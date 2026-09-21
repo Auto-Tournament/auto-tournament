@@ -354,7 +354,8 @@
       "noMapToPickSide": "Brak mapy do wyboru strony",
       "matchNotFound": "Mecz nie znaleziony",
       "unauthorized": "Tylko gracze jednego z dwóch uczestniczących zespołów mogą wykonywać akcje veto dla tego meczu."
-    }
+    },
+    "decider": "Decider"
   },
   "discordId": {
     "noDiscord": "Brak Discorda",

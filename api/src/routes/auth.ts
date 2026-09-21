@@ -1,9 +1,9 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { log } from '../utils/logger';
 import { getAuthProvidersConfig } from '../config/authProviders';
 import { steamService } from '../services/steamService';
 import { playerService } from '../services/playerService';
-import { passport } from '../config/passport';
+import { passport, isStrategyConfigured } from '../config/passport';
 import { settingsService } from '../services/settingsService';
 import { authIdentityService, AuthProvider } from '../services/authIdentityService';
 import {
@@ -440,7 +440,7 @@ router.get('/steam/callback', (req: Request, res: Response, _next) => {
       }
 
       // If this Steam login was initiated from a non‑Steam provider (Discord,
-      // Keycloak, GitHub), persist that association so future logins via that
+      // Keycloak, GitHub, Google), persist that association so future logins via that
       // provider automatically resolve the Steam ID without asking to link
       // again.
       // Only the session copy or a correctly signed, unexpired cookie is acted on.
@@ -517,76 +517,98 @@ router.post('/logout', (req: Request, res: Response) => {
 });
 
 /**
- * Keycloak OIDC admin login
- *
- * GET /api/auth/keycloak
- * Redirects to the Keycloak authorization endpoint.
+ * The field on the Passport user that holds each SSO provider's user id.
+ * The strategies in config/passport.ts set it.
  */
-router.get(
-  '/keycloak',
-  // Initial redirect – session will be established on the callback.
-  passport.authenticate('keycloak', {
-    // Request standard OIDC scopes so that the UserInfo endpoint
-    // can return a usable profile.
-    scope: ['openid', 'profile', 'email'],
-  })
-);
+const SSO_USER_ID_FIELD: Record<AuthProvider, string> = {
+  discord: 'discordId',
+  keycloak: 'keycloakId',
+  github: 'githubId',
+  google: 'googleId',
+};
+
+const SSO_PROVIDER_LABEL: Record<AuthProvider, string> = {
+  discord: 'Discord',
+  keycloak: 'Keycloak',
+  github: 'GitHub',
+  google: 'Google',
+};
 
 /**
- * Keycloak OIDC callback
- *
- * GET /api/auth/keycloak/callback
- * Exchanges the authorization code for tokens and then drops the admin API
- * token into localStorage via a small HTML bridge page.
+ * Answer 503 instead of letting Passport throw "Unknown authentication
+ * strategy" when a provider's client credentials are not configured.
  */
-router.get(
-  '/keycloak/callback',
-  passport.authenticate('keycloak', {
-    failureRedirect: '/login',
-  }),
-  async (req: Request, res: Response) => {
+export function requireStrategy(strategyName: string, provider: AuthProvider) {
+  return (_req: Request, res: Response, next: NextFunction) => {
+    if (!isStrategyConfigured(strategyName)) {
+      log.warn(`${SSO_PROVIDER_LABEL[provider]} auth requested but it is not configured`);
+      return res.status(503).json({
+        success: false,
+        error: `${SSO_PROVIDER_LABEL[provider]} authentication is not configured on the server.`,
+      });
+    }
+    return next();
+  };
+}
+
+/**
+ * What every SSO callback does once Passport has verified the login (state
+ * checked, code exchanged, profile fetched). The same for all providers:
+ *
+ *  1. A verified player_steam_id cookie is already present (the user signed in
+ *     with Steam earlier in this browser): link this identity to that Steam ID.
+ *  2. The identity is already linked: sign in as the linked Steam ID.
+ *  3. Otherwise: remember the identity in a signed pending_steam_link cookie
+ *     (and the session) and send the user to /connect-steam. The Steam
+ *     callback links it once Steam proves an account.
+ *
+ * Admin rights are never decided here. They come from players.is_admin for
+ * the resolved Steam ID, as for a Steam login.
+ *
+ * Exported so the test-only fake provider routes run exactly this code.
+ */
+export function ssoCallbackHandler(expectedProvider: AuthProvider) {
+  const label = SSO_PROVIDER_LABEL[expectedProvider];
+
+  return async (req: Request, res: Response) => {
     const anyReq = req as Request & {
-      user?: {
-        provider?: string;
-        keycloakId?: string;
-        steamId?: string;
-      };
+      user?: Record<string, unknown> & { provider?: string; steamId?: string };
       session?: {
         pendingSteamLink?: { provider: AuthProvider; providerUserId: string };
       };
-      sessionID?: string;
     };
 
     const user = anyReq.user;
     const provider = user?.provider as AuthProvider | undefined;
-    const providerUserId = user?.keycloakId;
-    // Never log the Passport user object: it carries the OAuth access and
-    // refresh tokens. Provider plus a truncated provider user id is enough.
-    log.info('Keycloak callback: resolved Passport user', {
+    const rawId = user?.[SSO_USER_ID_FIELD[expectedProvider]];
+    const providerUserId = typeof rawId === 'string' && rawId.length > 0 ? rawId : undefined;
+    // Never log the Passport user object. Provider plus a truncated provider
+    // user id is enough to correlate.
+    log.info(`${label} callback: resolved Passport user`, {
       provider,
       providerUserId: redactProviderUserId(providerUserId),
     });
 
-    if (!provider || provider !== 'keycloak' || !providerUserId) {
-      log.warn('Keycloak callback missing provider or keycloakId on user');
+    if (!user || provider !== expectedProvider || !providerUserId) {
+      log.warn(`${label} callback missing provider or user id on user`);
       return sendAdminLoginBridgePage(req, res);
     }
 
     try {
       const baseUrl = getFrontendBaseUrl(req);
 
-      // Fast-path: if a verified player_steam_id cookie exists (e.g. previous Steam
-      // login), persist the mapping so the user doesn't have to go through link again.
+      // Fast path: a verified player_steam_id cookie (e.g. an earlier Steam
+      // login) means we already know who this is, so persist the mapping.
       const cookieSteamId = getVerifiedPlayerSteamId(req.headers.cookie);
-      log.info('Keycloak callback: checking for existing player_steam_id cookie', {
+      log.info(`${label} callback: checking for existing player_steam_id cookie`, {
         cookieSteamId: cookieSteamId ?? null,
       });
       if (cookieSteamId) {
         await authIdentityService.linkIdentityToSteam(provider, providerUserId, cookieSteamId);
-        (anyReq.user as { steamId?: string }).steamId = cookieSteamId;
+        user.steamId = cookieSteamId;
         setPlayerSteamCookie(req, res, cookieSteamId);
 
-        log.success('Keycloak login auto-linked via existing Steam cookie', {
+        log.success(`${label} login auto-linked via existing Steam cookie`, {
           provider,
           providerUserId: redactProviderUserId(providerUserId),
           steamId: cookieSteamId,
@@ -595,275 +617,75 @@ router.get(
       }
 
       const steamId = await authIdentityService.findSteamIdForIdentity(provider, providerUserId);
-      log.info('Keycloak callback: result of auth identity lookup', {
-        provider,
-        providerUserId: redactProviderUserId(providerUserId),
-        steamId: steamId ?? null,
-      });
-      const baseUrlResolved = baseUrl;
-
-      if (steamId) {
-        (anyReq.user as { steamId?: string }).steamId = steamId;
-        setPlayerSteamCookie(req, res, steamId);
-
-        log.success('Keycloak login resolved via existing Steam link', { provider, steamId });
-        return res.redirect(302, `${baseUrlResolved}/`);
-      }
-
-      // No existing link – remember this identity so the Steam callback can persist it.
-      if (anyReq.session) {
-        anyReq.session.pendingSteamLink = {
-          provider,
-          providerUserId,
-        };
-        log.info('Keycloak callback: stored pendingSteamLink on session', {
-          provider,
-          providerUserId: redactProviderUserId(providerUserId),
-        });
-      }
-
-      // Also set a short-lived cookie so that even if the Express session ID
-      // changes between the SSO callback and the Steam callback, we can still
-      // recover the pending identity and persist the link. The cookie is signed
-      // and expires, so the Steam callback only acts on one we wrote.
-      setPendingSteamLinkCookie(res, provider, providerUserId);
-
-      log.success('Keycloak Passport login completed; Steam link required');
-      return sendAdminLoginBridgePage(req, res);
-    } catch (err) {
-      log.error('Keycloak callback failed while resolving Steam link', err as Error);
-      return sendAdminLoginBridgePage(req, res);
-    }
-  }
-);
-
-/**
- * Discord OAuth2 admin login
- *
- * GET /api/auth/discord
- * Redirects to the Discord OAuth2 authorization endpoint.
- */
-router.get(
-  '/discord',
-  // Initial redirect – session will be established on the callback.
-  passport.authenticate('discord')
-);
-
-/**
- * Discord OAuth2 callback
- *
- * GET /api/auth/discord/callback
- * Exchanges the authorization code for tokens and then drops the admin API
- * token into localStorage via a small HTML bridge page.
- */
-router.get(
-  '/discord/callback',
-  passport.authenticate('discord', {
-    failureRedirect: '/login',
-  }),
-  async (req: Request, res: Response) => {
-    const anyReq = req as Request & {
-      user?: {
-        provider?: string;
-        discordId?: string;
-        steamId?: string;
-      };
-      session?: {
-        pendingSteamLink?: { provider: AuthProvider; providerUserId: string };
-      };
-      sessionID?: string;
-    };
-
-    const user = anyReq.user;
-    const provider = user?.provider as AuthProvider | undefined;
-    const providerUserId = user?.discordId;
-    // Never log the Passport user object: it carries the OAuth access and
-    // refresh tokens. Provider plus a truncated provider user id is enough.
-    log.info('Discord callback: resolved Passport user', {
-      provider,
-      providerUserId: redactProviderUserId(providerUserId),
-    });
-
-    if (!provider || provider !== 'discord' || !providerUserId) {
-      log.warn('Discord callback missing provider or discordId on user');
-      return sendAdminLoginBridgePage(req, res);
-    }
-
-    try {
-      const baseUrl = getFrontendBaseUrl(req);
-
-      const cookieSteamId = getVerifiedPlayerSteamId(req.headers.cookie);
-      log.info('Discord callback: checking for existing player_steam_id cookie', {
-        cookieSteamId: cookieSteamId ?? null,
-      });
-      if (cookieSteamId) {
-        await authIdentityService.linkIdentityToSteam(provider, providerUserId, cookieSteamId);
-        (anyReq.user as { steamId?: string }).steamId = cookieSteamId;
-        setPlayerSteamCookie(req, res, cookieSteamId);
-
-        log.success('Discord login auto-linked via existing Steam cookie', {
-          provider,
-          providerUserId: redactProviderUserId(providerUserId),
-          steamId: cookieSteamId,
-        });
-        return res.redirect(302, `${baseUrl}/`);
-      }
-
-      const steamId = await authIdentityService.findSteamIdForIdentity(provider, providerUserId);
-
-      log.info('Discord callback: result of auth identity lookup', {
+      log.info(`${label} callback: result of auth identity lookup`, {
         provider,
         providerUserId: redactProviderUserId(providerUserId),
         steamId: steamId ?? null,
       });
 
       if (steamId) {
-        (anyReq.user as { steamId?: string }).steamId = steamId;
+        user.steamId = steamId;
         setPlayerSteamCookie(req, res, steamId);
 
-        log.success('Discord login resolved via existing Steam link', { provider, steamId });
+        log.success(`${label} login resolved via existing Steam link`, { provider, steamId });
         return res.redirect(302, `${baseUrl}/`);
       }
 
+      // No existing link: remember this identity so the Steam callback can persist it.
       if (anyReq.session) {
-        anyReq.session.pendingSteamLink = {
-          provider,
-          providerUserId,
-        };
-        log.info('Discord callback: stored pendingSteamLink on session', {
+        anyReq.session.pendingSteamLink = { provider, providerUserId };
+        log.info(`${label} callback: stored pendingSteamLink on session`, {
           provider,
           providerUserId: redactProviderUserId(providerUserId),
         });
       }
 
       // Also set a short-lived cookie so that even if the Express session ID
-      // changes between the Discord callback and the Steam callback, we can still
+      // changes between this callback and the Steam callback, we can still
       // recover the pending identity and persist the link. The cookie is signed
       // and expires, so the Steam callback only acts on one we wrote.
       setPendingSteamLinkCookie(res, provider, providerUserId);
 
-      log.success('Discord Passport login completed; Steam link required');
+      log.success(`${label} Passport login completed; Steam link required`);
       return sendAdminLoginBridgePage(req, res);
     } catch (err) {
-      log.error('Discord callback failed while resolving Steam link', err as Error);
+      log.error(`${label} callback failed while resolving Steam link`, err as Error);
       return sendAdminLoginBridgePage(req, res);
     }
-  }
-);
+  };
+}
 
 /**
- * GitHub OAuth2 admin login
+ * The start and callback routes for one SSO provider:
  *
- * GET /api/auth/github
- * Redirects to the GitHub OAuth2 authorization endpoint.
- */
-router.get(
-  '/github',
-  // Initial redirect – session will be established on the callback.
-  passport.authenticate('github')
-);
-
-/**
- * GitHub OAuth2 callback
+ *   GET /api/auth/<provider>           redirects to the provider
+ *   GET /api/auth/<provider>/callback  verifies the login, see ssoCallbackHandler
  *
- * GET /api/auth/github/callback
- * Exchanges the authorization code for tokens and then drops the admin API
- * token into localStorage via a small HTML bridge page.
+ * The OAuth state cookie is set and checked by the strategy's
+ * SignedCookieStateStore (utils/oauthStateCookie). A failed state check or a
+ * refused consent is a Passport failure and redirects to /login.
  */
-router.get(
-  '/github/callback',
-  passport.authenticate('github', {
-    failureRedirect: '/login',
-  }),
-  async (req: Request, res: Response) => {
-    const anyReq = req as Request & {
-      user?: {
-        provider?: string;
-        githubId?: string;
-        steamId?: string;
-      };
-      session?: {
-        pendingSteamLink?: { provider: AuthProvider; providerUserId: string };
-      };
-      sessionID?: string;
-    };
+function registerSsoRoutes(provider: AuthProvider, startOptions: Record<string, unknown> = {}) {
+  router.get(
+    `/${provider}`,
+    requireStrategy(provider, provider),
+    passport.authenticate(provider, startOptions)
+  );
+  router.get(
+    `/${provider}/callback`,
+    requireStrategy(provider, provider),
+    passport.authenticate(provider, { failureRedirect: '/login' }),
+    ssoCallbackHandler(provider)
+  );
+}
 
-    const user = anyReq.user;
-    const provider = user?.provider as AuthProvider | undefined;
-    const providerUserId = user?.githubId;
-    // Never log the Passport user object: it carries the OAuth access and
-    // refresh tokens. Provider plus a truncated provider user id is enough.
-    log.info('GitHub callback: resolved Passport user', {
-      provider,
-      providerUserId: redactProviderUserId(providerUserId),
-    });
-
-    if (!provider || provider !== 'github' || !providerUserId) {
-      log.warn('GitHub callback missing provider or githubId on user');
-      return sendAdminLoginBridgePage(req, res);
-    }
-
-    try {
-      const baseUrl = getFrontendBaseUrl(req);
-
-      const cookieSteamId = getVerifiedPlayerSteamId(req.headers.cookie);
-      log.info('GitHub callback: checking for existing player_steam_id cookie', {
-        cookieSteamId: cookieSteamId ?? null,
-      });
-      if (cookieSteamId) {
-        await authIdentityService.linkIdentityToSteam(provider, providerUserId, cookieSteamId);
-        (anyReq.user as { steamId?: string }).steamId = cookieSteamId;
-        setPlayerSteamCookie(req, res, cookieSteamId);
-
-        log.success('GitHub login auto-linked via existing Steam cookie', {
-          provider,
-          providerUserId: redactProviderUserId(providerUserId),
-          steamId: cookieSteamId,
-        });
-        return res.redirect(302, `${baseUrl}/`);
-      }
-
-      const steamId = await authIdentityService.findSteamIdForIdentity(provider, providerUserId);
-
-      log.info('GitHub callback: result of auth identity lookup', {
-        provider,
-        providerUserId: redactProviderUserId(providerUserId),
-        steamId: steamId ?? null,
-      });
-
-      if (steamId) {
-        (anyReq.user as { steamId?: string }).steamId = steamId;
-        setPlayerSteamCookie(req, res, steamId);
-
-        log.success('GitHub login resolved via existing Steam link', { provider, steamId });
-        return res.redirect(302, `${baseUrl}/`);
-      }
-
-      if (anyReq.session) {
-        anyReq.session.pendingSteamLink = {
-          provider,
-          providerUserId,
-        };
-        log.info('GitHub callback: stored pendingSteamLink on session', {
-          provider,
-          providerUserId: redactProviderUserId(providerUserId),
-        });
-      }
-
-      // Also set a short-lived cookie so that even if the Express session ID
-      // changes between the GitHub callback and the Steam callback, we can still
-      // recover the pending identity and persist the link. The cookie is signed
-      // and expires, so the Steam callback only acts on one we wrote.
-      setPendingSteamLinkCookie(res, provider, providerUserId);
-
-      log.success('GitHub Passport login completed; Steam link required');
-      return sendAdminLoginBridgePage(req, res);
-    } catch (err) {
-      log.error('GitHub callback failed while resolving Steam link', err as Error);
-      return sendAdminLoginBridgePage(req, res);
-    }
-  }
-);
+// Keycloak (OIDC): request the standard scopes so the UserInfo endpoint
+// returns a usable profile. Discord, GitHub and Google set their scopes on the
+// strategy.
+registerSsoRoutes('keycloak', { scope: ['openid', 'profile', 'email'] });
+registerSsoRoutes('discord');
+registerSsoRoutes('github');
+registerSsoRoutes('google');
 
 /**
  * Public discovery endpoint: returns the list of configured auth providers.
@@ -1181,7 +1003,7 @@ router.get('/admin/me', async (req: Request, res: Response) => {
     } else if (provider === 'discord') {
       profileName = (user as { username?: string }).username ?? null;
       profileAvatarUrl = (user as { avatarUrl?: string }).avatarUrl ?? null;
-    } else if (provider === 'github') {
+    } else if (provider === 'github' || provider === 'google') {
       profileName =
         (user as { displayName?: string }).displayName ||
         (user as { username?: string }).username ||

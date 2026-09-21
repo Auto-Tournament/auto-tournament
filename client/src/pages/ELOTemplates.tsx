@@ -204,7 +204,7 @@ export default function ELOTemplates() {
                   transition: 'transform 0.2s, box-shadow 0.2s',
                   '&:hover': {
                     transform: 'translateY(-4px)',
-                    boxShadow: 6,
+                    boxShadow: (theme) => `0 24px 60px -30px ${theme.palette.primary.main}`,
                   },
                 }}
               >

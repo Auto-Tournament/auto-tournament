@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { Box, Stack, Alert } from '@mui/material';
-import { alpha } from '@mui/material/styles';
 import { OnboardingChecklist } from '../components/dashboard/OnboardingChecklist';
 import { useOnboardingStatus } from '../hooks/useOnboardingStatus';
 import { DashboardStats } from '../components/dashboard/DashboardStats';
@@ -44,13 +43,12 @@ export default function Dashboard() {
     <Box
       component="main"
       data-testid="dashboard-page"
-      sx={(theme) => ({
+      sx={{
         flexGrow: 1,
-        backgroundColor: theme.vars
-          ? `rgba(${theme.vars.palette.background.defaultChannel} / 1)`
-          : alpha(theme.palette.background.default, 1),
+        // Transparent so the page sits on the body's orange blooms.
+        backgroundColor: 'transparent',
         overflow: 'auto',
-      })}
+      }}
     >
       <Stack
         spacing={2}

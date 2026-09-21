@@ -61,10 +61,7 @@ export default function TournamentStatCard({
       theme.palette.mode === 'light'
         ? theme.palette.error.main
         : theme.palette.error.dark,
-    neutral:
-      theme.palette.mode === 'light'
-        ? theme.palette.grey[400]
-        : theme.palette.grey[700],
+    neutral: theme.palette.text.disabled,
   };
 
   const labelColors = {

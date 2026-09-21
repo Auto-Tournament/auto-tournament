@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Box, useTheme } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { alpha } from '@mui/material/styles';
+import { tokens } from '../../theme/tokens';
 import {
   TransformWrapper,
   TransformComponent,
@@ -630,50 +630,34 @@ export default function BracketsViewerVisualization({
 
         if (cancelled) return;
 
-        // Apply custom styles based on theme
+        // Bracket colours come from the design tokens: matches on paper3,
+        // the winner row filled orange, a live match outlined in orange.
         if (container) {
-          const primaryBackground = theme.palette.background.default;
-          const secondaryBackground =
-            theme.palette.mode === 'dark'
-              ? alpha(theme.palette.background.default, 0.8)
-              : alpha(theme.palette.background.default, 0.95);
-          const matchBackground =
-            theme.palette.mode === 'dark'
-              ? alpha(theme.palette.background.paper, 0.6)
-              : theme.palette.background.paper;
-
-          container.style.setProperty('--primary-background', primaryBackground);
-          container.style.setProperty('--secondary-background', secondaryBackground);
-          container.style.setProperty('--match-background', matchBackground);
-          container.style.setProperty('--font-color', theme.palette.text.primary);
-          container.style.setProperty('--label-color', theme.palette.text.secondary);
-          container.style.setProperty('--hint-color', theme.palette.text.secondary);
-          container.style.setProperty('--connector-color', theme.palette.divider);
-          container.style.setProperty('--border-color', theme.palette.divider);
-          container.style.setProperty(
-            '--border-hover-color',
-            alpha(theme.palette.text.primary, 0.4)
-          );
-          container.style.setProperty('--border-selected-color', theme.palette.primary.main);
-          // Bracket participants: show winners in green and losers in a neutral grey,
-          // with corresponding subtle backgrounds so the winner row stands out.
-          container.style.setProperty('--win-color', theme.palette.success.main);
-          container.style.setProperty('--loss-color', theme.palette.text.secondary);
-          container.style.setProperty(
-            '--winner-background',
-            alpha(theme.palette.text.secondary, 0.16)
-          );
-          container.style.setProperty(
-            '--loser-background',
-            alpha(theme.palette.text.secondary, theme.palette.mode === 'dark' ? 0.08 : 0.04)
-          );
-          container.style.setProperty('--live-border-color', theme.palette.primary.main);
-          container.style.setProperty('--status-live-border-color', theme.palette.error.main);
-          container.style.setProperty('--status-loaded-border-color', theme.palette.info.main);
-          container.style.setProperty(
-            '--status-allocated-border-color',
-            theme.palette.warning.main
-          );
+          const c = tokens.color;
+          const vars: Record<string, string> = {
+            '--primary-background': c.paper2,
+            '--secondary-background': c.paper3,
+            '--match-background': c.paper3,
+            '--font-color': c.ink,
+            '--label-color': c.muted,
+            '--hint-color': c.muted,
+            '--connector-color': c.rule,
+            '--border-color': 'transparent',
+            '--border-hover-color': c.muted,
+            '--border-selected-color': c.accent,
+            '--win-color': c.accentInk,
+            '--loss-color': c.muted,
+            '--winner-background': c.accent,
+            '--loser-background': 'transparent',
+            '--live-border-color': c.accent,
+            '--status-live-border-color': c.accent,
+            '--status-loaded-border-color': c.info,
+            '--status-allocated-border-color': c.warning,
+            '--match-border-radius': `${tokens.radius.sm}px`,
+            '--text-size': '13px',
+            '--match-width': '172px',
+          };
+          Object.entries(vars).forEach(([name, value]) => container.style.setProperty(name, value));
         }
 
         const transformInstance = transformRef.current;
@@ -722,9 +706,9 @@ export default function BracketsViewerVisualization({
         height: isFullscreen ? '100%' : '70vh',
         border: isFullscreen ? 0 : 1,
         borderColor: 'divider',
-        borderRadius: isFullscreen ? 0 : 2,
+        borderRadius: isFullscreen ? 0 : `${tokens.radius.lg}px`,
         overflow: 'hidden',
-        bgcolor: 'background.default',
+        bgcolor: 'background.paper',
         p: 0,
       }}
     >
@@ -749,7 +733,7 @@ export default function BracketsViewerVisualization({
             height: '100%',
             padding: theme.spacing(3),
             overflow: 'hidden',
-            background: theme.palette.background.default,
+            background: theme.palette.background.paper,
             boxSizing: 'border-box',
           }}
           contentStyle={{ width: 'auto', height: 'auto' }}

@@ -135,7 +135,7 @@ export default function FindPlayer() {
   };
 
   return (
-    <Box minHeight="100vh" bgcolor="background.default" data-testid="find-player-page">
+    <Box minHeight="100vh" bgcolor="transparent" data-testid="find-player-page">
       <TopNavBar />
       <Container maxWidth="sm" sx={{ py: 6 }}>
         <Card data-testid="find-player-form">

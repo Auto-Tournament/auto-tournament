@@ -22,6 +22,10 @@ import { api } from '../../utils/api';
 import type { VetoState, MapSide } from '../../types';
 import type { MapsResponse } from '../../types/api.types';
 import { FadeInImage } from '../common/FadeInImage';
+import { tokens, mono, withAlpha } from '../../theme/tokens';
+import { vetoHistoryRowSx, vetoMapNameSx } from './vetoStyles';
+
+const { color, radius } = tokens;
 
 interface VetoInterfaceProps {
   matchSlug: string;
@@ -292,13 +296,21 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   const team2Name = vetoState.team2Name || propTeam2Name || t('teamMatchHistory.team2');
   const isViewingTeam1 = currentTeamSlug === vetoState.team1Id;
   const isViewingTeam2 = currentTeamSlug === vetoState.team2Id;
+  // A picked map no team chose is the decider (what is left after the bans).
+  const teamPickedMaps = new Set(
+    (Array.isArray(vetoState.actions) ? vetoState.actions : [])
+      .filter((a) => a.action === 'pick' && a.mapName)
+      .map((a) => a.mapName as string)
+  );
+  const isDeciderMap = (mapName: string) =>
+    Array.isArray(vetoState.actions) && !teamPickedMaps.has(mapName);
 
   if (vetoState.status === 'completed') {
     return (
       <Box>
         <Alert severity="success" sx={{ mb: 3 }}>
           <Typography variant="body1" fontWeight={600}>
-            ✅ {t('vetoInterface.vetoCompleted')}
+            {t('vetoInterface.vetoCompleted')}
           </Typography>
           <Typography variant="body2">
             {t('vetoInterface.vetoCompletedSubtitle')}
@@ -332,6 +344,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                   state="picked"
                   mapNumber={pick.mapNumber}
                   side={displaySide}
+                  isDecider={isDeciderMap(pick.mapName)}
                 />
               </Grid>
             );
@@ -380,8 +393,14 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       )}
 
       {/* Match Header */}
-      <Paper elevation={2} sx={{ mb: 3, p: 3, bgcolor: 'background.paper' }}>
-        <Box display="flex" alignItems="center" justifyContent="center" gap={3}>
+      <Paper sx={{ mb: 3, p: { xs: 2, sm: 3 }, bgcolor: 'background.paper', borderRadius: `${radius.lg}px` }}>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          gap={{ xs: 1.5, sm: 3 }}
+          flexWrap="wrap"
+        >
           <Typography
             variant="h4"
             fontWeight={700}
@@ -400,8 +419,9 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                 : undefined
             }
             sx={{
-              color: 'primary.main',
+              color: 'text.primary',
               textDecoration: 'none',
+              overflowWrap: 'anywhere',
               '&:hover': {
                 textDecoration:
                   vetoState.team1Id &&
@@ -414,7 +434,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           >
             {team1Name}
           </Typography>
-          <Typography variant="h3" fontWeight={300} color="text.secondary">
+          <Typography variant="body2" color="text.disabled" sx={{ ...mono }}>
             {t('teamMatchHistory.vs')}
           </Typography>
           <Typography
@@ -435,8 +455,9 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                 : undefined
             }
             sx={{
-              color: 'error.main',
+              color: 'text.primary',
               textDecoration: 'none',
+              overflowWrap: 'anywhere',
               '&:hover': {
                 textDecoration:
                   vetoState.team2Id &&
@@ -450,63 +471,58 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
             {team2Name}
           </Typography>
         </Box>
-        <Typography variant="body2" textAlign="center" color="text.secondary" mt={1}>
-          {vetoState.format.toUpperCase()}
-        </Typography>
+        <Box display="flex" justifyContent="center" mt={1.5}>
+          <Chip size="small" label={vetoState.format.toUpperCase()} />
+        </Box>
       </Paper>
 
       {/* Progress Header */}
       <Paper
-        elevation={1}
         sx={{
           mb: 3,
-          p: 3,
+          p: { xs: 2, sm: 3 },
           bgcolor: 'background.paper',
-          border: '1px solid',
-          borderColor: 'divider',
+          borderRadius: `${radius.lg}px`,
         }}
       >
         <Stack spacing={2}>
           {/* Big, high‑contrast turn banner */}
           <Box
-            sx={(theme) => {
-              const bgColor = isMyTurn
-                ? currentAction === 'ban'
-                  ? theme.palette.error.main
+            sx={() => {
+              // Inset row on paper3, as on the homepage veto card. The action
+              // colour (red ban, green pick, blue side) marks the outline and
+              // title; on your turn it glows.
+              const actionColor =
+                currentAction === 'ban'
+                  ? color.ban
                   : currentAction === 'pick'
-                    ? theme.palette.success.main
-                    : theme.palette.info.main
-                : theme.palette.grey[900];
+                    ? color.pick
+                    : color.info;
 
               return {
                 p: 2,
-                borderRadius: 2,
+                borderRadius: `${radius.md}px`,
                 textAlign: 'center',
-                bgcolor: bgColor,
-                color: theme.palette.getContrastText(bgColor),
-                boxShadow: isMyTurn ? 6 : 1,
-                border: '2px solid',
-                borderColor: isMyTurn
-                  ? currentAction === 'ban'
-                    ? 'error.light'
-                    : currentAction === 'pick'
-                      ? 'success.light'
-                      : 'info.light'
-                  : 'grey.700',
+                bgcolor: color.paper3,
+                color: color.ink,
+                border: '1px solid',
+                borderColor: isMyTurn ? actionColor : color.rule,
                 position: 'relative',
                 overflow: 'hidden',
+                '& .veto-turn-title': { color: isMyTurn ? actionColor : color.ink },
                 '@keyframes vetoTurnPulse': {
-                  '0%': { boxShadow: '0 0 0 0 rgba(255,255,255,0.5)' },
-                  '70%': { boxShadow: '0 0 0 12px rgba(255,255,255,0)' },
-                  '100%': { boxShadow: '0 0 0 0 rgba(255,255,255,0)' },
+                  '0%': { boxShadow: `0 0 0 0 ${withAlpha(actionColor, 0.45)}` },
+                  '70%': { boxShadow: `0 0 0 10px ${withAlpha(actionColor, 0)}` },
+                  '100%': { boxShadow: `0 0 0 0 ${withAlpha(actionColor, 0)}` },
                 },
                 animation: isMyTurn ? 'vetoTurnPulse 1.6s ease-out infinite' : 'none',
+                '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
               };
             }}
           >
             {isMyTurn ? (
               <>
-                <Typography variant="h5" fontWeight={800} color="inherit">
+                <Typography variant="h5" className="veto-turn-title">
                   {currentAction === 'ban'
                     ? t('vetoInterface.yourTurnToBan')
                     : currentAction === 'pick'
@@ -514,21 +530,21 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                     : t('vetoInterface.yourTurnToChooseSide')}
                 </Typography>
                 {currentAction !== 'side_pick' && (
-                  <Typography variant="body2" color="inherit" sx={{ mt: 0.5, opacity: 0.9 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                     {t('vetoInterface.clickMapToConfirm')}
                   </Typography>
                 )}
               </>
             ) : (
               <>
-                <Typography variant="h6" fontWeight={700} color="inherit">
+                <Typography variant="h6" className="veto-turn-title">
                   {currentAction === 'ban'
                     ? t('vetoInterface.waitingToBan', { team: currentTeamName })
                     : currentAction === 'pick'
                     ? t('vetoInterface.waitingToPick', { team: currentTeamName })
                     : t('vetoInterface.waitingToChooseSide', { team: currentTeamName })}
                 </Typography>
-                <Typography variant="body2" color="inherit" sx={{ mt: 0.5, opacity: 0.9 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                   {t('vetoInterface.pageUpdatesAutomatically')}
                 </Typography>
               </>
@@ -537,7 +553,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
 
           {/* Step / progress row */}
           <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" sx={{ ...mono, fontSize: '0.75rem' }}>
               {t('vetoInterface.stepOf', { current: vetoState.currentStep, total: vetoState.totalSteps })}
             </Typography>
             <Chip
@@ -556,7 +572,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           <LinearProgress
             variant="determinate"
             value={(vetoState.currentStep / vetoState.totalSteps) * 100}
-            sx={{ height: 6, borderRadius: 3 }}
+            sx={{ height: 4 }}
           />
         </Stack>
       </Paper>
@@ -603,7 +619,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                     alt={mapData?.displayName || fallbackData?.displayName || sidePickMapName}
                     height={250}
                     sx={{
-                      borderRadius: 2,
+                      borderRadius: `${radius.md}px`,
                       mb: 3,
                     }}
                   >
@@ -621,8 +637,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                           left: 0,
                           right: 0,
                           bottom: 0,
-                          background:
-                            'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%)',
+                          background: `linear-gradient(to bottom, ${withAlpha(color.paper, 0.3)} 0%, ${withAlpha(color.paper, 0.8)} 100%)`,
                         },
                       }}
                     >
@@ -630,8 +645,8 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                         <Typography
                           variant="h2"
                           fontWeight={700}
-                          color="white"
-                          sx={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}
+                          color="text.primary"
+                          sx={{ textShadow: `0 2px 12px ${color.shadow}` }}
                         >
                           {mapData?.displayName ||
                             fallbackData?.displayName ||
@@ -639,8 +654,8 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                         </Typography>
                         <Typography
                           variant="h6"
-                          color="rgba(255,255,255,0.9)"
-                          sx={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+                          color="text.secondary"
+                          sx={{ textShadow: `0 1px 6px ${color.shadow}` }}
                         >
                           {t('vetoInterface.chooseYourStartingSide')}
                         </Typography>
@@ -665,9 +680,15 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                       size="large"
                       onClick={() => handleSidePick('CT')}
                       disabled={!isMyTurn}
-                      sx={{ py: 2, fontSize: '1.1rem', fontWeight: 600 }}
+                      sx={{
+                        py: 2,
+                        fontSize: '1.05rem',
+                        bgcolor: color.sideCt,
+                        color: color.accentInk,
+                        '&:hover': { bgcolor: color.sideCt, boxShadow: `0 10px 30px -12px ${color.sideCt}` },
+                      }}
                     >
-                      🛡️ {t('vetoInterface.counterTerrorist')}
+                      {t('vetoInterface.counterTerrorist')}
                     </Button>
                   </Grid>
                   <Grid size={{ xs: 6 }}>
@@ -679,9 +700,15 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                       size="large"
                       onClick={() => handleSidePick('T')}
                       disabled={!isMyTurn}
-                      sx={{ py: 2, fontSize: '1.1rem', fontWeight: 600 }}
+                      sx={{
+                        py: 2,
+                        fontSize: '1.05rem',
+                        bgcolor: color.sideT,
+                        color: color.accentInk,
+                        '&:hover': { bgcolor: color.sideT, boxShadow: `0 10px 30px -12px ${color.sideT}` },
+                      }}
                     >
-                      💣 {t('vetoInterface.terrorist')}
+                      {t('vetoInterface.terrorist')}
                     </Button>
                   </Grid>
                 </Grid>
@@ -699,20 +726,16 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
             isMyTurn
               ? {
                   p: 1.5,
-                  borderRadius: 2,
-                  border: '2px dashed',
-                  borderColor:
-                    currentAction === 'ban'
-                      ? 'error.light'
-                      : currentAction === 'pick'
-                      ? 'success.light'
-                      : 'info.light',
-                  bgcolor:
-                    currentAction === 'ban'
-                      ? 'rgba(211, 47, 47, 0.06)'
-                      : currentAction === 'pick'
-                      ? 'rgba(46, 125, 50, 0.06)'
-                      : 'rgba(2, 136, 209, 0.06)',
+                  borderRadius: `${radius.lg}px`,
+                  border: '1px dashed',
+                  borderColor: withAlpha(
+                    currentAction === 'ban' ? color.ban : currentAction === 'pick' ? color.pick : color.info,
+                    0.5
+                  ),
+                  bgcolor: withAlpha(
+                    currentAction === 'ban' ? color.ban : currentAction === 'pick' ? color.pick : color.info,
+                    0.05
+                  ),
                 }
               : undefined
           }
@@ -747,6 +770,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                   disabled={mapState !== 'available' || !isMyTurn}
                   isCurrentTurn={isMyTurn && mapState === 'available'}
                   currentAction={currentAction}
+                  isDecider={mapState === 'picked' && isDeciderMap(map.name)}
                 />
               </Grid>
             );
@@ -763,16 +787,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
             </Typography>
             <Stack spacing={1}>
               {(vetoState.actions || []).map((action, idx) => (
-                <Box
-                  key={idx}
-                  sx={{
-                    p: 1.5,
-                    borderRadius: 1,
-                    bgcolor: 'action.hover',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                  }}
-                >
+                <Box key={idx} sx={vetoHistoryRowSx(action.action)}>
                   <Typography variant="body2">
                     <strong>{t('vetoInterface.historyStep', { step: action.step })}</strong>{' '}
                     {action.team === 'team1' ? team1Name : team2Name}{' '}
@@ -791,8 +806,10 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                       }
                       sx={{ mx: 1 }}
                     />
-                    {allMaps.get(action.mapName || '')?.displayName ||
-                      getMapDisplayName(action.mapName || '')}
+                    <Box component="span" sx={vetoMapNameSx(action.action)}>
+                      {allMaps.get(action.mapName || '')?.displayName ||
+                        getMapDisplayName(action.mapName || '')}
+                    </Box>
                     {action.side && ` (${t('vetoInterface.startingSide', { side: action.side })})`}
                   </Typography>
                 </Box>

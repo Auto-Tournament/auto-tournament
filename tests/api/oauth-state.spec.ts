@@ -9,7 +9,7 @@ import { signInViaRequest } from '../helpers/auth';
  * talks to the provider). CI's e2e stack does not configure any SSO provider,
  * so those tests skip themselves there. To run them locally, start the API with
  * e.g. DISCORD_CLIENT_ID=123456789012345678 DISCORD_CLIENT_SECRET=fake
- * GITHUB_CLIENT_ID=Iv1.fake GITHUB_CLIENT_SECRET=fake
+ * GITHUB_CLIENT_ID=Iv1.fake GITHUB_CLIENT_SECRET=fake GOOGLE_CLIENT_ID=fake GOOGLE_CLIENT_SECRET=fake
  * KEYCLOAK_ISSUER_URL=https://sso.invalid/realms/test KEYCLOAK_CLIENT_ID=matchzy.
  *
  * @tag api
@@ -32,6 +32,7 @@ function isCleared(cookie: string): boolean {
 const providers = [
   { id: 'discord', authorizeHost: 'discord.com' },
   { id: 'github', authorizeHost: 'github.com' },
+  { id: 'google', authorizeHost: 'accounts.google.com' },
   { id: 'keycloak', authorizeHost: 'sso.invalid' },
 ] as const;
 

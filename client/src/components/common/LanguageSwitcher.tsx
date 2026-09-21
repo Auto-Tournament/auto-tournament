@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import * as Flags from 'country-flag-icons/react/3x2';
+import { tokens } from '../../theme/tokens';
 
 const LANGUAGES: {
   code: string;
@@ -36,8 +37,7 @@ function FlagIcon({ code }: { code: string }) {
         justifyContent: 'center',
         overflow: 'hidden',
         borderRadius: '7px',
-        border: '1px solid rgba(255, 255, 255, 0.18)',
-        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.35)',
+        border: `1px solid ${tokens.color.rule}`,
         '& svg': {
           width: '100%',
           height: '100%',

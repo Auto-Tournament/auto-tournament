@@ -3,6 +3,7 @@ import { Card, CardContent, Typography, Button, Box } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import PersonIcon from '@mui/icons-material/Person';
 import type { Team, TeamMatchInfo } from '../../types';
+import { mono } from '../../theme/tokens';
 
 interface CurrentMatchDisplayCardProps {
   match: TeamMatchInfo;
@@ -41,12 +42,7 @@ export function CurrentMatchDisplayCard({
   const rightName = opponent?.name ?? match.team2?.name ?? 'Team 2';
 
   return (
-    <Card
-      sx={{
-        background:
-          'linear-gradient(135deg, rgba(103, 80, 164, 0.08) 0%, rgba(103, 80, 164, 0.03) 100%)',
-      }}
-    >
+    <Card>
       <CardContent>
         <Box display="flex" alignItems="center" gap={1} mb={2}>
           <SportsEsportsIcon color="primary" />
@@ -54,10 +50,10 @@ export function CurrentMatchDisplayCard({
             {title}
           </Typography>
         </Box>
-        <Typography variant="body2" color="text.secondary" gutterBottom>
+        <Typography variant="body2" color="text.secondary" gutterBottom sx={{ ...mono, fontSize: '0.75rem' }}>
           {roundLabel}
         </Typography>
-        <Typography variant="h5" fontWeight={700} sx={{ my: 2 }}>
+        <Typography variant="h5" sx={{ my: 2, overflowWrap: 'anywhere' }}>
           {leftName} {versus} {rightName}
         </Typography>
         {playerSteamId && (

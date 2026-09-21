@@ -91,7 +91,7 @@ function renderTable(
                     variant="body2"
                     noWrap
                     sx={{
-                      color: isHighlighted ? 'common.white' : `${accent}.main`,
+                      color: isHighlighted ? 'text.primary' : `${accent}.main`,
                       fontWeight: 600,
                       textDecoration: 'none',
                       cursor: isHighlighted ? 'default' : 'pointer',

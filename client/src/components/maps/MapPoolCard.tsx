@@ -29,7 +29,7 @@ export function MapPoolCard({ pool, maps, onClick }: MapPoolCardProps) {
         opacity: pool.enabled ? 1 : 0.7,
         '&:hover': {
           transform: 'translateY(-4px)',
-          boxShadow: 4,
+          boxShadow: (theme) => `0 24px 60px -30px ${theme.palette.primary.main}`,
         },
       }}
     >

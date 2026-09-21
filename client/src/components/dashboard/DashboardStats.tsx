@@ -265,21 +265,21 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
 
   // Prepare chart data
   const matchStatusData = [
-    { id: 0, value: matchStatusCount.pending, label: 'Pending' },
-    { id: 1, value: matchStatusCount.ready, label: 'Ready' },
-    { id: 2, value: matchStatusCount.loaded, label: 'Loaded' },
-    { id: 3, value: matchStatusCount.live, label: 'Live' },
-    { id: 4, value: matchStatusCount.completed, label: 'Completed' },
+    { id: 0, value: matchStatusCount.pending, label: 'Pending', color: theme.palette.text.disabled },
+    { id: 1, value: matchStatusCount.ready, label: 'Ready', color: theme.palette.info.main },
+    { id: 2, value: matchStatusCount.loaded, label: 'Loaded', color: theme.palette.warning.main },
+    { id: 3, value: matchStatusCount.live, label: 'Live', color: theme.palette.success.main },
+    { id: 4, value: matchStatusCount.completed, label: 'Completed', color: theme.palette.primary.main },
   ].filter((item) => item.value > 0);
 
   const serverStatusData = [
-    { id: 0, value: serverStatusCount.online, label: 'Online' },
-    { id: 1, value: serverStatusCount.offline, label: 'Offline' },
+    { id: 0, value: serverStatusCount.online, label: 'Online', color: theme.palette.success.main },
+    { id: 1, value: serverStatusCount.offline, label: 'Offline', color: theme.palette.error.main },
   ].filter((item) => item.value > 0);
 
   const playerDistributionData = [
-    { id: 0, value: playerStats.inMatches, label: 'In Matches' },
-    { id: 1, value: playerStats.waiting, label: 'Waiting' },
+    { id: 0, value: playerStats.inMatches, label: 'In Matches', color: theme.palette.success.main },
+    { id: 1, value: playerStats.waiting, label: 'Waiting', color: theme.palette.text.disabled },
   ].filter((item) => item.value > 0);
 
   // Match status over time (last 7 matches)

@@ -1,7 +1,7 @@
 /**
  * Signed `pending_steam_link` cookie.
  *
- * When an SSO login (Discord, Keycloak, GitHub) needs the user to prove a Steam
+ * When an SSO login (Discord, Keycloak, GitHub, Google) needs the user to prove a Steam
  * account, we remember "link this SSO identity once Steam has signed them in".
  * The session copy of that does not survive: Passport regenerates the session
  * when the Steam OpenID login completes. So a short-lived cookie is what
@@ -42,7 +42,7 @@ export const PENDING_STEAM_LINK_TTL_MS = 1000 * 60 * 10;
  * module free of DB imports; auth.ts passes one to the other, so a mismatch is
  * a type error there).
  */
-export const PENDING_STEAM_LINK_PROVIDERS = ['discord', 'keycloak', 'github'] as const;
+export const PENDING_STEAM_LINK_PROVIDERS = ['discord', 'keycloak', 'github', 'google'] as const;
 export type PendingSteamLinkProvider = (typeof PENDING_STEAM_LINK_PROVIDERS)[number];
 
 export interface PendingSteamLink {
