@@ -71,6 +71,7 @@ export function getSchemaSQL(): string {
       maps TEXT NOT NULL,
       team_ids TEXT NOT NULL,
       settings TEXT,
+      game TEXT NOT NULL DEFAULT 'cs2', -- Game integration that owns this row (integrations/registry)
       -- Shuffle tournament specific fields
       map_sequence TEXT, -- JSON array of maps in order (number of maps = number of rounds)
       team_size INTEGER DEFAULT 5, -- Number of players per team (default: 5 for 5v5)
@@ -99,6 +100,7 @@ export function getSchemaSQL(): string {
       winner_id TEXT,
       server_id TEXT,
       config TEXT NOT NULL,
+      game TEXT NOT NULL DEFAULT 'cs2', -- Game integration that owns this row (integrations/registry)
       status TEXT NOT NULL DEFAULT 'pending',
       -- Optional explicit slot wiring: where the inputs for this match come from.
       -- When populated, runtime progression can be driven entirely by these
@@ -203,6 +205,7 @@ export function getSchemaSQL(): string {
       maps TEXT,
       team_ids TEXT,
       settings TEXT NOT NULL,
+      game TEXT NOT NULL DEFAULT 'cs2', -- Game integration that owns this row (integrations/registry)
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       FOREIGN KEY (map_pool_id) REFERENCES map_pools(id) ON DELETE SET NULL
@@ -226,6 +229,7 @@ export function getSchemaSQL(): string {
       overtime_max_rounds INTEGER,
       map_pool_id INTEGER,
       maps TEXT, -- JSON array of map IDs
+      game TEXT NOT NULL DEFAULT 'cs2', -- Game integration that owns this row (integrations/registry)
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       FOREIGN KEY (map_pool_id) REFERENCES map_pools(id) ON DELETE SET NULL
