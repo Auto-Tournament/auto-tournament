@@ -349,6 +349,9 @@
       "eloDefaultSuffix": "(Standard)",
       "eloTemplateHelper": "Pure Win/Loss (Standard): Nur das Matchergebnis beeinflusst die ELO. Spielerstatistiken werden weiterhin für Bestenlisten und Exporte erfasst, ändern die Wertung aber nur, wenn du eine eigene Vorlage wählst."
     },
+    "shuffleStats": {
+      "serverShortageWarning": "You have {{available}} of {{needed}} servers. Matches will run in waves, so rounds take longer."
+    },
     "changePreview": {
       "title": "Turnieränderungen prüfen",
       "liveHeading": "Das Turnier läuft LIVE!",

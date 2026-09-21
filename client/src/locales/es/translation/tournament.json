@@ -349,6 +349,9 @@
       "eloDefaultSuffix": "(predeterminada)",
       "eloTemplateHelper": "Pure Win/Loss (predeterminada): solo el resultado del partido afecta al ELO. Las estadísticas de los jugadores se siguen registrando para clasificaciones y exportaciones, pero no cambian la puntuación salvo que elijas una plantilla personalizada."
     },
+    "shuffleStats": {
+      "serverShortageWarning": "You have {{available}} of {{needed}} servers. Matches will run in waves, so rounds take longer."
+    },
     "changePreview": {
       "title": "Revisar los cambios del torneo",
       "liveHeading": "¡El torneo está EN DIRECTO!",

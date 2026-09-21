@@ -349,6 +349,9 @@
       "eloDefaultSuffix": "（默认）",
       "eloTemplateHelper": "Pure Win/Loss（默认）：仅比赛结果影响 ELO。玩家数据仍会记录用于排行榜和导出，但除非选择自定义模板，否则不会改变评分。"
     },
+    "shuffleStats": {
+      "serverShortageWarning": "You have {{available}} of {{needed}} servers. Matches will run in waves, so rounds take longer."
+    },
     "changePreview": {
       "title": "查看赛事更改",
       "liveHeading": "赛事正在进行中！",
