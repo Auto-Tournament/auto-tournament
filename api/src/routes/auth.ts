@@ -431,6 +431,29 @@ router.get('/steam/callback', (req: Request, res: Response, _next) => {
             hasAnyAdmin,
           });
           await playerService.getOrCreatePlayer(steamId, displayName, avatarUrl);
+        } else if (existingPlayer) {
+          // Players created without Steam data (ADMIN_STEAM_IDS seeding, admin
+          // imports) carry the Steam ID as a placeholder name and no avatar.
+          // Fill those in from Steam, and keep Steam avatars current, but never
+          // overwrite a name or avatar someone set by hand.
+          const updates: { name?: string; avatar?: string } = {};
+          if (existingPlayer.name === steamId && displayName !== steamId) {
+            updates.name = displayName;
+          }
+          const currentAvatar = existingPlayer.avatar ?? '';
+          const avatarFromSteam =
+            currentAvatar.startsWith('/api/players/') || /steamstatic|steamcdn|akamaihd/.test(currentAvatar);
+          if (avatarUrl && avatarFromSteam && currentAvatar !== avatarUrl) {
+            updates.avatar = avatarUrl;
+          }
+          if (updates.name || updates.avatar) {
+            log.info('Steam Passport callback: refreshing player profile from Steam', {
+              steamId,
+              name: Boolean(updates.name),
+              avatar: Boolean(updates.avatar),
+            });
+            await playerService.updatePlayer(steamId, updates);
+          }
         }
 
         // If this is the very first admin, promote this Steam user to admin.
