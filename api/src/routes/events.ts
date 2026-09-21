@@ -555,7 +555,7 @@ router.get('/server/:serverId', requireAuth, async (req: Request, res: Response)
         FROM match_events me
         JOIN matches m ON m.slug = me.match_slug
         WHERE m.server_id = ?
-        ORDER BY me.received_at DESC
+        ORDER BY me.received_at DESC, me.id DESC
         LIMIT ?
       `,
       [serverId, limit]
@@ -605,7 +605,7 @@ router.get('/:matchSlug', requireAuth, async (req: Request, res: Response) => {
       params.push(eventType);
     }
 
-    query += ' ORDER BY received_at DESC LIMIT ?';
+    query += ' ORDER BY received_at DESC, id DESC LIMIT ?';
     params.push(limit);
 
     const events = await db.queryAsync<DbEventRow>(query, params);
