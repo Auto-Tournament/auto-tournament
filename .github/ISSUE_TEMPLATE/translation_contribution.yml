@@ -128,7 +128,7 @@ body:
     attributes:
       label: 🔗 Pull Request Link
       description: Link to your PR (if you've already created one)
-      placeholder: "https://github.com/sivert-io/matchzy-auto-tournament/pull/XXX"
+      placeholder: "https://github.com/Auto-Tournament/auto-tournament/pull/XXX"
     validations:
       required: false
 

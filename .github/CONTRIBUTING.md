@@ -6,8 +6,8 @@ The full guide is in the docs:
 ## Running it locally
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/matchzy-auto-tournament.git
-cd matchzy-auto-tournament
+git clone https://github.com/YOUR_USERNAME/auto-tournament.git
+cd auto-tournament
 yarn install
 
 yarn db               # starts PostgreSQL in Docker

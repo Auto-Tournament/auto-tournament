@@ -11,7 +11,7 @@ body:
         **Quick Resources:**
         - [Server Setup Guide](https://docs.sivert.io/docs/mat/user/server-setup)
         - [CS2 Server Manager Tool](https://docs.sivert.io/docs/csm/quick-start)
-        - [MatchZy Enhanced Releases](https://github.com/sivert-io/matchzy-Enhanced/releases)
+        - [MatchZy Enhanced Releases](https://github.com/Auto-Tournament/MatchZy-Enhanced/releases)
 
   - type: dropdown
     id: server-issue-type

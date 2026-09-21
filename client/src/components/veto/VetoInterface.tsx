@@ -74,7 +74,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   }, [onComplete]);
 
   const MAP_IMAGE_BASE =
-    'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails';
+    'https://raw.githubusercontent.com/Auto-Tournament/cs2-server-manager/master/map_thumbnails';
 
   const getThumbnailUrl = (mapId: string): string => `${MAP_IMAGE_BASE}/${mapId}_thumb.webp`;
 
