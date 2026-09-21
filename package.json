@@ -1,7 +1,15 @@
 {
-    "name": "matchzy-auto-tournament",
+    "name": "auto-tournament",
     "version": "2.4.15",
-    "description": "Tournament management API for CS2 MatchZy plugin",
+    "description": "Web app for running CS2 tournaments, with CS2 as the built-in game module",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Auto-Tournament/auto-tournament.git"
+    },
+    "homepage": "https://docs.autotournament.gg",
+    "bugs": {
+        "url": "https://github.com/Auto-Tournament/auto-tournament/issues"
+    },
     "private": true,
     "workspaces": [
         "api",
@@ -9,12 +17,12 @@
     ],
     "main": "api/dist/index.js",
     "scripts": {
-        "api:dev": "yarn workspace @matchzy/api dev",
-        "api:build": "yarn workspace @matchzy/api build",
-        "api:start": "yarn workspace @matchzy/api start",
-        "client:dev": "yarn workspace @matchzy/client dev",
-        "client:dev:host": "yarn workspace @matchzy/client dev:host",
-        "client:build": "yarn workspace @matchzy/client build",
+        "api:dev": "yarn workspace @auto-tournament/api dev",
+        "api:build": "yarn workspace @auto-tournament/api build",
+        "api:start": "yarn workspace @auto-tournament/api start",
+        "client:dev": "yarn workspace @auto-tournament/client dev",
+        "client:dev:host": "yarn workspace @auto-tournament/client dev:host",
+        "client:build": "yarn workspace @auto-tournament/client build",
         "dev": "concurrently \"yarn dev:server\" \"yarn client:dev:host\" --names \"API,CLIENT\" --prefix-colors \"cyan,magenta\"",
         "dev:localhost": "concurrently \"yarn dev:server\" \"yarn client:dev\" --names \"API,CLIENT\" --prefix-colors \"cyan,magenta\"",
         "dev:server": "bash scripts/dev-server-with-logs.sh",
@@ -34,10 +42,10 @@
         "typecheck:baseline": "node scripts/typecheck-ratchet.mjs --update",
     "docs:api": "tsx scripts/generate-api-reference.ts",
     "docs:api:check": "tsx scripts/generate-api-reference.ts --check",
-        "db": "docker ps --format '{{.Names}}' | grep -q '^matchzy-postgres$' && echo '\u2705 PostgreSQL container is already running' || (docker ps -a --format '{{.Names}}' | grep -q '^matchzy-postgres$' && (docker start matchzy-postgres && echo '\u2705 Started existing PostgreSQL container') || (docker run -d --name matchzy-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=matchzy_tournament -p 5432:5432 postgres:16-alpine && echo '\u2705 Created and started PostgreSQL container'))",
-        "db:stop": "docker stop matchzy-postgres 2>/dev/null && echo '\u2705 Stopped PostgreSQL container' || echo '\u26a0\ufe0f  PostgreSQL container not running'",
+        "db": "docker ps --format '{{.Names}}' | grep -q '^matchzy-postgres$' && echo '✅ PostgreSQL container is already running' || (docker ps -a --format '{{.Names}}' | grep -q '^matchzy-postgres$' && (docker start matchzy-postgres && echo '✅ Started existing PostgreSQL container') || (docker run -d --name matchzy-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=matchzy_tournament -p 5432:5432 postgres:16-alpine && echo '✅ Created and started PostgreSQL container'))",
+        "db:stop": "docker stop matchzy-postgres 2>/dev/null && echo '✅ Stopped PostgreSQL container' || echo '⚠️  PostgreSQL container not running'",
         "db:restart": "yarn db:stop && sleep 1 && yarn db",
-        "db:remove": "docker rm -f matchzy-postgres 2>/dev/null && echo '\u2705 Removed PostgreSQL container' || echo '\u26a0\ufe0f  PostgreSQL container not found'",
+        "db:remove": "docker rm -f matchzy-postgres 2>/dev/null && echo '✅ Removed PostgreSQL container' || echo '⚠️  PostgreSQL container not found'",
         "db:reset": "yarn db:remove && yarn db",
         "test": "bash scripts/test-e2e-sharded.sh",
         "test:single": "bash scripts/test-e2e-all.sh",
