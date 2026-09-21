@@ -62,16 +62,6 @@ export function getMatchZyBootstrapCommands(
 }
 
 /**
- * Get RCON commands to configure MatchZy match loading with bearer auth
- */
-export function getMatchZyLoadMatchAuthCommands(configToken: string): string[] {
-  return [
-    `matchzy_loadmatch_url_header_key "Authorization"`,
-    `matchzy_loadmatch_url_header_value "Bearer ${configToken}"`,
-  ];
-}
-
-/**
  * Get RCON commands to configure match report upload endpoint
  */
 export function getMatchZyReportUploadCommands(
