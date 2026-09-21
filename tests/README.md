@@ -1,6 +1,6 @@
 # Test Structure
 
-This directory contains the test suite for MatchZy Auto Tournament.
+This directory contains the test suite for Auto Tournament.
 
 ## Directory Structure
 

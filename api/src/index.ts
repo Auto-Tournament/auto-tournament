@@ -201,7 +201,7 @@ app.get('/api-docs.json', (_req: Request, res: Response) => {
  */
 app.get('/', (_req: Request, res: Response) => {
   res.json({
-    message: 'MatchZy Auto Tournament API',
+    message: 'Auto Tournament API',
     version: packageJson.version,
     status: 'running',
     documentation: {
@@ -426,7 +426,7 @@ process.on('uncaughtException', (err) => {
     // Bind to all interfaces (IPv4 & IPv6) so both 127.0.0.1 and ::1 work with dev proxies.
     const server = httpServer.listen(Number(PORT), () => {
       log.server('='.repeat(60));
-      log.server('MatchZy Auto Tournament API');
+      log.server('Auto Tournament API');
       log.server('='.repeat(60));
       log.server(`Server running on port ${PORT}`);
       log.server(`Listening on: all interfaces (IPv4 & IPv6)`);

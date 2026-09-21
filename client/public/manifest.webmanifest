@@ -1,6 +1,6 @@
 {
-  "name": "MatchZy Auto Tournament",
-  "short_name": "MAT",
+  "name": "Auto Tournament",
+  "short_name": "Auto Tournament",
   "icons": [
     { "src": "/icon.svg", "type": "image/svg+xml", "sizes": "any" },
     { "src": "/icon-192.png", "type": "image/png", "sizes": "192x192" },
