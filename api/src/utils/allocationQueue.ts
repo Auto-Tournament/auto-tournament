@@ -134,3 +134,44 @@ export function checkQueueTurn(
     ahead,
   };
 }
+
+/**
+ * A team plays one match at a time (#224).
+ *
+ * Round robin creates every match up front with both teams set, so after the
+ * vetoes a team's round 2 match was 'ready' next to its round 1 match and got
+ * its own server. A match is not ready for a server while either team is
+ * busy: in a loaded or live match, or in one that already has a server and is
+ * being loaded (see TEAM_BUSY_MATCH_SQL).
+ *
+ * `queue` is the waiting matches in queue order. The earliest waiting match
+ * claims its teams, so a later match with one of them waits for it instead of
+ * starting in the same allocation pass. The matches that remain keep their
+ * order. A match with an empty slot claims nothing and is never held back.
+ */
+export function withoutBusyTeams<
+  T extends { team1Id?: string | null; team2Id?: string | null },
+>(queue: T[], busyTeamIds: ReadonlySet<string>): T[] {
+  const claimed = new Set(busyTeamIds);
+  const result: T[] = [];
+  for (const match of queue) {
+    const teams = [match.team1Id, match.team2Id].filter((id): id is string => Boolean(id));
+    if (teams.length < 2) {
+      result.push(match);
+      continue;
+    }
+    if (teams.some((id) => claimed.has(id))) continue;
+    teams.forEach((id) => claimed.add(id));
+    result.push(match);
+  }
+  return result;
+}
+
+/**
+ * Matches that occupy their teams: loaded or live, or still 'ready' but with a
+ * server assigned (the load is in flight).
+ */
+export const TEAM_BUSY_MATCH_SQL = `
+  SELECT team1_id, team2_id FROM matches
+   WHERE status IN ('loaded', 'live')
+      OR (status = 'ready' AND server_id IS NOT NULL AND server_id != '')`;
