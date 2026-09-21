@@ -179,7 +179,7 @@ export default function Login() {
                   <Stack spacing={0.5}>
                     <Typography variant="body2">{providersError}</Typography>
                     <Link
-                      href="https://docs.sivert.io/docs/mat/developer/auth-providers"
+                      href="https://docs.autotournament.gg/guides/sign-in"
                       target="_blank"
                       rel="noopener noreferrer"
                       sx={{ fontSize: '0.8rem' }}
@@ -329,7 +329,7 @@ export default function Login() {
                   <OpenInNewIcon sx={{ fontSize: '1rem' }} />
                 </Link>
                 <Link
-                  href="https://docs.sivert.io/docs/mat"
+                  href="https://docs.autotournament.gg"
                   target="_blank"
                   rel="noopener noreferrer"
                   sx={{
