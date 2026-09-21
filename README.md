@@ -1,8 +1,8 @@
 <div align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo/mat-wordmark-dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="docs/assets/logo/mat-wordmark-light.svg">
-    <img src="docs/assets/logo/mat-wordmark-light.svg" alt="mat" height="56">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo/at-wordmark-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/logo/at-wordmark-light.svg">
+    <img src="docs/assets/logo/at-wordmark-light.svg" alt="Auto Tournament" height="56">
   </picture>
 
   # MatchZy Auto Tournament
