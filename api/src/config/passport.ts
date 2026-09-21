@@ -3,6 +3,7 @@ import { Strategy as SteamStrategy } from 'passport-steam';
 import { Strategy as DiscordStrategy } from 'passport-discord';
 import { Strategy as KeycloakStrategy } from 'passport-keycloak-oauth2-oidc';
 import { Strategy as GitHubStrategy } from 'passport-github2';
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { log } from '../utils/logger';
 import { SignedCookieStateStore } from '../utils/oauthStateCookie';
 
@@ -26,18 +27,51 @@ interface KeycloakProfile {
   username?: string;
 }
 
-interface GitHubProfile {
+export interface GitHubProfile {
   id: string;
   username?: string;
   displayName?: string;
   photos?: Array<{ value: string }>;
 }
 
+/** Profile as passport-google-oauth20 parses it from Google's OIDC userinfo. */
+export interface GoogleProfile {
+  /** The OIDC `sub` claim: stable, unlike the email address. */
+  id: string;
+  displayName?: string;
+  emails?: Array<{ value: string; verified?: boolean }>;
+  photos?: Array<{ value: string }>;
+}
+
+type VerifyDone = (err: unknown, user?: unknown) => void;
+
+/**
+ * Endpoint overrides for a provider strategy. Only the test-only fake provider
+ * sets these (see configureTestOAuthStrategies); real logins use each
+ * library's defaults.
+ */
+interface OAuthEndpoints {
+  authorizationURL?: string;
+  tokenURL?: string;
+  userProfileURL?: string;
+}
+
+interface OAuthStrategyOptions {
+  clientID: string;
+  clientSecret: string;
+  callbackURL: string;
+  /** Namespace for the signed state cookie (oauth_state_<stateProvider>). */
+  stateProvider: string;
+  endpoints?: OAuthEndpoints;
+}
+
 export function configurePassportAuth(): void {
   configureSteamStrategy();
   configureDiscordStrategy();
   configureKeycloakStrategy();
-  configureGitHubStrategy();
+  configureOAuthStrategy('github', createGitHubStrategy);
+  configureOAuthStrategy('google', createGoogleStrategy);
+  configureTestOAuthStrategies();
 }
 
 function getBackendBaseUrl(): string {
@@ -131,8 +165,8 @@ function configureDiscordStrategy(): void {
         store: new SignedCookieStateStore({ provider: 'discord', callbackURL }),
       },
       (
-        accessToken: string,
-        refreshToken: string,
+        _accessToken: string,
+        _refreshToken: string,
         profile: DiscordProfile,
         done: (err: unknown, user?: unknown) => void
       ) => {
@@ -157,8 +191,6 @@ function configureDiscordStrategy(): void {
           username: profile.username,
           avatar: profile.avatar,
           avatarUrl,
-          accessToken,
-          refreshToken,
         });
       }
     )
@@ -232,8 +264,8 @@ function configureKeycloakStrategy(): void {
   const keycloakStrategy = new KeycloakStrategy(
     strategyOptions,
     (
-      accessToken: string,
-      refreshToken: string,
+      _accessToken: string,
+      _refreshToken: string,
       profile: KeycloakProfile,
       done: (err: unknown, user?: unknown) => void
     ) => {
@@ -250,8 +282,6 @@ function configureKeycloakStrategy(): void {
         provider: 'keycloak',
         keycloakId: profile.id,
         displayName: profile.displayName || profile.username || profile.id,
-        accessToken,
-        refreshToken,
       });
     }
   );
@@ -279,55 +309,154 @@ function configureKeycloakStrategy(): void {
   passport.use(keycloakStrategy);
 }
 
-function configureGitHubStrategy(): void {
-  const clientID = process.env.GITHUB_CLIENT_ID;
-  const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+/**
+ * Register a plain OAuth2 provider (GitHub, Google) when both its client ID
+ * and secret are set: <PROVIDER>_CLIENT_ID / <PROVIDER>_CLIENT_SECRET, with
+ * the callback at <base>/api/auth/<provider>/callback.
+ */
+function configureOAuthStrategy(
+  provider: 'github' | 'google',
+  create: (options: OAuthStrategyOptions) => unknown
+): void {
+  const prefix = provider.toUpperCase();
+  const clientID = process.env[`${prefix}_CLIENT_ID`]?.trim();
+  const clientSecret = process.env[`${prefix}_CLIENT_SECRET`]?.trim();
 
   if (!clientID || !clientSecret) {
     return;
   }
 
-  const baseUrl = getBackendBaseUrl();
-  const callbackURL = `${baseUrl}/api/auth/github/callback`;
+  const callbackURL = `${getBackendBaseUrl()}/api/auth/${provider}/callback`;
+  passport.use(provider, create({ clientID, clientSecret, callbackURL, stateProvider: provider }));
+}
 
-  passport.use(
-    new GitHubStrategy(
-      {
-        clientID,
-        clientSecret,
-        callbackURL,
-        scope: ['read:user', 'user:email'],
-        // CSRF protection for the OAuth round trip; see utils/oauthStateCookie.
-        store: new SignedCookieStateStore({ provider: 'github', callbackURL }),
-      },
-      (
-        accessToken: string,
-        refreshToken: string,
-        profile: GitHubProfile,
-        done: (err: unknown, user?: unknown) => void
-      ) => {
-        const safeProfile = {
-          id: profile.id,
-          username: profile.username,
-          displayName: profile.displayName,
-          hasAvatar: Boolean(profile.photos && profile.photos[0]?.value),
-        };
-        log.info('GitHubStrategy callback: received profile from GitHub', {
-          profile: safeProfile,
-        });
+/** The Passport user for a GitHub login. No tokens: nothing uses them. */
+export function githubProfileToUser(profile: GitHubProfile) {
+  return {
+    provider: 'github' as const,
+    githubId: String(profile.id),
+    username: profile.username,
+    displayName: profile.displayName || profile.username || String(profile.id),
+    avatarUrl: profile.photos?.[0]?.value,
+  };
+}
 
-        done(null, {
-          provider: 'github',
-          githubId: profile.id,
-          username: profile.username,
-          displayName: profile.displayName || profile.username || profile.id,
-          avatarUrl: profile.photos && profile.photos[0]?.value,
-          accessToken,
-          refreshToken,
-        });
-      }
-    )
+/** The Passport user for a Google login, keyed by `sub`. No tokens: nothing uses them. */
+export function googleProfileToUser(profile: GoogleProfile) {
+  return {
+    provider: 'google' as const,
+    googleId: String(profile.id),
+    displayName: profile.displayName || profile.emails?.[0]?.value || String(profile.id),
+    avatarUrl: profile.photos?.[0]?.value,
+  };
+}
+
+function createGitHubStrategy(options: OAuthStrategyOptions) {
+  return new GitHubStrategy(
+    {
+      clientID: options.clientID,
+      clientSecret: options.clientSecret,
+      callbackURL: options.callbackURL,
+      ...options.endpoints,
+      // Public profile only. The login keys on the numeric user id, so no
+      // email scope is needed.
+      scope: ['read:user'],
+      // CSRF protection for the OAuth round trip; see utils/oauthStateCookie.
+      store: new SignedCookieStateStore({
+        provider: options.stateProvider,
+        callbackURL: options.callbackURL,
+      }),
+    },
+    (_accessToken: string, _refreshToken: string, profile: GitHubProfile, done: VerifyDone) => {
+      const user = githubProfileToUser(profile);
+      log.info('GitHubStrategy callback: received profile from GitHub', {
+        profile: { id: user.githubId, username: user.username, hasAvatar: !!user.avatarUrl },
+      });
+      done(null, user);
+    }
   );
+}
+
+function createGoogleStrategy(options: OAuthStrategyOptions) {
+  return new GoogleStrategy(
+    {
+      clientID: options.clientID,
+      clientSecret: options.clientSecret,
+      callbackURL: options.callbackURL,
+      ...options.endpoints,
+      scope: ['openid', 'email', 'profile'],
+      // CSRF protection for the OAuth round trip; see utils/oauthStateCookie.
+      store: new SignedCookieStateStore({
+        provider: options.stateProvider,
+        callbackURL: options.callbackURL,
+      }),
+    },
+    (_accessToken: string, _refreshToken: string, profile: GoogleProfile, done: VerifyDone) => {
+      const user = googleProfileToUser(profile);
+      // No email in the log: the id is enough to correlate.
+      log.info('GoogleStrategy callback: received profile from Google', {
+        profile: { id: user.googleId, hasAvatar: !!user.avatarUrl },
+      });
+      done(null, user);
+    }
+  );
+}
+
+/** Passport strategy name for the test-only fake provider of `provider`. */
+export function testOAuthStrategyName(provider: 'github' | 'google'): string {
+  return `${provider}-test`;
+}
+
+/**
+ * Test-only: a second GitHub and Google strategy whose authorize, token and
+ * profile endpoints point at the fake provider in routes/test.ts instead of
+ * github.com / google.com. They run the real strategy code (state cookie, code
+ * exchange, profile parsing, profile-to-user mapping), so the API tests can
+ * drive a full callback without a real provider.
+ *
+ * Registered only when ENABLE_TEST_ENDPOINTS is explicitly on. That flag
+ * already exposes /api/test/login-admin, so this adds no new way in.
+ */
+function configureTestOAuthStrategies(): void {
+  const flag = (process.env.ENABLE_TEST_ENDPOINTS || '').toLowerCase();
+  if (flag !== '1' && flag !== 'true' && flag !== 'yes') {
+    return;
+  }
+
+  // The token and profile calls are server-to-server, so they go to this
+  // process directly rather than through FRONTEND_BASE_URL.
+  const self = `http://127.0.0.1:${process.env.PORT || '3000'}/api/test/fake-oauth`;
+  const base = getBackendBaseUrl();
+
+  const create = {
+    github: createGitHubStrategy,
+    google: createGoogleStrategy,
+  } as const;
+
+  for (const provider of ['github', 'google'] as const) {
+    const name = testOAuthStrategyName(provider);
+    passport.use(
+      name,
+      create[provider]({
+        clientID: 'test-client-id',
+        clientSecret: 'test-client-secret',
+        callbackURL: `${base}/api/test/oauth/${provider}/callback`,
+        stateProvider: name,
+        endpoints: {
+          authorizationURL: `${self}/${provider}/authorize`,
+          tokenURL: `${self}/${provider}/token`,
+          // Must end in /userinfo so passport-google-oauth20 parses it as OIDC.
+          userProfileURL: `${self}/${provider}/userinfo`,
+        },
+      })
+    );
+  }
+}
+
+/** Whether a Passport strategy with this name is registered. */
+export function isStrategyConfigured(name: string): boolean {
+  const anyPassport = passport as unknown as { _strategy?: (n: string) => unknown };
+  return typeof anyPassport._strategy === 'function' && !!anyPassport._strategy(name);
 }
 
 // We don't currently use sessions, but Passport still expects serialize/deserialize

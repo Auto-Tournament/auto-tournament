@@ -1,7 +1,7 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 
-export type AuthProvider = 'discord' | 'keycloak' | 'github';
+export type AuthProvider = 'discord' | 'keycloak' | 'github' | 'google';
 
 interface AuthIdentityRow {
   id: number;
