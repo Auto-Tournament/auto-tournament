@@ -1,0 +1,262 @@
+[
+  {
+    "bracket": null,
+    "config": {
+      "admins": [
+        "<test-admin-steam-id>"
+      ],
+      "cvars": {
+        "matchzy_autoready_enabled": 0,
+        "matchzy_both_teams_unpause_required": 1,
+        "matchzy_demo_recording_enabled": 1,
+        "matchzy_ffw_enabled": 0,
+        "matchzy_ffw_time": 240,
+        "matchzy_gg_enabled": 0,
+        "matchzy_gg_min_score_diff": 0,
+        "matchzy_gg_threshold": 0.8,
+        "matchzy_max_pauses_per_team": 0,
+        "matchzy_pause_duration": 0,
+        "matchzy_side_selection_enabled": 1,
+        "matchzy_side_selection_time": 60,
+        "mp_maxrounds": 24
+      },
+      "expected_players_team1": 5,
+      "expected_players_team2": 5,
+      "expected_players_total": 10,
+      "map_sides": [
+        "team1_ct"
+      ],
+      "maplist": null,
+      "matchid": "<matchid>",
+      "maxRounds": 24,
+      "min_players_to_ready": 0,
+      "min_spectators_to_ready": 0,
+      "num_maps": 1,
+      "overtimeMode": "enabled",
+      "players_per_team": 5,
+      "simulation": false,
+      "skip_veto": true,
+      "spectators": {
+        "players": {}
+      },
+      "team1": {
+        "id": "golden-team-1",
+        "name": "Golden Team 1",
+        "players": {
+          "76561199000000101": "Golden 1.1",
+          "76561199000000102": "Golden 1.2",
+          "76561199000000103": "Golden 1.3",
+          "76561199000000104": "Golden 1.4",
+          "76561199000000105": "Golden 1.5"
+        },
+        "series_score": 0,
+        "tag": "GLD1"
+      },
+      "team2": {
+        "id": "golden-team-2",
+        "name": "Golden Team 2",
+        "players": {
+          "76561199000000201": "Golden 2.1",
+          "76561199000000202": "Golden 2.2",
+          "76561199000000203": "Golden 2.3",
+          "76561199000000204": "Golden 2.4",
+          "76561199000000205": "Golden 2.5"
+        },
+        "series_score": 0,
+        "tag": "GOLD"
+      },
+      "wingman": false
+    },
+    "matchNumber": 1,
+    "round": 1,
+    "slug": "swiss-r1m1"
+  },
+  {
+    "bracket": null,
+    "config": {
+      "admins": [
+        "<test-admin-steam-id>"
+      ],
+      "cvars": {
+        "matchzy_autoready_enabled": 0,
+        "matchzy_both_teams_unpause_required": 1,
+        "matchzy_demo_recording_enabled": 1,
+        "matchzy_ffw_enabled": 0,
+        "matchzy_ffw_time": 240,
+        "matchzy_gg_enabled": 0,
+        "matchzy_gg_min_score_diff": 0,
+        "matchzy_gg_threshold": 0.8,
+        "matchzy_max_pauses_per_team": 0,
+        "matchzy_pause_duration": 0,
+        "matchzy_side_selection_enabled": 1,
+        "matchzy_side_selection_time": 60,
+        "mp_maxrounds": 24
+      },
+      "expected_players_team1": 5,
+      "expected_players_team2": 5,
+      "expected_players_total": 10,
+      "map_sides": [
+        "team1_ct"
+      ],
+      "maplist": null,
+      "matchid": "<matchid>",
+      "maxRounds": 24,
+      "min_players_to_ready": 0,
+      "min_spectators_to_ready": 0,
+      "num_maps": 1,
+      "overtimeMode": "enabled",
+      "players_per_team": 5,
+      "simulation": false,
+      "skip_veto": true,
+      "spectators": {
+        "players": {}
+      },
+      "team1": {
+        "id": "golden-team-3",
+        "name": "Golden Team 3",
+        "players": {
+          "76561199000000301": "Golden 3.1",
+          "76561199000000302": "Golden 3.2",
+          "76561199000000303": "Golden 3.3",
+          "76561199000000304": "Golden 3.4",
+          "76561199000000305": "Golden 3.5"
+        },
+        "series_score": 0,
+        "tag": "GOLD"
+      },
+      "team2": {
+        "id": "golden-team-4",
+        "name": "Golden Team 4",
+        "players": {
+          "76561199000000401": "Golden 4.1",
+          "76561199000000402": "Golden 4.2",
+          "76561199000000403": "Golden 4.3",
+          "76561199000000404": "Golden 4.4",
+          "76561199000000405": "Golden 4.5"
+        },
+        "series_score": 0,
+        "tag": "GOLD"
+      },
+      "wingman": false
+    },
+    "matchNumber": 2,
+    "round": 1,
+    "slug": "swiss-r1m2"
+  },
+  {
+    "bracket": null,
+    "config": {
+      "admins": [
+        "<test-admin-steam-id>"
+      ],
+      "cvars": {
+        "matchzy_autoready_enabled": 0,
+        "matchzy_both_teams_unpause_required": 1,
+        "matchzy_demo_recording_enabled": 1,
+        "matchzy_ffw_enabled": 0,
+        "matchzy_ffw_time": 240,
+        "matchzy_gg_enabled": 0,
+        "matchzy_gg_min_score_diff": 0,
+        "matchzy_gg_threshold": 0.8,
+        "matchzy_max_pauses_per_team": 0,
+        "matchzy_pause_duration": 0,
+        "matchzy_side_selection_enabled": 1,
+        "matchzy_side_selection_time": 60,
+        "mp_maxrounds": 24
+      },
+      "expected_players_team1": 0,
+      "expected_players_team2": 0,
+      "expected_players_total": 0,
+      "map_sides": [
+        "team1_ct"
+      ],
+      "maplist": null,
+      "matchid": "<matchid>",
+      "maxRounds": 24,
+      "min_players_to_ready": 0,
+      "min_spectators_to_ready": 0,
+      "num_maps": 1,
+      "overtimeMode": "enabled",
+      "players_per_team": 1,
+      "simulation": false,
+      "skip_veto": true,
+      "spectators": {
+        "players": {}
+      },
+      "team1": {
+        "name": "TBD",
+        "players": {},
+        "series_score": 0,
+        "tag": "TBD"
+      },
+      "team2": {
+        "name": "TBD",
+        "players": {},
+        "series_score": 0,
+        "tag": "TBD"
+      },
+      "wingman": false
+    },
+    "matchNumber": 1,
+    "round": 2,
+    "slug": "swiss-r2m1"
+  },
+  {
+    "bracket": null,
+    "config": {
+      "admins": [
+        "<test-admin-steam-id>"
+      ],
+      "cvars": {
+        "matchzy_autoready_enabled": 0,
+        "matchzy_both_teams_unpause_required": 1,
+        "matchzy_demo_recording_enabled": 1,
+        "matchzy_ffw_enabled": 0,
+        "matchzy_ffw_time": 240,
+        "matchzy_gg_enabled": 0,
+        "matchzy_gg_min_score_diff": 0,
+        "matchzy_gg_threshold": 0.8,
+        "matchzy_max_pauses_per_team": 0,
+        "matchzy_pause_duration": 0,
+        "matchzy_side_selection_enabled": 1,
+        "matchzy_side_selection_time": 60,
+        "mp_maxrounds": 24
+      },
+      "expected_players_team1": 0,
+      "expected_players_team2": 0,
+      "expected_players_total": 0,
+      "map_sides": [
+        "team1_ct"
+      ],
+      "maplist": null,
+      "matchid": "<matchid>",
+      "maxRounds": 24,
+      "min_players_to_ready": 0,
+      "min_spectators_to_ready": 0,
+      "num_maps": 1,
+      "overtimeMode": "enabled",
+      "players_per_team": 1,
+      "simulation": false,
+      "skip_veto": true,
+      "spectators": {
+        "players": {}
+      },
+      "team1": {
+        "name": "TBD",
+        "players": {},
+        "series_score": 0,
+        "tag": "TBD"
+      },
+      "team2": {
+        "name": "TBD",
+        "players": {},
+        "series_score": 0,
+        "tag": "TBD"
+      },
+      "wingman": false
+    },
+    "matchNumber": 2,
+    "round": 2,
+    "slug": "swiss-r2m2"
+  }
+]
