@@ -16,7 +16,7 @@ import {
  *
  * Admin rights are always determined by the **Steam ID**:
  *  - We look up players.is_admin for the linked Steam ID.
- *  - SSO providers (Keycloak/Discord/GitHub) must also be linked to a Steam ID
+ *  - SSO providers (Keycloak/Discord/GitHub/Google) must also be linked to a Steam ID
  *    via the "Link Steam" flow to gain admin access.
  *
  * We accept **two** ways to prove admin access:

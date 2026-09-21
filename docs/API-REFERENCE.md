@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 194 of them, 145 behind auth —
+Every endpoint this API serves — 201 of them, 145 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -387,6 +387,11 @@ E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
 | `GET` | `/api/test/auth-identities` | admin |
 | `GET` | `/api/test/raw-team-roster/:teamId` | admin |
 | `POST` | `/api/test/auth-identities` | admin |
+| `GET` | `/api/test/oauth/:provider` | public |
+| `GET` | `/api/test/oauth/:provider/callback` | public |
+| `GET` | `/api/test/fake-oauth/:provider/authorize` | public |
+| `POST` | `/api/test/fake-oauth/:provider/token` | public |
+| `GET` | `/api/test/fake-oauth/:provider/userinfo` | public |
 
 ### Auth
 
@@ -403,6 +408,8 @@ Sign-in flows, admin identity, impersonation.
 | `GET` | `/api/auth/discord/callback` | public |
 | `GET` | `/api/auth/github` | public |
 | `GET` | `/api/auth/github/callback` | public |
+| `GET` | `/api/auth/google` | public |
+| `GET` | `/api/auth/google/callback` | public |
 | `GET` | `/api/auth/providers` | public |
 | `GET` | `/api/auth/me` | public |
 | `POST` | `/api/auth/self-register` | public |
