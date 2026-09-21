@@ -75,5 +75,8 @@
   "common": {
     "delete": "Slett",
     "cancel": "Avbryt"
+  },
+  "theme": {
+    "label": "Fargetema"
   }
 }

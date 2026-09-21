@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { PageHeaderProvider } from './contexts/PageHeaderContext';
 import { SnackbarProvider, useSnackbar } from './contexts/SnackbarContext';
+import { AtIcon } from './components/common/AtIcon';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Teams from './pages/Teams';
@@ -81,20 +82,20 @@ function ProtectedRoute({ children, adminOnly = true }: ProtectedRouteProps) {
       >
         <Box textAlign="center">
           <Box
-            component="img"
-            src="/icon.svg"
-            alt="Logo"
             sx={{
               width: 80,
               height: 80,
               mb: 2,
+              display: 'inline-flex',
               animation: 'pulse 2s ease-in-out infinite',
               '@keyframes pulse': {
                 '0%, 100%': { opacity: 1 },
                 '50%': { opacity: 0.5 },
               },
             }}
-          />
+          >
+            <AtIcon size={80} title="Logo" />
+          </Box>
         </Box>
       </Box>
     );

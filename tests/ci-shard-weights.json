@@ -61,6 +61,7 @@
   "tests/ui/steam-health-snackbar.spec.ts": 0.8,
   "tests/ui/team-discord-id.spec.ts": 3.9,
   "tests/ui/teams.spec.ts": 3.4,
+  "tests/ui/theme-switcher.spec.ts": 5.0,
   "tests/ui/tournament.spec.ts": 2.9,
   "tests/ui/veto-admin-player.spec.ts": 5.1,
   "tests/ui/veto-cs-major.spec.ts": 25.9,

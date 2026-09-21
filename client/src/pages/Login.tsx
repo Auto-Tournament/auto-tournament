@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { SteamIcon } from '../components/icons/SteamIcon';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { tokens } from '../theme/tokens';
+import { AtIcon } from '../components/common/AtIcon';
 
 export default function Login() {
   const { t } = useTranslation();
@@ -147,15 +148,9 @@ export default function Login() {
                   width: '100%',
                 }}
               >
-                <img
-                  src="/icon.svg"
-                  alt="Auto Tournament Logo"
-                  style={{
-                    width: '88px',
-                    height: '88px',
-                    borderRadius: '20px',
-                  }}
-                />
+                <Box sx={{ width: '88px', height: '88px', borderRadius: '20px', overflow: 'hidden', display: 'flex' }}>
+                  <AtIcon size={88} title="Auto Tournament Logo" />
+                </Box>
               </Box>
 
               <Stack spacing={0.5} alignItems="center" sx={{ textAlign: 'center', px: 2 }}>

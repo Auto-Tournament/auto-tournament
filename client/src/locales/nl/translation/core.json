@@ -75,5 +75,8 @@
     "label": "Taal",
     "en": "Engels",
     "zhCN": "Chinees (vereenvoudigd)"
+  },
+  "theme": {
+    "label": "Color theme"
   }
 }
