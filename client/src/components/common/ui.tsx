@@ -100,11 +100,14 @@ export function StatTile({
   value,
   label,
   accent,
+  size = 'md',
   sx,
 }: {
   value: React.ReactNode;
   label: React.ReactNode;
   accent?: string;
+  /** `lg` for page-level stat rows, `md` inside cards. */
+  size?: 'md' | 'lg';
   sx?: BoxProps['sx'];
 }) {
   return (
@@ -112,7 +115,7 @@ export function StatTile({
       sx={{
         bgcolor: color.paper3,
         borderRadius: `${radius.sm}px`,
-        p: 1.5,
+        p: size === 'lg' ? 2 : 1.5,
         minWidth: 0,
         ...(sx as object),
       }}
@@ -121,7 +124,8 @@ export function StatTile({
         sx={{
           ...mono,
           fontWeight: 600,
-          fontSize: '1.125rem',
+          fontSize: size === 'lg' ? '1.625rem' : '1.125rem',
+          lineHeight: 1.2,
           color: accent ?? color.ink,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
@@ -130,7 +134,9 @@ export function StatTile({
       >
         {value}
       </Box>
-      <Box sx={{ color: color.muted, fontSize: '0.75rem' }}>{label}</Box>
+      <Box sx={{ color: color.muted, fontSize: size === 'lg' ? '0.8125rem' : '0.75rem', mt: size === 'lg' ? 0.5 : 0 }}>
+        {label}
+      </Box>
     </Box>
   );
 }

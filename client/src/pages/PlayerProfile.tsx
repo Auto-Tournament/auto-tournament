@@ -52,6 +52,8 @@ import type {
   MatchMapResult,
   Player as TeamPlayer,
 } from '../types';
+import { tokens, mono } from '../theme/tokens';
+import { StatTile } from '../components/common/ui';
 
 interface RatingHistoryEntry {
   id: number;
@@ -907,8 +909,8 @@ export default function PlayerProfile() {
           {/* Player Header */}
           <Card>
             <CardContent>
-              <Box display="flex" justifyContent="space-between" alignItems="flex-start" gap={3}>
-                <Box display="flex" alignItems="center" gap={3}>
+              <Box display="flex" justifyContent="space-between" alignItems="flex-start" gap={2}>
+                <Box display="flex" alignItems="center" gap={{ xs: 2, sm: 3 }} minWidth={0} flexWrap="wrap">
                   <PlayerAvatar
                     id={player.id}
                     name={player.name}
@@ -965,7 +967,7 @@ export default function PlayerProfile() {
                         })()}
                       </Box>
                     )}
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                    <Typography variant="body2" color="text.secondary" gutterBottom sx={{ ...mono, fontSize: '0.75rem', mt: 0.75 }}>
                       {t('playerPage.steamId', { id: player.id })}
                     </Typography>
                     <Box display="flex" gap={2} mt={2} flexWrap="wrap" alignItems="center">
@@ -974,7 +976,7 @@ export default function PlayerProfile() {
                           data-testid="public-player-elo"
                           label={t('playerPage.skillRatingLabel', { elo: player.currentElo })}
                           color="primary"
-                          sx={{ fontWeight: 600, fontSize: '1rem' }}
+                          sx={{ fontWeight: 600, fontSize: '0.875rem', height: 30 }}
                         />
                       </Tooltip>
                       {latestTournamentId && (
@@ -1006,8 +1008,7 @@ export default function PlayerProfile() {
                     color="error"
                     size="small"
                     sx={{
-                      fontWeight: 700,
-                      borderRadius: 1,
+                      fontWeight: 600,
                       alignSelf: 'flex-start',
                     }}
                   />
@@ -1085,57 +1086,27 @@ export default function PlayerProfile() {
             </Card>
           )}
 
-          {/* Stats Overview */}
-          <Grid container spacing={2}>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <Card>
-                <CardContent>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    {t('playerPage.matchesPlayed')}
-                  </Typography>
-                  <Typography variant="h4" fontWeight={700}>
-                    {uniqueMatchHistory.length}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <Card>
-                <CardContent>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    {t('playerPage.winRate')}
-                  </Typography>
-                  <Typography variant="h4" fontWeight={700}>
-                    {winRate.toFixed(1)}%
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <Card>
-                <CardContent>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    {t('playerPage.winsLosses')}
-                  </Typography>
-                  <Typography variant="h4" fontWeight={700}>
-                    {wins} / {losses}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <Card>
-                <CardContent>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    {t('playerPage.averageAdr')}
-                  </Typography>
-                  <Typography variant="h4" fontWeight={700}>
-                    {averageAdr > 0 ? averageAdr.toFixed(1) : 'N/A'}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
+          {/* Stats Overview: stat tiles as on the homepage profile card */}
+          <Card>
+            <CardContent>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', md: 'repeat(4, minmax(0, 1fr))' },
+                  gap: 1,
+                }}
+              >
+                <StatTile size="lg" label={t('playerPage.matchesPlayed')} value={uniqueMatchHistory.length} />
+                <StatTile size="lg" label={t('playerPage.winRate')} value={`${winRate.toFixed(1)}%`} />
+                <StatTile size="lg" label={t('playerPage.winsLosses')} value={`${wins} / ${losses}`} />
+                <StatTile
+                  size="lg"
+                  label={t('playerPage.averageAdr')}
+                  value={averageAdr > 0 ? averageAdr.toFixed(1) : 'N/A'}
+                />
+              </Box>
+            </CardContent>
+          </Card>
 
           {/* Recent form and performance highlights */}
           {hasAnyMatches && (
@@ -1245,11 +1216,11 @@ export default function PlayerProfile() {
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                // Always use dark text for readability on bright win/loss colors
-                                color: 'common.black',
-                                fontSize: 14,
-                                fontWeight: 700,
-                                boxShadow: isPlayed ? 1 : 0,
+                                // Dark ink on the bright win/loss colours
+                                color: tokens.color.accentInk,
+                                ...mono,
+                                fontSize: 13,
+                                fontWeight: 600,
                                 cursor: isPlayed ? 'pointer' : 'default',
                               }}
                             >
