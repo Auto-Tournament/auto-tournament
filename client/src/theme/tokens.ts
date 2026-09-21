@@ -24,8 +24,6 @@ export const tokens = {
     live: '#3fc168', // oklch(72% 0.17 150)
     pick: '#3fc168', // same green as live
     ban: '#f2645f', // oklch(67% 0.17 25)
-    bloom: 'rgba(255, 106, 61, 0.22)',
-    bloom2: 'rgba(230, 70, 50, 0.14)',
     // App only: states the website never shows.
     warning: '#f2b84b', // amber, kept apart from the brand orange
     info: '#7fb0e8',

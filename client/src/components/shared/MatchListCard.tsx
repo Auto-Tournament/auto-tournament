@@ -195,8 +195,7 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
         borderLeftColor: getBorderColor(),
         '&:hover': onClick
           ? {
-              transform: 'translateY(-2px)',
-              boxShadow: (theme) => `0 16px 40px -24px ${theme.palette.primary.main}`,
+              bgcolor: 'var(--at-paper3)',
             }
           : {},
       }}

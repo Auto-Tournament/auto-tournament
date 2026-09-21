@@ -277,8 +277,7 @@ export default function Teams() {
                   borderStyle: 'solid',
                   borderColor: selectedTeamIds.has(team.id) ? 'primary.main' : 'divider',
                   '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: (theme) => `0 24px 60px -30px ${theme.palette.primary.main}`,
+                    bgcolor: 'var(--at-paper3)',
                   },
                 }}
                 onClick={() => {

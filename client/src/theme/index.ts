@@ -129,8 +129,6 @@ export const theme = createTheme({
         },
         body: {
           backgroundColor: color.paper,
-          backgroundImage: `radial-gradient(60rem 40rem at 50% -10%, ${color.bloom}, transparent 70%), radial-gradient(40rem 30rem at 90% 55%, ${color.bloom2}, transparent 70%)`,
-          backgroundAttachment: 'fixed',
           scrollbarColor: `${color.rule} transparent`,
           '&::-webkit-scrollbar, & *::-webkit-scrollbar': { width: 10, height: 10, backgroundColor: 'transparent' },
           '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
@@ -150,7 +148,7 @@ export const theme = createTheme({
     },
 
     // Buttons: pills. Contained primary is the brand orange with the lighter
-    // hover and a soft glow; outlined is a quiet rule-bordered pill.
+    // hover; outlined is a quiet rule-bordered pill.
     MuiButton: {
       defaultProps: { disableElevation: true, disableFocusRipple: true },
       styleOverrides: {
@@ -161,7 +159,7 @@ export const theme = createTheme({
           '&:active': { transform: 'translateY(1px)' },
         },
         containedPrimary: {
-          '&:hover': { backgroundColor: color.accent2, boxShadow: `0 10px 30px -12px ${color.accent}` },
+          '&:hover': { backgroundColor: color.accent2 },
         },
         outlinedPrimary: {
           borderColor: color.rule,
@@ -231,16 +229,9 @@ export const theme = createTheme({
           border: `1px solid ${color.rule}`,
           borderRadius: radius.lg,
           boxShadow: 'none',
-          transition: `transform ${duration.base}ms ${ease.out}, box-shadow ${duration.base}ms ${ease.out}, border-color ${duration.base}ms ${ease.out}`,
-          // Clickable cards lift a little with an orange glow, like the
-          // product cards on the website.
-          '&:has(> .MuiCardActionArea-root):hover': {
-            transform: 'translateY(-3px)',
-            boxShadow: `0 24px 60px -30px ${color.accent}`,
-          },
-          '@media (prefers-reduced-motion: reduce)': {
-            '&:has(> .MuiCardActionArea-root):hover': { transform: 'none' },
-          },
+          transition: `background-color ${duration.base}ms ${ease.out}, border-color ${duration.base}ms ${ease.out}`,
+          // Clickable cards stay flat: a slightly lighter surface on hover.
+          '&:has(> .MuiCardActionArea-root):hover': { backgroundColor: color.paper3 },
         },
       },
     },
