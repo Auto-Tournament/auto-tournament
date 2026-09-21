@@ -15,7 +15,7 @@
 [![Latest release](https://img.shields.io/github/v/release/Auto-Tournament/auto-tournament)](https://github.com/Auto-Tournament/auto-tournament/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-<a href="https://docs.sivert.io/docs/mat">Documentation</a> · <a href="https://discord.gg/n7gHYau7aW">Discord</a>
+<a href="https://docs.autotournament.gg">Documentation</a> · <a href="https://discord.gg/n7gHYau7aW">Discord</a>
 
 </div>
 
@@ -41,7 +41,7 @@ for organised tournaments and for a quick 5v5 or 2v2 with friends.
 - An HTTP API with API tokens and an OpenAPI spec, plus an example Discord bot
 - A simulation mode for testing tournaments without real players
 
-Screenshots are in the docs: https://docs.sivert.io/docs/mat/user/screenshots
+Screenshots are in the docs: https://docs.autotournament.gg
 
 ## Quick start
 
@@ -85,24 +85,24 @@ docker compose --env-file .env -f docker/docker-compose.yml up -d
 docker compose --env-file .env -f docker/docker-compose.yml logs -f matchzy-tournament
 ```
 
-More in [Updating](https://docs.sivert.io/docs/mat/user/updating). If you
+More in [Updating](https://docs.autotournament.gg). If you
 build from source, use `yarn docker:local:restart`.
 
 ## Documentation
 
 Running tournaments:
 
-- [Admin dashboard](https://docs.sivert.io/docs/mat/user/admin-dashboard)
-- [Server setup](https://docs.sivert.io/docs/mat/user/server-setup)
-- [Creating tournaments](https://docs.sivert.io/docs/mat/user/tournaments)
+- [Admin dashboard](https://docs.autotournament.gg)
+- [Server setup](https://docs.autotournament.gg)
+- [Creating tournaments](https://docs.autotournament.gg)
 
 Building on Auto Tournament:
 
 - [Using the API from a bot or script](docs/API.md)
 - [API reference](docs/API-REFERENCE.md) and [OpenAPI spec](docs/openapi.json), both generated from the code
 - [Example Discord bot](examples/discord-bot/README.md)
-- [Architecture](https://docs.sivert.io/docs/mat/developer/architecture)
-- [Testing](https://docs.sivert.io/docs/mat/developer/testing)
+- [Architecture](https://docs.autotournament.gg)
+- [Testing](https://docs.autotournament.gg)
 
 ## Related projects
 
