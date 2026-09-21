@@ -12,7 +12,7 @@ export default function NotFound() {
   }, [t]);
 
   return (
-    <Box minHeight="100vh" bgcolor="background.default" py={6}>
+    <Box minHeight="100vh" bgcolor="transparent" py={6}>
       <Container maxWidth="sm">
         <Card>
           <CardContent sx={{ textAlign: 'center', py: 6 }}>

@@ -503,7 +503,8 @@ export default function Bracket() {
       ref={fullscreenRef}
       data-testid="bracket-page"
       sx={{
-        bgcolor: 'background.default',
+        // Opaque only in fullscreen; otherwise the page sits on the body blooms.
+        bgcolor: isFullscreen ? 'background.default' : 'transparent',
         minHeight: '100vh',
         position: 'relative',
         height: isFullscreen ? '100vh' : 'auto',

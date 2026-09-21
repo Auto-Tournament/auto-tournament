@@ -59,7 +59,7 @@ export default function ConnectSteam() {
     generateAvatarDataUrl(`${providerLabel}:${displayName}`);
 
   return (
-    <Box minHeight="100vh" bgcolor="background.default" display="flex" alignItems="center">
+    <Box minHeight="100vh" bgcolor="transparent" display="flex" alignItems="center">
       <Container maxWidth="sm">
         <Card>
           <CardContent sx={{ p: 4 }}>

@@ -35,6 +35,10 @@ export const tokens = {
     // CS2 side colours, used on scoreboards and side picks.
     sideCt: '#7fb0e8',
     sideT: '#e8b04b',
+    // Leaderboard medals for places 1-3.
+    medalGold: '#f2c14b',
+    medalSilver: '#c4bcb9',
+    medalBronze: '#c98a5a',
   },
   /** Third-party sign-in button colours (their brand guidelines, not ours). */
   brand: {

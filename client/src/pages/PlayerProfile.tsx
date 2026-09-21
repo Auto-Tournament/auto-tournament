@@ -729,7 +729,7 @@ export default function PlayerProfile() {
 
   if (loading) {
     return (
-      <Box minHeight="100vh" bgcolor="background.default">
+      <Box minHeight="100vh" bgcolor="transparent">
         <TopNavBar />
         <Container maxWidth="md">
           <Box
@@ -754,7 +754,7 @@ export default function PlayerProfile() {
 
   if (error || !player) {
     return (
-      <Box minHeight="100vh" bgcolor="background.default">
+      <Box minHeight="100vh" bgcolor="transparent">
         <TopNavBar />
         <Container maxWidth="sm">
           <Box py={6}>
@@ -885,7 +885,7 @@ export default function PlayerProfile() {
   return (
     <Box
       minHeight="100vh"
-      bgcolor="background.default"
+      bgcolor="transparent"
       data-testid="public-player-page"
     >
       <TopNavBar />
