@@ -1,4 +1,4 @@
-export type AuthProviderId = 'steam' | 'keycloak' | 'discord' | 'github';
+export type AuthProviderId = 'steam' | 'keycloak' | 'discord' | 'github' | 'google';
 
 export type AuthProviderKind = 'steam-openid' | 'oidc' | 'oauth2';
 
@@ -58,10 +58,16 @@ export interface GitHubAuthProviderConfig extends BaseAuthProviderConfig {
   kind: 'oauth2';
 }
 
+export interface GoogleAuthProviderConfig extends BaseAuthProviderConfig {
+  id: 'google';
+  kind: 'oauth2';
+}
+
 export type AuthProviderConfig =
   | SteamAuthProviderConfig
   | KeycloakAuthProviderConfig
   | DiscordAuthProviderConfig
-  | GitHubAuthProviderConfig;
+  | GitHubAuthProviderConfig
+  | GoogleAuthProviderConfig;
 
 
