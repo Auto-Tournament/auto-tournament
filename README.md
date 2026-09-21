@@ -1,146 +1,117 @@
 <div align="center">
   <img src="client/public/icon.svg" alt="MatchZy Auto Tournament" width="140" height="140">
-  
+
   # MatchZy Auto Tournament
-  
-  ⚡ **Automated CS2 tournament management — one click from bracket creation to final scores**
-  
-  <p>Complete tournament automation for Counter-Strike 2 using the enhanced MatchZy plugin. Zero manual server configuration.</p>
 
+  A web app for running CS2 tournaments. You create the bracket, and MAT loads
+  each match onto your servers, runs the map veto in the browser and records the
+  results.
+
+[![CI](https://github.com/sivert-io/matchzy-auto-tournament/actions/workflows/ci.yml/badge.svg)](https://github.com/sivert-io/matchzy-auto-tournament/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/sivert-io/matchzy-auto-tournament)](https://github.com/sivert-io/matchzy-auto-tournament/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
-[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-**📚 <a href="https://docs.sivert.io/docs/mat" target="_blank">Documentation</a>** • <a href="https://discord.gg/n7gHYau7aW" target="_blank">💬 Discord</a>
+<a href="https://docs.sivert.io/docs/mat">Documentation</a> · <a href="https://discord.gg/n7gHYau7aW">Discord</a>
 
 </div>
 
----
+MAT (currently 2.4.13) talks to CS2 servers running
+[MatchZy Enhanced](https://github.com/sivert-io/MatchZy-Enhanced). It is used
+for organised tournaments and for a quick 5v5 or 2v2 with friends.
 
-## 🎯 Who is this for?
+## What it does
 
-- **Tournament Organizers** — Run professional CS2 tournaments with automated brackets, veto, ratings, and live stats
-- **Casual Players** — Quick setup to play competitive matches with friends (5v5, 2v2, or custom)
-- **Developers** — Open source platform for building CS2 tournament features
+- Single and double elimination, Swiss, round robin and shuffle tournaments
+- Map veto for Bo1, Bo3 and Bo5, done in the browser
+- Picks a free server, loads the match config and moves the bracket on when a
+  match ends
+- Live scores and server status over WebSockets
+- Player ratings (OpenSkill) and leaderboards
+- Demo recording, uploaded to MAT for download
+- Public team pages with connect info, no login needed
+- An HTTP API with API tokens and an OpenAPI spec, plus an example Discord bot
+- A simulation mode for testing tournaments without real players
 
----
+Screenshots are in the docs: https://docs.sivert.io/docs/mat/user/screenshots
 
-## ⚡ Quick Start (5 minutes)
+## Quick start
 
-### 1. Install Platform
+You need Docker with Docker Compose, and CS2 servers with
+[MatchZy Enhanced v1.3.0+](https://github.com/sivert-io/matchzy-Enhanced/releases)
+and RCON access.
 
 ```bash
-# Clone and start
 git clone https://github.com/sivert-io/matchzy-auto-tournament.git
 cd matchzy-auto-tournament
-cp example.env .env
-docker compose up -d
-
-# Open http://localhost:3069
+cp example.env .env   # set SESSION_SECRET, SERVER_TOKEN and STEAM_API_KEY
+docker compose --env-file .env -f docker/docker-compose.yml up -d
 ```
 
-### 2. Add CS2 Servers
+Then open http://localhost:3069.
 
-**Option A: Automated (Recommended)**
-- Use [CS2 Server Manager (CSM)](https://docs.sivert.io/docs/csm) to spin up servers with one command
+To add servers, either:
 
-**Option B: Manual**
-- Install [CounterStrikeSharp](https://docs.cssharp.dev/) on your CS2 server
-- Install [MatchZy Enhanced v1.3.0+](https://github.com/sivert-io/matchzy-Enhanced/releases)
-- Add server in the platform: Settings → Servers
+- use [CS2 Server Manager](https://github.com/sivert-io/cs2-server-manager)
+  ([docs](https://docs.sivert.io/docs/csm)), which sets up servers with
+  MatchZy Enhanced already installed, or
+- install [CounterStrikeSharp](https://docs.cssharp.dev/) and
+  [MatchZy Enhanced](https://docs.sivert.io/docs/me) yourself, then add the
+  server in MAT under Settings → Servers.
 
-### 3. Create Tournament
+To run a tournament: Dashboard → New Tournament, pick a format, add teams and
+start it.
 
-Dashboard → New Tournament → Select format → Add teams → Start!
+## Updating
 
-**That's it!** Matches auto-load on servers, veto happens in the browser, and brackets update live.
+Back up the database, pull the new image and recreate the containers:
 
----
+```bash
+mkdir -p backups
+docker compose --env-file .env -f docker/docker-compose.yml exec -T postgres pg_dump -U "${DB_USER:-postgres}" "${DB_NAME:-matchzy_tournament}" > "backups/mat-$(date +%F-%H%M%S).sql"
 
-## ✨ What You Get
+docker compose --env-file .env -f docker/docker-compose.yml pull
+docker compose --env-file .env -f docker/docker-compose.yml up -d
 
-🏆 **Tournament Formats** — Single/Double Elimination, Swiss, Round Robin, Shuffle  
-🗺️ **Map Veto** — FaceIT-style ban/pick for BO1/BO3/BO5  
-📈 **Player Ratings** — OpenSkill-backed ELO system with leaderboards  
-⚡ **Real-Time** — WebSocket updates for scores, connections, status  
-🎮 **Auto-Everything** — Server allocation, match loading, bracket progression  
-🎬 **Demo Recording** — Automatic upload and download  
-👥 **Public Pages** — No-login team pages with server connect info
+# migrations run on startup
+docker compose --env-file .env -f docker/docker-compose.yml logs -f matchzy-tournament
+```
 
-See screenshots in the docs: https://docs.sivert.io/docs/mat/user/screenshots
+More in [Updating MAT](https://docs.sivert.io/docs/mat/user/updating). If you
+build from source, use `yarn docker:local:restart`.
 
----
+## Documentation
 
-## 📖 Documentation (docs.sivert.io)
+Running tournaments:
 
-**For Tournament Admins (Operators):**
-- [Admin Dashboard](https://docs.sivert.io/docs/mat/user/admin-dashboard)
-- [Server Setup](https://docs.sivert.io/docs/mat/user/server-setup)
-- [Creating Tournaments](https://docs.sivert.io/docs/mat/user/tournaments)
+- [Admin dashboard](https://docs.sivert.io/docs/mat/user/admin-dashboard)
+- [Server setup](https://docs.sivert.io/docs/mat/user/server-setup)
+- [Creating tournaments](https://docs.sivert.io/docs/mat/user/tournaments)
 
-**For Developers:**
+Building on MAT:
+
 - [Using the API from a bot or script](docs/API.md)
-- [Complete API reference](docs/API-REFERENCE.md) and [OpenAPI spec](docs/openapi.json) (both generated)
-- [Discord bot example](examples/discord-bot/README.md) — boilerplate to copy
-- [Contributing Guide](.github/CONTRIBUTING.md)
+- [API reference](docs/API-REFERENCE.md) and [OpenAPI spec](docs/openapi.json), both generated from the code
+- [Example Discord bot](examples/discord-bot/README.md)
 - [Architecture](https://docs.sivert.io/docs/mat/developer/architecture)
 - [Testing](https://docs.sivert.io/docs/mat/developer/testing)
 
----
+## Related projects
 
-## 🔧 Requirements
+- [MatchZy Enhanced](https://github.com/sivert-io/MatchZy-Enhanced)
+  ([docs](https://docs.sivert.io/docs/me)): the CS2 server plugin MAT drives.
+- [CS2 Server Manager](https://github.com/sivert-io/cs2-server-manager)
+  ([docs](https://docs.sivert.io/docs/csm)): sets up and updates the CS2
+  servers.
 
-- Docker & Docker Compose
-- CS2 servers with [MatchZy Enhanced v1.3.0+](https://github.com/sivert-io/matchzy-Enhanced/releases)
-- RCON access to servers
+## Contributing
 
----
+Bug reports, fixes, translations and docs changes are all welcome. See the
+[contributing guide](.github/CONTRIBUTING.md), [open an issue](https://github.com/sivert-io/matchzy-auto-tournament/issues/new/choose),
+or read [TRANSLATING.md](TRANSLATING.md) to add a language.
 
-## 🔄 Updating (Docker)
+## License
 
-If you run MAT via Docker Compose, the basic update flow is:
+MIT, see [LICENSE](LICENSE).
 
-```bash
-# (recommended) backup your database first
-mkdir -p backups
-docker compose exec -T postgres pg_dump -U "${DB_USER:-postgres}" "${DB_NAME:-matchzy_tournament}" > "backups/mat-$(date +%F-%H%M%S).sql"
-
-# pull latest image + recreate containers
-docker compose pull
-docker compose up -d
-
-# watch logs for startup/migrations
-docker compose logs -f matchzy-tournament
-```
-
-More details: https://docs.sivert.io/docs/mat/user/updating
-
-For local dev builds (build from source): `yarn docker:local:restart`.
-
----
-
-## 🤝 Contributing
-
-Contributions welcome! Bug fixes, features, docs improvements, translations, or ideas.
-
-**Ways to contribute:**
-- 🐛 [Report bugs or request features](.github/ISSUE_TEMPLATE/)
-- 💻 [Submit code improvements](.github/CONTRIBUTING.md)
-- 🌍 [Translate to your language](TRANSLATING.md)
-- 📚 [Improve documentation](https://docs.sivert.io/docs/mat)
-
-**[Read Full Contributing Guide](.github/CONTRIBUTING.md)**
-
----
-
-## 📜 License
-
-MIT License - see [LICENSE](LICENSE)
-
-**Credits:** [cs2-server-manager](https://github.com/sivert-io/cs2-server-manager) • [brackets-manager.js](https://github.com/Drarig29/brackets-manager.js) • [brackets-viewer.js](https://github.com/Drarig29/brackets-viewer.js)
-
----
-
-<div align="center">
-  <strong>Made with ❤️ for the CS2 community</strong>
-</div>
+Built on [brackets-manager.js](https://github.com/Drarig29/brackets-manager.js)
+and [brackets-viewer.js](https://github.com/Drarig29/brackets-viewer.js).

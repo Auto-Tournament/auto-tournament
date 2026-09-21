@@ -1,99 +1,49 @@
 # Contributing to MatchZy Auto Tournament
 
-Thank you for your interest in contributing! 🎉
+The full guide is in the docs:
+[Development → Contributing](https://docs.sivert.io/docs/mat/developer/contributing).
 
-## 📚 Full Documentation
+## Running it locally
 
-For detailed contribution guidelines, please see:
+```bash
+git clone https://github.com/YOUR_USERNAME/matchzy-auto-tournament.git
+cd matchzy-auto-tournament
+yarn install
 
-**[Development → Contributing](https://docs.sivert.io/docs/mat/developer/contributing)**
+yarn db               # starts PostgreSQL in Docker
+cp example.env .env   # the API reads .env on startup; the DB_* defaults match `yarn db`
 
-## 🚀 Quick Start
+yarn dev              # API and client together
+```
 
-1. **Fork & Clone**
+## Pull requests
 
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/matchzy-auto-tournament.git
-   cd matchzy-auto-tournament
-   ```
+- Keep each PR to one fix or feature.
+- Test what you changed.
+- Follow the existing code style.
+- Update the docs if behaviour changes.
+- Write commit messages that say what changed and why.
 
-2. **Install Dependencies**
+## Translations
 
-   ```bash
-   yarn install
-   ```
+[TRANSLATING.md](../TRANSLATING.md) has the steps. The longer version is
+[i18n and translation](https://docs.sivert.io/docs/mat/developer/i18n-and-translation).
 
-3. **Setup Environment**
+## Reporting bugs
 
-   ```bash
-   # Start PostgreSQL
-   yarn db
+[Open an issue](https://github.com/sivert-io/matchzy-auto-tournament/issues/new/choose)
+with what happened, how to reproduce it, what you expected, and your setup (OS,
+Docker version, MAT version).
 
-   # Set environment variables
-   export API_TOKEN=admin123
-   export SERVER_TOKEN=server123
-   export DB_HOST=localhost
-   export DB_PORT=5432
-   export DB_USER=postgres
-   export DB_PASSWORD=postgres
-   export DB_NAME=matchzy_tournament
-   ```
+If you need several players to test something, or want feedback on a change,
+use the **Community Request** issue template. People who help with those get
+credited.
 
-4. **Start Development**
-   ```bash
-   yarn dev
-   ```
+## Questions
 
-## 📝 Guidelines
+Ask in [GitHub Discussions](https://github.com/sivert-io/matchzy-auto-tournament/discussions)
+or on [Discord](https://discord.gg/n7gHYau7aW).
 
-- ✅ Write clear commit messages
-- ✅ Test your changes
-- ✅ Update documentation if needed
-- ✅ Follow existing code style
-- ✅ Keep PRs focused on one feature/fix
+## Code of conduct
 
-## 🌍 Translating the Project
-
-Want to help translate MatchZy Auto Tournament into your language? We'd love your help!
-
-**Quick Start:** See [TRANSLATING.md](../TRANSLATING.md) for a 5-step guide.
-
-**Full Guide:** [i18n Documentation](https://docs.sivert.io/docs/mat/developer/i18n-and-translation)
-
-**Currently supported:**
-- 🇬🇧 English
-- 🇨🇳 Simplified Chinese
-
-Translation contributions are highly valued and help make the platform accessible worldwide! 🌍
-
-## 🐛 Reporting Issues
-
-Found a bug? Please [open an issue](https://github.com/sivert-io/matchzy-auto-tournament/issues/new) with:
-
-- Clear description
-- Steps to reproduce
-- Expected vs actual behavior
-- Environment details (OS, Docker version, etc.)
-
-## 🙏 Community Requests
-
-Need help testing something or getting feedback? Use the **Community Request** issue template! This is perfect for:
-- Features that require multiple players to test
-- Cross-platform compatibility testing
-- Getting user experience feedback
-- Performance testing with real-world scenarios
-
-**Contributors who help with Community Requests will be recognized and credited!** 🏆
-
-## 💬 Questions?
-
-- [GitHub Discussions](https://github.com/sivert-io/matchzy-auto-tournament/discussions) - Ask questions
-- [Documentation](https://docs.sivert.io/docs/mat) - Read the docs
-
-## 📖 Code of Conduct
-
-Be respectful and constructive. We're all here to build something awesome for the CS2 community! 🎮
-
----
-
-**Full Contribution Guide:** https://docs.sivert.io/docs/mat/developer/contributing
+Be respectful. The details are in [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
