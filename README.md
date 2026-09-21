@@ -124,7 +124,3 @@ PolyForm Noncommercial 1.0.0, see [LICENSE](LICENSE). Free for non-commercial us
 
 Built on [brackets-manager.js](https://github.com/Drarig29/brackets-manager.js)
 and [brackets-viewer.js](https://github.com/Drarig29/brackets-viewer.js).
-
----
-
-The logo was generated with an AI image model (ChatGPT) and then cleaned up and recoloured by hand.
