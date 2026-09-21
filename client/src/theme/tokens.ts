@@ -36,6 +36,18 @@ export const tokens = {
     sideCt: '#7fb0e8',
     sideT: '#e8b04b',
   },
+  /** Third-party sign-in button colours (their brand guidelines, not ours). */
+  brand: {
+    steam: '#171a21',
+    steamHover: '#1b2838',
+    discord: '#5865f2',
+    discordHover: '#4752c4',
+    github: '#24292e',
+    githubHover: '#1b1f23',
+    keycloak: '#3262a8',
+    keycloakHover: '#274c82',
+    onBrand: '#ffffff',
+  },
   radius: { sm: 8, md: 14, lg: 22, pill: 999 },
   space: { xs: '0.5rem', sm: '0.75rem', md: '1rem', lg: '1.5rem', xl: '2rem', '2xl': '3rem', '3xl': '5rem', '4xl': '8rem' },
   ease: {

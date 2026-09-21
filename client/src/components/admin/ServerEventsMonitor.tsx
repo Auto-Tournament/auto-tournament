@@ -24,6 +24,9 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 import { io, Socket } from 'socket.io-client';
 import type { ServerEvent, ServerEventsResponse } from '../../types';
+import { tokens, fontMono } from '../../theme/tokens';
+
+const c = tokens.color;
 
 export const ServerEventsMonitor: React.FC = () => {
   const { t } = useTranslation();
@@ -238,15 +241,15 @@ export const ServerEventsMonitor: React.FC = () => {
     switch (eventType) {
       case 'series_start':
       case 'going_live':
-        return '#A6E3D0'; // success (mint)
+        return c.live;
       case 'series_end':
-        return '#A8C7FA'; // info (soft blue)
+        return c.info;
       case 'map_result':
-        return '#D0BCFF'; // primary purple
+        return c.accent;
       case 'map_picked':
       case 'side_picked':
       case 'map_vetoed':
-        return '#C4B5FD'; // veto / map flow (violet)
+        return c.accent2;
       case 'round_started':
       case 'warmup_ended':
       case 'knife_round_started':
@@ -255,16 +258,16 @@ export const ServerEventsMonitor: React.FC = () => {
       case 'overtime_started':
       case 'side_swap':
       case 'backup_loaded':
-        return '#6EE7B7'; // round / phase transitions (teal)
+        return c.live;
       case 'round_end':
-        return '#F59E0B'; // round result (amber)
+        return c.warning;
       case 'round_mvp':
-        return '#FBBF24'; // MVP highlight (gold)
+        return c.warning;
       case 'player_death':
-        return '#F87171'; // kills/deaths (red)
+        return c.ban;
       case 'player_connect':
       case 'player_disconnect':
-        return '#93C5FD'; // connection events (blue)
+        return c.info;
       case 'player_ready':
       case 'player_unready':
       case 'team_ready':
@@ -272,28 +275,28 @@ export const ServerEventsMonitor: React.FC = () => {
       case 'unpause_requested':
       case 'match_paused':
       case 'match_unpaused':
-        return '#FACC15'; // ready / pause system (yellow)
+        return c.warning;
       case 'bomb_planted':
       case 'bomb_defused':
       case 'bomb_exploded':
-        return '#FB923C'; // bomb events (orange)
+        return c.accent;
       case 'player_stats_update':
-        return '#38BDF8'; // stats updates (sky blue)
+        return c.sideCt;
       case 'test_event':
       case 'MatchZyTestEvent':
-        return '#A855F7'; // connectivity test events (purple)
+        return c.accent2;
       case 'demo_recording_start':
       case 'demo_recording_stop':
-        return '#22C55E'; // recording markers (green)
+        return c.live;
       case 'demo_upload_start':
-        return '#38BDF8'; // upload started (sky)
+        return c.sideCt;
       case 'demo_upload_success':
       case 'demo_upload_ended':
-        return '#A6E3D0'; // upload success (mint)
+        return c.live;
       case 'demo_upload_fail':
-        return '#F87171'; // upload failures (red)
+        return c.ban;
       default:
-        return '#E5E7EB'; // neutral light grey
+        return c.ink2;
     }
   };
 
@@ -383,9 +386,9 @@ export const ServerEventsMonitor: React.FC = () => {
           sx={{
             height: 600,
             overflow: 'auto',
-            bgcolor: '#1e1e1e',
+            bgcolor: c.paper,
             p: 2,
-            fontFamily: 'monospace',
+            fontFamily: fontMono,
           }}
           onScroll={handleScroll}
         >
@@ -508,7 +511,7 @@ const EventItem: React.FC<{
         mb: 2,
         p: 1.5,
         borderRadius: 1,
-        bgcolor: 'rgba(255, 255, 255, 0.05)',
+        bgcolor: c.paper3,
         borderLeft: '3px solid',
         borderLeftColor: getEventColor(event.event.event),
       }}
@@ -526,9 +529,9 @@ const EventItem: React.FC<{
         <Typography
           component="span"
           sx={{
-            color: '#888',
+            color: c.muted,
             fontSize: '0.75rem',
-            fontFamily: 'monospace',
+            fontFamily: fontMono,
           }}
         >
           [{formatTimestamp(event.timestamp)}]
@@ -538,7 +541,7 @@ const EventItem: React.FC<{
           sx={{
             color: getEventColor(event.event.event),
             fontSize: '0.8rem',
-            fontFamily: 'monospace',
+            fontFamily: fontMono,
           }}
         >
           {event.event.event}
@@ -546,9 +549,9 @@ const EventItem: React.FC<{
         <Typography
           component="span"
           sx={{
-            color: '#61dafb',
+            color: c.info,
             fontSize: '0.75rem',
-            fontFamily: 'monospace',
+            fontFamily: fontMono,
           }}
         >
           Match: {event.matchSlug}
@@ -561,8 +564,8 @@ const EventItem: React.FC<{
               size="small"
               onClick={handleDownloadDemo}
               sx={{
-                color: '#E5E7EB',
-                border: '1px solid rgba(229, 231, 235, 0.3)',
+                color: c.ink2,
+                border: `1px solid ${c.rule}`,
                 borderRadius: 1,
                 p: 0.5,
               }}
@@ -575,9 +578,9 @@ const EventItem: React.FC<{
           <Typography
             component="span"
             sx={{
-              color: '#F9FAFB',
+              color: c.ink,
               fontSize: '0.75rem',
-              fontFamily: 'monospace',
+              fontFamily: fontMono,
             }}
           >
             {' '}
@@ -588,9 +591,9 @@ const EventItem: React.FC<{
           <Typography
             component="span"
             sx={{
-              color: '#E5E7EB',
+              color: c.ink2,
               fontSize: '0.75rem',
-              fontFamily: 'monospace',
+              fontFamily: fontMono,
             }}
           >
             {' '}
@@ -607,7 +610,7 @@ const EventItem: React.FC<{
             m: 0,
             mt: 1,
             p: 1,
-            bgcolor: 'rgba(0, 0, 0, 0.3)',
+            bgcolor: c.paper,
             borderRadius: 1,
             overflow: 'auto',
             fontSize: '0.75rem',

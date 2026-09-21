@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { SteamIcon } from '../components/icons/SteamIcon';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { generateAvatarDataUrl } from '../generation/avatar';
+import { tokens } from '../theme/tokens';
 
 export default function ConnectSteam() {
   const {
@@ -98,10 +99,10 @@ export default function ConnectSteam() {
                   fullWidth
                   startIcon={<SteamIcon />}
                   sx={{
-                    bgcolor: '#171a21',
-                    color: '#ffffff',
+                    bgcolor: tokens.brand.steam,
+                    color: tokens.brand.onBrand,
                     '&:hover': {
-                      bgcolor: '#1b2838',
+                      bgcolor: tokens.brand.steamHover,
                     },
                   }}
                 >

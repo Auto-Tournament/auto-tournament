@@ -72,8 +72,6 @@ export const OnboardingChecklist: React.FC = () => {
   return (
     <Card
       sx={{
-        background: 'linear-gradient(135deg, rgba(103, 80, 164, 0.05) 0%, rgba(103, 80, 164, 0.02) 100%)',
-        border: '2px solid',
         borderColor: isFullyOnboarded ? 'success.main' : 'primary.main',
       }}
     >

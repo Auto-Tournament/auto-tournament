@@ -18,6 +18,16 @@ import { LanguageSwitcher } from '../common/LanguageSwitcher';
 import { PlayerAvatar } from '../player/PlayerAvatar';
 import { generateAvatarDataUrl } from '../../generation/avatar';
 import { api } from '../../utils/api';
+import { fontDisplay } from '../../theme/tokens';
+
+/** Top-bar text links: ink2 at rest, ink on hover, like the website nav. */
+const navLinkSx = {
+  color: 'text.secondary',
+  fontWeight: 500,
+  px: { xs: 1, sm: 1.5 },
+  minWidth: 0,
+  '&:hover': { color: 'text.primary', backgroundColor: 'action.hover' },
+} as const;
 
 const PLAYER_AVATAR_CACHE_KEY_PREFIX = 'mat.playerAvatarUrl:';
 
@@ -228,7 +238,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
           flexGrow: 1,
           display: 'flex',
           alignItems: 'center',
-          gap: 3,
+          gap: { xs: 1.5, sm: 3 },
           minWidth: 0,
         }}
       >
@@ -238,26 +248,34 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
           sx={{
             display: 'flex',
             alignItems: 'center',
+            gap: 1,
             textDecoration: 'none',
+            color: 'text.primary',
+            fontFamily: fontDisplay,
+            fontWeight: 600,
+            whiteSpace: 'nowrap',
           }}
         >
           <Box
             component="img"
             src="/icon.svg"
-            alt="Matchzy Auto Tournament"
-            sx={{ height: 32 }}
+            alt="Auto Tournament"
+            sx={{ height: 30, width: 30, borderRadius: '8px' }}
           />
+          <Box component="span" aria-hidden sx={{ display: { xs: 'none', lg: 'inline' } }}>
+            Auto Tournament
+          </Box>
         </Box>
 
         <Box
           sx={{
             display: 'flex',
             alignItems: 'center',
-            gap: 1.5,
+            gap: { xs: 0, sm: 1.5 },
             flexShrink: 0,
           }}
         >
-          <Button color="inherit" component={RouterLink} to="/player" size="small">
+          <Button color="inherit" component={RouterLink} to="/player" size="small" sx={navLinkSx}>
             {t('nav.players')}
           </Button>
           <Button
@@ -265,6 +283,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
             component={RouterLink}
             to="/tournament/1/leaderboard"
             size="small"
+            sx={navLinkSx}
           >
             {t('nav.leaderboard')}
           </Button>
@@ -288,7 +307,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
               color="primary"
               size="small"
               startIcon={<SportsEsportsIcon />}
-              sx={{ fontWeight: 600, textTransform: 'none', px: 2 }}
+              sx={{ px: 2 }}
             >
               {ctaLabel}
             </Button>

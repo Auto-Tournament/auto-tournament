@@ -187,19 +187,22 @@ export default function Settings() {
   const { t } = useTranslation();
 
   const ACCORDION_SX = {
-    bgcolor: 'rgba(0, 0, 0, 0.18)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
+    bgcolor: 'background.paper',
+    border: 1,
+    borderColor: 'divider',
     boxShadow: 'none',
     // MUI renders a default divider line via :before; hide it so our border is the only separator
     '&:before': { display: 'none' },
   } as const;
 
   const ACCORDION_SUMMARY_SX = {
-    bgcolor: 'rgba(0, 0, 0, 0.26)',
+    bgcolor: 'background.paper',
   } as const;
 
   const ACCORDION_DETAILS_SX = {
-    bgcolor: 'rgba(0, 0, 0, 0.18)',
+    bgcolor: 'background.surface2',
+    borderTop: 1,
+    borderColor: 'divider',
   } as const;
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
