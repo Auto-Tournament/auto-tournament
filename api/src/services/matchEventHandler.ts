@@ -1481,7 +1481,7 @@ async function persistPlayerMatchStats(options: {
     }>(
       `SELECT event_data FROM match_events 
        WHERE match_slug = ? AND event_type = 'player_stats' 
-       ORDER BY received_at DESC LIMIT 1`,
+       ORDER BY received_at DESC, id DESC LIMIT 1`,
       [matchSlug]
     );
 
@@ -1514,7 +1514,7 @@ async function persistPlayerMatchStats(options: {
       }>(
         `SELECT event_data FROM match_events 
          WHERE match_slug = ? AND event_type = 'round_end' 
-         ORDER BY received_at DESC LIMIT 1`,
+         ORDER BY received_at DESC, id DESC LIMIT 1`,
         [matchSlug]
       );
 
