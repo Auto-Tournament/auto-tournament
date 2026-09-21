@@ -351,6 +351,9 @@
       "eloDefaultSuffix": "(domyślny)",
       "eloTemplateHelper": "Pure Win/Loss (domyślny): na ELO wpływa wyłącznie wynik meczu. Statystyki graczy są nadal zapisywane na potrzeby rankingów i eksportu, ale nie zmieniają oceny, dopóki nie wybierzesz własnego szablonu."
     },
+    "shuffleStats": {
+      "serverShortageWarning": "You have {{available}} of {{needed}} servers. Matches will run in waves, so rounds take longer."
+    },
     "changePreview": {
       "title": "Przejrzyj zmiany w turnieju",
       "liveHeading": "Turniej trwa NA ŻYWO!",
