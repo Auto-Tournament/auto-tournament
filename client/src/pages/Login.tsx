@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Card, Button, Alert, Container, Link, Stack, Typography } from '@mui/material';
 import { OpenInNew as OpenInNewIcon } from '@mui/icons-material';
 import { SiDiscord, SiGithub, SiKeycloak } from 'react-icons/si';
+import { FcGoogle } from 'react-icons/fc';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
@@ -189,6 +190,7 @@ export default function Login() {
                   const isDiscord = provider.id === 'discord';
                   const isGitHub = provider.id === 'github';
                   const isKeycloak = provider.id === 'keycloak';
+                  const isGoogle = provider.id === 'google';
 
                   // Brand-aligned button styles per provider
                   const { variant, color, sx, icon } = (() => {
@@ -234,6 +236,22 @@ export default function Login() {
                         icon: <SiGithub />,
                       };
                     }
+                    if (isGoogle) {
+                      // Google's sign-in button guidelines: white, grey border, colour logo.
+                      return {
+                        variant: 'contained' as const,
+                        color: 'inherit' as const,
+                        sx: {
+                          bgcolor: '#ffffff',
+                          color: '#1f1f1f',
+                          border: '1px solid #747775',
+                          '&:hover': {
+                            bgcolor: '#f2f2f2',
+                          },
+                        },
+                        icon: <FcGoogle />,
+                      };
+                    }
                     if (isKeycloak) {
                       const bg = provider.buttonBgColor || '#3262a8';
                       const text = provider.buttonTextColor || '#ffffff';
@@ -276,7 +294,7 @@ export default function Login() {
                           : `login-${provider.id}-sign-in-button`
                       }
                     >
-                      {provider.buttonLabel || `Sign in with ${provider.label}`}
+                      {provider.buttonLabel || t('login.signInWith', { provider: provider.label })}
                     </Button>
                   );
                 })}
