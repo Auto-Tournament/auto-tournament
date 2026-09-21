@@ -46,6 +46,7 @@ export default function Bracket() {
     matches,
     totalRounds,
     swissStandings,
+    roundRobinStandings,
     // starting handled by StartTournamentButton
     loadBracket,
   } = useBracket();
@@ -690,6 +691,7 @@ export default function Bracket() {
             <BracketsViewerVisualization
               matches={matches}
               tournamentType={tournament.type}
+              rankingTeamIds={roundRobinStandings.map((s) => s.teamId)}
               isFullscreen={isFullscreen}
               onMatchClick={handleMatchClick}
             />

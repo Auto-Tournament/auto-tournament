@@ -77,6 +77,7 @@ export class BracketsViewer {
             highlightParticipantOnHover: config?.highlightParticipantOnHover ?? true,
             showRankingTable: config?.showRankingTable ?? true,
             rankingFormula: config?.rankingFormula,
+            rankingOrder: config?.rankingOrder,
         };
 
         if (config?.onMatchClick)
@@ -486,7 +487,17 @@ export class BracketsViewer {
      */
     private createRanking(matches: Match[]): HTMLElement {
         const table = dom.createTable();
-        const ranking = getRanking(matches, this.config.rankingFormula);
+        let ranking = getRanking(matches, this.config.rankingFormula);
+
+        const order = this.config.rankingOrder;
+        if (order?.length) {
+            const position = (id: Id) => {
+                const index = order.indexOf(id);
+                return index === -1 ? order.length : index;
+            };
+            ranking = [...ranking].sort((a, b) => position(a.id) - position(b.id));
+            ranking.forEach((item, index) => { item.rank = index + 1; });
+        }
 
         table.append(dom.createRankingHeaders(ranking));
 
