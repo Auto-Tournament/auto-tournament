@@ -201,10 +201,9 @@ export default function ELOTemplates() {
                   height: '100%',
                   display: 'flex',
                   flexDirection: 'column',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  transition: 'background-color 0.2s',
                   '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: (theme) => `0 24px 60px -30px ${theme.palette.primary.main}`,
+                    bgcolor: 'var(--at-paper3)',
                   },
                 }}
               >

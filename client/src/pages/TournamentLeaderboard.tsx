@@ -475,7 +475,7 @@ export default function TournamentLeaderboard() {
   return (
     <Box
       minHeight="100vh"
-      // Transparent so the page sits on the body's orange blooms.
+      // Transparent so the page sits on the body's paper colour.
       bgcolor="transparent"
       data-testid="public-leaderboard-page"
     >

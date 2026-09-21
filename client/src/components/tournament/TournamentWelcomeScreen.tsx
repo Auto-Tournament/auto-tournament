@@ -88,7 +88,7 @@ export function TournamentWelcomeScreen({
                 transition: 'all 0.2s',
                 '&:hover': {
                   borderColor: 'primary.main',
-                  boxShadow: (theme) => `0 24px 60px -30px ${theme.palette.primary.main}`,
+                  bgcolor: 'var(--at-paper3)',
                 },
               }}
               onClick={onCreateNew}

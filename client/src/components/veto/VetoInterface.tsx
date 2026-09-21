@@ -685,7 +685,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                         fontSize: '1.05rem',
                         bgcolor: color.sideCt,
                         color: color.accentInk,
-                        '&:hover': { bgcolor: color.sideCt, boxShadow: `0 10px 30px -12px ${color.sideCt}` },
+                        '&:hover': { bgcolor: color.sideCt },
                       }}
                     >
                       {t('vetoInterface.counterTerrorist')}
@@ -705,7 +705,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                         fontSize: '1.05rem',
                         bgcolor: color.sideT,
                         color: color.accentInk,
-                        '&:hover': { bgcolor: color.sideT, boxShadow: `0 10px 30px -12px ${color.sideT}` },
+                        '&:hover': { bgcolor: color.sideT },
                       }}
                     >
                       {t('vetoInterface.terrorist')}

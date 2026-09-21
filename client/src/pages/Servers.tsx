@@ -1114,8 +1114,6 @@ export default function Servers() {
                   sx={() => {
                     const selected = selectedServerIds.has(server.id);
                     const ring = `0 0 0 2px ${tokens.color.accent}`;
-                    const glow = `0 24px 60px -30px ${tokens.color.accent}`;
-                    const hoverShadow = selected ? `${ring}, ${glow}` : glow;
                     return {
                       cursor: 'pointer',
                       borderColor: needsInitialization
@@ -1128,8 +1126,7 @@ export default function Servers() {
                         bgcolor: 'action.selected',
                       }),
                       '&:hover': {
-                        transform: 'translateY(-3px)',
-                        boxShadow: hoverShadow,
+                        bgcolor: selected ? 'action.selected' : 'var(--at-paper3)',
                         ...(selected && {
                           bgcolor: 'action.selected',
                         }),

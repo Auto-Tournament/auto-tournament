@@ -45,7 +45,7 @@ export default function Dashboard() {
       data-testid="dashboard-page"
       sx={{
         flexGrow: 1,
-        // Transparent so the page sits on the body's orange blooms.
+        // Transparent so the page sits on the body's paper colour.
         backgroundColor: 'transparent',
         overflow: 'auto',
       }}

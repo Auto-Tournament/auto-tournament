@@ -204,8 +204,7 @@ export default function SwissView({
                               borderRadius: `${tokens.radius.sm}px`,
                               '&:hover': onMatchClick
                                 ? {
-                                    transform: 'translateY(-2px)',
-                                    boxShadow: `0 16px 40px -20px ${tokens.color.accent}`,
+                                    borderColor: tokens.color.rule,
                                   }
                                 : {},
                             }}

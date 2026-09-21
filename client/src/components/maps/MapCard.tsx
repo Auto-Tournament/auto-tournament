@@ -34,11 +34,10 @@ export function MapCard({ map, onClick }: MapCardProps) {
         display: 'flex',
         flexDirection: 'column',
         width: '100%',
-        transition: 'transform 0.2s, box-shadow 0.2s',
+        transition: 'background-color 0.2s',
         cursor: 'pointer',
         '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: (theme) => `0 24px 60px -30px ${theme.palette.primary.main}`,
+          bgcolor: 'var(--at-paper3)',
         },
       }}
     >

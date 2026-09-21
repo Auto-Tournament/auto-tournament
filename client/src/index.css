@@ -91,12 +91,12 @@ body {
 }
 
 .brackets-viewer .match.match--clickable:hover .opponents {
-  box-shadow: 0 16px 40px -20px var(--live-border-color);
+  border-color: var(--at-muted);
 }
 
 .brackets-viewer .match.match--live .opponents {
   border-color: var(--live-border-color);
-  box-shadow: 0 0 0 1px var(--live-border-color), 0 12px 40px -16px var(--live-border-color);
+  box-shadow: 0 0 0 1px var(--live-border-color);
   animation: match-live-pulse 1.6s ease-in-out infinite;
 }
 
@@ -113,10 +113,10 @@ body {
 @keyframes match-live-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 1px var(--live-border-color), 0 12px 40px -16px var(--live-border-color);
+    box-shadow: 0 0 0 1px var(--live-border-color);
   }
   50% {
-    box-shadow: 0 0 0 1px var(--live-border-color), 0 16px 48px -12px var(--live-border-color);
+    box-shadow: 0 0 0 2px var(--live-border-color);
   }
 }
 
