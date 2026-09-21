@@ -836,9 +836,12 @@ async function findLosersBracketMatch(wbMatch: DbMatchRow): Promise<DbMatchRow |
 }
 
 /**
- * Automatically allocate an available server to a newly ready match
+ * Automatically allocate an available server to a newly ready match.
+ *
+ * Exported as the CS2 integration's `onMatchReady` hook. `makeMatchReady`
+ * still calls it directly until allocation moves behind the interface (PR 7).
  */
-async function autoAllocateServerToMatch(matchSlug: string): Promise<void> {
+export async function autoAllocateServerToMatch(matchSlug: string): Promise<void> {
   try {
     const webhookUrl = await settingsService.getWebhookUrl();
 

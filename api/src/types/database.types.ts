@@ -15,6 +15,8 @@ export interface DbMatchRow {
   server_id?: string;
   status: 'pending' | 'ready' | 'live' | 'completed';
   config?: string;
+  /** Game integration that owns the match (integrations/registry); 'cs2' by default. */
+  game?: string;
   next_match_id?: number;
   team1_from_match_id?: number | null;
   team1_from_outcome?: 'winner' | 'loser' | null | string;
@@ -50,6 +52,8 @@ export interface DbTournamentRow {
   started_at?: number;
   completed_at?: number;
   settings?: string;
+  /** Game integration for the tournament's matches; 'cs2' by default. */
+  game?: string;
   // Shuffle / global round-limit fields
   map_sequence?: string | null;
   team_size?: number | null;
