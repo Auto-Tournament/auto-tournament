@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { styled, useTheme, Theme, CSSObject } from '@mui/material/styles';
 import { tokens } from '../../theme/tokens';
+import { AtIcon } from '../common/AtIcon';
 import Box from '@mui/material/Box';
 import MuiDrawer from '@mui/material/Drawer';
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
@@ -537,7 +538,9 @@ export default function Layout() {
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box component="img" src="/icon.svg" alt="Logo" sx={{ width: 32, height: 32 }} />
+              <Box sx={{ width: 32, height: 32, display: 'flex' }}>
+                <AtIcon size={32} title="Logo" />
+              </Box>
               <Typography variant="body2" noWrap component="div" sx={{ fontWeight: 600 }}>
                 Auto Tournament
               </Typography>

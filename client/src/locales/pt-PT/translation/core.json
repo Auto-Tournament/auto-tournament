@@ -75,5 +75,8 @@
     "label": "Idioma",
     "en": "Inglês",
     "zhCN": "Chinês (simplificado)"
+  },
+  "theme": {
+    "label": "Color theme"
   }
 }
