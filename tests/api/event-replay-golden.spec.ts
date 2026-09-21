@@ -218,19 +218,6 @@ test.describe.serial('Golden MatchZy BO3 event replay', () => {
           data: event,
         });
         expect(res.ok(), `${String(event.event)} rejected: ${await res.text()}`).toBe(true);
-
-        // enrichMatchWithScores (api/src/utils/matchEnrichment.ts) reads the
-        // *latest* round_end/series_end row from match_events, ordered by
-        // received_at — a column with one-second resolution. A real MatchZy
-        // server paces these minutes apart; this replay fires them back to
-        // back, and two round_end (or the final round_end and series_end)
-        // landing in the same wall-clock second makes that ORDER BY tie and
-        // resolve arbitrarily, occasionally reporting a stale series score.
-        // A short pause after each of those two event types keeps every one
-        // of them in its own second so the query is never ambiguous.
-        if (event.event === 'round_end' || event.event === 'series_end') {
-          await new Promise((resolve) => setTimeout(resolve, 1100));
-        }
       }
 
       // 4. Wait for the series to be recorded as completed with its final
