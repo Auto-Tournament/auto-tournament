@@ -9,6 +9,7 @@
   "tests/api/event-webhook-auth.spec.ts": 0.5,
   "tests/api/impersonation.spec.ts": 3.7,
   "tests/api/knife-side-selection.spec.ts": 2.2,
+  "tests/api/match-events-order.spec.ts": 2.4,
   "tests/api/match-phase.spec.ts": 15.2,
   "tests/api/matchzy-enhanced.spec.ts": 7.2,
   "tests/api/matchzy-hostname.spec.ts": 4.1,
