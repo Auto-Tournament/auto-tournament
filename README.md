@@ -11,16 +11,22 @@
   each match onto your servers, runs the map veto in the browser and records the
   results.
 
-[![CI](https://github.com/sivert-io/matchzy-auto-tournament/actions/workflows/ci.yml/badge.svg)](https://github.com/sivert-io/matchzy-auto-tournament/actions/workflows/ci.yml)
-[![Latest release](https://img.shields.io/github/v/release/sivert-io/matchzy-auto-tournament)](https://github.com/sivert-io/matchzy-auto-tournament/releases)
+[![CI](https://github.com/Auto-Tournament/matchzy-auto-tournament/actions/workflows/ci.yml/badge.svg)](https://github.com/Auto-Tournament/matchzy-auto-tournament/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/Auto-Tournament/matchzy-auto-tournament)](https://github.com/Auto-Tournament/matchzy-auto-tournament/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 <a href="https://docs.sivert.io/docs/mat">Documentation</a> · <a href="https://discord.gg/n7gHYau7aW">Discord</a>
 
 </div>
 
+> **MatchZy Auto Tournament is becoming Auto Tournament.** The project has moved
+> to the [Auto-Tournament](https://github.com/Auto-Tournament) organisation. It is the
+> same project, maintainer and code, and your install keeps working. From 3.0 it will
+> support more games and tournament formats as modules, with CS2 as the built-in game.
+> Nothing changes for you until you update to 3.0.
+
 MAT (currently 2.4.13) talks to CS2 servers running
-[MatchZy Enhanced](https://github.com/sivert-io/MatchZy-Enhanced). It is used
+[MatchZy Enhanced](https://github.com/Auto-Tournament/MatchZy-Enhanced). It is used
 for organised tournaments and for a quick 5v5 or 2v2 with friends.
 
 ## What it does
@@ -41,11 +47,11 @@ Screenshots are in the docs: https://docs.sivert.io/docs/mat/user/screenshots
 ## Quick start
 
 You need Docker with Docker Compose, and CS2 servers with
-[MatchZy Enhanced v1.3.0+](https://github.com/sivert-io/matchzy-Enhanced/releases)
+[MatchZy Enhanced v1.3.0+](https://github.com/Auto-Tournament/MatchZy-Enhanced/releases)
 and RCON access.
 
 ```bash
-git clone https://github.com/sivert-io/matchzy-auto-tournament.git
+git clone https://github.com/Auto-Tournament/matchzy-auto-tournament.git
 cd matchzy-auto-tournament
 cp example.env .env   # set SESSION_SECRET, SERVER_TOKEN and STEAM_API_KEY
 docker compose --env-file .env -f docker/docker-compose.yml up -d
@@ -55,7 +61,7 @@ Then open http://localhost:3069.
 
 To add servers, either:
 
-- use [CS2 Server Manager](https://github.com/sivert-io/cs2-server-manager)
+- use [CS2 Server Manager](https://github.com/Auto-Tournament/cs2-server-manager)
   ([docs](https://docs.sivert.io/docs/csm)), which sets up servers with
   MatchZy Enhanced already installed, or
 - install [CounterStrikeSharp](https://docs.cssharp.dev/) and
@@ -101,16 +107,16 @@ Building on MAT:
 
 ## Related projects
 
-- [MatchZy Enhanced](https://github.com/sivert-io/MatchZy-Enhanced)
+- [MatchZy Enhanced](https://github.com/Auto-Tournament/MatchZy-Enhanced)
   ([docs](https://docs.sivert.io/docs/me)): the CS2 server plugin MAT drives.
-- [CS2 Server Manager](https://github.com/sivert-io/cs2-server-manager)
+- [CS2 Server Manager](https://github.com/Auto-Tournament/cs2-server-manager)
   ([docs](https://docs.sivert.io/docs/csm)): sets up and updates the CS2
   servers.
 
 ## Contributing
 
 Bug reports, fixes, translations and docs changes are all welcome. See the
-[contributing guide](.github/CONTRIBUTING.md), [open an issue](https://github.com/sivert-io/matchzy-auto-tournament/issues/new/choose),
+[contributing guide](.github/CONTRIBUTING.md), [open an issue](https://github.com/Auto-Tournament/matchzy-auto-tournament/issues/new/choose),
 or read [TRANSLATING.md](TRANSLATING.md) to add a language.
 
 ## License
