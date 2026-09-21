@@ -100,12 +100,33 @@ collect_changes() {
 
 
 # Configuration
+#
+# Three image names get the same content from the same build:
+#   - GHCR_IMAGE: the primary, ghcr.io/auto-tournament/auto-tournament.
+#   - DOCKER_IMAGE_NEW: the Docker Hub mirror under the new name.
+#   - DOCKER_IMAGE: the old Docker Hub name, kept for existing installs
+#     that still pull sivertio/matchzy-auto-tournament.
 DOCKER_USERNAME="${DOCKER_USERNAME:-sivertio}"
 IMAGE_NAME="matchzy-auto-tournament"
 DOCKER_IMAGE="${DOCKER_USERNAME}/${IMAGE_NAME}"
+GHCR_OWNER="${GHCR_OWNER:-auto-tournament}"
+GHCR_IMAGE="ghcr.io/${GHCR_OWNER}/auto-tournament"
+DOCKER_IMAGE_NEW="${DOCKER_USERNAME}/auto-tournament"
+RELEASE_IMAGES=("$GHCR_IMAGE" "$DOCKER_IMAGE_NEW" "$DOCKER_IMAGE")
 BUILDER_NAME="matchzy-release"
 REPO_OWNER="Auto-Tournament"
 REPO_NAME="auto-tournament"
+
+# stable publishes :X.Y.Z and :latest everywhere; beta publishes :X.Y.Z-beta.N
+# and :next everywhere, and never touches :latest or main's package.json.
+RELEASE_CHANNEL="${RELEASE_CHANNEL:-stable}"
+case "$RELEASE_CHANNEL" in
+    stable|beta) ;;
+    *)
+        echo -e "${RED}Invalid RELEASE_CHANNEL: ${RELEASE_CHANNEL} (must be stable or beta)${NC}"
+        exit 1
+        ;;
+esac
 
 echo -e "${GREEN}MatchZy Auto Tournament - Release${NC}"
 echo "========================================="
@@ -235,6 +256,29 @@ if [ "$RELEASE_SKIP_DOCKER_BUILD" != "true" ] && ! docker info | grep -q "Userna
     if [ $? -ne 0 ]; then
         echo -e "${RED}Failed to login to Docker Hub${NC}"
         exit 1
+    fi
+fi
+
+# Log in to GHCR for a local run (split-build/CI mode logs in via
+# docker/login-action with GITHUB_TOKEN before this script runs). This uses
+# the gh CLI's own token, so it only needs whatever scopes `gh auth login`
+# already has; it is not required to release — if it fails, the local run
+# just skips publishing the GHCR image and keeps publishing the two Docker
+# Hub ones, same as before this image was added.
+GHCR_LOGIN_OK=true
+if [ "$RELEASE_SKIP_DOCKER_BUILD" != "true" ]; then
+    if GH_CLI_TOKEN=$(gh auth token 2>/dev/null) && [ -n "$GH_CLI_TOKEN" ] && GH_CLI_USER=$(gh api user --jq .login 2>/dev/null); then
+        if echo "$GH_CLI_TOKEN" | docker login ghcr.io -u "$GH_CLI_USER" --password-stdin > /dev/null 2>&1; then
+            echo -e "${GREEN}✅ Logged in to ghcr.io as ${GH_CLI_USER}${NC}"
+        else
+            GHCR_LOGIN_OK=false
+        fi
+    else
+        GHCR_LOGIN_OK=false
+    fi
+    if [ "$GHCR_LOGIN_OK" != "true" ]; then
+        echo -e "${YELLOW}⚠️  Could not log in to ghcr.io (need a gh token with write:packages). Skipping ${GHCR_IMAGE}; publishing the Docker Hub images only.${NC}"
+        RELEASE_IMAGES=("$DOCKER_IMAGE_NEW" "$DOCKER_IMAGE")
     fi
 fi
 
@@ -449,8 +493,27 @@ case "$VERSION_CHOICE" in
         ;;
 esac
 
-# Validate version format (semver)
-if ! [[ "$NEW_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+# Beta channel: the actual version (X.Y.Z-beta.N) was computed once by the
+# Release workflow's `prepare` job and handed down as RELEASE_EXPECTED_VERSION.
+# bump_version above only knows plain X.Y.Z, so its result is discarded here
+# rather than trying to teach it prerelease math a second time.
+if [ "$RELEASE_CHANNEL" = "beta" ]; then
+    if [ -z "$RELEASE_EXPECTED_VERSION" ]; then
+        echo -e "${RED}RELEASE_CHANNEL=beta requires RELEASE_EXPECTED_VERSION (the workflow always sets this).${NC}"
+        exit 1
+    fi
+    NEW_VERSION="$RELEASE_EXPECTED_VERSION"
+    VERSION_TYPE="beta"
+fi
+
+# Validate version format (semver, optionally with a -beta.N prerelease suffix
+# on the beta channel).
+if [ "$RELEASE_CHANNEL" = "beta" ]; then
+    if ! [[ "$NEW_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-beta\.[0-9]+$ ]]; then
+        echo -e "${RED}Invalid beta version format: ${NEW_VERSION} (expected X.Y.Z-beta.N)${NC}"
+        exit 1
+    fi
+elif ! [[ "$NEW_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     echo -e "${RED}Invalid version format. Use semantic versioning (e.g., 1.0.0)${NC}"
     exit 1
 fi
@@ -754,8 +817,15 @@ echo ""
 
 VERSION_BUMPED=false
 
+# Beta channel never bumps main's package.json — the prerelease version only
+# ever lives in the image (baked in by the build job's ephemeral, uncommitted
+# workspace edit) and in the git tag. Committing "3.0.0-beta.1" to main would
+# make `bump_version` compute the next stable release from a prerelease
+# string and break the eventual 3.0.0 stable release.
+if [ "$RELEASE_CHANNEL" = "beta" ]; then
+    echo -e "${BLUE}Beta channel: not bumping package.json on main (current: ${CURRENT_VERSION}).${NC}"
 # Check if version actually needs to change
-if [ "$CURRENT_VERSION" = "$NEW_VERSION" ]; then
+elif [ "$CURRENT_VERSION" = "$NEW_VERSION" ]; then
     echo -e "${YELLOW}⚠️  Version is already ${NEW_VERSION}. Skipping version bump.${NC}"
 else
     # We're on main (default) or the release branch (RELEASE_BUMP_VIA_PR=true)
@@ -1153,26 +1223,41 @@ echo ""
 echo -e "${YELLOW}Step 9: Building and pushing Docker images...${NC}"
 echo ""
 
+# Floating tag: stable gets :latest, beta gets :next. Beta never touches
+# :latest, so `docker compose pull` on an existing stable install can never
+# pick up a prerelease.
+if [ "$RELEASE_CHANNEL" = "beta" ]; then
+    FLOATING_TAG="next"
+else
+    FLOATING_TAG="latest"
+fi
+
 VERIFY_IMAGES=true
 if [ "$RELEASE_SKIP_DOCKER_BUILD" = "true" ]; then
     # Split-build mode: each platform was built natively and pushed by digest
-    # (untagged). Publishing the release tags is just writing a manifest list
-    # that points at those digests; no image is rebuilt.
+    # to GHCR only (untagged). Publishing the release tags is just writing a
+    # manifest list that points at those digests for every target image —
+    # imagetools create can source a manifest from one registry and publish
+    # it to a completely different one, so the other two images (Docker Hub,
+    # new and legacy names) are populated without rebuilding or re-pushing
+    # any layer.
     BUILD_PLATFORMS="${BUILD_PLATFORMS:-linux/amd64,linux/arm64}"
     if [ -z "$RELEASE_IMAGE_DIGESTS" ]; then
         echo -e "${YELLOW}⚠️  RELEASE_SKIP_DOCKER_BUILD=true and no RELEASE_IMAGE_DIGESTS: no Docker images published${NC}"
         VERIFY_IMAGES=false
     else
-        echo -e "${BLUE}Creating ${DOCKER_IMAGE}:${NEW_VERSION} and :latest from:${NC}"
-        for ref in $RELEASE_IMAGE_DIGESTS; do echo "  ${ref}"; done
-        # shellcheck disable=SC2086 # one argument per digest
-        if ! docker buildx imagetools create \
-            --tag "${DOCKER_IMAGE}:${NEW_VERSION}" \
-            --tag "${DOCKER_IMAGE}:latest" \
-            $RELEASE_IMAGE_DIGESTS; then
-            echo -e "${RED}❌ Failed to create multi-arch image tags${NC}"
-            exit 1
-        fi
+        for image in "${RELEASE_IMAGES[@]}"; do
+            echo -e "${BLUE}Creating ${image}:${NEW_VERSION} and :${FLOATING_TAG} from:${NC}"
+            for ref in $RELEASE_IMAGE_DIGESTS; do echo "  ${ref}"; done
+            # shellcheck disable=SC2086 # one argument per digest
+            if ! docker buildx imagetools create \
+                --tag "${image}:${NEW_VERSION}" \
+                --tag "${image}:${FLOATING_TAG}" \
+                $RELEASE_IMAGE_DIGESTS; then
+                echo -e "${RED}❌ Failed to create multi-arch image tags for ${image}${NC}"
+                exit 1
+            fi
+        done
     fi
 else
     # Build both platforms by default (no prompt). Override via BUILD_PLATFORMS env if needed.
@@ -1240,12 +1325,21 @@ else
         echo -e "${GREEN}✅ Builder created${NC}"
     fi
 
+    # One buildx build, tagged for every target image (GHCR + both Docker Hub
+    # names, minus GHCR if the login above failed) and pushed to all of them
+    # at once — buildx pushes each --tag to whichever registry it names.
+    # Cache is still keyed off the legacy Docker Hub image so this doesn't
+    # need a GHCR-hosted cache to work.
+    BUILD_TAG_ARGS=()
+    for image in "${RELEASE_IMAGES[@]}"; do
+        BUILD_TAG_ARGS+=(--tag "${image}:${NEW_VERSION}" --tag "${image}:${FLOATING_TAG}")
+    done
+
     # Build with network host mode for better connectivity in ARM64 emulation
     docker buildx build \
         --platform "${BUILD_PLATFORMS}" \
         --file docker/Dockerfile \
-        --tag "${DOCKER_IMAGE}:${NEW_VERSION}" \
-        --tag "${DOCKER_IMAGE}:latest" \
+        "${BUILD_TAG_ARGS[@]}" \
         --push \
         --cache-from type=registry,ref="${DOCKER_IMAGE}:buildcache" \
         --cache-to type=registry,ref="${DOCKER_IMAGE}:buildcache,mode=max" \
@@ -1306,26 +1400,46 @@ if gh release view "v${NEW_VERSION}" --repo "${REPO_OWNER}/${REPO_NAME}" >/dev/n
     echo -e "${BLUE}Deleted existing GitHub release${NC}"
 fi
 
-RELEASE_BODY="## 🐳 Docker Release v${NEW_VERSION}
+IMAGE_LIST_LINES=""
+FLOATING_LIST_LINES=""
+for image in "${RELEASE_IMAGES[@]}"; do
+    IMAGE_LIST_LINES="${IMAGE_LIST_LINES}- \`${image}:${NEW_VERSION}\`
+"
+    FLOATING_LIST_LINES="${FLOATING_LIST_LINES}- \`${image}:${FLOATING_TAG}\`
+"
+done
+# First image actually published in this run (GHCR unless its login failed
+# locally, in which case RELEASE_IMAGES only has the two Docker Hub names).
+PRIMARY_IMAGE="${RELEASE_IMAGES[0]}"
 
+if [ "$RELEASE_CHANNEL" = "beta" ]; then
+    RELEASE_HEADING="## 🧪 Beta Release v${NEW_VERSION}"
+    RELEASE_NOTE="This is a **prerelease/beta build**, tagged \`:${FLOATING_TAG}\` (never \`:latest\`). It is not installed by \`docker compose pull\` on a stable install."
+else
+    RELEASE_HEADING="## 🐳 Docker Release v${NEW_VERSION}"
+    RELEASE_NOTE=""
+fi
+
+RELEASE_BODY="${RELEASE_HEADING}
+
+${RELEASE_NOTE}
 ### Changelog
 
 ${CHANGELOG}
 
 ### Docker Images
 
-- \`${DOCKER_IMAGE}:${NEW_VERSION}\`
-- \`${DOCKER_IMAGE}:latest\`
-
+${IMAGE_LIST_LINES}${FLOATING_LIST_LINES}
 ### Pull Command
 
 \`\`\`bash
-docker pull ${DOCKER_IMAGE}:${NEW_VERSION}
+docker pull ${PRIMARY_IMAGE}:${NEW_VERSION}
 \`\`\`
 
-### Docker Hub
+### Docker Hub / GHCR
 
-https://hub.docker.com/r/${DOCKER_USERNAME}/${IMAGE_NAME}
+- https://hub.docker.com/r/${DOCKER_USERNAME}/auto-tournament
+- https://github.com/orgs/${REPO_OWNER}/packages/container/package/auto-tournament
 
 ### Platforms
 
@@ -1338,12 +1452,14 @@ https://hub.docker.com/r/${DOCKER_USERNAME}/${IMAGE_NAME}
 docker compose -f docker/docker-compose.yml up -d
 \`\`\`
 
-See [Getting Started Guide](https://docs.sivert.io/docs/mat/quick-start) for full setup instructions."
+See [Getting Started Guide](https://docs.autotournament.gg) for full setup instructions."
 
-gh release create "v${NEW_VERSION}" \
-    --title "Release v${NEW_VERSION}" \
-    --notes "$RELEASE_BODY" \
-    --repo "${REPO_OWNER}/${REPO_NAME}"
+GH_RELEASE_ARGS=(--title "Release v${NEW_VERSION}" --notes "$RELEASE_BODY" --repo "${REPO_OWNER}/${REPO_NAME}")
+if [ "$RELEASE_CHANNEL" = "beta" ]; then
+    GH_RELEASE_ARGS+=(--prerelease)
+fi
+
+gh release create "v${NEW_VERSION}" "${GH_RELEASE_ARGS[@]}"
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✅ GitHub release created${NC}"
@@ -1352,15 +1468,23 @@ else
 fi
 
 # Step 11: Send Discord webhook notification
+#
+# Betas skip this entirely rather than post to the same channel regular
+# users watch for stable releases. discord-webhook.sh also only understands
+# plain X.Y.Z versions, so a beta string would fail its format check anyway.
 echo ""
-echo -e "${YELLOW}Step 11: Sending Discord release notification...${NC}"
+if [ "$RELEASE_CHANNEL" = "beta" ]; then
+    echo -e "${YELLOW}Step 11: Skipping Discord notification (beta channel)${NC}"
+else
+    echo -e "${YELLOW}Step 11: Sending Discord release notification...${NC}"
 
-# Call the standalone Discord webhook script
-# Use SCRIPT_DIR that was set at the top of the script (before cd to PROJECT_ROOT)
-"${SCRIPT_DIR}/discord-webhook.sh" "${NEW_VERSION}"
+    # Call the standalone Discord webhook script
+    # Use SCRIPT_DIR that was set at the top of the script (before cd to PROJECT_ROOT)
+    "${SCRIPT_DIR}/discord-webhook.sh" "${NEW_VERSION}"
 
-if [ $? -ne 0 ]; then
-    echo -e "${YELLOW}⚠️  Discord webhook failed, but release completed successfully${NC}"
+    if [ $? -ne 0 ]; then
+        echo -e "${YELLOW}⚠️  Discord webhook failed, but release completed successfully${NC}"
+    fi
 fi
 
 # Summary
@@ -1372,13 +1496,16 @@ echo -e "${GREEN}Release Summary${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 echo "Version: ${NEW_VERSION}"
+echo "Channel: ${RELEASE_CHANNEL}"
 echo "Git Tag: v${NEW_VERSION}"
 echo "Docker Images:"
-echo -e "  ${GREEN}${DOCKER_IMAGE}:${NEW_VERSION}${NC}"
-echo -e "  ${GREEN}${DOCKER_IMAGE}:latest${NC}"
+for image in "${RELEASE_IMAGES[@]}"; do
+    echo -e "  ${GREEN}${image}:${NEW_VERSION}${NC}"
+    echo -e "  ${GREEN}${image}:${FLOATING_TAG}${NC}"
+done
 echo ""
 echo "GitHub Release: https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/tag/v${NEW_VERSION}"
-echo "Docker Hub: https://hub.docker.com/r/${DOCKER_USERNAME}/${IMAGE_NAME}"
+echo "Docker Hub: https://hub.docker.com/r/${DOCKER_USERNAME}/auto-tournament"
 echo ""
 echo -e "${GREEN}✨ Release complete!${NC}"
 echo ""

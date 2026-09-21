@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       release_type:
-        description: Release type
+        description: Release type (bump applied to package.json's current version; on the beta channel this only picks the *target* version, e.g. major -> 3.0.0-beta.N)
         required: true
         default: patch
         type: choice
@@ -12,9 +12,18 @@ on:
           - patch
           - minor
           - major
+      channel:
+        description: Release channel
+        required: true
+        default: stable
+        type: choice
+        options:
+          - stable
+          - beta
 
 # contents: write covers pushing the bump commit to main, the tag and the
-# GitHub release. No pull-requests permission: the bump no longer goes via a PR.
+# GitHub release. packages: write covers pushing to ghcr.io/auto-tournament.
+# No pull-requests permission: the bump no longer goes via a PR.
 permissions:
   contents: write
   packages: write
@@ -25,20 +34,33 @@ concurrency:
 
 # Required secrets:
 # - DISCORD_WEBHOOK_URL: Discord incoming webhook URL used by scripts/discord-webhook.sh
+#   (stable channel only; the beta channel skips the Discord post)
 # - DOCKER_USERNAME: Docker Hub username used for docker login and image naming
 # - DOCKER_PASSWORD: Docker Hub access token/password for docker login
 # Optional secret:
 # - RELEASE_GITHUB_TOKEN: PAT with repo permissions for the bump push, tags and release
 #   If omitted, workflow falls back to the auto-generated github.token.
 #
+# Images published, same build for all three:
+#   - ghcr.io/auto-tournament/auto-tournament   (primary, pushed with GITHUB_TOKEN)
+#   - <DOCKER_USERNAME>/auto-tournament         (Docker Hub mirror, new name)
+#   - <DOCKER_USERNAME>/matchzy-auto-tournament (Docker Hub, old name, kept for
+#     existing installs that still pull it)
+# Stable tags each as :X.Y.Z and :latest. Beta tags each as :X.Y.Z-beta.N and
+# :next — never :latest, so an existing stable install's `docker compose pull`
+# can never pick up a prerelease.
+#
 # Flow (nothing public changes until the last job):
-#   prepare  -> work out the new version from package.json. No commits.
+#   prepare  -> work out the new version from package.json (stable), or the
+#               next X.Y.Z-beta.N for that same target (beta). No commits.
 #   build    -> one native runner per platform (no QEMU) builds the image with
-#               the bumped version applied in its workspace and pushes it to
-#               Docker Hub by digest only. No tags are created.
-#   release  -> scripts/release.sh: commit the version bump on main and push
-#               it (fast-forward), tag, then the :X.Y.Z / :latest manifest
-#               from the digests, GitHub release, Discord. It aborts before
+#               that exact version applied in its workspace and pushes it to
+#               ghcr.io by digest only. No tags are created.
+#   release  -> scripts/release.sh: on stable, commit the version bump on main
+#               and push it (fast-forward); on beta, main's package.json is
+#               never touched. Then tag, the :X.Y.Z / floating-tag manifest
+#               for all three images from the digests, GitHub release
+#               (prerelease on beta), Discord (stable only). It aborts before
 #               pushing anything if main moved or the version changed since
 #               prepare, and before tagging if main moves under the bump push.
 #
@@ -71,16 +93,24 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: Compute version
         id: version
         shell: bash
         env:
           RELEASE_TYPE: ${{ inputs.release_type }}
+          RELEASE_CHANNEL: ${{ inputs.channel }}
         run: |
           set -euo pipefail
-          version=$(bash scripts/release-version.sh "$RELEASE_TYPE")
-          echo "Releasing ${version} from ${GITHUB_SHA}"
+          if [ "$RELEASE_CHANNEL" = "beta" ]; then
+            version=$(bash scripts/release-version.sh "$RELEASE_TYPE" --beta)
+          else
+            version=$(bash scripts/release-version.sh "$RELEASE_TYPE")
+          fi
+          echo "Releasing ${version} (${RELEASE_CHANNEL}) from ${GITHUB_SHA}"
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "sha=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
 
@@ -113,16 +143,19 @@ jobs:
 
       # The version is baked into the image (root package.json is copied in and
       # the client bundle embeds client/package.json's version), so apply the
-      # bump here without committing. release.sh makes the same edit on
-      # main and refuses to continue if the version differs.
-      - name: Apply version bump to workspace
+      # bump here without committing. This writes the *exact* version `prepare`
+      # already computed (release-version.sh takes it as a literal X.Y.Z or
+      # X.Y.Z-beta.N when given one), rather than recomputing a beta number a
+      # second time against tags that could have moved between the two jobs.
+      # release.sh makes the same edit on main (stable only) and refuses to
+      # continue if the version differs.
+      - name: Apply version to workspace
         shell: bash
         env:
           EXPECTED_VERSION: ${{ needs.prepare.outputs.version }}
-          RELEASE_TYPE: ${{ inputs.release_type }}
         run: |
           set -euo pipefail
-          version=$(bash scripts/release-version.sh "$RELEASE_TYPE" --apply)
+          version=$(bash scripts/release-version.sh "$EXPECTED_VERSION" --apply)
           if [ "$version" != "$EXPECTED_VERSION" ]; then
             echo "Version mismatch: prepare computed ${EXPECTED_VERSION}, build got ${version}" >&2
             exit 1
@@ -132,14 +165,17 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to Docker Hub
+      - name: Login to GHCR
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Pushed by digest only: the image is in the repository but no tag points
-      # at it until the release job writes the manifest.
+      # Pushed by digest only, to the primary (GHCR) image: it is in the
+      # repository but no tag points at it until the release job writes the
+      # manifest — for all three images, not just this one (imagetools create
+      # can source a manifest from one registry and publish it to another).
       - name: Build and push by digest
         id: build
         uses: docker/build-push-action@v6
@@ -147,7 +183,7 @@ jobs:
           context: .
           file: docker/Dockerfile
           platforms: ${{ matrix.platform }}
-          outputs: type=image,name=${{ secrets.DOCKER_USERNAME }}/matchzy-auto-tournament,push-by-digest=true,name-canonical=true,push=true
+          outputs: type=image,name=ghcr.io/auto-tournament/auto-tournament,push-by-digest=true,name-canonical=true,push=true
           cache-from: type=gha,scope=release-${{ matrix.arch }}
           cache-to: type=gha,scope=release-${{ matrix.arch }},mode=max
 
@@ -178,6 +214,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN || github.token }}
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      RELEASE_CHANNEL: ${{ inputs.channel }}
       RELEASE_NON_INTERACTIVE: "true"
       RELEASE_RUN_TESTS: "false"
       RELEASE_SKIP_DOCKER_BUILD: "true"
@@ -226,13 +263,22 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Run release script
         shell: bash
         env:
           RELEASE_TYPE: ${{ inputs.release_type }}
         run: |
           set -euo pipefail
-          image="${DOCKER_USERNAME}/matchzy-auto-tournament"
+          # The build job pushed by digest to GHCR only; release.sh fans the
+          # same digests out to the other two images via imagetools create.
+          image="ghcr.io/auto-tournament/auto-tournament"
           refs=()
           for f in "${RUNNER_TEMP}"/digests/*; do
             refs+=("${image}@sha256:$(basename "$f")")
