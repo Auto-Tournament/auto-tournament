@@ -349,6 +349,9 @@
       "eloDefaultSuffix": "(standard)",
       "eloTemplateHelper": "Pure Win/Loss (standard): bare kampresultatet påvirker ELO. Spillerstatistikk registreres fortsatt til ledertavler og eksport, men endrer ikke ratingen med mindre du velger en egen mal."
     },
+    "shuffleStats": {
+      "serverShortageWarning": "Du har {{available}} av {{needed}} servere. Kamper kjøres i bølger, så rundene tar lengre tid."
+    },
     "changePreview": {
       "title": "Gå gjennom turneringsendringene",
       "liveHeading": "Turneringen er I GANG!",

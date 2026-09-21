@@ -57,7 +57,7 @@ export function TournamentFormatStep({
                   transition: 'border-color 0.2s, background-color 0.2s',
                   '&:hover': {
                     transform: 'translateY(-2px)',
-                    boxShadow: 4,
+                    boxShadow: (theme) => `0 24px 60px -30px ${theme.palette.primary.main}`,
                     borderColor: isSelected ? 'primary.main' : 'divider',
                   },
                   opacity: !canEdit || saving ? 0.6 : 1,

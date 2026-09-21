@@ -232,7 +232,7 @@ async function preflightServersUpToDateForTournamentStart(): Promise<
  *     tags:
  *       - Tournament
  *     summary: Get tournament leaderboard (public)
- *     description: Public endpoint to get tournament leaderboard and current round status. No authentication required. For Swiss tournaments `teams` is in server standings order (wins, losses, Buchholz, round differential, seed) and each entry carries `rank`, `buchholz` and `roundDiff`.
+ *     description: Public endpoint to get tournament leaderboard and current round status. No authentication required. For Swiss tournaments `teams` is in server standings order (wins, losses, Buchholz, round differential, seed) and each entry carries `rank`, `buchholz` and `roundDiff`. Round robin `teams` is in server standings order too (wins, head-to-head, round differential, rounds won, seed) with `rank` and `roundDiff`.
  *     parameters:
  *       - in: path
  *         name: id
@@ -671,7 +671,7 @@ router.delete('/', async (_req: Request, res: Response) => {
  *     tags:
  *       - Tournament
  *     summary: Get tournament bracket
- *     description: Returns the tournament bracket with all matches. Swiss tournaments also get `swissStandings` - the standings the round pairing uses (wins, losses, Buchholz, round differential, then seed), best first.
+ *     description: Returns the tournament bracket with all matches. Swiss tournaments also get `swissStandings` - the standings the round pairing uses (wins, losses, Buchholz, round differential, then seed), best first. Round robin tournaments get `roundRobinStandings` (wins, head-to-head, round differential, rounds won, then seed), best first; the top team is the champion.
  *     security:
  *       - BearerAuth: []
  *     responses:

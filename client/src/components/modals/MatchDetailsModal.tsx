@@ -62,6 +62,7 @@ import {
   deriveCurrentMapScore,
   deriveSeriesScore,
 } from '../../utils/matchScoreDisplay';
+import { tokens, withAlpha } from '../../theme/tokens';
 
 interface MatchDetailsModalProps {
   match: Match | null;
@@ -1099,17 +1100,17 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                             position: 'absolute',
                             inset: 0,
                             background:
-                              'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)',
+                              `linear-gradient(to top, ${withAlpha(tokens.color.paper, 0.85)} 0%, transparent 100%)`,
                           }}
                         />
                       </FadeInImage>
                     )}
                     <Box sx={{ position: 'relative', p: 2, width: '100%' }}>
-                      <Typography variant="h4" fontWeight={700} color="white">
+                      <Typography variant="h4" fontWeight={700} color="text.primary">
                         {currentMapLabel || 'TBD'}
                       </Typography>
                       {activeMapNumber !== null && totalMapCount && totalMapCount > 1 && (
-                        <Typography variant="body2" color="rgba(255,255,255,0.7)">
+                        <Typography variant="body2" color="text.secondary">
                           Map {Math.min(activeMapNumber + 1, totalMapCount)} of {totalMapCount}
                         </Typography>
                       )}

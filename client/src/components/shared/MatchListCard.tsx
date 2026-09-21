@@ -177,9 +177,9 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
     // Bracket list view server status accents:
     // - allocated (serverId set, not yet loaded/live/completed) => yellow
     // - loaded (warmup) => blue
-    // - live  => red
+    // - live  => brand orange (as the live match in the bracket)
     // - completed or upcoming (no server) => no colored border
-    if (match.status === 'live') return 'error.main';
+    if (match.status === 'live') return 'primary.main';
     if (match.status === 'loaded') return 'info.main';
     if (match.serverId && match.status !== 'completed') return 'warning.main';
     return 'transparent';
@@ -196,7 +196,7 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
         '&:hover': onClick
           ? {
               transform: 'translateY(-2px)',
-              boxShadow: 4,
+              boxShadow: (theme) => `0 16px 40px -24px ${theme.palette.primary.main}`,
             }
           : {},
       }}
@@ -261,7 +261,7 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
                   variant="body2"
                   noWrap
                   sx={{
-                    color: winnerSide === 'team1' ? 'success.main' : 'text.secondary',
+                    color: winnerSide === 'team1' ? 'primary.main' : 'text.secondary',
                     fontWeight: winnerSide === 'team1' ? 600 : 500,
                   }}
                   onClick={(e) => e.stopPropagation()}
@@ -296,7 +296,7 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
                   variant="body2"
                   noWrap
                   sx={{
-                    color: winnerSide === 'team2' ? 'success.main' : 'text.secondary',
+                    color: winnerSide === 'team2' ? 'primary.main' : 'text.secondary',
                     fontWeight: winnerSide === 'team2' ? 600 : 500,
                   }}
                   onClick={(e) => e.stopPropagation()}

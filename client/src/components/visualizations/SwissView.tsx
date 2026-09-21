@@ -22,6 +22,7 @@ import type { Match, MatchLiveStats, SwissStanding, Team } from '../../types';
 import { deriveSeriesScore } from '../../utils/matchScoreDisplay';
 import { TeamNameLink } from '../team/TeamNameLink';
 import { useTranslation } from 'react-i18next';
+import { tokens, mono, withAlpha } from '../../theme/tokens';
 
 interface SwissViewProps {
   matches: Match[];
@@ -98,12 +99,14 @@ export default function SwissView({
                       <TableRow
                         key={record.teamId}
                         sx={{
+                          // Top two advance (green wash), next two are close (faint wash).
                           bgcolor:
                             index < 2
-                              ? 'success.main'
+                              ? withAlpha(tokens.color.live, 0.12)
                               : index < 4
-                              ? 'action.selected'
+                              ? tokens.color.paper3
                               : 'transparent',
+                          boxShadow: index < 2 ? `inset 3px 0 0 ${tokens.color.live}` : 'none',
                           opacity: index < 4 ? 1 : 0.7,
                         }}
                       >
@@ -121,7 +124,7 @@ export default function SwissView({
                           />
                         </TableCell>
                         <TableCell align="center">
-                          <Typography variant="body2" fontWeight={600}>
+                          <Typography variant="body2" fontWeight={600} sx={mono}>
                             {record.wins}-{record.losses}
                           </Typography>
                         </TableCell>
@@ -196,11 +199,13 @@ export default function SwissView({
                             variant="outlined"
                             sx={{
                               cursor: onMatchClick ? 'pointer' : 'default',
-                              transition: 'all 0.2s',
+                              bgcolor: tokens.color.paper3,
+                              borderColor: 'transparent',
+                              borderRadius: `${tokens.radius.sm}px`,
                               '&:hover': onMatchClick
                                 ? {
                                     transform: 'translateY(-2px)',
-                                    boxShadow: 2,
+                                    boxShadow: `0 16px 40px -20px ${tokens.color.accent}`,
                                   }
                                 : {},
                             }}
@@ -217,7 +222,7 @@ export default function SwissView({
                                     {match.team1?.name || 'TBD'}
                                   </Typography>
                                   {left !== null ? (
-                                    <Typography variant="body2" fontWeight={600}>
+                                    <Typography variant="body2" fontWeight={600} sx={mono}>
                                       {left}
                                     </Typography>
                                   ) : (
@@ -241,7 +246,7 @@ export default function SwissView({
                                   flex={1}
                                 >
                                   {right !== null ? (
-                                    <Typography variant="body2" fontWeight={600}>
+                                    <Typography variant="body2" fontWeight={600} sx={mono}>
                                       {right}
                                     </Typography>
                                   ) : (

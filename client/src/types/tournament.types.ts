@@ -60,11 +60,22 @@ export interface SwissStanding {
   byes: number;
 }
 
+/** Round robin standings from the server: wins, head-to-head, round difference, rounds won, seed. */
+export interface RoundRobinStanding {
+  rank: number;
+  teamId: string;
+  wins: number;
+  losses: number;
+  roundDiff: number;
+  roundsWon: number;
+}
+
 export interface BracketData {
   tournament: Tournament;
   matches: unknown[]; // Avoid circular dependency, use Match type in actual usage
   totalRounds: number;
   swissStandings?: SwissStanding[];
+  roundRobinStandings?: RoundRobinStanding[];
 }
 
 export interface TournamentTemplate {

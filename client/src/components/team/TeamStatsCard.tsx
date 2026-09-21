@@ -1,7 +1,9 @@
-import { Box, Card, CardContent, Typography, Grid, Paper } from '@mui/material';
+import { Box, Card, CardContent, Typography } from '@mui/material';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 import { useTranslation } from 'react-i18next';
 import type { TeamStats, TeamStanding } from '../../types';
+import { StatTile } from '../common/ui';
+import { tokens } from '../../theme/tokens';
 
 interface TeamStatsCardProps {
   stats: TeamStats | null;
@@ -24,50 +26,24 @@ export function TeamStatsCard({ stats, standing }: TeamStatsCardProps) {
             {t('teamStatsCard.title')}
           </Typography>
         </Box>
-        <Grid container spacing={2}>
-          <Grid size={{ xs: 6, sm: 3 }}>
-            <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
-              <Typography variant="h4" fontWeight={700} color="primary">
-                {stats.wins}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {t('teamStatsCard.wins')}
-              </Typography>
-            </Paper>
-          </Grid>
-          <Grid size={{ xs: 6, sm: 3 }}>
-            <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
-              <Typography variant="h4" fontWeight={700} color="error">
-                {stats.losses}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {t('teamStatsCard.losses')}
-              </Typography>
-            </Paper>
-          </Grid>
-          <Grid size={{ xs: 6, sm: 3 }}>
-            <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
-              <Typography variant="h4" fontWeight={700} color="success.main">
-                {stats.winRate}%
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {t('teamStatsCard.winRate')}
-              </Typography>
-            </Paper>
-          </Grid>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', sm: 'repeat(4, minmax(0, 1fr))' },
+            gap: 1,
+          }}
+        >
+          <StatTile size="lg" value={stats.wins} label={t('teamStatsCard.wins')} accent={tokens.color.live} />
+          <StatTile size="lg" value={stats.losses} label={t('teamStatsCard.losses')} accent={tokens.color.ban} />
+          <StatTile size="lg" value={`${stats.winRate}%`} label={t('teamStatsCard.winRate')} />
           {standing && (
-            <Grid size={{ xs: 6, sm: 3 }}>
-              <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
-                <Typography variant="h4" fontWeight={700}>
-                  #{standing.position}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {t('teamStatsCard.ofTotal', { total: standing.totalTeams })}
-                </Typography>
-              </Paper>
-            </Grid>
+            <StatTile
+              size="lg"
+              value={`#${standing.position}`}
+              label={t('teamStatsCard.ofTotal', { total: standing.totalTeams })}
+            />
           )}
-        </Grid>
+        </Box>
       </CardContent>
     </Card>
   );

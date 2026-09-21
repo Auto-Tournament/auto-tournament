@@ -328,15 +328,14 @@ export default function Players() {
                   sx={{
                     cursor: 'pointer',
                     transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
-                    border: selectedPlayerIds.has(player.id) ? 2 : 0,
-                    borderRadius: 2,
+                    border: selectedPlayerIds.has(player.id) ? 2 : 1,
                     borderStyle: 'solid',
                     borderColor: selectedPlayerIds.has(player.id)
                       ? 'primary.main'
-                      : 'transparent',
+                      : 'divider',
                     '&:hover': {
                       transform: 'translateY(-4px)',
-                      boxShadow: 6,
+                      boxShadow: (theme) => `0 24px 60px -30px ${theme.palette.primary.main}`,
                     },
                   }}
                   onClick={() => {

@@ -235,12 +235,24 @@ export interface SwissStandingEntry {
   byes: number;
 }
 
+/** Round robin standings row: wins, head-to-head, round difference, rounds won, seed. */
+export interface RoundRobinStandingEntry {
+  rank: number;
+  teamId: string;
+  wins: number;
+  losses: number;
+  /** Rounds won minus rounds lost over all maps. */
+  roundDiff: number;
+  roundsWon: number;
+}
+
 export interface BracketResponse {
   tournament: TournamentResponse;
   matches: BracketMatch[];
   totalRounds: number;
   /** Swiss tournaments only: server standings, best first. */
   swissStandings?: SwissStandingEntry[];
+  roundRobinStandings?: RoundRobinStandingEntry[];
 }
 
 export interface TournamentTemplate {

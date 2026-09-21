@@ -16,6 +16,7 @@ import { getMapData, getMapDisplayName } from '../../constants/maps';
 import { formatDuration } from '../../utils/matchUtils';
 import type { MatchMapResult } from '../../types';
 import { FadeInImage } from '../common/FadeInImage';
+import { tokens, withAlpha } from '../../theme/tokens';
 
 interface MapAccordionProps {
   mapNumber: number;
@@ -189,11 +190,11 @@ export function MapAccordion({
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)',
+                  background: `linear-gradient(to top, ${withAlpha(tokens.color.paper, 0.85)} 0%, transparent 100%)`,
                   p: 2,
                 }}
               >
-                <Typography variant="h6" fontWeight={700} color="white">
+                <Typography variant="h6" color="text.primary">
                   {displayName}
                 </Typography>
               </Box>

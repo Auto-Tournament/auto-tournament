@@ -344,7 +344,8 @@
       "noMapToPickSide": "Ingen kart å velge side for",
       "matchNotFound": "Kampen ble ikke funnet",
       "unauthorized": "Bare spillere på ett av de to deltakende lagene kan utføre veto-handlinger for denne kampen."
-    }
+    },
+    "decider": "Avgjørende kart"
   },
   "discordId": {
     "noDiscord": "Ingen Discord",

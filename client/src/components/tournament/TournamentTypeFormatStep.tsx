@@ -62,7 +62,7 @@ export function TournamentTypeFormatStep({
                         transition: 'all 0.2s',
                         '&:hover': {
                           transform: 'translateY(-2px)',
-                          boxShadow: 4,
+                          boxShadow: (theme) => `0 24px 60px -30px ${theme.palette.primary.main}`,
                         },
                         opacity: !canEdit || saving ? 0.6 : 1,
                         cursor: !canEdit || saving ? 'not-allowed' : 'pointer',

@@ -46,6 +46,7 @@ export default function Bracket() {
     matches,
     totalRounds,
     swissStandings,
+    roundRobinStandings,
     // starting handled by StartTournamentButton
     loadBracket,
   } = useBracket();
@@ -503,7 +504,8 @@ export default function Bracket() {
       ref={fullscreenRef}
       data-testid="bracket-page"
       sx={{
-        bgcolor: 'background.default',
+        // Opaque only in fullscreen; otherwise the page sits on the body blooms.
+        bgcolor: isFullscreen ? 'background.default' : 'transparent',
         minHeight: '100vh',
         position: 'relative',
         height: isFullscreen ? '100vh' : 'auto',
@@ -607,14 +609,14 @@ export default function Bracket() {
             top: 16,
             right: 16,
             zIndex: 1000,
-            bgcolor: 'rgba(42, 42, 42, 0.95)',
+            bgcolor: 'background.surface2',
             backdropFilter: 'blur(10px)',
-            boxShadow: 3,
-            color: '#e0e0e0',
-            border: '1px solid #555',
+            color: 'text.primary',
+            border: 1,
+            borderColor: 'divider',
             '&:hover': {
-              bgcolor: 'rgba(58, 58, 58, 1)',
-              color: '#ffffff',
+              bgcolor: 'background.surface2',
+              borderColor: 'text.disabled',
             },
           }}
           title={t('bracket.view.exitFullscreen')}
@@ -690,6 +692,7 @@ export default function Bracket() {
             <BracketsViewerVisualization
               matches={matches}
               tournamentType={tournament.type}
+              rankingTeamIds={roundRobinStandings.map((s) => s.teamId)}
               isFullscreen={isFullscreen}
               onMatchClick={handleMatchClick}
             />

@@ -2,133 +2,91 @@ import type {
   AuthProviderConfig,
   DiscordAuthProviderConfig,
   GitHubAuthProviderConfig,
+  GoogleAuthProviderConfig,
   KeycloakAuthProviderConfig,
   SteamAuthProviderConfig,
 } from '../types/auth.types';
 
+/** True when the env var is set to 1/true/yes (case-insensitive). */
+function isEnvFlagOn(name: string): boolean {
+  const value = process.env[name]?.trim().toLowerCase();
+  return value === '1' || value === 'true' || value === 'yes';
+}
+
+/** Trimmed env var, or undefined when unset or blank. */
+function envValue(name: string): string | undefined {
+  const value = process.env[name]?.trim();
+  return value && value.length > 0 ? value : undefined;
+}
+
+/**
+ * A plain OAuth2 provider (Discord, GitHub, Google) is listed when
+ * AUTH_<PROVIDER>_ENABLED is on and both <PROVIDER>_CLIENT_ID and
+ * <PROVIDER>_CLIENT_SECRET are set. Passport only registers the strategy when
+ * both are set (config/passport.ts), so listing it without the secret would
+ * show a button that cannot work.
+ */
+function isOAuthProviderConfigured(provider: 'discord' | 'github' | 'google'): boolean {
+  const prefix = provider.toUpperCase();
+  return (
+    isEnvFlagOn(`AUTH_${prefix}_ENABLED`) &&
+    !!envValue(`${prefix}_CLIENT_ID`) &&
+    !!envValue(`${prefix}_CLIENT_SECRET`)
+  );
+}
+
 /**
  * Build the list of configured auth providers based on environment variables.
  *
- * This is intentionally conservative: it only exposes **public metadata**
- * (labels, login URLs, issuer URLs) – secrets like client secrets stay on the
- * server and will be wired into Passport/OIDC flows later.
+ * This only exposes **public metadata** (labels, login URLs, issuer URLs).
+ * Client secrets stay on the server.
  */
 export function getAuthProvidersConfig(): AuthProviderConfig[] {
   const providers: AuthProviderConfig[] = [];
 
   // Steam – Passport/OpenID flow used for player convenience login and admin identity.
-  const steamEnabledEnv = process.env.AUTH_STEAM_ENABLED;
-  const steamApiKey = process.env.STEAM_API_KEY;
-  const steamEnvEnabled =
-    !steamEnabledEnv ||
-    steamEnabledEnv.toLowerCase() === '1' ||
-    steamEnabledEnv.toLowerCase() === 'true' ||
-    steamEnabledEnv.toLowerCase() === 'yes';
-  const steamEnabled =
-    steamEnvEnabled &&
-    !!steamApiKey &&
-    steamApiKey.trim().length > 0;
-
+  // Unlike the others, Steam is on unless AUTH_STEAM_ENABLED says otherwise.
+  const steamEnvEnabled = !process.env.AUTH_STEAM_ENABLED || isEnvFlagOn('AUTH_STEAM_ENABLED');
   const steamProvider: SteamAuthProviderConfig = {
     id: 'steam',
     kind: 'steam-openid',
     label: 'Steam',
     loginUrl: '/api/auth/steam',
-    enabled: steamEnabled,
+    enabled: steamEnvEnabled && !!envValue('STEAM_API_KEY'),
   };
-
   providers.push(steamProvider);
 
-  // Keycloak – planned OIDC provider for admin/SSO style logins.
-  const keycloakEnabledEnv = process.env.AUTH_KEYCLOAK_ENABLED;
-  const keycloakEnabled =
-    keycloakEnabledEnv &&
-    (keycloakEnabledEnv.toLowerCase() === '1' ||
-      keycloakEnabledEnv.toLowerCase() === 'true' ||
-      keycloakEnabledEnv.toLowerCase() === 'yes');
-
-  const keycloakIssuerUrl = process.env.KEYCLOAK_ISSUER_URL;
-
-  if (keycloakEnabled && keycloakIssuerUrl && keycloakIssuerUrl.trim().length > 0) {
-    const keycloakLabelEnv = process.env.AUTH_KEYCLOAK_LABEL;
-    const keycloakLabel =
-      keycloakLabelEnv && keycloakLabelEnv.trim().length > 0
-        ? keycloakLabelEnv.trim()
-        : 'Keycloak';
-
-    const keycloakButtonLabelEnv = process.env.AUTH_KEYCLOAK_BUTTON_LABEL;
-    const keycloakButtonLabel =
-      keycloakButtonLabelEnv && keycloakButtonLabelEnv.trim().length > 0
-        ? keycloakButtonLabelEnv.trim()
-        : undefined;
-
-    const keycloakButtonBgColorEnv = process.env.AUTH_KEYCLOAK_BUTTON_BG_COLOR;
-    const keycloakButtonBgColor =
-      keycloakButtonBgColorEnv && keycloakButtonBgColorEnv.trim().length > 0
-        ? keycloakButtonBgColorEnv.trim()
-        : undefined;
-
-    const keycloakButtonTextColorEnv = process.env.AUTH_KEYCLOAK_BUTTON_TEXT_COLOR;
-    const keycloakButtonTextColor =
-      keycloakButtonTextColorEnv && keycloakButtonTextColorEnv.trim().length > 0
-        ? keycloakButtonTextColorEnv.trim()
-        : undefined;
-
-    const keycloakButtonHoverBgColorEnv = process.env.AUTH_KEYCLOAK_BUTTON_HOVER_BG_COLOR;
-    const keycloakButtonHoverBgColor =
-      keycloakButtonHoverBgColorEnv && keycloakButtonHoverBgColorEnv.trim().length > 0
-        ? keycloakButtonHoverBgColorEnv.trim()
-        : undefined;
-
+  // Keycloak – OIDC provider for admin/SSO style logins.
+  const keycloakIssuerUrl = envValue('KEYCLOAK_ISSUER_URL');
+  if (isEnvFlagOn('AUTH_KEYCLOAK_ENABLED') && keycloakIssuerUrl) {
     const keycloakProvider: KeycloakAuthProviderConfig = {
       id: 'keycloak',
       kind: 'oidc',
-      label: keycloakLabel,
+      label: envValue('AUTH_KEYCLOAK_LABEL') ?? 'Keycloak',
       loginUrl: '/api/auth/keycloak',
       enabled: true,
-      issuerUrl: keycloakIssuerUrl.trim(),
-      buttonLabel: keycloakButtonLabel,
-      buttonBgColor: keycloakButtonBgColor,
-      buttonTextColor: keycloakButtonTextColor,
-      buttonHoverBgColor: keycloakButtonHoverBgColor,
+      issuerUrl: keycloakIssuerUrl,
+      buttonLabel: envValue('AUTH_KEYCLOAK_BUTTON_LABEL'),
+      buttonBgColor: envValue('AUTH_KEYCLOAK_BUTTON_BG_COLOR'),
+      buttonTextColor: envValue('AUTH_KEYCLOAK_BUTTON_TEXT_COLOR'),
+      buttonHoverBgColor: envValue('AUTH_KEYCLOAK_BUTTON_HOVER_BG_COLOR'),
     };
-
     providers.push(keycloakProvider);
   }
 
-  // Discord – OAuth2 provider primarily for community/admin workflows.
-  const discordEnabledEnv = process.env.AUTH_DISCORD_ENABLED;
-  const discordEnabled =
-    discordEnabledEnv &&
-    (discordEnabledEnv.toLowerCase() === '1' ||
-      discordEnabledEnv.toLowerCase() === 'true' ||
-      discordEnabledEnv.toLowerCase() === 'yes');
-
-  const discordClientId = process.env.DISCORD_CLIENT_ID;
-
-  if (discordEnabled && discordClientId && discordClientId.trim().length > 0) {
+  // Discord, GitHub, Google – plain OAuth2 providers.
+  if (isOAuthProviderConfigured('discord')) {
     const discordProvider: DiscordAuthProviderConfig = {
       id: 'discord',
       kind: 'oauth2',
       label: 'Discord',
-      loginUrl: '/api/auth/discord', // To be implemented with Passport/OAuth2
+      loginUrl: '/api/auth/discord',
       enabled: true,
     };
-
     providers.push(discordProvider);
   }
 
-  // GitHub – OAuth2 provider primarily for contributor/admin workflows.
-  const githubEnabledEnv = process.env.AUTH_GITHUB_ENABLED;
-  const githubEnabled =
-    githubEnabledEnv &&
-    (githubEnabledEnv.toLowerCase() === '1' ||
-      githubEnabledEnv.toLowerCase() === 'true' ||
-      githubEnabledEnv.toLowerCase() === 'yes');
-
-  const githubClientId = process.env.GITHUB_CLIENT_ID;
-
-  if (githubEnabled && githubClientId && githubClientId.trim().length > 0) {
+  if (isOAuthProviderConfigured('github')) {
     const githubProvider: GitHubAuthProviderConfig = {
       id: 'github',
       kind: 'oauth2',
@@ -136,11 +94,19 @@ export function getAuthProvidersConfig(): AuthProviderConfig[] {
       loginUrl: '/api/auth/github',
       enabled: true,
     };
-
     providers.push(githubProvider);
+  }
+
+  if (isOAuthProviderConfigured('google')) {
+    const googleProvider: GoogleAuthProviderConfig = {
+      id: 'google',
+      kind: 'oauth2',
+      label: 'Google',
+      loginUrl: '/api/auth/google',
+      enabled: true,
+    };
+    providers.push(googleProvider);
   }
 
   return providers;
 }
-
-

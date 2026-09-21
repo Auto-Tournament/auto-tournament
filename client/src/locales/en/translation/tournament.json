@@ -349,6 +349,9 @@
       "eloDefaultSuffix": "(Default)",
       "eloTemplateHelper": "Pure Win/Loss (default): only match result affects ELO. Player stats are still recorded for leaderboards and exports, but they do not change the rating unless you select a custom template."
     },
+    "shuffleStats": {
+      "serverShortageWarning": "You have {{available}} of {{needed}} servers. Matches will run in waves, so rounds take longer."
+    },
     "changePreview": {
       "title": "Review Tournament Changes",
       "liveHeading": "Tournament is LIVE!",

@@ -1,5 +1,6 @@
 import { Stack, Typography, Chip, Paper, Box } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { tokens, mono } from '../../theme/tokens';
 
 interface MatchScoreboardProps {
   leftName?: string | null;
@@ -41,13 +42,15 @@ export function MatchScoreboard({
     <Paper
       variant="outlined"
       sx={{
-        p: 4,
-        background: 'linear-gradient(135deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.05) 100%)',
+        p: { xs: 2, sm: 4 },
+        bgcolor: 'background.surface2',
+        borderColor: 'transparent',
+        borderRadius: `${tokens.radius.md}px`,
       }}
     >
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <Stack spacing={1} alignItems="center" flex={1}>
-          <Typography variant="h4" fontWeight={700} color="primary.main" align="center">
+          <Typography variant="h5" color="text.primary" align="center" sx={{ overflowWrap: 'anywhere' }}>
             {leftName}
           </Typography>
           {typeof leftTeamElo === 'number' && Number.isFinite(leftTeamElo) && (
@@ -57,7 +60,7 @@ export function MatchScoreboard({
           )}
           {!hideSeriesWins && (
             <>
-              <Typography variant="h1" fontWeight={900} color="primary.main">
+              <Typography variant="h1" fontWeight={600} color="text.primary" sx={mono}>
                 {leftSeriesWins}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -67,7 +70,7 @@ export function MatchScoreboard({
           )}
           {!hideMapRounds && (
             <>
-              <Typography variant="h4" fontWeight={700} color="primary.main">
+              <Typography variant="h4" fontWeight={600} color="text.secondary" sx={mono}>
                 {leftMapRounds}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -76,8 +79,8 @@ export function MatchScoreboard({
             </>
           )}
         </Stack>
-        <Stack spacing={1} alignItems="center" mx={3}>
-          <Typography variant="h3" color="text.secondary" fontWeight={700}>
+        <Stack spacing={1} alignItems="center" mx={{ xs: 1, sm: 3 }}>
+          <Typography variant="body2" color="text.disabled" sx={mono}>
             {t('matchInfo.scoreboard.vs')}
           </Typography>
           {liveStatusDisplay && (
@@ -90,7 +93,7 @@ export function MatchScoreboard({
           )}
         </Stack>
         <Stack spacing={1} alignItems="center" flex={1}>
-          <Typography variant="h4" fontWeight={700} color="error.main" align="center">
+          <Typography variant="h5" color="text.primary" align="center" sx={{ overflowWrap: 'anywhere' }}>
             {rightName || t('matchInfo.scoreboard.tbd')}
           </Typography>
           {typeof rightTeamElo === 'number' && Number.isFinite(rightTeamElo) && (
@@ -100,7 +103,7 @@ export function MatchScoreboard({
           )}
           {!hideSeriesWins && (
             <>
-              <Typography variant="h1" fontWeight={900} color="error.main">
+              <Typography variant="h1" fontWeight={600} color="text.primary" sx={mono}>
                 {rightSeriesWins}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -110,7 +113,7 @@ export function MatchScoreboard({
           )}
           {!hideMapRounds && (
             <>
-              <Typography variant="h4" fontWeight={700} color="error.main">
+              <Typography variant="h4" fontWeight={600} color="text.secondary" sx={mono}>
                 {rightMapRounds}
               </Typography>
               <Typography variant="body2" color="text.secondary">

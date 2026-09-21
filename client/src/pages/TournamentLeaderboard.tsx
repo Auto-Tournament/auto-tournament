@@ -39,6 +39,14 @@ import { PlayerName } from '../components/player/PlayerName';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { TeamNameLink } from '../components/team/TeamNameLink';
 import type { Tournament } from '../types/tournament.types';
+import { tokens, mono, fontMono } from '../theme/tokens';
+
+/** Right-aligned (numeric) body cells use the mono face. */
+const numericCellsSx = {
+  '& td.MuiTableCell-alignRight, & td.MuiTableCell-alignRight .MuiTypography-root': {
+    fontFamily: fontMono,
+  },
+} as const;
 
 interface PlayerLeaderboardEntry {
   playerId: string;
@@ -263,9 +271,9 @@ export default function TournamentLeaderboard() {
 
   if (loading) {
     return (
-      <Box minHeight="100vh" bgcolor="background.default">
+      <Box minHeight="100vh" bgcolor="transparent">
         <TopNavBar />
-        <Container maxWidth="lg" sx={{ py: 6 }}>
+        <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
           <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
             <CircularProgress />
           </Box>
@@ -276,9 +284,9 @@ export default function TournamentLeaderboard() {
 
   if (error) {
     return (
-      <Box minHeight="100vh" bgcolor="background.default">
+      <Box minHeight="100vh" bgcolor="transparent">
         <TopNavBar />
-        <Container maxWidth="lg" sx={{ py: 6 }}>
+        <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
           <Alert severity="error">{error}</Alert>
         </Container>
       </Box>
@@ -291,11 +299,11 @@ export default function TournamentLeaderboard() {
     return (
       <Box
         minHeight="100vh"
-        bgcolor="background.default"
+        bgcolor="transparent"
         data-testid="public-leaderboard-page"
       >
         <TopNavBar />
-        <Container maxWidth="lg" sx={{ py: 6 }}>
+        <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
           <Stack spacing={3}>
             <Card>
               <CardContent>
@@ -467,19 +475,33 @@ export default function TournamentLeaderboard() {
   return (
     <Box
       minHeight="100vh"
-      bgcolor="background.default"
+      // Transparent so the page sits on the body's orange blooms.
+      bgcolor="transparent"
       data-testid="public-leaderboard-page"
     >
       <TopNavBar />
-      <Container maxWidth="lg" sx={{ py: 6 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
         <Stack spacing={3}>
           {/* Tournament Header */}
           <Card>
             <CardContent>
               <Box display="flex" alignItems="center" gap={2} mb={2}>
-                <EmojiEventsIcon sx={{ fontSize: 48, color: 'primary.main' }} />
-                <Box flex={1}>
-                  <Typography variant="h3" fontWeight={700} gutterBottom>
+                <Box
+                  sx={{
+                    width: 56,
+                    height: 56,
+                    flex: 'none',
+                    display: 'grid',
+                    placeItems: 'center',
+                    borderRadius: `${tokens.radius.md}px`,
+                    bgcolor: 'primary.main',
+                    color: 'primary.contrastText',
+                  }}
+                >
+                  <EmojiEventsIcon sx={{ fontSize: 30 }} />
+                </Box>
+                <Box flex={1} minWidth={0}>
+                  <Typography variant="h3" gutterBottom>
                     {tournament.name}
                   </Typography>
                   <Box display="flex" gap={1} flexWrap="wrap">
@@ -491,10 +513,11 @@ export default function TournamentLeaderboard() {
                             ? t('leaderboardPage.inProgress')
                             : t('leaderboardPage.setup')
                       }
-                      color={isComplete ? 'success' : isActive ? 'primary' : 'default'}
+                      // Homepage chips: finished is solid orange, in progress is live green.
+                      color={isComplete ? 'primary' : isActive ? 'success' : 'default'}
                       sx={{ fontWeight: 600 }}
                     />
-                    <Chip label={tournamentTypeLabel} color="info" />
+                    <Chip label={tournamentTypeLabel} />
                     {roundStatus && (
                       <Chip
                         label={t('leaderboardPage.roundOf', {
@@ -660,7 +683,7 @@ export default function TournamentLeaderboard() {
                   />
                 </Box>
                 <TableContainer>
-                  <Table size="small">
+                  <Table size="small" sx={numericCellsSx}>
                     <TableHead>
                       <TableRow>
                         <TableCell sx={{ fontWeight: 600, width: 60 }}>#</TableCell>
@@ -696,7 +719,8 @@ export default function TournamentLeaderboard() {
                             <Typography
                               variant="body1"
                               fontWeight={index === 0 ? 700 : 600}
-                              color={index === 0 ? 'primary.main' : 'text.primary'}
+                              color={index === 0 ? 'text.primary' : 'text.secondary'}
+                              sx={mono}
                             >
                               {index + 1}
                             </Typography>
@@ -823,7 +847,7 @@ export default function TournamentLeaderboard() {
                 </Box>
               ) : (
                 <TableContainer>
-                  <Table>
+                  <Table sx={numericCellsSx}>
                     <TableHead>
                       <TableRow>
                         <TableCell sx={{ fontWeight: 600, width: 60 }}>#</TableCell>
@@ -862,25 +886,26 @@ export default function TournamentLeaderboard() {
                             sx={{
                               '&:hover': { bgcolor: 'action.hover' },
                               ...(actualRank <= 3 && {
-                                bgcolor: 'action.selected',
+                                bgcolor: 'background.surface2',
                               }),
                             }}
                           >
                             <TableCell>
                               <Box display="flex" alignItems="center" gap={1}>
                                 {actualRank === 1 && (
-                                  <EmojiEventsIcon sx={{ color: 'gold', fontSize: 20 }} />
+                                  <EmojiEventsIcon sx={{ color: tokens.color.medalGold, fontSize: 20 }} />
                                 )}
                                 {actualRank === 2 && (
-                                  <EmojiEventsIcon sx={{ color: 'silver', fontSize: 20 }} />
+                                  <EmojiEventsIcon sx={{ color: tokens.color.medalSilver, fontSize: 20 }} />
                                 )}
                                 {actualRank === 3 && (
-                                  <EmojiEventsIcon sx={{ color: '#CD7F32', fontSize: 20 }} />
+                                  <EmojiEventsIcon sx={{ color: tokens.color.medalBronze, fontSize: 20 }} />
                                 )}
                                 <Typography
                                   variant="body1"
                                   fontWeight={actualRank <= 3 ? 700 : 600}
-                                  color={actualRank <= 3 ? 'primary.main' : 'text.primary'}
+                                  color={actualRank <= 3 ? 'text.primary' : 'text.secondary'}
+                                  sx={mono}
                                 >
                                   {actualRank}
                                 </Typography>

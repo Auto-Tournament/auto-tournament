@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { styled, useTheme, Theme, CSSObject } from '@mui/material/styles';
+import { tokens } from '../../theme/tokens';
 import Box from '@mui/material/Box';
 import MuiDrawer from '@mui/material/Drawer';
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
@@ -48,6 +49,29 @@ import { useTranslation } from 'react-i18next';
 import { SharedNavBar } from './SharedNavBar';
 
 const drawerWidth = 240;
+
+/**
+ * Sidebar items are pills inset from the drawer edge. When the desktop drawer
+ * is collapsed to icons, the pill shrinks to a centred icon button.
+ */
+const navItemSx = (open: boolean) => ({
+  minHeight: 42,
+  mx: open ? 1 : 0.75,
+  my: 0.25,
+  px: open ? 1.75 : 0,
+  borderRadius: `${tokens.radius.pill}px`,
+  justifyContent: open ? 'initial' : 'center',
+  color: 'text.secondary',
+  '&:hover': { color: 'text.primary' },
+});
+
+/** Active item: faint orange wash, ink label, orange icon. */
+const navItemSelectedSx = {
+  '&.Mui-selected': {
+    color: 'text.primary',
+    '& .MuiListItemIcon-root': { color: 'primary.main' },
+  },
+};
 
 /**
  * Height of the impersonation banner (0px when it is not shown). The banner is
@@ -439,29 +463,8 @@ export default function Layout() {
               component={Link}
               to={item.path}
               sx={[
-                {
-                  minHeight: 48,
-                  px: 2.5,
-                },
-                open
-                  ? {
-                      justifyContent: 'initial',
-                    }
-                  : {
-                      justifyContent: 'center',
-                    },
-                {
-                  '&.Mui-selected': {
-                    backgroundColor: 'primary.main',
-                    color: 'primary.contrastText',
-                    '&:hover': {
-                      backgroundColor: 'primary.dark',
-                    },
-                    '& .MuiListItemIcon-root': {
-                      color: 'primary.contrastText',
-                    },
-                  },
-                },
+                navItemSx(open),
+                navItemSelectedSx,
               ]}
             >
               <ListItemIcon
@@ -469,11 +472,7 @@ export default function Layout() {
                   {
                     minWidth: 0,
                     justifyContent: 'center',
-                    color: isActive(item.path)
-                      ? open
-                        ? 'primary.contrastText'
-                        : 'primary.main'
-                      : 'inherit',
+                    color: isActive(item.path) ? 'primary.main' : 'inherit',
                   },
                   open
                     ? {
@@ -540,7 +539,7 @@ export default function Layout() {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Box component="img" src="/icon.svg" alt="Logo" sx={{ width: 32, height: 32 }} />
               <Typography variant="body2" noWrap component="div" sx={{ fontWeight: 600 }}>
-                Matchzy Auto Tournament
+                Auto Tournament
               </Typography>
             </Box>
             <IconButton onClick={handleDrawerClose} aria-label={t('layout.closeDrawer')}>
@@ -558,23 +557,8 @@ export default function Layout() {
                 component={Link}
                 to="/"
                 sx={[
-                  {
-                    minHeight: 48,
-                    px: 2.5,
-                    justifyContent: 'initial',
-                  },
-                  {
-                    '&.Mui-selected': {
-                      backgroundColor: 'primary.main',
-                      color: 'primary.contrastText',
-                      '&:hover': {
-                        backgroundColor: 'primary.dark',
-                      },
-                      '& .MuiListItemIcon-root': {
-                        color: 'primary.contrastText',
-                      },
-                    },
-                  },
+                  navItemSx(true),
+                  navItemSelectedSx,
                 ]}
               >
                 <ListItemIcon
@@ -582,7 +566,7 @@ export default function Layout() {
                     minWidth: 0,
                     justifyContent: 'center',
                     mr: 3,
-                    color: location.pathname === '/' ? 'primary.contrastText' : 'inherit',
+                    color: location.pathname === '/' ? 'primary.main' : 'inherit',
                   }}
                 >
                   <HomeIcon />
@@ -595,14 +579,7 @@ export default function Layout() {
         <Divider />
         <List>
           <ListSubheader
-            sx={{
-              fontSize: 12,
-              fontWeight: 600,
-              height: 36,
-              px: 2.5,
-              py: 0,
-              lineHeight: '36px',
-            }}
+            sx={{ px: 2.5 }}
           >
             {t('nav.tournamentSection')}
           </ListSubheader>
@@ -611,14 +588,7 @@ export default function Layout() {
         <Divider />
         <List>
           <ListSubheader
-            sx={{
-              fontSize: 12,
-              fontWeight: 600,
-              height: 36,
-              px: 2.5,
-              py: 0,
-              lineHeight: '36px',
-            }}
+            sx={{ px: 2.5 }}
           >
             {t('nav.resourcesSection')}
           </ListSubheader>
@@ -627,14 +597,7 @@ export default function Layout() {
         <Divider />
         <List>
           <ListSubheader
-            sx={{
-              fontSize: 12,
-              fontWeight: 600,
-              height: 36,
-              px: 2.5,
-              py: 0,
-              lineHeight: '36px',
-            }}
+            sx={{ px: 2.5 }}
           >
             {t('nav.configurationSection')}
           </ListSubheader>
@@ -643,14 +606,7 @@ export default function Layout() {
         <Divider />
         <List>
           <ListSubheader
-            sx={{
-              fontSize: 12,
-              fontWeight: 600,
-              height: 36,
-              px: 2.5,
-              py: 0,
-              lineHeight: '36px',
-            }}
+            sx={{ px: 2.5 }}
           >
             {t('nav.systemSection')}
           </ListSubheader>
@@ -661,14 +617,10 @@ export default function Layout() {
           <ListItem disablePadding sx={{ display: 'block' }}>
             <ListItemButton
               component="a"
-                href="https://docs.sivert.io/docs/mat"
+                href="https://docs.autotournament.gg"
               target="_blank"
               rel="noopener noreferrer"
-              sx={{
-                minHeight: 48,
-                px: 2.5,
-                justifyContent: 'initial',
-              }}
+              sx={navItemSx(true)}
             >
               <ListItemIcon sx={{ minWidth: 0, justifyContent: 'center', mr: 3 }}>
                 <LibraryBooksIcon />
@@ -696,29 +648,8 @@ export default function Layout() {
                 component={Link}
                 to="/"
                 sx={[
-                  {
-                    minHeight: 48,
-                    px: 2.5,
-                  },
-                  open
-                    ? {
-                        justifyContent: 'initial',
-                      }
-                    : {
-                        justifyContent: 'center',
-                      },
-                  {
-                    '&.Mui-selected': {
-                      backgroundColor: 'primary.main',
-                      color: 'primary.contrastText',
-                      '&:hover': {
-                        backgroundColor: 'primary.dark',
-                      },
-                      '& .MuiListItemIcon-root': {
-                        color: 'primary.contrastText',
-                      },
-                    },
-                  },
+                  navItemSx(open),
+                  navItemSelectedSx,
                 ]}
               >
                 <ListItemIcon
@@ -726,12 +657,7 @@ export default function Layout() {
                     {
                       minWidth: 0,
                       justifyContent: 'center',
-                      color:
-                        location.pathname === '/'
-                          ? open
-                            ? 'primary.contrastText'
-                            : 'primary.main'
-                          : 'inherit',
+                      color: location.pathname === '/' ? 'primary.main' : 'inherit',
                     },
                     open
                       ? {
@@ -764,14 +690,7 @@ export default function Layout() {
         <List>
           {open && (
             <ListSubheader
-              sx={{
-                fontSize: 12,
-                fontWeight: 600,
-                height: 36,
-                px: 2.5,
-                py: 0,
-                lineHeight: '36px',
-              }}
+              sx={{ px: 2.5 }}
             >
               {t('nav.tournamentSection')}
             </ListSubheader>
@@ -782,14 +701,7 @@ export default function Layout() {
         <List>
           {open && (
             <ListSubheader
-              sx={{
-                fontSize: 12,
-                fontWeight: 600,
-                height: 36,
-                px: 2.5,
-                py: 0,
-                lineHeight: '36px',
-              }}
+              sx={{ px: 2.5 }}
             >
               {t('nav.resourcesSection')}
             </ListSubheader>
@@ -800,14 +712,7 @@ export default function Layout() {
         <List>
           {open && (
             <ListSubheader
-              sx={{
-                fontSize: 12,
-                fontWeight: 600,
-                height: 36,
-                px: 2.5,
-                py: 0,
-                lineHeight: '36px',
-              }}
+              sx={{ px: 2.5 }}
             >
               {t('nav.configurationSection')}
             </ListSubheader>
@@ -818,14 +723,7 @@ export default function Layout() {
         <List>
           {open && (
             <ListSubheader
-              sx={{
-                fontSize: 12,
-                fontWeight: 600,
-                height: 36,
-                px: 2.5,
-                py: 0,
-                lineHeight: '36px',
-              }}
+              sx={{ px: 2.5 }}
             >
               {t('nav.systemSection')}
             </ListSubheader>
@@ -838,12 +736,11 @@ export default function Layout() {
             <Tooltip title={!open ? t('nav.documentation') : ''} placement="right">
               <ListItemButton
                 component="a"
-                href="https://docs.sivert.io/docs/mat"
+                href="https://docs.autotournament.gg"
                 target="_blank"
                 rel="noopener noreferrer"
                 sx={[
-                  { minHeight: 48, px: 2.5 },
-                  open ? { justifyContent: 'initial' } : { justifyContent: 'center' },
+                  navItemSx(open),
                 ]}
               >
                 <ListItemIcon
@@ -901,7 +798,7 @@ export default function Layout() {
             width: '100%',
             flexGrow: 1,
             overflow: 'auto',
-            p: 3,
+            p: { xs: 2, sm: 3 },
             display: 'flex',
             justifyContent: 'center',
           }}
@@ -909,25 +806,39 @@ export default function Layout() {
           <Box sx={{ width: '100%', maxWidth: (theme) => theme.breakpoints.values.lg }}>
             {/* Page Header */}
             {currentPageHeader && (
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-                <Box display="flex" alignItems="center" gap={2}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: 2,
+                  mb: { xs: 3, md: 4 },
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.75, minWidth: 0 }}>
                   <Box
                     sx={{
-                      width: 48,
-                      height: 48,
+                      width: 44,
+                      height: 44,
+                      flex: 'none',
                       display: 'grid',
                       placeItems: 'center',
+                      borderRadius: `${tokens.radius.md}px`,
+                      bgcolor: 'background.paper',
+                      border: 1,
+                      borderColor: 'divider',
                     }}
                   >
                     <Box
                       component={currentPageHeader.icon}
                       sx={{
-                        fontSize: 40,
+                        fontSize: 24,
                         color: currentPageHeader.color || 'primary.main',
                       }}
                     />
                   </Box>
-                  <Typography variant="h4" fontWeight={600}>
+                  <Typography variant="h4" sx={{ minWidth: 0 }}>
                     {currentPageHeader.title}
                   </Typography>
                 </Box>

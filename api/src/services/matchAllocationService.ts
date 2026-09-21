@@ -15,7 +15,18 @@ import type { DbMatchRow } from '../types/database.types';
 import type { BracketMatch } from '../types/tournament.types';
 import { serverAllocationTracker } from './serverAllocationTracker';
 import { serverTurnoverTracker } from '../utils/serverTurnover';
-import { checkQueueTurn, matchBracketOf, QUEUE_ORDER_SQL, type QueueEntry } from '../utils/allocationQueue';
+import {
+  batchServerTarget,
+  checkQueueTurn,
+  matchBracketOf,
+  QUEUE_ORDER_SQL,
+  TEAM_BUSY_MATCH_SQL,
+  withoutBusyTeams,
+  type QueueEntry,
+} from '../utils/allocationQueue';
+
+/** allocateSingleMatch result while a team of the match is still playing (#224). */
+const TEAM_BUSY_ERROR = 'Waiting for a team to finish its current match';
 
 /**
  * Service for automatic server allocation to tournament matches
@@ -646,8 +657,23 @@ export class MatchAllocationService {
     return availableServers;
   }
 
+  /** Teams that are in a loaded or live match, or one being loaded (#224). */
+  private async getBusyTeamIds(): Promise<Set<string>> {
+    const rows = await db.queryAsync<{ team1_id: string | null; team2_id: string | null }>(
+      TEAM_BUSY_MATCH_SQL
+    );
+    const busy = new Set<string>();
+    for (const row of rows) {
+      if (row.team1_id) busy.add(row.team1_id);
+      if (row.team2_id) busy.add(row.team2_id);
+    }
+    return busy;
+  }
+
   /**
-   * Get all ready matches that need server allocation
+   * Get all ready matches that need server allocation, in queue order. A match
+   * whose team is still playing (or claimed by an earlier match in the queue)
+   * is not ready yet: see withoutBusyTeams.
    */
   async getReadyMatches(): Promise<BracketMatch[]> {
     const matches = await db.queryAsync<DbMatchRow>(
@@ -658,14 +684,19 @@ export class MatchAllocationService {
        ORDER BY ${QUEUE_ORDER_SQL}`
     );
 
-    return Promise.all(matches.map((row) => this.rowToMatch(row)));
+    const startable = withoutBusyTeams(
+      matches.map((row) => ({ row, team1Id: row.team1_id, team2Id: row.team2_id })),
+      await this.getBusyTeamIds()
+    );
+    return Promise.all(startable.map(({ row }) => this.rowToMatch(row)));
   }
 
   /**
    * Ready bracket matches waiting for a server, in queue order, without the
    * team lookups getReadyMatches does. Matches allocateSingleMatch would refuse
-   * anyway (a team missing, or both slots the same team) are left out so they
-   * cannot hold up the matches behind them.
+   * anyway (a team missing, or both slots the same team, or a team still
+   * playing: see withoutBusyTeams) are left out so they cannot hold up the
+   * matches behind them.
    */
   private async getAllocationQueue(): Promise<QueueEntry[]> {
     const rows = await db.queryAsync<{
@@ -674,21 +705,26 @@ export class MatchAllocationService {
       round: number;
       match_number: number;
       bracket: string | null;
+      team1_id: string;
+      team2_id: string;
     }>(
-      `SELECT id, slug, round, match_number, bracket FROM matches
+      `SELECT id, slug, round, match_number, bracket, team1_id, team2_id FROM matches
        WHERE tournament_id = 1
        AND status = 'ready'
        AND (server_id IS NULL OR server_id = '')
        AND team1_id IS NOT NULL AND team2_id IS NOT NULL AND team1_id != team2_id
        ORDER BY ${QUEUE_ORDER_SQL}`
     );
-    return rows.map((row) => ({
+    const queue = rows.map((row) => ({
       id: row.id,
       slug: row.slug,
       round: row.round,
       matchNumber: row.match_number,
       bracket: row.bracket,
+      team1Id: row.team1_id,
+      team2Id: row.team2_id,
     }));
+    return withoutBusyTeams(queue, await this.getBusyTeamIds());
   }
 
   /**
@@ -986,8 +1022,11 @@ export class MatchAllocationService {
     // to avoid starting only a subset of a round's matches while the rest sit
     // "waiting for server". Follow the MatchZy guidance and poll until we have
     // enough truly idle servers (status=idle, beyond grace period) to cover
-    // all requested ready matches, or until a reasonable timeout is reached.
-    const requiredServers = readyMatches.length;
+    // the requested ready matches, or until a reasonable timeout is reached.
+    // Never wait for more servers than exist (#226): with more matches than
+    // servers, start one per server and poll the rest (see batchServerTarget).
+    const { servers: configuredServers } = await this.getAllocationStatus();
+    const requiredServers = batchServerTarget(readyMatches.length, configuredServers);
     const POLL_INTERVAL_MS = 10_000; // 10s, per MatchZy best practices
     const MAX_WAIT_MS = 15 * 60 * 1000; // 15 minutes hard cap
     const deadline = Date.now() + MAX_WAIT_MS;
@@ -1130,7 +1169,14 @@ export class MatchAllocationService {
       const freeServerCount = availableServers.filter(
         (candidate) => !this.allocatingServers.has(candidate.id)
       ).length;
-      const turn = checkQueueTurn(await this.getAllocationQueue(), matchSlug, freeServerCount);
+      const queue = await this.getAllocationQueue();
+      // A team plays one match at a time (#224): a bracket match is left out of
+      // the queue while either team is in a loaded/live match, or an earlier
+      // match in the queue has claimed it. Hold it; it is retried later.
+      if (isBracketMatch && !queue.some((entry) => entry.slug === matchSlug)) {
+        return { success: false, error: TEAM_BUSY_ERROR };
+      }
+      const turn = checkQueueTurn(queue, matchSlug, freeServerCount);
       if (!turn.allowed) {
         log.debug(
           `[ALLOCATION] Holding match ${matchSlug} (queue position ${turn.position}) for ${turn.ahead.length} earlier match(es); ${freeServerCount} server(s) free`,
@@ -2097,6 +2143,8 @@ export const matchAllocationService = new MatchAllocationService();
 export function isQueuedAllocationResult(error: string | undefined | null): boolean {
   return (
     typeof error === 'string' &&
-    (error === 'No available servers' || /earlier match\(es\) in the queue/.test(error))
+    (error === 'No available servers' ||
+      error === TEAM_BUSY_ERROR ||
+      /earlier match\(es\) in the queue/.test(error))
   );
 }

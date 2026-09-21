@@ -5,6 +5,9 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import BlockIcon from '@mui/icons-material/Block';
 import type { MapSide, VetoActionType } from '../../types';
 import { FadeInImage } from '../common/FadeInImage';
+import { tokens, mono, withAlpha } from '../../theme/tokens';
+
+const { color, radius, ease, duration } = tokens;
 
 interface VetoMapCardProps {
   mapName: string;
@@ -26,6 +29,8 @@ interface VetoMapCardProps {
    * ("Ban Mirage" / "Pick Mirage").
    */
   currentAction?: VetoActionType;
+  /** The last map, left over after the bans rather than picked by a team. */
+  isDecider?: boolean;
 }
 
 export const VetoMapCard: React.FC<VetoMapCardProps> = ({
@@ -39,6 +44,7 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
   disabled,
   isCurrentTurn,
   currentAction,
+  isDecider,
 }) => {
   const { t } = useTranslation();
   const [imageError] = React.useState(false);
@@ -76,9 +82,10 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
             color="success"
             size="small"
             sx={{
-              fontWeight: 700,
-              bgcolor: 'success.main',
-              color: 'success.contrastText',
+              ...mono,
+              fontWeight: 600,
+              bgcolor: color.pick,
+              color: color.accentInk,
             }}
           />
         </Box>
@@ -99,14 +106,10 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
             label={side}
             color="primary"
             size="small"
-            sx={(theme) => {
-              const bgColor =
-                side === 'CT' ? theme.palette.info.main : theme.palette.warning.main;
-              return {
-                fontWeight: 700,
-                bgcolor: bgColor,
-                color: theme.palette.getContrastText(bgColor),
-              };
+            sx={{
+              fontWeight: 600,
+              bgcolor: side === 'CT' ? color.sideCt : color.sideT,
+              color: color.accentInk,
             }}
           />
         </Box>
@@ -124,11 +127,11 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            bgcolor: 'rgba(0, 0, 0, 0.7)',
+            bgcolor: color.scrim,
             zIndex: 1,
           }}
         >
-          <BlockIcon sx={{ fontSize: 60, color: 'error.main' }} />
+          <BlockIcon sx={{ fontSize: 44, color: color.ban }} />
         </Box>
       )}
 
@@ -142,7 +145,7 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
             zIndex: 2,
           }}
         >
-          <CheckCircleIcon sx={{ fontSize: 32, color: 'success.main' }} />
+          <CheckCircleIcon sx={{ fontSize: 28, color: color.pick }} />
         </Box>
       )}
 
@@ -162,11 +165,11 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            bgcolor: state === 'banned' ? 'background.paper' : 'primary.dark',
+            bgcolor: color.paper3,
             filter: state === 'banned' ? 'grayscale(100%)' : 'none',
           }}
         >
-          <Typography variant="h4" fontWeight={700} color="white">
+          <Typography variant="h4" fontWeight={700} color="text.primary">
             {displayName}
           </Typography>
         </Box>
@@ -174,21 +177,41 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
 
       <CardContent
         sx={{
-          py: 1.5,
-          px: 2,
-          bgcolor: state === 'picked' ? 'success.dark' : 'background.paper',
+          py: 1.25,
+          px: 1.75,
+          '&:last-child': { pb: 1.25 },
+          bgcolor: color.paper3,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 1,
         }}
       >
         <Typography
-          variant="h6"
-          fontWeight={700}
-          textAlign="center"
+          variant="subtitle1"
+          component="span"
           sx={{
-            color: state === 'picked' ? 'success.contrastText' : 'text.primary',
+            minWidth: 0,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            color: state === 'banned' ? color.ban : state === 'picked' ? color.pick : color.ink,
+            textDecoration: state === 'banned' ? 'line-through' : 'none',
+            textDecorationThickness: '2px',
+            transition: `color ${duration.base}ms ${ease.out}`,
           }}
         >
           {displayName}
         </Typography>
+        {state === 'picked' && isDecider && (
+          <Box
+            component="span"
+            data-testid="veto-decider-label"
+            sx={{ ...mono, fontSize: '0.75rem', color: color.pick, whiteSpace: 'nowrap' }}
+          >
+            {t('vetoInterface.decider')}
+          </Box>
+        )}
       </CardContent>
     </>
   );
@@ -199,24 +222,24 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
       sx={{
         position: 'relative',
         cursor: isClickable ? 'pointer' : 'default',
-        opacity: state === 'banned' ? 0.5 : 1,
-        border: state === 'picked' ? 3 : isCurrentTurn ? 2 : 1,
-        borderColor:
+        borderRadius: `${radius.md}px`,
+        // Banned tiles dim the image (scrim overlay) but keep the red name readable.
+        border: 1,
+        borderColor: state === 'picked' ? color.pick : isCurrentTurn ? color.accent : color.rule,
+        boxShadow:
           state === 'picked'
-            ? 'success.main'
+            ? `0 0 0 1px ${color.pick}, 0 16px 40px -24px ${color.pick}`
             : isCurrentTurn
-            ? 'warning.main'
-            : 'divider',
-        boxShadow: isCurrentTurn ? 6 : 1,
-        transition: 'all 0.25s ease',
-        transform: 'scale(1)',
+            ? `0 0 0 1px ${withAlpha(color.accent, 0.5)}`
+            : 'none',
+        transition: `transform ${duration.base}ms ${ease.out}, box-shadow ${duration.base}ms ${ease.out}, border-color ${duration.base}ms ${ease.out}`,
         '&:hover': isClickable
           ? {
-              transform: 'scale(1.05)',
-              boxShadow: 8,
-              borderColor: isCurrentTurn ? 'warning.light' : 'primary.main',
+              transform: 'translateY(-3px)',
+              boxShadow: `0 0 0 1px ${color.accent}, 0 24px 60px -30px ${color.accent}`,
             }
           : {},
+        '@media (prefers-reduced-motion: reduce)': { '&:hover': { transform: 'none' } },
       }}
     >
       {isInteractive ? (

@@ -416,6 +416,34 @@
         }
       }
     },
+    "/api/auth/google": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "GET /api/auth/google",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/auth/google/callback": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "GET /api/auth/google/callback",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/auth/impersonate": {
       "get": {
         "tags": [
@@ -4515,6 +4543,78 @@
         ]
       }
     },
+    "/api/test/fake-oauth/{provider}/authorize": {
+      "get": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "GET /api/test/fake-oauth/:provider/authorize",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/test/fake-oauth/{provider}/token": {
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/fake-oauth/:provider/token",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/test/fake-oauth/{provider}/userinfo": {
+      "get": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "GET /api/test/fake-oauth/:provider/userinfo",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/api/test/login-admin": {
       "post": {
         "tags": [
@@ -4630,6 +4730,54 @@
           },
           {
             "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/test/oauth/{provider}": {
+      "get": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "GET /api/test/oauth/:provider",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/test/oauth/{provider}/callback": {
+      "get": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "GET /api/test/oauth/:provider/callback",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ]
       }
@@ -4945,7 +5093,7 @@
           "Tournament"
         ],
         "summary": "Get tournament bracket",
-        "description": "Returns the tournament bracket with all matches. Swiss tournaments also get `swissStandings` - the standings the round pairing uses (wins, losses, Buchholz, round differential, then seed), best first.",
+        "description": "Returns the tournament bracket with all matches. Swiss tournaments also get `swissStandings` - the standings the round pairing uses (wins, losses, Buchholz, round differential, then seed), best first. Round robin tournaments get `roundRobinStandings` (wins, head-to-head, round differential, rounds won, then seed), best first; the top team is the champion.",
         "security": [
           {
             "bearerAuth": []
@@ -5408,7 +5556,7 @@
           "Tournament"
         ],
         "summary": "Get tournament leaderboard (public)",
-        "description": "Public endpoint to get tournament leaderboard and current round status. No authentication required. For Swiss tournaments `teams` is in server standings order (wins, losses, Buchholz, round differential, seed) and each entry carries `rank`, `buchholz` and `roundDiff`.",
+        "description": "Public endpoint to get tournament leaderboard and current round status. No authentication required. For Swiss tournaments `teams` is in server standings order (wins, losses, Buchholz, round differential, seed) and each entry carries `rank`, `buchholz` and `roundDiff`. Round robin `teams` is in server standings order too (wins, head-to-head, round differential, rounds won, seed) with `rank` and `roundDiff`.",
         "parameters": [
           {
             "in": "path",

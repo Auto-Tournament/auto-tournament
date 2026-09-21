@@ -1,4 +1,4 @@
-import { Router, type Request, type Response } from 'express';
+import { Router, type NextFunction, type Request, type Response } from 'express';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
 import { applyMatchReport, type MatchReport } from '../services/connectionSnapshotService';
@@ -7,7 +7,13 @@ import { playerService } from '../services/playerService';
 import { signPlayerSteamId } from '../utils/signedPlayerCookie';
 import { primeServerStatusForTests, ServerStatus } from '../services/serverStatusService';
 import { authIdentityService, type AuthProvider } from '../services/authIdentityService';
-import { completePendingSteamLink, setPendingSteamLinkCookie } from './auth';
+import {
+  completePendingSteamLink,
+  requireStrategy,
+  setPendingSteamLinkCookie,
+  ssoCallbackHandler,
+} from './auth';
+import { passport, testOAuthStrategyName } from '../config/passport';
 import { PENDING_STEAM_LINK_PROVIDERS } from '../utils/signedPendingSteamLink';
 
 const router = Router();
@@ -600,6 +606,99 @@ router.post('/auth-identities', requireAuth, async (req: Request, res: Response)
   } catch (err) {
     log.error('Error in POST /api/test/auth-identities', err as Error);
     res.status(500).json({ success: false, error: 'Failed to seed auth identity' });
+  }
+});
+
+/*
+ * Test-only fake OAuth provider for GitHub and Google.
+ *
+ * config/passport.ts registers a `github-test` and a `google-test` strategy
+ * (only when ENABLE_TEST_ENDPOINTS is explicitly on) whose token and profile
+ * endpoints point here. The routes below then drive the real strategy code and
+ * the real `ssoCallbackHandler`, so a test can complete a GitHub or Google
+ * login end to end without talking to github.com or google.com.
+ *
+ * The test picks the profile the "provider" returns: the authorization `code`
+ * is the base64url-encoded JSON of the raw profile (GitHub /user or Google
+ * userinfo format). The token endpoint hands that back as the access token and
+ * the userinfo endpoint decodes it. A code starting with `fail` makes the token
+ * endpoint refuse, like a provider rejecting a used or bogus code.
+ *
+ *   GET  /api/test/oauth/:provider            start (sets the state cookie)
+ *   GET  /api/test/oauth/:provider/callback   callback (state, code exchange, linking)
+ *   GET  /api/test/fake-oauth/:provider/authorize
+ *   POST /api/test/fake-oauth/:provider/token
+ *   GET  /api/test/fake-oauth/:provider/userinfo
+ */
+
+const FAKE_OAUTH_PROVIDERS = ['github', 'google'] as const;
+type FakeOAuthProvider = (typeof FAKE_OAUTH_PROVIDERS)[number];
+
+function parseFakeOAuthProvider(value: unknown): FakeOAuthProvider | null {
+  return typeof value === 'string' && (FAKE_OAUTH_PROVIDERS as readonly string[]).includes(value)
+    ? (value as FakeOAuthProvider)
+    : null;
+}
+
+/** The fake provider only exists when test endpoints are explicitly enabled. */
+function fakeOAuthProviderFrom(req: Request, res: Response): FakeOAuthProvider | null {
+  const provider = parseFakeOAuthProvider(req.params.provider);
+  if (!isE2eTestHelperEnabled() || !provider) {
+    res.status(404).json({ success: false, error: 'Not found' });
+    return null;
+  }
+  return provider;
+}
+
+router.get('/oauth/:provider', (req: Request, res: Response, next: NextFunction) => {
+  const provider = fakeOAuthProviderFrom(req, res);
+  if (!provider) return;
+  const name = testOAuthStrategyName(provider);
+  requireStrategy(name, provider)(req, res, () => passport.authenticate(name)(req, res, next));
+});
+
+router.get('/oauth/:provider/callback', (req: Request, res: Response, next: NextFunction) => {
+  const provider = fakeOAuthProviderFrom(req, res);
+  if (!provider) return;
+  const name = testOAuthStrategyName(provider);
+  requireStrategy(name, provider)(req, res, () =>
+    passport.authenticate(name, { failureRedirect: '/login' })(req, res, (err?: unknown) => {
+      if (err) return next(err);
+      return ssoCallbackHandler(provider)(req, res);
+    })
+  );
+});
+
+router.get('/fake-oauth/:provider/authorize', (req: Request, res: Response): void => {
+  if (!fakeOAuthProviderFrom(req, res)) return;
+  // A real provider would show a consent screen here. Tests read the state
+  // from the redirect to this URL and call the callback themselves.
+  res.json({ success: true });
+});
+
+router.post('/fake-oauth/:provider/token', (req: Request, res: Response): void => {
+  if (!fakeOAuthProviderFrom(req, res)) return;
+  const code = (req.body as { code?: unknown }).code;
+  if (typeof code !== 'string' || code.length === 0 || code.startsWith('fail')) {
+    res.status(400).json({ error: 'bad_verification_code' });
+    return;
+  }
+  res.json({ access_token: code, token_type: 'bearer', scope: '' });
+});
+
+router.get('/fake-oauth/:provider/userinfo', (req: Request, res: Response): void => {
+  if (!fakeOAuthProviderFrom(req, res)) return;
+  // passport-github2 sends the token as a Bearer header, passport-google-oauth20
+  // as an access_token query parameter.
+  const header = req.headers.authorization || '';
+  const query = typeof req.query.access_token === 'string' ? req.query.access_token : '';
+  const token = header.toLowerCase().startsWith('bearer ') ? header.slice(7).trim() : query;
+  try {
+    const profile: unknown = JSON.parse(Buffer.from(token, 'base64url').toString('utf8'));
+    if (!profile || typeof profile !== 'object') throw new Error('not an object');
+    res.json(profile);
+  } catch {
+    res.status(401).json({ error: 'invalid_token' });
   }
 });
 
