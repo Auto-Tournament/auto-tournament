@@ -30,8 +30,11 @@ interface RoundRow extends DbMatchRow {
   team2_rounds?: number | string | null;
 }
 
-/** Load every Swiss match with its summed map rounds (for the differential). */
-async function loadSwissMatches(tournamentId: number): Promise<RoundRow[]> {
+/**
+ * Load every bracket match with its summed map rounds (for the differential).
+ * Nothing Swiss-specific: round robin standings use it too.
+ */
+export async function loadSwissMatches(tournamentId: number): Promise<RoundRow[]> {
   return db.queryAsync<RoundRow>(
     `SELECT m.*,
             COALESCE(r.team1_rounds, 0) AS team1_rounds,
@@ -48,7 +51,7 @@ async function loadSwissMatches(tournamentId: number): Promise<RoundRow[]> {
   );
 }
 
-function toSwissMatch(row: RoundRow): SwissMatchLike {
+export function toSwissMatch(row: RoundRow): SwissMatchLike {
   return {
     team1Id: row.team1_id ?? null,
     team2Id: row.team2_id ?? null,
@@ -59,7 +62,7 @@ function toSwissMatch(row: RoundRow): SwissMatchLike {
   };
 }
 
-function parseTeamIds(raw: string | null | undefined): string[] {
+export function parseTeamIds(raw: string | null | undefined): string[] {
   try {
     const parsed = JSON.parse(raw ?? '[]') as unknown;
     return Array.isArray(parsed) ? parsed.map(String) : [];

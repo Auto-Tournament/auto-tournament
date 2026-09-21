@@ -14,6 +14,7 @@ import type { TournamentResponse, TournamentType } from '../types/tournament.typ
 import type { DbMatchRow, DbTeamRow, DbTournamentRow } from '../types/database.types';
 import { tournamentRowToResponse } from '../utils/tournamentRow';
 import { getSwissStandingEntries } from './swissProgressionService';
+import { getRoundRobinStandingEntries } from './roundRobinStandingsService';
 import type { Player } from '../types/team.types';
 
 export interface ShuffleTournamentConfig {
@@ -56,7 +57,7 @@ export interface TeamLeaderboardEntry {
   matchLosses: number;
   matchCount: number;
   winRate: number;
-  /** Swiss only: rank, Buchholz and round differential from the server standings. */
+  /** Swiss and round robin: rank and round differential from the server standings (Buchholz: Swiss only). */
   rank?: number;
   buchholz?: number;
   roundDiff?: number;
@@ -979,6 +980,15 @@ export async function getTournamentLeaderboard(): Promise<{
             roundDiff: s.roundDiff,
           },
         ];
+      });
+    } else if (row.type === 'round_robin') {
+      // Same standings (and order) the bracket and the champion use.
+      const standings = await getRoundRobinStandingEntries(row.id);
+      const byTeam = new Map(teams.map((t) => [t.teamId, t]));
+      teams = standings.flatMap((s) => {
+        const team = byTeam.get(s.teamId);
+        if (!team) return [];
+        return [{ ...team, rank: s.rank, roundDiff: s.roundDiff }];
       });
     } else {
       // Sort teams by wins desc, then name

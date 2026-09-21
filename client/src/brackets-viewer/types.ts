@@ -206,6 +206,14 @@ export interface Config {
     rankingFormula?: RankingFormula,
 
     /**
+     * Participant ids, best first, from standings computed elsewhere (MAT's
+     * server-side round robin tiebreaks). When set, the ranking table follows
+     * this order and ranks are strict (1, 2, 3, ...) instead of shared on equal
+     * points.
+     */
+    rankingOrder?: Id[],
+
+    /**
      * Whether to clear any previously displayed data.
      * 
      * @default false

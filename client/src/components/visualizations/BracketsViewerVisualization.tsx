@@ -17,6 +17,8 @@ import { deriveSeriesScore } from '../../utils/matchScoreDisplay';
 interface BracketsViewerVisualizationProps {
   matches: Array<Match & { liveStats?: MatchLiveStats | null }>;
   tournamentType: string;
+  /** Round robin: team ids best first from the server standings (#225). */
+  rankingTeamIds?: string[];
   isFullscreen?: boolean;
   onMatchClick?: (match: Match) => void;
 }
@@ -33,6 +35,7 @@ function grandFinalParents(matches: Match[]): Match[] {
 export default function BracketsViewerVisualization({
   matches,
   tournamentType,
+  rankingTeamIds,
   isFullscreen = false,
   onMatchClick,
 }: BracketsViewerVisualizationProps) {
@@ -482,8 +485,12 @@ export default function BracketsViewerVisualization({
         rounds,
       },
       matchLookup,
+      teamIdMap,
     };
   }, [matches, tournamentType, t]);
+
+  // Stable across refetches that return the same order.
+  const rankingKey = (rankingTeamIds ?? []).join('|');
 
   /**
    * Labels empty slots in later rounds as "Winner of <match>".
@@ -583,8 +590,14 @@ export default function BracketsViewerVisualization({
     const container = containerRef.current;
     if (!container || !viewerData) return;
 
-    const { data, matchLookup } = viewerData;
+    const { data, matchLookup, teamIdMap } = viewerData;
     matchLookupRef.current = matchLookup;
+    const rankingOrder = rankingKey
+      ? rankingKey
+          .split('|')
+          .map((teamId) => teamIdMap.get(teamId))
+          .filter((id): id is number => id !== undefined)
+      : undefined;
 
     // Render the bracket
     let cancelled = false;
@@ -599,6 +612,8 @@ export default function BracketsViewerVisualization({
           showSlotsOrigin: true,
           showLowerBracketSlotsOrigin: true,
           highlightParticipantOnHover: true,
+          // Round robin table in the server's tiebreak order, strict ranks.
+          rankingOrder,
           onMatchClick: (match) => {
             // Find the original match by ID
             const originalMatch = findOriginalMatch(match.id);
@@ -673,6 +688,7 @@ export default function BracketsViewerVisualization({
     };
   }, [
     viewerData,
+    rankingKey,
     theme,
     onMatchClick,
     centerMatch,
