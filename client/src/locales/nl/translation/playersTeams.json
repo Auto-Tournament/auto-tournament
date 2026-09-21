@@ -344,7 +344,8 @@
       "noMapToPickSide": "Geen kaart om kant voor te kiezen",
       "matchNotFound": "Match niet gevonden",
       "unauthorized": "Alleen spelers van een van de twee deelnemende teams kunnen veto-acties uitvoeren voor deze match."
-    }
+    },
+    "decider": "Decider"
   },
   "discordId": {
     "noDiscord": "Geen Discord",

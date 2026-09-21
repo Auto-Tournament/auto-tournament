@@ -344,7 +344,8 @@
       "noMapToPickSide": "Aucune carte pour choisir le côté",
       "matchNotFound": "Match introuvable",
       "unauthorized": "Seuls les joueurs d'une des deux équipes participantes peuvent effectuer des actions de veto pour ce match."
-    }
+    },
+    "decider": "Decider"
   },
   "discordId": {
     "noDiscord": "Pas de Discord",
