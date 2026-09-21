@@ -938,7 +938,7 @@ export default function Servers() {
                     const boxColor = olderCount > 0 ? 'warning' : 'info';
                     const releaseHref =
                       latestMatchZyReleaseUrl ??
-                      'https://github.com/sivert-io/MatchZy-Enhanced/releases';
+                      'https://github.com/Auto-Tournament/MatchZy-Enhanced/releases';
 
                     return (
                       <Box

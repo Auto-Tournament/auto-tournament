@@ -36,7 +36,7 @@ export default function MapActionsModal({
   if (!map) return null;
 
   const getDefaultWebpUrlForId = (mapId: string): string =>
-    `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${mapId}.webp`;
+    `https://raw.githubusercontent.com/Auto-Tournament/cs2-server-manager/master/map_thumbnails/${mapId}.webp`;
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth data-testid="map-actions-modal">

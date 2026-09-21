@@ -292,7 +292,7 @@ export default function Login() {
             <Stack spacing={1.5} alignItems="center" sx={{ width: '100%' }}>
               <Stack direction="row" spacing={2}>
                 <Link
-                  href="https://github.com/sivert-io/matchzy-auto-tournament"
+                  href="https://github.com/Auto-Tournament/matchzy-auto-tournament"
                   target="_blank"
                   rel="noopener noreferrer"
                   sx={{

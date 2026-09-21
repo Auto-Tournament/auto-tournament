@@ -26,7 +26,7 @@ fi
 DOCKER_USERNAME="${DOCKER_USERNAME:-sivertio}"
 IMAGE_NAME="matchzy-auto-tournament"
 DOCKER_IMAGE="${DOCKER_USERNAME}/${IMAGE_NAME}"
-REPO_OWNER="sivert-io"
+REPO_OWNER="Auto-Tournament"
 REPO_NAME="matchzy-auto-tournament"
 
 echo -e "${GREEN}MatchZy Auto Tournament - Discord Webhook${NC}"

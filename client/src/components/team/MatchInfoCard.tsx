@@ -104,7 +104,7 @@ export function MatchInfoCard({
     if (mapData) return mapData;
     // Fallback: construct map data from slug
     const baseUrl =
-      'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails';
+      'https://raw.githubusercontent.com/Auto-Tournament/cs2-server-manager/master/map_thumbnails';
     return {
       name: currentMapSlug,
       displayName: getMapDisplayName(currentMapSlug),
