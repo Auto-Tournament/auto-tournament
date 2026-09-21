@@ -349,6 +349,9 @@
       "eloDefaultSuffix": "(standaard)",
       "eloTemplateHelper": "Pure Win/Loss (standaard): alleen het wedstrijdresultaat beïnvloedt de ELO. Spelersstatistieken worden nog steeds vastgelegd voor klassementen en exports, maar veranderen de rating niet tenzij je een aangepast sjabloon kiest."
     },
+    "shuffleStats": {
+      "serverShortageWarning": "You have {{available}} of {{needed}} servers. Matches will run in waves, so rounds take longer."
+    },
     "changePreview": {
       "title": "Toernooiwijzigingen controleren",
       "liveHeading": "Het toernooi is LIVE!",
