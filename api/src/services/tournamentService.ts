@@ -8,6 +8,7 @@ import { applyScoreFields, enrichMatch } from '../utils/matchEnrichment';
 import { getMapResults } from './matchMapResultService';
 import { matchLiveStatsService } from './matchLiveStatsService';
 import { getSwissStandings, getSwissStandingEntries } from './swissProgressionService';
+import { getRoundRobinStandings, getRoundRobinStandingEntries } from './roundRobinStandingsService';
 import type { DbMatchRow, DbTeamRow } from '../types/database.types';
 import type {
   Tournament,
@@ -88,8 +89,8 @@ class TournamentService {
    *   when present, otherwise the last winners-bracket round, skipping a
    *   third-place match fed by losers).
    * - Swiss: top of the Swiss standings (see utils/swissPairing).
-   * - Round robin: the team with the most match wins; null when the top spot
-   *   is shared, since no tiebreak data is stored.
+   * - Round robin: top of the round robin standings (wins, head-to-head,
+   *   round difference, rounds won, seed; see utils/roundRobinStandings).
    * - Shuffle: null (players, not teams, are ranked on the leaderboard).
    */
   async getTournamentWinner(
@@ -137,17 +138,15 @@ class TournamentService {
       return top ? resolveTeam(top.teamId) : null;
     }
 
-    // Round robin: most match wins, no winner on a shared top spot.
-    const wins = new Map<string, number>();
-    for (const r of rows) {
-      if (r.status === 'completed' && r.winner_id) {
-        wins.set(r.winner_id, (wins.get(r.winner_id) ?? 0) + 1);
-      }
+    // Round robin: top of the standings. The tiebreaks make the order strict,
+    // so a finished round robin always has a champion (#225).
+    if (type === 'round_robin') {
+      if (!rows.some((r) => r.status === 'completed' && r.winner_id)) return null;
+      const [top] = await getRoundRobinStandings(1);
+      return top ? resolveTeam(top.teamId) : null;
     }
-    const ranked = [...wins.entries()].sort((a, b) => b[1] - a[1]);
-    if (ranked.length === 0) return null;
-    if (ranked.length > 1 && ranked[0][1] === ranked[1][1]) return null;
-    return resolveTeam(ranked[0][0]);
+
+    return null;
   }
 
   /**
@@ -607,6 +606,10 @@ class TournamentService {
     if (tournament.type === 'swiss') {
       const swissStandings = await getSwissStandingEntries(tournament.id);
       return { tournament, matches, totalRounds, swissStandings };
+    }
+    if (tournament.type === 'round_robin') {
+      const roundRobinStandings = await getRoundRobinStandingEntries(tournament.id);
+      return { tournament, matches, totalRounds, roundRobinStandings };
     }
     return { tournament, matches, totalRounds };
   }
