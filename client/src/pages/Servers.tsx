@@ -938,7 +938,7 @@ export default function Servers() {
                     const boxColor = olderCount > 0 ? 'warning' : 'info';
                     const releaseHref =
                       latestMatchZyReleaseUrl ??
-                      'https://github.com/Auto-Tournament/auto-tournament-cs2/releases';
+                      'https://github.com/Auto-Tournament/cs2-plugin/releases';
 
                     return (
                       <Box

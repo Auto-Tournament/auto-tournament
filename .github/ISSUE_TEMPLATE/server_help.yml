@@ -11,7 +11,7 @@ body:
         **Quick Resources:**
         - [Server Setup Guide](https://docs.sivert.io/docs/mat/user/server-setup)
         - [CS2 Server Manager Tool](https://docs.sivert.io/docs/csm/quick-start)
-        - [Auto Tournament CS2 releases](https://github.com/Auto-Tournament/auto-tournament-cs2/releases)
+        - [Auto Tournament CS2 releases](https://github.com/Auto-Tournament/cs2-plugin/releases)
 
   - type: dropdown
     id: server-issue-type
