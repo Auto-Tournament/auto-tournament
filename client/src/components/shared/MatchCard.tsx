@@ -206,7 +206,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     <Card
       sx={{
         cursor: onClick ? 'pointer' : 'default',
-        transition: 'transform 0.2s, box-shadow 0.2s',
+        transition: 'background-color 0.2s',
         borderLeft: 4,
         borderLeftColor: getBorderColor(),
         border: selected ? 2 : 1,
@@ -218,8 +218,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           : getBorderColor(),
         '&:hover': onClick
           ? {
-              transform: 'translateY(-3px)',
-              boxShadow: (theme) => `0 24px 60px -30px ${theme.palette.primary.main}`,
+              bgcolor: 'var(--at-paper3)',
             }
           : {},
       }}

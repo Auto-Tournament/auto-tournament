@@ -61,8 +61,7 @@ export function TournamentTypeFormatStep({
                         bgcolor: isSelected ? 'action.selected' : 'background.paper',
                         transition: 'all 0.2s',
                         '&:hover': {
-                          transform: 'translateY(-2px)',
-                          boxShadow: (theme) => `0 24px 60px -30px ${theme.palette.primary.main}`,
+                          bgcolor: 'var(--at-paper3)',
                         },
                         opacity: !canEdit || saving ? 0.6 : 1,
                         cursor: !canEdit || saving ? 'not-allowed' : 'pointer',

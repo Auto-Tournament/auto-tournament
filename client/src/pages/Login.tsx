@@ -3,7 +3,6 @@ import { Box, Card, Button, Alert, Container, Link, Stack, Typography } from '@m
 import { OpenInNew as OpenInNewIcon } from '@mui/icons-material';
 import { SiDiscord, SiGithub, SiKeycloak } from 'react-icons/si';
 import { FcGoogle } from 'react-icons/fc';
-import { useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { SteamIcon } from '../components/icons/SteamIcon';
@@ -27,7 +26,6 @@ export default function Login() {
   >([]);
   const [loadingProviders, setLoadingProviders] = useState(false);
   const [providersError, setProvidersError] = useState<string | null>(null);
-  const location = useLocation();
   const hasLoadedProvidersRef = React.useRef(false);
   // __APP_VERSION__ is injected by Vite at build time (see client/vite.config.ts)
   const appVersion = __APP_VERSION__;
@@ -118,7 +116,7 @@ export default function Login() {
         minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
-        // Transparent: the body carries the paper colour and the orange blooms.
+        // Transparent: the body carries the paper colour.
         background: 'transparent',
       }}
     >
@@ -137,7 +135,6 @@ export default function Login() {
           sx={{
             p: { xs: 3, sm: 4, md: 5 },
             backgroundColor: 'background.paper',
-            boxShadow: location.pathname === '/login' ? `0 24px 60px -30px ${tokens.color.accent}` : 'none',
           }}
         >
           <Stack spacing={4} alignItems="center">
@@ -157,7 +154,6 @@ export default function Login() {
                     width: '88px',
                     height: '88px',
                     borderRadius: '20px',
-                    boxShadow: `0 24px 80px -20px ${tokens.color.accent}`,
                   }}
                 />
               </Box>

@@ -228,18 +228,16 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
         borderColor: state === 'picked' ? color.pick : isCurrentTurn ? color.accent : color.rule,
         boxShadow:
           state === 'picked'
-            ? `0 0 0 1px ${color.pick}, 0 16px 40px -24px ${color.pick}`
+            ? `0 0 0 1px ${color.pick}`
             : isCurrentTurn
             ? `0 0 0 1px ${withAlpha(color.accent, 0.5)}`
             : 'none',
-        transition: `transform ${duration.base}ms ${ease.out}, box-shadow ${duration.base}ms ${ease.out}, border-color ${duration.base}ms ${ease.out}`,
+        transition: `box-shadow ${duration.base}ms ${ease.out}, border-color ${duration.base}ms ${ease.out}`,
         '&:hover': isClickable
           ? {
-              transform: 'translateY(-3px)',
-              boxShadow: `0 0 0 1px ${color.accent}, 0 24px 60px -30px ${color.accent}`,
+              boxShadow: `0 0 0 1px ${color.accent}`,
             }
           : {},
-        '@media (prefers-reduced-motion: reduce)': { '&:hover': { transform: 'none' } },
       }}
     >
       {isInteractive ? (

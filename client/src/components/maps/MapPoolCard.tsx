@@ -25,11 +25,10 @@ export function MapPoolCard({ pool, maps, onClick }: MapPoolCardProps) {
         display: 'flex',
         flexDirection: 'column',
         cursor: 'pointer',
-        transition: 'transform 0.2s, box-shadow 0.2s',
+        transition: 'background-color 0.2s',
         opacity: pool.enabled ? 1 : 0.7,
         '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: (theme) => `0 24px 60px -30px ${theme.palette.primary.main}`,
+          bgcolor: 'var(--at-paper3)',
         },
       }}
     >
