@@ -1,13 +1,13 @@
 <div align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo/mat-wordmark-dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="docs/assets/logo/mat-wordmark-light.svg">
-    <img src="docs/assets/logo/mat-wordmark-light.svg" alt="mat" height="56">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo/at-wordmark-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/logo/at-wordmark-light.svg">
+    <img src="docs/assets/logo/at-wordmark-light.svg" alt="Auto Tournament" height="56">
   </picture>
 
-  # MatchZy Auto Tournament
+  # Auto Tournament
 
-  A web app for running CS2 tournaments. You create the bracket, and MAT loads
+  A web app for running CS2 tournaments. You create the bracket, and Auto Tournament loads
   each match onto your servers, runs the map veto in the browser and records the
   results.
 
@@ -19,13 +19,12 @@
 
 </div>
 
-> **MatchZy Auto Tournament is becoming Auto Tournament.** The project has moved
-> to the [Auto-Tournament](https://github.com/Auto-Tournament) organisation. It is the
-> same project, maintainer and code, and your install keeps working. From 3.0 it will
-> support more games and tournament formats as modules, with CS2 as the built-in game.
-> Nothing changes for you until you update to 3.0.
+> **Formerly MatchZy Auto Tournament.** Same project, maintainer and code, now in the
+> [Auto-Tournament](https://github.com/Auto-Tournament) organisation. Your install keeps
+> working, and the Docker image keeps its old name for now. From 3.0 it will support
+> more games and tournament formats as modules, with CS2 as the built-in game.
 
-MAT (currently 2.4.13) talks to CS2 servers running
+Auto Tournament (currently 2.4.13) talks to CS2 servers running
 [MatchZy Enhanced](https://github.com/Auto-Tournament/MatchZy-Enhanced). It is used
 for organised tournaments and for a quick 5v5 or 2v2 with friends.
 
@@ -37,7 +36,7 @@ for organised tournaments and for a quick 5v5 or 2v2 with friends.
   match ends
 - Live scores and server status over WebSockets
 - Player ratings (OpenSkill) and leaderboards
-- Demo recording, uploaded to MAT for download
+- Demo recording, uploaded to Auto Tournament for download
 - Public team pages with connect info, no login needed
 - An HTTP API with API tokens and an OpenAPI spec, plus an example Discord bot
 - A simulation mode for testing tournaments without real players
@@ -66,7 +65,7 @@ To add servers, either:
   MatchZy Enhanced already installed, or
 - install [CounterStrikeSharp](https://docs.cssharp.dev/) and
   [MatchZy Enhanced](https://docs.sivert.io/docs/me) yourself, then add the
-  server in MAT under Settings → Servers.
+  server in Auto Tournament under Settings → Servers.
 
 To run a tournament: Dashboard → New Tournament, pick a format, add teams and
 start it.
@@ -86,7 +85,7 @@ docker compose --env-file .env -f docker/docker-compose.yml up -d
 docker compose --env-file .env -f docker/docker-compose.yml logs -f matchzy-tournament
 ```
 
-More in [Updating MAT](https://docs.sivert.io/docs/mat/user/updating). If you
+More in [Updating](https://docs.sivert.io/docs/mat/user/updating). If you
 build from source, use `yarn docker:local:restart`.
 
 ## Documentation
@@ -97,7 +96,7 @@ Running tournaments:
 - [Server setup](https://docs.sivert.io/docs/mat/user/server-setup)
 - [Creating tournaments](https://docs.sivert.io/docs/mat/user/tournaments)
 
-Building on MAT:
+Building on Auto Tournament:
 
 - [Using the API from a bot or script](docs/API.md)
 - [API reference](docs/API-REFERENCE.md) and [OpenAPI spec](docs/openapi.json), both generated from the code
@@ -108,7 +107,7 @@ Building on MAT:
 ## Related projects
 
 - [MatchZy Enhanced](https://github.com/Auto-Tournament/MatchZy-Enhanced)
-  ([docs](https://docs.sivert.io/docs/me)): the CS2 server plugin MAT drives.
+  ([docs](https://docs.sivert.io/docs/me)): the CS2 server plugin Auto Tournament drives.
 - [CS2 Server Manager](https://github.com/Auto-Tournament/cs2-server-manager)
   ([docs](https://docs.sivert.io/docs/csm)): sets up and updates the CS2
   servers.
@@ -125,3 +124,7 @@ PolyForm Noncommercial 1.0.0, see [LICENSE](LICENSE). Free for non-commercial us
 
 Built on [brackets-manager.js](https://github.com/Drarig29/brackets-manager.js)
 and [brackets-viewer.js](https://github.com/Drarig29/brackets-viewer.js).
+
+---
+
+The logo was generated with an AI image model (ChatGPT) and then cleaned up and recoloured by hand.

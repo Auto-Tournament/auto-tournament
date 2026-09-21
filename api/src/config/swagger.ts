@@ -20,7 +20,7 @@ const options: swaggerJsdoc.Options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'MatchZy Auto Tournament API',
+      title: 'Auto Tournament API',
       version: '1.0.0',
       description: 'API for managing CS2 tournament servers with secure RCON control',
       contact: {
