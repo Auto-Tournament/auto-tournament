@@ -8,7 +8,7 @@ Portuguese (pt-PT), Polish, Dutch, Simplified Chinese and Norwegian bokmål.
 Fixing gaps in one of those is as welcome as adding a new one.
 
 The longer technical write-up is
-[i18n and translation](https://docs.autotournament.gg)
+[i18n and translation](https://docs.autotournament.gg/developer/translating)
 in the docs.
 
 ## Adding a language

@@ -1,7 +1,7 @@
 # Contributing to MatchZy Auto Tournament
 
 The full guide is in the docs:
-[Development → Contributing](https://docs.autotournament.gg).
+[Development → Contributing](https://docs.autotournament.gg/developer/contributing).
 
 ## Running it locally
 
@@ -27,7 +27,7 @@ yarn dev              # API and client together
 ## Translations
 
 [TRANSLATING.md](../TRANSLATING.md) has the steps. The longer version is
-[i18n and translation](https://docs.autotournament.gg).
+[i18n and translation](https://docs.autotournament.gg/developer/translating).
 
 ## Reporting bugs
 

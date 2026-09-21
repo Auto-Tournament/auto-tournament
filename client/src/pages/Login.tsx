@@ -179,7 +179,7 @@ export default function Login() {
                   <Stack spacing={0.5}>
                     <Typography variant="body2">{providersError}</Typography>
                     <Link
-                      href="https://docs.autotournament.gg"
+                      href="https://docs.autotournament.gg/guides/sign-in"
                       target="_blank"
                       rel="noopener noreferrer"
                       sx={{ fontSize: '0.8rem' }}

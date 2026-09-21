@@ -217,7 +217,7 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
           </Typography>
           <Typography variant="caption" component="div">
             <Link
-              href="https://docs.autotournament.gg"
+              href="https://docs.autotournament.gg/guides/teams-and-players#import-players"
               target="_blank"
               rel="noopener noreferrer"
               sx={{

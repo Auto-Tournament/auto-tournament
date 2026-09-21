@@ -85,24 +85,24 @@ docker compose --env-file .env -f docker/docker-compose.yml up -d
 docker compose --env-file .env -f docker/docker-compose.yml logs -f matchzy-tournament
 ```
 
-More in [Updating](https://docs.autotournament.gg). If you
+More in [Updating](https://docs.autotournament.gg/guides/updating). If you
 build from source, use `yarn docker:local:restart`.
 
 ## Documentation
 
 Running tournaments:
 
-- [Admin dashboard](https://docs.autotournament.gg)
-- [Server setup](https://docs.autotournament.gg)
-- [Creating tournaments](https://docs.autotournament.gg)
+- [Admin dashboard](https://docs.autotournament.gg/getting-started/first-login)
+- [Server setup](https://docs.autotournament.gg/getting-started/connect-server)
+- [Creating tournaments](https://docs.autotournament.gg/getting-started/first-tournament)
 
 Building on Auto Tournament:
 
 - [Using the API from a bot or script](docs/API.md)
 - [API reference](docs/API-REFERENCE.md) and [OpenAPI spec](docs/openapi.json), both generated from the code
 - [Example Discord bot](examples/discord-bot/README.md)
-- [Architecture](https://docs.autotournament.gg)
-- [Testing](https://docs.autotournament.gg)
+- [Architecture](https://docs.autotournament.gg/developer/architecture)
+- [Testing](https://docs.autotournament.gg/developer/tests)
 
 ## Related projects
 
