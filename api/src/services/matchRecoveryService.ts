@@ -171,7 +171,7 @@ export async function replayRecentEvents(matchSlug: string, sinceTimestamp?: num
       `SELECT event_type, event_data, received_at 
        FROM match_events 
        WHERE match_slug = ? AND received_at >= ?
-       ORDER BY received_at ASC`,
+       ORDER BY received_at ASC, id ASC`,
       [matchSlug, since]
     );
 

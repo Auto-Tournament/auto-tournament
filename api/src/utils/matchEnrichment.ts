@@ -18,7 +18,7 @@ export async function enrichMatchWithPlayerStats(
   const playerStatsEvent = await db.queryOneAsync<DbEventRow>(
     `SELECT event_data FROM match_events 
      WHERE match_slug = ? AND event_type = 'player_stats' 
-     ORDER BY received_at DESC LIMIT 1`,
+     ORDER BY received_at DESC, id DESC LIMIT 1`,
     [matchSlug]
   );
 
@@ -47,7 +47,7 @@ export async function enrichMatchWithScores(
   const scoreEvent = await db.queryOneAsync<DbEventRow>(
     `SELECT event_data FROM match_events 
      WHERE match_slug = ? AND event_type IN ('series_end', 'round_end', 'map_end') 
-     ORDER BY received_at DESC LIMIT 1`,
+     ORDER BY received_at DESC, id DESC LIMIT 1`,
     [matchSlug]
   );
 

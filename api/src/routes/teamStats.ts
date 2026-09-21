@@ -74,7 +74,7 @@ router.get('/:teamId/history', async (req: Request, res: Response) => {
       const scoreEvent = await db.queryOneAsync<DbEventRow>(
         `SELECT event_data FROM match_events 
          WHERE match_slug = ? AND event_type = 'series_end' 
-         ORDER BY received_at DESC LIMIT 1`,
+         ORDER BY received_at DESC, id DESC LIMIT 1`,
         [match.slug]
       );
 
