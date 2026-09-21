@@ -75,5 +75,8 @@
   "common": {
     "delete": "Delete",
     "cancel": "Cancel"
+  },
+  "theme": {
+    "label": "Color theme"
   }
 }

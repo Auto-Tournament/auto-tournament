@@ -8,26 +8,37 @@
  * Components should not hard-code colours: read them from here or from the
  * MUI theme (theme/index.ts), which is built from these tokens.
  */
+import { DEFAULT_THEME_ID, THEME_COLORS, readStoredThemeId, type ThemeId } from './themes';
+
+// Read the chosen theme synchronously, before the MUI theme below is built,
+// and merge its overrides over the Ember defaults. See theme/themes.ts.
+export const activeThemeId: ThemeId = typeof window === 'undefined' ? DEFAULT_THEME_ID : readStoredThemeId();
+export { setTheme } from './themes';
+
+const activeThemeColors = THEME_COLORS[activeThemeId];
+
 export const tokens = {
   color: {
-    paper: '#100908', // oklch(15% 0.012 38)
-    paper2: '#18110e', // oklch(18.5% 0.014 38)
-    paper3: '#211815', // oklch(22% 0.016 38)
-    ink: '#f4edeb', // oklch(95% 0.008 38)
-    ink2: '#c4bcb9', // oklch(80% 0.010 38)
-    muted: '#938a87', // oklch(64% 0.012 38)
-    rule: '#322926', // oklch(29% 0.014 38)
-    accent: '#ff6a3d', // brand orange, oklch(70% 0.19 38)
-    accent2: '#fe8f5b', // oklch(76% 0.15 45), hover
-    accentInk: '#140e0c', // text on accent
-    focus: '#ff6b33',
-    live: '#3fc168', // oklch(72% 0.17 150)
-    pick: '#3fc168', // same green as live
-    ban: '#f2645f', // oklch(67% 0.17 25)
+    paper: activeThemeColors.paper, // oklch(15% 0.012 38)
+    paper2: activeThemeColors.paper2, // oklch(18.5% 0.014 38)
+    paper3: activeThemeColors.paper3, // oklch(22% 0.016 38)
+    ink: activeThemeColors.ink, // oklch(95% 0.008 38)
+    ink2: activeThemeColors.ink2, // oklch(80% 0.010 38)
+    muted: activeThemeColors.muted, // oklch(64% 0.012 38)
+    rule: activeThemeColors.rule, // oklch(29% 0.014 38)
+    accent: activeThemeColors.accent, // brand orange, oklch(70% 0.19 38)
+    accent2: activeThemeColors.accent2, // oklch(76% 0.15 45), hover
+    accentInk: activeThemeColors.accentInk, // text on accent
+    focus: activeThemeColors.focus,
+    live: activeThemeColors.live, // oklch(72% 0.17 150)
+    pick: activeThemeColors.pick, // same green as live
+    ban: activeThemeColors.ban, // oklch(67% 0.17 25)
+    // Fill for the dark parts of the ram logo (AtIcon).
+    logoInk: activeThemeColors.logoInk,
     // App only: states the website never shows.
     warning: '#f2b84b', // amber, kept apart from the brand orange
     info: '#7fb0e8',
-    navGlass: 'rgba(24, 17, 14, 0.82)', // paper2 at 82%, under a backdrop blur
+    navGlass: activeThemeColors.navGlass, // paper2 at 82%, under a backdrop blur
     scrim: 'rgba(8, 4, 3, 0.72)', // dialog backdrop
     shadow: 'rgba(0, 0, 0, 0.45)',
     // CS2 side colours, used on scoreboards and side picks.

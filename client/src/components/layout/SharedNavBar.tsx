@@ -15,6 +15,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { useCurrentMatchStatus } from '../../hooks/useCurrentMatchStatus';
 import { LanguageSwitcher } from '../common/LanguageSwitcher';
+import { ThemeSwitcher } from '../common/ThemeSwitcher';
+import { AtIcon } from '../common/AtIcon';
 import { PlayerAvatar } from '../player/PlayerAvatar';
 import { generateAvatarDataUrl } from '../../generation/avatar';
 import { api } from '../../utils/api';
@@ -256,12 +258,9 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
             whiteSpace: 'nowrap',
           }}
         >
-          <Box
-            component="img"
-            src="/icon.svg"
-            alt="Auto Tournament"
-            sx={{ height: 30, width: 30, borderRadius: '8px' }}
-          />
+          <Box sx={{ height: 30, width: 30, borderRadius: '8px', overflow: 'hidden', display: 'flex' }}>
+            <AtIcon size={30} title="Auto Tournament" />
+          </Box>
           <Box component="span" aria-hidden sx={{ display: { xs: 'none', lg: 'inline' } }}>
             Auto Tournament
           </Box>
@@ -313,6 +312,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
             </Button>
           ) : null}
         </Box>
+        <ThemeSwitcher />
         <LanguageSwitcher />
 
         {needsSteamLink && (

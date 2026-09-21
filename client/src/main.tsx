@@ -6,12 +6,21 @@ import { zhCN, enUS, frFR, deDE, esES, itIT, ptPT, plPL, nlNL, nbNO } from '@mui
 import App from './App';
 import './index.css';
 import i18n from './i18n';
-import { theme as baseTheme } from './theme';
+import { theme as baseTheme, activeThemeId, tokens } from './theme';
 import { createTheme } from '@mui/material/styles';
+import { applyFaviconTheme } from './theme/favicon';
 
 // Log application version on startup (injected by Vite from package.json)
 
 console.info('[MatchZy] App version:', __APP_VERSION__);
+
+// Ember's favicon is baked into index.html; swap it for the active theme's
+// recoloured ram logo otherwise.
+applyFaviconTheme(activeThemeId, {
+  accent: tokens.color.accent,
+  accent2: tokens.color.accent2,
+  logoInk: tokens.color.logoInk,
+});
 
 const getMuiLocale = (lang: string) => {
   if (lang.startsWith('zh')) return zhCN;
