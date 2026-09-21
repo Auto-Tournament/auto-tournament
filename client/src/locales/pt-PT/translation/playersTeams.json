@@ -344,7 +344,8 @@
       "noMapToPickSide": "Nenhum mapa para escolher o lado",
       "matchNotFound": "Partida não encontrada",
       "unauthorized": "Apenas jogadores de uma das duas equipas participantes podem realizar ações de veto para esta partida."
-    }
+    },
+    "decider": "Decider"
   },
   "discordId": {
     "noDiscord": "Sem Discord",

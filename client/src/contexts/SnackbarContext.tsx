@@ -8,6 +8,7 @@ import {
 } from 'notistack';
 import { Alert, GlobalStyles, IconButton, Slide, TransitionProps } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import { tokens, withAlpha } from '../theme/tokens';
 
 type ShowSnackbarOptions = {
   /**
@@ -46,7 +47,7 @@ const SNACKBAR_SX = {
   minWidth: 0,
   maxWidth: '500px',
   borderRadius: 2,
-  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+  boxShadow: `0 18px 40px -18px ${tokens.color.shadow}`,
   fontWeight: 500,
   '& .MuiAlert-icon': {
     color: 'inherit',
@@ -54,7 +55,7 @@ const SNACKBAR_SX = {
   '& .MuiAlert-action .MuiIconButton-root': {
     color: 'inherit',
     '&:hover': {
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      backgroundColor: withAlpha(tokens.color.accentInk, 0.12),
     },
   },
 } as const;

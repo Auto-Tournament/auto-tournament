@@ -913,6 +913,21 @@
   resolved "https://registry.npmjs.org/@faker-js/faker/-/faker-10.1.0.tgz"
   integrity sha512-C3mrr3b5dRVlKPJdfrAXS8+dq+rq8Qm5SNRazca0JKgw1HQERFmrVb0towvMmw5uu8hHKNiQasMaR/tydf3Zsg==
 
+"@fontsource/geist-mono@^5.3.0":
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/@fontsource/geist-mono/-/geist-mono-5.3.0.tgz#3b1823d8c2d64366575015fd4e7a7f07b05cf926"
+  integrity sha512-UtJ1BBBCVpMYdIcW7nEB45UAoAw5M53ZXs2t0ciPW+IokuAAIc56M8+kW5tXbRJCTpDw4XTtU7proT6NdQAHTg==
+
+"@fontsource/geist@^5.3.0":
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/@fontsource/geist/-/geist-5.3.0.tgz#309379f1654fe357be21ea1964e3042dcf9f0b08"
+  integrity sha512-u03ftlfVwb05uijq2jGDJ03/HKGqMKaNFk7KOhkpBUex8+BhrAOfMs/XciJ2UUNUX9fEsZbZQld/RWMA2oFU7g==
+
+"@fontsource/sora@^5.3.0":
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/@fontsource/sora/-/sora-5.3.0.tgz#13bbc152d4a18d7531b6fbe4b3dfa6927f793c42"
+  integrity sha512-SqW3OpKxxfKvxDLPlbdrWf2KooPfbd+W3jaYn483o+Y/JrmU87vjFPNptDqwP428c3vY+gnranLhjcbRaXB0Jw==
+
 "@humanfs/core@^0.19.1":
   version "0.19.1"
   resolved "https://registry.npmjs.org/@humanfs/core/-/core-0.19.1.tgz"

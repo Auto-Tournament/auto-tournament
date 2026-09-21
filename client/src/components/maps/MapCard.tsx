@@ -38,7 +38,7 @@ export function MapCard({ map, onClick }: MapCardProps) {
         cursor: 'pointer',
         '&:hover': {
           transform: 'translateY(-4px)',
-          boxShadow: 4,
+          boxShadow: (theme) => `0 24px 60px -30px ${theme.palette.primary.main}`,
         },
       }}
     >

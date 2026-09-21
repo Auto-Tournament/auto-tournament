@@ -8,6 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { SteamIcon } from '../components/icons/SteamIcon';
 import { TopNavBar } from '../components/layout/TopNavBar';
+import { tokens } from '../theme/tokens';
 
 export default function Login() {
   const { t } = useTranslation();
@@ -117,7 +118,8 @@ export default function Login() {
         minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
-        background: 'linear-gradient(135deg, #1C1B1F 0%, #2B2930 100%)',
+        // Transparent: the body carries the paper colour and the orange blooms.
+        background: 'transparent',
       }}
     >
       <TopNavBar />
@@ -133,10 +135,9 @@ export default function Login() {
         <Card
           elevation={0}
           sx={{
-            p: { xs: 4, md: 5 },
+            p: { xs: 3, sm: 4, md: 5 },
             backgroundColor: 'background.paper',
-            borderRadius: 3,
-            boxShadow: (theme) => theme.shadows[location.pathname === '/login' ? 8 : 2],
+            boxShadow: location.pathname === '/login' ? `0 24px 60px -30px ${tokens.color.accent}` : 'none',
           }}
         >
           <Stack spacing={4} alignItems="center">
@@ -152,7 +153,12 @@ export default function Login() {
                 <img
                   src="/icon.svg"
                   alt="Auto Tournament Logo"
-                  style={{ width: '108px', height: '108px' }}
+                  style={{
+                    width: '88px',
+                    height: '88px',
+                    borderRadius: '20px',
+                    boxShadow: `0 24px 80px -20px ${tokens.color.accent}`,
+                  }}
                 />
               </Box>
 
@@ -169,7 +175,7 @@ export default function Login() {
             {/* Provider-based sign in (Steam, Keycloak, Discord, etc.) */}
             <Stack spacing={2.5} sx={{ width: '100%' }}>
               {providersError && (
-                <Alert severity="error" sx={{ borderRadius: 2 }}>
+                <Alert severity="error">
                   <Stack spacing={0.5}>
                     <Typography variant="body2">{providersError}</Typography>
                     <Link
@@ -199,10 +205,10 @@ export default function Login() {
                         variant: 'contained' as const,
                         color: 'primary' as const,
                         sx: {
-                          bgcolor: '#171a21',
-                          color: '#ffffff',
+                          bgcolor: tokens.brand.steam,
+                          color: tokens.brand.onBrand,
                           '&:hover': {
-                            bgcolor: '#1b2838',
+                            bgcolor: tokens.brand.steamHover,
                           },
                         },
                         icon: <SteamIcon />,
@@ -213,10 +219,10 @@ export default function Login() {
                         variant: 'contained' as const,
                         color: 'inherit' as const,
                         sx: {
-                          bgcolor: '#5865F2',
-                          color: '#ffffff',
+                          bgcolor: tokens.brand.discord,
+                          color: tokens.brand.onBrand,
                           '&:hover': {
-                            bgcolor: '#4752c4',
+                            bgcolor: tokens.brand.discordHover,
                           },
                         },
                         icon: <SiDiscord />,
@@ -227,10 +233,10 @@ export default function Login() {
                         variant: 'contained' as const,
                         color: 'inherit' as const,
                         sx: {
-                          bgcolor: '#24292e',
-                          color: '#ffffff',
+                          bgcolor: tokens.brand.github,
+                          color: tokens.brand.onBrand,
                           '&:hover': {
-                            bgcolor: '#1b1f23',
+                            bgcolor: tokens.brand.githubHover,
                           },
                         },
                         icon: <SiGithub />,
@@ -253,9 +259,9 @@ export default function Login() {
                       };
                     }
                     if (isKeycloak) {
-                      const bg = provider.buttonBgColor || '#3262a8';
-                      const text = provider.buttonTextColor || '#ffffff';
-                      const hoverBg = provider.buttonHoverBgColor || '#274c82';
+                      const bg = provider.buttonBgColor || tokens.brand.keycloak;
+                      const text = provider.buttonTextColor || tokens.brand.onBrand;
+                      const hoverBg = provider.buttonHoverBgColor || tokens.brand.keycloakHover;
                       return {
                         variant: 'contained' as const,
                         color: 'inherit' as const,

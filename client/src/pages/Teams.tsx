@@ -273,13 +273,12 @@ export default function Teams() {
                 sx={{
                   cursor: 'pointer',
                   transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
-                  border: selectedTeamIds.has(team.id) ? 2 : 0,
-                  borderRadius: 2,
+                  border: selectedTeamIds.has(team.id) ? 2 : 1,
                   borderStyle: 'solid',
-                  borderColor: selectedTeamIds.has(team.id) ? 'primary.main' : 'transparent',
+                  borderColor: selectedTeamIds.has(team.id) ? 'primary.main' : 'divider',
                   '&:hover': {
                     transform: 'translateY(-4px)',
-                    boxShadow: 6,
+                    boxShadow: (theme) => `0 24px 60px -30px ${theme.palette.primary.main}`,
                   },
                 }}
                 onClick={() => {
