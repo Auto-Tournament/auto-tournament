@@ -33,7 +33,7 @@ export async function getLatestMatchZyVersion(options?: {
   try {
     log.debug('[MATCHZY-VERSION] Fetching latest MatchZy Enhanced version from GitHub...');
     const response = await fetch(
-      'https://api.github.com/repos/Auto-Tournament/MatchZy-Enhanced/releases/latest',
+      'https://api.github.com/repos/Auto-Tournament/cs2-plugin/releases/latest',
       {
         headers: {
           Accept: 'application/vnd.github.v3+json',

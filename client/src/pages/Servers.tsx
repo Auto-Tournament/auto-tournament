@@ -938,7 +938,7 @@ export default function Servers() {
                     const boxColor = olderCount > 0 ? 'warning' : 'info';
                     const releaseHref =
                       latestMatchZyReleaseUrl ??
-                      'https://github.com/Auto-Tournament/MatchZy-Enhanced/releases';
+                      'https://github.com/Auto-Tournament/cs2-plugin/releases';
 
                     return (
                       <Box
@@ -1603,7 +1603,7 @@ export default function Servers() {
                         <Box display="flex" alignItems="center" gap={0.5}>
                           <UpdateIcon sx={{ fontSize: 16, color: 'text.disabled' }} />
                           <Typography variant="body2" color="text.secondary">
-                            <strong>{t('serversPage.labels.plugin')}</strong> MatchZy Enhanced v{server.pluginVersion}
+                            <strong>{t('serversPage.labels.plugin')}</strong> Auto Tournament CS2 v{server.pluginVersion}
                           </Typography>
                         </Box>
                       )}

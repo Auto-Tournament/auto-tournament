@@ -221,7 +221,7 @@
         }
       },
       "matchzyEnhanced": {
-        "title": "MatchZy Enhanced Features",
+        "title": "CS2 plugin features",
         "description": "Configure advanced match features. Leave settings empty to use MatchZy plugin defaults.",
         "autoready": {
           "title": "Auto-Ready System",
@@ -259,7 +259,7 @@
         "demo": {
           "title": "Demos",
           "enabled": "Enable demo recording (auto-configure GOTV + uploads)",
-          "description": "When enabled, MAT sets tv_enable 1 and configures MatchZy Enhanced to upload demos to MAT automatically after each map."
+          "description": "When enabled, MAT sets tv_enable 1 and configures the CS2 plugin to upload demos to MAT automatically after each map."
         }
       }
     },
