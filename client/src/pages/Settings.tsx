@@ -1304,7 +1304,7 @@ export default function Settings() {
 
                       <Box
                         sx={{
-                          bgcolor: 'warning.50',
+                          bgcolor: (theme) => `${theme.palette.warning.main}14`, // 8% amber wash
                           border: 1,
                           borderColor: 'warning.main',
                           borderRadius: 1,

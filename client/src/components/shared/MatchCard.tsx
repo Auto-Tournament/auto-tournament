@@ -209,9 +209,13 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         transition: 'transform 0.2s, box-shadow 0.2s',
         borderLeft: 4,
         borderLeftColor: getBorderColor(),
-        border: selected ? 2 : 0,
+        border: selected ? 2 : 1,
         borderStyle: 'solid',
-        borderColor: selected ? 'primary.main' : getBorderColor(),
+        borderColor: selected
+          ? 'primary.main'
+          : getBorderColor() === 'transparent'
+          ? 'divider'
+          : getBorderColor(),
         '&:hover': onClick
           ? {
               transform: 'translateY(-3px)',

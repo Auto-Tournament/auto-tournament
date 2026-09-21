@@ -317,7 +317,7 @@ export default function PlayerSelectionModal({
                           ? {}
                           : {
                               borderColor: 'primary.main',
-                              boxShadow: 2,
+                              boxShadow: (theme) => `0 24px 60px -30px ${theme.palette.primary.main}`,
                             },
                       }}
                       onClick={() =>

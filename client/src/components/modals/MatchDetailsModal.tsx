@@ -1106,7 +1106,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                       </FadeInImage>
                     )}
                     <Box sx={{ position: 'relative', p: 2, width: '100%' }}>
-                      <Typography variant="h4" fontWeight={700} color="white">
+                      <Typography variant="h4" fontWeight={700} color="text.primary">
                         {currentMapLabel || 'TBD'}
                       </Typography>
                       {activeMapNumber !== null && totalMapCount && totalMapCount > 1 && (

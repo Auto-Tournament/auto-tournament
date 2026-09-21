@@ -945,13 +945,13 @@ export default function Servers() {
                     return (
                       <Box
                         sx={{
-                          bgcolor: `${boxColor}.light`,
+                          bgcolor: withAlpha(boxColor === 'warning' ? tokens.color.warning : tokens.color.info, 0.1),
                           border: 1,
-                          borderColor: `${boxColor}.main`,
-                          borderRadius: 1,
+                          borderColor: withAlpha(boxColor === 'warning' ? tokens.color.warning : tokens.color.info, 0.4),
+                          borderRadius: `${tokens.radius.md}px`,
                           p: 1.5,
                           mt: 1,
-                          color: 'grey.900',
+                          color: 'text.primary',
                         }}
                       >
                         <Typography
@@ -961,7 +961,7 @@ export default function Servers() {
                           display="block"
                           mb={0.5}
                         >
-                          ℹ️ {t('serversPage.fleet.latestRelease', { version: latestMatchZyVersion })}
+                          {t('serversPage.fleet.latestRelease', { version: latestMatchZyVersion })}
                         </Typography>
                         {olderCount > 0 && (
                           <Typography variant="caption" sx={{ color: 'inherit' }} display="block">
@@ -986,13 +986,13 @@ export default function Servers() {
                   {cs2UpdateInfo.outOfDate.length > 0 && (
                     <Box
                       sx={{
-                        bgcolor: 'error.light',
-                        border: 2,
-                        borderColor: 'error.main',
-                        borderRadius: 2,
+                        bgcolor: withAlpha(tokens.color.ban, 0.1),
+                        border: 1,
+                        borderColor: withAlpha(tokens.color.ban, 0.45),
+                        borderRadius: `${tokens.radius.md}px`,
                         p: 2,
                         mt: 1.5,
-                        color: 'grey.900',
+                        color: 'text.primary',
                       }}
                     >
                       <Typography
@@ -1023,7 +1023,7 @@ export default function Servers() {
                   {versionInfo.hasMultipleVersions && (
                     <Box 
                       sx={{ 
-                        bgcolor: 'warning.50', 
+                        bgcolor: (theme) => `${theme.palette.warning.main}14`, // 8% amber wash
                         border: 1, 
                         borderColor: 'warning.main',
                         borderRadius: 1, 
