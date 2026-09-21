@@ -3,7 +3,7 @@ import path from 'path';
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import { DEFAULT_ADMIN_STEAM_ID, getAuthHeader, signInViaRequest } from '../helpers/auth';
 import { createTeam, type Team } from '../helpers/teams';
-import { createServer, FAKE_SERVER_HOST } from '../helpers/servers';
+import { createServer, deleteServer, FAKE_SERVER_HOST } from '../helpers/servers';
 import { createAndStartTournament } from '../helpers/tournaments';
 import { findMatchByTeams } from '../helpers/matches';
 import { executeVetoActions, getCSMajorBO3Actions } from '../helpers/veto';
@@ -189,6 +189,23 @@ test.describe.serial('Golden MatchZy BO3 event replay', () => {
   test.beforeEach(async ({ request }) => {
     // The reset in beforeAll ran on another context; sign this one in.
     expect(await signInViaRequest(request)).toBe(true);
+  });
+
+  test.afterAll(async ({ playwright }) => {
+    // ensureServers() (tests/helpers/tournamentSetup.ts) reuses any enabled
+    // server on FAKE_SERVER_HOST it finds, from any spec. Left enabled, this
+    // one gets adopted by later specs that expect a fresh server (and its
+    // in-memory turnover-tracker state, e.g. seriesEndedAt from this replay,
+    // leaks with it) — see tests/api/server-turnover.spec.ts.
+    const request = await playwright.request.newContext({
+      baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069',
+    });
+    try {
+      expect(await signInViaRequest(request)).toBe(true);
+      await deleteServer(request, SERVER_ID);
+    } finally {
+      await request.dispose();
+    }
   });
 
   test(
