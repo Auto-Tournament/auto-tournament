@@ -69,7 +69,10 @@ export const theme = createTheme({
       disabledBackground: withAlpha(color.ink, 0.08),
     },
   },
-  shape: { borderRadius: radius.md },
+  // The base unit stays at the small radius (8px) so existing numeric
+  // `borderRadius: n` in component sx keep their size (1 = 8px, 2 = 16px,
+  // 3 = 24px). Surfaces set the 14px and 22px radii explicitly below.
+  shape: { borderRadius: radius.sm },
   typography: {
     fontFamily: fontBody,
     h1: { ...headingBase, letterSpacing: '-0.03em', lineHeight: 1.05, fontSize: '2.75rem' },
@@ -214,6 +217,7 @@ export const theme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: { backgroundImage: 'none' },
+        rounded: { borderRadius: radius.md },
         outlined: { borderColor: color.rule },
         elevation1: { border: `1px solid ${color.rule}`, boxShadow: 'none' },
         elevation2: { border: `1px solid ${color.rule}`, boxShadow: 'none' },
@@ -257,9 +261,9 @@ export const theme = createTheme({
           border: `1px solid ${color.rule}`,
           boxShadow: 'none',
           '&::before': { display: 'none' },
-          '&:first-of-type': { borderTopLeftRadius: radius.md, borderTopRightRadius: radius.md },
-          '&:last-of-type': { borderBottomLeftRadius: radius.md, borderBottomRightRadius: radius.md },
-          '& + &': { borderTop: 0 },
+          // Every accordion is its own rounded panel, stacked or not.
+          borderRadius: radius.md,
+          '&:first-of-type, &:last-of-type': { borderRadius: radius.md },
         },
       },
     },
