@@ -7,9 +7,9 @@ import fetch from 'node-fetch';
 import { log } from './logger';
 
 const GITHUB_REPO_API =
-  'https://api.github.com/repos/sivert-io/cs2-server-manager/contents/map_thumbnails';
+  'https://api.github.com/repos/Auto-Tournament/cs2-server-manager/contents/map_thumbnails';
 const GITHUB_RAW_BASE =
-  'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails';
+  'https://raw.githubusercontent.com/Auto-Tournament/cs2-server-manager/master/map_thumbnails';
 
 /**
  * Get GitHub API headers with optional authentication
@@ -136,7 +136,7 @@ function extractMapId(filename: string): string | null {
 
 /**
  * Fetch and parse CS2 maps from GitHub repository
- * Source: https://github.com/sivert-io/cs2-server-manager/tree/master/map_thumbnails
+ * Source: https://github.com/Auto-Tournament/cs2-server-manager/tree/master/map_thumbnails
  * Throws error if fetch fails - no fallback to ensure we always use the actual repository
  */
 export async function fetchCS2MapsFromWiki(): Promise<MapData[]> {
@@ -164,7 +164,7 @@ export async function fetchCS2MapsFromWiki(): Promise<MapData[]> {
               `Reset at: ${
                 rateLimitReset ? new Date(parseInt(rateLimitReset) * 1000).toISOString() : 'unknown'
               }. ` +
-              `Repository: https://github.com/sivert-io/cs2-server-manager/tree/master/map_thumbnails`
+              `Repository: https://github.com/Auto-Tournament/cs2-server-manager/tree/master/map_thumbnails`
           );
         }
         throw new Error(
@@ -234,7 +234,7 @@ export async function fetchCS2MapsFromWiki(): Promise<MapData[]> {
         throw new Error(
           'No maps found in repository. ' +
             'Please ensure the repository contains map thumbnail files: ' +
-            'https://github.com/sivert-io/cs2-server-manager/tree/master/map_thumbnails'
+            'https://github.com/Auto-Tournament/cs2-server-manager/tree/master/map_thumbnails'
         );
       }
 
@@ -248,7 +248,7 @@ export async function fetchCS2MapsFromWiki(): Promise<MapData[]> {
         log.error(`Failed to fetch maps from GitHub after ${maxRetries} attempts: ${errorMessage}`);
         throw new Error(
           `Failed to fetch maps from GitHub repository after ${maxRetries} attempts. ` +
-            `Repository: https://github.com/sivert-io/cs2-server-manager/tree/master/map_thumbnails. ` +
+            `Repository: https://github.com/Auto-Tournament/cs2-server-manager/tree/master/map_thumbnails. ` +
             `Error: ${errorMessage}`
         );
       }

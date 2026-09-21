@@ -378,7 +378,7 @@ export function getSchemaSQL(): string {
 
 /**
  * Default maps to insert on schema initialization
- * Fetches from GitHub repository: https://github.com/sivert-io/cs2-server-manager/tree/master/map_thumbnails
+ * Fetches from GitHub repository: https://github.com/Auto-Tournament/cs2-server-manager/tree/master/map_thumbnails
  * Falls back to hardcoded maps if GitHub fetch fails (e.g., rate limiting, network errors, etc.)
  */
 export async function getDefaultMapsSQL(): Promise<string> {
@@ -430,11 +430,11 @@ export async function getDefaultMapsSQL(): Promise<string> {
 /**
  * Fallback hardcoded maps (used if GitHub fetch fails, e.g., rate limiting)
  * This list matches the actual maps in the repository:
- * https://github.com/sivert-io/cs2-server-manager/tree/master/map_thumbnails
+ * https://github.com/Auto-Tournament/cs2-server-manager/tree/master/map_thumbnails
  */
 function getFallbackMaps(): Array<{ id: string; display_name: string; image_url: string }> {
   const GITHUB_RAW_BASE =
-    'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails';
+    'https://raw.githubusercontent.com/Auto-Tournament/cs2-server-manager/master/map_thumbnails';
 
   return [
     {

@@ -318,7 +318,7 @@ class DatabaseManager {
 
         if (mapsCount === 0) {
           // Maps table is empty - this is first initialization or after database wipe
-          // Fetch fresh maps from GitHub repository: https://github.com/sivert-io/cs2-server-manager/tree/master/map_thumbnails
+          // Fetch fresh maps from GitHub repository: https://github.com/Auto-Tournament/cs2-server-manager/tree/master/map_thumbnails
           // Falls back to hardcoded maps if GitHub fetch fails (e.g., rate limiting)
           log.database(
             '[PostgreSQL] Maps table is empty, fetching and inserting default maps from GitHub...'
