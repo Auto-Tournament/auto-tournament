@@ -4,6 +4,7 @@ import typescriptParser from '@typescript-eslint/parser';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactCompiler from 'eslint-plugin-react-compiler';
+import integrationBoundaries from './eslint-rules/integration-boundaries.mjs';
 
 export default [
   js.configs.recommended,
@@ -306,6 +307,21 @@ export default [
       react: {
         version: 'detect',
       },
+    },
+  },
+
+  // Game integration boundaries (3.0 module split). Core code reaches a game
+  // only through integrations/registry and integrations/types; an integration
+  // never imports another one. Passes trivially today: every later PR that
+  // moves game code must route calls through the interface.
+  // See eslint-rules/integration-boundaries.mjs.
+  {
+    files: ['api/src/**/*.ts', 'client/src/**/*.{ts,tsx}'],
+    plugins: {
+      local: integrationBoundaries,
+    },
+    rules: {
+      'local/integration-boundaries': 'error',
     },
   },
 
