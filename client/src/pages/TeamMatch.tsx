@@ -72,7 +72,7 @@ export default function TeamMatch() {
         minHeight="100vh"
         display="flex"
         flexDirection="column"
-        bgcolor="background.default"
+        bgcolor="transparent"
       >
         <TopNavBar />
         <Box flex={1} display="flex" alignItems="center" justifyContent="center">
@@ -84,7 +84,7 @@ export default function TeamMatch() {
 
   if (error) {
     return (
-      <Box minHeight="100vh" bgcolor="background.default">
+      <Box minHeight="100vh" bgcolor="transparent">
         <TopNavBar />
         <Container maxWidth="md">
           <Box py={6}>
@@ -101,7 +101,7 @@ export default function TeamMatch() {
 
   if (!hasMatch) {
     return (
-      <Box minHeight="100vh" bgcolor="background.default">
+      <Box minHeight="100vh" bgcolor="transparent">
         <TopNavBar />
         <Container maxWidth="md">
           <Stack spacing={3} py={6}>
@@ -189,7 +189,7 @@ export default function TeamMatch() {
   }
 
   return (
-    <Box minHeight="100vh" bgcolor="background.default">
+    <Box minHeight="100vh" bgcolor="transparent">
       <TopNavBar />
       <Container maxWidth="md">
         <Box py={6}>

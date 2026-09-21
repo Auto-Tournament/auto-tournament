@@ -3,6 +3,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useTranslation } from 'react-i18next';
 import type { VetoAction } from '../../types';
 import { getMapDisplayName } from '../../constants/maps';
+import { vetoHistoryRowSx, vetoMapNameSx } from '../veto/vetoStyles';
 
 interface MatchVetoHistoryProps {
   actions: VetoAction[];
@@ -27,16 +28,7 @@ export function MatchVetoHistory({ actions, team1Name, team2Name }: MatchVetoHis
       <AccordionDetails>
         <Stack spacing={1}>
           {actions.map((action, idx) => (
-            <Box
-              key={`${action.step}-${action.action}-${idx}`}
-              sx={{
-                p: 1.5,
-                borderRadius: 1,
-                bgcolor: 'action.hover',
-                border: '1px solid',
-                borderColor: 'divider',
-              }}
-            >
+            <Box key={`${action.step}-${action.action}-${idx}`} sx={vetoHistoryRowSx(action.action)}>
               <Typography variant="body2">
                 <strong>{t('vetoInterface.historyStep', { step: action.step })}</strong>{' '}
                 {action.team === 'team1' ? team1Name : team2Name}{' '}
@@ -55,7 +47,9 @@ export function MatchVetoHistory({ actions, team1Name, team2Name }: MatchVetoHis
                   }
                   sx={{ mx: 1 }}
                 />
-                {action.mapName ? getMapDisplayName(action.mapName) || action.mapName : '—'}
+                <Box component="span" sx={vetoMapNameSx(action.action)}>
+                  {action.mapName ? getMapDisplayName(action.mapName) || action.mapName : '—'}
+                </Box>
                 {action.side ? ` (${t('vetoInterface.startingSide', { side: action.side })})` : ''}
               </Typography>
             </Box>

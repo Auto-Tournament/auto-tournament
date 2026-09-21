@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import type { TeamMatchInfo } from '../../types';
 import type { CS2MapData } from '../../constants/maps';
 import { FadeInImage } from '../common/FadeInImage';
+import { tokens, mono, withAlpha } from '../../theme/tokens';
 
 interface MatchServerPanelProps {
   server: TeamMatchInfo['server'];
@@ -31,7 +32,7 @@ export function MatchServerPanel({
     return (
       <Alert severity="info">
         <Typography variant="body2" fontWeight={600} gutterBottom>
-          ⏳ {t('matchInfo.server.waitingTitle')}
+          {t('matchInfo.server.waitingTitle')}
         </Typography>
         <Typography variant="body2">{t('matchInfo.server.waitingBody')}</Typography>
       </Alert>
@@ -65,15 +66,15 @@ export function MatchServerPanel({
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              background: 'linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.5))',
+              background: `linear-gradient(to bottom, ${withAlpha(tokens.color.paper, 0.3)}, ${withAlpha(tokens.color.paper, 0.7)})`,
             }}
           >
             <Typography
               variant="h3"
               sx={{
                 fontWeight: 700,
-                color: 'white',
-                textShadow: '2px 2px 8px rgba(0,0,0,0.8)',
+                color: 'text.primary',
+                textShadow: `0 2px 12px ${tokens.color.shadow}`,
               }}
             >
               {currentMapData.displayName}
@@ -83,9 +84,10 @@ export function MatchServerPanel({
                 variant="caption"
                 sx={{
                   mt: 0.5,
-                  color: 'rgba(255, 255, 255, 0.8)',
+                  color: 'text.secondary',
                   fontSize: '0.7rem',
-                  textShadow: '1px 1px 3px rgba(0,0,0,0.8)',
+                  ...mono,
+                  textShadow: `0 1px 6px ${tokens.color.shadow}`,
                 }}
               >
                 {t('matchInfo.mapN', { n: currentMapNumber + 1 })}

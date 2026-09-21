@@ -4,6 +4,7 @@ import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { useTranslation } from 'react-i18next';
 import type { Team } from '../../types';
+import { mono } from '../../theme/tokens';
 
 interface TeamHeaderProps {
   team: Team | null;
@@ -24,17 +25,21 @@ export function TeamHeader({
   const { t } = useTranslation();
 
   return (
-    <Card
-      sx={{
-        background:
-          'linear-gradient(135deg, rgba(103, 80, 164, 0.1) 0%, rgba(103, 80, 164, 0.05) 100%)',
-      }}
-    >
+    <Card>
       <CardContent>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Box flex={1} display="flex" alignItems="center" gap={1}>
-            <Typography variant="h2" fontWeight={600} color="primary">
-              {team?.tag ? `[${team.tag}] ${team.name}` : team?.name}
+            <Typography
+              variant="h3"
+              component="p"
+              sx={{ fontSize: { xs: '1.5rem', sm: '1.875rem' }, minWidth: 0, overflowWrap: 'anywhere' }}
+            >
+              {team?.tag && (
+                <Box component="span" sx={{ ...mono, color: 'primary.main', fontSize: '0.7em', mr: 1 }}>
+                  [{team.tag}]
+                </Box>
+              )}
+              {team?.name}
             </Typography>
           </Box>
           {!hideSoundControls && onToggleMute != null && onToggleSettings != null && (

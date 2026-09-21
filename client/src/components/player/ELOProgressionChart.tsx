@@ -3,6 +3,7 @@ import { Box, Typography, Paper } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 import { buildEloProgression } from '../../utils/eloProgression';
+import { tokens } from '../../theme/tokens';
 
 interface ELOProgressionChartProps {
   history: Array<{
@@ -89,7 +90,7 @@ export function ELOProgressionChart({
   const displayStartingElo = startingElo;
 
   return (
-    <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.paper' }}>
+    <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.paper', borderRadius: `${tokens.radius.lg}px` }}>
       <Typography variant="subtitle2" fontWeight={600} gutterBottom>
         {t('playerPage.eloChart.title')}
       </Typography>

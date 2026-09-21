@@ -2,6 +2,7 @@ import { useRef, useEffect, useState } from 'react';
 import { Box, Typography, Paper, Stack, Chip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
+import { tokens } from '../../theme/tokens';
 
 interface PerformanceMetricsChartProps {
   matchHistory: Array<{
@@ -102,7 +103,7 @@ export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChar
   const hasKdPoint = kdValues.length > 0 && kdValues.some((v) => v > 0);
   if (!hasNonZeroAdr && !hasKdPoint) {
     return (
-      <Paper variant="outlined" sx={{ p: 2 }}>
+      <Paper variant="outlined" sx={{ p: 2, borderRadius: `${tokens.radius.lg}px` }}>
         <Typography variant="h6" fontWeight={600} gutterBottom>
           {t('playerPage.performanceChart.title')}
         </Typography>
@@ -157,7 +158,7 @@ export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChar
     .join(' ');
 
   return (
-    <Paper variant="outlined" sx={{ p: 2 }}>
+    <Paper variant="outlined" sx={{ p: 2, borderRadius: `${tokens.radius.lg}px` }}>
       <Typography variant="h6" fontWeight={600} gutterBottom>
         {t('playerPage.performanceChart.title')}
       </Typography>

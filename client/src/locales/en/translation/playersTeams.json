@@ -326,6 +326,7 @@
       "side_pick": "SIDE PICK"
     },
     "mapBadge": "MAP {{n}}",
+    "decider": "Decider",
     "mapCardAria": {
       "ban": "Ban {{map}}",
       "pick": "Pick {{map}}",
