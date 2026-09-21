@@ -212,6 +212,6 @@ export const routeTable: MountedRouter[] = [
     prefix: '/api/matchzy',
     router: matchzyRoutes,
     title: 'MatchZy',
-    description: 'MatchZy Enhanced version information.',
+    description: 'Auto Tournament CS2 plugin (formerly MatchZy Enhanced) version information.',
   },
 ];

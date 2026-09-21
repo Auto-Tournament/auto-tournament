@@ -11,7 +11,7 @@ body:
         **Quick Resources:**
         - [Server Setup Guide](https://docs.sivert.io/docs/mat/user/server-setup)
         - [CS2 Server Manager Tool](https://docs.sivert.io/docs/csm/quick-start)
-        - [MatchZy Enhanced Releases](https://github.com/Auto-Tournament/MatchZy-Enhanced/releases)
+        - [Auto Tournament CS2 releases](https://github.com/Auto-Tournament/auto-tournament-cs2/releases)
 
   - type: dropdown
     id: server-issue-type
@@ -83,8 +83,8 @@ body:
   - type: input
     id: matchzy-version
     attributes:
-      label: MatchZy Enhanced Version
-      description: What version of MatchZy Enhanced is installed?
+      label: Auto Tournament CS2 plugin version
+      description: What version of the CS2 plugin (Auto Tournament CS2, formerly MatchZy Enhanced) is installed?
       placeholder: "e.g., v1.3.6 (check addons/counterstrikesharp/plugins/MatchZy/MatchZy.dll properties)"
     validations:
       required: true

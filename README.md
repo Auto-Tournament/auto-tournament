@@ -25,7 +25,7 @@
 > more games and tournament formats as modules, with CS2 as the built-in game.
 
 Auto Tournament (currently 2.4.13) talks to CS2 servers running
-[MatchZy Enhanced](https://github.com/Auto-Tournament/MatchZy-Enhanced). It is used
+[Auto Tournament CS2](https://github.com/Auto-Tournament/auto-tournament-cs2), the CS2 plugin (formerly MatchZy Enhanced). It is used
 for organised tournaments and for a quick 5v5 or 2v2 with friends.
 
 ## What it does
@@ -46,7 +46,7 @@ Screenshots are in the docs: https://docs.sivert.io/docs/mat/user/screenshots
 ## Quick start
 
 You need Docker with Docker Compose, and CS2 servers with
-[MatchZy Enhanced v1.3.0+](https://github.com/Auto-Tournament/MatchZy-Enhanced/releases)
+[Auto Tournament CS2 v1.3.0+](https://github.com/Auto-Tournament/auto-tournament-cs2/releases)
 and RCON access.
 
 ```bash
@@ -62,9 +62,9 @@ To add servers, either:
 
 - use [CS2 Server Manager](https://github.com/Auto-Tournament/cs2-server-manager)
   ([docs](https://docs.sivert.io/docs/csm)), which sets up servers with
-  MatchZy Enhanced already installed, or
+  the CS2 plugin already installed, or
 - install [CounterStrikeSharp](https://docs.cssharp.dev/) and
-  [MatchZy Enhanced](https://docs.sivert.io/docs/me) yourself, then add the
+  [Auto Tournament CS2](https://docs.autotournament.gg) yourself, then add the
   server in Auto Tournament under Settings → Servers.
 
 To run a tournament: Dashboard → New Tournament, pick a format, add teams and
@@ -106,7 +106,7 @@ Building on Auto Tournament:
 
 ## Related projects
 
-- [MatchZy Enhanced](https://github.com/Auto-Tournament/MatchZy-Enhanced)
+- [Auto Tournament CS2](https://github.com/Auto-Tournament/auto-tournament-cs2)
   ([docs](https://docs.sivert.io/docs/me)): the CS2 server plugin Auto Tournament drives.
 - [CS2 Server Manager](https://github.com/Auto-Tournament/cs2-server-manager)
   ([docs](https://docs.sivert.io/docs/csm)): sets up and updates the CS2

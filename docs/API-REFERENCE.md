@@ -415,7 +415,7 @@ Sign-in flows, admin identity, impersonation.
 
 ### MatchZy
 
-MatchZy Enhanced version information.
+Auto Tournament CS2 plugin (formerly MatchZy Enhanced) version information.
 
 | Method | Path | Auth |
 | --- | --- | --- |
