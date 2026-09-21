@@ -23,6 +23,8 @@ import { useSnackbar } from '../contexts/SnackbarContext';
 import { getRoundLabel } from '../utils/matchUtils';
 import { useTranslation } from 'react-i18next';
 import type { SnackbarKey } from 'notistack';
+import { tokens, mono, withAlpha } from '../theme/tokens';
+import { StatusDot } from '../components/common/ui';
 
 export default function Servers() {
   const { setHeaderActions } = usePageHeader();
@@ -1109,30 +1111,24 @@ export default function Servers() {
                 <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }} key={server.id}>
                 <Card
                   data-testid={`server-card-${server.name.replace(/\s+/g, '-').toLowerCase()}`}
-                  sx={(theme) => {
+                  sx={() => {
                     const selected = selectedServerIds.has(server.id);
-                    const ring = `0 0 0 2px ${theme.palette.primary.main}`;
-                    const hoverShadow = selected
-                      ? `${ring}, ${theme.shadows[6]}`
-                      : theme.shadows[6];
+                    const ring = `0 0 0 2px ${tokens.color.accent}`;
+                    const glow = `0 24px 60px -30px ${tokens.color.accent}`;
+                    const hoverShadow = selected ? `${ring}, ${glow}` : glow;
                     return {
                       cursor: 'pointer',
-                      transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s, background-color 0.2s',
-                      border:
-                        needsInitialization || configSentWaitingForMatchzy ? 2 : 0,
-                      borderRadius: 2,
-                      borderStyle: 'solid',
                       borderColor: needsInitialization
                         ? 'error.main'
                         : configSentWaitingForMatchzy
                         ? 'info.main'
-                        : 'transparent',
+                        : 'divider',
                       boxShadow: selected ? ring : undefined,
                       ...(selected && {
                         bgcolor: 'action.selected',
                       }),
                       '&:hover': {
-                        transform: 'translateY(-4px)',
+                        transform: 'translateY(-3px)',
                         boxShadow: hoverShadow,
                         ...(selected && {
                           bgcolor: 'action.selected',
@@ -1152,16 +1148,17 @@ export default function Servers() {
                     {typeof server.cs2RequiredVersion === 'number' && server.enabled && (
                       <Box
                         sx={{
-                          bgcolor: 'error.light',
-                          border: 2,
-                          borderColor: 'error.main',
-                          borderRadius: 1,
+                          bgcolor: withAlpha(tokens.color.ban, 0.1),
+                          border: 1,
+                          borderColor: withAlpha(tokens.color.ban, 0.45),
+                          borderRadius: `${tokens.radius.md}px`,
                           p: 1.5,
                           mb: 2,
                           display: 'flex',
                           alignItems: 'center',
                           gap: 1,
-                          color: 'grey.900',
+                          color: 'text.primary',
+                          '& svg': { color: tokens.color.ban },
                         }}
                       >
                         <UpdateIcon
@@ -1187,16 +1184,17 @@ export default function Servers() {
                     {needsInitialization && (
                       <Box
                         sx={{
-                          bgcolor: 'error.light',
+                          bgcolor: withAlpha(tokens.color.ban, 0.1),
                           border: 1,
-                          borderColor: 'error.main',
-                          borderRadius: 1,
+                          borderColor: withAlpha(tokens.color.ban, 0.45),
+                          borderRadius: `${tokens.radius.md}px`,
                           p: 1.5,
                           mb: 2,
                           display: 'flex',
                           alignItems: 'center',
                           gap: 1,
-                          color: 'grey.900',
+                          color: 'text.primary',
+                          '& svg': { color: tokens.color.ban },
                         }}
                       >
                         <BlockIcon
@@ -1225,10 +1223,29 @@ export default function Servers() {
                       </Box>
                     )}
                     <Box display="flex" justifyContent="space-between" alignItems="start" mb={2}>
-                      <Box flex={1}>
-                        <Typography variant="h6" fontWeight={600} gutterBottom>
-                          {server.name}
-                        </Typography>
+                      <Box flex={1} minWidth={0}>
+                        <Box display="flex" alignItems="center" gap={1.25} mb={0.75}>
+                          <StatusDot
+                            state={
+                              isChecking || configSentWaitingForMatchzy
+                                ? 'loading'
+                                : !server.enabled || server.status === 'disabled'
+                                ? 'free'
+                                : needsInitialization ||
+                                  (server.status !== 'online' && server.reachableFromApi === false)
+                                ? 'error'
+                                : server.currentMatch
+                                ? 'live'
+                                : 'free'
+                            }
+                          />
+                          <Typography
+                            variant="h6"
+                            sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                          >
+                            {server.name}
+                          </Typography>
+                        </Box>
                         <Box display="flex" gap={0.5} flexWrap="wrap">
                           {(() => {
                             const reachableFromApi = server.reachableFromApi;
@@ -1638,12 +1655,16 @@ export default function Servers() {
                             
                             const isActive = secondsAgo < 300; // 5 minutes
                             return (
-                              <span style={{ 
-                                color: isActive ? '#4caf50' : '#9e9e9e',
-                                fontWeight: isActive ? 600 : 400 
-                              }}>
-                                ⏱️ {timeStr}
-                              </span>
+                              <Box
+                                component="span"
+                                sx={{
+                                  ...mono,
+                                  color: isActive ? tokens.color.live : tokens.color.muted,
+                                  fontWeight: isActive ? 600 : 400,
+                                }}
+                              >
+                                {timeStr}
+                              </Box>
                             );
                           })()}
                         </Typography>
