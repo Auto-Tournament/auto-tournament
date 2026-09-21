@@ -1,7 +1,12 @@
 {
-  "name": "@matchzy/api",
+  "name": "@auto-tournament/api",
   "version": "2.4.15",
   "description": "Auto Tournament API (backend)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Auto-Tournament/auto-tournament.git",
+    "directory": "api"
+  },
   "private": true,
   "main": "dist/index.js",
   "scripts": {
