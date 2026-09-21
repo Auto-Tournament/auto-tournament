@@ -617,7 +617,7 @@ export default function Layout() {
           <ListItem disablePadding sx={{ display: 'block' }}>
             <ListItemButton
               component="a"
-                href="https://docs.sivert.io/docs/mat"
+                href="https://docs.autotournament.gg"
               target="_blank"
               rel="noopener noreferrer"
               sx={navItemSx(true)}
@@ -736,7 +736,7 @@ export default function Layout() {
             <Tooltip title={!open ? t('nav.documentation') : ''} placement="right">
               <ListItemButton
                 component="a"
-                href="https://docs.sivert.io/docs/mat"
+                href="https://docs.autotournament.gg"
                 target="_blank"
                 rel="noopener noreferrer"
                 sx={[

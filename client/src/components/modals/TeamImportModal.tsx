@@ -240,7 +240,7 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
             </Typography>
             <Typography variant="caption" component="div" sx={{ mt: 1 }}>
               <Link
-                href="https://docs.sivert.io/docs/mat/user/teams#bulk-import-json"
+                href="https://docs.autotournament.gg/guides/teams-and-players#import-teams"
                 target="_blank"
                 rel="noopener noreferrer"
                 sx={{
