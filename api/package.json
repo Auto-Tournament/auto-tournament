@@ -1,6 +1,6 @@
 {
   "name": "@matchzy/api",
-  "version": "2.4.13",
+  "version": "2.4.14",
   "description": "Auto Tournament API (backend)",
   "private": true,
   "main": "dist/index.js",
