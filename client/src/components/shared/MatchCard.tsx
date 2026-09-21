@@ -14,6 +14,7 @@ import type { Match } from '../../types';
 import { deriveCurrentMapScore, deriveSeriesScore } from '../../utils/matchScoreDisplay';
 import { TeamNameLink } from '../team/TeamNameLink';
 import { useTranslation } from 'react-i18next';
+import { tokens, fontMono } from '../../theme/tokens';
 
 interface MatchCardProps {
   match: Match;
@@ -51,9 +52,9 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     // Bracket view / generic match card server status accents:
     // - allocated (serverId set, not yet loaded/live/completed) => yellow
     // - loaded (warmup) => blue
-    // - live  => red
+    // - live  => brand orange (as the live match in the bracket)
     // - completed or upcoming (no server) => no colored border
-    if (match.status === 'live') return 'error.main';
+    if (match.status === 'live') return 'primary.main';
     if (match.status === 'loaded') return 'info.main';
     if (match.serverId && match.status !== 'completed') return 'warning.main';
     // For completed and all other non-live states without a server, no colored border.
@@ -153,17 +154,18 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   };
 
   const getTeamBgColor = (which: 'team1' | 'team2') => {
-    if (isWinnerVisual(which)) return 'success.main';
-    return 'background.paper';
+    // Winner row is filled brand orange, like the bracket.
+    if (isWinnerVisual(which)) return 'primary.main';
+    return 'background.surface2';
   };
 
   const getTeamBorderColor = (which: 'team1' | 'team2') => {
-    if (isWinnerVisual(which)) return 'success.dark';
-    return 'divider';
+    if (isWinnerVisual(which)) return 'primary.main';
+    return 'transparent';
   };
 
   const getTeamTextColor = (which: 'team1' | 'team2') => {
-    if (isWinnerVisual(which)) return 'success.contrastText';
+    if (isWinnerVisual(which)) return 'primary.contrastText';
     const team = which === 'team1' ? match.team1 : match.team2;
     if (team) return 'text.primary';
     return 'text.disabled';
@@ -208,13 +210,12 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         borderLeft: 4,
         borderLeftColor: getBorderColor(),
         border: selected ? 2 : 0,
-        borderRadius: 2,
         borderStyle: 'solid',
         borderColor: selected ? 'primary.main' : getBorderColor(),
         '&:hover': onClick
           ? {
-              transform: 'translateY(-4px)',
-              boxShadow: 6,
+              transform: 'translateY(-3px)',
+              boxShadow: (theme) => `0 24px 60px -30px ${theme.palette.primary.main}`,
             }
           : {},
       }}
@@ -246,7 +247,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   display="block"
                   fontWeight={600}
                   sx={{ 
-                    bgcolor: 'primary.50',
+                    bgcolor: 'action.selected',
                     px: 1,
                     py: 0.25,
                     borderRadius: 0.5,
@@ -358,7 +359,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             alignItems="center"
             sx={{
               p: 1.5,
-              borderRadius: 1,
+              borderRadius: `${tokens.radius.sm}px`,
               bgcolor: getTeamBgColor('team1'),
               border: 1,
               borderColor: getTeamBorderColor('team1'),
@@ -380,8 +381,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   variant="outlined"
                   sx={{
                     fontWeight: 600,
-                    color: 'success.contrastText',
-                    borderColor: 'success.contrastText',
+                    color: 'primary.contrastText',
+                    borderColor: 'primary.contrastText',
                   }}
                 />
               )}
@@ -400,7 +401,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     ml: 1,
                     // On the green winner background we want a dark score color
                     // for better contrast; on non-winner rows keep the default.
-                    color: team1IsWinner ? 'grey.900' : 'text.primary',
+                    color: team1IsWinner ? 'primary.contrastText' : 'text.primary',
+                    fontFamily: fontMono,
                   }}
                 >
                   {getTeamScoreDisplay('team1')}
@@ -426,7 +428,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             alignItems="center"
             sx={{
               p: 1.5,
-              borderRadius: 1,
+              borderRadius: `${tokens.radius.sm}px`,
               bgcolor: getTeamBgColor('team2'),
               border: 1,
               borderColor: getTeamBorderColor('team2'),
@@ -448,8 +450,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   variant="outlined"
                   sx={{
                     fontWeight: 600,
-                    color: 'success.contrastText',
-                    borderColor: 'success.contrastText',
+                    color: 'primary.contrastText',
+                    borderColor: 'primary.contrastText',
                   }}
                 />
               )}
@@ -466,7 +468,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     minWidth: 24,
                     textAlign: 'right',
                     ml: 1,
-                    color: team2IsWinner ? 'grey.900' : 'text.primary',
+                    color: team2IsWinner ? 'primary.contrastText' : 'text.primary',
+                    fontFamily: fontMono,
                   }}
                 >
                   {getTeamScoreDisplay('team2')}

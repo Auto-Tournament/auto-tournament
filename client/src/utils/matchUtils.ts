@@ -276,18 +276,20 @@ export const getStatusExplanation = (
 export const getStatusColor = (
   status: string,
   walkover: boolean = false
-): 'error' | 'warning' | 'info' | 'success' | 'default' => {
+): 'error' | 'warning' | 'info' | 'success' | 'primary' | 'default' => {
   if (walkover) return 'warning';
 
+  // Colours follow the homepage cards: live is green, finished is the solid
+  // brand orange chip.
   switch (status) {
     case 'live':
-      return 'error'; // Red - match is live
+      return 'success'; // Green - match is live
     case 'loaded':
       return 'info'; // Blue - server loaded, waiting for players
     case 'ready':
-      return 'warning'; // Yellow/Orange - ready to start
+      return 'warning'; // Amber - ready to start
     case 'completed':
-      return 'success'; // Green - match finished
+      return 'primary'; // Orange - match finished
     case 'cancelled':
       return 'error'; // Red - match was cancelled
     case 'needs_decision':
