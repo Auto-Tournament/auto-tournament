@@ -3,9 +3,11 @@
  * for decisive results, rating changes. Called by the match lifecycle
  * (`./matchLifecycle`) once a series result has been applied.
  *
- * Player stats come from the match's integration (`seriesPlayerStats`). A
- * game without player stats still gets one row per rostered player, carrying
- * only `won_match`, so match history and standings work the same for it.
+ * Player stats come from the match's integration (`seriesPlayerStats`) as
+ * stat lines; each rostered player's line is written with the integration's
+ * columns (`playerStatsColumns`) next to the core ones. A game without player
+ * stats still gets one row per rostered player, carrying only `won_match`, so
+ * match history and standings work the same for it.
  */
 
 import { db } from '../config/database';
@@ -14,10 +16,9 @@ import { updatePlayerRatings } from '../services/ratingService';
 import { teamService } from '../services/teamService';
 import { describeMatch } from '../utils/matchIntegration';
 import { integrationForMatch } from '../integrations/registry';
+import type { GameIntegration, PlayerStatLine, ReportedStatLine } from '../integrations/types';
 import type { DbMatchRow } from '../types/database.types';
 import type { Player } from '../types/team.types';
-
-type StatsBySteamId = Record<string, Record<string, unknown>>;
 
 /**
  * Update player ratings for matches (all tournament types with players)
@@ -82,14 +83,13 @@ export async function updateRatingsForMatch(
   }
 }
 
-/** The integration's per-player stats for the series, or none when it records none. */
+/** The integration's stat lines for the series, or none when it records none. */
 async function seriesStatsFor(
-  match: DbMatchRow,
+  integration: GameIntegration,
   matchSlug: string
-): Promise<{ team1: StatsBySteamId; team2: StatsBySteamId }> {
-  const integration = integrationForMatch(match);
+): Promise<ReportedStatLine[]> {
   if (!integration.capabilities.playerStats || !integration.seriesPlayerStats) {
-    return { team1: {}, team2: {} };
+    return [];
   }
   return integration.seriesPlayerStats(matchSlug);
 }
@@ -114,74 +114,51 @@ async function persistPlayerMatchStats(options: {
 }): Promise<void> {
   const { match, matchSlug, team1Players, team2Players, result } = options;
 
-  const { team1: team1PlayerStats, team2: team2PlayerStats } = await seriesStatsFor(
-    match,
-    matchSlug
-  );
+  const integration = integrationForMatch(match);
+  const reported = await seriesStatsFor(integration, matchSlug);
 
   const now = Math.floor(Date.now() / 1000);
 
-  // Look players up by steamid, not by which side the payload filed them under.
-  // MatchZy has shipped payloads that list team2's players inside the `team1`
-  // block, which made every one of those players land on 0 kills / 0 damage /
-  // 0.0 ADR in their match history. Matching on steamid is correct either way.
-  const statsBySteamId = new Map<string, Record<string, unknown>>();
-  for (const sideStats of [team1PlayerStats, team2PlayerStats]) {
-    for (const [steamId, stats] of Object.entries(sideStats)) {
-      if (steamId) statsBySteamId.set(steamId.toLowerCase(), stats);
-    }
+  // Look players up by account id, not by which side the game filed them
+  // under. MatchZy has shipped payloads that list team2's players inside the
+  // `team1` block, which made every one of those players land on 0 kills /
+  // 0 damage / 0.0 ADR in their match history. Matching on the id is correct
+  // either way. A later line for the same account wins.
+  const reportedById = new Map<string, ReportedStatLine>();
+  for (const line of reported) {
+    const id = line.account.externalId;
+    if (id) reportedById.set(id.toLowerCase(), line);
   }
-  const statsFor = (steamId: string): Record<string, unknown> =>
-    statsBySteamId.get((steamId || '').toLowerCase()) ?? {};
 
-  const insertRow = async (steamId: string, team: 'team1' | 'team2'): Promise<void> => {
-    const stats = statsFor(steamId) as {
-      rounds_played?: number;
-      roundsPlayed?: number;
-      damage?: number;
-      kills?: number;
-      deaths?: number;
-      assists?: number;
-      headshot_kills?: number;
-      headshotKills?: number;
-      flash_assists?: number;
-      flashAssists?: number;
-      utility_damage?: number;
-      utilityDamage?: number;
-      kast?: number;
-      mvp?: number;
-      mvps?: number;
-      score?: number;
+  // The rostered player's line: roster side and series result, with the
+  // metrics the game reported for them (none when it reported nothing).
+  const lineFor = (steamId: string, team: 'team1' | 'team2'): PlayerStatLine => {
+    const found = reportedById.get((steamId || '').toLowerCase());
+    return {
+      account: found?.account ?? { provider: 'steam', externalId: steamId },
+      name: found?.name ?? '',
+      team,
+      won: result === team,
+      metrics: found?.metrics ?? {},
     };
-    const roundsPlayed = stats.rounds_played ?? stats.roundsPlayed ?? 0;
-    const adr = roundsPlayed > 0 ? ((stats.damage ?? 0) as number) / roundsPlayed : 0;
+  };
 
+  const insertRow = async (steamId: string, line: PlayerStatLine): Promise<void> => {
     await db.insertAsync('player_match_stats', {
       player_id: steamId,
       match_slug: matchSlug,
-      team,
-      won_match: result === team,
-      adr: Math.round(adr * 100) / 100, // Round to 2 decimal places
-      total_damage: stats.damage || 0,
-      kills: stats.kills || 0,
-      deaths: stats.deaths || 0,
-      assists: stats.assists || 0,
-      headshots: stats.headshot_kills || stats.headshotKills || 0,
-      flash_assists: stats.flash_assists || stats.flashAssists || 0,
-      utility_damage: stats.utility_damage || stats.utilityDamage || 0,
-      kast: stats.kast || 0,
-      mvps: stats.mvp || stats.mvps || 0,
-      score: stats.score || 0,
-      rounds_played: roundsPlayed,
+      team: line.team,
+      won_match: line.won,
+      ...(integration.playerStatsColumns?.(line.metrics) ?? {}),
       created_at: now,
     });
   };
 
   for (const player of team1Players) {
-    await insertRow(player.steamId, 'team1');
+    await insertRow(player.steamId, lineFor(player.steamId, 'team1'));
   }
   for (const player of team2Players) {
-    await insertRow(player.steamId, 'team2');
+    await insertRow(player.steamId, lineFor(player.steamId, 'team2'));
   }
 
   log.debug(`Tracked player stats for ${team1Players.length + team2Players.length} players`, {

@@ -5,21 +5,19 @@
 
 import { db } from '../config/database';
 import { log } from '../utils/logger';
-import type { PlayerStatLine } from './matchLiveStatsService';
+import type { StatsSchema } from '../integrations/types';
+import {
+  BALANCED_STATS_V1_WEIGHTS,
+  PURE_WIN_LOSS_WEIGHTS,
+  unknownWeightKeys,
+  weightedStatSum,
+  type EloTemplateWeights,
+} from '../utils/eloWeights';
 
-export interface EloTemplateWeights {
-  kills?: number;
-  deaths?: number;
-  assists?: number;
-  flashAssists?: number;
-  headshotKills?: number;
-  damage?: number;
-  utilityDamage?: number;
-  kast?: number;
-  mvps?: number;
-  score?: number;
-  adr?: number;
-}
+export type { EloTemplateWeights };
+
+/** Templates already warned about (id + unknown keys), so each is logged once. */
+const warnedUnknownWeights = new Set<string>();
 
 export interface EloCalculationTemplate {
   id: string;
@@ -120,19 +118,7 @@ class EloTemplateService {
         name: 'Pure Win/Loss',
         description: 'Only team result affects ELO. No stat adjustments. This is the default template.',
         enabled: true,
-        weights: {
-          kills: 0,
-          deaths: 0,
-          assists: 0,
-          flashAssists: 0,
-          headshotKills: 0,
-          damage: 0,
-          utilityDamage: 0,
-          kast: 0,
-          mvps: 0,
-          score: 0,
-          adr: 0,
-        },
+        weights: PURE_WIN_LOSS_WEIGHTS,
       });
       log.info('Created default "Pure Win/Loss" template');
     } else if (!template.enabled) {
@@ -171,19 +157,7 @@ class EloTemplateService {
       description:
         'Adds a modest stat-based adjustment on top of OpenSkill win/loss, using ADR, KAST, K/D, utility, and MVPs. Tuned so that match result still dominates.',
       enabled: true,
-      weights: {
-        kills: 0.4,
-        deaths: -0.4,
-        assists: 0.2,
-        flashAssists: 0.15,
-        headshotKills: 0.2,
-        damage: 0,
-        utilityDamage: 0.02,
-        kast: 0.05,
-        mvps: 1.5,
-        score: 0,
-        adr: 0.05,
-      },
+      weights: BALANCED_STATS_V1_WEIGHTS,
       maxAdjustment: 40,
       minAdjustment: -40,
     });
@@ -282,13 +256,16 @@ class EloTemplateService {
   }
 
   /**
-   * Apply template to calculate stat-based ELO adjustment
+   * Apply template to calculate stat-based ELO adjustment from a player's
+   * metrics, weighted by the template over `schema` (the match's
+   * integration's `statsSchema`).
    * Returns 0 if template is disabled or doesn't exist
    */
   async applyTemplate(
     templateId: string | null | undefined,
     _baseELO: number, // Reserved for future use (e.g., percentage-based adjustments)
-    playerStats: PlayerStatLine
+    metrics: Record<string, number>,
+    schema: StatsSchema
   ): Promise<{ adjustment: number; templateId: string | null }> {
     // If no template ID, return no adjustment
     if (!templateId) {
@@ -301,46 +278,18 @@ class EloTemplateService {
       return { adjustment: 0, templateId: null };
     }
 
-    // Calculate ADR if needed
-    const adr = playerStats.roundsPlayed > 0 ? playerStats.damage / playerStats.roundsPlayed : 0;
+    const unknown = unknownWeightKeys(template.weights, schema);
+    const warnKey = `${template.id}:${unknown.join(',')}`;
+    if (unknown.length > 0 && !warnedUnknownWeights.has(warnKey)) {
+      warnedUnknownWeights.add(warnKey);
+      log.warn('ELO template weights stats the game does not record; they are ignored', {
+        templateId: template.id,
+        unknown,
+      });
+    }
 
     // Calculate stat-based adjustment
-    const weights = template.weights;
-    let adjustment = 0;
-
-    if (weights.kills !== undefined) {
-      adjustment += (playerStats.kills || 0) * weights.kills;
-    }
-    if (weights.deaths !== undefined) {
-      adjustment += (playerStats.deaths || 0) * weights.deaths; // deaths weight should be negative
-    }
-    if (weights.assists !== undefined) {
-      adjustment += (playerStats.assists || 0) * weights.assists;
-    }
-    if (weights.flashAssists !== undefined) {
-      adjustment += (playerStats.flashAssists || 0) * weights.flashAssists;
-    }
-    if (weights.headshotKills !== undefined) {
-      adjustment += (playerStats.headshotKills || 0) * weights.headshotKills;
-    }
-    if (weights.damage !== undefined) {
-      adjustment += (playerStats.damage || 0) * weights.damage;
-    }
-    if (weights.utilityDamage !== undefined) {
-      adjustment += (playerStats.utilityDamage || 0) * weights.utilityDamage;
-    }
-    if (weights.kast !== undefined) {
-      adjustment += (playerStats.kast || 0) * weights.kast;
-    }
-    if (weights.mvps !== undefined) {
-      adjustment += (playerStats.mvps || 0) * weights.mvps;
-    }
-    if (weights.score !== undefined) {
-      adjustment += (playerStats.score || 0) * weights.score;
-    }
-    if (weights.adr !== undefined) {
-      adjustment += adr * weights.adr;
-    }
+    const adjustment = weightedStatSum(template.weights, metrics, schema);
 
     // Apply caps if defined
     let cappedAdjustment = adjustment;
