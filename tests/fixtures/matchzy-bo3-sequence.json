@@ -3,7 +3,7 @@
     "A Bo3 as the MatchZy plugin reports it: series_start, then for each map going_live,",
     "round_end (per-player stats cumulative within the map), halftime_started and side_swap,",
     "player_stats_update and map_result, then series_end. Payload shapes follow",
-    "api/src/types/matchzy-events.types.ts and what the plugin sends (nested team blocks,",
+    "api/src/integrations/cs2/events/matchzy-events.types.ts and what the plugin sends (nested team blocks,",
     "winner { side: '3' | '2', team }). matchid is the placeholder {{matchid}}: the replay spec",
     "substitutes the numeric matches row id, as MatchZy sends it. Teams, players and the veto",
     "result (de_ancient, de_anubis, de_nuke) are fixed and created by the spec.",

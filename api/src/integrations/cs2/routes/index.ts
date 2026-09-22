@@ -17,6 +17,7 @@ import serverStatusRoutes from './serverStatus';
 import rconRoutes from './rcon';
 import demoRoutes from './demos';
 import matchzyRoutes from './matchzy';
+import eventRoutes from '../events/routes';
 
 export const cs2LegacyRoutes: LegacyRouteMount[] = [
   {
@@ -54,5 +55,11 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     router: matchzyRoutes,
     title: 'MatchZy',
     description: 'Auto Tournament CS2 plugin (formerly MatchZy Enhanced) version information.',
+  },
+  {
+    prefix: '/api/events',
+    router: eventRoutes,
+    title: 'Events',
+    description: 'MatchZy webhooks in, and the recorded event log out.',
   },
 ];

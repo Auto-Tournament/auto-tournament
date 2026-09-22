@@ -134,6 +134,21 @@ Auto Tournament CS2 plugin (formerly MatchZy Enhanced) version information.
 | --- | --- | --- |
 | `GET` | `/api/matchzy/latest-version` | public |
 
+### Events
+
+MatchZy webhooks in, and the recorded event log out.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/events/test` | public |
+| `POST` | `/api/events` | server token |
+| `POST` | `/api/events/report` | server token |
+| `POST` | `/api/events/:matchSlugOrServerId` | server token |
+| `GET` | `/api/events/connections/:matchSlug` | public |
+| `GET` | `/api/events/live/:matchSlug` | public |
+| `GET` | `/api/events/server/:serverId` | admin |
+| `GET` | `/api/events/:matchSlug` | admin |
+
 ### Teams
 
 Team roster CRUD, including batch create and delete.
@@ -166,21 +181,6 @@ Create, load, restart and cancel matches; read match state.
 | `PATCH` | `/api/matches/:slug/status` | admin |
 | `POST` | `/api/matches/:slug/winner` | admin |
 | `POST` | `/api/matches/:slug/force-cancel` | admin |
-
-### Events
-
-MatchZy webhooks in, and the recorded event log out.
-
-| Method | Path | Auth |
-| --- | --- | --- |
-| `GET` | `/api/events/test` | public |
-| `POST` | `/api/events` | server token |
-| `POST` | `/api/events/report` | server token |
-| `POST` | `/api/events/:matchSlugOrServerId` | server token |
-| `GET` | `/api/events/connections/:matchSlug` | public |
-| `GET` | `/api/events/live/:matchSlug` | public |
-| `GET` | `/api/events/server/:serverId` | admin |
-| `GET` | `/api/events/:matchSlug` | admin |
 
 ### Steam
 

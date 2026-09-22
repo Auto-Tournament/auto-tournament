@@ -1,7 +1,7 @@
 import { Router, type NextFunction, type Request, type Response } from 'express';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
-import { applyMatchReport, type MatchReport } from '../services/connectionSnapshotService';
+import { integrationForMatch } from '../integrations/registry';
 import { db } from '../config/database';
 import { playerService } from '../services/playerService';
 import { signPlayerSteamId } from '../utils/signedPlayerCookie';
@@ -265,7 +265,11 @@ router.post('/match-report', requireAuth, async (req: Request, res: Response): P
     return;
   }
 
-  await applyMatchReport(slug, report as MatchReport);
+  const match = await db.queryOneAsync<{ game?: string | null }>(
+    'SELECT game FROM matches WHERE slug = ?',
+    [slug]
+  );
+  await integrationForMatch(match ?? {}).syncMatchState?.(slug, { report });
   log.warn(`[DEV-TOOLS] Applied injected match report for ${slug}`);
   res.json({ success: true });
 });

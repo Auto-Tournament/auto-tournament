@@ -17,7 +17,7 @@ import type {
   ServerConfiguredEvent,
   Cs2UpdateRequiredEvent,
   ServerHealthEvent,
-} from '../../../types/matchzy-events.types';
+} from '../events/matchzy-events.types';
 
 // Re-exported so existing importers keep working now that these live with the
 // other MatchZy event types.

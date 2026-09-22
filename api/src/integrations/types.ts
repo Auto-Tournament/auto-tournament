@@ -213,8 +213,12 @@ export interface PlayerStatLine {
  * `eventId` makes ingest idempotent: the core ignores an event it has already
  * applied for that slug.
  *
- * TODO(PR 6a): the CS2 adapter gains `normalize()`; TODO(PR 6b): the core
- * consumes these through `MatchLifecycleApi.ingest`.
+ * `mapNumber` is the 0-based position of the map in the series, the same
+ * index `matches.map_number` and `match_map_results.map_number` store.
+ *
+ * CS2 produces these in `cs2/events/normalize.ts`. TODO(PR 6b): the core
+ * consumes them through `MatchLifecycleApi.ingest`; until then they are only
+ * logged at debug and the adapter still drives the old event handler.
  */
 export type NormalizedEvent =
   | { type: 'series.started'; slug: string; eventId: string; seriesLength: number }
@@ -409,6 +413,26 @@ export interface GameIntegration {
    * `status` and `timestamp` (CS2: `cs2Fleet` and `servers`).
    */
   healthContributions?(): Promise<Record<string, unknown>>;
+
+  // --- live state ----------------------------------------------------------
+
+  /**
+   * Refresh who is connected to a match, when the game can be asked (CS2: the
+   * plugin's match report over RCON, at most every few seconds unless
+   * `force`). Never rejects.
+   */
+  refreshPresence?(slug: string, opts?: { force?: boolean }): Promise<void>;
+  /**
+   * Pull the game's own view of a running match (score, phase, connections)
+   * and apply it, e.g. after an API restart. `resourceId` asks the resource
+   * the match runs on; `report` applies a report the caller already has (test
+   * helpers). Returns a short summary for logs, or null when there was
+   * nothing to apply.
+   */
+  syncMatchState?(
+    slug: string,
+    source: { resourceId: string } | { report: unknown }
+  ): Promise<Record<string, unknown> | null>;
 }
 
 /** A router mounted at a fixed prefix, plus its heading in the API reference. */

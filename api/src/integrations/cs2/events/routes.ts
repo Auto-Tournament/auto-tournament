@@ -1,6 +1,13 @@
 /**
- * Events Routes
- * Handles MatchZy webhook events
+ * Events Routes (CS2 event adapter)
+ * Handles MatchZy webhook events at /api/events — the URL every MatchZy
+ * plugin in the field is configured with, so it must not change. Mounted
+ * through the CS2 integration's `legacyRoutes`.
+ *
+ * CS2-only side effects stay here: server tracking and health, turnover,
+ * attribution to the assigned server, connections and the match report. Match
+ * lifecycle events are still handed to the core's `handleMatchEvent`
+ * (TODO(PR 6b): `normalize()` output goes to `matchLifecycle.ingest` instead).
  * 
  * MatchZy Enhanced Retry System:
  * - Events are automatically retried on failure with exponential backoff
@@ -13,37 +20,38 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { requireAuth } from '../middleware/auth';
-import { validateEventToken, validateServerToken } from '../middleware/serverAuth';
-import { MatchZyEvent } from '../types/matchzy-events.types';
-import { db } from '../config/database';
-import { log } from '../utils/logger';
-import { logWebhookEvent } from '../utils/eventLogger';
-import { emitMatchEvent, emitServerEvent } from '../services/socketService';
-import { handleMatchEvent } from '../services/matchEventHandler';
-import { playerConnectionService } from '../services/playerConnectionService';
-import { matchLiveStatsService } from '../services/matchLiveStatsService';
-import { recordServerTestEvent } from '../integrations/cs2/services/serverConnectivityService';
-import { serverTurnoverTracker } from '../integrations/cs2/utils/serverTurnover';
+import { requireAuth } from '../../../middleware/auth';
+import { validateEventToken, validateServerToken } from '../../../middleware/serverAuth';
+import { MatchZyEvent } from './matchzy-events.types';
+import { db } from '../../../config/database';
+import { log } from '../../../utils/logger';
+import { logWebhookEvent } from '../../../utils/eventLogger';
+import { emitMatchEvent, emitServerEvent } from '../../../services/socketService';
+import { handleMatchEvent } from '../../../services/matchEventHandler';
+import { playerConnectionService } from '../../../services/playerConnectionService';
+import { matchLiveStatsService } from '../../../services/matchLiveStatsService';
+import { recordServerTestEvent } from '../services/serverConnectivityService';
+import { serverTurnoverTracker } from '../utils/serverTurnover';
 import {
   refreshConnectionsFromServer,
   applyMatchReport,
   type MatchReport,
-} from '../services/connectionSnapshotService';
-import type { DbMatchRow, DbEventRow } from '../types/database.types';
+} from './connectionSnapshotService';
+import type { DbMatchRow, DbEventRow } from '../../../types/database.types';
 import {
   serverTrackingService,
   type ServerConfiguredEvent,
   type Cs2UpdateRequiredEvent,
   type ServerHealthEvent,
-} from '../integrations/cs2/services/serverTrackingService';
+} from '../services/serverTrackingService';
 import {
   isFromAssignedServer,
   readQueryString,
   resolveReportTarget,
   SERVER_ID_PARAM,
-} from '../utils/serverAttribution';
-import { findActiveMatchForServer } from '../services/matchTerminationService';
+} from '../../../utils/serverAttribution';
+import { findActiveMatchForServer } from '../../../services/matchTerminationService';
+import { normalize } from './normalize';
 
 const router = Router();
 
@@ -400,7 +408,25 @@ async function handleEventRequest(
       );
     }
 
-    // Add to event buffer
+    // The neutral view of this event. Only logged for now: the core does not
+    // consume it yet (TODO(PR 6b): matchLifecycle.ingest), so the lifecycle
+    // still runs through handleMatchEvent below. Never allowed to fail the
+    // webhook.
+    try {
+      const normalized = normalize(event, { slug: actualMatchSlug });
+      if (normalized.length) {
+        log.debug('[EVENTS] Normalized', {
+          event: event.event,
+          matchSlug: actualMatchSlug,
+          normalized: normalized.map((n) => `${n.type} ${n.eventId}`),
+        });
+      }
+    } catch (normalizeError) {
+      log.warn('[EVENTS] normalize() failed; event handled as before', {
+        event: event.event,
+        error: normalizeError instanceof Error ? normalizeError.message : String(normalizeError),
+      });
+    }
 
     // Process the event
     await handleMatchEvent(event);

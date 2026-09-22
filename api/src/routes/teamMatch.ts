@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { db } from '../config/database';
 import { serverStatusService } from '../integrations/cs2/services/serverStatusService';
 import { playerConnectionService } from '../services/playerConnectionService';
-import { refreshConnectionsFromServer } from '../services/connectionSnapshotService';
+import { integrationForMatch } from '../integrations/registry';
 import { describeMatch, describedPlayers } from '../utils/matchIntegration';
 import { normalizeConfigPlayers } from '../utils/playerTransform';
 import { teamService } from '../services/teamService';
@@ -285,7 +285,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
       }
     }
 
-    await refreshConnectionsFromServer(match.slug);
+    await integrationForMatch(match).refreshPresence?.(match.slug);
     const connectionStatus = playerConnectionService.getStatus(match.slug);
     const liveStats = matchLiveStatsService.getStats(match.slug);
 
