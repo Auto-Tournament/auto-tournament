@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { matchService } from '../services/matchService';
-import { matchAllocationService } from '../services/matchAllocationService';
+import { scheduler } from '../core/scheduler';
 import { CreateMatchInput, MatchConfig, MatchListItem } from '../types/match.types';
 import { TournamentResponse } from '../types/tournament.types';
 import { requestActorId, requireAuth } from '../middleware/auth';
@@ -22,20 +22,18 @@ import {
   currentMatchConfig,
   describeMatch,
   describedPlayers,
-  matchContextFor,
 } from '../utils/matchIntegration';
 import { applyScoreFields, enrichMatch } from '../utils/matchEnrichment';
 import { matchLiveStatsService } from '../services/matchLiveStatsService';
 import { teamService } from '../services/teamService';
 import { playerService } from '../services/playerService';
 import { getMapResults } from '../services/matchMapResultService';
-import { integrationForMatch } from '../integrations/registry';
 import {
   resolveTournamentId,
   tournamentIdForMatch,
   tournamentRowToResponse,
 } from '../utils/tournamentRow';
-import { compareQueueOrder, isQueueable, matchBracketOf } from '../utils/allocationQueue';
+import { compareQueueOrder, isQueueable, matchBracketOf } from '../core/allocationQueue';
 
 const router = Router();
 
@@ -583,7 +581,7 @@ router.post('/bulk-delete', requireAuth, async (req: Request, res: Response) => 
     if (deleted > 0) {
       log.info(`Bulk deleted ${deleted} match(es), triggering immediate allocation`);
       setImmediate(() => {
-        void matchAllocationService.tryImmediateAllocation();
+        void scheduler.tryImmediateAllocation();
       });
     }
 
@@ -987,7 +985,7 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
       // the UI doesn't block on potentially slow RCON / connectivity checks.
       setImmediate(async () => {
         try {
-          const allocation = await matchAllocationService.allocateSingleMatch(
+          const allocation = await scheduler.allocateSingleMatch(
             match.slug,
             webhookBaseUrl
           );
@@ -1046,14 +1044,13 @@ router.post('/:slug/load', requireAuth, async (req: Request, res: Response) => {
 
     const baseUrl = await getWebhookBaseUrl(req);
     const row = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [slug]);
-    const integration = integrationForMatch(row ?? {});
-    if (!row || !integration.load) {
-      return res.status(400).json({ success: false, error: 'Failed to load match' });
-    }
 
     // The integration loads it on the assigned server (for manual matches it
     // first moves the match off a server that has become busy since).
-    const result = await integration.load(await matchContextFor(row), { baseUrl, skipWebhook });
+    const result = row ? await scheduler.loadMatch(row, { baseUrl, skipWebhook }) : null;
+    if (!result) {
+      return res.status(400).json({ success: false, error: 'Failed to load match' });
+    }
 
     if (result.ok) {
       return res.status(200).json({
@@ -1091,7 +1088,7 @@ router.post('/:slug/restart', requireAuth, async (req: Request, res: Response) =
 
     const row = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [slug]);
     const result = row
-      ? await integrationForMatch(row).restart(await matchContextFor(row), { baseUrl })
+      ? await scheduler.restartMatch(row, { baseUrl })
       : ({ ok: false, error: 'Match not found' } as const);
 
     if (result.ok) {
@@ -1165,10 +1162,7 @@ router.post('/:slug/reallocate', requireAuth, async (req: Request, res: Response
 
     // The integration picks another free server, frees the old one and loads
     // the match on the new one.
-    const moved = await integrationForMatch(match).restart(await matchContextFor(match), {
-      baseUrl,
-      moveResource: true,
-    });
+    const moved = await scheduler.reallocateMatch(match, { baseUrl });
 
     if (!moved.ok) {
       return res.status(moved.conflict ? 409 : 400).json({
@@ -1296,7 +1290,7 @@ router.post('/:slug/force-cancel', requireAuth, async (req: Request, res: Respon
     // Try to end the match on the server (best effort)
     if (serverId) {
       try {
-        await integrationForMatch(match).cancel?.(await matchContextFor(match), 'force-cancel');
+        await scheduler.cancelMatch(match, 'force-cancel');
       } catch (rconError) {
         // Don't fail the whole operation if RCON fails - this is the whole point
         const errorMsg = rconError instanceof Error ? rconError.message : String(rconError);

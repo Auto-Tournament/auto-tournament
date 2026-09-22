@@ -330,7 +330,7 @@ export const getMatchBracket = (match: Pick<BracketMatchRef, 'slug' | 'bracket'>
   return null;
 };
 
-/** Chronological stage; mirrors queueStage in api/src/utils/allocationQueue.ts. */
+/** Chronological stage; mirrors queueStage in api/src/core/allocationQueue.ts. */
 const matchStage = (match: BracketMatchRef): number => {
   if (match.round <= 0) return -1;
   const bracket = getMatchBracket(match);

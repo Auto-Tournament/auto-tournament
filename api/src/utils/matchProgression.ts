@@ -6,7 +6,7 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { emitBracketUpdate } from '../services/socketService';
-import { matchAllocationService } from '../services/matchAllocationService';
+import { scheduler } from '../core/scheduler';
 import { buildMatchConfigFor, serializeMatchConfig } from './matchIntegration';
 import type { DbMatchRow, DbTeamRow, DbTournamentRow } from '../types/database.types';
 import type { TournamentResponse } from '../types/tournament.types';
@@ -533,7 +533,7 @@ export async function makeMatchReady(match: DbMatchRow): Promise<void> {
     emitBracketUpdate({ action: 'match_ready', matchSlug: match.slug });
 
     // Auto-allocate server to this ready match
-    await autoAllocateServerToMatch(match.slug);
+    await scheduler.allocateReadyMatch(match.slug);
   } catch (error) {
     log.error('Error making match ready', error, { matchSlug: match.slug });
   }
@@ -854,38 +854,4 @@ async function findLosersBracketMatch(wbMatch: DbMatchRow): Promise<DbMatchRow |
   }
 
   return lbMatch;
-}
-
-/**
- * Automatically allocate an available server to a newly ready match.
- *
- * Exported as the CS2 integration's `onMatchReady` hook. `makeMatchReady`
- * still calls it directly until allocation moves behind the interface (PR 7).
- */
-export async function autoAllocateServerToMatch(matchSlug: string): Promise<void> {
-  try {
-    const webhookUrl = await settingsService.getWebhookUrl();
-
-    if (!webhookUrl) {
-      log.warn(
-        'Webhook URL is not configured. Skipping auto-allocation for match. Configure the webhook URL in Settings.'
-      );
-      return;
-    }
-
-    const result = await matchAllocationService.allocateSingleMatch(matchSlug, webhookUrl);
-
-    if (result.success) {
-      log.success(`Auto-allocated match ${matchSlug} to server ${result.serverId}`);
-      emitBracketUpdate({
-        action: 'match_allocated',
-        matchSlug,
-        serverId: result.serverId,
-      });
-    } else {
-      log.warn(`Could not auto-allocate match ${matchSlug}: ${result.error}`);
-    }
-  } catch (error) {
-    log.error('Error in auto-allocate server', error, { matchSlug });
-  }
 }

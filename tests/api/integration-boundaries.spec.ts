@@ -75,26 +75,19 @@ test.describe('Integration boundary lint', () => {
     ).toEqual(['coreToIntegration']);
   });
 
-  test('legacy exceptions are exact (file, module) pairs', async () => {
-    // Listed: matchAllocationService still calls rconService (TODO PR 7b).
+  test('no legacy exceptions are left', async () => {
+    // The last ones (PR 7b): the scheduler and the tournament routes reached
+    // CS2 services directly. Both now go through the registry.
     expect(
       await lint(
-        'api/src/services/matchAllocationService.ts',
+        'api/src/core/scheduler.ts',
         "import { rconService } from '../integrations/cs2/services/rconService';"
-      )
-    ).toEqual([]);
-    // The same file, a module that is not listed for it.
-    expect(
-      await lint(
-        'api/src/services/matchAllocationService.ts',
-        "import { x } from '../integrations/cs2/services/matchzyConfigService';"
       )
     ).toEqual(['coreToIntegration']);
-    // The same module, from a file that is not listed.
     expect(
       await lint(
-        'api/src/services/matchService.ts',
-        "import { rconService } from '../integrations/cs2/services/rconService';"
+        'api/src/routes/tournament.ts',
+        "import { serverService } from '../integrations/cs2/services/serverService';"
       )
     ).toEqual(['coreToIntegration']);
   });

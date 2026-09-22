@@ -18,7 +18,7 @@
  *    integration, so that would be a cycle and a back door to the others).
  *
  * `registry.ts` and `types.ts` themselves are not restricted. Rule 1 has an
- * explicit, shrinking list of legacy exceptions (`LEGACY_CORE_IMPORTS`).
+ * explicit list of legacy exceptions (`LEGACY_CORE_IMPORTS`), empty today.
  *
  * Paths are resolved against the importing file, so `../cs2`, `../../cs2/x` and
  * `../integrations/cs2/index` are all caught regardless of depth, which a glob
@@ -38,18 +38,11 @@ const SHARED = new Set(['registry', 'types']);
  *
  * Keys are the importing file relative to the repo (`api/src/...`); values are
  * the imported modules relative to that src root, without extension.
+ *
+ * Empty since PR 7b: every core call into CS2 goes through the registry. Keep
+ * it empty.
  */
-const LEGACY_CORE_IMPORTS = {
-  // TODO(PR 7b): restartTournament moves to core/scheduler.ts and ends matches through cancel().
-  'api/src/services/matchAllocationService.ts': ['integrations/cs2/services/rconService'],
-  // TODO(PR 7b): /start and /restart preflight and ending matches on servers go through capacity()/cancel().
-  'api/src/routes/tournament.ts': [
-    'integrations/cs2/services/cs2UpdateService',
-    'integrations/cs2/services/rconService',
-    'integrations/cs2/services/serverInitializationService',
-    'integrations/cs2/services/serverService',
-  ],
-};
+const LEGACY_CORE_IMPORTS = {};
 
 function isLegacyCoreImport(root, filename, absTarget) {
   const repoRoot = path.dirname(path.dirname(root));

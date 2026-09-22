@@ -4,7 +4,7 @@
  *
  * This is the server side of allocation, behind `capacity()`, `allocate()`,
  * `allocateBatch()`, `restart()`, `load()` and `cancel()` on the CS2
- * integration. The core (`services/matchAllocationService`) owns the rest:
+ * integration. The core (`core/scheduler`) owns the rest:
  * which matches are ready, the queue order, a team playing one match at a
  * time, batch waves, and starting or restarting a tournament.
  *
@@ -20,7 +20,7 @@ import { settingsService } from '../../services/settingsService';
 import { emitBracketUpdate, emitMatchUpdate } from '../../services/socketService';
 import type { DbMatchRow } from '../../types/database.types';
 import type { ServerResponse } from '../../types/server.types';
-import { matchBracketOf } from '../../utils/allocationQueue';
+import { matchBracketOf } from '../../core/allocationQueue';
 import type { ResourcePoolStatus } from '../types';
 import { rconService } from './services/rconService';
 import { serverService } from './services/serverService';
@@ -1208,6 +1208,28 @@ export class Cs2ServerPool {
     // server: the call fails and force-cancel reports the server as unreachable. Fixing it (and choosing the command) is a separate change.
     await rconService.executeCommand(serverId, 'get5_endmatch');
     log.info(`Successfully sent end match command to server ${serverId} for match ${matchSlug}`);
+  }
+
+  /**
+   * End whatever match is running on the server by restarting it
+   * (`css_restart`): tournament restart, reset and delete. Rejects when the
+   * command failed. A restart whose RCON reply was lost (the server restarted
+   * before answering) counts as ended.
+   */
+  async restartServerToEndMatch(serverId: string): Promise<void> {
+    const result = await rconService.sendCommand(serverId, 'css_restart');
+
+    if (!result.success) {
+      throw new Error(result.error ?? 'css_restart failed');
+    }
+
+    if (result.unconfirmed) {
+      log.warn(
+        `Restart sent to server ${serverId}; no RCON reply (server was restarting), counting the match as ended`
+      );
+    } else {
+      log.success(`Match ended on server ${serverId}`);
+    }
   }
 
   /** The series is over: the server is free for the allocator again. */

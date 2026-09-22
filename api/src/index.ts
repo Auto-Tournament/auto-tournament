@@ -18,7 +18,7 @@ import { routeTable } from './routes/routeTable';
 import { listIntegrations } from './integrations/registry';
 import { recoverActiveMatches } from './services/matchRecoveryService';
 import { enrichBuiltinGames } from './services/gameEnrichmentService';
-import { matchAllocationService } from './services/matchAllocationService';
+import { scheduler } from './core/scheduler';
 import { steamService } from './services/steamService';
 import { seedAdminsFromEnv } from './services/adminSeedService';
 import { getServiceTokens } from './utils/serviceTokens';
@@ -487,7 +487,7 @@ process.on('uncaughtException', (err) => {
 
     process.on('SIGINT', () => {
       log.warn('Received SIGINT, shutting down gracefully...');
-      matchAllocationService.stopAllPolling();
+      scheduler.stopAllPolling();
       stopIntegrations();
       server.close(() => {
         db.close();
@@ -498,7 +498,7 @@ process.on('uncaughtException', (err) => {
 
     process.on('SIGTERM', () => {
       log.warn('Received SIGTERM, shutting down gracefully...');
-      matchAllocationService.stopAllPolling();
+      scheduler.stopAllPolling();
       stopIntegrations();
       server.close(() => {
         db.close();

@@ -7,7 +7,7 @@
  *  - history said "Match #2 / #1 / #1", the per-round number, where the
  *    matches page shows chronological numbers and bracket labels.
  */
-import { compareQueueOrder, matchBracketOf } from './allocationQueue';
+import { compareQueueOrder, matchBracketOf } from '../core/allocationQueue';
 
 export interface TeamStanding {
   position: number;
