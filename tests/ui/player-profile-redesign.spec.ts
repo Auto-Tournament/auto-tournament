@@ -128,6 +128,12 @@ test.describe('Redesigned player profile', () => {
       const row = page.getByTestId(`profile-recent-match-${slug}`);
       await expect(row).toBeVisible();
       await expect(row).toContainText('20 / 10');
+
+      // Profile header team chip links to that team's public profile page
+      // (/t/team/:teamId), not the in-match/server team page (/team/:teamId).
+      const teamChip = page.getByTestId('public-player-team');
+      await expect(teamChip).toBeVisible();
+      await expect(teamChip).toHaveAttribute('href', `/t/team/${team1.id}`);
     }
   );
 });

@@ -1,4 +1,5 @@
 import { copyTextToClipboard } from './clipboard';
+import { teamProfilePath } from '../paths';
 
 /**
  * Team link utilities
@@ -18,7 +19,7 @@ export function getTeamMatchUrl(teamId: string): string {
  * read-only overview anyone can open, not the in-match/server page.
  */
 export function getTeamProfileUrl(teamId: string): string {
-  return `/t/team/${teamId}`;
+  return teamProfilePath(teamId);
 }
 
 /**

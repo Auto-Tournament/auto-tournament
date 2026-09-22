@@ -11,6 +11,7 @@ import { PlayerAvatar } from '../PlayerAvatar';
 import { PlayerName } from '../PlayerName';
 import { fetchMyGames } from '../../games/gamesApi';
 import { mono } from '../../../theme/tokens';
+import { teamProfilePath } from '../../../paths';
 
 export interface ProfileHeaderTeam {
   id?: string;
@@ -118,7 +119,7 @@ export function ProfileHeader({
                       color="secondary"
                       label={teamLabel}
                       component={RouterLink}
-                      to={`/team/${teamId}`}
+                      to={teamProfilePath(teamId as string)}
                       clickable
                       sx={{ fontWeight: 600 }}
                     />
