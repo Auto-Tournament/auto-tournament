@@ -17,8 +17,12 @@
  *    another integration and not the registry (the registry imports every
  *    integration, so that would be a cycle and a back door to the others).
  *
- * `registry.ts` and `types.ts` themselves are not restricted. Rule 1 has an
- * explicit list of legacy exceptions (`LEGACY_CORE_IMPORTS`), empty today.
+ * 3. `api/src/core/**` must not import `rconService` or the MatchZy event
+ *    types (`types/matchzy-events`) by any path, relative or not.
+ *
+ * `registry.ts` and `types.ts` themselves are not restricted. There are no
+ * exceptions: the legacy allowlist emptied out in PR 7b and was removed in
+ * PR 14, so every rule is an error everywhere.
  *
  * Paths are resolved against the importing file, so `../cs2`, `../../cs2/x` and
  * `../integrations/cs2/index` are all caught regardless of depth, which a glob
@@ -31,30 +35,23 @@ const SRC_ROOT = /^(.*?[\\/](?:api|client)[\\/]src)(?:[\\/]|$)/;
 const SHARED = new Set(['registry', 'types']);
 
 /**
- * Legacy exceptions to rule 1: core files that still call CS2 code directly,
- * until the PR that puts that call behind the interface. Each entry is one
- * exact (core file, integration module) pair, so the list can only shrink:
- * a new import, even of an already-listed module from another file, fails.
- *
- * Keys are the importing file relative to the repo (`api/src/...`); values are
- * the imported modules relative to that src root, without extension.
- *
- * Empty since PR 7b: every core call into CS2 goes through the registry. Keep
- * it empty.
+ * Game-specific modules the core must never import, by any path (3.0 PR 14).
+ * Rule 1 already rejects them where they live today (`integrations/cs2/**`);
+ * this also catches a copy, a re-export shim or an alias path that puts them
+ * back under a core directory. Matched on the last path segment, without
+ * extension, of every import specifier in `api/src/core/**`.
  */
-const LEGACY_CORE_IMPORTS = {};
+const CORE_FORBIDDEN_MODULES = new Set(['rconService', 'matchzy-events', 'matchzy-events.types']);
 
-function isLegacyCoreImport(root, filename, absTarget) {
-  const repoRoot = path.dirname(path.dirname(root));
-  const importer = path.relative(repoRoot, filename).split(path.sep).join('/');
-  const allowed = LEGACY_CORE_IMPORTS[importer];
-  if (!allowed) return false;
-  const target = path
-    .relative(root, absTarget)
-    .split(path.sep)
-    .join('/')
-    .replace(/\.(d\.)?[cm]?[jt]sx?$/, '');
-  return allowed.includes(target);
+function isCoreDir(root, filename) {
+  const rel = path.relative(root, filename).split(path.sep);
+  return rel[0] === 'core' && /[\\/]api[\\/]src$/.test(root);
+}
+
+function forbiddenCoreModule(source) {
+  const last = source.split(/[\\/]/).pop() ?? '';
+  const base = last.replace(/\.(d\.)?[cm]?[jt]sx?$/, '');
+  return CORE_FORBIDDEN_MODULES.has(base) ? base : null;
 }
 
 /** 'core' | { integration: id } | 'shared' | null (outside a src root) */
@@ -83,6 +80,8 @@ const rule = {
         "The '{{from}}' integration must not import the '{{id}}' integration. Integrations share only integrations/types.",
       integrationToRegistry:
         "The '{{from}}' integration must not import integrations/{{name}}. Integrations may only import integrations/types and their own files.",
+      coreForbiddenModule:
+        "api/src/core must not import '{{name}}' by any path. The core sees games only through integrations/types (NormalizedEvent) and the registry.",
     },
   },
 
@@ -94,15 +93,21 @@ const rule = {
     const self = classify(root, filename);
     if (!self || self.kind === 'shared') return {};
 
+    const inCore = self.kind === 'core' && isCoreDir(root, filename);
+
     function check(node, source) {
-      if (typeof source !== 'string' || !source.startsWith('.')) return;
+      if (typeof source !== 'string') return;
+      if (inCore) {
+        const name = forbiddenCoreModule(source);
+        if (name) context.report({ node, messageId: 'coreForbiddenModule', data: { name } });
+      }
+      if (!source.startsWith('.')) return;
       const absTarget = path.resolve(path.dirname(filename), source);
       const target = classify(root, absTarget);
       if (!target || target.kind === 'core') return;
 
       if (self.kind === 'core') {
         if (target.kind === 'integration') {
-          if (isLegacyCoreImport(root, filename, absTarget)) return;
           context.report({ node, messageId: 'coreToIntegration', data: { id: target.id } });
         } else if (target.name === 'index') {
           context.report({ node, messageId: 'coreToIntegration', data: { id: 'integrations/index' } });

@@ -61,6 +61,9 @@ services:
       # Allow enabling /api/test/* helpers for E2E in prod-like stacks.
       # Keep disabled by default for safety.
       - ENABLE_TEST_ENDPOINTS=${ENABLE_TEST_ENDPOINTS:-false}
+      # Register the test-only fake game integration (integrations/fake) for
+      # E2E runs. Needs ENABLE_TEST_ENDPOINTS too; off by default.
+      - MAT_TEST_INTEGRATION=${MAT_TEST_INTEGRATION:-0}
       # Built-in game enrichment (gameEnrichmentService) calls real Wikidata/IGDB;
       # keep it off for local "prod-like" and E2E stacks by default.
       - GAMES_ENRICH=${GAMES_ENRICH:-off}

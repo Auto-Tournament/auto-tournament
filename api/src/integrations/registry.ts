@@ -7,6 +7,7 @@
  */
 
 import { cs2Integration } from './cs2';
+import { fakeIntegration, isFakeIntegrationEnabled } from './fake';
 import { DEFAULT_GAME, type GameId, type GameIntegration } from './types';
 
 export class UnknownGameError extends Error {
@@ -18,10 +19,7 @@ export class UnknownGameError extends Error {
 
 const integrations = new Map<GameId, GameIntegration>();
 
-/**
- * Register an integration. Built-ins are registered below; this is also the
- * hook for the test-only fake integration (PR 14).
- */
+/** Register an integration. Built-ins are registered below. */
 export function registerIntegration(integration: GameIntegration): void {
   if (integrations.has(integration.id)) {
     throw new Error(`Game integration '${integration.id}' is already registered`);
@@ -30,6 +28,13 @@ export function registerIntegration(integration: GameIntegration): void {
 }
 
 registerIntegration(cs2Integration);
+
+// Test runs only (NODE_ENV=test, or MAT_TEST_INTEGRATION=1; a production
+// process also needs ENABLE_TEST_ENDPOINTS): the fake game that proves the
+// core runs a tournament without CS2. See integrations/fake.
+if (isFakeIntegrationEnabled()) {
+  registerIntegration(fakeIntegration);
+}
 
 export function getIntegration(game: GameId): GameIntegration {
   const integration = integrations.get(game);

@@ -312,9 +312,9 @@ export default [
 
   // Game integration boundaries (3.0 module split). Core code reaches a game
   // only through integrations/registry and integrations/types; an integration
-  // never imports another one. Passes trivially today: every later PR that
-  // moves game code must route calls through the interface.
-  // See eslint-rules/integration-boundaries.mjs.
+  // never imports another one or the registry; api/src/core never imports
+  // rconService or the MatchZy event types by any path. An error everywhere,
+  // with no allowlist. See eslint-rules/integration-boundaries.mjs.
   {
     files: ['api/src/**/*.ts', 'client/src/**/*.{ts,tsx}'],
     plugins: {

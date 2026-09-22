@@ -7,9 +7,10 @@
  * it records. The core owns tournaments, brackets, scheduling and results, and
  * talks to a game only through this interface.
  *
- * CS2 is the only integration today (`integrations/cs2`). The core reaches it
- * only through the registry (eslint-rules/integration-boundaries.mjs enforces
- * it). Some CS2 features still live in core files (the stats columns the
+ * CS2 is the only production integration (`integrations/cs2`); test runs also
+ * register a fake one (`integrations/fake`) that proves the core runs a
+ * tournament without CS2. The core reaches them only through the registry
+ * (eslint-rules/integration-boundaries.mjs enforces it). Some CS2 features still live in core files (the stats columns the
  * leaderboard and profile queries read); later PRs move them
  * behind this interface one seam at a time (see the TODOs).
  *
@@ -26,7 +27,10 @@
 import type { Router } from 'express';
 import type { DbMatchRow } from '../types/database.types';
 
-/** Identifier stored in the `game` column: 'cs2' today; later e.g. 'manual-report', 'fake'. */
+/**
+ * Identifier stored in the `game` column: 'cs2', plus 'fake' in test runs
+ * (integrations/fake); later e.g. 'manual-report'.
+ */
 export type GameId = string;
 
 /** The game every existing row belongs to; also the column default. */
@@ -596,8 +600,11 @@ export interface GameIntegration {
   id: GameId;
   displayName: string;
   capabilities: IntegrationCapabilities;
-  /** Catalogue entry; defaults to a slug of `displayName`. */
-  catalog?: GameCatalogEntry;
+  /**
+   * Catalogue entry; defaults to a slug of `displayName`. `null` keeps the
+   * integration out of the player-facing catalogue (the test-only fake).
+   */
+  catalog?: GameCatalogEntry | null;
   /**
    * The account a player needs for this game, by sign-in provider id (CS2:
    * 'steam', the Steam ID matches identify players by). Drives the "Game
