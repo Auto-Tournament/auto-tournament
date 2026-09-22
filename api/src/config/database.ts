@@ -16,12 +16,7 @@ import {
   redactParamsForLog,
   redactInsertValuesForLog,
 } from '../utils/dbLogRedaction';
-import {
-  getSchemaSQL,
-  getSchemaColumns,
-  getDefaultMapsSQL,
-  getDefaultMapPoolsSQL,
-} from './database.schema';
+import { getSchemaSQL, getSchemaColumns } from './database.schema';
 
 const MAX_DB_VALUES_SAMPLE = 5;
 
@@ -314,71 +309,13 @@ class DatabaseManager {
         log.error(`[PostgreSQL] Failed to add player_games foreign key: ${(err as Error).message}`);
       }
 
-      // Insert default maps (only if maps table is empty - first initialization or after wipe)
-      // This prevents fetching from GitHub on every server restart/reload
-      // But ensures maps are regenerated when database is wiped
-      try {
-        // The maps table should exist at this point (created by schema SQL above)
-        // But handle the case where it might not exist yet
-        let mapsCount = 0;
-        try {
-          const mapsCheck = await client.query('SELECT COUNT(*) as count FROM maps');
-          mapsCount = parseInt(mapsCheck.rows[0]?.count || '0', 10);
-        } catch (err) {
-          const error = err as Error;
-          // If table doesn't exist, that's unexpected but we'll skip map insertion
-          if (error.message.includes('does not exist')) {
-            log.warn('[PostgreSQL] Maps table does not exist, skipping map insertion');
-            return;
-          }
-          throw err; // Re-throw other errors
-        }
-
-        if (mapsCount === 0) {
-          // Maps table is empty - this is first initialization or after database wipe
-          // Fetch fresh maps from GitHub repository: https://github.com/Auto-Tournament/cs2-server-manager/tree/master/map_thumbnails
-          // Falls back to hardcoded maps if GitHub fetch fails (e.g., rate limiting)
-          log.database(
-            '[PostgreSQL] Maps table is empty, fetching and inserting default maps from GitHub...'
-          );
-          try {
-            const defaultMapsSQL = await getDefaultMapsSQL();
-            await client.query(defaultMapsSQL);
-            log.success('[PostgreSQL] Default maps inserted (from GitHub repository or fallback)');
-          } catch (fetchError) {
-            const error = fetchError as Error;
-            log.error(`[PostgreSQL] Failed to initialize maps: ${error.message}`);
-            // Don't throw - fallback maps should have been used, but if that also failed, log and continue
-            // The application can still function without maps (they can be added manually or synced later)
-            log.warn(
-              '[PostgreSQL] Continuing without default maps. Maps can be added manually or synced via /api/maps/sync'
-            );
-          }
-        } else {
-          // Maps already exist - skip fetching from wiki (saves time and API calls)
-          log.database(
-            `[PostgreSQL] Maps table already has ${mapsCount} maps, skipping map insertion`
-          );
-        }
-      } catch (err) {
-        const error = err as Error;
-        // If it's a map fetch error, we already logged it above, just re-throw
-        if (error.message.includes('GitHub') || error.message.includes('maps')) {
-          throw err;
-        }
-        log.warn(`[PostgreSQL] Failed to insert default maps: ${error.message}`);
-        // Don't throw for other errors - continue
-      }
-
-      // Insert default map pools
-      try {
-        const defaultMapPoolsSQL = await getDefaultMapPoolsSQL(client);
-        await client.query(defaultMapPoolsSQL);
-        log.database('[PostgreSQL] Default map pools inserted');
-      } catch (err) {
-        const error = err as Error;
-        log.warn(`[PostgreSQL] Failed to insert default map pools: ${error.message}`);
-        // Don't throw - continue
+      // Integration default data (CS2: the map catalogue when the maps table
+      // is empty, then the default map pools). A rejection fails the schema
+      // initialisation; the CS2 seed rethrows the same errors the inline map
+      // insert did.
+      const { listIntegrations } = await import('../integrations/registry');
+      for (const integration of listIntegrations()) {
+        await integration.seed?.(client);
       }
 
       log.success('[PostgreSQL] Database schema initialized');

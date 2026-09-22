@@ -23,7 +23,11 @@ import { settingsService } from '../services/settingsService';
 import { checkTournamentCompletion } from '../utils/matchProgression';
 import { resolveTournamentId } from '../utils/tournamentRow';
 import { integrationForMatch } from '../integrations/registry';
-import type { GameId } from '../integrations/types';
+import type {
+  GameId,
+  TournamentSettingsInput,
+  TournamentSettingsValidation,
+} from '../integrations/types';
 
 const router = Router();
 
@@ -273,17 +277,22 @@ router.get('/', async (req: Request, res: Response) => {
  */
 
 /**
- * Validate a tournament's game settings through its integration (CS2: the
- * optional `settings.customVetoOrder`, against the tournament's map pool).
+ * Validate a tournament request's game fields through its integration (CS2:
+ * the map pool, the shuffle map sequence and max rounds, and the optional
+ * `settings.customVetoOrder`). The lists are always present; the caller
+ * reports them in the order `TournamentSettingsValidation` describes.
  */
 function validateGameSettings(
   game: GameId | null | undefined,
-  settings: unknown,
-  mapCount: number
-): { valid: true } | { valid: false; error: string } {
-  const result = integrationForMatch({ game }).validateTournamentSettings?.({ settings, mapCount });
-  if (!result || result.valid) return { valid: true };
-  return { valid: false, error: result.errors[0] ?? 'Invalid tournament settings' };
+  input: TournamentSettingsInput
+): Required<Omit<TournamentSettingsValidation, 'valid'>> {
+  const result = integrationForMatch({ game }).validateTournamentSettings?.(input);
+  return {
+    errors: result?.errors ?? [],
+    missingFields: result?.missingFields ?? [],
+    fieldErrors: result?.fieldErrors ?? [],
+    requiredFields: result?.requiredFields ?? [],
+  };
 }
 
 /**
@@ -401,18 +410,33 @@ router.post('/', async (req: Request, res: Response) => {
     const tournamentId = resolveTournamentId(req);
     const input: CreateTournamentInput = req.body;
 
+    // Tournaments are created as CS2 (the `game` column default).
+    const gameCheck = validateGameSettings(null, {
+      mode: 'create',
+      // `?.`: a missing body still fails on `input.name` below, as before.
+      settings: input?.settings,
+      body: input as unknown as Record<string, unknown>,
+    });
+
     // Validate input
-    if (!input.name || !input.type || !input.format || !input.maps || !input.teamIds) {
+    if (
+      !input.name ||
+      !input.type ||
+      !input.format ||
+      gameCheck.missingFields.length > 0 ||
+      !input.teamIds
+    ) {
+      const required = ['name', 'type', 'format', ...gameCheck.requiredFields, 'teamIds'];
       return res.status(400).json({
         success: false,
-        error: 'Missing required fields: name, type, format, maps, teamIds',
+        error: `Missing required fields: ${required.join(', ')}`,
       });
     }
 
-    if (input.maps.length === 0) {
+    if (gameCheck.fieldErrors.length > 0) {
       return res.status(400).json({
         success: false,
-        error: 'At least one map is required',
+        error: gameCheck.fieldErrors[0],
       });
     }
 
@@ -423,12 +447,10 @@ router.post('/', async (req: Request, res: Response) => {
       });
     }
 
-    // Tournaments are created as CS2 (the `game` column default).
-    const vetoOrderCheck = validateGameSettings(null, input.settings, input.maps.length);
-    if (!vetoOrderCheck.valid) {
+    if (gameCheck.errors.length > 0) {
       return res.status(400).json({
         success: false,
-        error: vetoOrderCheck.error,
+        error: gameCheck.errors[0],
       });
     }
 
@@ -526,26 +548,23 @@ router.put('/', async (req: Request, res: Response) => {
     const input: UpdateTournamentInput = req.body;
 
     if (input.settings) {
-      // Fall back to the stored map pool when the update does not change it,
-      // so the order is validated against the pool it will actually run on.
-      const existing = await db.queryOneAsync<{ maps: string; game: GameId | null }>(
-        'SELECT maps, game FROM tournament WHERE id = ?',
+      // The stored row lets the integration fall back to the stored values
+      // the update leaves alone (CS2: the map pool the veto order runs on).
+      const existing = await db.queryOneAsync<Record<string, unknown> & { game: GameId | null }>(
+        'SELECT * FROM tournament WHERE id = ?',
         [tournamentId]
       );
-      let mapCount = input.maps?.length;
-      if (typeof mapCount !== 'number') {
-        try {
-          mapCount = existing ? (JSON.parse(existing.maps) as string[]).length : undefined;
-        } catch {
-          mapCount = undefined;
-        }
-      }
-
-      const vetoOrderCheck = validateGameSettings(existing?.game, input.settings, mapCount ?? 7);
-      if (!vetoOrderCheck.valid) {
+      const gameCheck = validateGameSettings(existing?.game, {
+        mode: 'update',
+        settings: input.settings,
+        body: input as unknown as Record<string, unknown>,
+        stored: existing ?? null,
+      });
+      const gameError = [...gameCheck.fieldErrors, ...gameCheck.errors][0];
+      if (gameError) {
         return res.status(400).json({
           success: false,
-          error: vetoOrderCheck.error,
+          error: gameError,
         });
       }
 
@@ -1385,15 +1404,19 @@ router.post('/shuffle', async (req: Request, res: Response) => {
     const tournamentId = resolveTournamentId(req);
     const config: ShuffleTournamentConfig = req.body;
 
-    if (
-      !config.name ||
-      !config.mapSequence ||
-      typeof config.maxRounds !== 'number' ||
-      !config.overtimeMode
-    ) {
+    // Shuffle tournaments are created as CS2 too.
+    const gameCheck = validateGameSettings(null, {
+      mode: 'create-shuffle',
+      // No veto in shuffle, so no settings to check.
+      settings: undefined,
+      body: config as unknown as Record<string, unknown>,
+    });
+
+    if (!config.name || gameCheck.missingFields.length > 0) {
+      const required = ['name', ...gameCheck.requiredFields];
       return res.status(400).json({
         success: false,
-        error: 'Missing required fields: name, mapSequence, maxRounds, overtimeMode',
+        error: `Missing required fields: ${required.join(', ')}`,
       });
     }
 
@@ -1402,6 +1425,21 @@ router.post('/shuffle', async (req: Request, res: Response) => {
       return res.status(400).json({
         success: false,
         error: 'Team size must be between 2 and 10 players',
+      });
+    }
+
+    if (config.name.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        error: 'Tournament name is required. Please provide a name for your shuffle tournament.',
+      });
+    }
+
+    const gameError = [...gameCheck.fieldErrors, ...gameCheck.errors][0];
+    if (gameError) {
+      return res.status(400).json({
+        success: false,
+        error: gameError,
       });
     }
 

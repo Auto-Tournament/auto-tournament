@@ -4,7 +4,7 @@
  */
 
 import fetch from 'node-fetch';
-import { log } from './logger';
+import { log } from '../../../utils/logger';
 
 const GITHUB_REPO_API =
   'https://api.github.com/repos/Auto-Tournament/cs2-server-manager/contents/map_thumbnails';

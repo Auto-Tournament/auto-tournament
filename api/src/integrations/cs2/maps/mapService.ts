@@ -1,6 +1,6 @@
-import { db } from '../config/database';
-import { DbMapRow, CreateMapInput, UpdateMapInput, MapResponse } from '../types/map.types';
-import { log } from '../utils/logger';
+import { db } from '../../../config/database';
+import { DbMapRow, CreateMapInput, UpdateMapInput, MapResponse } from '../../../types/map.types';
+import { log } from '../../../utils/logger';
 
 /**
  * Map service for business logic

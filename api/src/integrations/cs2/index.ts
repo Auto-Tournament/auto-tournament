@@ -22,7 +22,12 @@
  * CS2 pre-match phase (`veto/`: the `/api/veto` routes, the veto orders, and
  * the simulation auto-veto behind `isReadyToAllocate`, `onMatchReady` and
  * `startPendingPreMatchPhases`). Its progress is `matches.veto_state`, which
- * CS2 owns (core match views still read it for display).
+ * CS2 owns (core match views still read it for display). Maps and map pools
+ * are `maps/`: the `/api/maps` and `/api/map-pools` routes, the catalogue
+ * fetch, and the default data behind `seed`. `validateTournamentSettings`
+ * (./tournamentSettings) checks the CS2 tournament fields on create and
+ * update: the map pool, the shuffle map sequence and max rounds, and the veto
+ * order.
  *
  * Services are imported lazily inside each method. That keeps loading the
  * registry free of side effects (no database pool, no monitors) and avoids an
@@ -35,7 +40,7 @@ import type { TournamentResponse } from '../../types/tournament.types';
 import type { DbTournamentRow } from '../../types/database.types';
 import type { MatchReport } from './events/connectionSnapshotService';
 import { normalizeConfigPlayers } from '../../utils/playerTransform';
-import { validateCustomVetoOrderSetting } from './veto/config';
+import { validateCs2TournamentSettings } from './tournamentSettings';
 import type { ServerActionResult, ServerAllocationResult } from './allocation';
 import type {
   AllocateResult,
@@ -248,10 +253,15 @@ export const cs2Integration: GameIntegration = {
     await autoCompleteVetoForMatch(ctx.slug);
   },
 
-  /** The custom veto order, per format, against the map pool. */
-  validateTournamentSettings({ settings, mapCount }) {
-    const result = validateCustomVetoOrderSetting(settings, mapCount);
-    return result.valid ? { valid: true, errors: [] } : { valid: false, errors: [result.error] };
+  /** The map pool, the shuffle map sequence and max rounds, and the custom veto order. */
+  validateTournamentSettings(input) {
+    return validateCs2TournamentSettings(input);
+  },
+
+  /** The map catalogue (when the table is empty) and the default map pools. */
+  async seed(client) {
+    const { seedCs2Maps } = await import('./maps/seed');
+    await seedCs2Maps(client);
   },
 
   /** The veto's current turn, derived from the veto order before the first action. */
@@ -438,7 +448,7 @@ export const cs2Integration: GameIntegration = {
 
   /**
    * /api/servers (bootstrap, fleet, status), /api/rcon, /api/demos,
-   * /api/matchzy, /api/events and /api/veto, at their existing URLs. Loaded on first call, not with the
+   * /api/matchzy, /api/events, /api/veto, /api/maps and /api/map-pools, at their existing URLs. Loaded on first call, not with the
    * registry (see the note at the top).
    */
   legacyRoutes() {

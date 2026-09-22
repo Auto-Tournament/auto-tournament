@@ -159,6 +159,36 @@ Map veto state and actions.
 | `POST` | `/api/veto/:matchSlug/action` | public |
 | `POST` | `/api/veto/:matchSlug/reset` | admin |
 
+### Maps
+
+The map catalogue.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/maps` | admin |
+| `GET` | `/api/maps/:id` | admin |
+| `POST` | `/api/maps` | admin |
+| `PUT` | `/api/maps/:id` | admin |
+| `PATCH` | `/api/maps/:id` | admin |
+| `POST` | `/api/maps/:id/upload-image` | admin |
+| `POST` | `/api/maps/sync` | admin |
+| `DELETE` | `/api/maps/:id` | admin |
+
+### Map pools
+
+Named sets of maps for veto and match config.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/map-pools` | admin |
+| `GET` | `/api/map-pools/:id` | admin |
+| `POST` | `/api/map-pools` | admin |
+| `PUT` | `/api/map-pools/:id/enable` | admin |
+| `PUT` | `/api/map-pools/:id/disable` | admin |
+| `PUT` | `/api/map-pools/:id/set-default` | admin |
+| `PUT` | `/api/map-pools/:id` | admin |
+| `DELETE` | `/api/map-pools/:id` | admin |
+
 ### Test helpers (CS2)
 
 E2E helpers that stand in for a CS2 server. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
@@ -280,36 +310,6 @@ Instance-wide settings.
 | `POST` | `/api/settings/igdb/test` | admin |
 | `GET` | `/api/settings` | admin |
 | `PUT` | `/api/settings` | admin |
-
-### Maps
-
-The map catalogue.
-
-| Method | Path | Auth |
-| --- | --- | --- |
-| `GET` | `/api/maps` | admin |
-| `GET` | `/api/maps/:id` | admin |
-| `POST` | `/api/maps` | admin |
-| `PUT` | `/api/maps/:id` | admin |
-| `PATCH` | `/api/maps/:id` | admin |
-| `POST` | `/api/maps/:id/upload-image` | admin |
-| `POST` | `/api/maps/sync` | admin |
-| `DELETE` | `/api/maps/:id` | admin |
-
-### Map pools
-
-Named sets of maps for veto and match config.
-
-| Method | Path | Auth |
-| --- | --- | --- |
-| `GET` | `/api/map-pools` | admin |
-| `GET` | `/api/map-pools/:id` | admin |
-| `POST` | `/api/map-pools` | admin |
-| `PUT` | `/api/map-pools/:id/enable` | admin |
-| `PUT` | `/api/map-pools/:id/disable` | admin |
-| `PUT` | `/api/map-pools/:id/set-default` | admin |
-| `PUT` | `/api/map-pools/:id` | admin |
-| `DELETE` | `/api/map-pools/:id` | admin |
 
 ### Tournament templates
 

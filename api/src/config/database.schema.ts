@@ -68,16 +68,19 @@ export function getSchemaSQL(): string {
       type TEXT NOT NULL,
       format TEXT NOT NULL,
       status TEXT NOT NULL DEFAULT 'setup',
-      maps TEXT NOT NULL,
+      -- cs2-owned columns (maps, map_sequence, max_rounds, overtime_*): only the CS2
+      -- integration validates them (validateTournamentSettings). Folding them into
+      -- tournament.integration_settings is later work.
+      maps TEXT NOT NULL, -- cs2-owned: JSON array of map ids (the map pool)
       team_ids TEXT NOT NULL,
       settings TEXT,
       game TEXT NOT NULL DEFAULT 'cs2', -- Game integration that owns this row (integrations/registry)
       -- Shuffle tournament specific fields
-      map_sequence TEXT, -- JSON array of maps in order (number of maps = number of rounds)
+      map_sequence TEXT, -- cs2-owned: JSON array of maps in order (number of maps = number of rounds)
       team_size INTEGER DEFAULT 5, -- Number of players per team (default: 5 for 5v5)
-      max_rounds INTEGER DEFAULT 24, -- Max rounds per map
-      overtime_mode TEXT DEFAULT 'enabled', -- 'enabled' or 'disabled'
-      overtime_segments INTEGER, -- Optional: max number of overtime segments (MatchZy overtime_limit). NULL/0 = unlimited.
+      max_rounds INTEGER DEFAULT 24, -- cs2-owned: max rounds per map
+      overtime_mode TEXT DEFAULT 'enabled', -- cs2-owned: 'enabled' or 'disabled'
+      overtime_segments INTEGER, -- cs2-owned. Optional: max number of overtime segments (MatchZy overtime_limit). NULL/0 = unlimited.
       elo_template_id TEXT, -- Reference to elo_calculation_templates table (nullable)
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
@@ -171,7 +174,7 @@ export function getSchemaSQL(): string {
 
     CREATE INDEX IF NOT EXISTS idx_servers_enabled ON servers(enabled);
 
-    -- Maps table
+    -- Maps table (cs2-owned: integrations/cs2/maps, seeded by the CS2 seed hook)
     CREATE TABLE IF NOT EXISTS maps (
       id TEXT PRIMARY KEY,
       display_name TEXT NOT NULL,
@@ -182,7 +185,7 @@ export function getSchemaSQL(): string {
 
     CREATE INDEX IF NOT EXISTS idx_maps_id ON maps(id);
 
-    -- Map pools table
+    -- Map pools table (cs2-owned: integrations/cs2/maps, seeded by the CS2 seed hook)
     CREATE TABLE IF NOT EXISTS map_pools (
       id SERIAL PRIMARY KEY,
       name TEXT NOT NULL UNIQUE,
@@ -418,296 +421,6 @@ export function getSchemaSQL(): string {
     );
 
     CREATE INDEX IF NOT EXISTS idx_session_expire ON session(expire);
-  `;
-}
-
-/**
- * Default maps to insert on schema initialization
- * Fetches from GitHub repository: https://github.com/Auto-Tournament/cs2-server-manager/tree/master/map_thumbnails
- * Falls back to hardcoded maps if GitHub fetch fails (e.g., rate limiting, network errors, etc.)
- */
-export async function getDefaultMapsSQL(): Promise<string> {
-  let maps: Array<{ id: string; displayName: string; imageUrl: string }> = [];
-
-  try {
-    // Fetch from GitHub repository - this is the source of truth
-    const { fetchCS2MapsFromWiki } = await import('../utils/fetchCS2Maps');
-    try {
-      maps = await fetchCS2MapsFromWiki();
-    } catch (err) {
-      const { log } = await import('../utils/logger');
-      const error = err as Error;
-      log.warn(
-        `[PostgreSQL] Failed to fetch maps from GitHub repository (wiki). Falling back to hardcoded maps. Reason: ${error.message}`
-      );
-      maps = [];
-    }
-  } catch (err) {
-    // Dynamic import of fetchCS2MapsFromWiki failed – also fall back
-    const { log } = await import('../utils/logger');
-    const error = err as Error;
-    log.warn(
-      `[PostgreSQL] Failed to load fetchCS2MapsFromWiki helper. Falling back to hardcoded maps. Reason: ${error.message}`
-    );
-    maps = [];
-  }
-
-  // Fallback to hardcoded maps if fetch failed or returned empty (e.g., rate limiting)
-  if (maps.length === 0) {
-    const { log } = await import('../utils/logger');
-    log.warn(
-      'Failed to fetch maps from GitHub repository. Using fallback maps that match the repository.'
-    );
-    const fallbackMaps = getFallbackMaps();
-    return generateMapsSQL(fallbackMaps);
-  }
-
-  // Convert fetched maps to the format expected by generateMapsSQL
-  const formattedMaps = maps.map((map) => ({
-    id: map.id,
-    display_name: map.displayName,
-    image_url: map.imageUrl,
-  }));
-
-  return generateMapsSQL(formattedMaps);
-}
-
-/**
- * Fallback hardcoded maps (used if GitHub fetch fails, e.g., rate limiting)
- * This list matches the actual maps in the repository:
- * https://github.com/Auto-Tournament/cs2-server-manager/tree/master/map_thumbnails
- */
-function getFallbackMaps(): Array<{ id: string; display_name: string; image_url: string }> {
-  const GITHUB_RAW_BASE =
-    'https://raw.githubusercontent.com/Auto-Tournament/cs2-server-manager/master/map_thumbnails';
-
-  return [
-    {
-      id: 'ar_baggage',
-      display_name: 'Baggage',
-      image_url: `${GITHUB_RAW_BASE}/ar_baggage.webp`,
-    },
-    {
-      id: 'ar_pool_day',
-      display_name: 'Pool Day',
-      image_url: `${GITHUB_RAW_BASE}/ar_pool_day.webp`,
-    },
-    {
-      id: 'ar_shoots',
-      display_name: 'Shoots',
-      image_url: `${GITHUB_RAW_BASE}/ar_shoots.webp`,
-    },
-    {
-      id: 'ar_shoots_night',
-      display_name: 'Shoots (Night)',
-      image_url: `${GITHUB_RAW_BASE}/ar_shoots_night.webp`,
-    },
-    {
-      id: 'cs_agency',
-      display_name: 'Agency',
-      image_url: `${GITHUB_RAW_BASE}/cs_agency.webp`,
-    },
-    {
-      id: 'cs_italy',
-      display_name: 'Italy',
-      image_url: `${GITHUB_RAW_BASE}/cs_italy.webp`,
-    },
-    {
-      id: 'cs_office',
-      display_name: 'CS Office',
-      image_url: `${GITHUB_RAW_BASE}/cs_office.webp`,
-    },
-    {
-      id: 'de_ancient',
-      display_name: 'Ancient',
-      image_url: `${GITHUB_RAW_BASE}/de_ancient.webp`,
-    },
-    {
-      id: 'de_ancient_night',
-      display_name: 'Ancient (Night)',
-      image_url: `${GITHUB_RAW_BASE}/de_ancient_night.webp`,
-    },
-    {
-      id: 'de_anubis',
-      display_name: 'Anubis',
-      image_url: `${GITHUB_RAW_BASE}/de_anubis.webp`,
-    },
-    {
-      id: 'de_dust2',
-      display_name: 'Dust II',
-      image_url: `${GITHUB_RAW_BASE}/de_dust2.webp`,
-    },
-    {
-      id: 'de_golden',
-      display_name: 'Golden',
-      image_url: `${GITHUB_RAW_BASE}/de_golden.webp`,
-    },
-    {
-      id: 'de_inferno',
-      display_name: 'Inferno',
-      image_url: `${GITHUB_RAW_BASE}/de_inferno.webp`,
-    },
-    {
-      id: 'de_mirage',
-      display_name: 'Mirage',
-      image_url: `${GITHUB_RAW_BASE}/de_mirage.webp`,
-    },
-    {
-      id: 'de_nuke',
-      display_name: 'Nuke',
-      image_url: `${GITHUB_RAW_BASE}/de_nuke.webp`,
-    },
-    {
-      id: 'de_overpass',
-      display_name: 'Overpass',
-      image_url: `${GITHUB_RAW_BASE}/de_overpass.webp`,
-    },
-    {
-      id: 'de_palacio',
-      display_name: 'Palacio',
-      image_url: `${GITHUB_RAW_BASE}/de_palacio.webp`,
-    },
-    {
-      id: 'de_rooftop',
-      display_name: 'Rooftop',
-      image_url: `${GITHUB_RAW_BASE}/de_rooftop.webp`,
-    },
-    {
-      id: 'de_train',
-      display_name: 'Train',
-      image_url: `${GITHUB_RAW_BASE}/de_train.webp`,
-    },
-    {
-      id: 'de_vertigo',
-      display_name: 'Vertigo',
-      image_url: `${GITHUB_RAW_BASE}/de_vertigo.webp`,
-    },
-  ];
-}
-
-/**
- * Generate SQL from maps array
- */
-function generateMapsSQL(
-  maps: Array<{ id: string; display_name: string; image_url: string }>
-): string {
-  const now = Math.floor(Date.now() / 1000);
-  const values = maps
-    .map(
-      (map) =>
-        `('${map.id}', '${map.display_name.replace(/'/g, "''")}', '${
-          map.image_url
-        }', ${now}, ${now})`
-    )
-    .join(',\n    ');
-
-  return `
-    INSERT INTO maps (id, display_name, image_url, created_at, updated_at)
-    VALUES
-      ${values}
-    ON CONFLICT (id) DO NOTHING;
-  `;
-}
-
-/**
- * Default map pools to insert on schema initialization
- * Creates pools based on map types (de_, cs_, ar_) and Active Duty pool
- */
-export async function getDefaultMapPoolsSQL(client: {
-  query: (sql: string) => Promise<{ rows: Array<{ id: string }> }>;
-}): Promise<string> {
-  const now = Math.floor(Date.now() / 1000);
-
-  // Query all maps from the database
-  const mapsResult = await client.query('SELECT id FROM maps ORDER BY id');
-  const allMapIds = mapsResult.rows.map((row) => row.id);
-
-  // Group maps by prefix
-  const defusalMaps: string[] = [];
-  const hostageMaps: string[] = [];
-  const armsRaceMaps: string[] = [];
-
-  for (const mapId of allMapIds) {
-    if (mapId.startsWith('de_')) {
-      defusalMaps.push(mapId);
-    } else if (mapId.startsWith('cs_')) {
-      hostageMaps.push(mapId);
-    } else if (mapId.startsWith('ar_')) {
-      armsRaceMaps.push(mapId);
-    }
-  }
-
-  // Active Duty map pool (all 7 competitive maps, filtered to only include maps that exist)
-  const activeDutyMapIds = [
-    'de_ancient',
-    'de_anubis',
-    'de_dust2',
-    'de_inferno',
-    'de_mirage',
-    'de_nuke',
-    'de_vertigo',
-  ];
-  const activeDutyMaps = activeDutyMapIds.filter((id) => allMapIds.includes(id));
-
-  const pools: Array<{ name: string; mapIds: string[]; isDefault: number; enabled: number }> = [];
-
-  // Add Active Duty pool if we have any of those maps
-  if (activeDutyMaps.length > 0) {
-    pools.push({
-      name: 'Active Duty',
-      mapIds: activeDutyMaps,
-      isDefault: 1,
-      enabled: 1, // Active Duty is enabled by default
-    });
-  }
-
-  // Add Defusal pool if we have de_ maps
-  if (defusalMaps.length > 0) {
-    pools.push({
-      name: 'Defusal only',
-      mapIds: defusalMaps,
-      isDefault: 0,
-      enabled: 0, // Disabled by default - for future "no veto" mode
-    });
-  }
-
-  // Add Hostage pool if we have cs_ maps
-  if (hostageMaps.length > 0) {
-    pools.push({
-      name: 'Hostage only',
-      mapIds: hostageMaps,
-      isDefault: 0,
-      enabled: 0, // Disabled by default - for future "no veto" mode
-    });
-  }
-
-  // Add Arms Race pool if we have ar_ maps
-  if (armsRaceMaps.length > 0) {
-    pools.push({
-      name: 'Arms Race only',
-      mapIds: armsRaceMaps,
-      isDefault: 0,
-      enabled: 0, // Disabled by default - for future "no veto" mode
-    });
-  }
-
-  // Generate SQL for all pools
-  const values = pools
-    .map((pool) => {
-      const mapIdsJson = JSON.stringify(pool.mapIds).replace(/'/g, "''");
-      const escapedName = pool.name.replace(/'/g, "''");
-      return `('${escapedName}', '${mapIdsJson}', ${pool.isDefault}, ${pool.enabled}, ${now}, ${now})`;
-    })
-    .join(',\n      ');
-
-  return `
-    INSERT INTO map_pools (name, map_ids, is_default, enabled, created_at, updated_at)
-    VALUES
-      ${values}
-    ON CONFLICT (name) DO UPDATE SET
-      map_ids = EXCLUDED.map_ids,
-      enabled = EXCLUDED.enabled,
-      updated_at = EXCLUDED.updated_at;
   `;
 }
 
