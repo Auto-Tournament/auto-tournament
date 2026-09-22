@@ -4,11 +4,14 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
+import Collapse from '@mui/material/Collapse';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { useTranslation } from 'react-i18next';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -22,6 +25,7 @@ interface IgdbStatus {
 }
 
 const TWITCH_CONSOLE_URL = 'https://dev.twitch.tv/console/apps';
+const GAME_SEARCH_GUIDE_URL = 'https://docs.autotournament.gg/guides/game-search';
 
 /**
  * Admin card for the IGDB credentials (a Twitch application's client id and
@@ -37,11 +41,13 @@ export function IgdbCredentialsCard() {
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null);
+  const [howToOpen, setHowToOpen] = useState(true);
 
   const apply = (next: IgdbStatus) => {
     setStatus(next);
     setClientId(next.envOverride ? '' : (next.clientId ?? ''));
     setClientSecret('');
+    setHowToOpen(!next.configured);
   };
 
   useEffect(() => {
@@ -127,19 +133,52 @@ export function IgdbCredentialsCard() {
       <Typography variant="body2" color="text.secondary" mb={1}>
         {t('games.igdb.description')}
       </Typography>
-      <Typography variant="body2" color="text.secondary" mb={1}>
-        {t('games.igdb.howTo')}
-      </Typography>
-      <Link
-        href={TWITCH_CONSOLE_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        variant="body2"
-        sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, mb: 2 }}
+
+      <Button
+        size="small"
+        onClick={() => setHowToOpen((open) => !open)}
+        endIcon={howToOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+        sx={{ mb: 1, textTransform: 'none' }}
+        data-testid="settings-igdb-howto-toggle"
       >
-        {t('games.igdb.consoleLink')}
-        <OpenInNewIcon sx={{ fontSize: 16 }} aria-hidden />
-      </Link>
+        {t('games.igdb.howToToggle')}
+      </Button>
+      <Collapse in={howToOpen}>
+        <Box sx={{ mb: 2 }}>
+          <Typography component="ol" variant="body2" color="text.secondary" sx={{ pl: 2.5, m: 0 }}>
+            <li>{t('games.igdb.howToStep1')}</li>
+            <li>{t('games.igdb.howToStep2')}</li>
+            <li>{t('games.igdb.howToStep3')}</li>
+            <li>{t('games.igdb.howToStep4')}</li>
+            <li>{t('games.igdb.howToStep5')}</li>
+          </Typography>
+          <Stack direction="row" spacing={2} flexWrap="wrap" mt={1}>
+            <Link
+              href={TWITCH_CONSOLE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="body2"
+              sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
+            >
+              {t('games.igdb.consoleLink')}
+              <OpenInNewIcon sx={{ fontSize: 16 }} aria-hidden />
+            </Link>
+            <Link
+              href={GAME_SEARCH_GUIDE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="body2"
+              sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
+            >
+              {t('games.igdb.fullGuideLink')}
+              <OpenInNewIcon sx={{ fontSize: 16 }} aria-hidden />
+            </Link>
+          </Stack>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+            {t('games.igdb.freeNote')}
+          </Typography>
+        </Box>
+      </Collapse>
 
       {status.envOverride && (
         <Alert severity="info" sx={{ mb: 2 }}>
