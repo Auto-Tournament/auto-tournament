@@ -4,6 +4,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
+import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
@@ -46,6 +47,7 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
     failed: false,
   });
   const [fromIgdb, setFromIgdb] = useState(false);
+  const [fromWikidata, setFromWikidata] = useState(false);
   const [suggestions, setSuggestions] = useState<GameSummary[]>([]);
 
   const pickedIds = useMemo(() => new Set(value.map((g) => g.id)), [value]);
@@ -73,8 +75,9 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
       searchGames(query, controller.signal)
         .then((res) => {
           setResolved({ q: query, games: res.games, failed: false });
-          // Sticky for this picker: the credit stays once IGDB data is on screen.
+          // Sticky for this picker: the credit stays once external data is on screen.
           if (res.fromIgdb) setFromIgdb(true);
+          if (res.fromWikidata) setFromWikidata(true);
         })
         .catch((err: unknown) => {
           if ((err as Error).name === 'AbortError') return;
@@ -107,8 +110,12 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
         ? t('games.picker.searchFailed')
         : t('games.picker.noResults');
 
-  // IGDB covers are IGDB data too, so they carry the credit as well.
-  const showCredit = fromIgdb || value.some((g) => g.coverUrl);
+  // Picked games carry the credit of whichever external source supplied them,
+  // even once search has moved on (e.g. after a reload). IGDB takes priority
+  // over Wikidata if a session somehow saw both.
+  const showIgdbCredit = fromIgdb || value.some((g) => g.source === 'igdb');
+  const showWikidataCredit = !showIgdbCredit && (fromWikidata || value.some((g) => g.source === 'wikidata'));
+  const showCredit = showIgdbCredit || showWikidataCredit;
 
   return (
     <Stack spacing={2} data-testid="game-picker">
@@ -245,7 +252,19 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
 
       {showCredit && (
         <Typography variant="caption" color="text.secondary" data-testid="igdb-credit">
-          {t('games.picker.credit')}
+          {showWikidataCredit ? (
+            <Link
+              href="https://www.wikidata.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              color="inherit"
+              data-testid="wikidata-credit-link"
+            >
+              {t('games.picker.creditWikidata')}
+            </Link>
+          ) : (
+            t('games.picker.credit')
+          )}
         </Typography>
       )}
     </Stack>

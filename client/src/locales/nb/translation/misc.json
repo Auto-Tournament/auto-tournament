@@ -52,7 +52,8 @@
       "remove": "Fjern {{name}}",
       "supported": "Turneringer støttes",
       "limit": "Du kan velge opptil {{max}} spill",
-      "credit": "Spilldata fra IGDB"
+      "credit": "Spilldata fra IGDB",
+      "creditWikidata": "Spilldata fra Wikidata"
     },
     "profile": {
       "title": "Dine spill",

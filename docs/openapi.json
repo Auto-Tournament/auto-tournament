@@ -188,7 +188,7 @@
           },
           "slug": {
             "type": "string",
-            "description": "IGDB slug",
+            "description": "IGDB or Wikidata slug",
             "example": "counter-strike-2"
           },
           "name": {
@@ -198,7 +198,7 @@
           "coverUrl": {
             "type": "string",
             "nullable": true,
-            "description": "IGDB cover (t_cover_small); null for built-ins IGDB has not returned yet"
+            "description": "IGDB cover (t_cover_small) or Wikidata's logo/image; null for built-ins with no cover"
           },
           "releaseYear": {
             "type": "integer",
@@ -208,6 +208,15 @@
           "supported": {
             "type": "boolean",
             "description": "A game module for this game is installed (tournaments can run it)"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "igdb",
+              "wikidata",
+              "builtin"
+            ],
+            "description": "Where this row came from; used to pick the data-source credit line"
           }
         }
       },
@@ -274,7 +283,7 @@
     },
     {
       "name": "Games",
-      "description": "The game catalogue players pick from (IGDB-backed search, suggestions). Public."
+      "description": "The game catalogue players pick from (IGDB or Wikidata-backed search, suggestions). Public."
     },
     {
       "name": "Generation",
@@ -1267,7 +1276,7 @@
           "Games"
         ],
         "summary": "Search the game catalogue",
-        "description": "Searches IGDB when credentials are configured (results are stored in\nthe local `games` table) and always includes the built-in games for\ninstalled game modules first. Without IGDB, or when it fails, only the\nbuilt-in list is searched. At most 10 results. Rate limited per IP.\n",
+        "description": "Searches IGDB when credentials are configured (results are stored in\nthe local `games` table); otherwise searches Wikidata, which needs no\nAPI key and is the default so search works out of the box. Always\nincludes the built-in games for installed game modules first. When\nneither is configured to answer, or the active one fails or times\nout, only the built-in list is searched. At most 10 results. Rate\nlimited per IP.\n",
         "parameters": [
           {
             "in": "query",
@@ -1293,6 +1302,10 @@
                     "fromIgdb": {
                       "type": "boolean",
                       "description": "True when any result came from IGDB (show the IGDB credit)"
+                    },
+                    "fromWikidata": {
+                      "type": "boolean",
+                      "description": "True when any result came from Wikidata (show the Wikidata credit)"
                     },
                     "games": {
                       "type": "array",
@@ -5157,6 +5170,20 @@
         ]
       }
     },
+    "/api/test/fake-wikidata": {
+      "get": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "GET /api/test/fake-wikidata",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/test/igdb": {
       "get": {
         "tags": [
@@ -5478,6 +5505,48 @@
           "Test helpers"
         ],
         "summary": "POST /api/test/server-status",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/test/wikidata": {
+      "get": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "GET /api/test/wikidata",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/wikidata",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
