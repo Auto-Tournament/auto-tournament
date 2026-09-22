@@ -232,8 +232,57 @@ function configOf(match: DbMatchRow): StoredConfig {
  * The config is the one this module built, so its `game` field is the module's
  * id whatever catalogue id the row carries.
  */
-function isManualReportMatch(match: DbMatchRow): boolean {
+export function isManualReportMatch(match: DbMatchRow): boolean {
   return configOf(match).game === MANUAL_REPORT_GAME_ID;
+}
+
+/** The reporting rules a match was built with, as a report form needs them. */
+export interface ReportingRules {
+  seriesLength: number;
+  allowDraw: boolean;
+  confirmation: MatchReportConfirmation;
+  /** Minutes the opponent has to answer, or null when nothing expires. */
+  confirmTimeoutMin: number | null;
+  timeoutAction: MatchReportTimeoutAction;
+}
+
+/**
+ * The rules this match was built with, read off its stored config.
+ *
+ * The same defaults `submitReport` applies, in one place, so the form a captain
+ * fills in and the check their report is measured against cannot disagree.
+ */
+export function reportingRules(match: DbMatchRow): ReportingRules {
+  const config = configOf(match);
+  const timeoutMin = Number(config.confirmTimeoutMin);
+  return {
+    seriesLength: Number(config.seriesLength) > 0 ? Number(config.seriesLength) : 1,
+    allowDraw: config.allowDraw === true,
+    confirmation: config.confirmation === 'none' ? 'none' : 'opponent',
+    confirmTimeoutMin: Number.isFinite(timeoutMin) && timeoutMin > 0 ? Math.floor(timeoutMin) : null,
+    timeoutAction: config.timeoutAction === 'escalate' ? 'escalate' : 'auto_confirm',
+  };
+}
+
+/**
+ * Refuse an answer aimed at a report that has moved on (3.0 phase D, PR D4).
+ *
+ * The HTTP routes make a caller name the revision they are answering, because
+ * a captain reading a match page and a captain reporting over it race: a newer
+ * report supersedes the open one and takes the next revision, so the number
+ * the client is holding stops matching. Without this, the second captain would
+ * silently confirm a result they never saw.
+ *
+ * `undefined` means the caller did not say, and nothing is checked — the
+ * state machine stays callable without a revision, as the sweeper needs.
+ */
+function revisionMismatch(open: MatchReport, expected: number | undefined): ReportOutcome | null {
+  if (expected === undefined) return null;
+  if (Number(expected) === open.revision) return null;
+  return fail(
+    409,
+    `This match is at report revision ${open.revision}, not ${expected}; reload it and look again`
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -575,11 +624,15 @@ export async function submitReport(input: SubmitInput): Promise<ReportOutcome> {
 export async function confirmReport(input: {
   matchSlug: string;
   actor: ReportActor;
+  /** The revision the caller is answering; 409 when it is no longer the open one. */
+  expectedRevision?: number;
 }): Promise<ReportOutcome> {
   const match = await matchFor(input.matchSlug);
   if (!match) return fail(404, `Match '${input.matchSlug}' not found`);
   const open = await openReport(match.slug);
   if (!open) return fail(404, `Match '${match.slug}' has no open report`);
+  const stale = revisionMismatch(open, input.expectedRevision);
+  if (stale) return stale;
   if (open.status !== 'submitted') {
     return fail(409, `That report is ${open.status}, so it cannot be confirmed`);
   }
@@ -611,11 +664,15 @@ export async function disputeReport(input: {
   matchSlug: string;
   actor: ReportActor;
   reason?: string;
+  /** The revision the caller is answering; 409 when it is no longer the open one. */
+  expectedRevision?: number;
 }): Promise<ReportOutcome> {
   const match = await matchFor(input.matchSlug);
   if (!match) return fail(404, `Match '${input.matchSlug}' not found`);
   const open = await openReport(match.slug);
   if (!open) return fail(404, `Match '${match.slug}' has no open report`);
+  const stale = revisionMismatch(open, input.expectedRevision);
+  if (stale) return stale;
   if (open.status !== 'submitted') {
     return fail(409, `That report is ${open.status}, so it cannot be disputed`);
   }
@@ -650,11 +707,15 @@ export async function disputeReport(input: {
 export async function withdrawReport(input: {
   matchSlug: string;
   actor: ReportActor;
+  /** The revision the caller is taking back; 409 when it is no longer the open one. */
+  expectedRevision?: number;
 }): Promise<ReportOutcome> {
   const match = await matchFor(input.matchSlug);
   if (!match) return fail(404, `Match '${input.matchSlug}' not found`);
   const open = await openReport(match.slug);
   if (!open) return fail(404, `Match '${match.slug}' has no open report`);
+  const stale = revisionMismatch(open, input.expectedRevision);
+  if (stale) return stale;
   if (open.status !== 'submitted') {
     return fail(409, `That report is ${open.status}, so it cannot be withdrawn`);
   }
