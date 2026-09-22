@@ -10,6 +10,7 @@
     "home": "Home",
     "browse": "Browse",
     "dashboard": "Overzicht",
+    "manage": "Manage",
     "tournament": "Toernooi",
     "bracket": "Schema",
     "matches": "Wedstrijden",
@@ -41,6 +42,7 @@
     "openSettings": "Instellingen openen",
     "pageTitle": {
       "dashboard": "Overzicht",
+      "manage": "Manage",
       "tournament": "Toernooi",
       "bracket": "Schema",
       "matches": "Wedstrijden",

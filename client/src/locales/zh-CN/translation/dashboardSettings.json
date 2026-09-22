@@ -2,6 +2,10 @@
   "dashboard": {
     "title": "控制台",
     "notReady": "当锦标赛开始后，锦标赛控制台将显示在这里。",
+    "manageBanner": {
+      "text": "Looking for what needs a decision right now? The Manage console keeps a live queue of matches and servers that need you.",
+      "cta": "Open Manage"
+    },
     "restartTournament": {
       "button": "重启锦标赛比赛",
       "restarting": "正在重启锦标赛比赛…"
@@ -320,6 +324,87 @@
       "simulationDisabled": "已禁用模拟模式",
       "timescaleUpdated": "模拟时间倍率已更新为 {{value}} 倍",
       "simulationEnabledWithSpeed": "已启用模拟模式（{{speed}}x 速度）"
+    }
+  },
+  "managePage": {
+    "title": "Manage",
+    "needsYouHeading": "Needs you",
+    "noTournament": "No tournament yet",
+    "rail": {
+      "needsYou": "Needs you",
+      "matches": "Matches",
+      "bracket": "Bracket",
+      "teams": "Teams",
+      "players": "Players",
+      "servers": "Servers",
+      "maps": "Maps",
+      "tournament": "Tournament setup",
+      "settings": "Settings"
+    },
+    "status": {
+      "live": "LIVE",
+      "inVeto": "IN VETO",
+      "queued": "QUEUED",
+      "serversFree": "SERVERS FREE",
+      "round": "ROUND"
+    },
+    "needsYou": {
+      "empty": "Nothing needs you right now.",
+      "unknownTime": "a while",
+      "secondsAgo": "{{count}}s",
+      "minutesAgo": "{{count}}m",
+      "hoursAgo": "{{count}}h",
+      "vsLabel": "{{team1}} vs {{team2}}",
+      "decide": {
+        "title": "{{teams}} needs a winner",
+        "detail": "Every map was played and the series is still level.",
+        "action": "Decide"
+      },
+      "stale": {
+        "title": "{{server}} has been loaded for a while",
+        "detail": "{{match}} has been stuck past the usual wait."
+      },
+      "offline": {
+        "title": "{{server}} stopped responding",
+        "detail": "{{match}} was on this server. Last heartbeat {{time}} ago."
+      },
+      "reallocateAction": "Move to another server",
+      "forceCancelAction": "Force cancel",
+      "reallocateSuccess": "Match moved to another server",
+      "forceCancelSuccess": "Match cancelled",
+      "actionFailed": "That didn't go through. Try again.",
+      "reallocateConfirmTitle": "Move this match to another server?",
+      "reallocateConfirmBody": "The match will be reassigned to the next available server.",
+      "forceCancelConfirmTitle": "Force cancel this match?",
+      "forceCancelConfirmBody": "This ends the match immediately and marks it as cancelled, even if the server is unreachable."
+    },
+    "servers": {
+      "heading": "Servers",
+      "viewAll": "All servers",
+      "none": "No servers configured yet.",
+      "inMatch": "In match",
+      "free": "Free",
+      "offline": "Offline",
+      "lastHeartbeat": "Last heartbeat {{time}} ago",
+      "never": "never"
+    },
+    "recent": {
+      "heading": "Recent",
+      "viewAll": "Full log",
+      "empty": "No recent activity yet.",
+      "closingLine": "Everything else runs on its own. You'll only see it here when something needs a decision.",
+      "team1Fallback": "Team 1",
+      "team2Fallback": "Team 2",
+      "mapResult": "{{winner}} won map {{map}} against {{loser}}, {{score}}",
+      "seriesEnd": "{{winner}} won the series against {{loser}}, {{score}}"
+    },
+    "announce": {
+      "button": "Announce",
+      "title": "Announce to all servers",
+      "label": "Message",
+      "send": "Send",
+      "success": "Announcement sent",
+      "failed": "Failed to send the announcement"
     }
   }
 }

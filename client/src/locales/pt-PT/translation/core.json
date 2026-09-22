@@ -10,6 +10,7 @@
     "home": "Home",
     "browse": "Browse",
     "dashboard": "Painel de Controlo",
+    "manage": "Manage",
     "tournament": "Torneio",
     "bracket": "Quadro",
     "matches": "Jogos",
@@ -41,6 +42,7 @@
     "openSettings": "Abrir definições",
     "pageTitle": {
       "dashboard": "Painel de Controlo",
+      "manage": "Manage",
       "tournament": "Torneio",
       "bracket": "Quadro",
       "matches": "Jogos",

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { Box, Stack, Alert } from '@mui/material';
+import { Box, Stack, Alert, Button } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { OnboardingChecklist } from '../components/dashboard/OnboardingChecklist';
 import { useOnboardingStatus } from '../hooks/useOnboardingStatus';
 import { DashboardStats } from '../components/dashboard/DashboardStats';
@@ -7,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 
 export default function Dashboard() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   // Set dynamic page title
   useEffect(() => {
     document.title = t('dashboard.title');
@@ -65,6 +67,21 @@ export default function Dashboard() {
             <OnboardingChecklist />
           </Box>
         )}
+
+        {/* Banner pointing admins to the Manage console, which surfaces the
+            things that actually need a decision (out of the way here so the
+            Dashboard keeps its own broader stats view). */}
+        <Alert
+          severity="info"
+          sx={{ width: '100%', maxWidth: { sm: '100%', md: '1700px' } }}
+          action={
+            <Button color="inherit" size="small" onClick={() => navigate('/manage')}>
+              {t('dashboard.manageBanner.cta')}
+            </Button>
+          }
+        >
+          {t('dashboard.manageBanner.text')}
+        </Alert>
 
         {/* Main dashboard stats (handles its own loading/error) */}
         <Box sx={{ width: '100%', maxWidth: { sm: '100%', md: '1700px' } }}>

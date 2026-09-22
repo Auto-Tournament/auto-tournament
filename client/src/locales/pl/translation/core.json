@@ -10,6 +10,7 @@
     "home": "Home",
     "browse": "Browse",
     "dashboard": "Panel",
+    "manage": "Manage",
     "tournament": "Turniej",
     "bracket": "Drabinka",
     "matches": "Mecze",
@@ -41,6 +42,7 @@
     "openSettings": "Otwórz ustawienia",
     "pageTitle": {
       "dashboard": "Panel",
+      "manage": "Manage",
       "tournament": "Turniej",
       "bracket": "Drabinka",
       "matches": "Mecze",

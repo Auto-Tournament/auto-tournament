@@ -28,6 +28,7 @@ import {
   Dashboard as DashboardIcon,
   BugReport as BugReportIcon,
 } from '@mui/icons-material';
+import InboxIcon from '@mui/icons-material/Inbox';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import GroupsIcon from '@mui/icons-material/Groups';
@@ -206,6 +207,7 @@ export default function Layout() {
   const pageHeaders: Record<string, { title: string; icon: React.ComponentType; color?: string }> =
     {
       '/': { title: t('layout.pageTitle.dashboard'), icon: DashboardIcon },
+      '/manage': { title: t('layout.pageTitle.manage'), icon: InboxIcon },
       '/tournament': { title: t('layout.pageTitle.tournament'), icon: EmojiEventsIcon },
       '/bracket': { title: t('layout.pageTitle.bracket'), icon: AccountTreeIcon },
       '/matches': { title: t('layout.pageTitle.matches'), icon: SportsEsportsIcon },
@@ -578,6 +580,32 @@ export default function Layout() {
               </ListItemButton>
             </ListItem>
           </Tooltip>
+          <Tooltip title={!open ? t('nav.manage') : ''} placement="right">
+            <ListItem disablePadding sx={{ display: 'block' }}>
+              <ListItemButton
+                selected={location.pathname === '/manage'}
+                onClick={() => handleNavClick('/manage')}
+                component={Link}
+                to="/manage"
+                sx={[
+                  navItemSx(true),
+                  navItemSelectedSx,
+                ]}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    justifyContent: 'center',
+                    mr: 3,
+                    color: location.pathname === '/manage' ? 'primary.main' : 'inherit',
+                  }}
+                >
+                  <InboxIcon />
+                </ListItemIcon>
+                <ListItemText primary={t('nav.manage')} />
+              </ListItemButton>
+            </ListItem>
+          </Tooltip>
         </List>
         <Divider />
         <List>
@@ -675,6 +703,51 @@ export default function Layout() {
                 </ListItemIcon>
                 <ListItemText
                   primary={t('nav.dashboard')}
+                  sx={[
+                    open
+                      ? {
+                          opacity: 1,
+                        }
+                      : {
+                          opacity: 0,
+                        },
+                  ]}
+                />
+              </ListItemButton>
+            </ListItem>
+          </Tooltip>
+          <Tooltip title={!open ? t('nav.manage') : ''} placement="right">
+            <ListItem disablePadding sx={{ display: 'block' }}>
+              <ListItemButton
+                selected={location.pathname === '/manage'}
+                onClick={() => handleNavClick('/manage')}
+                component={Link}
+                to="/manage"
+                sx={[
+                  navItemSx(open),
+                  navItemSelectedSx,
+                ]}
+              >
+                <ListItemIcon
+                  sx={[
+                    {
+                      minWidth: 0,
+                      justifyContent: 'center',
+                      color: location.pathname === '/manage' ? 'primary.main' : 'inherit',
+                    },
+                    open
+                      ? {
+                          mr: 3,
+                        }
+                      : {
+                          mr: 'auto',
+                        },
+                  ]}
+                >
+                  <InboxIcon />
+                </ListItemIcon>
+                <ListItemText
+                  primary={t('nav.manage')}
                   sx={[
                     open
                       ? {

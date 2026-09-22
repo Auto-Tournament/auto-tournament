@@ -13,6 +13,7 @@
     "home": "Home",
     "browse": "Browse",
     "dashboard": "Dashboard",
+    "manage": "Manage",
     "tournament": "Tournament",
     "bracket": "Bracket",
     "matches": "Matches",
@@ -44,6 +45,7 @@
     "openSettings": "Open settings",
     "pageTitle": {
       "dashboard": "Dashboard",
+      "manage": "Manage",
       "tournament": "Tournament",
       "bracket": "Bracket",
       "matches": "Matches",

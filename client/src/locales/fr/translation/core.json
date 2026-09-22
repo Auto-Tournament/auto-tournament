@@ -10,6 +10,7 @@
     "home": "Home",
     "browse": "Browse",
     "dashboard": "Tableau de bord",
+    "manage": "Manage",
     "tournament": "Tournoi",
     "bracket": "Tableau",
     "matches": "Matchs",
@@ -41,6 +42,7 @@
     "openSettings": "Ouvrir les paramètres",
     "pageTitle": {
       "dashboard": "Tableau de bord",
+      "manage": "Manage",
       "tournament": "Tournoi",
       "bracket": "Tableau",
       "matches": "Matchs",

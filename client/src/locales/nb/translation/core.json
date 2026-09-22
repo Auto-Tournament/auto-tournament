@@ -13,6 +13,7 @@
     "home": "Hjem",
     "browse": "Utforsk",
     "dashboard": "Kontrollpanel",
+    "manage": "Administrer",
     "tournament": "Turnering",
     "bracket": "Turneringsoversikt",
     "matches": "Kamper",
@@ -44,6 +45,7 @@
     "openSettings": "Åpne innstillinger",
     "pageTitle": {
       "dashboard": "Kontrollpanel",
+      "manage": "Administrer",
       "tournament": "Turnering",
       "bracket": "Turneringsoversikt",
       "matches": "Kamper",

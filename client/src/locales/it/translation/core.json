@@ -10,6 +10,7 @@
     "home": "Home",
     "browse": "Browse",
     "dashboard": "Cruscotto",
+    "manage": "Manage",
     "tournament": "Torneo",
     "bracket": "Tabellone",
     "matches": "Match",
@@ -41,6 +42,7 @@
     "openSettings": "Apri impostazioni",
     "pageTitle": {
       "dashboard": "Cruscotto",
+      "manage": "Manage",
       "tournament": "Torneo",
       "bracket": "Tabellone",
       "matches": "Match",

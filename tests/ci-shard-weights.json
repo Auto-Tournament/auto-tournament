@@ -58,6 +58,7 @@
   "tests/ui/games-you-play.spec.ts": 3.0,
   "tests/ui/home.spec.ts": 5.0,
   "tests/ui/login-providers-error.spec.ts": 0.5,
+  "tests/ui/manage.spec.ts": 4.0,
   "tests/ui/maps.spec.ts": 7.1,
   "tests/ui/matches.spec.ts": 3.5,
   "tests/ui/player-discord-id.spec.ts": 4.4,

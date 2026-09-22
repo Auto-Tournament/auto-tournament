@@ -13,6 +13,7 @@
     "home": "Home",
     "browse": "Browse",
     "dashboard": "控制台",
+    "manage": "Manage",
     "tournament": "锦标赛",
     "bracket": "对阵图",
     "matches": "比赛",
@@ -44,6 +45,7 @@
     "openSettings": "打开设置",
     "pageTitle": {
       "dashboard": "控制台",
+      "manage": "Manage",
       "tournament": "锦标赛",
       "bracket": "对阵图",
       "matches": "比赛",

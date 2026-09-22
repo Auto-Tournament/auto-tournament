@@ -7,6 +7,7 @@ import { SnackbarProvider, useSnackbar } from './contexts/SnackbarContext';
 import { AtIcon } from './components/common/AtIcon';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Manage from './pages/Manage';
 import Teams from './pages/Teams';
 import Players from './pages/Players';
 import Servers from './pages/Servers';
@@ -327,6 +328,7 @@ function AppRoutes() {
 
       <Route path="/" element={<RootRoute />}>
         <Route index element={<Dashboard />} />
+        <Route path="manage" element={<Manage />} />
         <Route path="teams" element={<Teams />} />
         <Route path="players" element={<Players />} />
         <Route path="servers" element={<Servers />} />

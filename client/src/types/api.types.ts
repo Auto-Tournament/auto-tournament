@@ -136,6 +136,17 @@ export interface ServerAllocationInfo {
   inGraceWindow: boolean;
   secondsUntilReady: number | null;
   allocatable: boolean;
+  /** Why this server cannot take a match right now, if it can't. */
+  notAllocatableReason?:
+    | 'offline'
+    | 'busy'
+    | 'grace-window'
+    | 'demo-upload'
+    | 'cs2-out-of-date'
+    | 'cs2-unverified'
+    | null;
+  /** Set when a 'loaded' row was overridden as stale (past the allocator's staleness window). */
+  staleMatchSlug?: string | null;
 }
 
 export interface ServerAvailabilityResponse extends ApiResponse {
