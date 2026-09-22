@@ -182,75 +182,45 @@ export default function Login() {
               )}
 
               <Stack spacing={1.5}>
-                {providers.map((provider) => {
+                {providers.map((provider, index) => {
                   const isSteam = provider.id === 'steam';
                   const isDiscord = provider.id === 'discord';
                   const isGitHub = provider.id === 'github';
                   const isKeycloak = provider.id === 'keycloak';
                   const isGoogle = provider.id === 'google';
 
-                  // Brand-aligned button styles per provider
-                  const { variant, color, sx, icon } = (() => {
-                    if (isSteam) {
+                  // Preferred = first enabled provider in the order the API
+                  // returns them (Steam today). It always gets the theme's
+                  // accent so it follows all themes; everyone else is a
+                  // neutral outlined button.
+                  const isPreferred = index === 0;
+
+                  const icon = isSteam
+                    ? <SteamIcon />
+                    : isDiscord
+                      ? <SiDiscord />
+                      : isGitHub
+                        ? <SiGithub />
+                        : isGoogle
+                          ? <FcGoogle />
+                          : isKeycloak
+                            ? <SiKeycloak />
+                            : undefined;
+
+                  const { variant, color, sx } = (() => {
+                    if (isPreferred) {
                       return {
                         variant: 'contained' as const,
                         color: 'primary' as const,
-                        sx: {
-                          bgcolor: tokens.brand.steam,
-                          color: tokens.brand.onBrand,
-                          '&:hover': {
-                            bgcolor: tokens.brand.steamHover,
-                          },
-                        },
-                        icon: <SteamIcon />,
+                        sx: undefined,
                       };
                     }
-                    if (isDiscord) {
-                      return {
-                        variant: 'contained' as const,
-                        color: 'inherit' as const,
-                        sx: {
-                          bgcolor: tokens.brand.discord,
-                          color: tokens.brand.onBrand,
-                          '&:hover': {
-                            bgcolor: tokens.brand.discordHover,
-                          },
-                        },
-                        icon: <SiDiscord />,
-                      };
-                    }
-                    if (isGitHub) {
-                      return {
-                        variant: 'contained' as const,
-                        color: 'inherit' as const,
-                        sx: {
-                          bgcolor: tokens.brand.github,
-                          color: tokens.brand.onBrand,
-                          '&:hover': {
-                            bgcolor: tokens.brand.githubHover,
-                          },
-                        },
-                        icon: <SiGithub />,
-                      };
-                    }
-                    if (isGoogle) {
-                      // Google's sign-in button guidelines: white, grey border, colour logo.
-                      return {
-                        variant: 'contained' as const,
-                        color: 'inherit' as const,
-                        sx: {
-                          bgcolor: '#ffffff',
-                          color: '#1f1f1f',
-                          border: '1px solid #747775',
-                          '&:hover': {
-                            bgcolor: '#f2f2f2',
-                          },
-                        },
-                        icon: <FcGoogle />,
-                      };
-                    }
-                    if (isKeycloak) {
-                      const bg = provider.buttonBgColor || tokens.brand.keycloak;
+
+                    // Keycloak keeps its admin-configured colours only when
+                    // explicitly set, and only when it isn't the preferred
+                    // provider (handled above).
+                    if (isKeycloak && provider.buttonBgColor) {
+                      const bg = provider.buttonBgColor;
                       const text = provider.buttonTextColor || tokens.brand.onBrand;
                       const hoverBg = provider.buttonHoverBgColor || tokens.brand.keycloakHover;
                       return {
@@ -263,14 +233,13 @@ export default function Login() {
                             bgcolor: hoverBg,
                           },
                         },
-                        icon: <SiKeycloak />,
                       };
                     }
+
                     return {
                       variant: 'outlined' as const,
                       color: 'inherit' as const,
                       sx: undefined,
-                      icon: undefined,
                     };
                   })();
 
