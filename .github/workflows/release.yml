@@ -289,3 +289,26 @@ jobs:
           fi
           export RELEASE_IMAGE_DIGESTS="${refs[*]}"
           bash ./scripts/release.sh "$RELEASE_TYPE"
+
+      # The Docker Hub token may not have "Read & Write" scope for descriptions
+      # (only for image push/pull), so a failure here must never fail the
+      # release itself.
+      - name: Update Docker Hub description (auto-tournament)
+        uses: peter-evans/dockerhub-description@v4
+        continue-on-error: true
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: ${{ secrets.DOCKER_USERNAME }}/auto-tournament
+          readme-filepath: ./docker/hub/auto-tournament.md
+          short-description: "Self-hosted tournament platform. Free for non-commercial use."
+
+      - name: Update Docker Hub description (matchzy-auto-tournament)
+        uses: peter-evans/dockerhub-description@v4
+        continue-on-error: true
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: ${{ secrets.DOCKER_USERNAME }}/matchzy-auto-tournament
+          readme-filepath: ./docker/hub/matchzy-auto-tournament.md
+          short-description: "Old image name for Auto Tournament. 2.x MIT, 3.0+ PolyForm Noncommercial."

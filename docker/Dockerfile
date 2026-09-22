@@ -139,6 +139,14 @@ COPY docker/Caddyfile /app/Caddyfile
 # License terms travel with the image (PolyForm Noncommercial requires it).
 COPY LICENSE NOTICE /app/
 
+LABEL org.opencontainers.image.title="Auto Tournament" \
+      org.opencontainers.image.description="Self-hosted tournament platform: brackets, map veto, game servers and results run themselves." \
+      org.opencontainers.image.url="https://autotournament.gg" \
+      org.opencontainers.image.documentation="https://docs.autotournament.gg" \
+      org.opencontainers.image.source="https://github.com/Auto-Tournament/auto-tournament" \
+      org.opencontainers.image.vendor="Sivert Gullberg Hansen" \
+      org.opencontainers.image.licenses="PolyForm-Noncommercial-1.0.0"
+
 # Data directory for demos / uploads / etc.
 RUN mkdir -p /app/data
 
