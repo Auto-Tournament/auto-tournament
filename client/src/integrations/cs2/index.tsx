@@ -26,6 +26,11 @@ import ConnectSteam from './pages/ConnectSteam';
 export const cs2ClientIntegration: ClientGameIntegration = {
   id: 'cs2',
 
+  // The same slug and aliases the API's cs2Integration claims, so a tournament
+  // whose `game` is the catalogue id resolves here rather than falling through
+  // to the module that runs anything (3.0 phase D, PR D7).
+  catalogGames: ['counter-strike-2', 'cs', 'counter strike', 'csgo'],
+
   matchPanels: {
     teamView: MatchServerPanel,
     adminView: ServerAllocationWidget,

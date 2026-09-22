@@ -65,6 +65,19 @@ export interface MatchAllocationPanelProps {
   requiredServerCount?: number;
 }
 
+/**
+ * Team match page: how this match's result reaches MAT when the game cannot
+ * send one itself (3.0 phase D, PR D7).
+ *
+ * The panel asks the API what the viewer may do, so it takes only the match it
+ * is about. CS2 leaves the slot empty — a CS2 result comes from the server.
+ */
+export interface MatchReportPanelProps {
+  matchSlug: string;
+  /** Re-read when the match itself moves (live → completed, needs_decision). */
+  matchStatus?: string;
+}
+
 // ---------------------------------------------------------------------------
 // Pre-match phase (CS2: the map veto)
 // ---------------------------------------------------------------------------
@@ -256,18 +269,52 @@ export interface IntegrationNavItem {
 }
 
 // ---------------------------------------------------------------------------
+// Team administration
+// ---------------------------------------------------------------------------
+
+/**
+ * Team page: one control the integration needs an admin to have (3.0 phase D,
+ * PR D7 — manual reporting needs a team to have a captain before anybody can
+ * report for it).
+ */
+export interface TeamAdminPanelProps {
+  teamId: string;
+}
+
+// ---------------------------------------------------------------------------
 // The integration
 // ---------------------------------------------------------------------------
 
 export interface ClientGameIntegration {
   id: GameId;
 
+  /**
+   * Catalogue ids this integration answers for, besides its own id.
+   *
+   * `game` holds an integration id today ('cs2') and a game catalogue id from
+   * 3.0 phase D onwards ('rocket-league'), so the client resolves it the way
+   * `api/src/integrations/registry.ts` does: the id, then these, then an
+   * integration that runs anything.
+   */
+  catalogGames?: string[];
+
+  /**
+   * True for a module that runs every other catalogue game (manual reporting).
+   * The registry falls back to it before it falls back to CS2.
+   */
+  runsAnyCatalogGame?: boolean;
+
   matchPanels: {
     /** Team / player match page: how to join the match. */
     teamView?: ComponentType<MatchConnectPanelProps>;
     /** Admin match list: resource allocation status. */
     adminView?: ComponentType<MatchAllocationPanelProps>;
+    /** Team match page: reporting the result, when the game cannot send one. */
+    reportView?: ComponentType<MatchReportPanelProps>;
   };
+
+  /** Team page: an admin-only control this integration needs (D7: captains). */
+  teamAdminPanel?: ComponentType<TeamAdminPanelProps>;
 
   /** Shown to the teams before the match can be allocated (CS2: map veto). */
   preMatchView?: ComponentType<PreMatchViewProps>;
