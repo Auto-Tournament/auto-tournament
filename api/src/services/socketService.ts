@@ -50,6 +50,31 @@ export function emitTournamentUpdate(tournament: TournamentUpdateEvent): void {
 }
 
 /**
+ * Emit an event scoped to one tournament (3.0 phase D).
+ *
+ * Everything else here broadcasts, because 3.0 hosts a single tournament row.
+ * A tournament-scoped emit is the shape 3.1 needs — several tournaments on one
+ * instance, each with its own listeners — so anything written from phase D
+ * onwards goes through this rather than adding another global `io.emit`.
+ *
+ * It sends the event twice: once globally, so today's clients (which join no
+ * room and filter nothing) keep working, and once on a per-tournament channel
+ * a 3.1 client subscribes to. `tournamentId` rides along in the payload so a
+ * listener on the global channel can tell them apart.
+ */
+export function emitTournament(
+  tournamentId: number,
+  event: string,
+  payload: Record<string, unknown> = {}
+): void {
+  if (!io) return;
+  const body = { ...payload, tournamentId };
+  io.emit(event, body);
+  io.emit(`${event}:t${tournamentId}`, body);
+  log.debug('Emitted tournament-scoped event', { tournamentId, event });
+}
+
+/**
  * Emit bracket update
  */
 export function emitBracketUpdate(bracket: BracketUpdateEvent): void {

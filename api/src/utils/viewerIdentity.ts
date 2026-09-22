@@ -108,3 +108,49 @@ export async function getEffectiveViewerSteamId(req: Request): Promise<string | 
   const identity = await resolveViewerIdentity(req);
   return identity.effectiveSteamId;
 }
+
+/** Who a request is acting as, by account rather than by Steam ID. */
+export interface ViewerAccount {
+  /** `players.uid` of the account this request acts as, or null if anonymous. */
+  uid: string | null;
+  /** The same account's `players.id`; still the Steam ID in 3.0. */
+  playerId: string | null;
+  /** Whether the *real* signed-in user is an admin (impersonation never grants it). */
+  isAdmin: boolean;
+  /** True when an admin is viewing the site as another player. */
+  isImpersonating: boolean;
+}
+
+/**
+ * The account a request acts as, as a `players.uid` (3.0 phase D).
+ *
+ * Everything written from phase D onwards names an account by `players.uid`,
+ * never by a Steam ID: a 3.1 account with no Steam account still has to be
+ * able to captain a team and report a result. `resolveViewerIdentity` above
+ * answers in Steam IDs, because that is what `players.id` is in 3.0, so this
+ * is the one place that turns one into the other.
+ *
+ * When `players.id` stops being the Steam ID in 3.1, this function changes and
+ * its callers do not.
+ */
+export async function resolveViewerAccount(req: Request): Promise<ViewerAccount> {
+  const identity = await resolveViewerIdentity(req);
+  const playerId = identity.effectiveSteamId;
+  if (!playerId) {
+    return {
+      uid: null,
+      playerId: null,
+      isAdmin: identity.isRealAdmin,
+      isImpersonating: identity.isImpersonating,
+    };
+  }
+  const row = await db
+    .queryOneAsync<{ uid: string }>('SELECT uid FROM players WHERE id = ?', [playerId])
+    .catch(() => null);
+  return {
+    uid: row?.uid ?? null,
+    playerId,
+    isAdmin: identity.isRealAdmin,
+    isImpersonating: identity.isImpersonating,
+  };
+}

@@ -592,6 +592,13 @@ export type ClientSlotName = 'MatchPanel' | 'SetupStep' | 'StatsPanel';
  */
 export interface GameCatalogEntry {
   slug: string;
+  /**
+   * The catalogue row's name. Defaults to the integration's `displayName`,
+   * which is right for a module that is one game (CS2) and wrong for one that
+   * ships several (see `catalogEntries`), where the module's name is not any
+   * of the games' names.
+   */
+  name?: string;
   /** Extra search terms, e.g. 'cs2'. */
   aliases?: string[];
 }
@@ -606,12 +613,24 @@ export interface GameIntegration {
    */
   catalog?: GameCatalogEntry | null;
   /**
-   * This module runs any catalogue game, not just its own entry: the
+   * More catalogue entries the same module ships, for a module that is not one
+   * game: manual-report declares the titles it comes ready to run. Each entry
+   * becomes a `games` row the module is the integration for, so those games
+   * read as supported and a tournament can be created for them. `catalog` (one
+   * entry, named after the module) and `catalogEntries` are independent; a
+   * module with only `catalogEntries` sets `catalog: null`.
+   *
+   * An entry whose slug another integration already claims is skipped, so a
+   * module that ships a CS2 entry never takes CS2's rows.
+   */
+  catalogEntries?: ReadonlyArray<GameCatalogEntry>;
+  /**
+   * This module runs any catalogue game, not just its own entries: the
    * manual-report module (3.0 phase D), where the result is typed in and the
    * game only decides the labels. `integrationForGameRef` falls back to it for
    * a `game` value no other module claims, so a tournament row can carry a
    * catalogue id ('rocket-league', 'chess') and still find its module. At most
-   * one integration may set it; nothing does yet.
+   * one integration may set it.
    */
   runsAnyCatalogGame?: boolean;
   /**
