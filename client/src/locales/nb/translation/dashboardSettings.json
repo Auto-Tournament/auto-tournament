@@ -1,115 +1,81 @@
 {
   "dashboard": {
-    "title": "Kontrollpanel",
-    "notReady": "Turneringsdashboardet vises her når turneringen er startet.",
-    "manageBanner": {
-      "text": "Ser du etter hva som trenger en avgjørelse akkurat nå? Administrer-konsollen holder en oppdatert kø over kamper og servere som trenger deg.",
-      "cta": "Åpne Administrer"
-    },
+    "title": "Admin",
     "restartTournament": {
       "button": "Start turneringskamper på nytt",
       "restarting": "Starter turneringskamper på nytt…"
     },
-    "onboarding": {
-      "ready": "🎉 Klar til bruk!",
-      "gettingStarted": "Kom i gang",
-      "stepsComplete": "{{completed}}/{{total}} fullført",
-      "subtitle": "Følg disse stegene for å sette opp din første turnering",
-      "steps": {
-        "webhook": {
-          "title": "Konfigurer webhook-URL",
-          "secondaryConfigured": "Webhook-endepunkt konfigurert",
-          "secondaryMissing": "Sett base-URL for webhooks og demo-opplasting",
-          "openSettings": "Åpne innstillinger"
-        },
-        "servers": {
-          "title": "Legg til minst én CS2-server",
-          "chip": "{{count}}-server",
-          "chipPlural": "{{count}} servere",
-          "secondaryConfigured": "Servere konfigurert og klare",
-          "secondaryMissing": "Start med å legge til CS2-spillservere",
-          "addServer": "Legg til server"
-        },
-        "teamsPlayers": {
-          "title": "Opprett lag eller legg til spillere",
-          "teamsChip": "{{count}} lag",
-          "teamsChipPlural": "{{count}} lag",
-          "playersChip": "{{count}} spiller",
-          "playersChipPlural": "{{count}} spillere",
-          "secondaryConfigured": "{{details}}",
-          "secondaryMissing": "Opprett lag og/eller legg til spillere med Steam-ID",
-          "createTeams": "Opprett lag",
-          "addPlayers": "Legg til spillere"
-        },
-        "tournament": {
-          "title": "Konfigurer turneringen",
-          "chipStatus": "{{status}}",
-          "secondaryConfigured": "Turnering konfigurert med lag og format",
-          "secondaryMissing": "Sett opp turneringstype, format, lag og kart",
-          "createTournament": "Opprett turnering"
-        }
+    "header": {
+      "brand": "Auto Tournament",
+      "version": "Din Auto Tournament-side · versjon {{version}}",
+      "unknownVersion": "utvikling",
+      "createTournament": "Opprett turnering"
+    },
+    "setup": {
+      "title": "Fullfør oppsettet",
+      "openSettings": "Åpne innstillinger",
+      "steam": "Steam-innlogging",
+      "serversTodo": "Koble til en server",
+      "serversDone": "{{count}} server tilkoblet",
+      "serversDonePlural": "{{count}} servere tilkoblet",
+      "discord": "Discord-innlogging (valgfritt)",
+      "igdb": "Spillomslag via IGDB (valgfritt)"
+    },
+    "tournaments": {
+      "title": "Turneringer",
+      "empty": "Ingen turneringer enda. Opprett en for å komme i gang.",
+      "status": {
+        "setup": "Utkast",
+        "ready": "Sign-up",
+        "inProgress": "Live",
+        "completed": "Fullført"
       },
-      "startCta": {
-        "helper": "Alt er klart! Gå gjennom oppsettet og start turneringen fra Turneringssiden.",
-        "button": "Gå til turnering"
+      "state": {
+        "draftEmpty": "Ikke publisert enda",
+        "draftTeams": "Utkast · {{count}} lag valgt",
+        "draftTeamsPlural": "Utkast · {{count}} lag valgt",
+        "readyTeams": "{{count}} lag meldt på · sign-up åpen",
+        "readyTeamsPlural": "{{count}} lag meldt på · sign-up åpen",
+        "inProgressTeams": "{{count}} lag · pågår",
+        "inProgressTeamsPlural": "{{count}} lag · pågår",
+        "completedTeams": "{{count}} lag deltok",
+        "completedTeamsPlural": "{{count}} lag deltok",
+        "winner": "Vinner: {{name}}"
+      },
+      "actions": {
+        "manage": "Administrer",
+        "continueSetup": "Fortsett oppsett",
+        "view": "Vis"
       }
     },
-    "stats": {
-      "heading": "Turneringsstatistikk",
-      "tournamentStatus": {
-        "title": "Turneringsstatus",
-        "none": "Ingen aktiv turnering",
-        "typeLabel": "Turneringstype",
-        "formatLabel": "Kampformat",
-        "matchesLabel": "Kamper"
-      },
-      "matchStatus": {
-        "title": "Kampstatus",
-        "total": "Totalt antall kamper",
-        "pending": "Venter:",
-        "ready": "Klar:",
-        "loaded": "Lastet:",
-        "live": "Live",
-        "completed": "Fullført:"
-      },
-      "serverStatus": {
-        "title": "Serverstatus",
-        "onlineSummary": "Servere online",
-        "online": "{{count}} online",
-        "offline": "{{count}} offline",
-        "distributionTitle": "Serverstatus"
-      },
-      "players": {
-        "title": "Spillere",
-        "total": "Totalt antall spillere",
-        "inMatches": "I kamper:",
-        "waiting": "Venter:"
-      },
-      "topPlayers": {
-        "title": "Topp spillere etter ELO",
-        "subtitle": "Global rating på tvers av alle turneringstyper",
-        "chip": "ELO: {{value}}"
-      },
-      "recentMatches": {
-        "title": "Siste fullførte kamper",
-        "subtitle": "Siste {{count}} fullførte kamper",
-        "none": "Ingen fullførte kamper ennå.",
-        "chipCompleted": "Fullført"
-      },
-      "noData": "Ingen data tilgjengelig. Opprett en turnering for å se statistikk.",
-      "errors": {
-        "load": "Klarte ikke å laste dashboard-data"
-      },
-      "playerDistribution": {
-        "title": "Spillerfordeling"
-      },
-      "eloDistribution": {
-        "title": "ELO-fordeling for spillere",
-        "subtitle": "Antall spillere per Skill Rating-bånd (bøttestørrelse {{bucket}}).",
-        "xAxis": "Skill Rating-bånd",
-        "yAxis": "Spillere",
-        "seriesLabel": "Spillere"
-      }
+    "site": {
+      "title": "Nettsted",
+      "servers": { "label": "Servere", "hint": "Koble til, oppdater, helse" },
+      "maps": { "label": "Baner", "hint": "Pooler og bilder" },
+      "players": { "label": "Spillere", "hint": "Alle som har logget inn" },
+      "teams": { "label": "Lag", "hint": "Klubber og lagoppstillinger" },
+      "templates": { "label": "Maler", "hint": "Gjenbrukbare oppsett" },
+      "ratings": { "label": "Rating", "hint": "ELO-maler" },
+      "settings": { "label": "Innstillinger", "hint": "Innlogging, API-nøkler" },
+      "adminTools": { "label": "Adminverktøy", "hint": "Logger og vedlikehold" }
+    },
+    "servers": {
+      "title": "Servere",
+      "open": "Åpne",
+      "online": "online",
+      "inMatch": "I kamp",
+      "free": "Ledig",
+      "offline": "Offline",
+      "plugin": "Plugin",
+      "pluginSame": "{{version}}, alle servere matcher",
+      "pluginMixed": "{{count}} plugin-versjoner i bruk",
+      "none": "Ingen servere tilkoblet enda."
+    },
+    "people": {
+      "title": "Folk",
+      "open": "Åpne",
+      "players": "Spillere",
+      "admins": "Administratorer"
     }
   },
   "settingsPage": {

@@ -1,115 +1,105 @@
 {
   "dashboard": {
-    "title": "控制台",
-    "notReady": "当锦标赛开始后，锦标赛控制台将显示在这里。",
-    "manageBanner": {
-      "text": "Looking for what needs a decision right now? The Manage console keeps a live queue of matches and servers that need you.",
-      "cta": "Open Manage"
-    },
+    "title": "Admin",
     "restartTournament": {
-      "button": "重启锦标赛比赛",
-      "restarting": "正在重启锦标赛比赛…"
+      "button": "Restart Tournament Matches",
+      "restarting": "Restarting tournament matches…"
     },
-    "onboarding": {
-      "ready": "🎉 一切就绪！",
-      "gettingStarted": "快速开始",
-      "stepsComplete": "{{completed}}/{{total}} 已完成",
-      "subtitle": "按照以下步骤完成首次锦标赛的设置",
-      "steps": {
-        "webhook": {
-          "title": "配置 Webhook URL",
-          "secondaryConfigured": "Webhook 端点已配置",
-          "secondaryMissing": "设置用于 Webhook 与 Demo 上传的基础 URL",
-          "openSettings": "打开设置"
-        },
-        "servers": {
-          "title": "至少添加一台 CS2 服务器",
-          "chip": "{{count}} 台服务器",
-          "chipPlural": "{{count}} 台服务器",
-          "secondaryConfigured": "服务器已配置并就绪",
-          "secondaryMissing": "先从添加 CS2 游戏服务器开始",
-          "addServer": "新增服务器"
-        },
-        "teamsPlayers": {
-          "title": "创建战队或添加选手",
-          "teamsChip": "{{count}} 支战队",
-          "teamsChipPlural": "{{count}} 支战队",
-          "playersChip": "{{count}} 名选手",
-          "playersChipPlural": "{{count}} 名选手",
-          "secondaryConfigured": "{{details}}",
-          "secondaryMissing": "创建战队和/或添加包含 Steam ID 的选手",
-          "createTeams": "创建战队",
-          "addPlayers": "添加选手"
-        },
-        "tournament": {
-          "title": "配置锦标赛",
-          "chipStatus": "{{status}}",
-          "secondaryConfigured": "锦标赛已配置战队与赛制",
-          "secondaryMissing": "设置锦标赛类型、赛制、战队与地图",
-          "createTournament": "创建锦标赛"
-        }
+    "header": {
+      "brand": "Auto Tournament",
+      "version": "Your Auto Tournament site · version {{version}}",
+      "unknownVersion": "dev",
+      "createTournament": "Create tournament"
+    },
+    "setup": {
+      "title": "Finish setting up",
+      "openSettings": "Open settings",
+      "steam": "Steam sign-in",
+      "serversTodo": "Connect a server",
+      "serversDone": "{{count}} server connected",
+      "serversDonePlural": "{{count}} servers connected",
+      "discord": "Discord sign-in (optional)",
+      "igdb": "Game covers via IGDB (optional)"
+    },
+    "tournaments": {
+      "title": "Tournaments",
+      "empty": "No tournaments yet. Create one to get started.",
+      "status": {
+        "setup": "Draft",
+        "ready": "Sign-up",
+        "inProgress": "Live",
+        "completed": "Finished"
       },
-      "startCta": {
-        "helper": "所有步骤均已完成！前往“锦标赛”页面复核配置并启动锦标赛。",
-        "button": "前往锦标赛页面"
+      "state": {
+        "draftEmpty": "Not published yet",
+        "draftTeams": "Draft · {{count}} team selected",
+        "draftTeamsPlural": "Draft · {{count}} teams selected",
+        "readyTeams": "{{count}} team entered · sign-up open",
+        "readyTeamsPlural": "{{count}} teams entered · sign-up open",
+        "inProgressTeams": "{{count}} team · in progress",
+        "inProgressTeamsPlural": "{{count}} teams · in progress",
+        "completedTeams": "{{count}} team took part",
+        "completedTeamsPlural": "{{count}} teams took part",
+        "winner": "Winner: {{name}}"
+      },
+      "actions": {
+        "manage": "Manage",
+        "continueSetup": "Continue setup",
+        "view": "View"
       }
     },
-    "stats": {
-      "heading": "锦标赛统计",
-      "tournamentStatus": {
-        "title": "锦标赛状态",
-        "none": "当前没有活动中的锦标赛",
-        "typeLabel": "类型",
-        "formatLabel": "赛制",
-        "matchesLabel": "比赛场次"
+    "site": {
+      "title": "Site",
+      "servers": {
+        "label": "Servers",
+        "hint": "Connect, update, health"
       },
-      "matchStatus": {
-        "title": "比赛状态",
-        "total": "总比赛数",
-        "pending": "待开始：",
-        "ready": "就绪：",
-        "loaded": "已加载：",
-        "live": "进行中：",
-        "completed": "已完成："
-      },
-      "serverStatus": {
-        "title": "服务器状态",
-        "onlineSummary": "在线服务器",
-        "online": "{{count}} 台在线",
-        "offline": "{{count}} 台离线",
-        "distributionTitle": "服务器状态"
+      "maps": {
+        "label": "Maps",
+        "hint": "Pools and images"
       },
       "players": {
-        "title": "选手",
-        "total": "总选手数",
-        "inMatches": "比赛中：",
-        "waiting": "等待中："
+        "label": "Players",
+        "hint": "Everyone who signed in"
       },
-      "playerDistribution": {
-        "title": "选手分布"
+      "teams": {
+        "label": "Teams",
+        "hint": "Clubs and rosters"
       },
-      "topPlayers": {
-        "title": "按 ELO 排名前列的选手",
-        "subtitle": "跨所有锦标赛类型的全局评分",
-        "chip": "ELO：{{value}}"
+      "templates": {
+        "label": "Templates",
+        "hint": "Reusable setups"
       },
-      "eloDistribution": {
-        "title": "选手 ELO 分布",
-        "subtitle": "每个 Skill Rating 区间内的选手数量（区间大小 {{bucket}}）。",
-        "xAxis": "Skill Rating 区间",
-        "yAxis": "选手数",
-        "seriesLabel": "选手"
+      "ratings": {
+        "label": "Ratings",
+        "hint": "ELO templates"
       },
-      "recentMatches": {
-        "title": "最近完成的比赛",
-        "subtitle": "最近 {{count}} 场已结束的比赛",
-        "none": "暂时还没有已完成的比赛。",
-        "chipCompleted": "已完成"
+      "settings": {
+        "label": "Settings",
+        "hint": "Sign-in, API keys"
       },
-      "noData": "暂无数据。创建锦标赛后将显示统计信息。",
-      "errors": {
-        "load": "加载控制台数据失败"
+      "adminTools": {
+        "label": "Admin tools",
+        "hint": "Logs and maintenance"
       }
+    },
+    "servers": {
+      "title": "Servers",
+      "open": "Open",
+      "online": "online",
+      "inMatch": "In a match",
+      "free": "Free",
+      "offline": "Offline",
+      "plugin": "Plugin",
+      "pluginSame": "{{version}}, all servers match",
+      "pluginMixed": "{{count}} plugin versions in use",
+      "none": "No servers connected yet."
+    },
+    "people": {
+      "title": "People",
+      "open": "Open",
+      "players": "Players",
+      "admins": "Admins"
     }
   },
   "settingsPage": {
