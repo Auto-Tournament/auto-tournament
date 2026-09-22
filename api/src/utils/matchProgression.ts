@@ -7,7 +7,7 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { emitBracketUpdate } from '../services/socketService';
 import { matchAllocationService } from '../services/matchAllocationService';
-import { generateMatchConfig } from '../services/matchConfigBuilder';
+import { buildMatchConfigFor, serializeMatchConfig } from './matchIntegration';
 import type { DbMatchRow, DbTeamRow, DbTournamentRow } from '../types/database.types';
 import type { TournamentResponse } from '../types/tournament.types';
 import { settingsService } from '../services/settingsService';
@@ -468,8 +468,11 @@ export async function checkTournamentCompletion(tournamentId: number = 1): Promi
  */
 export async function makeMatchReady(match: DbMatchRow): Promise<void> {
   try {
-    // Get tournament data
-    const tournament = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = 1');
+    // The match's own tournament
+    const tournament = await db.queryOneAsync<DbTournamentRow>(
+      'SELECT * FROM tournament WHERE id = ?',
+      [match.tournament_id]
+    );
     if (!tournament) {
       log.error('Tournament not found');
       return;
@@ -493,16 +496,27 @@ export async function makeMatchReady(match: DbMatchRow): Promise<void> {
     // Build tournament response object for config generation
     const tournamentData: TournamentResponse = tournamentRowToResponse(tournament);
 
-    // Generate match config using the service
-    const config = await generateMatchConfig(
-      tournamentData,
-      match.team1_id ?? undefined,
-      match.team2_id ?? undefined,
-      match.slug
+    // Build the match config through the match's game integration
+    const config = await buildMatchConfigFor(
+      {
+        slug: match.slug,
+        id: match.id,
+        game: match.game,
+        round: match.round,
+        bracket: match.bracket,
+        team1Id: match.team1_id,
+        team2Id: match.team2_id,
+      },
+      tournamentData
     );
 
     // Update match with config and ready status
-    await db.updateAsync('matches', { config: JSON.stringify(config), status: 'ready' }, 'id = ?', [match.id]);
+    await db.updateAsync(
+      'matches',
+      { config: serializeMatchConfig(config), status: 'ready' },
+      'id = ?',
+      [match.id]
+    );
 
     // Get team names for logging
     const team1 = await db.queryOneAsync<DbTeamRow>('SELECT name FROM teams WHERE id = ?', [match.team1_id]);

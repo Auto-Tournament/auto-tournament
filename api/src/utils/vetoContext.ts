@@ -9,6 +9,7 @@
 import { db } from '../config/database';
 import type { DbMatchRow } from '../types/database.types';
 import { getVetoOrder, type VetoStep } from './vetoConfig';
+import { describeMatch } from './matchIntegration';
 
 export type VetoContext = {
   format: 'bo1' | 'bo3' | 'bo5';
@@ -24,12 +25,9 @@ export async function getVetoContext(match: DbMatchRow): Promise<VetoContext | n
   const isManual = match.round === 0 || match.tournament_id == null;
 
   if (isManual) {
-    const config = match.config
-      ? (JSON.parse(match.config) as { maplist?: string[]; num_maps?: number })
-      : {};
-    const maplist = Array.isArray(config.maplist) ? config.maplist : [];
-    const numMaps = config.num_maps === 1 ? 1 : config.num_maps === 3 ? 3 : config.num_maps === 5 ? 5 : 1;
-    const format: 'bo1' | 'bo3' | 'bo5' = numMaps === 1 ? 'bo1' : numMaps === 3 ? 'bo3' : 'bo5';
+    const { maps: maplist, seriesLength } = describeMatch(match);
+    const format: 'bo1' | 'bo3' | 'bo5' =
+      seriesLength === 3 ? 'bo3' : seriesLength === 5 ? 'bo5' : 'bo1';
     if (maplist.length === 0) return null;
     return { format, tournamentMaps: maplist };
   }

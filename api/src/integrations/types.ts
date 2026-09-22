@@ -100,21 +100,59 @@ export interface MatchContext {
   integrationConfig: unknown;
 }
 
-export type BuildMatchConfigContext = Omit<MatchContext, 'integrationConfig'>;
+/**
+ * Input to `buildMatchConfig`.
+ *
+ * Tournament matches (`tournament` set, `round >= 1`) are built from the
+ * tournament's settings and the participants. Standalone matches
+ * (`tournament: null`, or `round === 0`) have no tournament to build from:
+ * - with `settings` (the admin's per-match settings, see `SetupSchema.match`)
+ *   the integration returns the config to store for a new match;
+ * - without, it returns the config to hand the game for the stored match.
+ *
+ * `matchId` is 0 while the match row does not exist yet (configs for new
+ * bracket slots are built before the insert, as before).
+ */
+export type BuildMatchConfigContext = Omit<MatchContext, 'integrationConfig'> & {
+  settings?: unknown;
+  /**
+   * Standalone creation only: the tournament whose rules a new standalone
+   * match falls back to for settings the admin left out (CS2: the round
+   * limit). Chosen by the caller; absent means no fallback.
+   */
+  defaultsFrom?: IntegrationTournament | null;
+};
 
 /** Neutral description of a match config, so the core never parses the blob itself. */
 export interface MatchDescription {
   seriesLength: number;
   /** Planned maps (or game-specific equivalent), empty when not decided yet. */
   maps: string[];
+  /** Players per side the config expects, when it says. */
+  playersPerTeam?: number;
+  /**
+   * The config opts out of the pre-match phase (CS2: a manual match created
+   * with the veto disabled). Unset when the config does not say.
+   */
+  skipPreMatchPhase?: boolean;
   team1: MatchDescriptionTeam;
   team2: MatchDescriptionTeam;
 }
 
 export interface MatchDescriptionTeam {
   id?: string;
+  /** Empty when the config names no team. */
   name: string;
-  players: Array<{ account: LinkedAccountRef; name: string }>;
+  tag?: string;
+  /** Country code, when the config carries one. */
+  flag?: string;
+  players: MatchDescriptionPlayer[];
+}
+
+export interface MatchDescriptionPlayer {
+  account: LinkedAccountRef;
+  name: string;
+  avatar?: string;
 }
 
 export type AllocateResult =

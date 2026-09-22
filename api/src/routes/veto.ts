@@ -5,7 +5,13 @@ import { emitVetoUpdate } from '../services/socketService';
 import { isQueuedAllocationResult, matchAllocationService } from '../services/matchAllocationService';
 import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
 import type { TournamentResponse } from '../types/tournament.types';
-import { generateMatchConfig } from '../services/matchConfigBuilder';
+import {
+  buildMatchConfigFor,
+  describeMatch,
+  describedPlayers,
+  isBracketManaged,
+  serializeMatchConfig,
+} from '../utils/matchIntegration';
 import { getVetoOrder } from '../utils/vetoConfig';
 import { getVetoContext } from '../utils/vetoContext';
 import { settingsService } from '../services/settingsService';
@@ -59,26 +65,13 @@ async function resolveViewerTeamForMatch(
     return null;
   }
 
-  let config: {
-    team1?: { players?: Record<string, unknown> | Array<unknown> };
-    team2?: { players?: Record<string, unknown> | Array<unknown> };
-  } = {};
+  let description = describeMatch(match);
 
-  if (match.config) {
-    try {
-      config = JSON.parse(match.config) as typeof config;
-    } catch (error) {
-      log.warn(`Failed to parse stored match config while resolving veto viewer team for ${match.slug}`, {
-        error,
-      });
-    }
-  }
-
+  // A stored config without a roster on either side (unreadable, or taken
+  // before the slot was filled): rebuild it from the tournament.
   const shouldTryRegenerateConfig =
-    typeof match.round === 'number' &&
-    match.round >= 1 &&
-    match.tournament_id &&
-    (!config.team1 || !config.team2);
+    isBracketManaged(match) &&
+    (description.team1.players.length === 0 || description.team2.players.length === 0);
 
   if (shouldTryRegenerateConfig) {
     try {
@@ -89,21 +82,19 @@ async function resolveViewerTeamForMatch(
       if (tournament) {
         const tournamentResponse: TournamentResponse = tournamentRowToResponse(tournament);
 
-        const generatedConfig = (await generateMatchConfig(
-          tournamentResponse,
-          match.team1_id ?? undefined,
-          match.team2_id ?? undefined,
-          match.slug
-        )) as {
-          team1?: { players?: Record<string, unknown> | Array<unknown> };
-          team2?: { players?: Record<string, unknown> | Array<unknown> };
-        } | null;
-        if (generatedConfig && typeof generatedConfig === 'object') {
-          config = {
-            team1: generatedConfig.team1,
-            team2: generatedConfig.team2,
-          };
-        }
+        const generatedConfig = await buildMatchConfigFor(
+          {
+            slug: match.slug,
+            id: match.id,
+            game: match.game,
+            round: match.round,
+            bracket: match.bracket,
+            team1Id: match.team1_id,
+            team2Id: match.team2_id,
+          },
+          tournamentResponse
+        );
+        description = describeMatch({ game: match.game, config: generatedConfig });
       }
     } catch (error) {
       log.warn(`Failed to regenerate match config while resolving veto viewer team for ${match.slug}`, {
@@ -112,12 +103,8 @@ async function resolveViewerTeamForMatch(
     }
   }
 
-  const normalizedTeam1Players = config.team1
-    ? normalizeConfigPlayers(config.team1.players)
-    : [];
-  const normalizedTeam2Players = config.team2
-    ? normalizeConfigPlayers(config.team2.players)
-    : [];
+  const normalizedTeam1Players = describedPlayers(description.team1);
+  const normalizedTeam2Players = describedPlayers(description.team2);
 
   const isInConfigTeam1 = normalizedTeam1Players.some((p) => p.steamid === viewerSteamId);
   const isInConfigTeam2 = normalizedTeam2Players.some((p) => p.steamid === viewerSteamId);
@@ -191,12 +178,7 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
     }
 
     const isManualMatch = match.round === 0 || match.tournament_id == null;
-    const config = match.config
-      ? (JSON.parse(match.config) as {
-          team1?: { name?: string };
-          team2?: { name?: string };
-        })
-      : {};
+    const description = describeMatch(match);
 
     let team1Id: string | null = match.team1_id;
     let team2Id: string | null = match.team2_id;
@@ -206,8 +188,8 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
     if (isManualMatch && !match.team1_id && !match.team2_id) {
       team1Id = 'team1';
       team2Id = 'team2';
-      team1Name = (config.team1?.name as string) || 'Team 1';
-      team2Name = (config.team2?.name as string) || 'Team 2';
+      team1Name = description.team1.name || 'Team 1';
+      team2Name = description.team2.name || 'Team 2';
     } else {
       const team1 = await db.queryOneAsync<{ name: string; id: string }>(
         'SELECT name, id FROM teams WHERE id = ?',
@@ -372,11 +354,9 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
     if (isManualMatch && !match.team1_id && !match.team2_id) {
       team1Id = 'team1';
       team2Id = 'team2';
-      const config = match.config
-        ? (JSON.parse(match.config) as { team1?: { name?: string }; team2?: { name?: string } })
-        : {};
-      team1Name = (config.team1?.name as string) || 'Team 1';
-      team2Name = (config.team2?.name as string) || 'Team 2';
+      const description = describeMatch(match);
+      team1Name = description.team1.name || 'Team 1';
+      team2Name = description.team2.name || 'Team 2';
     } else {
       const team1 = await db.queryOneAsync<{ name: string }>(
         'SELECT name FROM teams WHERE id = ?',
@@ -606,19 +586,28 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
         // Tournament match: regenerate config from tournament settings
         const tournament: TournamentResponse = tournamentRowToResponse(t);
         try {
-          const cfg = await generateMatchConfig(
-            tournament,
-            match.team1_id ?? undefined,
-            match.team2_id ?? undefined,
-            matchSlug
+          const cfg = await buildMatchConfigFor(
+            {
+              slug: matchSlug,
+              id: match.id,
+              game: match.game,
+              round: match.round,
+              bracket: match.bracket,
+              team1Id: match.team1_id,
+              team2Id: match.team2_id,
+            },
+            tournament
           );
-          await db.updateAsync('matches', { config: JSON.stringify(cfg) }, 'slug = ?', [matchSlug]);
+          await db.updateAsync('matches', { config: serializeMatchConfig(cfg) }, 'slug = ?', [
+            matchSlug,
+          ]);
           log.success(`Stored fresh config for match ${matchSlug} after veto completion`);
         } catch (e) {
           log.error(`Failed to generate/store config after veto for ${matchSlug}`, e as Error);
         }
       } else if (match.round === 0) {
-        // Manual match (round === 0, tournament_id === null): update config's maplist from veto picks
+        // Manual match (round === 0, tournament_id === null): update config's maplist from veto picks.
+        // TODO(PR 8): this writes MatchZy fields; it moves with the veto into integrations/cs2.
         try {
           const existingConfig = match.config ? JSON.parse(match.config) : {};
           const orderedPickedMaps = [...vetoState.pickedMaps].sort(

@@ -18,18 +18,15 @@ import { log } from '../utils/logger';
 import { db } from '../config/database';
 import { serverStatusService } from '../services/serverStatusService';
 import { playerConnectionService } from '../services/playerConnectionService';
-import { normalizeConfigPlayers, type NormalizedServerPlayer } from '../utils/playerTransform';
+import type { NormalizedServerPlayer } from '../utils/playerTransform';
 import { teamService } from '../services/teamService';
 import { matchLiveStatsService } from '../services/matchLiveStatsService';
-import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
+import type { DbMatchRow } from '../types/database.types';
 import { getMapResults } from '../services/matchMapResultService';
-import { generateMatchConfig } from '../services/matchConfigBuilder';
-import type { TournamentResponse } from '../types/tournament.types';
-import type { MatchConfig } from '../types/match.types';
+import { currentMatchConfig, describeMatch, describedPlayers } from '../utils/matchIntegration';
 import { generateAvatarSvg } from '../generation/avatar';
 import { getEffectiveViewerSteamId, resolveViewerIdentity } from '../utils/viewerIdentity';
 import { resolveCurrentVetoTurn } from '../utils/vetoContext';
-import { tournamentRowToResponse } from '../utils/tournamentRow';
 
 const router = Router();
 
@@ -449,14 +446,9 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
       });
     }
 
-    const config = match.config
-      ? (JSON.parse(match.config) as {
-          team1?: { players?: Array<{ steamid: string }> };
-          team2?: { players?: Array<{ steamid: string }> };
-        })
-      : {};
-    const t1 = normalizeConfigPlayers(config.team1?.players ?? []);
-    const t2 = normalizeConfigPlayers(config.team2?.players ?? []);
+    const description = describeMatch(match);
+    const t1 = describedPlayers(description.team1);
+    const t2 = describedPlayers(description.team2);
     const in1 = t1.some((p) => p.steamid === steamId);
     const in2 = t2.some((p) => p.steamid === steamId);
     const team1Json = (match.team1_players ?? '') as string;
@@ -761,43 +753,11 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
     // For bracket-managed matches (round >= 1) we rebuild the config on-demand
     // so team rosters always reflect the latest team membership instead of a
     // stale snapshot from bracket generation.
-    let config: MatchConfig | Record<string, unknown>;
-    if (typeof match.round === 'number' && match.round >= 1 && match.tournament_id) {
-      const t = await db.queryOneAsync<DbTournamentRow>(
-        'SELECT * FROM tournament WHERE id = ?',
-        [match.tournament_id]
-      );
+    // Manual/non-bracket matches keep their stored config as-is.
+    const cfg = describeMatch({ game: match.game, config: await currentMatchConfig(match) });
 
-      if (t) {
-        const tournament: TournamentResponse = tournamentRowToResponse(t);
-
-        const fresh = await generateMatchConfig(
-          tournament,
-          match.team1_id ?? undefined,
-          match.team2_id ?? undefined,
-          match.slug
-        );
-        config = fresh;
-      } else {
-        config = match.config
-          ? (JSON.parse(match.config) as MatchConfig | Record<string, unknown>)
-          : {};
-      }
-    } else {
-      // Manual/non-bracket matches keep their stored config as-is.
-      config = match.config
-        ? (JSON.parse(match.config) as MatchConfig | Record<string, unknown>)
-        : {};
-    }
-
-    const cfg = config as Partial<MatchConfig>;
-
-    const normalizedTeam1Players = cfg.team1
-      ? normalizeConfigPlayers(cfg.team1.players)
-      : [];
-    const normalizedTeam2Players = cfg.team2
-      ? normalizeConfigPlayers(cfg.team2.players)
-      : [];
+    const normalizedTeam1Players = describedPlayers(cfg.team1);
+    const normalizedTeam2Players = describedPlayers(cfg.team2);
 
     const isPlayerInTeam1 = normalizedTeam1Players.some((p) => p.steamid === playerId);
     const isPlayerInTeam2 = normalizedTeam2Players.some((p) => p.steamid === playerId);
@@ -843,10 +803,10 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
     }
 
     const isManualMatch = match.round === 0 && !match.team1_id && !match.team2_id;
-    const t1Name = match.team1_name ?? cfg.team1?.name;
-    const t2Name = match.team2_name ?? cfg.team2?.name;
-    const t1Tag = match.team1_tag ?? cfg.team1?.tag ?? '';
-    const t2Tag = match.team2_tag ?? cfg.team2?.tag ?? '';
+    const t1Name = match.team1_name ?? (cfg.team1.name || undefined);
+    const t2Name = match.team2_name ?? (cfg.team2.name || undefined);
+    const t1Tag = match.team1_tag ?? cfg.team1.tag ?? '';
+    const t2Tag = match.team2_tag ?? cfg.team2.tag ?? '';
 
     const playerTeam = isTeam1
       ? {
@@ -929,12 +889,12 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
             team1Name:
               vetoState.team1Name ||
               match.team1_name ||
-              cfg.team1?.name ||
+              cfg.team1.name ||
               'Team 1',
             team2Name:
               vetoState.team2Name ||
               match.team2_name ||
-              cfg.team2?.name ||
+              cfg.team2.name ||
               'Team 2',
             pickedMaps: sanitizedPickedMaps,
             actions: Array.isArray(vetoState.actions)
@@ -1050,8 +1010,8 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
     };
 
     let [enrichedTeam1Players, enrichedTeam2Players] = await Promise.all([
-      enrichPlayers(normalizedTeam1Players, cfg.team1?.id),
-      enrichPlayers(normalizedTeam2Players, cfg.team2?.id),
+      enrichPlayers(normalizedTeam1Players, cfg.team1.id),
+      enrichPlayers(normalizedTeam2Players, cfg.team2.id),
     ]);
 
     // Manual matches: no team rows, enrich from players table
@@ -1154,37 +1114,31 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
         veto: vetoSummary,
         matchFormat:
           (tournament?.format as 'bo1' | 'bo3' | 'bo5') ||
-          (cfg.num_maps === 1 ? 'bo1' : cfg.num_maps === 5 ? 'bo5' : 'bo3'),
+          (cfg.seriesLength === 1 ? 'bo1' : cfg.seriesLength === 5 ? 'bo5' : 'bo3'),
         loadedAt: match.loaded_at,
+        // Neutral match summary, kept in the shape the player page reads.
         config: {
-          maplist: cfg.maplist ?? null,
-          num_maps: cfg.num_maps ?? null,
-          players_per_team: typeof cfg.players_per_team === 'number' ? cfg.players_per_team : null,
-          expected_players_total:
-            typeof cfg.players_per_team === 'number' ? cfg.players_per_team * 2 : 10,
-          expected_players_team1:
-            typeof cfg.players_per_team === 'number' ? cfg.players_per_team : 5,
-          expected_players_team2:
-            typeof cfg.players_per_team === 'number' ? cfg.players_per_team : 5,
-          vetoDisabled: cfg.vetoDisabled,
-          team1: cfg.team1
-            ? {
-                id: cfg.team1.id,
-                name: cfg.team1.name,
-                tag: cfg.team1.tag,
-                flag: cfg.team1.flag,
-                players: enrichedTeam1Players,
-              }
-            : undefined,
-          team2: cfg.team2
-            ? {
-                id: cfg.team2.id,
-                name: cfg.team2.name,
-                tag: cfg.team2.tag,
-                flag: cfg.team2.flag,
-                players: enrichedTeam2Players,
-              }
-            : undefined,
+          maplist: cfg.maps.length > 0 ? cfg.maps : null,
+          num_maps: cfg.seriesLength,
+          players_per_team: cfg.playersPerTeam ?? null,
+          expected_players_total: cfg.playersPerTeam !== undefined ? cfg.playersPerTeam * 2 : 10,
+          expected_players_team1: cfg.playersPerTeam ?? 5,
+          expected_players_team2: cfg.playersPerTeam ?? 5,
+          vetoDisabled: cfg.skipPreMatchPhase,
+          team1: {
+            id: cfg.team1.id,
+            name: cfg.team1.name,
+            tag: cfg.team1.tag,
+            flag: cfg.team1.flag,
+            players: enrichedTeam1Players,
+          },
+          team2: {
+            id: cfg.team2.id,
+            name: cfg.team2.name,
+            tag: cfg.team2.tag,
+            flag: cfg.team2.flag,
+            players: enrichedTeam2Players,
+          },
         },
       },
     });

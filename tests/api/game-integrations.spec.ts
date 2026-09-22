@@ -98,6 +98,7 @@ test.describe('Game integration registry', () => {
     const expected = {
       seriesLength: 3,
       maps: ['de_ancient', 'de_anubis', 'de_nuke'],
+      playersPerTeam: 2,
       team1: {
         id: 'alpha',
         name: 'Alpha',
@@ -112,6 +113,41 @@ test.describe('Game integration registry', () => {
     expect(cs2.describeMatch(config)).toEqual(expected);
     // matches.config is stored as a string; both forms are accepted.
     expect(cs2.describeMatch(JSON.stringify(config))).toEqual(expected);
+  });
+
+  test('cs2 describeMatch reads stored manual configs (player arrays, tag, veto flag)', () => {
+    // The shape the "Create manual match" modal posts and matches.config keeps.
+    const config = {
+      vetoDisabled: false,
+      num_maps: 1,
+      maplist: null,
+      team1: {
+        id: 'alpha',
+        name: 'Alpha',
+        tag: 'ALP',
+        players: [{ steamid: '76561198000000001', name: 'a1' }],
+      },
+      team2: { name: 'Mix', players: [{ steamId: '76561198000000002', name: 'b1' }] },
+    };
+    expect(getIntegration('cs2').describeMatch(config)).toEqual({
+      seriesLength: 1,
+      maps: [],
+      skipPreMatchPhase: false,
+      team1: {
+        id: 'alpha',
+        name: 'Alpha',
+        tag: 'ALP',
+        players: [{ account: { provider: 'steam', externalId: '76561198000000001' }, name: 'a1' }],
+      },
+      team2: {
+        name: 'Mix',
+        players: [{ account: { provider: 'steam', externalId: '76561198000000002' }, name: 'b1' }],
+      },
+    });
+    // Unreadable or empty configs describe as an empty match instead of throwing.
+    for (const bad of ['not json', 'null', '', null]) {
+      expect(getIntegration('cs2').describeMatch(bad)).toMatchObject({ seriesLength: 1, maps: [] });
+    }
   });
 
   test('cs2 exports the lifecycle hooks core will call', () => {

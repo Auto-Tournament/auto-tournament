@@ -5,7 +5,7 @@ import type { TournamentResponse } from '../types/tournament.types';
 import { getVetoOrder } from '../utils/vetoConfig';
 import { emitVetoUpdate } from './socketService';
 import { settingsService } from './settingsService';
-import { generateMatchConfig } from './matchConfigBuilder';
+import { buildMatchConfigFor, serializeMatchConfig } from '../utils/matchIntegration';
 import { isQueuedAllocationResult, matchAllocationService } from './matchAllocationService';
 import { tournamentRowToResponse } from '../utils/tournamentRow';
 
@@ -421,13 +421,19 @@ async function runAutoVeto(
 
       // Recompute and persist fresh config
       try {
-        const cfg = await generateMatchConfig(
-          tournament,
-          match.team1_id ?? undefined,
-          match.team2_id ?? undefined,
-          matchSlug
+        const cfg = await buildMatchConfigFor(
+          {
+            slug: matchSlug,
+            id: match.id,
+            game: match.game,
+            round: match.round,
+            bracket: match.bracket,
+            team1Id: match.team1_id,
+            team2Id: match.team2_id,
+          },
+          tournament
         );
-        await db.updateAsync('matches', { config: JSON.stringify(cfg) }, 'slug = ?', [
+        await db.updateAsync('matches', { config: serializeMatchConfig(cfg) }, 'slug = ?', [
           matchSlug,
         ]);
         log.success(

@@ -4,6 +4,12 @@ import { log } from '../utils/logger';
 import { getBracketGenerator } from './bracketGenerators';
 import { validateTeamCount, calculateTotalRounds } from '../utils/tournamentHelpers';
 import { normalizeTournamentSettings } from '../utils/tournamentRow';
+import {
+  buildMatchConfigFor,
+  describeMatch,
+  parseStoredMatchConfig,
+  serializeMatchConfig,
+} from '../utils/matchIntegration';
 import { applyScoreFields, enrichMatch } from '../utils/matchEnrichment';
 import { getMapResults } from './matchMapResultService';
 import { matchLiveStatsService } from './matchLiveStatsService';
@@ -364,98 +370,118 @@ class TournamentService {
         generator.reset();
       }
 
-      const result = await generator.generate(tournament, () => this.getMatches());
+      const result = await generator.generate(tournament);
 
-      // Handle different result types (Swiss returns BracketMatch[], others return BracketGeneratorResult)
-      if (Array.isArray(result)) {
-        // Swiss generator returns BracketMatch[] directly (already in DB)
-        matches = result;
-      } else {
-        // Standard generators return BracketGeneratorResult (needs DB insertion)
+      // The generator returns neutral slots. Each slot's game config comes
+      // from the match's integration, built before the rows are inserted (the
+      // slugs have no row yet, exactly as when the generators built them).
+      const configs = await Promise.all(
+        result.matches.map((slot) =>
+          buildMatchConfigFor(
+            {
+              slug: slot.slug,
+              round: slot.round,
+              bracket: slot.bracket ?? null,
+              team1Id: slot.team1Id,
+              team2Id: slot.team2Id,
+            },
+            tournament
+          )
+        )
+      );
 
-        // Insert matches into database and track IDs for linking
-        const slugToDbId: Map<string, number> = new Map();
+      // Insert matches into database and track IDs for linking
+      const slugToDbId: Map<string, number> = new Map();
 
-        for (const matchData of result.matches) {
-          const config = JSON.parse(matchData.config);
-          const insertResult = await db.insertAsync('matches', {
-            slug: matchData.slug,
-            tournament_id: 1,
-            round: matchData.round,
-            match_number: matchData.matchNum,
-            bracket: matchData.bracket ?? null,
-            team1_id: matchData.team1Id,
-            team2_id: matchData.team2Id,
-            winner_id: matchData.winnerId,
-            server_id: null,
-            config: matchData.config,
-            status: matchData.status,
-            next_match_id: null, // Will be set in a second pass
-            created_at: Math.floor(Date.now() / 1000),
-          });
+      for (const [index, matchData] of result.matches.entries()) {
+        const config = configs[index];
+        const description = describeMatch({ config });
+        const createdAt = Math.floor(Date.now() / 1000);
+        const insertResult = await db.insertAsync('matches', {
+          slug: matchData.slug,
+          tournament_id: 1,
+          round: matchData.round,
+          match_number: matchData.matchNum,
+          bracket: matchData.bracket ?? null,
+          team1_id: matchData.team1Id,
+          team2_id: matchData.team2Id,
+          winner_id: matchData.winnerId,
+          server_id: null,
+          config: serializeMatchConfig(config),
+          status: matchData.status,
+          next_match_id: null, // Will be set in a second pass
+          created_at: createdAt,
+          ...(matchData.completedAt ? { completed_at: matchData.completedAt } : {}),
+        });
 
-          slugToDbId.set(matchData.slug, insertResult.lastInsertRowid as number);
+        slugToDbId.set(matchData.slug, insertResult.lastInsertRowid as number);
 
-          matches.push({
-            id: insertResult.lastInsertRowid as number,
-            slug: matchData.slug,
-            round: matchData.round,
-            matchNumber: matchData.matchNum,
-            // Bracket grouping is currently inferred from slug in the client,
-            // so we don't need to expose it explicitly here yet.
-            team1: matchData.team1Id
-              ? {
-                  id: matchData.team1Id,
-                  name: config.team1?.name || 'TBD',
-                  tag: config.team1?.tag || 'TBD',
-                }
-              : null,
-            team2: matchData.team2Id
-              ? {
-                  id: matchData.team2Id,
-                  name: config.team2?.name || 'TBD',
-                  tag: config.team2?.tag || 'TBD',
-                }
-              : null,
-            winner: null,
-            status: matchData.status,
-            serverId: null,
-            config,
-            nextMatchId: null,
-            createdAt: Math.floor(Date.now() / 1000),
-          });
+        matches.push({
+          id: insertResult.lastInsertRowid as number,
+          slug: matchData.slug,
+          round: matchData.round,
+          matchNumber: matchData.matchNum,
+          // Bracket grouping is currently inferred from slug in the client,
+          // so we don't need to expose it explicitly here yet.
+          team1: matchData.team1Id
+            ? {
+                id: matchData.team1Id,
+                name: description.team1.name || 'TBD',
+                tag: description.team1.tag || 'TBD',
+              }
+            : null,
+          team2: matchData.team2Id
+            ? {
+                id: matchData.team2Id,
+                name: description.team2.name || 'TBD',
+                tag: description.team2.tag || 'TBD',
+              }
+            : null,
+          winner: null,
+          status: matchData.status,
+          serverId: null,
+          // Integration-owned config, forwarded as-is (client slots: PR 12).
+          config: config as BracketMatch['config'],
+          nextMatchId: null,
+          createdAt,
+        });
+      }
+
+      // Link matches (set next_match_id based on bracket structure)
+      await this.linkMatches(matches, slugToDbId, tournament.type);
+
+      // Apply declarative slot wiring (team*_from_match_id / outcome)
+      // using the slugs produced by the generator. This makes runtime
+      // progression size-agnostic and independent of any slug heuristics.
+      for (const matchData of result.matches) {
+        const dbId = slugToDbId.get(matchData.slug);
+        if (!dbId) continue;
+
+        const updates: Partial<DbMatchRow> = {};
+
+        if (matchData.team1FromMatchSlug) {
+          const fromId = slugToDbId.get(matchData.team1FromMatchSlug) ?? null;
+          updates.team1_from_match_id = fromId;
+          updates.team1_from_outcome = matchData.team1FromOutcome ?? null;
         }
 
-        // Link matches (set next_match_id based on bracket structure)
-        await this.linkMatches(matches, slugToDbId, tournament.type);
-
-        // Apply declarative slot wiring (team*_from_match_id / outcome)
-        // using the slugs produced by the generator. This makes runtime
-        // progression size-agnostic and independent of any slug heuristics.
-        for (const matchData of result.matches) {
-          const dbId = slugToDbId.get(matchData.slug);
-          if (!dbId) continue;
-
-          const updates: Partial<DbMatchRow> = {};
-
-          if (matchData.team1FromMatchSlug) {
-            const fromId = slugToDbId.get(matchData.team1FromMatchSlug) ?? null;
-            updates.team1_from_match_id = fromId;
-            updates.team1_from_outcome = matchData.team1FromOutcome ?? null;
-          }
-
-          if (matchData.team2FromMatchSlug) {
-            const fromId = slugToDbId.get(matchData.team2FromMatchSlug) ?? null;
-            updates.team2_from_match_id = fromId;
-            updates.team2_from_outcome = matchData.team2FromOutcome ?? null;
-          }
-
-          if (Object.keys(updates).length > 0) {
-            await db.updateAsync('matches', updates as Record<string, unknown>, 'id = ?', [
-              dbId,
-            ]);
-          }
+        if (matchData.team2FromMatchSlug) {
+          const fromId = slugToDbId.get(matchData.team2FromMatchSlug) ?? null;
+          updates.team2_from_match_id = fromId;
+          updates.team2_from_outcome = matchData.team2FromOutcome ?? null;
         }
+
+        if (Object.keys(updates).length > 0) {
+          await db.updateAsync('matches', updates as Record<string, unknown>, 'id = ?', [
+            dbId,
+          ]);
+        }
+      }
+
+      // Swiss always answered with the stored rows (scores and standings
+      // enrichment included); keep that response.
+      if (tournament.type === 'swiss') {
+        matches = await this.getMatches();
       }
 
       // Keep tournament in 'setup' status - it will change to 'ready' when user starts it
@@ -638,13 +664,9 @@ class TournamentService {
         completedAt: row.completed_at,
       };
 
-      // Parse config for additional details
+      // Integration-owned config, forwarded as-is (client slots: PR 12).
       if (row.config) {
-        try {
-          match.config = JSON.parse(row.config);
-        } catch {
-          // Ignore parse errors
-        }
+        match.config = parseStoredMatchConfig(row.config) as BracketMatch['config'];
       }
 
       // Attach team info if available
