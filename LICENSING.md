@@ -27,6 +27,8 @@ Not sure whether your use counts as commercial? Ask first.
 
 Contact the author, Sivert Gullberg Hansen, through the [Auto Tournament Discord](https://discord.gg/n7gHYau7aW) or the [Auto-Tournament organization on GitHub](https://github.com/Auto-Tournament).
 
+Contributions are accepted under the [Contributor License Agreement](CLA.md).
+
 ## Older versions
 
 Versions up to and including 2.4.15 (released as "MatchZy Auto Tournament") were published under the MIT License and remain under it. Everything since the rename to Auto Tournament is under the PolyForm Noncommercial License 1.0.0.
