@@ -88,5 +88,49 @@
       "removed": "IGDB-nøklene er fjernet",
       "saveFailed": "Kunne ikke lagre IGDB-nøklene"
     }
+  },
+  "account": {
+    "title": "Tilkoblinger",
+    "subtitle": "Én konto for alle turneringer på denne siden.",
+    "loadFailed": "Kunne ikke laste kontoen din.",
+    "impersonating": "Du ser denne siden mens du etterligner en spiller. Den viser din egen konto; slutt å etterligne for å endre den.",
+    "rail": {
+      "label": "Konto",
+      "profile": "Profil",
+      "connections": "Tilkoblinger"
+    },
+    "callout": {
+      "title": "Velg spillene du spiller",
+      "body": "Turneringer for spillene dine vises først.",
+      "action": "Velg spill"
+    },
+    "gameAccounts": {
+      "title": "Spillkontoer",
+      "description": "Hvert spill trenger sin egen konto, så kampene vet hvem du er.",
+      "verified": "Bekreftet",
+      "id": "Steam-ID {{id}}",
+      "more": "Flere spillkontoer dukker opp her etter hvert som spill legges til på denne siden."
+    },
+    "signIn": {
+      "title": "Innloggingsmetoder",
+      "description": "Alle disse logger deg inn på den samme kontoen. Behold minst én.",
+      "primary": "Primær",
+      "primaryDetail": "Kontoens identitet · også spillkontoen din for {{games}}",
+      "primaryDetailNoGames": "Kontoens identitet",
+      "connected": "Tilkoblet",
+      "linkedOn": "Tilkoblet {{date}}",
+      "turnedOff": "innlogging med den er slått av på denne siden",
+      "notConnected": "Ikke tilkoblet",
+      "connect": "Koble til",
+      "remove": "Fjern",
+      "lastMethod": "Dette er den eneste måten du kan logge inn på. Koble til en annen metode først.",
+      "removeTitle": "Fjerne {{provider}}?",
+      "removeBody": "Du kan ikke lenger logge inn med {{provider}}. Du kan koble den til igjen senere.",
+      "removed": "{{provider}} fjernet",
+      "removeFailed": "Kunne ikke fjerne denne innloggingsmetoden",
+      "linked": "{{provider}} tilkoblet",
+      "taken": "Den {{provider}}-kontoen er allerede koblet til en annen konto på denne siden.",
+      "linkFailed": "Kunne ikke koble til {{provider}}. Prøv igjen."
+    }
   }
 }

@@ -30,6 +30,7 @@
     "signOut": "Abmelden",
     "linkSteam": "Steam verknüpfen",
     "myProfile": "Mein Profil",
+    "accountConnections": "Account settings",
     "goToAdminDashboard": "Zum Admin-Dashboard",
     "goToAdminDashboardHint": "Du siehst dein Spielerprofil. Öffne das Admin-Dashboard, um Teams, Turniere und Server zu verwalten."
   },

@@ -381,6 +381,17 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
                   {t('nav.myProfile')}
                 </MenuItem>
               )}
+              {playerSteamId && (
+                <MenuItem
+                  onClick={() => {
+                    handleAvatarMenuClose();
+                    navigate('/me/connections');
+                  }}
+                  data-testid="nav-account-connections"
+                >
+                  {t('nav.accountConnections')}
+                </MenuItem>
+              )}
               <MenuItem
                 onClick={() => {
                   handleAvatarMenuClose();

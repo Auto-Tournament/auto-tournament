@@ -23,6 +23,7 @@ import PlayerProfile from './pages/PlayerProfile';
 import TournamentLeaderboard from './pages/TournamentLeaderboard';
 import TournamentOverview from './pages/TournamentOverview';
 import ConnectSteam from './pages/ConnectSteam';
+import AccountConnections from './pages/AccountConnections';
 import Maps from './pages/Maps';
 import Templates from './pages/Templates';
 import ELOTemplates from './pages/ELOTemplates';
@@ -147,6 +148,20 @@ function ProtectedRoute({ children, adminOnly = true }: ProtectedRouteProps) {
   return <>{children}</>;
 }
 
+/**
+ * Pages about the viewer's own account (/me/*): any signed-in player, admin
+ * or not. Anonymous visitors go to login and come back afterwards.
+ */
+function RequireSignedIn({ children }: { children: React.ReactNode }) {
+  const { playerSteamId, isLoading } = useAuth();
+  const location = useLocation();
+  if (isLoading) return null;
+  if (!playerSteamId) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  return <>{children}</>;
+}
+
 function AppRoutes() {
   const { isAuthenticated, isLoading, playerSteamId } = useAuth();
   const isDevelopment = useIsDevelopment();
@@ -221,6 +236,17 @@ function AppRoutes() {
           <ProtectedRoute adminOnly={false}>
             <PlayerProfile />
           </ProtectedRoute>
+        }
+      />
+
+      {/* The signed-in player's own account */}
+      <Route path="/me" element={<Navigate to="/me/connections" replace />} />
+      <Route
+        path="/me/connections"
+        element={
+          <RequireSignedIn>
+            <AccountConnections />
+          </RequireSignedIn>
         }
       />
 

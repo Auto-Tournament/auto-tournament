@@ -458,6 +458,20 @@
         }
       }
     },
+    "/api/auth/discord/link": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "POST /api/auth/discord/link",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/auth/github": {
       "get": {
         "tags": [
@@ -486,6 +500,20 @@
         }
       }
     },
+    "/api/auth/github/link": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "POST /api/auth/github/link",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/auth/google": {
       "get": {
         "tags": [
@@ -506,6 +534,20 @@
           "Auth"
         ],
         "summary": "GET /api/auth/google/callback",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/auth/google/link": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "POST /api/auth/google/link",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
@@ -630,6 +672,20 @@
         }
       }
     },
+    "/api/auth/keycloak/link": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "POST /api/auth/keycloak/link",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/auth/logout": {
       "post": {
         "tags": [
@@ -710,6 +766,45 @@
         "responses": {
           "200": {
             "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/auth/{provider}/link": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Start connecting a sign-in provider to the signed-in account",
+        "description": "A same-site form post from /me/connections. Redirects to the provider with a signed, single-use, 10-minute state that names this account. The provider's callback (/api/auth/{provider}/callback) then links the identity to this account, refusing one that belongs to another account, and redirects to /me/connections?link=ok|taken|failed.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "discord",
+                "keycloak",
+                "github",
+                "google"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect to the provider"
+          },
+          "401": {
+            "description": "Not signed in"
+          },
+          "403": {
+            "description": "Impersonating, or a cross-site request"
+          },
+          "503": {
+            "description": "Provider not configured"
           }
         }
       }
@@ -2163,6 +2258,74 @@
         "responses": {
           "200": {
             "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/me/connections": {
+      "get": {
+        "tags": [
+          "Me"
+        ],
+        "summary": "The signed-in player's sign-in methods and game accounts",
+        "description": "Sign-in methods list Steam (the account's primary identity, never removable) and every provider this site offers or the account has linked. Game accounts are derived from the installed game modules. Answers for the real signed-in account, also while impersonating.\n",
+        "responses": {
+          "200": {
+            "description": "Account, sign-in methods and game accounts"
+          },
+          "401": {
+            "description": "Not signed in"
+          },
+          "404": {
+            "description": "Signed in, but no player record"
+          }
+        }
+      }
+    },
+    "/api/me/connections/{provider}/remove": {
+      "post": {
+        "tags": [
+          "Me"
+        ],
+        "summary": "Remove a sign-in method from the signed-in player's account",
+        "description": "Steam cannot be removed (it is the account's primary identity), and neither can the last method this site would let the player sign in with. Requires a JSON request from this site (Origin checked).\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "discord",
+                "keycloak",
+                "github",
+                "google"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Removed; the updated connections"
+          },
+          "400": {
+            "description": "Steam, or not a sign-in provider"
+          },
+          "401": {
+            "description": "Not signed in"
+          },
+          "403": {
+            "description": "Impersonating, or a cross-site request"
+          },
+          "404": {
+            "description": "Not linked to this account"
+          },
+          "409": {
+            "description": "It is the last way to sign in"
+          },
+          "415": {
+            "description": "Not a JSON request"
           }
         }
       }
@@ -5185,6 +5348,30 @@
           "Test helpers"
         ],
         "summary": "GET /api/test/oauth/:provider/callback",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/test/oauth/{provider}/link": {
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/oauth/:provider/link",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
