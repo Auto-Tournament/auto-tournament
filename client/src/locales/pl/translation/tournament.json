@@ -465,7 +465,7 @@
       "game": {
         "label": "Game",
         "descriptions": {
-          "cs2": "Matches run on your servers with MatchZy."
+          "cs2": "Matches run on your own CS2 servers with the Auto Tournament plugin."
         }
       },
       "basics": {

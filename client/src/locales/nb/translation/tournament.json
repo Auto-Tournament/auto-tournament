@@ -463,7 +463,7 @@
       "game": {
         "label": "Spill",
         "descriptions": {
-          "cs2": "Kampene kjøres på serverne dine med MatchZy."
+          "cs2": "Kampene kjøres på dine egne CS2-servere med Auto Tournament-pluginen."
         }
       },
       "basics": {

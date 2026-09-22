@@ -483,9 +483,19 @@ export function TournamentSetup(props: TournamentSetupProps) {
                         placeItems: 'center',
                         fontWeight: 700,
                         fontSize: '0.8rem',
+                        overflow: 'hidden',
                       }}
                     >
-                      {game.mark}
+                      {game.icon ? (
+                        <Box
+                          component="img"
+                          src={game.icon}
+                          alt=""
+                          sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        game.mark
+                      )}
                     </Box>
                     <Box sx={{ display: 'grid' }}>
                       <Typography fontWeight={600}>{game.name}</Typography>

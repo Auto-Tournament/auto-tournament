@@ -7,10 +7,14 @@
 export interface SetupGame {
   id: string;
   name: string;
-  /** Short mark shown in place of a logo. */
+  /** Short mark shown when there is no icon. */
   mark: string;
+  /** Square icon under client/public (the game's Steam client icon). */
+  icon?: string;
 }
 
-export const SETUP_GAMES: SetupGame[] = [{ id: 'cs2', name: 'Counter-Strike 2', mark: 'CS' }];
+export const SETUP_GAMES: SetupGame[] = [
+  { id: 'cs2', name: 'Counter-Strike 2', mark: 'CS', icon: '/games/cs2.png' },
+];
 
 export const DEFAULT_SETUP_GAME = SETUP_GAMES[0];
