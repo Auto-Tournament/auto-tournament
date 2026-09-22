@@ -108,7 +108,8 @@
     "versus": "对阵",
     "goToPlayerPage": "否决、连接与详情 → 你的选手页",
     "pageTitle": "战队页",
-    "manualMatch": "自定义比赛"
+    "manualMatch": "自定义比赛",
+    "viewTeamProfile": "Team page →"
   },
   "rounds": {
     "round1": "第一轮",
@@ -252,7 +253,8 @@
       "success_other": "已删除 {{count}} 支战队"
     },
     "loadError": "加载战队失败",
-    "importSuccess": "成功导入 {{count}} 支战队"
+    "importSuccess": "成功导入 {{count}} 支战队",
+    "viewPublicPage": "View public team page"
   },
   "playersPage": {
     "headerSelect": {
@@ -463,6 +465,30 @@
       "effectivelyDisabled": "如果常规时间结束时比分相同，比赛不会进入加时。根据该地图上队伍的总伤害判定胜者；如果伤害也相同，则比赛为平局。",
       "implicitSegments": "如果在设定的加时段结束后比分仍然相同，则根据队伍总伤害判定胜者。如果伤害也相同，则结果为平局。",
       "standard": "大多数情况下，最终比分较高的队伍获胜。只有当比分和总伤害都完全相同时，才会记为真正的平局。"
+    }
+  },
+  "teamProfile": {
+    "pageTitle": "{{name}} · Team",
+    "notFound": "Team not found. Please check the URL.",
+    "loadError": "Failed to load this team. Please try again.",
+    "editTeam": "Edit team",
+    "game": "Counter-Strike 2",
+    "roster": {
+      "title": "Roster",
+      "empty": "This team has no players yet.",
+      "rating": "Rating {{rating}}"
+    },
+    "tournaments": {
+      "title": "Tournaments",
+      "empty": "No tournament activity yet.",
+      "live": "Live",
+      "upcoming": "Upcoming",
+      "versus": "vs {{opponent}}",
+      "placement": "#{{position}} of {{total}}",
+      "finalPlacement": "Final: #{{position}} of {{total}}",
+      "recentResults": "Recent results",
+      "win": "Win",
+      "loss": "Loss"
     }
   }
 }

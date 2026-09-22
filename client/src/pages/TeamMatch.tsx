@@ -23,6 +23,7 @@ import { TournamentRulesAccordion } from '../components/tournament/TournamentRul
 import { useAuth } from '../contexts/AuthContext';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { useTranslation } from 'react-i18next';
+import { getTeamProfileUrl } from '../utils/teamLinks';
 
 export default function TeamMatch() {
   const { teamId } = useParams<{ teamId: string }>();
@@ -106,6 +107,19 @@ export default function TeamMatch() {
         <Container maxWidth="md">
           <Stack spacing={3} py={6}>
             <TeamHeader team={team} hideSoundControls />
+            {teamId && (
+              <Box display="flex" justifyContent="flex-end">
+                <Button
+                  size="small"
+                  variant="text"
+                  component={RouterLink}
+                  to={getTeamProfileUrl(teamId)}
+                  data-testid="team-match-view-profile-link"
+                >
+                  {t('teamPage.viewTeamProfile')}
+                </Button>
+              </Box>
+            )}
 
             {playerSteamId && (
               <Card>
@@ -207,6 +221,19 @@ export default function TeamMatch() {
             )}
 
             <TeamHeader team={team} hideSoundControls />
+            {teamId && (
+              <Box display="flex" justifyContent="flex-end">
+                <Button
+                  size="small"
+                  variant="text"
+                  component={RouterLink}
+                  to={getTeamProfileUrl(teamId)}
+                  data-testid="team-match-view-profile-link"
+                >
+                  {t('teamPage.viewTeamProfile')}
+                </Button>
+              </Box>
+            )}
 
             <TournamentRulesAccordion
               format={rulesFormat}
