@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../utils/api';
 import { io, Socket } from 'socket.io-client';
+import { onSocketReconnect } from '../utils/socketResync';
 import type { ApiResponse } from '../types';
 
 export interface ConnectedPlayer {
@@ -131,7 +132,10 @@ export const usePlayerConnections = (matchSlug: string | null) => {
       socket.on(`match:update:${matchSlug}`, handleUpdate);
     }
 
+    const offReconnect = onSocketReconnect(socket, () => void loadStatus({ force: true }));
+
     return () => {
+      offReconnect();
       socket.off('match:update', handleUpdate);
       if (matchSlug) {
         socket.off(`match:update:${matchSlug}`, handleUpdate);

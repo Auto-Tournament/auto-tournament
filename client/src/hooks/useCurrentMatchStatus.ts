@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../utils/api';
 import { io, Socket } from 'socket.io-client';
+import { onSocketReconnect } from '../utils/socketResync';
 
 export type MatchStatusValue =
   | 'none'
@@ -123,8 +124,10 @@ export function useCurrentMatchStatus(
 
     // Any veto update can affect whose turn it is (and thus match-status labels).
     socket.on('veto:update', scheduleSilentRefetch);
+    const offReconnect = onSocketReconnect(socket, scheduleSilentRefetch);
 
     return () => {
+      offReconnect();
       if (refreshTimerRef.current) {
         window.clearTimeout(refreshTimerRef.current);
         refreshTimerRef.current = null;

@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { api } from '../utils/api';
 import { io, type Socket } from 'socket.io-client';
+import { onSocketReconnect } from '../utils/socketResync';
 import type { MatchLiveStats } from '../types';
 
 const SNAPSHOT_CACHE_MS = 5000;
@@ -88,8 +89,10 @@ export function useLiveStats(matchSlug: string | null) {
     };
 
     socket.on('match:update', handleMatchUpdate);
+    const offReconnect = onSocketReconnect(socket, () => loadStats({ force: true }));
 
     return () => {
+      offReconnect();
       socket.off('match:update', handleMatchUpdate);
       socket.close();
     };

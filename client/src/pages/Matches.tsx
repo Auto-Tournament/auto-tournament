@@ -3,6 +3,7 @@ import { Box, Typography, Grid, LinearProgress, Snackbar, Alert, Stack, Button, 
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import AddIcon from '@mui/icons-material/Add';
 import { io } from 'socket.io-client';
+import { onSocketReconnect } from '../utils/socketResync';
 import { useNavigate } from 'react-router-dom';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
@@ -254,7 +255,11 @@ export default function Matches() {
       fetchMatches();
     });
 
+    // Events sent while the socket was down are gone; refetch on reconnect.
+    const offReconnect = onSocketReconnect(newSocket, () => void fetchMatches());
+
     return () => {
+      offReconnect();
       newSocket.disconnect();
     };
   }, [fetchMatches]);

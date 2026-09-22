@@ -21,6 +21,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTranslation } from 'react-i18next';
 import { io } from 'socket.io-client';
+import { onSocketReconnect } from '../../utils/socketResync';
 import { TOURNAMENT_TYPES, MATCH_FORMATS } from '../../constants/tournament';
 import { RestartTournamentButton } from '../dashboard/RestartTournamentButton';
 import { ChampionBanner } from './ChampionBanner';
@@ -113,9 +114,11 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
       void loadMatches();
     };
     socket.on('match:update', handleMatchUpdate);
+    const offReconnect = onSocketReconnect(socket, handleMatchUpdate);
 
     return () => {
       cancelled = true;
+      offReconnect();
       socket.off('match:update', handleMatchUpdate);
       socket.close();
     };
