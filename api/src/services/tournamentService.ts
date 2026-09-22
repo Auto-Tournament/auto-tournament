@@ -869,33 +869,33 @@ class TournamentService {
               m.nextMatchId = nextMatchId;
             }
           }
+        }
 
-          // Finally, wire the winners‑bracket final and losers‑bracket final into
-          // the grand final (slug `gf`) when present. We treat both as parents
-          // of the same terminal match.
-          const grandFinalId = slugToDbId.get('gf');
-          if (grandFinalId) {
-            const lastWinnersRound = Math.max(...winnersMatches.map((m) => m.round));
-            const winnersFinal = winnersMatches.find(
-              (m) => m.round === lastWinnersRound && !m.slug.startsWith('lb-')
-            );
+        // Finally, wire the winners‑bracket final and losers‑bracket final into
+        // the grand final (slug `gf`) when present. We treat both as parents
+        // of the same terminal match.
+        //
+        // A two-team bracket has no losers-bracket matches at all — both grand
+        // finalists come out of the single winners match — so this runs outside
+        // the losers-bracket linking above, which would otherwise skip it and
+        // leave the grand final with no parent link.
+        const grandFinalId = slugToDbId.get('gf');
+        if (grandFinalId && winnersMatches.length > 0) {
+          const lastWinnersRound = Math.max(...winnersMatches.map((m) => m.round));
+          const winnersFinal = winnersMatches.find(
+            (m) => m.round === lastWinnersRound && !m.slug.startsWith('lb-')
+          );
 
-            const lastLosersRound = Math.max(...lbMatches.map((m) => m.round));
-            const losersFinal = lbMatches.find((m) => m.round === lastLosersRound);
+          const losersFinal =
+            lbMatches.length > 0
+              ? lbMatches.find((m) => m.round === Math.max(...lbMatches.map((lm) => lm.round)))
+              : undefined;
 
-            const finals = [winnersFinal, losersFinal].filter(
-              (m): m is BracketMatch => Boolean(m)
-            );
+          const finals = [winnersFinal, losersFinal].filter((m): m is BracketMatch => Boolean(m));
 
-            for (const parent of finals) {
-              await db.updateAsync(
-                'matches',
-                { next_match_id: grandFinalId },
-                'id = ?',
-                [parent.id]
-              );
-              parent.nextMatchId = grandFinalId;
-            }
+          for (const parent of finals) {
+            await db.updateAsync('matches', { next_match_id: grandFinalId }, 'id = ?', [parent.id]);
+            parent.nextMatchId = grandFinalId;
           }
         }
       }

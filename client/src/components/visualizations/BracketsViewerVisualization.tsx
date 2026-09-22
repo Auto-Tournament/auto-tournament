@@ -23,13 +23,30 @@ interface BracketsViewerVisualizationProps {
   onMatchClick?: (match: Match) => void;
 }
 
+interface SlotSource {
+  match: Match;
+  outcome: 'winner' | 'loser';
+}
+
 /** Upper bracket final and lower bracket final, in grand final slot order. */
-function grandFinalParents(matches: Match[]): Match[] {
+function grandFinalParents(matches: Match[]): SlotSource[] {
   const last = (list: Match[]) =>
     [...list].sort((a, b) => b.round - a.round || a.matchNumber - b.matchNumber)[0];
   const upperFinal = last(matches.filter((m) => /^r\d+m\d+$/.test(m.slug)));
   const lowerFinal = last(matches.filter((m) => m.slug.startsWith('lb-')));
-  return upperFinal && lowerFinal ? [upperFinal, lowerFinal] : [];
+  if (!upperFinal) return [];
+  // Two teams have no losers bracket at all: the upper final's loser wins that
+  // empty bracket unopposed and takes the grand final's second slot.
+  if (!lowerFinal) {
+    return [
+      { match: upperFinal, outcome: 'winner' },
+      { match: upperFinal, outcome: 'loser' },
+    ];
+  }
+  return [
+    { match: upperFinal, outcome: 'winner' },
+    { match: lowerFinal, outcome: 'winner' },
+  ];
 }
 
 export default function BracketsViewerVisualization({
@@ -196,6 +213,17 @@ export default function BracketsViewerVisualization({
     const hasLosersBracket = matches.some((m) => m.slug.startsWith('lb-'));
     const hasGrandFinals = matches.some((m) => m.slug === 'gf');
 
+    // brackets-viewer addresses groups by position, not by id: the first group
+    // with matches is the winners bracket, the second the losers bracket and
+    // the third the final group. A two-team double elimination has a grand
+    // final but no losers-bracket matches, so giving the grand final a group of
+    // its own would land it in the losers-bracket slot and it would render
+    // under that heading. Fold it into the winners bracket as a trailing round
+    // instead — which is what it is when both finalists come out of the one
+    // winners match.
+    const foldGrandFinalIntoWinners = hasGrandFinals && !hasLosersBracket;
+    const grandFinalGroupId = foldGrandFinalIntoWinners ? 1 : 3;
+
     if (hasLosersBracket) {
       // Double elimination: Winners, Losers, Grand Finals
       groups.push(
@@ -204,7 +232,7 @@ export default function BracketsViewerVisualization({
         { id: 3, stage_id: 1, number: 3 } // Grand Finals
       );
     } else {
-      // Single elimination: Just main bracket
+      // Single elimination, and two-team double elimination: one bracket
       groups.push({ id: 1, stage_id: 1, number: 1 });
     }
 
@@ -427,9 +455,9 @@ export default function BracketsViewerVisualization({
       if (gfMatch) {
         rounds.push({
           id: roundCounter,
-          number: 1,
+          number: foldGrandFinalIntoWinners ? wbRounds.length + 1 : 1,
           stage_id: 1,
-          group_id: 3,
+          group_id: grandFinalGroupId,
         });
 
         const viewerMatchId = gfMatch.id ?? fallbackMatchId++;
@@ -445,7 +473,7 @@ export default function BracketsViewerVisualization({
           id: viewerMatchId,
           number: 1,
           stage_id: 1,
-          group_id: 3,
+          group_id: grandFinalGroupId,
           round_id: roundCounter,
           child_count: 0,
           status: gfMatch.status === 'completed' ? 2 : gfMatch.status === 'live' ? 1 : 0,
@@ -458,7 +486,9 @@ export default function BracketsViewerVisualization({
 
     const stageSettings: Stage['settings'] = {
       skipFirstRound: false,
-      grandFinal: hasGrandFinals ? 'simple' : 'none',
+      // Only a grand final in its own group is one as far as the viewer is
+      // concerned; a folded one is just the last winners round.
+      grandFinal: hasGrandFinals && !foldGrandFinalIntoWinners ? 'simple' : 'none',
       size: participants.length || undefined,
     };
 
@@ -527,12 +557,12 @@ export default function BracketsViewerVisualization({
       // lower bracket final winner second. Its parents cannot be ordered by
       // match number (both finals are match 1), and the viewer's own hint names
       // the lower bracket final for both slots.
-      const parents =
+      const parents: SlotSource[] =
         originalMatch.slug === 'gf'
           ? grandFinalParents(matches)
-          : [...(parentsByChildId.get(String(originalMatch.id)) ?? [])].sort(
-              (a, b) => a.matchNumber - b.matchNumber
-            );
+          : [...(parentsByChildId.get(String(originalMatch.id)) ?? [])]
+              .sort((a, b) => a.matchNumber - b.matchNumber)
+              .map((m) => ({ match: m, outcome: 'winner' as const }));
       if (parents.length < 2) return;
 
       const slots = element.querySelectorAll<HTMLElement>(':scope > .opponents > .participant');
@@ -543,11 +573,18 @@ export default function BracketsViewerVisualization({
         if (!parent || !nameEl) return;
 
         const parentLabel = container
-          .querySelector<HTMLElement>(`.match[data-match-id="${parent.id}"] > .opponents > span`)
+          .querySelector<HTMLElement>(
+            `.match[data-match-id="${parent.match.id}"] > .opponents > span`
+          )
           ?.innerText?.trim();
-        const hint = t('bracket.slotHint.winnerOf', {
-          match: parentLabel || t('bracket.slotHint.matchNumber', { number: parent.matchNumber }),
-        });
+        const hint = t(
+          parent.outcome === 'loser' ? 'bracket.slotHint.loserOf' : 'bracket.slotHint.winnerOf',
+          {
+            match:
+              parentLabel ||
+              t('bracket.slotHint.matchNumber', { number: parent.match.matchNumber }),
+          }
+        );
         nameEl.classList.add('hint');
         nameEl.innerText = hint;
         nameEl.title = hint;

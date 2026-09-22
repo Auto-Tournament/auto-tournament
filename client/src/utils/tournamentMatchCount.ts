@@ -8,7 +8,9 @@
  *   power-of-two path): N - 1.
  * - double elimination, grand final 'simple' or 'double' (power-of-two path;
  *   'double' is generated like 'simple' for now): winners N - 1, losers N - 2,
- *   one grand final = 2N - 2. Needs N >= 4; the generator rejects N = 2.
+ *   one grand final = 2N - 2. N = 2 is the degenerate case of the same
+ *   formula: one winners match, an empty losers bracket and a grand final
+ *   between the same two teams = 2.
  * - double elimination, grand final 'none' (brackets-manager): 2N - 3.
  * - round robin (brackets-manager, one group): N(N - 1) / 2.
  * - swiss (api/src/services/swissBracketGenerator.ts): ceil(log2 N) rounds of
@@ -69,7 +71,6 @@ export function estimateMatchCount(input: MatchCountInput): MatchCountEstimate {
       if (!isPowerOfTwo(n)) return UNKNOWN;
       const mode = input.grandFinalMode ?? 'simple';
       if (mode === 'none') return { matches: 2 * n - 3, rounds: null };
-      if (n < 4) return UNKNOWN;
       return { matches: 2 * n - 2, rounds: null };
     }
     case 'round_robin':
