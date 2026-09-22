@@ -120,7 +120,7 @@ or read [TRANSLATING.md](TRANSLATING.md) to add a language.
 
 ## License
 
-PolyForm Noncommercial 1.0.0, see [LICENSE](LICENSE). Free for non-commercial use.
+PolyForm Noncommercial 1.0.0, see [LICENSE](LICENSE). Free for non-commercial use; commercial use (paid hosting, selling it, paid-entry events, business use) needs a license. See [LICENSING.md](LICENSING.md).
 
 Built on [brackets-manager.js](https://github.com/Drarig29/brackets-manager.js)
 and [brackets-viewer.js](https://github.com/Drarig29/brackets-viewer.js).
