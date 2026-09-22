@@ -33,7 +33,8 @@ import ELOTemplates from './pages/ELOTemplates';
 import Layout from './components/layout/Layout';
 import NotFound from './pages/NotFound';
 import { theme } from './theme';
-import { GamesPromptDialog } from './components/games/GamesPromptDialog';
+import { GamesOnboardingRedirect } from './components/games/GamesOnboardingRedirect';
+import WelcomeGames from './pages/WelcomeGames';
 import { ImpersonationBanner } from './components/common/ImpersonationBanner';
 
 interface ProtectedRouteProps {
@@ -325,6 +326,17 @@ function AppRoutes() {
         }
       />
 
+      {/* "What do you play?" onboarding: first-visit redirect target, and
+          "Edit games" (?edit=1) entry points navigate here too. */}
+      <Route
+        path="/welcome/games"
+        element={
+          <RequireSignedIn>
+            <WelcomeGames />
+          </RequireSignedIn>
+        }
+      />
+
       <Route path="/" element={<RootRoute />}>
         <Route index element={<Dashboard />} />
         <Route path="teams" element={<Teams />} />
@@ -358,9 +370,10 @@ export default function App() {
               {/* Rendered above every route: impersonation applies app-wide,
                   including the public/player-facing pages it exists to test. */}
               <ImpersonationBanner />
-              {/* "What do you play?": once per account, on whatever page the
-                  player lands on. The API decides whether it is due. */}
-              <GamesPromptDialog />
+              {/* "What do you play?": redirects to /welcome/games once per
+                  account, from whatever page the player lands on. The API
+                  decides whether it is due. */}
+              <GamesOnboardingRedirect />
               <AppRoutes />
             </PageHeaderProvider>
           </SnackbarProvider>

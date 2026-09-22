@@ -12,6 +12,10 @@ export interface GameSummary {
   supported: boolean;
   /** Where this row's data came from; picks which credit line to show. */
   source: 'igdb' | 'wikidata' | 'builtin';
+  /** Up to 3 genre names. */
+  genres: string[];
+  /** `coverUrl` if present, else `logoUrl`; what the onboarding page's cards render. */
+  imageUrl: string | null;
 }
 
 export interface GameSearchResponse {
@@ -42,6 +46,14 @@ export async function searchGames(q: string, signal?: AbortSignal): Promise<Game
 
 export async function fetchSuggestions(): Promise<GameSummary[]> {
   const response = await fetch('/api/games/suggestions', { credentials: 'same-origin' });
+  if (!response.ok) return [];
+  const body = (await response.json()) as { games?: GameSummary[] };
+  return body.games ?? [];
+}
+
+/** Every built-in game (installed modules + popular titles), for the onboarding grid. */
+export async function fetchPopularGames(): Promise<GameSummary[]> {
+  const response = await fetch('/api/games/popular', { credentials: 'same-origin' });
   if (!response.ok) return [];
   const body = (await response.json()) as { games?: GameSummary[] };
   return body.games ?? [];

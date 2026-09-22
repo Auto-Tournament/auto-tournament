@@ -43,6 +43,9 @@ const INSTANCE_OF_PROP = 'P31';
 const PUBLICATION_DATE_PROP = 'P577';
 const LOGO_IMAGE_PROP = 'P154';
 const IMAGE_PROP = 'P18';
+const GENRE_PROP = 'P136';
+/** At most this many genres are kept per game, in claim order. */
+const MAX_GENRES = 3;
 
 export interface WikidataGame {
   wikidataId: string;
@@ -51,6 +54,8 @@ export interface WikidataGame {
   coverUrl: string | null;
   logoUrl: string | null;
   releaseYear: number | null;
+  /** Up to 3 genre names (P136), resolved to their English label. */
+  genres: string[];
 }
 
 export class WikidataError extends Error {
@@ -198,6 +203,49 @@ function englishLabel(entity: WikidataEntity): string | null {
 }
 
 // ---------------------------------------------------------------------------
+// Genre resolution (P136): one extra batched wbgetentities call resolves the
+// English label for every genre item referenced by a whole batch of games, so
+// looking up genres for N games never costs more than one extra request.
+// ---------------------------------------------------------------------------
+
+async function resolveGenreLabels(entities: WikidataEntity[]): Promise<Map<string, string[]>> {
+  const idsByEntity = new Map<string, string[]>();
+  const genreIds = new Set<string>();
+  for (const entity of entities) {
+    const ids = claimEntityIds(entity, GENRE_PROP).slice(0, MAX_GENRES);
+    idsByEntity.set(entity.id, ids);
+    for (const id of ids) genreIds.add(id);
+  }
+
+  let labels = new Map<string, string>();
+  if (genreIds.size > 0) {
+    const body = (await wikidataFetch({
+      action: 'wbgetentities',
+      ids: [...genreIds].join('|'),
+      props: 'labels',
+      languages: 'en',
+      languagefallback: '1',
+      format: 'json',
+    })) as { entities?: Record<string, WikidataEntity> };
+    const genreEntities = body.entities ?? {};
+    labels = new Map(
+      Object.entries(genreEntities)
+        .map(([id, e]) => [id, englishLabel(e)] as const)
+        .filter((pair): pair is [string, string] => Boolean(pair[1]))
+    );
+  }
+
+  const out = new Map<string, string[]>();
+  for (const entity of entities) {
+    const genres = (idsByEntity.get(entity.id) ?? [])
+      .map((id) => labels.get(id))
+      .filter((g): g is string => Boolean(g));
+    out.set(entity.id, genres);
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------
 // Search
 // ---------------------------------------------------------------------------
 
@@ -230,6 +278,10 @@ export async function searchWikidata(query: string, limit: number): Promise<Wiki
     ids: ids.join('|'),
     props: 'claims|labels',
     languages: 'en',
+    // Newer/eponymous items (e.g. "Counter-Strike 2") often carry only the
+    // language-independent "mul" label, not an "en" one; without this, those
+    // items have no usable name and are silently dropped below.
+    languagefallback: '1',
     format: 'json',
   })) as { entities?: Record<string, WikidataEntity> };
 
@@ -250,6 +302,10 @@ export async function searchWikidata(query: string, limit: number): Promise<Wiki
   const maxResults = Math.max(1, Math.min(limit, 50));
   const usedSlugs = new Set<string>();
   const out: WikidataGame[] = [];
+
+  // One extra batched call resolves every genre label this whole search
+  // needs, however many games are in `chosen`.
+  const genresByEntity = await resolveGenreLabels(chosen);
 
   for (const entity of chosen) {
     if (out.length >= maxResults) break;
@@ -278,6 +334,53 @@ export async function searchWikidata(query: string, limit: number): Promise<Wiki
       coverUrl: imageUrl,
       logoUrl: imageUrl,
       releaseYear: earliestYear(claimTimeValues(entity, PUBLICATION_DATE_PROP)),
+      genres: genresByEntity.get(entity.id) ?? [],
+    });
+  }
+
+  return out;
+}
+
+// ---------------------------------------------------------------------------
+// Built-in game enrichment
+// ---------------------------------------------------------------------------
+
+export interface WikidataBuiltinInfo {
+  imageUrl: string | null;
+  releaseYear: number | null;
+  genres: string[];
+}
+
+/**
+ * Batched lookup for built-in game enrichment: given known Wikidata QIDs
+ * (see `gameEnrichmentService`), fetch their claims (P154/P18 image, P577
+ * release year, P136 genres) in one `wbgetentities` call, then resolve genre
+ * labels in one more batched call — two requests total, however many QIDs are
+ * passed in. Throws `WikidataError` on a network/HTTP failure; the caller
+ * decides how to handle that (built-in enrichment logs and retries next
+ * start; see `gameEnrichmentService.enrichBuiltinGames`).
+ */
+export async function getWikidataBuiltinInfo(ids: string[]): Promise<Map<string, WikidataBuiltinInfo>> {
+  const out = new Map<string, WikidataBuiltinInfo>();
+  if (ids.length === 0) return out;
+
+  const entitiesBody = (await wikidataFetch({
+    action: 'wbgetentities',
+    ids: ids.join('|'),
+    props: 'claims',
+    format: 'json',
+  })) as { entities?: Record<string, WikidataEntity> };
+  const entities = ids
+    .map((id) => entitiesBody.entities?.[id])
+    .filter((e): e is WikidataEntity => Boolean(e));
+
+  const genresByEntity = await resolveGenreLabels(entities);
+
+  for (const entity of entities) {
+    out.set(entity.id, {
+      imageUrl: commonsImageUrl(entity),
+      releaseYear: earliestYear(claimTimeValues(entity, PUBLICATION_DATE_PROP)),
+      genres: genresByEntity.get(entity.id) ?? [],
     });
   }
 

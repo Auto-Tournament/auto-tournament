@@ -17,6 +17,7 @@ import { initializeSocket } from './services/socketService';
 import { routeTable } from './routes/routeTable';
 import { listIntegrations } from './integrations/registry';
 import { recoverActiveMatches } from './services/matchRecoveryService';
+import { enrichBuiltinGames } from './services/gameEnrichmentService';
 import { matchAllocationService } from './services/matchAllocationService';
 import { steamService } from './services/steamService';
 import { seedAdminsFromEnv } from './services/adminSeedService';
@@ -462,6 +463,13 @@ process.on('uncaughtException', (err) => {
         }),
         seedAdminsFromEnv().catch((error) => {
           log.warn('Failed to seed admins from ADMIN_STEAM_IDS on startup', { error });
+        }),
+        // Best-effort, never blocks: gives built-in games (installed modules
+        // + the popular list) a real image/genres from Wikidata (and IGDB
+        // covers, if configured). See gameEnrichmentService for the
+        // once-per-7-days-per-game throttling and the CI/test opt-out.
+        enrichBuiltinGames().catch((error) => {
+          log.warn('Failed to enrich built-in games on startup', { error });
         }),
       ]).then(() => {
         log.success('[Startup] All startup tasks completed');
