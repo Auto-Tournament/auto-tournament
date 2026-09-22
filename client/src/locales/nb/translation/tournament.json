@@ -408,6 +408,165 @@
       "save": "Lagre arrangementsside",
       "saveSuccess": "Arrangementsside lagret.",
       "saveError": "Kunne ikke lagre arrangementsside: {{message}}"
+    },
+    "setup": {
+      "steps": {
+        "game": "Spill",
+        "basics": "Grunnleggende",
+        "format": "Format",
+        "teams": "Lag og påmelding",
+        "maps": "Kart og veto",
+        "eventPage": "Arrangementsside",
+        "review": "Gjennomgang"
+      },
+      "stepsLabel": "Oppsettssteg",
+      "stepDone": "ferdig",
+      "newTournament": "Ny turnering",
+      "editing": "Turneringsoppsett",
+      "draftSaved": "utkast lagret i denne fanen",
+      "discardDraft": "Begynn på nytt",
+      "startFromTemplate": "Start fra en mal",
+      "continueTo": "Fortsett til {{step}}",
+      "questions": {
+        "game": {
+          "title": "Hvilket spill?",
+          "lede": "Spillet avgjør hvordan kampene kjøres og hvilke innstillinger du får."
+        },
+        "basics": {
+          "title": "Hva heter den?",
+          "lede": "Gi turneringen et navn spillerne kjenner igjen, og velg hvordan rating endres."
+        },
+        "format": {
+          "title": "Hvordan spilles den?",
+          "lede": "Velg bracket og hvor lang hver serie er. Du kan endre dette til turneringen starter."
+        },
+        "teams": {
+          "title": "Hvem spiller?",
+          "lede": "Velg lagene i bracketen. Du kan også opprette eller importere lag her.",
+          "ledeShuffle": "Shuffle har påmelding for enkeltspillere: spillerne melder seg på, og nye lag trekkes hver runde."
+        },
+        "maps": {
+          "title": "Hvilke kart?",
+          "lede": "Velg kartpoolen. Seriene bruker vetoen til å velge kartene sine fra den.",
+          "ledeShuffle": "Velg kartene i den rekkefølgen de spilles. Hvert kart er én runde."
+        },
+        "eventPage": {
+          "title": "Hva skal stå på arrangementssiden?",
+          "lede": "Valgfritt. Vises for spillere og besøkende på den offentlige oversiktssiden."
+        },
+        "review": {
+          "title": "Klar?",
+          "lede": "Sjekk detaljene, og opprett turneringen.",
+          "ledeExisting": "Sjekk detaljene, og start turneringen når alle er klare."
+        }
+      },
+      "game": {
+        "label": "Spill",
+        "descriptions": {
+          "cs2": "Kampene kjøres på serverne dine med MatchZy."
+        }
+      },
+      "basics": {
+        "ratingLabel": "Rating",
+        "ratingHelp": "Hvordan spillernes rating endres etter hver kamp i denne turneringen."
+      },
+      "format": {
+        "label": "Format",
+        "names": {
+          "single_elimination": "Enkel eliminasjon",
+          "double_elimination": "Dobbel eliminasjon",
+          "swiss": "Swiss",
+          "round_robin": "Round robin",
+          "shuffle": "Shuffle"
+        },
+        "types": {
+          "single_elimination": "Ett tap og du er ute. Raskest.",
+          "double_elimination": "En ny sjanse i lower bracket.",
+          "swiss": "Lagene spiller flere runder mot lag med lik rekord.",
+          "round_robin": "Alle møter alle. Best for små grupper.",
+          "shuffle": "Påmelding for enkeltspillere. Nye balanserte lag hver runde."
+        },
+        "seriesLength": "Serielengde",
+        "grandFinal": "Grand final",
+        "grandFinalOptions": {
+          "simple": "Én kamp",
+          "double": "Bracket reset",
+          "none": "Ingen"
+        },
+        "grandFinalHelp": {
+          "simple": "Vinnerne av winners og losers bracket møtes i én grand final.",
+          "double": "Bracket reset. Foreløpig spilles den som én grand final; full støtte kommer.",
+          "none": "Ingen grand final: finalen i winners bracket avgjør turneringen."
+        },
+        "teams": "Lag",
+        "teamsHelpPowerOfTwo": "Eliminasjonsbrackets trenger {{counts}} lag. Brukes i oppsummeringen til du har valgt lag.",
+        "teamsHelpRange": "Mellom {{min}} og {{max}} lag. Brukes i oppsummeringen til du har valgt lag.",
+        "fewerTeams": "Færre lag",
+        "moreTeams": "Flere lag",
+        "shuffleTitle": "Shuffle-innstillinger",
+        "cs2Title": "Counter-Strike 2-innstillinger",
+        "cs2Help": "Sendes til MatchZy av spillmodulen for Counter-Strike 2.",
+        "overtime": {
+          "enabled": "Overtid",
+          "disabledDraws": "Av, uavgjort tillatt",
+          "disabledNoDraws": "Av, skade avgjør"
+        }
+      },
+      "teams": {
+        "shuffleBeforeCreate": "Spillerne melder seg på etter at du har opprettet turneringen. Kom tilbake til dette steget for å velge dem."
+      },
+      "maps": {
+        "vetoTitle": "Veto",
+        "vetoStandard": "Hver {{format}}-serie kjører kartveto: lagene banner og velger fra disse 7 kartene.",
+        "vetoCustom": "Denne turneringen har egen veto-rekkefølge for {{format}}.",
+        "vetoNone": "Ingen veto for dette formatet.",
+        "vetoShuffle": "Shuffle har ingen veto: kartene spilles i denne rekkefølgen, ett per runde."
+      },
+      "eventPage": {
+        "draftNote": "Lagres sammen med turneringen når du oppretter den."
+      },
+      "review": {
+        "unsaved": "Du har endringer som ikke er lagret. Lagre dem (bracketen lages på nytt) eller forkast dem før du starter."
+      },
+      "summary": {
+        "label": "Oppsummering",
+        "untitled": "Turnering uten navn",
+        "format": "Format",
+        "series": "Serie",
+        "seriesShuffle": "Bo1 per runde",
+        "seriesFinal": {
+          "simple": "{{format}} · grand final",
+          "double": "{{format}} · grand final, bracket reset",
+          "none": "{{format}} · ingen grand final"
+        },
+        "teams": "Lag",
+        "teamSize": "{{size}}v{{size}}",
+        "teamsPlanned": "{{count}} planlagt",
+        "matches": "Kamper",
+        "matchesAfterSignUp": "Etter påmelding",
+        "signUp": "Påmelding",
+        "signUpOrganizer": "Valgt av arrangør",
+        "signUpAfterCreate": "Åpner når den er opprettet",
+        "players_one": "{{count}} spiller",
+        "players_other": "{{count}} spillere",
+        "maps": "Kart",
+        "mapsRounds": "{{maps}} · {{rounds}}",
+        "notSet": "Ikke satt"
+      },
+      "checklist": {
+        "title": "Før du kan starte",
+        "met": "ferdig",
+        "notMet": "ikke ferdig",
+        "name": "Et navn",
+        "format": "Format og kampinnstillinger",
+        "teams": "Et gyldig antall lag",
+        "players_one": "Minst {{count}} spiller påmeldt",
+        "players_other": "Minst {{count}} spillere påmeldt",
+        "mapsVeto": "7 kart til vetoen",
+        "maps": "Minst ett kart",
+        "created": "Turneringen er opprettet",
+        "saved": "Endringene er lagret"
+      }
     }
   },
   "bracket": {

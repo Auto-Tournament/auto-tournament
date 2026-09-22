@@ -23,9 +23,8 @@ test.describe.serial('Shuffle Tournament UI', () => {
   test.beforeEach(async ({ page, request }) => {
     await ensureSignedIn(page);
     await signInViaRequest(request);
-    // The creation wizard is only reachable from the welcome screen, which only
-    // appears when no tournament exists. Other specs leave one behind, so clear
-    // it rather than depending on file order.
+    // The creation flow only opens when no tournament exists. Other specs
+    // leave one behind, so clear it rather than depending on file order.
     await request.delete('/api/tournament', { headers: getAuthHeader() });
   });
 
@@ -38,27 +37,37 @@ test.describe.serial('Shuffle Tournament UI', () => {
       await page.goto('/tournament');
       await page.waitForLoadState('networkidle');
 
-      // /tournament opens on a welcome screen; the wizard is behind "Create New".
-      await page.getByTestId('tournament-welcome-create-new').click();
-
+      // With no tournament, /tournament opens the setup flow on its Game step.
       const nextButton = page.getByTestId('tournament-next-button');
+      await expect(page.getByTestId('tournament-setup-step-game')).toHaveAttribute(
+        'aria-current',
+        'step'
+      );
+      await nextButton.click();
 
-      // Step 1 of 6 — Name.
+      // Basics — name.
       const nameInput = page.getByTestId('tournament-name-input');
       await expect(nameInput).toBeVisible({ timeout: 15000 });
       await nameInput.fill(`Shuffle UI Test ${Date.now()}`);
       await nextButton.click();
 
-      // Step 2 — Type. Shuffle must be on offer.
+      // Format. Shuffle must be on offer, and choosing it shows its own settings.
       const typeSelector = page.getByTestId('tournament-type-selector');
       await expect(typeSelector).toBeVisible({ timeout: 15000 });
       await page.getByTestId('tournament-type-option-shuffle').click();
+      await expect(page.getByTestId('tournament-type-option-shuffle')).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      );
+      await expect(page.getByTestId('shuffle-team-size-field')).toBeVisible();
       await nextButton.click();
 
-      // Step 3 — Format. Shuffle sets its own format, so this step just passes through.
+      // Teams and sign-up. Shuffle has solo sign-up, which opens once the
+      // tournament exists.
+      await expect(page.getByTestId('shuffle-signup-after-create')).toBeVisible();
       await nextButton.click();
 
-      // Step 4 — Maps. Shuffle plays the pool in sequence instead of running a
+      // Maps and veto. Shuffle plays the pool in sequence instead of running a
       // veto, and the map step says so. That notice is the shuffle-specific
       // behaviour worth pinning down here.
       await expect(page.getByTestId('shuffle-map-sequence-field')).toBeVisible({ timeout: 15000 });

@@ -148,8 +148,8 @@ test.describe.serial('Maps UI', () => {
 test.describe.serial('Tournament Map Pool Selection', () => {
   test.beforeEach(async ({ page, request }) => {
     await setupTestContext(page, request);
-    // The map-pool step lives inside the creation wizard, which is only offered
-    // when no tournament exists yet.
+    // The map-pool step lives inside the creation flow, which only opens when
+    // no tournament exists yet.
     await request.delete('/api/tournament', { headers: getAuthHeader() });
   });
 
@@ -158,11 +158,11 @@ test.describe.serial('Tournament Map Pool Selection', () => {
     { tag: ['@ui', '@tournament', '@map-pools'] },
     async ({ page }) => {
       await page.goto('/tournament');
-      await page.getByTestId('tournament-welcome-create-new').click();
 
       const nextButton = page.getByTestId('tournament-next-button');
 
-      // Name -> Type -> Format -> Maps
+      // Game -> Basics -> Format
+      await nextButton.click();
       const nameInput = page.getByTestId('tournament-name-input');
       await expect(nameInput).toBeVisible();
       await nameInput.fill(`Map Pool Test ${Date.now()}`);
@@ -170,12 +170,11 @@ test.describe.serial('Tournament Map Pool Selection', () => {
 
       await expect(page.getByTestId('tournament-type-selector')).toBeVisible();
       await page.getByTestId('tournament-type-option-single_elimination').click();
-      await nextButton.click();
+      await page.getByTestId('tournament-format-option-bo1').click();
 
-      // Format step has no test ids, so select by its visible label. A format is
-      // required before the wizard will advance for non-shuffle tournaments.
-      await page.getByText('Best of 1', { exact: true }).click();
-      await nextButton.click();
+      // Teams would refuse Continue without teams; the step list jumps straight
+      // to the map step.
+      await page.getByTestId('tournament-setup-step-maps').click();
 
       const mapPoolSelect = page.getByTestId('tournament-map-pool-select');
       await expect(mapPoolSelect).toBeVisible();

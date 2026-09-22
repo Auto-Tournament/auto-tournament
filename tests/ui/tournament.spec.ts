@@ -12,8 +12,8 @@ import { createTournament, startTournament } from '../helpers/tournaments';
  * and each test below drives the app into a specific one rather than accepting
  * whichever happens to show up:
  *
- *   no tournament   -> welcome screen (tournament-welcome-create-new)
- *   created (setup) -> configuration review (tournament-name-display)
+ *   no tournament   -> setup flow on its first step (tournament-setup)
+ *   created (setup) -> setup flow on its Review step (tournament-name-display)
  *   in_progress     -> live view (tournament-status, view-bracket-button)
  *
  * The previous version of this file guarded every assertion behind
@@ -45,7 +45,7 @@ test.describe.serial('Tournament UI', () => {
   });
 
   test(
-    'should show the welcome screen when no tournament exists',
+    'should open the setup flow when no tournament exists',
     { tag: ['@ui', '@tournament'] },
     async ({ page, request }) => {
       await request.delete('/api/tournament', { headers: getAuthHeader() });
@@ -55,7 +55,13 @@ test.describe.serial('Tournament UI', () => {
       await expect(page).toHaveTitle(/Tournament Setup/i);
 
       await expect(page.getByTestId('tournament-page')).toBeVisible();
-      await expect(page.getByTestId('tournament-welcome-create-new')).toBeVisible();
+      await expect(page.getByTestId('tournament-setup')).toBeVisible();
+      await expect(page.getByTestId('tournament-setup-step-game')).toHaveAttribute(
+        'aria-current',
+        'step'
+      );
+      // Nothing to review yet.
+      await expect(page.getByTestId('tournament-name-display')).toHaveCount(0);
 
       // The live view belongs to an in-progress tournament, not an empty one.
       await expect(page.getByTestId('tournament-status')).toHaveCount(0);
@@ -64,7 +70,7 @@ test.describe.serial('Tournament UI', () => {
   );
 
   test(
-    'should show the tournament instead of the welcome screen once created',
+    'should open on the Review step once a tournament is created',
     { tag: ['@ui', '@tournament', '@crud'] },
     async ({ page, request }) => {
       const teams = await createTestTeams(request, 'tournament-ui');
@@ -85,7 +91,10 @@ test.describe.serial('Tournament UI', () => {
 
       await page.goto('/tournament');
       await expect(page.getByTestId('tournament-name-display')).toBeVisible();
-      await expect(page.getByTestId('tournament-welcome-create-new')).toHaveCount(0);
+      await expect(page.getByTestId('tournament-setup-step-review')).toHaveAttribute(
+        'aria-current',
+        'step'
+      );
     }
   );
 
@@ -100,6 +109,7 @@ test.describe.serial('Tournament UI', () => {
       // Starting flips the page from the configuration view to the live one.
       await expect(page.getByTestId('tournament-status')).toBeVisible();
       await expect(page.getByTestId('tournament-name-display')).toHaveCount(0);
+      await expect(page.getByTestId('tournament-setup')).toHaveCount(0);
 
       const bracketButton = page.getByTestId('view-bracket-button');
       await expect(bracketButton).toBeVisible();
