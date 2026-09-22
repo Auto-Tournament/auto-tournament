@@ -54,3 +54,8 @@ export function adminRoute(path: string): string {
 export function playerProfilePath(steamId: string): string {
   return `/player/${steamId}`;
 }
+
+/** `/t/team/:teamId` for one team's public profile page. */
+export function teamProfilePath(teamId: string): string {
+  return paths.teamProfile.replace(':teamId', teamId);
+}

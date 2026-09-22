@@ -59,6 +59,7 @@ import type {
   Player as TeamPlayer,
 } from '../types';
 import { tokens, mono } from '../theme/tokens';
+import { teamProfilePath } from '../paths';
 
 interface RatingHistoryEntry {
   id: number;
@@ -1498,7 +1499,7 @@ export default function PlayerProfile() {
                           }`,
                         })}
                         component={RouterLink}
-                        to={`/team/${assignedTeam?.id || currentTeam?.id}`}
+                        to={teamProfilePath((assignedTeam?.id || currentTeam?.id) as string)}
                         clickable
                         sx={{ fontWeight: 600 }}
                       />
