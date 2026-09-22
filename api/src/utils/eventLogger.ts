@@ -7,9 +7,11 @@ import fs from 'fs';
 import path from 'path';
 import type { GameWebhookEvent } from '../types/socket.types';
 import { log } from './logger';
+import { DATA_DIR } from '../config/dataDir';
 
-// Logs live under the api/data directory to keep the repo root clean
-const LOGS_DIR = path.join(__dirname, '..', '..', 'data', 'logs', 'events');
+// Logs live under DATA_DIR to keep the repo root clean, and so they survive
+// container recreates (see config/dataDir.ts / config/migrateLegacyDataDir.ts).
+const LOGS_DIR = path.join(DATA_DIR, 'logs', 'events');
 const ALL_EVENTS_FILE = path.join(LOGS_DIR, 'events-all.txt');
 
 // Ensure logs directory exists
