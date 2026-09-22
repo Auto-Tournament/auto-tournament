@@ -122,7 +122,7 @@ export function ShufflePlayerRegistration({
 
   return (
     <>
-      <Card sx={{ width: '33%', display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
+      <Card sx={{ width: '100%', display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
         <CardContent
           sx={{
             display: 'flex',

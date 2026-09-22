@@ -862,323 +862,66 @@ async function generateTestData(
 }
 
 /**
- * Take screenshots of the tournament creation wizard (single elimination + shuffle config)
+ * Take screenshots of the tournament setup flow (single elimination + shuffle config).
+ * Steps are opened from the step list, so a step that refuses Continue (no teams
+ * yet) doesn't stop the run.
  */
 async function takeTournamentCreationScreenshots(page: Page): Promise<void> {
-  console.log('\n📸 Taking tournament creation wizard screenshots...\n');
+  console.log('\n📸 Taking tournament setup screenshots...\n');
+
+  const openStep = async (step: string) => {
+    await page.click(`[data-testid="tournament-setup-step-${step}"]`);
+    await page.waitForSelector(`[data-testid="tournament-setup-question-${step}"]`, {
+      timeout: 5000,
+      state: 'visible',
+    });
+    await page.waitForTimeout(300);
+  };
+
+  const shoot = async (name: string, waitFor: string) => {
+    try {
+      await takeScreenshot(page, { path: '/tournament', name, waitFor, waitTime: 500 });
+    } catch (error) {
+      console.warn(`⚠️  Could not capture ${name}:`, error);
+    }
+  };
 
   try {
-    // Ensure we are on the welcome screen
     await page.goto(`${BASE_URL}/tournament`, { waitUntil: 'networkidle' });
-    await page.waitForSelector('[data-testid="tournament-welcome-create-new"]', {
+    await page.waitForSelector('[data-testid="tournament-setup-steps"]', {
       timeout: 5000,
       state: 'visible',
     });
-    await page.waitForTimeout(500);
 
-    // Open the creation wizard
-    await page.click('[data-testid="tournament-welcome-create-new"]');
-    await page.waitForSelector('[data-testid="tournament-name-input"]', {
-      timeout: 5000,
-      state: 'visible',
-    });
-    await page.waitForTimeout(500);
-
-    // Step 0: Name
+    await openStep('basics');
     await page.fill('[data-testid="tournament-name-input"]', 'Weekend Cup – Single Elimination');
-    await takeScreenshot(page, {
-      path: '/tournament',
-      name: 'tournament-step-name',
-      waitFor: '[data-testid="tournament-name-input"]',
-      waitTime: 500,
-    });
+    await shoot('tournament-step-name', '[data-testid="tournament-name-input"]');
 
-    // Step 1: Type
-    try {
-      const nextButton = page.locator('[data-testid="tournament-next-button"]').first();
-      await nextButton.waitFor({ timeout: 5000, state: 'visible' });
-      await nextButton.click();
-    } catch (error) {
-      console.warn(
-        '⚠️  Could not find "Next" button on Name step, skipping wizard screenshots:',
-        error
+    await openStep('format');
+    for (const type of ['single_elimination', 'double_elimination', 'shuffle']) {
+      await page.click(`[data-testid="tournament-type-option-${type}"]`);
+      await page.waitForTimeout(300);
+      await shoot(
+        `tournament-type-${type.replace('_', '-')}`,
+        '[data-testid="tournament-type-selector"]'
       );
-      return;
     }
-    await page.waitForSelector('[data-testid="tournament-type-selector"]', {
-      timeout: 5000,
-      state: 'visible',
-    });
-    await page.waitForTimeout(500);
+    await shoot('shuffle-tournament-config', '[data-testid="shuffle-team-size-field"]');
 
-    // Single Elimination type selected
-    try {
-      await page.click('[data-testid="tournament-type-option-single_elimination"]');
-      await page.waitForTimeout(300);
-      await takeScreenshot(page, {
-        path: '/tournament',
-        name: 'tournament-type-single-elimination',
-        waitFor: '[data-testid="tournament-type-selector"]',
-        waitTime: 500,
-      });
-    } catch (error) {
-      console.warn('⚠️  Could not capture single elimination type screenshot:', error);
-    }
+    await page.click('[data-testid="tournament-type-option-single_elimination"]');
+    await page.click('[data-testid="tournament-format-option-bo3"]');
+    await shoot('tournament-step-format', '[data-testid="tournament-format-selector"]');
 
-    // Double Elimination type
-    try {
-      await page.click('[data-testid="tournament-type-option-double_elimination"]');
-      await page.waitForTimeout(300);
-      await takeScreenshot(page, {
-        path: '/tournament',
-        name: 'tournament-type-double-elimination',
-        waitFor: '[data-testid="tournament-type-selector"]',
-        waitTime: 500,
-      });
-    } catch (error) {
-      console.warn('⚠️  Could not capture double elimination type screenshot:', error);
-    }
+    await openStep('teams');
+    await shoot('tournament-step-teams', '[data-testid="tournament-setup-question-teams"]');
 
-    // Shuffle tournament type
-    try {
-      await page.click('[data-testid="tournament-type-option-shuffle"]');
-      await page.waitForTimeout(300);
-      await takeScreenshot(page, {
-        path: '/tournament',
-        name: 'tournament-type-shuffle',
-        waitFor: '[data-testid="tournament-type-option-shuffle"]',
-        waitTime: 500,
-      });
-    } catch (error) {
-      console.warn('⚠️  Could not capture shuffle type screenshot:', error);
-    }
+    await openStep('maps');
+    await shoot('tournament-step-maps', '[data-testid="tournament-map-pool-select"]');
 
-    // Set type back to single_elimination for the generic flow
-    try {
-      await page.click('[data-testid="tournament-type-option-single_elimination"]');
-      await page.waitForTimeout(300);
-    } catch {
-      // Ignore if it fails; flow can still continue
-    }
-
-    // Step 2: Format (Best of X)
-    try {
-      const nextButton = page.locator('[data-testid="tournament-next-button"]').first();
-      await nextButton.waitFor({ timeout: 5000, state: 'visible' });
-      await nextButton.click();
-      await page.waitForTimeout(500);
-      await page.waitForSelector('text=Best of 3', { timeout: 5000 });
-      await takeScreenshot(page, {
-        path: '/tournament',
-        name: 'tournament-step-format',
-        waitFor: 'text=Best of 3',
-        waitTime: 500,
-      });
-    } catch (error) {
-      console.warn('⚠️  Could not capture format step screenshot:', error);
-    }
-
-    // Step 3: Maps (map pool selection)
-    try {
-      const nextButton = page.locator('[data-testid="tournament-next-button"]').first();
-      await nextButton.waitFor({ timeout: 5000, state: 'visible' });
-      await nextButton.click();
-      await page.waitForTimeout(500);
-      await page.waitForSelector('[data-testid="tournament-map-pool-select"]', {
-        timeout: 5000,
-        state: 'visible',
-      });
-      await takeScreenshot(page, {
-        path: '/tournament',
-        name: 'tournament-step-maps',
-        waitFor: '[data-testid="tournament-map-pool-select"]',
-        waitTime: 500,
-      });
-    } catch (error) {
-      console.warn('⚠️  Could not capture maps step screenshot:', error);
-    }
-
-    // Step 4: Teams (team selection) for non-shuffle
-    try {
-      const nextButton = page.locator('[data-testid="tournament-next-button"]').first();
-      await nextButton.waitFor({ timeout: 5000, state: 'visible' });
-      await nextButton.click();
-      await page.waitForTimeout(500);
-      await takeScreenshot(page, {
-        path: '/tournament',
-        name: 'tournament-step-teams',
-        waitFor: 'text=You need at least 2 teams, text=Add All',
-        waitTime: 500,
-      });
-    } catch (error) {
-      console.warn('⚠️  Could not capture teams step screenshot:', error);
-    }
-
-    // Step 5: Review
-    try {
-      const nextButton = page.locator('[data-testid="tournament-next-button"]').first();
-      const hasNext = await nextButton.isVisible({ timeout: 3000 }).catch(() => false);
-
-      // In most cases we're on the Teams step here and need one more "Next" to reach Review.
-      // If the button isn't visible, assume we're already on the Review step.
-      if (hasNext) {
-        await nextButton.click();
-        await page.waitForTimeout(500);
-      } else {
-        console.warn(
-          '⚠️  Review step: "Next" button not visible, assuming we are already on the Review step'
-        );
-      }
-
-      // Wait for either the review title or the primary action button ("Create Tournament"/"Save & Generate Brackets")
-      await Promise.race([
-        page.waitForSelector('[data-testid="tournament-name-display"]', {
-          timeout: 10000,
-          state: 'visible',
-        }),
-        page.waitForSelector('[data-testid="tournament-save-button"]', {
-          timeout: 10000,
-          state: 'visible',
-        }),
-      ]);
-
-      await takeScreenshot(page, {
-        path: '/tournament',
-        name: 'tournament-step-review',
-        waitFor: '[data-testid="tournament-save-button"], [data-testid="tournament-name-display"]',
-        waitTime: 500,
-      });
-    } catch (error) {
-      console.warn('⚠️  Could not capture review step screenshot:', error);
-    }
-
-    // Shuffle-specific configuration step (reuse the same wizard by going back to Type step)
-    try {
-      console.log('\n📸 Taking shuffle configuration step screenshot...\n');
-
-      // Try to navigate back to the "Type" step inside the current wizard
-      let atTypeStep = false;
-      for (let i = 0; i < 6; i++) {
-        const typeVisible = await page
-          .locator('[data-testid="tournament-type-selector"]')
-          .isVisible({ timeout: 1000 })
-          .catch(() => false);
-
-        if (typeVisible) {
-          atTypeStep = true;
-          break;
-        }
-
-        const backButton = page.locator('[data-testid="tournament-back-button"]').first();
-        const canGoBack = await backButton.isVisible({ timeout: 1000 }).catch(() => false);
-        if (!canGoBack) {
-          break;
-        }
-
-        await backButton.click();
-        await page.waitForTimeout(300);
-      }
-
-      if (!atTypeStep) {
-        console.warn(
-          '⚠️  Shuffle flow: could not navigate back to Type step, falling back to skipping shuffle screenshots'
-        );
-        return;
-      }
-
-      // We are now on the Type step – switch to Shuffle
-      await page.click('[data-testid="tournament-type-option-shuffle"]');
-      await page.waitForTimeout(300);
-
-      // Go to Format step (info-only for shuffle)
-      try {
-        const nextButton2 = page.locator('[data-testid="tournament-next-button"]').first();
-        const hasNext2 = await nextButton2.isVisible({ timeout: 3000 }).catch(() => false);
-        if (hasNext2) {
-          await nextButton2.click();
-        } else {
-          console.warn('⚠️  Shuffle flow: "Next" button not visible on Type step');
-          return;
-        }
-      } catch (error) {
-        console.warn('⚠️  Could not find "Next" button on Shuffle Type step:', error);
-        return;
-      }
-
-      try {
-        await page.waitForSelector('text=Shuffle tournaments use Best of 1 format', {
-          timeout: 10000,
-        });
-      } catch (error) {
-        console.warn('⚠️  Shuffle flow: format info text did not appear:', error);
-        return;
-      }
-
-      await takeScreenshot(page, {
-        path: '/tournament',
-        name: 'shuffle-tournament-format',
-        waitFor: 'text=Shuffle tournaments use Best of 1 format',
-        waitTime: 500,
-      });
-
-      // Maps step
-      try {
-        const nextButton3 = page.locator('[data-testid="tournament-next-button"]').first();
-        const hasNext3 = await nextButton3.isVisible({ timeout: 3000 }).catch(() => false);
-        if (hasNext3) {
-          await nextButton3.click();
-        } else {
-          console.warn('⚠️  Shuffle flow: "Next" button not visible on Format step');
-          return;
-        }
-      } catch (error) {
-        console.warn('⚠️  Could not find "Next" button on Shuffle Format step:', error);
-        return;
-      }
-
-      try {
-        await page.waitForSelector('[data-testid="tournament-map-pool-select"]', {
-          timeout: 10000,
-          state: 'visible',
-        });
-      } catch (error) {
-        console.warn('⚠️  Shuffle flow: map pool select did not appear:', error);
-        return;
-      }
-
-      await page.waitForTimeout(300);
-
-      // Shuffle configuration step (step 4)
-      try {
-        const nextButton4 = page.locator('[data-testid="tournament-next-button"]').first();
-        const hasNext4 = await nextButton4.isVisible({ timeout: 3000 }).catch(() => false);
-        if (hasNext4) {
-          await nextButton4.click();
-        } else {
-          console.warn('⚠️  Shuffle flow: "Next" button not visible on Maps step');
-          return;
-        }
-      } catch (error) {
-        console.warn('⚠️  Could not find "Next" button on Shuffle Maps step:', error);
-        return;
-      }
-
-      await page.waitForSelector('[data-testid="shuffle-team-size-field"]', {
-        timeout: 10000,
-        state: 'visible',
-      });
-
-      await takeScreenshot(page, {
-        path: '/tournament',
-        name: 'shuffle-tournament-config',
-        waitFor: '[data-testid="shuffle-team-size-field"]',
-        waitTime: 500,
-      });
-    } catch (error) {
-      console.warn('⚠️  Could not capture shuffle tournament config screenshots:', error);
-    }
+    await openStep('review');
+    await shoot('tournament-step-review', '[data-testid="tournament-save-button"]');
   } catch (error) {
-    console.error('❌ Error during tournament wizard screenshots:', error);
+    console.error('❌ Error during tournament setup screenshots:', error);
   }
 }
 
@@ -1229,8 +972,8 @@ async function generateScreenshots(): Promise<void> {
 
       await page.goto(`${BASE_URL}/tournament`, { waitUntil: 'networkidle' });
 
-      // Wait for welcome screen using data-testid
-      await page.waitForSelector('[data-testid="tournament-welcome-create-new"]', {
+      // With no tournament, /tournament opens the setup on its first step.
+      await page.waitForSelector('[data-testid="tournament-setup-steps"]', {
         timeout: 3000,
         state: 'visible',
       });
@@ -1239,7 +982,7 @@ async function generateScreenshots(): Promise<void> {
       await takeScreenshot(page, {
         path: '/tournament',
         name: 'tournament-welcome',
-        waitFor: '[data-testid="tournament-welcome-create-new"]',
+        waitFor: '[data-testid="tournament-setup-steps"]',
         waitTime: 500,
       });
     } catch (error) {

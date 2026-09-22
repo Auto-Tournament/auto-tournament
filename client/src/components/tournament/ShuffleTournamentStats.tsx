@@ -53,7 +53,7 @@ export function ShuffleTournamentStats({ playerCount, teamSize }: ShuffleTournam
     availableServerCount < serversNeeded;
 
   return (
-    <Card sx={{ width: '33%', display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
+    <Card sx={{ width: '100%', display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
       <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', flex: 1, minHeight: 0 }}>
         <Typography variant="h6" fontWeight={600} mb={3}>
           Tournament Stats
