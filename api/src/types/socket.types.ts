@@ -4,7 +4,6 @@
  */
 
 import type { BracketMatch } from './tournament.types';
-import type { MatchZyEvent } from './matchzy-events.types';
 import type { DbMatchRow } from './database.types';
 
 /**
@@ -47,7 +46,16 @@ export interface MatchEventData {
    * not give interfaces implicit index signatures — so the one caller failed
    * to typecheck.
    */
-  event: MatchZyEvent;
+  event: GameWebhookEvent;
+}
+
+/**
+ * A game server's webhook event as the integration received it (CS2: a
+ * MatchZy event, typed in integrations/cs2/events/matchzy-events.types.ts).
+ * The core only relays and logs these, so it needs no more than the name.
+ */
+export interface GameWebhookEvent {
+  event: string;
 }
 
 /**

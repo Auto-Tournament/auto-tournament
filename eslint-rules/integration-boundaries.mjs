@@ -40,14 +40,9 @@ const SHARED = new Set(['registry', 'types']);
  * the imported modules relative to that src root, without extension.
  */
 const LEGACY_CORE_IMPORTS = {
-  // TODO(PR 6a): event ingest moves to integrations/cs2/events/.
-  'api/src/routes/events.ts': [
-    'integrations/cs2/services/serverConnectivityService',
-    'integrations/cs2/services/serverTrackingService',
-    'integrations/cs2/utils/serverTurnover',
-  ],
-  // TODO(PR 6a): the connection snapshot is part of the CS2 event adapter.
-  'api/src/services/connectionSnapshotService.ts': ['integrations/cs2/services/rconService'],
+  // TODO(PR 6b): the match lifecycle moves to core/matchLifecycle.ts and takes
+  // NormalizedEvents; until then the CS2 adapter hands it the MatchZy event.
+  'api/src/services/matchEventHandler.ts': ['integrations/cs2/events/matchzy-events.types'],
   // TODO(PR 7a): loading a match onto a server becomes Cs2ServerPool.allocate().
   'api/src/services/matchLoadingService.ts': [
     'integrations/cs2/services/rconService',

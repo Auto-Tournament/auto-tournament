@@ -3,6 +3,7 @@
   "tests/api/admin-denial-reason.spec.ts": 2.2,
   "tests/api/admin-seed.spec.ts": 0.5,
   "tests/api/bootstrap-command-order.spec.ts": 0.5,
+  "tests/api/cs2-normalize.spec.ts": 0.5,
   "tests/api/drawn-match.spec.ts": 2.2,
   "tests/api/duplicate-team-membership.spec.ts": 4.4,
   "tests/api/end-match.spec.ts": 3.4,

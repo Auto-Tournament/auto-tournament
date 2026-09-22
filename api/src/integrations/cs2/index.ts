@@ -6,10 +6,14 @@
  * `describeMatch` is the only reader of it the core uses. It also owns the
  * game servers: RCON, the server fleet and its status, bootstrap, health and
  * CS2 update monitoring, and demos (`services/`, `utils/`, `routes/`), mounted
- * through `legacyRoutes` and started through `start()`. Allocation and event
- * ingest still live in the core and call some of that code directly (the
- * legacy list in eslint-rules/integration-boundaries.mjs); later PRs move
- * them behind the interface (see the TODOs in ../types.ts).
+ * through `legacyRoutes` and started through `start()`. Event ingest is the
+ * `events/` adapter: the MatchZy webhooks (`/api/events`), the match report
+ * and connection snapshot, and `normalize()`, which maps MatchZy events to
+ * `NormalizedEvent`s. The adapter still hands match lifecycle events to the
+ * core's `handleMatchEvent` (TODO(PR 6b)), and allocation still lives in the
+ * core and calls some of this code directly (the legacy list in
+ * eslint-rules/integration-boundaries.mjs); later PRs move them behind the
+ * interface (see the TODOs in ../types.ts).
  *
  * Services are imported lazily inside each method. That keeps loading the
  * registry free of side effects (no database pool, no monitors) and avoids an
@@ -20,6 +24,7 @@
 import type { MatchConfig } from '../../types/match.types';
 import type { TournamentResponse } from '../../types/tournament.types';
 import type { DbTournamentRow } from '../../types/database.types';
+import type { MatchReport } from './events/connectionSnapshotService';
 import { normalizeConfigPlayers } from '../../utils/playerTransform';
 import type {
   AllocateResult,
@@ -235,6 +240,29 @@ export const cs2Integration: GameIntegration = {
   async healthContributions() {
     const { cs2FleetHealth } = await import('./health');
     return cs2FleetHealth();
+  },
+
+  async refreshPresence(slug, opts) {
+    const { refreshConnectionsFromServer } = await import('./events/connectionSnapshotService');
+    await refreshConnectionsFromServer(slug, opts);
+  },
+
+  /** The MatchZy match report: fetched over RCON from the server, or passed in. */
+  async syncMatchState(slug, source) {
+    const { fetchMatchReport, applyMatchReport } = await import(
+      './events/connectionSnapshotService'
+    );
+    const report =
+      'report' in source
+        ? (source.report as MatchReport)
+        : await fetchMatchReport(source.resourceId);
+    if (!report) return null;
+    await applyMatchReport(slug, report);
+    return {
+      map: report.match?.map?.name,
+      phase: report.match?.phase,
+      score: report.match?.score,
+    };
   },
 
   clientSlots: ['MatchPanel', 'SetupStep', 'StatsPanel'],

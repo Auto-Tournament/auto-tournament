@@ -5,7 +5,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { MatchZyEvent } from '../types/matchzy-events.types';
+import type { GameWebhookEvent } from '../types/socket.types';
 import { log } from './logger';
 
 // Logs live under the api/data directory to keep the repo root clean
@@ -21,7 +21,7 @@ if (!fs.existsSync(LOGS_DIR)) {
  * Log a webhook event to file
  * Creates daily log files: events-YYYY-MM-DD.log
  */
-export function logWebhookEvent(serverId: string, matchSlug: string, event: MatchZyEvent): void {
+export function logWebhookEvent(serverId: string, matchSlug: string, event: GameWebhookEvent): void {
   try {
     // Get current date for filename
     const date = new Date();
