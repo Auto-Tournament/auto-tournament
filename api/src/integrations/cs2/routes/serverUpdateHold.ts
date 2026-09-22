@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { validateServerToken } from '../../../middleware/serverAuth';
 import { getUpdateHoldStatus } from '../services/updateHoldService';
+import { resolveTournamentId } from '../../../utils/tournamentRow';
 import { log } from '../../../utils/logger';
 
 /**
@@ -76,9 +77,9 @@ const router = Router();
  *       500:
  *         description: The hold could not be determined
  */
-router.get('/update-hold', validateServerToken, async (_req: Request, res: Response) => {
+router.get('/update-hold', validateServerToken, async (req: Request, res: Response) => {
   try {
-    const status = await getUpdateHoldStatus();
+    const status = await getUpdateHoldStatus(resolveTournamentId(req));
     return res.json({ success: true, ...status });
   } catch (error) {
     // csm treats any non-200 as "hold", so a failure here pauses updates

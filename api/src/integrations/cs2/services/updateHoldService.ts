@@ -111,11 +111,24 @@ interface ActiveMatchDbRow {
   status: string;
 }
 
-/** Read the facts out of the database and decide. */
-export async function getUpdateHoldStatus(): Promise<UpdateHoldStatus> {
+/**
+ * Read the facts out of the database and decide.
+ *
+ * `tournamentId` comes from the caller (`resolveTournamentId(req)`), as every
+ * tournament-scoped read does. When 3.1 hosts more than one tournament this
+ * becomes "is *any* tournament the caller's servers could be given in
+ * progress" rather than one row.
+ *
+ * The active-match query is deliberately not scoped to that tournament: a
+ * standalone match has no `tournament_id`, and a server running one must hold
+ * updates just the same.
+ */
+export async function getUpdateHoldStatus(tournamentId: number): Promise<UpdateHoldStatus> {
   const placeholders = ACTIVE_MATCH_STATUSES.map(() => '?').join(', ');
   const [tournament, matches] = await Promise.all([
-    db.queryOneAsync<TournamentStatusRow>('SELECT status, name FROM tournament WHERE id = ?', [1]),
+    db.queryOneAsync<TournamentStatusRow>('SELECT status, name FROM tournament WHERE id = ?', [
+      tournamentId,
+    ]),
     db.queryAsync<ActiveMatchDbRow>(
       `SELECT slug, server_id, status FROM matches WHERE status IN (${placeholders}) ORDER BY slug`,
       [...ACTIVE_MATCH_STATUSES]
