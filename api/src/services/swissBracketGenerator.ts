@@ -1,8 +1,6 @@
-import { db } from '../config/database';
-import { generateMatchConfig } from './matchConfigBuilder';
 import { determineInitialMatchStatus } from '../utils/matchStatusHelpers';
-import type { TournamentResponse, BracketMatch } from '../types/tournament.types';
-import type { IBracketGenerator } from './bracketGenerators/types';
+import type { TournamentResponse } from '../types/tournament.types';
+import type { BracketGeneratorResult, IBracketGenerator } from './bracketGenerators/types';
 
 /**
  * Shuffle array in place (Fisher-Yates)
@@ -19,10 +17,7 @@ const shuffleArray = <T>(array: T[]): void => {
  * Swiss system pairs teams with similar records against each other
  */
 class SwissBracketGenerator implements IBracketGenerator {
-  async generate(
-    tournament: TournamentResponse,
-    getMatchesCallback: () => Promise<BracketMatch[]>
-  ): Promise<BracketMatch[]> {
+  async generate(tournament: TournamentResponse): Promise<BracketGeneratorResult> {
     const teamIds = [...tournament.teamIds];
     const teamCount = teamIds.length;
 
@@ -35,6 +30,7 @@ class SwissBracketGenerator implements IBracketGenerator {
     // An odd team count needs one extra slot per round for the bye.
     const slotsPerRound = Math.ceil(teamCount / 2);
     const now = Math.floor(Date.now() / 1000);
+    const matches: BracketGeneratorResult['matches'] = [];
 
     // Only round 1 is paired here (by seed order). Later rounds are placeholders
     // that swissProgressionService fills from the standings once the previous
@@ -55,30 +51,25 @@ class SwissBracketGenerator implements IBracketGenerator {
         // Round 1 bye: the last seed has no opponent and wins the round.
         const isBye = round === 1 && !!team1Id && !team2Id;
 
-        const config = await generateMatchConfig(tournament, team1Id, team2Id, slug);
         const status = isBye
           ? 'completed'
           : determineInitialMatchStatus(team1Id, team2Id, tournament.format, round);
 
-        await db.insertAsync('matches', {
+        matches.push({
           slug,
-          tournament_id: tournament.id,
           round,
-          match_number: matchNum,
-          team1_id: team1Id || null,
-          team2_id: team2Id || null,
-          winner_id: isBye ? team1Id : null,
-          server_id: null,
-          config: JSON.stringify(config),
+          matchNum,
+          team1Id: team1Id || null,
+          team2Id: team2Id || null,
+          winnerId: isBye ? team1Id ?? null : null,
           status,
-          next_match_id: null,
-          created_at: now,
-          ...(isBye ? { completed_at: now } : {}),
+          nextMatchId: null,
+          ...(isBye ? { completedAt: now } : {}),
         });
       }
     }
 
-    return await getMatchesCallback();
+    return { matches };
   }
 }
 

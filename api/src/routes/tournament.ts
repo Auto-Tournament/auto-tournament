@@ -1661,6 +1661,8 @@ router.post('/:id/manual-matches', async (req: Request, res: Response) => {
 
       const slug = (matchDef.slug || '').trim() || generateSlug(index);
 
+      // TODO: this builds a MatchZy config in core; route it through the CS2
+      // integration's standalone buildMatchConfig in a follow-up.
       // Construct a minimal manual‑match config. The MatchZy config endpoint for
       // manual matches will normalize this further (matchid, spectators, etc.).
       const config: MatchConfig = {

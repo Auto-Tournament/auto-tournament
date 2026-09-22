@@ -1,11 +1,11 @@
-import { db } from '../config/database';
-import type { DbTeamRow, DbMatchRow } from '../types/database.types';
-import type { TournamentResponse } from '../types/tournament.types';
-import type { MatchConfig } from '../types/match.types';
-import { log } from '../utils/logger';
-import { settingsService } from './settingsService';
-import { matchzyConfigService } from './matchzyConfigService';
-import { simulationTvCvars } from '../utils/serverTurnover';
+import { db } from '../../config/database';
+import type { DbTeamRow, DbMatchRow } from '../../types/database.types';
+import type { TournamentResponse } from '../../types/tournament.types';
+import type { MatchConfig, MatchPlayer } from '../../types/match.types';
+import { log } from '../../utils/logger';
+import { settingsService } from '../../services/settingsService';
+import { matchzyConfigService } from '../../services/matchzyConfigService';
+import { simulationTvCvars } from '../../utils/serverTurnover';
 
 /**
  * Determine whether matches should be simulated (bots instead of real players).
@@ -56,11 +56,21 @@ function resolveMaxRounds(tournament: TournamentResponse): number {
   return maxRounds;
 }
 
+export interface GenerateMatchConfigOptions {
+  /**
+   * The slot's round. Shuffle picks the round's map from the map sequence by
+   * the stored row; this is the fallback while the row does not exist yet
+   * (config built before the insert).
+   */
+  round?: number;
+}
+
 export const generateMatchConfig = async (
   tournament: TournamentResponse,
   team1Id?: string,
   team2Id?: string,
-  slug?: string
+  slug?: string,
+  options: GenerateMatchConfigOptions = {}
 ): Promise<MatchConfig> => {
   // Hard safety check: never generate a config where both slots are the same team.
   // If this happens, it's a bracket progression bug and we should fail fast
@@ -73,7 +83,7 @@ export const generateMatchConfig = async (
   }
   // Handle shuffle tournaments specially
   if (tournament.type === 'shuffle') {
-    return generateShuffleMatchConfig(tournament, team1Id, team2Id, slug);
+    return generateShuffleMatchConfig(tournament, team1Id, team2Id, slug, options);
   }
   // 1) DB reads (await!)
   const team1 = team1Id
@@ -338,7 +348,8 @@ async function generateShuffleMatchConfig(
   tournament: TournamentResponse,
   team1Id?: string,
   team2Id?: string,
-  slug?: string
+  slug?: string,
+  options: GenerateMatchConfigOptions = {}
 ): Promise<MatchConfig> {
   const team1 = team1Id
     ? await db.queryOneAsync<DbTeamRow & { players: string }>('SELECT * FROM teams WHERE id = ?', [
@@ -354,22 +365,24 @@ async function generateShuffleMatchConfig(
   // Get map for this round from match
   let mapForRound: string | null = null;
   let matchId: number | null = null;
-  if (slug) {
-    const match = await db.queryOneAsync<DbMatchRow>(
-      'SELECT id, current_map, round FROM matches WHERE slug = ?',
-      [slug]
-    );
-    if (match) {
-      matchId = match.id;
-    }
-    if (match?.current_map) {
-      mapForRound = match.current_map;
-    } else if (match?.round) {
-      // Fallback: get map from sequence
-      const mapSequence = tournament.mapSequence || tournament.maps;
-      if (match.round > 0 && match.round <= mapSequence.length) {
-        mapForRound = mapSequence[match.round - 1];
-      }
+  const match = slug
+    ? await db.queryOneAsync<DbMatchRow>(
+        'SELECT id, current_map, round FROM matches WHERE slug = ?',
+        [slug]
+      )
+    : null;
+  if (match) {
+    matchId = match.id;
+  }
+  // The stored row decides; before it exists, the slot's round does.
+  const round = match ? match.round : options.round;
+  if (match?.current_map) {
+    mapForRound = match.current_map;
+  } else if (round) {
+    // Fallback: get map from sequence
+    const mapSequence = tournament.mapSequence || tournament.maps;
+    if (round > 0 && round <= mapSequence.length) {
+      mapForRound = mapSequence[round - 1];
     }
   }
 
@@ -522,4 +535,196 @@ async function generateShuffleMatchConfig(
   });
 
   return config;
+}
+
+// ---------------------------------------------------------------------------
+// Standalone (manual) matches
+// ---------------------------------------------------------------------------
+
+/**
+ * The config stored for a new standalone match: the admin's MatchZy config
+ * from the "Create manual match" modal, with the instance-wide rules applied
+ * (simulation mode, the primary tournament's round limit, the default MatchZy
+ * Enhanced cvars and the admin list), so manual matches behave like
+ * tournament-generated ones.
+ */
+export async function buildStandaloneMatchConfig(
+  slug: string,
+  input: Partial<MatchConfig>,
+  defaults: TournamentResponse | null
+): Promise<MatchConfig> {
+  const config = { ...input } as MatchConfig;
+
+  try {
+    // Apply global simulation mode (development only, mirrors generateMatchConfig).
+    const simulationEnabled = await settingsService.isSimulationModeEnabled();
+    if (simulationEnabled) {
+      const timescale = await settingsService.getSimulationTimescale();
+      config.simulation = true;
+      config.simulation_timescale = timescale;
+    } else {
+      // Explicitly clear simulation flags for manual matches when simulation mode is off.
+      config.simulation = false;
+      config.simulation_timescale = undefined;
+    }
+
+    // Respect a manually provided mp_maxrounds from the match config when present.
+    const hasManualMaxRounds =
+      typeof config.cvars?.mp_maxrounds === 'number' &&
+      Number.isFinite(config.cvars.mp_maxrounds) &&
+      config.cvars.mp_maxrounds > 0;
+
+    // Apply mp_maxrounds from the defaults tournament's maxRounds (the caller
+    // picks it) only when the manual match config did not already specify a
+    // value. This keeps the manual match modal's "Max rounds" field
+    // authoritative while still providing a sensible default that mirrors
+    // tournament-generated matches.
+    if (!hasManualMaxRounds && defaults) {
+      config.cvars = {
+        ...(config.cvars || {}),
+        mp_maxrounds: resolveMaxRounds(defaults),
+      };
+    }
+
+    // Apply MatchZy Enhanced v1.3.0 cvars for manual matches.
+    // Use the 'default' profile (safe, permissive settings) unless the config
+    // already includes specific MatchZy Enhanced cvars (allowing customization).
+    const hasMatchzyEnhancedCvars =
+      config.cvars &&
+      ('matchzy_autoready_enabled' in config.cvars ||
+        'matchzy_gg_enabled' in config.cvars ||
+        'matchzy_ffw_enabled' in config.cvars);
+
+    if (!hasMatchzyEnhancedCvars) {
+      const matchzyEnhancedCvars = matchzyConfigService.getDefaultMatchzyEnhancedCvars();
+      config.cvars = {
+        ...(config.cvars || {}),
+        ...matchzyEnhancedCvars,
+      };
+      log.debug('Applied default MatchZy Enhanced cvars to manual match', {
+        matchSlug: slug,
+      });
+    }
+  } catch (simError) {
+    log.warn(
+      'Failed to apply simulation / round-limit settings to manual match config',
+      simError as Error
+    );
+  }
+
+  // Always attach current admin Steam64 IDs to manual match configs so they
+  // have in‑game admin rights just like tournament-generated matches.
+  try {
+    const adminRows = await db.queryAsync<{ id: string }>(
+      'SELECT id FROM players WHERE is_admin = 1'
+    );
+    config.admins = Array.isArray(adminRows) ? adminRows.map((row) => row.id) : [];
+  } catch (e) {
+    log.warn('Failed to attach admins to manual match config', e as Error);
+  }
+
+  return config;
+}
+
+/** Player lists in stored manual configs: a steamId -> name map, or the modal's array. */
+function normalizeManualPlayers(value: unknown): MatchPlayer {
+  if (!value) return {};
+
+  // Case 1: already a map of steamId -> name
+  if (typeof value === 'object' && !Array.isArray(value)) {
+    const result: MatchPlayer = {};
+    for (const [steamId, name] of Object.entries(value as Record<string, unknown>)) {
+      if (typeof name === 'string') {
+        result[steamId] = name;
+      }
+    }
+    return result;
+  }
+
+  // Case 2: array of { steamid/name } objects from the manual match modal
+  if (Array.isArray(value)) {
+    const result: MatchPlayer = {};
+    for (const entry of value as Array<unknown>) {
+      if (!entry || typeof entry !== 'object') continue;
+      const steamid =
+        (entry as { steamid?: string; steamId?: string }).steamid ||
+        (entry as { steamid?: string; steamId?: string }).steamId;
+      const name = (entry as { name?: string }).name;
+      if (steamid && name) {
+        result[steamid] = name;
+      }
+    }
+    return result;
+  }
+
+  // Fallback: unknown shape
+  return {};
+}
+
+/**
+ * The config served to MatchZy for a standalone match (round 0): the stored
+ * config, not a tournament-backed rebuild, so admins can run ad hoc matches
+ * independent from the bracket. Fills in the fields MatchZy requires.
+ *
+ * Returns null when the match does not exist.
+ */
+export async function serveStandaloneMatchConfig(slug: string): Promise<MatchConfig | null> {
+  const match = await db.queryOneAsync<DbMatchRow>(
+    'SELECT id, config FROM matches WHERE slug = ?',
+    [slug]
+  );
+  if (!match) return null;
+
+  let storedConfig: Partial<MatchConfig> = {};
+  try {
+    storedConfig = match.config ? (JSON.parse(match.config) as Partial<MatchConfig>) : {};
+  } catch (e) {
+    console.error('Failed to parse stored match config for manual match', e);
+    storedConfig = {};
+  }
+
+  // Ensure required fields for MatchZy are present.
+  return {
+    ...storedConfig,
+    matchid: match.id,
+    players_per_team:
+      typeof storedConfig.players_per_team === 'number' && storedConfig.players_per_team > 0
+        ? storedConfig.players_per_team
+        : 5,
+    num_maps:
+      typeof storedConfig.num_maps === 'number' && storedConfig.num_maps > 0
+        ? storedConfig.num_maps
+        : Array.isArray(storedConfig.maplist) && storedConfig.maplist.length > 0
+        ? storedConfig.maplist.length
+        : 1,
+    maplist: storedConfig.maplist ?? null,
+    skip_veto: true,
+    spectators: {
+      players: normalizeManualPlayers(storedConfig.spectators?.players),
+    },
+    team1:
+      storedConfig.team1 && storedConfig.team1.name
+        ? {
+            ...storedConfig.team1,
+            players: normalizeManualPlayers(
+              (storedConfig.team1 as { players?: unknown } | undefined)?.players
+            ),
+          }
+        : {
+            name: 'Team 1',
+            players: {},
+          },
+    team2:
+      storedConfig.team2 && storedConfig.team2.name
+        ? {
+            ...storedConfig.team2,
+            players: normalizeManualPlayers(
+              (storedConfig.team2 as { players?: unknown } | undefined)?.players
+            ),
+          }
+        : {
+            name: 'Team 2',
+            players: {},
+          },
+  };
 }

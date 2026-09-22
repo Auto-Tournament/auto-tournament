@@ -3,6 +3,7 @@ import { db } from '../config/database';
 import { serverStatusService } from '../services/serverStatusService';
 import { playerConnectionService } from '../services/playerConnectionService';
 import { refreshConnectionsFromServer } from '../services/connectionSnapshotService';
+import { describeMatch, describedPlayers } from '../utils/matchIntegration';
 import { normalizeConfigPlayers } from '../utils/playerTransform';
 import { teamService } from '../services/teamService';
 import { matchLiveStatsService, type MatchLiveStats } from '../services/matchLiveStatsService';
@@ -182,8 +183,8 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
       server: match.server_name || 'not assigned',
     });
 
-    // Get match config for map pool
-    const config = match.config ? JSON.parse(match.config) : {};
+    // Neutral view of the match config (rosters, maps) from its integration
+    const description = describeMatch(match);
 
     // Get veto state to determine actual picked maps
     let pickedMaps: string[] = [];
@@ -306,12 +307,8 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
     }));
 
     // Normalize and enrich config players with avatars from team data
-    const normalizedTeam1Players = config.team1
-      ? normalizeConfigPlayers(config.team1.players)
-      : [];
-    const normalizedTeam2Players = config.team2
-      ? normalizeConfigPlayers(config.team2.players)
-      : [];
+    const normalizedTeam1Players = describedPlayers(description.team1);
+    const normalizedTeam2Players = describedPlayers(description.team2);
 
     // Determine whether the current viewer is actually on THIS team.
     // We intentionally scope this to the team whose page is being viewed
@@ -375,8 +372,8 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
 
     // Enrich both teams in parallel
     const [enrichedTeam1Players, enrichedTeam2Players] = await Promise.all([
-      enrichPlayers(normalizedTeam1Players, config.team1?.id),
-      enrichPlayers(normalizedTeam2Players, config.team2?.id),
+      enrichPlayers(normalizedTeam1Players, description.team1.id),
+      enrichPlayers(normalizedTeam2Players, description.team2.id),
     ]);
 
     return res.json({
@@ -447,31 +444,28 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
         veto: vetoSummary,
         matchFormat: (tournament?.format as 'bo1' | 'bo3' | 'bo5') || 'bo3',
         loadedAt: match.loaded_at,
+        // Neutral match summary, kept in the shape the team page reads.
         config: {
-          maplist: config.maplist,
-          num_maps: config.num_maps,
-          players_per_team: config.players_per_team,
-          expected_players_total: config.players_per_team ? config.players_per_team * 2 : 10,
-          expected_players_team1: config.players_per_team || 5,
-          expected_players_team2: config.players_per_team || 5,
-          team1: config.team1
-            ? {
-                id: config.team1.id,
-                name: config.team1.name,
-                tag: config.team1.tag,
-                flag: config.team1.flag,
-                players: enrichedTeam1Players,
-              }
-            : undefined,
-          team2: config.team2
-            ? {
-                id: config.team2.id,
-                name: config.team2.name,
-                tag: config.team2.tag,
-                flag: config.team2.flag,
-                players: enrichedTeam2Players,
-              }
-            : undefined,
+          maplist: description.maps.length > 0 ? description.maps : null,
+          num_maps: description.seriesLength,
+          players_per_team: description.playersPerTeam,
+          expected_players_total: description.playersPerTeam ? description.playersPerTeam * 2 : 10,
+          expected_players_team1: description.playersPerTeam || 5,
+          expected_players_team2: description.playersPerTeam || 5,
+          team1: {
+            id: description.team1.id,
+            name: description.team1.name,
+            tag: description.team1.tag,
+            flag: description.team1.flag,
+            players: enrichedTeam1Players,
+          },
+          team2: {
+            id: description.team2.id,
+            name: description.team2.name,
+            tag: description.team2.tag,
+            flag: description.team2.flag,
+            players: enrichedTeam2Players,
+          },
         },
         // Used by the frontend to decide whether to show sensitive controls
         // like veto actions and server connection details.

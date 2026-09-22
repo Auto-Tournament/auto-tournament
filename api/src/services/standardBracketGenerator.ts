@@ -2,9 +2,8 @@ import { BracketsManager } from 'brackets-manager';
 import { InMemoryDatabase } from 'brackets-memory-db';
 import type { Match, StageType, StageSettings } from 'brackets-model';
 import { log } from '../utils/logger';
-import type { TournamentResponse, BracketMatch } from '../types/tournament.types';
+import type { TournamentResponse } from '../types/tournament.types';
 import type { IBracketGenerator, BracketGeneratorResult } from './bracketGenerators/types';
-import { generateMatchConfig } from './matchConfigBuilder';
 import { determineInitialMatchStatus } from '../utils/matchStatusHelpers';
 
 /**
@@ -24,10 +23,7 @@ export class StandardBracketGenerator implements IBracketGenerator {
   /**
    * Generate bracket using brackets-manager and convert to our schema
    */
-  async generate(
-    tournament: TournamentResponse,
-    _getMatchesCallback: () => Promise<BracketMatch[]>
-  ): Promise<BracketGeneratorResult> {
+  async generate(tournament: TournamentResponse): Promise<BracketGeneratorResult> {
     const { teamIds, type, settings } = tournament;
 
     // For power-of-two single / double elimination tournaments, bypass
@@ -213,7 +209,6 @@ export class StandardBracketGenerator implements IBracketGenerator {
       winnerId: string | null;
       status: 'pending' | 'ready' | 'loaded' | 'live' | 'completed';
       nextMatchId: number | null;
-      config: string;
     }>;
   }> {
     const matches = await Promise.all(
@@ -294,14 +289,6 @@ export class StandardBracketGenerator implements IBracketGenerator {
           status = determineInitialMatchStatus(team1Id, team2Id, tournament.format, roundNum);
         }
 
-        // Generate match config
-        const config = await generateMatchConfig(
-          tournament,
-          team1Id as string | undefined,
-          team2Id as string | undefined,
-          slug
-        );
-
         // Infer basic bracket grouping from slug for downstream consumers.
         let bracket: 'WB' | 'LB' | 'GF' | 'GF_RESET' | undefined;
         if (stageType === 'double_elimination') {
@@ -329,7 +316,6 @@ export class StandardBracketGenerator implements IBracketGenerator {
           team1FromOutcome: null,
           team2FromMatchSlug: null,
           team2FromOutcome: null,
-          config: JSON.stringify(config),
         };
       })
     );
@@ -585,7 +571,7 @@ export class StandardBracketGenerator implements IBracketGenerator {
 
     const allGenerated: GeneratedMatch[] = [...wb.flat(), ...lb.flat(), gf];
 
-    // 5) Convert to BracketGeneratorResult with configs and initial statuses
+    // 5) Convert to BracketGeneratorResult with initial statuses
     const matches = await Promise.all(
       allGenerated.map(async (gm) => {
         // Determine initial status based on seeding
@@ -593,13 +579,6 @@ export class StandardBracketGenerator implements IBracketGenerator {
           gm.bracket === 'WB' && gm.round === 1
             ? determineInitialMatchStatus(gm.team1Id, gm.team2Id, tournament.format, gm.round)
             : 'pending';
-
-        const config = await generateMatchConfig(
-          tournament,
-          gm.team1Id ?? undefined,
-          gm.team2Id ?? undefined,
-          gm.slug
-        );
 
         return {
           slug: gm.slug,
@@ -615,7 +594,6 @@ export class StandardBracketGenerator implements IBracketGenerator {
           team1FromOutcome: gm.team1FromOutcome,
           team2FromMatchSlug: gm.team2FromMatchSlug,
           team2FromOutcome: gm.team2FromOutcome,
-          config: JSON.stringify(config),
         };
       })
     );
@@ -716,20 +694,13 @@ export class StandardBracketGenerator implements IBracketGenerator {
 
     const allGenerated: GeneratedMatch[] = rounds.flat();
 
-    // 3) Convert to BracketGeneratorResult with configs and initial statuses
+    // 3) Convert to BracketGeneratorResult with initial statuses
     const matches = await Promise.all(
       allGenerated.map(async (gm) => {
         const status =
           gm.round === 1
             ? determineInitialMatchStatus(gm.team1Id, gm.team2Id, tournament.format, gm.round)
             : 'pending';
-
-        const config = await generateMatchConfig(
-          tournament,
-          gm.team1Id ?? undefined,
-          gm.team2Id ?? undefined,
-          gm.slug
-        );
 
         return {
           slug: gm.slug,
@@ -745,7 +716,6 @@ export class StandardBracketGenerator implements IBracketGenerator {
           team1FromOutcome: gm.team1FromOutcome,
           team2FromMatchSlug: gm.team2FromMatchSlug,
           team2FromOutcome: gm.team2FromOutcome,
-          config: JSON.stringify(config),
         };
       })
     );

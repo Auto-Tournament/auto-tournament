@@ -8,7 +8,7 @@ import { log } from '../utils/logger';
 import { balanceTeams, type BalancedTeam } from './teamBalancingService';
 import { playerService, type PlayerRecord } from './playerService';
 import { teamService } from './teamService';
-import { generateMatchConfig } from './matchConfigBuilder';
+import { buildMatchConfigFor, serializeMatchConfig } from '../utils/matchIntegration';
 import { generateUniqueTeamName } from '../generation/teamName';
 import type { TournamentResponse, TournamentType } from '../types/tournament.types';
 import type { DbMatchRow, DbTeamRow, DbTournamentRow } from '../types/database.types';
@@ -478,29 +478,36 @@ export async function generateRoundMatches(roundNumber: number): Promise<{
                 [existingTeam.id]
               );
 
-              // Update match config
+              // Rebuild the match config so it carries the rotated roster
               if (!match.slug) continue;
               const matchSlug = match.slug;
               const updatedMatch = await db.queryOneAsync<DbMatchRow>(
                 'SELECT * FROM matches WHERE slug = ?',
                 [matchSlug]
               );
-              if (updatedMatch && updatedMatch.config) {
-                const matchConfig = JSON.parse(updatedMatch.config);
-                if (existingTeam.id === match.team1_id) {
-                  matchConfig.team1.players = updatedPlayers.reduce((acc, p) => {
-                    acc[p.steamId] = p.name;
-                    return acc;
-                  }, {} as Record<string, string>);
-                } else {
-                  matchConfig.team2.players = updatedPlayers.reduce((acc, p) => {
-                    acc[p.steamId] = p.name;
-                    return acc;
-                  }, {} as Record<string, string>);
-                }
-                await db.updateAsync('matches', { config: JSON.stringify(matchConfig) }, 'id = ?', [
-                  updatedMatch.id,
-                ]);
+              const matchTournament = updatedMatch?.tournament_id
+                ? await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
+                    updatedMatch.tournament_id,
+                  ])
+                : null;
+              if (updatedMatch && updatedMatch.config && matchTournament) {
+                const matchConfig = await buildMatchConfigFor(
+                  {
+                    slug: updatedMatch.slug,
+                    id: updatedMatch.id,
+                    game: updatedMatch.game,
+                    round: updatedMatch.round,
+                    team1Id: updatedMatch.team1_id,
+                    team2Id: updatedMatch.team2_id,
+                  },
+                  tournamentRowToResponse(matchTournament)
+                );
+                await db.updateAsync(
+                  'matches',
+                  { config: serializeMatchConfig(matchConfig) },
+                  'id = ?',
+                  [updatedMatch.id]
+                );
               }
 
               log.info(
@@ -578,14 +585,13 @@ export async function generateRoundMatches(roundNumber: number): Promise<{
 
     createdTeams.push({ team1Id, team2Id });
 
-    // Generate match config
+    // Build the match config through the game integration. For shuffle it is
+    // Bo1 on the round's map (map sequence), random side, no veto.
     const matchSlug = `shuffle-r${roundNumber}-m${matchNum + 1}`;
-    const config = await generateMatchConfig(tournament, team1Id, team2Id, matchSlug);
-
-    // Update config for shuffle tournament specifics
-    config.skip_veto = true; // No veto for shuffle
-    config.maplist = [map]; // Single map for this round
-    config.map_sides = [Math.random() > 0.5 ? 'team1_ct' : 'team2_ct']; // Random side
+    const config = await buildMatchConfigFor(
+      { slug: matchSlug, round: roundNumber, team1Id, team2Id },
+      tournament
+    );
 
     // Create match
     // Shuffle tournaments skip veto, so matches are immediately ready for server allocation
@@ -598,7 +604,7 @@ export async function generateRoundMatches(roundNumber: number): Promise<{
       team2_id: team2Id,
       winner_id: null,
       server_id: null,
-      config: JSON.stringify(config),
+      config: serializeMatchConfig(config),
       status: 'ready', // Changed from 'pending' to 'ready' since skip_veto = true
       next_match_id: null,
       current_map: map,

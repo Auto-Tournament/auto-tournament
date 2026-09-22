@@ -11,7 +11,7 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { emitBracketUpdate } from './socketService';
-import { generateMatchConfig } from './matchConfigBuilder';
+import { buildMatchConfigFor, serializeMatchConfig } from '../utils/matchIntegration';
 import { settingsService } from './settingsService';
 import { autoVetoPendingMatches } from './vetoSimulationService';
 import { makeMatchReady } from '../utils/matchProgression';
@@ -253,8 +253,17 @@ async function advanceOnce(tournamentId: number): Promise<void> {
   for (const a of assignments) {
     if (!a.team2) continue;
     const slot = slots.find((s) => s.id === a.id)!;
-    const config = await generateMatchConfig(tournamentData, a.team1, a.team2, slot.slug);
-    await db.updateAsync('matches', { config: JSON.stringify(config) }, 'id = ?', [a.id]);
+    const config = await buildMatchConfigFor(
+      {
+        slug: slot.slug,
+        id: a.id,
+        round: nextRound,
+        team1Id: a.team1,
+        team2Id: a.team2,
+      },
+      tournamentData
+    );
+    await db.updateAsync('matches', { config: serializeMatchConfig(config) }, 'id = ?', [a.id]);
     const fresh = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [a.id]);
     if (fresh) paired.push(fresh);
   }

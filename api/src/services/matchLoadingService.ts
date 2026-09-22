@@ -82,6 +82,7 @@ export async function loadMatchOnServer(
     log.debug(`Match config URL: ${configUrl}`);
 
     // Parse match config once so we can reuse its cvars for per-match setup.
+    // TODO(PR 7a): CS2 server loading; reads the MatchZy blob and moves into integrations/cs2.
     // Important: we never store secrets (SERVER_TOKEN) in match JSON; token-bearing
     // commands must be sent over RCON only.
     let parsedConfig: { cvars?: Record<string, string | number> } = {};
