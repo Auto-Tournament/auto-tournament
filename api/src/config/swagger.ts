@@ -211,6 +211,40 @@ const options: swaggerJsdoc.Options = {
             },
           },
         },
+        GameSummary: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer', description: 'games.id', example: 1 },
+            slug: { type: 'string', description: 'IGDB slug', example: 'counter-strike-2' },
+            name: { type: 'string', example: 'Counter-Strike 2' },
+            coverUrl: {
+              type: 'string',
+              nullable: true,
+              description: 'IGDB cover (t_cover_small); null for built-ins IGDB has not returned yet',
+            },
+            releaseYear: { type: 'integer', nullable: true, example: 2023 },
+            supported: {
+              type: 'boolean',
+              description: 'A game module for this game is installed (tournaments can run it)',
+            },
+          },
+        },
+        IgdbCredentialStatus: {
+          type: 'object',
+          properties: {
+            configured: { type: 'boolean', description: 'A complete id + secret pair is active' },
+            source: { type: 'string', enum: ['env', 'settings'], nullable: true },
+            envOverride: {
+              type: 'boolean',
+              description: 'IGDB_CLIENT_ID / IGDB_CLIENT_SECRET are set and win over saved settings',
+            },
+            clientId: { type: 'string', nullable: true },
+            clientSecretSet: {
+              type: 'boolean',
+              description: 'A secret is stored. The secret itself is never returned.',
+            },
+          },
+        },
         Error: {
           type: 'object',
           properties: {

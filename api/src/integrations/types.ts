@@ -341,10 +341,23 @@ export type ClientSlotName = 'MatchPanel' | 'SetupStep' | 'StatsPanel';
 // The integration
 // ---------------------------------------------------------------------------
 
+/**
+ * How an integration's game appears in the player-facing game catalogue
+ * ("What do you play?"). `slug` is the IGDB slug, so a search result from IGDB
+ * and the built-in entry for an installed module are the same `games` row.
+ */
+export interface GameCatalogEntry {
+  slug: string;
+  /** Extra search terms, e.g. 'cs2'. */
+  aliases?: string[];
+}
+
 export interface GameIntegration {
   id: GameId;
   displayName: string;
   capabilities: IntegrationCapabilities;
+  /** Catalogue entry; defaults to a slug of `displayName`. */
+  catalog?: GameCatalogEntry;
 
   /**
    * The stats this game records. A function so it can depend on tournament

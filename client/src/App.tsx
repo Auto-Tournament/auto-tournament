@@ -28,6 +28,7 @@ import ELOTemplates from './pages/ELOTemplates';
 import Layout from './components/layout/Layout';
 import NotFound from './pages/NotFound';
 import { theme } from './theme';
+import { GamesPromptDialog } from './components/games/GamesPromptDialog';
 import { ImpersonationBanner } from './components/common/ImpersonationBanner';
 
 interface ProtectedRouteProps {
@@ -254,6 +255,9 @@ export default function App() {
               {/* Rendered above every route: impersonation applies app-wide,
                   including the public/player-facing pages it exists to test. */}
               <ImpersonationBanner />
+              {/* "What do you play?": once per account, on whatever page the
+                  player lands on. The API decides whether it is due. */}
+              <GamesPromptDialog />
               <AppRoutes />
             </PageHeaderProvider>
           </SnackbarProvider>
