@@ -1,6 +1,6 @@
 import type { TournamentType } from '../../../types/tournament.types';
 import { log } from '../../../utils/logger';
-import { settingsService } from '../../../services/settingsService';
+import { cs2Settings } from '../settingsReaders';
 
 /**
  * MatchZy Enhanced v1.3.0 Configuration Service
@@ -78,7 +78,7 @@ export async function generateMatchzyEnhancedCvars(
   overrides?: Partial<MatchzyEnhancedCvars>
 ): Promise<MatchzyEnhancedCvars> {
   // Load global settings from SettingsService (only non-null values override)
-  const globalSettings = await settingsService.getMatchzyEnhancedSettings();
+  const globalSettings = await cs2Settings.getMatchzyEnhancedSettings();
   const globalOverrides: Partial<MatchzyEnhancedCvars> = {};
   
   // Only include non-null global settings as overrides

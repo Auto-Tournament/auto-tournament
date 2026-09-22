@@ -12,6 +12,7 @@ import type { MatchConfig } from '../../../types/match.types';
 import { matchLiveStatsService } from '../../../services/matchLiveStatsService';
 import { serverInitializationService } from './serverInitializationService';
 import { settingsService } from '../../../services/settingsService';
+import { cs2Settings } from '../settingsReaders';
 import {
   getMatchZyLoadMatchCommand,
   getMatchZyServerConfigCommands,
@@ -151,7 +152,7 @@ export async function loadMatchOnServer(
     // Even though these are persisted by MatchZy Enhanced, we re-apply them on
     // each match load so updates take effect without requiring a server init reset.
     try {
-      const matchzyCore = await settingsService.getMatchzyCoreDefaults();
+      const matchzyCore = await cs2Settings.getMatchzyCoreDefaults();
       // Simulated series only have bots; MAT waits for the demo upload itself,
       // so the plugin should not hold the server for the admin's kick delay.
       const kickDelays = resolveSeriesEndKickDelays(
