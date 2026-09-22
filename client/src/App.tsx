@@ -194,6 +194,11 @@ function RootRoute() {
   }
 
   if (playerSteamId) {
+    // Home is only "/". Any other path under this route is an admin page
+    // (/admin, /teams, …): send the player to their own page, as before Home.
+    if (location.pathname !== '/') {
+      return <Navigate to={`/player/${playerSteamId}`} replace />;
+    }
     return <Home />;
   }
 
