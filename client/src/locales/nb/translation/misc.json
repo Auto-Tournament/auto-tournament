@@ -69,7 +69,7 @@
     },
     "igdb": {
       "title": "Spilldata fra IGDB",
-      "description": "Spillere velger spillene de spiller fra et søk. Med IGDB-nøkler dekker søket alle spill, med omslag; uten dem søkes det bare i den innebygde listen.",
+      "description": "Spillere velger spillene de spiller fra et søk. Med IGDB-nøkler dekker søket alle spill, med omslag; uten dem bruker søket Wikidata.",
       "consoleLink": "Åpne Twitch developer console",
       "howToToggle": "Slik henter du nøklene",
       "howToStep1": "Opprett en Twitch-konto og skru på tofaktorautentisering.",

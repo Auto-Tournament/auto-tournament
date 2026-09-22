@@ -69,7 +69,7 @@
     },
     "igdb": {
       "title": "IGDB game data",
-      "description": "Players pick the games they play from a search. With IGDB credentials the search covers every game, with covers; without them only the built-in list is searched.",
+      "description": "Players pick the games they play from a search. With IGDB credentials the search covers every game, with covers; without them, search uses Wikidata.",
       "consoleLink": "Open the Twitch developer console",
       "howToToggle": "How to get keys",
       "howToStep1": "Create a Twitch account and turn on Two-Factor Authentication.",
