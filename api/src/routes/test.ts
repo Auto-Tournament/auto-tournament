@@ -389,10 +389,15 @@ router.post('/login-player', async (req: Request, res: Response): Promise<void> 
   }
 
   try {
-    const { steamId: raw } = req.body as { steamId?: string };
+    const { steamId: raw, name: rawName } = req.body as { steamId?: string; name?: string };
     const steamId = raw && raw.trim().length > 0 ? raw.trim() : '76561198000000002';
+    // `name` is only used when the player is first created (getOrCreatePlayer
+    // does not rename an existing player), so it is safe to pass on every
+    // call without affecting an existing test player's name.
+    const name =
+      rawName && rawName.trim().length > 0 ? rawName.trim() : `Test Player ${steamId}`;
 
-    await playerService.getOrCreatePlayer(steamId, `Test Player ${steamId}`);
+    await playerService.getOrCreatePlayer(steamId, name);
     await playerService.updatePlayer(steamId, { isAdmin: false });
     await setGamesPromptForTest(steamId, req.body);
 

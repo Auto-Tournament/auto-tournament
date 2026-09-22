@@ -120,7 +120,10 @@ test.describe('Account connections: linking a provider', () => {
     const providerUserId = githubId();
     const ctx = await newContext();
     try {
-      expect(await signInAsPlayerViaRequest(ctx, steamId)).toBe(true);
+      expect(await signInAsPlayerViaRequest(ctx, steamId, 'Connections Test Player')).toBe(true);
+      // login-player's optional `name` is only applied when the player is created.
+      const summary = await (await ctx.get(`/api/players/${steamId}/summary`)).json();
+      expect(summary.player?.name).toBe('Connections Test Player');
       const state = await startLink(ctx);
       const res = await callback(ctx, codeFor(providerUserId), state);
       expect(res.status()).toBe(302);
