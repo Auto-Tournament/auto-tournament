@@ -14,6 +14,7 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { updatePlayerRatings } from '../services/ratingService';
 import { teamService } from '../services/teamService';
+import { playerIdentity } from '../services/playerIdentity';
 import { describeMatch } from '../utils/matchIntegration';
 import { integrationForMatch } from '../integrations/registry';
 import type { GameIntegration, PlayerStatLine, ReportedStatLine } from '../integrations/types';
@@ -124,9 +125,13 @@ async function persistPlayerMatchStats(options: {
   // `team1` block, which made every one of those players land on 0 kills /
   // 0 damage / 0.0 ADR in their match history. Matching on the id is correct
   // either way. A later line for the same account wins.
+  // The account is resolved to its player first (playerIdentity), so a game
+  // that names players by another provider still finds its rostered player;
+  // a Steam account resolves to its own Steam ID, so CS2 is keyed as before.
+  const resolved = await playerIdentity.resolveMany(reported.map((line) => line.account));
   const reportedById = new Map<string, ReportedStatLine>();
   for (const line of reported) {
-    const id = line.account.externalId;
+    const id = resolved.get(playerIdentity.key(line.account)) ?? line.account.externalId;
     if (id) reportedById.set(id.toLowerCase(), line);
   }
 

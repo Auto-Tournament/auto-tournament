@@ -320,6 +320,34 @@ export function getSchemaSQL(): string {
     CREATE INDEX IF NOT EXISTS idx_auth_identities_provider_user
       ON auth_identities(provider, provider_user_id);
 
+    -- Accounts a player holds with an external provider (Steam, Discord, and
+    -- later Epic, Riot, ...), prepared for the identity step. No login or
+    -- roster path reads it yet: players.id (Steam) and auth_identities stay
+    -- the source of truth, and services/playerIdentity.ts mirrors their writes
+    -- here. Backfilled once (the linked_accounts_backfill migration in
+    -- database.ts) from players (steam) and auth_identities (discord only).
+    -- players.discord_id is never copied: it is unverified contact data and
+    -- not unique.
+    CREATE TABLE IF NOT EXISTS linked_accounts (
+      id SERIAL PRIMARY KEY,
+      player_id TEXT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+      provider TEXT NOT NULL, -- 'steam' | 'discord' | ...
+      external_id TEXT NOT NULL, -- The provider's account id (Steam ID64, Discord user id)
+      verified BOOLEAN NOT NULL DEFAULT FALSE, -- TRUE = the holder proved it by signing in with the provider
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      UNIQUE (provider, external_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_linked_accounts_player ON linked_accounts(player_id);
+
+    -- One row per hand-written migration in database.ts (backfills, data
+    -- rewrites) once it has been applied, so it never runs twice. Column
+    -- additions need no row: the auto-migrator (getSchemaColumns) detects them.
+    CREATE TABLE IF NOT EXISTS schema_migrations (
+      id TEXT PRIMARY KEY,
+      applied_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
     -- Player rating history table
     CREATE TABLE IF NOT EXISTS player_rating_history (
       id SERIAL PRIMARY KEY,

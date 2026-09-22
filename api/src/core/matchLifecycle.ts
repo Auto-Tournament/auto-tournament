@@ -11,7 +11,8 @@
  * - `series.ended`: finish the series.
  *
  * The other event types (live score, phase, presence) are still applied by the
- * integration's adapter and ignored here.
+ * integration's adapter. The core only resolves a presence event's account to
+ * its player (`playerIdentity`) and otherwise ignores them.
  *
  * Every way a series can end goes through `applySeriesResult`: the game's
  * `series.ended`, the series this module finishes itself, and the admin "set
@@ -40,6 +41,7 @@ import {
 import { recordMapResult, getMapResults } from '../services/matchMapResultService';
 import { advanceToNextRound } from '../services/shuffleTournamentService';
 import { scheduler } from './scheduler';
+import { playerIdentity } from '../services/playerIdentity';
 import { tournamentIdForMatch } from '../utils/tournamentRow';
 import { formatSeriesEndSummary } from '../utils/seriesEndSummary';
 import { decideExhaustedSeries, isSeriesOutOfMaps } from '../utils/exhaustedSeries';
@@ -96,6 +98,21 @@ async function ingest(events: NormalizedEvent[]): Promise<void> {
           INTEGRATION_RESULT
         );
         break;
+      case 'presence.changed': {
+        // No core state for presence yet (the integration's adapter shows it);
+        // resolving the account here is the seam the identity step builds on.
+        // A failed lookup must not fail the event, which did not need it.
+        try {
+          const playerId = await playerIdentity.resolve(event.account);
+          log.debug('Presence changed', { matchSlug: event.slug, state: event.state, playerId });
+        } catch (err) {
+          log.warn('Presence changed: could not resolve the account', {
+            matchSlug: event.slug,
+            error: (err as Error).message,
+          });
+        }
+        break;
+      }
       default:
         break;
     }

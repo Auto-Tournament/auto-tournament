@@ -1,5 +1,6 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
+import { playerIdentity } from './playerIdentity';
 
 export type AuthProvider = 'discord' | 'keycloak' | 'github' | 'google';
 
@@ -86,7 +87,9 @@ class AuthIdentityService {
       [provider, providerUserId, steamId]
     );
     const stored = await this.findSteamIdForIdentity(provider, providerUserId);
-    return stored === steamId ? 'linked' : 'taken';
+    if (stored !== steamId) return 'taken';
+    await playerIdentity.mirrorSignInLinked(provider, providerUserId, steamId);
+    return 'linked';
   }
 
   /** Remove every identity of `provider` from this account. Returns how many went. */
@@ -100,6 +103,7 @@ class AuthIdentityService {
       steamId,
       provider,
     ]);
+    await playerIdentity.mirrorSignInsRemoved(provider, steamId);
     return rows.length;
   }
 
@@ -165,6 +169,7 @@ class AuthIdentityService {
     `,
       [provider, providerUserId, steamId]
     );
+    await playerIdentity.mirrorSignInLinked(provider, providerUserId, steamId);
 
     // Best-effort verification: read back the row we just wrote so logs show the
     // actual database state for debugging.
