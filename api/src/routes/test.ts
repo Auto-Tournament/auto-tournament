@@ -17,6 +17,7 @@ import {
 import { passport, testOAuthStrategyName } from '../config/passport';
 import { PENDING_STEAM_LINK_PROVIDERS } from '../utils/signedPendingSteamLink';
 import { setIgdbEndpointOverride, clearIgdbTokenCache } from '../services/igdbService';
+import { setWikidataEndpointOverride, resetWikidataThrottle } from '../services/wikidataService';
 import { clearGameSearchCache } from '../services/gameCatalogService';
 import { gameSearchLimiter } from './games';
 
@@ -847,5 +848,152 @@ router.post(
     res.json(rows);
   }
 );
+
+/*
+ * Test-only fake Wikidata (www.wikidata.org/w/api.php).
+ *
+ *   POST /api/test/wikidata      { fake: true | false } point the Wikidata
+ *                                client at this fake (or back), and reset its
+ *                                rate-limit window, the search cache and the
+ *                                search rate limiter
+ *   GET  /api/test/wikidata      request counters
+ *   GET  /api/test/fake-wikidata action=wbsearchentities|wbgetentities over
+ *                                FAKE_WIKIDATA_ITEMS
+ *
+ * A search containing `wderror` makes wbsearchentities answer 500, so tests
+ * can drive the fallback-to-built-ins path without a real network failure.
+ */
+
+interface FakeWikidataItem {
+  id: string;
+  label: string;
+  /** QIDs this item is "instance of" (P31): a game (Q7889), a series (Q1150710), or neither. */
+  instanceOf: string[];
+  /** P577 publication date values, as Wikibase time strings. */
+  pubDates: string[];
+  logo?: string;
+  image?: string;
+}
+
+const FAKE_WIKIDATA_ITEMS: FakeWikidataItem[] = [
+  {
+    id: 'Q10510',
+    label: 'Rocket League',
+    instanceOf: ['Q7889'],
+    pubDates: ['+2015-07-07T00:00:00Z'],
+    logo: 'Rocket League logo.png',
+  },
+  {
+    id: 'Q2005',
+    label: 'Counter-Strike 2',
+    instanceOf: ['Q7889'],
+    pubDates: ['+2023-09-27T00:00:00Z'],
+    image: 'Counter-Strike 2 key art.jpg',
+  },
+  {
+    id: 'Q108364709',
+    label: 'Hollow Knight',
+    instanceOf: ['Q7889'],
+    // Deliberately out of order and with more than one value: the earliest
+    // (2017) must win, not the first or the latest.
+    pubDates: ['+2018-06-26T00:00:00Z', '+2017-02-24T00:00:00Z'],
+  },
+  {
+    id: 'Q19835',
+    label: 'Hollow Corp',
+    instanceOf: ['Q4830453'], // a business, not a video game: must be filtered out
+    pubDates: [],
+  },
+  {
+    id: 'Q4438121',
+    label: 'Mario (franchise)',
+    instanceOf: ['Q1150710'], // a video game series: only kept when nothing else matched
+    pubDates: [],
+  },
+  // Popular built-ins other specs search for with no IGDB credentials
+  // configured; without a matching fake item, Wikidata would legitimately
+  // answer "no matches" and (like a real, comprehensive source) suppress
+  // those built-ins from the results (see gameCatalogService.searchGames).
+  { id: 'Q1258949', label: 'Dota 2', instanceOf: ['Q7889'], pubDates: ['+2013-07-09T00:00:00Z'] },
+  { id: 'Q30819', label: 'Chess', instanceOf: ['Q7889'], pubDates: [] },
+];
+
+const fakeWikidataCounters = { searchRequests: 0, getEntitiesRequests: 0 };
+
+function fakeWikidataEnabled(res: Response): boolean {
+  if (!isE2eTestHelperEnabled()) {
+    res.status(404).json({ success: false, error: 'Not found' });
+    return false;
+  }
+  return true;
+}
+
+router.post('/wikidata', requireAuth, (req: Request, res: Response): void => {
+  if (!fakeWikidataEnabled(res)) return;
+  const { fake } = (req.body ?? {}) as { fake?: unknown };
+  const self = `http://127.0.0.1:${process.env.PORT || '3000'}/api/test/fake-wikidata`;
+  setWikidataEndpointOverride(fake === false ? null : self);
+  resetWikidataThrottle();
+  clearGameSearchCache();
+  gameSearchLimiter.reset();
+  fakeWikidataCounters.searchRequests = 0;
+  fakeWikidataCounters.getEntitiesRequests = 0;
+  res.json({ success: true, fake: fake !== false });
+});
+
+router.get('/wikidata', requireAuth, (_req: Request, res: Response): void => {
+  if (!fakeWikidataEnabled(res)) return;
+  res.json({ success: true, ...fakeWikidataCounters });
+});
+
+router.get('/fake-wikidata', (req: Request, res: Response): void => {
+  if (!fakeWikidataEnabled(res)) return;
+
+  const action = typeof req.query.action === 'string' ? req.query.action : '';
+
+  if (action === 'wbsearchentities') {
+    fakeWikidataCounters.searchRequests += 1;
+    const term = (typeof req.query.search === 'string' ? req.query.search : '').toLowerCase();
+    if (term.includes('wderror')) {
+      res.status(500).json({ error: { code: 'internal_api_error', info: 'fake failure' } });
+      return;
+    }
+    const limit = Number(req.query.limit ?? 20) || 20;
+    const hits = FAKE_WIKIDATA_ITEMS.filter((item) => item.label.toLowerCase().includes(term)).slice(
+      0,
+      limit
+    );
+    res.json({ search: hits.map((item) => ({ id: item.id, label: item.label })) });
+    return;
+  }
+
+  if (action === 'wbgetentities') {
+    fakeWikidataCounters.getEntitiesRequests += 1;
+    const ids = (typeof req.query.ids === 'string' ? req.query.ids : '').split('|').filter(Boolean);
+    const entities: Record<string, unknown> = {};
+    for (const id of ids) {
+      const item = FAKE_WIKIDATA_ITEMS.find((i) => i.id === id);
+      if (!item) continue;
+      entities[id] = {
+        id: item.id,
+        labels: { en: { language: 'en', value: item.label } },
+        claims: {
+          P31: item.instanceOf.map((qid) => ({ mainsnak: { datavalue: { value: { id: qid } } } })),
+          P577: item.pubDates.map((time) => ({ mainsnak: { datavalue: { value: { time } } } })),
+          ...(item.logo
+            ? { P154: [{ mainsnak: { datavalue: { value: item.logo } } }] }
+            : {}),
+          ...(item.image
+            ? { P18: [{ mainsnak: { datavalue: { value: item.image } } }] }
+            : {}),
+        },
+      };
+    }
+    res.json({ entities });
+    return;
+  }
+
+  res.status(400).json({ error: { code: 'unknown_action', info: `unknown action: ${action}` } });
+});
 
 export default router;

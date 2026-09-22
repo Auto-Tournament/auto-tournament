@@ -29,9 +29,12 @@ export const gameSearchLimiter = createRateLimiter({
  *     summary: Search the game catalogue
  *     description: |
  *       Searches IGDB when credentials are configured (results are stored in
- *       the local `games` table) and always includes the built-in games for
- *       installed game modules first. Without IGDB, or when it fails, only the
- *       built-in list is searched. At most 10 results. Rate limited per IP.
+ *       the local `games` table); otherwise searches Wikidata, which needs no
+ *       API key and is the default so search works out of the box. Always
+ *       includes the built-in games for installed game modules first. When
+ *       neither is configured to answer, or the active one fails or times
+ *       out, only the built-in list is searched. At most 10 results. Rate
+ *       limited per IP.
  *     parameters:
  *       - in: query
  *         name: q
@@ -51,6 +54,9 @@ export const gameSearchLimiter = createRateLimiter({
  *                 fromIgdb:
  *                   type: boolean
  *                   description: True when any result came from IGDB (show the IGDB credit)
+ *                 fromWikidata:
+ *                   type: boolean
+ *                   description: True when any result came from Wikidata (show the Wikidata credit)
  *                 games:
  *                   type: array
  *                   items:

@@ -11,7 +11,7 @@
   "tests/api/event-replay-golden.spec.ts": 4.0,
   "tests/api/event-webhook-auth.spec.ts": 0.5,
   "tests/api/game-integrations.spec.ts": 0.5,
-  "tests/api/games-catalog.spec.ts": 1.5,
+  "tests/api/games-catalog.spec.ts": 2.5,
   "tests/api/golden-match-config.spec.ts": 3.0,
   "tests/api/impersonation.spec.ts": 3.7,
   "tests/api/integration-boundaries.spec.ts": 0.5,
