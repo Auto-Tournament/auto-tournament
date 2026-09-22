@@ -117,7 +117,7 @@ async function recoverMatch(
     // We just need to make sure it's been initialized once. This is idempotent.
     if (baseUrl && serverToken) {
       try {
-        const { serverInitializationService } = await import('./serverInitializationService');
+        const { serverInitializationService } = await import('../integrations/cs2/services/serverInitializationService');
         await serverInitializationService.initializeServer(match.server_id, false);
         result.webhookReconfigured = true;
         result.demoUploadReconfigured = true;

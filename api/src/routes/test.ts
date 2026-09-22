@@ -5,7 +5,7 @@ import { applyMatchReport, type MatchReport } from '../services/connectionSnapsh
 import { db } from '../config/database';
 import { playerService } from '../services/playerService';
 import { signPlayerSteamId } from '../utils/signedPlayerCookie';
-import { primeServerStatusForTests, ServerStatus } from '../services/serverStatusService';
+import { primeServerStatusForTests, ServerStatus } from '../integrations/cs2/services/serverStatusService';
 import { authIdentityService, type AuthProvider } from '../services/authIdentityService';
 import {
   completePendingSteamLink,

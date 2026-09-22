@@ -2,7 +2,7 @@
  * Helper functions to generate MatchZy RCON configuration commands
  */
 
-import { buildServerEventsUrl } from './serverAttribution';
+import { buildServerEventsUrl } from '../../../utils/serverAttribution';
 
 /**
  * Get RCON commands to configure MatchZy webhook

@@ -1,8 +1,8 @@
 import { Router, Request, Response } from 'express';
-import { validateServerToken } from '../middleware/serverAuth';
-import { settingsService } from '../services/settingsService';
+import { validateServerToken } from '../../../middleware/serverAuth';
+import { settingsService } from '../../../services/settingsService';
 import { serverService } from '../services/serverService';
-import { log } from '../utils/logger';
+import { log } from '../../../utils/logger';
 import {
   getMatchZyWebhookCommands,
   getMatchZyCoreSettingsCommands,

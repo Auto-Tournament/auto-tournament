@@ -16,7 +16,7 @@ import { steamService } from '../services/steamService';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
 import { db } from '../config/database';
-import { serverStatusService } from '../services/serverStatusService';
+import { serverStatusService } from '../integrations/cs2/services/serverStatusService';
 import { playerConnectionService } from '../services/playerConnectionService';
 import type { NormalizedServerPlayer } from '../utils/playerTransform';
 import { teamService } from '../services/teamService';

@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../config/database';
-import { serverStatusService } from '../services/serverStatusService';
+import { serverStatusService } from '../integrations/cs2/services/serverStatusService';
 import { playerConnectionService } from '../services/playerConnectionService';
 import { refreshConnectionsFromServer } from '../services/connectionSnapshotService';
 import { describeMatch, describedPlayers } from '../utils/matchIntegration';

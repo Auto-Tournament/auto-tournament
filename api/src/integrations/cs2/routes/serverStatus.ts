@@ -1,13 +1,13 @@
 import { Router, Request, Response } from 'express';
 import { serverService } from '../services/serverService';
 import { rconService } from '../services/rconService';
-import { requireAuth } from '../middleware/auth';
-import { log } from '../utils/logger';
+import { requireAuth } from '../../../middleware/auth';
+import { log } from '../../../utils/logger';
 import { serverStatusService, ServerStatus } from '../services/serverStatusService';
 import { getLastServerTestEvent } from '../services/serverConnectivityService';
-import { serverAllocationTracker } from '../services/serverAllocationTracker';
-import { db } from '../config/database';
-import { extractCs2StatusVersionLine, parseCs2BuildId } from '../utils/cs2Version';
+import { serverAllocationTracker } from '../../../services/serverAllocationTracker';
+import { db } from '../../../config/database';
+import { extractCs2StatusVersionLine, parseCs2BuildId } from '../../../utils/cs2Version';
 import { cs2UpdateService } from '../services/cs2UpdateService';
 
 const router = Router();

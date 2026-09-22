@@ -14,15 +14,10 @@ import { getOpenApiSpec } from './config/swagger';
 import { log, logger, LOG_HTTP_REQUESTS, LOG_DB_VERBOSE, LOG_DB_VALUES } from './utils/logger';
 import { cleanupOldLogs } from './utils/eventLogger';
 import { initializeSocket } from './services/socketService';
-import { serverService } from './services/serverService';
-import { rconService } from './services/rconService';
-import { settingsService } from './services/settingsService';
-import { serverInitializationService } from './services/serverInitializationService';
 import { routeTable } from './routes/routeTable';
-import { initMatchZyVersionService } from './services/matchzyVersionService';
+import { listIntegrations } from './integrations/registry';
 import { recoverActiveMatches } from './services/matchRecoveryService';
 import { matchAllocationService } from './services/matchAllocationService';
-import { healthMonitoringService } from './services/healthMonitoringService';
 import { steamService } from './services/steamService';
 import { seedAdminsFromEnv } from './services/adminSeedService';
 import { getServiceTokens } from './utils/serviceTokens';
@@ -321,40 +316,18 @@ app.get('/health', (_req: Request, res: Response) => {
  *         description: Fleet snapshot
  */
 app.get('/api/health/fleet', async (_req: Request, res: Response) => {
-  const now = Math.floor(Date.now() / 1000);
-  const servers = await serverService.getAllServers(true);
-
-  // NOTE: getAllServers already filters to enabled servers, and ServerResponse
-  // exposes `enabled` as a boolean. Comparing it to 1 is always false, which
-  // silently made this whole endpoint report an empty fleet.
-  const enabled = servers.filter((s) => s.enabled && s.host !== '0.0.0.0');
-  const outdated = enabled.filter((s) => typeof s.cs2RequiredVersion === 'number');
-  const stale = enabled.filter(
-    (s) => !s.cs2UpdateCheckedAt || now - s.cs2UpdateCheckedAt >= 30 * 60
-  );
-  const neverChecked = enabled.filter((s) => !s.cs2UpdateCheckedAt);
+  // Each game integration adds its own block (CS2: `cs2Fleet` and `servers`).
+  const contributions: Record<string, unknown> = {};
+  for (const integration of listIntegrations()) {
+    if (integration.healthContributions) {
+      Object.assign(contributions, await integration.healthContributions());
+    }
+  }
 
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
-    cs2Fleet: {
-      enabled: enabled.length,
-      outdated: outdated.length,
-      stale: stale.length,
-      neverChecked: neverChecked.length,
-    },
-    servers: enabled.map((s) => ({
-      id: s.id,
-      name: s.name,
-      status: s.status ?? null,
-      lastSeen: s.lastSeen ?? null,
-      cs2BuildId: s.cs2BuildId ?? null,
-      cs2RequiredVersion: s.cs2RequiredVersion ?? null,
-      cs2UpdatePhase: s.cs2UpdatePhase ?? null,
-      cs2UpdateRequiredAt: s.cs2UpdateRequiredAt ?? null,
-      cs2UpdateCheckedAt: s.cs2UpdateCheckedAt ?? null,
-      cs2VersionFetchedAt: s.cs2VersionFetchedAt ?? null,
-    })),
+    ...contributions,
   });
 });
 
@@ -472,11 +445,15 @@ process.on('uncaughtException', (err) => {
       reportServiceTokens();
       reportEventAuth();
 
-      // Bootstrap webhooks, recover matches, fetch MatchZy version (now database is ready)
+      // Recover matches and start the game integrations (CS2: bootstrap server
+      // webhooks, fetch the MatchZy version, start health monitoring) now the
+      // database is ready.
       Promise.all([
-        bootstrapServerWebhooks().catch((error) => {
-          log.warn('Failed to auto-configure server webhooks on startup', { error });
-        }),
+        ...listIntegrations().map((integration) =>
+          (integration.start?.() ?? Promise.resolve()).catch((error) => {
+            log.warn(`Failed to start the ${integration.id} integration`, { error });
+          })
+        ),
         recoverActiveMatches().catch((error) => {
           log.warn('Failed to recover active matches on startup', { error });
         }),
@@ -488,21 +465,22 @@ process.on('uncaughtException', (err) => {
         }),
       ]).then(() => {
         log.success('[Startup] All startup tasks completed');
-        
-        // Fetch latest MatchZy Enhanced version (fire-and-forget, cached for 1 hour)
-        initMatchZyVersionService();
-        
-        // Start health monitoring for server tracking
-        // Checks every minute to mark inactive servers as offline
-        healthMonitoringService.start();
       });
     });
 
     // Graceful shutdown handlers
+    const stopIntegrations = () => {
+      for (const integration of listIntegrations()) {
+        integration.stop?.().catch((error) => {
+          log.warn(`Failed to stop the ${integration.id} integration`, { error });
+        });
+      }
+    };
+
     process.on('SIGINT', () => {
       log.warn('Received SIGINT, shutting down gracefully...');
       matchAllocationService.stopAllPolling();
-      healthMonitoringService.stop();
+      stopIntegrations();
       server.close(() => {
         db.close();
         log.server('Server closed');
@@ -513,7 +491,7 @@ process.on('uncaughtException', (err) => {
     process.on('SIGTERM', () => {
       log.warn('Received SIGTERM, shutting down gracefully...');
       matchAllocationService.stopAllPolling();
-      healthMonitoringService.stop();
+      stopIntegrations();
       server.close(() => {
         db.close();
         log.server('Server closed');
@@ -647,110 +625,4 @@ function reportEventAuth(): void {
       'events. Reconnect your servers so they re-fetch their webhook config, then ' +
       'unset this.'
   );
-}
-
-async function bootstrapServerWebhooks(): Promise<void> {
-  const serverToken = process.env.SERVER_TOKEN;
-  if (!serverToken) {
-    log.warn('SERVER_TOKEN is not set. Skipping automatic webhook bootstrap.');
-    return;
-  }
-
-  // Resolve webhook base URL from settings.
-  // Priority: 1) DB, 2) API_BASE_URL, 3) FRONTEND_BASE_URL, 4) http://localhost:{PORT}
-  const apiPort = parseInt(process.env.PORT || '3000', 10);
-  const localhostDefault = `http://localhost:${apiPort}`;
-  let baseUrl = await settingsService.getWebhookUrl();
-
-  const fromApi = process.env.API_BASE_URL?.trim();
-  const fromFrontend = process.env.FRONTEND_BASE_URL?.trim();
-
-  // If DB has localhost:PORT but FRONTEND_BASE_URL is set, treat as "wrong default" and fix it.
-  if (
-    baseUrl &&
-    (baseUrl === localhostDefault || baseUrl === 'http://localhost:3000') &&
-    fromFrontend &&
-    !fromApi
-  ) {
-    try {
-      await settingsService.setSetting('webhook_url', fromFrontend);
-      baseUrl = await settingsService.getWebhookUrl();
-      log.success(`Webhook URL updated from localhost default to FRONTEND_BASE_URL: ${baseUrl}`);
-    } catch (e) {
-      log.warn('Failed to update webhook URL from FRONTEND_BASE_URL', { error: e });
-    }
-  }
-
-  if (!baseUrl) {
-    const fallback = fromApi || fromFrontend || localhostDefault;
-    const source = fromApi ? 'API_BASE_URL' : fromFrontend ? 'FRONTEND_BASE_URL' : 'auto-detect (PORT)';
-    try {
-      await settingsService.setSetting('webhook_url', fallback);
-      baseUrl = await settingsService.getWebhookUrl();
-      log.success(`Webhook URL initialized from ${source}: ${baseUrl}`);
-      if (source === 'auto-detect (PORT)') {
-        log.warn(
-          'Webhook URL was not configured; auto-detected from PORT. ' +
-            'Set API_BASE_URL or FRONTEND_BASE_URL in .env, or update in Settings, if your API is elsewhere.'
-        );
-      }
-    } catch (error) {
-      log.warn(
-        'Failed to set webhook URL; skipping automatic webhook bootstrap. ' +
-          'Set API_BASE_URL or FRONTEND_BASE_URL in .env or configure in Settings.',
-        { error }
-      );
-      return;
-    }
-  }
-
-  const enabledServers = await serverService.getAllServers(true);
-  if (enabledServers.length === 0) {
-    log.info('No enabled servers found for webhook bootstrap.');
-    return;
-  }
-
-  log.info(`[STARTUP] Checking ${enabledServers.length} enabled server(s)...`);
-
-  // Process all servers concurrently for faster startup
-  await Promise.allSettled(
-    enabledServers.map(async (serverInfo) => {
-      try {
-        // Quick RCON ping to check if server is reachable
-        const statusResult = await rconService.sendCommand(serverInfo.id, 'status');
-        if (!statusResult.success) {
-          log.warn(`[STARTUP] ${serverInfo.id}: Unreachable (${statusResult.error})`);
-          return;
-        }
-
-        const needsInit = !serverInfo.persistentConfigSent;
-        const needsRetry = !!serverInfo.persistentConfigSent && !serverInfo.lastSeen;
-
-        if (needsInit || needsRetry) {
-          // Server needs (re)configuration
-          await serverInitializationService.initializeServer(serverInfo.id, baseUrl, {
-            force: needsRetry,
-          });
-          log.success(
-            `[STARTUP] ${serverInfo.id}: ${needsInit ? 'Configured' : 'Retry sent'} – waiting for MatchZy events`
-          );
-        } else {
-          // Server is already configured and has sent events - just log status
-          const timeSinceLastSeen = serverInfo.lastSeen
-            ? Math.floor(Date.now() / 1000) - serverInfo.lastSeen
-            : null;
-          
-          if (timeSinceLastSeen !== null && timeSinceLastSeen < 300) {
-            log.info(`[STARTUP] ${serverInfo.id}: Online (last event ${timeSinceLastSeen}s ago)`);
-          } else {
-            log.info(`[STARTUP] ${serverInfo.id}: Configured but inactive (${timeSinceLastSeen ? `${timeSinceLastSeen}s` : 'never'} since last event)`);
-          }
-        }
-      } catch (error) {
-        log.warn(`[STARTUP] ${serverInfo.id}: Check failed`, { error });
-      }
-    })
-  );
-
-  log.success(`[STARTUP] Server initialization complete`);
 }

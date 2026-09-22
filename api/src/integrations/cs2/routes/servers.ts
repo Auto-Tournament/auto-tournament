@@ -1,11 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { serverService } from '../services/serverService';
-import { CreateServerInput, UpdateServerInput } from '../types/server.types';
-import { requireAuth } from '../middleware/auth';
-import { matchAllocationService } from '../services/matchAllocationService';
+import { CreateServerInput, UpdateServerInput } from '../../../types/server.types';
+import { requireAuth } from '../../../middleware/auth';
+import { matchAllocationService } from '../../../services/matchAllocationService';
 import { serverInitializationService } from '../services/serverInitializationService';
-import { settingsService } from '../services/settingsService';
-import { log } from '../utils/logger';
+import { settingsService } from '../../../services/settingsService';
+import { log } from '../../../utils/logger';
 
 const router = Router();
 

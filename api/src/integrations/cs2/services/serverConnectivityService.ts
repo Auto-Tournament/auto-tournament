@@ -1,4 +1,4 @@
-import { log } from '../utils/logger';
+import { log } from '../../../utils/logger';
 
 /**
  * Lightweight in-memory tracking of "test event" connectivity checks

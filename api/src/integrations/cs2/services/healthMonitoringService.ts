@@ -3,12 +3,12 @@
  * Runs periodic checks to keep server online/offline status stable.
  */
 
-import { log } from '../utils/logger';
+import { log } from '../../../utils/logger';
 import { serverService } from './serverService';
 import { serverStatusService } from './serverStatusService';
 import { serverTrackingService } from './serverTrackingService';
 import { cs2FleetMonitoringService } from './cs2FleetMonitoringService';
-import type { ServerResponse } from '../types/server.types';
+import type { ServerResponse } from '../../../types/server.types';
 
 class HealthMonitoringService {
   private intervalId: NodeJS.Timeout | null = null;

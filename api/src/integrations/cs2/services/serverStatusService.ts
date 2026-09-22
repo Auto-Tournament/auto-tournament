@@ -1,7 +1,7 @@
 import { rconService } from './rconService';
 import { serverService } from './serverService';
-import { log } from '../utils/logger';
-import { parseConVarReply } from '../utils/matchzyServerReplies';
+import { log } from '../../../utils/logger';
+import { parseConVarReply } from '../../../utils/matchzyServerReplies';
 
 /**
  * Server Status Values
@@ -270,6 +270,6 @@ export function primeServerStatusForTests(
   });
 }
 
-export { isAllocatableStatus } from '../utils/matchzyServerReplies';
+export { isAllocatableStatus } from '../../../utils/matchzyServerReplies';
 
 export const serverStatusService = new ServerStatusService();

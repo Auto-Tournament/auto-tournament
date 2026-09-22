@@ -1197,7 +1197,7 @@ router.post('/:slug/reallocate', requireAuth, async (req: Request, res: Response
     // config is refused by the config route instead of starting a second copy.
     await cancelQueuedLoad(oldServerId, slug);
     try {
-      const { rconService } = await import('../services/rconService');
+      const { rconService } = await import('../integrations/cs2/services/rconService');
       await rconService.sendCommand(oldServerId, 'css_restart');
     } catch (err) {
       log.warn(`Failed to restart old server during reallocation (continuing)`, {
@@ -1338,7 +1338,7 @@ router.post('/:slug/force-cancel', requireAuth, async (req: Request, res: Respon
     // Try to end the match on the server (best effort)
     if (serverId) {
       try {
-        const { rconService } = await import('../services/rconService');
+        const { rconService } = await import('../integrations/cs2/services/rconService');
         await rconService.executeCommand(serverId, 'get5_endmatch');
         log.info(`Successfully sent end match command to server ${serverId} for match ${slug}`);
       } catch (rconError) {
