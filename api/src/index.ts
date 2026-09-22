@@ -5,12 +5,20 @@ import path from 'path';
 import os from 'os';
 dotenv.config({ path: path.join(process.cwd(), '.env') });
 
+// Migrate any demos/logs left behind under the pre-fix (wrong) DATA_DIR
+// before any other module reads or writes under the real one at import time
+// (e.g. the event logger and the demos route both create their directory as
+// soon as they're imported below).
+import { migrateLegacyDataDir } from './config/migrateLegacyDataDir';
+migrateLegacyDataDir();
+
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import swaggerUi from 'swagger-ui-express';
 import { db } from './config/database';
 import { PUBLIC_DIR, MAP_IMAGES_DIR } from './config/publicPaths';
+import { DATA_DIR } from './config/dataDir';
 import { getOpenApiSpec } from './config/swagger';
 import { log, logger, LOG_HTTP_REQUESTS, LOG_DB_VERBOSE, LOG_DB_VALUES } from './utils/logger';
 import { cleanupOldLogs } from './utils/eventLogger';
@@ -443,7 +451,7 @@ process.on('uncaughtException', (err) => {
       log.server(`  Health:     ${protocol}://localhost:${PORT}/health`);
       log.server('');
       log.server(`WebSocket: Enabled`);
-      log.server(`Event logs: api/data/logs/events/ (30 day retention)`);
+      log.server(`Event logs: ${path.join(DATA_DIR, 'logs', 'events')} (30 day retention)`);
       log.server('='.repeat(60));
 
       reportServiceTokens();

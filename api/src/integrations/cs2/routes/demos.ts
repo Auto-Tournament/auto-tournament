@@ -14,7 +14,8 @@ import { DATA_DIR } from '../../../config/dataDir';
 
 const router = Router();
 
-// Directory for storing demos (same as database) - under api/data
+// Directory for storing demos (same as database) - under DATA_DIR, so it
+// survives container recreates (see config/dataDir.ts).
 const DEMOS_DIR = path.join(DATA_DIR, 'demos');
 
 // Ensure demos directory exists
