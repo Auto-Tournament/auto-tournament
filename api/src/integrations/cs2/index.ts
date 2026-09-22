@@ -18,7 +18,11 @@
  * scheduler (`core/scheduler.ts`) keeps the queue and calls it through
  * `capacity`, `allocate`, `allocateBatch`, `restart`, `load`, `cancel` and
  * `release`; the tournament start preflight and webhook bootstrap are
- * `checkStart` and `prepareStart` (./tournamentStart).
+ * `checkStart` and `prepareStart` (./tournamentStart). The map veto is a
+ * CS2 pre-match phase (`veto/`: the `/api/veto` routes, the veto orders, and
+ * the simulation auto-veto behind `isReadyToAllocate`, `onMatchReady` and
+ * `startPendingPreMatchPhases`). Its progress is `matches.veto_state`, which
+ * CS2 owns (core match views still read it for display).
  *
  * Services are imported lazily inside each method. That keeps loading the
  * registry free of side effects (no database pool, no monitors) and avoids an
@@ -31,6 +35,7 @@ import type { TournamentResponse } from '../../types/tournament.types';
 import type { DbTournamentRow } from '../../types/database.types';
 import type { MatchReport } from './events/connectionSnapshotService';
 import { normalizeConfigPlayers } from '../../utils/playerTransform';
+import { validateCustomVetoOrderSetting } from './veto/config';
 import type { ServerActionResult, ServerAllocationResult } from './allocation';
 import type {
   AllocateResult,
@@ -156,6 +161,11 @@ function toResourceActionResult(result: ServerActionResult): ResourceActionResul
   return { ...rest, ...(serverId ? { resourceId: serverId } : {}) };
 }
 
+/** Series formats that run a map veto (case-sensitive, as the veto has always checked). */
+function usesVeto(format: string | undefined): boolean {
+  return format === 'bo1' || format === 'bo3' || format === 'bo5';
+}
+
 export const cs2Integration: GameIntegration = {
   id: 'cs2',
   displayName: 'Counter-Strike 2',
@@ -217,11 +227,44 @@ export const cs2Integration: GameIntegration = {
   },
 
   /**
-   * Nothing yet: the scheduler allocates a newly ready match itself
-   * (`scheduler.allocateReadyMatch`). TODO(PR 8): the simulation auto-veto
-   * moves here from makeMatchReady.
+   * Hold a newly ready BO match for the automated veto in simulation mode.
+   * The same check `makeMatchReady` made inline before the veto moved here.
    */
-  async onMatchReady(_ctx: MatchContext) {},
+  async isReadyToAllocate(ctx: MatchContext) {
+    const { settingsService } = await import('../../services/settingsService');
+    if (!(await settingsService.isSimulationModeEnabled())) return true;
+    return !usesVeto(ctx.tournament?.format);
+  },
+
+  /** Simulation mode: run the automated veto; it allocates the match when done. */
+  async onMatchReady(ctx: MatchContext) {
+    const [{ log }, { autoCompleteVetoForMatch }] = await Promise.all([
+      import('../../utils/logger'),
+      import('./veto/simulation'),
+    ]);
+    log.info(
+      `[VETO-SIM] Simulation mode active – auto-completing veto for newly ready match ${ctx.slug}`
+    );
+    await autoCompleteVetoForMatch(ctx.slug);
+  },
+
+  /** The custom veto order, per format, against the map pool. */
+  validateTournamentSettings({ settings, mapCount }) {
+    const result = validateCustomVetoOrderSetting(settings, mapCount);
+    return result.valid ? { valid: true, errors: [] } : { valid: false, errors: [result.error] };
+  },
+
+  /** The veto's current turn, derived from the veto order before the first action. */
+  async preMatchTurn(match) {
+    const { resolveCurrentVetoTurn } = await import('./veto/context');
+    return (await resolveCurrentVetoTurn(match))?.currentTurn ?? null;
+  },
+
+  /** Simulation mode: auto-veto every match of the tournament waiting on a veto. */
+  async startPendingPreMatchPhases(tournamentId: number) {
+    const { autoVetoPendingMatches } = await import('./veto/simulation');
+    return autoVetoPendingMatches(tournamentId);
+  },
 
   /**
    * Free servers. The fleet is shared by every tournament, so the scope does
@@ -394,8 +437,8 @@ export const cs2Integration: GameIntegration = {
   },
 
   /**
-   * /api/servers (bootstrap, fleet, status), /api/rcon, /api/demos and
-   * /api/matchzy, at their existing URLs. Loaded on first call, not with the
+   * /api/servers (bootstrap, fleet, status), /api/rcon, /api/demos,
+   * /api/matchzy, /api/events and /api/veto, at their existing URLs. Loaded on first call, not with the
    * registry (see the note at the top).
    */
   legacyRoutes() {

@@ -333,3 +333,53 @@ export function getVetoOrder(
   return BO1_VETO_ORDER;
 }
 
+/**
+ * Validate a tournament's optional `settings.customVetoOrder`.
+ *
+ * Without this check an invalid order is accepted at creation time and only
+ * discovered during veto, where `getVetoOrder` silently falls back to the
+ * standard format — so the tournament runs a different veto than configured.
+ * Rejecting up front keeps the configured order and the actual veto in sync.
+ *
+ * Only the formats present in the payload are checked; each is validated
+ * against the tournament's own map pool size.
+ */
+export function validateCustomVetoOrderSetting(
+  settings: unknown,
+  mapCount: number
+): { valid: true } | { valid: false; error: string } {
+  if (!settings || typeof settings !== 'object') {
+    return { valid: true };
+  }
+
+  const customVetoOrder = (settings as { customVetoOrder?: unknown }).customVetoOrder;
+  if (!customVetoOrder || typeof customVetoOrder !== 'object') {
+    return { valid: true };
+  }
+
+  const orders = customVetoOrder as Record<string, unknown>;
+
+  for (const format of ['bo1', 'bo3', 'bo5'] as const) {
+    const order = orders[format];
+    if (typeof order === 'undefined' || order === null) {
+      continue;
+    }
+
+    if (!Array.isArray(order)) {
+      return {
+        valid: false,
+        error: `Custom veto order for ${format} must be an array of veto steps`,
+      };
+    }
+
+    const result = validateVetoOrder(order as VetoStep[], format, mapCount);
+    if (!result.valid) {
+      return {
+        valid: false,
+        error: `Invalid custom veto order for ${format}: ${result.error}`,
+      };
+    }
+  }
+
+  return { valid: true };
+}

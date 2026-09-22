@@ -23,6 +23,7 @@
  */
 
 import type { Router } from 'express';
+import type { DbMatchRow } from '../types/database.types';
 
 /** Identifier stored in the `game` column: 'cs2' today; later e.g. 'manual-report', 'fake'. */
 export type GameId = string;
@@ -483,8 +484,12 @@ export interface GameIntegration {
 
   /** TODO(PR 9 / PR 11): CS2 declares its tournament and `matchzy_*` settings here. */
   setupSchema?: SetupSchema;
-  /** TODO(PR 9): CS2 validates maps, map sequence, rounds and veto order here. */
-  validateTournamentSettings?(settings: unknown): ValidationResult;
+  /**
+   * Validate a tournament's `settings` on create and update, against its map
+   * pool size. CS2: the custom veto order. TODO(PR 9): CS2 also validates
+   * maps, map sequence and rounds here.
+   */
+  validateTournamentSettings?(input: { settings: unknown; mapCount: number }): ValidationResult;
 
   // --- setup ---------------------------------------------------------------
 
@@ -496,19 +501,42 @@ export interface GameIntegration {
   // --- lifecycle -----------------------------------------------------------
 
   /**
-   * Called once a match has both participants, a config and status `ready`,
-   * for the integration's own side effects. Allocating the match is the
-   * scheduler's (`core/scheduler.ts`), not this hook's. Must be safe to call
-   * twice. TODO(PR 8): CS2 auto-completes the veto here in simulation mode.
+   * Whether the core may ready and allocate a match that has just got both
+   * participants (`makeMatchReady` in bracket progression). `false` hands the
+   * match to `onMatchReady` instead, and the integration readies it itself.
+   * Omitted means `true`.
+   *
+   * CS2: `false` in simulation mode for BO formats, where the automated veto
+   * runs first. Outside simulation there is no per-match gate: the players'
+   * veto is gated tournament-wide by `capabilities.veto` in
+   * `Scheduler.startTournament`.
+   */
+  isReadyToAllocate?(ctx: MatchContext): Promise<boolean>;
+  /**
+   * A match got both participants and `isReadyToAllocate` returned `false`:
+   * run the integration's pre-match phase. The integration readies and
+   * allocates the match when the phase ends (CS2 simulation: the automated
+   * veto, then `scheduler.allocateReadyMatch`). Awaited. Must be safe to call
+   * twice.
    */
   onMatchReady?(ctx: MatchContext): Promise<void>;
   /**
-   * TODO(PR 8): CS2 returns false until the veto is complete. Today the only
-   * veto gate is tournament-wide: with `capabilities.veto`, the scheduler's
-   * tournament start leaves allocation to the veto flow (see
-   * `Scheduler.startTournament`).
+   * Start the pre-match phase, in the background, for every match of the
+   * tournament that is waiting on one, and return the slugs started. Called
+   * when a tournament starts, when a Swiss round is paired and when
+   * simulation mode is switched on mid-tournament.
+   *
+   * CS2: the automated veto for every match with both teams, no server and
+   * no finished veto (an unfinished one is resumed). `[]` outside simulation
+   * mode, for shuffle tournaments and for formats without a veto.
    */
-  isReadyToAllocate?(ctx: MatchContext): Promise<boolean>;
+  startPendingPreMatchPhases?(tournamentId: number): Promise<string[]>;
+  /**
+   * Whose move it is in the match's pre-match phase (CS2: the map veto), or
+   * `null` when there is none or it is done. Drives the player's "your turn"
+   * prompt (`GET /api/players/me/match-status`).
+   */
+  preMatchTurn?(match: DbMatchRow): Promise<'team1' | 'team2' | null>;
   /**
    * Check the integration's resources before a tournament starts (CS2: every
    * enabled server runs an up-to-date CS2 build). Omit when there is nothing

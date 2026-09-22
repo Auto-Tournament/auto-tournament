@@ -25,7 +25,6 @@ import { getMapResults } from '../services/matchMapResultService';
 import { currentMatchConfig, describeMatch, describedPlayers } from '../utils/matchIntegration';
 import { generateAvatarSvg } from '../generation/avatar';
 import { getEffectiveViewerSteamId, resolveViewerIdentity } from '../utils/viewerIdentity';
-import { resolveCurrentVetoTurn } from '../utils/vetoContext';
 import { getIntegration, integrationForMatch } from '../integrations/registry';
 import { DEFAULT_GAME } from '../integrations/types';
 
@@ -479,9 +478,11 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
     // Do NOT read currentTurn straight off veto_state: that row is only written
     // once the first action is submitted, so on step 1 it is NULL and the team
     // that has to act first would be told "waiting for veto" instead of
-    // "your turn". resolveCurrentVetoTurn derives the opening step from the
-    // configured veto order in that case.
-    const currentTurn = vetoCompleted ? null : (await resolveCurrentVetoTurn(match))?.currentTurn ?? null;
+    // "your turn". The integration's preMatchTurn derives the opening step
+    // from the configured veto order in that case.
+    const currentTurn = vetoCompleted
+      ? null
+      : ((await integrationForMatch(match).preMatchTurn?.(match)) ?? null);
 
     if (['loaded', 'live'].includes(match.status)) {
       return res.json({

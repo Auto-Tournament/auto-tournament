@@ -1,24 +1,24 @@
 import { Router, Request, Response } from 'express';
-import { db } from '../config/database';
-import { log } from '../utils/logger';
-import { emitVetoUpdate } from '../services/socketService';
-import { isQueuedAllocationResult, scheduler } from '../core/scheduler';
-import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
-import type { TournamentResponse } from '../types/tournament.types';
+import { db } from '../../../config/database';
+import { log } from '../../../utils/logger';
+import { emitVetoUpdate } from '../../../services/socketService';
+import { isQueuedAllocationResult, scheduler } from '../../../core/scheduler';
+import type { DbMatchRow, DbTournamentRow } from '../../../types/database.types';
+import type { TournamentResponse } from '../../../types/tournament.types';
 import {
   buildMatchConfigFor,
   describeMatch,
   describedPlayers,
   isBracketManaged,
   serializeMatchConfig,
-} from '../utils/matchIntegration';
-import { getVetoOrder } from '../utils/vetoConfig';
-import { getVetoContext } from '../utils/vetoContext';
-import { settingsService } from '../services/settingsService';
-import { normalizeConfigPlayers } from '../utils/playerTransform';
-import { resolveViewerIdentity } from '../utils/viewerIdentity';
-import { requireAuth } from '../middleware/auth';
-import { tournamentRowToResponse } from '../utils/tournamentRow';
+} from '../../../utils/matchIntegration';
+import { getVetoOrder } from './config';
+import { getVetoContext } from './context';
+import { settingsService } from '../../../services/settingsService';
+import { normalizeConfigPlayers } from '../../../utils/playerTransform';
+import { resolveViewerIdentity } from '../../../utils/viewerIdentity';
+import { requireAuth } from '../../../middleware/auth';
+import { tournamentRowToResponse } from '../../../utils/tournamentRow';
 
 const router = Router();
 
@@ -607,7 +607,6 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
         }
       } else if (match.round === 0) {
         // Manual match (round === 0, tournament_id === null): update config's maplist from veto picks.
-        // TODO(PR 8): this writes MatchZy fields; it moves with the veto into integrations/cs2.
         try {
           const existingConfig = match.config ? JSON.parse(match.config) : {};
           const orderedPickedMaps = [...vetoState.pickedMaps].sort(
