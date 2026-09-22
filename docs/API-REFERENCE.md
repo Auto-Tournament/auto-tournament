@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 242 of them, 166 behind auth —
+Every endpoint this API serves — 249 of them, 173 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -216,6 +216,20 @@ Report a result, and confirm, dispute or withdraw one, for a game MAT cannot wat
 | `POST` | `/api/game/manual/matches/:slug/confirm` | public |
 | `POST` | `/api/game/manual/matches/:slug/dispute` | public |
 | `POST` | `/api/game/manual/matches/:slug/withdraw` | public |
+
+### Manual reporting — admin
+
+The dispute queue, resolving and reopening a reported match, the extra stat fields a tournament asks reporters for, and who captains a team (3.0 phase D, PR D5).
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/game/manual/disputes` | admin |
+| `POST` | `/api/game/manual/matches/:slug/resolve` | admin |
+| `POST` | `/api/game/manual/matches/:slug/reopen` | admin |
+| `GET` | `/api/game/manual/tournaments/:tournamentId/fields` | admin |
+| `PUT` | `/api/game/manual/tournaments/:tournamentId/fields` | admin |
+| `POST` | `/api/game/manual/teams/:teamId/captain` | admin |
+| `GET` | `/api/game/manual/teams/:teamId/members` | admin |
 
 ### Teams
 

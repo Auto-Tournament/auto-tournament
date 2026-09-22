@@ -27,8 +27,8 @@
  * search must still find a module.
  *
  * The report state machine itself is `./reports` (3.0 phase D, PR D3), and the
- * captain routes onto it are `./reportRoutes`, mounted at `/api/game/manual`
- * (PR D4); the admin side is D5. Like CS2 and the fake module,
+ * routes onto it are `./reportRoutes` (captains, PR D4) and `./adminRoutes`
+ * (PR D5), both mounted at `/api/game/manual`. Like CS2 and the fake module,
  * services are imported lazily inside each method, so loading the registry
  * stays free of side effects and import cycles.
  */
@@ -273,6 +273,8 @@ export const manualReportIntegration: GameIntegration = {
     const { manualReportTestRoutes } = require('./routes') as typeof import('./routes');
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { manualReportRoutes } = require('./reportRoutes') as typeof import('./reportRoutes');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { manualReportAdminRoutes } = require('./adminRoutes') as typeof import('./adminRoutes');
     return [
       {
         prefix: '/api/game/manual',
@@ -280,6 +282,13 @@ export const manualReportIntegration: GameIntegration = {
         title: 'Manual reporting — captains',
         description:
           'Report a result, and confirm, dispute or withdraw one, for a game MAT cannot watch. A captain of one of the two teams only; answering names the revision it answers (3.0 phase D, PR D4).',
+      },
+      {
+        prefix: '/api/game/manual',
+        router: manualReportAdminRoutes,
+        title: 'Manual reporting — admin',
+        description:
+          'The dispute queue, resolving and reopening a reported match, the extra stat fields a tournament asks reporters for, and who captains a team (3.0 phase D, PR D5).',
       },
       {
         prefix: '/api/test/integration/manual-report',

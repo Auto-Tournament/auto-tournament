@@ -52,6 +52,7 @@ import {
   type ReportActor,
   type ReportOutcome,
 } from './reports';
+import { listFields } from './fields';
 
 export const manualReportRoutes = Router();
 
@@ -70,10 +71,13 @@ manualReportRoutes.get('/matches/:slug', async (req: Request, res: Response) => 
     const viewer = await viewerForMatch(req, res, match, 'see this match');
     if (!viewer) return;
 
-    const [open, reports, teams] = await Promise.all([
+    const [open, reports, teams, fields] = await Promise.all([
       openReport(match.slug),
       listReports(match.slug),
       teamNames(match),
+      // The extra numbers this tournament asks for (PR D5), so the report form
+      // is one request rather than two.
+      listFields(match.tournament_id),
     ]);
 
     const { actor } = viewer;
@@ -99,6 +103,7 @@ manualReportRoutes.get('/matches/:slug', async (req: Request, res: Response) => 
         ...teams,
       },
       rules: reportingRules(match),
+      fields,
       viewer: {
         team: actor.team,
         role: actor.role,

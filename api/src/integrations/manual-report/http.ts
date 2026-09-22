@@ -119,6 +119,16 @@ export async function viewerForMatch(
   return { account, actor };
 }
 
+/**
+ * Admin-only routes still need the acting account, so the audit trail records
+ * a person rather than "an admin". `requireAuth` has already let the request
+ * through; a service token has no account, and is recorded as one.
+ */
+export async function adminActor(req: Request): Promise<ReportActor> {
+  const account = await resolveViewerAccount(req);
+  return { uid: account.uid, role: 'admin', team: null };
+}
+
 /** Run a route body, turning anything thrown into a 500 rather than a hang. */
 export async function guarded(
   res: Response,
