@@ -26,8 +26,9 @@
  * holds a catalogue id from phase D onwards and a game found through IGDB
  * search must still find a module.
  *
- * The report state machine itself is `./reports` (3.0 phase D, PR D3); the
- * captain and admin HTTP routes are D4 and D5. Like CS2 and the fake module,
+ * The report state machine itself is `./reports` (3.0 phase D, PR D3), and the
+ * captain routes onto it are `./reportRoutes`, mounted at `/api/game/manual`
+ * (PR D4); the admin side is D5. Like CS2 and the fake module,
  * services are imported lazily inside each method, so loading the registry
  * stays free of side effects and import cycles.
  */
@@ -270,7 +271,16 @@ export const manualReportIntegration: GameIntegration = {
     // Required here, not at the top: loading the registry must not load routers.
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { manualReportTestRoutes } = require('./routes') as typeof import('./routes');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { manualReportRoutes } = require('./reportRoutes') as typeof import('./reportRoutes');
     return [
+      {
+        prefix: '/api/game/manual',
+        router: manualReportRoutes,
+        title: 'Manual reporting — captains',
+        description:
+          'Report a result, and confirm, dispute or withdraw one, for a game MAT cannot watch. A captain of one of the two teams only; answering names the revision it answers (3.0 phase D, PR D4).',
+      },
       {
         prefix: '/api/test/integration/manual-report',
         router: manualReportTestRoutes,

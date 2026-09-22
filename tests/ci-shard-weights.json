@@ -22,6 +22,7 @@
   "tests/api/linked-accounts-backfill.spec.ts": 0.5,
   "tests/api/manual-report-module.spec.ts": 2.5,
   "tests/api/manual-report-reports.spec.ts": 4.0,
+  "tests/api/manual-report-routes.spec.ts": 3.5,
   "tests/api/manual-report-schema.spec.ts": 3.0,
   "tests/api/match-config-auth.spec.ts": 3.0,
   "tests/api/match-events-order.spec.ts": 2.4,
