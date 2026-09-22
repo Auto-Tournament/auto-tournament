@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 236 of them, 165 behind auth —
+Every endpoint this API serves — 237 of them, 166 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -56,6 +56,14 @@ Self-registration for a CS2 server coming online.
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/servers/:id/bootstrap` | server token |
+
+### Update hold
+
+Whether a game host should pause automatic CS2 updates.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/servers/update-hold` | server token |
 
 ### Servers
 
