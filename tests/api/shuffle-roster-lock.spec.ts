@@ -63,7 +63,7 @@ test.describe.serial('Shuffle tournament rosters', () => {
       const seen = new Set<string>();
       for (const match of matches) {
         const res = await request.get(`/api/matches/${match.slug}.json`, {
-          headers: { Authorization: `Bearer ${process.env.SERVER_TOKEN ?? 'server123'}` },
+          headers: { 'X-MatchZy-Token': process.env.SERVER_TOKEN ?? 'server123' },
         });
         expect(res.ok(), `config for ${match.slug}: ${res.status()}`).toBe(true);
         const config = (await res.json()) as ServedConfig;
