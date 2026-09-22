@@ -13,7 +13,7 @@ import {
   type MatchPlayerStatsSnapshot,
   type PlayerStatLine,
 } from './matchLiveStatsService';
-import type { MatchZyEvent } from '../types/matchzy-events.types';
+import type { MatchZyEvent } from '../integrations/cs2/events/matchzy-events.types';
 import type { DbMatchRow } from '../types/database.types';
 import {
   advanceWinnerToNextMatch,

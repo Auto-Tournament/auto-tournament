@@ -6,7 +6,7 @@
 
 import { db } from '../config/database';
 import { log } from '../utils/logger';
-import { refreshConnectionsFromServer, fetchMatchReport, applyMatchReport } from './connectionSnapshotService';
+import { integrationForMatch } from '../integrations/registry';
 import { settingsService } from './settingsService';
 import type { DbMatchRow } from '../types/database.types';
 
@@ -92,15 +92,12 @@ async function recoverMatch(
 
     // 1. Sync match state from server (fetch match report)
     try {
-      const report = await fetchMatchReport(match.server_id);
-      if (report) {
-        await applyMatchReport(match.slug, report);
+      const synced = await integrationForMatch(match).syncMatchState?.(match.slug, {
+        resourceId: match.server_id,
+      });
+      if (synced) {
         result.stateSynced = true;
-        log.success(`[Recovery] Synced match state for ${match.slug}`, {
-          map: report.match?.map?.name,
-          phase: report.match?.phase,
-          score: report.match?.score,
-        });
+        log.success(`[Recovery] Synced match state for ${match.slug}`, synced);
       } else {
         log.info(`[Recovery] No match report from server for ${match.slug} (yet)`, {
           serverId: match.server_id,
@@ -133,7 +130,7 @@ async function recoverMatch(
 
     // 3. Refresh player connections
     try {
-      await refreshConnectionsFromServer(match.slug, { force: true });
+      await integrationForMatch(match).refreshPresence?.(match.slug, { force: true });
       log.debug(`[Recovery] Refreshed player connections for ${match.slug}`);
     } catch (connError) {
       log.warn(`[Recovery] Failed to refresh connections for ${match.slug}`, {

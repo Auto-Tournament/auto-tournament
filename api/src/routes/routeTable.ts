@@ -23,7 +23,6 @@ import { listIntegrations } from '../integrations/registry';
 
 import teamRoutes from './teams';
 import matchRoutes from './matches';
-import eventRoutes from './events';
 import steamRoutes from './steam';
 import tournamentRoutes from './tournament';
 import logsRoutes from './logs';
@@ -64,12 +63,6 @@ const coreRoutes: MountedRouter[] = [
     router: matchRoutes,
     title: 'Matches',
     description: 'Create, load, restart and cancel matches; read match state.',
-  },
-  {
-    prefix: '/api/events',
-    router: eventRoutes,
-    title: 'Events',
-    description: 'MatchZy webhooks in, and the recorded event log out.',
   },
   {
     prefix: '/api/steam',
@@ -178,7 +171,7 @@ const coreRoutes: MountedRouter[] = [
 
 /**
  * Routes owned by game integrations that keep their pre-module URLs
- * (CS2: /api/servers ×3, /api/rcon, /api/demos, /api/matchzy). They come first:
+ * (CS2: /api/servers ×3, /api/rcon, /api/demos, /api/matchzy, /api/events). They come first:
  * no core prefix overlaps them, and each integration returns its own routers
  * in match order.
  */
