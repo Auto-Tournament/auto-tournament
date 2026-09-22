@@ -245,7 +245,14 @@ const actions: Array<{
   {
     path: '/:slug/report',
     run: (match, actor, body) =>
-      submitReport({ matchSlug: match.slug, actor, result: body.result ?? body }),
+      submitReport({
+        matchSlug: match.slug,
+        actor,
+        result: body.result ?? body,
+        // Custom stat values ride with the report (PR D6); the helpers take
+        // them too, so the state machine is driven the same way here.
+        ...(body.stats === undefined ? {} : { stats: body.stats }),
+      }),
   },
   { path: '/:slug/confirm', run: (match, actor) => confirmReport({ matchSlug: match.slug, actor }) },
   {
@@ -265,12 +272,18 @@ const actions: Array<{
         matchSlug: match.slug,
         actor,
         ...(body.result !== undefined ? { result: body.result } : {}),
+        ...(body.stats === undefined ? {} : { stats: body.stats }),
       }),
   },
   {
     path: '/:slug/override',
     run: (match, actor, body) =>
-      adminOverride({ matchSlug: match.slug, actor, result: body.result ?? body }),
+      adminOverride({
+        matchSlug: match.slug,
+        actor,
+        result: body.result ?? body,
+        ...(body.stats === undefined ? {} : { stats: body.stats }),
+      }),
   },
   { path: '/:slug/reopen', run: (match, actor) => reopenMatch({ matchSlug: match.slug, actor }) },
 ];

@@ -148,6 +148,25 @@ export async function guarded(
   }
 }
 
+/**
+ * The tournament a `/tournaments/:tournamentId/...` route is about, or null
+ * once the 400 or 404 has been sent. Shared by the fields routes (PR D5) and
+ * the stats listing (PR D6) so they cannot disagree about what a bad id is.
+ */
+export async function tournamentForRequest(req: Request, res: Response): Promise<number | null> {
+  const id = Number(req.params.tournamentId);
+  if (!Number.isInteger(id) || id <= 0) {
+    res.status(400).json({ success: false, error: 'tournamentId must be a positive integer' });
+    return null;
+  }
+  const row = await db.queryOneAsync<{ id: number }>('SELECT id FROM tournament WHERE id = ?', [id]);
+  if (!row) {
+    res.status(404).json({ success: false, error: `Tournament ${id} not found` });
+    return null;
+  }
+  return id;
+}
+
 /** A positive integer from a request body, or undefined when it is absent. */
 export function readRevision(value: unknown): number | undefined | null {
   if (value === undefined || value === null || value === '') return undefined;

@@ -36,7 +36,7 @@ import { teamMembers, type TeamMemberRole } from '../../services/teamMembers';
 import { NEEDS_DECISION_STATUS } from '../../utils/matchStatusHelpers';
 import type { DbMatchRow } from '../../types/database.types';
 import type { DbMatchReportRow } from '../../types/matchReport.types';
-import { adminActor, answer, guarded, matchForRequest } from './http';
+import { adminActor, answer, guarded, matchForRequest, tournamentForRequest } from './http';
 import { listFields, replaceFields, validateFields } from './fields';
 import {
   adminResolve,
@@ -171,19 +171,22 @@ function reportOf(row: DisputeRow): Partial<MatchReport> & { revision: number } 
  *
  * With a `result` in the body the admin's version is stored as its own
  * revision (`source: 'admin'`) and the open one is superseded, so the
- * disagreement and its ruling are both on the record.
+ * disagreement and its ruling are both on the record. A `stats` array beside
+ * it replaces the custom values too, checked against the tournament's fields
+ * exactly as a captain's are (PR D6).
  */
 manualReportAdminRoutes.post('/matches/:slug/resolve', async (req: Request, res: Response) => {
   await guarded(res, 'POST /matches/:slug/resolve', async () => {
     const match = await matchForRequest(req, res);
     if (!match) return;
-    const body = (req.body ?? {}) as { result?: unknown };
+    const body = (req.body ?? {}) as { result?: unknown; stats?: unknown };
     answer(
       res,
       await adminResolve({
         matchSlug: match.slug,
         actor: await adminActor(req),
         ...(body.result === undefined ? {} : { result: body.result }),
+        ...(body.stats === undefined ? {} : { stats: body.stats }),
       })
     );
   });
@@ -208,25 +211,11 @@ manualReportAdminRoutes.post('/matches/:slug/reopen', async (req: Request, res: 
 // The extra fields a tournament asks for
 // ---------------------------------------------------------------------------
 
-async function tournamentOr404(req: Request, res: Response): Promise<number | null> {
-  const id = Number(req.params.tournamentId);
-  if (!Number.isInteger(id) || id <= 0) {
-    res.status(400).json({ success: false, error: 'tournamentId must be a positive integer' });
-    return null;
-  }
-  const row = await db.queryOneAsync<{ id: number }>('SELECT id FROM tournament WHERE id = ?', [id]);
-  if (!row) {
-    res.status(404).json({ success: false, error: `Tournament ${id} not found` });
-    return null;
-  }
-  return id;
-}
-
 manualReportAdminRoutes.get(
   '/tournaments/:tournamentId/fields',
   async (req: Request, res: Response) => {
     await guarded(res, 'GET /tournaments/:tournamentId/fields', async () => {
-      const tournamentId = await tournamentOr404(req, res);
+      const tournamentId = await tournamentForRequest(req, res);
       if (tournamentId === null) return;
       res.json({ success: true, tournamentId, fields: await listFields(tournamentId) });
     });
@@ -235,13 +224,14 @@ manualReportAdminRoutes.get(
 
 /**
  * Set the whole list. A field that keeps its key keeps its recorded values; a
- * key that is dropped takes them with it (see `replaceFields`).
+ * key that is dropped takes them with it (see `replaceFields`), which is the
+ * honest reading of "these are the fields now" and why this is admin-only.
  */
 manualReportAdminRoutes.put(
   '/tournaments/:tournamentId/fields',
   async (req: Request, res: Response) => {
     await guarded(res, 'PUT /tournaments/:tournamentId/fields', async () => {
-      const tournamentId = await tournamentOr404(req, res);
+      const tournamentId = await tournamentForRequest(req, res);
       if (tournamentId === null) return;
 
       const body = (req.body ?? {}) as { fields?: unknown };

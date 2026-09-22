@@ -39,6 +39,10 @@
  * - **The tournament comes from the match row** (`tournamentIdForMatch`), not
  *   from a "the tournament" lookup, and socket events are emitted with
  *   `emitTournament(tournamentId, …)`, both for 3.1.
+ * - **A report may carry custom stat values** (3.0 phase D, PR D6), checked
+ *   against the tournament's `custom_stat_fields` by `./statValues` and
+ *   written with the report. They are display only: `applySeriesResult` never
+ *   sees them, so ratings are exactly what they would be without them.
  *
  * Timeouts are swept by `./sweeper`, not by a timer per report, so a deadline
  * that passed while the API was down is still acted on at the next sweep.
@@ -67,6 +71,14 @@ import type {
 } from '../../types/matchReport.types';
 import type { GameResult, SeriesResult, TeamSide } from '../types';
 import { MANUAL_REPORT_GAME_ID } from './catalog';
+import { listFields } from './fields';
+import {
+  clearValues,
+  replaceValues,
+  sidesForMatch,
+  validateStatValues,
+  type StatValueWrite,
+} from './statValues';
 
 // ---------------------------------------------------------------------------
 // Values
@@ -535,6 +547,13 @@ export interface SubmitInput {
   actor: ReportActor;
   /** The reported games; checked by `validateResult` against the match's rules. */
   result: unknown;
+  /**
+   * The tournament's custom stat fields, filled in (3.0 phase D, PR D6).
+   * Checked by `validateStatValues` against `custom_stat_fields`; a required
+   * field left blank, an unknown key or a value of the wrong type refuses the
+   * whole report.
+   */
+  stats?: unknown;
 }
 
 /**
@@ -564,6 +583,11 @@ export async function submitReport(input: SubmitInput): Promise<ReportOutcome> {
     allowDraw: config.allowDraw === true,
   });
   if (!check.ok) return fail(400, check.error);
+
+  // The extra numbers, checked before anything is written: a report with one
+  // bad value supersedes nothing and leaves the match exactly as it was.
+  const stats = await checkStats(match, input.stats, check.result.maps.length);
+  if (!stats.ok) return fail(400, stats.error);
 
   // An admin's own report needs nobody's agreement; a captain's follows the
   // tournament's rule, as it stood when the match was built.
@@ -608,9 +632,11 @@ export async function submitReport(input: SubmitInput): Promise<ReportOutcome> {
   });
 
   const report = await reportById(inserted.lastInsertRowid as number);
+  await replaceValues(match.slug, report.id, stats.values);
   await recordAction(report, 'submit', input.actor, {
     revision,
     confirmation,
+    ...(stats.values.length > 0 ? { statValues: stats.values.length } : {}),
     ...(deadline ? { confirmDeadline: deadline, timeoutAction } : {}),
   });
   await announce(match, report, 'submit');
@@ -731,6 +757,8 @@ export async function withdrawReport(input: {
     [open.id]
   );
   const report = await reportById(open.id);
+  // Nothing this report said stands any more, its numbers included.
+  await clearValues(match.slug);
   await recordAction(report, 'withdraw', input.actor);
   await announce(match, report, 'withdraw');
   return { ok: true, report, finalized: false };
@@ -774,6 +802,8 @@ export async function adminResolve(input: {
   matchSlug: string;
   actor: ReportActor;
   result?: unknown;
+  /** Custom stat values for the admin's own result; ignored without one. */
+  stats?: unknown;
 }): Promise<ReportOutcome> {
   if (input.actor.role !== 'admin') return fail(403, 'Only an admin may resolve a report');
   const match = await matchFor(input.matchSlug);
@@ -782,7 +812,7 @@ export async function adminResolve(input: {
   if (!open) return fail(404, `Match '${match.slug}' has no open report to resolve`);
 
   if (input.result !== undefined) {
-    return writeAdminResult(match, input.actor, input.result, 'resolve');
+    return writeAdminResult(match, input.actor, input.result, 'resolve', input.stats);
   }
 
   const at = now();
@@ -816,6 +846,7 @@ export async function adminOverride(input: {
   matchSlug: string;
   actor: ReportActor;
   result: unknown;
+  stats?: unknown;
 }): Promise<ReportOutcome> {
   if (input.actor.role !== 'admin') return fail(403, 'Only an admin may override a result');
   const match = await matchFor(input.matchSlug);
@@ -826,7 +857,7 @@ export async function adminOverride(input: {
   if (match.status === 'completed' && match.winner_id) {
     return fail(409, 'That match already has a winner; reopen it first');
   }
-  return writeAdminResult(match, input.actor, input.result, 'override');
+  return writeAdminResult(match, input.actor, input.result, 'override', input.stats);
 }
 
 /** Store an admin's result as its own confirmed revision and finish the series. */
@@ -834,7 +865,8 @@ async function writeAdminResult(
   match: DbMatchRow,
   actor: ReportActor,
   result: unknown,
-  action: Extract<MatchReportAction, 'resolve' | 'override'>
+  action: Extract<MatchReportAction, 'resolve' | 'override'>,
+  statsInput?: unknown
 ): Promise<ReportOutcome> {
   const config = configOf(match);
   const check = validateResult(result, {
@@ -842,6 +874,11 @@ async function writeAdminResult(
     allowDraw: config.allowDraw === true,
   });
   if (!check.ok) return fail(400, check.error);
+
+  // An admin's result is measured against the same fields a captain's is: a
+  // ruling that quietly recorded an unknown stat would be worse, not better.
+  const stats = await checkStats(match, statsInput, check.result.maps.length);
+  if (!stats.ok) return fail(400, stats.error);
 
   await supersedeOpen(match.slug, actor);
 
@@ -870,9 +907,31 @@ async function writeAdminResult(
   });
 
   const report = await reportById(inserted.lastInsertRowid as number);
-  await recordAction(report, action, actor);
+  await replaceValues(match.slug, report.id, stats.values);
+  await recordAction(report, action, actor, {
+    ...(stats.values.length > 0 ? { statValues: stats.values.length } : {}),
+  });
   await announce(match, report, action);
   return { ok: true, report, finalized: await finalize(match, report) };
+}
+
+/**
+ * Check a report's custom stat values against the tournament's fields.
+ *
+ * Kept next to the state machine rather than in the routes so every door onto
+ * it — the captain route, an admin ruling, the test helpers — measures a
+ * report by the same rules. `./statValues` holds what those rules are.
+ */
+async function checkStats(
+  match: DbMatchRow,
+  input: unknown,
+  gameCount: number
+): Promise<{ ok: true; values: StatValueWrite[] } | { ok: false; error: string }> {
+  const [fields, { sideOf, sides }] = await Promise.all([
+    listFields(tournamentIdForMatch(match)),
+    sidesForMatch(match),
+  ]);
+  return validateStatValues(input, { fields, gameCount, sideOf, sides });
 }
 
 /**
@@ -956,6 +1015,8 @@ export async function reopenMatch(input: {
 
   await db.runAsync('DELETE FROM match_map_results WHERE match_slug = ?', [match.slug]);
   await db.runAsync('DELETE FROM player_match_stats WHERE match_slug = ?', [match.slug]);
+  // The custom values belonged to the result that no longer stands (PR D6).
+  await clearValues(match.slug);
   await db.updateAsync(
     'matches',
     { status: 'live', winner_id: null, completed_at: null, map_number: 0, current_map: null },

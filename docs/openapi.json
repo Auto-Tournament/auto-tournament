@@ -1634,6 +1634,30 @@
         ]
       }
     },
+    "/api/game/manual/tournaments/{tournamentId}/stats": {
+      "get": {
+        "tags": [
+          "Manual reporting — captains"
+        ],
+        "summary": "GET /api/game/manual/tournaments/:tournamentId/stats",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "tournamentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/api/games/popular": {
       "get": {
         "tags": [
