@@ -39,8 +39,7 @@ import {
 } from '../utils/matchProgression';
 import { recordMapResult, getMapResults } from '../services/matchMapResultService';
 import { advanceToNextRound } from '../services/shuffleTournamentService';
-import { matchAllocationService } from '../services/matchAllocationService';
-import { settingsService } from '../services/settingsService';
+import { scheduler } from './scheduler';
 import { tournamentIdForMatch } from '../utils/tournamentRow';
 import { formatSeriesEndSummary } from '../utils/seriesEndSummary';
 import { decideExhaustedSeries, isSeriesOutOfMaps } from '../utils/exhaustedSeries';
@@ -845,58 +844,11 @@ async function checkAndAdvanceShuffleRound(
         // are actually loaded. This is independent of the per‑server idle
         // cooldown and guarantees e.g. a 5‑minute pause between rounds even if
         // other servers are already free.
-        // TODO(PR 7b): this goes through core/scheduler.ts.
-        try {
-          const webhookUrl = await settingsService.getWebhookUrl();
-          if (webhookUrl) {
-            const delaySeconds = await matchAllocationService.getEffectiveGracePeriodSeconds(tournamentId);
-            const slugs = result.matches.map((m) => m.slug);
-
-            log.info(
-              `[ALLOCATION] Scheduling batch allocation of ${slugs.length} shuffle match(es) for round ${result.roundNumber} in ${delaySeconds}s (inter-round grace window)`
-            );
-
-            setTimeout(() => {
-              void (async () => {
-                try {
-                  const allocationResults = await matchAllocationService.allocateSpecificMatches(
-                    tournamentId,
-                    slugs,
-                    webhookUrl
-                  );
-
-                  const successful = allocationResults.filter((r) => r.success).length;
-                  const failed = allocationResults.length - successful;
-
-                  if (successful > 0) {
-                    log.success(`Auto-allocated ${successful} match(es) to servers`);
-                  }
-
-                  if (failed > 0) {
-                    log.info(
-                      `${failed} match(es) could not be allocated immediately; starting polling where appropriate`
-                    );
-                    for (const result of allocationResults.filter((r) => !r.success)) {
-                      matchAllocationService.startPollingForServer(result.matchSlug, webhookUrl);
-                    }
-                  }
-                } catch (error) {
-                  log.error(
-                    'Error auto-allocating servers to new round matches after grace window',
-                    error
-                  );
-                }
-              })();
-            }, delaySeconds * 1000);
-          } else {
-            log.warn(
-              'Webhook URL not configured - cannot auto-allocate servers to new round matches'
-            );
-          }
-        } catch (error) {
-          log.error('Error scheduling auto-allocation for new round matches', error);
-          // Don't throw - allocation scheduling failure shouldn't break round advancement
-        }
+        await scheduler.scheduleRoundAllocation(
+          tournamentId,
+          result.roundNumber,
+          result.matches.map((m) => m.slug)
+        );
       } else {
         log.info('Tournament is complete or no more rounds');
       }

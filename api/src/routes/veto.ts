@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { emitVetoUpdate } from '../services/socketService';
-import { isQueuedAllocationResult, matchAllocationService } from '../services/matchAllocationService';
+import { isQueuedAllocationResult, scheduler } from '../core/scheduler';
 import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
 import type { TournamentResponse } from '../types/tournament.types';
 import {
@@ -650,7 +650,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       } else {
         setImmediate(async () => {
           try {
-            const result = await matchAllocationService.allocateSingleMatch(matchSlug, baseUrl);
+            const result = await scheduler.allocateSingleMatch(matchSlug, baseUrl);
 
             if (result.success) {
               log.success(`[VETO] Match ${matchSlug} loaded on server ${result.serverId} after veto`);
@@ -664,7 +664,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
               // Start polling for available servers (checks every 10 seconds)
               // The backend will keep checking for available servers and assign one when found
               log.debug(`[VETO] Starting background polling for available servers`, { matchSlug });
-              matchAllocationService.startPollingForServer(matchSlug, baseUrl);
+              scheduler.startPollingForServer(matchSlug, baseUrl);
             }
           } catch (err) {
             log.error(`[VETO] Error loading match after veto`, err as Error);
@@ -673,7 +673,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
             log.debug(`[VETO] Starting background polling for available servers after error`, {
               matchSlug,
             });
-            matchAllocationService.startPollingForServer(matchSlug, baseUrl);
+            scheduler.startPollingForServer(matchSlug, baseUrl);
           }
         });
       }

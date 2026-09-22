@@ -15,8 +15,10 @@
  * `seriesPlayerStats` and `standaloneRoster` when a series ends. The server
  * side of allocation is `./allocation` (`Cs2ServerPool`): which servers are
  * free, loading a match onto one, restarting, moving and ending it. The core
- * keeps the queue and calls it through `capacity`, `allocate`,
- * `allocateBatch`, `restart`, `load`, `cancel` and `release`.
+ * scheduler (`core/scheduler.ts`) keeps the queue and calls it through
+ * `capacity`, `allocate`, `allocateBatch`, `restart`, `load`, `cancel` and
+ * `release`; the tournament start preflight and webhook bootstrap are
+ * `checkStart` and `prepareStart` (./tournamentStart).
  *
  * Services are imported lazily inside each method. That keeps loading the
  * registry free of side effects (no database pool, no monitors) and avoids an
@@ -214,11 +216,12 @@ export const cs2Integration: GameIntegration = {
     };
   },
 
-  /** Today's auto-allocation after a match becomes ready (see makeMatchReady). */
-  async onMatchReady(ctx: MatchContext) {
-    const { autoAllocateServerToMatch } = await import('../../utils/matchProgression');
-    await autoAllocateServerToMatch(ctx.slug);
-  },
+  /**
+   * Nothing yet: the scheduler allocates a newly ready match itself
+   * (`scheduler.allocateReadyMatch`). TODO(PR 8): the simulation auto-veto
+   * moves here from makeMatchReady.
+   */
+  async onMatchReady(_ctx: MatchContext) {},
 
   /**
    * Free servers. The fleet is shared by every tournament, so the scope does
@@ -277,11 +280,39 @@ export const cs2Integration: GameIntegration = {
     );
   },
 
-  /** Force-cancel: best-effort end of the match on its server. */
-  async cancel(ctx) {
+  /**
+   * End the match on its server. Force-cancel keeps its own command (see
+   * `endMatchOnServer`); a tournament restart, reset or delete restarts the
+   * server (`css_restart`).
+   */
+  async cancel(ctx, reason) {
     if (!ctx.resourceId) return;
     const { cs2ServerPool } = await import('./allocation');
-    await cs2ServerPool.endMatchOnServer(ctx.resourceId, ctx.slug);
+    if (reason === 'force-cancel') {
+      await cs2ServerPool.endMatchOnServer(ctx.resourceId, ctx.slug);
+      return;
+    }
+    await cs2ServerPool.restartServerToEndMatch(ctx.resourceId);
+  },
+
+  /** Every enabled server runs an up-to-date CS2 build (RCON BuildID + Steam UpToDateCheck). */
+  async checkStart(_scope) {
+    const { preflightServersUpToDateForTournamentStart } = await import('./tournamentStart');
+    const preflight = await preflightServersUpToDateForTournamentStart();
+    if (preflight.ok) return { ok: true };
+    return {
+      ok: false,
+      errorCode: 'cs2_outdated_servers',
+      message:
+        'One or more enabled servers are out of date (or could not be verified). Update or disable the affected servers before starting the tournament.',
+      details: { servers: preflight.servers },
+    };
+  },
+
+  /** Persistent MatchZy webhook config on every enabled server, so allocation's connectivity checks pass. */
+  async prepareStart(_scope) {
+    const { bootstrapServerWebhooksForTournamentStart } = await import('./tournamentStart');
+    await bootstrapServerWebhooksForTournamentStart();
   },
 
   /**
@@ -293,10 +324,10 @@ export const cs2Integration: GameIntegration = {
   async release(ctx) {
     if (!ctx.resourceId) return;
     const { cs2ServerPool } = await import('./allocation');
-    const { matchAllocationService } = await import('../../services/matchAllocationService');
+    const { scheduler } = await import('../../core/scheduler');
     cs2ServerPool.markIdle(ctx.resourceId);
     setImmediate(() => {
-      void matchAllocationService.tryImmediateAllocation();
+      void scheduler.tryImmediateAllocation();
     });
   },
 

@@ -1,16 +1,35 @@
+/**
+ * Core scheduler: which matches are ready, the allocation queue, batch waves,
+ * and starting or restarting a tournament.
+ *
+ * The scheduler decides when a match gets a resource; the match's game
+ * integration decides which resource and puts the match on it. Everything
+ * game-specific goes through the registry: `capacity()`, `allocate()` and
+ * `allocateBatch()` for allocation, `restart()`, `load()` and `cancel()` for
+ * the admin actions on a match's resource, and `checkStart()` /
+ * `prepareStart()` for the tournament start preflight (CS2:
+ * integrations/cs2/allocation.ts and integrations/cs2/tournamentStart.ts).
+ */
+
 import { db } from '../config/database';
-import { rconService } from '../integrations/cs2/services/rconService';
-import { tournamentService } from './tournamentService';
-import { emitTournamentUpdate, emitBracketUpdate } from './socketService';
-import { generateRoundMatches, advanceToNextRound } from './shuffleTournamentService';
+import { tournamentService } from '../services/tournamentService';
+import { emitTournamentUpdate, emitBracketUpdate } from '../services/socketService';
+import { generateRoundMatches, advanceToNextRound } from '../services/shuffleTournamentService';
 import { resolveTournamentId, tournamentIdForMatch } from '../utils/tournamentRow';
 import { log } from '../utils/logger';
-import { settingsService } from './settingsService';
-import { autoVetoPendingMatches } from './vetoSimulationService';
+import { settingsService } from '../services/settingsService';
+import { autoVetoPendingMatches } from '../services/vetoSimulationService';
 import type { DbMatchRow } from '../types/database.types';
 import type { BracketMatch } from '../types/tournament.types';
 import { integrationForMatch } from '../integrations/registry';
-import type { AllocateResult, GameIntegration, ResourcePoolStatus } from '../integrations/types';
+import type {
+  AllocateResult,
+  CancelReason,
+  GameIntegration,
+  ResourceActionResult,
+  ResourcePoolStatus,
+  StartCheckResult,
+} from '../integrations/types';
 import { matchContextFor } from '../utils/matchIntegration';
 import {
   batchServerTarget,
@@ -19,7 +38,7 @@ import {
   TEAM_BUSY_MATCH_SQL,
   withoutBusyTeams,
   type QueueEntry,
-} from '../utils/allocationQueue';
+} from './allocationQueue';
 
 /** allocateSingleMatch result while a team of the match is still playing (#224). */
 const TEAM_BUSY_ERROR = 'Waiting for a team to finish its current match';
@@ -68,16 +87,20 @@ const EMPTY_POOL: ResourcePoolStatus = {
   graceWindowCount: 0,
 };
 
+/** What ending the matches on their resources reports (tournament restart, reset, delete). */
+export interface EndMatchesOutcome {
+  /** Resources told to end their match. */
+  ended: number;
+  /** Resources that could not be told. */
+  failed: number;
+}
+
 /**
  * Automatic allocation of tournament matches: which matches are ready, the
  * queue order, a team playing one match at a time, batch waves, and starting
- * or restarting a tournament.
- *
- * Which resource a match goes on, and loading it there, belongs to the game
- * integration: `capacity()`, `allocate()` and `allocateBatch()` through the
- * registry (CS2: integrations/cs2/allocation.ts).
+ * or restarting a tournament. See the note at the top of the file.
  */
-export class MatchAllocationService {
+export class Scheduler {
   /** Last contention summary logged by getAllocationStatus, to log changes only. */
   private lastContentionSummary: string | null = null;
 
@@ -697,9 +720,13 @@ export class MatchAllocationService {
     const availableServerCount = await this.getAvailableServerCount(tournamentId);
     const hasAvailableServers = availableServerCount > 0;
 
-    // Determine if this tournament uses veto system
-    // Shuffle tournaments *never* use veto, even if format is BO1
+    // Determine if this tournament uses veto system: the game has a veto
+    // (pre-match phase) and the format is a series. Shuffle tournaments
+    // *never* use veto, even if format is BO1. TODO(PR 8): per match, through
+    // isReadyToAllocate().
+    const integration = await this.integrationForTournament(tournamentId);
     const requiresVeto =
+      integration.capabilities.veto &&
       tournament.type !== 'shuffle' &&
       ['bo1', 'bo3', 'bo5'].includes(tournament.format.toLowerCase());
 
@@ -996,9 +1023,9 @@ export class MatchAllocationService {
     log.info(`Restarting ${serverIds.size} server(s)...`);
 
     // Wait a moment after each restart for the server to clean up
-    const { ended: restarted, failed: restartFailed } = await rconService.endMatchesOnServers(
-      serverIds,
-      { logPrefix: '[RESTART]', delayAfterEachMs: 2000 }
+    const { ended: restarted, failed: restartFailed } = await this.endMatchesOnResources(
+      loadedMatches,
+      { reason: 'tournament-restart', logPrefix: '[RESTART]', delayAfterEachMs: 2000 }
     );
 
     // Reset all loaded/live matches back to 'ready' status
@@ -1036,6 +1063,190 @@ export class MatchAllocationService {
     };
   }
 
+  /**
+   * End the given matches on their resources, one resource at a time, in the
+   * order given (tournament restart, reset, delete and the dev simulation
+   * reset). A resource running several of the matches is told once. Counts
+   * resources, not matches; a resource that could not be told counts as
+   * failed and never stops the rest.
+   */
+  async endMatchesOnResources(
+    matches: DbMatchRow[],
+    options: { reason: CancelReason; logPrefix?: string; delayAfterEachMs?: number }
+  ): Promise<EndMatchesOutcome> {
+    const prefix = options.logPrefix ? `${options.logPrefix} ` : '';
+    const byResource = new Map<string, DbMatchRow>();
+    for (const match of matches) {
+      if (match.server_id && !byResource.has(match.server_id)) {
+        byResource.set(match.server_id, match);
+      }
+    }
+
+    let ended = 0;
+    let failed = 0;
+    for (const [resourceId, match] of byResource) {
+      try {
+        log.info(`${prefix}Ending match on server: ${resourceId}`);
+        const integration = integrationForMatch(match);
+        await integration.cancel?.(await matchContextFor(match), options.reason);
+        ended++;
+
+        if (options.delayAfterEachMs && options.delayAfterEachMs > 0) {
+          await new Promise((resolve) => setTimeout(resolve, options.delayAfterEachMs));
+        }
+      } catch (error) {
+        log.error(`${prefix}Failed to end match on server ${resourceId}`, error);
+        failed++;
+      }
+    }
+
+    return { ended, failed };
+  }
+
+  /**
+   * The tournament start preflight: the integration checks its resources
+   * (CS2: enabled servers run an up-to-date build). A failed check blocks the
+   * start.
+   */
+  async checkStart(tournamentId: number): Promise<StartCheckResult> {
+    const integration = await this.integrationForTournament(tournamentId);
+    return integration.checkStart ? integration.checkStart({ tournamentId }) : { ok: true };
+  }
+
+  /** Get the integration's resources ready for a tournament start (CS2: webhook bootstrap). */
+  async prepareStart(tournamentId: number): Promise<void> {
+    const integration = await this.integrationForTournament(tournamentId);
+    await integration.prepareStart?.({ tournamentId });
+  }
+
+  /**
+   * Admin "load": put the match on the resource it is assigned to. Null when
+   * the match's integration has no load action.
+   */
+  async loadMatch(
+    match: DbMatchRow,
+    opts: { baseUrl: string; skipWebhook?: boolean }
+  ): Promise<ResourceActionResult | null> {
+    const integration = integrationForMatch(match);
+    if (!integration.load) return null;
+    return integration.load(await matchContextFor(match), opts);
+  }
+
+  /** Admin "restart": restart the match on its resource. */
+  async restartMatch(match: DbMatchRow, opts: { baseUrl: string }): Promise<ResourceActionResult> {
+    return integrationForMatch(match).restart(await matchContextFor(match), opts);
+  }
+
+  /** Admin "reallocate": move a match that has not gone live to another free resource. */
+  async reallocateMatch(match: DbMatchRow, opts: { baseUrl: string }): Promise<ResourceActionResult> {
+    return integrationForMatch(match).restart(await matchContextFor(match), {
+      ...opts,
+      moveResource: true,
+    });
+  }
+
+  /**
+   * Best-effort end of one match on its resource (force-cancel). Rejects when
+   * the resource could not be told; the caller records the cancel regardless.
+   */
+  async cancelMatch(match: DbMatchRow, reason: CancelReason): Promise<void> {
+    await integrationForMatch(match).cancel?.(await matchContextFor(match), reason);
+  }
+
+  /**
+   * A match has just become ready (both teams, a config, status `ready`):
+   * try to allocate it now, in its queue turn. Polling and later passes pick
+   * it up when it cannot go yet.
+   */
+  async allocateReadyMatch(matchSlug: string): Promise<void> {
+    try {
+      const webhookUrl = await settingsService.getWebhookUrl();
+
+      if (!webhookUrl) {
+        log.warn(
+          'Webhook URL is not configured. Skipping auto-allocation for match. Configure the webhook URL in Settings.'
+        );
+        return;
+      }
+
+      const result = await this.allocateSingleMatch(matchSlug, webhookUrl);
+
+      if (result.success) {
+        log.success(`Auto-allocated match ${matchSlug} to server ${result.serverId}`);
+        emitBracketUpdate({
+          action: 'match_allocated',
+          matchSlug,
+          serverId: result.serverId,
+        });
+      } else {
+        log.warn(`Could not auto-allocate match ${matchSlug}: ${result.error}`);
+      }
+    } catch (error) {
+      log.error('Error in auto-allocate server', error, { matchSlug });
+    }
+  }
+
+  /**
+   * A new round (shuffle) was generated: allocate its matches as one batch,
+   * but only after the inter-round grace window, so there is a pause between
+   * rounds even when resources are already free. Matches that cannot go then
+   * start polling.
+   */
+  async scheduleRoundAllocation(
+    tournamentId: number,
+    roundNumber: number,
+    matchSlugs: string[]
+  ): Promise<void> {
+    try {
+      const webhookUrl = await settingsService.getWebhookUrl();
+      if (webhookUrl) {
+        const delaySeconds = await this.getEffectiveGracePeriodSeconds(tournamentId);
+        const slugs = matchSlugs;
+
+        log.info(
+          `[ALLOCATION] Scheduling batch allocation of ${slugs.length} shuffle match(es) for round ${roundNumber} in ${delaySeconds}s (inter-round grace window)`
+        );
+
+        setTimeout(() => {
+          void (async () => {
+            try {
+              const allocationResults = await this.allocateSpecificMatches(
+                tournamentId,
+                slugs,
+                webhookUrl
+              );
+
+              const successful = allocationResults.filter((r) => r.success).length;
+              const failed = allocationResults.length - successful;
+
+              if (successful > 0) {
+                log.success(`Auto-allocated ${successful} match(es) to servers`);
+              }
+
+              if (failed > 0) {
+                log.info(
+                  `${failed} match(es) could not be allocated immediately; starting polling where appropriate`
+                );
+                for (const result of allocationResults.filter((r) => !r.success)) {
+                  this.startPollingForServer(result.matchSlug, webhookUrl);
+                }
+              }
+            } catch (error) {
+              log.error(
+                'Error auto-allocating servers to new round matches after grace window',
+                error
+              );
+            }
+          })();
+        }, delaySeconds * 1000);
+      } else {
+        log.warn('Webhook URL not configured - cannot auto-allocate servers to new round matches');
+      }
+    } catch (error) {
+      log.error('Error scheduling auto-allocation for new round matches', error);
+      // Don't throw - allocation scheduling failure shouldn't break round advancement
+    }
+  }
 
   // Track polling intervals to avoid duplicate polling
   private pollingIntervals = new Map<string, ReturnType<typeof setInterval>>();
@@ -1228,7 +1439,7 @@ export class MatchAllocationService {
   }
 }
 
-export const matchAllocationService = new MatchAllocationService();
+export const scheduler = new Scheduler();
 
 /**
  * An allocation "failure" that only means the match is queued: no server is

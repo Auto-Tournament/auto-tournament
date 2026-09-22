@@ -170,59 +170,6 @@ export class RconService {
   }
 
   /**
-   * End whatever match is running on each server by restarting it
-   * (`css_restart`), one server at a time.
-   *
-   * Shared by tournament reset, delete, restart and the dev simulation reset so
-   * they count and log outcomes the same way. A restart whose RCON reply was
-   * lost (the server restarted before answering) counts as ended and is
-   * reported in `unconfirmed` as well, never as a failure.
-   */
-  async endMatchesOnServers(
-    serverIds: Iterable<string>,
-    options: { logPrefix?: string; delayAfterEachMs?: number } = {}
-  ): Promise<{ ended: number; unconfirmed: number; failed: number }> {
-    const prefix = options.logPrefix ? `${options.logPrefix} ` : '';
-    let ended = 0;
-    let unconfirmed = 0;
-    let failed = 0;
-
-    for (const serverId of serverIds) {
-      try {
-        log.info(`${prefix}Ending match on server: ${serverId}`);
-        const result = await this.sendCommand(serverId, 'css_restart');
-
-        if (!result.success) {
-          log.error(`${prefix}Failed to end match on server ${serverId}`, undefined, {
-            error: result.error,
-          });
-          failed++;
-          continue;
-        }
-
-        ended++;
-        if (result.unconfirmed) {
-          unconfirmed++;
-          log.warn(
-            `${prefix}Restart sent to server ${serverId}; no RCON reply (server was restarting), counting the match as ended`
-          );
-        } else {
-          log.success(`${prefix}Match ended on server ${serverId}`);
-        }
-
-        if (options.delayAfterEachMs && options.delayAfterEachMs > 0) {
-          await new Promise((resolve) => setTimeout(resolve, options.delayAfterEachMs));
-        }
-      } catch (error) {
-        log.error(`${prefix}Error ending match on server ${serverId}`, error);
-        failed++;
-      }
-    }
-
-    return { ended, unconfirmed, failed };
-  }
-
-  /**
    * Send a command to multiple servers
    */
   async sendCommandToServers(serverIds: string[], command: string): Promise<RconCommandResponse[]> {

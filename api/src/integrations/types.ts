@@ -8,9 +8,9 @@
  * talks to a game only through this interface.
  *
  * CS2 is the only integration today (`integrations/cs2`). The core reaches it
- * through the registry; the places that still call CS2 code directly are the
- * legacy list in eslint-rules/integration-boundaries.mjs, and later PRs move
- * them behind this interface one seam at a time (see the TODOs).
+ * only through the registry (eslint-rules/integration-boundaries.mjs enforces
+ * it). Some CS2 features (veto, maps, stats) still live in core files; later
+ * PRs move them behind this interface one seam at a time (see the TODOs).
  *
  * Two rules keep a future out-of-process (HTTP/webhook) integration possible:
  * - every value that crosses the boundary can be serialised to JSON;
@@ -220,6 +220,28 @@ export interface ResourcePoolStatus {
   busyCount: number;
   graceWindowCount: number;
 }
+
+/**
+ * Why the core ends a match on its resource. `force-cancel` is the admin
+ * action on one match; the others end every loaded or live match of a
+ * tournament before it is restarted, reset, deleted or (dev) wiped for a new
+ * simulation run.
+ */
+export type CancelReason =
+  | 'force-cancel'
+  | 'tournament-restart'
+  | 'tournament-reset'
+  | 'tournament-delete'
+  | 'simulation-reset';
+
+/**
+ * Outcome of an integration's check before a tournament starts. A failed
+ * check blocks the start; `errorCode`, `message` and `details` go to the
+ * admin as they are (CS2: `cs2_outdated_servers` with the affected servers).
+ */
+export type StartCheckResult =
+  | { ok: true }
+  | { ok: false; errorCode: string; message: string; details?: Record<string, unknown> };
 
 export interface ValidationResult {
   valid: boolean;
@@ -474,12 +496,31 @@ export interface GameIntegration {
   // --- lifecycle -----------------------------------------------------------
 
   /**
-   * Called once a match has both participants, a config and status `ready`.
-   * CS2: auto-allocate a server. Must be safe to call twice.
+   * Called once a match has both participants, a config and status `ready`,
+   * for the integration's own side effects. Allocating the match is the
+   * scheduler's (`core/scheduler.ts`), not this hook's. Must be safe to call
+   * twice. TODO(PR 8): CS2 auto-completes the veto here in simulation mode.
    */
   onMatchReady?(ctx: MatchContext): Promise<void>;
-  /** TODO(PR 8): CS2 returns false until the veto is complete. */
+  /**
+   * TODO(PR 8): CS2 returns false until the veto is complete. Today the only
+   * veto gate is tournament-wide: with `capabilities.veto`, the scheduler's
+   * tournament start leaves allocation to the veto flow (see
+   * `Scheduler.startTournament`).
+   */
   isReadyToAllocate?(ctx: MatchContext): Promise<boolean>;
+  /**
+   * Check the integration's resources before a tournament starts (CS2: every
+   * enabled server runs an up-to-date CS2 build). Omit when there is nothing
+   * to check.
+   */
+  checkStart?(scope: CapacityScope): Promise<StartCheckResult>;
+  /**
+   * Get the resources ready for a tournament start (CS2: the persistent
+   * webhook config on every enabled server). Idempotent; a rejection is
+   * logged and the start carries on.
+   */
+  prepareStart?(scope: CapacityScope): Promise<void>;
   /**
    * Idle resources that can take a match now; `null` means unlimited (no
    * servers). The core asks before it hands out a queue turn.
@@ -508,10 +549,11 @@ export interface GameIntegration {
   /** Load the match on the resource it is assigned to (the admin "load" action). */
   load?(ctx: MatchContext, opts: { baseUrl: string; skipWebhook?: boolean }): Promise<ResourceActionResult>;
   /**
-   * Best-effort end of the match on its resource (force-cancel). Rejects when
-   * the resource could not be told; the core records the cancel regardless.
+   * Best-effort end of the match on its resource (force-cancel, or a
+   * tournament restart, reset or delete: see `CancelReason`). Rejects when the
+   * resource could not be told; the core records the cancel regardless.
    */
-  cancel?(ctx: MatchContext, reason: string): Promise<void>;
+  cancel?(ctx: MatchContext, reason: CancelReason): Promise<void>;
   /**
    * The series is over (finished, drawn, or parked for an admin decision):
    * free the match's resource for the next match. CS2: mark the server idle

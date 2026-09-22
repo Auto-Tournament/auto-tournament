@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { db } from '../config/database';
 import type { DbMatchRow, DbEventRow } from '../types/database.types';
 import { computeTeamStanding, globalMatchNumbers, type TeamStanding } from '../utils/teamPage';
-import { matchBracketOf } from '../utils/allocationQueue';
+import { matchBracketOf } from '../core/allocationQueue';
 import { resolveTournamentId } from '../utils/tournamentRow';
 import { getSwissStandingEntries } from '../services/swissProgressionService';
 

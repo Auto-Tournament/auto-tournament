@@ -1,7 +1,7 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import { getAuthHeader, signInViaRequest } from '../helpers/auth';
 import { setupTournament } from '../helpers/tournamentSetup';
-import { withoutBusyTeams, type QueueEntry } from '../../api/src/utils/allocationQueue';
+import { withoutBusyTeams, type QueueEntry } from '../../api/src/core/allocationQueue';
 
 /**
  * A team plays one match at a time (#224).

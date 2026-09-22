@@ -4,7 +4,7 @@ import {
   compareQueueOrder,
   isQueueable,
   type QueueEntry,
-} from '../../api/src/utils/allocationQueue';
+} from '../../api/src/core/allocationQueue';
 
 /**
  * Servers go to waiting matches in queue order.

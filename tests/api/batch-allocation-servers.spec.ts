@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { batchServerTarget } from '../../api/src/utils/allocationQueue';
+import { batchServerTarget } from '../../api/src/core/allocationQueue';
 
 /**
  * A shuffle round with more matches than servers still starts (#226).

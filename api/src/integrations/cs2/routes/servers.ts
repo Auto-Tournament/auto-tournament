@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { serverService } from '../services/serverService';
 import { CreateServerInput, UpdateServerInput } from '../../../types/server.types';
 import { requireAuth } from '../../../middleware/auth';
-import { matchAllocationService } from '../../../services/matchAllocationService';
+import { scheduler } from '../../../core/scheduler';
 import { serverInitializationService } from '../services/serverInitializationService';
 import { settingsService } from '../../../services/settingsService';
 import { log } from '../../../utils/logger';
@@ -57,7 +57,7 @@ router.post('/batch', async (req: Request, res: Response) => {
 
     if (result.successful.length > 0) {
       setImmediate(() => {
-        void matchAllocationService.tryImmediateAllocation();
+        void scheduler.tryImmediateAllocation();
       });
       setImmediate(async () => {
         try {
@@ -197,7 +197,7 @@ router.post('/', async (req: Request, res: Response) => {
     if (server.enabled !== false) {
       log.info(`New server ${server.id} created and enabled, triggering immediate allocation`);
       setImmediate(() => {
-        void matchAllocationService.tryImmediateAllocation();
+        void scheduler.tryImmediateAllocation();
       });
       // Send persistent config (webhook, etc.) so MatchZy can start sending events and server becomes "initialized"
       setImmediate(async () => {
@@ -245,7 +245,7 @@ router.put('/:id', async (req: Request, res: Response) => {
     if (input.enabled === true) {
       log.info(`Server ${id} updated with enabled=true, triggering immediate allocation`);
       setImmediate(() => {
-        void matchAllocationService.tryImmediateAllocation();
+        void scheduler.tryImmediateAllocation();
       });
     }
 
@@ -281,7 +281,7 @@ router.patch('/:id', async (req: Request, res: Response) => {
     if (input.enabled === true) {
       log.info(`Server ${id} patched with enabled=true, triggering immediate allocation`);
       setImmediate(() => {
-        void matchAllocationService.tryImmediateAllocation();
+        void scheduler.tryImmediateAllocation();
       });
     }
 
@@ -386,7 +386,7 @@ router.post('/:id/enable', async (req: Request, res: Response) => {
     // Server is now available - trigger immediate allocation for waiting matches
     log.info(`Server ${id} enabled, triggering immediate allocation`);
     setImmediate(() => {
-      void matchAllocationService.tryImmediateAllocation();
+      void scheduler.tryImmediateAllocation();
     });
 
     return res.json({
