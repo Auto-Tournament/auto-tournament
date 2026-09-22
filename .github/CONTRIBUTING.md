@@ -3,6 +3,8 @@
 The full guide is in the docs:
 [Development → Contributing](https://docs.autotournament.gg/developer/contributing).
 
+Contributions are accepted under the project's [PolyForm Noncommercial License](../LICENSE).
+
 ## Running it locally
 
 ```bash
