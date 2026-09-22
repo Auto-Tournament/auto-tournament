@@ -1,6 +1,7 @@
 import type { Request } from 'express';
 import type { DbTournamentRow } from '../types/database.types';
 import type { TournamentResponse, TournamentSettings } from '../types/tournament.types';
+import { DEFAULT_GAME } from '../integrations/types';
 
 /**
  * The id of the single tournament row that 3.0 hosts.
@@ -79,6 +80,7 @@ export function tournamentRowToResponse(row: DbTournamentRow): TournamentRespons
     type: row.type as TournamentResponse['type'],
     format: row.format as TournamentResponse['format'],
     status: row.status as TournamentResponse['status'],
+    game: row.game || DEFAULT_GAME,
     maps: parseJson<string[]>(row.maps, []),
     teamIds: parseJson<string[]>(row.team_ids, []),
     settings: normalizeTournamentSettings(

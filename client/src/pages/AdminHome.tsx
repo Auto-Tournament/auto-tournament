@@ -7,7 +7,7 @@ import { useAdminHomeData } from '../hooks/useAdminHomeData';
 import { SetupCard, type SetupItem } from '../components/adminHome/SetupCard';
 import { TournamentsList } from '../components/adminHome/TournamentsList';
 import { SiteLinksGrid } from '../components/adminHome/SiteLinksGrid';
-import { ServersOverviewCard } from '../components/adminHome/ServersOverviewCard';
+import { instanceIntegration } from '../integrations/registry';
 import { PeopleOverviewCard } from '../components/adminHome/PeopleOverviewCard';
 
 declare const __APP_VERSION__: string | undefined;
@@ -23,6 +23,8 @@ declare const __APP_VERSION__: string | undefined;
  * in the list below is the way in.
  */
 export default function AdminHome() {
+  // The game's resource summary (CS2: the server fleet).
+  const ServersOverviewCard = instanceIntegration().dashboardWidgets.adminHomeResources;
   const { t } = useTranslation();
   const { tournaments, loading: tournamentsLoading } = useTournamentList();
   const {
@@ -113,7 +115,9 @@ export default function AdminHome() {
               </Grid>
               <Grid size={{ xs: 12, md: 4 }}>
                 <Stack spacing={2}>
-                  <ServersOverviewCard fleet={serverFleet} pluginVersions={pluginVersions} />
+                  {ServersOverviewCard && (
+                    <ServersOverviewCard fleet={serverFleet} pluginVersions={pluginVersions} />
+                  )}
                   <PeopleOverviewCard playersCount={playersCount} adminsCount={adminsCount} />
                 </Stack>
               </Grid>

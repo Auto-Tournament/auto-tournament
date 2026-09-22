@@ -25,9 +25,6 @@ import type { TournamentSettings, TournamentTemplate } from '../../../types/tour
 import SaveMapPoolModal from '../../modals/SaveMapPoolModal';
 import TeamModal from '../../modals/TeamModal';
 import { TeamImportModal } from '../../modals/TeamImportModal';
-import ServerModal from '../../modals/ServerModal';
-import BatchServerModal from '../../modals/BatchServerModal';
-import { MapPoolStep } from '../MapPoolStep';
 import { TeamSelectionStep } from '../TeamSelectionStep';
 import { ShufflePlayerRegistration } from '../ShufflePlayerRegistration';
 import { ShuffleTournamentStats } from '../ShuffleTournamentStats';
@@ -42,7 +39,8 @@ import { SetupSummary, type ChecklistItem, type SummaryRow } from './SetupSummar
 import { FormatCards } from './FormatCards';
 import { SegmentedControl } from './SegmentedControl';
 import { TeamCountStepper } from './TeamCountStepper';
-import { Cs2MatchSettings, type Cs2MatchSettingsValue } from './Cs2MatchSettings';
+import { getIntegration } from '../../../integrations/registry';
+import type { MatchRulesValue } from '../../../integrations/types';
 import { EloTemplateSelect } from './EloTemplateSelect';
 import { ReviewStep, type ReviewTournament } from './ReviewStep';
 import { DEFAULT_SETUP_GAME, SETUP_GAMES } from './games';
@@ -79,7 +77,7 @@ export interface SetupFormHandlers {
   onFormatChange: (format: string) => void;
   onTeamsChange: (teamIds: string[]) => void;
   onMapsChange: (maps: string[]) => void;
-  onCs2SettingsChange: (patch: Partial<Cs2MatchSettingsValue>) => void;
+  onCs2SettingsChange: (patch: Partial<MatchRulesValue>) => void;
   onGrandFinalModeChange: (mode: GrandFinalMode) => void;
   onShuffleSettingsChange: (settings: ShuffleTournamentSettings) => void;
   onEloTemplateChange: (templateId: string) => void;
@@ -89,6 +87,8 @@ export interface SetupFormHandlers {
 
 export interface SetupTournament extends ReviewTournament {
   status: string;
+  /** Game integration (API `game`); new tournaments use the setup's game. */
+  game?: string;
   settings?: TournamentSettings;
 }
 
@@ -162,6 +162,13 @@ export function TournamentSetup(props: TournamentSetupProps) {
     const pool = mapPools.find((p) => p.id.toString() === selectedMapPool);
     if (pool) handlers.onMapsChange(pool.mapIds);
   }, [mapPools, form.maps.length, selectedMapPool, handlers]);
+  // Game-specific steps and dialogs (CS2: rounds/overtime, map pool, servers).
+  const integration = getIntegration(tournament?.game ?? DEFAULT_SETUP_GAME.id);
+  const RulesStep = integration.tournamentSetupSteps.rules;
+  const ContentStep = integration.tournamentSetupSteps.content;
+  const AddResourceDialog = integration.resourceDialogs.add;
+  const BatchResourceDialog = integration.resourceDialogs.batchAdd;
+
   const [servers, setServers] = useState<Server[]>([]);
   const [saveMapPoolModalOpen, setSaveMapPoolModalOpen] = useState(false);
   const [teamModalOpen, setTeamModalOpen] = useState(false);
@@ -232,7 +239,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
   }, [tournament]);
 
   // ---- Validation and navigation ------------------------------------------
-  const cs2Value: Cs2MatchSettingsValue = isShuffle
+  const cs2Value: MatchRulesValue = isShuffle
     ? {
         maxRounds: form.shuffleSettings.maxRounds,
         overtimeMode: form.shuffleSettings.overtimeMode,
@@ -625,14 +632,16 @@ export function TournamentSetup(props: TournamentSetupProps) {
               </Box>
             )}
 
-            <Cs2MatchSettings
-              value={cs2Value}
-              onChange={handlers.onCs2SettingsChange}
-              disabled={locked}
-              maxRoundsTestId={
-                isShuffle ? 'shuffle-max-rounds-field' : 'tournament-max-rounds-field'
-              }
-            />
+            {RulesStep && (
+              <RulesStep
+                value={cs2Value}
+                onChange={handlers.onCs2SettingsChange}
+                disabled={locked}
+                maxRoundsTestId={
+                  isShuffle ? 'shuffle-max-rounds-field' : 'tournament-max-rounds-field'
+                }
+              />
+            )}
           </>
         );
       }
@@ -691,21 +700,23 @@ export function TournamentSetup(props: TournamentSetupProps) {
         )?.[form.format];
         return (
           <>
-            <MapPoolStep
-              format={form.format}
-              type={form.type}
-              maps={form.maps}
-              mapPools={mapPools}
-              availableMaps={availableMaps}
-              selectedMapPool={selectedMapPool}
-              loadingMaps={loadingMaps}
-              canEdit={canEdit}
-              saving={saving}
-              onMapPoolChange={handleMapPoolChange}
-              onMapsChange={handlers.onMapsChange}
-              onMapRemove={handleMapRemove}
-              onSaveMapPool={() => setSaveMapPoolModalOpen(true)}
-            />
+            {ContentStep && (
+              <ContentStep
+                format={form.format}
+                type={form.type}
+                maps={form.maps}
+                mapPools={mapPools}
+                availableMaps={availableMaps}
+                selectedMapPool={selectedMapPool}
+                loadingMaps={loadingMaps}
+                canEdit={canEdit}
+                saving={saving}
+                onMapPoolChange={handleMapPoolChange}
+                onMapsChange={handlers.onMapsChange}
+                onMapRemove={handleMapRemove}
+                onSaveMapPool={() => setSaveMapPoolModalOpen(true)}
+              />
+            )}
             <Field label={t('tournament.setup.maps.vetoTitle')}>
               <Typography
                 variant="body2"
@@ -1000,28 +1011,32 @@ export function TournamentSetup(props: TournamentSetupProps) {
         }}
       />
 
-      <ServerModal
-        open={serverModalOpen}
-        server={null}
-        servers={servers}
-        onClose={() => setServerModalOpen(false)}
-        onSave={async () => {
-          await loadServers();
-          await refreshServers();
-          setServerModalOpen(false);
-        }}
-      />
+      {AddResourceDialog && (
+        <AddResourceDialog
+          open={serverModalOpen}
+          server={null}
+          servers={servers}
+          onClose={() => setServerModalOpen(false)}
+          onSave={async () => {
+            await loadServers();
+            await refreshServers();
+            setServerModalOpen(false);
+          }}
+        />
+      )}
 
-      <BatchServerModal
-        open={batchServerModalOpen}
-        onClose={() => setBatchServerModalOpen(false)}
-        onSave={async () => {
-          await loadServers();
-          await refreshServers();
-          setBatchServerModalOpen(false);
-        }}
-        existingServers={servers}
-      />
+      {BatchResourceDialog && (
+        <BatchResourceDialog
+          open={batchServerModalOpen}
+          onClose={() => setBatchServerModalOpen(false)}
+          onSave={async () => {
+            await loadServers();
+            await refreshServers();
+            setBatchServerModalOpen(false);
+          }}
+          existingServers={servers}
+        />
+      )}
     </Box>
   );
 }

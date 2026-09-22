@@ -165,6 +165,8 @@ export interface MatchMapResult {
 export interface MatchListItem {
   id: number;
   slug: string;
+  /** Game integration that owns the match (`matches.game`, default 'cs2'). */
+  game: string;
   round: number;
   matchNumber: number;
   [key: string]: unknown;

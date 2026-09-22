@@ -3,6 +3,7 @@ import { Warning as WarningIcon, Add as AddIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { Team } from '../../types';
 import { validateTeamCountForType } from '../../utils/tournamentValidation';
+import { paths } from '../../paths';
 
 interface TeamSelectionStepProps {
   teams: Team[];
@@ -85,7 +86,7 @@ export function TeamSelectionStep({
                 color="inherit"
                 size="small"
                 startIcon={<AddIcon />}
-                onClick={onAddServer || (() => (window.location.href = '/servers'))}
+                onClick={onAddServer || (() => (window.location.href = paths.servers))}
               >
                 {t('tournament.teamSelection.addServer')}
               </Button>

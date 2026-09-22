@@ -1,21 +1,22 @@
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Paper, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { instanceIntegration } from '../../integrations/registry';
+import { paths } from '../../paths';
 
 interface SiteLink {
   key: string;
   to: string;
 }
 
-const SITE_LINKS: SiteLink[] = [
-  { key: 'servers', to: '/servers' },
-  { key: 'maps', to: '/maps' },
-  { key: 'players', to: '/players' },
-  { key: 'teams', to: '/teams' },
-  { key: 'templates', to: '/templates' },
-  { key: 'ratings', to: '/elo-templates' },
-  { key: 'settings', to: '/settings' },
-  { key: 'adminTools', to: '/admin' },
+/** Core pages; the game integration's pages (CS2: Servers, Maps) come first. */
+const CORE_SITE_LINKS: SiteLink[] = [
+  { key: 'players', to: paths.players },
+  { key: 'teams', to: paths.teams },
+  { key: 'templates', to: paths.templates },
+  { key: 'ratings', to: paths.eloTemplates },
+  { key: 'settings', to: paths.settings },
+  { key: 'adminTools', to: paths.admin },
 ];
 
 /**
@@ -26,6 +27,10 @@ const SITE_LINKS: SiteLink[] = [
  */
 export function SiteLinksGrid() {
   const { t } = useTranslation();
+  const siteLinks: SiteLink[] = [
+    ...instanceIntegration().navItems.map((item) => ({ key: item.key, to: item.path })),
+    ...CORE_SITE_LINKS,
+  ];
 
   return (
     <Box component="section" data-testid="admin-home-site-grid">
@@ -39,7 +44,7 @@ export function SiteLinksGrid() {
           gap: 1.5,
         }}
       >
-        {SITE_LINKS.map((link) => (
+        {siteLinks.map((link) => (
           <Paper
             key={link.key}
             variant="outlined"

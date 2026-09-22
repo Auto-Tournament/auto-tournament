@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { db } from '../config/database';
 import { playerConnectionService } from '../services/playerConnectionService';
 import { integrationForMatch } from '../integrations/registry';
+import { DEFAULT_GAME } from '../integrations/types';
 import { describeMatch, describedPlayers } from '../utils/matchIntegration';
 import { normalizeConfigPlayers } from '../utils/playerTransform';
 import { teamService } from '../services/teamService';
@@ -384,6 +385,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
       tournamentStatus: tournament?.status || 'setup',
         match: {
         slug: match.slug,
+        game: match.game || DEFAULT_GAME,
         round: match.round,
         matchNumber: match.match_number,
         status: match.status,

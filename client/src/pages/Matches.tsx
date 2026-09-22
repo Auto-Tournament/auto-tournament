@@ -11,7 +11,7 @@ import { CreateManualMatchModal } from '../components/modals/CreateManualMatchMo
 import { EmptyState } from '../components/shared/EmptyState';
 import { StatusLegend } from '../components/shared/StatusLegend';
 import { MatchCard } from '../components/shared/MatchCard';
-import { ServerAllocationWidget } from '../components/shared/ServerAllocationWidget';
+import { instanceIntegration } from '../integrations/registry';
 import { getGlobalMatchNumber, getRoundLabel } from '../utils/matchUtils';
 import { isManualMatch as isManualMatchFlag } from '../utils/matchFlags';
 import { api } from '../utils/api';
@@ -20,6 +20,8 @@ import ConfirmDialog from '../components/modals/ConfirmDialog';
 import { useTranslation } from 'react-i18next';
 
 export default function Matches() {
+  // The game's allocation status panel (CS2: servers the queue waits for).
+  const ServerAllocationWidget = instanceIntegration().matchPanels.adminView;
   const navigate = useNavigate();
   const [upcomingMatches, setUpcomingMatches] = useState<Match[]>([]);
   const [liveMatches, setLiveMatches] = useState<Match[]>([]);
@@ -613,7 +615,7 @@ export default function Matches() {
       )}
 
       {/* Server Allocation Status Widget */}
-      {hasMatches && serverAllocationStatus && serverAllocationStatus.servers.length > 0 && (
+      {ServerAllocationWidget && hasMatches && serverAllocationStatus && serverAllocationStatus.servers.length > 0 && (
         <ServerAllocationWidget
           servers={serverAllocationStatus.servers}
           gracePeriodSeconds={serverAllocationStatus.gracePeriodSeconds}

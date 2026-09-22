@@ -18,8 +18,7 @@ import SaveMapPoolModal from './SaveMapPoolModal';
 import { useCreateManualMatchModal } from './useCreateManualMatchModal';
 import { ManualMatchChooseModeStep } from './ManualMatchChooseModeStep';
 import { ManualMatchBasicsStep } from './ManualMatchBasicsStep';
-import { ManualMatchMapsRulesStep } from './ManualMatchMapsRulesStep';
-import { ManualMatchMapsStep } from './ManualMatchMapsStep';
+import { instanceIntegration } from '../../integrations/registry';
 import { ManualMatchReviewStep } from './ManualMatchReviewStep';
 import { useTranslation } from 'react-i18next';
 
@@ -127,6 +126,9 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
     },
   } = useCreateManualMatchModal({ open, onCreated, onClose });
 
+  // Standalone matches are created for the instance's game (CS2 today).
+  const { rules: RulesStep, content: ContentStep } = instanceIntegration().standaloneMatchSteps;
+
   return (
     <>
       <Dialog open={open} onClose={handleDialogClose} fullWidth maxWidth="sm" disableEscapeKeyDown>
@@ -177,8 +179,8 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
               />
             )}
 
-            {activeStep === 1 && (
-              <ManualMatchMapsRulesStep
+            {activeStep === 1 && RulesStep && (
+              <RulesStep
                 activeStep={activeStep}
                 useVeto={useVeto}
                 onUseVetoChange={setUseVeto}
@@ -209,8 +211,8 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
               />
             )}
 
-            {activeStep === 2 && (
-              <ManualMatchMapsStep
+            {activeStep === 2 && ContentStep && (
+              <ContentStep
                 activeStep={activeStep}
                 maps={maps}
                 mapPools={mapPools}

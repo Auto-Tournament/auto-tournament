@@ -1,0 +1,44 @@
+import { Grid } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import CollectionsIcon from '@mui/icons-material/Collections';
+import { EmptyState } from '../../../components/shared/EmptyState';
+import { MapPoolCard } from './MapPoolCard';
+import type { MapPool, Map as MapType } from '../../../types/api.types';
+
+interface MapPoolsTabProps {
+  mapPools: MapPool[];
+  maps: MapType[];
+  onCreatePool: () => void;
+  onPoolClick: (pool: MapPool) => void;
+}
+
+export function MapPoolsTab({
+  mapPools,
+  maps,
+  onCreatePool,
+  onPoolClick,
+}: MapPoolsTabProps) {
+  if (mapPools.length === 0) {
+    return (
+      <EmptyState
+        icon={CollectionsIcon}
+        title="No map pools found"
+        description="Get started by creating your first map pool"
+        actionLabel="Create Map Pool"
+        actionIcon={AddIcon}
+        onAction={onCreatePool}
+      />
+    );
+  }
+
+  return (
+    <Grid container spacing={2} data-testid="map-pools-list">
+      {mapPools.map((pool) => (
+        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }} key={pool.id} sx={{ display: 'flex' }}>
+          <MapPoolCard pool={pool} maps={maps} onClick={onPoolClick} />
+        </Grid>
+      ))}
+    </Grid>
+  );
+}
+

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Typography, Alert, Box } from '@mui/material';
 import { Trans, useTranslation } from 'react-i18next';
 import ConfirmDialog from '../modals/ConfirmDialog';
+import { paths } from '../../paths';
 
 interface TournamentDialogsProps {
   deleteOpen: boolean;
@@ -261,7 +262,7 @@ export const TournamentDialogs: React.FC<TournamentDialogsProps> = ({
         onConfirm={onStartConfirm}
         onCancel={() => {
           onStartCancel();
-          navigate('/servers');
+          navigate(paths.servers);
         }}
         confirmColor="warning"
       />

@@ -6,11 +6,10 @@ import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import GroupsIcon from '@mui/icons-material/Groups';
 import PersonIcon from '@mui/icons-material/Person';
-import StorageIcon from '@mui/icons-material/Storage';
-import MapIcon from '@mui/icons-material/Map';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { useTranslation } from 'react-i18next';
+import { instanceIntegration } from '../../integrations/registry';
 
 interface ManageRailItem {
   key: string;
@@ -47,8 +46,13 @@ export const ManageRail: React.FC<ManageRailProps> = ({ needsYouCount }) => {
     { key: 'bracket', label: t('managePage.rail.bracket'), path: '/bracket', icon: <AccountTreeIcon /> },
     { key: 'teams', label: t('managePage.rail.teams'), path: '/teams', icon: <GroupsIcon /> },
     { key: 'players', label: t('managePage.rail.players'), path: '/players', icon: <PersonIcon /> },
-    { key: 'servers', label: t('managePage.rail.servers'), path: '/servers', icon: <StorageIcon /> },
-    { key: 'maps', label: t('managePage.rail.maps'), path: '/maps', icon: <MapIcon /> },
+    // The game integration's pages (CS2: Servers, Maps) sit after Players.
+    ...instanceIntegration().navItems.map(({ key, path, icon: Icon }) => ({
+      key,
+      label: t(`managePage.rail.${key}`),
+      path,
+      icon: <Icon />,
+    })),
     { key: 'tournament', label: t('managePage.rail.tournament'), path: '/tournament', icon: <EmojiEventsIcon /> },
     { key: 'settings', label: t('managePage.rail.settings'), path: '/settings', icon: <SettingsIcon /> },
   ];

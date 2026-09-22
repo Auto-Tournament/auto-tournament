@@ -15,6 +15,7 @@ import {
   MATCH_ID_PARAM,
 } from '../utils/serverAttribution';
 import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
+import { DEFAULT_GAME } from '../integrations/types';
 import { getBaseUrl, getWebhookBaseUrl } from '../utils/urlHelper';
 import { emitMatchUpdate, emitBracketUpdate } from '../services/socketService';
 import {
@@ -201,6 +202,7 @@ async function getMatchDetailsBySlug(slug: string): Promise<MatchListItem | null
   const match: MatchListItem = {
     id: row.id,
     slug: row.slug,
+    game: row.game || DEFAULT_GAME,
     round: row.round,
     matchNumber: row.match_number,
     bracket: matchBracketOf(row),
@@ -737,6 +739,7 @@ router.get('/', async (req: Request, res: Response) => {
         const match: MatchListItem = {
           id: row.id,
           slug: row.slug,
+          game: row.game || DEFAULT_GAME,
           round: row.round,
           matchNumber: row.match_number,
           bracket: matchBracketOf(row),
