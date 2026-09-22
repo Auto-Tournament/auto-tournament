@@ -149,6 +149,16 @@ MatchZy webhooks in, and the recorded event log out.
 | `GET` | `/api/events/server/:serverId` | admin |
 | `GET` | `/api/events/:matchSlug` | admin |
 
+### Veto
+
+Map veto state and actions.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/veto/:matchSlug` | public |
+| `POST` | `/api/veto/:matchSlug/action` | public |
+| `POST` | `/api/veto/:matchSlug/reset` | admin |
+
 ### Test helpers (CS2)
 
 E2E helpers that stand in for a CS2 server. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
@@ -257,16 +267,6 @@ Past results and aggregates for a team. Public.
 | --- | --- | --- |
 | `GET` | `/api/team/:teamId/history` | public |
 | `GET` | `/api/team/:teamId/stats` | public |
-
-### Veto
-
-Map veto state and actions.
-
-| Method | Path | Auth |
-| --- | --- | --- |
-| `GET` | `/api/veto/:matchSlug` | public |
-| `POST` | `/api/veto/:matchSlug/action` | public |
-| `POST` | `/api/veto/:matchSlug/reset` | admin |
 
 ### Settings
 

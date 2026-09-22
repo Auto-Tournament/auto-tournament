@@ -111,6 +111,9 @@ export function getSchemaSQL(): string {
       team2_from_outcome TEXT, -- 'winner' | 'loser'
       next_match_id INTEGER,
       demo_file_path TEXT,
+      -- Integration-owned: the CS2 map veto's progress (integrations/cs2/veto).
+      -- Only CS2 writes it; core match views still read it for display.
+      -- Moving it into an integration_state JSONB column is later work.
       veto_state TEXT,
       current_map TEXT,
       map_number INTEGER DEFAULT 0,

@@ -22,7 +22,8 @@ import { eloTemplateService } from '../services/eloTemplateService';
 import { settingsService } from '../services/settingsService';
 import { checkTournamentCompletion } from '../utils/matchProgression';
 import { resolveTournamentId } from '../utils/tournamentRow';
-import { validateVetoOrder, type VetoStep } from '../utils/vetoConfig';
+import { integrationForMatch } from '../integrations/registry';
+import type { GameId } from '../integrations/types';
 
 const router = Router();
 
@@ -272,54 +273,17 @@ router.get('/', async (req: Request, res: Response) => {
  */
 
 /**
- * Validate a tournament's optional `settings.customVetoOrder`.
- *
- * Without this check an invalid order is accepted at creation time and only
- * discovered during veto, where `getVetoOrder` silently falls back to the
- * standard format — so the tournament runs a different veto than configured.
- * Rejecting up front keeps the configured order and the actual veto in sync.
- *
- * Only the formats present in the payload are checked; each is validated
- * against the tournament's own map pool size.
+ * Validate a tournament's game settings through its integration (CS2: the
+ * optional `settings.customVetoOrder`, against the tournament's map pool).
  */
-function validateCustomVetoOrderSetting(
+function validateGameSettings(
+  game: GameId | null | undefined,
   settings: unknown,
   mapCount: number
 ): { valid: true } | { valid: false; error: string } {
-  if (!settings || typeof settings !== 'object') {
-    return { valid: true };
-  }
-
-  const customVetoOrder = (settings as { customVetoOrder?: unknown }).customVetoOrder;
-  if (!customVetoOrder || typeof customVetoOrder !== 'object') {
-    return { valid: true };
-  }
-
-  const orders = customVetoOrder as Record<string, unknown>;
-
-  for (const format of ['bo1', 'bo3', 'bo5'] as const) {
-    const order = orders[format];
-    if (typeof order === 'undefined' || order === null) {
-      continue;
-    }
-
-    if (!Array.isArray(order)) {
-      return {
-        valid: false,
-        error: `Custom veto order for ${format} must be an array of veto steps`,
-      };
-    }
-
-    const result = validateVetoOrder(order as VetoStep[], format, mapCount);
-    if (!result.valid) {
-      return {
-        valid: false,
-        error: `Invalid custom veto order for ${format}: ${result.error}`,
-      };
-    }
-  }
-
-  return { valid: true };
+  const result = integrationForMatch({ game }).validateTournamentSettings?.({ settings, mapCount });
+  if (!result || result.valid) return { valid: true };
+  return { valid: false, error: result.errors[0] ?? 'Invalid tournament settings' };
 }
 
 /**
@@ -459,7 +423,8 @@ router.post('/', async (req: Request, res: Response) => {
       });
     }
 
-    const vetoOrderCheck = validateCustomVetoOrderSetting(input.settings, input.maps.length);
+    // Tournaments are created as CS2 (the `game` column default).
+    const vetoOrderCheck = validateGameSettings(null, input.settings, input.maps.length);
     if (!vetoOrderCheck.valid) {
       return res.status(400).json({
         success: false,
@@ -563,12 +528,12 @@ router.put('/', async (req: Request, res: Response) => {
     if (input.settings) {
       // Fall back to the stored map pool when the update does not change it,
       // so the order is validated against the pool it will actually run on.
+      const existing = await db.queryOneAsync<{ maps: string; game: GameId | null }>(
+        'SELECT maps, game FROM tournament WHERE id = ?',
+        [tournamentId]
+      );
       let mapCount = input.maps?.length;
       if (typeof mapCount !== 'number') {
-        const existing = await db.queryOneAsync<{ maps: string }>(
-          'SELECT maps FROM tournament WHERE id = ?',
-          [tournamentId]
-        );
         try {
           mapCount = existing ? (JSON.parse(existing.maps) as string[]).length : undefined;
         } catch {
@@ -576,7 +541,7 @@ router.put('/', async (req: Request, res: Response) => {
         }
       }
 
-      const vetoOrderCheck = validateCustomVetoOrderSetting(input.settings, mapCount ?? 7);
+      const vetoOrderCheck = validateGameSettings(existing?.game, input.settings, mapCount ?? 7);
       if (!vetoOrderCheck.valid) {
         return res.status(400).json({
           success: false,

@@ -165,11 +165,17 @@ export function describedPlayers(team: MatchDescriptionTeam): NormalizedServerPl
 /**
  * The `MatchContext` an integration hook gets for a stored match. A bracket
  * match carries its tournament; a standalone match (or one whose tournament
- * is gone) carries null.
+ * is gone) carries null. Pass `tournament` when the caller has already read
+ * it, to use that instead.
  */
-export async function matchContextFor(match: DbMatchRow): Promise<MatchContext> {
+export async function matchContextFor(
+  match: DbMatchRow,
+  knownTournament?: TournamentResponse
+): Promise<MatchContext> {
   let tournament: IntegrationTournament | null = null;
-  if (isBracketManaged(match)) {
+  if (knownTournament) {
+    tournament = toIntegrationTournament(knownTournament);
+  } else if (isBracketManaged(match)) {
     const row = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
       match.tournament_id,
     ]);

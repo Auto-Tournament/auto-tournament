@@ -5,7 +5,7 @@ import { clampSimulationTimescale } from '../utils/simulationTimescale';
 import { resolveTournamentId } from '../utils/tournamentRow';
 import { log } from '../utils/logger';
 import { db } from '../config/database';
-import { autoVetoPendingMatches } from '../services/vetoSimulationService';
+import { integrationForMatch } from '../integrations/registry';
 import packageJson from '../../package.json';
 import { clearIgdbTokenCache, testIgdbConnection } from '../services/igdbService';
 import { clearGameSearchCache } from '../services/gameCatalogService';
@@ -28,13 +28,14 @@ router.use(requireAuth);
  */
 async function startAutoVetoForRunningTournament(tournamentId: number): Promise<void> {
   try {
-    const tournament = await db.queryOneAsync<{ id: number; status: string }>(
-      'SELECT id, status FROM tournament WHERE id = ?',
+    const tournament = await db.queryOneAsync<{ id: number; status: string; game: string | null }>(
+      'SELECT id, status, game FROM tournament WHERE id = ?',
       [tournamentId]
     );
     if (!tournament || tournament.status !== 'in_progress') return;
 
-    const started = await autoVetoPendingMatches(tournament.id);
+    const started =
+      (await integrationForMatch(tournament).startPendingPreMatchPhases?.(tournament.id)) ?? [];
     if (started.length > 0) {
       log.info(
         `[VETO-SIM] Simulation enabled mid-tournament; auto-vetoing ${started.length} waiting match(es)`,

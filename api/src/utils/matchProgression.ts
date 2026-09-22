@@ -7,11 +7,10 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { emitBracketUpdate } from '../services/socketService';
 import { scheduler } from '../core/scheduler';
-import { buildMatchConfigFor, serializeMatchConfig } from './matchIntegration';
+import { buildMatchConfigFor, matchContextFor, serializeMatchConfig } from './matchIntegration';
 import type { DbMatchRow, DbTeamRow, DbTournamentRow } from '../types/database.types';
 import type { TournamentResponse } from '../types/tournament.types';
-import { settingsService } from '../services/settingsService';
-import { autoCompleteVetoForMatch } from '../services/vetoSimulationService';
+import { integrationForMatch } from '../integrations/registry';
 import { tournamentIdForMatch, tournamentRowToResponse } from './tournamentRow';
 
 /**
@@ -482,23 +481,20 @@ export async function makeMatchReady(match: DbMatchRow): Promise<void> {
       return;
     }
 
-    // In simulation mode, for BO formats that use veto, delegate to the
-    // automated veto simulator instead of directly marking the match as ready.
-    // This ensures that *all* rounds (r1, r2, etc.) go through the same
-    // auto-veto + auto-load flow once both teams are known.
-    const simulationEnabled = await settingsService.isSimulationModeEnabled();
-    const usesVeto =
-      tournament.format === 'bo1' || tournament.format === 'bo3' || tournament.format === 'bo5';
-    if (simulationEnabled && usesVeto) {
-      log.info(
-        `[VETO-SIM] Simulation mode active – auto-completing veto for newly ready match ${match.slug}`
-      );
-      await autoCompleteVetoForMatch(match.slug);
-      return;
-    }
-
     // Build tournament response object for config generation
     const tournamentData: TournamentResponse = tournamentRowToResponse(tournament);
+
+    // The integration may hold the match for a pre-match phase and ready it
+    // itself (CS2 in simulation mode: the automated veto, for every round
+    // once both teams are known).
+    const integration = integrationForMatch(match);
+    if (integration.isReadyToAllocate) {
+      const ctx = await matchContextFor(match, tournamentData);
+      if (!(await integration.isReadyToAllocate(ctx))) {
+        await integration.onMatchReady?.(ctx);
+        return;
+      }
+    }
 
     // Build the match config through the match's game integration
     const config = await buildMatchConfigFor(

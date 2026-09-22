@@ -13,7 +13,7 @@ import { log } from '../utils/logger';
 import { emitBracketUpdate } from './socketService';
 import { buildMatchConfigFor, serializeMatchConfig } from '../utils/matchIntegration';
 import { settingsService } from './settingsService';
-import { autoVetoPendingMatches } from './vetoSimulationService';
+import { integrationForMatch } from '../integrations/registry';
 import { makeMatchReady } from '../utils/matchProgression';
 import { tournamentRowToResponse } from '../utils/tournamentRow';
 import {
@@ -277,7 +277,9 @@ async function advanceOnce(tournamentId: number): Promise<void> {
     void (async () => {
       try {
         if (await settingsService.isSimulationModeEnabled()) {
-          const started = await autoVetoPendingMatches(tournamentId);
+          const started =
+            (await integrationForMatch(tournament).startPendingPreMatchPhases?.(tournamentId)) ??
+            [];
           if (started.length > 0) return;
         }
         for (const match of paired) {

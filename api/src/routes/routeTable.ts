@@ -28,7 +28,6 @@ import tournamentRoutes from './tournament';
 import logsRoutes from './logs';
 import teamMatchRoutes from './teamMatch';
 import teamStatsRoutes from './teamStats';
-import vetoRoutes from './veto';
 import settingsRoutes from './settings';
 import mapsRoutes from './maps';
 import mapPoolsRoutes from './mapPools';
@@ -95,12 +94,6 @@ const coreRoutes: MountedRouter[] = [
     router: teamStatsRoutes,
     title: 'Team stats',
     description: 'Past results and aggregates for a team. Public.',
-  },
-  {
-    prefix: '/api/veto',
-    router: vetoRoutes,
-    title: 'Veto',
-    description: 'Map veto state and actions.',
   },
   {
     prefix: '/api/settings',
@@ -186,7 +179,7 @@ const coreRoutes: MountedRouter[] = [
 
 /**
  * Routes owned by game integrations that keep their pre-module URLs
- * (CS2: /api/servers ×3, /api/rcon, /api/demos, /api/matchzy, /api/events). They come first:
+ * (CS2: /api/servers ×3, /api/rcon, /api/demos, /api/matchzy, /api/events, /api/veto). They come first:
  * no core prefix overlaps them, and each integration returns its own routers
  * in match order.
  */

@@ -18,7 +18,6 @@ import { generateRoundMatches, advanceToNextRound } from '../services/shuffleTou
 import { resolveTournamentId, tournamentIdForMatch } from '../utils/tournamentRow';
 import { log } from '../utils/logger';
 import { settingsService } from '../services/settingsService';
-import { autoVetoPendingMatches } from '../services/vetoSimulationService';
 import type { DbMatchRow } from '../types/database.types';
 import type { BracketMatch } from '../types/tournament.types';
 import { integrationForMatch } from '../integrations/registry';
@@ -722,8 +721,10 @@ export class Scheduler {
 
     // Determine if this tournament uses veto system: the game has a veto
     // (pre-match phase) and the format is a series. Shuffle tournaments
-    // *never* use veto, even if format is BO1. TODO(PR 8): per match, through
-    // isReadyToAllocate().
+    // *never* use veto, even if format is BO1. This gate is tournament-wide on
+    // purpose: the per-match `isReadyToAllocate` only holds matches for the
+    // simulation auto-veto (see makeMatchReady), so `/restart` of a veto
+    // tournament still allocates nothing here.
     const integration = await this.integrationForTournament(tournamentId);
     const requiresVeto =
       integration.capabilities.veto &&
@@ -771,7 +772,7 @@ export class Scheduler {
 
         // Matches with both teams assigned that have not completed veto. Future
         // TBD bracket slots are skipped; they are not "ready" for veto yet.
-        const started = await autoVetoPendingMatches(tournament.id, { stepDelayMs: 1000 });
+        const started = (await integration.startPendingPreMatchPhases?.(tournament.id)) ?? [];
 
         if (started.length === 0) {
           log.warn('[VETO-SIM] No pending matches found for tournament; nothing to auto-veto.');

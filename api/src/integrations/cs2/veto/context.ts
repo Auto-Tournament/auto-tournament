@@ -6,10 +6,10 @@
  * Keeping that in one place stops the two from disagreeing.
  */
 
-import { db } from '../config/database';
-import type { DbMatchRow } from '../types/database.types';
-import { getVetoOrder, type VetoStep } from './vetoConfig';
-import { describeMatch } from './matchIntegration';
+import { db } from '../../../config/database';
+import type { DbMatchRow } from '../../../types/database.types';
+import { getVetoOrder, type VetoStep } from './config';
+import { describeMatch } from '../../../utils/matchIntegration';
 
 export type VetoContext = {
   format: 'bo1' | 'bo3' | 'bo5';
