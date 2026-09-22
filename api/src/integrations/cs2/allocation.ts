@@ -1201,12 +1201,22 @@ export class Cs2ServerPool {
   /**
    * Best-effort end of a match on its server (force-cancel). Throws when the
    * server cannot be told; the caller carries on regardless.
+   *
+   * `css_endmatch` is the MatchZy console command that ends and resets the
+   * current match (`ConsoleCommand("css_endmatch", "Ends and resets the
+   * current match")` in `src/ConsoleCommands.cs` of the plugin — it's
+   * registered as an alias of the legacy `get5_endmatch` name, both bound to
+   * the same handler). It's the same command the admin "End Match" route
+   * already uses (`routes/rcon.ts`), and — unlike `css_restart` — it does not
+   * restart the server, so there is no `unconfirmed`-reply case to handle.
    */
   async endMatchOnServer(serverId: string, matchSlug: string): Promise<void> {
-    // NOTE: kept exactly as the force-cancel route had it. `executeCommand` is
-    // private and takes a server record, not an id, so the command never reaches the
-    // server: the call fails and force-cancel reports the server as unreachable. Fixing it (and choosing the command) is a separate change.
-    await rconService.executeCommand(serverId, 'get5_endmatch');
+    const result = await rconService.sendCommand(serverId, 'css_endmatch');
+
+    if (!result.success) {
+      throw new Error(result.error ?? 'css_endmatch failed');
+    }
+
     log.info(`Successfully sent end match command to server ${serverId} for match ${matchSlug}`);
   }
 
