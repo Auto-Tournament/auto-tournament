@@ -908,9 +908,14 @@ async function writeAdminResult(
 
   const report = await reportById(inserted.lastInsertRowid as number);
   await replaceValues(match.slug, report.id, stats.values);
-  await recordAction(report, action, actor, {
-    ...(stats.values.length > 0 ? { statValues: stats.values.length } : {}),
-  });
+  // No `detail` at all when there were no values, rather than an empty object:
+  // the audit trail reads back as it did before D6 for a plain ruling.
+  await recordAction(
+    report,
+    action,
+    actor,
+    stats.values.length > 0 ? { statValues: stats.values.length } : undefined
+  );
   await announce(match, report, action);
   return { ok: true, report, finalized: await finalize(match, report) };
 }
