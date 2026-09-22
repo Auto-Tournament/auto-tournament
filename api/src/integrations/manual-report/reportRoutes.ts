@@ -10,6 +10,13 @@
  *   POST /api/game/manual/matches/:slug/confirm    the opponent agrees
  *   POST /api/game/manual/matches/:slug/dispute    the opponent disagrees
  *   POST /api/game/manual/matches/:slug/withdraw   the reporter takes it back
+ *   GET  /api/game/manual/tournaments/:id/stats    the custom stats, added up
+ *
+ * **Custom stat values** (3.0 phase D, PR D6) ride with the report. A
+ * tournament's admin says which fields exist (`PUT .../fields`, PR D5); the
+ * captain fills them in with the score, and they are checked against those
+ * fields before anything is stored. They are display only — the rating maths
+ * stays on the CS2 metrics path and never sees them.
  *
  * **Answering names a revision.** `confirm` must carry the revision it is
  * answering and `dispute`/`withdraw` may; a number that is no longer the open
@@ -39,6 +46,7 @@ import {
   matchForRequest,
   readRevision,
   teamNames,
+  tournamentForRequest,
   viewerForMatch,
 } from './http';
 import {
@@ -53,6 +61,7 @@ import {
   type ReportOutcome,
 } from './reports';
 import { listFields } from './fields';
+import { listValues, tournamentStats } from './statValues';
 
 export const manualReportRoutes = Router();
 
@@ -71,13 +80,16 @@ manualReportRoutes.get('/matches/:slug', async (req: Request, res: Response) => 
     const viewer = await viewerForMatch(req, res, match, 'see this match');
     if (!viewer) return;
 
-    const [open, reports, teams, fields] = await Promise.all([
+    const [open, reports, teams, fields, stats] = await Promise.all([
       openReport(match.slug),
       listReports(match.slug),
       teamNames(match),
       // The extra numbers this tournament asks for (PR D5), so the report form
       // is one request rather than two.
       listFields(match.tournament_id),
+      // And what has been filled in for them (PR D6) — whatever stands right
+      // now, confirmed or not, which is why this route is guarded.
+      listValues(match.slug),
     ]);
 
     const { actor } = viewer;
@@ -104,6 +116,7 @@ manualReportRoutes.get('/matches/:slug', async (req: Request, res: Response) => 
       },
       rules: reportingRules(match),
       fields,
+      stats,
       viewer: {
         team: actor.team,
         role: actor.role,
@@ -124,9 +137,13 @@ manualReportRoutes.get('/matches/:slug', async (req: Request, res: Response) => 
 /**
  * Report a result.
  *
- * The body is `{ result: { maps: [...], note? } }`, checked against the
- * match's own rules by `validateResult` — 400 for anything a best-of-N cannot
- * be. An open report from before is superseded, not replaced.
+ * The body is `{ result: { maps: [...], note? }, stats?: [...] }`. The result
+ * is checked against the match's own rules by `validateResult` — 400 for
+ * anything a best-of-N cannot be — and `stats` against the tournament's custom
+ * fields by `validateStatValues`: an unknown key, a value of the wrong type or
+ * a required field left blank refuses the whole report, so a refused report
+ * stores neither a score nor a number. An open report from before is
+ * superseded, not replaced, and its values are replaced with these.
  */
 manualReportRoutes.post('/matches/:slug/report', async (req: Request, res: Response) => {
   await guarded(res, 'POST /matches/:slug/report', async () => {
@@ -135,13 +152,14 @@ manualReportRoutes.post('/matches/:slug/report', async (req: Request, res: Respo
     const viewer = await viewerForMatch(req, res, match, 'report a result');
     if (!viewer) return;
 
-    const body = (req.body ?? {}) as { result?: unknown };
+    const body = (req.body ?? {}) as { result?: unknown; stats?: unknown };
     answer(
       res,
       await submitReport({
         matchSlug: match.slug,
         actor: viewer.actor,
         result: body.result ?? body,
+        ...(body.stats === undefined ? {} : { stats: body.stats }),
       })
     );
   });
@@ -232,3 +250,25 @@ for (const { path, what, revisionRequired, run } of answers) {
     });
   });
 }
+
+/**
+ * A tournament's custom stats, added up per player and per team.
+ *
+ * The scoreboard half of PR D6, and the one place a tournament's typed-in
+ * numbers are listed together. Open like the rest of a tournament's results:
+ * **only confirmed reports count**, so nothing here is a number one captain
+ * typed in that the other has not agreed to. Those are on the match page,
+ * which is guarded.
+ *
+ * Registered on the captain router rather than the admin one because it needs
+ * no session — the admin router behind it is mounted at the same prefix and
+ * would demand one.
+ */
+manualReportRoutes.get('/tournaments/:tournamentId/stats', async (req: Request, res: Response) => {
+  await guarded(res, 'GET /tournaments/:tournamentId/stats', async () => {
+    const tournamentId = await tournamentForRequest(req, res);
+    if (tournamentId === null) return;
+    const fields = await listFields(tournamentId);
+    res.json({ success: true, tournamentId, ...(await tournamentStats(tournamentId, fields)) });
+  });
+});

@@ -25,6 +25,7 @@
   "tests/api/manual-report-reports.spec.ts": 4.0,
   "tests/api/manual-report-routes.spec.ts": 3.5,
   "tests/api/manual-report-schema.spec.ts": 3.0,
+  "tests/api/manual-report-stats.spec.ts": 4.0,
   "tests/api/match-config-auth.spec.ts": 3.0,
   "tests/api/match-events-order.spec.ts": 2.4,
   "tests/api/match-lifecycle.spec.ts": 1.5,

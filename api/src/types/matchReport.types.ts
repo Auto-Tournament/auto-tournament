@@ -109,8 +109,16 @@ export interface DbMatchReportActionRow {
   created_at: number;
 }
 
-/** A number the reporter types in, or a short text. */
-export type CustomStatValueType = 'number' | 'text';
+/**
+ * What a reporter may type into a custom field.
+ *
+ * `number` is any finite number, `integer` a whole one (3.0 phase D, PR D6 —
+ * "3.5 goals" is a typo, not a score), and `text` a short line for the things
+ * a number cannot hold, like a deck name or a car. All three are stored in the
+ * same `match_stat_values` row shape: the two numeric kinds in `value_number`
+ * and `text` in `value_text`, so `integer` needs no column and no migration.
+ */
+export type CustomStatValueType = 'number' | 'integer' | 'text';
 
 /** Whether a field is filled in per player or once per team. */
 export type CustomStatScope = 'player' | 'team';

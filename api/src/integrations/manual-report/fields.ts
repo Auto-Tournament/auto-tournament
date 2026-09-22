@@ -12,9 +12,11 @@
  * against; `label` is what a reporter reads. Renaming a label keeps the
  * recorded values, renaming a key does not — see `replaceFields`.
  *
- * Nothing writes `match_stat_values` yet; collecting the values with a report
- * is a later PR. The fields exist first so the report form has something to
- * render and so D1's tables stop being unreachable.
+ * The values themselves are `./statValues` (PR D6): a report carries them,
+ * they are checked against these fields, and they are read back on the match
+ * and summed over the tournament. Nothing here or there feeds ratings — the
+ * rating maths stays on the CS2 metrics path, and a custom field is display
+ * only.
  */
 
 import { db } from '../../config/database';
@@ -43,7 +45,13 @@ export interface CustomStatFieldInput {
   required?: boolean;
 }
 
-const VALUE_TYPES: readonly string[] = ['number', 'text'];
+/**
+ * What a field may hold. `integer` is separate from `number` so a goal count
+ * refuses 1.5 while a possession percentage does not (3.0 phase D, PR D6);
+ * both are stored in `match_stat_values.value_number`, so it needed no
+ * migration.
+ */
+const VALUE_TYPES: readonly string[] = ['number', 'integer', 'text'];
 const SCOPES: readonly string[] = ['player', 'team'];
 
 /** Keys are typed into a URL and matched against stored values, so keep them plain. */
@@ -54,7 +62,8 @@ function toField(row: DbCustomStatFieldRow): CustomStatField {
     id: row.id,
     key: row.key,
     label: row.label,
-    valueType: row.value_type === 'text' ? 'text' : 'number',
+    valueType:
+      row.value_type === 'text' ? 'text' : row.value_type === 'integer' ? 'integer' : 'number',
     scope: row.scope === 'team' ? 'team' : 'player',
     required: Number(row.required) === 1,
     displayOrder: Number(row.display_order),
@@ -110,7 +119,7 @@ export function validateFields(input: unknown): FieldsCheck {
 
     const valueType = entry.valueType ?? 'number';
     if (!VALUE_TYPES.includes(valueType)) {
-      return { ok: false, error: `${where}: valueType must be 'number' or 'text'` };
+      return { ok: false, error: `${where}: valueType must be 'number', 'integer' or 'text'` };
     }
     const scope = entry.scope ?? 'player';
     if (!SCOPES.includes(scope)) {

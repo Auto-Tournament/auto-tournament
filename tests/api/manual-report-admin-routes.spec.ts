@@ -44,7 +44,7 @@ type Field = {
   id: number;
   key: string;
   label: string;
-  valueType: 'number' | 'text';
+  valueType: 'number' | 'integer' | 'text';
   scope: 'player' | 'team';
   required: boolean;
   displayOrder: number;
@@ -361,7 +361,11 @@ test.describe.serial('Manual reporting over HTTP: admin', () => {
         [[{ key: 'Goals!', label: 'Goals' }], 'key must be'],
         [[{ key: 'goals', label: '' }], 'label is required'],
         [[{ key: 'goals', label: 'Goals' }, { key: 'goals', label: 'Again' }], 'listed twice'],
-        [[{ key: 'goals', label: 'Goals', valueType: 'boolean' }], "valueType must be 'number' or 'text'"],
+        // 'integer' joined the list in PR D6; 'boolean' is still not a thing.
+        [
+          [{ key: 'goals', label: 'Goals', valueType: 'boolean' }],
+          "valueType must be 'number', 'integer' or 'text'",
+        ],
         [[{ key: 'goals', label: 'Goals', scope: 'league' }], "scope must be 'player' or 'team'"],
       ];
       for (const [fields, message] of bad) {

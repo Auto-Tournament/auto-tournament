@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 249 of them, 173 behind auth —
+Every endpoint this API serves — 250 of them, 173 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -216,6 +216,7 @@ Report a result, and confirm, dispute or withdraw one, for a game MAT cannot wat
 | `POST` | `/api/game/manual/matches/:slug/confirm` | public |
 | `POST` | `/api/game/manual/matches/:slug/dispute` | public |
 | `POST` | `/api/game/manual/matches/:slug/withdraw` | public |
+| `GET` | `/api/game/manual/tournaments/:tournamentId/stats` | public |
 
 ### Manual reporting — admin
 
