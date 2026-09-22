@@ -108,7 +108,8 @@
     "versus": "vs",
     "goToPlayerPage": "Veto, connexion & détails → Votre page joueur",
     "pageTitle": "Page d’équipe",
-    "manualMatch": "Match manuel"
+    "manualMatch": "Match manuel",
+    "viewTeamProfile": "Team page →"
   },
   "rounds": {
     "round1": "Tour 1",
@@ -252,7 +253,8 @@
       "success_other": "{{count}} équipes supprimées"
     },
     "loadError": "Impossible de charger les équipes",
-    "importSuccess": "{{count}} équipe(s) importée(s) avec succès"
+    "importSuccess": "{{count}} équipe(s) importée(s) avec succès",
+    "viewPublicPage": "View public team page"
   },
   "playersPage": {
     "headerSelect": {
@@ -463,6 +465,30 @@
       "effectivelyDisabled": "Si le temps réglementaire se termine sur une égalité, il n’y a pas de prolongation. Le vainqueur est déterminé par le total des dégâts de l’équipe sur la carte ; en cas d’égalité de dégâts, le match est nul.",
       "implicitSegments": "Si le score est toujours à égalité après les périodes de prolongation configurées, le vainqueur est déterminé par le total des dégâts de l’équipe. En cas d’égalité de dégâts, le résultat est un match nul.",
       "standard": "Dans la plupart des cas, l’équipe avec le score final le plus élevé l’emporte. Ce n’est que si le score et le total des dégâts sont strictement identiques que le résultat est enregistré comme une véritable égalité."
+    }
+  },
+  "teamProfile": {
+    "pageTitle": "{{name}} · Team",
+    "notFound": "Team not found. Please check the URL.",
+    "loadError": "Failed to load this team. Please try again.",
+    "editTeam": "Edit team",
+    "game": "Counter-Strike 2",
+    "roster": {
+      "title": "Roster",
+      "empty": "This team has no players yet.",
+      "rating": "Rating {{rating}}"
+    },
+    "tournaments": {
+      "title": "Tournaments",
+      "empty": "No tournament activity yet.",
+      "live": "Live",
+      "upcoming": "Upcoming",
+      "versus": "vs {{opponent}}",
+      "placement": "#{{position}} of {{total}}",
+      "finalPlacement": "Final: #{{position}} of {{total}}",
+      "recentResults": "Recent results",
+      "win": "Win",
+      "loss": "Loss"
     }
   }
 }

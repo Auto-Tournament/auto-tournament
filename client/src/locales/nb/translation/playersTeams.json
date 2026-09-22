@@ -108,7 +108,8 @@
     "versus": "mot",
     "goToPlayerPage": "Veto, koble til og detaljer → Spiller-siden din",
     "pageTitle": "Lagside",
-    "manualMatch": "Manuell kamp"
+    "manualMatch": "Manuell kamp",
+    "viewTeamProfile": "Lagside →"
   },
   "rounds": {
     "round1": "Runde 1",
@@ -159,6 +160,30 @@
     "rating": "Rating: {{rating}}",
     "viewPlayerStats": "Se spillerstatistikk",
     "viewSteamProfile": "Se Steam-profil"
+  },
+  "teamProfile": {
+    "pageTitle": "{{name}} · Lag",
+    "notFound": "Fant ikke laget. Kontroller URL-en.",
+    "loadError": "Klarte ikke å laste dette laget. Prøv igjen.",
+    "editTeam": "Rediger lag",
+    "game": "Counter-Strike 2",
+    "roster": {
+      "title": "Lagoppstilling",
+      "empty": "Dette laget har ingen spillere ennå.",
+      "rating": "Rating {{rating}}"
+    },
+    "tournaments": {
+      "title": "Turneringer",
+      "empty": "Ingen turneringsaktivitet ennå.",
+      "live": "Live",
+      "upcoming": "Kommende",
+      "versus": "mot {{opponent}}",
+      "placement": "#{{position}} av {{total}}",
+      "finalPlacement": "Sluttresultat: #{{position}} av {{total}}",
+      "recentResults": "Siste resultater",
+      "win": "Seier",
+      "loss": "Tap"
+    }
   },
   "mapAccordion": {
     "won": "Vunnet",
@@ -252,7 +277,8 @@
       "success_other": "Slettet {{count}} lag"
     },
     "loadError": "Klarte ikke å laste lag",
-    "importSuccess": "Importerte {{count}} lag"
+    "importSuccess": "Importerte {{count}} lag",
+    "viewPublicPage": "Se offentlig lagside"
   },
   "playersPage": {
     "headerSelect": {

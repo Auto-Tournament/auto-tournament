@@ -108,7 +108,8 @@
     "versus": "vs",
     "goToPlayerPage": "Veto, connessione e dettagli → La tua pagina giocatore",
     "pageTitle": "Pagina squadra",
-    "manualMatch": "Match manuale"
+    "manualMatch": "Match manuale",
+    "viewTeamProfile": "Team page →"
   },
   "rounds": {
     "round1": "Turno 1",
@@ -252,7 +253,8 @@
       "success_other": "{{count}} squadre eliminate"
     },
     "loadError": "Impossibile caricare le squadre",
-    "importSuccess": "Importate {{count}} squadra(e) con successo"
+    "importSuccess": "Importate {{count}} squadra(e) con successo",
+    "viewPublicPage": "View public team page"
   },
   "playersPage": {
     "headerSelect": {
@@ -463,6 +465,30 @@
       "effectivelyDisabled": "Se il tempo regolamentare finisce in parità, il match non va all'overtime. Il vincitore viene deciso in base ai danni totali della squadra sulla mappa; se anche i danni sono in parità, il match finisce in pareggio.",
       "implicitSegments": "Se il punteggio è ancora in parità dopo i segmenti di overtime configurati, il vincitore viene deciso in base ai danni totali della squadra. Se anche i danni sono in parità, il risultato è un pareggio.",
       "standard": "Nella maggior parte dei casi vince la squadra con il punteggio finale più alto. Solo quando punteggio e danni totali sono esattamente in parità il risultato viene registrato come vero pareggio."
+    }
+  },
+  "teamProfile": {
+    "pageTitle": "{{name}} · Team",
+    "notFound": "Team not found. Please check the URL.",
+    "loadError": "Failed to load this team. Please try again.",
+    "editTeam": "Edit team",
+    "game": "Counter-Strike 2",
+    "roster": {
+      "title": "Roster",
+      "empty": "This team has no players yet.",
+      "rating": "Rating {{rating}}"
+    },
+    "tournaments": {
+      "title": "Tournaments",
+      "empty": "No tournament activity yet.",
+      "live": "Live",
+      "upcoming": "Upcoming",
+      "versus": "vs {{opponent}}",
+      "placement": "#{{position}} of {{total}}",
+      "finalPlacement": "Final: #{{position}} of {{total}}",
+      "recentResults": "Recent results",
+      "win": "Win",
+      "loss": "Loss"
     }
   }
 }

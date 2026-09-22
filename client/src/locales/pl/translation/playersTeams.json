@@ -110,7 +110,8 @@
     "versus": "vs",
     "goToPlayerPage": "Veto, połączenie i szczegóły → Twoja strona gracza",
     "pageTitle": "Strona drużyny",
-    "manualMatch": "Mecz ręczny"
+    "manualMatch": "Mecz ręczny",
+    "viewTeamProfile": "Team page →"
   },
   "rounds": {
     "round1": "Runda 1",
@@ -258,7 +259,8 @@
       "success_other": "Usunięto {{count}} drużyn"
     },
     "loadError": "Nie udało się załadować drużyn",
-    "importSuccess": "Pomyślnie zaimportowano {{count}} drużynę/y"
+    "importSuccess": "Pomyślnie zaimportowano {{count}} drużynę/y",
+    "viewPublicPage": "View public team page"
   },
   "playersPage": {
     "headerSelect": {
@@ -473,6 +475,30 @@
       "effectivelyDisabled": "Jeśli czas regulaminowy kończy się remisem, mecz nie przechodzi do dogrywki. O zwycięzcy decydują łączne obrażenia zadane przez drużynę na mapie; jeśli obrażenia są równe, mecz kończy się remisem.",
       "implicitSegments": "Jeśli po skonfigurowanych segmentach dogrywki nadal jest remis, o zwycięzcy decydują łączne obrażenia drużyny. Jeśli obrażenia są równe, wynikiem jest remis.",
       "standard": "W większości przypadków wygrywa drużyna z wyższym wynikiem końcowym. Tylko gdy wynik i łączne obrażenia są dokładnie równe, rezultat zostaje zapisany jako prawdziwy remis."
+    }
+  },
+  "teamProfile": {
+    "pageTitle": "{{name}} · Team",
+    "notFound": "Team not found. Please check the URL.",
+    "loadError": "Failed to load this team. Please try again.",
+    "editTeam": "Edit team",
+    "game": "Counter-Strike 2",
+    "roster": {
+      "title": "Roster",
+      "empty": "This team has no players yet.",
+      "rating": "Rating {{rating}}"
+    },
+    "tournaments": {
+      "title": "Tournaments",
+      "empty": "No tournament activity yet.",
+      "live": "Live",
+      "upcoming": "Upcoming",
+      "versus": "vs {{opponent}}",
+      "placement": "#{{position}} of {{total}}",
+      "finalPlacement": "Final: #{{position}} of {{total}}",
+      "recentResults": "Recent results",
+      "win": "Win",
+      "loss": "Loss"
     }
   }
 }

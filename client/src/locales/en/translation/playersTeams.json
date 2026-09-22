@@ -108,7 +108,8 @@
     "versus": "vs",
     "goToPlayerPage": "Veto, connect & details → Your player page",
     "pageTitle": "Team Page",
-    "manualMatch": "Manual match"
+    "manualMatch": "Manual match",
+    "viewTeamProfile": "Team page →"
   },
   "rounds": {
     "round1": "Round 1",
@@ -159,6 +160,30 @@
     "rating": "Rating: {{rating}}",
     "viewPlayerStats": "View player stats",
     "viewSteamProfile": "View Steam profile"
+  },
+  "teamProfile": {
+    "pageTitle": "{{name}} · Team",
+    "notFound": "Team not found. Please check the URL.",
+    "loadError": "Failed to load this team. Please try again.",
+    "editTeam": "Edit team",
+    "game": "Counter-Strike 2",
+    "roster": {
+      "title": "Roster",
+      "empty": "This team has no players yet.",
+      "rating": "Rating {{rating}}"
+    },
+    "tournaments": {
+      "title": "Tournaments",
+      "empty": "No tournament activity yet.",
+      "live": "Live",
+      "upcoming": "Upcoming",
+      "versus": "vs {{opponent}}",
+      "placement": "#{{position}} of {{total}}",
+      "finalPlacement": "Final: #{{position}} of {{total}}",
+      "recentResults": "Recent results",
+      "win": "Win",
+      "loss": "Loss"
+    }
   },
   "mapAccordion": {
     "won": "Won",
@@ -252,7 +277,8 @@
       "success_other": "Deleted {{count}} teams"
     },
     "loadError": "Failed to load teams",
-    "importSuccess": "Successfully imported {{count}} team(s)"
+    "importSuccess": "Successfully imported {{count}} team(s)",
+    "viewPublicPage": "View public team page"
   },
   "playersPage": {
     "headerSelect": {

@@ -1,13 +1,27 @@
 import { useState, useEffect, useCallback } from 'react';
 import { usePageHeader } from '../contexts/PageHeaderContext';
 import { useSnackbar } from '../contexts/SnackbarContext';
-import { Box, Button, Card, CardContent, Typography, Grid, Chip, CircularProgress } from '@mui/material';
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Typography,
+  Grid,
+  Chip,
+  CircularProgress,
+  IconButton,
+  Tooltip,
+} from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import GroupsIcon from '@mui/icons-material/Groups';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { Link as RouterLink } from 'react-router-dom';
 import { api } from '../utils/api';
 import TeamModal from '../components/modals/TeamModal';
 import { TeamImportModal } from '../components/modals/TeamImportModal';
 import { TeamLinkActions } from '../components/teams/TeamLinkActions';
+import { getTeamProfileUrl } from '../utils/teamLinks';
 import { EmptyState } from '../components/shared/EmptyState';
 import ConfirmDialog from '../components/modals/ConfirmDialog';
 import { ImportWarningsMessage } from '../components/shared/ImportWarningsMessage';
@@ -297,6 +311,19 @@ export default function Teams() {
                       {team.tag && <Chip label={team.tag} size="small" sx={{ fontWeight: 600 }} />}
                     </Box>
                     <Box display="flex" gap={0.5}>
+                      <Tooltip title={t('teamsPage.viewPublicPage')}>
+                        <IconButton
+                          size="small"
+                          component={RouterLink}
+                          to={getTeamProfileUrl(team.id)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          data-testid={`team-view-page-${teamNameSlug}`}
+                        >
+                          <OpenInNewIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                       <TeamLinkActions teamId={team.id} />
                     </Box>
                   </Box>
