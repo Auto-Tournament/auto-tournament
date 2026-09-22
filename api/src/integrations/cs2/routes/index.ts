@@ -6,12 +6,13 @@
  * with these exact paths, so they are mounted at their old prefixes (through
  * `GameIntegration.legacyRoutes`) rather than under `/api/game/cs2`.
  *
- * Order is significant: `/api/servers` has three routers and Express matches
+ * Order is significant: `/api/servers` has four routers and Express matches
  * in registration order.
  */
 
 import type { LegacyRouteMount } from '../../types';
 import serverBootstrapRoutes from './serverBootstrap';
+import serverUpdateHoldRoutes from './serverUpdateHold';
 import serverRoutes from './servers';
 import serverStatusRoutes from './serverStatus';
 import rconRoutes from './rcon';
@@ -29,6 +30,14 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     router: serverBootstrapRoutes,
     title: 'Server bootstrap',
     description: 'Self-registration for a CS2 server coming online.',
+  },
+  {
+    // Before `serverRoutes`, whose `/:id` would otherwise swallow
+    // `/update-hold`, and which is admin-only.
+    prefix: '/api/servers',
+    router: serverUpdateHoldRoutes,
+    title: 'Update hold',
+    description: 'Whether a game host should pause automatic CS2 updates.',
   },
   {
     prefix: '/api/servers',
