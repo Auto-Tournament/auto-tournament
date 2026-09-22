@@ -178,6 +178,68 @@
           }
         }
       },
+      "GameSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "games.id",
+            "example": 1
+          },
+          "slug": {
+            "type": "string",
+            "description": "IGDB slug",
+            "example": "counter-strike-2"
+          },
+          "name": {
+            "type": "string",
+            "example": "Counter-Strike 2"
+          },
+          "coverUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "IGDB cover (t_cover_small); null for built-ins IGDB has not returned yet"
+          },
+          "releaseYear": {
+            "type": "integer",
+            "nullable": true,
+            "example": 2023
+          },
+          "supported": {
+            "type": "boolean",
+            "description": "A game module for this game is installed (tournaments can run it)"
+          }
+        }
+      },
+      "IgdbCredentialStatus": {
+        "type": "object",
+        "properties": {
+          "configured": {
+            "type": "boolean",
+            "description": "A complete id + secret pair is active"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "env",
+              "settings"
+            ],
+            "nullable": true
+          },
+          "envOverride": {
+            "type": "boolean",
+            "description": "IGDB_CLIENT_ID / IGDB_CLIENT_SECRET are set and win over saved settings"
+          },
+          "clientId": {
+            "type": "string",
+            "nullable": true
+          },
+          "clientSecretSet": {
+            "type": "boolean",
+            "description": "A secret is stored. The secret itself is never returned."
+          }
+        }
+      },
       "Error": {
         "type": "object",
         "properties": {
@@ -211,6 +273,10 @@
       "description": "MatchZy webhooks in, and the recorded event log out."
     },
     {
+      "name": "Games",
+      "description": "The game catalogue players pick from (IGDB-backed search, suggestions). Public."
+    },
+    {
       "name": "Generation",
       "description": "Shared generators, e.g. random team names."
     },
@@ -241,6 +307,10 @@
     {
       "name": "MatchZy",
       "description": "Auto Tournament CS2 plugin (formerly MatchZy Enhanced) version information."
+    },
+    {
+      "name": "Me",
+      "description": "The signed-in player's own data, e.g. the games they play."
     },
     {
       "name": "Players",
@@ -1094,6 +1164,91 @@
             "apiToken": []
           }
         ]
+      }
+    },
+    "/api/games/search": {
+      "get": {
+        "tags": [
+          "Games"
+        ],
+        "summary": "Search the game catalogue",
+        "description": "Searches IGDB when credentials are configured (results are stored in\nthe local `games` table) and always includes the built-in games for\ninstalled game modules first. Without IGDB, or when it fails, only the\nbuilt-in list is searched. At most 10 results. Rate limited per IP.\n",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 2
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching games",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "fromIgdb": {
+                      "type": "boolean",
+                      "description": "True when any result came from IGDB (show the IGDB credit)"
+                    },
+                    "games": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/GameSummary"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Query shorter than 2 characters"
+          },
+          "429": {
+            "description": "Too many searches from this address"
+          }
+        }
+      }
+    },
+    "/api/games/suggestions": {
+      "get": {
+        "tags": [
+          "Games"
+        ],
+        "summary": "Up to three games to suggest",
+        "description": "Games with a tournament open or running on this instance first, then\npopular built-in games. Games the signed-in viewer already picked are\nleft out. Works anonymously (nothing is excluded then).\n",
+        "responses": {
+          "200": {
+            "description": "Suggested games",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "games": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/GameSummary"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/generation/team-name": {
@@ -2008,6 +2163,100 @@
         "responses": {
           "200": {
             "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/me/games": {
+      "get": {
+        "tags": [
+          "Me"
+        ],
+        "summary": "The signed-in player's games",
+        "responses": {
+          "200": {
+            "description": "Games, and whether to show the \"What do you play?\" prompt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "showPrompt": {
+                      "type": "boolean"
+                    },
+                    "games": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/GameSummary"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in"
+          },
+          "404": {
+            "description": "Signed in, but no player record"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Me"
+        ],
+        "summary": "Replace the signed-in player's games",
+        "description": "Body is an array of game ids (at most 30). Also counts as answering the prompt.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "maxItems": 30,
+                "items": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The stored games"
+          },
+          "400": {
+            "description": "Not an array of known game ids, or more than 30"
+          },
+          "401": {
+            "description": "Not signed in"
+          },
+          "403": {
+            "description": "Impersonating"
+          }
+        }
+      }
+    },
+    "/api/me/games/prompt/dismiss": {
+      "post": {
+        "tags": [
+          "Me"
+        ],
+        "summary": "Skip the \"What do you play?\" prompt for this account",
+        "responses": {
+          "200": {
+            "description": "Dismissed"
+          },
+          "401": {
+            "description": "Not signed in"
+          },
+          "403": {
+            "description": "Impersonating"
           }
         }
       }
@@ -3867,6 +4116,108 @@
         ]
       }
     },
+    "/api/settings/igdb": {
+      "get": {
+        "tags": [
+          "Settings"
+        ],
+        "summary": "IGDB credential status (admin)",
+        "description": "Whether IGDB (the game catalogue source) is configured, and from where.\nThe client secret is write-only and never returned; `clientSecretSet`\nsays whether one is stored. IGDB_CLIENT_ID / IGDB_CLIENT_SECRET in the\nenvironment win over saved settings (`envOverride`).\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Credential status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "igdb": {
+                      "$ref": "#/components/schemas/IgdbCredentialStatus"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Settings"
+        ],
+        "summary": "Save IGDB credentials (admin)",
+        "description": "Omit a field to keep it. `clientSecret` is write-only: send a new one to\nreplace it, or null to remove it. An empty `clientId` removes both.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "clientId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "clientSecret": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved; the new status (never the secret)"
+          },
+          "400": {
+            "description": "Invalid body"
+          }
+        }
+      }
+    },
+    "/api/settings/igdb/test": {
+      "post": {
+        "tags": [
+          "Settings"
+        ],
+        "summary": "Test the IGDB connection (admin)",
+        "description": "Requests a fresh Twitch token and runs a one-row IGDB query with the active credentials.",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "`ok: true`, or `ok: false` with an error safe to show"
+          }
+        }
+      }
+    },
     "/api/settings/version": {
       "get": {
         "tags": [
@@ -4543,6 +4894,34 @@
         ]
       }
     },
+    "/api/test/fake-igdb/token": {
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/fake-igdb/token",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/test/fake-igdb/v4/games": {
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/fake-igdb/v4/games",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/test/fake-oauth/{provider}/authorize": {
       "get": {
         "tags": [
@@ -4611,6 +4990,48 @@
             "schema": {
               "type": "string"
             }
+          }
+        ]
+      }
+    },
+    "/api/test/igdb": {
+      "get": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "GET /api/test/igdb",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/igdb",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
           }
         ]
       }

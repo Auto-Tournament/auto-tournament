@@ -296,6 +296,24 @@ class DatabaseManager {
         }
       }
 
+      // player_games.player_uid -> players(uid). Not declared inline: on an
+      // upgraded instance players.uid only exists after the column migrations
+      // and its unique index (deferred above), so the CREATE TABLE would fail.
+      try {
+        const { rows } = await client.query(
+          `SELECT 1 FROM pg_constraint
+            WHERE conrelid = to_regclass('player_games') AND conname = 'player_games_player_uid_fkey'`
+        );
+        if (rows.length === 0) {
+          await client.query(
+            `ALTER TABLE player_games ADD CONSTRAINT player_games_player_uid_fkey
+               FOREIGN KEY (player_uid) REFERENCES players(uid) ON DELETE CASCADE`
+          );
+        }
+      } catch (err) {
+        log.error(`[PostgreSQL] Failed to add player_games foreign key: ${(err as Error).message}`);
+      }
+
       // Insert default maps (only if maps table is empty - first initialization or after wipe)
       // This prevents fetching from GitHub on every server restart/reload
       // But ensures maps are regenerated when database is wiped

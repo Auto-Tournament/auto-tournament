@@ -40,6 +40,7 @@ import { TournamentRulesAccordion } from '../components/tournament/TournamentRul
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { PlayerName } from '../components/player/PlayerName';
 import { OwnDiscordIdCard } from '../components/player/OwnDiscordIdCard';
+import { OwnGamesCard } from '../components/games/OwnGamesCard';
 import type { PlayerDetail } from '../types/api.types';
 import { useAuth } from '../contexts/AuthContext';
 import { useCurrentMatchStatus } from '../hooks/useCurrentMatchStatus';
@@ -1021,7 +1022,10 @@ export default function PlayerProfile() {
               while an admin impersonates (playerSteamId is then the impersonated
               player, and the API refuses the request anyway). */}
           {steamId && playerSteamId === steamId && !impersonation && (
-            <OwnDiscordIdCard steamId={steamId} />
+            <>
+              <OwnGamesCard />
+              <OwnDiscordIdCard steamId={steamId} />
+            </>
           )}
 
           {currentMatch && (

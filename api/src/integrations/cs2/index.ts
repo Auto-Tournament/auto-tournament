@@ -128,6 +128,7 @@ function parseConfig(config: unknown): Partial<MatchConfig> {
 export const cs2Integration: GameIntegration = {
   id: 'cs2',
   displayName: 'Counter-Strike 2',
+  catalog: { slug: 'counter-strike-2', aliases: ['cs2', 'cs', 'counter strike', 'csgo'] },
   capabilities: {
     servers: true,
     veto: true,

@@ -40,7 +40,11 @@ export type AppSettingKey =
   | 'matchzy_gg_min_score_diff'
   | 'matchzy_ffw_enabled'
   | 'matchzy_ffw_time'
-  | 'matchzy_demo_recording_enabled';
+  | 'matchzy_demo_recording_enabled'
+  // IGDB (game catalogue) credentials. The secret is write-only: it is never
+  // returned by any endpoint, and env (IGDB_CLIENT_ID / IGDB_CLIENT_SECRET) wins.
+  | 'igdb_client_id'
+  | 'igdb_client_secret';
 
 export interface AppSetting {
   key: AppSettingKey;
@@ -87,7 +91,17 @@ const ALLOWED_KEYS: AppSettingKey[] = [
   'matchzy_ffw_enabled',
   'matchzy_ffw_time',
   'matchzy_demo_recording_enabled',
+  'igdb_client_id',
+  'igdb_client_secret',
 ];
+
+export type IgdbCredentialSource = 'env' | 'settings';
+
+export interface IgdbCredentials {
+  clientId: string;
+  clientSecret: string;
+  source: IgdbCredentialSource;
+}
 
 class SettingsService {
   async getSetting(key: AppSettingKey): Promise<string | null> {
@@ -137,6 +151,13 @@ class SettingsService {
 
       if (!trimmed) {
         await db.setAppSettingAsync(key, null);
+        return;
+      }
+
+      if (key === 'igdb_client_id' || key === 'igdb_client_secret') {
+        await db.setAppSettingAsync(key, trimmed);
+        // Never log the value.
+        log.success(`${key} updated`);
         return;
       }
 
@@ -393,6 +414,56 @@ class SettingsService {
   async getSteamApiKey(): Promise<string | null> {
     const value = process.env.STEAM_API_KEY;
     return value && value.trim().length > 0 ? value.trim() : null;
+  }
+
+  /**
+   * IGDB credentials, env first. The env pair only counts when both halves are
+   * set; otherwise the pair saved in settings is used, if complete.
+   */
+  async getIgdbCredentials(): Promise<IgdbCredentials | null> {
+    const envId = process.env.IGDB_CLIENT_ID?.trim();
+    const envSecret = process.env.IGDB_CLIENT_SECRET?.trim();
+    if (envId && envSecret) {
+      return { clientId: envId, clientSecret: envSecret, source: 'env' };
+    }
+
+    const [id, secret] = await Promise.all([
+      this.getSetting('igdb_client_id'),
+      this.getSetting('igdb_client_secret'),
+    ]);
+    if (id?.trim() && secret?.trim()) {
+      return { clientId: id.trim(), clientSecret: secret.trim(), source: 'settings' };
+    }
+    return null;
+  }
+
+  /**
+   * What the admin Settings page may see about the IGDB credentials: the
+   * client id (not a secret, it is sent as a header on every IGDB call) and
+   * whether a secret is set. Never the secret itself.
+   */
+  async getIgdbCredentialStatus(): Promise<{
+    configured: boolean;
+    source: IgdbCredentialSource | null;
+    envOverride: boolean;
+    clientId: string | null;
+    clientSecretSet: boolean;
+  }> {
+    const envOverride = Boolean(
+      process.env.IGDB_CLIENT_ID?.trim() && process.env.IGDB_CLIENT_SECRET?.trim()
+    );
+    const [storedId, storedSecret, active] = await Promise.all([
+      this.getSetting('igdb_client_id'),
+      this.getSetting('igdb_client_secret'),
+      this.getIgdbCredentials(),
+    ]);
+    return {
+      configured: Boolean(active),
+      source: active?.source ?? null,
+      envOverride,
+      clientId: envOverride ? (active?.clientId ?? null) : storedId?.trim() || null,
+      clientSecretSet: envOverride ? true : Boolean(storedSecret?.trim()),
+    };
   }
 
   async getMatchzyChatPrefix(): Promise<string | null> {

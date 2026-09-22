@@ -1,4 +1,4 @@
-import { Router, type NextFunction, type Request, type Response } from 'express';
+import express, { Router, type NextFunction, type Request, type Response } from 'express';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
 import { integrationForMatch } from '../integrations/registry';
@@ -15,12 +15,28 @@ import {
 } from './auth';
 import { passport, testOAuthStrategyName } from '../config/passport';
 import { PENDING_STEAM_LINK_PROVIDERS } from '../utils/signedPendingSteamLink';
+import { setIgdbEndpointOverride, clearIgdbTokenCache } from '../services/igdbService';
+import { clearGameSearchCache } from '../services/gameCatalogService';
+import { gameSearchLimiter } from './games';
 
 const router = Router();
 
 function isE2eTestHelperEnabled(): boolean {
   const enabled = (process.env.ENABLE_TEST_ENDPOINTS || '').toLowerCase();
   return enabled === '1' || enabled === 'true' || enabled === 'yes';
+}
+
+/**
+ * Test sign-ins skip the "What do you play?" dialog unless the test asks for
+ * it with `{ gamesPrompt: true }`: it is a modal, and every other UI spec that
+ * signs in would otherwise have to dismiss it first.
+ */
+async function setGamesPromptForTest(steamId: string, body: unknown): Promise<void> {
+  const wantsPrompt = (body as { gamesPrompt?: unknown } | undefined)?.gamesPrompt === true;
+  await db.runAsync('UPDATE players SET games_prompt_dismissed_at = ? WHERE id = ?', [
+    wantsPrompt ? null : Math.floor(Date.now() / 1000),
+    steamId,
+  ]);
 }
 
 /**
@@ -309,6 +325,7 @@ router.post('/login-admin', async (req: Request, res: Response): Promise<void> =
     // Ensure a player exists and is marked as admin for this Steam ID.
     await playerService.getOrCreatePlayer(testSteamId, `Test Admin ${testSteamId}`);
     await playerService.updatePlayer(testSteamId, { isAdmin: true });
+    await setGamesPromptForTest(testSteamId, req.body);
 
     const user = {
       provider: 'steam' as const,
@@ -376,6 +393,7 @@ router.post('/login-player', async (req: Request, res: Response): Promise<void> 
 
     await playerService.getOrCreatePlayer(steamId, `Test Player ${steamId}`);
     await playerService.updatePlayer(steamId, { isAdmin: false });
+    await setGamesPromptForTest(steamId, req.body);
 
     res.cookie('player_steam_id', signPlayerSteamId(steamId), {
       httpOnly: false,
@@ -705,5 +723,116 @@ router.get('/fake-oauth/:provider/userinfo', (req: Request, res: Response): void
     res.status(401).json({ error: 'invalid_token' });
   }
 });
+
+/*
+ * Test-only fake IGDB (api.igdb.com v4) and Twitch token endpoint.
+ *
+ *   POST /api/test/igdb                 { fake: true | false } point the IGDB
+ *                                       client at this fake (or back), and reset
+ *                                       its token cache, the search cache and the
+ *                                       search rate limiter
+ *   GET  /api/test/igdb                 request counters
+ *   POST /api/test/fake-igdb/token      Twitch client-credentials token
+ *   POST /api/test/fake-igdb/v4/games   Apicalypse `search "..."` over FAKE_IGDB_GAMES
+ *
+ * A client id starting with `bad` is refused by the token endpoint, and a
+ * search containing `explode` makes the games endpoint answer 500, so tests
+ * can drive the failure paths.
+ */
+
+const FAKE_IGDB_GAMES = [
+  { id: 1001, name: 'Rocket League', slug: 'rocket-league', year: 2015, image: 'fakerl' },
+  { id: 1002, name: 'Rocket Knight Adventures', slug: 'rocket-knight-adventures', year: 1993, image: null },
+  { id: 1003, name: 'Counter-Strike 2', slug: 'counter-strike-2', year: 2023, image: 'fakecs2' },
+  { id: 1004, name: 'Hollow Knight', slug: 'hollow-knight', year: 2017, image: 'fakehk' },
+  { id: 1005, name: 'Stardew Valley', slug: 'stardew-valley', year: 2016, image: null },
+  { id: 1006, name: 'Celeste', slug: 'celeste', year: 2018, image: 'fakecel' },
+];
+
+const fakeIgdbCounters = { tokenRequests: 0, searchRequests: 0 };
+let fakeIgdbTokenSerial = 0;
+const fakeIgdbTokens = new Set<string>();
+
+function fakeIgdbEnabled(res: Response): boolean {
+  if (!isE2eTestHelperEnabled()) {
+    res.status(404).json({ success: false, error: 'Not found' });
+    return false;
+  }
+  return true;
+}
+
+router.post('/igdb', requireAuth, (req: Request, res: Response): void => {
+  if (!fakeIgdbEnabled(res)) return;
+  const { fake } = (req.body ?? {}) as { fake?: unknown };
+  const self = `http://127.0.0.1:${process.env.PORT || '3000'}/api/test/fake-igdb`;
+  setIgdbEndpointOverride(
+    fake === false ? null : { apiBase: `${self}/v4`, tokenUrl: `${self}/token` }
+  );
+  clearIgdbTokenCache();
+  clearGameSearchCache();
+  gameSearchLimiter.reset();
+  fakeIgdbCounters.tokenRequests = 0;
+  fakeIgdbCounters.searchRequests = 0;
+  fakeIgdbTokens.clear();
+  res.json({ success: true, fake: fake !== false });
+});
+
+router.get('/igdb', requireAuth, (_req: Request, res: Response): void => {
+  if (!fakeIgdbEnabled(res)) return;
+  res.json({ success: true, ...fakeIgdbCounters });
+});
+
+router.post('/fake-igdb/token', (req: Request, res: Response): void => {
+  if (!fakeIgdbEnabled(res)) return;
+  fakeIgdbCounters.tokenRequests += 1;
+  const clientId = typeof req.query.client_id === 'string' ? req.query.client_id : '';
+  const secret = typeof req.query.client_secret === 'string' ? req.query.client_secret : '';
+  if (
+    !clientId ||
+    !secret ||
+    clientId.startsWith('bad') ||
+    req.query.grant_type !== 'client_credentials'
+  ) {
+    res.status(400).json({ status: 400, message: 'invalid client' });
+    return;
+  }
+  fakeIgdbTokenSerial += 1;
+  const token = `fake-igdb-token-${fakeIgdbTokenSerial}`;
+  fakeIgdbTokens.add(token);
+  res.json({ access_token: token, expires_in: 5_000_000, token_type: 'bearer' });
+});
+
+router.post(
+  '/fake-igdb/v4/games',
+  express.text({ type: '*/*' }),
+  (req: Request, res: Response): void => {
+    if (!fakeIgdbEnabled(res)) return;
+    const auth = req.headers.authorization || '';
+    const token = auth.toLowerCase().startsWith('bearer ') ? auth.slice(7).trim() : '';
+    if (!req.headers['client-id'] || !fakeIgdbTokens.has(token)) {
+      res.status(401).json({ message: 'Authorization Failure' });
+      return;
+    }
+    fakeIgdbCounters.searchRequests += 1;
+
+    const body = typeof req.body === 'string' ? req.body : '';
+    const term = /search\s+"([^"]*)"/.exec(body)?.[1]?.toLowerCase() ?? '';
+    if (term.includes('explode')) {
+      res.status(500).json({ message: 'Internal Server Error' });
+      return;
+    }
+    const limit = Number(/limit\s+(\d+)/.exec(body)?.[1] ?? 10);
+    const rows = FAKE_IGDB_GAMES.filter((g) => !term || g.name.toLowerCase().includes(term))
+      .slice(0, limit)
+      .map((g) => ({
+        id: g.id,
+        name: g.name,
+        slug: g.slug,
+        first_release_date: Math.floor(Date.UTC(g.year, 5, 1) / 1000),
+        ...(g.image ? { cover: { id: g.id * 10, image_id: g.image } } : {}),
+      }));
+    res.json(rows);
+  }
+);
 
 export default router;
