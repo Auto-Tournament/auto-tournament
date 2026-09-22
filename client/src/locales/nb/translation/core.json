@@ -10,6 +10,8 @@
       "matchReady": "Kampen er klar – koble til",
       "snackbarOpponentMoved": "Motstanderen gjorde sitt valg"
     },
+    "home": "Hjem",
+    "browse": "Utforsk",
     "dashboard": "Kontrollpanel",
     "tournament": "Turnering",
     "bracket": "Turneringsoversikt",

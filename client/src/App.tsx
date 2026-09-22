@@ -23,6 +23,8 @@ import FindPlayer from './pages/FindPlayer';
 import PlayerProfile from './pages/PlayerProfile';
 import TournamentLeaderboard from './pages/TournamentLeaderboard';
 import TournamentOverview from './pages/TournamentOverview';
+import Home from './pages/Home';
+import Browse from './pages/Browse';
 import ConnectSteam from './pages/ConnectSteam';
 import AccountConnections from './pages/AccountConnections';
 import Maps from './pages/Maps';
@@ -150,6 +152,55 @@ function ProtectedRoute({ children, adminOnly = true }: ProtectedRouteProps) {
 }
 
 /**
+ * What "/" shows.
+ *
+ * - A real admin session (not impersonating): the admin dashboard shell
+ *   (`Layout`, with its nested `/teams`, `/players`, etc. routes) — unchanged
+ *   from before Home existed.
+ * - A signed-in player (including an admin impersonating one — impersonation
+ *   is there to preview the player experience, and this is the player
+ *   experience): `Home`.
+ * - Signed out: `/login`, same as before.
+ *
+ * Only "/" changes here. `/player/:steamId` stays reachable (nav avatar menu,
+ * direct links) for anyone who wants it; players are just no longer bounced
+ * there automatically.
+ */
+function RootRoute() {
+  const { isAuthenticated, isLoading, playerSteamId, needsSteamLink, impersonation } = useAuth();
+  const location = useLocation();
+
+  if (isLoading) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          backgroundColor: 'background.default',
+        }}
+      >
+        <AtIcon size={80} title="Logo" />
+      </Box>
+    );
+  }
+
+  if (isAuthenticated && !impersonation) {
+    if (needsSteamLink && location.pathname !== '/connect-steam') {
+      return <Navigate to="/connect-steam" replace />;
+    }
+    return <Layout />;
+  }
+
+  if (playerSteamId) {
+    return <Home />;
+  }
+
+  return <Navigate to="/login" state={{ from: location }} replace />;
+}
+
+/**
  * Pages about the viewer's own account (/me/*): any signed-in player, admin
  * or not. Anonymous visitors go to login and come back afterwards.
  */
@@ -254,6 +305,14 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/browse"
+        element={
+          <ProtectedRoute adminOnly={false}>
+            <Browse />
+          </ProtectedRoute>
+        }
+      />
 
       {/* The signed-in player's own account */}
       <Route path="/me" element={<Navigate to="/me/connections" replace />} />
@@ -266,14 +325,7 @@ function AppRoutes() {
         }
       />
 
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <Layout />
-          </ProtectedRoute>
-        }
-      >
+      <Route path="/" element={<RootRoute />}>
         <Route index element={<Dashboard />} />
         <Route path="teams" element={<Teams />} />
         <Route path="players" element={<Players />} />

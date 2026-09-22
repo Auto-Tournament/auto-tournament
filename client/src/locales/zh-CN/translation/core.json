@@ -10,6 +10,8 @@
       "matchReady": "比赛就绪 – 连接",
       "snackbarOpponentMoved": "对方已行动"
     },
+    "home": "Home",
+    "browse": "Browse",
     "dashboard": "控制台",
     "tournament": "锦标赛",
     "bracket": "对阵图",
