@@ -16,6 +16,7 @@ import { useSnackbar } from '../../contexts/SnackbarContext';
 import { useCurrentMatchStatus } from '../../hooks/useCurrentMatchStatus';
 import { LanguageSwitcher } from '../common/LanguageSwitcher';
 import { ThemeSwitcher } from '../common/ThemeSwitcher';
+import { DevAccountSwitcherGate } from '../dev/DevAccountSwitcherGate';
 import { AtIcon } from '../common/AtIcon';
 import { PlayerAvatar } from '../player/PlayerAvatar';
 import { generateAvatarDataUrl } from '../../generation/avatar';
@@ -314,6 +315,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
         </Box>
         <ThemeSwitcher />
         <LanguageSwitcher />
+        <DevAccountSwitcherGate />
 
         {needsSteamLink && (
           <Button

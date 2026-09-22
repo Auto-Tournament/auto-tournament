@@ -53,11 +53,6 @@ export const tokens = {
   brand: {
     steam: '#171a21',
     steamHover: '#1b2838',
-    discord: '#5865f2',
-    discordHover: '#4752c4',
-    github: '#24292e',
-    githubHover: '#1b1f23',
-    keycloak: '#3262a8',
     keycloakHover: '#274c82',
     onBrand: '#ffffff',
   },
