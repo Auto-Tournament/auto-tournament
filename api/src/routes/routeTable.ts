@@ -40,6 +40,8 @@ import eloTemplatesRoutes from './eloTemplates';
 import generationRoutes from './generation';
 import testRoutes from './test';
 import authRoutes from './auth';
+import gamesRoutes from './games';
+import meRoutes from './me';
 
 export interface MountedRouter {
   /** Path prefix the router is mounted under. */
@@ -153,6 +155,18 @@ const coreRoutes: MountedRouter[] = [
     router: generationRoutes,
     title: 'Generation',
     description: 'Shared generators, e.g. random team names.',
+  },
+  {
+    prefix: '/api/games',
+    router: gamesRoutes,
+    title: 'Games',
+    description: 'The game catalogue players pick from (IGDB-backed search, suggestions). Public.',
+  },
+  {
+    prefix: '/api/me',
+    router: meRoutes,
+    title: 'Me',
+    description: "The signed-in player's own data, e.g. the games they play.",
   },
   {
     prefix: '/api/test',

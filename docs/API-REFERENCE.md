@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 201 of them, 145 behind auth —
+Every endpoint this API serves — 213 of them, 150 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -267,6 +267,9 @@ Instance-wide settings.
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/settings/version` | public |
+| `GET` | `/api/settings/igdb` | admin |
+| `PUT` | `/api/settings/igdb` | admin |
+| `POST` | `/api/settings/igdb/test` | admin |
 | `GET` | `/api/settings` | admin |
 | `PUT` | `/api/settings` | admin |
 
@@ -377,6 +380,25 @@ Shared generators, e.g. random team names.
 | --- | --- | --- |
 | `GET` | `/api/generation/team-name` | admin |
 
+### Games
+
+The game catalogue players pick from (IGDB-backed search, suggestions). Public.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/games/search` | public |
+| `GET` | `/api/games/suggestions` | public |
+
+### Me
+
+The signed-in player's own data, e.g. the games they play.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/me/games` | public |
+| `PUT` | `/api/me/games` | public |
+| `POST` | `/api/me/games/prompt/dismiss` | public |
+
 ### Test helpers
 
 E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
@@ -400,6 +422,10 @@ E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
 | `GET` | `/api/test/fake-oauth/:provider/authorize` | public |
 | `POST` | `/api/test/fake-oauth/:provider/token` | public |
 | `GET` | `/api/test/fake-oauth/:provider/userinfo` | public |
+| `POST` | `/api/test/igdb` | admin |
+| `GET` | `/api/test/igdb` | admin |
+| `POST` | `/api/test/fake-igdb/token` | public |
+| `POST` | `/api/test/fake-igdb/v4/games` | public |
 
 ### Auth
 

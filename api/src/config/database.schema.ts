@@ -253,12 +253,44 @@ export function getSchemaSQL(): string {
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       discord_id TEXT, -- Discord user ID (17-20 digit string). Contact data only, admin-only, not unique (a parent may list theirs on several children)
-      discord_id_edited_at INTEGER -- Epoch of the last explicit edit (admin or the player) that set OR cleared discord_id; NULL = only ever filled by an import. Imports never touch a row where this is set. Internal, never in a response
+      discord_id_edited_at INTEGER, -- Epoch of the last explicit edit (admin or the player) that set OR cleared discord_id; NULL = only ever filled by an import. Imports never touch a row where this is set. Internal, never in a response
+      uid UUID NOT NULL DEFAULT gen_random_uuid(), -- Stable account id, never regenerated. Player-owned data (player_games, ...) keys on this rather than the Steam ID, so 3.1 can have accounts without Steam
+      games_prompt_dismissed_at INTEGER -- Epoch when the player skipped or answered the "What do you play?" dialog; NULL = show it while they have no games
     );
 
     CREATE INDEX IF NOT EXISTS idx_players_name ON players(name);
     CREATE INDEX IF NOT EXISTS idx_players_elo ON players(current_elo);
     CREATE INDEX IF NOT EXISTS idx_players_discord_id ON players(discord_id);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_players_uid ON players(uid);
+
+    -- Game catalogue: games players can say they play. Rows come from IGDB
+    -- search results (upserted so repeat queries and chips render from here)
+    -- and from the built-in list (installed game modules + popular esports).
+    CREATE TABLE IF NOT EXISTS games (
+      id SERIAL PRIMARY KEY,
+      igdb_id INTEGER UNIQUE,
+      slug TEXT NOT NULL UNIQUE,
+      name TEXT NOT NULL,
+      cover_url TEXT,
+      logo_url TEXT,
+      release_year INTEGER,
+      source TEXT NOT NULL DEFAULT 'builtin', -- 'igdb' | 'builtin'
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_games_name ON games(LOWER(name));
+
+    -- Games a player plays, keyed on players.uid (not the Steam ID). The
+    -- foreign key to players(uid) is added in database.ts once the column is
+    -- guaranteed to exist on upgraded instances.
+    CREATE TABLE IF NOT EXISTS player_games (
+      player_uid UUID NOT NULL,
+      game_id INTEGER NOT NULL REFERENCES games(id) ON DELETE CASCADE,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      PRIMARY KEY (player_uid, game_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_player_games_game ON player_games(game_id);
 
     -- Auth identities table: links external auth providers (Discord, Keycloak, GitHub, etc.)
     -- to a Steam player ID so that once a user has linked Steam, future logins via

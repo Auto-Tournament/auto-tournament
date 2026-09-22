@@ -31,6 +31,7 @@ import { api } from '../utils/api';
 import type { SettingsResponse } from '../types/api.types';
 import { useIsDevelopment } from '../hooks/useIsDevelopment';
 import { useTranslation } from 'react-i18next';
+import { IgdbCredentialsCard } from '../components/games/IgdbCredentialsCard';
 
 declare const __APP_VERSION__: string | undefined;
 
@@ -979,6 +980,12 @@ export default function Settings() {
                     }}
                   />
                 </Box>
+
+                <Divider />
+
+                <IgdbCredentialsCard />
+
+                <Divider />
 
                 <Box>
                   <Typography variant="h6" fontWeight={600} gutterBottom>
