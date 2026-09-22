@@ -136,6 +136,8 @@ COPY --from=build /app/docs/openapi.json ./docs/openapi.json
 
 # Copy Caddy configuration
 COPY docker/Caddyfile /app/Caddyfile
+# License terms travel with the image (PolyForm Noncommercial requires it).
+COPY LICENSE NOTICE /app/
 
 # Data directory for demos / uploads / etc.
 RUN mkdir -p /app/data
