@@ -510,5 +510,56 @@
       "win": "Win",
       "loss": "Loss"
     }
+  },
+  "manualReport": {
+    "title": "Match result",
+    "unknownTeam": "the other team",
+    "state": {
+      "nothing": "No result reported yet. Whoever played it, report the score.",
+      "waitingOpponent": "Reported. Waiting for {{team}} to confirm.",
+      "needsAnswer": "{{team}} reported this result. Confirm it if it is right.",
+      "disputed": "This result is disputed. An admin will decide it.",
+      "awaitingAdmin": "Waiting for an admin to decide this match.",
+      "confirmed": "Both teams agree on this result."
+    },
+    "deadline": {
+      "autoConfirm": "Confirms on its own in {{minutes}} min if nobody answers.",
+      "autoConfirmSoon": "Confirms on its own any moment now.",
+      "escalate": "Goes to an admin in {{minutes}} min if nobody answers.",
+      "escalateSoon": "Goes to an admin any moment now."
+    },
+    "score": "{{team1}} {{score1}} – {{score2}} {{team2}}",
+    "game": "Game {{number}}",
+    "note": "Note",
+    "notePlaceholder": "Anything the other team should know (optional)",
+    "noteGiven": "Note: {{note}}",
+    "disputeReason": "What is wrong with it?",
+    "disputeReasonGiven": "Disputed: {{reason}}",
+    "formHint": "Scores for {{team1}} and {{team2}}, game by game.",
+    "actions": {
+      "report": "Report the score",
+      "reportAgain": "Report a different score",
+      "submit": "Send report",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "dispute": "Dispute",
+      "disputeSubmit": "Send dispute",
+      "withdraw": "Withdraw my report"
+    },
+    "errors": {
+      "stale": "This report changed while it was on your screen. Read it again before you confirm.",
+      "incomplete": "Fill in both scores for at least one game.",
+      "failed": "That did not go through. Try again."
+    },
+    "captains": {
+      "title": "Captains",
+      "hint": "Only a captain can report or confirm a result for this team.",
+      "make": "Make captain",
+      "remove": "Remove captain",
+      "isCaptain": "Captain",
+      "empty": "Nobody on this team has signed in yet, so there is nobody to appoint.",
+      "unknown": "Unknown player",
+      "failed": "Could not change that. Try again."
+    }
   }
 }

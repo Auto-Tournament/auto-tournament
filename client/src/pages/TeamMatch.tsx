@@ -24,6 +24,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { useTranslation } from 'react-i18next';
 import { getTeamProfileUrl } from '../utils/teamLinks';
+import { integrationFor } from '../integrations/registry';
 
 export default function TeamMatch() {
   const { teamId } = useParams<{ teamId: string }>();
@@ -44,6 +45,26 @@ export default function TeamMatch() {
   const { playerSteamId } = useAuth();
 
   const matchFormat = (match?.matchFormat as 'bo1' | 'bo3' | 'bo5') || 'bo1';
+
+  // Game-specific parts of this page (3.0 phase D, PR D7). Resolved from the
+  // match, falling back to the tournament so a team with no match right now
+  // still gets them. CS2 fills neither slot, so nothing is rendered for it.
+  const integration = integrationFor(match ?? tournament);
+  const ReportPanel = integration.matchPanels.reportView;
+  const TeamAdminPanel = integration.teamAdminPanel;
+
+  /**
+   * The match the report panel is about: the current one, or the last one
+   * this team finished.
+   *
+   * The fallback is not a nicety. This page only ever shows a *live or
+   * upcoming* match, and a confirmed result completes the match at once — so
+   * with `match` alone the card a captain just acted on vanishes the instant
+   * their confirm lands, leaving nothing to say it worked. The panel itself
+   * refuses a match it has no business showing (404 on a match that is gone,
+   * 409 on one another game owns), so an old slug costs nothing.
+   */
+  const reportSlug = match?.slug ?? matchHistory[0]?.slug ?? null;
 
   useEffect(() => {
     if (team?.name) {
@@ -193,7 +214,12 @@ export default function TeamMatch() {
               </CardContent>
             </Card>
 
+            {reportSlug && ReportPanel && (
+              <ReportPanel matchSlug={reportSlug} matchStatus={match?.status} />
+            )}
+
             <PlayerRosterCard team={team} />
+            {TeamAdminPanel && teamId && <TeamAdminPanel teamId={teamId} />}
             <TeamStatsCard stats={stats} standing={standing} />
             <TeamMatchHistoryCard matchHistory={matchHistory} teamId={teamId} />
           </Stack>
@@ -257,7 +283,12 @@ export default function TeamMatch() {
               />
             )}
 
+            {reportSlug && ReportPanel && (
+              <ReportPanel matchSlug={reportSlug} matchStatus={match?.status} />
+            )}
+
             <PlayerRosterCard team={team} />
+            {TeamAdminPanel && teamId && <TeamAdminPanel teamId={teamId} />}
             <TeamStatsCard stats={stats} standing={standing} />
             <TeamMatchHistoryCard matchHistory={matchHistory} teamId={teamId} />
           </Stack>
