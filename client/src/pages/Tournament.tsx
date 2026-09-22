@@ -12,6 +12,7 @@ import { ShufflePlayerRegistration } from '../components/tournament/ShufflePlaye
 import { ShuffleTournamentStats } from '../components/tournament/ShuffleTournamentStats';
 import { ShuffleMapsCard } from '../components/tournament/ShuffleMapsCard';
 import { TournamentDialogs } from '../components/tournament/TournamentDialogs';
+import { EventPageSettingsCard } from '../components/tournament/EventPageSettingsCard';
 import TournamentChangePreviewModal from '../components/modals/TournamentChangePreviewModal';
 import SaveTemplateModal from '../components/modals/SaveTemplateModal';
 import { BulkShuffleMatchesModal } from '../components/modals/BulkShuffleMatchesModal';
@@ -47,6 +48,7 @@ const Tournament: React.FC = () => {
     loading,
     hasBracket,
     saveTournament,
+    updateSettings,
     deleteTournament,
     regenerateBracket,
     resetTournament,
@@ -1156,6 +1158,16 @@ const Tournament: React.FC = () => {
           onReset={() => setShowResetConfirm(true)}
           onDelete={() => setShowDeleteConfirm(true)}
           playerCount={tournament.type === 'shuffle' ? registeredPlayerCount : undefined}
+        />
+      )}
+
+      {/* Event page: organizer-written content for the public Overview tab.
+          Editable any time the tournament exists, independent of the setup wizard. */}
+      {tournament && !isEditing && (
+        <EventPageSettingsCard
+          settings={tournament.settings}
+          saving={saving}
+          onSave={updateSettings}
         />
       )}
 

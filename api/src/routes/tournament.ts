@@ -420,6 +420,48 @@ router.get('/', async (req: Request, res: Response) => {
  *                   seedingMethod:
  *                     type: string
  *                     enum: [random, manual]
+ *                   description:
+ *                     type: string
+ *                     maxLength: 4000
+ *                     description: Organizer-written event page text (public Overview tab).
+ *                   location:
+ *                     type: string
+ *                     maxLength: 120
+ *                     example: "On site, Trondheim"
+ *                   rules:
+ *                     type: array
+ *                     maxItems: 20
+ *                     items:
+ *                       type: string
+ *                       maxLength: 500
+ *                   rulebookUrl:
+ *                     type: string
+ *                     format: uri
+ *                     description: Must be an https URL, or empty/omitted.
+ *                   prizes:
+ *                     type: array
+ *                     maxItems: 5
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         place:
+ *                           type: string
+ *                           example: "1st"
+ *                         prize:
+ *                           type: string
+ *                           example: "$500"
+ *                   schedule:
+ *                     type: array
+ *                     maxItems: 20
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         at:
+ *                           type: string
+ *                           format: date-time
+ *                         label:
+ *                           type: string
+ *                           example: "Grand final, on stage"
  *     responses:
  *       200:
  *         description: Tournament created successfully
@@ -478,6 +520,116 @@ function validateCustomVetoOrderSetting(
   return { valid: true };
 }
 
+/**
+ * Validate a tournament's optional event-page settings (the public "Overview"
+ * tab's organizer-written content): `description`, `location`, `rules`,
+ * `rulebookUrl`, `prizes`, `schedule`.
+ *
+ * All fields are optional; the page hides a section when its data is empty.
+ * Length caps here are what keep an organizer's paste from blowing up the
+ * page (or the settings JSON column) rather than a hard product limit.
+ */
+function validateEventPageSettings(settings: unknown): { valid: true } | { valid: false; error: string } {
+  if (!settings || typeof settings !== 'object') {
+    return { valid: true };
+  }
+
+  const s = settings as Record<string, unknown>;
+
+  if (s.description !== undefined && s.description !== null) {
+    if (typeof s.description !== 'string') {
+      return { valid: false, error: 'settings.description must be a string' };
+    }
+    if (s.description.length > 4000) {
+      return { valid: false, error: 'settings.description must be at most 4000 characters' };
+    }
+  }
+
+  if (s.location !== undefined && s.location !== null) {
+    if (typeof s.location !== 'string') {
+      return { valid: false, error: 'settings.location must be a string' };
+    }
+    if (s.location.length > 120) {
+      return { valid: false, error: 'settings.location must be at most 120 characters' };
+    }
+  }
+
+  if (s.rules !== undefined && s.rules !== null) {
+    if (!Array.isArray(s.rules)) {
+      return { valid: false, error: 'settings.rules must be an array of strings' };
+    }
+    if (s.rules.length > 20) {
+      return { valid: false, error: 'settings.rules must have at most 20 items' };
+    }
+    for (const rule of s.rules) {
+      if (typeof rule !== 'string') {
+        return { valid: false, error: 'settings.rules items must be strings' };
+      }
+      if (rule.length > 500) {
+        return { valid: false, error: 'settings.rules items must be at most 500 characters' };
+      }
+    }
+  }
+
+  if (s.rulebookUrl !== undefined && s.rulebookUrl !== null && s.rulebookUrl !== '') {
+    if (typeof s.rulebookUrl !== 'string') {
+      return { valid: false, error: 'settings.rulebookUrl must be a string' };
+    }
+    try {
+      const url = new URL(s.rulebookUrl);
+      if (url.protocol !== 'https:') {
+        return { valid: false, error: 'settings.rulebookUrl must be an https URL' };
+      }
+    } catch {
+      return { valid: false, error: 'settings.rulebookUrl must be a valid https URL' };
+    }
+  }
+
+  if (s.prizes !== undefined && s.prizes !== null) {
+    if (!Array.isArray(s.prizes)) {
+      return { valid: false, error: 'settings.prizes must be an array' };
+    }
+    if (s.prizes.length > 5) {
+      return { valid: false, error: 'settings.prizes must have at most 5 items' };
+    }
+    for (const prize of s.prizes) {
+      if (!prize || typeof prize !== 'object') {
+        return { valid: false, error: 'settings.prizes items must be objects with place and prize' };
+      }
+      const p = prize as Record<string, unknown>;
+      if (typeof p.place !== 'string' || p.place.length === 0 || p.place.length > 40) {
+        return { valid: false, error: 'settings.prizes items need a place (1-40 characters)' };
+      }
+      if (typeof p.prize !== 'string' || p.prize.length > 200) {
+        return { valid: false, error: 'settings.prizes items need a prize string (0-200 characters)' };
+      }
+    }
+  }
+
+  if (s.schedule !== undefined && s.schedule !== null) {
+    if (!Array.isArray(s.schedule)) {
+      return { valid: false, error: 'settings.schedule must be an array' };
+    }
+    if (s.schedule.length > 20) {
+      return { valid: false, error: 'settings.schedule must have at most 20 items' };
+    }
+    for (const item of s.schedule) {
+      if (!item || typeof item !== 'object') {
+        return { valid: false, error: 'settings.schedule items must be objects with at and label' };
+      }
+      const row = item as Record<string, unknown>;
+      if (typeof row.at !== 'string' || Number.isNaN(new Date(row.at).getTime())) {
+        return { valid: false, error: 'settings.schedule items need a valid ISO datetime "at"' };
+      }
+      if (typeof row.label !== 'string' || row.label.length === 0 || row.label.length > 200) {
+        return { valid: false, error: 'settings.schedule items need a label (1-200 characters)' };
+      }
+    }
+  }
+
+  return { valid: true };
+}
+
 router.post('/', async (req: Request, res: Response) => {
   try {
     const tournamentId = resolveTournamentId(req);
@@ -510,6 +662,14 @@ router.post('/', async (req: Request, res: Response) => {
       return res.status(400).json({
         success: false,
         error: vetoOrderCheck.error,
+      });
+    }
+
+    const eventPageCheck = validateEventPageSettings(input.settings);
+    if (!eventPageCheck.valid) {
+      return res.status(400).json({
+        success: false,
+        error: eventPageCheck.error,
       });
     }
 
@@ -546,6 +706,47 @@ router.post('/', async (req: Request, res: Response) => {
  *         application/json:
  *           schema:
  *             type: object
+ *             properties:
+ *               settings:
+ *                 type: object
+ *                 description: Merged with the tournament's existing settings.
+ *                 properties:
+ *                   description:
+ *                     type: string
+ *                     maxLength: 4000
+ *                   location:
+ *                     type: string
+ *                     maxLength: 120
+ *                   rules:
+ *                     type: array
+ *                     maxItems: 20
+ *                     items:
+ *                       type: string
+ *                       maxLength: 500
+ *                   rulebookUrl:
+ *                     type: string
+ *                     format: uri
+ *                   prizes:
+ *                     type: array
+ *                     maxItems: 5
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         place:
+ *                           type: string
+ *                         prize:
+ *                           type: string
+ *                   schedule:
+ *                     type: array
+ *                     maxItems: 20
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         at:
+ *                           type: string
+ *                           format: date-time
+ *                         label:
+ *                           type: string
  *     responses:
  *       200:
  *         description: Tournament updated successfully
@@ -578,6 +779,14 @@ router.put('/', async (req: Request, res: Response) => {
         return res.status(400).json({
           success: false,
           error: vetoOrderCheck.error,
+        });
+      }
+
+      const eventPageCheck = validateEventPageSettings(input.settings);
+      if (!eventPageCheck.valid) {
+        return res.status(400).json({
+          success: false,
+          error: eventPageCheck.error,
         });
       }
     }

@@ -10,7 +10,7 @@ import { playerService, type PlayerRecord } from './playerService';
 import { teamService } from './teamService';
 import { buildMatchConfigFor, serializeMatchConfig } from '../utils/matchIntegration';
 import { generateUniqueTeamName } from '../generation/teamName';
-import type { TournamentResponse, TournamentType } from '../types/tournament.types';
+import type { TournamentResponse } from '../types/tournament.types';
 import type { DbMatchRow, DbTeamRow, DbTournamentRow } from '../types/database.types';
 import { tournamentRowToResponse } from '../utils/tournamentRow';
 import { getSwissStandingEntries } from './swissProgressionService';
@@ -862,27 +862,25 @@ export async function getTournamentLeaderboard(tournamentId: number): Promise<{
   totalRounds: number;
   roundStatus?: RoundStatus;
   teams?: TeamLeaderboardEntry[];
+  /** Matches currently live or loaded, across the whole tournament. Powers the public "live now" strip. */
+  liveMatchCount: number;
 }> {
   // Load base tournament row
-  const row = await db.queryOneAsync<{
-    id: number;
-    name: string;
-    type: TournamentType;
-    format: string;
-    status: string;
-    maps: string;
-    team_ids: string;
-    settings: string;
-    map_sequence?: string | null;
-    created_at: number;
-    updated_at?: number;
-    started_at?: number;
-    completed_at?: number;
-  }>('SELECT * FROM tournament WHERE id = ?', [tournamentId]);
+  const row = await db.queryOneAsync<DbTournamentRow>(
+    'SELECT * FROM tournament WHERE id = ?',
+    [tournamentId]
+  );
 
   if (!row) {
     throw new Error('Tournament not found');
   }
+
+  // Postgres returns COUNT(*) as a bigint-safe string; coerce it explicitly.
+  const liveMatchCountResult = await db.queryOneAsync<{ count: number | string }>(
+    `SELECT COUNT(*) as count FROM matches WHERE tournament_id = ? AND status IN ('live', 'loaded')`,
+    [tournamentId]
+  );
+  const liveMatchCount = Number(liveMatchCountResult?.count ?? 0);
 
   // Shuffle tournaments keep the existing behaviour: player-only leaderboard
   // driven by registered players and Swiss-style rounds.
@@ -928,30 +926,16 @@ export async function getTournamentLeaderboard(tournamentId: number): Promise<{
       currentRound,
       totalRounds,
       roundStatus,
+      liveMatchCount,
     };
   }
 
   // Standard tournament (single_elimination / double_elimination / round_robin / swiss):
-  // build a simple tournament object, team standings, and player leaderboard
-  const maps = JSON.parse(row.maps || '[]') as string[];
-  const teamIds: string[] = JSON.parse(row.team_ids || '[]');
-  const settings = row.settings ? JSON.parse(row.settings) : {};
-
-  const baseTournament: TournamentResponse = {
-    id: row.id,
-    name: row.name,
-    type: row.type,
-    format: row.format as TournamentResponse['format'],
-    status: row.status as TournamentResponse['status'],
-    maps,
-    teamIds,
-    settings,
-    teams: [],
-    created_at: row.created_at,
-    updated_at: row.updated_at ?? row.created_at,
-    started_at: row.started_at,
-    completed_at: row.completed_at,
-  };
+  // build the public tournament object (via the shared row helper so no column
+  // is dropped), team standings, and player leaderboard.
+  const baseTournament: TournamentResponse = tournamentRowToResponse(row);
+  const teamIds = baseTournament.teamIds;
+  baseTournament.teams = [];
 
   // Team standings for this tournament
   let teams: TeamLeaderboardEntry[] = [];
@@ -1150,6 +1134,7 @@ export async function getTournamentLeaderboard(tournamentId: number): Promise<{
     totalRounds,
     roundStatus: undefined,
     teams,
+    liveMatchCount,
   };
 }
 

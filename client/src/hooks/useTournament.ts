@@ -103,6 +103,20 @@ export const useTournament = () => {
     return response;
   };
 
+  /**
+   * Save just a settings patch (e.g. the "Event page" fields) without
+   * re-sending the whole wizard payload. The server merges it into the
+   * tournament's existing settings.
+   */
+  const updateSettings = async (settingsPatch: Record<string, unknown>) => {
+    const response = await api.put<TournamentResponse & { tournament: TournamentDetailed }>(
+      '/api/tournament',
+      { settings: settingsPatch }
+    );
+    setTournament(response.tournament);
+    return response;
+  };
+
   const deleteTournament = async () => {
     await api.delete('/api/tournament');
     setTournament(null);
@@ -165,6 +179,7 @@ export const useTournament = () => {
     error,
     setError,
     saveTournament,
+    updateSettings,
     deleteTournament,
     regenerateBracket,
     resetTournament,

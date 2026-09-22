@@ -36,6 +36,8 @@ export type {
   SwissStanding,
   RoundRobinStanding,
   TournamentTemplate,
+  EventPagePrize,
+  EventPageScheduleItem,
 } from './tournament.types';
 
 // Veto types
