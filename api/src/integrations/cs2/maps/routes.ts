@@ -4,22 +4,16 @@ import { CreateMapInput, UpdateMapInput } from '../../../types/map.types';
 import { requireAuth } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
 import { fetchCS2MapsFromWiki } from './fetchCS2Maps';
+import { MAP_IMAGES_DIR } from '../../../config/publicPaths';
 import path from 'path';
 import fs from 'fs';
 
 const router = Router();
 
-// Directory for storing map images. Resolved exactly as it was from
-// `routes/maps.ts` before the CS2 module split: under tsx `__dirname` is the
-// source directory (so this is api/public/map-images); in the esbuild bundle it
-// is `dist/` whichever file the code came from, so the bundled path is
-// unchanged too.
-const LEGACY_ROUTES_DIR = __filename.endsWith('.ts')
-  ? path.resolve(__dirname, '..', '..', '..', 'routes')
-  : __dirname;
-const MAP_IMAGES_DIR = path.join(LEGACY_ROUTES_DIR, '..', '..', 'public', 'map-images');
-
-// Ensure map images directory exists
+// Directory for storing map images. Shared with the static `/map-images`
+// setup in the api entry (`index.ts`) via `config/publicPaths` so the
+// upload path and the serve path can't drift apart again -- see PR #284's
+// "Judgement calls" section for how they did before.
 if (!fs.existsSync(MAP_IMAGES_DIR)) {
   fs.mkdirSync(MAP_IMAGES_DIR, { recursive: true });
   log.server(`Created map images directory: ${MAP_IMAGES_DIR}`);
