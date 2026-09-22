@@ -9,8 +9,8 @@
  *
  * CS2 is the only integration today (`integrations/cs2`). The core reaches it
  * only through the registry (eslint-rules/integration-boundaries.mjs enforces
- * it). Some CS2 features still live in core files (settings, and the stats
- * columns the leaderboard and profile queries read); later PRs move them
+ * it). Some CS2 features still live in core files (the stats columns the
+ * leaderboard and profile queries read); later PRs move them
  * behind this interface one seam at a time (see the TODOs).
  *
  * Two rules keep a future out-of-process (HTTP/webhook) integration possible:
@@ -304,12 +304,74 @@ export interface SeedClient {
 export type JSONSchema = Record<string, unknown>;
 
 export interface SetupSchema {
-  /** Tournament-level settings (cs2: maps/map pool, map sequence, max rounds, overtime, veto order, team size). */
-  tournament: JSONSchema;
-  /** Per-match overrides, used for standalone matches. */
-  match: JSONSchema;
-  /** Instance-wide settings (cs2: the `matchzy_*` app settings). */
+  /**
+   * Tournament-level settings (cs2: maps/map pool, map sequence, max rounds,
+   * overtime, veto order, team size). Not declared yet: CS2 validates them
+   * through `validateTournamentSettings`.
+   */
+  tournament?: JSONSchema;
+  /** Per-match overrides, used for standalone matches. Not declared yet. */
+  match?: JSONSchema;
+  /**
+   * Instance-wide settings: the `app_settings` keys the integration owns
+   * (cs2: the `matchzy_*` and simulation keys), one property per key. The
+   * store and the settings API use `instanceSettings`; this is the
+   * declarative view of the same keys.
+   */
   instance: JSONSchema;
+}
+
+// ---------------------------------------------------------------------------
+// Instance settings (app_settings)
+// ---------------------------------------------------------------------------
+
+/** What an `applyRequest` gets from `PUT /api/settings`. */
+export interface SettingWriteContext {
+  /** The tournament the request is scoped to (`resolveTournamentId`). */
+  tournamentId: number;
+  /** Store a value under this setting's key, through the settings store (so `normalize` runs). */
+  set(value: string | null): Promise<void>;
+  /**
+   * Start the pre-match phases the tournament has waiting (the core calls
+   * its integration's `startPendingPreMatchPhases`, in the background of the
+   * request; failures are logged, never returned).
+   */
+  startPendingPreMatchPhases(): Promise<void>;
+}
+
+/**
+ * One `app_settings` key. The core owns a few (webhook URL, ratings,
+ * self-registration, IGDB); an integration contributes the rest through
+ * `GameIntegration.instanceSettings`. The settings store accepts exactly the
+ * union, and key names never change, so stored rows stay valid.
+ */
+export interface SettingDefinition {
+  /** The `app_settings` key. */
+  key: string;
+  /**
+   * Store an empty (trimmed) value as is. Otherwise "" is stored as NULL,
+   * which falls back to the default.
+   */
+  keepEmpty?: boolean;
+  /**
+   * Turn a trimmed, non-empty value (or "" with `keepEmpty`) into what is
+   * stored, and the line logged on success. Throw to reject it; the message
+   * reaches the client as a 400.
+   */
+  normalize(trimmed: string): { value: string; message: string };
+  /** The `PUT /api/settings` body field, when the key is editable there. */
+  field?: string;
+  /**
+   * Where the field is applied in a `PUT /api/settings`. Fields are applied
+   * one at a time in this order and a rejected one stops the request, so the
+   * order decides which earlier fields were already saved.
+   */
+  order?: number;
+  /**
+   * Apply the request value (never `undefined`). Return an error message for
+   * a 400, or nothing once it is stored (through `ctx.set`).
+   */
+  applyRequest?(value: unknown, ctx: SettingWriteContext): Promise<string | void>;
 }
 
 // ---------------------------------------------------------------------------
@@ -550,8 +612,19 @@ export interface GameIntegration {
    */
   statsSchema(tournament: IntegrationTournament | null): StatsSchema;
 
-  /** TODO(PR 11): CS2 declares its tournament and `matchzy_*` settings here. */
+  /** The settings this game declares (CS2: `instance`, its `app_settings` keys). */
   setupSchema?: SetupSchema;
+  /**
+   * The `app_settings` keys this game owns, with how each is stored and
+   * edited through `/api/settings`. Keys must not clash with the core's or
+   * another integration's.
+   */
+  instanceSettings?: ReadonlyArray<SettingDefinition>;
+  /**
+   * This game's fields of the `GET /api/settings` response (the stored
+   * values with their defaults applied), keyed by `SettingDefinition.field`.
+   */
+  readInstanceSettings?(): Promise<Record<string, unknown>>;
   /**
    * Validate a tournament create or update: the integration's top-level
    * fields and its part of `settings`. CS2: the map pool (`maps`), the shuffle

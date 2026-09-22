@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { validateServerToken } from '../../../middleware/serverAuth';
 import { settingsService } from '../../../services/settingsService';
+import { cs2Settings } from '../settingsReaders';
 import { serverService } from '../services/serverService';
 import { log } from '../../../utils/logger';
 import {
@@ -47,11 +48,11 @@ router.get('/:id/bootstrap', validateServerToken, async (req: Request, res: Resp
 
     const [chatPrefix, adminChatPrefix, knifeEnabledDefault, debugChatEnabled, matchzyCoreDefaults] =
       await Promise.all([
-        settingsService.getMatchzyChatPrefix(),
-        settingsService.getMatchzyAdminChatPrefix(),
-        settingsService.isKnifeRoundEnabledByDefault(),
-        settingsService.isMatchzyDebugChatEnabled(),
-        settingsService.getMatchzyCoreDefaults(),
+        cs2Settings.getMatchzyChatPrefix(),
+        cs2Settings.getMatchzyAdminChatPrefix(),
+        cs2Settings.isKnifeRoundEnabledByDefault(),
+        cs2Settings.isMatchzyDebugChatEnabled(),
+        cs2Settings.getMatchzyCoreDefaults(),
       ]);
 
     const perServerOverrides = server.matchzyConfig ?? {};

@@ -4,6 +4,7 @@ import type { TournamentResponse } from '../../types/tournament.types';
 import type { MatchConfig, MatchPlayer } from '../../types/match.types';
 import { log } from '../../utils/logger';
 import { settingsService } from '../../services/settingsService';
+import { cs2Settings } from './settingsReaders';
 import { matchzyConfigService } from './services/matchzyConfigService';
 import { simulationTvCvars } from './utils/serverTurnover';
 
@@ -244,7 +245,7 @@ export const generateMatchConfig = async (
 
   // In MatchZy Enhanced, min_players_to_ready is interpreted as a per-team threshold.
   // 0 = everyone connected on that team must ready.
-  const minPlayersToReadyRaw = await settingsService.getMatchzyMinimumReadyRequired();
+  const minPlayersToReadyRaw = await cs2Settings.getMatchzyMinimumReadyRequired();
   const minPlayersToReady = Math.max(0, Math.min(playersPerTeam, minPlayersToReadyRaw));
   
   // Generate MatchZy Enhanced v1.3.0 cvars based on tournament type

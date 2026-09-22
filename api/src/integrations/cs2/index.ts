@@ -28,7 +28,9 @@
  * fetch, and the default data behind `seed`. `validateTournamentSettings`
  * (./tournamentSettings) checks the CS2 tournament fields on create and
  * update: the map pool, the shuffle map sequence and max rounds, and the veto
- * order.
+ * order. The `matchzy_*` and simulation app settings are CS2's
+ * `instanceSettings` (./settings), read through `cs2Settings`
+ * (./settingsReaders).
  *
  * Services are imported lazily inside each method. That keeps loading the
  * registry free of side effects (no database pool, no monitors) and avoids an
@@ -42,6 +44,7 @@ import type { DbTournamentRow } from '../../types/database.types';
 import type { MatchReport } from './events/connectionSnapshotService';
 import { normalizeConfigPlayers } from '../../utils/playerTransform';
 import { validateCs2TournamentSettings } from './tournamentSettings';
+import { CS2_INSTANCE_SCHEMA, CS2_INSTANCE_SETTINGS } from './settings';
 import type { ServerActionResult, ServerAllocationResult } from './allocation';
 import type {
   AllocateResult,
@@ -170,6 +173,12 @@ export const cs2Integration: GameIntegration = {
   },
 
   statsSchema: () => CS2_STATS_SCHEMA,
+  setupSchema: { instance: CS2_INSTANCE_SCHEMA },
+  instanceSettings: CS2_INSTANCE_SETTINGS,
+  async readInstanceSettings() {
+    const { readCs2InstanceSettings } = await import('./settingsReaders');
+    return readCs2InstanceSettings();
+  },
 
   async buildMatchConfig(ctx) {
     const { generateMatchConfig, buildStandaloneMatchConfig, serveStandaloneMatchConfig } =
