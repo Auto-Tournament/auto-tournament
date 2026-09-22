@@ -45,6 +45,36 @@ export interface TournamentSettings {
   maxRounds?: number;
   overtimeMode?: 'enabled' | 'disabled';
   overtimeSegments?: number;
+
+  /**
+   * Organizer-written event page content (the public "Overview" tab).
+   * All optional; the page hides a section when its data is empty. Lengths
+   * are enforced server-side in routes/tournament.ts
+   * (`validateEventPageSettings`).
+   */
+  /** Plain text, max 4000 chars. */
+  description?: string;
+  /** Free-text location line, e.g. "On site, Trondheim". Max 120 chars. */
+  location?: string;
+  /** Numbered rules, in display order. Max 20 items, 500 chars each. */
+  rules?: string[];
+  /** Link to a fuller rulebook. Must be an https URL, or empty/omitted. */
+  rulebookUrl?: string;
+  /** Up to 5 placements, in display order (e.g. 1st/2nd/3rd). */
+  prizes?: EventPagePrize[];
+  /** Up to 20 schedule rows, in display order. */
+  schedule?: EventPageScheduleItem[];
+}
+
+export interface EventPagePrize {
+  place: string;
+  prize: string;
+}
+
+export interface EventPageScheduleItem {
+  /** ISO 8601 datetime string. */
+  at: string;
+  label: string;
 }
 
 export interface Tournament {

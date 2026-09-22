@@ -382,6 +382,32 @@
       "powerOfTwo": "{{type}} krever et antall lag som er en potens av 2 ({{counts}}). Du har valgt {{selected}}.",
       "minTeams": "{{type}} krever minst {{min}} lag. Du har valgt {{selected}}.",
       "maxTeams": "{{type}} tillater maks {{max}} lag. Du har valgt {{selected}}."
+    },
+    "eventPage": {
+      "title": "Arrangementsside",
+      "subtitle": "Vises for spillere og besøkende på den offentlige oversiktssiden.",
+      "descriptionLabel": "Beskrivelse",
+      "locationLabel": "Sted",
+      "locationPlaceholder": "f.eks. På stedet, Trondheim",
+      "rulebookUrlLabel": "Lenke til fullt regelverk",
+      "rulebookUrlHelper": "Må være en https-lenke, eller la stå tom.",
+      "rulesLabel": "Regler",
+      "ruleFieldLabel": "Regel {{n}}",
+      "addRule": "Legg til regel",
+      "prizesLabel": "Priser",
+      "placeLabel": "Plassering",
+      "prizeLabel": "Pris",
+      "addPrize": "Legg til pris",
+      "scheduleLabel": "Tidsplan",
+      "whenLabel": "Når",
+      "scheduleLabelLabel": "Etikett",
+      "addScheduleItem": "Legg til punkt",
+      "remove": "Fjern",
+      "moveUp": "Flytt opp",
+      "moveDown": "Flytt ned",
+      "save": "Lagre arrangementsside",
+      "saveSuccess": "Arrangementsside lagret.",
+      "saveError": "Kunne ikke lagre arrangementsside: {{message}}"
     }
   },
   "bracket": {
@@ -433,5 +459,58 @@
       "winnerOf": "Vinner av {{match}}",
       "matchNumber": "kamp {{number}}"
     }
+  },
+  "overviewPage": {
+    "tabs": {
+      "overview": "Oversikt",
+      "leaderboard": "Poengtavle"
+    },
+    "status": {
+      "setup": "Kommende",
+      "inProgress": "Live",
+      "completed": "Avsluttet"
+    },
+    "liveNow": "{{count}} live nå",
+    "viewAllMatches": "Se stillingen",
+    "howItsPlayed": "Slik spilles det",
+    "facts": {
+      "teams": "Lag",
+      "teamsValue": "{{count}} lag",
+      "teamSize": "Lagstørrelse",
+      "teamSizeValue": "{{count}} spillere",
+      "format": "Format",
+      "series": "Serie",
+      "seriesValue": "Best av {{count}}",
+      "mapVeto": "Banevalg",
+      "mapVetoCustom": "Egendefinert rekkefølge (lagkapteiner)",
+      "mapVetoStandard": "Standard rekkefølge (lagkapteiner)",
+      "overtime": "Overtid",
+      "overtimeEnabledUnlimited": "Aktivert, ubegrenset",
+      "overtimeEnabledSegments": "Aktivert, {{count}} runde(r)",
+      "overtimeDisabled": "Deaktivert (avgjøres på skade)"
+    },
+    "mapPool": "Banepool",
+    "rules": "Regler",
+    "fullRulebook": "Fullt regelverk",
+    "schedule": "Tidsplan",
+    "yourTeam": {
+      "title": "Du spiller",
+      "onRoster": "Du er på {{team}}.",
+      "viewTeam": "Se laget ditt"
+    },
+    "prizes": {
+      "title": "Priser",
+      "note": "Satt av arrangøren. Pengepriser, utstyr eller ære."
+    },
+    "requirements": {
+      "title": "For å delta",
+      "steamLinkedOk": "Steam-konto koblet til.",
+      "steamLinkedNeutral": "Logg inn med Steam for å delta.",
+      "onRosterOk": "Du er på en lagliste for denne turneringen.",
+      "onRosterNeutral": "Vær på en lagliste før turneringen starter."
+    },
+    "loadError": "Kunne ikke laste denne turneringen.",
+    "notFoundTitle": "Fant ikke turneringen",
+    "notFoundDescription": "Denne turneringen finnes ikke, eller er ikke opprettet ennå."
   }
 }

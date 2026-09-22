@@ -21,6 +21,7 @@ import TeamMatch from './pages/TeamMatch';
 import FindPlayer from './pages/FindPlayer';
 import PlayerProfile from './pages/PlayerProfile';
 import TournamentLeaderboard from './pages/TournamentLeaderboard';
+import TournamentOverview from './pages/TournamentOverview';
 import ConnectSteam from './pages/ConnectSteam';
 import Maps from './pages/Maps';
 import Templates from './pages/Templates';
@@ -187,6 +188,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly={false}>
             <TeamMatch />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/tournament/:id"
+        element={
+          <ProtectedRoute adminOnly={false}>
+            <TournamentOverview />
           </ProtectedRoute>
         }
       />

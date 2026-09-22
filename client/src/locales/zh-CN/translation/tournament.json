@@ -382,6 +382,32 @@
       "powerOfTwo": "{{type}} 要求战队数量为 2 的幂（{{counts}}）。你选择了 {{selected}}。",
       "minTeams": "{{type}} 至少需要 {{min}} 支战队。你选择了 {{selected}}。",
       "maxTeams": "{{type}} 最多允许 {{max}} 支战队。你选择了 {{selected}}。"
+    },
+    "eventPage": {
+      "title": "Event page",
+      "subtitle": "Shown to players and visitors on the public Overview page.",
+      "descriptionLabel": "Description",
+      "locationLabel": "Location",
+      "locationPlaceholder": "e.g. On site, Trondheim",
+      "rulebookUrlLabel": "Full rulebook URL",
+      "rulebookUrlHelper": "Must be an https link, or leave it empty.",
+      "rulesLabel": "Rules",
+      "ruleFieldLabel": "Rule {{n}}",
+      "addRule": "Add rule",
+      "prizesLabel": "Prizes",
+      "placeLabel": "Place",
+      "prizeLabel": "Prize",
+      "addPrize": "Add prize",
+      "scheduleLabel": "Schedule",
+      "whenLabel": "When",
+      "scheduleLabelLabel": "Label",
+      "addScheduleItem": "Add schedule item",
+      "remove": "Remove",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "save": "Save event page",
+      "saveSuccess": "Event page saved.",
+      "saveError": "Failed to save event page: {{message}}"
     }
   },
   "bracket": {
@@ -433,5 +459,58 @@
       "winnerOf": "{{match}}胜者",
       "matchNumber": "第 {{number}} 场比赛"
     }
+  },
+  "overviewPage": {
+    "tabs": {
+      "overview": "Overview",
+      "leaderboard": "Leaderboard"
+    },
+    "status": {
+      "setup": "Upcoming",
+      "inProgress": "Live",
+      "completed": "Completed"
+    },
+    "liveNow": "{{count}} live now",
+    "viewAllMatches": "View standings",
+    "howItsPlayed": "How it's played",
+    "facts": {
+      "teams": "Teams",
+      "teamsValue": "{{count}} teams",
+      "teamSize": "Team size",
+      "teamSizeValue": "{{count}} players",
+      "format": "Format",
+      "series": "Series",
+      "seriesValue": "Best of {{count}}",
+      "mapVeto": "Map veto",
+      "mapVetoCustom": "Custom order (captains)",
+      "mapVetoStandard": "Standard order (captains)",
+      "overtime": "Overtime",
+      "overtimeEnabledUnlimited": "Enabled, unlimited",
+      "overtimeEnabledSegments": "Enabled, {{count}} segment(s)",
+      "overtimeDisabled": "Disabled (damage tiebreak)"
+    },
+    "mapPool": "Map pool",
+    "rules": "Rules",
+    "fullRulebook": "Full rulebook",
+    "schedule": "Schedule",
+    "yourTeam": {
+      "title": "You're playing",
+      "onRoster": "You're on {{team}}.",
+      "viewTeam": "View your team"
+    },
+    "prizes": {
+      "title": "Prizes",
+      "note": "Set by the organizer. Prize money, hardware or bragging rights."
+    },
+    "requirements": {
+      "title": "To take part",
+      "steamLinkedOk": "Steam account linked.",
+      "steamLinkedNeutral": "Sign in with Steam to take part.",
+      "onRosterOk": "You're on a team roster for this tournament.",
+      "onRosterNeutral": "Be on a team roster before the tournament starts."
+    },
+    "loadError": "Failed to load this tournament.",
+    "notFoundTitle": "Tournament not found",
+    "notFoundDescription": "This tournament doesn't exist or hasn't been created yet."
   }
 }

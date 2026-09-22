@@ -5423,6 +5423,63 @@
                           "random",
                           "manual"
                         ]
+                      },
+                      "description": {
+                        "type": "string",
+                        "maxLength": 4000,
+                        "description": "Organizer-written event page text (public Overview tab)."
+                      },
+                      "location": {
+                        "type": "string",
+                        "maxLength": 120,
+                        "example": "On site, Trondheim"
+                      },
+                      "rules": {
+                        "type": "array",
+                        "maxItems": 20,
+                        "items": {
+                          "type": "string",
+                          "maxLength": 500
+                        }
+                      },
+                      "rulebookUrl": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "Must be an https URL, or empty/omitted."
+                      },
+                      "prizes": {
+                        "type": "array",
+                        "maxItems": 5,
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "place": {
+                              "type": "string",
+                              "example": "1st"
+                            },
+                            "prize": {
+                              "type": "string",
+                              "example": "$500"
+                            }
+                          }
+                        }
+                      },
+                      "schedule": {
+                        "type": "array",
+                        "maxItems": 20,
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "at": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "label": {
+                              "type": "string",
+                              "example": "Grand final, on stage"
+                            }
+                          }
+                        }
                       }
                     }
                   }
@@ -5459,7 +5516,66 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object"
+                "type": "object",
+                "properties": {
+                  "settings": {
+                    "type": "object",
+                    "description": "Merged with the tournament's existing settings.",
+                    "properties": {
+                      "description": {
+                        "type": "string",
+                        "maxLength": 4000
+                      },
+                      "location": {
+                        "type": "string",
+                        "maxLength": 120
+                      },
+                      "rules": {
+                        "type": "array",
+                        "maxItems": 20,
+                        "items": {
+                          "type": "string",
+                          "maxLength": 500
+                        }
+                      },
+                      "rulebookUrl": {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      "prizes": {
+                        "type": "array",
+                        "maxItems": 5,
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "place": {
+                              "type": "string"
+                            },
+                            "prize": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      },
+                      "schedule": {
+                        "type": "array",
+                        "maxItems": 20,
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "at": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "label": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
               }
             }
           }
