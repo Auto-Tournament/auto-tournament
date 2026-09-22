@@ -52,7 +52,7 @@
         "title": "MatchZy chat- & knife-standaarden",
         "description": "Configureer chat-prefixen in-game en het standaard knife-round gedrag.",
         "chatPrefixLabel": "Chat-prefix",
-        "chatPrefixHelper": "Standaard: \"[{Green}MAT{Default}]\". Laat leeg om terug te zetten naar de standaard.",
+        "chatPrefixHelper": "Standaard: \"[{Green}Auto Tournament{Default}]\". Laat leeg om terug te zetten naar de standaard.",
         "adminChatPrefixLabel": "Admin chat-prefix",
         "adminChatPrefixHelper": "Standaard: \"[{Red}ADMIN{Default}]\". Laat leeg om terug te zetten naar de standaard.",
         "knifeToggleLabel": "Knife-rounds standaard inschakelen voor nieuwe wedstrijden (wanneer sides niet vooraf gekozen zijn)",
@@ -112,7 +112,7 @@
         }
       },
       "matchzyEnhanced": {
-        "title": "MatchZy Enhanced-functies",
+        "title": "Auto Tournament CS2-functies",
         "description": "Configureer geavanceerde match-functies. Laat velden leeg om de MatchZy-standaard te gebruiken.",
         "autoready": {
           "title": "Auto-ready",

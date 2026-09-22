@@ -125,7 +125,7 @@
         "title": "MatchZy chat- og knivstandarder",
         "description": "Konfigurer chat‑prefikser og standard oppførsel for knivrunde.",
         "chatPrefixLabel": "Chat‑prefiks",
-        "chatPrefixHelper": "Standard: \"[{Green}MAT{Default}]\". La stå tomt for standard.",
+        "chatPrefixHelper": "Standard: \"[{Green}Auto Tournament{Default}]\". La stå tomt for standard.",
         "adminChatPrefixLabel": "Admin chat‑prefiks",
         "adminChatPrefixHelper": "Standard: \"[{Red}ADMIN{Default}]\". La stå tomt for standard.",
         "knifeToggleLabel": "Aktiver knivrunder som standard for nye kamper",
@@ -191,7 +191,7 @@
         }
       },
       "matchzyEnhanced": {
-        "title": "MatchZy Enhanced‑funksjoner",
+        "title": "Auto Tournament CS2‑funksjoner",
         "description": "Avanserte match‑funksjoner. La stå tomt for MatchZy‑standard.",
         "autoready": {
           "title": "Auto‑ready",
@@ -228,8 +228,8 @@
         },
         "demo": {
           "title": "Demo‑opptak",
-          "enabled": "Aktiver demo‑opptak (MAT konfigurerer GOTV + opplasting automatisk)",
-          "description": "Når aktivert setter MAT tv_enable 1 og konfigurerer MatchZy Enhanced til å laste opp demoer til MAT automatisk etter hvert kart."
+          "enabled": "Aktiver demo‑opptak (Auto Tournament konfigurerer GOTV + opplasting automatisk)",
+          "description": "Når aktivert setter Auto Tournament tv_enable 1 og konfigurerer Auto Tournament CS2 til å laste opp demoer til Auto Tournament automatisk etter hvert kart."
         }
       }
     },

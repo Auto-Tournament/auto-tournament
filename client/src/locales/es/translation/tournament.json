@@ -75,7 +75,7 @@
       "createTournament": "Crear torneo"
     },
     "nameLabel": "Nombre del torneo",
-    "namePlaceholder": "MAT 2025 — torneo de primavera",
+    "namePlaceholder": "Auto Tournament 2025 — torneo de primavera",
     "champion": {
       "title": "Campeón"
     },

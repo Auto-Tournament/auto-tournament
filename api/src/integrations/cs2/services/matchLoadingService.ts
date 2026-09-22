@@ -341,7 +341,7 @@ export async function loadMatchOnServer(
     // it, and the first server loaded its queued copy anyway. The plugin has no
     // command to drop a queued load, so keep the assignment.
     if (loadResult.success && reply === 'queued') {
-      log.info('[MATCH LOADING] MatchZy queued the match to load after the current series resets', {
+      log.info('[MATCH LOADING] The Auto Tournament plugin queued the match to load after the current series resets', {
         matchSlug,
         serverId,
         response: loadResult.response,

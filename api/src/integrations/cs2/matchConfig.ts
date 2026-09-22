@@ -601,7 +601,7 @@ export async function buildStandaloneMatchConfig(
         ...(config.cvars || {}),
         ...matchzyEnhancedCvars,
       };
-      log.debug('Applied default MatchZy Enhanced cvars to manual match', {
+      log.debug('Applied default Auto Tournament CS2 cvars to manual match', {
         matchSlug: slug,
       });
     }

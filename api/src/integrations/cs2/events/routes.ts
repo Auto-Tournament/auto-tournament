@@ -430,7 +430,7 @@ async function handleEventRequest(
     // during temporary API issues (database timeouts, memory issues, etc.)
     return res.status(500).json({
       success: false,
-      error: 'Internal server error - event will be retried by MatchZy',
+      error: 'Internal server error - event will be retried by the Auto Tournament plugin',
     });
   }
 }

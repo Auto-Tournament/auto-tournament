@@ -52,7 +52,7 @@
         "title": "MatchZy Chat- & Knife-Standards",
         "description": "Konfiguriere Ingame-Chat-Präfixe und das Standardverhalten der Knife-Runde.",
         "chatPrefixLabel": "Chat-Präfix",
-        "chatPrefixHelper": "Standard: \"[{Green}MAT{Default}]\". Leer lassen, um auf den Standard zurückzusetzen.",
+        "chatPrefixHelper": "Standard: \"[{Green}Auto Tournament{Default}]\". Leer lassen, um auf den Standard zurückzusetzen.",
         "adminChatPrefixLabel": "Admin-Chat-Präfix",
         "adminChatPrefixHelper": "Standard: \"[{Red}ADMIN{Default}]\". Leer lassen, um auf den Standard zurückzusetzen.",
         "knifeToggleLabel": "Knife-Runden standardmäßig für neue Matches aktivieren (wenn Seiten nicht vorab gewählt sind)",
@@ -112,7 +112,7 @@
         }
       },
       "matchzyEnhanced": {
-        "title": "MatchZy Enhanced Funktionen",
+        "title": "Auto Tournament CS2 Funktionen",
         "description": "Erweiterte Match-Funktionen. Leer lassen, um die MatchZy-Standardwerte zu verwenden.",
         "autoready": {
           "title": "Automatisch einsatzbereites System",

@@ -126,7 +126,7 @@ export async function generateMatchzyEnhancedCvars(
     ...overrides, // Explicit overrides take precedence
   };
   
-  log.debug('Generated MatchZy Enhanced cvars', {
+  log.debug('Generated Auto Tournament CS2 cvars', {
     tournamentType,
     globalOverrides: Object.keys(globalOverrides).length > 0 ? globalOverrides : undefined,
     config,

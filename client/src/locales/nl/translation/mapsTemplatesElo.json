@@ -183,7 +183,7 @@
     },
     "baseName": {
       "label": "Basisnaam",
-      "placeholder": "MAT",
+      "placeholder": "Auto Tournament",
       "helper": "Servernamen worden: Basis #1, Basis #2, Basis #3..."
     },
     "host": {
