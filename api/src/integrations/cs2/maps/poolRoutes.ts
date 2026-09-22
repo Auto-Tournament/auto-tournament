@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
-import { mapPoolService } from '../services/mapPoolService';
-import { CreateMapPoolInput, UpdateMapPoolInput } from '../types/mapPool.types';
-import { requireAuth } from '../middleware/auth';
+import { mapPoolService } from './mapPoolService';
+import { CreateMapPoolInput, UpdateMapPoolInput } from '../../../types/mapPool.types';
+import { requireAuth } from '../../../middleware/auth';
 
 const router = Router();
 

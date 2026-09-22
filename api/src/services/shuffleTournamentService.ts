@@ -81,25 +81,9 @@ export async function createShuffleTournament(
 ): Promise<TournamentResponse> {
   const now = Math.floor(Date.now() / 1000);
 
-  // Validate config
-  if (!config.name || config.name.trim() === '') {
-    throw new Error(
-      'Tournament name is required. Please provide a name for your shuffle tournament.'
-    );
-  }
-
-  if (!config.mapSequence || config.mapSequence.length === 0) {
-    throw new Error(
-      'At least one map must be selected. ' +
-      'The number of maps you select determines the number of rounds in the tournament.'
-    );
-  }
-
-  if (!config.maxRounds || config.maxRounds < 1) {
-    throw new Error(
-      'Invalid max rounds value. You must specify a maximum number of rounds (minimum: 1).'
-    );
-  }
+  // The config is validated by the route (POST /api/tournament/shuffle): the
+  // name there, the map sequence and max rounds through the integration's
+  // `validateTournamentSettings`.
 
   // Clean up any existing data for this tournament row, so it can be
   // recreated multiple times (tests do) without PK conflicts.

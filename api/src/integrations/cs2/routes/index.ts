@@ -19,6 +19,8 @@ import demoRoutes from './demos';
 import matchzyRoutes from './matchzy';
 import eventRoutes from '../events/routes';
 import vetoRoutes from '../veto/routes';
+import mapRoutes from '../maps/routes';
+import mapPoolRoutes from '../maps/poolRoutes';
 import testHelperRoutes from './testHelpers';
 
 export const cs2LegacyRoutes: LegacyRouteMount[] = [
@@ -69,6 +71,18 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     router: vetoRoutes,
     title: 'Veto',
     description: 'Map veto state and actions.',
+  },
+  {
+    prefix: '/api/maps',
+    router: mapRoutes,
+    title: 'Maps',
+    description: 'The map catalogue.',
+  },
+  {
+    prefix: '/api/map-pools',
+    router: mapPoolRoutes,
+    title: 'Map pools',
+    description: 'Named sets of maps for veto and match config.',
   },
   {
     prefix: '/api/test',

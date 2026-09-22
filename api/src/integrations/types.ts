@@ -9,7 +9,7 @@
  *
  * CS2 is the only integration today (`integrations/cs2`). The core reaches it
  * only through the registry (eslint-rules/integration-boundaries.mjs enforces
- * it). Some CS2 features (veto, maps, stats) still live in core files; later
+ * it). Some CS2 features (stats, settings) still live in core files; later
  * PRs move them behind this interface one seam at a time (see the TODOs).
  *
  * Two rules keep a future out-of-process (HTTP/webhook) integration possible:
@@ -75,9 +75,10 @@ export interface ParticipantRef {
  * The neutral view of a tournament an integration gets. `settings` is the
  * integration-owned part: the core stores and forwards it without reading it.
  *
- * TODO(PR 9): for CS2 this is the full `TournamentResponse` until the CS2
- * tournament fields (maps, map_sequence, max_rounds, overtime_*, veto order)
- * are validated through `validateTournamentSettings` and narrowed.
+ * For CS2 this is still the full `TournamentResponse`. The CS2 tournament
+ * fields (maps, map_sequence, max_rounds, overtime_*, veto order) are
+ * validated through `validateTournamentSettings`; narrowing `settings` to
+ * them waits for the columns to fold into `tournament.integration_settings`.
  */
 export interface IntegrationTournament {
   id: number;
@@ -247,6 +248,55 @@ export type StartCheckResult =
 export interface ValidationResult {
   valid: boolean;
   errors: string[];
+}
+
+/** What a tournament create or update asks its integration to validate. */
+export interface TournamentSettingsInput {
+  /** The request's `settings` object. */
+  settings: unknown;
+  /**
+   * Map pool size a settings-only check (no `mode`) validates against. With
+   * a `mode` the integration works it out from `body` and `stored`.
+   */
+  mapCount?: number;
+  /**
+   * - 'create': POST /api/tournament; required fields apply.
+   * - 'create-shuffle': POST /api/tournament/shuffle.
+   * - 'update': PUT /api/tournament; only what is sent is checked.
+   * Omitted: only `settings`, against `mapCount`.
+   */
+  mode?: 'create' | 'create-shuffle' | 'update';
+  /**
+   * The request body. The integration reads its own top-level fields (CS2:
+   * maps, mapSequence, maxRounds, overtimeMode, overtimeSegments).
+   */
+  body?: Record<string, unknown>;
+  /** Update: the stored tournament row, for fields the request leaves alone. */
+  stored?: Record<string, unknown> | null;
+}
+
+/**
+ * Result of `validateTournamentSettings`. `valid` is false when any list is
+ * non-empty. The core reports them in this order, around its own checks:
+ * its required fields together with `missingFields` (one "Missing required
+ * fields" message naming its own and `requiredFields`), then `fieldErrors`,
+ * then its participant checks, then `errors` (the `settings`).
+ */
+export interface TournamentSettingsValidation extends ValidationResult {
+  /** Required integration fields absent from the request. */
+  missingFields?: string[];
+  /** Errors in the integration's top-level fields (CS2: an empty map pool). */
+  fieldErrors?: string[];
+  /** The integration's required fields for this mode, missing or not, for the core's message. */
+  requiredFields?: string[];
+}
+
+/**
+ * The connection a `seed` hook gets: the schema initialisation client, plain
+ * SQL with `$n` placeholders.
+ */
+export interface SeedClient {
+  query(sql: string, params?: unknown[]): Promise<{ rows: Array<Record<string, unknown>> }>;
 }
 
 /** JSON Schema document. Kept loose on purpose; the core only stores and forwards it. */
@@ -482,14 +532,22 @@ export interface GameIntegration {
    */
   statsSchema(tournament: IntegrationTournament | null): StatsSchema;
 
-  /** TODO(PR 9 / PR 11): CS2 declares its tournament and `matchzy_*` settings here. */
+  /** TODO(PR 11): CS2 declares its tournament and `matchzy_*` settings here. */
   setupSchema?: SetupSchema;
   /**
-   * Validate a tournament's `settings` on create and update, against its map
-   * pool size. CS2: the custom veto order. TODO(PR 9): CS2 also validates
-   * maps, map sequence and rounds here.
+   * Validate a tournament create or update: the integration's top-level
+   * fields and its part of `settings`. CS2: the map pool (`maps`), the shuffle
+   * map sequence and max rounds, and the custom veto order against the pool
+   * size.
    */
-  validateTournamentSettings?(input: { settings: unknown; mapCount: number }): ValidationResult;
+  validateTournamentSettings?(input: TournamentSettingsInput): TournamentSettingsValidation;
+  /**
+   * Insert the integration's default data. Called after the core schema is
+   * created or migrated: on every API start and after a database reset. Must
+   * be idempotent; a rejection fails schema initialisation. CS2: the map
+   * catalogue when the `maps` table is empty, then the default map pools.
+   */
+  seed?(db: SeedClient): Promise<void>;
 
   // --- setup ---------------------------------------------------------------
 
