@@ -278,7 +278,9 @@ export function getSchemaSQL(): string {
       cover_url TEXT,
       logo_url TEXT,
       release_year INTEGER,
+      genres TEXT, -- JSON array of up to 3 genre names, e.g. '["Shooter","Tactical"]' (matches the maps/team_ids convention: JSON text, not a native array)
       source TEXT NOT NULL DEFAULT 'builtin', -- 'igdb' | 'wikidata' | 'builtin'
+      enriched_at INTEGER, -- epoch of the last successful built-in enrichment (image/genres/year from Wikidata or IGDB); NULL = never enriched
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
 

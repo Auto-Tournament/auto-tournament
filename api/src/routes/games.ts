@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import {
   SEARCH_MIN_LENGTH,
   getPlayerAccountBySteamId,
+  getPopularGames,
   getSuggestions,
   searchGames,
 } from '../services/gameCatalogService';
@@ -122,6 +123,43 @@ router.get('/suggestions', async (req: Request, res: Response) => {
   } catch (error) {
     log.error('Game suggestions failed', error);
     return res.status(500).json({ success: false, error: 'Failed to load game suggestions' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/games/popular:
+ *   get:
+ *     tags: [Games]
+ *     summary: Every built-in game, for the "/welcome/games" onboarding grid
+ *     description: |
+ *       Installed game modules, then popular esports titles — the full
+ *       built-in catalogue, in the same order `suggestions` uses. Unlike
+ *       `suggestions`, this is never filtered by what the viewer already
+ *       picked (or capped at three): the onboarding page's card grid needs
+ *       every built-in on screen so a game already picked still shows up,
+ *       selected. Works anonymously.
+ *     responses:
+ *       200:
+ *         description: The built-in games
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 games:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/GameSummary'
+ */
+router.get('/popular', async (_req: Request, res: Response) => {
+  try {
+    const games = await getPopularGames();
+    return res.json({ success: true, games });
+  } catch (error) {
+    log.error('Failed to load popular games', error);
+    return res.status(500).json({ success: false, error: 'Failed to load popular games' });
   }
 });
 

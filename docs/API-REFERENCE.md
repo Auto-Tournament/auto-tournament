@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 223 of them, 152 behind auth —
+Every endpoint this API serves — 224 of them, 152 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -388,6 +388,7 @@ The game catalogue players pick from (IGDB or Wikidata-backed search, suggestion
 | --- | --- | --- |
 | `GET` | `/api/games/search` | public |
 | `GET` | `/api/games/suggestions` | public |
+| `GET` | `/api/games/popular` | public |
 
 ### Me
 

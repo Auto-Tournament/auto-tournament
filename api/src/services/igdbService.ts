@@ -36,6 +36,8 @@ export interface IgdbGame {
   coverUrl: string | null;
   logoUrl: string | null;
   releaseYear: number | null;
+  /** Up to 3 genre names (IGDB `genres.name`). */
+  genres: string[];
 }
 
 export class IgdbError extends Error {
@@ -190,6 +192,7 @@ interface RawIgdbGame {
   slug?: unknown;
   first_release_date?: unknown;
   cover?: { image_id?: unknown } | null;
+  genres?: Array<{ name?: unknown }> | null;
 }
 
 function toIgdbGame(raw: RawIgdbGame): IgdbGame | null {
@@ -201,6 +204,12 @@ function toIgdbGame(raw: RawIgdbGame): IgdbGame | null {
     typeof raw.first_release_date === 'number'
       ? new Date(raw.first_release_date * 1000).getUTCFullYear()
       : null;
+  const genres = Array.isArray(raw.genres)
+    ? raw.genres
+        .map((g) => (typeof g?.name === 'string' ? g.name : null))
+        .filter((name): name is string => Boolean(name))
+        .slice(0, 3)
+    : [];
   return {
     igdbId: raw.id,
     slug: raw.slug,
@@ -208,6 +217,7 @@ function toIgdbGame(raw: RawIgdbGame): IgdbGame | null {
     coverUrl: imageId ? igdbImageUrl(imageId, 't_cover_small') : null,
     logoUrl: imageId ? igdbImageUrl(imageId, 't_logo_med') : null,
     releaseYear: released,
+    genres,
   };
 }
 
@@ -226,7 +236,7 @@ export async function searchIgdb(query: string, limit: number): Promise<IgdbGame
   // bundles and mods are not. version_parent = null drops editions.
   const body =
     `search "${term}"; ` +
-    'fields name,slug,first_release_date,cover.image_id; ' +
+    'fields name,slug,first_release_date,cover.image_id,genres.name; ' +
     'where version_parent = null; ' +
     `limit ${Math.max(1, Math.min(limit, 50))};`;
 

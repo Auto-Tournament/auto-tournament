@@ -26,6 +26,8 @@ interface GameSummary {
   releaseYear: number | null;
   supported: boolean;
   source: 'igdb' | 'wikidata' | 'builtin';
+  genres: string[];
+  imageUrl: string | null;
 }
 
 const FAKE_SECRET = 'fake-igdb-secret-never-returned-4711';
@@ -71,6 +73,12 @@ async function search(request: APIRequestContext, q: string) {
   const res = await request.get(`/api/games/search?q=${encodeURIComponent(q)}`);
   expect(res.ok(), `search ${q}: ${await res.text()}`).toBe(true);
   return (await res.json()) as { games: GameSummary[]; fromIgdb: boolean; fromWikidata: boolean };
+}
+
+async function popularGames(request: APIRequestContext) {
+  const res = await request.get('/api/games/popular');
+  expect(res.ok(), `popular: ${await res.text()}`).toBe(true);
+  return ((await res.json()) as { games: GameSummary[] }).games;
 }
 
 /** A signed-in player on their own cookie jar. */
@@ -125,6 +133,9 @@ test.describe.serial('Game catalogue', () => {
       expect(rl.coverUrl).toBe(
         'https://commons.wikimedia.org/wiki/Special:FilePath/Rocket%20League%20logo.png?width=128'
       );
+      expect(rl.imageUrl).toBe(rl.coverUrl);
+      // P136 genre ids, resolved to labels in one extra batched wbgetentities call.
+      expect(rl.genres).toEqual(['Sports']);
 
       // P18 ("image") is used when there is no P154 ("logo image").
       const cs = await search(request, 'counter-strike 2');
@@ -133,6 +144,9 @@ test.describe.serial('Game catalogue', () => {
       expect(csGame.coverUrl).toBe(
         'https://commons.wikimedia.org/wiki/Special:FilePath/Counter-Strike%202%20key%20art.jpg?width=128'
       );
+      expect(csGame.imageUrl).toBe(csGame.coverUrl);
+      // Up to 3 genres, in claim order.
+      expect(csGame.genres).toEqual(['Shooter', 'Tactical shooter']);
 
       // A business ("Hollow Corp", not instance-of video game) is filtered
       // out of a query it would otherwise match; the earliest of several
@@ -191,13 +205,19 @@ test.describe.serial('Game catalogue', () => {
       const rl = rock.games.find((g) => g.slug === 'rocket-league')!;
       expect(rl.id).toBe(builtinRocketLeague.id);
       expect(rl.coverUrl).toBe('https://images.igdb.com/igdb/image/upload/t_cover_small/fakerl.jpg');
+      expect(rl.imageUrl).toBe(rl.coverUrl);
       expect(rl.releaseYear).toBe(2015);
-      expect(rock.games.find((g) => g.name === 'Rocket Knight Adventures')!.coverUrl).toBeNull();
+      expect(rl.genres).toEqual(['Sport', 'Racing']);
+      const rocketKnight = rock.games.find((g) => g.name === 'Rocket Knight Adventures')!;
+      expect(rocketKnight.coverUrl).toBeNull();
+      expect(rocketKnight.imageUrl).toBeNull();
+      expect(rocketKnight.genres).toEqual([]);
 
       // Installed modules come first and are marked supported.
       const counterStrike = await search(request, 'counter');
       expect(counterStrike.games[0]).toMatchObject({ slug: 'counter-strike-2', supported: true });
       expect(counterStrike.games[0].coverUrl).toContain('fakecs2');
+      expect(counterStrike.games[0].genres).toEqual(['Shooter', 'Tactical']);
 
       let counters = await igdbCounters(request);
       expect(counters.tokenRequests).toBe(1);
@@ -281,6 +301,15 @@ test.describe.serial('Game catalogue', () => {
       expect(beforeGames).toHaveLength(3);
       expect(beforeGames.map((g) => g.slug)).not.toContain('counter-strike-2');
       expect(beforeGames[0].slug).toBe('rocket-league');
+
+      // "league-of-legends" is never searched anywhere in this suite, so it is
+      // still exactly what `ensureBuiltinGames` seeded: proof that built-in
+      // enrichment (gameEnrichmentService, which would give it a real
+      // Wikidata image/genres) never ran during tests — it is disabled by
+      // NODE_ENV=test (and, belt-and-suspenders, GAMES_ENRICH=off in CI).
+      const popular = await popularGames(request);
+      const lol = popular.find((g) => g.slug === 'league-of-legends')!;
+      expect(lol).toMatchObject({ source: 'builtin', coverUrl: null, imageUrl: null, genres: [] });
 
       const teams = await createTestTeams(request, 'games-suggest');
       expect(teams).toBeTruthy();
