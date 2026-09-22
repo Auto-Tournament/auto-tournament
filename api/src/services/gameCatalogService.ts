@@ -429,19 +429,46 @@ export async function searchGames(rawQuery: string): Promise<GameSearchResult> {
 // Suggestions
 // ---------------------------------------------------------------------------
 
-/** Built-in slugs, games with a tournament open or running on this instance first. */
-async function orderedBuiltinSlugs(): Promise<string[]> {
-  const builtins = builtinGames();
-  // Instance-wide, not one tournament: "games people can play here right now".
+/** Instance-wide, not one tournament: "games people can play here right now". */
+async function activeIntegrationIds(): Promise<Set<string>> {
   const tournamentGames = await db.queryAsync<{ game: string }>(
     `SELECT DISTINCT game FROM tournament WHERE status IN ('setup', 'ready', 'in_progress')`
   );
-  const activeIntegrationIds = new Set(tournamentGames.map((r) => r.game));
+  return new Set(tournamentGames.map((r) => r.game));
+}
+
+/**
+ * Built-in slugs with a tournament open or running on this instance first,
+ * then the popular (non-supported) list. A supported game with no active
+ * tournament is left out entirely — deliberate for the 3-item "suggestions"
+ * strip: a genuinely popular title beats a supported-but-idle one there. The
+ * onboarding grid needs every card instead, so it uses
+ * `allBuiltinSlugsOrdered` below rather than this.
+ */
+async function suggestionOrderedSlugs(): Promise<string[]> {
+  const builtins = builtinGames();
+  const active = await activeIntegrationIds();
 
   return [
-    ...builtins.filter((g) => g.integrationId && activeIntegrationIds.has(g.integrationId)),
+    ...builtins.filter((g) => g.integrationId && active.has(g.integrationId)),
     ...builtins.filter((g) => !g.integrationId),
   ].map((g) => g.slug);
+}
+
+/**
+ * Every built-in slug — installed modules and the popular list — with a
+ * tournament open or running on this instance first, then everything else in
+ * `builtinGames()`'s own order (installed modules, then the popular list).
+ * Unlike `suggestionOrderedSlugs`, a supported game is never dropped just for
+ * having no tournament active right now: the onboarding grid must always
+ * offer every game this instance can run.
+ */
+async function allBuiltinSlugsOrdered(): Promise<string[]> {
+  const builtins = builtinGames();
+  const active = await activeIntegrationIds();
+  const isActive = (g: BuiltinGame) => !!g.integrationId && active.has(g.integrationId);
+
+  return [...builtins.filter(isActive), ...builtins.filter((g) => !isActive(g))].map((g) => g.slug);
 }
 
 /**
@@ -452,7 +479,7 @@ async function orderedBuiltinSlugs(): Promise<string[]> {
 export async function getSuggestions(playerUid: string | null): Promise<GameSummary[]> {
   await ensureBuiltinGames();
   const supported = supportedSlugs();
-  const orderedSlugs = await orderedBuiltinSlugs();
+  const orderedSlugs = await suggestionOrderedSlugs();
 
   const picked = new Set<number>(
     playerUid
@@ -477,16 +504,17 @@ export async function getSuggestions(playerUid: string | null): Promise<GameSumm
 }
 
 /**
- * Every built-in game (installed modules + popular esports titles), in the
- * same order as `getSuggestions` but never filtered by what the viewer
- * already picked — the "/welcome/games" onboarding grid needs every card on
- * screen, including ones the viewer (in "edit" mode) already has, so it can
- * show them selected rather than hide them.
+ * Every built-in game (installed modules + popular esports titles), never
+ * filtered by what the viewer already picked (unlike `getSuggestions`) and
+ * never dropped for having no active tournament (unlike `getSuggestions`) —
+ * the "/welcome/games" onboarding grid needs every card on screen, including
+ * ones the viewer (in "edit" mode) already has, so it can show them selected
+ * rather than hide them.
  */
 export async function getPopularGames(): Promise<GameSummary[]> {
   await ensureBuiltinGames();
   const supported = supportedSlugs();
-  const orderedSlugs = await orderedBuiltinSlugs();
+  const orderedSlugs = await allBuiltinSlugsOrdered();
   const rows = await rowsBySlug(orderedSlugs);
   return orderedSlugs
     .map((slug) => rows.get(slug))

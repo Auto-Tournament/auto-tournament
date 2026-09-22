@@ -302,12 +302,19 @@ test.describe.serial('Game catalogue', () => {
       expect(beforeGames.map((g) => g.slug)).not.toContain('counter-strike-2');
       expect(beforeGames[0].slug).toBe('rocket-league');
 
+      // Unlike `suggestions`, `/api/games/popular` (the onboarding grid) never
+      // drops a supported game just because no tournament is active for it
+      // right now — this is the one place with no open/running tournament in
+      // this whole spec, so it is the regression case for that.
+      const popular = await popularGames(request);
+      expect(popular.map((g) => g.slug)).toContain('counter-strike-2');
+      expect(popular.find((g) => g.slug === 'counter-strike-2')).toMatchObject({ supported: true });
+
       // "league-of-legends" is never searched anywhere in this suite, so it is
       // still exactly what `ensureBuiltinGames` seeded: proof that built-in
       // enrichment (gameEnrichmentService, which would give it a real
       // Wikidata image/genres) never ran during tests — it is disabled by
       // NODE_ENV=test (and, belt-and-suspenders, GAMES_ENRICH=off in CI).
-      const popular = await popularGames(request);
       const lol = popular.find((g) => g.slug === 'league-of-legends')!;
       expect(lol).toMatchObject({ source: 'builtin', coverUrl: null, imageUrl: null, genres: [] });
 
