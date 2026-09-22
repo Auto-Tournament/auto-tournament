@@ -1,15 +1,19 @@
 /**
  * The player game catalogue: "What do you play?".
  *
- * Games live in the `games` table. Rows come from two places:
+ * Games live in the `games` table. Rows come from three places:
  * - **built-in**: every game an installed integration supports, then a short
  *   list of popular esports titles. Names and slugs only. Seeded on demand
  *   (one idempotent insert) so they always exist, with or without IGDB.
  * - **IGDB**: search results are upserted by IGDB id / slug, so repeat queries
  *   and chips render from our own table.
+ * - **Wikidata**: the same idea, keyed on Wikidata id / slug, used instead of
+ *   IGDB when no IGDB credentials are configured — it needs no API key, so
+ *   search works out of the box.
  *
- * Built-in slugs are IGDB slugs, so an IGDB result for Rocket League updates
- * the built-in Rocket League row rather than adding a second one.
+ * Built-in slugs are IGDB slugs, so an IGDB (or Wikidata) result for Rocket
+ * League updates the built-in Rocket League row rather than adding a second
+ * one.
  *
  * `supported` means a game module exists for it (the integration registry),
  * i.e. this instance can run tournaments for it.
@@ -18,7 +22,9 @@
 import { db } from '../config/database';
 import { listIntegrations } from '../integrations/registry';
 import { log } from '../utils/logger';
+import { slugify } from '../utils/slug';
 import { IgdbError, searchIgdb, type IgdbGame } from './igdbService';
+import { WikidataError, searchWikidata, type WikidataGame } from './wikidataService';
 
 export const SEARCH_MIN_LENGTH = 2;
 export const SEARCH_MAX_RESULTS = 10;
@@ -34,12 +40,16 @@ export interface GameSummary {
   coverUrl: string | null;
   releaseYear: number | null;
   supported: boolean;
+  /** Where this row's data came from; the client uses it to pick a credit line. */
+  source: 'igdb' | 'wikidata' | 'builtin';
 }
 
 export interface GameSearchResult {
   games: GameSummary[];
   /** True when any result came from IGDB (the client shows the IGDB credit). */
   fromIgdb: boolean;
+  /** True when any result came from Wikidata (the client shows the Wikidata credit). */
+  fromWikidata: boolean;
 }
 
 interface BuiltinGame {
@@ -68,14 +78,7 @@ const POPULAR_GAMES: Array<{ slug: string; name: string; aliases?: string[] }> =
   { slug: 'age-of-empires-ii', name: 'Age of Empires II', aliases: ['aoe2', 'aoe'] },
 ];
 
-export function slugify(value: string): string {
-  return value
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/\p{M}/gu, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
+export { slugify };
 
 /** Lowercase, alphanumerics only: "Counter-Strike 2" and "counter strike2" match. */
 function searchKey(value: string): string {
@@ -125,6 +128,7 @@ function matchesBuiltin(game: BuiltinGame, query: string): boolean {
 interface GameRow {
   id: number;
   igdb_id: number | null;
+  wikidata_id: string | null;
   slug: string;
   name: string;
   cover_url: string | null;
@@ -133,7 +137,8 @@ interface GameRow {
   source: string;
 }
 
-const GAME_COLUMNS = 'id, igdb_id, slug, name, cover_url, logo_url, release_year, source';
+const GAME_COLUMNS =
+  'id, igdb_id, wikidata_id, slug, name, cover_url, logo_url, release_year, source';
 
 function toSummary(row: GameRow, supported: Map<string, string>): GameSummary {
   return {
@@ -143,6 +148,7 @@ function toSummary(row: GameRow, supported: Map<string, string>): GameSummary {
     coverUrl: row.cover_url,
     releaseYear: row.release_year,
     supported: supported.has(row.slug),
+    source: row.source === 'igdb' || row.source === 'wikidata' ? row.source : 'builtin',
   };
 }
 
@@ -224,6 +230,59 @@ async function upsertIgdbGames(games: IgdbGame[]): Promise<GameRow[]> {
   return out;
 }
 
+/**
+ * Upsert Wikidata results. Matched by Wikidata id first (a label can change),
+ * then by slug (a built-in, or an IGDB-enriched, row for the same game) —
+ * same idea as `upsertIgdbGames`.
+ */
+async function upsertWikidataGames(games: WikidataGame[]): Promise<GameRow[]> {
+  const out: GameRow[] = [];
+  const now = Math.floor(Date.now() / 1000);
+
+  for (const game of games) {
+    const existing = await db.queryAsync<GameRow>(
+      `SELECT ${GAME_COLUMNS} FROM games WHERE wikidata_id = ? OR slug = ? ORDER BY (wikidata_id = ?) DESC NULLS LAST`,
+      [game.wikidataId, game.slug, game.wikidataId]
+    );
+
+    if (existing.length === 0) {
+      const row = await db.queryOneAsync<GameRow>(
+        `INSERT INTO games (wikidata_id, slug, name, cover_url, logo_url, release_year, source, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, 'wikidata', ?)
+         ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name
+         RETURNING ${GAME_COLUMNS}`,
+        [game.wikidataId, game.slug, game.name, game.coverUrl, game.logoUrl, game.releaseYear, now]
+      );
+      if (row) out.push(row);
+      continue;
+    }
+
+    const target = existing[0];
+    // Keep the old slug if the new one belongs to a different row.
+    const slugTaken = existing.some((r) => r.id !== target.id && r.slug === game.slug);
+    const row = await db.queryOneAsync<GameRow>(
+      `UPDATE games
+          SET wikidata_id = ?, slug = ?, name = ?, cover_url = ?, logo_url = ?,
+              release_year = ?, source = 'wikidata', updated_at = ?
+        WHERE id = ?
+        RETURNING ${GAME_COLUMNS}`,
+      [
+        game.wikidataId,
+        slugTaken ? target.slug : game.slug,
+        game.name,
+        game.coverUrl,
+        game.logoUrl,
+        game.releaseYear,
+        now,
+        target.id,
+      ]
+    );
+    if (row) out.push(row);
+  }
+
+  return out;
+}
+
 // ---------------------------------------------------------------------------
 // Search
 // ---------------------------------------------------------------------------
@@ -233,6 +292,7 @@ interface CachedSearch {
   /** Game ids in result order; rows are re-read so they reflect later upserts. */
   ids: number[];
   fromIgdb: boolean;
+  fromWikidata: boolean;
 }
 
 const searchCache = new Map<string, CachedSearch>();
@@ -260,7 +320,11 @@ export async function searchGames(rawQuery: string): Promise<GameSearchResult> {
   if (cached && cached.expiresAt > Date.now()) {
     const rows = await rowsById(cached.ids);
     if (rows.length === cached.ids.length) {
-      return { games: rows.map((r) => toSummary(r, supported)), fromIgdb: cached.fromIgdb };
+      return {
+        games: rows.map((r) => toSummary(r, supported)),
+        fromIgdb: cached.fromIgdb,
+        fromWikidata: cached.fromWikidata,
+      };
     }
     // A row disappeared (database reset): search again.
   }
@@ -268,26 +332,35 @@ export async function searchGames(rawQuery: string): Promise<GameSearchResult> {
   await ensureBuiltinGames();
 
   // Built-ins for installed modules come first, so the games this instance
-  // can run always show, whatever IGDB ranks first.
+  // can run always show, whatever the external source ranks first.
   const builtins = builtinGames().filter((g) => matchesBuiltin(g, query));
   const supportedBuiltins = builtins.filter((g) => g.integrationId);
   const otherBuiltins = builtins.filter((g) => !g.integrationId);
 
-  let igdbRows: GameRow[] = [];
+  // IGDB when it is configured; otherwise Wikidata, which needs no API key
+  // and is the default so search works out of the box. Never both.
+  let externalRows: GameRow[] = [];
   let fromIgdb = false;
-  let igdbAnswered = false;
-  let igdbFailed = false;
+  let fromWikidata = false;
+  let externalAnswered = false;
+  let externalFailed = false;
   try {
-    const results = await searchIgdb(query, SEARCH_MAX_RESULTS);
-    if (results) {
-      igdbAnswered = true;
-      igdbRows = await upsertIgdbGames(results);
-      fromIgdb = igdbRows.length > 0;
+    const igdbResults = await searchIgdb(query, SEARCH_MAX_RESULTS);
+    if (igdbResults) {
+      externalAnswered = true;
+      externalRows = await upsertIgdbGames(igdbResults);
+      fromIgdb = externalRows.length > 0;
+    } else {
+      const wikidataResults = await searchWikidata(query, SEARCH_MAX_RESULTS);
+      externalAnswered = true;
+      externalRows = await upsertWikidataGames(wikidataResults);
+      fromWikidata = externalRows.length > 0;
     }
   } catch (err) {
-    igdbFailed = true;
-    const message = err instanceof IgdbError ? err.message : (err as Error).message;
-    log.warn(`[IGDB] Search failed, serving built-in games: ${message}`);
+    externalFailed = true;
+    const message =
+      err instanceof IgdbError || err instanceof WikidataError ? err.message : (err as Error).message;
+    log.warn(`[Games] External search failed, serving built-in games: ${message}`);
   }
 
   const builtinRows = await rowsBySlug(builtins.map((g) => g.slug));
@@ -300,16 +373,17 @@ export async function searchGames(rawQuery: string): Promise<GameSearchResult> {
   };
 
   for (const g of supportedBuiltins) push(builtinRows.get(g.slug));
-  for (const row of igdbRows) push(row);
-  // Without IGDB (or when it failed) the popular built-ins are the whole
-  // catalogue; with IGDB they are already among its results or not relevant.
-  if (!igdbAnswered) {
+  for (const row of externalRows) push(row);
+  // Without an external source (or when it failed) the popular built-ins are
+  // the whole catalogue; when one answered they are already among its
+  // results or not relevant.
+  if (!externalAnswered) {
     for (const g of otherBuiltins) push(builtinRows.get(g.slug));
   }
 
-  // Do not cache a failed IGDB call, so it is retried. "Not configured" is
-  // cached: saving credentials clears the cache (routes/settings.ts).
-  if (!igdbFailed) {
+  // Do not cache a failed external call, so it is retried. "Not configured"
+  // is cached: saving IGDB credentials clears the cache (routes/settings.ts).
+  if (!externalFailed) {
     if (searchCache.size >= SEARCH_CACHE_MAX_ENTRIES) {
       const oldest = searchCache.keys().next().value;
       if (oldest !== undefined) searchCache.delete(oldest);
@@ -318,10 +392,11 @@ export async function searchGames(rawQuery: string): Promise<GameSearchResult> {
       expiresAt: Date.now() + SEARCH_CACHE_TTL_MS,
       ids: ordered.map((r) => r.id),
       fromIgdb,
+      fromWikidata,
     });
   }
 
-  return { games: ordered.map((r) => toSummary(r, supported)), fromIgdb };
+  return { games: ordered.map((r) => toSummary(r, supported)), fromIgdb, fromWikidata };
 }
 
 // ---------------------------------------------------------------------------

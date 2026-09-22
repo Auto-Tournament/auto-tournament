@@ -160,7 +160,8 @@ const coreRoutes: MountedRouter[] = [
     prefix: '/api/games',
     router: gamesRoutes,
     title: 'Games',
-    description: 'The game catalogue players pick from (IGDB-backed search, suggestions). Public.',
+    description:
+      'The game catalogue players pick from (IGDB or Wikidata-backed search, suggestions). Public.',
   },
   {
     prefix: '/api/me',

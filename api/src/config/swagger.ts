@@ -215,17 +215,23 @@ const options: swaggerJsdoc.Options = {
           type: 'object',
           properties: {
             id: { type: 'integer', description: 'games.id', example: 1 },
-            slug: { type: 'string', description: 'IGDB slug', example: 'counter-strike-2' },
+            slug: { type: 'string', description: 'IGDB or Wikidata slug', example: 'counter-strike-2' },
             name: { type: 'string', example: 'Counter-Strike 2' },
             coverUrl: {
               type: 'string',
               nullable: true,
-              description: 'IGDB cover (t_cover_small); null for built-ins IGDB has not returned yet',
+              description:
+                "IGDB cover (t_cover_small) or Wikidata's logo/image; null for built-ins with no cover",
             },
             releaseYear: { type: 'integer', nullable: true, example: 2023 },
             supported: {
               type: 'boolean',
               description: 'A game module for this game is installed (tournaments can run it)',
+            },
+            source: {
+              type: 'string',
+              enum: ['igdb', 'wikidata', 'builtin'],
+              description: 'Where this row came from; used to pick the data-source credit line',
             },
           },
         },

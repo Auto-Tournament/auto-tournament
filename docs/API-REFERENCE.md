@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 220 of them, 150 behind auth —
+Every endpoint this API serves — 223 of them, 152 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -382,7 +382,7 @@ Shared generators, e.g. random team names.
 
 ### Games
 
-The game catalogue players pick from (IGDB-backed search, suggestions). Public.
+The game catalogue players pick from (IGDB or Wikidata-backed search, suggestions). Public.
 
 | Method | Path | Auth |
 | --- | --- | --- |
@@ -429,6 +429,9 @@ E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
 | `GET` | `/api/test/igdb` | admin |
 | `POST` | `/api/test/fake-igdb/token` | public |
 | `POST` | `/api/test/fake-igdb/v4/games` | public |
+| `POST` | `/api/test/wikidata` | admin |
+| `GET` | `/api/test/wikidata` | admin |
+| `GET` | `/api/test/fake-wikidata` | public |
 
 ### Auth
 

@@ -52,7 +52,8 @@
       "remove": "Remove {{name}}",
       "supported": "Tournaments supported",
       "limit": "You can pick up to {{max}} games",
-      "credit": "Game data from IGDB"
+      "credit": "Game data from IGDB",
+      "creditWikidata": "Game data from Wikidata"
     },
     "profile": {
       "title": "Your games",
