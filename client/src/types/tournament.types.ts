@@ -47,6 +47,28 @@ export interface TournamentSettings {
   maxRounds?: number;
   overtimeMode?: 'enabled' | 'disabled';
   overtimeSegments?: number;
+  /** Custom veto step order, keyed by series format. Presence implies a non-default veto. */
+  customVetoOrder?: Record<string, unknown>;
+
+  // Organizer-written event page content (public "Overview" tab). All
+  // optional; a page section hides when its data is empty.
+  description?: string;
+  location?: string;
+  rules?: string[];
+  rulebookUrl?: string;
+  prizes?: EventPagePrize[];
+  schedule?: EventPageScheduleItem[];
+}
+
+export interface EventPagePrize {
+  place: string;
+  prize: string;
+}
+
+export interface EventPageScheduleItem {
+  /** ISO 8601 datetime string. */
+  at: string;
+  label: string;
 }
 
 /** Swiss standings row from the API, in the order the round pairing uses. */
