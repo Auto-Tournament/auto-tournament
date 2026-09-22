@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { signInViaRequest, getAuthHeader } from '../helpers/auth';
 import { setupTournament } from '../helpers/tournamentSetup';
-import { createServer } from '../helpers/servers';
+import { createServer, deleteServer } from '../helpers/servers';
 
 /**
  * End Match must settle MAT's own record, not just poke the server.
@@ -148,31 +148,38 @@ test.describe.serial('Ending a match', () => {
       });
       expect(badServer, 'creating the unreachable test server should succeed').toBeTruthy();
 
-      await request.post('/api/test/match-state', {
-        headers: getAuthHeader(),
-        data: { slug, status: 'live', serverId: unreachableId },
-      });
+      // Remove it afterwards: an enabled server nothing answers on fails the
+      // tournament-start preflight (cs2_outdated_servers) for every later
+      // spec on the same shard.
+      try {
+        await request.post('/api/test/match-state', {
+          headers: getAuthHeader(),
+          data: { slug, status: 'live', serverId: unreachableId },
+        });
 
-      const response = await request.post(`/api/matches/${slug}/force-cancel`, {
-        headers: getAuthHeader(),
-        data: {},
-      });
-      expect(response.ok(), 'force-cancel should succeed even when the server refuses it').toBe(
-        true
-      );
+        const response = await request.post(`/api/matches/${slug}/force-cancel`, {
+          headers: getAuthHeader(),
+          data: {},
+        });
+        expect(response.ok(), 'force-cancel should succeed even when the server refuses it').toBe(
+          true
+        );
 
-      const body = await response.json();
-      expect(
-        Array.isArray(body.warnings) && body.warnings.length > 0,
-        'force-cancel should surface a warning when the server could not be told'
-      ).toBe(true);
+        const body = await response.json();
+        expect(
+          Array.isArray(body.warnings) && body.warnings.length > 0,
+          'force-cancel should surface a warning when the server could not be told'
+        ).toBe(true);
 
-      await expect
-        .poll(() => matchStatus(request, slug), {
-          message: 'force-cancel should settle the match record even after a warning',
-          timeout: 10000,
-        })
-        .toBe('cancelled');
+        await expect
+          .poll(() => matchStatus(request, slug), {
+            message: 'force-cancel should settle the match record even after a warning',
+            timeout: 10000,
+          })
+          .toBe('cancelled');
+      } finally {
+        await deleteServer(request, unreachableId);
+      }
     }
   );
 });
