@@ -10,6 +10,8 @@
       "matchReady": "Match ready – connect",
       "snackbarOpponentMoved": "Opponent made their move"
     },
+    "home": "Home",
+    "browse": "Browse",
     "dashboard": "Dashboard",
     "tournament": "Tournament",
     "bracket": "Bracket",

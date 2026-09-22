@@ -7,6 +7,8 @@
       "matchReady": "Partido listo – conectar",
       "snackbarOpponentMoved": "El rival ha jugado"
     },
+    "home": "Home",
+    "browse": "Browse",
     "dashboard": "Panel",
     "tournament": "Torneo",
     "bracket": "Cuadro",

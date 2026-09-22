@@ -9,7 +9,17 @@ import '@fontsource/geist-mono/500.css';
 import '@fontsource/geist-mono/600.css';
 import { tokens, fontBody, fontDisplay, fontMono, withAlpha } from './tokens';
 
-export { tokens, fontBody, fontDisplay, fontMono, mono, withAlpha, activeThemeId, setTheme } from './tokens';
+export {
+  tokens,
+  fontBody,
+  fontDisplay,
+  fontMono,
+  mono,
+  withAlpha,
+  gameTintPalette,
+  activeThemeId,
+  setTheme,
+} from './tokens';
 export { THEME_IDS, THEME_NAMES, THEME_COLORS, type ThemeId } from './themes';
 
 // Extra surface levels on `background`, so components can ask for a raised

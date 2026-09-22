@@ -275,6 +275,26 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
             flexShrink: 0,
           }}
         >
+          <Button
+            color="inherit"
+            component={RouterLink}
+            to="/"
+            size="small"
+            sx={navLinkSx}
+            data-testid="nav-home"
+          >
+            {t('nav.home')}
+          </Button>
+          <Button
+            color="inherit"
+            component={RouterLink}
+            to="/browse"
+            size="small"
+            sx={navLinkSx}
+            data-testid="nav-browse"
+          >
+            {t('nav.browse')}
+          </Button>
           <Button color="inherit" component={RouterLink} to="/player" size="small" sx={navLinkSx}>
             {t('nav.players')}
           </Button>

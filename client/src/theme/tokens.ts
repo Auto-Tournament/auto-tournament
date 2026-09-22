@@ -66,6 +66,21 @@ export const tokens = {
   duration: { fast: 150, base: 240, slow: 600 },
 } as const;
 
+/**
+ * Tints for a game's monogram tile (`GameMark`) when it has no cover image.
+ * Picked by hashing the game's catalog slug, so the same game always lands on
+ * the same tint — but the colours themselves are theme tokens, never hex
+ * written into the component.
+ */
+export const gameTintPalette: readonly string[] = [
+  tokens.color.accent,
+  tokens.color.info,
+  tokens.color.live,
+  tokens.color.warning,
+  tokens.color.sideCt,
+  tokens.color.sideT,
+];
+
 export const fontDisplay = '"Sora", "Geist", system-ui, sans-serif';
 export const fontBody = '"Geist", system-ui, -apple-system, "Segoe UI", sans-serif';
 export const fontMono = '"Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace';

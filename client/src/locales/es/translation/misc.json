@@ -140,5 +140,68 @@
       "taken": "That {{provider}} account is already connected to another account on this site.",
       "linkFailed": "Could not connect {{provider}}. Please try again."
     }
+  },
+  "home": {
+    "title": "Home",
+    "greeting": "Hi, {{name}}",
+    "greetingFallback": "Hi",
+    "editGames": "Edit games",
+    "vs": "vs",
+    "tbd": "TBD",
+    "openMatch": "Open match",
+    "connectToServer": "Connect to server",
+    "matchStatus": {
+      "pending": "Waiting",
+      "ready": "Ready",
+      "loaded": "Loaded",
+      "live": "Live",
+      "completed": "Completed"
+    },
+    "yourTournaments": {
+      "title": "Your tournaments",
+      "empty": "You're not in any tournaments right now."
+    },
+    "tournaments": {
+      "playingNow": "Playing now",
+      "waiting": "Waiting",
+      "eliminated": "Eliminated",
+      "finished": "Finished",
+      "placement": "{{position}} of {{total}}"
+    },
+    "openForYourGames": {
+      "title": "Open for your games",
+      "browseAll": "Browse all tournaments",
+      "empty": "No open tournaments for your games right now.",
+      "emptyNoGames": "Pick the games you play to see open tournaments for them.",
+      "steamLinked": "Steam linked"
+    }
+  },
+  "browsePage": {
+    "title": "Browse tournaments",
+    "searchPlaceholder": "Search by name or location",
+    "loadError": "Could not load tournaments.",
+    "empty": "No tournaments match your filters.",
+    "teamsCount": "{{count}} teams",
+    "watch": "Watch",
+    "view": "View",
+    "filters": {
+      "allGames": "All games",
+      "status": {
+        "all": "All statuses",
+        "live": "Live",
+        "registration_open": "Registration open",
+        "finished": "Finished"
+      },
+      "where": {
+        "all": "Online and LAN",
+        "online": "Online",
+        "lan": "LAN"
+      }
+    },
+    "status": {
+      "live": "Live",
+      "finished": "Finished",
+      "registrationOpen": "Registration open"
+    }
   }
 }

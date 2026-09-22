@@ -140,5 +140,68 @@
       "taken": "Den {{provider}}-kontoen er allerede koblet til en annen konto på denne siden.",
       "linkFailed": "Kunne ikke koble til {{provider}}. Prøv igjen."
     }
+  },
+  "home": {
+    "title": "Hjem",
+    "greeting": "Hei, {{name}}",
+    "greetingFallback": "Hei",
+    "editGames": "Endre spill",
+    "vs": "mot",
+    "tbd": "Ikke bestemt",
+    "openMatch": "Åpne kamp",
+    "connectToServer": "Koble til server",
+    "matchStatus": {
+      "pending": "Venter",
+      "ready": "Klar",
+      "loaded": "Lastet",
+      "live": "Live",
+      "completed": "Fullført"
+    },
+    "yourTournaments": {
+      "title": "Dine turneringer",
+      "empty": "Du er ikke med i noen turneringer akkurat nå."
+    },
+    "tournaments": {
+      "playingNow": "Spiller nå",
+      "waiting": "Venter",
+      "eliminated": "Slått ut",
+      "finished": "Fullført",
+      "placement": "{{position}} av {{total}}"
+    },
+    "openForYourGames": {
+      "title": "Åpent for dine spill",
+      "browseAll": "Bla gjennom alle turneringer",
+      "empty": "Ingen åpne turneringer for dine spill akkurat nå.",
+      "emptyNoGames": "Velg spillene du spiller for å se åpne turneringer for dem.",
+      "steamLinked": "Steam koblet til"
+    }
+  },
+  "browsePage": {
+    "title": "Bla gjennom turneringer",
+    "searchPlaceholder": "Søk etter navn eller sted",
+    "loadError": "Kunne ikke laste turneringer.",
+    "empty": "Ingen turneringer samsvarer med filtrene dine.",
+    "teamsCount": "{{count}} lag",
+    "watch": "Se",
+    "view": "Vis",
+    "filters": {
+      "allGames": "Alle spill",
+      "status": {
+        "all": "Alle statuser",
+        "live": "Live",
+        "registration_open": "Registrering åpen",
+        "finished": "Fullført"
+      },
+      "where": {
+        "all": "Nett og LAN",
+        "online": "Nett",
+        "lan": "LAN"
+      }
+    },
+    "status": {
+      "live": "Live",
+      "finished": "Fullført",
+      "registrationOpen": "Registrering åpen"
+    }
   }
 }
