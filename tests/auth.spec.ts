@@ -163,7 +163,7 @@ test.describe.serial('Normal user cannot access admin', () => {
   });
 
   test(
-    'redirects normal user to player page when visiting admin routes',
+    'normal user gets Home at / and is sent to their player page from admin routes',
     { tag: ['@ui', '@auth', '@admin'] },
     async ({ page }) => {
       const ok = await signInAsPlayer(page, nonAdminSteamId);
@@ -171,8 +171,10 @@ test.describe.serial('Normal user cannot access admin', () => {
 
       const playerUrl = new RegExp(`/player/${nonAdminSteamId}`);
 
+      // Signed-in players land on Home at "/" (not the admin dashboard, not login).
       await page.goto('/');
-      await expect(page).toHaveURL(playerUrl, { timeout: 10000 });
+      await expect(page).toHaveURL(/\/$/, { timeout: 10000 });
+      await expect(page.getByTestId('home-page')).toBeVisible({ timeout: 10000 });
 
       await page.goto('/admin');
       await expect(page).toHaveURL(playerUrl, { timeout: 10000 });
