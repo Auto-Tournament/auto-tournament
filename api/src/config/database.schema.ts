@@ -348,6 +348,135 @@ export function getSchemaSQL(): string {
       applied_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
 
+    -- Who belongs to a team, and who may act for it (3.0 phase D).
+    --
+    -- Keyed on players.uid, never a Steam ID: a 3.1 account without Steam can
+    -- captain a team. The foreign key to players(uid) is added in database.ts
+    -- once the column and its unique index are guaranteed to exist on an
+    -- upgraded instance (the same reason as player_games).
+    --
+    -- teams.players (JSON) stays the roster of record that match configs are
+    -- built from; this table mirrors it (services/teamMembers.ts) and adds the
+    -- role. Nothing reads it yet: the manual-report module (phase D2 onwards)
+    -- authorises a report by it.
+    CREATE TABLE IF NOT EXISTS team_members (
+      team_id TEXT NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+      account_uid UUID NOT NULL, -- players.uid
+      role TEXT NOT NULL DEFAULT 'member', -- 'captain' | 'member'
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      PRIMARY KEY (team_id, account_uid)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_team_members_account ON team_members(account_uid);
+    CREATE INDEX IF NOT EXISTS idx_team_members_role ON team_members(team_id, role);
+
+    -- Reported match results (3.0 phase D), one row per revision.
+    --
+    -- A report is the raw claim; nothing is final until it is confirmed or an
+    -- admin resolves it, at which point the module turns it into normalized
+    -- map_result / series_end events. At most one row per match is open
+    -- ('submitted' or 'disputed') - idx_match_reports_open. A newer report
+    -- supersedes the open one instead of replacing it, so the history stays.
+    --
+    -- The *_uid columns are players.uid values with no foreign key on purpose:
+    -- deleting an account must not erase who reported what.
+    CREATE TABLE IF NOT EXISTS match_reports (
+      id SERIAL PRIMARY KEY,
+      match_slug TEXT NOT NULL REFERENCES matches(slug) ON DELETE CASCADE,
+      revision INTEGER NOT NULL DEFAULT 1, -- 1, 2, ... within the match
+      status TEXT NOT NULL DEFAULT 'submitted', -- 'submitted' | 'confirmed' | 'disputed' | 'superseded' | 'withdrawn'
+      source TEXT NOT NULL DEFAULT 'report', -- 'report' (a team) | 'admin' (an override)
+      submitted_by_uid UUID, -- players.uid of the reporter; NULL = the system
+      submitted_by_team TEXT, -- 'team1' | 'team2'; NULL for an admin report
+      result TEXT NOT NULL, -- JSON: the reported per-map scores and the series result
+      confirmation TEXT NOT NULL DEFAULT 'opponent', -- 'opponent' | 'none', from the tournament's setup at submit time
+      confirm_deadline INTEGER, -- Epoch the timeout action fires at; NULL = no timeout
+      timeout_action TEXT, -- 'auto_confirm' | 'escalate'; NULL = no timeout
+      confirmed_by_uid UUID, -- players.uid of the opponent who confirmed it
+      confirmed_at INTEGER,
+      disputed_by_uid UUID,
+      disputed_at INTEGER,
+      dispute_reason TEXT,
+      resolved_by_uid UUID, -- The admin who resolved, overrode or reopened it
+      resolved_at INTEGER,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      UNIQUE (match_slug, revision)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_match_reports_match ON match_reports(match_slug);
+    CREATE INDEX IF NOT EXISTS idx_match_reports_status ON match_reports(status);
+    -- The timeout sweeper's query: open reports whose deadline has passed.
+    CREATE INDEX IF NOT EXISTS idx_match_reports_deadline ON match_reports(confirm_deadline);
+    -- At most one open report per match.
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_match_reports_open
+      ON match_reports(match_slug) WHERE status IN ('submitted', 'disputed');
+
+    -- Audit trail for match_reports (3.0 phase D): every state change, who made
+    -- it and why. Append only, and kept for as long as the match exists.
+    CREATE TABLE IF NOT EXISTS match_report_actions (
+      id SERIAL PRIMARY KEY,
+      report_id INTEGER REFERENCES match_reports(id) ON DELETE CASCADE,
+      match_slug TEXT NOT NULL REFERENCES matches(slug) ON DELETE CASCADE,
+      action TEXT NOT NULL, -- 'submit' | 'confirm' | 'dispute' | 'withdraw' | 'supersede' | 'resolve' | 'override' | 'reopen' | 'timeout_auto_confirm' | 'timeout_escalate'
+      actor_uid UUID, -- players.uid; NULL = the system (the timeout sweeper)
+      actor_role TEXT NOT NULL DEFAULT 'system', -- 'captain' | 'admin' | 'system'
+      detail TEXT, -- JSON: the reason, the values that changed
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_match_report_actions_match ON match_report_actions(match_slug);
+    CREATE INDEX IF NOT EXISTS idx_match_report_actions_report ON match_report_actions(report_id);
+
+    -- Extra stats a tournament asks reporters for (3.0 phase D), e.g. goals in
+    -- Rocket League. A game with no live events records what people type in, so
+    -- the fields belong to the tournament rather than to the game.
+    CREATE TABLE IF NOT EXISTS custom_stat_fields (
+      id SERIAL PRIMARY KEY,
+      tournament_id INTEGER NOT NULL DEFAULT 1 REFERENCES tournament(id) ON DELETE CASCADE,
+      key TEXT NOT NULL, -- Stable id within the tournament, e.g. 'goals'
+      label TEXT NOT NULL,
+      value_type TEXT NOT NULL DEFAULT 'number', -- 'number' | 'text'
+      scope TEXT NOT NULL DEFAULT 'player', -- 'player' | 'team'
+      required INTEGER NOT NULL DEFAULT 0,
+      display_order INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      UNIQUE (tournament_id, key)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_custom_stat_fields_tournament ON custom_stat_fields(tournament_id);
+
+    -- The values reported for those fields (3.0 phase D). One row per field per
+    -- player (or per team, for a team-scoped field) per map, with map_number 0
+    -- for a series total. player_uid is players.uid; its foreign key is added
+    -- in database.ts, like team_members.
+    CREATE TABLE IF NOT EXISTS match_stat_values (
+      id SERIAL PRIMARY KEY,
+      match_slug TEXT NOT NULL REFERENCES matches(slug) ON DELETE CASCADE,
+      map_number INTEGER NOT NULL DEFAULT 0, -- 0 = the series total, 1.. = that map
+      field_id INTEGER NOT NULL REFERENCES custom_stat_fields(id) ON DELETE CASCADE,
+      player_uid UUID, -- players.uid for a player value; NULL for a team value
+      team TEXT, -- 'team1' | 'team2'
+      value_number REAL,
+      value_text TEXT,
+      report_id INTEGER REFERENCES match_reports(id) ON DELETE SET NULL, -- The report that carried this value
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
+    -- One value per field per player, and one per field per team. Two partial
+    -- indexes rather than one UNIQUE: Postgres counts NULLs as distinct, so a
+    -- table constraint over (..., player_uid, team) would not hold for the team
+    -- rows, where player_uid is NULL.
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_match_stat_values_player
+      ON match_stat_values(match_slug, map_number, field_id, player_uid) WHERE player_uid IS NOT NULL;
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_match_stat_values_team
+      ON match_stat_values(match_slug, map_number, field_id, team) WHERE player_uid IS NULL;
+    CREATE INDEX IF NOT EXISTS idx_match_stat_values_match ON match_stat_values(match_slug);
+    CREATE INDEX IF NOT EXISTS idx_match_stat_values_field ON match_stat_values(field_id);
+
     -- Player rating history table
     CREATE TABLE IF NOT EXISTS player_rating_history (
       id SERIAL PRIMARY KEY,

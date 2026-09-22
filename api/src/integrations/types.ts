@@ -606,6 +606,15 @@ export interface GameIntegration {
    */
   catalog?: GameCatalogEntry | null;
   /**
+   * This module runs any catalogue game, not just its own entry: the
+   * manual-report module (3.0 phase D), where the result is typed in and the
+   * game only decides the labels. `integrationForGameRef` falls back to it for
+   * a `game` value no other module claims, so a tournament row can carry a
+   * catalogue id ('rocket-league', 'chess') and still find its module. At most
+   * one integration may set it; nothing does yet.
+   */
+  runsAnyCatalogGame?: boolean;
+  /**
    * The account a player needs for this game, by sign-in provider id (CS2:
    * 'steam', the Steam ID matches identify players by). Drives the "Game
    * accounts" list on /me/connections. Omit when the game needs none.

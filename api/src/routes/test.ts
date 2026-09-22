@@ -21,8 +21,13 @@ import { setIgdbEndpointOverride, clearIgdbTokenCache } from '../services/igdbSe
 import { setWikidataEndpointOverride, resetWikidataThrottle } from '../services/wikidataService';
 import { clearGameSearchCache } from '../services/gameCatalogService';
 import { gameSearchLimiter } from './games';
-import { backfillLinkedAccounts, runSchemaMigrations } from '../config/schemaMigrations';
+import {
+  backfillLinkedAccounts,
+  backfillTeamMembers,
+  runSchemaMigrations,
+} from '../config/schemaMigrations';
 import { playerIdentity } from '../services/playerIdentity';
+import { teamMembers } from '../services/teamMembers';
 
 const router = Router();
 
@@ -1162,6 +1167,266 @@ router.get('/fake-wikidata', (req: Request, res: Response): void => {
   }
 
   res.status(400).json({ error: { code: 'unknown_action', info: `unknown action: ${action}` } });
+});
+
+/**
+ * Test-only helpers for the manual-reporting schema (3.0 phase D, PR D1).
+ * Nothing in the app reads these tables yet, so these are how a spec can see
+ * them and prove the constraints hold.
+ *
+ *   GET  /api/test/team-members?teamId=...     that team's memberships
+ *   POST /api/test/team-members/backfill       run the backfill again
+ *        Body: { clearTeamId? }                (delete that team's rows first)
+ *   GET  /api/test/phase-d-schema              columns and indexes of the new tables
+ *   GET  /api/test/match-reports?matchSlug=... that match's reports
+ *   POST /api/test/match-reports               insert one raw report row
+ *        Body: { matchSlug, revision?, status?, source?, result? }
+ *        409 when a constraint rejects it (a second open report, a repeated revision)
+ *
+ * NOTE: These endpoints are only available in non-production environments.
+ */
+
+/** The only tables `/api/test/phase-d-schema` will describe. */
+const PHASE_D_TABLES = [
+  'team_members',
+  'match_reports',
+  'match_report_actions',
+  'custom_stat_fields',
+  'match_stat_values',
+] as const;
+
+router.get('/team-members', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (isTestHelperDisabled(res)) return;
+
+  const { teamId } = req.query;
+  if (typeof teamId !== 'string' || teamId === '') {
+    res.status(400).json({ success: false, error: 'Query parameter "teamId" is required' });
+    return;
+  }
+  try {
+    const rows = await db.queryAsync<{
+      account_uid: string;
+      role: string;
+      created_at: number;
+      player_id: string | null;
+    }>(
+      `SELECT tm.account_uid, tm.role, tm.created_at, p.id AS player_id
+         FROM team_members tm
+         LEFT JOIN players p ON p.uid = tm.account_uid
+        WHERE tm.team_id = ?
+        ORDER BY tm.created_at, tm.account_uid`,
+      [teamId]
+    );
+    res.json({
+      success: true,
+      members: rows.map((r) => ({
+        accountUid: r.account_uid,
+        role: r.role,
+        createdAt: Number(r.created_at),
+        playerId: r.player_id,
+      })),
+    });
+  } catch (err) {
+    log.error('Error in GET /api/test/team-members', err as Error);
+    res.status(500).json({ success: false, error: 'Failed to read team members' });
+  }
+});
+
+router.post(
+  '/team-members/backfill',
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    if (isTestHelperDisabled(res)) return;
+
+    const { clearTeamId } = (req.body ?? {}) as { clearTeamId?: unknown };
+    if (clearTeamId !== undefined && typeof clearTeamId !== 'string') {
+      res.status(400).json({ success: false, error: 'Field "clearTeamId" must be a string' });
+      return;
+    }
+    try {
+      if (typeof clearTeamId === 'string') {
+        await db.runAsync('DELETE FROM team_members WHERE team_id = ?', [clearTeamId]);
+      }
+      const inserted = await db.withClient((client) => backfillTeamMembers(client));
+      res.json({ success: true, inserted });
+    } catch (err) {
+      log.error('Error in POST /api/test/team-members/backfill', err as Error);
+      res.status(500).json({ success: false, error: 'Failed to run the backfill' });
+    }
+  }
+);
+
+router.post('/team-members', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (isTestHelperDisabled(res)) return;
+
+  const { teamId, accountUid, role } = (req.body ?? {}) as {
+    teamId?: unknown;
+    accountUid?: unknown;
+    role?: unknown;
+  };
+  if (typeof teamId !== 'string' || teamId === '') {
+    res.status(400).json({ success: false, error: 'Field "teamId" is required' });
+    return;
+  }
+  if (typeof accountUid !== 'string' || accountUid === '') {
+    res.status(400).json({ success: false, error: 'Field "accountUid" is required' });
+    return;
+  }
+  if (role !== 'captain' && role !== 'member') {
+    res.status(400).json({ success: false, error: 'Field "role" must be captain or member' });
+    return;
+  }
+  try {
+    const applied = await teamMembers.setRole(teamId, accountUid, role);
+    res.json({ success: true, applied });
+  } catch (err) {
+    log.error('Error in POST /api/test/team-members', err as Error);
+    res.status(500).json({ success: false, error: 'Failed to set the role' });
+  }
+});
+
+router.get('/phase-d-schema', requireAuth, async (_req: Request, res: Response): Promise<void> => {
+  if (isTestHelperDisabled(res)) return;
+
+  try {
+    const columns = await db.queryAsync<{
+      table_name: string;
+      column_name: string;
+      data_type: string;
+      is_nullable: string;
+      column_default: string | null;
+    }>(
+      `SELECT table_name, column_name, data_type, is_nullable, column_default
+         FROM information_schema.columns
+        WHERE table_schema = current_schema() AND table_name = ANY(?::text[])
+        ORDER BY table_name, ordinal_position`,
+      [[...PHASE_D_TABLES]]
+    );
+    const indexes = await db.queryAsync<{ tablename: string; indexname: string; indexdef: string }>(
+      `SELECT tablename, indexname, indexdef
+         FROM pg_indexes
+        WHERE schemaname = current_schema() AND tablename = ANY(?::text[])
+        ORDER BY tablename, indexname`,
+      [[...PHASE_D_TABLES]]
+    );
+    const foreignKeys = await db.queryAsync<{ table_name: string; conname: string; def: string }>(
+      `SELECT cl.relname AS table_name, c.conname, pg_get_constraintdef(c.oid) AS def
+         FROM pg_constraint c
+         JOIN pg_class cl ON cl.oid = c.conrelid
+        WHERE c.contype = 'f' AND cl.relname = ANY(?::text[])
+        ORDER BY cl.relname, c.conname`,
+      [[...PHASE_D_TABLES]]
+    );
+
+    const tables: Record<string, unknown> = {};
+    for (const table of PHASE_D_TABLES) {
+      tables[table] = {
+        columns: columns
+          .filter((c) => c.table_name === table)
+          .map((c) => ({
+            name: c.column_name,
+            type: c.data_type,
+            nullable: c.is_nullable === 'YES',
+            default: c.column_default,
+          })),
+        indexes: indexes
+          .filter((i) => i.tablename === table)
+          .map((i) => ({ name: i.indexname, definition: i.indexdef })),
+        foreignKeys: foreignKeys
+          .filter((f) => f.table_name === table)
+          .map((f) => ({ name: f.conname, definition: f.def })),
+      };
+    }
+    res.json({ success: true, tables });
+  } catch (err) {
+    log.error('Error in GET /api/test/phase-d-schema', err as Error);
+    res.status(500).json({ success: false, error: 'Failed to read the schema' });
+  }
+});
+
+router.get('/match-reports', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (isTestHelperDisabled(res)) return;
+
+  const { matchSlug } = req.query;
+  if (typeof matchSlug !== 'string' || matchSlug === '') {
+    res.status(400).json({ success: false, error: 'Query parameter "matchSlug" is required' });
+    return;
+  }
+  try {
+    const rows = await db.queryAsync<{
+      id: number;
+      revision: number;
+      status: string;
+      source: string;
+      result: string;
+    }>(
+      `SELECT id, revision, status, source, result
+         FROM match_reports
+        WHERE match_slug = ?
+        ORDER BY revision`,
+      [matchSlug]
+    );
+    res.json({
+      success: true,
+      reports: rows.map((r) => ({
+        id: r.id,
+        revision: r.revision,
+        status: r.status,
+        source: r.source,
+        result: r.result,
+      })),
+    });
+  } catch (err) {
+    log.error('Error in GET /api/test/match-reports', err as Error);
+    res.status(500).json({ success: false, error: 'Failed to read match reports' });
+  }
+});
+
+router.post('/match-reports', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (isTestHelperDisabled(res)) return;
+
+  const {
+    matchSlug,
+    revision,
+    status,
+    source,
+    result: reported,
+  } = (req.body ?? {}) as {
+    matchSlug?: unknown;
+    revision?: unknown;
+    status?: unknown;
+    source?: unknown;
+    result?: unknown;
+  };
+  if (typeof matchSlug !== 'string' || matchSlug === '') {
+    res.status(400).json({ success: false, error: 'Field "matchSlug" is required' });
+    return;
+  }
+  try {
+    const row = await db.queryOneAsync<{ id: number }>(
+      `INSERT INTO match_reports (match_slug, revision, status, source, result)
+       VALUES (?, ?, ?, ?, ?)
+       RETURNING id`,
+      [
+        matchSlug,
+        typeof revision === 'number' ? revision : 1,
+        typeof status === 'string' ? status : 'submitted',
+        typeof source === 'string' ? source : 'report',
+        JSON.stringify(reported ?? {}),
+      ]
+    );
+    res.status(201).json({ success: true, id: row?.id });
+  } catch (err) {
+    const error = err as Error & { code?: string };
+    // 23505 unique violation, 23503 foreign key violation: what the spec is
+    // checking for, not a server fault.
+    if (error.code === '23505' || error.code === '23503') {
+      res.status(409).json({ success: false, error: error.message, code: error.code });
+      return;
+    }
+    log.error('Error in POST /api/test/match-reports', error);
+    res.status(500).json({ success: false, error: 'Failed to insert the match report' });
+  }
 });
 
 export default router;

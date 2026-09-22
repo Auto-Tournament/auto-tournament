@@ -3,6 +3,7 @@ import { Team, CreateTeamInput, UpdateTeamInput, TeamResponse, Player } from '..
 import { log } from '../utils/logger';
 import { steamService } from './steamService';
 import { playerService } from './playerService';
+import { teamMembers } from './teamMembers';
 import { normalisePlayerDiscordIds } from '../utils/discordId';
 
 /** A roster player as an admin sees it: enriched from the players table. */
@@ -228,6 +229,12 @@ class TeamService {
       id: input.id,
       playerCount: input.players.length,
     });
+    // Mirror the roster into team_members (3.0 phase D). Best effort: the
+    // table is not read yet, and the backfill migration repairs a miss.
+    await teamMembers.syncFromRoster(
+      input.id,
+      enrichedPlayers.map((p) => p.steamId)
+    );
     const result = await this.getTeamById(input.id);
     if (!result) throw new Error('Failed to retrieve created team');
     warnings.push(...(await playerService.applyImportedDiscordIds(discordIds)));
@@ -265,6 +272,8 @@ class TeamService {
     if (input.discordRoleId !== undefined) updateData.discord_role_id = input.discordRoleId || null;
     const normalised = normalisePlayerDiscordIds(input.players ?? []);
     const warnings = [...normalised.warnings];
+    /** Set only when this update rewrites the roster, so the mirror follows it. */
+    let rosterSteamIds: string[] | null = null;
 
     if (input.players !== undefined) {
       // Enrich players with avatars from Steam API. For test/dev teams created
@@ -285,9 +294,15 @@ class TeamService {
       }
       
       updateData.players = JSON.stringify(enrichedPlayers);
+      rosterSteamIds = enrichedPlayers.map((p) => p.steamId);
     }
 
     await db.updateAsync('teams', updateData, 'id = ?', [id]);
+    // Keep team_members in step with the roster (3.0 phase D): members that
+    // left go, and the ones that stay keep their role. Best effort.
+    if (rosterSteamIds) {
+      await teamMembers.syncFromRoster(id, rosterSteamIds);
+    }
 
     log.success(`Team updated: ${input.name || existing.name} (${id})`, { id });
     const result = await this.getTeamById(id);

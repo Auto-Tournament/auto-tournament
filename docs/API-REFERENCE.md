@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 230 of them, 159 behind auth —
+Every endpoint this API serves — 236 of them, 165 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -446,6 +446,12 @@ E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
 | `POST` | `/api/test/wikidata` | admin |
 | `GET` | `/api/test/wikidata` | admin |
 | `GET` | `/api/test/fake-wikidata` | public |
+| `GET` | `/api/test/team-members` | admin |
+| `POST` | `/api/test/team-members/backfill` | admin |
+| `POST` | `/api/test/team-members` | admin |
+| `GET` | `/api/test/phase-d-schema` | admin |
+| `GET` | `/api/test/match-reports` | admin |
+| `POST` | `/api/test/match-reports` | admin |
 
 ### Auth
 
