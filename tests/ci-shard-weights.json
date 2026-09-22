@@ -67,6 +67,7 @@
   "tests/ui/shuffle-tournament.spec.ts": 5.2,
   "tests/ui/steam-health-snackbar.spec.ts": 0.8,
   "tests/ui/team-discord-id.spec.ts": 3.9,
+  "tests/ui/team-profile.spec.ts": 3.5,
   "tests/ui/teams.spec.ts": 3.4,
   "tests/ui/theme-switcher.spec.ts": 5.0,
   "tests/ui/tournament-overview.spec.ts": 3.0,

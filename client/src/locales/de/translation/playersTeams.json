@@ -108,7 +108,8 @@
     "versus": "vs",
     "goToPlayerPage": "Veto, Connect & Details → Deine Spieler-Seite",
     "pageTitle": "Teamseite",
-    "manualMatch": "Manuelles Match"
+    "manualMatch": "Manuelles Match",
+    "viewTeamProfile": "Team page →"
   },
   "rounds": {
     "round1": "Runde 1",
@@ -252,7 +253,8 @@
       "success_other": "{{count}} Teams gelöscht"
     },
     "loadError": "Teams konnten nicht geladen werden",
-    "importSuccess": "{{count}} Team(s) erfolgreich importiert"
+    "importSuccess": "{{count}} Team(s) erfolgreich importiert",
+    "viewPublicPage": "View public team page"
   },
   "playersPage": {
     "headerSelect": {
@@ -463,6 +465,30 @@
       "effectivelyDisabled": "Endet die reguläre Spielzeit unentschieden, gibt es keine Verlängerung. Der gesamte Teamschaden auf der Map entscheidet über den Sieger; ist auch der Schaden gleich, endet das Match unentschieden.",
       "implicitSegments": "Steht es nach den konfigurierten Verlängerungsabschnitten immer noch unentschieden, entscheidet der gesamte Teamschaden über den Sieger. Ist auch der Schaden gleich, wird ein Unentschieden gewertet.",
       "standard": "In den meisten Fällen gewinnt das Team mit dem höheren Endergebnis. Nur wenn Ergebnis und Gesamtschaden exakt gleich sind, wird ein echtes Unentschieden gewertet."
+    }
+  },
+  "teamProfile": {
+    "pageTitle": "{{name}} · Team",
+    "notFound": "Team not found. Please check the URL.",
+    "loadError": "Failed to load this team. Please try again.",
+    "editTeam": "Edit team",
+    "game": "Counter-Strike 2",
+    "roster": {
+      "title": "Roster",
+      "empty": "This team has no players yet.",
+      "rating": "Rating {{rating}}"
+    },
+    "tournaments": {
+      "title": "Tournaments",
+      "empty": "No tournament activity yet.",
+      "live": "Live",
+      "upcoming": "Upcoming",
+      "versus": "vs {{opponent}}",
+      "placement": "#{{position}} of {{total}}",
+      "finalPlacement": "Final: #{{position}} of {{total}}",
+      "recentResults": "Recent results",
+      "win": "Win",
+      "loss": "Loss"
     }
   }
 }

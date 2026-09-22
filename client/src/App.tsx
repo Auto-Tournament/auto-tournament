@@ -18,6 +18,7 @@ import Settings from './pages/Settings';
 import Development from './pages/Development';
 import { useIsDevelopment } from './hooks/useIsDevelopment';
 import TeamMatch from './pages/TeamMatch';
+import TeamProfile from './pages/TeamProfile';
 import FindPlayer from './pages/FindPlayer';
 import PlayerProfile from './pages/PlayerProfile';
 import TournamentLeaderboard from './pages/TournamentLeaderboard';
@@ -203,6 +204,21 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly={false}>
             <TeamMatch />
+          </ProtectedRoute>
+        }
+      />
+      {/*
+        Public team profile. Deliberately not `/team/:teamId` or `/teams/:teamId`:
+        the former is the team's live match/server page (`TeamMatch`, used during
+        play by players and MatchZy flows) and must keep its URL unchanged; the
+        latter would sit under the admin-only `/teams` list. `/t/team/:teamId`
+        avoids both.
+      */}
+      <Route
+        path="/t/team/:teamId"
+        element={
+          <ProtectedRoute adminOnly={false}>
+            <TeamProfile />
           </ProtectedRoute>
         }
       />

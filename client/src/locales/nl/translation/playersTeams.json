@@ -108,7 +108,8 @@
     "versus": "vs",
     "goToPlayerPage": "Veto, connect & details → Jouw spelerspagina",
     "pageTitle": "Teampagina",
-    "manualMatch": "Handmatige wedstrijd"
+    "manualMatch": "Handmatige wedstrijd",
+    "viewTeamProfile": "Team page →"
   },
   "rounds": {
     "round1": "Ronde 1",
@@ -252,7 +253,8 @@
       "success_other": "{{count}} teams verwijderd"
     },
     "loadError": "Kon teams niet laden",
-    "importSuccess": "{{count}} team(s) succesvol geïmporteerd"
+    "importSuccess": "{{count}} team(s) succesvol geïmporteerd",
+    "viewPublicPage": "View public team page"
   },
   "playersPage": {
     "headerSelect": {
@@ -463,6 +465,30 @@
       "effectivelyDisabled": "Als de reguliere speeltijd eindigt in een gelijke stand, gaat de wedstrijd niet naar overtime. De totale ploegschade op de map beslist over de winnaar; is de schade gelijk, dan eindigt de wedstrijd in een gelijkspel.",
       "implicitSegments": "Als de stand na de ingestelde overtime-segmenten nog steeds gelijk is, beslist de totale ploegschade over de winnaar. Is de schade gelijk, dan is het resultaat een gelijkspel.",
       "standard": "In de meeste gevallen wint de ploeg met de hoogste eindstand. Alleen als zowel de stand als de totale schade precies gelijk zijn, wordt het resultaat als echt gelijkspel geregistreerd."
+    }
+  },
+  "teamProfile": {
+    "pageTitle": "{{name}} · Team",
+    "notFound": "Team not found. Please check the URL.",
+    "loadError": "Failed to load this team. Please try again.",
+    "editTeam": "Edit team",
+    "game": "Counter-Strike 2",
+    "roster": {
+      "title": "Roster",
+      "empty": "This team has no players yet.",
+      "rating": "Rating {{rating}}"
+    },
+    "tournaments": {
+      "title": "Tournaments",
+      "empty": "No tournament activity yet.",
+      "live": "Live",
+      "upcoming": "Upcoming",
+      "versus": "vs {{opponent}}",
+      "placement": "#{{position}} of {{total}}",
+      "finalPlacement": "Final: #{{position}} of {{total}}",
+      "recentResults": "Recent results",
+      "win": "Win",
+      "loss": "Loss"
     }
   }
 }
