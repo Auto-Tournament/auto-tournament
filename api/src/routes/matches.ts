@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { matchService } from '../services/matchService';
 import { matchAllocationService } from '../services/matchAllocationService';
 import { cancelQueuedLoad, loadMatchOnServer } from '../services/matchLoadingService';
-import { CreateMatchInput, MatchConfig, MatchListItem, MatchPlayer } from '../types/match.types';
+import { CreateMatchInput, MatchConfig, MatchListItem } from '../types/match.types';
 import { TournamentResponse } from '../types/tournament.types';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
@@ -17,10 +17,14 @@ import {
 import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
 import { getBaseUrl, getWebhookBaseUrl } from '../utils/urlHelper';
 import { emitMatchUpdate, emitBracketUpdate } from '../services/socketService';
-import { generateMatchConfig } from '../services/matchConfigBuilder';
+import {
+  buildMatchConfigFor,
+  currentMatchConfig,
+  describeMatch,
+  describedPlayers,
+} from '../utils/matchIntegration';
 import { applyScoreFields, enrichMatch } from '../utils/matchEnrichment';
 import { matchLiveStatsService } from '../services/matchLiveStatsService';
-import { normalizeConfigPlayers } from '../utils/playerTransform';
 import { teamService } from '../services/teamService';
 import { playerService } from '../services/playerService';
 import { getMapResults } from '../services/matchMapResultService';
@@ -85,45 +89,22 @@ async function getMatchDetailsBySlug(slug: string): Promise<MatchListItem | null
   // team rosters and settings always reflect the latest DB state instead of a
   // stale snapshot from when the match was first generated. Manual matches
   // (round = 0) keep their stored config as-is.
-  let config: MatchConfig | Record<string, unknown>;
-  if (typeof row.round === 'number' && row.round >= 1 && row.tournament_id) {
-    const t = await db.queryOneAsync<DbTournamentRow>(
-      'SELECT * FROM tournament WHERE id = ?',
-      [row.tournament_id]
-    );
-
-    if (t) {
-      const tournament: TournamentResponse = tournamentRowToResponse(t);
-
-      config = await generateMatchConfig(
-        tournament,
-        row.team1_id ?? undefined,
-        row.team2_id ?? undefined,
-        row.slug
-      );
-    } else {
-      config = row.config ? JSON.parse(row.config as string) : {};
-    }
-  } else {
-    config = row.config ? JSON.parse(row.config as string) : {};
-  }
+  // Integration-owned; forwarded to the client below (client slots: PR 12).
+  const config = (await currentMatchConfig(row)) as MatchConfig | Record<string, unknown>;
+  const description = describeMatch({ game: row.game, config });
   const vetoState = row.veto_state ? JSON.parse(row.veto_state as string) : null;
 
   // Normalize players from config
-  const normalizedTeam1Players = config.team1
-    ? normalizeConfigPlayers(config.team1.players)
-    : [];
-  const normalizedTeam2Players = config.team2
-    ? normalizeConfigPlayers(config.team2.players)
-    : [];
+  const normalizedTeam1Players = describedPlayers(description.team1);
+  const normalizedTeam2Players = describedPlayers(description.team2);
 
   // Enrich players with avatars from team records if team IDs are available
   let enrichedTeam1Players = normalizedTeam1Players;
   let enrichedTeam2Players = normalizedTeam2Players;
 
-  if (config.team1?.id && row.team1_id) {
+  if (description.team1.id && row.team1_id) {
     try {
-      const team1Data = await teamService.getTeamById(config.team1.id);
+      const team1Data = await teamService.getTeamById(description.team1.id);
       if (team1Data?.players) {
         const avatarMap = new Map(
           team1Data.players.map((p) => [p.steamId.toLowerCase(), p.avatar])
@@ -142,9 +123,9 @@ async function getMatchDetailsBySlug(slug: string): Promise<MatchListItem | null
     }
   }
 
-  if (config.team2?.id && row.team2_id) {
+  if (description.team2.id && row.team2_id) {
     try {
-      const team2Data = await teamService.getTeamById(config.team2.id);
+      const team2Data = await teamService.getTeamById(description.team2.id);
       if (team2Data?.players) {
         const avatarMap = new Map(
           team2Data.players.map((p) => [p.steamId.toLowerCase(), p.avatar])
@@ -413,98 +394,15 @@ router.get('/:slug.json', async (req: Request, res: Response) => {
 
     // Manual / non-bracket matches:
     // We treat any match with round = 0 as a manually created match. For these,
-    // we return the stored config from the `matches.config` column instead of
-    // generating a fresh tournament-backed config. This allows admins to create
-    // ad hoc matches that are independent from the tournament bracket.
+    // the integration serves the stored `matches.config` instead of generating
+    // a fresh tournament-backed config. This allows admins to create ad hoc
+    // matches that are independent from the tournament bracket.
     if (match.round === 0) {
-      let storedConfig: Partial<MatchConfig> = {};
-      try {
-        storedConfig = match.config ? (JSON.parse(match.config) as Partial<MatchConfig>) : {};
-      } catch (e) {
-        console.error('Failed to parse stored match config for manual match', e);
-        storedConfig = {};
-      }
-
-      const normalizePlayers = (value: unknown): MatchPlayer => {
-        if (!value) return {};
-
-        // Case 1: already a map of steamId -> name
-        if (typeof value === 'object' && !Array.isArray(value)) {
-          const result: MatchPlayer = {};
-          for (const [steamId, name] of Object.entries(value as Record<string, unknown>)) {
-            if (typeof name === 'string') {
-              result[steamId] = name;
-            }
-          }
-          return result;
-        }
-
-        // Case 2: array of { steamid/name } objects from the manual match modal
-        if (Array.isArray(value)) {
-          const result: MatchPlayer = {};
-          for (const entry of value as Array<unknown>) {
-            if (!entry || typeof entry !== 'object') continue;
-            const steamid =
-              (entry as { steamid?: string; steamId?: string }).steamid ||
-              (entry as { steamid?: string; steamId?: string }).steamId;
-            const name = (entry as { name?: string }).name;
-            if (steamid && name) {
-              result[steamid] = name;
-            }
-          }
-          return result;
-        }
-
-        // Fallback: unknown shape
-        return {};
-      };
-
-      // Ensure required fields for MatchZy are present.
-      const safeConfig: MatchConfig = {
-        ...storedConfig,
-        matchid: match.id,
-        players_per_team:
-          typeof storedConfig.players_per_team === 'number' && storedConfig.players_per_team > 0
-            ? storedConfig.players_per_team
-            : 5,
-        num_maps:
-          typeof storedConfig.num_maps === 'number' && storedConfig.num_maps > 0
-            ? storedConfig.num_maps
-            : Array.isArray(storedConfig.maplist) && storedConfig.maplist.length > 0
-            ? storedConfig.maplist.length
-            : 1,
-        maplist: storedConfig.maplist ?? null,
-        skip_veto: true,
-        spectators: {
-          players: normalizePlayers(storedConfig.spectators?.players),
-        },
-        team1:
-          storedConfig.team1 && storedConfig.team1.name
-            ? {
-                ...storedConfig.team1,
-                players: normalizePlayers(
-                  (storedConfig.team1 as { players?: unknown } | undefined)?.players
-                ),
-              }
-            : {
-                name: 'Team 1',
-                players: {},
-              },
-        team2:
-          storedConfig.team2 && storedConfig.team2.name
-            ? {
-                ...storedConfig.team2,
-                players: normalizePlayers(
-                  (storedConfig.team2 as { players?: unknown } | undefined)?.players
-                ),
-              }
-            : {
-                name: 'Team 2',
-                players: {},
-              },
-      };
-
-      return res.json(safeConfig);
+      const served = await buildMatchConfigFor(
+        { slug, id: match.id, game: match.game, round: 0 },
+        null
+      );
+      return res.json(served);
     }
 
     // 2) Load the tournament row for bracket-managed matches
@@ -521,15 +419,21 @@ router.get('/:slug.json', async (req: Request, res: Response) => {
     // 3) Hydrate a Tournament-like object for config generation
     const tournament: TournamentResponse = tournamentRowToResponse(t);
 
-    // 4) Generate a fresh config (reads veto_state internally)
-    const fresh = await generateMatchConfig(
-      tournament,
-      match.team1_id ?? undefined,
-      match.team2_id ?? undefined,
-      slug
+    // 4) Build a fresh config through the match's integration (CS2 reads veto_state)
+    const fresh = await buildMatchConfigFor(
+      {
+        slug,
+        id: match.id,
+        game: match.game,
+        round: match.round,
+        bracket: match.bracket,
+        team1Id: match.team1_id,
+        team2Id: match.team2_id,
+      },
+      tournament
     );
 
-    // Return raw MatchZy config
+    // Return the raw game config (MatchZy JSON for CS2)
     return res.json(fresh);
   } catch (error) {
     console.error('Error fetching match config:', error);
@@ -720,46 +624,23 @@ router.get('/', async (req: Request, res: Response) => {
         // For bracket-managed matches (round >= 1) rebuild config on demand so
         // admin views always see the latest team composition and settings. Manual
         // matches (round = 0) keep their stored config.
-        let config: MatchConfig | Record<string, unknown>;
-        if (typeof row.round === 'number' && row.round >= 1 && row.tournament_id) {
-          const tournamentRow = await db.queryOneAsync<DbTournamentRow>(
-            'SELECT * FROM tournament WHERE id = ?',
-            [row.tournament_id]
-          );
-          if (tournamentRow) {
-            const t = tournamentRow;
-            const tournament: TournamentResponse = tournamentRowToResponse(t);
-
-            config = await generateMatchConfig(
-              tournament,
-              row.team1_id ?? undefined,
-              row.team2_id ?? undefined,
-              row.slug
-            );
-          } else {
-            config = row.config ? JSON.parse(row.config as string) : {};
-          }
-        } else {
-          config = row.config ? JSON.parse(row.config as string) : {};
-        }
+        // Integration-owned; forwarded to the client below (client slots: PR 12).
+        const config = (await currentMatchConfig(row)) as MatchConfig | Record<string, unknown>;
+        const description = describeMatch({ game: row.game, config });
 
         const vetoState = row.veto_state ? JSON.parse(row.veto_state as string) : null;
 
         // Normalize players and enrich with avatars from team data
-        const normalizedTeam1Players = config.team1
-          ? normalizeConfigPlayers(config.team1.players)
-          : [];
-        const normalizedTeam2Players = config.team2
-          ? normalizeConfigPlayers(config.team2.players)
-          : [];
+        const normalizedTeam1Players = describedPlayers(description.team1);
+        const normalizedTeam2Players = describedPlayers(description.team2);
 
         // Enrich players with avatars from team records if team IDs are available
         let enrichedTeam1Players = normalizedTeam1Players;
         let enrichedTeam2Players = normalizedTeam2Players;
 
-        if (config.team1?.id && row.team1_id) {
+        if (description.team1.id && row.team1_id) {
           try {
-            const team1Data = await teamService.getTeamById(config.team1.id);
+            const team1Data = await teamService.getTeamById(description.team1.id);
             if (team1Data?.players) {
               const avatarMap = new Map(
                 team1Data.players.map((p) => [p.steamId.toLowerCase(), p.avatar])
@@ -778,9 +659,9 @@ router.get('/', async (req: Request, res: Response) => {
           }
         }
 
-        if (config.team2?.id && row.team2_id) {
+        if (description.team2.id && row.team2_id) {
           try {
-            const team2Data = await teamService.getTeamById(config.team2.id);
+            const team2Data = await teamService.getTeamById(description.team2.id);
             if (team2Data?.players) {
               const avatarMap = new Map(
                 team2Data.players.map((p) => [p.steamId.toLowerCase(), p.avatar])

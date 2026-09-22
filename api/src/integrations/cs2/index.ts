@@ -1,9 +1,11 @@
 /**
  * CS2 (MatchZy) game integration.
  *
- * In this step it is a pure wrapper: every method delegates to the existing
- * services with no change in behaviour, and nothing in the core calls it yet.
- * Later PRs move the code itself in here (see the TODOs in ../types.ts).
+ * Owns the MatchZy match config: `buildMatchConfig` (./matchConfig) builds the
+ * `matches.config` blob for tournament and standalone matches, and
+ * `describeMatch` is the only reader of it the core uses. The other methods
+ * still delegate to the existing services; later PRs move that code in here
+ * (see the TODOs in ../types.ts).
  *
  * Services are imported lazily inside each method. That keeps loading the
  * registry free of side effects (no database pool, no monitors) and avoids an
@@ -14,6 +16,7 @@
 import type { MatchConfig } from '../../types/match.types';
 import type { TournamentResponse } from '../../types/tournament.types';
 import type { DbTournamentRow } from '../../types/database.types';
+import { normalizeConfigPlayers } from '../../utils/playerTransform';
 import type {
   AllocateResult,
   BuildMatchConfigContext,
@@ -59,11 +62,9 @@ function looksLikeTournamentResponse(value: unknown): value is TournamentRespons
  * `ctx.tournament.settings`; otherwise it is read the way `makeMatchReady`
  * reads it today.
  */
-async function resolveTournament(ctx: BuildMatchConfigContext): Promise<TournamentResponse> {
-  if (!ctx.tournament) {
-    // TODO(PR 4): standalone matches build their config in routes/matches.ts today.
-    throw new Error(`cs2.buildMatchConfig: match ${ctx.slug} has no tournament`);
-  }
+async function resolveTournament(
+  ctx: BuildMatchConfigContext & { tournament: NonNullable<BuildMatchConfigContext['tournament']> }
+): Promise<TournamentResponse> {
   if (looksLikeTournamentResponse(ctx.tournament.settings)) {
     return ctx.tournament.settings;
   }
@@ -78,26 +79,41 @@ async function resolveTournament(ctx: BuildMatchConfigContext): Promise<Tourname
   return tournamentRowToResponse(row);
 }
 
+/**
+ * Stored configs carry players as a steamId -> name map (generated configs) or
+ * as the manual match modal's `{ steamid, name }` array; both are read the way
+ * the API always normalised them (`normalizeConfigPlayers`).
+ */
 function describeTeam(team: MatchConfig['team1'] | undefined): MatchDescriptionTeam {
+  const players = normalizeConfigPlayers(
+    team?.players as Record<string, unknown> | Array<unknown> | undefined
+  );
   return {
     ...(team?.id ? { id: team.id } : {}),
     name: team?.name ?? '',
-    players: Object.entries(team?.players ?? {}).map(([steamId, name]) => ({
-      account: { provider: 'steam', externalId: steamId },
-      name,
+    ...(team?.tag ? { tag: team.tag } : {}),
+    ...(team?.flag ? { flag: team.flag } : {}),
+    players: players.map((p) => ({
+      account: { provider: 'steam', externalId: p.steamid },
+      name: p.name,
+      ...(p.avatar ? { avatar: p.avatar } : {}),
     })),
   };
 }
 
+/** `matches.config` as stored (JSON text) or already parsed; anything unreadable describes as empty. */
 function parseConfig(config: unknown): Partial<MatchConfig> {
-  if (typeof config === 'string') {
+  let value = config;
+  if (typeof value === 'string') {
     try {
-      return JSON.parse(config) as Partial<MatchConfig>;
+      value = JSON.parse(value);
     } catch {
       return {};
     }
   }
-  return (config ?? {}) as Partial<MatchConfig>;
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Partial<MatchConfig>)
+    : {};
 }
 
 export const cs2Integration: GameIntegration = {
@@ -114,9 +130,31 @@ export const cs2Integration: GameIntegration = {
   statsSchema: () => CS2_STATS_SCHEMA,
 
   async buildMatchConfig(ctx) {
-    const { generateMatchConfig } = await import('../../services/matchConfigBuilder');
-    const tournament = await resolveTournament(ctx);
-    return generateMatchConfig(tournament, ctx.team1?.id, ctx.team2?.id, ctx.slug);
+    const { generateMatchConfig, buildStandaloneMatchConfig, serveStandaloneMatchConfig } =
+      await import('./matchConfig');
+    const { tournament } = ctx;
+    if (!tournament || ctx.round === 0) {
+      // Standalone: create from the admin's settings, or serve the stored config.
+      if (ctx.settings !== undefined) {
+        const defaults = looksLikeTournamentResponse(ctx.defaultsFrom?.settings)
+          ? ctx.defaultsFrom.settings
+          : null;
+        return buildStandaloneMatchConfig(
+          ctx.slug,
+          (ctx.settings ?? {}) as Partial<MatchConfig>,
+          defaults
+        );
+      }
+      const served = await serveStandaloneMatchConfig(ctx.slug);
+      if (!served) {
+        throw new Error(`cs2.buildMatchConfig: match ${ctx.slug} not found`);
+      }
+      return served;
+    }
+    const resolved = await resolveTournament({ ...ctx, tournament });
+    return generateMatchConfig(resolved, ctx.team1?.id, ctx.team2?.id, ctx.slug, {
+      round: ctx.round,
+    });
   },
 
   describeMatch(config): MatchDescription {
@@ -124,6 +162,8 @@ export const cs2Integration: GameIntegration = {
     return {
       seriesLength: typeof cfg.num_maps === 'number' ? cfg.num_maps : 1,
       maps: Array.isArray(cfg.maplist) ? [...cfg.maplist] : [],
+      ...(typeof cfg.players_per_team === 'number' ? { playersPerTeam: cfg.players_per_team } : {}),
+      ...(typeof cfg.vetoDisabled === 'boolean' ? { skipPreMatchPhase: cfg.vetoDisabled } : {}),
       team1: describeTeam(cfg.team1),
       team2: describeTeam(cfg.team2),
     };
