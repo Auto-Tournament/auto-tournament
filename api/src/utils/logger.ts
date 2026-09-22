@@ -105,7 +105,8 @@ function createPinoLogger() {
         target: 'pino-pretty',
         options: {
           colorize: true,
-          translateTime: 'UTC:yyyy-MM-dd HH:mm:ss',
+          // pino-pretty uses dateformat tokens: mm is the month, MM the minutes.
+          translateTime: 'UTC:yyyy-mm-dd HH:MM:ss',
           ignore: 'pid,hostname',
           singleLine: false,
         },
