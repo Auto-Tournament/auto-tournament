@@ -758,8 +758,8 @@ function statsFromLines(lines: PlayerStatLine[]): StatsBySteamId {
 }
 
 /**
- * Per-player stats for a finished series, per side as MatchZy filed them
- * (`GameIntegration.seriesPlayerStats`).
+ * Per-player stats for a finished series, per side as MatchZy filed them.
+ * `GameIntegration.seriesPlayerStats` turns them into stat lines (../stats).
  *
  * Preferred source: the series totals built from `round_end` events (see
  * `matchLiveStatsService.getSeriesPlayerStats`). `round_end` reports stats

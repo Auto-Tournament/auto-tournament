@@ -12,8 +12,9 @@
  * `NormalizedEvent`s. The adapter applies the CS2-only side effects (live
  * score, connections, stale-event guards) and hands the rest to the core's
  * `matchLifecycle.ingest`; the core calls back into `release`,
- * `seriesPlayerStats` and `standaloneRoster` when a series ends. The server
- * side of allocation is `./allocation` (`Cs2ServerPool`): which servers are
+ * `seriesPlayerStats` and `standaloneRoster` when a series ends, and stores
+ * and rates the stats through `playerStatsColumns` / `playerStatsMetrics`
+ * (./stats). The server side of allocation is `./allocation` (`Cs2ServerPool`): which servers are
  * free, loading a match onto one, restarting, moving and ending it. The core
  * scheduler (`core/scheduler.ts`) keeps the queue and calls it through
  * `capacity`, `allocate`, `allocateBatch`, `restart`, `load`, `cancel` and
@@ -50,29 +51,13 @@ import type {
   MatchDescription,
   MatchDescriptionTeam,
   ResourceActionResult,
-  StatsSchema,
 } from '../types';
-
-/**
- * The metrics MatchZy reports, i.e. the CS2 columns of `player_match_stats`.
- * The same for every tournament today; `statsSchema` is a function so a mode
- * that records less (or more) can say so later.
- */
-const CS2_STATS_SCHEMA: StatsSchema = {
-  metrics: [
-    { key: 'kills', label: 'Kills', higherIsBetter: true, ratingWeightable: true },
-    { key: 'deaths', label: 'Deaths', higherIsBetter: false, ratingWeightable: true },
-    { key: 'assists', label: 'Assists', higherIsBetter: true, ratingWeightable: true },
-    { key: 'adr', label: 'ADR', higherIsBetter: true, ratingWeightable: true },
-    { key: 'kast', label: 'KAST', higherIsBetter: true, ratingWeightable: true },
-    { key: 'headshots', label: 'Headshots', higherIsBetter: true, ratingWeightable: true },
-    { key: 'flash_assists', label: 'Flash assists', higherIsBetter: true, ratingWeightable: true },
-    { key: 'utility_damage', label: 'Utility damage', higherIsBetter: true, ratingWeightable: true },
-    { key: 'mvps', label: 'MVPs', higherIsBetter: true, ratingWeightable: true },
-    { key: 'score', label: 'Score', higherIsBetter: true, ratingWeightable: true },
-    { key: 'rounds_played', label: 'Rounds played', higherIsBetter: true, ratingWeightable: false },
-  ],
-};
+import {
+  CS2_STATS_SCHEMA,
+  cs2PlayerStatsColumns,
+  cs2PlayerStatsMetrics,
+  metricsFromMatchZyStats,
+} from './stats';
 
 function looksLikeTournamentResponse(value: unknown): value is TournamentResponse {
   return (
@@ -415,10 +400,22 @@ export const cs2Integration: GameIntegration = {
     };
   },
 
+  /** MatchZy's series stats as stat lines, team1's block first (./stats maps the fields). */
   async seriesPlayerStats(slug) {
     const { seriesPlayerStats } = await import('./events/matchEvents');
-    return seriesPlayerStats(slug);
+    const bySide = await seriesPlayerStats(slug);
+    return (['team1', 'team2'] as const).flatMap((team) =>
+      Object.entries(bySide[team]).map(([steamId, stats]) => ({
+        account: { provider: 'steam', externalId: steamId },
+        name: '',
+        team,
+        metrics: metricsFromMatchZyStats(stats ?? {}),
+      }))
+    );
   },
+
+  playerStatsColumns: cs2PlayerStatsColumns,
+  playerStatsMetrics: cs2PlayerStatsMetrics,
 
   /**
    * Steam IDs from the `{ steamid }` player arrays the manual match modal

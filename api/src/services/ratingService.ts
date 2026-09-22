@@ -7,7 +7,11 @@ import { rating, type Rating } from 'openskill';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { eloTemplateService } from './eloTemplateService';
-import type { PlayerStatLine } from './matchLiveStatsService';
+import { integrationForMatch } from '../integrations/registry';
+import type { StatsSchema } from '../integrations/types';
+import type { DbTournamentRow } from '../types/database.types';
+import { toIntegrationTournament } from '../utils/matchIntegration';
+import { tournamentRowToResponse } from '../utils/tournamentRow';
 import { settingsService } from './settingsService';
 import {
   MAX_DISPLAY_ELO,
@@ -119,8 +123,12 @@ export async function updatePlayerRatings(
     // Get tournament's template ID (if any)
     // Labels are copied onto the history rows: they outlive the match when the
     // tournament is deleted.
-    const match = await db.queryOneAsync<{ tournament_id: number; match_label: string | null }>(
-      `SELECT m.tournament_id, t1.name || ' vs ' || t2.name AS match_label
+    const match = await db.queryOneAsync<{
+      tournament_id: number;
+      game: string | null;
+      match_label: string | null;
+    }>(
+      `SELECT m.tournament_id, m.game, t1.name || ' vs ' || t2.name AS match_label
          FROM matches m
          LEFT JOIN teams t1 ON t1.id = m.team1_id
          LEFT JOIN teams t2 ON t2.id = m.team2_id
@@ -128,52 +136,30 @@ export async function updatePlayerRatings(
       [matchSlug]
     );
     const tournament = match
-      ? await db.queryOneAsync<{ elo_template_id: string | null; name: string | null }>(
-          'SELECT elo_template_id, name FROM tournament WHERE id = ?',
-          [match.tournament_id]
-        )
+      ? await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
+          match.tournament_id,
+        ])
       : null;
     const templateId = tournament?.elo_template_id || null;
 
-    // Fetch player stats for stat-based adjustments
-    const playerStatsMap = new Map<string, PlayerStatLine>();
-    if (templateId) {
-      const statsRecords = await db.queryAsync<{
-        player_id: string;
-        adr: number;
-        total_damage: number;
-        kills: number;
-        deaths: number;
-        assists: number;
-        headshots: number;
-        flash_assists: number | null;
-        utility_damage: number | null;
-        kast: number | null;
-        mvps: number | null;
-        score: number | null;
-        rounds_played: number | null;
-      }>(
-        'SELECT player_id, adr, total_damage, kills, deaths, assists, headshots, flash_assists, utility_damage, kast, mvps, score, rounds_played FROM player_match_stats WHERE match_slug = ?',
-        [matchSlug]
+    // Fetch player metrics for stat-based adjustments. The match's integration
+    // reads them from its stored stats (`playerStatsMetrics`) and names them
+    // (`statsSchema`); the template weights them by metric key.
+    const playerMetrics = new Map<string, Record<string, number>>();
+    let statsSchema: StatsSchema = { metrics: [] };
+    if (templateId && tournament) {
+      const integration = integrationForMatch({ game: match?.game });
+      statsSchema = integration.statsSchema(
+        toIntegrationTournament(tournamentRowToResponse(tournament))
       );
-
-      for (const stat of statsRecords) {
-        const roundsPlayed = stat.rounds_played || (stat.adr > 0 && stat.total_damage > 0 ? Math.round(stat.total_damage / stat.adr) : 0);
-        playerStatsMap.set(stat.player_id, {
-          steamId: stat.player_id,
-          name: '', // Not needed for calculation
-          kills: stat.kills || 0,
-          deaths: stat.deaths || 0,
-          assists: stat.assists || 0,
-          flashAssists: stat.flash_assists || 0,
-          headshotKills: stat.headshots || 0,
-          damage: stat.total_damage || 0,
-          utilityDamage: stat.utility_damage || 0,
-          kast: stat.kast || 0,
-          mvps: stat.mvps || 0,
-          score: stat.score || 0,
-          roundsPlayed: roundsPlayed,
-        });
+      if (integration.playerStatsMetrics) {
+        const statsRecords = await db.queryAsync<Record<string, unknown> & { player_id: string }>(
+          'SELECT * FROM player_match_stats WHERE match_slug = ?',
+          [matchSlug]
+        );
+        for (const stat of statsRecords) {
+          playerMetrics.set(stat.player_id, integration.playerStatsMetrics(stat));
+        }
       }
     }
 
@@ -191,16 +177,17 @@ export async function updatePlayerRatings(
       const baseElo = openSkillToDisplayElo(newRating);
 
       // Apply stat-based adjustments if template is enabled
-      const playerStats = playerStatsMap.get(player.id);
+      const metrics = playerMetrics.get(player.id);
       let finalElo = baseElo;
       let statAdjustment = 0;
       let appliedTemplateId: string | null = null;
 
-      if (templateId && playerStats) {
+      if (templateId && metrics) {
         const adjustmentResult = await eloTemplateService.applyTemplate(
           templateId,
           baseElo,
-          playerStats
+          metrics,
+          statsSchema
         );
         statAdjustment = adjustmentResult.adjustment;
         appliedTemplateId = adjustmentResult.templateId;

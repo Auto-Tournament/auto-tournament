@@ -9,8 +9,9 @@
  *
  * CS2 is the only integration today (`integrations/cs2`). The core reaches it
  * only through the registry (eslint-rules/integration-boundaries.mjs enforces
- * it). Some CS2 features (stats, settings) still live in core files; later
- * PRs move them behind this interface one seam at a time (see the TODOs).
+ * it). Some CS2 features still live in core files (settings, and the stats
+ * columns the leaderboard and profile queries read); later PRs move them
+ * behind this interface one seam at a time (see the TODOs).
  *
  * Two rules keep a future out-of-process (HTTP/webhook) integration possible:
  * - every value that crosses the boundary can be serialised to JSON;
@@ -321,18 +322,35 @@ export interface StatsMetric {
   higherIsBetter: boolean;
   /** Whether an ELO template may weight this metric. */
   ratingWeightable: boolean;
+  /**
+   * The key an ELO template stores this metric's weight under, when it is not
+   * `key` (CS2: the camelCase keys templates have always been saved with,
+   * e.g. `flashAssists` for `flash_assists`). Only for `ratingWeightable`
+   * metrics.
+   */
+  ratingWeightKey?: string;
 }
 
+/**
+ * The metrics a game records per player. The rating stat adjustment sums the
+ * weighted metrics in the order listed here, so an integration keeps the
+ * order stable (floating-point sums depend on it).
+ */
 export interface StatsSchema {
   metrics: StatsMetric[];
 }
 
-export interface PlayerStatLine {
+/** One player's stats as the game reported them: `metrics` keyed by `statsSchema` keys. */
+export interface ReportedStatLine {
   account: LinkedAccountRef;
   name: string;
+  /** The side the game filed the player under (not always their roster side). */
   team: TeamSide;
-  won: boolean;
   metrics: Record<string, number>;
+}
+
+export interface PlayerStatLine extends ReportedStatLine {
+  won: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -676,16 +694,29 @@ export interface GameIntegration {
   // --- results -------------------------------------------------------------
 
   /**
-   * Per-player stats for a finished series, by account id (`externalId`),
-   * split by the side the game reported them under. Keys of each stat record
-   * are the `player_match_stats` metrics (TODO(PR 10): `PlayerStatLine`s).
-   * Without it, or when it has nothing, the core records rows with the result
-   * only.
+   * Per-player stats for a finished series, one line per player the game
+   * reported, team1's side first. The core matches lines to the roster by
+   * account id (a later line for the same account wins), so `team` is only
+   * where the game filed the player. Without it, or when it has nothing, the
+   * core records rows with the result only.
    */
-  seriesPlayerStats?(slug: string): Promise<{
-    team1: Record<string, Record<string, unknown>>;
-    team2: Record<string, Record<string, unknown>>;
-  }>;
+  seriesPlayerStats?(slug: string): Promise<ReportedStatLine[]>;
+  /**
+   * The integration's columns of a `player_match_stats` row for one player's
+   * metrics (CS2: adr, total_damage, kills, …). The core writes them next to
+   * its own columns (player, match, team, won_match, created_at). A player the
+   * game reported nothing for gets `{}` as metrics.
+   *
+   * Transitional: a later PR adds a `metrics` JSONB column and a `game`
+   * column; until then the metrics live in the CS2 columns.
+   */
+  playerStatsColumns?(metrics: Record<string, number>): Record<string, unknown>;
+  /**
+   * The reverse of `playerStatsColumns`: the metrics of a stored
+   * `player_match_stats` row, as the rating stat adjustment reads them.
+   * Without it a stored row has no metrics (no stat adjustment).
+   */
+  playerStatsMetrics?(row: Record<string, unknown>): Record<string, number>;
   /**
    * Account ids (`externalId`) per side of a standalone match, whose teams
    * exist only in its config; null when the config cannot be parsed. Without
