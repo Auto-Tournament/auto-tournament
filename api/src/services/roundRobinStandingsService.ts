@@ -11,7 +11,7 @@ import type { RoundRobinStandingEntry } from '../types/tournament.types';
 
 /** Current (or final) round robin standings, best first. */
 export async function getRoundRobinStandings(
-  tournamentId: number = 1
+  tournamentId: number
 ): Promise<RoundRobinStanding[]> {
   const tournament = await db.queryOneAsync<DbTournamentRow>(
     'SELECT * FROM tournament WHERE id = ?',
@@ -24,7 +24,7 @@ export async function getRoundRobinStandings(
 
 /** Standings as exposed by the API (bracket and leaderboard), best first. */
 export async function getRoundRobinStandingEntries(
-  tournamentId: number = 1
+  tournamentId: number
 ): Promise<RoundRobinStandingEntry[]> {
   const standings = await getRoundRobinStandings(tournamentId);
   return standings.map((s, index) => ({

@@ -6,6 +6,7 @@ import { emitTournamentUpdate, emitBracketUpdate, emitMatchUpdate } from './sock
 import { cancelQueuedLoad, loadMatchOnServer } from './matchLoadingService';
 import { serverStatusService, ServerStatus, isAllocatableStatus } from '../integrations/cs2/services/serverStatusService';
 import { generateRoundMatches, advanceToNextRound } from './shuffleTournamentService';
+import { resolveTournamentId, tournamentIdForMatch } from '../utils/tournamentRow';
 import { log } from '../utils/logger';
 import { getLastServerTestEvent } from '../integrations/cs2/services/serverConnectivityService';
 import { settingsService } from './settingsService';
@@ -97,7 +98,7 @@ export class MatchAllocationService {
    *   of seconds until the *first* server exits that window and becomes
    *   eligible for allocation again. Returns null when no grace window applies.
    */
-  async getAllocationStatus(): Promise<{
+  async getAllocationStatus(tournamentId: number): Promise<{
     availableServerCount: number;
     gracePeriodSeconds: number;
     nextAllocationInSeconds: number | null;
@@ -369,7 +370,7 @@ export class MatchAllocationService {
     }
 
     // How many matches are currently waiting for servers (ready + no server_id)
-    const readyMatches = await this.getReadyMatches();
+    const readyMatches = await this.getReadyMatches(tournamentId);
     const requiredServerCount = readyMatches.length;
 
     // This method is called both by UI endpoints (the start dialog polls it
@@ -675,13 +676,14 @@ export class MatchAllocationService {
    * whose team is still playing (or claimed by an earlier match in the queue)
    * is not ready yet: see withoutBusyTeams.
    */
-  async getReadyMatches(): Promise<BracketMatch[]> {
+  async getReadyMatches(tournamentId: number): Promise<BracketMatch[]> {
     const matches = await db.queryAsync<DbMatchRow>(
       `SELECT * FROM matches 
-       WHERE tournament_id = 1 
+       WHERE tournament_id = ? 
        AND status = 'ready' 
        AND (server_id IS NULL OR server_id = '')
-       ORDER BY ${QUEUE_ORDER_SQL}`
+       ORDER BY ${QUEUE_ORDER_SQL}`,
+      [tournamentId]
     );
 
     const startable = withoutBusyTeams(
@@ -698,7 +700,7 @@ export class MatchAllocationService {
    * playing: see withoutBusyTeams) are left out so they cannot hold up the
    * matches behind them.
    */
-  private async getAllocationQueue(): Promise<QueueEntry[]> {
+  private async getAllocationQueue(tournamentId: number): Promise<QueueEntry[]> {
     const rows = await db.queryAsync<{
       id: number;
       slug: string;
@@ -709,11 +711,12 @@ export class MatchAllocationService {
       team2_id: string;
     }>(
       `SELECT id, slug, round, match_number, bracket, team1_id, team2_id FROM matches
-       WHERE tournament_id = 1
+       WHERE tournament_id = ?
        AND status = 'ready'
        AND (server_id IS NULL OR server_id = '')
        AND team1_id IS NOT NULL AND team2_id IS NOT NULL AND team1_id != team2_id
-       ORDER BY ${QUEUE_ORDER_SQL}`
+       ORDER BY ${QUEUE_ORDER_SQL}`,
+      [tournamentId]
     );
     const queue = rows.map((row) => ({
       id: row.id,
@@ -894,7 +897,7 @@ export class MatchAllocationService {
    * Allocate servers to ready matches
    * Returns allocation results for each match
    */
-  async allocateServersToMatches(baseUrl: string): Promise<
+  async allocateServersToMatches(tournamentId: number, baseUrl: string): Promise<
     Array<{
       matchSlug: string;
       serverId?: string;
@@ -907,7 +910,7 @@ export class MatchAllocationService {
     log.info(`Found ${availableServers.length} available server(s)`);
 
     log.info('[ALLOCATION] Getting ready matches...');
-    const readyMatches = await this.getReadyMatches();
+    const readyMatches = await this.getReadyMatches(tournamentId);
     log.info(`Found ${readyMatches.length} ready match(es) to allocate`);
 
     if (readyMatches.length === 0) {
@@ -986,6 +989,7 @@ export class MatchAllocationService {
    * newly generated round's matches are considered.
    */
   async allocateSpecificMatches(
+    tournamentId: number,
     matchSlugs: string[],
     baseUrl: string
   ): Promise<
@@ -1006,7 +1010,7 @@ export class MatchAllocationService {
       { matchSlugs: uniqueSlugs }
     );
 
-    const allReadyMatches = await this.getReadyMatches();
+    const allReadyMatches = await this.getReadyMatches(tournamentId);
     const readyMatches = allReadyMatches.filter((m) => uniqueSlugs.includes(m.slug));
 
     if (readyMatches.length === 0) {
@@ -1025,7 +1029,7 @@ export class MatchAllocationService {
     // the requested ready matches, or until a reasonable timeout is reached.
     // Never wait for more servers than exist (#226): with more matches than
     // servers, start one per server and poll the rest (see batchServerTarget).
-    const { servers: configuredServers } = await this.getAllocationStatus();
+    const { servers: configuredServers } = await this.getAllocationStatus(tournamentId);
     const requiredServers = batchServerTarget(readyMatches.length, configuredServers);
     const POLL_INTERVAL_MS = 10_000; // 10s, per MatchZy best practices
     const MAX_WAIT_MS = 15 * 60 * 1000; // 15 minutes hard cap
@@ -1169,7 +1173,7 @@ export class MatchAllocationService {
       const freeServerCount = availableServers.filter(
         (candidate) => !this.allocatingServers.has(candidate.id)
       ).length;
-      const queue = await this.getAllocationQueue();
+      const queue = await this.getAllocationQueue(tournamentIdForMatch(match));
       // A team plays one match at a time (#224): a bracket match is left out of
       // the queue while either team is in a loaded/live match, or an earlier
       // match in the queue has claimed it. Hold it; it is retried later.
@@ -1306,7 +1310,7 @@ export class MatchAllocationService {
   /**
    * Start tournament - allocate all ready matches to available servers
    */
-  async startTournament(baseUrl: string): Promise<{
+  async startTournament(tournamentId: number, baseUrl: string): Promise<{
     success: boolean;
     message: string;
     allocated: number;
@@ -1322,7 +1326,7 @@ export class MatchAllocationService {
     log.info(`Base URL: ${baseUrl}`);
 
     // Check if tournament exists and is ready
-    const tournament = await tournamentService.getTournament();
+    const tournament = await tournamentService.getTournament(tournamentId);
     if (!tournament) {
       log.error('No tournament exists');
       return {
@@ -1396,7 +1400,8 @@ export class MatchAllocationService {
 
     // Check if bracket/matches exist (coerce COUNT(*) to number explicitly)
     const matchCountRow = await db.queryOneAsync<{ count: number | string }>(
-      'SELECT COUNT(*) as count FROM matches WHERE tournament_id = 1'
+      'SELECT COUNT(*) as count FROM matches WHERE tournament_id = ?',
+      [tournamentId]
     );
     const totalMatches = Number(matchCountRow?.count ?? 0);
 
@@ -1405,7 +1410,7 @@ export class MatchAllocationService {
       if (tournament.type === 'shuffle') {
         log.info('No matches found - generating first round for shuffle tournament');
         try {
-          const result = await advanceToNextRound();
+          const result = await advanceToNextRound(tournamentId);
           if (!result) {
             // This should not normally happen for a brand new shuffle tournament where
             // no rounds have been generated yet. Treat it as a hard failure so the UI
@@ -1440,7 +1445,7 @@ export class MatchAllocationService {
         // For other tournament types, regenerate bracket
         log.warn('No matches found - regenerating bracket before starting');
         try {
-          await tournamentService.regenerateBracket(true);
+          await tournamentService.regenerateBracket(tournamentId, true);
           log.success('Bracket regenerated successfully');
         } catch (err) {
           log.error('Failed to regenerate bracket', err);
@@ -1458,7 +1463,8 @@ export class MatchAllocationService {
       // Extra safety: if tournament is shuffle and there are *no* shuffle matches yet,
       // ensure we still generate round 1 before proceeding (helps in edge cases with stale data)
       const shuffleMatchCountRow = await db.queryOneAsync<{ count: number | string }>(
-        "SELECT COUNT(*) as count FROM matches WHERE tournament_id = 1 AND slug LIKE 'shuffle-%'"
+        "SELECT COUNT(*) as count FROM matches WHERE tournament_id = ? AND slug LIKE 'shuffle-%'",
+        [tournamentId]
       );
       const shuffleMatches = Number(shuffleMatchCountRow?.count ?? 0);
 
@@ -1467,7 +1473,7 @@ export class MatchAllocationService {
           'Shuffle tournament has existing matches but no shuffle rounds yet - generating first round'
         );
         try {
-          const result = await advanceToNextRound();
+          const result = await advanceToNextRound(tournamentId);
           if (!result) {
             // In this path we know matches exist but none are shuffle rounds yet.
             // If advanceToNextRound returns null, it usually means the current round
@@ -1534,12 +1540,12 @@ export class MatchAllocationService {
             updated_at: Math.floor(Date.now() / 1000),
           },
           'id = ?',
-          [1]
+          [tournamentId]
         );
         log.success(`Tournament started! Teams can now begin map veto.`);
 
         // Emit tournament update so teams know veto is available
-        emitTournamentUpdate({ id: 1, status: 'in_progress' });
+        emitTournamentUpdate({ id: tournamentId, status: 'in_progress' });
         emitBracketUpdate({ action: 'tournament_started' });
       }
 
@@ -1616,11 +1622,11 @@ export class MatchAllocationService {
             updated_at: Math.floor(Date.now() / 1000),
           },
           'id = ?',
-          [1]
+          [tournamentId]
         );
         log.success('Tournament started (non-BO format)');
 
-        emitTournamentUpdate({ id: 1, status: 'in_progress' });
+        emitTournamentUpdate({ id: tournamentId, status: 'in_progress' });
         emitBracketUpdate({ action: 'tournament_started' });
       }
 
@@ -1631,7 +1637,7 @@ export class MatchAllocationService {
         );
 
         // Start polling for all ready matches
-        const readyMatches = await this.getReadyMatches();
+        const readyMatches = await this.getReadyMatches(tournamentId);
         for (const match of readyMatches) {
           this.startPollingForServer(match.slug, baseUrl);
         }
@@ -1650,7 +1656,7 @@ export class MatchAllocationService {
 
       // Allocate servers to matches
       log.info('Allocating servers to matches...');
-      results = await this.allocateServersToMatches(baseUrl);
+      results = await this.allocateServersToMatches(tournamentId, baseUrl);
       log.info(`Allocation complete: ${results.length} matches processed`);
 
       allocated = results.filter((r) => r.success).length;
@@ -1670,21 +1676,22 @@ export class MatchAllocationService {
       // For shuffle tournaments: auto-generate first round if no matches exist
       if (tournament.type === 'shuffle') {
         const existingMatches = await db.queryAsync<DbMatchRow>(
-          'SELECT * FROM matches WHERE tournament_id = 1 LIMIT 1'
+          'SELECT * FROM matches WHERE tournament_id = ? LIMIT 1',
+          [tournamentId]
         );
 
         if (existingMatches.length === 0) {
           // No matches exist yet - generate first round automatically
           try {
             log.info('Shuffle tournament: Auto-generating first round...');
-            const roundResult = await generateRoundMatches(1);
+            const roundResult = await generateRoundMatches(tournamentId, 1);
             log.success(
               `Shuffle tournament: Generated ${roundResult.matches.length} matches for round 1`
             );
 
             // Allocate servers to the newly generated matches
             // Allocate servers to all matches at once
-            const shuffleResults = await this.allocateServersToMatches(baseUrl);
+            const shuffleResults = await this.allocateServersToMatches(tournamentId, baseUrl);
 
             const shuffleAllocated = shuffleResults.filter((r) => r.success).length;
             const shuffleFailed = shuffleResults.length - shuffleAllocated;
@@ -1721,8 +1728,9 @@ export class MatchAllocationService {
         // Check if there are pending matches waiting for veto
         const pendingMatches = await db.queryAsync<DbMatchRow>(
           `SELECT * FROM matches 
-           WHERE tournament_id = 1 
-           AND status = 'pending'`
+           WHERE tournament_id = ? 
+           AND status = 'pending'`,
+          [tournamentId]
         );
 
         // Reuse the earlier requiresVeto flag so that shuffle tournaments
@@ -1749,7 +1757,7 @@ export class MatchAllocationService {
   /**
    * Restart tournament - run css_restart on all servers with loaded matches, then reallocate
    */
-  async restartTournament(baseUrl: string): Promise<{
+  async restartTournament(tournamentId: number, baseUrl: string): Promise<{
     success: boolean;
     message: string;
     allocated: number;
@@ -1767,7 +1775,7 @@ export class MatchAllocationService {
     log.info(`Base URL: ${baseUrl}`);
 
     // Check if tournament exists
-    const tournament = await tournamentService.getTournament();
+    const tournament = await tournamentService.getTournament(tournamentId);
     if (!tournament) {
       log.error('No tournament exists');
       return {
@@ -1786,10 +1794,11 @@ export class MatchAllocationService {
     // Get all servers that have loaded matches
     const loadedMatches = await db.queryAsync<DbMatchRow>(
       `SELECT * FROM matches 
-       WHERE tournament_id = 1 
+       WHERE tournament_id = ? 
        AND status IN ('loaded', 'live')
        AND server_id IS NOT NULL 
-       AND server_id != ''`
+       AND server_id != ''`,
+      [tournamentId]
     );
 
     log.info(`Found ${loadedMatches.length} loaded/live match(es) to restart`);
@@ -1813,20 +1822,21 @@ export class MatchAllocationService {
 
     // Reset all loaded/live matches back to 'ready' status
     if (loadedMatches.length > 0) {
-      await db.execAsync(
+      await db.runAsync(
         `UPDATE matches 
          SET status = 'ready', 
              loaded_at = NULL,
              server_id = NULL
-         WHERE tournament_id = 1 
-         AND status IN ('loaded', 'live')`
+         WHERE tournament_id = ? 
+         AND status IN ('loaded', 'live')`,
+        [tournamentId]
       );
       log.info(`[RESTART] Reset ${loadedMatches.length} match(es) to 'ready' status`);
     }
 
     // Now run the normal start tournament flow
     log.info('Starting tournament allocation after restart...');
-    const startResult = await this.startTournament(baseUrl);
+    const startResult = await this.startTournament(tournamentId, baseUrl);
 
     log.info('[RESTART] ========================================================');
 
@@ -2094,7 +2104,10 @@ export class MatchAllocationService {
         return;
       }
 
-      const readyMatches = await this.getReadyMatches();
+      // Fleet-level trigger (a server freed up): no single tournament in the
+      // call chain. 3.1 walks every tournament with ready matches here.
+      const tournamentId = resolveTournamentId();
+      const readyMatches = await this.getReadyMatches(tournamentId);
       if (readyMatches.length === 0) {
         return;
       }
@@ -2110,6 +2123,7 @@ export class MatchAllocationService {
 
       // Try to allocate each ready match (will stop when no more servers available)
       const results = await this.allocateSpecificMatches(
+        tournamentId,
         readyMatches.map((m) => m.slug),
         webhookUrl
       );

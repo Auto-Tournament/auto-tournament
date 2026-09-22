@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { requireAuth } from '../middleware/auth';
 import { settingsService } from '../services/settingsService';
 import { clampSimulationTimescale } from '../utils/simulationTimescale';
+import { resolveTournamentId } from '../utils/tournamentRow';
 import { log } from '../utils/logger';
 import { db } from '../config/database';
 import { autoVetoPendingMatches } from '../services/vetoSimulationService';
@@ -23,10 +24,11 @@ router.use(requireAuth);
  * Kick off automated veto for the in-progress tournament's waiting matches.
  * Runs in the background; a failure here must not fail the settings save.
  */
-async function startAutoVetoForRunningTournament(): Promise<void> {
+async function startAutoVetoForRunningTournament(tournamentId: number): Promise<void> {
   try {
     const tournament = await db.queryOneAsync<{ id: number; status: string }>(
-      'SELECT id, status FROM tournament WHERE id = 1'
+      'SELECT id, status FROM tournament WHERE id = ?',
+      [tournamentId]
     );
     if (!tournament || tournament.status !== 'in_progress') return;
 
@@ -113,6 +115,7 @@ router.get('/', async (_req: Request, res: Response) => {
 });
 
 router.put('/', async (req: Request, res: Response) => {
+  const tournamentId = resolveTournamentId(req);
   const {
     webhookUrl,
     simulateMatches,
@@ -235,7 +238,7 @@ router.put('/', async (req: Request, res: Response) => {
         // simulation is on. Switching it on mid-tournament must pick up the
         // matches already waiting on a veto, or they stay stuck.
         if (!wasSimulating && simulateMatches === true) {
-          await startAutoVetoForRunningTournament();
+          await startAutoVetoForRunningTournament(tournamentId);
         }
       }
     }

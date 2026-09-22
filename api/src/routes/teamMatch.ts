@@ -11,6 +11,7 @@ import type { DbMatchRow } from '../types/database.types';
 import { getMapResults } from '../services/matchMapResultService';
 import { resolveViewerIdentity } from '../utils/viewerIdentity';
 import { log } from '../utils/logger';
+import { resolveTournamentId } from '../utils/tournamentRow';
 
 const router = Router();
 
@@ -29,6 +30,7 @@ async function getViewerSteamId(req: Request): Promise<string | null> {
  */
 router.get('/:teamId/match', async (req: Request, res: Response) => {
   try {
+    const tournamentId = resolveTournamentId(req);
     const { teamId } = req.params;
 
     // Check if team exists and get players
@@ -151,7 +153,8 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
 
     if (!match) {
       const currentTournament = await db.queryOneAsync<{ status: string }>(
-        'SELECT status FROM tournament WHERE id = 1'
+        'SELECT status FROM tournament WHERE id = ?',
+        [tournamentId]
       );
       return res.json({
         success: true,

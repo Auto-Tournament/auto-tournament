@@ -17,7 +17,15 @@ class MatchService {
   /**
    * Create a new match configuration
    */
-  async createMatch(input: CreateMatchInput, baseUrl: string): Promise<MatchResponse> {
+  /**
+   * @param defaultsTournamentId tournament whose rules (e.g. the round limit)
+   *   fill in what the admin left out of a manual match.
+   */
+  async createMatch(
+    input: CreateMatchInput,
+    baseUrl: string,
+    defaultsTournamentId: number
+  ): Promise<MatchResponse> {
     // Check if slug already exists
     const existing = await db.getOneAsync<Match>('matches', 'slug = ?', [input.slug]);
     if (existing) {
@@ -31,9 +39,10 @@ class MatchService {
 
     // Manual matches borrow the primary tournament's rules (e.g. the round
     // limit) for anything the admin left out.
-    // TODO(3.1 multi-tournament): pick the defaults tournament explicitly.
     const tournament = await db
-      .queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [1])
+      .queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
+        defaultsTournamentId,
+      ])
       .catch((error: unknown) => {
         log.warn('Failed to read round-limit defaults for manual match', error as Error);
         return null;

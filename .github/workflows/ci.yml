@@ -37,6 +37,12 @@ jobs:
       - name: Lint
         run: yarn lint
 
+      # 3.0 has one tournament row; the id is passed as a parameter so 3.1
+      # only changes where it comes from (api/src/utils/tournamentRow.ts).
+      # Fails on new hard-coded `id = 1` / `tournament_id = 1` style literals.
+      - name: No hard-coded tournament ids
+        run: yarn check:tournament-literals
+
       # The build strips types without checking them (esbuild for the api, Vite
       # for the client), so tsc errors have never failed anything. This ratchets
       # the count instead of gating on zero: the build fails only when new type
