@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import {
   Box,
@@ -54,17 +54,25 @@ export default function TeamMatch() {
   const TeamAdminPanel = integration.teamAdminPanel;
 
   /**
-   * The match the report panel is about: the current one, or the last one
-   * this team finished.
+   * The match the report panel is about: the current one, the last one this
+   * page saw, or the last one this team finished.
    *
-   * The fallback is not a nicety. This page only ever shows a *live or
-   * upcoming* match, and a confirmed result completes the match at once — so
-   * with `match` alone the card a captain just acted on vanishes the instant
-   * their confirm lands, leaving nothing to say it worked. The panel itself
-   * refuses a match it has no business showing (404 on a match that is gone,
-   * 409 on one another game owns), so an old slug costs nothing.
+   * The fallbacks are not a nicety. This page only ever shows a *live or
+   * upcoming* match, and answering a report moves the match straight out of
+   * that set — a confirm completes it, a dispute parks it as `needs_decision`.
+   * With `match` alone the card a captain had just acted on vanished the
+   * instant their answer landed, leaving nothing to say what happened; after a
+   * dispute, with no completed match to fall back to, neither side could see
+   * that the match was now waiting on an admin.
+   *
+   * The panel refuses a match it has no business showing (404 for one that is
+   * gone, 409 for one another game owns), so a stale slug costs nothing.
    */
-  const reportSlug = match?.slug ?? matchHistory[0]?.slug ?? null;
+  // Adjusted during render rather than in an effect, so the panel never blinks
+  // out for a frame between the match going and the remembered slug arriving.
+  const [lastSeenSlug, setLastSeenSlug] = useState<string | null>(null);
+  if (match?.slug && match.slug !== lastSeenSlug) setLastSeenSlug(match.slug);
+  const reportSlug = match?.slug ?? lastSeenSlug ?? matchHistory[0]?.slug ?? null;
 
   useEffect(() => {
     if (team?.name) {

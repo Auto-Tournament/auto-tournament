@@ -91,6 +91,15 @@ function stateOf(view: MatchReportView): PanelState {
   return 'nothing';
 }
 
+/** The score to show big: the game's own for a one-game series, else maps won. */
+function headlineScore(report: MatchReport | null): { team1: number; team2: number } {
+  if (!report) return { team1: 0, team2: 0 };
+  const only = report.result.maps.length === 1 ? report.result.maps[0] : null;
+  return only
+    ? { team1: only.team1Score, team2: only.team2Score }
+    : { team1: report.result.seriesTeam1Score, team2: report.result.seriesTeam2Score };
+}
+
 /** The report the panel describes: the open one, else the confirmed one. */
 function shownReport(view: MatchReportView): MatchReport | null {
   return view.open ?? view.reports.find((report) => report.status === 'confirmed') ?? null;
@@ -186,7 +195,7 @@ export function ManualReportPanel({ matchSlug, matchStatus }: MatchReportPanelPr
   const deadline = useMemo(() => {
     const open = view?.open;
     if (!open || open.status !== 'submitted' || open.confirmDeadline === null) return null;
-    const minutes = Math.ceil((open.confirmDeadline * 1000 - now) / 60_000);
+    const minutes = Math.round((open.confirmDeadline * 1000 - now) / 60_000);
     const action = open.timeoutAction === 'escalate' ? 'escalate' : 'autoConfirm';
     if (minutes <= 0) return t(`manualReport.deadline.${action}Soon`);
     return t(`manualReport.deadline.${action}`, { minutes });
@@ -261,6 +270,10 @@ export function ManualReportPanel({ matchSlug, matchStatus }: MatchReportPanelPr
   });
 
   const mayReport = viewer.canReport && REPORTABLE_MATCH_STATUSES.has(view.match.status);
+  // A one-game series has no maps-won score worth showing: a captain who typed
+  // 3-1 should not be told the result is 1-0. Anything longer is scored in
+  // games won, with the individual games on the chips below.
+  const headline = headlineScore(report);
   const canAnswer = viewer.canConfirm || viewer.canDispute;
   const buttonSx = { width: { xs: '100%', sm: 'auto' } };
 
@@ -295,8 +308,8 @@ export function ManualReportPanel({ matchSlug, matchStatus }: MatchReportPanelPr
             <Typography variant="h5" sx={{ overflowWrap: 'anywhere' }}>
               {t('manualReport.score', {
                 team1: teamName('team1'),
-                score1: report.result.seriesTeam1Score,
-                score2: report.result.seriesTeam2Score,
+                score1: headline.team1,
+                score2: headline.team2,
                 team2: teamName('team2'),
               })}
             </Typography>
