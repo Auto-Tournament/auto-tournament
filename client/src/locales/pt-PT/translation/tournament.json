@@ -616,6 +616,7 @@
     },
     "slotHint": {
       "winnerOf": "Vencedor de {{match}}",
+      "loserOf": "Derrotado de {{match}}",
       "matchNumber": "jogo {{number}}"
     }
   },

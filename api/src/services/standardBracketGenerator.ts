@@ -365,6 +365,11 @@ export class StandardBracketGenerator implements IBracketGenerator {
    *  - Winners bracket: k rounds, N/2, N/4, ..., 1 match
    *  - Losers bracket: 2k-2 rounds, wired via fixed rules
    *  - Grand final: WB champion vs LB champion
+   *
+   * N = 2 (k = 1) is the degenerate case these formulas already describe: the
+   * losers bracket has 2k-2 = 0 rounds, so the team that loses the single
+   * winners match drops into an empty bracket and wins it by walkover. It is
+   * therefore the grand final's second seed, and the same two teams meet twice.
    */
   private async generatePowerOfTwoDoubleElimination(
     tournament: TournamentResponse
@@ -373,9 +378,9 @@ export class StandardBracketGenerator implements IBracketGenerator {
     const N = teamIds.length;
     const k = Math.log2(N);
 
-    if (!Number.isInteger(k) || k < 2) {
+    if (!Number.isInteger(k) || k < 1) {
       throw new Error(
-        `Power-of-two double elimination generator requires N=2^k with k>=2, got ${N}`
+        `Power-of-two double elimination generator requires N=2^k with k>=1, got ${N}`
       );
     }
 
@@ -552,9 +557,15 @@ export class StandardBracketGenerator implements IBracketGenerator {
       }
     }
 
-    // 4) Grand Final: WB final winner vs LB final winner
+    // 4) Grand Final: WB final winner vs LB final winner.
+    //
+    // With two teams there are no losers-bracket rounds at all, so there is no
+    // LB final to take a winner from: the losers-bracket champion is simply the
+    // team that lost the winners final (it "wins" an empty bracket unopposed).
+    // Wiring the second slot to that loser keeps the grand final a real match
+    // instead of a slot that can never be filled.
     const wbFinal = wb[k - 1][0];
-    const lbFinal = lb[lbTotalRounds - 1][0];
+    const lbFinal = lbTotalRounds > 0 ? lb[lbTotalRounds - 1][0] : null;
 
     const gf: GeneratedMatch = {
       slug: 'gf',
@@ -565,8 +576,8 @@ export class StandardBracketGenerator implements IBracketGenerator {
       team2Id: null,
       team1FromMatchSlug: wbFinal.slug,
       team1FromOutcome: 'winner',
-      team2FromMatchSlug: lbFinal.slug,
-      team2FromOutcome: 'winner',
+      team2FromMatchSlug: lbFinal ? lbFinal.slug : wbFinal.slug,
+      team2FromOutcome: lbFinal ? 'winner' : 'loser',
     };
 
     const allGenerated: GeneratedMatch[] = [...wb.flat(), ...lb.flat(), gf];

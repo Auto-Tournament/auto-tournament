@@ -616,6 +616,7 @@
     },
     "slotHint": {
       "winnerOf": "{{match}}胜者",
+      "loserOf": "{{match}}负者",
       "matchNumber": "第 {{number}} 场比赛"
     }
   },

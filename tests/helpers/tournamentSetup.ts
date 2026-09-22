@@ -30,6 +30,8 @@ export interface TournamentSetupOptions {
   webhookUrl?: string;
   /** Prefix for generated resources (defaults to 'test') */
   prefix?: string;
+  /** Tournament settings passthrough (seedingMethod, grandFinalMode, ...) */
+  settings?: Record<string, unknown>;
 }
 
 export interface TournamentSetupResult {
@@ -243,6 +245,7 @@ export async function setupTournament(
     serverCount = 1,
     webhookUrl = 'http://localhost:3069',
     prefix = 'test',
+    settings,
   } = options;
 
   // Step 1: Set webhook URL (non-blocking - warn but continue)
@@ -274,6 +277,7 @@ export async function setupTournament(
     format,
     maps,
     teamIds: teams.map((t) => t.id),
+    ...(settings ? { settings } : {}),
   };
 
   const tournament = await createAndStartTournament(request, tournamentInput);

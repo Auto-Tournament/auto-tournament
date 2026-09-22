@@ -616,6 +616,7 @@
     },
     "slotHint": {
       "winnerOf": "Vinner av {{match}}",
+      "loserOf": "Taper av {{match}}",
       "matchNumber": "kamp {{number}}"
     }
   },
