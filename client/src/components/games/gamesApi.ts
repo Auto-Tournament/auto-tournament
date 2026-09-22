@@ -10,11 +10,14 @@ export interface GameSummary {
   releaseYear: number | null;
   /** A game module is installed for it: this instance can run its tournaments. */
   supported: boolean;
+  /** Where this row's data came from; picks which credit line to show. */
+  source: 'igdb' | 'wikidata' | 'builtin';
 }
 
 export interface GameSearchResponse {
   games: GameSummary[];
   fromIgdb: boolean;
+  fromWikidata: boolean;
 }
 
 export interface MyGamesResponse {

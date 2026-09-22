@@ -264,17 +264,21 @@ export function getSchemaSQL(): string {
     CREATE UNIQUE INDEX IF NOT EXISTS idx_players_uid ON players(uid);
 
     -- Game catalogue: games players can say they play. Rows come from IGDB
-    -- search results (upserted so repeat queries and chips render from here)
-    -- and from the built-in list (installed game modules + popular esports).
+    -- search results when IGDB credentials are configured, from Wikidata
+    -- search results otherwise (the keyless default so search works out of
+    -- the box), and from the built-in list (installed game modules + popular
+    -- esports). External results are upserted so repeat queries and chips
+    -- render from here.
     CREATE TABLE IF NOT EXISTS games (
       id SERIAL PRIMARY KEY,
       igdb_id INTEGER UNIQUE,
+      wikidata_id TEXT UNIQUE,
       slug TEXT NOT NULL UNIQUE,
       name TEXT NOT NULL,
       cover_url TEXT,
       logo_url TEXT,
       release_year INTEGER,
-      source TEXT NOT NULL DEFAULT 'builtin', -- 'igdb' | 'builtin'
+      source TEXT NOT NULL DEFAULT 'builtin', -- 'igdb' | 'wikidata' | 'builtin'
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
 

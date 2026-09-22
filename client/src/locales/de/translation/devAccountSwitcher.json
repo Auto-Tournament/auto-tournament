@@ -1,0 +1,12 @@
+{
+  "devAccountSwitcher": {
+    "tooltip": "Switch account (dev)",
+    "adminTest": "Admin (test)",
+    "playerA": "Player A (dev)",
+    "playerB": "Player B (dev)",
+    "playerC": "Player C (dev)",
+    "newPlayer": "New player (first visit) (dev)",
+    "signOut": "Sign out",
+    "disabled": "Test sign-in is disabled on this server"
+  }
+}

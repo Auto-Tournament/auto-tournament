@@ -126,13 +126,16 @@ export async function ensureSignedIn(page: Page): Promise<void> {
  *
  * @param page Playwright page (uses page.request for the POST; cookies are shared)
  * @param steamId Optional Steam ID (default 76561198000000002)
+ * @param name Optional player name, only used when the player is created for
+ *   the first time (login-player never renames an existing player)
  * @returns true if login-player returned 200
  */
 export async function signInAsPlayer(
   page: Page,
-  steamId: string = DEFAULT_PLAYER_STEAM_ID
+  steamId: string = DEFAULT_PLAYER_STEAM_ID,
+  name?: string
 ): Promise<boolean> {
-  return signInAsPlayerViaRequest(page.request, steamId);
+  return signInAsPlayerViaRequest(page.request, steamId, name);
 }
 
 /**
@@ -140,11 +143,12 @@ export async function signInAsPlayer(
  */
 export async function signInAsPlayerViaRequest(
   request: APIRequestContext,
-  steamId: string = DEFAULT_PLAYER_STEAM_ID
+  steamId: string = DEFAULT_PLAYER_STEAM_ID,
+  name?: string
 ): Promise<boolean> {
   try {
     const response = await request.post('/api/test/login-player', {
-      data: { steamId },
+      data: { steamId, ...(name ? { name } : {}) },
     });
     if (!response.ok()) {
       console.error('login-player test helper failed:', await response.text());
