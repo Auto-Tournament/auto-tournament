@@ -386,6 +386,10 @@
       "description": "E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set."
     },
     {
+      "name": "Test helpers (CS2)",
+      "description": "E2E helpers that stand in for a CS2 server. Disabled in production unless ENABLE_TEST_ENDPOINTS is set."
+    },
+    {
       "name": "Tournament",
       "description": "The tournament itself — setup, bracket, rounds, standings."
     },
@@ -5687,7 +5691,7 @@
     "/api/test/server-status": {
       "post": {
         "tags": [
-          "Test helpers"
+          "Test helpers (CS2)"
         ],
         "summary": "POST /api/test/server-status",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",

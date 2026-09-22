@@ -1,8 +1,8 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { emitMatchUpdate } from './socketService';
-import { serverAllocationTracker } from './serverAllocationTracker';
-import { matchAllocationService } from './matchAllocationService';
+import { integrationForMatch } from '../integrations/registry';
+import { matchContextFor } from '../utils/matchIntegration';
 import type { DbMatchRow } from '../types/database.types';
 
 /**
@@ -32,11 +32,8 @@ export async function settleEndedMatch(
 
   // A match that is over must not keep its server out of the pool.
   if (match.server_id) {
-    serverAllocationTracker.markIdle(match.server_id);
     log.info(`Server ${match.server_id} freed by ${reason}, triggering immediate allocation`);
-    setImmediate(() => {
-      void matchAllocationService.tryImmediateAllocation();
-    });
+    await integrationForMatch(match).release?.(await matchContextFor(match));
   }
 
   emitMatchUpdate({ slug: match.slug, status: 'cancelled' });

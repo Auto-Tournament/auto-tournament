@@ -7,9 +7,10 @@
  * it records. The core owns tournaments, brackets, scheduling and results, and
  * talks to a game only through this interface.
  *
- * CS2 is the only integration today (`integrations/cs2`), and in this step it
- * is a thin wrapper around the existing services: nothing in the core calls it
- * yet. Later PRs move logic behind it one seam at a time (see the TODOs).
+ * CS2 is the only integration today (`integrations/cs2`). The core reaches it
+ * through the registry; the places that still call CS2 code directly are the
+ * legacy list in eslint-rules/integration-boundaries.mjs, and later PRs move
+ * them behind this interface one seam at a time (see the TODOs).
  *
  * Two rules keep a future out-of-process (HTTP/webhook) integration possible:
  * - every value that crosses the boundary can be serialised to JSON;
@@ -163,10 +164,62 @@ export interface MatchDescriptionPlayer {
   avatar?: string;
 }
 
+/**
+ * Outcome of putting a match on a resource. `queued` means nothing is wrong,
+ * the match just has to wait (no free resource yet). A `failed` attempt names
+ * the resource it tried when there was one.
+ */
 export type AllocateResult =
   | { status: 'assigned'; resourceId?: string }
   | { status: 'queued'; reason: string }
-  | { status: 'failed'; error: string; retryable: boolean };
+  | { status: 'failed'; error: string; retryable: boolean; resourceId?: string };
+
+/**
+ * What a capacity or pool question is about. Resources may be shared across
+ * tournaments (CS2: one server fleet), but the question is always asked for a
+ * tournament (null for a standalone match) and, when there is one, a match.
+ */
+export interface CapacityScope {
+  tournamentId: number | null;
+  slug?: string;
+}
+
+/** Outcome of an admin action on a match's resource: load it, restart it, move it. */
+export type ResourceActionResult =
+  | {
+      ok: true;
+      /** One line for the admin. */
+      message: string;
+      /** The resource the match is on afterwards. */
+      resourceId?: string;
+      /** Integration-specific fields the route passes through (CS2: RCON replies). */
+      details?: Record<string, unknown>;
+    }
+  | {
+      ok: false;
+      error: string;
+      /** The action is not possible right now (no free resource), rather than broken. */
+      conflict?: boolean;
+      details?: Record<string, unknown>;
+    };
+
+/**
+ * Snapshot of an integration's resources for the allocation status views
+ * (start dialog, server availability).
+ */
+export interface ResourcePoolStatus {
+  /** Resources that can take a match right now. */
+  availableCount: number;
+  /** How long a freed resource rests before it is handed out again. */
+  gracePeriodSeconds: number;
+  /** When every resource is resting: seconds until the first one is free. */
+  nextAllocationInSeconds: number | null;
+  /** One row per resource; fields beyond `id` and `online` are integration-specific. */
+  resources: Array<{ id: string; online: boolean } & Record<string, unknown>>;
+  offlineCount: number;
+  busyCount: number;
+  graceWindowCount: number;
+}
 
 export interface ValidationResult {
   valid: boolean;
@@ -427,12 +480,37 @@ export interface GameIntegration {
   onMatchReady?(ctx: MatchContext): Promise<void>;
   /** TODO(PR 8): CS2 returns false until the veto is complete. */
   isReadyToAllocate?(ctx: MatchContext): Promise<boolean>;
-  /** Idle resources that can take a match; `null` means unlimited (no servers). */
-  capacity(): Promise<number | null>;
-  /** Select a resource and load the match on it. */
+  /**
+   * Idle resources that can take a match now; `null` means unlimited (no
+   * servers). The core asks before it hands out a queue turn.
+   */
+  capacity(scope: CapacityScope): Promise<number | null>;
+  /**
+   * Select a resource and load the match on it. The core has already checked
+   * that the match is ready and that it is its turn in the queue.
+   */
   allocate(ctx: MatchContext, opts: { baseUrl: string }): Promise<AllocateResult>;
-  restart(ctx: MatchContext, opts: { baseUrl: string }): Promise<void>;
-  /** TODO(PR 7a): force-cancel's server side (end the match on the server). */
+  /**
+   * Allocate a wave of matches at once (tournament start, a new round): one
+   * result per match, in the order given. The integration pairs matches with
+   * the resources free at that moment, in order; the rest come back `queued`.
+   * Without it the core calls `allocate` for each.
+   */
+  allocateBatch?(ctxs: MatchContext[], opts: { baseUrl: string }): Promise<AllocateResult[]>;
+  /**
+   * Restart a loaded or live match on its resource, or with `moveResource`
+   * move a match that has not gone live to another free resource.
+   */
+  restart(
+    ctx: MatchContext,
+    opts: { baseUrl: string; moveResource?: boolean }
+  ): Promise<ResourceActionResult>;
+  /** Load the match on the resource it is assigned to (the admin "load" action). */
+  load?(ctx: MatchContext, opts: { baseUrl: string; skipWebhook?: boolean }): Promise<ResourceActionResult>;
+  /**
+   * Best-effort end of the match on its resource (force-cancel). Rejects when
+   * the resource could not be told; the core records the cancel regardless.
+   */
   cancel?(ctx: MatchContext, reason: string): Promise<void>;
   /**
    * The series is over (finished, drawn, or parked for an admin decision):
@@ -440,6 +518,32 @@ export interface GameIntegration {
    * and try to allocate waiting matches. Called by the core; safe to call twice.
    */
   release?(ctx: MatchContext): Promise<void>;
+  /** Resource snapshot for the allocation status views. */
+  poolStatus?(scope: CapacityScope): Promise<ResourcePoolStatus>;
+  /**
+   * How long a freed resource rests before the next match (CS2: the server
+   * grace period). The core waits this long between shuffle rounds; 0 when
+   * omitted.
+   */
+  turnoverSeconds?(): Promise<number>;
+  /**
+   * After an API restart, make sure the match's resource still reports to us
+   * (CS2: the server's persistent webhook and demo upload config). Idempotent;
+   * rejects when it could not be checked.
+   */
+  reattach?(ctx: MatchContext): Promise<void>;
+  /**
+   * The live state of one resource for the player and team match views, with
+   * how to show it; null when it is unknown or the resource is offline.
+   */
+  resourceStatus?(resourceId: string): Promise<{
+    status: string;
+    description: {
+      label: string;
+      description: string;
+      color: 'success' | 'warning' | 'error' | 'info' | 'default';
+    };
+  } | null>;
 
   // --- results -------------------------------------------------------------
 

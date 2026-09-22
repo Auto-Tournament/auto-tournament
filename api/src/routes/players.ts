@@ -16,7 +16,6 @@ import { steamService } from '../services/steamService';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
 import { db } from '../config/database';
-import { serverStatusService } from '../integrations/cs2/services/serverStatusService';
 import { playerConnectionService } from '../services/playerConnectionService';
 import type { NormalizedServerPlayer } from '../utils/playerTransform';
 import { teamService } from '../services/teamService';
@@ -27,7 +26,7 @@ import { currentMatchConfig, describeMatch, describedPlayers } from '../utils/ma
 import { generateAvatarSvg } from '../generation/avatar';
 import { getEffectiveViewerSteamId, resolveViewerIdentity } from '../utils/viewerIdentity';
 import { resolveCurrentVetoTurn } from '../utils/vetoContext';
-import { getIntegration } from '../integrations/registry';
+import { getIntegration, integrationForMatch } from '../integrations/registry';
 import { DEFAULT_GAME } from '../integrations/types';
 
 const router = Router();
@@ -938,19 +937,13 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
     if (match.server_id) {
       try {
         const statusInfo = await Promise.race([
-          serverStatusService.getServerStatus(match.server_id),
-          new Promise<{ status: null; matchSlug: null; updatedAt: null; online: false }>(
-            (resolve) =>
-              setTimeout(
-                () => resolve({ status: null, matchSlug: null, updatedAt: null, online: false }),
-                2000
-              )
-          ),
+          integrationForMatch(match).resourceStatus?.(match.server_id) ?? Promise.resolve(null),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000)),
         ]);
 
-        if (statusInfo.online && statusInfo.status) {
+        if (statusInfo) {
           realServerStatus = statusInfo.status;
-          serverStatusDescription = serverStatusService.getStatusDescription(statusInfo.status);
+          serverStatusDescription = statusInfo.description;
         }
       } catch (error) {
         // Silently fail - server status is nice-to-have, not critical

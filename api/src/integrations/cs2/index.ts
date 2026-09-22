@@ -12,10 +12,11 @@
  * `NormalizedEvent`s. The adapter applies the CS2-only side effects (live
  * score, connections, stale-event guards) and hands the rest to the core's
  * `matchLifecycle.ingest`; the core calls back into `release`,
- * `seriesPlayerStats` and `standaloneRoster` when a series ends. Allocation
- * still lives in the core and calls some of this code directly (the legacy list in
- * eslint-rules/integration-boundaries.mjs); later PRs move them behind the
- * interface (see the TODOs in ../types.ts).
+ * `seriesPlayerStats` and `standaloneRoster` when a series ends. The server
+ * side of allocation is `./allocation` (`Cs2ServerPool`): which servers are
+ * free, loading a match onto one, restarting, moving and ending it. The core
+ * keeps the queue and calls it through `capacity`, `allocate`,
+ * `allocateBatch`, `restart`, `load`, `cancel` and `release`.
  *
  * Services are imported lazily inside each method. That keeps loading the
  * registry free of side effects (no database pool, no monitors) and avoids an
@@ -28,6 +29,7 @@ import type { TournamentResponse } from '../../types/tournament.types';
 import type { DbTournamentRow } from '../../types/database.types';
 import type { MatchReport } from './events/connectionSnapshotService';
 import { normalizeConfigPlayers } from '../../utils/playerTransform';
+import type { ServerActionResult, ServerAllocationResult } from './allocation';
 import type {
   AllocateResult,
   BuildMatchConfigContext,
@@ -35,6 +37,7 @@ import type {
   MatchContext,
   MatchDescription,
   MatchDescriptionTeam,
+  ResourceActionResult,
   StatsSchema,
 } from '../types';
 
@@ -127,6 +130,30 @@ function parseConfig(config: unknown): Partial<MatchConfig> {
     : {};
 }
 
+/** The pool's allocation outcome in the interface's terms. */
+function toAllocateResult(result: ServerAllocationResult): AllocateResult {
+  if (result.success) {
+    return { status: 'assigned', ...(result.serverId ? { resourceId: result.serverId } : {}) };
+  }
+  const error = result.error ?? 'Allocation failed';
+  if (!result.serverId && error === 'No available servers') {
+    return { status: 'queued', reason: error };
+  }
+  // The allocator is polled, so a failed attempt is retried later.
+  return {
+    status: 'failed',
+    error,
+    retryable: true,
+    ...(result.serverId ? { resourceId: result.serverId } : {}),
+  };
+}
+
+function toResourceActionResult(result: ServerActionResult): ResourceActionResult {
+  if (!result.ok) return result;
+  const { serverId, ...rest } = result;
+  return { ...rest, ...(serverId ? { resourceId: serverId } : {}) };
+}
+
 export const cs2Integration: GameIntegration = {
   id: 'cs2',
   displayName: 'Counter-Strike 2',
@@ -193,33 +220,68 @@ export const cs2Integration: GameIntegration = {
     await autoAllocateServerToMatch(ctx.slug);
   },
 
-  async capacity() {
-    const { matchAllocationService } = await import('../../services/matchAllocationService');
-    return matchAllocationService.getAvailableServerCount();
+  /**
+   * Free servers. The fleet is shared by every tournament, so the scope does
+   * not narrow it today.
+   */
+  async capacity(_scope) {
+    const { cs2ServerPool } = await import('./allocation');
+    return cs2ServerPool.getFreeServerCount();
   },
 
   async allocate(ctx, { baseUrl }): Promise<AllocateResult> {
-    const { matchAllocationService, isQueuedAllocationResult } = await import(
-      '../../services/matchAllocationService'
-    );
-    const result = await matchAllocationService.allocateSingleMatch(ctx.slug, baseUrl);
-    if (result.success) {
-      return { status: 'assigned', ...(result.serverId ? { resourceId: result.serverId } : {}) };
-    }
-    const error = result.error ?? 'Allocation failed';
-    if (isQueuedAllocationResult(error)) {
-      return { status: 'queued', reason: error };
-    }
-    // The allocator is polled today, so a failed attempt is retried later.
-    return { status: 'failed', error, retryable: true };
+    const { cs2ServerPool } = await import('./allocation');
+    return toAllocateResult(await cs2ServerPool.allocate(ctx.slug, baseUrl));
   },
 
-  async restart(ctx, { baseUrl }) {
-    const { matchAllocationService } = await import('../../services/matchAllocationService');
-    const result = await matchAllocationService.restartMatch(ctx.slug, baseUrl);
-    if (!result.success) {
-      throw new Error(result.error ?? result.message);
+  async allocateBatch(ctxs, { baseUrl }) {
+    const { cs2ServerPool } = await import('./allocation');
+    const results = await cs2ServerPool.allocateBatch(
+      ctxs.map((ctx) => ctx.slug),
+      baseUrl
+    );
+    // The pool reports left-over matches first; answer in the order asked.
+    const bySlug = new Map(results.map((result) => [result.matchSlug, result]));
+    return ctxs.map((ctx) => {
+      const result = bySlug.get(ctx.slug);
+      return result
+        ? toAllocateResult(result)
+        : { status: 'failed', error: 'Allocation failed', retryable: true };
+    });
+  },
+
+  /** css_restart and reload on the same server, or move a match that has not gone live. */
+  async restart(ctx, { baseUrl, moveResource }): Promise<ResourceActionResult> {
+    const { cs2ServerPool } = await import('./allocation');
+    if (moveResource) {
+      if (!ctx.resourceId) {
+        return { ok: false, error: 'Match has no server assigned. There is nothing to reallocate.' };
+      }
+      return toResourceActionResult(
+        await cs2ServerPool.moveToOtherServer(ctx.slug, ctx.resourceId, baseUrl)
+      );
     }
+    const result = await cs2ServerPool.restartMatch(ctx.slug, baseUrl);
+    return result.success
+      ? { ok: true, message: result.message, ...(ctx.resourceId ? { resourceId: ctx.resourceId } : {}) }
+      : { ok: false, error: result.message };
+  },
+
+  async load(ctx, { baseUrl, skipWebhook }) {
+    const { cs2ServerPool } = await import('./allocation');
+    return toResourceActionResult(
+      await cs2ServerPool.loadAssigned(
+        { id: ctx.matchId, slug: ctx.slug, round: ctx.round, server_id: ctx.resourceId ?? null },
+        { baseUrl, skipWebhook }
+      )
+    );
+  },
+
+  /** Force-cancel: best-effort end of the match on its server. */
+  async cancel(ctx) {
+    if (!ctx.resourceId) return;
+    const { cs2ServerPool } = await import('./allocation');
+    await cs2ServerPool.endMatchOnServer(ctx.resourceId, ctx.slug);
   },
 
   /**
@@ -230,12 +292,43 @@ export const cs2Integration: GameIntegration = {
    */
   async release(ctx) {
     if (!ctx.resourceId) return;
-    const { serverAllocationTracker } = await import('../../services/serverAllocationTracker');
+    const { cs2ServerPool } = await import('./allocation');
     const { matchAllocationService } = await import('../../services/matchAllocationService');
-    serverAllocationTracker.markIdle(ctx.resourceId);
+    cs2ServerPool.markIdle(ctx.resourceId);
     setImmediate(() => {
       void matchAllocationService.tryImmediateAllocation();
     });
+  },
+
+  async poolStatus() {
+    const { cs2ServerPool } = await import('./allocation');
+    return cs2ServerPool.getPoolStatus();
+  },
+
+  /** The server grace period (shorter in simulation mode). */
+  async turnoverSeconds() {
+    const { cs2ServerPool } = await import('./allocation');
+    return cs2ServerPool.getEffectiveGracePeriodSeconds();
+  },
+
+  /** Verify the server's persistent webhook and demo upload config (recovery). */
+  async reattach(ctx) {
+    if (!ctx.resourceId) return;
+    const { serverInitializationService } = await import('./services/serverInitializationService');
+    // NOTE: kept as recovery has always called it: `false` lands in the baseUrl
+    // parameter.
+    await serverInitializationService.initializeServer(ctx.resourceId, false);
+  },
+
+  /** The MatchZy status convar, read through the short status cache. */
+  async resourceStatus(resourceId) {
+    const { serverStatusService } = await import('./services/serverStatusService');
+    const statusInfo = await serverStatusService.getServerStatus(resourceId);
+    if (!statusInfo.online || !statusInfo.status) return null;
+    return {
+      status: statusInfo.status,
+      description: serverStatusService.getStatusDescription(statusInfo.status),
+    };
   },
 
   async seriesPlayerStats(slug) {

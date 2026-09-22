@@ -7,6 +7,7 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { integrationForMatch } from '../integrations/registry';
+import { matchContextFor } from '../utils/matchIntegration';
 import { settingsService } from './settingsService';
 import type { DbMatchRow } from '../types/database.types';
 
@@ -114,10 +115,12 @@ async function recoverMatch(
     // We just need to make sure it's been initialized once. This is idempotent.
     if (baseUrl && serverToken) {
       try {
-        const { serverInitializationService } = await import('../integrations/cs2/services/serverInitializationService');
-        await serverInitializationService.initializeServer(match.server_id, false);
-        result.webhookReconfigured = true;
-        result.demoUploadReconfigured = true;
+        const integration = integrationForMatch(match);
+        if (integration.reattach) {
+          await integration.reattach(await matchContextFor(match));
+          result.webhookReconfigured = true;
+          result.demoUploadReconfigured = true;
+        }
         log.success(`[Recovery] Verified persistent config for ${match.slug} on server ${match.server_id}`);
       } catch (error) {
         log.warn(`[Recovery] Failed to verify persistent config for ${match.slug}`, { error });

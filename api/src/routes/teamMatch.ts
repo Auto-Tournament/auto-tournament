@@ -1,6 +1,5 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../config/database';
-import { serverStatusService } from '../integrations/cs2/services/serverStatusService';
 import { playerConnectionService } from '../services/playerConnectionService';
 import { integrationForMatch } from '../integrations/registry';
 import { describeMatch, describedPlayers } from '../utils/matchIntegration';
@@ -262,19 +261,13 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
       try {
         // 2 second timeout - fail fast if server is unreachable or ConVars don't exist yet
         const statusInfo = await Promise.race([
-          serverStatusService.getServerStatus(match.server_id),
-          new Promise<{ status: null; matchSlug: null; updatedAt: null; online: false }>(
-            (resolve) =>
-              setTimeout(
-                () => resolve({ status: null, matchSlug: null, updatedAt: null, online: false }),
-                2000
-              )
-          ),
+          integrationForMatch(match).resourceStatus?.(match.server_id) ?? Promise.resolve(null),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000)),
         ]);
 
-        if (statusInfo.online && statusInfo.status) {
+        if (statusInfo) {
           realServerStatus = statusInfo.status;
-          serverStatusDescription = serverStatusService.getStatusDescription(statusInfo.status);
+          serverStatusDescription = statusInfo.description;
         }
       } catch (error) {
         // Silently fail - server status is nice-to-have, not critical
