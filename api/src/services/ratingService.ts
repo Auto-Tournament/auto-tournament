@@ -64,6 +64,65 @@ export async function discardTournamentRatings(tournamentId: number): Promise<nu
 }
 
 /**
+ * Undo one match's rating changes and remove its history rows (3.0 phase D).
+ *
+ * `discardTournamentRatings` above does this for a whole run before its
+ * matches are deleted; this is the same rollback for a single match that is
+ * being reopened, so the replacement result can be rated from where the
+ * players actually stood.
+ *
+ * It refuses unless this match is the **last** rated match for every player it
+ * touched. The rollback restores each player to the `*_before` values this
+ * match recorded, which is only their true standing when nothing has rated
+ * them since; a later match would be silently undone too. The manual-report
+ * reopen guard ("nothing downstream has completed") usually means that, but a
+ * player may have played elsewhere, so it is checked rather than assumed.
+ *
+ * Returns the number of players rolled back, or `null` when it refused.
+ */
+export async function discardMatchRatings(matchSlug: string): Promise<number | null> {
+  const rows = await db.queryAsync<RatingHistoryRow>(
+    `SELECT id, player_id, match_slug, elo_before, mu_before, sigma_before, created_at
+       FROM player_rating_history
+      WHERE match_slug = ?`,
+    [matchSlug]
+  );
+  if (rows.length === 0) return 0;
+
+  const playerIds = [...new Set(rows.map((r) => r.player_id))];
+  const later = await db.queryOneAsync<{ count: number | string }>(
+    `SELECT COUNT(*) as count
+       FROM player_rating_history
+      WHERE player_id = ANY(?::text[])
+        AND match_slug IS DISTINCT FROM ?
+        AND created_at >= (SELECT MIN(created_at) FROM player_rating_history WHERE match_slug = ?)`,
+    [playerIds, matchSlug, matchSlug]
+  );
+  if (later && Number(later.count) > 0) {
+    log.warn(
+      `[RATINGS] Refusing to discard ${matchSlug}: a player has been rated since, so the rollback would undo that too`,
+      { matchSlug, players: playerIds.length }
+    );
+    return null;
+  }
+
+  const rollbacks = ratingRollbacks(rows);
+  const now = Math.floor(Date.now() / 1000);
+  for (const rb of rollbacks) {
+    await db.runAsync(
+      `UPDATE players
+          SET current_elo = ?, openskill_mu = ?, openskill_sigma = ?,
+              match_count = GREATEST(0, match_count - ?), updated_at = ?
+        WHERE id = ?`,
+      [rb.elo, rb.mu, rb.sigma, rb.matches, now, rb.playerId]
+    );
+  }
+  await db.runAsync('DELETE FROM player_rating_history WHERE match_slug = ?', [matchSlug]);
+  log.info(`[RATINGS] Reverted ${matchSlug} for ${rollbacks.length} player(s)`);
+  return rollbacks.length;
+}
+
+/**
  * Update player ratings after a match
  * @param team1Players - Array of player IDs in team 1
  * @param team2Players - Array of player IDs in team 2

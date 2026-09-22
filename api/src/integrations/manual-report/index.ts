@@ -284,6 +284,20 @@ export const manualReportIntegration: GameIntegration = {
       },
     ];
   },
+
+  /**
+   * The timeout sweeper (./sweeper): one interval for the instance that acts
+   * on reports whose confirmation deadline has passed.
+   */
+  async start(): Promise<void> {
+    const { reportSweeper } = await import('./sweeper');
+    reportSweeper.start();
+  },
+
+  async stop(): Promise<void> {
+    const { reportSweeper } = await import('./sweeper');
+    reportSweeper.stop();
+  },
 };
 
 function positiveOr(value: unknown, fallback: number): number {
