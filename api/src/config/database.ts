@@ -9,7 +9,7 @@
  * which keeps dev/prod log files focused on actions instead of every SQL call.
  */
 
-import { Pool } from 'pg';
+import { Pool, type PoolClient } from 'pg';
 import { log, LOG_DB_VERBOSE, LOG_DB_VALUES } from '../utils/logger';
 import {
   safeLogJson,
@@ -17,6 +17,7 @@ import {
   redactInsertValuesForLog,
 } from '../utils/dbLogRedaction';
 import { getSchemaSQL, getSchemaColumns } from './database.schema';
+import { runSchemaMigrations } from './schemaMigrations';
 
 const MAX_DB_VALUES_SAMPLE = 5;
 
@@ -107,6 +108,21 @@ class DatabaseManager {
         .split(';')
         .map((s) => s.trim().replace(/\n\s*\n/g, '\n')) // Normalize whitespace
         .filter((s) => s.length > 0 && s.length > 10); // Filter out empty or very short strings
+
+      // gen_random_uuid() (players.uid) is built in from Postgres 13.
+      try {
+        const { rows } = await client.query<{ server_version_num: string }>(
+          'SHOW server_version_num'
+        );
+        const version = Number(rows[0]?.server_version_num);
+        if (Number.isFinite(version) && version < 130000) {
+          log.error(
+            `[PostgreSQL] Postgres ${version} is older than 13, which this version needs (gen_random_uuid). Upgrade Postgres.`
+          );
+        }
+      } catch (err) {
+        log.warn(`[PostgreSQL] Could not read the server version: ${(err as Error).message}`);
+      }
 
       log.database(`[PostgreSQL] Executing ${statements.length} schema statements`);
       // An index on a column that an upgraded database does not have yet fails
@@ -309,6 +325,11 @@ class DatabaseManager {
         log.error(`[PostgreSQL] Failed to add player_games foreign key: ${(err as Error).message}`);
       }
 
+      // Hand-written migrations (backfills), each once per database: see
+      // schemaMigrations.ts. After the column migrations and indexes above,
+      // which they may rely on.
+      await runSchemaMigrations(client);
+
       // Integration default data (CS2: the map catalogue when the maps table
       // is empty, then the default map pools). A rejection fails the schema
       // initialisation; the CS2 seed rethrows the same errors the inline map
@@ -319,6 +340,17 @@ class DatabaseManager {
       }
 
       log.success('[PostgreSQL] Database schema initialized');
+    } finally {
+      client.release();
+    }
+  }
+
+  /** Run `fn` with one pooled connection (for work that needs a transaction), then release it. */
+  async withClient<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> {
+    if (!this.postgresPool) throw new Error('Database not initialized');
+    const client = await this.postgresPool.connect();
+    try {
+      return await fn(client);
     } finally {
       client.release();
     }

@@ -21,6 +21,8 @@ import { setIgdbEndpointOverride, clearIgdbTokenCache } from '../services/igdbSe
 import { setWikidataEndpointOverride, resetWikidataThrottle } from '../services/wikidataService';
 import { clearGameSearchCache } from '../services/gameCatalogService';
 import { gameSearchLimiter } from './games';
+import { backfillLinkedAccounts, runSchemaMigrations } from '../config/schemaMigrations';
+import { playerIdentity } from '../services/playerIdentity';
 
 const router = Router();
 
@@ -634,6 +636,131 @@ router.post('/auth-identities', requireAuth, async (req: Request, res: Response)
     res.status(500).json({ success: false, error: 'Failed to seed auth identity' });
   }
 });
+
+/**
+ * Test-only helpers for the identity preparation (`linked_accounts`,
+ * `schema_migrations`, `playerIdentity.resolve`). No real endpoint reads
+ * `linked_accounts` yet, so these are how a test can see it.
+ *
+ *   GET  /api/test/linked-accounts?playerId=...        that player's rows, by id
+ *   POST /api/test/linked-accounts/backfill            run the backfill again
+ *        Body: { clearPlayerId? }                      (delete that player's rows first)
+ *   GET  /api/test/schema-migrations                   the applied migration ids
+ *   POST /api/test/schema-migrations/run               run the migrations again
+ *   GET  /api/test/player-identity/resolve?provider=...&externalId=...
+ *
+ * NOTE: These endpoints are only available in non-production environments.
+ */
+router.get('/linked-accounts', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (isTestHelperDisabled(res)) return;
+
+  const { playerId } = req.query;
+  if (typeof playerId !== 'string' || playerId === '') {
+    res.status(400).json({ success: false, error: 'Query parameter "playerId" is required' });
+    return;
+  }
+  try {
+    const rows = await db.queryAsync<{
+      id: number;
+      provider: string;
+      external_id: string;
+      verified: boolean;
+      created_at: number;
+    }>(
+      'SELECT id, provider, external_id, verified, created_at FROM linked_accounts WHERE player_id = ? ORDER BY id',
+      [playerId]
+    );
+    res.json({
+      success: true,
+      accounts: rows.map((r) => ({
+        id: r.id,
+        provider: r.provider,
+        externalId: r.external_id,
+        verified: r.verified,
+        createdAt: Number(r.created_at),
+      })),
+    });
+  } catch (err) {
+    log.error('Error in GET /api/test/linked-accounts', err as Error);
+    res.status(500).json({ success: false, error: 'Failed to read linked accounts' });
+  }
+});
+
+router.post(
+  '/linked-accounts/backfill',
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    if (isTestHelperDisabled(res)) return;
+
+    const { clearPlayerId } = (req.body ?? {}) as { clearPlayerId?: unknown };
+    if (clearPlayerId !== undefined && typeof clearPlayerId !== 'string') {
+      res.status(400).json({ success: false, error: 'Field "clearPlayerId" must be a string' });
+      return;
+    }
+    try {
+      if (typeof clearPlayerId === 'string') {
+        await db.runAsync('DELETE FROM linked_accounts WHERE player_id = ?', [clearPlayerId]);
+      }
+      const inserted = await db.withClient((client) => backfillLinkedAccounts(client));
+      res.json({ success: true, inserted });
+    } catch (err) {
+      log.error('Error in POST /api/test/linked-accounts/backfill', err as Error);
+      res.status(500).json({ success: false, error: 'Failed to run the backfill' });
+    }
+  }
+);
+
+router.get('/schema-migrations', requireAuth, async (_req: Request, res: Response): Promise<void> => {
+  if (isTestHelperDisabled(res)) return;
+  try {
+    const rows = await db.queryAsync<{ id: string }>(
+      'SELECT id FROM schema_migrations ORDER BY applied_at, id'
+    );
+    res.json({ success: true, applied: rows.map((r) => r.id) });
+  } catch (err) {
+    log.error('Error in GET /api/test/schema-migrations', err as Error);
+    res.status(500).json({ success: false, error: 'Failed to read schema migrations' });
+  }
+});
+
+router.post(
+  '/schema-migrations/run',
+  requireAuth,
+  async (_req: Request, res: Response): Promise<void> => {
+    if (isTestHelperDisabled(res)) return;
+    try {
+      const applied = await db.withClient((client) => runSchemaMigrations(client));
+      res.json({ success: true, applied });
+    } catch (err) {
+      log.error('Error in POST /api/test/schema-migrations/run', err as Error);
+      res.status(500).json({ success: false, error: 'Failed to run schema migrations' });
+    }
+  }
+);
+
+router.get(
+  '/player-identity/resolve',
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    if (isTestHelperDisabled(res)) return;
+
+    const { provider, externalId } = req.query;
+    if (typeof provider !== 'string' || typeof externalId !== 'string') {
+      res.status(400).json({
+        success: false,
+        error: 'Query parameters "provider" and "externalId" are required',
+      });
+      return;
+    }
+    try {
+      const playerId = await playerIdentity.resolve({ provider, externalId });
+      res.json({ success: true, playerId });
+    } catch (err) {
+      log.error('Error in GET /api/test/player-identity/resolve', err as Error);
+      res.status(500).json({ success: false, error: 'Failed to resolve the account' });
+    }
+  }
+);
 
 /*
  * Test-only fake OAuth provider for GitHub and Google.

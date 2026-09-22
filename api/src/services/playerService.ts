@@ -6,6 +6,7 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { eloToOpenSkill } from './ratingService';
+import { playerIdentity } from './playerIdentity';
 import {
   abbreviateId,
   describePlayer,
@@ -463,6 +464,7 @@ class PlayerService {
       id: input.id,
       ...playerData,
     });
+    await playerIdentity.mirrorPlayerCreated(input.id);
 
     const player = await this.getPlayerById(input.id);
     if (!player) {
@@ -630,6 +632,7 @@ class PlayerService {
       created_at: now,
       updated_at: now,
     });
+    await playerIdentity.mirrorPlayerCreated(steamId);
 
     const player = await db.getOneAsync<PlayerRecord>('players', 'id = ?', [steamId]);
     if (!player) {
