@@ -10,6 +10,7 @@ import cors from 'cors';
 import { createServer } from 'http';
 import swaggerUi from 'swagger-ui-express';
 import { db } from './config/database';
+import { PUBLIC_DIR, MAP_IMAGES_DIR } from './config/publicPaths';
 import { getOpenApiSpec } from './config/swagger';
 import { log, logger, LOG_HTTP_REQUESTS, LOG_DB_VERBOSE, LOG_DB_VALUES } from './utils/logger';
 import { cleanupOldLogs } from './utils/eventLogger';
@@ -342,13 +343,15 @@ for (const { prefix, router } of routeTable) {
 }
 
 // Serve frontend at /app (built client lives under api/public)
-const publicPath = path.join(__dirname, '..', 'public');
-app.use('/app', express.static(publicPath));
+app.use('/app', express.static(PUBLIC_DIR));
 
-// Serve map images statically
-app.use('/map-images', express.static(path.join(publicPath, 'map-images')));
+// Serve map images statically. PUBLIC_DIR and MAP_IMAGES_DIR come from
+// config/publicPaths, the single place both this static setup and the
+// upload route (integrations/cs2/maps/routes.ts) resolve them from -- see
+// that module for why.
+app.use('/map-images', express.static(MAP_IMAGES_DIR));
 app.get('/app/*', (_req: Request, res: Response) => {
-  res.sendFile(path.join(publicPath, 'index.html'));
+  res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
 });
 
 // 404 handler

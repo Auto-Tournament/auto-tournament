@@ -254,6 +254,12 @@ export const cs2Integration: GameIntegration = {
 
   /** The map catalogue (when the table is empty) and the default map pools. */
   async seed(client) {
+    // One-time fix for installs affected by the map-images path bug (PR
+    // #284's "Judgement calls"): moves any images left in the old, wrong
+    // directory into the correct one. See maps/migrateLegacyImages.ts.
+    const { migrateLegacyMapImages } = await import('./maps/migrateLegacyImages');
+    migrateLegacyMapImages();
+
     const { seedCs2Maps } = await import('./maps/seed');
     await seedCs2Maps(client);
   },
