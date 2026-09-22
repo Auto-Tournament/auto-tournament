@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
-import { log } from '../utils/logger';
-import { settingsService } from './settingsService';
+import { log } from '../../../utils/logger';
+import { settingsService } from '../../../services/settingsService';
 
 type UpToDateCheckResponse = {
   response?: {

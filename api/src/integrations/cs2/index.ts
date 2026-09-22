@@ -3,9 +3,13 @@
  *
  * Owns the MatchZy match config: `buildMatchConfig` (./matchConfig) builds the
  * `matches.config` blob for tournament and standalone matches, and
- * `describeMatch` is the only reader of it the core uses. The other methods
- * still delegate to the existing services; later PRs move that code in here
- * (see the TODOs in ../types.ts).
+ * `describeMatch` is the only reader of it the core uses. It also owns the
+ * game servers: RCON, the server fleet and its status, bootstrap, health and
+ * CS2 update monitoring, and demos (`services/`, `utils/`, `routes/`), mounted
+ * through `legacyRoutes` and started through `start()`. Allocation and event
+ * ingest still live in the core and call some of that code directly (the
+ * legacy list in eslint-rules/integration-boundaries.mjs); later PRs move
+ * them behind the interface (see the TODOs in ../types.ts).
  *
  * Services are imported lazily inside each method. That keeps loading the
  * registry free of side effects (no database pool, no monitors) and avoids an
@@ -202,6 +206,35 @@ export const cs2Integration: GameIntegration = {
     if (!result.success) {
       throw new Error(result.error ?? result.message);
     }
+  },
+
+  /**
+   * /api/servers (bootstrap, fleet, status), /api/rcon, /api/demos and
+   * /api/matchzy, at their existing URLs. Loaded on first call, not with the
+   * registry (see the note at the top).
+   */
+  legacyRoutes() {
+    // A synchronous lazy load: the route table is built synchronously.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { cs2LegacyRoutes } = require('./routes') as typeof import('./routes');
+    return cs2LegacyRoutes;
+  },
+
+  /** Server webhook bootstrap, then the MatchZy version fetch and the health monitor. */
+  async start() {
+    const { startCs2 } = await import('./startup');
+    await startCs2();
+  },
+
+  async stop() {
+    const { stopCs2 } = await import('./startup');
+    stopCs2();
+  },
+
+  /** `cs2Fleet` and `servers` for GET /api/health/fleet. */
+  async healthContributions() {
+    const { cs2FleetHealth } = await import('./health');
+    return cs2FleetHealth();
   },
 
   clientSlots: ['MatchPanel', 'SetupStep', 'StatsPanel'],

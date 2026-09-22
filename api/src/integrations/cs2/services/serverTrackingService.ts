@@ -10,14 +10,14 @@
  * - Plugin version tracking
  */
 
-import { db } from '../config/database';
-import { log } from '../utils/logger';
+import { db } from '../../../config/database';
+import { log } from '../../../utils/logger';
 
 import type {
   ServerConfiguredEvent,
   Cs2UpdateRequiredEvent,
   ServerHealthEvent,
-} from '../types/matchzy-events.types';
+} from '../../../types/matchzy-events.types';
 
 // Re-exported so existing importers keep working now that these live with the
 // other MatchZy event types.

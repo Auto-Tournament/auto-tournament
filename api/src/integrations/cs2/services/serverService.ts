@@ -1,11 +1,11 @@
-import { db } from '../config/database';
+import { db } from '../../../config/database';
 import {
   Server,
   CreateServerInput,
   UpdateServerInput,
   ServerResponse,
-} from '../types/server.types';
-import { log } from '../utils/logger';
+} from '../../../types/server.types';
+import { log } from '../../../utils/logger';
 
 /**
  * Server service for business logic

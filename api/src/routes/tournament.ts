@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { tournamentService } from '../services/tournamentService';
 import { matchAllocationService } from '../services/matchAllocationService';
-import { rconService } from '../services/rconService';
+import { rconService } from '../integrations/cs2/services/rconService';
 import { db } from '../config/database';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
@@ -21,10 +21,10 @@ import {
 } from '../services/shuffleTournamentService';
 import { eloTemplateService } from '../services/eloTemplateService';
 import { settingsService } from '../services/settingsService';
-import { serverService } from '../services/serverService';
-import { serverInitializationService } from '../services/serverInitializationService';
+import { serverService } from '../integrations/cs2/services/serverService';
+import { serverInitializationService } from '../integrations/cs2/services/serverInitializationService';
 import { checkTournamentCompletion } from '../utils/matchProgression';
-import { cs2UpdateService } from '../services/cs2UpdateService';
+import { cs2UpdateService } from '../integrations/cs2/services/cs2UpdateService';
 import { extractCs2StatusVersionLine, parseCs2BuildId } from '../utils/cs2Version';
 import { validateVetoOrder, type VetoStep } from '../utils/vetoConfig';
 

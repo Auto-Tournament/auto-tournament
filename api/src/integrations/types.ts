@@ -16,8 +16,9 @@
  * - every hook is async and idempotent, keyed by match slug (plus an event id
  *   for events).
  *
- * The `Router` import below is type-only; `routes` is the one in-process-only
- * member, and an HTTP integration would replace it with its own server.
+ * The `Router` import below is type-only; `routes` and `legacyRoutes` are the
+ * in-process-only members, and an HTTP integration would replace them with its
+ * own server.
  */
 
 import type { Router } from 'express';
@@ -385,13 +386,38 @@ export interface GameIntegration {
   routes?: Router;
   /**
    * Built-in routes that must keep their existing URL (MatchZy and existing
-   * API clients are configured with them), mounted at `prefix`.
-   * TODO(PR 5): CS2 moves /api/servers, /api/rcon, /api/server-status, … here.
+   * API clients are configured with them), mounted at `prefix`, in the order
+   * returned. `routes/routeTable.ts` reads them from the registry, so the
+   * server and the API reference generator both see them.
+   *
+   * A function so that loading the registry does not load the routers (and
+   * everything they import) until something actually mounts them.
    */
-  legacyRoutes?: Array<{ prefix: string; router: Router }>;
+  legacyRoutes?(): LegacyRouteMount[];
   /** Client slots this integration fills (see `ClientSlotName`). */
   clientSlots?: ClientSlotName[];
-  /** Background jobs (monitors, fleet checks). TODO(PR 5). */
+  /**
+   * Background jobs (monitors, fleet checks) and one-off startup work. Called
+   * once the database is ready and the HTTP server is listening, alongside the
+   * core startup tasks; must not reject (log and carry on instead).
+   */
   start?(): Promise<void>;
+  /** Stop what `start` started. Called on SIGINT / SIGTERM. */
   stop?(): Promise<void>;
+  /**
+   * Fields this integration adds to `GET /api/health/fleet`, merged after
+   * `status` and `timestamp` (CS2: `cs2Fleet` and `servers`).
+   */
+  healthContributions?(): Promise<Record<string, unknown>>;
+}
+
+/** A router mounted at a fixed prefix, plus its heading in the API reference. */
+export interface LegacyRouteMount {
+  /** Path prefix the router is mounted under, e.g. `/api/servers`. */
+  prefix: string;
+  router: Router;
+  /** Group heading in the generated reference. */
+  title: string;
+  /** One line on what this group is for. */
+  description: string;
 }

@@ -22,7 +22,7 @@ import { findMatchByTeams } from '../helpers/matches';
  * @tag matchzy
  */
 
-/** Baseline values from DEFAULT_MATCHZY_ENHANCED_CVARS (api/src/services/matchzyConfigService.ts). */
+/** Baseline values from DEFAULT_MATCHZY_ENHANCED_CVARS (api/src/integrations/cs2/services/matchzyConfigService.ts). */
 const DEFAULT_CVARS = {
   matchzy_autoready_enabled: 0,
   matchzy_both_teams_unpause_required: 1,

@@ -4,8 +4,8 @@ import type { TournamentResponse } from '../../types/tournament.types';
 import type { MatchConfig, MatchPlayer } from '../../types/match.types';
 import { log } from '../../utils/logger';
 import { settingsService } from '../../services/settingsService';
-import { matchzyConfigService } from '../../services/matchzyConfigService';
-import { simulationTvCvars } from '../../utils/serverTurnover';
+import { matchzyConfigService } from './services/matchzyConfigService';
+import { simulationTvCvars } from './utils/serverTurnover';
 
 /**
  * Determine whether matches should be simulated (bots instead of real players).

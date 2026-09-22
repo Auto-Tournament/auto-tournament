@@ -1,20 +1,21 @@
 import express, { Router, Request, Response, NextFunction } from 'express';
-import { requireAuth } from '../middleware/auth';
-import { validateServerToken } from '../middleware/serverAuth';
-import { db } from '../config/database';
-import { log } from '../utils/logger';
-import { settingsService } from '../services/settingsService';
-import { emitMatchUpdate } from '../services/socketService';
-import { getMapResults } from '../services/matchMapResultService';
+import { requireAuth } from '../../../middleware/auth';
+import { validateServerToken } from '../../../middleware/serverAuth';
+import { db } from '../../../config/database';
+import { log } from '../../../utils/logger';
+import { settingsService } from '../../../services/settingsService';
+import { emitMatchUpdate } from '../../../services/socketService';
+import { getMapResults } from '../../../services/matchMapResultService';
 import path from 'path';
 import fs from 'fs';
-import type { DbMatchRow } from '../types/database.types';
-import { demoMatchIdFromHeader } from '../utils/serverAttribution';
+import type { DbMatchRow } from '../../../types/database.types';
+import { demoMatchIdFromHeader } from '../../../utils/serverAttribution';
+import { DATA_DIR } from '../../../config/dataDir';
 
 const router = Router();
 
 // Directory for storing demos (same as database) - under api/data
-const DEMOS_DIR = path.join(__dirname, '..', '..', 'data', 'demos');
+const DEMOS_DIR = path.join(DATA_DIR, 'demos');
 
 // Ensure demos directory exists
 if (!fs.existsSync(DEMOS_DIR)) {

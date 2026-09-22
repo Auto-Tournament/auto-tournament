@@ -1,4 +1,4 @@
-import { log } from '../utils/logger';
+import { log } from '../../../utils/logger';
 import fetch from 'node-fetch';
 
 interface GitHubRelease {

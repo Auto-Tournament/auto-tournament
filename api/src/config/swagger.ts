@@ -250,6 +250,8 @@ const options: swaggerJsdoc.Options = {
   // no hand-written detail in it at all.
   apis: [
     path.join(API_SRC, 'routes', '*.ts'),
+    // Game integrations keep their routers (and their annotations) with them.
+    path.join(API_SRC, 'integrations', '*', 'routes', '*.ts'),
     path.join(API_SRC, 'index.ts'),
   ],
 };

@@ -75,6 +75,30 @@ test.describe('Integration boundary lint', () => {
     ).toEqual(['coreToIntegration']);
   });
 
+  test('legacy exceptions are exact (file, module) pairs', async () => {
+    // Listed: matchAllocationService still calls rconService (TODO PR 7).
+    expect(
+      await lint(
+        'api/src/services/matchAllocationService.ts',
+        "import { rconService } from '../integrations/cs2/services/rconService';"
+      )
+    ).toEqual([]);
+    // The same file, a module that is not listed for it.
+    expect(
+      await lint(
+        'api/src/services/matchAllocationService.ts',
+        "import { x } from '../integrations/cs2/services/matchzyConfigService';"
+      )
+    ).toEqual(['coreToIntegration']);
+    // The same module, from a file that is not listed.
+    expect(
+      await lint(
+        'api/src/services/matchService.ts',
+        "import { rconService } from '../integrations/cs2/services/rconService';"
+      )
+    ).toEqual(['coreToIntegration']);
+  });
+
   test('an integration may import its own files and the shared types', async () => {
     expect(
       await lint(

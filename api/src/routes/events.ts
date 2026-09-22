@@ -23,8 +23,8 @@ import { emitMatchEvent, emitServerEvent } from '../services/socketService';
 import { handleMatchEvent } from '../services/matchEventHandler';
 import { playerConnectionService } from '../services/playerConnectionService';
 import { matchLiveStatsService } from '../services/matchLiveStatsService';
-import { recordServerTestEvent } from '../services/serverConnectivityService';
-import { serverTurnoverTracker } from '../utils/serverTurnover';
+import { recordServerTestEvent } from '../integrations/cs2/services/serverConnectivityService';
+import { serverTurnoverTracker } from '../integrations/cs2/utils/serverTurnover';
 import {
   refreshConnectionsFromServer,
   applyMatchReport,
@@ -36,7 +36,7 @@ import {
   type ServerConfiguredEvent,
   type Cs2UpdateRequiredEvent,
   type ServerHealthEvent,
-} from '../services/serverTrackingService';
+} from '../integrations/cs2/services/serverTrackingService';
 import {
   isFromAssignedServer,
   readQueryString,

@@ -16,9 +16,9 @@
  * - matchzy_server_id
  */
 
-import { db } from '../config/database';
+import { db } from '../../../config/database';
 import { rconService } from './rconService';
-import { log } from '../utils/logger';
+import { log } from '../../../utils/logger';
 import { getMatchZyBootstrapCommands } from '../utils/matchzyRconCommands';
 // NOTE: Remaining MatchZy configuration is fetched by the server itself
 // via /api/servers/:id/bootstrap to avoid RCON command churn.
