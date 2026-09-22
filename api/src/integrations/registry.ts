@@ -8,6 +8,7 @@
 
 import { cs2Integration } from './cs2';
 import { fakeIntegration, isFakeIntegrationEnabled } from './fake';
+import { manualReportIntegration } from './manual-report';
 import { slugify } from '../utils/slug';
 import { DEFAULT_GAME, type GameId, type GameIntegration } from './types';
 
@@ -29,6 +30,11 @@ export function registerIntegration(integration: GameIntegration): void {
 }
 
 registerIntegration(cs2Integration);
+
+// CS2 first: the two overlap on nothing, but `integrationForGameRef` resolves
+// claimed catalogue slugs in registration order, so the module that owns a
+// game outright is asked before the one that runs anything (3.0 phase D2).
+registerIntegration(manualReportIntegration);
 
 // Test runs only (NODE_ENV=test, or MAT_TEST_INTEGRATION=1; a production
 // process also needs ENABLE_TEST_ENDPOINTS): the fake game that proves the
@@ -53,14 +59,20 @@ export function listIntegrations(): GameIntegration[] {
 
 /**
  * The catalogue games an integration claims: its own id, its `games.slug` and
- * that entry's aliases. An integration kept out of the catalogue (`catalog:
- * null`, the test-only fake) claims only its id.
+ * that entry's aliases, plus every extra entry it ships (`catalogEntries`, the
+ * manual-report module's titles). An integration kept out of the catalogue
+ * (`catalog: null`, the test-only fake) claims only its id and its extra
+ * entries.
  */
 function claimedGameRefs(integration: GameIntegration): string[] {
   const refs = [integration.id];
-  if (integration.catalog === null) return refs;
-  refs.push(integration.catalog?.slug || slugify(integration.displayName));
-  refs.push(...(integration.catalog?.aliases ?? []));
+  if (integration.catalog !== null) {
+    refs.push(integration.catalog?.slug || slugify(integration.displayName));
+    refs.push(...(integration.catalog?.aliases ?? []));
+  }
+  for (const entry of integration.catalogEntries ?? []) {
+    refs.push(entry.slug, ...(entry.aliases ?? []));
+  }
   return refs;
 }
 

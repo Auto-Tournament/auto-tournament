@@ -62,6 +62,14 @@ interface BuiltinGame {
   aliases: string[];
   /** Integration id when an installed module runs this game. */
   integrationId: string | null;
+  /**
+   * The only module that runs it is one that runs anything (manual-report,
+   * `runsAnyCatalogGame`), rather than a module written for this game. The
+   * game is supported either way; the suggestions strip treats it as an
+   * ordinary popular title, because "a module exists for it" says nothing
+   * about this game when the module says it about every game.
+   */
+  viaCatchAll: boolean;
 }
 
 /** Popular esports titles offered before IGDB is configured. IGDB slugs. */
@@ -89,28 +97,56 @@ function searchKey(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '');
 }
 
-/** Installed integrations first, then the popular list; one entry per slug. */
+/**
+ * Installed integrations first, then the popular list; one entry per slug.
+ *
+ * An integration contributes its own entry (`catalog`, named after the module,
+ * which is the game for CS2) and every extra title it ships
+ * (`catalogEntries`, the manual-report module). First claim wins, so a slug an
+ * earlier integration already took is left with that integration, and a
+ * popular title a module ships is that module's row rather than an
+ * unsupported one.
+ */
 export function builtinGames(): BuiltinGame[] {
   const out: BuiltinGame[] = [];
   const seen = new Set<string>();
 
+  const add = (game: BuiltinGame): void => {
+    if (seen.has(game.slug)) return;
+    seen.add(game.slug);
+    out.push(game);
+  };
+
   for (const integration of listIntegrations()) {
-    if (integration.catalog === null) continue;
-    const slug = integration.catalog?.slug || slugify(integration.displayName);
-    if (seen.has(slug)) continue;
-    seen.add(slug);
-    out.push({
-      slug,
-      name: integration.displayName,
-      aliases: [integration.id, ...(integration.catalog?.aliases ?? [])],
-      integrationId: integration.id,
-    });
+    const viaCatchAll = integration.runsAnyCatalogGame === true;
+    if (integration.catalog !== null) {
+      add({
+        slug: integration.catalog?.slug || slugify(integration.displayName),
+        name: integration.displayName,
+        aliases: [integration.id, ...(integration.catalog?.aliases ?? [])],
+        integrationId: integration.id,
+        viaCatchAll,
+      });
+    }
+    for (const entry of integration.catalogEntries ?? []) {
+      add({
+        slug: entry.slug,
+        name: entry.name || integration.displayName,
+        aliases: entry.aliases ?? [],
+        integrationId: integration.id,
+        viaCatchAll,
+      });
+    }
   }
 
   for (const game of POPULAR_GAMES) {
-    if (seen.has(game.slug)) continue;
-    seen.add(game.slug);
-    out.push({ slug: game.slug, name: game.name, aliases: game.aliases ?? [], integrationId: null });
+    add({
+      slug: game.slug,
+      name: game.name,
+      aliases: game.aliases ?? [],
+      integrationId: null,
+      viaCatchAll: false,
+    });
   }
 
   return out;
@@ -430,29 +466,48 @@ export async function searchGames(rawQuery: string): Promise<GameSearchResult> {
 // Suggestions
 // ---------------------------------------------------------------------------
 
-/** Instance-wide, not one tournament: "games people can play here right now". */
-async function activeIntegrationIds(): Promise<Set<string>> {
+/**
+ * Instance-wide, not one tournament: "games people can play here right now".
+ *
+ * The values are `tournament.game` as stored, which is an integration id on
+ * rows written before 3.0 phase D ('cs2') and a catalogue id after it
+ * ('rocket-league'), because a module like manual-report runs many games. So
+ * a built-in matches on either its slug or its integration id.
+ */
+async function activeGameRefs(): Promise<Set<string>> {
   const tournamentGames = await db.queryAsync<{ game: string }>(
     `SELECT DISTINCT game FROM tournament WHERE status IN ('setup', 'ready', 'in_progress')`
   );
-  return new Set(tournamentGames.map((r) => r.game));
+  return new Set(tournamentGames.filter((r) => r.game).map((r) => r.game.toLowerCase()));
+}
+
+function isActiveIn(active: ReadonlySet<string>, game: BuiltinGame): boolean {
+  if (active.has(game.slug)) return true;
+  return !!game.integrationId && active.has(game.integrationId);
 }
 
 /**
  * Built-in slugs with a tournament open or running on this instance first,
- * then the popular (non-supported) list. A supported game with no active
- * tournament is left out entirely — deliberate for the 3-item "suggestions"
- * strip: a genuinely popular title beats a supported-but-idle one there. The
- * onboarding grid needs every card instead, so it uses
+ * then the ordinary popular list. A game with a module of its own and no
+ * active tournament is left out entirely — deliberate for the 3-item
+ * "suggestions" strip: a genuinely popular title beats a supported-but-idle
+ * one there.
+ *
+ * "A module of its own" is the point: a game only supported because a
+ * catch-all module runs anything (`viaCatchAll`) is an ordinary popular title
+ * here, otherwise installing manual-report would empty the strip, since
+ * every built-in would then be supported.
+ *
+ * The onboarding grid needs every card instead, so it uses
  * `allBuiltinSlugsOrdered` below rather than this.
  */
 async function suggestionOrderedSlugs(): Promise<string[]> {
   const builtins = builtinGames();
-  const active = await activeIntegrationIds();
+  const active = await activeGameRefs();
 
   return [
-    ...builtins.filter((g) => g.integrationId && active.has(g.integrationId)),
-    ...builtins.filter((g) => !g.integrationId),
+    ...builtins.filter((g) => isActiveIn(active, g)),
+    ...builtins.filter((g) => !isActiveIn(active, g) && (!g.integrationId || g.viaCatchAll)),
   ].map((g) => g.slug);
 }
 
@@ -466,8 +521,8 @@ async function suggestionOrderedSlugs(): Promise<string[]> {
  */
 async function allBuiltinSlugsOrdered(): Promise<string[]> {
   const builtins = builtinGames();
-  const active = await activeIntegrationIds();
-  const isActive = (g: BuiltinGame) => !!g.integrationId && active.has(g.integrationId);
+  const active = await activeGameRefs();
+  const isActive = (g: BuiltinGame) => isActiveIn(active, g);
 
   return [...builtins.filter(isActive), ...builtins.filter((g) => !isActive(g))].map((g) => g.slug);
 }

@@ -46,10 +46,23 @@ test.describe('Game integration registry', () => {
     expect(integrationForMatch({ game: 'cs2' }).id).toBe('cs2');
   });
 
-  test('an unknown game is an error, not a silent fallback', () => {
+  test('an unknown game id is an error; a game ref falls back to the catch-all module', () => {
+    // `getIntegration` is the by-id lookup and stays strict.
     expect(() => getIntegration('no-such-game')).toThrow(UnknownGameError);
-    expect(() => integrationForMatch({ game: 'no-such-game' })).toThrow(UnknownGameError);
     expect(hasIntegration('no-such-game')).toBe(false);
+
+    // A `game` *ref* is a catalogue id from 3.0 phase D onwards, and the
+    // manual-report module runs any catalogue game (`runsAnyCatalogGame`), so
+    // a row for a game no dedicated module claims resolves to it rather than
+    // throwing. That is the whole point of the flag: a tournament created for
+    // a game someone found through IGDB search must still find a module.
+    const fallback = integrationForMatch({ game: 'no-such-game' });
+    expect(fallback.id).toBe('manual-report');
+    expect(fallback.runsAnyCatalogGame).toBe(true);
+    // The cost of that fallback: a typo'd game id is a manual-report
+    // tournament rather than an error. Rows the core writes come from the
+    // catalogue, so it only bites a hand-written one.
+    expect(integrationForMatch({ game: 'cs3' }).id).toBe('manual-report');
   });
 
   test('registering the same id twice is rejected', () => {
