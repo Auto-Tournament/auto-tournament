@@ -72,7 +72,7 @@ export function parseTeamIds(raw: string | null | undefined): string[] {
 }
 
 /** Final/current Swiss standings for a tournament, best first. */
-export async function getSwissStandings(tournamentId: number = 1): Promise<SwissStanding[]> {
+export async function getSwissStandings(tournamentId: number): Promise<SwissStanding[]> {
   const tournament = await db.queryOneAsync<DbTournamentRow>(
     'SELECT * FROM tournament WHERE id = ?',
     [tournamentId]
@@ -84,7 +84,7 @@ export async function getSwissStandings(tournamentId: number = 1): Promise<Swiss
 
 /** Standings as exposed by the API (bracket and leaderboard), best first. */
 export async function getSwissStandingEntries(
-  tournamentId: number = 1
+  tournamentId: number
 ): Promise<SwissStandingEntry[]> {
   const standings = await getSwissStandings(tournamentId);
   return standings.map((s, index) => ({
@@ -107,7 +107,7 @@ let advanceChain: Promise<void> = Promise.resolve();
  * number of times, concurrently: runs are serialised in-process and the fill
  * itself only claims placeholder rows that are still empty.
  */
-export function advanceSwissTournament(tournamentId: number = 1): Promise<void> {
+export function advanceSwissTournament(tournamentId: number): Promise<void> {
   const run = advanceChain.then(() => advanceOnce(tournamentId));
   advanceChain = run.catch((error) => {
     log.error('[SWISS] Round advancement failed', error, { tournamentId });

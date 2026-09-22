@@ -41,6 +41,7 @@ function parseRoster(players: string | null | undefined): Player[] {
  * the veto conflict this guards against.
  */
 export async function findDuplicateTournamentMemberships(
+  tournamentId: number,
   teamId: string,
   players: Array<{ steamId: string; name?: string }>
 ): Promise<DuplicateMembership[]> {
@@ -48,7 +49,8 @@ export async function findDuplicateTournamentMemberships(
 
   try {
     const tournament = await db.queryOneAsync<{ team_ids: string | null }>(
-      'SELECT team_ids FROM tournament WHERE id = 1'
+      'SELECT team_ids FROM tournament WHERE id = ?',
+      [tournamentId]
     );
     if (!tournament?.team_ids) return [];
 

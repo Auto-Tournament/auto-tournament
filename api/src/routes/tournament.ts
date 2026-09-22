@@ -24,6 +24,7 @@ import { settingsService } from '../services/settingsService';
 import { serverService } from '../integrations/cs2/services/serverService';
 import { serverInitializationService } from '../integrations/cs2/services/serverInitializationService';
 import { checkTournamentCompletion } from '../utils/matchProgression';
+import { resolveTournamentId } from '../utils/tournamentRow';
 import { cs2UpdateService } from '../integrations/cs2/services/cs2UpdateService';
 import { extractCs2StatusVersionLine, parseCs2BuildId } from '../utils/cs2Version';
 import { validateVetoOrder, type VetoStep } from '../utils/vetoConfig';
@@ -250,16 +251,17 @@ async function preflightServersUpToDateForTournamentStart(): Promise<
  */
 router.get('/:id/leaderboard', async (req: Request, res: Response) => {
   try {
+    const tournamentId = resolveTournamentId(req);
     const { id } = req.params;
 
-    if (id !== '1') {
+    if (id !== String(tournamentId)) {
       return res.status(400).json({
         success: false,
-        error: 'Only tournament ID 1 is supported',
+        error: `Only tournament ID ${tournamentId} is supported`,
       });
     }
 
-    const standings = await getTournamentLeaderboard();
+    const standings = await getTournamentLeaderboard(tournamentId);
 
     return res.json({
       success: true,
@@ -281,9 +283,10 @@ router.get('/:id/leaderboard', async (req: Request, res: Response) => {
  * during veto / match wait. Returns only countdown-related fields; full
  * server-availability remains admin-only.
  */
-router.get('/allocation-status', async (_req: Request, res: Response) => {
+router.get('/allocation-status', async (req: Request, res: Response) => {
   try {
-    const status = await matchAllocationService.getAllocationStatus();
+    const tournamentId = resolveTournamentId(req);
+    const status = await matchAllocationService.getAllocationStatus(tournamentId);
     return res.json({
       success: true,
       availableServerCount: status.availableServerCount,
@@ -318,9 +321,10 @@ router.use(requireAuth);
  *       404:
  *         description: No tournament exists
  */
-router.get('/', async (_req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   try {
-    const tournament = await tournamentService.getTournament();
+    const tournamentId = resolveTournamentId(req);
+    const tournament = await tournamentService.getTournament(tournamentId);
 
     if (!tournament) {
       return res.status(404).json({
@@ -337,7 +341,7 @@ router.get('/', async (_req: Request, res: Response) => {
       log.debug(`[TOURNAMENT API] Tournament is in_progress, checking completion...`);
       await checkTournamentCompletion(tournament.id);
       // Re-fetch tournament to get updated status
-      const updatedTournament = await tournamentService.getTournament();
+      const updatedTournament = await tournamentService.getTournament(tournamentId);
       if (updatedTournament) {
         log.debug(`[TOURNAMENT API] After completion check - Status: ${updatedTournament.status}`);
         return res.json({
@@ -476,6 +480,7 @@ function validateCustomVetoOrderSetting(
 
 router.post('/', async (req: Request, res: Response) => {
   try {
+    const tournamentId = resolveTournamentId(req);
     const input: CreateTournamentInput = req.body;
 
     // Validate input
@@ -508,7 +513,7 @@ router.post('/', async (req: Request, res: Response) => {
       });
     }
 
-    const tournament = await tournamentService.createTournament(input);
+    const tournament = await tournamentService.createTournament(tournamentId, input);
 
     return res.json({
       success: true,
@@ -549,6 +554,7 @@ router.post('/', async (req: Request, res: Response) => {
  */
 router.put('/', async (req: Request, res: Response) => {
   try {
+    const tournamentId = resolveTournamentId(req);
     const input: UpdateTournamentInput = req.body;
 
     if (input.settings) {
@@ -558,7 +564,7 @@ router.put('/', async (req: Request, res: Response) => {
       if (typeof mapCount !== 'number') {
         const existing = await db.queryOneAsync<{ maps: string }>(
           'SELECT maps FROM tournament WHERE id = ?',
-          [1]
+          [tournamentId]
         );
         try {
           mapCount = existing ? (JSON.parse(existing.maps) as string[]).length : undefined;
@@ -576,7 +582,7 @@ router.put('/', async (req: Request, res: Response) => {
       }
     }
 
-    const tournament = await tournamentService.updateTournament(input);
+    const tournament = await tournamentService.updateTournament(tournamentId, input);
 
     // Emit updates to all clients
     emitTournamentUpdate({ action: 'tournament_updated', ...tournament });
@@ -611,17 +617,19 @@ router.put('/', async (req: Request, res: Response) => {
  *       200:
  *         description: Tournament deleted successfully
  */
-router.delete('/', async (_req: Request, res: Response) => {
+router.delete('/', async (req: Request, res: Response) => {
   try {
+    const tournamentId = resolveTournamentId(req);
     log.info('Deleting tournament...');
 
     // First, end all matches on servers (same as reset)
     const loadedMatches = await db.queryAsync<DbMatchRow>(
       `SELECT * FROM matches 
-       WHERE tournament_id = 1 
+       WHERE tournament_id = ? 
        AND status IN ('loaded', 'live')
        AND server_id IS NOT NULL 
-       AND server_id != ''`
+       AND server_id != ''`,
+      [tournamentId]
     );
 
     let matchesEnded = 0;
@@ -639,7 +647,7 @@ router.delete('/', async (_req: Request, res: Response) => {
     }
 
     // Now delete the tournament (will also delete matches via CASCADE)
-    await tournamentService.deleteTournament();
+    await tournamentService.deleteTournament(tournamentId);
 
     log.success(`Tournament deleted successfully. ${matchesEnded} match(es) ended on servers.`);
 
@@ -680,16 +688,17 @@ router.delete('/', async (_req: Request, res: Response) => {
  *       404:
  *         description: No tournament exists
  */
-router.get('/bracket', async (_req: Request, res: Response) => {
+router.get('/bracket', async (req: Request, res: Response) => {
   try {
+    const tournamentId = resolveTournamentId(req);
     // Automatically check if tournament should be marked as completed
     // This ensures the status is always up-to-date when bracket is fetched
-    const tournament = await tournamentService.getTournament();
+    const tournament = await tournamentService.getTournament(tournamentId);
     if (tournament && tournament.status === 'in_progress') {
       await checkTournamentCompletion(tournament.id);
     }
 
-    const bracket = await tournamentService.getBracket();
+    const bracket = await tournamentService.getBracket(tournamentId);
 
     if (!bracket) {
       return res.status(404).json({
@@ -738,8 +747,9 @@ router.get('/bracket', async (_req: Request, res: Response) => {
  */
 router.post('/bracket/regenerate', requireAuth, async (req: Request, res: Response) => {
   try {
+    const tournamentId = resolveTournamentId(req);
     const { force } = req.body;
-    const bracket = await tournamentService.regenerateBracket(force === true);
+    const bracket = await tournamentService.regenerateBracket(tournamentId, force === true);
 
     // Emit updates to all clients
     emitBracketUpdate({ action: 'bracket_regenerated' });
@@ -774,17 +784,19 @@ router.post('/bracket/regenerate', requireAuth, async (req: Request, res: Respon
  *       200:
  *         description: Tournament reset successfully
  */
-router.post('/reset', requireAuth, async (_req: Request, res: Response) => {
+router.post('/reset', requireAuth, async (req: Request, res: Response) => {
   try {
+    const tournamentId = resolveTournamentId(req);
     log.info('Resetting tournament to setup mode...');
 
     // First, end all matches on servers
     const loadedMatches = await db.queryAsync<DbMatchRow>(
       `SELECT * FROM matches 
-       WHERE tournament_id = 1 
+       WHERE tournament_id = ? 
        AND status IN ('loaded', 'live')
        AND server_id IS NOT NULL 
-       AND server_id != ''`
+       AND server_id != ''`,
+      [tournamentId]
     );
 
     let matchesEnded = 0;
@@ -802,7 +814,7 @@ router.post('/reset', requireAuth, async (_req: Request, res: Response) => {
     }
 
     // Now reset the tournament in the database
-    const tournament = await tournamentService.resetTournament();
+    const tournament = await tournamentService.resetTournament(tournamentId);
 
     log.success(`Tournament reset to setup mode. ${matchesEnded} match(es) ended on servers.`);
 
@@ -863,9 +875,10 @@ router.post('/reset', requireAuth, async (_req: Request, res: Response) => {
  *       200:
  *         description: Server availability retrieved successfully
  */
-router.get('/server-availability', requireAuth, async (_req: Request, res: Response) => {
+router.get('/server-availability', requireAuth, async (req: Request, res: Response) => {
   try {
-    const status = await matchAllocationService.getAllocationStatus();
+    const tournamentId = resolveTournamentId(req);
+    const status = await matchAllocationService.getAllocationStatus(tournamentId);
     const simulationEnabled = await settingsService.isSimulationModeEnabled();
 
     return res.json({
@@ -888,6 +901,7 @@ router.get('/server-availability', requireAuth, async (_req: Request, res: Respo
 
 router.post('/start', requireAuth, async (req: Request, res: Response) => {
   try {
+    const tournamentId = resolveTournamentId(req);
     const { enableSimulation } = (req.body ?? {}) as { enableSimulation?: unknown };
 
     // Optional one-shot toggle to enable simulation mode at the moment the
@@ -940,7 +954,7 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
     // task has finished. This ensures tests and UIs consistently see the
     // tournament as non‑setup as soon as start is requested.
     try {
-      const tournament = await tournamentService.getTournament();
+      const tournament = await tournamentService.getTournament(tournamentId);
       if (
         tournament &&
         tournament.type === 'shuffle' &&
@@ -954,7 +968,7 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
             updated_at: Math.floor(Date.now() / 1000),
           },
           'id = ?',
-          [1]
+          [tournamentId]
         );
       }
     } catch (err) {
@@ -970,7 +984,7 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
     const baseUrl = await getWebhookBaseUrl(req);
     void (async () => {
       try {
-        const result = await matchAllocationService.startTournament(baseUrl);
+        const result = await matchAllocationService.startTournament(tournamentId, baseUrl);
 
         if (result.success) {
           log.success(result.message, {
@@ -1033,10 +1047,11 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
  */
 router.post('/restart', requireAuth, async (req: Request, res: Response) => {
   try {
+    const tournamentId = resolveTournamentId(req);
     // Get base URL for webhook configuration
     const baseUrl = await getWebhookBaseUrl(req);
 
-    const result = await matchAllocationService.restartTournament(baseUrl);
+    const result = await matchAllocationService.restartTournament(tournamentId, baseUrl);
 
     if (result.success) {
       log.success(result.message, {
@@ -1143,6 +1158,7 @@ router.post('/wipe-database', async (_req: Request, res: Response) => {
  */
 router.post('/wipe-table/:table', async (req: Request, res: Response) => {
   try {
+    const tournamentId = resolveTournamentId(req);
     const { table } = req.params;
     const allowedTables = [
       'teams',
@@ -1175,7 +1191,7 @@ router.post('/wipe-table/:table', async (req: Request, res: Response) => {
 
     // Handle special cases for foreign key constraints
     if (table === 'tournament') {
-      await tournamentService.deleteTournament();
+      await tournamentService.deleteTournament(tournamentId);
     } else if (table === 'matches') {
       // Delete related data first
       await db.execAsync('DELETE FROM match_events');
@@ -1241,8 +1257,9 @@ router.post('/wipe-table/:table', async (req: Request, res: Response) => {
  *       500:
  *         description: Failed to reset simulation state
  */
-router.post('/dev/reset-simulation-state', async (_req: Request, res: Response) => {
+router.post('/dev/reset-simulation-state', async (req: Request, res: Response) => {
   try {
+    const tournamentId = resolveTournamentId(req);
     log.warn(
       '[DEV] Reset simulation state requested - clearing matches & stats but keeping servers, teams, maps, and tournament config'
     );
@@ -1254,10 +1271,11 @@ router.post('/dev/reset-simulation-state', async (_req: Request, res: Response) 
 
     const loadedMatches = await db.queryAsync<DbMatchRow>(
       `SELECT * FROM matches 
-       WHERE tournament_id = 1 
+       WHERE tournament_id = ? 
          AND status IN ('loaded', 'live')
          AND server_id IS NOT NULL 
-         AND server_id != ''`
+         AND server_id != ''`,
+      [tournamentId]
     );
 
     if (loadedMatches.length > 0) {
@@ -1294,7 +1312,7 @@ router.post('/dev/reset-simulation-state', async (_req: Request, res: Response) 
         updated_at: now,
       },
       'id = ?',
-      [1]
+      [tournamentId]
     );
 
     // 4) Reset player ratings to their starting values and clear match counters.
@@ -1382,6 +1400,7 @@ router.post('/dev/reset-simulation-state', async (_req: Request, res: Response) 
  */
 router.post('/shuffle', async (req: Request, res: Response) => {
   try {
+    const tournamentId = resolveTournamentId(req);
     const config: ShuffleTournamentConfig = req.body;
 
     if (
@@ -1404,7 +1423,7 @@ router.post('/shuffle', async (req: Request, res: Response) => {
       });
     }
 
-    const tournament = await createShuffleTournament(config);
+    const tournament = await createShuffleTournament(tournamentId, config);
 
     return res.status(201).json({
       success: true,
@@ -1430,7 +1449,7 @@ router.post('/shuffle', async (req: Request, res: Response) => {
  * part of the shuffle tournament (ELO, leaderboards, allocation, etc.).
  *
  * Behaviour:
- * - Matches are created with tournament_id = 1 and round = 0 so they are
+ * - Matches are created with the shuffle tournament's id and round = 0 so they are
  *   treated as "manual" by the MatchZy config endpoint but still counted for
  *   the shuffle tournament’s stats and server allocation.
  * - Each match gets two temporary team rows with players derived from the
@@ -1440,16 +1459,17 @@ router.post('/shuffle', async (req: Request, res: Response) => {
  */
 router.post('/:id/manual-matches', async (req: Request, res: Response) => {
   try {
+    const tournamentId = resolveTournamentId(req);
     const { id } = req.params;
 
-    if (id !== '1') {
+    if (id !== String(tournamentId)) {
       return res.status(400).json({
         success: false,
-        error: 'Only tournament ID 1 is supported',
+        error: `Only tournament ID ${tournamentId} is supported`,
       });
     }
 
-    const tournament = await tournamentService.getTournament();
+    const tournament = await tournamentService.getTournament(tournamentId);
     if (!tournament || tournament.type !== 'shuffle') {
       return res.status(400).json({
         success: false,
@@ -1510,7 +1530,7 @@ router.post('/:id/manual-matches', async (req: Request, res: Response) => {
     const effectiveMaxRounds = resolveMaxRounds();
 
     // Load registered players once so we can validate and build teams.
-    const registeredPlayers = await getRegisteredPlayers();
+    const registeredPlayers = await getRegisteredPlayers(tournamentId);
     const registeredById = new Map(registeredPlayers.map((p) => [p.id, p]));
 
     if (registeredPlayers.length === 0) {
@@ -1697,7 +1717,7 @@ router.post('/:id/manual-matches', async (req: Request, res: Response) => {
 
       await db.insertAsync('matches', {
         slug,
-        tournament_id: 1,
+        tournament_id: tournamentId,
         round: 0, // 0 = manual / non‑bracket match, but still tied to the shuffle tournament
         match_number: 0,
         team1_id: team1Id,
@@ -1786,13 +1806,14 @@ router.post('/:id/manual-matches', async (req: Request, res: Response) => {
  */
 router.post('/:id/register-players', async (req: Request, res: Response) => {
   try {
+    const tournamentId = resolveTournamentId(req);
     const { id } = req.params;
     const { playerIds } = req.body;
 
-    if (id !== '1') {
+    if (id !== String(tournamentId)) {
       return res.status(400).json({
         success: false,
-        error: 'Only tournament ID 1 is supported',
+        error: `Only tournament ID ${tournamentId} is supported`,
       });
     }
 
@@ -1803,7 +1824,7 @@ router.post('/:id/register-players', async (req: Request, res: Response) => {
       });
     }
 
-    const result = await registerPlayers(playerIds);
+    const result = await registerPlayers(tournamentId, playerIds);
 
     const statusCode = result.errors.length > 0 ? 207 : 200; // 207 Multi-Status if some failed
 
@@ -1865,13 +1886,14 @@ router.post('/:id/register-players', async (req: Request, res: Response) => {
  */
 router.put('/:id/set-players', async (req: Request, res: Response) => {
   try {
+    const tournamentId = resolveTournamentId(req);
     const { id } = req.params;
     const { playerIds } = req.body;
 
-    if (id !== '1') {
+    if (id !== String(tournamentId)) {
       return res.status(400).json({
         success: false,
-        error: 'Only tournament ID 1 is supported',
+        error: `Only tournament ID ${tournamentId} is supported`,
       });
     }
 
@@ -1882,7 +1904,7 @@ router.put('/:id/set-players', async (req: Request, res: Response) => {
       });
     }
 
-    const result = await setRegisteredPlayers(playerIds);
+    const result = await setRegisteredPlayers(tournamentId, playerIds);
 
     const statusCode = result.errors.length > 0 ? 207 : 200; // 207 Multi-Status if some failed
 
@@ -1932,16 +1954,17 @@ router.put('/:id/set-players', async (req: Request, res: Response) => {
  */
 router.get('/:id/players', async (req: Request, res: Response) => {
   try {
+    const tournamentId = resolveTournamentId(req);
     const { id } = req.params;
 
-    if (id !== '1') {
+    if (id !== String(tournamentId)) {
       return res.status(400).json({
         success: false,
-        error: 'Only tournament ID 1 is supported',
+        error: `Only tournament ID ${tournamentId} is supported`,
       });
     }
 
-    const players = await getRegisteredPlayers();
+    const players = await getRegisteredPlayers(tournamentId);
 
     return res.json({
       success: true,
@@ -1985,16 +2008,17 @@ router.get('/:id/players', async (req: Request, res: Response) => {
  */
 router.get('/:id/round-status', async (req: Request, res: Response) => {
   try {
+    const tournamentId = resolveTournamentId(req);
     const { id } = req.params;
 
-    if (id !== '1') {
+    if (id !== String(tournamentId)) {
       return res.status(400).json({
         success: false,
-        error: 'Only tournament ID 1 is supported',
+        error: `Only tournament ID ${tournamentId} is supported`,
       });
     }
 
-    const leaderboardData = await getTournamentLeaderboard();
+    const leaderboardData = await getTournamentLeaderboard(tournamentId);
 
     return res.json({
       success: true,
@@ -2019,13 +2043,14 @@ router.get('/:id/round-status', async (req: Request, res: Response) => {
  */
 router.post('/:id/generate-round', async (req: Request, res: Response) => {
   try {
+    const tournamentId = resolveTournamentId(req);
     const { id } = req.params;
     const { roundNumber } = req.body;
 
-    if (id !== '1') {
+    if (id !== String(tournamentId)) {
       return res.status(400).json({
         success: false,
-        error: 'Only tournament ID 1 is supported',
+        error: `Only tournament ID ${tournamentId} is supported`,
       });
     }
 
@@ -2036,7 +2061,7 @@ router.post('/:id/generate-round', async (req: Request, res: Response) => {
       });
     }
 
-    const result = await generateRoundMatches(roundNumber);
+    const result = await generateRoundMatches(tournamentId, roundNumber);
 
     return res.json({
       success: true,

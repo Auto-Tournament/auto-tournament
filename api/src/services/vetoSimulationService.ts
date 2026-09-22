@@ -7,7 +7,7 @@ import { emitVetoUpdate } from './socketService';
 import { settingsService } from './settingsService';
 import { buildMatchConfigFor, serializeMatchConfig } from '../utils/matchIntegration';
 import { isQueuedAllocationResult, matchAllocationService } from './matchAllocationService';
-import { tournamentRowToResponse } from '../utils/tournamentRow';
+import { tournamentIdForMatch, tournamentRowToResponse } from '../utils/tournamentRow';
 
 type VetoActionType = 'ban' | 'pick' | 'side_pick';
 type VetoTeam = 'team1' | 'team2';
@@ -230,7 +230,7 @@ async function runAutoVeto(
 
   // Load tournament
   const t = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
-    match.tournament_id ?? 1,
+    tournamentIdForMatch(match),
   ]);
   if (!t) {
     log.warn(`[VETO-SIM] Tournament not found for match ${matchSlug}; skipping auto veto`);

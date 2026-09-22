@@ -12,7 +12,7 @@ import type { DbMatchRow, DbTeamRow, DbTournamentRow } from '../types/database.t
 import type { TournamentResponse } from '../types/tournament.types';
 import { settingsService } from '../services/settingsService';
 import { autoCompleteVetoForMatch } from '../services/vetoSimulationService';
-import { tournamentRowToResponse } from './tournamentRow';
+import { tournamentIdForMatch, tournamentRowToResponse } from './tournamentRow';
 
 /**
  * Advance winner to next match in bracket
@@ -34,8 +34,10 @@ export async function advanceWinnerToNextMatch(
           currentMatch.next_match_id,
         ])) ?? null;
     } else {
+      const tournamentId = tournamentIdForMatch(currentMatch);
       const tournament = await db.queryOneAsync<DbTournamentRow>(
-        'SELECT * FROM tournament WHERE id = 1'
+        'SELECT * FROM tournament WHERE id = ?',
+        [tournamentId]
       );
 
       // Only infer progression for traditional bracket types.
@@ -54,9 +56,9 @@ export async function advanceWinnerToNextMatch(
           const maxRoundRow = await db.queryOneAsync<{ max_round: number }>(
             `SELECT MAX(round) as max_round 
              FROM matches 
-             WHERE tournament_id = 1 
+             WHERE tournament_id = ? 
                AND slug NOT LIKE 'lb-%'`,
-            []
+            [tournamentId]
           );
 
           if (maxRoundRow && typeof maxRoundRow.max_round === 'number') {
@@ -151,7 +153,9 @@ export async function advanceLoserToLosersBracket(
       return;
     }
 
-    const tournament = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = 1');
+    const tournament = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
+      tournamentIdForMatch(currentMatch),
+    ]);
     if (!tournament || tournament.type !== 'double_elimination') {
       return;
     }
@@ -286,7 +290,7 @@ export async function propagateMatchBySlotSources(matchId: number): Promise<void
 
     const children = await db.queryAsync<DbMatchRow>(
       'SELECT * FROM matches WHERE tournament_id = ? AND (team1_from_match_id = ? OR team2_from_match_id = ?)',
-      [match.tournament_id ?? 1, matchId, matchId]
+      [tournamentIdForMatch(match), matchId, matchId]
     );
 
     if (!children.length) {
@@ -354,7 +358,7 @@ export async function propagateMatchBySlotSources(matchId: number): Promise<void
  * For shuffle tournaments, matches are generated dynamically per round, so completion
  * is handled separately in shuffleTournamentService.
  */
-export async function checkTournamentCompletion(tournamentId: number = 1): Promise<void> {
+export async function checkTournamentCompletion(tournamentId: number): Promise<void> {
   try {
     log.debug(`[TOURNAMENT] Starting completion check for tournament ${tournamentId}`);
     
@@ -565,10 +569,11 @@ export async function makeMatchReady(match: DbMatchRow): Promise<void> {
  * marks that match as ready (generating its config and triggering allocation)
  * via `makeMatchReady`, mirroring what `advanceWinnerToNextMatch` would do.
  */
-export async function reconcileDoubleElimination8Bracket(): Promise<void> {
+export async function reconcileDoubleElimination8Bracket(tournamentId: number): Promise<void> {
   try {
     const tournament = await db.queryOneAsync<DbTournamentRow>(
-      'SELECT * FROM tournament WHERE id = 1'
+      'SELECT * FROM tournament WHERE id = ?',
+      [tournamentId]
     );
     if (!tournament || tournament.type !== 'double_elimination') {
       return;
@@ -588,7 +593,8 @@ export async function reconcileDoubleElimination8Bracket(): Promise<void> {
     }
 
     const rows = await db.queryAsync<DbMatchRow>(
-      'SELECT * FROM matches WHERE tournament_id = 1'
+      'SELECT * FROM matches WHERE tournament_id = ?',
+      [tournamentId]
     );
 
     const bySlug = new Map<string, DbMatchRow>();
@@ -758,18 +764,19 @@ async function findLosersBracketMatch(wbMatch: DbMatchRow): Promise<DbMatchRow |
 
   const wbRound = parseInt(wbSlugMatch[1], 10);
   const wbMatchNum = parseInt(wbSlugMatch[2], 10);
+  const tournamentId = tournamentIdForMatch(wbMatch);
 
   // Derive how brackets-manager has laid out rounds across winners and losers
   // groups. In our schema, "round" is a single counter shared by both groups,
   // so losers bracket rounds often start at a higher numeric value (e.g. 4)
   // even though conceptually it's "Losers Round 1".
   const winnersRoundRow = await db.queryOneAsync<{ min_round: number }>(
-    "SELECT MIN(round) as min_round FROM matches WHERE tournament_id = 1 AND slug NOT LIKE 'lb-%'",
-    []
+    "SELECT MIN(round) as min_round FROM matches WHERE tournament_id = ? AND slug NOT LIKE 'lb-%'",
+    [tournamentId]
   );
   const losersRoundRow = await db.queryOneAsync<{ min_round: number }>(
-    "SELECT MIN(round) as min_round FROM matches WHERE tournament_id = 1 AND slug LIKE 'lb-%'",
-    []
+    "SELECT MIN(round) as min_round FROM matches WHERE tournament_id = ? AND slug LIKE 'lb-%'",
+    [tournamentId]
   );
 
   if (!winnersRoundRow?.min_round || !losersRoundRow?.min_round) {
@@ -785,12 +792,12 @@ async function findLosersBracketMatch(wbMatch: DbMatchRow): Promise<DbMatchRow |
   const losersBase = losersRoundRow.min_round;
   const roundOffset = losersBase - winnersBase;
   const winnersMaxRoundRow = await db.queryOneAsync<{ max_round: number }>(
-    "SELECT MAX(round) as max_round FROM matches WHERE tournament_id = 1 AND slug NOT LIKE 'lb-%'",
-    []
+    "SELECT MAX(round) as max_round FROM matches WHERE tournament_id = ? AND slug NOT LIKE 'lb-%'",
+    [tournamentId]
   );
   const lbRounds = await db.queryAsync<{ round: number }>(
-    "SELECT DISTINCT round FROM matches WHERE tournament_id = 1 AND slug LIKE 'lb-%'",
-    []
+    "SELECT DISTINCT round FROM matches WHERE tournament_id = ? AND slug LIKE 'lb-%'",
+    [tournamentId]
   );
 
   const winnersMaxRound =

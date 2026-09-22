@@ -29,7 +29,11 @@ import { teamService } from '../services/teamService';
 import { playerService } from '../services/playerService';
 import { getMapResults } from '../services/matchMapResultService';
 import { serverAllocationTracker } from '../services/serverAllocationTracker';
-import { tournamentRowToResponse } from '../utils/tournamentRow';
+import {
+  resolveTournamentId,
+  tournamentIdForMatch,
+  tournamentRowToResponse,
+} from '../utils/tournamentRow';
 import { compareQueueOrder, isQueueable, matchBracketOf } from '../utils/allocationQueue';
 
 const router = Router();
@@ -81,7 +85,7 @@ async function getMatchDetailsBySlug(slug: string): Promise<MatchListItem | null
   // Determine if this is a shuffle tournament (enables ELO enrichment)
   const tournamentType = await db.queryOneAsync<{ type: string }>(
     'SELECT type FROM tournament WHERE id = ?',
-    [row.tournament_id || 1]
+    [tournamentIdForMatch(row)]
   );
   const isShuffleTournament = tournamentType?.type === 'shuffle';
 
@@ -407,7 +411,7 @@ router.get('/:slug.json', async (req: Request, res: Response) => {
 
     // 2) Load the tournament row for bracket-managed matches
     const t = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
-      match.tournament_id ?? 1,
+      tournamentIdForMatch(match),
     ]);
     if (!t) {
       return res.status(500).json({
@@ -572,6 +576,7 @@ router.post('/bulk-delete', requireAuth, async (req: Request, res: Response) => 
  */
 router.get('/', async (req: Request, res: Response) => {
   try {
+    const tournamentId = resolveTournamentId(req);
     const serverId = req.query.serverId as string | undefined;
 
     // Fetch matches with tournament and server information
@@ -614,7 +619,7 @@ router.get('/', async (req: Request, res: Response) => {
     // Get tournament type once (optimization to avoid N+1 queries)
     const tournamentType = await db.queryOneAsync<{ type: string }>(
       'SELECT type FROM tournament WHERE id = ?',
-      [rows[0]?.tournament_id || 1]
+      [tournamentIdForMatch(rows[0])]
     );
     const isShuffleTournament = tournamentType?.type === 'shuffle';
 
@@ -862,7 +867,8 @@ router.get('/', async (req: Request, res: Response) => {
 
     // Get tournament status
     const tournamentStatus = await db.queryOneAsync<{ status: string }>(
-      'SELECT status FROM tournament WHERE id = 1'
+      'SELECT status FROM tournament WHERE id = ?',
+      [tournamentId]
     );
 
     return res.json({
@@ -915,6 +921,7 @@ router.get('/:slug', async (req: Request, res: Response) => {
  */
 router.post('/', requireAuth, async (req: Request, res: Response) => {
   try {
+    const tournamentId = resolveTournamentId(req);
     const input: CreateMatchInput = req.body;
 
     if (!input.slug || !input.config) {
@@ -934,7 +941,7 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
 
     const baseUrl = getBaseUrl(req);
     const webhookBaseUrl = await getWebhookBaseUrl(req);
-    const match = await matchService.createMatch(input, baseUrl);
+    const match = await matchService.createMatch(input, baseUrl, tournamentId);
 
     // When no serverId is provided, attempt to auto-allocate a server for
     // this match using the same allocator used for tournament matches. This

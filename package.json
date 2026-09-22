@@ -37,6 +37,7 @@
         "start": "yarn api:start",
         "lint": "eslint .",
         "lint:fix": "eslint . --fix",
+        "check:tournament-literals": "node scripts/check-tournament-literals.mjs",
         "typecheck": "tsc -p api/tsconfig.json --noEmit && tsc -p client/tsconfig.json --noEmit",
         "typecheck:ratchet": "node scripts/typecheck-ratchet.mjs",
         "typecheck:baseline": "node scripts/typecheck-ratchet.mjs --update",
