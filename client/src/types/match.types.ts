@@ -8,6 +8,8 @@ import type { MatchPhase } from './matchPhase.types';
 export interface Match {
   id: number;
   slug: string;
+  /** Game integration that owns it (API `game`, 'cs2' today). */
+  game?: string;
   round: number;
   matchNumber: number;
   /** 'WB' | 'LB' | 'GF' | 'GF_RESET' | 'SE' | null (bracket matches only). */

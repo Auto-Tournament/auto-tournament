@@ -5,6 +5,8 @@
 export interface Tournament {
   id: number;
   name: string;
+  /** Game integration that owns it (API `game`, 'cs2' today). */
+  game?: string;
   type: 'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss' | 'shuffle';
   format: 'bo1' | 'bo3' | 'bo5';
   status: 'setup' | 'ready' | 'in_progress' | 'completed';

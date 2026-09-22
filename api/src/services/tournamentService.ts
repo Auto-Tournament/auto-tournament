@@ -16,6 +16,7 @@ import { matchLiveStatsService } from './matchLiveStatsService';
 import { getSwissStandings, getSwissStandingEntries } from './swissProgressionService';
 import { getRoundRobinStandings, getRoundRobinStandingEntries } from './roundRobinStandingsService';
 import type { DbMatchRow, DbTeamRow } from '../types/database.types';
+import { DEFAULT_GAME } from '../integrations/types';
 import type {
   Tournament,
   TournamentRow,
@@ -69,6 +70,7 @@ class TournamentService {
       type: tournament.type,
       format: tournament.format,
       status: tournament.status,
+      game: tournament.game,
       maps: tournament.maps,
       teamIds: tournament.team_ids,
       settings: tournament.settings,
@@ -905,6 +907,7 @@ class TournamentService {
 
     return {
       ...row,
+      game: row.game || DEFAULT_GAME,
       maps: JSON.parse(row.maps),
       team_ids: JSON.parse(row.team_ids),
       settings: normalizeTournamentSettings(JSON.parse(row.settings), row.format),

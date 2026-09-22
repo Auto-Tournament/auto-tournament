@@ -10,12 +10,14 @@ import { getGlobalMatchNumber, getRoundLabel } from '../utils/matchUtils';
 import { ManageRail } from '../components/manage/ManageRail';
 import { StatusStrip } from '../components/manage/StatusStrip';
 import { NeedsYouQueue } from '../components/manage/NeedsYouQueue';
-import { ServerGrid } from '../components/manage/ServerGrid';
+import { instanceIntegration } from '../integrations/registry';
 import { RecentLog } from '../components/manage/RecentLog';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import type { Match } from '../types/match.types';
 
 export default function Manage() {
+  // The game's resource grid (CS2: servers and what runs on them).
+  const ServerGrid = instanceIntegration().dashboardWidgets.manageResources;
   const { t } = useTranslation();
   const { setHeaderActions } = usePageHeader();
   const { showSuccess, showError } = useSnackbar();
@@ -114,7 +116,9 @@ export default function Manage() {
             onActionDone={refresh}
           />
 
-          <ServerGrid servers={serverAvailability?.servers ?? []} matches={matches} />
+          {ServerGrid && (
+            <ServerGrid servers={serverAvailability?.servers ?? []} matches={matches} />
+          )}
 
           <RecentLog events={recentEvents} />
         </Box>

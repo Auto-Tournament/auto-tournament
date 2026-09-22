@@ -49,6 +49,8 @@ export interface TeamMatchVetoSummary {
 
 export interface TeamMatchInfo {
   slug: string;
+  /** Game integration that owns it (API `game`, 'cs2' today). */
+  game?: string;
   round: number;
   matchNumber: number;
   status: 'pending' | 'ready' | 'loaded' | 'live' | 'completed';

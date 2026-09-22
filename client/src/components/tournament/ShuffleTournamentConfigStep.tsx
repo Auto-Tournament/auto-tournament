@@ -42,7 +42,7 @@ interface ShuffleTournamentConfigStepProps {
 
 /**
  * The setting only shuffle tournaments have: players per team. Round limit and
- * overtime live with the Counter-Strike 2 settings (setup/Cs2MatchSettings) and
+ * overtime live with the Counter-Strike 2 settings (integrations/cs2/setup/Cs2MatchSettings) and
  * the rating template on the Basics step, the same as for bracket tournaments.
  */
 export function ShuffleTournamentConfigStep({

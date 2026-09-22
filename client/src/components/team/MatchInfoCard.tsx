@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Box, Card, CardContent, Typography, Alert } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import { getMapData, getMapDisplayName } from '../../constants/maps';
-import { VetoInterface } from '../veto/VetoInterface';
 import { copyTextToClipboard } from '../../utils/clipboard';
 import type { Team, TeamMatchInfo, VetoState, MatchLiveStats, PlayersResponse } from '../../types';
 // Note: status color is handled by higher-level components; keep imports minimal here.
@@ -15,8 +14,7 @@ import { calculateOvertimeNumber } from '../../utils/matchUtils';
 import { MatchScoreboard } from './MatchScoreboard';
 import { MatchPlayerPerformance } from './MatchPlayerPerformance';
 import { MatchMapChips } from './MatchMapChips';
-import { MatchVetoHistory } from './MatchVetoHistory';
-import { MatchServerPanel } from './MatchServerPanel';
+import { integrationFor } from '../../integrations/registry';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -76,6 +74,12 @@ export function MatchInfoCard({
   const { showError } = useSnackbar();
   const { isAuthenticated } = useAuth();
   const { t } = useTranslation();
+
+  // Game-specific parts of the card (CS2: veto, server panel, veto history).
+  const integration = integrationFor(match);
+  const PreMatchView = integration.preMatchView;
+  const PreMatchHistory = integration.preMatchHistory;
+  const ConnectPanel = integration.matchPanels.teamView;
 
   const liveStats = match.liveStats || null;
   const connectionStatus = match.connectionStatus || null;
@@ -455,15 +459,17 @@ export function MatchInfoCard({
               {t('matchInfo.tournamentStartedBody')}
             </Typography>
           </Alert>
-          <VetoInterface
-            matchSlug={match.slug}
-            team1Name={match.team1?.name ?? match.config?.team1?.name}
-            team2Name={match.team2?.name ?? match.config?.team2?.name}
-            currentTeamSlug={
-              team?.id ?? (match.isTeam1 ? 'team1' : 'team2')
-            }
-            onComplete={onVetoComplete}
-          />
+          {PreMatchView && (
+            <PreMatchView
+              matchSlug={match.slug}
+              team1Name={match.team1?.name ?? match.config?.team1?.name}
+              team2Name={match.team2?.name ?? match.config?.team2?.name}
+              currentTeamSlug={
+                team?.id ?? (match.isTeam1 ? 'team1' : 'team2')
+              }
+              onComplete={onVetoComplete}
+            />
+          )}
         </CardContent>
       </Card>
     );
@@ -544,15 +550,17 @@ export function MatchInfoCard({
               </Alert>
             )}
 
-            <MatchServerPanel
-              server={viewerIsTeamMember ? effectiveServer : null}
-              currentMapData={currentMapData}
-              currentMapNumber={mapNumber}
-              connected={connected}
-              copied={copied}
-              onConnect={handleConnect}
-              onCopy={handleCopyIP}
-            />
+            {ConnectPanel && (
+              <ConnectPanel
+                server={viewerIsTeamMember ? effectiveServer : null}
+                currentMapData={currentMapData}
+                currentMapNumber={mapNumber}
+                connected={connected}
+                copied={copied}
+                onConnect={handleConnect}
+                onCopy={handleCopyIP}
+              />
+            )}
 
             {copyFallbackCommand && (
               <Typography
@@ -576,8 +584,8 @@ export function MatchInfoCard({
 
             <MatchMapChips match={match} currentMapNumber={mapNumber} />
 
-            {showVetoHistory && (
-              <MatchVetoHistory
+            {showVetoHistory && PreMatchHistory && (
+              <PreMatchHistory
                 actions={vetoActions}
                 team1Name={vetoTeam1Name}
                 team2Name={vetoTeam2Name}

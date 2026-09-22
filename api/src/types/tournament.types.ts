@@ -83,6 +83,8 @@ export interface Tournament {
   type: TournamentType;
   format: MatchFormat;
   status: TournamentStatus;
+  /** Game integration that owns the tournament (`tournament.game`, default 'cs2'). */
+  game: string;
   maps: string[]; // JSON array
   team_ids: string[]; // JSON array
   settings: TournamentSettings; // JSON object
@@ -105,6 +107,7 @@ export interface TournamentRow {
   type: TournamentType;
   format: MatchFormat;
   status: TournamentStatus;
+  game?: string | null;
   maps: string; // JSON string
   team_ids: string; // JSON string
   settings: string; // JSON string

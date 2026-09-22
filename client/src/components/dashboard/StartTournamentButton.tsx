@@ -17,6 +17,7 @@ import ConfirmDialog from '../modals/ConfirmDialog';
 import { api } from '../../utils/api';
 import { useIsDevelopment } from '../../hooks/useIsDevelopment';
 import { useSimulationMode } from '../../hooks/useSimulationMode';
+import { paths } from '../../paths';
 
 interface StartTournamentButtonProps {
   variant?: 'text' | 'outlined' | 'contained';
@@ -340,7 +341,7 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
         onCancel={() => {
           setShowConfirm(false);
           // Navigate to servers page
-          navigate('/servers');
+          navigate(paths.servers);
         }}
         confirmColor="warning"
       />
@@ -372,7 +373,7 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
         loading={disablingOutdated}
         onCancel={() => {
           setShowOutdatedDialog(false);
-          navigate('/servers');
+          navigate(paths.servers);
         }}
         onConfirm={async () => {
           if (disablingOutdated) return;

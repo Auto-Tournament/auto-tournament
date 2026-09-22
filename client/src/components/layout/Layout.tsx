@@ -33,12 +33,10 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import GroupsIcon from '@mui/icons-material/Groups';
 import PersonIcon from '@mui/icons-material/Person';
-import StorageIcon from '@mui/icons-material/Storage';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import SettingsIcon from '@mui/icons-material/Settings';
 import BuildIcon from '@mui/icons-material/Build';
-import MapIcon from '@mui/icons-material/Map';
 import DescriptionIcon from '@mui/icons-material/Description';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -49,6 +47,7 @@ import type { SettingsResponse } from '../../types/api.types';
 import { useIsDevelopment } from '../../hooks/useIsDevelopment';
 import { useTranslation } from 'react-i18next';
 import { SharedNavBar } from './SharedNavBar';
+import { instanceIntegration } from '../../integrations/registry';
 
 const drawerWidth = 240;
 
@@ -203,6 +202,10 @@ export default function Layout() {
 
   const isDevelopment = useIsDevelopment();
 
+  // Pages the game integration adds (CS2: Servers, Maps). Each keeps the
+  // i18n keys it had: nav.<key> and layout.pageTitle.<key>.
+  const integrationNavItems = instanceIntegration().navItems;
+
   // Page header configuration - maps routes to their titles and icons
   const pageHeaders: Record<string, { title: string; icon: React.ComponentType; color?: string }> =
     {
@@ -213,8 +216,12 @@ export default function Layout() {
       '/matches': { title: t('layout.pageTitle.matches'), icon: SportsEsportsIcon },
       '/teams': { title: t('layout.pageTitle.teams'), icon: GroupsIcon },
       '/players': { title: t('layout.pageTitle.players'), icon: PersonIcon },
-      '/servers': { title: t('layout.pageTitle.servers'), icon: StorageIcon },
-      '/maps': { title: t('layout.pageTitle.maps'), icon: MapIcon },
+      ...Object.fromEntries(
+        integrationNavItems.map((item) => [
+          item.path,
+          { title: t(`layout.pageTitle.${item.key}`), icon: item.icon },
+        ])
+      ),
       '/templates': { title: t('layout.pageTitle.templates'), icon: DescriptionIcon },
       '/elo-templates': { title: t('layout.pageTitle.eloTemplates'), icon: TrendingUpIcon },
       '/admin': { title: t('layout.pageTitle.adminTools'), icon: CampaignIcon },
@@ -239,8 +246,11 @@ export default function Layout() {
   const resourcesNavItems = [
     { label: t('nav.teams'), path: '/teams', icon: GroupsIcon },
     { label: t('nav.players'), path: '/players', icon: PersonIcon },
-    { label: t('nav.servers'), path: '/servers', icon: StorageIcon },
-    { label: t('nav.maps'), path: '/maps', icon: MapIcon },
+    ...integrationNavItems.map((item) => ({
+      label: t(`nav.${item.key}`),
+      path: item.path,
+      icon: item.icon,
+    })),
   ];
 
   const configurationNavItems = [

@@ -10,7 +10,6 @@ import AdminHome from './pages/AdminHome';
 import Manage from './pages/Manage';
 import Teams from './pages/Teams';
 import Players from './pages/Players';
-import Servers from './pages/Servers';
 import Tournament from './pages/Tournament';
 import Bracket from './pages/Bracket';
 import Matches from './pages/Matches';
@@ -26,9 +25,7 @@ import TournamentLeaderboard from './pages/TournamentLeaderboard';
 import TournamentOverview from './pages/TournamentOverview';
 import Home from './pages/Home';
 import Browse from './pages/Browse';
-import ConnectSteam from './pages/ConnectSteam';
 import AccountConnections from './pages/AccountConnections';
-import Maps from './pages/Maps';
 import Templates from './pages/Templates';
 import ELOTemplates from './pages/ELOTemplates';
 import Layout from './components/layout/Layout';
@@ -37,6 +34,8 @@ import { theme } from './theme';
 import { GamesOnboardingRedirect } from './components/games/GamesOnboardingRedirect';
 import WelcomeGames from './pages/WelcomeGames';
 import { ImpersonationBanner } from './components/common/ImpersonationBanner';
+import { instanceIntegration } from './integrations/registry';
+import { adminRoute, paths, playerProfilePath } from './paths';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -116,14 +115,14 @@ function ProtectedRoute({ children, adminOnly = true }: ProtectedRouteProps) {
     // The API still honours the real admin session on purpose, so stopping
     // and anything done explicitly from the banner keep working.
     if (impersonation) {
-      return <Navigate to={`/player/${impersonation.steamId}`} replace />;
+      return <Navigate to={playerProfilePath(impersonation.steamId)} replace />;
     }
 
     if (isAuthenticated) {
       // Admin session active – require Steam to be linked before allowing access
       // to the main dashboard and other protected admin routes.
-      if (needsSteamLink && location.pathname !== '/connect-steam') {
-        return <Navigate to="/connect-steam" replace />;
+      if (needsSteamLink && location.pathname !== paths.connectSteam) {
+        return <Navigate to={paths.connectSteam} replace />;
       }
 
       return <>{children}</>;
@@ -132,11 +131,11 @@ function ProtectedRoute({ children, adminOnly = true }: ProtectedRouteProps) {
     // If the user has a Steam identity but no admin session, send them to
     // their player page (registered or not – we show "not registered" there).
     if (playerSteamId) {
-      return <Navigate to={`/player/${playerSteamId}`} replace />;
+      return <Navigate to={playerProfilePath(playerSteamId)} replace />;
     }
 
     // No admin session and no player Steam ID – go to login.
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to={paths.login} state={{ from: location }} replace />;
   }
 
   // Non-admin-only "public" routes:
@@ -189,8 +188,8 @@ function RootRoute() {
   }
 
   if (isAuthenticated && !impersonation) {
-    if (needsSteamLink && location.pathname !== '/connect-steam') {
-      return <Navigate to="/connect-steam" replace />;
+    if (needsSteamLink && location.pathname !== paths.connectSteam) {
+      return <Navigate to={paths.connectSteam} replace />;
     }
     return <Layout />;
   }
@@ -198,13 +197,13 @@ function RootRoute() {
   if (playerSteamId) {
     // Home is only "/". Any other path under this route is an admin page
     // (/admin, /teams, …): send the player to their own page, as before Home.
-    if (location.pathname !== '/') {
-      return <Navigate to={`/player/${playerSteamId}`} replace />;
+    if (location.pathname !== paths.root) {
+      return <Navigate to={playerProfilePath(playerSteamId)} replace />;
     }
     return <Home />;
   }
 
-  return <Navigate to="/login" state={{ from: location }} replace />;
+  return <Navigate to={paths.login} state={{ from: location }} replace />;
 }
 
 /**
@@ -216,7 +215,7 @@ function RequireSignedIn({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   if (isLoading) return null;
   if (!playerSteamId) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to={paths.login} state={{ from: location }} replace />;
   }
   return <>{children}</>;
 }
@@ -229,36 +228,41 @@ function AppRoutes() {
     return null; // Loading state is handled by ProtectedRoute
   }
 
+  // Pages the game integration owns (CS2: Servers, Maps, Steam connect).
+  const integrationRoutes = instanceIntegration().routes;
+
   return (
     <Routes>
       <Route
-        path="/login"
+        path={paths.login}
         element={
           isAuthenticated ? (
             // Admins leaving login should land on the dashboard
-            <Navigate to="/" replace />
+            <Navigate to={paths.root} replace />
           ) : playerSteamId ? (
             // Signed-in but not admin → their player page (shows "not registered" if needed)
-            <Navigate to={`/player/${playerSteamId}`} replace />
+            <Navigate to={playerProfilePath(playerSteamId)} replace />
           ) : (
             <Login />
           )
         }
       />
 
-      {/* Admin Steam linking flow */}
-      <Route
-        path="/connect-steam"
-        element={
-          <ProtectedRoute>
-            <ConnectSteam />
-          </ProtectedRoute>
-        }
-      />
+      {/* Admin-only pages outside the shell, owned by the game integration
+          (CS2: the admin Steam linking flow at /connect-steam) */}
+      {integrationRoutes
+        .filter((route) => route.scope === 'admin-standalone')
+        .map((route) => (
+          <Route
+            key={route.path}
+            path={route.path}
+            element={<ProtectedRoute>{route.element}</ProtectedRoute>}
+          />
+        ))}
 
       {/* Viewer & player-facing pages – require a signed-in identity (admin or player) */}
       <Route
-        path="/team/:teamId"
+        path={paths.teamMatch}
         element={
           <ProtectedRoute adminOnly={false}>
             <TeamMatch />
@@ -273,7 +277,7 @@ function AppRoutes() {
         avoids both.
       */}
       <Route
-        path="/t/team/:teamId"
+        path={paths.teamProfile}
         element={
           <ProtectedRoute adminOnly={false}>
             <TeamProfile />
@@ -281,7 +285,7 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/tournament/:id"
+        path={paths.tournamentOverview}
         element={
           <ProtectedRoute adminOnly={false}>
             <TournamentOverview />
@@ -289,7 +293,7 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/tournament/:id/leaderboard"
+        path={paths.tournamentLeaderboard}
         element={
           <ProtectedRoute adminOnly={false}>
             <TournamentLeaderboard />
@@ -297,7 +301,7 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/player"
+        path={paths.findPlayer}
         element={
           <ProtectedRoute adminOnly={false}>
             <FindPlayer />
@@ -305,7 +309,7 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/player/:steamId"
+        path={paths.playerProfile}
         element={
           <ProtectedRoute adminOnly={false}>
             <PlayerProfile />
@@ -313,7 +317,7 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/browse"
+        path={paths.browse}
         element={
           <ProtectedRoute adminOnly={false}>
             <Browse />
@@ -322,9 +326,9 @@ function AppRoutes() {
       />
 
       {/* The signed-in player's own account */}
-      <Route path="/me" element={<Navigate to="/me/connections" replace />} />
+      <Route path={paths.me} element={<Navigate to={paths.meConnections} replace />} />
       <Route
-        path="/me/connections"
+        path={paths.meConnections}
         element={
           <RequireSignedIn>
             <AccountConnections />
@@ -335,7 +339,7 @@ function AppRoutes() {
       {/* "What do you play?" onboarding: first-visit redirect target, and
           "Edit games" (?edit=1) entry points navigate here too. */}
       <Route
-        path="/welcome/games"
+        path={paths.welcomeGames}
         element={
           <RequireSignedIn>
             <WelcomeGames />
@@ -343,21 +347,24 @@ function AppRoutes() {
         }
       />
 
-      <Route path="/" element={<RootRoute />}>
+      <Route path={paths.root} element={<RootRoute />}>
         <Route index element={<AdminHome />} />
-        <Route path="manage" element={<Manage />} />
-        <Route path="teams" element={<Teams />} />
-        <Route path="players" element={<Players />} />
-        <Route path="servers" element={<Servers />} />
-        <Route path="tournament" element={<Tournament />} />
-        <Route path="bracket" element={<Bracket />} />
-        <Route path="matches" element={<Matches />} />
-        <Route path="admin" element={<AdminTools />} />
-        <Route path="settings" element={<Settings />} />
-        <Route path="maps" element={<Maps />} />
-        <Route path="templates" element={<Templates />} />
-        <Route path="elo-templates" element={<ELOTemplates />} />
-        {isDevelopment && <Route path="dev" element={<Development />} />}
+        <Route path={adminRoute(paths.manage)} element={<Manage />} />
+        <Route path={adminRoute(paths.teams)} element={<Teams />} />
+        <Route path={adminRoute(paths.players)} element={<Players />} />
+        <Route path={adminRoute(paths.tournament)} element={<Tournament />} />
+        <Route path={adminRoute(paths.bracket)} element={<Bracket />} />
+        <Route path={adminRoute(paths.matches)} element={<Matches />} />
+        <Route path={adminRoute(paths.admin)} element={<AdminTools />} />
+        <Route path={adminRoute(paths.settings)} element={<Settings />} />
+        {integrationRoutes
+          .filter((route) => route.scope === 'admin')
+          .map((route) => (
+            <Route key={route.path} path={route.path} element={route.element} />
+          ))}
+        <Route path={adminRoute(paths.templates)} element={<Templates />} />
+        <Route path={adminRoute(paths.eloTemplates)} element={<ELOTemplates />} />
+        {isDevelopment && <Route path={adminRoute(paths.dev)} element={<Development />} />}
         {/* Nested catch-all so removed/unknown child routes (e.g. /public) show a proper 404 within the app shell */}
         <Route path="*" element={<NotFound />} />
       </Route>
