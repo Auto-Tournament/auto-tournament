@@ -9,9 +9,11 @@
  * through `legacyRoutes` and started through `start()`. Event ingest is the
  * `events/` adapter: the MatchZy webhooks (`/api/events`), the match report
  * and connection snapshot, and `normalize()`, which maps MatchZy events to
- * `NormalizedEvent`s. The adapter still hands match lifecycle events to the
- * core's `handleMatchEvent` (TODO(PR 6b)), and allocation still lives in the
- * core and calls some of this code directly (the legacy list in
+ * `NormalizedEvent`s. The adapter applies the CS2-only side effects (live
+ * score, connections, stale-event guards) and hands the rest to the core's
+ * `matchLifecycle.ingest`; the core calls back into `release`,
+ * `seriesPlayerStats` and `standaloneRoster` when a series ends. Allocation
+ * still lives in the core and calls some of this code directly (the legacy list in
  * eslint-rules/integration-boundaries.mjs); later PRs move them behind the
  * interface (see the TODOs in ../types.ts).
  *
@@ -175,6 +177,11 @@ export const cs2Integration: GameIntegration = {
       maps: Array.isArray(cfg.maplist) ? [...cfg.maplist] : [],
       ...(typeof cfg.players_per_team === 'number' ? { playersPerTeam: cfg.players_per_team } : {}),
       ...(typeof cfg.vetoDisabled === 'boolean' ? { skipPreMatchPhase: cfg.vetoDisabled } : {}),
+      // Overtime off, and no explicit overtime segments (or none): a map can end level.
+      ...(cfg.overtimeMode === 'disabled' &&
+      (typeof cfg.overtimeSegments !== 'number' || cfg.overtimeSegments === 0)
+        ? { gamesCanDraw: true }
+        : {}),
       team1: describeTeam(cfg.team1),
       team2: describeTeam(cfg.team2),
     };
@@ -213,6 +220,53 @@ export const cs2Integration: GameIntegration = {
     if (!result.success) {
       throw new Error(result.error ?? result.message);
     }
+  },
+
+  /**
+   * The series is over: the server is free for new work. Mark it idle for the
+   * allocator and try to allocate waiting matches now rather than on the next
+   * polling cycle. Demo uploads and the plugin's restore delay are still
+   * honoured: `serverTurnover` holds a server until they are done.
+   */
+  async release(ctx) {
+    if (!ctx.resourceId) return;
+    const { serverAllocationTracker } = await import('../../services/serverAllocationTracker');
+    const { matchAllocationService } = await import('../../services/matchAllocationService');
+    serverAllocationTracker.markIdle(ctx.resourceId);
+    setImmediate(() => {
+      void matchAllocationService.tryImmediateAllocation();
+    });
+  },
+
+  async seriesPlayerStats(slug) {
+    const { seriesPlayerStats } = await import('./events/matchEvents');
+    return seriesPlayerStats(slug);
+  },
+
+  /**
+   * Steam IDs from the `{ steamid }` player arrays the manual match modal
+   * stores. Null when the config is not JSON; a shape it cannot read throws.
+   */
+  standaloneRoster(config) {
+    let parsed: unknown;
+    try {
+      parsed = typeof config === 'string' ? JSON.parse(config) : config;
+    } catch {
+      return null;
+    }
+    const cfg = parsed as {
+      team1?: { players?: Array<{ steamid?: string }> };
+      team2?: { players?: Array<{ steamid?: string }> };
+    };
+    const steamIds = (players: Array<{ steamid?: string }> | undefined): string[] =>
+      players?.map((p) => (p.steamid ? p.steamid : null)).filter((p): p is string => !!p) ?? [];
+    return { team1: steamIds(cfg.team1?.players), team2: steamIds(cfg.team2?.players) };
+  },
+
+  /** A stored MatchZy event through the same handling as the events route, minus its checks. */
+  async replayEvent(event) {
+    const { applyMatchEvent } = await import('./events/matchEvents');
+    await applyMatchEvent(event as import('./events/matchzy-events.types').MatchZyEvent);
   },
 
   /**

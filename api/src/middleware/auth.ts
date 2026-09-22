@@ -97,6 +97,18 @@ export function authenticateServiceToken(req: Request): ServiceTokenAuthResult |
   };
 }
 
+/**
+ * Who made a request that `requireAuth` let through, for audit records: the
+ * admin's Steam ID (session or signed cookie), or `token:<label>` for an API
+ * token. Null when neither is known.
+ */
+export function requestActorId(req: Request): string | null {
+  const token = (req as AuthedRequest).serviceToken;
+  if (token) return `token:${token.label}`;
+  const sessionSteamId = (req as Request & { user?: { steamId?: string } }).user?.steamId;
+  return sessionSteamId || getVerifiedPlayerSteamId(req.headers.cookie) || null;
+}
+
 export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   // Service tokens are checked before anything else. A caller that presents one
   // has told us it is a machine, so falling back to session auth on a bad token

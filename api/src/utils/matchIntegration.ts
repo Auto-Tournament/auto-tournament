@@ -15,10 +15,11 @@ import {
   DEFAULT_GAME,
   type GameId,
   type IntegrationTournament,
+  type MatchContext,
   type MatchDescription,
   type MatchDescriptionTeam,
 } from '../integrations/types';
-import type { DbTournamentRow } from '../types/database.types';
+import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
 import type { TournamentResponse } from '../types/tournament.types';
 import type { NormalizedServerPlayer } from './playerTransform';
 import { tournamentRowToResponse } from './tournamentRow';
@@ -159,4 +160,31 @@ export function describedPlayers(team: MatchDescriptionTeam): NormalizedServerPl
     name: p.name,
     avatar: p.avatar,
   }));
+}
+
+/**
+ * The `MatchContext` an integration hook gets for a stored match. A bracket
+ * match carries its tournament; a standalone match (or one whose tournament
+ * is gone) carries null.
+ */
+export async function matchContextFor(match: DbMatchRow): Promise<MatchContext> {
+  let tournament: IntegrationTournament | null = null;
+  if (isBracketManaged(match)) {
+    const row = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
+      match.tournament_id,
+    ]);
+    if (row) tournament = toIntegrationTournament(tournamentRowToResponse(row));
+  }
+  return {
+    slug: match.slug,
+    matchId: match.id,
+    game: match.game || DEFAULT_GAME,
+    tournament,
+    team1: match.team1_id ? { id: match.team1_id } : null,
+    team2: match.team2_id ? { id: match.team2_id } : null,
+    round: match.round,
+    bracket: match.bracket ?? null,
+    integrationConfig: parseStoredMatchConfig(match.config),
+    resourceId: match.server_id ?? null,
+  };
 }

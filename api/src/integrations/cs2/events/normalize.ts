@@ -21,8 +21,8 @@
  * detail (`round_mvp`, `player_death`, bomb events) and the ready counters
  * (`team_ready`, `all_players_ready`). Those return `[]`.
  *
- * TODO(PR 6b): the core ingests these through `MatchLifecycleApi.ingest`. For
- * now the events route only logs them at debug.
+ * The core ingests these through `MatchLifecycleApi.ingest` (see
+ * `./matchEvents`, which adds the reported series score to `map.result`).
  */
 
 import type { LinkedAccountRef, NormalizedEvent, PlayerStatLine, TeamSide } from '../../types';

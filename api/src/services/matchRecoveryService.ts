@@ -179,13 +179,21 @@ export async function replayRecentEvents(matchSlug: string, sinceTimestamp?: num
 
     log.info(`[Recovery] Replaying ${events.length} recent event(s) for ${matchSlug}`);
 
-    // Import handler dynamically to avoid circular dependencies
-    const { handleMatchEvent } = await import('./matchEventHandler');
+    // The stored events are the game's own payloads; its integration applies them.
+    const matchRow = await db.queryOneAsync<{ game?: string | null }>(
+      'SELECT game FROM matches WHERE slug = ?',
+      [matchSlug]
+    );
+    const integration = integrationForMatch(matchRow ?? {});
+    if (!integration.replayEvent) {
+      log.debug(`[Recovery] ${integration.id} cannot replay events; skipping ${matchSlug}`);
+      return;
+    }
 
     for (const eventRow of events) {
       try {
-        const event = JSON.parse(eventRow.event_data);
-        await handleMatchEvent(event);
+        const event: unknown = JSON.parse(eventRow.event_data);
+        await integration.replayEvent(event);
         log.debug(`[Recovery] Replayed event: ${eventRow.event_type}`, {
           matchSlug,
           timestamp: eventRow.received_at,

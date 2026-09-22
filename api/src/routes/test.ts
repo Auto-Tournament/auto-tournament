@@ -2,6 +2,8 @@ import express, { Router, type NextFunction, type Request, type Response } from 
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
 import { integrationForMatch } from '../integrations/registry';
+import type { ResultMeta, SeriesResult } from '../integrations/types';
+import { matchLifecycle } from '../core/matchLifecycle';
 import { db } from '../config/database';
 import { playerService } from '../services/playerService';
 import { signPlayerSteamId } from '../utils/signedPlayerCookie';
@@ -290,6 +292,49 @@ router.post('/match-report', requireAuth, async (req: Request, res: Response): P
   await integrationForMatch(match ?? {}).syncMatchState?.(slug, { report });
   log.warn(`[DEV-TOOLS] Applied injected match report for ${slug}`);
   res.json({ success: true });
+});
+
+/**
+ * Test-only helper: apply a series result through the core's result path.
+ *
+ * POST /api/test/series-result  { slug, result, meta }
+ *
+ * `matchLifecycle.applySeriesResult` is what every series end goes through (the
+ * game's series end, the admin "set winner" action, later manual reports).
+ * This calls it directly with any `source`, so a test can pin its contract
+ * (idempotent, accepts ready and live matches, records who decided) without a
+ * game in the loop. Answers with the outcome.
+ *
+ * NOTE: This endpoint is only available in non-production environments.
+ */
+router.post('/series-result', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+    res.status(403).json({ success: false, error: 'Disabled in production' });
+    return;
+  }
+
+  const { slug, result, meta } = (req.body || {}) as {
+    slug?: string;
+    result?: SeriesResult;
+    meta?: Partial<ResultMeta>;
+  };
+  if (!slug || !result || typeof result !== 'object') {
+    res.status(400).json({ success: false, error: 'slug and result are required' });
+    return;
+  }
+
+  const outcome = await matchLifecycle.applySeriesResult(
+    slug,
+    {
+      games: Array.isArray(result.games) ? result.games : [],
+      team1Score: Number(result.team1Score) || 0,
+      team2Score: Number(result.team2Score) || 0,
+      winner: result.winner,
+    },
+    { source: meta?.source ?? 'admin', actorId: meta?.actorId ?? null }
+  );
+  log.warn(`[DEV-TOOLS] Applied series result for ${slug}`, { outcome });
+  res.json({ success: true, ...outcome });
 });
 
 /**

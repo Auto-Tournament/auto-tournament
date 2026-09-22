@@ -99,6 +99,8 @@ export interface MatchContext {
   bracket?: string | null;
   /** Parsed `matches.config`: an integration-owned blob (for CS2, the MatchZy config). */
   integrationConfig: unknown;
+  /** The resource the match is assigned to (CS2: `matches.server_id`), when it has one. */
+  resourceId?: string | null;
 }
 
 /**
@@ -136,6 +138,11 @@ export interface MatchDescription {
    * with the veto disabled). Unset when the config does not say.
    */
   skipPreMatchPhase?: boolean;
+  /**
+   * A single game (map) can end level, so a series can end drawn (CS2: overtime
+   * disabled). Unset when games always produce a winner.
+   */
+  gamesCanDraw?: boolean;
   team1: MatchDescriptionTeam;
   team2: MatchDescriptionTeam;
 }
@@ -216,9 +223,14 @@ export interface PlayerStatLine {
  * `mapNumber` is the 0-based position of the map in the series, the same
  * index `matches.map_number` and `match_map_results.map_number` store.
  *
- * CS2 produces these in `cs2/events/normalize.ts`. TODO(PR 6b): the core
- * consumes them through `MatchLifecycleApi.ingest`; until then they are only
- * logged at debug and the adapter still drives the old event handler.
+ * CS2 produces these in `cs2/events/normalize.ts`; the core consumes them
+ * through `MatchLifecycleApi.ingest` (`core/matchLifecycle.ts`). The core acts
+ * on `map.result` and `series.ended` today; the others are still applied by the
+ * integration's own adapter (live score, phase, presence) and ignored by ingest.
+ *
+ * There is no event-id dedupe yet: results are guarded by match state (a
+ * finished series is not finished twice, a stale map is dropped by the
+ * adapter), and a restarted match legitimately replays the same map ids.
  */
 export type NormalizedEvent =
   | { type: 'series.started'; slug: string; eventId: string; seriesLength: number }
@@ -241,6 +253,12 @@ export type NormalizedEvent =
       team1Score: number;
       team2Score: number;
       winner: TeamSide | 'draw';
+      /**
+       * The series score the game reports after this map. When absent the
+       * series is not treated as won on this map (a separate `series.ended`
+       * finishes it).
+       */
+      seriesScore?: { team1: number; team2: number };
     }
   | {
       type: 'series.ended';
@@ -307,19 +325,35 @@ export interface ResultMeta {
 
 export interface ApplySeriesResultOutcome {
   applied: boolean;
-  /** Set when `applied` is false, e.g. 'already_completed', 'match_not_found'. */
+  /**
+   * Set when `applied` is false: 'match_not_found', 'already_completed' (the
+   * match already has a winner), 'in_progress' (another result for the match
+   * is being applied right now) or 'no_winner' (a decisive result named a
+   * side the match has no team for).
+   */
   reason?: string;
 }
 
 /**
- * The game-neutral result path the core offers. Every way a series can end
- * (MatchZy `series_end`, the admin "set winner" action, a manual-report
- * submission) goes through `applySeriesResult`, so bracket progression,
- * ratings and stats run the same way regardless of source.
+ * The game-neutral result path the core offers (`core/matchLifecycle.ts`).
+ * Every way a series can end (the game's `series.ended`, the admin "set
+ * winner" action, later a manual-report submission) goes through
+ * `applySeriesResult`, so bracket progression, ratings and stats run the same
+ * way regardless of source.
  *
- * TODO(PR 6b): implemented in `core/matchLifecycle.ts`, when
- * `processSeriesEnd` / `setSeriesWinnerByAdmin` move out of
- * `matchEventHandler`. Until then nothing implements this.
+ * `applySeriesResult` contract:
+ * - takes the match by slug, whatever its status (`ready`, `loaded`, `live`,
+ *   `needs_decision`, or `completed` without a winner); the tournament comes
+ *   from the match row;
+ * - idempotent: a match that already has a winner is left alone
+ *   (`already_completed`), so applying the same result twice changes nothing;
+ * - `games` are written to `match_map_results` (game N is map N-1), skipping
+ *   games already stored with the same result;
+ * - player stats come from the integration (`seriesPlayerStats`); without
+ *   them each rostered player still gets a `player_match_stats` row carrying
+ *   only `won_match`;
+ * - `meta.source` other than 'integration' is recorded with its `actorId` as
+ *   a `series_result` row in `match_events`.
  */
 export interface MatchLifecycleApi {
   applySeriesResult(slug: string, result: SeriesResult, meta: ResultMeta): Promise<ApplySeriesResultOutcome>;
@@ -400,8 +434,38 @@ export interface GameIntegration {
   restart(ctx: MatchContext, opts: { baseUrl: string }): Promise<void>;
   /** TODO(PR 7a): force-cancel's server side (end the match on the server). */
   cancel?(ctx: MatchContext, reason: string): Promise<void>;
-  /** TODO(PR 6b): server turnover after series end. */
+  /**
+   * The series is over (finished, drawn, or parked for an admin decision):
+   * free the match's resource for the next match. CS2: mark the server idle
+   * and try to allocate waiting matches. Called by the core; safe to call twice.
+   */
   release?(ctx: MatchContext): Promise<void>;
+
+  // --- results -------------------------------------------------------------
+
+  /**
+   * Per-player stats for a finished series, by account id (`externalId`),
+   * split by the side the game reported them under. Keys of each stat record
+   * are the `player_match_stats` metrics (TODO(PR 10): `PlayerStatLine`s).
+   * Without it, or when it has nothing, the core records rows with the result
+   * only.
+   */
+  seriesPlayerStats?(slug: string): Promise<{
+    team1: Record<string, Record<string, unknown>>;
+    team2: Record<string, Record<string, unknown>>;
+  }>;
+  /**
+   * Account ids (`externalId`) per side of a standalone match, whose teams
+   * exist only in its config; null when the config cannot be parsed. Without
+   * it the core uses `describeMatch`.
+   */
+  standaloneRoster?(config: unknown): { team1: string[]; team2: string[] } | null;
+  /**
+   * Apply one stored game event again (`match_events.event_data`), as when it
+   * arrived but without the webhook's side effects. Used by event replay after
+   * downtime.
+   */
+  replayEvent?(event: unknown): Promise<void>;
 
   // --- plumbing ------------------------------------------------------------
 
