@@ -849,7 +849,7 @@ async function checkAndAdvanceShuffleRound(
         try {
           const webhookUrl = await settingsService.getWebhookUrl();
           if (webhookUrl) {
-            const delaySeconds = await matchAllocationService.getEffectiveGracePeriodSeconds();
+            const delaySeconds = await matchAllocationService.getEffectiveGracePeriodSeconds(tournamentId);
             const slugs = result.matches.map((m) => m.slug);
 
             log.info(

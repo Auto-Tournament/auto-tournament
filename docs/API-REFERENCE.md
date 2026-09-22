@@ -149,6 +149,14 @@ MatchZy webhooks in, and the recorded event log out.
 | `GET` | `/api/events/server/:serverId` | admin |
 | `GET` | `/api/events/:matchSlug` | admin |
 
+### Test helpers (CS2)
+
+E2E helpers that stand in for a CS2 server. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `POST` | `/api/test/server-status` | admin |
+
 ### Teams
 
 Team roster CRUD, including batch create and delete.
@@ -410,7 +418,6 @@ E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
 | --- | --- | --- |
 | `POST` | `/api/test/marker` | admin |
 | `POST` | `/api/test/reset-database` | admin |
-| `POST` | `/api/test/server-status` | admin |
 | `POST` | `/api/test/match-state` | admin |
 | `POST` | `/api/test/match-report` | admin |
 | `POST` | `/api/test/series-result` | admin |

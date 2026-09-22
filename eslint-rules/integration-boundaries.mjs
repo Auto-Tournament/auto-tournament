@@ -40,26 +40,8 @@ const SHARED = new Set(['registry', 'types']);
  * the imported modules relative to that src root, without extension.
  */
 const LEGACY_CORE_IMPORTS = {
-  // TODO(PR 7a): loading a match onto a server becomes Cs2ServerPool.allocate().
-  'api/src/services/matchLoadingService.ts': [
-    'integrations/cs2/services/rconService',
-    'integrations/cs2/services/serverInitializationService',
-    'integrations/cs2/services/serverStatusService',
-    'integrations/cs2/utils/matchzyRconCommands',
-    'integrations/cs2/utils/serverTurnover',
-  ],
-  // TODO(PR 7a/7b): server selection moves to integrations/cs2/allocation.ts, the rest to core/scheduler.ts.
-  'api/src/services/matchAllocationService.ts': [
-    'integrations/cs2/services/rconService',
-    'integrations/cs2/services/serverConnectivityService',
-    'integrations/cs2/services/serverService',
-    'integrations/cs2/services/serverStatusService',
-    'integrations/cs2/utils/serverTurnover',
-  ],
-  // TODO(PR 7a): re-sending the webhook config on recovery becomes an allocation-side restart.
-  'api/src/services/matchRecoveryService.ts': [
-    'integrations/cs2/services/serverInitializationService',
-  ],
+  // TODO(PR 7b): restartTournament moves to core/scheduler.ts and ends matches through cancel().
+  'api/src/services/matchAllocationService.ts': ['integrations/cs2/services/rconService'],
   // TODO(PR 7b): /start and /restart preflight and ending matches on servers go through capacity()/cancel().
   'api/src/routes/tournament.ts': [
     'integrations/cs2/services/cs2UpdateService',
@@ -67,13 +49,6 @@ const LEGACY_CORE_IMPORTS = {
     'integrations/cs2/services/serverInitializationService',
     'integrations/cs2/services/serverService',
   ],
-  // TODO(PR 7a): /reallocate and /force-cancel go through restart()/cancel().
-  'api/src/routes/matches.ts': ['integrations/cs2/services/rconService'],
-  // TODO(PR 7a): the match's server status comes from the allocation side of the interface.
-  'api/src/routes/players.ts': ['integrations/cs2/services/serverStatusService'],
-  'api/src/routes/teamMatch.ts': ['integrations/cs2/services/serverStatusService'],
-  // TODO(PR 7a): test helper that primes the server status cache.
-  'api/src/routes/test.ts': ['integrations/cs2/services/serverStatusService'],
 };
 
 function isLegacyCoreImport(root, filename, absTarget) {

@@ -3,25 +3,25 @@
  * Centralized logic for configuring and loading matches via RCON
  */
 
-import { db } from '../config/database';
-import { rconService } from '../integrations/cs2/services/rconService';
-import { emitMatchUpdate, emitBracketUpdate } from './socketService';
-import { log } from '../utils/logger';
-import type { DbMatchRow } from '../types/database.types';
-import type { MatchConfig } from '../types/match.types';
-import { matchLiveStatsService } from './matchLiveStatsService';
-import { serverInitializationService } from '../integrations/cs2/services/serverInitializationService';
-import { settingsService } from './settingsService';
+import { db } from '../../../config/database';
+import { rconService } from './rconService';
+import { emitMatchUpdate, emitBracketUpdate } from '../../../services/socketService';
+import { log } from '../../../utils/logger';
+import type { DbMatchRow } from '../../../types/database.types';
+import type { MatchConfig } from '../../../types/match.types';
+import { matchLiveStatsService } from '../../../services/matchLiveStatsService';
+import { serverInitializationService } from './serverInitializationService';
+import { settingsService } from '../../../services/settingsService';
 import {
   getMatchZyLoadMatchCommand,
   getMatchZyServerConfigCommands,
   redactLoadMatchCommand,
-} from '../integrations/cs2/utils/matchzyRconCommands';
-import { resolveSeriesEndKickDelays, serverTurnoverTracker, tvDelayFromCvars } from '../integrations/cs2/utils/serverTurnover';
-import { matchConfigFetchTracker } from './matchConfigFetchTracker';
-import { classifyClearQueuedReply, classifyLoadMatchReply } from '../utils/matchzyServerReplies';
-import { serverStatusService, ServerStatus } from '../integrations/cs2/services/serverStatusService';
-import { buildMatchConfigUrl, buildServerEventsUrl } from '../utils/serverAttribution';
+} from '../utils/matchzyRconCommands';
+import { resolveSeriesEndKickDelays, serverTurnoverTracker, tvDelayFromCvars } from '../utils/serverTurnover';
+import { matchConfigFetchTracker } from '../../../services/matchConfigFetchTracker';
+import { classifyClearQueuedReply, classifyLoadMatchReply } from '../../../utils/matchzyServerReplies';
+import { serverStatusService, ServerStatus } from './serverStatusService';
+import { buildMatchConfigUrl, buildServerEventsUrl } from '../../../utils/serverAttribution';
 
 /**
  * How long to wait for MatchZy to fetch the match config after the load command.
@@ -86,8 +86,7 @@ export async function loadMatchOnServer(
     log.debug(`Match config URL: ${configUrl}`);
 
     // Parse match config once so we can reuse its cvars for per-match setup.
-    // TODO(PR 7a): CS2 server loading; reads the MatchZy blob and moves into integrations/cs2.
-    // Important: we never store secrets (SERVER_TOKEN) in match JSON; token-bearing
+        // Important: we never store secrets (SERVER_TOKEN) in match JSON; token-bearing
     // commands must be sent over RCON only.
     let parsedConfig: { cvars?: Record<string, string | number> } = {};
     try {

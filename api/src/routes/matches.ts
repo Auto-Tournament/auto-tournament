@@ -1,7 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { matchService } from '../services/matchService';
 import { matchAllocationService } from '../services/matchAllocationService';
-import { cancelQueuedLoad, loadMatchOnServer } from '../services/matchLoadingService';
 import { CreateMatchInput, MatchConfig, MatchListItem } from '../types/match.types';
 import { TournamentResponse } from '../types/tournament.types';
 import { requestActorId, requireAuth } from '../middleware/auth';
@@ -23,13 +22,14 @@ import {
   currentMatchConfig,
   describeMatch,
   describedPlayers,
+  matchContextFor,
 } from '../utils/matchIntegration';
 import { applyScoreFields, enrichMatch } from '../utils/matchEnrichment';
 import { matchLiveStatsService } from '../services/matchLiveStatsService';
 import { teamService } from '../services/teamService';
 import { playerService } from '../services/playerService';
 import { getMapResults } from '../services/matchMapResultService';
-import { serverAllocationTracker } from '../services/serverAllocationTracker';
+import { integrationForMatch } from '../integrations/registry';
 import {
   resolveTournamentId,
   tournamentIdForMatch,
@@ -1045,73 +1045,30 @@ router.post('/:slug/load', requireAuth, async (req: Request, res: Response) => {
     }
 
     const baseUrl = await getWebhookBaseUrl(req);
-
-    // For manual matches (round = 0), double‑check that the selected server is
-    // still truly available at load time. The admin UI already filters
-    // "busy"/non‑allocatable servers out of the dropdown, but there is still a
-    // race window where a server can become allocated between the time the
-    // modal is opened and the match is created. If that happens, we try to
-    // transparently re‑allocate the match to a different idle server instead
-    // of letting it hang forever.
-    let serverIdToUse = match.serverId;
-    if (typeof match.round === 'number' && match.round === 0 && match.serverId) {
-      const busy = await db.queryOneAsync<{ count: number }>(
-        `SELECT COUNT(*) as count
-           FROM matches
-          WHERE server_id = ?
-            AND slug != ?
-            AND status IN ('ready', 'loaded', 'live')`,
-        [match.serverId, slug]
-      );
-
-      if (busy && busy.count > 0) {
-        log.warn(
-          `Manual match ${slug} requested busy server ${match.serverId}; attempting re‑allocation`
-        );
-
-        const availableServers = await matchAllocationService.getAvailableServers();
-        const fallback = availableServers.find((s) => s.id !== match.serverId);
-
-        if (fallback) {
-          await db.updateAsync('matches', { server_id: fallback.id }, 'id = ?', [match.id]);
-          serverIdToUse = fallback.id;
-          log.success(
-            `Re‑allocated manual match ${slug} from busy server ${match.serverId} to ${fallback.id}`
-          );
-        } else {
-          return res.status(409).json({
-            success: false,
-            error:
-              'Selected server is now busy with another match and no alternative idle servers are available. Please try again in a moment or free up a server.',
-          });
-        }
-      }
+    const row = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [slug]);
+    const integration = integrationForMatch(row ?? {});
+    if (!row || !integration.load) {
+      return res.status(400).json({ success: false, error: 'Failed to load match' });
     }
 
-    // Use centralized match loading service
-    const result = await loadMatchOnServer(slug, serverIdToUse, {
-      skipWebhook,
-      baseUrl,
-    });
+    // The integration loads it on the assigned server (for manual matches it
+    // first moves the match off a server that has become busy since).
+    const result = await integration.load(await matchContextFor(row), { baseUrl, skipWebhook });
 
-    if (result.success) {
+    if (result.ok) {
       return res.status(200).json({
         success: true,
-        message: result.webhookConfigured
-          ? 'Match loaded and webhook configured'
-          : 'Match loaded (webhook skipped)',
-        webhookConfigured: result.webhookConfigured,
-        demoUploadConfigured: result.demoUploadConfigured,
+        message: result.message,
+        ...result.details,
         match: await matchService.getMatchBySlug(slug, getBaseUrl(req)),
-        rconResponses: result.rconResponses,
       });
+    } else if (result.conflict) {
+      return res.status(409).json({ success: false, error: result.error });
     } else {
       return res.status(400).json({
         success: false,
-        error: result.error || 'Failed to load match',
-        webhookConfigured: result.webhookConfigured,
-        demoUploadConfigured: result.demoUploadConfigured,
-        rconResponses: result.rconResponses,
+        error: result.error,
+        ...result.details,
       });
     }
   } catch (error) {
@@ -1132,9 +1089,12 @@ router.post('/:slug/restart', requireAuth, async (req: Request, res: Response) =
     const { slug } = req.params;
     const baseUrl = await getWebhookBaseUrl(req);
 
-    const result = await matchAllocationService.restartMatch(slug, baseUrl);
+    const row = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [slug]);
+    const result = row
+      ? await integrationForMatch(row).restart(await matchContextFor(row), { baseUrl })
+      : ({ ok: false, error: 'Match not found' } as const);
 
-    if (result.success) {
+    if (result.ok) {
       log.success(`Match ${slug} restarted successfully`);
 
       // Emit match restart event
@@ -1152,7 +1112,7 @@ router.post('/:slug/restart', requireAuth, async (req: Request, res: Response) =
     } else {
       return res.status(400).json({
         success: false,
-        error: result.message,
+        error: result.error,
       });
     }
   } catch (error) {
@@ -1203,62 +1163,18 @@ router.post('/:slug/reallocate', requireAuth, async (req: Request, res: Response
       });
     }
 
-    const availableServers = await matchAllocationService.getAvailableServers();
-    const fallback = availableServers.find((s) => s.id !== oldServerId);
+    // The integration picks another free server, frees the old one and loads
+    // the match on the new one.
+    const moved = await integrationForMatch(match).restart(await matchContextFor(match), {
+      baseUrl,
+      moveResource: true,
+    });
 
-    if (!fallback) {
-      return res.status(409).json({
+    if (!moved.ok) {
+      return res.status(moved.conflict ? 409 : 400).json({
         success: false,
-        error:
-          'No alternative idle servers are available for reallocation. Please free up a server or update existing ones.',
-      });
-    }
-
-    // Free old server from allocation tracker immediately.
-    serverAllocationTracker.markIdle(oldServerId);
-
-    // Reserve the new server in the tracker so the allocator won't race us.
-    serverAllocationTracker.markAllocated(fallback.id, slug);
-
-    // Update match to point to the new server and reset it to a clean pre-load state.
-    await db.updateAsync(
-      'matches',
-      {
-        server_id: fallback.id,
-        status: 'ready',
-        loaded_at: null,
-      },
-      'slug = ?',
-      [slug]
-    );
-
-    // Only now that server_id points at the new server: drop any load of this
-    // match queued on the old server, then restart it so it returns to a clean
-    // state. In that order, a restart that makes an old plugin fetch its queued
-    // config is refused by the config route instead of starting a second copy.
-    await cancelQueuedLoad(oldServerId, slug);
-    try {
-      const { rconService } = await import('../integrations/cs2/services/rconService');
-      await rconService.sendCommand(oldServerId, 'css_restart');
-    } catch (err) {
-      log.warn(`Failed to restart old server during reallocation (continuing)`, {
-        matchSlug: slug,
-        serverId: oldServerId,
-        error: err instanceof Error ? err.message : String(err),
-      });
-    }
-
-    // Load on the new server.
-    const load = await loadMatchOnServer(slug, fallback.id, { baseUrl });
-
-    if (!load.success) {
-      // Roll back the tracker reservation; keep match assigned to the new server
-      // so the admin can retry once the underlying issue is fixed.
-      serverAllocationTracker.markIdle(fallback.id);
-      return res.status(400).json({
-        success: false,
-        error: load.error || 'Failed to load match on the reallocated server',
-        rconResponses: load.rconResponses,
+        error: moved.error,
+        ...moved.details,
       });
     }
 
@@ -1270,9 +1186,9 @@ router.post('/:slug/reallocate', requireAuth, async (req: Request, res: Response
 
     return res.json({
       success: true,
-      message: `Match reallocated from ${oldServerId} to ${fallback.id}`,
+      message: moved.message,
       match: updatedMatch,
-      rconResponses: load.rconResponses,
+      ...moved.details,
     });
   } catch (error) {
     log.error(`Error reallocating match`, error);
@@ -1380,9 +1296,7 @@ router.post('/:slug/force-cancel', requireAuth, async (req: Request, res: Respon
     // Try to end the match on the server (best effort)
     if (serverId) {
       try {
-        const { rconService } = await import('../integrations/cs2/services/rconService');
-        await rconService.executeCommand(serverId, 'get5_endmatch');
-        log.info(`Successfully sent end match command to server ${serverId} for match ${slug}`);
+        await integrationForMatch(match).cancel?.(await matchContextFor(match), 'force-cancel');
       } catch (rconError) {
         // Don't fail the whole operation if RCON fails - this is the whole point
         const errorMsg = rconError instanceof Error ? rconError.message : String(rconError);

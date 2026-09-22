@@ -2,16 +2,16 @@ import { db } from '../config/database';
 import { Match, MatchConfig, CreateMatchInput, MatchResponse } from '../types/match.types';
 import { log } from '../utils/logger';
 import { emitMatchUpdate } from './socketService';
-import { matchAllocationService } from './matchAllocationService';
-import { serverAllocationTracker } from './serverAllocationTracker';
+import { integrationForMatch } from '../integrations/registry';
 import {
   buildMatchConfigFor,
   describeMatch,
+  matchContextFor,
   parseStoredMatchConfig,
   serializeMatchConfig,
 } from '../utils/matchIntegration';
 import { tournamentRowToResponse } from '../utils/tournamentRow';
-import type { DbTournamentRow } from '../types/database.types';
+import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
 
 class MatchService {
   /**
@@ -193,14 +193,12 @@ class MatchService {
     await db.deleteAsync('matches', 'slug = ?', [slug]);
     log.success(`Match deleted: ${slug}`);
 
-    // If the deleted match had a server assigned, mark that server as idle
-    // and trigger immediate allocation for any waiting matches.
+    // If the deleted match had a server assigned, free it through the
+    // integration (CS2: mark it idle and allocate waiting matches right away).
     if (serverId) {
-      serverAllocationTracker.markIdle(serverId);
       log.info(`Server ${serverId} freed by match deletion, triggering immediate allocation`);
-      setImmediate(() => {
-        void matchAllocationService.tryImmediateAllocation();
-      });
+      const row = match as unknown as DbMatchRow;
+      await integrationForMatch(row).release?.(await matchContextFor(row));
     }
   }
 

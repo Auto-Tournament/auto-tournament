@@ -76,7 +76,7 @@ test.describe('Integration boundary lint', () => {
   });
 
   test('legacy exceptions are exact (file, module) pairs', async () => {
-    // Listed: matchAllocationService still calls rconService (TODO PR 7).
+    // Listed: matchAllocationService still calls rconService (TODO PR 7b).
     expect(
       await lint(
         'api/src/services/matchAllocationService.ts',
