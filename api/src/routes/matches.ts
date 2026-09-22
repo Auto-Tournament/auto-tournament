@@ -4,7 +4,7 @@ import { matchAllocationService } from '../services/matchAllocationService';
 import { cancelQueuedLoad, loadMatchOnServer } from '../services/matchLoadingService';
 import { CreateMatchInput, MatchConfig, MatchListItem } from '../types/match.types';
 import { TournamentResponse } from '../types/tournament.types';
-import { requireAuth } from '../middleware/auth';
+import { requestActorId, requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
 import { db } from '../config/database';
 import { matchConfigFetchTracker } from '../services/matchConfigFetchTracker';
@@ -1301,8 +1301,9 @@ router.post('/:slug/winner', requireAuth, async (req: Request, res: Response) =>
     if (winner !== 'team1' && winner !== 'team2') {
       return res.status(400).json({ success: false, error: "winner must be 'team1' or 'team2'" });
     }
-    const { setSeriesWinnerByAdmin } = await import('../services/matchEventHandler');
-    const result = await setSeriesWinnerByAdmin(slug, winner);
+    const { setSeriesWinnerByAdmin } = await import('../core/matchLifecycle');
+    const actorId = requestActorId(req);
+    const result = await setSeriesWinnerByAdmin(slug, winner, actorId);
     if (!result.ok) {
       return res.status(result.status).json({ success: false, error: result.error });
     }

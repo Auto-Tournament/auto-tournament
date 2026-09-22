@@ -5,10 +5,11 @@
  * through the CS2 integration's `legacyRoutes`.
  *
  * CS2-only side effects stay here: server tracking and health, turnover,
- * attribution to the assigned server, connections and the match report. Match
- * lifecycle events are still handed to the core's `handleMatchEvent`
- * (TODO(PR 6b): `normalize()` output goes to `matchLifecycle.ingest` instead).
- * 
+ * attribution to the assigned server, the match report, and (in
+ * `./matchEvents`) the live score, connections and stale-event guards. What
+ * `normalize()` makes of the event then goes to the core's
+ * `matchLifecycle.ingest`, which owns map results and series results.
+ *
  * MatchZy Enhanced Retry System:
  * - Events are automatically retried on failure with exponential backoff
  * - Local queue on server survives API downtime
@@ -27,7 +28,8 @@ import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { logWebhookEvent } from '../../../utils/eventLogger';
 import { emitMatchEvent, emitServerEvent } from '../../../services/socketService';
-import { handleMatchEvent } from '../../../services/matchEventHandler';
+import { matchLifecycle } from '../../../core/matchLifecycle';
+import { handleMatchEvent } from './matchEvents';
 import { playerConnectionService } from '../../../services/playerConnectionService';
 import { matchLiveStatsService } from '../../../services/matchLiveStatsService';
 import { recordServerTestEvent } from '../services/serverConnectivityService';
@@ -51,7 +53,6 @@ import {
   SERVER_ID_PARAM,
 } from '../../../utils/serverAttribution';
 import { findActiveMatchForServer } from '../../../services/matchTerminationService';
-import { normalize } from './normalize';
 
 const router = Router();
 
@@ -408,28 +409,10 @@ async function handleEventRequest(
       );
     }
 
-    // The neutral view of this event. Only logged for now: the core does not
-    // consume it yet (TODO(PR 6b): matchLifecycle.ingest), so the lifecycle
-    // still runs through handleMatchEvent below. Never allowed to fail the
-    // webhook.
-    try {
-      const normalized = normalize(event, { slug: actualMatchSlug });
-      if (normalized.length) {
-        log.debug('[EVENTS] Normalized', {
-          event: event.event,
-          matchSlug: actualMatchSlug,
-          normalized: normalized.map((n) => `${n.type} ${n.eventId}`),
-        });
-      }
-    } catch (normalizeError) {
-      log.warn('[EVENTS] normalize() failed; event handled as before', {
-        event: event.event,
-        error: normalizeError instanceof Error ? normalizeError.message : String(normalizeError),
-      });
-    }
-
-    // Process the event
-    await handleMatchEvent(event);
+    // Process the event: the CS2 side effects, then the normalized events in
+    // the core (map results, series end).
+    const lifecycleEvents = await handleMatchEvent(event, resolvedMatch?.slug);
+    await matchLifecycle.ingest(lifecycleEvents);
 
     // Emit real-time event via Socket.io
     emitMatchEvent(actualMatchSlug, event);
