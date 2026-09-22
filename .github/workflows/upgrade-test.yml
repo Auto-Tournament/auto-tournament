@@ -1,0 +1,71 @@
+name: Upgrade test
+
+# Proves an existing 2.4.x install upgrades to the current build without
+# losing data (Phase E prep). Runs scripts/test-upgrade.ts, which starts
+# Postgres and the released image, seeds it through that version's own API,
+# swaps in a locally built image of this checkout against the SAME database,
+# and asserts the hand-written migrations ran once, are idempotent, and every
+# byte of seeded data reads back unchanged after the swap and two more
+# reboots -- then repeats the boot on a second, empty database.
+#
+# Scoped to pull requests that can plausibly break an upgrade (schema
+# migrations and the Postgres bootstrap live under api/src/config; the image
+# itself is docker/Dockerfile and docker/Caddyfile) plus the script and this
+# workflow. That keeps the ~3-5 minute Docker build off PRs that cannot
+# affect it (client-only or CS2-module changes), while a daily schedule and
+# every push to main still catch drift with no matching PR -- a Docker Hub
+# tag disappearing, a Postgres image change, or the OLD_IMAGE pin in the
+# script simply going stale.
+on:
+  pull_request:
+    paths:
+      - 'api/src/config/**'
+      - 'docker/Dockerfile'
+      - 'docker/Caddyfile'
+      - 'scripts/test-upgrade.ts'
+      - '.github/workflows/upgrade-test.yml'
+      - 'package.json'
+      - 'yarn.lock'
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 4 * * *'
+  workflow_dispatch: {}
+
+concurrency:
+  group: upgrade-test-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  upgrade:
+    name: Upgrade test (2.4.15 -> current build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Pull the released baseline image
+        run: docker pull sivertio/matchzy-auto-tournament:2.4.15
+
+      - name: Run the upgrade test
+        run: yarn test:upgrade
+
+      # The script cleans up its own containers/network in a `finally`, but a
+      # cancelled or killed job (timeout, `workflow: cancel`) skips that. This
+      # is a no-op when the script already cleaned up.
+      - name: Clean up any leftover containers/networks
+        if: always()
+        run: |
+          docker ps -a --filter "name=mat-upgrade-" --format '{{.Names}}' | xargs -r docker rm -f
+          docker network ls --filter "name=mat-upgrade-" --format '{{.Name}}' | xargs -r docker network rm
