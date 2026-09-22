@@ -36,7 +36,6 @@
     "wins": "Vittorie",
     "losses": "Sconfitte",
     "winRate": "Percentuale vittorie",
-    "recentMatches": "Match recenti",
     "bestAdrIn": "{{adr}} ADR nel {{round}}",
     "win": "Vittoria",
     "loss": "Sconfitta",
@@ -93,6 +92,27 @@
       "avgKd": "K/D: {{value}} media",
       "matchCount_one": "{{count}} match",
       "matchCount_other": "{{count}} match"
+    },
+    "profileHeader": {
+      "plays": "Plays {{games}}",
+      "joined": "joined {{date}}",
+      "editProfile": "Edit profile"
+    },
+    "stats": {
+      "rating": "RATING",
+      "matches": "MATCHES",
+      "winRate": "WIN RATE",
+      "adr": "ADR",
+      "kd": "K/D"
+    },
+    "ratingChart": {
+      "sectionTitle": "Rating",
+      "noHistory": "Not enough matches yet to chart a trend",
+      "ariaLabel": "Rating trend, from {{from}} to {{to}}"
+    },
+    "recentMatches": {
+      "title": "Recent matches",
+      "statsNote": "Kills / deaths. Stats shown depend on what the game module reports."
     }
   },
   "teamPage": {

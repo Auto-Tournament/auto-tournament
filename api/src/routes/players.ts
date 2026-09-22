@@ -27,6 +27,8 @@ import { currentMatchConfig, describeMatch, describedPlayers } from '../utils/ma
 import { generateAvatarSvg } from '../generation/avatar';
 import { getEffectiveViewerSteamId, resolveViewerIdentity } from '../utils/viewerIdentity';
 import { resolveCurrentVetoTurn } from '../utils/vetoContext';
+import { getIntegration } from '../integrations/registry';
+import { DEFAULT_GAME } from '../integrations/types';
 
 const router = Router();
 
@@ -1153,13 +1155,59 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
 });
 
 /**
- * GET /api/players/:playerId/summary
- * Aggregate player view used by the public player page.
- * Returns:
- *   - player details (with matchesPlayed normalized from stats)
- *   - rating history
- *   - match history (deduplicated by slug)
- *   - basic derived stats (win rate, average ADR, recent form)
+ * @openapi
+ * /api/players/{playerId}/summary:
+ *   get:
+ *     tags: [Players]
+ *     summary: Aggregate player view used by the public player page
+ *     description: >
+ *       Player details (with matchesPlayed normalized from stats), rating
+ *       history, deduplicated match history (each row carries the `game` id
+ *       it was played under), basic derived stats, and the distinct games
+ *       this player has recorded matches in.
+ *     parameters:
+ *       - name: playerId
+ *         in: path
+ *         required: true
+ *         schema: { type: string }
+ *       - name: tournamentId
+ *         in: query
+ *         required: false
+ *         schema: { type: integer }
+ *     responses:
+ *       200:
+ *         description: Player summary
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 player: { type: object }
+ *                 stats:
+ *                   type: object
+ *                   properties:
+ *                     matchesPlayed: { type: integer }
+ *                     wins: { type: integer }
+ *                     losses: { type: integer }
+ *                     winRate: { type: number }
+ *                     averageAdr: { type: number }
+ *                     recentForm: { type: string }
+ *                 ratingHistory: { type: array, items: { type: object } }
+ *                 matches:
+ *                   type: array
+ *                   description: Deduplicated match history; each row includes `game`.
+ *                   items: { type: object }
+ *                 games:
+ *                   type: array
+ *                   description: Distinct games this player has recorded matches in, newest first.
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id: { type: string, example: 'cs2' }
+ *                       name: { type: string, example: 'Counter-Strike 2' }
+ *       404:
+ *         description: Player not found
  */
 router.get('/:playerId/summary', async (req: Request, res: Response) => {
   try {
@@ -1200,6 +1248,7 @@ router.get('/:playerId/summary', async (req: Request, res: Response) => {
         m.team1_id,
         m.team2_id,
         m.winner_id,
+        m.game,
         t1.name as team1_name,
         t1.tag as team1_tag,
         t2.name as team2_name,
@@ -1242,6 +1291,7 @@ router.get('/:playerId/summary', async (req: Request, res: Response) => {
       team1_id?: string | null;
       team2_id?: string | null;
       winner_id?: string | null;
+      game?: string | null;
       team1_name?: string | null;
       team1_tag?: string | null;
       team2_name?: string | null;
@@ -1299,6 +1349,22 @@ router.get('/:playerId/summary', async (req: Request, res: Response) => {
       }
     }
 
+    // Distinct games this player has recorded matches in (newest match first),
+    // read from the already-computed integration registry rather than
+    // hard-coding a game name on the client.
+    const gameIds: string[] = [];
+    for (const m of matches) {
+      const id = m.game || DEFAULT_GAME;
+      if (!gameIds.includes(id)) gameIds.push(id);
+    }
+    const games = gameIds.map((id) => {
+      try {
+        return { id, name: getIntegration(id).displayName };
+      } catch {
+        return { id, name: id };
+      }
+    });
+
     return res.json({
       success: true,
       player: {
@@ -1319,6 +1385,7 @@ router.get('/:playerId/summary', async (req: Request, res: Response) => {
       },
       ratingHistory,
       matches,
+      games,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';

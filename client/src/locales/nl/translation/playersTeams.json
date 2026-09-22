@@ -36,7 +36,6 @@
     "wins": "Overwinningen",
     "losses": "Nederlagen",
     "winRate": "Winstpercentage",
-    "recentMatches": "Recente wedstrijden",
     "bestAdrIn": "{{adr}} ADR in ronde {{round}}",
     "win": "Winst",
     "loss": "Verlies",
@@ -93,6 +92,27 @@
       "avgKd": "K/D: {{value}} gem.",
       "matchCount_one": "{{count}} wedstrijd",
       "matchCount_other": "{{count}} wedstrijden"
+    },
+    "profileHeader": {
+      "plays": "Plays {{games}}",
+      "joined": "joined {{date}}",
+      "editProfile": "Edit profile"
+    },
+    "stats": {
+      "rating": "RATING",
+      "matches": "MATCHES",
+      "winRate": "WIN RATE",
+      "adr": "ADR",
+      "kd": "K/D"
+    },
+    "ratingChart": {
+      "sectionTitle": "Rating",
+      "noHistory": "Not enough matches yet to chart a trend",
+      "ariaLabel": "Rating trend, from {{from}} to {{to}}"
+    },
+    "recentMatches": {
+      "title": "Recent matches",
+      "statsNote": "Kills / deaths. Stats shown depend on what the game module reports."
     }
   },
   "teamPage": {

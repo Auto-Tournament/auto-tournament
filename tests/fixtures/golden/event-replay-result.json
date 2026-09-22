@@ -196,12 +196,19 @@
         }
       ],
       "summary": {
+        "games": [
+          {
+            "id": "cs2",
+            "name": "Counter-Strike 2"
+          }
+        ],
         "matches": [
           {
             "adr": 74.52,
             "assists": 9,
             "completed_at": "<completed_at>",
             "deaths": 45,
+            "game": "cs2",
             "headshots": 20,
             "kills": 37,
             "match_number": 1,
@@ -258,6 +265,7 @@
             "assists": 9,
             "completed_at": "<completed_at>",
             "deaths": 45,
+            "game": "cs2",
             "headshots": 20,
             "kills": 37,
             "match_number": 1,
@@ -286,6 +294,7 @@
             "assists": 9,
             "completed_at": "<completed_at>",
             "deaths": 45,
+            "game": "cs2",
             "headshots": 20,
             "kills": 37,
             "match_number": 1,
@@ -329,12 +338,19 @@
         }
       ],
       "summary": {
+        "games": [
+          {
+            "id": "cs2",
+            "name": "Counter-Strike 2"
+          }
+        ],
         "matches": [
           {
             "adr": 75.15,
             "assists": 11,
             "completed_at": "<completed_at>",
             "deaths": 43,
+            "game": "cs2",
             "headshots": 15,
             "kills": 41,
             "match_number": 1,
@@ -391,6 +407,7 @@
             "assists": 11,
             "completed_at": "<completed_at>",
             "deaths": 43,
+            "game": "cs2",
             "headshots": 15,
             "kills": 41,
             "match_number": 1,
@@ -419,6 +436,7 @@
             "assists": 11,
             "completed_at": "<completed_at>",
             "deaths": 43,
+            "game": "cs2",
             "headshots": 15,
             "kills": 41,
             "match_number": 1,
@@ -462,12 +480,19 @@
         }
       ],
       "summary": {
+        "games": [
+          {
+            "id": "cs2",
+            "name": "Counter-Strike 2"
+          }
+        ],
         "matches": [
           {
             "adr": 110.26,
             "assists": 14,
             "completed_at": "<completed_at>",
             "deaths": 43,
+            "game": "cs2",
             "headshots": 31,
             "kills": 63,
             "match_number": 1,
@@ -524,6 +549,7 @@
             "assists": 14,
             "completed_at": "<completed_at>",
             "deaths": 43,
+            "game": "cs2",
             "headshots": 31,
             "kills": 63,
             "match_number": 1,
@@ -552,6 +578,7 @@
             "assists": 14,
             "completed_at": "<completed_at>",
             "deaths": 43,
+            "game": "cs2",
             "headshots": 31,
             "kills": 63,
             "match_number": 1,
@@ -595,12 +622,19 @@
         }
       ],
       "summary": {
+        "games": [
+          {
+            "id": "cs2",
+            "name": "Counter-Strike 2"
+          }
+        ],
         "matches": [
           {
             "adr": 99.21,
             "assists": 12,
             "completed_at": "<completed_at>",
             "deaths": 45,
+            "game": "cs2",
             "headshots": 31,
             "kills": 58,
             "match_number": 1,
@@ -657,6 +691,7 @@
             "assists": 12,
             "completed_at": "<completed_at>",
             "deaths": 45,
+            "game": "cs2",
             "headshots": 31,
             "kills": 58,
             "match_number": 1,
@@ -685,6 +720,7 @@
             "assists": 12,
             "completed_at": "<completed_at>",
             "deaths": 45,
+            "game": "cs2",
             "headshots": 31,
             "kills": 58,
             "match_number": 1,
@@ -728,12 +764,19 @@
         }
       ],
       "summary": {
+        "games": [
+          {
+            "id": "cs2",
+            "name": "Counter-Strike 2"
+          }
+        ],
         "matches": [
           {
             "adr": 68.56,
             "assists": 9,
             "completed_at": "<completed_at>",
             "deaths": 37,
+            "game": "cs2",
             "headshots": 21,
             "kills": 36,
             "match_number": 1,
@@ -790,6 +833,7 @@
             "assists": 9,
             "completed_at": "<completed_at>",
             "deaths": 37,
+            "game": "cs2",
             "headshots": 21,
             "kills": 36,
             "match_number": 1,
@@ -818,6 +862,7 @@
             "assists": 9,
             "completed_at": "<completed_at>",
             "deaths": 37,
+            "game": "cs2",
             "headshots": 21,
             "kills": 36,
             "match_number": 1,
@@ -861,12 +906,19 @@
         }
       ],
       "summary": {
+        "games": [
+          {
+            "id": "cs2",
+            "name": "Counter-Strike 2"
+          }
+        ],
         "matches": [
           {
             "adr": 73.58,
             "assists": 17,
             "completed_at": "<completed_at>",
             "deaths": 51,
+            "game": "cs2",
             "headshots": 18,
             "kills": 38,
             "match_number": 1,
@@ -923,6 +975,7 @@
             "assists": 17,
             "completed_at": "<completed_at>",
             "deaths": 51,
+            "game": "cs2",
             "headshots": 18,
             "kills": 38,
             "match_number": 1,
@@ -951,6 +1004,7 @@
             "assists": 17,
             "completed_at": "<completed_at>",
             "deaths": 51,
+            "game": "cs2",
             "headshots": 18,
             "kills": 38,
             "match_number": 1,
@@ -994,12 +1048,19 @@
         }
       ],
       "summary": {
+        "games": [
+          {
+            "id": "cs2",
+            "name": "Counter-Strike 2"
+          }
+        ],
         "matches": [
           {
             "adr": 83.56,
             "assists": 16,
             "completed_at": "<completed_at>",
             "deaths": 46,
+            "game": "cs2",
             "headshots": 22,
             "kills": 45,
             "match_number": 1,
@@ -1056,6 +1117,7 @@
             "assists": 16,
             "completed_at": "<completed_at>",
             "deaths": 46,
+            "game": "cs2",
             "headshots": 22,
             "kills": 45,
             "match_number": 1,
@@ -1084,6 +1146,7 @@
             "assists": 16,
             "completed_at": "<completed_at>",
             "deaths": 46,
+            "game": "cs2",
             "headshots": 22,
             "kills": 45,
             "match_number": 1,
@@ -1127,12 +1190,19 @@
         }
       ],
       "summary": {
+        "games": [
+          {
+            "id": "cs2",
+            "name": "Counter-Strike 2"
+          }
+        ],
         "matches": [
           {
             "adr": 75.56,
             "assists": 7,
             "completed_at": "<completed_at>",
             "deaths": 46,
+            "game": "cs2",
             "headshots": 20,
             "kills": 42,
             "match_number": 1,
@@ -1189,6 +1259,7 @@
             "assists": 7,
             "completed_at": "<completed_at>",
             "deaths": 46,
+            "game": "cs2",
             "headshots": 20,
             "kills": 42,
             "match_number": 1,
@@ -1217,6 +1288,7 @@
             "assists": 7,
             "completed_at": "<completed_at>",
             "deaths": 46,
+            "game": "cs2",
             "headshots": 20,
             "kills": 42,
             "match_number": 1,
@@ -1260,12 +1332,19 @@
         }
       ],
       "summary": {
+        "games": [
+          {
+            "id": "cs2",
+            "name": "Counter-Strike 2"
+          }
+        ],
         "matches": [
           {
             "adr": 80.7,
             "assists": 9,
             "completed_at": "<completed_at>",
             "deaths": 43,
+            "game": "cs2",
             "headshots": 24,
             "kills": 44,
             "match_number": 1,
@@ -1322,6 +1401,7 @@
             "assists": 9,
             "completed_at": "<completed_at>",
             "deaths": 43,
+            "game": "cs2",
             "headshots": 24,
             "kills": 44,
             "match_number": 1,
@@ -1350,6 +1430,7 @@
             "assists": 9,
             "completed_at": "<completed_at>",
             "deaths": 43,
+            "game": "cs2",
             "headshots": 24,
             "kills": 44,
             "match_number": 1,
@@ -1393,12 +1474,19 @@
         }
       ],
       "summary": {
+        "games": [
+          {
+            "id": "cs2",
+            "name": "Counter-Strike 2"
+          }
+        ],
         "matches": [
           {
             "adr": 78.83,
             "assists": 10,
             "completed_at": "<completed_at>",
             "deaths": 49,
+            "game": "cs2",
             "headshots": 22,
             "kills": 44,
             "match_number": 1,
@@ -1455,6 +1543,7 @@
             "assists": 10,
             "completed_at": "<completed_at>",
             "deaths": 49,
+            "game": "cs2",
             "headshots": 22,
             "kills": 44,
             "match_number": 1,
@@ -1483,6 +1572,7 @@
             "assists": 10,
             "completed_at": "<completed_at>",
             "deaths": 49,
+            "game": "cs2",
             "headshots": 22,
             "kills": 44,
             "match_number": 1,

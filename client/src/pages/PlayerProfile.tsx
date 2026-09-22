@@ -38,9 +38,13 @@ import { MatchNotificationAudio } from '../components/match/MatchNotificationAud
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { TournamentRulesAccordion } from '../components/tournament/TournamentRulesAccordion';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
-import { PlayerName } from '../components/player/PlayerName';
 import { OwnDiscordIdCard } from '../components/player/OwnDiscordIdCard';
 import { OwnGamesCard } from '../components/games/OwnGamesCard';
+import { ProfileHeader } from '../components/player/profile/ProfileHeader';
+import { GameSwitch } from '../components/player/profile/GameSwitch';
+import { StatsGrid, type ProfileStat } from '../components/player/profile/StatsGrid';
+import { RatingChart } from '../components/player/profile/RatingChart';
+import { RecentMatches, type RecentMatchEntry } from '../components/player/profile/RecentMatches';
 import type { PlayerDetail } from '../types/api.types';
 import { useAuth } from '../contexts/AuthContext';
 import { useCurrentMatchStatus } from '../hooks/useCurrentMatchStatus';
@@ -54,7 +58,6 @@ import type {
   Player as TeamPlayer,
 } from '../types';
 import { tokens, mono } from '../theme/tokens';
-import { StatTile } from '../components/common/ui';
 
 interface RatingHistoryEntry {
   id: number;
@@ -80,6 +83,8 @@ interface MatchHistoryEntry {
   team1Id?: string;
   team2Id?: string;
   winnerId?: string | null;
+  /** Game id the match was played under (integrations registry key), e.g. 'cs2'. */
+  game?: string | null;
   team1Name?: string | null;
   team1Tag?: string | null;
   team2Name?: string | null;
@@ -231,6 +236,8 @@ export default function PlayerProfile() {
   const [player, setPlayer] = useState<PlayerDetail | null>(null);
   const [ratingHistory, setRatingHistory] = useState<RatingHistoryEntry[]>([]);
   const [matchHistory, setMatchHistory] = useState<MatchHistoryEntry[]>([]);
+  const [games, setGames] = useState<Array<{ id: string; name: string }>>([]);
+  const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentMatch, setCurrentMatch] = useState<TeamMatchInfo | null>(null);
@@ -329,6 +336,7 @@ export default function PlayerProfile() {
           team1_id?: string;
           team2_id?: string;
           winner_id?: string | null;
+          game?: string | null;
           team1_name?: string | null;
           team1_tag?: string | null;
           team2_name?: string | null;
@@ -342,6 +350,7 @@ export default function PlayerProfile() {
           assists?: number;
           headshots?: number;
         }>;
+        games?: Array<{ id: string; name: string }>;
       };
 
       // Load aggregated player summary (details + history + matches + basic stats)
@@ -356,6 +365,8 @@ export default function PlayerProfile() {
         setRatingHistory([]);
         setMatchHistory([]);
         setAssignedTeam(null);
+        setGames([]);
+        setSelectedGameId(null);
         return;
       }
 
@@ -409,6 +420,7 @@ export default function PlayerProfile() {
           team1Id: m.team1_id,
           team2Id: m.team2_id,
           winnerId: m.winner_id,
+          game: m.game,
           team1Name: m.team1_name,
           team1Tag: m.team1_tag,
           team2Name: m.team2_name,
@@ -422,6 +434,12 @@ export default function PlayerProfile() {
           assists: m.assists,
           headshots: m.headshots,
         }))
+      );
+
+      const loadedGames = summaryResponse.games || [];
+      setGames(loadedGames);
+      setSelectedGameId((prev) =>
+        prev && loadedGames.some((g) => g.id === prev) ? prev : loadedGames[0]?.id ?? null
       );
 
       // Load current or upcoming match (for connect info)
@@ -821,20 +839,102 @@ export default function PlayerProfile() {
 
   // Baseline row matches the "Starting ELO" the chart shows (see utils/eloProgression).
   const baselineRating = ratingHistoryBaseline(player.startingElo);
-  const winRate =
-    uniqueMatchHistory.length > 0
-      ? (uniqueMatchHistory.filter((m) => m.wonMatch).length / uniqueMatchHistory.length) * 100
-      : 0;
   const wins = uniqueMatchHistory.filter((m) => m.wonMatch).length;
   const losses = uniqueMatchHistory.length - wins;
-  const averageAdr =
-    uniqueMatchHistory.length > 0
-      ? uniqueMatchHistory.reduce((sum, m) => sum + (m.adr || 0), 0) / uniqueMatchHistory.length
-      : 0;
 
   // Use the most recent match's tournament for leaderboard link (if available)
   const latestTournamentId = uniqueMatchHistory.find((m) => m.tournamentId)?.tournamentId;
   const hasAnyMatches = uniqueMatchHistory.length > 0;
+
+  // --- New profile header/stats/rating-chart/recent-matches section ---
+  // Matches for whichever game the switch above has selected. Rows recorded
+  // before the `game` column existed (or without a game module wired up to
+  // stamp it) fall back to 'cs2', matching the API's own default.
+  const FALLBACK_GAME_ID = 'cs2';
+  const gameFilteredMatches = selectedGameId
+    ? uniqueMatchHistory.filter((m) => (m.game || FALLBACK_GAME_ID) === selectedGameId)
+    : uniqueMatchHistory;
+
+  const profileMatchCount = gameFilteredMatches.length;
+  const profileWins = gameFilteredMatches.filter((m) => m.wonMatch).length;
+  const profileWinRatePct =
+    profileMatchCount > 0 ? Math.round((profileWins / profileMatchCount) * 100) : null;
+
+  const adrSamples = gameFilteredMatches.filter((m) => typeof m.adr === 'number');
+  const profileAvgAdr =
+    adrSamples.length > 0
+      ? adrSamples.reduce((sum, m) => sum + (m.adr as number), 0) / adrSamples.length
+      : null;
+
+  const kdSamples = gameFilteredMatches.filter(
+    (m) => typeof m.kills === 'number' && typeof m.deaths === 'number'
+  );
+  const totalKills = kdSamples.reduce((sum, m) => sum + (m.kills as number), 0);
+  const totalDeaths = kdSamples.reduce((sum, m) => sum + (m.deaths as number), 0);
+  const profileKd = kdSamples.length > 0 && totalDeaths > 0 ? totalKills / totalDeaths : null;
+
+  // Rating change over the same last-N-matches window the rating chart plots.
+  const ratingChartWindow = 20;
+  const sortedRatingHistoryAsc = [...ratingHistory].sort((a, b) => a.createdAt - b.createdAt);
+  const recentRatingHistory = sortedRatingHistoryAsc.slice(-ratingChartWindow);
+  const profileRatingChange =
+    player && recentRatingHistory.length > 0
+      ? player.currentElo - recentRatingHistory[0].eloBefore
+      : undefined;
+
+  const profileStats: ProfileStat[] = player
+    ? [
+        {
+          key: 'rating',
+          label: t('playerPage.stats.rating'),
+          value: String(player.currentElo),
+          change: profileRatingChange,
+        },
+        { key: 'matches', label: t('playerPage.stats.matches'), value: String(profileMatchCount) },
+        ...(profileWinRatePct !== null
+          ? [{ key: 'win-rate', label: t('playerPage.stats.winRate'), value: `${profileWinRatePct}%` }]
+          : []),
+        ...(profileAvgAdr !== null
+          ? [{ key: 'adr', label: t('playerPage.stats.adr'), value: profileAvgAdr.toFixed(1) }]
+          : []),
+        ...(profileKd !== null
+          ? [{ key: 'kd', label: t('playerPage.stats.kd'), value: profileKd.toFixed(2) }]
+          : []),
+        // TITLES (tournaments won) intentionally omitted: not derivable from
+        // existing data without new backend logic, and we never show a made-up
+        // number.
+      ]
+    : [];
+
+  const profileGames = games;
+
+  const headerTeamName = assignedTeam?.name || currentTeam?.name;
+  const headerTeam = headerTeamName
+    ? {
+        id: assignedTeam?.id || currentTeam?.id,
+        name: headerTeamName,
+        tag: assignedTeam?.tag || currentTeam?.tag,
+      }
+    : null;
+
+  const isOwnProfile = !!steamId && playerSteamId === steamId && !impersonation;
+
+  const recentMatchEntries: RecentMatchEntry[] = gameFilteredMatches.map((m) => {
+    const isTeam1 = m.team === 'team1';
+    const opponentName = isTeam1
+      ? m.team2Name || t('playerPage.opponent')
+      : m.team1Name || t('playerPage.opponent');
+    return {
+      slug: m.slug,
+      wonMatch: m.wonMatch,
+      opponentName,
+      roundLabel: getRoundLabel(m.round),
+      kills: m.kills,
+      deaths: m.deaths,
+    };
+  });
+  // --- end new profile section ---
+
   const tournamentIsActive = currentTournamentStatus === 'in_progress';
   const tournamentIsCompleted = currentTournamentStatus === 'completed';
 
@@ -900,123 +1000,81 @@ export default function PlayerProfile() {
             volume={volume}
             soundFile={soundFile}
           />
-          {/* Local navigation (kept minimal; main links live in the navbar) */}
-          <Box display="flex" justifyContent="flex-end" alignItems="center">
-            {playerSteamId === steamId && (
-              <Chip color="primary" size="small" label={t('playerPage.thisIsYou')} />
+          {/* Public profile header: avatar, name, plays/joined, team, edit link */}
+          <ProfileHeader
+            playerId={player.id}
+            name={player.name}
+            avatarUrl={player.avatar}
+            isAdmin={player.isAdmin}
+            joinedAt={player.createdAt}
+            team={headerTeam}
+            isOwnProfile={isOwnProfile}
+          />
+
+          <Box display="flex" gap={2} flexWrap="wrap" alignItems="center">
+            {latestTournamentId && (
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<EmojiEventsIcon />}
+                onClick={() => window.open(`/tournament/${latestTournamentId}/leaderboard`, '_blank')}
+              >
+                {t('playerPage.viewTournamentLeaderboard')}
+              </Button>
             )}
+            {allocationCountdown.nextAllocationInSeconds !== null &&
+              allocationCountdown.nextAllocationInSeconds > 0 && (
+                <Typography variant="body2" color="text.secondary">
+                  {t('playerPage.nextServersAllocated', {
+                    seconds: Math.max(0, allocationCountdown.nextAllocationInSeconds),
+                  })}
+                </Typography>
+              )}
           </Box>
 
-          {/* Player Header */}
-          <Card>
-            <CardContent>
-              <Box display="flex" justifyContent="space-between" alignItems="flex-start" gap={2}>
-                <Box display="flex" alignItems="center" gap={{ xs: 2, sm: 3 }} minWidth={0} flexWrap="wrap">
-                  <PlayerAvatar
-                    id={player.id}
-                    name={player.name}
-                    avatarUrl={player.avatar}
-                    size={80}
-                    isAdmin={player.isAdmin}
-                  />
-                  <Box flex={1}>
-                    <PlayerName
-                      name={player.name}
-                      isAdmin={player.isAdmin}
-                      variant="h4"
-                      sx={{ fontWeight: 700, mb: 0.5 }}
-                      data-testid="public-player-name"
-                    />
-                    {(assignedTeam?.name || currentTeam?.name) && (
-                      <Box mt={0.5}>
-                        {(() => {
-                          const teamId = assignedTeam?.id || currentTeam?.id;
-                          const teamName = assignedTeam?.name || currentTeam?.name || '';
-                          const teamTag = assignedTeam?.tag || currentTeam?.tag;
-                          const label = t('playerPage.teamChip', {
-                            team: `${teamTag ? `[${teamTag}] ` : ''}${teamName}`,
-                          });
-                          const isLink =
-                            !!teamId && teamId !== 'team1' && teamId !== 'team2';
+          {/* Per-game switch: which game's stats/rating/matches are shown below. */}
+          <GameSwitch
+            games={profileGames}
+            selectedId={selectedGameId ?? ''}
+            onSelect={setSelectedGameId}
+          />
 
-                          if (isLink) {
-                            return (
-                              <Chip
-                                data-testid="public-player-team"
-                                size="small"
-                                variant="outlined"
-                                color="secondary"
-                                label={label}
-                                component={RouterLink}
-                                to={`/team/${teamId}`}
-                                clickable
-                                sx={{ fontWeight: 600 }}
-                              />
-                            );
-                          }
+          {/* Stats: RATING (+change), MATCHES, WIN RATE, ADR, K/D. TITLES omitted
+              (not derivable from existing data). Tiles without real data are
+              never rendered — see profileStats above. */}
+          <StatsGrid stats={profileStats} />
 
-                          return (
-                            <Chip
-                              data-testid="public-player-team"
-                              size="small"
-                              variant="outlined"
-                              color="secondary"
-                              label={label}
-                              sx={{ fontWeight: 600 }}
-                            />
-                          );
-                        })()}
-                      </Box>
-                    )}
-                    <Typography variant="body2" color="text.secondary" gutterBottom sx={{ ...mono, fontSize: '0.75rem', mt: 0.75 }}>
-                      {t('playerPage.steamId', { id: player.id })}
-                    </Typography>
-                    <Box display="flex" gap={2} mt={2} flexWrap="wrap" alignItems="center">
-                      <Tooltip title={t('playerPage.skillRatingTooltip')}>
-                        <Chip
-                          data-testid="public-player-elo"
-                          label={t('playerPage.skillRatingLabel', { elo: player.currentElo })}
-                          color="primary"
-                          sx={{ fontWeight: 600, fontSize: '0.875rem', height: 30 }}
-                        />
-                      </Tooltip>
-                      {latestTournamentId && (
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          startIcon={<EmojiEventsIcon />}
-                          onClick={() =>
-                            window.open(`/tournament/${latestTournamentId}/leaderboard`, '_blank')
-                          }
-                        >
-                          {t('playerPage.viewTournamentLeaderboard')}
-                        </Button>
-                      )}
-                      {allocationCountdown.nextAllocationInSeconds !== null &&
-                        allocationCountdown.nextAllocationInSeconds > 0 && (
-                          <Typography variant="body2" color="text.secondary">
-                            {t('playerPage.nextServersAllocated', {
-                              seconds: Math.max(0, allocationCountdown.nextAllocationInSeconds),
-                            })}
-                          </Typography>
-                        )}
-                    </Box>
-                  </Box>
-                </Box>
-                {player.isAdmin && (
-                  <Chip
-                    label={t('playerPage.admin')}
-                    color="error"
-                    size="small"
-                    sx={{
-                      fontWeight: 600,
-                      alignSelf: 'flex-start',
-                    }}
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, md: 7 }}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                    {t('playerPage.ratingChart.sectionTitle')}
+                  </Typography>
+                  <RatingChart
+                    history={ratingHistory.map((entry) => ({
+                      eloAfter: entry.eloAfter,
+                      createdAt: entry.createdAt,
+                    }))}
                   />
-                )}
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid size={{ xs: 12, md: 5 }}>
+              <Box display="flex" justifyContent="space-between" alignItems="baseline" mb={1}>
+                <Typography variant="h6" fontWeight={600}>
+                  {t('playerPage.recentMatches.title')}
+                </Typography>
               </Box>
-            </CardContent>
-          </Card>
+              <RecentMatches
+                matches={recentMatchEntries}
+                onSelect={(slug) => {
+                  const match = uniqueMatchHistory.find((m) => m.slug === slug);
+                  if (match) setSelectedMatch(match);
+                }}
+              />
+            </Grid>
+          </Grid>
 
           {/* Self-service contact details: only on the viewer's own profile, and not
               while an admin impersonates (playerSteamId is then the impersonated
@@ -1090,29 +1148,10 @@ export default function PlayerProfile() {
             </Card>
           )}
 
-          {/* Stats Overview: stat tiles as on the homepage profile card */}
-          <Card>
-            <CardContent>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', md: 'repeat(4, minmax(0, 1fr))' },
-                  gap: 1,
-                }}
-              >
-                <StatTile size="lg" label={t('playerPage.matchesPlayed')} value={uniqueMatchHistory.length} />
-                <StatTile size="lg" label={t('playerPage.winRate')} value={`${winRate.toFixed(1)}%`} />
-                <StatTile size="lg" label={t('playerPage.winsLosses')} value={`${wins} / ${losses}`} />
-                <StatTile
-                  size="lg"
-                  label={t('playerPage.averageAdr')}
-                  value={averageAdr > 0 ? averageAdr.toFixed(1) : 'N/A'}
-                />
-              </Box>
-            </CardContent>
-          </Card>
-
-          {/* Recent form and performance highlights */}
+          {/* Recent form and performance highlights: kept as detailed sections
+              below the new stats grid above (see StatsGrid), rather than
+              dropped — they show highlights (best/toughest ADR match) and a
+              longer W/L timeline the new compact tiles don't cover. */}
           {hasAnyMatches && (
             <Card>
               <CardContent>

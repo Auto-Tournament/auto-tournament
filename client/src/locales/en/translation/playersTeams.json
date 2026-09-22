@@ -37,7 +37,6 @@
     "wins": "Wins",
     "losses": "Losses",
     "winRate": "Win Rate",
-    "recentMatches": "Recent Matches",
     "bestAdrIn": "{{adr}} ADR in {{round}}",
     "win": "Win",
     "loss": "Loss",
@@ -93,6 +92,27 @@
       "avgKd": "K/D: {{value}} avg",
       "matchCount_one": "{{count}} match",
       "matchCount_other": "{{count}} matches"
+    },
+    "profileHeader": {
+      "plays": "Plays {{games}}",
+      "joined": "joined {{date}}",
+      "editProfile": "Edit profile"
+    },
+    "stats": {
+      "rating": "RATING",
+      "matches": "MATCHES",
+      "winRate": "WIN RATE",
+      "adr": "ADR",
+      "kd": "K/D"
+    },
+    "ratingChart": {
+      "sectionTitle": "Rating",
+      "noHistory": "Not enough matches yet to chart a trend",
+      "ariaLabel": "Rating trend, from {{from}} to {{to}}"
+    },
+    "recentMatches": {
+      "title": "Recent matches",
+      "statsNote": "Kills / deaths. Stats shown depend on what the game module reports."
     }
   },
   "teamPage": {
