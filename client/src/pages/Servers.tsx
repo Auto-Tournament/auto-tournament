@@ -66,12 +66,12 @@ export default function Servers() {
   const { t } = useTranslation();
 
   const docs = {
-    fleetHealth: '/docs/mat/user/fleet-health',
-    pluginDbDown: '/docs/mat/user/fleet-health#plugin-db-down',
-    cs2Outdated: '/docs/mat/user/fleet-health#cs2-update-required',
-    offline: '/docs/mat/user/fleet-health#server-offline-or-unreachable',
-    ipBanned: '/docs/mat/user/fleet-health#ip-banned-rcon',
-    versionMismatch: '/docs/mat/user/fleet-health#plugin-version-mismatch',
+    fleetHealth: 'https://docs.autotournament.gg/reference/servers-health',
+    pluginDbDown: 'https://docs.autotournament.gg/reference/servers-health#plugin-db-down',
+    cs2Outdated: 'https://docs.autotournament.gg/reference/servers-health#cs2-update-required',
+    offline: 'https://docs.autotournament.gg/reference/servers-health#server-offline-or-unreachable',
+    ipBanned: 'https://docs.autotournament.gg/reference/servers-health#ip-banned-rcon',
+    versionMismatch: 'https://docs.autotournament.gg/reference/servers-health#plugin-version-mismatch',
   } as const;
 
   const compareDottedVersions = React.useCallback((a: string, b: string): number | null => {
