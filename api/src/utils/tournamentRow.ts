@@ -1,5 +1,34 @@
+import type { Request } from 'express';
 import type { DbTournamentRow } from '../types/database.types';
 import type { TournamentResponse, TournamentSettings } from '../types/tournament.types';
+
+/**
+ * The id of the single tournament row that 3.0 hosts.
+ *
+ * This is the only place that knows about the single row. Everything else takes
+ * the tournament id as a parameter: routes resolve it with
+ * `resolveTournamentId(req)`, services and progression receive it, and code
+ * that already holds a match row uses `match.tournament_id`. 3.1 replaces this
+ * with per-request resolution (and drops the schema's `CHECK (id = 1)`).
+ */
+export const LEGACY_TOURNAMENT_ID = 1;
+
+/**
+ * The tournament a request acts on. Always the single row for now; 3.1 reads
+ * it from the route or session.
+ */
+export function resolveTournamentId(_req?: Request): number {
+  return LEGACY_TOURNAMENT_ID;
+}
+
+/**
+ * Tournament a match belongs to. Standalone matches (tournament_id NULL) have
+ * always been read against the single tournament row; that fallback lives here
+ * so 3.1 can decide what a standalone match resolves to in one place.
+ */
+export function tournamentIdForMatch(match: { tournament_id?: number | null } | null | undefined): number {
+  return match?.tournament_id ?? LEGACY_TOURNAMENT_ID;
+}
 
 function parseJson<T>(raw: string | null | undefined, fallback: T): T {
   if (!raw) return fallback;

@@ -6,6 +6,7 @@ import {
   findDuplicateTournamentMemberships,
   describeDuplicateMemberships,
 } from '../utils/duplicateTeamMembership';
+import { resolveTournamentId } from '../utils/tournamentRow';
 
 const router = Router();
 
@@ -74,6 +75,7 @@ router.get('/:id', async (req: Request, res: Response) => {
  */
 router.post('/', async (req: Request, res: Response) => {
   try {
+    const tournamentId = resolveTournamentId(req);
     const upsert = req.query.upsert === 'true';
     const body = req.body;
 
@@ -103,7 +105,11 @@ router.post('/', async (req: Request, res: Response) => {
       upsert
     );
 
-    const duplicates = await findDuplicateTournamentMemberships(team.id, team.players ?? []);
+    const duplicates = await findDuplicateTournamentMemberships(
+      tournamentId,
+      team.id,
+      team.players ?? []
+    );
     const warnings = [...describeDuplicateMemberships(duplicates), ...discordWarnings];
     const [enriched] = await teamService.withPlayerDiscordIds([team]);
 
@@ -129,6 +135,7 @@ router.post('/', async (req: Request, res: Response) => {
  */
 router.put('/:id', async (req: Request, res: Response) => {
   try {
+    const tournamentId = resolveTournamentId(req);
     const { id } = req.params;
     const input = req.body as UpdateTeamInput;
 
@@ -137,7 +144,11 @@ router.put('/:id', async (req: Request, res: Response) => {
     // Admins are allowed to put a player on two teams of one tournament, but
     // it silently dead-ends the veto for that player, so say so at the moment
     // it happens rather than leaving it to be discovered mid-match.
-    const duplicates = await findDuplicateTournamentMemberships(id, team.players ?? []);
+    const duplicates = await findDuplicateTournamentMemberships(
+      tournamentId,
+      id,
+      team.players ?? []
+    );
     const warnings = [...describeDuplicateMemberships(duplicates), ...discordWarnings];
     const [enriched] = await teamService.withPlayerDiscordIds([team]);
 

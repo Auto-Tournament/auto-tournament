@@ -38,10 +38,13 @@ export const DEFAULT_SETTINGS: TournamentSettings = {
 
 class TournamentService {
   /**
-   * Get the current tournament (only one tournament exists at a time)
+   * Get a tournament by id. Callers resolve the id through utils/tournamentRow
+   * (3.0 has a single row; 3.1 resolves it per request).
    */
-  async getTournament(): Promise<TournamentResponse | null> {
-    const row = await db.queryOneAsync<TournamentRow>('SELECT * FROM tournament WHERE id = 1');
+  async getTournament(tournamentId: number): Promise<TournamentResponse | null> {
+    const row = await db.queryOneAsync<TournamentRow>('SELECT * FROM tournament WHERE id = ?', [
+      tournamentId,
+    ]);
     if (!row) return null;
 
     const tournament = this.rowToTournament(row);
@@ -83,7 +86,7 @@ class TournamentService {
       teams,
       winner:
         tournament.status === 'completed'
-          ? await this.getTournamentWinner(tournament.type, teams)
+          ? await this.getTournamentWinner(tournament.id, tournament.type, teams)
           : null,
     };
   }
@@ -100,13 +103,15 @@ class TournamentService {
    * - Shuffle: null (players, not teams, are ranked on the leaderboard).
    */
   async getTournamentWinner(
+    tournamentId: number,
     type: string,
     teams: Array<{ id: string; name: string; tag?: string }>
   ): Promise<{ id: string; name: string; tag?: string } | null> {
     if (type === 'shuffle') return null;
 
     const rows = await db.queryAsync<DbMatchRow>(
-      'SELECT id, slug, round, match_number, status, team1_id, team2_id, winner_id, team1_from_outcome, team2_from_outcome FROM matches WHERE tournament_id = 1 AND round >= 1'
+      'SELECT id, slug, round, match_number, status, team1_id, team2_id, winner_id, team1_from_outcome, team2_from_outcome FROM matches WHERE tournament_id = ? AND round >= 1',
+      [tournamentId]
     );
     if (rows.length === 0) return null;
 
@@ -140,7 +145,7 @@ class TournamentService {
     // Swiss: top of the standings (wins, losses, Buchholz, round differential,
     // then seed), so there is always a champion once every round is played.
     if (type === 'swiss') {
-      const [top] = await getSwissStandings(1);
+      const [top] = await getSwissStandings(tournamentId);
       return top ? resolveTeam(top.teamId) : null;
     }
 
@@ -148,7 +153,7 @@ class TournamentService {
     // so a finished round robin always has a champion (#225).
     if (type === 'round_robin') {
       if (!rows.some((r) => r.status === 'completed' && r.winner_id)) return null;
-      const [top] = await getRoundRobinStandings(1);
+      const [top] = await getRoundRobinStandings(tournamentId);
       return top ? resolveTeam(top.teamId) : null;
     }
 
@@ -158,7 +163,10 @@ class TournamentService {
   /**
    * Create or replace the tournament
    */
-  async createTournament(input: CreateTournamentInput): Promise<TournamentResponse> {
+  async createTournament(
+    tournamentId: number,
+    input: CreateTournamentInput
+  ): Promise<TournamentResponse> {
     const {
       name,
       type,
@@ -186,11 +194,11 @@ class TournamentService {
     const now = Math.floor(Date.now() / 1000);
 
     // Delete existing tournament (if any) - we only support one tournament at a time
-    await db.execAsync('DELETE FROM tournament WHERE id = 1');
+    await db.runAsync('DELETE FROM tournament WHERE id = ?', [tournamentId]);
 
     // Insert new tournament
     await db.insertAsync('tournament', {
-      id: 1,
+      id: tournamentId,
       name,
       type,
       format,
@@ -218,13 +226,13 @@ class TournamentService {
     if (type !== 'shuffle') {
       // Auto-generate bracket
       try {
-        await this.generateBracket();
+        await this.generateBracket(tournamentId);
         log.success('Bracket automatically generated');
       } catch (err) {
         log.error('Failed to auto-generate bracket', err);
 
         // Clean up: Delete the tournament since bracket generation failed
-        await db.execAsync('DELETE FROM tournament WHERE id = 1');
+        await db.runAsync('DELETE FROM tournament WHERE id = ?', [tournamentId]);
         log.warn('Tournament deleted due to bracket generation failure');
 
         // Re-throw to prevent returning tournament in broken state
@@ -236,7 +244,7 @@ class TournamentService {
       log.info('Shuffle tournament created - bracket generation skipped (not applicable)');
     }
 
-    const created = await this.getTournament();
+    const created = await this.getTournament(tournamentId);
     if (!created) {
       throw new Error('Failed to create tournament');
     }
@@ -247,8 +255,11 @@ class TournamentService {
   /**
    * Update existing tournament
    */
-  async updateTournament(input: UpdateTournamentInput): Promise<TournamentResponse> {
-    const existing = await this.getTournament();
+  async updateTournament(
+    tournamentId: number,
+    input: UpdateTournamentInput
+  ): Promise<TournamentResponse> {
+    const existing = await this.getTournament(tournamentId);
     if (!existing) {
       throw new Error('No tournament exists to update');
     }
@@ -295,7 +306,7 @@ class TournamentService {
           : null;
     }
 
-    await db.updateAsync('tournament', updates, 'id = ?', [1]);
+    await db.updateAsync('tournament', updates, 'id = ?', [tournamentId]);
 
     log.debug('Tournament updated');
 
@@ -303,7 +314,7 @@ class TournamentService {
     const needsRegeneration = type || teamIds || (maps && maps.length !== existing.maps.length);
     if (needsRegeneration) {
       try {
-        await this.regenerateBracket(true);
+        await this.regenerateBracket(tournamentId, true);
         log.debug('Bracket regenerated after update');
       } catch (err) {
         log.error('Failed to regenerate bracket after update', err);
@@ -311,13 +322,13 @@ class TournamentService {
         if (teamIds) {
           const oldTeamId = existing.teamIds;
           await db.updateAsync('tournament', { team_ids: JSON.stringify(oldTeamId) }, 'id = ?', [
-            1,
+            tournamentId,
           ]);
         }
       }
     }
 
-    const updated = await this.getTournament();
+    const updated = await this.getTournament(tournamentId);
     if (!updated) {
       throw new Error('Failed to retrieve updated tournament');
     }
@@ -329,13 +340,13 @@ class TournamentService {
    * Delete tournament and all associated matches
    * Note: Server cleanup (ending matches) should be done by the caller before this
    */
-  async deleteTournament(): Promise<void> {
+  async deleteTournament(tournamentId: number): Promise<void> {
     // First, clear server_id from all matches to clean up references
-    await db.execAsync('UPDATE matches SET server_id = NULL WHERE tournament_id = 1');
+    await db.runAsync('UPDATE matches SET server_id = NULL WHERE tournament_id = ?', [tournamentId]);
     log.debug('Cleared server references from matches');
 
     // Delete tournament (CASCADE will also delete matches and events)
-    await db.execAsync('DELETE FROM tournament WHERE id = 1');
+    await db.runAsync('DELETE FROM tournament WHERE id = ?', [tournamentId]);
     log.debug('Tournament deleted from database');
 
     // Live stats are keyed by slug, and the next bracket reuses slugs (r1m1...):
@@ -346,8 +357,8 @@ class TournamentService {
   /**
    * Generate bracket for the tournament
    */
-  async generateBracket(): Promise<BracketResponse> {
-    const tournament = await this.getTournament();
+  async generateBracket(tournamentId: number): Promise<BracketResponse> {
+    const tournament = await this.getTournament(tournamentId);
     if (!tournament) {
       throw new Error('No tournament exists');
     }
@@ -357,7 +368,7 @@ class TournamentService {
     }
 
     // Delete existing matches
-    await db.execAsync('DELETE FROM matches WHERE tournament_id = 1');
+    await db.runAsync('DELETE FROM matches WHERE tournament_id = ?', [tournamentId]);
 
     let matches: BracketMatch[] = [];
 
@@ -399,7 +410,7 @@ class TournamentService {
         const createdAt = Math.floor(Date.now() / 1000);
         const insertResult = await db.insertAsync('matches', {
           slug: matchData.slug,
-          tournament_id: 1,
+          tournament_id: tournamentId,
           round: matchData.round,
           match_number: matchData.matchNum,
           bracket: matchData.bracket ?? null,
@@ -481,12 +492,12 @@ class TournamentService {
       // Swiss always answered with the stored rows (scores and standings
       // enrichment included); keep that response.
       if (tournament.type === 'swiss') {
-        matches = await this.getMatches();
+        matches = await this.getMatches(tournamentId);
       }
 
       // Keep tournament in 'setup' status - it will change to 'ready' when user starts it
       await db.updateAsync('tournament', { updated_at: Math.floor(Date.now() / 1000) }, 'id = ?', [
-        1,
+        tournamentId,
       ]);
 
       log.debug(`Bracket generated: ${matches.length} matches created`);
@@ -503,8 +514,8 @@ class TournamentService {
    * Explicitly regenerate brackets (DESTRUCTIVE - wipes all match data)
    * Should only be called with user confirmation
    */
-  async regenerateBracket(force: boolean = false): Promise<BracketResponse> {
-    const tournament = await this.getTournament();
+  async regenerateBracket(tournamentId: number, force: boolean = false): Promise<BracketResponse> {
+    const tournament = await this.getTournament(tournamentId);
     if (!tournament) {
       throw new Error('No tournament exists');
     }
@@ -520,7 +531,7 @@ class TournamentService {
     log.warn('Regenerating bracket - all existing match data will be deleted');
 
     // Generate new bracket (this also sets status to 'ready')
-    const result = await this.generateBracket();
+    const result = await this.generateBracket(tournamentId);
 
     log.success('Bracket regenerated successfully');
     return result;
@@ -530,23 +541,24 @@ class TournamentService {
    * Reset tournament back to setup mode
    * Clears all matches and resets status
    */
-  async resetTournament(): Promise<TournamentResponse> {
-    const tournament = await this.getTournament();
+  async resetTournament(tournamentId: number): Promise<TournamentResponse> {
+    const tournament = await this.getTournament(tournamentId);
     if (!tournament) {
       throw new Error('No tournament exists');
     }
 
     // Count matches before deletion for logging
     const matchCount = await db.queryOneAsync<{ count: number }>(
-      'SELECT COUNT(*) as count FROM matches WHERE tournament_id = 1'
+      'SELECT COUNT(*) as count FROM matches WHERE tournament_id = ?',
+      [tournamentId]
     );
 
     // Reset means "play it again": roll ratings back and drop this run's
     // history before the matches go. (deleteTournament keeps both.)
-    await discardTournamentRatings(1);
+    await discardTournamentRatings(tournamentId);
 
     // Delete all matches (this also clears all veto states stored in matches)
-    await db.execAsync('DELETE FROM matches WHERE tournament_id = 1');
+    await db.runAsync('DELETE FROM matches WHERE tournament_id = ?', [tournamentId]);
 
     // Also clear any in-memory live stats so new brackets don't inherit stale scores
     matchLiveStatsService.clearAll();
@@ -568,7 +580,7 @@ class TournamentService {
           completed_at: null,
         },
         'id = ?',
-        [1]
+        [tournamentId]
       );
 
       log.success(
@@ -577,7 +589,7 @@ class TournamentService {
         } match(es) and cleared shuffle teams (registrations preserved).`
       );
 
-      const result = await this.getTournament();
+      const result = await this.getTournament(tournamentId);
       if (!result) throw new Error('Failed to retrieve tournament after reset');
       return result;
     }
@@ -592,7 +604,7 @@ class TournamentService {
         completed_at: null,
       },
       'id = ?',
-      [1]
+      [tournamentId]
     );
 
     log.success(
@@ -603,7 +615,7 @@ class TournamentService {
 
     // Regenerate bracket after reset
     try {
-      await this.generateBracket();
+      await this.generateBracket(tournamentId);
       log.success('Bracket regenerated after tournament reset');
     } catch (err) {
       log.error('Failed to regenerate bracket after reset', err);
@@ -614,7 +626,7 @@ class TournamentService {
       );
     }
 
-    const result = await this.getTournament();
+    const result = await this.getTournament(tournamentId);
     if (!result) throw new Error('Failed to retrieve tournament after reset');
     return result;
   }
@@ -622,11 +634,11 @@ class TournamentService {
   /**
    * Get bracket with all matches
    */
-  async getBracket(): Promise<BracketResponse | null> {
-    const tournament = await this.getTournament();
+  async getBracket(tournamentId: number): Promise<BracketResponse | null> {
+    const tournament = await this.getTournament(tournamentId);
     if (!tournament) return null;
 
-    const matches = await this.getMatches();
+    const matches = await this.getMatches(tournamentId);
     const totalRounds = calculateTotalRounds(tournament.teamIds.length, tournament.type);
 
     if (tournament.type === 'swiss') {
@@ -643,9 +655,10 @@ class TournamentService {
   /**
    * Get all matches for the tournament
    */
-  private async getMatches(): Promise<BracketMatch[]> {
+  private async getMatches(tournamentId: number): Promise<BracketMatch[]> {
     const rows = await db.queryAsync<DbMatchRow>(
-      'SELECT * FROM matches WHERE tournament_id = 1 ORDER BY round, match_number'
+      'SELECT * FROM matches WHERE tournament_id = ? ORDER BY round, match_number',
+      [tournamentId]
     );
 
     const matches: BracketMatch[] = [];
