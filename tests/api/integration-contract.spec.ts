@@ -8,6 +8,7 @@ import {
   unknownWeightKeys,
 } from '../../api/src/utils/eloWeights';
 import { CORE_SETTINGS } from '../../api/src/services/settingsService';
+import { collectRouterGroups } from '../../api/src/utils/routeIntrospection';
 
 /**
  * Game integration contract (3.0 phase C, PR 14).
@@ -217,6 +218,19 @@ test.describe('Fake integration (no database needed)', () => {
       await expect(fakeIntegration.cancel!(ctx, 'force-cancel')).resolves.toBeUndefined();
       await expect(fakeIntegration.release!(ctx)).resolves.toBeUndefined();
     }
+  });
+
+  test('its routes are test-only and never reach the API reference', () => {
+    const mounts = fakeIntegration.legacyRoutes!();
+    expect(mounts.length).toBeGreaterThan(0);
+    for (const mount of mounts) {
+      // The fake is registered only in test runs, so the generated reference
+      // must not depend on whether this process registered it.
+      expect(mount.testOnly, mount.prefix).toBe(true);
+      expect(mount.prefix.startsWith('/api/test/')).toBe(true);
+    }
+    const documented = collectRouterGroups().flatMap((g) => g.endpoints.map((e) => e.path));
+    expect(documented.filter((p) => p.startsWith('/api/test/integration/fake'))).toEqual([]);
   });
 
   test('stays out of the game catalogue and needs no game account', () => {

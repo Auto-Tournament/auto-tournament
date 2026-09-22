@@ -870,4 +870,11 @@ export interface LegacyRouteMount {
   title: string;
   /** One line on what this group is for. */
   description: string;
+  /**
+   * Test-only routes: mounted as usual, but left out of the API reference and
+   * the OpenAPI spec. An integration that is only registered in test runs
+   * would otherwise make the generated docs depend on the environment they
+   * were generated in.
+   */
+  testOnly?: boolean;
 }

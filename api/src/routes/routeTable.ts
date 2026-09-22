@@ -48,6 +48,8 @@ export interface MountedRouter {
   title: string;
   /** One line on what this group is for. */
   description: string;
+  /** Mounted, but left out of the API reference (see LegacyRouteMount.testOnly). */
+  testOnly?: boolean;
 }
 
 const coreRoutes: MountedRouter[] = [

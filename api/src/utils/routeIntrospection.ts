@@ -113,7 +113,10 @@ export function walkRouter(router: unknown, prefix = ''): Endpoint[] {
 }
 
 /**
- * Every mounted router, walked, in mount order, with shadowed routes marked.
+ * Every documented router, walked, in mount order, with shadowed routes
+ * marked. Test-only mounts are left out: they belong to an integration that
+ * is registered only in test runs, so including them would make the generated
+ * reference depend on the environment.
  *
  * Shadowing is resolved across the whole table rather than per router:
  * `/api/servers` has three routers on the same prefix, so a route in a later
@@ -122,17 +125,19 @@ export function walkRouter(router: unknown, prefix = ''): Endpoint[] {
 export function collectRouterGroups(): EndpointGroup[] {
   const seen = new Set<string>();
 
-  return routeTable.map((mount) => ({
-    title: mount.title,
-    description: mount.description,
-    prefix: mount.prefix,
-    endpoints: walkRouter(mount.router, mount.prefix).map((endpoint) => {
-      const key = `${endpoint.method} ${endpoint.path}`;
-      if (seen.has(key)) return { ...endpoint, shadowed: true };
-      seen.add(key);
-      return endpoint;
-    }),
-  }));
+  return routeTable
+    .filter((mount) => !mount.testOnly)
+    .map((mount) => ({
+      title: mount.title,
+      description: mount.description,
+      prefix: mount.prefix,
+      endpoints: walkRouter(mount.router, mount.prefix).map((endpoint) => {
+        const key = `${endpoint.method} ${endpoint.path}`;
+        if (seen.has(key)) return { ...endpoint, shadowed: true };
+        seen.add(key);
+        return endpoint;
+      }),
+    }));
 }
 
 /** Express `/api/teams/:id` → OpenAPI `/api/teams/{id}`. */

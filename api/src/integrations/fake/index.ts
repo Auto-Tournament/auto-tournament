@@ -208,6 +208,10 @@ export const fakeIntegration: GameIntegration = {
         title: 'Test helpers (fake integration)',
         description:
           'Test-only: create a tournament for the fake game and post NormalizedEvents for its matches. Registered only in test runs.',
+        // Out of the API reference and the OpenAPI spec: this integration is
+        // only registered in test runs, so the generated docs must not depend
+        // on whether it was.
+        testOnly: true,
       },
     ];
   },
