@@ -2830,13 +2830,8 @@
         "tags": [
           "Players"
         ],
-        "summary": "GET /api/players/:playerId/summary",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
+        "summary": "Aggregate player view used by the public player page",
+        "description": "Player details (with matchesPlayed normalized from stats), rating history, deduplicated match history (each row carries the `game` id it was played under), basic derived stats, and the distinct games this player has recorded matches in.\n",
         "parameters": [
           {
             "name": "playerId",
@@ -2845,8 +2840,92 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "tournamentId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Player summary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "player": {
+                      "type": "object"
+                    },
+                    "stats": {
+                      "type": "object",
+                      "properties": {
+                        "matchesPlayed": {
+                          "type": "integer"
+                        },
+                        "wins": {
+                          "type": "integer"
+                        },
+                        "losses": {
+                          "type": "integer"
+                        },
+                        "winRate": {
+                          "type": "number"
+                        },
+                        "averageAdr": {
+                          "type": "number"
+                        },
+                        "recentForm": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "ratingHistory": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "matches": {
+                      "type": "array",
+                      "description": "Deduplicated match history; each row includes `game`.",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "games": {
+                      "type": "array",
+                      "description": "Distinct games this player has recorded matches in, newest first.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "example": "cs2"
+                          },
+                          "name": {
+                            "type": "string",
+                            "example": "Counter-Strike 2"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Player not found"
+          }
+        }
       }
     },
     "/api/players/{playerId}/team": {

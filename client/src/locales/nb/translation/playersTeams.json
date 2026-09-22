@@ -37,7 +37,6 @@
     "wins": "Seire",
     "losses": "Tap",
     "winRate": "Seiersprosent",
-    "recentMatches": "Siste kamper",
     "bestAdrIn": "{{adr}} ADR i {{round}}",
     "win": "Seier",
     "loss": "Tap",
@@ -93,6 +92,27 @@
       "avgKd": "K/D: {{value}} snitt",
       "matchCount_one": "{{count}} kamp",
       "matchCount_other": "{{count}} kamper"
+    },
+    "profileHeader": {
+      "plays": "Spiller {{games}}",
+      "joined": "ble med {{date}}",
+      "editProfile": "Rediger profil"
+    },
+    "stats": {
+      "rating": "RATING",
+      "matches": "KAMPER",
+      "winRate": "SEIERSRATE",
+      "adr": "ADR",
+      "kd": "K/D"
+    },
+    "ratingChart": {
+      "sectionTitle": "Rating",
+      "noHistory": "Ikke nok kamper ennå til å vise en trend",
+      "ariaLabel": "Ratingtrend, fra {{from}} til {{to}}"
+    },
+    "recentMatches": {
+      "title": "Siste kamper",
+      "statsNote": "Drap / død. Statistikken som vises avhenger av hva spillmodulen rapporterer."
     }
   },
   "teamPage": {

@@ -36,7 +36,6 @@
     "wins": "Vitórias",
     "losses": "Derrotas",
     "winRate": "Taxa de vitórias",
-    "recentMatches": "Jogos recentes",
     "bestAdrIn": "{{adr}} ADR em {{round}}",
     "win": "Vitória",
     "loss": "Derrota",
@@ -93,6 +92,27 @@
       "avgKd": "K/D: {{value}} méd.",
       "matchCount_one": "{{count}} jogo",
       "matchCount_other": "{{count}} jogos"
+    },
+    "profileHeader": {
+      "plays": "Plays {{games}}",
+      "joined": "joined {{date}}",
+      "editProfile": "Edit profile"
+    },
+    "stats": {
+      "rating": "RATING",
+      "matches": "MATCHES",
+      "winRate": "WIN RATE",
+      "adr": "ADR",
+      "kd": "K/D"
+    },
+    "ratingChart": {
+      "sectionTitle": "Rating",
+      "noHistory": "Not enough matches yet to chart a trend",
+      "ariaLabel": "Rating trend, from {{from}} to {{to}}"
+    },
+    "recentMatches": {
+      "title": "Recent matches",
+      "statsNote": "Kills / deaths. Stats shown depend on what the game module reports."
     }
   },
   "teamPage": {

@@ -37,7 +37,6 @@
     "wins": "胜场",
     "losses": "负场",
     "winRate": "胜率",
-    "recentMatches": "近期比赛",
     "bestAdrIn": "{{round}} 中 {{adr}} ADR",
     "win": "胜",
     "loss": "负",
@@ -93,6 +92,27 @@
       "avgKd": "K/D：平均 {{value}}",
       "matchCount_one": "{{count}} 场比赛",
       "matchCount_other": "{{count}} 场比赛"
+    },
+    "profileHeader": {
+      "plays": "Plays {{games}}",
+      "joined": "joined {{date}}",
+      "editProfile": "Edit profile"
+    },
+    "stats": {
+      "rating": "RATING",
+      "matches": "MATCHES",
+      "winRate": "WIN RATE",
+      "adr": "ADR",
+      "kd": "K/D"
+    },
+    "ratingChart": {
+      "sectionTitle": "Rating",
+      "noHistory": "Not enough matches yet to chart a trend",
+      "ariaLabel": "Rating trend, from {{from}} to {{to}}"
+    },
+    "recentMatches": {
+      "title": "Recent matches",
+      "statsNote": "Kills / deaths. Stats shown depend on what the game module reports."
     }
   },
   "teamPage": {
