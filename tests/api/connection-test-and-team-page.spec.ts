@@ -4,7 +4,7 @@ import path from 'path';
 import {
   connectionTestCommands,
   connectionTestServerIds,
-} from '../../api/src/utils/connectionTest';
+} from '../../api/src/integrations/cs2/utils/connectionTest';
 import { computeTeamStanding, globalMatchNumbers } from '../../api/src/utils/teamPage';
 
 /**
@@ -33,7 +33,7 @@ test.describe('Connection test does not change server config', () => {
 
   test('route no longer sends webhook configuration commands', () => {
     const source = fs.readFileSync(
-      path.join(__dirname, '../../api/src/routes/rcon.ts'),
+      path.join(__dirname, '../../api/src/integrations/cs2/routes/rcon.ts'),
       'utf8'
     );
     expect(source).not.toContain('getMatchZyWebhookCommands');

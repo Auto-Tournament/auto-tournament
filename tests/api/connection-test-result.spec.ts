@@ -5,7 +5,7 @@ import {
   checkServerReachesApi,
   safeDisconnect,
   type ConnectionTestClient,
-} from '../../api/src/utils/connectionTest';
+} from '../../api/src/integrations/cs2/utils/connectionTest';
 import { parseConVarReply } from '../../api/src/utils/matchzyServerReplies';
 
 /**
@@ -136,7 +136,7 @@ test.describe('Connection test result path', () => {
   });
 
   test('route delegates to the shared check instead of chaining on disconnect()', () => {
-    const source = fs.readFileSync(path.join(__dirname, '../../api/src/routes/rcon.ts'), 'utf8');
+    const source = fs.readFileSync(path.join(__dirname, '../../api/src/integrations/cs2/routes/rcon.ts'), 'utf8');
     expect(source).toContain('checkServerReachesApi(');
     expect(source).not.toMatch(/disconnect\(\)\.catch/);
   });

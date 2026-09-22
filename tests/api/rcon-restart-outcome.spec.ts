@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { isLostReplyError, isServerRestartCommand } from '../../api/src/utils/rconRestartOutcome';
+import { isLostReplyError, isServerRestartCommand } from '../../api/src/integrations/cs2/utils/rconRestartOutcome';
 
 /**
  * Outcome of a `css_restart` sent over RCON.

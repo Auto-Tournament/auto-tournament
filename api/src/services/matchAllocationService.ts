@@ -1,20 +1,20 @@
 import { db } from '../config/database';
-import { serverService } from './serverService';
-import { rconService } from './rconService';
+import { serverService } from '../integrations/cs2/services/serverService';
+import { rconService } from '../integrations/cs2/services/rconService';
 import { tournamentService } from './tournamentService';
 import { emitTournamentUpdate, emitBracketUpdate, emitMatchUpdate } from './socketService';
 import { cancelQueuedLoad, loadMatchOnServer } from './matchLoadingService';
-import { serverStatusService, ServerStatus, isAllocatableStatus } from './serverStatusService';
+import { serverStatusService, ServerStatus, isAllocatableStatus } from '../integrations/cs2/services/serverStatusService';
 import { generateRoundMatches, advanceToNextRound } from './shuffleTournamentService';
 import { log } from '../utils/logger';
-import { getLastServerTestEvent } from './serverConnectivityService';
+import { getLastServerTestEvent } from '../integrations/cs2/services/serverConnectivityService';
 import { settingsService } from './settingsService';
 import { autoVetoPendingMatches } from './vetoSimulationService';
 import type { ServerResponse } from '../types/server.types';
 import type { DbMatchRow } from '../types/database.types';
 import type { BracketMatch } from '../types/tournament.types';
 import { serverAllocationTracker } from './serverAllocationTracker';
-import { serverTurnoverTracker } from '../utils/serverTurnover';
+import { serverTurnoverTracker } from '../integrations/cs2/utils/serverTurnover';
 import {
   batchServerTarget,
   checkQueueTurn,

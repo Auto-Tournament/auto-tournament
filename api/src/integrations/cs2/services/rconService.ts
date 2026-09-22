@@ -1,9 +1,9 @@
 import { Rcon } from 'dathost-rcon-client';
 import { GameDig } from 'gamedig';
 import { serverService } from './serverService';
-import { ServerResponse } from '../types/server.types';
+import { ServerResponse } from '../../../types/server.types';
 import { RconCommandResponse } from '../types/rcon.types';
-import { log } from '../utils/logger';
+import { log } from '../../../utils/logger';
 import { isLostReplyError, isServerRestartCommand } from '../utils/rconRestartOutcome';
 
 /**

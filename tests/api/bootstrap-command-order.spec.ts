@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { getMatchZyBootstrapCommands } from '../../api/src/utils/matchzyRconCommands';
+import { getMatchZyBootstrapCommands } from '../../api/src/integrations/cs2/utils/matchzyRconCommands';
 
 /**
  * Order of the RCON commands that hand a server its bootstrap URL.

@@ -1,5 +1,5 @@
 import { db } from '../config/database';
-import { rconService } from './rconService';
+import { rconService } from '../integrations/cs2/services/rconService';
 import { playerConnectionService, type ConnectedPlayer } from './playerConnectionService';
 import type { DbMatchRow } from '../types/database.types';
 import {

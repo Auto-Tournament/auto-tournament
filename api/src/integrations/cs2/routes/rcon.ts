@@ -1,16 +1,16 @@
 import { Router, Request, Response } from 'express';
 import { Rcon } from 'dathost-rcon-client';
 import { rconService } from '../services/rconService';
-import { requireAuth } from '../middleware/auth';
-import { log } from '../utils/logger';
-import { db } from '../config/database';
-import { parseConVarReply } from '../utils/matchzyServerReplies';
+import { requireAuth } from '../../../middleware/auth';
+import { log } from '../../../utils/logger';
+import { db } from '../../../config/database';
+import { parseConVarReply } from '../../../utils/matchzyServerReplies';
 import { checkServerReachesApi } from '../utils/connectionTest';
 import { getLastServerTestEvent } from '../services/serverConnectivityService';
 import {
   findActiveMatchForServer,
   settleEndedMatch,
-} from '../services/matchTerminationService';
+} from '../../../services/matchTerminationService';
 
 const router = Router();
 

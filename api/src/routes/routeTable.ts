@@ -19,16 +19,13 @@
 
 import type { Router } from 'express';
 
-import serverBootstrapRoutes from './serverBootstrap';
-import serverRoutes from './servers';
-import serverStatusRoutes from './serverStatus';
+import { listIntegrations } from '../integrations/registry';
+
 import teamRoutes from './teams';
-import rconRoutes from './rcon';
 import matchRoutes from './matches';
 import eventRoutes from './events';
 import steamRoutes from './steam';
 import tournamentRoutes from './tournament';
-import demoRoutes from './demos';
 import logsRoutes from './logs';
 import teamMatchRoutes from './teamMatch';
 import teamStatsRoutes from './teamStats';
@@ -44,7 +41,6 @@ import eloTemplatesRoutes from './eloTemplates';
 import generationRoutes from './generation';
 import testRoutes from './test';
 import authRoutes from './auth';
-import matchzyRoutes from './matchzy';
 
 export interface MountedRouter {
   /** Path prefix the router is mounted under. */
@@ -56,36 +52,12 @@ export interface MountedRouter {
   description: string;
 }
 
-export const routeTable: MountedRouter[] = [
-  {
-    prefix: '/api/servers',
-    router: serverBootstrapRoutes,
-    title: 'Server bootstrap',
-    description: 'Self-registration for a CS2 server coming online.',
-  },
-  {
-    prefix: '/api/servers',
-    router: serverRoutes,
-    title: 'Servers',
-    description: 'The CS2 server fleet — add, edit, enable, remove.',
-  },
-  {
-    prefix: '/api/servers',
-    router: serverStatusRoutes,
-    title: 'Server status',
-    description: 'Liveness, connectivity and CS2 update state per server.',
-  },
+const coreRoutes: MountedRouter[] = [
   {
     prefix: '/api/teams',
     router: teamRoutes,
     title: 'Teams',
     description: 'Team roster CRUD, including batch create and delete.',
-  },
-  {
-    prefix: '/api/rcon',
-    router: rconRoutes,
-    title: 'RCON',
-    description: 'Direct server control — pause, say, end match, raw commands.',
   },
   {
     prefix: '/api/matches',
@@ -110,12 +82,6 @@ export const routeTable: MountedRouter[] = [
     router: tournamentRoutes,
     title: 'Tournament',
     description: 'The tournament itself — setup, bracket, rounds, standings.',
-  },
-  {
-    prefix: '/api/demos',
-    router: demoRoutes,
-    title: 'Demos',
-    description: 'Demo upload from the game server, and download.',
   },
   {
     prefix: '/api/logs',
@@ -208,10 +174,16 @@ export const routeTable: MountedRouter[] = [
     title: 'Auth',
     description: 'Sign-in flows, admin identity, impersonation.',
   },
-  {
-    prefix: '/api/matchzy',
-    router: matchzyRoutes,
-    title: 'MatchZy',
-    description: 'Auto Tournament CS2 plugin (formerly MatchZy Enhanced) version information.',
-  },
 ];
+
+/**
+ * Routes owned by game integrations that keep their pre-module URLs
+ * (CS2: /api/servers ×3, /api/rcon, /api/demos, /api/matchzy). They come first:
+ * no core prefix overlaps them, and each integration returns its own routers
+ * in match order.
+ */
+const integrationRoutes: MountedRouter[] = listIntegrations().flatMap(
+  (integration) => integration.legacyRoutes?.() ?? []
+);
+
+export const routeTable: MountedRouter[] = [...integrationRoutes, ...coreRoutes];

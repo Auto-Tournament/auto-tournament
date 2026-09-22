@@ -85,20 +85,6 @@ Liveness, connectivity and CS2 update state per server.
 | --- | --- | --- |
 | `GET` | `/api/servers/:id/status` | admin |
 
-### Teams
-
-Team roster CRUD, including batch create and delete.
-
-| Method | Path | Auth |
-| --- | --- | --- |
-| `GET` | `/api/teams` | admin |
-| `GET` | `/api/teams/:id` | admin |
-| `POST` | `/api/teams` | admin |
-| `PUT` | `/api/teams/:id` | admin |
-| `PATCH` | `/api/teams/batch` | admin |
-| `DELETE` | `/api/teams/:id` | admin |
-| `POST` | `/api/teams/bulk-delete` | admin |
-
 ### RCON
 
 Direct server control — pause, say, end match, raw commands.
@@ -128,6 +114,39 @@ Direct server control — pause, say, end match, raw commands.
 | `POST` | `/api/rcon/end-match` | admin |
 | `POST` | `/api/rcon/:serverId/add-player` | admin |
 | `POST` | `/api/rcon/command` | admin |
+
+### Demos
+
+Demo upload from the game server, and download.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `POST` | `/api/demos/:matchSlug/upload` | server token |
+| `GET` | `/api/demos/:matchSlug/download/:mapNumber?` | public |
+| `GET` | `/api/demos/:matchSlug/status` | admin |
+| `GET` | `/api/demos/:matchSlug/info` | admin |
+
+### MatchZy
+
+Auto Tournament CS2 plugin (formerly MatchZy Enhanced) version information.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/matchzy/latest-version` | public |
+
+### Teams
+
+Team roster CRUD, including batch create and delete.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/teams` | admin |
+| `GET` | `/api/teams/:id` | admin |
+| `POST` | `/api/teams` | admin |
+| `PUT` | `/api/teams/:id` | admin |
+| `PATCH` | `/api/teams/batch` | admin |
+| `DELETE` | `/api/teams/:id` | admin |
+| `POST` | `/api/teams/bulk-delete` | admin |
 
 ### Matches
 
@@ -205,17 +224,6 @@ The tournament itself — setup, bracket, rounds, standings.
 | `GET` | `/api/tournament/:id/elo-template` | admin |
 | `PUT` | `/api/tournament/:id/elo-template` | admin |
 | `POST` | `/api/tournament/:id/check-completion` | admin |
-
-### Demos
-
-Demo upload from the game server, and download.
-
-| Method | Path | Auth |
-| --- | --- | --- |
-| `POST` | `/api/demos/:matchSlug/upload` | server token |
-| `GET` | `/api/demos/:matchSlug/download/:mapNumber?` | public |
-| `GET` | `/api/demos/:matchSlug/status` | admin |
-| `GET` | `/api/demos/:matchSlug/info` | admin |
 
 ### Logs
 
@@ -419,11 +427,3 @@ Sign-in flows, admin identity, impersonation.
 | `GET` | `/api/auth/impersonate` | admin |
 | `POST` | `/api/auth/impersonate` | admin |
 | `POST` | `/api/auth/impersonate/stop` | admin |
-
-### MatchZy
-
-Auto Tournament CS2 plugin (formerly MatchZy Enhanced) version information.
-
-| Method | Path | Auth |
-| --- | --- | --- |
-| `GET` | `/api/matchzy/latest-version` | public |

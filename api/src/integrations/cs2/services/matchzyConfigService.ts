@@ -1,6 +1,6 @@
-import type { TournamentType } from '../types/tournament.types';
-import { log } from '../utils/logger';
-import { settingsService } from './settingsService';
+import type { TournamentType } from '../../../types/tournament.types';
+import { log } from '../../../utils/logger';
+import { settingsService } from '../../../services/settingsService';
 
 /**
  * MatchZy Enhanced v1.3.0 Configuration Service

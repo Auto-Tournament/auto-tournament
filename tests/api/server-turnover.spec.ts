@@ -13,7 +13,7 @@ import {
   resolveSeriesEndKickDelays,
   simulationTvCvars,
   tvDelayFromCvars,
-} from '../../api/src/utils/serverTurnover';
+} from '../../api/src/integrations/cs2/utils/serverTurnover';
 
 /**
  * Faster server turnover after a series.
