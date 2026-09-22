@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 225 of them, 153 behind auth —
+Every endpoint this API serves — 225 of them, 154 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -169,7 +169,7 @@ Create, load, restart and cancel matches; read match state.
 
 | Method | Path | Auth |
 | --- | --- | --- |
-| `GET` | `/api/matches/:slug.json` | public |
+| `GET` | `/api/matches/:slug.json` | server token or admin |
 | `DELETE` | `/api/matches/:slug` | admin |
 | `POST` | `/api/matches/bulk-delete` | admin |
 | `GET` | `/api/matches` | public |

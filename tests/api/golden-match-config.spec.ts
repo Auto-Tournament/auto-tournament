@@ -81,9 +81,16 @@ const COMMON_REPLACE = {
   [DEFAULT_ADMIN_STEAM_ID]: '<test-admin-steam-id>',
 };
 
-async function fetchServedConfig(request: APIRequestContext, match: MatchListRow): Promise<Config> {
-  // No auth header: the plugin fetches this URL anonymously.
-  const res = await request.get(`/api/matches/${match.slug}.json`);
+/**
+ * A cookie-less context, as the game server is: the config is fetched with the
+ * header MAT puts on the load command, not an admin session.
+ */
+let serverContext: APIRequestContext;
+
+async function fetchServedConfig(match: MatchListRow): Promise<Config> {
+  const res = await serverContext.get(`/api/matches/${match.slug}.json`, {
+    headers: { 'X-MatchZy-Token': process.env.SERVER_TOKEN ?? 'server123' },
+  });
   expect(res.ok(), `config for ${match.slug}: ${res.status()} ${await res.text()}`).toBe(true);
   const config = (await res.json()) as Config;
   expect(config.matchid, `${match.slug}: matchid is the matches row id`).toBe(match.id);
@@ -117,7 +124,7 @@ async function snapshotTournament(request: APIRequestContext, name: string): Pro
       round: match.round,
       matchNumber: match.matchNumber,
       bracket: match.bracket ?? null,
-      config: await fetchServedConfig(request, match),
+      config: await fetchServedConfig(match),
     });
   }
   expectGolden(`match-config-${name}`, normalizeForGolden(snapshot, { replace: COMMON_REPLACE }));
@@ -138,6 +145,13 @@ test.describe.serial('Golden MatchZy match configs', () => {
     } finally {
       await request.dispose();
     }
+    serverContext = await playwright.request.newContext({
+      baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069',
+    });
+  });
+
+  test.afterAll(async () => {
+    await serverContext?.dispose();
   });
 
   test.beforeEach(async ({ request }) => {
@@ -224,7 +238,7 @@ test.describe.serial('Golden MatchZy match configs', () => {
 
     const snapshot = [];
     for (const match of matches) {
-      const config = await fetchServedConfig(request, match);
+      const config = await fetchServedConfig(match);
 
       // Random per match (Math.random in the shuffle config builder).
       expect(config.map_sides).toHaveLength(1);
@@ -311,7 +325,7 @@ test.describe.serial('Golden MatchZy match configs', () => {
     });
 
     try {
-      const config = await fetchServedConfig(request, {
+      const config = await fetchServedConfig({
         id: created.match.id,
         slug,
         round: 0,

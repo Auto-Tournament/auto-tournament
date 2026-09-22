@@ -110,6 +110,39 @@ export function getMatchZyDemoUploadCommand(baseUrl: string, matchSlug: string):
 }
 
 /**
+ * Header the game server presents when it downloads its match config. Same
+ * header, same `SERVER_TOKEN`, as the event webhook and demo upload.
+ */
+export const MATCH_CONFIG_AUTH_HEADER = 'X-MatchZy-Token';
+
+/**
+ * The RCON command that tells MatchZy to load a match.
+ *
+ * `matchzy_loadmatch_url "<url>" "<header name>" "<header value>"` — MatchZy
+ * adds the header to its config fetch, and keeps it for a load it queues
+ * behind a series in postgame. It has taken the two extra arguments since
+ * MatchZy 0.6.0, so every MatchZy-Enhanced build does. The config endpoint
+ * refuses a fetch without the header (see `requireMatchConfigAccess`).
+ *
+ * Without a token the bare command is sent; the fetch is then refused, which
+ * is the right outcome for an instance with no `SERVER_TOKEN`.
+ */
+export function getMatchZyLoadMatchCommand(
+  configUrl: string,
+  serverToken: string | null | undefined
+): string {
+  if (!serverToken) {
+    return `matchzy_loadmatch_url "${configUrl}"`;
+  }
+  return `matchzy_loadmatch_url "${configUrl}" "${MATCH_CONFIG_AUTH_HEADER}" "${serverToken}"`;
+}
+
+/** The load command as it may appear in logs and API responses: token hidden. */
+export function redactLoadMatchCommand(command: string): string {
+  return command.replace(/^(matchzy_loadmatch_url "[^"]*" "[^"]*" )"[^"]*"$/, '$1"REDACTED"');
+}
+
+/**
  * Get RCON commands for core MatchZy settings that we want to control from the app:
  * - Chat prefixes
  * - Knife round enabled-by-default toggle

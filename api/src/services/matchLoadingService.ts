@@ -12,7 +12,11 @@ import type { MatchConfig } from '../types/match.types';
 import { matchLiveStatsService } from './matchLiveStatsService';
 import { serverInitializationService } from '../integrations/cs2/services/serverInitializationService';
 import { settingsService } from './settingsService';
-import { getMatchZyServerConfigCommands } from '../integrations/cs2/utils/matchzyRconCommands';
+import {
+  getMatchZyLoadMatchCommand,
+  getMatchZyServerConfigCommands,
+  redactLoadMatchCommand,
+} from '../integrations/cs2/utils/matchzyRconCommands';
 import { resolveSeriesEndKickDelays, serverTurnoverTracker, tvDelayFromCvars } from '../integrations/cs2/utils/serverTurnover';
 import { matchConfigFetchTracker } from './matchConfigFetchTracker';
 import { classifyClearQueuedReply, classifyLoadMatchReply } from '../utils/matchzyServerReplies';
@@ -285,15 +289,16 @@ export async function loadMatchOnServer(
     // Load match on server
     // Server initialization has already ensured webhook, auth, and core config are set and persisted
     log.success(`✅ Server ${serverId} ready. Loading match ${matchSlug}`);
-    log.info(`Sending load command to ${serverId}: matchzy_loadmatch_url "${configUrl}"`);
+    // The header args make MatchZy authenticate its config fetch; the config
+    // endpoint refuses it otherwise (requireMatchConfigAccess).
+    const loadCommand = getMatchZyLoadMatchCommand(configUrl, process.env.SERVER_TOKEN);
+    const safeLoadCommand = redactLoadMatchCommand(loadCommand);
+    log.info(`Sending load command to ${serverId}: ${safeLoadCommand}`);
     const loadCommandSentAt = Date.now();
-    const loadResult = await rconService.sendCommand(
-      serverId,
-      `matchzy_loadmatch_url "${configUrl}"`
-    );
+    const loadResult = await rconService.sendCommand(serverId, loadCommand);
     results.push({
       success: loadResult.success,
-      command: `matchzy_loadmatch_url "${configUrl}"`,
+      command: safeLoadCommand,
       error: loadResult.error,
     });
 

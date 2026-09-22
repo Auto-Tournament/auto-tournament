@@ -214,116 +214,106 @@
     }
   },
   "dashboard": {
-    "title": "Tableau de bord",
-    "notReady": "Le tableau de bord du tournoi s’affichera ici une fois le tournoi démarré.",
-    "manageBanner": {
-      "text": "Looking for what needs a decision right now? The Manage console keeps a live queue of matches and servers that need you.",
-      "cta": "Open Manage"
-    },
+    "title": "Admin",
     "restartTournament": {
-      "button": "Redémarrer les matchs du tournoi",
-      "restarting": "Redémarrage des matchs du tournoi…"
+      "button": "Restart Tournament Matches",
+      "restarting": "Restarting tournament matches…"
     },
-    "onboarding": {
-      "ready": "🎉 Prêt !",
-      "gettingStarted": "Bien démarrer",
-      "stepsComplete": "{{completed}}/{{total}} terminé(s)",
-      "subtitle": "Suivez ces étapes pour configurer votre premier tournoi",
-      "steps": {
-        "webhook": {
-          "title": "Configurer l’URL du webhook",
-          "secondaryConfigured": "Endpoint webhook configuré",
-          "secondaryMissing": "Définir l’URL de base pour les webhooks et l’upload des démos",
-          "openSettings": "Ouvrir les paramètres"
-        },
-        "servers": {
-          "title": "Ajouter au moins un serveur CS2",
-          "chip": "{{count}} serveur",
-          "chipPlural": "{{count}} serveurs",
-          "secondaryConfigured": "Serveurs configurés et prêts",
-          "secondaryMissing": "Commencez par ajouter vos serveurs de jeu CS2",
-          "addServer": "Ajouter un serveur"
-        },
-        "teamsPlayers": {
-          "title": "Créer des équipes ou ajouter des joueurs",
-          "teamsChip": "{{count}} équipe",
-          "teamsChipPlural": "{{count}} équipes",
-          "playersChip": "{{count}} joueur",
-          "playersChipPlural": "{{count}} joueurs",
-          "secondaryConfigured": "{{details}}",
-          "secondaryMissing": "Créez des équipes et/ou ajoutez des joueurs avec leurs Steam IDs",
-          "createTeams": "Créer des équipes",
-          "addPlayers": "Ajouter des joueurs"
-        },
-        "tournament": {
-          "title": "Configurer le tournoi",
-          "chipStatus": "{{status}}",
-          "secondaryConfigured": "Tournoi configuré avec équipes et format",
-          "secondaryMissing": "Définir le type, le format, les équipes et les cartes",
-          "createTournament": "Créer un tournoi"
-        }
+    "header": {
+      "brand": "Auto Tournament",
+      "version": "Your Auto Tournament site · version {{version}}",
+      "unknownVersion": "dev",
+      "createTournament": "Create tournament"
+    },
+    "setup": {
+      "title": "Finish setting up",
+      "openSettings": "Open settings",
+      "steam": "Steam sign-in",
+      "serversTodo": "Connect a server",
+      "serversDone": "{{count}} server connected",
+      "serversDonePlural": "{{count}} servers connected",
+      "discord": "Discord sign-in (optional)",
+      "igdb": "Game covers via IGDB (optional)"
+    },
+    "tournaments": {
+      "title": "Tournaments",
+      "empty": "No tournaments yet. Create one to get started.",
+      "status": {
+        "setup": "Draft",
+        "ready": "Sign-up",
+        "inProgress": "Live",
+        "completed": "Finished"
       },
-      "startCta": {
-        "helper": "Tout est prêt ! Vérifiez votre configuration et démarrez le tournoi depuis la page Tournoi.",
-        "button": "Aller au tournoi"
+      "state": {
+        "draftEmpty": "Not published yet",
+        "draftTeams": "Draft · {{count}} team selected",
+        "draftTeamsPlural": "Draft · {{count}} teams selected",
+        "readyTeams": "{{count}} team entered · sign-up open",
+        "readyTeamsPlural": "{{count}} teams entered · sign-up open",
+        "inProgressTeams": "{{count}} team · in progress",
+        "inProgressTeamsPlural": "{{count}} teams · in progress",
+        "completedTeams": "{{count}} team took part",
+        "completedTeamsPlural": "{{count}} teams took part",
+        "winner": "Winner: {{name}}"
+      },
+      "actions": {
+        "manage": "Manage",
+        "continueSetup": "Continue setup",
+        "view": "View"
       }
     },
-    "stats": {
-      "heading": "Statistiques du tournoi",
-      "tournamentStatus": {
-        "title": "Statut du tournoi",
-        "none": "Aucun tournoi actif",
-        "typeLabel": "Type ",
-        "formatLabel": "Format du match",
-        "matchesLabel": "Matchs"
+    "site": {
+      "title": "Site",
+      "servers": {
+        "label": "Servers",
+        "hint": "Connect, update, health"
       },
-      "matchStatus": {
-        "title": "Statut des matchs",
-        "total": "Matchs au total",
-        "pending": "En attente :",
-        "ready": "Prêts :",
-        "loaded": "Chargés :",
-        "live": "En direct :",
-        "completed": "Terminés :"
-      },
-      "serverStatus": {
-        "title": "Statut des serveurs",
-        "onlineSummary": "Serveurs en ligne",
-        "online": "{{count}} en ligne",
-        "offline": "{{count}} hors ligne",
-        "distributionTitle": "Statut des serveurs"
+      "maps": {
+        "label": "Maps",
+        "hint": "Pools and images"
       },
       "players": {
-        "title": "Joueurs",
-        "total": "Joueurs au total",
-        "inMatches": "En match :",
-        "waiting": "En attente :"
+        "label": "Players",
+        "hint": "Everyone who signed in"
       },
-      "playerDistribution": {
-        "title": "Répartition des joueurs"
+      "teams": {
+        "label": "Teams",
+        "hint": "Clubs and rosters"
       },
-      "topPlayers": {
-        "title": "Meilleurs joueurs par ELO",
-        "subtitle": "Rating global tous types de tournois confondus",
-        "chip": "ELO : {{value}}"
+      "templates": {
+        "label": "Templates",
+        "hint": "Reusable setups"
       },
-      "eloDistribution": {
-        "title": "Répartition ELO des joueurs",
-        "subtitle": "Nombre de joueurs par tranche de Skill Rating (taille du bucket : {{bucket}}).",
-        "xAxis": "Tranche de Skill Rating",
-        "yAxis": "Joueurs",
-        "seriesLabel": "Joueurs"
+      "ratings": {
+        "label": "Ratings",
+        "hint": "ELO templates"
       },
-      "recentMatches": {
-        "title": "Derniers matchs terminés",
-        "subtitle": "Les {{count}} derniers matchs terminés",
-        "none": "Aucun match terminé pour le moment.",
-        "chipCompleted": "Terminé"
+      "settings": {
+        "label": "Settings",
+        "hint": "Sign-in, API keys"
       },
-      "noData": "Aucune donnée disponible. Créez un tournoi pour voir des statistiques.",
-      "errors": {
-        "load": "Impossible de charger les données du tableau de bord"
+      "adminTools": {
+        "label": "Admin tools",
+        "hint": "Logs and maintenance"
       }
+    },
+    "servers": {
+      "title": "Servers",
+      "open": "Open",
+      "online": "online",
+      "inMatch": "In a match",
+      "free": "Free",
+      "offline": "Offline",
+      "plugin": "Plugin",
+      "pluginSame": "{{version}}, all servers match",
+      "pluginMixed": "{{count}} plugin versions in use",
+      "none": "No servers connected yet."
+    },
+    "people": {
+      "title": "People",
+      "open": "Open",
+      "players": "Players",
+      "admins": "Admins"
     }
   },
   "managePage": {

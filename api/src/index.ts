@@ -249,7 +249,7 @@ app.get('/', (_req: Request, res: Response) => {
         note: 'Match management - webhooks auto-configured on load',
         list: 'GET /api/matches (auth required)',
         get: 'GET /api/matches/:slug (auth required)',
-        getConfig: 'GET /api/matches/:slug.json (public - for MatchZy)',
+        getConfig: 'GET /api/matches/:slug.json (X-MatchZy-Token or admin auth required - for MatchZy)',
         create: 'POST /api/matches (auth required)',
         load: 'POST /api/matches/:slug/load (auth required, webhooks auto-configured)',
         loadNoWebhook: 'POST /api/matches/:slug/load?skipWebhook=true (skip webhook setup)',

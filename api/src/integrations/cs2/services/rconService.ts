@@ -5,6 +5,7 @@ import { ServerResponse } from '../../../types/server.types';
 import { RconCommandResponse } from '../types/rcon.types';
 import { log } from '../../../utils/logger';
 import { isLostReplyError, isServerRestartCommand } from '../utils/rconRestartOutcome';
+import { getMatchZyLoadMatchCommand } from '../utils/matchzyRconCommands';
 
 /**
  * RCON Service for sending commands to CS2 servers
@@ -645,7 +646,7 @@ export class RconService {
      * Load a match config (MatchZy)
      */
     loadMatch: (serverId: string, configUrl: string) =>
-      this.sendCommand(serverId, `matchzy_loadmatch_url "${configUrl}"`),
+      this.sendCommand(serverId, getMatchZyLoadMatchCommand(configUrl, process.env.SERVER_TOKEN)),
 
     /**
      * End current match (MatchZy)
