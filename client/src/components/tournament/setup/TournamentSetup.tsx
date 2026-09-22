@@ -520,7 +520,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
               disabled={locked}
               fullWidth
               required
-              placeholder={t('tournament.namePlaceholder', 'MAT 2025 Spring Tournament')}
+              placeholder={t('tournament.namePlaceholder', 'Auto Tournament 2025 Spring Tournament')}
               slotProps={{ htmlInput: { 'data-testid': 'tournament-name-input' } }}
             />
             <Field

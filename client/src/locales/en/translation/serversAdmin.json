@@ -50,13 +50,13 @@
       "message": "Server is reachable but repeatedly rejecting RCON authentication. This may indicate an IP ban. If the RCON password is correct, please check the server's ban list and unban our IP address."
     },
     "connectivity": {
-      "apiToServer": "MAT API → CS2 Server",
+      "apiToServer": "Auto Tournament API → CS2 Server",
       "serverToApi": "Server → API (/api/events)",
       "unreachable": "Unreachable",
       "reachable": "Reachable",
       "unknown": "Unknown",
       "loading": "Loading…",
-      "pluginLabel": "MatchZy:"
+      "pluginLabel": "Auto Tournament CS2:"
     },
     "currentMatch": {
       "view": "View Match",
@@ -86,7 +86,7 @@
       "configuring": "Configuring new servers (sending MatchZy config via RCON)…",
       "done": "New servers configured. Refreshing status…"
     },
-    "checkServerLogs": "Check the game server console/logs to see if MatchZy receives config and sends events.",
+    "checkServerLogs": "Check the game server console/logs to see if the Auto Tournament plugin receives config and sends events.",
     "fleet": {
       "title": "Server fleet status",
       "total_one": "{{count}} server",
@@ -120,7 +120,7 @@
       "title": "Server not initialized",
       "checking": "Checking connectivity…",
       "rconUnreachable": "RCON unreachable. Check the host, port and that the game server is running. Use Retry once it's reachable.",
-      "noEvents": "RCON reachable, but MatchZy hasn't sent any events. Click Retry to configure it.",
+      "noEvents": "RCON reachable, but the Auto Tournament plugin hasn't sent any events. Click Retry to configure it.",
       "notChecked": "Connectivity not checked yet. See the status below. Click Retry to configure once RCON is reachable."
     },
     "chips": {
@@ -134,21 +134,21 @@
       "fixGuide": "Fix guide",
       "disabledTitle": "Disabled server",
       "disabledBody": "Disabled servers are ignored by allocation and health checks.",
-      "noEventsTitle": "No MatchZy events received yet",
-      "noEventsBody": "MAT sent the webhook config via RCON but hasn't received any events. This usually means the server can't reach the MAT webhook URL, or MatchZy isn't running.",
+      "noEventsTitle": "No events received yet from the Auto Tournament plugin",
+      "noEventsBody": "Auto Tournament sent the webhook config via RCON but hasn't received any events. This usually means the server can't reach the Auto Tournament webhook URL, or the Auto Tournament plugin isn't running.",
       "notConfiguredTitle": "Not configured",
-      "notConfiguredBody": "MAT hasn't sent the persistent config to this server yet. Use Retry to initialize it.",
-      "unreachableTitle": "Server unreachable from MAT",
-      "unreachableBody": "MAT can't reach the server via RCON. Check host/port, RCON password, firewall, and that the server is running.",
-      "webhookTitle": "Server can't reach MAT (webhook)",
-      "webhookBody": "MAT can reach the server via RCON, but the server can't reach MAT's webhook. Check egress, DNS and the configured webhook URL.",
+      "notConfiguredBody": "Auto Tournament hasn't sent the persistent config to this server yet. Use Retry to initialize it.",
+      "unreachableTitle": "Server unreachable from Auto Tournament",
+      "unreachableBody": "Auto Tournament can't reach the server via RCON. Check host/port, RCON password, firewall, and that the server is running.",
+      "webhookTitle": "Server can't reach Auto Tournament (webhook)",
+      "webhookBody": "Auto Tournament can reach the server via RCON, but the server can't reach Auto Tournament's webhook. Check egress, DNS and the configured webhook URL.",
       "versionDiffTitle": "Plugin versions differ across servers",
       "versionDiffBody": "Some servers are running a different Auto Tournament CS2 plugin version. If you use CSM, run {{command}} and restart the servers.",
       "ipBannedTitle": "RCON IP banned",
-      "ipBannedBody": "The server has temporarily banned MAT's IP after repeated RCON auth failures. Fix the RCON password and unban the IP.",
-      "pluginDbTitle": "The MatchZy plugin can't reach its database.",
+      "ipBannedBody": "The server has temporarily banned Auto Tournament's IP after repeated RCON auth failures. Fix the RCON password and unban the IP.",
+      "pluginDbTitle": "The Auto Tournament plugin can't reach its database.",
       "pluginDbBody": "If you use CSM, run {{path}}.",
-      "cs2UpdateBody": "MAT verified that this server's build is behind Steam. It is blocked from new allocations (and tournament start) until it's updated.",
+      "cs2UpdateBody": "Auto Tournament verified that this server's build is behind Steam. It is blocked from new allocations (and tournament start) until it's updated.",
       "retryInit": "Retry server initialization (send persistent config via RCON)"
     },
     "lastActive": {
@@ -201,7 +201,7 @@
     "overridesTitle": "MatchZy Overrides (optional)",
     "overridesDescription": "These settings override the global MatchZy defaults for this server only. Leave blank to use global values from Settings.",
     "chatPrefixLabel": "Chat Prefix Override",
-    "chatPrefixPlaceholder": "[{Green}MAT{Default}]",
+    "chatPrefixPlaceholder": "[{Green}Auto Tournament{Default}]",
     "chatPrefixHelper": "Overrides matchzy_chat_prefix on this server (optional)",
     "adminChatPrefixLabel": "Admin Chat Prefix Override",
     "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
@@ -211,7 +211,7 @@
     "testConnectivity": "Test connectivity",
     "testingConnectivity": "Testing connectivity…",
     "connectivity": {
-      "apiToServer": "MAT API → CS2 Server:",
+      "apiToServer": "Auto Tournament API → CS2 Server:",
       "serverToApi": "Server → API (/api/events):",
       "reachable": "Reachable",
       "unreachable": "Unreachable"

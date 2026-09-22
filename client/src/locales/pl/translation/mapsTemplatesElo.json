@@ -185,7 +185,7 @@
     },
     "baseName": {
       "label": "Nazwa bazowa",
-      "placeholder": "MAT",
+      "placeholder": "Auto Tournament",
       "helper": "Nazwy serwerów będą: Base #1, Base #2, Base #3..."
     },
     "host": {

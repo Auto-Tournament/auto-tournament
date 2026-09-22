@@ -52,7 +52,7 @@
         "title": "Predefinições do MatchZy (chat e knife)",
         "description": "Configura os prefíxos do chat no jogo e o comportamento padrão da ronda de knife.",
         "chatPrefixLabel": "Prefíxo do chat",
-        "chatPrefixHelper": "Predefinição: \"[{Green}MAT{Default}]\". Deixa vazio para repor o prefíxo padrão.",
+        "chatPrefixHelper": "Predefinição: \"[{Green}Auto Tournament{Default}]\". Deixa vazio para repor o prefíxo padrão.",
         "adminChatPrefixLabel": "Prefíxo de chat admin",
         "adminChatPrefixHelper": "Predefinição: \"[{Red}ADMIN{Default}]\". Deixa vazio para repor o prefíxo de admin padrão.",
         "knifeToggleLabel": "Ativar rondas de knife por defeito para novos jogos (quando os lados não estão pré-selecionados)",
@@ -112,7 +112,7 @@
         }
       },
       "matchzyEnhanced": {
-        "title": "Funcionalidades MatchZy Enhanced",
+        "title": "Funcionalidades Auto Tournament CS2",
         "description": "Configura funcionalidades avançadas de jogo. Deixa os campos vazios para usar as predefinições do MatchZy.",
         "autoready": {
           "title": "Auto-ready",

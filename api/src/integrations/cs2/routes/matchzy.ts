@@ -26,7 +26,7 @@ router.get('/latest-version', async (_req: Request, res: Response) => {
   } catch {
     return res.status(500).json({
       success: false,
-      error: 'Failed to fetch MatchZy version',
+      error: 'Failed to fetch Auto Tournament CS2 version',
     });
   }
 });

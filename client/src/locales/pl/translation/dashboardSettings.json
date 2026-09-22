@@ -52,7 +52,7 @@
         "title": "Domyślne ustawienia MatchZy (chat i knife)",
         "description": "Skonfiguruj prefiksy czatu w grze oraz domyślne zachowanie rundy knife.",
         "chatPrefixLabel": "Prefiks czatu",
-        "chatPrefixHelper": "Domyślnie: \"[{Green}MAT{Default}]\". Zostaw puste, aby przywrócić wartość domyślną.",
+        "chatPrefixHelper": "Domyślnie: \"[{Green}Auto Tournament{Default}]\". Zostaw puste, aby przywrócić wartość domyślną.",
         "adminChatPrefixLabel": "Prefiks czatu admina",
         "adminChatPrefixHelper": "Domyślnie: \"[{Red}ADMIN{Default}]\". Zostaw puste, aby przywrócić wartość domyślną.",
         "knifeToggleLabel": "Domyślnie włącz rundy knife dla nowych meczów (gdy strony nie są wcześniej wybrane)",
@@ -112,7 +112,7 @@
         }
       },
       "matchzyEnhanced": {
-        "title": "Funkcje MatchZy Enhanced",
+        "title": "Funkcje Auto Tournament CS2",
         "description": "Skonfiguruj zaawansowane funkcje meczu. Zostaw pola puste, aby użyć domyślnych ustawień MatchZy.",
         "autoready": {
           "title": "Auto-ready",

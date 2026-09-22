@@ -50,13 +50,13 @@
       "message": "服务器可达但反复拒绝 RCON 身份验证。这可能表示 IP 被封禁。如果 RCON 密码正确，请检查服务器的封禁列表并解封我们的 IP 地址。"
     },
     "connectivity": {
-      "apiToServer": "MAT API → CS2 服务器",
+      "apiToServer": "Auto Tournament API → CS2 服务器",
       "serverToApi": "服务器 → API（/api/events）",
       "unreachable": "不可达",
       "reachable": "可达",
       "unknown": "未知",
       "loading": "加载中…",
-      "pluginLabel": "MatchZy："
+      "pluginLabel": "Auto Tournament CS2："
     },
     "currentMatch": {
       "view": "查看比赛",
@@ -86,7 +86,7 @@
       "configuring": "正在配置新服务器（通过 RCON 发送 MatchZy 配置）…",
       "done": "新服务器已配置，正在刷新状态…"
     },
-    "checkServerLogs": "请查看游戏服务器控制台/日志，确认 MatchZy 是否收到配置并发送事件。",
+    "checkServerLogs": "请查看游戏服务器控制台/日志，确认 Auto Tournament 插件是否收到配置并发送事件。",
     "fleet": {
       "title": "服务器集群状态",
       "total_one": "{{count}} 台服务器",
@@ -95,7 +95,7 @@
       "offline": "离线",
       "notConfigured": "未配置",
       "disabled": "已禁用",
-      "latestRelease": "MatchZy Enhanced 最新版本：v{{version}}",
+      "latestRelease": "Auto Tournament CS2 最新版本：v{{version}}",
       "olderVersion_one": "{{count}} 台服务器运行的版本低于最新版本。",
       "olderVersion_other": "{{count}} 台服务器运行的版本低于最新版本。",
       "newerVersion_one": "{{count}} 台服务器运行的版本高于 GitHub 最新发布版本（可能是未发布的构建）。",
@@ -120,7 +120,7 @@
       "title": "服务器未初始化",
       "checking": "正在检查连接…",
       "rconUnreachable": "无法连接 RCON。请检查主机、端口以及游戏服务器是否正在运行。可以连接后点击“重试”。",
-      "noEvents": "RCON 可连接，但 MatchZy 尚未发送任何事件。点击“重试”进行配置。",
+      "noEvents": "RCON 可连接，但 Auto Tournament 插件尚未发送任何事件。点击“重试”进行配置。",
       "notChecked": "尚未检查连接，请查看下方状态。RCON 可连接后点击“重试”进行配置。"
     },
     "chips": {
@@ -134,21 +134,21 @@
       "fixGuide": "修复指南",
       "disabledTitle": "已禁用的服务器",
       "disabledBody": "已禁用的服务器不会参与分配和健康检查。",
-      "noEventsTitle": "尚未收到 MatchZy 事件",
-      "noEventsBody": "MAT 已通过 RCON 发送 Webhook 配置，但尚未收到任何事件。这通常表示服务器无法访问 MAT 的 Webhook URL，或 MatchZy 未运行。",
+      "noEventsTitle": "尚未收到 Auto Tournament 插件的事件",
+      "noEventsBody": "Auto Tournament 已通过 RCON 发送 Webhook 配置，但尚未收到任何事件。这通常表示服务器无法访问 Auto Tournament 的 Webhook URL，或 Auto Tournament 插件未运行。",
       "notConfiguredTitle": "未配置",
-      "notConfiguredBody": "MAT 尚未向此服务器发送持久配置。点击“重试”进行初始化。",
-      "unreachableTitle": "MAT 无法连接服务器",
-      "unreachableBody": "MAT 无法通过 RCON 连接服务器。请检查主机/端口、RCON 密码、防火墙以及服务器是否正在运行。",
-      "webhookTitle": "服务器无法连接 MAT（Webhook）",
-      "webhookBody": "MAT 可以通过 RCON 连接服务器，但服务器无法访问 MAT 的 Webhook。请检查出站网络、DNS 和已配置的 Webhook URL。",
+      "notConfiguredBody": "Auto Tournament 尚未向此服务器发送持久配置。点击“重试”进行初始化。",
+      "unreachableTitle": "Auto Tournament 无法连接服务器",
+      "unreachableBody": "Auto Tournament 无法通过 RCON 连接服务器。请检查主机/端口、RCON 密码、防火墙以及服务器是否正在运行。",
+      "webhookTitle": "服务器无法连接 Auto Tournament（Webhook）",
+      "webhookBody": "Auto Tournament 可以通过 RCON 连接服务器，但服务器无法访问 Auto Tournament 的 Webhook。请检查出站网络、DNS 和已配置的 Webhook URL。",
       "versionDiffTitle": "各服务器的插件版本不一致",
-      "versionDiffBody": "部分服务器运行的 MatchZy Enhanced 版本不同。如果使用 CSM，请运行 {{command}} 并重启服务器。",
+      "versionDiffBody": "部分服务器运行的 Auto Tournament CS2 版本不同。如果使用 CSM，请运行 {{command}} 并重启服务器。",
       "ipBannedTitle": "RCON IP 已被封禁",
-      "ipBannedBody": "由于 RCON 认证多次失败，服务器已暂时封禁 MAT 的 IP。请修正 RCON 密码并解封该 IP。",
-      "pluginDbTitle": "MatchZy 插件无法连接其数据库。",
+      "ipBannedBody": "由于 RCON 认证多次失败，服务器已暂时封禁 Auto Tournament 的 IP。请修正 RCON 密码并解封该 IP。",
+      "pluginDbTitle": "Auto Tournament 插件无法连接其数据库。",
       "pluginDbBody": "如果使用 CSM，请运行 {{path}}。",
-      "cs2UpdateBody": "MAT 已确认此服务器的构建版本落后于 Steam。更新前，该服务器不会被分配新比赛（也无法用于开始锦标赛）。",
+      "cs2UpdateBody": "Auto Tournament 已确认此服务器的构建版本落后于 Steam。更新前，该服务器不会被分配新比赛（也无法用于开始锦标赛）。",
       "retryInit": "重试服务器初始化（通过 RCON 发送持久配置）"
     },
     "lastActive": {
@@ -201,7 +201,7 @@
     "overridesTitle": "MatchZy 覆盖配置（可选）",
     "overridesDescription": "这些设置仅覆盖此服务器的全局 MatchZy 默认值。留空则使用“设置”中的全局值。",
     "chatPrefixLabel": "聊天前缀覆盖",
-    "chatPrefixPlaceholder": "[{Green}MAT{Default}]",
+    "chatPrefixPlaceholder": "[{Green}Auto Tournament{Default}]",
     "chatPrefixHelper": "覆盖此服务器上的 matchzy_chat_prefix（可选）",
     "adminChatPrefixLabel": "管理员聊天前缀覆盖",
     "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
@@ -211,7 +211,7 @@
     "testConnectivity": "测试连通性",
     "testingConnectivity": "正在测试连通性…",
     "connectivity": {
-      "apiToServer": "MAT API → CS2 服务器：",
+      "apiToServer": "Auto Tournament API → CS2 服务器：",
       "serverToApi": "服务器 → API（/api/events）：",
       "reachable": "可达",
       "unreachable": "不可达"

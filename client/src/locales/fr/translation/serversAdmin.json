@@ -56,13 +56,13 @@
       "message": "Le serveur est joignable mais refuse l’authentification RCON de manière répétée. Cela peut indiquer un ban IP. Si le mot de passe RCON est correct, vérifiez la liste de bans du serveur et débannissez notre adresse IP."
     },
     "connectivity": {
-      "apiToServer": "API MAT → serveur CS2",
+      "apiToServer": "API Auto Tournament → serveur CS2",
       "serverToApi": "Serveur → API (/api/events)",
       "unreachable": "Injoignable",
       "reachable": "Joignable",
       "unknown": "Inconnu",
       "loading": "Chargement…",
-      "pluginLabel": "MatchZy :"
+      "pluginLabel": "Auto Tournament CS2 :"
     },
     "currentMatch": {
       "view": "Voir le match",
@@ -86,7 +86,7 @@
       "configuring": "Configuration des nouveaux serveurs (envoi de la config MatchZy via RCON)…",
       "done": "Nouveaux serveurs configurés. Actualisation du statut…"
     },
-    "checkServerLogs": "Consultez la console / les logs du serveur de jeu pour vérifier que MatchZy reçoit la config et envoie des événements.",
+    "checkServerLogs": "Consultez la console / les logs du serveur de jeu pour vérifier que le plugin Auto Tournament reçoit la config et envoie des événements.",
     "fleet": {
       "title": "État du parc de serveurs",
       "total_one": "{{count}} serveur",
@@ -95,7 +95,7 @@
       "offline": "hors ligne",
       "notConfigured": "non configuré",
       "disabled": "désactivé",
-      "latestRelease": "Dernière version de MatchZy Enhanced : v{{version}}",
+      "latestRelease": "Dernière version de Auto Tournament CS2 : v{{version}}",
       "olderVersion_one": "{{count}} serveur utilise une version plus ancienne que la dernière release.",
       "olderVersion_other": "{{count}} serveurs utilisent une version plus ancienne que la dernière release.",
       "newerVersion_one": "{{count}} serveur utilise une version plus récente que la dernière release GitHub (probablement un build non publié).",
@@ -120,7 +120,7 @@
       "title": "Serveur non initialisé",
       "checking": "Vérification de la connectivité…",
       "rconUnreachable": "RCON injoignable. Vérifiez l’hôte, le port et que le serveur de jeu est lancé. Utilisez Réessayer une fois qu’il est joignable.",
-      "noEvents": "RCON joignable, mais MatchZy n’a envoyé aucun événement. Cliquez sur Réessayer pour le configurer.",
+      "noEvents": "RCON joignable, mais le plugin Auto Tournament n’a envoyé aucun événement. Cliquez sur Réessayer pour le configurer.",
       "notChecked": "Connectivité pas encore vérifiée. Consultez l’état ci-dessous. Cliquez sur Réessayer pour configurer le serveur une fois RCON joignable."
     },
     "chips": {
@@ -134,21 +134,21 @@
       "fixGuide": "Guide de résolution",
       "disabledTitle": "Serveur désactivé",
       "disabledBody": "Les serveurs désactivés sont ignorés par l’attribution et les vérifications de santé.",
-      "noEventsTitle": "Aucun événement MatchZy reçu pour l’instant",
-      "noEventsBody": "MAT a envoyé la configuration du webhook via RCON mais n’a reçu aucun événement. En général, le serveur ne peut pas joindre l’URL du webhook MAT, ou MatchZy ne tourne pas.",
+      "noEventsTitle": "Aucun événement reçu du plugin Auto Tournament pour l’instant",
+      "noEventsBody": "Auto Tournament a envoyé la configuration du webhook via RCON mais n’a reçu aucun événement. En général, le serveur ne peut pas joindre l’URL du webhook Auto Tournament, ou le plugin Auto Tournament ne tourne pas.",
       "notConfiguredTitle": "Non configuré",
-      "notConfiguredBody": "MAT n’a pas encore envoyé la configuration persistante à ce serveur. Utilisez Réessayer pour l’initialiser.",
-      "unreachableTitle": "Serveur injoignable depuis MAT",
-      "unreachableBody": "MAT ne peut pas joindre le serveur via RCON. Vérifiez l’hôte/le port, le mot de passe RCON, le pare-feu et que le serveur est lancé.",
-      "webhookTitle": "Le serveur ne peut pas joindre MAT (webhook)",
-      "webhookBody": "MAT peut joindre le serveur via RCON, mais le serveur ne peut pas joindre le webhook de MAT. Vérifiez le trafic sortant, le DNS et l’URL du webhook configurée.",
+      "notConfiguredBody": "Auto Tournament n’a pas encore envoyé la configuration persistante à ce serveur. Utilisez Réessayer pour l’initialiser.",
+      "unreachableTitle": "Serveur injoignable depuis Auto Tournament",
+      "unreachableBody": "Auto Tournament ne peut pas joindre le serveur via RCON. Vérifiez l’hôte/le port, le mot de passe RCON, le pare-feu et que le serveur est lancé.",
+      "webhookTitle": "Le serveur ne peut pas joindre Auto Tournament (webhook)",
+      "webhookBody": "Auto Tournament peut joindre le serveur via RCON, mais le serveur ne peut pas joindre le webhook de Auto Tournament. Vérifiez le trafic sortant, le DNS et l’URL du webhook configurée.",
       "versionDiffTitle": "Les versions du plugin diffèrent selon les serveurs",
-      "versionDiffBody": "Certains serveurs utilisent une autre version de MatchZy Enhanced. Si vous utilisez CSM, exécutez {{command}} puis redémarrez les serveurs.",
+      "versionDiffBody": "Certains serveurs utilisent une autre version de Auto Tournament CS2. Si vous utilisez CSM, exécutez {{command}} puis redémarrez les serveurs.",
       "ipBannedTitle": "IP bannie par RCON",
-      "ipBannedBody": "Le serveur a temporairement banni l’IP de MAT après plusieurs échecs d’authentification RCON. Corrigez le mot de passe RCON et débannissez l’IP.",
-      "pluginDbTitle": "Le plugin MatchZy ne peut pas joindre sa base de données.",
+      "ipBannedBody": "Le serveur a temporairement banni l’IP de Auto Tournament après plusieurs échecs d’authentification RCON. Corrigez le mot de passe RCON et débannissez l’IP.",
+      "pluginDbTitle": "Le plugin Auto Tournament ne peut pas joindre sa base de données.",
       "pluginDbBody": "Si vous utilisez CSM, exécutez {{path}}.",
-      "cs2UpdateBody": "MAT a vérifié que le build de ce serveur est en retard sur Steam. Il est exclu des nouvelles attributions (et du lancement du tournoi) jusqu’à sa mise à jour.",
+      "cs2UpdateBody": "Auto Tournament a vérifié que le build de ce serveur est en retard sur Steam. Il est exclu des nouvelles attributions (et du lancement du tournoi) jusqu’à sa mise à jour.",
       "retryInit": "Réessayer l’initialisation du serveur (envoyer la configuration persistante via RCON)"
     },
     "lastActive": {
@@ -201,7 +201,7 @@
     "overridesTitle": "Surcharges MatchZy (optionnel)",
     "overridesDescription": "Ces paramètres surchargent les valeurs globales MatchZy uniquement pour ce serveur. Laissez vide pour utiliser les valeurs globales dans Paramètres.",
     "chatPrefixLabel": "Surcharge du préfixe de chat",
-    "chatPrefixPlaceholder": "[{Green}MAT{Default}]",
+    "chatPrefixPlaceholder": "[{Green}Auto Tournament{Default}]",
     "chatPrefixHelper": "Surcharge matchzy_chat_prefix sur ce serveur (optionnel)",
     "adminChatPrefixLabel": "Surcharge du préfixe de chat admin",
     "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
@@ -211,7 +211,7 @@
     "testConnectivity": "Tester la connectivité",
     "testingConnectivity": "Test de connectivité…",
     "connectivity": {
-      "apiToServer": "API MAT → serveur CS2 :",
+      "apiToServer": "API Auto Tournament → serveur CS2 :",
       "serverToApi": "Serveur → API (/api/events) :",
       "reachable": "Joignable",
       "unreachable": "Injoignable"

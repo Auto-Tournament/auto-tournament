@@ -50,13 +50,13 @@
       "message": "Serveren er tilgjengelig, men avviser RCON-autentisering gjentatte ganger. Dette kan indikere IP-blokkering. Hvis RCON-passordet er korrekt, sjekk serverens ban-liste og fjern blokkeringen av IP-en vår."
     },
     "connectivity": {
-      "apiToServer": "MAT API → CS2-server",
+      "apiToServer": "Auto Tournament API → CS2-server",
       "serverToApi": "Server → API (/api/events) (hendelser)",
       "unreachable": "Ikke tilgjengelig",
       "reachable": "Tilgjengelig",
       "unknown": "Ukjent",
       "loading": "Laster…",
-      "pluginLabel": "MatchZy"
+      "pluginLabel": "Auto Tournament CS2"
     },
     "currentMatch": {
       "view": "Vis kamp",
@@ -86,7 +86,7 @@
       "configuring": "Konfigurerer nye servere (sender MatchZy-konfig via RCON)…",
       "done": "Nye servere konfigurert. Oppdaterer status…"
     },
-    "checkServerLogs": "Sjekk spillserverens konsoll/logger for å se om MatchZy mottar konfigurasjon og sender hendelser.",
+    "checkServerLogs": "Sjekk spillserverens konsoll/logger for å se om Auto Tournament-pluginet mottar konfigurasjon og sender hendelser.",
     "fleet": {
       "title": "Serverstatus",
       "total_one": "{{count}} server",
@@ -95,7 +95,7 @@
       "offline": "frakoblet",
       "notConfigured": "ikke konfigurert",
       "disabled": "deaktivert",
-      "latestRelease": "Nyeste MatchZy Enhanced-versjon: v{{version}}",
+      "latestRelease": "Nyeste Auto Tournament CS2-versjon: v{{version}}",
       "olderVersion_one": "{{count}} server kjører en eldre versjon enn den nyeste.",
       "olderVersion_other": "{{count}} servere kjører en eldre versjon enn den nyeste.",
       "newerVersion_one": "{{count}} server kjører en nyere versjon enn den nyeste på GitHub (trolig en uutgitt build).",
@@ -120,7 +120,7 @@
       "title": "Serveren er ikke initialisert",
       "checking": "Sjekker tilkobling …",
       "rconUnreachable": "Får ikke kontakt via RCON. Sjekk vert, port og at spillserveren kjører. Trykk «Prøv igjen» når den svarer.",
-      "noEvents": "RCON svarer, men MatchZy har ikke sendt hendelser. Trykk «Prøv igjen» for å konfigurere serveren.",
+      "noEvents": "RCON svarer, men Auto Tournament-pluginet har ikke sendt hendelser. Trykk «Prøv igjen» for å konfigurere serveren.",
       "notChecked": "Tilkoblingen er ikke sjekket ennå. Se status under. Trykk «Prøv igjen» for å konfigurere når RCON svarer."
     },
     "chips": {
@@ -134,21 +134,21 @@
       "fixGuide": "Slik fikser du det",
       "disabledTitle": "Deaktivert server",
       "disabledBody": "Deaktiverte servere blir ikke tildelt kamper og helsesjekkes ikke.",
-      "noEventsTitle": "Ingen MatchZy-hendelser mottatt ennå",
-      "noEventsBody": "MAT har sendt webhook-konfigurasjonen via RCON, men har ikke mottatt noen hendelser. Som regel betyr det at serveren ikke når MATs webhook-URL, eller at MatchZy ikke kjører.",
+      "noEventsTitle": "Ingen hendelser mottatt fra Auto Tournament-pluginet ennå",
+      "noEventsBody": "Auto Tournament har sendt webhook-konfigurasjonen via RCON, men har ikke mottatt noen hendelser. Som regel betyr det at serveren ikke når Auto Tournaments webhook-URL, eller at Auto Tournament-pluginet ikke kjører.",
       "notConfiguredTitle": "Ikke konfigurert",
-      "notConfiguredBody": "MAT har ikke sendt den faste konfigurasjonen til denne serveren ennå. Trykk «Prøv igjen» for å initialisere den.",
-      "unreachableTitle": "MAT når ikke serveren",
-      "unreachableBody": "MAT får ikke kontakt med serveren via RCON. Sjekk vert/port, RCON-passord, brannmur og at serveren kjører.",
-      "webhookTitle": "Serveren når ikke MAT (webhook)",
-      "webhookBody": "MAT når serveren via RCON, men serveren når ikke MATs webhook. Sjekk utgående trafikk, DNS og webhook-URL-en som er satt opp.",
+      "notConfiguredBody": "Auto Tournament har ikke sendt den faste konfigurasjonen til denne serveren ennå. Trykk «Prøv igjen» for å initialisere den.",
+      "unreachableTitle": "Auto Tournament når ikke serveren",
+      "unreachableBody": "Auto Tournament får ikke kontakt med serveren via RCON. Sjekk vert/port, RCON-passord, brannmur og at serveren kjører.",
+      "webhookTitle": "Serveren når ikke Auto Tournament (webhook)",
+      "webhookBody": "Auto Tournament når serveren via RCON, men serveren når ikke Auto Tournaments webhook. Sjekk utgående trafikk, DNS og webhook-URL-en som er satt opp.",
       "versionDiffTitle": "Serverne har ulike pluginversjoner",
-      "versionDiffBody": "Noen servere kjører en annen versjon av MatchZy Enhanced. Bruker du CSM, kjør {{command}} og start serverne på nytt.",
+      "versionDiffBody": "Noen servere kjører en annen versjon av Auto Tournament CS2. Bruker du CSM, kjør {{command}} og start serverne på nytt.",
       "ipBannedTitle": "RCON-IP blokkert",
-      "ipBannedBody": "Serveren har midlertidig blokkert MATs IP etter gjentatte mislykkede RCON-innlogginger. Rett RCON-passordet og opphev blokkeringen av IP-en.",
-      "pluginDbTitle": "MatchZy-pluginen når ikke databasen sin.",
+      "ipBannedBody": "Serveren har midlertidig blokkert Auto Tournaments IP etter gjentatte mislykkede RCON-innlogginger. Rett RCON-passordet og opphev blokkeringen av IP-en.",
+      "pluginDbTitle": "Auto Tournament-pluginet når ikke databasen sin.",
       "pluginDbBody": "Bruker du CSM, kjør {{path}}.",
-      "cs2UpdateBody": "MAT har bekreftet at serverens build er eldre enn den på Steam. Serveren får ikke nye kamper (og turneringen kan ikke startes) før den er oppdatert.",
+      "cs2UpdateBody": "Auto Tournament har bekreftet at serverens build er eldre enn den på Steam. Serveren får ikke nye kamper (og turneringen kan ikke startes) før den er oppdatert.",
       "retryInit": "Prøv å initialisere serveren på nytt (sender fast konfigurasjon via RCON)"
     },
     "lastActive": {
@@ -201,7 +201,7 @@
     "overridesTitle": "MatchZy-overstyringer (valgfritt)",
     "overridesDescription": "Disse innstillingene overstyrer globale MatchZy-standarder kun for denne serveren. La stå tomt for å bruke globale verdier fra Innstillinger.",
     "chatPrefixLabel": "Overstyr chat-prefiks",
-    "chatPrefixPlaceholder": "[{Green}MAT{Default}]",
+    "chatPrefixPlaceholder": "[{Green}Auto Tournament{Default}]",
     "chatPrefixHelper": "Overstyrer matchzy_chat_prefix på denne serveren (valgfritt)",
     "adminChatPrefixLabel": "Overstyr admin-chat-prefiks",
     "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
@@ -211,7 +211,7 @@
     "testConnectivity": "Test tilkobling",
     "testingConnectivity": "Tester tilkobling…",
     "connectivity": {
-      "apiToServer": "MAT API → CS2-server:",
+      "apiToServer": "Auto Tournament API → CS2-server:",
       "serverToApi": "Server → API (/api/events) (hendelser):",
       "reachable": "Tilgjengelig",
       "unreachable": "Ikke tilgjengelig"

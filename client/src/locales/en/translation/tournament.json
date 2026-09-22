@@ -75,7 +75,7 @@
       "createTournament": "Create Tournament"
     },
     "nameLabel": "Tournament Name",
-    "namePlaceholder": "MAT 2025 Spring Tournament",
+    "namePlaceholder": "Auto Tournament 2025 Spring Tournament",
     "champion": {
       "title": "Champion"
     },
