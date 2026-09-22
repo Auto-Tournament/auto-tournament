@@ -1,0 +1,141 @@
+{
+  "devToolsPage": {
+    "alert": "Ces outils sont uniquement disponibles en mode développement. Utilisez-les pour générer rapidement des données de test afin de tester l’application.",
+    "sections": {
+      "testData": {
+        "title": "Créer des données de test"
+      }
+    },
+    "testTeams": {
+      "title": "Équipes de test",
+      "description": "Créez des équipes avec des données de joueurs aléatoires pour tester les tableaux et les matchs du tournoi.",
+      "success": "Création réussie de {{count}} équipe(s) de test !",
+      "errors": {
+        "create": "Impossible de créer les équipes de test",
+        "partial": "Créé {{created}} équipe(s), mais {{failed}} ont échoué. Consultez la console pour les détails."
+      },
+      "customLabel": "Nombre d’équipes personnalisé",
+      "buttons": {
+        "createFixed": "Créer {{count}} équipes",
+        "createCustom": "Créer des équipes"
+      }
+    },
+    "testPlayers": {
+      "title": "Joueurs de test",
+      "description": "Créez des joueurs avec des classements ELO pour tester les tournois shuffle et la gestion des joueurs.",
+      "success": "Joueurs de test créés : {{created}} !",
+      "errors": {
+        "create": "Impossible de créer les joueurs de test",
+        "partial": "Créé {{created}} joueur(s), mis à jour {{updated}}, mais {{failed}} ont échoué. Consultez la console pour les détails."
+      },
+      "customLabel": "Nombre de joueurs personnalisé",
+      "buttons": {
+        "createFixed": "Créer {{count}} joueurs",
+        "createCustom": "Créer des joueurs"
+      },
+      "successWithUpdated": "Joueurs de test créés : {{created}}, mis à jour : {{updated}} !"
+    },
+    "testServers": {
+      "title": "Serveurs de test",
+      "description": "Créez des configurations de serveurs pour tester la gestion des matchs et les commandes RCON.",
+      "success": "Création réussie de {{count}} serveur(s) de test !",
+      "errors": {
+        "create": "Impossible de créer les serveurs de test",
+        "partial": "Créé {{created}} serveur(s), mais {{failed}} ont échoué. Consultez la console pour les détails."
+      },
+      "customLabel": "Nombre de serveurs personnalisé",
+      "buttons": {
+        "createCustom": "Créer des serveurs",
+        "createFixed_one": "Créer {{count}} serveur",
+        "createFixed_other": "Créer {{count}} serveurs"
+      }
+    },
+    "dangerZone": {
+      "title": "Zone dangereuse"
+    },
+    "deleteTestData": {
+      "title": "Supprimer les données de test",
+      "description": "Supprime toutes les données de test (équipes et serveurs avec le préfixe 'test-'). Cette action est irréversible.",
+      "button": "Supprimer toutes les données de test",
+      "confirmPrompt": "Êtes-vous sûr de vouloir supprimer TOUTES les données de test ?",
+      "success": "Toutes les données de test ont été supprimées avec succès !",
+      "error": "Impossible de supprimer les données de test"
+    },
+    "wipeTable": {
+      "title": "Vider des tables spécifiques",
+      "description": "Supprime toutes les données d’une table spécifique. Utile pour nettoyer sans tout réinitialiser. Les tables sont organisées par catégorie.",
+      "confirmPrompt": "Êtes-vous sûr de vouloir vider la table {{table}} ? Cela supprimera toutes les données de cette table.",
+      "success": "La table {{table}} a été vidée avec succès !",
+      "error": "Impossible de vider la table {{table}}",
+      "core": {
+        "title": "Tables principales",
+        "teams": "Vider les équipes",
+        "servers": "Vider les serveurs",
+        "tournament": "Vider le tournoi",
+        "matches": "Vider les matchs"
+      },
+      "players": {
+        "title": "Joueurs et tournois shuffle",
+        "players": "Vider les joueurs",
+        "ratingHistory": "Vider l’historique de rating",
+        "matchStats": "Vider les stats de match",
+        "shufflePlayers": "Vider les joueurs shuffle"
+      },
+      "maps": {
+        "title": "Cartes et modèles",
+        "maps": "Vider les cartes",
+        "mapPools": "Vider les pools de cartes",
+        "tournamentTemplates": "Vider les modèles de tournoi",
+        "eloTemplates": "Vider les modèles ELO"
+      },
+      "matchEvents": {
+        "title": "Événements de match et résultats",
+        "events": "Vider les événements de match",
+        "mapResults": "Vider les résultats de carte"
+      },
+      "settings": {
+        "title": "Paramètres",
+        "appSettings": "Vider les paramètres de l’application"
+      }
+    },
+    "simulation": {
+      "title": "État de simulation",
+      "description": "Efface tous les matchs et les statistiques historiques afin que vous puissiez cliquer sur « Démarrer le tournoi » en mode simulation sur un tableau vierge, tout en conservant les serveurs, équipes, cartes et la configuration actuelle du tournoi.",
+      "button": "Réinitialiser l’état de simulation (conserver la config)",
+      "reset": {
+        "success": "État de simulation réinitialisé. Matchs et stats effacés ; serveurs, équipes et config du tournoi conservés.",
+        "error": "Impossible de réinitialiser l’état de simulation"
+      }
+    },
+    "wipeDatabase": {
+      "title": "Effacer toute la base de données",
+      "warningTitle": "EXTRÊMEMENT DESTRUCTEUR !",
+      "warningBody": "Cela supprimera TOUTES les données.",
+      "permanentlyDeletes": "Supprime définitivement :",
+      "items": {
+        "tournaments": "Tous les tournois et tableaux",
+        "matches": "Tous les matchs et événements",
+        "teams": "Toutes les équipes et joueurs",
+        "servers": "Toutes les configurations de serveur"
+      },
+      "button": "Effacer toute la base de données",
+      "successRedirect": "Base de données effacée avec succès ! Redirection...",
+      "error": "Impossible d’effacer la base de données",
+      "dialog": {
+        "title": "Confirmer l’effacement de la base de données",
+        "areYouSure": "Êtes-vous absolument sûr ?",
+        "actionWill": "Cette action va",
+        "permanentlyDelete": "supprimer définitivement",
+        "items": {
+          "tournaments": "Toutes les données de tournoi et tableaux",
+          "matches": "Tout l’historique des matchs et événements",
+          "teams": "Toutes les équipes et configurations de joueurs",
+          "servers": "Toutes les configurations de serveur"
+        },
+        "cannotUndo": "Cette action est irréversible !",
+        "wiping": "Effacement de la base de données...",
+        "yesWipe": "Oui, tout effacer"
+      }
+    }
+  }
+}

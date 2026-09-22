@@ -1,0 +1,342 @@
+{
+  "mapsPage": {
+    "title": "Mapas e pools de mapas",
+    "tabs": {
+      "maps": "Mapas",
+      "mapPools": "Pools de mapas"
+    },
+    "headerActions": {
+      "addMap": "Adicionar mapa",
+      "createMapPool": "Criar pool de mapas"
+    },
+    "errors": {
+      "loadMaps": "Não foi possível carregar os mapas",
+      "loadPools": "Não foi possível carregar os pools de mapas",
+      "defaultPoolCannotDelete": "O pool de mapas predefinido não pode ser eliminado.",
+      "setDefaultPool": "Não foi possível definir o pool de mapas predefinido",
+      "togglePool": "Não foi possível alterar o estado do pool de mapas",
+      "deleteMap": "Não foi possível eliminar o mapa",
+      "deletePool": "Não foi possível eliminar o pool de mapas"
+    },
+    "success": {
+      "mapDeleted": "Mapa eliminado com sucesso"
+    },
+    "confirmDeleteMap": {
+      "title": "Eliminar mapa",
+      "message": "Tem a certeza de que pretende eliminar \"{{name}}\"? Esta ação não pode ser anulada."
+    },
+    "confirmDeletePool": {
+      "title": "Eliminar pool de mapas",
+      "message": "Tem a certeza de que pretende eliminar \"{{name}}\"? Esta ação não pode ser anulada."
+    }
+  },
+  "mapModal": {
+    "titleCreate": "Adicionar mapa",
+    "titleEdit": "Editar mapa",
+    "workshop": {
+      "inputLabel": "URL ou ID do Steam Workshop",
+      "inputPlaceholder": "https://steamcommunity.com/sharedfiles/filedetails/?id=1234567890",
+      "inputHelper": "Cola um URL do Workshop ou um ID numérico para preencher automaticamente o nome e a imagem.",
+      "found": "Encontrado: {{title}}",
+      "lookupFailed": "Falha na pesquisa no Workshop"
+    },
+    "mapIdLabel": "ID do mapa",
+    "mapIdPlaceholder": "de_dust2",
+    "mapIdHelper": "Apenas letras minúsculas, números e sublinhados (de_dust2)",
+    "displayNameLabel": "Nome de apresentação",
+    "displayNamePlaceholder": "Dust II",
+    "mapImageLabel": "Imagem do mapa",
+    "uploadButton": "Carregar imagem",
+    "fetchFromGitHub": "Obter do GitHub",
+    "uploadHelper": "Carregue uma imagem PNG, JPG, GIF ou WebP (máx. 5 MB)",
+    "previewLabel": "Pré-visualização:",
+    "removeImage": "Remover imagem",
+    "errors": {
+      "mapIdRequired": "O ID do mapa é obrigatório",
+      "displayNameRequired": "O nome de apresentação é obrigatório",
+      "mapIdInvalid": "O ID do mapa só pode conter letras minúsculas, números e sublinhados",
+      "invalidFileType": "Tipo de ficheiro inválido. Selecione uma imagem PNG, JPG, GIF ou WebP.",
+      "fileTooLarge": "Ficheiro demasiado grande. Selecione uma imagem com menos de 5 MB.",
+      "readFileFailed": "Não foi possível ler o ficheiro de imagem",
+      "fetchImageIdRequired": "Introduza primeiro um ID de mapa",
+      "fetchImageFailed": "Não foi possível obter a imagem. Pode carregar uma imagem em alternativa.",
+      "imageNotFound": "Não foi encontrada uma imagem para {{id}}. Pode carregar uma imagem em alternativa.",
+      "uploadFailed": "Não foi possível carregar a imagem",
+      "saveFailed": "Não foi possível guardar o mapa"
+    },
+    "success": {
+      "mapUpdated": "Mapa atualizado com sucesso",
+      "mapCreated": "Mapa criado com sucesso"
+    },
+    "buttons": {
+      "cancel": "Cancelar",
+      "saving": "A guardar...",
+      "update": "Atualizar",
+      "create": "Criar"
+    }
+  },
+  "mapActionsModal": {
+    "mapId": "ID do mapa",
+    "preview": "Pré-visualizar",
+    "edit": "Editar"
+  },
+  "mapPoolActionsModal": {
+    "defaultChip": "Predefinido",
+    "status": {
+      "label": "Estado",
+      "enabled": "Ativo",
+      "disabled": "Inativo"
+    },
+    "maps": {
+      "label": "Mapas ({{count}})"
+    },
+    "actions": {
+      "edit": "Editar",
+      "enable": "Ativar",
+      "disable": "Desativar",
+      "setDefault": "Definir como predefinido"
+    }
+  },
+  "templatesPage": {
+    "header": {
+      "createFromTournament": "Criar modelo a partir do torneio"
+    },
+    "empty": "Ainda não existem modelos. Crie o seu primeiro modelo a partir da página Torneio.",
+    "errors": {
+      "load": "Não foi possível carregar os modelos"
+    },
+    "delete": {
+      "title": "Eliminar modelo",
+      "message": "Tem a certeza de que pretende eliminar o modelo \"{{name}}\"? Esta ação não pode ser anulada.",
+      "success": "Modelo \"{{name}}\" eliminado com sucesso",
+      "error": "Não foi possível eliminar o modelo"
+    },
+    "update": {
+      "success": "Modelo \"{{name}}\" atualizado com sucesso",
+      "error": "Não foi possível atualizar o modelo"
+    },
+    "createFromTemplate": {
+      "errors": {
+        "inProgressOrCompleted": "Não é possível criar um torneio a partir de um modelo enquanto um torneio estiver em curso ou concluído. Elimine ou redefina primeiro o torneio atual.",
+        "alreadyExists": "Já existe um torneio. Elimine ou redefina o torneio atual antes de criar um novo a partir de um modelo."
+      }
+    },
+    "edit": {
+      "title": "Editar modelo",
+      "nameLabel": "Nome do modelo",
+      "descriptionLabel": "Descrição (opcional)",
+      "typeLabel": "Tipo de torneio",
+      "formatLabel": "Formato do jogo",
+      "mapPool": {
+        "title": "Pool de mapas",
+        "selectLabel": "Escolha um pool de mapas",
+        "customOption": "Personalizado",
+        "selectedLabel": "Mapas selecionados ({{count}}):",
+        "vetoWarning": "Os formatos com veto (BO1/BO3/BO5) exigem exatamente 7 mapas. Atualmente selecionados: {{count}}"
+      },
+      "save": "Guardar"
+    }
+  },
+  "saveTemplateModal": {
+    "title": "Guardar como modelo",
+    "nameLabel": "Nome do modelo",
+    "namePlaceholder": "Eliminação simples BO3 (8 equipas)",
+    "descriptionLabel": "Descrição (opcional)",
+    "descriptionPlaceholder": "Torneio semanal de 8 equipas em eliminação simples",
+    "saveButton": "Guardar modelo",
+    "errors": {
+      "nameRequired": "O nome do modelo é obrigatório",
+      "saveFailed": "Não foi possível guardar o modelo"
+    }
+  },
+  "saveMapPoolModal": {
+    "title": "Guardar pool de mapas",
+    "nameLabel": "Nome do pool de mapas",
+    "namePlaceholder": "O meu pool personalizado",
+    "saveButton": "Guardar",
+    "errors": {
+      "nameRequired": "O nome do pool de mapas é obrigatório",
+      "noMaps": "Selecione pelo menos um mapa",
+      "saveFailed": "Não foi possível guardar o pool de mapas"
+    },
+    "info_one": "Isto guarda um map pool com {{count}} mapa.",
+    "info_other": "Isto guarda um map pool com {{count}} mapas."
+  },
+  "batchServerModal": {
+    "title": "Criar servidores em lote",
+    "info": "Crie vários servidores com portas a aumentar de 10 em 10 (27015, 27025, 27035...). Perfeito para configurações LAN com servidores na mesma máquina.",
+    "sections": {
+      "identification": {
+        "title": "Identificação do servidor"
+      },
+      "connection": {
+        "title": "Definições de ligação"
+      },
+      "configuration": {
+        "title": "Configuração do servidor"
+      }
+    },
+    "baseId": {
+      "label": "ID base",
+      "placeholder": "server",
+      "helper": "Os IDs dos servidores serão: base_1, base_2, base_3..."
+    },
+    "baseName": {
+      "label": "Nome base",
+      "placeholder": "MAT",
+      "helper": "Os nomes dos servidores serão: Base #1, Base #2, Base #3..."
+    },
+    "host": {
+      "label": "Host / endereço IP",
+      "placeholder": "192.168.1.100"
+    },
+    "rconPassword": {
+      "label": "Palavra-passe RCON",
+      "placeholder": "shared-rcon-password",
+      "helper": "A mesma palavra-passe para todos os servidores"
+    },
+    "numServers": {
+      "label": "Número de servidores",
+      "placeholder": "3",
+      "helper": "Máx.: 50"
+    },
+    "assignPorts": {
+      "label": "Atribuir portas",
+      "helper": "API → Servidor (teste RCON)"
+    },
+    "serverPortLabel": "Servidor #{{index}}",
+    "portPlaceholder": "27015",
+    "enabled": {
+      "label": "Servidores ativados",
+      "helper": "Todos os servidores serão criados como ativados/desativados"
+    },
+    "preview": {
+      "more": "...e mais {{count}}",
+      "titleFirst10": "Pré-visualização (primeiros 10)",
+      "titleAll": "Pré-visualização (todos)"
+    },
+    "checkServersButton": {
+      "default": "Verificar servidores",
+      "checking": "A verificar..."
+    },
+    "createServersButton": {
+      "creating": "A criar...",
+      "default_one": "Criar {{count}} servidor",
+      "default_other": "Criar {{count}} servidores"
+    },
+    "warnings": {
+      "notAllVerified": "Alguns servidores não passaram nas verificações de conectividade. Serão guardados, mas poderão aparecer offline até RCON e webhook estarem configurados."
+    },
+    "success": {
+      "createdAll_one": "{{count}} servidor criado",
+      "createdAll_other": "{{count}} servidores criados"
+    },
+    "errors": {
+      "baseNameRequired": "O nome base é obrigatório",
+      "baseIdRequired": "O ID base é obrigatório",
+      "hostRequired": "O host é obrigatório",
+      "countRange": "O número de servidores tem de estar entre 1 e 50",
+      "passwordRequired": "A palavra-passe RCON é obrigatória",
+      "portRange": "A porta do servidor #{{index}} tem de estar entre 1 e 65535",
+      "connectionFailed": "A ligação falhou",
+      "createFailed": "Não foi possível criar os servidores",
+      "partialCreate": "Criados {{created}}/{{total}} servidores. Erros:\n{{details}}"
+    }
+  },
+  "eloTemplatesPage": {
+    "errors": {
+      "load": "Não foi possível carregar os modelos de ELO"
+    },
+    "header": {
+      "createTemplate": "Criar modelo",
+      "importJson": "Importar de JSON"
+    },
+    "empty": {
+      "title": "Sem modelos de cálculo de ELO",
+      "description": "Crie o seu primeiro modelo para personalizar como as estatísticas dos jogadores influenciam os ajustes de ELO",
+      "action": "Criar modelo"
+    },
+    "delete": {
+      "title": "Eliminar modelo de ELO",
+      "message": "Tem a certeza de que pretende eliminar \"{{name}}\"? Esta ação não pode ser anulada.",
+      "success": "Modelo \"{{name}}\" eliminado com sucesso",
+      "error": "Não foi possível eliminar o modelo",
+      "defaultProtected": "O modelo predefinido \"pure-win-loss\" não pode ser eliminado."
+    },
+    "import": {
+      "success_one": "{{count}} modelo de ELO importado",
+      "success_other": "{{count}} modelos de ELO importados"
+    },
+    "weights": {
+      "noAdjustmentsPure": "Sem ajustes por estatísticas (vitória/derrota pura)"
+    },
+    "card": {
+      "enabled": "Ativo",
+      "disabled": "Inativo",
+      "default": "Predefinido",
+      "adjustment": {
+        "none": "Ajuste por estatísticas por jogo: nenhum (0; ELO apenas pelo resultado)",
+        "uncapped": "Ajuste por estatísticas por jogo: sem limite (use com cuidado)",
+        "range": "Intervalo de ajuste por estatísticas por jogo: {{min}} a {{max}} ELO",
+        "noMin": "no min",
+        "noMax": "no max"
+      },
+      "tooltips": {
+        "edit": "Editar modelo",
+        "delete": "Eliminar modelo"
+      },
+      "weightsTitle": "Pesos das estatísticas:",
+      "limitsTitle": "Limites de ajuste:"
+    },
+    "importModal": {
+      "title": "Importar modelos de ELO a partir de JSON",
+      "introTitle": "Cole abaixo o JSON com as definições dos modelos de ELO.",
+      "introBody": "Formato esperado: array de modelos com name, description (opcional), enabled, weights, maxAdjustment e minAdjustment. Se omitir id, será gerado a partir do nome.",
+      "jsonLabel": "Dados JSON",
+      "validJsonTitle": "✓ JSON válido!",
+      "previewTitle": "Pré-visualização:",
+      "previewButton": "Pré-visualizar",
+      "importButton": "Importar modelos",
+      "validJsonBody_one": "Encontrado {{count}} modelo.",
+      "validJsonBody_other": "Encontrados {{count}} modelos."
+    },
+    "editor": {
+      "titleEdit": "Editar modelo de ELO",
+      "titleCreate": "Criar modelo de ELO",
+      "info": "Configure como as estatísticas individuais dos jogadores influenciam os ajustes de ELO. Os pesos são aplicados após o OpenSkill calcular a alteração base de ELO (vitória/derrota). Pesos positivos aumentam o ELO, pesos negativos diminuem-no.",
+      "nameLabel": "Nome do modelo",
+      "nameDefaultLocked": "O nome do modelo predefinido não pode ser alterado",
+      "descriptionLabel": "Descrição",
+      "descriptionPlaceholder": "Descrição opcional do objetivo deste modelo",
+      "enabledLabel": "Ativo",
+      "weights": {
+        "title": "Pesos das estatísticas",
+        "subtitle": "Ajuste o seletor de cada estatística. O valor 0 significa que não há ajuste para essa estatística."
+      },
+      "limits": {
+        "title": "Limites de ajuste (opcional)",
+        "subtitle": "Defina os ajustes máximos e mínimos de ELO por jogo para evitar alterações extremas.",
+        "maxLabel": "Ajuste máximo",
+        "maxHelper": "Ajuste positivo máximo de ELO por jogo",
+        "minLabel": "Ajuste mínimo",
+        "minHelper": "Ajuste negativo máximo de ELO por jogo"
+      },
+      "errors": {
+        "nameRequired": "O nome do modelo é obrigatório"
+      },
+      "create": {
+        "success": "Modelo \"{{name}}\" criado com sucesso",
+        "error": "Não foi possível criar o modelo"
+      },
+      "update": {
+        "success": "Modelo \"{{name}}\" atualizado com sucesso",
+        "error": "Não foi possível atualizar o modelo"
+      },
+      "buttons": {
+        "saving": "A guardar...",
+        "update": "Atualizar",
+        "create": "Criar"
+      }
+    }
+  }
+}

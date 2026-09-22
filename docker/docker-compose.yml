@@ -1,0 +1,88 @@
+# Minimal production compose – uses pre-built image from Docker Hub.
+#
+# Usage:
+#   docker compose -f docker/docker-compose.yml up -d
+#
+# Environment variables are loaded from:
+#   NOTE: run compose with `--env-file .env` from the repo root (the yarn
+#   docker:* scripts do this). Compose resolves ${VAR} substitutions below from
+#   that file plus your shell — without it, entries like SESSION_SECRET and
+#   ENABLE_TEST_ENDPOINTS silently override the env_file with their defaults.
+#   - ../.env file (project root) via env_file directive
+#   - Environment variables set in your shell (for docker-compose variable substitution)
+#
+# Optional: HOST_PORT=27016 docker compose -f docker/docker-compose.yml up -d
+# Default port: 3069
+#
+# Image: this still defaults to the old sivertio/matchzy-auto-tournament name
+# below. 3.0 also publishes the same build as ghcr.io/auto-tournament/auto-
+# tournament (primary) and sivertio/auto-tournament (Docker Hub mirror), but
+# neither has a stable `:latest` yet during the 3.0 release freeze — until it
+# ships, switching the default here would leave existing installs on an image
+# with no `:latest` tag. Once 3.0 is out, point `image:` below at one of:
+#   image: ghcr.io/auto-tournament/auto-tournament:latest
+#   image: sivertio/auto-tournament:latest
+# Renaming the `matchzy-tournament*` / `matchzy-postgres` service, container
+# and database names below is a separate, breaking decision — not done here.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: matchzy-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+      - POSTGRES_DB=${DB_NAME:-matchzy_tournament}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - matchzy-network
+
+  matchzy-tournament:
+    image: sivertio/matchzy-auto-tournament:latest
+    container_name: matchzy-tournament-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - ../.env
+    ports:
+      - '${HOST_PORT:-3069}:3069'
+    environment:
+      # Container-specific settings (not from .env)
+      - NODE_ENV=production
+      - PORT=3000
+      # Docker service name for DB connection (not from .env)
+      - DB_HOST=postgres
+      # Computed DATABASE_URL (uses DB_* vars from .env or defaults)
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
+      # SESSION_SECRET should be set in .env (required for session persistence)
+      # If not set, a default is used but sessions won't persist across restarts
+      - SESSION_SECRET=${SESSION_SECRET:-}
+      # All other variables (SERVER_TOKEN, STEAM_API_KEY, FRONTEND_BASE_URL, LOG_LEVEL, etc.)
+      # are loaded from .env via env_file directive above
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3069/health']
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - matchzy-network
+
+networks:
+  matchzy-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+    driver: local

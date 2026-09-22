@@ -1,0 +1,207 @@
+{
+  "notFound": {
+    "title": "Nie znaleziono strony",
+    "description": "Strona, której szukasz, nie istnieje lub została przeniesiona.",
+    "backToDashboard": "Wróć do panelu",
+    "publicPlayerSearch": "Publiczne wyszukiwanie graczy"
+  },
+  "publicLinks": {
+    "intro": "Szybkie linki do stron publicznych, które możesz udostępnić graczom i widzom.",
+    "common": {
+      "publicUrl": "Publiczny URL",
+      "urlPattern": "Wzorzec URL"
+    },
+    "playerSearch": {
+      "title": "Publiczne wyszukiwanie graczy",
+      "description": "Szukaj zarejestrowanych graczy po nazwie, Steam ID lub URL profilu.",
+      "openButton": "Otwórz /player"
+    },
+    "playerProfile": {
+      "title": "Profil gracza (publiczny)",
+      "description": "Bezpośredni link do profilu gracza po Steam ID64. Gracze zalogowani przez Steam mogą też użyć linku „Mój profil” na górnym pasku zamiast kopiować URL-e.",
+      "requiresSteamId": "Wymaga Steam ID64"
+    },
+    "teamMatch": {
+      "title": "Strona meczu drużyny (publiczna)",
+      "description": "Widok tylko do odczytu bieżącego lub ostatniego meczu drużyny.",
+      "openExample": "Otwórz przykładową drużynę"
+    },
+    "tournamentLeaderboard": {
+      "title": "Ranking turnieju (publiczny)",
+      "description": "Publiczna tabela wyników bieżącego turnieju (domyślnie turniej 1).",
+      "open": "Otwórz ranking"
+    }
+  },
+  "games": {
+    "prompt": {
+      "title": "What do you play?",
+      "description": "We'll show tournaments for these games first. You can change this any time.",
+      "skip": "Skip",
+      "save": "Save my games"
+    },
+    "picker": {
+      "searchLabel": "Search games",
+      "placeholder": "Type a game name",
+      "minChars": "Type at least 2 characters",
+      "noResults": "No games found",
+      "loading": "Searching…",
+      "searchFailed": "Search is unavailable right now",
+      "suggestionsLabel": "Popular here:",
+      "yourGames": "Your games",
+      "none": "No games picked yet",
+      "remove": "Remove {{name}}",
+      "supported": "Tournaments supported",
+      "limit": "You can pick up to {{max}} games",
+      "credit": "Game data from IGDB",
+      "creditWikidata": "Game data from Wikidata"
+    },
+    "profile": {
+      "title": "Your games",
+      "description": "The games you play. Tournaments for these games are shown first.",
+      "empty": "You haven't picked any games yet.",
+      "edit": "Edit",
+      "add": "Add games",
+      "dialogTitle": "Your games",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saved": "Games saved",
+      "saveFailed": "Could not save your games"
+    },
+    "igdb": {
+      "title": "IGDB game data",
+      "description": "Players pick the games they play from a search. With IGDB credentials the search covers every game, with covers; without them, search uses Wikidata.",
+      "consoleLink": "Open the Twitch developer console",
+      "howToToggle": "How to get keys",
+      "howToStep1": "Create a Twitch account and turn on Two-Factor Authentication.",
+      "howToStep2": "Register an app in the Twitch Developer Console. Redirect URL: http://localhost. Client Type: Confidential.",
+      "howToStep3": "Open the app, press Manage, and copy the Client ID.",
+      "howToStep4": "Press New Secret and copy the Client Secret.",
+      "howToStep5": "Paste both here, press Save, then Test connection.",
+      "fullGuideLink": "Full guide",
+      "freeNote": "Free for non-commercial use.",
+      "clientId": "Client ID",
+      "clientSecret": "Client secret",
+      "secretSetPlaceholder": "Saved. Enter a new secret to replace it",
+      "secretHelper": "Write-only: the saved secret is never shown.",
+      "envOverride": "IGDB_CLIENT_ID and IGDB_CLIENT_SECRET are set in the environment, and take precedence over this form.",
+      "statusConfigured": "Configured",
+      "statusNotConfigured": "Not configured",
+      "save": "Save",
+      "remove": "Remove",
+      "test": "Test connection",
+      "testing": "Testing…",
+      "testOk": "Connected to IGDB",
+      "testFailed": "IGDB connection failed: {{error}}",
+      "saved": "IGDB credentials saved",
+      "removed": "IGDB credentials removed",
+      "saveFailed": "Could not save IGDB credentials"
+    }
+  },
+  "account": {
+    "title": "Connections",
+    "subtitle": "One account for every tournament on this site.",
+    "loadFailed": "Could not load your account.",
+    "impersonating": "You are viewing this page while impersonating a player. It shows your own account; stop impersonating to change it.",
+    "rail": {
+      "label": "Account",
+      "profile": "Profile",
+      "connections": "Connections"
+    },
+    "callout": {
+      "title": "Pick the games you play",
+      "body": "Tournaments for your games are shown first.",
+      "action": "Pick games"
+    },
+    "gameAccounts": {
+      "title": "Game accounts",
+      "description": "Each game needs its own account so matches know who you are.",
+      "verified": "Verified",
+      "id": "Steam ID {{id}}",
+      "more": "More game accounts appear here as games are added to this site."
+    },
+    "signIn": {
+      "title": "Sign-in methods",
+      "description": "Any of these signs you in to the same account. Keep at least one.",
+      "primary": "Primary",
+      "primaryDetail": "Your account's identity · also your game account for {{games}}",
+      "primaryDetailNoGames": "Your account's identity",
+      "connected": "Connected",
+      "linkedOn": "Connected {{date}}",
+      "turnedOff": "sign-in with it is turned off on this site",
+      "notConnected": "Not connected",
+      "connect": "Connect",
+      "remove": "Remove",
+      "lastMethod": "This is your only way to sign in. Connect another method first.",
+      "removeTitle": "Remove {{provider}}?",
+      "removeBody": "You will no longer be able to sign in with {{provider}}. You can connect it again later.",
+      "removed": "{{provider}} removed",
+      "removeFailed": "Could not remove this sign-in method",
+      "linked": "{{provider}} connected",
+      "taken": "That {{provider}} account is already connected to another account on this site.",
+      "linkFailed": "Could not connect {{provider}}. Please try again."
+    }
+  },
+  "home": {
+    "title": "Home",
+    "greeting": "Hi, {{name}}",
+    "greetingFallback": "Hi",
+    "editGames": "Edit games",
+    "vs": "vs",
+    "tbd": "TBD",
+    "openMatch": "Open match",
+    "connectToServer": "Connect to server",
+    "matchStatus": {
+      "pending": "Waiting",
+      "ready": "Ready",
+      "loaded": "Loaded",
+      "live": "Live",
+      "completed": "Completed"
+    },
+    "yourTournaments": {
+      "title": "Your tournaments",
+      "empty": "You're not in any tournaments right now."
+    },
+    "tournaments": {
+      "playingNow": "Playing now",
+      "waiting": "Waiting",
+      "eliminated": "Eliminated",
+      "finished": "Finished",
+      "placement": "{{position}} of {{total}}"
+    },
+    "openForYourGames": {
+      "title": "Open for your games",
+      "browseAll": "Browse all tournaments",
+      "empty": "No open tournaments for your games right now.",
+      "emptyNoGames": "Pick the games you play to see open tournaments for them.",
+      "steamLinked": "Steam linked"
+    }
+  },
+  "browsePage": {
+    "title": "Browse tournaments",
+    "searchPlaceholder": "Search by name or location",
+    "loadError": "Could not load tournaments.",
+    "empty": "No tournaments match your filters.",
+    "teamsCount": "{{count}} teams",
+    "watch": "Watch",
+    "view": "View",
+    "filters": {
+      "allGames": "All games",
+      "status": {
+        "all": "All statuses",
+        "live": "Live",
+        "registration_open": "Registration open",
+        "finished": "Finished"
+      },
+      "where": {
+        "all": "Online and LAN",
+        "online": "Online",
+        "lan": "LAN"
+      }
+    },
+    "status": {
+      "live": "Live",
+      "finished": "Finished",
+      "registrationOpen": "Registration open"
+    }
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "nav": {
+    "matchStatus": {
+      "yourTurnVeto": "Twoja kolej w veto",
+      "waitingVeto": "Oczekiwanie na veto",
+      "waitingServer": "Oczekiwanie na serwer",
+      "matchReady": "Mecz gotowy – połącz",
+      "snackbarOpponentMoved": "Przeciwnik wykonał ruch"
+    },
+    "home": "Home",
+    "browse": "Browse",
+    "dashboard": "Panel",
+    "manage": "Manage",
+    "tournament": "Turniej",
+    "bracket": "Drabinka",
+    "matches": "Mecze",
+    "teams": "Drużyny",
+    "players": "Gracze",
+    "leaderboard": "Ranking",
+    "servers": "Serwery",
+    "maps": "Mapy i pule map",
+    "templates": "Szablony",
+    "eloTemplates": "Kalkulacja ELO",
+    "adminTools": "Narzędzia admina",
+    "publicLinks": "Linki publiczne",
+    "devTools": "Narzędzia dev",
+    "settings": "Ustawienia",
+    "resourcesSection": "Zasoby",
+    "tournamentSection": "Turniej",
+    "configurationSection": "Konfiguracja",
+    "systemSection": "Systemowe",
+    "documentation": "Dokumentacja",
+    "signOut": "Wyloguj się",
+    "linkSteam": "Połącz Steam",
+    "myProfile": "Mój profil",
+    "accountConnections": "Account settings",
+    "goToAdminDashboard": "Przejdź do panelu administratora",
+    "goToAdminDashboardHint": "Wyświetlasz swój profil gracza. Otwórz panel administratora, aby zarządzać drużynami, turniejami i serwerami."
+  },
+  "layout": {
+    "webhookNotConfigured": "URL webhooka nie jest skonfigurowany. Mecze i serwery nie mogą odbierać zdarzeń, dopóki nie zostanie ustawiony.",
+    "openSettings": "Otwórz ustawienia",
+    "pageTitle": {
+      "dashboard": "Panel",
+      "manage": "Manage",
+      "tournament": "Turniej",
+      "bracket": "Drabinka",
+      "matches": "Mecze",
+      "teams": "Drużyny",
+      "players": "Gracze",
+      "servers": "Serwery",
+      "maps": "Mapy i pule map",
+      "templates": "Szablony",
+      "eloTemplates": "Kalkulacja ELO",
+      "adminTools": "Narzędzia admina",
+      "settings": "Ustawienia",
+      "devTools": "Narzędzia deweloperskie",
+      "publicLinks": "Linki publiczne"
+    },
+    "openDrawer": "Otwórz menu nawigacji",
+    "matchzyDbDown": {
+      "title": "Baza danych MatchZy niedostępna",
+      "body_one": "{{count}} serwer zgłasza, że plugin nie może połączyć się ze swoją bazą danych. Może to wpłynąć na backupy i kolejkę zdarzeń.",
+      "body_few": "{{count}} serwery zgłaszają, że plugin nie może połączyć się ze swoją bazą danych. Może to wpłynąć na backupy i kolejkę zdarzeń.",
+      "body_many": "{{count}} serwerów zgłasza, że plugin nie może połączyć się ze swoją bazą danych. Może to wpłynąć na backupy i kolejkę zdarzeń.",
+      "body_other": "{{count}} serwerów zgłasza, że plugin nie może połączyć się ze swoją bazą danych. Może to wpłynąć na backupy i kolejkę zdarzeń."
+    },
+    "steamUnavailable": {
+      "title": "Integracja ze Steam niedostępna",
+      "body": "Logowanie i wyszukiwanie po vanity URL mogą nie działać. Sprawdź konfigurację serwera i połączenie."
+    },
+    "closeDrawer": "Close navigation menu"
+  },
+  "common": {
+    "delete": "Usuń",
+    "cancel": "Anuluj"
+  },
+  "app": {
+    "name": "Matchzy Auto Tournament"
+  },
+  "language": {
+    "label": "Język",
+    "en": "Angielski",
+    "zhCN": "Chiński (uproszczony)"
+  },
+  "theme": {
+    "label": "Color theme"
+  }
+}

@@ -1,0 +1,449 @@
+{
+  "matchesPage": {
+    "errors": {
+      "loadMatches": "Nie udało się załadować meczów",
+      "loadTitle": "Błąd podczas ładowania meczów",
+      "bulkDelete": "Nie udało się usunąć jednego lub więcej meczów"
+    },
+    "allocation": {
+      "nextServers": "Kolejna alokacja serwerów za {{seconds}} s"
+    },
+    "header": {
+      "createMatch": "Utwórz mecz"
+    },
+    "bulkSelect": {
+      "select": "Wybierz",
+      "done": "Zakończ wybieranie",
+      "selectAll": "Zaznacz wszystkie",
+      "unselectAll": "Odznacz wszystkie",
+      "deleteSelected": "Usuń zaznaczone"
+    },
+    "empty": {
+      "title": "Brak meczów do wyświetlenia",
+      "description": "Utwórz turniej i wygeneruj drabinkę, aby zobaczyć tutaj mecze",
+      "createManual": "Albo utwórz mecz ręcznie"
+    },
+    "sections": {
+      "live": "Mecze na żywo ({{count}})",
+      "upcoming": "Nadchodzące mecze ({{count}})",
+      "history": "Historia meczów ({{count}})",
+      "inQueue": "W kolejce: {{count}}"
+    },
+    "manualMatchLabel": "Mecz ręczny",
+    "create": {
+      "success": "Utworzono mecz ręczny: {{slug}}"
+    },
+    "bulkDelete": {
+      "title": "Usuń mecze ręczne",
+      "deleted_one": "Usunięto {{count}} mecz",
+      "deleted_other": "Usunięto {{count}} meczów",
+      "message_one": "Czy na pewno chcesz usunąć {{count}} ręczny mecz? Tej operacji nie można cofnąć.",
+      "message_few": "Czy na pewno chcesz usunąć {{count}} ręczne mecze? Tej operacji nie można cofnąć.",
+      "message_many": "Czy na pewno chcesz usunąć {{count}} ręcznych meczów? Tej operacji nie można cofnąć.",
+      "message_other": "Czy na pewno chcesz usunąć {{count}} ręcznych meczów? Tej operacji nie można cofnąć."
+    },
+    "card": {
+      "matchNumber": "Mecz #{{number}}",
+      "server": "Serwer: {{name}}",
+      "queuePosition": "Pozycja w kolejce: #{{position}}",
+      "waitingForServers": "Oczekiwanie na serwery...",
+      "allocatingNow": "Przydzielanie...",
+      "allocatesIn": "Przydział za {{time}}",
+      "shuffle": "Shuffle",
+      "shuffleManual": "Shuffle ręczny",
+      "manual": "Ręczny",
+      "simulation": "Symulacja",
+      "winner": "ZWYCIĘZCA",
+      "mapN": "Mapa {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "WALKOWER",
+      "waitingForTournament": "OCZEKIWANIE NA START TURNIEJU",
+      "waitingForServer": "OCZEKIWANIE NA SERWER",
+      "vetoPending": "VETO OCZEKUJE",
+      "mapVeto": "VETO MAP",
+      "serverAllocated": "SERWER PRZYDZIELONY",
+      "warmup": "ROZGRZEWKA",
+      "overtime": "DOGRYWKA #{{n}}",
+      "live": "NA ŻYWO",
+      "completed": "ZAKOŃCZONY",
+      "cancelled": "ANULOWANY",
+      "needsDecision": "NEEDS ADMIN DECISION",
+      "waitingForPairing": "WAITING FOR PAIRING"
+    },
+    "statusGuide": {
+      "title": "Przewodnik po statusach meczu",
+      "pending": "Mecz jest zaplanowany, ale nie ma jeszcze przydzielonego serwera. Zostanie przydzielony, gdy serwer będzie wolny.",
+      "loaded": "Mecz jest załadowany na serwerze i trwa rozgrzewka. Gracze powinni się połączyć i zgłosić gotowość.",
+      "live": "Mecz jest rozgrywany na serwerze.",
+      "completed": "Mecz się zakończył. Zwycięzca został wyłoniony, a drabinka zaktualizowana.",
+      "proTipTitle": "Wskazówka:",
+      "proTip": "Gdy mecz pokazuje „Oczekiwanie na graczy (X/Y)”, serwer jest gotowy i gracze powinni się połączyć. Gdy wszyscy oczekiwani gracze połączą się i zgłoszą gotowość, mecz rozpocznie się automatycznie."
+    },
+    "allocationWidget": {
+      "title": "Status przydziału serwerów",
+      "available": "Wolne:",
+      "busy": "Zajęte:",
+      "cooling": "Chłodzenie:",
+      "offline": "Offline:",
+      "waitingMatches_one": "Oczekuje: {{count}} mecz",
+      "waitingMatches_other": "Oczekuje: {{count}} meczów",
+      "statusLine": "Status: {{status}}",
+      "statusReady": "Gotowy",
+      "statusCooling": "Chłodzenie",
+      "statusBusy": "Zajęty",
+      "statusOffline": "Offline",
+      "readyIn": "Gotowy za: {{time}}"
+    },
+    "latestEvent": "Ostatnie: {{event}}",
+    "matchLabel": {
+      "upper": "UB R{{round}} M{{match}}",
+      "lower": "LB R{{round}} M{{match}}",
+      "grandFinal": "Grand Final",
+      "grandFinalReset": "Grand Final Reset"
+    }
+  },
+  "manualMatchModal": {
+    "title": "Utwórz mecz ręczny",
+    "steps": {
+      "matchSetup": "Konfiguracja meczu",
+      "rules": "Zasady",
+      "maps": "Mapy",
+      "teams": "Drużyny",
+      "review": "Podsumowanie"
+    },
+    "description": "Utwórz niezależny mecz, niezwiązany z drabinką turnieju. API automatycznie przydzieli dostępny serwer.",
+    "buttons": {
+      "next": "Dalej",
+      "back": "Wstecz",
+      "create": "Utwórz mecz",
+      "creating": "Tworzenie…"
+    },
+    "saveTemplate": {
+      "title": "Zapisz szablon meczu",
+      "nameLabel": "Nazwa szablonu",
+      "nameHelper": "Np.: BO1 Inferno knife, BO3 pula map, itd.",
+      "description": "Bieżące mapy, format serii, zasada strony CT, przełącznik veto, tryb knife oraz liczba graczy na drużynę zostaną zapisane w tym szablonie.",
+      "save": "Zapisz"
+    },
+    "chooseMode": {
+      "heading": "Jak chcesz utworzyć ten mecz?",
+      "template": {
+        "title": "Wybierz szablon",
+        "description": "Wczytaj preset map, formatu i zasad, a następnie wybierz drużyny.",
+        "label": "Szablon meczu",
+        "none": "Brak",
+        "empty": "Brak zapisanych szablonów. Skonfiguruj mecz i zapisz go jako szablon."
+      },
+      "custom": {
+        "title": "Utwórz nowy mecz",
+        "description": "Skonfiguruj mapy, zasady, strony i drużyny od zera."
+      }
+    },
+    "errors": {
+      "slugAndMapsRequired": "Wymagany jest slug i co najmniej jedna mapa.",
+      "teamsMustDiffer": "Drużyna 1 i drużyna 2 muszą być różne.",
+      "invalidMapSelectionVeto": "Nieprawidłowy wybór map dla veto. Wybierz dokładnie 7 map lub wyłącz veto.",
+      "invalidMapSelectionFormat": "Nieprawidłowy wybór map dla tego formatu. Wybierz właściwą liczbę map.",
+      "configIncomplete": "Konfiguracja meczu jest niekompletna. Sprawdź ustawienia.",
+      "createFailed": "Nie udało się utworzyć meczu. Spróbuj ponownie."
+    }
+  },
+  "matchDetailsModal": {
+    "delete": {
+      "dialogTitle": "Usuń mecz",
+      "confirmTitle": "Usunąć ten mecz?",
+      "confirmBody": "Czy na pewno chcesz usunąć mecz \"{{slug}}\"? Tej akcji nie można cofnąć.",
+      "button": "Usuń mecz"
+    },
+    "roster": {
+      "title": "Skład",
+      "yourTeam": "Twoja drużyna",
+      "openPlayerPage": "Otwórz stronę gracza",
+      "ready": "GOTOWY",
+      "connected": "POŁĄCZONY",
+      "offline": "OFFLINE"
+    },
+    "decision": {
+      "body": "Every map has been played but the series is level on maps, rounds and damage. Choose the winner to advance the bracket.",
+      "setWinner": "{{team}} wins",
+      "confirmTitle": "Set series winner",
+      "confirmBody": "Finish this series with {{team}} as the winner? The bracket advances and this cannot be undone here.",
+      "confirm": "Set winner",
+      "success": "Winner set",
+      "failed": "Failed to set the winner"
+    },
+    "tiebreakHint": "Scores are level: {{team}} won the map, decided by tiebreak."
+  },
+  "bulkShuffleMatchesModal": {
+    "title": "Zbiorczo utwórz mecze shuffle",
+    "description": "Skonfiguruj mecz shuffle na jedną mapę (mapa + limit rund), a następnie zdefiniuj dowolną liczbę meczów head‑to‑head, wybierając dokładne składy graczy po każdej stronie. Mecze zostaną utworzone w ramach bieżącego turnieju shuffle i przydzielone do serwerów po uruchomieniu turnieju.",
+    "mapSelect": {
+      "label": "Mapa",
+      "noMaps": "Brak skonfigurowanych map dla tego turnieju",
+      "helper": "Wszystkie mecze w tej paczce będą używać tej mapy."
+    },
+    "maxRounds": {
+      "label": "Maks. rund na mapę",
+      "helperWithValue": "Mecz rozgrywany jest do {{maxRounds}} rund; zwycięża ten, kto pierwszy zdobędzie {{winRounds}} rund.",
+      "helperDefault": "Maksymalna liczba rund na mapę (domyślnie: 24, maks: 30)."
+    },
+    "matchesSection": {
+      "title": "Mecze ({{count}})",
+      "addMatch": "Dodaj mecz"
+    },
+    "players": {
+      "empty": "Nie zarejestrowano jeszcze graczy w tym turnieju shuffle. Najpierw zarejestruj graczy, a potem możesz tworzyć mecze ręczne."
+    },
+    "matchRow": {
+      "title": "Mecz nr {{index}}",
+      "teamCounts": "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}",
+      "team1Label": "Gracze drużyny 1 ({{team1Count}}/{{teamSize}})",
+      "team2Label": "Gracze drużyny 2 ({{team2Count}}/{{teamSize}})",
+      "searchPlaceholder": "Szukaj i wybierz graczy",
+      "mapOverrideLabel": "Mapa (opcjonalne nadpisanie)",
+      "mapOverrideHelperOwn": "Ten mecz używa własnej mapy.",
+      "mapOverrideHelperDefault": "Pozostaw puste, aby użyć domyślnej mapy powyżej.",
+      "maxRoundsOverrideLabel": "Maks. rundy (opcjonalne nadpisanie)",
+      "maxRoundsOverrideHelperOwn": "Nadpisuje domyślne maks. rundy dla tego meczu (obecnie {{value}}).",
+      "maxRoundsOverrideHelperDefault": "Pozostaw puste, aby użyć domyślnych maks. rund powyżej."
+    },
+    "errors": {
+      "loadPlayers": "Nie udało się załadować zarejestrowanych graczy",
+      "noMatches": "Dodaj co najmniej jeden mecz do utworzenia.",
+      "bothTeamsRequired": "Mecz {{index}}: obie drużyny muszą mieć co najmniej jednego gracza.",
+      "conflictingPlayers": "Mecz {{index}}: ten sam gracz nie może być w obu drużynach. ID w konflikcie: {{ids}}",
+      "mapRequired": "Mecz {{index}}: mapa jest wymagana (ustaw domyślną mapę powyżej lub wybierz mapę dla tego meczu).",
+      "rowMaxRoundsRange": "Mecz {{index}}: maks. rundy muszą być w zakresie 1–30, gdy są nadpisywane dla meczu.",
+      "globalMaxRoundsRange": "Maks. rundy muszą być w zakresie 1–30.",
+      "createFailed": "Nie udało się utworzyć ręcznych meczów shuffle"
+    },
+    "success": {
+      "created": "Ręczne mecze shuffle zostały utworzone. Zostaną przydzielone po rozpoczęciu turnieju."
+    },
+    "createMatchesButton": {
+      "default": "Utwórz mecze",
+      "creating": "Tworzenie…"
+    }
+  },
+  "teamModal": {
+    "titleCreate": "Utwórz nową drużynę",
+    "titleEdit": "Edytuj drużynę",
+    "teamNameLabel": "Nazwa drużyny",
+    "teamNamePlaceholder": "Astralis",
+    "teamNameHelper": "Nazwa drużyny może zawierać dowolny język i znaki specjalne",
+    "teamTagLabel": "Tag drużyny",
+    "teamTagPlaceholder": "AST",
+    "teamTagHelper": "Generowany automatycznie z nazwy drużyny (maks. 4 znaki)",
+    "playersHeader": "Gracze ({{count}})",
+    "selectPlayers": "Wybierz graczy",
+    "noPlayersInfo": "Nie dodano jeszcze graczy. Dodaj co najmniej jednego gracza.",
+    "addPlayersHelper": "Dodaj graczy, wklejając URL Steam lub wybierając z istniejących graczy",
+    "steamInputLabel": "Steam ID / vanity URL",
+    "steamInputPlaceholder": "gaben or steamcommunity.com/id/gaben",
+    "resolveSteam": "Rozwiąż Steam ID",
+    "resolving": "Rozwiązywanie...",
+    "playerNameLabel": "Nazwa gracza",
+    "playerNamePlaceholder": "s1mple",
+    "eloLabel": "ELO (opcjonalnie)",
+    "eloPlaceholder": "1500",
+    "eloHelper": "Domyślnie: 1500",
+    "errors": {
+      "steamLookupEmpty": "Wpisz Steam ID, vanity URL lub URL profilu",
+      "steamApiNotConfigured": "Steam API nie jest skonfigurowane — wpisz Steam ID64 ręcznie",
+      "steamResolveFailed": "Nie udało się rozwiązać Steam ID — wpisz Steam ID64 ręcznie",
+      "steamAndNameRequired": "Wymagane są zarówno Steam ID, jak i nazwa gracza",
+      "steamDuplicate": "Ten Steam ID jest już w drużynie",
+      "teamNameRequired": "Nazwa drużyny jest wymagana",
+      "playersRequired": "Wymagany jest co najmniej jeden gracz",
+      "saveFailed": "Nie udało się zapisać drużyny",
+      "deleteFailed": "Nie udało się usunąć drużyny",
+      "discordIdInvalid": "ID Discord musi mieć 17–20 cyfr (numeryczne ID użytkownika, nie nazwa użytkownika)",
+      "discordIdInvalidPlayers": "Nieprawidłowe ID Discord dla: {{names}}. Musi mieć 17–20 cyfr lub pozostać puste.",
+      "discordIdSaveFailed": "Drużyna została zapisana, ale nie udało się zapisać ID Discord dla: {{names}}. {{message}}"
+    },
+    "success": {
+      "playerAdded": "Gracz dodany do drużyny",
+      "playerReplaced": "Gracz zamieniony",
+      "teamUpdated": "Drużyna zaktualizowana",
+      "teamCreated": "Drużyna utworzona",
+      "teamDeleted": "Drużyna usunięta"
+    },
+    "buttons": {
+      "deleteTeam": "Usuń drużynę",
+      "cancel": "Anuluj",
+      "saving": "Zapisywanie...",
+      "saveChanges": "Zapisz zmiany",
+      "createTeam": "Utwórz drużynę"
+    },
+    "confirmDelete": {
+      "title": "Usuń drużynę",
+      "message": "Czy na pewno chcesz usunąć \"{{name}}\"? Tej akcji nie można cofnąć."
+    },
+    "replacePlayerAria": "Zamień gracza {{name}}",
+    "replacePlayerTooltip": "Zamień tego gracza"
+  },
+  "playerModal": {
+    "titleCreate": "Utwórz gracza",
+    "titleEdit": "Edytuj gracza",
+    "steamLabel": "Steam ID lub URL profilu",
+    "steamHelperEditing": "Steam ID nie może zostać zmienione",
+    "steamHelperNew": "Wpisz Steam ID64, vanity URL lub URL profilu. Kliknij „Rozwiąż”, aby automatycznie uzupełnić nazwę i avatar.",
+    "resolveSteam": "Rozwiąż Steam ID",
+    "resolving": "Rozwiązywanie...",
+    "playerNameLabel": "Nazwa gracza",
+    "playerNamePlaceholder": "Gracz",
+    "eloLabelNew": "Początkowe ELO",
+    "eloLabelEdit": "ELO",
+    "eloHelperNew": "Pozostaw puste, aby użyć domyślnej wartości (1500 Skill Rating).",
+    "eloHelperEdit": "Zmiana ELO zresetuje rating i statystyki gracza. Tej akcji nie można cofnąć.",
+    "isAdminLabel": "Admin (ma uprawnienia admina w grze dla wszystkich meczów)",
+    "currentElo": "Aktualne ELO: {{value}}",
+    "startingElo": "Początkowe ELO: {{value}}",
+    "matchesPlayed": "Rozegrane mecze: {{count}}",
+    "errors": {
+      "steamRequired": "Steam ID jest wymagane",
+      "nameRequired": "Nazwa gracza jest wymagana",
+      "steamLookupEmpty": "Wpisz Steam ID, vanity URL lub URL profilu",
+      "steamApiNotConfigured": "Steam API nie jest skonfigurowane — wpisz Steam ID64 ręcznie",
+      "steamResolveFailed": "Nie udało się rozwiązać Steam ID — wpisz Steam ID64 ręcznie",
+      "saveFailed": "Nie udało się zapisać gracza"
+    },
+    "success": {
+      "playerUpdated": "Gracz zaktualizowany",
+      "playerCreated": "Gracz utworzony"
+    },
+    "buttons": {
+      "delete": "Usuń",
+      "cancel": "Anuluj",
+      "saving": "Zapisywanie...",
+      "save": "Zapisz",
+      "create": "Utwórz"
+    },
+    "confirmDelete": {
+      "title": "Usuń gracza",
+      "message": "Czy na pewno chcesz usunąć gracza \"{{name}}\"? Tej akcji nie można cofnąć."
+    },
+    "confirmEloUpdate": {
+      "title": "Zaktualizuj ELO gracza",
+      "message": "Czy na pewno chcesz zaktualizować ELO tego gracza z {{from}} do {{to}}? Spowoduje to reset statystyk oraz historii ratingu. Tej akcji nie można cofnąć."
+    },
+    "discordIdHelper": "Opcjonalnie. 17–20 cyfr. Pozwala organizatorom skontaktować się z tym graczem na Discordzie. Nigdy nie jest wyświetlane publicznie."
+  },
+  "teamImportModal": {
+    "title": "Importuj drużyny z JSON",
+    "info": {
+      "title": "Wklej poniżej JSON z danymi drużyn.",
+      "format": "Oczekiwany format: tablica drużyn z name, tag (opcjonalnie) i players (name + steamId oraz opcjonalne discordId jako tekst w cudzysłowie).",
+      "link": "Zobacz dokumentację z przykładami"
+    },
+    "jsonLabel": "Dane JSON",
+    "errors": {
+      "mustBeArray": "JSON musi być tablicą drużyn",
+      "emptyArray": "Tablica nie może być pusta",
+      "parseWithMessage": "Błąd parsowania JSON: {{message}}",
+      "parseGeneric": "Nieprawidłowy format JSON. Sprawdź składnię.",
+      "importFailed": "Nie udało się zaimportować drużyn",
+      "noJson": "Wpisz dane JSON"
+    },
+    "preview": {
+      "summary": "✓ Poprawny JSON! Znaleziono: {{teams}}, łącznie {{players}}.",
+      "title": "Podgląd:",
+      "missingDiscordTotal": "Gracze bez ID Discord: {{count}}",
+      "missingDiscordChip": "Bez Discorda: {{count}}",
+      "playersChip_one": "{{count}} gracz",
+      "playersChip_few": "{{count}} graczy",
+      "playersChip_many": "{{count}} graczy",
+      "playersChip_other": "{{count}} graczy",
+      "teamsCount_one": "{{count}} drużyna",
+      "teamsCount_few": "{{count}} drużyny",
+      "teamsCount_many": "{{count}} drużyn",
+      "teamsCount_other": "{{count}} drużyn"
+    },
+    "actions": {
+      "preview": "Podgląd",
+      "importing": "Importowanie...",
+      "import_one": "Importuj {{count}} drużynę",
+      "import_few": "Importuj {{count}} drużyny",
+      "import_many": "Importuj {{count}} drużyn",
+      "import_other": "Importuj {{count}} drużyn"
+    },
+    "warnings": {
+      "title": "Niektóre ID Discord zostały pominięte. Ci gracze zostaną zaimportowani bez nich:",
+      "discordIdNumber": "Drużyna \"{{team}}\", gracz \"{{player}}\": discordId musi być tekstem w cudzysłowie. Duże liczby tracą precyzję w JSON, więc ID zostało usunięte.",
+      "discordIdInvalid": "Drużyna \"{{team}}\", gracz \"{{player}}\": \"{{value}}\" nie jest ID użytkownika Discord (oczekiwano 17–20 cyfr), więc zostało usunięte."
+    }
+  },
+  "playerImportModal": {
+    "title": "Importuj graczy",
+    "info": {
+      "description": "Importuj graczy z formatu JSON lub CSV. Wymagane pola: steamId, name. Opcjonalnie: initialELO (domyślnie 1500), avatarUrl.",
+      "link": "Zobacz dokumentację z przykładami"
+    },
+    "placeholders": {
+      "jsonCsv": "Format JSON:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Gracz Pierwszy\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nFormat CSV:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Gracz Pierwszy,1500,https://..."
+    },
+    "actions": {
+      "parseValidate": "Przetwórz i zweryfikuj",
+      "importing": "Importowanie...",
+      "import_one": "Importuj {{count}} gracza",
+      "import_few": "Importuj {{count}} graczy",
+      "import_many": "Importuj {{count}} graczy",
+      "import_other": "Importuj {{count}} graczy"
+    },
+    "preview": {
+      "title": "Gracze do importu ({{count}}):",
+      "steamId": "Steam ID64: {{steamId}}",
+      "name": "Nazwa: {{name}}",
+      "initialElo": "Początkowe ELO: {{elo}}",
+      "avatar": "URL avatara: {{url}}",
+      "readyChip_one": "{{count}} gracz gotowy do importu",
+      "readyChip_few": "{{count}} graczy gotowych do importu",
+      "readyChip_many": "{{count}} graczy gotowych do importu",
+      "readyChip_other": "{{count}} graczy gotowych do importu"
+    },
+    "errors": {
+      "noData": "Wpisz dane JSON lub CSV",
+      "noPlayers": "Nie znaleziono graczy w danych",
+      "validationPrefix": "Błędy walidacji:",
+      "parseFailed": "Nie udało się przetworzyć danych: {{message}}",
+      "importFailed": "Nie udało się zaimportować graczy",
+      "parseFirst": "Najpierw przetwórz i zweryfikuj dane"
+    }
+  },
+  "playerSelectionModal": {
+    "title": "Wybierz graczy",
+    "selectedCount": "{{count}} wybrano",
+    "searchPlaceholder": "Szukaj graczy po nazwie lub Steam ID...",
+    "selectAll": {
+      "select": "Zaznacz wszystkie",
+      "deselect": "Odznacz wszystkie"
+    },
+    "empty": {
+      "noSearchResults": "Brak graczy pasujących do wyszukiwania",
+      "noPlayers": "Brak dostępnych graczy"
+    },
+    "playerCard": {
+      "alreadyInTeam": "Już w drużynie"
+    },
+    "errors": {
+      "loadFailed": "Nie udało się załadować graczy",
+      "noSelectable": "Brak graczy możliwych do wybrania"
+    },
+    "addPlayersButton_one": "Dodaj {{count}} gracza",
+    "addPlayersButton_few": "Dodaj {{count}} graczy",
+    "addPlayersButton_many": "Dodaj {{count}} graczy",
+    "addPlayersButton_other": "Dodaj {{count}} graczy"
+  },
+  "soundSettingsModal": {
+    "title": "Ustawienia dźwięku",
+    "soundSelect": {
+      "label": "Dźwięk powiadomień"
+    },
+    "volume": {
+      "label": "Głośność: {{percent}}%"
+    },
+    "testButton": "Testuj dźwięk",
+    "footer": "Powiadomienia dźwiękowe zostaną odtworzone, gdy mecz będzie gotowy lub gdy wystąpią ważne zdarzenia."
+  }
+}

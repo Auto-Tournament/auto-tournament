@@ -1,0 +1,410 @@
+{
+  "settingsPage": {
+    "title": "Instellingen",
+    "intro": "Configureer integraties, in-game standaarden en ontwikkelaarsopties.",
+    "tabs": {
+      "integrations": "Integraties & webhooks",
+      "players": "Spelers & toegang",
+      "matches": "Wedstrijden & ratings",
+      "advanced": "Geavanceerd",
+      "matchzy": "MatchZy",
+      "developer": "Ontwikkelaar / simulatie"
+    },
+    "integrations": {
+      "webhook": {
+        "title": "MatchZy webhook",
+        "description": "MatchZy webhook-URL die je CS2-servers kunnen bereiken.",
+        "label": "Webhook-URL",
+        "helper": "Voorbeeld: https://jouw-domein.nl"
+      },
+      "mapSync": {
+        "title": "Kaart-synchronisatie",
+        "description": "Synchroniseer CS2-kaarten vanuit de GitHub-repository.",
+        "buttonSyncing": "Synchroniseren...",
+        "buttonIdle": "CS2-kaarten synchroniseren",
+        "success": "Kaartsynchronisatie voltooid! {{added}} nieuwe kaart(en) toegevoegd, {{skipped}} bestond al.",
+        "partialError": "Sommige kaarten konden niet worden gesynchroniseerd: {{errors}}",
+        "failed": "Kan kaarten niet synchroniseren",
+        "rateLimit": "GitHub API-snelheidslimiet overschreden. Probeer het over een paar minuten opnieuw. U kunt de GITHUB_TOKEN-OMGEVINGSVARIABELE instellen om de snelheidslimiet te verhogen.",
+        "rateLimitShort": "GitHub API-snelheidslimiet overschreden. Probeer het over een paar minuten opnieuw.",
+        "githubError": "Kan GitHub-repository niet bereiken. Controleer uw internetverbinding en probeer het later opnieuw."
+      },
+      "steam": {
+        "title": "Steam-integratie",
+        "apiKeyLabel": "Steam Web API-sleutel",
+        "apiKeyHelper": "Lost Steam-vanity-URL's en spelersinformatie op. Laat leeg om opzoekingen uit te schakelen.",
+        "checkButtonChecking": "Steam controleren…",
+        "checkButtonIdle": "Steam-connectiviteit controleren",
+        "statusOk": "Steam API-sleutel is ingesteld en bereikbaar.",
+        "statusNotConfigured": "Steam API-sleutel is niet ingesteld. Vanity-URL's kunnen niet worden opgelost totdat u een sleutel toevoegt.",
+        "statusUnreachable": "Steam API-sleutel verschijnt ingesteld, maar Steam kon niet worden bereikt. Controleer uw netwerk of sleutel.",
+        "statusError": "Kan de Steam API-status niet controleren. Probeer het opnieuw."
+      }
+    },
+    "matchRating": {
+      "ratings": {
+        "title": "Rating-updates",
+        "description": "Bepaal of afgeronde wedstrijden de Skill Rating van spelers bijwerken.",
+        "toggleLabel": "Werk spelersratings bij op basis van afgeronde wedstrijden",
+        "note": "Wanneer uitgeschakeld, blijven wedstrijden statistieken bijhouden (ADR, K/D, etc.), maar Skill Ratings veranderen niet."
+      },
+      "chatDefaults": {
+        "title": "MatchZy chat- & knife-standaarden",
+        "description": "Configureer chat-prefixen in-game en het standaard knife-round gedrag.",
+        "chatPrefixLabel": "Chat-prefix",
+        "chatPrefixHelper": "Standaard: \"[{Green}MAT{Default}]\". Laat leeg om terug te zetten naar de standaard.",
+        "adminChatPrefixLabel": "Admin chat-prefix",
+        "adminChatPrefixHelper": "Standaard: \"[{Red}ADMIN{Default}]\". Laat leeg om terug te zetten naar de standaard.",
+        "knifeToggleLabel": "Knife-rounds standaard inschakelen voor nieuwe wedstrijden (wanneer sides niet vooraf gekozen zijn)",
+        "knifeNote": "Geldt alleen wanneer MatchZy normaal een knife-round zou spelen; expliciete side-picks worden niet aangepast."
+      },
+      "matchzyCore": {
+        "title": "MatchZy Core-standaarden",
+        "description": "Deze standaarden worden naar servers gestuurd tijdens initialisatie en vóór elke wedstrijd-load.",
+        "expert": {
+          "title": "Expertinstellingen",
+          "description": "Deze instellingen kunnen onverwacht servergedrag veroorzaken als ze verkeerd zijn ingesteld. Wijzig ze alleen als je weet dat je ze nodig hebt.",
+          "autostartMode": {
+            "label": "Autostart-modus bij plugin-load",
+            "helper": "0 = idle/sleep, 1 = match mode (aanbevolen), 2 = practice mode",
+            "options": {
+              "0": "0 — Inactief / slaapstand",
+              "1": "1 — Match-modus",
+              "2": "2 — Practice-modus"
+            }
+          }
+        },
+        "ready": {
+          "title": "Ready / Start wedstrijd",
+          "minimumReadyLabel": "Minimum aantal ready-spelers vereist",
+          "minimumReadyHelper": "0 = iedereen die verbonden is moet ready zijn. Standaard: 0.",
+          "allowForceReady": "Sta admins toe spelers force-ready te zetten tijdens setup (!forceready)"
+        },
+        "access": {
+          "title": "Servertoegang",
+          "kickWhenNoMatchLoaded": "Kick/voorkom joins wanneer geen wedstrijd geladen is (toernooiservers)",
+          "whitelistEnabledDefault": "Whitelist standaard inschakelen (admins kunnen togglen met .whitelist)"
+        },
+        "adminTools": {
+          "title": "Admin-tools",
+          "pauseAfterRestore": "Pauzeren na round restore (.stop) zodat teams kunnen overleggen",
+          "stopCommandAvailable": "Schakel .stop (round restore) commando in",
+          "stopCommandNoDamage": "Schakel .stop uit na schade aan het andere team",
+          "usePauseForTacticalPause": "Laat .pause zich gedragen als tactische pauze"
+        },
+        "hostname": {
+          "formatLabel": "Formaat serverhostnaam",
+          "formatHelper": "Wordt op elke server toegepast wanneer een wedstrijd wordt geladen. Tokens: {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}, {TEAM1_SCORE}, {TEAM2_SCORE}. Laat leeg om de hostnaam te behouden die elke server in zijn eigen config instelt."
+        },
+        "demos": {
+          "title": "Demo’s",
+          "demoPathLabel": "Demo-pad (relatief aan csgo/)",
+          "demoPathHelper": "Moet eindigen op '/'. Standaard: MatchZy/",
+          "demoNameFormatLabel": "Demo-bestandsnaamformaat (zonder .dem)",
+          "demoNameFormatHelper": "Plaatsvervangers: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
+        },
+        "seriesEnd": {
+          "title": "Timing einde serie",
+          "kickDelayNoDemoLabel": "Extra kick-vertraging wanneer demo’s uit staan (seconden)",
+          "kickDelayDemoNoUploadLabel": "Extra kick-vertraging wanneer demo’s aan staan maar geen upload-URL (seconden)",
+          "kickDelayDemoUploadLabel": "Extra kick-vertraging wanneer demo’s aan staan en upload-URL is ingesteld (seconden)",
+          "kickDelayHelper": "Wordt opgeteld bij mp_match_restart_delay."
+        }
+      },
+      "matchzyEnhanced": {
+        "title": "MatchZy Enhanced-functies",
+        "description": "Configureer geavanceerde match-functies. Laat velden leeg om de MatchZy-standaard te gebruiken.",
+        "autoready": {
+          "title": "Auto-ready",
+          "label": "Markeer spelers automatisch als ready wanneer ze joinen",
+          "description": "Spelers zijn automatisch ready bij join. Ze kunnen nog steeds .unready gebruiken."
+        },
+        "pause": {
+          "title": "Pauzes",
+          "bothTeamsUnpause": "Vereis dat beide teams unpausen",
+          "maxPausesLabel": "Max. pauzes per team",
+          "maxPausesHelper": "0 = onbeperkt",
+          "pauseDurationLabel": "Pauzelimiet (seconden)",
+          "pauseDurationHelper": "0 = geen tijdslimiet"
+        },
+        "sideSelection": {
+          "title": "Timer side-keuze",
+          "enabled": "Timer voor side-keuze inschakelen",
+          "timeLabel": "Tijd (seconden)",
+          "timeHelper": "Tijd na knife-round om sides te kiezen"
+        },
+        "gg": {
+          "title": "Vroegtijdig beëindigen (.gg)",
+          "enabled": ".gg forfeit inschakelen",
+          "thresholdLabel": "Stem-drempel (0.0-1.0)",
+          "thresholdHelper": "0.8 = 80% van het team moet stemmen (bijv. 4/5 spelers)",
+          "minScoreDiffLabel": "Minimum scoreverschil",
+          "minScoreDiffHelper": "0 = uitgeschakeld. Voorbeeld: 6 = .gg alleen toestaan bij 6+ rounds achter"
+        },
+        "ffw": {
+          "title": "Forfeit/walkover",
+          "enabled": "Automatische forfeit inschakelen wanneer team disconnect",
+          "timeLabel": "Forfeit-timer (seconden)",
+          "timeHelper": "Tijd voordat forfeit wordt verklaard wanneer het hele team vertrekt"
+        },
+        "demo": {
+          "title": "Demo-opname",
+          "enabled": "Automatische GOTV demo-opname inschakelen",
+          "description": "Wanneer uitgeschakeld, herstart de server ~10s na match-einde (vs 60-90s met opname)"
+        }
+      }
+    },
+    "players": {
+      "registration": {
+        "title": "Spelerregistratie",
+        "description": "Bepaal of nieuwe Steam-logins automatisch spelersrecords aanmaken. Wanneer uitgeschakeld, verschijnen in private toernooien en shuffle-pools alleen spelers die door admins zijn aangemaakt of geïmporteerd.",
+        "toggleLabel": "Sta iedereen toe om zich te registreren via Steam-login",
+        "recommendation": "Aanbevolen: laat dit uit voor invite-only of private toernooien, zodat willekeurige Steam-logins de spelerslijst niet vervuilen."
+      }
+    },
+    "developer": {
+      "title": "Ontwikkelaarsopties",
+      "description": "Alleen voor lokale ontwikkeling; niet inschakelen in productie.",
+      "simulateToggleLabel": "Simuleer wedstrijden (gebruik bot-gestuurde demo-wedstrijden i.p.v. echte spelers)",
+      "simulateNote": "Wanneer ingeschakeld, bevatten gegenereerde MatchZy-configs \"simulation\": true voor geautomatiseerde demo-wedstrijden.",
+      "timescaleTitle": "Simulatie-snelheid",
+      "timescaleDescription": "Bepaalt hoe snel gesimuleerde wedstrijden lopen. Hogere waarden versnellen bots en rondes. Dit geldt alleen wanneer simulatie is ingeschakeld.",
+      "timescaleWarning": "Snelheden boven 2.0 kunnen instabiel zijn en vreemd bot-gedrag veroorzaken, maar zijn ok voor snelle lokale tests.",
+      "resetApiTitle": "API & database resetten",
+      "resetApiDescription": "Gevarenzone: verwijdert en hermaakt het volledige databaseschema en initialiseert daarna defaults opnieuw (kaarten, map-pools, etc.). Alleen voor lokale ontwikkeling. Onomkeerbaar.",
+      "resetApiButton": "API resetten (alle data wissen)",
+      "resetApiButtonLoading": "API resetten…",
+      "resetApiSuccess": "API en database succesvol gereset. Alle data is gewist en defaults zijn opnieuw geïnitialiseerd.",
+      "resetApiError": "API en database resetten mislukt. Controleer de API-logs.",
+      "resetApiDialog": {
+        "title": "API resetten & alle data wissen?",
+        "description": "Dit verwijdert en hermaakt het volledige databaseschema. Alle toernooien, wedstrijden, spelers, teams, ratings, events, logs en instellingen worden permanent verwijderd. Deze actie kan niet ongedaan worden gemaakt. Doorgaan?",
+        "cancel": "Annuleren",
+        "confirm": "Ja, API resetten & data wissen",
+        "confirmLoading": "Resetten…"
+      },
+      "debugChat": {
+        "label": "MatchZy debug-chatberichten inschakelen",
+        "description": "Wanneer ingeschakeld, toont MatchZy extra debug-berichten (connects/disconnects, event-traces, etc.) in de chat. Gebruik dit alleen voor ontwikkeling en testen."
+      }
+    },
+    "footer": {
+      "version": "Versie",
+      "unknownVersion": "Onbekend",
+      "resetButton": "Instellingen resetten"
+    },
+    "resetDialog": {
+      "title": "Instellingen resetten?",
+      "description": "Reset alle instellingen op deze pagina terug naar defaults. Bestaande toernooien en servers worden niet gewijzigd, maar nieuwe wedstrijden en lookups gebruiken de default-waarden. Doorgaan?",
+      "cancel": "Annuleren",
+      "confirm": "Resetten",
+      "success": "Instellingen gereset naar standaard.",
+      "error": "Kon instellingen niet resetten"
+    },
+    "errors": {
+      "loadSettings": "Instellingen laden mislukt",
+      "saveSettings": "Instellingen opslaan mislukt"
+    },
+    "success": {
+      "saveSettings": "Instellingen opgeslagen",
+      "simulationEnabled": "Simulatiemodus ingeschakeld",
+      "simulationDisabled": "Simulatiemodus uitgeschakeld",
+      "timescaleUpdated": "Simulatiesnelheid bijgewerkt naar {{value}}x",
+      "simulationEnabledWithSpeed": "Simulatiemodus ingeschakeld op {{speed}}x snelheid"
+    }
+  },
+  "dashboard": {
+    "title": "Overzicht",
+    "notReady": "Het toernooidashboard verschijnt hier zodra het toernooi is gestart.",
+    "manageBanner": {
+      "text": "Looking for what needs a decision right now? The Manage console keeps a live queue of matches and servers that need you.",
+      "cta": "Open Manage"
+    },
+    "restartTournament": {
+      "button": "Wedstrijden opnieuw starten",
+      "restarting": "Toernooiwedstrijden worden opnieuw gestart..."
+    },
+    "onboarding": {
+      "ready": "🎉 Klaar voor gebruik!",
+      "gettingStarted": "Aan de slag",
+      "stepsComplete": "{{completed}}/{{total}} Voltooid",
+      "subtitle": "Volg deze stappen om je eerste toernooi in te stellen",
+      "steps": {
+        "webhook": {
+          "title": "Webhook-URL configureren",
+          "secondaryConfigured": "Webhook-eindpunt geconfigureerd",
+          "secondaryMissing": "Stel de basis-URL in voor webhooks en demo-uploads",
+          "openSettings": "Open instellingen"
+        },
+        "servers": {
+          "title": "Voeg ten minste één CS2-server toe",
+          "chip": "{{count}} server",
+          "chipPlural": "{{count}} servers",
+          "secondaryConfigured": "Servers geconfigureerd en gereed",
+          "secondaryMissing": "Begin met het toevoegen van je CS2-gameservers",
+          "addServer": "Server toevoegen"
+        },
+        "teamsPlayers": {
+          "title": "Teams maken of spelers toevoegen",
+          "teamsChip": "{{count}} team",
+          "teamsChipPlural": "{{count}} teams",
+          "playersChip": "{{count}} speler",
+          "playersChipPlural": "{{count}} spelers",
+          "secondaryConfigured": "{{details}}",
+          "secondaryMissing": "Maak teams en/of voeg spelers toe met hun Steam-ID's",
+          "createTeams": "Teams aanmaken",
+          "addPlayers": "Spelers toevoegen"
+        },
+        "tournament": {
+          "title": "Configureer je toernooi",
+          "chipStatus": "{{status}}",
+          "secondaryConfigured": "Toernooi geconfigureerd met teams en format",
+          "secondaryMissing": "Toernooitype, -indeling, -teams en -kaarten instellen",
+          "createTournament": "Wedstrijdvorm maken"
+        }
+      },
+      "startCta": {
+        "helper": "Alles is klaar! Bekijk uw configuratie en start het toernooi vanaf de toernooipagina.",
+        "button": "Ga naar Toernooi"
+      }
+    },
+    "stats": {
+      "heading": "Toernooistatistieken",
+      "tournamentStatus": {
+        "title": "Toernooistatus",
+        "none": "Geen toernooi actief",
+        "typeLabel": "Soort",
+        "formatLabel": "Formaat",
+        "matchesLabel": "Wedstrijden"
+      },
+      "matchStatus": {
+        "title": "Wedstrijdstatus",
+        "total": "Totaal aantal wedstrijden",
+        "pending": "In behandeling:",
+        "ready": "Gereed:",
+        "loaded": "Geladen:",
+        "live": "Live (nu):",
+        "completed": "Voltooid:"
+      },
+      "serverStatus": {
+        "title": "Serverstatus",
+        "onlineSummary": "Online servers",
+        "online": "{{count}} online",
+        "offline": "{{count}} offline",
+        "distributionTitle": "Serverstatus"
+      },
+      "players": {
+        "title": "Spelers",
+        "total": "Totaal aantal spelers",
+        "inMatches": "In wedstrijden:",
+        "waiting": "Wachten:"
+      },
+      "playerDistribution": {
+        "title": "Spelerverdeling"
+      },
+      "topPlayers": {
+        "title": "Topspelers van ELO",
+        "subtitle": "Globale beoordeling voor alle toernooitypes",
+        "chip": "ELO: {{value}}"
+      },
+      "eloDistribution": {
+        "title": "Speler ELO Distributie",
+        "subtitle": "Aantal spelers per Skill Rating-band (emmergrootte {{bucket}}).",
+        "xAxis": "Skill Rating-band",
+        "yAxis": "Spelers",
+        "seriesLabel": "Spelers"
+      },
+      "recentMatches": {
+        "title": "Recent afgeronde wedstrijden",
+        "subtitle": "Laatste {{count}} voltooide wedstrijden",
+        "none": "Nog geen afgeronde wedstrijden.",
+        "chipCompleted": "Afgerond"
+      },
+      "noData": "Geen gegevens beschikbaar. Maak een toernooi om statistieken te bekijken.",
+      "errors": {
+        "load": "Kan dashboardgegevens niet laden"
+      }
+    }
+  },
+  "managePage": {
+    "title": "Manage",
+    "needsYouHeading": "Needs you",
+    "noTournament": "No tournament yet",
+    "rail": {
+      "needsYou": "Needs you",
+      "matches": "Matches",
+      "bracket": "Bracket",
+      "teams": "Teams",
+      "players": "Players",
+      "servers": "Servers",
+      "maps": "Maps",
+      "tournament": "Tournament setup",
+      "settings": "Settings"
+    },
+    "status": {
+      "live": "LIVE",
+      "inVeto": "IN VETO",
+      "queued": "QUEUED",
+      "serversFree": "SERVERS FREE",
+      "round": "ROUND"
+    },
+    "needsYou": {
+      "empty": "Nothing needs you right now.",
+      "unknownTime": "a while",
+      "secondsAgo": "{{count}}s",
+      "minutesAgo": "{{count}}m",
+      "hoursAgo": "{{count}}h",
+      "vsLabel": "{{team1}} vs {{team2}}",
+      "decide": {
+        "title": "{{teams}} needs a winner",
+        "detail": "Every map was played and the series is still level.",
+        "action": "Decide"
+      },
+      "stale": {
+        "title": "{{server}} has been loaded for a while",
+        "detail": "{{match}} has been stuck past the usual wait."
+      },
+      "offline": {
+        "title": "{{server}} stopped responding",
+        "detail": "{{match}} was on this server. Last heartbeat {{time}} ago."
+      },
+      "reallocateAction": "Move to another server",
+      "forceCancelAction": "Force cancel",
+      "reallocateSuccess": "Match moved to another server",
+      "forceCancelSuccess": "Match cancelled",
+      "actionFailed": "That didn't go through. Try again.",
+      "reallocateConfirmTitle": "Move this match to another server?",
+      "reallocateConfirmBody": "The match will be reassigned to the next available server.",
+      "forceCancelConfirmTitle": "Force cancel this match?",
+      "forceCancelConfirmBody": "This ends the match immediately and marks it as cancelled, even if the server is unreachable."
+    },
+    "servers": {
+      "heading": "Servers",
+      "viewAll": "All servers",
+      "none": "No servers configured yet.",
+      "inMatch": "In match",
+      "free": "Free",
+      "offline": "Offline",
+      "lastHeartbeat": "Last heartbeat {{time}} ago",
+      "never": "never"
+    },
+    "recent": {
+      "heading": "Recent",
+      "viewAll": "Full log",
+      "empty": "No recent activity yet.",
+      "closingLine": "Everything else runs on its own. You'll only see it here when something needs a decision.",
+      "team1Fallback": "Team 1",
+      "team2Fallback": "Team 2",
+      "mapResult": "{{winner}} won map {{map}} against {{loser}}, {{score}}",
+      "seriesEnd": "{{winner}} won the series against {{loser}}, {{score}}"
+    },
+    "announce": {
+      "button": "Announce",
+      "title": "Announce to all servers",
+      "label": "Message",
+      "send": "Send",
+      "success": "Announcement sent",
+      "failed": "Failed to send the announcement"
+    }
+  }
+}

@@ -1,0 +1,171 @@
+name: ⚡ Performance Issue
+description: Report slow loading, lag, timeouts, or resource usage problems
+title: "[PERFORMANCE] "
+labels: ["performance", "bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a performance issue! Please provide details to help us identify bottlenecks.
+
+  - type: textarea
+    id: performance-issue
+    attributes:
+      label: ⚡ Performance Issue Description
+      description: What is slow or not performing well?
+      placeholder: |
+        Example: "The tournament bracket page takes 15+ seconds to load when there are more than 64 teams. The page becomes unresponsive during loading."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: performance-category
+    attributes:
+      label: Performance Category
+      description: What type of performance issue is this?
+      options:
+        - "Slow page load / rendering"
+        - "API endpoint timeout"
+        - "Database query slow"
+        - "WebSocket lag / delays"
+        - "High memory usage"
+        - "High CPU usage"
+        - "Server allocation delays"
+        - "Match loading slow"
+        - "Other (specify below)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: 📋 Steps to Reproduce
+      description: How can we reproduce this performance issue?
+      placeholder: |
+        1. Create a tournament with 64+ teams
+        2. Generate bracket
+        3. Navigate to tournament page
+        4. Observe page load time (15+ seconds)
+        5. Browser tab becomes unresponsive
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-performance
+    attributes:
+      label: ✅ Expected Performance
+      description: What performance would be acceptable?
+      placeholder: |
+        Example: "Page should load within 2-3 seconds even with 128 teams. UI should remain responsive."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-performance
+    attributes:
+      label: ❌ Actual Performance
+      description: What is the current performance? Include measurements if possible.
+      placeholder: |
+        Example:
+        - Page load time: 15-20 seconds
+        - Browser DevTools Performance shows 8s spent in React rendering
+        - Memory usage spikes to 2GB
+        - CPU usage goes to 100% for ~10 seconds
+    validations:
+      required: true
+
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: 🖥️ Deployment Type
+      description: How are you running the platform?
+      options:
+        - Docker (docker compose)
+        - Local development (npm/bun run dev)
+        - Other (please specify below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Provide relevant environment information
+      placeholder: |
+        - Runtime: Bun 1.0.20
+        - OS: Ubuntu 22.04
+        - Database: PostgreSQL 15
+        - RAM: 8GB
+        - CPU: 4 cores
+        - Number of teams: 128
+        - Number of matches: 256
+        - Number of servers: 10
+    validations:
+      required: true
+
+  - type: dropdown
+    id: data-scale
+    attributes:
+      label: Data Scale
+      description: How much data is in your system?
+      options:
+        - "Small (< 10 teams, < 20 matches)"
+        - "Medium (10-50 teams, 20-100 matches)"
+        - "Large (50-100 teams, 100-500 matches)"
+        - "Very Large (100+ teams, 500+ matches)"
+        - "Not sure / Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: metrics
+    attributes:
+      label: 📊 Performance Measurements
+      description: |
+        Paste relevant performance metrics (browser DevTools, API logs, htop/top output, etc.)
+      placeholder: |
+        Browser DevTools (F12 → Performance tab):
+        - Click record, reproduce issue, stop
+        - Take screenshot of flame graph
+        
+        API Response Times (Network tab):
+        - GET /api/tournament/1: 8.5s
+        - GET /api/matches: 3.2s
+        
+        Server Resources (htop, docker stats):
+        - CPU: 95%
+        - Memory: 6.8GB / 8GB
+        - Postgres connections: 45/100
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: workarounds
+    attributes:
+      label: 🔧 Workarounds Tried
+      description: Have you found any workarounds or temporary fixes?
+      placeholder: |
+        Example: "Reducing team count to 32 makes it load in 3 seconds. Clearing browser cache helps temporarily."
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📎 Additional Context
+      description: Any other relevant details (recent changes, patterns noticed, etc.)
+      placeholder: |
+        Example: "This started happening after upgrading to v2.0. Performance is fine with smaller tournaments. Issue is worse on Firefox than Chrome."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I've searched existing issues for similar performance problems
+          required: true
+        - label: I've provided performance measurements or observations
+          required: false

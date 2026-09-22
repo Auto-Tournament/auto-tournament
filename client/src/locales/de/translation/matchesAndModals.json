@@ -1,0 +1,435 @@
+{
+  "matchesPage": {
+    "errors": {
+      "loadMatches": "Matches konnten nicht geladen werden",
+      "loadTitle": "Fehler beim Laden der Matches",
+      "bulkDelete": "Ein oder mehrere Matches konnten nicht gelöscht werden"
+    },
+    "allocation": {
+      "nextServers": "Nächste Server zugewiesen in {{seconds}}s"
+    },
+    "header": {
+      "createMatch": "Match erstellen"
+    },
+    "bulkSelect": {
+      "select": "Auswählen",
+      "done": "Auswahl abgeschlossen",
+      "selectAll": "Alles auswählen",
+      "unselectAll": "Auswahl aufheben",
+      "deleteSelected": "Auswahl löschen"
+    },
+    "empty": {
+      "title": "Keine Matches zum Anzeigen",
+      "description": "Erstelle ein Turnier und generiere ein Bracket, um Matches hier zu sehen",
+      "createManual": "Oder manuelles Match erstellen"
+    },
+    "sections": {
+      "live": "Live-Spiele ({{count}})",
+      "upcoming": "Anstehende Spiele ({{count}})",
+      "history": "Spielverlauf ({{count}})",
+      "inQueue": "{{count}} in Warteschlange"
+    },
+    "manualMatchLabel": "Manuelles Match",
+    "create": {
+      "success": "Manuelles Match erstellt: {{slug}}"
+    },
+    "bulkDelete": {
+      "title": "Manuelle Matches löschen",
+      "deleted_one": "{{count}} Match gelöscht",
+      "deleted_other": "{{count}} Matches gelöscht",
+      "message_one": "Möchtest du wirklich {{count}} manuelles Match löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "message_other": "Möchtest du wirklich {{count}} manuelle Matches löschen? Diese Aktion kann nicht rückgängig gemacht werden."
+    },
+    "card": {
+      "matchNumber": "Match #{{number}}",
+      "server": "Server: {{name}}",
+      "queuePosition": "Warteschlangenposition: #{{position}}",
+      "waitingForServers": "Warte auf Server...",
+      "allocatingNow": "Wird jetzt zugewiesen...",
+      "allocatesIn": "Zuweisung in {{time}}",
+      "shuffle": "Shuffle",
+      "shuffleManual": "Shuffle manuell",
+      "manual": "Manuell",
+      "simulation": "Simulation",
+      "winner": "SIEGER",
+      "mapN": "Map {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "KAMPFLOS",
+      "waitingForTournament": "WARTE AUF TURNIERSTART",
+      "waitingForServer": "WARTE AUF SERVER",
+      "vetoPending": "VETO AUSSTEHEND",
+      "mapVeto": "MAP-VETO",
+      "serverAllocated": "SERVER ZUGEWIESEN",
+      "warmup": "AUFWÄRMEN",
+      "overtime": "VERLÄNGERUNG #{{n}}",
+      "live": "LIVE",
+      "completed": "BEENDET",
+      "cancelled": "ABGEBROCHEN",
+      "needsDecision": "NEEDS ADMIN DECISION",
+      "waitingForPairing": "WAITING FOR PAIRING"
+    },
+    "statusGuide": {
+      "title": "Leitfaden zum Match-Status",
+      "pending": "Das Match ist geplant, aber noch keinem Server zugewiesen. Es wird zugewiesen, sobald ein Server frei wird.",
+      "loaded": "Das Match ist auf dem Server geladen und im Aufwärmmodus. Spieler sollten sich verbinden und bereit melden.",
+      "live": "Das Match wird auf seinem Server gespielt.",
+      "completed": "Das Match ist beendet. Der Sieger steht fest und der Turnierbaum wurde aktualisiert.",
+      "proTipTitle": "Profi-Tipp:",
+      "proTip": "Wenn ein Match „Warte auf Spieler (X/Y)“ anzeigt, ist der Server bereit und die Spieler sollten sich verbinden. Sobald alle erwarteten Spieler verbunden und bereit sind, startet das Match automatisch."
+    },
+    "allocationWidget": {
+      "title": "Status der Serverzuweisung",
+      "available": "Verfügbar:",
+      "busy": "Belegt:",
+      "cooling": "Abkühlung:",
+      "offline": "Offline:",
+      "waitingMatches_one": "Wartend: {{count}} Match",
+      "waitingMatches_other": "Wartend: {{count}} Matches",
+      "statusLine": "Status: {{status}}",
+      "statusReady": "Bereit",
+      "statusCooling": "Abkühlung",
+      "statusBusy": "Belegt",
+      "statusOffline": "Offline",
+      "readyIn": "Bereit in: {{time}}"
+    },
+    "latestEvent": "Zuletzt: {{event}}",
+    "matchLabel": {
+      "upper": "UB R{{round}} M{{match}}",
+      "lower": "LB R{{round}} M{{match}}",
+      "grandFinal": "Grand Final",
+      "grandFinalReset": "Grand Final Reset"
+    }
+  },
+  "manualMatchModal": {
+    "title": "Manuelles Match erstellen",
+    "steps": {
+      "matchSetup": "Spiel-Setup",
+      "rules": "Regeln",
+      "maps": "Karten",
+      "teams": "Mannschaften",
+      "review": "Überprüfung"
+    },
+    "description": "Erstelle ein eigenständiges Match, das unabhängig von der Turniergruppe ist. Die API weist Ihnen automatisch einen verfügbaren Server zu.",
+    "buttons": {
+      "next": "Nächste",
+      "back": "Zurück",
+      "create": "Match erstellen",
+      "creating": "Wird erstellt..."
+    },
+    "saveTemplate": {
+      "title": "Spielvorlage speichern",
+      "nameLabel": "Name der Vorlage",
+      "nameHelper": "Zum Beispiel: BO1 Inferno Messer, BO3 Kartenpool, etc.",
+      "description": "Aktuelle Karten, Serienformat, CT-Seitenregel, Veto-Schalter, Messermodus und Spieler pro Team werden in dieser Vorlage gespeichert.",
+      "save": "Speichern"
+    },
+    "chooseMode": {
+      "heading": "Wie möchtest du dieses Match erstellen?",
+      "template": {
+        "title": "Vorlage auswählen",
+        "description": "Laden Sie eine Voreinstellung für Karten, Format und Regeln und wählen Sie dann die Teams aus.",
+        "label": "Matchvorlage",
+        "none": "Kein",
+        "empty": "Noch keine Vorlagen gespeichert. Konfigurieren Sie eine Übereinstimmung und speichern Sie sie als Vorlage."
+      },
+      "custom": {
+        "title": "Neue Partie erstellen",
+        "description": "Konfigurieren Sie Karten, Regeln, Seiten und Teams von Grund auf."
+      }
+    },
+    "errors": {
+      "slugAndMapsRequired": "Slug und mindestens eine Karte sind erforderlich.",
+      "teamsMustDiffer": "Team 1 und Team 2 müssen unterschiedlich sein.",
+      "invalidMapSelectionVeto": "Ungültige Kartenauswahl für das Veto. Bitte wähle genau 7 Karten aus oder deaktiviere das Veto.",
+      "invalidMapSelectionFormat": "Ungültige Kartenauswahl für dieses Serienformat. Bitte wähle die richtige Anzahl an Karten aus.",
+      "configIncomplete": "Die Match-Konfiguration ist unvollständig. Bitte überprüfe die Einstellungen.",
+      "createFailed": "Match konnte nicht erstellt werden. Bitte versuche es erneut."
+    }
+  },
+  "matchDetailsModal": {
+    "delete": {
+      "dialogTitle": "Match löschen",
+      "confirmTitle": "Dieses Match löschen?",
+      "confirmBody": "Möchtest du das Match \"{{slug}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "button": "Match löschen"
+    },
+    "roster": {
+      "title": "Spielerkader",
+      "yourTeam": "Dein Team",
+      "openPlayerPage": "Spielerseite öffnen",
+      "ready": "BEREIT",
+      "connected": "VERBUNDEN",
+      "offline": "OFFLINE"
+    },
+    "decision": {
+      "body": "Every map has been played but the series is level on maps, rounds and damage. Choose the winner to advance the bracket.",
+      "setWinner": "{{team}} wins",
+      "confirmTitle": "Set series winner",
+      "confirmBody": "Finish this series with {{team}} as the winner? The bracket advances and this cannot be undone here.",
+      "confirm": "Set winner",
+      "success": "Winner set",
+      "failed": "Failed to set the winner"
+    },
+    "tiebreakHint": "Scores are level: {{team}} won the map, decided by tiebreak."
+  },
+  "bulkShuffleMatchesModal": {
+    "title": "Massen-Shuffle-Matches erstellen",
+    "description": "Konfigurieren Sie ein Einzelkarten-Shuffle-Match (Map + Rundenlimit) und definieren Sie dann so viele Kopf-an-Kopf-Matches, wie Sie möchten, indem Sie genaue Spieleraufstellungen für jede Seite auswählen. Spiele werden im Rahmen des aktuellen Shuffle-Turniers erstellt und zu Beginn des Turniers den Servern zugewiesen.",
+    "mapSelect": {
+      "label": "Karte",
+      "noMaps": "Keine Karten für dieses Turnier konfiguriert",
+      "helper": "Alle Übereinstimmungen in diesem Stapel verwenden diese Karte."
+    },
+    "maxRounds": {
+      "label": "Max. Runden pro Karte",
+      "helperWithValue": "Das Spiel spielt bis zu {{maxRounds}} Runden; der Gewinner ist der Erste in {{winRounds}} Runden.",
+      "helperDefault": "Maximale Anzahl von Runden pro Karte (Standard: 24, max: 30)."
+    },
+    "matchesSection": {
+      "title": "Übereinstimmungen ({{count}})",
+      "addMatch": "Spiel hinzufügen"
+    },
+    "players": {
+      "empty": "Für dieses Shuffle-Turnier sind noch keine Spieler registriert. Registrieren Sie zuerst Spieler, dann können Sie manuelle Spiele erstellen."
+    },
+    "matchRow": {
+      "title": "Match Nr. {{index}}",
+      "teamCounts": "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}",
+      "team1Label": "Team 1 Spieler ({{team1Count}}/{{teamSize}})",
+      "team2Label": "Team 2 Spieler ({{team2Count}}/{{teamSize}})",
+      "searchPlaceholder": "Spieler suchen & auswählen",
+      "mapOverrideLabel": "Karte (optionale Überschreibung)",
+      "mapOverrideHelperOwn": "Dieses Spiel verwendet eine eigene Karte.",
+      "mapOverrideHelperDefault": "Leer lassen, um die Standardkarte oben zu verwenden.",
+      "maxRoundsOverrideLabel": "Max. Runden (optionale Überschreibung)",
+      "maxRoundsOverrideHelperOwn": "Überschreibt die max. Standardrunden für dieses Spiel (derzeit {{value}}).",
+      "maxRoundsOverrideHelperDefault": "Lassen Sie das Feld leer, um die oben angegebenen maximalen Standardrunden zu verwenden."
+    },
+    "errors": {
+      "loadPlayers": "Registrierte Spieler konnten nicht geladen werden",
+      "noMatches": "Fügen Sie mindestens eine Übereinstimmung hinzu, um sie zu erstellen.",
+      "bothTeamsRequired": "Match {{index}}: Beide Teams müssen mindestens einen Spieler haben.",
+      "conflictingPlayers": "Match {{index}}: Der gleiche Spieler kann nicht in beiden Teams sein. Konflikt-ID (s): {{ids}}",
+      "mapRequired": "Übereinstimmung mit {{index}}: Karte ist erforderlich (legen Sie oben eine Standardkarte fest oder wählen Sie eine Karte für diese Übereinstimmung aus).",
+      "rowMaxRoundsRange": "Match {{index}}: max. Runden müssen zwischen 1 und 30 liegen, wenn sie pro Match überschrieben werden.",
+      "globalMaxRoundsRange": "Max. Runden müssen zwischen 1 und 30 liegen.",
+      "createFailed": "Manuelle Zufallsübereinstimmungen konnten nicht erstellt werden"
+    },
+    "success": {
+      "created": "Manuelle Zufallsübereinstimmungen erstellt. Sie werden zugeteilt, wenn das Turnier beginnt."
+    },
+    "createMatchesButton": {
+      "default": "Übereinstimmungen erstellen",
+      "creating": "Wird erstellt..."
+    }
+  },
+  "teamModal": {
+    "titleCreate": "Neues Team erstellen",
+    "titleEdit": "Teammitglied bearbeiten",
+    "teamNameLabel": "Teamname",
+    "teamNamePlaceholder": "Astralis",
+    "teamNameHelper": "Der Teamname kann eine beliebige Sprache oder Sonderzeichen enthalten",
+    "teamTagLabel": "Team-Tag",
+    "teamTagPlaceholder": "AST",
+    "teamTagHelper": "Automatisch aus dem Teamnamen generiert (max. 4 Zeichen)",
+    "playersHeader": "Spieler ({{count}})",
+    "selectPlayers": "Spieler auswählen",
+    "noPlayersInfo": "Noch keine Spieler hinzugefügt. Füge mindestens einen Spieler hinzu.",
+    "addPlayersHelper": "Fügen Sie Spieler hinzu, indem Sie die Steam-URL einfügen oder aus vorhandenen Spielern auswählen",
+    "steamInputLabel": "Steam-ID / Vanity-URL",
+    "steamInputPlaceholder": "gaben oder steamcommunity.com/id/gaben",
+    "resolveSteam": "Steam-ID auflösen",
+    "resolving": "Wird gelöst",
+    "playerNameLabel": "Spielername",
+    "playerNamePlaceholder": "s1mple",
+    "eloLabel": "ELO (optional, leer lassen)",
+    "eloPlaceholder": "1500",
+    "eloHelper": "Standard: 1500",
+    "errors": {
+      "steamLookupEmpty": "Bitte geben Sie eine Steam-ID, eine Vanity-URL oder eine Profil-URL ein",
+      "steamApiNotConfigured": "Dampf-API nicht konfiguriert - Steam ID64 manuell eingeben",
+      "steamResolveFailed": "Steam-ID konnte nicht aufgelöst werden - bitte geben Sie Steam-ID64 manuell ein",
+      "steamAndNameRequired": "Sowohl Steam-ID als auch Spielername sind erforderlich",
+      "steamDuplicate": "Diese Steam-ID ist bereits im Team",
+      "teamNameRequired": "Teamname ist erforderlich",
+      "playersRequired": "Mindestens ein Spieler ist erforderlich",
+      "saveFailed": "Speichern fehlgeschlagen.",
+      "deleteFailed": "Loeschen fehlgeschlagen",
+      "discordIdInvalid": "Die Discord-ID muss aus 17–20 Ziffern bestehen (die numerische Benutzer-ID, kein Benutzername)",
+      "discordIdInvalidPlayers": "Ungültige Discord-ID für: {{names}}. Sie muss aus 17–20 Ziffern bestehen oder leer bleiben.",
+      "discordIdSaveFailed": "Das Team wurde gespeichert, aber die Discord-ID konnte nicht gespeichert werden für: {{names}}. {{message}}"
+    },
+    "success": {
+      "playerAdded": "Spieler zum Team hinzugefügt",
+      "playerReplaced": "Spieler ersetzt",
+      "teamUpdated": "Team erfolgreich aktualisiert",
+      "teamCreated": "Team erfolgreich erstellt",
+      "teamDeleted": "Erfolgreich gelöscht"
+    },
+    "buttons": {
+      "deleteTeam": "Teammitglied löschen",
+      "cancel": "Abbrechen",
+      "saving": "Der Speichervorgang läuft...",
+      "saveChanges": "Änderungen speichern",
+      "createTeam": "Team erstellen"
+    },
+    "confirmDelete": {
+      "title": "Teammitglied löschen",
+      "message": "Sind Sie sicher, dass Sie \"{{name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+    },
+    "replacePlayerAria": "Spieler {{name}} ersetzen",
+    "replacePlayerTooltip": "Diesen Spieler ersetzen"
+  },
+  "playerModal": {
+    "titleCreate": "Spieler erstellen",
+    "titleEdit": "Spieler bearbeiten",
+    "steamLabel": "Steam-ID oder Profil-URL",
+    "steamHelperEditing": "Dampf-ID kann nicht geändert werden",
+    "steamHelperNew": "Geben Sie die Steam-ID64, die Vanity-URL oder die Profil-URL ein. Klicken Sie auf „Auflösen“, um den Namen und den Avatar automatisch auszufüllen.",
+    "resolveSteam": "Steam-ID auflösen",
+    "resolving": "Wird gelöst",
+    "playerNameLabel": "Spielername",
+    "playerNamePlaceholder": "Spieler",
+    "eloLabelNew": "Start-ELO",
+    "eloLabelEdit": "ELO",
+    "eloHelperNew": "Leer lassen, um die Standardbewertung (1500 Skill Rating) zu verwenden.",
+    "eloHelperEdit": "Das Ändern des ELO setzt die Bewertung und die Werte des Spielers zurück. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "isAdminLabel": "Ist Admin (hat im Spiel Admin-Rechte für alle Spiele)",
+    "currentElo": "Aktueller ELO: {{value}}",
+    "startingElo": "Start ELO: {{value}}",
+    "matchesPlayed": "Gespielte Spiele: {{count}}",
+    "errors": {
+      "steamRequired": "Dampf-ID ist erforderlich",
+      "nameRequired": "Spielername ist erforderlich",
+      "steamLookupEmpty": "Bitte geben Sie eine Steam-ID, eine Vanity-URL oder eine Profil-URL ein",
+      "steamApiNotConfigured": "Dampf-API nicht konfiguriert - Steam ID64 manuell eingeben",
+      "steamResolveFailed": "Steam-ID konnte nicht aufgelöst werden - bitte geben Sie Steam-ID64 manuell ein",
+      "saveFailed": "Spieler konnte nicht gespeichert werden"
+    },
+    "success": {
+      "playerUpdated": "Spieler erfolgreich aktualisiert",
+      "playerCreated": "Spieler erfolgreich erstellt"
+    },
+    "buttons": {
+      "delete": "Löschen",
+      "cancel": "Abbrechen",
+      "saving": "Der Speichervorgang läuft...",
+      "save": "Speichern",
+      "create": "Erstellen"
+    },
+    "confirmDelete": {
+      "title": "Spieler löschen",
+      "message": "Sind Sie sicher, dass Sie den Player \"{{name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+    },
+    "confirmEloUpdate": {
+      "title": "Spieler aktualisieren",
+      "message": "Sind Sie sicher, dass Sie die ELO dieses Spielers von {{from}} auf {{to}} aktualisieren möchten? Dadurch werden ihre Statistiken und ihr Bewertungsverlauf zurückgesetzt. Diese Aktion kann nicht rückgängig gemacht werden."
+    },
+    "discordIdHelper": "Optional. 17–20 Ziffern. Damit Organisatoren diesen Spieler über Discord erreichen können. Wird nie öffentlich angezeigt."
+  },
+  "teamImportModal": {
+    "title": "Teams aus json importieren",
+    "info": {
+      "title": "Fügen Sie json mit Teamdaten unten ein.",
+      "format": "Erwartetes Format: Array von Teams mit name, tag (optional) und players (name + steamId, dazu optional discordId als String in Anführungszeichen).",
+      "link": "Sehen Sie sich die Dokumentation mit Beispielen an"
+    },
+    "jsonLabel": "JSON-Daten",
+    "errors": {
+      "mustBeArray": "Json muss ein Array von Teams sein",
+      "emptyArray": "Array darf nicht leer sein",
+      "parseWithMessage": "Json Analysefehler: {{message}}",
+      "parseGeneric": "Ungültiges JSON-Format. Bitte überprüfen Sie Ihre Syntax.",
+      "importFailed": "Teams konnten nicht importiert werden",
+      "noJson": "Bitte Daten eingeben"
+    },
+    "preview": {
+      "summary": "✓ Gültiges JSON! {{teams}} mit insgesamt {{players}} gefunden.",
+      "title": "Vorschau:",
+      "missingDiscordTotal": "Spieler ohne Discord-ID: {{count}}",
+      "missingDiscordChip": "Ohne Discord: {{count}}",
+      "playersChip_one": "{{count}} Spieler",
+      "playersChip_other": "{{count}} Spieler",
+      "teamsCount_one": "{{count}} Team",
+      "teamsCount_other": "{{count}} Teams"
+    },
+    "actions": {
+      "preview": "Vorschau",
+      "importing": "Import läuft …",
+      "import_one": "{{count}} Team importieren",
+      "import_other": "{{count}} Teams importieren"
+    },
+    "warnings": {
+      "title": "Einige Discord-IDs wurden ignoriert. Diese Spieler werden ohne ID importiert:",
+      "discordIdNumber": "Team \"{{team}}\", Spieler \"{{player}}\": discordId muss ein String in Anführungszeichen sein. Große Zahlen verlieren in JSON an Genauigkeit, daher wurde die ID entfernt.",
+      "discordIdInvalid": "Team \"{{team}}\", Spieler \"{{player}}\": \"{{value}}\" ist keine Discord-Benutzer-ID (erwartet 17–20 Ziffern) und wurde entfernt."
+    }
+  },
+  "playerImportModal": {
+    "title": "Spieler importieren",
+    "info": {
+      "description": "Spieler aus dem json oder CSV-Format importieren. Erforderliche Felder: steamId, Name. Optional: initialELO (standardmäßig 1500), avatarUrl.",
+      "link": "Sehen Sie sich die Dokumentation mit Beispielen an"
+    },
+    "placeholders": {
+      "jsonCsv": "JSON-Format:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Player One\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nCSV-Format:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Player One,1500,https://..."
+    },
+    "actions": {
+      "parseValidate": "Analysieren und validieren",
+      "importing": "Import läuft …",
+      "import_one": "{{count}} Spieler importieren",
+      "import_other": "{{count}} Spieler importieren"
+    },
+    "preview": {
+      "title": "Zu importierende Spieler ({{count}}):",
+      "steamId": "Steam-ID: {{steamId}}",
+      "name": "Spielername: {{name}}",
+      "initialElo": "Start-ELO: {{elo}}",
+      "avatar": "Avatar-URL: {{url}}",
+      "readyChip_one": "{{count}} Spieler bereit zum Import",
+      "readyChip_other": "{{count}} Spieler bereit zum Import"
+    },
+    "errors": {
+      "noData": "Bitte JSON- oder CSV-Daten eingeben",
+      "noPlayers": "Keine Spieler in den Daten gefunden",
+      "validationPrefix": "Validierungsfehler:",
+      "parseFailed": "Daten konnten nicht geparst werden: {{message}}",
+      "importFailed": "Spieler konnten nicht importiert werden",
+      "parseFirst": "Bitte die Daten zuerst parsen und validieren"
+    }
+  },
+  "playerSelectionModal": {
+    "title": "Spieler auswählen",
+    "selectedCount": "{{count}} ausgewählt",
+    "searchPlaceholder": "Spieler nach Name oder Steam-ID suchen…",
+    "selectAll": {
+      "select": "Alles auswählen",
+      "deselect": "Alle abwählen"
+    },
+    "empty": {
+      "noSearchResults": "Keine Spieler gefunden, die deiner Suche entsprechen",
+      "noPlayers": "Keine Spieler verfügbar"
+    },
+    "playerCard": {
+      "alreadyInTeam": "Bereits im Team"
+    },
+    "errors": {
+      "loadFailed": "Spieler konnten nicht geladen werden",
+      "noSelectable": "Keine auswählbaren Spieler verfügbar"
+    },
+    "addPlayersButton_one": "{{count}} Spieler hinzufügen",
+    "addPlayersButton_other": "{{count}} Spieler hinzufügen"
+  },
+  "soundSettingsModal": {
+    "title": "Sound-Einstellungen",
+    "soundSelect": {
+      "label": "Benachrichtigungston"
+    },
+    "volume": {
+      "label": "Lautstärke: {{percent}}%"
+    },
+    "testButton": "Sound testen",
+    "footer": "Sound-Benachrichtigungen werden abgespielt, wenn dein Match bereit ist oder wenn wichtige Ereignisse auftreten."
+  }
+}

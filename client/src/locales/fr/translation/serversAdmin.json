@@ -1,0 +1,558 @@
+{
+  "serversPage": {
+    "title": "Serveurs",
+    "headerActions": {
+      "refreshChecking": "Vérification…",
+      "refresh": "Actualiser le statut",
+      "batchAdd": "Ajout en lot",
+      "addServer": "Ajouter un serveur",
+      "retryUninitialized": "Réessayer les serveurs non initialisés ({{count}})",
+      "retryUninitializedChecking": "Nouvel essai…",
+      "select": "Sélectionner",
+      "done": "Terminer la sélection",
+      "selectAll": "Tout sélectionner",
+      "unselectAll": "Tout désélectionner",
+      "deleteSelected": "Supprimer la sélection"
+    },
+    "empty": {
+      "title": "Aucun serveur enregistré",
+      "description": "Ajoutez votre premier serveur CS2 pour démarrer le tournoi",
+      "addServer": "Ajouter un serveur",
+      "batchAdd": "Ou ajouter plusieurs serveurs en lot"
+    },
+    "errors": {
+      "loadServers": "Impossible de charger les serveurs",
+      "noMatchesForServer": "Aucun match trouvé pour ce serveur",
+      "loadCurrentMatch": "Impossible de charger le match en cours pour ce serveur",
+      "bulkDelete": "Impossible de supprimer un ou plusieurs serveurs"
+    },
+    "allocation": {
+      "title": "Allocation des serveurs",
+      "loading": "Chargement de l’état d’allocation…",
+      "empty": "Aucune donnée d’allocation disponible.",
+      "available": "Serveurs disponibles :",
+      "waiting": "Matchs en attente de serveur :",
+      "nextPass": "Prochain passage de l’allocateur dans ~{{seconds}} s",
+      "cooldownLabel": "Refroidissement",
+      "cooldownDescription": "Match terminé récemment — en refroidissement pour permettre l’upload des démos et la réinitialisation complète du serveur (environ 2 minutes).",
+      "cooldownEta": "Prêt dans ~{{seconds}} s"
+    },
+    "statusChip": {
+      "checking": "Vérification…",
+      "disabled": "Désactivé",
+      "offline": "Hors ligne",
+      "onlineOk": "En ligne (API ↔ serveur OK)",
+      "onlineRconOnly": "En ligne (RCON uniquement)",
+      "rconFailed": "Échec RCON",
+      "onlineTesting": "En ligne (test)",
+      "noEventsYet": "Aucun événement pour l’instant",
+      "notConfigured": "Non configuré",
+      "onlineIdle": "En ligne (inactif — aucun événement récent)",
+      "onlineActive": "En ligne (actif)",
+      "online": "En ligne"
+    },
+    "ipBanned": {
+      "title": "Le serveur a peut-être banni notre IP",
+      "message": "Le serveur est joignable mais refuse l’authentification RCON de manière répétée. Cela peut indiquer un ban IP. Si le mot de passe RCON est correct, vérifiez la liste de bans du serveur et débannissez notre adresse IP."
+    },
+    "connectivity": {
+      "apiToServer": "API MAT → serveur CS2",
+      "serverToApi": "Serveur → API (/api/events)",
+      "unreachable": "Injoignable",
+      "reachable": "Joignable",
+      "unknown": "Inconnu",
+      "loading": "Chargement…",
+      "pluginLabel": "MatchZy :"
+    },
+    "currentMatch": {
+      "view": "Voir le match",
+      "loading": "Chargement…",
+      "queuedPrefix": "En file d’attente : "
+    },
+    "labels": {
+      "host": "Hôte :",
+      "port": "Port :",
+      "id": "ID :",
+      "cs2Name": "Nom CS2 :",
+      "plugin": "Plugin :",
+      "cs2BuildValue": "build {{build}}"
+    },
+    "bulkDelete": {
+      "title": "Supprimer des serveurs",
+      "message_one": "Voulez-vous vraiment supprimer {{count}} serveur ? Cette action est irréversible.",
+      "message_other": "Voulez-vous vraiment supprimer {{count}} serveurs ? Cette action est irréversible."
+    },
+    "autoConfig": {
+      "configuring": "Configuration des nouveaux serveurs (envoi de la config MatchZy via RCON)…",
+      "done": "Nouveaux serveurs configurés. Actualisation du statut…"
+    },
+    "checkServerLogs": "Consultez la console / les logs du serveur de jeu pour vérifier que MatchZy reçoit la config et envoie des événements.",
+    "fleet": {
+      "title": "État du parc de serveurs",
+      "total_one": "{{count}} serveur",
+      "total_other": "{{count}} serveurs",
+      "online": "en ligne",
+      "offline": "hors ligne",
+      "notConfigured": "non configuré",
+      "disabled": "désactivé",
+      "latestRelease": "Dernière version de MatchZy Enhanced : v{{version}}",
+      "olderVersion_one": "{{count}} serveur utilise une version plus ancienne que la dernière release.",
+      "olderVersion_other": "{{count}} serveurs utilisent une version plus ancienne que la dernière release.",
+      "newerVersion_one": "{{count}} serveur utilise une version plus récente que la dernière release GitHub (probablement un build non publié).",
+      "newerVersion_other": "{{count}} serveurs utilisent une version plus récente que la dernière release GitHub (probablement un build non publié).",
+      "downloadLatest": "Télécharger la dernière version"
+    },
+    "cs2Update": {
+      "title": "Mise à jour CS2 requise",
+      "snackbarBody_one": "{{count}} serveur n’est pas à jour. Mettez à jour l’installation du serveur puis redémarrez-le.",
+      "snackbarBody_other": "{{count}} serveurs ne sont pas à jour. Mettez à jour l’installation des serveurs puis redémarrez-les.",
+      "fleetTitle": "Serveurs CS2 obsolètes — mise à jour requise",
+      "fleetBody_one": "{{count}} serveur a signalé une mise à jour CS2 requise par Steam. Mettez à jour l’installation du serveur (SteamCMD/hôte) puis redémarrez-le.",
+      "fleetBody_other": "{{count}} serveurs ont signalé une mise à jour CS2 requise par Steam. Mettez à jour l’installation des serveurs (SteamCMD/hôte) puis redémarrez-les."
+    },
+    "versionMismatch": {
+      "title": "Versions différentes détectées",
+      "chip_one": "v{{version}} : {{count}} serveur",
+      "chip_other": "v{{version}} : {{count}} serveurs",
+      "recommended": "Recommandé : mettez à jour tous les serveurs en v{{version}} pour plus de cohérence"
+    },
+    "notInitialized": {
+      "title": "Serveur non initialisé",
+      "checking": "Vérification de la connectivité…",
+      "rconUnreachable": "RCON injoignable. Vérifiez l’hôte, le port et que le serveur de jeu est lancé. Utilisez Réessayer une fois qu’il est joignable.",
+      "noEvents": "RCON joignable, mais MatchZy n’a envoyé aucun événement. Cliquez sur Réessayer pour le configurer.",
+      "notChecked": "Connectivité pas encore vérifiée. Consultez l’état ci-dessous. Cliquez sur Réessayer pour configurer le serveur une fois RCON joignable."
+    },
+    "chips": {
+      "versionMismatch": "Version différente",
+      "ipBanned": "IP bannie",
+      "cs2Build": "Build CS2 {{build}}",
+      "pluginDbDown": "BDD du plugin hors service",
+      "cs2UpdateRequired": "Mise à jour CS2 requise ({{version}})"
+    },
+    "tooltips": {
+      "fixGuide": "Guide de résolution",
+      "disabledTitle": "Serveur désactivé",
+      "disabledBody": "Les serveurs désactivés sont ignorés par l’attribution et les vérifications de santé.",
+      "noEventsTitle": "Aucun événement MatchZy reçu pour l’instant",
+      "noEventsBody": "MAT a envoyé la configuration du webhook via RCON mais n’a reçu aucun événement. En général, le serveur ne peut pas joindre l’URL du webhook MAT, ou MatchZy ne tourne pas.",
+      "notConfiguredTitle": "Non configuré",
+      "notConfiguredBody": "MAT n’a pas encore envoyé la configuration persistante à ce serveur. Utilisez Réessayer pour l’initialiser.",
+      "unreachableTitle": "Serveur injoignable depuis MAT",
+      "unreachableBody": "MAT ne peut pas joindre le serveur via RCON. Vérifiez l’hôte/le port, le mot de passe RCON, le pare-feu et que le serveur est lancé.",
+      "webhookTitle": "Le serveur ne peut pas joindre MAT (webhook)",
+      "webhookBody": "MAT peut joindre le serveur via RCON, mais le serveur ne peut pas joindre le webhook de MAT. Vérifiez le trafic sortant, le DNS et l’URL du webhook configurée.",
+      "versionDiffTitle": "Les versions du plugin diffèrent selon les serveurs",
+      "versionDiffBody": "Certains serveurs utilisent une autre version de MatchZy Enhanced. Si vous utilisez CSM, exécutez {{command}} puis redémarrez les serveurs.",
+      "ipBannedTitle": "IP bannie par RCON",
+      "ipBannedBody": "Le serveur a temporairement banni l’IP de MAT après plusieurs échecs d’authentification RCON. Corrigez le mot de passe RCON et débannissez l’IP.",
+      "pluginDbTitle": "Le plugin MatchZy ne peut pas joindre sa base de données.",
+      "pluginDbBody": "Si vous utilisez CSM, exécutez {{path}}.",
+      "cs2UpdateBody": "MAT a vérifié que le build de ce serveur est en retard sur Steam. Il est exclu des nouvelles attributions (et du lancement du tournoi) jusqu’à sa mise à jour.",
+      "retryInit": "Réessayer l’initialisation du serveur (envoyer la configuration persistante via RCON)"
+    },
+    "lastActive": {
+      "justNow": "Actif à l’instant",
+      "minutesAgo_one": "Actif il y a {{count}} minute",
+      "minutesAgo_other": "Actif il y a {{count}} minutes",
+      "hoursAgo_one": "Actif il y a {{count}} heure",
+      "hoursAgo_other": "Actif il y a {{count}} heures",
+      "daysAgo_one": "Actif il y a {{count}} jour",
+      "daysAgo_other": "Actif il y a {{count}} jours"
+    },
+    "pluginStatus": {
+      "idle": "Inactif",
+      "loading": "Chargement",
+      "warmup": "Warmup",
+      "knife": "Manche knife",
+      "live": "Live",
+      "playing": "En jeu",
+      "paused": "En pause",
+      "halftime": "Mi-temps",
+      "postgame": "Fin de match",
+      "queued": "En file d’attente",
+      "error": "Erreur"
+    },
+    "retry": {
+      "sendingConfig": "Envoi de la configuration persistante au serveur…",
+      "triggered": "Initialisation du serveur déclenchée",
+      "failed": "Impossible de relancer l’initialisation : {{message}}",
+      "retryingAll_one": "Nouvelle tentative d’initialisation pour {{count}} serveur…",
+      "retryingAll_other": "Nouvelle tentative d’initialisation pour {{count}} serveurs…",
+      "triggeredAll_one": "Nouvelle tentative lancée pour {{count}} serveur",
+      "triggeredAll_other": "Nouvelle tentative lancée pour {{count}} serveurs",
+      "failedAll": "Échec de la nouvelle tentative : {{message}}"
+    }
+  },
+  "serverModal": {
+    "titleCreate": "Ajouter un serveur",
+    "titleEdit": "Modifier le serveur",
+    "serverNameLabel": "Nom du serveur",
+    "serverNamePlaceholder": "Serveur match #1",
+    "hostLabel": "Hôte / adresse IP",
+    "hostPlaceholder": "192.168.1.100",
+    "portLabel": "Port :",
+    "portPlaceholder": "27015",
+    "rconPasswordLabel": "Mot de passe RCON",
+    "rconPasswordPlaceholder": "your-rcon-password",
+    "rconPasswordHelper": "Mot de passe pour l’accès RCON au serveur",
+    "enabledLabel": "Serveur activé",
+    "enabledHelper": "Les serveurs désactivés ne seront pas utilisés pour les matchs",
+    "overridesTitle": "Surcharges MatchZy (optionnel)",
+    "overridesDescription": "Ces paramètres surchargent les valeurs globales MatchZy uniquement pour ce serveur. Laissez vide pour utiliser les valeurs globales dans Paramètres.",
+    "chatPrefixLabel": "Surcharge du préfixe de chat",
+    "chatPrefixPlaceholder": "[{Green}MAT{Default}]",
+    "chatPrefixHelper": "Surcharge matchzy_chat_prefix sur ce serveur (optionnel)",
+    "adminChatPrefixLabel": "Surcharge du préfixe de chat admin",
+    "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
+    "adminChatPrefixHelper": "Surcharge matchzy_admin_chat_prefix sur ce serveur (optionnel)",
+    "knifeOverrideLabel": "Couteau activé par défaut (surcharge)",
+    "knifeOverrideHelper": "Si défini, surcharge matchzy_knife_enabled_default pour ce serveur. Laissez indéterminé pour utiliser la valeur globale.",
+    "testConnectivity": "Tester la connectivité",
+    "testingConnectivity": "Test de connectivité…",
+    "connectivity": {
+      "apiToServer": "API MAT → serveur CS2 :",
+      "serverToApi": "Serveur → API (/api/events) :",
+      "reachable": "Joignable",
+      "unreachable": "Injoignable"
+    },
+    "errors": {
+      "nameRequired": "Le nom du serveur est requis",
+      "hostRequired": "L’hôte est requis",
+      "portInvalid": "Le port doit être un nombre valide entre 1 et 65535",
+      "rconRequired": "Le mot de passe RCON est requis",
+      "idGenerationFailed": "Impossible de générer l’ID du serveur. Ajustez le nom du serveur.",
+      "duplicateId": "Le nom du serveur crée un ID dupliqué '{{id}}'. Choisissez un autre nom.",
+      "duplicateHostPort": "Un serveur avec hôte:port '{{host}}:{{port}}' existe déjà (ID : {{id}}, Nom : {{name}})",
+      "testConnectionSaveFirst": "Enregistrez d’abord le serveur avant de tester la connexion",
+      "testConnectionFailed": "Échec du test de connexion",
+      "saveFailed": "Impossible d’enregistrer le serveur",
+      "deleteFailed": "Impossible de supprimer le serveur",
+      "rconReachableApiUnreachable": "Le serveur est joignable via RCON, mais il n’a pas pu joindre l’endpoint API (événement de test manquant).",
+      "serverOffline": "Le serveur semble hors ligne ou injoignable via RCON.",
+      "rconReachableApiUnknown": "RCON works. The server has no event URL yet, so its connection back to the API can't be checked until it is saved and configured."
+    },
+    "success": {
+      "connectivityOk": "Connectivité bidirectionnelle vérifiée : le serveur est en ligne et peut joindre l’API.",
+      "serverUpdated": "Serveur mis à jour",
+      "serverCreated": "Serveur créé",
+      "serverDeleted": "Serveur supprimé"
+    },
+    "buttons": {
+      "deleteServer": "Supprimer le serveur",
+      "cancel": "Annuler",
+      "saving": "Enregistrement…",
+      "saveChanges": "Enregistrer",
+      "addServer": "Ajouter un serveur"
+    },
+    "confirmDelete": {
+      "title": "Supprimer le serveur",
+      "message": "Voulez-vous vraiment supprimer \"{{name}}\" ? Cette action est irréversible."
+    }
+  },
+  "adminToolsPage": {
+    "title": "Outils admin",
+    "description": "Exécutez des actions courantes sur vos serveurs CS2. Les actions rapides s’affichent d’abord, avec des outils plus avancés disponibles ci‑dessous.",
+    "header": {
+      "refresh": "Actualiser les serveurs"
+    },
+    "serverSelect": {
+      "label": "Serveur(s) cible(s)",
+      "allServersChip": "Tous les serveurs",
+      "sendStatus": "Envoyer status",
+      "allServersDescription_one": "Exécuter sur {{count}} serveur",
+      "allServersDescription_other": "Exécuter sur les {{count}} serveurs"
+    },
+    "command": {
+      "execute": "Exécuter"
+    },
+    "customRconWarning": "Attention : à utiliser avec prudence !",
+    "results": {
+      "title": "Résultats d’exécution",
+      "successChip": "✓ Succès",
+      "failedChip": "✗ Échec",
+      "errorPrefix": "Erreur :"
+    },
+    "quickActions": {
+      "title": "Actions rapides"
+    },
+    "advanced": {
+      "title": "Outils avancés"
+    },
+    "noServers": "Aucun serveur activé trouvé. Ajoutez et activez des serveurs dans la page Serveurs.",
+    "recovery": {
+      "title": "Récupération de match",
+      "description": "Si l’API ou les serveurs ont redémarré pendant un tournoi et que l’état des matchs semble désynchronisé (ex. match bloqué en warmup, score live manquant), vous pouvez déclencher une récupération manuelle. Cela demandera à tous les serveurs leur rapport de match actuel, resynchronisera scores/phases, et reconfigurera webhooks et uploads de démos si possible.",
+      "button": "Lancer la récupération maintenant",
+      "success": "Récupération de match terminée.",
+      "error": "Échec de la récupération de match.",
+      "failedTrigger": "Impossible de lancer la récupération. Réessayez."
+    },
+    "monitoring": {
+      "title": "Monitoring & logs",
+      "serverEvents": "Moniteur d’événements serveur",
+      "appLogs": "Logs applicatifs"
+    },
+    "toasts": {
+      "commandExecuted_one": "Commande exécutée sur {{count}} serveur",
+      "commandExecuted_other": "Commande exécutée sur {{count}} serveurs",
+      "commandPartial": "Commande réussie sur {{succeeded}} serveurs sur {{total}} ({{failed}} en échec)",
+      "commandFailed": "Impossible d’exécuter la commande"
+    },
+    "categories": {
+      "matchControl": "Contrôle du match",
+      "matchSettings": "Paramètres du match",
+      "backupRestore": "Sauvegarde & restauration",
+      "serverMgmt": "Gestion des serveurs",
+      "teamMgmt": "Gestion des équipes",
+      "practiceMode": "Mode entraînement",
+      "adminComm": "Communication admin",
+      "advanced": "RCON avancé"
+    },
+    "commands": {
+      "matchStart": {
+        "label": "Lancer le match",
+        "description": "Lance le match immédiatement."
+      },
+      "matchEnd": {
+        "label": "Terminer le match (css_restart)",
+        "description": "Force la fin du match en cours sur les serveurs sélectionnés et les remet en warmup avec css_restart."
+      },
+      "forcePause": {
+        "label": "Forcer la pause",
+        "description": "Force la mise en pause du match."
+      },
+      "forceUnpause": {
+        "label": "Forcer la reprise",
+        "description": "Force la reprise du match."
+      },
+      "skipVeto": {
+        "label": "Passer le veto",
+        "description": "Passe la phase de veto."
+      },
+      "toggleKnife": {
+        "label": "Activer/désactiver la manche knife",
+        "description": "Active ou désactive la manche knife pour le choix du camp (alias : rk)."
+      },
+      "togglePlayout": {
+        "label": "Activer/désactiver le playout",
+        "description": "Active ou désactive le fait de jouer tous les rounds."
+      },
+      "toggleWhitelist": {
+        "label": "Activer/désactiver la whitelist",
+        "description": "Active ou désactive la whitelist des équipes."
+      },
+      "showSettings": {
+        "label": "Afficher les paramètres",
+        "description": "Affiche les paramètres actuels du match."
+      },
+      "reloadAdmins": {
+        "label": "Recharger les admins",
+        "description": "Recharge la liste des admins depuis admins.json."
+      },
+      "readyRequired": {
+        "label": "Définir les joueurs prêts requis",
+        "description": "Définit combien de joueurs doivent être prêts avant le début du match.",
+        "inputLabel": "Nombre de joueurs"
+      },
+      "restoreBackup": {
+        "label": "Restaurer une sauvegarde de round",
+        "description": "Restaure le match à un round précis.",
+        "inputLabel": "Numéro du round"
+      },
+      "cleanServers": {
+        "label": "Nettoyer les serveurs (css_restart)",
+        "description": "Termine tout match en cours sur les serveurs sélectionnés et les remet en warmup avec css_restart. Action destructive."
+      },
+      "changeMap": {
+        "label": "Changer de carte",
+        "description": "Passe sur une autre carte (css_map <mapname>).",
+        "inputLabel": "Nom de la carte (de_dust2)"
+      },
+      "team1Name": {
+        "label": "Définir le nom de l’équipe 1",
+        "description": "Définit le nom de l’équipe 1.",
+        "inputLabel": "Nom de l’équipe"
+      },
+      "team2Name": {
+        "label": "Définir le nom de l’équipe 2",
+        "description": "Définit le nom de l’équipe 2.",
+        "inputLabel": "Nom de l’équipe"
+      },
+      "startPractice": {
+        "label": "Lancer le mode entraînement",
+        "description": "Active le mode entraînement avec les .commands."
+      },
+      "exitPractice": {
+        "label": "Quitter le mode entraînement",
+        "description": "Désactive le mode entraînement."
+      },
+      "broadcast": {
+        "label": "Diffuser un message",
+        "description": "Envoie un message admin à tous les joueurs.",
+        "inputLabel": "Message"
+      },
+      "customRcon": {
+        "label": "Exécuter une commande RCON personnalisée",
+        "description": "Exécute directement n’importe quelle commande RCON.",
+        "inputLabel": "Commande RCON"
+      }
+    },
+    "logs": {
+      "loadFailed": "Impossible de charger les logs",
+      "levelAll": "Tous",
+      "auto": "Auto",
+      "refresh": "Actualiser les logs",
+      "empty": "Aucun log à afficher",
+      "footer": "Affichage des {{count}} entrées de log les plus récentes",
+      "footerAutoRefresh": "Affichage des {{count}} entrées de log les plus récentes (actualisation automatique)"
+    },
+    "events": {
+      "healthCheckFailed": "Échec de la vérification de santé de l’API des événements. Vérifiez que l’API tourne et que /api/events/test est joignable.",
+      "loadFailed": "Impossible de charger les événements",
+      "connected": "Connecté",
+      "disconnected": "Déconnecté",
+      "paused": "En pause",
+      "pause": "Pause",
+      "resume": "Reprendre",
+      "refresh": "Actualiser les événements",
+      "clear": "Vider la console",
+      "filterLabel": "Filtrer par serveur (facultatif)",
+      "noServers": "Aucun serveur disponible",
+      "refreshServers": "Actualiser la liste des serveurs",
+      "noEvents": "Aucun événement reçu de ce serveur pour l’instant.",
+      "noEventsHint": "Toujours aucun événement après 15 secondes. Vérifiez que votre serveur CS2 est configuré pour envoyer les webhooks MatchZy vers /api/events/:matchSlugOrServerId avec le bon X-MatchZy-Token.",
+      "waiting": "En attente d’événements du serveur…",
+      "footer_one": "{{count}} événement affiché (max 100)",
+      "footer_other": "{{count}} événements affichés (max 100)",
+      "footerForServer_one": "{{count}} événement affiché pour le serveur {{server}} (max 100)",
+      "footerForServer_other": "{{count}} événements affichés pour le serveur {{server}} (max 100)",
+      "realtime": "Les événements se mettent à jour en temps réel via WebSocket",
+      "downloadDemo": "Télécharger la démo"
+    }
+  },
+  "servers": {
+    "allocation": {
+      "title": "En attente d’un serveur disponible",
+      "waiting": "Ce match démarrera automatiquement dès que des serveurs seront libres. Serveurs nécessaires :",
+      "nextPass": "Prochaine tentative d’attribution dans {{seconds}} s"
+    }
+  },
+  "adminMatchControls": {
+    "title": "Contrôles admin",
+    "noServer": "Aucun serveur n’est attribué à ce match",
+    "unavailable": "Aucun serveur n’est attribué à ce match, les contrôles admin sont donc indisponibles.",
+    "unknownAction": "Action inconnue",
+    "commandFailed": "Impossible d’exécuter la commande",
+    "confirm": "Confirmer",
+    "execute": "Exécuter",
+    "close": "Fermer",
+    "tipLabel": "Conseil admin :",
+    "tip": "Utilisez ces contrôles avec prudence pendant les matchs en direct. Certaines actions, comme « {{endMatch}} » et « {{restartMatch}} », sont irréversibles.",
+    "sections": {
+      "matchControl": "Contrôle du match",
+      "advanced": "Actions avancées"
+    },
+    "actions": {
+      "pause": {
+        "button": "Pause",
+        "tooltip": "Pause admin – les joueurs ne peuvent pas reprendre",
+        "title": "Mettre le match en pause",
+        "description": "Force la mise en pause du match. Les joueurs ne peuvent pas reprendre."
+      },
+      "unpause": {
+        "button": "Reprendre",
+        "tooltip": "Reprendre le match après une pause",
+        "title": "Reprendre le match",
+        "description": "Force la reprise du match."
+      },
+      "swap": {
+        "button": "Inverser les équipes",
+        "tooltip": "Faire passer les équipes dans le camp opposé (CT ↔ T)",
+        "title": "Inverser les équipes",
+        "description": "Inverse les camps des équipes (CT/T)."
+      },
+      "restartRound": {
+        "button": "Relancer le round",
+        "tooltip": "Relancer le round en cours depuis le début (réinitialise l’économie)",
+        "title": "Relancer le round",
+        "description": "Relance le round en cours."
+      },
+      "skipVeto": {
+        "button": "Passer le veto",
+        "tooltip": "Passer le veto des cartes et charger immédiatement la première carte",
+        "title": "Passer le veto",
+        "description": "Passe la phase de veto et lance le match."
+      },
+      "endWarmup": {
+        "button": "Terminer le warmup",
+        "tooltip": "Terminer le warmup et lancer le match (manche knife ou live)",
+        "title": "Terminer le warmup",
+        "description": "Termine le warmup et lance le match."
+      },
+      "endMatch": {
+        "button": "Terminer le match",
+        "tooltip": "Terminer le match immédiatement et enregistrer le score final",
+        "title": "Terminer le match",
+        "description": "Force la fin du match. À utiliser avec prudence !"
+      },
+      "restartMatch": {
+        "button": "Relancer le match",
+        "tooltip": "Terminer et recharger le match depuis zéro – toute la progression est perdue",
+        "title": "Relancer le match",
+        "description": "Termine le match et le recharge depuis le début. Toute la progression sera perdue !"
+      },
+      "reallocateServer": {
+        "button": "Réattribuer le serveur",
+        "tooltip": "Déplacer le match vers un autre serveur (récupération avant le live)",
+        "tooltipUnavailable": "Disponible uniquement pour les matchs prêts/chargés (pas pendant le live)",
+        "title": "Réattribuer le serveur",
+        "description": "Déplace le match vers un autre serveur inactif et le recharge. Utile si le serveur actuel n’est pas à jour ou si les joueurs ne peuvent pas se connecter. Impossible pendant un match live."
+      },
+      "forceCancel": {
+        "button": "Forcer l’annulation",
+        "tooltip": "Annuler le match même si le serveur est hors ligne – libère l’attribution du serveur",
+        "title": "Forcer l’annulation du match",
+        "description": "⚠️ Annule le match même si le serveur est hors ligne. Le match est marqué comme terminé et le serveur est libéré. Cette action est irréversible."
+      }
+    },
+    "inputs": {
+      "restoreBackup": {
+        "button": "Restaurer une sauvegarde",
+        "tooltip": "Charger une sauvegarde de round – restaure l’économie et les positions",
+        "title": "Restaurer une sauvegarde",
+        "label": "Numéro du round à restaurer"
+      },
+      "addTime": {
+        "button": "Ajouter du temps",
+        "tooltip": "Prolonger le chrono du round en cours (utile pour les pauses techniques)",
+        "title": "Ajouter du temps au round",
+        "label": "Secondes à ajouter"
+      },
+      "broadcast": {
+        "button": "Diffuser",
+        "tooltip": "Envoyer un message à tous les joueurs du serveur",
+        "title": "Diffuser un message",
+        "label": "Message à diffuser"
+      }
+    },
+    "success": {
+      "pause": "Match mis en pause",
+      "unpause": "Match repris",
+      "swap": "Équipes inversées",
+      "skipVeto": "Phase de veto passée",
+      "restartRound": "Round relancé",
+      "endMatch": "Match terminé",
+      "endWarmup": "Warmup terminé",
+      "startMatch": "Match lancé",
+      "restoreBackup": "Sauvegarde restaurée au round {{round}}",
+      "addTime_one": "{{count}} seconde ajoutée au chrono du round",
+      "addTime_other": "{{count}} secondes ajoutées au chrono du round",
+      "broadcast": "Message envoyé au serveur",
+      "restartMatch": "Match relancé (terminé et rechargé)",
+      "reallocateServer": "Match déplacé vers un autre serveur",
+      "forceCancel": "Match annulé",
+      "default": "Commande exécutée"
+    }
+  }
+}

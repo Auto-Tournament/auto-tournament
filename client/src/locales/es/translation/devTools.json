@@ -1,0 +1,141 @@
+{
+  "devToolsPage": {
+    "alert": "Estas herramientas solo están disponibles en modo de desarrollo. Úsalas para generar rápidamente datos de prueba y probar la aplicación.",
+    "sections": {
+      "testData": {
+        "title": "Crear datos de prueba"
+      }
+    },
+    "testTeams": {
+      "title": "Equipos de prueba",
+      "description": "Crea equipos con datos de jugadores aleatorios para probar cuadros y partidos del torneo.",
+      "success": "¡Se crearon correctamente {{count}} equipo(s) de prueba!",
+      "errors": {
+        "create": "No se pudieron crear los equipos de prueba",
+        "partial": "Se crearon {{created}} equipo(s), pero {{failed}} fallaron. Revisa la consola para más detalles."
+      },
+      "customLabel": "Cantidad personalizada de equipos",
+      "buttons": {
+        "createFixed": "Crear {{count}} equipos",
+        "createCustom": "Crear equipos"
+      }
+    },
+    "testPlayers": {
+      "title": "Jugadores de prueba",
+      "description": "Crea jugadores con ratings ELO para probar torneos shuffle y la gestión de jugadores.",
+      "success": "¡{{created}} jugadores de prueba creados!",
+      "errors": {
+        "create": "No se pudieron crear los jugadores de prueba",
+        "partial": "Se crearon {{created}} jugador(es), se actualizaron {{updated}}, pero {{failed}} fallaron. Revisa la consola para más detalles."
+      },
+      "customLabel": "Cantidad personalizada de jugadores",
+      "buttons": {
+        "createFixed": "Crear {{count}} jugadores",
+        "createCustom": "Crear jugadores"
+      },
+      "successWithUpdated": "¡{{created}} jugadores de prueba creados y {{updated}} actualizados!"
+    },
+    "testServers": {
+      "title": "Servidores de prueba",
+      "description": "Crea configuraciones de servidor para probar la gestión de partidos y los comandos RCON.",
+      "success": "¡Se crearon correctamente {{count}} servidor(es) de prueba!",
+      "errors": {
+        "create": "No se pudieron crear los servidores de prueba",
+        "partial": "Se crearon {{created}} servidor(es), pero {{failed}} fallaron. Revisa la consola para más detalles."
+      },
+      "customLabel": "Cantidad personalizada de servidores",
+      "buttons": {
+        "createCustom": "Crear servidores",
+        "createFixed_one": "Crear {{count}} servidor",
+        "createFixed_other": "Crear {{count}} servidores"
+      }
+    },
+    "dangerZone": {
+      "title": "Zona de peligro"
+    },
+    "deleteTestData": {
+      "title": "Eliminar datos de prueba",
+      "description": "Elimina todos los datos de prueba (equipos y servidores con el prefijo 'test-'). Esta acción no se puede deshacer.",
+      "button": "Eliminar todos los datos de prueba",
+      "confirmPrompt": "¿Seguro que quieres eliminar TODOS los datos de prueba?",
+      "success": "¡Se eliminaron correctamente todos los datos de prueba!",
+      "error": "No se pudieron eliminar los datos de prueba"
+    },
+    "wipeTable": {
+      "title": "Vaciar tablas específicas",
+      "description": "Elimina todos los datos de una tabla específica. Útil para limpiar sin restablecer todo. Las tablas están organizadas por categoría.",
+      "confirmPrompt": "¿Seguro que quieres vaciar la tabla {{table}}? Esto eliminará todos los datos de esa tabla.",
+      "success": "¡La tabla {{table}} se vació correctamente!",
+      "error": "No se pudo vaciar la tabla {{table}}",
+      "core": {
+        "title": "Tablas principales",
+        "teams": "Vaciar equipos",
+        "servers": "Vaciar servidores",
+        "tournament": "Vaciar torneo",
+        "matches": "Vaciar partidos"
+      },
+      "players": {
+        "title": "Jugadores y torneos shuffle",
+        "players": "Vaciar jugadores",
+        "ratingHistory": "Vaciar historial de rating",
+        "matchStats": "Vaciar estadísticas de partido",
+        "shufflePlayers": "Vaciar jugadores shuffle"
+      },
+      "maps": {
+        "title": "Mapas y plantillas",
+        "maps": "Vaciar mapas",
+        "mapPools": "Vaciar pools de mapas",
+        "tournamentTemplates": "Vaciar plantillas de torneo",
+        "eloTemplates": "Vaciar plantillas ELO"
+      },
+      "matchEvents": {
+        "title": "Eventos y resultados de partidos",
+        "events": "Vaciar eventos de partido",
+        "mapResults": "Vaciar resultados de mapas"
+      },
+      "settings": {
+        "title": "Ajustes",
+        "appSettings": "Vaciar ajustes de la app"
+      }
+    },
+    "simulation": {
+      "title": "Estado de simulación",
+      "description": "Borra todos los partidos y estadísticas históricas para que puedas hacer clic en \"Iniciar torneo\" en modo simulación con un cuadro limpio, manteniendo servidores, equipos, mapas y la configuración actual del torneo.",
+      "button": "Restablecer estado de simulación (conservar configuración)",
+      "reset": {
+        "success": "Estado de simulación restablecido. Partidos y estadísticas borrados; se conservan servidores, equipos y configuración del torneo.",
+        "error": "No se pudo restablecer el estado de simulación"
+      }
+    },
+    "wipeDatabase": {
+      "title": "Borrar toda la base de datos",
+      "warningTitle": "¡EXTREMADAMENTE DESTRUCTIVO!",
+      "warningBody": "Esto eliminará TODOS los datos.",
+      "permanentlyDeletes": "Elimina permanentemente:",
+      "items": {
+        "tournaments": "Todos los torneos y cuadros",
+        "matches": "Todos los partidos y eventos",
+        "teams": "Todos los equipos y jugadores",
+        "servers": "Todas las configuraciones de servidor"
+      },
+      "button": "Borrar toda la base de datos",
+      "successRedirect": "¡Base de datos borrada correctamente! Redirigiendo...",
+      "error": "No se pudo borrar la base de datos",
+      "dialog": {
+        "title": "Confirmar borrado de la base de datos",
+        "areYouSure": "¿Estás completamente seguro?",
+        "actionWill": "Esta acción",
+        "permanentlyDelete": "eliminará permanentemente",
+        "items": {
+          "tournaments": "Todos los datos del torneo y cuadros",
+          "matches": "Todo el historial de partidos y eventos",
+          "teams": "Todos los equipos y configuraciones de jugadores",
+          "servers": "Todas las configuraciones de servidor"
+        },
+        "cannotUndo": "¡Esta acción no se puede deshacer!",
+        "wiping": "Borrando base de datos...",
+        "yesWipe": "Sí, bórralo todo"
+      }
+    }
+  }
+}

@@ -1,0 +1,108 @@
+import React from 'react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+  Box,
+} from '@mui/material';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import { useTranslation } from 'react-i18next';
+
+interface ConfirmDialogProps {
+  open: boolean;
+  title: string;
+  message: React.ReactNode; // Changed from string to ReactNode to accept JSX
+  confirmLabel?: string;
+  cancelLabel?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  confirmColor?: 'error' | 'warning' | 'primary' | 'secondary' | 'success';
+  loading?: boolean;
+}
+
+const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
+  open,
+  title,
+  message,
+  confirmLabel,
+  cancelLabel,
+  onConfirm,
+  onCancel,
+  confirmColor = 'error',
+  loading = false,
+}) => {
+  const { t } = useTranslation();
+  const effectiveConfirmLabel = confirmLabel ?? t('common.delete');
+  const effectiveCancelLabel = cancelLabel ?? t('common.cancel');
+
+  return (
+    <Dialog
+      open={open}
+      onClose={(_event, reason) => {
+        // For destructive / high‑impact dialogs we only treat explicit button
+        // clicks as a "cancel" action. Backdrop clicks and ESC simply keep
+        // the dialog open so we don't accidentally trigger side effects that
+        // callers might attach to onCancel (e.g. navigation).
+        if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+          return;
+        }
+        onCancel();
+      }}
+      maxWidth="sm"
+      fullWidth
+      data-testid="confirm-dialog"
+      PaperProps={{
+        sx: {
+          borderRadius: 3,
+        },
+      }}
+    >
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.5,
+          pb: 1,
+        }}
+      >
+        <WarningAmberIcon
+          sx={{
+            color:
+              confirmColor === 'error'
+                ? 'error.main'
+                : confirmColor === 'success'
+                ? 'success.main'
+                : 'warning.main',
+            fontSize: 28,
+          }}
+        />
+        <Typography component="span" variant="h6" fontWeight={600}>
+          {title}
+        </Typography>
+      </DialogTitle>
+      <DialogContent>
+        <Box>{message}</Box>
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2.5 }}>
+        <Button onClick={onCancel} variant="outlined" color="inherit">
+          {effectiveCancelLabel}
+        </Button>
+        <Button
+          data-testid="confirm-dialog-confirm-button"
+          onClick={onConfirm}
+          variant="contained"
+          color={confirmColor}
+          disabled={loading}
+          autoFocus
+        >
+          {effectiveConfirmLabel}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+export default ConfirmDialog;

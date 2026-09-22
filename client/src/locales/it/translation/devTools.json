@@ -1,0 +1,141 @@
+{
+  "devToolsPage": {
+    "alert": "Questi strumenti sono disponibili solo in modalità sviluppo. Usali per generare rapidamente dati di test e testare l’applicazione.",
+    "sections": {
+      "testData": {
+        "title": "Crea dati di test"
+      }
+    },
+    "testTeams": {
+      "title": "Team di test",
+      "description": "Crea team con dati giocatore casuali per testare tabelloni e match del torneo.",
+      "success": "Creati con successo {{count}} team di test!",
+      "errors": {
+        "create": "Impossibile creare i team di test",
+        "partial": "Creati {{created}} team, ma {{failed}} non sono riusciti. Controlla la console per i dettagli."
+      },
+      "customLabel": "Numero di team personalizzato",
+      "buttons": {
+        "createFixed": "Crea {{count}} team",
+        "createCustom": "Crea team"
+      }
+    },
+    "testPlayers": {
+      "title": "Giocatori di test",
+      "description": "Crea giocatori con rating ELO per testare tornei shuffle e gestione giocatori.",
+      "success": "Giocatori di test creati: {{created}}!",
+      "errors": {
+        "create": "Impossibile creare i giocatori di test",
+        "partial": "Creati {{created}} giocatore(i), aggiornati {{updated}}, ma {{failed}} non sono riusciti. Controlla la console per i dettagli."
+      },
+      "customLabel": "Numero di giocatori personalizzato",
+      "buttons": {
+        "createFixed": "Crea {{count}} giocatori",
+        "createCustom": "Crea giocatori"
+      },
+      "successWithUpdated": "Giocatori di test creati: {{created}}, aggiornati: {{updated}}!"
+    },
+    "testServers": {
+      "title": "Server di test",
+      "description": "Crea configurazioni server per testare gestione match e comandi RCON.",
+      "success": "Creati con successo {{count}} server di test!",
+      "errors": {
+        "create": "Impossibile creare i server di test",
+        "partial": "Creati {{created}} server, ma {{failed}} non sono riusciti. Controlla la console per i dettagli."
+      },
+      "customLabel": "Numero di server personalizzato",
+      "buttons": {
+        "createCustom": "Crea server",
+        "createFixed_one": "Crea {{count}} server",
+        "createFixed_other": "Crea {{count}} server"
+      }
+    },
+    "dangerZone": {
+      "title": "Zona pericolosa"
+    },
+    "deleteTestData": {
+      "title": "Elimina dati di test",
+      "description": "Elimina tutti i dati di test (team e server con prefisso 'test-'). Questa azione non può essere annullata.",
+      "button": "Elimina tutti i dati di test",
+      "confirmPrompt": "Sei sicuro di voler eliminare TUTTI i dati di test?",
+      "success": "Tutti i dati di test sono stati eliminati!",
+      "error": "Impossibile eliminare i dati di test"
+    },
+    "wipeTable": {
+      "title": "Svuota tabelle specifiche",
+      "description": "Elimina tutti i dati da una tabella specifica. Utile per ripulire senza resettare tutto. Le tabelle sono organizzate per categoria.",
+      "confirmPrompt": "Sei sicuro di voler svuotare la tabella {{table}}? Questo eliminerà tutti i dati della tabella.",
+      "success": "Tabella {{table}} svuotata con successo!",
+      "error": "Impossibile svuotare la tabella {{table}}",
+      "core": {
+        "title": "Tabelle principali",
+        "teams": "Svuota team",
+        "servers": "Svuota server",
+        "tournament": "Svuota torneo",
+        "matches": "Svuota match"
+      },
+      "players": {
+        "title": "Giocatori e tornei shuffle",
+        "players": "Svuota giocatori",
+        "ratingHistory": "Svuota cronologia rating",
+        "matchStats": "Svuota statistiche match",
+        "shufflePlayers": "Svuota giocatori shuffle"
+      },
+      "maps": {
+        "title": "Mappe e modelli",
+        "maps": "Svuota mappe",
+        "mapPools": "Svuota pool mappe",
+        "tournamentTemplates": "Svuota modelli torneo",
+        "eloTemplates": "Svuota modelli ELO"
+      },
+      "matchEvents": {
+        "title": "Eventi match e risultati",
+        "events": "Svuota eventi match",
+        "mapResults": "Svuota risultati mappe"
+      },
+      "settings": {
+        "title": "Impostazioni",
+        "appSettings": "Svuota impostazioni app"
+      }
+    },
+    "simulation": {
+      "title": "Stato simulazione",
+      "description": "Cancella tutti i match e le statistiche storiche per poter cliccare su \"Avvia torneo\" in modalità simulazione su un tabellone pulito, mantenendo server, team, mappe e l’attuale configurazione del torneo.",
+      "button": "Reimposta stato simulazione (mantieni config)",
+      "reset": {
+        "success": "Stato simulazione reimpostato. Match e statistiche cancellati; server, team e configurazione torneo mantenuti.",
+        "error": "Impossibile reimpostare lo stato simulazione"
+      }
+    },
+    "wipeDatabase": {
+      "title": "Cancella l’intero database",
+      "warningTitle": "ESTREMAMENTE DISTRUTTIVO!",
+      "warningBody": "Questo eliminerà TUTTI i dati.",
+      "permanentlyDeletes": "Elimina definitivamente:",
+      "items": {
+        "tournaments": "Tutti i tornei e tabelloni",
+        "matches": "Tutti i match e eventi",
+        "teams": "Tutti i team e giocatori",
+        "servers": "Tutte le configurazioni server"
+      },
+      "button": "Cancella l’intero database",
+      "successRedirect": "Database cancellato con successo! Reindirizzamento...",
+      "error": "Impossibile cancellare il database",
+      "dialog": {
+        "title": "Conferma cancellazione database",
+        "areYouSure": "Sei assolutamente sicuro?",
+        "actionWill": "Questa azione",
+        "permanentlyDelete": "eliminerà definitivamente",
+        "items": {
+          "tournaments": "Tutti i dati del torneo e tabelloni",
+          "matches": "Tutta la cronologia match e eventi",
+          "teams": "Tutti i team e configurazioni giocatori",
+          "servers": "Tutte le configurazioni server"
+        },
+        "cannotUndo": "Questa azione non può essere annullata!",
+        "wiping": "Cancellazione database...",
+        "yesWipe": "Sì, cancella tutto"
+      }
+    }
+  }
+}

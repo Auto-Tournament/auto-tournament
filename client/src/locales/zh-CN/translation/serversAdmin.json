@@ -1,0 +1,558 @@
+{
+  "serversPage": {
+    "title": "服务器",
+    "headerActions": {
+      "refreshChecking": "正在检查…",
+      "refresh": "刷新状态",
+      "retryUninitialized": "重试未初始化 ({{count}})",
+      "retryUninitializedChecking": "正在重试…",
+      "batchAdd": "批量新增",
+      "select": "选择",
+      "done": "完成选择",
+      "selectAll": "全选",
+      "unselectAll": "取消全选",
+      "deleteSelected": "删除所选",
+      "addServer": "新增服务器"
+    },
+    "empty": {
+      "title": "还没有服务器",
+      "description": "添加第一台 CS2 服务器以开始锦标赛",
+      "addServer": "新增服务器",
+      "batchAdd": "或批量新增多个服务器"
+    },
+    "allocation": {
+      "title": "服务器分配",
+      "loading": "正在加载分配状态…",
+      "empty": "暂无分配数据。",
+      "available": "可用服务器：",
+      "waiting": "等待服务器的比赛：",
+      "nextPass": "下一次分配轮约在 ~{{seconds}} 秒后",
+      "cooldownLabel": "冷却",
+      "cooldownDescription": "最近完成了一场比赛——进入冷却，以便上传 Demo 并让服务器完全重置（约 2 分钟）。",
+      "cooldownEta": "约 {{seconds}} 秒后就绪"
+    },
+    "statusChip": {
+      "checking": "正在检查…",
+      "disabled": "已禁用",
+      "offline": "离线",
+      "onlineOk": "在线（API ↔ 服务器正常）",
+      "onlineRconOnly": "在线（仅 RCON 可达）",
+      "rconFailed": "RCON 失败",
+      "onlineTesting": "在线（测试中）",
+      "noEventsYet": "暂无事件",
+      "notConfigured": "未配置",
+      "onlineIdle": "在线（空闲 — 近期无事件）",
+      "onlineActive": "在线（活跃）",
+      "online": "在线"
+    },
+    "ipBanned": {
+      "title": "服务器可能已封禁我们的 IP",
+      "message": "服务器可达但反复拒绝 RCON 身份验证。这可能表示 IP 被封禁。如果 RCON 密码正确，请检查服务器的封禁列表并解封我们的 IP 地址。"
+    },
+    "connectivity": {
+      "apiToServer": "MAT API → CS2 服务器",
+      "serverToApi": "服务器 → API（/api/events）",
+      "unreachable": "不可达",
+      "reachable": "可达",
+      "unknown": "未知",
+      "loading": "加载中…",
+      "pluginLabel": "MatchZy："
+    },
+    "currentMatch": {
+      "view": "查看比赛",
+      "loading": "正在加载…",
+      "queuedPrefix": "已排队："
+    },
+    "labels": {
+      "host": "主机：",
+      "port": "端口：",
+      "id": "ID：",
+      "cs2Name": "CS2 名称：",
+      "plugin": "插件：",
+      "cs2BuildValue": "构建 {{build}}"
+    },
+    "errors": {
+      "loadServers": "加载服务器失败",
+      "noMatchesForServer": "未找到该服务器的比赛",
+      "loadCurrentMatch": "加载该服务器的当前比赛失败",
+      "bulkDelete": "删除一台或多台服务器时出错"
+    },
+    "bulkDelete": {
+      "title": "删除服务器",
+      "message_one": "确定要删除 {{count}} 台服务器吗？该操作无法撤销。",
+      "message_other": "确定要删除 {{count}} 台服务器吗？该操作无法撤销。"
+    },
+    "autoConfig": {
+      "configuring": "正在配置新服务器（通过 RCON 发送 MatchZy 配置）…",
+      "done": "新服务器已配置，正在刷新状态…"
+    },
+    "checkServerLogs": "请查看游戏服务器控制台/日志，确认 MatchZy 是否收到配置并发送事件。",
+    "fleet": {
+      "title": "服务器集群状态",
+      "total_one": "{{count}} 台服务器",
+      "total_other": "{{count}} 台服务器",
+      "online": "在线",
+      "offline": "离线",
+      "notConfigured": "未配置",
+      "disabled": "已禁用",
+      "latestRelease": "MatchZy Enhanced 最新版本：v{{version}}",
+      "olderVersion_one": "{{count}} 台服务器运行的版本低于最新版本。",
+      "olderVersion_other": "{{count}} 台服务器运行的版本低于最新版本。",
+      "newerVersion_one": "{{count}} 台服务器运行的版本高于 GitHub 最新发布版本（可能是未发布的构建）。",
+      "newerVersion_other": "{{count}} 台服务器运行的版本高于 GitHub 最新发布版本（可能是未发布的构建）。",
+      "downloadLatest": "下载最新版本"
+    },
+    "cs2Update": {
+      "title": "需要更新 CS2",
+      "snackbarBody_one": "{{count}} 台服务器版本过旧。请更新服务器安装并重启。",
+      "snackbarBody_other": "{{count}} 台服务器版本过旧。请更新服务器安装并重启。",
+      "fleetTitle": "CS2 服务器版本过旧 — 需要更新",
+      "fleetBody_one": "{{count}} 台服务器收到 Steam 的 CS2 强制更新通知。请更新服务器安装（SteamCMD/主机）并重启。",
+      "fleetBody_other": "{{count}} 台服务器收到 Steam 的 CS2 强制更新通知。请更新服务器安装（SteamCMD/主机）并重启。"
+    },
+    "versionMismatch": {
+      "title": "检测到版本不一致",
+      "chip_one": "v{{version}}：{{count}} 台服务器",
+      "chip_other": "v{{version}}：{{count}} 台服务器",
+      "recommended": "建议：将所有服务器更新到 v{{version}} 以保持一致"
+    },
+    "notInitialized": {
+      "title": "服务器未初始化",
+      "checking": "正在检查连接…",
+      "rconUnreachable": "无法连接 RCON。请检查主机、端口以及游戏服务器是否正在运行。可以连接后点击“重试”。",
+      "noEvents": "RCON 可连接，但 MatchZy 尚未发送任何事件。点击“重试”进行配置。",
+      "notChecked": "尚未检查连接，请查看下方状态。RCON 可连接后点击“重试”进行配置。"
+    },
+    "chips": {
+      "versionMismatch": "版本不一致",
+      "ipBanned": "IP 已被封禁",
+      "cs2Build": "CS2 构建 {{build}}",
+      "pluginDbDown": "插件数据库不可用",
+      "cs2UpdateRequired": "需要更新 CS2（{{version}}）"
+    },
+    "tooltips": {
+      "fixGuide": "修复指南",
+      "disabledTitle": "已禁用的服务器",
+      "disabledBody": "已禁用的服务器不会参与分配和健康检查。",
+      "noEventsTitle": "尚未收到 MatchZy 事件",
+      "noEventsBody": "MAT 已通过 RCON 发送 Webhook 配置，但尚未收到任何事件。这通常表示服务器无法访问 MAT 的 Webhook URL，或 MatchZy 未运行。",
+      "notConfiguredTitle": "未配置",
+      "notConfiguredBody": "MAT 尚未向此服务器发送持久配置。点击“重试”进行初始化。",
+      "unreachableTitle": "MAT 无法连接服务器",
+      "unreachableBody": "MAT 无法通过 RCON 连接服务器。请检查主机/端口、RCON 密码、防火墙以及服务器是否正在运行。",
+      "webhookTitle": "服务器无法连接 MAT（Webhook）",
+      "webhookBody": "MAT 可以通过 RCON 连接服务器，但服务器无法访问 MAT 的 Webhook。请检查出站网络、DNS 和已配置的 Webhook URL。",
+      "versionDiffTitle": "各服务器的插件版本不一致",
+      "versionDiffBody": "部分服务器运行的 MatchZy Enhanced 版本不同。如果使用 CSM，请运行 {{command}} 并重启服务器。",
+      "ipBannedTitle": "RCON IP 已被封禁",
+      "ipBannedBody": "由于 RCON 认证多次失败，服务器已暂时封禁 MAT 的 IP。请修正 RCON 密码并解封该 IP。",
+      "pluginDbTitle": "MatchZy 插件无法连接其数据库。",
+      "pluginDbBody": "如果使用 CSM，请运行 {{path}}。",
+      "cs2UpdateBody": "MAT 已确认此服务器的构建版本落后于 Steam。更新前，该服务器不会被分配新比赛（也无法用于开始锦标赛）。",
+      "retryInit": "重试服务器初始化（通过 RCON 发送持久配置）"
+    },
+    "lastActive": {
+      "justNow": "刚刚活跃",
+      "minutesAgo_one": "{{count}} 分钟前活跃",
+      "minutesAgo_other": "{{count}} 分钟前活跃",
+      "hoursAgo_one": "{{count}} 小时前活跃",
+      "hoursAgo_other": "{{count}} 小时前活跃",
+      "daysAgo_one": "{{count}} 天前活跃",
+      "daysAgo_other": "{{count}} 天前活跃"
+    },
+    "pluginStatus": {
+      "idle": "空闲",
+      "loading": "加载中",
+      "warmup": "热身",
+      "knife": "刀局",
+      "live": "进行中",
+      "playing": "比赛中",
+      "paused": "已暂停",
+      "halftime": "半场",
+      "postgame": "赛后",
+      "queued": "排队中",
+      "error": "错误"
+    },
+    "retry": {
+      "sendingConfig": "正在向服务器发送持久配置…",
+      "triggered": "已触发服务器初始化",
+      "failed": "重试初始化失败：{{message}}",
+      "retryingAll_one": "正在为 {{count}} 台服务器重试初始化…",
+      "retryingAll_other": "正在为 {{count}} 台服务器重试初始化…",
+      "triggeredAll_one": "已为 {{count}} 台服务器触发重试",
+      "triggeredAll_other": "已为 {{count}} 台服务器触发重试",
+      "failedAll": "重试失败：{{message}}"
+    }
+  },
+  "serverModal": {
+    "titleCreate": "新增服务器",
+    "titleEdit": "编辑服务器",
+    "serverNameLabel": "服务器名称",
+    "serverNamePlaceholder": "比赛服务器 #1",
+    "hostLabel": "主机 / IP 地址",
+    "hostPlaceholder": "192.168.1.100",
+    "portLabel": "端口",
+    "portPlaceholder": "27015",
+    "rconPasswordLabel": "RCON 密码",
+    "rconPasswordPlaceholder": "your-rcon-password",
+    "rconPasswordHelper": "用于 RCON 访问服务器的密码",
+    "enabledLabel": "服务器启用",
+    "enabledHelper": "被禁用的服务器不会用于比赛",
+    "overridesTitle": "MatchZy 覆盖配置（可选）",
+    "overridesDescription": "这些设置仅覆盖此服务器的全局 MatchZy 默认值。留空则使用“设置”中的全局值。",
+    "chatPrefixLabel": "聊天前缀覆盖",
+    "chatPrefixPlaceholder": "[{Green}MAT{Default}]",
+    "chatPrefixHelper": "覆盖此服务器上的 matchzy_chat_prefix（可选）",
+    "adminChatPrefixLabel": "管理员聊天前缀覆盖",
+    "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
+    "adminChatPrefixHelper": "覆盖此服务器上的 matchzy_admin_chat_prefix（可选）",
+    "knifeOverrideLabel": "默认启用刀局（覆盖）",
+    "knifeOverrideHelper": "设置后会覆盖此服务器上的 matchzy_knife_enabled_default。保持中间态以使用全局默认值。",
+    "testConnectivity": "测试连通性",
+    "testingConnectivity": "正在测试连通性…",
+    "connectivity": {
+      "apiToServer": "MAT API → CS2 服务器：",
+      "serverToApi": "服务器 → API（/api/events）：",
+      "reachable": "可达",
+      "unreachable": "不可达"
+    },
+    "errors": {
+      "nameRequired": "服务器名称为必填项",
+      "hostRequired": "主机为必填项",
+      "portInvalid": "端口必须是 1 到 65535 之间的有效数字",
+      "rconRequired": "RCON 密码为必填项",
+      "idGenerationFailed": "无法生成服务器 ID，请调整服务器名称。",
+      "duplicateId": "服务器名称会生成重复 ID “{{id}}”，请选择其他名称。",
+      "duplicateHostPort": "已存在使用主机与端口 '{{host}}:{{port}}' 的服务器（ID：{{id}}，名称：{{name}}）",
+      "testConnectionSaveFirst": "请先保存服务器，然后再测试连通性",
+      "testConnectionFailed": "测试连通性失败",
+      "saveFailed": "保存服务器失败",
+      "deleteFailed": "删除服务器失败",
+      "rconReachableApiUnreachable": "可以通过 RCON 连接到服务器，但服务器无法访问 API 端点（未收到测试事件）。",
+      "serverOffline": "服务器似乎离线或无法通过 RCON 访问。",
+      "rconReachableApiUnknown": "RCON works. The server has no event URL yet, so its connection back to the API can't be checked until it is saved and configured."
+    },
+    "success": {
+      "connectivityOk": "双向连通性验证通过：服务器在线且可以访问 API。",
+      "serverUpdated": "服务器更新成功",
+      "serverCreated": "服务器创建成功",
+      "serverDeleted": "服务器删除成功"
+    },
+    "buttons": {
+      "deleteServer": "删除服务器",
+      "cancel": "取消",
+      "saving": "正在保存…",
+      "saveChanges": "保存更改",
+      "addServer": "新增服务器"
+    },
+    "confirmDelete": {
+      "title": "删除服务器",
+      "message": "确定要删除 “{{name}}” 吗？该操作无法撤销。"
+    }
+  },
+  "adminToolsPage": {
+    "title": "管理工具",
+    "description": "在所有 CS2 服务器上批量执行常用比赛与服务器操作。常用操作会优先展示，更高级的工具可以在下方展开查看。",
+    "header": {
+      "refresh": "刷新服务器"
+    },
+    "serverSelect": {
+      "label": "目标服务器",
+      "allServersChip": "全部服务器",
+      "sendStatus": "发送 status 命令",
+      "allServersDescription_one": "在 {{count}} 台服务器上运行",
+      "allServersDescription_other": "在全部 {{count}} 台服务器上运行"
+    },
+    "command": {
+      "execute": "执行"
+    },
+    "customRconWarning": "警告：请谨慎使用！",
+    "results": {
+      "title": "执行结果",
+      "successChip": "✓ 成功",
+      "failedChip": "✗ 失败",
+      "errorPrefix": "错误："
+    },
+    "quickActions": {
+      "title": "快速操作"
+    },
+    "advanced": {
+      "title": "高级工具"
+    },
+    "noServers": "未找到已启用的服务器。请在“服务器”页面添加并启用至少一台服务器。",
+    "recovery": {
+      "title": "比赛恢复",
+      "description": "如果在锦标赛进行过程中 API 或服务器被重启，导致比赛状态不同步（例如比赛卡在热身、比分缺失），可以手动触发一次恢复流程。系统会向所有服务器请求当前比赛状态，重新同步比分/阶段，并尽可能重新配置 Webhook 与 Demo 上传。",
+      "button": "立即执行比赛恢复",
+      "success": "比赛恢复已完成。",
+      "error": "比赛恢复失败。",
+      "failedTrigger": "触发比赛恢复失败，请重试。"
+    },
+    "monitoring": {
+      "title": "监控与日志",
+      "serverEvents": "服务器事件监控",
+      "appLogs": "应用日志"
+    },
+    "toasts": {
+      "commandExecuted_one": "命令已在 {{count}} 台服务器上执行",
+      "commandExecuted_other": "命令已在 {{count}} 台服务器上执行",
+      "commandPartial": "命令在 {{total}} 台服务器中的 {{succeeded}} 台上执行成功（{{failed}} 台失败）",
+      "commandFailed": "执行命令失败"
+    },
+    "categories": {
+      "matchControl": "比赛控制",
+      "matchSettings": "比赛设置",
+      "backupRestore": "备份与恢复",
+      "serverMgmt": "服务器管理",
+      "teamMgmt": "战队管理",
+      "practiceMode": "练习模式",
+      "adminComm": "管理员通知",
+      "advanced": "高级 RCON"
+    },
+    "commands": {
+      "matchStart": {
+        "label": "开始比赛",
+        "description": "立即开始比赛。"
+      },
+      "matchEnd": {
+        "label": "结束比赛（css_restart）",
+        "description": "强制结束所选服务器上的当前比赛，并使用 css_restart 将其重置为热身。"
+      },
+      "forcePause": {
+        "label": "强制暂停",
+        "description": "强制暂停比赛。"
+      },
+      "forceUnpause": {
+        "label": "强制取消暂停",
+        "description": "强制取消比赛暂停。"
+      },
+      "skipVeto": {
+        "label": "跳过选图",
+        "description": "跳过选图（veto）阶段。"
+      },
+      "toggleKnife": {
+        "label": "切换刀局",
+        "description": "开启或关闭用于选边的刀局（别名：rk）。"
+      },
+      "togglePlayout": {
+        "label": "切换打满全部回合",
+        "description": "开启或关闭打满全部回合。"
+      },
+      "toggleWhitelist": {
+        "label": "切换白名单",
+        "description": "开启或关闭战队白名单。"
+      },
+      "showSettings": {
+        "label": "显示设置",
+        "description": "显示当前比赛设置。"
+      },
+      "reloadAdmins": {
+        "label": "重新加载管理员",
+        "description": "从 admins.json 重新加载管理员列表。"
+      },
+      "readyRequired": {
+        "label": "设置需准备的玩家数",
+        "description": "设置比赛开始前需要准备的玩家数量。",
+        "inputLabel": "玩家数量"
+      },
+      "restoreBackup": {
+        "label": "恢复回合备份",
+        "description": "将比赛恢复到指定回合。",
+        "inputLabel": "回合编号"
+      },
+      "cleanServers": {
+        "label": "清理服务器（css_restart）",
+        "description": "结束所选服务器上正在进行的比赛，并使用 css_restart 将其重置为热身。此操作具有破坏性。"
+      },
+      "changeMap": {
+        "label": "更换地图",
+        "description": "切换到其他地图（css_map <mapname>）。",
+        "inputLabel": "地图名称（de_dust2）"
+      },
+      "team1Name": {
+        "label": "设置战队 1 名称",
+        "description": "设置战队 1 的名称。",
+        "inputLabel": "战队名称"
+      },
+      "team2Name": {
+        "label": "设置战队 2 名称",
+        "description": "设置战队 2 的名称。",
+        "inputLabel": "战队名称"
+      },
+      "startPractice": {
+        "label": "开启练习模式",
+        "description": "开启支持 .commands 的练习模式。"
+      },
+      "exitPractice": {
+        "label": "退出练习模式",
+        "description": "关闭练习模式。"
+      },
+      "broadcast": {
+        "label": "广播消息",
+        "description": "向所有玩家发送管理员消息。",
+        "inputLabel": "消息"
+      },
+      "customRcon": {
+        "label": "执行自定义 RCON 命令",
+        "description": "直接执行任意 RCON 命令。",
+        "inputLabel": "RCON 命令"
+      }
+    },
+    "logs": {
+      "loadFailed": "加载日志失败",
+      "levelAll": "全部",
+      "auto": "自动",
+      "refresh": "刷新日志",
+      "empty": "暂无日志",
+      "footer": "显示最近 {{count}} 条日志",
+      "footerAutoRefresh": "显示最近 {{count}} 条日志（自动刷新中）"
+    },
+    "events": {
+      "healthCheckFailed": "事件 API 健康检查失败。请检查 API 是否正在运行，以及 /api/events/test 是否可访问。",
+      "loadFailed": "加载事件失败",
+      "connected": "已连接",
+      "disconnected": "已断开",
+      "paused": "已暂停",
+      "pause": "暂停",
+      "resume": "继续",
+      "refresh": "刷新事件",
+      "clear": "清空控制台",
+      "filterLabel": "按服务器筛选（可选）",
+      "noServers": "没有可用的服务器",
+      "refreshServers": "刷新服务器列表",
+      "noEvents": "尚未收到此服务器的事件。",
+      "noEventsHint": "15 秒后仍未收到事件。请检查你的 CS2 服务器是否已配置为使用正确的 X-MatchZy-Token 将 MatchZy Webhook 发送到 /api/events/:matchSlugOrServerId。",
+      "waiting": "正在等待服务器事件…",
+      "footer_one": "显示 {{count}} 条事件（最多 100 条）",
+      "footer_other": "显示 {{count}} 条事件（最多 100 条）",
+      "footerForServer_one": "显示服务器 {{server}} 的 {{count}} 条事件（最多 100 条）",
+      "footerForServer_other": "显示服务器 {{server}} 的 {{count}} 条事件（最多 100 条）",
+      "realtime": "事件通过 WebSocket 实时更新",
+      "downloadDemo": "下载 Demo"
+    }
+  },
+  "servers": {
+    "allocation": {
+      "title": "等待可用服务器",
+      "waiting": "服务器空闲后，此比赛将自动开始。所需服务器：",
+      "nextPass": "{{seconds}} 秒后再次尝试分配"
+    }
+  },
+  "adminMatchControls": {
+    "title": "管理员控制",
+    "noServer": "此比赛未分配服务器",
+    "unavailable": "此比赛未分配服务器，因此无法使用管理员控制。",
+    "unknownAction": "未知操作",
+    "commandFailed": "执行命令失败",
+    "confirm": "确认",
+    "execute": "执行",
+    "close": "关闭",
+    "tipLabel": "管理员提示：",
+    "tip": "比赛进行中请谨慎使用这些控制。部分操作（如“{{endMatch}}”和“{{restartMatch}}”）无法撤销。",
+    "sections": {
+      "matchControl": "比赛控制",
+      "advanced": "高级操作"
+    },
+    "actions": {
+      "pause": {
+        "button": "暂停",
+        "tooltip": "管理员暂停 – 玩家无法取消暂停",
+        "title": "暂停比赛",
+        "description": "将强制暂停比赛，玩家无法取消暂停。"
+      },
+      "unpause": {
+        "button": "取消暂停",
+        "tooltip": "从暂停中恢复比赛",
+        "title": "取消暂停比赛",
+        "description": "将强制取消比赛暂停。"
+      },
+      "swap": {
+        "button": "交换阵营",
+        "tooltip": "将双方战队切换到对面阵营（CT ↔ T）",
+        "title": "交换阵营",
+        "description": "将交换双方战队的阵营（CT/T）。"
+      },
+      "restartRound": {
+        "button": "重开回合",
+        "tooltip": "从头重新开始当前回合（重置经济）",
+        "title": "重开回合",
+        "description": "将重新开始当前回合。"
+      },
+      "skipVeto": {
+        "button": "跳过选图",
+        "tooltip": "跳过选图并立即加载第一张地图",
+        "title": "跳过选图",
+        "description": "将跳过选图阶段并开始比赛。"
+      },
+      "endWarmup": {
+        "button": "结束热身",
+        "tooltip": "结束热身并开始比赛（刀局或正式开始）",
+        "title": "结束热身",
+        "description": "将结束热身并开始比赛。"
+      },
+      "endMatch": {
+        "button": "结束比赛",
+        "tooltip": "立即结束比赛并记录最终比分",
+        "title": "结束比赛",
+        "description": "将强制结束比赛。请谨慎使用！"
+      },
+      "restartMatch": {
+        "button": "重开比赛",
+        "tooltip": "结束并从头重新加载比赛 – 所有进度都会丢失",
+        "title": "重开比赛",
+        "description": "将结束比赛并从头重新加载。所有进度都会丢失！"
+      },
+      "reallocateServer": {
+        "button": "重新分配服务器",
+        "tooltip": "将比赛转移到其他服务器（正式开始前的补救措施）",
+        "tooltipUnavailable": "仅适用于已就绪/已加载的比赛（比赛进行中不可用）",
+        "title": "重新分配服务器",
+        "description": "将比赛转移到另一台空闲服务器并重新加载。适用于当前服务器版本过旧或玩家无法连接的情况。比赛进行中不可使用。"
+      },
+      "forceCancel": {
+        "button": "强制取消",
+        "tooltip": "即使服务器离线也取消比赛 – 释放服务器分配",
+        "title": "强制取消比赛",
+        "description": "⚠️ 即使服务器离线也会取消比赛。比赛将被标记为已完成，服务器将被释放。该操作无法撤销。"
+      }
+    },
+    "inputs": {
+      "restoreBackup": {
+        "button": "恢复备份",
+        "tooltip": "加载已保存的回合备份 – 恢复经济和站位",
+        "title": "恢复备份",
+        "label": "要恢复的回合编号"
+      },
+      "addTime": {
+        "button": "增加时间",
+        "tooltip": "延长当前回合计时（适用于技术暂停）",
+        "title": "增加回合时间",
+        "label": "增加的秒数"
+      },
+      "broadcast": {
+        "button": "广播",
+        "tooltip": "向服务器上的所有玩家发送消息",
+        "title": "广播消息",
+        "label": "广播内容"
+      }
+    },
+    "success": {
+      "pause": "比赛已暂停",
+      "unpause": "比赛已取消暂停",
+      "swap": "已交换阵营",
+      "skipVeto": "已跳过选图阶段",
+      "restartRound": "回合已重开",
+      "endMatch": "比赛已结束",
+      "endWarmup": "热身已结束",
+      "startMatch": "比赛已开始",
+      "restoreBackup": "已恢复到第 {{round}} 回合的备份",
+      "addTime_one": "回合计时已增加 {{count}} 秒",
+      "addTime_other": "回合计时已增加 {{count}} 秒",
+      "broadcast": "消息已发送到服务器",
+      "restartMatch": "比赛已重开（已结束并重新加载）",
+      "reallocateServer": "比赛已转移到其他服务器",
+      "forceCancel": "比赛已取消",
+      "default": "命令已执行"
+    }
+  }
+}

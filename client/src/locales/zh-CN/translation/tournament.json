@@ -1,0 +1,675 @@
+{
+  "tournament": {
+    "steps": {
+      "create": "创建锦标赛",
+      "review": "复核与确认",
+      "live": "进行中的锦标赛"
+    },
+    "nameLabel": "锦标赛名称",
+    "namePlaceholder": "MAT 2025 春季赛",
+    "welcome": {
+      "heading": "创建锦标赛",
+      "chooseMethod": "选择你希望如何创建锦标赛",
+      "createNewTitle": "创建新锦标赛",
+      "createNewDescription": "从空白开始，手动配置所有锦标赛设置"
+    },
+    "emptyBracket": {
+      "title": "暂无可显示的对阵图",
+      "description": "创建锦标赛并生成对阵图即可在这里查看"
+    },
+    "common": {
+      "createTournament": "创建锦标赛"
+    },
+    "typeSelector": {
+      "categories": {
+        "professional": {
+          "label": "职业系列"
+        },
+        "party": {
+          "label": "派对与趣味模式"
+        }
+      },
+      "types": {
+        "single_elimination": {
+          "label": "单败淘汰",
+          "description": "一场失利即被淘汰。适用于职业赛事的经典对阵赛制。"
+        },
+        "double_elimination": {
+          "label": "双败淘汰",
+          "description": "需要输掉两场才会被淘汰。队伍在败者组中获得第二次机会。"
+        },
+        "round_robin": {
+          "label": "循环赛",
+          "description": "所有队伍彼此对战一次，非常适合联赛或积分赛制。"
+        },
+        "swiss": {
+          "label": "瑞士轮",
+          "description": "根据战绩自动配对战队。整场锦标赛中都保持较为均衡的对局。"
+        },
+        "shuffle": {
+          "label": "洗牌锦标赛",
+          "description": "每轮自动将选手洗牌成平衡的队伍。基于 ELO 的个人赛制，适合社区与线下活动。"
+        }
+      },
+      "selectedChip": "已选择"
+    },
+    "review": {
+      "summary": {
+        "info": "请检查你的锦标赛设置，准备好后点击“{{button}}”。",
+        "nameLabel": "锦标赛名称",
+        "typeLabel": "锦标赛类型",
+        "formatLabel": "比赛赛制",
+        "notSet": "未设置",
+        "estimatedVolumeText": "约 {{matches}}，分布在 {{rounds}}（{{mapsPerMatch}} 局制，最多共 {{maps}}）。"
+      }
+    },
+    "formSteps": {
+      "steps": {
+        "name": "名称",
+        "type": "类型",
+        "format": "赛制",
+        "maps": "地图",
+        "teams": "战队",
+        "review": "确认"
+      },
+      "backToWelcome": "返回欢迎页",
+      "back": "上一步",
+      "next": "下一步"
+    },
+    "champion": {
+      "title": "冠军"
+    },
+    "page": {
+      "title": "赛事设置"
+    },
+    "labels": {
+      "teams": "战队",
+      "maps": "地图",
+      "format": "赛制",
+      "players": "玩家",
+      "matchRules": "比赛规则",
+      "servers": "服务器",
+      "overtimeSettings": "加时设置",
+      "mapPool": "地图池"
+    },
+    "tooltips": {
+      "deleteTournament": "永久删除该赛事及其所有数据"
+    },
+    "counts": {
+      "teams_one": "{{count}} 支战队",
+      "teams_other": "{{count}} 支战队",
+      "matches_one": "{{count}} 场比赛",
+      "matches_other": "{{count}} 场比赛",
+      "rounds_one": "{{count}} 轮",
+      "rounds_other": "{{count}} 轮",
+      "maps_one": "{{count}} 张地图",
+      "maps_other": "{{count}} 张地图",
+      "servers_one": "{{count}} 台服务器",
+      "servers_other": "{{count}} 台服务器",
+      "availableServers_one": "{{count}} 台可用服务器",
+      "availableServers_other": "{{count}} 台可用服务器",
+      "concurrentMatches_one": "{{count}} 场同时进行的比赛",
+      "concurrentMatches_other": "{{count}} 场同时进行的比赛",
+      "enabledServers_one": "{{count}} 台已启用的服务器",
+      "enabledServers_other": "{{count}} 台已启用的服务器"
+    },
+    "matchRules": {
+      "value": "每张地图最多 {{maxRounds}} 回合；先赢得 {{winRounds}} 回合者获胜。",
+      "teamSizeValue": "队伍人数：{{size}}v{{size}}",
+      "overtimeEnabled": "加时：已启用",
+      "overtimeDisabled": "加时：已禁用（不打加时）",
+      "overtimeDisabledNoDraws": "加时：已禁用（不允许平局，按总伤害决胜）",
+      "overtimeSegments_one": "加时段数：{{count}} 段",
+      "overtimeSegments_other": "加时段数：{{count}} 段",
+      "overtimeSegmentsDefault": "加时段数：MatchZy 默认值",
+      "overtimeSegmentsDefaultUnlimited": "加时段数：MatchZy 默认值（通常不限）"
+    },
+    "toasts": {
+      "loadTemplateFailed": "加载模板失败",
+      "nameRequired": "必须填写赛事名称",
+      "nameUpdated": "赛事名称已更新",
+      "nameUpdateFailed": "更新赛事名称失败",
+      "selectAtLeastOneMap": "请至少选择 1 张地图",
+      "maxRoundsRange": "最大回合数必须介于 1 到 30 之间",
+      "teamSizeRange": "队伍人数必须介于 2 到 10 名玩家之间",
+      "invalidTeamCount": "战队数量无效",
+      "selectAtLeastTwoTeams": "请至少选择 2 支战队",
+      "shuffleCreated": "随机分队赛事“{{name}}”创建成功！下一步：至少注册 {{minPlayers}} 名玩家即可开始赛事（{{teamSize}}v{{teamSize}} 比赛）。",
+      "shuffleCreateFailed": "创建随机分队赛事失败",
+      "shuffleCreateFailedRetry": "创建随机分队赛事失败。请检查设置后重试。",
+      "updated": "赛事已更新，对阵表已重新生成！",
+      "created": "赛事已创建！",
+      "saveFailed": "保存赛事失败",
+      "deleted": "赛事已删除",
+      "deleteFailed": "删除赛事失败",
+      "regenerated": "对阵表已重新生成",
+      "regenerateFailed": "重新生成对阵表失败",
+      "resetDone": "赛事已重置为设置状态",
+      "resetFailed": "重置赛事失败",
+      "started_one": "赛事已开始！已为 {{count}} 场比赛分配服务器。",
+      "started_other": "赛事已开始！已为 {{count}} 场比赛分配服务器。",
+      "startRequested": "已请求开始赛事。服务器稍后分配。",
+      "startFailed": "开始赛事失败",
+      "templateSaved": "模板已保存！",
+      "disableServersFailed": "无法禁用一台或多台服务器：{{message}}",
+      "noChangesToSave": "没有需要保存的更改",
+      "invalidMapSelection": "地图选择无效"
+    },
+    "outdatedServers": {
+      "title": "服务器需要更新",
+      "body": "根据 Steam 的信息，一台或多台已启用的服务器版本过旧（或无法验证）。请更新它们，或将其禁用以便使用其余服务器继续。",
+      "confirm": "禁用受影响的服务器并重试",
+      "disabling": "正在禁用…"
+    },
+    "live": {
+      "saveNameAria": "保存赛事名称",
+      "cancelRenameAria": "取消重命名赛事",
+      "editNameAria": "编辑赛事名称",
+      "renameTooltip": "重命名赛事",
+      "alert": {
+        "liveTitle": "赛事进行中",
+        "liveBody": "服务器上正在进行比赛。赛事进行期间无法修改赛事设置（赛事名称除外）。",
+        "pendingTitle": "赛事进行中",
+        "pendingBody": "服务器分配完成且 veto 结束后，比赛就会开始。赛事进行期间无法修改赛事设置（赛事名称除外）。",
+        "completedTitle": "赛事已结束",
+        "completedBody": "本赛事的所有比赛均已结束。可创建新赛事，或重置本赛事重新开始。"
+      },
+      "teamsCompeting_one": "{{count}} 支战队参赛",
+      "teamsCompeting_other": "{{count}} 支战队参赛",
+      "playersCompeting_one": "{{count}} 名玩家参赛",
+      "playersCompeting_other": "{{count}} 名玩家参赛",
+      "playersCompetingUnknown": "玩家参赛中",
+      "shuffleSettingsLabel": "随机分队设置",
+      "maxRoundsPerMapValue": "每张地图最大回合数：{{rounds}}",
+      "eloTemplateValue": "ELO 模板：{{template}}",
+      "mapSequenceLabel": "地图顺序（轮次）",
+      "noMapsConfigured": "尚未配置地图。",
+      "viewBracket": "查看对阵表",
+      "viewBracketTooltip": "查看赛事对阵表和比赛详情",
+      "leaderboardTooltip": "打开可分享给玩家的公开排行榜页面",
+      "restartTooltip": "结束服务器上所有进行中的比赛并重新加载（适用于卡住的比赛）",
+      "resetTooltip": "结束所有比赛并将赛事重置为设置状态（保留赛事设置，但清除所有比赛数据）",
+      "reset": "重置为设置状态"
+    },
+    "reviewCard": {
+      "needPlayersWarning": "至少需要 {{minPlayers}} 名玩家才能开始赛事（{{teamSize}}v{{teamSize}} 比赛）。当前已注册：{{registered}}",
+      "start": "开始赛事",
+      "starting": "正在开始…",
+      "startSimulation": "开始模拟",
+      "startingSimulation": "正在开始模拟…",
+      "bulkCreateMatches": "批量创建比赛",
+      "edit": "编辑",
+      "regenerate": "重新生成",
+      "regenerateTooltip": "删除当前所有比赛，并使用相同设置重新生成对阵表。",
+      "regenerateDisabledTooltip": "请先生成一次对阵表（保存并生成对阵表），之后才能重新生成。"
+    },
+    "dialogs": {
+      "items": {
+        "endMatches": "结束服务器上所有进行中的比赛",
+        "deleteMatches": "删除所有比赛和对阵表",
+        "deleteData": "删除所有比赛数据和统计"
+      },
+      "delete": {
+        "title": "🗑️ 删除赛事",
+        "question": "确定要永久删除 <b>“{{name}}”</b> 吗？",
+        "willTitle": "⚠️ 此操作将：",
+        "items": {
+          "removeTournament": "彻底删除该赛事",
+          "cannotBeUndone": "无法撤销"
+        },
+        "note": "💡 提示：如果只是想用相同的赛事设置重新开始，请改用“重置为设置状态”。",
+        "confirm": "永久删除"
+      },
+      "regenerate": {
+        "title": "🔄 重新生成对阵表",
+        "liveWarning": "⚠️ 警告：赛事当前状态为 {{status}}！",
+        "liveBody": "重新生成对阵表会 <b>删除所有</b> 现有比赛数据，包括比分、统计和事件记录。",
+        "cannotBeUndone": "此操作无法撤销。",
+        "areYouSure": "确定要继续吗？",
+        "setupBody": "此操作会删除所有现有比赛，并使用相同设置重新生成对阵表。",
+        "continue": "要继续吗？",
+        "confirmDestructive": "是的，全部删除",
+        "confirm": "重新生成"
+      },
+      "reset": {
+        "title": "🔄 重置为设置状态",
+        "question": "要将 <b>“{{name}}”</b> 重置为设置状态吗？",
+        "willTitle": "此操作将：",
+        "items": {
+          "clearStatus": "清除赛事状态（回到设置状态）",
+          "keepSettings": "<b>保留</b>赛事设置（名称、战队、赛制）",
+          "allowEdit": "让你可以再次修改设置",
+          "regenerateMatches": "Clear all match results and regenerate the brackets from scratch"
+        },
+        "note": "💡 提示：若要彻底删除赛事，请改用“删除”。",
+        "confirm": "重置为设置状态",
+        "regenerated": "Fresh brackets are created right away, so pending matches show up again immediately."
+      },
+      "start": {
+        "titleNoServers": "⚠️ 没有可用服务器",
+        "titleInsufficient": "⚠️ 服务器数量不足",
+        "titleUncertain": "⚠️ 要在没有服务器的情况下开始赛事吗？",
+        "noServersHeading": "当前没有可用服务器",
+        "noServersBody": "赛事会开始，但比赛将推迟到有服务器可用时。服务器就绪后，系统会自动分配比赛。",
+        "insufficientHeading": "服务器不足，无法同时进行首轮的全部比赛",
+        "insufficientBody": "你当前有 <b>{{available}}</b>，而首轮需要 <b>{{required}}</b>。部分比赛将排队，待服务器空闲后再开始。",
+        "uncertainHeading": "服务器可用情况不确定",
+        "uncertainBody": "赛事可能在服务器很少甚至没有服务器的情况下开始。比赛将推迟到有服务器可用，并在其就绪后自动分配。",
+        "question": "仍要开始赛事吗？",
+        "confirm": "是，仍然开始",
+        "cancel": "检查服务器"
+      }
+    },
+    "formActions": {
+      "saveAndGenerate": "保存并生成对阵表",
+      "saveAsTemplate": "保存为模板",
+      "saveTemplateTooltip": "将当前赛事配置保存为模板"
+    },
+    "wizard": {
+      "validation": {
+        "selectType": "请选择赛事类型",
+        "selectFormat": "请选择比赛赛制"
+      },
+      "shuffleInfo": "随机分队赛事不使用固定战队。系统会在每场比赛根据玩家的 Skill Rating 自动平衡分队。",
+      "shuffleRounds": "本随机分队赛事大约有 {{rounds}}（每张所选地图一轮）。",
+      "volumeAlert": "在 {{format}} 赛制的 {{type}} 赛事中，{{teams}}参赛时，本对阵表大约有 {{matches}}，分布在 {{rounds}}（最多共 {{maps}}）。",
+      "maxRoundsLabel": "每张地图最大回合数",
+      "maxRoundsHelper": "每张地图最多打 {{maxRounds}} 回合；先赢得 {{winRounds}} 回合者获胜。",
+      "maxRoundsHelperEmpty": "每张地图的最大回合数（默认 24，最大 30）。",
+      "serversSummary": "已配置 {{servers}}；第一轮共有 {{matches}}。",
+      "estimatedVolumeLabel": "预计规模",
+      "mapsHeading": "地图（{{total}}）",
+      "noMapsSelected": "未选择地图",
+      "matchConfiguration": "比赛配置",
+      "roundLimitValue_one": "回合上限：最多 {{count}} 回合",
+      "roundLimitValue_other": "回合上限：最多 {{count}} 回合",
+      "teamsHeading": "战队（{{total}}）",
+      "noTeamsSelected": "未选择战队（可选）",
+      "playerRegistration": "玩家注册",
+      "playerRegistrationInfo_one": "玩家将在赛事创建后注册。每张所选地图代表一轮比赛（共 {{count}} 轮）。",
+      "playerRegistrationInfo_other": "玩家将在赛事创建后注册。每张所选地图代表一轮比赛（共 {{count}} 轮）。",
+      "serversSummaryQueued": "已配置 {{servers}}；第一轮共有 {{matches}}。超出服务器数量的比赛会排队等待，直到有空闲服务器。"
+    },
+    "overtime": {
+      "selectLabel": "加时",
+      "options": {
+        "enabled": "启用（标准加时）",
+        "disabledDraws": "禁用 – 允许平局",
+        "disabledNoDraws": "禁用 – 不允许平局（按总伤害决胜）"
+      },
+      "modeHelper": "标准加时会持续加打，直到一方领先。“允许平局”会让打平的地图以平局结束，而“不允许平局”则按队伍总伤害决出胜者。",
+      "tooltip": "控制加时行为以及达到最大回合数打平时的处理方式。这些设置会以 overtimeMode/overtimeSegments 传给 MatchZy，含义与随机分队赛事和手动比赛一致。",
+      "shuffleTooltip": "控制随机分队比赛的加时行为，以及达到最大回合数打平时的判定方式。禁用加时后，打平的比赛可以保持平局，也可以按队伍总伤害决出胜者，取决于所选选项。",
+      "segmentsLabel": "加时段数（可选）",
+      "segmentsHelper": "可选：限制加时段数。留空则使用 MatchZy 默认值。",
+      "segmentsHelperValue_one": "将加时限制为 {{count}} 段。加时后仍打平时，按队伍总伤害决胜。",
+      "segmentsHelperValue_other": "将加时限制为 {{count}} 段。加时后仍打平时，按队伍总伤害决胜。"
+    },
+    "grandFinal": {
+      "sectionTitle": "总决赛模式（双败淘汰）",
+      "label": "总决赛",
+      "options": {
+        "simple": "简单 – 胜者组与败者组冠军进行一场总决赛",
+        "none": "无 – 由胜者组决赛决定冠军（不设总决赛）",
+        "double": "双重 – 采用 bracket‑reset 形式（目前表现同“简单”，完整支持仍在计划中）"
+      },
+      "helper": "决定胜者组与败者组冠军在赛事结束时如何相遇。"
+    },
+    "mapPool": {
+      "shuffleTitle": "随机分队赛事的地图选择",
+      "shuffleBody": "所选地图将按顺序进行。每张地图代表一轮比赛。所选地图数量决定要打多少轮。",
+      "shuffleSelected": "你已选择 {{maps}}，因此将进行 {{rounds}}。",
+      "chooseLabel": "选择地图池",
+      "custom": "自定义",
+      "selectedMaps": "已选地图（{{total}}）：",
+      "chooseMapsPlaceholder": "选择地图…",
+      "saveMapPool": "保存地图池",
+      "types": {
+        "defusal": "爆破",
+        "hostage": "人质",
+        "armsRace": "军备竞赛",
+        "unknown": "未知"
+      }
+    },
+    "formatStep": {
+      "shuffleInfo": "随机分队赛事采用 BO1 赛制。每场比赛只打一张地图。"
+    },
+    "shuffleConfig": {
+      "overline": "随机分队赛事配置",
+      "subtitle": "比赛规则与设置",
+      "teamSizeLabel": "队伍人数",
+      "teamSizeTooltip": "每队人数。常见选项：4v4、5v5、6v6。每队最少 2 人，最多 10 人。",
+      "teamSizeHelper": "每队人数（默认 5，即 5v5；范围 2–10）",
+      "maxRoundsLabel": "最大回合数",
+      "maxRoundsTooltip": "每场比赛的最大回合数。该值会作为 mp_maxrounds 直接传给 MatchZy。例如：6 = MR6，24 = MR24。",
+      "maxRoundsHelper": "比赛最多打 {{maxRounds}} 回合；先赢得 {{winRounds}} 回合者获胜",
+      "maxRoundsHelperEmpty": "每场比赛的最大回合数（默认 24，最大 30）",
+      "eloTemplateLabel": "ELO 计算模板",
+      "eloTemplateTooltip": "选择本赛事的 ELO 计算方式。默认的“Pure Win/Loss”模板只依据比赛结果（胜/负）；数据仍会记录，但不影响 ELO。其他模板为可选项，会在 OpenSkill 的胜负变化之上叠加基于数据的调整，适合需要 Excel 式算法的场景。",
+      "eloDefaultSuffix": "（默认）",
+      "eloTemplateHelper": "Pure Win/Loss（默认）：仅比赛结果影响 ELO。玩家数据仍会记录用于排行榜和导出，但除非选择自定义模板，否则不会改变评分。"
+    },
+    "shuffleStats": {
+      "serverShortageWarning": "You have {{available}} of {{needed}} servers. Matches will run in waves, so rounds take longer."
+    },
+    "changePreview": {
+      "title": "查看赛事更改",
+      "liveHeading": "赛事正在进行中！",
+      "liveBody": "更改赛事类型、赛制或战队数量可能需要重新生成对阵表。可考虑使用“重置赛事”重新开始。",
+      "noChangesDetected": "未检测到更改",
+      "intro": "将应用以下更改：",
+      "before": "更改前",
+      "after": "更改后",
+      "apply": "应用更改",
+      "applyRisky": "应用更改（有风险！）",
+      "noChangesToApply": "没有可应用的更改",
+      "none": "无",
+      "itemCount_one": "{{count}} 项",
+      "itemCount_other": "{{count}} 项"
+    },
+    "teamSelection": {
+      "chooseTeamsPlaceholder": "选择战队…",
+      "addAll": "全部添加",
+      "batchAddServers": "批量添加",
+      "addServer": "添加服务器",
+      "importTeams": "导入战队",
+      "createTeam": "创建战队",
+      "notEnoughServers": "第一轮共有 {{matches}}，但你只有 {{servers}}。超出服务器数量的比赛会排队等待，直到有空闲服务器 — 添加更多服务器即可同时进行所有比赛。",
+      "notEnoughTeams": "创建锦标赛至少需要 2 支战队。你当前有 {{teams}}。"
+    },
+    "teamValidation": {
+      "invalidType": "无效的锦标赛类型",
+      "powerOfTwo": "{{type}} 要求战队数量为 2 的幂（{{counts}}）。你选择了 {{selected}}。",
+      "minTeams": "{{type}} 至少需要 {{min}} 支战队。你选择了 {{selected}}。",
+      "maxTeams": "{{type}} 最多允许 {{max}} 支战队。你选择了 {{selected}}。"
+    },
+    "eventPage": {
+      "title": "Event page",
+      "subtitle": "Shown to players and visitors on the public Overview page.",
+      "descriptionLabel": "Description",
+      "locationLabel": "Location",
+      "locationPlaceholder": "e.g. On site, Trondheim",
+      "rulebookUrlLabel": "Full rulebook URL",
+      "rulebookUrlHelper": "Must be an https link, or leave it empty.",
+      "rulesLabel": "Rules",
+      "ruleFieldLabel": "Rule {{n}}",
+      "addRule": "Add rule",
+      "prizesLabel": "Prizes",
+      "placeLabel": "Place",
+      "prizeLabel": "Prize",
+      "addPrize": "Add prize",
+      "scheduleLabel": "Schedule",
+      "whenLabel": "When",
+      "scheduleLabelLabel": "Label",
+      "addScheduleItem": "Add schedule item",
+      "remove": "Remove",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "save": "Save event page",
+      "saveSuccess": "Event page saved.",
+      "saveError": "Failed to save event page: {{message}}"
+    },
+    "setup": {
+      "steps": {
+        "game": "Game",
+        "basics": "Basics",
+        "format": "Format",
+        "teams": "Teams and sign-up",
+        "maps": "Maps and veto",
+        "eventPage": "Event page",
+        "review": "Review"
+      },
+      "stepsLabel": "Setup steps",
+      "stepDone": "done",
+      "newTournament": "New tournament",
+      "editing": "Tournament setup",
+      "draftSaved": "draft saved in this tab",
+      "discardDraft": "Start over",
+      "startFromTemplate": "Start from a template",
+      "continueTo": "Continue to {{step}}",
+      "questions": {
+        "game": {
+          "title": "Which game?",
+          "lede": "The game decides how matches are run and which settings you get."
+        },
+        "basics": {
+          "title": "What is it called?",
+          "lede": "Give the tournament a name players will recognise, and pick how ratings change."
+        },
+        "format": {
+          "title": "How is it played?",
+          "lede": "Pick the bracket and how long each series is. You can change this until the tournament starts."
+        },
+        "teams": {
+          "title": "Who is playing?",
+          "lede": "Pick the teams in the bracket. You can create or import teams here too.",
+          "ledeShuffle": "Shuffle has solo sign-up: players register, and new teams are drawn each round."
+        },
+        "maps": {
+          "title": "Which maps?",
+          "lede": "Pick the map pool. Series use the veto to choose their maps from it.",
+          "ledeShuffle": "Pick the maps in the order they are played. Each map is one round."
+        },
+        "eventPage": {
+          "title": "What goes on the event page?",
+          "lede": "Optional. Shown to players and visitors on the public Overview page."
+        },
+        "review": {
+          "title": "Ready to go?",
+          "lede": "Check the details, then create the tournament.",
+          "ledeExisting": "Check the details, then start the tournament when everyone is ready."
+        }
+      },
+      "game": {
+        "label": "Game",
+        "descriptions": {
+          "cs2": "Matches run on your servers with MatchZy."
+        }
+      },
+      "basics": {
+        "ratingLabel": "Ratings",
+        "ratingHelp": "How player ratings change after each match in this tournament."
+      },
+      "format": {
+        "label": "Format",
+        "names": {
+          "single_elimination": "Single elimination",
+          "double_elimination": "Double elimination",
+          "swiss": "Swiss",
+          "round_robin": "Round robin",
+          "shuffle": "Shuffle"
+        },
+        "types": {
+          "single_elimination": "Lose once and you're out. Fastest.",
+          "double_elimination": "A second chance in the lower bracket.",
+          "swiss": "Teams play several rounds against similar records.",
+          "round_robin": "Everyone plays everyone. Best for small groups.",
+          "shuffle": "Solo sign-up. New balanced teams each round."
+        },
+        "seriesLength": "Series length",
+        "grandFinal": "Grand final",
+        "grandFinalOptions": {
+          "simple": "One match",
+          "double": "Bracket reset",
+          "none": "None"
+        },
+        "grandFinalHelp": {
+          "simple": "The winners and losers bracket champions meet in one grand final.",
+          "double": "Bracket reset. For now it is played like one grand final; full reset support is planned.",
+          "none": "No grand final: the winners bracket final decides the tournament."
+        },
+        "teams": "Teams",
+        "teamsHelpPowerOfTwo": "Elimination brackets need {{counts}} teams. Used for the summary until you pick teams.",
+        "teamsHelpRange": "Between {{min}} and {{max}} teams. Used for the summary until you pick teams.",
+        "fewerTeams": "Fewer teams",
+        "moreTeams": "More teams",
+        "shuffleTitle": "Shuffle settings",
+        "cs2Title": "Counter-Strike 2 settings",
+        "cs2Help": "Passed to MatchZy by the Counter-Strike 2 game module.",
+        "overtime": {
+          "enabled": "Overtime",
+          "disabledDraws": "Off, draws allowed",
+          "disabledNoDraws": "Off, damage tiebreak"
+        }
+      },
+      "teams": {
+        "shuffleBeforeCreate": "Players sign up after you create the tournament. Come back to this step to choose them."
+      },
+      "maps": {
+        "vetoTitle": "Veto",
+        "vetoStandard": "Each {{format}} series runs the map veto: the teams ban and pick from these 7 maps.",
+        "vetoCustom": "This tournament has a custom veto order for {{format}}.",
+        "vetoNone": "No veto for this format.",
+        "vetoShuffle": "Shuffle has no veto: the maps are played in this order, one per round."
+      },
+      "eventPage": {
+        "draftNote": "Saved with the tournament when you create it."
+      },
+      "review": {
+        "unsaved": "You have unsaved changes. Save them (the bracket is generated again) or discard them before starting."
+      },
+      "summary": {
+        "label": "Summary",
+        "untitled": "Untitled tournament",
+        "format": "Format",
+        "series": "Series",
+        "seriesShuffle": "Bo1 per round",
+        "seriesFinal": {
+          "simple": "{{format}} · grand final",
+          "double": "{{format}} · grand final, bracket reset",
+          "none": "{{format}} · no grand final"
+        },
+        "teams": "Teams",
+        "teamSize": "{{size}}v{{size}}",
+        "teamsPlanned": "{{count}} planned",
+        "matches": "Matches",
+        "matchesAfterSignUp": "After sign-up",
+        "signUp": "Sign-up",
+        "signUpOrganizer": "Picked by organiser",
+        "signUpAfterCreate": "Opens after creating",
+        "players_one": "{{count}} player",
+        "players_other": "{{count}} players",
+        "maps": "Maps",
+        "mapsRounds": "{{maps}} · {{rounds}}",
+        "notSet": "Not set"
+      },
+      "checklist": {
+        "title": "Before you can start",
+        "met": "done",
+        "notMet": "not done",
+        "name": "A name",
+        "format": "Format and match settings",
+        "teams": "A valid number of teams",
+        "players_one": "At least {{count}} player signed up",
+        "players_other": "At least {{count}} players signed up",
+        "mapsVeto": "7 maps for the veto",
+        "maps": "At least one map",
+        "created": "Tournament created",
+        "saved": "Changes saved"
+      }
+    }
+  },
+  "bracket": {
+    "empty": {
+      "noBracketTitle": "暂无可显示的对阵图",
+      "noBracketDescription": "创建锦标赛并生成对阵图即可在这里查看"
+    },
+    "view": {
+      "visual": "图形",
+      "list": "列表",
+      "refresh": "刷新",
+      "enterFullscreen": "全屏",
+      "exitFullscreen": "退出全屏",
+      "shuffleNoVisual": "随机组队赛事没有图形对阵图，请使用列表视图。"
+    },
+    "shuffleEmpty": {
+      "title": "随机组队赛事没有对阵图",
+      "description": "随机组队赛事不使用固定对阵图。每轮会根据玩家 ELO 重新分队。",
+      "hint": "在“比赛”页面查看进行中和即将开始的比赛，在“排行榜”页面查看玩家排名。",
+      "goToMatches": "前往比赛",
+      "viewLeaderboard": "查看排行榜"
+    },
+    "notGenerated": {
+      "title": "尚未生成对阵图",
+      "description": "生成对阵图以为 {{name}} 创建比赛",
+      "goToSettings": "前往赛事设置"
+    },
+    "shuffleNoVisual": {
+      "title": "随机组队赛事没有图形对阵图",
+      "description": "每轮比赛会根据玩家 ELO 和队伍平衡动态生成。在此跟踪进度：",
+      "listView": "列表视图",
+      "matches": "比赛",
+      "standings": "积分榜",
+      "docsHint": "如需完整了解随机组队的运作方式，请参阅文档中的 Shuffle Tournaments 指南。"
+    },
+    "swiss": {
+      "notGenerated": "未生成",
+      "generatedAfter": "第 {{round}} 轮结束后将生成比赛",
+      "bye": "BYE",
+      "standings": "Standings",
+      "team": "Team",
+      "record": "Record",
+      "buchholz": "BH",
+      "buchholzHint": "Buchholz: sum of opponents' wins",
+      "roundDiff": "RD",
+      "roundDiffHint": "Round differential: rounds won minus rounds lost"
+    },
+    "slotHint": {
+      "winnerOf": "{{match}}胜者",
+      "matchNumber": "第 {{number}} 场比赛"
+    }
+  },
+  "overviewPage": {
+    "tabs": {
+      "overview": "Overview",
+      "leaderboard": "Leaderboard"
+    },
+    "status": {
+      "setup": "Upcoming",
+      "inProgress": "Live",
+      "completed": "Completed"
+    },
+    "liveNow": "{{count}} live now",
+    "viewAllMatches": "View standings",
+    "howItsPlayed": "How it's played",
+    "facts": {
+      "teams": "Teams",
+      "teamsValue": "{{count}} teams",
+      "teamSize": "Team size",
+      "teamSizeValue": "{{count}} players",
+      "format": "Format",
+      "series": "Series",
+      "seriesValue": "Best of {{count}}",
+      "mapVeto": "Map veto",
+      "mapVetoCustom": "Custom order (captains)",
+      "mapVetoStandard": "Standard order (captains)",
+      "overtime": "Overtime",
+      "overtimeEnabledUnlimited": "Enabled, unlimited",
+      "overtimeEnabledSegments": "Enabled, {{count}} segment(s)",
+      "overtimeDisabled": "Disabled (damage tiebreak)"
+    },
+    "mapPool": "Map pool",
+    "rules": "Rules",
+    "fullRulebook": "Full rulebook",
+    "schedule": "Schedule",
+    "yourTeam": {
+      "title": "You're playing",
+      "onRoster": "You're on {{team}}.",
+      "viewTeam": "View your team"
+    },
+    "prizes": {
+      "title": "Prizes",
+      "note": "Set by the organizer. Prize money, hardware or bragging rights."
+    },
+    "requirements": {
+      "title": "To take part",
+      "steamLinkedOk": "Steam account linked.",
+      "steamLinkedNeutral": "Sign in with Steam to take part.",
+      "onRosterOk": "You're on a team roster for this tournament.",
+      "onRosterNeutral": "Be on a team roster before the tournament starts."
+    },
+    "loadError": "Failed to load this tournament.",
+    "notFoundTitle": "Tournament not found",
+    "notFoundDescription": "This tournament doesn't exist or hasn't been created yet."
+  }
+}

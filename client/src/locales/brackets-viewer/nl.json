@@ -1,0 +1,91 @@
+{
+  "origin-hint": {
+    "seed": "Seed {{position}}",
+    "winner-bracket": "Verliezer van $t(abbreviations.winner-bracket) {{round}}.{{position}}",
+    "winner-bracket-semi-final": "Verliezer van $t(abbreviations.winner-bracket) Semi {{position}}",
+    "winner-bracket-final": "Verliezer van $t(abbreviations.winner-bracket) Final",
+    "consolation-final": "Verliezer van Semi {{position}}",
+    "grand-final": "Winnaar van $t(abbreviations.loser-bracket) Final",
+    "double-elimination-consolation-final-opponent-1": "Verliezer van $t(abbreviations.loser-bracket) Semi 1",
+    "double-elimination-consolation-final-opponent-2": "Verliezer van $t(abbreviations.loser-bracket) Final"
+  },
+  "match-label": {
+    "default": "Match {{matchNumber}}",
+    "winner-bracket": "$t(abbreviations.winner-bracket)",
+    "loser-bracket": "$t(abbreviations.loser-bracket)",
+    "standard-bracket": "$t(abbreviations.match)",
+    "standard-bracket-semi-final": "Semi {{matchNumber}}",
+    "standard-bracket-final": "Final",
+    "double-elimination": "{{matchPrefix}} {{roundNumber}}.{{matchNumber}}",
+    "double-elimination-semi-final": "{{matchPrefix}} Semi {{matchNumber}}",
+    "double-elimination-final": "{{matchPrefix}} Final",
+    "consolation-final": "Troostfinale",
+    "grand-final-single": "Grand Final",
+    "grand-final": "$t(abbreviations.grand-final) Ronde {{roundNumber}}",
+    "match-game": "Game {{gameNumber}}"
+  },
+  "match-status": {
+    "locked": "Vergrendeld",
+    "waiting": "Wachten",
+    "ready": "Klaar",
+    "running": "Bezig",
+    "completed": "Afgerond",
+    "archived": "Gearchiveerd"
+  },
+  "abbreviations": {
+    "win": "W",
+    "loss": "L",
+    "forfeit": "F",
+    "position": "P",
+    "seed": "#",
+    "winner-bracket": "WB",
+    "loser-bracket": "LB",
+    "match": "M",
+    "grand-final": "GF"
+  },
+  "ranking": {
+    "rank": { "text": "#", "tooltip": "Rang" },
+    "id": { "text": "Naam", "tooltip": "Naam" },
+    "played": { "text": "P", "tooltip": "Gespeeld" },
+    "wins": { "text": "$t(abbreviations.win)", "tooltip": "Overwinningen" },
+    "draws": { "text": "G", "tooltip": "Gelijk" },
+    "losses": { "text": "$t(abbreviations.loss)", "tooltip": "Nederlagen" },
+    "forfeits": { "text": "$t(abbreviations.forfeit)", "tooltip": "Forfeits" },
+    "scoreFor": { "text": "SF", "tooltip": "Voor" },
+    "scoreAgainst": { "text": "SA", "tooltip": "Tegen" },
+    "scoreDifference": { "text": "+/-", "tooltip": "Verschil" },
+    "points": { "text": "Pts", "tooltip": "Punten" }
+  },
+  "common": {
+    "bye": "BYE",
+    "best-of-x": "Bo{{x}}",
+    "consolation": "Troost",
+    "group-name": "Groep {{groupNumber}}",
+    "group-name-winner-bracket": "Winner Bracket",
+    "group-name-loser-bracket": "Loser Bracket",
+    "round-name": "Ronde {{roundNumber}}",
+    "round-name-final": "Finale ronde",
+    "round-name-winner-bracket": "$t(abbreviations.winner-bracket) Ronde {{roundNumber}}",
+    "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket) Finale ronde",
+    "round-name-loser-bracket": "$t(abbreviations.loser-bracket) Ronde {{roundNumber}}",
+    "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket) Finale ronde"
+  },
+  "form-creator": {
+    "stage-name-label": "Naam van de fase",
+    "stage-name-placeholder": "Geef de fase een naam",
+    "stage-selector-label": "Selecteer een fase",
+    "team-label": "Teamnamen",
+    "team-label-placeholder": "Komma-gescheiden lijst (moet 2^n zijn)",
+    "team-count": "Of een team-aantal",
+    "team-count-placeholder": "Hoeveel teams wil je?",
+    "group-label": "Hoeveel groepen?",
+    "group-placeholder": "Hoeveel groepen wil je?",
+    "seed-order-label": "Hoe wil je de seeds ordenen?",
+    "double-elimination-seed-order-placeholder": "Seed-volgorde voor double elimination, komma-gescheiden",
+    "round-robin-mode-label": "Welke round robin-modus?",
+    "consolation-final-label": "Troostfinale",
+    "skip-first-round-label": "Eerste ronde overslaan",
+    "grand-final-type-label": "Grand final type",
+    "submit": "Aanmaken"
+  }
+}

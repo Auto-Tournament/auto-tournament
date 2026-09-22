@@ -1,0 +1,435 @@
+{
+  "matchesPage": {
+    "errors": {
+      "loadMatches": "Kan wedstrijden niet laden",
+      "loadTitle": "Fout bij het laden van wedstrijden",
+      "bulkDelete": "Kan een of meer wedstrijden niet verwijderen"
+    },
+    "allocation": {
+      "nextServers": "Volgende servertoewijzing over {{seconds}}s"
+    },
+    "header": {
+      "createMatch": "Wedstrijd maken"
+    },
+    "bulkSelect": {
+      "select": "Selecteren",
+      "done": "Klaar met selecteren",
+      "selectAll": "Alles selecteren",
+      "unselectAll": "Alles deselecteren",
+      "deleteSelected": "Selectie verwijderen"
+    },
+    "empty": {
+      "title": "Geen wedstrijden om te tonen",
+      "description": "Maak een toernooi en genereer het schema om hier wedstrijden te zien",
+      "createManual": "Of maak een handmatige wedstrijd"
+    },
+    "sections": {
+      "live": "Live-wedstrijden ({{count}})",
+      "upcoming": "Aankomende wedstrijden ({{count}})",
+      "history": "Wedstrijdgeschiedenis ({{count}})",
+      "inQueue": "{{count}} in wachtrij"
+    },
+    "manualMatchLabel": "Handmatige wedstrijd",
+    "create": {
+      "success": "Handmatige wedstrijd aangemaakt: {{slug}}"
+    },
+    "bulkDelete": {
+      "title": "Handmatige wedstrijden verwijderen",
+      "deleted_one": "{{count}} wedstrijd verwijderd",
+      "deleted_other": "{{count}} wedstrijden verwijderd",
+      "message_one": "Weet je zeker dat je {{count}} handmatige wedstrijd wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "message_other": "Weet je zeker dat je {{count}} handmatige wedstrijden wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+    },
+    "card": {
+      "matchNumber": "Wedstrijd #{{number}}",
+      "server": "Server: {{name}}",
+      "queuePosition": "Positie in wachtrij: #{{position}}",
+      "waitingForServers": "Wachten op servers...",
+      "allocatingNow": "Nu toewijzen...",
+      "allocatesIn": "Toewijzing over {{time}}",
+      "shuffle": "Shuffle",
+      "shuffleManual": "Shuffle handmatig",
+      "manual": "Handmatig",
+      "simulation": "Simulatie",
+      "winner": "WINNAAR",
+      "mapN": "Map {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "WALKOVER",
+      "waitingForTournament": "WACHTEN OP START TOERNOOI",
+      "waitingForServer": "WACHTEN OP SERVER",
+      "vetoPending": "VETO IN AFWACHTING",
+      "mapVeto": "MAPVETO",
+      "serverAllocated": "SERVER TOEGEWEZEN",
+      "warmup": "WARMING-UP",
+      "overtime": "VERLENGING #{{n}}",
+      "live": "LIVE",
+      "completed": "VOLTOOID",
+      "cancelled": "GEANNULEERD",
+      "needsDecision": "NEEDS ADMIN DECISION",
+      "waitingForPairing": "WAITING FOR PAIRING"
+    },
+    "statusGuide": {
+      "title": "Uitleg wedstrijdstatus",
+      "pending": "De wedstrijd is gepland maar nog niet aan een server toegewezen. Hij wordt toegewezen zodra er een server vrij is.",
+      "loaded": "De wedstrijd is geladen op de server en in warming-up. Spelers moeten verbinden en zich klaar melden om te starten.",
+      "live": "De wedstrijd wordt op de server gespeeld.",
+      "completed": "De wedstrijd is afgelopen. De winnaar is bepaald en het schema is bijgewerkt.",
+      "proTipTitle": "Tip:",
+      "proTip": "Als een wedstrijd \"Wachten op spelers (X/Y)\" toont, is de server klaar en moeten spelers verbinden. Zodra alle verwachte spelers verbonden en klaar zijn, start de wedstrijd automatisch."
+    },
+    "allocationWidget": {
+      "title": "Status servertoewijzing",
+      "available": "Beschikbaar:",
+      "busy": "Bezet:",
+      "cooling": "Afkoelen:",
+      "offline": "Offline:",
+      "waitingMatches_one": "Wachtend: {{count}} wedstrijd",
+      "waitingMatches_other": "Wachtend: {{count}} wedstrijden",
+      "statusLine": "Status: {{status}}",
+      "statusReady": "Klaar",
+      "statusCooling": "Afkoelen",
+      "statusBusy": "Bezet",
+      "statusOffline": "Offline",
+      "readyIn": "Klaar over: {{time}}"
+    },
+    "latestEvent": "Laatste: {{event}}",
+    "matchLabel": {
+      "upper": "UB R{{round}} M{{match}}",
+      "lower": "LB R{{round}} M{{match}}",
+      "grandFinal": "Grand Final",
+      "grandFinalReset": "Grand Final Reset"
+    }
+  },
+  "manualMatchModal": {
+    "title": "Handmatige wedstrijd maken",
+    "steps": {
+      "matchSetup": "Wedstrijdinstellingen",
+      "rules": "Regels",
+      "maps": "Kaarten",
+      "teams": "Ploegen",
+      "review": "Controle"
+    },
+    "description": "Maak een losse wedstrijd die onafhankelijk is van het toernooischema. De API wijst automatisch een beschikbare server toe.",
+    "buttons": {
+      "next": "Volgende",
+      "back": "Terug",
+      "create": "Wedstrijd maken",
+      "creating": "Aanmaken…"
+    },
+    "saveTemplate": {
+      "title": "Wedstrijdsjabloon opslaan",
+      "nameLabel": "Sjabloonnaam",
+      "nameHelper": "Bijv.: BO1 Inferno knife, BO3 kaartpool, enz.",
+      "description": "De huidige kaarten, serieformaat, CT-side-regel, veto-schakelaar, knife-modus en spelers per ploeg worden in dit sjabloon opgeslagen.",
+      "save": "Opslaan"
+    },
+    "chooseMode": {
+      "heading": "Hoe wil je deze wedstrijd maken?",
+      "template": {
+        "title": "Kies sjabloon",
+        "description": "Laad een preset voor kaarten, formaat en regels, en kies daarna de ploegen.",
+        "label": "Wedstrijdsjabloon",
+        "none": "Geen",
+        "empty": "Nog geen sjablonen opgeslagen. Configureer een wedstrijd en sla die op als sjabloon."
+      },
+      "custom": {
+        "title": "Nieuwe wedstrijd maken",
+        "description": "Configureer kaarten, regels, sides en ploegen vanaf nul."
+      }
+    },
+    "errors": {
+      "slugAndMapsRequired": "Een slug en minimaal één kaart zijn vereist.",
+      "teamsMustDiffer": "Team 1 en team 2 moeten verschillende teams zijn.",
+      "invalidMapSelectionVeto": "Ongeldige kaartselectie voor veto. Selecteer precies 7 kaarten of schakel veto uit.",
+      "invalidMapSelectionFormat": "Ongeldige kaartselectie voor dit serieformaat. Selecteer het juiste aantal kaarten.",
+      "configIncomplete": "De matchconfiguratie is onvolledig. Controleer de instellingen.",
+      "createFailed": "Aanmaken van match mislukt. Probeer het opnieuw."
+    }
+  },
+  "matchDetailsModal": {
+    "delete": {
+      "dialogTitle": "Wedstrijd verwijderen",
+      "confirmTitle": "Deze wedstrijd verwijderen?",
+      "confirmBody": "Weet je zeker dat je wedstrijd \"{{slug}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "button": "Wedstrijd verwijderen"
+    },
+    "roster": {
+      "title": "Spelerslijst",
+      "yourTeam": "Jouw team",
+      "openPlayerPage": "Spelerspagina openen",
+      "ready": "KLAAR",
+      "connected": "VERBONDEN",
+      "offline": "OFFLINE"
+    },
+    "decision": {
+      "body": "Every map has been played but the series is level on maps, rounds and damage. Choose the winner to advance the bracket.",
+      "setWinner": "{{team}} wins",
+      "confirmTitle": "Set series winner",
+      "confirmBody": "Finish this series with {{team}} as the winner? The bracket advances and this cannot be undone here.",
+      "confirm": "Set winner",
+      "success": "Winner set",
+      "failed": "Failed to set the winner"
+    },
+    "tiebreakHint": "Scores are level: {{team}} won the map, decided by tiebreak."
+  },
+  "bulkShuffleMatchesModal": {
+    "title": "Shuffle-wedstrijden in bulk maken",
+    "description": "Configureer een shuffle-wedstrijd op één kaart (kaart + rondelimiet) en definieer daarna zoveel head‑to‑head wedstrijden als je wilt door de exacte spelersopstellingen per kant te kiezen. Wedstrijden worden aangemaakt binnen het huidige shuffle-toernooi en worden aan servers toegewezen wanneer je het toernooi start.",
+    "mapSelect": {
+      "label": "Kaart",
+      "noMaps": "Geen kaarten geconfigureerd voor dit toernooi",
+      "helper": "Alle wedstrijden in deze batch gebruiken deze kaart."
+    },
+    "maxRounds": {
+      "label": "Max. rondes per kaart",
+      "helperWithValue": "De wedstrijd speelt tot {{maxRounds}} rondes; de winnaar is als eerste op {{winRounds}} rondes.",
+      "helperDefault": "Maximum aantal rondes per kaart (standaard: 24, max: 30)."
+    },
+    "matchesSection": {
+      "title": "Wedstrijden ({{count}})",
+      "addMatch": "Wedstrijd toevoegen"
+    },
+    "players": {
+      "empty": "Er zijn nog geen spelers geregistreerd voor dit shuffle-toernooi. Registreer eerst spelers, daarna kun je handmatige wedstrijden maken."
+    },
+    "matchRow": {
+      "title": "Wedstrijd nr. {{index}}",
+      "teamCounts": "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}",
+      "team1Label": "Spelers ploeg 1 ({{team1Count}}/{{teamSize}})",
+      "team2Label": "Spelers ploeg 2 ({{team2Count}}/{{teamSize}})",
+      "searchPlaceholder": "Zoek & selecteer spelers",
+      "mapOverrideLabel": "Kaart (optioneel)",
+      "mapOverrideHelperOwn": "Deze wedstrijd gebruikt een eigen kaart.",
+      "mapOverrideHelperDefault": "Laat leeg om de standaard kaart hierboven te gebruiken.",
+      "maxRoundsOverrideLabel": "Max. rondes (optioneel)",
+      "maxRoundsOverrideHelperOwn": "Overschrijft de standaard max. rondes voor deze wedstrijd (nu {{value}}).",
+      "maxRoundsOverrideHelperDefault": "Laat leeg om de standaard max. rondes hierboven te gebruiken."
+    },
+    "errors": {
+      "loadPlayers": "Kan geregistreerde spelers niet laden",
+      "noMatches": "Voeg minstens één wedstrijd toe om aan te maken.",
+      "bothTeamsRequired": "Wedstrijd {{index}}: beide ploegen moeten minstens één speler hebben.",
+      "conflictingPlayers": "Wedstrijd {{index}}: dezelfde speler kan niet in beide ploegen zitten. Conflicterende ID(s): {{ids}}",
+      "mapRequired": "Wedstrijd {{index}}: kaart is verplicht (stel een standaard kaart hierboven in of kies een kaart voor deze wedstrijd).",
+      "rowMaxRoundsRange": "Wedstrijd {{index}}: max. rondes moet tussen 1 en 30 liggen wanneer per wedstrijd overschreven.",
+      "globalMaxRoundsRange": "Max. rondes moet tussen 1 en 30 liggen.",
+      "createFailed": "Handmatige shuffle-wedstrijden aanmaken mislukt"
+    },
+    "success": {
+      "created": "Handmatige shuffle-wedstrijden aangemaakt. Ze worden toegewezen wanneer het toernooi start."
+    },
+    "createMatchesButton": {
+      "default": "Wedstrijden maken",
+      "creating": "Aanmaken…"
+    }
+  },
+  "teamModal": {
+    "titleCreate": "Nieuw team maken",
+    "titleEdit": "Team bewerken",
+    "teamNameLabel": "Teamnaam",
+    "teamNamePlaceholder": "Astralis",
+    "teamNameHelper": "Teamnaam kan elke taal of speciale tekens bevatten",
+    "teamTagLabel": "Teamtag",
+    "teamTagPlaceholder": "AST",
+    "teamTagHelper": "Automatisch gegenereerd uit teamnaam (max 4 tekens)",
+    "playersHeader": "Spelers ({{count}})",
+    "selectPlayers": "Spelers selecteren",
+    "noPlayersInfo": "Nog geen spelers toegevoegd. Voeg minstens één speler toe.",
+    "addPlayersHelper": "Voeg spelers toe door een Steam-URL te plakken of uit bestaande spelers te kiezen",
+    "steamInputLabel": "Steam-ID / vanity URL",
+    "steamInputPlaceholder": "gaben or steamcommunity.com/id/gaben",
+    "resolveSteam": "Steam-ID opzoeken",
+    "resolving": "Opzoeken...",
+    "playerNameLabel": "Spelernaam",
+    "playerNamePlaceholder": "s1mple",
+    "eloLabel": "ELO (optioneel)",
+    "eloPlaceholder": "1500",
+    "eloHelper": "Standaard: 1500",
+    "errors": {
+      "steamLookupEmpty": "Vul een Steam-ID, vanity URL of profiel-URL in",
+      "steamApiNotConfigured": "Steam API is niet ingesteld — voer Steam ID64 handmatig in",
+      "steamResolveFailed": "Kan Steam-ID niet opzoeken — voer Steam ID64 handmatig in",
+      "steamAndNameRequired": "Steam-ID en spelernaam zijn verplicht",
+      "steamDuplicate": "Deze Steam-ID zit al in het team",
+      "teamNameRequired": "Teamnaam is verplicht",
+      "playersRequired": "Minstens één speler is verplicht",
+      "saveFailed": "Team opslaan mislukt",
+      "deleteFailed": "Team verwijderen mislukt",
+      "discordIdInvalid": "Discord-ID moet 17–20 cijfers zijn (het numerieke gebruikers-ID, geen gebruikersnaam)",
+      "discordIdInvalidPlayers": "Ongeldige Discord-ID voor: {{names}}. Deze moet 17–20 cijfers zijn of leeg blijven.",
+      "discordIdSaveFailed": "Het team is opgeslagen, maar de Discord-ID kon niet worden opgeslagen voor: {{names}}. {{message}}"
+    },
+    "success": {
+      "playerAdded": "Speler aan team toegevoegd",
+      "playerReplaced": "Speler vervangen",
+      "teamUpdated": "Team succesvol bijgewerkt",
+      "teamCreated": "Team succesvol aangemaakt",
+      "teamDeleted": "Team succesvol verwijderd"
+    },
+    "buttons": {
+      "deleteTeam": "Team verwijderen",
+      "cancel": "Annuleren",
+      "saving": "Opslaan...",
+      "saveChanges": "Wijzigingen opslaan",
+      "createTeam": "Team maken"
+    },
+    "confirmDelete": {
+      "title": "Team verwijderen",
+      "message": "Weet je zeker dat je \"{{name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+    },
+    "replacePlayerAria": "Speler {{name}} vervangen",
+    "replacePlayerTooltip": "Deze speler vervangen"
+  },
+  "playerModal": {
+    "titleCreate": "Speler maken",
+    "titleEdit": "Speler bewerken",
+    "steamLabel": "Steam-ID of profiel-URL",
+    "steamHelperEditing": "Steam-ID kan niet worden gewijzigd",
+    "steamHelperNew": "Vul Steam ID64, vanity URL of profiel-URL in. Klik op \"Opzoeken\" om naam en avatar automatisch in te vullen.",
+    "resolveSteam": "Steam-ID opzoeken",
+    "resolving": "Opzoeken...",
+    "playerNameLabel": "Spelernaam",
+    "playerNamePlaceholder": "Speler",
+    "eloLabelNew": "Start-ELO",
+    "eloLabelEdit": "ELO",
+    "eloHelperNew": "Laat leeg om de standaardwaarde te gebruiken (1500 Skill Rating).",
+    "eloHelperEdit": "ELO wijzigen reset de rating en statistieken van de speler. Deze actie kan niet ongedaan worden gemaakt.",
+    "isAdminLabel": "Is admin (heeft in-game adminrechten voor alle wedstrijden)",
+    "currentElo": "Huidige ELO: {{value}}",
+    "startingElo": "Start-ELO: {{value}}",
+    "matchesPlayed": "Wedstrijden gespeeld: {{count}}",
+    "errors": {
+      "steamRequired": "Steam-ID is verplicht",
+      "nameRequired": "Spelernaam is verplicht",
+      "steamLookupEmpty": "Vul een Steam-ID, vanity URL of profiel-URL in",
+      "steamApiNotConfigured": "Steam API is niet ingesteld — voer Steam ID64 handmatig in",
+      "steamResolveFailed": "Kan Steam-ID niet opzoeken — voer Steam ID64 handmatig in",
+      "saveFailed": "Speler opslaan mislukt"
+    },
+    "success": {
+      "playerUpdated": "Speler succesvol bijgewerkt",
+      "playerCreated": "Speler succesvol aangemaakt"
+    },
+    "buttons": {
+      "delete": "Verwijderen",
+      "cancel": "Annuleren",
+      "saving": "Opslaan...",
+      "save": "Opslaan",
+      "create": "Aanmaken"
+    },
+    "confirmDelete": {
+      "title": "Speler verwijderen",
+      "message": "Weet je zeker dat je speler \"{{name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+    },
+    "confirmEloUpdate": {
+      "title": "Speler-ELO bijwerken",
+      "message": "Weet je zeker dat je de ELO van deze speler wilt wijzigen van {{from}} naar {{to}}? Dit reset statistieken en ratinggeschiedenis. Deze actie kan niet ongedaan worden gemaakt."
+    },
+    "discordIdHelper": "Optioneel. 17–20 cijfers. Hiermee kunnen organisatoren deze speler via Discord bereiken. Wordt nooit openbaar getoond."
+  },
+  "teamImportModal": {
+    "title": "Teams importeren vanuit JSON",
+    "info": {
+      "title": "Plak hieronder JSON met teamgegevens.",
+      "format": "Verwacht formaat: array van teams met name, tag (optioneel) en players (name + steamId, plus een optionele discordId als tekst tussen aanhalingstekens).",
+      "link": "Bekijk documentatie met voorbeelden"
+    },
+    "jsonLabel": "JSON-gegevens",
+    "errors": {
+      "mustBeArray": "JSON moet een lijst met teams zijn",
+      "emptyArray": "De lijst mag niet leeg zijn",
+      "parseWithMessage": "JSON-parsefout: {{message}}",
+      "parseGeneric": "Ongeldig JSON-formaat. Controleer je syntax.",
+      "importFailed": "Teams importeren mislukt",
+      "noJson": "Vul JSON-gegevens in"
+    },
+    "preview": {
+      "summary": "✓ Geldige JSON! {{teams}} gevonden met in totaal {{players}}.",
+      "title": "Voorbeeld:",
+      "missingDiscordTotal": "Spelers zonder Discord-ID: {{count}}",
+      "missingDiscordChip": "Zonder Discord: {{count}}",
+      "playersChip_one": "{{count}} speler",
+      "playersChip_other": "{{count}} spelers",
+      "teamsCount_one": "{{count}} team",
+      "teamsCount_other": "{{count}} teams"
+    },
+    "actions": {
+      "preview": "Voorbeeld",
+      "importing": "Importeren...",
+      "import_one": "{{count}} team importeren",
+      "import_other": "{{count}} teams importeren"
+    },
+    "warnings": {
+      "title": "Sommige Discord-ID's zijn genegeerd. Deze spelers worden zonder ID geïmporteerd:",
+      "discordIdNumber": "Team \"{{team}}\", speler \"{{player}}\": discordId moet tekst tussen aanhalingstekens zijn. Grote getallen verliezen precisie in JSON, dus de ID is verwijderd.",
+      "discordIdInvalid": "Team \"{{team}}\", speler \"{{player}}\": \"{{value}}\" is geen Discord-gebruikers-ID (17–20 cijfers verwacht) en is verwijderd."
+    }
+  },
+  "playerImportModal": {
+    "title": "Spelers importeren",
+    "info": {
+      "description": "Importeer spelers vanuit JSON of CSV. Verplichte velden: steamId, name. Optioneel: initialELO (standaard 1500), avatarUrl.",
+      "link": "Bekijk documentatie met voorbeelden"
+    },
+    "placeholders": {
+      "jsonCsv": "JSON-formaat:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Speler Eén\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nCSV-formaat:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Speler Eén,1500,https://..."
+    },
+    "actions": {
+      "parseValidate": "Parsen & valideren",
+      "importing": "Importeren...",
+      "import_one": "{{count}} speler importeren",
+      "import_other": "{{count}} spelers importeren"
+    },
+    "preview": {
+      "title": "Spelers om te importeren ({{count}}):",
+      "steamId": "Steam-ID: {{steamId}}",
+      "name": "Naam: {{name}}",
+      "initialElo": "Start-ELO: {{elo}}",
+      "avatar": "Avatar-url: {{url}}",
+      "readyChip_one": "{{count}} speler klaar om te importeren",
+      "readyChip_other": "{{count}} spelers klaar om te importeren"
+    },
+    "errors": {
+      "noData": "Vul JSON- of CSV-gegevens in",
+      "noPlayers": "Geen spelers gevonden in de gegevens",
+      "validationPrefix": "Validatiefouten:",
+      "parseFailed": "Parsen mislukt: {{message}}",
+      "importFailed": "Spelers importeren mislukt",
+      "parseFirst": "Parse en valideer eerst de gegevens"
+    }
+  },
+  "playerSelectionModal": {
+    "title": "Spelers selecteren",
+    "selectedCount": "{{count}} geselecteerd",
+    "searchPlaceholder": "Zoek spelers op naam of Steam-ID...",
+    "selectAll": {
+      "select": "Alles selecteren",
+      "deselect": "Alles deselecteren"
+    },
+    "empty": {
+      "noSearchResults": "Geen spelers gevonden voor je zoekopdracht",
+      "noPlayers": "Geen spelers beschikbaar"
+    },
+    "playerCard": {
+      "alreadyInTeam": "Al in team"
+    },
+    "errors": {
+      "loadFailed": "Kan spelers niet laden",
+      "noSelectable": "Geen selecteerbare spelers beschikbaar"
+    },
+    "addPlayersButton_one": "{{count}} speler toevoegen",
+    "addPlayersButton_other": "{{count}} spelers toevoegen"
+  },
+  "soundSettingsModal": {
+    "title": "Geluidsinstellingen",
+    "soundSelect": {
+      "label": "Notificatiegeluid"
+    },
+    "volume": {
+      "label": "Volume ({{percent}}%)"
+    },
+    "testButton": "Geluid testen",
+    "footer": "Geluidsmeldingen worden afgespeeld wanneer je wedstrijd klaar is of wanneer belangrijke gebeurtenissen plaatsvinden."
+  }
+}

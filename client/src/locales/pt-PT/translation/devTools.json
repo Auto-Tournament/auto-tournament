@@ -1,0 +1,141 @@
+{
+  "devToolsPage": {
+    "alert": "Estas ferramentas só estão disponíveis em modo de desenvolvimento. Usa-as para gerar rapidamente dados de teste para testar a aplicação.",
+    "sections": {
+      "testData": {
+        "title": "Criar dados de teste"
+      }
+    },
+    "testTeams": {
+      "title": "Equipas de teste",
+      "description": "Cria equipas com dados aleatórios de jogadores para testar brackets e jogos do torneio.",
+      "success": "Criadas {{count}} equipa(s) de teste com sucesso!",
+      "errors": {
+        "create": "Falha ao criar equipas de teste",
+        "partial": "Foram criadas {{created}} equipa(s), mas {{failed}} falharam. Verifica a consola para detalhes."
+      },
+      "customLabel": "Número personalizado de equipas",
+      "buttons": {
+        "createFixed": "Criar {{count}} equipas",
+        "createCustom": "Criar equipas"
+      }
+    },
+    "testPlayers": {
+      "title": "Jogadores de teste",
+      "description": "Cria jogadores com ratings ELO para testar torneios shuffle e gestão de jogadores.",
+      "success": "Criados {{created}} jogadores de teste!",
+      "errors": {
+        "create": "Falha ao criar jogadores de teste",
+        "partial": "Foram criados {{created}} jogador(es), atualizados {{updated}}, mas {{failed}} falharam. Verifica a consola para detalhes."
+      },
+      "customLabel": "Número personalizado de jogadores",
+      "buttons": {
+        "createFixed": "Criar {{count}} jogadores",
+        "createCustom": "Criar jogadores"
+      },
+      "successWithUpdated": "Criados {{created}} e atualizados {{updated}} jogadores de teste!"
+    },
+    "testServers": {
+      "title": "Servidores de teste",
+      "description": "Cria configurações de servidor para testar a gestão de jogos e comandos RCON.",
+      "success": "Criados {{count}} servidor(es) de teste com sucesso!",
+      "errors": {
+        "create": "Falha ao criar servidores de teste",
+        "partial": "Foram criados {{created}} servidor(es), mas {{failed}} falharam. Verifica a consola para detalhes."
+      },
+      "customLabel": "Número personalizado de servidores",
+      "buttons": {
+        "createCustom": "Criar servidores",
+        "createFixed_one": "Criar {{count}} servidor",
+        "createFixed_other": "Criar {{count}} servidores"
+      }
+    },
+    "dangerZone": {
+      "title": "Zona de perigo"
+    },
+    "deleteTestData": {
+      "title": "Eliminar dados de teste",
+      "description": "Elimina todos os dados de teste (equipas e servidores com o prefixo 'test-'). Esta ação não pode ser desfeita.",
+      "button": "Eliminar todos os dados de teste",
+      "confirmPrompt": "Tens a certeza de que queres eliminar TODOS os dados de teste?",
+      "success": "Todos os dados de teste foram eliminados com sucesso!",
+      "error": "Falha ao eliminar dados de teste"
+    },
+    "wipeTable": {
+      "title": "Limpar tabelas específicas",
+      "description": "Apaga todos os dados de uma tabela específica. Útil para limpar sem repor tudo. As tabelas estão organizadas por categoria.",
+      "confirmPrompt": "Tens a certeza de que queres limpar a tabela {{table}}? Isto irá apagar todos os dados dessa tabela.",
+      "success": "Tabela {{table}} limpa com sucesso!",
+      "error": "Falha ao limpar a tabela {{table}}",
+      "core": {
+        "title": "Tabelas principais",
+        "teams": "Limpar equipas",
+        "servers": "Limpar servidores",
+        "tournament": "Limpar torneio",
+        "matches": "Limpar jogos"
+      },
+      "players": {
+        "title": "Jogadores e torneios shuffle",
+        "players": "Limpar jogadores",
+        "ratingHistory": "Limpar histórico de rating",
+        "matchStats": "Limpar estatísticas de jogo",
+        "shufflePlayers": "Limpar jogadores shuffle"
+      },
+      "maps": {
+        "title": "Mapas e modelos",
+        "maps": "Limpar mapas",
+        "mapPools": "Limpar pools de mapas",
+        "tournamentTemplates": "Limpar modelos de torneio",
+        "eloTemplates": "Limpar modelos ELO"
+      },
+      "matchEvents": {
+        "title": "Eventos e resultados de jogos",
+        "events": "Limpar eventos de jogo",
+        "mapResults": "Limpar resultados de mapas"
+      },
+      "settings": {
+        "title": "Definições",
+        "appSettings": "Limpar definições da app"
+      }
+    },
+    "simulation": {
+      "title": "Estado de simulação",
+      "description": "Limpa todos os jogos e estatísticas históricas para que possas clicar em \"Iniciar torneio\" em modo simulação num bracket limpo, mantendo servidores, equipas, mapas e a configuração atual do torneio.",
+      "button": "Repor estado de simulação (manter config)",
+      "reset": {
+        "success": "Estado de simulação reposto. Jogos e estatísticas limpos; servidores, equipas e configuração do torneio mantidos.",
+        "error": "Falha ao repor o estado de simulação"
+      }
+    },
+    "wipeDatabase": {
+      "title": "Apagar toda a base de dados",
+      "warningTitle": "EXTREMAMENTE DESTRUTIVO!",
+      "warningBody": "Isto vai apagar TODOS os dados.",
+      "permanentlyDeletes": "Apaga permanentemente:",
+      "items": {
+        "tournaments": "Todos os torneios e brackets",
+        "matches": "Todos os jogos e eventos",
+        "teams": "Todas as equipas e jogadores",
+        "servers": "Todas as configurações de servidor"
+      },
+      "button": "Apagar toda a base de dados",
+      "successRedirect": "Base de dados apagada com sucesso! A redirecionar...",
+      "error": "Falha ao apagar a base de dados",
+      "dialog": {
+        "title": "Confirmar apagar base de dados",
+        "areYouSure": "Tens a certeza absoluta?",
+        "actionWill": "Esta ação vai",
+        "permanentlyDelete": "apagar permanentemente",
+        "items": {
+          "tournaments": "Todos os dados de torneio e brackets",
+          "matches": "Todo o histórico de jogos e eventos",
+          "teams": "Todas as equipas e configurações de jogadores",
+          "servers": "Todas as configurações de servidor"
+        },
+        "cannotUndo": "Esta ação não pode ser desfeita!",
+        "wiping": "A apagar base de dados...",
+        "yesWipe": "Sim, apagar tudo"
+      }
+    }
+  }
+}

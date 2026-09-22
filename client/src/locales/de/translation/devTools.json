@@ -1,0 +1,141 @@
+{
+  "devToolsPage": {
+    "alert": "Diese Tools sind nur im Entwicklungsmodus verfügbar. Verwende sie, um schnell Testdaten zu erzeugen und die Anwendung zu testen.",
+    "sections": {
+      "testData": {
+        "title": "Testdaten erstellen"
+      }
+    },
+    "testTeams": {
+      "title": "Test-Teams",
+      "description": "Erstelle Teams mit zufälligen Spieler*innendaten, um Turnier-Brackets und Matches zu testen.",
+      "success": "Erfolgreich {{count}} Test-Team(s) erstellt!",
+      "errors": {
+        "create": "Test-Teams konnten nicht erstellt werden",
+        "partial": "Es wurden {{created}} Team(s) erstellt, aber {{failed}} sind fehlgeschlagen. Details siehe Konsole."
+      },
+      "customLabel": "Benutzerdefinierte Teamanzahl",
+      "buttons": {
+        "createFixed": "{{count}} Teams erstellen",
+        "createCustom": "Teams erstellen"
+      }
+    },
+    "testPlayers": {
+      "title": "Test-Spieler",
+      "description": "Erstelle Spieler mit ELO-Wertungen, um Shuffle-Turniere und Spielerverwaltung zu testen.",
+      "success": "{{created}} Testspieler erstellt!",
+      "errors": {
+        "create": "Test-Spieler konnten nicht erstellt werden",
+        "partial": "Es wurden {{created}} Spieler erstellt, {{updated}} aktualisiert, aber {{failed}} sind fehlgeschlagen. Details siehe Konsole."
+      },
+      "customLabel": "Benutzerdefinierte Spieleranzahl",
+      "buttons": {
+        "createFixed": "{{count}} Spieler erstellen",
+        "createCustom": "Spieler erstellen"
+      },
+      "successWithUpdated": "{{created}} Testspieler erstellt und {{updated}} aktualisiert!"
+    },
+    "testServers": {
+      "title": "Test-Server",
+      "description": "Erstelle Serverkonfigurationen, um Matchverwaltung und RCON-Befehle zu testen.",
+      "success": "Erfolgreich {{count}} Test-Server erstellt!",
+      "errors": {
+        "create": "Test-Server konnten nicht erstellt werden",
+        "partial": "Es wurden {{created}} Server erstellt, aber {{failed}} sind fehlgeschlagen. Details siehe Konsole."
+      },
+      "customLabel": "Benutzerdefinierte Serveranzahl",
+      "buttons": {
+        "createCustom": "Server erstellen",
+        "createFixed_one": "{{count}} Server erstellen",
+        "createFixed_other": "{{count}} Server erstellen"
+      }
+    },
+    "dangerZone": {
+      "title": "Gefahrenzone"
+    },
+    "deleteTestData": {
+      "title": "Testdaten löschen",
+      "description": "Löscht alle Testdaten (Teams und Server mit dem Präfix 'test-'). Diese Aktion kann nicht rückgängig gemacht werden.",
+      "button": "Alle Testdaten löschen",
+      "confirmPrompt": "Möchtest du wirklich ALLE Testdaten löschen?",
+      "success": "Alle Testdaten wurden erfolgreich gelöscht!",
+      "error": "Testdaten konnten nicht gelöscht werden"
+    },
+    "wipeTable": {
+      "title": "Bestimmte Tabellen leeren",
+      "description": "Löscht alle Daten aus einer bestimmten Tabelle. Nützlich zum Aufräumen, ohne alles zurückzusetzen. Tabellen sind nach Kategorie organisiert.",
+      "confirmPrompt": "Möchtest du wirklich die Tabelle {{table}} leeren? Dadurch werden alle Daten in dieser Tabelle gelöscht.",
+      "success": "Tabelle {{table}} wurde erfolgreich geleert!",
+      "error": "Tabelle {{table}} konnte nicht geleert werden",
+      "core": {
+        "title": "Kern-Tabellen",
+        "teams": "Teams leeren",
+        "servers": "Server leeren",
+        "tournament": "Turnier leeren",
+        "matches": "Matches leeren"
+      },
+      "players": {
+        "title": "Spieler & Shuffle-Turniere",
+        "players": "Spieler leeren",
+        "ratingHistory": "Rating-Verlauf leeren",
+        "matchStats": "Match-Statistiken leeren",
+        "shufflePlayers": "Shuffle-Spieler leeren"
+      },
+      "maps": {
+        "title": "Maps & Vorlagen",
+        "maps": "Maps leeren",
+        "mapPools": "Mappools leeren",
+        "tournamentTemplates": "Turnier-Vorlagen leeren",
+        "eloTemplates": "ELO-Vorlagen leeren"
+      },
+      "matchEvents": {
+        "title": "Match-Events & Ergebnisse",
+        "events": "Match-Events leeren",
+        "mapResults": "Map-Ergebnisse leeren"
+      },
+      "settings": {
+        "title": "Einstellungen",
+        "appSettings": "App-Einstellungen leeren"
+      }
+    },
+    "simulation": {
+      "title": "Simulationszustand",
+      "description": "Lösche alle Matches und historischen Statistiken, damit du im Simulationsmodus auf einem leeren Bracket „Turnier starten“ klicken kannst, während Server, Teams, Maps und die aktuelle Turnierkonfiguration erhalten bleiben.",
+      "button": "Simulationszustand zurücksetzen (Konfiguration behalten)",
+      "reset": {
+        "success": "Simulationszustand zurückgesetzt. Matches und Statistiken gelöscht; Server, Teams und Turnierkonfiguration beibehalten.",
+        "error": "Simulationszustand konnte nicht zurückgesetzt werden"
+      }
+    },
+    "wipeDatabase": {
+      "title": "Gesamte Datenbank löschen",
+      "warningTitle": "EXTREM ZERSTÖRERISCH!",
+      "warningBody": "Dies löscht ALLE Daten.",
+      "permanentlyDeletes": "Löscht dauerhaft:",
+      "items": {
+        "tournaments": "Alle Turniere & Brackets",
+        "matches": "Alle Matches & Events",
+        "teams": "Alle Teams & Spieler",
+        "servers": "Alle Serverkonfigurationen"
+      },
+      "button": "Gesamte Datenbank löschen",
+      "successRedirect": "Datenbank erfolgreich gelöscht! Weiterleitung...",
+      "error": "Datenbank konnte nicht gelöscht werden",
+      "dialog": {
+        "title": "Datenbanklöschung bestätigen",
+        "areYouSure": "Bist du absolut sicher?",
+        "actionWill": "Diese Aktion wird",
+        "permanentlyDelete": "dauerhaft löschen",
+        "items": {
+          "tournaments": "Alle Turnierdaten und Brackets",
+          "matches": "Alle Match-Historie und Events",
+          "teams": "Alle Teams und Spielerkonfigurationen",
+          "servers": "Alle Serverkonfigurationen"
+        },
+        "cannotUndo": "Diese Aktion kann nicht rückgängig gemacht werden!",
+        "wiping": "Datenbank wird gelöscht...",
+        "yesWipe": "Ja, alles löschen"
+      }
+    }
+  }
+}

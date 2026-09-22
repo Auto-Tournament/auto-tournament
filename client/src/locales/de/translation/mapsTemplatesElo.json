@@ -1,0 +1,342 @@
+{
+  "mapsPage": {
+    "title": "Karten & Kartenpools",
+    "tabs": {
+      "maps": "Karten",
+      "mapPools": "Kartenpools"
+    },
+    "headerActions": {
+      "addMap": "Karte hinzufügen",
+      "createMapPool": "Kartenpool erstellen"
+    },
+    "errors": {
+      "loadMaps": "Karten konnten nicht geladen werden",
+      "loadPools": "Kartenpools konnten nicht geladen werden",
+      "defaultPoolCannotDelete": "Der Standard-Kartenpool kann nicht gelöscht werden.",
+      "setDefaultPool": "Standard-Kartenpool konnte nicht festgelegt werden",
+      "togglePool": "Fehler beim Umschalten des Kartenpool-Status",
+      "deleteMap": "Löschen fehlgeschlagen",
+      "deletePool": "Fehler beim Löschen des Kartenpools"
+    },
+    "success": {
+      "mapDeleted": "Karte erfolgreich gelöscht"
+    },
+    "confirmDeleteMap": {
+      "title": "Karte löschen",
+      "message": "Sind Sie sicher, dass Sie \"{{name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+    },
+    "confirmDeletePool": {
+      "title": "Kartenpool löschen",
+      "message": "Sind Sie sicher, dass Sie \"{{name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+    }
+  },
+  "mapModal": {
+    "titleCreate": "Karte hinzufügen",
+    "titleEdit": "Karte bearbeiten",
+    "workshop": {
+      "inputLabel": "Steam-Workshop-URL oder -ID",
+      "inputPlaceholder": "https://steamcommunity.com/sharedfiles/filedetails/?id=1234567890",
+      "inputHelper": "Füge eine Workshop-URL oder numerische ID ein, um Name und Bild automatisch auszufüllen.",
+      "found": "Gefunden: {{title}}",
+      "lookupFailed": "Workshop-Abfrage fehlgeschlagen"
+    },
+    "mapIdLabel": "Map-ID",
+    "mapIdPlaceholder": "de_dust2",
+    "mapIdHelper": "Nur Kleinbuchstaben, Zahlen und Unterstriche (de_dust2)",
+    "displayNameLabel": "Anzeigename",
+    "displayNamePlaceholder": "Staub II",
+    "mapImageLabel": "Bild der Karte",
+    "uploadButton": "Bild hochladen",
+    "fetchFromGitHub": "Von GitHub abrufen",
+    "uploadHelper": "Laden Sie ein PNG-, JPG-, GIF- oder WebP-Bild hoch (max. 5 MB)",
+    "previewLabel": "Vorschau:",
+    "removeImage": "Bild entfernen",
+    "errors": {
+      "mapIdRequired": "Map-ID ist erforderlich",
+      "displayNameRequired": "Anzeigename ist erforderlich",
+      "mapIdInvalid": "Die Karten-ID darf nur Kleinbuchstaben, Zahlen und Unterstriche enthalten",
+      "invalidFileType": "Ungültiger Dateityp. Bitte wählen Sie ein PNG-, JPG-, GIF- oder WebP-Bild aus.",
+      "fileTooLarge": "Dateigröße zu groß. Bitte wählen Sie ein Bild aus, das kleiner als 5 MB ist.",
+      "readFileFailed": "Fehler beim Lesen der Bilddaten",
+      "fetchImageIdRequired": "Bitte geben Sie zuerst eine Karten-ID ein",
+      "fetchImageFailed": "Bild konnte nicht abgerufen werden. Sie können stattdessen ein Bild hochladen.",
+      "imageNotFound": "Bild für {{id}} nicht gefunden. Sie können stattdessen ein Bild hochladen.",
+      "uploadFailed": "Das Bild konnte nicht hochgeladen werden",
+      "saveFailed": "Speichern fehlgeschlagen."
+    },
+    "success": {
+      "mapUpdated": "Karte erfolgreich aktualisiert",
+      "mapCreated": "Erfolgreich erstellt"
+    },
+    "buttons": {
+      "cancel": "Abbrechen",
+      "saving": "Der Speichervorgang läuft...",
+      "update": "Aktualisierung",
+      "create": "Erstellen"
+    }
+  },
+  "mapActionsModal": {
+    "mapId": "Map-ID",
+    "preview": "Vorschau",
+    "edit": "Bearbeiten"
+  },
+  "mapPoolActionsModal": {
+    "defaultChip": "Standard",
+    "status": {
+      "label": "Zustand",
+      "enabled": "Aktiviert",
+      "disabled": "Deaktiviert"
+    },
+    "maps": {
+      "label": "Karten ({{count}})"
+    },
+    "actions": {
+      "edit": "Bearbeiten",
+      "enable": "Aktivieren",
+      "disable": "Deaktivieren",
+      "setDefault": "Als Standard festlegen"
+    }
+  },
+  "templatesPage": {
+    "header": {
+      "createFromTournament": "Vorlage aus Turnier erstellen"
+    },
+    "empty": "Noch keine Vorlagen. Erstelle deine erste Vorlage auf der Turnierseite.",
+    "errors": {
+      "load": "Vorlagen konnten nicht geladen werden"
+    },
+    "delete": {
+      "title": "Vorlage löschen",
+      "message": "Sind Sie sicher, dass Sie die Vorlage \"{{name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "success": "Vorlage \"{{name}}\" erfolgreich gelöscht",
+      "error": "Vorlage konnte nicht gelöscht werden"
+    },
+    "update": {
+      "success": "Template „{{name}}“ erfolgreich aktualisiert",
+      "error": "Fehler beim Aktualisieren der Vorlage."
+    },
+    "createFromTemplate": {
+      "errors": {
+        "inProgressOrCompleted": "Turnier kann nicht aus Vorlage erstellt werden, während ein Turnier läuft oder abgeschlossen ist. Bitte löschen oder setzen Sie zuerst das aktuelle Turnier zurück.",
+        "alreadyExists": "Ein Turnier existiert bereits. Bitte löschen oder setzen Sie das aktuelle Turnier zurück, bevor Sie ein neues aus einer Vorlage erstellen."
+      }
+    },
+    "edit": {
+      "title": "Vorlage bearbeiten",
+      "nameLabel": "Vorlagenname",
+      "descriptionLabel": "Beschreibung (optional)",
+      "typeLabel": "Turniertyp",
+      "formatLabel": "Match-Format",
+      "mapPool": {
+        "title": "Kartenpool",
+        "selectLabel": "Wählen Sie einen Kartenpool",
+        "customOption": "Angepasst",
+        "selectedLabel": "Ausgewählte Karten ({{count}}):",
+        "vetoWarning": "Veto-Formate (BO1/BO3/BO5) benötigen genau 7 Karten. Aktuell ausgewählt: {{count}}"
+      },
+      "save": "Speichern"
+    }
+  },
+  "saveTemplateModal": {
+    "title": "Als Vorlage sichern",
+    "nameLabel": "Vorlagenname",
+    "namePlaceholder": "8 Teams – Single Elim BO3",
+    "descriptionLabel": "Beschreibung (optional)",
+    "descriptionPlaceholder": "Wöchentliches 8-Team-Einzel-Eliminationsturnier",
+    "saveButton": "Template speichern",
+    "errors": {
+      "nameRequired": "Vorlagenname ist erforderlich",
+      "saveFailed": "Vorlage konnte nicht gespeichert werden"
+    }
+  },
+  "saveMapPoolModal": {
+    "title": "Kartenpool speichern",
+    "nameLabel": "Map-Pool-Name",
+    "namePlaceholder": "Mein benutzerdefinierter Pool",
+    "saveButton": "Speichern",
+    "errors": {
+      "nameRequired": "Map-Pool-Name ist erforderlich",
+      "noMaps": "Bitte mindestens eines auswählen",
+      "saveFailed": "Pool konnte nicht gespeichert werden"
+    },
+    "info_one": "Damit wird ein Map-Pool mit {{count}} Karte gespeichert.",
+    "info_other": "Damit wird ein Map-Pool mit {{count}} Karten gespeichert."
+  },
+  "batchServerModal": {
+    "title": "Batch-Server erstellen",
+    "info": "Erstellen Sie mehrere Server mit um 10 erhöhten Ports (27015, 27025, 27035...). Perfekt für LAN-Setups mit Servern auf demselben Computer.",
+    "sections": {
+      "identification": {
+        "title": "Serverkennung"
+      },
+      "connection": {
+        "title": "Verbindungseinstellungen"
+      },
+      "configuration": {
+        "title": "Server Konfiguration"
+      }
+    },
+    "baseId": {
+      "label": "Basis-ID",
+      "placeholder": "server",
+      "helper": "Die Server-IDs lauten: base_1, base_2, base_3..."
+    },
+    "baseName": {
+      "label": "Datenbankname",
+      "placeholder": "MAT",
+      "helper": "Servernamen werden sein: Basis #1, Basis #2, Basis #3..."
+    },
+    "host": {
+      "label": "IP Adresse für den Rechner",
+      "placeholder": "192.168.1.100"
+    },
+    "rconPassword": {
+      "label": "Rcon Passwort",
+      "placeholder": "shared-rcon-password",
+      "helper": "Gleiches Passwort für alle Server"
+    },
+    "numServers": {
+      "label": "Anzahl der Server",
+      "placeholder": "3",
+      "helper": "max. 50"
+    },
+    "assignPorts": {
+      "label": "Ports zuweisen",
+      "helper": "→ API-Server (RCON-Test)"
+    },
+    "serverPortLabel": "Server Nr. {{index}}",
+    "portPlaceholder": "27015",
+    "enabled": {
+      "label": "Server aktiviert",
+      "helper": "Alle Server werden als aktiviert/deaktiviert erstellt"
+    },
+    "preview": {
+      "more": "...und {{count}} mehr",
+      "titleFirst10": "Vorschau (erste 10)",
+      "titleAll": "Vorschau (alle)"
+    },
+    "checkServersButton": {
+      "default": "Server überprüfen",
+      "checking": "Wird geprüft…"
+    },
+    "createServersButton": {
+      "creating": "Erstellen ...",
+      "default_one": "{{count}} Server erstellen",
+      "default_other": "{{count}} Server erstellen"
+    },
+    "warnings": {
+      "notAllVerified": "Einige Server haben die Konnektivitätsprüfungen nicht bestanden. Sie werden gespeichert, können aber offline angezeigt werden, bis RCON und Webhook konfiguriert sind."
+    },
+    "success": {
+      "createdAll_one": "{{count}} Server erstellt",
+      "createdAll_other": "{{count}} Server erstellt"
+    },
+    "errors": {
+      "baseNameRequired": "Name ist erforderlich",
+      "baseIdRequired": "ID ist erforderlich",
+      "hostRequired": "Host ist erforderlich",
+      "countRange": "Anzahl der Server muss zwischen 1 und 50 liegen",
+      "passwordRequired": "Passwort ist erforderlich",
+      "portRange": "Server #{{index}} Port muss zwischen 1 und 65535 liegen",
+      "connectionFailed": "Verbindung fehlgeschlagen",
+      "createFailed": "Server konnten nicht erstellt werden",
+      "partialCreate": "Erstellt {{created}}/{{total}} Server. Fehler:\n{{details}}"
+    }
+  },
+  "eloTemplatesPage": {
+    "errors": {
+      "load": "ELO-Vorlagen konnten nicht geladen werden"
+    },
+    "header": {
+      "createTemplate": "Vorlage erstellen",
+      "importJson": "WPRM-Import aus JSON"
+    },
+    "empty": {
+      "title": "Keine ELO-Berechnungsvorlagen",
+      "description": "Erstellen Sie Ihre erste Vorlage, um anzupassen, wie Spielerstatistiken ELO-Anpassungen beeinflussen",
+      "action": "Vorlage erstellen"
+    },
+    "delete": {
+      "title": "ELO-Vorlage löschen",
+      "message": "Sind Sie sicher, dass Sie \"{{name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "success": "Vorlage \"{{name}}\" erfolgreich gelöscht",
+      "error": "Vorlage konnte nicht gelöscht werden",
+      "defaultProtected": "Die Standardvorlage „pure-win-loss“ kann nicht gelöscht werden."
+    },
+    "import": {
+      "success_one": "{{count}} ELO-Vorlage importiert",
+      "success_other": "{{count}} ELO-Vorlagen importiert"
+    },
+    "weights": {
+      "noAdjustmentsPure": "Keine statistischen Anpassungen (reiner Gewinn/Verlust)"
+    },
+    "card": {
+      "enabled": "Aktiviert",
+      "disabled": "Deaktiviert",
+      "default": "Standard",
+      "adjustment": {
+        "none": "Wertanpassung pro Übereinstimmung: keine (0; Ergebnis nur ELO)",
+        "uncapped": "Anpassung der Statistik pro Übereinstimmung: ungekappt (mit Vorsicht verwenden)",
+        "range": "Anpassungsbereich der Statistik pro Übereinstimmung: {{min}} bis {{max}} ELO",
+        "noMin": "Kein Min.",
+        "noMax": "Kein Max."
+      },
+      "tooltips": {
+        "edit": "Vorlage bearbeiten",
+        "delete": "Vorlage löschen"
+      },
+      "weightsTitle": "Stat-Gewichte:",
+      "limitsTitle": "Anpassungsgrenzen:"
+    },
+    "importModal": {
+      "title": "ELO-Vorlagen aus json importieren",
+      "introTitle": "Fügen Sie json mit ELO-Vorlagendefinitionen unten ein.",
+      "introBody": "Erwartetes Format: Array von Vorlagen mit Namen, optionaler Beschreibung, aktiviert, Gewichten, maxAdjustment und minAdjustment. Wenn Sie die ID weglassen, wird sie aus dem Namen generiert.",
+      "jsonLabel": "JSON-Daten",
+      "validJsonTitle": "✓ Gültiges json!",
+      "previewTitle": "Vorschau:",
+      "previewButton": "Vorschau",
+      "importButton": "Vorlagen importieren",
+      "validJsonBody_one": "{{count}} Vorlage gefunden.",
+      "validJsonBody_other": "{{count}} Vorlagen gefunden."
+    },
+    "editor": {
+      "titleEdit": "ELO-Vorlage bearbeiten",
+      "titleCreate": "ELO-Vorlage erstellen",
+      "info": "Konfigurieren Sie, wie einzelne Spielerstatistiken ELO-Anpassungen beeinflussen. Die Gewichte werden angewendet, nachdem OpenSkill die Basis-ELO-Änderung (Gewinn/Verlust) berechnet hat. Positive Gewichte erhöhen die ELO, negative Gewichte verringern sie.",
+      "nameLabel": "Vorlagenname",
+      "nameDefaultLocked": "Der Standardvorlagenname kann nicht geändert werden",
+      "descriptionLabel": "Bezeichnung",
+      "descriptionPlaceholder": "Optionale Beschreibung des Zwecks dieser Vorlage",
+      "enabledLabel": "Aktiviert",
+      "weights": {
+        "title": "Wertgewichte",
+        "subtitle": "Passen Sie den Schieberegler für jede Statistik an. Der Wert 0 bedeutet keine Anpassung für diese Statistik."
+      },
+      "limits": {
+        "title": "Einstellgrenzen (optional)",
+        "subtitle": "Legen Sie maximale und minimale ELO-Anpassungen pro Übereinstimmung fest, um extreme Änderungen zu verhindern.",
+        "maxLabel": "Max. Einstellung",
+        "maxHelper": "Maximale positive ELO-Anpassung pro Match",
+        "minLabel": "Min. Justagewert",
+        "minHelper": "Maximale negative ELO-Anpassung pro Match"
+      },
+      "errors": {
+        "nameRequired": "Vorlagenname ist erforderlich"
+      },
+      "create": {
+        "success": "Vorlage „{{name}}“ erfolgreich erstellt",
+        "error": "Erzeugung der Vorlage fehlgeschlagen."
+      },
+      "update": {
+        "success": "Template „{{name}}“ erfolgreich aktualisiert",
+        "error": "Fehler beim Aktualisieren der Vorlage."
+      },
+      "buttons": {
+        "saving": "Der Speichervorgang läuft...",
+        "update": "Aktualisierung",
+        "create": "Erstellen"
+      }
+    }
+  }
+}

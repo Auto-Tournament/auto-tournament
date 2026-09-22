@@ -1,0 +1,141 @@
+{
+  "devToolsPage": {
+    "alert": "Disse verktøyene er bare tilgjengelige i utviklingsmodus. Bruk dem til å raskt generere testdata for å teste applikasjonen.",
+    "sections": {
+      "testData": {
+        "title": "Lag testdata"
+      }
+    },
+    "testTeams": {
+      "title": "Testlag",
+      "description": "Opprett lag med tilfeldige spillerdata for å teste turneringsbraketter og kamper.",
+      "success": "Opprettet {{count}} testlag!",
+      "errors": {
+        "create": "Kunne ikke opprette testlag",
+        "partial": "Opprettet {{created}} lag, men {{failed}} feilet. Sjekk konsollen for detaljer."
+      },
+      "customLabel": "Egendefinert antall lag",
+      "buttons": {
+        "createFixed": "Opprett {{count}} lag",
+        "createCustom": "Opprett lag"
+      }
+    },
+    "testPlayers": {
+      "title": "Testspillere",
+      "description": "Opprett spillere med ELO-rating for å teste shuffle-turneringer og spilleradministrasjon.",
+      "success": "Opprettet {{created}} testspillere!",
+      "errors": {
+        "create": "Kunne ikke opprette testspillere",
+        "partial": "Opprettet {{created}} spiller(e), oppdaterte {{updated}}, men {{failed}} feilet. Sjekk konsollen for detaljer."
+      },
+      "customLabel": "Egendefinert antall spillere",
+      "buttons": {
+        "createFixed": "Opprett {{count}} spillere",
+        "createCustom": "Opprett spillere"
+      },
+      "successWithUpdated": "Opprettet {{created}} og oppdaterte {{updated}} testspillere!"
+    },
+    "testServers": {
+      "title": "Testservere",
+      "description": "Opprett serverkonfigurasjoner for å teste kamphåndtering og RCON-kommandoer.",
+      "success": "Opprettet {{count}} testserver(e)!",
+      "errors": {
+        "create": "Kunne ikke opprette testservere",
+        "partial": "Opprettet {{created}} server(e), men {{failed}} feilet. Sjekk konsollen for detaljer."
+      },
+      "customLabel": "Egendefinert antall servere",
+      "buttons": {
+        "createCustom": "Opprett servere",
+        "createFixed_one": "Opprett {{count}} server",
+        "createFixed_other": "Opprett {{count}} servere"
+      }
+    },
+    "dangerZone": {
+      "title": "Faresone"
+    },
+    "deleteTestData": {
+      "title": "Slett testdata",
+      "description": "Slett all testdata (lag og servere med 'test-' prefiks). Denne handlingen kan ikke angres.",
+      "button": "Slett all testdata",
+      "confirmPrompt": "Er du sikker på at du vil slette ALL testdata?",
+      "success": "All testdata ble slettet!",
+      "error": "Kunne ikke slette testdata"
+    },
+    "wipeTable": {
+      "title": "Tøm bestemte tabeller",
+      "description": "Slett alle data fra en bestemt tabell. Nyttig for å rydde opp uten å nullstille alt. Tabeller er organisert etter kategori.",
+      "confirmPrompt": "Er du sikker på at du vil tømme tabellen {{table}}? Dette vil slette alle data i tabellen.",
+      "success": "Tabellen {{table}} ble tømt!",
+      "error": "Kunne ikke tømme tabellen {{table}}",
+      "core": {
+        "title": "Kjernetabeller",
+        "teams": "Tøm lag",
+        "servers": "Tøm servere",
+        "tournament": "Tøm turnering",
+        "matches": "Tøm kamper"
+      },
+      "players": {
+        "title": "Spillere og shuffle-turneringer",
+        "players": "Tøm spillere",
+        "ratingHistory": "Tøm ratinghistorikk",
+        "matchStats": "Tøm kampstatistikk",
+        "shufflePlayers": "Tøm shuffle-spillere"
+      },
+      "maps": {
+        "title": "Kart og maler",
+        "maps": "Tøm kart",
+        "mapPools": "Tøm kartpooler",
+        "tournamentTemplates": "Tøm turneringsmaler",
+        "eloTemplates": "Tøm ELO-maler"
+      },
+      "matchEvents": {
+        "title": "Kamp-hendelser og resultater",
+        "events": "Tøm kamp-hendelser",
+        "mapResults": "Tøm kartresultater"
+      },
+      "settings": {
+        "title": "Innstillinger",
+        "appSettings": "Tøm app-innstillinger"
+      }
+    },
+    "simulation": {
+      "title": "Simuleringsstatus",
+      "description": "Slett alle kamper og historiske statistikker slik at du kan klikke \"Start turnering\" i simuleringsmodus på en ren brakett, samtidig som servere, lag, kart og gjeldende turneringsoppsett beholdes.",
+      "button": "Tilbakestill simuleringsstatus (behold konfig)",
+      "reset": {
+        "success": "Simuleringsstatus tilbakestilt. Kamper og statistikk slettet; servere, lag og turneringsoppsett beholdt.",
+        "error": "Kunne ikke tilbakestille simuleringsstatus"
+      }
+    },
+    "wipeDatabase": {
+      "title": "Slett hele databasen",
+      "warningTitle": "EKSTREMT DESTRUKTIVT!",
+      "warningBody": "Dette vil slette ALLE data.",
+      "permanentlyDeletes": "Sletter permanent:",
+      "items": {
+        "tournaments": "Alle turneringer og braketter",
+        "matches": "Alle kamper og hendelser",
+        "teams": "Alle lag og spillere",
+        "servers": "Alle serverkonfigurasjoner"
+      },
+      "button": "Slett hele databasen",
+      "successRedirect": "Databasen ble slettet! Omdirigerer...",
+      "error": "Kunne ikke slette databasen",
+      "dialog": {
+        "title": "Bekreft sletting av database",
+        "areYouSure": "Er du helt sikker?",
+        "actionWill": "Denne handlingen vil",
+        "permanentlyDelete": "slette permanent",
+        "items": {
+          "tournaments": "Alle turneringsdata og braketter",
+          "matches": "All kamphistorikk og hendelser",
+          "teams": "Alle lag og spillerkonfigurasjoner",
+          "servers": "Alle serverkonfigurasjoner"
+        },
+        "cannotUndo": "Denne handlingen kan ikke angres!",
+        "wiping": "Sletter database...",
+        "yesWipe": "Ja, slett alt"
+      }
+    }
+  }
+}

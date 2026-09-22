@@ -1,0 +1,143 @@
+{
+  "devToolsPage": {
+    "alert": "Te narzędzia są dostępne tylko w trybie deweloperskim. Użyj ich, aby szybko wygenerować dane testowe do testowania aplikacji.",
+    "sections": {
+      "testData": {
+        "title": "Utwórz dane testowe"
+      }
+    },
+    "testTeams": {
+      "title": "Drużyny testowe",
+      "description": "Utwórz drużyny z losowymi danymi graczy do testowania drabinek i meczów turniejowych.",
+      "success": "Pomyślnie utworzono {{count}} testowe drużyny!",
+      "errors": {
+        "create": "Nie udało się utworzyć drużyn testowych",
+        "partial": "Utworzono {{created}} drużyn, ale {{failed}} niepowiodło się. Sprawdź konsolę, aby zobaczyć szczegóły."
+      },
+      "customLabel": "Własna liczba drużyn",
+      "buttons": {
+        "createFixed": "Utwórz {{count}} drużyn",
+        "createCustom": "Utwórz drużyny"
+      }
+    },
+    "testPlayers": {
+      "title": "Gracze testowi",
+      "description": "Utwórz graczy z ratingami ELO do testowania turniejów shuffle i zarządzania graczami.",
+      "success": "Utworzono testowych graczy: {{created}}!",
+      "errors": {
+        "create": "Nie udało się utworzyć graczy testowych",
+        "partial": "Utworzono {{created}} gracz(y), zaktualizowano {{updated}}, ale {{failed}} niepowiodło się. Sprawdź konsolę, aby zobaczyć szczegóły."
+      },
+      "customLabel": "Własna liczba graczy",
+      "buttons": {
+        "createFixed": "Utwórz {{count}} graczy",
+        "createCustom": "Utwórz graczy"
+      },
+      "successWithUpdated": "Testowi gracze – utworzono: {{created}}, zaktualizowano: {{updated}}!"
+    },
+    "testServers": {
+      "title": "Serwery testowe",
+      "description": "Utwórz konfiguracje serwerów do testowania zarządzania meczami i komend RCON.",
+      "success": "Pomyślnie utworzono {{count}} serwer(y) testowe!",
+      "errors": {
+        "create": "Nie udało się utworzyć serwerów testowych",
+        "partial": "Utworzono {{created}} serwer(y), ale {{failed}} niepowiodło się. Sprawdź konsolę, aby zobaczyć szczegóły."
+      },
+      "customLabel": "Własna liczba serwerów",
+      "buttons": {
+        "createCustom": "Utwórz serwery",
+        "createFixed_one": "Utwórz {{count}} serwer",
+        "createFixed_few": "Utwórz {{count}} serwery",
+        "createFixed_many": "Utwórz {{count}} serwerów",
+        "createFixed_other": "Utwórz {{count}} serwerów"
+      }
+    },
+    "dangerZone": {
+      "title": "Strefa niebezpieczna"
+    },
+    "deleteTestData": {
+      "title": "Usuń dane testowe",
+      "description": "Usuń wszystkie dane testowe (drużyny i serwery z prefiksem 'test-'). Tej operacji nie można cofnąć.",
+      "button": "Usuń wszystkie dane testowe",
+      "confirmPrompt": "Czy na pewno chcesz usunąć WSZYSTKIE dane testowe?",
+      "success": "Pomyślnie usunięto wszystkie dane testowe!",
+      "error": "Nie udało się usunąć danych testowych"
+    },
+    "wipeTable": {
+      "title": "Wyczyść wybrane tabele",
+      "description": "Usuń wszystkie dane z wybranej tabeli. Przydatne do sprzątania bez resetowania wszystkiego. Tabele są pogrupowane według kategorii.",
+      "confirmPrompt": "Czy na pewno chcesz wyczyścić tabelę {{table}}? Spowoduje to usunięcie wszystkich danych z tej tabeli.",
+      "success": "Tabela {{table}} została wyczyszczona!",
+      "error": "Nie udało się wyczyścić tabeli {{table}}",
+      "core": {
+        "title": "Tabele podstawowe",
+        "teams": "Wyczyść drużyny",
+        "servers": "Wyczyść serwery",
+        "tournament": "Wyczyść turniej",
+        "matches": "Wyczyść mecze"
+      },
+      "players": {
+        "title": "Gracze i turnieje shuffle",
+        "players": "Wyczyść graczy",
+        "ratingHistory": "Wyczyść historię ratingu",
+        "matchStats": "Wyczyść statystyki meczu",
+        "shufflePlayers": "Wyczyść graczy shuffle"
+      },
+      "maps": {
+        "title": "Mapy i szablony",
+        "maps": "Wyczyść mapy",
+        "mapPools": "Wyczyść pule map",
+        "tournamentTemplates": "Wyczyść szablony turniejów",
+        "eloTemplates": "Wyczyść szablony ELO"
+      },
+      "matchEvents": {
+        "title": "Zdarzenia meczu i wyniki",
+        "events": "Wyczyść zdarzenia meczu",
+        "mapResults": "Wyczyść wyniki map"
+      },
+      "settings": {
+        "title": "Ustawienia",
+        "appSettings": "Wyczyść ustawienia aplikacji"
+      }
+    },
+    "simulation": {
+      "title": "Stan symulacji",
+      "description": "Wyczyść wszystkie mecze i historyczne statystyki, aby móc kliknąć \"Start turnieju\" w trybie symulacji na czystej drabince, zachowując serwery, drużyny, mapy i aktualną konfigurację turnieju.",
+      "button": "Resetuj stan symulacji (zachowaj konfigurację)",
+      "reset": {
+        "success": "Stan symulacji zresetowany. Mecze i statystyki wyczyszczone; serwery, drużyny i konfiguracja turnieju zachowane.",
+        "error": "Nie udało się zresetować stanu symulacji"
+      }
+    },
+    "wipeDatabase": {
+      "title": "Wyczyść całą bazę danych",
+      "warningTitle": "BARDZO DESTRUKCYJNE!",
+      "warningBody": "To usunie WSZYSTKIE dane.",
+      "permanentlyDeletes": "Trwale usuwa:",
+      "items": {
+        "tournaments": "Wszystkie turnieje i drabinki",
+        "matches": "Wszystkie mecze i zdarzenia",
+        "teams": "Wszystkie drużyny i graczy",
+        "servers": "Wszystkie konfiguracje serwerów"
+      },
+      "button": "Wyczyść całą bazę danych",
+      "successRedirect": "Baza danych wyczyszczona! Przekierowanie...",
+      "error": "Nie udało się wyczyścić bazy danych",
+      "dialog": {
+        "title": "Potwierdź wyczyszczenie bazy danych",
+        "areYouSure": "Czy na pewno?",
+        "actionWill": "Ta operacja",
+        "permanentlyDelete": "trwale usunie",
+        "items": {
+          "tournaments": "Wszystkie dane turniejów i drabinki",
+          "matches": "Całą historię meczów i zdarzeń",
+          "teams": "Wszystkie drużyny i konfiguracje graczy",
+          "servers": "Wszystkie konfiguracje serwerów"
+        },
+        "cannotUndo": "Tej operacji nie można cofnąć!",
+        "wiping": "Czyszczenie bazy danych...",
+        "yesWipe": "Tak, wyczyść wszystko"
+      }
+    }
+  }
+}

@@ -1,0 +1,410 @@
+{
+  "settingsPage": {
+    "title": "Einstellungen",
+    "intro": "Konfiguriere Integrationen, Ingame-Defaults und Entwickleroptionen.",
+    "tabs": {
+      "integrations": "Integrationen & Webhooks",
+      "players": "Spieler & Zugriff",
+      "matches": "Übereinstimmungen & Bewertungen",
+      "advanced": "Erweitert",
+      "matchzy": "MatchZy",
+      "developer": "Entwickler / Simulation"
+    },
+    "integrations": {
+      "webhook": {
+        "title": "MatchZy-Webhook",
+        "description": "MatchZy Webhook-URL, die deine CS2-Server erreichen können.",
+        "label": "Webhook-URL",
+        "helper": "Beispiel: https://deine-domain.de"
+      },
+      "mapSync": {
+        "title": "Map-Synchronisierung",
+        "description": "CS2-Maps aus dem GitHub-Repository synchronisieren.",
+        "buttonSyncing": "Synchronisiere...",
+        "buttonIdle": "CS2-Maps synchronisieren",
+        "success": "Map-Sync abgeschlossen! {{added}} neue Map(s) hinzugefügt, {{skipped}} existierten bereits.",
+        "partialError": "Einige Maps konnten nicht synchronisiert werden: {{errors}}",
+        "failed": "Map-Sync fehlgeschlagen",
+        "rateLimit": "GitHub API Rate Limit erreicht. Bitte versuche es in ein paar Minuten erneut. Du kannst die Umgebungsvariable GITHUB_TOKEN setzen, um das Rate Limit zu erhöhen.",
+        "rateLimitShort": "GitHub API Rate Limit erreicht. Bitte versuche es in ein paar Minuten erneut.",
+        "githubError": "GitHub-Repository konnte nicht erreicht werden. Bitte prüfe deine Internetverbindung und versuche es später erneut."
+      },
+      "steam": {
+        "title": "Steam-Integration",
+        "apiKeyLabel": "Steam Web API-Key",
+        "apiKeyHelper": "Löst Steam-Vanity-URLs auf und lädt Spielerinfos. Leer lassen, um Lookups zu deaktivieren.",
+        "checkButtonChecking": "Steam wird geprüft…",
+        "checkButtonIdle": "Steam-Verbindung prüfen",
+        "statusOk": "Steam API-Key ist gesetzt und erreichbar.",
+        "statusNotConfigured": "Steam API-Key ist nicht gesetzt. Vanity-URLs können erst aufgelöst werden, wenn du einen Key hinzufügst.",
+        "statusUnreachable": "Steam API-Key scheint gesetzt zu sein, aber Steam ist nicht erreichbar. Prüfe Netzwerk und Key.",
+        "statusError": "Steam API-Status konnte nicht geprüft werden. Bitte erneut versuchen."
+      }
+    },
+    "matchRating": {
+      "ratings": {
+        "title": "Rating-Updates",
+        "description": "Steuere, ob abgeschlossene Matches die Skill Ratings der Spieler aktualisieren.",
+        "toggleLabel": "Spieler-Ratings aus abgeschlossenen Matches aktualisieren",
+        "note": "Wenn deaktiviert, werden weiterhin Stats (ADR, K/D, usw.) erfasst, aber Skill Ratings bleiben unverändert."
+      },
+      "chatDefaults": {
+        "title": "MatchZy Chat- & Knife-Standards",
+        "description": "Konfiguriere Ingame-Chat-Präfixe und das Standardverhalten der Knife-Runde.",
+        "chatPrefixLabel": "Chat-Präfix",
+        "chatPrefixHelper": "Standard: \"[{Green}MAT{Default}]\". Leer lassen, um auf den Standard zurückzusetzen.",
+        "adminChatPrefixLabel": "Admin-Chat-Präfix",
+        "adminChatPrefixHelper": "Standard: \"[{Red}ADMIN{Default}]\". Leer lassen, um auf den Standard zurückzusetzen.",
+        "knifeToggleLabel": "Knife-Runden standardmäßig für neue Matches aktivieren (wenn Seiten nicht vorab gewählt sind)",
+        "knifeNote": "Gilt nur, wenn MatchZy normalerweise eine Knife-Runde spielen würde; explizite Side-Picks werden nicht verändert."
+      },
+      "matchzyCore": {
+        "title": "MatchZy Core-Standards",
+        "description": "Diese Standards werden bei der Serverinitialisierung und vor jedem Match-Load an die Server gesendet.",
+        "expert": {
+          "title": "Experteneinstellungen",
+          "description": "Diese Einstellungen können bei falscher Konfiguration zu unerwartetem Serververhalten führen. Nur ändern, wenn du weißt, dass du sie brauchst.",
+          "autostartMode": {
+            "label": "Autostart-Modus beim Plugin-Load",
+            "helper": "0 = idle/sleep, 1 = match mode (empfohlen), 2 = practice mode",
+            "options": {
+              "0": "0 — Leerlauf / Schlaf",
+              "1": "1 — Match-Modus",
+              "2": "2 — Practice-Modus"
+            }
+          }
+        },
+        "ready": {
+          "title": "Ready / Matchstart",
+          "minimumReadyLabel": "Mindestanzahl bereit gemeldeter Spieler",
+          "minimumReadyHelper": "0 = alle verbundenen Spieler müssen ready sein. Standard: 0.",
+          "allowForceReady": "Admins dürfen Spieler während des Setups force-ready setzen (!forceready)"
+        },
+        "access": {
+          "title": "Serverzugriff",
+          "kickWhenNoMatchLoaded": "Kicken/Joins verhindern, wenn kein Match geladen ist (Turnierserver)",
+          "whitelistEnabledDefault": "Whitelist standardmäßig aktivieren (Admins können mit .whitelist umschalten)"
+        },
+        "adminTools": {
+          "title": "Admin-Tools",
+          "pauseAfterRestore": "Nach Round-Restore (.stop) pausieren, damit Teams sich koordinieren können",
+          "stopCommandAvailable": ".stop (Round-Restore) aktivieren",
+          "stopCommandNoDamage": ".stop deaktivieren, nachdem Schaden am gegnerischen Team verursacht wurde",
+          "usePauseForTacticalPause": ".pause wie Tactical Pause behandeln"
+        },
+        "hostname": {
+          "formatLabel": "Format des Server-Hostnamens",
+          "formatHelper": "Wird beim Laden eines Matches auf jeden Server angewendet. Platzhalter: {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}, {TEAM1_SCORE}, {TEAM2_SCORE}. Leer lassen, um den Hostnamen aus der jeweiligen Serverkonfiguration beizubehalten."
+        },
+        "demos": {
+          "title": "Demoaufnahmen",
+          "demoPathLabel": "Demo-Pfad (relativ zu csgo/)",
+          "demoPathHelper": "Muss mit '/' enden. Standard: MatchZy/",
+          "demoNameFormatLabel": "Demo-Dateiname-Format (ohne .dem)",
+          "demoNameFormatHelper": "Token: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
+        },
+        "seriesEnd": {
+          "title": "Timing am Serienende",
+          "kickDelayNoDemoLabel": "Zusätzliche Kick-Verzögerung wenn Demos deaktiviert sind (Sekunden)",
+          "kickDelayDemoNoUploadLabel": "Zusätzliche Kick-Verzögerung wenn Demos aktiv sind, aber keine Upload-URL gesetzt ist (Sekunden)",
+          "kickDelayDemoUploadLabel": "Zusätzliche Kick-Verzögerung wenn Demos aktiv sind und Upload-URL gesetzt ist (Sekunden)",
+          "kickDelayHelper": "Wird zusätzlich zu mp_match_restart_delay addiert."
+        }
+      },
+      "matchzyEnhanced": {
+        "title": "MatchZy Enhanced Funktionen",
+        "description": "Erweiterte Match-Funktionen. Leer lassen, um die MatchZy-Standardwerte zu verwenden.",
+        "autoready": {
+          "title": "Automatisch einsatzbereites System",
+          "label": "Spieler beim Join automatisch als ready markieren",
+          "description": "Spieler sind beim Join automatisch ready. Sie können weiterhin .unready nutzen."
+        },
+        "pause": {
+          "title": "Pausensteuerung",
+          "bothTeamsUnpause": "Beide Teams müssen unpausen",
+          "maxPausesLabel": "Max. Pausen pro Team",
+          "maxPausesHelper": "0 = unbegrenzt",
+          "pauseDurationLabel": "Pausenlimit (Sekunden)",
+          "pauseDurationHelper": "0 = keine Zeitbegrenzung"
+        },
+        "sideSelection": {
+          "title": "Side-Selection Timer",
+          "enabled": "Timer für Side-Selection aktivieren",
+          "timeLabel": "Zeit (Sekunden)",
+          "timeHelper": "Zeit nach der Knife-Runde, um Seiten zu wählen"
+        },
+        "gg": {
+          "title": "Frühes Match-Ende (.gg)",
+          "enabled": ".gg Forfeit aktivieren",
+          "thresholdLabel": "Vote-Schwelle (0.0-1.0)",
+          "thresholdHelper": "0.8 = 80% des Teams müssen voten (z. B. 4/5 Spieler)",
+          "minScoreDiffLabel": "Minimale Score-Differenz",
+          "minScoreDiffHelper": "0 = deaktiviert. Beispiel: 6 = .gg nur erlauben bei 6+ Runden Rückstand"
+        },
+        "ffw": {
+          "title": "Forfeit / Walkover",
+          "enabled": "Automatischen Forfeit bei Team-Disconnect aktivieren",
+          "timeLabel": "Forfeit-Timer (Sekunden)",
+          "timeHelper": "Zeit, bis Forfeit erklärt wird, wenn das ganze Team geht"
+        },
+        "demo": {
+          "title": "Demo-Aufzeichnung",
+          "enabled": "Automatische GOTV-Demo-Aufzeichnung aktivieren",
+          "description": "Wenn deaktiviert, startet der Server ~10s nach Match-Ende neu (statt 60-90s mit Aufnahme)"
+        }
+      }
+    },
+    "players": {
+      "registration": {
+        "title": "Spielerregistrierung",
+        "description": "Steuere, ob neue Steam-Logins automatisch Spielerprofile erstellen. Wenn deaktiviert, erscheinen in privaten Turnieren und Shuffle-Pools nur Spieler, die von Admins erstellt oder importiert wurden.",
+        "toggleLabel": "Allen erlauben, sich per Steam-Login zu registrieren",
+        "recommendation": "Empfohlen: Für Einladungs- oder private Turniere deaktiviert lassen, damit zufällige Steam-Logins die Spielerliste nicht „vermüllen“."
+      }
+    },
+    "developer": {
+      "title": "Entwickleroptionen",
+      "description": "Nur für lokale Entwicklung; nicht in Produktion aktivieren.",
+      "simulateToggleLabel": "Matches simulieren (bot-gesteuerte Demo-Matches statt echter Spieler)",
+      "simulateNote": "Wenn aktiviert, enthalten generierte MatchZy-Konfigurationen \"simulation\": true für automatisierte Demo-Matches.",
+      "timescaleTitle": "Simulations-Zeitfaktor",
+      "timescaleDescription": "Steuert, wie schnell simulierte Matches laufen. Höhere Werte beschleunigen Bots und Round-Flow. Gilt nur, wenn Simulation aktiv ist.",
+      "timescaleWarning": "Werte über 2.0 können etwas instabil sein und zu seltsamem Bot-Verhalten führen, sind aber für schnelle lokale Tests ok.",
+      "resetApiTitle": "API & Datenbank zurücksetzen",
+      "resetApiDescription": "Gefahrenzone: Löscht und erstellt das komplette DB-Schema neu und initialisiert Defaults (Maps, Map-Pools, etc.) erneut. Nur für lokale Entwicklung. Irreversibel.",
+      "resetApiButton": "API zurücksetzen (alle Daten löschen)",
+      "resetApiButtonLoading": "API wird zurückgesetzt…",
+      "resetApiSuccess": "API und Datenbank erfolgreich zurückgesetzt. Alle Daten wurden gelöscht und Defaults neu initialisiert.",
+      "resetApiError": "API/Datenbank konnte nicht zurückgesetzt werden. Prüfe die API-Logs.",
+      "resetApiDialog": {
+        "title": "API zurücksetzen & alle Daten löschen?",
+        "description": "Dies löscht und erstellt das komplette DB-Schema neu. Alle Turniere, Matches, Spieler, Teams, Ratings, Events, Logs und Einstellungen werden dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden. Fortfahren?",
+        "cancel": "Abbrechen",
+        "confirm": "Ja, API zurücksetzen & Daten löschen",
+        "confirmLoading": "Zurücksetzen…"
+      },
+      "debugChat": {
+        "label": "MatchZy Debug-Chat-Nachrichten aktivieren",
+        "description": "Wenn aktiviert, schreibt MatchZy zusätzliche Debug-Nachrichten (Connects/Disconnects, Event-Traces, etc.) in den Chat. Nur für Entwicklung und Tests."
+      }
+    },
+    "footer": {
+      "version": "Version:",
+      "unknownVersion": "Unbekannt",
+      "resetButton": "Einstellungen zurücksetzen"
+    },
+    "resetDialog": {
+      "title": "Einstellungen zurücksetzen?",
+      "description": "Setze alle Einstellungen auf dieser Seite auf Defaults zurück. Bestehende Turniere und Server werden nicht geändert, aber neue Matches und Lookups verwenden die Default-Werte. Fortfahren?",
+      "cancel": "Abbrechen",
+      "confirm": "Zurücksetzen",
+      "success": "Einstellungen auf Standardwerte zurückgesetzt",
+      "error": "Zurücksetzen der Einstellungen fehlgeschlagen"
+    },
+    "errors": {
+      "loadSettings": "Einstellungen konnten nicht geladen werden",
+      "saveSettings": "Einstellungen konnten nicht gespeichert werden"
+    },
+    "success": {
+      "saveSettings": "Einstellungen gespeichert",
+      "simulationEnabled": "Simulationsmodus aktiviert",
+      "simulationDisabled": "Simulationsmodus deaktiviert",
+      "timescaleUpdated": "Simulations-Zeitfaktor auf {{value}}x gesetzt",
+      "simulationEnabledWithSpeed": "Simulationsmodus mit {{speed}}x-Geschwindigkeit aktiviert"
+    }
+  },
+  "dashboard": {
+    "title": "Übersicht",
+    "notReady": "Das Turnier-Dashboard wird hier angezeigt, sobald das Turnier gestartet wurde.",
+    "manageBanner": {
+      "text": "Looking for what needs a decision right now? The Manage console keeps a live queue of matches and servers that need you.",
+      "cta": "Open Manage"
+    },
+    "restartTournament": {
+      "button": "Turniermatches neu starten",
+      "restarting": "Turniermatches werden neu gestartet…"
+    },
+    "onboarding": {
+      "ready": "🎉 Bereit!",
+      "gettingStarted": "Erste Schritte",
+      "stepsComplete": "{{completed}}/{{total}} abgeschlossen",
+      "subtitle": "Folge diesen Schritten, um dein erstes Turnier einzurichten",
+      "steps": {
+        "webhook": {
+          "title": "Webhook-URL konfigurieren",
+          "secondaryConfigured": "Webhook-Endpunkt konfiguriert",
+          "secondaryMissing": "Basis-URL für Webhooks und Demo-Uploads setzen",
+          "openSettings": "Einstellungen öffnen"
+        },
+        "servers": {
+          "title": "Mindestens einen CS2-Server hinzufügen",
+          "chip": "{{count}} Server",
+          "chipPlural": "{{count}} Server",
+          "secondaryConfigured": "Server konfiguriert und bereit",
+          "secondaryMissing": "Beginne mit dem Hinzufügen deiner CS2-Server",
+          "addServer": "Server hinzufügen"
+        },
+        "teamsPlayers": {
+          "title": "Teams erstellen oder Spieler hinzufügen",
+          "teamsChip": "{{count}} Team",
+          "teamsChipPlural": "{{count}} Teams",
+          "playersChip": "{{count}} Spieler",
+          "playersChipPlural": "{{count}} Spieler",
+          "secondaryConfigured": "{{details}}",
+          "secondaryMissing": "Teams erstellen und/oder Spieler per Steam-ID hinzufügen",
+          "createTeams": "Teams erstellen",
+          "addPlayers": "Spieler hinzufügen"
+        },
+        "tournament": {
+          "title": "Turnier konfigurieren",
+          "chipStatus": "{{status}}",
+          "secondaryConfigured": "Turnier mit Teams und Format konfiguriert",
+          "secondaryMissing": "Turniertyp, Format, Teams und Maps festlegen",
+          "createTournament": "Turnier erstellen"
+        }
+      },
+      "startCta": {
+        "helper": "Alles ist bereit! Prüfe deine Konfiguration und starte das Turnier auf der Turnierseite.",
+        "button": "Zum Turnier"
+      }
+    },
+    "stats": {
+      "heading": "Turnierstatistiken",
+      "tournamentStatus": {
+        "title": "Turnierstatus",
+        "none": "Kein aktives Turnier",
+        "typeLabel": "Typ",
+        "formatLabel": "Modus",
+        "matchesLabel": "Spiele"
+      },
+      "matchStatus": {
+        "title": "Matchstatus",
+        "total": "Matches insgesamt",
+        "pending": "Ausstehend:",
+        "ready": "Bereit:",
+        "loaded": "Geladen:",
+        "live": "Live",
+        "completed": "Abgeschlossen:"
+      },
+      "serverStatus": {
+        "title": "Serverstatus",
+        "onlineSummary": "Server online",
+        "online": "{{count}} online",
+        "offline": "{{count}} offline",
+        "distributionTitle": "Serverstatus"
+      },
+      "players": {
+        "title": "Spieler",
+        "total": "Spieler insgesamt",
+        "inMatches": "In Übereinstimmungen:",
+        "waiting": "Warten:"
+      },
+      "playerDistribution": {
+        "title": "Spielerverteilung"
+      },
+      "topPlayers": {
+        "title": "Top-Spieler nach ELO",
+        "subtitle": "Globales Rating über alle Turniertypen",
+        "chip": "ELO: {{value}}"
+      },
+      "eloDistribution": {
+        "title": "ELO-Verteilung der Spieler",
+        "subtitle": "Anzahl der Spieler pro Skill-Rating-Band (Bucket-Größe {{bucket}}).",
+        "xAxis": "Skill-Rating-Band",
+        "yAxis": "Spieler",
+        "seriesLabel": "Spieler"
+      },
+      "recentMatches": {
+        "title": "Zuletzt abgeschlossene Matches",
+        "subtitle": "Letzte {{count}} abgeschlossene Matches",
+        "none": "Noch keine abgeschlossenen Matches.",
+        "chipCompleted": "Abgeschlossen"
+      },
+      "noData": "Keine Daten verfügbar. Erstelle ein Turnier, um Statistiken zu sehen.",
+      "errors": {
+        "load": "Dashboard-Daten konnten nicht geladen werden"
+      }
+    }
+  },
+  "managePage": {
+    "title": "Manage",
+    "needsYouHeading": "Needs you",
+    "noTournament": "No tournament yet",
+    "rail": {
+      "needsYou": "Needs you",
+      "matches": "Matches",
+      "bracket": "Bracket",
+      "teams": "Teams",
+      "players": "Players",
+      "servers": "Servers",
+      "maps": "Maps",
+      "tournament": "Tournament setup",
+      "settings": "Settings"
+    },
+    "status": {
+      "live": "LIVE",
+      "inVeto": "IN VETO",
+      "queued": "QUEUED",
+      "serversFree": "SERVERS FREE",
+      "round": "ROUND"
+    },
+    "needsYou": {
+      "empty": "Nothing needs you right now.",
+      "unknownTime": "a while",
+      "secondsAgo": "{{count}}s",
+      "minutesAgo": "{{count}}m",
+      "hoursAgo": "{{count}}h",
+      "vsLabel": "{{team1}} vs {{team2}}",
+      "decide": {
+        "title": "{{teams}} needs a winner",
+        "detail": "Every map was played and the series is still level.",
+        "action": "Decide"
+      },
+      "stale": {
+        "title": "{{server}} has been loaded for a while",
+        "detail": "{{match}} has been stuck past the usual wait."
+      },
+      "offline": {
+        "title": "{{server}} stopped responding",
+        "detail": "{{match}} was on this server. Last heartbeat {{time}} ago."
+      },
+      "reallocateAction": "Move to another server",
+      "forceCancelAction": "Force cancel",
+      "reallocateSuccess": "Match moved to another server",
+      "forceCancelSuccess": "Match cancelled",
+      "actionFailed": "That didn't go through. Try again.",
+      "reallocateConfirmTitle": "Move this match to another server?",
+      "reallocateConfirmBody": "The match will be reassigned to the next available server.",
+      "forceCancelConfirmTitle": "Force cancel this match?",
+      "forceCancelConfirmBody": "This ends the match immediately and marks it as cancelled, even if the server is unreachable."
+    },
+    "servers": {
+      "heading": "Servers",
+      "viewAll": "All servers",
+      "none": "No servers configured yet.",
+      "inMatch": "In match",
+      "free": "Free",
+      "offline": "Offline",
+      "lastHeartbeat": "Last heartbeat {{time}} ago",
+      "never": "never"
+    },
+    "recent": {
+      "heading": "Recent",
+      "viewAll": "Full log",
+      "empty": "No recent activity yet.",
+      "closingLine": "Everything else runs on its own. You'll only see it here when something needs a decision.",
+      "team1Fallback": "Team 1",
+      "team2Fallback": "Team 2",
+      "mapResult": "{{winner}} won map {{map}} against {{loser}}, {{score}}",
+      "seriesEnd": "{{winner}} won the series against {{loser}}, {{score}}"
+    },
+    "announce": {
+      "button": "Announce",
+      "title": "Announce to all servers",
+      "label": "Message",
+      "send": "Send",
+      "success": "Announcement sent",
+      "failed": "Failed to send the announcement"
+    }
+  }
+}

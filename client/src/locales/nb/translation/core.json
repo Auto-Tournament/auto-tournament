@@ -1,0 +1,87 @@
+{
+  "app": {
+    "name": "Matchzy Auto Tournament"
+  },
+  "nav": {
+    "matchStatus": {
+      "yourTurnVeto": "Din tur i veto",
+      "waitingVeto": "Venter på veto",
+      "waitingServer": "Venter på server",
+      "matchReady": "Kampen er klar – koble til",
+      "snackbarOpponentMoved": "Motstanderen gjorde sitt valg"
+    },
+    "home": "Hjem",
+    "browse": "Utforsk",
+    "dashboard": "Kontrollpanel",
+    "manage": "Administrer",
+    "tournament": "Turnering",
+    "bracket": "Turneringsoversikt",
+    "matches": "Kamper",
+    "teams": "Lag",
+    "players": "Spillere",
+    "leaderboard": "Toppliste",
+    "servers": "Servere",
+    "maps": "Kart og kartpooler",
+    "templates": "Maler",
+    "eloTemplates": "ELO-beregning",
+    "adminTools": "Adminverktøy",
+    "publicLinks": "Offentlige lenker",
+    "devTools": "Dev-verktøy",
+    "settings": "Innstillinger",
+    "resourcesSection": "Ressurser",
+    "tournamentSection": "Turnering",
+    "configurationSection": "Konfigurasjon",
+    "systemSection": "Systemet",
+    "documentation": "Dokumentasjon",
+    "signOut": "Logg ut",
+    "linkSteam": "Koble til Steam",
+    "myProfile": "Min profil",
+    "accountConnections": "Kontoinnstillinger",
+    "goToAdminDashboard": "Gå til admin-dashboard",
+    "goToAdminDashboardHint": "Du ser spillerprofilen din. Åpne admin-dashboardet for å administrere lag, turneringer og servere."
+  },
+  "layout": {
+    "webhookNotConfigured": "Webhook-URL er ikke konfigurert. Kamper og servere kan ikke motta hendelser før den er satt.",
+    "openSettings": "Åpne innstillinger",
+    "pageTitle": {
+      "dashboard": "Kontrollpanel",
+      "manage": "Administrer",
+      "tournament": "Turnering",
+      "bracket": "Turneringsoversikt",
+      "matches": "Kamper",
+      "teams": "Lag",
+      "players": "Spillere",
+      "servers": "Servere",
+      "maps": "Kart og kartpooler",
+      "templates": "Maler",
+      "eloTemplates": "ELO-beregning",
+      "adminTools": "Adminverktøy",
+      "settings": "Innstillinger",
+      "devTools": "Utviklerverktøy",
+      "publicLinks": "Offentlige lenker"
+    },
+    "openDrawer": "Åpne navigasjonsmenyen",
+    "matchzyDbDown": {
+      "title": "MatchZy-databasen er utilgjengelig",
+      "body_one": "{{count}} server melder at pluginen ikke når databasen sin. Backuper og hendelseskøen kan bli berørt.",
+      "body_other": "{{count}} servere melder at pluginen ikke når databasen sin. Backuper og hendelseskøen kan bli berørt."
+    },
+    "steamUnavailable": {
+      "title": "Steam-integrasjonen er utilgjengelig",
+      "body": "Innlogging og oppslag av Steam-brukernavn fungerer kanskje ikke. Sjekk serverkonfigurasjonen og nettverkstilkoblingen."
+    },
+    "closeDrawer": "Close navigation menu"
+  },
+  "language": {
+    "label": "Språk",
+    "en": "Engelsk",
+    "zhCN": "Kinesisk (forenklet)"
+  },
+  "common": {
+    "delete": "Slett",
+    "cancel": "Avbryt"
+  },
+  "theme": {
+    "label": "Fargetema"
+  }
+}

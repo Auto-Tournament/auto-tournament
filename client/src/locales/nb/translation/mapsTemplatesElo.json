@@ -1,0 +1,342 @@
+{
+  "mapsPage": {
+    "title": "Kart og kartpooler",
+    "tabs": {
+      "maps": "Kart",
+      "mapPools": "Kartpooler"
+    },
+    "headerActions": {
+      "addMap": "Legg til kart",
+      "createMapPool": "Opprett kartpool"
+    },
+    "errors": {
+      "loadMaps": "Klarte ikke å laste kart",
+      "loadPools": "Klarte ikke å laste kartpooler",
+      "defaultPoolCannotDelete": "Standard kartpool kan ikke slettes.",
+      "setDefaultPool": "Klarte ikke å sette standard kartpool",
+      "togglePool": "Klarte ikke å endre status på kartpool",
+      "deleteMap": "Klarte ikke å slette kart",
+      "deletePool": "Klarte ikke å slette kartpool"
+    },
+    "success": {
+      "mapDeleted": "Kart slettet"
+    },
+    "confirmDeleteMap": {
+      "title": "Slett kart",
+      "message": "Er du sikker på at du vil slette \"{{name}}\"? Dette kan ikke angres."
+    },
+    "confirmDeletePool": {
+      "title": "Slett kartpool",
+      "message": "Er du sikker på at du vil slette \"{{name}}\"? Dette kan ikke angres."
+    }
+  },
+  "mapModal": {
+    "titleCreate": "Legg til kart",
+    "titleEdit": "Rediger kart",
+    "workshop": {
+      "inputLabel": "Steam Workshop-URL eller -ID",
+      "inputPlaceholder": "https://steamcommunity.com/sharedfiles/filedetails/?id=1234567890",
+      "inputHelper": "Lim inn en Workshop-URL eller numerisk ID for å fylle ut navn og bilde automatisk.",
+      "found": "Funnet: {{title}}",
+      "lookupFailed": "Oppslag i Workshop mislyktes"
+    },
+    "mapIdLabel": "Kart-ID",
+    "mapIdPlaceholder": "de_dust2",
+    "mapIdHelper": "Kun små bokstaver, tall og understrek (de_dust2)",
+    "displayNameLabel": "Visningsnavn",
+    "displayNamePlaceholder": "Dust II",
+    "mapImageLabel": "Kartbilde",
+    "uploadButton": "Last opp bilde",
+    "fetchFromGitHub": "Hent fra GitHub",
+    "uploadHelper": "Last opp PNG, JPG, GIF eller WebP (maks 5 MB)",
+    "previewLabel": "Forhåndsvisning:",
+    "removeImage": "Fjern bilde",
+    "errors": {
+      "mapIdRequired": "Kart-ID er påkrevd",
+      "displayNameRequired": "Visningsnavn er påkrevd",
+      "mapIdInvalid": "Kart-ID kan kun inneholde små bokstaver, tall og understrek",
+      "invalidFileType": "Ugyldig filtype. Velg PNG, JPG, GIF eller WebP.",
+      "fileTooLarge": "Filen er for stor. Velg et bilde under 5 MB.",
+      "readFileFailed": "Klarte ikke å lese bildefil",
+      "fetchImageIdRequired": "Skriv inn kart-ID først",
+      "fetchImageFailed": "Klarte ikke å hente bilde. Du kan laste opp manuelt.",
+      "imageNotFound": "Fant ikke bilde for {{id}}. Du kan laste opp manuelt.",
+      "uploadFailed": "Klarte ikke å laste opp bilde",
+      "saveFailed": "Klarte ikke å lagre kart"
+    },
+    "success": {
+      "mapUpdated": "Kart oppdatert",
+      "mapCreated": "Kart opprettet"
+    },
+    "buttons": {
+      "cancel": "Avbryt",
+      "saving": "Lagrer...",
+      "update": "Oppdater",
+      "create": "Opprett"
+    }
+  },
+  "mapActionsModal": {
+    "mapId": "Kart-ID",
+    "preview": "Forhåndsvis",
+    "edit": "Rediger"
+  },
+  "mapPoolActionsModal": {
+    "defaultChip": "Standard",
+    "status": {
+      "label": "Tilstand",
+      "enabled": "Aktivert",
+      "disabled": "Deaktivert"
+    },
+    "maps": {
+      "label": "Kart ({{count}})"
+    },
+    "actions": {
+      "edit": "Rediger",
+      "enable": "Aktiver",
+      "disable": "Deaktiver",
+      "setDefault": "Sett som standard"
+    }
+  },
+  "templatesPage": {
+    "header": {
+      "createFromTournament": "Opprett mal fra turnering"
+    },
+    "empty": "Ingen maler ennå. Opprett den første malen din fra turneringssiden.",
+    "errors": {
+      "load": "Klarte ikke å laste maler"
+    },
+    "delete": {
+      "title": "Slett mal",
+      "message": "Er du sikker på at du vil slette malen \"{{name}}\"? Dette kan ikke angres.",
+      "success": "Malen \"{{name}}\" ble slettet",
+      "error": "Klarte ikke å slette mal"
+    },
+    "update": {
+      "success": "Malen \"{{name}}\" ble oppdatert",
+      "error": "Klarte ikke å oppdatere mal"
+    },
+    "createFromTemplate": {
+      "errors": {
+        "inProgressOrCompleted": "Kan ikke opprette turnering fra mal mens en turnering pågår eller er fullført. Slett eller tilbakestill den nåværende turneringen først.",
+        "alreadyExists": "En turnering finnes allerede. Slett eller tilbakestill den nåværende turneringen før du oppretter en ny fra en mal."
+      }
+    },
+    "edit": {
+      "title": "Rediger mal",
+      "nameLabel": "Malnavn",
+      "descriptionLabel": "Beskrivelse (valgfritt)",
+      "typeLabel": "Turneringstype",
+      "formatLabel": "Kampformat",
+      "mapPool": {
+        "title": "Kartpool",
+        "selectLabel": "Velg en kartpool",
+        "customOption": "Egendefinert",
+        "selectedLabel": "Valgte kart ({{count}}):",
+        "vetoWarning": "Veto-formater (BO1/BO3/BO5) krever nøyaktig 7 kart. Valgt nå: {{count}}"
+      },
+      "save": "Lagre"
+    }
+  },
+  "saveTemplateModal": {
+    "title": "Lagre som mal",
+    "nameLabel": "Malnavn",
+    "namePlaceholder": "8-lags enkelt utslag BO3",
+    "descriptionLabel": "Beskrivelse (valgfritt)",
+    "descriptionPlaceholder": "Ukentlig 8-lags turnering med enkelt utslag",
+    "saveButton": "Lagre mal",
+    "errors": {
+      "nameRequired": "Malnavn er påkrevd",
+      "saveFailed": "Klarte ikke å lagre mal"
+    }
+  },
+  "saveMapPoolModal": {
+    "title": "Lagre kartpool",
+    "nameLabel": "Navn på kartpool",
+    "namePlaceholder": "Min egendefinerte pool",
+    "saveButton": "Lagre",
+    "errors": {
+      "nameRequired": "Navn på kartpool er påkrevd",
+      "noMaps": "Velg minst ett kart",
+      "saveFailed": "Klarte ikke å lagre kartpool"
+    },
+    "info_one": "Dette lagrer en kartpool med {{count}} kart.",
+    "info_other": "Dette lagrer en kartpool med {{count}} kart."
+  },
+  "batchServerModal": {
+    "title": "Opprett servere i bulk",
+    "info": "Opprett flere servere med porter som øker med 10 (27015, 27025, 27035...). Perfekt for LAN-oppsett med servere på samme maskin.",
+    "sections": {
+      "identification": {
+        "title": "Serveridentifikasjon"
+      },
+      "connection": {
+        "title": "Tilkoblingsinnstillinger"
+      },
+      "configuration": {
+        "title": "Serverkonfigurasjon"
+      }
+    },
+    "baseId": {
+      "label": "Basis-ID",
+      "placeholder": "server",
+      "helper": "Server-ID-er blir: base_1, base_2, base_3..."
+    },
+    "baseName": {
+      "label": "Basisnavn",
+      "placeholder": "MAT",
+      "helper": "Servernavn blir: Base #1, Base #2, Base #3..."
+    },
+    "host": {
+      "label": "Vert / IP-adresse",
+      "placeholder": "192.168.1.100"
+    },
+    "rconPassword": {
+      "label": "RCON-passord",
+      "placeholder": "shared-rcon-password",
+      "helper": "Samme passord for alle servere"
+    },
+    "numServers": {
+      "label": "Antall servere",
+      "placeholder": "3",
+      "helper": "Maks: 50"
+    },
+    "assignPorts": {
+      "label": "Tildel porter",
+      "helper": "API → server (RCON-test)"
+    },
+    "serverPortLabel": "Server nr. {{index}}",
+    "portPlaceholder": "27015",
+    "enabled": {
+      "label": "Servere aktivert",
+      "helper": "Alle servere opprettes som aktivert/deaktivert"
+    },
+    "preview": {
+      "more": "...og {{count}} flere",
+      "titleFirst10": "Forhåndsvisning (de første 10)",
+      "titleAll": "Forhåndsvisning (alle)"
+    },
+    "checkServersButton": {
+      "default": "Sjekk servere",
+      "checking": "Sjekker..."
+    },
+    "createServersButton": {
+      "creating": "Oppretter...",
+      "default_one": "Opprett {{count}} server",
+      "default_other": "Opprett {{count}} servere"
+    },
+    "warnings": {
+      "notAllVerified": "Noen servere bestod ikke tilkoblingssjekkene. De lagres likevel, men kan vises som offline til RCON og webhook er konfigurert."
+    },
+    "success": {
+      "createdAll_one": "Opprettet {{count}} server",
+      "createdAll_other": "Opprettet {{count}} servere"
+    },
+    "errors": {
+      "baseNameRequired": "Basisnavn er påkrevd",
+      "baseIdRequired": "Basis-ID er påkrevd",
+      "hostRequired": "Vert er påkrevd",
+      "countRange": "Antall servere må være mellom 1 og 50",
+      "passwordRequired": "RCON-passord er påkrevd",
+      "portRange": "Server #{{index}}-port må være mellom 1 og 65535",
+      "connectionFailed": "Tilkobling feilet",
+      "createFailed": "Klarte ikke å opprette servere",
+      "partialCreate": "Opprettet {{created}}/{{total}} servere. Feil:\n{{details}}"
+    }
+  },
+  "eloTemplatesPage": {
+    "errors": {
+      "load": "Klarte ikke å laste ELO-maler"
+    },
+    "header": {
+      "createTemplate": "Opprett mal",
+      "importJson": "Importer fra JSON"
+    },
+    "empty": {
+      "title": "Ingen ELO-beregningsmaler",
+      "description": "Opprett din første mal for å tilpasse hvordan spillerstatistikk påvirker ELO-justeringer",
+      "action": "Opprett mal"
+    },
+    "delete": {
+      "title": "Slett ELO-mal",
+      "message": "Er du sikker på at du vil slette \"{{name}}\"? Dette kan ikke angres.",
+      "success": "Malen \"{{name}}\" ble slettet",
+      "error": "Klarte ikke å slette mal",
+      "defaultProtected": "Standardmalen \"pure-win-loss\" kan ikke slettes."
+    },
+    "import": {
+      "success_one": "Importerte {{count}} ELO-mal",
+      "success_other": "Importerte {{count}} ELO-maler"
+    },
+    "weights": {
+      "noAdjustmentsPure": "Ingen statistikkjusteringer (ren vinn/tap)"
+    },
+    "card": {
+      "enabled": "Aktivert",
+      "disabled": "Deaktivert",
+      "default": "Standard",
+      "adjustment": {
+        "none": "Statistikkjustering per kamp: ingen (0; kun resultat-ELO)",
+        "uncapped": "Statistikkjustering per kamp: ubegrenset (bruk med forsiktighet)",
+        "range": "Statistikkjustering per kamp: {{min}} til {{max}} ELO",
+        "noMin": "ingen min",
+        "noMax": "ingen maks"
+      },
+      "tooltips": {
+        "edit": "Rediger mal",
+        "delete": "Slett mal"
+      },
+      "weightsTitle": "Statistikkvekter:",
+      "limitsTitle": "Justeringsgrenser:"
+    },
+    "importModal": {
+      "title": "Importer ELO-maler fra JSON",
+      "introTitle": "Lim inn JSON med ELO-maldefinisjoner under.",
+      "introBody": "Forventet format: en liste med maler med navn, valgfri beskrivelse, aktivert, vekter, maxAdjustment og minAdjustment. Hvis du utelater id, genereres den fra navnet.",
+      "jsonLabel": "JSON-data",
+      "validJsonTitle": "✓ Gyldig JSON!",
+      "previewTitle": "Forhåndsvisning:",
+      "previewButton": "Forhåndsvis",
+      "importButton": "Importer maler",
+      "validJsonBody_one": "Fant {{count}} mal.",
+      "validJsonBody_other": "Fant {{count}} maler."
+    },
+    "editor": {
+      "titleEdit": "Rediger ELO-mal",
+      "titleCreate": "Opprett ELO-mal",
+      "info": "Konfigurer hvordan individuell spillerstatistikk påvirker ELO-justeringer. Vekter brukes etter at OpenSkill har beregnet grunnendringen i ELO (vinn/tap). Positive vekter øker ELO, negative vekter senker den.",
+      "nameLabel": "Malnavn",
+      "nameDefaultLocked": "Standard malnavn kan ikke endres",
+      "descriptionLabel": "Beskrivelse",
+      "descriptionPlaceholder": "Valgfri beskrivelse av hva denne malen er til for",
+      "enabledLabel": "Aktivert",
+      "weights": {
+        "title": "Statistikkvekter",
+        "subtitle": "Juster skyveknappen for hver statistikk. Verdien 0 betyr ingen justering for den statistikken."
+      },
+      "limits": {
+        "title": "Justeringsgrenser (valgfritt)",
+        "subtitle": "Sett maks- og min-grenser for ELO-justering per kamp for å unngå ekstreme endringer.",
+        "maxLabel": "Maks justering",
+        "maxHelper": "Maksimal positiv ELO-justering per kamp",
+        "minLabel": "Min justering",
+        "minHelper": "Maksimal negativ ELO-justering per kamp"
+      },
+      "errors": {
+        "nameRequired": "Malnavn er påkrevd"
+      },
+      "create": {
+        "success": "Malen \"{{name}}\" ble opprettet",
+        "error": "Klarte ikke å opprette mal"
+      },
+      "update": {
+        "success": "Malen \"{{name}}\" ble oppdatert",
+        "error": "Klarte ikke å oppdatere mal"
+      },
+      "buttons": {
+        "saving": "Lagrer...",
+        "update": "Oppdater",
+        "create": "Opprett"
+      }
+    }
+  }
+}

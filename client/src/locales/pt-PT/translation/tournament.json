@@ -1,0 +1,675 @@
+{
+  "tournament": {
+    "steps": {
+      "create": "Criar torneio",
+      "review": "Rever e confirmar",
+      "live": "Torneio em direto"
+    },
+    "welcome": {
+      "heading": "Criar torneio",
+      "chooseMethod": "Escolha como gostaria de criar o seu torneio",
+      "createNewTitle": "Criar novo torneio",
+      "createNewDescription": "Comece do zero e configure manualmente todas as definições do torneio"
+    },
+    "typeSelector": {
+      "categories": {
+        "professional": {
+          "label": "Série profissional"
+        },
+        "party": {
+          "label": "Festa e diversão"
+        }
+      },
+      "types": {
+        "single_elimination": {
+          "label": "Eliminação simples",
+          "description": "Uma derrota e está fora. Formato clássico de bracket usado em torneios profissionais."
+        },
+        "double_elimination": {
+          "label": "Eliminação dupla",
+          "description": "Duas derrotas para ser eliminado. As equipas têm uma segunda oportunidade na lower bracket."
+        },
+        "round_robin": {
+          "label": "Todos contra todos",
+          "description": "Todos jogam contra todos. Perfeito para competições em estilo liga."
+        },
+        "swiss": {
+          "label": "Sistema suíço",
+          "description": "Registos semelhantes enfrentam-se. Jogos equilibrados ao longo do torneio."
+        },
+        "shuffle": {
+          "label": "Torneio shuffle",
+          "description": "Os jogadores são baralhados dinamicamente em equipas equilibradas a cada ronda. Competição individual com balanceamento de equipas baseado em ELO."
+        }
+      },
+      "selectedChip": "Selecionado"
+    },
+    "review": {
+      "summary": {
+        "info": "Reveja as definições do torneio e clique em \"{{button}}\" quando estiver pronto.",
+        "nameLabel": "Nome do torneio",
+        "typeLabel": "Tipo de torneio",
+        "formatLabel": "Formato do jogo",
+        "notSet": "Não definido",
+        "estimatedVolumeText": "Aproximadamente {{matches}} ao longo de {{rounds}} (à melhor de {{mapsPerMatch}}, até {{maps}} no total)."
+      }
+    },
+    "formSteps": {
+      "steps": {
+        "name": "Nome",
+        "type": "Tipo",
+        "format": "Formato",
+        "maps": "Mapas",
+        "teams": "Equipas",
+        "review": "Rever"
+      },
+      "backToWelcome": "Voltar ao início",
+      "back": "Voltar",
+      "next": "Seguinte"
+    },
+    "emptyBracket": {
+      "title": "Sem bracket para mostrar",
+      "description": "Crie um torneio e gere a bracket para começar"
+    },
+    "common": {
+      "createTournament": "Criar torneio"
+    },
+    "nameLabel": "Nome do torneio",
+    "namePlaceholder": "MAT 2025 — torneio de primavera",
+    "champion": {
+      "title": "Campeão"
+    },
+    "page": {
+      "title": "Configuração do torneio"
+    },
+    "labels": {
+      "teams": "Equipas",
+      "maps": "Mapas",
+      "format": "Formato",
+      "players": "Jogadores",
+      "matchRules": "Regras do jogo",
+      "servers": "Servidores",
+      "overtimeSettings": "Definições de prolongamento",
+      "mapPool": "Conjunto de mapas"
+    },
+    "tooltips": {
+      "deleteTournament": "Eliminar permanentemente este torneio e todos os seus dados"
+    },
+    "counts": {
+      "teams_one": "{{count}} equipa",
+      "teams_other": "{{count}} equipas",
+      "matches_one": "{{count}} jogo",
+      "matches_other": "{{count}} jogos",
+      "rounds_one": "{{count}} ronda",
+      "rounds_other": "{{count}} rondas",
+      "maps_one": "{{count}} mapa",
+      "maps_other": "{{count}} mapas",
+      "servers_one": "{{count}} servidor",
+      "servers_other": "{{count}} servidores",
+      "availableServers_one": "{{count}} servidor disponível",
+      "availableServers_other": "{{count}} servidores disponíveis",
+      "concurrentMatches_one": "{{count}} jogo em simultâneo",
+      "concurrentMatches_other": "{{count}} jogos em simultâneo",
+      "enabledServers_one": "{{count}} servidor ativado",
+      "enabledServers_other": "{{count}} servidores ativados"
+    },
+    "matchRules": {
+      "value": "Máximo de {{maxRounds}} rondas por mapa; vence quem chegar primeiro a {{winRounds}} rondas.",
+      "teamSizeValue": "Tamanho da equipa: {{size}}v{{size}}",
+      "overtimeEnabled": "Prolongamento: ativado",
+      "overtimeDisabled": "Prolongamento: desativado (sem prolongamento)",
+      "overtimeDisabledNoDraws": "Prolongamento: desativado (sem empates – o dano decide)",
+      "overtimeSegments_one": "Segmentos de prolongamento: {{count}} segmento",
+      "overtimeSegments_other": "Segmentos de prolongamento: {{count}} segmentos",
+      "overtimeSegmentsDefault": "Segmentos de prolongamento: predefinição do MatchZy",
+      "overtimeSegmentsDefaultUnlimited": "Segmentos de prolongamento: predefinição do MatchZy (normalmente ilimitado)"
+    },
+    "toasts": {
+      "loadTemplateFailed": "Não foi possível carregar o modelo",
+      "nameRequired": "O nome do torneio é obrigatório",
+      "nameUpdated": "Nome do torneio atualizado",
+      "nameUpdateFailed": "Não foi possível atualizar o nome do torneio",
+      "selectAtLeastOneMap": "Seleciona pelo menos 1 mapa",
+      "maxRoundsRange": "O número máximo de rondas tem de estar entre 1 e 30",
+      "teamSizeRange": "O tamanho da equipa tem de estar entre 2 e 10 jogadores",
+      "invalidTeamCount": "Número de equipas inválido",
+      "selectAtLeastTwoTeams": "Seleciona pelo menos 2 equipas",
+      "shuffleCreated": "Torneio shuffle «{{name}}» criado com sucesso! Passo seguinte: regista pelo menos {{minPlayers}} jogadores para iniciar o torneio (jogos {{teamSize}}v{{teamSize}}).",
+      "shuffleCreateFailed": "Não foi possível criar o torneio shuffle",
+      "shuffleCreateFailedRetry": "Não foi possível criar o torneio shuffle. Verifica as definições e tenta novamente.",
+      "updated": "Torneio atualizado e chave regenerada!",
+      "created": "Torneio criado!",
+      "saveFailed": "Não foi possível guardar o torneio",
+      "deleted": "Torneio eliminado com sucesso",
+      "deleteFailed": "Não foi possível eliminar o torneio",
+      "regenerated": "Chave regenerada com sucesso",
+      "regenerateFailed": "Não foi possível regenerar a chave",
+      "resetDone": "Torneio reposto para o modo de configuração",
+      "resetFailed": "Não foi possível repor o torneio",
+      "started_one": "Torneio iniciado! {{count}} jogo atribuído aos servidores.",
+      "started_other": "Torneio iniciado! {{count}} jogos atribuídos aos servidores.",
+      "startRequested": "Início do torneio solicitado. Os servidores serão atribuídos em breve.",
+      "startFailed": "Não foi possível iniciar o torneio",
+      "templateSaved": "Modelo guardado com sucesso!",
+      "disableServersFailed": "Não foi possível desativar um ou mais servidores: {{message}}",
+      "noChangesToSave": "Não há alterações para guardar",
+      "invalidMapSelection": "Seleção de mapas inválida"
+    },
+    "outdatedServers": {
+      "title": "Os servidores precisam de atualização",
+      "body": "Segundo o Steam, um ou mais servidores ativados estão desatualizados (ou não foi possível verificá-los). Atualiza-os ou desativa-os para continuar com os restantes servidores.",
+      "confirm": "Desativar os servidores afetados e tentar novamente",
+      "disabling": "A desativar..."
+    },
+    "live": {
+      "saveNameAria": "Guardar o nome do torneio",
+      "cancelRenameAria": "Cancelar a mudança de nome do torneio",
+      "editNameAria": "Editar o nome do torneio",
+      "renameTooltip": "Mudar o nome do torneio",
+      "alert": {
+        "liveTitle": "O torneio está a decorrer",
+        "liveBody": "Há jogos a decorrer nos servidores. Não podes editar as definições do torneio enquanto está a decorrer (exceto o nome).",
+        "pendingTitle": "Torneio em curso",
+        "pendingBody": "Os jogos começam assim que os servidores forem atribuídos e os vetos concluídos. Não podes editar as definições do torneio enquanto este decorre (exceto o nome).",
+        "completedTitle": "Torneio concluído",
+        "completedBody": "Todos os jogos deste torneio terminaram. Cria um novo torneio ou repõe este para recomeçar."
+      },
+      "teamsCompeting_one": "{{count}} equipa em competição",
+      "teamsCompeting_other": "{{count}} equipas em competição",
+      "playersCompeting_one": "{{count}} jogador em competição",
+      "playersCompeting_other": "{{count}} jogadores em competição",
+      "playersCompetingUnknown": "Jogadores em competição",
+      "shuffleSettingsLabel": "Definições de shuffle",
+      "maxRoundsPerMapValue": "Rondas máximas por mapa: {{rounds}}",
+      "eloTemplateValue": "Modelo de ELO: {{template}}",
+      "mapSequenceLabel": "Sequência de mapas (rondas)",
+      "noMapsConfigured": "Ainda não há mapas configurados.",
+      "viewBracket": "Ver a chave",
+      "viewBracketTooltip": "Ver a chave do torneio e os detalhes dos jogos",
+      "leaderboardTooltip": "Abrir a classificação pública para partilhar com os jogadores",
+      "restartTooltip": "Termina todos os jogos ativos nos servidores e recarrega-os (útil para jogos bloqueados)",
+      "resetTooltip": "Termina todos os jogos e repõe o torneio para o modo de configuração (mantém as definições, mas apaga todos os dados dos jogos)",
+      "reset": "Repor para configuração"
+    },
+    "reviewCard": {
+      "needPlayersWarning": "São necessários pelo menos {{minPlayers}} jogadores para iniciar o torneio (jogos {{teamSize}}v{{teamSize}}). Registados atualmente: {{registered}}",
+      "start": "Iniciar torneio",
+      "starting": "A iniciar...",
+      "startSimulation": "Iniciar simulação",
+      "startingSimulation": "A iniciar simulação...",
+      "bulkCreateMatches": "Criar jogos em lote",
+      "edit": "Editar",
+      "regenerate": "Regenerar",
+      "regenerateTooltip": "Elimina todos os jogos atuais e regenera a chave com as mesmas definições.",
+      "regenerateDisabledTooltip": "Gera a chave pelo menos uma vez (Guardar e gerar a chave) antes de a poderes regenerar."
+    },
+    "dialogs": {
+      "items": {
+        "endMatches": "Terminar todos os jogos ativos nos servidores",
+        "deleteMatches": "Eliminar todos os jogos e chaves",
+        "deleteData": "Eliminar todos os dados dos jogos e as estatísticas"
+      },
+      "delete": {
+        "title": "🗑️ Eliminar o torneio",
+        "question": "Tens a certeza de que queres ELIMINAR permanentemente <b>«{{name}}»</b>?",
+        "willTitle": "⚠️ Isto irá:",
+        "items": {
+          "removeTournament": "Remover completamente o torneio",
+          "cannotBeUndone": "Não pode ser anulado"
+        },
+        "note": "💡 Nota: se só queres recomeçar com as mesmas definições do torneio, usa antes «Repor para configuração».",
+        "confirm": "Eliminar permanentemente"
+      },
+      "regenerate": {
+        "title": "🔄 Regenerar a chave",
+        "liveWarning": "⚠️ AVISO: o torneio está {{status}}!",
+        "liveBody": "Regenerar a chave irá <b>ELIMINAR TODOS</b> os dados de jogo existentes, incluindo resultados, estatísticas e histórico de eventos.",
+        "cannotBeUndone": "Esta ação não pode ser anulada.",
+        "areYouSure": "Tens a certeza absoluta de que queres continuar?",
+        "setupBody": "Isto elimina todos os jogos existentes e regenera a chave com as mesmas definições.",
+        "continue": "Continuar?",
+        "confirmDestructive": "SIM, ELIMINAR TUDO",
+        "confirm": "Regenerar"
+      },
+      "reset": {
+        "title": "🔄 Repor para configuração",
+        "question": "Repor <b>«{{name}}»</b> para o modo de CONFIGURAÇÃO?",
+        "willTitle": "Isto irá:",
+        "items": {
+          "clearStatus": "Limpar o estado do torneio (voltar à configuração)",
+          "keepSettings": "<b>Manter</b> as definições do torneio (nome, equipas, formato)",
+          "allowEdit": "Permitir-te editar novamente as definições",
+          "regenerateMatches": "Clear all match results and regenerate the brackets from scratch"
+        },
+        "note": "💡 Nota: para remover completamente o torneio, usa antes «Eliminar».",
+        "confirm": "Repor para configuração",
+        "regenerated": "Fresh brackets are created right away, so pending matches show up again immediately."
+      },
+      "start": {
+        "titleNoServers": "⚠️ Sem servidores disponíveis",
+        "titleInsufficient": "⚠️ Servidores insuficientes",
+        "titleUncertain": "⚠️ Iniciar o torneio sem servidores?",
+        "noServersHeading": "De momento não há servidores disponíveis",
+        "noServersBody": "O torneio vai começar, mas os jogos ficam adiados até haver um servidor disponível. O sistema atribui os jogos automaticamente quando os servidores estiverem prontos.",
+        "insufficientHeading": "Servidores insuficientes para disputar em simultâneo todos os jogos da primeira ronda",
+        "insufficientBody": "Tens atualmente <b>{{available}}</b>, mas a primeira ronda prevê <b>{{required}}</b>. Alguns jogos ficam em fila e começam à medida que os servidores ficarem livres.",
+        "uncertainHeading": "A disponibilidade dos servidores é incerta",
+        "uncertainBody": "O torneio pode começar com poucos servidores ou sem nenhum. Os jogos ficam adiados até haver servidores disponíveis e são atribuídos automaticamente quando estiverem prontos.",
+        "question": "Queres iniciar o torneio mesmo assim?",
+        "confirm": "Sim, iniciar mesmo assim",
+        "cancel": "Verificar servidores"
+      }
+    },
+    "formActions": {
+      "saveAndGenerate": "Guardar e gerar a chave",
+      "saveAsTemplate": "Guardar como modelo",
+      "saveTemplateTooltip": "Guardar a configuração atual do torneio como modelo"
+    },
+    "wizard": {
+      "validation": {
+        "selectType": "Seleciona um tipo de torneio",
+        "selectFormat": "Seleciona um formato de jogo"
+      },
+      "shuffleInfo": "Os torneios shuffle não usam equipas fixas. Os jogadores são distribuídos automaticamente por equipas equilibradas em cada jogo com base no Skill Rating.",
+      "shuffleRounds": "Este torneio shuffle terá aproximadamente {{rounds}} (uma por cada mapa selecionado).",
+      "volumeAlert": "Com {{teams}} num torneio {{type}} em {{format}}, esta chave terá aproximadamente {{matches}} ao longo de {{rounds}} (até {{maps}} no total).",
+      "maxRoundsLabel": "Rondas máximas por mapa",
+      "maxRoundsHelper": "Cada mapa é jogado até {{maxRounds}} rondas; vence quem chegar primeiro a {{winRounds}} rondas.",
+      "maxRoundsHelperEmpty": "Número máximo de rondas por mapa (predefinição: 24, máx.: 30).",
+      "serversSummary": "{{servers}} configurados; a primeira ronda tem {{matches}}.",
+      "estimatedVolumeLabel": "Volume estimado",
+      "mapsHeading": "Mapas ({{total}})",
+      "noMapsSelected": "Nenhum mapa selecionado",
+      "matchConfiguration": "Configuração dos jogos",
+      "roundLimitValue_one": "Limite de rondas: máximo {{count}} ronda",
+      "roundLimitValue_other": "Limite de rondas: máximo {{count}} rondas",
+      "teamsHeading": "Equipas ({{total}})",
+      "noTeamsSelected": "Nenhuma equipa selecionada (opcional)",
+      "playerRegistration": "Registo de jogadores",
+      "playerRegistrationInfo_one": "Os jogadores são registados depois de criar o torneio. Cada mapa selecionado corresponde a uma ronda de jogos ({{count}} ronda no total).",
+      "playerRegistrationInfo_other": "Os jogadores são registados depois de criar o torneio. Cada mapa selecionado corresponde a uma ronda de jogos ({{count}} rondas no total).",
+      "serversSummaryQueued": "{{servers}} configurados; a primeira ronda tem {{matches}}. Os jogos além do número de servidores ficam em fila até haver um servidor livre."
+    },
+    "overtime": {
+      "selectLabel": "Prolongamento",
+      "options": {
+        "enabled": "Ativado (prolongamento padrão)",
+        "disabledDraws": "Desativado – empates permitidos",
+        "disabledNoDraws": "Desativado – sem empates (desempate por dano)"
+      },
+      "modeHelper": "O prolongamento padrão joga segmentos extra até uma equipa ficar à frente. «Empates permitidos» termina um mapa empatado em empate, enquanto «sem empates» decide pelo dano total da equipa.",
+      "tooltip": "Controla o comportamento do prolongamento e como são resolvidos os empates no máximo de rondas. Estas definições são enviadas ao MatchZy como overtimeMode/overtimeSegments e têm o mesmo significado que nos torneios shuffle e nos jogos manuais.",
+      "shuffleTooltip": "Controla o comportamento do prolongamento nos jogos shuffle e como são decididos os empates no máximo de rondas. Com o prolongamento desativado, os jogos empatados podem ficar empatados ou ser decididos pelo dano total da equipa, consoante a opção escolhida.",
+      "segmentsLabel": "Segmentos de prolongamento (opcional)",
+      "segmentsHelper": "Opcional: limita o número de segmentos de prolongamento. Deixa vazio para a predefinição do MatchZy.",
+      "segmentsHelperValue_one": "Limita o prolongamento a {{count}} segmento. Se o empate persistir, decide o dano total da equipa.",
+      "segmentsHelperValue_other": "Limita o prolongamento a {{count}} segmentos. Se o empate persistir, decide o dano total da equipa."
+    },
+    "grandFinal": {
+      "sectionTitle": "Modo de grande final (dupla eliminação)",
+      "label": "Grande final",
+      "options": {
+        "simple": "Simples – uma única grande final entre os vencedores da chave de vencedores e de derrotados",
+        "none": "Nenhuma – a final da chave de vencedores decide o torneio (sem grande final)",
+        "double": "Dupla – com bracket‑reset (por agora comporta-se como Simples; o suporte completo está previsto)"
+      },
+      "helper": "Controla como os vencedores das chaves de vencedores e de derrotados se defrontam no final do torneio."
+    },
+    "mapPool": {
+      "shuffleTitle": "Seleção de mapas para torneios shuffle",
+      "shuffleBody": "Todos os mapas selecionados são jogados em sequência. Cada mapa corresponde a uma ronda de jogos. O número de mapas escolhidos determina quantas rondas serão jogadas.",
+      "shuffleSelected": "Selecionaste {{maps}}, por isso serão jogadas {{rounds}}.",
+      "chooseLabel": "Escolhe um conjunto de mapas",
+      "custom": "Personalizado",
+      "selectedMaps": "Mapas selecionados ({{total}}):",
+      "chooseMapsPlaceholder": "Escolhe mapas...",
+      "saveMapPool": "Guardar conjunto de mapas",
+      "types": {
+        "defusal": "Desarmamento",
+        "hostage": "Reféns",
+        "armsRace": "Corrida às armas",
+        "unknown": "Desconhecido"
+      }
+    },
+    "formatStep": {
+      "shuffleInfo": "Os torneios shuffle usam o formato à melhor de 1. Cada jogo é um único mapa."
+    },
+    "shuffleConfig": {
+      "overline": "Configuração do torneio shuffle",
+      "subtitle": "Regras e definições dos jogos",
+      "teamSizeLabel": "Tamanho da equipa",
+      "teamSizeTooltip": "Número de jogadores por equipa. Opções comuns: 4v4, 5v5, 6v6. Mínimo de 2 e máximo de 10 jogadores por equipa.",
+      "teamSizeHelper": "Número de jogadores por equipa (predefinição: 5 para 5v5, intervalo: 2-10)",
+      "maxRoundsLabel": "Rondas máximas",
+      "maxRoundsTooltip": "Número máximo de rondas por jogo. Este valor é enviado diretamente ao MatchZy como mp_maxrounds. Exemplo: 6 = MR6, 24 = MR24.",
+      "maxRoundsHelper": "O jogo é disputado até {{maxRounds}} rondas; vence quem chegar primeiro a {{winRounds}} rondas",
+      "maxRoundsHelperEmpty": "Número máximo de rondas por jogo (predefinição: 24, máx.: 30)",
+      "eloTemplateLabel": "Modelo de cálculo de ELO",
+      "eloTemplateTooltip": "Escolhe como o ELO é calculado neste torneio. Por predefinição, o modelo «Pure Win/Loss» usa apenas o resultado do jogo (vitória/derrota); as estatísticas são registadas mas não alteram o ELO. Os outros modelos são opcionais e acrescentam ajustes baseados em estatísticas à variação do OpenSkill, se quiseres um comportamento ao estilo Excel.",
+      "eloDefaultSuffix": "(predefinido)",
+      "eloTemplateHelper": "Pure Win/Loss (predefinido): apenas o resultado do jogo afeta o ELO. As estatísticas dos jogadores continuam a ser registadas para classificações e exportações, mas não alteram a pontuação a menos que escolhas um modelo personalizado."
+    },
+    "shuffleStats": {
+      "serverShortageWarning": "You have {{available}} of {{needed}} servers. Matches will run in waves, so rounds take longer."
+    },
+    "changePreview": {
+      "title": "Rever as alterações do torneio",
+      "liveHeading": "O torneio está A DECORRER!",
+      "liveBody": "Alterar o tipo, o formato ou o número de equipas pode exigir regenerar a chave. Considera usar «Repor torneio» para recomeçar.",
+      "noChangesDetected": "Não foram detetadas alterações",
+      "intro": "Serão aplicadas as seguintes alterações:",
+      "before": "ANTES",
+      "after": "DEPOIS",
+      "apply": "Aplicar alterações",
+      "applyRisky": "Aplicar alterações (arriscado!)",
+      "noChangesToApply": "Não há alterações para aplicar",
+      "none": "Nenhum",
+      "itemCount_one": "{{count}} item",
+      "itemCount_other": "{{count}} itens"
+    },
+    "teamSelection": {
+      "chooseTeamsPlaceholder": "Escolha as equipas…",
+      "addAll": "Adicionar todas",
+      "batchAddServers": "Adicionar em lote",
+      "addServer": "Adicionar servidor",
+      "importTeams": "Importar equipas",
+      "createTeam": "Criar equipa",
+      "notEnoughServers": "A primeira ronda tem {{matches}}, mas tem {{servers}}. Os jogos além do número de servidores ficam em fila até haver um servidor livre — adicione mais servidores para os disputar todos ao mesmo tempo.",
+      "notEnoughTeams": "Precisa de pelo menos 2 equipas para criar um torneio. De momento tem {{teams}}."
+    },
+    "teamValidation": {
+      "invalidType": "Tipo de torneio inválido",
+      "powerOfTwo": "{{type}} requer um número de equipas que seja potência de 2 ({{counts}}). Selecionou {{selected}}.",
+      "minTeams": "{{type}} requer pelo menos {{min}} equipas. Selecionou {{selected}}.",
+      "maxTeams": "{{type}} permite no máximo {{max}} equipas. Selecionou {{selected}}."
+    },
+    "eventPage": {
+      "title": "Event page",
+      "subtitle": "Shown to players and visitors on the public Overview page.",
+      "descriptionLabel": "Description",
+      "locationLabel": "Location",
+      "locationPlaceholder": "e.g. On site, Trondheim",
+      "rulebookUrlLabel": "Full rulebook URL",
+      "rulebookUrlHelper": "Must be an https link, or leave it empty.",
+      "rulesLabel": "Rules",
+      "ruleFieldLabel": "Rule {{n}}",
+      "addRule": "Add rule",
+      "prizesLabel": "Prizes",
+      "placeLabel": "Place",
+      "prizeLabel": "Prize",
+      "addPrize": "Add prize",
+      "scheduleLabel": "Schedule",
+      "whenLabel": "When",
+      "scheduleLabelLabel": "Label",
+      "addScheduleItem": "Add schedule item",
+      "remove": "Remove",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "save": "Save event page",
+      "saveSuccess": "Event page saved.",
+      "saveError": "Failed to save event page: {{message}}"
+    },
+    "setup": {
+      "steps": {
+        "game": "Game",
+        "basics": "Basics",
+        "format": "Format",
+        "teams": "Teams and sign-up",
+        "maps": "Maps and veto",
+        "eventPage": "Event page",
+        "review": "Review"
+      },
+      "stepsLabel": "Setup steps",
+      "stepDone": "done",
+      "newTournament": "New tournament",
+      "editing": "Tournament setup",
+      "draftSaved": "draft saved in this tab",
+      "discardDraft": "Start over",
+      "startFromTemplate": "Start from a template",
+      "continueTo": "Continue to {{step}}",
+      "questions": {
+        "game": {
+          "title": "Which game?",
+          "lede": "The game decides how matches are run and which settings you get."
+        },
+        "basics": {
+          "title": "What is it called?",
+          "lede": "Give the tournament a name players will recognise, and pick how ratings change."
+        },
+        "format": {
+          "title": "How is it played?",
+          "lede": "Pick the bracket and how long each series is. You can change this until the tournament starts."
+        },
+        "teams": {
+          "title": "Who is playing?",
+          "lede": "Pick the teams in the bracket. You can create or import teams here too.",
+          "ledeShuffle": "Shuffle has solo sign-up: players register, and new teams are drawn each round."
+        },
+        "maps": {
+          "title": "Which maps?",
+          "lede": "Pick the map pool. Series use the veto to choose their maps from it.",
+          "ledeShuffle": "Pick the maps in the order they are played. Each map is one round."
+        },
+        "eventPage": {
+          "title": "What goes on the event page?",
+          "lede": "Optional. Shown to players and visitors on the public Overview page."
+        },
+        "review": {
+          "title": "Ready to go?",
+          "lede": "Check the details, then create the tournament.",
+          "ledeExisting": "Check the details, then start the tournament when everyone is ready."
+        }
+      },
+      "game": {
+        "label": "Game",
+        "descriptions": {
+          "cs2": "Matches run on your servers with MatchZy."
+        }
+      },
+      "basics": {
+        "ratingLabel": "Ratings",
+        "ratingHelp": "How player ratings change after each match in this tournament."
+      },
+      "format": {
+        "label": "Format",
+        "names": {
+          "single_elimination": "Single elimination",
+          "double_elimination": "Double elimination",
+          "swiss": "Swiss",
+          "round_robin": "Round robin",
+          "shuffle": "Shuffle"
+        },
+        "types": {
+          "single_elimination": "Lose once and you're out. Fastest.",
+          "double_elimination": "A second chance in the lower bracket.",
+          "swiss": "Teams play several rounds against similar records.",
+          "round_robin": "Everyone plays everyone. Best for small groups.",
+          "shuffle": "Solo sign-up. New balanced teams each round."
+        },
+        "seriesLength": "Series length",
+        "grandFinal": "Grand final",
+        "grandFinalOptions": {
+          "simple": "One match",
+          "double": "Bracket reset",
+          "none": "None"
+        },
+        "grandFinalHelp": {
+          "simple": "The winners and losers bracket champions meet in one grand final.",
+          "double": "Bracket reset. For now it is played like one grand final; full reset support is planned.",
+          "none": "No grand final: the winners bracket final decides the tournament."
+        },
+        "teams": "Teams",
+        "teamsHelpPowerOfTwo": "Elimination brackets need {{counts}} teams. Used for the summary until you pick teams.",
+        "teamsHelpRange": "Between {{min}} and {{max}} teams. Used for the summary until you pick teams.",
+        "fewerTeams": "Fewer teams",
+        "moreTeams": "More teams",
+        "shuffleTitle": "Shuffle settings",
+        "cs2Title": "Counter-Strike 2 settings",
+        "cs2Help": "Passed to MatchZy by the Counter-Strike 2 game module.",
+        "overtime": {
+          "enabled": "Overtime",
+          "disabledDraws": "Off, draws allowed",
+          "disabledNoDraws": "Off, damage tiebreak"
+        }
+      },
+      "teams": {
+        "shuffleBeforeCreate": "Players sign up after you create the tournament. Come back to this step to choose them."
+      },
+      "maps": {
+        "vetoTitle": "Veto",
+        "vetoStandard": "Each {{format}} series runs the map veto: the teams ban and pick from these 7 maps.",
+        "vetoCustom": "This tournament has a custom veto order for {{format}}.",
+        "vetoNone": "No veto for this format.",
+        "vetoShuffle": "Shuffle has no veto: the maps are played in this order, one per round."
+      },
+      "eventPage": {
+        "draftNote": "Saved with the tournament when you create it."
+      },
+      "review": {
+        "unsaved": "You have unsaved changes. Save them (the bracket is generated again) or discard them before starting."
+      },
+      "summary": {
+        "label": "Summary",
+        "untitled": "Untitled tournament",
+        "format": "Format",
+        "series": "Series",
+        "seriesShuffle": "Bo1 per round",
+        "seriesFinal": {
+          "simple": "{{format}} · grand final",
+          "double": "{{format}} · grand final, bracket reset",
+          "none": "{{format}} · no grand final"
+        },
+        "teams": "Teams",
+        "teamSize": "{{size}}v{{size}}",
+        "teamsPlanned": "{{count}} planned",
+        "matches": "Matches",
+        "matchesAfterSignUp": "After sign-up",
+        "signUp": "Sign-up",
+        "signUpOrganizer": "Picked by organiser",
+        "signUpAfterCreate": "Opens after creating",
+        "players_one": "{{count}} player",
+        "players_other": "{{count}} players",
+        "maps": "Maps",
+        "mapsRounds": "{{maps}} · {{rounds}}",
+        "notSet": "Not set"
+      },
+      "checklist": {
+        "title": "Before you can start",
+        "met": "done",
+        "notMet": "not done",
+        "name": "A name",
+        "format": "Format and match settings",
+        "teams": "A valid number of teams",
+        "players_one": "At least {{count}} player signed up",
+        "players_other": "At least {{count}} players signed up",
+        "mapsVeto": "7 maps for the veto",
+        "maps": "At least one map",
+        "created": "Tournament created",
+        "saved": "Changes saved"
+      }
+    }
+  },
+  "bracket": {
+    "empty": {
+      "noBracketTitle": "Sem bracket para mostrar",
+      "noBracketDescription": "Crie um torneio e gere a bracket para começar"
+    },
+    "view": {
+      "visual": "Visual",
+      "list": "Lista",
+      "refresh": "Atualizar",
+      "enterFullscreen": "Ecrã inteiro",
+      "exitFullscreen": "Sair do ecrã inteiro",
+      "shuffleNoVisual": "Os torneios shuffle não têm quadro visual; usa a vista de lista."
+    },
+    "shuffleEmpty": {
+      "title": "Sem quadro para torneios shuffle",
+      "description": "Os torneios shuffle não usam um quadro fixo. As equipas são remisturadas a cada ronda com base no ELO dos jogadores.",
+      "hint": "Usa a página Partidas para acompanhar as partidas em curso e próximas, e a página Classificação para o ranking dos jogadores.",
+      "goToMatches": "Ir para partidas",
+      "viewLeaderboard": "Ver classificação"
+    },
+    "notGenerated": {
+      "title": "Quadro ainda não gerado",
+      "description": "Gera o quadro para criar as partidas de {{name}}",
+      "goToSettings": "Ir para as definições do torneio"
+    },
+    "shuffleNoVisual": {
+      "title": "Sem quadro visual para torneios shuffle",
+      "description": "As partidas são geradas a cada ronda com base no ELO dos jogadores e no equilíbrio das equipas. Acompanha o progresso aqui:",
+      "listView": "Vista de lista",
+      "matches": "Partidas",
+      "standings": "Classificação",
+      "docsHint": "Para uma explicação completa do funcionamento do shuffle, consulta o guia \"Shuffle Tournaments\" na documentação."
+    },
+    "swiss": {
+      "notGenerated": "Não gerado",
+      "generatedAfter": "As partidas serão geradas após a ronda {{round}} terminar",
+      "bye": "BYE",
+      "standings": "Standings",
+      "team": "Team",
+      "record": "Record",
+      "buchholz": "BH",
+      "buchholzHint": "Buchholz: sum of opponents' wins",
+      "roundDiff": "RD",
+      "roundDiffHint": "Round differential: rounds won minus rounds lost"
+    },
+    "slotHint": {
+      "winnerOf": "Vencedor de {{match}}",
+      "matchNumber": "jogo {{number}}"
+    }
+  },
+  "overviewPage": {
+    "tabs": {
+      "overview": "Overview",
+      "leaderboard": "Leaderboard"
+    },
+    "status": {
+      "setup": "Upcoming",
+      "inProgress": "Live",
+      "completed": "Completed"
+    },
+    "liveNow": "{{count}} live now",
+    "viewAllMatches": "View standings",
+    "howItsPlayed": "How it's played",
+    "facts": {
+      "teams": "Teams",
+      "teamsValue": "{{count}} teams",
+      "teamSize": "Team size",
+      "teamSizeValue": "{{count}} players",
+      "format": "Format",
+      "series": "Series",
+      "seriesValue": "Best of {{count}}",
+      "mapVeto": "Map veto",
+      "mapVetoCustom": "Custom order (captains)",
+      "mapVetoStandard": "Standard order (captains)",
+      "overtime": "Overtime",
+      "overtimeEnabledUnlimited": "Enabled, unlimited",
+      "overtimeEnabledSegments": "Enabled, {{count}} segment(s)",
+      "overtimeDisabled": "Disabled (damage tiebreak)"
+    },
+    "mapPool": "Map pool",
+    "rules": "Rules",
+    "fullRulebook": "Full rulebook",
+    "schedule": "Schedule",
+    "yourTeam": {
+      "title": "You're playing",
+      "onRoster": "You're on {{team}}.",
+      "viewTeam": "View your team"
+    },
+    "prizes": {
+      "title": "Prizes",
+      "note": "Set by the organizer. Prize money, hardware or bragging rights."
+    },
+    "requirements": {
+      "title": "To take part",
+      "steamLinkedOk": "Steam account linked.",
+      "steamLinkedNeutral": "Sign in with Steam to take part.",
+      "onRosterOk": "You're on a team roster for this tournament.",
+      "onRosterNeutral": "Be on a team roster before the tournament starts."
+    },
+    "loadError": "Failed to load this tournament.",
+    "notFoundTitle": "Tournament not found",
+    "notFoundDescription": "This tournament doesn't exist or hasn't been created yet."
+  }
+}

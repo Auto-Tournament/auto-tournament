@@ -1,0 +1,87 @@
+{
+  "nav": {
+    "matchStatus": {
+      "yourTurnVeto": "Jij bent aan de beurt (veto)",
+      "waitingVeto": "Wachten op veto",
+      "waitingServer": "Wachten op server",
+      "matchReady": "Match klaar – verbinden",
+      "snackbarOpponentMoved": "Tegenstander heeft gezet"
+    },
+    "home": "Home",
+    "browse": "Browse",
+    "dashboard": "Overzicht",
+    "manage": "Manage",
+    "tournament": "Toernooi",
+    "bracket": "Schema",
+    "matches": "Wedstrijden",
+    "teams": "Ploegen",
+    "players": "Spelers",
+    "leaderboard": "Ranglijst",
+    "servers": "Spelservers",
+    "maps": "Kaarten & map-pools",
+    "templates": "Sjablonen",
+    "eloTemplates": "ELO-berekening",
+    "adminTools": "Admin-tools",
+    "publicLinks": "Publieke links",
+    "devTools": "Dev-tools",
+    "settings": "Instellingen",
+    "resourcesSection": "Bronnen",
+    "tournamentSection": "Toernooi",
+    "configurationSection": "Configuratie",
+    "systemSection": "Systeem",
+    "documentation": "Documentatie",
+    "signOut": "Uitloggen",
+    "linkSteam": "Steam koppelen",
+    "myProfile": "Mijn profiel",
+    "accountConnections": "Account settings",
+    "goToAdminDashboard": "Ga naar admin-dashboard",
+    "goToAdminDashboardHint": "Je bekijkt je spelersprofiel. Open het admin-dashboard om teams, toernooien en servers te beheren."
+  },
+  "layout": {
+    "webhookNotConfigured": "Webhook-URL is niet ingesteld. Wedstrijden en servers kunnen geen events ontvangen totdat dit is ingesteld.",
+    "openSettings": "Instellingen openen",
+    "pageTitle": {
+      "dashboard": "Overzicht",
+      "manage": "Manage",
+      "tournament": "Toernooi",
+      "bracket": "Schema",
+      "matches": "Wedstrijden",
+      "teams": "Ploegen",
+      "players": "Spelers",
+      "servers": "Spelservers",
+      "maps": "Kaarten & map-pools",
+      "templates": "Sjablonen",
+      "eloTemplates": "ELO-berekening",
+      "adminTools": "Admin-tools",
+      "settings": "Instellingen",
+      "devTools": "Dev-tools",
+      "publicLinks": "Publieke links"
+    },
+    "openDrawer": "Navigatiemenu openen",
+    "matchzyDbDown": {
+      "title": "MatchZy-database onbereikbaar",
+      "body_one": "{{count}} server meldt dat de plugin zijn database niet kan bereiken. Back-ups en de eventwachtrij kunnen hierdoor last hebben.",
+      "body_other": "{{count}} servers melden dat de plugin zijn database niet kan bereiken. Back-ups en de eventwachtrij kunnen hierdoor last hebben."
+    },
+    "steamUnavailable": {
+      "title": "Steam-integratie niet beschikbaar",
+      "body": "Inloggen en het opzoeken van vanity-URL's werken mogelijk niet. Controleer de serverconfiguratie en de verbinding."
+    },
+    "closeDrawer": "Close navigation menu"
+  },
+  "common": {
+    "delete": "Verwijderen",
+    "cancel": "Annuleren"
+  },
+  "app": {
+    "name": "Matchzy Auto Tournament"
+  },
+  "language": {
+    "label": "Taal",
+    "en": "Engels",
+    "zhCN": "Chinees (vereenvoudigd)"
+  },
+  "theme": {
+    "label": "Color theme"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "Auto Tournament",
+  "short_name": "Auto Tournament",
+  "icons": [
+    { "src": "/icon.svg", "type": "image/svg+xml", "sizes": "any" },
+    { "src": "/icon-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "/icon-512.png", "type": "image/png", "sizes": "512x512" }
+  ],
+  "theme_color": "#100908",
+  "background_color": "#100908",
+  "display": "browser"
+}

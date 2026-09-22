@@ -1,0 +1,87 @@
+{
+  "nav": {
+    "matchStatus": {
+      "yourTurnVeto": "A tua vez no veto",
+      "waitingVeto": "A aguardar veto",
+      "waitingServer": "A aguardar servidor",
+      "matchReady": "Jogo pronto – ligar",
+      "snackbarOpponentMoved": "O adversário jogou"
+    },
+    "home": "Home",
+    "browse": "Browse",
+    "dashboard": "Painel de Controlo",
+    "manage": "Manage",
+    "tournament": "Torneio",
+    "bracket": "Quadro",
+    "matches": "Jogos",
+    "teams": "Equipas",
+    "players": "Jogadores",
+    "leaderboard": "Classificação",
+    "servers": "Servidores",
+    "maps": "Mapas e pools",
+    "templates": "Modelos",
+    "eloTemplates": "Cálculo ELO",
+    "adminTools": "Ferramentas admin",
+    "publicLinks": "Links públicos",
+    "devTools": "Ferramentas dev",
+    "settings": "Definições",
+    "resourcesSection": "Recursos",
+    "tournamentSection": "Torneio",
+    "configurationSection": "Configuração",
+    "systemSection": "Sistema",
+    "documentation": "Documentação",
+    "signOut": "Terminar sessão",
+    "linkSteam": "Ligar Steam",
+    "myProfile": "O meu perfil",
+    "accountConnections": "Account settings",
+    "goToAdminDashboard": "Ir para o painel de administração",
+    "goToAdminDashboardHint": "Estás a ver o teu perfil de jogador. Abre o painel de administração para gerir equipas, torneios e servidores."
+  },
+  "layout": {
+    "webhookNotConfigured": "O URL do webhook não está configurado. Jogos e servidores não podem receber eventos até ser definido.",
+    "openSettings": "Abrir definições",
+    "pageTitle": {
+      "dashboard": "Painel de Controlo",
+      "manage": "Manage",
+      "tournament": "Torneio",
+      "bracket": "Quadro",
+      "matches": "Jogos",
+      "teams": "Equipas",
+      "players": "Jogadores",
+      "servers": "Servidores",
+      "maps": "Mapas e pools",
+      "templates": "Modelos",
+      "eloTemplates": "Cálculo ELO",
+      "adminTools": "Ferramentas admin",
+      "settings": "Definições",
+      "devTools": "Ferramentas de desenvolvimento",
+      "publicLinks": "Links públicos"
+    },
+    "openDrawer": "Abrir menu de navegação",
+    "matchzyDbDown": {
+      "title": "Base de dados do MatchZy inacessível",
+      "body_one": "{{count}} servidor indica que o plugin não consegue aceder à base de dados. As cópias de segurança e a fila de eventos podem ser afetadas.",
+      "body_other": "{{count}} servidores indicam que o plugin não consegue aceder à base de dados. As cópias de segurança e a fila de eventos podem ser afetadas."
+    },
+    "steamUnavailable": {
+      "title": "Integração com a Steam indisponível",
+      "body": "O início de sessão e a pesquisa de URLs personalizados podem não funcionar. Verifique a configuração do servidor e a ligação."
+    },
+    "closeDrawer": "Close navigation menu"
+  },
+  "common": {
+    "delete": "Eliminar",
+    "cancel": "Cancelar"
+  },
+  "app": {
+    "name": "Matchzy Auto Tournament"
+  },
+  "language": {
+    "label": "Idioma",
+    "en": "Inglês",
+    "zhCN": "Chinês (simplificado)"
+  },
+  "theme": {
+    "label": "Color theme"
+  }
+}

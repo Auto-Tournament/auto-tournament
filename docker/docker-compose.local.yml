@@ -1,0 +1,88 @@
+# Local production build – builds from source instead of pulling from Docker Hub.
+# Uses production settings (same as docker-compose.yml) but builds locally.
+#
+# First run (or after Dockerfile changes):
+#   docker compose --env-file .env -f docker/docker-compose.local.yml up -d --build
+#
+# Subsequent runs:
+#   docker compose --env-file .env -f docker/docker-compose.local.yml up -d
+#
+# Environment variables are loaded from:
+#   NOTE: run compose with `--env-file .env` from the repo root (the yarn
+#   docker:* scripts do this). Compose resolves ${VAR} substitutions below from
+#   that file plus your shell — without it, entries like SESSION_SECRET and
+#   ENABLE_TEST_ENDPOINTS silently override the env_file with their defaults.
+#   - .env file (project root) via env_file directive
+#   - Environment variables set in your shell (for docker-compose variable substitution)
+#
+# Default port: 3069 (use HOST_PORT=27016 to override)
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: matchzy-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+      - POSTGRES_DB=${DB_NAME:-matchzy_tournament}
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - matchzy-network
+
+  matchzy-tournament:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        # Enable developer menus/tools in the client build (see client/src/hooks/useIsDevelopment.ts)
+        VITE_ENABLE_DEV_PAGE: "true"
+    container_name: matchzy-tournament-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - ../.env
+    ports:
+      - '${HOST_PORT:-3069}:3069'
+    environment:
+      # Container-specific settings (not from .env)
+      - NODE_ENV=production
+      - PORT=3000
+      # Default frontend URL for session cookies and redirects.
+      # Override in your shell if needed; this value also ensures E2E tests
+      # run against localhost without cookie domain issues.
+      - FRONTEND_BASE_URL=${FRONTEND_BASE_URL:-http://localhost:${HOST_PORT:-3069}}
+      # Allow enabling /api/test/* helpers for E2E in prod-like stacks.
+      # Keep disabled by default for safety.
+      - ENABLE_TEST_ENDPOINTS=${ENABLE_TEST_ENDPOINTS:-false}
+      # Allow simulation settings in local "prod-like" builds
+      - MATCHZY_ENABLE_SIMULATION_IN_PROD=true
+      # Docker service name for DB connection (not from .env)
+      - DB_HOST=postgres
+      # Computed DATABASE_URL (uses DB_* vars from .env or defaults)
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
+      # SESSION_SECRET should be set in .env (required for session persistence)
+      # If not set, a default is used but sessions won't persist across restarts
+      - SESSION_SECRET=${SESSION_SECRET:-}
+      # All other variables (SERVER_TOKEN, STEAM_API_KEY, FRONTEND_BASE_URL, LOG_LEVEL, etc.)
+      # are loaded from .env via env_file directive above
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3069/health']
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - matchzy-network
+
+networks:
+  matchzy-network:
+    driver: bridge

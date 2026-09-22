@@ -1,0 +1,141 @@
+{
+  "devToolsPage": {
+    "alert": "Deze tools zijn alleen beschikbaar in ontwikkelmodus. Gebruik ze om snel testdata te genereren om de applicatie te testen.",
+    "sections": {
+      "testData": {
+        "title": "Testdata maken"
+      }
+    },
+    "testTeams": {
+      "title": "Testteams",
+      "description": "Maak teams met willekeurige spelersgegevens om toernooibrackets en wedstrijden te testen.",
+      "success": "{{count}} testteam(s) succesvol aangemaakt!",
+      "errors": {
+        "create": "Testteams aanmaken mislukt",
+        "partial": "{{created}} team(s) aangemaakt, maar {{failed}} mislukt. Bekijk de console voor details."
+      },
+      "customLabel": "Aangepast aantal teams",
+      "buttons": {
+        "createFixed": "{{count}} teams aanmaken",
+        "createCustom": "Teams aanmaken"
+      }
+    },
+    "testPlayers": {
+      "title": "Testspelers",
+      "description": "Maak spelers met ELO-scores om shuffle-toernooien en spelersbeheer te testen.",
+      "success": "{{created}} testspelers aangemaakt!",
+      "errors": {
+        "create": "Testspelers aanmaken mislukt",
+        "partial": "{{created}} speler(s) aangemaakt, {{updated}} bijgewerkt, maar {{failed}} mislukt. Bekijk de console voor details."
+      },
+      "customLabel": "Aangepast aantal spelers",
+      "buttons": {
+        "createFixed": "{{count}} spelers aanmaken",
+        "createCustom": "Spelers aanmaken"
+      },
+      "successWithUpdated": "{{created}} testspelers aangemaakt en {{updated}} bijgewerkt!"
+    },
+    "testServers": {
+      "title": "Testservers",
+      "description": "Maak serverconfiguraties om wedstrijdbeheer en RCON-commando's te testen.",
+      "success": "{{count}} testserver(s) succesvol aangemaakt!",
+      "errors": {
+        "create": "Testservers aanmaken mislukt",
+        "partial": "{{created}} server(s) aangemaakt, maar {{failed}} mislukt. Bekijk de console voor details."
+      },
+      "customLabel": "Aangepast aantal servers",
+      "buttons": {
+        "createCustom": "Servers aanmaken",
+        "createFixed_one": "{{count}} server aanmaken",
+        "createFixed_other": "{{count}} servers aanmaken"
+      }
+    },
+    "dangerZone": {
+      "title": "Gevarenzone"
+    },
+    "deleteTestData": {
+      "title": "Testdata verwijderen",
+      "description": "Verwijder alle testdata (teams en servers met 'test-' prefix). Deze actie kan niet ongedaan worden gemaakt.",
+      "button": "Alle testdata verwijderen",
+      "confirmPrompt": "Weet je zeker dat je ALLE testdata wilt verwijderen?",
+      "success": "Alle testdata succesvol verwijderd!",
+      "error": "Testdata verwijderen mislukt"
+    },
+    "wipeTable": {
+      "title": "Specifieke tabellen leegmaken",
+      "description": "Verwijder alle data uit een specifieke tabel. Handig om op te schonen zonder alles te resetten. Tabellen zijn per categorie gegroepeerd.",
+      "confirmPrompt": "Weet je zeker dat je de tabel {{table}} wilt leegmaken? Dit verwijdert alle data in die tabel.",
+      "success": "Tabel {{table}} succesvol leeggemaakt!",
+      "error": "Tabel {{table}} leegmaken mislukt",
+      "core": {
+        "title": "Kern-tabellen",
+        "teams": "Teams leegmaken",
+        "servers": "Servers leegmaken",
+        "tournament": "Toernooi leegmaken",
+        "matches": "Wedstrijden leegmaken"
+      },
+      "players": {
+        "title": "Spelers en shuffle-toernooien",
+        "players": "Spelers leegmaken",
+        "ratingHistory": "Ratinggeschiedenis leegmaken",
+        "matchStats": "Wedstrijdstatistieken leegmaken",
+        "shufflePlayers": "Shuffle-spelers leegmaken"
+      },
+      "maps": {
+        "title": "Kaarten en sjablonen",
+        "maps": "Kaarten leegmaken",
+        "mapPools": "Map-pools leegmaken",
+        "tournamentTemplates": "Toernooisjablonen leegmaken",
+        "eloTemplates": "ELO-sjablonen leegmaken"
+      },
+      "matchEvents": {
+        "title": "Wedstrijdgebeurtenissen en resultaten",
+        "events": "Wedstrijdgebeurtenissen leegmaken",
+        "mapResults": "Mapresultaten leegmaken"
+      },
+      "settings": {
+        "title": "Instellingen",
+        "appSettings": "App-instellingen leegmaken"
+      }
+    },
+    "simulation": {
+      "title": "Simulatiestatus",
+      "description": "Wis alle wedstrijden en historische statistieken zodat je in simulatiemodus op een schoon bracket op \"Toernooi starten\" kunt klikken, terwijl servers, teams, kaarten en de huidige toernooiconfiguratie behouden blijven.",
+      "button": "Simulatiestatus resetten (config behouden)",
+      "reset": {
+        "success": "Simulatiestatus gereset. Wedstrijden en statistieken gewist; servers, teams en toernooiconfig behouden.",
+        "error": "Simulatiestatus resetten mislukt"
+      }
+    },
+    "wipeDatabase": {
+      "title": "Hele database wissen",
+      "warningTitle": "ZEER DESTRUCTIEF!",
+      "warningBody": "Dit verwijdert ALLE data.",
+      "permanentlyDeletes": "Verwijdert permanent:",
+      "items": {
+        "tournaments": "Alle toernooien en brackets",
+        "matches": "Alle wedstrijden en events",
+        "teams": "Alle teams en spelers",
+        "servers": "Alle serverconfiguraties"
+      },
+      "button": "Hele database wissen",
+      "successRedirect": "Database succesvol gewist! Doorsturen...",
+      "error": "Database wissen mislukt",
+      "dialog": {
+        "title": "Bevestig database wissen",
+        "areYouSure": "Weet je het absoluut zeker?",
+        "actionWill": "Deze actie zal",
+        "permanentlyDelete": "permanent verwijderen",
+        "items": {
+          "tournaments": "Alle toernooidata en brackets",
+          "matches": "Alle wedstrijdhistorie en events",
+          "teams": "Alle teams en spelerconfiguraties",
+          "servers": "Alle serverconfiguraties"
+        },
+        "cannotUndo": "Deze actie kan niet ongedaan worden gemaakt!",
+        "wiping": "Database wissen...",
+        "yesWipe": "Ja, alles wissen"
+      }
+    }
+  }
+}

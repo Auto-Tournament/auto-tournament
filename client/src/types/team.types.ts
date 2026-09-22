@@ -1,0 +1,201 @@
+/**
+ * Team-related types
+ */
+
+import type { VetoAction, VetoMapResult } from './veto.types';
+
+export interface Player {
+  steamId: string;
+  name: string;
+  avatar?: string;
+  elo?: number; // Optional ELO rating (defaults to 1500 Skill Rating if not specified)
+  /**
+   * Discord user ID (17–20 digit string), looked up from the player record by the
+   * admin team endpoints. Contact data only; never part of the stored roster.
+   */
+  discordId?: string | null;
+}
+
+export interface Team {
+  id: string;
+  name: string;
+  tag?: string;
+  discordRoleId?: string;
+  players?: Player[];
+  createdAt?: number;
+  updatedAt?: number;
+}
+
+export interface TeamStats {
+  totalMatches: number;
+  wins: number;
+  losses: number;
+  winRate: number;
+}
+
+export interface TeamStanding {
+  position: number;
+  totalTeams: number;
+  wins: number;
+}
+
+export interface TeamMatchVetoSummary {
+  status: 'pending' | 'in_progress' | 'completed';
+  team1Name?: string;
+  team2Name?: string;
+  pickedMaps: VetoMapResult[];
+  actions: VetoAction[];
+}
+
+export interface TeamMatchInfo {
+  slug: string;
+  round: number;
+  matchNumber: number;
+  status: 'pending' | 'ready' | 'loaded' | 'live' | 'completed';
+  isTeam1: boolean;
+  /**
+   * Indicates whether the current viewer is a member of the team whose page
+   * this match is being viewed from. Used to gate sensitive UI like veto
+   * controls and server connection details for spectators.
+   */
+  viewerIsTeamMember?: boolean;
+  currentMap?: string | null;
+  mapNumber?: number | null;
+  team1?: Team; // For veto interface
+  team2?: Team; // For veto interface
+  opponent: Team | null;
+  server: {
+    id: string;
+    name: string;
+    host: string;
+    port: number;
+    password?: string;
+    status?: string | null;
+    statusDescription?: {
+      label: string;
+      description: string;
+      color: 'success' | 'warning' | 'error' | 'info' | 'default';
+    } | null;
+  } | null;
+  connectionStatus?: MatchConnectionStatus | null;
+  liveStats?: MatchLiveStats | null;
+  maps: string[];
+  mapResults: MatchMapResult[];
+  matchFormat: string;
+  loadedAt?: number;
+  /**
+   * NOTE: this mirrors `MatchConfig` in match.types.ts rather than reusing it,
+   * and the two have already drifted — `cvars` was missing here while callers
+   * read it. Worth collapsing into the shared type.
+   */
+  config?: {
+    // Core player / team counts
+    players_per_team?: number;
+    expected_players_total?: number;
+    expected_players_team1?: number;
+    expected_players_team2?: number;
+    // Series / map configuration
+    num_maps?: number;
+    maplist?: string[];
+    // Overtime / regulation configuration (mirrors MatchZy match JSON)
+    maxRounds?: number;
+    overtimeMode?: 'enabled' | 'disabled';
+    overtimeSegments?: number;
+    /** MatchZy convars carried through from the generated match JSON. */
+    cvars?: {
+      [key: string]: string | number;
+    };
+    team1?: {
+      id?: string;
+      name: string;
+      tag?: string;
+      players?: Array<{ steamid: string; name: string; avatar?: string }>;
+    };
+    team2?: {
+      id?: string;
+      name: string;
+      tag?: string;
+      players?: Array<{ steamid: string; name: string; avatar?: string }>;
+    };
+  };
+  veto?: TeamMatchVetoSummary | null;
+}
+
+export interface ConnectedPlayerStatus {
+  steamId: string;
+  name: string;
+  team: 'team1' | 'team2';
+  connectedAt: number;
+  isReady: boolean;
+}
+
+export interface MatchConnectionStatus {
+  matchSlug: string;
+  connectedPlayers: ConnectedPlayerStatus[];
+  team1Connected: number;
+  team2Connected: number;
+  totalConnected: number;
+  lastUpdated: number;
+}
+
+export interface MatchLiveStats {
+  matchSlug: string;
+  team1Score: number;
+  team2Score: number;
+  roundNumber: number;
+  mapNumber: number;
+  status: 'warmup' | 'knife' | 'live' | 'halftime' | 'postgame';
+  lastEventAt: number;
+  team1SeriesScore: number;
+  team2SeriesScore: number;
+  mapName?: string | null;
+  totalMaps: number;
+  playerStats?: MatchPlayerStatsSnapshot | null;
+}
+
+export interface MatchPlayerStatsSnapshot {
+  team1: MatchPlayerStatsLine[];
+  team2: MatchPlayerStatsLine[];
+}
+
+export interface MatchPlayerStatsLine {
+  steamId: string;
+  name: string;
+  kills: number;
+  deaths: number;
+  assists: number;
+  flashAssists: number;
+  headshotKills: number;
+  damage: number;
+  utilityDamage: number;
+  kast: number;
+  mvps: number;
+  score: number;
+  roundsPlayed: number;
+}
+
+export interface MatchMapResult {
+  mapNumber: number;
+  mapName?: string | null;
+  team1Score: number;
+  team2Score: number;
+  winner?: 'team1' | 'team2' | 'none' | null;
+  winnerTeam?: 'team1' | 'team2' | 'none' | null;
+  demoFilePath?: string | null;
+  completedAt: number;
+}
+
+export interface TeamMatchHistory {
+  slug: string;
+  round: number;
+  matchNumber: number;
+  /** Chronological number, as on the matches page. */
+  globalMatchNumber?: number;
+  bracket?: string | null;
+  opponent: Team | null;
+  won: boolean;
+  teamScore: number;
+  opponentScore: number;
+  completedAt: number;
+}
+

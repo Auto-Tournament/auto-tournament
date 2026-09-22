@@ -1,0 +1,87 @@
+{
+  "nav": {
+    "matchStatus": {
+      "yourTurnVeto": "Tocca a te (veto)",
+      "waitingVeto": "In attesa del veto",
+      "waitingServer": "In attesa del server",
+      "matchReady": "Match pronto – connettiti",
+      "snackbarOpponentMoved": "L’avversario ha fatto la sua mossa"
+    },
+    "home": "Home",
+    "browse": "Browse",
+    "dashboard": "Cruscotto",
+    "manage": "Manage",
+    "tournament": "Torneo",
+    "bracket": "Tabellone",
+    "matches": "Match",
+    "teams": "Squadre",
+    "players": "Giocatori",
+    "leaderboard": "Classifica",
+    "servers": "Server",
+    "maps": "Mappe e pool",
+    "templates": "Modelli",
+    "eloTemplates": "Calcolo ELO",
+    "adminTools": "Strumenti admin",
+    "publicLinks": "Link pubblici",
+    "devTools": "Strumenti dev",
+    "settings": "Impostazioni",
+    "resourcesSection": "Risorse",
+    "tournamentSection": "Torneo",
+    "configurationSection": "Configurazione",
+    "systemSection": "Sistema",
+    "documentation": "Documentazione",
+    "signOut": "Esci",
+    "linkSteam": "Collega Steam",
+    "myProfile": "Il mio profilo",
+    "accountConnections": "Account settings",
+    "goToAdminDashboard": "Vai al pannello admin",
+    "goToAdminDashboardHint": "Stai visualizzando il tuo profilo giocatore. Apri il pannello admin per gestire squadre, tornei e server."
+  },
+  "layout": {
+    "webhookNotConfigured": "L’URL del webhook non è configurato. Match e server non possono ricevere eventi finché non viene impostato.",
+    "openSettings": "Apri impostazioni",
+    "pageTitle": {
+      "dashboard": "Cruscotto",
+      "manage": "Manage",
+      "tournament": "Torneo",
+      "bracket": "Tabellone",
+      "matches": "Match",
+      "teams": "Squadre",
+      "players": "Giocatori",
+      "servers": "Server",
+      "maps": "Mappe e pool",
+      "templates": "Modelli",
+      "eloTemplates": "Calcolo ELO",
+      "adminTools": "Strumenti admin",
+      "settings": "Impostazioni",
+      "devTools": "Strumenti di sviluppo",
+      "publicLinks": "Link pubblici"
+    },
+    "openDrawer": "Apri il menu di navigazione",
+    "matchzyDbDown": {
+      "title": "Database MatchZy non raggiungibile",
+      "body_one": "{{count}} server segnala che il plugin non riesce a raggiungere il proprio database. Backup e coda eventi potrebbero risentirne.",
+      "body_other": "{{count}} server segnalano che il plugin non riesce a raggiungere il proprio database. Backup e coda eventi potrebbero risentirne."
+    },
+    "steamUnavailable": {
+      "title": "Integrazione Steam non disponibile",
+      "body": "Gli accessi e la risoluzione degli URL personalizzati potrebbero non funzionare. Controlla la configurazione e la connettività del server."
+    },
+    "closeDrawer": "Close navigation menu"
+  },
+  "common": {
+    "delete": "Elimina",
+    "cancel": "Annulla"
+  },
+  "app": {
+    "name": "Matchzy Auto Tournament"
+  },
+  "language": {
+    "label": "Lingua",
+    "en": "Inglese",
+    "zhCN": "Cinese (semplificato)"
+  },
+  "theme": {
+    "label": "Color theme"
+  }
+}

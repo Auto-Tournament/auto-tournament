@@ -1,0 +1,87 @@
+{
+  "app": {
+    "name": "Matchzy Auto Tournament"
+  },
+  "nav": {
+    "matchStatus": {
+      "yourTurnVeto": "Your turn in veto",
+      "waitingVeto": "Waiting for veto",
+      "waitingServer": "Waiting for server",
+      "matchReady": "Match ready – connect",
+      "snackbarOpponentMoved": "Opponent made their move"
+    },
+    "home": "Home",
+    "browse": "Browse",
+    "dashboard": "Dashboard",
+    "manage": "Manage",
+    "tournament": "Tournament",
+    "bracket": "Bracket",
+    "matches": "Matches",
+    "teams": "Teams",
+    "players": "Players",
+    "leaderboard": "Leaderboard",
+    "servers": "Servers",
+    "maps": "Maps & Map Pools",
+    "templates": "Templates",
+    "eloTemplates": "ELO Calculation",
+    "adminTools": "Admin Tools",
+    "publicLinks": "Public Links",
+    "devTools": "Dev Tools",
+    "settings": "Settings",
+    "resourcesSection": "Resources",
+    "tournamentSection": "Tournament",
+    "configurationSection": "Configuration",
+    "systemSection": "System",
+    "documentation": "Documentation",
+    "signOut": "Sign out",
+    "linkSteam": "Link Steam",
+    "myProfile": "My profile",
+    "accountConnections": "Account settings",
+    "goToAdminDashboard": "Go to Admin Dashboard",
+    "goToAdminDashboardHint": "You're viewing your player profile. Open the admin dashboard to manage teams, tournaments, and servers."
+  },
+  "layout": {
+    "webhookNotConfigured": "Webhook URL is not configured. Matches and servers cannot receive events until it is set.",
+    "openSettings": "Open settings",
+    "pageTitle": {
+      "dashboard": "Dashboard",
+      "manage": "Manage",
+      "tournament": "Tournament",
+      "bracket": "Bracket",
+      "matches": "Matches",
+      "teams": "Teams",
+      "players": "Players",
+      "servers": "Servers",
+      "maps": "Maps & Map Pools",
+      "templates": "Templates",
+      "eloTemplates": "ELO Calculation",
+      "adminTools": "Admin Tools",
+      "settings": "Settings",
+      "devTools": "Development Tools",
+      "publicLinks": "Public Links"
+    },
+    "openDrawer": "Open navigation menu",
+    "closeDrawer": "Close navigation menu",
+    "matchzyDbDown": {
+      "title": "MatchZy DB unreachable",
+      "body_one": "{{count}} server reports that the plugin cannot reach its database. Backups and the event queue may be affected.",
+      "body_other": "{{count}} servers report that the plugin cannot reach its database. Backups and the event queue may be affected."
+    },
+    "steamUnavailable": {
+      "title": "Steam integration unavailable",
+      "body": "Sign-ins and vanity URL lookups may not work. Check the server configuration and connectivity."
+    }
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "zhCN": "Chinese (Simplified)"
+  },
+  "common": {
+    "delete": "Delete",
+    "cancel": "Cancel"
+  },
+  "theme": {
+    "label": "Color theme"
+  }
+}

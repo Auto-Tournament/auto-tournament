@@ -1,0 +1,127 @@
+/* Minimal global styles - MUI handles most styling */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/*
+ * Bracket viewer (third-party markup). Colours are set as CSS variables on the
+ * container from the design tokens (BracketsViewerVisualization.tsx); the
+ * --at-* variables come from the MUI theme (theme/index.ts). Fallbacks keep
+ * the viewer readable if the theme variables are missing.
+ */
+.brackets-viewer {
+  font-family: var(--at-font-body, system-ui, sans-serif);
+}
+
+.brackets-viewer h1,
+.brackets-viewer h2 {
+  font-family: var(--at-font-display, system-ui, sans-serif);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.brackets-viewer .round > h3,
+.brackets-viewer .round-name {
+  background: transparent;
+  color: var(--label-color);
+  font-family: var(--at-font-mono, ui-monospace, monospace);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  padding: 6px 0;
+}
+
+.brackets-viewer .opponents {
+  background: var(--match-background);
+}
+
+.brackets-viewer .opponents > span {
+  font-family: var(--at-font-mono, ui-monospace, monospace);
+  background: var(--primary-background);
+  color: var(--label-color);
+  border-radius: 4px;
+}
+
+.brackets-viewer .participant {
+  background: var(--match-background);
+  color: var(--font-color);
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.brackets-viewer .participant + .participant {
+  border-top: 1px solid var(--at-rule, rgba(255, 255, 255, 0.1));
+}
+
+.brackets-viewer .participant .result {
+  font-family: var(--at-font-mono, ui-monospace, monospace);
+}
+
+/* Winner row: filled brand orange with dark ink, as on the homepage. */
+.brackets-viewer .participant.win {
+  background-color: var(--winner-background);
+  color: var(--win-color);
+  font-weight: 600;
+}
+
+.brackets-viewer .participant.win .name,
+.brackets-viewer .participant.win .name > span,
+.brackets-viewer .participant.win .result {
+  color: var(--win-color);
+}
+
+.brackets-viewer .participant.loss {
+  color: var(--loss-color);
+  background-color: var(--loser-background);
+}
+
+.brackets-viewer .participant.hover:not(.win) {
+  background: var(--at-rule, rgba(255, 255, 255, 0.08)) !important;
+}
+
+.brackets-viewer .match.match--clickable:hover .opponents {
+  border-color: var(--at-muted);
+}
+
+.brackets-viewer .match.match--live .opponents {
+  border-color: var(--live-border-color);
+  box-shadow: 0 0 0 1px var(--live-border-color);
+  animation: match-live-pulse 1.6s ease-in-out infinite;
+}
+
+.brackets-viewer .connector {
+  border-color: var(--connector-color);
+}
+
+.brackets-viewer .round--live > h3 {
+  color: var(--font-color);
+  border-radius: 999px;
+  border: 1px solid var(--live-border-color);
+}
+
+@keyframes match-live-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px var(--live-border-color);
+  }
+  50% {
+    box-shadow: 0 0 0 2px var(--live-border-color);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brackets-viewer .match.match--live .opponents {
+    animation: none;
+  }
+}
