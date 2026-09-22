@@ -38,6 +38,7 @@
   "tests/api/shuffle-tournament.spec.ts": 16.8,
   "tests/api/signed-pending-steam-link.spec.ts": 0.5,
   "tests/api/simulation-mid-tournament-veto.spec.ts": 14.9,
+  "tests/api/sso-no-silent-relink.spec.ts": 1.0,
   "tests/api/stale-loaded-match.spec.ts": 8.8,
   "tests/api/steam-key-health.spec.ts": 0.6,
   "tests/api/team-page-roster.spec.ts": 10.5,

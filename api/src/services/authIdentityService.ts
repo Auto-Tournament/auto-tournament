@@ -59,6 +59,26 @@ class AuthIdentityService {
     );
     if (other) return 'provider_in_use';
 
+    return this.linkIdentityUnlessOwnedElsewhere(provider, providerUserId, steamId);
+  }
+
+  /**
+   * Link an identity to this account unless it already belongs to another one.
+   * Used by the login flows (SSO callback with a Steam session, and the Steam
+   * callback completing a pending link). Unlike `linkIdentityIfUnowned` it
+   * does not refuse a second identity of the same provider, which those flows
+   * have always allowed.
+   *
+   * Never re-points an existing row: the insert is ON CONFLICT DO NOTHING and
+   * the stored owner is read back, so a race cannot re-point it either.
+   * - `linked`: the identity points at this account (new, or it already did);
+   * - `taken`: it belongs to another account and was left alone.
+   */
+  async linkIdentityUnlessOwnedElsewhere(
+    provider: AuthProvider,
+    providerUserId: string,
+    steamId: string
+  ): Promise<'linked' | 'taken'> {
     await db.runAsync(
       `INSERT INTO auth_identities (provider, provider_user_id, steam_id)
        VALUES (?, ?, ?)
@@ -118,10 +138,12 @@ class AuthIdentityService {
   }
 
   /**
-   * Link (or relink) an external auth identity to a Steam ID.
+   * Link (or relink) an external auth identity to a Steam ID, re-pointing an
+   * existing link on conflict.
    *
-   * This is idempotent per (provider, providerUserId) pair; calling it again
-   * with the same values is safe.
+   * Not for user-driven flows: re-pointing moves another account's sign-in
+   * method. Those use `linkIdentityUnlessOwnedElsewhere` or
+   * `linkIdentityIfUnowned`. Only the test seeding helper calls this.
    */
   async linkIdentityToSteam(
     provider: AuthProvider,

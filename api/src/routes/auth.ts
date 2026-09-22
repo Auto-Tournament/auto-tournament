@@ -245,8 +245,10 @@ export function readPendingSteamLink(
 /**
  * The linking step of `/steam/callback`, once Steam has proven `steamId`: link
  * the pending SSO identity (per `readPendingSteamLink`) to it and clear the
- * pending state. Errors are logged and swallowed; a failed link must not fail
- * the Steam login itself.
+ * pending state. An identity that already belongs to another Steam account is
+ * refused and left alone, never re-pointed; the pending state is still cleared
+ * and the Steam login goes ahead as a plain Steam login. Errors are logged and
+ * swallowed; a failed link must not fail the Steam login itself.
  *
  * Exported so the test helper runs exactly this code, since a test cannot
  * complete a real Steam OpenID login.
@@ -274,18 +276,28 @@ export async function completePendingSteamLink(
       return { ...read, linked: false };
     }
 
-    await authIdentityService.linkIdentityToSteam(
+    const outcome = await authIdentityService.linkIdentityUnlessOwnedElsewhere(
       read.link.provider,
       read.link.providerUserId,
       steamId
     );
 
+    // The pending link is spent either way: clear the session copy and the
+    // bridging cookie so a refused link is not retried on the next Steam login.
     if (anyReq.session) {
       delete anyReq.session.pendingSteamLink;
     }
-
-    // Clear the bridging cookie once we've successfully linked.
     res.clearCookie(PENDING_STEAM_LINK_COOKIE_NAME, PENDING_STEAM_LINK_COOKIE_OPTIONS);
+
+    if (outcome === 'taken') {
+      log.warn('Steam callback: pending identity already linked to another Steam account; not re-pointed', {
+        provider: read.link.provider,
+        providerUserId: redactProviderUserId(read.link.providerUserId),
+        steamId,
+        linkSource: read.source,
+      });
+      return { ...read, linked: false };
+    }
 
     log.success('Linked external auth identity to Steam', {
       provider: read.link.provider,
@@ -586,7 +598,13 @@ export function requireStrategy(strategyName: string, provider: AuthProvider) {
  * checked, code exchanged, profile fetched). The same for all providers:
  *
  *  1. A verified player_steam_id cookie is already present (the user signed in
- *     with Steam earlier in this browser): link this identity to that Steam ID.
+ *     with Steam earlier in this browser): link this identity to that Steam ID,
+ *     unless it already belongs to a different Steam account. Then nothing is
+ *     changed: the identity row is not re-pointed and the session stays the
+ *     signed-in account (no switch to the identity's owner, which would swap
+ *     accounts under a user who is signed in and most likely meant to add a
+ *     sign-in method). The user lands on /me/connections?link=taken, the same
+ *     outcome as the explicit Connect flow.
  *  2. The identity is already linked: sign in as the linked Steam ID.
  *  3. Otherwise: remember the identity in a signed pending_steam_link cookie
  *     (and the session) and send the user to /connect-steam. The Steam
@@ -634,7 +652,20 @@ export function ssoCallbackHandler(expectedProvider: AuthProvider) {
         cookieSteamId: cookieSteamId ?? null,
       });
       if (cookieSteamId) {
-        await authIdentityService.linkIdentityToSteam(provider, providerUserId, cookieSteamId);
+        const outcome = await authIdentityService.linkIdentityUnlessOwnedElsewhere(
+          provider,
+          providerUserId,
+          cookieSteamId
+        );
+        if (outcome === 'taken') {
+          // Leave the identity row and this browser's session exactly as they were.
+          log.warn(`${label} login refused: identity already linked to another Steam account`, {
+            provider,
+            providerUserId: redactProviderUserId(providerUserId),
+            steamId: cookieSteamId,
+          });
+          return linkResultRedirect(req, res, provider, 'taken');
+        }
         user.steamId = cookieSteamId;
         setPlayerSteamCookie(req, res, cookieSteamId);
 

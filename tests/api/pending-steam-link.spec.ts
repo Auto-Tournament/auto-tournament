@@ -4,12 +4,14 @@ import { test, expect, type APIResponse, type PlaywrightWorkerArgs } from '@play
  * Which `pending_steam_link` cookies the Steam callback acts on.
  *
  * When Steam proves an account, `/steam/callback` links the SSO identity named
- * by this cookie to it, re-pointing any existing link. An attacker who could
- * write the cookie could therefore point a victim's Discord login at their own
- * Steam account. The rule these tests pin down:
+ * by this cookie to it. It used to re-point any existing link, so an attacker
+ * who could write the cookie could point a victim's Discord login at their own
+ * Steam account. The rules these tests pin down:
  *
  *   Only a cookie the server signed, unmodified and unexpired, links anything.
  *   Anything else is ignored and the login is a plain Steam login.
+ *   Even a genuine cookie never re-points an identity that already belongs to
+ *   another Steam account.
  *
  * A real Steam OpenID login is out of reach, so `/api/test/complete-steam-link`
  * runs the callback's own linking step (`completePendingSteamLink`) as if Steam
@@ -228,20 +230,51 @@ test.describe('Steam callback: pending Steam link cookie', () => {
     'an expired cookie links nothing, though the same cookie in time would',
     TAGS,
     async ({ playwright }) => {
-      const victim = await victimWithLink(playwright);
-      const cookie = await realPendingCookie(playwright, victim.discordId);
-      const newSteamId = uniqueSteamId();
+      const discordId = uniqueDiscordId();
+      const cookie = await realPendingCookie(playwright, discordId);
+      const steamId = uniqueSteamId();
 
-      const late = await completeSteamLink(playwright, cookie, newSteamId, TEN_MINUTES_MS + 1000);
+      const late = await completeSteamLink(playwright, cookie, steamId, TEN_MINUTES_MS + 1000);
       expect(late.linked).toBe(false);
       expect(late.link).toBeNull();
       expect(late.cookieRejected).toBe('expired');
-      expect(await linkedSteamIds(playwright, victim.discordId)).toEqual([victim.steamId]);
+      expect(await linkedSteamIds(playwright, discordId)).toEqual([]);
 
       // Control: the clock is the only thing that made the difference.
-      const onTime = await completeSteamLink(playwright, cookie, newSteamId);
+      const onTime = await completeSteamLink(playwright, cookie, steamId);
       expect(onTime.linked).toBe(true);
-      expect(await linkedSteamIds(playwright, victim.discordId)).toEqual([newSteamId]);
+      expect(await linkedSteamIds(playwright, discordId)).toEqual([steamId]);
+    }
+  );
+
+  test(
+    'a genuine cookie for an identity owned by another account is refused, not re-pointed',
+    TAGS,
+    async ({ playwright }) => {
+      const victim = await victimWithLink(playwright);
+      const cookie = await realPendingCookie(playwright, victim.discordId);
+      const otherSteamId = uniqueSteamId();
+
+      const result = await completeSteamLink(playwright, cookie, otherSteamId);
+      // The cookie itself was trusted; the link was refused on ownership.
+      expect(result.source).toBe('cookie');
+      expect(result.cookieRejected).toBeNull();
+      expect(result.link).toEqual({ provider: 'discord', providerUserId: victim.discordId });
+      expect(result.linked).toBe(false);
+      expect(await linkedSteamIds(playwright, victim.discordId)).toEqual([victim.steamId]);
+    }
+  );
+
+  test(
+    'a genuine cookie for an identity already on the same account is a no-op success',
+    TAGS,
+    async ({ playwright }) => {
+      const owner = await victimWithLink(playwright);
+      const cookie = await realPendingCookie(playwright, owner.discordId);
+
+      const result = await completeSteamLink(playwright, cookie, owner.steamId);
+      expect(result.linked).toBe(true);
+      expect(await linkedSteamIds(playwright, owner.discordId)).toEqual([owner.steamId]);
     }
   );
 });
