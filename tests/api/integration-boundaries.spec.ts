@@ -6,8 +6,8 @@ import * as tsParser from '@typescript-eslint/parser';
 /**
  * Boundary lint for the game-integration split (3.0, step 1 PR 3).
  *
- * `yarn lint` enforces the rule on the real tree, where it passes trivially
- * until game code moves. This spec proves the rule actually fires on the
+ * `yarn lint` enforces the rule on the real tree as an error, with no
+ * allowlist (3.0 phase C, PR 14). This spec proves the rule actually fires on the
  * imports it must forbid, and that eslint.config.mjs applies it to the API and
  * the client, so disabling or mis-wiring it fails a test instead of silently
  * letting core code import CS2 internals again.
@@ -83,13 +83,54 @@ test.describe('Integration boundary lint', () => {
         'api/src/core/scheduler.ts',
         "import { rconService } from '../integrations/cs2/services/rconService';"
       )
-    ).toEqual(['coreToIntegration']);
+      // Both rules fire: it is CS2 code, and rconService is banned from core.
+    ).toEqual(['coreForbiddenModule', 'coreToIntegration']);
     expect(
       await lint(
         'api/src/routes/tournament.ts',
         "import { serverService } from '../integrations/cs2/services/serverService';"
       )
     ).toEqual(['coreToIntegration']);
+  });
+
+  test('the legacy allowlist is gone from the rule', async () => {
+    const fs = await import('fs');
+    const source = fs.readFileSync(path.join(REPO_ROOT, 'eslint-rules/integration-boundaries.mjs'), 'utf8');
+    expect(source).not.toMatch(/LEGACY_CORE_IMPORTS|isLegacyCoreImport/);
+  });
+
+  test('api/src/core must not import rconService or the MatchZy event types by any path', async () => {
+    expect(
+      await lint(
+        'api/src/core/scheduler.ts',
+        [
+          // Through a core-looking path (a copy or re-export shim) ...
+          "import { rconService } from '../services/rconService';",
+          "import type { MatchZyEvent } from '../types/matchzy-events.types';",
+          "import type { E } from '../types/matchzy-events';",
+          // ... an alias path ...
+          "import { rcon } from '@/services/rconService';",
+          // ... any import form, deeper in core.
+          "const r = require('../../somewhere/rconService.ts');",
+        ].join('\n')
+      )
+    ).toEqual(Array(5).fill('coreForbiddenModule'));
+    expect(
+      await lint('api/src/core/sub/x.ts', "export * from '../../integrations/cs2/events/matchzy-events.types';")
+    ).toEqual(['coreForbiddenModule', 'coreToIntegration']);
+  });
+
+  test('the core-only rule leaves the rest of the tree and look-alike names alone', async () => {
+    // Outside api/src/core, rule 1 alone decides (a core-path import is fine).
+    expect(await lint('api/src/services/x.ts', "import { a } from '../utils/rconService';")).toEqual([]);
+    // The CS2 integration owns these modules.
+    expect(
+      await lint('api/src/integrations/cs2/allocation.ts', "import { rconService } from './services/rconService';")
+    ).toEqual([]);
+    // Only the exact module names.
+    expect(
+      await lint('api/src/core/scheduler.ts', "import { x } from '../services/rconServiceHelpers';")
+    ).toEqual([]);
   });
 
   test('an integration may import its own files and the shared types', async () => {

@@ -16,7 +16,9 @@ import { matchLiveStatsService } from './matchLiveStatsService';
 import { getSwissStandings, getSwissStandingEntries } from './swissProgressionService';
 import { getRoundRobinStandings, getRoundRobinStandingEntries } from './roundRobinStandingsService';
 import type { DbMatchRow, DbTeamRow } from '../types/database.types';
-import { DEFAULT_GAME } from '../integrations/types';
+import { DEFAULT_GAME, type GameId } from '../integrations/types';
+import { integrationForMatch } from '../integrations/registry';
+import { determineInitialMatchStatus } from '../utils/matchStatusHelpers';
 import type {
   Tournament,
   TournamentRow,
@@ -27,6 +29,23 @@ import type {
   BracketMatch,
   BracketResponse,
 } from '../types/tournament.types';
+
+/**
+ * A generated slot's stored status. The generators hold every match with both
+ * teams as `pending` for the map veto (all series formats have one); a game
+ * without a pre-match phase gets the status the same helper gives a format
+ * without a veto, so its first-round matches are ready to allocate.
+ */
+function initialSlotStatus<S extends string>(
+  slot: { team1Id: string | null; team2Id: string | null; round: number; status: S },
+  format: string,
+  preMatchPhase: boolean
+): S | 'pending' | 'ready' | 'completed' {
+  if (preMatchPhase || slot.status !== 'pending') return slot.status;
+  return determineInitialMatchStatus(slot.team1Id, slot.team2Id, format, slot.round, {
+    preMatchPhase: false,
+  });
+}
 
 export const DEFAULT_SETTINGS: TournamentSettings = {
   matchFormat: 'bo3',
@@ -165,9 +184,16 @@ class TournamentService {
   /**
    * Create or replace the tournament
    */
+  /**
+   * `options.game` picks the integration that runs the tournament; omitted,
+   * the row gets the column default (CS2). The public create route never
+   * passes it: only built-in callers choose a game (today the test-only fake
+   * integration).
+   */
   async createTournament(
     tournamentId: number,
-    input: CreateTournamentInput
+    input: CreateTournamentInput,
+    options: { game?: GameId } = {}
   ): Promise<TournamentResponse> {
     const {
       name,
@@ -205,6 +231,7 @@ class TournamentService {
       type,
       format,
       status: 'setup',
+      ...(options.game ? { game: options.game } : {}),
       maps: JSON.stringify(maps),
       team_ids: JSON.stringify(teamIds || []), // Shuffle tournaments have no fixed teams
       settings: JSON.stringify(tournamentSettings),
@@ -385,6 +412,10 @@ class TournamentService {
 
       const result = await generator.generate(tournament);
 
+      // Every match belongs to the tournament's game.
+      const game = tournament.game || DEFAULT_GAME;
+      const preMatchPhase = integrationForMatch({ game }).capabilities.veto;
+
       // The generator returns neutral slots. Each slot's game config comes
       // from the match's integration, built before the rows are inserted (the
       // slugs have no row yet, exactly as when the generators built them).
@@ -393,6 +424,7 @@ class TournamentService {
           buildMatchConfigFor(
             {
               slug: slot.slug,
+              game,
               round: slot.round,
               bracket: slot.bracket ?? null,
               team1Id: slot.team1Id,
@@ -408,11 +440,13 @@ class TournamentService {
 
       for (const [index, matchData] of result.matches.entries()) {
         const config = configs[index];
-        const description = describeMatch({ config });
+        const description = describeMatch({ game, config });
+        const status = initialSlotStatus(matchData, tournament.format, preMatchPhase);
         const createdAt = Math.floor(Date.now() / 1000);
         const insertResult = await db.insertAsync('matches', {
           slug: matchData.slug,
           tournament_id: tournamentId,
+          game,
           round: matchData.round,
           match_number: matchData.matchNum,
           bracket: matchData.bracket ?? null,
@@ -421,7 +455,7 @@ class TournamentService {
           winner_id: matchData.winnerId,
           server_id: null,
           config: serializeMatchConfig(config),
-          status: matchData.status,
+          status,
           next_match_id: null, // Will be set in a second pass
           created_at: createdAt,
           ...(matchData.completedAt ? { completed_at: matchData.completedAt } : {}),
@@ -451,7 +485,7 @@ class TournamentService {
               }
             : null,
           winner: null,
-          status: matchData.status,
+          status,
           serverId: null,
           // Integration-owned config, forwarded as-is (client slots: PR 12).
           config: config as BracketMatch['config'],

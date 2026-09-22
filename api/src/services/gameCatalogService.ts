@@ -95,6 +95,7 @@ export function builtinGames(): BuiltinGame[] {
   const seen = new Set<string>();
 
   for (const integration of listIntegrations()) {
+    if (integration.catalog === null) continue;
     const slug = integration.catalog?.slug || slugify(integration.displayName);
     if (seen.has(slug)) continue;
     seen.add(slug);

@@ -16,13 +16,16 @@ export function requiresVeto(format: string): boolean {
  * @param team2Id - Second team ID (null if TBD)
  * @param format - Tournament format (bo1, bo3, bo5, etc.)
  * @param round - Match round number (1-based)
+ * @param options.preMatchPhase - Whether the match's game has a map veto;
+ *   defaults to what the format implies (every series format has one in CS2)
  * @returns Match status
  */
 export function determineInitialMatchStatus(
   team1Id: string | null | undefined,
   team2Id: string | null | undefined,
   format: string,
-  round: number = 1
+  round: number = 1,
+  options: { preMatchPhase?: boolean } = {}
 ): 'pending' | 'ready' | 'completed' {
   // If either team is missing, match is pending
   if (!team1Id || !team2Id) {
@@ -30,7 +33,7 @@ export function determineInitialMatchStatus(
   }
 
   // Both teams are set - check if veto is required
-  const needsVeto = requiresVeto(format);
+  const needsVeto = options.preMatchPhase ?? requiresVeto(format);
 
   // First round matches without veto requirement are ready immediately
   if (round === 1 && !needsVeto) {

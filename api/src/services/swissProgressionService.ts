@@ -14,6 +14,7 @@ import { emitBracketUpdate } from './socketService';
 import { buildMatchConfigFor, serializeMatchConfig } from '../utils/matchIntegration';
 import { settingsService } from './settingsService';
 import { integrationForMatch } from '../integrations/registry';
+import { DEFAULT_GAME } from '../integrations/types';
 import { makeMatchReady } from '../utils/matchProgression';
 import { tournamentRowToResponse } from '../utils/tournamentRow';
 import {
@@ -155,10 +156,18 @@ async function advanceOnce(tournamentId: number): Promise<void> {
   for (let n = slots.length + 1; n <= needed; n++) {
     const slug = `swiss-r${nextRound}m${n}`;
     await db.runAsync(
-      `INSERT INTO matches (slug, tournament_id, round, match_number, config, status, created_at)
-       VALUES (?, ?, ?, ?, ?, 'pending', ?)
+      `INSERT INTO matches (slug, tournament_id, game, round, match_number, config, status, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)
        ON CONFLICT (slug) DO NOTHING`,
-      [slug, tournamentId, nextRound, n, '{}', Math.floor(Date.now() / 1000)]
+      [
+        slug,
+        tournamentId,
+        tournament.game || DEFAULT_GAME,
+        nextRound,
+        n,
+        '{}',
+        Math.floor(Date.now() / 1000),
+      ]
     );
     const inserted = await db.queryOneAsync<RoundRow>('SELECT * FROM matches WHERE slug = ?', [
       slug,
@@ -257,6 +266,7 @@ async function advanceOnce(tournamentId: number): Promise<void> {
       {
         slug: slot.slug,
         id: a.id,
+        game: slot.game,
         round: nextRound,
         team1Id: a.team1,
         team2Id: a.team2,
