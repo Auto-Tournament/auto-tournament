@@ -179,7 +179,9 @@ test.describe.serial('Manual reporting on the team page', () => {
         await reporter.getByTestId('manual-report-submit').click();
 
         await expect(reporterState).toHaveAttribute('data-state', 'waitingOpponent');
-        await expect(reporter.getByTestId('manual-report-score')).toContainText('3');
+        // A one-game series reads back the game's own score, not maps won: a
+        // captain who typed 3-1 must not be shown "1 - 0".
+        await expect(reporter.getByTestId('manual-report-score')).toContainText('3 \u2013 1');
 
         // --- the opponent is not a captain yet, so there is nothing to answer -
         const opponent: Page = await opponentContext.newPage();
