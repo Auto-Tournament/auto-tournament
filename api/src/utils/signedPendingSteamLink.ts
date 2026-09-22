@@ -6,9 +6,12 @@
  * The session copy of that does not survive: Passport regenerates the session
  * when the Steam OpenID login completes. So a short-lived cookie is what
  * actually carries the pending link into `/steam/callback`, and that handler
- * calls `linkIdentityToSteam`, which re-points an existing link on conflict.
+ * links the identity to the Steam account it just proved.
  *
- * That makes the cookie a write capability over someone else's login. It used
+ * That handler used to re-point an existing link on conflict, which made the
+ * cookie a write capability over someone else's login. It now refuses an
+ * identity that already belongs to another account (see
+ * `completePendingSteamLink`), and the cookie is still hardened. It used
  * to be plain JSON, so anyone could set it to a victim's Discord ID, sign in
  * with their own Steam account, and have the victim's Discord login re-pointed
  * at the attacker's account. So it is now:
