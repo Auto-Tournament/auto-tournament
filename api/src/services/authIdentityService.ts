@@ -11,7 +11,79 @@ interface AuthIdentityRow {
   created_at: number;
 }
 
+/** One sign-in identity linked to an account, as the connections page shows it. */
+export interface LinkedIdentity {
+  provider: string;
+  /** Unix seconds. */
+  linkedAt: number;
+}
+
+/**
+ * Outcome of an explicit "link this provider to my account":
+ * - `linked`: the identity now points at this account (new, or it already did);
+ * - `taken`: it belongs to another account and was left alone;
+ * - `provider_in_use`: this account already has a different identity of that provider.
+ */
+export type ExplicitLinkResult = 'linked' | 'taken' | 'provider_in_use';
+
 class AuthIdentityService {
+  /** Every external identity linked to this Steam ID, oldest first. */
+  async listIdentitiesForSteamId(steamId: string): Promise<LinkedIdentity[]> {
+    const rows = await db.queryAsync<AuthIdentityRow>(
+      'SELECT * FROM auth_identities WHERE steam_id = ? ORDER BY created_at, id',
+      [steamId]
+    );
+    return rows.map((r) => ({ provider: r.provider, linkedAt: Number(r.created_at) }));
+  }
+
+  /**
+   * Link an identity to this account on the account owner's explicit request.
+   *
+   * Unlike `linkIdentityToSteam` (the login flows), this never re-points an
+   * identity that already belongs to someone else: the insert is ON CONFLICT
+   * DO NOTHING and the stored owner is read back, so two racing requests
+   * cannot both win either.
+   */
+  async linkIdentityIfUnowned(
+    provider: AuthProvider,
+    providerUserId: string,
+    steamId: string
+  ): Promise<ExplicitLinkResult> {
+    const owner = await this.findSteamIdForIdentity(provider, providerUserId);
+    if (owner && owner !== steamId) return 'taken';
+    if (owner === steamId) return 'linked';
+
+    const other = await db.queryOneAsync<{ id: number }>(
+      'SELECT id FROM auth_identities WHERE steam_id = ? AND provider = ? AND provider_user_id <> ?',
+      [steamId, provider, providerUserId]
+    );
+    if (other) return 'provider_in_use';
+
+    await db.runAsync(
+      `INSERT INTO auth_identities (provider, provider_user_id, steam_id)
+       VALUES (?, ?, ?)
+       ON CONFLICT (provider, provider_user_id) DO NOTHING`,
+      [provider, providerUserId, steamId]
+    );
+    const stored = await this.findSteamIdForIdentity(provider, providerUserId);
+    return stored === steamId ? 'linked' : 'taken';
+  }
+
+  /** Remove every identity of `provider` from this account. Returns how many went. */
+  async unlinkProviderFromSteamId(provider: string, steamId: string): Promise<number> {
+    const rows = await db.queryAsync<{ id: number }>(
+      'SELECT id FROM auth_identities WHERE steam_id = ? AND provider = ?',
+      [steamId, provider]
+    );
+    if (rows.length === 0) return 0;
+    await db.runAsync('DELETE FROM auth_identities WHERE steam_id = ? AND provider = ?', [
+      steamId,
+      provider,
+    ]);
+    return rows.length;
+  }
+
+
   /**
    * Find the Steam ID previously linked to a given external auth identity.
    */

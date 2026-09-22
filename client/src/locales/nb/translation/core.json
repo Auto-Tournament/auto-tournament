@@ -33,6 +33,7 @@
     "signOut": "Logg ut",
     "linkSteam": "Koble til Steam",
     "myProfile": "Min profil",
+    "accountConnections": "Kontoinnstillinger",
     "goToAdminDashboard": "Gå til admin-dashboard",
     "goToAdminDashboardHint": "Du ser spillerprofilen din. Åpne admin-dashboardet for å administrere lag, turneringer og servere."
   },

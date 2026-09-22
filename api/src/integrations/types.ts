@@ -358,6 +358,12 @@ export interface GameIntegration {
   capabilities: IntegrationCapabilities;
   /** Catalogue entry; defaults to a slug of `displayName`. */
   catalog?: GameCatalogEntry;
+  /**
+   * The account a player needs for this game, by sign-in provider id (CS2:
+   * 'steam', the Steam ID matches identify players by). Drives the "Game
+   * accounts" list on /me/connections. Omit when the game needs none.
+   */
+  accountProvider?: LinkedAccountRef['provider'];
 
   /**
    * The stats this game records. A function so it can depend on tournament

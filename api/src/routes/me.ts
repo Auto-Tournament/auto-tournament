@@ -20,23 +20,33 @@ import {
 } from '../services/gameCatalogService';
 import { resolveViewerIdentity } from '../utils/viewerIdentity';
 import { log } from '../utils/logger';
+import { getAuthProvidersConfig } from '../config/authProviders';
+import { authIdentityService } from '../services/authIdentityService';
+import { playerService } from '../services/playerService';
+import { listIntegrations } from '../integrations/registry';
+import {
+  LINKABLE_PROVIDERS,
+  checkRemoveSignInMethod,
+  isLinkableProvider,
+  isSameSiteRequest,
+} from '../utils/accountConnections';
 
 const router = Router();
 
 async function resolveAccount(
   req: Request,
   res: Response,
-  { write }: { write: boolean }
+  { write, what = 'games' }: { write: boolean; what?: 'games' | 'account' }
 ): Promise<PlayerAccount | null> {
   const identity = await resolveViewerIdentity(req);
   if (!identity.realSteamId) {
-    res.status(401).json({ success: false, error: 'Sign in to manage your games' });
+    res.status(401).json({ success: false, error: `Sign in to manage your ${what}` });
     return null;
   }
   if (write && identity.isImpersonating) {
     res.status(403).json({
       success: false,
-      error: 'You are impersonating a player. Stop impersonating to manage your own games.',
+      error: `You are impersonating a player. Stop impersonating to manage your own ${what}.`,
     });
     return null;
   }
@@ -179,6 +189,215 @@ router.post('/games/prompt/dismiss', async (req: Request, res: Response) => {
   } catch (error) {
     log.error('Error dismissing games prompt', error);
     return res.status(500).json({ success: false, error: 'Failed to skip' });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Connections: sign-in methods and game accounts
+// ---------------------------------------------------------------------------
+
+const PROVIDER_LABELS: Record<string, string> = {
+  steam: 'Steam',
+  discord: 'Discord',
+  keycloak: 'Keycloak',
+  github: 'GitHub',
+  google: 'Google',
+};
+
+/** Providers this site can sign in with right now, with their labels. */
+function enabledSignInProviders(): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const p of getAuthProvidersConfig()) {
+    if (p.enabled) out.set(p.id, p.label);
+  }
+  return out;
+}
+
+async function connectionsResponse(account: PlayerAccount, isImpersonating: boolean) {
+  const [player, identities] = await Promise.all([
+    playerService.getPlayerById(account.steamId),
+    authIdentityService.listIdentitiesForSteamId(account.steamId),
+  ]);
+  const enabled = enabledSignInProviders();
+  const linkedProviders = identities.map((i) => i.provider);
+
+  const signInMethods = [
+    {
+      provider: 'steam',
+      label: PROVIDER_LABELS.steam,
+      linked: true,
+      primary: true,
+      linkedAt: null as number | null,
+      signInEnabled: enabled.has('steam'),
+      canConnect: false,
+      removable: false,
+    },
+  ];
+  // Every provider this site offers, plus any linked one it no longer offers.
+  const shown = LINKABLE_PROVIDERS.filter(
+    (p) => enabled.has(p) || linkedProviders.includes(p)
+  );
+  for (const provider of shown) {
+    const identity = identities.find((i) => i.provider === provider);
+    signInMethods.push({
+      provider,
+      label: enabled.get(provider) ?? PROVIDER_LABELS[provider] ?? provider,
+      linked: !!identity,
+      primary: false,
+      linkedAt: identity?.linkedAt ?? null,
+      signInEnabled: enabled.has(provider),
+      canConnect: !identity && enabled.has(provider),
+      removable:
+        !!identity &&
+        checkRemoveSignInMethod({
+          provider,
+          linkedProviders,
+          enabledProviders: [...enabled.keys()],
+        }).ok,
+    });
+  }
+
+  // Game accounts follow the installed game modules: each names the provider
+  // whose account identifies its players.
+  const gamesByProvider = new Map<string, Array<{ id: string; name: string }>>();
+  for (const integration of listIntegrations()) {
+    if (!integration.accountProvider) continue;
+    const games = gamesByProvider.get(integration.accountProvider) ?? [];
+    games.push({ id: integration.id, name: integration.displayName });
+    gamesByProvider.set(integration.accountProvider, games);
+  }
+  const gameAccounts = [...gamesByProvider.entries()].map(([provider, games]) => ({
+    provider,
+    label: PROVIDER_LABELS[provider] ?? provider,
+    // Steam is the account's own identity, proven by the Steam sign-in.
+    linked: provider === 'steam',
+    verified: provider === 'steam',
+    externalId: provider === 'steam' ? account.steamId : null,
+    games,
+  }));
+
+  return {
+    success: true,
+    account: {
+      uid: account.uid,
+      steamId: account.steamId,
+      name: player?.name ?? account.steamId,
+      avatar: player?.avatar ?? null,
+    },
+    isImpersonating,
+    signInMethods,
+    gameAccounts,
+  };
+}
+
+/**
+ * @openapi
+ * /api/me/connections:
+ *   get:
+ *     tags: [Me]
+ *     summary: The signed-in player's sign-in methods and game accounts
+ *     description: >
+ *       Sign-in methods list Steam (the account's primary identity, never
+ *       removable) and every provider this site offers or the account has
+ *       linked. Game accounts are derived from the installed game modules.
+ *       Answers for the real signed-in account, also while impersonating.
+ *     responses:
+ *       200:
+ *         description: Account, sign-in methods and game accounts
+ *       401:
+ *         description: Not signed in
+ *       404:
+ *         description: Signed in, but no player record
+ */
+router.get('/connections', async (req: Request, res: Response) => {
+  try {
+    const account = await resolveAccount(req, res, { write: false, what: 'account' });
+    if (!account) return;
+    const identity = await resolveViewerIdentity(req);
+    return res.json(await connectionsResponse(account, identity.isImpersonating));
+  } catch (error) {
+    log.error('Error reading own connections', error);
+    return res.status(500).json({ success: false, error: 'Failed to load your connections' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/me/connections/{provider}/remove:
+ *   post:
+ *     tags: [Me]
+ *     summary: Remove a sign-in method from the signed-in player's account
+ *     description: >
+ *       Steam cannot be removed (it is the account's primary identity), and
+ *       neither can the last method this site would let the player sign in
+ *       with. Requires a JSON request from this site (Origin checked).
+ *     parameters:
+ *       - in: path
+ *         name: provider
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [discord, keycloak, github, google]
+ *     responses:
+ *       200:
+ *         description: Removed; the updated connections
+ *       400:
+ *         description: Steam, or not a sign-in provider
+ *       401:
+ *         description: Not signed in
+ *       403:
+ *         description: Impersonating, or a cross-site request
+ *       404:
+ *         description: Not linked to this account
+ *       409:
+ *         description: It is the last way to sign in
+ *       415:
+ *         description: Not a JSON request
+ */
+router.post('/connections/:provider/remove', async (req: Request, res: Response) => {
+  try {
+    if (!isSameSiteRequest(req)) {
+      log.warn('Refused cross-site sign-in method removal', { provider: req.params.provider });
+      return res.status(403).json({ success: false, error: 'Request refused' });
+    }
+    if (!req.is('application/json')) {
+      return res.status(415).json({ success: false, error: 'Send this request as JSON' });
+    }
+    const account = await resolveAccount(req, res, { write: true, what: 'account' });
+    if (!account) return;
+
+    const { provider } = req.params;
+    if (provider === 'steam') {
+      return res
+        .status(400)
+        .json({ success: false, error: 'Steam is your primary sign-in and cannot be removed' });
+    }
+    if (!isLinkableProvider(provider)) {
+      return res.status(400).json({ success: false, error: 'Unknown sign-in method' });
+    }
+
+    const identities = await authIdentityService.listIdentitiesForSteamId(account.steamId);
+    const check = checkRemoveSignInMethod({
+      provider,
+      linkedProviders: identities.map((i) => i.provider),
+      enabledProviders: [...enabledSignInProviders().keys()],
+    });
+    if (!check.ok) {
+      if (check.reason === 'not_linked') {
+        return res.status(404).json({ success: false, error: 'Not linked to your account' });
+      }
+      return res.status(409).json({
+        success: false,
+        error: 'This is your only way to sign in. Connect another method first.',
+      });
+    }
+
+    await authIdentityService.unlinkProviderFromSteamId(provider, account.steamId);
+    log.info('Removed sign-in method from account', { provider, steamId: account.steamId });
+    return res.json(await connectionsResponse(account, false));
+  } catch (error) {
+    log.error('Error removing sign-in method', error);
+    return res.status(500).json({ success: false, error: 'Failed to remove sign-in method' });
   }
 });
 

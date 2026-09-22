@@ -1,4 +1,5 @@
 {
+  "tests/api/account-connections.spec.ts": 1.0,
   "tests/api/add-player.spec.ts": 2.3,
   "tests/api/admin-denial-reason.spec.ts": 2.2,
   "tests/api/admin-seed.spec.ts": 0.5,
@@ -48,6 +49,7 @@
   "tests/example.spec.ts": 1.9,
   "tests/setup.spec.ts": 1.6,
   "tests/ui/accessibility.spec.ts": 19.9,
+  "tests/ui/account-connections.spec.ts": 3.5,
   "tests/ui/bracket.spec.ts": 3.5,
   "tests/ui/copy-connect-command.spec.ts": 7.3,
   "tests/ui/dashboard.spec.ts": 1.3,

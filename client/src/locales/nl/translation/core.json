@@ -30,6 +30,7 @@
     "signOut": "Uitloggen",
     "linkSteam": "Steam koppelen",
     "myProfile": "Mijn profiel",
+    "accountConnections": "Account settings",
     "goToAdminDashboard": "Ga naar admin-dashboard",
     "goToAdminDashboardHint": "Je bekijkt je spelersprofiel. Open het admin-dashboard om teams, toernooien en servers te beheren."
   },
