@@ -247,6 +247,27 @@ test.describe('Manual-report: what counts as a result', () => {
     if (!checked.ok) return;
     expect(checked.result.winner).toBeNull();
     expect(checked.result.maps[0].winner).toBeNull();
+
+    // A level series that is genuinely over is a result too.
+    const drawn = validateResult(
+      { maps: [{ team1Score: 2, team2Score: 1 }, { team1Score: 0, team2Score: 3 }] },
+      { seriesLength: 3, allowDraw: true }
+    );
+    expect(drawn.ok).toBe(true);
+  });
+
+  test('allowing draws does not let a series be cut short', () => {
+    // "We won the first, then went home" must not finish a best-of-three,
+    // whether or not the tournament allows a drawn series.
+    for (const allowDraw of [false, true]) {
+      const checked = validateResult({ maps: [{ team1Score: 3, team2Score: 1 }] }, {
+        seriesLength: 3,
+        allowDraw,
+      });
+      expect(checked.ok, `allowDraw: ${allowDraw}`).toBe(false);
+      if (checked.ok) continue;
+      expect(checked.error).toContain('Neither side has won 2 of 3');
+    }
   });
 });
 

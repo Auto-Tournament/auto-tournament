@@ -333,22 +333,19 @@ export function validateResult(
     });
   }
 
-  // Enough games must have been played to decide the series, unless it is a
-  // draw the tournament allows.
+  // Enough games must have been played to decide the series. A report that
+  // stops one game short ("we won the first, then went home") would otherwise
+  // finish a best-of-three on one game.
   const needed = Math.floor(rules.seriesLength / 2) + 1;
   const decided = team1Maps >= needed || team2Maps >= needed;
-  if (!decided && !rules.allowDraw && team1Maps !== team2Maps) {
-    return {
-      ok: false,
-      error: `Neither side has won ${needed} of ${rules.seriesLength} games`,
-    };
-  }
-  if (!decided && team1Maps !== team2Maps && !rules.allowDraw) {
-    return { ok: false, error: 'The series is not decided' };
+  const level = team1Maps === team2Maps;
+  if (!decided && !level) {
+    return { ok: false, error: `Neither side has won ${needed} of ${rules.seriesLength} games` };
   }
 
   const seriesWinner: 'team1' | 'team2' | null =
     team1Maps > team2Maps ? 'team1' : team2Maps > team1Maps ? 'team2' : null;
+  // A level series is only a result where the tournament says a draw is one.
   if (seriesWinner === null && !rules.allowDraw) {
     return { ok: false, error: 'The series is level, and this tournament allows no draw' };
   }
