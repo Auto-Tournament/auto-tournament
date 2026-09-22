@@ -214,116 +214,106 @@
     }
   },
   "dashboard": {
-    "title": "Overzicht",
-    "notReady": "Het toernooidashboard verschijnt hier zodra het toernooi is gestart.",
-    "manageBanner": {
-      "text": "Looking for what needs a decision right now? The Manage console keeps a live queue of matches and servers that need you.",
-      "cta": "Open Manage"
-    },
+    "title": "Admin",
     "restartTournament": {
-      "button": "Wedstrijden opnieuw starten",
-      "restarting": "Toernooiwedstrijden worden opnieuw gestart..."
+      "button": "Restart Tournament Matches",
+      "restarting": "Restarting tournament matches…"
     },
-    "onboarding": {
-      "ready": "🎉 Klaar voor gebruik!",
-      "gettingStarted": "Aan de slag",
-      "stepsComplete": "{{completed}}/{{total}} Voltooid",
-      "subtitle": "Volg deze stappen om je eerste toernooi in te stellen",
-      "steps": {
-        "webhook": {
-          "title": "Webhook-URL configureren",
-          "secondaryConfigured": "Webhook-eindpunt geconfigureerd",
-          "secondaryMissing": "Stel de basis-URL in voor webhooks en demo-uploads",
-          "openSettings": "Open instellingen"
-        },
-        "servers": {
-          "title": "Voeg ten minste één CS2-server toe",
-          "chip": "{{count}} server",
-          "chipPlural": "{{count}} servers",
-          "secondaryConfigured": "Servers geconfigureerd en gereed",
-          "secondaryMissing": "Begin met het toevoegen van je CS2-gameservers",
-          "addServer": "Server toevoegen"
-        },
-        "teamsPlayers": {
-          "title": "Teams maken of spelers toevoegen",
-          "teamsChip": "{{count}} team",
-          "teamsChipPlural": "{{count}} teams",
-          "playersChip": "{{count}} speler",
-          "playersChipPlural": "{{count}} spelers",
-          "secondaryConfigured": "{{details}}",
-          "secondaryMissing": "Maak teams en/of voeg spelers toe met hun Steam-ID's",
-          "createTeams": "Teams aanmaken",
-          "addPlayers": "Spelers toevoegen"
-        },
-        "tournament": {
-          "title": "Configureer je toernooi",
-          "chipStatus": "{{status}}",
-          "secondaryConfigured": "Toernooi geconfigureerd met teams en format",
-          "secondaryMissing": "Toernooitype, -indeling, -teams en -kaarten instellen",
-          "createTournament": "Wedstrijdvorm maken"
-        }
+    "header": {
+      "brand": "Auto Tournament",
+      "version": "Your Auto Tournament site · version {{version}}",
+      "unknownVersion": "dev",
+      "createTournament": "Create tournament"
+    },
+    "setup": {
+      "title": "Finish setting up",
+      "openSettings": "Open settings",
+      "steam": "Steam sign-in",
+      "serversTodo": "Connect a server",
+      "serversDone": "{{count}} server connected",
+      "serversDonePlural": "{{count}} servers connected",
+      "discord": "Discord sign-in (optional)",
+      "igdb": "Game covers via IGDB (optional)"
+    },
+    "tournaments": {
+      "title": "Tournaments",
+      "empty": "No tournaments yet. Create one to get started.",
+      "status": {
+        "setup": "Draft",
+        "ready": "Sign-up",
+        "inProgress": "Live",
+        "completed": "Finished"
       },
-      "startCta": {
-        "helper": "Alles is klaar! Bekijk uw configuratie en start het toernooi vanaf de toernooipagina.",
-        "button": "Ga naar Toernooi"
+      "state": {
+        "draftEmpty": "Not published yet",
+        "draftTeams": "Draft · {{count}} team selected",
+        "draftTeamsPlural": "Draft · {{count}} teams selected",
+        "readyTeams": "{{count}} team entered · sign-up open",
+        "readyTeamsPlural": "{{count}} teams entered · sign-up open",
+        "inProgressTeams": "{{count}} team · in progress",
+        "inProgressTeamsPlural": "{{count}} teams · in progress",
+        "completedTeams": "{{count}} team took part",
+        "completedTeamsPlural": "{{count}} teams took part",
+        "winner": "Winner: {{name}}"
+      },
+      "actions": {
+        "manage": "Manage",
+        "continueSetup": "Continue setup",
+        "view": "View"
       }
     },
-    "stats": {
-      "heading": "Toernooistatistieken",
-      "tournamentStatus": {
-        "title": "Toernooistatus",
-        "none": "Geen toernooi actief",
-        "typeLabel": "Soort",
-        "formatLabel": "Formaat",
-        "matchesLabel": "Wedstrijden"
+    "site": {
+      "title": "Site",
+      "servers": {
+        "label": "Servers",
+        "hint": "Connect, update, health"
       },
-      "matchStatus": {
-        "title": "Wedstrijdstatus",
-        "total": "Totaal aantal wedstrijden",
-        "pending": "In behandeling:",
-        "ready": "Gereed:",
-        "loaded": "Geladen:",
-        "live": "Live (nu):",
-        "completed": "Voltooid:"
-      },
-      "serverStatus": {
-        "title": "Serverstatus",
-        "onlineSummary": "Online servers",
-        "online": "{{count}} online",
-        "offline": "{{count}} offline",
-        "distributionTitle": "Serverstatus"
+      "maps": {
+        "label": "Maps",
+        "hint": "Pools and images"
       },
       "players": {
-        "title": "Spelers",
-        "total": "Totaal aantal spelers",
-        "inMatches": "In wedstrijden:",
-        "waiting": "Wachten:"
+        "label": "Players",
+        "hint": "Everyone who signed in"
       },
-      "playerDistribution": {
-        "title": "Spelerverdeling"
+      "teams": {
+        "label": "Teams",
+        "hint": "Clubs and rosters"
       },
-      "topPlayers": {
-        "title": "Topspelers van ELO",
-        "subtitle": "Globale beoordeling voor alle toernooitypes",
-        "chip": "ELO: {{value}}"
+      "templates": {
+        "label": "Templates",
+        "hint": "Reusable setups"
       },
-      "eloDistribution": {
-        "title": "Speler ELO Distributie",
-        "subtitle": "Aantal spelers per Skill Rating-band (emmergrootte {{bucket}}).",
-        "xAxis": "Skill Rating-band",
-        "yAxis": "Spelers",
-        "seriesLabel": "Spelers"
+      "ratings": {
+        "label": "Ratings",
+        "hint": "ELO templates"
       },
-      "recentMatches": {
-        "title": "Recent afgeronde wedstrijden",
-        "subtitle": "Laatste {{count}} voltooide wedstrijden",
-        "none": "Nog geen afgeronde wedstrijden.",
-        "chipCompleted": "Afgerond"
+      "settings": {
+        "label": "Settings",
+        "hint": "Sign-in, API keys"
       },
-      "noData": "Geen gegevens beschikbaar. Maak een toernooi om statistieken te bekijken.",
-      "errors": {
-        "load": "Kan dashboardgegevens niet laden"
+      "adminTools": {
+        "label": "Admin tools",
+        "hint": "Logs and maintenance"
       }
+    },
+    "servers": {
+      "title": "Servers",
+      "open": "Open",
+      "online": "online",
+      "inMatch": "In a match",
+      "free": "Free",
+      "offline": "Offline",
+      "plugin": "Plugin",
+      "pluginSame": "{{version}}, all servers match",
+      "pluginMixed": "{{count}} plugin versions in use",
+      "none": "No servers connected yet."
+    },
+    "people": {
+      "title": "People",
+      "open": "Open",
+      "players": "Players",
+      "admins": "Admins"
     }
   },
   "managePage": {

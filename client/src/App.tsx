@@ -6,7 +6,7 @@ import { PageHeaderProvider } from './contexts/PageHeaderContext';
 import { SnackbarProvider, useSnackbar } from './contexts/SnackbarContext';
 import { AtIcon } from './components/common/AtIcon';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
+import AdminHome from './pages/AdminHome';
 import Manage from './pages/Manage';
 import Teams from './pages/Teams';
 import Players from './pages/Players';
@@ -332,7 +332,7 @@ function AppRoutes() {
       />
 
       <Route path="/" element={<RootRoute />}>
-        <Route index element={<Dashboard />} />
+        <Route index element={<AdminHome />} />
         <Route path="manage" element={<Manage />} />
         <Route path="teams" element={<Teams />} />
         <Route path="players" element={<Players />} />

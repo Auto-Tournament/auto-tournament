@@ -54,6 +54,7 @@
   "tests/ui/bracket.spec.ts": 3.5,
   "tests/ui/browse.spec.ts": 5.0,
   "tests/ui/copy-connect-command.spec.ts": 7.3,
+  "tests/ui/admin-home.spec.ts": 4.0,
   "tests/ui/dashboard.spec.ts": 1.3,
   "tests/ui/games-you-play.spec.ts": 3.0,
   "tests/ui/home.spec.ts": 5.0,
