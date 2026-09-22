@@ -28,6 +28,7 @@ import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 import DownloadIcon from '@mui/icons-material/Download';
 import { api } from '../utils/api';
+import { onSocketReconnect } from '../utils/socketResync';
 import { io, Socket } from 'socket.io-client';
 import { ELOProgressionChart } from '../components/player/ELOProgressionChart';
 import { PerformanceMetricsChart } from '../components/player/PerformanceMetricsChart';
@@ -613,8 +614,17 @@ export default function PlayerProfile() {
       }
     };
 
-    socket.on('bracket:update', handleBracketOrTournamentUpdate);
+    // Every bracket event is a change to some match's state (ready, server
+    // assigned, needs a decision, reallocated...). Filtering them against an
+    // allowlist silently dropped the ones nobody had added yet (match_ready,
+    // match_status, match_reallocated), so refresh on all of them; the
+    // refresh is debounced.
+    const handleBracketUpdate = () => scheduleSilentRefresh();
+
+    socket.on('bracket:update', handleBracketUpdate);
     socket.on('tournament:update', handleBracketOrTournamentUpdate);
+    // Events sent while the socket was down are gone; refetch on reconnect.
+    const offReconnect = onSocketReconnect(socket, scheduleSilentRefresh);
 
     // Additionally, refresh the player summary whenever any match completes.
     // This ensures ELO, rating history, and match history update immediately
@@ -636,7 +646,8 @@ export default function PlayerProfile() {
         silentRefreshTimerRef.current = null;
       }
       if (!socket) return;
-      socket.off('bracket:update', handleBracketOrTournamentUpdate);
+      offReconnect();
+      socket.off('bracket:update', handleBracketUpdate);
       socket.off('tournament:update', handleBracketOrTournamentUpdate);
       socket.off('match:update', handleAnyMatchUpdate);
       socket.close();

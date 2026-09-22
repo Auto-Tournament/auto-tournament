@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
+import { onSocketReconnect } from '../utils/socketResync';
 import type {
   Team,
   TeamStats,
@@ -54,6 +55,7 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
   
   // Use ref to track current match slug to avoid infinite loops
   const currentMatchSlugRef = useRef<string | null>(null);
+  const currentMatchStatusRef = useRef<TeamMatchInfo['status'] | null>(null);
 
   const mergeConnectionStatus = useCallback((slug: string, status: MatchConnectionStatus) => {
     setMatch((prev) => {
@@ -263,11 +265,11 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
     [teamId]
   );
 
-  // Update ref when match changes
+  // Update refs when match changes. Cleared when the team has no match, so a
+  // finished match does not keep filtering out events about the next one.
   useEffect(() => {
-    if (match) {
-      currentMatchSlugRef.current = match.slug;
-    }
+    currentMatchSlugRef.current = match?.slug ?? null;
+    currentMatchStatusRef.current = match?.status ?? null;
   }, [match]);
 
   const currentMatchSlug = match?.slug ?? null;
@@ -288,6 +290,35 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
 
     // Setup Socket.IO for real-time updates
     const socket = io();
+
+    // Silent refetch of everything the page shows, coalesced so a burst of
+    // events (a round advancing emits several) costs one round of requests.
+    let resyncTimer: ReturnType<typeof setTimeout> | null = null;
+    const resync = () => {
+      if (resyncTimer) clearTimeout(resyncTimer);
+      resyncTimer = setTimeout(() => {
+        resyncTimer = null;
+        void loadTeamMatch(true);
+        void loadMatchHistory(true);
+        void loadTeamStats(true);
+        const trackedSlug = currentMatchSlugRef.current;
+        if (trackedSlug) {
+          void fetchConnectionStatus(trackedSlug);
+          void fetchLiveStats(trackedSlug);
+        }
+      }, 250);
+    };
+
+    // An event naming a match is only safe to ignore while this team is busy
+    // with a different, unfinished match. With no match yet, or a finished
+    // one, any match event may be this team's next match being created,
+    // readied or given a server - ignoring those left the page stale until a
+    // hard refresh.
+    const isForAnotherMatch = (slug?: string) => {
+      const trackedSlug = currentMatchSlugRef.current;
+      if (!slug || !trackedSlug || slug === trackedSlug) return false;
+      return currentMatchStatusRef.current !== 'completed';
+    };
 
     const handleMatchUpdate = (data: {
       slug?: string;
@@ -376,6 +407,11 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
           fetchConnectionStatus(messageSlug);
           fetchLiveStats(messageSlug);
         }
+        // A finished match changes history and stats, and may hand the team
+        // its next match.
+        if (data.status === 'completed') {
+          resync();
+        }
         return;
       }
 
@@ -383,12 +419,8 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
     };
 
     const handleBracketUpdate = (event?: BracketSocketEvent) => {
-      const trackedSlug = currentMatchSlugRef.current;
-      if (!trackedSlug) return;
-      if (event?.matchSlug && event.matchSlug !== trackedSlug) {
-        return;
-      }
-      loadTeamMatch(true);
+      if (isForAnotherMatch(event?.matchSlug)) return;
+      resync();
     };
 
     const handleTournamentUpdate = (
@@ -407,11 +439,7 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
         return;
       }
 
-      const trackedSlug = currentMatchSlugRef.current;
-      if (!trackedSlug) return;
-      if (data.matchSlug && data.matchSlug !== trackedSlug) {
-        return;
-      }
+      if (isForAnotherMatch(data.matchSlug)) return;
 
       const refreshActions = new Set([
         'tournament_reset',
@@ -430,21 +458,24 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
       // refresh so veto/match readiness doesn't get stuck.
       const status = (data as { status?: string }).status;
       if (typeof status === 'string' && status.trim() !== '' && status !== tournamentStatus) {
-        loadTeamMatch(true);
+        resync();
         return;
       }
 
       if (data.action && !refreshActions.has(data.action)) return;
 
-      loadTeamMatch(true);
+      resync();
     };
 
     // Use silent updates for socket events to avoid loading spinner
     socket.on('match:update', handleMatchUpdate);
     socket.on('bracket:update', handleBracketUpdate);
     socket.on('tournament:update', handleTournamentUpdate);
+    const offReconnect = onSocketReconnect(socket, resync);
 
     return () => {
+      if (resyncTimer) clearTimeout(resyncTimer);
+      offReconnect();
       socket.off('match:update', handleMatchUpdate);
       socket.off('bracket:update', handleBracketUpdate);
       socket.off('tournament:update', handleTournamentUpdate);

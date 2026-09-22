@@ -28,6 +28,7 @@ import { useTournament } from '../hooks/useTournament';
 import { validateTeamCountForType } from '../utils/tournamentValidation';
 import { api } from '../utils/api';
 import { io } from 'socket.io-client';
+import { onSocketReconnect } from '../utils/socketResync';
 import { MATCH_FORMATS } from '../constants/tournament';
 import type { Tournament as TournamentRecord, TournamentTemplate } from '../types/tournament.types';
 import type { ShuffleTournamentSettings } from '../components/tournament/ShuffleTournamentConfigStep';
@@ -1084,8 +1085,10 @@ const Tournament: React.FC = () => {
     };
 
     socket.on('tournament:update', handleTournamentUpdate);
+    const offReconnect = onSocketReconnect(socket, () => void refreshDataRef.current());
 
     return () => {
+      offReconnect();
       socket.off('tournament:update', handleTournamentUpdate);
       socket.close();
     };

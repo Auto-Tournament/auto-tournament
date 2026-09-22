@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { io } from 'socket.io-client';
+import { onSocketReconnect } from '../../utils/socketResync';
 import { VetoMapCard } from './VetoMapCard';
 import { getMapData, getMapDisplayName } from '../../constants/maps';
 import { getVetoOrder } from '../../constants/vetoOrders';
@@ -151,7 +152,25 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       }
     });
 
+    // A pick or ban made while this socket was down never arrives, which left
+    // the board on the wrong turn until a reload. Refetch on reconnect,
+    // without the loading state so the board does not flash.
+    const offReconnect = onSocketReconnect(newSocket, () => {
+      void fetch(`/api/veto/${matchSlug}`)
+        .then((response) => response.json())
+        .then((data: { success?: boolean; veto?: VetoState }) => {
+          if (data.success && data.veto) {
+            setVetoState(data.veto);
+            if (data.veto.status === 'completed') {
+              onCompleteRef.current?.(data.veto);
+            }
+          }
+        })
+        .catch(() => undefined);
+    });
+
     return () => {
+      offReconnect();
       newSocket.close();
     };
   }, [matchSlug, loadVetoState]);

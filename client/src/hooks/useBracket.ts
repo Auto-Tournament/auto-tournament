@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '../utils/api';
 import { io } from 'socket.io-client';
+import { onSocketReconnect } from '../utils/socketResync';
 import type { Match, MatchLiveStats, RoundRobinStanding, SwissStanding, Tournament } from '../types';
 import { useSnackbar } from '../contexts/SnackbarContext';
 
@@ -507,8 +508,11 @@ export const useBracket = () => {
 
     newSocket.on('match:update', applyMatchPatch);
     newSocket.on('bracket:update', handleBracketUpdate);
+    // Events sent while the socket was down are gone; refetch on reconnect.
+    const offReconnect = onSocketReconnect(newSocket, () => void loadBracket({ silent: true }));
 
     return () => {
+      offReconnect();
       newSocket.off('match:update', applyMatchPatch);
       newSocket.off('bracket:update', handleBracketUpdate);
       newSocket.close();

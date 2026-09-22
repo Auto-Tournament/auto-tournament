@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { io } from 'socket.io-client';
+import { onSocketReconnect } from '../utils/socketResync';
 import {
   Box,
   Card,
@@ -219,8 +220,10 @@ export default function TournamentLeaderboard() {
     socket.on('match:update', handleMatchUpdate);
     socket.on('tournament:update', handleTournamentUpdate);
     socket.on('bracket:update', handleBracketUpdate);
+    const offReconnect = onSocketReconnect(socket, refreshLeaderboardSilently);
 
     return () => {
+      offReconnect();
       socket.off('match:update', handleMatchUpdate);
       socket.off('tournament:update', handleTournamentUpdate);
       socket.off('bracket:update', handleBracketUpdate);
