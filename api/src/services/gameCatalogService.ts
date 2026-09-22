@@ -42,6 +42,10 @@ export interface GameSummary {
   supported: boolean;
   /** Where this row's data came from; the client uses it to pick a credit line. */
   source: 'igdb' | 'wikidata' | 'builtin';
+  /** Up to 3 genre names, from IGDB `genres.name` or Wikidata P136. */
+  genres: string[];
+  /** `coverUrl` if present, else `logoUrl`; convenience for the onboarding page's cards. */
+  imageUrl: string | null;
 }
 
 export interface GameSearchResult {
@@ -134,11 +138,22 @@ interface GameRow {
   cover_url: string | null;
   logo_url: string | null;
   release_year: number | null;
+  genres: string | null;
   source: string;
 }
 
 const GAME_COLUMNS =
-  'id, igdb_id, wikidata_id, slug, name, cover_url, logo_url, release_year, source';
+  'id, igdb_id, wikidata_id, slug, name, cover_url, logo_url, release_year, genres, source';
+
+function parseGenres(genres: string | null): string[] {
+  if (!genres) return [];
+  try {
+    const parsed = JSON.parse(genres);
+    return Array.isArray(parsed) ? parsed.filter((g): g is string => typeof g === 'string') : [];
+  } catch {
+    return [];
+  }
+}
 
 function toSummary(row: GameRow, supported: Map<string, string>): GameSummary {
   return {
@@ -149,6 +164,8 @@ function toSummary(row: GameRow, supported: Map<string, string>): GameSummary {
     releaseYear: row.release_year,
     supported: supported.has(row.slug),
     source: row.source === 'igdb' || row.source === 'wikidata' ? row.source : 'builtin',
+    genres: parseGenres(row.genres),
+    imageUrl: row.cover_url || row.logo_url || null,
   };
 }
 
@@ -182,6 +199,11 @@ async function rowsBySlug(slugs: string[]): Promise<Map<string, GameRow>> {
  * Upsert IGDB results. Matched by IGDB id first (IGDB can rename a slug),
  * then by slug (a built-in row for the same game).
  */
+/** JSON for up to 3 genres, or `null` when there are none (never clobbers a row's existing genres). */
+function genresJson(genres: string[]): string | null {
+  return genres.length > 0 ? JSON.stringify(genres.slice(0, 3)) : null;
+}
+
 async function upsertIgdbGames(games: IgdbGame[]): Promise<GameRow[]> {
   const out: GameRow[] = [];
   const now = Math.floor(Date.now() / 1000);
@@ -191,14 +213,15 @@ async function upsertIgdbGames(games: IgdbGame[]): Promise<GameRow[]> {
       `SELECT ${GAME_COLUMNS} FROM games WHERE igdb_id = ? OR slug = ? ORDER BY (igdb_id = ?) DESC NULLS LAST`,
       [game.igdbId, game.slug, game.igdbId]
     );
+    const genres = genresJson(game.genres);
 
     if (existing.length === 0) {
       const row = await db.queryOneAsync<GameRow>(
-        `INSERT INTO games (igdb_id, slug, name, cover_url, logo_url, release_year, source, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, 'igdb', ?)
-         ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name
+        `INSERT INTO games (igdb_id, slug, name, cover_url, logo_url, release_year, genres, source, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'igdb', ?)
+         ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, genres = COALESCE(EXCLUDED.genres, games.genres)
          RETURNING ${GAME_COLUMNS}`,
-        [game.igdbId, game.slug, game.name, game.coverUrl, game.logoUrl, game.releaseYear, now]
+        [game.igdbId, game.slug, game.name, game.coverUrl, game.logoUrl, game.releaseYear, genres, now]
       );
       if (row) out.push(row);
       continue;
@@ -210,7 +233,7 @@ async function upsertIgdbGames(games: IgdbGame[]): Promise<GameRow[]> {
     const row = await db.queryOneAsync<GameRow>(
       `UPDATE games
           SET igdb_id = ?, slug = ?, name = ?, cover_url = ?, logo_url = ?,
-              release_year = ?, source = 'igdb', updated_at = ?
+              release_year = ?, genres = COALESCE(?, genres), source = 'igdb', updated_at = ?
         WHERE id = ?
         RETURNING ${GAME_COLUMNS}`,
       [
@@ -220,6 +243,7 @@ async function upsertIgdbGames(games: IgdbGame[]): Promise<GameRow[]> {
         game.coverUrl,
         game.logoUrl,
         game.releaseYear,
+        genres,
         now,
         target.id,
       ]
@@ -244,14 +268,15 @@ async function upsertWikidataGames(games: WikidataGame[]): Promise<GameRow[]> {
       `SELECT ${GAME_COLUMNS} FROM games WHERE wikidata_id = ? OR slug = ? ORDER BY (wikidata_id = ?) DESC NULLS LAST`,
       [game.wikidataId, game.slug, game.wikidataId]
     );
+    const genres = genresJson(game.genres);
 
     if (existing.length === 0) {
       const row = await db.queryOneAsync<GameRow>(
-        `INSERT INTO games (wikidata_id, slug, name, cover_url, logo_url, release_year, source, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, 'wikidata', ?)
-         ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name
+        `INSERT INTO games (wikidata_id, slug, name, cover_url, logo_url, release_year, genres, source, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'wikidata', ?)
+         ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, genres = COALESCE(EXCLUDED.genres, games.genres)
          RETURNING ${GAME_COLUMNS}`,
-        [game.wikidataId, game.slug, game.name, game.coverUrl, game.logoUrl, game.releaseYear, now]
+        [game.wikidataId, game.slug, game.name, game.coverUrl, game.logoUrl, game.releaseYear, genres, now]
       );
       if (row) out.push(row);
       continue;
@@ -263,7 +288,7 @@ async function upsertWikidataGames(games: WikidataGame[]): Promise<GameRow[]> {
     const row = await db.queryOneAsync<GameRow>(
       `UPDATE games
           SET wikidata_id = ?, slug = ?, name = ?, cover_url = ?, logo_url = ?,
-              release_year = ?, source = 'wikidata', updated_at = ?
+              release_year = ?, genres = COALESCE(?, genres), source = 'wikidata', updated_at = ?
         WHERE id = ?
         RETURNING ${GAME_COLUMNS}`,
       [
@@ -273,6 +298,7 @@ async function upsertWikidataGames(games: WikidataGame[]): Promise<GameRow[]> {
         game.coverUrl,
         game.logoUrl,
         game.releaseYear,
+        genres,
         now,
         target.id,
       ]
@@ -403,6 +429,48 @@ export async function searchGames(rawQuery: string): Promise<GameSearchResult> {
 // Suggestions
 // ---------------------------------------------------------------------------
 
+/** Instance-wide, not one tournament: "games people can play here right now". */
+async function activeIntegrationIds(): Promise<Set<string>> {
+  const tournamentGames = await db.queryAsync<{ game: string }>(
+    `SELECT DISTINCT game FROM tournament WHERE status IN ('setup', 'ready', 'in_progress')`
+  );
+  return new Set(tournamentGames.map((r) => r.game));
+}
+
+/**
+ * Built-in slugs with a tournament open or running on this instance first,
+ * then the popular (non-supported) list. A supported game with no active
+ * tournament is left out entirely — deliberate for the 3-item "suggestions"
+ * strip: a genuinely popular title beats a supported-but-idle one there. The
+ * onboarding grid needs every card instead, so it uses
+ * `allBuiltinSlugsOrdered` below rather than this.
+ */
+async function suggestionOrderedSlugs(): Promise<string[]> {
+  const builtins = builtinGames();
+  const active = await activeIntegrationIds();
+
+  return [
+    ...builtins.filter((g) => g.integrationId && active.has(g.integrationId)),
+    ...builtins.filter((g) => !g.integrationId),
+  ].map((g) => g.slug);
+}
+
+/**
+ * Every built-in slug — installed modules and the popular list — with a
+ * tournament open or running on this instance first, then everything else in
+ * `builtinGames()`'s own order (installed modules, then the popular list).
+ * Unlike `suggestionOrderedSlugs`, a supported game is never dropped just for
+ * having no tournament active right now: the onboarding grid must always
+ * offer every game this instance can run.
+ */
+async function allBuiltinSlugsOrdered(): Promise<string[]> {
+  const builtins = builtinGames();
+  const active = await activeIntegrationIds();
+  const isActive = (g: BuiltinGame) => !!g.integrationId && active.has(g.integrationId);
+
+  return [...builtins.filter(isActive), ...builtins.filter((g) => !isActive(g))].map((g) => g.slug);
+}
+
 /**
  * Up to three games to offer under the search box: games with a tournament
  * open or running on this instance first, then the popular built-ins, never
@@ -411,18 +479,7 @@ export async function searchGames(rawQuery: string): Promise<GameSearchResult> {
 export async function getSuggestions(playerUid: string | null): Promise<GameSummary[]> {
   await ensureBuiltinGames();
   const supported = supportedSlugs();
-  const builtins = builtinGames();
-
-  // Instance-wide, not one tournament: "games people can play here right now".
-  const tournamentGames = await db.queryAsync<{ game: string }>(
-    `SELECT DISTINCT game FROM tournament WHERE status IN ('setup', 'ready', 'in_progress')`
-  );
-  const activeIntegrationIds = new Set(tournamentGames.map((r) => r.game));
-
-  const orderedSlugs = [
-    ...builtins.filter((g) => g.integrationId && activeIntegrationIds.has(g.integrationId)),
-    ...builtins.filter((g) => !g.integrationId),
-  ].map((g) => g.slug);
+  const orderedSlugs = await suggestionOrderedSlugs();
 
   const picked = new Set<number>(
     playerUid
@@ -444,6 +501,25 @@ export async function getSuggestions(playerUid: string | null): Promise<GameSumm
     if (out.length >= SUGGESTION_COUNT) break;
   }
   return out;
+}
+
+/**
+ * Every built-in game (installed modules + popular esports titles), never
+ * filtered by what the viewer already picked (unlike `getSuggestions`) and
+ * never dropped for having no active tournament (unlike `getSuggestions`) —
+ * the "/welcome/games" onboarding grid needs every card on screen, including
+ * ones the viewer (in "edit" mode) already has, so it can show them selected
+ * rather than hide them.
+ */
+export async function getPopularGames(): Promise<GameSummary[]> {
+  await ensureBuiltinGames();
+  const supported = supportedSlugs();
+  const orderedSlugs = await allBuiltinSlugsOrdered();
+  const rows = await rowsBySlug(orderedSlugs);
+  return orderedSlugs
+    .map((slug) => rows.get(slug))
+    .filter((row): row is GameRow => Boolean(row))
+    .map((row) => toSummary(row, supported));
 }
 
 // ---------------------------------------------------------------------------
