@@ -307,22 +307,34 @@ class DatabaseManager {
         }
       }
 
-      // player_games.player_uid -> players(uid). Not declared inline: on an
-      // upgraded instance players.uid only exists after the column migrations
-      // and its unique index (deferred above), so the CREATE TABLE would fail.
-      try {
-        const { rows } = await client.query(
-          `SELECT 1 FROM pg_constraint
-            WHERE conrelid = to_regclass('player_games') AND conname = 'player_games_player_uid_fkey'`
-        );
-        if (rows.length === 0) {
-          await client.query(
-            `ALTER TABLE player_games ADD CONSTRAINT player_games_player_uid_fkey
-               FOREIGN KEY (player_uid) REFERENCES players(uid) ON DELETE CASCADE`
+      // Foreign keys onto players(uid). Not declared inline: on an upgraded
+      // instance players.uid only exists after the column migrations and its
+      // unique index (deferred above), so the CREATE TABLE would fail.
+      const uidForeignKeys: Array<{ table: string; column: string }> = [
+        { table: 'player_games', column: 'player_uid' },
+        // 3.0 phase D: team membership and reported custom stats.
+        { table: 'team_members', column: 'account_uid' },
+        { table: 'match_stat_values', column: 'player_uid' },
+      ];
+      for (const { table, column } of uidForeignKeys) {
+        const constraint = `${table}_${column}_fkey`;
+        try {
+          const { rows } = await client.query(
+            `SELECT 1 FROM pg_constraint
+              WHERE conrelid = to_regclass($1) AND conname = $2`,
+            [table, constraint]
+          );
+          if (rows.length === 0) {
+            await client.query(
+              `ALTER TABLE ${table} ADD CONSTRAINT ${constraint}
+                 FOREIGN KEY (${column}) REFERENCES players(uid) ON DELETE CASCADE`
+            );
+          }
+        } catch (err) {
+          log.error(
+            `[PostgreSQL] Failed to add ${table}.${column} foreign key: ${(err as Error).message}`
           );
         }
-      } catch (err) {
-        log.error(`[PostgreSQL] Failed to add player_games foreign key: ${(err as Error).message}`);
       }
 
       // Hand-written migrations (backfills), each once per database: see

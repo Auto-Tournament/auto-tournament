@@ -23,6 +23,7 @@ import { settingsService } from '../services/settingsService';
 import { checkTournamentCompletion } from '../utils/matchProgression';
 import { resolveTournamentId } from '../utils/tournamentRow';
 import { integrationForMatch } from '../integrations/registry';
+import { teamMembers } from '../services/teamMembers';
 import type {
   GameId,
   TournamentSettingsInput,
@@ -1685,6 +1686,17 @@ router.post('/:id/manual-matches', async (req: Request, res: Response) => {
         created_at: now,
         updated_at: now,
       });
+
+      // Mirror both rosters into team_members (3.0 phase D), as a team written
+      // through teamService would. Best effort.
+      await teamMembers.syncFromRoster(
+        team1Id,
+        team1Players.map((p) => p.id)
+      );
+      await teamMembers.syncFromRoster(
+        team2Id,
+        team2Players.map((p) => p.id)
+      );
 
       // Build MatchZy‑style player dictionaries for config.
       const toMatchPlayers = (teamPlayers: typeof team1Players) =>

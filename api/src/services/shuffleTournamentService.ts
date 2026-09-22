@@ -8,6 +8,7 @@ import { log } from '../utils/logger';
 import { balanceTeams, type BalancedTeam } from './teamBalancingService';
 import { playerService, type PlayerRecord } from './playerService';
 import { teamService } from './teamService';
+import { teamMembers } from './teamMembers';
 import { buildMatchConfigFor, serializeMatchConfig } from '../utils/matchIntegration';
 import { generateUniqueTeamName } from '../generation/teamName';
 import type { TournamentResponse } from '../types/tournament.types';
@@ -578,6 +579,18 @@ export async function generateRoundMatches(
       created_at: now,
       updated_at: now,
     });
+
+    // Mirror both rosters into team_members (3.0 phase D), as a team written
+    // through teamService would. Best effort; these teams cascade away with
+    // the round.
+    await teamMembers.syncFromRoster(
+      team1Id,
+      team1Players.map((p) => p.steamId)
+    );
+    await teamMembers.syncFromRoster(
+      team2Id,
+      team2Players.map((p) => p.steamId)
+    );
 
     createdTeams.push({ team1Id, team2Id });
 
