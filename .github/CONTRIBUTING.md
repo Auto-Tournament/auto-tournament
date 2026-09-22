@@ -5,6 +5,13 @@ The full guide is in the docs:
 
 Contributions are accepted under the project's [PolyForm Noncommercial License](../LICENSE).
 
+## Contributor License Agreement
+
+Before your first pull request can be merged, you sign the [CLA](../CLA.md) by
+commenting on the pull request as the CLA bot asks. You keep your copyright;
+the CLA lets the maintainer offer the project under both the non-commercial
+licence and commercial licences.
+
 ## Running it locally
 
 ```bash
