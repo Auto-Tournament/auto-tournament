@@ -10,7 +10,6 @@ docs/
 # every hand-written description is lost. See api/src/config/swagger.ts.
 !docs/openapi.json
 *.md
-LICENSE
 
 # Node modules (will be installed in container)
 node_modules

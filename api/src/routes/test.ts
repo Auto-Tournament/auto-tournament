@@ -800,12 +800,33 @@ router.get('/fake-oauth/:provider/userinfo', (req: Request, res: Response): void
  */
 
 const FAKE_IGDB_GAMES = [
-  { id: 1001, name: 'Rocket League', slug: 'rocket-league', year: 2015, image: 'fakerl' },
-  { id: 1002, name: 'Rocket Knight Adventures', slug: 'rocket-knight-adventures', year: 1993, image: null },
-  { id: 1003, name: 'Counter-Strike 2', slug: 'counter-strike-2', year: 2023, image: 'fakecs2' },
-  { id: 1004, name: 'Hollow Knight', slug: 'hollow-knight', year: 2017, image: 'fakehk' },
-  { id: 1005, name: 'Stardew Valley', slug: 'stardew-valley', year: 2016, image: null },
-  { id: 1006, name: 'Celeste', slug: 'celeste', year: 2018, image: 'fakecel' },
+  {
+    id: 1001,
+    name: 'Rocket League',
+    slug: 'rocket-league',
+    year: 2015,
+    image: 'fakerl',
+    genres: ['Sport', 'Racing'],
+  },
+  {
+    id: 1002,
+    name: 'Rocket Knight Adventures',
+    slug: 'rocket-knight-adventures',
+    year: 1993,
+    image: null,
+    genres: [],
+  },
+  {
+    id: 1003,
+    name: 'Counter-Strike 2',
+    slug: 'counter-strike-2',
+    year: 2023,
+    image: 'fakecs2',
+    genres: ['Shooter', 'Tactical'],
+  },
+  { id: 1004, name: 'Hollow Knight', slug: 'hollow-knight', year: 2017, image: 'fakehk', genres: ['Platform'] },
+  { id: 1005, name: 'Stardew Valley', slug: 'stardew-valley', year: 2016, image: null, genres: [] },
+  { id: 1006, name: 'Celeste', slug: 'celeste', year: 2018, image: 'fakecel', genres: ['Platform'] },
 ];
 
 const fakeIgdbCounters = { tokenRequests: 0, searchRequests: 0 };
@@ -889,6 +910,7 @@ router.post(
         slug: g.slug,
         first_release_date: Math.floor(Date.UTC(g.year, 5, 1) / 1000),
         ...(g.image ? { cover: { id: g.id * 10, image_id: g.image } } : {}),
+        genres: g.genres.map((name) => ({ name })),
       }));
     res.json(rows);
   }
@@ -918,7 +940,16 @@ interface FakeWikidataItem {
   pubDates: string[];
   logo?: string;
   image?: string;
+  /** P136 (genre) item ids; resolved to `FAKE_WIKIDATA_GENRES` labels. */
+  genreIds?: string[];
 }
+
+/** Genre item ids referenced by `FAKE_WIKIDATA_ITEMS.genreIds`, id -> English label. */
+const FAKE_WIKIDATA_GENRES: Record<string, string> = {
+  Q1: 'Shooter',
+  Q2: 'Tactical shooter',
+  Q3: 'Sports',
+};
 
 const FAKE_WIKIDATA_ITEMS: FakeWikidataItem[] = [
   {
@@ -927,6 +958,7 @@ const FAKE_WIKIDATA_ITEMS: FakeWikidataItem[] = [
     instanceOf: ['Q7889'],
     pubDates: ['+2015-07-07T00:00:00Z'],
     logo: 'Rocket League logo.png',
+    genreIds: ['Q3'],
   },
   {
     id: 'Q2005',
@@ -934,6 +966,7 @@ const FAKE_WIKIDATA_ITEMS: FakeWikidataItem[] = [
     instanceOf: ['Q7889'],
     pubDates: ['+2023-09-27T00:00:00Z'],
     image: 'Counter-Strike 2 key art.jpg',
+    genreIds: ['Q1', 'Q2'],
   },
   {
     id: 'Q108364709',
@@ -1018,21 +1051,32 @@ router.get('/fake-wikidata', (req: Request, res: Response): void => {
     const entities: Record<string, unknown> = {};
     for (const id of ids) {
       const item = FAKE_WIKIDATA_ITEMS.find((i) => i.id === id);
-      if (!item) continue;
-      entities[id] = {
-        id: item.id,
-        labels: { en: { language: 'en', value: item.label } },
-        claims: {
-          P31: item.instanceOf.map((qid) => ({ mainsnak: { datavalue: { value: { id: qid } } } })),
-          P577: item.pubDates.map((time) => ({ mainsnak: { datavalue: { value: { time } } } })),
-          ...(item.logo
-            ? { P154: [{ mainsnak: { datavalue: { value: item.logo } } }] }
-            : {}),
-          ...(item.image
-            ? { P18: [{ mainsnak: { datavalue: { value: item.image } } }] }
-            : {}),
-        },
-      };
+      if (item) {
+        entities[id] = {
+          id: item.id,
+          labels: { en: { language: 'en', value: item.label } },
+          claims: {
+            P31: item.instanceOf.map((qid) => ({ mainsnak: { datavalue: { value: { id: qid } } } })),
+            P577: item.pubDates.map((time) => ({ mainsnak: { datavalue: { value: { time } } } })),
+            ...(item.logo
+              ? { P154: [{ mainsnak: { datavalue: { value: item.logo } } }] }
+              : {}),
+            ...(item.image
+              ? { P18: [{ mainsnak: { datavalue: { value: item.image } } }] }
+              : {}),
+            ...(item.genreIds
+              ? { P136: item.genreIds.map((qid) => ({ mainsnak: { datavalue: { value: { id: qid } } } })) }
+              : {}),
+          },
+        };
+        continue;
+      }
+      // Not a game — the second, genre-label-only batched call this codebase
+      // makes for P136 ids (see wikidataService.resolveGenreLabels).
+      const genreLabel = FAKE_WIKIDATA_GENRES[id];
+      if (genreLabel) {
+        entities[id] = { id, labels: { en: { language: 'en', value: genreLabel } } };
+      }
     }
     res.json({ entities });
     return;

@@ -233,6 +233,17 @@ const options: swaggerJsdoc.Options = {
               enum: ['igdb', 'wikidata', 'builtin'],
               description: 'Where this row came from; used to pick the data-source credit line',
             },
+            genres: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Up to 3 genre names, from IGDB genres.name or Wikidata P136',
+              example: ['Shooter', 'Tactical shooter'],
+            },
+            imageUrl: {
+              type: 'string',
+              nullable: true,
+              description: "coverUrl if present, else logoUrl; convenience for the onboarding page's cards",
+            },
           },
         },
         IgdbCredentialStatus: {

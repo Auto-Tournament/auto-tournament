@@ -217,6 +217,22 @@
               "builtin"
             ],
             "description": "Where this row came from; used to pick the data-source credit line"
+          },
+          "genres": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Up to 3 genre names, from IGDB genres.name or Wikidata P136",
+            "example": [
+              "Shooter",
+              "Tactical shooter"
+            ]
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "coverUrl if present, else logoUrl; convenience for the onboarding page's cards"
           }
         }
       },
@@ -1268,6 +1284,38 @@
             "apiToken": []
           }
         ]
+      }
+    },
+    "/api/games/popular": {
+      "get": {
+        "tags": [
+          "Games"
+        ],
+        "summary": "Every built-in game, for the \"/welcome/games\" onboarding grid",
+        "description": "Installed game modules, then popular esports titles — the full\nbuilt-in catalogue, in the same order `suggestions` uses. Unlike\n`suggestions`, this is never filtered by what the viewer already\npicked (or capped at three): the onboarding page's card grid needs\nevery built-in on screen so a game already picked still shows up,\nselected. Works anonymously.\n",
+        "responses": {
+          "200": {
+            "description": "The built-in games",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "games": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/GameSummary"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/games/search": {

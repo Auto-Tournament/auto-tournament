@@ -95,6 +95,12 @@
       "saved": "IGDB credentials saved",
       "removed": "IGDB credentials removed",
       "saveFailed": "Could not save IGDB credentials"
+    },
+    "welcome": {
+      "gridTitle": "Popular games",
+      "continue": "Continue",
+      "notNow": "Not now",
+      "selectedGames": "Selected games"
     }
   },
   "account": {
