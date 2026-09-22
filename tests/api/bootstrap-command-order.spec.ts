@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { getMatchZyBootstrapCommands } from '../../api/src/integrations/cs2/utils/matchzyRconCommands';
+import {
+  getMatchZyBootstrapCommands,
+  getMatchZyLoadMatchCommand,
+  redactLoadMatchCommand,
+} from '../../api/src/integrations/cs2/utils/matchzyRconCommands';
 
 /**
  * Order of the RCON commands that hand a server its bootstrap URL.
@@ -37,6 +41,37 @@ test.describe('MatchZy bootstrap commands', () => {
     expect(commands).toContain('matchzy_bootstrap_token "new-token"');
     expect(commands).toContain(
       'matchzy_bootstrap_url "http://mat.example:3069/api/servers/s_1/bootstrap"'
+    );
+  });
+});
+
+/**
+ * The load command authenticates the config fetch: MatchZy takes a header name
+ * and value after the URL and adds them to its request. The config endpoint
+ * refuses a fetch without it.
+ *
+ * @tag api
+ */
+test.describe('MatchZy load command', () => {
+  const url = 'http://mat.example:3069/api/matches/r1m1.json?server_id=s_1&match_id=7';
+
+  test('passes the server token as a header on the same line', () => {
+    expect(getMatchZyLoadMatchCommand(url, 'tok-123')).toBe(
+      `matchzy_loadmatch_url "${url}" "X-MatchZy-Token" "tok-123"`
+    );
+  });
+
+  test('falls back to the bare command when there is no token', () => {
+    expect(getMatchZyLoadMatchCommand(url, '')).toBe(`matchzy_loadmatch_url "${url}"`);
+    expect(getMatchZyLoadMatchCommand(url, undefined)).toBe(`matchzy_loadmatch_url "${url}"`);
+  });
+
+  test('hides the token when the command is logged or returned', () => {
+    const redacted = redactLoadMatchCommand(getMatchZyLoadMatchCommand(url, 'tok-123'));
+    expect(redacted).toBe(`matchzy_loadmatch_url "${url}" "X-MatchZy-Token" "REDACTED"`);
+    expect(redacted).not.toContain('tok-123');
+    expect(redactLoadMatchCommand(`matchzy_loadmatch_url "${url}"`)).toBe(
+      `matchzy_loadmatch_url "${url}"`
     );
   });
 });

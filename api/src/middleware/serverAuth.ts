@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
 import { log } from '../utils/logger';
+import { checkAdminAccess } from './auth';
 
 /**
  * Authentication for requests coming from CS2 game servers.
@@ -157,4 +158,69 @@ export function validateEventToken(req: Request, res: Response, next: NextFuncti
     success: false,
     error: 'Unauthorized - Missing server token',
   });
+}
+
+/**
+ * Guard for `GET /api/matches/:slug.json`, the match config MatchZy downloads.
+ *
+ * The config carries both rosters with their Steam IDs and the server's match
+ * setup, and match slugs are guessable (`r1m1`), so it is not public. Two
+ * callers are let through:
+ *
+ * - **A game server**, presenting `X-MatchZy-Token: <SERVER_TOKEN>`. MAT sends
+ *   the header name and value as extra arguments on the load command
+ *   (`getMatchZyLoadMatchCommand`), and MatchZy adds them to its fetch. There
+ *   is no per-server secret: this is the same fleet-wide token the event
+ *   webhook and report upload use.
+ * - **An admin**, by session or service token (read-only scope is enough) —
+ *   the match details dialog shows the served config, and API tooling reads it.
+ *
+ * A wrong server token is refused even for an admin session: a request that
+ * presents one is claiming to be a game server. Every refusal gets the same
+ * 401 body, so it says nothing about which check failed or whether the slug
+ * exists; the details go to the server log.
+ */
+/**
+ * `res.locals` key set when a config fetch was authenticated as a game server
+ * rather than an admin. Only such a fetch proves MatchZy accepted a load.
+ */
+export const MATCH_CONFIG_FETCHED_BY_SERVER = 'matchConfigFetchedByServer';
+
+export async function requireMatchConfigAccess(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const validToken = process.env.SERVER_TOKEN;
+  const presented = presentedToken(req);
+  const refuse = (reason: string): void => {
+    log.warn(`[MATCH CONFIG] Refused config fetch: ${reason}`, {
+      slug: req.params?.slug,
+      ip: req.ip ?? req.socket?.remoteAddress,
+    });
+    res.status(401).json({ success: false, error: 'Unauthorized' });
+  };
+
+  if (presented) {
+    if (validToken && tokensMatch(presented, validToken)) {
+      res.locals[MATCH_CONFIG_FETCHED_BY_SERVER] = true;
+      return next();
+    }
+    return refuse(
+      validToken
+        ? 'X-MatchZy-Token does not match SERVER_TOKEN'
+        : 'SERVER_TOKEN is not set, so no game server can authenticate'
+    );
+  }
+
+  const admin = await checkAdminAccess(req);
+  if (admin.ok) {
+    return next();
+  }
+  if (admin.status === 500) {
+    log.error(admin.logReason, admin.cause as Error);
+    res.status(500).json({ success: false, error: 'Failed to verify permissions' });
+    return;
+  }
+  refuse(`no X-MatchZy-Token and not an admin (${admin.logReason})`);
 }

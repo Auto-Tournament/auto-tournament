@@ -38,7 +38,7 @@
         "type": "apiKey",
         "in": "header",
         "name": "X-MatchZy-Token",
-        "description": "Server-to-API authentication (webhooks, reports, demo uploads). Send `X-MatchZy-Token: <token>`."
+        "description": "Server-to-API authentication (webhooks, reports, demo uploads, match config fetch). Send `X-MatchZy-Token: <token>`."
       }
     },
     "schemas": {
@@ -2098,23 +2098,59 @@
         "tags": [
           "Matches"
         ],
-        "summary": "GET /api/matches/:slug.json",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
+        "summary": "Match config for MatchZy",
+        "description": "The MatchZy match config the game server downloads when MAT sends\n`matchzy_loadmatch_url \"<url>\" \"X-MatchZy-Token\" \"<SERVER_TOKEN>\"`.\nAssembled fresh from the database on every request.\n\nRequires `X-MatchZy-Token: <SERVER_TOKEN>` (game servers) or admin\nauth: a session, or a service token (read-only scope is enough). A\nrequest presenting a wrong `X-MatchZy-Token` is refused even with an\nadmin session.\n\n`server_id` and `match_id` are added by MAT to the URL it sends; when\npresent, the fetch is refused with 409 if the match has since moved to\nanother server or the slug now belongs to a different match.\n",
+        "security": [
+          {
+            "matchzyServerToken": []
+          },
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
           }
-        },
+        ],
         "parameters": [
           {
-            "name": "slug",
             "in": "path",
+            "name": "slug",
             "required": true,
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "in": "query",
+            "name": "server_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "match_id",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "MatchZy match config (JSON)"
+          },
+          "401": {
+            "description": "Missing or wrong X-MatchZy-Token and no admin auth"
+          },
+          "404": {
+            "description": "Match not found"
+          },
+          "409": {
+            "description": "The load this fetch belongs to no longer applies"
+          }
+        }
       }
     },
     "/api/matches/{slug}/force-cancel": {

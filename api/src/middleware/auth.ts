@@ -109,7 +109,27 @@ export function requestActorId(req: Request): string | null {
   return sessionSteamId || getVerifiedPlayerSteamId(req.headers.cookie) || null;
 }
 
-export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
+/**
+ * The outcome of checking a request for admin rights, without answering it.
+ *
+ * `requireAuth` turns a refusal into its response. Routes that accept an admin
+ * *or* another credential (the match config MatchZy downloads, see
+ * `requireMatchConfigAccess`) call this directly so they can answer a refusal
+ * their own way.
+ */
+export type AdminAccessResult =
+  | { ok: true; serviceToken?: ServiceTokenIdentity }
+  | {
+      ok: false;
+      status: 401 | 403 | 500;
+      /** Sent to the client. */
+      error: string;
+      /** Written to the auth-failure log. */
+      logReason: string;
+      cause?: unknown;
+    };
+
+export async function checkAdminAccess(req: Request): Promise<AdminAccessResult> {
   // Service tokens are checked before anything else. A caller that presents one
   // has told us it is a machine, so falling back to session auth on a bad token
   // would only turn "your token is wrong" into "you are not signed in" — the
@@ -117,23 +137,24 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   const tokenAuth = authenticateServiceToken(req);
   if (tokenAuth) {
     if (tokenAuth.ok) {
-      (req as AuthedRequest).serviceToken = tokenAuth.identity;
-      return next();
+      return { ok: true, serviceToken: tokenAuth.identity };
     }
-
-    log.authFailed(req.path, tokenAuth.reason);
-    res.status(tokenAuth.status).json({ success: false, error: tokenAuth.reason });
-    return;
+    return {
+      ok: false,
+      status: tokenAuth.status,
+      error: tokenAuth.reason,
+      logReason: tokenAuth.reason,
+    };
   }
 
   if (shouldBlockAdminAsDirectAccess(req)) {
-    log.authFailed(req.path, 'Admin access blocked for direct container access (use reverse proxy)');
-    res.status(403).json({
-      success: false,
+    return {
+      ok: false,
+      status: 403,
       error:
         'Admin access is only allowed via the configured frontend URL. Connect through your reverse proxy (e.g. HTTPS domain), not directly to the container.',
-    });
-    return;
+      logReason: 'Admin access blocked for direct container access (use reverse proxy)',
+    };
   }
 
   const anyReq = req as Request & {
@@ -152,41 +173,61 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     const userSteamId = (anyReq.user as { steamId?: string }).steamId;
     steamId = userSteamId || cookieSteamId || null;
     if (!steamId) {
-      log.authFailed(req.path, 'Authenticated session has no linked Steam ID');
-      res.status(403).json({
-        success: false,
+      return {
+        ok: false,
+        status: 403,
         error: 'Forbidden - Admin account must be linked to a Steam ID',
-      });
-      return;
+        logReason: 'Authenticated session has no linked Steam ID',
+      };
     }
   } else if (cookieSteamId) {
     steamId = cookieSteamId;
   }
 
   if (!steamId) {
-    log.authFailed(req.path, 'Missing or invalid admin session');
-    res.status(401).json({
-      success: false,
+    return {
+      ok: false,
+      status: 401,
       error: 'Unauthorized - Admin session required',
-    });
-    return;
+      logReason: 'Missing or invalid admin session',
+    };
   }
 
   try {
     const isAdmin = await checkAdminBySteamId(steamId);
     if (isAdmin) {
-      return next();
+      return { ok: true };
     }
-    log.authFailed(req.path, `Steam user ${steamId} is not an admin`);
-    res.status(403).json({
-      success: false,
+    return {
+      ok: false,
+      status: 403,
       error: 'Forbidden - Admin access required',
-    });
+      logReason: `Steam user ${steamId} is not an admin`,
+    };
   } catch (error) {
-    log.error('Failed to verify Steam admin in requireAuth', error as Error);
-    res.status(500).json({
-      success: false,
+    return {
+      ok: false,
+      status: 500,
       error: 'Failed to verify admin permissions',
-    });
+      logReason: 'Failed to verify Steam admin in requireAuth',
+      cause: error,
+    };
   }
+}
+
+export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
+  const access = await checkAdminAccess(req);
+  if (access.ok) {
+    if (access.serviceToken) {
+      (req as AuthedRequest).serviceToken = access.serviceToken;
+    }
+    return next();
+  }
+
+  if (access.status === 500) {
+    log.error(access.logReason, access.cause as Error);
+  } else {
+    log.authFailed(req.path, access.logReason);
+  }
+  res.status(access.status).json({ success: false, error: access.error });
 }

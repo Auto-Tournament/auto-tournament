@@ -5,6 +5,7 @@ import { cancelQueuedLoad, loadMatchOnServer } from '../services/matchLoadingSer
 import { CreateMatchInput, MatchConfig, MatchListItem } from '../types/match.types';
 import { TournamentResponse } from '../types/tournament.types';
 import { requestActorId, requireAuth } from '../middleware/auth';
+import { MATCH_CONFIG_FETCHED_BY_SERVER, requireMatchConfigAccess } from '../middleware/serverAuth';
 import { log } from '../utils/logger';
 import { db } from '../config/database';
 import { matchConfigFetchTracker } from '../services/matchConfigFetchTracker';
@@ -326,33 +327,63 @@ async function getMatchDetailsBySlug(slug: string): Promise<MatchListItem | null
 }
 
 /**
- * GET /api/matches/:slug.json
- * Protected endpoint for MatchZy to fetch match configuration
- * Returns a FRESH, on-demand config assembled from DB (reads veto_state)
- * Requires bearer token authentication from game server (kept commented for local dev)
+ * @openapi
+ * /api/matches/{slug}.json:
+ *   get:
+ *     tags:
+ *       - Matches
+ *     summary: Match config for MatchZy
+ *     description: |
+ *       The MatchZy match config the game server downloads when MAT sends
+ *       `matchzy_loadmatch_url "<url>" "X-MatchZy-Token" "<SERVER_TOKEN>"`.
+ *       Assembled fresh from the database on every request.
+ *
+ *       Requires `X-MatchZy-Token: <SERVER_TOKEN>` (game servers) or admin
+ *       auth: a session, or a service token (read-only scope is enough). A
+ *       request presenting a wrong `X-MatchZy-Token` is refused even with an
+ *       admin session.
+ *
+ *       `server_id` and `match_id` are added by MAT to the URL it sends; when
+ *       present, the fetch is refused with 409 if the match has since moved to
+ *       another server or the slug now belongs to a different match.
+ *     security:
+ *       - matchzyServerToken: []
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: server_id
+ *         required: false
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: match_id
+ *         required: false
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: MatchZy match config (JSON)
+ *       401:
+ *         description: Missing or wrong X-MatchZy-Token and no admin auth
+ *       404:
+ *         description: Match not found
+ *       409:
+ *         description: The load this fetch belongs to no longer applies
  */
-router.get('/:slug.json', async (req: Request, res: Response) => {
+/**
+ * GET /api/matches/:slug.json
+ * Endpoint MatchZy fetches the match configuration from.
+ * Returns a FRESH, on-demand config assembled from DB (reads veto_state)
+ * Requires `X-MatchZy-Token: <SERVER_TOKEN>` (sent by the plugin, see
+ * getMatchZyLoadMatchCommand) or an admin session / service token.
+ */
+router.get('/:slug.json', requireMatchConfigAccess, async (req: Request, res: Response) => {
   try {
-    // // Optional bearer token auth — enable when you wire SERVER_TOKEN on the game server
-    // const authHeader = req.headers.authorization;
-    // const expectedToken = process.env.SERVER_TOKEN;
-    // if (!expectedToken) {
-    //   return res.status(500).json({
-    //     success: false,
-    //     error: 'SERVER_TOKEN environment variable is not configured',
-    //   });
-    // }
-    // if (!authHeader?.startsWith('Bearer ')) {
-    //     return res.status(401).json({
-    //       success: false,
-    //       error: 'Missing or invalid authorization header. Expected: Bearer <token>',
-    //     });
-    // }
-    // const token = authHeader.substring(7);
-    // if (token !== expectedToken) {
-    //   return res.status(403).json({ success: false, error: 'Invalid bearer token' });
-    // }
-
     const { slug } = req.params;
 
     // 1) Load the match row
@@ -393,8 +424,11 @@ router.get('/:slug.json', async (req: Request, res: Response) => {
     }
 
     // The game server fetching this config is the only reliable proof that
-    // MatchZy accepted the load command - see matchConfigFetchTracker.
-    matchConfigFetchTracker.record(slug);
+    // MatchZy accepted the load command - see matchConfigFetchTracker. An admin
+    // viewing the config proves nothing, so only a server's fetch counts.
+    if (res.locals[MATCH_CONFIG_FETCHED_BY_SERVER] === true) {
+      matchConfigFetchTracker.record(slug);
+    }
 
     // Manual / non-bracket matches:
     // We treat any match with round = 0 as a manually created match. For these,

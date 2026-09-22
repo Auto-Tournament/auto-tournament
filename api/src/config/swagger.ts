@@ -77,7 +77,7 @@ const options: swaggerJsdoc.Options = {
           in: 'header',
           name: 'X-MatchZy-Token',
           description:
-            'Server-to-API authentication (webhooks, reports, demo uploads). Send `X-MatchZy-Token: <token>`.',
+            'Server-to-API authentication (webhooks, reports, demo uploads, match config fetch). Send `X-MatchZy-Token: <token>`.',
         },
       },
       schemas: {
@@ -311,6 +311,7 @@ const options: swaggerJsdoc.Options = {
 const SECURITY_BY_GUARD: Record<Guard, Array<Record<string, string[]>>> = {
   admin: [{ bearerAuth: [] }, { apiToken: [] }],
   'server token': [{ matchzyServerToken: [] }],
+  'server token or admin': [{ matchzyServerToken: [] }, { bearerAuth: [] }, { apiToken: [] }],
 };
 
 interface OperationObject {

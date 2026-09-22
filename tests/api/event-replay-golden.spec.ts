@@ -108,8 +108,10 @@ interface MatchListRow {
 }
 
 async function fetchServedConfig(request: APIRequestContext, match: MatchListRow) {
-  // No auth header: the plugin fetches this URL anonymously.
-  const res = await request.get(`/api/matches/${match.slug}.json`);
+  // The header MAT puts on the load command, as the plugin sends it.
+  const res = await request.get(`/api/matches/${match.slug}.json`, {
+    headers: { 'X-MatchZy-Token': process.env.SERVER_TOKEN ?? 'server123' },
+  });
   expect(res.ok(), `config for ${match.slug}: ${res.status()} ${await res.text()}`).toBe(true);
   const config = (await res.json()) as Record<string, unknown> & { matchid?: number };
   expect(config.matchid, `${match.slug}: matchid is the matches row id`).toBe(match.id);
