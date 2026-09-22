@@ -88,5 +88,49 @@
       "removed": "IGDB credentials removed",
       "saveFailed": "Could not save IGDB credentials"
     }
+  },
+  "account": {
+    "title": "Connections",
+    "subtitle": "One account for every tournament on this site.",
+    "loadFailed": "Could not load your account.",
+    "impersonating": "You are viewing this page while impersonating a player. It shows your own account; stop impersonating to change it.",
+    "rail": {
+      "label": "Account",
+      "profile": "Profile",
+      "connections": "Connections"
+    },
+    "callout": {
+      "title": "Pick the games you play",
+      "body": "Tournaments for your games are shown first.",
+      "action": "Pick games"
+    },
+    "gameAccounts": {
+      "title": "Game accounts",
+      "description": "Each game needs its own account so matches know who you are.",
+      "verified": "Verified",
+      "id": "Steam ID {{id}}",
+      "more": "More game accounts appear here as games are added to this site."
+    },
+    "signIn": {
+      "title": "Sign-in methods",
+      "description": "Any of these signs you in to the same account. Keep at least one.",
+      "primary": "Primary",
+      "primaryDetail": "Your account's identity · also your game account for {{games}}",
+      "primaryDetailNoGames": "Your account's identity",
+      "connected": "Connected",
+      "linkedOn": "Connected {{date}}",
+      "turnedOff": "sign-in with it is turned off on this site",
+      "notConnected": "Not connected",
+      "connect": "Connect",
+      "remove": "Remove",
+      "lastMethod": "This is your only way to sign in. Connect another method first.",
+      "removeTitle": "Remove {{provider}}?",
+      "removeBody": "You will no longer be able to sign in with {{provider}}. You can connect it again later.",
+      "removed": "{{provider}} removed",
+      "removeFailed": "Could not remove this sign-in method",
+      "linked": "{{provider}} connected",
+      "taken": "That {{provider}} account is already connected to another account on this site.",
+      "linkFailed": "Could not connect {{provider}}. Please try again."
+    }
   }
 }

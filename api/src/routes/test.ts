@@ -11,7 +11,8 @@ import {
   completePendingSteamLink,
   requireStrategy,
   setPendingSteamLinkCookie,
-  ssoCallbackHandler,
+  ssoCallbackRoute,
+  startAccountLink,
 } from './auth';
 import { passport, testOAuthStrategyName } from '../config/passport';
 import { PENDING_STEAM_LINK_PROVIDERS } from '../utils/signedPendingSteamLink';
@@ -637,7 +638,7 @@ router.post('/auth-identities', requireAuth, async (req: Request, res: Response)
  * config/passport.ts registers a `github-test` and a `google-test` strategy
  * (only when ENABLE_TEST_ENDPOINTS is explicitly on) whose token and profile
  * endpoints point here. The routes below then drive the real strategy code and
- * the real `ssoCallbackHandler`, so a test can complete a GitHub or Google
+ * the real callback route (`ssoCallbackRoute`), so a test can complete a GitHub or Google
  * login end to end without talking to github.com or google.com.
  *
  * The test picks the profile the "provider" returns: the authorization `code`
@@ -647,6 +648,7 @@ router.post('/auth-identities', requireAuth, async (req: Request, res: Response)
  * endpoint refuse, like a provider rejecting a used or bogus code.
  *
  *   GET  /api/test/oauth/:provider            start (sets the state cookie)
+ *   POST /api/test/oauth/:provider/link       start linking to the signed-in account
  *   GET  /api/test/oauth/:provider/callback   callback (state, code exchange, linking)
  *   GET  /api/test/fake-oauth/:provider/authorize
  *   POST /api/test/fake-oauth/:provider/token
@@ -679,16 +681,22 @@ router.get('/oauth/:provider', (req: Request, res: Response, next: NextFunction)
   requireStrategy(name, provider)(req, res, () => passport.authenticate(name)(req, res, next));
 });
 
+// Link the fake provider to the signed-in account, as POST /api/auth/<provider>/link.
+router.post('/oauth/:provider/link', (req: Request, res: Response, next: NextFunction) => {
+  const provider = fakeOAuthProviderFrom(req, res);
+  if (!provider) return;
+  const name = testOAuthStrategyName(provider);
+  requireStrategy(name, provider)(req, res, () => {
+    void startAccountLink(name, provider)(req, res, next);
+  });
+});
+
 router.get('/oauth/:provider/callback', (req: Request, res: Response, next: NextFunction) => {
   const provider = fakeOAuthProviderFrom(req, res);
   if (!provider) return;
   const name = testOAuthStrategyName(provider);
-  requireStrategy(name, provider)(req, res, () =>
-    passport.authenticate(name, { failureRedirect: '/login' })(req, res, (err?: unknown) => {
-      if (err) return next(err);
-      return ssoCallbackHandler(provider)(req, res);
-    })
-  );
+  // The strategy's state cookie is namespaced by the strategy name.
+  requireStrategy(name, provider)(req, res, () => ssoCallbackRoute(name, name, provider)(req, res, next));
 });
 
 router.get('/fake-oauth/:provider/authorize', (req: Request, res: Response): void => {

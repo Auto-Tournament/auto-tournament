@@ -1,3 +1,4 @@
+import { URLSearchParams } from 'url';
 import { Router, Request, Response, NextFunction } from 'express';
 import { log } from '../utils/logger';
 import { getAuthProvidersConfig } from '../config/authProviders';
@@ -24,6 +25,12 @@ import {
 } from '../utils/impersonationCookie';
 import { resolveViewerIdentity } from '../utils/viewerIdentity';
 import { authenticateServiceToken, requireAuth } from '../middleware/auth';
+import {
+  peekOAuthLinkIntent,
+  type LinkIntentRequest,
+  type OAuthLinkIntent,
+} from '../utils/oauthStateCookie';
+import { isSameSiteRequest } from '../utils/accountConnections';
 
 const router = Router();
 
@@ -678,15 +685,217 @@ export function ssoCallbackHandler(expectedProvider: AuthProvider) {
   };
 }
 
-/**
- * The start and callback routes for one SSO provider:
+/*
+ * Linking a provider to the signed-in account ("Connect" on /me/connections).
  *
- *   GET /api/auth/<provider>           redirects to the provider
- *   GET /api/auth/<provider>/callback  verifies the login, see ssoCallbackHandler
+ *   POST /api/auth/<provider>/link  (form post from /me/connections)
+ *     -> redirect to the provider, with a state cookie that also carries the
+ *        signed intent { purpose: 'link', steamId } (utils/oauthStateCookie)
+ *   GET  /api/auth/<provider>/callback  (the provider's one registered redirect)
+ *     -> ssoCallbackRoute sees the signed intent and runs accountLinkCallback
+ *        instead of the login handler
+ *
+ * Protections:
+ *  - start: same-site POST only (sameSite=lax identity cookies + Origin check),
+ *    signed in, not impersonating;
+ *  - state: signed, expires after 10 minutes, single use (cookie cleared and
+ *    nonce remembered server-side), bound to this browser by the cookie;
+ *  - callback: the browser must still be signed in as the account in the
+ *    state; an identity owned by another account is refused, never re-pointed;
+ *    Passport runs with `session: false`, so the session is never switched to
+ *    the provider login;
+ *  - the user sees only ok / taken / failed; reasons are logged server-side.
+ */
+
+/** Where a link flow ends: /me/connections with an outcome flag. */
+function linkResultRedirect(
+  req: Request,
+  res: Response,
+  provider: AuthProvider,
+  outcome: 'ok' | 'taken' | 'failed'
+) {
+  const query = new URLSearchParams({ link: outcome, provider });
+  return res.redirect(302, `${getFrontendBaseUrl(req)}/me/connections?${query}`);
+}
+
+/**
+ * @openapi
+ * /api/auth/{provider}/link:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Start connecting a sign-in provider to the signed-in account
+ *     description: >
+ *       A same-site form post from /me/connections. Redirects to the provider
+ *       with a signed, single-use, 10-minute state that names this account.
+ *       The provider's callback (/api/auth/{provider}/callback) then links the
+ *       identity to this account, refusing one that belongs to another
+ *       account, and redirects to /me/connections?link=ok|taken|failed.
+ *     parameters:
+ *       - in: path
+ *         name: provider
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [discord, keycloak, github, google]
+ *     responses:
+ *       302:
+ *         description: Redirect to the provider
+ *       401:
+ *         description: Not signed in
+ *       403:
+ *         description: Impersonating, or a cross-site request
+ *       503:
+ *         description: Provider not configured
+ */
+
+/**
+ * Start linking `provider` to the signed-in account. Exported for the
+ * test-only fake provider routes.
+ */
+export function startAccountLink(
+  strategyName: string,
+  provider: AuthProvider,
+  startOptions: Record<string, unknown> = {}
+) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (!isSameSiteRequest(req)) {
+        log.warn('Account link start refused: cross-site request', { provider });
+        return res.status(403).json({ success: false, error: 'Request refused' });
+      }
+      const identity = await resolveViewerIdentity(req);
+      if (!identity.realSteamId) {
+        return res.status(401).json({ success: false, error: 'Sign in to connect an account' });
+      }
+      if (identity.isImpersonating) {
+        return res.status(403).json({
+          success: false,
+          error: 'You are impersonating a player. Stop impersonating to manage your own account.',
+        });
+      }
+      const player = await playerService.getPlayerById(identity.realSteamId);
+      if (!player) {
+        return res.status(404).json({ success: false, error: 'No player record for this account' });
+      }
+
+      const intent: OAuthLinkIntent = { purpose: 'link', steamId: identity.realSteamId };
+      (req as Request & LinkIntentRequest).oauthLinkIntent = intent;
+      log.info('Account link started', { provider, steamId: identity.realSteamId });
+      return passport.authenticate(strategyName, { ...startOptions, session: false })(
+        req,
+        res,
+        next
+      );
+    } catch (error) {
+      log.error('Account link start failed', error as Error);
+      return linkResultRedirect(req, res, provider, 'failed');
+    }
+  };
+}
+
+/**
+ * The callback of a link flow: Passport verifies state (and returns the signed
+ * intent as `info.state`), exchanges the code and loads the profile; then the
+ * identity is linked to the account in the intent, if that is still who is
+ * signed in and nobody else owns the identity.
+ */
+function accountLinkCallback(strategyName: string, provider: AuthProvider) {
+  const label = SSO_PROVIDER_LABEL[provider];
+  return (req: Request, res: Response, next: NextFunction) => {
+    const refuse = (reason: string, outcome: 'taken' | 'failed' = 'failed', extra = {}) => {
+      log.warn(`${label} account link refused`, { provider, reason, ...extra });
+      return linkResultRedirect(req, res, provider, outcome);
+    };
+
+    passport.authenticate(
+      strategyName,
+      { session: false },
+      async (err: unknown, user: unknown, info: unknown) => {
+        try {
+          if (err) return refuse('provider_error', 'failed', { error: (err as Error)?.message });
+          if (!user) {
+            return refuse('passport_failure', 'failed', {
+              message: (info as { message?: string } | undefined)?.message ?? null,
+            });
+          }
+          const intent = (info as { state?: OAuthLinkIntent } | undefined)?.state;
+          if (!intent || intent.purpose !== 'link') return refuse('no_link_intent');
+
+          const identity = await resolveViewerIdentity(req);
+          if (!identity.realSteamId || identity.realSteamId !== intent.steamId) {
+            return refuse('account_mismatch', 'failed', {
+              stateSteamId: intent.steamId,
+              viewerSteamId: identity.realSteamId,
+            });
+          }
+          if (identity.isImpersonating) return refuse('impersonating');
+
+          const passportUser = user as Record<string, unknown>;
+          const rawId = passportUser[SSO_USER_ID_FIELD[provider]];
+          const providerUserId = typeof rawId === 'string' && rawId.length > 0 ? rawId : null;
+          if (passportUser.provider !== provider || !providerUserId) {
+            return refuse('missing_provider_user_id');
+          }
+
+          const result = await authIdentityService.linkIdentityIfUnowned(
+            provider,
+            providerUserId,
+            intent.steamId
+          );
+          if (result !== 'linked') {
+            return refuse(result, result === 'taken' ? 'taken' : 'failed', {
+              providerUserId: redactProviderUserId(providerUserId),
+              steamId: intent.steamId,
+            });
+          }
+
+          log.success(`${label} linked to account`, {
+            provider,
+            providerUserId: redactProviderUserId(providerUserId),
+            steamId: intent.steamId,
+          });
+          return linkResultRedirect(req, res, provider, 'ok');
+        } catch (error) {
+          log.error(`${label} account link failed`, error as Error);
+          return linkResultRedirect(req, res, provider, 'failed');
+        }
+      }
+    )(req, res, next);
+  };
+}
+
+/**
+ * The callback route for one provider: a link flow when the state cookie
+ * carries a signed link intent, else the login flow as before (Passport
+ * login, then ssoCallbackHandler; a failed state check redirects to /login).
+ * `stateProvider` names the state cookie (the strategy's SignedCookieStateStore).
+ * Exported for the test-only fake provider routes.
+ */
+export function ssoCallbackRoute(strategyName: string, stateProvider: string, provider: AuthProvider) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (peekOAuthLinkIntent(stateProvider, req.headers.cookie)) {
+      return accountLinkCallback(strategyName, provider)(req, res, next);
+    }
+    return passport.authenticate(strategyName, { failureRedirect: '/login' })(
+      req,
+      res,
+      (err?: unknown) => {
+        if (err) return next(err);
+        return ssoCallbackHandler(provider)(req, res);
+      }
+    );
+  };
+}
+
+/**
+ * The routes for one SSO provider:
+ *
+ *   GET  /api/auth/<provider>           redirects to the provider (login)
+ *   POST /api/auth/<provider>/link      redirects to the provider (link to the signed-in account)
+ *   GET  /api/auth/<provider>/callback  login (ssoCallbackHandler) or link (accountLinkCallback)
  *
  * The OAuth state cookie is set and checked by the strategy's
- * SignedCookieStateStore (utils/oauthStateCookie). A failed state check or a
- * refused consent is a Passport failure and redirects to /login.
+ * SignedCookieStateStore (utils/oauthStateCookie).
  */
 function registerSsoRoutes(provider: AuthProvider, startOptions: Record<string, unknown> = {}) {
   router.get(
@@ -694,11 +903,15 @@ function registerSsoRoutes(provider: AuthProvider, startOptions: Record<string, 
     requireStrategy(provider, provider),
     passport.authenticate(provider, startOptions)
   );
+  router.post(
+    `/${provider}/link`,
+    requireStrategy(provider, provider),
+    startAccountLink(provider, provider, startOptions)
+  );
   router.get(
     `/${provider}/callback`,
     requireStrategy(provider, provider),
-    passport.authenticate(provider, { failureRedirect: '/login' }),
-    ssoCallbackHandler(provider)
+    ssoCallbackRoute(provider, provider, provider)
   );
 }
 

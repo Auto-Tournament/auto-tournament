@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 213 of them, 150 behind auth —
+Every endpoint this API serves — 220 of them, 150 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -398,6 +398,8 @@ The signed-in player's own data, e.g. the games they play.
 | `GET` | `/api/me/games` | public |
 | `PUT` | `/api/me/games` | public |
 | `POST` | `/api/me/games/prompt/dismiss` | public |
+| `GET` | `/api/me/connections` | public |
+| `POST` | `/api/me/connections/:provider/remove` | public |
 
 ### Test helpers
 
@@ -418,6 +420,7 @@ E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
 | `GET` | `/api/test/raw-team-roster/:teamId` | admin |
 | `POST` | `/api/test/auth-identities` | admin |
 | `GET` | `/api/test/oauth/:provider` | public |
+| `POST` | `/api/test/oauth/:provider/link` | public |
 | `GET` | `/api/test/oauth/:provider/callback` | public |
 | `GET` | `/api/test/fake-oauth/:provider/authorize` | public |
 | `POST` | `/api/test/fake-oauth/:provider/token` | public |
@@ -437,12 +440,16 @@ Sign-in flows, admin identity, impersonation.
 | `GET` | `/api/auth/steam/callback` | public |
 | `POST` | `/api/auth/logout` | public |
 | `GET` | `/api/auth/keycloak` | public |
+| `POST` | `/api/auth/keycloak/link` | public |
 | `GET` | `/api/auth/keycloak/callback` | public |
 | `GET` | `/api/auth/discord` | public |
+| `POST` | `/api/auth/discord/link` | public |
 | `GET` | `/api/auth/discord/callback` | public |
 | `GET` | `/api/auth/github` | public |
+| `POST` | `/api/auth/github/link` | public |
 | `GET` | `/api/auth/github/callback` | public |
 | `GET` | `/api/auth/google` | public |
+| `POST` | `/api/auth/google/link` | public |
 | `GET` | `/api/auth/google/callback` | public |
 | `GET` | `/api/auth/providers` | public |
 | `GET` | `/api/auth/me` | public |

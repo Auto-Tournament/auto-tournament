@@ -30,6 +30,7 @@
     "signOut": "Esci",
     "linkSteam": "Collega Steam",
     "myProfile": "Il mio profilo",
+    "accountConnections": "Account settings",
     "goToAdminDashboard": "Vai al pannello admin",
     "goToAdminDashboardHint": "Stai visualizzando il tuo profilo giocatore. Apri il pannello admin per gestire squadre, tornei e server."
   },
