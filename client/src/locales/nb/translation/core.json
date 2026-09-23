@@ -84,7 +84,8 @@
   "common": {
     "delete": "Slett",
     "cancel": "Avbryt",
-    "remove": "Fjern"
+    "remove": "Fjern",
+    "close": "Lukk"
   },
   "theme": {
     "label": "Fargetema"

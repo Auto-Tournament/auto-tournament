@@ -249,6 +249,18 @@
     "confirmRemove": {
       "title": "Remove {{name}}?",
       "body": "The game disappears from the setup wizard. Nothing else is deleted, and importing the pack again brings it back."
+    },
+    "browse": {
+      "action": "Browse",
+      "title": "Games you can add",
+      "hint": "From the community pack list. Nothing was fetched until you opened this.",
+      "add": "Add",
+      "update": "Update",
+      "installed": "Installed",
+      "empty": "The list has no games this instance can add yet.",
+      "offline": "the list could not be reached",
+      "staleWith": "Showing the last list this instance saw — {{reason}}.",
+      "failed": "Could not read the list"
     }
   }
 }

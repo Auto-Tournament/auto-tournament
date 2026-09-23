@@ -2999,6 +2999,63 @@
         }
       }
     },
+    "/api/packs/index": {
+      "get": {
+        "tags": [
+          "Game packs"
+        ],
+        "summary": "The community pack index",
+        "description": "Fetches `index.json` from the configured pack index (by default the\n`Auto-Tournament/packs` repository) and says which of its games this\ninstance already has. Nothing is fetched until this is called, and\nthe answer is cached under `DATA_DIR`, so an instance with no network\nstill lists what it saw last — with `stale` set.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The index, or the last copy of it"
+          }
+        }
+      }
+    },
+    "/api/packs/index/{slug}": {
+      "post": {
+        "tags": [
+          "Game packs"
+        ],
+        "summary": "Import a game from the community index",
+        "description": "Downloads the pack the index lists for this slug and validates it\nexactly as an uploaded file is validated. Being listed in the index\nearns a pack nothing.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The pack was imported"
+          },
+          "400": {
+            "description": "The pack is not valid, with the reason"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/api/packs/{slug}": {
       "delete": {
         "tags": [
@@ -5947,6 +6004,44 @@
         ]
       }
     },
+    "/api/test/fake-pack-index/index.json": {
+      "get": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "GET /api/test/fake-pack-index/index.json",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/test/fake-pack-index/packs/{file}": {
+      "get": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "GET /api/test/fake-pack-index/packs/:file",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "file",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/api/test/fake-wikidata": {
       "get": {
         "tags": [
@@ -6276,6 +6371,28 @@
             "schema": {
               "type": "string"
             }
+          }
+        ]
+      }
+    },
+    "/api/test/pack-index": {
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/pack-index",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
           }
         ]
       }

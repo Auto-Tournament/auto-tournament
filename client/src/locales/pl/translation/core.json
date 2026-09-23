@@ -78,7 +78,8 @@
   "common": {
     "delete": "Usuń",
     "cancel": "Anuluj",
-    "remove": "Remove"
+    "remove": "Remove",
+    "close": "Close"
   },
   "app": {
     "name": "Auto Tournament"

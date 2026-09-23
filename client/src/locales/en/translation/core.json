@@ -84,7 +84,8 @@
   "common": {
     "delete": "Delete",
     "cancel": "Cancel",
-    "remove": "Remove"
+    "remove": "Remove",
+    "close": "Close"
   },
   "theme": {
     "label": "Color theme"

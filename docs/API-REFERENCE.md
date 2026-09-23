@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 256 of them, 176 behind auth —
+Every endpoint this API serves — 261 of them, 179 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -444,6 +444,8 @@ Games an admin imported as a pack file: list, import, remove, and the pack tile.
 | `GET` | `/api/packs/:slug/icon.svg` | public |
 | `GET` | `/api/packs` | admin |
 | `POST` | `/api/packs` | admin |
+| `GET` | `/api/packs/index` | admin |
+| `POST` | `/api/packs/index/:slug` | admin |
 | `DELETE` | `/api/packs/:slug` | admin |
 
 ### Me
@@ -500,6 +502,9 @@ E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
 | `GET` | `/api/test/phase-d-schema` | admin |
 | `GET` | `/api/test/match-reports` | admin |
 | `POST` | `/api/test/match-reports` | admin |
+| `POST` | `/api/test/pack-index` | admin |
+| `GET` | `/api/test/fake-pack-index/index.json` | public |
+| `GET` | `/api/test/fake-pack-index/packs/:file` | public |
 
 ### Auth
 

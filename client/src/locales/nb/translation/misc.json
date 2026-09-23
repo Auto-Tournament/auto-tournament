@@ -249,6 +249,18 @@
     "confirmRemove": {
       "title": "Fjerne {{name}}?",
       "body": "Spillet forsvinner fra oppsettveiviseren. Ingenting annet slettes, og importerer du pakken på nytt er den tilbake."
+    },
+    "browse": {
+      "action": "Bla gjennom",
+      "title": "Spill du kan legge til",
+      "hint": "Fra fellesskapets pakkeliste. Ingenting ble hentet før du åpnet dette.",
+      "add": "Legg til",
+      "update": "Oppdater",
+      "installed": "Installert",
+      "empty": "Listen har ingen spill denne instansen kan legge til enda.",
+      "offline": "listen kunne ikke nås",
+      "staleWith": "Viser den siste listen instansen så — {{reason}}.",
+      "failed": "Kunne ikke lese listen"
     }
   }
 }
