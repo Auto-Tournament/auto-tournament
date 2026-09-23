@@ -254,6 +254,8 @@ export default [
         HTMLSelectElement: 'readonly',
         HTMLTextAreaElement: 'readonly',
         HTMLImageElement: 'readonly',
+        SVGSVGElement: 'readonly',
+        DOMParser: 'readonly',
         Element: 'readonly',
         Audio: 'readonly',
         URLSearchParams: 'readonly',

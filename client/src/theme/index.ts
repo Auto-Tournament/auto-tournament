@@ -7,6 +7,7 @@ import '@fontsource/geist/600.css';
 import '@fontsource/geist-mono/400.css';
 import '@fontsource/geist-mono/500.css';
 import '@fontsource/geist-mono/600.css';
+import { moduleIconVars } from './moduleIcons';
 import { tokens, fontBody, fontDisplay, fontMono, withAlpha } from './tokens';
 
 export {
@@ -137,6 +138,11 @@ export const theme = createTheme({
           '--at-font-body': fontBody,
           '--at-font-display': fontDisplay,
           '--at-font-mono': fontMono,
+          // The module tiles' own palette (theme/moduleIcons.ts). The tiles
+          // are SVGs written entirely in `var(--at-ember…)` and
+          // `var(--at-ink-…)`, inlined by `ModuleIcon` so that these reach
+          // them; that is the whole of how they follow the theme.
+          ...moduleIconVars,
         },
         body: {
           backgroundColor: color.paper,
