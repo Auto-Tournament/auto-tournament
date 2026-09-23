@@ -292,6 +292,25 @@ export function getSchemaSQL(): string {
 
     CREATE INDEX IF NOT EXISTS idx_games_name ON games(LOWER(name));
 
+    -- Game packs: a game this instance can run because an admin imported a
+    -- file describing it, rather than because a module shipped it. A pack is
+    -- data only — no code — and runs on the engine named in \`engine\`, which
+    -- must be an installed module that runs any catalogue game (manual-report).
+    -- See api/src/services/gamePackService.ts.
+    CREATE TABLE IF NOT EXISTS game_packs (
+      slug TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      engine TEXT NOT NULL, -- integration id that runs it, e.g. 'manual-report'
+      version TEXT, -- the pack's own version string, for "update available"
+      source TEXT NOT NULL DEFAULT 'uploaded', -- 'uploaded' | 'index'
+      origin TEXT, -- where an 'index' pack came from, for updates
+      definition TEXT NOT NULL, -- the validated pack JSON, as stored
+      icon TEXT, -- the pack's square tile (SVG markup), already sanitised
+      installed_by TEXT, -- admin account uid, best effort
+      installed_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
     -- Games a player plays, keyed on players.uid (not the Steam ID). The
     -- foreign key to players(uid) is added in database.ts once the column is
     -- guaranteed to exist on upgraded instances.
