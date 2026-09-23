@@ -28,6 +28,12 @@
  * Live updates ride the module's existing emit: every transition announces
  * itself with `emitTournament(..., 'match:report', …)`, so both captains see
  * each other's moves without reloading.
+ *
+ * **The tournament's custom fields** (3.0 phase D, PR D8) are part of the form
+ * rather than an afterthought: D7 shipped scores only while D6 was still
+ * writing the API side of them. They are checked against the same rules the
+ * API applies (`./statFields`) before anything is sent, because the API
+ * refuses the *whole* report — the score with it — on a single bad value.
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -56,6 +62,15 @@ import {
   type MatchReportView,
   type ReportSide,
 } from '../api';
+import { RecordedStats } from './RecordedStats';
+import { StatFieldsForm } from './StatFieldsForm';
+import {
+  draftFromRecorded,
+  validateDraft,
+  type DraftCheck,
+  type StatDraft,
+} from './statFields';
+import { useStatDraftLabels } from './statFieldMessages';
 
 /** Which of the five sentences the panel is showing. */
 type PanelState =
@@ -118,6 +133,9 @@ export function ManualReportPanel({ matchSlug, matchStatus }: MatchReportPanelPr
   const [formOpen, setFormOpen] = useState(false);
   const [rows, setRows] = useState<Array<{ team1: string; team2: string }>>(emptyRows(1));
   const [note, setNote] = useState('');
+  /** The tournament's custom fields, as typed in (PR D8). */
+  const [statDraft, setStatDraft] = useState<StatDraft>({});
+  const statLabels = useStatDraftLabels();
 
   const [disputeOpen, setDisputeOpen] = useState(false);
   const [disputeReason, setDisputeReason] = useState('');
@@ -230,6 +248,11 @@ export function ManualReportPanel({ matchSlug, matchStatus }: MatchReportPanelPr
     setRows(emptyRows(view?.rules.seriesLength ?? 1));
     setNote('');
     setError(null);
+    // Prefilled with whatever stands, not blank. A report **replaces** the
+    // match's whole set of values (`replaceValues`), so a form that started
+    // empty would quietly delete every number already recorded the moment
+    // somebody corrected a score.
+    setStatDraft(view ? draftFromRecorded(view) : {});
     setFormOpen(true);
   };
 
@@ -241,8 +264,23 @@ export function ManualReportPanel({ matchSlug, matchStatus }: MatchReportPanelPr
       setError(t('manualReport.errors.incomplete'));
       return;
     }
+    // Checked here as well as by the API, which refuses the whole report —
+    // score included — on one bad value. Saying which field while the captain
+    // is still looking at it beats handing the refusal back as prose.
+    const checked: DraftCheck =
+      view?.fields?.length
+        ? validateDraft(view, view.fields, statDraft, statLabels)
+        : { ok: true, values: [] };
+    if (!checked.ok) {
+      setError(checked.error);
+      return;
+    }
     void act(() =>
-      manualReportApi.report(matchSlug, { maps, ...(note.trim() ? { note: note.trim() } : {}) })
+      manualReportApi.report(
+        matchSlug,
+        { maps, ...(note.trim() ? { note: note.trim() } : {}) },
+        checked.values
+      )
     );
   };
 
@@ -335,6 +373,10 @@ export function ManualReportPanel({ matchSlug, matchStatus }: MatchReportPanelPr
                 {t('manualReport.disputeReasonGiven', { reason: report.disputeReason })}
               </Typography>
             )}
+            {/* What was filed with the score. The opponent is being asked to
+                agree with these too, so they have to be on screen before the
+                Confirm button is. */}
+            <RecordedStats view={view} />
           </Box>
         )}
 
@@ -457,6 +499,21 @@ export function ManualReportPanel({ matchSlug, matchStatus }: MatchReportPanelPr
                   />
                 </Stack>
               ))}
+              {view.fields && view.fields.length > 0 && (
+                <>
+                  <Divider />
+                  <StatFieldsForm
+                    view={view}
+                    fields={view.fields}
+                    draft={statDraft}
+                    disabled={busy}
+                    testIdPrefix="manual-report"
+                    onChange={(cell, value) =>
+                      setStatDraft((prev) => ({ ...prev, [cell]: value }))
+                    }
+                  />
+                </>
+              )}
               <TextField
                 size="small"
                 fullWidth

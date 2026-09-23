@@ -560,6 +560,19 @@
       "empty": "Ingen på dette laget har logget inn ennå, så det er ingen å utnevne.",
       "unknown": "Ukjent spiller",
       "failed": "Klarte ikke å endre det. Prøv igjen."
+    },
+    "stats": {
+      "hint": "Ekstratallene denne turneringen ber om. La feltet stå tomt hvis ingen har et tall.",
+      "required": "påkrevd",
+      "recorded": "Rapporterte tall",
+      "value": "{{subject}}: {{value}}{{suffix}}",
+      "errors": {
+        "number": "{{field}} for {{subject}} må være et tall.",
+        "integer": "{{field}} for {{subject}} må være et helt tall.",
+        "range": "{{field}} for {{subject}} er for stort til å være et ekte tall.",
+        "tooLong": "{{field}} for {{subject}} er lengre enn {{max}} tegn.",
+        "missing": "{{field}} er påkrevd, og ingenting er fylt ut for {{team}}."
+      }
     }
   }
 }

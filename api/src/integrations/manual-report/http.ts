@@ -175,6 +175,61 @@ export function readRevision(value: unknown): number | undefined | null {
   return n;
 }
 
+/** One person who may have a per-player number recorded against them. */
+export interface RosterMember {
+  /** `players.uid` — what a stat value is filed against, and nothing else. */
+  accountUid: string;
+  role: 'captain' | 'member';
+  /** `players.id`, still a Steam id in 3.0; null when the row has gone. */
+  playerId: string | null;
+  name: string | null;
+}
+
+/**
+ * Who is on each side of a match (3.0 phase D, PR D8).
+ *
+ * A per-player custom stat field is filed against a `players.uid`
+ * (`./statValues`), and until now nothing a **captain** could call handed one
+ * out — `GET /teams/:id/members` is on the admin router. So a report form had
+ * no way to offer "goals, per player" to the person filling it in. This is
+ * that list, and it rides on the match view, which is already guarded to the
+ * two captains and an admin: the uids of the ten people in a match are not a
+ * secret from the two captains playing it.
+ *
+ * `team_members` rather than `teams.players`, because that is what a value is
+ * checked against — a roster entry with no membership row could never carry a
+ * number, so offering it would be a form that cannot be submitted.
+ */
+export async function teamRosters(match: DbMatchRow): Promise<Map<string, RosterMember[]>> {
+  const ids = [match.team1_id, match.team2_id].filter((id): id is string => Boolean(id));
+  const byTeam = new Map<string, RosterMember[]>(ids.map((id) => [id, []]));
+  if (ids.length === 0) return byTeam;
+
+  const rows = await db.queryAsync<{
+    team_id: string;
+    account_uid: string;
+    role: string;
+    player_id: string | null;
+    name: string | null;
+  }>(
+    `SELECT tm.team_id, tm.account_uid, tm.role, p.id AS player_id, p.name AS name
+       FROM team_members tm
+       LEFT JOIN players p ON p.uid = tm.account_uid
+      WHERE tm.team_id = ANY(?::text[])
+      ORDER BY (tm.role = 'captain') DESC, p.name NULLS LAST, tm.account_uid`,
+    [ids]
+  );
+  for (const row of rows) {
+    byTeam.get(row.team_id)?.push({
+      accountUid: row.account_uid,
+      role: row.role === 'captain' ? 'captain' : 'member',
+      playerId: row.player_id,
+      name: row.name,
+    });
+  }
+  return byTeam;
+}
+
 /** The two teams of a match, by name, for a client that has only the slugs. */
 export async function teamNames(
   match: DbMatchRow
