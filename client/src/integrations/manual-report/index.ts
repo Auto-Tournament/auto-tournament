@@ -3,9 +3,10 @@
  *
  * Mirrors `api/src/integrations/manual-report`: the module is not a game, it
  * is the way a result reaches MAT when the game cannot send one itself. So it
- * fills exactly two slots — the report panel on a team's match page, and the
- * admin control that appoints the captain who may use it — and leaves the CS2
- * shaped ones (veto, servers, maps, map pools) empty.
+ * fills exactly three slots — the report panel on a team's match page, the
+ * admin control that appoints the captain who may use it, and the admin
+ * dispute queue (3.0 phase D, PR D8) — and leaves the CS2 shaped ones (veto,
+ * servers, maps, map pools) empty.
  *
  * `catalogGames` and `runsAnyCatalogGame` mirror what the API's registry
  * resolves: a tournament's `game` holds a catalogue id from phase D onwards
@@ -14,6 +15,7 @@
  */
 
 import type { ClientGameIntegration } from '../types';
+import { DisputesQueue } from './admin/DisputesQueue';
 import { ManualReportPanel } from './match/ManualReportPanel';
 import { TeamCaptainsCard } from './team/TeamCaptainsCard';
 
@@ -51,6 +53,8 @@ export const manualReportClientIntegration: ClientGameIntegration = {
   },
 
   teamAdminPanel: TeamCaptainsCard,
+
+  adminDisputesView: DisputesQueue,
 
   tournamentSetupSteps: {},
   standaloneMatchSteps: {},

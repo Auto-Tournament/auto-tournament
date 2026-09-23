@@ -35,6 +35,8 @@ export const paths = {
   tournament: '/tournament',
   bracket: '/bracket',
   matches: '/matches',
+  /** Results nobody agrees on (3.0 phase D, PR D8). */
+  disputes: '/disputes',
   admin: '/admin',
   settings: '/settings',
   maps: '/maps',

@@ -136,6 +136,28 @@ export interface MatchReportView {
   reports: MatchReport[];
 }
 
+/** Why a match is on an admin's desk. */
+export type DisputeReason = 'disputed' | 'timeout';
+
+/** One row of `GET /api/game/manual/disputes`. */
+export interface DisputeRow {
+  matchSlug: string;
+  tournamentId: number | null;
+  matchStatus: string;
+  round: number;
+  bracket: string | null;
+  team1: { id: string | null; name: string | null };
+  team2: { id: string | null; name: string | null };
+  reason: DisputeReason;
+  report: MatchReport & { disputedAt?: number | null };
+}
+
+/** The result an admin rules with, the same shape a captain reports. */
+export interface ReportedResultInput {
+  maps: Array<{ team1Score: number; team2Score: number }>;
+  note?: string;
+}
+
 export interface ApiResult<T> {
   status: number;
   ok: boolean;
@@ -236,6 +258,37 @@ export const manualReportApi = {
       method: 'POST',
       body: JSON.stringify({ uid, role }),
     }),
+
+  // -------------------------------------------------------------------------
+  // Admin (3.0 phase D, PR D8). All behind `requireAuth`, so a player gets a
+  // 401 and the admin page is never reachable for them in the first place.
+  // -------------------------------------------------------------------------
+
+  /** Everything waiting for an admin: disputes, and escalated timeouts. */
+  disputes: (tournamentId?: number | null) =>
+    request<{ disputes: DisputeRow[] }>(
+      `/api/game/manual/disputes${tournamentId ? `?tournamentId=${tournamentId}` : ''}`
+    ),
+
+  /**
+   * Settle the open report.
+   *
+   * With no `result` the report stands as the captain made it; with one, the
+   * admin's own version is stored as its own revision and the open one is
+   * superseded, so the disagreement and the ruling are both on the record.
+   */
+  resolve: (slug: string, result?: ReportedResultInput, stats?: ReportedStatValue[]) =>
+    request(`/api/game/manual/matches/${slug}/resolve`, {
+      method: 'POST',
+      body: JSON.stringify({
+        ...(result ? { result } : {}),
+        ...(stats && stats.length ? { stats } : {}),
+      }),
+    }),
+
+  /** Put a settled match back to `live` so it can be reported again. */
+  reopen: (slug: string) =>
+    request(`/api/game/manual/matches/${slug}/reopen`, { method: 'POST' }),
 };
 
 /** A status that means "this panel is not for you", rather than a failure. */

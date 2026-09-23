@@ -574,5 +574,53 @@
         "missing": "{{field}} is required, and nothing is filled in for {{team}}."
       }
     }
+  },
+  "disputes": {
+    "title": "Disputes",
+    "heading": "Disputes",
+    "subheading": "Results the two teams could not agree on, and reports nobody answered in time.",
+    "empty": {
+      "title": "Nothing to settle",
+      "hint": "Disputed results, and reports that ran out of time, show up here."
+    },
+    "notApplicable": {
+      "title": "Nothing to settle here",
+      "hint": "This game sends its own results, so there is nothing for an admin to decide."
+    },
+    "reason": {
+      "disputed": "Disputed",
+      "timeout": "Nobody answered"
+    },
+    "roundLabel": "Round {{round}}",
+    "reportedBy": "{{team}} reported {{score}} · {{at}}",
+    "byAdmin": "An admin",
+    "history": "What each side reported",
+    "revision": "#{{revision}} {{team}}: {{score}} — {{status}} · {{at}}",
+    "status": {
+      "submitted": "waiting",
+      "confirmed": "confirmed",
+      "disputed": "disputed",
+      "superseded": "replaced",
+      "withdrawn": "withdrawn"
+    },
+    "ruling": {
+      "title": "Decide it",
+      "asReported": "Let the report stand",
+      "own": "Set the result myself",
+      "note": "Note",
+      "notePlaceholder": "Why you decided it this way (optional)"
+    },
+    "actions": {
+      "review": "Review",
+      "close": "Close",
+      "resolve": "Decide",
+      "reopen": "Reopen the match"
+    },
+    "reopenHint": "Reopening puts the match back to live, so it can be played or reported again.",
+    "reopenUnavailable": "A match can only be reopened once it is finished or waiting for a decision.",
+    "errors": {
+      "load": "Could not load the queue. Try again.",
+      "action": "That did not go through. Try again."
+    }
   }
 }
