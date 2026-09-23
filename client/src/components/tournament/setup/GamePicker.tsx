@@ -8,9 +8,14 @@
  * logos are IGDB and Wikidata artwork: every aspect ratio, every colour, and
  * mostly dark — squeezed into a square box on a dark card they were both
  * distorted and invisible. The module tiles are square, full-bleed and share
- * one palette, so they need no plate behind them and nothing is cropped. They
- * are drawn with `object-fit: contain` all the same: a tile that is ever not
- * square must letterbox rather than stretch.
+ * one palette, so they need no plate behind them and nothing is cropped. A
+ * tile that is ever not square letterboxes rather than stretches, which the
+ * inlined SVG's own `viewBox` does for free.
+ *
+ * **The tile is inlined, not an `<img>`.** It is written in `var(--at-ember…)`
+ * fills, and page CSS cannot reach into an `<img>`, so through one it stayed
+ * brand-orange under every theme. See `components/common/ModuleIcon` and
+ * `theme/moduleIcons`.
  *
  * Catalogue art is untouched and stays where it belongs — "What do you play?"
  * and a player's profile, where someone is picking their own game out of
@@ -30,6 +35,7 @@ import Box from '@mui/material/Box';
 import ButtonBase from '@mui/material/ButtonBase';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
+import { ModuleIcon } from '../../common/ModuleIcon';
 import { fontDisplay, tokens } from '../../../theme';
 import { groupSetupGames, type SetupGame } from './games';
 
@@ -46,7 +52,7 @@ const TILE_MAX = 72;
  */
 function GameTile({ game }: { game: SetupGame }) {
   const [failed, setFailed] = useState(false);
-  const showMark = !game.icon || failed;
+  const icon = failed ? undefined : game.icon;
 
   return (
     <Box
@@ -63,8 +69,9 @@ function GameTile({ game }: { game: SetupGame }) {
         // the mark's own background after; a full-bleed tile covers it, so it
         // is never a plate *behind* artwork.
         bgcolor: 'background.surface2',
-        ...(showMark
-          ? {
+        ...(icon
+          ? {}
+          : {
               border: 1,
               borderColor: 'divider',
               color: 'text.secondary',
@@ -72,24 +79,19 @@ function GameTile({ game }: { game: SetupGame }) {
               fontWeight: 700,
               fontSize: '1.05rem',
               letterSpacing: '-0.02em',
-            }
-          : {}),
+            }),
       }}
     >
-      {showMark ? (
-        game.mark
+      {icon ? (
+        // Inlined rather than drawn as an `<img>`, so the tile's
+        // `var(--at-ember…)` fills resolve against the page and it follows the
+        // theme (components/common/ModuleIcon). Not lazy either: every tile on
+        // this step is on screen or one scroll away, and a card that paints
+        // empty and fills in later is exactly the unfinished look this step
+        // had.
+        <ModuleIcon src={icon} onError={() => setFailed(true)} />
       ) : (
-        <Box
-          component="img"
-          src={game.icon}
-          alt=""
-          // Not lazy: every tile on this step is on screen or one scroll away,
-          // and a card that paints empty and fills in later is exactly the
-          // unfinished look this step had.
-          decoding="async"
-          onError={() => setFailed(true)}
-          sx={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
-        />
+        game.mark
       )}
     </Box>
   );
