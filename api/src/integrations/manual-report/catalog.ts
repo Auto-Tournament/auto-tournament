@@ -19,9 +19,9 @@
  * entries are only the ones that exist without any search.
  *
  * `icon` is the module's own square tile, shipped in `client/public/games`.
- * Five titles have none yet — Overwatch 2, EA Sports FC, Super Smash Bros.
- * Ultimate, Street Fighter 6 and Tekken 8 — and the setup wizard shows their
- * text mark instead of borrowing art that is not theirs.
+ * Three titles have none yet — Overwatch 2, EA Sports FC and Super Smash Bros.
+ * Ultimate — and the setup wizard shows their text mark instead of borrowing
+ * art that is not theirs.
  */
 
 import type { GameCatalogEntry } from '../types';
@@ -63,8 +63,13 @@ export const MANUAL_REPORT_CATALOG: ReadonlyArray<GameCatalogEntry> = [
     name: 'Super Smash Bros. Ultimate',
     aliases: ['smash', 'ssbu'],
   },
-  { slug: 'street-fighter-6', name: 'Street Fighter 6', aliases: ['sf6'] },
-  { slug: 'tekken-8', name: 'Tekken 8' },
+  {
+    slug: 'street-fighter-6',
+    name: 'Street Fighter 6',
+    aliases: ['sf6'],
+    icon: '/games/street-fighter-6.svg',
+  },
+  { slug: 'tekken-8', name: 'Tekken 8', icon: '/games/tekken-8.svg' },
   { slug: 'osu', name: 'osu!', icon: '/games/osu.svg' },
   {
     slug: 'team-fortress-2',
