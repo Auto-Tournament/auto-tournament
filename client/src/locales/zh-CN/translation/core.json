@@ -84,7 +84,8 @@
   "common": {
     "delete": "删除",
     "cancel": "取消",
-    "remove": "Remove"
+    "remove": "Remove",
+    "close": "Close"
   },
   "theme": {
     "label": "Color theme"

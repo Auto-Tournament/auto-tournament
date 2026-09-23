@@ -107,4 +107,36 @@ test.describe.serial('Modules page', () => {
       await expect(page.getByTestId(`pack-${PACK.slug}`)).toHaveCount(0);
     }
   );
+  test(
+    'an admin browses the community list and adds a game from it',
+    { tag: ['@ui', '@packs'] },
+    async ({ page, request }) => {
+      const fake = await request.post('/api/test/pack-index', { data: { fake: true } });
+      expect(fake.ok(), `pointing at the fake index: ${await fake.text()}`).toBe(true);
+      await request.delete('/api/packs/index-test-game');
+
+      try {
+        await page.goto('/modules');
+        await expect(page.getByTestId('modules-page')).toBeVisible({ timeout: 15000 });
+
+        await page.getByTestId('modules-browse').click();
+        const dialog = page.getByTestId('modules-browse-dialog');
+        await expect(dialog).toBeVisible();
+
+        const entry = page.getByTestId('index-index-test-game');
+        await expect(entry).toBeVisible({ timeout: 15000 });
+        await expect(entry).toContainText('2.0.0');
+
+        await page.getByTestId('index-index-test-game-add').click();
+
+        // The dialog now calls it installed, and the page behind it lists it.
+        await expect(entry).toContainText(/installed/i, { timeout: 15000 });
+        await page.getByRole('button', { name: /close/i }).click();
+        await expect(page.getByTestId('pack-index-test-game')).toBeVisible();
+      } finally {
+        await request.delete('/api/packs/index-test-game');
+        await request.post('/api/test/pack-index', { data: { fake: false } });
+      }
+    }
+  );
 });

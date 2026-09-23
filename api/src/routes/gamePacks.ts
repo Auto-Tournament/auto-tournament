@@ -21,6 +21,7 @@ import {
   removePack,
   validatePack,
 } from '../services/gamePackService';
+import { fetchIndexedPack, readPackIndex } from '../services/packIndexService';
 
 const router = Router();
 
@@ -139,6 +140,76 @@ router.post('/', async (req: Request, res: Response) => {
     });
   } catch (error) {
     log.error('[PACKS] Failed to import a pack', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to import the pack',
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /api/packs/index:
+ *   get:
+ *     tags: [Game packs]
+ *     summary: The community pack index
+ *     description: |
+ *       Fetches `index.json` from the configured pack index (by default the
+ *       `Auto-Tournament/packs` repository) and says which of its games this
+ *       instance already has. Nothing is fetched until this is called, and
+ *       the answer is cached under `DATA_DIR`, so an instance with no network
+ *       still lists what it saw last — with `stale` set.
+ *     security: [{ cookieAuth: [] }]
+ *     responses:
+ *       200:
+ *         description: The index, or the last copy of it
+ */
+router.get('/index', async (_req: Request, res: Response) => {
+  try {
+    res.json({ success: true, ...(await readPackIndex()) });
+  } catch (error) {
+    log.error('[PACKS] Failed to read the pack index', error);
+    res.status(502).json({ success: false, error: 'Could not read the pack index' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/packs/index/{slug}:
+ *   post:
+ *     tags: [Game packs]
+ *     summary: Import a game from the community index
+ *     description: |
+ *       Downloads the pack the index lists for this slug and validates it
+ *       exactly as an uploaded file is validated. Being listed in the index
+ *       earns a pack nothing.
+ *     security: [{ cookieAuth: [] }]
+ *     responses:
+ *       200:
+ *         description: The pack was imported
+ *       400:
+ *         description: The pack is not valid, with the reason
+ */
+router.post('/index/:slug', async (req: Request, res: Response) => {
+  try {
+    const found = await fetchIndexedPack(req.params.slug);
+    if (!found.ok) {
+      res.status(400).json({ success: false, error: found.error });
+      return;
+    }
+    const existing = installedPack(found.pack.slug);
+    const pack = await installPack(found.pack, {
+      source: 'index',
+      origin: found.origin,
+      installedBy: requestActorId(req),
+    });
+    res.json({
+      success: true,
+      updated: Boolean(existing),
+      pack: { slug: pack.slug, name: pack.name, engine: pack.engine, version: pack.version },
+    });
+  } catch (error) {
+    log.error('[PACKS] Failed to import a pack from the index', error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to import the pack',

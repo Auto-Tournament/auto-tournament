@@ -18,6 +18,7 @@ import {
 import { passport, testOAuthStrategyName } from '../config/passport';
 import { PENDING_STEAM_LINK_PROVIDERS } from '../utils/signedPendingSteamLink';
 import { setIgdbEndpointOverride, clearIgdbTokenCache } from '../services/igdbService';
+import { setPackIndexBaseOverride } from '../services/packIndexService';
 import { setWikidataEndpointOverride, resetWikidataThrottle } from '../services/wikidataService';
 import { clearGameSearchCache } from '../services/gameCatalogService';
 import { gameSearchLimiter } from './games';
@@ -1427,6 +1428,79 @@ router.post('/match-reports', requireAuth, async (req: Request, res: Response): 
     log.error('Error in POST /api/test/match-reports', error);
     res.status(500).json({ success: false, error: 'Failed to insert the match report' });
   }
+});
+
+/**
+ * Test-only fake pack index, the same trick the fake IGDB uses.
+ *
+ *   POST /api/test/pack-index   { fake: true | false }  point the pack index
+ *                                                       at the fixture below
+ *   GET  /api/test/fake-pack-index/index.json
+ *   GET  /api/test/fake-pack-index/packs/:slug.json
+ *
+ * The fixture holds one importable game and one entry pointing outside the
+ * index, which must never be fetched.
+ */
+const FAKE_INDEX_TILE =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">' +
+  '<rect width="16" height="16" fill="var(--at-ember, #ff6a3d)"/>' +
+  '<path d="M4 4h8v8H4z" fill="var(--at-ink-900, #121213)"/></svg>';
+
+const FAKE_INDEX_PACKS: Record<string, unknown> = {
+  'index-test-game': {
+    schema: 1,
+    slug: 'index-test-game',
+    name: 'Index Test Game',
+    engine: 'manual-report',
+    version: '2.0.0',
+    description: 'A game that exists only in the fake index.',
+    icon: FAKE_INDEX_TILE,
+  },
+};
+
+router.post('/pack-index', requireAuth, (req: Request, res: Response): void => {
+  if (!fakeIgdbEnabled(res)) return;
+  const { fake } = (req.body ?? {}) as { fake?: unknown };
+  const self = `http://127.0.0.1:${process.env.PORT || '3000'}/api/test/fake-pack-index/`;
+  setPackIndexBaseOverride(fake === false ? null : self);
+  res.json({ success: true, fake: fake !== false });
+});
+
+router.get('/fake-pack-index/index.json', (_req: Request, res: Response): void => {
+  if (!fakeIgdbEnabled(res)) return;
+  res.json({
+    schema: 1,
+    packs: [
+      {
+        slug: 'index-test-game',
+        name: 'Index Test Game',
+        version: '2.0.0',
+        engine: 'manual-report',
+        description: 'A game that exists only in the fake index.',
+        file: 'packs/index-test-game.json',
+      },
+      // Must be dropped rather than fetched: an index is a file anybody can
+      // open a pull request against.
+      {
+        slug: 'elsewhere',
+        name: 'Somewhere Else',
+        version: '1.0.0',
+        engine: 'manual-report',
+        file: 'https://example.com/evil.json',
+      },
+    ],
+  });
+});
+
+router.get('/fake-pack-index/packs/:file', (req: Request, res: Response): void => {
+  if (!fakeIgdbEnabled(res)) return;
+  const slug = req.params.file.replace(/\.json$/, '');
+  const pack = FAKE_INDEX_PACKS[slug];
+  if (!pack) {
+    res.status(404).json({ success: false, error: 'No such pack' });
+    return;
+  }
+  res.json(pack);
 });
 
 export default router;
