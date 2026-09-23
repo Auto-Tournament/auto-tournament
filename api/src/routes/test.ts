@@ -1454,7 +1454,8 @@ const FAKE_INDEX_PACKS: Record<string, unknown> = {
     engine: 'manual-report',
     version: '2.0.0',
     description: 'A game that exists only in the fake index.',
-    icon: FAKE_INDEX_TILE,
+    // A path to the file below, the way a real pack names its art.
+    icon: '../icons/index-test-game.svg',
   },
 };
 
@@ -1501,6 +1502,16 @@ router.get('/fake-pack-index/packs/:file', (req: Request, res: Response): void =
     return;
   }
   res.json(pack);
+});
+
+router.get('/fake-pack-index/icons/:file', (req: Request, res: Response): void => {
+  if (!fakeIgdbEnabled(res)) return;
+  if (req.params.file !== 'index-test-game.svg') {
+    res.status(404).json({ success: false, error: 'No such icon' });
+    return;
+  }
+  res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
+  res.send(FAKE_INDEX_TILE);
 });
 
 export default router;

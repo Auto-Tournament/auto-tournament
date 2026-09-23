@@ -28,8 +28,25 @@ const PACK = {
   engine: 'manual-report',
   version: '1.2.3',
   description: 'A game that exists only in this test.',
-  icon: TILE,
+  // A file beside the pack, which the admin picks along with the JSON.
+  icon: '../icons/modules-page-game.svg',
 };
+
+/** The two files a host selects: the pack, and the tile it names. */
+function packFiles(pack: Record<string, unknown> = PACK) {
+  return [
+    {
+      name: 'modules-page-game.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(JSON.stringify(pack)),
+    },
+    {
+      name: 'modules-page-game.svg',
+      mimeType: 'image/svg+xml',
+      buffer: Buffer.from(TILE),
+    },
+  ];
+}
 
 test.describe.serial('Modules page', () => {
   test.beforeEach(async ({ page, request }) => {
@@ -57,11 +74,7 @@ test.describe.serial('Modules page', () => {
       await expect(page.getByTestId('modules-packs-empty')).toBeVisible();
 
       // Import a pack the way a host would: pick the file.
-      await page.getByTestId('modules-file-input').setInputFiles({
-        name: 'modules-page-game.json',
-        mimeType: 'application/json',
-        buffer: Buffer.from(JSON.stringify(PACK)),
-      });
+      await page.getByTestId('modules-file-input').setInputFiles(packFiles());
 
       const card = page.getByTestId(`pack-${PACK.slug}`);
       await expect(card).toBeVisible({ timeout: 15000 });
@@ -91,22 +104,42 @@ test.describe.serial('Modules page', () => {
       await page.goto('/modules');
       await expect(page.getByTestId('modules-page')).toBeVisible({ timeout: 15000 });
 
-      await page.getByTestId('modules-file-input').setInputFiles({
-        name: 'bad.json',
-        mimeType: 'application/json',
-        buffer: Buffer.from(
-          JSON.stringify({
-            ...PACK,
-            icon: '<svg viewBox="0 0 1 1"><path d="M0 0" onload="alert(1)"/></svg>',
-          })
-        ),
-      });
+      await page.getByTestId('modules-file-input').setInputFiles([
+        {
+          name: 'modules-page-game.json',
+          mimeType: 'application/json',
+          buffer: Buffer.from(JSON.stringify(PACK)),
+        },
+        {
+          name: 'modules-page-game.svg',
+          mimeType: 'image/svg+xml',
+          buffer: Buffer.from('<svg viewBox="0 0 1 1"><path d="M0 0" onload="alert(1)"/></svg>'),
+        },
+      ]);
 
       // The API's own sentence, not a generic failure.
       await expect(page.getByText(/onload/i)).toBeVisible({ timeout: 15000 });
       await expect(page.getByTestId(`pack-${PACK.slug}`)).toHaveCount(0);
     }
   );
+  test(
+    'picking only the JSON of a pack that names a tile says which file is missing',
+    { tag: ['@ui', '@packs'] },
+    async ({ page }) => {
+      await page.goto('/modules');
+      await expect(page.getByTestId('modules-page')).toBeVisible({ timeout: 15000 });
+
+      await page.getByTestId('modules-file-input').setInputFiles({
+        name: 'modules-page-game.json',
+        mimeType: 'application/json',
+        buffer: Buffer.from(JSON.stringify(PACK)),
+      });
+
+      await expect(page.getByText(/modules-page-game\.svg/)).toBeVisible({ timeout: 15000 });
+      await expect(page.getByTestId(`pack-${PACK.slug}`)).toHaveCount(0);
+    }
+  );
+
   test(
     'an admin browses the community list and adds a game from it',
     { tag: ['@ui', '@packs'] },

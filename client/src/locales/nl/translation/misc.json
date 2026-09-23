@@ -244,7 +244,9 @@
       "updated": "Updated {{name}}",
       "failed": "Could not import that pack",
       "notJson": "That file is not JSON, so it is not a pack",
-      "tooLarge": "That file is too large to be a pack"
+      "tooLarge": "That file is too large to be a pack",
+      "noJson": "Pick the pack’s .json file",
+      "missingIcon": "This pack uses {{file}} — pick that file too, or import the JSON on its own for no tile"
     },
     "confirmRemove": {
       "title": "Remove {{name}}?",
