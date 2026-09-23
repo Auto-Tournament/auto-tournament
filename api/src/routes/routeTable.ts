@@ -38,6 +38,7 @@ import generationRoutes from './generation';
 import testRoutes from './test';
 import authRoutes from './auth';
 import gamesRoutes from './games';
+import gamePackRoutes from './gamePacks';
 import meRoutes from './me';
 
 export interface MountedRouter {
@@ -143,6 +144,13 @@ const coreRoutes: MountedRouter[] = [
     title: 'Games',
     description:
       'The game catalogue players pick from (IGDB or Wikidata-backed search, suggestions). Public.',
+  },
+  {
+    prefix: '/api/packs',
+    router: gamePackRoutes,
+    title: 'Game packs',
+    description:
+      'Games an admin imported as a pack file: list, import, remove, and the pack tile. Admin only, except the tile.',
   },
   {
     prefix: '/api/me',

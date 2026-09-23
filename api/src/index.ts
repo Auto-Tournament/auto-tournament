@@ -24,6 +24,7 @@ import cors from 'cors';
 import { createServer } from 'http';
 import swaggerUi from 'swagger-ui-express';
 import { db } from './config/database';
+import { refreshPackCache } from './services/gamePackService';
 import { PUBLIC_DIR, MAP_IMAGES_DIR } from './config/publicPaths';
 import { DATA_DIR } from './config/dataDir';
 import { getOpenApiSpec } from './config/swagger';
@@ -414,6 +415,12 @@ process.on('uncaughtException', (err) => {
     // Initialize database first (including schema)
     await db.init();
     log.success('Database initialized successfully');
+
+    // Imported game packs, into the cache the catalogue reads. It is a
+    // synchronous read on every catalogue call, so the packs cannot come from
+    // a query at that point; they are loaded once here and refreshed by every
+    // import and removal.
+    await refreshPackCache();
 
     // Now start the server after database is ready
     // Bind to all interfaces (IPv4 & IPv6) so both 127.0.0.1 and ::1 work with dev proxies.

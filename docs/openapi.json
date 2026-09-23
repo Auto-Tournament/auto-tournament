@@ -304,6 +304,10 @@
       "description": "MatchZy webhooks in, and the recorded event log out."
     },
     {
+      "name": "Game packs",
+      "description": "Games an admin imported as a pack file: list, import, remove, and the pack tile. Admin only, except the tile."
+    },
+    {
       "name": "Games",
       "description": "The game catalogue players pick from (IGDB or Wikidata-backed search, suggestions). Public."
     },
@@ -2947,6 +2951,115 @@
           },
           "403": {
             "description": "Impersonating"
+          }
+        }
+      }
+    },
+    "/api/packs": {
+      "get": {
+        "tags": [
+          "Game packs"
+        ],
+        "summary": "Every installed game pack",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The installed packs"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Game packs"
+        ],
+        "summary": "Import a game pack",
+        "description": "Takes the pack file's JSON as the request body. Re-importing a slug\nthat is already installed updates it in place, which is how an\nupdate is applied.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The pack was imported"
+          },
+          "400": {
+            "description": "The pack is not valid, with the reason"
+          }
+        }
+      }
+    },
+    "/api/packs/{slug}": {
+      "delete": {
+        "tags": [
+          "Game packs"
+        ],
+        "summary": "Remove a game pack",
+        "description": "Refused while a tournament is running the pack's game, so a live\ntournament is never left pointing at a game this instance no longer\nknows about.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Removed"
+          },
+          "409": {
+            "description": "A tournament is using it"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/packs/{slug}/icon.svg": {
+      "get": {
+        "tags": [
+          "Game packs"
+        ],
+        "summary": "A game pack's square tile",
+        "description": "The pack's own SVG, checked against a strict allowlist when the pack\nwas imported. Served from this origin so the client can inline it and\nlet it follow the active theme.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The tile",
+            "content": {
+              "image/svg+xml": {}
+            }
+          },
+          "404": {
+            "description": "No such pack, or it has no tile"
           }
         }
       }

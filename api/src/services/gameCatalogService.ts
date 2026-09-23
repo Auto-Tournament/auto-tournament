@@ -21,6 +21,7 @@
 
 import { db } from '../config/database';
 import { listIntegrations } from '../integrations/registry';
+import { installedPacks, packIconPath } from './gamePackService';
 import { log } from '../utils/logger';
 import { slugify } from '../utils/slug';
 import { IgdbError, searchIgdb, type IgdbGame } from './igdbService';
@@ -120,7 +121,8 @@ function searchKey(value: string): string {
 }
 
 /**
- * Installed integrations first, then the popular list; one entry per slug.
+ * Installed integrations first, then imported game packs, then the popular
+ * list; one entry per slug.
  *
  * An integration contributes its own entry (`catalog`, named after the module,
  * which is the game for CS2) and every extra title it ships
@@ -163,6 +165,23 @@ export function builtinGames(): BuiltinGame[] {
         icon: entry.icon ?? null,
       });
     }
+  }
+
+  // Then the games an admin imported as packs. After the modules, so a pack
+  // can never take a slug a module ships; before the popular list, so an
+  // imported game reads as supported rather than as a title nothing runs.
+  for (const pack of installedPacks()) {
+    add({
+      slug: pack.slug,
+      name: pack.name,
+      aliases: pack.definition.aliases ?? [],
+      integrationId: pack.engine,
+      // A pack runs on a module that runs anything, which is exactly what
+      // `viaCatchAll` says: supported, but not a module written for it.
+      viaCatchAll: true,
+      own: false,
+      icon: pack.hasIcon ? packIconPath(pack.slug) : null,
+    });
   }
 
   for (const game of POPULAR_GAMES) {
@@ -541,7 +560,8 @@ async function suggestionOrderedSlugs(): Promise<string[]> {
 }
 
 /**
- * Every built-in slug — installed modules and the popular list — with a
+ * Every built-in slug — installed modules, imported packs and the popular
+ * list — with a
  * tournament open or running on this instance first, then everything else in
  * `builtinGames()`'s own order (installed modules, then the popular list).
  * Unlike `suggestionOrderedSlugs`, a supported game is never dropped just for
