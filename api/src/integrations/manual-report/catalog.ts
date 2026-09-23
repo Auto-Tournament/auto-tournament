@@ -19,9 +19,9 @@
  * entries are only the ones that exist without any search.
  *
  * `icon` is the module's own square tile, shipped in `client/public/games`.
- * Three titles have none yet — Overwatch 2, EA Sports FC and Super Smash Bros.
- * Ultimate — and the setup wizard shows their text mark instead of borrowing
- * art that is not theirs.
+ * Two titles have none yet — EA Sports FC and Super Smash Bros. Ultimate —
+ * and the setup wizard shows their text mark instead of borrowing art that is
+ * not theirs.
  */
 
 import type { GameCatalogEntry } from '../types';
@@ -52,7 +52,18 @@ export const MANUAL_REPORT_CATALOG: ReadonlyArray<GameCatalogEntry> = [
   },
   { slug: 'dota-2', name: 'Dota 2', aliases: ['dota'], icon: '/games/dota-2.svg' },
   { slug: 'deadlock', name: 'Deadlock', icon: '/games/deadlock.svg' },
-  { slug: 'overwatch-2', name: 'Overwatch 2', aliases: ['ow', 'ow2'] },
+  {
+    slug: 'overwatch-2',
+    name: 'Overwatch 2',
+    aliases: ['ow', 'ow2'],
+    icon: '/games/overwatch-2.svg',
+  },
+  {
+    slug: 'rainbow-six-siege',
+    name: 'Rainbow Six Siege',
+    aliases: ['r6', 'r6s', 'siege'],
+    icon: '/games/rainbow-six-siege.svg',
+  },
   { slug: 'battlefield-6', name: 'Battlefield 6', aliases: ['bf6'], icon: '/games/battlefield-6.svg' },
   { slug: 'trackmania', name: 'Trackmania', aliases: ['tm'], icon: '/games/trackmania.svg' },
   { slug: 'chess', name: 'Chess', icon: '/games/chess.svg' },
