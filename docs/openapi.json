@@ -6893,6 +6893,37 @@
         }
       }
     },
+    "/api/tournament/game": {
+      "get": {
+        "tags": [
+          "Tournament"
+        ],
+        "summary": "Which game the current tournament is for (public)",
+        "description": "One field, no session. `GET /api/tournament` is admin-only, but a\nplayer's own profile has to know whether this instance is running a\ngame that measures kills and ADR or one that measures nothing, so it\ncan leave those columns out rather than fill them with \"N/A\"\n(3.0 phase D, PR D10). Same split as `/allocation-status`: the one\nfact a non-admin page needs, carved out of an admin-only resource.\n\n`null` when no tournament exists.\n",
+        "responses": {
+          "200": {
+            "description": "The game, as `tournament.game` stores it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "game": {
+                      "type": "string",
+                      "nullable": true,
+                      "example": "rocket-league"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/tournament/reset": {
       "post": {
         "tags": [

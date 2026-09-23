@@ -30,6 +30,7 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   // whose `game` is the catalogue id resolves here rather than falling through
   // to the module that runs anything (3.0 phase D, PR D7).
   catalogGames: ['counter-strike-2', 'cs', 'counter strike', 'csgo'],
+  catalogSlug: 'counter-strike-2',
 
   // The same five facts `cs2Integration.capabilities` states on the API side.
   capabilities: {

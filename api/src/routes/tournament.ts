@@ -111,6 +111,49 @@ router.get('/allocation-status', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * @openapi
+ * /api/tournament/game:
+ *   get:
+ *     tags: [Tournament]
+ *     summary: Which game the current tournament is for (public)
+ *     description: |
+ *       One field, no session. `GET /api/tournament` is admin-only, but a
+ *       player's own profile has to know whether this instance is running a
+ *       game that measures kills and ADR or one that measures nothing, so it
+ *       can leave those columns out rather than fill them with "N/A"
+ *       (3.0 phase D, PR D10). Same split as `/allocation-status`: the one
+ *       fact a non-admin page needs, carved out of an admin-only resource.
+ *
+ *       `null` when no tournament exists.
+ *     responses:
+ *       200:
+ *         description: The game, as `tournament.game` stores it
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 game:
+ *                   type: string
+ *                   nullable: true
+ *                   example: 'rocket-league'
+ */
+router.get('/game', async (req: Request, res: Response) => {
+  try {
+    const tournamentId = resolveTournamentId(req);
+    const row = await db.queryOneAsync<{ game: GameId | null }>(
+      'SELECT game FROM tournament WHERE id = ?',
+      [tournamentId]
+    );
+    return res.json({ success: true, game: row?.game ?? null });
+  } catch (error) {
+    log.error('Error fetching the tournament game', error);
+    return res.status(500).json({ success: false, error: 'Failed to fetch the tournament game' });
+  }
+});
+
 // Protect all routes
 router.use(requireAuth);
 

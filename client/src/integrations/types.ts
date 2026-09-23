@@ -383,6 +383,17 @@ export interface ClientGameIntegration {
   catalogGames?: string[];
 
   /**
+   * The catalogue slug for this integration's *own* game, when it is one
+   * (`cs2` -> `counter-strike-2`). A module that is not a game — manual
+   * reporting, which runs many — leaves it out.
+   *
+   * It is what turns a `tournament.game` of 'cs2' back into the catalogue id
+   * the rest of the app names games by. The API makes the same distinction
+   * with `catalog` vs `catalogEntries`.
+   */
+  catalogSlug?: string;
+
+  /**
    * True for a module that runs every other catalogue game (manual reporting).
    * The registry falls back to it before it falls back to CS2.
    */

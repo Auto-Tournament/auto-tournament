@@ -56,6 +56,21 @@ export function getIntegration(game: GameId | null | undefined): ClientGameInteg
   return INTEGRATIONS[DEFAULT_GAME];
 }
 
+/**
+ * The catalogue id for a `game` value, or undefined when there is none.
+ *
+ * `game` holds a catalogue slug from 3.0 phase D onwards ('rocket-league'),
+ * and an integration id for a module's own game ('cs2'). Pages that name a
+ * game the way the catalogue does — the browse list's filter and its game
+ * mark — want the slug either way. A module that is not a game ('manual-report',
+ * meaning "a game this instance has no catalogue row for") has none.
+ */
+export function catalogSlugFor(game: GameId | null | undefined): string | undefined {
+  const wanted = (game || DEFAULT_GAME).trim().toLowerCase();
+  const integration = getIntegration(wanted);
+  return integration.id === wanted ? integration.catalogSlug : wanted;
+}
+
 /** The integration that owns a tournament or match row (by its `game`). */
 export function integrationFor(row: GameOwned | null | undefined): ClientGameIntegration {
   return getIntegration(row?.game);
