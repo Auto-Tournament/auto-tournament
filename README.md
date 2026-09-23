@@ -61,10 +61,10 @@ Then open http://localhost:3069.
 To add servers, either:
 
 - use [CS2 Server Manager](https://github.com/Auto-Tournament/cs2-server-manager)
-  ([docs](https://docs.sivert.io/docs/csm)), which sets up servers with
+  ([docs](https://docs.autotournament.gg/cs2/server-manager)), which sets up servers with
   the CS2 plugin already installed, or
 - install [CounterStrikeSharp](https://docs.cssharp.dev/) and
-  [Auto Tournament CS2](https://docs.autotournament.gg) yourself, then add the
+  [Auto Tournament CS2](https://docs.autotournament.gg/cs2/plugin/install) yourself, then add the
   server in Auto Tournament under Settings → Servers.
 
 To run a tournament: Dashboard → New Tournament, pick a format, add teams and
@@ -107,9 +107,9 @@ Building on Auto Tournament:
 ## Related projects
 
 - [Auto Tournament CS2](https://github.com/Auto-Tournament/cs2-plugin)
-  ([docs](https://docs.sivert.io/docs/me)): the CS2 server plugin Auto Tournament drives.
+  ([docs](https://docs.autotournament.gg/cs2/plugin)): the CS2 server plugin Auto Tournament drives.
 - [CS2 Server Manager](https://github.com/Auto-Tournament/cs2-server-manager)
-  ([docs](https://docs.sivert.io/docs/csm)): sets up and updates the CS2
+  ([docs](https://docs.autotournament.gg/cs2/server-manager)): sets up and updates the CS2
   servers.
 
 ## Contributing

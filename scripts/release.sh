@@ -864,7 +864,7 @@ else
     # Changelog
     #
     # The changelog is not in this repository. It lives in the docs site, at
-    # content/docs/mat/advanced/changelog.mdx in sivert-io/docs.sivert.io, and
+    # content/docs/reference/changelog.mdx in Auto-Tournament/docs, and
     # is written by hand in prose rather than PR titles.
     #
     # This step used to write docs/changelog.md here. That path went away when
@@ -875,7 +875,7 @@ else
     echo ""
     echo -e "${YELLOW}Changelog${NC}"
     echo -e "${BLUE}The changelog lives in the docs site, not here. Add an entry to:${NC}"
-    echo -e "  ${GREEN}content/docs/mat/advanced/changelog.mdx${NC} (sivert-io/docs.sivert.io)"
+    echo -e "  ${GREEN}content/docs/reference/changelog.mdx${NC} (Auto-Tournament/docs)"
     echo ""
     echo -e "${BLUE}Landing in v${NEW_VERSION}:${NC}"
     collect_changes | sed 's/^/  /'
