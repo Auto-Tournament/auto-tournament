@@ -53,7 +53,7 @@ export const MANUAL_REPORT_CATALOG: ReadonlyArray<GameCatalogEntry> = [
   { slug: 'dota-2', name: 'Dota 2', aliases: ['dota'], icon: '/games/dota-2.svg' },
   { slug: 'deadlock', name: 'Deadlock', icon: '/games/deadlock.svg' },
   { slug: 'overwatch-2', name: 'Overwatch 2', aliases: ['ow', 'ow2'] },
-  { slug: 'battlefield-6', name: 'Battlefield 6', aliases: ['bf6', 'bf'], icon: '/games/battlefield-6.svg' },
+  { slug: 'battlefield-6', name: 'Battlefield 6', aliases: ['bf6'], icon: '/games/battlefield-6.svg' },
   { slug: 'trackmania', name: 'Trackmania', aliases: ['tm'], icon: '/games/trackmania.svg' },
   { slug: 'chess', name: 'Chess', icon: '/games/chess.svg' },
   { slug: 'minecraft', name: 'Minecraft', aliases: ['mc'], icon: '/games/minecraft.svg' },
