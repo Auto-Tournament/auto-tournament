@@ -12,6 +12,7 @@ import { getMapResults } from '../services/matchMapResultService';
 import { resolveViewerIdentity } from '../utils/viewerIdentity';
 import { log } from '../utils/logger';
 import { resolveTournamentId } from '../utils/tournamentRow';
+import { NEEDS_DECISION_STATUS } from '../utils/matchStatusHelpers';
 
 const router = Router();
 
@@ -92,7 +93,20 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
       );
     }
 
-    // Find active match (loaded or live)
+    // Find active match (loaded, live, or played but not yet settled).
+    //
+    // `needs_decision` belongs here (3.0 phase D, PR D8). It is a match that
+    // has been *played* and is waiting for somebody to say what the result
+    // was — a CS2 series that ran out of maps level, or a manually reported
+    // result the opponent disputed. Leaving it out of both queries meant a
+    // fresh page load answered `hasMatch: false`, so the team page told two
+    // captains staring at an open dispute that they had no match, and the
+    // report panel had no slug to render against. Ordered ahead of the
+    // pending/ready query below on purpose: the match you have just played
+    // and cannot get a result for is more current than the one you have not
+    // started. A live or loaded match still wins over it, which the `ORDER BY`
+    // says outright rather than leaving to `loaded_at` — both statuses carry
+    // one.
     let match = await db.queryOneAsync<
       DbMatchRow & {
         team1_name?: string;
@@ -114,10 +128,10 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
       LEFT JOIN teams t2 ON m.team2_id = t2.id
       LEFT JOIN servers s ON m.server_id = s.id
       WHERE (m.team1_id = ? OR m.team2_id = ?)
-        AND m.status IN ('loaded', 'live')
-      ORDER BY m.loaded_at DESC
+        AND m.status IN ('loaded', 'live', ?)
+      ORDER BY (m.status = ?) ASC, m.loaded_at DESC
       LIMIT 1`,
-      [teamId, teamId]
+      [teamId, teamId, NEEDS_DECISION_STATUS, NEEDS_DECISION_STATUS]
     );
 
     // If no active match, find next pending/ready match
