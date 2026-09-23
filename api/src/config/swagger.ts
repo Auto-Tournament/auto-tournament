@@ -228,6 +228,13 @@ const options: swaggerJsdoc.Options = {
               type: 'boolean',
               description: 'A game module for this game is installed (tournaments can run it)',
             },
+            integrationId: {
+              type: 'string',
+              nullable: true,
+              description:
+                'The installed module that would run this game, or null when none would ("cs2", "manual-report")',
+              example: 'manual-report',
+            },
             source: {
               type: 'string',
               enum: ['igdb', 'wikidata', 'builtin'],

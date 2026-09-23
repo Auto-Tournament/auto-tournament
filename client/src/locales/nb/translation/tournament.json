@@ -462,8 +462,11 @@
       },
       "game": {
         "label": "Spill",
-        "descriptions": {
-          "cs2": "Kampene kjøres på dine egne CS2-servere med Auto Tournament-pluginen."
+        "loading": "Henter spillene denne instansen kan kjøre.",
+        "lockedHelp": "Spillet er låst når turneringen finnes. Slett den og start på nytt for å kjøre et annet.",
+        "integrationDescriptions": {
+          "cs2": "Kamper kjører på dine egne CS2-servere med Auto Tournament CS2-pluginen.",
+          "manual-report": "Ingen servere. Lagene spiller kampen selv, og en kaptein rapporterer resultatet."
         }
       },
       "basics": {
@@ -566,6 +569,41 @@
         "maps": "Minst ett kart",
         "created": "Turneringen er opprettet",
         "saved": "Endringene er lagret"
+      },
+      "manualReport": {
+        "title": "Manuell rapportering",
+        "help": "Auto Tournament kan ikke følge med på dette spillet, så lagene forteller hva som skjedde.",
+        "seriesLength": "Serielengde",
+        "seriesLengthHelp": "Hvor mange kamper en serie er. Laget som vinner mer enn halvparten, tar kampen.",
+        "gameLabel": "Kall spillet",
+        "gameLabelHelp": "Hva det skal hete i rapportskjemaet. La stå tomt for «{{game}}».",
+        "allowDraw": "Uavgjort",
+        "allowDrawHelp": "Tillat at en kamp, og dermed en serie, ender likt. La det stå av i en cup, der noen må gå videre.",
+        "allowDrawOptions": {
+          "no": "Ikke tillatt",
+          "yes": "Tillatt"
+        },
+        "confirmation": "Før et resultat gjelder",
+        "confirmationHelp": {
+          "opponent": "Kapteinen på det andre laget må si seg enig før kampen er avgjort. De kan også protestere, og da går den til en administrator.",
+          "none": "Rapporten fra en kaptein avgjør kampen alene. Raskt, og verdt det bare der ingen sannsynligvis er uenig."
+        },
+        "confirmationOptions": {
+          "opponent": "Motstanderen godtar",
+          "none": "Rapporten gjelder"
+        },
+        "confirmTimeout": "Minutter på å svare",
+        "confirmTimeoutHelp": "Hvor lang tid motstanderen har før fristen går ut. 1440 er ett døgn.",
+        "confirmTimeoutNone": "Ingen frist: rapporten venter på svar.",
+        "timeoutAction": "Når fristen går ut",
+        "timeoutActionHelp": {
+          "auto_confirm": "Rapporten tas som den er, og cupen går videre uten at noen venter.",
+          "escalate": "Kampen sendes til en administrator, som avgjør den på Tvister-siden."
+        },
+        "timeoutActionOptions": {
+          "auto_confirm": "Ta rapporten",
+          "escalate": "Spør en administrator"
+        }
       }
     }
   },

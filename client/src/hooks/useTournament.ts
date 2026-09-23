@@ -85,11 +85,22 @@ export const useTournament = () => {
 
   const saveTournament = async (payload: {
     name: string;
+    /**
+     * The game to run, on create only ('cs2', 'rocket-league'). The update
+     * route does not take one: a tournament's matches were built by the
+     * module that owns it (3.0 phase D, PR D9).
+     */
+    game?: string;
     type: string;
     format: string;
     maps: string[];
     teamIds: string[];
-    settings: { seedingMethod: string; grandFinalMode?: 'none' | 'simple' | 'double' };
+    settings: {
+      seedingMethod: string;
+      grandFinalMode?: 'none' | 'simple' | 'double';
+      /** A game module's own object, stored and forwarded unread by the core. */
+      [moduleKey: string]: unknown;
+    };
     maxRounds?: number;
     overtimeMode?: 'enabled' | 'disabled';
     /** null clears the setting back to the MatchZy default. */

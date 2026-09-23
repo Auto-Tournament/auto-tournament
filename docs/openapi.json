@@ -209,6 +209,12 @@
             "type": "boolean",
             "description": "A game module for this game is installed (tournaments can run it)"
           },
+          "integrationId": {
+            "type": "string",
+            "nullable": true,
+            "description": "The installed module that would run this game, or null when none would (\"cs2\", \"manual-report\")",
+            "example": "manual-report"
+          },
           "source": {
             "type": "string",
             "enum": [
@@ -1656,6 +1662,52 @@
             }
           }
         ]
+      }
+    },
+    "/api/games/playable": {
+      "get": {
+        "tags": [
+          "Games"
+        ],
+        "summary": "Games this instance can create a tournament for",
+        "description": "The built-in catalogue, minus the popular titles no installed module\nruns. Each entry carries the module that would run it\n(`integrationId`), because the tournament setup wizard's steps differ\nby module: Counter-Strike 2 picks servers, maps and a veto, a manually\nreported game picks a series length and who confirms a result.\n\nNot everything a module could run: manual reporting answers for any\ncatalogue game, including one found through `/api/games/search`. This\nis the list an organizer picks from without searching. Works\nanonymously.\n",
+        "responses": {
+          "200": {
+            "description": "The playable games",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "games": {
+                      "type": "array",
+                      "items": {
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/GameSummary"
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "gameRef": {
+                                "type": "string",
+                                "description": "What to send as `game` when creating the\ntournament. The catalogue slug, except for a\nmodule's own game (Counter-Strike 2), which\nkeeps the module id the column has always held\nfor it.\n",
+                                "example": "rocket-league"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/games/popular": {
@@ -6494,6 +6546,11 @@
                       "swiss"
                     ],
                     "example": "single_elimination"
+                  },
+                  "game": {
+                    "type": "string",
+                    "description": "The game to run, as a catalogue slug from\n`/api/games/playable` (\"rocket-league\") or an installed\nmodule's id (\"cs2\"). Omitted, the tournament is CS2, the\n`game` column default. A game this instance does not know\nis a 400; the module that runs it then decides what the\nrest of the body must contain (CS2 wants maps, manual\nreporting does not).\n",
+                    "example": "rocket-league"
                   },
                   "format": {
                     "type": "string",

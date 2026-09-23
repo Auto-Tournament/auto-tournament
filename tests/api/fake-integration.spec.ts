@@ -271,14 +271,38 @@ test.describe.serial('Fake integration: a tournament without CS2', () => {
     expect(refused.status()).toBe(409);
   });
 
-  test('the public create route still makes CS2 tournaments, even when asked for another game', { tag: ['@api'] }, async ({ request }) => {
+  /**
+   * The public create route takes a `game` from 3.0 phase D (PR D9), but only
+   * one this instance has a catalogue row for. The fake module deliberately
+   * has none (`catalog: null`), which makes it the one game name that is
+   * guaranteed to be unknown however many modules are installed — so this is
+   * also the check that `runsAnyCatalogGame` does not quietly accept a typo.
+   *
+   * Before D9 the route ignored `game` entirely and made a CS2 tournament
+   * whatever was asked for; silently running the wrong game is the worse of
+   * the two answers, so it is a 400 now.
+   */
+  test('the public create route refuses a game this instance does not have', { tag: ['@api'] }, async ({ request }) => {
     const [a, b] = await createTeams(request, 'fake-pub', 2);
-    const res = await request.post('/api/tournament', {
+    const refused = await request.post('/api/tournament', {
       data: {
         name: 'Asks for fake',
         type: 'single_elimination',
         format: 'bo1',
         game: 'fake',
+        maps: ['de_mirage', 'de_inferno', 'de_nuke'],
+        teamIds: [a, b],
+      },
+    });
+    expect(refused.status()).toBe(400);
+    expect(await refused.text()).toContain('fake');
+
+    // With no `game` at all it is a CS2 tournament, as it has always been.
+    const res = await request.post('/api/tournament', {
+      data: {
+        name: 'Asks for nothing',
+        type: 'single_elimination',
+        format: 'bo1',
         maps: ['de_mirage', 'de_inferno', 'de_nuke'],
         teamIds: [a, b],
       },

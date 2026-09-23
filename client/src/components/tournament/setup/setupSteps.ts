@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next';
 import { TOURNAMENT_TYPES } from '../../../constants/tournament';
+import { getIntegration } from '../../../integrations/registry';
 import { validateTeamCountForType } from '../../../utils/tournamentValidation';
 import { validateMapCount } from '../../../utils/tournamentVerification';
 
@@ -14,6 +15,25 @@ export const SETUP_STEPS = [
 ] as const;
 
 export type SetupStepId = (typeof SETUP_STEPS)[number];
+
+/**
+ * The steps for one game (3.0 phase D, PR D9).
+ *
+ * Every step but "Maps and veto" is the core's and is asked for every game.
+ * That one is the game module's — it renders the module's `content` step and
+ * nothing else — so a game whose module has none (a manually reported one:
+ * there are no maps to pick and no veto to play) does not get the step at
+ * all, rather than an empty page with a Continue button.
+ */
+export function setupStepsFor(game: string | null | undefined): SetupStepId[] {
+  const hasContent = Boolean(getIntegration(game).tournamentSetupSteps.content);
+  return SETUP_STEPS.filter((step) => step !== 'maps' || hasContent);
+}
+
+/** The index of the last step for a game; Review is always last. */
+export function reviewStepIndexFor(game: string | null | undefined): number {
+  return setupStepsFor(game).length - 1;
+}
 
 export const REVIEW_STEP_INDEX = SETUP_STEPS.indexOf('review');
 

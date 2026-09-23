@@ -11,6 +11,13 @@ interface TournamentFormActionsProps {
   type: string;
   format: string;
   mapsCount: number;
+  /**
+   * The game is played on maps this instance picks (CS2). False for a game
+   * whose module has no map pool — a manually reported one — where "you need
+   * seven maps for the veto" is not a thing that can be true (3.0 phase D,
+   * PR D9). Defaults to true, the only case there was before.
+   */
+  hasMaps?: boolean;
   canEdit: boolean;
   onSave: () => void;
   onCancel?: () => void;
@@ -25,6 +32,7 @@ export function TournamentFormActions({
   type,
   format,
   mapsCount,
+  hasMaps = true,
   canEdit,
   onSave,
   onCancel,
@@ -40,7 +48,9 @@ export function TournamentFormActions({
 
   // Use verification rules system - create dummy array for validation
   const dummyMaps = Array(mapsCount).fill('dummy');
-  const mapValidation = validateMapCount(dummyMaps, type, format);
+  const mapValidation = hasMaps
+    ? validateMapCount(dummyMaps, type, format)
+    : { valid: true as const, message: undefined };
   const isValidMaps = mapValidation.valid;
 
   const handleSave = () => {

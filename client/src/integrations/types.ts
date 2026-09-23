@@ -43,6 +43,28 @@ export interface GameOwned {
   game?: string | null;
 }
 
+/**
+ * What a game gives the app, mirroring `IntegrationCapabilities` in
+ * `api/src/integrations/types.ts` (3.0 phase D, PR D10).
+ *
+ * The client reads these to leave a thing out rather than render it empty. A
+ * page that shows kills, ADR, headshots, maps or a demo link is showing what
+ * the *game* measured; a game that measures nothing has no zero to show, it
+ * has nothing to show, and those two read very differently to an organizer.
+ */
+export interface GameCapabilities {
+  /** Matches run on game servers that must be allocated (cs2: true). */
+  servers: boolean;
+  /** Matches have a pre-match map veto / side pick phase (cs2: true). */
+  veto: boolean;
+  /** The game pushes live events (scores, phases, presence) while a match runs. */
+  liveEvents: boolean;
+  /** The game records demos that can be listed and downloaded. */
+  demos: boolean;
+  /** The game reports per-player stats (kills, deaths, ADR, ...). */
+  playerStats: boolean;
+}
+
 // ---------------------------------------------------------------------------
 // Match panels (team view, admin view)
 // ---------------------------------------------------------------------------
@@ -143,6 +165,36 @@ export interface TournamentContentStepProps {
    * order is irrelevant but we still want shuffle-style validation rules.
    */
   enableOrdering?: boolean;
+}
+
+/**
+ * The module's own tournament settings, inside the setup wizard (3.0 phase D,
+ * PR D9).
+ *
+ * `rules` above is the *core's* question asked in the game's words (CS2:
+ * rounds and overtime). This is the module's own object inside
+ * `tournament.settings` — manual reporting's `manualReport` key: what to call
+ * the game, how long a series is, who has to agree with a result. The core
+ * stores and forwards that object without reading it, so the step is the only
+ * thing that knows its shape.
+ *
+ * A module that ships this step also owns the series-length question, so the
+ * core hides its own: a tournament has one series length, and asking for it
+ * twice is a way to store two different answers.
+ */
+export interface TournamentGameSettingsStepProps {
+  /** The tournament's `settings` object as the wizard has it so far. */
+  settings: Record<string, unknown>;
+  /** Merge a patch into `settings`. A module writes only its own key. */
+  onChange: (patch: Record<string, unknown>) => void;
+  /** The tournament's `game`, for a default that depends on the title. */
+  game: string;
+  /** What the catalogue calls that game, for a label that defaults to it. */
+  gameName: string;
+  /** The tournament's series length ('bo3'), which this step owns. */
+  format: string;
+  onFormatChange: (format: string) => void;
+  disabled?: boolean;
 }
 
 export type StartingSide = 'knife' | 'team1_ct' | 'team2_ct';
@@ -345,9 +397,20 @@ export interface ClientGameIntegration {
   /** Record of the pre-match phase, shown on the match details. */
   preMatchHistory?: ComponentType<PreMatchHistoryProps>;
 
+  /**
+   * What this game gives the rest of the app, mirroring the API integration's
+   * `capabilities` (3.0 phase D, PR D10). The client reads them to leave out
+   * what a game does not have rather than showing an empty column or a zero:
+   * a manually reported match has no server to join, no demo to download and
+   * no per-player numbers, because nothing measured it.
+   */
+  capabilities: GameCapabilities;
+
   tournamentSetupSteps: {
     rules?: ComponentType<TournamentRulesStepProps>;
     content?: ComponentType<TournamentContentStepProps>;
+    /** The module's own tournament settings (manual reporting: `manualReport`). */
+    settings?: ComponentType<TournamentGameSettingsStepProps>;
   };
 
   standaloneMatchSteps: {

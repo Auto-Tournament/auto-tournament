@@ -22,13 +22,22 @@ export interface ChecklistItem {
 interface SetupSummaryProps {
   gameName: string;
   gameMark: string;
+  /** The game's icon, when the catalogue has one; else the mark is shown. */
+  gameIcon?: string;
   name: string;
   rows: SummaryRow[];
   checklist: ChecklistItem[];
 }
 
 /** The live summary on the right: reads like the event page will, updates as you go. */
-export function SetupSummary({ gameName, gameMark, name, rows, checklist }: SetupSummaryProps) {
+export function SetupSummary({
+  gameName,
+  gameMark,
+  gameIcon,
+  name,
+  rows,
+  checklist,
+}: SetupSummaryProps) {
   const { t } = useTranslation();
 
   return (
@@ -49,16 +58,32 @@ export function SetupSummary({ gameName, gameMark, name, rows, checklist }: Setu
             component="span"
             aria-hidden="true"
             sx={{
-              px: 0.75,
-              py: 0.25,
-              borderRadius: `${tokens.radius.sm / 2}px`,
-              bgcolor: 'background.surface2',
-              color: 'text.primary',
-              fontSize: '0.7rem',
-              fontWeight: 700,
+              display: 'grid',
+              placeItems: 'center',
+              overflow: 'hidden',
+              ...(gameIcon
+                ? { width: 20, height: 20, borderRadius: `${tokens.radius.sm / 2}px` }
+                : {
+                    px: 0.75,
+                    py: 0.25,
+                    borderRadius: `${tokens.radius.sm / 2}px`,
+                    bgcolor: 'background.surface2',
+                    color: 'text.primary',
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                  }),
             }}
           >
-            {gameMark}
+            {gameIcon ? (
+              <Box
+                component="img"
+                src={gameIcon}
+                alt=""
+                sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            ) : (
+              gameMark
+            )}
           </Box>
           {gameName}
         </Typography>
