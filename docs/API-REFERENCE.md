@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 262 of them, 179 behind auth —
+Every endpoint this API serves — 263 of them, 180 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -445,6 +445,7 @@ Games an admin imported as a pack file: list, import, remove, and the pack tile.
 | `GET` | `/api/packs` | admin |
 | `POST` | `/api/packs` | admin |
 | `GET` | `/api/packs/index` | admin |
+| `GET` | `/api/packs/index/:slug/icon.svg` | admin |
 | `POST` | `/api/packs/index/:slug` | admin |
 | `DELETE` | `/api/packs/:slug` | admin |
 

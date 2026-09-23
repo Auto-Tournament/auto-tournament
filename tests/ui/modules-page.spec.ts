@@ -159,6 +159,9 @@ test.describe.serial('Modules page', () => {
         const entry = page.getByTestId('index-index-test-game');
         await expect(entry).toBeVisible({ timeout: 15000 });
         await expect(entry).toContainText('2.0.0');
+        // Its tile is drawn before anything is installed, inlined from our
+        // own origin rather than loaded from wherever the index lives.
+        await expect(entry.locator('svg').first()).toBeVisible();
 
         await page.getByTestId('index-index-test-game-add').click();
 

@@ -49,6 +49,7 @@ test.describe.serial('The pack index', () => {
     expect(entry, 'the fixture game should be listed').toBeTruthy();
     expect(entry!.installed).toBe(false);
     expect(entry!.version).toBe('2.0.0');
+    expect(entry!.icon, 'the index names a tile for it').toBe('icons/index-test-game.svg');
 
     // The entry whose `file` is an absolute URL to another host is dropped
     // while it is being read, so nothing downstream can ever fetch it.
@@ -80,6 +81,22 @@ test.describe.serial('The pack index', () => {
     );
     expect(entry!.installed).toBe(true);
     expect(entry!.updatable, 'installed at the version the index lists').toBe(false);
+  });
+
+  test('a tile for a game that is not installed is served by us, not the index', {
+    tag: ['@api', '@packs'],
+  }, async ({ request }) => {
+    // Browse draws these before anything is installed. They come from this
+    // origin so the page can inline them — and so the index never learns who
+    // is looking.
+    const icon = await request.get(`/api/packs/index/${SLUG}/icon.svg`);
+    expect(icon.ok(), `reading the tile: ${await icon.text()}`).toBe(true);
+    expect(icon.headers()['content-type']).toContain('image/svg+xml');
+    expect(await icon.text()).toContain('var(--at-ember');
+
+    // The entry the index points elsewhere with has none, because it is not
+    // in the list at all.
+    expect((await request.get('/api/packs/index/elsewhere/icon.svg')).status()).toBe(404);
   });
 
   test('a game the index does not list cannot be added', {

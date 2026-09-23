@@ -1479,6 +1479,7 @@ router.get('/fake-pack-index/index.json', (_req: Request, res: Response): void =
         engine: 'manual-report',
         description: 'A game that exists only in the fake index.',
         file: 'packs/index-test-game.json',
+        icon: 'icons/index-test-game.svg',
       },
       // Must be dropped rather than fetched: an index is a file anybody can
       // open a pull request against.

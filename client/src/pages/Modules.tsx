@@ -63,6 +63,8 @@ interface IndexEntry {
   version: string | null;
   engine: string;
   description: string | null;
+  /** The tile the index names, or null. Served by us, not by the index. */
+  icon: string | null;
   installed: boolean;
   updatable: boolean;
 }
@@ -72,6 +74,15 @@ const MAX_PACK_BYTES = 2_000_000;
 
 function packIconPath(slug: string): string {
   return `/api/packs/${encodeURIComponent(slug)}/icon.svg`;
+}
+
+/**
+ * A tile for a game that is not installed yet. Our own URL, not the index's:
+ * the server fetches it, so a browse list does not hand the admin's address
+ * to whoever hosts the index, and the tile is same-origin and can be inlined.
+ */
+function indexIconPath(slug: string): string {
+  return `/api/packs/index/${encodeURIComponent(slug)}/icon.svg`;
 }
 
 /**
@@ -445,6 +456,7 @@ export default function Modules() {
                       '&:last-child': { pb: 2 },
                     }}
                   >
+                    <Tile src={entry.icon ? indexIconPath(entry.slug) : null} name={entry.name} />
                     <Box sx={{ minWidth: 0, flex: 1 }}>
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Typography fontWeight={600}>{entry.name}</Typography>

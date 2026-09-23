@@ -22,7 +22,7 @@ import {
   removePack,
   validatePack,
 } from '../services/gamePackService';
-import { fetchIndexedPack, readPackIndex } from '../services/packIndexService';
+import { fetchIndexedPack, fetchIndexedTile, readPackIndex } from '../services/packIndexService';
 
 const router = Router();
 
@@ -193,6 +193,42 @@ router.get('/index', async (_req: Request, res: Response) => {
     log.error('[PACKS] Failed to read the pack index', error);
     res.status(502).json({ success: false, error: 'Could not read the pack index' });
   }
+});
+
+/**
+ * @openapi
+ * /api/packs/index/{slug}/icon.svg:
+ *   get:
+ *     tags: [Game packs]
+ *     summary: The tile the index names for a game
+ *     description: |
+ *       Fetched by this server and served from this origin, so a browse list
+ *       does not hand every admin's address to whoever hosts the index, and
+ *       so the tile is same-origin and can follow the theme. Checked against
+ *       the same allowlist an imported tile is.
+ *     security: [{ cookieAuth: [] }]
+ *     responses:
+ *       200:
+ *         description: The tile
+ *         content:
+ *           image/svg+xml: {}
+ *       404:
+ *         description: The index names no usable tile for that game
+ */
+router.get('/index/:slug/icon.svg', async (req: Request, res: Response) => {
+  const found = await fetchIndexedTile(req.params.slug);
+  if (!found.ok) {
+    res.status(404).json({ success: false, error: found.error });
+    return;
+  }
+  res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'none'; style-src 'unsafe-inline'; sandbox"
+  );
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Cache-Control', 'private, max-age=300');
+  res.send(found.markup);
 });
 
 /**

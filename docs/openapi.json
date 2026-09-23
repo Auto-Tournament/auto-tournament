@@ -3056,6 +3056,44 @@
         ]
       }
     },
+    "/api/packs/index/{slug}/icon.svg": {
+      "get": {
+        "tags": [
+          "Game packs"
+        ],
+        "summary": "The tile the index names for a game",
+        "description": "Fetched by this server and served from this origin, so a browse list\ndoes not hand every admin's address to whoever hosts the index, and\nso the tile is same-origin and can follow the theme. Checked against\nthe same allowlist an imported tile is.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The tile",
+            "content": {
+              "image/svg+xml": {}
+            }
+          },
+          "404": {
+            "description": "The index names no usable tile for that game"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/api/packs/{slug}": {
       "delete": {
         "tags": [
