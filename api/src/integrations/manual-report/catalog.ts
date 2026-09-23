@@ -19,9 +19,9 @@
  * entries are only the ones that exist without any search.
  *
  * `icon` is the module's own square tile, shipped in `client/public/games`.
- * Two titles have none yet — EA Sports FC and Super Smash Bros. Ultimate —
- * and the setup wizard shows their text mark instead of borrowing art that is
- * not theirs.
+ * Every title in this list has one. A game found through IGDB search has
+ * none, and the setup wizard shows its text mark rather than borrowing art
+ * that is not that game's.
  */
 
 import type { GameCatalogEntry } from '../types';
@@ -68,11 +68,17 @@ export const MANUAL_REPORT_CATALOG: ReadonlyArray<GameCatalogEntry> = [
   { slug: 'trackmania', name: 'Trackmania', aliases: ['tm'], icon: '/games/trackmania.svg' },
   { slug: 'chess', name: 'Chess', icon: '/games/chess.svg' },
   { slug: 'minecraft', name: 'Minecraft', aliases: ['mc'], icon: '/games/minecraft.svg' },
-  { slug: 'ea-sports-fc-25', name: 'EA Sports FC', aliases: ['fifa', 'fc'] },
+  {
+    slug: 'ea-sports-fc-25',
+    name: 'EA Sports FC',
+    aliases: ['fifa', 'fc'],
+    icon: '/games/ea-sports-fc-25.svg',
+  },
   {
     slug: 'super-smash-bros-ultimate',
     name: 'Super Smash Bros. Ultimate',
     aliases: ['smash', 'ssbu'],
+    icon: '/games/super-smash-bros-ultimate.svg',
   },
   {
     slug: 'street-fighter-6',
