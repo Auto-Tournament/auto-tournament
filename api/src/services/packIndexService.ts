@@ -68,6 +68,12 @@ export interface PackIndexEntry {
   engine: string;
   description: string | null;
   file: string;
+  /**
+   * The tile the index names for this game, as it declared it — relative to
+   * the index itself. Null when it names none, or names one outside the
+   * index. Served by this instance at `/api/packs/index/<slug>/icon.svg`.
+   */
+  icon: string | null;
   /** True when this instance already has the pack. */
   installed: boolean;
   /** True when it is installed at a different version than the index lists. */
@@ -89,6 +95,7 @@ interface RawEntry {
   engine?: unknown;
   description?: unknown;
   file?: unknown;
+  icon?: unknown;
 }
 
 function asString(value: unknown): string | null {
@@ -161,6 +168,11 @@ function toEntries(raw: RawEntry[]): PackIndexEntry[] {
 
     const version = asString(row.version);
     const installed = installedPack(slug);
+    // The tile is named relative to the index itself here, so Browse can draw
+    // a card without downloading the pack first. An entry naming one outside
+    // the index simply has no tile, the same way a malformed one is skipped.
+    const declared = asString(row.icon);
+    const icon = declared && resolveEntryUrl(packIndexBase(), declared) ? declared : null;
     entries.push({
       slug,
       name,
@@ -168,6 +180,7 @@ function toEntries(raw: RawEntry[]): PackIndexEntry[] {
       engine,
       description: asString(row.description),
       file,
+      icon,
       installed: Boolean(installed),
       updatable: Boolean(installed && version && installed.version !== version),
     });
@@ -285,4 +298,47 @@ export async function fetchIndexedPack(
   }
 
   return { ok: true, pack: result.pack, origin: url, tile };
+}
+
+/**
+ * The tile the index names for one of its entries, for Browse to draw before
+ * anything is installed.
+ *
+ * Fetched by *this server* and served from our own origin, rather than
+ * letting the page load it from wherever the index lives: a browse list
+ * should not hand every admin's address to whoever hosts the index, and a
+ * tile has to be same-origin before `ModuleIcon` will inline it and let the
+ * theme reach it.
+ *
+ * Kept briefly in memory. Browse draws a handful of cards at once and an
+ * admin who closes and reopens it should not re-fetch them all.
+ */
+const previewCache = new Map<string, { markup: string; at: number }>();
+const PREVIEW_TTL_MS = 10 * 60 * 1000;
+
+export async function fetchIndexedTile(
+  slug: string
+): Promise<{ ok: true; markup: string } | { ok: false; error: string }> {
+  const wanted = slug.trim().toLowerCase();
+  const cached = previewCache.get(wanted);
+  if (cached && Date.now() - cached.at < PREVIEW_TTL_MS) {
+    return { ok: true, markup: cached.markup };
+  }
+
+  const index = await readPackIndex();
+  const entry = index.entries.find((candidate) => candidate.slug === wanted);
+  if (!entry?.icon) return { ok: false, error: 'No tile for that game' };
+
+  const url = resolveEntryUrl(packIndexBase(), entry.icon);
+  if (!url) return { ok: false, error: 'That tile points outside the index' };
+
+  try {
+    const markup = await fetchText(url, MAX_TILE_BYTES);
+    const problem = checkTileMarkup(markup);
+    if (problem) return { ok: false, error: problem };
+    previewCache.set(wanted, { markup, at: Date.now() });
+    return { ok: true, markup };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : 'unknown error' };
+  }
 }
