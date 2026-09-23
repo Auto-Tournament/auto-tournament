@@ -18,7 +18,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import ListSubheader from '@mui/material/ListSubheader';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -44,12 +43,12 @@ import GavelIcon from '@mui/icons-material/Gavel';
 import { usePageHeader } from '../../contexts/PageHeaderContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { api } from '../../utils/api';
-import type { SettingsResponse } from '../../types/api.types';
 import { useIsDevelopment } from '../../hooks/useIsDevelopment';
 import { useTranslation } from 'react-i18next';
 import { SharedNavBar } from './SharedNavBar';
 import { instanceIntegration } from '../../integrations/registry';
-import { useDisputesEntry } from '../../hooks/useDisputesEntry';
+import { useTournamentIntegration } from '../../hooks/useTournamentIntegration';
+import { paths } from '../../paths';
 
 const drawerWidth = 240;
 
@@ -175,15 +174,13 @@ export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { headerActions } = usePageHeader();
-  const { showError, showPersistentError, closeSnackbar } = useSnackbar();
-  const hasShownWebhookWarningRef = React.useRef(false);
+  const { showPersistentError, closeSnackbar } = useSnackbar();
   const [dbHealthSnackbarKey, setDbHealthSnackbarKey] = React.useState<import('notistack').SnackbarKey | null>(null);
   const [steamHealthSnackbarKey, setSteamHealthSnackbarKey] = React.useState<import('notistack').SnackbarKey | null>(
     null
   );
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const contentContainerRef = React.useRef<HTMLDivElement>(null);
-  const [webhookConfigured, setWebhookConfigured] = React.useState<boolean | null>(null);
   // The saved preference is for the desktop mini/full sidebar only. Reusing it
   // on phones kept the 240px permanent drawer and opened the temporary one on
   // top, leaving ~135px of content at 375px wide. Small screens use only the
@@ -208,8 +205,17 @@ export default function Layout() {
   // i18n keys it had: nav.<key> and layout.pageTitle.<key>.
   const integrationNavItems = instanceIntegration().navItems;
 
-  // Whether this instance's tournament can have a disputed result at all.
-  const { show: showDisputes } = useDisputesEntry();
+  // One read of the tournament for both of the shell's game-dependent parts:
+  // whether a result here can be disputed at all (3.0 phase D, PR D8), and
+  // what the game's module needs an admin to fix before it can run (phase E:
+  // CS2's webhook URL). `useDisputesEntry` is the same decision for the pages
+  // that need only that one.
+  const { integration: tournamentIntegration, loading: tournamentGameLoading } =
+    useTournamentIntegration();
+  const showDisputes = !tournamentGameLoading && Boolean(tournamentIntegration.adminDisputesView);
+  const AdminGlobalWarning = tournamentGameLoading
+    ? undefined
+    : tournamentIntegration.adminGlobalWarning;
 
   // Page header configuration - maps routes to their titles and icons
   const pageHeaders: Record<string, { title: string; icon: React.ComponentType; color?: string }> =
@@ -273,37 +279,6 @@ export default function Layout() {
     { label: t('nav.adminTools'), path: '/admin', icon: CampaignIcon },
     ...(isDevelopment ? [{ label: t('nav.devTools'), path: '/dev', icon: BuildIcon }] : []),
   ];
-
-  React.useEffect(() => {
-    let isMounted = true;
-
-    const loadSettings = async () => {
-      try {
-        const response = await api.get<SettingsResponse>('/api/settings');
-        if (isMounted) {
-          setWebhookConfigured(Boolean(response.settings?.webhookConfigured));
-        }
-      } catch {
-        if (isMounted) {
-          setWebhookConfigured(false);
-        }
-      }
-    };
-
-    loadSettings();
-
-    const handleSettingsUpdated = (event: Event) => {
-      const customEvent = event as CustomEvent<SettingsResponse['settings']>;
-      setWebhookConfigured(Boolean(customEvent.detail?.webhookConfigured));
-    };
-
-    window.addEventListener('matchzy:settingsUpdated', handleSettingsUpdated);
-
-    return () => {
-      isMounted = false;
-      window.removeEventListener('matchzy:settingsUpdated', handleSettingsUpdated);
-    };
-  }, []);
 
   // Global admin warning: keep a persistent snackbar while any server reports plugin DB down.
   React.useEffect(() => {
@@ -395,35 +370,11 @@ export default function Layout() {
     };
   }, [steamHealthSnackbarKey, showPersistentError, closeSnackbar, t]);
 
-  // Show a single global snackbar when webhook is not configured
+  // What the game's own module needs an admin to fix, wherever they are (3.0
+  // phase E). The shell owns the settings route and nothing else about it.
   const handleOpenSettingsFromSnackbar = React.useCallback(() => {
-    navigate('/settings');
+    navigate(paths.settings);
   }, [navigate]);
-
-  React.useEffect(() => {
-    if (webhookConfigured === false && !hasShownWebhookWarningRef.current) {
-      hasShownWebhookWarningRef.current = true;
-      showError(
-        <Box display="flex" alignItems="center" gap={1}>
-          <Box component="span" sx={{ mr: 1 }}>
-            {t('layout.webhookNotConfigured')}
-          </Box>
-          <Button
-            color="inherit"
-            size="small"
-            onClick={handleOpenSettingsFromSnackbar}
-            sx={{ textDecoration: 'underline' }}
-          >
-            {t('layout.openSettings')}
-          </Button>
-        </Box>
-      );
-    }
-
-    if (webhookConfigured === true) {
-      hasShownWebhookWarningRef.current = false;
-    }
-  }, [webhookConfigured, showError, handleOpenSettingsFromSnackbar, t]);
 
   // Fallback page title handling for critical routes (e.g. Matches)
   React.useEffect(() => {
@@ -530,6 +481,8 @@ export default function Layout() {
   return (
     <Box sx={{ display: 'flex', minHeight: `calc(100vh - ${bannerOffset})` }}>
       <CssBaseline />
+      {/* The game module's own global warning, or nothing (3.0 phase E). */}
+      {AdminGlobalWarning && <AdminGlobalWarning onOpenSettings={handleOpenSettingsFromSnackbar} />}
       {/* Mobile Drawer (temporary) */}
       <MuiDrawer
         variant="temporary"

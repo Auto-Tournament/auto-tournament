@@ -1,5 +1,13 @@
 {
   "tournament": {
+    "startConfirm": {
+      "intro": "Ready to start the tournament?",
+      "thisWill": "This will:",
+      "openMatches": "Open the first round's matches for play",
+      "statusInProgress": "Change the tournament status to IN PROGRESS",
+      "confirm": "Yes, start the tournament",
+      "started": "Tournament started! The first round's matches are open."
+    },
     "steps": {
       "create": "Turnier erstellen",
       "review": "Überprüfen & bestätigen",
