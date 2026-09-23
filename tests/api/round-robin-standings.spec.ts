@@ -114,6 +114,8 @@ const SERVER_HEADERS = {
 
 type ListedMatch = {
   slug: string;
+  round: number;
+  status: string;
   team1?: { id: string } | null;
   team2?: { id: string } | null;
 };
@@ -235,6 +237,61 @@ test.describe.serial('Round robin completion', () => {
       const lb = (await lbRes.json()) as { teams?: Array<{ teamId: string; rank?: number }> };
       expect(lb.teams?.map((t) => t.teamId), 'leaderboard uses the same order').toEqual(expected);
       expect(lb.teams?.map((t) => t.rank)).toEqual([1, 2, 3, 4]);
+    }
+  );
+
+  /**
+   * The round opener that keeps a no-veto round robin moving must not reach
+   * CS2. A CS2 round robin holds every match for the map veto, including
+   * round 1, and finishing a round changes none of that: the veto is what
+   * readies a match, in its own order and its own time.
+   */
+  test(
+    'CS2 keeps the veto: a finished round does not ready the next one',
+    { tag: ['@api', '@regression'] },
+    async ({ request }) => {
+      await signInViaRequest(request);
+      await request.put('/api/settings', { data: { simulateMatches: false } });
+
+      const setup = await setupTournament(request, {
+        type: 'round_robin',
+        format: 'bo1',
+        teamCount: 4,
+        serverCount: 1,
+        prefix: 'rrveto',
+      });
+      expect(setup, 'tournament setup failed').toBeTruthy();
+
+      const listed = async () => {
+        const res = await request.get('/api/matches', { headers: getAuthHeader() });
+        return ((await res.json()) as { matches: ListedMatch[] }).matches.filter((m) =>
+          /^r\d+m\d+$/.test(m.slug)
+        );
+      };
+
+      // Started, and every match — round 1 included — waits for its veto.
+      const created = await listed();
+      expect(created).toHaveLength(6);
+      expect(created.every((m) => m.status === 'pending')).toBe(true);
+
+      // Play round 1 anyway (the events do not care about the veto).
+      for (const match of created.filter((m) => m.round === 1)) {
+        await playBo1(request, match, 'team1', 13, 5);
+      }
+
+      await expect
+        .poll(async () => (await listed()).filter((m) => m.round === 1 && m.status === 'completed').length, {
+          message: 'round 1 should complete',
+          timeout: 20_000,
+        })
+        .toBe(2);
+
+      // Round 2 is still the veto's to open, exactly as before.
+      const after = await listed();
+      expect(
+        after.filter((m) => m.round > 1).map((m) => m.status),
+        'CS2 rounds after 1 are still held for the veto'
+      ).toEqual(['pending', 'pending', 'pending', 'pending']);
     }
   );
 });

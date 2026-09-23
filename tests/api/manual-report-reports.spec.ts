@@ -655,6 +655,61 @@ test.describe.serial('Manual-report: reporting a tournament to a champion', () =
     expect(done.winnerId).toBe(match.team2!.id);
   });
 
+  /**
+   * A reported league: round robin on a game with no veto. Every pairing is
+   * generated up front and everything past round 1 is held `pending` — CS2
+   * opens those rounds through the map veto, and manual reporting has no
+   * pre-match phase at all, so the tournament used to stall the moment round 1
+   * was reported. The finished round now opens the next one.
+   */
+  test('round robin: reporting a round opens the next one, up to a champion', { tag: ['@api'] }, async ({ request }) => {
+    const teamIds = await createTeams(request, 'mr-rr', 4);
+    await createTournament(request, {
+      name: 'Reported league',
+      type: 'round_robin',
+      format: 'bo1',
+      game: 'chess',
+      teamIds,
+      settings: { manualReport: { confirmation: 'none' } },
+    });
+
+    // 4 teams: 3 rounds of 2, every pairing known from the start.
+    const created = await listMatches(request);
+    expect(created).toHaveLength(6);
+    expect(created.filter((m) => m.round > 1).every((m) => m.status === 'pending' && m.team1 && m.team2)).toBe(true);
+
+    await start(request);
+
+    for (const round of [1, 2, 3]) {
+      const matches = await waitForLive(request, round, 2);
+      const later = (await listMatches(request)).filter((m) => m.round > round);
+      expect(later.every((m) => m.status === 'pending'), `round ${round + 1} is not open yet`).toBe(true);
+      for (const match of matches) {
+        const reported = await expectOk(
+          await asCaptain(request, match.team1!.id, () =>
+            act(request, match.slug, 'report', { as: 'captain', data: { result: sweep(1, 'team1') } })
+          ),
+          `reporting ${match.slug}`
+        );
+        expect(reported.finalized).toBe(true);
+      }
+    }
+
+    await expect
+      .poll(
+        async () => {
+          const res = await request.get('/api/tournament');
+          return ((await res.json()) as { tournament?: { status?: string } }).tournament?.status;
+        },
+        { message: 'the league should complete', timeout: 20_000 }
+      )
+      .toBe('completed');
+
+    const done = await request.get('/api/tournament');
+    expect(((await done.json()) as { tournament: { winner?: { id: string } | null } }).tournament.winner?.id).toBeTruthy();
+    expect((await listMatches(request)).every((m) => m.status === 'completed')).toBe(true);
+  });
+
   test('an admin overrides, and reopens only while nothing downstream has finished', { tag: ['@api'] }, async ({ request }) => {
     const teamIds = await createTeams(request, 'mr-admin', 4);
     await createTournament(request, {
