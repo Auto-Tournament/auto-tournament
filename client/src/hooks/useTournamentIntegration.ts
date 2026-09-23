@@ -13,9 +13,13 @@
  * League. `useTournamentStatus` is the same read `useDisputesEntry` and
  * `TeamMatch` already make for the same decision.
  *
- * With no tournament yet — a fresh install, mid-setup — the answer is CS2's,
- * the game every install has had, so nothing on the common path changes shape
- * while an admin is still deciding what to run.
+ * With no tournament — a fresh install, mid-setup — the answer is *no module*,
+ * not CS2's. PR #311 fell back to CS2 there, on the grounds that it is the
+ * game every install has had, and the result was that a brand new instance was
+ * told to configure a webhook URL for a game it had not said it was running
+ * yet. An instance with nothing to run has nothing that needs fixing before it
+ * can run, so the shell says nothing until there is a tournament to say it
+ * about.
  */
 
 import { useTournamentStatus } from './useTournamentStatus';
@@ -23,9 +27,10 @@ import { integrationFor } from '../integrations/registry';
 import type { ClientGameIntegration } from '../integrations/types';
 
 export function useTournamentIntegration(): {
-  integration: ClientGameIntegration;
+  /** Null while the tournament is loading, and when there is no tournament. */
+  integration: ClientGameIntegration | null;
   loading: boolean;
 } {
   const { tournament, loading } = useTournamentStatus();
-  return { integration: integrationFor(tournament), loading };
+  return { integration: tournament ? integrationFor(tournament) : null, loading };
 }

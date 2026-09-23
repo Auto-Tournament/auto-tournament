@@ -30,6 +30,8 @@ import { RoundStatusCard } from '../components/tournament/RoundStatusCard';
 import { ChampionBanner } from '../components/tournament/ChampionBanner';
 import { getGlobalMatchNumber as globalMatchNumber, getRoundLabel } from '../utils/matchUtils';
 import { useBracket } from '../hooks/useBracket';
+import { useResourceAvailability } from '../hooks/useResourceAvailability';
+import { integrationFor } from '../integrations/registry';
 import { api } from '../utils/api';
 import { StartTournamentButton } from '../components/dashboard';
 import type { Match } from '../types';
@@ -51,6 +53,16 @@ export default function Bracket() {
     loadBracket,
   } = useBracket();
 
+  // What the waiting matches are waiting for is the game's answer, not the
+  // bracket's: CS2 matches wait for a free server and for the next allocation
+  // pass, and a game with no resources has neither (3.0 phase E). The core
+  // asks the route the module named, once, and hands the numbers to its
+  // banner; nothing here knows what a server is.
+  const integration = tournament ? integrationFor(tournament) : null;
+  const MatchQueueBanner = integration?.matchQueueBanner;
+  const { availability: resourceAvailability, nextInSeconds: nextAllocationInSeconds } =
+    useResourceAvailability(integration, 30000);
+
   const [viewMode, setViewMode] = useState<'visual' | 'list'>('visual');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [selectedMatchId, setSelectedMatchId] = useState<number | null>(null);
@@ -66,28 +78,6 @@ export default function Bracket() {
   const [shuffleTotalRounds, setShuffleTotalRounds] = useState<number | null>(null);
   const fullscreenRef = useRef<globalThis.HTMLDivElement>(null);
   const selectedMatchIdRef = useRef<number | null>(null);
-  const [allocationCountdown, setAllocationCountdown] = useState<{
-    nextAllocationInSeconds: number | null;
-    gracePeriodSeconds: number;
-    availableServerCount: number;
-    requiredServerCount: number;
-    // Snapshot of server states so we can show which ones are still in cooldown
-    // or otherwise not allocatable.
-    servers: Array<{
-      id: string;
-      name: string;
-      status: string | null;
-      inGraceWindow: boolean;
-      secondsUntilReady: number | null;
-      allocatable: boolean;
-    }>;
-  }>({
-    nextAllocationInSeconds: null,
-    gracePeriodSeconds: 120,
-    availableServerCount: 0,
-    requiredServerCount: 0,
-    servers: [],
-  });
   const { t } = useTranslation();
 
   // Derive the current match from matches array (keeps status/score in sync with
@@ -151,86 +141,6 @@ export default function Bracket() {
     // it is only used when the current tournament is a shuffle tournament.
   }, [tournament?.type, tournament?.id, tournament?.mapSequence, tournament?.maps]);
 
-  // Poll allocation status globally so all tournament types can show the
-  // "next servers in Xs" countdown on the Bracket page.
-  useEffect(() => {
-    const loadAllocationStatus = async () => {
-      try {
-        const availability = await api.get<{
-          success: boolean;
-          availableServerCount: number;
-          gracePeriodSeconds?: number;
-          nextAllocationInSeconds?: number | null;
-          requiredServerCount?: number;
-          servers?: Array<{
-            id: string;
-            name: string;
-            online: boolean;
-            status: string | null;
-            matchSlug: string | null;
-            updatedAt: number | null;
-            inGraceWindow: boolean;
-            secondsUntilReady: number | null;
-            allocatable: boolean;
-          }>;
-          simulationEnabled?: boolean;
-        }>('/api/tournament/server-availability');
-
-        if (availability.success) {
-          setAllocationCountdown({
-            gracePeriodSeconds: availability.gracePeriodSeconds ?? 300,
-            nextAllocationInSeconds:
-              typeof availability.nextAllocationInSeconds === 'number'
-                ? availability.nextAllocationInSeconds
-                : null,
-            availableServerCount: availability.availableServerCount,
-            requiredServerCount: availability.requiredServerCount ?? 0,
-            servers:
-              availability.servers?.map((s) => ({
-                id: s.id,
-                name: s.name,
-                status: s.status,
-                inGraceWindow: s.inGraceWindow,
-                secondsUntilReady: s.secondsUntilReady,
-                allocatable: s.allocatable,
-              })) ?? [],
-          });
-        }
-      } catch (err) {
-        console.error('Failed to load allocation status for Bracket page:', err);
-      }
-    };
-
-    void loadAllocationStatus();
-    const interval = setInterval(() => {
-      void loadAllocationStatus();
-    }, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Local per‑second countdown tick for "next allocation in" display
-  useEffect(() => {
-    if (
-      allocationCountdown.nextAllocationInSeconds === null ||
-      allocationCountdown.nextAllocationInSeconds <= 0
-    ) {
-      return;
-    }
-
-    const timer = setInterval(
-      () =>
-        setAllocationCountdown((prev) => ({
-          ...prev,
-          nextAllocationInSeconds:
-            prev.nextAllocationInSeconds !== null && prev.nextAllocationInSeconds > 0
-              ? prev.nextAllocationInSeconds - 1
-              : 0,
-        })),
-      1000
-    );
-
-    return () => clearInterval(timer);
-  }, [allocationCountdown.nextAllocationInSeconds]);
 
   // Set dynamic page title
   useEffect(() => {
@@ -366,37 +276,6 @@ export default function Bracket() {
       </Box>
     );
   }
-
-  const showWaitingForServersBanner =
-    allocationCountdown.requiredServerCount > 0 &&
-    allocationCountdown.availableServerCount === 0;
-
-  const renderAllocationBanner = () => {
-    if (!showWaitingForServersBanner) {
-      return null;
-    }
-
-    const nextIn = allocationCountdown.nextAllocationInSeconds;
-
-    return (
-      <Box mb={2}>
-        <Alert severity="info">
-          <Typography variant="body2" fontWeight={600} gutterBottom>
-            {t('servers.allocation.title')}
-          </Typography>
-          <Typography variant="body2">
-            {t('servers.allocation.waiting')}{' '}
-            <strong>{allocationCountdown.requiredServerCount}</strong>
-          </Typography>
-          {typeof nextIn === 'number' && nextIn > 0 && (
-            <Typography variant="body2" color="text.secondary" mt={0.5}>
-              {t('servers.allocation.nextPass', { seconds: nextIn })}
-            </Typography>
-          )}
-        </Alert>
-      </Box>
-    );
-  };
 
   if (!matches.length) {
     return (
@@ -597,8 +476,15 @@ export default function Bracket() {
         </Box>
       )}
 
-      {/* Allocation / cooldown status helper */}
-      {!isFullscreen && renderAllocationBanner()}
+      {/* What the ready matches are waiting for, in the game's words (CS2:
+          a free server, and when the next allocation pass runs). A game whose
+          matches wait for nothing fills this with nothing. */}
+      {!isFullscreen && MatchQueueBanner && (
+        <MatchQueueBanner
+          availability={resourceAvailability}
+          nextInSeconds={nextAllocationInSeconds}
+        />
+      )}
 
       {/* Fullscreen exit button - only visible in fullscreen */}
       {isFullscreen && (
@@ -631,7 +517,7 @@ export default function Bracket() {
           roundStatus={liveRoundStatus}
           totalRounds={shuffleTotalRounds ?? totalRounds}
           isActive={!liveRoundStatus.isComplete}
-          allocationCountdownSeconds={allocationCountdown.nextAllocationInSeconds}
+          allocationCountdownSeconds={nextAllocationInSeconds}
         />
       )}
 

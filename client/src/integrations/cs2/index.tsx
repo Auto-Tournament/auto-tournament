@@ -19,12 +19,15 @@ import { Cs2MatchSettings } from './setup/Cs2MatchSettings';
 import { MapPoolStep } from './setup/MapPoolStep';
 import { ManualMatchMapsRulesStep } from './standalone/ManualMatchMapsRulesStep';
 import { ManualMatchMapsStep } from './standalone/ManualMatchMapsStep';
-import { WebhookWarning } from './global/WebhookWarning';
+import { Cs2AdminWarnings } from './global/Cs2AdminWarnings';
 import { Cs2StartConfirm } from './start/Cs2StartConfirm';
+import { Cs2StartPreflight } from './start/Cs2StartPreflight';
 import {
   Cs2OutdatedServersDialog,
   parseCs2OutdatedError,
 } from './start/Cs2OutdatedServersDialog';
+import { Cs2SetupOutdatedServersDialog } from './start/Cs2SetupOutdatedServersDialog';
+import { Cs2AllocationBanner } from './bracket/Cs2AllocationBanner';
 import Servers from './pages/Servers';
 import Maps from './pages/Maps';
 import ConnectSteam from './pages/ConnectSteam';
@@ -55,9 +58,10 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   preMatchView: VetoInterface,
   preMatchHistory: MatchVetoHistory,
 
-  // The webhook URL is the address a CS2 server reaches the platform on, so
-  // the shell's warning about an unset one is this module's (3.0 phase E).
-  adminGlobalWarning: WebhookWarning,
+  // The webhook URL a CS2 server reaches the platform on, and the MatchZy
+  // plugin's own database: both are settings only this game has, so the
+  // shell's warnings about them are this module's (3.0 phase E).
+  adminGlobalWarning: Cs2AdminWarnings,
 
   // Starting a CS2 tournament means allocating servers, so the dialog talks
   // about servers, and a refusal about out-of-date ones is answered here. The
@@ -70,7 +74,18 @@ export const cs2ClientIntegration: ClientGameIntegration = {
     confirmColor: 'warning',
     ownsFailure: (error) => parseCs2OutdatedError(error) !== null,
     failureView: Cs2OutdatedServersDialog,
+    // The same start asked from the setup page, which checks the fleet before
+    // it starts rather than describing it, and words a refusal its own way.
+    preflight: {
+      view: Cs2StartPreflight,
+      failureView: Cs2SetupOutdatedServersDialog,
+    },
   },
+
+  // A CS2 match waits for a server, so the bracket says which round is waiting
+  // and for how many, and the core asks this route what is free right now.
+  matchQueueBanner: Cs2AllocationBanner,
+  resourceAvailabilityEndpoint: '/api/tournament/server-availability',
 
   tournamentSetupSteps: {
     rules: Cs2MatchSettings,

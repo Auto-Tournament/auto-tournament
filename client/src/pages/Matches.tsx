@@ -12,10 +12,12 @@ import { EmptyState } from '../components/shared/EmptyState';
 import { StatusLegend } from '../components/shared/StatusLegend';
 import { MatchCard } from '../components/shared/MatchCard';
 import { instanceIntegration } from '../integrations/registry';
+import { useTournamentIntegration } from '../hooks/useTournamentIntegration';
+import { useResourceAvailability } from '../hooks/useResourceAvailability';
 import { getGlobalMatchNumber, getRoundLabel } from '../utils/matchUtils';
 import { isManualMatch as isManualMatchFlag } from '../utils/matchFlags';
 import { api } from '../utils/api';
-import type { Match, MatchEvent, MatchesResponse, ServerAvailabilityResponse } from '../types';
+import type { Match, MatchEvent, MatchesResponse } from '../types';
 import ConfirmDialog from '../components/modals/ConfirmDialog';
 import { useTranslation } from 'react-i18next';
 
@@ -33,14 +35,20 @@ export default function Matches() {
   const [tournamentStatus, setTournamentStatus] = useState<string>('setup');
   const [createMatchOpen, setCreateMatchOpen] = useState(false);
   const { showSuccess, showError } = useSnackbar();
-  const [allocationCountdown, setAllocationCountdown] = useState<{
-    nextAllocationInSeconds: number | null;
-    gracePeriodSeconds: number;
-  }>({
-    nextAllocationInSeconds: null,
-    gracePeriodSeconds: 120,
-  });
-  const [serverAllocationStatus, setServerAllocationStatus] = useState<ServerAvailabilityResponse | null>(null);
+  // What the queued matches are waiting for, asked of the game's own module
+  // rather than of a route this page names (3.0 phase E). A module with no
+  // resources is never asked, and every queue below then shows nothing, which
+  // is the truth for a match that is simply open.
+  //
+  // The tournament's module when there is a tournament; the instance's game
+  // otherwise, because standalone matches exist before any tournament does.
+  const { integration: tournamentIntegration, loading: tournamentIntegrationLoading } =
+    useTournamentIntegration();
+  const matchIntegration = tournamentIntegrationLoading
+    ? null
+    : tournamentIntegration ?? instanceIntegration();
+  const { availability: serverAllocationStatus, nextInSeconds: nextAllocationInSeconds } =
+    useResourceAvailability(matchIntegration, 5000);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedMatchSlugs, setSelectedMatchSlugs] = useState<Set<string>>(() => new Set());
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
@@ -266,65 +274,12 @@ export default function Matches() {
     };
   }, [fetchMatches]);
 
-  // Poll allocation status periodically so we can show per-server cooldown timers
-  // and per-match allocation estimates (mount-only).
-  useEffect(() => {
-    const loadAllocationStatus = async () => {
-      try {
-        const availability = await api.get<ServerAvailabilityResponse>('/api/tournament/server-availability');
-
-        if (availability.success) {
-          setServerAllocationStatus(availability);
-          setAllocationCountdown({
-            gracePeriodSeconds: availability.gracePeriodSeconds ?? 300,
-            nextAllocationInSeconds:
-              typeof availability.nextAllocationInSeconds === 'number'
-                ? availability.nextAllocationInSeconds
-                : null,
-          });
-        }
-      } catch (err) {
-        console.error('Failed to load allocation status for Matches page:', err);
-      }
-    };
-
-    void loadAllocationStatus();
-    const interval = setInterval(() => {
-      void loadAllocationStatus();
-    }, 5000); // Poll more frequently (5s) for better countdown accuracy
-    return () => clearInterval(interval);
-  }, []);
-
-  // Local per‑second tick for countdown on this page
-  useEffect(() => {
-    if (
-      allocationCountdown.nextAllocationInSeconds === null ||
-      allocationCountdown.nextAllocationInSeconds <= 0
-    ) {
-      return;
-    }
-
-    const timer = setInterval(
-      () =>
-        setAllocationCountdown((prev) => ({
-          ...prev,
-          nextAllocationInSeconds:
-            prev.nextAllocationInSeconds !== null && prev.nextAllocationInSeconds > 0
-              ? prev.nextAllocationInSeconds - 1
-              : 0,
-        })),
-      1000
-    );
-
-    return () => clearInterval(timer);
-  }, [allocationCountdown.nextAllocationInSeconds]);
-
   const renderAllocationBanner = () => {
-    if (allocationCountdown.nextAllocationInSeconds === null) {
+    if (nextAllocationInSeconds === null) {
       return null;
     }
 
-    const nextIn = allocationCountdown.nextAllocationInSeconds;
+    const nextIn = nextAllocationInSeconds;
     if (nextIn <= 0) {
       return null;
     }
@@ -516,14 +471,13 @@ export default function Matches() {
       {hasMatches && (
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
           <Box display="flex" alignItems="center" gap={2}>
-            {allocationCountdown.nextAllocationInSeconds !== null &&
-              allocationCountdown.nextAllocationInSeconds > 0 && (
-                <Typography variant="body2" color="text.secondary">
-                  {t('matchesPage.allocation.nextServers', {
-                    seconds: Math.max(0, allocationCountdown.nextAllocationInSeconds),
-                  })}
-                </Typography>
-              )}
+            {nextAllocationInSeconds !== null && nextAllocationInSeconds > 0 && (
+              <Typography variant="body2" color="text.secondary">
+                {t('matchesPage.allocation.nextServers', {
+                  seconds: Math.max(0, nextAllocationInSeconds),
+                })}
+              </Typography>
+            )}
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
             <Button

@@ -1,57 +1,46 @@
+/**
+ * The setup page's own dialogs: delete, regenerate, reset.
+ *
+ * The start confirmation used to be the fourth, and it was three variants of
+ * "there are not enough servers" with a **Check Servers** way out — a question
+ * only a game with servers can be asked. It is now the game module's
+ * `tournamentStart.preflight` (see `integrations/types.ts`), so a tournament
+ * that runs on nothing is not asked it (3.0 phase E).
+ */
+
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Typography, Alert, Box } from '@mui/material';
+import { Typography, Box } from '@mui/material';
 import { Trans, useTranslation } from 'react-i18next';
 import ConfirmDialog from '../modals/ConfirmDialog';
-import { paths } from '../../paths';
 
 interface TournamentDialogsProps {
   deleteOpen: boolean;
   regenerateOpen: boolean;
   resetOpen: boolean;
-  startOpen: boolean;
   tournamentName?: string;
   tournamentStatus?: string;
-  startWarning?: {
-    requiredServers: number;
-    availableServers: number;
-  };
   onDeleteConfirm: () => void;
   onDeleteCancel: () => void;
   onRegenerateConfirm: () => void;
   onRegenerateCancel: () => void;
   onResetConfirm: () => void;
   onResetCancel: () => void;
-  onStartConfirm: () => void;
-  onStartCancel: () => void;
 }
 
 export const TournamentDialogs: React.FC<TournamentDialogsProps> = ({
   deleteOpen,
   regenerateOpen,
   resetOpen,
-  startOpen,
   tournamentName,
   tournamentStatus,
-   startWarning,
   onDeleteConfirm,
   onDeleteCancel,
   onRegenerateConfirm,
   onRegenerateCancel,
   onResetConfirm,
   onResetCancel,
-  onStartConfirm,
-  onStartCancel,
 }) => {
-  const navigate = useNavigate();
   const { t } = useTranslation();
-
-  const requiredServers = startWarning?.requiredServers ?? 0;
-  const availableServers = startWarning?.availableServers ?? 0;
-  const hasServerCounts = requiredServers > 0;
-  const noServers = hasServerCounts && availableServers === 0;
-  const insufficientServers =
-    hasServerCounts && availableServers > 0 && availableServers < requiredServers;
 
   return (
     <>
@@ -198,74 +187,6 @@ export const TournamentDialogs: React.FC<TournamentDialogsProps> = ({
         confirmColor="warning"
       />
 
-      <ConfirmDialog
-        open={startOpen}
-        title={
-          noServers
-            ? t('tournament.dialogs.start.titleNoServers')
-            : insufficientServers
-            ? t('tournament.dialogs.start.titleInsufficient')
-            : t('tournament.dialogs.start.titleUncertain')
-        }
-        message={
-          <>
-            <Alert severity="warning" sx={{ mb: 2 }}>
-              {noServers && (
-                <>
-                  <Typography variant="body2" fontWeight={600} gutterBottom>
-                    {t('tournament.dialogs.start.noServersHeading')}
-                  </Typography>
-                  <Typography variant="body2">
-                    {t('tournament.dialogs.start.noServersBody')}
-                  </Typography>
-                </>
-              )}
-              {insufficientServers && (
-                <>
-                  <Typography variant="body2" fontWeight={600} gutterBottom>
-                    {t('tournament.dialogs.start.insufficientHeading')}
-                  </Typography>
-                  <Typography variant="body2">
-                    <Trans
-                      i18nKey="tournament.dialogs.start.insufficientBody"
-                      values={{
-                        available: t('tournament.counts.availableServers', {
-                          count: availableServers,
-                        }),
-                        required: t('tournament.counts.concurrentMatches', {
-                          count: requiredServers,
-                        }),
-                      }}
-                      components={{ b: <strong /> }}
-                    />
-                  </Typography>
-                </>
-              )}
-              {!noServers && !insufficientServers && (
-                <>
-                  <Typography variant="body2" fontWeight={600} gutterBottom>
-                    {t('tournament.dialogs.start.uncertainHeading')}
-                  </Typography>
-                  <Typography variant="body2">
-                    {t('tournament.dialogs.start.uncertainBody')}
-                  </Typography>
-                </>
-              )}
-            </Alert>
-            <Typography variant="body2" color="text.secondary">
-              {t('tournament.dialogs.start.question')}
-            </Typography>
-          </>
-        }
-        confirmLabel={t('tournament.dialogs.start.confirm')}
-        cancelLabel={t('tournament.dialogs.start.cancel')}
-        onConfirm={onStartConfirm}
-        onCancel={() => {
-          onStartCancel();
-          navigate(paths.servers);
-        }}
-        confirmColor="warning"
-      />
     </>
   );
 };
