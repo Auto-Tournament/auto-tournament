@@ -169,7 +169,8 @@
       "title": "Serwery wymagają aktualizacji",
       "body": "Według Steam co najmniej jeden włączony serwer jest nieaktualny (lub nie udało się go zweryfikować). Zaktualizuj go albo wyłącz, aby kontynuować na pozostałych serwerach.",
       "confirm": "Wyłącz wskazane serwery i spróbuj ponownie",
-      "disabling": "Wyłączanie..."
+      "disabling": "Wyłączanie...",
+      "goToServers": "Go to Servers"
     },
     "live": {
       "saveNameAria": "Zapisz nazwę turnieju",

@@ -167,7 +167,8 @@
       "title": "Servers need update",
       "body": "One or more enabled servers are out of date (or could not be verified) according to Steam. Update them, or disable them to continue with the remaining fleet.",
       "confirm": "Disable affected servers & retry",
-      "disabling": "Disabling..."
+      "disabling": "Disabling...",
+      "goToServers": "Go to Servers"
     },
     "live": {
       "saveNameAria": "Save tournament name",

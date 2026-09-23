@@ -167,7 +167,8 @@
       "title": "Server benötigen ein Update",
       "body": "Laut Steam sind ein oder mehrere aktivierte Server veraltet (oder konnten nicht überprüft werden). Aktualisiere sie oder deaktiviere sie, um mit den übrigen Servern fortzufahren.",
       "confirm": "Betroffene Server deaktivieren und erneut versuchen",
-      "disabling": "Wird deaktiviert …"
+      "disabling": "Wird deaktiviert …",
+      "goToServers": "Go to Servers"
     },
     "live": {
       "saveNameAria": "Turniername speichern",

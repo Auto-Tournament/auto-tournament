@@ -167,7 +167,8 @@
       "title": "Servers hebben een update nodig",
       "body": "Volgens Steam zijn een of meer ingeschakelde servers verouderd (of konden ze niet worden geverifieerd). Werk ze bij of schakel ze uit om verder te gaan met de overige servers.",
       "confirm": "Betrokken servers uitschakelen en opnieuw proberen",
-      "disabling": "Uitschakelen..."
+      "disabling": "Uitschakelen...",
+      "goToServers": "Go to Servers"
     },
     "live": {
       "saveNameAria": "Toernooinaam opslaan",

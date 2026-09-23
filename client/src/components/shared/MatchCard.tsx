@@ -27,9 +27,13 @@ interface MatchCardProps {
   selectable?: boolean;
   selected?: boolean;
   onToggleSelected?: () => void;
-  allocationETA?: number | null; // Estimated seconds until server allocation (null if already allocated)
   queuePosition?: number | null; // Position in allocation queue (1 = first in queue)
-  hasAvailableServers?: boolean; // Whether there are servers available right now
+  /**
+   * The game's own line under a match that has not got a place to run yet
+   * (CS2: "allocates in 1:20"). Only the module knows what its matches wait
+   * for, so the card renders what it is handed, or nothing.
+   */
+  queueStatus?: React.ReactNode;
 }
 
 export const MatchCard: React.FC<MatchCardProps> = ({
@@ -43,9 +47,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   selectable: _selectable,
   selected,
   onToggleSelected: _onToggleSelected,
-  allocationETA,
   queuePosition,
-  hasAvailableServers,
+  queueStatus,
 }) => {
   const { t } = useTranslation();
   const getBorderColor = () => {
@@ -261,35 +264,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   {t('matchesPage.card.queuePosition', { position: queuePosition })}
                 </Typography>
               )}
-              {!match.serverId && allocationETA !== undefined && allocationETA !== null && (
-                <Typography
-                  variant="caption"
-                  color={
-                    allocationETA === -1
-                      ? 'error.main'
-                      : allocationETA === 0 && hasAvailableServers
-                      ? 'success.main'
-                      : allocationETA === 0
-                      ? 'error.main'
-                      : 'warning.main'
-                  }
-                  display="block"
-                  fontWeight={500}
-                  sx={{ mt: 0.25 }}
-                >
-                  {allocationETA === -1
-                    ? t('matchesPage.card.waitingForServers')
-                    : allocationETA === 0 && !hasAvailableServers
-                    ? t('matchesPage.card.waitingForServers')
-                    : allocationETA === 0
-                    ? t('matchesPage.card.allocatingNow')
-                    : `${t('matchesPage.card.allocatesIn', {
-                        time: `${Math.floor(allocationETA / 60)}:${(allocationETA % 60)
-                          .toString()
-                          .padStart(2, '0')}`,
-                      })}`}
-                </Typography>
-              )}
+              {!match.serverId && queueStatus}
             </Box>
           </Box>
           <Box display="flex" alignItems="center" gap={1}>

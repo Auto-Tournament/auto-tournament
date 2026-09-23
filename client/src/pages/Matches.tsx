@@ -49,13 +49,17 @@ export default function Matches() {
     : tournamentIntegration ?? instanceIntegration();
   const { availability: serverAllocationStatus, nextInSeconds: nextAllocationInSeconds } =
     useResourceAvailability(matchIntegration, 5000);
+  // What the waiting matches are waiting for, said in the game's own words:
+  // the pass countdown above the list, the same countdown in the toolbar, and
+  // the per-match line on a card. A module with no resources fills none of
+  // them and the list simply shows the matches.
+  const QueueBanner = matchIntegration?.matchListQueue?.banner;
+  const QueueCountdown = matchIntegration?.matchListQueue?.countdown;
+  const MatchQueueStatus = matchIntegration?.matchListQueue?.cardStatus;
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedMatchSlugs, setSelectedMatchSlugs] = useState<Set<string>>(() => new Set());
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
   const { t } = useTranslation();
-  
-  // Local countdown state for match allocation ETAs (match.id -> seconds remaining)
-  const [matchETAs, setMatchETAs] = useState<Map<number, number>>(new Map());
 
   // Fetch matches
   const fetchMatches = useCallback(async () => {
@@ -274,104 +278,6 @@ export default function Matches() {
     };
   }, [fetchMatches]);
 
-  const renderAllocationBanner = () => {
-    if (nextAllocationInSeconds === null) {
-      return null;
-    }
-
-    const nextIn = nextAllocationInSeconds;
-    if (nextIn <= 0) {
-      return null;
-    }
-
-    return (
-      <Box mb={2}>
-        <Alert severity="info">
-          <Typography variant="body2">
-            {t('servers.allocation.nextPass', { seconds: nextIn })}
-          </Typography>
-        </Alert>
-      </Box>
-    );
-  };
-
-  // Calculate allocation ETA for each match based on server cooldowns
-  // Returns: 0 = allocating now, positive number = cooldown seconds, -1 = waiting for busy servers
-  const getMatchAllocationETA = (matchIndex: number): number | null => {
-    if (!serverAllocationStatus) return null;
-
-    const { servers } = serverAllocationStatus;
-    const availableServers = servers.filter((s) => s.allocatable).length;
-    
-    // If we have enough available servers, no wait time
-    if (matchIndex < availableServers) {
-      return 0;
-    }
-
-    // Get all servers in grace window (cooling down after match completion)
-    const coolingServers = servers
-      .filter((s) => s.inGraceWindow && s.secondsUntilReady !== null)
-      .sort((a, b) => (a.secondsUntilReady || 0) - (b.secondsUntilReady || 0));
-
-    // Calculate which cooling server this match will get
-    const coolingServerIndex = matchIndex - availableServers;
-    if (coolingServerIndex < coolingServers.length) {
-      return coolingServers[coolingServerIndex].secondsUntilReady || null;
-    }
-
-    // Check if there are busy servers (with active matches, not cooling)
-    const busyServers = servers.filter((s) => s.online && !s.allocatable && !s.inGraceWindow);
-    
-    // If servers are busy with live matches, return -1 to indicate "waiting"
-    // Only show countdown when servers are actually cooling down
-    if (busyServers.length > 0 && coolingServers.length === 0) {
-      return -1; // Special value: waiting for busy servers
-    }
-
-    // No servers available and none cooling - return null
-    return null;
-  };
-
-  // Update match ETAs when server status or matches change
-  useEffect(() => {
-    if (!serverAllocationStatus) return;
-
-    const newETAs = new Map<number, number>();
-    upcomingMatches.forEach((match, index) => {
-      if (!match.serverId) {
-        const eta = getMatchAllocationETA(index);
-        if (eta !== null) {
-          newETAs.set(match.id, eta);
-        }
-      }
-    });
-    setMatchETAs(newETAs);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [serverAllocationStatus, upcomingMatches]);
-
-  // Local countdown timer for match ETAs
-  useEffect(() => {
-    if (matchETAs.size === 0) return;
-
-    const timer = setInterval(() => {
-      setMatchETAs((prev) => {
-        const next = new Map(prev);
-        let hasChanges = false;
-        
-        next.forEach((value, key) => {
-          if (value > 0) {
-            next.set(key, value - 1);
-            hasChanges = true;
-          }
-        });
-        
-        return hasChanges ? next : prev;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [matchETAs]);
-
   useEffect(() => {
     fetchMatches();
   }, [fetchMatches]);
@@ -466,17 +372,21 @@ export default function Matches() {
 
   return (
     <Box data-testid="matches-page" sx={{ width: '100%', height: '100%' }}>
-      {renderAllocationBanner()}
+      {QueueBanner && (
+        <QueueBanner
+          availability={serverAllocationStatus}
+          nextInSeconds={nextAllocationInSeconds}
+        />
+      )}
       {/* Manual match creation + allocation countdown */}
       {hasMatches && (
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
           <Box display="flex" alignItems="center" gap={2}>
-            {nextAllocationInSeconds !== null && nextAllocationInSeconds > 0 && (
-              <Typography variant="body2" color="text.secondary">
-                {t('matchesPage.allocation.nextServers', {
-                  seconds: Math.max(0, nextAllocationInSeconds),
-                })}
-              </Typography>
+            {QueueCountdown && (
+              <QueueCountdown
+                availability={serverAllocationStatus}
+                nextInSeconds={nextAllocationInSeconds}
+              />
             )}
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
@@ -681,7 +591,7 @@ export default function Matches() {
                 )}
               </Box>
               <Grid container spacing={2}>
-                {upcomingMatches.map((match) => {
+                {upcomingMatches.map((match, queueIndex) => {
                   const matchNumber = getGlobalMatchNumber(match, allMatches);
                   const isManualMatch = isManualMatchFlag(match);
                   // Don't show "Manual match" text - the pill is more explanatory
@@ -692,14 +602,6 @@ export default function Matches() {
                   
                   // Use queue position from backend (calculated globally across all matches)
                   const queuePosition = match.queuePosition;
-                  
-                  // Get allocation ETA from local countdown state
-                  const allocationETA = !match.serverId ? (matchETAs.get(match.id) ?? null) : null;
-                  
-                  // Check if there are servers available right now
-                  const hasAvailableServers = serverAllocationStatus
-                    ? serverAllocationStatus.availableServerCount > 0
-                    : false;
                   
                   return (
                     <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }} key={match.id}>
@@ -713,8 +615,14 @@ export default function Matches() {
                         selectable={selectionMode && isManualMatchFlag(match)}
                         selected={selectedMatchSlugs.has(match.slug)}
                         queuePosition={queuePosition}
-                        allocationETA={allocationETA}
-                        hasAvailableServers={hasAvailableServers}
+                        queueStatus={
+                          MatchQueueStatus ? (
+                            <MatchQueueStatus
+                              availability={serverAllocationStatus}
+                              queueIndex={queueIndex}
+                            />
+                          ) : null
+                        }
                         onClick={() => {
                           if (selectionMode && isManualMatchFlag(match)) {
                             toggleMatchSelected(match);

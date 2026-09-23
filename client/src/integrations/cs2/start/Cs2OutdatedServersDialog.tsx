@@ -8,12 +8,22 @@
  * refusal and renders this in place of its error snackbar when it does;
  * everything else, for every game, is still the snackbar.
  *
- * Moved from `components/dashboard/StartTournamentButton.tsx` unchanged.
+ * One dialog, two surfaces. The dashboard button and the setup page each used
+ * to have their own version of this — #311 moved the dashboard's literal
+ * English out of `StartTournamentButton.tsx`, #312 moved the setup page's
+ * translated one out of `pages/Tournament.tsx`, and both landed here side by
+ * side because making them agree changes copy for a CS2 install. This is that
+ * change, made deliberately: it is the same refusal about the same servers, so
+ * it now reads the same wherever a start runs into it, and it keeps the better
+ * half of each — the `tournament.outdatedServers.*` keys the setup page had in
+ * all ten locales, and the dashboard's way out to the Servers page, which is
+ * where an admin goes to update the servers this dialog has just named.
  */
 
 import React, { useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import ConfirmDialog from '../../../components/modals/ConfirmDialog';
 import { api } from '../../../utils/api';
 import { paths } from '../../../paths';
@@ -60,18 +70,18 @@ export const Cs2OutdatedServersDialog: React.FC<TournamentStartFailureProps> = (
   onError,
 }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [disablingOutdated, setDisablingOutdated] = useState(false);
   const outdatedServers = parseCs2OutdatedError(error) ?? [];
 
   return (
     <ConfirmDialog
       open={outdatedServers.length > 0}
-      title="Servers need update"
+      title={t('tournament.outdatedServers.title')}
       message={
         <>
           <Typography variant="body2" color="text.secondary" paragraph>
-            One or more enabled servers are out of date (or could not be verified) according to
-            Steam. Update them, or disable them to continue with the remaining fleet.
+            {t('tournament.outdatedServers.body')}
           </Typography>
           <Box component="ul" sx={{ mt: 0, mb: 0, pl: 2 }}>
             {outdatedServers.map((s) => (
@@ -91,8 +101,12 @@ export const Cs2OutdatedServersDialog: React.FC<TournamentStartFailureProps> = (
           </Box>
         </>
       }
-      confirmLabel={disablingOutdated ? 'Disabling...' : 'Disable affected servers & retry'}
-      cancelLabel="Go to Servers"
+      confirmLabel={
+        disablingOutdated
+          ? t('tournament.outdatedServers.disabling')
+          : t('tournament.outdatedServers.confirm')
+      }
+      cancelLabel={t('tournament.outdatedServers.goToServers')}
       confirmColor="warning"
       loading={disablingOutdated}
       onCancel={() => {
@@ -107,12 +121,12 @@ export const Cs2OutdatedServersDialog: React.FC<TournamentStartFailureProps> = (
             await api.post(`/api/servers/${s.id}/disable`);
           }
           onClose();
-          // Retry immediately (will run preflight again with the remaining
-          // enabled servers).
+          // Retry immediately (the start runs its preflight again with the
+          // remaining enabled servers).
           await onRetry();
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
-          onError(`Failed to disable one or more servers: ${msg}`);
+          onError(t('tournament.toasts.disableServersFailed', { message: msg }));
         } finally {
           setDisablingOutdated(false);
         }

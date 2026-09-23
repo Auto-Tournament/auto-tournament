@@ -167,7 +167,8 @@
       "title": "Os servidores precisam de atualização",
       "body": "Segundo o Steam, um ou mais servidores ativados estão desatualizados (ou não foi possível verificá-los). Atualiza-os ou desativa-os para continuar com os restantes servidores.",
       "confirm": "Desativar os servidores afetados e tentar novamente",
-      "disabling": "A desativar..."
+      "disabling": "A desativar...",
+      "goToServers": "Go to Servers"
     },
     "live": {
       "saveNameAria": "Guardar o nome do torneio",

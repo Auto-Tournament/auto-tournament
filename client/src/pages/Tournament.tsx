@@ -271,7 +271,7 @@ const Tournament: React.FC = () => {
   const startIntegration = getIntegration(setupGame);
   const startSlot = startIntegration.tournamentStart;
   const StartPreflight = startSlot?.preflight?.view;
-  const StartFailureView = startSlot?.preflight?.failureView;
+  const StartFailureView = startSlot?.failureView;
   const [showChangePreview, setShowChangePreview] = useState(false);
   const [changes, setChanges] = useState<
     Array<{
