@@ -39,7 +39,8 @@
     "accountConnections": "Account settings",
     "goToAdminDashboard": "前往管理控制台",
     "goToAdminDashboardHint": "您正在查看自己的选手资料。打开管理控制台以管理战队、锦标赛和服务器。",
-    "disputes": "Disputes"
+    "disputes": "Disputes",
+    "modules": "Modules"
   },
   "layout": {
     "webhookNotConfigured": "尚未配置 Webhook URL。配置完成之前，比赛和服务器无法接收事件。",
@@ -60,7 +61,8 @@
       "settings": "设置",
       "devTools": "开发工具",
       "publicLinks": "公开链接",
-      "disputes": "Disputes"
+      "disputes": "Disputes",
+      "modules": "Modules"
     },
     "openDrawer": "打开导航菜单",
     "matchzyDbDown": {
@@ -81,7 +83,8 @@
   },
   "common": {
     "delete": "删除",
-    "cancel": "取消"
+    "cancel": "取消",
+    "remove": "Remove"
   },
   "theme": {
     "label": "Color theme"

@@ -85,6 +85,10 @@
       "disputes": {
         "label": "Disputes",
         "hint": "Results to settle"
+      },
+      "modules": {
+        "label": "Modules",
+        "hint": "Games this instance runs"
       }
     },
     "servers": {

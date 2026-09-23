@@ -14,6 +14,7 @@ import Tournament from './pages/Tournament';
 import Bracket from './pages/Bracket';
 import Matches from './pages/Matches';
 import Disputes from './pages/Disputes';
+import Modules from './pages/Modules';
 import AdminTools from './pages/AdminTools';
 import Settings from './pages/Settings';
 import Development from './pages/Development';
@@ -366,6 +367,7 @@ function AppRoutes() {
             tournament's module fills no queue, and a bookmarked URL is better
             answered that way than with a 404. */}
         <Route path={adminRoute(paths.disputes)} element={<Disputes />} />
+        <Route path={adminRoute(paths.modules)} element={<Modules />} />
         <Route path={adminRoute(paths.admin)} element={<AdminTools />} />
         <Route path={adminRoute(paths.settings)} element={<Settings />} />
         {integrationRoutes

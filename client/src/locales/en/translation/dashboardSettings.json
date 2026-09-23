@@ -50,15 +50,46 @@
     },
     "site": {
       "title": "Site",
-      "servers": { "label": "Servers", "hint": "Connect, update, health" },
-      "maps": { "label": "Maps", "hint": "Pools and images" },
-      "players": { "label": "Players", "hint": "Everyone who signed in" },
-      "teams": { "label": "Teams", "hint": "Clubs and rosters" },
-      "templates": { "label": "Templates", "hint": "Reusable setups" },
-      "ratings": { "label": "Ratings", "hint": "ELO templates" },
-      "settings": { "label": "Settings", "hint": "Sign-in, API keys" },
-      "adminTools": { "label": "Admin tools", "hint": "Logs and maintenance" },
-      "disputes": { "label": "Disputes", "hint": "Results to settle" }
+      "servers": {
+        "label": "Servers",
+        "hint": "Connect, update, health"
+      },
+      "maps": {
+        "label": "Maps",
+        "hint": "Pools and images"
+      },
+      "players": {
+        "label": "Players",
+        "hint": "Everyone who signed in"
+      },
+      "teams": {
+        "label": "Teams",
+        "hint": "Clubs and rosters"
+      },
+      "templates": {
+        "label": "Templates",
+        "hint": "Reusable setups"
+      },
+      "ratings": {
+        "label": "Ratings",
+        "hint": "ELO templates"
+      },
+      "settings": {
+        "label": "Settings",
+        "hint": "Sign-in, API keys"
+      },
+      "adminTools": {
+        "label": "Admin tools",
+        "hint": "Logs and maintenance"
+      },
+      "disputes": {
+        "label": "Disputes",
+        "hint": "Results to settle"
+      },
+      "modules": {
+        "label": "Modules",
+        "hint": "Games this instance runs"
+      }
     },
     "servers": {
       "title": "Servers",

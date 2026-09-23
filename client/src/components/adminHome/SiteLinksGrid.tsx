@@ -12,6 +12,7 @@ interface SiteLink {
 
 /** Core pages; the game integration's pages (CS2: Servers, Maps) come first. */
 const CORE_SITE_LINKS: SiteLink[] = [
+  { key: 'modules', to: paths.modules },
   { key: 'players', to: paths.players },
   { key: 'teams', to: paths.teams },
   { key: 'templates', to: paths.templates },
