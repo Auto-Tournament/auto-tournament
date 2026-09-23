@@ -43,7 +43,7 @@ import { getIntegration } from '../../../integrations/registry';
 import type { MatchRulesValue } from '../../../integrations/types';
 import { EloTemplateSelect } from './EloTemplateSelect';
 import { ReviewStep, type ReviewTournament } from './ReviewStep';
-import { DEFAULT_SETUP_GAME, useSetupGames, type SetupGame } from './games';
+import { DEFAULT_SETUP_GAME, gameMark, useSetupGames, type SetupGame } from './games';
 import { MEDIUM, NARROW } from './layout';
 import { setupStepsFor, stepError, teamCountChoices, type SetupStepId } from './setupSteps';
 
@@ -153,9 +153,15 @@ export function TournamentSetup(props: TournamentSetupProps) {
   const steps = setupStepsFor(game);
   const reviewStepIndex = steps.length - 1;
   const stepId = steps[props.activeStep] ?? 'game';
-  const pickedGame: SetupGame =
-    setupGames.find((entry) => entry.id === game) ??
-    (game === DEFAULT_SETUP_GAME.id ? DEFAULT_SETUP_GAME : { ...DEFAULT_SETUP_GAME, id: game, name: game, mark: '?' });
+  // A saved tournament can name a game the playable list does not — one found
+  // through game search, which manual reporting runs too. It is named by its
+  // catalogue id and gets a text mark, never another game's icon.
+  const pickedGame: SetupGame = setupGames.find((entry) => entry.id === game) ?? {
+    id: game,
+    name: game,
+    mark: gameMark(game.replace(/-/g, ' ')),
+    integrationId: getIntegration(game).id,
+  };
 
   // ---- Data the steps need (servers, map pools, maps) ----------------------
   const {
