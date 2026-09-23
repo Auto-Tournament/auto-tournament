@@ -1,5 +1,13 @@
 {
   "tournament": {
+    "startConfirm": {
+      "intro": "Klar til å starte turneringen?",
+      "thisWill": "Dette skjer:",
+      "openMatches": "Kampene i første runde åpnes for spill",
+      "statusInProgress": "Turneringsstatusen endres til PÅGÅR",
+      "confirm": "Ja, start turneringen",
+      "started": "Turneringen er i gang! Kampene i første runde er åpne."
+    },
     "nameLabel": "Turneringsnavn",
     "namePlaceholder": "Auto Tournament 2025 vårturnering",
     "steps": {

@@ -321,6 +321,81 @@ export interface IntegrationNavItem {
 }
 
 // ---------------------------------------------------------------------------
+// The admin shell, and starting the tournament
+// ---------------------------------------------------------------------------
+
+/**
+ * Something the module needs an admin to fix before its tournament can run,
+ * shown on every admin page (3.0 phase E).
+ *
+ * CS2 fills it with the webhook URL warning: that URL is what a CS2 server
+ * reaches the platform on, so an unset one stops that game and no other. The
+ * core shell has no opinion about it — it renders the slot and nothing else —
+ * so an instance whose tournament needs no servers is never nagged about a
+ * setting that would change nothing for it.
+ */
+export interface AdminGlobalWarningProps {
+  /** Take the admin to the settings page, whose route the core owns. */
+  onOpenSettings: () => void;
+}
+
+/**
+ * The body of the "Start tournament" confirmation, in the game's words (3.0
+ * phase E).
+ *
+ * What starting *does* is the module's answer: CS2 checks its fleet, allocates
+ * servers, loads matches over RCON and puts them in warmup, and says how much
+ * of that fleet is ready. A module with no resources has none of that to say,
+ * leaves the slot empty, and the core's own dialog — which knows only that the
+ * matches open and the tournament goes live — is what the admin sees.
+ */
+export interface TournamentStartConfirmProps {
+  /** True while the dialog is open, so the module reads its state then. */
+  open: boolean;
+}
+
+/**
+ * A start the API refused for a reason this module can offer a way out of
+ * (CS2: servers Steam says are out of date, which it can disable and retry).
+ */
+export interface TournamentStartFailureProps {
+  /** The raw message the start request rejected with. */
+  error: string;
+  /** Give up: close the dialog without starting. */
+  onClose: () => void;
+  /** Start again, once the module has fixed what it named. */
+  onRetry: () => Promise<void>;
+  /** Report a problem the module hit while fixing it, the ordinary way. */
+  onError: (message: string) => void;
+}
+
+/**
+ * Everything the "Start tournament" button says in the game's words. A module
+ * that leaves this out gets the core's dialog, which names nothing the game
+ * does not have.
+ */
+export interface TournamentStartSlot {
+  /** What starting does to this game's resources, and whether they are ready. */
+  confirmView: ComponentType<TournamentStartConfirmProps>;
+  /** The go-ahead button's label (CS2: "Yes, Start Anyway"). */
+  confirmLabel: string;
+  /** The dismiss button's label (CS2: "Check Servers"). */
+  cancelLabel: string;
+  /** Where dismissing takes the admin instead (CS2: the Servers page). */
+  cancelPath?: string;
+  /** The go-ahead button's colour, for a start the module calls risky. */
+  confirmColor?: 'primary' | 'warning' | 'error';
+  /**
+   * True when `failureView` will handle this refusal. The core shows its error
+   * snackbar for everything this says no to — and for every refusal at all
+   * when a module has no `failureView`.
+   */
+  ownsFailure?: (error: string) => boolean;
+  /** The way out of a refusal `ownsFailure` claimed. */
+  failureView?: ComponentType<TournamentStartFailureProps>;
+}
+
+// ---------------------------------------------------------------------------
 // Team administration
 // ---------------------------------------------------------------------------
 
@@ -410,6 +485,19 @@ export interface ClientGameIntegration {
 
   /** Team page: an admin-only control this integration needs (D7: captains). */
   teamAdminPanel?: ComponentType<TeamAdminPanelProps>;
+
+  /**
+   * The admin shell, every page: a setting this module needs before its
+   * tournament can run (CS2: the webhook URL). Left empty by a module that
+   * needs nothing configured, and the shell then says nothing.
+   */
+  adminGlobalWarning?: ComponentType<AdminGlobalWarningProps>;
+
+  /**
+   * The "Start tournament" confirmation, in this game's words. Left empty by
+   * a module with no resources to prepare, which gets the core's dialog.
+   */
+  tournamentStart?: TournamentStartSlot;
 
   /**
    * Admin area, `/disputes`: what this module needs an admin to settle (D8).

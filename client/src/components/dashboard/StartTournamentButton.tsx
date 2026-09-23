@@ -1,3 +1,16 @@
+/**
+ * "Start tournament", for any game (3.0 phase E).
+ *
+ * The button owns the start itself: refresh, confirm, POST, navigate. What
+ * starting *does* is the game module's, and it used to be written in here —
+ * servers checked, allocated, loaded over RCON, put in warmup, counted — on
+ * every install, including one whose tournament is reported by hand and has no
+ * servers at all. That body, its labels and its "go look at the servers"
+ * escape hatch are now `integration.tournamentStart` (see
+ * `integrations/types.ts`), and a module that leaves the slot empty gets the
+ * dialog below, which names only what is true for every game.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -12,12 +25,13 @@ import {
 } from '@mui/material';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
+import { useTranslation } from 'react-i18next';
 import { useTournament } from '../../hooks/useTournament';
 import ConfirmDialog from '../modals/ConfirmDialog';
 import { api } from '../../utils/api';
 import { useIsDevelopment } from '../../hooks/useIsDevelopment';
 import { useSimulationMode } from '../../hooks/useSimulationMode';
-import { paths } from '../../paths';
+import { integrationFor } from '../../integrations/registry';
 
 interface StartTournamentButtonProps {
   variant?: 'text' | 'outlined' | 'contained';
@@ -33,113 +47,30 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
   onSuccess,
 }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { startTournament, refreshData, tournament } = useTournament();
   const [starting, setStarting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [availableServerCount, setAvailableServerCount] = useState<number | null>(null);
-  const [onlineServerCount, setOnlineServerCount] = useState<number | null>(null);
-  const [busyServerCount, setBusyServerCount] = useState<number | null>(null);
-  const [loadingServers, setLoadingServers] = useState(false);
   const [enableSimulation, setEnableSimulation] = useState(false);
   const isDev = useIsDevelopment();
   const { simulationEnabled, refresh: refreshSimulation } = useSimulationMode();
-  const [outdatedServers, setOutdatedServers] = useState<
-    Array<{
-      id: string;
-      name: string;
-      installedBuildId: number | null;
-      requiredVersion: number | null;
-      reason: string;
-    }>
-  >([]);
-  const [showOutdatedDialog, setShowOutdatedDialog] = useState(false);
-  const [disablingOutdated, setDisablingOutdated] = useState(false);
+  // A refusal the game's own module offered a way out of, instead of the
+  // error snackbar (CS2: servers Steam says are out of date).
+  const [failureError, setFailureError] = useState<string | null>(null);
 
-  const parseCs2OutdatedError = (raw: string): null | {
-    errorCode: string;
-    message?: string;
-    servers?: Array<{
-      id: string;
-      name: string;
-      installedBuildId: number | null;
-      requiredVersion: number | null;
-      reason: string;
-    }>;
-  } => {
-    try {
-      const parsed = JSON.parse(raw) as {
-        errorCode?: unknown;
-        message?: unknown;
-        servers?: unknown;
-      };
-      if (!parsed || typeof parsed !== 'object') return null;
-      if (typeof parsed.errorCode !== 'string') return null;
-      if (parsed.errorCode !== 'cs2_outdated_servers') return null;
-      const servers = Array.isArray(parsed.servers) ? (parsed.servers as any[]) : [];
-      return {
-        errorCode: parsed.errorCode,
-        message: typeof parsed.message === 'string' ? parsed.message : undefined,
-        servers: servers
-          .filter((s) => s && typeof s === 'object')
-          .map((s) => ({
-            id: String((s as any).id ?? ''),
-            name: String((s as any).name ?? ''),
-            installedBuildId:
-              typeof (s as any).installedBuildId === 'number' ? (s as any).installedBuildId : null,
-            requiredVersion:
-              typeof (s as any).requiredVersion === 'number' ? (s as any).requiredVersion : null,
-            reason: String((s as any).reason ?? 'Unknown reason'),
-          }))
-          .filter((s) => s.id && s.name),
-      };
-    } catch {
-      return null;
-    }
-  };
+  const integration = integrationFor(tournament);
+  const startSlot = integration.tournamentStart;
+  const ConfirmView = startSlot?.confirmView;
+  const FailureView = startSlot?.failureView;
 
-  // Check server availability when dialog opens (when user clicks "Start Tournament" button)
   useEffect(() => {
-    if (showConfirm) {
-      loadServerAvailability();
-      if (isDev) {
-        void refreshSimulation();
-        setEnableSimulation(simulationEnabled);
-      }
+    if (showConfirm && isDev) {
+      void refreshSimulation();
+      setEnableSimulation(simulationEnabled);
     }
   }, [showConfirm, isDev, simulationEnabled, refreshSimulation]);
-
-  const loadServerAvailability = async () => {
-    try {
-      setLoadingServers(true);
-      const response = await api.get<{
-        success: boolean;
-        availableServerCount: number;
-        requiredServerCount: number;
-        servers: Array<{
-          id: string;
-          name: string;
-          online: boolean;
-          allocatable: boolean;
-        }>;
-      }>('/api/tournament/server-availability');
-      if (response.success) {
-        setAvailableServerCount(response.availableServerCount);
-        const online = response.servers.filter((s) => s.online).length;
-        const busy = response.servers.filter((s) => s.online && !s.allocatable).length;
-        setOnlineServerCount(online);
-        setBusyServerCount(busy);
-      }
-    } catch (err) {
-      console.error('Error loading server availability:', err);
-      setAvailableServerCount(null);
-      setOnlineServerCount(null);
-      setBusyServerCount(null);
-    } finally {
-      setLoadingServers(false);
-    }
-  };
 
   const handleStartClick = async () => {
     // Before showing the confirmation dialog, refresh the latest tournament info.
@@ -156,7 +87,8 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
       return;
     }
 
-    // Otherwise, show confirmation dialog; it will handle server availability + simulation toggle.
+    // Otherwise, show confirmation dialog; the game's module fills in what
+    // starting does and whether its resources are ready.
     setShowConfirm(true);
   };
 
@@ -192,7 +124,14 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
       });
 
       if (response.success) {
-        setSuccess(`Tournament started! ${response.allocated} matches allocated to servers`);
+        // How many matches went to a server is the answer for a game that has
+        // servers; for one that has none, "0 allocated" would read as a
+        // failure when every match is in fact open for play.
+        setSuccess(
+          integration.capabilities.servers
+            ? `Tournament started! ${response.allocated} matches allocated to servers`
+            : t('tournament.startConfirm.started')
+        );
         // Refresh tournament data so the dashboard immediately sees the
         // updated status, then navigate straight into the tournament
         // management screen (`/tournament`).
@@ -205,13 +144,11 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
         setError(response.message || 'Failed to start tournament');
       }
     } catch (err) {
-      const error = err as Error;
-      const parsed = parseCs2OutdatedError(error.message || '');
-      if (parsed?.errorCode === 'cs2_outdated_servers' && parsed.servers && parsed.servers.length > 0) {
-        setOutdatedServers(parsed.servers);
-        setShowOutdatedDialog(true);
+      const message = (err as Error).message || 'Failed to start tournament';
+      if (FailureView && startSlot?.ownsFailure?.(message)) {
+        setFailureError(message);
       } else {
-        setError(error.message || 'Failed to start tournament');
+        setError(message);
       }
     } finally {
       clearTimeout(spinnerTimeout);
@@ -252,63 +189,25 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
         title="Start Tournament"
         message={
           <>
-            <Typography variant="body2" color="text.secondary" paragraph>
-              🚀 Ready to start the tournament?
-            </Typography>
-            <Typography variant="body2" fontWeight={600} gutterBottom>
-              This will:
-            </Typography>
-            <Box component="ul" sx={{ mt: 0, mb: 2, pl: 2 }}>
-              <Typography component="li" variant="body2" color="text.secondary">
-                Check all available servers
-              </Typography>
-              <Typography component="li" variant="body2" color="text.secondary">
-                Automatically allocate servers to ready matches
-              </Typography>
-              <Typography component="li" variant="body2" color="text.secondary">
-                Load matches on servers via RCON
-              </Typography>
-              <Typography component="li" variant="body2" color="text.secondary">
-                Set servers to warmup mode
-              </Typography>
-              <Typography component="li" variant="body2" color="text.secondary">
-                Change tournament status to IN PROGRESS
-              </Typography>
-            </Box>
-            {!loadingServers && availableServerCount !== null && availableServerCount === 0 && (
-              <Alert severity="warning" sx={{ mb: 2 }}>
-                <Typography variant="body2" fontWeight={600} gutterBottom>
-                  ⚠️ No servers are currently available for new matches
+            {ConfirmView ? (
+              <ConfirmView open={showConfirm} />
+            ) : (
+              <>
+                <Typography variant="body2" color="text.secondary" paragraph>
+                  {t('tournament.startConfirm.intro')}
                 </Typography>
-                {onlineServerCount && onlineServerCount > 0 ? (
-                  <Typography variant="body2">
-                    All {onlineServerCount} online server
-                    {onlineServerCount !== 1 ? 's are' : ' is'} currently busy (loading, warmup, live,
-                    or in cooldown). The tournament will start, and matches will be queued and
-                    automatically allocated as soon as a server becomes idle.
+                <Typography variant="body2" fontWeight={600} gutterBottom>
+                  {t('tournament.startConfirm.thisWill')}
+                </Typography>
+                <Box component="ul" sx={{ mt: 0, mb: 2, pl: 2 }}>
+                  <Typography component="li" variant="body2" color="text.secondary">
+                    {t('tournament.startConfirm.openMatches')}
                   </Typography>
-                ) : (
-                  <Typography variant="body2">
-                    No servers are online or ready right now. The tournament will start, but matches
-                    will be postponed until a server comes online. The system will automatically
-                    allocate matches when servers are ready.
+                  <Typography component="li" variant="body2" color="text.secondary">
+                    {t('tournament.startConfirm.statusInProgress')}
                   </Typography>
-                )}
-              </Alert>
-            )}
-            {!loadingServers && availableServerCount !== null && availableServerCount > 0 && (
-              <Typography variant="body2" color="success.main" fontWeight={600} sx={{ mb: 2 }}>
-                ✓ {availableServerCount} server{availableServerCount !== 1 ? 's are' : ' is'} currently
-                available for new matches
-                {busyServerCount && busyServerCount > 0
-                  ? ` (${busyServerCount} busy running matches or in cooldown)`
-                  : ''}
-              </Typography>
-            )}
-            {availableServerCount === null && !loadingServers && (
-              <Typography variant="body2" color="warning.main" fontWeight={600}>
-                Make sure all servers are online and ready before proceeding.
-              </Typography>
+                </Box>
+              </>
             )}
             {isDev && (
               <Box mt={2}>
@@ -335,66 +234,31 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
             )}
           </>
         }
-        confirmLabel="Yes, Start Anyway"
-        cancelLabel="Check Servers"
+        confirmLabel={startSlot?.confirmLabel ?? t('tournament.startConfirm.confirm')}
+        // Undefined falls back to ConfirmDialog's own translated "Cancel".
+        cancelLabel={startSlot?.cancelLabel}
         onConfirm={performTournamentStart}
         onCancel={() => {
           setShowConfirm(false);
-          // Navigate to servers page
-          navigate(paths.servers);
-        }}
-        confirmColor="warning"
-      />
-
-      <ConfirmDialog
-        open={showOutdatedDialog}
-        title="Servers need update"
-        message={
-          <>
-            <Typography variant="body2" color="text.secondary" paragraph>
-              One or more enabled servers are out of date (or could not be verified) according to Steam.
-              Update them, or disable them to continue with the remaining fleet.
-            </Typography>
-            <Box component="ul" sx={{ mt: 0, mb: 0, pl: 2 }}>
-              {outdatedServers.map((s) => (
-                <Typography key={s.id} component="li" variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                  <strong>{s.name}</strong> ({s.id})
-                  {typeof s.installedBuildId === 'number' ? ` — installed=${s.installedBuildId}` : ''}
-                  {typeof s.requiredVersion === 'number' ? `, required=${s.requiredVersion}` : ''}
-                  {s.reason ? ` — ${s.reason}` : ''}
-                </Typography>
-              ))}
-            </Box>
-          </>
-        }
-        confirmLabel={disablingOutdated ? 'Disabling...' : 'Disable affected servers & retry'}
-        cancelLabel="Go to Servers"
-        confirmColor="warning"
-        loading={disablingOutdated}
-        onCancel={() => {
-          setShowOutdatedDialog(false);
-          navigate(paths.servers);
-        }}
-        onConfirm={async () => {
-          if (disablingOutdated) return;
-          setDisablingOutdated(true);
-          setError('');
-          try {
-            for (const s of outdatedServers) {
-              await api.post(`/api/servers/${s.id}/disable`);
-            }
-            await refreshData();
-            setShowOutdatedDialog(false);
-            // Retry immediately (will run preflight again with the remaining enabled servers).
-            await performTournamentStart();
-          } catch (e) {
-            const msg = e instanceof Error ? e.message : String(e);
-            setError(`Failed to disable one or more servers: ${msg}`);
-          } finally {
-            setDisablingOutdated(false);
+          // Where the module would rather the admin look first (CS2: servers).
+          if (startSlot?.cancelPath) {
+            navigate(startSlot.cancelPath);
           }
         }}
+        confirmColor={startSlot?.confirmColor ?? 'primary'}
       />
+
+      {FailureView && failureError !== null && (
+        <FailureView
+          error={failureError}
+          onClose={() => setFailureError(null)}
+          onRetry={async () => {
+            await refreshData();
+            await performTournamentStart();
+          }}
+          onError={(message) => setError(message)}
+        />
+      )}
 
       <Snackbar
         open={!!error}
@@ -420,4 +284,3 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
     </>
   );
 };
-

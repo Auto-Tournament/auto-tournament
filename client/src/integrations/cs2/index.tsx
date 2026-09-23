@@ -19,6 +19,12 @@ import { Cs2MatchSettings } from './setup/Cs2MatchSettings';
 import { MapPoolStep } from './setup/MapPoolStep';
 import { ManualMatchMapsRulesStep } from './standalone/ManualMatchMapsRulesStep';
 import { ManualMatchMapsStep } from './standalone/ManualMatchMapsStep';
+import { WebhookWarning } from './global/WebhookWarning';
+import { Cs2StartConfirm } from './start/Cs2StartConfirm';
+import {
+  Cs2OutdatedServersDialog,
+  parseCs2OutdatedError,
+} from './start/Cs2OutdatedServersDialog';
 import Servers from './pages/Servers';
 import Maps from './pages/Maps';
 import ConnectSteam from './pages/ConnectSteam';
@@ -48,6 +54,23 @@ export const cs2ClientIntegration: ClientGameIntegration = {
 
   preMatchView: VetoInterface,
   preMatchHistory: MatchVetoHistory,
+
+  // The webhook URL is the address a CS2 server reaches the platform on, so
+  // the shell's warning about an unset one is this module's (3.0 phase E).
+  adminGlobalWarning: WebhookWarning,
+
+  // Starting a CS2 tournament means allocating servers, so the dialog talks
+  // about servers, and a refusal about out-of-date ones is answered here. The
+  // labels are the ones the button has always shown.
+  tournamentStart: {
+    confirmView: Cs2StartConfirm,
+    confirmLabel: 'Yes, Start Anyway',
+    cancelLabel: 'Check Servers',
+    cancelPath: paths.servers,
+    confirmColor: 'warning',
+    ownsFailure: (error) => parseCs2OutdatedError(error) !== null,
+    failureView: Cs2OutdatedServersDialog,
+  },
 
   tournamentSetupSteps: {
     rules: Cs2MatchSettings,
