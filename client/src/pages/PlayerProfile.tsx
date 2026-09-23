@@ -44,6 +44,7 @@ import { OwnGamesCard } from '../components/games/OwnGamesCard';
 import { ProfileHeader } from '../components/player/profile/ProfileHeader';
 import { GameSwitch } from '../components/player/profile/GameSwitch';
 import { StatsGrid, type ProfileStat } from '../components/player/profile/StatsGrid';
+import { useGameCapabilities } from '../hooks/useGameCapabilities';
 import { RatingChart } from '../components/player/profile/RatingChart';
 import { RecentMatches, type RecentMatchEntry } from '../components/player/profile/RecentMatches';
 import type { PlayerDetail } from '../types/api.types';
@@ -257,6 +258,12 @@ export default function PlayerProfile() {
   const socketRef = useRef<Socket | null>(null);
   const { playerSteamId, hasPlayerRecord, impersonation } = useAuth();
   const { t } = useTranslation();
+  // Kills, deaths, assists, headshots, damage and the demo link are things the
+  // game measured. A game that measures none of them has no column of N/A to
+  // show — it has no column (3.0 phase D, PR D10).
+  const { capabilities: gameCapabilities } = useGameCapabilities();
+  const showGameStats = gameCapabilities.playerStats;
+  const showDemos = gameCapabilities.demos;
   const { matchSlug: statusMatchSlug } = useCurrentMatchStatus(
     steamId && playerSteamId === steamId ? steamId : null
   );
@@ -1316,8 +1323,9 @@ export default function PlayerProfile() {
             />
           )}
 
-          {/* Performance Metrics Chart */}
-          {uniqueMatchHistory.length > 0 && (
+          {/* Performance Metrics Chart. Kills, deaths, assists and ADR over
+              time — nothing to plot for a game that measures none of them. */}
+          {showGameStats && uniqueMatchHistory.length > 0 && (
             <PerformanceMetricsChart
               matchHistory={uniqueMatchHistory.map((match) => ({
                 adr: match.adr,
@@ -1343,14 +1351,18 @@ export default function PlayerProfile() {
                       <TableRow>
                         <TableCell align="left">{t('playerPage.round')}</TableCell>
                         <TableCell>{t('playerPage.opponent')}</TableCell>
-                        <TableCell align="right">{t('playerPage.kills')}</TableCell>
-                        <TableCell align="right">{t('playerPage.deaths')}</TableCell>
-                        <TableCell align="right">{t('playerPage.assists')}</TableCell>
-                        <TableCell align="right">{t('playerPage.hsPercent')}</TableCell>
-                        <TableCell align="right">{t('playerPage.dmg')}</TableCell>
+                        {showGameStats && (
+                          <>
+                            <TableCell align="right">{t('playerPage.kills')}</TableCell>
+                            <TableCell align="right">{t('playerPage.deaths')}</TableCell>
+                            <TableCell align="right">{t('playerPage.assists')}</TableCell>
+                            <TableCell align="right">{t('playerPage.hsPercent')}</TableCell>
+                            <TableCell align="right">{t('playerPage.dmg')}</TableCell>
+                          </>
+                        )}
                         <TableCell align="right">{t('playerPage.rating')}</TableCell>
                         <TableCell>{t('playerPage.result')}</TableCell>
-                        <TableCell>{t('playerPage.demo')}</TableCell>
+                        {showDemos && <TableCell>{t('playerPage.demo')}</TableCell>}
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -1373,27 +1385,31 @@ export default function PlayerProfile() {
                                 {t('teamMatchHistory.vs')} {opponentName}
                               </Typography>
                             </TableCell>
-                            <TableCell align="right">
-                              {typeof match.kills === 'number' ? match.kills : 'N/A'}
-                            </TableCell>
-                            <TableCell align="right">
-                              {typeof match.deaths === 'number' ? match.deaths : 'N/A'}
-                            </TableCell>
-                            <TableCell align="right">
-                              {typeof match.assists === 'number' ? match.assists : 'N/A'}
-                            </TableCell>
-                            <TableCell align="right">
-                              {typeof match.kills === 'number' &&
-                              typeof match.headshots === 'number' &&
-                              match.kills > 0
-                                ? `${Math.round((match.headshots / match.kills) * 100)}%`
-                                : 'N/A'}
-                            </TableCell>
-                            <TableCell align="right">
-                              {typeof match.totalDamage === 'number'
-                                ? match.totalDamage.toLocaleString()
-                                : 'N/A'}
-                            </TableCell>
+                            {showGameStats && (
+                              <>
+                                <TableCell align="right">
+                                  {typeof match.kills === 'number' ? match.kills : 'N/A'}
+                                </TableCell>
+                                <TableCell align="right">
+                                  {typeof match.deaths === 'number' ? match.deaths : 'N/A'}
+                                </TableCell>
+                                <TableCell align="right">
+                                  {typeof match.assists === 'number' ? match.assists : 'N/A'}
+                                </TableCell>
+                                <TableCell align="right">
+                                  {typeof match.kills === 'number' &&
+                                  typeof match.headshots === 'number' &&
+                                  match.kills > 0
+                                    ? `${Math.round((match.headshots / match.kills) * 100)}%`
+                                    : 'N/A'}
+                                </TableCell>
+                                <TableCell align="right">
+                                  {typeof match.totalDamage === 'number'
+                                    ? match.totalDamage.toLocaleString()
+                                    : 'N/A'}
+                                </TableCell>
+                              </>
+                            )}
                             <TableCell align="right">
                               {ratingBySlug.has(match.slug)
                                 ? ratingBySlug.get(match.slug)
@@ -1406,27 +1422,29 @@ export default function PlayerProfile() {
                                 color={match.wonMatch ? 'success' : 'error'}
                               />
                             </TableCell>
-                            <TableCell>
-                              <Tooltip title={t('playerPage.downloadDemo')}>
-                                <span>
-                                  <IconButton
-                                    size="small"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      const link = document.createElement('a');
-                                      link.href = `/api/demos/${match.slug}/download`;
-                                      link.download = '';
-                                      document.body.appendChild(link);
-                                      link.click();
-                                      document.body.removeChild(link);
-                                    }}
-                                    disabled={match.status !== 'completed'}
-                                  >
-                                    <DownloadIcon fontSize="inherit" />
-                                  </IconButton>
-                                </span>
-                              </Tooltip>
-                            </TableCell>
+                            {showDemos && (
+                              <TableCell>
+                                <Tooltip title={t('playerPage.downloadDemo')}>
+                                  <span>
+                                    <IconButton
+                                      size="small"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const link = document.createElement('a');
+                                        link.href = `/api/demos/${match.slug}/download`;
+                                        link.download = '';
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+                                      }}
+                                      disabled={match.status !== 'completed'}
+                                    >
+                                      <DownloadIcon fontSize="inherit" />
+                                    </IconButton>
+                                  </span>
+                                </Tooltip>
+                              </TableCell>
+                            )}
                           </TableRow>
                         );
                       })}
@@ -1438,11 +1456,15 @@ export default function PlayerProfile() {
                           </Typography>
                         </TableCell>
                         <TableCell>—</TableCell>
-                        <TableCell align="right">—</TableCell>
-                        <TableCell align="right">—</TableCell>
-                        <TableCell align="right">—</TableCell>
-                        <TableCell align="right">—</TableCell>
-                        <TableCell align="right">—</TableCell>
+                        {showGameStats && (
+                          <>
+                            <TableCell align="right">—</TableCell>
+                            <TableCell align="right">—</TableCell>
+                            <TableCell align="right">—</TableCell>
+                            <TableCell align="right">—</TableCell>
+                            <TableCell align="right">—</TableCell>
+                          </>
+                        )}
                         <TableCell align="right">
                           <strong>{baselineRating}</strong>
                         </TableCell>
@@ -1451,7 +1473,7 @@ export default function PlayerProfile() {
                             —
                           </Typography>
                         </TableCell>
-                        <TableCell>—</TableCell>
+                        {showDemos && <TableCell>—</TableCell>}
                       </TableRow>
                     </TableBody>
                   </Table>

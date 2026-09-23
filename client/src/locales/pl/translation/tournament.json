@@ -464,8 +464,11 @@
       },
       "game": {
         "label": "Game",
-        "descriptions": {
-          "cs2": "Matches run on your own CS2 servers with the Auto Tournament plugin."
+        "loading": "Loading the games this instance can run.",
+        "lockedHelp": "The game is fixed once the tournament exists. Delete it and start again to run a different one.",
+        "integrationDescriptions": {
+          "cs2": "Matches run on your own CS2 servers with the Auto Tournament CS2 plugin.",
+          "manual-report": "No servers. Teams play the match themselves and a captain reports the result."
         }
       },
       "basics": {
@@ -568,6 +571,41 @@
         "maps": "At least one map",
         "created": "Tournament created",
         "saved": "Changes saved"
+      },
+      "manualReport": {
+        "title": "Manual reporting",
+        "help": "Auto Tournament cannot watch this game, so the teams tell it what happened.",
+        "seriesLength": "Series length",
+        "seriesLengthHelp": "How many games a series is. The first team to win more than half of them takes the match.",
+        "gameLabel": "Call the game",
+        "gameLabelHelp": "What to call it in the report form. Leave empty for “{{game}}”.",
+        "allowDraw": "Draws",
+        "allowDrawHelp": "Allow a game, and so a series, to end level. Leave off for a bracket, where somebody has to go through.",
+        "allowDrawOptions": {
+          "no": "Not allowed",
+          "yes": "Allowed"
+        },
+        "confirmation": "Before a result counts",
+        "confirmationHelp": {
+          "opponent": "The other team's captain has to agree before the match is settled. They can dispute it instead, which sends it to an admin.",
+          "none": "A captain's report settles the match on its own. Quick, and worth it only where nobody is likely to disagree."
+        },
+        "confirmationOptions": {
+          "opponent": "The opponent agrees",
+          "none": "The report stands"
+        },
+        "confirmTimeout": "Minutes to answer",
+        "confirmTimeoutHelp": "How long the opponent has before the deadline is reached. 1440 is a day.",
+        "confirmTimeoutNone": "No deadline: the report waits for an answer.",
+        "timeoutAction": "At the deadline",
+        "timeoutActionHelp": {
+          "auto_confirm": "The report is taken as reported, and the bracket moves on without anybody waiting.",
+          "escalate": "The match is handed to an admin, who decides it on the Disputes page."
+        },
+        "timeoutActionOptions": {
+          "auto_confirm": "Take the report",
+          "escalate": "Ask an admin"
+        }
       }
     }
   },

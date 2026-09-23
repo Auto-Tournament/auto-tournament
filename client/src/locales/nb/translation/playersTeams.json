@@ -437,7 +437,8 @@
       "currentMapScore": "Stilling på dette kartet (runder)",
       "eloAvg": "ELO (snitt): {{elo}}",
       "vs": "MOT",
-      "tbd": "Ikke avgjort"
+      "tbd": "Ikke avgjort",
+      "gamesWon": "Kamper vunnet"
     },
     "server": {
       "waitingTitle": "Venter på servertildeling",
@@ -572,7 +573,14 @@
         "range": "{{field}} for {{subject}} er for stort til å være et ekte tall.",
         "tooLong": "{{field}} for {{subject}} er lengre enn {{max}} tegn.",
         "missing": "{{field}} er påkrevd, og ingenting er fylt ut for {{team}}."
-      }
+      },
+      "tournamentTitle": "Rapporterte tall",
+      "tournamentHelp": "Summert fra bekreftede rapporter. Et resultat som fortsatt venter på motstanderen, telles ikke med her.",
+      "byTeam": "Per lag",
+      "byPlayer": "Per spiller",
+      "team": "Lag",
+      "player": "Spiller",
+      "matches": "Kamper"
     }
   },
   "disputes": {

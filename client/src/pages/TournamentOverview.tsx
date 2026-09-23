@@ -23,6 +23,7 @@ import { PrizesCard } from '../components/tournament/overview/PrizesCard';
 import { RequirementsCard, type Requirement } from '../components/tournament/overview/RequirementsCard';
 import { LiveStrip } from '../components/tournament/overview/LiveStrip';
 import { getMapDisplayName } from '../constants/maps';
+import { integrationFor } from '../integrations/registry';
 import { MATCH_FORMATS } from '../constants/tournament';
 
 export default function TournamentOverview() {
@@ -96,6 +97,15 @@ export default function TournamentOverview() {
   const typeLabelKey = `${tournamentTypeKeyPrefix}.label`;
   const typeLabel = t(typeLabelKey) === typeLabelKey ? tournament.type : t(typeLabelKey);
 
+  // A map veto and an overtime policy are Counter-Strike 2's. A game the
+  // platform cannot watch has neither, and a fact line saying "Map veto:
+  // Standard" about a chess cup is simply wrong (3.0 phase D, PR D10).
+  const gameIntegration = integrationFor(tournament);
+  const capabilities = gameIntegration.capabilities;
+  // Overtime is a match rule the game module asks for in setup; a module that
+  // asks for none has none to report.
+  const hasMatchRules = Boolean(gameIntegration.tournamentSetupSteps.rules);
+
   const seriesCount = parseInt(tournament.format.replace('bo', ''), 10) || 1;
   const hasCustomVeto = Boolean(
     (settings?.customVetoOrder as Record<string, unknown> | undefined)?.[tournament.format]
@@ -121,7 +131,7 @@ export default function TournamentOverview() {
       MATCH_FORMATS.find((f) => f.value === tournament.format)?.label ??
       t('overviewPage.facts.seriesValue', { count: seriesCount }),
   });
-  if (!isShuffle) {
+  if (!isShuffle && capabilities.veto) {
     facts.push({
       label: t('overviewPage.facts.mapVeto'),
       value: hasCustomVeto
@@ -129,7 +139,7 @@ export default function TournamentOverview() {
         : t('overviewPage.facts.mapVetoStandard'),
     });
   }
-  if (tournament.overtimeMode) {
+  if (tournament.overtimeMode && hasMatchRules) {
     facts.push({
       label: t('overviewPage.facts.overtime'),
       value:

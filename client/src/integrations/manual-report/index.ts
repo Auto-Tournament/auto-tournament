@@ -17,6 +17,8 @@
 import type { ClientGameIntegration } from '../types';
 import { DisputesQueue } from './admin/DisputesQueue';
 import { ManualReportPanel } from './match/ManualReportPanel';
+import { ManualReportSetupStep } from './setup/ManualReportSetupStep';
+import { CustomStatsTables } from './stats/CustomStatsTables';
 import { TeamCaptainsCard } from './team/TeamCaptainsCard';
 
 /**
@@ -48,6 +50,16 @@ export const manualReportClientIntegration: ClientGameIntegration = {
   catalogGames: MANUAL_REPORT_GAMES,
   runsAnyCatalogGame: true,
 
+  // The same five facts `manualReportIntegration.capabilities` states on the
+  // API side: nothing runs anywhere, nothing is measured, nothing is recorded.
+  capabilities: {
+    servers: false,
+    veto: false,
+    liveEvents: false,
+    demos: false,
+    playerStats: false,
+  },
+
   matchPanels: {
     reportView: ManualReportPanel,
   },
@@ -56,7 +68,11 @@ export const manualReportClientIntegration: ClientGameIntegration = {
 
   adminDisputesView: DisputesQueue,
 
-  tournamentSetupSteps: {},
+  tournamentStatsView: CustomStatsTables,
+
+  tournamentSetupSteps: {
+    settings: ManualReportSetupStep,
+  },
   standaloneMatchSteps: {},
   resourceDialogs: {},
   dashboardWidgets: {},

@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import {
   SEARCH_MIN_LENGTH,
+  getPlayableGames,
   getPlayerAccountBySteamId,
   getPopularGames,
   getSuggestions,
@@ -160,6 +161,59 @@ router.get('/popular', async (_req: Request, res: Response) => {
   } catch (error) {
     log.error('Failed to load popular games', error);
     return res.status(500).json({ success: false, error: 'Failed to load popular games' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/games/playable:
+ *   get:
+ *     tags: [Games]
+ *     summary: Games this instance can create a tournament for
+ *     description: |
+ *       The built-in catalogue, minus the popular titles no installed module
+ *       runs. Each entry carries the module that would run it
+ *       (`integrationId`), because the tournament setup wizard's steps differ
+ *       by module: Counter-Strike 2 picks servers, maps and a veto, a manually
+ *       reported game picks a series length and who confirms a result.
+ *
+ *       Not everything a module could run: manual reporting answers for any
+ *       catalogue game, including one found through `/api/games/search`. This
+ *       is the list an organizer picks from without searching. Works
+ *       anonymously.
+ *     responses:
+ *       200:
+ *         description: The playable games
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 games:
+ *                   type: array
+ *                   items:
+ *                     allOf:
+ *                       - $ref: '#/components/schemas/GameSummary'
+ *                       - type: object
+ *                         properties:
+ *                           gameRef:
+ *                             type: string
+ *                             description: |
+ *                               What to send as `game` when creating the
+ *                               tournament. The catalogue slug, except for a
+ *                               module's own game (Counter-Strike 2), which
+ *                               keeps the module id the column has always held
+ *                               for it.
+ *                             example: 'rocket-league'
+ */
+router.get('/playable', async (_req: Request, res: Response) => {
+  try {
+    const games = await getPlayableGames();
+    return res.json({ success: true, games });
+  } catch (error) {
+    log.error('Failed to load playable games', error);
+    return res.status(500).json({ success: false, error: 'Failed to load playable games' });
   }
 });
 

@@ -126,6 +126,12 @@ export interface TournamentRow {
 
 export interface CreateTournamentInput {
   name: string;
+  /**
+   * The game to run: a catalogue slug ('rocket-league') or an installed
+   * module's id ('cs2'). Omitted, the row takes the `game` column default
+   * (CS2), which is what every tournament created before 3.0 phase D was.
+   */
+  game?: string;
   type: TournamentType;
   format: MatchFormat;
   maps: string[];

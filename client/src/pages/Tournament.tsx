@@ -15,10 +15,12 @@ import {
   type SetupFormValues,
 } from '../components/tournament/setup/TournamentSetup';
 import {
-  REVIEW_STEP_INDEX,
-  SETUP_STEPS,
   nearestTeamCount,
+  reviewStepIndexFor,
+  setupStepsFor,
 } from '../components/tournament/setup/setupSteps';
+import { DEFAULT_SETUP_GAME } from '../components/tournament/setup/games';
+import { getIntegration } from '../integrations/registry';
 import { DEFAULT_ELO_TEMPLATE_ID } from '../components/tournament/setup/EloTemplateSelect';
 import TournamentChangePreviewModal from '../components/modals/TournamentChangePreviewModal';
 import SaveTemplateModal from '../components/modals/SaveTemplateModal';
@@ -63,6 +65,10 @@ const EMPTY_EVENT_PAGE: EventPageFields = {
 
 const DEFAULT_FORM: SetupFormValues = {
   name: '',
+  // Counter-Strike 2 until the organizer picks otherwise: what every
+  // tournament created before 3.0 phase D was, and the `game` column default.
+  game: DEFAULT_SETUP_GAME.id,
+  gameSettings: {},
   type: 'single_elimination',
   format: 'bo3',
   selectedTeams: [],
@@ -104,7 +110,42 @@ const formKeyOf = (tournament: TournamentRecord) =>
     tournament.overtimeSegments,
     tournament.eloTemplateId,
     grandFinalModeOf(tournament),
+    tournament.game ?? null,
+    gameSettingsOf(tournament),
   ]);
+
+/**
+ * A game module's own settings inside `tournament.settings`: everything the
+ * core does not name. The core stores and forwards them without reading them,
+ * so "not one of ours" is the only test there can be (3.0 phase D, PR D9).
+ */
+const CORE_SETTING_KEYS = new Set([
+  'matchFormat',
+  'thirdPlaceMatch',
+  'autoAdvance',
+  'checkInRequired',
+  'seedingMethod',
+  'grandFinalMode',
+  'maxRounds',
+  'overtimeMode',
+  'overtimeSegments',
+  'customVetoOrder',
+  'description',
+  'location',
+  'rules',
+  'rulebookUrl',
+  'prizes',
+  'schedule',
+]);
+
+const gameSettingsOf = (tournament: Pick<TournamentRecord, 'settings'>): Record<string, unknown> => {
+  const settings = (tournament.settings ?? {}) as Record<string, unknown>;
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(settings)) {
+    if (!CORE_SETTING_KEYS.has(key)) out[key] = value;
+  }
+  return out;
+};
 
 /** Form values for a saved tournament. */
 const formFromTournament = (tournament: TournamentRecord): SetupFormValues => {
@@ -114,6 +155,8 @@ const formFromTournament = (tournament: TournamentRecord): SetupFormValues => {
   const base: SetupFormValues = {
     ...DEFAULT_FORM,
     name: tournament.name,
+    game: tournament.game || DEFAULT_SETUP_GAME.id,
+    gameSettings: gameSettingsOf(tournament),
     type: tournament.type,
     format: tournament.format,
     selectedTeams: tournament.teamIds || [],
@@ -186,7 +229,9 @@ const Tournament: React.FC = () => {
   const [grandFinalModePicked, setGrandFinalModePicked] = useState(false);
   const [eloTemplates, setEloTemplates] = useState<EloCalculationTemplate[]>([]);
 
-  // Setup step navigation
+  // Setup step navigation. The steps a game has differ (3.0 phase D, PR D9),
+  // so "the last one" is not a constant.
+  const setupGame = tournament?.game || form.game || DEFAULT_SETUP_GAME.id;
   const [activeStep, setActiveStep] = useState(0);
   const [furthestStep, setFurthestStep] = useState(0);
   const goToStep = React.useCallback((index: number) => {
@@ -352,9 +397,11 @@ const Tournament: React.FC = () => {
         grandFinalMode: settings?.grandFinalMode ?? DEFAULT_FORM.grandFinalMode,
       });
       setGrandFinalModePicked(false);
-      // A loaded template is complete: go straight to Review to confirm and create.
-      setActiveStep(REVIEW_STEP_INDEX);
-      setFurthestStep(REVIEW_STEP_INDEX);
+      // A loaded template is complete: go straight to Review to confirm and
+      // create. Templates are saved from a CS2 tournament and carry no game.
+      const last = reviewStepIndexFor(DEFAULT_SETUP_GAME.id);
+      setActiveStep(last);
+      setFurthestStep(last);
       window.history.replaceState({}, '', '/tournament');
     },
     []
@@ -414,8 +461,9 @@ const Tournament: React.FC = () => {
       setGrandFinalModePicked(false);
       if (isNewTournament) {
         // Just created, or opened with one in setup: land on Review (Start).
-        setActiveStep(REVIEW_STEP_INDEX);
-        setFurthestStep(REVIEW_STEP_INDEX);
+        const last = reviewStepIndexFor(tournament.game);
+        setActiveStep(last);
+        setFurthestStep(last);
       }
       clearDraft();
       return;
@@ -448,8 +496,11 @@ const Tournament: React.FC = () => {
         shuffleSettings: { ...DEFAULT_FORM.shuffleSettings, ...(values.shuffleSettings ?? {}) },
         eventPage: { ...EMPTY_EVENT_PAGE, ...(values.eventPage ?? {}) },
       });
+      // A draft saved for one game can hold a step the next game does not
+      // have, so the bound is that game's own list.
+      const stepCount = setupStepsFor(values.game ?? DEFAULT_FORM.game).length;
       const validStep = (n: unknown) =>
-        typeof n === 'number' && n >= 0 && n < SETUP_STEPS.length ? n : 0;
+        typeof n === 'number' && n >= 0 && n < stepCount ? n : 0;
       setActiveStep(validStep(step));
       setFurthestStep(Math.max(validStep(step), validStep(savedFurthest)));
     } catch (error) {
@@ -557,6 +608,12 @@ const Tournament: React.FC = () => {
   const handlers: SetupFormHandlers = useMemo(
     () => ({
       onNameChange: (value) => patchForm({ name: value }),
+      // Switching game drops the previous module's settings: they are keyed by
+      // module, and a Rocket League tournament carrying CS2's object would
+      // save a setting nothing reads and nothing can clear.
+      onGameChange: (value) => patchForm({ game: value, gameSettings: {} }),
+      onGameSettingsChange: (patch) =>
+        setForm((prev) => ({ ...prev, gameSettings: { ...prev.gameSettings, ...patch } })),
       onTypeChange: handleTypeChange,
       onFormatChange: (value) => patchForm({ format: value }),
       onTeamsChange: (teamIds) =>
@@ -597,13 +654,17 @@ const Tournament: React.FC = () => {
 
   const eloTemplateName = (id: string) => eloTemplates.find((tpl) => tpl.id === id)?.name ?? id;
 
+  const gameHasMaps = Boolean(getIntegration(setupGame).tournamentSetupSteps.content);
+
   const handleSave = async () => {
     if (!name.trim()) {
       showError(t('tournament.toasts.nameRequired'));
       return;
     }
 
-    if (maps.length === 0) {
+    // Only for a game played on maps this instance picks: a manually reported
+    // tournament has no map pool to be empty (3.0 phase D, PR D9).
+    if (gameHasMaps && maps.length === 0) {
       showError(t('tournament.toasts.selectAtLeastOneMap'));
       return;
     }
@@ -818,13 +879,20 @@ const Tournament: React.FC = () => {
       const settings = {
         ...baseSettings,
         ...(type === 'double_elimination' ? { grandFinalMode } : {}),
+        // The game module's own object, which the core stores without reading.
+        ...form.gameSettings,
       };
 
       const payload = {
         name,
         type,
         format,
-        maps,
+        // A game with no map pool sends none, whatever a draft carried over
+        // from a game that has one.
+        maps: gameHasMaps ? maps : [],
+        // Only on create: the API's update route does not take a game, and a
+        // tournament's matches were built by the module that owns it.
+        ...(tournament ? {} : { game: form.game }),
         teamIds: selectedTeams,
         settings,
         maxRounds,
@@ -975,6 +1043,13 @@ const Tournament: React.FC = () => {
     // return after the refresh instead of attempting to start again.
     await refreshData();
     if (tournament && (tournament.status === 'in_progress' || tournament.status === 'completed')) {
+      return;
+    }
+
+    // A game that runs on no servers can never be short of one, so there is
+    // nothing to warn about and nothing to check (3.0 phase D, PR D9).
+    if (!getIntegration(setupGame).capabilities.servers) {
+      await performTournamentStart();
       return;
     }
 

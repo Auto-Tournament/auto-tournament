@@ -40,6 +40,14 @@ export interface GameSummary {
   coverUrl: string | null;
   releaseYear: number | null;
   supported: boolean;
+  /**
+   * The installed module that would run a tournament for this game, or null
+   * when none would. `supported` is the same fact as a boolean; the id is what
+   * a caller needs to know *which* module — the tournament setup wizard asks,
+   * because a CS2 tournament and a manually reported one are set up
+   * differently (3.0 phase D, PR D9).
+   */
+  integrationId: string | null;
   /** Where this row's data came from; the client uses it to pick a credit line. */
   source: 'igdb' | 'wikidata' | 'builtin';
   /** Up to 3 genre names, from IGDB `genres.name` or Wikidata P136. */
@@ -70,6 +78,13 @@ interface BuiltinGame {
    * about this game when the module says it about every game.
    */
   viaCatchAll: boolean;
+  /**
+   * The module's own catalogue entry (CS2's row for Counter-Strike 2) rather
+   * than an extra title it ships. Such a game is stored on a tournament under
+   * the integration's id, which is what the `game` column has always held for
+   * it; everything else is stored under its catalogue slug.
+   */
+  own: boolean;
 }
 
 /** Popular esports titles offered before IGDB is configured. IGDB slugs. */
@@ -126,6 +141,7 @@ export function builtinGames(): BuiltinGame[] {
         aliases: [integration.id, ...(integration.catalog?.aliases ?? [])],
         integrationId: integration.id,
         viaCatchAll,
+        own: true,
       });
     }
     for (const entry of integration.catalogEntries ?? []) {
@@ -135,6 +151,7 @@ export function builtinGames(): BuiltinGame[] {
         aliases: entry.aliases ?? [],
         integrationId: integration.id,
         viaCatchAll,
+        own: false,
       });
     }
   }
@@ -146,6 +163,7 @@ export function builtinGames(): BuiltinGame[] {
       aliases: game.aliases ?? [],
       integrationId: null,
       viaCatchAll: false,
+      own: false,
     });
   }
 
@@ -200,6 +218,7 @@ function toSummary(row: GameRow, supported: Map<string, string>): GameSummary {
     coverUrl: row.cover_url,
     releaseYear: row.release_year,
     supported: supported.has(row.slug),
+    integrationId: supported.get(row.slug) ?? null,
     source: row.source === 'igdb' || row.source === 'wikidata' ? row.source : 'builtin',
     genres: parseGenres(row.genres),
     imageUrl: row.cover_url || row.logo_url || null,
@@ -576,6 +595,68 @@ export async function getPopularGames(): Promise<GameSummary[]> {
     .map((slug) => rows.get(slug))
     .filter((row): row is GameRow => Boolean(row))
     .map((row) => toSummary(row, supported));
+}
+
+/** A playable game, plus the value to store on the tournament that runs it. */
+export interface PlayableGame extends GameSummary {
+  /**
+   * What `tournament.game` is set to for this game. The catalogue slug, except
+   * for a module's own game (Counter-Strike 2), which keeps the module id the
+   * column has held for it since before it could hold a slug. `resolveGameRef`
+   * normalizes either spelling to this.
+   */
+  gameRef: string;
+}
+
+/**
+ * Every game this instance can create a tournament for: the built-in list,
+ * minus the popular titles no installed module runs (3.0 phase D, PR D9).
+ *
+ * This is what the tournament setup wizard's "Game" step offers. It is not
+ * everything a module *could* run — `runsAnyCatalogGame` means manual
+ * reporting answers for any catalogue id, including one found through IGDB
+ * search — but a list an organizer can pick from without searching, which is
+ * what a wizard step is.
+ */
+export async function getPlayableGames(): Promise<PlayableGame[]> {
+  const games = await getPopularGames();
+  const refs = new Map(
+    builtinGames().map((g) => [g.slug, g.own && g.integrationId ? g.integrationId : g.slug])
+  );
+  return games
+    .filter((game) => game.integrationId !== null)
+    .map((game) => ({ ...game, gameRef: refs.get(game.slug) ?? game.slug }));
+}
+
+/**
+ * The canonical `tournament.game` value for a game reference, or null when
+ * this instance has no such game.
+ *
+ * Takes a built-in slug or alias ('rl'), an integration id ('cs2'), or the
+ * slug of any `games` row IGDB or Wikidata search has added. Returns the
+ * canonical slug to store, so a tournament row never holds an alias — the
+ * registry resolves those, but two rows for one game would read as two games
+ * everywhere else.
+ *
+ * It deliberately does *not* accept anything the registry would resolve:
+ * `runsAnyCatalogGame` answers for every string, so without this check a typo
+ * would create a tournament for a game nobody has heard of.
+ */
+export async function resolveGameRef(ref: string): Promise<string | null> {
+  const wanted = ref.trim().toLowerCase();
+  if (!wanted) return null;
+
+  for (const game of builtinGames()) {
+    if (game.slug !== wanted && !game.aliases.some((a) => a.toLowerCase() === wanted)) continue;
+    // A module's own game keeps the module's id ('cs2'), the value the column
+    // has held since before it could hold a catalogue slug.
+    return game.own && game.integrationId ? game.integrationId : game.slug;
+  }
+
+  const row = await db.queryOneAsync<{ slug: string }>('SELECT slug FROM games WHERE slug = ?', [
+    wanted,
+  ]);
+  return row?.slug ?? null;
 }
 
 // ---------------------------------------------------------------------------

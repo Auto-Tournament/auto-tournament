@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../utils/api';
+import { catalogSlugFor } from '../integrations/registry';
 import type { Tournament } from '../types';
 
 /**
@@ -13,8 +14,7 @@ export interface TournamentSummary {
   name: string;
   /**
    * Catalog slug of the game this tournament is for (e.g. `counter-strike-2`),
-   * when known. Optional because a 3.1 tournament could be for any catalog
-   * game, but today every tournament this instance runs is CS2.
+   * when known. Undefined for a game this instance has no catalogue row for.
    */
   game?: string;
   status: Tournament['status'];
@@ -51,9 +51,10 @@ function toSummary(tournament: Tournament): TournamentSummary {
   return {
     id: tournament.id,
     name: tournament.name,
-    // This instance only ever runs CS2 tournaments today; 3.1 tournaments
-    // carry their own catalog game id and this falls away.
-    game: 'counter-strike-2',
+    // The row's own game, as a catalogue slug. It was hard-coded to CS2 while
+    // that was the only game a tournament could be for; from 3.0 phase D it
+    // can be any of them (PR D9).
+    game: catalogSlugFor(tournament.game),
     status: tournament.status,
     type: tournament.type,
     format: tournament.format,

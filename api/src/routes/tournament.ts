@@ -23,6 +23,7 @@ import { settingsService } from '../services/settingsService';
 import { checkTournamentCompletion } from '../utils/matchProgression';
 import { resolveTournamentId } from '../utils/tournamentRow';
 import { integrationForMatch } from '../integrations/registry';
+import { resolveGameRef } from '../services/gameCatalogService';
 import { teamMembers } from '../services/teamMembers';
 import type {
   GameId,
@@ -107,6 +108,49 @@ router.get('/allocation-status', async (req: Request, res: Response) => {
       success: false,
       error: 'Failed to fetch allocation status',
     });
+  }
+});
+
+/**
+ * @openapi
+ * /api/tournament/game:
+ *   get:
+ *     tags: [Tournament]
+ *     summary: Which game the current tournament is for (public)
+ *     description: |
+ *       One field, no session. `GET /api/tournament` is admin-only, but a
+ *       player's own profile has to know whether this instance is running a
+ *       game that measures kills and ADR or one that measures nothing, so it
+ *       can leave those columns out rather than fill them with "N/A"
+ *       (3.0 phase D, PR D10). Same split as `/allocation-status`: the one
+ *       fact a non-admin page needs, carved out of an admin-only resource.
+ *
+ *       `null` when no tournament exists.
+ *     responses:
+ *       200:
+ *         description: The game, as `tournament.game` stores it
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 game:
+ *                   type: string
+ *                   nullable: true
+ *                   example: 'rocket-league'
+ */
+router.get('/game', async (req: Request, res: Response) => {
+  try {
+    const tournamentId = resolveTournamentId(req);
+    const row = await db.queryOneAsync<{ game: GameId | null }>(
+      'SELECT game FROM tournament WHERE id = ?',
+      [tournamentId]
+    );
+    return res.json({ success: true, game: row?.game ?? null });
+  } catch (error) {
+    log.error('Error fetching the tournament game', error);
+    return res.status(500).json({ success: false, error: 'Failed to fetch the tournament game' });
   }
 });
 
@@ -202,6 +246,17 @@ router.get('/', async (req: Request, res: Response) => {
  *                 type: string
  *                 enum: [single_elimination, double_elimination, round_robin, swiss]
  *                 example: "single_elimination"
+ *               game:
+ *                 type: string
+ *                 description: |
+ *                   The game to run, as a catalogue slug from
+ *                   `/api/games/playable` ("rocket-league") or an installed
+ *                   module's id ("cs2"). Omitted, the tournament is CS2, the
+ *                   `game` column default. A game this instance does not know
+ *                   is a 400; the module that runs it then decides what the
+ *                   rest of the body must contain (CS2 wants maps, manual
+ *                   reporting does not).
+ *                 example: "rocket-league"
  *               format:
  *                 type: string
  *                 enum: [bo1, bo3, bo5]
@@ -411,8 +466,26 @@ router.post('/', async (req: Request, res: Response) => {
     const tournamentId = resolveTournamentId(req);
     const input: CreateTournamentInput = req.body;
 
-    // Tournaments are created as CS2 (the `game` column default).
-    const gameCheck = validateGameSettings(null, {
+    // The game the organizer picked, as a value the `game` column may hold.
+    // Absent means CS2 (the column default), which is what every tournament
+    // created before 3.0 phase D was.
+    let game: GameId | null = null;
+    if (input?.game !== undefined && input.game !== null && input.game !== '') {
+      if (typeof input.game !== 'string') {
+        return res.status(400).json({ success: false, error: 'game must be a string' });
+      }
+      game = await resolveGameRef(input.game);
+      if (!game) {
+        return res.status(400).json({
+          success: false,
+          error: `Unknown game '${input.game}'; use a slug from /api/games/playable`,
+        });
+      }
+    }
+
+    // What the request must carry is the picked game's module's business: CS2
+    // wants a map pool, manual reporting wants none.
+    const gameCheck = validateGameSettings(game, {
       mode: 'create',
       // `?.`: a missing body still fails on `input.name` below, as before.
       settings: input?.settings,
@@ -463,7 +536,11 @@ router.post('/', async (req: Request, res: Response) => {
       });
     }
 
-    const tournament = await tournamentService.createTournament(tournamentId, input);
+    const tournament = await tournamentService.createTournament(
+      tournamentId,
+      input,
+      game ? { game } : {}
+    );
 
     return res.json({
       success: true,

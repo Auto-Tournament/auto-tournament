@@ -3,10 +3,12 @@ import CheckIcon from '@mui/icons-material/Check';
 import { useTranslation } from 'react-i18next';
 import { visuallyHidden } from './layout';
 import { tokens, mono } from '../../../theme';
-import { SETUP_STEPS, type SetupStepId } from './setupSteps';
+import { type SetupStepId } from './setupSteps';
 import { NARROW } from './layout';
 
 interface SetupStepListProps {
+  /** The steps for the game being set up (`setupStepsFor`). */
+  steps: readonly SetupStepId[];
   activeStep: number;
   isDone: (step: SetupStepId, index: number) => boolean;
   onSelect: (index: number) => void;
@@ -16,7 +18,7 @@ interface SetupStepListProps {
  * The step list on the left. An ordered list of buttons; the current one
  * carries aria-current="step". Under 760px it becomes a horizontal scroller.
  */
-export function SetupStepList({ activeStep, isDone, onSelect }: SetupStepListProps) {
+export function SetupStepList({ steps, activeStep, isDone, onSelect }: SetupStepListProps) {
   const { t } = useTranslation();
 
   return (
@@ -41,7 +43,7 @@ export function SetupStepList({ activeStep, isDone, onSelect }: SetupStepListPro
         },
       }}
     >
-      {SETUP_STEPS.map((step, index) => {
+      {steps.map((step, index) => {
         const current = index === activeStep;
         const done = !current && isDone(step, index);
         return (

@@ -43,18 +43,24 @@ import { getIntegration } from '../../../integrations/registry';
 import type { MatchRulesValue } from '../../../integrations/types';
 import { EloTemplateSelect } from './EloTemplateSelect';
 import { ReviewStep, type ReviewTournament } from './ReviewStep';
-import { DEFAULT_SETUP_GAME, SETUP_GAMES } from './games';
+import { DEFAULT_SETUP_GAME, gameMark, useSetupGames, type SetupGame } from './games';
 import { MEDIUM, NARROW } from './layout';
-import {
-  REVIEW_STEP_INDEX,
-  SETUP_STEPS,
-  stepError,
-  teamCountChoices,
-  type SetupStepId,
-} from './setupSteps';
+import { setupStepsFor, stepError, teamCountChoices, type SetupStepId } from './setupSteps';
 
 export interface SetupFormValues {
   name: string;
+  /**
+   * The game to run, as `tournament.game` stores it: an installed module's id
+   * ('cs2') or a catalogue slug ('rocket-league'). It decides which steps the
+   * wizard asks and which module runs the tournament (3.0 phase D, PR D9).
+   */
+  game: string;
+  /**
+   * The game module's own object(s) inside `tournament.settings` — manual
+   * reporting's `manualReport`. The core never reads them; the module's
+   * settings step is the only thing that knows the shape.
+   */
+  gameSettings: Record<string, unknown>;
   type: string;
   format: string;
   selectedTeams: string[];
@@ -73,6 +79,8 @@ export interface SetupFormValues {
 
 export interface SetupFormHandlers {
   onNameChange: (name: string) => void;
+  onGameChange: (game: string) => void;
+  onGameSettingsChange: (patch: Record<string, unknown>) => void;
   onTypeChange: (type: string) => void;
   onFormatChange: (format: string) => void;
   onTeamsChange: (teamIds: string[]) => void;
@@ -136,7 +144,24 @@ export function TournamentSetup(props: TournamentSetupProps) {
   const { tournament, form, handlers, canEdit, saving } = props;
   const isShuffle = form.type === 'shuffle';
   const locked = !canEdit || saving;
-  const stepId = SETUP_STEPS[props.activeStep] ?? 'game';
+
+  // ---- The game, and the steps it brings ------------------------------------
+  // A saved tournament's own `game` wins: its matches were built for it, so
+  // the wizard shows that game's steps whatever the draft form still holds.
+  const game = tournament?.game || form.game || DEFAULT_SETUP_GAME.id;
+  const { games: setupGames, loading: loadingGames } = useSetupGames();
+  const steps = setupStepsFor(game);
+  const reviewStepIndex = steps.length - 1;
+  const stepId = steps[props.activeStep] ?? 'game';
+  // A saved tournament can name a game the playable list does not — one found
+  // through game search, which manual reporting runs too. It is named by its
+  // catalogue id and gets a text mark, never another game's icon.
+  const pickedGame: SetupGame = setupGames.find((entry) => entry.id === game) ?? {
+    id: game,
+    name: game,
+    mark: gameMark(game.replace(/-/g, ' ')),
+    integrationId: getIntegration(game).id,
+  };
 
   // ---- Data the steps need (servers, map pools, maps) ----------------------
   const {
@@ -153,19 +178,29 @@ export function TournamentSetup(props: TournamentSetupProps) {
   const selectedMapPool =
     pickedMapPool || defaultMapPool(mapPools, form.type, form.maps, props.mapPoolId);
 
-  // A new tournament with no maps yet starts with the default pool's maps.
+  // Game-specific steps and dialogs (CS2: rounds/overtime, map pool, servers).
+  const integration = getIntegration(game);
+  const RulesStep = integration.tournamentSetupSteps.rules;
+  const ContentStep = integration.tournamentSetupSteps.content;
+  const GameSettingsStep = integration.tournamentSetupSteps.settings;
+  // A module with its own settings step asks for the series length there, so
+  // the core does not ask a second time (see TournamentGameSettingsStepProps).
+  const coreOwnsSeriesLength = !GameSettingsStep;
+  const hasMapsStep = Boolean(ContentStep);
+  const needsServers = integration.capabilities.servers;
+
+  // A new tournament with no maps yet starts with the default pool's maps —
+  // but only for a game that is played on maps this instance picks. Filling a
+  // manually reported tournament's map pool in the background would store
+  // seven CS2 maps on a Rocket League cup (3.0 phase D, PR D9).
   const mapsInitialized = useRef(false);
   useEffect(() => {
-    if (mapsInitialized.current || mapPools.length === 0) return;
+    if (mapsInitialized.current || mapPools.length === 0 || !hasMapsStep) return;
     mapsInitialized.current = true;
     if (form.maps.length > 0 || selectedMapPool === 'custom') return;
     const pool = mapPools.find((p) => p.id.toString() === selectedMapPool);
     if (pool) handlers.onMapsChange(pool.mapIds);
-  }, [mapPools, form.maps.length, selectedMapPool, handlers]);
-  // Game-specific steps and dialogs (CS2: rounds/overtime, map pool, servers).
-  const integration = getIntegration(tournament?.game ?? DEFAULT_SETUP_GAME.id);
-  const RulesStep = integration.tournamentSetupSteps.rules;
-  const ContentStep = integration.tournamentSetupSteps.content;
+  }, [mapPools, form.maps.length, selectedMapPool, handlers, hasMapsStep]);
   const AddResourceDialog = integration.resourceDialogs.add;
   const BatchResourceDialog = integration.resourceDialogs.batchAdd;
 
@@ -278,7 +313,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
   }, [props.activeStep]);
 
   const goTo = (index: number) => {
-    if (index < 0 || index >= SETUP_STEPS.length) return;
+    if (index < 0 || index >= steps.length) return;
     setRefusedStep(null);
     props.onStepChange(index);
   };
@@ -373,6 +408,9 @@ export function TournamentSetup(props: TournamentSetupProps) {
           label: t('tournament.setup.summary.signUp'),
           value: t('tournament.setup.summary.signUpOrganizer'),
         },
+    ...(!hasMapsStep
+      ? []
+      : [
     form.maps.length > 0
       ? {
           key: 'maps',
@@ -390,6 +428,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
           value: t('tournament.setup.summary.notSet'),
           pending: true,
         },
+      ]),
   ];
 
   // Only real preconditions for Start.
@@ -413,13 +452,17 @@ export function TournamentSetup(props: TournamentSetupProps) {
           label: t('tournament.setup.checklist.teams'),
           met: selectedCount >= 2 && teamRule.isValid,
         },
-    {
-      key: 'maps',
-      label: requiresVeto(form.type, form.format)
-        ? t('tournament.setup.checklist.mapsVeto')
-        : t('tournament.setup.checklist.maps'),
-      met: validateMapCount(form.maps, form.type, form.format).valid,
-    },
+    ...(hasMapsStep
+      ? [
+          {
+            key: 'maps',
+            label: requiresVeto(form.type, form.format)
+              ? t('tournament.setup.checklist.mapsVeto')
+              : t('tournament.setup.checklist.maps'),
+            met: validateMapCount(form.maps, form.type, form.format).valid,
+          },
+        ]
+      : []),
     { key: 'created', label: t('tournament.setup.checklist.created'), met: !!tournament },
   ];
   if (tournament && canEdit) {
@@ -431,7 +474,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
   }
 
   // ---- Step content ----------------------------------------------------------
-  const nextStepId = SETUP_STEPS[props.activeStep + 1];
+  const nextStepId = steps[props.activeStep + 1];
   const lede = (() => {
     if (stepId === 'teams' && isShuffle) return t('tournament.setup.questions.teams.ledeShuffle');
     if (stepId === 'maps' && isShuffle) return t('tournament.setup.questions.maps.ledeShuffle');
@@ -444,7 +487,16 @@ export function TournamentSetup(props: TournamentSetupProps) {
     switch (stepId) {
       case 'game':
         return (
-          <Field label={t('tournament.setup.game.label')}>
+          <Field
+            label={t('tournament.setup.game.label')}
+            help={
+              tournament
+                ? t('tournament.setup.game.lockedHelp')
+                : loadingGames
+                  ? t('tournament.setup.game.loading')
+                  : undefined
+            }
+          >
             <Box
               role="group"
               aria-label={t('tournament.setup.game.label')}
@@ -454,14 +506,19 @@ export function TournamentSetup(props: TournamentSetupProps) {
                 gap: 1.5,
               }}
             >
-              {SETUP_GAMES.map((game) => {
-                const pressed = game.id === DEFAULT_SETUP_GAME.id;
+              {setupGames.map((entry) => {
+                const pressed = entry.id === game;
                 return (
                   <ButtonBase
-                    key={game.id}
+                    key={entry.id}
                     type="button"
                     aria-pressed={pressed}
-                    data-testid={`tournament-game-option-${game.id}`}
+                    // The game is fixed once the tournament exists: its matches
+                    // were built by that module, and nothing moves them to
+                    // another one.
+                    disabled={locked || !!tournament}
+                    onClick={() => handlers.onGameChange(entry.id)}
+                    data-testid={`tournament-game-option-${entry.id}`}
                     sx={{
                       display: 'flex',
                       gap: 1.5,
@@ -493,21 +550,24 @@ export function TournamentSetup(props: TournamentSetupProps) {
                         overflow: 'hidden',
                       }}
                     >
-                      {game.icon ? (
+                      {entry.icon ? (
                         <Box
                           component="img"
-                          src={game.icon}
+                          src={entry.icon}
                           alt=""
                           sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         />
                       ) : (
-                        game.mark
+                        entry.mark
                       )}
                     </Box>
                     <Box sx={{ display: 'grid' }}>
-                      <Typography fontWeight={600}>{game.name}</Typography>
+                      <Typography fontWeight={600}>{entry.name}</Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {t(`tournament.setup.game.descriptions.${game.id}`)}
+                        {t(
+                          `tournament.setup.game.integrationDescriptions.${entry.integrationId}`,
+                          { defaultValue: '' }
+                        )}
                       </Typography>
                     </Box>
                   </ButtonBase>
@@ -574,20 +634,22 @@ export function TournamentSetup(props: TournamentSetupProps) {
                   gap: 3,
                 }}
               >
-                <Field label={t('tournament.setup.format.seriesLength')}>
-                  <SegmentedControl
-                    label={t('tournament.setup.format.seriesLength')}
-                    value={form.format}
-                    onChange={handlers.onFormatChange}
-                    disabled={locked}
-                    testId="tournament-format-selector"
-                    options={['bo1', 'bo3', 'bo5'].map((value) => ({
-                      value,
-                      label: value.replace(/^bo/, 'Bo'),
-                      testId: `tournament-format-option-${value}`,
-                    }))}
-                  />
-                </Field>
+                {coreOwnsSeriesLength && (
+                  <Field label={t('tournament.setup.format.seriesLength')}>
+                    <SegmentedControl
+                      label={t('tournament.setup.format.seriesLength')}
+                      value={form.format}
+                      onChange={handlers.onFormatChange}
+                      disabled={locked}
+                      testId="tournament-format-selector"
+                      options={['bo1', 'bo3', 'bo5'].map((value) => ({
+                        value,
+                        label: value.replace(/^bo/, 'Bo'),
+                        testId: `tournament-format-option-${value}`,
+                      }))}
+                    />
+                  </Field>
+                )}
                 {form.type === 'double_elimination' && (
                   <Field
                     label={t('tournament.setup.format.grandFinal')}
@@ -642,6 +704,18 @@ export function TournamentSetup(props: TournamentSetupProps) {
                 }
               />
             )}
+
+            {GameSettingsStep && (
+              <GameSettingsStep
+                settings={form.gameSettings}
+                onChange={handlers.onGameSettingsChange}
+                game={game}
+                gameName={pickedGame.name}
+                format={form.format}
+                onFormatChange={handlers.onFormatChange}
+                disabled={locked}
+              />
+            )}
           </>
         );
       }
@@ -682,8 +756,12 @@ export function TournamentSetup(props: TournamentSetupProps) {
             type={form.type}
             serverCount={serverCount}
             requiredServers={Math.ceil(selectedCount / 2)}
-            hasEnoughServers={serverCount >= Math.ceil(selectedCount / 2)}
-            loadingServers={loadingServers}
+            // A game with no servers has nothing to run short of, so the
+            // "not enough servers" warning and its two buttons never show.
+            hasEnoughServers={
+              !needsServers || serverCount >= Math.ceil(selectedCount / 2)
+            }
+            loadingServers={needsServers && loadingServers}
             canEdit={canEdit}
             saving={saving}
             onTeamsChange={handlers.onTeamsChange}
@@ -763,6 +841,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
         return (
           <ReviewStep
             tournament={tournament}
+            game={game}
             canEdit={canEdit}
             saving={saving}
             starting={props.starting}
@@ -793,7 +872,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
                   : null;
               props.onSaveTemplate(poolId);
             }}
-            onEdit={() => goTo(SETUP_STEPS.indexOf('basics'))}
+            onEdit={() => goTo(steps.indexOf('basics'))}
             onStart={props.onStart}
             onRegenerate={props.onRegenerate}
             onBulkCreateShuffleMatches={props.onBulkCreateShuffleMatches}
@@ -882,7 +961,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
           [NARROW]: { gridTemplateColumns: 'minmax(0, 1fr)', gap: 3 },
         }}
       >
-        <SetupStepList activeStep={props.activeStep} isDone={isDone} onSelect={goTo} />
+        <SetupStepList steps={steps} activeStep={props.activeStep} isDone={isDone} onSelect={goTo} />
 
         <Box
           component="form"
@@ -941,7 +1020,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
             >
               {t('tournament.formSteps.back')}
             </Button>
-            {props.activeStep < REVIEW_STEP_INDEX && nextStepId && (
+            {props.activeStep < reviewStepIndex && nextStepId && (
               <Button
                 type="submit"
                 variant="contained"
@@ -965,8 +1044,9 @@ export function TournamentSetup(props: TournamentSetupProps) {
           }}
         >
           <SetupSummary
-            gameName={DEFAULT_SETUP_GAME.name}
-            gameMark={DEFAULT_SETUP_GAME.mark}
+            gameName={pickedGame.name}
+            gameMark={pickedGame.mark}
+            gameIcon={pickedGame.icon}
             name={form.name.trim()}
             rows={summaryRows}
             checklist={checklist}

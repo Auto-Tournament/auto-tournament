@@ -7,6 +7,7 @@ import { ShufflePlayerRegistration } from '../ShufflePlayerRegistration';
 import { ShuffleTournamentStats } from '../ShuffleTournamentStats';
 import { ShuffleMapsCard } from '../ShuffleMapsCard';
 import { deriveOvertimeOption } from '../ShuffleTournamentConfigStep';
+import { getIntegration } from '../../../integrations/registry';
 import type { Team } from '../../../types';
 
 export interface ReviewTournament {
@@ -21,6 +22,12 @@ export interface ReviewTournament {
 
 interface ReviewStepProps {
   tournament: ReviewTournament | null;
+  /**
+   * The game being set up, as `tournament.game` stores it. Decides which rows
+   * this review has: a manually reported tournament has no servers to wait
+   * for, no map pool and no round limit (3.0 phase D, PR D9).
+   */
+  game: string;
   canEdit: boolean;
   saving: boolean;
   starting: boolean;
@@ -63,6 +70,8 @@ export function ReviewStep(props: ReviewStepProps) {
   const { t } = useTranslation();
   const { tournament, form } = props;
   const isShuffle = form.type === 'shuffle';
+  const integration = getIntegration(props.game);
+  const hasMaps = Boolean(integration.tournamentSetupSteps.content);
 
   const formActions = (
     <TournamentFormActions
@@ -72,6 +81,7 @@ export function ReviewStep(props: ReviewStepProps) {
       type={form.type}
       format={form.format}
       mapsCount={form.maps.length}
+      hasMaps={hasMaps}
       canEdit={props.canEdit}
       onSave={props.onSave}
       onCancel={tournament ? props.onDiscardChanges : undefined}
@@ -128,7 +138,7 @@ export function ReviewStep(props: ReviewStepProps) {
           type: tournament.type,
           format: tournament.format,
           teams: tournament.teams || [],
-          maps: tournament.maps,
+          maps: hasMaps ? tournament.maps : [],
           teamSize: tournament.teamSize,
         }}
         starting={props.starting}
@@ -158,9 +168,13 @@ export function ReviewStep(props: ReviewStepProps) {
 }
 
 /** The old wizard's review, for a tournament that doesn't exist yet. */
-function NewTournamentDetails({ form, teams, mapName, serverCount }: ReviewStepProps) {
+function NewTournamentDetails({ form, teams, mapName, serverCount, game }: ReviewStepProps) {
   const { t } = useTranslation();
   const isShuffle = form.type === 'shuffle';
+  const integration = getIntegration(game);
+  const hasMaps = Boolean(integration.tournamentSetupSteps.content);
+  const hasMatchRules = Boolean(integration.tournamentSetupSteps.rules);
+  const hasServers = integration.capabilities.servers;
   const overtimeOption = deriveOvertimeOption(form.overtimeMode, form.overtimeSegments);
   const requiredServers = Math.max(1, Math.ceil(form.selectedTeams.length / 2));
   const hasEnoughServers = serverCount >= requiredServers;
@@ -188,25 +202,32 @@ function NewTournamentDetails({ form, teams, mapName, serverCount }: ReviewStepP
       label: t('tournament.review.summary.formatLabel'),
       value: form.format.toUpperCase(),
     },
-    {
-      key: 'rules',
-      label: t('tournament.labels.matchRules'),
-      value: [
-        isShuffle
-          ? t('tournament.wizard.roundLimitValue', { count: form.maxRounds })
-          : t('tournament.matchRules.value', {
-              maxRounds: form.maxRounds,
-              winRounds: Math.floor(form.maxRounds / 2) + 1,
-            }),
-        overtimeLine,
-        ...(isShuffle ? [t('tournament.matchRules.teamSizeValue', { size: form.teamSize })] : []),
-      ].join(' · '),
-    },
+    ...(hasMatchRules
+      ? [
+          {
+            key: 'rules',
+            label: t('tournament.labels.matchRules'),
+            value: [
+              isShuffle
+                ? t('tournament.wizard.roundLimitValue', { count: form.maxRounds })
+                : t('tournament.matchRules.value', {
+                    maxRounds: form.maxRounds,
+                    winRounds: Math.floor(form.maxRounds / 2) + 1,
+                  }),
+              overtimeLine,
+              ...(isShuffle
+                ? [t('tournament.matchRules.teamSizeValue', { size: form.teamSize })]
+                : []),
+            ].join(' · '),
+          },
+        ]
+      : []),
   ];
 
   if (!isShuffle) {
-    rows.push({
-      key: 'servers',
+    if (hasServers) {
+      rows.push({
+        key: 'servers',
       label: t('tournament.labels.servers'),
       value: t(
         hasEnoughServers
@@ -217,8 +238,9 @@ function NewTournamentDetails({ form, teams, mapName, serverCount }: ReviewStepP
           matches: t('tournament.counts.concurrentMatches', { count: requiredServers }),
         }
       ),
-      tone: hasEnoughServers ? undefined : 'warning',
-    });
+        tone: hasEnoughServers ? undefined : 'warning',
+      });
+    }
     rows.push({
       key: 'teams',
       label: t('tournament.wizard.teamsHeading', { total: form.selectedTeams.length }),
@@ -238,11 +260,13 @@ function NewTournamentDetails({ form, teams, mapName, serverCount }: ReviewStepP
     });
   }
 
-  rows.push({
-    key: 'maps',
-    label: t('tournament.wizard.mapsHeading', { total: form.maps.length }),
-    value: form.maps.map(mapName).join(', ') || t('tournament.wizard.noMapsSelected'),
-  });
+  if (hasMaps) {
+    rows.push({
+      key: 'maps',
+      label: t('tournament.wizard.mapsHeading', { total: form.maps.length }),
+      value: form.maps.map(mapName).join(', ') || t('tournament.wizard.noMapsSelected'),
+    });
+  }
 
   return (
     <Box sx={{ display: 'grid', gap: 2 }}>

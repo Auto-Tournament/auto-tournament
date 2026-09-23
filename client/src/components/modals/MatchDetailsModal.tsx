@@ -63,6 +63,7 @@ import {
   deriveSeriesScore,
 } from '../../utils/matchScoreDisplay';
 import { tokens, withAlpha } from '../../theme/tokens';
+import { integrationFor } from '../../integrations/registry';
 
 interface MatchDetailsModalProps {
   match: Match | null;
@@ -92,6 +93,11 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
   onDeleted,
 }) => {
   const { t } = useTranslation();
+  // A series is a run of maps for a game this instance picks maps for, and a
+  // run of games otherwise. The module that owns the match says which, and a
+  // match with no maps has no map list to be "to be determined via veto"
+  // (3.0 phase D, PR D10).
+  const playsOnMaps = integrationFor(match).capabilities.veto;
   const [matchTimer, setMatchTimer] = useState<number>(0);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -722,7 +728,11 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                         </Typography>
                       </Box>
                       <Typography variant="caption" color="text.secondary" mt={1}>
-                        {t('matchInfo.scoreboard.mapsWon')}
+                        {t(
+                          playsOnMaps
+                            ? 'matchInfo.scoreboard.mapsWon'
+                            : 'matchInfo.scoreboard.gamesWon'
+                        )}
                       </Typography>
                     </>
                   )}
@@ -1120,6 +1130,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
               </>
             )}
 
+            {playsOnMaps && (
             <Accordion defaultExpanded>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Box display="flex" alignItems="center" gap={1}>
@@ -1157,6 +1168,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                 )}
               </AccordionDetails>
             </Accordion>
+            )}
 
             <Accordion defaultExpanded sx={{ mt: 2 }}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
