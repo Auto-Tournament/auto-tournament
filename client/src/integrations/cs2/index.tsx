@@ -26,8 +26,14 @@ import {
   Cs2OutdatedServersDialog,
   parseCs2OutdatedError,
 } from './start/Cs2OutdatedServersDialog';
-import { Cs2SetupOutdatedServersDialog } from './start/Cs2SetupOutdatedServersDialog';
 import { Cs2AllocationBanner } from './bracket/Cs2AllocationBanner';
+import { Cs2NextAllocationChip } from './bracket/Cs2NextAllocationChip';
+import {
+  Cs2MatchAllocationStatus,
+  Cs2MatchListAllocationBanner,
+  Cs2MatchListAllocationCountdown,
+} from './match/Cs2MatchListQueue';
+import { Cs2ServersFreeTile } from './manage/Cs2ServersFreeTile';
 import Servers from './pages/Servers';
 import Maps from './pages/Maps';
 import ConnectSteam from './pages/ConnectSteam';
@@ -75,16 +81,29 @@ export const cs2ClientIntegration: ClientGameIntegration = {
     ownsFailure: (error) => parseCs2OutdatedError(error) !== null,
     failureView: Cs2OutdatedServersDialog,
     // The same start asked from the setup page, which checks the fleet before
-    // it starts rather than describing it, and words a refusal its own way.
+    // it starts rather than describing it, and answers a refusal with the same
+    // dialog the dashboard's start does.
     preflight: {
       view: Cs2StartPreflight,
-      failureView: Cs2SetupOutdatedServersDialog,
     },
   },
 
   // A CS2 match waits for a server, so the bracket says which round is waiting
   // and for how many, and the core asks this route what is free right now.
   matchQueueBanner: Cs2AllocationBanner,
+  matchQueueChip: Cs2NextAllocationChip,
+
+  // The match list's three sizes of the same wait: when the next pass runs,
+  // again in the toolbar, and when this one match expects a server.
+  matchListQueue: {
+    banner: Cs2MatchListAllocationBanner,
+    countdown: Cs2MatchListAllocationCountdown,
+    cardStatus: Cs2MatchAllocationStatus,
+  },
+
+  // The Manage strip's one tile that counts servers rather than matches.
+  manageStatusTile: Cs2ServersFreeTile,
+
   resourceAvailabilityEndpoint: '/api/tournament/server-availability',
 
   tournamentSetupSteps: {

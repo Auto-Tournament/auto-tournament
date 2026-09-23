@@ -167,7 +167,8 @@
       "title": "Les serveurs doivent être mis à jour",
       "body": "Selon Steam, un ou plusieurs serveurs activés ne sont pas à jour (ou n’ont pas pu être vérifiés). Mettez-les à jour ou désactivez-les pour continuer avec les serveurs restants.",
       "confirm": "Désactiver les serveurs concernés et réessayer",
-      "disabling": "Désactivation…"
+      "disabling": "Désactivation…",
+      "goToServers": "Go to Servers"
     },
     "live": {
       "saveNameAria": "Enregistrer le nom du tournoi",

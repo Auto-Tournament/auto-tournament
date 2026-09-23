@@ -167,7 +167,8 @@
       "title": "Servere trenger oppdatering",
       "body": "Én eller flere aktive servere er utdaterte (eller kunne ikke verifiseres) ifølge Steam. Oppdater dem, eller deaktiver dem for å fortsette med de øvrige serverne.",
       "confirm": "Deaktiver berørte servere og prøv igjen",
-      "disabling": "Deaktiverer …"
+      "disabling": "Deaktiverer …",
+      "goToServers": "Gå til servere"
     },
     "live": {
       "saveNameAria": "Lagre turneringsnavn",

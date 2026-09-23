@@ -26,15 +26,19 @@ export interface ManageStatusCounts {
   live: number;
   inVeto: number;
   queued: number;
-  serversFree: number;
-  serversTotal: number;
   /** Human label ("QF", "Round 3", ...), or null when there's no bracket round to show. */
   roundLabel: string | null;
 }
 
+/**
+ * The strip's match counts. It no longer counts servers: how many of a game's
+ * resources are free is the game's own tile (`manageStatusTile`), because a
+ * game with none has no zero to show — it has nothing to show, and "0 / 0"
+ * reads as an outage rather than as "not applicable".
+ */
 export function computeStatusCounts(
   matches: Match[],
-  serverAvailability: { servers: ServerAllocationInfo[]; availableServerCount: number; requiredServerCount: number } | null
+  serverAvailability: { requiredServerCount: number } | null
 ): ManageStatusCounts {
   const live = matches.filter(
     (m) => (m.status === 'live' || m.status === 'loaded') && hasAssignedTeams(m)
@@ -60,8 +64,6 @@ export function computeStatusCounts(
     live,
     inVeto,
     queued: serverAvailability?.requiredServerCount ?? 0,
-    serversFree: serverAvailability?.availableServerCount ?? 0,
-    serversTotal: serverAvailability?.servers.length ?? 0,
     roundLabel,
   };
 }

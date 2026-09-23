@@ -60,6 +60,7 @@ export default function Bracket() {
   // banner; nothing here knows what a server is.
   const integration = tournament ? integrationFor(tournament) : null;
   const MatchQueueBanner = integration?.matchQueueBanner;
+  const MatchQueueChip = integration?.matchQueueChip;
   const { availability: resourceAvailability, nextInSeconds: nextAllocationInSeconds } =
     useResourceAvailability(integration, 30000);
 
@@ -517,7 +518,14 @@ export default function Bracket() {
           roundStatus={liveRoundStatus}
           totalRounds={shuffleTotalRounds ?? totalRounds}
           isActive={!liveRoundStatus.isComplete}
-          allocationCountdownSeconds={nextAllocationInSeconds}
+          queueChip={
+            MatchQueueChip ? (
+              <MatchQueueChip
+                availability={resourceAvailability}
+                nextInSeconds={nextAllocationInSeconds}
+              />
+            ) : null
+          }
         />
       )}
 

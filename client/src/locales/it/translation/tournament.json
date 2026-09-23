@@ -167,7 +167,8 @@
       "title": "I server devono essere aggiornati",
       "body": "Secondo Steam uno o più server attivi non sono aggiornati (o non è stato possibile verificarli). Aggiornali oppure disattivali per continuare con i server rimanenti.",
       "confirm": "Disattiva i server interessati e riprova",
-      "disabling": "Disattivazione..."
+      "disabling": "Disattivazione...",
+      "goToServers": "Go to Servers"
     },
     "live": {
       "saveNameAria": "Salva il nome del torneo",

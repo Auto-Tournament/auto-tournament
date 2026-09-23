@@ -167,7 +167,8 @@
       "title": "服务器需要更新",
       "body": "根据 Steam 的信息，一台或多台已启用的服务器版本过旧（或无法验证）。请更新它们，或将其禁用以便使用其余服务器继续。",
       "confirm": "禁用受影响的服务器并重试",
-      "disabling": "正在禁用…"
+      "disabling": "正在禁用…",
+      "goToServers": "Go to Servers"
     },
     "live": {
       "saveNameAria": "保存赛事名称",

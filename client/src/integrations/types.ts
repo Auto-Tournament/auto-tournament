@@ -426,26 +426,26 @@ export interface TournamentStartSlot {
    * when a module has no `failureView`.
    */
   ownsFailure?: (error: string) => boolean;
-  /** The way out of a refusal `ownsFailure` claimed. */
+  /**
+   * The way out of a refusal `ownsFailure` claimed, wherever the start was
+   * asked for.
+   *
+   * There used to be two of these, one per surface, because the dashboard and
+   * the setup page had always worded the same refusal differently. They are
+   * one component again: the refusal is about the same resources and offers
+   * the same way out, so saying it two ways was an accident of where the code
+   * grew rather than something either surface needed.
+   */
   failureView?: ComponentType<TournamentStartFailureProps>;
 
   /**
    * The setup page's start, which is the same action asked in a different
-   * place: it runs the module's check first (`view`), and answers a refusal
-   * `ownsFailure` claimed with `failureView` below.
-   *
-   * There are two failure views rather than one because the two surfaces have
-   * always worded the same refusal differently — the dashboard's is literal
-   * English and hands the admin to the Servers page, the setup page's is
-   * translated into all ten locales and leaves them on the page they are
-   * setting up. Folding them into one would change one of those for every CS2
-   * install, which is a copy change, not a move.
+   * place: it runs the module's check first, and answers a refusal
+   * `ownsFailure` claimed with the same `failureView` above.
    */
   preflight?: {
     /** The check itself, which asks only when there is something to ask. */
     view: ComponentType<TournamentStartPreflightProps>;
-    /** The way out of a refusal `ownsFailure` claimed, in this surface's words. */
-    failureView?: ComponentType<TournamentStartFailureProps>;
   };
 }
 
@@ -469,6 +469,47 @@ export interface MatchQueueBannerProps {
   availability: ServerAvailabilityResponse | null;
   /** Seconds until the next allocation pass, ticked down locally between polls. */
   nextInSeconds: number | null;
+}
+
+/**
+ * One queued match, and when the game expects to have somewhere to run it (3.0
+ * phase E follow-up).
+ *
+ * The admin match list put a line under every waiting match — *allocating now*,
+ * *allocates in 1:20*, *waiting for servers* — worked out from how many CS2
+ * servers were free and how long the rest had left on their cooldown. None of
+ * that is a fact about a match; it is a fact about a fleet, and a module
+ * without one leaves the slot empty. Its matches are then simply queued, which
+ * is what the queue position beside this already says.
+ *
+ * The module gets the raw answer and the match's place in the queue, and works
+ * out the rest itself, because "how long until there is room for the Nth one"
+ * is a question only the thing holding the resources can answer.
+ */
+export interface MatchQueueStatusProps {
+  /** What the game's resources can take right now, or null before the first answer. */
+  availability: ServerAvailabilityResponse | null;
+  /** This match's index among the upcoming matches, in the order they are shown. */
+  queueIndex: number;
+}
+
+/**
+ * The Manage console's status strip: the module's own tile (3.0 phase E
+ * follow-up).
+ *
+ * The strip counts what is live, what is in veto, what is queued and what
+ * round it is — all facts about matches — and then said *SERVERS FREE 0 / 0*,
+ * which is a fact about a fleet. On a game with no fleet that tile was a zero
+ * standing in for "not applicable", which is exactly the reading this seam
+ * exists to stop. The module now supplies the tile or supplies nothing, and
+ * the strip is one tile shorter.
+ *
+ * The tile renders itself with `ManageStatusTile` from the strip, so a
+ * module's tile cannot end up looking unlike the tiles beside it.
+ */
+export interface ManageStatusTileProps {
+  /** What the game's resources can take right now, or null before the first answer. */
+  availability: ServerAvailabilityResponse | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -577,6 +618,42 @@ export interface ClientGameIntegration {
 
   /** The bracket page: why the ready matches have not started (CS2: servers). */
   matchQueueBanner?: ComponentType<MatchQueueBannerProps>;
+
+  /**
+   * The bracket page's shuffle round card: the same wait as one chip beside
+   * the round's own counts (CS2: "Next servers in 24s").
+   *
+   * The card is the core's — how many of this round's matches are done,
+   * playing and still pending is true of every game — and only this one chip
+   * was about a fleet. It gets the same numbers the banner does, so the two
+   * cannot show a different countdown.
+   */
+  matchQueueChip?: ComponentType<MatchQueueBannerProps>;
+
+  /**
+   * The admin match list, where a match waits between being drawn and being
+   * playable (3.0 phase E follow-up).
+   *
+   * All three of these are the same fact — the game has not got round to this
+   * match yet — told at three sizes, and all three are about resources the
+   * game allocates. A module whose matches are playable the moment they are
+   * drawn fills none of them, and its match list shows a match and its queue
+   * position and nothing else.
+   */
+  matchListQueue?: {
+    /** Above the list: when the next allocation pass runs. */
+    banner?: ComponentType<MatchQueueBannerProps>;
+    /** In the list's toolbar: the same countdown, in one line. */
+    countdown?: ComponentType<MatchQueueBannerProps>;
+    /** On a waiting match's card: when this one expects somewhere to run. */
+    cardStatus?: ComponentType<MatchQueueStatusProps>;
+  };
+
+  /**
+   * The Manage console's status strip: this module's own tile, beside the
+   * match counts the strip works out for itself (CS2: servers free).
+   */
+  manageStatusTile?: ComponentType<ManageStatusTileProps>;
 
   /**
    * Where the core asks what this game's match resources can take right now

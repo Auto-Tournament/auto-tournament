@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import {
   Card,
   CardContent,
@@ -29,14 +30,19 @@ interface RoundStatusCardProps {
   roundStatus: RoundStatus;
   totalRounds: number;
   isActive?: boolean;
-  allocationCountdownSeconds?: number | null;
+  /**
+   * The game's own chip beside the round's counts (CS2: when the next servers
+   * are allocated). A game whose matches wait for nothing hands over nothing,
+   * and the card shows only what it counts itself.
+   */
+  queueChip?: ReactNode;
 }
 
 export function RoundStatusCard({
   roundStatus,
   totalRounds,
   isActive = false,
-  allocationCountdownSeconds,
+  queueChip,
 }: RoundStatusCardProps) {
   const completionPercentage =
     roundStatus.totalMatches > 0
@@ -126,14 +132,7 @@ export function RoundStatusCard({
                 variant="outlined"
               />
             )}
-            {allocationCountdownSeconds !== null && allocationCountdownSeconds > 0 && (
-              <Chip
-                label={`Next servers in ${Math.max(0, allocationCountdownSeconds)}s`}
-                size="small"
-                color="info"
-                variant="outlined"
-              />
-            )}
+            {queueChip}
           </Box>
 
           {/* Previously displayed a generic "next round will begin automatically" message here.
