@@ -473,6 +473,10 @@
         "label": "Spill",
         "loading": "Henter spillene denne instansen kan kjøre.",
         "lockedHelp": "Spillet er låst når turneringen finnes. Slett den og start på nytt for å kjøre et annet.",
+        "integrationTitles": {
+          "cs2": "Kjører på dine servere",
+          "manual-report": "Lagene rapporterer resultatet"
+        },
         "integrationDescriptions": {
           "cs2": "Kamper kjører på dine egne CS2-servere med Auto Tournament CS2-pluginen.",
           "manual-report": "Ingen servere. Lagene spiller kampen selv, og en kaptein rapporterer resultatet."

@@ -206,6 +206,18 @@ router.get('/popular', async (_req: Request, res: Response) => {
  *                               keeps the module id the column has always held
  *                               for it.
  *                             example: 'rocket-league'
+ *                           moduleIcon:
+ *                             type: string
+ *                             nullable: true
+ *                             description: |
+ *                               The module's own square tile for this game, as
+ *                               a path the client serves. Shipped with the
+ *                               module, not taken from the games catalogue:
+ *                               the setup wizard lists what this instance can
+ *                               run, so the art is ours and every card reads
+ *                               the same. `null` when the module ships none,
+ *                               and the wizard shows a text mark.
+ *                             example: '/games/rocket-league.svg'
  */
 router.get('/playable', async (_req: Request, res: Response) => {
   try {

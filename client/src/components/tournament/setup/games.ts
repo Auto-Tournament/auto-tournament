@@ -13,13 +13,18 @@
  * catalogue game, including one found through game search. It is the list an
  * organizer picks from without searching, which is what a wizard step is.
  *
- * Icons come from the catalogue (IGDB or Wikidata, via `gameCatalogService`),
- * so adding a game adds no files here. Counter-Strike 2 keeps the bundled
- * Steam client icon it has always had, and a game with neither shows a short
- * text mark.
+ * Icons are the module's own (`GameCatalogEntry.icon` -> `moduleIcon`), served
+ * from `client/public/games`: square tiles in one palette, with their own
+ * background. They are not the catalogue's IGDB or Wikidata artwork, which is
+ * every shape and every colour and was unreadable dropped onto a dark card —
+ * that art belongs to the player-facing "What do you play?" surfaces, where
+ * someone is recognising their own game and the list covers every game rather
+ * than the handful a module runs. A title no module ships a tile for shows a
+ * short text mark; nothing is stretched or borrowed to fill the box.
  */
 
 import { useEffect, useState } from 'react';
+import { getIntegration } from '../../../integrations/registry';
 import { api } from '../../../utils/api';
 
 export interface SetupGame {
@@ -28,28 +33,29 @@ export interface SetupGame {
   name: string;
   /** Short mark shown when there is no icon. */
   mark: string;
-  /** Square icon: bundled for CS2, else the catalogue's cover or logo. */
+  /** The module's own square tile, when it ships one for this game. */
   icon?: string;
   /** The module that runs it ('cs2', 'manual-report'). */
   integrationId: string;
 }
-
-/** Icons that ship with the client, by catalogue slug. */
-const BUNDLED_ICONS: Record<string, string> = {
-  'counter-strike-2': '/games/cs2.png',
-};
 
 /**
  * Counter-Strike 2, the game every instance has had. Shown while the
  * catalogue loads, and kept as the whole list if the request fails — a wizard
  * that cannot reach the API is still a wizard that creates the tournament
  * this instance has always created.
+ *
+ * Its tile comes from the CS2 client integration's own declaration
+ * (`catalogIcon`) rather than a path written here, so the module still owns
+ * its art on the one card the API never answered for.
  */
+const CS2_TILE = getIntegration('cs2').catalogIcon;
+
 export const DEFAULT_SETUP_GAME: SetupGame = {
   id: 'cs2',
   name: 'Counter-Strike 2',
   mark: 'CS',
-  icon: BUNDLED_ICONS['counter-strike-2'],
+  ...(CS2_TILE ? { icon: CS2_TILE } : {}),
   integrationId: 'cs2',
 };
 
@@ -67,22 +73,51 @@ export function gameMark(name: string): string {
 interface PlayableGame {
   slug: string;
   name: string;
-  imageUrl: string | null;
   integrationId: string | null;
+  /** The module's own square tile, or null when it ships none. */
+  moduleIcon?: string | null;
   /** What to store as `tournament.game`; the API decides the spelling. */
   gameRef?: string;
 }
 
 function toSetupGame(game: PlayableGame): SetupGame | null {
   if (!game.integrationId) return null;
-  const icon = BUNDLED_ICONS[game.slug] ?? game.imageUrl ?? undefined;
   return {
     id: game.gameRef || game.slug,
     name: game.name,
     mark: gameMark(game.name),
-    ...(icon ? { icon } : {}),
+    ...(game.moduleIcon ? { icon: game.moduleIcon } : {}),
     integrationId: game.integrationId,
   };
+}
+
+/** The games one module runs, in the order the API listed them. */
+export interface SetupGameGroup {
+  integrationId: string;
+  games: SetupGame[];
+}
+
+/**
+ * The games grouped by the module that runs them, first appearance first.
+ *
+ * How a game runs — on your own servers, or played by the teams with a
+ * captain typing in the result — is a fact about the module, not about the
+ * game, so the step says it once above each group instead of repeating the
+ * same sentence on all sixteen cards.
+ */
+export function groupSetupGames(games: SetupGame[]): SetupGameGroup[] {
+  const groups: SetupGameGroup[] = [];
+  const byId = new Map<string, SetupGameGroup>();
+  for (const game of games) {
+    let group = byId.get(game.integrationId);
+    if (!group) {
+      group = { integrationId: game.integrationId, games: [] };
+      byId.set(game.integrationId, group);
+      groups.push(group);
+    }
+    group.games.push(game);
+  }
+  return groups;
 }
 
 /**

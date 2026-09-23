@@ -1696,6 +1696,12 @@
                                 "type": "string",
                                 "description": "What to send as `game` when creating the\ntournament. The catalogue slug, except for a\nmodule's own game (Counter-Strike 2), which\nkeeps the module id the column has always held\nfor it.\n",
                                 "example": "rocket-league"
+                              },
+                              "moduleIcon": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "The module's own square tile for this game, as\na path the client serves. Shipped with the\nmodule, not taken from the games catalogue:\nthe setup wizard lists what this instance can\nrun, so the art is ours and every card reads\nthe same. `null` when the module ships none,\nand the wizard shows a text mark.\n",
+                                "example": "/games/rocket-league.svg"
                               }
                             }
                           }

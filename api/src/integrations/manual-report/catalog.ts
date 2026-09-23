@@ -17,6 +17,11 @@
  * makes it the fallback for every other catalogue id, so a tournament for a
  * game someone found through IGDB search is reported manually too; these
  * entries are only the ones that exist without any search.
+ *
+ * `icon` is the module's own square tile, shipped in `client/public/games`.
+ * Five titles have none yet — Overwatch 2, EA Sports FC, Super Smash Bros.
+ * Ultimate, Street Fighter 6 and Tekken 8 — and the setup wizard shows their
+ * text mark instead of borrowing art that is not theirs.
  */
 
 import type { GameCatalogEntry } from '../types';
@@ -32,13 +37,26 @@ export const MANUAL_REPORT_GAME_ID = 'manual-report';
  * catalogue row for".
  */
 export const MANUAL_REPORT_CATALOG: ReadonlyArray<GameCatalogEntry> = [
-  { slug: 'rocket-league', name: 'Rocket League', aliases: ['rl'] },
-  { slug: 'valorant', name: 'Valorant' },
-  { slug: 'league-of-legends', name: 'League of Legends', aliases: ['lol'] },
-  { slug: 'dota-2', name: 'Dota 2', aliases: ['dota'] },
+  {
+    slug: 'rocket-league',
+    name: 'Rocket League',
+    aliases: ['rl'],
+    icon: '/games/rocket-league.svg',
+  },
+  { slug: 'valorant', name: 'Valorant', icon: '/games/valorant.svg' },
+  {
+    slug: 'league-of-legends',
+    name: 'League of Legends',
+    aliases: ['lol'],
+    icon: '/games/league-of-legends.svg',
+  },
+  { slug: 'dota-2', name: 'Dota 2', aliases: ['dota'], icon: '/games/dota-2.svg' },
+  { slug: 'deadlock', name: 'Deadlock', icon: '/games/deadlock.svg' },
   { slug: 'overwatch-2', name: 'Overwatch 2', aliases: ['ow', 'ow2'] },
-  { slug: 'trackmania', name: 'Trackmania', aliases: ['tm'] },
-  { slug: 'chess', name: 'Chess' },
+  { slug: 'battlefield-6', name: 'Battlefield 6', aliases: ['bf6'], icon: '/games/battlefield-6.svg' },
+  { slug: 'trackmania', name: 'Trackmania', aliases: ['tm'], icon: '/games/trackmania.svg' },
+  { slug: 'chess', name: 'Chess', icon: '/games/chess.svg' },
+  { slug: 'minecraft', name: 'Minecraft', aliases: ['mc'], icon: '/games/minecraft.svg' },
   { slug: 'ea-sports-fc-25', name: 'EA Sports FC', aliases: ['fifa', 'fc'] },
   {
     slug: 'super-smash-bros-ultimate',
@@ -47,9 +65,19 @@ export const MANUAL_REPORT_CATALOG: ReadonlyArray<GameCatalogEntry> = [
   },
   { slug: 'street-fighter-6', name: 'Street Fighter 6', aliases: ['sf6'] },
   { slug: 'tekken-8', name: 'Tekken 8' },
-  { slug: 'osu', name: 'osu!' },
-  { slug: 'team-fortress-2', name: 'Team Fortress 2', aliases: ['tf2'] },
-  { slug: 'age-of-empires-ii', name: 'Age of Empires II', aliases: ['aoe2', 'aoe'] },
+  { slug: 'osu', name: 'osu!', icon: '/games/osu.svg' },
+  {
+    slug: 'team-fortress-2',
+    name: 'Team Fortress 2',
+    aliases: ['tf2'],
+    icon: '/games/team-fortress-2.svg',
+  },
+  {
+    slug: 'age-of-empires-ii',
+    name: 'Age of Empires II',
+    aliases: ['aoe2', 'aoe'],
+    icon: '/games/age-of-empires-ii.svg',
+  },
 ];
 
 /** The name this module shows for a catalogue id it ships, or null. */
