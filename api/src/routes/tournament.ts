@@ -4,7 +4,6 @@ import { scheduler } from '../core/scheduler';
 import { db } from '../config/database';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
-import { getWebhookBaseUrl } from '../utils/urlHelper';
 import type { CreateTournamentInput, UpdateTournamentInput } from '../types/tournament.types';
 import type { DbMatchRow } from '../types/database.types';
 import type { MatchConfig } from '../types/match.types';
@@ -1057,7 +1056,12 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
     // Kick off tournament start + server allocation in the background so the
     // HTTP request can return immediately and the UI doesn't sit in a pending
     // state while RCON/webhook calls are in flight.
-    const baseUrl = await getWebhookBaseUrl(req);
+    //
+    // The integration says what its resources need to reach us on. CS2 asks
+    // for the webhook URL from Settings and rejects when it is unset, which
+    // fails the start (500) with that message; a game with no servers needs
+    // nothing and starts without one.
+    const baseUrl = await scheduler.resolveBaseUrl(tournamentId);
     void (async () => {
       try {
         const result = await scheduler.startTournament(tournamentId, baseUrl);
@@ -1124,8 +1128,8 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
 router.post('/restart', requireAuth, async (req: Request, res: Response) => {
   try {
     const tournamentId = resolveTournamentId(req);
-    // Get base URL for webhook configuration
-    const baseUrl = await getWebhookBaseUrl(req);
+    // What the tournament's integration needs its resources to reach us on.
+    const baseUrl = await scheduler.resolveBaseUrl(tournamentId);
 
     const result = await scheduler.restartTournament(tournamentId, baseUrl);
 

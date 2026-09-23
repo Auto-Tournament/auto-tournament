@@ -1045,8 +1045,10 @@ router.post('/:slug/load', requireAuth, async (req: Request, res: Response) => {
       });
     }
 
-    const baseUrl = await getWebhookBaseUrl(req);
     const row = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [slug]);
+    // What the match's integration needs its resources to reach us on (CS2:
+    // the webhook URL from Settings; a game with no servers needs none).
+    const baseUrl = row ? await scheduler.resolveBaseUrlForMatch(row) : '';
 
     // The integration loads it on the assigned server (for manual matches it
     // first moves the match off a server that has become busy since).
@@ -1087,9 +1089,9 @@ router.post('/:slug/load', requireAuth, async (req: Request, res: Response) => {
 router.post('/:slug/restart', requireAuth, async (req: Request, res: Response) => {
   try {
     const { slug } = req.params;
-    const baseUrl = await getWebhookBaseUrl(req);
 
     const row = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [slug]);
+    const baseUrl = row ? await scheduler.resolveBaseUrlForMatch(row) : '';
     const result = row
       ? await scheduler.restartMatch(row, { baseUrl })
       : ({ ok: false, error: 'Match not found' } as const);
@@ -1134,7 +1136,6 @@ router.post('/:slug/restart', requireAuth, async (req: Request, res: Response) =
 router.post('/:slug/reallocate', requireAuth, async (req: Request, res: Response) => {
   try {
     const { slug } = req.params;
-    const baseUrl = await getWebhookBaseUrl(req);
 
     const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
       slug,
@@ -1146,6 +1147,8 @@ router.post('/:slug/reallocate', requireAuth, async (req: Request, res: Response
         error: `Match '${slug}' not found`,
       });
     }
+
+    const baseUrl = await scheduler.resolveBaseUrlForMatch(match);
 
     const status = match.status as string | null;
     if (status !== 'ready' && status !== 'loaded') {

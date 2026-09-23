@@ -734,6 +734,17 @@ export interface GameIntegration {
    */
   prepareStart?(scope: CapacityScope): Promise<void>;
   /**
+   * The URL the integration's resources reach this platform on. It is the
+   * `baseUrl` the core hands to `allocate`, `load` and `restart` (CS2: the
+   * webhook URL from Settings, which MatchZy posts its events to).
+   *
+   * Rejects when the integration needs one and it is not configured; that
+   * rejection blocks a tournament start. An integration with no resources to
+   * reach back has nothing to resolve and omits this: the core then passes
+   * `''`, and a tournament for that game starts without a webhook URL.
+   */
+  resolveBaseUrl?(scope: CapacityScope): Promise<string>;
+  /**
    * Idle resources that can take a match now; `null` means unlimited (no
    * servers). The core asks before it hands out a queue turn.
    */

@@ -369,6 +369,16 @@ export const cs2Integration: GameIntegration = {
   },
 
   /**
+   * The webhook URL from Settings: where MatchZy on the server posts its
+   * events, and the base of the match config and demo upload URLs it is
+   * given. Rejects when it is not configured, which blocks the start.
+   */
+  async resolveBaseUrl(_scope) {
+    const { settingsService } = await import('../../services/settingsService');
+    return settingsService.requireWebhookUrl();
+  },
+
+  /**
    * The series is over: the server is free for new work. Mark it idle for the
    * allocator and try to allocate waiting matches now rather than on the next
    * polling cycle. Demo uploads and the plugin's restore delay are still

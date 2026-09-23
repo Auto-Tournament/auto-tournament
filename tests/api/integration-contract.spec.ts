@@ -87,10 +87,15 @@ test.describe('Game integration contract', () => {
           // The core frees a server after every series and shows the pool.
           expect(typeof integration.release).toBe('function');
           expect(typeof integration.poolStatus).toBe('function');
+          // Servers have to reach the platform, so the integration says on
+          // what URL; the core has none of its own to offer them.
+          expect(typeof integration.resolveBaseUrl).toBe('function');
         } else {
           // The scheduler reads null as "never runs out" and must not wait.
           expect(await integration.capacity({ tournamentId: null })).toBeNull();
           expect(await integration.capacity({ tournamentId: 1, slug: 'contract-r1m1' })).toBeNull();
+          // Nothing calls back, so nothing may make a start wait on a URL.
+          expect(integration.resolveBaseUrl).toBeUndefined();
         }
       });
 
