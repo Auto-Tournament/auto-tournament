@@ -28,11 +28,18 @@ function pack(overrides: Record<string, unknown> = {}) {
     aliases: ['ptg'],
     version: '1.0.0',
     description: 'A game that exists only in this test.',
-    icon: TILE,
+    // A path to a file beside the pack, not the markup: a tile is a few
+    // hundred KB of facets and belongs in its own file.
+    icon: '../icons/packs-test-game.svg',
     report: { confirmation: 'opponent', confirmTimeoutMin: 30 },
     stats: [{ key: 'goals', label: 'Goals', type: 'integer', scope: 'player' }],
     ...overrides,
   };
+}
+
+/** What the Modules page posts: the pack, and the tile the admin picked. */
+function upload(overrides: Record<string, unknown> = {}, icon: string | null = TILE) {
+  return { pack: pack(overrides), ...(icon === null ? {} : { icon }) };
 }
 
 async function removeIfPresent(admin: APIRequestContext, slug: string): Promise<void> {
@@ -52,7 +59,7 @@ test.describe.serial('Game packs', () => {
   test('an imported pack becomes a supported game with its own tile', {
     tag: ['@api', '@packs'],
   }, async ({ request }) => {
-    const created = await request.post('/api/packs', { data: pack() });
+    const created = await request.post('/api/packs', { data: upload() });
     expect(created.status(), `importing: ${await created.text()}`).toBe(200);
     expect((await created.json()).updated).toBe(false);
 
@@ -85,13 +92,29 @@ test.describe.serial('Game packs', () => {
     expect(await icon.text()).toContain('var(--at-ember');
   });
 
+  test('a pack posted on its own arrives without a tile', {
+    tag: ['@api', '@packs'],
+  }, async ({ request }) => {
+    // `curl -d @pack.json`: no envelope, no icon. The game is added and shows
+    // its text mark rather than borrowing art.
+    const created = await request.post('/api/packs', { data: pack() });
+    expect(created.status(), `importing: ${await created.text()}`).toBe(200);
+
+    const list = await request.get('/api/packs');
+    const row = ((await list.json()).packs as Array<Record<string, unknown>>).find(
+      (entry) => entry.slug === 'packs-test-game'
+    );
+    expect(row!.hasIcon).toBe(false);
+    expect((await request.get('/api/packs/packs-test-game/icon.svg')).status()).toBe(404);
+  });
+
   test('re-importing the same slug updates it in place', {
     tag: ['@api', '@packs'],
   }, async ({ request }) => {
-    expect((await request.post('/api/packs', { data: pack() })).status()).toBe(200);
+    expect((await request.post('/api/packs', { data: upload() })).status()).toBe(200);
 
     const again = await request.post('/api/packs', {
-      data: pack({ name: 'Packs Test Game 2', version: '2.0.0' }),
+      data: upload({ name: 'Packs Test Game 2', version: '2.0.0' }),
     });
     expect(again.status(), `re-importing: ${await again.text()}`).toBe(200);
     expect((await again.json()).updated).toBe(true);
@@ -125,7 +148,7 @@ test.describe.serial('Game packs', () => {
     ];
 
     for (const [what, icon] of refused) {
-      const response = await request.post('/api/packs', { data: pack({ icon }) });
+      const response = await request.post('/api/packs', { data: upload({}, icon) });
       expect(response.status(), `a tile with ${what} should be refused`).toBe(400);
       expect(await response.text()).toContain('error');
     }
@@ -140,21 +163,27 @@ test.describe.serial('Game packs', () => {
     tag: ['@api', '@packs'],
   }, async ({ request }) => {
     const cases: Array<[string, Record<string, unknown>, string]> = [
-      ['a newer schema', pack({ schema: 2 }), 'schema'],
-      ['a slug a module ships', pack({ slug: 'rocket-league' }), 'manual-report'],
-      ['CS2 as the engine', pack({ engine: 'cs2' }), 'only runs the games it ships'],
-      ['an engine that is not installed', pack({ engine: 'halo' }), 'not installed'],
-      ['an unknown field', { ...pack(), wat: true }, 'unknown field'],
-      ['a slug with spaces', pack({ slug: 'not a slug' }), 'slug'],
-      ['no name', pack({ name: '   ' }), 'name is required'],
+      ['a newer schema', upload({ schema: 2 }), 'schema'],
+      ['a slug a module ships', upload({ slug: 'rocket-league' }), 'manual-report'],
+      ['CS2 as the engine', upload({ engine: 'cs2' }), 'only runs the games it ships'],
+      ['an engine that is not installed', upload({ engine: 'halo' }), 'not installed'],
+      ['an unknown field', { pack: { ...pack(), wat: true } }, 'unknown field'],
+      ['a slug with spaces', upload({ slug: 'not a slug' }), 'slug'],
+      ['no name', upload({ name: '   ' }), 'name is required'],
+      // The icon field names a file now, so a pack carrying markup in it, or
+      // pointing at another host, is a pack written against the wrong idea.
+      ['SVG markup in the icon field', upload({ icon: TILE }), 'icon must be'],
+      ['an icon on another host', upload({ icon: 'https://example.com/x.svg' }), 'not a URL'],
+      ['an absolute icon path', upload({ icon: '/etc/passwd.svg' }), 'relative path'],
+      ['an icon that is not an SVG', upload({ icon: '../icons/x.png' }), '.svg'],
       [
         'a stat field with no label',
-        pack({ stats: [{ key: 'goals', label: '', type: 'integer', scope: 'player' }] }),
+        upload({ stats: [{ key: 'goals', label: '', type: 'integer', scope: 'player' }] }),
         'label',
       ],
       [
         'a stat field with a made-up type',
-        pack({ stats: [{ key: 'goals', label: 'Goals', type: 'vector', scope: 'player' }] }),
+        upload({ stats: [{ key: 'goals', label: 'Goals', type: 'vector', scope: 'player' }] }),
         'integer, decimal or text',
       ],
     ];
@@ -170,7 +199,7 @@ test.describe.serial('Game packs', () => {
     request,
     playwright,
   }, testInfo) => {
-    expect((await request.post('/api/packs', { data: pack() })).status()).toBe(200);
+    expect((await request.post('/api/packs', { data: upload() })).status()).toBe(200);
 
     // A context with no session cookie at all, against the same server.
     const stranger = await playwright.request.newContext({
@@ -178,7 +207,7 @@ test.describe.serial('Game packs', () => {
     });
     try {
       const imported = await stranger.post('/api/packs', {
-        data: pack({ slug: 'packs-test-stranger' }),
+        data: upload({ slug: 'packs-test-stranger' }),
       });
       expect([401, 403], 'a stranger should not be able to import').toContain(imported.status());
 
@@ -197,7 +226,7 @@ test.describe.serial('Game packs', () => {
   test('a pack a tournament is running cannot be removed', {
     tag: ['@api', '@packs'],
   }, async ({ request }) => {
-    expect((await request.post('/api/packs', { data: pack() })).status()).toBe(200);
+    expect((await request.post('/api/packs', { data: upload() })).status()).toBe(200);
 
     const teams: string[] = [];
     const stamp = `${Date.now()}`.slice(-7);

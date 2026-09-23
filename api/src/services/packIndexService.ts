@@ -28,7 +28,12 @@ import path from 'path';
 import fetch from 'node-fetch';
 import { DATA_DIR } from '../config/dataDir';
 import { log } from '../utils/logger';
-import { installedPack, validatePack, type GamePackDefinition } from './gamePackService';
+import {
+  checkTileMarkup,
+  installedPack,
+  validatePack,
+  type GamePackDefinition,
+} from './gamePackService';
 
 /** Where the index lives, unless a host or a test says otherwise. */
 const DEFAULT_PACK_INDEX_URL = 'https://raw.githubusercontent.com/Auto-Tournament/packs/main/';
@@ -54,6 +59,7 @@ const CACHE_FILE = path.join(DATA_DIR, 'pack-index.json');
 const FETCH_TIMEOUT_MS = 10_000;
 const MAX_INDEX_BYTES = 2_000_000;
 const MAX_PACK_BYTES = 2_000_000;
+const MAX_TILE_BYTES = 1_000_000;
 
 export interface PackIndexEntry {
   slug: string;
@@ -90,19 +96,35 @@ function asString(value: unknown): string | null {
 }
 
 /**
- * Resolve an entry's `file` against the index's base, refusing anything that
- * would leave it.
+ * Resolve a relative path from somewhere inside the index, refusing anything
+ * that would leave it.
+ *
+ * `from` is what the path is relative to: the index base for an entry's
+ * `file`, the pack's own URL for the `icon` it names. Either way the answer
+ * must still sit under the base, so a file written by whoever opened the pull
+ * request cannot send this server anywhere else. A `..` is allowed inside the
+ * path — that is how a pack in `packs/` reaches `icons/` — and caught here if
+ * it climbs too far.
  */
-export function resolveEntryUrl(base: string, file: string): string | null {
-  if (/^[a-z][a-z0-9+.-]*:/i.test(file)) return null; // a scheme of any kind
-  if (file.startsWith('//') || file.startsWith('/')) return null;
-  if (file.split('/').includes('..')) return null;
+export function resolveInsideIndex(base: string, from: string, relative: string): string | null {
+  if (/^[a-z][a-z0-9+.-]*:/i.test(relative)) return null; // a scheme of any kind
+  if (relative.startsWith('//') || relative.startsWith('/')) return null;
 
-  const url = new URL(file, base);
   const root = new URL(base);
+  let url: URL;
+  try {
+    url = new URL(relative, from);
+  } catch {
+    return null;
+  }
   if (url.origin !== root.origin) return null;
   if (!url.pathname.startsWith(root.pathname)) return null;
   return url.toString();
+}
+
+/** An index entry's `file`, relative to the index itself. */
+export function resolveEntryUrl(base: string, file: string): string | null {
+  return resolveInsideIndex(base, base, file);
 }
 
 async function fetchText(url: string, limit: number): Promise<string> {
@@ -202,7 +224,8 @@ export async function readPackIndex(): Promise<PackIndexResult> {
 export async function fetchIndexedPack(
   slug: string
 ): Promise<
-  { ok: true; pack: GamePackDefinition; origin: string } | { ok: false; error: string }
+  | { ok: true; pack: GamePackDefinition; origin: string; tile: string | null }
+  | { ok: false; error: string }
 > {
   const wanted = slug.trim().toLowerCase();
   const index = await readPackIndex();
@@ -236,5 +259,30 @@ export async function fetchIndexedPack(
   if (result.pack.slug !== wanted) {
     return { ok: false, error: `The index lists '${wanted}' but the file is '${result.pack.slug}'` };
   }
-  return { ok: true, pack: result.pack, origin: url };
+
+  // The tile is a file beside the pack, named by a path relative to it —
+  // `../icons/call-of-duty.svg`. Resolved against the *pack's* URL, then
+  // checked against the same base as everything else: a pack file is written
+  // by whoever opened the pull request, so its paths are a claim, not a
+  // permission.
+  let tile: string | null = null;
+  if (result.pack.icon) {
+    const iconUrl = resolveInsideIndex(packIndexBase(), url, result.pack.icon);
+    if (!iconUrl) return { ok: false, error: "That pack's icon points outside the index" };
+    try {
+      const markup = await fetchText(iconUrl, MAX_TILE_BYTES);
+      const problem = checkTileMarkup(markup);
+      if (problem) return { ok: false, error: problem };
+      tile = markup;
+    } catch (error) {
+      return {
+        ok: false,
+        error: `Could not download that pack's icon: ${
+          error instanceof Error ? error.message : 'unknown error'
+        }`,
+      };
+    }
+  }
+
+  return { ok: true, pack: result.pack, origin: url, tile };
 }

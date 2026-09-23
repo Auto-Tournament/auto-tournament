@@ -13,6 +13,7 @@ import { Router, Request, Response } from 'express';
 import { requireAuth, requestActorId } from '../middleware/auth';
 import { log } from '../utils/logger';
 import {
+  checkTileMarkup,
   installPack,
   installedPack,
   installedPacks,
@@ -121,10 +122,30 @@ router.get('/', (_req: Request, res: Response) => {
  *         description: The pack is not valid, with the reason
  */
 router.post('/', async (req: Request, res: Response) => {
-  const result = validatePack(req.body);
+  // Two shapes, because a pack's tile is a file beside it rather than a
+  // string inside it. The page sends `{ pack, icon }` with the markup of the
+  // SVG the admin picked alongside the JSON; `curl -d @pack.json` sends the
+  // pack on its own, and gets the game with its text mark.
+  const body = (req.body ?? {}) as { pack?: unknown; icon?: unknown };
+  const hasEnvelope = body.pack !== undefined;
+  const result = validatePack(hasEnvelope ? body.pack : req.body);
   if (!result.ok) {
     res.status(400).json({ success: false, error: result.error });
     return;
+  }
+
+  let tile: string | null = null;
+  if (hasEnvelope && body.icon !== undefined && body.icon !== null) {
+    if (typeof body.icon !== 'string') {
+      res.status(400).json({ success: false, error: 'icon must be SVG markup' });
+      return;
+    }
+    const problem = checkTileMarkup(body.icon);
+    if (problem) {
+      res.status(400).json({ success: false, error: problem });
+      return;
+    }
+    tile = body.icon;
   }
 
   try {
@@ -132,6 +153,7 @@ router.post('/', async (req: Request, res: Response) => {
     const pack = await installPack(result.pack, {
       source: 'uploaded',
       installedBy: requestActorId(req),
+      tile,
     });
     res.json({
       success: true,
@@ -202,6 +224,7 @@ router.post('/index/:slug', async (req: Request, res: Response) => {
       source: 'index',
       origin: found.origin,
       installedBy: requestActorId(req),
+      tile: found.tile,
     });
     res.json({
       success: true,

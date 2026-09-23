@@ -244,7 +244,9 @@
       "updated": "Oppdaterte {{name}}",
       "failed": "Kunne ikke importere pakken",
       "notJson": "Den filen er ikke JSON, så den er ikke en pakke",
-      "tooLarge": "Den filen er for stor til å være en pakke"
+      "tooLarge": "Den filen er for stor til å være en pakke",
+      "noJson": "Velg pakkens .json-fil",
+      "missingIcon": "Denne pakken bruker {{file}} — velg den filen også, eller importer JSON-en alene uten flis"
     },
     "confirmRemove": {
       "title": "Fjerne {{name}}?",

@@ -156,16 +156,28 @@ export default function Modules() {
     void refresh();
   }, [refresh]);
 
-  const importFile = async (file: File) => {
-    if (file.size > MAX_PACK_BYTES) {
+  /**
+   * A pack is a JSON file that *names* its tile — `../icons/rocket-league.svg`
+   * — rather than carrying the markup inside it. There is no folder to
+   * resolve that against when a file is picked from a disk, so the admin
+   * selects both and the page matches them up by name. Picking only the JSON
+   * is fine; the game arrives with its text mark.
+   */
+  const importFiles = async (files: File[]) => {
+    const json = files.find((file) => file.name.toLowerCase().endsWith('.json'));
+    if (!json) {
+      showError(t('modulesPage.import.noJson'));
+      return;
+    }
+    if (files.some((file) => file.size > MAX_PACK_BYTES)) {
       showError(t('modulesPage.import.tooLarge'));
       return;
     }
     setBusy(true);
     try {
-      let parsed: unknown;
+      let parsed: { icon?: unknown };
       try {
-        parsed = JSON.parse(await file.text());
+        parsed = JSON.parse(await json.text()) as { icon?: unknown };
       } catch {
         // A file that is not JSON never reaches the API: the API's answer
         // would be about the body it could not read, which is a worse
@@ -173,9 +185,21 @@ export default function Modules() {
         showError(t('modulesPage.import.notJson'));
         return;
       }
+
+      let icon: string | undefined;
+      if (typeof parsed.icon === 'string' && parsed.icon) {
+        const wanted = parsed.icon.split('/').pop()?.toLowerCase();
+        const svg = files.find((file) => file.name.toLowerCase() === wanted);
+        if (!svg) {
+          showError(t('modulesPage.import.missingIcon', { file: parsed.icon }));
+          return;
+        }
+        icon = await svg.text();
+      }
+
       const result = await api.post<{ success: boolean; updated: boolean; pack: { name: string } }>(
         '/api/packs',
-        parsed
+        { pack: parsed, icon }
       );
       showSuccess(
         result.updated
@@ -287,12 +311,13 @@ export default function Modules() {
       <input
         ref={fileInput}
         type="file"
-        accept="application/json,.json"
+        accept="application/json,.json,image/svg+xml,.svg"
+        multiple
         hidden
         data-testid="modules-file-input"
         onChange={(event) => {
-          const file = event.target.files?.[0];
-          if (file) void importFile(file);
+          const files = Array.from(event.target.files ?? []);
+          if (files.length > 0) void importFiles(files);
         }}
       />
 

@@ -2,8 +2,9 @@
  * Game packs: a game this instance runs because an admin imported a file for
  * it, rather than because a module shipped it.
  *
- * A pack is **data**. It carries a name, a tile and the settings a manually
- * reported game needs, and it runs on an engine that is already installed —
+ * A pack is **data**. It carries a name, the settings a manually reported game
+ * needs, and the path of its tile, and it runs on an engine that is already
+ * installed —
  * `engine`, which today is always the manual-reporting module. Nothing in a
  * pack executes. That is the whole point: a file describing Rocket League can
  * be passed around, reviewed in a pull request and imported by a stranger,
@@ -25,6 +26,18 @@
  * already declares `runsAnyCatalogGame`, so a tournament created for a pack's
  * slug resolves to it the same way a tournament for a game found through IGDB
  * search does.
+ *
+ * ## The tile is a file next to the pack, not a string inside it
+ *
+ * `icon` is a path — `../icons/call-of-duty.svg` — resolved against wherever
+ * the pack file came from. A tile is a few hundred KB of flat facets, and a
+ * pack with one baked into it is a JSON file nobody can read, diff or review.
+ * So the pack names its art and the art stays a file.
+ *
+ * The markup therefore arrives *beside* the definition: fetched from the
+ * index alongside the pack, or picked by the admin along with the JSON. It is
+ * stored in the `game_packs.icon` column either way, because the instance has
+ * to serve it whether or not the place it came from is still reachable.
  *
  * ## Trust
  *
@@ -65,7 +78,10 @@ export interface GamePackDefinition {
   aliases?: string[];
   version?: string;
   description?: string;
-  /** SVG markup for the square tile, in the `--at-*` palette. */
+  /**
+   * Where the square tile lives, relative to the pack file — normally
+   * `../icons/<slug>.svg`. Never the markup itself, and never a URL.
+   */
   icon?: string;
   report?: {
     confirmation?: 'opponent' | 'admin';
@@ -226,6 +242,26 @@ export function checkTileMarkup(markup: string): string | null {
   return null;
 }
 
+/**
+ * Reject an `icon` that is anything but a relative path to an SVG beside the
+ * pack. A URL here would have the instance fetching from wherever a pack
+ * file said to, which is the one thing importing data must never do.
+ */
+export function checkIconPath(value: string): string | null {
+  if (!value.trim()) return 'icon must be a path to an SVG file';
+  if (/^[a-z][a-z0-9+.-]*:/i.test(value)) return 'icon must be a path, not a URL';
+  if (value.startsWith('/') || value.startsWith('//')) return 'icon must be a relative path';
+  if (!value.toLowerCase().endsWith('.svg')) return 'icon must be an .svg file';
+  if (value.length > 200) return 'icon path is longer than 200 characters';
+  // `..` is how a pack in `packs/` reaches `icons/`, so it is allowed — but
+  // only as a whole segment, and `resolveIconUrl` still refuses anything that
+  // climbs out of the index's own base.
+  if (value.split('/').some((segment) => segment !== '..' && segment.includes('..'))) {
+    return 'icon path is malformed';
+  }
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // Validation
 // ---------------------------------------------------------------------------
@@ -356,8 +392,8 @@ export function validatePack(
   }
 
   if (raw.icon !== undefined) {
-    if (typeof raw.icon !== 'string') return fail('icon must be SVG markup');
-    const problem = checkTileMarkup(raw.icon);
+    if (typeof raw.icon !== 'string') return fail('icon must be a path to an SVG file');
+    const problem = checkIconPath(raw.icon);
     if (problem) return fail(problem);
   }
 
@@ -471,7 +507,13 @@ export async function packIcon(slug: string): Promise<string | null> {
 
 export async function installPack(
   definition: GamePackDefinition,
-  options: { source?: 'uploaded' | 'index'; origin?: string | null; installedBy?: string | null } = {}
+  options: {
+    source?: 'uploaded' | 'index';
+    origin?: string | null;
+    installedBy?: string | null;
+    /** The tile's markup, already checked by `checkTileMarkup`. */
+    tile?: string | null;
+  } = {}
 ): Promise<InstalledPack> {
   const existing = cache.get(definition.slug);
   if (!existing && cache.size >= MAX_PACKS) {
@@ -479,11 +521,12 @@ export async function installPack(
   }
 
   const now = Math.floor(Date.now() / 1000);
+  // The definition keeps the path it declared, which is a record of where the
+  // art came from. The markup is a column of its own, because the instance
+  // serves it on its own URL and must not depend on that path still
+  // resolving to anything.
   const stored = { ...definition };
-  const icon = stored.icon ?? null;
-  // The tile is a column of its own: it is most of the file's bytes and the
-  // only part served on its own URL.
-  delete stored.icon;
+  const icon = options.tile ?? null;
 
   await db.runAsync(
     `INSERT INTO game_packs
