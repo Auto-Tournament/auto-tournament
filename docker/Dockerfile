@@ -147,8 +147,15 @@ LABEL org.opencontainers.image.title="Auto Tournament" \
       org.opencontainers.image.vendor="Sivert Gullberg Hansen" \
       org.opencontainers.image.licenses="PolyForm-Noncommercial-1.0.0"
 
-# Data directory for demos / uploads / etc.
-RUN mkdir -p /app/data
+# Data directory for demos / event logs / uploaded map images.
+#
+# Both compose files bind-mount a host directory here (`./data:/app/data`),
+# which is what makes anything written at runtime survive a container
+# recreate. Everything else in this image -- including /app/public -- is
+# build output and is replaced wholesale by every update, so nothing the app
+# writes may live outside this directory. See api/src/config/dataDir.ts and
+# api/src/config/publicPaths.ts.
+RUN mkdir -p /app/data/map-images
 
 # Expose Caddy port (single entry point)
 EXPOSE 3069

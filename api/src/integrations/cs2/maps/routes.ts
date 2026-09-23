@@ -13,7 +13,8 @@ const router = Router();
 // Directory for storing map images. Shared with the static `/map-images`
 // setup in the api entry (`index.ts`) via `config/publicPaths` so the
 // upload path and the serve path can't drift apart again -- see PR #284's
-// "Judgement calls" section for how they did before.
+// "Judgement calls" section for how they did before. It lives under
+// `DATA_DIR` (the mounted volume), so uploads survive a container recreate.
 if (!fs.existsSync(MAP_IMAGES_DIR)) {
   fs.mkdirSync(MAP_IMAGES_DIR, { recursive: true });
   log.server(`Created map images directory: ${MAP_IMAGES_DIR}`);

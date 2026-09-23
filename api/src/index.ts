@@ -12,6 +12,13 @@ dotenv.config({ path: path.join(process.cwd(), '.env') });
 import { migrateLegacyDataDir } from './config/migrateLegacyDataDir';
 migrateLegacyDataDir();
 
+// Move uploaded map images off the container image and onto the mounted
+// volume. Must also run before the map upload route is imported below: that
+// module creates MAP_IMAGES_DIR at import time, and /map-images is served
+// straight off the directory.
+import { migrateLegacyMapImages } from './config/migrateLegacyMapImages';
+migrateLegacyMapImages();
+
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
@@ -353,10 +360,11 @@ for (const { prefix, router } of routeTable) {
 // Serve frontend at /app (built client lives under api/public)
 app.use('/app', express.static(PUBLIC_DIR));
 
-// Serve map images statically. PUBLIC_DIR and MAP_IMAGES_DIR come from
-// config/publicPaths, the single place both this static setup and the
-// upload route (integrations/cs2/maps/routes.ts) resolve them from -- see
-// that module for why.
+// Serve map images statically. MAP_IMAGES_DIR comes from config/publicPaths,
+// the single place both this static setup and the upload route
+// (integrations/cs2/maps/routes.ts) resolve it from -- see that module for
+// why, and for why it lives under DATA_DIR (the mounted volume) rather than
+// under PUBLIC_DIR (build output, wiped by every update).
 app.use('/map-images', express.static(MAP_IMAGES_DIR));
 app.get('/app/*', (_req: Request, res: Response) => {
   res.sendFile(path.join(PUBLIC_DIR, 'index.html'));

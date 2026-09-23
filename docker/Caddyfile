@@ -20,6 +20,8 @@
 
 # /socket.io/\* → Socket.IO WebSocket
 
+# /map-images/\* → Express backend (uploaded images, stored under DATA_DIR)
+
 # /health → Health check endpoint
 
 # ========================================
@@ -33,6 +35,12 @@
 	reverse_proxy /api-docs* localhost:3000
 	reverse_proxy /socket.io/* localhost:3000
 	reverse_proxy /health localhost:3000
+	# Uploaded map images live under DATA_DIR (the mounted volume), not under
+	# the /app/public build output Caddy's file_server below is rooted at, so
+	# they have to go to Express — which serves them from the one directory
+	# config/publicPaths.ts resolves. Without this they'd fall through to the
+	# SPA and every map image would come back as index.html.
+	reverse_proxy /map-images/* localhost:3000
 
 	# Serve React frontend from /app/public
 	root * /app/public
@@ -43,6 +51,7 @@
 		not path /api-docs*
 		not path /socket.io/*
 		not path /health
+		not path /map-images/*
 		file {
 			try_files {path} /index.html
 		}
