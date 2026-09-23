@@ -34,6 +34,7 @@ const MANUAL_REPORT_GAMES = [
   'dota-2',
   'deadlock',
   'overwatch-2',
+  'rainbow-six-siege',
   'battlefield-6',
   'trackmania',
   'chess',
