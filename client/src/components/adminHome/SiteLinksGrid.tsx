@@ -1,8 +1,8 @@
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Paper, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { instanceIntegration } from '../../integrations/registry';
 import { useDisputesEntry } from '../../hooks/useDisputesEntry';
+import { useShellIntegrations } from '../../hooks/useShellIntegrations';
 import { paths } from '../../paths';
 
 interface SiteLink {
@@ -32,8 +32,13 @@ export function SiteLinksGrid() {
   // inside it, and only where a result can be argued about — see
   // `useDisputesEntry`.
   const { show: showDisputes } = useDisputesEntry();
+  // The game's own pages, from the module the tournament runs (3.0 phase E)
+  // — see `useShellIntegrations`.
+  const { shell } = useShellIntegrations();
   const siteLinks: SiteLink[] = [
-    ...instanceIntegration().navItems.map((item) => ({ key: item.key, to: item.path })),
+    ...shell
+      .flatMap((integration) => integration.navItems)
+      .map((item) => ({ key: item.key, to: item.path })),
     ...(showDisputes ? [{ key: 'disputes', to: paths.disputes }] : []),
     ...CORE_SITE_LINKS,
   ];

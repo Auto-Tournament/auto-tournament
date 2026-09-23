@@ -18,7 +18,7 @@ import SaveMapPoolModal from './SaveMapPoolModal';
 import { useCreateManualMatchModal } from './useCreateManualMatchModal';
 import { ManualMatchChooseModeStep } from './ManualMatchChooseModeStep';
 import { ManualMatchBasicsStep } from './ManualMatchBasicsStep';
-import { instanceIntegration } from '../../integrations/registry';
+import { useShellIntegrations, shellModule } from '../../hooks/useShellIntegrations';
 import { ManualMatchReviewStep } from './ManualMatchReviewStep';
 import { useTranslation } from 'react-i18next';
 
@@ -126,8 +126,14 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
     },
   } = useCreateManualMatchModal({ open, onCreated, onClose });
 
-  // Standalone matches are created for the instance's game (CS2 today).
-  const { rules: RulesStep, content: ContentStep } = instanceIntegration().standaloneMatchSteps;
+  // Standalone matches are created for the game this instance runs — the
+  // tournament's module (3.0 phase E), and every installed one before there
+  // is a tournament, because a standalone match can be created first.
+  const { shell } = useShellIntegrations();
+  const RulesStep = shellModule(shell, (i) => i.standaloneMatchSteps.rules)?.standaloneMatchSteps
+    .rules;
+  const ContentStep = shellModule(shell, (i) => i.standaloneMatchSteps.content)
+    ?.standaloneMatchSteps.content;
 
   return (
     <>

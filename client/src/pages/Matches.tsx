@@ -11,8 +11,7 @@ import { CreateManualMatchModal } from '../components/modals/CreateManualMatchMo
 import { EmptyState } from '../components/shared/EmptyState';
 import { StatusLegend } from '../components/shared/StatusLegend';
 import { MatchCard } from '../components/shared/MatchCard';
-import { instanceIntegration } from '../integrations/registry';
-import { useTournamentIntegration } from '../hooks/useTournamentIntegration';
+import { useShellIntegrations, shellModule } from '../hooks/useShellIntegrations';
 import { useResourceAvailability } from '../hooks/useResourceAvailability';
 import { getGlobalMatchNumber, getRoundLabel } from '../utils/matchUtils';
 import { isManualMatch as isManualMatchFlag } from '../utils/matchFlags';
@@ -22,8 +21,15 @@ import ConfirmDialog from '../components/modals/ConfirmDialog';
 import { useTranslation } from 'react-i18next';
 
 export default function Matches() {
-  // The game's allocation status panel (CS2: servers the queue waits for).
-  const ServerAllocationWidget = instanceIntegration().matchPanels.adminView;
+  // One read of the tournament for both of this page's game-dependent parts:
+  // the allocation status panel (CS2: servers the queue waits for) and what
+  // the queued matches are waiting for (3.0 phase E). Both come from the
+  // module the tournament runs; before there is a tournament, from every
+  // installed module, because a standalone match can be created first.
+  const { shell, tournament: tournamentIntegration, loading: tournamentIntegrationLoading } =
+    useShellIntegrations();
+  const ServerAllocationWidget = shellModule(shell, (i) => i.matchPanels.adminView)?.matchPanels
+    .adminView;
   const navigate = useNavigate();
   const [upcomingMatches, setUpcomingMatches] = useState<Match[]>([]);
   const [liveMatches, setLiveMatches] = useState<Match[]>([]);
@@ -39,14 +45,9 @@ export default function Matches() {
   // rather than of a route this page names (3.0 phase E). A module with no
   // resources is never asked, and every queue below then shows nothing, which
   // is the truth for a match that is simply open.
-  //
-  // The tournament's module when there is a tournament; the instance's game
-  // otherwise, because standalone matches exist before any tournament does.
-  const { integration: tournamentIntegration, loading: tournamentIntegrationLoading } =
-    useTournamentIntegration();
   const matchIntegration = tournamentIntegrationLoading
     ? null
-    : tournamentIntegration ?? instanceIntegration();
+    : tournamentIntegration ?? shell[0] ?? null;
   const { availability: serverAllocationStatus, nextInSeconds: nextAllocationInSeconds } =
     useResourceAvailability(matchIntegration, 5000);
   // What the waiting matches are waiting for, said in the game's own words:

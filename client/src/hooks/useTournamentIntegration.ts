@@ -7,11 +7,11 @@
  * URL matters to a game whose servers call back, and an allocation is
  * something only a game with servers does.
  *
- * Resolved from the tournament rather than from `instanceIntegration()`, which
- * is hard-wired to CS2 ("3.0 runs one game per instance"), for the reason
- * phase D exists: the one tournament this instance runs might be Rocket
- * League. `useTournamentStatus` is the same read `useDisputesEntry` and
- * `TeamMatch` already make for the same decision.
+ * Resolved from the tournament rather than from the instance, which until
+ * phase E meant CS2 ("3.0 runs one game per instance"), for the reason phase
+ * D exists: the one tournament this instance runs might be Rocket League.
+ * `useTournamentStatus` is the same read `useDisputesEntry` and `TeamMatch`
+ * already make for the same decision.
  *
  * With no tournament — a fresh install, mid-setup — the answer is *no module*,
  * not CS2's. PR #311 fell back to CS2 there, on the grounds that it is the

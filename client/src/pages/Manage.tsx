@@ -10,14 +10,19 @@ import { getGlobalMatchNumber, getRoundLabel } from '../utils/matchUtils';
 import { ManageRail } from '../components/manage/ManageRail';
 import { StatusStrip } from '../components/manage/StatusStrip';
 import { NeedsYouQueue } from '../components/manage/NeedsYouQueue';
-import { instanceIntegration, integrationFor } from '../integrations/registry';
+import { integrationFor } from '../integrations/registry';
+import { useShellIntegrations, shellModule } from '../hooks/useShellIntegrations';
 import { RecentLog } from '../components/manage/RecentLog';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import type { Match } from '../types/match.types';
 
 export default function Manage() {
-  // The game's resource grid (CS2: servers and what runs on them).
-  const ServerGrid = instanceIntegration().dashboardWidgets.manageResources;
+  // The game's resource grid (CS2: servers and what runs on them), from the
+  // module the tournament runs (3.0 phase E). A game with no resources has no
+  // grid, and the console shows only the work.
+  const { shell } = useShellIntegrations();
+  const ServerGrid = shellModule(shell, (i) => i.dashboardWidgets.manageResources)
+    ?.dashboardWidgets.manageResources;
   const { t } = useTranslation();
   const { setHeaderActions } = usePageHeader();
   const { showSuccess, showError } = useSnackbar();

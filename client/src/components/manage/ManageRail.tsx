@@ -9,7 +9,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { useTranslation } from 'react-i18next';
-import { instanceIntegration } from '../../integrations/registry';
+import { useShellIntegrations } from '../../hooks/useShellIntegrations';
 
 interface ManageRailItem {
   key: string;
@@ -33,6 +33,9 @@ export const ManageRail: React.FC<ManageRailProps> = ({ needsYouCount }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  // The pages the game's module adds, from the module the tournament runs
+  // (3.0 phase E) — see `useShellIntegrations`.
+  const { shell } = useShellIntegrations();
 
   const items: ManageRailItem[] = [
     {
@@ -47,7 +50,7 @@ export const ManageRail: React.FC<ManageRailProps> = ({ needsYouCount }) => {
     { key: 'teams', label: t('managePage.rail.teams'), path: '/teams', icon: <GroupsIcon /> },
     { key: 'players', label: t('managePage.rail.players'), path: '/players', icon: <PersonIcon /> },
     // The game integration's pages (CS2: Servers, Maps) sit after Players.
-    ...instanceIntegration().navItems.map(({ key, path, icon: Icon }) => ({
+    ...shell.flatMap((integration) => integration.navItems).map(({ key, path, icon: Icon }) => ({
       key,
       label: t(`managePage.rail.${key}`),
       path,
@@ -101,6 +104,7 @@ export const ManageRail: React.FC<ManageRailProps> = ({ needsYouCount }) => {
             return (
               <ListItemButton
                 key={item.key}
+                data-testid={`manage-rail-${item.key}`}
                 selected={selected}
                 onClick={() => navigate(item.path)}
                 sx={{

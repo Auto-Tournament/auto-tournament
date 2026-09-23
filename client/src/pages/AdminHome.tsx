@@ -7,7 +7,7 @@ import { useAdminHomeData } from '../hooks/useAdminHomeData';
 import { SetupCard, type SetupItem } from '../components/adminHome/SetupCard';
 import { TournamentsList } from '../components/adminHome/TournamentsList';
 import { SiteLinksGrid } from '../components/adminHome/SiteLinksGrid';
-import { instanceIntegration } from '../integrations/registry';
+import { useShellIntegrations, shellModule } from '../hooks/useShellIntegrations';
 import { PeopleOverviewCard } from '../components/adminHome/PeopleOverviewCard';
 
 declare const __APP_VERSION__: string | undefined;
@@ -23,8 +23,12 @@ declare const __APP_VERSION__: string | undefined;
  * in the list below is the way in.
  */
 export default function AdminHome() {
-  // The game's resource summary (CS2: the server fleet).
-  const ServersOverviewCard = instanceIntegration().dashboardWidgets.adminHomeResources;
+  // The game's resource summary (CS2: the server fleet), from the module the
+  // tournament runs (3.0 phase E). A game with no resources has no card, and
+  // the page is one card shorter rather than showing an empty fleet.
+  const { shell } = useShellIntegrations();
+  const ServersOverviewCard = shellModule(shell, (i) => i.dashboardWidgets.adminHomeResources)
+    ?.dashboardWidgets.adminHomeResources;
   const { t } = useTranslation();
   const { tournaments, loading: tournamentsLoading } = useTournamentList();
   const {

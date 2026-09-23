@@ -75,12 +75,3 @@ export function catalogSlugFor(game: GameId | null | undefined): string | undefi
 export function integrationFor(row: GameOwned | null | undefined): ClientGameIntegration {
   return getIntegration(row?.game);
 }
-
-/**
- * The instance-wide integration, for pages that are not about one tournament
- * or match (navigation, admin home, the server and map pages). 3.0 runs one
- * game per instance, so this is CS2.
- */
-export function instanceIntegration(): ClientGameIntegration {
-  return getIntegration(DEFAULT_GAME);
-}
