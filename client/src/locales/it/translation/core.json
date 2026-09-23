@@ -35,7 +35,8 @@
     "myProfile": "Il mio profilo",
     "accountConnections": "Account settings",
     "goToAdminDashboard": "Vai al pannello admin",
-    "goToAdminDashboardHint": "Stai visualizzando il tuo profilo giocatore. Apri il pannello admin per gestire squadre, tornei e server."
+    "goToAdminDashboardHint": "Stai visualizzando il tuo profilo giocatore. Apri il pannello admin per gestire squadre, tornei e server.",
+    "disputes": "Disputes"
   },
   "layout": {
     "webhookNotConfigured": "L’URL del webhook non è configurato. Match e server non possono ricevere eventi finché non viene impostato.",
@@ -55,7 +56,8 @@
       "adminTools": "Strumenti admin",
       "settings": "Impostazioni",
       "devTools": "Strumenti di sviluppo",
-      "publicLinks": "Link pubblici"
+      "publicLinks": "Link pubblici",
+      "disputes": "Disputes"
     },
     "openDrawer": "Apri il menu di navigazione",
     "matchzyDbDown": {

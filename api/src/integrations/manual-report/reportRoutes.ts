@@ -46,6 +46,7 @@ import {
   matchForRequest,
   readRevision,
   teamNames,
+  teamRosters,
   tournamentForRequest,
   viewerForMatch,
 } from './http';
@@ -80,10 +81,14 @@ manualReportRoutes.get('/matches/:slug', async (req: Request, res: Response) => 
     const viewer = await viewerForMatch(req, res, match, 'see this match');
     if (!viewer) return;
 
-    const [open, reports, teams, fields, stats] = await Promise.all([
+    const [open, reports, teams, rosters, fields, stats] = await Promise.all([
       openReport(match.slug),
       listReports(match.slug),
       teamNames(match),
+      // Who a per-player custom field can be filed against (PR D8). Nothing a
+      // captain could call handed out a `players.uid` before this, so the
+      // report form had no way to offer a per-player field at all.
+      teamRosters(match),
       // The extra numbers this tournament asks for (PR D5), so the report form
       // is one request rather than two.
       listFields(match.tournament_id),
@@ -112,7 +117,8 @@ manualReportRoutes.get('/matches/:slug', async (req: Request, res: Response) => 
         bracket: match.bracket ?? null,
         tournamentId: match.tournament_id,
         winnerId: match.winner_id ?? null,
-        ...teams,
+        team1: { ...teams.team1, players: rosters.get(match.team1_id ?? '') ?? [] },
+        team2: { ...teams.team2, players: rosters.get(match.team2_id ?? '') ?? [] },
       },
       rules: reportingRules(match),
       fields,

@@ -40,6 +40,7 @@ import BuildIcon from '@mui/icons-material/Build';
 import DescriptionIcon from '@mui/icons-material/Description';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import GavelIcon from '@mui/icons-material/Gavel';
 import { usePageHeader } from '../../contexts/PageHeaderContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { api } from '../../utils/api';
@@ -48,6 +49,7 @@ import { useIsDevelopment } from '../../hooks/useIsDevelopment';
 import { useTranslation } from 'react-i18next';
 import { SharedNavBar } from './SharedNavBar';
 import { instanceIntegration } from '../../integrations/registry';
+import { useDisputesEntry } from '../../hooks/useDisputesEntry';
 
 const drawerWidth = 240;
 
@@ -206,6 +208,9 @@ export default function Layout() {
   // i18n keys it had: nav.<key> and layout.pageTitle.<key>.
   const integrationNavItems = instanceIntegration().navItems;
 
+  // Whether this instance's tournament can have a disputed result at all.
+  const { show: showDisputes } = useDisputesEntry();
+
   // Page header configuration - maps routes to their titles and icons
   const pageHeaders: Record<string, { title: string; icon: React.ComponentType; color?: string }> =
     {
@@ -214,6 +219,7 @@ export default function Layout() {
       '/tournament': { title: t('layout.pageTitle.tournament'), icon: EmojiEventsIcon },
       '/bracket': { title: t('layout.pageTitle.bracket'), icon: AccountTreeIcon },
       '/matches': { title: t('layout.pageTitle.matches'), icon: SportsEsportsIcon },
+      '/disputes': { title: t('layout.pageTitle.disputes'), icon: GavelIcon },
       '/teams': { title: t('layout.pageTitle.teams'), icon: GroupsIcon },
       '/players': { title: t('layout.pageTitle.players'), icon: PersonIcon },
       ...Object.fromEntries(
@@ -241,6 +247,10 @@ export default function Layout() {
     { label: t('nav.tournament'), path: '/tournament', icon: EmojiEventsIcon },
     { label: t('nav.bracket'), path: '/bracket', icon: AccountTreeIcon },
     { label: t('nav.matches'), path: '/matches', icon: SportsEsportsIcon },
+    // Only where a result can be argued about at all (3.0 phase D, PR D8).
+    // A CS2 result comes from the game server, so linking a page that can
+    // never have a row on it would be nav clutter with no answer behind it.
+    ...(showDisputes ? [{ label: t('nav.disputes'), path: '/disputes', icon: GavelIcon }] : []),
   ];
 
   const resourcesNavItems = [

@@ -2,6 +2,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { Box, Paper, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { instanceIntegration } from '../../integrations/registry';
+import { useDisputesEntry } from '../../hooks/useDisputesEntry';
 import { paths } from '../../paths';
 
 interface SiteLink {
@@ -27,8 +28,13 @@ const CORE_SITE_LINKS: SiteLink[] = [
  */
 export function SiteLinksGrid() {
   const { t } = useTranslation();
+  // Disputes (3.0 phase D, PR D8) sits next to the admin home rather than
+  // inside it, and only where a result can be argued about — see
+  // `useDisputesEntry`.
+  const { show: showDisputes } = useDisputesEntry();
   const siteLinks: SiteLink[] = [
     ...instanceIntegration().navItems.map((item) => ({ key: item.key, to: item.path })),
+    ...(showDisputes ? [{ key: 'disputes', to: paths.disputes }] : []),
     ...CORE_SITE_LINKS,
   ];
 

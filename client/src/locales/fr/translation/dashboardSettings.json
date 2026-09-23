@@ -295,6 +295,10 @@
       "adminTools": {
         "label": "Admin tools",
         "hint": "Logs and maintenance"
+      },
+      "disputes": {
+        "label": "Disputes",
+        "hint": "Results to settle"
       }
     },
     "servers": {

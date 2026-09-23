@@ -57,7 +57,8 @@
       "templates": { "label": "Maler", "hint": "Gjenbrukbare oppsett" },
       "ratings": { "label": "Rating", "hint": "ELO-maler" },
       "settings": { "label": "Innstillinger", "hint": "Innlogging, API-nøkler" },
-      "adminTools": { "label": "Adminverktøy", "hint": "Logger og vedlikehold" }
+      "adminTools": { "label": "Adminverktøy", "hint": "Logger og vedlikehold" },
+      "disputes": { "label": "Tvister", "hint": "Resultater som må avgjøres" }
     },
     "servers": {
       "title": "Servere",

@@ -13,6 +13,7 @@ import Players from './pages/Players';
 import Tournament from './pages/Tournament';
 import Bracket from './pages/Bracket';
 import Matches from './pages/Matches';
+import Disputes from './pages/Disputes';
 import AdminTools from './pages/AdminTools';
 import Settings from './pages/Settings';
 import Development from './pages/Development';
@@ -355,6 +356,11 @@ function AppRoutes() {
         <Route path={adminRoute(paths.tournament)} element={<Tournament />} />
         <Route path={adminRoute(paths.bracket)} element={<Bracket />} />
         <Route path={adminRoute(paths.matches)} element={<Matches />} />
+        {/* Mounted for every instance, not only one whose game can have a
+            dispute: the page itself says "nothing to settle here" when the
+            tournament's module fills no queue, and a bookmarked URL is better
+            answered that way than with a 404. */}
+        <Route path={adminRoute(paths.disputes)} element={<Disputes />} />
         <Route path={adminRoute(paths.admin)} element={<AdminTools />} />
         <Route path={adminRoute(paths.settings)} element={<Settings />} />
         {integrationRoutes

@@ -282,6 +282,24 @@ export interface TeamAdminPanelProps {
 }
 
 // ---------------------------------------------------------------------------
+// The admin area
+// ---------------------------------------------------------------------------
+
+/**
+ * The admin Disputes page (3.0 phase D, PR D8): everything this module needs
+ * an admin to decide, and the form for deciding it.
+ *
+ * Only a module whose results are *claimed* rather than measured can have a
+ * dispute, so CS2 leaves this empty and the page says so. The core page owns
+ * the URL and the chrome; what goes inside it is the module's, because only
+ * the module knows what "a result nobody agrees on" looks like.
+ */
+export interface AdminDisputesViewProps {
+  /** The tournament to filter to, or null for everything waiting. */
+  tournamentId: number | null;
+}
+
+// ---------------------------------------------------------------------------
 // The integration
 // ---------------------------------------------------------------------------
 
@@ -315,6 +333,12 @@ export interface ClientGameIntegration {
 
   /** Team page: an admin-only control this integration needs (D7: captains). */
   teamAdminPanel?: ComponentType<TeamAdminPanelProps>;
+
+  /**
+   * Admin area, `/disputes`: what this module needs an admin to settle (D8).
+   * Left empty by a game whose results come from the game itself.
+   */
+  adminDisputesView?: ComponentType<AdminDisputesViewProps>;
 
   /** Shown to the teams before the match can be allocated (CS2: map veto). */
   preMatchView?: ComponentType<PreMatchViewProps>;

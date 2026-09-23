@@ -35,7 +35,8 @@
     "myProfile": "Mijn profiel",
     "accountConnections": "Account settings",
     "goToAdminDashboard": "Ga naar admin-dashboard",
-    "goToAdminDashboardHint": "Je bekijkt je spelersprofiel. Open het admin-dashboard om teams, toernooien en servers te beheren."
+    "goToAdminDashboardHint": "Je bekijkt je spelersprofiel. Open het admin-dashboard om teams, toernooien en servers te beheren.",
+    "disputes": "Disputes"
   },
   "layout": {
     "webhookNotConfigured": "Webhook-URL is niet ingesteld. Wedstrijden en servers kunnen geen events ontvangen totdat dit is ingesteld.",
@@ -55,7 +56,8 @@
       "adminTools": "Admin-tools",
       "settings": "Instellingen",
       "devTools": "Dev-tools",
-      "publicLinks": "Publieke links"
+      "publicLinks": "Publieke links",
+      "disputes": "Disputes"
     },
     "openDrawer": "Navigatiemenu openen",
     "matchzyDbDown": {

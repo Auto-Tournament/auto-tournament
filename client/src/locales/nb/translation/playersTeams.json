@@ -560,6 +560,67 @@
       "empty": "Ingen på dette laget har logget inn ennå, så det er ingen å utnevne.",
       "unknown": "Ukjent spiller",
       "failed": "Klarte ikke å endre det. Prøv igjen."
+    },
+    "stats": {
+      "hint": "Ekstratallene denne turneringen ber om. La feltet stå tomt hvis ingen har et tall.",
+      "required": "påkrevd",
+      "recorded": "Rapporterte tall",
+      "value": "{{subject}}: {{value}}{{suffix}}",
+      "errors": {
+        "number": "{{field}} for {{subject}} må være et tall.",
+        "integer": "{{field}} for {{subject}} må være et helt tall.",
+        "range": "{{field}} for {{subject}} er for stort til å være et ekte tall.",
+        "tooLong": "{{field}} for {{subject}} er lengre enn {{max}} tegn.",
+        "missing": "{{field}} er påkrevd, og ingenting er fylt ut for {{team}}."
+      }
+    }
+  },
+  "disputes": {
+    "title": "Tvister",
+    "heading": "Tvister",
+    "subheading": "Resultater lagene ikke ble enige om, og rapporter ingen svarte på i tide.",
+    "empty": {
+      "title": "Ingenting å avgjøre",
+      "hint": "Omstridte resultater, og rapporter som gikk ut på tid, dukker opp her."
+    },
+    "notApplicable": {
+      "title": "Ingenting å avgjøre her",
+      "hint": "Dette spillet sender resultatene sine selv, så det er ingenting en admin må bestemme."
+    },
+    "reason": {
+      "disputed": "Omstridt",
+      "timeout": "Ingen svarte"
+    },
+    "roundLabel": "Runde {{round}}",
+    "reportedBy": "{{team}} rapporterte {{score}} · {{at}}",
+    "byAdmin": "En admin",
+    "history": "Hva hver side rapporterte",
+    "revision": "#{{revision}} {{team}}: {{score}} — {{status}} · {{at}}",
+    "status": {
+      "submitted": "venter",
+      "confirmed": "bekreftet",
+      "disputed": "omstridt",
+      "superseded": "erstattet",
+      "withdrawn": "trukket"
+    },
+    "ruling": {
+      "title": "Avgjør saken",
+      "asReported": "La rapporten stå",
+      "own": "Sett resultatet selv",
+      "note": "Notat",
+      "notePlaceholder": "Hvorfor du avgjorde det slik (valgfritt)"
+    },
+    "actions": {
+      "review": "Se nærmere",
+      "close": "Lukk",
+      "resolve": "Avgjør",
+      "reopen": "Åpne kampen igjen"
+    },
+    "reopenHint": "Å åpne kampen igjen setter den tilbake til live, så den kan spilles eller rapporteres på nytt.",
+    "reopenUnavailable": "En kamp kan bare åpnes igjen når den er ferdig eller venter på en avgjørelse.",
+    "errors": {
+      "load": "Fikk ikke lastet køen. Prøv igjen.",
+      "action": "Det gikk ikke gjennom. Prøv igjen."
     }
   }
 }

@@ -38,7 +38,8 @@
     "myProfile": "Min profil",
     "accountConnections": "Kontoinnstillinger",
     "goToAdminDashboard": "Gå til admin-dashboard",
-    "goToAdminDashboardHint": "Du ser spillerprofilen din. Åpne admin-dashboardet for å administrere lag, turneringer og servere."
+    "goToAdminDashboardHint": "Du ser spillerprofilen din. Åpne admin-dashboardet for å administrere lag, turneringer og servere.",
+    "disputes": "Tvister"
   },
   "layout": {
     "webhookNotConfigured": "Webhook-URL er ikke konfigurert. Kamper og servere kan ikke motta hendelser før den er satt.",
@@ -58,7 +59,8 @@
       "adminTools": "Adminverktøy",
       "settings": "Innstillinger",
       "devTools": "Utviklerverktøy",
-      "publicLinks": "Offentlige lenker"
+      "publicLinks": "Offentlige lenker",
+      "disputes": "Tvister"
     },
     "openDrawer": "Åpne navigasjonsmenyen",
     "matchzyDbDown": {

@@ -59,17 +59,71 @@ export interface ReportingRules {
   timeoutAction: 'auto_confirm' | 'escalate';
 }
 
+/** What a value may hold (3.0 phase D, PR D6). */
+export type StatValueType = 'number' | 'integer' | 'text';
+
+/** Whether a field is asked of each player or of each side. */
+export type StatScope = 'player' | 'team';
+
+/** One extra number or word this tournament asks reporters for. */
+export interface CustomStatField {
+  id: number;
+  key: string;
+  label: string;
+  valueType: StatValueType;
+  scope: StatScope;
+  required: boolean;
+  displayOrder: number;
+}
+
+/** One recorded value, read back with its field and the person behind it. */
+export interface MatchStatValue {
+  fieldId: number;
+  key: string;
+  label: string;
+  valueType: StatValueType;
+  scope: StatScope;
+  mapNumber: number;
+  playerUid: string | null;
+  playerId: string | null;
+  playerName: string | null;
+  team: ReportSide | null;
+  value: number | string | null;
+}
+
+/** One value as the form posts it back. */
+export interface ReportedStatValue {
+  key: string;
+  playerUid?: string;
+  team?: ReportSide;
+  value: number | string;
+}
+
+export interface TeamMember {
+  accountUid: string;
+  role: 'captain' | 'member';
+  playerId: string | null;
+  name: string | null;
+}
+
 /** Everything `GET /api/game/manual/matches/:slug` answers with. */
 export interface MatchReportView {
   match: {
     slug: string;
     status: string;
+    round?: number;
+    bracket?: string | null;
     tournamentId: number;
     winnerId: string | null;
-    team1: { id: string | null; name: string | null };
-    team2: { id: string | null; name: string | null };
+    /** `players` is the membership list a per-player field is filed against. */
+    team1: { id: string | null; name: string | null; players?: TeamMember[] };
+    team2: { id: string | null; name: string | null; players?: TeamMember[] };
   };
   rules: ReportingRules;
+  /** The tournament's custom stat fields, in the order the form shows them. */
+  fields?: CustomStatField[];
+  /** What is filled in for them right now, confirmed or not. */
+  stats?: MatchStatValue[];
   viewer: {
     team: ReportSide | null;
     role: 'captain' | 'admin' | 'system';
@@ -82,11 +136,26 @@ export interface MatchReportView {
   reports: MatchReport[];
 }
 
-export interface TeamMember {
-  accountUid: string;
-  role: 'captain' | 'member';
-  playerId: string | null;
-  name: string | null;
+/** Why a match is on an admin's desk. */
+export type DisputeReason = 'disputed' | 'timeout';
+
+/** One row of `GET /api/game/manual/disputes`. */
+export interface DisputeRow {
+  matchSlug: string;
+  tournamentId: number | null;
+  matchStatus: string;
+  round: number;
+  bracket: string | null;
+  team1: { id: string | null; name: string | null };
+  team2: { id: string | null; name: string | null };
+  reason: DisputeReason;
+  report: MatchReport & { disputedAt?: number | null };
+}
+
+/** The result an admin rules with, the same shape a captain reports. */
+export interface ReportedResultInput {
+  maps: Array<{ team1Score: number; team2Score: number }>;
+  note?: string;
 }
 
 export interface ApiResult<T> {
@@ -137,10 +206,22 @@ export const manualReportApi = {
   /** The report page for one match. */
   view: (slug: string) => request<MatchReportView>(`/api/game/manual/matches/${slug}`),
 
-  report: (slug: string, result: { maps: Array<Omit<ReportedGame, 'mapNumber'>>; note?: string }) =>
+  /**
+   * Report a result, with the tournament's custom fields filled in.
+   *
+   * `stats` is a flat list whatever the tournament asks for, because the form
+   * renders it from `fields` and posts it back the same shape. The API checks
+   * it against those fields and refuses the **whole** report on one bad value,
+   * which is why the panel checks the same rules before it sends.
+   */
+  report: (
+    slug: string,
+    result: { maps: Array<Omit<ReportedGame, 'mapNumber'>>; note?: string },
+    stats?: ReportedStatValue[]
+  ) =>
     request(`/api/game/manual/matches/${slug}/report`, {
       method: 'POST',
-      body: JSON.stringify({ result }),
+      body: JSON.stringify({ result, ...(stats && stats.length ? { stats } : {}) }),
     }),
 
   /**
@@ -177,6 +258,37 @@ export const manualReportApi = {
       method: 'POST',
       body: JSON.stringify({ uid, role }),
     }),
+
+  // -------------------------------------------------------------------------
+  // Admin (3.0 phase D, PR D8). All behind `requireAuth`, so a player gets a
+  // 401 and the admin page is never reachable for them in the first place.
+  // -------------------------------------------------------------------------
+
+  /** Everything waiting for an admin: disputes, and escalated timeouts. */
+  disputes: (tournamentId?: number | null) =>
+    request<{ disputes: DisputeRow[] }>(
+      `/api/game/manual/disputes${tournamentId ? `?tournamentId=${tournamentId}` : ''}`
+    ),
+
+  /**
+   * Settle the open report.
+   *
+   * With no `result` the report stands as the captain made it; with one, the
+   * admin's own version is stored as its own revision and the open one is
+   * superseded, so the disagreement and the ruling are both on the record.
+   */
+  resolve: (slug: string, result?: ReportedResultInput, stats?: ReportedStatValue[]) =>
+    request(`/api/game/manual/matches/${slug}/resolve`, {
+      method: 'POST',
+      body: JSON.stringify({
+        ...(result ? { result } : {}),
+        ...(stats && stats.length ? { stats } : {}),
+      }),
+    }),
+
+  /** Put a settled match back to `live` so it can be reported again. */
+  reopen: (slug: string) =>
+    request(`/api/game/manual/matches/${slug}/reopen`, { method: 'POST' }),
 };
 
 /** A status that means "this panel is not for you", rather than a failure. */

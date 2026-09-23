@@ -35,7 +35,8 @@
     "myProfile": "Mój profil",
     "accountConnections": "Account settings",
     "goToAdminDashboard": "Przejdź do panelu administratora",
-    "goToAdminDashboardHint": "Wyświetlasz swój profil gracza. Otwórz panel administratora, aby zarządzać drużynami, turniejami i serwerami."
+    "goToAdminDashboardHint": "Wyświetlasz swój profil gracza. Otwórz panel administratora, aby zarządzać drużynami, turniejami i serwerami.",
+    "disputes": "Disputes"
   },
   "layout": {
     "webhookNotConfigured": "URL webhooka nie jest skonfigurowany. Mecze i serwery nie mogą odbierać zdarzeń, dopóki nie zostanie ustawiony.",
@@ -55,7 +56,8 @@
       "adminTools": "Narzędzia admina",
       "settings": "Ustawienia",
       "devTools": "Narzędzia deweloperskie",
-      "publicLinks": "Linki publiczne"
+      "publicLinks": "Linki publiczne",
+      "disputes": "Disputes"
     },
     "openDrawer": "Otwórz menu nawigacji",
     "matchzyDbDown": {

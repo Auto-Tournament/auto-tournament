@@ -57,7 +57,8 @@
       "templates": { "label": "Templates", "hint": "Reusable setups" },
       "ratings": { "label": "Ratings", "hint": "ELO templates" },
       "settings": { "label": "Settings", "hint": "Sign-in, API keys" },
-      "adminTools": { "label": "Admin tools", "hint": "Logs and maintenance" }
+      "adminTools": { "label": "Admin tools", "hint": "Logs and maintenance" },
+      "disputes": { "label": "Disputes", "hint": "Results to settle" }
     },
     "servers": {
       "title": "Servers",
