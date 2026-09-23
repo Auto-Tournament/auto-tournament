@@ -288,6 +288,117 @@ test.describe.serial('Manual reporting over HTTP: admin', () => {
   );
 
   test(
+    'reopening a disputed match clears the dispute, so both captains can report again',
+    { tag: ['@api', '@regression'] },
+    async ({ request, playwright, baseURL }) => {
+      // The test above reopens a match whose report was **confirmed**, which
+      // always worked. This one reopens a match whose report is still open and
+      // `disputed`, which did not: `reopenMatch` superseded the confirmed
+      // report and nothing else, so the match went back to `live` with the
+      // dispute still open — and then nothing could move it. `submitReport`
+      // refuses while any report is open, `confirmReport` and `disputeReport`
+      // refuse anything that is not `submitted`, so both captains were stuck
+      // on a live match, and the dispute stayed in this queue for a match that
+      // was being replayed. Only another `resolve` could reach it.
+      //
+      // Four teams again, so the tournament is still running: `reopen` refuses
+      // to touch a finished one, and that refusal would hide all of this.
+      const teamIds = await createTeams(request, 'mra-reopen', 4);
+      await createTournament(request, {
+        name: 'Reopened mid-argument',
+        type: 'single_elimination',
+        format: 'bo1',
+        game: 'chess',
+        teamIds,
+      });
+      const [match] = await waitForLive(request, 1, 2);
+
+      const one = await playerContext(playwright, baseURL, captainSteamIds.get(match.team1!.id)!);
+      const two = await playerContext(playwright, baseURL, captainSteamIds.get(match.team2!.id)!);
+
+      /** The match as one captain's own session sees it. */
+      const viewOf = async (ctx: APIRequestContext) => {
+        const res = await ctx.get(`${API}/matches/${match.slug}`);
+        expect(res.status(), `reading ${match.slug}: ${await res.text()}`).toBe(200);
+        return (await res.json()) as {
+          match: { status: string; winnerId: string | null };
+          viewer: {
+            canReport: boolean;
+            canConfirm: boolean;
+            canDispute: boolean;
+            canWithdraw: boolean;
+          };
+          open: { status: string } | null;
+          reports: Array<{ revision: number; status: string }>;
+        };
+      };
+
+      try {
+        await expectOk(
+          await one.post(`${API}/matches/${match.slug}/report`, { data: { result: sweep(1, 'team1') } }),
+          'reporting'
+        );
+        const disputed = await two.post(`${API}/matches/${match.slug}/dispute`, {
+          data: { revision: 1, reason: 'That is not the score we played' },
+        });
+        expect(disputed.status(), await disputed.text()).toBe(200);
+        expect((await disputes(request)).map((d) => d.matchSlug)).toEqual([match.slug]);
+
+        // Where the deadlock starts. All four permissions false is *correct*
+        // here — the match is on an admin's desk — which is why nothing about
+        // the parked state gave the bug away.
+        const parked = await viewOf(one);
+        expect(parked.match.status).toBe('needs_decision');
+        expect(parked.open?.status).toBe('disputed');
+        expect(parked.viewer).toMatchObject({
+          canReport: false,
+          canConfirm: false,
+          canDispute: false,
+          canWithdraw: false,
+        });
+
+        const reopened = await request.post(`${API}/matches/${match.slug}/reopen`);
+        expect(reopened.status(), `reopening: ${await reopened.text()}`).toBe(200);
+
+        const live = await viewOf(one);
+        expect(live.match.status, 'a reopened match is playable again').toBe('live');
+        expect(live.match.winnerId).toBeNull();
+        expect(live.open, 'the dispute must not survive the reopen').toBeNull();
+        // Superseded, not deleted: the argument happened, it just no longer
+        // stands.
+        expect(live.reports.find((r) => r.revision === 1)?.status).toBe('superseded');
+
+        // The bug, one line per captain.
+        expect(live.viewer.canReport, 'the reporter can report again').toBe(true);
+        expect((await viewOf(two)).viewer.canReport, 'so can the opponent').toBe(true);
+        expect(
+          await disputes(request),
+          'and an admin is no longer asked to decide a match being replayed'
+        ).toEqual([]);
+
+        // Not just permitted — a replacement report goes through and settles,
+        // over a clean slate.
+        const again = await expectOk(
+          await two.post(`${API}/matches/${match.slug}/report`, { data: { result: sweep(1, 'team2') } }),
+          'reporting again after the reopen'
+        );
+        expect(again.report.revision).toBe(2);
+        await expectOk(
+          await one.post(`${API}/matches/${match.slug}/confirm`, { data: { revision: 2 } }),
+          'confirming the replacement'
+        );
+
+        const final = await viewOf(one);
+        expect(final.match.status).toBe('completed');
+        expect(final.match.winnerId).toBe(match.team2!.id);
+      } finally {
+        await one.dispose();
+        await two.dispose();
+      }
+    }
+  );
+
+  test(
     'the tournament says what extra numbers it wants reported',
     { tag: ['@api'] },
     async ({ request, playwright, baseURL }) => {

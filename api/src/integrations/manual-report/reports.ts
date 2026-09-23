@@ -951,7 +951,9 @@ async function checkStats(
  * winner and completion of the match itself, the downstream slots it filled
  * (back to empty and `pending`), its recorded games, its player stats, and its
  * rating changes (`discardMatchRatings`, which refuses if a player has been
- * rated since — then so does this).
+ * rated since — then so does this), and **every report that still stands** —
+ * the confirmed one and any open one, because a reopened match with a report
+ * still open is a match neither captain can report and neither can answer.
  */
 export async function reopenMatch(input: {
   matchSlug: string;
@@ -1028,6 +1030,18 @@ export async function reopenMatch(input: {
     'id = ?',
     [match.id]
   );
+
+  // An **open** report is about a result that no longer stands either, and
+  // leaving one behind strands both captains. This only ever superseded the
+  // *confirmed* report, so reopening a **disputed** match put it back to
+  // `live` with the dispute still open — and then nobody could move it:
+  // `submitReport` refuses while any report is open, `confirmReport` and
+  // `disputeReport` refuse anything that is not `submitted`, and the dispute
+  // stayed in the admin queue for a match that was being replayed. Only
+  // `adminResolve` could reach it, on a match that looked fine from every
+  // screen. Supersede whatever is open, so a reopened match really is the
+  // clean slate the routes promise.
+  await supersedeOpen(match.slug, input.actor);
 
   // The result that stood is no longer the match's result.
   const previous = await confirmedReport(match.slug);
