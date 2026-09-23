@@ -4,12 +4,20 @@ import { signInViaRequest } from '../helpers/auth';
 /**
  * Map image upload -> static serve round trip.
  *
- * Regression test for the bug fixed alongside this file: in the bundled
- * build (and therefore Docker), `POST /api/maps/:id/upload-image` wrote the
- * file one directory above where `/map-images/*` actually serves from, so
- * an uploaded image never came back. See PR #284's "Judgement calls"
- * section and `api/src/config/publicPaths.ts`, which now derives both
- * paths from a single constant.
+ * Regression test for two bugs, both in `api/src/config/publicPaths.ts`:
+ *
+ * 1. In the bundled build (and therefore Docker), `POST
+ *    /api/maps/:id/upload-image` wrote the file one directory above where
+ *    `/map-images/*` serves from, so an uploaded image never came back. Both
+ *    paths are now derived from a single constant. See PR #284's "Judgement
+ *    calls" section.
+ * 2. That directory was under `PUBLIC_DIR` -- build output baked into the
+ *    container image, not the mounted volume -- so every container recreate
+ *    (every update) deleted every uploaded image. `MAP_IMAGES_DIR` now lives
+ *    under `DATA_DIR`, and `docker/Caddyfile` proxies `/map-images/*` to
+ *    Express instead of serving it off `/app/public` with its file_server.
+ *    See `api/src/config/migrateLegacyMapImages.ts` and
+ *    `tests/api/map-images-migration.spec.ts`.
  *
  * @tag api
  * @tag maps
@@ -74,6 +82,25 @@ test.describe('Map image upload', () => {
       } finally {
         await deleteMap(request, id);
       }
+    }
+  );
+
+  test(
+    'a missing map image is a miss, not the SPA shell',
+    { tag: ['@api', '@maps'] },
+    async ({ request }) => {
+      // `/map-images/*` is served off `MAP_IMAGES_DIR`, which now lives under
+      // DATA_DIR rather than inside the `/app/public` tree `docker/Caddyfile`
+      // roots its file_server at. If that route ever stops reaching Express
+      // (or the directory drifts again), Caddy's SPA fallback answers instead
+      // and every map image comes back as a 200 full of index.html -- which a
+      // broken <img> makes very hard to spot. Assert the miss stays a miss.
+      const res = await request.get(`/map-images/${uniqueMapId()}.png`);
+
+      expect(res.status(), 'a missing map image should not be served as the SPA shell').not.toBe(
+        200
+      );
+      expect(res.headers()['content-type'] ?? '').not.toContain('text/html');
     }
   );
 });
