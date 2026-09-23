@@ -39,7 +39,8 @@
     "accountConnections": "Kontoinnstillinger",
     "goToAdminDashboard": "Gå til admin-dashboard",
     "goToAdminDashboardHint": "Du ser spillerprofilen din. Åpne admin-dashboardet for å administrere lag, turneringer og servere.",
-    "disputes": "Tvister"
+    "disputes": "Tvister",
+    "modules": "Moduler"
   },
   "layout": {
     "webhookNotConfigured": "Webhook-URL er ikke konfigurert. Kamper og servere kan ikke motta hendelser før den er satt.",
@@ -60,7 +61,8 @@
       "settings": "Innstillinger",
       "devTools": "Utviklerverktøy",
       "publicLinks": "Offentlige lenker",
-      "disputes": "Tvister"
+      "disputes": "Tvister",
+      "modules": "Moduler"
     },
     "openDrawer": "Åpne navigasjonsmenyen",
     "matchzyDbDown": {
@@ -81,7 +83,8 @@
   },
   "common": {
     "delete": "Slett",
-    "cancel": "Avbryt"
+    "cancel": "Avbryt",
+    "remove": "Fjern"
   },
   "theme": {
     "label": "Fargetema"

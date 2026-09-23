@@ -50,15 +50,46 @@
     },
     "site": {
       "title": "Nettsted",
-      "servers": { "label": "Servere", "hint": "Koble til, oppdater, helse" },
-      "maps": { "label": "Baner", "hint": "Pooler og bilder" },
-      "players": { "label": "Spillere", "hint": "Alle som har logget inn" },
-      "teams": { "label": "Lag", "hint": "Klubber og lagoppstillinger" },
-      "templates": { "label": "Maler", "hint": "Gjenbrukbare oppsett" },
-      "ratings": { "label": "Rating", "hint": "ELO-maler" },
-      "settings": { "label": "Innstillinger", "hint": "Innlogging, API-nøkler" },
-      "adminTools": { "label": "Adminverktøy", "hint": "Logger og vedlikehold" },
-      "disputes": { "label": "Tvister", "hint": "Resultater som må avgjøres" }
+      "servers": {
+        "label": "Servere",
+        "hint": "Koble til, oppdater, helse"
+      },
+      "maps": {
+        "label": "Baner",
+        "hint": "Pooler og bilder"
+      },
+      "players": {
+        "label": "Spillere",
+        "hint": "Alle som har logget inn"
+      },
+      "teams": {
+        "label": "Lag",
+        "hint": "Klubber og lagoppstillinger"
+      },
+      "templates": {
+        "label": "Maler",
+        "hint": "Gjenbrukbare oppsett"
+      },
+      "ratings": {
+        "label": "Rating",
+        "hint": "ELO-maler"
+      },
+      "settings": {
+        "label": "Innstillinger",
+        "hint": "Innlogging, API-nøkler"
+      },
+      "adminTools": {
+        "label": "Adminverktøy",
+        "hint": "Logger og vedlikehold"
+      },
+      "disputes": {
+        "label": "Tvister",
+        "hint": "Resultater som må avgjøres"
+      },
+      "modules": {
+        "label": "Moduler",
+        "hint": "Spillene denne instansen kjører"
+      }
     },
     "servers": {
       "title": "Servere",

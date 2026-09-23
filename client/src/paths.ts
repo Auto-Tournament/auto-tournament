@@ -40,6 +40,8 @@ export const paths = {
   admin: '/admin',
   settings: '/settings',
   maps: '/maps',
+  /** What this instance can run, and the packs an admin imported. */
+  modules: '/modules',
   templates: '/templates',
   eloTemplates: '/elo-templates',
   dev: '/dev',

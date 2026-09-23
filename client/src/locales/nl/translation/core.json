@@ -36,7 +36,8 @@
     "accountConnections": "Account settings",
     "goToAdminDashboard": "Ga naar admin-dashboard",
     "goToAdminDashboardHint": "Je bekijkt je spelersprofiel. Open het admin-dashboard om teams, toernooien en servers te beheren.",
-    "disputes": "Disputes"
+    "disputes": "Disputes",
+    "modules": "Modules"
   },
   "layout": {
     "webhookNotConfigured": "Webhook-URL is niet ingesteld. Wedstrijden en servers kunnen geen events ontvangen totdat dit is ingesteld.",
@@ -57,7 +58,8 @@
       "settings": "Instellingen",
       "devTools": "Dev-tools",
       "publicLinks": "Publieke links",
-      "disputes": "Disputes"
+      "disputes": "Disputes",
+      "modules": "Modules"
     },
     "openDrawer": "Navigatiemenu openen",
     "matchzyDbDown": {
@@ -73,7 +75,8 @@
   },
   "common": {
     "delete": "Verwijderen",
-    "cancel": "Annuleren"
+    "cancel": "Annuleren",
+    "remove": "Remove"
   },
   "app": {
     "name": "Auto Tournament"

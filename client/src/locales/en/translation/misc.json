@@ -209,5 +209,46 @@
       "finished": "Finished",
       "registrationOpen": "Registration open"
     }
+  },
+  "modulesPage": {
+    "title": "Modules",
+    "heading": "Modules",
+    "subheading": "What this instance can run, and the games you have added to it.",
+    "builtIn": "Built in",
+    "loadFailed": "Could not load the installed packs",
+    "removed": "Removed {{name}}",
+    "removeFailed": "Could not remove that pack",
+    "installed": {
+      "title": "Game modules",
+      "hint": "Code that knows how a match is run and how its result arrives. These ship with the app."
+    },
+    "module": {
+      "cs2": {
+        "name": "Counter-Strike 2",
+        "hint": "Talks to your game servers: loads the match, reads every round, records the result."
+      },
+      "manual-report": {
+        "name": "Manual reporting",
+        "hint": "For games nothing can watch. A captain reports the score and the opponent agrees."
+      }
+    },
+    "packs": {
+      "title": "Game packs",
+      "hint": "A pack is a file describing one game — a name, a tile and how a result is reported. It contains no code and runs on a module above.",
+      "empty": "No packs yet. Import one to add a game this instance did not ship with.",
+      "runBy": "Run by {{engine}}"
+    },
+    "import": {
+      "action": "Import a pack",
+      "added": "Added {{name}}",
+      "updated": "Updated {{name}}",
+      "failed": "Could not import that pack",
+      "notJson": "That file is not JSON, so it is not a pack",
+      "tooLarge": "That file is too large to be a pack"
+    },
+    "confirmRemove": {
+      "title": "Remove {{name}}?",
+      "body": "The game disappears from the setup wizard. Nothing else is deleted, and importing the pack again brings it back."
+    }
   }
 }

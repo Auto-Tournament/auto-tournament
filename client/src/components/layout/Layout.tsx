@@ -40,6 +40,7 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import GavelIcon from '@mui/icons-material/Gavel';
+import ExtensionIcon from '@mui/icons-material/Extension';
 import { usePageHeader } from '../../contexts/PageHeaderContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { api } from '../../utils/api';
@@ -233,6 +234,7 @@ export default function Layout() {
       '/bracket': { title: t('layout.pageTitle.bracket'), icon: AccountTreeIcon },
       '/matches': { title: t('layout.pageTitle.matches'), icon: SportsEsportsIcon },
       '/disputes': { title: t('layout.pageTitle.disputes'), icon: GavelIcon },
+      '/modules': { title: t('layout.pageTitle.modules'), icon: ExtensionIcon },
       '/teams': { title: t('layout.pageTitle.teams'), icon: GroupsIcon },
       '/players': { title: t('layout.pageTitle.players'), icon: PersonIcon },
       ...Object.fromEntries(
@@ -277,6 +279,7 @@ export default function Layout() {
   ];
 
   const configurationNavItems = [
+    { label: t('nav.modules'), path: '/modules', icon: ExtensionIcon },
     { label: t('nav.templates'), path: '/templates', icon: DescriptionIcon },
     { label: t('nav.eloTemplates'), path: '/elo-templates', icon: TrendingUpIcon },
     { label: t('nav.settings'), path: '/settings', icon: SettingsIcon },

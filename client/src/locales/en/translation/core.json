@@ -39,7 +39,8 @@
     "accountConnections": "Account settings",
     "goToAdminDashboard": "Go to Admin Dashboard",
     "goToAdminDashboardHint": "You're viewing your player profile. Open the admin dashboard to manage teams, tournaments, and servers.",
-    "disputes": "Disputes"
+    "disputes": "Disputes",
+    "modules": "Modules"
   },
   "layout": {
     "webhookNotConfigured": "Webhook URL is not configured. Matches and servers cannot receive events until it is set.",
@@ -60,7 +61,8 @@
       "settings": "Settings",
       "devTools": "Development Tools",
       "publicLinks": "Public Links",
-      "disputes": "Disputes"
+      "disputes": "Disputes",
+      "modules": "Modules"
     },
     "openDrawer": "Open navigation menu",
     "closeDrawer": "Close navigation menu",
@@ -81,7 +83,8 @@
   },
   "common": {
     "delete": "Delete",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "remove": "Remove"
   },
   "theme": {
     "label": "Color theme"

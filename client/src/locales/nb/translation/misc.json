@@ -209,5 +209,46 @@
       "finished": "Fullført",
       "registrationOpen": "Registrering åpen"
     }
+  },
+  "modulesPage": {
+    "title": "Moduler",
+    "heading": "Moduler",
+    "subheading": "Hva denne instansen kan kjøre, og spillene du har lagt til.",
+    "builtIn": "Innebygd",
+    "loadFailed": "Kunne ikke laste installerte pakker",
+    "removed": "Fjernet {{name}}",
+    "removeFailed": "Kunne ikke fjerne pakken",
+    "installed": {
+      "title": "Spillmoduler",
+      "hint": "Kode som vet hvordan en kamp kjøres og hvordan resultatet kommer inn. Disse følger med appen."
+    },
+    "module": {
+      "cs2": {
+        "name": "Counter-Strike 2",
+        "hint": "Snakker med spillserverne dine: laster kampen, leser hver runde, lagrer resultatet."
+      },
+      "manual-report": {
+        "name": "Manuell rapportering",
+        "hint": "For spill ingenting kan følge med på. En kaptein rapporterer resultatet og motstanderen bekrefter."
+      }
+    },
+    "packs": {
+      "title": "Spillpakker",
+      "hint": "En pakke er en fil som beskriver ett spill — et navn, en flis og hvordan resultatet rapporteres. Den inneholder ingen kode og kjører på en modul over.",
+      "empty": "Ingen pakker enda. Importer en for å legge til et spill instansen ikke kom med.",
+      "runBy": "Kjøres av {{engine}}"
+    },
+    "import": {
+      "action": "Importer en pakke",
+      "added": "La til {{name}}",
+      "updated": "Oppdaterte {{name}}",
+      "failed": "Kunne ikke importere pakken",
+      "notJson": "Den filen er ikke JSON, så den er ikke en pakke",
+      "tooLarge": "Den filen er for stor til å være en pakke"
+    },
+    "confirmRemove": {
+      "title": "Fjerne {{name}}?",
+      "body": "Spillet forsvinner fra oppsettveiviseren. Ingenting annet slettes, og importerer du pakken på nytt er den tilbake."
+    }
   }
 }

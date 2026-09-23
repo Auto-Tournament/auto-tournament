@@ -36,7 +36,8 @@
     "accountConnections": "Account settings",
     "goToAdminDashboard": "Ir para o painel de administração",
     "goToAdminDashboardHint": "Estás a ver o teu perfil de jogador. Abre o painel de administração para gerir equipas, torneios e servidores.",
-    "disputes": "Disputes"
+    "disputes": "Disputes",
+    "modules": "Modules"
   },
   "layout": {
     "webhookNotConfigured": "O URL do webhook não está configurado. Jogos e servidores não podem receber eventos até ser definido.",
@@ -57,7 +58,8 @@
       "settings": "Definições",
       "devTools": "Ferramentas de desenvolvimento",
       "publicLinks": "Links públicos",
-      "disputes": "Disputes"
+      "disputes": "Disputes",
+      "modules": "Modules"
     },
     "openDrawer": "Abrir menu de navegação",
     "matchzyDbDown": {
@@ -73,7 +75,8 @@
   },
   "common": {
     "delete": "Eliminar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "remove": "Remove"
   },
   "app": {
     "name": "Auto Tournament"
