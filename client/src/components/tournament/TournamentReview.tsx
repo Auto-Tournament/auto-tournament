@@ -172,6 +172,7 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
             }
             onClick={handleStart}
             disabled={starting || saving}
+            data-testid="tournament-start-button"
             sx={{
               flex: { xs: '1 1 100%', sm: '1 1 auto' },
               minWidth: 200,

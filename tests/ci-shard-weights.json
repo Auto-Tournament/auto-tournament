@@ -75,6 +75,7 @@
   "tests/ui/manage.spec.ts": 4.0,
   "tests/ui/manual-report-disputes.spec.ts": 7.0,
   "tests/ui/manual-report-panel.spec.ts": 6.0,
+  "tests/ui/manual-report-tournament.spec.ts": 6.0,
   "tests/ui/maps.spec.ts": 7.1,
   "tests/ui/matches.spec.ts": 3.5,
   "tests/ui/player-discord-id.spec.ts": 4.4,
