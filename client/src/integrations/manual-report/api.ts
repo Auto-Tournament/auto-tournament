@@ -136,6 +136,47 @@ export interface MatchReportView {
   reports: MatchReport[];
 }
 
+/**
+ * One field's total for one subject over a whole tournament (3.0 phase D,
+ * PR D6's scoreboard half).
+ */
+export interface StatTotal {
+  key: string;
+  label: string;
+  valueType: StatValueType;
+  /** null for a text field, which is listed rather than added up. */
+  total: number | null;
+  average: number | null;
+  /** How many values went into it. */
+  count: number;
+  /** Up to 20 of the texts, for a text field. */
+  texts?: string[];
+}
+
+export interface PlayerStatLine {
+  uid: string;
+  playerId: string | null;
+  name: string | null;
+  teams: Array<{ id: string; name: string | null }>;
+  matches: number;
+  totals: StatTotal[];
+}
+
+export interface TeamStatLine {
+  id: string;
+  name: string | null;
+  matches: number;
+  totals: StatTotal[];
+}
+
+/** Everything `GET /api/game/manual/tournaments/:id/stats` answers with. */
+export interface TournamentStats {
+  tournamentId: number;
+  fields: CustomStatField[];
+  players: PlayerStatLine[];
+  teams: TeamStatLine[];
+}
+
 /** Why a match is on an admin's desk. */
 export type DisputeReason = 'disputed' | 'timeout';
 
@@ -249,6 +290,16 @@ export const manualReportApi = {
       method: 'POST',
       body: JSON.stringify({ revision }),
     }),
+
+  /**
+   * A tournament's custom stat fields, added up per player and per team.
+   *
+   * Open, like the rest of a tournament's results, and only confirmed reports
+   * count — so nothing here is a number one captain typed in that the other
+   * has not agreed to.
+   */
+  tournamentStats: (tournamentId: number) =>
+    request<TournamentStats>(`/api/game/manual/tournaments/${tournamentId}/stats`),
 
   members: (teamId: string) =>
     request<{ members: TeamMember[] }>(`/api/game/manual/teams/${teamId}/members`),

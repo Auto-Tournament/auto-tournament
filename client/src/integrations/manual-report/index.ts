@@ -18,6 +18,7 @@ import type { ClientGameIntegration } from '../types';
 import { DisputesQueue } from './admin/DisputesQueue';
 import { ManualReportPanel } from './match/ManualReportPanel';
 import { ManualReportSetupStep } from './setup/ManualReportSetupStep';
+import { CustomStatsTables } from './stats/CustomStatsTables';
 import { TeamCaptainsCard } from './team/TeamCaptainsCard';
 
 /**
@@ -66,6 +67,8 @@ export const manualReportClientIntegration: ClientGameIntegration = {
   teamAdminPanel: TeamCaptainsCard,
 
   adminDisputesView: DisputesQueue,
+
+  tournamentStatsView: CustomStatsTables,
 
   tournamentSetupSteps: {
     settings: ManualReportSetupStep,

@@ -351,6 +351,20 @@ export interface AdminDisputesViewProps {
   tournamentId: number | null;
 }
 
+/**
+ * The tournament's own statistics, on the public leaderboard page (3.0 phase
+ * D, PR D10).
+ *
+ * The page's built-in columns — wins, losses, win rate, rating, ADR — are what
+ * the *game* measured. A game that measures nothing fills this slot instead:
+ * manual reporting lists the totals for the custom fields the tournament asks
+ * reporters for, which is the only thing there is to show. CS2 leaves it
+ * empty, because its own numbers are already the page.
+ */
+export interface TournamentStatsViewProps {
+  tournamentId: number;
+}
+
 // ---------------------------------------------------------------------------
 // The integration
 // ---------------------------------------------------------------------------
@@ -391,6 +405,13 @@ export interface ClientGameIntegration {
    * Left empty by a game whose results come from the game itself.
    */
   adminDisputesView?: ComponentType<AdminDisputesViewProps>;
+
+  /**
+   * The public leaderboard page: this game's own statistics, when the page's
+   * built-in CS2 columns are not them (D10). Left empty by a game whose
+   * numbers the page already shows.
+   */
+  tournamentStatsView?: ComponentType<TournamentStatsViewProps>;
 
   /** Shown to the teams before the match can be allocated (CS2: map veto). */
   preMatchView?: ComponentType<PreMatchViewProps>;

@@ -413,7 +413,8 @@
       "currentMapScore": "Marcador del mapa actual (rondas)",
       "eloAvg": "ELO (media): {{elo}}",
       "vs": "VS",
-      "tbd": "Por definir"
+      "tbd": "Por definir",
+      "gamesWon": "Games won"
     },
     "server": {
       "waitingTitle": "Esperando asignación de servidor",
@@ -572,7 +573,14 @@
         "range": "{{field}} for {{subject}} is too big to be a real number.",
         "tooLong": "{{field}} for {{subject}} is longer than {{max}} characters.",
         "missing": "{{field}} is required, and nothing is filled in for {{team}}."
-      }
+      },
+      "tournamentTitle": "Reported stats",
+      "tournamentHelp": "Added up from confirmed reports. A result still waiting for the opponent is not counted here.",
+      "byTeam": "By team",
+      "byPlayer": "By player",
+      "team": "Team",
+      "player": "Player",
+      "matches": "Matches"
     }
   },
   "disputes": {

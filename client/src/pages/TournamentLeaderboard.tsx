@@ -40,6 +40,7 @@ import { PlayerName } from '../components/player/PlayerName';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { TeamNameLink } from '../components/team/TeamNameLink';
 import type { Tournament } from '../types/tournament.types';
+import { integrationFor } from '../integrations/registry';
 import { tokens, mono, fontMono } from '../theme/tokens';
 
 /** Right-aligned (numeric) body cells use the mono face. */
@@ -77,7 +78,7 @@ interface TeamLeaderboardEntry {
 }
 
 interface TournamentLeaderboardData {
-  tournament: Pick<Tournament, 'id' | 'name' | 'status' | 'type'>;
+  tournament: Pick<Tournament, 'id' | 'name' | 'status' | 'type' | 'game'>;
   leaderboard: PlayerLeaderboardEntry[];
   teams?: TeamLeaderboardEntry[];
   currentRound: number;
@@ -347,6 +348,14 @@ export default function TournamentLeaderboard() {
   }
 
   const { tournament, leaderboard, currentRound, totalRounds, roundStatus, teams } = data;
+  // ADR is a thing the game measured. A game that measures nothing has no ADR
+  // column, no "top by ADR" card and no ADR in the export — not a column of
+  // N/A, which reads as data that went missing (3.0 phase D, PR D10). What it
+  // has instead is the tournament's own custom fields, which the module that
+  // owns it renders.
+  const gameIntegration = integrationFor(tournament);
+  const showGameStats = gameIntegration.capabilities.playerStats;
+  const GameStatsView = gameIntegration.tournamentStatsView;
   // Swiss team standings come ordered by the server (wins, losses, Buchholz, RD).
   const isSwissStandings = Boolean(teams?.some((team) => team.buchholz !== undefined));
 
@@ -391,7 +400,7 @@ export default function TournamentLeaderboard() {
       t('leaderboardPage.winRate'),
       t('leaderboardPage.skillRating'),
       t('leaderboardPage.ratingChange'),
-      t('leaderboardPage.avgAdr'),
+      ...(showGameStats ? [t('leaderboardPage.avgAdr')] : []),
     ];
     const rows = filteredLeaderboard.map((player, index) => [
       index + 1,
@@ -401,7 +410,7 @@ export default function TournamentLeaderboard() {
       `${(player.winRate * 100).toFixed(1)}%`,
       player.currentElo,
       player.eloChange > 0 ? `+${player.eloChange}` : player.eloChange.toString(),
-      player.averageAdr ? player.averageAdr.toFixed(1) : 'N/A',
+      ...(showGameStats ? [player.averageAdr ? player.averageAdr.toFixed(1) : 'N/A'] : []),
     ]);
 
     const csvContent = [
@@ -449,7 +458,7 @@ export default function TournamentLeaderboard() {
         winRate: player.winRate,
         elo: player.currentElo,
         eloChange: player.eloChange,
-        averageAdr: player.averageAdr,
+        ...(showGameStats ? { averageAdr: player.averageAdr } : {}),
       })),
     };
 
@@ -538,7 +547,7 @@ export default function TournamentLeaderboard() {
               {topPerformers && (
                 <Box mt={3}>
                   <Grid container spacing={2}>
-                    <Grid size={{ xs: 12, md: 6 }}>
+                    <Grid size={{ xs: 12, md: showGameStats ? 6 : 12 }}>
                       <Typography variant="subtitle2" fontWeight={600} gutterBottom>
                         {t('leaderboardPage.topByWins')}
                       </Typography>
@@ -586,6 +595,7 @@ export default function TournamentLeaderboard() {
                       )}
                     </Grid>
 
+                    {showGameStats && (
                     <Grid size={{ xs: 12, md: 6 }}>
                       <Typography variant="subtitle2" fontWeight={600} gutterBottom>
                         {t('leaderboardPage.topByAdr')}
@@ -633,6 +643,7 @@ export default function TournamentLeaderboard() {
                         </Stack>
                       )}
                     </Grid>
+                    )}
                   </Grid>
                 </Box>
               )}
@@ -669,6 +680,10 @@ export default function TournamentLeaderboard() {
               )}
             </CardContent>
           </Card>
+
+          {/* The game's own statistics, when the page's CS2 columns are not
+              them: manual reporting lists the tournament's custom fields. */}
+          {GameStatsView && <GameStatsView tournamentId={tournament.id} />}
 
           {/* Team Standings (for standard tournaments) */}
           {teams && teams.length > 0 && (
@@ -870,7 +885,7 @@ export default function TournamentLeaderboard() {
                         <TableCell align="right" sx={{ fontWeight: 600 }}>
                           {t('leaderboardPage.ratingChange')}
                         </TableCell>
-                        {leaderboard.some((p) => p.averageAdr) && (
+                        {showGameStats && leaderboard.some((p) => p.averageAdr) && (
                           <TableCell align="right" sx={{ fontWeight: 600 }}>
                             {t('leaderboardPage.avgAdr')}
                           </TableCell>
@@ -958,7 +973,7 @@ export default function TournamentLeaderboard() {
                                 />
                               )}
                             </TableCell>
-                            {leaderboard.some((p) => p.averageAdr) && (
+                            {showGameStats && leaderboard.some((p) => p.averageAdr) && (
                               <TableCell align="right">
                                 {player.averageAdr ? (
                                   <Typography variant="body2">
