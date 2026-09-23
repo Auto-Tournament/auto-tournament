@@ -28,7 +28,7 @@ import type {
   VetoAction,
   VetoState,
 } from '../types';
-import type { MapPool, Map as MapType } from '../types/api.types';
+import type { MapPool, Map as MapType, ServerAvailabilityResponse } from '../types/api.types';
 import type { CS2MapData } from '../types/veto.types';
 import type { PluginVersionSummary, ServerFleetCounts } from '../hooks/useAdminHomeData';
 
@@ -328,11 +328,17 @@ export interface IntegrationNavItem {
  * Something the module needs an admin to fix before its tournament can run,
  * shown on every admin page (3.0 phase E).
  *
- * CS2 fills it with the webhook URL warning: that URL is what a CS2 server
- * reaches the platform on, so an unset one stops that game and no other. The
- * core shell has no opinion about it — it renders the slot and nothing else —
- * so an instance whose tournament needs no servers is never nagged about a
- * setting that would change nothing for it.
+ * CS2 fills it with the webhook URL — what a CS2 server reaches the platform
+ * on — and with the MatchZy plugin's database health, which is the plugin's
+ * own connection on the game server and has no meaning anywhere else. The core
+ * shell has no opinion about either: it renders the slot and nothing else, so
+ * an instance whose tournament needs no servers is never nagged about settings
+ * that would change nothing for it.
+ *
+ * Not everything the shell warns about belongs here. Steam's health stays in
+ * the shell, because the warning is about sign-ins and profile lookups — the
+ * platform's own login provider, which a Rocket League instance depends on
+ * exactly as much as a CS2 one.
  */
 export interface AdminGlobalWarningProps {
   /** Take the admin to the settings page, whose route the core owns. */
@@ -370,6 +376,35 @@ export interface TournamentStartFailureProps {
 }
 
 /**
+ * The module's own check, run between "start" being clicked and the tournament
+ * actually starting, on the setup page (3.0 phase E).
+ *
+ * The setup page's start asks *before* it starts rather than after: CS2 counts
+ * what its fleet can take right now against what the first round wants, and
+ * stops to ask when the answer is "less than that". That question, and all
+ * three ways CS2 phrases it, only exist because there are servers.
+ *
+ * So the module owns the whole decision, including whether there is anything
+ * to ask about: it renders nothing and calls `onProceed` when the start can
+ * just happen. A module that leaves the slot empty is the same as one that
+ * always proceeds, and the core starts without asking.
+ */
+export interface TournamentStartPreflightProps {
+  /** True once the admin asked to start and the core is waiting for an answer. */
+  open: boolean;
+  /**
+   * How many of the first round's matches can be played at the same time —
+   * the bracket's shape, which the core knows and the module translates into
+   * its own resources ("that many servers").
+   */
+  concurrentMatches: number;
+  /** Nothing to ask about, or the admin said go ahead. */
+  onProceed: () => void;
+  /** The admin backed out. */
+  onCancel: () => void;
+}
+
+/**
  * Everything the "Start tournament" button says in the game's words. A module
  * that leaves this out gets the core's dialog, which names nothing the game
  * does not have.
@@ -393,6 +428,47 @@ export interface TournamentStartSlot {
   ownsFailure?: (error: string) => boolean;
   /** The way out of a refusal `ownsFailure` claimed. */
   failureView?: ComponentType<TournamentStartFailureProps>;
+
+  /**
+   * The setup page's start, which is the same action asked in a different
+   * place: it runs the module's check first (`view`), and answers a refusal
+   * `ownsFailure` claimed with `failureView` below.
+   *
+   * There are two failure views rather than one because the two surfaces have
+   * always worded the same refusal differently — the dashboard's is literal
+   * English and hands the admin to the Servers page, the setup page's is
+   * translated into all ten locales and leaves them on the page they are
+   * setting up. Folding them into one would change one of those for every CS2
+   * install, which is a copy change, not a move.
+   */
+  preflight?: {
+    /** The check itself, which asks only when there is something to ask. */
+    view: ComponentType<TournamentStartPreflightProps>;
+    /** The way out of a refusal `ownsFailure` claimed, in this surface's words. */
+    failureView?: ComponentType<TournamentStartFailureProps>;
+  };
+}
+
+/**
+ * The bracket, above it: why the matches that are ready have not started yet
+ * (3.0 phase E).
+ *
+ * A match waits for something only where there is something to wait for. CS2's
+ * matches wait for a server to come free, and the banner names how many and
+ * when the next allocation pass runs — an allocation pass being a thing only a
+ * game with servers has. A module whose matches are simply open the moment the
+ * round opens leaves this empty, and the bracket has no banner.
+ *
+ * The core does the asking, once, through `resourceAvailabilityEndpoint`
+ * below, and hands the answer over: the page already ticks the countdown down
+ * between polls for a chip of its own, and two components counting the same
+ * seconds from two requests would drift apart on screen.
+ */
+export interface MatchQueueBannerProps {
+  /** What the game's resources can take right now, or null before the first answer. */
+  availability: ServerAvailabilityResponse | null;
+  /** Seconds until the next allocation pass, ticked down locally between polls. */
+  nextInSeconds: number | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -498,6 +574,26 @@ export interface ClientGameIntegration {
    * a module with no resources to prepare, which gets the core's dialog.
    */
   tournamentStart?: TournamentStartSlot;
+
+  /** The bracket page: why the ready matches have not started (CS2: servers). */
+  matchQueueBanner?: ComponentType<MatchQueueBannerProps>;
+
+  /**
+   * Where the core asks what this game's match resources can take right now
+   * (3.0 phase E).
+   *
+   * The match list and the Manage console show a queue: how many matches are
+   * waiting, how long until one gets a place to run, whether anything is free
+   * at all. That queue exists because a match needs a *resource* first, and
+   * only the module knows whether its game has any or where to ask about them
+   * — `/api/tournament/server-availability` is a CS2 route about CS2 servers,
+   * and the core used to name it in three places.
+   *
+   * A module that leaves this empty is saying its matches wait for nothing:
+   * the core never asks, and every surface that would have shown a queue shows
+   * nothing instead, which is the truth rather than "0 servers free".
+   */
+  resourceAvailabilityEndpoint?: string;
 
   /**
    * Admin area, `/disputes`: what this module needs an admin to settle (D8).

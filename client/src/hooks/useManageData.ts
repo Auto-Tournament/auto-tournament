@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { api } from '../utils/api';
+import { integrationFor } from '../integrations/registry';
+import { useResourceAvailability } from './useResourceAvailability';
 import type { Match } from '../types/match.types';
 import type { Tournament } from '../types/tournament.types';
 import type { MatchesResponse, ServerAvailabilityResponse, TournamentResponse } from '../types/api.types';
@@ -18,17 +20,17 @@ export interface ManageData {
  * Data for the Manage console. Reuses the exact endpoints and refresh
  * cadence the Matches and Dashboard pages already poll/subscribe to:
  * GET /api/matches (+ the same `match:update` / `bracket:update` sockets),
- * GET /api/tournament/server-availability (5s poll, same as Matches.tsx),
- * and GET /api/tournament once.
+ * GET /api/tournament once, and — through the tournament's own game module,
+ * on the same 5s cadence Matches.tsx uses — whatever that module's matches
+ * wait for (3.0 phase E). The console used to name CS2's server-availability
+ * route itself; a module with no resources is now simply never asked, and the
+ * console's server counts and grid stay empty rather than reading zero.
  */
 export function useManageData(): ManageData {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [matches, setMatches] = useState<Match[]>([]);
-  const [serverAvailability, setServerAvailability] = useState<ServerAvailabilityResponse | null>(
-    null
-  );
 
   const fetchMatches = useCallback(async () => {
     try {
@@ -39,17 +41,6 @@ export function useManageData(): ManageData {
     } catch (err) {
       console.error('Failed to load matches for Manage:', err);
       setError((prev) => prev ?? 'Failed to load matches');
-    }
-  }, []);
-
-  const fetchServerAvailability = useCallback(async () => {
-    try {
-      const data = await api.get<ServerAvailabilityResponse>('/api/tournament/server-availability');
-      if (data.success) {
-        setServerAvailability(data);
-      }
-    } catch (err) {
-      console.error('Failed to load server availability for Manage:', err);
     }
   }, []);
 
@@ -64,25 +55,31 @@ export function useManageData(): ManageData {
     }
   }, []);
 
+  // Only the tournament's own module knows whether its matches wait for
+  // anything, and where to ask. Null until the tournament is known, so a
+  // manually reported one never asks at all.
+  const { availability: serverAvailability, refresh: refreshAvailability } =
+    useResourceAvailability(tournament ? integrationFor(tournament) : null, 5000);
+
   const refresh = useCallback(() => {
     void fetchMatches();
-    void fetchServerAvailability();
+    void refreshAvailability();
     void fetchTournament();
-  }, [fetchMatches, fetchServerAvailability, fetchTournament]);
+  }, [fetchMatches, refreshAvailability, fetchTournament]);
 
   useEffect(() => {
     let cancelled = false;
     const loadInitial = async () => {
       setLoading(true);
       setError(null);
-      await Promise.all([fetchMatches(), fetchServerAvailability(), fetchTournament()]);
+      await Promise.all([fetchMatches(), fetchTournament()]);
       if (!cancelled) setLoading(false);
     };
     void loadInitial();
     return () => {
       cancelled = true;
     };
-  }, [fetchMatches, fetchServerAvailability, fetchTournament]);
+  }, [fetchMatches, fetchTournament]);
 
   // Same sockets Matches.tsx listens to, so the status strip and queue update
   // live without a second, independent realtime channel.
@@ -94,12 +91,6 @@ export function useManageData(): ManageData {
       socket.disconnect();
     };
   }, [fetchMatches]);
-
-  // Same 5s cadence Matches.tsx uses for server-availability polling.
-  useEffect(() => {
-    const interval = setInterval(() => void fetchServerAvailability(), 5000);
-    return () => clearInterval(interval);
-  }, [fetchServerAvailability]);
 
   return { loading, error, tournament, matches, serverAvailability, refresh };
 }

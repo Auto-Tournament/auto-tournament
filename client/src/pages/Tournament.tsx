@@ -25,7 +25,6 @@ import { DEFAULT_ELO_TEMPLATE_ID } from '../components/tournament/setup/EloTempl
 import TournamentChangePreviewModal from '../components/modals/TournamentChangePreviewModal';
 import SaveTemplateModal from '../components/modals/SaveTemplateModal';
 import { BulkShuffleMatchesModal } from '../components/modals/BulkShuffleMatchesModal';
-import ConfirmDialog from '../components/modals/ConfirmDialog';
 import { useTournament } from '../hooks/useTournament';
 import { validateTeamCountForType } from '../utils/tournamentValidation';
 import { api } from '../utils/api';
@@ -250,17 +249,9 @@ const Tournament: React.FC = () => {
   const { showSuccess, showError } = useSnackbar();
   const [saving, setSaving] = useState(false);
   const [starting, setStarting] = useState(false);
-  const [outdatedServers, setOutdatedServers] = useState<
-    Array<{
-      id: string;
-      name: string;
-      installedBuildId: number | null;
-      requiredVersion: number | null;
-      reason: string;
-    }>
-  >([]);
-  const [showOutdatedDialog, setShowOutdatedDialog] = useState(false);
-  const [disablingOutdated, setDisablingOutdated] = useState(false);
+  // A refusal the game's own module offered a way out of, instead of the error
+  // snackbar (CS2: servers Steam says are out of date). 3.0 phase E.
+  const [startFailure, setStartFailure] = useState<string | null>(null);
   const [saveTemplateModalOpen, setSaveTemplateModalOpen] = useState(false);
   const [currentMapPoolId, setCurrentMapPoolId] = useState<number | null>(null);
   const [registeredPlayerCount, setRegisteredPlayerCount] = useState<number | undefined>(undefined);
@@ -270,11 +261,17 @@ const Tournament: React.FC = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [showStartConfirm, setShowStartConfirm] = useState(false);
-  const [startWarningInfo, setStartWarningInfo] = useState<{
-    requiredServers: number;
-    availableServers: number;
-  } | null>(null);
+  // True from the moment "start" is clicked until the module's own check has
+  // either asked the admin something or let the start through.
+  const [startPreflightOpen, setStartPreflightOpen] = useState(false);
+
+  // Everything starting says in the game's words: the check that runs first,
+  // and the way out of a refusal the module recognises. A module that fills
+  // neither starts without asking and reports a refusal the ordinary way.
+  const startIntegration = getIntegration(setupGame);
+  const startSlot = startIntegration.tournamentStart;
+  const StartPreflight = startSlot?.preflight?.view;
+  const StartFailureView = startSlot?.preflight?.failureView;
   const [showChangePreview, setShowChangePreview] = useState(false);
   const [changes, setChanges] = useState<
     Array<{
@@ -1026,10 +1023,18 @@ const Tournament: React.FC = () => {
     }
   };
 
-  const getRequiredServersForTournament = () => {
+  /**
+   * How many of the first round's matches can be played at the same time.
+   *
+   * This is the bracket's shape, not the game's: a shuffle tournament plays
+   * one match at a time by design, and everything else opens half its teams'
+   * worth at once. The game's module is what turns it into "that many
+   * servers" (3.0 phase E).
+   */
+  const getConcurrentFirstRoundMatches = () => {
     if (!tournament) return 0;
     if (tournament.type === 'shuffle') {
-      // Shuffle tournaments reuse servers round-by-round; only one match per server at a time
+      // Shuffle tournaments play round-by-round; only one match at a time
       return 1;
     }
     const teamCount = tournament.teams?.length || 0;
@@ -1046,46 +1051,20 @@ const Tournament: React.FC = () => {
       return;
     }
 
-    // A game that runs on no servers can never be short of one, so there is
-    // nothing to warn about and nothing to check (3.0 phase D, PR D9).
-    if (!getIntegration(setupGame).capabilities.servers) {
-      await performTournamentStart();
+    // Whether there is anything to check before starting is the module's
+    // answer, and so is what to ask. A module that fills no preflight slot is
+    // saying there is nothing in the way (3.0 phase E).
+    if (StartPreflight) {
+      setStartPreflightOpen(true);
       return;
     }
 
-    const requiredServers = getRequiredServersForTournament();
-
-    // Check server availability first
-    try {
-      const availabilityResponse = await api.get<{
-        success: boolean;
-        availableServerCount: number;
-      }>('/api/tournament/server-availability');
-
-      if (availabilityResponse.success) {
-        const available = availabilityResponse.availableServerCount;
-
-        // If we don't have enough available servers to cover the first round's concurrent matches,
-        // show a confirmation dialog so the admin explicitly accepts queued/paused matches.
-        if (requiredServers > 0 && available < requiredServers) {
-          setStartWarningInfo({ requiredServers, availableServers: available });
-          setShowStartConfirm(true);
-          return;
-        }
-      }
-    } catch (err) {
-      console.error('Error checking server availability:', err);
-      // Continue anyway if check fails
-    }
-
-    // Servers are sufficient (or check failed) - start immediately
     await performTournamentStart();
   };
 
   const performTournamentStart = async () => {
     setStarting(true);
-    setShowStartConfirm(false);
-    setStartWarningInfo(null);
+    setStartPreflightOpen(false);
 
     try {
       const baseUrl = window.location.origin;
@@ -1093,7 +1072,11 @@ const Tournament: React.FC = () => {
 
       if (response.success) {
         const allocated = (response as { allocated?: number }).allocated || 0;
-        if (allocated > 0) {
+        if (!startIntegration.capabilities.servers) {
+          // "0 matches allocated to servers" reads as a failure on a game
+          // where every match is in fact open (3.0 phase E).
+          showSuccess(t('tournament.startConfirm.started'));
+        } else if (allocated > 0) {
           showSuccess(t('tournament.toasts.started', { count: allocated }));
         } else {
           showSuccess(
@@ -1110,29 +1093,13 @@ const Tournament: React.FC = () => {
       }
     } catch (err) {
       const error = err as Error;
-      try {
-        const parsed = JSON.parse(error.message || '') as {
-          errorCode?: string;
-          servers?: Array<{
-            id: string;
-            name: string;
-            installedBuildId: number | null;
-            requiredVersion: number | null;
-            reason: string;
-          }>;
-        };
-        if (
-          parsed?.errorCode === 'cs2_outdated_servers' &&
-          Array.isArray(parsed.servers) &&
-          parsed.servers.length > 0
-        ) {
-          setOutdatedServers(parsed.servers);
-          setShowOutdatedDialog(true);
-        } else {
-          showError(error.message || t('tournament.toasts.startFailed'));
-        }
-      } catch {
-        showError(error.message || t('tournament.toasts.startFailed'));
+      const message = error.message || t('tournament.toasts.startFailed');
+      // A refusal the module recognises gets the module's way out; everything
+      // else, for every game, is the error snackbar it has always been.
+      if (StartFailureView && startSlot?.ownsFailure?.(message)) {
+        setStartFailure(message);
+      } else {
+        showError(message);
       }
     } finally {
       setStarting(false);
@@ -1277,70 +1244,43 @@ const Tournament: React.FC = () => {
         deleteOpen={showDeleteConfirm}
         regenerateOpen={showRegenerateConfirm}
         resetOpen={showResetConfirm}
-        startOpen={showStartConfirm}
         tournamentName={tournament?.name}
         tournamentStatus={tournament?.status}
-        startWarning={startWarningInfo ?? undefined}
         onDeleteConfirm={handleDelete}
         onDeleteCancel={() => setShowDeleteConfirm(false)}
         onRegenerateConfirm={handleRegenerate}
         onRegenerateCancel={() => setShowRegenerateConfirm(false)}
         onResetConfirm={handleReset}
         onResetCancel={() => setShowResetConfirm(false)}
-        onStartConfirm={performTournamentStart}
-        onStartCancel={() => {
-          setShowStartConfirm(false);
-          setStartWarningInfo(null);
-        }}
       />
 
-      <ConfirmDialog
-        open={showOutdatedDialog}
-        title={t('tournament.outdatedServers.title')}
-        message={
-          <>
-            <Box sx={{ mb: 1 }}>{t('tournament.outdatedServers.body')}</Box>
-            <Box component="ul" sx={{ mt: 0, mb: 0, pl: 2 }}>
-              {outdatedServers.map((s) => (
-                <li key={s.id}>
-                  {s.name} ({s.id})
-                  {typeof s.installedBuildId === 'number'
-                    ? ` — installed=${s.installedBuildId}`
-                    : ''}
-                  {typeof s.requiredVersion === 'number' ? `, required=${s.requiredVersion}` : ''}
-                  {s.reason ? ` — ${s.reason}` : ''}
-                </li>
-              ))}
-            </Box>
-          </>
-        }
-        confirmLabel={
-          disablingOutdated
-            ? t('tournament.outdatedServers.disabling')
-            : t('tournament.outdatedServers.confirm')
-        }
-        cancelLabel={t('common.cancel')}
-        confirmColor="warning"
-        loading={disablingOutdated}
-        onCancel={() => setShowOutdatedDialog(false)}
-        onConfirm={async () => {
-          if (disablingOutdated) return;
-          setDisablingOutdated(true);
-          try {
-            for (const s of outdatedServers) {
-              await api.post(`/api/servers/${s.id}/disable`);
-            }
+      {/* What the game wants checked before its tournament starts (CS2: that
+          the fleet can take the first round). It asks only when there is
+          something to ask, and otherwise starts. */}
+      {StartPreflight && startPreflightOpen && (
+        <StartPreflight
+          open={startPreflightOpen}
+          concurrentMatches={getConcurrentFirstRoundMatches()}
+          onProceed={() => {
+            void performTournamentStart();
+          }}
+          onCancel={() => setStartPreflightOpen(false)}
+        />
+      )}
+
+      {/* A refusal the module knows how to undo (CS2: servers Steam says are
+          out of date, which it can disable before retrying). */}
+      {StartFailureView && startFailure !== null && (
+        <StartFailureView
+          error={startFailure}
+          onClose={() => setStartFailure(null)}
+          onRetry={async () => {
             await refreshData();
-            setShowOutdatedDialog(false);
             await performTournamentStart();
-          } catch (e) {
-            const msg = e instanceof Error ? e.message : String(e);
-            showError(t('tournament.toasts.disableServersFailed', { message: msg }));
-          } finally {
-            setDisablingOutdated(false);
-          }
-        }}
-      />
+          }}
+          onError={(message) => showError(message)}
+        />
+      )}
 
       <TournamentChangePreviewModal
         open={showChangePreview}

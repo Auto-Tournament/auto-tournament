@@ -175,7 +175,6 @@ export default function Layout() {
   const location = useLocation();
   const { headerActions } = usePageHeader();
   const { showPersistentError, closeSnackbar } = useSnackbar();
-  const [dbHealthSnackbarKey, setDbHealthSnackbarKey] = React.useState<import('notistack').SnackbarKey | null>(null);
   const [steamHealthSnackbarKey, setSteamHealthSnackbarKey] = React.useState<import('notistack').SnackbarKey | null>(
     null
   );
@@ -208,14 +207,17 @@ export default function Layout() {
   // One read of the tournament for both of the shell's game-dependent parts:
   // whether a result here can be disputed at all (3.0 phase D, PR D8), and
   // what the game's module needs an admin to fix before it can run (phase E:
-  // CS2's webhook URL). `useDisputesEntry` is the same decision for the pages
-  // that need only that one.
+  // CS2's webhook URL and its plugin's database). `useDisputesEntry` is the
+  // same decision for the pages that need only that one.
+  //
+  // Null until there is a tournament, so an instance that has not said what it
+  // runs yet is not warned about the settings of a game it may not be running.
   const { integration: tournamentIntegration, loading: tournamentGameLoading } =
     useTournamentIntegration();
-  const showDisputes = !tournamentGameLoading && Boolean(tournamentIntegration.adminDisputesView);
+  const showDisputes = !tournamentGameLoading && Boolean(tournamentIntegration?.adminDisputesView);
   const AdminGlobalWarning = tournamentGameLoading
     ? undefined
-    : tournamentIntegration.adminGlobalWarning;
+    : tournamentIntegration?.adminGlobalWarning;
 
   // Page header configuration - maps routes to their titles and icons
   const pageHeaders: Record<string, { title: string; icon: React.ComponentType; color?: string }> =
@@ -280,47 +282,11 @@ export default function Layout() {
     ...(isDevelopment ? [{ label: t('nav.devTools'), path: '/dev', icon: BuildIcon }] : []),
   ];
 
-  // Global admin warning: keep a persistent snackbar while any server reports plugin DB down.
-  React.useEffect(() => {
-    let cancelled = false;
-
-    const checkDbHealth = async () => {
-      try {
-        const response = await api.get<{ success: boolean; servers?: Array<{ enabled?: boolean; matchzyDbOk?: boolean | null }> }>(
-          '/api/servers'
-        );
-        if (cancelled) return;
-        const servers = response.servers ?? [];
-        const downCount = servers.filter((s) => s.enabled !== false && s.matchzyDbOk === false).length;
-
-        if (downCount > 0) {
-          if (!dbHealthSnackbarKey) {
-            const key = showPersistentError(
-              <span>
-                <strong>{t('layout.matchzyDbDown.title')}</strong> —{' '}
-                {t('layout.matchzyDbDown.body', { count: downCount })}
-              </span>,
-              'matchzy-db-down'
-            );
-            setDbHealthSnackbarKey(key);
-          }
-        } else if (dbHealthSnackbarKey) {
-          closeSnackbar(dbHealthSnackbarKey);
-          setDbHealthSnackbarKey(null);
-        }
-      } catch {
-        // Non-fatal; we don't want global UI to hard-fail.
-      }
-    };
-
-    void checkDbHealth();
-    const interval = window.setInterval(checkDbHealth, 60_000);
-    return () => {
-      cancelled = true;
-      window.clearInterval(interval);
-    };
-  }, [dbHealthSnackbarKey, showPersistentError, closeSnackbar, t]);
-
+  // Steam's health stays here rather than moving behind the game integration
+  // with the MatchZy plugin's database (3.0 phase E). The warning is about
+  // sign-ins and vanity URL lookups: Steam is the platform's own login
+  // provider, and an instance running a manually reported Rocket League
+  // tournament signs its admins in with it exactly like a CS2 one.
   // Global admin warning: keep a persistent snackbar while Steam integration is unhealthy.
   React.useEffect(() => {
     let cancelled = false;

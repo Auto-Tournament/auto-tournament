@@ -20,7 +20,7 @@ export function useDisputesEntry(): { show: boolean; loading: boolean } {
   return {
     // Never while it is still loading: a link that appears a beat after the
     // rest of the nav reads as the page glitching.
-    show: !loading && Boolean(integration.adminDisputesView),
+    show: !loading && Boolean(integration?.adminDisputesView),
     loading,
   };
 }
