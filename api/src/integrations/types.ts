@@ -601,6 +601,23 @@ export interface GameCatalogEntry {
   name?: string;
   /** Extra search terms, e.g. 'cs2'. */
   aliases?: string[];
+  /**
+   * The module's own square tile for this game, as a path the client serves
+   * (`/games/rocket-league.svg`). It ships with the module rather than coming
+   * from the games catalogue, because the setup wizard lists what this
+   * instance can run: the art is ours, so every card reads the same — one
+   * square, one palette, its own background, nothing cropped or recoloured.
+   *
+   * The catalogue's IGDB and Wikidata logos stay where a player is
+   * recognising their own game ("What do you play?", a profile). That is a
+   * different question — it covers every game, not only the ones a module
+   * runs — and it keeps its own answer.
+   *
+   * Omit it and the wizard falls back to the game's text mark, which is the
+   * honest answer for a title no module ships a tile for. Nothing is
+   * stretched or borrowed to fill the box.
+   */
+  icon?: string;
 }
 
 export interface GameIntegration {

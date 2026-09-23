@@ -46,6 +46,7 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   // to the module that runs anything (3.0 phase D, PR D7).
   catalogGames: ['counter-strike-2', 'cs', 'counter strike', 'csgo'],
   catalogSlug: 'counter-strike-2',
+  catalogIcon: '/games/counter-strike-2.svg',
 
   // The same five facts `cs2Integration.capabilities` states on the API side.
   capabilities: {

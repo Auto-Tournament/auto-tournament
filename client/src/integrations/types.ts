@@ -586,6 +586,20 @@ export interface ClientGameIntegration {
   catalogSlug?: string;
 
   /**
+   * The module's own square tile for its own game, mirroring
+   * `GameCatalogEntry.icon` on the API side (`cs2` ->
+   * `/games/counter-strike-2.svg`).
+   *
+   * The setup wizard takes every other game's tile from
+   * `GET /api/games/playable`, which is the module's declaration reaching the
+   * client the same way `integrationId` does. This one is here because the
+   * wizard renders Counter-Strike 2 before that request answers — and if it
+   * never answers — and a fallback entry with no art would flash a text mark
+   * on the instance's own game.
+   */
+  catalogIcon?: string;
+
+  /**
    * True for a module that runs every other catalogue game (manual reporting).
    * The registry falls back to it before it falls back to CS2.
    */

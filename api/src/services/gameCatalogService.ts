@@ -85,6 +85,13 @@ interface BuiltinGame {
    * it; everything else is stored under its catalogue slug.
    */
   own: boolean;
+  /**
+   * The module's own square tile for this game (`GameCatalogEntry.icon`), or
+   * null for a popular title no module ships art for. Never the catalogue's
+   * IGDB or Wikidata artwork — that is a different picture answering a
+   * different question, and `GameSummary.imageUrl` still carries it.
+   */
+  icon: string | null;
 }
 
 /** Popular esports titles offered before IGDB is configured. IGDB slugs. */
@@ -142,6 +149,7 @@ export function builtinGames(): BuiltinGame[] {
         integrationId: integration.id,
         viaCatchAll,
         own: true,
+        icon: integration.catalog?.icon ?? null,
       });
     }
     for (const entry of integration.catalogEntries ?? []) {
@@ -152,6 +160,7 @@ export function builtinGames(): BuiltinGame[] {
         integrationId: integration.id,
         viaCatchAll,
         own: false,
+        icon: entry.icon ?? null,
       });
     }
   }
@@ -164,6 +173,7 @@ export function builtinGames(): BuiltinGame[] {
       integrationId: null,
       viaCatchAll: false,
       own: false,
+      icon: null,
     });
   }
 
@@ -606,6 +616,19 @@ export interface PlayableGame extends GameSummary {
    * normalizes either spelling to this.
    */
   gameRef: string;
+  /**
+   * The module's own square tile for this game, or null when it ships none.
+   *
+   * The setup wizard's list is what this instance can run, so it is drawn
+   * with the modules' art: square, full-bleed, one palette. `imageUrl` (the
+   * catalogue's IGDB or Wikidata picture) is still on the summary and is
+   * still what the player-facing "What do you play?" surfaces use — those
+   * cover every game, not only the ones a module runs, and a player has to
+   * recognise their own game by its real logo.
+   *
+   * Null means the wizard shows the game's text mark.
+   */
+  moduleIcon: string | null;
 }
 
 /**
@@ -620,12 +643,18 @@ export interface PlayableGame extends GameSummary {
  */
 export async function getPlayableGames(): Promise<PlayableGame[]> {
   const games = await getPopularGames();
+  const builtins = builtinGames();
   const refs = new Map(
-    builtinGames().map((g) => [g.slug, g.own && g.integrationId ? g.integrationId : g.slug])
+    builtins.map((g) => [g.slug, g.own && g.integrationId ? g.integrationId : g.slug])
   );
+  const icons = new Map(builtins.map((g) => [g.slug, g.icon]));
   return games
     .filter((game) => game.integrationId !== null)
-    .map((game) => ({ ...game, gameRef: refs.get(game.slug) ?? game.slug }));
+    .map((game) => ({
+      ...game,
+      gameRef: refs.get(game.slug) ?? game.slug,
+      moduleIcon: icons.get(game.slug) ?? null,
+    }));
 }
 
 /**

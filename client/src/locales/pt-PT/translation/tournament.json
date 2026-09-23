@@ -473,6 +473,10 @@
         "label": "Game",
         "loading": "Loading the games this instance can run.",
         "lockedHelp": "The game is fixed once the tournament exists. Delete it and start again to run a different one.",
+        "integrationTitles": {
+          "cs2": "Runs on your servers",
+          "manual-report": "Teams report the result"
+        },
         "integrationDescriptions": {
           "cs2": "Matches run on your own CS2 servers with the Auto Tournament CS2 plugin.",
           "manual-report": "No servers. Teams play the match themselves and a captain reports the result."

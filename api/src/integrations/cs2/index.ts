@@ -162,7 +162,11 @@ function usesVeto(format: string | undefined): boolean {
 export const cs2Integration: GameIntegration = {
   id: 'cs2',
   displayName: 'Counter-Strike 2',
-  catalog: { slug: 'counter-strike-2', aliases: ['cs2', 'cs', 'counter strike', 'csgo'] },
+  catalog: {
+    slug: 'counter-strike-2',
+    aliases: ['cs2', 'cs', 'counter strike', 'csgo'],
+    icon: '/games/counter-strike-2.svg',
+  },
   accountProvider: 'steam',
   capabilities: {
     servers: true,

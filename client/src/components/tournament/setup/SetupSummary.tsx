@@ -22,7 +22,7 @@ export interface ChecklistItem {
 interface SetupSummaryProps {
   gameName: string;
   gameMark: string;
-  /** The game's icon, when the catalogue has one; else the mark is shown. */
+  /** The module's own square tile for the game, when it ships one; else the mark. */
   gameIcon?: string;
   name: string;
   rows: SummaryRow[];
@@ -79,7 +79,9 @@ export function SetupSummary({
                 component="img"
                 src={gameIcon}
                 alt=""
-                sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                // `contain`, never `cover`: the tiles are square today, and a
+                // tile that is ever not square must letterbox rather than crop.
+                sx={{ width: '100%', height: '100%', objectFit: 'contain' }}
               />
             ) : (
               gameMark

@@ -3,7 +3,6 @@ import {
   Alert,
   Box,
   Button,
-  ButtonBase,
   Menu,
   MenuItem,
   TextField,
@@ -16,7 +15,6 @@ import { api } from '../../../utils/api';
 import { estimateMatchCount, type GrandFinalMode } from '../../../utils/tournamentMatchCount';
 import { validateMapCount, requiresVeto } from '../../../utils/tournamentVerification';
 import { validateTeamCountForType } from '../../../utils/tournamentValidation';
-import { tokens } from '../../../theme';
 import type { Team, Server } from '../../../types';
 import type { MapPoolsResponse } from '../../../types/api.types';
 import { defaultMapPool } from './defaultMapPool';
@@ -43,6 +41,7 @@ import { getIntegration } from '../../../integrations/registry';
 import type { MatchRulesValue } from '../../../integrations/types';
 import { EloTemplateSelect } from './EloTemplateSelect';
 import { ReviewStep, type ReviewTournament } from './ReviewStep';
+import { GamePicker } from './GamePicker';
 import { DEFAULT_SETUP_GAME, gameMark, useSetupGames, type SetupGame } from './games';
 import { MEDIUM, NARROW } from './layout';
 import { setupStepsFor, stepError, teamCountChoices, type SetupStepId } from './setupSteps';
@@ -497,83 +496,15 @@ export function TournamentSetup(props: TournamentSetupProps) {
                   : undefined
             }
           >
-            <Box
-              role="group"
-              aria-label={t('tournament.setup.game.label')}
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 240px), 1fr))',
-                gap: 1.5,
-              }}
-            >
-              {setupGames.map((entry) => {
-                const pressed = entry.id === game;
-                return (
-                  <ButtonBase
-                    key={entry.id}
-                    type="button"
-                    aria-pressed={pressed}
-                    // The game is fixed once the tournament exists: its matches
-                    // were built by that module, and nothing moves them to
-                    // another one.
-                    disabled={locked || !!tournament}
-                    onClick={() => handlers.onGameChange(entry.id)}
-                    data-testid={`tournament-game-option-${entry.id}`}
-                    sx={{
-                      display: 'flex',
-                      gap: 1.5,
-                      alignItems: 'center',
-                      justifyContent: 'flex-start',
-                      p: 2,
-                      textAlign: 'left',
-                      border: 1,
-                      borderColor: pressed ? 'primary.main' : 'divider',
-                      borderRadius: `${tokens.radius.md}px`,
-                      bgcolor: pressed ? 'background.paper' : 'transparent',
-                      '&.Mui-focusVisible': {
-                        outline: `2px solid ${tokens.color.focus}`,
-                        outlineOffset: 2,
-                      },
-                    }}
-                  >
-                    <Box
-                      aria-hidden="true"
-                      sx={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: `${tokens.radius.sm}px`,
-                        bgcolor: 'background.surface2',
-                        display: 'grid',
-                        placeItems: 'center',
-                        fontWeight: 700,
-                        fontSize: '0.8rem',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {entry.icon ? (
-                        <Box
-                          component="img"
-                          src={entry.icon}
-                          alt=""
-                          sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        />
-                      ) : (
-                        entry.mark
-                      )}
-                    </Box>
-                    <Box sx={{ display: 'grid' }}>
-                      <Typography fontWeight={600}>{entry.name}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {t(
-                          `tournament.setup.game.integrationDescriptions.${entry.integrationId}`,
-                          { defaultValue: '' }
-                        )}
-                      </Typography>
-                    </Box>
-                  </ButtonBase>
-                );
-              })}
-            </Box>
+            <GamePicker
+              games={setupGames}
+              value={game}
+              onChange={handlers.onGameChange}
+              // The game is fixed once the tournament exists: its matches were
+              // built by that module, and nothing moves them to another one.
+              disabled={locked || !!tournament}
+              label={t('tournament.setup.game.label')}
+            />
           </Field>
         );
 
