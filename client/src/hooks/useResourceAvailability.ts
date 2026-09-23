@@ -24,6 +24,17 @@ import { api } from '../utils/api';
 import type { ServerAvailabilityResponse } from '../types/api.types';
 import type { ClientGameIntegration } from '../integrations/types';
 
+/** One ask, or null when it failed or the endpoint answered with no data. */
+async function askOnce(endpoint: string): Promise<ServerAvailabilityResponse | null> {
+  try {
+    const data = await api.get<ServerAvailabilityResponse>(endpoint);
+    return data.success ? data : null;
+  } catch (err) {
+    console.error('Failed to load resource availability:', err);
+    return null;
+  }
+}
+
 interface UseResourceAvailabilityResult {
   availability: ServerAvailabilityResponse | null;
   /** Seconds until the next allocation pass, or null when there is none. */
@@ -47,37 +58,27 @@ export function useResourceAvailability(
   const availability = endpoint ? answer : null;
   const nextInSeconds = endpoint ? seconds : null;
 
+  const apply = useCallback((data: ServerAvailabilityResponse | null) => {
+    if (!data) return;
+    setAnswer(data);
+    setSeconds(
+      typeof data.nextAllocationInSeconds === 'number' ? data.nextAllocationInSeconds : null
+    );
+  }, []);
+
+  /** Ask again now, for a page with its own refresh button. */
   const refresh = useCallback(async () => {
     if (!endpoint) return;
-    try {
-      const data = await api.get<ServerAvailabilityResponse>(endpoint);
-      if (data.success) {
-        setAnswer(data);
-        setSeconds(
-          typeof data.nextAllocationInSeconds === 'number' ? data.nextAllocationInSeconds : null
-        );
-      }
-    } catch (err) {
-      console.error('Failed to load resource availability:', err);
-    }
-  }, [endpoint]);
+    apply(await askOnce(endpoint));
+  }, [endpoint, apply]);
 
   useEffect(() => {
     if (!endpoint) return;
     let cancelled = false;
 
     const load = async () => {
-      try {
-        const data = await api.get<ServerAvailabilityResponse>(endpoint);
-        if (cancelled || !data.success) return;
-        setAnswer(data);
-        setSeconds(
-          typeof data.nextAllocationInSeconds === 'number' ? data.nextAllocationInSeconds : null
-        );
-      } catch (err) {
-        if (cancelled) return;
-        console.error('Failed to load resource availability:', err);
-      }
+      const data = await askOnce(endpoint);
+      if (!cancelled) apply(data);
     };
 
     void load();
@@ -86,7 +87,7 @@ export function useResourceAvailability(
       cancelled = true;
       clearInterval(interval);
     };
-  }, [endpoint, intervalMs]);
+  }, [endpoint, intervalMs, apply]);
 
   // Local per-second tick, so the countdown moves between answers.
   useEffect(() => {
