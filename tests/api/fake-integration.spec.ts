@@ -238,6 +238,68 @@ test.describe.serial('Fake integration: a tournament without CS2', () => {
     expect(done?.winner?.id).toBeTruthy();
   });
 
+  /**
+   * Round robin used to stall on a game with no veto (the gap PR #295 left
+   * open). The generator knows every pairing up front and holds everything
+   * past round 1 as `pending` for the map veto; CS2 opens those rounds by
+   * vetoing them, and a game without a pre-match phase had nothing that did.
+   * Round 1 played out and rounds 2 and 3 stayed `pending` for ever.
+   *
+   * Now the finished round opens the next one, the way Swiss pairs its next
+   * round and the elimination brackets ready the match a winner advances into.
+   */
+  test('round robin: each finished round opens the next one, up to a champion', { tag: ['@api'] }, async ({ request }) => {
+    const teamIds = await createTeams(request, 'fake-rr', 4);
+    await createFakeTournament(request, {
+      name: 'Fake round robin',
+      type: 'round_robin',
+      format: 'bo1',
+      teamIds,
+    });
+
+    // 4 teams: 3 rounds of 2, every pairing seeded from the start. Round 1 is
+    // ready without a veto; the later rounds wait their turn.
+    const created = await listMatches(request);
+    expect(created).toHaveLength(6);
+    expect(created.filter((m) => m.round === 1).map((m) => m.status)).toEqual(['ready', 'ready']);
+    expect(created.filter((m) => m.round > 1).every((m) => m.status === 'pending')).toBe(true);
+    expect(created.filter((m) => m.round > 1).every((m) => m.team1 && m.team2)).toBe(true);
+
+    await start(request);
+
+    const round1 = await waitForLoadedRound(request, 1, 2);
+
+    // Half a round is not a round: the next one stays shut.
+    await playSeries(request, round1[0], 1, 'team1');
+    expect(
+      (await listMatches(request)).filter((m) => m.round === 2).every((m) => m.status === 'pending'),
+      'round 2 waits for the whole of round 1'
+    ).toBe(true);
+    await playSeries(request, round1[1], 1, 'team1');
+
+    // Rounds 2 and 3 open on their own, one at a time.
+    for (const round of [2, 3]) {
+      const matches = await waitForLoadedRound(request, round, 2);
+      expect(matches.every((m) => !m.serverId)).toBe(true);
+      const later = (await listMatches(request)).filter((m) => m.round > round);
+      expect(later.every((m) => m.status === 'pending'), `round ${round + 1} is not open yet`).toBe(true);
+      for (const match of matches) await playSeries(request, match, 1, 'team1');
+    }
+
+    const done = await waitForCompletion(request);
+    expect(done?.winner?.id, 'a round robin ends with a champion').toBeTruthy();
+    expect((await listMatches(request)).every((m) => m.status === 'completed')).toBe(true);
+
+    // The standings are the core's, computed over all 6 completed matches.
+    const bracket = await request.get('/api/tournament/bracket');
+    expect(bracket.ok()).toBe(true);
+    const standings = ((await bracket.json()) as {
+      roundRobinStandings?: Array<{ teamId: string; wins: number; losses: number }>;
+    }).roundRobinStandings;
+    expect(standings).toHaveLength(4);
+    expect(standings!.reduce((sum, s) => sum + s.wins, 0)).toBe(6);
+  });
+
   test('the event route checks its input and only drives the fake game', { tag: ['@api'] }, async ({ request }) => {
     expect((await request.post(`${FAKE}/r1m1/events`, { data: { type: 'map.result' } })).status()).toBe(400);
     expect(

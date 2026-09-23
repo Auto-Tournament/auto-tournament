@@ -392,6 +392,18 @@ export async function checkTournamentCompletion(tournamentId: number): Promise<v
       await advanceSwissTournament(tournamentId);
     }
 
+    // Round robin generates every match with its teams up front and holds the
+    // rounds after 1 as `pending`. CS2 opens them through the map veto; a game
+    // without a pre-match phase needs the finished round to open the next one,
+    // or the tournament stalls after round 1. The service is a no-op for a
+    // game that has a veto.
+    if (tournament.type === 'round_robin') {
+      const { advanceRoundRobinTournament } = await import(
+        '../services/roundRobinProgressionService'
+      );
+      await advanceRoundRobinTournament(tournamentId);
+    }
+
     // Count all matches for this tournament (bracket matches have round >= 1)
     const totalMatches = await db.queryOneAsync<{ count: number | string }>(
       'SELECT COUNT(*) as count FROM matches WHERE tournament_id = ? AND round >= 1',
