@@ -1121,6 +1121,25 @@ export class Scheduler {
   }
 
   /**
+   * The `baseUrl` the tournament's integration needs for allocation (CS2:
+   * the webhook URL from Settings). Rejects when the integration needs one
+   * and it is not configured; `''` when it needs none, so a game with no
+   * servers starts without a webhook URL.
+   */
+  async resolveBaseUrl(tournamentId: number): Promise<string> {
+    const integration = await this.integrationForTournament(tournamentId);
+    return integration.resolveBaseUrl ? integration.resolveBaseUrl({ tournamentId }) : '';
+  }
+
+  /** `resolveBaseUrl` for one match's integration (the admin match actions). */
+  async resolveBaseUrlForMatch(match: DbMatchRow): Promise<string> {
+    const integration = integrationForMatch(match);
+    return integration.resolveBaseUrl
+      ? integration.resolveBaseUrl({ tournamentId: match.tournament_id, slug: match.slug })
+      : '';
+  }
+
+  /**
    * Admin "load": put the match on the resource it is assigned to. Null when
    * the match's integration has no load action.
    */
