@@ -35,7 +35,7 @@ import { theme } from './theme';
 import { GamesOnboardingRedirect } from './components/games/GamesOnboardingRedirect';
 import WelcomeGames from './pages/WelcomeGames';
 import { ImpersonationBanner } from './components/common/ImpersonationBanner';
-import { instanceIntegration } from './integrations/registry';
+import { listIntegrations } from './integrations/registry';
 import { adminRoute, paths, playerProfilePath } from './paths';
 
 interface ProtectedRouteProps {
@@ -229,8 +229,13 @@ function AppRoutes() {
     return null; // Loading state is handled by ProtectedRoute
   }
 
-  // Pages the game integration owns (CS2: Servers, Maps, Steam connect).
-  const integrationRoutes = instanceIntegration().routes;
+  // Pages the game integrations own (CS2: Servers, Maps, Steam connect).
+  //
+  // Every installed module's, not just the one the tournament runs: the
+  // *links* to these pages follow the game (see `useShellIntegrations`), but
+  // the pages themselves stay mounted, so a bookmark, a link in a Discord
+  // message or a half-finished setup opens the page instead of a 404.
+  const integrationRoutes = listIntegrations().flatMap((integration) => integration.routes);
 
   return (
     <Routes>

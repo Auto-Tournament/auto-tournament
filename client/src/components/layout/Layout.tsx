@@ -46,8 +46,7 @@ import { api } from '../../utils/api';
 import { useIsDevelopment } from '../../hooks/useIsDevelopment';
 import { useTranslation } from 'react-i18next';
 import { SharedNavBar } from './SharedNavBar';
-import { instanceIntegration } from '../../integrations/registry';
-import { useTournamentIntegration } from '../../hooks/useTournamentIntegration';
+import { useShellIntegrations } from '../../hooks/useShellIntegrations';
 import { paths } from '../../paths';
 
 const drawerWidth = 240;
@@ -200,20 +199,26 @@ export default function Layout() {
 
   const isDevelopment = useIsDevelopment();
 
-  // Pages the game integration adds (CS2: Servers, Maps). Each keeps the
-  // i18n keys it had: nav.<key> and layout.pageTitle.<key>.
-  const integrationNavItems = instanceIntegration().navItems;
-
-  // One read of the tournament for both of the shell's game-dependent parts:
-  // whether a result here can be disputed at all (3.0 phase D, PR D8), and
-  // what the game's module needs an admin to fix before it can run (phase E:
-  // CS2's webhook URL and its plugin's database). `useDisputesEntry` is the
-  // same decision for the pages that need only that one.
+  // One read of the tournament for all three of the shell's game-dependent
+  // parts: the pages the game's module adds (CS2: Servers, Maps), whether a
+  // result here can be disputed at all (3.0 phase D, PR D8), and what the
+  // module needs an admin to fix before it can run (phase E: CS2's webhook
+  // URL and its plugin's database). `useDisputesEntry` is the same decision
+  // for the pages that need only that one.
   //
-  // Null until there is a tournament, so an instance that has not said what it
-  // runs yet is not warned about the settings of a game it may not be running.
-  const { integration: tournamentIntegration, loading: tournamentGameLoading } =
-    useTournamentIntegration();
+  // The nav items are the shell's — every installed module until a tournament
+  // says which one this instance runs, then only that one's. The other two
+  // are the tournament's own, and null until there is one, so an instance
+  // that has not said what it runs yet is not warned about the settings of a
+  // game it may not be running.
+  //
+  // Each item keeps the i18n keys it had: nav.<key> and layout.pageTitle.<key>.
+  const {
+    shell,
+    tournament: tournamentIntegration,
+    loading: tournamentGameLoading,
+  } = useShellIntegrations();
+  const integrationNavItems = shell.flatMap((integration) => integration.navItems);
   const showDisputes = !tournamentGameLoading && Boolean(tournamentIntegration?.adminDisputesView);
   const AdminGlobalWarning = tournamentGameLoading
     ? undefined

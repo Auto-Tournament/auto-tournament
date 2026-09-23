@@ -7,10 +7,9 @@
  * it has nothing to show, and a column of "N/A" says the data is missing when
  * the truth is that it was never going to exist.
  *
- * Read from the tournament rather than from `instanceIntegration()`, which is
- * hard-wired to CS2 ("3.0 runs one game per instance"): the whole point of
- * phase D is that the one tournament this instance runs might be Rocket
- * League.
+ * Read from the tournament rather than from the instance, which until phase E
+ * meant CS2 ("3.0 runs one game per instance"): the whole point of phase D is
+ * that the one tournament this instance runs might be Rocket League.
  *
  * It asks `GET /api/tournament/game` and not `GET /api/tournament`, which is
  * admin-only — an ordinary player opening their own profile would get a 403 in

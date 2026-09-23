@@ -8,8 +8,8 @@
  * would then point at a page that can never have a row on it.
  *
  * Resolved from the tournament through `useTournamentIntegration` rather than
- * from `instanceIntegration()`, which is hard-wired to CS2 ("3.0 runs one game
- * per instance"): the whole point of phase D is that the one tournament this
+ * from the instance, which until phase E meant CS2 ("3.0 runs one game per
+ * instance"): the whole point of phase D is that the one tournament this
  * instance runs might be Rocket League.
  */
 
