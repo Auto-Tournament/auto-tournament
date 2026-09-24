@@ -20,6 +20,11 @@ export interface RecentMatchesProps {
   matches: RecentMatchEntry[];
   limit?: number;
   onSelect: (slug: string) => void;
+  /**
+   * The footnote explaining the kills / deaths column. A game that measures
+   * neither has no column, so the note would explain nothing (default: shown).
+   */
+  showStatsNote?: boolean;
 }
 
 /**
@@ -28,7 +33,12 @@ export interface RecentMatchesProps {
  * player's aggregated match-stats row, only of the full match record — click
  * a row to open the full match details modal (unchanged, further down).
  */
-export function RecentMatches({ matches, limit = 10, onSelect }: RecentMatchesProps) {
+export function RecentMatches({
+  matches,
+  limit = 10,
+  onSelect,
+  showStatsNote = true,
+}: RecentMatchesProps) {
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -48,7 +58,11 @@ export function RecentMatches({ matches, limit = 10, onSelect }: RecentMatchesPr
 
   return (
     <Card>
-      <CardContent sx={{ p: 0 }} data-testid="profile-recent-matches">
+      <CardContent
+        // MUI pads the last child's bottom; without the note, that is this.
+        sx={{ p: 0, '&:last-child': { pb: 0 } }}
+        data-testid="profile-recent-matches"
+      >
         {shown.map((match) => (
           <Box
             key={match.slug}
@@ -101,13 +115,15 @@ export function RecentMatches({ matches, limit = 10, onSelect }: RecentMatchesPr
           </Box>
         ))}
       </CardContent>
-      <Typography
-        variant="caption"
-        color="text.secondary"
-        sx={{ display: 'block', px: 2, pb: 1.5, pt: shown.length ? 0 : 1.5 }}
-      >
-        {t('playerPage.recentMatches.statsNote')}
-      </Typography>
+      {showStatsNote && (
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: 'block', px: 2, pb: 1.5, pt: shown.length ? 0 : 1.5 }}
+        >
+          {t('playerPage.recentMatches.statsNote')}
+        </Typography>
+      )}
     </Card>
   );
 }

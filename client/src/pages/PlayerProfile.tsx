@@ -45,6 +45,7 @@ import { ProfileHeader } from '../components/player/profile/ProfileHeader';
 import { GameSwitch } from '../components/player/profile/GameSwitch';
 import { StatsGrid, type ProfileStat } from '../components/player/profile/StatsGrid';
 import { useGameCapabilities } from '../hooks/useGameCapabilities';
+import { integrationFor } from '../integrations/registry';
 import { RatingChart } from '../components/player/profile/RatingChart';
 import { RecentMatches, type RecentMatchEntry } from '../components/player/profile/RecentMatches';
 import type { PlayerDetail } from '../types/api.types';
@@ -862,7 +863,15 @@ export default function PlayerProfile() {
   const losses = uniqueMatchHistory.length - wins;
 
   // Use the most recent match's tournament for leaderboard link (if available)
-  const latestTournamentId = uniqueMatchHistory.find((m) => m.tournamentId)?.tournamentId;
+  const latestTournamentMatch = uniqueMatchHistory.find((m) => m.tournamentId);
+  const latestTournamentId = latestTournamentMatch?.tournamentId;
+  // What that tournament's module shows in place of the columns above, when
+  // its game measures nothing itself: manual reporting lists the custom fields
+  // the tournament asked reporters for. CS2 leaves the slot empty — its
+  // numbers are the rest of this page.
+  const TournamentStatsView = latestTournamentMatch
+    ? integrationFor(latestTournamentMatch).tournamentStatsView
+    : undefined;
   const hasAnyMatches = uniqueMatchHistory.length > 0;
 
   // --- New profile header/stats/rating-chart/recent-matches section ---
@@ -913,10 +922,10 @@ export default function PlayerProfile() {
         ...(profileWinRatePct !== null
           ? [{ key: 'win-rate', label: t('playerPage.stats.winRate'), value: `${profileWinRatePct}%` }]
           : []),
-        ...(profileAvgAdr !== null
+        ...(showGameStats && profileAvgAdr !== null
           ? [{ key: 'adr', label: t('playerPage.stats.adr'), value: profileAvgAdr.toFixed(1) }]
           : []),
-        ...(profileKd !== null
+        ...(showGameStats && profileKd !== null
           ? [{ key: 'kd', label: t('playerPage.stats.kd'), value: profileKd.toFixed(2) }]
           : []),
         // TITLES (tournaments won) intentionally omitted: not derivable from
@@ -948,8 +957,7 @@ export default function PlayerProfile() {
       wonMatch: m.wonMatch,
       opponentName,
       roundLabel: getRoundLabel(m.round),
-      kills: m.kills,
-      deaths: m.deaths,
+      ...(showGameStats ? { kills: m.kills, deaths: m.deaths } : {}),
     };
   });
   // --- end new profile section ---
@@ -1058,9 +1066,10 @@ export default function PlayerProfile() {
             onSelect={setSelectedGameId}
           />
 
-          {/* Stats: RATING (+change), MATCHES, WIN RATE, ADR, K/D. TITLES omitted
-              (not derivable from existing data). Tiles without real data are
-              never rendered — see profileStats above. */}
+          {/* Stats: RATING (+change), MATCHES, WIN RATE, and ADR, K/D for a
+              game that measures them. TITLES omitted (not derivable from
+              existing data). Tiles without real data are never rendered — see
+              profileStats above. */}
           <StatsGrid stats={profileStats} />
 
           <Grid container spacing={2}>
@@ -1087,6 +1096,7 @@ export default function PlayerProfile() {
               </Box>
               <RecentMatches
                 matches={recentMatchEntries}
+                showStatsNote={showGameStats}
                 onSelect={(slug) => {
                   const match = uniqueMatchHistory.find((m) => m.slug === slug);
                   if (match) setSelectedMatch(match);
@@ -1178,7 +1188,9 @@ export default function PlayerProfile() {
                   {t('playerPage.recentFormHighlights')}
                 </Typography>
 
-                {/* ADR highlights centered above timeline */}
+                {/* ADR highlights centered above timeline. A match of a game
+                    that measures no damage has no ADR — not an "N/A" one. */}
+                {showGameStats && (
                 <Box display="flex" justifyContent="center" gap={4} mb={3} flexWrap="wrap">
                   {bestAdrMatch && (
                     <Box textAlign="center">
@@ -1213,6 +1225,7 @@ export default function PlayerProfile() {
                     </Box>
                   )}
                 </Box>
+                )}
 
                 {/* Full-width recent form timeline */}
                 <Box>
@@ -1337,6 +1350,10 @@ export default function PlayerProfile() {
             />
           )}
 
+          {TournamentStatsView && latestTournamentId !== undefined && (
+            <TournamentStatsView tournamentId={latestTournamentId} />
+          )}
+
           {/* Rating History */}
           {/* Match History */}
           {uniqueMatchHistory.length > 0 && (
@@ -1346,7 +1363,7 @@ export default function PlayerProfile() {
                   {t('playerPage.matchHistory')}
                 </Typography>
                 <TableContainer>
-                  <Table size="small">
+                  <Table size="small" data-testid="profile-match-history">
                     <TableHead>
                       <TableRow>
                         <TableCell align="left">{t('playerPage.round')}</TableCell>

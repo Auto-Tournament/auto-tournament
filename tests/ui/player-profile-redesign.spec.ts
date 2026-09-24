@@ -129,6 +129,25 @@ test.describe('Redesigned player profile', () => {
       await expect(row).toBeVisible();
       await expect(row).toContainText('20 / 10');
 
+      // CS2 measures kills, damage and headshots and records demos, so its
+      // profile keeps every one of those columns and tiles. The manually
+      // reported game's spec (manual-report-stats-pages.spec.ts) pins the
+      // other side: the same page with none of them.
+      await expect(page.getByTestId('profile-stat-adr')).toBeVisible();
+      await expect(page.getByTestId('profile-stat-kd')).toBeVisible();
+      await expect(page.getByTestId('profile-match-history').locator('thead th')).toHaveText([
+        'Round',
+        'Opponent',
+        'Kills',
+        'Deaths',
+        'Assists',
+        'HS%',
+        'DMG',
+        'Rating',
+        'Result',
+        'Demo',
+      ]);
+
       // Profile header team chip links to that team's public profile page
       // (/t/team/:teamId), not the in-match/server team page (/team/:teamId).
       const teamChip = page.getByTestId('public-player-team');
