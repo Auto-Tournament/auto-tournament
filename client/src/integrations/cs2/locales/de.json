@@ -627,5 +627,64 @@
       "mapsRequired": "Please select at least one map",
       "saveFailed": "Failed to save map pool"
     }
+  },
+  "manualMatchModal": {
+    "title": "Manuelles Match erstellen",
+    "steps": {
+      "matchSetup": "Spiel-Setup",
+      "rules": "Regeln",
+      "maps": "Karten",
+      "teams": "Mannschaften",
+      "review": "Überprüfung"
+    },
+    "description": "Erstelle ein eigenständiges Match, das unabhängig von der Turniergruppe ist. Die API weist Ihnen automatisch einen verfügbaren Server zu.",
+    "buttons": {
+      "next": "Nächste",
+      "back": "Zurück",
+      "create": "Match erstellen",
+      "creating": "Wird erstellt..."
+    },
+    "saveTemplate": {
+      "title": "Spielvorlage speichern",
+      "nameLabel": "Name der Vorlage",
+      "nameHelper": "Zum Beispiel: BO1 Inferno Messer, BO3 Kartenpool, etc.",
+      "description": "Aktuelle Karten, Serienformat, CT-Seitenregel, Veto-Schalter, Messermodus und Spieler pro Team werden in dieser Vorlage gespeichert.",
+      "save": "Speichern"
+    },
+    "chooseMode": {
+      "heading": "Wie möchtest du dieses Match erstellen?",
+      "template": {
+        "title": "Vorlage auswählen",
+        "description": "Laden Sie eine Voreinstellung für Karten, Format und Regeln und wählen Sie dann die Teams aus.",
+        "label": "Matchvorlage",
+        "none": "Kein",
+        "empty": "Noch keine Vorlagen gespeichert. Konfigurieren Sie eine Übereinstimmung und speichern Sie sie als Vorlage."
+      },
+      "custom": {
+        "title": "Neue Partie erstellen",
+        "description": "Konfigurieren Sie Karten, Regeln, Seiten und Teams von Grund auf."
+      }
+    },
+    "errors": {
+      "slugAndMapsRequired": "Slug und mindestens eine Karte sind erforderlich.",
+      "teamsMustDiffer": "Team 1 und Team 2 müssen unterschiedlich sein.",
+      "invalidMapSelectionVeto": "Ungültige Kartenauswahl für das Veto. Bitte wähle genau 7 Karten aus oder deaktiviere das Veto.",
+      "invalidMapSelectionFormat": "Ungültige Kartenauswahl für dieses Serienformat. Bitte wähle die richtige Anzahl an Karten aus.",
+      "configIncomplete": "Die Match-Konfiguration ist unvollständig. Bitte überprüfe die Einstellungen.",
+      "createFailed": "Match konnte nicht erstellt werden. Bitte versuche es erneut."
+    }
+  },
+  "saveMapPoolModal": {
+    "title": "Kartenpool speichern",
+    "nameLabel": "Map-Pool-Name",
+    "namePlaceholder": "Mein benutzerdefinierter Pool",
+    "saveButton": "Speichern",
+    "errors": {
+      "nameRequired": "Map-Pool-Name ist erforderlich",
+      "noMaps": "Bitte mindestens eines auswählen",
+      "saveFailed": "Pool konnte nicht gespeichert werden"
+    },
+    "info_one": "Damit wird ein Map-Pool mit {{count}} Karte gespeichert.",
+    "info_other": "Damit wird ein Map-Pool mit {{count}} Karten gespeichert."
   }
 }

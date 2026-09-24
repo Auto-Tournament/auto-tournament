@@ -11,7 +11,7 @@ import MapPoolModal from '../maps/MapPoolModal';
 import MapPoolActionsModal from '../maps/MapPoolActionsModal';
 import { MapsTab } from '../maps/MapsTab';
 import { MapPoolsTab } from '../maps/MapPoolsTab';
-import type { Map, MapsResponse, MapPool, MapPoolsResponse } from '../../../types/api.types';
+import type { Map, MapsResponse, MapPool, MapPoolsResponse } from '../cs2.types';
 import { ConfirmDialog } from '../../../module-sdk';
 
 export default function Maps() {

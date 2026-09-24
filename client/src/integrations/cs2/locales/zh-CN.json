@@ -627,5 +627,64 @@
       "mapsRequired": "Please select at least one map",
       "saveFailed": "Failed to save map pool"
     }
+  },
+  "manualMatchModal": {
+    "title": "创建手动比赛",
+    "steps": {
+      "matchSetup": "比赛设置",
+      "rules": "规则",
+      "maps": "地图",
+      "teams": "战队",
+      "review": "确认"
+    },
+    "description": "创建一场独立于锦标赛对阵图的单独比赛。API 会自动为你分配一台可用服务器。",
+    "buttons": {
+      "next": "下一步",
+      "back": "上一步",
+      "create": "创建比赛",
+      "creating": "正在创建…"
+    },
+    "saveTemplate": {
+      "title": "保存比赛模板",
+      "nameLabel": "模板名称",
+      "nameHelper": "例如：BO1 Inferno 刀局、BO3 地图池等。",
+      "description": "当前所选地图、系列赛制、CT 选边规则、Veto 开关、刀局模式以及每队人数等配置都会保存到该模板中。",
+      "save": "保存"
+    },
+    "chooseMode": {
+      "heading": "你希望如何创建这场比赛？",
+      "template": {
+        "title": "使用模板",
+        "description": "加载一套预设的地图、赛制和规则，然后选择双方队伍。",
+        "label": "比赛模板",
+        "none": "无",
+        "empty": "当前还没有保存的比赛模板。先配置一场比赛并将其保存为模板。"
+      },
+      "custom": {
+        "title": "全新创建比赛",
+        "description": "从零开始配置地图、规则、选边和队伍。"
+      }
+    },
+    "errors": {
+      "slugAndMapsRequired": "需要提供标识符和至少一张地图。",
+      "teamsMustDiffer": "队伍1和队伍2必须是不同的队伍。",
+      "invalidMapSelectionVeto": "禁选模式的地图选择无效。请选择恰好7张地图或禁用禁选。",
+      "invalidMapSelectionFormat": "此系列赛格式的地图选择无效。请选择正确数量的地图。",
+      "configIncomplete": "比赛配置不完整。请检查设置。",
+      "createFailed": "创建比赛失败。请重试。"
+    }
+  },
+  "saveMapPoolModal": {
+    "title": "保存地图池",
+    "nameLabel": "地图池名称",
+    "namePlaceholder": "我的自定义地图池",
+    "saveButton": "保存",
+    "errors": {
+      "nameRequired": "地图池名称为必填项",
+      "noMaps": "请至少选择一张地图",
+      "saveFailed": "保存地图池失败"
+    },
+    "info_one": "将保存一个包含 {{count}} 张地图的地图池。",
+    "info_other": "将保存一个包含 {{count}} 张地图的地图池。"
   }
 }

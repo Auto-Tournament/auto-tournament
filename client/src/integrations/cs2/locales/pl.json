@@ -657,5 +657,66 @@
       "mapsRequired": "Please select at least one map",
       "saveFailed": "Failed to save map pool"
     }
+  },
+  "manualMatchModal": {
+    "title": "Utwórz mecz ręczny",
+    "steps": {
+      "matchSetup": "Konfiguracja meczu",
+      "rules": "Zasady",
+      "maps": "Mapy",
+      "teams": "Drużyny",
+      "review": "Podsumowanie"
+    },
+    "description": "Utwórz niezależny mecz, niezwiązany z drabinką turnieju. API automatycznie przydzieli dostępny serwer.",
+    "buttons": {
+      "next": "Dalej",
+      "back": "Wstecz",
+      "create": "Utwórz mecz",
+      "creating": "Tworzenie…"
+    },
+    "saveTemplate": {
+      "title": "Zapisz szablon meczu",
+      "nameLabel": "Nazwa szablonu",
+      "nameHelper": "Np.: BO1 Inferno knife, BO3 pula map, itd.",
+      "description": "Bieżące mapy, format serii, zasada strony CT, przełącznik veto, tryb knife oraz liczba graczy na drużynę zostaną zapisane w tym szablonie.",
+      "save": "Zapisz"
+    },
+    "chooseMode": {
+      "heading": "Jak chcesz utworzyć ten mecz?",
+      "template": {
+        "title": "Wybierz szablon",
+        "description": "Wczytaj preset map, formatu i zasad, a następnie wybierz drużyny.",
+        "label": "Szablon meczu",
+        "none": "Brak",
+        "empty": "Brak zapisanych szablonów. Skonfiguruj mecz i zapisz go jako szablon."
+      },
+      "custom": {
+        "title": "Utwórz nowy mecz",
+        "description": "Skonfiguruj mapy, zasady, strony i drużyny od zera."
+      }
+    },
+    "errors": {
+      "slugAndMapsRequired": "Wymagany jest slug i co najmniej jedna mapa.",
+      "teamsMustDiffer": "Drużyna 1 i drużyna 2 muszą być różne.",
+      "invalidMapSelectionVeto": "Nieprawidłowy wybór map dla veto. Wybierz dokładnie 7 map lub wyłącz veto.",
+      "invalidMapSelectionFormat": "Nieprawidłowy wybór map dla tego formatu. Wybierz właściwą liczbę map.",
+      "configIncomplete": "Konfiguracja meczu jest niekompletna. Sprawdź ustawienia.",
+      "createFailed": "Nie udało się utworzyć meczu. Spróbuj ponownie."
+    }
+  },
+  "saveMapPoolModal": {
+    "title": "Zapisz pulę map",
+    "nameLabel": "Nazwa puli map",
+    "namePlaceholder": "Moja niestandardowa pula",
+    "saveButton": "Zapisz",
+    "errors": {
+      "nameRequired": "Nazwa puli map jest wymagana",
+      "noMaps": "Wybierz co najmniej jedną mapę",
+      "saveFailed": "Nie udało się zapisać puli map"
+    },
+    "info_one": "Zostanie zapisana pula map z {{count}} mapą.",
+    "info_few": "Zostanie zapisana pula map z {{count}} mapami.",
+    "info_many": "Zostanie zapisana pula map z {{count}} mapami.",
+    "info_other": "Zostanie zapisana pula map z {{count}} mapami."
   }
 }

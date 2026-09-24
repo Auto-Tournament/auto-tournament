@@ -1,8 +1,7 @@
 /**
- * This module's copy of `client/src/constants/vetoOrders.ts`: the veto
- * orders are CS2's data, and a module built on its own cannot reach core's
- * copy (DESIGN-module-client-api.md §2.4). Core keeps its own while its pages
- * still use it (item 10).
+ * The veto orders are CS2's data, so they live in the module
+ * (DESIGN-module-client-api.md §2.4). Core's copy is gone: nothing outside
+ * this module read it.
  *
  * Standard veto orders for different match formats
  * Following CS Major Supplemental Rulebook standards

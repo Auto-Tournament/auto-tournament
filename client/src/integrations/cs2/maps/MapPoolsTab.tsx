@@ -3,7 +3,7 @@ import AddIcon from '@mui/icons-material/Add';
 import CollectionsIcon from '@mui/icons-material/Collections';
 import { EmptyState, useModuleTranslation } from '../../../module-sdk';
 import { MapPoolCard } from './MapPoolCard';
-import type { MapPool, Map as MapType } from '../../../types/api.types';
+import type { MapPool, Map as MapType } from '../cs2.types';
 
 interface MapPoolsTabProps {
   mapPools: MapPool[];

@@ -17,8 +17,7 @@
  * `client/src` (hooks, utils, contexts, components, types, …) is core
  * internals that can change without notice, and would be missing from a
  * module built as its own bundle. `eslint-rules/module-sdk-boundary.mjs`
- * reports every import that goes around this barrel (warn for now; the
- * count is the baseline to drive down).
+ * refuses every import that goes around this barrel (an error).
  *
  * This file will become a versioned public API (`clientApi`, 0.x in
  * lockstep with the platform until a module that is not ours depends on it).

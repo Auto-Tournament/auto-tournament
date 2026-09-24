@@ -17,7 +17,7 @@
 import * as React from 'react';
 import { Box, Button } from '@mui/material';
 import { useSnackbar, api, useModuleTranslation } from '../../../module-sdk';
-import type { SettingsResponse } from '../../../types/api.types';
+import type { WebhookSettings, WebhookSettingsResponse } from '../cs2.types';
 import type { AdminGlobalWarningProps } from '../../types';
 
 export const WebhookWarning: React.FC<AdminGlobalWarningProps> = ({ onOpenSettings }) => {
@@ -31,7 +31,7 @@ export const WebhookWarning: React.FC<AdminGlobalWarningProps> = ({ onOpenSettin
 
     const loadSettings = async () => {
       try {
-        const response = await api.get<SettingsResponse>('/api/settings');
+        const response = await api.get<WebhookSettingsResponse>('/api/settings');
         if (isMounted) {
           setWebhookConfigured(Boolean(response.settings?.webhookConfigured));
         }
@@ -45,7 +45,7 @@ export const WebhookWarning: React.FC<AdminGlobalWarningProps> = ({ onOpenSettin
     loadSettings();
 
     const handleSettingsUpdated = (event: Event) => {
-      const customEvent = event as CustomEvent<SettingsResponse['settings']>;
+      const customEvent = event as CustomEvent<WebhookSettings>;
       setWebhookConfigured(Boolean(customEvent.detail?.webhookConfigured));
     };
 

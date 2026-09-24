@@ -8,10 +8,9 @@ import * as tsParser from '@typescript-eslint/parser';
  *
  * A client game module (`client/src/integrations/<id>/**`) may import platform
  * code only from `client/src/module-sdk` and `integrations/types`, and must use
- * the host's copy of the shared packages. The rule runs as a warning: the
- * current count is a baseline to burn down. This spec proves it fires on the
- * imports it must report, leaves the allowed ones alone, and is wired into
- * eslint.config.mjs as a warning on integration files only.
+ * the host's copy of the shared packages. This spec proves the rule fires on
+ * the imports it must report, leaves the allowed ones alone, and is wired
+ * into eslint.config.mjs as an error on integration files only.
  *
  * @tag api
  */
@@ -156,15 +155,16 @@ test.describe('Module SDK boundary lint', () => {
     }
   });
 
-  test('eslint.config.mjs turns the rule on as a warning for client integrations only', async () => {
+  test('eslint.config.mjs makes the rule an error for client integrations only', async () => {
     const eslint = new ESLint({ cwd: REPO_ROOT });
     const severity = async (file: string) => {
       const config = await eslint.calculateConfigForFile(path.join(REPO_ROOT, file));
       const setting = config.rules?.[RULE_ID];
       return Array.isArray(setting) ? setting[0] : setting;
     };
-    expect(await severity('client/src/integrations/cs2/index.tsx')).toBe(1);
-    expect(await severity('client/src/integrations/manual-report/index.ts')).toBe(1);
+    expect(await severity('client/src/integrations/cs2/index.tsx')).toBe(2);
+    expect(await severity('client/src/integrations/cs2/setup/MapPoolStep.tsx')).toBe(2);
+    expect(await severity('client/src/integrations/manual-report/index.ts')).toBe(2);
     expect(await severity('client/src/App.tsx')).toBeUndefined();
   });
 });

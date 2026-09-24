@@ -16,7 +16,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
-import type { MapPool, Map } from '../../../types/api.types';
+import type { MapPool, Map } from '../cs2.types';
 import { useModuleTranslation } from '../../../module-sdk';
 
 interface MapPoolActionsModalProps {

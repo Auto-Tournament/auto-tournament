@@ -80,52 +80,6 @@
       "grandFinalReset": "Grand Final Reset"
     }
   },
-  "manualMatchModal": {
-    "title": "Crea match manuale",
-    "steps": {
-      "matchSetup": "Configurazione match",
-      "rules": "Regole",
-      "maps": "Mappe",
-      "teams": "Squadre",
-      "review": "Riepilogo"
-    },
-    "description": "Crea un match indipendente dal tabellone del torneo. L’API alloca automaticamente un server disponibile per te.",
-    "buttons": {
-      "next": "Avanti",
-      "back": "Indietro",
-      "create": "Crea match",
-      "creating": "Creazione…"
-    },
-    "saveTemplate": {
-      "title": "Salva modello match",
-      "nameLabel": "Nome modello",
-      "nameHelper": "Ad esempio: BO1 Inferno knife, pool mappe BO3, ecc.",
-      "description": "Le mappe attuali, il formato serie, la regola lato CT, il toggle veto, la modalità knife e i giocatori per squadra verranno salvati in questo modello.",
-      "save": "Salva"
-    },
-    "chooseMode": {
-      "heading": "Come vuoi creare questo match?",
-      "template": {
-        "title": "Scegli modello",
-        "description": "Carica un preset per mappe, formato e regole, poi scegli le squadre.",
-        "label": "Modello match",
-        "none": "Nessuno",
-        "empty": "Nessun modello salvato. Configura un match e salvalo come modello."
-      },
-      "custom": {
-        "title": "Crea nuovo match",
-        "description": "Configura mappe, regole, lati e squadre da zero."
-      }
-    },
-    "errors": {
-      "slugAndMapsRequired": "Sono necessari lo slug e almeno una mappa.",
-      "teamsMustDiffer": "Il team 1 e il team 2 devono essere diversi.",
-      "invalidMapSelectionVeto": "Selezione mappe non valida per il veto. Seleziona esattamente 7 mappe o disabilita il veto.",
-      "invalidMapSelectionFormat": "Selezione mappe non valida per questo formato. Seleziona il numero corretto di mappe.",
-      "configIncomplete": "La configurazione della partita è incompleta. Controlla le impostazioni.",
-      "createFailed": "Impossibile creare la partita. Riprova."
-    }
-  },
   "matchDetailsModal": {
     "delete": {
       "dialogTitle": "Elimina match",

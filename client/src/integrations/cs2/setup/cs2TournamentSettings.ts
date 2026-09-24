@@ -14,7 +14,7 @@ import type {
   TournamentSetupModel,
   TournamentSetupSummary,
 } from '../../types';
-import { requiresVeto, validateMapCount } from '../../../utils/tournamentVerification';
+import { requiresVeto, validateMapCount } from './mapRules';
 
 /** The key of CS2's object in `settings`. */
 export const CS2_SETTINGS_KEY = 'cs2';

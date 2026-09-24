@@ -330,16 +330,15 @@ export default [
 
   // Module SDK boundary (item 8c). A client game module reaches platform code
   // only through client/src/module-sdk and integrations/types, and uses the
-  // host's copy of the shared packages. Warn, not error: today's count is the
-  // baseline to burn down, and it flips to error once CS2 compiles against the
-  // SDK alone. See eslint-rules/module-sdk-boundary.mjs.
+  // host's copy of the shared packages. An error, so no new bypass creeps in.
+  // See eslint-rules/module-sdk-boundary.mjs.
   {
     files: ['client/src/integrations/**/*.{ts,tsx}'],
     plugins: {
       'module-sdk': moduleSdkBoundary,
     },
     rules: {
-      'module-sdk/module-sdk-boundary': 'warn',
+      'module-sdk/module-sdk-boundary': 'error',
     },
   },
 

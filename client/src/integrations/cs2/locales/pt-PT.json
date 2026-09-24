@@ -627,5 +627,64 @@
       "mapsRequired": "Please select at least one map",
       "saveFailed": "Failed to save map pool"
     }
+  },
+  "manualMatchModal": {
+    "title": "Criar jogo manual",
+    "steps": {
+      "matchSetup": "Configuração do jogo",
+      "rules": "Regras",
+      "maps": "Mapas",
+      "teams": "Equipas",
+      "review": "Rever"
+    },
+    "description": "Crie um jogo independente que não depende da bracket do torneio. A API irá alocar automaticamente um servidor disponível.",
+    "buttons": {
+      "next": "Seguinte",
+      "back": "Voltar",
+      "create": "Criar jogo",
+      "creating": "A criar…"
+    },
+    "saveTemplate": {
+      "title": "Guardar modelo de jogo",
+      "nameLabel": "Nome do modelo",
+      "nameHelper": "Por exemplo: BO1 Inferno knife, BO3 pool de mapas, etc.",
+      "description": "Os mapas atuais, formato da série, regra do lado CT, alternância de veto, modo knife e jogadores por equipa serão guardados neste modelo.",
+      "save": "Guardar"
+    },
+    "chooseMode": {
+      "heading": "Como gostaria de criar este jogo?",
+      "template": {
+        "title": "Escolher modelo",
+        "description": "Carregue um predefinido para mapas, formato e regras e, depois, escolha as equipas.",
+        "label": "Modelo de jogo",
+        "none": "Nenhum",
+        "empty": "Ainda não existem modelos guardados. Configure um jogo e guarde-o como modelo."
+      },
+      "custom": {
+        "title": "Criar novo jogo",
+        "description": "Configure mapas, regras, lados e equipas do zero."
+      }
+    },
+    "errors": {
+      "slugAndMapsRequired": "O slug e pelo menos um mapa são obrigatórios.",
+      "teamsMustDiffer": "A equipa 1 e a equipa 2 têm de ser diferentes.",
+      "invalidMapSelectionVeto": "Seleção de mapas inválida para o veto. Selecione exatamente 7 mapas ou desative o veto.",
+      "invalidMapSelectionFormat": "Seleção de mapas inválida para este formato. Selecione o número correto de mapas.",
+      "configIncomplete": "A configuração da partida está incompleta. Reveja as configurações.",
+      "createFailed": "Falha ao criar a partida. Tente novamente."
+    }
+  },
+  "saveMapPoolModal": {
+    "title": "Guardar pool de mapas",
+    "nameLabel": "Nome do pool de mapas",
+    "namePlaceholder": "O meu pool personalizado",
+    "saveButton": "Guardar",
+    "errors": {
+      "nameRequired": "O nome do pool de mapas é obrigatório",
+      "noMaps": "Selecione pelo menos um mapa",
+      "saveFailed": "Não foi possível guardar o pool de mapas"
+    },
+    "info_one": "Isto guarda um map pool com {{count}} mapa.",
+    "info_other": "Isto guarda um map pool com {{count}} mapas."
   }
 }

@@ -53,19 +53,6 @@
       "saveFailed": "Klarte ikke å lagre mal"
     }
   },
-  "saveMapPoolModal": {
-    "title": "Lagre kartpool",
-    "nameLabel": "Navn på kartpool",
-    "namePlaceholder": "Min egendefinerte pool",
-    "saveButton": "Lagre",
-    "errors": {
-      "nameRequired": "Navn på kartpool er påkrevd",
-      "noMaps": "Velg minst ett kart",
-      "saveFailed": "Klarte ikke å lagre kartpool"
-    },
-    "info_one": "Dette lagrer en kartpool med {{count}} kart.",
-    "info_other": "Dette lagrer en kartpool med {{count}} kart."
-  },
   "eloTemplatesPage": {
     "errors": {
       "load": "Klarte ikke å laste ELO-maler"

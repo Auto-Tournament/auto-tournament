@@ -13,7 +13,12 @@ import DnsIcon from '@mui/icons-material/Dns';
 import ReplayIcon from '@mui/icons-material/Replay';
 import ServerModal from '../servers/ServerModal';
 import BatchServerModal from '../servers/BatchServerModal';
-import type { Server, ServersResponse, ServerStatusResponse, MatchesResponse } from '../../../types';
+import type {
+  Server,
+  ServersResponse,
+  ServerStatusResponse,
+  ServerMatchesResponse,
+} from '../cs2.types';
 import type { SnackbarKey } from 'notistack';
 import {
   usePageHeader,
@@ -700,7 +705,7 @@ export default function Servers() {
 
     setLoadingMatchServerId(server.id);
     try {
-      const response = await api.get<MatchesResponse & { tournamentStatus?: string }>(
+      const response = await api.get<ServerMatchesResponse>(
         `/api/matches?serverId=${encodeURIComponent(server.id)}`
       );
 

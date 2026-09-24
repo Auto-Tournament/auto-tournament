@@ -37,16 +37,115 @@ export interface Server {
   currentMatch?: string | null;
   reachableFromApi?: boolean;
   serverCanReachApi?: boolean;
-  /** Auto Tournament CS2 plugin version (e.g. "1.3.6"), from its server_configured event. */
-  pluginVersion?: string | null;
-  /** CS2 server hostname (from the hostname convar). */
-  hostname?: string | null;
-  /** Unix timestamp of the last event received (heartbeat). */
-  lastSeen?: number | null;
+  // Server tracking fields (from Auto Tournament CS2 server_configured event)
+  pluginVersion?: string | null; // Auto Tournament CS2 version (e.g., "1.3.6")
+  hostname?: string | null; // CS2 server hostname (from hostname convar)
+  lastSeen?: number | null; // Unix timestamp of last event received (heartbeat)
+  /** Unix timestamp when we last sent persistent config via RCON. Set before Auto Tournament CS2 sends events. */
+  persistentConfigSent?: number | null;
+  /** If set, the server has reported a CS2 update is required (Steam required_version). */
+  cs2RequiredVersion?: number | null;
+  /** Best-effort: phase of the update signal ('available'|'shutdown'). */
+  cs2UpdatePhase?: string | null;
+  /** Unix timestamp when update was last reported. */
+  cs2UpdateRequiredAt?: number | null;
+  /** Best-effort: CS2 server build ID parsed from `version` output. */
+  cs2BuildId?: number | null;
+  /** Unix timestamp when the platform last ran the Steam UpToDateCheck for this server. */
+  cs2UpdateCheckedAt?: number | null;
+  /** Best-effort: `version` output (display-only; may include multiple lines). */
+  cs2VersionString?: string | null;
+  /** Unix timestamp when version/build was last fetched via RCON. */
+  cs2VersionFetchedAt?: number | null;
+  /** Best-effort: Auto Tournament CS2 plugin DB reachable. */
+  atDbOk?: boolean | null;
+  /** Best-effort: 'sqlite' | 'mysql'. */
+  atDbType?: string | null;
+  /** Best-effort: last DB error message (if any). */
+  atDbError?: string | null;
+  /** Unix timestamp when DB was last reported OK. */
+  atDbLastOkAt?: number | null;
+  /** Unix timestamp when DB health was last reported. */
+  atDbLastSeenAt?: number | null;
+  /** Unix timestamp when server last successfully sent any event to /api/events. */
+  serverCanReachApiAt?: number | null;
+  // Optional real-time status values reported by the Auto Tournament CS2 plugin and
+  // allocator. These are populated by /api/servers/:id/status and are used
+  // purely for UI display on the Servers page.
+  pluginStatus?: string | null;
+  allocationState?: string | null;
+  allocationMatchSlug?: string | null;
+  ipBanned?: boolean; // True if server has banned our IP address
+  atConfig?: {
+    chatPrefix?: string | null;
+    adminChatPrefix?: string | null;
+    knifeEnabledDefault?: boolean | null;
+    minimumReadyRequired?: number | null;
+    pauseAfterRestore?: boolean | null;
+    stopCommandAvailable?: boolean | null;
+    stopCommandNoDamage?: boolean | null;
+    whitelistEnabledDefault?: boolean | null;
+    kickWhenNoMatchLoaded?: boolean | null;
+    playoutEnabledDefault?: boolean | null;
+    resetCvarsOnSeriesEnd?: boolean | null;
+    usePauseCommandForTacticalPause?: boolean | null;
+    /** Auto Tournament CS2: 0=idle, 1=match, 2=practice */
+    autostartMode?: 0 | 1 | 2 | null;
+    demoPath?: string | null;
+    hostnameFormat?: string | null;
+    demoNameFormat?: string | null;
+    demoUploadUrl?: string | null;
+  } | null;
 }
 
 export interface ServersResponse extends Cs2ApiResponse {
   servers: Server[];
+}
+
+/** `GET /api/servers/:id/status`: one server's live (or cached) status. */
+export interface ServerStatusResponse extends Cs2ApiResponse {
+  serverId: string;
+  status: string;
+  isAvailable: boolean;
+  currentMatch: string | null;
+  queuedMatch?: string | null;
+  playerCount?: number;
+  reachableFromApi?: boolean;
+  serverCanReachApi?: boolean;
+  pluginStatus?: string | null;
+  allocationState?: string | null;
+  allocationMatchSlug?: string | null;
+  ipBanned?: boolean; // True if server has banned our IP address
+  cs2BuildId?: number | null;
+  cs2VersionString?: string | null;
+  cs2VersionFetchedAt?: number | null;
+  /** If set, Steam reports this server is out of date (required_version). */
+  cs2RequiredVersion?: number | null;
+  /** Best-effort: phase of the update signal ('available'|'shutdown'). */
+  cs2UpdatePhase?: string | null;
+  /** Unix timestamp when the platform last checked UpToDateCheck for this server. */
+  cs2UpdateCheckedAt?: number | null;
+}
+
+/**
+ * `GET /api/matches?serverId=…`, read by the Servers page only to find the
+ * match a server is running: the platform's match list, of which this module
+ * needs the slug and status.
+ */
+export interface ServerMatchesResponse extends Cs2ApiResponse {
+  matches: Array<{ slug: string; status: string }>;
+}
+
+/**
+ * `GET /api/settings`, read only for whether the webhook URL (the address a
+ * CS2 server reaches the platform on) is set. The rest is the platform's.
+ */
+export interface WebhookSettings {
+  webhookConfigured?: boolean;
+}
+
+export interface WebhookSettingsResponse extends Cs2ApiResponse {
+  settings?: WebhookSettings;
 }
 
 /** One server as `/api/tournament/server-availability` describes it. */
@@ -234,6 +333,10 @@ export interface Map {
 export interface MapsResponse extends Cs2ApiResponse {
   maps: Map[];
   count: number;
+}
+
+export interface MapResponse extends Cs2ApiResponse {
+  map: Map;
 }
 
 export interface MapPool {

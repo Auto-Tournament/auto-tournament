@@ -14,7 +14,7 @@ import {
 import { Warning as WarningIcon } from '@mui/icons-material';
 import { useModuleTranslation } from '../../../module-sdk';
 import { SortableMapList } from './SortableMapList';
-import { validateMapCount, requiresVeto } from '../../../utils/tournamentVerification';
+import { validateMapCount, requiresVeto } from './mapRules';
 import type { Map as MapType, MapPool } from '../cs2.types';
 
 /**
