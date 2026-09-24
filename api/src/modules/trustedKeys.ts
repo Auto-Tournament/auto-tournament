@@ -58,6 +58,16 @@ function isRawEd25519(value: string): boolean {
   return /^[A-Za-z0-9+/]{43}=$/.test(value) && Buffer.from(value, 'base64').length === 32;
 }
 
+/** The keys `MODULE_TRUSTED_KEYS` adds, and how many of its entries are not keys. */
+export function environmentTrustedKeys(): { keys: TrustedKey[]; malformed: number } {
+  const entries = (process.env.MODULE_TRUSTED_KEYS || '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter((value) => value !== '');
+  const keys = environmentKeys().filter((extra) => !COMPILED_KEYS.some((k) => k.keyId === extra.keyId));
+  return { keys, malformed: entries.filter((value) => !isRawEd25519(value)).length };
+}
+
 function environmentKeys(): TrustedKey[] {
   const raw = process.env.MODULE_TRUSTED_KEYS || '';
   return raw

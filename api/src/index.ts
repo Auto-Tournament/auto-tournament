@@ -35,7 +35,12 @@ import { initializeSocket } from './services/socketService';
 import { routeTable } from './routes/routeTable';
 import { listIntegrations } from './integrations/registry';
 import { diskModuleRoutes, scanDiskModules } from './modules/loader';
-import { finishPendingUpdates, sweepStaging } from './modules/catalogService';
+import {
+  finishPendingUpdates,
+  restoreInterruptedSwaps,
+  sweepStaging,
+} from './modules/catalogService';
+import { environmentTrustedKeys } from './modules/trustedKeys';
 import { recoverActiveMatches } from './services/matchRecoveryService';
 import { enrichBuiltinGames } from './services/gameEnrichmentService';
 import { scheduler } from './core/scheduler';
@@ -448,6 +453,19 @@ process.on('uncaughtException', (err) => {
     // that waited for this restart are kept if they loaded and rolled back
     // if they did not (DESIGN-modules §10.7).
     await sweepStaging();
+    await restoreInterruptedSwaps();
+    // Extra signing keys from the environment trust code the platform does
+    // not vouch for. Said at every boot, by id, so it is never a surprise.
+    const envKeys = environmentTrustedKeys();
+    if (envKeys.keys.length > 0) {
+      log.warn(
+        `[MODULES] MODULE_TRUSTED_KEYS: code modules signed by ${envKeys.keys.length} key(s) this platform does not ship are trusted too: ` +
+          envKeys.keys.map((key) => key.keyId).join(', ')
+      );
+    }
+    if (envKeys.malformed > 0) {
+      log.warn(`[MODULES] MODULE_TRUSTED_KEYS: ${envKeys.malformed} entry(ies) are not base64 Ed25519 public keys and were ignored`);
+    }
     await scanDiskModules();
     await finishPendingUpdates();
 

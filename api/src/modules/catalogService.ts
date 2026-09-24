@@ -71,6 +71,7 @@ import {
 } from './loader';
 import { compatibilityProblem, isValidModuleId, parseManifest } from './manifest';
 import { verifyModuleRelease } from './signature';
+import { trustedKeys } from './trustedKeys';
 
 // ---------------------------------------------------------------------------
 // Errors and the lock
@@ -105,6 +106,45 @@ async function exclusive<T>(what: string, fn: () => Promise<T>): Promise<T> {
 
 export const MODULE_INSTALL_KEY_PREFIX = 'module_install:';
 export const MODULE_REMOVED_KEY_PREFIX = 'module_removed:';
+/**
+ * The highest version of a module this instance ever installed from the
+ * catalog. Kept through uninstall and purge (and a database wipe, with the
+ * other `module_*` settings), so a feed edit — or a stolen admin session —
+ * cannot walk an instance back to an older signed release with a known flaw.
+ */
+export const MODULE_MAX_VERSION_KEY_PREFIX = 'module_max_version:';
+
+/**
+ * The oldest release of a module this platform accepts, whatever the feed
+ * and the instance's history say. A release with a known flaw is fenced off
+ * here, in a platform release.
+ */
+const MINIMUM_MODULE_VERSIONS: Readonly<Record<string, string>> = {};
+
+async function highestInstalledVersion(id: string): Promise<string | null> {
+  const raw = await db.getAppSettingAsync(`${MODULE_MAX_VERSION_KEY_PREFIX}${id}`).catch(() => null);
+  return raw && semver.valid(raw) ? raw : null;
+}
+
+async function recordInstalledVersion(id: string, version: string): Promise<void> {
+  const highest = await highestInstalledVersion(id);
+  if (!highest || semver.gt(version, highest)) {
+    await db.setAppSettingAsync(`${MODULE_MAX_VERSION_KEY_PREFIX}${id}`, version);
+  }
+}
+
+/** Why installing `version` of `id` would be a downgrade, or null. Equal is a reinstall, and allowed. */
+async function downgradeProblem(id: string, version: string): Promise<string | null> {
+  const highest = await highestInstalledVersion(id);
+  if (highest && semver.lt(version, highest)) {
+    return `Version ${version} is older than ${highest}, which this instance has already run; a downgrade is refused.`;
+  }
+  const minimum = MINIMUM_MODULE_VERSIONS[id];
+  if (minimum && semver.lt(version, minimum)) {
+    return `Version ${version} is older than ${minimum}, the oldest this platform accepts.`;
+  }
+  return null;
+}
 
 export interface ModuleProvenance {
   source: 'catalog' | 'snapshot';
@@ -199,6 +239,9 @@ export interface CatalogItem {
     version: string | null;
     source: string;
     enabled: boolean;
+    /** Code modules from the catalog: the key their release was signed with. */
+    keyId?: string | null;
+    keyLabel?: string | null;
   } | null;
   /** What installing (or updating) would install. */
   available: { version: string | null; from: 'remote' | 'snapshot' } | null;
@@ -227,6 +270,27 @@ function mergeModules(remote: CatalogModuleEntry[], snapshot: CatalogModuleEntry
   return merged;
 }
 
+/**
+ * What the running process does not match yet, for a module, or null: the
+ * reason a restart is required.
+ */
+async function pendingRestart(id: string): Promise<string | null> {
+  const state = diskModuleState(id);
+  const onDisk = await exists(liveDir(id));
+  const installedVersion = onDisk ? await diskVersion(liveDir(id)) : null;
+  const enabled = (await readEnabled(id)) === true;
+  const loaded = isModuleLoaded(id);
+  if (loaded && !onDisk) return 'Uninstalled. Its code stays loaded until the next restart.';
+  if (loaded && !enabled) return 'Disabled. Its code stays loaded until the next restart.';
+  if (loaded && state?.version && installedVersion && state.version !== installedVersion) {
+    return `Version ${installedVersion} is installed; ${state.version} runs until the next restart.`;
+  }
+  if (onDisk && enabled && !loaded && state?.status === 'disabled') {
+    return 'Enabled. It loads on the next restart.';
+  }
+  return null;
+}
+
 async function moduleItem(
   id: string,
   entry: CatalogModuleEntry | undefined
@@ -236,20 +300,14 @@ async function moduleItem(
   const installedVersion = onDisk ? await diskVersion(liveDir(id)) : null;
   const enabled = (await readEnabled(id)) === true;
   const provenance = onDisk ? await readProvenance(id) : null;
-  const loaded = isModuleLoaded(id);
 
   const picked = entry ? pickRelease(entry.releases) : null;
   const available =
     picked && picked.ok ? { version: picked.release.version, from: picked.release.from } : null;
 
-  let restartReason: string | null = null;
-  if (loaded && !onDisk) restartReason = 'Uninstalled. Its code stays loaded until the next restart.';
-  else if (loaded && !enabled) restartReason = 'Disabled. Its code stays loaded until the next restart.';
-  else if (loaded && state?.version && installedVersion && state.version !== installedVersion) {
-    restartReason = `Version ${installedVersion} is installed; ${state.version} runs until the next restart.`;
-  } else if (onDisk && enabled && !loaded && state?.status === 'disabled') {
-    restartReason = 'Enabled. It loads on the next restart.';
-  }
+  const restartReason = await pendingRestart(id);
+  // Who vouched for the files on disk: the key that signed them, by name.
+  const key = provenance ? trustedKeys().find((candidate) => candidate.keyId === provenance.keyId) : undefined;
 
   let itemState: CatalogState;
   let reason: string | null = restartReason;
@@ -277,7 +335,13 @@ async function moduleItem(
     state: itemState,
     reason,
     installed: onDisk
-      ? { version: installedVersion, source: provenance?.source ?? 'manual', enabled }
+      ? {
+          version: installedVersion,
+          source: provenance?.source ?? 'manual',
+          enabled,
+          keyId: provenance?.keyId ?? null,
+          keyLabel: provenance ? (key ? key.label : 'a key this platform no longer trusts') : null,
+        }
       : null,
     available,
     restartRequired: restartReason !== null,
@@ -651,6 +715,13 @@ export function installCatalogModule(
 
 async function installModule(id: string, { actor, update }: { actor: string | null; update: boolean }): Promise<OperationResult> {
   checkModuleId(id);
+  // A loaded module whose files already moved on (an update, an uninstall,
+  // a switch) serves its client half from where it was until the restart.
+  // Changing its files again before then would pull those out from under it.
+  const pending = await pendingRestart(id);
+  if (pending) {
+    throw new CatalogError(409, `Restart Auto Tournament first: ${pending}`, 'restart-required');
+  }
   const entry = await moduleEntry(id);
   if (!entry) throw new CatalogError(404, `The catalog has no module '${id}'.`, 'not-found');
 
@@ -673,7 +744,13 @@ async function installModule(id: string, { actor, update }: { actor: string | nu
     );
   }
 
+  const refused = await downgradeProblem(id, picked.release.version);
+  if (refused) throw new CatalogError(409, refused, 'downgrade');
+
   const { bytes, release } = await obtain(picked.release, entry, installedVersion);
+  // The offline fallback may be another version than the one picked.
+  const refusedFallback = release === picked.release ? null : await downgradeProblem(id, release.version);
+  if (refusedFallback) throw new CatalogError(409, refusedFallback, 'downgrade');
 
   // The gate. Nothing below this line runs on bytes that did not verify.
   const verified = verifyModuleRelease(bytes.archive, bytes.signature, {
@@ -725,11 +802,23 @@ async function installModule(id: string, { actor, update }: { actor: string | nu
     const previousEnabled = await readEnabled(id);
     const previousProvenance = await readProvenance(id);
     await removeTree(previousDir(id));
-    if (hadPrevious) {
-      await fs.promises.mkdir(path.dirname(previousDir(id)), { recursive: true });
-      await fs.promises.rename(live, previousDir(id));
+    let movedOld = false;
+    try {
+      if (hadPrevious) {
+        await fs.promises.mkdir(path.dirname(previousDir(id)), { recursive: true });
+        await fs.promises.rename(live, previousDir(id));
+        movedOld = true;
+      }
+      await fs.promises.rename(tree, live);
+    } catch (error) {
+      // Never leave the module without a folder: put the old one back. (A
+      // crash between the two renames is finished at boot, see
+      // restoreInterruptedSwaps.)
+      if (movedOld && !(await exists(live))) {
+        await fs.promises.rename(previousDir(id), live).catch(() => undefined);
+      }
+      throw new Error(`Could not move the new version into place, so nothing was changed: ${(error as Error).message}`);
     }
-    await fs.promises.rename(tree, live);
 
     await writeProvenance(id, {
       source: release.from === 'remote' ? 'catalog' : 'snapshot',
@@ -741,13 +830,28 @@ async function installModule(id: string, { actor, update }: { actor: string | nu
       previous: previousProvenance ? { ...previousProvenance, previous: null } : null,
     });
     await db.setAppSettingAsync(`${MODULE_REMOVED_KEY_PREFIX}${id}`, null);
-    await storeEnabled(id, true);
+    // An install switches the module on; an update keeps the switch as the
+    // admin left it.
+    const enable = update ? previousEnabled === true : true;
+    await storeEnabled(id, enable);
 
     const verb = update ? 'Updated' : 'Installed';
     const from = release.from === 'remote' ? 'our GitHub' : 'the offline snapshot';
     const by = actor ? ` (by ${actor})` : '';
 
+    if (!enable) {
+      await recordInstalledVersion(id, release.version);
+      await removeTree(previousDir(id));
+      log.info(`[CATALOG] ${verb} ${id} to ${release.version} from ${from}${by}; it stays disabled`);
+      return {
+        item: await itemFor(id),
+        restartRequired: false,
+        message: `Version ${release.version} is installed. It stays disabled until you enable it.`,
+      };
+    }
+
     if (wasLoaded) {
+      await recordInstalledVersion(id, release.version);
       // Node cannot unload the running version. It keeps running — and keeps
       // serving its own client files from .previous — until the restart,
       // which loads the new one.
@@ -762,6 +866,7 @@ async function installModule(id: string, { actor, update }: { actor: string | nu
 
     const state = await loadModuleNow(id);
     if (state?.status === 'ok') {
+      await recordInstalledVersion(id, release.version);
       await removeTree(previousDir(id));
       log.success(`[CATALOG] ${verb} ${id}@${release.version} from ${from}${by}, loaded without a restart`);
       return {
@@ -790,6 +895,31 @@ async function installModule(id: string, { actor, update }: { actor: string | nu
 }
 
 /**
+ * A crash between the two renames of an install leaves the old version in
+ * `.previous/<id>` and nothing at `<id>`. Before the boot scan, put it back
+ * — when the instance still counts the module as installed (an install
+ * record or a switch) and no admin removed it. Never deletes anything.
+ */
+export async function restoreInterruptedSwaps(): Promise<void> {
+  const root = path.join(modulesDir(), '.previous');
+  const entries = await fs.promises.readdir(root, { withFileTypes: true }).catch(() => []);
+  for (const dirent of entries) {
+    const id = dirent.name;
+    if (!dirent.isDirectory() || !isValidModuleId(id)) continue;
+    if (await exists(liveDir(id))) continue;
+    try {
+      const installed = (await readProvenance(id)) !== null || (await readEnabled(id)) !== null;
+      const removed = await db.getAppSettingAsync(`${MODULE_REMOVED_KEY_PREFIX}${id}`);
+      if (!installed || removed) continue;
+      await fs.promises.rename(previousDir(id), liveDir(id));
+      log.warn(`[CATALOG] ${id}: an install was interrupted before its new version was in place; restored the previous version`);
+    } catch (error) {
+      log.error(`[CATALOG] ${id}: could not restore the previous version after an interrupted install: ${(error as Error).message}`);
+    }
+  }
+}
+
+/**
  * Finish the updates the last run left for a restart (§10.7 step 6). For each
  * module with a `.previous` folder: the new version loaded → drop the old
  * one; it did not → put the old one back, load that, and say so. Runs at
@@ -803,7 +933,11 @@ export async function finishPendingUpdates(): Promise<void> {
     if (!dirent.isDirectory() || !isValidModuleId(id)) continue;
     const state = diskModuleState(id);
     if (!(await exists(liveDir(id)))) {
-      await removeTree(previousDir(id));
+      // Not restored before the scan (restoreInterruptedSwaps): the module was
+      // removed on purpose, or nothing says it was installed. The old files
+      // stay where they are; only an admin's uninstall deletes a version.
+      if (await db.getAppSettingAsync(`${MODULE_REMOVED_KEY_PREFIX}${id}`)) await removeTree(previousDir(id));
+      else log.warn(`[CATALOG] ${id}: ${previousDir(id)} holds a version that is not installed; left as it is`);
     } else if (state?.status === 'ok') {
       await removeTree(previousDir(id));
     } else if (state?.status === 'broken' || state?.status === 'incompatible') {
@@ -924,16 +1058,11 @@ export function purgeCatalogModule(id: string, confirm: unknown, actor: string |
       );
     }
     const tables = await namespaceTables(id);
+    let purged: PurgeReport = { tables, constraints: [] };
     await db.withClient(async (client) => {
       await client.query('BEGIN');
       try {
-        if (tables.length > 0) {
-          await client.query(`DROP TABLE IF EXISTS ${tables.map((name) => `"${name.replace(/"/g, '""')}"`).join(', ')}`);
-        }
-        await client.query('DELETE FROM module_migrations WHERE module_id = $1', [id]);
-        await client.query('DELETE FROM app_settings WHERE key = ANY($1)', [
-          [`${MODULE_ENABLED_KEY_PREFIX}${id}`, `${MODULE_INSTALL_KEY_PREFIX}${id}`],
-        ]);
+        purged = await purgeModuleData(client, id, tables);
         await client.query('COMMIT');
       } catch (error) {
         await client.query('ROLLBACK').catch(() => undefined);
@@ -941,7 +1070,11 @@ export function purgeCatalogModule(id: string, confirm: unknown, actor: string |
       }
     });
     await storeEnabled(id, null);
-    log.warn(`[CATALOG] Purged ${id}'s data: ${tables.length ? tables.join(', ') : 'no tables'}${actor ? ` (by ${actor})` : ''}`);
+    log.warn(
+      `[CATALOG] Purged ${id}'s data: ${tables.length ? tables.join(', ') : 'no tables'}` +
+        (purged.constraints.length ? `, and the keys into them (${purged.constraints.join(', ')})` : '') +
+        (actor ? ` (by ${actor})` : '')
+    );
     return {
       item: await itemFor(id),
       restartRequired: false,
@@ -949,4 +1082,54 @@ export function purgeCatalogModule(id: string, confirm: unknown, actor: string |
       dropped: tables,
     };
   });
+}
+
+export interface PurgeReport {
+  tables: string[];
+  /** Foreign keys from other tables into the module's, dropped first: `table.constraint`. */
+  constraints: string[];
+}
+
+/**
+ * The database half of a purge, on a connection inside the caller's
+ * transaction: drop every foreign key another table holds into the module's
+ * tables (core's `matches.server_id` into CS2's `cs2_servers`, say — the
+ * rows keep their values, the key goes), then the tables, then the module's
+ * ledger and switches. Exported for the test helper that runs it and rolls
+ * it back.
+ */
+export async function purgeModuleData(
+  client: { query: (sql: string, params?: unknown[]) => Promise<{ rows: Array<Record<string, unknown>> }> },
+  id: string,
+  tables: string[]
+): Promise<PurgeReport> {
+  const constraints: string[] = [];
+  if (tables.length > 0) {
+    const { rows } = await client.query(
+      `SELECT quote_ident(n.nspname) || '.' || quote_ident(r.relname) AS tbl,
+              r.relname AS relname, quote_ident(c.conname) AS con, c.conname AS conname
+         FROM pg_constraint c
+         JOIN pg_class r ON r.oid = c.conrelid
+         JOIN pg_namespace n ON n.oid = r.relnamespace
+        WHERE c.contype = 'f'
+          AND c.confrelid = ANY($1::text[]::regclass[])
+          AND c.conrelid <> ALL($1::text[]::regclass[])`,
+      [tables]
+    );
+    for (const row of rows) {
+      await client.query(`ALTER TABLE ${row.tbl as string} DROP CONSTRAINT ${row.con as string}`);
+      constraints.push(`${row.relname as string}.${row.conname as string}`);
+    }
+    await client.query(`DROP TABLE IF EXISTS ${tables.map((name) => `"${name.replace(/"/g, '""')}"`).join(', ')}`);
+  }
+  await client.query('DELETE FROM module_migrations WHERE module_id = $1', [id]);
+  await client.query('DELETE FROM app_settings WHERE key = ANY($1)', [
+    [`${MODULE_ENABLED_KEY_PREFIX}${id}`, `${MODULE_INSTALL_KEY_PREFIX}${id}`],
+  ]);
+  return { tables, constraints };
+}
+
+/** The tables a purge of `id` would drop. For the test helper. */
+export function purgeableTables(id: string): Promise<string[]> {
+  return namespaceTables(id);
 }

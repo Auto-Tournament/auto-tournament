@@ -2660,7 +2660,7 @@ router.delete('/modules/fixtures', requireAuth, async (_req: Request, res: Respo
       if (name.startsWith('fixture-')) await fs.promises.rm(path.join(previous, name), { recursive: true, force: true });
     }
     await db.runAsync(
-      "DELETE FROM app_settings WHERE (key LIKE 'module_install:fixture-%' OR key LIKE 'module_removed:fixture-%' OR key LIKE 'module_enabled:fixture-%')"
+      "DELETE FROM app_settings WHERE key LIKE 'module\\_%:fixture-%'"
     );
     res.json({ success: true, removed });
   } catch (err) {

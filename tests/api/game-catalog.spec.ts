@@ -31,7 +31,13 @@ interface Item {
   name: string;
   state: string;
   reason: string | null;
-  installed: { version: string | null; source: string; enabled: boolean } | null;
+  installed: {
+    version: string | null;
+    source: string;
+    enabled: boolean;
+    keyId?: string | null;
+    keyLabel?: string | null;
+  } | null;
   available: { version: string | null; from: 'remote' | 'snapshot' } | null;
   restartRequired: boolean;
   icon: string | null;
@@ -44,7 +50,17 @@ interface Listing {
 }
 
 type Ids = Record<
-  'good' | 'tampered' | 'badsig' | 'traversal' | 'symlink' | 'wrongversion' | 'incompatible' | 'migfail' | 'offline',
+  | 'good'
+  | 'tampered'
+  | 'badsig'
+  | 'traversal'
+  | 'symlink'
+  | 'wrongversion'
+  | 'incompatible'
+  | 'migfail'
+  | 'offline'
+  | 'redirect'
+  | 'hop',
   string
 >;
 
@@ -186,6 +202,11 @@ test.describe.serial('Game catalog', () => {
     const body = JSON.parse(text) as { restartRequired: boolean; item: Item };
     expect(body.restartRequired).toBe(false);
     expect(body.item).toMatchObject({ state: 'installed', installed: { version: '1.0.0', source: 'catalog', enabled: true } });
+    // Which key vouched for it: this process's throwaway test key, by id and name.
+    expect(body.item.installed?.keyId).toMatch(/^[0-9a-f]{16}$/);
+    expect(body.item.installed?.keyLabel).toBe('test');
+    // Recorded as the highest version this instance has run.
+    expect(((await (await request.get(`/api/test/modules/${ids.good}/max-version`)).json()) as { version: string }).version).toBe('1.0.0');
 
     // Loaded: the loader lists it as ok, and the public manifest serves its client.
     const modules = (await (await request.get('/api/modules')).json()) as { modules: Array<{ id: string; status: string }> };
@@ -213,6 +234,14 @@ test.describe.serial('Game catalog', () => {
     // The running version's client keeps being served until then.
     const client = await request.get(`/api/modules/${ids.good}/client/index.js`);
     expect(client.status()).toBe(200);
+    expect(((await (await request.get(`/api/test/modules/${ids.good}/max-version`)).json()) as { version: string }).version).toBe('1.1.0');
+
+    // A second update before the restart would pull the running version's
+    // files out from under it: refused until then.
+    await fakeCatalog(request, { goodVersions: ['1.0.0', '1.1.0', '1.2.0'] });
+    await refused(await write(request, 'post', `/api/catalog/modules/${ids.good}/update`), 409, /Restart Auto Tournament first/);
+    expect(client.status()).toBe(200);
+    expect((await request.get(`/api/modules/${ids.good}/client/index.js`)).status()).toBe(200);
   });
 
   test('disable and uninstall keep the data; purge waits for the restart', async ({ request }) => {
@@ -226,6 +255,8 @@ test.describe.serial('Game catalog', () => {
     const row = await item(request, 'module', ids.good);
     expect(row?.installed).toBeNull();
     expect(row?.restartRequired).toBe(true);
+    // Installed again before the restart: refused, the old code still runs.
+    await refused(await write(request, 'post', `/api/catalog/modules/${ids.good}/install`), 409, /Restart Auto Tournament first/);
 
     await refused(await write(request, 'post', `/api/catalog/modules/${ids.good}/purge`, {}), 400, /to confirm/);
     await refused(
@@ -236,6 +267,79 @@ test.describe.serial('Game catalog', () => {
     // One never loaded can be purged.
     const purged = await write(request, 'post', `/api/catalog/modules/${ids.migfail}/purge`, { confirm: ids.migfail });
     expect(purged.status(), await purged.text()).toBe(200);
+  });
+
+  test('refuses a version older than one this instance already ran', async ({ request }) => {
+    // As if 2.0.0 had been installed and uninstalled: the highest version is
+    // kept, and the feed's 1.0.0 is a downgrade. Refused before downloading.
+    const setMax = await request.post(`/api/test/modules/${ids.tampered}/max-version`, { data: { version: '2.0.0' } });
+    expect(setMax.ok()).toBe(true);
+    await refused(await write(request, 'post', `/api/catalog/modules/${ids.tampered}/install`), 409, /older than 2\.0\.0.*downgrade is refused/);
+    expect((await item(request, 'module', ids.tampered))?.installed).toBeNull();
+  });
+
+  test('a release URL that redirects anywhere but an asset host is refused', async ({ request }) => {
+    await refused(
+      await write(request, 'post', `/api/catalog/modules/${ids.redirect}/install`),
+      502,
+      /redirected to https:\/\/example\.com/
+    );
+    expect((await item(request, 'module', ids.redirect))?.installed).toBeNull();
+  });
+
+  test('an update keeps a disabled module disabled (one allowed redirect on the way)', async ({ request }) => {
+    // Put 1.0.0 on disk by hand: a module an operator placed, switched off.
+    const written = await request.post('/api/test/modules/fixture', { data: { id: ids.hop, kind: 'valid' } });
+    expect(written.status(), await written.text()).toBe(200);
+    expect((await item(request, 'module', ids.hop))).toMatchObject({ state: 'disabled', installed: { version: '1.0.0', enabled: false } });
+
+    // The catalog's 1.1.0 is served through one redirect to an allowed origin.
+    const updated = await write(request, 'post', `/api/catalog/modules/${ids.hop}/update`);
+    const text = await updated.text();
+    expect(updated.status(), text).toBe(200);
+    const body = JSON.parse(text) as { restartRequired: boolean; message: string; item: Item };
+    expect(body.restartRequired).toBe(false);
+    expect(body.message).toMatch(/stays disabled/);
+    expect(body.item).toMatchObject({ state: 'disabled', installed: { version: '1.1.0', source: 'catalog', enabled: false } });
+    const modules = (await (await request.get('/api/modules')).json()) as { modules: Array<{ id: string; status: string }> };
+    expect(modules.modules.find((m) => m.id === ids.hop)?.status).toBe('disabled');
+
+    // Switching it on loads it now.
+    const enabled = await write(request, 'post', `/api/catalog/modules/${ids.hop}/enable`);
+    expect(enabled.status(), await enabled.text()).toBe(200);
+    expect((await item(request, 'module', ids.hop))?.state).toBe('installed');
+  });
+
+  test('a module whose database has migrations it does not know is refused, and says so', async ({ request }) => {
+    const id = `fixture-ledger-${RUN}`;
+    const written = await request.post('/api/test/modules/fixture', { data: { id, kind: 'migrates' } });
+    expect(written.status(), await written.text()).toBe(200);
+    // A newer version of it ran this one here.
+    const ledger = await request.post(`/api/test/modules/${id}/ledger`, { data: { migrationId: '999-from-a-newer-version' } });
+    expect(ledger.ok(), await ledger.text()).toBe(true);
+
+    const enabled = await write(request, 'post', `/api/catalog/modules/${id}/enable`);
+    expect(enabled.status(), await enabled.text()).toBe(200);
+    const row = await item(request, 'module', id);
+    expect(row?.state).toBe('broken');
+    expect(row?.reason).toMatch(/does not know \(999-from-a-newer-version\).*newer version/);
+    const migrations = (await (await request.get(`/api/test/modules/${id}/migrations`)).json()) as { probeTableExists: boolean };
+    expect(migrations.probeTableExists).toBe(false);
+  });
+
+  test('an install interrupted between its two renames is put back at boot', async ({ request }) => {
+    const id = `fixture-swap-${RUN}`;
+    const written = await request.post('/api/test/modules/fixture', { data: { id, kind: 'valid' } });
+    expect(written.status(), await written.text()).toBe(200);
+    // Switched off, but switched: the instance counts it as installed.
+    expect((await write(request, 'post', `/api/modules/${id}/disable`)).status()).toBe(200);
+
+    expect((await request.post(`/api/test/modules/${id}/interrupt-swap`)).ok()).toBe(true);
+    expect((await item(request, 'module', id))?.installed ?? null).toBeNull();
+
+    // What boot does before it scans.
+    expect((await request.post('/api/test/modules/restore-swaps')).ok()).toBe(true);
+    expect((await item(request, 'module', id))?.installed).toMatchObject({ version: '1.0.0' });
   });
 
   test('installs a pack from the feed, and removes it', async ({ request }) => {

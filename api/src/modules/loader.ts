@@ -314,6 +314,22 @@ async function evaluate(folder: string, dir: string): Promise<Evaluation> {
     // transaction, and refuses one that reaches outside the module's own
     // names or was edited after it ran. A module whose migrations did not all
     // apply is broken, and says which one and why.
+    // A database that already ran migrations this version does not declare
+    // was set up by a newer version of the module: running this one against
+    // that schema is a downgrade by another route. Refused, with the names.
+    const declared = new Set((loaded.migrations ?? []).map((migration) => migration.id));
+    const ledger = await db.queryAsync<{ migration_id: string }>(
+      'SELECT migration_id FROM module_migrations WHERE module_id = ? ORDER BY migration_id',
+      [loaded.id]
+    );
+    const unknown = ledger.map((row) => row.migration_id).filter((migration) => !declared.has(migration));
+    if (unknown.length > 0) {
+      throw new ModuleLoadError(
+        `This database has migrations of '${loaded.id}' that version ${manifest.version} does not know (${unknown.join(', ')}): ` +
+          'a newer version set it up. Install that version or a newer one.'
+      );
+    }
+
     const migrated = await runModuleMigrations(loaded);
     if (migrated.status !== 'ok') {
       throw new ModuleLoadError(

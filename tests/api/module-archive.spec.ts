@@ -12,7 +12,12 @@ import {
 } from '../../api/src/modules/archive';
 import { signModuleArchive, verifyModuleRelease } from '../../api/src/modules/signature';
 import { keyIdFor, type TrustedKey } from '../../api/src/modules/trustedKeys';
-import { allowedReleaseUrl, pickRelease, type CatalogRelease } from '../../api/src/modules/catalogFeed';
+import {
+  allowedRedirectUrl,
+  allowedReleaseUrl,
+  pickRelease,
+  type CatalogRelease,
+} from '../../api/src/modules/catalogFeed';
 
 /**
  * The module release format, in process (DESIGN-modules §10.3, §10.4): the
@@ -191,6 +196,25 @@ test.describe('Catalog feed rules', () => {
     const none = pickRelease([release('3.0.0', '^9.0.0')], { serverApi: '0.1.0', clientApi: '0.2.0' });
     expect(none.ok).toBe(false);
     if (!none.ok) expect(none.reason).toMatch(/\^9\.0\.0/);
+  });
+
+  test('a release download may redirect only to GitHub\'s asset hosts, over https', () => {
+    for (const good of [
+      'https://objects.githubusercontent.com/github-production-release-asset/1/2?X-Amz=1',
+      'https://release-assets.githubusercontent.com/github-production-release-asset/3/4',
+    ]) {
+      expect(allowedRedirectUrl(new URL(good)), good).toBe(true);
+    }
+    for (const bad of [
+      'http://objects.githubusercontent.com/x',
+      'https://objects.githubusercontent.com:8443/x',
+      'https://evil.objects.githubusercontent.com.example/x',
+      'https://user:pass@objects.githubusercontent.com/x',
+      'https://example.com/x',
+      'https://github.com/Someone-Else/x.atmod',
+    ]) {
+      expect(allowedRedirectUrl(new URL(bad)), bad).toBe(false);
+    }
   });
 
   test('release URLs must be ours', () => {

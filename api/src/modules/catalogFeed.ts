@@ -1,3 +1,4 @@
+/* global AbortController, AbortSignal */
 /**
  * Where the game catalog's entries come from (DESIGN-modules §10.2): the
  * remote feed, its last copy under `DATA_DIR`, and the offline snapshot the
@@ -47,6 +48,8 @@ interface Overrides {
   downloadTimeoutMs?: number;
   snapshotDir?: string | null;
   cacheFile?: string | null;
+  /** Origins a release download may redirect to, besides GitHub's asset hosts. */
+  redirectOrigins?: string[] | null;
 }
 
 let overrides: Overrides = {};
@@ -251,8 +254,9 @@ async function fetchBytes(url: string, limit: number, timeoutMs: number): Promis
 }
 
 function describe(error: unknown): string {
-  const err = error as { type?: string; message?: string };
+  const err = error as { type?: string; name?: string; message?: string };
   if (err?.type === 'request-timeout' || err?.type === 'body-timeout') return 'it did not answer in time';
+  if (err?.type === 'aborted' || err?.name === 'AbortError') return 'it did not answer in time';
   if (err?.type === 'max-size') return 'the file is too large';
   return err?.message || 'unknown error';
 }
@@ -321,24 +325,76 @@ export interface ReleaseBytes {
 }
 
 /** Download a remote release and its `.sig`. Throws with a sentence. */
+/**
+ * The hosts GitHub serves release assets from. A release URL on github.com
+ * answers with one redirect to one of these; nothing else is followed.
+ */
+export const RELEASE_REDIRECT_HOSTS = ['objects.githubusercontent.com', 'release-assets.githubusercontent.com'];
+
+/** Whether a release download may be redirected to `url`: https, GitHub's asset hosts, nothing else. */
+export function allowedRedirectUrl(url: URL): boolean {
+  if (url.username || url.password) return false;
+  if (overrides.redirectOrigins?.includes(url.origin)) return true;
+  return url.protocol === 'https:' && url.port === '' && RELEASE_REDIRECT_HOSTS.includes(url.hostname);
+}
+
+/**
+ * One release file. Redirects are not followed blindly — at most one hop, to
+ * an allowed asset host (`allowedRedirectUrl`) — and the caller's signal is
+ * one deadline for the whole download, bodies included.
+ */
+async function fetchReleaseFile(url: string, limit: number, signal: AbortSignal): Promise<Buffer> {
+  let target = url;
+  for (let hop = 0; ; hop++) {
+    const response = await fetch(target, {
+      redirect: 'manual',
+      size: limit,
+      // node-fetch 2 declares its own AbortSignal type; Node's has the same shape.
+      signal: signal as unknown as NonNullable<Parameters<typeof fetch>[1]>['signal'],
+      headers: { accept: 'application/octet-stream' },
+    });
+    if (response.status >= 300 && response.status < 400) {
+      if (hop >= 1) throw new Error('it redirected more than once');
+      const location = response.headers.get('location');
+      if (!location) throw new Error('it redirected nowhere');
+      const next = new URL(location, target);
+      if (!allowedRedirectUrl(next)) {
+        throw new Error(`it redirected to ${next.protocol}//${next.host}, which this platform does not download from`);
+      }
+      target = next.toString();
+      continue;
+    }
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+    const declared = Number(response.headers.get('content-length') || 0);
+    if (declared > limit) throw new Error('the file is too large');
+    return response.buffer();
+  }
+}
+
+/** Download a remote release and its `.sig`, within one deadline. Throws with a sentence. */
 export async function downloadRelease(release: CatalogRelease): Promise<ReleaseBytes> {
   if (release.from !== 'remote' || !release.url || !allowedReleaseUrl(release.url)) {
     throw new Error('the release URL is not one this platform downloads from');
   }
-  const timeout = downloadTimeoutMs();
-  let archive: Buffer;
+  const controller = new AbortController();
+  const deadline = setTimeout(() => controller.abort(), downloadTimeoutMs());
   try {
-    archive = await fetchBytes(release.url, MAX_ARCHIVE_BYTES, timeout);
-  } catch (error) {
-    throw new Error(`downloading the release failed: ${describe(error)}`);
+    let archive: Buffer;
+    try {
+      archive = await fetchReleaseFile(release.url, MAX_ARCHIVE_BYTES, controller.signal);
+    } catch (error) {
+      throw new Error(`downloading the release failed: ${describe(error)}`);
+    }
+    let signature: Buffer;
+    try {
+      signature = await fetchReleaseFile(`${release.url}.sig`, MAX_SIGNATURE_BYTES, controller.signal);
+    } catch (error) {
+      throw new Error(`downloading the release's signature failed: ${describe(error)}`);
+    }
+    return { archive, signature };
+  } finally {
+    clearTimeout(deadline);
   }
-  let signature: Buffer;
-  try {
-    signature = await fetchBytes(`${release.url}.sig`, MAX_SIGNATURE_BYTES, timeout);
-  } catch (error) {
-    throw new Error(`downloading the release's signature failed: ${describe(error)}`);
-  }
-  return { archive, signature };
 }
 
 /** A release from the snapshot folder. Throws with a sentence. */

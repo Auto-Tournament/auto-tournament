@@ -25,6 +25,8 @@
  *   incompatible  its only release needs server API ^9.0.0
  *   migfail       signed and valid, but its migration reaches into core's table
  *   offline       the download never answers; the offline snapshot has a copy
+ *   redirect      the release URL redirects to a host releases never come from
+ *   hop           the release URL redirects once, to an allowed asset origin (this API's)
  */
 
 import crypto from 'crypto';
@@ -38,6 +40,15 @@ import { writeModuleArchive } from '../modules/archive';
 import { setCatalogOverridesForTests } from '../modules/catalogFeed';
 import { signModuleArchive } from '../modules/signature';
 import { trustKeyForTests } from '../modules/trustedKeys';
+import {
+  MODULE_MAX_VERSION_KEY_PREFIX,
+  purgeableTables,
+  purgeModuleData,
+  restoreInterruptedSwaps,
+} from '../modules/catalogService';
+import { forgetDiskModule, modulesDir } from '../modules/loader';
+import { isValidModuleId } from '../modules/manifest';
+import { db } from '../config/database';
 
 type FixtureFiles = (id: string, kind: 'valid' | 'bad-migration') => Record<string, string>;
 
@@ -51,6 +62,8 @@ const KINDS = [
   'incompatible',
   'migfail',
   'offline',
+  'redirect',
+  'hop',
 ] as const;
 type Kind = (typeof KINDS)[number];
 
@@ -195,6 +208,8 @@ function feed(run: string, goodVersions: string[]) {
       entry('incompatible', ['1.0.0'], '^9.0.0'),
       entry('migfail', ['1.0.0']),
       entry('offline', ['1.0.0']),
+      entry('redirect', ['1.0.0']),
+      entry('hop', ['1.1.0']),
       // Refused by the feed parser: a release URL outside the allowed prefix.
       {
         id: `fixture-cat-elsewhere-${run}`,
@@ -231,6 +246,31 @@ async function writeSnapshot(run: string, fixtureFiles: FixtureFiles): Promise<v
   );
 }
 
+/**
+ * Test-only: a module's purge, run inside a transaction that is rolled back —
+ * what `POST /api/catalog/modules/<id>/purge` would drop and whether it
+ * would succeed, for a module the running suite cannot unload (CS2).
+ */
+async function purgeProbe(id: string): Promise<{ ok: boolean; tables: string[]; constraints: string[]; error?: string }> {
+  const tables = await purgeableTables(id);
+  return db.withClient(async (client) => {
+    await client.query('BEGIN');
+    try {
+      const report = await purgeModuleData(client, id, tables);
+      const left = await client.query(
+        "SELECT tablename FROM pg_tables WHERE schemaname = current_schema() AND tablename = ANY($1)",
+        [tables]
+      );
+      if (left.rows.length > 0) throw new Error(`still there: ${left.rows.map((r) => r.tablename).join(', ')}`);
+      return { ok: true, ...report };
+    } catch (error) {
+      return { ok: false, tables, constraints: [], error: (error as Error).message };
+    } finally {
+      await client.query('ROLLBACK').catch(() => undefined);
+    }
+  });
+}
+
 export function registerCatalogTestRoutes(
   router: Router,
   helpersEnabled: (res: Response) => boolean,
@@ -265,6 +305,8 @@ export function registerCatalogTestRoutes(
     setCatalogOverridesForTests({
       catalogUrl: `${self()}catalog.json`,
       releasePrefix: self(),
+      // The one origin a release may redirect to here, in place of GitHub's asset hosts.
+      redirectOrigins: [new URL(self()).origin],
       feedTimeoutMs: 1500,
       downloadTimeoutMs: 1500,
       snapshotDir: SNAPSHOT_DIR(),
@@ -276,6 +318,72 @@ export function registerCatalogTestRoutes(
       success: true,
       ids: Object.fromEntries(KINDS.map((kind) => [kind, idFor(kind, run)])),
     });
+  });
+
+  router.post('/modules/:id/purge-probe', requireAuth, async (req: Request, res: Response): Promise<void> => {
+    if (!helpersEnabled(res)) return;
+    if (!isValidModuleId(req.params.id)) {
+      res.status(400).json({ success: false, error: 'Not a valid module id' });
+      return;
+    }
+    res.json({ success: true, ...(await purgeProbe(req.params.id)) });
+  });
+
+  // A migration the fixture module does not declare, as a newer version would
+  // have left in the ledger. Fixture ids only.
+  router.post('/modules/:id/ledger', requireAuth, async (req: Request, res: Response): Promise<void> => {
+    if (!helpersEnabled(res)) return;
+    const migrationId = (req.body as { migrationId?: unknown } | undefined)?.migrationId;
+    if (!isValidModuleId(req.params.id) || !req.params.id.startsWith('fixture-') || typeof migrationId !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(migrationId)) {
+      res.status(400).json({ success: false, error: 'A fixture module id and a migration id are required' });
+      return;
+    }
+    await db.runAsync(
+      'INSERT INTO module_migrations (module_id, migration_id, checksum) VALUES (?, ?, ?) ON CONFLICT DO NOTHING',
+      [req.params.id, migrationId, 'f'.repeat(64)]
+    );
+    res.json({ success: true });
+  });
+
+  const fixtureId = (res: Response, id: string): boolean => {
+    if (isValidModuleId(id) && id.startsWith('fixture-')) return true;
+    res.status(400).json({ success: false, error: "id must be a valid module id starting with 'fixture-'" });
+    return false;
+  };
+
+  // The highest version the instance recorded for a fixture module, and a way
+  // to set it (as if a newer one had been installed and removed).
+  router.get('/modules/:id/max-version', requireAuth, async (req: Request, res: Response): Promise<void> => {
+    if (!helpersEnabled(res) || !fixtureId(res, req.params.id)) return;
+    res.json({ success: true, version: await db.getAppSettingAsync(`${MODULE_MAX_VERSION_KEY_PREFIX}${req.params.id}`) });
+  });
+  router.post('/modules/:id/max-version', requireAuth, async (req: Request, res: Response): Promise<void> => {
+    if (!helpersEnabled(res) || !fixtureId(res, req.params.id)) return;
+    const version = (req.body as { version?: unknown } | undefined)?.version;
+    if (typeof version !== 'string' || !/^\d+\.\d+\.\d+$/.test(version)) {
+      res.status(400).json({ success: false, error: 'version must be x.y.z' });
+      return;
+    }
+    await db.setAppSettingAsync(`${MODULE_MAX_VERSION_KEY_PREFIX}${req.params.id}`, version);
+    res.json({ success: true });
+  });
+
+  // What a crash between an install's two renames leaves: the module's folder
+  // in .previous and nothing in its place. Then what boot does about it.
+  router.post('/modules/:id/interrupt-swap', requireAuth, async (req: Request, res: Response): Promise<void> => {
+    if (!helpersEnabled(res) || !fixtureId(res, req.params.id)) return;
+    const live = path.join(modulesDir(), req.params.id);
+    const previous = path.join(modulesDir(), '.previous', req.params.id);
+    await fs.promises.mkdir(path.dirname(previous), { recursive: true });
+    await fs.promises.rm(previous, { recursive: true, force: true });
+    await fs.promises.rename(live, previous);
+    forgetDiskModule(req.params.id);
+    res.json({ success: true });
+  });
+  router.post('/modules/restore-swaps', requireAuth, async (_req: Request, res: Response): Promise<void> => {
+    if (!helpersEnabled(res)) return;
+    await restoreInterruptedSwaps();
+    res.json({ success: true });
   });
 
   router.get('/fake-catalog/catalog.json', async (_req: Request, res: Response): Promise<void> => {
@@ -303,6 +411,14 @@ export function registerCatalogTestRoutes(
     if (kind === 'offline') {
       // Never answers in time: the install must fall back to the snapshot.
       await new Promise((resolve) => setTimeout(resolve, 4000));
+    }
+    if (kind === 'redirect') {
+      res.redirect(302, `https://example.com/${req.params.file}`);
+      return;
+    }
+    if (kind === 'hop' && req.query.cdn !== '1') {
+      res.redirect(302, `${self()}releases/${req.params.file}?cdn=1`);
+      return;
     }
     const { archive, signature } = release(kind, match[1], match[2], fixtureFiles);
     if (match[3]) {
