@@ -10,6 +10,9 @@ import { TopNavBar } from '../components/layout/TopNavBar';
 import { tokens } from '../theme/tokens';
 import { AtIcon } from '../components/common/AtIcon';
 
+/** Stands for "no sign-in method is available"; rendered as `login.unavailable`. */
+const SIGN_IN_UNAVAILABLE = 'sign-in-unavailable';
+
 export default function Login() {
   const { t } = useTranslation();
   const { loginWithSteam } = useAuth();
@@ -76,10 +79,9 @@ export default function Login() {
         setProviders(enabledProviders);
 
         if (!data.success || enabledProviders.length === 0) {
-          throw new Error(
-            data.error ||
-              'No sign-in providers are configured. Please configure Steam or another SSO provider on the server.'
-          );
+          // The API's reason is English only; the alert says it in the
+          // viewer's language instead (see SIGN_IN_UNAVAILABLE below).
+          throw new Error(SIGN_IN_UNAVAILABLE);
         }
 
         // If only Steam is configured, keep backwards-compatible behaviour.
@@ -168,14 +170,16 @@ export default function Login() {
               {providersError && (
                 <Alert severity="error">
                   <Stack spacing={0.5}>
-                    <Typography variant="body2">{providersError}</Typography>
+                    <Typography variant="body2">
+                      {providersError === SIGN_IN_UNAVAILABLE ? t('login.unavailable') : providersError}
+                    </Typography>
                     <Link
                       href="https://docs.autotournament.gg/guides/sign-in"
                       target="_blank"
                       rel="noopener noreferrer"
                       sx={{ fontSize: '0.8rem' }}
                     >
-                      {t('login.documentation')}
+                      {t('login.signInGuide')}
                     </Link>
                   </Stack>
                 </Alert>

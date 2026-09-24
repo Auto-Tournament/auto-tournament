@@ -347,6 +347,13 @@ export default function Layout() {
     };
   }, [steamHealthSnackbarKey, showPersistentError, closeSnackbar, t]);
 
+  // The Steam warning belongs to the admin shell. Without this it outlived the
+  // shell: after "Sign out" it was still on the login page, in front of a
+  // visitor who can do nothing about it.
+  React.useEffect(() => {
+    return () => closeSnackbar('steam-api-health');
+  }, [closeSnackbar]);
+
   // What the game's own module needs an admin to fix, wherever they are (3.0
   // phase E). The shell owns the settings route and nothing else about it.
   const handleOpenSettingsFromSnackbar = React.useCallback(() => {

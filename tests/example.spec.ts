@@ -31,5 +31,5 @@ test('login page exposes the Steam sign-in button', { tag: ['@example'] }, async
 
   // Login is provider-based and which providers are enabled depends on the
   // environment, so assert the page rendered rather than a specific provider.
-  await expect(page.getByRole('heading', { name: /welcome back|login/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /welcome|login/i })).toBeVisible();
 });

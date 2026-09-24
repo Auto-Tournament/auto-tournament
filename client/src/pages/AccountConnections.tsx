@@ -17,6 +17,9 @@ import {
   Typography,
 } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { SiDiscord, SiGithub, SiKeycloak } from 'react-icons/si';
+import { FcGoogle } from 'react-icons/fc';
+import { SteamIcon } from '../components/icons/SteamIcon';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
@@ -36,10 +39,22 @@ import { fontDisplay, tokens } from '../theme/tokens';
 
 const { color, radius } = tokens;
 
-/** Short marks for the provider tiles; the label's first letter otherwise. */
+/**
+ * The provider's own mark on its tile — the same icons as the login page's
+ * buttons — so Steam reads as Steam, not as a letter "S". A provider without
+ * one gets a short text mark, or the label's first letter.
+ */
+const PROVIDER_ICON: Record<string, React.ComponentType> = {
+  steam: SteamIcon,
+  discord: SiDiscord,
+  github: SiGithub,
+  google: FcGoogle,
+  keycloak: SiKeycloak,
+};
 const PROVIDER_MARK: Record<string, string> = { github: 'GH' };
 
 function ProviderTile({ provider, label }: { provider: string; label: string }) {
+  const Icon = PROVIDER_ICON[provider];
   return (
     <Box
       aria-hidden
@@ -55,9 +70,10 @@ function ProviderTile({ provider, label }: { provider: string; label: string }) 
         fontFamily: fontDisplay,
         fontWeight: 700,
         fontSize: '0.875rem',
+        '& svg': { fontSize: 22, width: 22, height: 22 },
       }}
     >
-      {PROVIDER_MARK[provider] ?? label.slice(0, 1).toUpperCase()}
+      {Icon ? <Icon /> : (PROVIDER_MARK[provider] ?? label.slice(0, 1).toUpperCase())}
     </Box>
   );
 }
