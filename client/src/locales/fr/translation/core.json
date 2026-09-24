@@ -35,7 +35,9 @@
     "goToAdminDashboard": "Ouvrir le tableau de bord admin",
     "goToAdminDashboardHint": "Vous consultez votre profil joueur. Ouvrez le tableau de bord admin pour gérer les équipes, tournois et serveurs.",
     "disputes": "Disputes",
-    "modules": "Modules"
+    "modules": "Modules",
+    "siteMenu": "Site menu",
+    "accountMenu": "Account menu"
   },
   "layout": {
     "pageTitle": {

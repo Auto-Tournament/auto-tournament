@@ -35,7 +35,9 @@
     "goToAdminDashboard": "Przejdź do panelu administratora",
     "goToAdminDashboardHint": "Wyświetlasz swój profil gracza. Otwórz panel administratora, aby zarządzać drużynami, turniejami i serwerami.",
     "disputes": "Disputes",
-    "modules": "Modules"
+    "modules": "Modules",
+    "siteMenu": "Site menu",
+    "accountMenu": "Account menu"
   },
   "layout": {
     "pageTitle": {

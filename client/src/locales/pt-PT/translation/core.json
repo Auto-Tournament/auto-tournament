@@ -35,7 +35,9 @@
     "goToAdminDashboard": "Ir para o painel de administração",
     "goToAdminDashboardHint": "Estás a ver o teu perfil de jogador. Abre o painel de administração para gerir equipas, torneios e servidores.",
     "disputes": "Disputes",
-    "modules": "Modules"
+    "modules": "Modules",
+    "siteMenu": "Site menu",
+    "accountMenu": "Account menu"
   },
   "layout": {
     "pageTitle": {

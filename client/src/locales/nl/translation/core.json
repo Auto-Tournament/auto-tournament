@@ -35,7 +35,9 @@
     "goToAdminDashboard": "Ga naar admin-dashboard",
     "goToAdminDashboardHint": "Je bekijkt je spelersprofiel. Open het admin-dashboard om teams, toernooien en servers te beheren.",
     "disputes": "Disputes",
-    "modules": "Modules"
+    "modules": "Modules",
+    "siteMenu": "Site menu",
+    "accountMenu": "Account menu"
   },
   "layout": {
     "pageTitle": {

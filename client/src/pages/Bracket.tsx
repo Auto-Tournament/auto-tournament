@@ -396,18 +396,23 @@ export default function Bracket() {
       {/* Header - hidden in fullscreen mode */}
       {!isFullscreen && (
         <>
+          {/* Title and controls share a row from `sm` up. On a phone they
+              stack and the controls wrap, instead of breaking the name over
+              three lines and pushing Refresh off the screen. */}
           <Box
             sx={{
               display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
               justifyContent: 'space-between',
-              alignItems: 'center',
-              mb: 4,
-              p: 2,
+              alignItems: { xs: 'flex-start', sm: 'center' },
+              gap: 2,
+              mb: { xs: 2, sm: 4 },
+              p: { xs: 0, sm: 2 },
             }}
           >
-            <Box display="flex" alignItems="center" gap={2}>
-              <Box data-testid="bracket-tournament-info">
-                <Typography variant="h4" fontWeight={600} gutterBottom>
+            <Box display="flex" alignItems="center" gap={2} minWidth={0}>
+              <Box data-testid="bracket-tournament-info" minWidth={0}>
+                <Typography variant="h4" fontWeight={600} gutterBottom sx={{ overflowWrap: 'anywhere' }}>
                   {tournament.name}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -416,7 +421,7 @@ export default function Bracket() {
                 </Typography>
               </Box>
             </Box>
-            <Box display="flex" gap={2} alignItems="center">
+            <Box display="flex" gap={{ xs: 1, sm: 2 }} alignItems="center" flexWrap="wrap">
               {tournament.status === 'setup' && (
                 <StartTournamentButton variant="contained" size="medium" onSuccess={loadBracket} />
               )}
