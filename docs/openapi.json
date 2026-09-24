@@ -6365,6 +6365,72 @@
         ]
       }
     },
+    "/api/test/module-migrations": {
+      "get": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "GET /api/test/module-migrations",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/test/module-migrations/reset": {
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/module-migrations/reset",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/test/module-migrations/run": {
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/module-migrations/run",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/test/oauth/{provider}": {
       "get": {
         "tags": [

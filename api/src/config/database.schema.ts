@@ -367,6 +367,19 @@ export function getSchemaSQL(): string {
       applied_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
 
+    -- One row per migration a game module brought with it
+    -- (GameIntegration.migrations), once applied. The checksum is of the
+    -- migration's SQL as it ran: a module that later ships a different body
+    -- under the same id is refused rather than run again. See
+    -- config/moduleMigrations.ts.
+    CREATE TABLE IF NOT EXISTS module_migrations (
+      module_id TEXT NOT NULL,
+      migration_id TEXT NOT NULL,
+      checksum TEXT NOT NULL, -- sha256 hex of the migration's SQL
+      applied_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      PRIMARY KEY (module_id, migration_id)
+    );
+
     -- Who belongs to a team, and who may act for it (3.0 phase D).
     --
     -- Keyed on players.uid, never a Steam ID: a 3.1 account without Steam can
