@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { hasIntegration, listIntegrations } from '../../api/src/integrations/registry';
 import { fakeIntegration, isFakeIntegrationEnabled } from '../../api/src/integrations/fake';
+import { missingModuleIntegration } from '../../api/src/core/missingModule';
 import type { GameIntegration, MatchContext } from '../../api/src/integrations/types';
 import {
   BALANCED_STATS_V1_WEIGHTS,
@@ -16,9 +17,9 @@ import { collectRouterGroups } from '../../api/src/utils/routeIntrospection';
  * Every integration the registry holds must honour the same contract, so the
  * core can treat them alike. This spec runs the checks over each registered
  * integration, plus the test-only fake one when this process did not register
- * it (the spec process does not set MAT_TEST_INTEGRATION). The fake is not
- * added to the shared registry here: other specs in the same worker read the
- * route table from it.
+ * it (the spec process does not set MAT_TEST_INTEGRATION), plus the registry's
+ * "module not installed" placeholder. Neither is added to the shared registry
+ * here: other specs in the same worker read the route table from it.
  *
  * The checks are the ones that need no database. The fake integration's
  * end-to-end run (tests/api/fake-integration.spec.ts) covers the lifecycle
@@ -31,6 +32,11 @@ import { collectRouterGroups } from '../../api/src/utils/routeIntrospection';
 const integrations: GameIntegration[] = [
   ...listIntegrations(),
   ...(hasIntegration(fakeIntegration.id) ? [] : [fakeIntegration]),
+  // The registry's "module not installed" placeholder. It is never
+  // registered, but `integrationForMatch` hands it to the same callers as a
+  // real module, so it has to keep the same promises
+  // (tests/api/missing-module.spec.ts covers when it is chosen).
+  missingModuleIntegration('cs2'),
 ];
 
 /** Stored configs a describeMatch must survive: missing, empty, broken, wrong shape. */

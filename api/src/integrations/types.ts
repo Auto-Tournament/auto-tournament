@@ -656,6 +656,14 @@ export interface GameIntegration {
    */
   runsAnyCatalogGame?: boolean;
   /**
+   * Set only on the registry's placeholder (`core/missingModule`): the `game`
+   * value this instance has no module for. `integrationForMatch` answers with
+   * the placeholder rather than throwing or pretending the row is CS2's, so a
+   * caller that needs to say why nothing happens reads this. A real module
+   * never sets it.
+   */
+  notInstalled?: GameId;
+  /**
    * The account a player needs for this game, by sign-in provider id (CS2:
    * 'steam', the Steam ID matches identify players by). Drives the "Game
    * accounts" list on /me/connections. Omit when the game needs none.

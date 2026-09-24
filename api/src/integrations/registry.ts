@@ -10,6 +10,7 @@ import { cs2Integration } from './cs2';
 import { fakeIntegration, isFakeIntegrationEnabled } from './fake';
 import { manualReportIntegration } from './manual-report';
 import { slugify } from '../utils/slug';
+import { missingModuleIntegration } from '../core/missingModule';
 import { DEFAULT_GAME, type GameId, type GameIntegration } from './types';
 
 export class UnknownGameError extends Error {
@@ -85,35 +86,67 @@ function claimedGameRefs(integration: GameIntegration): string[] {
  * manual-report runs many catalogue games and the row has to say which one.
  * So the lookup goes: the integration's own id, then its catalogue slug and
  * aliases, then an integration that runs any catalogue game
- * (`runsAnyCatalogGame`, the manual-report module from phase D2; nothing
- * declares it yet).
+ * (`runsAnyCatalogGame`, the manual-report module from phase D2).
  */
 export function integrationForGameRef(ref: string): GameIntegration | null {
+  return resolveGameRef(ref, listIntegrations());
+}
+
+/**
+ * `integrationForGameRef` over a given list of installed modules, in
+ * registration order. Exported so a spec can ask what an instance with a
+ * different set of modules would resolve — one without CS2, or without the
+ * catch-all — without unregistering anything.
+ */
+export function resolveGameRef(
+  ref: string,
+  installed: readonly GameIntegration[]
+): GameIntegration | null {
   const wanted = ref.trim().toLowerCase();
   if (!wanted) return null;
 
-  const direct = integrations.get(wanted);
+  const direct = installed.find((integration) => integration.id === wanted);
   if (direct) return direct;
 
-  for (const integration of integrations.values()) {
+  for (const integration of installed) {
     if (claimedGameRefs(integration).some((claim) => claim.toLowerCase() === wanted)) {
       return integration;
     }
   }
 
-  for (const integration of integrations.values()) {
+  for (const integration of installed) {
     if (integration.runsAnyCatalogGame) return integration;
   }
   return null;
 }
 
 /**
- * The integration that owns a match (or tournament / template) row. Rows read
- * before the `game` column existed, or selected without it, belong to CS2.
+ * The integration that owns a match (or tournament / template) row, or the
+ * "module not installed" placeholder (`core/missingModule`) when this instance
+ * has none for it. Never throws, and never answers CS2 for a row that is not
+ * CS2's.
+ *
+ * Rows read before the `game` column existed, or selected without it, belong
+ * to CS2 (`DEFAULT_GAME`). So does a row whose `game` is 'cs2' — the column
+ * default. Both resolve to the CS2 module when it is installed and to the
+ * placeholder when it is not: a CS2 tournament is not a manually reported one
+ * just because the catch-all module would take any string.
  */
 export function integrationForMatch(row: { game?: GameId | null }): GameIntegration {
+  return resolveIntegrationForRow(row, listIntegrations());
+}
+
+/** `integrationForMatch` over a given list of installed modules; see `resolveGameRef`. */
+export function resolveIntegrationForRow(
+  row: { game?: GameId | null },
+  installed: readonly GameIntegration[]
+): GameIntegration {
   const game = row.game || DEFAULT_GAME;
-  const integration = integrationForGameRef(game);
-  if (!integration) throw new UnknownGameError(game);
-  return integration;
+  if (game.trim().toLowerCase() === DEFAULT_GAME) {
+    return (
+      installed.find((integration) => integration.id === DEFAULT_GAME) ??
+      missingModuleIntegration(DEFAULT_GAME)
+    );
+  }
+  return resolveGameRef(game, installed) ?? missingModuleIntegration(game);
 }

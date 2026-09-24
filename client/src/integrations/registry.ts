@@ -3,12 +3,14 @@
  * api/src/integrations/registry.ts).
  *
  * Core asks for the integration that owns a tournament or match by its `game`
- * field. Unknown or missing ids fall back to CS2, the only installed
- * integration, the same way the API treats `game` (column default 'cs2').
+ * field. A missing `game` is CS2's, the same way the API treats it (column
+ * default 'cs2'). A game no installed module runs is the "module not
+ * installed" placeholder (`utils/moduleResolution`), never CS2.
  */
 
 import { cs2ClientIntegration } from './cs2';
 import { manualReportClientIntegration } from './manual-report';
+import { resolveIntegration } from '../utils/moduleResolution';
 import { DEFAULT_GAME, type ClientGameIntegration, type GameId, type GameOwned } from './types';
 
 // CS2 first, the same order the API registers them in: the two overlap on
@@ -25,9 +27,10 @@ export function listIntegrations(): ClientGameIntegration[] {
 }
 
 /**
- * The integration behind a `game` value.
+ * The integration behind a `game` value, or the "module not installed"
+ * placeholder when this instance has none for it.
  *
- * Mirrors `integrationForGameRef` in `api/src/integrations/registry.ts`: a
+ * Mirrors `integrationForMatch` in `api/src/integrations/registry.ts`: a
  * `game` column holds an integration id today ('cs2') and a game catalogue id
  * from 3.0 phase D onwards ('rocket-league'), because a module like
  * manual-report runs many catalogue games and the row has to say which one. So
@@ -35,25 +38,14 @@ export function listIntegrations(): ClientGameIntegration[] {
  * then an integration that runs any catalogue game.
  *
  * A row with no `game` at all is a response from before the column existed,
- * and belongs to CS2 — that is `DEFAULT_GAME`, not "unknown".
+ * and belongs to CS2 — that is `DEFAULT_GAME`, not "unknown". When CS2 is not
+ * installed, it and a `game` of 'cs2' get the placeholder, as does a game no
+ * module claims or runs. The placeholder is valid in every slot (all empty,
+ * every capability false), so a caller never has to check for it to not
+ * crash; see `utils/moduleResolution`.
  */
 export function getIntegration(game: GameId | null | undefined): ClientGameIntegration {
-  const wanted = (game || DEFAULT_GAME).trim().toLowerCase();
-
-  const direct = INTEGRATIONS[wanted];
-  if (direct) return direct;
-
-  for (const integration of listIntegrations()) {
-    if (integration.catalogGames?.some((claim) => claim.toLowerCase() === wanted)) {
-      return integration;
-    }
-  }
-
-  for (const integration of listIntegrations()) {
-    if (integration.runsAnyCatalogGame) return integration;
-  }
-
-  return INTEGRATIONS[DEFAULT_GAME];
+  return resolveIntegration(game, listIntegrations());
 }
 
 /**

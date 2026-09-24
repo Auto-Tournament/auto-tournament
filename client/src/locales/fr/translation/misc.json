@@ -267,6 +267,10 @@
       "offline": "the list could not be reached",
       "staleWith": "Showing the last list this instance saw — {{reason}}.",
       "failed": "Could not read the list"
+    },
+    "notInstalled": {
+      "title": "The game module for {{game}} isn't installed",
+      "body": "The game-specific parts of this tournament are hidden, and its matches can't run until the module is installed again."
     }
   }
 }

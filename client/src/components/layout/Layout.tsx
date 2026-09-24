@@ -48,6 +48,7 @@ import { useIsDevelopment } from '../../hooks/useIsDevelopment';
 import { useTranslation } from 'react-i18next';
 import { SharedNavBar } from './SharedNavBar';
 import { useShellIntegrations } from '../../hooks/useShellIntegrations';
+import { ModuleNotInstalledNotice } from '../common/ModuleNotInstalledNotice';
 import { paths } from '../../paths';
 
 const drawerWidth = 240;
@@ -866,6 +867,12 @@ export default function Layout() {
                   </Typography>
                 </Box>
                 {headerActions && <Box>{headerActions}</Box>}
+              </Box>
+            )}
+            {/* The tournament's game module is not installed: say so once, on every admin page. */}
+            {!tournamentGameLoading && tournamentIntegration?.notInstalled && (
+              <Box sx={{ mb: 3 }}>
+                <ModuleNotInstalledNotice integration={tournamentIntegration} />
               </Box>
             )}
             <Outlet />

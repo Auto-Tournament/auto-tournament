@@ -267,6 +267,10 @@
       "offline": "listen kunne ikke nås",
       "staleWith": "Viser den siste listen instansen så — {{reason}}.",
       "failed": "Kunne ikke lese listen"
+    },
+    "notInstalled": {
+      "title": "Spillmodulen for {{game}} er ikke installert",
+      "body": "De spillspesifikke delene av turneringen er skjult, og kampene kan ikke kjøres før modulen er installert igjen."
     }
   }
 }

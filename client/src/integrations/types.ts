@@ -605,6 +605,15 @@ export interface ClientGameIntegration {
    */
   runsAnyCatalogGame?: boolean;
 
+  /**
+   * Set only on the registry's "module not installed" placeholder
+   * (`utils/moduleResolution`): the `game` value this instance has no module
+   * for. Every slot of the placeholder is empty, so a page renders nothing
+   * game-specific; the admin shell and the team match page read this to say
+   * why. A real module never sets it.
+   */
+  notInstalled?: GameId;
+
   matchPanels: {
     /** Team / player match page: how to join the match. */
     teamView?: ComponentType<MatchConnectPanelProps>;
