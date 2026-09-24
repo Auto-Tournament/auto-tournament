@@ -2,7 +2,8 @@ import { test, expect } from '@playwright/test';
 import { ensureSignedIn, signInViaRequest } from '../helpers/auth';
 
 /**
- * The Modules page: what this instance can run, and adding to it.
+ * The Modules page: what this instance can run, and adding to it — one game
+ * catalog of packs and signed code modules, plus importing a pack file.
  *
  * The page is the point of game packs — an admin who has to `curl` a JSON
  * file at an endpoint does not have a module system, they have an API. So
@@ -71,16 +72,16 @@ test.describe.serial('Modules page', () => {
       // something to manage.
       await expect(page.getByTestId('module-cs2')).toBeVisible();
       await expect(page.getByTestId('module-manual-report')).toBeVisible();
-      // The games the image ships are already here, as packs like any other,
-      // marked as having come with the install.
-      await expect(page.getByTestId('pack-rocket-league')).toBeVisible();
-      await expect(page.getByTestId('pack-rocket-league-bundled')).toBeVisible();
-      await expect(page.getByTestId(`pack-${PACK.slug}`)).toHaveCount(0);
+      // The games the image ships are in the one catalog list; CI preinstalls
+      // them (PREINSTALL_PACKS=all), so they show as installed.
+      await expect(page.getByTestId('catalog-pack-rocket-league')).toBeVisible({ timeout: 15000 });
+      await expect(page.getByTestId('catalog-pack-rocket-league-state')).toContainText(/installed/i);
+      await expect(page.getByTestId(`catalog-pack-${PACK.slug}`)).toHaveCount(0);
 
       // Import a pack the way a host would: pick the file.
       await page.getByTestId('modules-file-input').setInputFiles(packFiles());
 
-      const card = page.getByTestId(`pack-${PACK.slug}`);
+      const card = page.getByTestId(`catalog-pack-${PACK.slug}`);
       await expect(card).toBeVisible({ timeout: 15000 });
       await expect(card).toContainText(PACK.name);
       await expect(card).toContainText('1.2.3');
@@ -94,11 +95,11 @@ test.describe.serial('Modules page', () => {
       expect(games.find((game) => game.slug === PACK.slug)).toBeTruthy();
 
       // And it can be taken away again.
-      await page.getByTestId(`pack-${PACK.slug}-remove`).click();
+      await page.getByTestId(`catalog-pack-${PACK.slug}-uninstall`).click();
       await page.getByTestId('modules-confirm-remove').click();
       await expect(card).toHaveCount(0, { timeout: 15000 });
       // Only that one: the bundled games are untouched.
-      await expect(page.getByTestId('pack-rocket-league')).toBeVisible();
+      await expect(page.getByTestId('catalog-pack-rocket-league')).toBeVisible();
     }
   );
 
@@ -124,7 +125,7 @@ test.describe.serial('Modules page', () => {
 
       // The API's own sentence, not a generic failure.
       await expect(page.getByText(/onload/i)).toBeVisible({ timeout: 15000 });
-      await expect(page.getByTestId(`pack-${PACK.slug}`)).toHaveCount(0);
+      await expect(page.getByTestId(`catalog-pack-${PACK.slug}`)).toHaveCount(0);
     }
   );
   test(
@@ -141,43 +142,59 @@ test.describe.serial('Modules page', () => {
       });
 
       await expect(page.getByText(/modules-page-game\.svg/)).toBeVisible({ timeout: 15000 });
-      await expect(page.getByTestId(`pack-${PACK.slug}`)).toHaveCount(0);
+      await expect(page.getByTestId(`catalog-pack-${PACK.slug}`)).toHaveCount(0);
     }
   );
 
   test(
-    'an admin browses the community list and adds a game from it',
+    'an admin installs a game from the catalog with one click',
     { tag: ['@ui', '@packs'] },
     async ({ page, request }) => {
-      const fake = await request.post('/api/test/pack-index', { data: { fake: true } });
-      expect(fake.ok(), `pointing at the fake index: ${await fake.text()}`).toBe(true);
+      // The catalog pointed at the fake feed the API serves itself.
+      const fake = await request.post('/api/test/catalog', { data: { fake: true, run: 'uipage' } });
+      expect(fake.ok(), `pointing at the fake catalog: ${await fake.text()}`).toBe(true);
       await request.delete('/api/packs/index-test-game');
 
       try {
         await page.goto('/modules');
         await expect(page.getByTestId('modules-page')).toBeVisible({ timeout: 15000 });
 
-        await page.getByTestId('modules-browse').click();
-        const dialog = page.getByTestId('modules-browse-dialog');
-        await expect(dialog).toBeVisible();
-
-        const entry = page.getByTestId('index-index-test-game');
+        const entry = page.getByTestId('catalog-pack-index-test-game');
         await expect(entry).toBeVisible({ timeout: 15000 });
         await expect(entry).toContainText('2.0.0');
         // Its tile is drawn before anything is installed, inlined from our
-        // own origin rather than loaded from wherever the index lives.
+        // own origin rather than loaded from wherever the feed lives.
         await expect(entry.locator('svg').first()).toBeVisible();
 
-        await page.getByTestId('index-index-test-game-add').click();
+        await page.getByTestId('catalog-pack-index-test-game-install').click();
+        await expect(page.getByTestId('catalog-pack-index-test-game-state')).toContainText(/installed/i, {
+          timeout: 15000,
+        });
+        await expect(page.getByTestId('catalog-installed')).toContainText('Index Test Game');
 
-        // The dialog now calls it installed, and the page behind it lists it.
-        await expect(entry).toContainText(/installed/i, { timeout: 15000 });
-        await page.getByRole('button', { name: /close/i }).click();
-        await expect(page.getByTestId('pack-index-test-game')).toBeVisible();
+        // A release whose signature does not hold is refused, and the row says why.
+        await page.getByTestId('catalog-module-fixture-cat-tampered-uipage-install').click();
+        await page.getByTestId('catalog-confirm-install-go').click();
+        await expect(page.getByTestId('catalog-module-fixture-cat-tampered-uipage-failure')).toContainText(
+          /changed after signing/,
+          { timeout: 15000 }
+        );
       } finally {
         await request.delete('/api/packs/index-test-game');
-        await request.post('/api/test/pack-index', { data: { fake: false } });
+        await request.post('/api/test/catalog', { data: { fake: false } });
       }
+    }
+  );
+
+  test(
+    "an admin also picks the instance's games on /welcome/games",
+    { tag: ['@ui', '@packs'] },
+    async ({ page }) => {
+      await page.goto('/welcome/games');
+      const section = page.getByTestId('welcome-games-instance');
+      await expect(section).toBeVisible({ timeout: 15000 });
+      await expect(section.getByTestId('game-catalog')).toBeVisible({ timeout: 15000 });
+      await expect(section.getByTestId('catalog-pack-rocket-league')).toBeVisible();
     }
   );
 });

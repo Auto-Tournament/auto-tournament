@@ -321,5 +321,80 @@
         "render": "its “{{slot}}” slot failed while rendering: {{error}}"
       }
     }
+  },
+  "catalog": {
+    "title": "Games",
+    "hint": "Every game this instance runs, and the ones you can add. Game packs are data; code modules are signed by Auto Tournament. Both install with one click, and the ones marked “In this image” need no network.",
+    "search": "Search games",
+    "installedTitle": "Installed ({{count}})",
+    "availableTitle": "Available ({{count}})",
+    "empty": "No games match.",
+    "allInstalled": "Everything in the catalog is installed.",
+    "noneInstalled": "No games are installed yet. Install the ones you want to run tournaments for — players pick from these.",
+    "loadFailed": "Could not read the game catalog: {{reason}}",
+    "loadFailedFallback": "the server did not answer",
+    "retry": "Retry",
+    "failed": "{{name}}: {{reason}}",
+    "failedFallback": "the operation failed",
+    "feed": {
+      "cache": "Showing the last catalog this instance saw ({{reason}}). Games in this image still install without a network.",
+      "none": "The online catalog could not be reached ({{reason}}). Showing the games inside this image; they install without a network.",
+      "unknown": "no reason given"
+    },
+    "kind": {
+      "module": "Code module"
+    },
+    "source": {
+      "snapshot": "In this image"
+    },
+    "state": {
+      "available": "Available",
+      "installed": "Installed",
+      "update-available": "Update available",
+      "disabled": "Disabled",
+      "broken": "Broken",
+      "incompatible": "Incompatible",
+      "builtin": "Built in",
+      "installing": "Installing…",
+      "working": "Working…",
+      "restart": "Restart required"
+    },
+    "action": {
+      "install": "Install",
+      "update": "Update to {{version}}",
+      "enable": "Enable",
+      "disable": "Disable",
+      "remove": "Remove",
+      "uninstall": "Uninstall"
+    },
+    "done": {
+      "installed": "Installed {{name}}",
+      "updated": "Updated {{name}}",
+      "enabled": "Enabled {{name}}",
+      "disabled": "Disabled {{name}}",
+      "removed": "Removed {{name}}"
+    },
+    "reload": {
+      "body": "{{names}} is running. Reload the page to use it here.",
+      "action": "Reload"
+    },
+    "restart": "Restart Auto Tournament to finish: {{names}}.",
+    "confirmInstall": {
+      "title": "Install {{name}}?",
+      "body": "This is a code module, signed by Auto Tournament. It runs inside this server with access to your database and files, and in the browser of everyone who opens a page it draws.",
+      "version": "Version {{version}}",
+      "from": "From {{source}}",
+      "fromRemote": "Auto Tournament on GitHub",
+      "fromSnapshot": "the copy inside this image (no network needed)"
+    },
+    "confirmUninstall": {
+      "title": "Uninstall {{name}}?",
+      "body": "Its files are removed. Its data — tournaments, servers, settings — is kept, and installing it again brings it back.",
+      "packBody": "The game disappears from the setup wizard. Nothing else is deleted, and installing it again brings it back."
+    },
+    "welcome": {
+      "title": "Games on this instance",
+      "hint": "You run this instance, so you choose the games it offers. Players pick from these."
+    }
   }
 }

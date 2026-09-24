@@ -321,5 +321,80 @@
         "render": "delen «{{slot}}» feilet under tegning: {{error}}"
       }
     }
+  },
+  "catalog": {
+    "title": "Spill",
+    "hint": "Alle spillene denne instansen kjører, og de du kan legge til. Spillpakker er data; kodemoduler er signert av Auto Tournament. Begge installeres med ett klikk, og de som er merket «I dette imaget» trenger ikke nett.",
+    "search": "Søk etter spill",
+    "installedTitle": "Installert ({{count}})",
+    "availableTitle": "Tilgjengelig ({{count}})",
+    "empty": "Ingen spill passer.",
+    "allInstalled": "Alt i katalogen er installert.",
+    "noneInstalled": "Ingen spill er installert ennå. Installer dem du vil kjøre turneringer for — spillerne velger blant disse.",
+    "loadFailed": "Kunne ikke lese spillkatalogen: {{reason}}",
+    "loadFailedFallback": "serveren svarte ikke",
+    "retry": "Prøv igjen",
+    "failed": "{{name}}: {{reason}}",
+    "failedFallback": "operasjonen feilet",
+    "feed": {
+      "cache": "Viser den siste katalogen denne instansen så ({{reason}}). Spill i dette imaget kan fortsatt installeres uten nett.",
+      "none": "Fikk ikke kontakt med den nettbaserte katalogen ({{reason}}). Viser spillene i dette imaget; de installeres uten nett.",
+      "unknown": "ingen grunn oppgitt"
+    },
+    "kind": {
+      "module": "Kodemodul"
+    },
+    "source": {
+      "snapshot": "I dette imaget"
+    },
+    "state": {
+      "available": "Tilgjengelig",
+      "installed": "Installert",
+      "update-available": "Oppdatering tilgjengelig",
+      "disabled": "Deaktivert",
+      "broken": "Ødelagt",
+      "incompatible": "Ikke kompatibel",
+      "builtin": "Innebygd",
+      "installing": "Installerer …",
+      "working": "Jobber …",
+      "restart": "Krever omstart"
+    },
+    "action": {
+      "install": "Installer",
+      "update": "Oppdater til {{version}}",
+      "enable": "Aktiver",
+      "disable": "Deaktiver",
+      "remove": "Fjern",
+      "uninstall": "Avinstaller"
+    },
+    "done": {
+      "installed": "Installerte {{name}}",
+      "updated": "Oppdaterte {{name}}",
+      "enabled": "Aktiverte {{name}}",
+      "disabled": "Deaktiverte {{name}}",
+      "removed": "Fjernet {{name}}"
+    },
+    "reload": {
+      "body": "{{names}} kjører. Last inn siden på nytt for å bruke den her.",
+      "action": "Last inn på nytt"
+    },
+    "restart": "Start Auto Tournament på nytt for å fullføre: {{names}}.",
+    "confirmInstall": {
+      "title": "Installere {{name}}?",
+      "body": "Dette er en kodemodul, signert av Auto Tournament. Den kjører på denne serveren med tilgang til databasen og filene dine, og i nettleseren til alle som åpner en side den tegner.",
+      "version": "Versjon {{version}}",
+      "from": "Fra {{source}}",
+      "fromRemote": "Auto Tournament på GitHub",
+      "fromSnapshot": "kopien i dette imaget (trenger ikke nett)"
+    },
+    "confirmUninstall": {
+      "title": "Avinstallere {{name}}?",
+      "body": "Filene fjernes. Dataene — turneringer, servere, innstillinger — beholdes, og installerer du den igjen, er alt tilbake.",
+      "packBody": "Spillet forsvinner fra oppsettveiviseren. Ingenting annet slettes, og installerer du det igjen, er det tilbake."
+    },
+    "welcome": {
+      "title": "Spill på denne instansen",
+      "hint": "Du driver denne instansen, så du velger hvilke spill den tilbyr. Spillerne velger blant disse."
+    }
   }
 }

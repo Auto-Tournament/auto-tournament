@@ -1,0 +1,499 @@
+/**
+ * The game catalog (DESIGN-modules §10): every game this instance runs or can
+ * add, packs and code modules in one list, with one-click install, update,
+ * enable, disable and uninstall. Used on the Modules page and, for admins, on
+ * `/welcome/games`.
+ *
+ * Code modules install only as releases signed by Auto Tournament — from our
+ * GitHub, or the copy inside this image when there is no network — so the
+ * confirm dialog says what it is and where it comes from, but asks for no
+ * typed id: that is for code an operator put on disk by hand
+ * (`CodeModuleList`), which nothing has vouched for.
+ *
+ * States a row can be in: available, installing (this browser is waiting),
+ * installed, update available, disabled, broken or incompatible (with the
+ * server's reason), failed (the last operation's reason, until the next one),
+ * and restart required (the running server differs from what is installed).
+ */
+
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  InputAdornment,
+  LinearProgress,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
+import CodeIcon from '@mui/icons-material/Code';
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import { useTranslation } from 'react-i18next';
+import { useSnackbar } from '../../contexts/SnackbarContext';
+import { ModuleIcon } from '../common/ModuleIcon';
+import { listIntegrations } from '../../integrations/registry';
+import { apiErrorMessage } from '../../utils/api';
+import {
+  fetchCatalog,
+  runCatalogAction,
+  type CatalogAction,
+  type CatalogItem,
+  type CatalogListing,
+  type CatalogState,
+} from './catalogApi';
+
+const STATE_COLOR: Record<CatalogState, 'default' | 'success' | 'info' | 'warning' | 'error'> = {
+  available: 'default',
+  installed: 'success',
+  'update-available': 'info',
+  disabled: 'default',
+  broken: 'error',
+  incompatible: 'warning',
+  builtin: 'default',
+};
+
+/** Show a search box once the list is longer than this. */
+const SEARCH_FROM = 8;
+
+/** One square tile, or the game's initials when it has no art of its own. */
+export function CatalogTile({ src, name, size = 56 }: { src: string | null; name: string; size?: number }) {
+  const [failed, setFailed] = useState(false);
+  const initials = name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word[0] ?? '')
+    .join('')
+    .toUpperCase();
+  return (
+    <Box
+      aria-hidden="true"
+      sx={{
+        width: size,
+        height: size,
+        flex: '0 0 auto',
+        borderRadius: 1.5,
+        overflow: 'hidden',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: 'action.hover',
+        fontWeight: 700,
+      }}
+    >
+      {src && !failed ? <ModuleIcon src={src} onError={() => setFailed(true)} /> : initials}
+    </Box>
+  );
+}
+
+function isInstalled(item: CatalogItem): boolean {
+  return item.installed !== null;
+}
+
+interface GameCatalogProps {
+  /**
+   * Show modules compiled into the image that are games (they have a tile).
+   * The Modules page lists built-ins in a section of its own.
+   */
+  showBuiltins?: boolean;
+  /** After every change, and after each load, with the listing. */
+  onListing?: (listing: CatalogListing) => void;
+  /** Called when something was installed, updated or removed. */
+  onChanged?: () => void;
+  /** Change it to make the list load again (after a pack upload, say). */
+  refreshKey?: number;
+}
+
+export function GameCatalog({ showBuiltins = false, onListing, onChanged, refreshKey = 0 }: GameCatalogProps) {
+  const { t } = useTranslation();
+  const { showSuccess, showError } = useSnackbar();
+  const [listing, setListing] = useState<CatalogListing | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [busy, setBusy] = useState<{ id: string; action: CatalogAction } | null>(null);
+  const [failures, setFailures] = useState<Record<string, string>>({});
+  const [reloadFor, setReloadFor] = useState<string[]>([]);
+  const [confirming, setConfirming] = useState<{ item: CatalogItem; action: 'install' | 'uninstall' } | null>(null);
+  const [query, setQuery] = useState('');
+
+  // Held in a ref so a parent passing an inline function does not reload the list on every render.
+  const onListingRef = useRef(onListing);
+  onListingRef.current = onListing;
+
+  const load = useCallback(async () => {
+    try {
+      const next = await fetchCatalog();
+      setListing(next);
+      setLoadError(null);
+      onListingRef.current?.(next);
+    } catch (error) {
+      setLoadError(apiErrorMessage(error, t('catalog.loadFailedFallback')));
+    }
+  }, [t]);
+
+  useEffect(() => {
+    void load();
+  }, [load, refreshKey]);
+
+  const key = (item: CatalogItem) => `${item.kind}:${item.id}`;
+
+  const builtinGames = useMemo(() => {
+    if (!showBuiltins) return new Map<string, string>();
+    return new Map(
+      listIntegrations()
+        .filter((integration) => integration.catalogIcon)
+        .map((integration) => [integration.id, integration.catalogIcon as string])
+    );
+  }, [showBuiltins]);
+
+  const items = useMemo(() => {
+    const all = (listing?.items ?? []).filter((item) => {
+      if (item.state === 'builtin') return builtinGames.has(item.id);
+      // Hand-placed code that no catalog offers is the operator's, and listed
+      // with the other on-disk modules instead.
+      return !(item.kind === 'module' && item.installed?.source === 'manual' && !item.available);
+    });
+    const wanted = query.trim().toLowerCase();
+    return wanted ? all.filter((item) => item.name.toLowerCase().includes(wanted)) : all;
+  }, [listing, builtinGames, query]);
+
+  const installed = items.filter(isInstalled);
+  const available = items.filter((item) => !isInstalled(item));
+  const restartPending = (listing?.items ?? []).filter((item) => item.restartRequired);
+
+  const displayName = (item: CatalogItem) =>
+    item.state === 'builtin'
+      ? t(`modulesPage.module.${item.id}.name`, { defaultValue: item.name })
+      : item.name;
+
+  const run = async (item: CatalogItem, action: CatalogAction) => {
+    setConfirming(null);
+    setBusy({ id: key(item), action });
+    setFailures((prev) => {
+      const next = { ...prev };
+      delete next[key(item)];
+      return next;
+    });
+    try {
+      const result = await runCatalogAction(item, action);
+      const name = displayName(item);
+      const done: Record<CatalogAction, string> = {
+        install: 'catalog.done.installed',
+        update: 'catalog.done.updated',
+        enable: 'catalog.done.enabled',
+        disable: 'catalog.done.disabled',
+        uninstall: 'catalog.done.removed',
+      };
+      showSuccess(t(done[action], { name }));
+      // A code module the server loaded just now reaches this browser on the
+      // next page load: its client half is fetched at boot.
+      if (item.kind === 'module' && !result.restartRequired && (action === 'install' || action === 'enable')) {
+        setReloadFor((prev) => (prev.includes(name) ? prev : [...prev, name]));
+      } else if (action === 'disable' || action === 'uninstall') {
+        setReloadFor((prev) => prev.filter((other) => other !== name));
+      }
+      await load();
+      onChanged?.();
+    } catch (error) {
+      const reason = apiErrorMessage(error, t('catalog.failedFallback'));
+      setFailures((prev) => ({ ...prev, [key(item)]: reason }));
+      showError(t('catalog.failed', { name: displayName(item), reason }));
+      await load();
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const request = (item: CatalogItem, action: CatalogAction) => {
+    if (action === 'install' && item.kind === 'module') setConfirming({ item, action: 'install' });
+    else if (action === 'uninstall') setConfirming({ item, action: 'uninstall' });
+    else void run(item, action);
+  };
+
+  const actionsFor = (item: CatalogItem): Array<{ action: CatalogAction; primary?: boolean; danger?: boolean }> => {
+    switch (item.state) {
+      case 'available':
+        return [{ action: 'install', primary: true }];
+      case 'update-available':
+        return [
+          { action: 'update', primary: true },
+          ...(item.kind === 'module' ? [{ action: 'disable' as const }] : []),
+          { action: 'uninstall', danger: true },
+        ];
+      case 'installed':
+        return [...(item.kind === 'module' ? [{ action: 'disable' as const }] : []), { action: 'uninstall', danger: true }];
+      case 'disabled':
+        return [{ action: 'enable', primary: true }, { action: 'uninstall', danger: true }];
+      case 'broken':
+      case 'incompatible':
+        return isInstalled(item) ? [{ action: 'uninstall', danger: true }] : [];
+      default:
+        return [];
+    }
+  };
+
+  const actionLabel = (item: CatalogItem, action: CatalogAction) => {
+    if (action === 'update') return t('catalog.action.update', { version: item.available?.version ?? '' });
+    if (action === 'uninstall') return t(item.kind === 'pack' ? 'catalog.action.remove' : 'catalog.action.uninstall');
+    return t(`catalog.action.${action}`);
+  };
+
+  const row = (item: CatalogItem) => {
+    const id = `catalog-${item.kind}-${item.id}`;
+    const working = busy?.id === key(item) ? busy.action : null;
+    const failure = failures[key(item)];
+    const icon = item.state === 'builtin' ? builtinGames.get(item.id) ?? null : item.icon;
+    const version = item.installed?.version ?? item.available?.version ?? null;
+    const description =
+      item.state === 'builtin'
+        ? t(`modulesPage.module.${item.id}.hint`, { defaultValue: '' })
+        : item.description || (item.engine ? t('modulesPage.packs.runBy', { engine: item.engine }) : '');
+    const showReason = item.reason && (item.restartRequired || item.state === 'broken' || item.state === 'incompatible');
+
+    return (
+      <Card key={key(item)} variant="outlined" data-testid={id}>
+        <CardContent
+          sx={{
+            display: 'flex',
+            gap: 2,
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            flexDirection: { xs: 'column', sm: 'row' },
+            '&:last-child': { pb: 2 },
+          }}
+        >
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', minWidth: 0, flex: 1, width: '100%' }}>
+            <CatalogTile src={icon} name={displayName(item)} />
+            <Box sx={{ minWidth: 0, flex: 1 }}>
+              <Stack direction="row" spacing={1} alignItems="center" useFlexGap flexWrap="wrap">
+                <Typography fontWeight={600}>{displayName(item)}</Typography>
+                {version && <Chip size="small" label={version} />}
+                {item.kind === 'module' && item.state !== 'builtin' && (
+                  <Chip size="small" variant="outlined" icon={<CodeIcon />} label={t('catalog.kind.module')} />
+                )}
+                {working ? (
+                  <Chip
+                    size="small"
+                    color="info"
+                    icon={<CircularProgress size={12} color="inherit" />}
+                    label={t(working === 'install' || working === 'update' ? 'catalog.state.installing' : 'catalog.state.working')}
+                    data-testid={`${id}-state`}
+                  />
+                ) : item.restartRequired ? (
+                  <Chip size="small" color="warning" label={t('catalog.state.restart')} data-testid={`${id}-state`} />
+                ) : item.state !== 'available' ? (
+                  <Chip
+                    size="small"
+                    color={STATE_COLOR[item.state]}
+                    variant={item.state === 'installed' ? 'filled' : 'outlined'}
+                    label={t(`catalog.state.${item.state}`)}
+                    data-testid={`${id}-state`}
+                  />
+                ) : item.available?.from === 'snapshot' && listing?.feed.from === 'remote' ? (
+                  // Said only when the feed is up: offline, everything is from the image.
+                  <Chip size="small" variant="outlined" label={t('catalog.source.snapshot')} data-testid={`${id}-state`} />
+                ) : null}
+              </Stack>
+              {description && (
+                <Typography variant="body2" color="text.secondary">
+                  {description}
+                </Typography>
+              )}
+              {showReason && (
+                <Typography
+                  variant="body2"
+                  color={item.state === 'broken' ? 'error' : 'text.secondary'}
+                  data-testid={`${id}-reason`}
+                >
+                  {item.reason}
+                </Typography>
+              )}
+            </Box>
+          </Box>
+          <Stack direction="row" spacing={1} sx={{ flexShrink: 0, alignSelf: { xs: 'flex-end', sm: 'center' } }}>
+            {actionsFor(item).map(({ action, primary, danger }) => (
+              <Button
+                key={action}
+                size="small"
+                variant={primary ? 'contained' : 'text'}
+                color={danger ? 'error' : 'primary'}
+                disabled={busy !== null}
+                onClick={() => request(item, action)}
+                data-testid={`${id}-${action}`}
+              >
+                {actionLabel(item, action)}
+              </Button>
+            ))}
+          </Stack>
+        </CardContent>
+        {failure && (
+          <Alert severity="error" sx={{ borderRadius: 0 }} data-testid={`${id}-failure`}>
+            {failure}
+          </Alert>
+        )}
+      </Card>
+    );
+  };
+
+  if (loadError && !listing) {
+    return (
+      <Alert severity="error" data-testid="catalog-load-failed" action={<Button color="inherit" size="small" onClick={() => void load()}>{t('catalog.retry')}</Button>}>
+        {t('catalog.loadFailed', { reason: loadError })}
+      </Alert>
+    );
+  }
+  if (!listing) return <LinearProgress data-testid="catalog-loading" />;
+
+  const feed = listing.feed;
+  const total = (listing.items ?? []).length;
+
+  return (
+    <Stack spacing={2} data-testid="game-catalog">
+      {feed.stale && (
+        <Alert severity={feed.from === 'cache' ? 'info' : 'warning'} data-testid="catalog-feed-stale">
+          {t(feed.from === 'cache' ? 'catalog.feed.cache' : 'catalog.feed.none', {
+            reason: feed.error ?? t('catalog.feed.unknown'),
+          })}
+        </Alert>
+      )}
+      {restartPending.length > 0 && (
+        <Alert severity="warning" data-testid="catalog-restart">
+          {t('catalog.restart', { names: restartPending.map(displayName).join(', ') })}
+        </Alert>
+      )}
+      {reloadFor.length > 0 && (
+        <Alert
+          severity="success"
+          data-testid="catalog-reload"
+          action={
+            <Button color="inherit" size="small" onClick={() => window.location.reload()}>
+              {t('catalog.reload.action')}
+            </Button>
+          }
+        >
+          {t('catalog.reload.body', { names: reloadFor.join(', ') })}
+        </Alert>
+      )}
+
+      {total > SEARCH_FROM && (
+        <TextField
+          size="small"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder={t('catalog.search')}
+          inputProps={{ 'aria-label': t('catalog.search'), 'data-testid': 'catalog-search' }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchRoundedIcon fontSize="small" />
+              </InputAdornment>
+            ),
+          }}
+          sx={{ maxWidth: 360 }}
+        />
+      )}
+
+      <Box component="section" data-testid="catalog-installed">
+        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+          {t('catalog.installedTitle', { count: installed.length })}
+        </Typography>
+        {installed.length === 0 ? (
+          <Alert severity="info" data-testid="catalog-none-installed">
+            {query ? t('catalog.empty') : t('catalog.noneInstalled')}
+          </Alert>
+        ) : (
+          <Stack spacing={1.5}>{installed.map(row)}</Stack>
+        )}
+      </Box>
+
+      <Box component="section" data-testid="catalog-available">
+        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+          {t('catalog.availableTitle', { count: available.length })}
+        </Typography>
+        {available.length === 0 ? (
+          <Typography variant="body2" color="text.secondary">
+            {query ? t('catalog.empty') : t('catalog.allInstalled')}
+          </Typography>
+        ) : (
+          <Stack spacing={1.5}>{available.map(row)}</Stack>
+        )}
+      </Box>
+
+      <Dialog
+        open={confirming?.action === 'install'}
+        onClose={() => setConfirming(null)}
+        maxWidth="sm"
+        fullWidth
+        data-testid="catalog-confirm-install"
+      >
+        {confirming?.action === 'install' && (
+          <>
+            <DialogTitle>{t('catalog.confirmInstall.title', { name: displayName(confirming.item) })}</DialogTitle>
+            <DialogContent>
+              <DialogContentText sx={{ mb: 2 }}>{t('catalog.confirmInstall.body')}</DialogContentText>
+              <Typography variant="body2">
+                {t('catalog.confirmInstall.version', { version: confirming.item.available?.version ?? '' })}
+              </Typography>
+              <Typography variant="body2">
+                {t('catalog.confirmInstall.from', {
+                  source:
+                    confirming.item.available?.from === 'snapshot'
+                      ? t('catalog.confirmInstall.fromSnapshot')
+                      : t('catalog.confirmInstall.fromRemote'),
+                })}
+              </Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setConfirming(null)}>{t('common.cancel')}</Button>
+              <Button
+                variant="contained"
+                onClick={() => void run(confirming.item, 'install')}
+                data-testid="catalog-confirm-install-go"
+              >
+                {t('catalog.action.install')}
+              </Button>
+            </DialogActions>
+          </>
+        )}
+      </Dialog>
+
+      <Dialog
+        open={confirming?.action === 'uninstall'}
+        onClose={() => setConfirming(null)}
+        data-testid="catalog-confirm-uninstall"
+      >
+        {confirming?.action === 'uninstall' && (
+          <>
+            <DialogTitle>
+              {t(confirming.item.kind === 'pack' ? 'modulesPage.confirmRemove.title' : 'catalog.confirmUninstall.title', {
+                name: displayName(confirming.item),
+              })}
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                {t(confirming.item.kind === 'pack' ? 'catalog.confirmUninstall.packBody' : 'catalog.confirmUninstall.body')}
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setConfirming(null)}>{t('common.cancel')}</Button>
+              <Button
+                color="error"
+                onClick={() => void run(confirming.item, 'uninstall')}
+                data-testid="modules-confirm-remove"
+              >
+                {actionLabel(confirming.item, 'uninstall')}
+              </Button>
+            </DialogActions>
+          </>
+        )}
+      </Dialog>
+    </Stack>
+  );
+}

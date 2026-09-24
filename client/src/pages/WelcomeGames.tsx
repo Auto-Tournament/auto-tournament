@@ -18,6 +18,8 @@ import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
+import { GameCatalog } from '../components/catalog/GameCatalog';
+import { useAuth } from '../contexts/AuthContext';
 import { GameArt, GameCard } from '../components/games/GameCard';
 import { safeNextPath } from '../components/games/nextPath';
 import {
@@ -67,6 +69,9 @@ export default function WelcomeGames() {
   const { showSuccess, showError } = useSnackbar();
   const [searchParams] = useSearchParams();
 
+  // An admin also picks what this instance runs: a fresh install has no
+  // games until one is installed from the catalog (DESIGN-modules §10).
+  const { isAuthenticated } = useAuth();
   const isEdit = searchParams.get('edit') === '1';
   const next = safeNextPath(searchParams.get('next'));
 
@@ -109,6 +114,11 @@ export default function WelcomeGames() {
       cancelled = true;
     };
   }, []);
+
+  // After the admin installs or removes a game, the grid shows the new set.
+  const refreshPopular = () => {
+    void fetchPopularGames().then(setPopular);
+  };
 
   const pickedIds = useMemo(() => new Set(selected.map((g) => g.id)), [selected]);
   const atLimit = selected.length >= MAX_PLAYER_GAMES;
@@ -368,6 +378,28 @@ export default function WelcomeGames() {
             )}
           </Box>
         </Box>
+
+        {isAuthenticated && (
+          <Box
+            component="section"
+            sx={{
+              mt: { xs: 5, md: 7 },
+              p: { xs: 2, md: 3 },
+              borderRadius: `${radius.md}px`,
+              border: `1px solid ${color.rule}`,
+              bgcolor: 'background.surface1',
+            }}
+            data-testid="welcome-games-instance"
+          >
+            <Typography component="h2" variant="h6" sx={{ fontFamily: fontDisplay, fontWeight: 600 }}>
+              {t('catalog.welcome.title')}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 2, maxWidth: '64ch' }}>
+              {t('catalog.welcome.hint')}
+            </Typography>
+            <GameCatalog showBuiltins onChanged={refreshPopular} />
+          </Box>
+        )}
 
         <Box
           sx={{
