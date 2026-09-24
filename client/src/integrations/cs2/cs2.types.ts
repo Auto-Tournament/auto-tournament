@@ -238,6 +238,8 @@ export interface ServerFleetCounts {
   inMatch: number;
   free: number;
   offline: number;
+  /** Added and enabled, but never sent an event: the allocator cannot use them yet. */
+  notConfigured: number;
   total: number;
 }
 

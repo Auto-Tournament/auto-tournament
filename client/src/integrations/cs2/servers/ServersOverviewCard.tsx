@@ -6,13 +6,26 @@ import {
   SERVER_AVAILABILITY_ENDPOINT,
   type PluginVersionSummary,
   type ServerAvailability,
+  type Server,
   type ServerFleetCounts,
   type ServersResponse,
 } from '../cs2.types';
 
-/** Online / in-match / free / offline, from the allocator's view of the fleet. */
-function countFleet(availability: ServerAvailability): ServerFleetCounts {
-  const counts: ServerFleetCounts = { online: 0, inMatch: 0, free: 0, offline: 0, total: 0 };
+/**
+ * Online / in-match / free / offline from the allocator's view of the fleet,
+ * plus the enabled servers it does not list yet because they never sent an
+ * event, so the card counts the same servers as the Servers page.
+ */
+function countFleet(availability: ServerAvailability, servers: Server[]): ServerFleetCounts {
+  const notConfigured = servers.filter((s) => s.enabled && !s.lastSeen).length;
+  const counts: ServerFleetCounts = {
+    online: 0,
+    inMatch: 0,
+    free: 0,
+    offline: 0,
+    notConfigured,
+    total: notConfigured,
+  };
   for (const server of availability.servers ?? []) {
     counts.total += 1;
     if (!server.online) {
@@ -53,16 +66,14 @@ function useFleetSummary(): {
   useEffect(() => {
     let cancelled = false;
     void Promise.all([
-      api
-        .get<ServerAvailability>(SERVER_AVAILABILITY_ENDPOINT)
-        .then((res) => !cancelled && setFleet(countFleet(res)))
-        .catch(() => !cancelled && setFleet(null)),
-      api
-        .get<ServersResponse>('/api/servers')
-        .then((res) => !cancelled && setPluginVersions(summarisePluginVersions(res.servers ?? [])))
-        .catch(() => !cancelled && setPluginVersions(null)),
-    ]).then(() => {
-      if (!cancelled) setLoaded(true);
+      api.get<ServerAvailability>(SERVER_AVAILABILITY_ENDPOINT).catch(() => null),
+      api.get<ServersResponse>('/api/servers').catch(() => null),
+    ]).then(([availability, list]) => {
+      if (cancelled) return;
+      const servers = list?.servers ?? [];
+      setFleet(availability ? countFleet(availability, servers) : null);
+      setPluginVersions(list ? summarisePluginVersions(servers) : null);
+      setLoaded(true);
     });
     return () => {
       cancelled = true;
@@ -90,6 +101,7 @@ function FleetBar({ fleet }: { fleet: ServerFleetCounts }) {
       <Box sx={{ width: pct(fleet.inMatch), bgcolor: 'info.main' }} />
       <Box sx={{ width: pct(fleet.free), bgcolor: 'success.main' }} />
       <Box sx={{ width: pct(fleet.offline), bgcolor: 'error.main' }} />
+      <Box sx={{ width: pct(fleet.notConfigured), bgcolor: 'action.disabled' }} />
     </Box>
   );
 }
@@ -169,6 +181,16 @@ export function ServersOverviewCard() {
                 {fleet.offline}
               </Typography>
             </Box>
+            {fleet.notConfigured > 0 && (
+              <Box display="flex" justifyContent="space-between" data-testid="admin-home-servers-not-configured">
+                <Typography variant="body2" color="text.secondary">
+                  {t('dashboard.servers.notConfigured')}
+                </Typography>
+                <Typography variant="body2" fontWeight={600}>
+                  {fleet.notConfigured}
+                </Typography>
+              </Box>
+            )}
             {pluginVersions && pluginVersions.versions.length > 0 && (
               <Box display="flex" justifyContent="space-between">
                 <Typography variant="body2" color="text.secondary">

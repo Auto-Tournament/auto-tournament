@@ -5,6 +5,7 @@ import type { ManageResourcesProps } from '../../types';
 import { api, getBracketMatchLabel, links, useModuleTranslation } from '../../../module-sdk';
 import type { ServerAllocationInfo } from '../cs2.types';
 import { useServerAvailability } from './useServerAvailability';
+import { useUnconfiguredServers } from './useUnconfiguredServers';
 
 /** The two team names of a match, for a server running one with no bracket label. */
 type TeamNames = { team1?: string; team2?: string };
@@ -58,10 +59,11 @@ function useTeamNames(slugs: string[]): Map<string, TeamNames> {
 export const ServerGrid: React.FC<ManageResourcesProps> = () => {
   const { availability } = useServerAvailability(5000);
   const servers = availability?.servers ?? [];
+  const unconfigured = useUnconfiguredServers(30_000);
   const teamNames = useTeamNames(
     servers.filter((s) => !bracketLabel(s)).flatMap((s) => (s.matchSlug ? [s.matchSlug] : []))
   );
-  return <ServerGridView servers={servers} teamNames={teamNames} />;
+  return <ServerGridView servers={servers} unconfigured={unconfigured} teamNames={teamNames} />;
 };
 
 /** "UB R1 M1" for a double-elimination match; null for one the bracket does not label. */
@@ -91,8 +93,10 @@ function timeAgo(unixSeconds: number | null, t: (key: string, opts?: Record<stri
  */
 const ServerGridView: React.FC<{
   servers: ServerAllocationInfo[];
+  /** Added but never set up: listed so the grid matches the Servers page. */
+  unconfigured: { id: string; name: string }[];
   teamNames: Map<string, TeamNames>;
-}> = ({ servers, teamNames }) => {
+}> = ({ servers, unconfigured, teamNames }) => {
   const { t } = useModuleTranslation('cs2');
 
   return (
@@ -106,7 +110,7 @@ const ServerGridView: React.FC<{
         </MuiLink>
       </Box>
 
-      {servers.length === 0 ? (
+      {servers.length === 0 && unconfigured.length === 0 ? (
         <Typography variant="body2" color="text.secondary">
           {t('managePage.servers.none')}
         </Typography>
@@ -161,6 +165,21 @@ const ServerGridView: React.FC<{
               </Grid>
             );
           })}
+          {unconfigured.map((server) => (
+            <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={server.id}>
+              <Paper variant="outlined" sx={{ p: 1.5, height: '100%' }} data-testid="manage-server-not-configured">
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5} gap={1}>
+                  <Typography variant="body2" fontWeight={600} noWrap>
+                    {server.name}
+                  </Typography>
+                  <Chip label={t('managePage.servers.notConfigured')} size="small" variant="outlined" />
+                </Box>
+                <Typography variant="caption" color="text.secondary">
+                  {t('managePage.servers.notConfiguredHint')}
+                </Typography>
+              </Paper>
+            </Grid>
+          ))}
         </Grid>
       )}
     </Box>

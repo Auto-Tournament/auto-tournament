@@ -37,7 +37,8 @@
       "plugin": "Plugin",
       "pluginSame": "{{version}}, alle servere matcher",
       "pluginMixed": "{{count}} plugin-versjoner i bruk",
-      "none": "Ingen servere tilkoblet enda."
+      "none": "Ingen servere tilkoblet enda.",
+      "notConfigured": "Ikke satt opp"
     },
     "setup": {
       "serversDone": "{{count}} server lagt til",
@@ -61,7 +62,9 @@
       "free": "Ledig",
       "offline": "Offline",
       "lastHeartbeat": "Siste puls {{time}} siden",
-      "never": "aldri"
+      "never": "aldri",
+      "notConfigured": "Ikke satt opp",
+      "notConfiguredHint": "Lagt til, men har ikke meldt seg ennå"
     },
     "needsYou": {
       "stale": {

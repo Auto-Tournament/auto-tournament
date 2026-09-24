@@ -39,7 +39,8 @@
       "plugin": "Plugin",
       "pluginSame": "{{version}}, all servers match",
       "pluginMixed": "{{count}} plugin versions in use",
-      "none": "No servers connected yet."
+      "none": "No servers connected yet.",
+      "notConfigured": "Not configured"
     },
     "setup": {
       "serversDone": "{{count}} server added",
@@ -63,7 +64,9 @@
       "free": "Free",
       "offline": "Offline",
       "lastHeartbeat": "Last heartbeat {{time}} ago",
-      "never": "never"
+      "never": "never",
+      "notConfigured": "Not configured",
+      "notConfiguredHint": "Added, but it has not reported in yet"
     },
     "needsYou": {
       "stale": {
