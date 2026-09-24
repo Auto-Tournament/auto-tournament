@@ -21,7 +21,8 @@
       "errors": {
         "inProgressOrCompleted": "Turnier kann nicht aus Vorlage erstellt werden, während ein Turnier läuft oder abgeschlossen ist. Bitte löschen oder setzen Sie zuerst das aktuelle Turnier zurück.",
         "alreadyExists": "Ein Turnier existiert bereits. Bitte löschen oder setzen Sie das aktuelle Turnier zurück, bevor Sie ein neues aus einer Vorlage erstellen."
-      }
+      },
+      "button": "Create Tournament from Template"
     },
     "edit": {
       "title": "Vorlage bearbeiten",
@@ -34,7 +35,8 @@
         "selectLabel": "Wählen Sie einen Kartenpool",
         "customOption": "Angepasst",
         "selectedLabel": "Ausgewählte Karten ({{count}}):",
-        "vetoWarning": "Veto-Formate (BO1/BO3/BO5) benötigen genau 7 Karten. Aktuell ausgewählt: {{count}}"
+        "vetoWarning": "Veto-Formate (BO1/BO3/BO5) benötigen genau 7 Karten. Aktuell ausgewählt: {{count}}",
+        "chooseMaps": "Choose maps..."
       },
       "save": "Speichern"
     }

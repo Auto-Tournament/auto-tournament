@@ -21,7 +21,8 @@
       "errors": {
         "inProgressOrCompleted": "Nie można utworzyć turnieju z szablonu, gdy turniej jest w toku lub zakończony. Najpierw usuń lub zresetuj bieżący turniej.",
         "alreadyExists": "Turniej już istnieje. Usuń lub zresetuj bieżący turniej przed utworzeniem nowego z szablonu."
-      }
+      },
+      "button": "Create Tournament from Template"
     },
     "edit": {
       "title": "Edytuj szablon",
@@ -34,7 +35,8 @@
         "selectLabel": "Wybierz pulę map",
         "customOption": "Niestandardowa",
         "selectedLabel": "Wybrane mapy ({{count}}):",
-        "vetoWarning": "Formaty veto (BO1/BO3/BO5) wymagają dokładnie 7 map. Obecnie wybrano: {{count}}"
+        "vetoWarning": "Formaty veto (BO1/BO3/BO5) wymagają dokładnie 7 map. Obecnie wybrano: {{count}}",
+        "chooseMaps": "Choose maps..."
       },
       "save": "Zapisz"
     }

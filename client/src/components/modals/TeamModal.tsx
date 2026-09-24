@@ -852,12 +852,12 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
               disabled={saving}
               sx={{ mr: 'auto' }}
             >
-              Delete Team
+              {t('teamModal.buttons.deleteTeam')}
             </Button>
           )}
           {isEditing && (
             <Button onClick={onClose} disabled={saving}>
-              Cancel
+              {t('teamModal.buttons.cancel')}
             </Button>
           )}
           <Button

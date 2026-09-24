@@ -21,7 +21,8 @@
       "errors": {
         "inProgressOrCompleted": "当前已有锦标赛正在进行或已完成，无法从模板创建新锦标赛。请先删除或重置当前锦标赛。",
         "alreadyExists": "当前已存在一个锦标赛。在从模板创建新锦标赛之前，请先删除或重置现有锦标赛。"
-      }
+      },
+      "button": "Create Tournament from Template"
     },
     "edit": {
       "title": "编辑模板",
@@ -34,7 +35,8 @@
         "selectLabel": "选择地图池",
         "customOption": "自定义",
         "selectedLabel": "已选地图（{{count}} 张）：",
-        "vetoWarning": "Veto formats (BO1/BO3/BO5) require exactly 7 maps. 当前已选：{{count}}"
+        "vetoWarning": "Veto formats (BO1/BO3/BO5) require exactly 7 maps. 当前已选：{{count}}",
+        "chooseMaps": "Choose maps..."
       },
       "save": "保存"
     }

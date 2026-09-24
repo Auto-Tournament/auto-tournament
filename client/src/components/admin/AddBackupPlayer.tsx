@@ -14,6 +14,7 @@ import {
   Stack,
 } from '@mui/material';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 import { normalizeConfigPlayers } from '../../utils/playerUtils';
 
@@ -45,6 +46,7 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
   onSuccess,
   onError,
 }) => {
+  const { t } = useTranslation();
   const [allPlayers, setAllPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
@@ -107,12 +109,12 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
         }
       } catch (err) {
         console.error('Failed to load players:', err);
-        if (onErrorRef.current) onErrorRef.current('Failed to load player list');
+        if (onErrorRef.current) onErrorRef.current(t('addBackupPlayer.loadFailed'));
       } finally {
         setLoading(false);
       }
     },
-    [matchSlug]
+    [matchSlug, t]
   );
 
   useEffect(() => {
@@ -158,19 +160,28 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
       if (response.success) {
         if (onSuccess) {
           const targetLabel =
-            targetTeam === 'team1' ? team1Name : targetTeam === 'team2' ? team2Name : 'Spectator';
-          onSuccess(`${customName.trim() || selectedPlayer.name} added to ${targetLabel}`);
+            targetTeam === 'team1'
+              ? team1Name
+              : targetTeam === 'team2'
+                ? team2Name
+                : t('addBackupPlayer.spectator');
+          onSuccess(
+            t('addBackupPlayer.added', {
+              name: customName.trim() || selectedPlayer.name,
+              target: targetLabel,
+            })
+          );
         }
         setSelectedPlayer(null);
         setCustomName('');
         // Reload players to update the list
         loadAllPlayers(true);
       } else {
-        if (onError) onError(response.error || 'Failed to add player');
+        if (onError) onError(response.error || t('addBackupPlayer.addFailed'));
       }
     } catch (err) {
       console.error('Error adding player:', err);
-      if (onError) onError('Failed to add player to match');
+      if (onError) onError(t('addBackupPlayer.addToMatchFailed'));
     } finally {
       setAdding(false);
     }
@@ -179,7 +190,7 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
   return (
     <Box>
       <Typography variant="subtitle1" fontWeight={600} mb={2}>
-        Add Player
+        {t('addBackupPlayer.title')}
       </Typography>
 
       {loading ? (
@@ -207,36 +218,36 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="Search for player"
-                placeholder="Type player name..."
-                helperText={`${availablePlayers.length} available players (not already in match)`}
+                label={t('addBackupPlayer.searchLabel')}
+                placeholder={t('addBackupPlayer.searchPlaceholder')}
+                helperText={t('addBackupPlayer.available', { count: availablePlayers.length })}
               />
             )}
-            noOptionsText="No players available"
+            noOptionsText={t('addBackupPlayer.noneAvailable')}
             disabled={adding}
           />
 
           {/* Optional override name */}
           <TextField
-            label="Display name (optional)"
+            label={t('addBackupPlayer.displayNameLabel')}
             value={customName}
             onChange={(e) => setCustomName(e.target.value)}
-            placeholder="Defaults to the player's current name"
+            placeholder={t('addBackupPlayer.displayNamePlaceholder')}
             disabled={adding}
           />
 
           {/* Target Team Selection */}
           <FormControl fullWidth>
-            <InputLabel>Side</InputLabel>
+            <InputLabel>{t('addBackupPlayer.side')}</InputLabel>
             <Select
               value={targetTeam}
-              label="Side"
+              label={t('addBackupPlayer.side')}
               onChange={(e) => setTargetTeam(e.target.value as 'team1' | 'team2' | 'spec')}
               disabled={adding}
             >
               <MenuItem value="team1">{team1Name} (team1)</MenuItem>
               <MenuItem value="team2">{team2Name} (team2)</MenuItem>
-              <MenuItem value="spec">Spectator (spec)</MenuItem>
+              <MenuItem value="spec">{t('addBackupPlayer.spectator')} (spec)</MenuItem>
             </Select>
           </FormControl>
 
@@ -244,13 +255,13 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
           {selectedPlayer && (
             <Alert severity="info">
               <Typography variant="body2">
-                <strong>Selected:</strong> {selectedPlayer.name}
+                <strong>{t('addBackupPlayer.selected')}</strong> {selectedPlayer.name}
               </Typography>
               <Typography variant="caption" display="block">
-                From team: {selectedPlayer.teamName}
+                {t('addBackupPlayer.fromTeam', { team: selectedPlayer.teamName })}
               </Typography>
               <Typography variant="caption" display="block">
-                Steam ID: {selectedPlayer.steamId}
+                {t('addBackupPlayer.steamId', { id: selectedPlayer.steamId })}
               </Typography>
             </Alert>
           )}
@@ -264,16 +275,15 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
             disabled={!selectedPlayer || adding}
             fullWidth
           >
-            {adding ? 'Adding Player...' : 'Add Player to Match'}
+            {adding ? t('addBackupPlayer.adding') : t('addBackupPlayer.add')}
           </Button>
 
           <Alert severity="warning" sx={{ fontSize: '0.85rem' }}>
             <Typography variant="caption" display="block" gutterBottom>
-              ⚙️ <strong>Underlying command:</strong> <code>at_addplayer &lt;steam64&gt; &lt;team1|team2|spec&gt; [name]</code>
+              ⚙️ <strong>{t('addBackupPlayer.underlyingCommand')}</strong> <code>at_addplayer &lt;steam64&gt; &lt;team1|team2|spec&gt; [name]</code>
             </Typography>
             <Typography variant="caption">
-              ⚠️ <strong>Important:</strong> The player must reconnect to the server after being
-              added. They may need to restart CS2 if they're already connected.
+              ⚠️ <strong>{t('addBackupPlayer.important')}</strong> {t('addBackupPlayer.reconnectHint')}
             </Typography>
           </Alert>
         </Stack>

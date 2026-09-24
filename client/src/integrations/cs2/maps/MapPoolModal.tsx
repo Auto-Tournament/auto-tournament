@@ -15,7 +15,7 @@ import {
   IconButton,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { api } from '../../../module-sdk';
+import { api, useModuleTranslation } from '../../../module-sdk';
 import type { MapPool, MapPoolResponse, MapsResponse, Map } from '../../../types/api.types';
 
 interface MapPoolModalProps {
@@ -26,6 +26,7 @@ interface MapPoolModalProps {
 }
 
 export default function MapPoolModal({ open, mapPool, onClose, onSave }: MapPoolModalProps) {
+  const { t } = useModuleTranslation('cs2');
   const [name, setName] = useState('');
   const [selectedMapIds, setSelectedMapIds] = useState<string[]>([]);
   const [availableMaps, setAvailableMaps] = useState<Map[]>([]);
@@ -53,7 +54,7 @@ export default function MapPoolModal({ open, mapPool, onClose, onSave }: MapPool
       const data = await api.get<MapsResponse>('/api/maps');
       setAvailableMaps(data.maps || []);
     } catch (err) {
-      setError('Failed to load maps');
+      setError(t('mapsPage.errors.loadMaps'));
       console.error(err);
     } finally {
       setLoadingMaps(false);
@@ -72,10 +73,10 @@ export default function MapPoolModal({ open, mapPool, onClose, onSave }: MapPool
   };
 
   const getMapType = (mapId: string): string => {
-    if (mapId.startsWith('de_')) return 'Defusal';
-    if (mapId.startsWith('cs_')) return 'Hostage';
-    if (mapId.startsWith('ar_')) return 'Arms Race';
-    return 'Unknown';
+    if (mapId.startsWith('de_')) return t('mapPoolModal.types.defusal');
+    if (mapId.startsWith('cs_')) return t('mapPoolModal.types.hostage');
+    if (mapId.startsWith('ar_')) return t('mapPoolModal.types.armsRace');
+    return t('mapPoolModal.types.unknown');
   };
 
   const getMapTypeColor = (mapId: string): 'default' | 'primary' | 'secondary' | 'success' => {
@@ -102,12 +103,12 @@ export default function MapPoolModal({ open, mapPool, onClose, onSave }: MapPool
 
   const handleSave = async () => {
     if (!name.trim()) {
-      setError('Map pool name is required');
+      setError(t('mapPoolModal.errors.nameRequired'));
       return;
     }
 
     if (selectedMapIds.length === 0) {
-      setError('Please select at least one map');
+      setError(t('mapPoolModal.errors.mapsRequired'));
       return;
     }
 
@@ -130,7 +131,7 @@ export default function MapPoolModal({ open, mapPool, onClose, onSave }: MapPool
       onClose();
     } catch (err: unknown) {
       const error = err as { error?: string; message?: string };
-      setError(error.error || error.message || 'Failed to save map pool');
+      setError(error.error || error.message || t('mapPoolModal.errors.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -156,19 +157,19 @@ export default function MapPoolModal({ open, mapPool, onClose, onSave }: MapPool
         }}
       >
         <Typography variant="h6" fontWeight={600}>
-          {isEditing ? 'Edit Map Pool' : 'Create Map Pool'}
+          {isEditing ? t('mapPoolModal.titleEdit') : t('mapPoolModal.titleCreate')}
         </Typography>
-        <IconButton onClick={onClose} size="small" aria-label="close">
+        <IconButton onClick={onClose} size="small" aria-label={t('mapPoolModal.close')}>
           <CloseIcon fontSize="small" />
         </IconButton>
       </DialogTitle>
       <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField
-            label="Map Pool Name"
+            label={t('mapPoolModal.nameLabel')}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="My Custom Pool"
+            placeholder={t('mapPoolModal.namePlaceholder')}
             required
             fullWidth
             autoFocus
@@ -180,7 +181,7 @@ export default function MapPoolModal({ open, mapPool, onClose, onSave }: MapPool
           <Box>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
               <Typography variant="body2" color="text.secondary">
-                Select Maps ({selectedMapIds.length} selected)
+                {t('mapPoolModal.selectMaps', { count: selectedMapIds.length })}
               </Typography>
               {!loadingMaps && sortedMaps.length > 0 && (
                 <Button
@@ -202,7 +203,7 @@ export default function MapPoolModal({ open, mapPool, onClose, onSave }: MapPool
                     }),
                   }}
                 >
-                  Add all
+                  {t('mapPoolModal.addAll')}
                 </Button>
               )}
             </Box>
@@ -218,7 +219,7 @@ export default function MapPoolModal({ open, mapPool, onClose, onSave }: MapPool
                 onChange={(_, newValue) => setSelectedMapIds(newValue)}
                 disableCloseOnSelect
                 getOptionLabel={(option) => getMapDisplayName(option)}
-                renderInput={(params) => <TextField {...params} placeholder="Choose maps..." />}
+                renderInput={(params) => <TextField {...params} placeholder={t('mapPoolModal.chooseMaps')} />}
                 renderOption={(props, option) => (
                   <Box component="li" {...props} key={option}>
                     <Box display="flex" alignItems="center" gap={1} width="100%">
@@ -258,7 +259,7 @@ export default function MapPoolModal({ open, mapPool, onClose, onSave }: MapPool
       <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
         {isEditing && (
           <Button onClick={onClose} disabled={saving || loadingMaps}>
-            Cancel
+            {t('mapPoolModal.cancel')}
           </Button>
         )}
         <Button
@@ -268,7 +269,7 @@ export default function MapPoolModal({ open, mapPool, onClose, onSave }: MapPool
           disabled={saving || loadingMaps}
           sx={{ ml: isEditing ? 0 : 'auto' }}
         >
-          {saving ? <CircularProgress size={24} /> : isEditing ? 'Update' : 'Create'}
+          {saving ? <CircularProgress size={24} /> : isEditing ? t('mapPoolModal.update') : t('mapPoolModal.create')}
         </Button>
       </DialogActions>
     </Dialog>

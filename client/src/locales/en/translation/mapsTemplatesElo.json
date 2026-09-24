@@ -21,7 +21,8 @@
       "errors": {
         "inProgressOrCompleted": "Cannot create tournament from template while a tournament is in progress or completed. Please delete or reset the current tournament first.",
         "alreadyExists": "A tournament already exists. Please delete or reset the current tournament before creating a new one from a template."
-      }
+      },
+      "button": "Create Tournament from Template"
     },
     "edit": {
       "title": "Edit Template",
@@ -34,7 +35,8 @@
         "selectLabel": "Choose a map pool",
         "customOption": "Custom",
         "selectedLabel": "Selected Maps ({{count}}):",
-        "vetoWarning": "Veto formats (BO1/BO3/BO5) require exactly 7 maps. Currently selected: {{count}}"
+        "vetoWarning": "Veto formats (BO1/BO3/BO5) require exactly 7 maps. Currently selected: {{count}}",
+        "chooseMaps": "Choose maps..."
       },
       "save": "Save"
     }

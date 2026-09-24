@@ -21,7 +21,8 @@
       "errors": {
         "inProgressOrCompleted": "Impossibile creare un torneo da un modello mentre un torneo è in corso o completato. Elimina o reimposta prima il torneo corrente.",
         "alreadyExists": "Esiste già un torneo. Elimina o reimposta il torneo corrente prima di crearne uno nuovo da un modello."
-      }
+      },
+      "button": "Create Tournament from Template"
     },
     "edit": {
       "title": "Modifica modello",
@@ -34,7 +35,8 @@
         "selectLabel": "Scegli un pool mappe",
         "customOption": "Personalizzato",
         "selectedLabel": "Mappe selezionate ({{count}}):",
-        "vetoWarning": "I formati con veto (BO1/BO3/BO5) richiedono esattamente 7 mappe. Selezionate: {{count}}"
+        "vetoWarning": "I formati con veto (BO1/BO3/BO5) richiedono esattamente 7 mappe. Selezionate: {{count}}",
+        "chooseMaps": "Choose maps..."
       },
       "save": "Salva"
     }

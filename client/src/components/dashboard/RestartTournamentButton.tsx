@@ -76,36 +76,36 @@ export const RestartTournamentButton: React.FC<RestartTournamentButtonProps> = (
 
       <ConfirmDialog
         open={showConfirm}
-        title="Restart Tournament Matches"
+        title={t('dashboard.restartTournament.button')}
         message={
           <>
             <Typography variant="body2" color="text.secondary" paragraph>
-              🔄 This will restart all active matches and reload them on servers.
+              {t('dashboard.restartTournament.intro')}
             </Typography>
             <Typography variant="body2" fontWeight={600} gutterBottom>
-              Actions:
+              {t('dashboard.restartTournament.actionsTitle')}
             </Typography>
             <Box component="ul" sx={{ mt: 0, mb: 2, pl: 2 }}>
               <Typography component="li" variant="body2" color="text.secondary">
-                Run at_endmatch on all servers with loaded/live matches
+                {t('dashboard.restartTournament.actionEndMatch')}
               </Typography>
               <Typography component="li" variant="body2" color="text.secondary">
-                Reset matches to 'ready' status
+                {t('dashboard.restartTournament.actionReset')}
               </Typography>
               <Typography component="li" variant="body2" color="text.secondary">
-                Reallocate matches to available servers
+                {t('dashboard.restartTournament.actionReallocate')}
               </Typography>
               <Typography component="li" variant="body2" color="text.secondary">
-                Reload match configs via RCON
+                {t('dashboard.restartTournament.actionReload')}
               </Typography>
             </Box>
             <Typography variant="body2" color="text.secondary">
-              Use this if matches are stuck or need a fresh start.
+              {t('dashboard.restartTournament.hint')}
             </Typography>
           </>
         }
-        confirmLabel="Restart Tournament"
-        cancelLabel="Cancel"
+        confirmLabel={t('dashboard.restartTournament.confirm')}
+        cancelLabel={t('common.cancel')}
         onConfirm={handleRestart}
         onCancel={() => setShowConfirm(false)}
         confirmColor="warning"

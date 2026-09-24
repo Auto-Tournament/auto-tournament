@@ -83,14 +83,14 @@ export default function Templates() {
         startIcon={<AddIcon />}
         onClick={() => navigate('/tournament')}
       >
-        Create Template from Tournament
+        {t('templatesPage.header.createFromTournament')}
       </Button>
     );
 
     return () => {
       setHeaderActions(null);
     };
-  }, [setHeaderActions, navigate]);
+  }, [setHeaderActions, navigate, t]);
 
   const loadTournamentStatus = useCallback(async () => {
     try {
@@ -137,10 +137,10 @@ export default function Templates() {
   };
 
   const getMapType = (mapId: string): string => {
-    if (mapId.startsWith('de_')) return 'Defusal';
-    if (mapId.startsWith('cs_')) return 'Hostage';
-    if (mapId.startsWith('ar_')) return 'Arms Race';
-    return 'Unknown';
+    if (mapId.startsWith('de_')) return t('tournament.mapPool.types.defusal');
+    if (mapId.startsWith('cs_')) return t('tournament.mapPool.types.hostage');
+    if (mapId.startsWith('ar_')) return t('tournament.mapPool.types.armsRace');
+    return t('tournament.mapPool.types.unknown');
   };
 
   const getMapTypeColor = (mapId: string): 'default' | 'primary' | 'secondary' | 'success' => {
@@ -370,7 +370,9 @@ export default function Templates() {
 
                   <Stack direction="row" spacing={1} mb={2} flexWrap="wrap" gap={1}>
                     <Chip
-                      label={TOURNAMENT_TYPE_LABELS[template.type] || template.type}
+                      label={t(`tournament.typeSelector.types.${template.type}.label`, {
+                        defaultValue: TOURNAMENT_TYPE_LABELS[template.type] || template.type,
+                      })}
                       size="small"
                       color="primary"
                       variant="outlined"
@@ -405,13 +407,13 @@ export default function Templates() {
                     }
                     title={
                       tournamentStatus === 'in_progress' || tournamentStatus === 'completed'
-                        ? 'Cannot create tournament while one is in progress or completed'
+                        ? t('templatesPage.createFromTemplate.errors.inProgressOrCompleted')
                         : tournamentStatus === 'setup' || tournamentStatus === 'ready'
-                        ? 'A tournament already exists. Delete or reset it first.'
+                        ? t('templatesPage.createFromTemplate.errors.alreadyExists')
                         : ''
                     }
                   >
-                    Create Tournament from Template
+                    {t('templatesPage.createFromTemplate.button')}
                   </Button>
                 </CardContent>
               </Card>
@@ -561,7 +563,7 @@ export default function Templates() {
                   fullWidth
                   loading={loadingMaps}
                   getOptionLabel={(option) => getMapDisplayName(option)}
-                  renderInput={(params) => <TextField {...params} placeholder="Choose maps..." />}
+                  renderInput={(params) => <TextField {...params} placeholder={t('templatesPage.edit.mapPool.chooseMaps')} />}
                   renderOption={(props, option) => (
                     <Box component="li" {...props} key={option}>
                       <Box display="flex" alignItems="center" gap={1} width="100%">
@@ -593,7 +595,7 @@ export default function Templates() {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseEdit}>Cancel</Button>
+          <Button onClick={handleCloseEdit}>{t('common.cancel')}</Button>
           <Button
             onClick={handleSaveEdit}
             variant="contained"

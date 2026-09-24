@@ -1,5 +1,6 @@
 import { Card, CardContent, Typography, Box, Chip } from '@mui/material';
 import type { MapPool, Map as MapType } from '../../../types/api.types';
+import { useModuleTranslation } from '../../../module-sdk';
 
 interface MapPoolCardProps {
   pool: MapPool;
@@ -8,6 +9,7 @@ interface MapPoolCardProps {
 }
 
 export function MapPoolCard({ pool, maps, onClick }: MapPoolCardProps) {
+  const { t } = useModuleTranslation('cs2');
   const getMapDisplayName = (mapId: string): string => {
     const map = maps.find((m) => m.id === mapId);
     return map ? map.displayName : mapId;
@@ -48,12 +50,14 @@ export function MapPoolCard({ pool, maps, onClick }: MapPoolCardProps) {
             {pool.name}
           </Typography>
           <Box display="flex" gap={0.5}>
-            {pool.isDefault && <Chip label="Default" size="small" color="primary" />}
-            {!pool.enabled && <Chip label="Disabled" size="small" color="default" variant="outlined" />}
+            {pool.isDefault && <Chip label={t('mapsPage.pool.default')} size="small" color="primary" />}
+            {!pool.enabled && <Chip label={t('mapsPage.pool.disabled')} size="small" color="default" variant="outlined" />}
           </Box>
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          {mapIds.length} map{mapIds.length !== 1 ? 's' : ''}
+          {t(mapIds.length === 1 ? 'mapsPage.pool.mapCount' : 'mapsPage.pool.mapCountPlural', {
+            count: mapIds.length,
+          })}
         </Typography>
         <Box display="flex" flexWrap="wrap" gap={0.5}>
           {mapIds.slice(0, 5).map((mapId) => (

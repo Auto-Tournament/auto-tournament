@@ -618,6 +618,12 @@
           "escalate": "Ask an admin"
         }
       }
+    },
+    "startButton": {
+      "start": "Start Tournament",
+      "starting": "Starting...",
+      "startSimulation": "Start Simulation",
+      "startingSimulation": "Starting Simulation..."
     }
   },
   "bracket": {
@@ -723,5 +729,15 @@
     "loadError": "Failed to load this tournament.",
     "notFoundTitle": "Tournament not found",
     "notFoundDescription": "This tournament doesn't exist or hasn't been created yet."
+  },
+  "roundStatusCard": {
+    "roundOf": "Round {{current}} of {{total}}",
+    "complete": "Complete",
+    "inProgress": "In Progress",
+    "matchProgress": "Match Progress",
+    "completedOf": "{{completed}} / {{total}} completed",
+    "completedCount": "{{count}} completed",
+    "playingCount": "{{count}} playing",
+    "pendingCount": "{{count}} pending"
   }
 }

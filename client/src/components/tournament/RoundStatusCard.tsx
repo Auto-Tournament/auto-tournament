@@ -11,6 +11,7 @@ import {
 import MapIcon from '@mui/icons-material/Map';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ScheduleIcon from '@mui/icons-material/Schedule';
+import { useTranslation } from 'react-i18next';
 
 interface RoundStatus {
   roundNumber: number;
@@ -44,6 +45,7 @@ export function RoundStatusCard({
   isActive = false,
   queueChip,
 }: RoundStatusCardProps) {
+  const { t } = useTranslation();
   const completionPercentage =
     roundStatus.totalMatches > 0
       ? (roundStatus.completedMatches / roundStatus.totalMatches) * 100
@@ -66,13 +68,13 @@ export function RoundStatusCard({
               <ScheduleIcon color={isActive ? 'primary' : 'action'} />
             )}
             <Typography variant="h6" fontWeight={600}>
-              Round {roundStatus.roundNumber} of {totalRounds}
+              {t('roundStatusCard.roundOf', { current: roundStatus.roundNumber, total: totalRounds })}
             </Typography>
             {roundStatus.isComplete && (
-              <Chip label="Complete" size="small" color="success" />
+              <Chip label={t('roundStatusCard.complete')} size="small" color="success" />
             )}
             {isActive && !roundStatus.isComplete && (
-              <Chip label="In Progress" size="small" color="primary" />
+              <Chip label={t('roundStatusCard.inProgress')} size="small" color="primary" />
             )}
           </Box>
         </Box>
@@ -90,10 +92,13 @@ export function RoundStatusCard({
           <Box>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
               <Typography variant="body2" color="text.secondary">
-                Match Progress
+                {t('roundStatusCard.matchProgress')}
               </Typography>
               <Typography variant="body2" fontWeight={600}>
-                {roundStatus.completedMatches} / {roundStatus.totalMatches} completed
+                {t('roundStatusCard.completedOf', {
+                  completed: roundStatus.completedMatches,
+                  total: roundStatus.totalMatches,
+                })}
               </Typography>
             </Box>
             <LinearProgress
@@ -111,14 +116,14 @@ export function RoundStatusCard({
           {/* Match Status Summary */}
           <Box display="flex" gap={2} flexWrap="wrap">
             <Chip
-              label={`${roundStatus.completedMatches} completed`}
+              label={t('roundStatusCard.completedCount', { count: roundStatus.completedMatches })}
               size="small"
               color="success"
               variant="outlined"
             />
             {playingCount > 0 && (
               <Chip
-                label={`${playingCount} playing`}
+                label={t('roundStatusCard.playingCount', { count: playingCount })}
                 size="small"
                 color="primary"
                 variant="outlined"
@@ -126,7 +131,7 @@ export function RoundStatusCard({
             )}
             {waitingCount > 0 && (
               <Chip
-                label={`${waitingCount} pending`}
+                label={t('roundStatusCard.pendingCount', { count: waitingCount })}
                 size="small"
                 color="warning"
                 variant="outlined"

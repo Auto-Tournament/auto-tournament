@@ -88,6 +88,19 @@
     "confirmDeletePool": {
       "title": "Slett kartpool",
       "message": "Er du sikker på at du vil slette \"{{name}}\"? Dette kan ikke angres."
+    },
+    "confirmDelete": "Slett",
+    "empty": {
+      "mapsTitle": "Ingen kart",
+      "mapsDescription": "Kom i gang ved å legge til det første kartet",
+      "poolsTitle": "Ingen kartpooler",
+      "poolsDescription": "Kom i gang ved å lage den første kartpoolen"
+    },
+    "pool": {
+      "default": "Standard",
+      "disabled": "Deaktivert",
+      "mapCount": "{{count}} kart",
+      "mapCountPlural": "{{count}} kart"
     }
   },
   "mapModal": {
@@ -589,6 +602,30 @@
     "confirmDelete": {
       "title": "Slett server",
       "message": "Er du sikker på at du vil slette \"{{name}}\"? Dette kan ikke angres."
+    }
+  },
+  "mapPoolModal": {
+    "titleCreate": "Lag kartpool",
+    "titleEdit": "Rediger kartpool",
+    "close": "Lukk",
+    "nameLabel": "Navn på kartpool",
+    "namePlaceholder": "Min kartpool",
+    "selectMaps": "Velg kart ({{count}} valgt)",
+    "addAll": "Legg til alle",
+    "chooseMaps": "Velg kart...",
+    "cancel": "Avbryt",
+    "update": "Oppdater",
+    "create": "Lag",
+    "types": {
+      "defusal": "Defusal",
+      "hostage": "Gisler",
+      "armsRace": "Arms Race",
+      "unknown": "Ukjent"
+    },
+    "errors": {
+      "nameRequired": "Kartpoolen må ha et navn",
+      "mapsRequired": "Velg minst ett kart",
+      "saveFailed": "Kunne ikke lagre kartpoolen"
     }
   }
 }

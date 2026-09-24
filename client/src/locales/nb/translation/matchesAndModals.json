@@ -235,7 +235,9 @@
       "dialogTitle": "Slett kamp",
       "confirmTitle": "Slette denne kampen?",
       "confirmBody": "Er du sikker på at du vil slette kampen \"{{slug}}\"? Dette kan ikke angres.",
-      "button": "Slett kamp"
+      "button": "Slett kamp",
+      "success": "Kampen er slettet",
+      "failed": "Kunne ikke slette kampen"
     },
     "roster": {
       "title": "Spillerstall",
@@ -254,7 +256,44 @@
       "success": "Winner set",
       "failed": "Failed to set the winner"
     },
-    "tiebreakHint": "Scores are level: {{team}} won the map, decided by tiebreak."
+    "tiebreakHint": "Scores are level: {{team}} won the map, decided by tiebreak.",
+    "config": {
+      "loadFailed": "Kunne ikke hente kampoppsettet",
+      "view": "Vis kampoppsett (JSON)",
+      "title": "Kampoppsett (JSON)",
+      "loading": "Henter kampoppsettet...",
+      "empty": "Denne kampen har ikke noe oppsett."
+    },
+    "tiebreak": {
+      "regulationOnly": "Ekstraomganger er slått av for denne kampen (bare ordinær tid), så uavgjort avgjøres av total skade per lag.",
+      "segmentsExhausted": "Ekstraomganger har et maksimalt antall runder. Står det fortsatt likt, avgjøres vinneren av total skade per lag.",
+      "overtimeDisabled": "Ekstraomganger er slått av for denne kampen, så uavgjort avgjøres av total skade per lag.",
+      "tiedByDamage": "Sluttresultatet var uavgjort, så vinneren ble valgt etter total skade per lag, slik kampoppsettet sier."
+    },
+    "team1": "Lag 1",
+    "team2": "Lag 2",
+    "matchTime": "Kamptid:",
+    "server": "Server:",
+    "queuePosition": "Plass i køen:",
+    "totalDamage": "Total skade: {{team1}} - {{team2}}",
+    "mapOfTotal": "Kart {{index}} av {{total}}: {{map}}",
+    "mapIndex": "Kart {{index}}: {{map}}",
+    "round": "Runde {{round}}",
+    "shuffle": {
+      "averageElo": "Lag-ELO (snitt): {{team1}} mot {{team2}}",
+      "balancerHint": "Shuffle-lag settes sammen av en OpenSkill-basert fordeler som sprer høyt og lavt rangerte spillere på begge lag, så snittene blir like."
+    },
+    "playerLeaderboards": "Spillerstatistikk",
+    "noPlayerData": "Ingen spillerdata ennå",
+    "currentMap": "Nåværende kart",
+    "maps": "Kart",
+    "mapsViaVeto": "Avgjøres i kartvalget",
+    "matchInformation": "Kampinformasjon",
+    "created": "Opprettet:",
+    "started": "Startet:",
+    "completed": "Ferdig:",
+    "adminControls": "Adminkontroller",
+    "slug": "Kamp-ID:"
   },
   "bulkShuffleMatchesModal": {
     "title": "Opprett shuffle-kamper i bulk",
@@ -410,5 +449,28 @@
     },
     "testButton": "Test lyd",
     "footer": "Lydvarsler spilles av når kampen din er klar eller når viktige hendelser oppstår."
+  },
+  "addBackupPlayer": {
+    "title": "Legg til spiller",
+    "loadFailed": "Kunne ikke hente spillerlisten",
+    "added": "{{name}} lagt til i {{target}}",
+    "addFailed": "Kunne ikke legge til spilleren",
+    "addToMatchFailed": "Kunne ikke legge spilleren til i kampen",
+    "searchLabel": "Søk etter spiller",
+    "searchPlaceholder": "Skriv spillernavn...",
+    "available": "{{count}} ledige spillere (ikke allerede i kampen)",
+    "noneAvailable": "Ingen ledige spillere",
+    "displayNameLabel": "Visningsnavn (valgfritt)",
+    "displayNamePlaceholder": "Spillerens nåværende navn hvis tomt",
+    "side": "Side",
+    "spectator": "Tilskuer",
+    "selected": "Valgt:",
+    "fromTeam": "Fra lag: {{team}}",
+    "steamId": "Steam-ID: {{id}}",
+    "adding": "Legger til spiller...",
+    "add": "Legg spiller til i kampen",
+    "underlyingCommand": "Kommando som kjøres:",
+    "important": "Viktig:",
+    "reconnectHint": "Spilleren må koble til serveren på nytt etter å ha blitt lagt til. Kanskje må CS2 startes på nytt hvis spilleren allerede er tilkoblet."
   }
 }
