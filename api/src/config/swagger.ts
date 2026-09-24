@@ -22,7 +22,12 @@ const options: swaggerJsdoc.Options = {
     info: {
       title: 'Auto Tournament API',
       version: '1.0.0',
-      description: 'API for managing CS2 tournament servers with secure RCON control',
+      description:
+        'Run a tournament from a bot or a script: teams, players, brackets, ' +
+        'matches and results. The dashboard is a client of this API and ' +
+        'nothing more. Which game a tournament runs is a module\'s business, ' +
+        'so the endpoints here are the same whether it is Counter-Strike 2 ' +
+        'or a game whose captains report their own scores.',
       contact: {
         name: 'API Support',
       },

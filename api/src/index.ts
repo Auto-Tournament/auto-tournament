@@ -2,6 +2,7 @@
 // This ensures all modules can access env vars during initialization
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import os from 'os';
 dotenv.config({ path: path.join(process.cwd(), '.env') });
 
@@ -25,7 +26,7 @@ import { createServer } from 'http';
 import swaggerUi from 'swagger-ui-express';
 import { db } from './config/database';
 import { refreshPackCache } from './services/gamePackService';
-import { PUBLIC_DIR, MAP_IMAGES_DIR } from './config/publicPaths';
+import { PUBLIC_DIR, MAP_IMAGES_DIR, SWAGGER_UI_DIR } from './config/publicPaths';
 import { DATA_DIR } from './config/dataDir';
 import { getOpenApiSpec } from './config/swagger';
 import { log, logger, LOG_HTTP_REQUESTS, LOG_DB_VERBOSE, LOG_DB_VALUES } from './utils/logger';
@@ -182,6 +183,20 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // Swagger Documentation
+//
+// The static assets first, from the copy the image ships (see
+// `SWAGGER_UI_DIR`). `swagger-ui-express` would serve these itself out of
+// `node_modules/swagger-ui-dist`, which the release image does not have —
+// the backend is a single esbuild bundle. Without this the page loads and
+// its stylesheet and script come back as the SPA's index.html, which renders
+// as nothing at all.
+//
+// Running from source the directory is absent, this is a no-op, and
+// `swaggerUi.serve` below answers exactly as it always did.
+if (fs.existsSync(SWAGGER_UI_DIR)) {
+  app.use('/api-docs', express.static(SWAGGER_UI_DIR, { fallthrough: true }));
+}
+
 // swagger-ui-express types don't perfectly match Express middleware types
 app.use(
   '/api-docs',
@@ -189,7 +204,7 @@ app.use(
   ...(swaggerUi.serve as any),
   swaggerUi.setup(getOpenApiSpec(), {
     customCss: '.swagger-ui .topbar { display: none }',
-    customSiteTitle: 'MatchZy API Docs',
+    customSiteTitle: 'Auto Tournament API',
   }) as // eslint-disable-next-line @typescript-eslint/no-explicit-any
   any
 );
