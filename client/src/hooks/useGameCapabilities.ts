@@ -19,23 +19,44 @@
  *
  * While it loads, and with no tournament at all, the answer is CS2's — the
  * game every instance has had — so nothing flickers away on the common path.
+ *
+ * It also hands back the module itself and the tournament's id, so a page can
+ * show what that module puts in place of the columns it left out (manual
+ * reporting's `tournamentStatsView`). `tournamentId` is null until the
+ * tournament is known, so nothing is asked for a tournament that is not there.
  */
 
 import { useEffect, useState } from 'react';
 import { api } from '../utils/api';
 import { getIntegration } from '../integrations/registry';
-import { DEFAULT_GAME, type GameCapabilities } from '../integrations/types';
+import {
+  DEFAULT_GAME,
+  type ClientGameIntegration,
+  type GameCapabilities,
+} from '../integrations/types';
 
-export function useGameCapabilities(): { capabilities: GameCapabilities; loading: boolean } {
+export function useGameCapabilities(): {
+  capabilities: GameCapabilities;
+  /** The module that owns the tournament (CS2 while loading, and with none). */
+  integration: ClientGameIntegration;
+  /** The tournament's id; null while loading and with no tournament. */
+  tournamentId: number | null;
+  loading: boolean;
+} {
   const [game, setGame] = useState<string>(DEFAULT_GAME);
+  const [tournamentId, setTournamentId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let live = true;
     api
-      .get<{ success: boolean; game: string | null }>('/api/tournament/game')
+      .get<{ success: boolean; game: string | null; tournamentId?: number | null }>(
+        '/api/tournament/game'
+      )
       .then((response) => {
-        if (live && response.game) setGame(response.game);
+        if (!live) return;
+        if (response.game) setGame(response.game);
+        if (typeof response.tournamentId === 'number') setTournamentId(response.tournamentId);
       })
       .catch((error) => console.error("Failed to read the tournament's game:", error))
       .finally(() => {
@@ -46,5 +67,6 @@ export function useGameCapabilities(): { capabilities: GameCapabilities; loading
     };
   }, []);
 
-  return { capabilities: getIntegration(game).capabilities, loading };
+  const integration = getIntegration(game);
+  return { capabilities: integration.capabilities, integration, tournamentId, loading };
 }

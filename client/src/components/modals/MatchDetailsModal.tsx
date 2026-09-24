@@ -97,7 +97,13 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
   // run of games otherwise. The module that owns the match says which, and a
   // match with no maps has no map list to be "to be determined via veto"
   // (3.0 phase D, PR D10).
-  const playsOnMaps = integrationFor(match).capabilities.veto;
+  const gameCapabilities = integrationFor(match).capabilities;
+  const playsOnMaps = gameCapabilities.veto;
+  // Kills, damage and demos are what the game measured and recorded. A game
+  // that does neither has no leaderboard of them and no demo to download —
+  // not an empty one.
+  const measuresPlayers = gameCapabilities.playerStats;
+  const recordsDemos = gameCapabilities.demos;
   const [matchTimer, setMatchTimer] = useState<number>(0);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -766,7 +772,8 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                       </Typography>
                     </>
                   )}
-                  {(normalizedTeam1Players.length > 0 || normalizedTeam2Players.length > 0) && (
+                  {measuresPlayers &&
+                    (normalizedTeam1Players.length > 0 || normalizedTeam2Players.length > 0) && (
                     <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
                       Total Damage: {team1TotalDamage} - {team2TotalDamage}
                     </Typography>
@@ -888,7 +895,8 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
               )}
 
             {/* Player Leaderboards */}
-            {(normalizedTeam1Players.length > 0 || normalizedTeam2Players.length > 0) && (
+            {measuresPlayers &&
+              (normalizedTeam1Players.length > 0 || normalizedTeam2Players.length > 0) && (
               <>
                 <Divider />
                 <Box>
@@ -1151,7 +1159,9 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                       team1Name={team1Name}
                       team2Name={team2Name}
                     />
-                    {match.mapResults && match.mapResults.some((mr) => mr.demoFilePath) && (
+                    {recordsDemos &&
+                      match.mapResults &&
+                      match.mapResults.some((mr) => mr.demoFilePath) && (
                       <Box mt={3}>
                         <MapDemoDownloads
                           maps={mapsToShow}

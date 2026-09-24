@@ -117,14 +117,18 @@ router.get('/allocation-status', async (req: Request, res: Response) => {
  *     tags: [Tournament]
  *     summary: Which game the current tournament is for (public)
  *     description: |
- *       One field, no session. `GET /api/tournament` is admin-only, but a
+ *       Two fields, no session. `GET /api/tournament` is admin-only, but a
  *       player's own profile has to know whether this instance is running a
  *       game that measures kills and ADR or one that measures nothing, so it
  *       can leave those columns out rather than fill them with "N/A"
  *       (3.0 phase D, PR D10). Same split as `/allocation-status`: the one
  *       fact a non-admin page needs, carved out of an admin-only resource.
  *
- *       `null` when no tournament exists.
+ *       The tournament's id comes with it, so the profile can show that
+ *       tournament's statistics in the game module's own words (for manual
+ *       reporting, the custom field totals) where CS2's columns do not apply.
+ *
+ *       Both are `null` when no tournament exists.
  *     responses:
  *       200:
  *         description: The game, as `tournament.game` stores it
@@ -138,6 +142,10 @@ router.get('/allocation-status', async (req: Request, res: Response) => {
  *                   type: string
  *                   nullable: true
  *                   example: 'rocket-league'
+ *                 tournamentId:
+ *                   type: integer
+ *                   nullable: true
+ *                   example: 1
  */
 router.get('/game', async (req: Request, res: Response) => {
   try {
@@ -146,7 +154,11 @@ router.get('/game', async (req: Request, res: Response) => {
       'SELECT game FROM tournament WHERE id = ?',
       [tournamentId]
     );
-    return res.json({ success: true, game: row?.game ?? null });
+    return res.json({
+      success: true,
+      game: row?.game ?? null,
+      tournamentId: row ? tournamentId : null,
+    });
   } catch (error) {
     log.error('Error fetching the tournament game', error);
     return res.status(500).json({ success: false, error: 'Failed to fetch the tournament game' });
