@@ -22,6 +22,7 @@ import eventRoutes from '../events/routes';
 import vetoRoutes from '../veto/routes';
 import mapRoutes from '../maps/routes';
 import mapPoolRoutes from '../maps/poolRoutes';
+import matchConnectRoutes from './matchConnect';
 import testHelperRoutes from './testHelpers';
 
 export const cs2LegacyRoutes: LegacyRouteMount[] = [
@@ -92,6 +93,14 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     router: mapPoolRoutes,
     title: 'Map pools',
     description: 'Named sets of maps for veto and match config.',
+  },
+  {
+    // Not a legacy URL: new with the module client API 0.2.0, so under the
+    // module's own prefix.
+    prefix: '/api/game/cs2',
+    router: matchConnectRoutes,
+    title: 'Match connect',
+    description: 'How a player joins a CS2 match: its server, status and current map.',
   },
   {
     prefix: '/api/test',

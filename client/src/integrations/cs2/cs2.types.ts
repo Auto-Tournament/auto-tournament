@@ -91,7 +91,35 @@ export interface ServerAvailability extends Cs2ApiResponse {
   simulationEnabled: boolean;
 }
 
-/** The route above, as this module asks it itself. */
+/** The server a player joins, as the connect route describes it. */
+export interface MatchServer {
+  id: string;
+  name: string;
+  host: string;
+  port: number;
+  password?: string | null;
+  /** The plugin's own status (idle, warmup, live, …), when the server answered. */
+  status?: string | null;
+  statusDescription?: {
+    label: string;
+    description: string;
+    color: 'success' | 'warning' | 'error' | 'info' | 'default';
+  } | null;
+}
+
+/** `GET /api/game/cs2/matches/:slug/connect`: how the viewer joins one match. */
+export interface MatchConnectResponse extends Cs2ApiResponse {
+  viewerIsTeamMember: boolean;
+  matchStatus: string;
+  /** The live-stats phase (warmup, knife, live, halftime, postgame), once there are live stats. */
+  liveStatus: string | null;
+  currentMap: string | null;
+  mapNumber: number | null;
+  /** Null for a viewer on neither team, and for a match with no server. */
+  server: MatchServer | null;
+}
+
+/** The availability route, as this module asks it itself. */
 export const SERVER_AVAILABILITY_ENDPOINT = '/api/tournament/server-availability';
 
 /**
@@ -167,6 +195,23 @@ export interface VetoState {
   team1Name?: string;
   team2Name?: string;
   completedAt?: string;
+}
+
+export interface VetoStep {
+  step: number;
+  team: VetoTeam;
+  action: VetoActionType;
+  description: string;
+}
+
+/** A map's name and pictures, from the built-in list (`maps/mapData.ts`). */
+export interface CS2MapData {
+  name: string;
+  displayName: string;
+  /** Full-size image used for large hero/background displays. */
+  image: string;
+  /** Smaller thumbnail variant used for lists, chips, and small cards. */
+  thumbnail: string;
 }
 
 /** `GET /api/veto/:matchSlug`. A spectator's copy carries only some fields. */

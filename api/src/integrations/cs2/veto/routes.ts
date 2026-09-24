@@ -57,7 +57,7 @@ function normalizeTeamRosterPlayers(players: string | null | undefined) {
  */
 type ViewerTeam = 'team1' | 'team2' | 'both';
 
-async function resolveViewerTeamForMatch(
+export async function resolveViewerTeamForMatch(
   match: DbMatchRow,
   viewerSteamId: string | null
 ): Promise<ViewerTeam | null> {

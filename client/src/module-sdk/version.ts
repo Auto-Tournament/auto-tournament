@@ -33,5 +33,9 @@
  * - `standaloneMatchSteps.rules` / `.content` (21 + 16 props of core-held
  *   state) are gone; one optional slot, `standaloneMatch`, takes
  *   `{ open, onClose, onCreated(matchSlug) }` and owns the whole form.
+ * - `matchPanels.teamView` takes `{ matchSlug, viewerCanJoin, matchStatus? }`
+ *   (was `server`, `currentMapData`, `currentMapNumber`, `connected`,
+ *   `copied`, `onConnect`, `onCopy`); CS2 reads
+ *   `GET /api/game/cs2/matches/:slug/connect`.
  */
 export const CLIENT_API_VERSION = '0.2.0';
