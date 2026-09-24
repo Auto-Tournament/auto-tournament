@@ -1,32 +1,22 @@
 import { pageTitle } from '../utils/pageTitle';
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  Chip,
-  CircularProgress,
-  Container,
-  Grid,
-  Link,
-  List,
-  ListItem,
-  Stack,
-  Typography,
-} from '@mui/material';
+import { Box, Button, Chip, CircularProgress, Container, Link, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { GameMark } from '../components/common/GameMark';
+import { LiveChip, PageHead, Panel, panelSx, Row, RowList, SectionHead } from '../components/common/ui';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeamMatchData } from '../hooks/useTeamMatchData';
 import { useTournamentList } from '../hooks/useTournamentList';
 import { fetchMyGames, type GameSummary } from '../components/games/gamesApi';
 import { api } from '../utils/api';
-import { MATCH_FORMATS } from '../constants/tournament';
 import { eliminationRoundCount, getRoundLabel } from '../utils/matchUtils';
-import { radii } from '../theme/tokens';
+import { formatBadge, tournamentAction, tournamentWhen } from '../utils/tournamentSummary';
+import { paths, tournamentTabPath } from '../paths';
+import { tokens, radii, textSize } from '../theme/tokens';
+
+const { color } = tokens;
 
 interface ViewerTeam {
   id: string;
@@ -34,11 +24,13 @@ interface ViewerTeam {
   tag?: string;
 }
 
-/** "bo3" -> "Bo3". Falls back to the MATCH_FORMATS label when it doesn't fit. */
-function formatBadge(format: string): string {
-  const known = MATCH_FORMATS.find((f) => f.value === format);
-  if (!known) return format;
-  return format.length >= 2 ? format[0].toUpperCase() + format.slice(1) : known.label;
+/** A quiet line in a panel, for a section with nothing in it yet. */
+function EmptyLine({ children, testId }: { children: React.ReactNode; testId: string }) {
+  return (
+    <Panel role="status" data-testid={testId} sx={{ px: 3, py: 2.5, color: color.muted, fontSize: textSize.sm }}>
+      {children}
+    </Panel>
+  );
 }
 
 /**
@@ -65,7 +57,7 @@ function steamConnectUri(server: { host: string; port: number; password?: string
  * plural tournaments endpoint; this page does not change.
  */
 export default function Home() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { playerSteamId } = useAuth();
   const [playerName, setPlayerName] = useState('');
   const [myGames, setMyGames] = useState<GameSummary[]>([]);
@@ -200,237 +192,293 @@ export default function Home() {
     return { label: t('home.tournaments.waiting'), detail: undefined, color: 'default' as const };
   };
 
+
   const loading = tournamentsLoading || teamLoading || gamesLoading || (!!myTeam && matchLoading);
   const showNextMatch = !!myTeam && hasMatch && !!match;
+
+  // The draft's line under the greeting ("One match today. Two tournaments
+  // open for games you play."), from what this page already knows.
+  const summary = [
+    showNextMatch ? t('home.summary.match') : null,
+    openForYourGames.length > 0
+      ? t(noGamesPicked ? 'home.summary.openAll' : 'home.summary.open', { count: openForYourGames.length })
+      : null,
+  ].filter(Boolean);
+  const summaryLine = summary.length > 0 ? summary.join(' ') : t('home.summary.none');
+
+  const gameName = (slug: string | undefined): string | undefined =>
+    slug ? myGames.find((game) => game.slug === slug)?.name : undefined;
 
   return (
     <Box minHeight="100vh" bgcolor="transparent" data-testid="home-page">
       <TopNavBar />
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          justifyContent="space-between"
-          alignItems={{ xs: 'flex-start', sm: 'flex-end' }}
-          spacing={2}
-          sx={{ mb: 4 }}
-        >
-          <Box>
-            <Typography variant="h4" fontWeight={700}>
-              {playerName ? t('home.greeting', { name: playerName }) : t('home.greetingFallback')}
-            </Typography>
-          </Box>
-
-          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
-            {!gamesLoading &&
-              myGames.map((game) => (
-                <Chip
-                  key={game.id}
-                  size="small"
-                  variant="outlined"
-                  label={game.name}
-                  avatar={<GameMark name={game.name} slug={game.slug} coverUrl={game.coverUrl} size={20} />}
-                  data-testid={`home-game-chip-${game.slug}`}
-                />
-              ))}
-            <Link
-              component={RouterLink}
-              to="/welcome/games?edit=1"
-              variant="body2"
-              underline="hover"
-              data-testid="home-edit-games"
+        <PageHead
+          title={playerName ? t('home.greeting', { name: playerName }) : t('home.greetingFallback')}
+          subtitle={loading ? undefined : <span data-testid="home-summary">{summaryLine}</span>}
+          actions={
+            <Stack
+              direction="row"
+              spacing={1}
+              alignItems="center"
+              flexWrap="wrap"
+              useFlexGap
+              aria-label={t('home.yourGames')}
             >
-              {t('home.editGames')}
-            </Link>
-          </Stack>
-        </Stack>
+              {!gamesLoading &&
+                myGames.map((game) => (
+                  <Chip
+                    key={game.id}
+                    size="small"
+                    variant="outlined"
+                    label={game.name}
+                    avatar={<GameMark name={game.name} slug={game.slug} coverUrl={game.coverUrl} size={20} />}
+                    data-testid={`home-game-chip-${game.slug}`}
+                  />
+                ))}
+              <Link
+                component={RouterLink}
+                to="/welcome/games?edit=1"
+                variant="body2"
+                underline="hover"
+                data-testid="home-edit-games"
+                sx={{ color: color.muted, '&:hover': { color: color.ink } }}
+              >
+                {t('home.editGames')}
+              </Link>
+            </Stack>
+          }
+        />
 
         {loading ? (
           <Box display="flex" justifyContent="center" py={6}>
-            <CircularProgress />
+            <CircularProgress aria-label={t('home.loading')} />
           </Box>
         ) : (
-          <Stack spacing={5}>
+          <Stack spacing={{ xs: 5, md: 8 }}>
             {showNextMatch && match && (
-              <Card
-                variant="outlined"
+              <Box
+                component="section"
+                aria-label={t('home.nextMatch')}
                 data-testid="home-next-match"
                 sx={{
-                  p: { xs: 2, md: 3 },
-                  borderColor: 'primary.main',
-                  bgcolor: 'background.surface1',
+                  display: 'grid',
+                  gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1fr) auto' },
+                  gap: 3,
+                  alignItems: 'center',
+                  px: { xs: 3, md: 4 },
+                  py: 3,
+                  borderRadius: radii.lg,
+                  bgcolor: color.paper2,
+                  border: `1px solid ${color.accent}`,
                 }}
               >
-                <Stack
-                  direction={{ xs: 'column', md: 'row' }}
-                  justifyContent="space-between"
-                  alignItems={{ xs: 'flex-start', md: 'center' }}
-                  spacing={2}
-                >
-                  <Box>
-                    <Chip
-                      size="small"
-                      color={match.status === 'live' ? 'success' : 'default'}
-                      label={t(`home.matchStatus.${match.status}`)}
-                      sx={{ mb: 1, fontWeight: 600 }}
-                    />
-                    <Typography variant="h5" fontWeight={700}>
-                      {myTeamMatchTeam?.name ?? myTeam?.name}
-                      <Typography component="span" variant="body1" color="text.secondary" sx={{ mx: 1 }}>
-                        {t('home.vs')}
-                      </Typography>
-                      {match.opponent?.name ?? t('home.tbd')}
+                <Box sx={{ minWidth: 0 }}>
+                  {match.status === 'live' ? (
+                    <LiveChip label={t(`home.matchStatus.${match.status}`)} />
+                  ) : (
+                    <Chip size="small" label={t(`home.matchStatus.${match.status}`)} />
+                  )}
+                  <Typography variant="h4" component="p" sx={{ mt: 1, overflowWrap: 'anywhere' }}>
+                    {myTeamMatchTeam?.name ?? myTeam?.name}
+                    <Typography component="span" variant="body1" color="text.secondary" sx={{ mx: 1 }}>
+                      {t('home.vs')}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {[currentTournament?.name, getRoundLabel(
+                    {match.opponent?.name ?? t('home.tbd')}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: color.ink2 }}>
+                    {[
+                      currentTournament?.name,
+                      getRoundLabel(
                         match.round,
                         currentTournament
                           ? eliminationRoundCount(currentTournament.teamCount, currentTournament.type)
                           : undefined
-                      ), formatBadge(match.matchFormat)]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </Typography>
-                  </Box>
-                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                      ),
+                      formatBadge(match.matchFormat),
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </Typography>
+                </Box>
+                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                  <Button
+                    component={RouterLink}
+                    to={`/team/${myTeam?.id}`}
+                    variant="outlined"
+                    data-testid="home-open-match"
+                  >
+                    {t('home.openMatch')}
+                  </Button>
+                  {match.server && (
                     <Button
-                      component={RouterLink}
-                      to={`/team/${myTeam?.id}`}
-                      variant="outlined"
-                      data-testid="home-open-match"
+                      component="a"
+                      href={steamConnectUri(match.server)}
+                      variant="contained"
+                      data-testid="home-connect-server"
                     >
-                      {t('home.openMatch')}
+                      {t('home.connectToServer')}
                     </Button>
-                    {match.server && (
-                      <Button
-                        component="a"
-                        href={steamConnectUri(match.server)}
-                        variant="contained"
-                        data-testid="home-connect-server"
-                      >
-                        {t('home.connectToServer')}
-                      </Button>
-                    )}
-                  </Stack>
+                  )}
                 </Stack>
-              </Card>
+              </Box>
             )}
 
-            <Box>
-              <Stack direction="row" justifyContent="space-between" alignItems="baseline" sx={{ mb: 2 }}>
-                <Typography variant="h5" fontWeight={700}>
-                  {t('home.yourTournaments.title')}
-                </Typography>
-              </Stack>
+            <Box component="section" aria-labelledby="home-mine-title">
+              <SectionHead id="home-mine-title" title={t('home.yourTournaments.title')} />
               {myTournaments.length === 0 ? (
-                <Typography variant="body2" color="text.secondary" data-testid="home-tournaments-empty">
-                  {t('home.yourTournaments.empty')}
-                </Typography>
+                <EmptyLine testId="home-tournaments-empty">{t('home.yourTournaments.empty')}</EmptyLine>
               ) : (
-                <List
-                  disablePadding
-                  sx={{ border: 1, borderColor: 'divider', borderRadius: radii.lg, overflow: 'hidden' }}
-                  data-testid="home-tournaments-list"
-                >
+                <RowList data-testid="home-tournaments-list">
                   {myTournaments.map((tournament) => {
                     const state = tournamentState(tournament);
                     return (
-                      <ListItem
+                      <Row
                         key={tournament.id}
-                        component={RouterLink}
-                        to={`/tournament/${tournament.id}`}
-                        divider
+                        columns={{ xs: 'auto minmax(0, 1fr)', sm: 'auto minmax(0, 1fr) auto' }}
                         data-testid={`home-tournament-${tournament.id}`}
-                        sx={{
-                          display: 'flex',
-                          gap: 2,
-                          alignItems: 'center',
-                          color: 'text.primary',
-                          textDecoration: 'none',
-                          '&:hover': { bgcolor: 'action.hover' },
-                        }}
                       >
                         <GameMark name={tournament.game ?? tournament.name} slug={tournament.game} size={36} />
-                        <Box sx={{ minWidth: 0, flex: 1 }}>
-                          <Typography variant="subtitle1" fontWeight={600} noWrap>
-                            {tournament.name}
+                        <Box sx={{ minWidth: 0 }}>
+                          <Typography variant="h6" component="h3" sx={{ fontSize: textSize.lg }}>
+                            <Link
+                              component={RouterLink}
+                              to={tournamentTabPath(tournament.id)}
+                              underline="hover"
+                              color="inherit"
+                            >
+                              {tournament.name}
+                            </Link>
                           </Typography>
-                          <Typography variant="body2" color="text.secondary" noWrap>
+                          <Typography variant="body2" sx={{ color: color.muted }}>
                             {[
+                              myTeam?.name,
                               t(`tournament.typeSelector.types.${tournament.type}.label`),
                               formatBadge(tournament.format),
-                            ].join(' · ')}
+                            ]
+                              .filter(Boolean)
+                              .join(' · ')}
                           </Typography>
                         </Box>
-                        <Box sx={{ textAlign: 'right' }}>
-                          <Chip size="small" color={state.color} label={state.label} sx={{ fontWeight: 600 }} />
+                        <Box
+                          sx={{
+                            gridColumn: { xs: 2, sm: 'auto' },
+                            display: 'grid',
+                            gap: 0.5,
+                            justifyItems: { xs: 'start', sm: 'end' },
+                          }}
+                        >
+                          {state.color === 'success' ? (
+                            <LiveChip label={state.label} />
+                          ) : (
+                            <Chip size="small" label={state.label} />
+                          )}
                           {state.detail && (
-                            <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                            <Box component="small" sx={{ color: color.muted, fontSize: textSize.xs }}>
                               {state.detail}
-                            </Typography>
+                            </Box>
                           )}
                         </Box>
-                      </ListItem>
+                      </Row>
                     );
                   })}
-                </List>
+                </RowList>
               )}
             </Box>
 
-            <Box>
-              <Stack direction="row" justifyContent="space-between" alignItems="baseline" sx={{ mb: 2 }}>
-                <Typography variant="h5" fontWeight={700}>
-                  {noGamesPicked ? t('home.openForYourGames.titleAll') : t('home.openForYourGames.title')}
-                </Typography>
-                <Link component={RouterLink} to="/browse" variant="body2" underline="hover">
-                  {t('home.openForYourGames.browseAll')}
-                </Link>
-              </Stack>
+            <Box component="section" aria-labelledby="home-picks-title">
+              <SectionHead
+                id="home-picks-title"
+                title={noGamesPicked ? t('home.openForYourGames.titleAll') : t('home.openForYourGames.title')}
+                link={{ to: paths.browse, label: t('home.openForYourGames.browseAll') }}
+              />
               {openForYourGames.length === 0 ? (
-                <Alert severity="info" data-testid="home-open-empty">
-                  {noGamesPicked ? t('home.openForYourGames.emptyAll') : t('home.openForYourGames.empty')}{' '}
-                  <Link component={RouterLink} to="/browse">
-                    {t('home.openForYourGames.browseAll')}
-                  </Link>
-                </Alert>
+                <EmptyLine testId="home-open-empty">
+                  {noGamesPicked ? t('home.openForYourGames.emptyAll') : t('home.openForYourGames.empty')}
+                </EmptyLine>
               ) : (
-                <Grid container spacing={2}>
-                  {openForYourGames.map((tournament) => (
-                    <Grid key={tournament.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                      <Card
-                        variant="outlined"
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))',
+                    gap: 2,
+                  }}
+                >
+                  {openForYourGames.map((tournament) => {
+                    const when = tournamentWhen(t, tournament, i18n.language);
+                    const action = tournamentAction(tournament);
+                    const name = gameName(tournament.game);
+                    return (
+                      <Box
+                        key={tournament.id}
                         component={RouterLink}
-                        to={`/tournament/${tournament.id}`}
+                        to={action.to}
+                        data-testid={`home-pick-${tournament.id}`}
                         sx={{
-                          p: 2,
-                          display: 'block',
+                          ...panelSx,
+                          display: 'grid',
+                          gap: 1.5,
+                          alignContent: 'start',
+                          p: 3,
+                          color: color.ink,
                           textDecoration: 'none',
-                          color: 'text.primary',
-                          height: '100%',
-                          '&:hover': { borderColor: 'text.secondary' },
+                          '&:hover': { borderColor: color.muted },
+                          '&:focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: 2 },
                         }}
                       >
-                        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                          <GameMark name={tournament.game ?? tournament.name} slug={tournament.game} size={24} />
-                          <Typography variant="body2" color="text.secondary">
-                            {t('games.picker.supported')}
-                          </Typography>
-                        </Stack>
-                        <Typography variant="h6" fontWeight={700}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1.5 }}>
+                          <Box
+                            component="span"
+                            sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, fontSize: textSize.sm, minWidth: 0 }}
+                          >
+                            <GameMark name={name ?? tournament.game ?? tournament.name} slug={tournament.game} size={24} />
+                            {name}
+                          </Box>
+                          {when.kind === 'text' && <Chip size="small" label={when.text} />}
+                        </Box>
+                        <Typography variant="h6" component="h3">
                           {tournament.name}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                        <Typography variant="body2" sx={{ color: color.muted }}>
                           {[
                             t(`tournament.typeSelector.types.${tournament.type}.label`),
                             formatBadge(tournament.format),
+                            t('browsePage.teamsCount', { count: tournament.teamCount }),
                           ].join(' · ')}
                         </Typography>
-                        <Typography variant="caption" color="success.main" fontWeight={600}>
-                          {t('home.openForYourGames.steamLinked')}
-                        </Typography>
-                      </Card>
-                    </Grid>
-                  ))}
-                </Grid>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            mt: 0.5,
+                            pt: 2,
+                            borderTop: `1px solid ${color.rule}`,
+                          }}
+                        >
+                          <Box component="span" sx={{ fontSize: textSize.xs, color: color.live }}>
+                            {playerSteamId ? `✓ ${t('home.openForYourGames.steamLinked')}` : ''}
+                          </Box>
+                          <Box
+                            component="span"
+                            sx={{
+                              px: 1.5,
+                              py: 0.5,
+                              borderRadius: radii.pill,
+                              bgcolor: color.accent,
+                              color: color.accentInk,
+                              fontSize: textSize.sm,
+                              fontWeight: 600,
+                            }}
+                          >
+                            {t(`browsePage.actions.${action.key}`)}
+                          </Box>
+                        </Box>
+                      </Box>
+                    );
+                  })}
+                </Box>
               )}
             </Box>
           </Stack>

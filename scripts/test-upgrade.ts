@@ -971,6 +971,28 @@ function assertCs2TournamentColumnsGone(label: string, postgresName: string) {
   log(`${label}: core's tournament tables hold no CS2 columns.`);
 }
 
+/**
+ * Core columns added after 2.4.15 that the boot-time column pass
+ * (`getSchemaColumns`) must add to an existing table. Each is checked by name
+ * so a column that is only in a fresh schema fails here, not in production.
+ */
+const CORE_COLUMNS_ADDED_SINCE_OLD_IMAGE = ['players.last_sign_in_at'];
+
+function assertCoreColumnsAdded(label: string, postgresName: string) {
+  const present = psqlJson<string[]>(
+    postgresName,
+    `SELECT COALESCE(json_agg(table_name || '.' || column_name ORDER BY table_name, column_name), '[]'::json)
+       FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name || '.' || column_name IN (${CORE_COLUMNS_ADDED_SINCE_OLD_IMAGE.map((c) => `'${c}'`).join(', ')})`
+  );
+  const missing = CORE_COLUMNS_ADDED_SINCE_OLD_IMAGE.filter((column) => !present.includes(column));
+  if (missing.length > 0) {
+    throw new Error(`${label}: core columns were not added: ${missing.join(', ')}`);
+  }
+  log(`${label}: core's new columns exist (${CORE_COLUMNS_ADDED_SINCE_OLD_IMAGE.join(', ')}).`);
+}
+
 type Cs2Rows = ReturnType<typeof cs2Rows>;
 
 function assertCs2RowsSurvived(label: string, before: Cs2Rows, after: Cs2Rows) {
@@ -1421,6 +1443,7 @@ async function runUpgradedDatabasePath() {
       throw new Error('The fold of the CS2 tournament columns did not run on the upgrade.');
     }
     assertCs2TournamentColumnsGone('Upgrade', POSTGRES_NAME);
+    assertCoreColumnsAdded('Upgrade', POSTGRES_NAME);
 
     step = 'verify the stored plugin names were renamed';
     const pluginNamesAfter = pluginNamesIn(POSTGRES_NAME, DB_NAME);

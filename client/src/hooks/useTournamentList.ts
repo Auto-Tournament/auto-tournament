@@ -22,11 +22,31 @@ export interface TournamentSummary {
   format: Tournament['format'];
   teamCount: number;
   teamSize?: number;
+  /** Epoch ms: the first schedule row, or when it started. */
   startsAt?: number;
+  /** Epoch ms it finished, once completed. */
+  completedAt?: number;
+  /** Who runs it (the event page's organizer line). */
+  organizer?: string;
   location?: string;
   isLive: boolean;
+  /** Matches live or loading right now. */
   liveMatchCount?: number;
   winner?: { id: string; name: string; tag?: string } | null;
+}
+
+/** The public leaderboard's extras next to the tournament. */
+interface LeaderboardExtras {
+  liveMatchCount?: number;
+}
+
+/** Epoch ms of the first schedule row, or of the start; undefined when neither is known. */
+function startTime(tournament: Tournament): number | undefined {
+  const scheduled = (tournament.settings?.schedule ?? [])
+    .map((item) => new Date(item.at).getTime())
+    .filter((time) => Number.isFinite(time));
+  if (scheduled.length > 0) return Math.min(...scheduled);
+  return tournament.started_at ? tournament.started_at * 1000 : undefined;
 }
 
 interface UseTournamentListResult {
@@ -47,7 +67,7 @@ interface UseTournamentListResult {
  */
 export const CURRENT_TOURNAMENT_ID = 1;
 
-function toSummary(tournament: Tournament): TournamentSummary {
+function toSummary(tournament: Tournament, extras: LeaderboardExtras = {}): TournamentSummary {
   return {
     id: tournament.id,
     name: tournament.name,
@@ -60,8 +80,12 @@ function toSummary(tournament: Tournament): TournamentSummary {
     format: tournament.format,
     teamCount: tournament.teamIds?.length ?? 0,
     teamSize: tournament.teamSize,
+    startsAt: startTime(tournament),
+    completedAt: tournament.completed_at ? tournament.completed_at * 1000 : undefined,
+    organizer: tournament.settings?.organizer?.trim() || undefined,
     location: tournament.settings?.location,
     isLive: tournament.status === 'in_progress',
+    liveMatchCount: extras.liveMatchCount,
     winner: tournament.winner ?? null,
   };
 }
@@ -87,10 +111,10 @@ export function useTournamentList(): UseTournamentListResult {
     setLoading(true);
     setError('');
     try {
-      const response = await api.get<{ success: boolean; tournament?: Tournament }>(
-        `/api/tournament/${CURRENT_TOURNAMENT_ID}/leaderboard`
-      );
-      setTournaments(response.tournament ? [toSummary(response.tournament)] : []);
+      const response = await api.get<
+        { success: boolean; tournament?: Tournament } & LeaderboardExtras
+      >(`/api/tournament/${CURRENT_TOURNAMENT_ID}/leaderboard`);
+      setTournaments(response.tournament ? [toSummary(response.tournament, response)] : []);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       const isNotFound = message.includes('404') || message.toLowerCase().includes('not found');

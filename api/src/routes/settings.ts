@@ -56,6 +56,7 @@ const mapSettingsResponse = async () => {
   const defaultPlayerElo = null;
   const ratingsEnabled = await settingsService.areRatingsEnabled();
   const allowSelfRegister = await settingsService.isSelfRegistrationAllowed();
+  const siteName = await settingsService.getSiteName();
 
   const integrationFields: Record<string, unknown> = {};
   for (const integration of listIntegrations()) {
@@ -63,6 +64,7 @@ const mapSettingsResponse = async () => {
   }
 
   return {
+    siteName,
     webhookUrl,
     steamApiKey: null,
     steamApiKeySet: Boolean(steamApiKey),

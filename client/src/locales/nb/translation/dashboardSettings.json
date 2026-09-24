@@ -27,31 +27,35 @@
       "igdb": "Spillomslag via IGDB (valgfritt)"
     },
     "tournaments": {
-      "title": "Turneringer",
-      "empty": "Ingen turneringer enda. Opprett en for å komme i gang.",
+      "title": "Turnering",
+      "empty": "Denne siden kjører én turnering om gangen. Opprett den, så vises den her, under Utforsk og på arrangementssiden.",
       "status": {
         "setup": "Utkast",
-        "ready": "Sign-up",
+        "ready": "Påmelding",
         "inProgress": "Live",
         "completed": "Fullført"
       },
       "state": {
-        "draftEmpty": "Ikke publisert enda",
-        "draftTeams": "Utkast · {{count}} lag valgt",
-        "draftTeamsPlural": "Utkast · {{count}} lag valgt",
-        "readyTeams": "{{count}} lag meldt på · sign-up åpen",
-        "readyTeamsPlural": "{{count}} lag meldt på · sign-up åpen",
-        "inProgressTeams": "{{count}} lag · pågår",
-        "inProgressTeamsPlural": "{{count}} lag · pågår",
-        "completedTeams": "{{count}} lag deltok",
-        "completedTeamsPlural": "{{count}} lag deltok",
+        "teams_one": "{{count}} lag",
+        "teams_other": "{{count}} lag",
+        "entered_one": "{{count}} lag meldt på",
+        "entered_other": "{{count}} lag meldt på",
+        "draftTeams_one": "Utkast · {{count}} lag valgt",
+        "draftTeams_other": "Utkast · {{count}} lag valgt",
+        "draftEmpty": "Utkast · ingen lag ennå",
+        "live_one": "{{count}} kamp pågår",
+        "live_other": "{{count}} kamper pågår",
+        "completed_one": "{{count}} lag deltok",
+        "completed_other": "{{count}} lag deltok",
         "winner": "Vinner: {{name}}"
       },
       "actions": {
         "manage": "Administrer",
         "continueSetup": "Fortsett oppsett",
         "view": "Vis"
-      }
+      },
+      "eventPage": "Arrangementsside",
+      "emptyTitle": "Ingen turnering ennå"
     },
     "site": {
       "title": "Nettsted",
@@ -92,8 +96,10 @@
       "title": "Folk",
       "open": "Åpne",
       "players": "Spillere",
-      "admins": "Administratorer"
-    }
+      "admins": "Administratorer",
+      "signedInThisWeek": "Logget inn denne uken"
+    },
+    "loading": "Laster adminsiden"
   },
   "settingsPage": {
     "title": "Innstillinger",
@@ -158,6 +164,15 @@
     },
     "success": {
       "saveSettings": "Innstillinger lagret"
+    },
+    "site": {
+      "title": "Nettsted",
+      "description": "Hva denne siden heter. Adminsiden bruker navnet som overskrift.",
+      "label": "Navn på siden",
+      "helper": "La feltet stå tomt for å bruke «Auto Tournament».",
+      "save": "Lagre",
+      "saved": "Navnet er lagret",
+      "saveFailed": "Kunne ikke lagre navnet"
     }
   },
   "managePage": {

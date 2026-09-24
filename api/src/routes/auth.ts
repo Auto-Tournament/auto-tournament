@@ -95,6 +95,11 @@ function clearImpersonationCookie(req: Request, res: Response): void {
 }
 
 function setPlayerSteamCookie(req: Request, res: Response, steamId: string): void {
+  // Every sign-in path (Steam, SSO resolved to Steam) ends here, so this is
+  // where a sign-in is stamped. Best-effort: it never fails the login.
+  void playerService.recordSignIn(steamId).catch((error: unknown) => {
+    log.warn('Failed to record sign-in time', { steamId, error: (error as Error).message });
+  });
   res.cookie('player_steam_id', signPlayerSteamId(steamId), {
     // Frontend never needs to read this cookie directly; it calls /api/auth/me.
     // Keeping it httpOnly reduces XSS impact.

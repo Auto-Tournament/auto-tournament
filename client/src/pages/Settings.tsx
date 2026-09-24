@@ -18,6 +18,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Divider,
 } from '@mui/material';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -28,6 +29,7 @@ import { useIsDevelopment } from '../hooks/useIsDevelopment';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { IgdbCredentialsCard } from '../components/games/IgdbCredentialsCard';
+import { SiteNameCard } from '../components/settings/SiteNameCard';
 import { useInstalledIntegrations } from '../integrations/registry';
 
 declare const __APP_VERSION__: string | undefined;
@@ -279,6 +281,10 @@ export default function Settings() {
 
             <TabPanel value={activeTab} index="integrations">
               <Stack spacing={3}>
+                <SiteNameCard />
+
+                <Divider />
+
                 <IgdbCredentialsCard />
               </Stack>
             </TabPanel>
