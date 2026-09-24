@@ -167,10 +167,22 @@ export function builtinGames(): BuiltinGame[] {
     }
   }
 
-  // Then the games an admin imported as packs. After the modules, so a pack
-  // can never take a slug a module ships; before the popular list, so an
-  // imported game reads as supported rather than as a title nothing runs.
-  for (const pack of installedPacks()) {
+  // Then the games installed as packs — every game but a module's own, since
+  // 3.0 ships no game list in code. After the modules, so a pack can never
+  // take a slug a module ships; before the popular list, so an installed game
+  // reads as supported rather than as a title nothing runs.
+  //
+  // In popularity order where the game is a popular title, then by name.
+  // `installedPacks()` sorts by name, which is right for the Modules page and
+  // wrong here: this order is the suggestions strip's, and "What do you play?"
+  // should open on Rocket League, not on Age of Empires II.
+  const popularRank = new Map(POPULAR_GAMES.map((game, rank) => [game.slug, rank]));
+  const packs = [...installedPacks()].sort(
+    (a, b) =>
+      (popularRank.get(a.slug) ?? Number.MAX_SAFE_INTEGER) -
+        (popularRank.get(b.slug) ?? Number.MAX_SAFE_INTEGER) || a.name.localeCompare(b.name)
+  );
+  for (const pack of packs) {
     add({
       slug: pack.slug,
       name: pack.name,

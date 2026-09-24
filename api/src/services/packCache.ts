@@ -117,6 +117,18 @@ export async function refreshPackCache(): Promise<void> {
 }
 
 /** Every installed pack. Synchronous, from the cache. */
+/**
+ * Replace the cache with packs that did not come from the database.
+ *
+ * For code that has the packs but no database to read them from: the
+ * in-process specs in `tests/api`, which load the bundled snapshot so a
+ * module's behaviour is checked against the real games rather than none.
+ * Nothing in the running server calls it.
+ */
+export function setInstalledPacks(packs: InstalledPack[]): void {
+  cache = new Map(packs.map((pack) => [pack.slug, pack]));
+}
+
 export function installedPacks(): InstalledPack[] {
   return [...cache.values()].sort((a, b) => a.name.localeCompare(b.name));
 }

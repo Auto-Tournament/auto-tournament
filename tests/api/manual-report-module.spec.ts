@@ -12,6 +12,7 @@ import {
   MANUAL_REPORT_GAME_ID,
   catalogNameFor,
 } from '../../api/src/integrations/manual-report/catalog';
+import { setInstalledPacks, type InstalledPack } from '../../api/src/services/packCache';
 
 /**
  * The games the image ships with, read from the same snapshot the server
@@ -20,8 +21,38 @@ import {
 const BUNDLED = (
   JSON.parse(
     fs.readFileSync(path.join(__dirname, '../../api/bundled-packs/index.json'), 'utf8')
-  ) as { packs: Array<{ slug: string; name: string; engine: string }> }
+  ) as { packs: Array<{ slug: string; name: string; engine: string; file: string }> }
 ).packs;
+
+/**
+ * Most tests here run in this process, not against the server — and this
+ * process has no database, so no installed packs. The module reads its games'
+ * names from them, so load the bundled snapshot into the cache exactly as a
+ * fresh install has it. The tests then check the module against the real
+ * games, rather than against an empty cache that would make every name "the
+ * game".
+ */
+function installBundledPacksInProcess(): void {
+  setInstalledPacks(
+    BUNDLED.map((entry): InstalledPack => {
+      const definition = JSON.parse(
+        fs.readFileSync(path.join(__dirname, '../../api/bundled-packs', entry.file), 'utf8')
+      ) as InstalledPack['definition'];
+      return {
+        slug: definition.slug,
+        name: definition.name,
+        engine: definition.engine,
+        version: definition.version ?? null,
+        source: 'bundled',
+        origin: null,
+        hasIcon: Boolean(definition.icon),
+        installedAt: 0,
+        definition,
+      };
+    })
+  );
+}
+installBundledPacksInProcess();
 import {
   DEFAULT_CONFIRM_TIMEOUT_MIN,
   readSetup,
@@ -152,11 +183,10 @@ test.describe('Manual-report module: what it declares', () => {
     expect(integrationForMatch({ game: null }).id).toBe('cs2');
   });
 
-  test('catalogNameFor never invents a name', () => {
-    // It reads installed packs, and this test process has installed none —
-    // the server-side test below checks the names a real instance shows. What
-    // holds everywhere is that a game this module does not run has no name
-    // from it, CS2's least of all.
+  test('catalogNameFor names an installed game it runs, and nothing else', () => {
+    expect(catalogNameFor('rocket-league')).toBe('Rocket League');
+    expect(catalogNameFor('ROCKET-LEAGUE')).toBe('Rocket League');
+    // A game this module does not run has no name from it, CS2's least of all.
     expect(catalogNameFor('counter-strike-2')).toBeNull();
     expect(catalogNameFor('no-such-game')).toBeNull();
     expect(catalogNameFor('')).toBeNull();
