@@ -219,14 +219,19 @@ export const ManageRail: React.FC = () => {
         }}
       >
         {groups.map((group) => (
+          // A group of links, not a <ul>: the items are links, and a <ul>
+          // may only hold <li>s (axe `list`).
           <List
             key={group.key}
+            component="div"
+            role="group"
             dense
             disablePadding
             data-testid={`manage-rail-group-${group.key}`}
             aria-labelledby={`manage-rail-heading-${group.key}`}
             subheader={
               <ListSubheader
+                component="div"
                 id={`manage-rail-heading-${group.key}`}
                 disableSticky
                 disableGutters
