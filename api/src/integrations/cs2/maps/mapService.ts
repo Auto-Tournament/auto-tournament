@@ -10,7 +10,7 @@ export class MapService {
    * Get all maps
    */
   async getAllMaps(): Promise<MapResponse[]> {
-    const maps = await db.getAllAsync<DbMapRow>('maps', undefined, undefined);
+    const maps = await db.getAllAsync<DbMapRow>('cs2_maps', undefined, undefined);
     // Sort by display_name
     maps.sort((a, b) => a.display_name.localeCompare(b.display_name));
     return maps.map(this.toResponse);
@@ -20,7 +20,7 @@ export class MapService {
    * Get map by ID
    */
   async getMapById(id: string): Promise<MapResponse | null> {
-    const map = await db.getOneAsync<DbMapRow>('maps', 'id = ?', [id]);
+    const map = await db.getOneAsync<DbMapRow>('cs2_maps', 'id = ?', [id]);
     return map ? this.toResponse(map) : null;
   }
 
@@ -50,7 +50,7 @@ export class MapService {
       throw new Error('Display name is required');
     }
 
-    await db.insertAsync('maps', {
+    await db.insertAsync('cs2_maps', {
       id: input.id,
       display_name: input.displayName.trim(),
       image_url: input.imageUrl || null,
@@ -82,7 +82,7 @@ export class MapService {
     if (input.displayName !== undefined) updateData.display_name = input.displayName.trim();
     if (input.imageUrl !== undefined) updateData.image_url = input.imageUrl || null;
 
-    await db.updateAsync('maps', updateData, 'id = ?', [id]);
+    await db.updateAsync('cs2_maps', updateData, 'id = ?', [id]);
 
     log.success(`Map updated: ${input.displayName || existing.displayName} (${id})`);
     const result = await this.getMapById(id);
@@ -99,7 +99,7 @@ export class MapService {
       throw new Error(`Map with ID '${id}' not found`);
     }
 
-    await db.deleteAsync('maps', 'id = ?', [id]);
+    await db.deleteAsync('cs2_maps', 'id = ?', [id]);
     log.success(`Map deleted: ${existing.displayName} (${id})`);
   }
 

@@ -103,7 +103,7 @@ router.post('/test-connection', async (req: Request, res: Response) => {
     // RCON successful - now test if server can reach API (Server -> API).
     // Read-only: never set convars here (see utils/connectionTest).
     const savedServer = await db.queryOneAsync<{ id: string }>(
-      'SELECT id FROM servers WHERE host = ? AND port = ?',
+      'SELECT id FROM cs2_servers WHERE host = ? AND port = ?',
       [host, portNum]
     );
     const apiReachability = await checkServerReachesApi({

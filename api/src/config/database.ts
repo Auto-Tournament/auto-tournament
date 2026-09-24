@@ -18,7 +18,8 @@ import {
 } from '../utils/dbLogRedaction';
 import { getSchemaSQL, getSchemaColumns } from './database.schema';
 import { runSchemaMigrations } from './schemaMigrations';
-import { runModuleMigrations } from './moduleMigrations';
+import { markModuleMigrationsFailed, runModuleMigrations } from './moduleMigrations';
+import { CS2_MODULE_ID, handOverCs2Tables } from './cs2TableHandover';
 
 const MAX_DB_VALUES_SAMPLE = 5;
 
@@ -186,8 +187,7 @@ class DatabaseManager {
               team_ids TEXT,
               settings TEXT NOT NULL,
               created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
-              updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
-              FOREIGN KEY (map_pool_id) REFERENCES map_pools(id) ON DELETE SET NULL
+              updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
             );
             CREATE INDEX idx_tournament_templates_name ON tournament_templates(name);
             CREATE INDEX idx_tournament_templates_type ON tournament_templates(type);
@@ -352,13 +352,74 @@ class DatabaseManager {
       const installed = listIntegrations();
       const installedModuleIds = installed.map((integration) => integration.id);
       const failedModules = new Set<string>();
+
+      // CS2's 2.x tables (servers, maps, map_pools) become cs2_servers,
+      // cs2_maps and cs2_map_pools, and CS2's first migration is recorded, before
+      // CS2's migrations run. Renamed in place, never copied; a no-op once done
+      // and on a fresh database. See cs2TableHandover.ts. If it did not
+      // happen, CS2's migrations must not run: they would create empty cs2_*
+      // tables beside the host's data.
+      const cs2 = installed.find((integration) => integration.id === CS2_MODULE_ID);
+      const handover = await handOverCs2Tables(client, cs2);
+      if (handover.pending.length > 0) {
+        failedModules.add(CS2_MODULE_ID);
+        if (cs2) {
+          markModuleMigrationsFailed(
+            CS2_MODULE_ID,
+            `its 2.x tables (${handover.pending.join(', ')}) were not renamed to cs2_*` +
+              (handover.error ? `: ${handover.error}` : '')
+          );
+        }
+      }
+
       for (const integration of installed) {
+        if (failedModules.has(integration.id)) continue;
         const state = await runModuleMigrations(integration, { client, installedModuleIds });
         if (state.status === 'failed') failedModules.add(integration.id);
       }
 
-      // Integration default data (CS2: the map catalogue when the maps table
-      // is empty, then the default map pools). A rejection fails the schema
+      // Core columns that reference CS2's tables: matches.server_id and the
+      // templates' map_pool_id. The keys cannot be declared in core's CREATE
+      // TABLE any more, because on a fresh database CS2's tables are created
+      // after core's. An upgraded database kept its keys through the rename
+      // (Postgres tracks the referenced table, not its name), so this only
+      // adds them where they are missing: fresh databases and wipes. Skipped
+      // while the referenced table does not exist (no CS2).
+      // Moving these columns out of core is later work.
+      const cs2ForeignKeys = [
+        { table: 'matches', column: 'server_id', references: 'cs2_servers' },
+        { table: 'tournament_templates', column: 'map_pool_id', references: 'cs2_map_pools' },
+        { table: 'manual_match_templates', column: 'map_pool_id', references: 'cs2_map_pools' },
+      ];
+      for (const { table, column, references } of cs2ForeignKeys) {
+        try {
+          const { rows } = await client.query<{ has_target: boolean; has_key: boolean }>(
+            `SELECT to_regclass($2) IS NOT NULL AS has_target,
+                    EXISTS (
+                      SELECT 1
+                        FROM pg_constraint c
+                        JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = ANY(c.conkey)
+                       WHERE c.conrelid = to_regclass($1) AND c.contype = 'f'
+                         AND c.confrelid = to_regclass($2) AND a.attname = $3
+                    ) AS has_key`,
+            [table, references, column]
+          );
+          if (!rows[0]?.has_target || rows[0].has_key) continue;
+          await client.query(
+            `ALTER TABLE ${table} ADD CONSTRAINT ${table}_${column}_fkey
+               FOREIGN KEY (${column}) REFERENCES ${references}(id) ON DELETE SET NULL`
+          );
+        } catch (err) {
+          log.error(
+            `[PostgreSQL] Failed to add ${table}.${column} foreign key to ${references}: ${
+              (err as Error).message
+            }`
+          );
+        }
+      }
+
+      // Integration default data (CS2: the map catalogue when cs2_maps is
+      // empty, then the default map pools). A rejection fails the schema
       // initialisation; the CS2 seed rethrows the same errors the inline map
       // insert did. Not for a module whose tables did not migrate.
       for (const integration of installed) {
@@ -417,7 +478,7 @@ class DatabaseManager {
       this.initialized = false;
 
       // Reinitialize schema (this will create tables and insert default data)
-      // Maps will be regenerated from GitHub since maps table is now empty
+      // Maps will be regenerated from GitHub since cs2_maps is now empty
       log.database('[PostgreSQL] Reinitializing schema and regenerating maps from GitHub...');
       await this.initializeSchemaAsync();
       this.initialized = true;

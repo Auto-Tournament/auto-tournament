@@ -4,7 +4,7 @@
  * Run through `GameIntegration.seed` after the core schema is created or
  * migrated (every API start, and after a database reset). Moved here from
  * `config/database.schema.ts` (`getDefaultMapsSQL`, `getDefaultMapPoolsSQL`)
- * and `config/database.ts` unchanged: maps are only fetched when the `maps`
+ * and `config/database.ts` unchanged: maps are only fetched when the `cs2_maps`
  * table is empty, pools are upserted every time.
  */
 
@@ -192,7 +192,7 @@ function generateMapsSQL(
     .join(',\n    ');
 
   return `
-    INSERT INTO maps (id, display_name, image_url, created_at, updated_at)
+    INSERT INTO cs2_maps (id, display_name, image_url, created_at, updated_at)
     VALUES
       ${values}
     ON CONFLICT (id) DO NOTHING;
@@ -207,7 +207,7 @@ async function getDefaultMapPoolsSQL(client: SeedClient): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
 
   // Query all maps from the database
-  const mapsResult = await client.query('SELECT id FROM maps ORDER BY id');
+  const mapsResult = await client.query('SELECT id FROM cs2_maps ORDER BY id');
   const allMapIds = (mapsResult.rows as Array<{ id: string }>).map((row) => row.id);
 
   // Group maps by prefix
@@ -289,7 +289,7 @@ async function getDefaultMapPoolsSQL(client: SeedClient): Promise<string> {
     .join(',\n      ');
 
   return `
-    INSERT INTO map_pools (name, map_ids, is_default, enabled, created_at, updated_at)
+    INSERT INTO cs2_map_pools (name, map_ids, is_default, enabled, created_at, updated_at)
     VALUES
       ${values}
     ON CONFLICT (name) DO UPDATE SET
@@ -300,7 +300,7 @@ async function getDefaultMapPoolsSQL(client: SeedClient): Promise<string> {
 }
 
 /**
- * Insert the default maps when the `maps` table is empty (first start or after
+ * Insert the default maps when the `cs2_maps` table is empty (first start or after
  * a wipe), then upsert the default map pools.
  */
 export async function seedCs2Maps(client: SeedClient): Promise<void> {
@@ -308,11 +308,11 @@ export async function seedCs2Maps(client: SeedClient): Promise<void> {
   // This prevents fetching from GitHub on every server restart/reload
   // But ensures maps are regenerated when database is wiped
   try {
-    // The maps table should exist at this point (created by schema SQL above)
+    // The table exists at this point: CS2's migrations (../migrations) ran first.
     // But handle the case where it might not exist yet
     let mapsCount = 0;
     try {
-      const mapsCheck = await client.query('SELECT COUNT(*) as count FROM maps');
+      const mapsCheck = await client.query('SELECT COUNT(*) as count FROM cs2_maps');
       mapsCount = parseInt(String(mapsCheck.rows[0]?.count || '0'), 10);
     } catch (err) {
       const error = err as Error;

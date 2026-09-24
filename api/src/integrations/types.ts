@@ -713,7 +713,7 @@ export interface GameIntegration {
    * Insert the integration's default data. Called after the core schema is
    * created or migrated: on every API start and after a database reset. Must
    * be idempotent; a rejection fails schema initialisation. CS2: the map
-   * catalogue when the `maps` table is empty, then the default map pools.
+   * catalogue when the `cs2_maps` table is empty, then the default map pools.
    */
   seed?(db: SeedClient): Promise<void>;
   /**

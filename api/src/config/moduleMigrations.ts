@@ -584,6 +584,16 @@ async function runOn(
 }
 
 /**
+ * Mark a module failed without running its migrations: something core does
+ * before them did not complete (for CS2, handing over its 2.x tables;
+ * config/cs2TableHandover.ts). Kept for `getModuleMigrationState`, like any
+ * other failure.
+ */
+export function markModuleMigrationsFailed(moduleId: string, reason: string): ModuleMigrationState {
+  return settle({ moduleId, status: 'failed', applied: [], reason });
+}
+
+/**
  * Apply `module`'s pending migrations; see the top of this file. Never throws:
  * the outcome is returned and kept for `getModuleMigrationState`. Exported for
  * the loader of modules installed on disk as well as the schema initialisation.

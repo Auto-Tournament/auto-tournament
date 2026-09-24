@@ -255,7 +255,7 @@ router.get('/:id/status', async (req: Request, res: Response) => {
           cs2VersionFetchedAt = now;
 
           await db.updateAsync(
-            'servers',
+            'cs2_servers',
             {
               cs2_build_id: cs2BuildId,
               cs2_version_string: cs2VersionString,
@@ -286,7 +286,7 @@ router.get('/:id/status', async (req: Request, res: Response) => {
 
         if (result.upToDate) {
           await db.updateAsync(
-            'servers',
+            'cs2_servers',
             {
               cs2_required_version: null,
               cs2_update_phase: null,
@@ -307,7 +307,7 @@ router.get('/:id/status', async (req: Request, res: Response) => {
           const phase =
             existingPhase === 'shutdown' ? 'shutdown' : 'available';
           await db.updateAsync(
-            'servers',
+            'cs2_servers',
             {
               cs2_required_version: requiredVersion,
               cs2_update_phase: phase,

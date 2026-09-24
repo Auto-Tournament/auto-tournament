@@ -18,7 +18,7 @@ export class MapPoolService {
   async getAllMapPools(enabledOnly = false): Promise<MapPoolResponse[]> {
     const where = enabledOnly ? 'enabled = $1' : undefined;
     const params = enabledOnly ? [1] : undefined;
-    const pools = await db.getAllAsync<DbMapPoolRow>('map_pools', where, params);
+    const pools = await db.getAllAsync<DbMapPoolRow>('cs2_map_pools', where, params);
     // Sort: default first, then enabled, then by name
     pools.sort((a, b) => {
       if (a.is_default !== b.is_default) {
@@ -36,7 +36,7 @@ export class MapPoolService {
    * Get map pool by ID
    */
   async getMapPoolById(id: number): Promise<MapPoolResponse | null> {
-    const pool = await db.getOneAsync<DbMapPoolRow>('map_pools', 'id = $1', [id]);
+    const pool = await db.getOneAsync<DbMapPoolRow>('cs2_map_pools', 'id = $1', [id]);
     return pool ? this.toResponse(pool) : null;
   }
 
@@ -44,7 +44,7 @@ export class MapPoolService {
    * Get map pool by name
    */
   async getMapPoolByName(name: string): Promise<MapPoolResponse | null> {
-    const pool = await db.getOneAsync<DbMapPoolRow>('map_pools', 'name = $1', [name]);
+    const pool = await db.getOneAsync<DbMapPoolRow>('cs2_map_pools', 'name = $1', [name]);
     return pool ? this.toResponse(pool) : null;
   }
 
@@ -52,7 +52,7 @@ export class MapPoolService {
    * Get default map pool
    */
   async getDefaultMapPool(): Promise<MapPoolResponse | null> {
-    const pool = await db.getOneAsync<DbMapPoolRow>('map_pools', 'is_default = $1', [1]);
+    const pool = await db.getOneAsync<DbMapPoolRow>('cs2_map_pools', 'is_default = $1', [1]);
     return pool ? this.toResponse(pool) : null;
   }
 
@@ -81,7 +81,7 @@ export class MapPoolService {
       throw new Error('Map pool must contain at least one map');
     }
 
-    await db.insertAsync('map_pools', {
+    await db.insertAsync('cs2_map_pools', {
       name: input.name.trim(),
       map_ids: JSON.stringify(input.mapIds),
       is_default: 0,
@@ -127,7 +127,7 @@ export class MapPoolService {
     if (input.mapIds !== undefined) updateData.map_ids = JSON.stringify(input.mapIds);
     if (input.enabled !== undefined) updateData.enabled = input.enabled ? 1 : 0;
 
-    await db.updateAsync('map_pools', updateData, 'id = $1', [id]);
+    await db.updateAsync('cs2_map_pools', updateData, 'id = $1', [id]);
 
     log.success(`Map pool updated: ${input.name || existing.name}`);
     const result = await this.getMapPoolById(id);
@@ -146,10 +146,10 @@ export class MapPoolService {
     }
 
     // Unset current default
-    await db.updateAsync('map_pools', { is_default: 0 }, 'is_default = $1', [1]);
+    await db.updateAsync('cs2_map_pools', { is_default: 0 }, 'is_default = $1', [1]);
 
     // Set new default
-    await db.updateAsync('map_pools', { is_default: 1, updated_at: Math.floor(Date.now() / 1000) }, 'id = $1', [id]);
+    await db.updateAsync('cs2_map_pools', { is_default: 1, updated_at: Math.floor(Date.now() / 1000) }, 'id = $1', [id]);
 
     log.success(`Default map pool set to: ${pool.name}`);
     const result = await this.getMapPoolById(id);
@@ -170,7 +170,7 @@ export class MapPoolService {
       throw new Error('Cannot delete default map pool');
     }
 
-    await db.deleteAsync('map_pools', 'id = $1', [id]);
+    await db.deleteAsync('cs2_map_pools', 'id = $1', [id]);
     log.success(`Map pool deleted: ${existing.name}`);
   }
 
@@ -183,7 +183,7 @@ export class MapPoolService {
       throw new Error(`Map pool with ID ${id} not found`);
     }
 
-    await db.updateAsync('map_pools', { enabled: enabled ? 1 : 0, updated_at: Math.floor(Date.now() / 1000) }, 'id = $1', [id]);
+    await db.updateAsync('cs2_map_pools', { enabled: enabled ? 1 : 0, updated_at: Math.floor(Date.now() / 1000) }, 'id = $1', [id]);
 
     log.success(`Map pool ${enabled ? 'enabled' : 'disabled'}: ${pool.name}`);
     const result = await this.getMapPoolById(id);

@@ -150,7 +150,7 @@ class Cs2FleetMonitoringService {
 
           if (check.upToDate) {
             await db.updateAsync(
-              'servers',
+              'cs2_servers',
               {
                 cs2_build_id: buildId,
                 cs2_version_string: cs2VersionString,
@@ -169,7 +169,7 @@ class Cs2FleetMonitoringService {
             }
           } else {
             await db.updateAsync(
-              'servers',
+              'cs2_servers',
               {
                 cs2_build_id: buildId,
                 cs2_version_string: cs2VersionString,

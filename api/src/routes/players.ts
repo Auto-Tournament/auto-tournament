@@ -690,7 +690,7 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
       FROM matches m
       LEFT JOIN teams t1 ON m.team1_id = t1.id
       LEFT JOIN teams t2 ON m.team2_id = t2.id
-      LEFT JOIN servers s ON m.server_id = s.id
+      LEFT JOIN cs2_servers s ON m.server_id = s.id
       WHERE m.status IN ('loaded', 'live')
         AND (
           (t1.players LIKE ? ESCAPE '\\')
@@ -725,7 +725,7 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
         FROM matches m
         LEFT JOIN teams t1 ON m.team1_id = t1.id
         LEFT JOIN teams t2 ON m.team2_id = t2.id
-        LEFT JOIN servers s ON m.server_id = s.id
+        LEFT JOIN cs2_servers s ON m.server_id = s.id
         WHERE m.status IN ('pending', 'ready')
           AND (
             (t1.players LIKE ? ESCAPE '\\')
