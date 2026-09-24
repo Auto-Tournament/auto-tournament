@@ -1,12 +1,17 @@
 /**
- * What `GET /api/modules` answers, which of those modules the browser loads,
- * and the ways loading one can fail (DESIGN-module-client-api.md §4).
+ * What the module endpoints answer, and the ways loading a module can fail
+ * (DESIGN-module-client-api.md §4). Two lists:
+ *
+ * - `GET /api/modules/public`, the public manifest: the modules every
+ *   browser loads at boot, with only what loading needs.
+ * - `GET /api/modules`, admin-only: every module with its status, switch and
+ *   reason, for the Modules page.
  *
  * Pure: no React, no semver, no fetch. The boot path in the main bundle and
  * the Modules page read it, and a spec checks it in Node.
  */
 
-/** One module, as the server lists it. */
+/** One module, as the admin list shows it. */
 export interface ModuleListEntry {
   id: string;
   name: string;
@@ -30,26 +35,49 @@ export interface ModuleListing {
   modules: ModuleListEntry[];
 }
 
-/** A code module the browser should load: enabled, on disk, fine by the server, with client code. */
-export type LoadableModule = ModuleListEntry & { client: { entry: string } };
-
 /**
- * The modules the loader imports. Built-ins are compiled in and never loaded
- * by URL; a module the server already refused, or one that is disabled, is
- * shown on the Modules page and not fetched.
+ * A code module the browser should load, as the public manifest
+ * (`GET /api/modules/public`) lists it: only what loading needs. The server
+ * lists only modules that are enabled, loaded and have client code; built-ins
+ * are compiled in and never listed. That is a claim, not a permission: the
+ * loader still checks the entry URL and the `clientApi` range itself.
  */
-export function modulesToLoad(modules: readonly ModuleListEntry[]): LoadableModule[] {
-  return modules.filter(
-    (entry): entry is LoadableModule =>
-      entry.source === 'disk' &&
-      entry.enabled &&
-      entry.status === 'ok' &&
-      entry.client !== null &&
-      typeof entry.client?.entry === 'string'
-  );
+export interface LoadableModule {
+  id: string;
+  version: string;
+  /** The semver range of client APIs the module declares it works with. */
+  clientApi: string | null;
+  /** Where its client code is served, e.g. `/api/modules/<id>/client/index.js`. */
+  client: { entry: string };
 }
 
-/** Loose shape check of the response, so a proxy's HTML or an old API is "no modules", not a crash. */
+/**
+ * Loose shape check of the public manifest, so a proxy's HTML or an old API
+ * is "no modules", not a crash. An entry without an id or an entry URL is
+ * dropped; anything else the server claims is checked again by the loader.
+ * Only the public fields are kept.
+ */
+export function parsePublicManifest(body: unknown): LoadableModule[] | null {
+  if (!body || typeof body !== 'object') return null;
+  const { modules } = body as { modules?: unknown };
+  if (!Array.isArray(modules)) return null;
+  const loadable: LoadableModule[] = [];
+  for (const entry of modules) {
+    if (!entry || typeof entry !== 'object') continue;
+    const { id, version, clientApi, client } = entry as Record<string, unknown>;
+    const url = client && typeof client === 'object' ? (client as { entry?: unknown }).entry : undefined;
+    if (typeof id !== 'string' || typeof url !== 'string') continue;
+    loadable.push({
+      id,
+      version: typeof version === 'string' ? version : '',
+      clientApi: typeof clientApi === 'string' ? clientApi : null,
+      client: { entry: url },
+    });
+  }
+  return loadable;
+}
+
+/** Loose shape check of the admin list, so a proxy's HTML or an old API is "no modules", not a crash. */
 export function parseModuleListing(body: unknown): ModuleListing | null {
   if (!body || typeof body !== 'object') return null;
   const { platform, modules } = body as { platform?: unknown; modules?: unknown };

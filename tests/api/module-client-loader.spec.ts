@@ -11,8 +11,8 @@ import { loadCodeModules, type LoadDeps } from '../../client/src/module-loader/l
 import {
   COMPONENT_SLOTS,
   entryProblem,
-  modulesToLoad,
   parseModuleListing,
+  parsePublicManifest,
   type LoadableModule,
   type ModuleListEntry,
 } from '../../client/src/module-loader/manifest';
@@ -21,6 +21,22 @@ import {
   SHARED_SUBSETS,
 } from '../../client/src/module-loader/sharedSpecifiers';
 import { exportNames, shimSource, type Resolver } from '../../client/vite-plugins/moduleShims';
+import {
+  MISSING_MODULE_ID,
+  missingModuleIntegration,
+  resolveIntegration,
+  resolveIntegrationWhileLoading,
+} from '../../client/src/utils/moduleResolution';
+import {
+  getModuleState,
+  modulesMayArrive,
+  resetModuleState,
+  setBootStatus,
+  setManifestStatus,
+  setSafeMode,
+  subscribeModuleState,
+} from '../../client/src/module-loader/moduleState';
+import type { ClientGameIntegration } from '../../client/src/integrations/types';
 
 /**
  * The client half of loading a game module's code at runtime
@@ -74,7 +90,20 @@ function moduleDef(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function listed(overrides: Partial<ModuleListEntry> = {}): LoadableModule {
+/** A module as the public manifest lists it. */
+function listed(overrides: Partial<LoadableModule> = {}): LoadableModule {
+  const id = overrides.id ?? 'fixture';
+  return {
+    id,
+    version: '1.0.0',
+    clientApi: '^0.1.0',
+    client: { entry: `/api/modules/${id}/client/index.js` },
+    ...overrides,
+  };
+}
+
+/** A module as the admin list shows it. */
+function adminRow(overrides: Partial<ModuleListEntry> = {}): ModuleListEntry {
   const id = overrides.id ?? 'fixture';
   return {
     id,
@@ -88,7 +117,7 @@ function listed(overrides: Partial<ModuleListEntry> = {}): LoadableModule {
     reason: null,
     client: { entry: `/api/modules/${id}/client/index.js` },
     ...overrides,
-  } as LoadableModule;
+  };
 }
 
 const js = (body = 'export default {}') =>
@@ -186,26 +215,61 @@ test.describe('Client API range', () => {
 // ---------------------------------------------------------------------------
 
 test.describe('Module list', () => {
-  test('only enabled disk modules the server is fine with, with client code, are loaded', () => {
-    const modules: ModuleListEntry[] = [
+  test('the public manifest keeps only the public fields, and drops what cannot be loaded', () => {
+    expect(parsePublicManifest(null)).toBeNull();
+    expect(parsePublicManifest('<!doctype html>')).toBeNull();
+    expect(parsePublicManifest({ success: true })).toBeNull();
+    expect(parsePublicManifest({ success: true, modules: [] })).toEqual([]);
+
+    const modules = parsePublicManifest({
+      success: true,
+      modules: [
+        // Whatever else a server sends is not carried into the loader.
+        { ...listed({ id: 'good' }), reason: 'leaked', enabled: true, serverApi: '^0.1.0' },
+        { ...listed({ id: 'no-range' }), clientApi: undefined },
+        { id: 'no-client', version: '1.0.0', clientApi: '^0.1.0', client: null },
+        { id: 'bad-entry', version: '1.0.0', clientApi: '^0.1.0', client: { entry: 42 } },
+        null,
+        { nope: true },
+      ],
+    });
+    expect(modules).toEqual([
       listed({ id: 'good' }),
-      { ...listed({ id: 'cs2' }), source: 'builtin', client: null },
-      listed({ id: 'off', enabled: false, status: 'disabled' }),
-      listed({ id: 'old', status: 'incompatible', reason: 'built for ^0.3' }),
-      listed({ id: 'bad', status: 'broken', reason: 'module.json is not JSON' }),
-      { ...listed({ id: 'server-only' }), client: null },
-    ];
-    expect(modulesToLoad(modules).map((m) => m.id)).toEqual(['good']);
+      listed({ id: 'no-range', clientApi: null }),
+    ]);
   });
 
-  test('a body that is not the listing is "no modules", not a crash', () => {
+  test('a manifest is a claim: the loader still refuses a bad entry or range it lists', async () => {
+    const imported: string[] = [];
+    const manifest = parsePublicManifest({
+      modules: [
+        listed({ id: 'elsewhere', client: { entry: 'https://example.com/x.js' } }),
+        listed({ id: 'future', clientApi: '^9.0.0' }),
+        listed({ id: 'no-range', clientApi: null }),
+      ],
+    });
+    const results = await loadCodeModules(manifest!, deps({
+      importModule: async (url) => {
+        imported.push(url);
+        return { default: moduleDef() };
+      },
+    }));
+    expect(results.map((r) => (r.ok ? 'ok' : r.failure.code))).toEqual([
+      'badEntry',
+      'outOfRange',
+      'noClientApi',
+    ]);
+    expect(imported, 'nothing refused is fetched').toEqual([]);
+  });
+
+  test('a body that is not the admin listing is "no modules", not a crash', () => {
     expect(parseModuleListing(null)).toBeNull();
     expect(parseModuleListing('<!doctype html>')).toBeNull();
     expect(parseModuleListing({ success: true })).toBeNull();
     const listing = parseModuleListing({
       success: true,
       platform: { clientApi: '0.1.0', serverApi: '0.1.0' },
-      modules: [listed(), null, { nope: true }],
+      modules: [adminRow(), null, { nope: true }],
     });
     expect(listing?.platform.clientApi).toBe('0.1.0');
     expect(listing?.modules.map((m) => m.id)).toEqual(['fixture']);
@@ -228,6 +292,108 @@ test.describe('Module list', () => {
     ]) {
       expect(entryProblem('fixture', entry)?.code, entry).toBe('badEntry');
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// While code modules load: nothing waits but a module's own slots
+// ---------------------------------------------------------------------------
+
+/** Stand-ins: only what the lookup reads is set (the real ones import React components). */
+function stub(id: string, extra: Partial<ClientGameIntegration> = {}): ClientGameIntegration {
+  return { ...missingModuleIntegration(id), notInstalled: undefined, id, ...extra };
+}
+const cs2 = stub('cs2');
+const manual = stub('manual-report', { runsAnyCatalogGame: true });
+const late = stub('late-module', { catalogGames: ['rocket-league'] });
+
+test.describe('While code modules load', () => {
+  test.afterEach(() => resetModuleState());
+
+  test('boot settles the state: pending until the manifest is empty or boot is done', () => {
+    resetModuleState();
+    expect(getModuleState()).toMatchObject({ boot: 'idle', manifest: 'unknown' });
+    expect(modulesMayArrive()).toBe(true);
+
+    let changes = 0;
+    const unsubscribe = subscribeModuleState(() => changes++);
+    setBootStatus('running');
+    setManifestStatus('empty');
+    expect(modulesMayArrive(), 'an empty manifest: nothing will arrive').toBe(false);
+    unsubscribe();
+    expect(changes, 'subscribers hear each step, which is what re-renders a slot').toBe(2);
+
+    resetModuleState();
+    setBootStatus('running');
+    setManifestStatus('listed');
+    expect(modulesMayArrive(), 'listed and still loading').toBe(true);
+    setBootStatus('done');
+    expect(modulesMayArrive(), 'settled, whatever arrived').toBe(false);
+
+    resetModuleState();
+    setSafeMode();
+    expect(modulesMayArrive(), '?modules=off loads nothing, so nothing waits').toBe(false);
+  });
+
+  test('a built-in that owns the game never waits, in any phase', () => {
+    for (const manifest of ['unknown', 'listed'] as const) {
+      expect(resolveIntegrationWhileLoading('cs2', [cs2, manual], true, manifest)).toBe(cs2);
+      expect(resolveIntegrationWhileLoading(undefined, [cs2, manual], true, manifest)).toBe(cs2);
+    }
+  });
+
+  test('an empty manifest, or a settled boot, answers exactly what the registry does', () => {
+    const installed = [cs2, manual];
+    for (const game of ['cs2', 'rocket-league', 'no-such-game', undefined]) {
+      expect(resolveIntegrationWhileLoading(game, installed, false, 'empty'), String(game)).toBe(
+        resolveIntegration(game, installed)
+      );
+      expect(resolveIntegrationWhileLoading(game, installed, false, 'listed'), String(game)).toBe(
+        resolveIntegration(game, installed)
+      );
+    }
+    // Nothing installed runs it, and nothing will arrive: the not-installed placeholder.
+    const missing = resolveIntegrationWhileLoading('rocket-league', [cs2], false, 'empty');
+    expect(missing).toMatchObject({ id: MISSING_MODULE_ID, notInstalled: 'rocket-league' });
+    expect(missing.modulePending).toBeUndefined();
+  });
+
+  test('a game nothing runs yet is pending, not "not installed", while a module may arrive', () => {
+    for (const manifest of ['unknown', 'listed'] as const) {
+      const answer = resolveIntegrationWhileLoading('rocket-league', [cs2], true, manifest);
+      expect(answer.id).toBe(MISSING_MODULE_ID);
+      expect(answer.modulePending).toBe('rocket-league');
+      expect(answer.notInstalled, 'never both').toBeUndefined();
+      // Empty in every slot, like the placeholder it stands in for.
+      expect(Object.values(answer.capabilities).every((value) => value === false)).toBe(true);
+      expect(answer.routes).toEqual([]);
+    }
+  });
+
+  test('a catch-all game waits only once the manifest has listed a code module', () => {
+    // Not yet answered: the catch-all as before, so a stock install never
+    // holds manual reporting back.
+    expect(resolveIntegrationWhileLoading('rocket-league', [cs2, manual], true, 'unknown')).toBe(
+      manual
+    );
+    // Listed: a code module may claim it outright, so it waits.
+    const pending = resolveIntegrationWhileLoading('rocket-league', [cs2, manual], true, 'listed');
+    expect(pending.modulePending).toBe('rocket-league');
+    // The catch-all's own id is its own game, not a guess.
+    expect(resolveIntegrationWhileLoading('manual-report', [cs2, manual], true, 'listed')).toBe(
+      manual
+    );
+  });
+
+  test('pending goes to the module once it is registered, before boot settles', () => {
+    // The module arrived (registered) while other modules still load.
+    expect(
+      resolveIntegrationWhileLoading('rocket-league', [cs2, manual, late], true, 'listed')
+    ).toBe(late);
+    // It never arrived, and boot settled: the catch-all, as without code modules.
+    expect(resolveIntegrationWhileLoading('rocket-league', [cs2, manual], false, 'listed')).toBe(
+      manual
+    );
   });
 });
 

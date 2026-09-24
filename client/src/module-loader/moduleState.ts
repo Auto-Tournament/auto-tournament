@@ -11,8 +11,15 @@ import { errorText, failure, type ModuleFailure } from './manifest';
 
 export type BootStatus = 'idle' | 'running' | 'done';
 
+/**
+ * What the public manifest said: not yet answered, no code module to load
+ * (also safe mode, a failed request and an old API), or at least one.
+ */
+export type ManifestStatus = 'unknown' | 'empty' | 'listed';
+
 export interface ModuleState {
   boot: BootStatus;
+  manifest: ManifestStatus;
   /** `?modules=off`: nothing was loaded, so an admin can always reach /modules. */
   safeMode: boolean;
   /** Code modules that loaded and were registered. */
@@ -21,7 +28,15 @@ export interface ModuleState {
   failures: Readonly<Record<string, ModuleFailure>>;
 }
 
-let state: ModuleState = { boot: 'idle', safeMode: false, loaded: [], failures: {} };
+const INITIAL: ModuleState = {
+  boot: 'idle',
+  manifest: 'unknown',
+  safeMode: false,
+  loaded: [],
+  failures: {},
+};
+
+let state: ModuleState = INITIAL;
 const listeners = new Set<() => void>();
 
 function update(patch: Partial<ModuleState>) {
@@ -43,7 +58,21 @@ export function setBootStatus(boot: BootStatus) {
 }
 
 export function setSafeMode() {
-  update({ safeMode: true });
+  update({ safeMode: true, manifest: 'empty' });
+}
+
+export function setManifestStatus(manifest: ManifestStatus) {
+  update({ manifest });
+}
+
+/**
+ * Whether a code module might still arrive this page load: boot has not
+ * settled and the manifest has not said there is none. Once false it stays
+ * false, and on an instance with no code module it is false as soon as the
+ * manifest answers.
+ */
+export function modulesMayArrive(current: ModuleState = state): boolean {
+  return current.boot !== 'done' && current.manifest !== 'empty';
 }
 
 export function recordLoaded(id: string) {
@@ -76,6 +105,6 @@ export function isBroken(id: string): boolean {
 
 /** For specs. */
 export function resetModuleState() {
-  state = { boot: 'idle', safeMode: false, loaded: [], failures: {} };
+  state = INITIAL;
   listeners.forEach((listener) => listener());
 }

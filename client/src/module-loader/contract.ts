@@ -154,6 +154,7 @@ function shapeProblem(def: Record<string, unknown>): string | null {
   }
   // Only the registry's own placeholder says a module is missing.
   if (def.notInstalled !== undefined) return 'notInstalled is reserved for the platform';
+  if (def.modulePending !== undefined) return 'modulePending is reserved for the platform';
   return null;
 }
 

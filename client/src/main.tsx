@@ -9,6 +9,7 @@ import i18n from './i18n';
 import { theme as baseTheme, activeThemeId, tokens } from './theme';
 import { createTheme } from '@mui/material/styles';
 import { applyFaviconTheme } from './theme/favicon';
+import { bootCodeModules } from './module-loader/boot';
 
 // Log application version on startup (injected by Vite from package.json)
 
@@ -63,5 +64,10 @@ const Root: React.FC = () => {
     </React.StrictMode>
   );
 };
+
+// Code modules: ask for the public manifest now, alongside the first render,
+// never before it. Nothing waits on this; a module's slots and routes show a
+// pending state until it arrives (`useIntegration` in integrations/registry).
+void bootCodeModules();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(<Root />);

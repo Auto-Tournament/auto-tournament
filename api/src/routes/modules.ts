@@ -8,9 +8,10 @@
  * alone never gets to run code on the host (DESIGN-module-client-api,
  * decision 2). Game packs, which are data, are uploaded under `/api/packs`.
  *
- * Everything is admin-only except the client files: players render module
- * slots too (the veto, the connect panel), so a module's client code is
- * public, like the app's own bundle, and must never contain a secret.
+ * Everything is admin-only except the client files and the public manifest
+ * that points at them: players render module slots too (the veto, the
+ * connect panel), so a module's client code is public, like the app's own
+ * bundle, and must never contain a secret.
  */
 
 import fs from 'fs';
@@ -21,11 +22,66 @@ import { CLIENT_API_VERSION, SERVER_API_VERSION } from '../modules/version';
 import {
   contentTypeFor,
   listModules,
+  listPublicModules,
   resolveClientFile,
   setModuleEnabled,
 } from '../modules/loader';
 
 const router = Router();
+
+/**
+ * @openapi
+ * /api/modules/public:
+ *   get:
+ *     tags: [Modules]
+ *     summary: The code modules a browser should load (public)
+ *     description: |
+ *       The public manifest the client loader reads at boot, for every
+ *       visitor: players and signed-out visitors render module slots too.
+ *       Lists only code modules that are enabled, loaded and have a client
+ *       half, with exactly `id`, `version`, `clientApi` and `client.entry`.
+ *       Never reasons, disabled, broken or incompatible modules, the server
+ *       API or the switch state: those are on the admin-only `GET
+ *       /api/modules`. Built-in modules are compiled into the app and are
+ *       not listed, so a stock install answers an empty list. Served from
+ *       memory with an ETag and `Cache-Control: public, no-cache`: a cache
+ *       may keep it, but revalidates on each page load (a 304 when nothing
+ *       changed), so enabling or disabling a module shows on the next load.
+ *     responses:
+ *       200:
+ *         description: The modules to load
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 modules:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id: { type: string }
+ *                       version: { type: string }
+ *                       clientApi: { type: string, description: The semver range of client APIs the module works with }
+ *                       client:
+ *                         type: object
+ *                         properties:
+ *                           entry: { type: string, example: /api/modules/example/client/index.js }
+ */
+router.get('/public', async (_req: Request, res: Response) => {
+  try {
+    const modules = await listPublicModules();
+    // Stored, but revalidated on every use: Express's ETag makes that a 304
+    // with no body when nothing changed. A max-age would make a browser boot
+    // from a list that no longer holds after a module is switched on or off.
+    res.setHeader('Cache-Control', 'public, no-cache');
+    res.json({ success: true, modules });
+  } catch (error) {
+    log.error('[MODULES] Failed to list the public module manifest', error);
+    res.status(500).json({ success: false, error: 'Failed to list modules' });
+  }
+});
 
 /**
  * @openapi

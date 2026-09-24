@@ -7,8 +7,10 @@
  * - A module's strings live in the namespace named by its id. Core's are in
  *   `translation`, and core never renders a module's strings from there.
  * - They are registered before the module's first slot renders: a built-in's
- *   when the registry loads, a code module's by the loader, before it is
- *   registered and before the app renders.
+ *   when the registry loads, a code module's by the loader, in the same
+ *   synchronous step that registers it and before it tells the app the
+ *   module arrived (the app renders before code modules do; a slot waiting
+ *   for one re-renders only then).
  * - A language the module does not ship falls back to its English (`en`):
  *   i18next's `fallbackLng` applies per namespace, so the module's `en` is
  *   asked before core's strings are.

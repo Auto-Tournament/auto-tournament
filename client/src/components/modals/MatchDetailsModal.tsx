@@ -63,7 +63,7 @@ import {
   deriveSeriesScore,
 } from '../../utils/matchScoreDisplay';
 import { tokens, withAlpha } from '../../theme/tokens';
-import { integrationFor } from '../../integrations/registry';
+import { useIntegrationFor } from '../../integrations/registry';
 
 interface MatchDetailsModalProps {
   match: Match | null;
@@ -97,7 +97,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
   // run of games otherwise. The module that owns the match says which, and a
   // match with no maps has no map list to be "to be determined via veto"
   // (3.0 phase D, PR D10).
-  const gameCapabilities = integrationFor(match).capabilities;
+  const gameCapabilities = useIntegrationFor(match).capabilities;
   const playsOnMaps = gameCapabilities.veto;
   // Kills, damage and demos are what the game measured and recorded. A game
   // that does neither has no leaderboard of them and no demo to download —

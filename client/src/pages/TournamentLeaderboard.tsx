@@ -40,7 +40,7 @@ import { PlayerName } from '../components/player/PlayerName';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { TeamNameLink } from '../components/team/TeamNameLink';
 import type { Tournament } from '../types/tournament.types';
-import { integrationFor } from '../integrations/registry';
+import { useIntegrationFor } from '../integrations/registry';
 import { tokens, mono, fontMono } from '../theme/tokens';
 
 /** Right-aligned (numeric) body cells use the mono face. */
@@ -101,6 +101,8 @@ export default function TournamentLeaderboard() {
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [exportMenuAnchor, setExportMenuAnchor] = useState<HTMLElement | null>(null);
+  // Before the early returns below: a hook, re-rendering when a code module arrives.
+  const gameIntegration = useIntegrationFor(data?.tournament);
 
   // Always set a reasonable tab title, even before the tournament data loads (or if it doesn't exist yet).
   useEffect(() => {
@@ -353,7 +355,6 @@ export default function TournamentLeaderboard() {
   // N/A, which reads as data that went missing (3.0 phase D, PR D10). What it
   // has instead is the tournament's own custom fields, which the module that
   // owns it renders.
-  const gameIntegration = integrationFor(tournament);
   const showGameStats = gameIntegration.capabilities.playerStats;
   const GameStatsView = gameIntegration.tournamentStatsView;
   // Swiss team standings come ordered by the server (wins, losses, Buchholz, RD).

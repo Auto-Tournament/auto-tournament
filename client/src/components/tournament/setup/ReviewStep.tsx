@@ -7,7 +7,7 @@ import { ShufflePlayerRegistration } from '../ShufflePlayerRegistration';
 import { ShuffleTournamentStats } from '../ShuffleTournamentStats';
 import { ShuffleMapsCard } from '../ShuffleMapsCard';
 import { deriveOvertimeOption } from '../ShuffleTournamentConfigStep';
-import { getIntegration } from '../../../integrations/registry';
+import { useIntegration } from '../../../integrations/registry';
 import type { Team } from '../../../types';
 
 export interface ReviewTournament {
@@ -70,7 +70,7 @@ export function ReviewStep(props: ReviewStepProps) {
   const { t } = useTranslation();
   const { tournament, form } = props;
   const isShuffle = form.type === 'shuffle';
-  const integration = getIntegration(props.game);
+  const integration = useIntegration(props.game);
   const hasMaps = Boolean(integration.tournamentSetupSteps.content);
 
   const formActions = (
@@ -171,7 +171,7 @@ export function ReviewStep(props: ReviewStepProps) {
 function NewTournamentDetails({ form, teams, mapName, serverCount, game }: ReviewStepProps) {
   const { t } = useTranslation();
   const isShuffle = form.type === 'shuffle';
-  const integration = getIntegration(game);
+  const integration = useIntegration(game);
   const hasMaps = Boolean(integration.tournamentSetupSteps.content);
   const hasMatchRules = Boolean(integration.tournamentSetupSteps.rules);
   const hasServers = integration.capabilities.servers;

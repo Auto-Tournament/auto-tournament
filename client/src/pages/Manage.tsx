@@ -10,7 +10,7 @@ import { getGlobalMatchNumber, getRoundLabel } from '../utils/matchUtils';
 import { ManageRail } from '../components/manage/ManageRail';
 import { StatusStrip } from '../components/manage/StatusStrip';
 import { NeedsYouQueue } from '../components/manage/NeedsYouQueue';
-import { integrationFor } from '../integrations/registry';
+import { useIntegrationFor } from '../integrations/registry';
 import { useShellIntegrations, shellModule } from '../hooks/useShellIntegrations';
 import { RecentLog } from '../components/manage/RecentLog';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
@@ -30,9 +30,8 @@ export default function Manage() {
   // The status strip's own tile, from the module the availability above came
   // from (CS2: servers free). A module with no resources has no tile, and the
   // strip is one tile shorter rather than showing a zero.
-  const ResourceStatusTile = tournament
-    ? integrationFor(tournament).manageStatusTile
-    : undefined;
+  const tournamentIntegration = useIntegrationFor(tournament);
+  const ResourceStatusTile = tournament ? tournamentIntegration.manageStatusTile : undefined;
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [announceOpen, setAnnounceOpen] = useState(false);
   const [announceText, setAnnounceText] = useState('');

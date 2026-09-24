@@ -31,7 +31,7 @@ import { ChampionBanner } from '../components/tournament/ChampionBanner';
 import { getGlobalMatchNumber as globalMatchNumber, getRoundLabel } from '../utils/matchUtils';
 import { useBracket } from '../hooks/useBracket';
 import { useResourceAvailability } from '../hooks/useResourceAvailability';
-import { integrationFor } from '../integrations/registry';
+import { useIntegrationFor } from '../integrations/registry';
 import { api } from '../utils/api';
 import { StartTournamentButton } from '../components/dashboard';
 import type { Match } from '../types';
@@ -58,7 +58,8 @@ export default function Bracket() {
   // pass, and a game with no resources has neither (3.0 phase E). The core
   // asks the route the module named, once, and hands the numbers to its
   // banner; nothing here knows what a server is.
-  const integration = tournament ? integrationFor(tournament) : null;
+  const resolved = useIntegrationFor(tournament);
+  const integration = tournament ? resolved : null;
   const MatchQueueBanner = integration?.matchQueueBanner;
   const MatchQueueChip = integration?.matchQueueChip;
   const { availability: resourceAvailability, nextInSeconds: nextAllocationInSeconds } =
