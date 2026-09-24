@@ -19,7 +19,7 @@ import {
 import { getSchemaSQL, getSchemaColumns } from './database.schema';
 import { runSchemaMigrations } from './schemaMigrations';
 import { markModuleMigrationsFailed, runModuleMigrations } from './moduleMigrations';
-import { CS2_MODULE_ID, handOverCs2Tables } from './cs2TableHandover';
+import { addCs2ForeignKeys, CS2_MODULE_ID, handOverCs2Tables } from './cs2TableHandover';
 import { DATABASE_NAME, renameLegacyDatabase } from './databaseRename';
 
 const MAX_DB_VALUES_SAMPLE = 5;
@@ -392,37 +392,9 @@ class DatabaseManager {
       // name), so this only adds them where they are missing: fresh databases
       // and wipes. Skipped while the referenced table does not exist (no CS2).
       // A tournament template's map pool is CS2's own settings object now
-      // (settings.cs2.mapPoolId), with no key.
-      const cs2ForeignKeys = [
-        { table: 'matches', column: 'server_id', references: 'cs2_servers' },
-        { table: 'manual_match_templates', column: 'map_pool_id', references: 'cs2_map_pools' },
-      ];
-      for (const { table, column, references } of cs2ForeignKeys) {
-        try {
-          const { rows } = await client.query<{ has_target: boolean; has_key: boolean }>(
-            `SELECT to_regclass($2) IS NOT NULL AS has_target,
-                    EXISTS (
-                      SELECT 1
-                        FROM pg_constraint c
-                        JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = ANY(c.conkey)
-                       WHERE c.conrelid = to_regclass($1) AND c.contype = 'f'
-                         AND c.confrelid = to_regclass($2) AND a.attname = $3
-                    ) AS has_key`,
-            [table, references, column]
-          );
-          if (!rows[0]?.has_target || rows[0].has_key) continue;
-          await client.query(
-            `ALTER TABLE ${table} ADD CONSTRAINT ${table}_${column}_fkey
-               FOREIGN KEY (${column}) REFERENCES ${references}(id) ON DELETE SET NULL`
-          );
-        } catch (err) {
-          log.error(
-            `[PostgreSQL] Failed to add ${table}.${column} foreign key to ${references}: ${
-              (err as Error).message
-            }`
-          );
-        }
-      }
+      // (settings.cs2.mapPoolId), with no key. The CS2 module loaded from the
+      // catalog adds them again once its tables exist (modules/loader.ts).
+      await addCs2ForeignKeys(client);
 
       // Integration default data (CS2: the map catalogue when cs2_maps is
       // empty, then the default map pools). A rejection fails the schema
@@ -466,6 +438,21 @@ class DatabaseManager {
     try {
       log.warn('[PostgreSQL] Resetting database - dropping and recreating public schema');
 
+      // What is installed in DATA_DIR/modules is not data: the files stay
+      // through a wipe, so the switches and install records describing them
+      // (module_enabled:, module_install:, module_removed:) stay too.
+      // Otherwise a wipe would switch off CS2 while its code is on disk and
+      // loaded. Its tables are recreated below with everyone's.
+      let moduleSettings: Array<{ key: string; value: string | null }> = [];
+      try {
+        const kept = await client.query<{ key: string; value: string | null }>(
+          "SELECT key, value FROM app_settings WHERE starts_with(key, 'module_')"
+        );
+        moduleSettings = kept.rows;
+      } catch {
+        // No app_settings yet: nothing to keep.
+      }
+
       // Drop and recreate the public schema. This removes ALL user tables, views, sequences, etc.
       // This is more robust than maintaining a hard-coded list of tables.
       try {
@@ -488,6 +475,15 @@ class DatabaseManager {
       log.database('[PostgreSQL] Reinitializing schema and regenerating maps from GitHub...');
       await this.initializeSchemaAsync();
       this.initialized = true;
+
+      for (const { key, value } of moduleSettings) {
+        await client.query(
+          `INSERT INTO app_settings (key, value, updated_at)
+           VALUES ($1, $2, EXTRACT(EPOCH FROM NOW())::INTEGER)
+           ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
+          [key, value]
+        );
+      }
 
       log.success('[PostgreSQL] Database reset completed successfully');
     } finally {

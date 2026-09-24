@@ -37,6 +37,9 @@ concurrency:
 #   (stable channel only; the beta channel skips the Discord post)
 # - DOCKER_USERNAME: Docker Hub username used for docker login and image naming
 # - DOCKER_PASSWORD: Docker Hub access token/password for docker login
+# - MODULE_SIGNING_KEY: Ed25519 private key (PEM) that signs the code modules
+#   in the image's offline snapshot (CS2); its public key is compiled into
+#   api/src/modules/trustedKeys.ts
 # Optional secret:
 # - RELEASE_GITHUB_TOKEN: PAT with repo permissions for the bump push, tags and release
 #   If omitted, workflow falls back to the auto-generated github.token.
@@ -161,6 +164,18 @@ jobs:
             exit 1
           fi
           grep -H '"version"' package.json api/package.json client/package.json
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      # CS2 is a catalog module (DESIGN-modules §10): the image carries it only
+      # in its offline snapshot, signed with the release key, and installs it
+      # when an admin asks (or on an upgrade whose database has CS2 data). The
+      # script checks the signature against the keys compiled into this commit.
+      - name: Build the offline module snapshot (CS2)
+        env:
+          MODULE_SIGNING_KEY: ${{ secrets.MODULE_SIGNING_KEY }}
+        run: bash scripts/build-module-snapshot.sh
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3

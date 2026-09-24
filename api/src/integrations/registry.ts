@@ -30,7 +30,22 @@ export function registerIntegration(integration: GameIntegration): void {
   integrations.set(integration.id, integration);
 }
 
-registerIntegration(cs2Integration);
+/**
+ * Whether CS2 is compiled into this process (DESIGN-modules §10).
+ *
+ * CS2 is a catalog module: the release bundle (`api/esbuild.config.js`)
+ * replaces the `./cs2` import above with `null`, so the image carries no CS2
+ * code and installs it — signed — from the catalog or its offline snapshot.
+ * Running from source (the dev server, the in-process specs) it is compiled
+ * in as it always was: the dev alias DESIGN-module-client-api §6 asks for,
+ * so day-to-day work needs no module build. `AT_CS2_BUILTIN=0` turns that off
+ * to try the catalog path from source.
+ */
+export function cs2CompiledIn(): boolean {
+  return Boolean(cs2Integration) && process.env.AT_CS2_BUILTIN !== '0';
+}
+
+if (cs2CompiledIn()) registerIntegration(cs2Integration);
 
 // CS2 first: the two overlap on nothing, but `integrationForGameRef` resolves
 // claimed catalogue slugs in registration order, so the module that owns a

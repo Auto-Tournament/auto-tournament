@@ -149,6 +149,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      # CS2 is a catalog module (DESIGN-modules §10): the image carries it only
+      # in its offline snapshot, as a signed release. CI signs it with a
+      # throwaway key made for this run; the shards trust that key's public
+      # half (MODULE_TRUSTED_KEYS). The release signs with the real key.
+      - name: Build the offline module snapshot (CS2)
+        run: |
+          bash scripts/build-module-snapshot.sh --ephemeral | tee "$RUNNER_TEMP/snapshot.log"
+          sed -n 's/^MODULE_TRUSTED_KEYS=//p' "$RUNNER_TEMP/snapshot.log" > "$RUNNER_TEMP/trusted-key.txt"
+          test -s "$RUNNER_TEMP/trusted-key.txt"
+          ls -la api/bundled-modules
+
       - uses: docker/setup-buildx-action@v3
 
       # Same build as docker/docker-compose.local.yml (incl. the dev-page arg).
@@ -168,7 +187,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: e2e-image
-          path: ${{ runner.temp }}/mat-image.tar
+          path: |
+            ${{ runner.temp }}/mat-image.tar
+            ${{ runner.temp }}/trusted-key.txt
           # Image layers are already gzip-compressed.
           compression-level: 0
           retention-days: 1
@@ -215,6 +236,9 @@ jobs:
             echo "GAMES_ENRICH=off"
             # A stock install has no games; the suite needs the image's packs.
             echo "PREINSTALL_PACKS=all"
+            # The suite never depends on GitHub: the catalog offers what the
+            # image carries (specs point it at their own fake feed).
+            echo "CATALOG_OFFLINE=true"
             echo "API_TOKENS=ci-admin:ci-admin-token-0123456789abcdef"
             echo "API_TOKENS_READONLY=ci-readonly:ci-readonly-token-0123456789abcdef"
             echo "STEAM_API_KEY="
@@ -297,6 +321,11 @@ jobs:
       - name: Load image
         run: docker load --input "${{ runner.temp }}/mat-image.tar"
 
+      # The image's CS2 was signed with this run's throwaway key (see the
+      # build job); the app trusts it for this run only.
+      - name: Trust this run's module signing key
+        run: echo "MODULE_TRUSTED_KEYS=$(cat "${{ runner.temp }}/trusted-key.txt")" >> .env
+
       - name: Start the stack
         run: $COMPOSE up -d --no-build
 
@@ -312,6 +341,18 @@ jobs:
           echo "App never became healthy." >&2
           $COMPOSE logs --tail=100
           exit 1
+
+      # CS2 is not compiled into the image. Install it the way an admin does:
+      # from the catalog's offline snapshot — signature verified, unpacked,
+      # migrated and loaded without a restart — so the CS2 specs run against
+      # the real module path, not a compiled-in shortcut.
+      - name: Install CS2 through the catalog
+        run: |
+          response="$(curl -s -X POST http://localhost:3069/api/catalog/modules/cs2/install \
+            -H 'Authorization: Bearer ci-admin-token-0123456789abcdef' \
+            -H 'Content-Type: application/json' -d '{}')"
+          echo "$response"
+          echo "$response" | grep -q '"success":true' || { $COMPOSE logs --tail=100; exit 1; }
 
       # Whole spec files, packed by measured duration (tests/ci-shard.mjs) rather
       # than Playwright's --shard, which splits by test count and left the

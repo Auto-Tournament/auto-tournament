@@ -1,0 +1,5 @@
+# The offline snapshot of signed code modules is built, never committed:
+# scripts/build-module-snapshot.sh writes index.json and the .atmod/.sig
+# files here before the image is built (DESIGN-modules §10.1).
+*
+!.gitignore

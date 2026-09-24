@@ -139,21 +139,34 @@ test.describe.serial('Code modules on disk', () => {
     const { platform, modules } = await listModules(request);
     expect(platform).toEqual({ clientApi: '0.2.0', serverApi: '0.1.0' });
 
-    for (const id of ['cs2', 'manual-report']) {
-      const row = modules.find((module) => module.id === id);
-      expect(row, `${id} should be listed`).toBeTruthy();
-      expect(row).toMatchObject({
-        source: 'builtin',
-        enabled: true,
-        status: 'ok',
-        reason: null,
-        client: null,
-      });
-    }
+    const builtin = modules.find((module) => module.id === 'manual-report');
+    expect(builtin).toMatchObject({
+      source: 'builtin',
+      enabled: true,
+      status: 'ok',
+      reason: null,
+      client: null,
+    });
 
-    const disabled = await request.post('/api/modules/cs2/disable');
+    const disabled = await request.post('/api/modules/manual-report/disable');
     expect(disabled.status()).toBe(400);
-    expect((await moduleRow(request, 'cs2')).enabled).toBe(true);
+    expect((await moduleRow(request, 'manual-report')).enabled).toBe(true);
+  });
+
+  test('CS2 is not compiled in: it runs as a code module installed from the catalog', {
+    tag: ['@api', '@modules'],
+  }, async ({ request }) => {
+    // CI installs it through POST /api/catalog/modules/cs2/install before the
+    // suite runs (ci.yml), from the image's signed offline snapshot.
+    expect(await moduleRow(request, 'cs2')).toMatchObject({
+      source: 'disk',
+      enabled: true,
+      status: 'ok',
+      client: { entry: '/api/modules/cs2/client/index.js' },
+    });
+    const catalog = await request.get('/api/catalog');
+    const items = ((await catalog.json()) as { items: Array<{ kind: string; id: string; installed: { source: string } | null }> }).items;
+    expect(items.find((item) => item.kind === 'module' && item.id === 'cs2')?.installed?.source).toBe('snapshot');
   });
 
   test('a module put on disk starts disabled, and loads once enabled and rescanned', {
@@ -231,9 +244,10 @@ test.describe.serial('Code modules on disk', () => {
       client: { entry: `/api/modules/${VALID}/client/index.js` },
     });
 
-    // Built-in modules are compiled into the app: never listed.
-    expect(body.modules.map((module) => module.id)).not.toContain('cs2');
+    // Built-in modules are compiled into the app: never listed. CS2 is a
+    // catalog module, so it is listed like any other code module.
     expect(body.modules.map((module) => module.id)).not.toContain('manual-report');
+    expect(body.modules.map((module) => module.id)).toContain('cs2');
   });
 
   test('client files are served with their content type, and a missing one is a real 404', {
@@ -441,7 +455,7 @@ test.describe.serial('Code modules on disk', () => {
         ['GET /api/modules', () => stranger.get('/api/modules')],
         ['POST enable', () => stranger.post(`/api/modules/${VALID}/enable`)],
         ['POST disable', () => stranger.post(`/api/modules/${VALID}/disable`)],
-        ['POST builtin disable', () => stranger.post('/api/modules/cs2/disable')],
+        ['POST builtin disable', () => stranger.post('/api/modules/manual-report/disable')],
         [
           'POST test fixture',
           () =>

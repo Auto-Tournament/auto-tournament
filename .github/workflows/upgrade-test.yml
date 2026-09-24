@@ -23,6 +23,14 @@ on:
       - 'docker/Dockerfile'
       - 'docker/Caddyfile'
       - 'scripts/test-upgrade.ts'
+      # CS2 reaches an upgraded install as a catalog module from the image's
+      # offline snapshot: its build, signing, install and loader.
+      - 'scripts/build-module-snapshot.sh'
+      - 'scripts/module-release.ts'
+      - 'scripts/modules/**'
+      - 'api/src/modules/**'
+      - 'api/src/integrations/registry.ts'
+      - 'api/esbuild.config.js'
       - '.github/workflows/upgrade-test.yml'
       - 'package.json'
       - 'yarn.lock'

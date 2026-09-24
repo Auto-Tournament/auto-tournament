@@ -67,6 +67,12 @@ services:
       # Built-in game enrichment (gameEnrichmentService) calls real Wikidata/IGDB;
       # keep it off for local "prod-like" and E2E stacks by default.
       - GAMES_ENRICH=${GAMES_ENRICH:-off}
+      # A local image's CS2 snapshot is signed with a throwaway key
+      # (scripts/build-module-snapshot.sh --ephemeral); trust it here. The
+      # catalog and the pack preinstall follow the shell too, for E2E runs.
+      - MODULE_TRUSTED_KEYS=${MODULE_TRUSTED_KEYS:-}
+      - PREINSTALL_PACKS=${PREINSTALL_PACKS:-}
+      - CATALOG_OFFLINE=${CATALOG_OFFLINE:-}
       # Allow simulation settings in local "prod-like" builds
       - AT_ENABLE_SIMULATION_IN_PROD=true
       # Docker service name for DB connection (not from .env)
