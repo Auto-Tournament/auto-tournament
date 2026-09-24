@@ -107,7 +107,9 @@
         "delete": "Vorlage löschen"
       },
       "weightsTitle": "Stat-Gewichte:",
-      "limitsTitle": "Anpassungsgrenzen:"
+      "limitsTitle": "Anpassungsgrenzen:",
+      "minAdjustment": "Min: {{value}}",
+      "maxAdjustment": "Max: {{value}}"
     },
     "importModal": {
       "title": "ELO-Vorlagen aus json importieren",
@@ -157,6 +159,52 @@
         "saving": "Der Speichervorgang läuft...",
         "update": "Aktualisierung",
         "create": "Erstellen"
+      }
+    },
+    "stats": {
+      "kills": {
+        "label": "Kills",
+        "description": "Number of kills per match"
+      },
+      "deaths": {
+        "label": "Deaths",
+        "description": "Number of deaths per match (typically negative weight)"
+      },
+      "assists": {
+        "label": "Assists",
+        "description": "Number of assists per match"
+      },
+      "flashAssists": {
+        "label": "Flash Assists",
+        "description": "Number of flash assists per match"
+      },
+      "headshotKills": {
+        "label": "Headshot Kills",
+        "description": "Number of headshot kills per match"
+      },
+      "damage": {
+        "label": "Damage",
+        "description": "Total damage dealt per match"
+      },
+      "utilityDamage": {
+        "label": "Utility Damage",
+        "description": "Damage dealt with utility (grenades)"
+      },
+      "kast": {
+        "label": "KAST %",
+        "description": "Percentage of rounds with Kill, Assist, Survive, or Trade"
+      },
+      "mvps": {
+        "label": "MVPs",
+        "description": "Number of MVP awards per match"
+      },
+      "score": {
+        "label": "Score",
+        "description": "Match score (combines multiple factors)"
+      },
+      "adr": {
+        "label": "ADR",
+        "description": "Average Damage per Round"
       }
     }
   }

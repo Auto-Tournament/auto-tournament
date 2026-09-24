@@ -36,34 +36,6 @@ interface EloTemplateEditorModalProps {
   onSave: () => void;
 }
 
-const STAT_LABELS: Record<keyof EloTemplateWeights, string> = {
-  kills: 'Kills',
-  deaths: 'Deaths',
-  assists: 'Assists',
-  flashAssists: 'Flash Assists',
-  headshotKills: 'Headshot Kills',
-  damage: 'Damage',
-  utilityDamage: 'Utility Damage',
-  kast: 'KAST %',
-  mvps: 'MVPs',
-  score: 'Score',
-  adr: 'ADR',
-};
-
-const STAT_DESCRIPTIONS: Record<keyof EloTemplateWeights, string> = {
-  kills: 'Number of kills per match',
-  deaths: 'Number of deaths per match (typically negative weight)',
-  assists: 'Number of assists per match',
-  flashAssists: 'Number of flash assists per match',
-  headshotKills: 'Number of headshot kills per match',
-  damage: 'Total damage dealt per match',
-  utilityDamage: 'Damage dealt with utility (grenades)',
-  kast: 'Percentage of rounds with Kill, Assist, Survive, or Trade',
-  mvps: 'Number of MVP awards per match',
-  score: 'Match score (combines multiple factors)',
-  adr: 'Average Damage per Round',
-};
-
 export default function EloTemplateEditorModal({
   open,
   template,
@@ -256,10 +228,10 @@ export default function EloTemplateEditorModal({
                     <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
                       <Box>
                         <Typography variant="body2" fontWeight={600}>
-                          {STAT_LABELS[stat]}
+                          {t(`eloTemplatesPage.stats.${stat}.label`)}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {STAT_DESCRIPTIONS[stat]}
+                          {t(`eloTemplatesPage.stats.${stat}.description`)}
                         </Typography>
                       </Box>
                       <Typography

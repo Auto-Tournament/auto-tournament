@@ -107,7 +107,9 @@
         "delete": "Slett mal"
       },
       "weightsTitle": "Statistikkvekter:",
-      "limitsTitle": "Justeringsgrenser:"
+      "limitsTitle": "Justeringsgrenser:",
+      "minAdjustment": "Min: {{value}}",
+      "maxAdjustment": "Maks: {{value}}"
     },
     "importModal": {
       "title": "Importer ELO-maler fra JSON",
@@ -157,6 +159,52 @@
         "saving": "Lagrer...",
         "update": "Oppdater",
         "create": "Opprett"
+      }
+    },
+    "stats": {
+      "kills": {
+        "label": "Kills",
+        "description": "Antall kills per kamp"
+      },
+      "deaths": {
+        "label": "Dødsfall",
+        "description": "Antall dødsfall per kamp (vanligvis negativ vekt)"
+      },
+      "assists": {
+        "label": "Assists",
+        "description": "Antall assists per kamp"
+      },
+      "flashAssists": {
+        "label": "Flash-assists",
+        "description": "Antall flash-assists per kamp"
+      },
+      "headshotKills": {
+        "label": "Headshot-kills",
+        "description": "Antall headshot-kills per kamp"
+      },
+      "damage": {
+        "label": "Skade",
+        "description": "Total skade per kamp"
+      },
+      "utilityDamage": {
+        "label": "Granatskade",
+        "description": "Skade fra granater"
+      },
+      "kast": {
+        "label": "KAST %",
+        "description": "Andel runder med kill, assist, overlevelse eller trade"
+      },
+      "mvps": {
+        "label": "MVP-er",
+        "description": "Antall MVP-utmerkelser per kamp"
+      },
+      "score": {
+        "label": "Poeng",
+        "description": "Kamppoeng (kombinerer flere faktorer)"
+      },
+      "adr": {
+        "label": "ADR",
+        "description": "Gjennomsnittlig skade per runde"
       }
     }
   }
