@@ -15,13 +15,17 @@ import React from 'react';
 import { ManageStatusTile, useModuleTranslation } from '../../../module-sdk';
 import type { ManageStatusTileProps } from '../../types';
 import { asServerAvailability } from '../cs2.types';
+import { useUnconfiguredServers } from '../servers/useUnconfiguredServers';
 
 export const Cs2ServersFreeTile: React.FC<ManageStatusTileProps> = ({ availability }) => {
   const { t } = useModuleTranslation('cs2');
 
   const fleet = asServerAvailability(availability);
+  // Servers added but not set up count toward the total, as on the Servers
+  // page: "0 / 3", not "0 / 0" beside a grid of three servers.
+  const unconfigured = useUnconfiguredServers(30_000);
   const free = fleet?.availableServerCount ?? 0;
-  const total = fleet?.servers.length ?? 0;
+  const total = (fleet?.servers.length ?? 0) + unconfigured.length;
 
   return <ManageStatusTile label={t('managePage.status.serversFree')} value={`${free} / ${total}`} />;
 };
