@@ -113,7 +113,8 @@
     "recentMatches": {
       "title": "Recent matches",
       "statsNote": "Kills / deaths. Stats shown depend on what the game module reports."
-    }
+    },
+    "gameSwitchLabel": "Game"
   },
   "teamPage": {
     "wantYourStats": "Queres ver as tuas estatísticas e histórico de jogos?",
@@ -484,5 +485,9 @@
       "load": "Could not load the queue. Try again.",
       "action": "That did not go through. Try again."
     }
+  },
+  "teamLinkActions": {
+    "open": "Open team match page",
+    "copy": "Copy team match link"
   }
 }

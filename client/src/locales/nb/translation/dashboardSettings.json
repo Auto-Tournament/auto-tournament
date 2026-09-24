@@ -3,7 +3,15 @@
     "title": "Admin",
     "restartTournament": {
       "button": "Start turneringskamper på nytt",
-      "restarting": "Starter turneringskamper på nytt…"
+      "restarting": "Starter turneringskamper på nytt…",
+      "intro": "🔄 Dette starter alle aktive kamper på nytt og laster dem inn på serverne igjen.",
+      "actionsTitle": "Handlinger:",
+      "actionEndMatch": "Kjør at_endmatch på alle servere med lastede eller pågående kamper",
+      "actionReset": "Sett kampene tilbake til «klar»",
+      "actionReallocate": "Fordel kampene på ledige servere på nytt",
+      "actionReload": "Last inn kampoppsettet på nytt via RCON",
+      "hint": "Bruk dette hvis kamper har låst seg eller trenger en ny start.",
+      "confirm": "Start turneringen på nytt"
     },
     "header": {
       "brand": "Auto Tournament",

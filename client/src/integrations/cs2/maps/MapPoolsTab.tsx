@@ -1,7 +1,7 @@
 import { Grid } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import CollectionsIcon from '@mui/icons-material/Collections';
-import { EmptyState } from '../../../module-sdk';
+import { EmptyState, useModuleTranslation } from '../../../module-sdk';
 import { MapPoolCard } from './MapPoolCard';
 import type { MapPool, Map as MapType } from '../../../types/api.types';
 
@@ -18,13 +18,14 @@ export function MapPoolsTab({
   onCreatePool,
   onPoolClick,
 }: MapPoolsTabProps) {
+  const { t } = useModuleTranslation('cs2');
   if (mapPools.length === 0) {
     return (
       <EmptyState
         icon={CollectionsIcon}
-        title="No map pools found"
-        description="Get started by creating your first map pool"
-        actionLabel="Create Map Pool"
+        title={t('mapsPage.empty.poolsTitle')}
+        description={t('mapsPage.empty.poolsDescription')}
+        actionLabel={t('mapsPage.headerActions.createMapPool')}
         actionIcon={AddIcon}
         onAction={onCreatePool}
       />

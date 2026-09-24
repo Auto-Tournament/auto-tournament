@@ -21,7 +21,8 @@
       "errors": {
         "inProgressOrCompleted": "No se puede crear un torneo desde una plantilla mientras haya un torneo en curso o finalizado. Elimina o restablece primero el torneo actual.",
         "alreadyExists": "Ya existe un torneo. Elimina o restablece el torneo actual antes de crear uno nuevo desde una plantilla."
-      }
+      },
+      "button": "Create Tournament from Template"
     },
     "edit": {
       "title": "Editar plantilla",
@@ -34,7 +35,8 @@
         "selectLabel": "Elige un pool de mapas",
         "customOption": "Personalizado",
         "selectedLabel": "Mapas seleccionados ({{count}}):",
-        "vetoWarning": "Los formatos con veto (BO1/BO3/BO5) requieren exactamente 7 mapas. Seleccionados actualmente: {{count}}"
+        "vetoWarning": "Los formatos con veto (BO1/BO3/BO5) requieren exactamente 7 mapas. Seleccionados actualmente: {{count}}",
+        "chooseMaps": "Choose maps..."
       },
       "save": "Guardar"
     }

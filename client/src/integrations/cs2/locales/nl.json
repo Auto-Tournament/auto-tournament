@@ -88,6 +88,19 @@
     "confirmDeletePool": {
       "title": "Kaartpool verwijderen",
       "message": "Weet je zeker dat je \"{{name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+    },
+    "confirmDelete": "Delete",
+    "empty": {
+      "mapsTitle": "No maps found",
+      "mapsDescription": "Get started by adding your first map",
+      "poolsTitle": "No map pools found",
+      "poolsDescription": "Get started by creating your first map pool"
+    },
+    "pool": {
+      "default": "Default",
+      "disabled": "Disabled",
+      "mapCount": "{{count}} map",
+      "mapCountPlural": "{{count}} maps"
     }
   },
   "mapModal": {
@@ -589,6 +602,30 @@
     "confirmDelete": {
       "title": "Server verwijderen",
       "message": "Weet je zeker dat je \"{{name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+    }
+  },
+  "mapPoolModal": {
+    "titleCreate": "Create Map Pool",
+    "titleEdit": "Edit Map Pool",
+    "close": "Close",
+    "nameLabel": "Map Pool Name",
+    "namePlaceholder": "My Custom Pool",
+    "selectMaps": "Select Maps ({{count}} selected)",
+    "addAll": "Add all",
+    "chooseMaps": "Choose maps...",
+    "cancel": "Cancel",
+    "update": "Update",
+    "create": "Create",
+    "types": {
+      "defusal": "Defusal",
+      "hostage": "Hostage",
+      "armsRace": "Arms Race",
+      "unknown": "Unknown"
+    },
+    "errors": {
+      "nameRequired": "Map pool name is required",
+      "mapsRequired": "Please select at least one map",
+      "saveFailed": "Failed to save map pool"
     }
   }
 }

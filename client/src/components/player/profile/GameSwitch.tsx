@@ -1,4 +1,5 @@
 import Box from '@mui/material/Box';
+import { useTranslation } from 'react-i18next';
 import { gameMonogram } from '../../games/GameThumb';
 import { fontDisplay } from '../../../theme/tokens';
 
@@ -24,6 +25,7 @@ export interface GameSwitchProps {
  * non-interactive, already-selected pill instead of a pointless toggle.
  */
 export function GameSwitch({ games, selectedId, onSelect }: GameSwitchProps) {
+  const { t } = useTranslation();
   if (games.length === 0) return null;
 
   const single = games.length === 1;
@@ -31,7 +33,7 @@ export function GameSwitch({ games, selectedId, onSelect }: GameSwitchProps) {
   return (
     <Box
       role="group"
-      aria-label="Game"
+      aria-label={t('playerPage.gameSwitchLabel')}
       data-testid="profile-game-switch"
       sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}
     >

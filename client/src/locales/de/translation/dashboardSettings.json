@@ -216,7 +216,15 @@
     "title": "Admin",
     "restartTournament": {
       "button": "Restart Tournament Matches",
-      "restarting": "Restarting tournament matches…"
+      "restarting": "Restarting tournament matches…",
+      "intro": "🔄 This will restart all active matches and reload them on servers.",
+      "actionsTitle": "Actions:",
+      "actionEndMatch": "Run at_endmatch on all servers with loaded/live matches",
+      "actionReset": "Reset matches to 'ready' status",
+      "actionReallocate": "Reallocate matches to available servers",
+      "actionReload": "Reload match configs via RCON",
+      "hint": "Use this if matches are stuck or need a fresh start.",
+      "confirm": "Restart Tournament"
     },
     "header": {
       "brand": "Auto Tournament",

@@ -618,6 +618,12 @@
           "escalate": "Spør en administrator"
         }
       }
+    },
+    "startButton": {
+      "start": "Start turnering",
+      "starting": "Starter...",
+      "startSimulation": "Start simulering",
+      "startingSimulation": "Starter simulering..."
     }
   },
   "bracket": {
@@ -723,5 +729,15 @@
     "loadError": "Kunne ikke laste denne turneringen.",
     "notFoundTitle": "Fant ikke turneringen",
     "notFoundDescription": "Denne turneringen finnes ikke, eller er ikke opprettet ennå."
+  },
+  "roundStatusCard": {
+    "roundOf": "Runde {{current}} av {{total}}",
+    "complete": "Ferdig",
+    "inProgress": "Pågår",
+    "matchProgress": "Kampfremdrift",
+    "completedOf": "{{completed}} / {{total}} ferdig",
+    "completedCount": "{{count}} ferdig",
+    "playingCount": "{{count}} spilles",
+    "pendingCount": "{{count}} venter"
   }
 }

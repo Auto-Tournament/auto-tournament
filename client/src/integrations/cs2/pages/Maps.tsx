@@ -353,28 +353,28 @@ export default function Maps() {
 
       <ConfirmDialog
         open={deleteConfirmOpen}
-        title="Delete Map"
-        message={`Are you sure you want to delete "${mapToDelete?.displayName}"? This action cannot be undone.`}
+        title={t('mapsPage.confirmDeleteMap.title')}
+        message={t('mapsPage.confirmDeleteMap.message', { name: mapToDelete?.displayName ?? '' })}
         onConfirm={handleDeleteConfirm}
         onCancel={() => {
           setDeleteConfirmOpen(false);
           setMapToDelete(null);
         }}
-        confirmLabel="Delete"
+        confirmLabel={t('mapsPage.confirmDelete')}
         confirmColor="error"
         loading={deleting}
       />
 
       <ConfirmDialog
         open={deletePoolConfirmOpen}
-        title="Delete Map Pool"
-        message={`Are you sure you want to delete "${poolToDelete?.name}"? This action cannot be undone.`}
+        title={t('mapsPage.confirmDeletePool.title')}
+        message={t('mapsPage.confirmDeletePool.message', { name: poolToDelete?.name ?? '' })}
         onConfirm={handleDeletePoolConfirm}
         onCancel={() => {
           setDeletePoolConfirmOpen(false);
           setPoolToDelete(null);
         }}
-        confirmLabel="Delete"
+        confirmLabel={t('mapsPage.confirmDelete')}
         confirmColor="error"
         loading={deletingPool}
       />

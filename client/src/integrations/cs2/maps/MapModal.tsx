@@ -204,11 +204,11 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
           if (response.success && response.imageUrl) {
             resolve(response.imageUrl);
           } else {
-            reject(new Error('Failed to upload image'));
+            reject(new Error(t('mapModal.errors.uploadFailed')));
           }
         } catch (err) {
           const error = err as { error?: string; message?: string };
-          reject(new Error(error.error || error.message || 'Failed to upload image'));
+          reject(new Error(error.error || error.message || t('mapModal.errors.uploadFailed')));
         }
       };
 

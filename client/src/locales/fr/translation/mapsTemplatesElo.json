@@ -21,7 +21,8 @@
       "errors": {
         "inProgressOrCompleted": "Impossible de créer un tournoi à partir d’un modèle lorsqu’un tournoi est en cours ou terminé. Veuillez d’abord supprimer ou réinitialiser le tournoi actuel.",
         "alreadyExists": "Un tournoi existe déjà. Veuillez supprimer ou réinitialiser le tournoi actuel avant d’en créer un nouveau à partir d’un modèle."
-      }
+      },
+      "button": "Create Tournament from Template"
     },
     "edit": {
       "title": "Modifier le modèle",
@@ -34,7 +35,8 @@
         "selectLabel": "Choisir un pool de cartes",
         "customOption": "Personnalisé",
         "selectedLabel": "Cartes sélectionnées ({{count}}) :",
-        "vetoWarning": "Les formats veto (BO1/BO3/BO5) exigent exactement 7 cartes. Sélection actuelle : {{count}}"
+        "vetoWarning": "Les formats veto (BO1/BO3/BO5) exigent exactement 7 cartes. Sélection actuelle : {{count}}",
+        "chooseMaps": "Choose maps..."
       },
       "save": "Enregistrer"
     }

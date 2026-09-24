@@ -177,16 +177,16 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
       >
         {starting
           ? simulationEnabled
-            ? 'Starting Simulation...'
-            : 'Starting...'
+            ? t('tournament.startButton.startingSimulation')
+            : t('tournament.startButton.starting')
           : simulationEnabled
-          ? 'Start Simulation'
-          : 'Start Tournament'}
+          ? t('tournament.startButton.startSimulation')
+          : t('tournament.startButton.start')}
       </Button>
 
       <ConfirmDialog
         open={showConfirm}
-        title="Start Tournament"
+        title={t('tournament.startButton.start')}
         message={
           <>
             {ConfirmView ? (

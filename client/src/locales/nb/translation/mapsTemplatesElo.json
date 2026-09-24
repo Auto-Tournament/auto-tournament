@@ -21,7 +21,8 @@
       "errors": {
         "inProgressOrCompleted": "Kan ikke opprette turnering fra mal mens en turnering pågår eller er fullført. Slett eller tilbakestill den nåværende turneringen først.",
         "alreadyExists": "En turnering finnes allerede. Slett eller tilbakestill den nåværende turneringen før du oppretter en ny fra en mal."
-      }
+      },
+      "button": "Lag turnering fra mal"
     },
     "edit": {
       "title": "Rediger mal",
@@ -34,7 +35,8 @@
         "selectLabel": "Velg en kartpool",
         "customOption": "Egendefinert",
         "selectedLabel": "Valgte kart ({{count}}):",
-        "vetoWarning": "Veto-formater (BO1/BO3/BO5) krever nøyaktig 7 kart. Valgt nå: {{count}}"
+        "vetoWarning": "Veto-formater (BO1/BO3/BO5) krever nøyaktig 7 kart. Valgt nå: {{count}}",
+        "chooseMaps": "Velg kart..."
       },
       "save": "Lagre"
     }

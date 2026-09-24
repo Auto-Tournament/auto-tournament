@@ -21,7 +21,8 @@
       "errors": {
         "inProgressOrCompleted": "Não é possível criar um torneio a partir de um modelo enquanto um torneio estiver em curso ou concluído. Elimine ou redefina primeiro o torneio atual.",
         "alreadyExists": "Já existe um torneio. Elimine ou redefina o torneio atual antes de criar um novo a partir de um modelo."
-      }
+      },
+      "button": "Create Tournament from Template"
     },
     "edit": {
       "title": "Editar modelo",
@@ -34,7 +35,8 @@
         "selectLabel": "Escolha um pool de mapas",
         "customOption": "Personalizado",
         "selectedLabel": "Mapas selecionados ({{count}}):",
-        "vetoWarning": "Os formatos com veto (BO1/BO3/BO5) exigem exatamente 7 mapas. Atualmente selecionados: {{count}}"
+        "vetoWarning": "Os formatos com veto (BO1/BO3/BO5) exigem exatamente 7 mapas. Atualmente selecionados: {{count}}",
+        "chooseMaps": "Choose maps..."
       },
       "save": "Guardar"
     }

@@ -113,7 +113,8 @@
     "recentMatches": {
       "title": "Siste kamper",
       "statsNote": "Drap / død. Statistikken som vises avhenger av hva spillmodulen rapporterer."
-    }
+    },
+    "gameSwitchLabel": "Spill"
   },
   "teamPage": {
     "wantYourStats": "Vil du se din egen statistikk og kamphistorikk?",
@@ -484,5 +485,9 @@
       "load": "Fikk ikke lastet køen. Prøv igjen.",
       "action": "Det gikk ikke gjennom. Prøv igjen."
     }
+  },
+  "teamLinkActions": {
+    "open": "Åpne lagets kampside",
+    "copy": "Kopier lenke til lagets kampside"
   }
 }

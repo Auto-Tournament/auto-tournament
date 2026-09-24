@@ -1,7 +1,7 @@
 import { Grid } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import MapIcon from '@mui/icons-material/Map';
-import { EmptyState } from '../../../module-sdk';
+import { EmptyState, useModuleTranslation } from '../../../module-sdk';
 import { MapCard } from './MapCard';
 import type { Map } from '../../../types/api.types';
 
@@ -12,6 +12,7 @@ interface MapsTabProps {
 }
 
 export function MapsTab({ maps, onAddMap, onMapClick }: MapsTabProps) {
+  const { t } = useModuleTranslation('cs2');
   // Sort maps alphabetically by ID
   const sortedMaps = [...maps].sort((a, b) => a.id.localeCompare(b.id));
 
@@ -19,9 +20,9 @@ export function MapsTab({ maps, onAddMap, onMapClick }: MapsTabProps) {
     return (
       <EmptyState
         icon={MapIcon}
-        title="No maps found"
-        description="Get started by adding your first map"
-        actionLabel="Add Map"
+        title={t('mapsPage.empty.mapsTitle')}
+        description={t('mapsPage.empty.mapsDescription')}
+        actionLabel={t('mapsPage.headerActions.addMap')}
         actionIcon={AddIcon}
         onAction={onAddMap}
       />

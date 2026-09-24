@@ -21,7 +21,8 @@
       "errors": {
         "inProgressOrCompleted": "Kan geen toernooi aanmaken vanuit een sjabloon wanneer er al een toernooi loopt of is afgerond. Verwijder of reset eerst het huidige toernooi.",
         "alreadyExists": "Er bestaat al een toernooi. Verwijder of reset eerst het huidige toernooi voordat je een nieuw toernooi vanuit een sjabloon aanmaakt."
-      }
+      },
+      "button": "Create Tournament from Template"
     },
     "edit": {
       "title": "Sjabloon bewerken",
@@ -34,7 +35,8 @@
         "selectLabel": "Kies een kaartpool",
         "customOption": "Aangepast",
         "selectedLabel": "Geselecteerde kaarten ({{count}}):",
-        "vetoWarning": "Veto-formaten (BO1/BO3/BO5) vereisen precies 7 kaarten. Nu geselecteerd: {{count}}"
+        "vetoWarning": "Veto-formaten (BO1/BO3/BO5) vereisen precies 7 kaarten. Nu geselecteerd: {{count}}",
+        "chooseMaps": "Choose maps..."
       },
       "save": "Opslaan"
     }

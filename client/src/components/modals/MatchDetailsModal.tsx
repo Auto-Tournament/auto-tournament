@@ -212,14 +212,14 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
     setConfirmDeleteOpen(false);
     try {
       await api.delete(`/api/matches/${match.slug}`);
-      setSuccess('Match deleted successfully');
+      setSuccess(t('matchDetailsModal.delete.success'));
       if (onDeleted) {
         onDeleted(match.slug);
       }
       onClose();
     } catch (err) {
       const error = err as Error;
-      setError(error.message || 'Failed to delete match');
+      setError(error.message || t('matchDetailsModal.delete.failed'));
     }
   };
 
@@ -251,7 +251,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
       const response = await api.get<unknown>(`/api/matches/${match.slug}.json`);
       setConfigJson(JSON.stringify(response, null, 2));
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load match config';
+      const message = err instanceof Error ? err.message : t('matchDetailsModal.config.loadFailed');
       setError(message);
       setConfigJson(null);
     } finally {
@@ -479,23 +479,23 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
   if (usesDamageTiebreak) {
     if (overtimeMode === 'disabled' && overtimeSegments === 0) {
       tiebreakReason =
-        'Overtime is disabled for this match (regulation only), so tied scores are resolved by total team damage.';
+        t('matchDetailsModal.tiebreak.regulationOnly');
     } else if (overtimeMode && typeof overtimeSegments === 'number' && overtimeSegments > 0) {
       tiebreakReason =
-        'Overtime is configured with a maximum number of segments. If the score is still tied, the winner is decided by total team damage.';
+        t('matchDetailsModal.tiebreak.segmentsExhausted');
     } else if (cvarOvertimeEnabled === false) {
       tiebreakReason =
-        'Overtime is disabled for this match, so tied scores are resolved by total team damage.';
+        t('matchDetailsModal.tiebreak.overtimeDisabled');
     } else {
       tiebreakReason =
-        'The final score was tied, so according to the match settings the winner was chosen by total team damage.';
+        t('matchDetailsModal.tiebreak.tiedByDamage');
     }
   }
 
   const team1Name =
-    match.team1?.name || (match.config?.team1 as { name?: string } | undefined)?.name || 'Team 1';
+    match.team1?.name || (match.config?.team1 as { name?: string } | undefined)?.name || t('matchDetailsModal.team1');
   const team2Name =
-    match.team2?.name || (match.config?.team2 as { name?: string } | undefined)?.name || 'Team 2';
+    match.team2?.name || (match.config?.team2 as { name?: string } | undefined)?.name || t('matchDetailsModal.team2');
 
   return (
     <>
@@ -571,7 +571,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
               {match.status === 'live' && match.loadedAt && (
                 <Box display="flex" alignItems="center" gap={1}>
                   <Typography variant="body2" color="text.secondary">
-                    Match Time:
+                    {t('matchDetailsModal.matchTime')}
                   </Typography>
                   <Typography variant="h6" fontWeight={600} color="error.main">
                     {formatDuration(matchTimer)}
@@ -626,7 +626,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
             {match.serverName && (
               <Box>
                 <Typography variant="body2" color="text.secondary">
-                  <strong>Server:</strong> {match.serverName}
+                  <strong>{t('matchDetailsModal.server')}</strong> {match.serverName}
                 </Typography>
               </Box>
             )}
@@ -656,7 +656,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
             {!match.serverId && match.queuePosition && (
               <Box>
                 <Typography variant="body2" color="primary.main" fontWeight={600}>
-                  <strong>Queue Position:</strong> #{match.queuePosition}
+                  <strong>{t('matchDetailsModal.queuePosition')}</strong> #{match.queuePosition}
                 </Typography>
               </Box>
             )}
@@ -775,19 +775,26 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                   {measuresPlayers &&
                     (normalizedTeam1Players.length > 0 || normalizedTeam2Players.length > 0) && (
                     <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-                      Total Damage: {team1TotalDamage} - {team2TotalDamage}
+                      {t('matchDetailsModal.totalDamage', { team1: team1TotalDamage, team2: team2TotalDamage })}
                     </Typography>
                   )}
                   {showMapRoundsRow && currentMapLabel && (
                     <Typography variant="caption" color="text.secondary" display="block">
-                      {`Map ${displayMapIndex !== null ? displayMapIndex + 1 : ''}${
-                        totalMapCount ? ` of ${totalMapCount}` : ''
-                      }: ${currentMapLabel}`}
+                      {totalMapCount
+                        ? t('matchDetailsModal.mapOfTotal', {
+                            index: displayMapIndex !== null ? displayMapIndex + 1 : '',
+                            total: totalMapCount,
+                            map: currentMapLabel,
+                          })
+                        : t('matchDetailsModal.mapIndex', {
+                            index: displayMapIndex !== null ? displayMapIndex + 1 : '',
+                            map: currentMapLabel,
+                          })}
                     </Typography>
                   )}
                   {showMapRoundsRow && roundNumber !== null && roundNumber > 0 && (
                     <Typography variant="caption" color="text.secondary" display="block">
-                      {`Round ${roundNumber}`}
+                      {t('matchDetailsModal.round', { round: roundNumber })}
                     </Typography>
                   )}
                 </Box>
@@ -828,11 +835,13 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
             {isShuffle && team1AverageElo !== null && team2AverageElo !== null && (
               <Box textAlign="center">
                 <Typography variant="body2" color="text.secondary">
-                  Team ELO (avg): {Math.round(team1AverageElo)} vs {Math.round(team2AverageElo)}
+                  {t('matchDetailsModal.shuffle.averageElo', {
+                    team1: Math.round(team1AverageElo),
+                    team2: Math.round(team2AverageElo),
+                  })}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Shuffle teams are generated by an OpenSkill-based balancer that spreads high and
-                  low-rated players across both sides to keep these averages close.
+                  {t('matchDetailsModal.shuffle.balancerHint')}
                 </Typography>
               </Box>
             )}
@@ -878,12 +887,12 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                         team1Name={
                           match.team1?.name ||
                           (match.config?.team1 as { name?: string } | undefined)?.name ||
-                          'Team 1'
+                          t('matchDetailsModal.team1')
                         }
                         team2Name={
                           match.team2?.name ||
                           (match.config?.team2 as { name?: string } | undefined)?.name ||
-                          'Team 2'
+                          t('matchDetailsModal.team2')
                         }
                         team1Players={match.config?.team1?.players || []}
                         team2Players={match.config?.team2?.players || []}
@@ -903,7 +912,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                   <Box display="flex" alignItems="center" gap={1} mb={2}>
                     <GroupsIcon color="primary" />
                     <Typography variant="subtitle1" fontWeight={600}>
-                      Player Leaderboards
+                      {t('matchDetailsModal.playerLeaderboards')}
                     </Typography>
                   </Box>
                   <Grid container spacing={2}>
@@ -914,7 +923,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                           <Typography variant="subtitle2" fontWeight={600} mb={2} color="primary">
                             {match.team1?.name ||
                               (match.config?.team1 as { name?: string } | undefined)?.name ||
-                              'Team 1'}
+                              t('matchDetailsModal.team1')}
                           </Typography>
                           {normalizedTeam1Players.length > 0 ? (
                             <Stack spacing={1}>
@@ -985,7 +994,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                             </Stack>
                           ) : (
                             <Typography variant="body2" color="text.secondary">
-                              No player data available
+                              {t('matchDetailsModal.noPlayerData')}
                             </Typography>
                           )}
                         </CardContent>
@@ -999,7 +1008,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                           <Typography variant="subtitle2" fontWeight={600} mb={2} color="primary">
                             {match.team2?.name ||
                               (match.config?.team2 as { name?: string } | undefined)?.name ||
-                              'Team 2'}
+                              t('matchDetailsModal.team2')}
                           </Typography>
                           {normalizedTeam2Players.length > 0 ? (
                             <Stack spacing={1}>
@@ -1070,7 +1079,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                             </Stack>
                           ) : (
                             <Typography variant="body2" color="text.secondary">
-                              No player data available
+                              {t('matchDetailsModal.noPlayerData')}
                             </Typography>
                           )}
                         </CardContent>
@@ -1089,7 +1098,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                   <Box display="flex" alignItems="center" gap={1} mb={2}>
                     <MapIcon color="primary" />
                     <Typography variant="subtitle1" fontWeight={600}>
-                      Current Map
+                      {t('matchDetailsModal.currentMap')}
                     </Typography>
                   </Box>
                   <Card
@@ -1144,7 +1153,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                 <Box display="flex" alignItems="center" gap={1}>
                   <MapIcon color="primary" />
                   <Typography variant="subtitle1" fontWeight={600}>
-                    Maps
+                    {t('matchDetailsModal.maps')}
                   </Typography>
                 </Box>
               </AccordionSummary>
@@ -1173,7 +1182,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                   </Box>
                 ) : (
                   <Typography variant="body2" color="text.secondary" fontStyle="italic">
-                    To be determined via veto
+                    {t('matchDetailsModal.mapsViaVeto')}
                   </Typography>
                 )}
               </AccordionDetails>
@@ -1185,7 +1194,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                 <Box display="flex" alignItems="center" gap={1}>
                   <CalendarTodayIcon color="primary" />
                   <Typography variant="subtitle1" fontWeight={600}>
-                    Match Information
+                    {t('matchDetailsModal.matchInformation')}
                   </Typography>
                 </Box>
               </AccordionSummary>
@@ -1193,17 +1202,17 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                 <Stack spacing={1}>
                   {match.createdAt && (
                     <Typography variant="body2" color="text.secondary">
-                      <strong>Created:</strong> {formatDate(match.createdAt)}
+                      <strong>{t('matchDetailsModal.created')}</strong> {formatDate(match.createdAt)}
                     </Typography>
                   )}
                   {match.loadedAt && (
                     <Typography variant="body2" color="text.secondary">
-                      <strong>Started:</strong> {formatDate(match.loadedAt)}
+                      <strong>{t('matchDetailsModal.started')}</strong> {formatDate(match.loadedAt)}
                     </Typography>
                   )}
                   {match.completedAt && (
                     <Typography variant="body2" color="text.secondary">
-                      <strong>Completed:</strong> {formatDate(match.completedAt)}
+                      <strong>{t('matchDetailsModal.completed')}</strong> {formatDate(match.completedAt)}
                     </Typography>
                   )}
                 </Stack>
@@ -1214,7 +1223,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
               <Accordion sx={{ mt: 2 }}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                   <Typography variant="subtitle1" fontWeight={600}>
-                    Admin Controls
+                    {t('matchDetailsModal.adminControls')}
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
@@ -1234,8 +1243,8 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                   <AddBackupPlayer
                     matchSlug={match.slug}
                     serverId={match.serverId}
-                    team1Name={match.team1?.name || 'Team 1'}
-                    team2Name={match.team2?.name || 'Team 2'}
+                    team1Name={match.team1?.name || t('matchDetailsModal.team1')}
+                    team2Name={match.team2?.name || t('matchDetailsModal.team2')}
                     existingTeam1Players={match.config?.team1?.players || []}
                     existingTeam2Players={match.config?.team2?.players || []}
                     onSuccess={(message) => {
@@ -1254,7 +1263,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Box display="flex" justifyContent="space-between" width="100%" alignItems="center">
             <Typography variant="caption" color="text.secondary">
-              Match slug: <strong>{match.slug}</strong>
+              {t('matchDetailsModal.slug')} <strong>{match.slug}</strong>
             </Typography>
             <Box display="flex" gap={1}>
               <Button
@@ -1263,7 +1272,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                 startIcon={<CodeIcon />}
                 onClick={handleOpenConfigModal}
               >
-                View Match Config JSON
+                {t('matchDetailsModal.config.view')}
               </Button>
               {isManualMatch && (
                 <Button
@@ -1272,7 +1281,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                   color="error"
                   onClick={() => setConfirmDeleteOpen(true)}
                 >
-                  Delete Match
+                  {t('matchDetailsModal.delete.button')}
                 </Button>
               )}
             </Box>
@@ -1339,7 +1348,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
         <DialogTitle>
           <Box display="flex" justifyContent="space-between" alignItems="center">
             <Typography variant="h6" fontWeight={600}>
-              Match Config JSON
+              {t('matchDetailsModal.config.title')}
             </Typography>
             <IconButton onClick={() => setConfigModalOpen(false)} edge="end">
               <CloseIcon />
@@ -1349,7 +1358,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
         <DialogContent dividers>
           {configLoading ? (
             <Typography variant="body2" color="text.secondary">
-              Loading match config...
+              {t('matchDetailsModal.config.loading')}
             </Typography>
           ) : configJson ? (
             <Box
@@ -1369,7 +1378,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
             </Box>
           ) : (
             <Typography variant="body2" color="text.secondary">
-              No config available for this match.
+              {t('matchDetailsModal.config.empty')}
             </Typography>
           )}
         </DialogContent>
