@@ -145,7 +145,7 @@ router.post('/marker', requireAuth, (req: Request, res: Response): void => {
  *       500:
  *         description: Failed to reset database
  */
-router.post('/reset-database', requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.post('/reset-database', requireAuth, async (_req: Request, res: Response): Promise<void> => {
   if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
     res.status(403).json({
       success: false,
@@ -1699,9 +1699,44 @@ router.get('/fake-pack-index/icons/:file', (req: Request, res: Response): void =
  *   incompatible  a valid module built for server API ^0.3.0
  *   throws        a server entry that throws while it is imported
  *   mismatched-id module.json names its id '../<id>'
+ *   migrates      a valid module whose one migration creates `<id>_probe`
+ *   bad-migration a valid module whose migration reaches into core's `matches`
  */
-const MODULE_FIXTURE_KINDS = ['valid', 'incompatible', 'throws', 'mismatched-id'] as const;
+const MODULE_FIXTURE_KINDS = [
+  'valid',
+  'incompatible',
+  'throws',
+  'mismatched-id',
+  'migrates',
+  'bad-migration',
+] as const;
 type ModuleFixtureKind = (typeof MODULE_FIXTURE_KINDS)[number];
+
+/** The table prefix a module owns: its id with hyphens as underscores. */
+function fixtureTablePrefix(id: string): string {
+  return id.replace(/-/g, '_');
+}
+
+/** The `migrations` line of a fixture's source, for the kinds that have one. */
+function migrationsFor(id: string, kind: ModuleFixtureKind): string {
+  const table = `${fixtureTablePrefix(id)}_probe`;
+  if (kind === 'migrates') {
+    return `
+  migrations: [
+    { id: '001-probe', up: 'CREATE TABLE ${table} (id SERIAL PRIMARY KEY, note TEXT);' },
+  ],`;
+  }
+  if (kind === 'bad-migration') {
+    // Its own table first, then a reach into core's: the namespace check has
+    // to refuse the whole list before anything runs, so neither may exist.
+    return `
+  migrations: [
+    { id: '001-probe', up: 'CREATE TABLE ${table} (id SERIAL PRIMARY KEY);' },
+    { id: '002-reach', up: 'ALTER TABLE matches ADD COLUMN ${fixtureTablePrefix(id)}_x TEXT;' },
+  ],`;
+  }
+  return '';
+}
 
 function moduleFixtureFiles(id: string, kind: ModuleFixtureKind): Record<string, string> {
   const manifest = {
@@ -1718,7 +1753,7 @@ function moduleFixtureFiles(id: string, kind: ModuleFixtureKind): Record<string,
   displayName: ${JSON.stringify(`Fixture ${id}`)},
   capabilities: { servers: false, veto: false, liveEvents: false, demos: false, playerStats: false },
   // Kept out of the game catalogue, so loading it changes nothing else.
-  catalog: null,
+  catalog: null,${migrationsFor(id, kind)}
   statsSchema: () => ({ metrics: [] }),
   async buildMatchConfig() {
     return {};
@@ -1775,6 +1810,35 @@ router.post('/modules/fixture', requireAuth, async (req: Request, res: Response)
     res.json({ success: true, modules: await listModules() });
   } catch (err) {
     log.error('Error in POST /api/test/modules/fixture', err);
+    res.status(500).json({ success: false, error: (err as Error).message });
+  }
+});
+
+/**
+ * Test-only: what a fixture module's migrations did, and whether its probe
+ * table exists — the proof a loaded code module got its schema and a refused
+ * one got none of it.
+ */
+router.get('/modules/:id/migrations', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (!fakeIgdbEnabled(res)) return;
+  const { id } = req.params;
+  if (!isValidModuleId(id) || !id.startsWith('fixture-')) {
+    res.status(400).json({ success: false, error: "id must be a valid module id starting with 'fixture-'" });
+    return;
+  }
+  try {
+    const table = `${fixtureTablePrefix(id)}_probe`;
+    const row = await db.queryOneAsync<{ exists: string | null }>(
+      'SELECT to_regclass(?)::text AS exists',
+      [`public.${table}`]
+    );
+    res.json({
+      success: true,
+      state: getModuleMigrationState(id) ?? null,
+      probeTableExists: Boolean(row?.exists),
+    });
+  } catch (err) {
+    log.error('Error in GET /api/test/modules/:id/migrations', err);
     res.status(500).json({ success: false, error: (err as Error).message });
   }
 });
