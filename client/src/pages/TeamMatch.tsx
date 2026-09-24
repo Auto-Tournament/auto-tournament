@@ -23,6 +23,7 @@ import { TournamentRulesAccordion } from '../components/tournament/TournamentRul
 import { useAuth } from '../contexts/AuthContext';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { useTranslation } from 'react-i18next';
+import { useRoundLabel } from '../hooks/useRoundLabel';
 import { getTeamProfileUrl } from '../utils/teamLinks';
 import { useIntegrationFor } from '../integrations/registry';
 import {
@@ -86,14 +87,7 @@ export default function TeamMatch() {
     }
   }, [team, t]);
 
-  const getRoundLabel = (round: number) => {
-    if (round === 1) return t('rounds.round1');
-    if (round === 2) return t('rounds.round2');
-    if (round === 3) return t('rounds.quarterfinals');
-    if (round === 4) return t('rounds.semifinals');
-    if (round === 5) return t('rounds.finals');
-    return t('rounds.roundN', { n: round });
-  };
+  const getRoundLabel = useRoundLabel();
 
   const rulesFormat = matchFormat;
   const rulesMaxRounds = match?.config?.maxRounds ?? tournament?.maxRounds;

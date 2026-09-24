@@ -300,6 +300,14 @@ export const getStatusColor = (
 };
 
 /**
+ * Rounds in a single-elimination bracket of `teamCount` teams (8 → 3), the
+ * count `getRoundLabel` needs to name the last rounds. Undefined for other
+ * formats: their rounds have no stage names.
+ */
+export const eliminationRoundCount = (teamCount: number, type?: string): number | undefined =>
+  type === 'single_elimination' && teamCount >= 2 ? Math.ceil(Math.log2(teamCount)) : undefined;
+
+/**
  * Get a human-readable label for a tournament round
  * @param round The round number
  * @param totalRounds Optional total rounds for specific labels (Finals, Semi-Finals, etc.)
