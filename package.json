@@ -50,6 +50,7 @@
         "db:reset": "yarn db:remove && yarn db",
         "test": "bash scripts/test-e2e-sharded.sh",
         "test:upgrade": "tsx scripts/test-upgrade.ts",
+        "module:release": "tsx scripts/module-release.ts",
         "test:single": "bash scripts/test-e2e-all.sh",
         "test:sharded": "bash scripts/test-e2e-sharded.sh 10",
         "test:sharded:3": "bash scripts/test-e2e-sharded.sh 3",
