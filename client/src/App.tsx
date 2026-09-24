@@ -37,8 +37,9 @@ import { theme } from './theme';
 import { GamesOnboardingRedirect } from './components/games/GamesOnboardingRedirect';
 import WelcomeGames from './pages/WelcomeGames';
 import { ImpersonationBanner } from './components/common/ImpersonationBanner';
-import { listIntegrations } from './integrations/registry';
-import { ModuleBootGate } from './module-loader/ModuleBootGate';
+import { listRouteIntegrations } from './integrations/registry';
+import { useModuleState } from './module-loader/useModuleState';
+import { ModulePendingRoute } from './components/common/ModuleNotInstalledNotice';
 import { MatchDetailsHost } from './components/modals/MatchDetailsHost';
 import { adminRoute, paths, playerProfilePath } from './paths';
 
@@ -228,6 +229,8 @@ function RequireSignedIn({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   const { isAuthenticated, isLoading, playerSteamId } = useAuth();
   const isDevelopment = useIsDevelopment();
+  // Re-render when a code module arrives, so its routes are mounted.
+  useModuleState();
 
   if (isLoading) {
     return null; // Loading state is handled by ProtectedRoute
@@ -239,7 +242,7 @@ function AppRoutes() {
   // *links* to these pages follow the game (see `useShellIntegrations`), but
   // the pages themselves stay mounted, so a bookmark, a link in a Discord
   // message or a half-finished setup opens the page instead of a 404.
-  const integrationRoutes = listIntegrations().flatMap((integration) => integration.routes);
+  const integrationRoutes = listRouteIntegrations().flatMap((integration) => integration.routes);
 
   return (
     <Routes>
@@ -394,9 +397,11 @@ function AppRoutes() {
         <Route path={adminRoute(paths.eloTemplates)} element={<ELOTemplates />} />
         {isDevelopment && <Route path={adminRoute(paths.dev)} element={<Development />} />}
         {/* Nested catch-all so removed/unknown child routes (e.g. /public) show a proper 404 within the app shell */}
-        <Route path="*" element={<NotFound />} />
+        {/* A path no route matches may be a code module's that has not
+            arrived yet: pending until the modules settle, then a 404. */}
+        <Route path="*" element={<ModulePendingRoute fallback={<NotFound />} />} />
       </Route>
-      <Route path="*" element={<NotFound />} />
+      <Route path="*" element={<ModulePendingRoute fallback={<NotFound />} />} />
     </Routes>
   );
 }
@@ -416,15 +421,14 @@ export default function App() {
                   account, from whatever page the player lands on. The API
                   decides whether it is due. */}
               <GamesOnboardingRedirect />
-              {/* Code modules load before the routes render, since the
-                  routes and every slot read the registry synchronously. */}
-              <ModuleBootGate>
-                <AppRoutes />
-                {/* The one match details dialog a game module opens with
-                    the SDK's openMatchDetails(slug). Core pages keep their
-                    own. */}
-                <MatchDetailsHost />
-              </ModuleBootGate>
+              {/* Renders at once. Code modules load alongside (main.tsx
+                  starts them); a module's routes and slots show a pending
+                  state until it arrives, and re-render when it does. */}
+              <AppRoutes />
+              {/* The one match details dialog a game module opens with the
+                  SDK's openMatchDetails(slug). Core's, so it needs no module
+                  to have arrived. Core pages keep their own. */}
+              <MatchDetailsHost />
             </PageHeaderProvider>
           </SnackbarProvider>
         </AuthProvider>

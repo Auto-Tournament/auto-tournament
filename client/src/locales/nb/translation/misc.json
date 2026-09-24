@@ -268,6 +268,8 @@
       "staleWith": "Viser den siste listen instansen så — {{reason}}.",
       "failed": "Kunne ikke lese listen"
     },
+    "pending": "Laster spillmodulen for {{game}} …",
+    "pendingRoute": "Laster modulen for denne siden …",
     "notInstalled": {
       "title": "Spillmodulen for {{game}} er ikke installert",
       "body": "De spillspesifikke delene av turneringen er skjult, og kampene kan ikke kjøres før modulen er installert igjen."

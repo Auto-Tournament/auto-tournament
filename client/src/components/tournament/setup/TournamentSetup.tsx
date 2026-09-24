@@ -38,6 +38,7 @@ import { FormatCards } from './FormatCards';
 import { SegmentedControl } from './SegmentedControl';
 import { TeamCountStepper } from './TeamCountStepper';
 import { getIntegration } from '../../../integrations/registry';
+import { useModuleState } from '../../../module-loader/useModuleState';
 import type { MatchRulesValue } from '../../../integrations/types';
 import { EloTemplateSelect } from './EloTemplateSelect';
 import { ReviewStep, type ReviewTournament } from './ReviewStep';
@@ -140,6 +141,8 @@ interface TournamentSetupProps {
  */
 export function TournamentSetup(props: TournamentSetupProps) {
   const { t } = useTranslation();
+  // The steps come from the game's module: re-render when a code module arrives.
+  useModuleState();
   const { tournament, form, handlers, canEdit, saving } = props;
   const isShuffle = form.type === 'shuffle';
   const locked = !canEdit || saving;

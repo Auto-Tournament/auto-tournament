@@ -28,7 +28,7 @@
 
 import { useEffect, useState } from 'react';
 import { api } from '../utils/api';
-import { getIntegration } from '../integrations/registry';
+import { useIntegration } from '../integrations/registry';
 import {
   DEFAULT_GAME,
   type ClientGameIntegration,
@@ -67,6 +67,6 @@ export function useGameCapabilities(): {
     };
   }, []);
 
-  const integration = getIntegration(game);
+  const integration = useIntegration(game);
   return { capabilities: integration.capabilities, integration, tournamentId, loading };
 }

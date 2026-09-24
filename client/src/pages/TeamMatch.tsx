@@ -24,8 +24,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { useTranslation } from 'react-i18next';
 import { getTeamProfileUrl } from '../utils/teamLinks';
-import { integrationFor } from '../integrations/registry';
-import { ModuleNotInstalledNotice } from '../components/common/ModuleNotInstalledNotice';
+import { useIntegrationFor } from '../integrations/registry';
+import {
+  ModuleNotInstalledNotice,
+  ModulePendingNotice,
+} from '../components/common/ModuleNotInstalledNotice';
 
 export default function TeamMatch() {
   const { teamId } = useParams<{ teamId: string }>();
@@ -50,7 +53,7 @@ export default function TeamMatch() {
   // Game-specific parts of this page (3.0 phase D, PR D7). Resolved from the
   // match, falling back to the tournament so a team with no match right now
   // still gets them. CS2 fills neither slot, so nothing is rendered for it.
-  const integration = integrationFor(match ?? tournament);
+  const integration = useIntegrationFor(match ?? tournament);
   const ReportPanel = integration.matchPanels.reportView;
   const TeamAdminPanel = integration.teamAdminPanel;
 
@@ -222,6 +225,9 @@ export default function TeamMatch() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Its slots are empty while its module may still be loading: say so. */}
+            <ModulePendingNotice integration={integration} />
 
             {reportSlug && ReportPanel && (
               <ReportPanel matchSlug={reportSlug} matchStatus={match?.status} />

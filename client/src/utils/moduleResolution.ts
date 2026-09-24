@@ -43,6 +43,18 @@ export function missingModuleIntegration(game: GameId): ClientGameIntegration {
 }
 
 /**
+ * The placeholder for `game` while a code module that may run it is still
+ * loading: the same empty slots as the missing-module one, with
+ * `modulePending` in place of `notInstalled`. Only `getIntegrationWhileLoading`
+ * answers it, and only until the modules settle.
+ */
+export function pendingModuleIntegration(game: GameId): ClientGameIntegration {
+  const placeholder = missingModuleIntegration(game);
+  delete placeholder.notInstalled;
+  return { ...placeholder, modulePending: game };
+}
+
+/**
  * The installed module behind a `game` ref, or null when none claims or runs
  * it: the module's own id, then the catalogue ids it claims, then a module
  * that runs any catalogue game. Order is registration order.
@@ -88,4 +100,38 @@ export function resolveIntegration(
     );
   }
   return resolveGameRef(wanted, installed) ?? missingModuleIntegration(wanted);
+}
+
+/**
+ * `resolveIntegration`, while code modules may still arrive this page load
+ * (`mayArrive`): the "module pending" placeholder when the module that runs
+ * `game` may be one that has not arrived yet, else what `resolveIntegration`
+ * answers.
+ *
+ * - Nothing installed runs `game` (it would be the missing-module
+ *   placeholder): pending.
+ * - Only a catch-all module runs it (manual reporting), and the manifest has
+ *   listed a code module (`manifest === 'listed'`), which may claim it
+ *   outright: pending. While the manifest has not answered, the catch-all as
+ *   before, so an instance with no code module never holds its slots back.
+ * - A module that owns it (CS2, or one claiming it): never pending.
+ */
+export function resolveIntegrationWhileLoading(
+  game: GameId | null | undefined,
+  installed: readonly ClientGameIntegration[],
+  mayArrive: boolean,
+  manifest: 'unknown' | 'empty' | 'listed'
+): ClientGameIntegration {
+  const resolved = resolveIntegration(game, installed);
+  if (!mayArrive) return resolved;
+  const wanted = (game || DEFAULT_GAME).trim().toLowerCase();
+  if (resolved.id === MISSING_MODULE_ID) return pendingModuleIntegration(wanted);
+  if (manifest === 'listed' && resolved.runsAnyCatalogGame && resolved.id !== wanted) {
+    const owner = resolveIntegration(
+      wanted,
+      installed.filter((integration) => !integration.runsAnyCatalogGame)
+    );
+    if (owner.id === MISSING_MODULE_ID) return pendingModuleIntegration(wanted);
+  }
+  return resolved;
 }

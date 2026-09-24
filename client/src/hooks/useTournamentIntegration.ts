@@ -23,7 +23,7 @@
  */
 
 import { useTournamentStatus } from './useTournamentStatus';
-import { integrationFor } from '../integrations/registry';
+import { useIntegrationFor } from '../integrations/registry';
 import type { ClientGameIntegration } from '../integrations/types';
 
 export function useTournamentIntegration(): {
@@ -32,5 +32,6 @@ export function useTournamentIntegration(): {
   loading: boolean;
 } {
   const { tournament, loading } = useTournamentStatus();
-  return { integration: tournament ? integrationFor(tournament) : null, loading };
+  const integration = useIntegrationFor(tournament);
+  return { integration: tournament ? integration : null, loading };
 }

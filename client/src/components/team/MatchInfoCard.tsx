@@ -14,7 +14,7 @@ import { calculateOvertimeNumber } from '../../utils/matchUtils';
 import { MatchScoreboard } from './MatchScoreboard';
 import { MatchPlayerPerformance } from './MatchPlayerPerformance';
 import { MatchMapChips } from './MatchMapChips';
-import { integrationFor } from '../../integrations/registry';
+import { useIntegrationFor } from '../../integrations/registry';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -76,7 +76,7 @@ export function MatchInfoCard({
   const { t } = useTranslation();
 
   // Game-specific parts of the card (CS2: veto, server panel, veto history).
-  const integration = integrationFor(match);
+  const integration = useIntegrationFor(match);
   const PreMatchView = integration.preMatchView;
   const PreMatchHistory = integration.preMatchHistory;
   const ConnectPanel = integration.matchPanels.teamView;

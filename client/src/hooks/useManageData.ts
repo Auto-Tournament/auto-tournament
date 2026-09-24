@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { api } from '../utils/api';
-import { integrationFor } from '../integrations/registry';
+import { useIntegrationFor } from '../integrations/registry';
 import { useResourceAvailability } from './useResourceAvailability';
 import type { Match } from '../types/match.types';
 import type { Tournament } from '../types/tournament.types';
@@ -30,6 +30,7 @@ export function useManageData(): ManageData {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tournament, setTournament] = useState<Tournament | null>(null);
+  const tournamentIntegration = useIntegrationFor(tournament);
   const [matches, setMatches] = useState<Match[]>([]);
 
   const fetchMatches = useCallback(async () => {
@@ -59,7 +60,7 @@ export function useManageData(): ManageData {
   // anything, and where to ask. Null until the tournament is known, so a
   // manually reported one never asks at all.
   const { availability: serverAvailability, refresh: refreshAvailability } =
-    useResourceAvailability(tournament ? integrationFor(tournament) : null, 5000);
+    useResourceAvailability(tournament ? tournamentIntegration : null, 5000);
 
   const refresh = useCallback(() => {
     void fetchMatches();

@@ -31,8 +31,10 @@ export async function loadAndRegister(modules: readonly LoadableModule[]): Promi
     }
     try {
       registerCodeModule(adaptCodeModule(result.integration));
-      // Its strings, once it holds its id: boot is not over yet, so they are
-      // in place before its first slot renders.
+      // Its strings, once it holds its id, in the same synchronous step: the
+      // app renders before modules arrive, but nothing can render between
+      // these lines, and no slot re-renders into the module until
+      // `recordLoaded` below tells it the module is there.
       registerModuleLocales(i18n, result.id, result.integration.locales);
       recordLoaded(result.id);
     } catch (error) {

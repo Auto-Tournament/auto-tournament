@@ -125,7 +125,16 @@ function builtinIntegrations(): GameIntegration[] {
 // Enabled state
 // ---------------------------------------------------------------------------
 
+/**
+ * The stored switches, read from `app_settings` once and then kept in step by
+ * every write, which all go through this file (`setModuleEnabled`,
+ * `forgetModuleEnabled`). A scan reads them afresh. So the public manifest,
+ * which every visitor's browser asks for, costs no database query.
+ */
+let enabledCache: Map<string, boolean> | null = null;
+
 async function enabledFlags(): Promise<Map<string, boolean>> {
+  if (enabledCache) return enabledCache;
   const flags = new Map<string, boolean>();
   try {
     for (const row of await db.getAllAppSettingsAsync()) {
@@ -134,14 +143,33 @@ async function enabledFlags(): Promise<Map<string, boolean>> {
       }
     }
   } catch (error) {
-    // No database, no enabled modules: the safe reading.
+    // No database, no enabled modules: the safe reading. Not cached, so the
+    // next call tries again.
     log.warn(`[MODULES] Could not read which modules are enabled: ${messageOf(error)}`);
+    return flags;
   }
+  enabledCache = flags;
   return flags;
 }
 
 async function isModuleEnabled(id: string): Promise<boolean> {
   return (await enabledFlags()).get(id) === true;
+}
+
+/** Store a disk module's switch; `null` clears it. Keeps the cache in step. */
+async function storeEnabled(id: string, enabled: boolean | null): Promise<void> {
+  await db.setAppSettingAsync(
+    `${MODULE_ENABLED_KEY_PREFIX}${id}`,
+    enabled === null ? null : String(enabled)
+  );
+  if (!enabledCache) return;
+  if (enabled === null) enabledCache.delete(id);
+  else enabledCache.set(id, enabled);
+}
+
+/** Clear a module's stored switch, as if it had never been switched. For the test helpers. */
+export async function forgetModuleEnabled(id: string): Promise<void> {
+  await storeEnabled(id, null);
 }
 
 // ---------------------------------------------------------------------------
@@ -317,6 +345,8 @@ export function scanDiskModules(): Promise<GameIntegration[]> {
 }
 
 async function scanOnce(): Promise<GameIntegration[]> {
+  // What a restart would read: the switches as stored, not as last seen.
+  enabledCache = null;
   const root = modulesDir();
   let entries: fs.Dirent[];
   try {
@@ -423,6 +453,41 @@ export async function listModules(): Promise<ModuleListing[]> {
   return [...builtins, ...disk];
 }
 
+/** One row of the public manifest, `GET /api/modules/public`. */
+export interface PublicModuleListing {
+  id: string;
+  version: string;
+  clientApi: string;
+  client: { entry: string };
+}
+
+/**
+ * What any browser needs to load the code modules' client halves, and
+ * nothing else: modules that are enabled, loaded (`ok`) and have a client
+ * half, by id. No reasons, no disabled, broken or incompatible modules, no
+ * server API, no switch state. Built-in modules are compiled into the app and
+ * never listed. Their client files are public already, so this says nothing
+ * those files do not.
+ *
+ * Read from memory: the last scan and the cached switches.
+ */
+export async function listPublicModules(): Promise<PublicModuleListing[]> {
+  const flags = await enabledFlags();
+  const listed: PublicModuleListing[] = [];
+  for (const record of [...diskModules.values()].sort((a, b) => a.folder.localeCompare(b.folder))) {
+    const { manifest } = record;
+    if (record.status !== 'ok' || !manifest?.client || !manifest.clientApi) continue;
+    if (flags.get(record.folder) !== true) continue;
+    listed.push({
+      id: manifest.id,
+      version: manifest.version,
+      clientApi: manifest.clientApi,
+      client: { entry: clientEntryUrl(manifest.id, manifest.client) },
+    });
+  }
+  return listed;
+}
+
 export type SetEnabledResult =
   | { ok: true; module: ModuleListing; restartRequired: boolean }
   | { ok: false; status: 400 | 404; error: string };
@@ -452,7 +517,7 @@ export async function setModuleEnabled(id: string, enabled: boolean): Promise<Se
     };
   }
 
-  await db.setAppSettingAsync(`${MODULE_ENABLED_KEY_PREFIX}${id}`, enabled ? 'true' : 'false');
+  await storeEnabled(id, enabled);
   return {
     ok: true,
     module: diskListing(record, enabled),

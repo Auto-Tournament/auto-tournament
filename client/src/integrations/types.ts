@@ -665,6 +665,15 @@ export interface ClientGameIntegration {
    */
   notInstalled?: GameId;
 
+  /**
+   * Set only on the registry's "module pending" placeholder
+   * (`getIntegrationWhileLoading`): the `game` value whose module may still
+   * be loading this page load. Slots are empty as for `notInstalled`; the
+   * surfaces that would say "not installed" show a loading state instead. A
+   * real module never sets it.
+   */
+  modulePending?: GameId;
+
   matchPanels: {
     /** Team / player match page: how to join the match. */
     teamView?: ComponentType<MatchConnectPanelProps>;
