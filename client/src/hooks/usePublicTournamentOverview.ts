@@ -7,6 +7,10 @@ export interface OverviewTeamStanding {
   teamId: string;
   name: string;
   tag?: string | null;
+  matchWins?: number;
+  matchLosses?: number;
+  /** Swiss and round robin: the server standings' place. */
+  rank?: number;
 }
 
 interface TournamentOverviewResponse {
@@ -18,7 +22,7 @@ interface TournamentOverviewResponse {
   liveMatchCount: number;
 }
 
-interface ViewerTeam {
+export interface ViewerTeam {
   id: string;
   name: string;
   tag?: string;
@@ -28,6 +32,10 @@ export interface UsePublicTournamentOverviewResult {
   tournament: Tournament | null;
   totalRounds: number;
   liveMatchCount: number;
+  /** Team standings (not for shuffle, which ranks players), best first. */
+  teams: OverviewTeamStanding[];
+  /** Load again without the loading state (after a tournament update). */
+  reload: () => Promise<void>;
   /** The signed-in player's team, when they're on the roster of a team in this tournament. */
   viewerTeam: ViewerTeam | null;
   /** Whether the viewer is signed in with a Steam identity at all (linked or not). */
@@ -51,37 +59,48 @@ export function usePublicTournamentOverview(
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [totalRounds, setTotalRounds] = useState(0);
   const [liveMatchCount, setLiveMatchCount] = useState(0);
+  const [teams, setTeams] = useState<OverviewTeamStanding[]>([]);
   const [viewerTeam, setViewerTeam] = useState<ViewerTeam | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const load = useCallback(async () => {
-    if (!tournamentId) return;
-    setLoading(true);
-    setError('');
-
-    try {
-      const response = await api.get<TournamentOverviewResponse>(
-        `/api/tournament/${tournamentId}/leaderboard`
-      );
-      setTournament(response.tournament ?? null);
-      setTotalRounds(response.totalRounds ?? 0);
-      setLiveMatchCount(response.liveMatchCount ?? 0);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      const isNotFound = message.includes('404') || message.toLowerCase().includes('not found');
-      if (!isNotFound) {
-        setError(message);
+  const load = useCallback(
+    async (silent = false) => {
+      if (!tournamentId) return;
+      if (!silent) {
+        setLoading(true);
+        setError('');
       }
-      setTournament(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [tournamentId]);
+
+      try {
+        const response = await api.get<TournamentOverviewResponse>(
+          `/api/tournament/${tournamentId}/leaderboard`
+        );
+        setTournament(response.tournament ?? null);
+        setTotalRounds(response.totalRounds ?? 0);
+        setLiveMatchCount(response.liveMatchCount ?? 0);
+        setTeams(response.teams ?? []);
+      } catch (err: unknown) {
+        // A background reload that fails keeps what is on screen.
+        if (silent) return;
+        const message = err instanceof Error ? err.message : String(err);
+        const isNotFound = message.includes('404') || message.toLowerCase().includes('not found');
+        if (!isNotFound) {
+          setError(message);
+        }
+        setTournament(null);
+      } finally {
+        if (!silent) setLoading(false);
+      }
+    },
+    [tournamentId]
+  );
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  const reload = useCallback(() => load(true), [load]);
 
   // Resolve the viewer's own team, only when signed in with a Steam identity.
   useEffect(() => {
@@ -120,6 +139,8 @@ export function usePublicTournamentOverview(
     tournament,
     totalRounds,
     liveMatchCount,
+    teams,
+    reload,
     viewerTeam: viewerTeamInTournament,
     viewerHasSteamIdentity: !!playerSteamId,
     loading,

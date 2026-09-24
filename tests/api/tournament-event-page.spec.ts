@@ -20,6 +20,7 @@ import { createTestTeams } from '../helpers/teams';
 const EVENT_PAGE_SETTINGS = {
   description: 'The spring LAN main event: eight teams, double elimination.',
   location: 'On site, Trondheim',
+  organizer: 'Edition 35 LAN',
   rules: [
     'Be connected and ready 10 minutes after your match is called.',
     'Two tactical pauses per team per map, 60 seconds each.',
@@ -64,6 +65,7 @@ test.describe('Tournament event page settings API', () => {
 
       expect(data.tournament.settings.description).toBe(EVENT_PAGE_SETTINGS.description);
       expect(data.tournament.settings.location).toBe(EVENT_PAGE_SETTINGS.location);
+      expect(data.tournament.settings.organizer).toBe(EVENT_PAGE_SETTINGS.organizer);
       expect(data.tournament.settings.rules).toEqual(EVENT_PAGE_SETTINGS.rules);
       expect(data.tournament.settings.rulebookUrl).toBe(EVENT_PAGE_SETTINGS.rulebookUrl);
       expect(data.tournament.settings.prizes).toEqual(EVENT_PAGE_SETTINGS.prizes);
@@ -154,6 +156,31 @@ test.describe('Tournament event page settings API', () => {
       expect(response.status()).toBe(400);
       const data = await response.json();
       expect(data.error).toContain('description');
+    }
+  );
+
+  test(
+    'rejects an organizer over 80 characters',
+    { tag: ['@api', '@tournament'] },
+    async ({ request }) => {
+      const teams = await createTestTeams(request, 'evtpage-org');
+      expect(teams).toBeTruthy();
+      const [team1, team2] = teams!;
+
+      const response = await request.post('/api/tournament', {
+        headers: getAuthHeader(),
+        data: {
+          name: `Event Page Bad Organizer ${Date.now()}`,
+          type: 'single_elimination',
+          format: 'bo1',
+          maps: ['de_mirage', 'de_inferno'],
+          teamIds: [team1.id, team2.id],
+          settings: { organizer: 'x'.repeat(81) },
+        },
+      });
+      expect(response.status()).toBe(400);
+      const data = await response.json();
+      expect(data.error).toContain('organizer');
     }
   );
 

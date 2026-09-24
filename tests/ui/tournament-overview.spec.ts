@@ -87,4 +87,51 @@ test.describe.serial('Tournament Overview UI', () => {
       await expect(page.getByTestId('overview-facts')).toBeVisible();
     }
   );
+
+  test(
+    'has one H1, the organizer line and a tab for bracket, matches, teams and standings',
+    { tag: ['@ui', '@public', '@tournament'] },
+    async ({ page, request }) => {
+      const teams = await createTestTeams(request, 'overview-tabs');
+      expect(teams).toBeTruthy();
+      const [team1, team2] = teams!;
+
+      const name = `Overview Tabs ${Date.now()}`;
+      const tournament = await createTournament(request, {
+        name,
+        type: 'single_elimination',
+        format: 'bo1',
+        maps: ['de_mirage', 'de_inferno'],
+        teamIds: [team1.id, team2.id],
+        settings: { organizer: 'Edition 35 LAN', location: 'On site, Trondheim' },
+      });
+      expect(tournament).toBeTruthy();
+      const id = tournament!.id;
+
+      await page.goto(`/tournament/${id}`, { waitUntil: 'domcontentloaded' });
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText(name, { timeout: 15000 });
+      await expect(page.getByTestId('tournament-header')).toContainText('Edition 35 LAN');
+      await expect(page.getByTestId('tournament-game')).toBeVisible();
+      await expect(page.getByTestId('tournament-tab-overview')).toHaveAttribute('aria-current', 'page');
+
+      await page.getByTestId('tournament-tab-matches').click();
+      await expect(page).toHaveURL(new RegExp(`/tournament/${id}/matches$`));
+      await expect(page.getByTestId('public-matches')).toContainText(team1.name);
+
+      await page.getByTestId('tournament-tab-bracket').click();
+      await expect(page).toHaveURL(new RegExp(`/tournament/${id}/bracket$`));
+      await expect(page.getByTestId('public-bracket')).toBeVisible();
+
+      await page.getByTestId('tournament-tab-teams').click();
+      await expect(page.getByTestId(`public-team-${team2.id}`)).toBeVisible();
+
+      // Leaderboard was renamed Standings; the old address still lands there.
+      await page.goto(`/tournament/${id}/leaderboard`, { waitUntil: 'domcontentloaded' });
+      await expect(page).toHaveURL(new RegExp(`/tournament/${id}/standings$`));
+      await expect(page.getByTestId('tournament-tab-standings')).toHaveAttribute(
+        'aria-current',
+        'page'
+      );
+    }
+  );
 });

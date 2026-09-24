@@ -25,6 +25,10 @@ import FindPlayer from './pages/FindPlayer';
 import PlayerProfile from './pages/PlayerProfile';
 import TournamentLeaderboard from './pages/TournamentLeaderboard';
 import TournamentOverview from './pages/TournamentOverview';
+import TournamentPage, { LegacyLeaderboardRedirect } from './pages/TournamentPage';
+import TournamentBracketTab from './pages/TournamentBracketTab';
+import TournamentMatchesTab from './pages/TournamentMatchesTab';
+import TournamentTeamsTab from './pages/TournamentTeamsTab';
 import Home from './pages/Home';
 import Browse from './pages/Browse';
 import AccountConnections from './pages/AccountConnections';
@@ -307,22 +311,23 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      {/* The public tournament page: one header, a tab per nested route. */}
       <Route
         path={paths.tournamentOverview}
         element={
           <ProtectedRoute adminOnly={false}>
-            <TournamentOverview />
+            <TournamentPage />
           </ProtectedRoute>
         }
-      />
-      <Route
-        path={paths.tournamentLeaderboard}
-        element={
-          <ProtectedRoute adminOnly={false}>
-            <TournamentLeaderboard />
-          </ProtectedRoute>
-        }
-      />
+      >
+        <Route index element={<TournamentOverview />} />
+        <Route path="bracket" element={<TournamentBracketTab />} />
+        <Route path="matches" element={<TournamentMatchesTab />} />
+        <Route path="teams" element={<TournamentTeamsTab />} />
+        <Route path="standings" element={<TournamentLeaderboard />} />
+      </Route>
+      {/* Standings' old address, still in bookmarks and older links. */}
+      <Route path={paths.tournamentLeaderboard} element={<LegacyLeaderboardRedirect />} />
       <Route
         path={paths.findPlayer}
         element={

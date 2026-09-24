@@ -24,11 +24,12 @@ const MAX_PRIZES = 5;
 const MAX_SCHEDULE = 20;
 const MAX_DESCRIPTION = 4000;
 const MAX_LOCATION = 120;
+const MAX_ORGANIZER = 80;
 
 /** The event page fields, as stored in the tournament settings. */
 export type EventPageFields = Pick<
   TournamentSettings,
-  'description' | 'location' | 'rulebookUrl' | 'rules' | 'prizes' | 'schedule'
+  'description' | 'location' | 'organizer' | 'rulebookUrl' | 'rules' | 'prizes' | 'schedule'
 >;
 
 interface EventPageSettingsCardProps {
@@ -56,7 +57,7 @@ function move<T>(items: T[], index: number, delta: number): T[] {
 
 /**
  * Admin "Event page" section: the organizer-written content shown on the
- * public Overview tab (description, location, rules, rulebook link, prizes,
+ * public Overview tab (description, location, organizer, rules, rulebook link, prizes,
  * schedule). Saves via the existing tournament PUT, which merges these into
  * the tournament's stored settings.
  */
@@ -72,6 +73,7 @@ export function EventPageSettingsCard({
 
   const [description, setDescription] = useState(settings?.description ?? '');
   const [location, setLocation] = useState(settings?.location ?? '');
+  const [organizer, setOrganizer] = useState(settings?.organizer ?? '');
   const [rulebookUrl, setRulebookUrl] = useState(settings?.rulebookUrl ?? '');
   const [rules, setRules] = useState<string[]>(settings?.rules ?? []);
   const [prizes, setPrizes] = useState<EventPagePrize[]>(settings?.prizes ?? []);
@@ -87,8 +89,8 @@ export function EventPageSettingsCard({
       firstRender.current = false;
       return;
     }
-    draftChangeRef.current?.({ description, location, rulebookUrl, rules, prizes, schedule });
-  }, [description, location, rulebookUrl, rules, prizes, schedule]);
+    draftChangeRef.current?.({ description, location, organizer, rulebookUrl, rules, prizes, schedule });
+  }, [description, location, organizer, rulebookUrl, rules, prizes, schedule]);
 
   const handleSave = async () => {
     if (!onSave) return;
@@ -97,6 +99,7 @@ export function EventPageSettingsCard({
       await onSave({
         description,
         location,
+        organizer,
         rulebookUrl,
         rules,
         prizes,
@@ -132,6 +135,16 @@ export function EventPageSettingsCard({
         onChange={(e) => setLocation(e.target.value.slice(0, MAX_LOCATION))}
         fullWidth
         helperText={`${location.length}/${MAX_LOCATION}`}
+      />
+
+      <TextField
+        label={t('tournament.eventPage.organizerLabel')}
+        placeholder={t('tournament.eventPage.organizerPlaceholder')}
+        value={organizer}
+        onChange={(e) => setOrganizer(e.target.value.slice(0, MAX_ORGANIZER))}
+        fullWidth
+        helperText={`${organizer.length}/${MAX_ORGANIZER}`}
+        inputProps={{ 'data-testid': 'event-page-organizer' }}
       />
 
       <TextField

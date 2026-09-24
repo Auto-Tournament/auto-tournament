@@ -31,6 +31,7 @@ export const CORE_SETTINGS_KEYS: ReadonlySet<string> = new Set([
   'overtimeSegments',
   'description',
   'location',
+  'organizer',
   'rules',
   'rulebookUrl',
   'prizes',

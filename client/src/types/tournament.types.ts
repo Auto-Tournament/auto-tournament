@@ -56,6 +56,8 @@ export interface TournamentSettings {
   // optional; a page section hides when its data is empty.
   description?: string;
   location?: string;
+  /** Who runs it, shown in the page header. */
+  organizer?: string;
   rules?: string[];
   rulebookUrl?: string;
   prizes?: EventPagePrize[];

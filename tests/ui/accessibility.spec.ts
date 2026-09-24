@@ -25,7 +25,11 @@ const PAGES = [
   '/teams',
   '/players',
   '/settings',
-  '/tournament/1/leaderboard',
+  '/tournament/1',
+  '/tournament/1/bracket',
+  '/tournament/1/matches',
+  '/tournament/1/teams',
+  '/tournament/1/standings',
   '/player',
 ];
 

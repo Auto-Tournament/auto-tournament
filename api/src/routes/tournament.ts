@@ -24,6 +24,7 @@ import { resolveTournamentId } from '../utils/tournamentRow';
 import { integrationForMatch } from '../integrations/registry';
 import { resolveGameRef } from '../services/gameCatalogService';
 import { teamMembers } from '../services/teamMembers';
+import { toPublicBracket } from '../utils/publicBracket';
 import type {
   GameId,
   TournamentSettingsInput,
@@ -162,6 +163,102 @@ router.get('/game', async (req: Request, res: Response) => {
   } catch (error) {
     log.error('Error fetching the tournament game', error);
     return res.status(500).json({ success: false, error: 'Failed to fetch the tournament game' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/tournament/{id}/bracket:
+ *   get:
+ *     tags:
+ *       - Tournament
+ *     summary: Get the tournament's bracket and matches (public)
+ *     description: |
+ *       No session. What the public tournament page's Bracket and Matches tabs
+ *       draw: every match with its round, status, teams, winner and score, the
+ *       round count, and the Swiss or round robin standings.
+ *
+ *       A read-only, allow-listed copy of the admin `GET /api/tournament/bracket`.
+ *       Each match carries only `id`, `slug`, `round`, `matchNumber`, `status`,
+ *       `nextMatchId`, the timestamps, `team1` / `team2` / `winner` (id, name,
+ *       tag), the score fields and `mapResults`. Never the game server
+ *       (`serverId`), the game module's match `config` (Steam IDs, in-game
+ *       admins, cvars) or per-player stats. The tournament object is the one
+ *       `GET /api/tournament/{id}/leaderboard` already returns.
+ *
+ *       Unlike the admin route it does not run the completion check; it only
+ *       reads.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Tournament ID (this instance's one tournament)
+ *     responses:
+ *       200:
+ *         description: The bracket
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 tournament: { type: object }
+ *                 totalRounds: { type: integer }
+ *                 matches:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id: { type: integer }
+ *                       slug: { type: string, example: 'r1m1' }
+ *                       round: { type: integer }
+ *                       matchNumber: { type: integer }
+ *                       status:
+ *                         type: string
+ *                         enum: [pending, ready, loaded, live, completed]
+ *                       nextMatchId: { type: integer, nullable: true }
+ *                       team1:
+ *                         type: object
+ *                         nullable: true
+ *                         properties:
+ *                           id: { type: string }
+ *                           name: { type: string }
+ *                           tag: { type: string }
+ *                       team2: { type: object, nullable: true }
+ *                       winner: { type: object, nullable: true }
+ *                       team1Score: { type: integer }
+ *                       team2Score: { type: integer }
+ *                       mapResults: { type: array, items: { type: object } }
+ *                 swissStandings: { type: array, items: { type: object } }
+ *                 roundRobinStandings: { type: array, items: { type: object } }
+ *       400:
+ *         description: Not this instance's tournament
+ *       404:
+ *         description: No tournament exists
+ *       500:
+ *         description: Server error
+ */
+router.get('/:id/bracket', async (req: Request, res: Response) => {
+  try {
+    const tournamentId = resolveTournamentId(req);
+    if (req.params.id !== String(tournamentId)) {
+      return res.status(400).json({
+        success: false,
+        error: `Only tournament ID ${tournamentId} is supported`,
+      });
+    }
+
+    const bracket = await tournamentService.getBracket(tournamentId);
+    if (!bracket) {
+      return res.status(404).json({ success: false, error: 'No tournament bracket exists' });
+    }
+
+    return res.json({ success: true, ...toPublicBracket(bracket) });
+  } catch (error) {
+    log.error('Error fetching the public bracket', error);
+    return res.status(500).json({ success: false, error: 'Failed to fetch bracket' });
   }
 });
 
@@ -393,6 +490,15 @@ function validateEventPageSettings(settings: unknown): { valid: true } | { valid
     }
     if (s.location.length > 120) {
       return { valid: false, error: 'settings.location must be at most 120 characters' };
+    }
+  }
+
+  if (s.organizer !== undefined && s.organizer !== null) {
+    if (typeof s.organizer !== 'string') {
+      return { valid: false, error: 'settings.organizer must be a string' };
+    }
+    if (s.organizer.length > 80) {
+      return { valid: false, error: 'settings.organizer must be at most 80 characters' };
     }
   }
 
