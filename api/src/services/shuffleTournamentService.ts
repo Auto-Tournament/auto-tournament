@@ -14,27 +14,35 @@ import { generateUniqueTeamName } from '../generation/teamName';
 import type { TournamentResponse } from '../types/tournament.types';
 import type { DbMatchRow, DbTeamRow, DbTournamentRow } from '../types/database.types';
 import { tournamentRowToResponse } from '../utils/tournamentRow';
+import { withModuleSettings } from '../utils/moduleTournamentSettings';
+import { DEFAULT_GAME } from '../integrations/types';
 import { getSwissStandingEntries } from './swissProgressionService';
 import { getRoundRobinStandingEntries } from './roundRobinStandingsService';
 import type { Player } from '../types/team.types';
 
+/**
+ * POST /api/tournament/shuffle. The map sequence and round rules belong to
+ * the game module: a request sends them as the module's object in `settings`
+ * (CS2: `settings.cs2`), or at the top level as 2.x clients do. The core
+ * passes both to the module and never reads them.
+ */
 export interface ShuffleTournamentConfig {
   name: string;
-  mapSequence: string[]; // Maps in order (number of maps = number of rounds)
+  /** 2.x: maps in order (number of maps = number of rounds). */
+  mapSequence?: string[];
   teamSize: number; // Number of players per team, default: 5
+  /** 2.x: mp_maxrounds (the module defaults it to 24). */
+  maxRounds?: number;
+  /** 2.x: 'enabled' | 'disabled'. */
+  overtimeMode?: 'enabled' | 'disabled';
   /**
-   * Shuffle tournaments always use an explicit max-rounds limit.
-   * This directly maps to Auto Tournament CS2's mp_maxrounds.
-   */
-  maxRounds: number; // Required, default: 24 (validated below)
-  overtimeMode: 'enabled' | 'disabled';
-  /**
-   * Optional: max number of overtime segments (maps) allowed before match ends in a draw.
-   * Mapped to Auto Tournament CS2's overtime limit cvar. If undefined or 0, Auto Tournament CS2 default (unlimited)
-   * behavior is used.
+   * 2.x: max number of overtime segments before the match ends in a draw;
+   * undefined or 0 is the plugin's default (unlimited).
    */
   overtimeSegments?: number;
   eloTemplateId?: string; // ELO calculation template ID (optional, defaults to "Pure Win/Loss")
+  /** The game module's object, under its key (CS2: `cs2`). */
+  settings?: Record<string, unknown>;
 }
 
 export interface PlayerLeaderboardEntry {
@@ -93,6 +101,37 @@ export async function createShuffleTournament(
   await db.execAsync("DELETE FROM teams WHERE id LIKE 'shuffle-r%'");
   await db.runAsync('DELETE FROM tournament WHERE id = ?', [tournamentId]);
 
+  // The map sequence and round rules are the game module's (CS2:
+  // settings.cs2), built by it from the request: its object in `settings`,
+  // then the 2.x top-level fields. A 2.x sequence is also the map pool, and a
+  // shuffle tournament has never stored 0 overtime segments: 0 is the default.
+  const legacy: Record<string, unknown> = {};
+  if (config.mapSequence !== undefined) {
+    legacy.maps = config.mapSequence;
+    legacy.mapSequence = config.mapSequence;
+  }
+  if (config.maxRounds) legacy.maxRounds = config.maxRounds;
+  if (config.overtimeMode) legacy.overtimeMode = config.overtimeMode;
+  if (config.overtimeSegments !== undefined) {
+    legacy.overtimeSegments =
+      typeof config.overtimeSegments === 'number' && config.overtimeSegments > 0
+        ? config.overtimeSegments
+        : null;
+  }
+  const settings = withModuleSettings(
+    DEFAULT_GAME,
+    {
+      matchFormat: 'bo1',
+      thirdPlaceMatch: false,
+      autoAdvance: true,
+      checkInRequired: false,
+      seedingMethod: 'random',
+    },
+    { ...legacy, settings: config.settings },
+    undefined,
+    'tournament'
+  );
+
   // Create tournament
   await db.insertAsync('tournament', {
     id: tournamentId,
@@ -100,38 +139,24 @@ export async function createShuffleTournament(
     type: 'shuffle',
     format: 'bo1', // Shuffle tournaments are always BO1
     status: 'setup',
-    maps: JSON.stringify(config.mapSequence),
     team_ids: JSON.stringify([]), // No fixed teams for shuffle tournaments
-    settings: JSON.stringify({
-      matchFormat: 'bo1',
-      thirdPlaceMatch: false,
-      autoAdvance: true,
-      checkInRequired: false,
-      seedingMethod: 'random',
-    }),
-    map_sequence: JSON.stringify(config.mapSequence),
+    settings: JSON.stringify(settings),
     team_size: config.teamSize || 5,
-    max_rounds: config.maxRounds || 24,
-    overtime_mode: config.overtimeMode || 'enabled',
-    overtime_segments:
-      typeof config.overtimeSegments === 'number' && config.overtimeSegments > 0
-        ? config.overtimeSegments
-        : null,
     elo_template_id: config.eloTemplateId || null,
     created_at: now,
     updated_at: now,
-  });
-
-  log.success(`Shuffle tournament created: ${config.name}`, {
-    rounds: config.mapSequence.length,
-    overtimeMode: config.overtimeMode,
-    overtimeSegments: config.overtimeSegments,
   });
 
   const tournament = await getShuffleTournament(tournamentId);
   if (!tournament) {
     throw new Error('Failed to create tournament');
   }
+
+  log.success(`Shuffle tournament created: ${config.name}`, {
+    rounds: (tournament.mapSequence || tournament.maps).length,
+    overtimeMode: tournament.overtimeMode,
+    overtimeSegments: tournament.overtimeSegments,
+  });
 
   return tournament;
 }

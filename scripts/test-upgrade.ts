@@ -21,6 +21,10 @@
  *      map_pools held (read from Postgres before and after), the rows that
  *      point into them still do, the old names are gone, CS2's 001-tables
  *      migration is recorded, and running the handover again does nothing.
+ *      CS2's tournament columns (the tournament's maps, map sequence, max
+ *      rounds and overtime; a template's map pool and maps) were folded into
+ *      CS2's own settings object, `settings.cs2`, with the same values, and
+ *      the columns are gone; the API still returns the 2.x fields.
  *      The database itself was renamed too: 2.4.15 keeps its data in
  *      `matchzy_tournament`, 3.0 in `auto_tournament`. Before the successful
  *      start, the new build is started three times in states where it must
@@ -74,6 +78,8 @@ const DB_PASSWORD = 'postgres';
 const OLD_TOKEN_HEADER = 'X-MatchZy-Token';
 const UPGRADE_CHAT_PREFIX = 'UPGRADE';
 const UPGRADE_FFW_TIME = 123;
+/** The seeded tournament's max rounds: not the default 24. */
+const UPGRADE_MAX_ROUNDS = 16;
 
 // Skip the (slow) docker build and reuse an image already built/tagged with
 // this name — handy for iterating on the seeding/assertion logic locally.
@@ -417,6 +423,8 @@ async function seed(ctx: APIRequestContext): Promise<SeedResult> {
   // the real event-ingest path (same as tests/api/series-stats.spec.ts
   // and tests/api/swapped-team-player-stats.spec.ts).
   await ctx.delete('/api/tournament').catch(() => undefined);
+  // Round rules other than the defaults, so the fold of the CS2 columns into
+  // settings.cs2 is checked on values that could not come from a default.
   const tournamentRes = await ctx.post('/api/tournament', {
     data: {
       name: tournamentName,
@@ -424,6 +432,9 @@ async function seed(ctx: APIRequestContext): Promise<SeedResult> {
       format: 'bo1',
       maps: ['de_dust2'],
       teamIds: [team1Id, team2Id],
+      maxRounds: UPGRADE_MAX_ROUNDS,
+      overtimeMode: 'disabled',
+      overtimeSegments: 0,
     },
   });
   if (!tournamentRes.ok()) {
@@ -556,9 +567,15 @@ async function snapshot(
       status?: string;
       game?: string;
       winner?: { id: string } | null;
+      maps?: string[];
+      maxRounds?: number;
+      overtimeMode?: string;
+      overtimeSegments?: number;
     };
   };
   const t = tournamentBody.tournament;
+  // The CS2 fields are 2.4.15's columns and 3.0's settings.cs2: the API
+  // returns them at the top level either way.
   const tournament = t && {
     name: t.name,
     type: t.type,
@@ -566,6 +583,10 @@ async function snapshot(
     status: t.status,
     game: t.game,
     winnerId: t.winner?.id ?? null,
+    maps: t.maps ?? null,
+    maxRounds: t.maxRounds ?? null,
+    overtimeMode: t.overtimeMode ?? null,
+    overtimeSegments: t.overtimeSegments ?? null,
   };
 
   const matchesRes = await ctx.get('/api/matches');
@@ -773,6 +794,11 @@ interface Cs2Layout {
   tables: Cs2TableNames;
   /** Prefix of the plugin's columns on the servers table. */
   pluginColumns: 'matchzy_' | 'at_';
+  /**
+   * Where the tournament's and templates' CS2 fields are: 2.4.15's columns, or
+   * 3.0's `settings.cs2` object.
+   */
+  tournamentFields: 'columns' | 'settings';
 }
 
 const LEGACY_CS2_TABLE_NAMES: Cs2TableNames = {
@@ -790,8 +816,14 @@ const LEGACY_CS2_LAYOUT: Cs2Layout = {
   database: OLD_DB_NAME,
   tables: LEGACY_CS2_TABLE_NAMES,
   pluginColumns: 'matchzy_',
+  tournamentFields: 'columns',
 };
-const CS2_LAYOUT: Cs2Layout = { database: DB_NAME, tables: CS2_TABLE_NAMES, pluginColumns: 'at_' };
+const CS2_LAYOUT: Cs2Layout = {
+  database: DB_NAME,
+  tables: CS2_TABLE_NAMES,
+  pluginColumns: 'at_',
+  tournamentFields: 'settings',
+};
 
 const UPGRADE_SERVER_PLUGIN_CONFIG = '{"chatPrefix":"UPG","minimumReadyRequired":3}';
 
@@ -800,10 +832,10 @@ const UPGRADE_TEMPLATE_NAME = 'Upgrade Test Template';
 
 /**
  * On the OLD version's database: a custom map pool (an id the pools sequence
- * handed out for the host, not only the seeded ones) and a tournament
- * template that references it, so core's key from tournament_templates onto
- * the pools table is exercised by real rows. And values in the servers
- * table's matchzy_* columns, which 3.0 renames to at_*.
+ * handed out for the host, not only the seeded ones), a tournament template
+ * that references it and lists maps, and one with neither, so the template
+ * columns 3.0 folds into settings.cs2 hold real values. And values in the
+ * servers table's matchzy_* columns, which 3.0 renames to at_*.
  */
 function seedCs2Rows(postgresName: string) {
   step = 'seed CS2 rows on the old database';
@@ -811,9 +843,12 @@ function seedCs2Rows(postgresName: string) {
     postgresName,
     `INSERT INTO map_pools (name, map_ids, is_default, enabled)
        VALUES ('${UPGRADE_POOL_NAME}', '["de_dust2","de_mirage"]', 0, 1);
-     INSERT INTO tournament_templates (name, type, format, settings, map_pool_id)
-       SELECT '${UPGRADE_TEMPLATE_NAME}', 'single_elimination', 'bo1', '{}', id
+     INSERT INTO tournament_templates (name, type, format, settings, map_pool_id, maps)
+       SELECT '${UPGRADE_TEMPLATE_NAME}', 'single_elimination', 'bo1', '{"matchFormat":"bo1"}', id,
+              '["de_dust2","de_mirage"]'
          FROM map_pools WHERE name = '${UPGRADE_POOL_NAME}';
+     INSERT INTO tournament_templates (name, type, format, settings)
+       VALUES ('${UPGRADE_TEMPLATE_NAME} (no pool)', 'swiss', 'bo3', '{}');
      UPDATE servers
         SET matchzy_config = '${UPGRADE_SERVER_PLUGIN_CONFIG}',
             matchzy_db_type = 'sqlite',
@@ -850,12 +885,61 @@ function cs2Rows(postgresName: string, layout: Cs2Layout) {
       'id'
     ),
     templates: agg(
-      `SELECT t.name, t.map_pool_id, p.name AS pool_name
-         FROM tournament_templates t LEFT JOIN ${names.map_pools} p ON p.id = t.map_pool_id`,
+      layout.tournamentFields === 'columns'
+        ? `SELECT t.name, t.map_pool_id, p.name AS pool_name, t.maps::json AS maps
+             FROM tournament_templates t LEFT JOIN ${names.map_pools} p ON p.id = t.map_pool_id`
+        : `SELECT t.name, (t.settings::json #>> '{cs2,mapPoolId}')::int AS map_pool_id,
+                  p.name AS pool_name, t.settings::json #> '{cs2,maps}' AS maps
+             FROM tournament_templates t
+             LEFT JOIN ${names.map_pools} p ON p.id = (t.settings::json #>> '{cs2,mapPoolId}')::int`,
       'name'
+    ),
+    tournaments: agg(
+      layout.tournamentFields === 'columns'
+        ? `SELECT id, maps::json AS maps, map_sequence::json AS map_sequence, max_rounds,
+                  overtime_mode, overtime_segments
+             FROM tournament`
+        : `SELECT id, settings::json #> '{cs2,maps}' AS maps,
+                  settings::json #> '{cs2,mapSequence}' AS map_sequence,
+                  (settings::json #>> '{cs2,maxRounds}')::int AS max_rounds,
+                  settings::json #>> '{cs2,overtimeMode}' AS overtime_mode,
+                  (settings::json #>> '{cs2,overtimeSegments}')::int AS overtime_segments
+             FROM tournament`,
+      'id'
     ),
     matchServers: agg('SELECT slug, server_id FROM matches', 'slug'),
   };
+}
+
+/** The 2.x CS2 columns of core's tables, which the upgrade folds into settings.cs2. */
+const LEGACY_CS2_TOURNAMENT_COLUMNS = [
+  'tournament.maps',
+  'tournament.map_sequence',
+  'tournament.max_rounds',
+  'tournament.overtime_mode',
+  'tournament.overtime_segments',
+  'tournament_templates.map_pool_id',
+  'tournament_templates.maps',
+];
+
+/** Which of those columns a database still has. */
+function legacyCs2TournamentColumns(postgresName: string, database = DB_NAME): string[] {
+  return psqlJson<string[]>(
+    postgresName,
+    `SELECT COALESCE(json_agg(table_name || '.' || column_name ORDER BY table_name, column_name), '[]'::json)
+       FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name || '.' || column_name IN (${LEGACY_CS2_TOURNAMENT_COLUMNS.map((c) => `'${c}'`).join(', ')})`,
+    database
+  );
+}
+
+function assertCs2TournamentColumnsGone(label: string, postgresName: string) {
+  const left = legacyCs2TournamentColumns(postgresName);
+  if (left.length > 0) {
+    throw new Error(`${label}: core still has CS2 columns: ${left.join(', ')}`);
+  }
+  log(`${label}: core's tournament tables hold no CS2 columns.`);
 }
 
 type Cs2Rows = ReturnType<typeof cs2Rows>;
@@ -871,9 +955,19 @@ function assertCs2RowsSurvived(label: string, before: Cs2Rows, after: Cs2Rows) {
   if (before.servers.length === 0 || before.maps.length === 0 || before.mapPools.length === 0) {
     throw new Error(`${label}: expected the old database to have servers, maps and map pools.`);
   }
+  const seeded = before.tournaments as Array<{ max_rounds: number | null; maps: unknown }>;
+  if (seeded.length !== 1 || seeded[0].max_rounds !== UPGRADE_MAX_ROUNDS) {
+    throw new Error(
+      `${label}: expected the seeded tournament with max rounds ${UPGRADE_MAX_ROUNDS}: ${JSON.stringify(seeded)}`
+    );
+  }
+  if (before.templates.length < 2) {
+    throw new Error(`${label}: expected the two seeded templates: ${JSON.stringify(before.templates)}`);
+  }
   log(
     `${label}: ${before.servers.length} server(s), ${before.maps.length} map(s), ` +
-      `${before.mapPools.length} map pool(s) and the rows pointing at them survived unchanged.`
+      `${before.mapPools.length} map pool(s), the rows pointing at them, and the tournament's ` +
+      `and ${before.templates.length} template(s)' CS2 fields (now settings.cs2) survived unchanged.`
   );
 }
 
@@ -1257,6 +1351,10 @@ async function runUpgradedDatabasePath() {
     upgradedCs2Schema = await assertCs2TablesHandedOver(ctx, 'Upgrade');
     const cs2AfterUpgrade = cs2Rows(POSTGRES_NAME, CS2_LAYOUT);
     assertCs2RowsSurvived('Upgrade (old -> current build)', cs2Before, cs2AfterUpgrade);
+    if (!appliedFirstBoot.includes('2026-09-24-cs2-tournament-settings')) {
+      throw new Error('The fold of the CS2 tournament columns did not run on the upgrade.');
+    }
+    assertCs2TournamentColumnsGone('Upgrade', POSTGRES_NAME);
 
     step = 'verify the stored plugin names were renamed';
     const pluginNamesAfter = pluginNamesIn(POSTGRES_NAME, DB_NAME);
@@ -1283,6 +1381,7 @@ async function runUpgradedDatabasePath() {
       const schema = await assertCs2TablesHandedOver(ctx, `Reboot #${boot}`);
       assertSameCs2Schema(`Reboot #${boot}`, upgradedCs2Schema, schema);
       assertCs2RowsSurvived(`Reboot #${boot}`, cs2AfterUpgrade, cs2Rows(POSTGRES_NAME, CS2_LAYOUT));
+      assertCs2TournamentColumnsGone(`Reboot #${boot}`, POSTGRES_NAME);
       assertDatabases(`Reboot #${boot}`, POSTGRES_NAME, [DB_NAME]);
       if (
         JSON.stringify(pluginNamesIn(POSTGRES_NAME, DB_NAME)) !== JSON.stringify(pluginNamesAfter)
@@ -1350,6 +1449,7 @@ async function runFreshDatabasePath() {
       const freshCs2Schema = await assertCs2TablesHandedOver(ctx, 'Fresh database');
       if (!upgradedCs2Schema) throw new Error('Path 1 did not record the upgraded CS2 schema.');
       assertSameCs2Schema('Fresh database', upgradedCs2Schema, freshCs2Schema);
+      assertCs2TournamentColumnsGone('Fresh database', freshPg);
 
       step = 'verify a fresh database starts empty';
       const playersRes = await ctx.get('/api/players');

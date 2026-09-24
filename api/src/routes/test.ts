@@ -40,6 +40,7 @@ import {
   LEGACY_CS2_TABLES,
   handOverCs2Tables,
 } from '../config/cs2TableHandover';
+import { foldCs2TournamentColumns } from '../config/cs2SettingsFold';
 import { playerIdentity } from '../services/playerIdentity';
 import { teamMembers } from '../services/teamMembers';
 import { forgetModuleEnabled, listModules, modulesDir, scanDiskModules } from '../modules/loader';
@@ -1116,13 +1117,6 @@ router.post(
           );
           const missingPoolId = maxPool[0].id;
 
-          // A template pointing at a pool that does not exist.
-          const templateMissingPool = await probe(
-            client,
-            `INSERT INTO tournament_templates (name, type, format, settings, map_pool_id)
-             VALUES ('fk-probe', 'single_elimination', 'bo1', '{}', $1)`,
-            [missingPoolId]
-          );
           const manualTemplateMissingPool = await probe(
             client,
             `INSERT INTO manual_match_templates (name, best_of, starting_side, knife_mode, map_pool_id)
@@ -1137,25 +1131,24 @@ router.post(
             []
           );
 
-          // ON DELETE SET NULL: deleting a pool clears the template's reference.
+          // ON DELETE SET NULL: deleting a pool clears the standalone template's reference.
           const { rows: pool } = await client.query<{ id: number }>(
             `INSERT INTO cs2_map_pools (name, map_ids) VALUES ('fk-probe-pool', '[]') RETURNING id`
           );
           const { rows: template } = await client.query<{ id: number }>(
-            `INSERT INTO tournament_templates (name, type, format, settings, map_pool_id)
-             VALUES ('fk-probe', 'single_elimination', 'bo1', '{}', $1) RETURNING id`,
+            `INSERT INTO manual_match_templates (name, best_of, starting_side, knife_mode, map_pool_id)
+             VALUES ('fk-probe', 'bo1', 'knife', 'default', $1) RETURNING id`,
             [pool[0].id]
           );
           await client.query('DELETE FROM cs2_map_pools WHERE id = $1', [pool[0].id]);
           const { rows: after } = await client.query<{ map_pool_id: number | null }>(
-            'SELECT map_pool_id FROM tournament_templates WHERE id = $1',
+            'SELECT map_pool_id FROM manual_match_templates WHERE id = $1',
             [template[0].id]
           );
           return {
-            templateMissingPool,
             manualTemplateMissingPool,
             matchMissingServer,
-            templatePoolAfterPoolDeleted: after[0]?.map_pool_id ?? null,
+            manualTemplatePoolAfterPoolDeleted: after[0]?.map_pool_id ?? null,
           };
         } finally {
           await client.query('ROLLBACK');
@@ -1369,6 +1362,215 @@ router.post(
       res.json({ success: true, ...result });
     } catch (err) {
       log.error('Error in POST /api/test/cs2-tables/handover-probe', err as Error);
+      res.status(500).json({ success: false, error: (err as Error).message });
+    }
+  }
+);
+
+/*
+ * Test-only: the fold of CS2's tournament columns into `settings.cs2`
+ * (config/cs2SettingsFold.ts, core migration 2026-09-24-cs2-tournament-settings).
+ *
+ *   POST /api/test/cs2-settings-fold/probe      run the fold on copies of the two
+ *        Body: { scenario }                     tables in a scratch schema, twice
+ *   GET  /api/test/cs2-settings-fold/columns    the live tables' columns
+ *
+ * The probe proves the fold on a 2.4.15 database and on one from before this
+ * change without touching the real tables. The fixtures live here; the route
+ * never runs SQL a caller sends.
+ */
+
+const SETTINGS_FOLD_PROBE_SCHEMA = 'test_cs2_settings_fold_probe';
+
+/**
+ * `tournament` and `tournament_templates` as 2.4.15 created them
+ * (config/database.schema.ts at v2.4.15), minus the single-row check and the
+ * key onto the pools table, so several rows fit and no pools table is needed.
+ */
+const SETTINGS_FOLD_LEGACY_DDL = `
+  CREATE TABLE tournament (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    format TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'setup',
+    maps TEXT NOT NULL,
+    team_ids TEXT NOT NULL,
+    settings TEXT,
+    map_sequence TEXT,
+    team_size INTEGER DEFAULT 5,
+    max_rounds INTEGER DEFAULT 24,
+    overtime_mode TEXT DEFAULT 'enabled',
+    overtime_segments INTEGER,
+    elo_template_id TEXT,
+    created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+    updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+    started_at INTEGER,
+    completed_at INTEGER
+  );
+  CREATE TABLE tournament_templates (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT,
+    type TEXT NOT NULL,
+    format TEXT NOT NULL,
+    map_pool_id INTEGER,
+    maps TEXT,
+    team_ids TEXT,
+    settings TEXT NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+    updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+  );
+  INSERT INTO tournament (id, name, type, format, maps, team_ids, settings, map_sequence, max_rounds, overtime_mode, overtime_segments)
+  VALUES
+    (1, 'Shuffle', 'shuffle', 'bo1', '["de_ancient","de_nuke"]', '[]',
+     '{"matchFormat":"bo1","customVetoOrder":{"bo1":[]}}', '["de_ancient","de_nuke"]', 16, 'disabled', 0),
+    (2, 'Bracket', 'single_elimination', 'bo3', '["de_dust2","de_mirage","de_inferno"]', '["a","b"]',
+     NULL, NULL, 24, 'enabled', NULL);
+  INSERT INTO tournament_templates (id, name, type, format, map_pool_id, maps, settings) VALUES
+    (1, 'With pool', 'single_elimination', 'bo3', 7, '["de_dust2","de_mirage"]', '{"matchFormat":"bo3","maxRounds":16}'),
+    (2, 'Bare', 'swiss', 'bo1', NULL, NULL, '{}'),
+    (3, 'Maps only', 'round_robin', 'bo1', NULL, '["de_inferno"]', '{"matchFormat":"bo1"}');
+`;
+
+/**
+ * - `legacy`: 2.4.15 as it is.
+ * - `current`: a 3.0 database from before the fold: the `game` column the
+ *   column pass added, a manually reported tournament with only defaults
+ *   (left alone), one of another game with a value set (kept), and a CS2 row
+ *   that already has a `cs2` object (the columns win field by field).
+ * - `bad-settings`: a row whose settings are not JSON: refused, rolled back.
+ */
+const SETTINGS_FOLD_SCENARIOS: Record<string, string> = {
+  legacy: '',
+  current: `
+    ALTER TABLE tournament ADD COLUMN game TEXT NOT NULL DEFAULT 'cs2';
+    ALTER TABLE tournament_templates ADD COLUMN game TEXT NOT NULL DEFAULT 'cs2';
+    INSERT INTO tournament (id, name, type, format, maps, team_ids, settings, game) VALUES
+      (3, 'Rocket cup', 'single_elimination', 'bo3', '[]', '[]', '{"manualReport":{"gameLabel":"RL"}}', 'rocket-league'),
+      (4, 'Chess cup', 'swiss', 'bo1', '[]', '[]', '{}', 'chess'),
+      (5, 'Restored', 'single_elimination', 'bo1', '["de_vertigo"]', '[]',
+       '{"cs2":{"maps":["de_old"],"mapPoolId":3,"maxRounds":12}}', 'cs2');
+    UPDATE tournament SET max_rounds = 12 WHERE id = 4;
+    UPDATE tournament SET max_rounds = NULL WHERE id = 5;
+    INSERT INTO tournament_templates (id, name, type, format, settings, game) VALUES
+      (4, 'Rocket template', 'single_elimination', 'bo3', '{}', 'rocket-league');
+  `,
+  'bad-settings': `
+    INSERT INTO tournament (id, name, type, format, maps, team_ids, settings)
+    VALUES (9, 'Broken', 'swiss', 'bo1', '["de_dust2"]', '[]', 'not json');
+  `,
+};
+
+router.post(
+  '/cs2-settings-fold/probe',
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    if (isTestHelperDisabled(res)) return;
+    const { scenario } = (req.body ?? {}) as { scenario?: unknown };
+    if (
+      typeof scenario !== 'string' ||
+      !Object.prototype.hasOwnProperty.call(SETTINGS_FOLD_SCENARIOS, scenario)
+    ) {
+      res.status(400).json({
+        success: false,
+        error: `Field "scenario" must be one of ${Object.keys(SETTINGS_FOLD_SCENARIOS).join(', ')}`,
+      });
+      return;
+    }
+    try {
+      const result = await db.withClient(async (client) => {
+        const { rows } = await client.query<{ search_path: string }>('SHOW search_path');
+        const searchPath = rows[0].search_path;
+        // One run in its own transaction, as the schema migration runs it.
+        const run = async () => {
+          await client.query('BEGIN');
+          try {
+            const report = await foldCs2TournamentColumns(client);
+            await client.query('COMMIT');
+            return { report, error: null as string | null };
+          } catch (err) {
+            await client.query('ROLLBACK');
+            return { report: null, error: (err as Error).message };
+          }
+        };
+        const columnsOf = async (table: string) =>
+          (
+            await client.query<{ column_name: string }>(
+              `SELECT column_name FROM information_schema.columns
+                WHERE table_schema = current_schema() AND table_name = $1 ORDER BY ordinal_position`,
+              [table]
+            )
+          ).rows.map((r) => r.column_name);
+        const rowsOf = async (table: string) =>
+          (
+            await client.query<{ id: number; settings: string | null }>(
+              `SELECT id, settings FROM ${table} ORDER BY id`
+            )
+          ).rows.map((r) => {
+            let settings: unknown = r.settings;
+            try {
+              settings = r.settings === null ? null : JSON.parse(r.settings);
+            } catch {
+              // Kept as the raw text.
+            }
+            return { id: r.id, settings };
+          });
+        try {
+          await client.query(`DROP SCHEMA IF EXISTS ${SETTINGS_FOLD_PROBE_SCHEMA} CASCADE`);
+          await client.query(`CREATE SCHEMA ${SETTINGS_FOLD_PROBE_SCHEMA}`);
+          await client.query(`SET search_path TO ${SETTINGS_FOLD_PROBE_SCHEMA}`);
+          await client.query(SETTINGS_FOLD_LEGACY_DDL);
+          if (SETTINGS_FOLD_SCENARIOS[scenario]) {
+            await client.query(SETTINGS_FOLD_SCENARIOS[scenario]);
+          }
+          const first = await run();
+          const second = await run();
+          return {
+            first,
+            second,
+            columns: {
+              tournament: await columnsOf('tournament'),
+              tournament_templates: await columnsOf('tournament_templates'),
+            },
+            tournaments: await rowsOf('tournament'),
+            templates: await rowsOf('tournament_templates'),
+          };
+        } finally {
+          await client.query('ROLLBACK').catch(() => undefined);
+          await client.query(`SET search_path TO ${searchPath}`);
+          await client.query(`DROP SCHEMA IF EXISTS ${SETTINGS_FOLD_PROBE_SCHEMA} CASCADE`);
+        }
+      });
+      res.json({ success: true, ...result });
+    } catch (err) {
+      log.error('Error in POST /api/test/cs2-settings-fold/probe', err as Error);
+      res.status(500).json({ success: false, error: (err as Error).message });
+    }
+  }
+);
+
+router.get(
+  '/cs2-settings-fold/columns',
+  requireAuth,
+  async (_req: Request, res: Response): Promise<void> => {
+    if (isTestHelperDisabled(res)) return;
+    try {
+      const columnsOf = async (table: string) =>
+        (
+          await db.queryAsync<{ column_name: string }>(
+            `SELECT column_name FROM information_schema.columns
+              WHERE table_schema = current_schema() AND table_name = ? ORDER BY ordinal_position`,
+            [table]
+          )
+        ).map((r) => r.column_name);
+      res.json({
+        success: true,
+        tournament: await columnsOf('tournament'),
+        tournament_templates: await columnsOf('tournament_templates'),
+      });
+    } catch (err) {
+      log.error('Error in GET /api/test/cs2-settings-fold/columns', err as Error);
       res.status(500).json({ success: false, error: (err as Error).message });
     }
   }

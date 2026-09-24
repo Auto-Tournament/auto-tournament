@@ -19,6 +19,7 @@
 
 import type { PoolClient } from 'pg';
 import { log } from '../utils/logger';
+import { foldCs2TournamentColumns } from './cs2SettingsFold';
 
 /** What a migration body gets: a client inside the migration's transaction. */
 type Queryable = Pick<PoolClient, 'query'>;
@@ -276,6 +277,21 @@ export const SCHEMA_MIGRATIONS: readonly SchemaMigration[] = [
             'the at_* setting exists too. The at_* value is the one in use.'
         );
       }
+    },
+  },
+  {
+    id: '2026-09-24-cs2-tournament-settings',
+    description:
+      "Fold the CS2 columns of tournament and tournament_templates into CS2's settings object (settings.cs2) and drop them",
+    async up(client) {
+      const { tournaments, templates, skipped, dropped } = await foldCs2TournamentColumns(client);
+      if (dropped.length === 0) return;
+      log.success(
+        `[PostgreSQL] CS2's tournament settings are its own now: ${tournaments} tournament(s) and ` +
+          `${templates} template(s) moved to settings.cs2` +
+          (skipped > 0 ? `, ${skipped} row(s) of another game held only defaults` : '') +
+          `; dropped ${dropped.join(', ')}`
+      );
     },
   },
 ];

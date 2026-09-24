@@ -39,19 +39,13 @@ export function getSchemaSQL(): string {
       type TEXT NOT NULL,
       format TEXT NOT NULL,
       status TEXT NOT NULL DEFAULT 'setup',
-      -- cs2-owned columns (maps, map_sequence, max_rounds, overtime_*): only the CS2
-      -- integration validates them (validateTournamentSettings). Folding them into
-      -- tournament.integration_settings is later work.
-      maps TEXT NOT NULL, -- cs2-owned: JSON array of map ids (the map pool)
       team_ids TEXT NOT NULL,
+      -- JSON object. The game module's own settings are one key in it (CS2:
+      -- cs2, holding the map pool, map sequence, max rounds and overtime that
+      -- 2.x kept in columns here); the core stores them without reading them.
       settings TEXT,
       game TEXT NOT NULL DEFAULT 'cs2', -- Game integration that owns this row (integrations/registry)
-      -- Shuffle tournament specific fields
-      map_sequence TEXT, -- cs2-owned: JSON array of maps in order (number of maps = number of rounds)
       team_size INTEGER DEFAULT 5, -- Number of players per team (default: 5 for 5v5)
-      max_rounds INTEGER DEFAULT 24, -- cs2-owned: max rounds per map
-      overtime_mode TEXT DEFAULT 'enabled', -- cs2-owned: 'enabled' or 'disabled'
-      overtime_segments INTEGER, -- cs2-owned. Optional: max number of overtime segments (Auto Tournament CS2 overtime_limit). NULL/0 = unlimited.
       elo_template_id TEXT, -- Reference to elo_calculation_templates table (nullable)
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
@@ -152,15 +146,11 @@ export function getSchemaSQL(): string {
       description TEXT,
       type TEXT NOT NULL,
       format TEXT NOT NULL,
-      map_pool_id INTEGER,
-      maps TEXT,
       team_ids TEXT,
-      settings TEXT NOT NULL,
+      settings TEXT NOT NULL, -- JSON; the game module's object under its key (CS2: cs2, with the map pool id and maps)
       game TEXT NOT NULL DEFAULT 'cs2', -- Game integration that owns this row (integrations/registry)
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
-      -- map_pool_id references cs2_map_pools(id) ON DELETE SET NULL, added in
-      -- database.ts once CS2's migrations have created that table.
     );
 
     CREATE INDEX IF NOT EXISTS idx_tournament_templates_name ON tournament_templates(name);

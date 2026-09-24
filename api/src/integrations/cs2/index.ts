@@ -28,9 +28,9 @@
  * fetch, and the default data behind `seed`. `validateTournamentSettings`
  * (./tournamentSettings) checks the CS2 tournament fields on create and
  * update: the map pool, the shuffle map sequence and max rounds, and the veto
- * order. The `at_*` and simulation app settings are CS2's
- * `instanceSettings` (./settings), read through `cs2Settings`
- * (./settingsReaders).
+ * order; `tournamentSettings` stores them as `settings.cs2`. The `at_*` and
+ * simulation app settings are CS2's `instanceSettings` (./settings), read
+ * through `cs2Settings` (./settingsReaders).
  *
  * Services are imported lazily inside each method. That keeps loading the
  * registry free of side effects (no database pool, no monitors) and avoids an
@@ -43,7 +43,7 @@ import type { TournamentResponse } from '../../types/tournament.types';
 import type { DbTournamentRow } from '../../types/database.types';
 import type { MatchReport } from './events/connectionSnapshotService';
 import { normalizeConfigPlayers } from '../../utils/playerTransform';
-import { validateCs2TournamentSettings } from './tournamentSettings';
+import { cs2TournamentSettings, validateCs2TournamentSettings } from './tournamentSettings';
 import { CS2_INSTANCE_SCHEMA, CS2_INSTANCE_SETTINGS } from './settings';
 import { CS2_MIGRATIONS } from './migrations';
 import type { ServerActionResult, ServerAllocationResult } from './allocation';
@@ -256,6 +256,12 @@ export const cs2Integration: GameIntegration = {
   validateTournamentSettings(input) {
     return validateCs2TournamentSettings(input);
   },
+
+  /**
+   * `settings.cs2`: the map pool, the shuffle map sequence, max rounds and
+   * overtime (./tournamentSettings), which were core columns until 3.0.
+   */
+  tournamentSettings: cs2TournamentSettings,
 
   /**
    * `cs2_servers`, `cs2_maps` and `cs2_map_pools` (./migrations). An install

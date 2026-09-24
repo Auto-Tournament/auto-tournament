@@ -1,7 +1,8 @@
 import type { Request } from 'express';
 import type { DbTournamentRow } from '../types/database.types';
 import type { TournamentResponse, TournamentSettings } from '../types/tournament.types';
-import { DEFAULT_GAME } from '../integrations/types';
+import { DEFAULT_GAME, type GameId } from '../integrations/types';
+import { moduleResponseFields } from './moduleTournamentSettings';
 
 /**
  * The id of the single tournament row that 3.0 hosts.
@@ -62,6 +63,27 @@ export function normalizeTournamentSettings(
   return base;
 }
 
+/** The 2.x top-level tournament fields a game module fills from its settings object. */
+export type ModuleTournamentFields = Pick<
+  TournamentResponse,
+  'maps' | 'mapSequence' | 'maxRounds' | 'overtimeMode' | 'overtimeSegments' | 'mapPoolId'
+>;
+
+/**
+ * The fields 2.x kept in the tournament's own columns (CS2: the map pool,
+ * shuffle map sequence, max rounds and overtime), as the tournament's module
+ * reads them from its object in `settings` (`GameIntegration.
+ * tournamentSettings`). A game without one gets an empty `maps`, as its row
+ * used to have.
+ */
+export function moduleTournamentFields(
+  game: GameId | null | undefined,
+  settings: unknown
+): ModuleTournamentFields {
+  const fields = moduleResponseFields(game, settings, 'tournament') as Partial<ModuleTournamentFields>;
+  return { ...fields, maps: Array.isArray(fields.maps) ? fields.maps : [] };
+}
+
 /**
  * The tournament row as the object config generation expects.
  *
@@ -69,34 +91,39 @@ export function normalizeTournamentSettings(
  * simulated veto) left out maxRounds, overtime and team size, so the config it
  * stored after an automated veto used Auto Tournament CS2 defaults (24 rounds) instead of
  * the tournament's rules. Every caller goes through here now, so a new column
- * only has to be added once.
+ * only has to be added once. The game's own fields come from its object in
+ * `settings` (`moduleTournamentFields`).
  *
  * `teams` is left empty: config generation loads teams itself.
  */
 export function tournamentRowToResponse(row: DbTournamentRow): TournamentResponse {
+  const game = row.game || DEFAULT_GAME;
+  const settings = normalizeTournamentSettings(
+    parseJson<Partial<TournamentSettings>>(row.settings, {}),
+    row.format
+  );
+  const moduleFields = moduleTournamentFields(game, settings);
   return {
     id: row.id,
     name: row.name,
     type: row.type as TournamentResponse['type'],
     format: row.format as TournamentResponse['format'],
     status: row.status as TournamentResponse['status'],
-    game: row.game || DEFAULT_GAME,
-    maps: parseJson<string[]>(row.maps, []),
+    game,
+    maps: moduleFields.maps,
     teamIds: parseJson<string[]>(row.team_ids, []),
-    settings: normalizeTournamentSettings(
-      parseJson<Partial<TournamentSettings>>(row.settings, {}),
-      row.format
-    ),
+    settings,
     created_at: row.created_at,
     updated_at: row.updated_at ?? row.created_at,
     started_at: row.started_at,
     completed_at: row.completed_at,
     teams: [],
-    mapSequence: row.map_sequence ? parseJson<string[] | undefined>(row.map_sequence, undefined) : undefined,
+    mapSequence: moduleFields.mapSequence,
     teamSize: nullToUndefined(row.team_size),
-    maxRounds: nullToUndefined(row.max_rounds),
-    overtimeMode: (row.overtime_mode as 'enabled' | 'disabled' | null) || undefined,
-    overtimeSegments: nullToUndefined(row.overtime_segments),
+    maxRounds: moduleFields.maxRounds,
+    overtimeMode: moduleFields.overtimeMode,
+    overtimeSegments: moduleFields.overtimeSegments,
+    ...(moduleFields.mapPoolId !== undefined ? { mapPoolId: moduleFields.mapPoolId } : {}),
     eloTemplateId: row.elo_template_id ?? undefined,
   };
 }

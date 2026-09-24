@@ -27,16 +27,21 @@ const row: DbTournamentRow = {
   format: 'bo1',
   status: 'in_progress',
   team_ids: JSON.stringify(['t1', 't2']),
-  maps: JSON.stringify(['de_mirage', 'de_inferno']),
   created_at: 100,
   updated_at: 200,
-  // Edited from bo3 to bo1: settings kept the old value.
-  settings: JSON.stringify({ matchFormat: 'bo3', thirdPlaceMatch: false }),
-  map_sequence: null,
+  // Edited from bo3 to bo1: settings kept the old value. CS2's rules are its
+  // own object in settings (2.x kept them in columns).
+  settings: JSON.stringify({
+    matchFormat: 'bo3',
+    thirdPlaceMatch: false,
+    cs2: {
+      maps: ['de_mirage', 'de_inferno'],
+      maxRounds: 4,
+      overtimeMode: 'disabled',
+      overtimeSegments: 0,
+    },
+  }),
   team_size: 2,
-  max_rounds: 4,
-  overtime_mode: 'disabled',
-  overtime_segments: 0,
   elo_template_id: null,
 };
 
@@ -53,12 +58,9 @@ test.describe('Tournament config source', () => {
     expect(t.updated_at).toBe(200);
   });
 
-  test('unset columns stay unset rather than becoming null', () => {
+  test('unset fields stay unset rather than becoming null', () => {
     const t = tournamentRowToResponse({
       ...row,
-      max_rounds: null,
-      overtime_mode: null,
-      overtime_segments: null,
       team_size: null,
       settings: undefined,
     });
@@ -66,7 +68,16 @@ test.describe('Tournament config source', () => {
     expect(t.overtimeMode).toBeUndefined();
     expect(t.overtimeSegments).toBeUndefined();
     expect(t.teamSize).toBeUndefined();
+    expect(t.maps).toEqual([]);
     expect(t.settings.matchFormat).toBe('bo1');
+  });
+
+  test("another game's tournament gets no CS2 fields from a stray cs2 object", () => {
+    const t = tournamentRowToResponse({ ...row, game: 'rocket-league' });
+    expect(t.maps).toEqual([]);
+    expect(t.maxRounds).toBeUndefined();
+    // The object itself is kept, untouched.
+    expect((t.settings as Record<string, unknown>).cs2).toMatchObject({ maxRounds: 4 });
   });
 
   test('no config generator hand-builds the tournament object any more', () => {

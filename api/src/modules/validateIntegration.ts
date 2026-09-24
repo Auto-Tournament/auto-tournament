@@ -117,6 +117,21 @@ export function integrationProblem(value: unknown): string | null {
   if (value.setupSchema !== undefined && !isObject(value.setupSchema)) {
     return "'setupSchema' must be an object when present.";
   }
+  if (value.tournamentSettings !== undefined) {
+    const handler = value.tournamentSettings;
+    if (!isObject(handler)) return "'tournamentSettings' must be an object when present.";
+    if (typeof handler.key !== 'string' || handler.key === '') {
+      return "'tournamentSettings.key' must be a non-empty string.";
+    }
+    if (typeof handler.fromRequest !== 'function') {
+      return "'tournamentSettings.fromRequest' must be a function.";
+    }
+    for (const method of ['responseFields', 'changesBracket'] as const) {
+      if (handler[method] !== undefined && typeof handler[method] !== 'function') {
+        return `'tournamentSettings.${method}' must be a function when present.`;
+      }
+    }
+  }
   // Only the registry's "module not installed" placeholder says this.
   if (value.notInstalled !== undefined) {
     return "'notInstalled' is reserved for the platform's missing-module placeholder.";
