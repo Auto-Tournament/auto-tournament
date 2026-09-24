@@ -38,7 +38,9 @@
     "goToAdminDashboard": "Gå til admin-dashboard",
     "goToAdminDashboardHint": "Du ser spillerprofilen din. Åpne admin-dashboardet for å administrere lag, turneringer og servere.",
     "disputes": "Tvister",
-    "modules": "Moduler"
+    "modules": "Moduler",
+    "siteMenu": "Sidemeny",
+    "accountMenu": "Kontomeny"
   },
   "layout": {
     "pageTitle": {

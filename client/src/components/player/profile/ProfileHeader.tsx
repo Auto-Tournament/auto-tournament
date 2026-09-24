@@ -90,7 +90,10 @@ export function ProfileHeader({
             flexWrap: 'wrap',
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 2, sm: 3 }, minWidth: 0, flex: 1 }}>
+          {/* A real basis, not `flex: 1` (basis 0): on a phone the edit
+              button then wraps under the name instead of the name running
+              under the button. */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 2, sm: 3 }, minWidth: 0, flex: '1 1 260px' }}>
             <PlayerAvatar id={playerId} name={name} avatarUrl={avatarUrl} size={80} isAdmin={isAdmin} />
             <Box minWidth={0}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
@@ -98,7 +101,7 @@ export function ProfileHeader({
                   name={name}
                   isAdmin={isAdmin}
                   variant="h4"
-                  sx={{ fontWeight: 700 }}
+                  sx={{ fontWeight: 700, overflowWrap: 'anywhere' }}
                   data-testid="public-player-name"
                 />
                 {isAdmin && (

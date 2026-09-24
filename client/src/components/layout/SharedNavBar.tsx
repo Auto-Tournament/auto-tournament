@@ -8,8 +8,9 @@ import {
   MenuItem,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import ExploreOutlinedIcon from '@mui/icons-material/ExploreOutlined';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -85,6 +86,11 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
   const { showSnackbar } = useSnackbar();
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  // Below `md` the four site links do not fit next to the theme, language and
+  // account buttons (at 375px they were drawn under them), so they fold into
+  // one menu there.
+  const [siteMenuAnchor, setSiteMenuAnchor] = React.useState<null | HTMLElement>(null);
+  const location = useLocation();
   const prevMatchRef = React.useRef<{
     status: string;
     label: string | null;
@@ -216,6 +222,13 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
     waiting_server: t('nav.matchStatus.waitingServer'),
     match_ready: t('nav.matchStatus.matchReady'),
   };
+  const siteLinks = [
+    { to: '/', label: t('nav.home'), testId: 'nav-home' },
+    { to: '/browse', label: t('nav.browse'), testId: 'nav-browse' },
+    { to: '/player', label: t('nav.players'), testId: undefined },
+    { to: '/tournament/1/leaderboard', label: t('nav.leaderboard'), testId: undefined },
+  ];
+
   const ctaLabel =
     playerSteamId &&
     matchStatus !== 'none' &&
@@ -269,44 +282,60 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
 
         <Box
           sx={{
-            display: 'flex',
+            display: { xs: 'none', md: 'flex' },
             alignItems: 'center',
-            gap: { xs: 0, sm: 1.5 },
+            gap: 1.5,
             flexShrink: 0,
           }}
         >
-          <Button
+          {siteLinks.map((link) => (
+            <Button
+              key={link.to}
+              color="inherit"
+              component={RouterLink}
+              to={link.to}
+              size="small"
+              sx={navLinkSx}
+              data-testid={link.testId}
+            >
+              {link.label}
+            </Button>
+          ))}
+        </Box>
+        <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
+          <IconButton
             color="inherit"
-            component={RouterLink}
-            to="/"
             size="small"
-            sx={navLinkSx}
-            data-testid="nav-home"
+            aria-label={t('nav.siteMenu')}
+            aria-haspopup="menu"
+            aria-controls={siteMenuAnchor ? 'site-nav-menu' : undefined}
+            aria-expanded={siteMenuAnchor ? 'true' : undefined}
+            onClick={(event) => setSiteMenuAnchor(event.currentTarget)}
+            sx={{ color: 'text.secondary' }}
+            data-testid="nav-site-menu-button"
           >
-            {t('nav.home')}
-          </Button>
-          <Button
-            color="inherit"
-            component={RouterLink}
-            to="/browse"
-            size="small"
-            sx={navLinkSx}
-            data-testid="nav-browse"
+            <ExploreOutlinedIcon />
+          </IconButton>
+          <Menu
+            id="site-nav-menu"
+            anchorEl={siteMenuAnchor}
+            open={Boolean(siteMenuAnchor)}
+            onClose={() => setSiteMenuAnchor(null)}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'left' }}
           >
-            {t('nav.browse')}
-          </Button>
-          <Button color="inherit" component={RouterLink} to="/player" size="small" sx={navLinkSx}>
-            {t('nav.players')}
-          </Button>
-          <Button
-            color="inherit"
-            component={RouterLink}
-            to="/tournament/1/leaderboard"
-            size="small"
-            sx={navLinkSx}
-          >
-            {t('nav.leaderboard')}
-          </Button>
+            {siteLinks.map((link) => (
+              <MenuItem
+                key={link.to}
+                component={RouterLink}
+                to={link.to}
+                selected={location.pathname === link.to}
+                onClick={() => setSiteMenuAnchor(null)}
+              >
+                {link.label}
+              </MenuItem>
+            ))}
+          </Menu>
         </Box>
       </Box>
 
@@ -354,6 +383,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
               onClick={handleAvatarMenuOpen}
               size="small"
               sx={{ ml: 1 }}
+              aria-label={t('nav.accountMenu')}
               data-testid="nav-avatar-button"
             >
               {playerSteamId ? (

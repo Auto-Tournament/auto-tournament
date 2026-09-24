@@ -868,7 +868,22 @@ export default function Layout() {
                     {currentPageHeader.title}
                   </Typography>
                 </Box>
-                {headerActions && <Box>{headerActions}</Box>}
+                {/* Pages hand in a flex row of buttons. On a phone that row
+                    is wider than the screen: let it wrap instead of squeezing
+                    every label onto two or three lines (or off the edge). */}
+                {headerActions && (
+                  <Box
+                    sx={(theme) => ({
+                      maxWidth: '100%',
+                      // `&&` outranks the page's own `gap` on the same element.
+                      '&& > *': { flexWrap: 'wrap' },
+                      '& .MuiButton-root': { whiteSpace: 'nowrap' },
+                      [theme.breakpoints.down('sm')]: { '&& > *': { gap: theme.spacing(1) } },
+                    })}
+                  >
+                    {headerActions}
+                  </Box>
+                )}
               </Box>
             )}
             {/* The tournament's game module is not installed (or may still be
