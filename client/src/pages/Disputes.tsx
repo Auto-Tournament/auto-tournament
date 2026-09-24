@@ -34,9 +34,7 @@ export default function Disputes() {
     <Box data-testid="disputes-page" sx={{ width: '100%' }}>
       <Stack spacing={3} sx={{ width: '100%', maxWidth: 1100 }}>
         <Box>
-          <Typography variant="h4" fontWeight={700}>
-            {t('disputes.heading')}
-          </Typography>
+          {/* The shell header above already shows the page title; only the description stays. */}
           <Typography variant="body2" color="text.secondary">
             {t('disputes.subheading')}
           </Typography>

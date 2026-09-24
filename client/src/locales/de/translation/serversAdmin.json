@@ -1,6 +1,5 @@
 {
   "adminToolsPage": {
-    "title": "Admin-Tools",
     "description": "Führe gängige Match- und Server-Aktionen auf deinen CS2-Servern aus. Schnellaktionen werden zuerst angezeigt, darunter findest du erweiterte Tools.",
     "header": {
       "refresh": "Server aktualisieren"
@@ -64,7 +63,7 @@
         "description": "Startet das Match sofort."
       },
       "matchEnd": {
-        "label": "Match beenden (css_restart)",
+        "label": "Match beenden",
         "description": "Beendet das laufende Match auf den ausgewählten Servern erzwungen und setzt sie mit css_restart ins Warmup zurück."
       },
       "forcePause": {
@@ -110,7 +109,7 @@
         "inputLabel": "Rundennummer"
       },
       "cleanServers": {
-        "label": "Server bereinigen (css_restart)",
+        "label": "Server bereinigen",
         "description": "Beendet laufende Matches auf den ausgewählten Servern und setzt sie mit css_restart ins Warmup zurück. Das lässt sich nicht rückgängig machen."
       },
       "changeMap": {

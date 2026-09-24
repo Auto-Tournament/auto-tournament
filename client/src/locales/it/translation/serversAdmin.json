@@ -1,6 +1,5 @@
 {
   "adminToolsPage": {
-    "title": "Strumenti admin",
     "description": "Esegui azioni comuni sui match e sui server CS2. Le azioni rapide vengono mostrate per prime, con strumenti più avanzati disponibili sotto.",
     "header": {
       "refresh": "Aggiorna server"
@@ -64,7 +63,7 @@
         "description": "Avvia subito il match."
       },
       "matchEnd": {
-        "label": "Termina match (css_restart)",
+        "label": "Termina match",
         "description": "Forza la fine del match in corso sui server selezionati e li riporta in warmup con css_restart."
       },
       "forcePause": {
@@ -110,7 +109,7 @@
         "inputLabel": "Numero del round"
       },
       "cleanServers": {
-        "label": "Pulisci server (css_restart)",
+        "label": "Pulisci server",
         "description": "Termina qualsiasi match in corso sui server selezionati e li riporta in warmup con css_restart. Operazione distruttiva."
       },
       "changeMap": {

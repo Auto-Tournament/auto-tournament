@@ -215,7 +215,6 @@
   },
   "modulesPage": {
     "title": "Moduler",
-    "heading": "Moduler",
     "subheading": "Hva denne instansen kan kjøre, og spillene du har lagt til.",
     "builtIn": "Innebygd",
     "loadFailed": "Kunne ikke laste installerte pakker",

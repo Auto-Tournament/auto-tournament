@@ -1,6 +1,5 @@
 {
   "adminToolsPage": {
-    "title": "Admin Tools",
     "description": "Run common match and server actions across your CS2 servers. Quick actions are shown first, with more advanced tools available below.",
     "header": {
       "refresh": "Refresh Servers"
@@ -64,7 +63,7 @@
         "description": "Start the match immediately."
       },
       "matchEnd": {
-        "label": "End match (css_restart)",
+        "label": "End match",
         "description": "Force end the current match on the selected servers and reset them to warmup using css_restart."
       },
       "forcePause": {
@@ -110,7 +109,7 @@
         "inputLabel": "Round number"
       },
       "cleanServers": {
-        "label": "Clean servers (css_restart)",
+        "label": "Clean servers",
         "description": "End any running match on the selected servers and reset them to warmup using css_restart. This is destructive."
       },
       "changeMap": {

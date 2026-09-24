@@ -16,8 +16,8 @@
       "openSettings": "Åpne innstillinger",
       "steam": "Steam-innlogging",
       "serversTodo": "Koble til en server",
-      "serversDone": "{{count}} server tilkoblet",
-      "serversDonePlural": "{{count}} servere tilkoblet",
+      "serversDone": "{{count}} server lagt til",
+      "serversDonePlural": "{{count}} servere lagt til",
       "discord": "Discord-innlogging (valgfritt)",
       "igdb": "Spillomslag via IGDB (valgfritt)"
     },

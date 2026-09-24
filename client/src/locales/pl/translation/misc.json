@@ -215,7 +215,6 @@
   },
   "modulesPage": {
     "title": "Modules",
-    "heading": "Modules",
     "subheading": "What this instance can run, and the games you have added to it.",
     "builtIn": "Built in",
     "loadFailed": "Could not load the installed packs",

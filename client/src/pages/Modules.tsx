@@ -342,9 +342,7 @@ export default function Modules() {
 
       <Stack spacing={4} sx={{ width: '100%', maxWidth: 1100 }}>
         <Box>
-          <Typography variant="h4" fontWeight={700}>
-            {t('modulesPage.heading')}
-          </Typography>
+          {/* The shell header above already shows the page title; only the description stays. */}
           <Typography variant="body2" color="text.secondary">
             {t('modulesPage.subheading')}
           </Typography>

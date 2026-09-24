@@ -1,6 +1,5 @@
 {
   "adminToolsPage": {
-    "title": "Admin-tools",
     "description": "Voer veelgebruikte wedstrijd- en serveracties uit op je CS2-servers. Snelle acties worden eerst getoond; meer geavanceerde tools vind je hieronder.",
     "header": {
       "refresh": "Servers vernieuwen"
@@ -64,7 +63,7 @@
         "description": "Start de wedstrijd direct."
       },
       "matchEnd": {
-        "label": "Wedstrijd beëindigen (css_restart)",
+        "label": "Wedstrijd beëindigen",
         "description": "Beëindig de huidige wedstrijd geforceerd op de geselecteerde servers en zet ze terug naar warmup met css_restart."
       },
       "forcePause": {
@@ -110,7 +109,7 @@
         "inputLabel": "Rondenummer"
       },
       "cleanServers": {
-        "label": "Servers opschonen (css_restart)",
+        "label": "Servers opschonen",
         "description": "Beëindig lopende wedstrijden op de geselecteerde servers en zet ze terug naar warmup met css_restart. Dit is destructief."
       },
       "changeMap": {

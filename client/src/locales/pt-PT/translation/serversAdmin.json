@@ -1,6 +1,5 @@
 {
   "adminToolsPage": {
-    "title": "Ferramentas de admin",
     "description": "Execute ações comuns de jogos e servidores nos seus servidores CS2. As ações rápidas aparecem primeiro, com ferramentas mais avançadas abaixo.",
     "header": {
       "refresh": "Atualizar servidores"
@@ -64,7 +63,7 @@
         "description": "Inicia o jogo imediatamente."
       },
       "matchEnd": {
-        "label": "Terminar jogo (css_restart)",
+        "label": "Terminar jogo",
         "description": "Força o fim do jogo atual nos servidores selecionados e repõe-nos em warmup com css_restart."
       },
       "forcePause": {
@@ -110,7 +109,7 @@
         "inputLabel": "Número da ronda"
       },
       "cleanServers": {
-        "label": "Limpar servidores (css_restart)",
+        "label": "Limpar servidores",
         "description": "Termina qualquer jogo em curso nos servidores selecionados e repõe-nos em warmup com css_restart. Esta ação é destrutiva."
       },
       "changeMap": {
