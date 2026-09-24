@@ -102,14 +102,16 @@ async function recordRequests(page: Page): Promise<string[]> {
 }
 
 /**
- * Waits until the module loader has booted (or skipped) and the routes
- * rendered. The boot gate holds every route back until loading is done, so
- * the admin shell's <main> is there only after it. (The admin home has a
- * <main> of its own inside the shell's, hence `first()`.)
+ * Waits until the routes rendered and a path a code module may own has
+ * settled. Nothing holds the app back while modules load: the shell renders
+ * at once, and a path no route matches yet shows a pending state
+ * (`module-route-pending`) until the modules settle, then the module's page
+ * or a 404. The boot deadline is 20 seconds. (The admin home has a <main> of
+ * its own inside the shell's, hence `first()`.)
  */
 async function waitForBoot(page: Page): Promise<void> {
   await expect(page.locator('main').first()).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByTestId('modules-booting')).toHaveCount(0);
+  await expect(page.getByTestId('module-route-pending')).toHaveCount(0, { timeout: 30_000 });
 }
 
 /** Client-side navigation, keeping this page load's loader state. */
@@ -158,11 +160,15 @@ test.describe.serial('Code modules in the browser', () => {
     expect(entryScripts.length, 'index.html should load an entry script').toBeGreaterThan(0);
 
     const requested = await recordRequests(page);
-    const listed = page.waitForResponse((res) => new URL(res.url()).pathname === '/api/modules');
+    const listed = page.waitForResponse(
+      (res) => new URL(res.url()).pathname === '/api/modules/public'
+    );
     await page.goto('/');
-    // The boot asked, so the absence below is the loader deciding, not the
-    // loader never running.
-    expect((await listed).status()).toBe(200);
+    // The boot asked the public manifest, and it listed nothing, so the
+    // absence below is the loader deciding, not the loader never running.
+    const manifest = await listed;
+    expect(manifest.status()).toBe(200);
+    expect((await manifest.json()).modules).toEqual([]);
     await waitForBoot(page);
     await expect(page.getByTestId('dashboard-page')).toBeVisible({ timeout: 15_000 });
 
