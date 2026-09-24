@@ -42,6 +42,7 @@ import { pathToFileURL } from 'url';
 import { Router } from 'express';
 import { DATA_DIR } from '../config/dataDir';
 import { db } from '../config/database';
+import { runModuleMigrations } from '../config/moduleMigrations';
 import { log } from '../utils/logger';
 import { hasIntegration, listIntegrations, registerIntegration } from '../integrations/registry';
 import type { GameIntegration, LegacyRouteMount } from '../integrations/types';
@@ -266,10 +267,20 @@ async function evaluate(folder: string, dir: string): Promise<Evaluation> {
     }
     const mounts = legacyMountsOf(loaded);
 
-    // TODO(item 5): run this module's own migrations here, after it has
-    // validated and before it registers — DESIGN-modules §4.3, "Modules need
-    // migrations of their own". A migration that fails must throw a
-    // ModuleLoadError so the module is marked broken and never registered.
+    // Its own database schema, before anything can use it (DESIGN-modules
+    // §4.3). After validation, so a module that was never going to load does
+    // not leave tables behind; before seed() and registration, so nothing
+    // ever runs against a schema that is not there. The runner never throws:
+    // it answers with a status, applies each migration in its own
+    // transaction, and refuses one that reaches outside the module's own
+    // names or was edited after it ran. A module whose migrations did not all
+    // apply is broken, and says which one and why.
+    const migrated = await runModuleMigrations(loaded);
+    if (migrated.status !== 'ok') {
+      throw new ModuleLoadError(
+        `Its database migrations did not apply: ${migrated.reason ?? 'no reason given'}`
+      );
+    }
 
     if (loaded.seed) {
       try {

@@ -46,6 +46,8 @@ const VALID = `fixture-valid-${RUN}`;
 const INCOMPATIBLE = `fixture-incompatible-${RUN}`;
 const THROWS = `fixture-throws-${RUN}`;
 const MISMATCHED = `fixture-mismatched-${RUN}`;
+const MIGRATES = `fixture-migrates-${RUN}`;
+const BAD_MIGRATION = `fixture-badmig-${RUN}`;
 
 async function listModules(request: APIRequestContext): Promise<{
   platform: { clientApi: string; serverApi: string };
@@ -203,6 +205,47 @@ test.describe.serial('Code modules on disk', () => {
     expect((await request.post(`/api/modules/${INCOMPATIBLE}/enable`)).status()).toBe(200);
     await rescan(request);
     expect((await moduleRow(request, INCOMPATIBLE)).status).toBe('incompatible');
+  });
+
+  test('a module brings its own schema: its migrations run as it loads', {
+    tag: ['@api', '@modules'],
+  }, async ({ request }) => {
+    await writeFixture(request, MIGRATES, 'migrates');
+
+    // Disabled and never loaded: nothing may have touched the database yet.
+    const before = await (await request.get(`/api/test/modules/${MIGRATES}/migrations`)).json();
+    expect(before.probeTableExists, 'a disabled module gets no schema').toBe(false);
+
+    expect((await request.post(`/api/modules/${MIGRATES}/enable`)).status()).toBe(200);
+    await rescan(request);
+
+    expect((await moduleRow(request, MIGRATES)).status).toBe('ok');
+    const after = await (await request.get(`/api/test/modules/${MIGRATES}/migrations`)).json();
+    expect(after.state?.status).toBe('ok');
+    expect(after.state?.applied).toEqual(['001-probe']);
+    expect(after.probeTableExists, 'the module should have its own table').toBe(true);
+  });
+
+  test('a module whose migrations reach outside its own names is broken, and gets no schema at all', {
+    tag: ['@api', '@modules'],
+  }, async ({ request }) => {
+    await writeFixture(request, BAD_MIGRATION, 'bad-migration');
+    expect((await request.post(`/api/modules/${BAD_MIGRATION}/enable`)).status()).toBe(200);
+    await rescan(request);
+
+    const row = await moduleRow(request, BAD_MIGRATION);
+    expect(row.status).toBe('broken');
+    expect(row.reason).toContain('migrations did not apply');
+    expect(row.reason).toContain('matches');
+    expect(row.client).toBeNull();
+
+    // Refused before anything ran: not even its own, perfectly legal first
+    // migration may have been applied.
+    const state = await (await request.get(`/api/test/modules/${BAD_MIGRATION}/migrations`)).json();
+    expect(state.probeTableExists, 'a refused module must leave no table behind').toBe(false);
+
+    const health = await request.get('/health');
+    expect(health.status()).toBe(200);
   });
 
   test('a module that throws while it is imported is broken, and the platform keeps serving', {
