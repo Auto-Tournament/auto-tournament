@@ -2,12 +2,16 @@
  * Code modules on disk: `DATA_DIR/modules/<id>/`, scanned at boot
  * (DESIGN-modules §4.1, items 7 and 9 of §6).
  *
- * A code module is a `GameIntegration` built outside this repo. It is
- * installed by putting its folder in `DATA_DIR/modules/` or baking it into the
- * image, and **never through the API** (DESIGN-module-client-api, decision 2):
- * installing code takes the same access as editing `.env`, so a stolen admin
- * session cannot become code execution on the host. The API only lists
- * modules and switches them on and off.
+ * A code module is a `GameIntegration` built outside this repo. It gets into
+ * `DATA_DIR/modules/` one of two ways, and is **never uploaded**:
+ *
+ * - from the game catalog (`catalogService.ts`, DESIGN-modules §10): a
+ *   release signed with a key compiled into the platform, from our GitHub or
+ *   the image's offline snapshot. A stolen admin session can install our
+ *   signed code and nothing else, so it still cannot become arbitrary code
+ *   execution on the host.
+ * - by hand: an operator drops the folder in, which takes the same access as
+ *   editing `.env`. Such a module starts disabled.
  *
  * At boot, for each folder:
  *
@@ -157,7 +161,7 @@ async function isModuleEnabled(id: string): Promise<boolean> {
 }
 
 /** Store a disk module's switch; `null` clears it. Keeps the cache in step. */
-async function storeEnabled(id: string, enabled: boolean | null): Promise<void> {
+export async function storeEnabled(id: string, enabled: boolean | null): Promise<void> {
   await db.setAppSettingAsync(
     `${MODULE_ENABLED_KEY_PREFIX}${id}`,
     enabled === null ? null : String(enabled)
@@ -196,10 +200,17 @@ async function importServerEntry(dir: string, manifest: ModuleManifest): Promise
     throw new ModuleLoadError(`The server entry '${manifest.server}' resolves outside the module folder.`);
   }
 
+  // The version and the file's mtime in the URL make a reinstalled module a
+  // fresh ESM instance: Node caches an import by URL, so without them a
+  // module imported once (and refused, say, by its migrations) would come
+  // back as the old code after its files were replaced. A loaded module is
+  // never imported twice: an update of one waits for a restart.
+  const stamp = Math.floor((await fs.promises.stat(realFile)).mtimeMs);
+  const url = `${pathToFileURL(realFile).href}?v=${encodeURIComponent(manifest.version)}-${stamp}`;
   let namespace: unknown;
   try {
     namespace = await withTimeout(
-      import(pathToFileURL(realFile).href),
+      import(url),
       IMPORT_TIMEOUT_MS,
       `Importing the server entry did not finish within ${IMPORT_TIMEOUT_MS / 1000} seconds.`
     );
@@ -303,6 +314,22 @@ async function evaluate(folder: string, dir: string): Promise<Evaluation> {
     // transaction, and refuses one that reaches outside the module's own
     // names or was edited after it ran. A module whose migrations did not all
     // apply is broken, and says which one and why.
+    // A database that already ran migrations this version does not declare
+    // was set up by a newer version of the module: running this one against
+    // that schema is a downgrade by another route. Refused, with the names.
+    const declared = new Set((loaded.migrations ?? []).map((migration) => migration.id));
+    const ledger = await db.queryAsync<{ migration_id: string }>(
+      'SELECT migration_id FROM module_migrations WHERE module_id = ? ORDER BY migration_id',
+      [loaded.id]
+    );
+    const unknown = ledger.map((row) => row.migration_id).filter((migration) => !declared.has(migration));
+    if (unknown.length > 0) {
+      throw new ModuleLoadError(
+        `This database has migrations of '${loaded.id}' that version ${manifest.version} does not know (${unknown.join(', ')}): ` +
+          'a newer version set it up. Install that version or a newer one.'
+      );
+    }
+
     const migrated = await runModuleMigrations(loaded);
     if (migrated.status !== 'ok') {
       throw new ModuleLoadError(
@@ -398,6 +425,113 @@ async function scanOnce(): Promise<GameIntegration[]> {
     if (!seen.has(folder) && record.status !== 'ok') diskModules.delete(folder);
   }
   return loaded;
+}
+
+/** What the last scan (or `loadModuleNow`) found for one module. */
+export interface DiskModuleState {
+  status: ModuleStatus;
+  reason: string | null;
+  version: string | null;
+  name: string | null;
+  loaded: boolean;
+}
+
+export function diskModuleState(id: string): DiskModuleState | null {
+  const record = diskModules.get(id);
+  if (!record) return null;
+  return {
+    status: record.status,
+    reason: record.reason,
+    version: record.manifest?.version ?? null,
+    name: record.manifest?.name ?? null,
+    loaded: record.status === 'ok',
+  };
+}
+
+/** Whether this process runs the module's code (it loaded, and cannot unload). */
+export function isModuleLoaded(id: string): boolean {
+  return diskModules.get(id)?.status === 'ok';
+}
+
+/** Whether `id` is a module compiled into this image rather than one on disk. */
+export function isBuiltinModule(id: string): boolean {
+  return builtinIntegrations().some((integration) => integration.id === id);
+}
+
+/**
+ * Load one module now, the way boot would: evaluate `DATA_DIR/modules/<id>`
+ * and, when it is enabled and compatible, import, migrate, seed and register
+ * it, then `start()` it. For the catalog's install and enable, which load a
+ * module that is not loaded yet. A module already loaded is left as it is.
+ * Never throws; the state says what happened (null: no such folder).
+ */
+export function loadModuleNow(id: string): Promise<DiskModuleState | null> {
+  const run = scanning.then(
+    () => loadOne(id),
+    () => loadOne(id)
+  );
+  scanning = run;
+  return run;
+}
+
+async function loadOne(id: string): Promise<DiskModuleState | null> {
+  if (!isValidModuleId(id)) return null;
+  if (diskModules.get(id)?.status === 'ok') return diskModuleState(id);
+  enabledCache = null;
+  const dir = path.join(modulesDir(), id);
+  const isDirectory = await fs.promises.stat(dir).then(
+    (s) => s.isDirectory(),
+    () => false
+  );
+  if (!isDirectory) {
+    diskModules.delete(id);
+    return null;
+  }
+  let evaluation: Evaluation;
+  try {
+    evaluation = await evaluate(id, dir);
+  } catch (error) {
+    evaluation = {
+      record: { folder: id, dir, manifest: null, status: 'broken', reason: messageOf(error) },
+    };
+  }
+  diskModules.set(id, evaluation.record);
+  const { status, reason, manifest } = evaluation.record;
+  const label = manifest ? `${manifest.id}@${manifest.version}` : id;
+  if (evaluation.integration) {
+    log.success(`[MODULES] Loaded ${label} from ${dir} without a restart`);
+    try {
+      await evaluation.integration.start?.();
+    } catch (error) {
+      // Registered and serving; only its background work failed to start, the
+      // same as a failed start() at boot.
+      log.warn(`[MODULES] ${label} loaded, but its start() failed: ${messageOf(error)}`);
+    }
+  } else if (status === 'disabled') {
+    log.info(`[MODULES] ${label} is disabled`);
+  } else {
+    log.warn(`[MODULES] ${label} is ${status}: ${reason}`);
+  }
+  return diskModuleState(id);
+}
+
+/**
+ * Forget what a scan saw in a folder that is gone, unless its module is
+ * loaded: that one keeps running until the restart.
+ */
+export function forgetDiskModule(id: string): void {
+  if (diskModules.get(id)?.status !== 'ok') diskModules.delete(id);
+}
+
+/**
+ * A loaded module's files moved (an update put a new version in its folder
+ * and kept the running one in `dir`). Its client files are served from `dir`
+ * until the restart, so browsers keep getting the client half that matches
+ * the server half this process runs.
+ */
+export function relocateLoadedModule(id: string, dir: string): void {
+  const record = diskModules.get(id);
+  if (record?.status === 'ok') record.dir = dir;
 }
 
 // ---------------------------------------------------------------------------

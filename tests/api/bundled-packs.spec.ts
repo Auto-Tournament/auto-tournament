@@ -4,12 +4,16 @@ import { test, expect, type APIRequestContext } from '@playwright/test';
 import { signInViaRequest } from '../helpers/auth';
 
 /**
- * The games an instance ships with are packs, seeded once — and after that
- * they belong to the admin.
+ * The games an instance ships with are packs in an offline snapshot —
+ * available, never installed on their own — and once installed they belong
+ * to the admin.
  *
- * The platform carries no list of games in its source any more. A fresh
- * install gets `api/bundled-packs` (a committed snapshot of
- * `Auto-Tournament/packs`) installed on first boot. What matters is what
+ * The platform carries no list of games in its source any more, and since
+ * the game catalog (DESIGN-modules §10) a stock install has no games at all:
+ * `api/bundled-packs` (a committed snapshot of `Auto-Tournament/packs`) is
+ * offered in the catalog, and the admin installs what they want.
+ * `PREINSTALL_PACKS=all` installs them all on first boot instead; CI runs
+ * with it, so the rest of the suite has its games. What matters is what
  * happens *after* that, because the seed runs again on every restart:
  *
  * - a game an admin removed must **stay** removed. A game that comes back on
@@ -61,7 +65,43 @@ test.describe.serial('Bundled game packs', () => {
     expect(await signInViaRequest(request)).toBe(true);
   });
 
-  test('every game the image ships is installed, with its tile, as bundled', {
+  test('a stock install installs none of them; the catalog installs one from the snapshot', {
+    tag: ['@api', '@packs'],
+  }, async ({ request }) => {
+    try {
+      // What a first boot without PREINSTALL_PACKS does for a game it never saw.
+      expect((await request.delete(`/api/packs/${VICTIM}`)).status()).toBe(200);
+      const report = (await (
+        await request.post('/api/test/packs/reseed', { data: { forget: [VICTIM], preinstall: [] } })
+      ).json()) as { report: Record<string, string[]> };
+      expect(report.report.installed).toEqual([]);
+      expect(report.report.available).toContain(VICTIM);
+      expect((await listPacks(request)).find((pack) => pack.slug === VICTIM)).toBeUndefined();
+
+      // Offered in the catalog, from the image, with no network needed. The
+      // fake feed does not list it, so this is the snapshot's copy.
+      await request.post('/api/test/catalog', { data: { fake: true, run: 'bundled' } });
+      const listing = (await (await request.get('/api/catalog')).json()) as {
+        items: Array<{ kind: string; id: string; state: string; available: { from: string } | null }>;
+      };
+      const row = listing.items.find((item) => item.kind === 'pack' && item.id === VICTIM);
+      expect(row).toMatchObject({ state: 'available', available: { from: 'snapshot' } });
+
+      const installed = await request.post(`/api/catalog/packs/${VICTIM}/install`, {
+        data: {},
+        headers: { 'Content-Type': 'application/json' },
+      });
+      expect(installed.status(), await installed.text()).toBe(200);
+      const pack = (await listPacks(request)).find((p) => p.slug === VICTIM);
+      expect(pack?.source).toBe('bundled');
+      expect(pack?.hasIcon).toBe(true);
+    } finally {
+      await request.post('/api/test/catalog', { data: { fake: false } });
+      await restore(request);
+    }
+  });
+
+  test('with PREINSTALL_PACKS=all every game the image ships is installed, with its tile, as bundled', {
     tag: ['@api', '@packs'],
   }, async ({ request }) => {
     const packs = await listPacks(request);

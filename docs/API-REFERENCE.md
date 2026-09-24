@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 283 of them, 197 behind auth —
+Every endpoint this API serves — 305 of them, 215 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -459,7 +459,7 @@ Games an admin imported as a pack file: list, import, remove, and the pack tile.
 
 ### Modules
 
-Code modules: list built-in and on-disk modules, enable or disable one from the next restart, and serve its client files. Admin only, except the client files and the public manifest of modules to load. Modules are installed on disk, never through the API.
+Code modules: list built-in and on-disk modules, enable or disable one from the next restart, and serve its client files. Admin only, except the client files and the public manifest of modules to load. Modules are installed from the signed catalog (/api/catalog) or on disk, never uploaded.
 
 | Method | Path | Auth |
 | --- | --- | --- |
@@ -468,6 +468,24 @@ Code modules: list built-in and on-disk modules, enable or disable one from the 
 | `GET` | `/api/modules` | admin |
 | `POST` | `/api/modules/:id/enable` | admin |
 | `POST` | `/api/modules/:id/disable` | admin |
+
+### Catalog
+
+The game catalog: every pack and code module this instance has or can install, from the feed, its cache and the offline snapshot, with install, update, enable, disable, uninstall and purge. Code modules install only from signed releases. Admin only; writes must be same-site JSON.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/catalog` | admin |
+| `GET` | `/api/catalog/packs/:slug/icon.svg` | admin |
+| `GET` | `/api/catalog/modules/:id/icon.svg` | admin |
+| `POST` | `/api/catalog/packs/:slug/install` | admin |
+| `DELETE` | `/api/catalog/packs/:slug` | admin |
+| `POST` | `/api/catalog/modules/:id/install` | admin |
+| `POST` | `/api/catalog/modules/:id/update` | admin |
+| `POST` | `/api/catalog/modules/:id/enable` | admin |
+| `POST` | `/api/catalog/modules/:id/disable` | admin |
+| `DELETE` | `/api/catalog/modules/:id` | admin |
+| `POST` | `/api/catalog/modules/:id/purge` | admin |
 
 ### Me
 
@@ -541,6 +559,17 @@ E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
 | `GET` | `/api/test/modules/:id/migrations` | admin |
 | `POST` | `/api/test/modules/rescan` | admin |
 | `DELETE` | `/api/test/modules/fixtures` | admin |
+| `POST` | `/api/test/catalog` | admin |
+| `POST` | `/api/test/modules/:id/purge-probe` | admin |
+| `POST` | `/api/test/modules/:id/ledger` | admin |
+| `GET` | `/api/test/modules/:id/max-version` | admin |
+| `POST` | `/api/test/modules/:id/max-version` | admin |
+| `POST` | `/api/test/modules/:id/interrupt-swap` | admin |
+| `POST` | `/api/test/modules/restore-swaps` | admin |
+| `GET` | `/api/test/fake-catalog/catalog.json` | public |
+| `GET` | `/api/test/fake-catalog/releases/:file` | public |
+| `GET` | `/api/test/fake-catalog/packs/:file` | public |
+| `GET` | `/api/test/fake-catalog/icons/:file` | public |
 
 ### Auth
 

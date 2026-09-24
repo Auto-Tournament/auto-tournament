@@ -2,11 +2,11 @@
  * Code modules: list them, switch them on and off, and serve their client
  * files. See `modules/loader.ts` for what a code module is and how it loads.
  *
- * There is deliberately no way to add a module here. A code module is
- * installed by putting its folder in `DATA_DIR/modules/` (or baking it into
- * the image), which takes the same access as editing `.env`; an admin session
- * alone never gets to run code on the host (DESIGN-module-client-api,
- * decision 2). Game packs, which are data, are uploaded under `/api/packs`.
+ * There is deliberately no way to add a module here, and nowhere to upload
+ * one. A code module comes from the game catalog (`/api/catalog`), only as a
+ * release signed with a key compiled into the platform, or from an operator
+ * putting its folder in `DATA_DIR/modules/`, which takes the same access as
+ * editing `.env`. Game packs, which are data, are uploaded under `/api/packs`.
  *
  * Everything is admin-only except the client files and the public manifest
  * that points at them: players render module slots too (the veto, the

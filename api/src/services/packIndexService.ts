@@ -244,8 +244,24 @@ export async function fetchIndexedPack(
   const index = await readPackIndex();
   const entry = index.entries.find((candidate) => candidate.slug === wanted);
   if (!entry) return { ok: false, error: `The index does not list '${wanted}'` };
+  return fetchPackAt(packIndexBase(), wanted, entry.file);
+}
 
-  const url = resolveEntryUrl(packIndexBase(), entry.file);
+/**
+ * The pack file `file` names, relative to `base` (an index or the game
+ * catalog), validated the same way an uploaded file is, with its tile. The
+ * pack must be `slug`, and neither it nor its tile may leave `base`.
+ */
+export async function fetchPackAt(
+  base: string,
+  slug: string,
+  file: string
+): Promise<
+  | { ok: true; pack: GamePackDefinition; origin: string; tile: string | null }
+  | { ok: false; error: string }
+> {
+  const wanted = slug.trim().toLowerCase();
+  const url = resolveEntryUrl(base, file);
   if (!url) return { ok: false, error: 'That entry points outside the index' };
 
   let text: string;
@@ -280,7 +296,7 @@ export async function fetchIndexedPack(
   // permission.
   let tile: string | null = null;
   if (result.pack.icon) {
-    const iconUrl = resolveInsideIndex(packIndexBase(), url, result.pack.icon);
+    const iconUrl = resolveInsideIndex(base, url, result.pack.icon);
     if (!iconUrl) return { ok: false, error: "That pack's icon points outside the index" };
     try {
       const markup = await fetchText(iconUrl, MAX_TILE_BYTES);
