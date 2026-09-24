@@ -14,12 +14,14 @@
 import React from 'react';
 import { ManageStatusTile, useModuleTranslation } from '../../../module-sdk';
 import type { ManageStatusTileProps } from '../../types';
+import { asServerAvailability } from '../cs2.types';
 
 export const Cs2ServersFreeTile: React.FC<ManageStatusTileProps> = ({ availability }) => {
   const { t } = useModuleTranslation('cs2');
 
-  const free = availability?.availableServerCount ?? 0;
-  const total = availability?.servers.length ?? 0;
+  const fleet = asServerAvailability(availability);
+  const free = fleet?.availableServerCount ?? 0;
+  const total = fleet?.servers.length ?? 0;
 
   return <ManageStatusTile label={t('managePage.status.serversFree')} value={`${free} / ${total}`} />;
 };

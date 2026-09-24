@@ -21,7 +21,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Box, Typography } from '@mui/material';
 import { useModuleTranslation } from '../../../module-sdk';
 import type { MatchQueueBannerProps, MatchQueueStatusProps } from '../../types';
-import type { ServerAvailabilityResponse } from '../../../types/api.types';
+import { asServerAvailability, type ServerAvailability } from '../cs2.types';
 
 /** Above the list: the next allocation pass, as an alert. */
 export const Cs2MatchListAllocationBanner: React.FC<MatchQueueBannerProps> = ({
@@ -66,7 +66,7 @@ export const Cs2MatchListAllocationCountdown: React.FC<MatchQueueBannerProps> = 
  * to say about it at all, and the card shows no line.
  */
 function allocationEtaFor(
-  availability: ServerAvailabilityResponse | null,
+  availability: ServerAvailability | null,
   queueIndex: number
 ): number | null {
   if (!availability) return null;
@@ -102,7 +102,8 @@ export const Cs2MatchAllocationStatus: React.FC<MatchQueueStatusProps> = ({
   queueIndex,
 }) => {
   const { t } = useModuleTranslation('cs2');
-  const fromFleet = allocationEtaFor(availability, queueIndex);
+  const fleet = asServerAvailability(availability);
+  const fromFleet = allocationEtaFor(fleet, queueIndex);
   const [eta, setEta] = useState<number | null>(fromFleet);
 
   // Each answer from the fleet reseeds the countdown; the tick below moves it
@@ -119,7 +120,7 @@ export const Cs2MatchAllocationStatus: React.FC<MatchQueueStatusProps> = ({
 
   if (eta === null) return null;
 
-  const hasAvailableServers = (availability?.availableServerCount ?? 0) > 0;
+  const hasAvailableServers = (fleet?.availableServerCount ?? 0) > 0;
 
   return (
     <Typography

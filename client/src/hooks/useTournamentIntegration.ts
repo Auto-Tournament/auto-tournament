@@ -29,9 +29,15 @@ import type { ClientGameIntegration } from '../integrations/types';
 export function useTournamentIntegration(): {
   /** Null while the tournament is loading, and when there is no tournament. */
   integration: ClientGameIntegration | null;
+  /** The tournament's id, for a slot that takes it; null as above. */
+  tournamentId: number | null;
   loading: boolean;
 } {
   const { tournament, loading } = useTournamentStatus();
   const integration = useIntegrationFor(tournament);
-  return { integration: tournament ? integration : null, loading };
+  return {
+    integration: tournament ? integration : null,
+    tournamentId: tournament?.id ?? null,
+    loading,
+  };
 }

@@ -26,8 +26,12 @@ export default function Matches() {
   // the queued matches are waiting for (3.0 phase E). Both come from the
   // module the tournament runs; before there is a tournament, from every
   // installed module, because a standalone match can be created first.
-  const { shell, tournament: tournamentIntegration, loading: tournamentIntegrationLoading } =
-    useShellIntegrations();
+  const {
+    shell,
+    tournament: tournamentIntegration,
+    tournamentId,
+    loading: tournamentIntegrationLoading,
+  } = useShellIntegrations();
   const ServerAllocationWidget = shellModule(shell, (i) => i.matchPanels.adminView)?.matchPanels
     .adminView;
   const navigate = useNavigate();
@@ -480,13 +484,8 @@ export default function Matches() {
       )}
 
       {/* Server Allocation Status Widget */}
-      {ServerAllocationWidget && hasMatches && serverAllocationStatus && serverAllocationStatus.servers.length > 0 && (
-        <ServerAllocationWidget
-          servers={serverAllocationStatus.servers}
-          gracePeriodSeconds={serverAllocationStatus.gracePeriodSeconds}
-          requiredServerCount={serverAllocationStatus.requiredServerCount}
-        />
-      )}
+      {/* The module asks for its own resources, and shows nothing without any. */}
+      {ServerAllocationWidget && hasMatches && <ServerAllocationWidget tournamentId={tournamentId} />}
 
       {/* Status Legend */}
       {hasMatches && (

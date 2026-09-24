@@ -2319,7 +2319,7 @@ function moduleFixtureFiles(id: string, kind: ModuleFixtureKind): Record<string,
     name: `Fixture ${id}`,
     version: '1.0.0',
     serverApi: kind === 'incompatible' ? '^0.3.0' : '^0.1.0',
-    clientApi: kind === 'client-incompatible' ? '^0.3.0' : '^0.1.0',
+    clientApi: kind === 'client-incompatible' ? '^0.3.0' : '^0.2.0',
     server: 'server/index.js',
     client: 'client/index.js',
   };

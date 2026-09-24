@@ -96,7 +96,7 @@ function listed(overrides: Partial<LoadableModule> = {}): LoadableModule {
   return {
     id,
     version: '1.0.0',
-    clientApi: '^0.1.0',
+    clientApi: '^0.2.0',
     client: { entry: `/api/modules/${id}/client/index.js` },
     ...overrides,
   };
@@ -110,7 +110,7 @@ function adminRow(overrides: Partial<ModuleListEntry> = {}): ModuleListEntry {
     name: 'Fixture',
     version: '1.0.0',
     source: 'disk',
-    clientApi: '^0.1.0',
+    clientApi: '^0.2.0',
     serverApi: '^0.1.0',
     enabled: true,
     status: 'ok',
@@ -139,9 +139,11 @@ function deps(overrides: Partial<LoadDeps> = {}): LoadDeps {
 // ---------------------------------------------------------------------------
 
 test.describe('Client API range', () => {
-  test('the platform publishes 0.1.1, which a module built for ^0.1.0 still loads on', () => {
-    expect(CLIENT_API_VERSION).toBe('0.1.1');
-    expect(checkClientApi('^0.1.0', CLIENT_API_VERSION)).toBeNull();
+  test('the platform publishes 0.2.0, which a module built for ^0.2.0 loads on and one built for ^0.1.0 does not', () => {
+    // 0.2.0 reshaped slots to take ids (item 8b): a break, so the minor moved.
+    expect(CLIENT_API_VERSION).toBe('0.2.0');
+    expect(checkClientApi('^0.2.0', CLIENT_API_VERSION)).toBeNull();
+    expect(checkClientApi('^0.1.0', CLIENT_API_VERSION)?.code).toBe('outOfRange');
     // Re-exported from the SDK barrel, where a module reads it.
     const sdk = readFileSync(join(CLIENT, 'src/module-sdk/index.ts'), 'utf8');
     expect(sdk).toContain("export { CLIENT_API_VERSION } from './version';");
@@ -563,7 +565,7 @@ test.describe('Loading code modules', () => {
       failure: {
         stage: 'contract',
         code: 'outOfRange',
-        message: 'built for client API ^0.3.0; this platform provides 0.1.1',
+        message: 'built for client API ^0.3.0; this platform provides 0.2.0',
       },
     });
   });

@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardActionArea, CardContent, Typography, Box, Chip } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import BlockIcon from '@mui/icons-material/Block';
-import type { MapSide, VetoActionType } from '../../../types';
+import type { MapSide, VetoActionType } from '../cs2.types';
 import { FadeInImage } from '../common/FadeInImage';
 import { tokens, mono, withAlpha, useModuleTranslation } from '../../../module-sdk';
 

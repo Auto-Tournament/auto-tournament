@@ -37,8 +37,6 @@ export default function AdminHome() {
     discordConfigured,
     igdbConfigured,
     serversCount,
-    serverFleet,
-    pluginVersions,
     playersCount,
     adminsCount,
   } = useAdminHomeData();
@@ -119,9 +117,8 @@ export default function AdminHome() {
               </Grid>
               <Grid size={{ xs: 12, md: 4 }}>
                 <Stack spacing={2}>
-                  {ServersOverviewCard && (
-                    <ServersOverviewCard fleet={serverFleet} pluginVersions={pluginVersions} />
-                  )}
+                  {/* The module counts its own resources. */}
+                  {ServersOverviewCard && <ServersOverviewCard />}
                   <PeopleOverviewCard playersCount={playersCount} adminsCount={adminsCount} />
                 </Stack>
               </Grid>

@@ -4,11 +4,35 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
-import type { ServerAllocationInfo } from '../../../types';
 import { getBracketMatchLabel, useModuleTranslation } from '../../../module-sdk';
-import type { MatchAllocationPanelProps as ServerAllocationWidgetProps } from '../../types';
+import type { MatchAllocationPanelProps } from '../../types';
+import type { ServerAllocationInfo } from '../cs2.types';
+import { useServerAvailability } from './useServerAvailability';
 
-export const ServerAllocationWidget: React.FC<ServerAllocationWidgetProps> = ({
+/**
+ * The admin match list's server panel (`matchPanels.adminView`). It asks the
+ * fleet itself, on the match list's 5-second cadence, and shows nothing until
+ * there is at least one server to show.
+ */
+export const ServerAllocationWidget: React.FC<MatchAllocationPanelProps> = () => {
+  const { availability } = useServerAvailability(5000);
+  if (!availability || availability.servers.length === 0) return null;
+  return (
+    <ServerAllocationPanel
+      servers={availability.servers}
+      gracePeriodSeconds={availability.gracePeriodSeconds}
+      requiredServerCount={availability.requiredServerCount}
+    />
+  );
+};
+
+interface ServerAllocationPanelProps {
+  servers: ServerAllocationInfo[];
+  gracePeriodSeconds: number;
+  requiredServerCount?: number;
+}
+
+const ServerAllocationPanel: React.FC<ServerAllocationPanelProps> = ({
   servers,
   gracePeriodSeconds,
   requiredServerCount = 0,

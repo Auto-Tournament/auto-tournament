@@ -158,8 +158,8 @@ async function resolveViewerTeamForMatch(
  * Get current veto state for a match.
  *
  * NOTE: This endpoint is intentionally public so spectators can still see
- * high‑level veto results (picked maps, status) via pages like the player
- * profile or bracket. Security‑sensitive operations (choosing bans/picks)
+ * high‑level veto results (picked maps, status and, once the veto is over,
+ * its actions) via pages like the player profile or bracket. Security‑sensitive operations (choosing bans/picks)
  * are protected at the /action endpoint and via the team view UI.
  */
 router.get('/:matchSlug', async (req: Request, res: Response) => {
@@ -279,6 +279,12 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
               mapName: p.mapName,
             }))
           : [],
+        // Once the veto is over its record is public: the team and player
+        // pages already show it to anyone, and the match page's veto history
+        // reads it from here.
+        ...(vetoState.status === 'completed' && Array.isArray(vetoState.actions)
+          ? { actions: vetoState.actions }
+          : {}),
       };
 
       return res.json({

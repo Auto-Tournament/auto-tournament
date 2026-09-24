@@ -16,8 +16,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { VetoMapCard } from './VetoMapCard';
 import { getMapData, getMapDisplayName } from '../../../constants/maps';
 import { getVetoOrder } from '../../../constants/vetoOrders';
-import type { VetoState, MapSide } from '../../../types';
-import type { MapsResponse } from '../../../types/api.types';
+import type { MapSide, MapsResponse, VetoState } from '../cs2.types';
 import { FadeInImage } from '../common/FadeInImage';
 import { onSocketReconnect, useSocket, api, tokens, mono, withAlpha, useModuleTranslation } from '../../../module-sdk';
 import { vetoHistoryRowSx, vetoMapNameSx } from './vetoStyles';
@@ -109,7 +108,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       if (data.success) {
         setVetoState(data.veto);
         if (data.veto.status === 'completed') {
-          onCompleteRef.current?.(data.veto);
+          onCompleteRef.current?.();
         }
       } else {
         setError(translateVetoError(data.error) || t('vetoInterface.errors.failedToLoadVetoState'));
@@ -139,7 +138,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       // The board moved on, so a refused action from before is no longer news.
       setActionError('');
       if (updatedVeto.status === 'completed') {
-        onCompleteRef.current?.(updatedVeto);
+        onCompleteRef.current?.();
       }
     };
     const vetoEvent = `veto:update:${matchSlug}`;
@@ -155,7 +154,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           if (data.success && data.veto) {
             setVetoState(data.veto);
             if (data.veto.status === 'completed') {
-              onCompleteRef.current?.(data.veto);
+              onCompleteRef.current?.();
             }
           }
         })

@@ -22,7 +22,15 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../utils/api';
 import type { ServerAvailabilityResponse } from '../types/api.types';
-import type { ClientGameIntegration } from '../integrations/types';
+import type { ClientGameIntegration, ResourceAvailability } from '../integrations/types';
+
+/**
+ * The answer as this hook hands it out: what the slots take (the module's own
+ * shape, of which the contract names only `nextAllocationInSeconds`), and the
+ * CS2 route's shape that the match list's queue count and the Manage
+ * console's selectors still read (item 10 moves those out of core).
+ */
+export type ResourceAvailabilityAnswer = ServerAvailabilityResponse & ResourceAvailability;
 
 /** One ask, or null when it failed or the endpoint answered with no data. */
 async function askOnce(endpoint: string): Promise<ServerAvailabilityResponse | null> {
@@ -36,7 +44,7 @@ async function askOnce(endpoint: string): Promise<ServerAvailabilityResponse | n
 }
 
 interface UseResourceAvailabilityResult {
-  availability: ServerAvailabilityResponse | null;
+  availability: ResourceAvailabilityAnswer | null;
   /** Seconds until the next allocation pass, or null when there is none. */
   nextInSeconds: number | null;
   refresh: () => Promise<void>;
@@ -55,7 +63,7 @@ export function useResourceAvailability(
   // A game with nothing to wait for has no queue, not an empty one — and the
   // last answer from a game this instance has stopped running is not an answer
   // about this one, so it is read as none rather than cleared after the fact.
-  const availability = endpoint ? answer : null;
+  const availability = endpoint ? (answer as ResourceAvailabilityAnswer | null) : null;
   const nextInSeconds = endpoint ? seconds : null;
 
   const apply = useCallback((data: ServerAvailabilityResponse | null) => {

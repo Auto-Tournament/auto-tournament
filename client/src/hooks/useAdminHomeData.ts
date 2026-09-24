@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../utils/api';
-import type { PlayersResponse, ServerAvailabilityResponse, ServersResponse } from '../types/api.types';
+import type { PlayersResponse, ServersResponse } from '../types/api.types';
 
 interface AuthProviderSummary {
   id: string;
@@ -9,21 +9,6 @@ interface AuthProviderSummary {
 
 interface IgdbStatusSummary {
   configured: boolean;
-}
-
-export interface ServerFleetCounts {
-  online: number;
-  inMatch: number;
-  free: number;
-  offline: number;
-  total: number;
-}
-
-export interface PluginVersionSummary {
-  /** Distinct plugin versions reported by enabled servers that have reported one. */
-  versions: string[];
-  /** The single version every reporting server is on, when they agree. */
-  commonVersion: string | null;
 }
 
 export interface AdminHomeData {
@@ -36,20 +21,19 @@ export interface AdminHomeData {
   igdbConfigured: boolean;
   /** All servers this instance knows about, enabled or not (same source the old onboarding check used). */
   serversCount: number;
-  /** Enabled, configured servers only — the fleet the allocator actually uses (same as Manage/Matches). */
-  serverFleet: ServerFleetCounts | null;
-  pluginVersions: PluginVersionSummary | null;
   playersCount: number;
   adminsCount: number;
   refresh: () => void;
 }
 
 /**
- * Data backing the admin home page's "Finish setting up" card, Servers
- * summary and People summary. Each field comes from an endpoint that already
- * exists for another page (auth providers on Login, IGDB status on
- * Settings, server-availability on Manage/Matches, players on Players) — no
- * new backend surface.
+ * Data backing the admin home page's "Finish setting up" card and People
+ * summary. Each field comes from an endpoint that already exists for another
+ * page (auth providers on Login, IGDB status on Settings, players on
+ * Players) — no new backend surface.
+ *
+ * The game's resource card (CS2: the server fleet) counts its own resources
+ * since client API 0.2.0; this hook no longer asks for them on its behalf.
  */
 export function useAdminHomeData(): AdminHomeData {
   const [loading, setLoading] = useState(true);
@@ -57,8 +41,6 @@ export function useAdminHomeData(): AdminHomeData {
   const [discordConfigured, setDiscordConfigured] = useState(false);
   const [igdbConfigured, setIgdbConfigured] = useState(false);
   const [serversCount, setServersCount] = useState(0);
-  const [serverFleet, setServerFleet] = useState<ServerFleetCounts | null>(null);
-  const [pluginVersions, setPluginVersions] = useState<PluginVersionSummary | null>(null);
   const [playersCount, setPlayersCount] = useState(0);
   const [adminsCount, setAdminsCount] = useState(0);
 
@@ -88,49 +70,8 @@ export function useAdminHomeData(): AdminHomeData {
       // Full server list: total count for the setup checklist.
       api
         .get<ServersResponse>('/api/servers')
-        .then((res) => {
-          const servers = res.servers ?? [];
-          setServersCount(servers.length);
-
-          const versions = Array.from(
-            new Set(
-              servers
-                .filter((s) => s.enabled && s.pluginVersion)
-                .map((s) => s.pluginVersion as string)
-            )
-          );
-          setPluginVersions({
-            versions,
-            commonVersion: versions.length === 1 ? versions[0] : null,
-          });
-        })
-        .catch(() => {
-          setServersCount(0);
-          setPluginVersions(null);
-        }),
-
-      // Server availability (same source Manage's server grid uses) for the
-      // online/in-match/free/offline breakdown.
-      api
-        .get<ServerAvailabilityResponse>('/api/tournament/server-availability')
-        .then((res) => {
-          const servers = res.servers ?? [];
-          let online = 0;
-          let inMatch = 0;
-          let free = 0;
-          let offline = 0;
-          servers.forEach((s) => {
-            if (!s.online) {
-              offline += 1;
-              return;
-            }
-            online += 1;
-            if (s.allocatable) free += 1;
-            else inMatch += 1;
-          });
-          setServerFleet({ online, inMatch, free, offline, total: servers.length });
-        })
-        .catch(() => setServerFleet(null)),
+        .then((res) => setServersCount((res.servers ?? []).length))
+        .catch(() => setServersCount(0)),
 
       // Players: total count + how many are admins.
       api
@@ -160,8 +101,6 @@ export function useAdminHomeData(): AdminHomeData {
     discordConfigured,
     igdbConfigured,
     serversCount,
-    serverFleet,
-    pluginVersions,
     playersCount,
     adminsCount,
     refresh: load,

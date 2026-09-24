@@ -20,17 +20,9 @@
 
 import type { ComponentType, ReactElement } from 'react';
 import type { SvgIconComponent } from '@mui/icons-material';
-import type {
-  Match,
-  Server,
-  ServerAllocationInfo,
-  TeamMatchInfo,
-  VetoAction,
-  VetoState,
-} from '../types';
-import type { MapPool, Map as MapType, ServerAvailabilityResponse } from '../types/api.types';
+import type { Server, TeamMatchInfo } from '../types';
+import type { MapPool, Map as MapType } from '../types/api.types';
 import type { CS2MapData } from '../types/veto.types';
-import type { PluginVersionSummary, ServerFleetCounts } from '../hooks/useAdminHomeData';
 
 /** Integration id, the same value as the API's `game` column. */
 export type GameId = 'cs2' | (string & {});
@@ -80,11 +72,15 @@ export interface MatchConnectPanelProps {
   onCopy: () => void;
 }
 
-/** Admin match list: which resources (servers) the queued matches wait for. */
+/**
+ * Admin match list: which resources (servers) the queued matches wait for.
+ *
+ * The module asks its own endpoint what they are (client API 0.2.0). It
+ * renders nothing when it has none to show.
+ */
 export interface MatchAllocationPanelProps {
-  servers: ServerAllocationInfo[];
-  gracePeriodSeconds: number;
-  requiredServerCount?: number;
+  /** The tournament the list belongs to, or null before one exists (standalone matches). */
+  tournamentId: number | null;
 }
 
 /**
@@ -110,14 +106,20 @@ export interface PreMatchViewProps {
   team2Name?: string;
   /** Which team is viewing, so the phase only accepts that team's actions. */
   currentTeamSlug?: string;
-  onComplete?: (vetoState: VetoState) => void;
+  /**
+   * The phase is over, so the page can read the match again. It carries no
+   * state: what the phase decided is the module's (client API 0.2.0).
+   */
+  onComplete?: () => void;
 }
 
-/** What happened in the pre-match phase, shown once the match is on. */
+/**
+ * What happened in the pre-match phase, shown once the match is on. The
+ * module reads it itself and renders nothing when there is nothing to show
+ * (client API 0.2.0).
+ */
 export interface PreMatchHistoryProps {
-  actions: VetoAction[];
-  team1Name: string;
-  team2Name: string;
+  matchSlug: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -279,16 +281,19 @@ export interface BatchResourceDialogProps {
 // Dashboards
 // ---------------------------------------------------------------------------
 
-/** Admin home: summary card for the game's resources. */
-export interface AdminHomeResourcesProps {
-  fleet: ServerFleetCounts | null;
-  pluginVersions: PluginVersionSummary | null;
-}
+/**
+ * Admin home: summary card for the game's resources. The module counts them
+ * itself (client API 0.2.0), so it takes nothing.
+ */
+export type AdminHomeResourcesProps = Record<string, never>;
 
-/** Manage page: live grid of the game's resources and what runs on them. */
+/**
+ * Manage page: live grid of the game's resources and what runs on them. The
+ * module asks for both itself, as often as it likes (client API 0.2.0).
+ */
 export interface ManageResourcesProps {
-  servers: ServerAllocationInfo[];
-  matches: Match[];
+  /** The tournament being managed, or null before one exists. */
+  tournamentId: number | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -477,6 +482,18 @@ export interface TournamentStartSlot {
 }
 
 /**
+ * What a module's `resourceAvailabilityEndpoint` answered (client API 0.2.0).
+ *
+ * The answer is the module's own, in its own shape. Core reads one field of
+ * it, the seconds until the next allocation pass, to tick a countdown; the
+ * rest it hands back to the module's slots untouched, and the module reads it
+ * as the type it knows it is.
+ */
+export type ResourceAvailability = {
+  nextAllocationInSeconds?: number | null;
+} & Record<string, unknown>;
+
+/**
  * The bracket, above it: why the matches that are ready have not started yet
  * (3.0 phase E).
  *
@@ -493,7 +510,7 @@ export interface TournamentStartSlot {
  */
 export interface MatchQueueBannerProps {
   /** What the game's resources can take right now, or null before the first answer. */
-  availability: ServerAvailabilityResponse | null;
+  availability: ResourceAvailability | null;
   /** Seconds until the next allocation pass, ticked down locally between polls. */
   nextInSeconds: number | null;
 }
@@ -515,7 +532,7 @@ export interface MatchQueueBannerProps {
  */
 export interface MatchQueueStatusProps {
   /** What the game's resources can take right now, or null before the first answer. */
-  availability: ServerAvailabilityResponse | null;
+  availability: ResourceAvailability | null;
   /** This match's index among the upcoming matches, in the order they are shown. */
   queueIndex: number;
 }
@@ -536,7 +553,7 @@ export interface MatchQueueStatusProps {
  */
 export interface ManageStatusTileProps {
   /** What the game's resources can take right now, or null before the first answer. */
-  availability: ServerAvailabilityResponse | null;
+  availability: ResourceAvailability | null;
 }
 
 // ---------------------------------------------------------------------------

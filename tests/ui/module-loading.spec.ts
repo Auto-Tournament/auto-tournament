@@ -57,7 +57,7 @@ export default {
 const MANIFEST = {
   success: true,
   modules: [
-    { id: MODULE_ID, version: '1.0.0', clientApi: '^0.1.0', client: { entry: ENTRY } },
+    { id: MODULE_ID, version: '1.0.0', clientApi: '^0.2.0', client: { entry: ENTRY } },
   ],
 };
 
