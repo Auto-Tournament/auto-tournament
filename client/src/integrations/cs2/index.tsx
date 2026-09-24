@@ -9,8 +9,7 @@ import type { ClientGameIntegration } from '../types';
 import { links } from '../../module-sdk';
 import { MatchServerPanel } from './match/MatchServerPanel';
 import { ServerAllocationWidget } from './servers/ServerAllocationWidget';
-import ServerModal from './servers/ServerModal';
-import BatchServerModal from './servers/BatchServerModal';
+import { AddServerDialog, BatchAddServersDialog } from './servers/ResourceDialogs';
 import { ServersOverviewCard } from './servers/ServersOverviewCard';
 import { ServerGrid } from './servers/ServerGrid';
 import { VetoInterface } from './veto/VetoInterface';
@@ -122,8 +121,8 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   },
 
   resourceDialogs: {
-    add: ServerModal,
-    batchAdd: BatchServerModal,
+    add: AddServerDialog,
+    batchAdd: BatchAddServersDialog,
   },
 
   dashboardWidgets: {

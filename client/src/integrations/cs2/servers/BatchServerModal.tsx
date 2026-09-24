@@ -27,9 +27,16 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ErrorIcon from '@mui/icons-material/Error';
 import CloseIcon from '@mui/icons-material/Close';
-import type { Server } from '../../../types';
+import type { Server } from '../cs2.types';
 import { api, apiErrorMessage, useSnackbar, useModuleTranslation } from '../../../module-sdk';
-import type { BatchResourceDialogProps as BatchServerModalProps } from '../../types';
+
+/** Add many servers at once, numbered on from the ones that exist. */
+export interface BatchServerModalProps {
+  open: boolean;
+  onClose: () => void;
+  onSave: (createdIds?: string[]) => void;
+  existingServers?: Server[];
+}
 
 interface ServerConfig {
   id: string;

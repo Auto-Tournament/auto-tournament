@@ -20,7 +20,7 @@
 
 import type { ComponentType, ReactElement } from 'react';
 import type { SvgIconComponent } from '@mui/icons-material';
-import type { Server, TeamMatchInfo } from '../types';
+import type { TeamMatchInfo } from '../types';
 import type { MapPool, Map as MapType } from '../types/api.types';
 import type { CS2MapData } from '../types/veto.types';
 
@@ -260,22 +260,23 @@ export interface StandaloneContentStepProps {
 // Resources (CS2: game servers)
 // ---------------------------------------------------------------------------
 
-/** Add or edit one resource. */
+/**
+ * Add a resource, or several at once, from outside the module's own page (the
+ * tournament setup's "not enough servers" buttons).
+ *
+ * Core only opens the dialog. The module reads whatever it checks a new
+ * resource against itself (client API 0.2.0; it used to be handed the server
+ * list).
+ */
 export interface ResourceDialogProps {
   open: boolean;
-  server: Server | null;
-  servers: Server[]; // All existing servers for duplicate checking
   onClose: () => void;
-  onSave: (createdIds?: string[]) => void;
+  /** Something was added: core re-reads what it counts, and closes the dialog. */
+  onSaved: () => void;
 }
 
-/** Add many resources at once. */
-export interface BatchResourceDialogProps {
-  open: boolean;
-  onClose: () => void;
-  onSave: (createdIds?: string[]) => void;
-  existingServers?: Server[];
-}
+/** The batch dialog takes the same props. */
+export type BatchResourceDialogProps = ResourceDialogProps;
 
 // ---------------------------------------------------------------------------
 // Dashboards

@@ -15,7 +15,7 @@ import { api } from '../../../utils/api';
 import { estimateMatchCount, type GrandFinalMode } from '../../../utils/tournamentMatchCount';
 import { validateMapCount, requiresVeto } from '../../../utils/tournamentVerification';
 import { validateTeamCountForType } from '../../../utils/tournamentValidation';
-import type { Team, Server } from '../../../types';
+import type { Team } from '../../../types';
 import type { MapPoolsResponse } from '../../../types/api.types';
 import { defaultMapPool } from './defaultMapPool';
 import type { EloCalculationTemplate } from '../../../types/elo.types';
@@ -206,29 +206,11 @@ export function TournamentSetup(props: TournamentSetupProps) {
   const AddResourceDialog = integration.resourceDialogs.add;
   const BatchResourceDialog = integration.resourceDialogs.batchAdd;
 
-  const [servers, setServers] = useState<Server[]>([]);
   const [saveMapPoolModalOpen, setSaveMapPoolModalOpen] = useState(false);
   const [teamModalOpen, setTeamModalOpen] = useState(false);
   const [teamImportModalOpen, setTeamImportModalOpen] = useState(false);
   const [serverModalOpen, setServerModalOpen] = useState(false);
   const [batchServerModalOpen, setBatchServerModalOpen] = useState(false);
-
-  // Servers for the add-server dialogs.
-  const loadServers = React.useCallback(
-    () =>
-      api
-        .get<{ servers: Server[] }>('/api/servers')
-        .then((response) => setServers(response.servers || []))
-        .catch((err) => console.error('Failed to load servers:', err)),
-    []
-  );
-
-  useEffect(() => {
-    api
-      .get<{ servers: Server[] }>('/api/servers')
-      .then((response) => setServers(response.servers || []))
-      .catch((err) => console.error('Failed to load servers:', err));
-  }, []);
 
   // Switching a bracket to shuffle starts from an empty "Custom" sequence
   // instead of inheriting the static pool.
@@ -1028,11 +1010,8 @@ export function TournamentSetup(props: TournamentSetupProps) {
       {AddResourceDialog && (
         <AddResourceDialog
           open={serverModalOpen}
-          server={null}
-          servers={servers}
           onClose={() => setServerModalOpen(false)}
-          onSave={async () => {
-            await loadServers();
+          onSaved={async () => {
             await refreshServers();
             setServerModalOpen(false);
           }}
@@ -1043,12 +1022,10 @@ export function TournamentSetup(props: TournamentSetupProps) {
         <BatchResourceDialog
           open={batchServerModalOpen}
           onClose={() => setBatchServerModalOpen(false)}
-          onSave={async () => {
-            await loadServers();
+          onSaved={async () => {
             await refreshServers();
             setBatchServerModalOpen(false);
           }}
-          existingServers={servers}
         />
       )}
     </Box>

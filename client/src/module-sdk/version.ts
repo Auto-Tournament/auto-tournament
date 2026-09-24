@@ -28,5 +28,7 @@
  * - `preMatchView`'s `onComplete()` takes no argument (was the veto state).
  * - The six queue slots' `availability` is `ResourceAvailability`: the
  *   module's own answer, of which core reads only `nextAllocationInSeconds`.
+ * - `resourceDialogs.add` / `.batchAdd` take `{ open, onClose, onSaved }`
+ *   (were `server`, `servers` / `existingServers`, `onSave(createdIds)`).
  */
 export const CLIENT_API_VERSION = '0.2.0';
