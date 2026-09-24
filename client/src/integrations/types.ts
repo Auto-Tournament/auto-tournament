@@ -19,8 +19,8 @@
  */
 
 import type { ComponentType, ReactElement } from 'react';
+import type { TFunction } from 'i18next';
 import type { SvgIconComponent } from '@mui/icons-material';
-import type { MapPool, Map as MapType } from '../types/api.types';
 
 /** Integration id, the same value as the API's `game` column. */
 export type GameId = 'cs2' | (string & {});
@@ -132,48 +132,34 @@ export interface PreMatchHistoryProps {
 // Tournament setup steps, and the standalone match
 // ---------------------------------------------------------------------------
 
-/** The game's match rules inside the tournament setup (CS2: rounds, overtime). */
-export interface MatchRulesValue {
-  maxRounds: number;
-  overtimeMode?: 'enabled' | 'disabled';
-  overtimeSegments?: number | null;
-}
-
-export interface TournamentRulesStepProps {
-  value: MatchRulesValue;
-  onChange: (patch: Partial<MatchRulesValue>) => void;
-  disabled?: boolean;
-  /** Keeps the test id the old wizard had for each kind of tournament. */
-  maxRoundsTestId: string;
-}
-
-/** Game content picked for a tournament (CS2: the map pool). */
-export interface TournamentContentStepProps {
+/**
+ * What every tournament setup step of a game module gets: the tournament's
+ * settings object as the wizard holds it, and a way to merge a patch into it
+ * (3.0 item 8b). A module reads and writes only its own key in it (CS2:
+ * `cs2`, manual reporting: `manualReport`); the core stores and forwards the
+ * object without reading it, and the API keeps it in `tournament.settings`.
+ * A step that needs data (CS2: map pools and the map catalogue) loads it
+ * itself.
+ */
+export interface TournamentSettingsStepProps {
+  /** The tournament's `settings` object as the wizard has it so far. */
+  settings: Record<string, unknown>;
+  /** Merge a patch into `settings`. A module writes only its own key. */
+  onChange: (patch: Record<string, unknown>) => void;
+  /** The tournament's `game`, for a default that depends on the title. */
+  game: string;
+  /** Format id: 'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss' | 'shuffle'. */
+  type: string;
+  /** Series length ('bo3'). */
   format: string;
-  type?: string; // Tournament type - needed for shuffle tournament explanation
-  maps: string[];
-  mapPools: MapPool[];
-  availableMaps: MapType[];
-  selectedMapPool: string;
-  loadingMaps: boolean;
-  canEdit: boolean;
-  saving: boolean;
-  onMapPoolChange: (poolId: string) => void;
-  onMapsChange: (maps: string[]) => void;
-  onSaveMapPool: () => void;
-  onMapRemove?: (mapId: string) => void;
-  /**
-   * When true, hides the shuffle‑tournament specific explanation block.
-   * Useful for reusing this component in non‑tournament contexts (e.g. manual matches).
-   */
-  hideShuffleExplanation?: boolean;
-  /**
-   * When false, disables drag-and-drop ordering even for shuffle tournaments and
-   * falls back to a simple chip preview. This is handy for contexts where map
-   * order is irrelevant but we still want shuffle-style validation rules.
-   */
-  enableOrdering?: boolean;
+  disabled?: boolean;
 }
+
+/** The game's match rules inside the Format step (CS2: rounds, overtime). */
+export type TournamentRulesStepProps = TournamentSettingsStepProps;
+
+/** The game content picked for a tournament, its own step (CS2: the map pool). */
+export type TournamentContentStepProps = TournamentSettingsStepProps;
 
 /**
  * The module's own tournament settings, inside the setup wizard (3.0 phase D,
@@ -182,27 +168,124 @@ export interface TournamentContentStepProps {
  * `rules` above is the *core's* question asked in the game's words (CS2:
  * rounds and overtime). This is the module's own object inside
  * `tournament.settings` — manual reporting's `manualReport` key: what to call
- * the game, how long a series is, who has to agree with a result. The core
- * stores and forwards that object without reading it, so the step is the only
- * thing that knows its shape.
+ * the game, how long a series is, who has to agree with a result.
  *
  * A module that ships this step also owns the series-length question, so the
  * core hides its own: a tournament has one series length, and asking for it
  * twice is a way to store two different answers.
  */
-export interface TournamentGameSettingsStepProps {
-  /** The tournament's `settings` object as the wizard has it so far. */
-  settings: Record<string, unknown>;
-  /** Merge a patch into `settings`. A module writes only its own key. */
-  onChange: (patch: Record<string, unknown>) => void;
-  /** The tournament's `game`, for a default that depends on the title. */
-  game: string;
+export interface TournamentGameSettingsStepProps extends TournamentSettingsStepProps {
   /** What the catalogue calls that game, for a label that defaults to it. */
   gameName: string;
   /** The tournament's series length ('bo3'), which this step owns. */
-  format: string;
   onFormatChange: (format: string) => void;
-  disabled?: boolean;
+}
+
+/** What the wizard asks a module's setup model about: the tournament being set up. */
+export interface TournamentSetupContext {
+  game: string;
+  /** Format id ('single_elimination', ..., 'shuffle'). */
+  type: string;
+  /** Series length ('bo3'). */
+  format: string;
+}
+
+/** A row of the setup summary card or of the review of a new tournament. */
+export interface TournamentSetupRow {
+  /** Stable; the summary card's test id is `tournament-summary-<key>`. */
+  key: string;
+  label: string;
+  value: string;
+  /** Not decided yet: shown muted. */
+  pending?: boolean;
+}
+
+/** A condition the tournament needs before it can be created or started. */
+export interface TournamentSetupCheck {
+  key: string;
+  label: string;
+  met: boolean;
+}
+
+/** What the module adds around its steps. */
+export interface TournamentSetupSummary {
+  /** Rows of the summary card, after the core's. */
+  rows: TournamentSetupRow[];
+  /** Items of the Start checklist, after the core's. */
+  checklist: TournamentSetupCheck[];
+  /** Rows of the review of a tournament that is not created yet. */
+  review: TournamentSetupRow[];
+}
+
+/** One changed field, for the save confirmation of an existing tournament. */
+export interface TournamentSettingChange {
+  field: string;
+  label: string;
+  oldValue: string | string[];
+  newValue: string | string[];
+  /**
+   * False: a change worth saving that does not need the confirmation dialog
+   * on its own (CS2: the round rules). Omitted: it asks.
+   */
+  confirm?: boolean;
+}
+
+/**
+ * The rest of a game module's part in the tournament setup: plain functions
+ * of the settings object, for what the core shows around the module's steps
+ * and when it lets the organizer go on (3.0 item 8b). All optional; a module
+ * without steps needs none. `t` is the core's translate function (strings a
+ * module shares with core pages live in core's namespace; a module's own are
+ * `<id>:key`).
+ */
+export interface TournamentSetupModel {
+  /**
+   * The module's object(s) for a new tournament, as a settings patch (CS2:
+   * `{ cs2: { maps: [], maxRounds: 24, ... } }`). `from` is a saved settings
+   * object to start from: a template's, or a saved tournament's.
+   */
+  initialSettings?(
+    ctx: TournamentSetupContext,
+    from?: Record<string, unknown>
+  ): Record<string, unknown>;
+  /** A settings patch for a change of tournament type (CS2: a shuffle starts with no maps). */
+  onTypeChange?(
+    settings: Record<string, unknown>,
+    from: string,
+    to: string
+  ): Record<string, unknown>;
+  /**
+   * Why the organizer cannot go on yet, or null. `rules` is asked on the
+   * Format step (where the `rules` step shows), `content` on the module's own
+   * step and before a save.
+   */
+  stepError?(
+    step: 'rules' | 'content',
+    settings: Record<string, unknown>,
+    ctx: TournamentSetupContext,
+    t: TFunction
+  ): string | null;
+  /** Summary rows, Start checklist items and review rows for the module's settings. */
+  summary?(
+    settings: Record<string, unknown>,
+    ctx: TournamentSetupContext,
+    t: TFunction
+  ): TournamentSetupSummary;
+  /**
+   * Rounds a shuffle tournament will have with these settings (CS2: one per
+   * map), for the match estimate. Null when it cannot say.
+   */
+  roundCount?(settings: Record<string, unknown>, ctx: TournamentSetupContext): number | null;
+  /**
+   * What differs between the saved settings and the edited ones. An empty
+   * list is "no change" for the module's part of the form.
+   */
+  changes?(
+    before: Record<string, unknown>,
+    after: Record<string, unknown>,
+    ctx: TournamentSetupContext,
+    t: TFunction
+  ): TournamentSettingChange[];
 }
 
 /**
@@ -771,7 +854,16 @@ export interface ClientGameIntegration {
     content?: ComponentType<TournamentContentStepProps>;
     /** The module's own tournament settings (manual reporting: `manualReport`). */
     settings?: ComponentType<TournamentGameSettingsStepProps>;
+    /**
+     * Extra lines for the review of a tournament not created yet, that need
+     * data the module loads (CS2: the maps by name). Rendered inside the
+     * review's list, after the rows of `tournamentSetup.summary().review`.
+     */
+    review?: ComponentType<TournamentSettingsStepProps>;
   };
+
+  /** The module's answers about its settings around the setup steps; see `TournamentSetupModel`. */
+  tournamentSetup?: TournamentSetupModel;
 
   /** The admin match list's "create match" dialog (CS2: the whole standalone match form). */
   standaloneMatch?: ComponentType<StandaloneMatchProps>;

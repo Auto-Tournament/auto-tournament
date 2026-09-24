@@ -1,14 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
-import { api } from '../../utils/api';
-import type { MapPool, MapPoolsResponse, MapsResponse, Map as MapType } from '../../types/api.types';
 
-/** Enabled server count, map pools and maps for the tournament setup. Loaded once. */
+/**
+ * Enabled server count for the tournament setup. Loaded once. The game's own
+ * data (CS2: map pools and maps) is loaded by its setup steps.
+ */
 export function useTournamentFormData() {
   const [serverCount, setServerCount] = useState<number>(0);
   const [loadingServers, setLoadingServers] = useState(true);
-  const [mapPools, setMapPools] = useState<MapPool[]>([]);
-  const [availableMaps, setAvailableMaps] = useState<MapType[]>([]);
-  const [loadingMaps, setLoadingMaps] = useState(true);
 
   const refreshServers = useCallback(async () => {
     try {
@@ -28,21 +26,10 @@ export function useTournamentFormData() {
     const loadData = async () => {
       try {
         await refreshServers();
-
-        // Load map pools (filter disabled pools for tournament selection)
-        const poolsResponse = await api.get<MapPoolsResponse>('/api/map-pools?enabled=true');
-        if (!cancelled) setMapPools(poolsResponse.mapPools || []);
-
-        // Load available maps
-        const mapsResponse = await api.get<MapsResponse>('/api/maps');
-        if (!cancelled) setAvailableMaps(mapsResponse.maps || []);
       } catch (err) {
         console.error('Failed to load data:', err);
       } finally {
-        if (!cancelled) {
-          setLoadingServers(false);
-          setLoadingMaps(false);
-        }
+        if (!cancelled) setLoadingServers(false);
       }
     };
     void loadData();
@@ -54,10 +41,6 @@ export function useTournamentFormData() {
   return {
     serverCount,
     loadingServers,
-    mapPools,
-    availableMaps,
-    loadingMaps,
-    setMapPools,
     refreshServers,
   };
 }

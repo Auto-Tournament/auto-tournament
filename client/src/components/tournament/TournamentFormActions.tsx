@@ -1,23 +1,18 @@
 import { Box, Button, Tooltip, CircularProgress } from '@mui/material';
 import { DeleteForever as DeleteForeverIcon, Save as SaveIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { validateMapCount } from '../../utils/tournamentVerification';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 
 interface TournamentFormActionsProps {
   tournamentExists: boolean;
   saving: boolean;
   hasChanges: boolean;
-  type: string;
-  format: string;
-  mapsCount: number;
   /**
-   * The game is played on maps this instance picks (CS2). False for a game
-   * whose module has no map pool — a manually reported one — where "you need
-   * seven maps for the veto" is not a thing that can be true (3.0 phase D,
-   * PR D9). Defaults to true, the only case there was before.
+   * Why the game's own settings cannot be saved yet, from its module (CS2: a
+   * map pool that does not fit the format), or null. A game with no settings
+   * of its own — a manually reported one — never has one (3.0 item 8b).
    */
-  hasMaps?: boolean;
+  settingsError?: string | null;
   canEdit: boolean;
   onSave: () => void;
   onCancel?: () => void;
@@ -29,10 +24,7 @@ export function TournamentFormActions({
   tournamentExists,
   saving,
   hasChanges,
-  type,
-  format,
-  mapsCount,
-  hasMaps = true,
+  settingsError = null,
   canEdit,
   onSave,
   onCancel,
@@ -46,12 +38,7 @@ export function TournamentFormActions({
     return null;
   }
 
-  // Use verification rules system - create dummy array for validation
-  const dummyMaps = Array(mapsCount).fill('dummy');
-  const mapValidation = hasMaps
-    ? validateMapCount(dummyMaps, type, format)
-    : { valid: true as const, message: undefined };
-  const isValidMaps = mapValidation.valid;
+  const isValidMaps = settingsError === null;
 
   const handleSave = () => {
     if (!hasChanges) {
@@ -62,7 +49,7 @@ export function TournamentFormActions({
       return;
     }
     if (!isValidMaps) {
-      showWarning(mapValidation.message || t('tournament.toasts.invalidMapSelection'));
+      showWarning(settingsError || t('tournament.toasts.invalidMapSelection'));
       return;
     }
     onSave();
@@ -70,7 +57,7 @@ export function TournamentFormActions({
 
   const handleSaveTemplate = () => {
     if (!isValidMaps) {
-      showWarning(mapValidation.message || t('tournament.toasts.invalidMapSelection'));
+      showWarning(settingsError || t('tournament.toasts.invalidMapSelection'));
       return;
     }
     onSaveTemplate?.();

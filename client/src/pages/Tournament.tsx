@@ -20,6 +20,14 @@ import {
   setupStepsFor,
 } from '../components/tournament/setup/setupSteps';
 import { DEFAULT_SETUP_GAME } from '../components/tournament/setup/games';
+import {
+  gameSettingsChanges,
+  gameSettingsError,
+  gameSettingsFor,
+  gameSettingsOnTypeChange,
+  moduleKeysOf,
+} from '../components/tournament/setup/gameSettings';
+import type { TournamentSetupContext } from '../integrations/types';
 import { getIntegration } from '../integrations/registry';
 import { useModuleState } from '../module-loader/useModuleState';
 import { DEFAULT_ELO_TEMPLATE_ID } from '../components/tournament/setup/EloTemplateSelect';
@@ -68,16 +76,14 @@ const DEFAULT_FORM: SetupFormValues = {
   // Counter-Strike 2 until the organizer picks otherwise: what every
   // tournament created before 3.0 phase D was, and the `game` column default.
   game: DEFAULT_SETUP_GAME.id,
+  // The game module's settings (CS2: the map pool and round rules): its steps
+  // treat an empty object as its defaults.
   gameSettings: {},
   type: 'single_elimination',
   format: 'bo3',
   selectedTeams: [],
-  maps: [],
-  maxRounds: 24,
-  overtimeMode: 'enabled',
-  overtimeSegments: null,
   grandFinalMode: 'simple',
-  shuffleSettings: { teamSize: 5, maxRounds: 24, overtimeMode: 'enabled', overtimeSegments: null },
+  shuffleSettings: { teamSize: 5 },
   eloTemplateId: DEFAULT_ELO_TEMPLATE_ID,
   plannedTeams: 8,
   eventPage: EMPTY_EVENT_PAGE,
@@ -103,88 +109,37 @@ const formKeyOf = (tournament: TournamentRecord) =>
     tournament.type,
     tournament.format,
     tournament.teamIds,
-    tournament.maps,
     tournament.teamSize,
-    tournament.maxRounds,
-    tournament.overtimeMode,
-    tournament.overtimeSegments,
     tournament.eloTemplateId,
     grandFinalModeOf(tournament),
     tournament.game ?? null,
-    gameSettingsOf(tournament),
+    // The game module's own settings (CS2: map pool and round rules).
+    moduleKeysOf(tournament.settings),
   ]);
-
-/**
- * A game module's own settings inside `tournament.settings`: everything the
- * core does not name. The core stores and forwards them without reading them,
- * so "not one of ours" is the only test there can be (3.0 phase D, PR D9).
- */
-const CORE_SETTING_KEYS = new Set([
-  'matchFormat',
-  'thirdPlaceMatch',
-  'autoAdvance',
-  'checkInRequired',
-  'seedingMethod',
-  'grandFinalMode',
-  'maxRounds',
-  'overtimeMode',
-  'overtimeSegments',
-  'customVetoOrder',
-  'description',
-  'location',
-  'rules',
-  'rulebookUrl',
-  'prizes',
-  'schedule',
-]);
-
-const gameSettingsOf = (tournament: Pick<TournamentRecord, 'settings'>): Record<string, unknown> => {
-  const settings = (tournament.settings ?? {}) as Record<string, unknown>;
-  const out: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(settings)) {
-    if (!CORE_SETTING_KEYS.has(key)) out[key] = value;
-  }
-  return out;
-};
 
 /** Form values for a saved tournament. */
 const formFromTournament = (tournament: TournamentRecord): SetupFormValues => {
-  const segments =
-    typeof tournament.overtimeSegments === 'number' ? tournament.overtimeSegments : null;
   const teamCount = tournament.teamIds?.length ?? 0;
-  const base: SetupFormValues = {
+  const game = tournament.game || DEFAULT_SETUP_GAME.id;
+  return {
     ...DEFAULT_FORM,
     name: tournament.name,
-    game: tournament.game || DEFAULT_SETUP_GAME.id,
-    gameSettings: gameSettingsOf(tournament),
+    game,
+    // The game module's settings as saved, completed by the module.
+    gameSettings: gameSettingsFor(
+      { game, type: tournament.type, format: tournament.format },
+      tournament.settings
+    ),
     type: tournament.type,
     format: tournament.format,
     selectedTeams: tournament.teamIds || [],
-    maps: tournament.maps || [],
     eloTemplateId: tournament.eloTemplateId || DEFAULT_ELO_TEMPLATE_ID,
     // Stored even when the type isn't double elimination, so switching to it
     // (or saving untouched) keeps the saved behaviour.
     grandFinalMode: grandFinalModeOf(tournament),
     plannedTeams:
       teamCount >= 2 ? teamCount : nearestTeamCount(tournament.type, DEFAULT_FORM.plannedTeams),
-  };
-  if (tournament.type === 'shuffle') {
-    return {
-      ...base,
-      shuffleSettings: {
-        teamSize: tournament.teamSize || 5,
-        maxRounds: tournament.maxRounds || 24,
-        overtimeMode: tournament.overtimeMode ?? 'enabled',
-        overtimeSegments: segments,
-      },
-    };
-  }
-  // Bracket tournaments keep one round limit / overtime policy for every map.
-  return {
-    ...base,
-    maxRounds: tournament.maxRounds || 24,
-    overtimeMode: tournament.overtimeMode ?? 'enabled',
-    overtimeSegments: segments,
+    shuffleSettings: { teamSize: tournament.type === 'shuffle' ? tournament.teamSize || 5 : 5 },
   };
 };
 
@@ -213,19 +168,8 @@ const Tournament: React.FC = () => {
     (patch: Partial<SetupFormValues>) => setForm((prev) => ({ ...prev, ...patch })),
     []
   );
-  const {
-    name,
-    type,
-    format,
-    selectedTeams,
-    maps,
-    shuffleSettings,
-    maxRounds,
-    overtimeMode,
-    overtimeSegments,
-    grandFinalMode,
-    eloTemplateId,
-  } = form;
+  const { name, type, format, selectedTeams, shuffleSettings, grandFinalMode, eloTemplateId } =
+    form;
   // Whether the user picked a grand final mode in this edit; if not, changing
   // the type applies that type's default instead of a leftover value.
   const [grandFinalModePicked, setGrandFinalModePicked] = useState(false);
@@ -234,6 +178,8 @@ const Tournament: React.FC = () => {
   // Setup step navigation. The steps a game has differ (3.0 phase D, PR D9),
   // so "the last one" is not a constant.
   const setupGame = tournament?.game || form.game || DEFAULT_SETUP_GAME.id;
+  // What the game module's setup model is asked about (item 8b).
+  const settingsCtx: TournamentSetupContext = { game: setupGame, type, format };
   const [activeStep, setActiveStep] = useState(0);
   const [furthestStep, setFurthestStep] = useState(0);
   const goToStep = React.useCallback((index: number) => {
@@ -256,7 +202,6 @@ const Tournament: React.FC = () => {
   // snackbar (CS2: servers Steam says are out of date). 3.0 phase E.
   const [startFailure, setStartFailure] = useState<string | null>(null);
   const [saveTemplateModalOpen, setSaveTemplateModalOpen] = useState(false);
-  const [currentMapPoolId, setCurrentMapPoolId] = useState<number | null>(null);
   const [registeredPlayerCount, setRegisteredPlayerCount] = useState<number | undefined>(undefined);
   const [draftPersisted, setDraftPersisted] = useState(false);
 
@@ -352,7 +297,6 @@ const Tournament: React.FC = () => {
   const resetForm = React.useCallback(() => {
     setForm(DEFAULT_FORM);
     setGrandFinalModePicked(false);
-    setCurrentMapPoolId(null);
     setActiveStep(0);
     setFurthestStep(0);
   }, []);
@@ -382,18 +326,17 @@ const Tournament: React.FC = () => {
         name: template.name,
         type: template.type,
         format: template.format,
-        maps: template.maps || [],
+        // The game module's settings saved with the template (CS2: its pool,
+        // maps and round rules), read by the module.
+        gameSettings: gameSettingsFor(
+          { game: DEFAULT_SETUP_GAME.id, type: template.type, format: template.format },
+          settings
+        ),
         selectedTeams: options.withTeams ? template.teamIds || [] : [],
         plannedTeams:
           options.withTeams && (template.teamIds?.length ?? 0) >= 2
             ? template.teamIds!.length
             : nearestTeamCount(template.type, DEFAULT_FORM.plannedTeams),
-        // Saved global round / overtime / grand final settings, when present.
-        maxRounds:
-          typeof settings?.maxRounds === 'number' ? settings.maxRounds : DEFAULT_FORM.maxRounds,
-        overtimeMode: settings?.overtimeMode ?? DEFAULT_FORM.overtimeMode,
-        overtimeSegments:
-          typeof settings?.overtimeSegments === 'number' ? settings.overtimeSegments : null,
         grandFinalMode: settings?.grandFinalMode ?? DEFAULT_FORM.grandFinalMode,
       });
       setGrandFinalModePicked(false);
@@ -435,11 +378,9 @@ const Tournament: React.FC = () => {
 
   const handleLoadTemplate = (template: TournamentTemplate) => {
     applyTemplate(template, { withTeams: true });
-    setCurrentMapPoolId(template.mapPoolId || null);
   };
 
-  const handleSaveTemplate = (mapPoolId: number | null) => {
-    setCurrentMapPoolId(mapPoolId);
+  const handleSaveTemplate = () => {
     setSaveTemplateModalOpen(true);
   };
 
@@ -489,11 +430,18 @@ const Tournament: React.FC = () => {
         step?: number;
         furthestStep?: number;
       };
-      const { step, furthestStep: savedFurthest, ...values } = data;
+      const { step, furthestStep: savedFurthest, ...draftValues } = data;
+      // Only the fields the form still has: a draft from before 3.0 held the
+      // game's settings as fields of its own, which its steps start over.
+      const values = Object.fromEntries(
+        Object.entries(draftValues).filter(([key]) => key in DEFAULT_FORM)
+      ) as Partial<SetupFormValues>;
       setForm({
         ...DEFAULT_FORM,
         ...values,
-        shuffleSettings: { ...DEFAULT_FORM.shuffleSettings, ...(values.shuffleSettings ?? {}) },
+        shuffleSettings: {
+          teamSize: values.shuffleSettings?.teamSize ?? DEFAULT_FORM.shuffleSettings.teamSize,
+        },
         eventPage: { ...EMPTY_EVENT_PAGE, ...(values.eventPage ?? {}) },
       });
       // A draft saved for one game can hold a step the next game does not
@@ -531,33 +479,27 @@ const Tournament: React.FC = () => {
     if (type !== savedForm.type) return true;
     if (format !== savedForm.format) return true;
     if (!sameSet(selectedTeams, savedForm.selectedTeams)) return true;
-    // Shuffle plays the maps in order, so the order is part of the change.
-    if (
-      tournament.type === 'shuffle'
-        ? JSON.stringify(maps) !== JSON.stringify(savedForm.maps)
-        : !sameSet(maps, savedForm.maps)
-    )
-      return true;
     if (eloTemplateId !== savedForm.eloTemplateId) return true;
+    // The game module's settings (CS2: the map pool, in order for shuffle,
+    // and the round rules), as the module compares them.
+    if (
+      gameSettingsChanges(
+        savedForm.gameSettings,
+        form.gameSettings,
+        { ...settingsCtx, type: tournament.type },
+        t
+      ).length > 0
+    ) {
+      return true;
+    }
 
     if (tournament.type === 'shuffle') {
-      const saved = savedForm.shuffleSettings;
-      if (shuffleSettings.teamSize !== saved.teamSize) return true;
-      if (shuffleSettings.maxRounds !== saved.maxRounds) return true;
-      if ((shuffleSettings.overtimeMode ?? 'enabled') !== saved.overtimeMode) return true;
-      const localSegments =
-        typeof shuffleSettings.overtimeSegments === 'number'
-          ? shuffleSettings.overtimeSegments
-          : null;
-      if (localSegments !== saved.overtimeSegments) return true;
-    } else {
-      if (maxRounds !== savedForm.maxRounds) return true;
-      if ((overtimeMode ?? 'enabled') !== savedForm.overtimeMode) return true;
-      const localSegments = typeof overtimeSegments === 'number' ? overtimeSegments : null;
-      if (localSegments !== savedForm.overtimeSegments) return true;
-      if (tournament.type === 'double_elimination' && grandFinalMode !== savedForm.grandFinalMode) {
-        return true;
-      }
+      if (shuffleSettings.teamSize !== savedForm.shuffleSettings.teamSize) return true;
+    } else if (
+      tournament.type === 'double_elimination' &&
+      grandFinalMode !== savedForm.grandFinalMode
+    ) {
+      return true;
     }
 
     return false;
@@ -565,26 +507,22 @@ const Tournament: React.FC = () => {
 
   const handleTypeChange = (nextType: string) => {
     setForm((prev) => {
-      const next: SetupFormValues = { ...prev, type: nextType };
-      // Shuffle keeps max rounds and overtime in shuffleSettings, every other
-      // type in maxRounds/overtimeMode. Carry the values across when the type
-      // crosses that line, or the other form shows its own defaults (24, on) and
-      // the values just entered look reset (#226).
-      if (nextType === 'shuffle' && prev.type !== 'shuffle') {
-        next.shuffleSettings = {
-          ...prev.shuffleSettings,
-          maxRounds: prev.maxRounds,
-          overtimeMode: prev.overtimeMode,
-          overtimeSegments: prev.overtimeSegments,
-        };
-      } else if (nextType !== 'shuffle' && prev.type === 'shuffle') {
-        next.maxRounds = prev.shuffleSettings.maxRounds;
-        next.overtimeMode = prev.shuffleSettings.overtimeMode ?? 'enabled';
-        next.overtimeSegments =
-          typeof prev.shuffleSettings.overtimeSegments === 'number'
-            ? prev.shuffleSettings.overtimeSegments
-            : null;
-      }
+      const next: SetupFormValues = {
+        ...prev,
+        type: nextType,
+        // The game's settings follow the type as the module says (CS2: a new
+        // shuffle starts from an empty map sequence). One object for every
+        // type, so the round rules just entered carry across (#226).
+        gameSettings: {
+          ...prev.gameSettings,
+          ...gameSettingsOnTypeChange(
+            tournament?.game || prev.game || DEFAULT_SETUP_GAME.id,
+            prev.gameSettings,
+            prev.type,
+            nextType
+          ),
+        },
+      };
       // Keep the planned team count on a value the new type allows.
       if (nextType !== 'shuffle' && prev.selectedTeams.length === 0) {
         next.plannedTeams = nearestTeamCount(nextType, prev.plannedTeams);
@@ -600,18 +538,19 @@ const Tournament: React.FC = () => {
     });
   };
 
-  // Stable, so the setup's map loading doesn't re-run on every render.
-  const onMapsChange = React.useCallback(
-    (value: string[]) => patchForm({ maps: value }),
-    [patchForm]
-  );
   const handlers: SetupFormHandlers = useMemo(
     () => ({
       onNameChange: (value) => patchForm({ name: value }),
       // Switching game drops the previous module's settings: they are keyed by
       // module, and a Rocket League tournament carrying CS2's object would
-      // save a setting nothing reads and nothing can clear.
-      onGameChange: (value) => patchForm({ game: value, gameSettings: {} }),
+      // save a setting nothing reads and nothing can clear. The new game's
+      // module starts its own.
+      onGameChange: (value) =>
+        setForm((prev) => ({
+          ...prev,
+          game: value,
+          gameSettings: gameSettingsFor({ game: value, type: prev.type, format: prev.format }),
+        })),
       onGameSettingsChange: (patch) =>
         setForm((prev) => ({ ...prev, gameSettings: { ...prev.gameSettings, ...patch } })),
       onTypeChange: handleTypeChange,
@@ -622,21 +561,6 @@ const Tournament: React.FC = () => {
           selectedTeams: teamIds,
           plannedTeams: teamIds.length >= 2 ? teamIds.length : prev.plannedTeams,
         })),
-      onMapsChange,
-      onCs2SettingsChange: (patch) =>
-        setForm((prev) => {
-          if (prev.type === 'shuffle') {
-            return { ...prev, shuffleSettings: { ...prev.shuffleSettings, ...patch } };
-          }
-          return {
-            ...prev,
-            ...(patch.maxRounds !== undefined ? { maxRounds: patch.maxRounds } : {}),
-            ...(patch.overtimeMode !== undefined ? { overtimeMode: patch.overtimeMode } : {}),
-            ...('overtimeSegments' in patch
-              ? { overtimeSegments: patch.overtimeSegments ?? null }
-              : {}),
-          };
-        }),
       onGrandFinalModeChange: (mode) => {
         patchForm({ grandFinalMode: mode });
         setGrandFinalModePicked(true);
@@ -649,12 +573,19 @@ const Tournament: React.FC = () => {
     }),
     // handleTypeChange reads grandFinalModePicked and the saved tournament.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [patchForm, onMapsChange, grandFinalModePicked, tournament]
+    [patchForm, grandFinalModePicked, tournament]
   );
 
   const eloTemplateName = (id: string) => eloTemplates.find((tpl) => tpl.id === id)?.name ?? id;
 
-  const gameHasMaps = Boolean(getIntegration(setupGame).tournamentSetupSteps.content);
+  const setupSteps = getIntegration(setupGame).tournamentSetupSteps;
+
+  /**
+   * The game module's settings as they are saved: the form's, completed by the
+   * module (CS2: every field of `settings.cs2`, so the API gets the whole
+   * object whatever steps were visited).
+   */
+  const savedGameSettings = () => gameSettingsFor(settingsCtx, form.gameSettings);
 
   const handleSave = async () => {
     if (!name.trim()) {
@@ -662,17 +593,14 @@ const Tournament: React.FC = () => {
       return;
     }
 
-    // Only for a game played on maps this instance picks: a manually reported
-    // tournament has no map pool to be empty (3.0 phase D, PR D9).
-    if (gameHasMaps && maps.length === 0) {
-      showError(t('tournament.toasts.selectAtLeastOneMap'));
-      return;
-    }
-
-    // Validate global max rounds for non-shuffle tournaments
-    if (type !== 'shuffle') {
-      if (maxRounds < 1 || maxRounds > 30) {
-        showError(t('tournament.toasts.maxRoundsRange'));
+    // The game's own settings, checked by its module, for the steps it has:
+    // a manually reported tournament has no map pool to be empty (3.0 phase
+    // D, PR D9).
+    for (const step of ['content', 'rules'] as const) {
+      if (!(step === 'content' ? setupSteps.content : setupSteps.rules)) continue;
+      const error = gameSettingsError(step, form.gameSettings, settingsCtx, t);
+      if (error) {
+        showError(error);
         return;
       }
     }
@@ -682,10 +610,6 @@ const Tournament: React.FC = () => {
       // Validate shuffle settings
       if (shuffleSettings.teamSize < 2 || shuffleSettings.teamSize > 10) {
         showError(t('tournament.toasts.teamSizeRange'));
-        return;
-      }
-      if (shuffleSettings.maxRounds < 1 || shuffleSettings.maxRounds > 30) {
-        showError(t('tournament.toasts.maxRoundsRange'));
         return;
       }
       // For shuffle tournaments, use the shuffle-specific endpoint
@@ -760,12 +684,20 @@ const Tournament: React.FC = () => {
           newValue: newTeams.length > 0 ? newTeams : [],
         });
       }
-      if (JSON.stringify([...maps].sort()) !== JSON.stringify([...tournament.maps].sort())) {
+      // The game module's changes that ask for a confirmation (CS2: the map
+      // pool; its round rules have never asked).
+      for (const change of gameSettingsChanges(
+        savedForm?.gameSettings ?? {},
+        form.gameSettings,
+        settingsCtx,
+        t
+      )) {
+        if (change.confirm === false) continue;
         detectedChanges.push({
-          field: 'maps',
-          label: t('tournament.labels.mapPool'),
-          oldValue: tournament.maps.length > 0 ? tournament.maps : [],
-          newValue: maps.length > 0 ? maps : [],
+          field: change.field,
+          label: change.label,
+          oldValue: change.oldValue,
+          newValue: change.newValue,
         });
       }
       const savedElo = tournament.eloTemplateId || DEFAULT_ELO_TEMPLATE_ID;
@@ -805,18 +737,13 @@ const Tournament: React.FC = () => {
     setSaving(true);
 
     try {
-      // Shuffle tournament configuration
+      // Shuffle tournament configuration. The map sequence and round rules
+      // are the game module's settings (CS2: settings.cs2).
       const payload = {
         name,
-        mapSequence: maps, // Maps in order = rounds
         teamSize: shuffleSettings.teamSize || 5,
-        maxRounds: shuffleSettings.maxRounds,
-        overtimeMode: shuffleSettings.overtimeMode ?? 'enabled',
-        overtimeSegments:
-          typeof shuffleSettings.overtimeSegments === 'number'
-            ? shuffleSettings.overtimeSegments
-            : undefined,
         eloTemplateId,
+        settings: savedGameSettings(),
       };
 
       const response = await api.post<{
@@ -879,27 +806,20 @@ const Tournament: React.FC = () => {
       const settings = {
         ...baseSettings,
         ...(type === 'double_elimination' ? { grandFinalMode } : {}),
-        // The game module's own object, which the core stores without reading.
-        ...form.gameSettings,
+        // The game module's own object (CS2: the map pool and round rules),
+        // which the core stores without reading.
+        ...savedGameSettings(),
       };
 
       const payload = {
         name,
         type,
         format,
-        // A game with no map pool sends none, whatever a draft carried over
-        // from a game that has one.
-        maps: gameHasMaps ? maps : [],
         // Only on create: the API's update route does not take a game, and a
         // tournament's matches were built by the module that owns it.
         ...(tournament ? {} : { game: form.game }),
         teamIds: selectedTeams,
         settings,
-        maxRounds,
-        overtimeMode,
-        // null, not undefined: the API leaves an absent field alone, so
-        // sending undefined made "back to the Auto Tournament CS2 default" unsaveable.
-        overtimeSegments: typeof overtimeSegments === 'number' ? overtimeSegments : null,
       };
 
       const response = await saveTournament(payload);
@@ -1181,7 +1101,6 @@ const Tournament: React.FC = () => {
           hasChanges={hasChanges()}
           hasBracket={hasBracket}
           registeredPlayerCount={tournament?.type === 'shuffle' ? registeredPlayerCount : undefined}
-          mapPoolId={currentMapPoolId}
           activeStep={activeStep}
           furthestStep={furthestStep}
           onStepChange={goToStep}
@@ -1303,13 +1222,11 @@ const Tournament: React.FC = () => {
           name,
           type,
           format,
-          maps,
-          mapPoolId: currentMapPoolId,
           teamIds: selectedTeams,
           settings: tournament?.settings,
-          maxRounds,
-          overtimeMode,
-          overtimeSegments,
+          // The game module's settings (CS2: pool, maps, round rules) are
+          // saved with the template as they are.
+          gameSettings: savedGameSettings(),
           grandFinalMode,
         }}
       />

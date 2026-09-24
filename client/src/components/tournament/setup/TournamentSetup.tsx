@@ -13,14 +13,11 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../utils/api';
 import { estimateMatchCount, type GrandFinalMode } from '../../../utils/tournamentMatchCount';
-import { validateMapCount, requiresVeto } from '../../../utils/tournamentVerification';
+import { requiresVeto } from '../../../utils/tournamentVerification';
 import { validateTeamCountForType } from '../../../utils/tournamentValidation';
 import type { Team } from '../../../types';
-import type { MapPoolsResponse } from '../../../types/api.types';
-import { defaultMapPool } from './defaultMapPool';
 import type { EloCalculationTemplate } from '../../../types/elo.types';
 import type { TournamentSettings, TournamentTemplate } from '../../../types/tournament.types';
-import SaveMapPoolModal from '../../modals/SaveMapPoolModal';
 import TeamModal from '../../modals/TeamModal';
 import { TeamImportModal } from '../../modals/TeamImportModal';
 import { TeamSelectionStep } from '../TeamSelectionStep';
@@ -39,7 +36,8 @@ import { SegmentedControl } from './SegmentedControl';
 import { TeamCountStepper } from './TeamCountStepper';
 import { getIntegration } from '../../../integrations/registry';
 import { useModuleState } from '../../../module-loader/useModuleState';
-import type { MatchRulesValue } from '../../../integrations/types';
+import type { TournamentSetupContext } from '../../../integrations/types';
+import { gameSettingsError, gameSettingsRoundCount, gameSettingsSummary } from './gameSettings';
 import { EloTemplateSelect } from './EloTemplateSelect';
 import { ReviewStep, type ReviewTournament } from './ReviewStep';
 import { GamePicker } from './GamePicker';
@@ -56,18 +54,15 @@ export interface SetupFormValues {
    */
   game: string;
   /**
-   * The game module's own object(s) inside `tournament.settings` — manual
-   * reporting's `manualReport`. The core never reads them; the module's
-   * settings step is the only thing that knows the shape.
+   * The game module's own object(s) inside `tournament.settings`: CS2's
+   * `cs2` (map pool, round rules), manual reporting's `manualReport`. The
+   * core never reads them; the module's steps and setup model
+   * (`tournamentSetup`) are the only things that know the shape (item 8b).
    */
   gameSettings: Record<string, unknown>;
   type: string;
   format: string;
   selectedTeams: string[];
-  maps: string[];
-  maxRounds: number;
-  overtimeMode: 'enabled' | 'disabled';
-  overtimeSegments: number | null;
   grandFinalMode: GrandFinalMode;
   shuffleSettings: ShuffleTournamentSettings;
   eloTemplateId: string;
@@ -84,8 +79,6 @@ export interface SetupFormHandlers {
   onTypeChange: (type: string) => void;
   onFormatChange: (format: string) => void;
   onTeamsChange: (teamIds: string[]) => void;
-  onMapsChange: (maps: string[]) => void;
-  onCs2SettingsChange: (patch: Partial<MatchRulesValue>) => void;
   onGrandFinalModeChange: (mode: GrandFinalMode) => void;
   onShuffleSettingsChange: (settings: ShuffleTournamentSettings) => void;
   onEloTemplateChange: (templateId: string) => void;
@@ -112,8 +105,6 @@ interface TournamentSetupProps {
   hasChanges: boolean;
   hasBracket: boolean;
   registeredPlayerCount?: number;
-  /** Map pool picked by a loaded template. */
-  mapPoolId: number | null;
   activeStep: number;
   /** Furthest step reached; steps up to it that validate show as done. */
   furthestStep: number;
@@ -125,7 +116,7 @@ interface TournamentSetupProps {
   onSave: () => void;
   onDiscardChanges: () => void;
   onDelete: () => void;
-  onSaveTemplate: (mapPoolId: number | null) => void;
+  onSaveTemplate: () => void;
   onRefreshTeams: () => void | Promise<void>;
   onStart: () => void;
   onRegenerate: () => void;
@@ -165,80 +156,40 @@ export function TournamentSetup(props: TournamentSetupProps) {
     integrationId: getIntegration(game).id,
   };
 
-  // ---- Data the steps need (servers, map pools, maps) ----------------------
-  const {
-    serverCount,
-    loadingServers,
-    mapPools,
-    availableMaps,
-    loadingMaps,
-    setMapPools,
-    refreshServers,
-  } = useTournamentFormData();
-  // The pool the user picked; until then one is derived from the form.
-  const [pickedMapPool, setSelectedMapPool] = useState('');
-  const selectedMapPool =
-    pickedMapPool || defaultMapPool(mapPools, form.type, form.maps, props.mapPoolId);
+  // ---- Data the steps need (servers) ---------------------------------------
+  // The game's own data (CS2: map pools and maps) is its steps' to load.
+  const { serverCount, loadingServers, refreshServers } = useTournamentFormData();
 
   // Game-specific steps and dialogs (CS2: rounds/overtime, map pool, servers).
   const integration = getIntegration(game);
   const RulesStep = integration.tournamentSetupSteps.rules;
   const ContentStep = integration.tournamentSetupSteps.content;
   const GameSettingsStep = integration.tournamentSetupSteps.settings;
+  const GameReview = integration.tournamentSetupSteps.review;
   // A module with its own settings step asks for the series length there, so
   // the core does not ask a second time (see TournamentGameSettingsStepProps).
   const coreOwnsSeriesLength = !GameSettingsStep;
-  const hasMapsStep = Boolean(ContentStep);
   const needsServers = integration.capabilities.servers;
-
-  // A new tournament with no maps yet starts with the default pool's maps —
-  // but only for a game that is played on maps this instance picks. Filling a
-  // manually reported tournament's map pool in the background would store
-  // seven CS2 maps on a Rocket League cup (3.0 phase D, PR D9).
-  const mapsInitialized = useRef(false);
-  useEffect(() => {
-    if (mapsInitialized.current || mapPools.length === 0 || !hasMapsStep) return;
-    mapsInitialized.current = true;
-    if (form.maps.length > 0 || selectedMapPool === 'custom') return;
-    const pool = mapPools.find((p) => p.id.toString() === selectedMapPool);
-    if (pool) handlers.onMapsChange(pool.mapIds);
-  }, [mapPools, form.maps.length, selectedMapPool, handlers, hasMapsStep]);
+  // What every one of the module's steps and its setup model get: the game's
+  // settings object, which only the module reads (item 8b).
+  const settingsCtx: TournamentSetupContext = { game, type: form.type, format: form.format };
+  const settingsStepProps = {
+    settings: form.gameSettings,
+    onChange: handlers.onGameSettingsChange,
+    game,
+    type: form.type,
+    format: form.format,
+    disabled: locked,
+  };
+  const gameSummary = gameSettingsSummary(form.gameSettings, settingsCtx, t);
   const AddResourceDialog = integration.resourceDialogs.add;
   const BatchResourceDialog = integration.resourceDialogs.batchAdd;
 
-  const [saveMapPoolModalOpen, setSaveMapPoolModalOpen] = useState(false);
   const [teamModalOpen, setTeamModalOpen] = useState(false);
   const [teamImportModalOpen, setTeamImportModalOpen] = useState(false);
   const [serverModalOpen, setServerModalOpen] = useState(false);
   const [batchServerModalOpen, setBatchServerModalOpen] = useState(false);
 
-  // Switching a bracket to shuffle starts from an empty "Custom" sequence
-  // instead of inheriting the static pool.
-  const handleTypeChange = (nextType: string) => {
-    if (nextType === 'shuffle' && form.type !== 'shuffle') {
-      setSelectedMapPool('custom');
-      if (form.maps.length > 0) handlers.onMapsChange([]);
-    }
-    handlers.onTypeChange(nextType);
-  };
-
-  const handleMapPoolChange = (poolId: string) => {
-    setSelectedMapPool(poolId);
-    if (poolId === 'custom') {
-      handlers.onMapsChange([]);
-      return;
-    }
-    const pool = mapPools.find((p) => p.id.toString() === poolId);
-    if (pool) handlers.onMapsChange(pool.mapIds);
-  };
-
-  const handleMapRemove = (mapId: string) => {
-    if (selectedMapPool && selectedMapPool !== 'custom') setSelectedMapPool('custom');
-    handlers.onMapsChange(form.maps.filter((id) => id !== mapId));
-  };
-
-  const mapName = (mapId: string) =>
-    availableMaps.find((m) => m.id === mapId)?.displayName ?? mapId;
 
   // ---- Templates ("Start from a template") ---------------------------------
   const [templates, setTemplates] = useState<TournamentTemplate[]>([]);
@@ -258,26 +209,17 @@ export function TournamentSetup(props: TournamentSetupProps) {
   }, [tournament]);
 
   // ---- Validation and navigation ------------------------------------------
-  const cs2Value: MatchRulesValue = isShuffle
-    ? {
-        maxRounds: form.shuffleSettings.maxRounds,
-        overtimeMode: form.shuffleSettings.overtimeMode,
-        overtimeSegments: form.shuffleSettings.overtimeSegments,
-      }
-    : {
-        maxRounds: form.maxRounds,
-        overtimeMode: form.overtimeMode,
-        overtimeSegments: form.overtimeSegments,
-      };
-
   const validationInput = {
     name: form.name,
     type: form.type,
     format: form.format,
     teamCount: form.selectedTeams.length,
-    mapIds: form.maps,
-    maxRounds: cs2Value.maxRounds,
     teamSize: form.shuffleSettings.teamSize,
+    // Only a step the game has: a game without match rules has nothing to check.
+    moduleError: (step: 'rules' | 'content') =>
+      (step === 'rules' ? RulesStep : ContentStep)
+        ? gameSettingsError(step, form.gameSettings, settingsCtx, t)
+        : null,
   };
   const errorFor = (step: SetupStepId) => stepError(step, validationInput, t);
   const currentError = errorFor(stepId);
@@ -320,7 +262,8 @@ export function TournamentSetup(props: TournamentSetupProps) {
     type: form.type,
     teamCount: teamCountForMath,
     grandFinalMode: form.grandFinalMode,
-    mapCount: form.maps.length,
+    // Shuffle: one round per unit of the game's content (CS2: per map).
+    mapCount: gameSettingsRoundCount(form.gameSettings, settingsCtx) ?? 0,
     playerCount: tournament ? props.registeredPlayerCount : undefined,
     teamSize: form.shuffleSettings.teamSize,
   });
@@ -392,27 +335,8 @@ export function TournamentSetup(props: TournamentSetupProps) {
           label: t('tournament.setup.summary.signUp'),
           value: t('tournament.setup.summary.signUpOrganizer'),
         },
-    ...(!hasMapsStep
-      ? []
-      : [
-    form.maps.length > 0
-      ? {
-          key: 'maps',
-          label: t('tournament.setup.summary.maps'),
-          value: isShuffle
-            ? t('tournament.setup.summary.mapsRounds', {
-                maps: t('tournament.counts.maps', { count: form.maps.length }),
-                rounds: t('tournament.counts.rounds', { count: form.maps.length }),
-              })
-            : t('tournament.counts.maps', { count: form.maps.length }),
-        }
-      : {
-          key: 'maps',
-          label: t('tournament.setup.summary.maps'),
-          value: t('tournament.setup.summary.notSet'),
-          pending: true,
-        },
-      ]),
+    // The game's own rows (CS2: the map pool).
+    ...gameSummary.rows,
   ];
 
   // Only real preconditions for Start.
@@ -436,17 +360,8 @@ export function TournamentSetup(props: TournamentSetupProps) {
           label: t('tournament.setup.checklist.teams'),
           met: selectedCount >= 2 && teamRule.isValid,
         },
-    ...(hasMapsStep
-      ? [
-          {
-            key: 'maps',
-            label: requiresVeto(form.type, form.format)
-              ? t('tournament.setup.checklist.mapsVeto')
-              : t('tournament.setup.checklist.maps'),
-            met: validateMapCount(form.maps, form.type, form.format).valid,
-          },
-        ]
-      : []),
+    // The game's own conditions (CS2: a valid map pool).
+    ...gameSummary.checklist,
     { key: 'created', label: t('tournament.setup.checklist.created'), met: !!tournament },
   ];
   if (tournament && canEdit) {
@@ -527,7 +442,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
         return (
           <>
             <Field label={t('tournament.setup.format.label')}>
-              <FormatCards value={form.type} onChange={handleTypeChange} disabled={locked} />
+              <FormatCards value={form.type} onChange={handlers.onTypeChange} disabled={locked} />
             </Field>
 
             {isShuffle ? (
@@ -610,26 +525,13 @@ export function TournamentSetup(props: TournamentSetupProps) {
               </Box>
             )}
 
-            {RulesStep && (
-              <RulesStep
-                value={cs2Value}
-                onChange={handlers.onCs2SettingsChange}
-                disabled={locked}
-                maxRoundsTestId={
-                  isShuffle ? 'shuffle-max-rounds-field' : 'tournament-max-rounds-field'
-                }
-              />
-            )}
+            {RulesStep && <RulesStep {...settingsStepProps} />}
 
             {GameSettingsStep && (
               <GameSettingsStep
-                settings={form.gameSettings}
-                onChange={handlers.onGameSettingsChange}
-                game={game}
+                {...settingsStepProps}
                 gameName={pickedGame.name}
-                format={form.format}
                 onFormatChange={handlers.onFormatChange}
-                disabled={locked}
               />
             )}
           </>
@@ -694,23 +596,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
         )?.[form.format];
         return (
           <>
-            {ContentStep && (
-              <ContentStep
-                format={form.format}
-                type={form.type}
-                maps={form.maps}
-                mapPools={mapPools}
-                availableMaps={availableMaps}
-                selectedMapPool={selectedMapPool}
-                loadingMaps={loadingMaps}
-                canEdit={canEdit}
-                saving={saving}
-                onMapPoolChange={handleMapPoolChange}
-                onMapsChange={handlers.onMapsChange}
-                onMapRemove={handleMapRemove}
-                onSaveMapPool={() => setSaveMapPoolModalOpen(true)}
-              />
-            )}
+            {ContentStep && <ContentStep {...settingsStepProps} />}
             <Field label={t('tournament.setup.maps.vetoTitle')}>
               <Typography
                 variant="body2"
@@ -768,26 +654,21 @@ export function TournamentSetup(props: TournamentSetupProps) {
               name: form.name,
               type: form.type,
               format: form.format,
-              maps: form.maps,
               selectedTeams: form.selectedTeams,
-              maxRounds: cs2Value.maxRounds,
-              overtimeMode: cs2Value.overtimeMode,
-              overtimeSegments: cs2Value.overtimeSegments,
               teamSize: form.shuffleSettings.teamSize,
             }}
+            gameReviewRows={gameSummary.review}
+            gameReview={GameReview ? <GameReview {...settingsStepProps} /> : null}
+            gameSettingsError={
+              ContentStep ? gameSettingsError('content', form.gameSettings, settingsCtx, t) : null
+            }
+            roundCount={gameSettingsRoundCount(form.gameSettings, settingsCtx)}
             teams={props.teams}
-            mapName={mapName}
             serverCount={serverCount}
             onSave={props.onSave}
             onDiscardChanges={props.onDiscardChanges}
             onDelete={props.onDelete}
-            onSaveTemplate={() => {
-              const poolId =
-                selectedMapPool && selectedMapPool !== 'custom' && mapPools.length > 0
-                  ? parseInt(selectedMapPool, 10)
-                  : null;
-              props.onSaveTemplate(poolId);
-            }}
+            onSaveTemplate={props.onSaveTemplate}
             onEdit={() => goTo(steps.indexOf('basics'))}
             onStart={props.onStart}
             onRegenerate={props.onRegenerate}
@@ -969,20 +850,6 @@ export function TournamentSetup(props: TournamentSetupProps) {
           />
         </Box>
       </Box>
-
-      <SaveMapPoolModal
-        open={saveMapPoolModalOpen}
-        mapIds={form.maps}
-        onClose={() => setSaveMapPoolModalOpen(false)}
-        onSave={async () => {
-          try {
-            const poolsResponse = await api.get<MapPoolsResponse>('/api/map-pools');
-            setMapPools(poolsResponse.mapPools || []);
-          } catch (err) {
-            console.error('Failed to reload map pools:', err);
-          }
-        }}
-      />
 
       <TeamModal
         open={teamModalOpen}

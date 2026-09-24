@@ -2,7 +2,6 @@ import type { TFunction } from 'i18next';
 import { TOURNAMENT_TYPES } from '../../../constants/tournament';
 import { getIntegration } from '../../../integrations/registry';
 import { validateTeamCountForType } from '../../../utils/tournamentValidation';
-import { validateMapCount } from '../../../utils/tournamentVerification';
 
 export const SETUP_STEPS = [
   'game',
@@ -43,15 +42,19 @@ export interface SetupValidationInput {
   type: string;
   format: string;
   teamCount: number;
-  mapIds: string[];
-  maxRounds: number;
   teamSize: number;
+  /**
+   * The game module's own check of its settings (`tournamentSetup.stepError`):
+   * 'rules' on the Format step, 'content' on the module's step.
+   */
+  moduleError?: (step: 'rules' | 'content') => string | null;
 }
 
 /**
  * The message that blocks Continue on a step, or null when it is fine. Uses
  * the same rules as saving (Tournament.tsx handleSave) so a step never lets
- * through what the save would reject.
+ * through what the save would reject. The game's own settings (CS2: max
+ * rounds, the map pool) are the module's to check.
  */
 export function stepError(
   step: SetupStepId,
@@ -68,10 +71,7 @@ export function stepError(
       if (isShuffle && (input.teamSize < 2 || input.teamSize > 10)) {
         return t('tournament.toasts.teamSizeRange');
       }
-      if (input.maxRounds < 1 || input.maxRounds > 30) {
-        return t('tournament.toasts.maxRoundsRange');
-      }
-      return null;
+      return input.moduleError?.('rules') ?? null;
     case 'teams': {
       if (isShuffle) return null;
       if (input.teamCount === 0) return t('tournament.toasts.selectAtLeastTwoTeams');
@@ -80,12 +80,8 @@ export function stepError(
         ? null
         : (validation.error ?? t('tournament.toasts.invalidTeamCount'));
     }
-    case 'maps': {
-      const validation = validateMapCount(input.mapIds, input.type, input.format);
-      return validation.valid
-        ? null
-        : (validation.message ?? t('tournament.toasts.invalidMapSelection'));
-    }
+    case 'maps':
+      return input.moduleError?.('content') ?? null;
     default:
       return null;
   }

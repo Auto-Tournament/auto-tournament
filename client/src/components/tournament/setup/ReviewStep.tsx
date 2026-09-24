@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Alert, Box, Button, Typography } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import { useTranslation } from 'react-i18next';
@@ -6,8 +7,8 @@ import { TournamentFormActions } from '../TournamentFormActions';
 import { ShufflePlayerRegistration } from '../ShufflePlayerRegistration';
 import { ShuffleTournamentStats } from '../ShuffleTournamentStats';
 import { ShuffleMapsCard } from '../ShuffleMapsCard';
-import { deriveOvertimeOption } from '../ShuffleTournamentConfigStep';
 import { useIntegration } from '../../../integrations/registry';
+import type { TournamentSetupRow } from '../../../integrations/types';
 import type { Team } from '../../../types';
 
 export interface ReviewTournament {
@@ -39,15 +40,21 @@ interface ReviewStepProps {
     name: string;
     type: string;
     format: string;
-    maps: string[];
     selectedTeams: string[];
-    maxRounds: number;
-    overtimeMode?: 'enabled' | 'disabled';
-    overtimeSegments?: number | null;
     teamSize: number;
   };
+  /** The game module's review rows (CS2: match rules), from its setup model. */
+  gameReviewRows: TournamentSetupRow[];
+  /** The game module's own review lines that need its data (CS2: the maps by name). */
+  gameReview: ReactNode;
+  /**
+   * Why the game's settings cannot be saved yet (CS2: the map pool does not
+   * fit the format), or null.
+   */
+  gameSettingsError: string | null;
+  /** Shuffle: rounds the game's settings give (CS2: one per map), or null. */
+  roundCount: number | null;
   teams: Team[];
-  mapName: (mapId: string) => string;
   serverCount: number;
   onSave: () => void;
   onDiscardChanges: () => void;
@@ -78,10 +85,7 @@ export function ReviewStep(props: ReviewStepProps) {
       tournamentExists={!!tournament}
       saving={props.saving}
       hasChanges={props.hasChanges}
-      type={form.type}
-      format={form.format}
-      mapsCount={form.maps.length}
-      hasMaps={hasMaps}
+      settingsError={props.gameSettingsError}
       canEdit={props.canEdit}
       onSave={props.onSave}
       onCancel={tournament ? props.onDiscardChanges : undefined}
@@ -168,23 +172,21 @@ export function ReviewStep(props: ReviewStepProps) {
 }
 
 /** The old wizard's review, for a tournament that doesn't exist yet. */
-function NewTournamentDetails({ form, teams, mapName, serverCount, game }: ReviewStepProps) {
+function NewTournamentDetails({
+  form,
+  teams,
+  serverCount,
+  game,
+  gameReviewRows,
+  gameReview,
+  roundCount,
+}: ReviewStepProps) {
   const { t } = useTranslation();
   const isShuffle = form.type === 'shuffle';
   const integration = useIntegration(game);
-  const hasMaps = Boolean(integration.tournamentSetupSteps.content);
-  const hasMatchRules = Boolean(integration.tournamentSetupSteps.rules);
   const hasServers = integration.capabilities.servers;
-  const overtimeOption = deriveOvertimeOption(form.overtimeMode, form.overtimeSegments);
   const requiredServers = Math.max(1, Math.ceil(form.selectedTeams.length / 2));
   const hasEnoughServers = serverCount >= requiredServers;
-
-  const overtimeLine =
-    overtimeOption === 'enabled'
-      ? t('tournament.matchRules.overtimeEnabled')
-      : overtimeOption === 'disabledNoDraws'
-        ? t('tournament.matchRules.overtimeDisabledNoDraws')
-        : t('tournament.matchRules.overtimeDisabled');
 
   const rows: Array<{ key: string; label: string; value: string; tone?: 'warning' }> = [
     {
@@ -202,26 +204,16 @@ function NewTournamentDetails({ form, teams, mapName, serverCount, game }: Revie
       label: t('tournament.review.summary.formatLabel'),
       value: form.format.toUpperCase(),
     },
-    ...(hasMatchRules
-      ? [
-          {
-            key: 'rules',
-            label: t('tournament.labels.matchRules'),
-            value: [
-              isShuffle
-                ? t('tournament.wizard.roundLimitValue', { count: form.maxRounds })
-                : t('tournament.matchRules.value', {
-                    maxRounds: form.maxRounds,
-                    winRounds: Math.floor(form.maxRounds / 2) + 1,
-                  }),
-              overtimeLine,
-              ...(isShuffle
-                ? [t('tournament.matchRules.teamSizeValue', { size: form.teamSize })]
-                : []),
-            ].join(' · '),
-          },
-        ]
-      : []),
+    // The game's rows (CS2: rounds and overtime), with the shuffle team
+    // size on its match rules line, where it has always been.
+    ...gameReviewRows.map((row) =>
+      isShuffle && row.key === 'rules'
+        ? {
+            ...row,
+            value: `${row.value} · ${t('tournament.matchRules.teamSizeValue', { size: form.teamSize })}`,
+          }
+        : row
+    ),
   ];
 
   if (!isShuffle) {
@@ -256,15 +248,7 @@ function NewTournamentDetails({ form, teams, mapName, serverCount, game }: Revie
     rows.push({
       key: 'players',
       label: t('tournament.wizard.playerRegistration'),
-      value: t('tournament.wizard.playerRegistrationInfo', { count: form.maps.length }),
-    });
-  }
-
-  if (hasMaps) {
-    rows.push({
-      key: 'maps',
-      label: t('tournament.wizard.mapsHeading', { total: form.maps.length }),
-      value: form.maps.map(mapName).join(', ') || t('tournament.wizard.noMapsSelected'),
+      value: t('tournament.wizard.playerRegistrationInfo', { count: roundCount ?? 0 }),
     });
   }
 
@@ -288,6 +272,7 @@ function NewTournamentDetails({ form, teams, mapName, serverCount, game }: Revie
             </Typography>
           </Box>
         ))}
+        {gameReview}
       </Box>
     </Box>
   );

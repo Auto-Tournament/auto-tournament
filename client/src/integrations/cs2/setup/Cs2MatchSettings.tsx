@@ -1,33 +1,41 @@
 import { Box, TextField, Typography } from '@mui/material';
 import { SegmentedControl, useModuleTranslation } from '../../../module-sdk';
-import { deriveOvertimeOption, type OvertimeOption } from '../../../components/tournament/ShuffleTournamentConfigStep';
 import type { TournamentRulesStepProps as Cs2MatchSettingsProps } from '../../types';
+import {
+  cs2Patch,
+  cs2SettingsOf,
+  overtimeOptionOf,
+  type Cs2TournamentSettings,
+  type OvertimeOption,
+} from './cs2TournamentSettings';
 
 /**
  * Round limit and overtime, which the Counter-Strike 2 module passes to
  * Auto Tournament CS2 (mp_maxrounds, overtimeMode / overtimeSegments). Same rules for
- * shuffle and bracket tournaments.
+ * shuffle and bracket tournaments. They are CS2's own settings
+ * (`settings.cs2`), which this step reads from and writes to the wizard's
+ * settings object.
  */
-export function Cs2MatchSettings({
-  value,
-  onChange,
-  disabled = false,
-  maxRoundsTestId,
-}: Cs2MatchSettingsProps) {
+export function Cs2MatchSettings({ settings, onChange, type, disabled = false }: Cs2MatchSettingsProps) {
   const { t } = useModuleTranslation('cs2');
-  const overtimeOption = deriveOvertimeOption(value.overtimeMode, value.overtimeSegments);
+  const value = cs2SettingsOf(settings);
+  const overtimeOption = overtimeOptionOf(value);
   const { maxRounds, overtimeSegments } = value;
+  // The test ids the wizard has always had for each kind of tournament.
+  const maxRoundsTestId = type === 'shuffle' ? 'shuffle-max-rounds-field' : 'tournament-max-rounds-field';
+  const update = (patch: Partial<Cs2TournamentSettings>) =>
+    onChange(cs2Patch({ ...value, ...patch }));
 
   const handleOvertimeOption = (option: OvertimeOption) => {
     if (option === 'enabled') {
       // 0 segments only means something together with "disabled".
-      onChange({
+      update({
         overtimeMode: 'enabled',
         overtimeSegments: overtimeSegments === 0 ? null : overtimeSegments,
       });
       return;
     }
-    onChange({
+    update({
       overtimeMode: 'disabled',
       overtimeSegments: option === 'disabledNoDraws' ? 0 : null,
     });
@@ -62,7 +70,7 @@ export function Cs2MatchSettings({
         value={maxRounds === 0 ? '' : maxRounds}
         onChange={(event) => {
           const parsed = parseInt(event.target.value, 10);
-          onChange({ maxRounds: Number.isNaN(parsed) ? 0 : parsed });
+          update({ maxRounds: Number.isNaN(parsed) ? 0 : parsed });
         }}
         disabled={disabled}
         slotProps={{ htmlInput: { min: 1, max: 30, 'data-testid': maxRoundsTestId } }}
@@ -110,7 +118,7 @@ export function Cs2MatchSettings({
           onChange={(event) => {
             const raw = event.target.value.trim();
             const parsed = Number(raw);
-            onChange({
+            update({
               overtimeSegments:
                 raw === '' || !Number.isFinite(parsed) || parsed < 0 ? null : parsed,
             });

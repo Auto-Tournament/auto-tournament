@@ -24,13 +24,13 @@ interface SaveTemplateModalProps {
     name: string;
     type: string;
     format: string;
-    maps: string[];
-    mapPoolId?: number | null;
     teamIds?: string[];
     settings?: TournamentSettings;
-    maxRounds?: number;
-    overtimeMode?: 'enabled' | 'disabled';
-    overtimeSegments?: number | null;
+    /**
+     * The game module's own settings (CS2: `cs2`, with its pool, maps and
+     * round rules), saved into the template's settings as they are.
+     */
+    gameSettings?: Record<string, unknown>;
     grandFinalMode?: 'none' | 'simple' | 'double';
   };
 }
@@ -71,19 +71,11 @@ export default function SaveTemplateModal({
         seedingMethod: 'random',
       };
 
-      const settings: Partial<TournamentSettings> = {
+      const settings: Partial<TournamentSettings> & Record<string, unknown> = {
         ...baseSettings,
+        ...(tournamentData.gameSettings ?? {}),
       };
 
-      if (typeof tournamentData.maxRounds === 'number') {
-        settings.maxRounds = tournamentData.maxRounds;
-      }
-      if (tournamentData.overtimeMode) {
-        settings.overtimeMode = tournamentData.overtimeMode;
-      }
-      if (typeof tournamentData.overtimeSegments === 'number') {
-        settings.overtimeSegments = tournamentData.overtimeSegments ?? undefined;
-      }
       if (tournamentData.grandFinalMode) {
         settings.grandFinalMode = tournamentData.grandFinalMode;
       }
@@ -93,8 +85,6 @@ export default function SaveTemplateModal({
         description: templateDescription || undefined,
         type: tournamentData.type,
         format: tournamentData.format,
-        mapPoolId: tournamentData.mapPoolId,
-        maps: tournamentData.maps,
         teamIds: tournamentData.teamIds,
         settings,
       });

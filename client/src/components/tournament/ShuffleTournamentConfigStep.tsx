@@ -3,34 +3,12 @@ import { TextField, Tooltip } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
 /**
- * The three meaningful overtime configurations, derived from the
- * (overtimeMode, overtimeSegments) pair that is sent to Auto Tournament CS2:
- * - enabled            → 'enabled' + null/N segments
- * - disabledDraws      → 'disabled' + null (no overtime, draws allowed)
- * - disabledNoDraws    → 'disabled' + 0 (no overtime, damage tiebreak)
+ * What only a shuffle tournament asks: players per team. Its round rules and
+ * map sequence are the game's settings (CS2: `settings.cs2`), asked by the
+ * game module's steps like any other tournament's.
  */
-export type OvertimeOption = 'enabled' | 'disabledDraws' | 'disabledNoDraws';
-
-export function deriveOvertimeOption(
-  mode: 'enabled' | 'disabled' | undefined,
-  segments: number | null | undefined
-): OvertimeOption {
-  if ((mode ?? 'enabled') === 'enabled') return 'enabled';
-  return segments === 0 ? 'disabledNoDraws' : 'disabledDraws';
-}
-
 export interface ShuffleTournamentSettings {
   teamSize: number; // Number of players per team (default: 5)
-  maxRounds: number; // Directly controls mp_maxrounds in the Auto Tournament CS2 config
-  eloTemplateId?: string; // ELO calculation template ID (optional, defaults to "Pure Win/Loss")
-  overtimeMode?: 'enabled' | 'disabled';
-  /**
-   * See docs/guides/shuffle-tournaments.md for full semantics.
-   * - undefined/null → Auto Tournament CS2 default (usually unlimited OT, draws allowed)
-   * - 0 with overtimeMode === 'disabled' → "no OT, no draws" (force winner by damage)
-   * - >0 with overtimeMode === 'enabled' → OT with damage tiebreak after N segments
-   */
-  overtimeSegments?: number | null;
 }
 
 interface ShuffleTournamentConfigStepProps {
@@ -41,9 +19,9 @@ interface ShuffleTournamentConfigStepProps {
 }
 
 /**
- * The setting only shuffle tournaments have: players per team. Round limit and
- * overtime live with the Counter-Strike 2 settings (integrations/cs2/setup/Cs2MatchSettings) and
- * the rating template on the Basics step, the same as for bracket tournaments.
+ * The setting only shuffle tournaments have: players per team. The round
+ * limit and overtime are the game module's rules step, and the rating
+ * template is on the Basics step, the same as for bracket tournaments.
  */
 export function ShuffleTournamentConfigStep({
   settings,

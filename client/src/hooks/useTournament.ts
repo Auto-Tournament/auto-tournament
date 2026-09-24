@@ -93,18 +93,16 @@ export const useTournament = () => {
     game?: string;
     type: string;
     format: string;
-    maps: string[];
     teamIds: string[];
     settings: {
       seedingMethod: string;
       grandFinalMode?: 'none' | 'simple' | 'double';
-      /** A game module's own object, stored and forwarded unread by the core. */
+      /**
+       * A game module's own object (CS2: `cs2`, the map pool and round
+       * rules), stored and forwarded unread by the core.
+       */
       [moduleKey: string]: unknown;
     };
-    maxRounds?: number;
-    overtimeMode?: 'enabled' | 'disabled';
-    /** null clears the setting back to the Auto Tournament CS2 default. */
-    overtimeSegments?: number | null;
   }) => {
     const response = await api[tournament ? 'put' : 'post']<
       TournamentResponse & { tournament: TournamentDetailed }

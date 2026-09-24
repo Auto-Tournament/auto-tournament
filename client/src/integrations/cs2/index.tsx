@@ -15,7 +15,9 @@ import { ServerGrid } from './servers/ServerGrid';
 import { VetoInterface } from './veto/VetoInterface';
 import { MatchVetoHistory } from './veto/MatchVetoHistory';
 import { Cs2MatchSettings } from './setup/Cs2MatchSettings';
-import { MapPoolStep } from './setup/MapPoolStep';
+import { Cs2TournamentMapsStep } from './setup/Cs2TournamentMapsStep';
+import { Cs2TournamentReview } from './setup/Cs2TournamentReview';
+import { cs2TournamentSetup } from './setup/cs2TournamentSettings';
 import { CreateManualMatchModal } from './standalone/CreateManualMatchModal';
 import { Cs2AdminWarnings } from './global/Cs2AdminWarnings';
 import { Cs2StartConfirm } from './start/Cs2StartConfirm';
@@ -109,10 +111,15 @@ export const cs2ClientIntegration: ClientGameIntegration = {
 
   resourceAvailabilityEndpoint: '/api/tournament/server-availability',
 
+  // Round rules and the map pool: CS2's own object in the tournament's
+  // settings (`settings.cs2`), which the steps edit and load data for
+  // themselves, and the model answers the wizard's questions about (item 8b).
   tournamentSetupSteps: {
     rules: Cs2MatchSettings,
-    content: MapPoolStep,
+    content: Cs2TournamentMapsStep,
+    review: Cs2TournamentReview,
   },
+  tournamentSetup: cs2TournamentSetup,
 
   // A match outside the bracket: the whole form is CS2's, core only opens it.
   standaloneMatch: CreateManualMatchModal,
