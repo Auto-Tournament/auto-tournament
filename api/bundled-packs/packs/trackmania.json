@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "slug": "trackmania",
+  "name": "Trackmania",
+  "engine": "manual-report",
+  "aliases": [
+    "tm"
+  ],
+  "version": "1.0.0",
+  "description": "Racing. The score is whatever format the host runs — points, rounds or times.",
+  "icon": "../icons/trackmania.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  }
+}

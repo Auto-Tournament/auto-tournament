@@ -239,7 +239,8 @@
       "title": "Spillpakker",
       "hint": "En pakke er en fil som beskriver ett spill — et navn, en flis og hvordan resultatet rapporteres. Den inneholder ingen kode og kjører på en modul over.",
       "empty": "Ingen pakker enda. Importer en for å legge til et spill instansen ikke kom med.",
-      "runBy": "Kjøres av {{engine}}"
+      "runBy": "Kjøres av {{engine}}",
+      "bundled": "Fulgte med Auto Tournament"
     },
     "import": {
       "action": "Importer en pakke",

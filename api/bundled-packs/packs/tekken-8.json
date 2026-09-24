@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "slug": "tekken-8",
+  "name": "Tekken 8",
+  "engine": "manual-report",
+  "version": "1.0.0",
+  "description": "Fighting game. Report games won in the set.",
+  "icon": "../icons/tekken-8.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  }
+}

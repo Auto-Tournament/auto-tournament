@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "slug": "league-of-legends",
+  "name": "League of Legends",
+  "engine": "manual-report",
+  "aliases": [
+    "lol"
+  ],
+  "version": "1.0.0",
+  "description": "Five-a-side MOBA. One map per game.",
+  "icon": "../icons/league-of-legends.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  },
+  "stats": [
+    {
+      "key": "kills",
+      "label": "Kills",
+      "type": "integer",
+      "scope": "player"
+    },
+    {
+      "key": "deaths",
+      "label": "Deaths",
+      "type": "integer",
+      "scope": "player"
+    },
+    {
+      "key": "assists",
+      "label": "Assists",
+      "type": "integer",
+      "scope": "player"
+    }
+  ]
+}

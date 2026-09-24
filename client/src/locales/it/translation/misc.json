@@ -239,7 +239,8 @@
       "title": "Game packs",
       "hint": "A pack is a file describing one game — a name, a tile and how a result is reported. It contains no code and runs on a module above.",
       "empty": "No packs yet. Import one to add a game this instance did not ship with.",
-      "runBy": "Run by {{engine}}"
+      "runBy": "Run by {{engine}}",
+      "bundled": "Came with Auto Tournament"
     },
     "import": {
       "action": "Import a pack",

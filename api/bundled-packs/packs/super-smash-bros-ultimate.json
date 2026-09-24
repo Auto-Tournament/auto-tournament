@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "slug": "super-smash-bros-ultimate",
+  "name": "Super Smash Bros. Ultimate",
+  "engine": "manual-report",
+  "aliases": [
+    "smash",
+    "ssbu"
+  ],
+  "version": "1.0.0",
+  "description": "Platform fighter. Report games won in the set.",
+  "icon": "../icons/super-smash-bros-ultimate.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  }
+}

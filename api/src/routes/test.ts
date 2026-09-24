@@ -19,6 +19,7 @@ import { passport, testOAuthStrategyName } from '../config/passport';
 import { PENDING_STEAM_LINK_PROVIDERS } from '../utils/signedPendingSteamLink';
 import { setIgdbEndpointOverride, clearIgdbTokenCache } from '../services/igdbService';
 import { setPackIndexBaseOverride } from '../services/packIndexService';
+import { forgetBundledPacks, seedBundledPacks } from '../services/gamePackService';
 import { setWikidataEndpointOverride, resetWikidataThrottle } from '../services/wikidataService';
 import { clearGameSearchCache } from '../services/gameCatalogService';
 import { gameSearchLimiter } from './games';
@@ -147,6 +148,9 @@ router.post('/reset-database', requireAuth, async (req: Request, res: Response):
   try {
     log.warn('[DEV-TOOLS] Full database reset requested via /api/test/reset-database');
     await db.resetDatabase();
+    // Same as /api/tournament/wipe-database: the packs the image ships come
+    // back, and the catalogue's cache stops describing a table that is gone.
+    await seedBundledPacks();
     log.warn('[DEV-TOOLS] Database reset completed successfully');
 
     res.json({
@@ -1458,6 +1462,22 @@ const FAKE_INDEX_PACKS: Record<string, unknown> = {
     icon: '../icons/index-test-game.svg',
   },
 };
+
+/**
+ * Test-only: run bundled-pack seeding again without restarting the process,
+ * so a spec can prove what a restart would do — above all that a bundled game
+ * an admin removed stays removed.
+ */
+router.post('/packs/reseed', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (!fakeIgdbEnabled(res)) return;
+  // `{ forget: [slug] }` first forgets those were ever seeded, so a spec can
+  // put a bundled game it removed back exactly as a fresh install has it.
+  const { forget } = (req.body ?? {}) as { forget?: unknown };
+  if (Array.isArray(forget)) {
+    await forgetBundledPacks(forget.filter((slug): slug is string => typeof slug === 'string'));
+  }
+  res.json({ success: true, report: await seedBundledPacks() });
+});
 
 router.post('/pack-index', requireAuth, (req: Request, res: Response): void => {
   if (!fakeIgdbEnabled(res)) return;

@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "slug": "battlefield-6",
+  "name": "Battlefield 6",
+  "engine": "manual-report",
+  "aliases": [
+    "bf6"
+  ],
+  "version": "1.0.0",
+  "description": "Squad shooter, reported by the result of each map.",
+  "icon": "../icons/battlefield-6.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  },
+  "stats": [
+    {
+      "key": "kills",
+      "label": "Kills",
+      "type": "integer",
+      "scope": "player"
+    },
+    {
+      "key": "deaths",
+      "label": "Deaths",
+      "type": "integer",
+      "scope": "player"
+    }
+  ]
+}

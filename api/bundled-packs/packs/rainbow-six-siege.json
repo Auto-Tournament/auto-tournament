@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "slug": "rainbow-six-siege",
+  "name": "Rainbow Six Siege",
+  "engine": "manual-report",
+  "aliases": [
+    "r6",
+    "r6s",
+    "siege"
+  ],
+  "version": "1.0.0",
+  "description": "Five-a-side tactical shooter, reported by rounds won.",
+  "icon": "../icons/rainbow-six-siege.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  },
+  "stats": [
+    {
+      "key": "kills",
+      "label": "Kills",
+      "type": "integer",
+      "scope": "player"
+    },
+    {
+      "key": "deaths",
+      "label": "Deaths",
+      "type": "integer",
+      "scope": "player"
+    }
+  ]
+}

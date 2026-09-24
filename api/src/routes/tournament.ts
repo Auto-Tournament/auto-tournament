@@ -1197,6 +1197,12 @@ router.post('/wipe-database', async (_req: Request, res: Response) => {
 
     // Reset database: drops all tables and reinitializes schema with default data
     await db.resetDatabase();
+    // The wipe emptied game_packs, and the cache the catalogue reads still
+    // held what used to be there. Re-seed from the packs the image ships
+    // (the wipe cleared which ones had been seen, so all of them), which also
+    // refreshes that cache.
+    const { seedBundledPacks } = await import('../services/gamePackService');
+    await seedBundledPacks();
 
     log.success('[DATABASE] Database reset successfully - all tables recreated with default data');
 

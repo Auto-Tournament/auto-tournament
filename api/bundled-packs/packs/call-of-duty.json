@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "slug": "call-of-duty",
+  "name": "Call of Duty",
+  "engine": "manual-report",
+  "aliases": [
+    "cod"
+  ],
+  "version": "1.0.0",
+  "description": "Search and Destroy, Hardpoint and Control, reported by the teams that played them.",
+  "icon": "../icons/call-of-duty.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  },
+  "stats": [
+    {
+      "key": "kills",
+      "label": "Kills",
+      "type": "integer",
+      "scope": "player"
+    },
+    {
+      "key": "deaths",
+      "label": "Deaths",
+      "type": "integer",
+      "scope": "player"
+    },
+    {
+      "key": "objective_time",
+      "label": "Objective time (s)",
+      "type": "integer",
+      "scope": "player"
+    }
+  ]
+}

@@ -1,0 +1,176 @@
+{
+  "schema": 1,
+  "packs": [
+    {
+      "slug": "age-of-empires-ii",
+      "name": "Age of Empires II",
+      "version": "1.0.0",
+      "engine": "manual-report",
+      "description": "Real-time strategy. Report games won.",
+      "file": "packs/age-of-empires-ii.json",
+      "icon": "icons/age-of-empires-ii.svg"
+    },
+    {
+      "slug": "battlefield-6",
+      "name": "Battlefield 6",
+      "version": "1.0.0",
+      "engine": "manual-report",
+      "description": "Squad shooter, reported by the result of each map.",
+      "file": "packs/battlefield-6.json",
+      "icon": "icons/battlefield-6.svg"
+    },
+    {
+      "slug": "call-of-duty",
+      "name": "Call of Duty",
+      "version": "1.0.0",
+      "engine": "manual-report",
+      "description": "Search and Destroy, Hardpoint and Control, reported by the teams that played them.",
+      "file": "packs/call-of-duty.json",
+      "icon": "icons/call-of-duty.svg"
+    },
+    {
+      "slug": "chess",
+      "name": "Chess",
+      "version": "1.0.0",
+      "engine": "manual-report",
+      "description": "One board, two players. A win is 1, a draw is a half each.",
+      "file": "packs/chess.json",
+      "icon": "icons/chess.svg"
+    },
+    {
+      "slug": "deadlock",
+      "name": "Deadlock",
+      "version": "1.0.0",
+      "engine": "manual-report",
+      "description": "Six-a-side hero shooter MOBA.",
+      "file": "packs/deadlock.json",
+      "icon": "icons/deadlock.svg"
+    },
+    {
+      "slug": "dota-2",
+      "name": "Dota 2",
+      "version": "1.0.0",
+      "engine": "manual-report",
+      "description": "Five-a-side MOBA. One map per game.",
+      "file": "packs/dota-2.json",
+      "icon": "icons/dota-2.svg"
+    },
+    {
+      "slug": "ea-sports-fc-25",
+      "name": "EA Sports FC",
+      "version": "1.0.0",
+      "engine": "manual-report",
+      "description": "Football. Report the scoreline.",
+      "file": "packs/ea-sports-fc-25.json",
+      "icon": "icons/ea-sports-fc-25.svg"
+    },
+    {
+      "slug": "league-of-legends",
+      "name": "League of Legends",
+      "version": "1.0.0",
+      "engine": "manual-report",
+      "description": "Five-a-side MOBA. One map per game.",
+      "file": "packs/league-of-legends.json",
+      "icon": "icons/league-of-legends.svg"
+    },
+    {
+      "slug": "minecraft",
+      "name": "Minecraft",
+      "version": "1.0.0",
+      "engine": "manual-report",
+      "description": "Whatever the host builds on it. The captains report who won.",
+      "file": "packs/minecraft.json",
+      "icon": "icons/minecraft.svg"
+    },
+    {
+      "slug": "osu",
+      "name": "osu!",
+      "version": "1.0.0",
+      "engine": "manual-report",
+      "description": "Rhythm game. Report maps won.",
+      "file": "packs/osu.json",
+      "icon": "icons/osu.svg"
+    },
+    {
+      "slug": "overwatch-2",
+      "name": "Overwatch 2",
+      "version": "1.0.0",
+      "engine": "manual-report",
+      "description": "Five-a-side hero shooter, reported by maps won.",
+      "file": "packs/overwatch-2.json",
+      "icon": "icons/overwatch-2.svg"
+    },
+    {
+      "slug": "rainbow-six-siege",
+      "name": "Rainbow Six Siege",
+      "version": "1.0.0",
+      "engine": "manual-report",
+      "description": "Five-a-side tactical shooter, reported by rounds won.",
+      "file": "packs/rainbow-six-siege.json",
+      "icon": "icons/rainbow-six-siege.svg"
+    },
+    {
+      "slug": "rocket-league",
+      "name": "Rocket League",
+      "version": "1.0.0",
+      "engine": "manual-report",
+      "description": "Car soccer. Captains report the score; goals, assists, saves and shots per player.",
+      "file": "packs/rocket-league.json",
+      "icon": "icons/rocket-league.svg"
+    },
+    {
+      "slug": "street-fighter-6",
+      "name": "Street Fighter 6",
+      "version": "1.0.0",
+      "engine": "manual-report",
+      "description": "Fighting game. Report games won in the set.",
+      "file": "packs/street-fighter-6.json",
+      "icon": "icons/street-fighter-6.svg"
+    },
+    {
+      "slug": "super-smash-bros-ultimate",
+      "name": "Super Smash Bros. Ultimate",
+      "version": "1.0.0",
+      "engine": "manual-report",
+      "description": "Platform fighter. Report games won in the set.",
+      "file": "packs/super-smash-bros-ultimate.json",
+      "icon": "icons/super-smash-bros-ultimate.svg"
+    },
+    {
+      "slug": "team-fortress-2",
+      "name": "Team Fortress 2",
+      "version": "1.0.0",
+      "engine": "manual-report",
+      "description": "Six-a-side class shooter, reported by rounds won.",
+      "file": "packs/team-fortress-2.json",
+      "icon": "icons/team-fortress-2.svg"
+    },
+    {
+      "slug": "tekken-8",
+      "name": "Tekken 8",
+      "version": "1.0.0",
+      "engine": "manual-report",
+      "description": "Fighting game. Report games won in the set.",
+      "file": "packs/tekken-8.json",
+      "icon": "icons/tekken-8.svg"
+    },
+    {
+      "slug": "trackmania",
+      "name": "Trackmania",
+      "version": "1.0.0",
+      "engine": "manual-report",
+      "description": "Racing. The score is whatever format the host runs — points, rounds or times.",
+      "file": "packs/trackmania.json",
+      "icon": "icons/trackmania.svg"
+    },
+    {
+      "slug": "valorant",
+      "name": "Valorant",
+      "version": "1.0.0",
+      "engine": "manual-report",
+      "description": "Five-a-side tactical shooter, reported by rounds won.",
+      "file": "packs/valorant.json",
+      "icon": "icons/valorant.svg"
+    }
+  ]
+}

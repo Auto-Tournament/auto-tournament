@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "slug": "rocket-league",
+  "name": "Rocket League",
+  "engine": "manual-report",
+  "aliases": [
+    "rl"
+  ],
+  "version": "1.0.0",
+  "description": "Car soccer. Captains report the score; goals, assists, saves and shots per player.",
+  "icon": "../icons/rocket-league.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  },
+  "stats": [
+    {
+      "key": "goals",
+      "label": "Goals",
+      "type": "integer",
+      "scope": "player"
+    },
+    {
+      "key": "assists",
+      "label": "Assists",
+      "type": "integer",
+      "scope": "player"
+    },
+    {
+      "key": "saves",
+      "label": "Saves",
+      "type": "integer",
+      "scope": "player"
+    },
+    {
+      "key": "shots",
+      "label": "Shots",
+      "type": "integer",
+      "scope": "player"
+    }
+  ]
+}

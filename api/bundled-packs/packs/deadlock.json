@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "slug": "deadlock",
+  "name": "Deadlock",
+  "engine": "manual-report",
+  "version": "1.0.0",
+  "description": "Six-a-side hero shooter MOBA.",
+  "icon": "../icons/deadlock.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  },
+  "stats": [
+    {
+      "key": "kills",
+      "label": "Kills",
+      "type": "integer",
+      "scope": "player"
+    },
+    {
+      "key": "deaths",
+      "label": "Deaths",
+      "type": "integer",
+      "scope": "player"
+    },
+    {
+      "key": "assists",
+      "label": "Assists",
+      "type": "integer",
+      "scope": "player"
+    }
+  ]
+}

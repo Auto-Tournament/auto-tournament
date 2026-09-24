@@ -8,10 +8,12 @@
  * dispute queue (3.0 phase D, PR D8) — and leaves the CS2 shaped ones (veto,
  * servers, maps, map pools) empty.
  *
- * `catalogGames` and `runsAnyCatalogGame` mirror what the API's registry
- * resolves: a tournament's `game` holds a catalogue id from phase D onwards
+ * `runsAnyCatalogGame` mirrors what the API's registry resolves: a
+ * tournament's `game` holds a catalogue id from phase D onwards
  * ('rocket-league'), and anything this instance has no other module for is
- * reported manually.
+ * reported manually. The module ships no list of games — those are packs,
+ * installed on the instance — so there is no `catalogGames` to keep in step
+ * with the API.
  */
 
 import type { ClientGameIntegration } from '../types';
@@ -20,38 +22,9 @@ import { ManualReportPanel } from './match/ManualReportPanel';
 import { ManualReportSetupStep } from './setup/ManualReportSetupStep';
 import { CustomStatsTables } from './stats/CustomStatsTables';
 import { TeamCaptainsCard } from './team/TeamCaptainsCard';
-
-/**
- * The titles the module ships ready to run, the same list as the API's
- * `MANUAL_REPORT_CATALOG`. `runsAnyCatalogGame` already catches everything
- * else; these are named so the two registries resolve the same way even if
- * that fallback changes.
- */
-const MANUAL_REPORT_GAMES = [
-  'rocket-league',
-  'valorant',
-  'league-of-legends',
-  'dota-2',
-  'deadlock',
-  'overwatch-2',
-  'rainbow-six-siege',
-  'battlefield-6',
-  'trackmania',
-  'chess',
-  'minecraft',
-  'ea-sports-fc-25',
-  'super-smash-bros-ultimate',
-  'street-fighter-6',
-  'tekken-8',
-  'osu',
-  'team-fortress-2',
-  'age-of-empires-ii',
-];
-
 export const manualReportClientIntegration: ClientGameIntegration = {
   id: 'manual-report',
 
-  catalogGames: MANUAL_REPORT_GAMES,
   runsAnyCatalogGame: true,
 
   // The same five facts `manualReportIntegration.capabilities` states on the

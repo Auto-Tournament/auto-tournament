@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "slug": "osu",
+  "name": "osu!",
+  "engine": "manual-report",
+  "version": "1.0.0",
+  "description": "Rhythm game. Report maps won.",
+  "icon": "../icons/osu.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  }
+}

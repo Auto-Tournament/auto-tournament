@@ -47,7 +47,7 @@ import type {
   TournamentSettingsInput,
   TournamentSettingsValidation,
 } from '../types';
-import { MANUAL_REPORT_CATALOG, MANUAL_REPORT_GAME_ID } from './catalog';
+import { MANUAL_REPORT_GAME_ID } from './catalog';
 import {
   MANUAL_REPORT_TOURNAMENT_SCHEMA,
   readSetup,
@@ -170,10 +170,10 @@ async function setLive(slug: string): Promise<void> {
 export const manualReportIntegration: GameIntegration = {
   id: MANUAL_REPORT_GAME_ID,
   displayName: 'Manual reporting',
-  // The module is not a game, so it has no catalogue row of its own; the games
-  // it ships are `catalogEntries` (./catalog).
+  // The module is not a game, so it has no catalogue row of its own. Nor does
+  // it ship any games: those are packs, installed on the instance, naming this
+  // module as their engine (./catalog).
   catalog: null,
-  catalogEntries: MANUAL_REPORT_CATALOG,
   runsAnyCatalogGame: true,
   capabilities: {
     servers: false,

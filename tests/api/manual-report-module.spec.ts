@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import { signInViaRequest } from '../helpers/auth';
 import {
@@ -7,10 +9,50 @@ import {
   integrationForMatch,
 } from '../../api/src/integrations/registry';
 import {
-  MANUAL_REPORT_CATALOG,
   MANUAL_REPORT_GAME_ID,
   catalogNameFor,
 } from '../../api/src/integrations/manual-report/catalog';
+import { setInstalledPacks, type InstalledPack } from '../../api/src/services/packCache';
+
+/**
+ * The games the image ships with, read from the same snapshot the server
+ * seeds from. The module itself ships none any more; they are packs.
+ */
+const BUNDLED = (
+  JSON.parse(
+    fs.readFileSync(path.join(__dirname, '../../api/bundled-packs/index.json'), 'utf8')
+  ) as { packs: Array<{ slug: string; name: string; engine: string; file: string }> }
+).packs;
+
+/**
+ * Most tests here run in this process, not against the server — and this
+ * process has no database, so no installed packs. The module reads its games'
+ * names from them, so load the bundled snapshot into the cache exactly as a
+ * fresh install has it. The tests then check the module against the real
+ * games, rather than against an empty cache that would make every name "the
+ * game".
+ */
+function installBundledPacksInProcess(): void {
+  setInstalledPacks(
+    BUNDLED.map((entry): InstalledPack => {
+      const definition = JSON.parse(
+        fs.readFileSync(path.join(__dirname, '../../api/bundled-packs', entry.file), 'utf8')
+      ) as InstalledPack['definition'];
+      return {
+        slug: definition.slug,
+        name: definition.name,
+        engine: definition.engine,
+        version: definition.version ?? null,
+        source: 'bundled',
+        origin: null,
+        hasIcon: Boolean(definition.icon),
+        installedAt: 0,
+        definition,
+      };
+    })
+  );
+}
+installBundledPacksInProcess();
 import {
   DEFAULT_CONFIRM_TIMEOUT_MIN,
   readSetup,
@@ -90,19 +132,26 @@ test.describe('Manual-report module: what it declares', () => {
     expect(module.accountProvider).toBeUndefined();
   });
 
-  test('is not itself a game: no catalogue row of its own, but it ships titles', () => {
+  test('is not itself a game, and ships none: its games are packs', () => {
     const module = getIntegration(MANUAL_REPORT_GAME_ID);
     expect(module.catalog).toBeNull();
-    expect(module.catalogEntries?.length).toBeGreaterThan(0);
+    // Until 3.0 the module carried eighteen titles in its source. Adding a
+    // game or fixing a tile meant a release. They are packs now.
+    expect(module.catalogEntries ?? []).toHaveLength(0);
     expect(module.runsAnyCatalogGame).toBe(true);
+  });
+
+  test('the bundled packs it runs are well-formed', () => {
+    expect(BUNDLED.length, 'the image should ship some games').toBeGreaterThan(0);
 
     // Slugs are unique and IGDB-shaped, so an IGDB result enriches the row
     // rather than adding a second one.
-    const slugs = MANUAL_REPORT_CATALOG.map((e) => e.slug);
+    const slugs = BUNDLED.map((e) => e.slug);
     expect(new Set(slugs).size).toBe(slugs.length);
-    for (const entry of MANUAL_REPORT_CATALOG) {
+    for (const entry of BUNDLED) {
       expect(entry.slug, entry.slug).toMatch(/^[a-z0-9][a-z0-9-]*$/);
       expect(entry.name?.trim(), entry.slug).toBeTruthy();
+      expect(entry.engine, entry.slug).toBe(MANUAL_REPORT_GAME_ID);
     }
     // Never another module's game.
     expect(slugs).not.toContain('counter-strike-2');
@@ -134,10 +183,12 @@ test.describe('Manual-report module: what it declares', () => {
     expect(integrationForMatch({ game: null }).id).toBe('cs2');
   });
 
-  test('catalogNameFor labels a game it ships, and nothing else', () => {
+  test('catalogNameFor names an installed game it runs, and nothing else', () => {
     expect(catalogNameFor('rocket-league')).toBe('Rocket League');
     expect(catalogNameFor('ROCKET-LEAGUE')).toBe('Rocket League');
+    // A game this module does not run has no name from it, CS2's least of all.
     expect(catalogNameFor('counter-strike-2')).toBeNull();
+    expect(catalogNameFor('no-such-game')).toBeNull();
     expect(catalogNameFor('')).toBeNull();
   });
 });
@@ -351,7 +402,8 @@ test.describe.serial('Manual-report module: a tournament with no servers', () =>
     const games = ((await res.json()) as { games: Array<{ slug: string; name: string; supported: boolean }> }).games;
     const bySlug = new Map(games.map((g) => [g.slug, g]));
 
-    for (const entry of MANUAL_REPORT_CATALOG) {
+    // Every game the image ships, seeded on boot, is supported by name.
+    for (const entry of BUNDLED) {
       expect(bySlug.get(entry.slug), entry.slug).toMatchObject({
         name: entry.name,
         supported: true,

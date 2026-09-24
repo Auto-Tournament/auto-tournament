@@ -50,7 +50,8 @@ interface InstalledPack {
   name: string;
   engine: string;
   version: string | null;
-  source: 'uploaded' | 'index';
+  /** `bundled` came with the install; the others were added on this instance. */
+  source: 'bundled' | 'index' | 'uploaded';
   hasIcon: boolean;
   installedAt: number;
   description: string | null;
@@ -399,6 +400,14 @@ export default function Modules() {
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Typography fontWeight={600}>{pack.name}</Typography>
                         {pack.version && <Chip size="small" label={pack.version} />}
+                        {pack.source === 'bundled' && (
+                          <Chip
+                            size="small"
+                            variant="outlined"
+                            label={t('modulesPage.packs.bundled')}
+                            data-testid={`pack-${pack.slug}-bundled`}
+                          />
+                        )}
                       </Stack>
                       <Typography variant="body2" color="text.secondary">
                         {pack.description ||
