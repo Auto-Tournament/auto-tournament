@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/http/enroll.request.json",
+  "title": "POST /api/fleet/enroll request body",
+  "description": "Exactly one of `code` (one-time enrollment code, RUE-XXXX-XXXX-XXXX-XXXX) or `key` (reusable fleet enrollment key, rfk_<id>_<secret>). A server that enrolls again with the same install_id gets its existing record back. FLEET.md §4.1.",
+  "type": "object",
+  "required": ["install_id", "host"],
+  "oneOf": [{ "required": ["code"] }, { "required": ["key"] }],
+  "properties": {
+    "code": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "key": { "type": "string", "pattern": "^rfk_[0-9a-z]{12}_[A-Za-z0-9_-]{43}$" },
+    "install_id": { "type": "string", "minLength": 8, "maxLength": 128, "pattern": "^[A-Za-z0-9_-]+$" },
+    "tenant_id": { "$ref": "../defs.json#/$defs/tenantId" },
+    "name": { "type": "string", "minLength": 1, "maxLength": 100, "description": "suggested display name (key enrollment), e.g. the server-N directory" },
+    "host": { "$ref": "../defs.json#/$defs/host" },
+    "versions": { "$ref": "../defs.json#/$defs/versions" },
+    "cs2_build": { "type": "integer", "minimum": 0 }
+  }
+}

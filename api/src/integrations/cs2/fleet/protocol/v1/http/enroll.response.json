@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/http/enroll.response.json",
+  "title": "POST /api/fleet/enroll 201 response body",
+  "description": "The server writes server_id, token and ws_url to csgo/readyup/fleet/credentials.json (mode 0600) and opens the WebSocket with `Authorization: Bearer <token>`. `reenrolled` is true when the install_id already had a record (its older tokens are revoked).",
+  "type": "object",
+  "required": ["success", "server_id", "tenant_id", "token", "ws_url", "reenrolled"],
+  "properties": {
+    "success": { "const": true },
+    "server_id": { "type": "string" },
+    "tenant_id": { "$ref": "../defs.json#/$defs/tenantId" },
+    "name": { "type": "string" },
+    "token": { "type": "string", "pattern": "^rus_[0-9a-z]{12}_[A-Za-z0-9_-]{43}$" },
+    "ws_url": { "type": "string", "pattern": "^wss?://" },
+    "reenrolled": { "type": "boolean" }
+  }
+}

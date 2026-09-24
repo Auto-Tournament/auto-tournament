@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/defs.json",
+  "title": "Shared definitions (protocol v1)",
+  "$defs": {
+    "ulid": {
+      "type": "string",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+    },
+    "u64s": {
+      "type": "string",
+      "pattern": "^[0-9]{1,20}$",
+      "description": "SteamID64 (or any u64) as a decimal string: JSON numbers lose precision above 2^53"
+    },
+    "tenantId": {
+      "const": "default",
+      "description": "Reserved (D4). One organization per deployment, always \"default\"."
+    },
+    "availability": {
+      "enum": ["available", "busy", "draining", "error"]
+    },
+    "port": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 65535
+    },
+    "versions": {
+      "type": "object",
+      "required": ["core", "plugin_api", "plugins"],
+      "properties": {
+        "core": { "type": "string", "maxLength": 64 },
+        "plugin_api": { "type": "string", "maxLength": 64 },
+        "plugins": {
+          "type": "object",
+          "additionalProperties": { "type": "string", "maxLength": 64 },
+          "maxProperties": 64
+        },
+        "cs2_build": { "type": "integer", "minimum": 0 },
+        "cs2_patch": { "type": "string", "maxLength": 64 }
+      }
+    },
+    "host": {
+      "type": "object",
+      "required": ["hostname", "game_port"],
+      "properties": {
+        "hostname": { "type": "string", "minLength": 1, "maxLength": 255 },
+        "game_port": { "$ref": "#/$defs/port" },
+        "tv_port": { "$ref": "#/$defs/port" },
+        "public_addr": { "type": "string", "maxLength": 255 },
+        "status_port": { "$ref": "#/$defs/port" }
+      }
+    }
+  }
+}

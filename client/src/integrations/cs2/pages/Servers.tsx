@@ -13,6 +13,7 @@ import DnsIcon from '@mui/icons-material/Dns';
 import ReplayIcon from '@mui/icons-material/Replay';
 import ServerModal from '../servers/ServerModal';
 import BatchServerModal from '../servers/BatchServerModal';
+import FleetPanel from '../servers/FleetPanel';
 import type {
   Server,
   ServersResponse,
@@ -1837,6 +1838,9 @@ export default function Servers() {
             </Grid>
           </>
         )}
+
+      {/* Ready Up servers enroll themselves and connect over the fleet link. */}
+      <FleetPanel />
 
       <ServerModal
         open={modalOpen}

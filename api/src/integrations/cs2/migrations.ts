@@ -28,6 +28,7 @@ import type { ModuleMigration } from '../types';
 
 export const CS2_TABLES_MIGRATION_ID = '001-tables';
 export const CS2_AT_COLUMNS_MIGRATION_ID = '002-at-columns';
+export const CS2_FLEET_MIGRATION_ID = '003-fleet';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -105,6 +106,107 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
     ALTER TABLE cs2_servers RENAME COLUMN matchzy_db_error TO at_db_error;
     ALTER TABLE cs2_servers RENAME COLUMN matchzy_db_last_ok_at TO at_db_last_ok_at;
     ALTER TABLE cs2_servers RENAME COLUMN matchzy_db_last_seen_at TO at_db_last_seen_at;
+`,
+  },
+  {
+    // The Ready Up fleet registry (FLEET.md §4, §19.2 items 1-2). Module
+    // tables must start with `cs2_`, so FLEET.md's `fleet_*` tables are
+    // `cs2_fleet_*` here. `tenant_id` is reserved (D4) and always 'default'.
+    // Times are Unix seconds like the rest of the schema.
+    id: CS2_FLEET_MIGRATION_ID,
+    up: `
+    -- Enrolled (or, for a one-time code, pending) Ready Up servers
+    CREATE TABLE IF NOT EXISTS cs2_fleet_servers (
+      id TEXT PRIMARY KEY,
+      tenant_id TEXT NOT NULL DEFAULT 'default',
+      install_id TEXT, -- random id Ready Up writes once; NULL while pending
+      name TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending', -- 'pending' | 'enrolled' | 'revoked'
+      enrolled_via TEXT, -- 'code' | 'key'
+      enrollment_key_id TEXT,
+      availability TEXT, -- from hello: available | busy | draining | error
+      versions TEXT, -- JSON, from hello (or enroll)
+      capabilities TEXT, -- JSON array, from hello
+      host TEXT, -- JSON {hostname, game_port, tv_port, public_addr, status_port}
+      health TEXT, -- JSON, the last ping's health
+      selftest TEXT, -- JSON, from hello
+      protocol INTEGER, -- negotiated protocol major
+      boot_id TEXT,
+      session_id TEXT,
+      online INTEGER NOT NULL DEFAULT 0,
+      connected_at INTEGER,
+      last_seen INTEGER,
+      rx_stream_id TEXT, -- the server's outbound stream id (hello.stream.id)
+      rx_seq INTEGER NOT NULL DEFAULT 0, -- highest contiguous server seq processed
+      tx_seq INTEGER NOT NULL DEFAULT 0, -- last seq the platform assigned
+      tx_acked INTEGER NOT NULL DEFAULT 0, -- highest platform seq the server acked
+      rotate_requested_at INTEGER, -- an admin asked for a new token while it was offline
+      created_by TEXT,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS cs2_fleet_servers_install_idx ON cs2_fleet_servers(tenant_id, install_id);
+    CREATE INDEX IF NOT EXISTS cs2_fleet_servers_status_idx ON cs2_fleet_servers(status);
+
+    -- Server tokens rus_<id>_<secret>: only sha256(secret) is stored
+    CREATE TABLE IF NOT EXISTS cs2_fleet_tokens (
+      id TEXT PRIMARY KEY, -- the <id> part
+      tenant_id TEXT NOT NULL DEFAULT 'default',
+      server_id TEXT NOT NULL REFERENCES cs2_fleet_servers(id) ON DELETE CASCADE,
+      secret_hash TEXT NOT NULL,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      last_used_at INTEGER,
+      rotated_from TEXT, -- the token this one replaces
+      expires_at INTEGER, -- set when superseded by a rotation (old_valid_until)
+      activated_at INTEGER, -- a rotated token: when the server confirmed it (auth.rotated or used)
+      revoked_at INTEGER
+    );
+
+    CREATE INDEX IF NOT EXISTS cs2_fleet_tokens_server_idx ON cs2_fleet_tokens(server_id);
+
+    -- One-time enrollment codes RUE-XXXX-XXXX-XXXX-XXXX (hashed, single use)
+    CREATE TABLE IF NOT EXISTS cs2_fleet_enrollment_codes (
+      id TEXT PRIMARY KEY,
+      tenant_id TEXT NOT NULL DEFAULT 'default',
+      code_hash TEXT NOT NULL UNIQUE,
+      server_id TEXT NOT NULL REFERENCES cs2_fleet_servers(id) ON DELETE CASCADE,
+      created_by TEXT,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      expires_at INTEGER NOT NULL,
+      used_at INTEGER
+    );
+
+    CREATE INDEX IF NOT EXISTS cs2_fleet_enrollment_codes_server_idx ON cs2_fleet_enrollment_codes(server_id);
+
+    -- Reusable fleet enrollment keys rfk_<id>_<secret> (hashed)
+    CREATE TABLE IF NOT EXISTS cs2_fleet_enrollment_keys (
+      id TEXT PRIMARY KEY, -- the <id> part
+      tenant_id TEXT NOT NULL DEFAULT 'default',
+      name TEXT NOT NULL,
+      secret_hash TEXT NOT NULL,
+      name_prefix TEXT,
+      max_servers INTEGER,
+      expires_at INTEGER,
+      created_by TEXT,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      last_used_at INTEGER,
+      use_count INTEGER NOT NULL DEFAULT 0,
+      failed_attempts INTEGER NOT NULL DEFAULT 0,
+      locked_at INTEGER,
+      revoked_at INTEGER
+    );
+
+    -- The platform's outbound stream per server: reliable messages kept until acked (FLEET.md §6.4)
+    CREATE TABLE IF NOT EXISTS cs2_fleet_outbox (
+      server_id TEXT NOT NULL REFERENCES cs2_fleet_servers(id) ON DELETE CASCADE,
+      seq INTEGER NOT NULL,
+      type TEXT NOT NULL,
+      message TEXT NOT NULL, -- the envelope as JSON (secrets are never stored here)
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      expires_at INTEGER,
+      PRIMARY KEY (server_id, seq)
+    );
 `,
   },
 ];

@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 305 of them, 215 behind auth —
+Every endpoint this API serves — 318 of them, 227 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -205,6 +205,31 @@ How a player joins a CS2 match: its server, status and current map.
 | --- | --- | --- |
 | `GET` | `/api/game/cs2/matches/:slug/connect` | public |
 
+### Fleet enrollment
+
+A Ready Up server trades a one-time code or fleet key for its server token.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `POST` | `/api/fleet/enroll` | public |
+
+### Fleet
+
+Ready Up servers on the fleet link: registry, one-time codes, fleet keys, revoke and rotate. The server WebSocket is /api/fleet/ws.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/fleet/servers` | admin |
+| `POST` | `/api/fleet/servers` | admin |
+| `PATCH` | `/api/fleet/servers/:id` | admin |
+| `DELETE` | `/api/fleet/servers/:id` | admin |
+| `POST` | `/api/fleet/servers/:id/code` | admin |
+| `POST` | `/api/fleet/servers/:id/revoke` | admin |
+| `POST` | `/api/fleet/servers/:id/rotate` | admin |
+| `GET` | `/api/fleet/keys` | admin |
+| `POST` | `/api/fleet/keys` | admin |
+| `DELETE` | `/api/fleet/keys/:id` | admin |
+
 ### Test helpers (CS2)
 
 E2E helpers that stand in for a CS2 server. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
@@ -212,6 +237,8 @@ E2E helpers that stand in for a CS2 server. Disabled in production unless ENABLE
 | Method | Path | Auth |
 | --- | --- | --- |
 | `POST` | `/api/test/server-status` | admin |
+| `POST` | `/api/test/fleet/reset-enroll-rate-limit` | admin |
+| `POST` | `/api/test/fleet/age-token` | admin |
 
 ### Manual reporting — captains
 

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/pong.json",
+  "title": "pong (both directions, ephemeral)",
+  "description": "Reply to ping, echoing its t. `ref` in the envelope is the ping's id. FLEET.md §6.2.",
+  "type": "object",
+  "required": ["t"],
+  "properties": {
+    "t": { "type": "integer" }
+  }
+}

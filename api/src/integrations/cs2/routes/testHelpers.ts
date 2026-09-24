@@ -9,6 +9,8 @@ import { Router, type Request, type Response } from 'express';
 import { requireAuth } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
 import { primeServerStatusForTests, ServerStatus } from '../services/serverStatusService';
+import { db } from '../../../config/database';
+import { resetEnrollRateLimit } from '../fleet/routes';
 
 const router = Router();
 
@@ -62,6 +64,39 @@ router.post('/server-status', requireAuth, (req: Request, res: Response): void =
 
   log.warn(`[DEV-TOOLS] Primed server status for ${serverId}: ${status ?? 'null'}`);
   res.json({ success: true });
+});
+
+/**
+ * Test-only fleet helpers (the Ready Up fleet link, api/src/integrations/cs2/fleet).
+ *
+ * POST /api/test/fleet/reset-enroll-rate-limit   forget the 10/min/IP enrollment counts
+ * POST /api/test/fleet/age-token { serverId, days }   backdate a server's live tokens,
+ *   so the next connect (or the hourly job) rotates them
+ */
+router.post('/fleet/reset-enroll-rate-limit', requireAuth, (_req: Request, res: Response): void => {
+  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+    res.status(403).json({ success: false, error: 'Disabled in production' });
+    return;
+  }
+  resetEnrollRateLimit();
+  res.json({ success: true });
+});
+
+router.post('/fleet/age-token', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+    res.status(403).json({ success: false, error: 'Disabled in production' });
+    return;
+  }
+  const { serverId, days } = (req.body || {}) as { serverId?: string; days?: number };
+  if (!serverId || typeof days !== 'number' || days <= 0) {
+    res.status(400).json({ success: false, error: 'serverId and a positive days are required' });
+    return;
+  }
+  const result = await db.runAsync(
+    'UPDATE cs2_fleet_tokens SET created_at = created_at - ? WHERE server_id = ? AND revoked_at IS NULL',
+    [Math.floor(days * 86400), serverId]
+  );
+  res.json({ success: true, tokens: result.changes });
 });
 
 export default router;

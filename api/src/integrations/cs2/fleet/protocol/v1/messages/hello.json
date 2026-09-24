@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/hello.json",
+  "title": "hello (server → platform, ephemeral)",
+  "description": "First message after the upgrade. The platform answers welcome or closes (4400 protocol error, 4403 identity mismatch, 4426 unsupported protocol). FLEET.md §6.1.",
+  "type": "object",
+  "required": [
+    "server_id",
+    "install_id",
+    "tenant_id",
+    "protocol",
+    "versions",
+    "capabilities",
+    "host",
+    "boot_id",
+    "stream",
+    "availability"
+  ],
+  "properties": {
+    "server_id": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "install_id": { "type": "string", "minLength": 8, "maxLength": 128 },
+    "tenant_id": { "$ref": "../defs.json#/$defs/tenantId" },
+    "protocol": {
+      "type": "object",
+      "required": ["min", "max"],
+      "properties": {
+        "min": { "type": "integer", "minimum": 1 },
+        "max": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "versions": { "$ref": "../defs.json#/$defs/versions" },
+    "capabilities": {
+      "type": "array",
+      "items": { "type": "string", "maxLength": 64 },
+      "maxItems": 128,
+      "uniqueItems": true
+    },
+    "host": { "$ref": "../defs.json#/$defs/host" },
+    "boot_id": { "$ref": "../defs.json#/$defs/ulid" },
+    "stream": {
+      "type": "object",
+      "required": ["id", "last_tx_seq", "last_rx_seq"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "last_tx_seq": { "type": "integer", "minimum": 0 },
+        "last_rx_seq": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "state": {
+      "type": ["object", "null"],
+      "description": "MatchState (FLEET.md §9); null or absent when idle. Not interpreted in step 1."
+    },
+    "availability": { "$ref": "../defs.json#/$defs/availability" },
+    "selftest": {
+      "type": "object",
+      "required": ["pass", "passed", "total", "failures"],
+      "properties": {
+        "pass": { "type": "boolean" },
+        "passed": { "type": "integer", "minimum": 0 },
+        "total": { "type": "integer", "minimum": 0 },
+        "failures": { "type": "array", "items": { "type": "string", "maxLength": 512 }, "maxItems": 256 }
+      }
+    }
+  }
+}

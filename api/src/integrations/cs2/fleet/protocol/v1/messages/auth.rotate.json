@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/auth.rotate.json",
+  "title": "auth.rotate (platform → server, reliable)",
+  "description": "A new server token. The server writes it to credentials.json (temp + rename), uses it for the next connect, and replies auth.rotated. The old token keeps working until old_valid_until (24 h). FLEET.md §4.3.",
+  "type": "object",
+  "required": ["token", "old_valid_until"],
+  "properties": {
+    "token": { "type": "string", "pattern": "^rus_[0-9a-z]{12}_[A-Za-z0-9_-]{43}$" },
+    "old_valid_until": { "type": "integer", "description": "ms since Unix epoch" }
+  }
+}
