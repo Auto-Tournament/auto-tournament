@@ -54,7 +54,6 @@ export const manualReportClientIntegration: ClientGameIntegration = {
   tournamentSetupSteps: {
     settings: ManualReportSetupStep,
   },
-  standaloneMatchSteps: {},
   resourceDialogs: {},
   dashboardWidgets: {},
 

@@ -209,8 +209,7 @@ export const COMPONENT_SLOTS = [
   'tournamentSetupSteps.rules',
   'tournamentSetupSteps.content',
   'tournamentSetupSteps.settings',
-  'standaloneMatchSteps.rules',
-  'standaloneMatchSteps.content',
+  'standaloneMatch',
   'resourceDialogs.add',
   'resourceDialogs.batchAdd',
   'dashboardWidgets.adminHomeResources',
@@ -223,7 +222,6 @@ export type ComponentSlot = (typeof COMPONENT_SLOTS)[number];
 export const REQUIRED_GROUPS = [
   'matchPanels',
   'tournamentSetupSteps',
-  'standaloneMatchSteps',
   'resourceDialogs',
   'dashboardWidgets',
 ] as const;

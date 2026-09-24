@@ -190,3 +190,22 @@ export interface MapsResponse extends Cs2ApiResponse {
   maps: Map[];
   count: number;
 }
+
+export interface MapPool {
+  id: number;
+  name: string;
+  mapIds: string[];
+  isDefault: boolean;
+  enabled: boolean;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface MapPoolsResponse extends Cs2ApiResponse {
+  mapPools: MapPool[];
+  count: number;
+}
+
+export interface MapPoolResponse extends Cs2ApiResponse {
+  mapPool: MapPool;
+}

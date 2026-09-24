@@ -233,7 +233,6 @@ test.describe('Missing module placeholder (client registry)', () => {
     for (const group of [
       placeholder.matchPanels,
       placeholder.tournamentSetupSteps,
-      placeholder.standaloneMatchSteps,
       placeholder.resourceDialogs,
       placeholder.dashboardWidgets,
     ]) {
@@ -254,6 +253,7 @@ test.describe('Missing module placeholder (client registry)', () => {
       'tournamentStatsView',
       'preMatchView',
       'preMatchHistory',
+      'standaloneMatch',
       'catalogSlug',
       'catalogIcon',
       'runsAnyCatalogGame',

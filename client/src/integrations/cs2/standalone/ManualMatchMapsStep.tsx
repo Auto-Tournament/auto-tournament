@@ -1,7 +1,29 @@
 import React from 'react';
 import { Typography } from '@mui/material';
 import { MapPoolStep } from '../setup/MapPoolStep';
-import type { StandaloneContentStepProps as ManualMatchMapsStepProps } from '../../types';
+import type { Map as MapType, MapPool } from '../cs2.types';
+
+/** The dialog's maps step: the pool and the maps for the series. */
+interface ManualMatchMapsStepProps {
+  activeStep: number;
+
+  maps: string[];
+  mapPools: MapPool[];
+  availableMaps: MapType[];
+  selectedMapPool: string;
+  loadingMaps: boolean;
+  saving: boolean;
+  onMapPoolChange: (poolId: string) => void;
+  onMapsChange: (maps: string[]) => void;
+  onMapRemove: (mapId: string) => void;
+  onOpenSaveMapPool: () => void;
+
+  useVeto: boolean;
+  requiredMaps: number;
+  selectedMapsCount: number;
+  hasVetoMapCountError: boolean;
+  hasSeriesMapCountError: boolean;
+}
 
 export const ManualMatchMapsStep: React.FC<ManualMatchMapsStepProps> = ({
   activeStep,

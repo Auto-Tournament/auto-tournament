@@ -2301,7 +2301,6 @@ export default {
   capabilities: { servers: false, veto: false, liveEvents: false, demos: false, playerStats: false },
   matchPanels: {},
   tournamentSetupSteps: {},
-  standaloneMatchSteps: {},
   resourceDialogs: {},
   dashboardWidgets: {},
   routes: [
