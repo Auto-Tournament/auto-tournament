@@ -5,10 +5,8 @@ import {
   Container,
   Stack,
   Typography,
-  Chip,
-  Tabs,
-  Tab,
   CircularProgress,
+  Link,
   Alert,
   Grid,
 } from '@mui/material';
@@ -22,6 +20,7 @@ import { SchedulePanel } from '../components/tournament/overview/SchedulePanel';
 import { PrizesCard } from '../components/tournament/overview/PrizesCard';
 import { RequirementsCard, type Requirement } from '../components/tournament/overview/RequirementsCard';
 import { LiveStrip } from '../components/tournament/overview/LiveStrip';
+import { TournamentPageHeader } from '../components/tournament/overview/TournamentPageHeader';
 import { getMapDisplayName } from '../constants/maps';
 import { useIntegrationFor } from '../integrations/registry';
 import { MATCH_FORMATS } from '../constants/tournament';
@@ -86,15 +85,6 @@ export default function TournamentOverview() {
 
   const settings = tournament.settings;
   const isShuffle = tournament.type === 'shuffle';
-  const isLive = tournament.status === 'in_progress';
-  const isComplete = tournament.status === 'completed';
-
-  const statusLabel = isComplete
-    ? t('overviewPage.status.completed')
-    : isLive
-      ? t('overviewPage.status.inProgress')
-      : t('overviewPage.status.setup');
-
   const tournamentTypeKeyPrefix = `tournament.typeSelector.types.${tournament.type}`;
   const typeLabelKey = `${tournamentTypeKeyPrefix}.label`;
   const typeLabel = t(typeLabelKey) === typeLabelKey ? tournament.type : t(typeLabelKey);
@@ -175,33 +165,15 @@ export default function TournamentOverview() {
     <Box minHeight="100vh" bgcolor="transparent" data-testid="public-tournament-overview">
       <TopNavBar />
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
-        <Stack spacing={1} sx={{ mb: 2 }}>
-          <Box display="flex" alignItems="center" gap={1.5} flexWrap="wrap">
-            <Chip
-              label={statusLabel}
-              color={isComplete ? 'primary' : isLive ? 'success' : 'default'}
-              size="small"
-              sx={{ fontWeight: 600 }}
-            />
-          </Box>
-          <Typography variant="h3" fontWeight={700}>
-            {tournament.name}
-          </Typography>
-          {settings?.location && (
-            <Typography variant="body2" color="text.secondary">
-              {settings.location}
-            </Typography>
-          )}
-        </Stack>
-
-        <Tabs value={0} sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-          <Tab label={t('overviewPage.tabs.overview')} />
-          <Tab
-            label={t('overviewPage.tabs.leaderboard')}
-            component={RouterLink}
-            to={`/tournament/${tournament.id}/leaderboard`}
+        <Box sx={{ mb: 2 }}>
+          <TournamentPageHeader
+            tournamentId={tournament.id}
+            name={tournament.name}
+            status={tournament.status}
+            location={settings?.location}
+            tab="overview"
           />
-        </Tabs>
+        </Box>
 
         <LiveStrip
           liveCount={liveMatchCount}
@@ -278,9 +250,9 @@ export default function TournamentOverview() {
                   <Typography variant="body2" color="text.secondary" gutterBottom>
                     {t('overviewPage.yourTeam.onRoster', { team: viewerTeam.name })}
                   </Typography>
-                  <RouterLink to={`/team/${viewerTeam.id}`}>
+                  <Link component={RouterLink} to={`/team/${viewerTeam.id}`} variant="body2">
                     {t('overviewPage.yourTeam.viewTeam')}
-                  </RouterLink>
+                  </Link>
                 </Box>
               )}
 
