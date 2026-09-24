@@ -189,7 +189,12 @@ function EnableDialog({
   );
 }
 
-export function CodeModuleList() {
+/**
+ * `exclude`: ids the game catalog already shows (modules installed from it,
+ * or offered by it). Those are managed there; this list keeps the ones an
+ * operator put on disk by hand.
+ */
+export function CodeModuleList({ exclude }: { exclude?: ReadonlySet<string> } = {}) {
   const { t } = useTranslation();
   const { showSuccess, showError } = useSnackbar();
   const state = useModuleState();
@@ -262,7 +267,7 @@ export function CodeModuleList() {
         </Alert>
       )}
 
-      {modules.map((entry) => {
+      {modules.filter((entry) => !exclude?.has(entry.id)).map((entry) => {
         const { status, reason } = effectiveStatus(entry, state, t);
         return (
           <Card key={entry.id} variant="outlined" data-testid={`code-module-${entry.id}`}>
