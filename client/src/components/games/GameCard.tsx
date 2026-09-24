@@ -59,12 +59,16 @@ function guessArtKind(url: string): ArtKind {
 }
 
 /**
- * The API hands out IGDB's smallest cover (90x128), which suits a list row.
- * The card is ~200px wide, so it asks IGDB for the same image at its big
- * cover size rather than blowing up the thumbnail.
+ * The API hands out small pictures that suit a list row: IGDB's smallest
+ * cover (90x128) and Wikimedia files at 128px wide. The card is ~200px wide
+ * (400 device pixels on a phone), so it asks for the same image bigger —
+ * IGDB's big cover size, Wikimedia at 320px — rather than blowing up the
+ * thumbnail.
  */
 function cardArtUrl(url: string): string {
-  return url.replace('/t_cover_small/', '/t_cover_big/');
+  return url
+    .replace('/t_cover_small/', '/t_cover_big/')
+    .replace(/([?&]width=)128\b/, '$1320');
 }
 
 /**
@@ -86,31 +90,31 @@ export function GameArt({ game, compact = false }: { game: GameSummary; compact?
     overflow: 'hidden',
   } as const;
 
-  if (!src) {
-    return (
-      <Box
-        aria-hidden
+  const monogramWell = (
+    <Box
+      aria-hidden
+      sx={{
+        ...well,
+        backgroundColor: color.paper3,
+        backgroundImage: `radial-gradient(120% 90% at 50% 0%, ${withAlpha(color.accent, 0.14)}, transparent 70%)`,
+      }}
+    >
+      <Typography
+        component="span"
         sx={{
-          ...well,
-          backgroundColor: color.paper3,
-          backgroundImage: `radial-gradient(120% 90% at 50% 0%, ${withAlpha(color.accent, 0.14)}, transparent 70%)`,
+          fontFamily: fontDisplay,
+          fontWeight: 700,
+          fontSize: compact ? '0.6875rem' : 'clamp(1.5rem, 4vw, 2rem)',
+          letterSpacing: '-0.03em',
+          color: color.ink2,
         }}
       >
-        <Typography
-          component="span"
-          sx={{
-            fontFamily: fontDisplay,
-            fontWeight: 700,
-            fontSize: compact ? '0.6875rem' : 'clamp(1.5rem, 4vw, 2rem)',
-            letterSpacing: '-0.03em',
-            color: color.ink2,
-          }}
-        >
-          {gameMonogram(game.name)}
-        </Typography>
-      </Box>
-    );
-  }
+        {gameMonogram(game.name)}
+      </Typography>
+    </Box>
+  );
+
+  if (!src) return monogramWell;
 
   const onLoad = (event: SyntheticEvent<HTMLImageElement>) => {
     const { naturalWidth: w, naturalHeight: h } = event.currentTarget;
@@ -126,15 +130,22 @@ export function GameArt({ game, compact = false }: { game: GameSummary; compact?
     transition: `opacity ${duration.base}ms ${ease.out}`,
   };
 
+  // A logo's light plate only appears once the logo is there. Before, the
+  // plate showed at once, so a slow or blocked image (Wikimedia) left a
+  // blank bright rectangle — on a phone, the whole first screen.
+  const showPlate = kind === 'logo' && loaded;
+
   return (
     <Box
       aria-hidden
       sx={{
         ...well,
-        bgcolor: kind === 'logo' ? color.ink : color.paper3,
+        bgcolor: showPlate ? color.ink : color.paper3,
+        transition: `background-color ${duration.base}ms ${ease.out}`,
         p: kind !== 'logo' ? 0 : compact ? '3px' : { xs: 2, sm: 2.5 },
       }}
     >
+      {!loaded && <Box sx={{ position: 'absolute', inset: 0 }}>{monogramWell}</Box>}
       {kind === 'photo' && (
         <Box
           component="img"
