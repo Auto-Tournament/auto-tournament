@@ -100,7 +100,10 @@
       "gridTitle": "Popular games",
       "continue": "Continue",
       "notNow": "Not now",
-      "selectedGames": "Selected games"
+      "selectedGames": "Selected games",
+      "selectedCount": "{{count}} of {{max}} picked",
+      "pickOne": "Pick at least one game",
+      "supportedLegend": "Tournaments run here"
     }
   },
   "account": {
