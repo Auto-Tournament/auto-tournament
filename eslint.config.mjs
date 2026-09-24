@@ -5,6 +5,7 @@ import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactCompiler from 'eslint-plugin-react-compiler';
 import integrationBoundaries from './eslint-rules/integration-boundaries.mjs';
+import moduleSdkBoundary from './eslint-rules/module-sdk-boundary.mjs';
 
 export default [
   js.configs.recommended,
@@ -324,6 +325,21 @@ export default [
     },
     rules: {
       'local/integration-boundaries': 'error',
+    },
+  },
+
+  // Module SDK boundary (item 8c). A client game module reaches platform code
+  // only through client/src/module-sdk and integrations/types, and uses the
+  // host's copy of the shared packages. Warn, not error: today's count is the
+  // baseline to burn down, and it flips to error once CS2 compiles against the
+  // SDK alone. See eslint-rules/module-sdk-boundary.mjs.
+  {
+    files: ['client/src/integrations/**/*.{ts,tsx}'],
+    plugins: {
+      'module-sdk': moduleSdkBoundary,
+    },
+    rules: {
+      'module-sdk/module-sdk-boundary': 'warn',
     },
   },
 
