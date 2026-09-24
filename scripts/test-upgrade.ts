@@ -279,10 +279,13 @@ function containerLogs(name: string, tail = 200): string {
   }
 }
 
-/** Everything a container wrote, stdout and stderr together. */
+/**
+ * Everything a container wrote, stdout and stderr together, with JSON-escaped
+ * quotes unescaped (the production logger may write a line as JSON).
+ */
 function containerOutput(name: string): string {
   const result = spawnSync('docker', ['logs', name], { encoding: 'utf8' });
-  return `${result.stdout ?? ''}${result.stderr ?? ''}`;
+  return `${result.stdout ?? ''}${result.stderr ?? ''}`.replace(/\\"/g, '"');
 }
 
 /** Wait for a container to exit by itself; returns its exit code. */
