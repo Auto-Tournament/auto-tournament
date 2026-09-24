@@ -12,6 +12,7 @@ import MapIcon from '@mui/icons-material/Map';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import { useTranslation } from 'react-i18next';
+import { radii } from '../../theme/tokens';
 
 interface RoundStatus {
   roundNumber: number;
@@ -106,7 +107,7 @@ export function RoundStatusCard({
               value={completionPercentage}
               sx={{
                 height: 8,
-                borderRadius: 1,
+                borderRadius: radii.sm,
                 bgcolor: 'action.disabledBackground',
               }}
               color={roundStatus.isComplete ? 'success' : 'primary'}

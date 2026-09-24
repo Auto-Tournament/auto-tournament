@@ -24,6 +24,7 @@ import { TournamentPageHeader } from '../components/tournament/overview/Tourname
 import { getMapDisplayName } from '../constants/maps';
 import { useIntegrationFor } from '../integrations/registry';
 import { MATCH_FORMATS } from '../constants/tournament';
+import { radii } from '../theme/tokens';
 
 export default function TournamentOverview() {
   const { id } = useParams<{ id: string }>();
@@ -198,7 +199,7 @@ export default function TournamentOverview() {
               )}
 
               <Box>
-                <Typography variant="h6" fontWeight={600} gutterBottom>
+                <Typography variant="h5" component="h2" gutterBottom>
                   {t('overviewPage.howItsPlayed')}
                 </Typography>
                 <FactsGrid facts={facts} />
@@ -206,7 +207,7 @@ export default function TournamentOverview() {
 
               {mapNames.length > 0 && (
                 <Box>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                  <Typography variant="h5" component="h2" gutterBottom>
                     {t('overviewPage.mapPool')}
                   </Typography>
                   <MapPool mapNames={mapNames} />
@@ -215,7 +216,7 @@ export default function TournamentOverview() {
 
               {settings?.rules && settings.rules.length > 0 && (
                 <Box>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                  <Typography variant="h5" component="h2" gutterBottom>
                     {t('overviewPage.rules')}
                   </Typography>
                   <RulesList
@@ -228,7 +229,7 @@ export default function TournamentOverview() {
 
               {settings?.schedule && settings.schedule.length > 0 && (
                 <Box>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                  <Typography variant="h5" component="h2" gutterBottom>
                     {t('overviewPage.schedule')}
                   </Typography>
                   <SchedulePanel schedule={settings.schedule} />
@@ -242,7 +243,7 @@ export default function TournamentOverview() {
               {viewerTeam && (
                 <Box
                   data-testid="overview-your-team"
-                  sx={{ p: 2, border: 1, borderColor: 'divider', borderRadius: 2 }}
+                  sx={{ p: 2, border: 1, borderColor: 'divider', borderRadius: radii.lg }}
                 >
                   <Typography variant="subtitle1" fontWeight={600} gutterBottom>
                     {t('overviewPage.yourTeam.title')}

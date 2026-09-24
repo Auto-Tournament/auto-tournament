@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { PlayerAvatar } from '../../player/PlayerAvatar';
 import { getPlayerPageUrl } from '../../../utils/playerLinks';
 import type { Player } from '../../../types';
+import { radii } from '../../../theme/tokens';
 
 interface RosterListProps {
   players: Player[];
@@ -50,7 +51,7 @@ export function RosterList({ players }: RosterListProps) {
                   justifyContent: 'space-between',
                   gap: 2,
                   p: 1.5,
-                  borderRadius: 1,
+                  borderRadius: radii.sm,
                   textDecoration: 'none',
                   color: 'inherit',
                   border: 1,

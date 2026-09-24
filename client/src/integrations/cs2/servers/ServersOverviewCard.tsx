@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Card, CardContent, Skeleton, Stack, Typography } from '@mui/material';
-import { api, links, useModuleTranslation } from '../../../module-sdk';
+import { api, links, useModuleTranslation, radii } from '../../../module-sdk';
 import {
   SERVER_AVAILABILITY_ENDPOINT,
   type PluginVersionSummary,
@@ -92,7 +92,7 @@ function FleetBar({ fleet }: { fleet: ServerFleetCounts }) {
       aria-hidden
       sx={{
         height: 6,
-        borderRadius: 3,
+        borderRadius: radii.pill,
         bgcolor: 'background.surface2',
         overflow: 'hidden',
         display: 'flex',

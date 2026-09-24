@@ -14,7 +14,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 import type { Map } from '../cs2.types';
 import { FadeInImage } from '../common/FadeInImage';
-import { useModuleTranslation } from '../../../module-sdk';
+import { useModuleTranslation, radii } from '../../../module-sdk';
 
 interface MapActionsModalProps {
   open: boolean;
@@ -72,7 +72,7 @@ export default function MapActionsModal({
                   width: '100%',
                   border: '1px solid',
                   borderColor: 'divider',
-                  borderRadius: 1,
+                  borderRadius: radii.sm,
                 }}
                 height={256}
               />

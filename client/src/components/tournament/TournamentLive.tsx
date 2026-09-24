@@ -31,6 +31,7 @@ import { api } from '../../utils/api';
 import type { Map, MatchesResponse } from '../../types/api.types';
 import type { Tournament } from '../../types';
 import { getMapDisplayName } from '../../constants/maps';
+import { radii } from '../../theme/tokens';
 
 interface TournamentLiveProps {
   tournament: {
@@ -452,7 +453,7 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
             p: 2,
             border: 1,
             borderColor: 'error.main',
-            borderRadius: 2,
+            borderRadius: radii.lg,
           }}
         >
           <Typography

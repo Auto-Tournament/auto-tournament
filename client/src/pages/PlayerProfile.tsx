@@ -51,7 +51,7 @@ import type {
   MatchMapResult,
   Player as TeamPlayer,
 } from '../types';
-import { tokens, mono } from '../theme/tokens';
+import { tokens, mono, radii } from '../theme/tokens';
 import { teamProfilePath } from '../paths';
 
 interface RatingHistoryEntry {
@@ -1114,7 +1114,7 @@ export default function PlayerProfile() {
             <Grid size={{ xs: 12, md: 7 }}>
               <Card>
                 <CardContent>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                  <Typography variant="h5" component="h2" gutterBottom>
                     {t('playerPage.ratingChart.sectionTitle')}
                   </Typography>
                   <RatingChart
@@ -1125,7 +1125,7 @@ export default function PlayerProfile() {
             </Grid>
             <Grid size={{ xs: 12, md: 5 }}>
               <Box display="flex" justifyContent="space-between" alignItems="baseline" mb={1}>
-                <Typography variant="h6" fontWeight={600}>
+                <Typography variant="h5" component="h2">
                   {t('playerPage.recentMatches.title')}
                 </Typography>
               </Box>
@@ -1404,7 +1404,7 @@ export default function PlayerProfile() {
                           textDecoration: 'none',
                           color: 'inherit',
                           p: 1,
-                          borderRadius: 1,
+                          borderRadius: radii.sm,
                           '&:hover': {
                             bgcolor: 'action.hover',
                           },

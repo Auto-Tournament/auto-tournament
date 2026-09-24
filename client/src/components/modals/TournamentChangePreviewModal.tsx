@@ -15,6 +15,7 @@ import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { useTranslation } from 'react-i18next';
 import { useSnackbar } from '../../contexts/SnackbarContext';
+import { radii } from '../../theme/tokens';
 
 interface ChangeItem {
   field: string;
@@ -100,7 +101,7 @@ const TournamentChangePreviewModal: React.FC<TournamentChangePreviewModalProps> 
                 <Box
                   sx={{
                     p: 2,
-                    borderRadius: 2,
+                    borderRadius: radii.md,
                     bgcolor: 'action.hover',
                     border: '1px solid',
                     borderColor: 'divider',

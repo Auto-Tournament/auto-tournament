@@ -2,7 +2,7 @@ import { Box, Card, CardContent, Chip, Divider, Stack, Typography } from '@mui/m
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { useTranslation } from 'react-i18next';
 import { formatDate, getBracketMatchLabel } from '../../../utils/matchUtils';
-import { tokens } from '../../../theme/tokens';
+import { tokens, radii } from '../../../theme/tokens';
 import type { TeamMatchInfo, TeamMatchHistory, TeamStanding } from '../../../types';
 
 interface TeamTournamentInfo {
@@ -60,7 +60,7 @@ export function TeamTournaments({
               justifyContent: 'space-between',
               gap: 2,
               p: 1.5,
-              borderRadius: 1,
+              borderRadius: radii.sm,
               border: 1,
               borderColor: 'divider',
               flexWrap: 'wrap',
@@ -123,7 +123,7 @@ export function TeamTournaments({
                     justifyContent: 'space-between',
                     gap: 2,
                     p: 1.25,
-                    borderRadius: 1,
+                    borderRadius: radii.sm,
                     border: 1,
                     borderColor: 'divider',
                     borderLeft: 4,

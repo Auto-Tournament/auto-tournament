@@ -26,6 +26,7 @@ import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { Map as MapType } from '../../types/api.types';
 import { getMapDisplayName } from '../../constants/maps';
 import { useTranslation } from 'react-i18next';
+import { radii } from '../../theme/tokens';
 
 interface BulkShuffleMatchesModalProps {
   open: boolean;
@@ -396,7 +397,7 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
                     <Box
                       key={row.id}
                       sx={{
-                        borderRadius: 1,
+                        borderRadius: radii.sm,
                         border: '1px solid',
                         borderColor: 'divider',
                         p: 2,

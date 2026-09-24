@@ -1,5 +1,5 @@
 import { Box, Typography } from '@mui/material';
-import { fontMono } from '../../../theme/tokens';
+import { fontMono, radii } from '../../../theme/tokens';
 
 export interface Fact {
   label: string;
@@ -27,7 +27,7 @@ export function FactsGrid({ facts }: FactsGridProps) {
         gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 170px), 1fr))',
         border: 1,
         borderColor: 'divider',
-        borderRadius: 2,
+        borderRadius: radii.lg,
         overflow: 'hidden',
       }}
     >

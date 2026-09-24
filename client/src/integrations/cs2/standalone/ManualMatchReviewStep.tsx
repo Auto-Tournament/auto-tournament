@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Button, Stack, Typography } from '@mui/material';
+import { radii } from '../../../module-sdk';
 import type { StandaloneMatchConfig as MatchConfig } from './standaloneTypes';
 
 interface ManualMatchReviewStepProps {
@@ -34,7 +35,7 @@ export const ManualMatchReviewStep: React.FC<ManualMatchReviewStepProps> = ({
         component="pre"
         sx={{
           bgcolor: 'background.paper',
-          borderRadius: 1,
+          borderRadius: radii.sm,
           p: 1.5,
           fontSize: 12,
           maxHeight: 260,

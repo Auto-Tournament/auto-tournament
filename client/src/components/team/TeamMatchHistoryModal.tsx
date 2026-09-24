@@ -26,6 +26,7 @@ import { useRoundLabel } from '../../hooks/useRoundLabel';
 import { formatDate, getBracketMatchLabel } from '../../utils/matchUtils';
 import { MapAccordion } from './MapAccordion';
 import type { Match, PlayerStats, TeamMatchHistory } from '../../types';
+import { radii } from '../../theme/tokens';
 
 interface TeamMatchHistoryModalProps {
   matchHistory: TeamMatchHistory | null;
@@ -223,7 +224,7 @@ export function TeamMatchHistoryModal({
               <Box
                 sx={{
                   p: 2,
-                  borderRadius: 2,
+                  borderRadius: radii.md,
                   bgcolor: 'background.default',
                   border: '1px solid',
                   borderColor: 'divider',

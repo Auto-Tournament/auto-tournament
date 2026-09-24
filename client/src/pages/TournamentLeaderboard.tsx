@@ -42,7 +42,7 @@ import { TournamentPageHeader } from '../components/tournament/overview/Tourname
 import { TeamNameLink } from '../components/team/TeamNameLink';
 import type { Tournament } from '../types/tournament.types';
 import { useIntegrationFor } from '../integrations/registry';
-import { tokens, mono, fontMono } from '../theme/tokens';
+import { tokens, mono, fontMono, radii } from '../theme/tokens';
 
 /** Right-aligned (numeric) body cells use the mono face. */
 const numericCellsSx = {
@@ -650,7 +650,7 @@ export default function TournamentLeaderboard() {
                   <LinearProgress
                     variant="determinate"
                     value={(roundStatus.completedMatches / roundStatus.totalMatches) * 100}
-                    sx={{ height: 8, borderRadius: 1 }}
+                    sx={{ height: 8, borderRadius: radii.sm }}
                   />
                 </Box>
               )}

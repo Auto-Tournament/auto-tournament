@@ -10,6 +10,7 @@ import { getPlayerPageUrl } from '../../utils/playerLinks';
 import { PlayerAvatar } from '../player/PlayerAvatar';
 import { useTranslation } from 'react-i18next';
 import { PlayerName } from '../player/PlayerName';
+import { radii } from '../../theme/tokens';
 
 interface PlayerRosterProps {
   team1Name: string;
@@ -66,7 +67,7 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
                 key={player.steamid}
                 sx={{
                   p: 1.5,
-                  borderRadius: 1,
+                  borderRadius: radii.sm,
                   bgcolor: status.isReady
                     ? 'success.dark'
                     : status.isConnected

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import type { EventPageScheduleItem } from '../../../types';
+import { radii } from '../../../theme/tokens';
 
 interface SchedulePanelProps {
   schedule: EventPageScheduleItem[];
@@ -31,7 +32,7 @@ export function SchedulePanel({ schedule }: SchedulePanelProps) {
     <Box
       data-testid="overview-schedule"
       component="ul"
-      sx={{ listStyle: 'none', m: 0, p: 0, border: 1, borderColor: 'divider', borderRadius: 2 }}
+      sx={{ listStyle: 'none', m: 0, p: 0, border: 1, borderColor: 'divider', borderRadius: radii.lg }}
     >
       {schedule.map((item, index) => {
         const isNext = index === nextIndex;

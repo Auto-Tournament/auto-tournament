@@ -10,6 +10,7 @@ import {
 } from '@mui/material';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { useTranslation } from 'react-i18next';
+import { radii } from '../../theme/tokens';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -56,7 +57,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       data-testid="confirm-dialog"
       PaperProps={{
         sx: {
-          borderRadius: 3,
+          borderRadius: radii.lg,
         },
       }}
     >
