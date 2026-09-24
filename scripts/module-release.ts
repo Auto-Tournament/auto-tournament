@@ -2,13 +2,20 @@
 /**
  * Build, sign and verify code-module releases (DESIGN-modules §10.3, §10.4).
  *
- *   tsx scripts/module-release.ts pack <module-folder> --out <dir> [--key <pem>] [--url-base <url>] [--snapshot <dir>]
- *       Pack the folder into <id>-<version>.atmod, sign it, and write
- *       <id>-<version>.atmod.sig and catalog-entry.json next to it. The
- *       private key comes from --key (a PEM file) or the MODULE_SIGNING_KEY
- *       environment variable (the PEM text); it is never printed. With
- *       --snapshot, also copy the release into that offline-snapshot folder
- *       and add it to the folder's index.json (the image's bundled-modules).
+ *   tsx scripts/module-release.ts pack <module-folder> --out <dir> [--unsigned | --key <pem>]
+ *       [--url-base <url>] [--snapshot <dir>] [--icon <file.svg>] [--description <text>]
+ *       Pack the folder into <id>-<version>.atmod and write catalog-entry.json
+ *       next to it. With --unsigned (what the release workflows do) that is
+ *       all: `scripts/sign-module.mjs` signs it later, in a job that installs
+ *       nothing. Otherwise it also signs it here and writes the .sig — for
+ *       local and CI builds with a throwaway key; the private key comes from
+ *       --key (a PEM file) or MODULE_SIGNING_KEY (the PEM text) and is never
+ *       printed. With --snapshot, also copy the release into that
+ *       offline-snapshot folder and list it in the folder's index.json (the
+ *       image's bundled-modules). --icon and --description describe the
+ *       module in the catalog; the icon is copied into the snapshot as
+ *       icons/<id>.svg, and catalog-entry.json names that same path, which is
+ *       where the tile goes in Auto-Tournament/packs.
  *
  *   tsx scripts/module-release.ts verify <file.atmod> [--sig <file.sig>]
  *       Verify a release with exactly the check the platform runs, against
@@ -70,7 +77,10 @@ async function pack(args: string[]): Promise<void> {
   const out = option(args, '--out') ?? fail('pack needs --out <dir>');
   const urlBase = option(args, '--url-base');
   const snapshot = option(args, '--snapshot');
-  const key = loadPrivateKey(option(args, '--key'));
+  const iconFile = option(args, '--icon');
+  const description = option(args, '--description');
+  const unsigned = args.includes('--unsigned');
+  const key = unsigned ? null : loadPrivateKey(option(args, '--key'));
 
   let raw: unknown;
   try {
@@ -90,12 +100,12 @@ async function pack(args: string[]): Promise<void> {
     if (!entries.some((entry) => entry.path === required)) fail(`${required} is missing from ${folder}`);
   }
   const archive = writeModuleArchive(entries);
-  const signature = signModuleArchive(archive, { id: manifest.id, version: manifest.version }, key);
+  const signature = key ? signModuleArchive(archive, { id: manifest.id, version: manifest.version }, key) : null;
 
   const file = `${manifest.id}-${manifest.version}.atmod`;
   fs.mkdirSync(out, { recursive: true });
   fs.writeFileSync(path.join(out, file), archive);
-  fs.writeFileSync(path.join(out, `${file}.sig`), `${JSON.stringify(signature, null, 2)}\n`);
+  if (signature) fs.writeFileSync(path.join(out, `${file}.sig`), `${JSON.stringify(signature, null, 2)}\n`);
 
   const release = {
     version: manifest.version,
@@ -105,13 +115,21 @@ async function pack(args: string[]): Promise<void> {
     sha256: sha256Hex(archive),
     size: archive.length,
   };
-  const entry = { id: manifest.id, name: manifest.name, releases: [release] };
+  const about = {
+    ...(description ? { description } : {}),
+    ...(iconFile ? { icon: `icons/${manifest.id}.svg` } : {}),
+  };
+  const entry = { id: manifest.id, name: manifest.name, ...about, releases: [release] };
   fs.writeFileSync(path.join(out, 'catalog-entry.json'), `${JSON.stringify(entry, null, 2)}\n`);
 
   if (snapshot) {
     fs.mkdirSync(snapshot, { recursive: true });
     fs.copyFileSync(path.join(out, file), path.join(snapshot, file));
-    fs.copyFileSync(path.join(out, `${file}.sig`), path.join(snapshot, `${file}.sig`));
+    if (signature) fs.copyFileSync(path.join(out, `${file}.sig`), path.join(snapshot, `${file}.sig`));
+    if (iconFile) {
+      fs.mkdirSync(path.join(snapshot, 'icons'), { recursive: true });
+      fs.copyFileSync(iconFile, path.join(snapshot, 'icons', `${manifest.id}.svg`));
+    }
     const indexFile = path.join(snapshot, 'index.json');
     const index = fs.existsSync(indexFile)
       ? (JSON.parse(fs.readFileSync(indexFile, 'utf8')) as { schema: number; modules: Array<Record<string, unknown>> })
@@ -119,14 +137,15 @@ async function pack(args: string[]): Promise<void> {
     const others = index.modules.filter((m) => m.id !== manifest.id);
     const snapshotRelease = { ...release, file };
     delete (snapshotRelease as { url?: string }).url;
-    index.modules = [...others, { id: manifest.id, name: manifest.name, releases: [snapshotRelease] }].sort((a, b) =>
+    index.modules = [...others, { id: manifest.id, name: manifest.name, ...about, releases: [snapshotRelease] }].sort((a, b) =>
       String(a.id).localeCompare(String(b.id))
     );
     fs.writeFileSync(indexFile, `${JSON.stringify(index, null, 2)}\n`);
   }
 
   console.log(
-    `Built ${file} (${archive.length} bytes, sha256 ${release.sha256}), signed by key ${signature.keyId}` +
+    `Built ${file} (${archive.length} bytes, sha256 ${release.sha256}), ` +
+      (signature ? `signed by key ${signature.keyId}` : 'unsigned') +
       (snapshot ? `, added to ${snapshot}` : '')
   );
 }

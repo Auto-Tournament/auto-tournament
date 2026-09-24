@@ -1,3 +1,4 @@
+import { execFileSync, spawnSync } from 'child_process';
 import crypto from 'crypto';
 import fs from 'fs';
 import os from 'os';
@@ -173,6 +174,59 @@ test.describe('Module signature', () => {
     const result = verifyModuleRelease(archive, JSON.stringify(forged), { id: 'demo' }, [trusted]);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toMatch(/does not verify/);
+  });
+});
+
+test.describe('The standalone signer (scripts/sign-module.mjs)', () => {
+  // What the release workflows sign with, in a job that installs nothing:
+  // its output must be exactly what the platform verifies.
+  const SIGNER = path.join(__dirname, '../../scripts/sign-module.mjs');
+
+  function setup() {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'atsign-'));
+    const { privateKey, trusted } = keypair();
+    const pem = privateKey.export({ format: 'pem', type: 'pkcs8' }) as string;
+    const archive = writeModuleArchive(FILES);
+    const file = path.join(dir, 'demo-1.2.3.atmod');
+    fs.writeFileSync(file, archive);
+    return { dir, pem, trusted, archive, file };
+  }
+
+  test('signs what the platform verifies, and never prints the key', () => {
+    const { pem, trusted, archive, file } = setup();
+    const output = execFileSync(process.execPath, [SIGNER, file, 'demo', '1.2.3'], {
+      env: { ...process.env, MODULE_SIGNING_KEY: pem },
+      encoding: 'utf8',
+    });
+    expect(output).toContain(trusted.keyId);
+    expect(output).not.toContain('PRIVATE KEY');
+    const result = verifyModuleRelease(archive, fs.readFileSync(`${file}.sig`), { id: 'demo', version: '1.2.3' }, [trusted]);
+    expect(result.ok).toBe(true);
+  });
+
+  test('--entry refuses an archive that is not the one the build described', () => {
+    const { dir, pem } = setup();
+    fs.writeFileSync(
+      path.join(dir, 'catalog-entry.json'),
+      JSON.stringify({ id: 'demo', name: 'Demo', releases: [{ version: '1.2.3', sha256: 'a'.repeat(64) }] })
+    );
+    const run = spawnSync(process.execPath, [SIGNER, '--entry', path.join(dir, 'catalog-entry.json')], {
+      env: { ...process.env, MODULE_SIGNING_KEY: pem },
+      encoding: 'utf8',
+    });
+    expect(run.status).not.toBe(0);
+    expect(run.stderr).toMatch(/not the archive that was built/);
+    expect(fs.existsSync(path.join(dir, 'demo-1.2.3.atmod.sig'))).toBe(false);
+  });
+
+  test('refuses a key that is not an Ed25519 PEM, without echoing it', () => {
+    const { file } = setup();
+    const run = spawnSync(process.execPath, [SIGNER, file, 'demo', '1.2.3'], {
+      env: { ...process.env, MODULE_SIGNING_KEY: 'not-a-key-secret-material' },
+      encoding: 'utf8',
+    });
+    expect(run.status).not.toBe(0);
+    expect(run.stderr).not.toContain('secret-material');
   });
 });
 

@@ -2,20 +2,33 @@ name: Module release
 
 # Publish a signed code-module release (DESIGN-modules §10.2–10.4).
 #
-# Push a tag `module-<id>-v<version>` (e.g. `module-cs2-v3.0.0`). This builds
-# the module with `scripts/modules/<id>/build.sh`, packs it into
-# `<id>-<version>.atmod`, signs it with the MODULE_SIGNING_KEY secret, checks
-# the signature against the keys compiled into this commit (so a secret that
-# does not match the platform's trusted key fails here, not on every
-# install), and publishes a GitHub release with the archive, its `.sig` and
-# `catalog-entry.json`. The release is never marked "latest": that stays the
-# platform's.
+# Push a tag `module-<id>-v<version>` (e.g. `module-cs2-v3.0.0`) on a commit
+# that is on main. Four jobs, so the signing key never shares a process with
+# a dependency:
+#
+#   build    no secrets. Refuses a commit that is not on main, installs
+#            dependencies, builds the module with scripts/modules/<id>/build.sh,
+#            packs it UNSIGNED into <id>-<version>.atmod plus
+#            catalog-entry.json, and uploads them.
+#   sign     environment `module-signing` (required reviewer; the only place
+#            MODULE_SIGNING_KEY exists). No `yarn install`, no tsx, no
+#            bundler: plain `node scripts/sign-module.mjs`, which uses Node's
+#            built-in crypto only, checks the archive is the one `build`
+#            described (sha256), and writes the .sig.
+#   verify   no secrets. Installs dependencies and checks the signature with
+#            the platform's own verifier against the keys compiled into this
+#            commit, so a key that does not match fails here, not on every
+#            install.
+#   publish  contents: write, installs nothing: creates the GitHub release
+#            (never marked "latest"; that stays the platform's) with the
+#            .atmod, its .sig and catalog-entry.json.
 #
 # Adding the release to the catalog is a pull request to Auto-Tournament/packs
-# that pastes catalog-entry.json into catalog.json's `modules`.
+# that pastes catalog-entry.json into catalog.json's `modules`, with the tile
+# at the path the entry names (icons/<id>.svg).
 #
-# Required secret: MODULE_SIGNING_KEY — the Ed25519 private key, PEM. It is
-# handed to the signing step only, and nothing prints it.
+# Required: the `module-signing` environment, holding the secret
+# MODULE_SIGNING_KEY — the Ed25519 private key as PEM text.
 
 on:
   push:
@@ -23,17 +36,34 @@ on:
       - 'module-*-v*'
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: module-release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  release:
+  build:
+    name: Build (unsigned)
     runs-on: ubuntu-latest
+    outputs:
+      id: ${{ steps.tag.outputs.id }}
+      version: ${{ steps.tag.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # A tag can be pushed on any commit, including one on a branch nobody
+      # reviewed, and then that commit's workflow runs. Only commits on main
+      # are released.
+      - name: Refuse a commit that is not on main
+        run: |
+          git fetch --no-tags origin main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::$GITHUB_SHA is not on main; module releases are cut from main only"
+            exit 1
+          fi
 
       - name: Read the module and version from the tag
         id: tag
@@ -75,45 +105,144 @@ jobs:
             exit 1
           fi
 
-      - name: Pack and sign
+      # scripts/modules/<id>/meta.json, when there is one, describes the
+      # module in the catalog: { "description": "...", "icon": "<path to svg>" }.
+      - name: Pack (unsigned)
         env:
           MODULE_ID: ${{ steps.tag.outputs.id }}
-          MODULE_SIGNING_KEY: ${{ secrets.MODULE_SIGNING_KEY }}
           URL_BASE: https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}
         run: |
-          if [ -z "$MODULE_SIGNING_KEY" ]; then
-            echo "::error::The MODULE_SIGNING_KEY secret is not set"
-            exit 1
+          ARGS=()
+          META="scripts/modules/$MODULE_ID/meta.json"
+          if [ -f "$META" ]; then
+            DESCRIPTION=$(jq -r '.description // empty' "$META")
+            ICON=$(jq -r '.icon // empty' "$META")
+            if [ -n "$DESCRIPTION" ]; then ARGS+=(--description "$DESCRIPTION"); fi
+            if [ -n "$ICON" ]; then ARGS+=(--icon "$ICON"); cp "$ICON" "$RUNNER_TEMP/icon.svg"; fi
           fi
           node_modules/.bin/tsx scripts/module-release.ts pack "$RUNNER_TEMP/module/$MODULE_ID" \
-            --out "$RUNNER_TEMP/release" --url-base "$URL_BASE"
+            --out "$RUNNER_TEMP/release" --url-base "$URL_BASE" --unsigned "${ARGS[@]+"${ARGS[@]}"}"
+          if [ -f "$RUNNER_TEMP/icon.svg" ]; then cp "$RUNNER_TEMP/icon.svg" "$RUNNER_TEMP/release/$MODULE_ID.svg"; fi
+          ls -la "$RUNNER_TEMP/release"
 
-      # No key here: exactly the check an installing platform runs, against
-      # the public keys compiled into this commit.
-      - name: Verify with the platform's trusted keys
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-release
+          path: ${{ runner.temp }}/release
+          retention-days: 3
+
+  sign:
+    name: Sign
+    needs: build
+    runs-on: ubuntu-latest
+    # The only job that can read MODULE_SIGNING_KEY. The environment's
+    # required reviewer approves each run.
+    environment: module-signing
+    steps:
+      # For scripts/sign-module.mjs only. Nothing is installed.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Refuse a commit that is not on main
+        run: |
+          git fetch --no-tags origin main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::$GITHUB_SHA is not on main; module releases are cut from main only"
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: unsigned-release
+          path: ${{ runner.temp }}/release
+
+      - name: Sign (Node's built-in crypto, no dependencies)
         env:
-          FILE: ${{ steps.tag.outputs.id }}-${{ steps.tag.outputs.version }}.atmod
-        run: node_modules/.bin/tsx scripts/module-release.ts verify "$RUNNER_TEMP/release/$FILE"
+          MODULE_SIGNING_KEY: ${{ secrets.MODULE_SIGNING_KEY }}
+        run: node scripts/sign-module.mjs --entry "$RUNNER_TEMP/release/catalog-entry.json"
 
-      - name: Publish the release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: signature
+          path: ${{ runner.temp }}/release/*.atmod.sig
+          retention-days: 3
+
+  verify:
+    name: Verify against the platform's keys
+    needs: [build, sign]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: unsigned-release
+          path: ${{ runner.temp }}/release
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: signature
+          path: ${{ runner.temp }}/release
+
+      # No key here, and MODULE_TRUSTED_KEYS unset: exactly the check an
+      # installing platform runs, against the public keys compiled into this
+      # commit.
+      - name: Verify
+        env:
+          FILE: ${{ needs.build.outputs.id }}-${{ needs.build.outputs.version }}.atmod
+        run: MODULE_TRUSTED_KEYS='' node_modules/.bin/tsx scripts/module-release.ts verify "$RUNNER_TEMP/release/$FILE"
+
+  publish:
+    name: Publish the release
+    needs: [build, sign, verify]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: unsigned-release
+          path: ${{ runner.temp }}/release
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: signature
+          path: ${{ runner.temp }}/release
+
+      - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
-          MODULE_ID: ${{ steps.tag.outputs.id }}
-          VERSION: ${{ steps.tag.outputs.version }}
+          GH_REPO: ${{ github.repository }}
+          MODULE_ID: ${{ needs.build.outputs.id }}
+          VERSION: ${{ needs.build.outputs.version }}
         run: |
           {
             echo "Signed code module \`$MODULE_ID\` $VERSION for Auto Tournament."
             echo
-            echo "Install it from the Modules page. To offer it in the catalog, add \`catalog-entry.json\` to \`catalog.json\` in Auto-Tournament/packs."
+            echo "Install it from the Modules page. To offer it in the catalog, add \`catalog-entry.json\` to \`catalog.json\` in Auto-Tournament/packs (and the tile at the \`icon\` path it names)."
             echo
             echo '```'
-            sha256sum "$RUNNER_TEMP"/release/*.atmod
+            (cd "$RUNNER_TEMP/release" && sha256sum ./*.atmod)
             echo '```'
           } > "$RUNNER_TEMP/notes.md"
+          ASSETS=("$RUNNER_TEMP"/release/*.atmod "$RUNNER_TEMP"/release/*.atmod.sig "$RUNNER_TEMP/release/catalog-entry.json")
+          if [ -f "$RUNNER_TEMP/release/$MODULE_ID.svg" ]; then ASSETS+=("$RUNNER_TEMP/release/$MODULE_ID.svg"); fi
           gh release create "$GITHUB_REF_NAME" \
             --title "Module $MODULE_ID $VERSION" \
             --notes-file "$RUNNER_TEMP/notes.md" \
             --latest=false \
-            "$RUNNER_TEMP"/release/*.atmod \
-            "$RUNNER_TEMP"/release/*.atmod.sig \
-            "$RUNNER_TEMP/release/catalog-entry.json"
+            --verify-tag \
+            "${ASSETS[@]}"
