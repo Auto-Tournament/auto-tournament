@@ -15,8 +15,7 @@ import {
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
-import { api } from '../../../utils/api';
-import { useSnackbar } from '../../../contexts/SnackbarContext';
+import { api, useSnackbar } from '../../../module-sdk';
 import type { Map, MapResponse } from '../../../types/api.types';
 import { FadeInImage } from '../../../components/common/FadeInImage';
 import { useTranslation } from 'react-i18next';

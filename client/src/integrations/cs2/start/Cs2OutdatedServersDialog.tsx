@@ -24,9 +24,8 @@ import React, { useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import ConfirmDialog from '../../../components/modals/ConfirmDialog';
-import { api } from '../../../utils/api';
 import { paths } from '../../../paths';
+import { ConfirmDialog, api } from '../../../module-sdk';
 import type { TournamentStartFailureProps } from '../../types';
 
 export interface OutdatedServer {

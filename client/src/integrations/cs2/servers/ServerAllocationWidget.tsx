@@ -5,7 +5,7 @@ import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
 import type { ServerAllocationInfo } from '../../../types';
-import { getBracketMatchLabel } from '../../../utils/matchUtils';
+import { getBracketMatchLabel } from '../../../module-sdk';
 import { useTranslation } from 'react-i18next';
 import type { MatchAllocationPanelProps as ServerAllocationWidgetProps } from '../../types';
 

@@ -1,4 +1,4 @@
-import { tokens } from '../../../theme/tokens';
+import { tokens } from '../../../module-sdk';
 
 /**
  * Veto history styling shared by the live veto page and the team match page,
