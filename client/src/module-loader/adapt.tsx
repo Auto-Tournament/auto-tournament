@@ -1,7 +1,9 @@
 /**
  * Turns a validated code module into the integration the registry holds:
  * the same object, with every component slot, route and nav icon wrapped in
- * a `ModuleSlotBoundary`, and its `ownsFailure` callback guarded.
+ * a `ModuleSlotBoundary`, and its callbacks (`ownsFailure`,
+ * `summarizeAvailability`, `manageNeedsYou`, `adminHomeSetup` and the
+ * `tournamentSetup` model's functions) guarded.
  *
  * Doing it here, once, puts a boundary around every slot core renders for a
  * code module without touching the 21 files that render slots, and without a
@@ -101,6 +103,51 @@ export function adaptCodeModule(integration: ClientGameIntegration): ClientGameI
         summary: guard('summary', setup.summary, { rows: [], checklist: [], review: [] }),
         roundCount: guard('roundCount', setup.roundCount, null),
         changes: guard('changes', setup.changes, []),
+      },
+    };
+  }
+
+  // Core calls these on render (or, for the setup rows, on load). A throw
+  // reads as "nothing to add" and marks the module broken, as a slot's does.
+  const summarize = adapted.summarizeAvailability;
+  if (summarize) {
+    adapted = {
+      ...adapted,
+      summarizeAvailability: (availability) => {
+        try {
+          return summarize(availability);
+        } catch (thrown) {
+          recordRenderFailure(id, 'summarizeAvailability', thrown);
+          return { waitingMatches: 0, resourceCount: 0 };
+        }
+      },
+    };
+  }
+  const needsYou = adapted.manageNeedsYou;
+  if (needsYou) {
+    adapted = {
+      ...adapted,
+      manageNeedsYou: (input) => {
+        try {
+          return needsYou(input);
+        } catch (thrown) {
+          recordRenderFailure(id, 'manageNeedsYou', thrown);
+          return [];
+        }
+      },
+    };
+  }
+  const adminSetup = adapted.adminHomeSetup;
+  if (adminSetup) {
+    adapted = {
+      ...adapted,
+      adminHomeSetup: async () => {
+        try {
+          return await adminSetup();
+        } catch (thrown) {
+          recordRenderFailure(id, 'adminHomeSetup', thrown);
+          return [];
+        }
       },
     };
   }

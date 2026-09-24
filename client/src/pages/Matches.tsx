@@ -65,6 +65,12 @@ export default function Matches() {
   const QueueBanner = matchIntegration?.matchListQueue?.banner;
   const QueueCountdown = matchIntegration?.matchListQueue?.countdown;
   const MatchQueueStatus = matchIntegration?.matchListQueue?.cardStatus;
+  // How many wait, as the module reads its own answer (0 without one).
+  const summarizeAvailability = matchIntegration?.summarizeAvailability;
+  const waitingMatches =
+    serverAllocationStatus && summarizeAvailability
+      ? summarizeAvailability(serverAllocationStatus).waitingMatches
+      : 0;
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedMatchSlugs, setSelectedMatchSlugs] = useState<Set<string>>(() => new Set());
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
@@ -585,10 +591,10 @@ export default function Matches() {
                 <Typography variant="h6" fontWeight={600}>
                   {t('matchesPage.sections.upcoming', { count: upcomingMatches.length })}
                 </Typography>
-                {serverAllocationStatus && serverAllocationStatus.requiredServerCount > 0 && (
+                {waitingMatches > 0 && (
                   <Chip 
                     label={t('matchesPage.sections.inQueue', {
-                      count: serverAllocationStatus.requiredServerCount,
+                      count: waitingMatches,
                     })}
                     color="primary"
                     size="small"

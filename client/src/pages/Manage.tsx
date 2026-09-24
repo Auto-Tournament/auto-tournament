@@ -5,7 +5,12 @@ import { usePageHeader } from '../contexts/PageHeaderContext';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { useManageData } from '../hooks/useManageData';
 import { api } from '../utils/api';
-import { computeStatusCounts, computeNeedsYouItems, computeRecentEvents } from '../utils/manageSelectors';
+import {
+  computeStatusCounts,
+  computeNeedsYouItems,
+  computeRecentEvents,
+  manageMatchRefs,
+} from '../utils/manageSelectors';
 import { getGlobalMatchNumber, getRoundLabel } from '../utils/matchUtils';
 import { ManageRail } from '../components/manage/ManageRail';
 import { StatusStrip } from '../components/manage/StatusStrip';
@@ -14,6 +19,7 @@ import { useIntegrationFor } from '../integrations/registry';
 import { useShellIntegrations, shellModule } from '../hooks/useShellIntegrations';
 import { RecentLog } from '../components/manage/RecentLog';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
+import { useModuleTranslation } from '../module-sdk';
 import type { Match } from '../types/match.types';
 
 export default function Manage() {
@@ -26,12 +32,20 @@ export default function Manage() {
   const { t } = useTranslation();
   const { setHeaderActions } = usePageHeader();
   const { showSuccess, showError } = useSnackbar();
-  const { loading, tournament, matches, serverAvailability, refresh } = useManageData();
+  const { loading, tournament, matches, availability, refresh } = useManageData();
   // The status strip's own tile, from the module the availability above came
   // from (CS2: servers free). A module with no resources has no tile, and the
   // strip is one tile shorter rather than showing a zero.
   const tournamentIntegration = useIntegrationFor(tournament);
   const ResourceStatusTile = tournament ? tournamentIntegration.manageStatusTile : undefined;
+  // The module reads its own answer for the counts and rows the console shows
+  // itself (CS2: matches waiting for a server, servers down while holding one).
+  const { t: moduleT } = useModuleTranslation(tournamentIntegration.id);
+  const { summarizeAvailability, manageNeedsYou } = tournamentIntegration;
+  const summary = useMemo(
+    () => (availability && summarizeAvailability ? summarizeAvailability(availability) : null),
+    [availability, summarizeAvailability]
+  );
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [announceOpen, setAnnounceOpen] = useState(false);
   const [announceText, setAnnounceText] = useState('');
@@ -42,12 +56,18 @@ export default function Manage() {
   }, [t]);
 
   const statusCounts = useMemo(
-    () => computeStatusCounts(matches, serverAvailability),
-    [matches, serverAvailability]
+    () => computeStatusCounts(matches, summary?.waitingMatches ?? 0),
+    [matches, summary]
   );
   const needsYouItems = useMemo(
-    () => computeNeedsYouItems(matches, serverAvailability),
-    [matches, serverAvailability]
+    () =>
+      computeNeedsYouItems(
+        matches,
+        availability && manageNeedsYou
+          ? manageNeedsYou({ availability, matches: manageMatchRefs(matches), t: moduleT })
+          : []
+      ),
+    [matches, availability, manageNeedsYou, moduleT]
   );
   const recentEvents = useMemo(() => computeRecentEvents(matches), [matches]);
 
@@ -73,14 +93,14 @@ export default function Manage() {
       <Button
         variant="outlined"
         onClick={() => setAnnounceOpen(true)}
-        disabled={!serverAvailability || serverAvailability.servers.length === 0}
+        disabled={!summary || summary.resourceCount === 0}
       >
         {t('managePage.announce.button')}
       </Button>
     );
     return () => setHeaderActions(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setHeaderActions, t, serverAvailability?.servers.length]);
+  }, [setHeaderActions, t, summary?.resourceCount]);
 
   if (loading) {
     return (
@@ -119,7 +139,7 @@ export default function Manage() {
             counts={statusCounts}
             resourceTile={
               ResourceStatusTile ? (
-                <ResourceStatusTile availability={serverAvailability} />
+                <ResourceStatusTile availability={availability} />
               ) : null
             }
           />

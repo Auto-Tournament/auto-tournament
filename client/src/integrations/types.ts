@@ -544,6 +544,22 @@ export type ResourceAvailability = {
 } & Record<string, unknown>;
 
 /**
+ * The two numbers core shows about a queue itself, read by the module out of
+ * its own availability answer (client API 0.2.0).
+ *
+ * The match list's "3 in queue" chip and the Manage console's QUEUED tile and
+ * "Announce" button are core's, but the answer they are read from is the
+ * module's, in its own shape. Core does not read that shape: it hands the
+ * answer to `summarizeAvailability` and shows what comes back.
+ */
+export interface ResourceQueueSummary {
+  /** Matches ready to play that are waiting for a resource. */
+  waitingMatches: number;
+  /** Resources the game has at all. Manage's "Announce" goes to all of them, and is off at 0. */
+  resourceCount: number;
+}
+
+/**
  * The bracket, above it: why the matches that are ready have not started yet
  * (3.0 phase E).
  *
@@ -604,6 +620,66 @@ export interface MatchQueueStatusProps {
 export interface ManageStatusTileProps {
   /** What the game's resources can take right now, or null before the first answer. */
   availability: ResourceAvailability | null;
+}
+
+/** What one "needs you" button does. Each calls an endpoint core already has. */
+export type ManageNeedsYouActionKind = 'decide' | 'reallocate' | 'forceCancel';
+
+export interface ManageNeedsYouAction {
+  kind: ManageNeedsYouActionKind;
+  label: string;
+  matchSlug: string;
+}
+
+/** One row of the Manage console's "needs you" queue. */
+export interface ManageNeedsYouItem {
+  id: string;
+  /** The dot: 'ban' (red) for outages, 'warn' (accent) for decisions, 'info' for the rest. */
+  severity: 'ban' | 'warn' | 'info';
+  title: string;
+  detail: string;
+  actions: ManageNeedsYouAction[];
+  /** Present when one of the actions opens the match details/decision dialog. */
+  decisionMatchSlug?: string;
+}
+
+/** One of the tournament's matches, as the "needs you" queue names it. */
+export interface ManageMatchRef {
+  slug: string;
+  status: string;
+  /** "Team A vs Team B", or the slug while a team is unknown. */
+  name: string;
+}
+
+/**
+ * What `manageNeedsYou` is given (client API 0.2.0).
+ *
+ * The Manage console's queue lists what an admin has to act on. Matches that
+ * need a decision are core's. What is wrong with the game's resources (CS2: a
+ * server offline, or flagged stale, while it holds a match) is the module's,
+ * worked out from its own availability answer.
+ */
+export interface ManageNeedsYouInput {
+  /** The module's own availability answer. */
+  availability: ResourceAvailability;
+  /** The tournament's matches, so a row can name its match. */
+  matches: readonly ManageMatchRef[];
+  /** The module's translator: its own namespace first, core's after it. */
+  t: TFunction;
+}
+
+/**
+ * One row of the admin home's "Finish setting up" card, from a module
+ * (client API 0.2.0). CS2: "Add a server" / "3 servers added".
+ */
+export interface AdminHomeSetupItem {
+  key: string;
+  done: boolean;
+  /** An optional row does not keep the card up once the required ones are done. */
+  optional?: boolean;
+  /** A key in the module's own namespace. */
+  labelKey: string;
+  labelValues?: Record<string, unknown>;
 }
 
 // ---------------------------------------------------------------------------
@@ -806,6 +882,21 @@ export interface ClientGameIntegration {
   manageStatusTile?: ComponentType<ManageStatusTileProps>;
 
   /**
+   * Reads this module's availability answer for the counts core shows itself:
+   * the match list's "N in queue", Manage's QUEUED tile and whether Manage's
+   * "Announce" has anywhere to go. Without it they read 0.
+   */
+  summarizeAvailability?: (availability: ResourceAvailability) => ResourceQueueSummary;
+
+  /**
+   * The Manage console's "needs you" rows about this module's resources,
+   * listed after core's own (CS2: servers offline or stale while holding a
+   * match). Worked out from the answer core already has; called on render,
+   * so it must be quick and must not fetch.
+   */
+  manageNeedsYou?: (input: ManageNeedsYouInput) => ManageNeedsYouItem[];
+
+  /**
    * Where the core asks what this game's match resources can take right now
    * (3.0 phase E).
    *
@@ -877,6 +968,14 @@ export interface ClientGameIntegration {
     adminHomeResources?: ComponentType<AdminHomeResourcesProps>;
     manageResources?: ComponentType<ManageResourcesProps>;
   };
+
+  /**
+   * The admin home's "Finish setting up" rows this module adds (CS2: add a
+   * server). The module fetches what it needs; core asks once per visit,
+   * alongside its own rows, and shows them after its first. A rejection
+   * counts as no rows.
+   */
+  adminHomeSetup?: () => Promise<AdminHomeSetupItem[]>;
 
   /** Pages the integration owns. URLs come from `paths.ts`. */
   routes: IntegrationRoute[];

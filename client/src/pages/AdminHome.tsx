@@ -4,6 +4,7 @@ import { Box, Button, CircularProgress, Grid, Stack, Typography } from '@mui/mat
 import { useTranslation } from 'react-i18next';
 import { useTournamentList } from '../hooks/useTournamentList';
 import { useAdminHomeData } from '../hooks/useAdminHomeData';
+import { useModuleSetupItems } from '../hooks/useModuleSetupItems';
 import { SetupCard, type SetupItem } from '../components/adminHome/SetupCard';
 import { TournamentsList } from '../components/adminHome/TournamentsList';
 import { SiteLinksGrid } from '../components/adminHome/SiteLinksGrid';
@@ -26,7 +27,7 @@ export default function AdminHome() {
   // The game's resource summary (CS2: the server fleet), from the module the
   // tournament runs (3.0 phase E). A game with no resources has no card, and
   // the page is one card shorter rather than showing an empty fleet.
-  const { shell } = useShellIntegrations();
+  const { shell, loading: shellLoading } = useShellIntegrations();
   const ServersOverviewCard = shellModule(shell, (i) => i.dashboardWidgets.adminHomeResources)
     ?.dashboardWidgets.adminHomeResources;
   const { t } = useTranslation();
@@ -36,10 +37,13 @@ export default function AdminHome() {
     steamConfigured,
     discordConfigured,
     igdbConfigured,
-    serversCount,
     playersCount,
     adminsCount,
   } = useAdminHomeData();
+  // The modules' own rows (CS2: add a server), after the first of core's.
+  const { items: moduleSetupItems, loading: moduleSetupLoading } = useModuleSetupItems(
+    shellLoading ? null : shell
+  );
 
   useEffect(() => {
     document.title = t('dashboard.title');
@@ -52,22 +56,12 @@ export default function AdminHome() {
 
   const setupItems: SetupItem[] = [
     { key: 'steam', done: steamConfigured, labelKey: 'dashboard.setup.steam' },
-    {
-      key: 'servers',
-      done: serversCount > 0,
-      labelKey:
-        serversCount > 0
-          ? serversCount === 1
-            ? 'dashboard.setup.serversDone'
-            : 'dashboard.setup.serversDonePlural'
-          : 'dashboard.setup.serversTodo',
-      labelValues: { count: serversCount },
-    },
+    ...moduleSetupItems.map((item) => ({ ...item, key: `${item.ns}:${item.key}` })),
     { key: 'discord', done: discordConfigured, optional: true, labelKey: 'dashboard.setup.discord' },
     { key: 'igdb', done: igdbConfigured, optional: true, labelKey: 'dashboard.setup.igdb' },
   ];
 
-  const loading = tournamentsLoading || dataLoading;
+  const loading = tournamentsLoading || dataLoading || moduleSetupLoading;
 
   return (
     <Box component="main" data-testid="dashboard-page" sx={{ flexGrow: 1, backgroundColor: 'transparent' }}>

@@ -40,6 +40,11 @@
       "pluginSame": "{{version}}, all servers match",
       "pluginMixed": "{{count}} plugin versions in use",
       "none": "No servers connected yet."
+    },
+    "setup": {
+      "serversDone": "{{count}} server added",
+      "serversDonePlural": "{{count}} servers added",
+      "serversTodo": "Connect a server"
     }
   },
   "managePage": {
@@ -59,6 +64,19 @@
       "offline": "Offline",
       "lastHeartbeat": "Last heartbeat {{time}} ago",
       "never": "never"
+    },
+    "needsYou": {
+      "stale": {
+        "title": "{{server}} has been loaded for a while",
+        "detail": "{{match}} has been stuck past the usual wait."
+      },
+      "offline": {
+        "title": "{{server}} stopped responding",
+        "detail": "{{match}} was on this server. Last heartbeat {{time}} ago."
+      },
+      "unknownTime": "a while",
+      "reallocateAction": "Move to another server",
+      "forceCancelAction": "Force cancel"
     }
   },
   "mapsPage": {

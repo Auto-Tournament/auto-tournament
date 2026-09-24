@@ -62,8 +62,6 @@ export type {
   Server,
   ServersResponse,
   ServerResponse,
-  ServerAllocationInfo,
-  ServerAvailabilityResponse,
   TeamsResponse,
   TeamResponse,
   TeamStatsResponse,

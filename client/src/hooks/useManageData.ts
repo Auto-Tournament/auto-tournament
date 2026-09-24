@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { api } from '../utils/api';
 import { useIntegrationFor } from '../integrations/registry';
-import { useResourceAvailability, type ResourceAvailabilityAnswer } from './useResourceAvailability';
+import { useResourceAvailability } from './useResourceAvailability';
+import type { ResourceAvailability } from '../integrations/types';
 import type { Match } from '../types/match.types';
 import type { Tournament } from '../types/tournament.types';
 import type { MatchesResponse, TournamentResponse } from '../types/api.types';
@@ -12,7 +13,8 @@ export interface ManageData {
   error: string | null;
   tournament: Tournament | null;
   matches: Match[];
-  serverAvailability: ResourceAvailabilityAnswer | null;
+  /** The module's own availability answer; null for a module with no queue. */
+  availability: ResourceAvailability | null;
   refresh: () => void;
 }
 
@@ -24,7 +26,7 @@ export interface ManageData {
  * on the same 5s cadence Matches.tsx uses — whatever that module's matches
  * wait for (3.0 phase E). The console used to name CS2's server-availability
  * route itself; a module with no resources is now simply never asked, and the
- * console's server counts and grid stay empty rather than reading zero.
+ * console's queue counts read zero and its resource rows stay empty.
  */
 export function useManageData(): ManageData {
   const [loading, setLoading] = useState(true);
@@ -59,7 +61,7 @@ export function useManageData(): ManageData {
   // Only the tournament's own module knows whether its matches wait for
   // anything, and where to ask. Null until the tournament is known, so a
   // manually reported one never asks at all.
-  const { availability: serverAvailability, refresh: refreshAvailability } =
+  const { availability, refresh: refreshAvailability } =
     useResourceAvailability(tournament ? tournamentIntegration : null, 5000);
 
   const refresh = useCallback(() => {
@@ -93,5 +95,5 @@ export function useManageData(): ManageData {
     };
   }, [fetchMatches]);
 
-  return { loading, error, tournament, matches, serverAvailability, refresh };
+  return { loading, error, tournament, matches, availability, refresh };
 }

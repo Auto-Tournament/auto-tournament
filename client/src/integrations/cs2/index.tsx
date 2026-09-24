@@ -34,6 +34,11 @@ import {
   Cs2MatchListAllocationCountdown,
 } from './match/Cs2MatchListQueue';
 import { Cs2ServersFreeTile } from './manage/Cs2ServersFreeTile';
+import {
+  serverNeedsYouItems,
+  serversSetupItems,
+  summarizeServerAvailability,
+} from './manage/cs2QueueSummary';
 import Servers from './pages/Servers';
 import Maps from './pages/Maps';
 import { cs2Locales } from './locales';
@@ -109,6 +114,11 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   // The Manage strip's one tile that counts servers rather than matches.
   manageStatusTile: Cs2ServersFreeTile,
 
+  // The queue counts core shows itself, and the Manage console's rows about
+  // servers, read out of this module's own availability answer.
+  summarizeAvailability: summarizeServerAvailability,
+  manageNeedsYou: serverNeedsYouItems,
+
   resourceAvailabilityEndpoint: '/api/tournament/server-availability',
 
   // Round rules and the map pool: CS2's own object in the tournament's
@@ -133,6 +143,9 @@ export const cs2ClientIntegration: ClientGameIntegration = {
     adminHomeResources: ServersOverviewCard,
     manageResources: ServerGrid,
   },
+
+  // The admin home's "Add a server" row; this module counts its own servers.
+  adminHomeSetup: serversSetupItems,
 
   // At URLs the platform keeps. The Steam connect page these used to include
   // is core's now: Steam is the platform's sign-in, not this game's.

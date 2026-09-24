@@ -439,6 +439,18 @@ test.describe('Module export validation', () => {
       'matchPanels.teamView is not a component',
     ],
     [
+      'a callback that is not a function',
+      { default: moduleDef({ summarizeAvailability: { waitingMatches: 0 } }) },
+      'badExport',
+      'summarizeAvailability is not a function',
+    ],
+    [
+      'setup rows given as a list instead of a function',
+      { default: moduleDef({ adminHomeSetup: [] }) },
+      'badExport',
+      'adminHomeSetup is not a function',
+    ],
+    [
       'a route whose element is not an element',
       { default: moduleDef({ routes: [{ path: 'x', scope: 'admin', element: Component }] }) },
       'badExport',

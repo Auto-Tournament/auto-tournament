@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../utils/api';
-import type { PlayersResponse, ServersResponse } from '../types/api.types';
+import type { PlayersResponse } from '../types/api.types';
 
 interface AuthProviderSummary {
   id: string;
@@ -19,8 +19,6 @@ export interface AdminHomeData {
   discordConfigured: boolean;
   /** Whether IGDB (game cover) credentials are configured. */
   igdbConfigured: boolean;
-  /** All servers this instance knows about, enabled or not (same source the old onboarding check used). */
-  serversCount: number;
   playersCount: number;
   adminsCount: number;
   refresh: () => void;
@@ -32,15 +30,16 @@ export interface AdminHomeData {
  * page (auth providers on Login, IGDB status on Settings, players on
  * Players) — no new backend surface.
  *
- * The game's resource card (CS2: the server fleet) counts its own resources
- * since client API 0.2.0; this hook no longer asks for them on its behalf.
+ * The game's resource card (CS2: the server fleet) and its setup row (CS2:
+ * "Add a server") count their own resources since client API 0.2.0; this
+ * hook no longer asks for them on the module's behalf
+ * (see `useModuleSetupItems`).
  */
 export function useAdminHomeData(): AdminHomeData {
   const [loading, setLoading] = useState(true);
   const [steamConfigured, setSteamConfigured] = useState(false);
   const [discordConfigured, setDiscordConfigured] = useState(false);
   const [igdbConfigured, setIgdbConfigured] = useState(false);
-  const [serversCount, setServersCount] = useState(0);
   const [playersCount, setPlayersCount] = useState(0);
   const [adminsCount, setAdminsCount] = useState(0);
 
@@ -66,12 +65,6 @@ export function useAdminHomeData(): AdminHomeData {
         .get<{ igdb?: IgdbStatusSummary }>('/api/settings/igdb')
         .then((res) => setIgdbConfigured(!!res.igdb?.configured))
         .catch(() => setIgdbConfigured(false)),
-
-      // Full server list: total count for the setup checklist.
-      api
-        .get<ServersResponse>('/api/servers')
-        .then((res) => setServersCount((res.servers ?? []).length))
-        .catch(() => setServersCount(0)),
 
       // Players: total count + how many are admins.
       api
@@ -100,7 +93,6 @@ export function useAdminHomeData(): AdminHomeData {
     steamConfigured,
     discordConfigured,
     igdbConfigured,
-    serversCount,
     playersCount,
     adminsCount,
     refresh: load,

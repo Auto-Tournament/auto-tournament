@@ -10,6 +10,7 @@
 import { isValidRange, satisfies } from './semverRange';
 import type { ClientGameIntegration, IntegrationNavLabelSurface } from '../integrations/types';
 import {
+  CALLBACKS,
   CAPABILITY_KEYS,
   COMPONENT_SLOTS,
   REQUIRED_GROUPS,
@@ -108,6 +109,9 @@ function shapeProblem(def: Record<string, unknown>): string | null {
   for (const path of COMPONENT_SLOTS) {
     const value = getPath(def, path);
     if (value !== undefined && !isComponent(value)) return `${path} is not a component`;
+  }
+  for (const key of CALLBACKS) {
+    if (def[key] !== undefined && typeof def[key] !== 'function') return `${key} is not a function`;
   }
 
   const setup = def.tournamentSetup;

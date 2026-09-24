@@ -23,9 +23,6 @@
       "title": "Fullfør oppsettet",
       "openSettings": "Åpne innstillinger",
       "steam": "Steam-innlogging",
-      "serversTodo": "Koble til en server",
-      "serversDone": "{{count}} server lagt til",
-      "serversDonePlural": "{{count}} servere lagt til",
       "discord": "Discord-innlogging (valgfritt)",
       "igdb": "Spillomslag via IGDB (valgfritt)"
     },
@@ -332,7 +329,6 @@
     },
     "needsYou": {
       "empty": "Ingenting trenger deg akkurat nå.",
-      "unknownTime": "en stund",
       "secondsAgo": "{{count}}s",
       "minutesAgo": "{{count}}m",
       "hoursAgo": "{{count}}t",
@@ -342,16 +338,6 @@
         "detail": "Alle banene er spilt og serien står fortsatt likt.",
         "action": "Avgjør"
       },
-      "stale": {
-        "title": "{{server}} har vært lastet en stund",
-        "detail": "{{match}} har sittet fast lenger enn vanlig."
-      },
-      "offline": {
-        "title": "{{server}} svarer ikke",
-        "detail": "{{match}} var på denne serveren. Sist sett {{time}} siden."
-      },
-      "reallocateAction": "Flytt til en annen server",
-      "forceCancelAction": "Tvangsavbryt",
       "reallocateSuccess": "Kampen ble flyttet til en annen server",
       "forceCancelSuccess": "Kampen ble avbrutt",
       "actionFailed": "Det gikk ikke gjennom. Prøv igjen.",
