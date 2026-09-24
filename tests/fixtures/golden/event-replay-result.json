@@ -224,7 +224,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 4918,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": true
           }
@@ -281,7 +281,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 4918,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": true
           },
@@ -310,7 +310,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 4918,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": true
           }
@@ -366,7 +366,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 4960,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": true
           }
@@ -423,7 +423,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 4960,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": true
           },
@@ -452,7 +452,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 4960,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": true
           }
@@ -508,7 +508,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 7277,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": true
           }
@@ -565,7 +565,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 7277,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": true
           },
@@ -594,7 +594,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 7277,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": true
           }
@@ -650,7 +650,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 6548,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": true
           }
@@ -707,7 +707,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 6548,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": true
           },
@@ -736,7 +736,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 6548,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": true
           }
@@ -792,7 +792,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 4525,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": true
           }
@@ -849,7 +849,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 4525,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": true
           },
@@ -878,7 +878,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 4525,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": true
           }
@@ -934,7 +934,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 4856,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": false
           }
@@ -991,7 +991,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 4856,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": false
           },
@@ -1020,7 +1020,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 4856,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": false
           }
@@ -1076,7 +1076,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 5515,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": false
           }
@@ -1133,7 +1133,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 5515,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": false
           },
@@ -1162,7 +1162,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 5515,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": false
           }
@@ -1218,7 +1218,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 4987,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": false
           }
@@ -1275,7 +1275,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 4987,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": false
           },
@@ -1304,7 +1304,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 4987,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": false
           }
@@ -1360,7 +1360,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 5326,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": false
           }
@@ -1417,7 +1417,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 5326,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": false
           },
@@ -1446,7 +1446,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 5326,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": false
           }
@@ -1502,7 +1502,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 5203,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": false
           }
@@ -1559,7 +1559,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 5203,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": false
           },
@@ -1588,7 +1588,7 @@
             "team2_name": "Replay Bravo",
             "team2_tag": null,
             "total_damage": 5203,
-            "tournamentid": 1,
+            "tournamentId": 1,
             "winner_id": "golden-replay-a",
             "won_match": false
           }
