@@ -10,6 +10,7 @@ import { db } from '../../../config/database';
 import type { DbMatchRow } from '../../../types/database.types';
 import { getVetoOrder, type VetoStep } from './config';
 import { describeMatch } from '../../../utils/matchIntegration';
+import { storedCs2Settings } from '../tournamentSettings';
 
 export type VetoContext = {
   format: 'bo1' | 'bo3' | 'bo5';
@@ -18,8 +19,9 @@ export type VetoContext = {
 };
 
 /**
- * Resolve format and map pool for veto. Tournament matches use tournament row;
- * manual matches (round === 0, no tournament) use match config.
+ * Resolve format and map pool for veto. Tournament matches use the tournament
+ * row (the pool is CS2's `settings.cs2.maps`); manual matches (round === 0, no
+ * tournament) use match config.
  */
 export async function getVetoContext(match: DbMatchRow): Promise<VetoContext | null> {
   const isManual = match.round === 0 || match.tournament_id == null;
@@ -32,8 +34,8 @@ export async function getVetoContext(match: DbMatchRow): Promise<VetoContext | n
     return { format, tournamentMaps: maplist };
   }
 
-  const tournament = await db.queryOneAsync<{ format: string; maps: string; settings: string | null }>(
-    'SELECT format, maps, settings FROM tournament WHERE id = ?',
+  const tournament = await db.queryOneAsync<{ format: string; settings: string | null }>(
+    'SELECT format, settings FROM tournament WHERE id = ?',
     [match.tournament_id]
   );
   if (!tournament) return null;
@@ -41,7 +43,7 @@ export async function getVetoContext(match: DbMatchRow): Promise<VetoContext | n
   const tournamentSettings = tournament.settings ? JSON.parse(tournament.settings) : {};
   return {
     format: tournament.format as 'bo1' | 'bo3' | 'bo5',
-    tournamentMaps: JSON.parse(tournament.maps),
+    tournamentMaps: storedCs2Settings(tournamentSettings)?.maps ?? [],
     customVetoOrder: tournamentSettings.customVetoOrder,
   };
 }

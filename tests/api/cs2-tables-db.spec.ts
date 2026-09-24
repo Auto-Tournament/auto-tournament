@@ -15,7 +15,7 @@ import { CS2_MIGRATIONS } from '../../api/src/integrations/cs2/migrations';
  *   do not, and CS2's first migration is recorded;
  * - a map pool created through the API lands in `cs2_map_pools`;
  * - the keys from core's tables onto them (`matches.server_id`, the
- *   templates' `map_pool_id`) are enforced;
+ *   standalone match templates' `map_pool_id`) are enforced;
  * - running the handover again is a no-op;
  * - on a 2.4-shaped copy in a scratch schema, the handover renames without
  *   losing a row, keeps the keys, finishes half-done states, refuses a
@@ -163,11 +163,8 @@ test.describe.serial('CS2 tables on the database', () => {
         name: 'matches_server_id_fkey',
         definition: 'FOREIGN KEY (server_id) REFERENCES cs2_servers(id) ON DELETE SET NULL',
       },
-      {
-        table: 'tournament_templates',
-        name: 'tournament_templates_map_pool_id_fkey',
-        definition: 'FOREIGN KEY (map_pool_id) REFERENCES cs2_map_pools(id) ON DELETE SET NULL',
-      },
+      // No key from tournament_templates: a template's pool is CS2's own
+      // settings object (settings.cs2.mapPoolId) since the fold.
     ]);
   });
 
@@ -191,17 +188,13 @@ test.describe.serial('CS2 tables on the database', () => {
     const res = await request.post('/api/test/cs2-tables/foreign-keys');
     expect(res.ok(), await res.text()).toBe(true);
     const body = await res.json();
-    expect(body.templateMissingPool).toEqual({
-      code: '23503',
-      constraint: 'tournament_templates_map_pool_id_fkey',
-    });
     expect(body.manualTemplateMissingPool).toEqual({
       code: '23503',
       constraint: 'manual_match_templates_map_pool_id_fkey',
     });
     expect(body.matchMissingServer).toEqual({ code: '23503', constraint: 'matches_server_id_fkey' });
     // ON DELETE SET NULL survived too.
-    expect(body.templatePoolAfterPoolDeleted).toBeNull();
+    expect(body.manualTemplatePoolAfterPoolDeleted).toBeNull();
   });
 
   test('running the handover again is a no-op', async ({ request }) => {

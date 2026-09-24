@@ -1303,8 +1303,13 @@ router.post('/wipe-table/:table', async (req: Request, res: Response) => {
       await db.execAsync('DELETE FROM shuffle_tournament_players');
       await db.execAsync('DELETE FROM players');
     } else if (table === 'map_pools') {
-      // Delete related data first
-      await db.execAsync('DELETE FROM tournament_templates WHERE map_pool_id IS NOT NULL');
+      // Delete the templates saved with a pool first, as this always has. The
+      // pool id is CS2's own template field now (settings.cs2), so it is read
+      // through the template view rather than a column.
+      const { templateService } = await import('../services/templateService');
+      for (const template of await templateService.getAllTemplates()) {
+        if (template.mapPoolId) await db.runAsync('DELETE FROM tournament_templates WHERE id = ?', [template.id]);
+      }
       await db.execAsync('DELETE FROM cs2_map_pools');
     } else if (table === 'tournament_templates') {
       await db.execAsync('DELETE FROM tournament_templates');

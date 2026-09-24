@@ -3,7 +3,11 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { getBracketGenerator } from './bracketGenerators';
 import { validateTeamCount, calculateTotalRounds } from '../utils/tournamentHelpers';
-import { normalizeTournamentSettings } from '../utils/tournamentRow';
+import { moduleTournamentFields, normalizeTournamentSettings } from '../utils/tournamentRow';
+import {
+  moduleSettingsChangeBracket,
+  withModuleSettings,
+} from '../utils/moduleTournamentSettings';
 import {
   buildMatchConfigFor,
   describeMatch,
@@ -93,12 +97,13 @@ class TournamentService {
       maps: tournament.maps,
       teamIds: tournament.team_ids,
       settings: tournament.settings,
-      // Shuffle tournament specific fields (only populated for type === 'shuffle')
+      // The game module's 2.x fields (CS2: from settings.cs2)
       mapSequence: tournament.mapSequence,
       teamSize: tournament.teamSize,
       maxRounds: tournament.maxRounds,
       overtimeMode: tournament.overtimeMode,
       overtimeSegments: tournament.overtimeSegments,
+      ...(tournament.mapPoolId !== undefined ? { mapPoolId: tournament.mapPoolId } : {}),
       eloTemplateId: tournament.eloTemplateId || undefined,
       created_at: tournament.created_at,
       updated_at: tournament.updated_at,
@@ -195,17 +200,7 @@ class TournamentService {
     input: CreateTournamentInput,
     options: { game?: GameId } = {}
   ): Promise<TournamentResponse> {
-    const {
-      name,
-      type,
-      format,
-      maps,
-      teamIds,
-      settings,
-      maxRounds,
-      overtimeMode,
-      overtimeSegments,
-    } = input;
+    const { name, type, format, teamIds, settings } = input;
 
     // Shuffle tournaments don't use teams, skip validation
     if (type !== 'shuffle') {
@@ -214,9 +209,14 @@ class TournamentService {
     }
 
     // `format` wins over any matchFormat inside settings: the two must agree.
-    const tournamentSettings: TournamentSettings = normalizeTournamentSettings(
-      { ...DEFAULT_SETTINGS, ...settings },
-      format
+    // The game module's object (CS2: settings.cs2, the map pool and round
+    // rules) is built by the module from the request.
+    const tournamentSettings: TournamentSettings = withModuleSettings(
+      options.game ?? DEFAULT_GAME,
+      normalizeTournamentSettings({ ...DEFAULT_SETTINGS, ...settings }, format),
+      input as unknown as Record<string, unknown>,
+      undefined,
+      'tournament'
     );
 
     const now = Math.floor(Date.now() / 1000);
@@ -232,19 +232,8 @@ class TournamentService {
       format,
       status: 'setup',
       ...(options.game ? { game: options.game } : {}),
-      maps: JSON.stringify(maps),
       team_ids: JSON.stringify(teamIds || []), // Shuffle tournaments have no fixed teams
       settings: JSON.stringify(tournamentSettings),
-      max_rounds: maxRounds ?? 24,
-      overtime_mode: overtimeMode ?? 'enabled',
-      // Keep semantics aligned with shuffle and manual matches:
-      // - NULL → Auto Tournament CS2 default (unlimited OT / draws)
-      // - 0 with overtimeMode === 'disabled' → "no OT, no draws" (damage tiebreak)
-      // - >0 with overtimeMode === 'enabled' → OT with damage tiebreak after N segments
-      overtime_segments:
-        typeof overtimeSegments === 'number' && Number.isFinite(overtimeSegments)
-          ? overtimeSegments
-          : null,
       created_at: now,
       updated_at: now,
     });
@@ -293,8 +282,7 @@ class TournamentService {
       throw new Error('No tournament exists to update');
     }
 
-    const { name, type, format, maps, teamIds, settings, maxRounds, overtimeMode, overtimeSegments } =
-      input;
+    const { name, type, format, teamIds, settings } = input;
 
     // Validate team count if changing teams or type
     if (type || teamIds) {
@@ -308,39 +296,34 @@ class TournamentService {
     if (name) updates.name = name;
     if (type) updates.type = type;
     if (format) updates.format = format;
-    if (maps) updates.maps = JSON.stringify(maps);
     if (teamIds) updates.team_ids = JSON.stringify(teamIds);
-    // settings.matchFormat mirrors `format`. Rewrite settings whenever either
-    // changes, or an edited format leaves the old value behind in settings.
-    if (settings || format) {
-      const merged = normalizeTournamentSettings(
+    // settings.matchFormat mirrors `format`, so settings are rewritten when
+    // either changes (or an edited format leaves the old value behind in
+    // settings), and whenever the game module's object changes: the module
+    // reads its own fields (CS2: settings.cs2, or the 2.x top-level maps,
+    // maxRounds, overtimeMode, overtimeSegments) from the request.
+    const merged = withModuleSettings(
+      existing.game,
+      normalizeTournamentSettings(
         { ...existing.settings, ...(settings ?? {}) },
         format || existing.format
-      );
+      ),
+      input as unknown as Record<string, unknown>,
+      existing.settings,
+      'tournament'
+    );
+    if (settings || format || JSON.stringify(merged) !== JSON.stringify(existing.settings)) {
       updates.settings = JSON.stringify(merged);
-    }
-    if (typeof maxRounds === 'number') {
-      updates.max_rounds = maxRounds;
-    }
-    if (overtimeMode) {
-      updates.overtime_mode = overtimeMode;
-    }
-    // `null` is meaningful here (back to the Auto Tournament CS2 default), so only an
-    // absent field leaves the stored value alone. Without this an existing
-    // tournament could never be switched off "no draws (0)" again.
-    if (overtimeSegments !== undefined) {
-      updates.overtime_segments =
-        typeof overtimeSegments === 'number' && Number.isFinite(overtimeSegments)
-          ? overtimeSegments
-          : null;
     }
 
     await db.updateAsync('tournament', updates, 'id = ?', [tournamentId]);
 
     log.debug('Tournament updated');
 
-    // Auto-regenerate bracket if structural changes were made
-    const needsRegeneration = type || teamIds || (maps && maps.length !== existing.maps.length);
+    // Auto-regenerate bracket if structural changes were made (CS2: the map
+    // pool changed size).
+    const needsRegeneration =
+      type || teamIds || moduleSettingsChangeBracket(existing.game, existing.settings, merged);
     if (needsRegeneration) {
       try {
         await this.regenerateBracket(tournamentId, true);
@@ -931,30 +914,21 @@ class TournamentService {
       type: row.type,
       format: row.format,
       status: row.status,
-      map_sequence: row.map_sequence,
       team_size: row.team_size,
-      max_rounds: row.max_rounds,
-      overtime_mode: row.overtime_mode,
-      overtime_segments: row.overtime_segments,
       elo_template_id: row.elo_template_id,
     });
 
+    const game = row.game || DEFAULT_GAME;
+    const settings = normalizeTournamentSettings(JSON.parse(row.settings), row.format);
+    const moduleFields = moduleTournamentFields(game, settings);
     return {
       ...row,
-      game: row.game || DEFAULT_GAME,
-      maps: JSON.parse(row.maps),
+      game,
       team_ids: JSON.parse(row.team_ids),
-      settings: normalizeTournamentSettings(JSON.parse(row.settings), row.format),
-      // Normalize shuffle-specific fields
-      mapSequence: row.map_sequence ? JSON.parse(row.map_sequence) : undefined,
+      settings,
+      // The game module's 2.x fields, from its object in settings.
+      ...moduleFields,
       teamSize: row.team_size === null || row.team_size === undefined ? undefined : row.team_size,
-      maxRounds:
-        row.max_rounds === null || row.max_rounds === undefined ? undefined : row.max_rounds,
-      overtimeMode: (row.overtime_mode as 'enabled' | 'disabled' | null) || undefined,
-      overtimeSegments:
-        row.overtime_segments === null || row.overtime_segments === undefined
-          ? undefined
-          : row.overtime_segments,
       eloTemplateId: row.elo_template_id ?? null,
     };
   }

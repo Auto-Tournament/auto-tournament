@@ -80,10 +80,11 @@ export interface ParticipantRef {
  * The neutral view of a tournament an integration gets. `settings` is the
  * integration-owned part: the core stores and forwards it without reading it.
  *
- * For CS2 this is still the full `TournamentResponse`. The CS2 tournament
- * fields (maps, map_sequence, max_rounds, overtime_*, veto order) are
- * validated through `validateTournamentSettings`; narrowing `settings` to
- * them waits for the columns to fold into `tournament.integration_settings`.
+ * For CS2 this is still the full `TournamentResponse`. CS2's own settings
+ * (maps, map sequence, max rounds, overtime) are its object inside
+ * `settings` (`settings.cs2`, see `ModuleTournamentSettings`), also spread
+ * onto the response's top level for 2.x clients; the veto order is still
+ * `settings.customVetoOrder`.
  */
 export interface IntegrationTournament {
   id: number;
@@ -272,11 +273,15 @@ export interface TournamentSettingsInput {
    */
   mode?: 'create' | 'create-shuffle' | 'update';
   /**
-   * The request body. The integration reads its own top-level fields (CS2:
+   * The request body. The integration reads its own object in
+   * `body.settings` and any 2.x top-level fields it still accepts (CS2:
    * maps, mapSequence, maxRounds, overtimeMode, overtimeSegments).
    */
   body?: Record<string, unknown>;
-  /** Update: the stored tournament row, for fields the request leaves alone. */
+  /**
+   * Update: the stored tournament row (its `settings` as the stored JSON
+   * text), for fields the request leaves alone.
+   */
   stored?: Record<string, unknown> | null;
 }
 
@@ -294,6 +299,54 @@ export interface TournamentSettingsValidation extends ValidationResult {
   fieldErrors?: string[];
   /** The integration's required fields for this mode, missing or not, for the core's message. */
   requiredFields?: string[];
+}
+
+/** What a tournament settings object is attached to. */
+export type ModuleSettingsTarget = 'tournament' | 'template';
+
+/**
+ * A module's own tournament settings: one object inside `tournament.settings`,
+ * and inside a tournament template's `settings`, under the module's `key`
+ * (CS2: `settings.cs2` holds the map pool, the shuffle map sequence, max
+ * rounds and overtime). The core stores the object and hands it back; it
+ * never reads a field of it. The module's client setup steps edit the same
+ * object (`TournamentGameSettingsStepProps` on the client).
+ *
+ * Until 3.0 these were core columns (`tournament.maps`, `max_rounds`, ...,
+ * `tournament_templates.map_pool_id`, `maps`); the schema migration
+ * `2026-09-24-cs2-tournament-settings` folded them in.
+ */
+export interface ModuleTournamentSettings<T = unknown> {
+  /**
+   * The key under `settings` this module owns. It must not be one of the
+   * core's own settings keys (`matchFormat`, `description`, ...).
+   */
+  key: string;
+  /**
+   * The object to store for a create (`stored` undefined) or an update.
+   * `body` is the request body: the module reads its object from
+   * `body.settings[key]` and any 2.x top-level fields it still accepts (CS2:
+   * `maps`, `mapSequence`, `maxRounds`, `overtimeMode`, `overtimeSegments`,
+   * and on a template `mapPoolId`). Return `stored` (or undefined) when the
+   * request changes nothing.
+   */
+  fromRequest(
+    body: Record<string, unknown>,
+    stored: T | undefined,
+    target: ModuleSettingsTarget
+  ): T | undefined;
+  /**
+   * The top-level fields the tournament and template responses keep for 2.x
+   * clients, read from the stored object (CS2: `maps`, `mapSequence`,
+   * `maxRounds`, `overtimeMode`, `overtimeSegments`, `mapPoolId`). Omitted:
+   * none.
+   */
+  responseFields?(value: T | undefined, target: ModuleSettingsTarget): Record<string, unknown>;
+  /**
+   * Whether an update from `before` to `after` changes the bracket, so the
+   * core regenerates it (CS2: the map pool changed size). Omitted: never.
+   */
+  changesBracket?(before: T | undefined, after: T | undefined): boolean;
 }
 
 /**
@@ -709,6 +762,12 @@ export interface GameIntegration {
    * size.
    */
   validateTournamentSettings?(input: TournamentSettingsInput): TournamentSettingsValidation;
+  /**
+   * The module's own object inside `tournament.settings` and a template's
+   * `settings`: how a request sets it and which 2.x response fields it still
+   * fills. See `ModuleTournamentSettings`.
+   */
+  tournamentSettings?: ModuleTournamentSettings;
   /**
    * Insert the integration's default data. Called after the core schema is
    * created or migrated: on every API start and after a database reset. Must

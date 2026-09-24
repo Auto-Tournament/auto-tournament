@@ -64,6 +64,13 @@ export interface TournamentSettings {
   prizes?: EventPagePrize[];
   /** Up to 20 schedule rows, in display order. */
   schedule?: EventPageScheduleItem[];
+
+  /**
+   * A game module's own object, under the module's key (CS2: `cs2`, manual
+   * reporting: `manualReport`). The core stores it and never reads it; see
+   * `GameIntegration.tournamentSettings`.
+   */
+  [moduleKey: string]: unknown;
 }
 
 export interface EventPagePrize {
@@ -85,15 +92,21 @@ export interface Tournament {
   status: TournamentStatus;
   /** Game integration that owns the tournament (`tournament.game`, default 'cs2'). */
   game: string;
-  maps: string[]; // JSON array
+  /**
+   * The game module's 2.x fields, filled from its object in `settings`
+   * (CS2: `settings.cs2`; utils/tournamentRow `moduleTournamentFields`). The
+   * core keeps them in responses for 2.x clients and never stores them.
+   */
+  maps: string[];
   team_ids: string[]; // JSON array
   settings: TournamentSettings; // JSON object
-  // Shuffle tournament specific fields (parsed / normalized)
-  mapSequence?: string[]; // Maps in order (number of rounds)
+  mapSequence?: string[]; // Shuffle: maps in order (number of rounds). Module field, see `maps`.
   teamSize?: number; // Number of players per team (default: 5)
-  maxRounds?: number;
-  overtimeMode?: 'enabled' | 'disabled';
-  overtimeSegments?: number;
+  maxRounds?: number; // Module field, see `maps`.
+  overtimeMode?: 'enabled' | 'disabled'; // Module field, see `maps`.
+  overtimeSegments?: number; // Module field, see `maps`.
+  /** The map pool the maps came from, when the module stored one. Module field, see `maps`. */
+  mapPoolId?: number;
   eloTemplateId?: string | null;
   created_at: number;
   updated_at: number;
@@ -108,15 +121,9 @@ export interface TournamentRow {
   format: MatchFormat;
   status: TournamentStatus;
   game?: string | null;
-  maps: string; // JSON string
   team_ids: string; // JSON string
-  settings: string; // JSON string
-  // Shuffle tournament specific fields (raw DB columns)
-  map_sequence?: string | null;
+  settings: string; // JSON string; the game module's object is under its key (CS2: `cs2`)
   team_size?: number | null;
-  max_rounds?: number | null;
-  overtime_mode?: string | null;
-  overtime_segments?: number | null;
   elo_template_id?: string | null;
   created_at: number;
   updated_at: number;
@@ -247,12 +254,13 @@ export interface TournamentResponse extends Omit<Tournament, 'settings' | 'maps'
     name: string;
     tag?: string;
   }>;
-  // Shuffle tournament specific fields
+  // The game module's 2.x fields (see `Tournament.maps`)
   mapSequence?: string[];
   teamSize?: number; // Number of players per team (default: 5)
   maxRounds?: number;
   overtimeMode?: 'enabled' | 'disabled';
   overtimeSegments?: number;
+  mapPoolId?: number;
   eloTemplateId?: string; // ELO calculation template ID (optional, defaults to "Pure Win/Loss")
   /**
    * Champion once the tournament is completed (null otherwise, for shuffle
@@ -300,10 +308,13 @@ export interface TournamentTemplate {
   description?: string;
   type: TournamentType;
   format: MatchFormat;
+  /** Module fields (CS2: from `settings.cs2`), kept for 2.x clients. */
   mapPoolId?: number | null;
   maps: string[];
   teamIds?: string[];
   settings: TournamentSettings;
+  /** The game module whose object `settings` carries ('cs2' by default). */
+  game: string;
   createdAt: number;
   updatedAt: number;
 }
@@ -314,10 +325,9 @@ export interface TournamentTemplateRow {
   description?: string | null;
   type: TournamentType;
   format: MatchFormat;
-  map_pool_id?: number | null;
-  maps?: string | null;
   team_ids?: string | null;
-  settings: string; // JSON string
+  settings: string; // JSON string; the game module's object is under its key (CS2: `cs2`)
+  game?: string | null;
   created_at: number;
   updated_at: number;
 }

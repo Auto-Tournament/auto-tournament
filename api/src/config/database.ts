@@ -190,8 +190,6 @@ class DatabaseManager {
               description TEXT,
               type TEXT NOT NULL,
               format TEXT NOT NULL,
-              map_pool_id INTEGER,
-              maps TEXT,
               team_ids TEXT,
               settings TEXT NOT NULL,
               created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
@@ -387,16 +385,16 @@ class DatabaseManager {
       }
 
       // Core columns that reference CS2's tables: matches.server_id and the
-      // templates' map_pool_id. The keys cannot be declared in core's CREATE
-      // TABLE any more, because on a fresh database CS2's tables are created
-      // after core's. An upgraded database kept its keys through the rename
-      // (Postgres tracks the referenced table, not its name), so this only
-      // adds them where they are missing: fresh databases and wipes. Skipped
-      // while the referenced table does not exist (no CS2).
-      // Moving these columns out of core is later work.
+      // standalone match templates' map_pool_id. The keys cannot be declared
+      // in core's CREATE TABLE any more, because on a fresh database CS2's
+      // tables are created after core's. An upgraded database kept its keys
+      // through the rename (Postgres tracks the referenced table, not its
+      // name), so this only adds them where they are missing: fresh databases
+      // and wipes. Skipped while the referenced table does not exist (no CS2).
+      // A tournament template's map pool is CS2's own settings object now
+      // (settings.cs2.mapPoolId), with no key.
       const cs2ForeignKeys = [
         { table: 'matches', column: 'server_id', references: 'cs2_servers' },
-        { table: 'tournament_templates', column: 'map_pool_id', references: 'cs2_map_pools' },
         { table: 'manual_match_templates', column: 'map_pool_id', references: 'cs2_map_pools' },
       ];
       for (const { table, column, references } of cs2ForeignKeys) {

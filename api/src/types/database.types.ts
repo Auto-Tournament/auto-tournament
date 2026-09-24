@@ -46,7 +46,6 @@ export interface DbTournamentRow {
   format: string;
   status: string;
   team_ids: string;
-  maps: string;
   created_at: number;
   updated_at?: number;
   started_at?: number;
@@ -54,12 +53,7 @@ export interface DbTournamentRow {
   settings?: string;
   /** Game integration for the tournament's matches; 'cs2' by default. */
   game?: string;
-  // Shuffle / global round-limit fields
-  map_sequence?: string | null;
   team_size?: number | null;
-  max_rounds?: number | null;
-  overtime_mode?: string | null;
-  overtime_segments?: number | null;
   elo_template_id?: string | null;
 }
 

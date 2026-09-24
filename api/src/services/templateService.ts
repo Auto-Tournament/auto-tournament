@@ -1,6 +1,8 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { DEFAULT_SETTINGS } from './tournamentService';
+import { DEFAULT_GAME } from '../integrations/types';
+import { moduleResponseFields, withModuleSettings } from '../utils/moduleTournamentSettings';
 import type {
   TournamentTemplate,
   TournamentTemplateRow,
@@ -18,8 +20,13 @@ class TemplateService {
       ? JSON.parse(row.settings)
       : DEFAULT_SETTINGS;
 
-    const maps: string[] = row.maps ? JSON.parse(row.maps) : [];
     const teamIds: string[] = row.team_ids ? JSON.parse(row.team_ids) : [];
+    // The game module's 2.x fields (CS2: the map pool and its maps), from its
+    // object in settings (settings.cs2).
+    const moduleFields = moduleResponseFields(row.game || DEFAULT_GAME, settings, 'template') as {
+      mapPoolId?: number;
+      maps?: string[];
+    };
 
     return {
       id: row.id,
@@ -27,10 +34,11 @@ class TemplateService {
       description: row.description || undefined,
       type: row.type,
       format: row.format,
-      mapPoolId: row.map_pool_id || undefined,
-      maps,
+      mapPoolId: moduleFields.mapPoolId || undefined,
+      maps: Array.isArray(moduleFields.maps) ? moduleFields.maps : [],
       teamIds: teamIds.length > 0 ? teamIds : undefined,
       settings,
+      game: row.game || DEFAULT_GAME,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
@@ -79,13 +87,18 @@ class TemplateService {
    * Create a new template
    */
   async createTemplate(input: CreateTemplateInput): Promise<TournamentTemplate> {
-    const { name, description, type, format, mapPoolId, maps, teamIds, settings } = input;
+    const { name, description, type, format, teamIds, settings } = input;
 
-    const templateSettings: TournamentSettings = {
-      ...DEFAULT_SETTINGS,
-      matchFormat: format,
-      ...settings,
-    };
+    // Templates are saved from CS2 tournaments and carry no game of their own
+    // (the column default). The module builds its object (CS2: the map pool
+    // and its maps) from the request.
+    const templateSettings: TournamentSettings = withModuleSettings(
+      DEFAULT_GAME,
+      { ...DEFAULT_SETTINGS, matchFormat: format, ...settings },
+      input as unknown as Record<string, unknown>,
+      undefined,
+      'template'
+    );
 
     const now = Math.floor(Date.now() / 1000);
 
@@ -94,8 +107,6 @@ class TemplateService {
       description: description || null,
       type,
       format,
-      map_pool_id: mapPoolId || null,
-      maps: maps ? JSON.stringify(maps) : null,
       team_ids: teamIds && teamIds.length > 0 ? JSON.stringify(teamIds) : null,
       settings: JSON.stringify(templateSettings),
       created_at: now,
@@ -128,18 +139,26 @@ class TemplateService {
     if (input.description !== undefined) updates.description = input.description || null;
     if (input.type !== undefined) updates.type = input.type;
     if (input.format !== undefined) updates.format = input.format;
-    if (input.mapPoolId !== undefined) updates.map_pool_id = input.mapPoolId || null;
-    if (input.maps !== undefined) updates.maps = input.maps ? JSON.stringify(input.maps) : null;
     if (input.teamIds !== undefined) {
       updates.team_ids = input.teamIds && input.teamIds.length > 0 ? JSON.stringify(input.teamIds) : null;
     }
 
-    if (input.settings !== undefined || input.format !== undefined) {
-      const templateSettings: TournamentSettings = {
+    const templateSettings: TournamentSettings = withModuleSettings(
+      existing.game,
+      {
         ...existing.settings,
         ...input.settings,
         matchFormat: input.format || existing.format,
-      };
+      },
+      input as unknown as Record<string, unknown>,
+      existing.settings,
+      'template'
+    );
+    if (
+      input.settings !== undefined ||
+      input.format !== undefined ||
+      JSON.stringify(templateSettings) !== JSON.stringify(existing.settings)
+    ) {
       updates.settings = JSON.stringify(templateSettings);
     }
 
