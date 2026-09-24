@@ -37,5 +37,11 @@
  *   (was `server`, `currentMapData`, `currentMapNumber`, `connected`,
  *   `copied`, `onConnect`, `onCopy`); CS2 reads
  *   `GET /api/game/cs2/matches/:slug/connect`.
+ * - `tournamentSetupSteps.rules` / `.content` take `TournamentSettingsStepProps`
+ *   `{ settings, onChange, game, type, format, disabled }`, the tournament's
+ *   settings object in which the module edits its own key (were the round
+ *   rules as `value` / `maxRoundsTestId`, and 14 props of map pools, maps and
+ *   callbacks); `.settings` gets `type` as well. Added: the optional
+ *   `tournamentSetupSteps.review` slot and the `tournamentSetup` model.
  */
 export const CLIENT_API_VERSION = '0.2.0';

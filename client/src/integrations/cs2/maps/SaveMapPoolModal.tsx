@@ -17,10 +17,8 @@ import { api, useModuleTranslation } from '../../../module-sdk';
 import type { MapPoolResponse } from '../cs2.types';
 
 /**
- * Save the maps picked in the standalone match dialog as a new map pool.
- *
- * Core keeps its own copy (`components/modals/SaveMapPoolModal`) for the
- * tournament setup's map step until that step moves into this module too.
+ * Save the maps picked as a new map pool: from the standalone match dialog
+ * and from the tournament setup's maps step (`Cs2TournamentMapsStep`).
  */
 interface SaveMapPoolModalProps {
   open: boolean;

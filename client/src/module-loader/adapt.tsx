@@ -74,6 +74,37 @@ export function adaptCodeModule(integration: ClientGameIntegration): ClientGameI
     };
   }
 
+  // The setup model's functions run inside core renders and handlers. A throw
+  // counts as "nothing to add": no settings, no error, no rows, no change.
+  const setup = adapted.tournamentSetup;
+  if (setup) {
+    const guard = <A extends unknown[], R>(
+      name: string,
+      fn: ((...args: A) => R) | undefined,
+      fallback: R
+    ): ((...args: A) => R) | undefined =>
+      fn &&
+      ((...args: A) => {
+        try {
+          return fn(...args);
+        } catch (thrown) {
+          recordRenderFailure(id, `tournamentSetup.${name}`, thrown);
+          return fallback;
+        }
+      });
+    adapted = {
+      ...adapted,
+      tournamentSetup: {
+        initialSettings: guard('initialSettings', setup.initialSettings, {}),
+        onTypeChange: guard('onTypeChange', setup.onTypeChange, {}),
+        stepError: guard('stepError', setup.stepError, null),
+        summary: guard('summary', setup.summary, { rows: [], checklist: [], review: [] }),
+        roundCount: guard('roundCount', setup.roundCount, null),
+        changes: guard('changes', setup.changes, []),
+      },
+    };
+  }
+
   return {
     ...adapted,
     routes: adapted.routes.map((route) => ({

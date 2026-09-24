@@ -209,6 +209,7 @@ export const COMPONENT_SLOTS = [
   'tournamentSetupSteps.rules',
   'tournamentSetupSteps.content',
   'tournamentSetupSteps.settings',
+  'tournamentSetupSteps.review',
   'standaloneMatch',
   'resourceDialogs.add',
   'resourceDialogs.batchAdd',

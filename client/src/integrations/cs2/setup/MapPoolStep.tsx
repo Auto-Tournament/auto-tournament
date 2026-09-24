@@ -15,7 +15,39 @@ import { Warning as WarningIcon } from '@mui/icons-material';
 import { useModuleTranslation } from '../../../module-sdk';
 import { SortableMapList } from './SortableMapList';
 import { validateMapCount, requiresVeto } from '../../../utils/tournamentVerification';
-import type { TournamentContentStepProps as MapPoolStepProps } from '../../types';
+import type { Map as MapType, MapPool } from '../cs2.types';
+
+/**
+ * The map pool picker, as data in and callbacks out: the tournament setup's
+ * maps step (`Cs2TournamentMapsStep`) and the standalone match's maps step
+ * both drive it.
+ */
+export interface MapPoolStepProps {
+  format: string;
+  type?: string; // Tournament type - needed for shuffle tournament explanation
+  maps: string[];
+  mapPools: MapPool[];
+  availableMaps: MapType[];
+  selectedMapPool: string;
+  loadingMaps: boolean;
+  canEdit: boolean;
+  saving: boolean;
+  onMapPoolChange: (poolId: string) => void;
+  onMapsChange: (maps: string[]) => void;
+  onSaveMapPool: () => void;
+  onMapRemove?: (mapId: string) => void;
+  /**
+   * When true, hides the shuffle‑tournament specific explanation block.
+   * Useful for reusing this component in non‑tournament contexts (e.g. manual matches).
+   */
+  hideShuffleExplanation?: boolean;
+  /**
+   * When false, disables drag-and-drop ordering even for shuffle tournaments and
+   * falls back to a simple chip preview. This is handy for contexts where map
+   * order is irrelevant but we still want shuffle-style validation rules.
+   */
+  enableOrdering?: boolean;
+}
 
 export function MapPoolStep({
   format,

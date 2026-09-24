@@ -70,6 +70,16 @@ function isElement(value: unknown): boolean {
   return tag === REACT_ELEMENT || tag === REACT_TRANSITIONAL_ELEMENT;
 }
 
+/** The functions `ClientGameIntegration.tournamentSetup` may carry. */
+export const TOURNAMENT_SETUP_FUNCTIONS = [
+  'initialSettings',
+  'onTypeChange',
+  'stepError',
+  'summary',
+  'roundCount',
+  'changes',
+] as const;
+
 const isObject = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === 'object' && !Array.isArray(value);
 
@@ -98,6 +108,16 @@ function shapeProblem(def: Record<string, unknown>): string | null {
   for (const path of COMPONENT_SLOTS) {
     const value = getPath(def, path);
     if (value !== undefined && !isComponent(value)) return `${path} is not a component`;
+  }
+
+  const setup = def.tournamentSetup;
+  if (setup !== undefined) {
+    if (!isObject(setup)) return 'tournamentSetup is not an object';
+    for (const fn of TOURNAMENT_SETUP_FUNCTIONS) {
+      if (setup[fn] !== undefined && typeof setup[fn] !== 'function') {
+        return `tournamentSetup.${fn} is not a function`;
+      }
+    }
   }
 
   const start = def.tournamentStart;
