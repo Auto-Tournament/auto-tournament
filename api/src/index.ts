@@ -204,7 +204,7 @@ app.use(
   ...(swaggerUi.serve as any),
   swaggerUi.setup(getOpenApiSpec(), {
     customCss: '.swagger-ui .topbar { display: none }',
-    customSiteTitle: 'MatchZy API Docs',
+    customSiteTitle: 'Auto Tournament API',
   }) as // eslint-disable-next-line @typescript-eslint/no-explicit-any
   any
 );
