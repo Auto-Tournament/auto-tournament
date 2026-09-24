@@ -68,6 +68,12 @@ function effectiveStatus(
   state: ModuleState,
   t: TFunction
 ): { status: ModuleServerStatus; reason: string | null } {
+  if (!entry.enabled && entry.status === 'ok') {
+    // Switched off while loaded. The server keeps its code until it restarts
+    // (the reason says so), but no browser loads it any more: to the admin
+    // who just disabled it, it is disabled, not "OK" next to an Enable button.
+    return { status: 'disabled', reason: entry.reason };
+  }
   const found = state.failures[entry.id];
   if (entry.enabled && entry.status === 'ok' && found && INCOMPATIBLE.has(found.code)) {
     // Refused on its declared client API range: nothing is wrong with the

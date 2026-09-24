@@ -45,8 +45,7 @@ import { useSnackbar } from '../contexts/SnackbarContext';
 import { usePageHeader } from '../contexts/PageHeaderContext';
 import { ModuleIcon } from '../components/common/ModuleIcon';
 import { CodeModuleList } from '../components/modules/CodeModuleList';
-import { listIntegrations } from '../integrations/registry';
-import { useModuleState } from '../module-loader/useModuleState';
+import { builtInIntegrationIds, listIntegrations } from '../integrations/registry';
 import { api } from '../utils/api';
 
 interface InstalledPack {
@@ -320,9 +319,11 @@ export default function Modules() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [busy, setHeaderActions, t]);
 
-  // Re-render when a code module arrives, so it is listed.
-  useModuleState();
-  const integrations = listIntegrations();
+  // Only the ones compiled in: a code module that loaded is in the registry
+  // too, but it is listed by `CodeModuleList` with its own status and switch,
+  // not a second time here as "built in".
+  const builtIn = builtInIntegrationIds();
+  const integrations = listIntegrations().filter((integration) => builtIn.includes(integration.id));
 
   return (
     <Box data-testid="modules-page" sx={{ width: '100%' }}>
