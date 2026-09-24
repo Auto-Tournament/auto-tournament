@@ -87,8 +87,15 @@ async function installEnabled(request: APIRequestContext, id: string, kind: stri
   expect(rescanned.status(), `rescanning: ${await rescanned.text()}`).toBe(200);
 }
 
-/** Every path this page requests from now on. */
-function recordRequests(page: Page): string[] {
+/**
+ * Every path this page requests from now on.
+ *
+ * Leaves the page first: `beforeEach` opened `/`, whose module boot may still
+ * be fetching (a module that fails to link is fetched again to say why), and
+ * its requests must not be counted as the next page's.
+ */
+async function recordRequests(page: Page): Promise<string[]> {
+  await page.goto('about:blank');
   const paths: string[] = [];
   page.on('request', (req) => paths.push(new URL(req.url()).pathname));
   return paths;
@@ -150,7 +157,7 @@ test.describe.serial('Code modules in the browser', () => {
     ].map((m) => m[1]);
     expect(entryScripts.length, 'index.html should load an entry script').toBeGreaterThan(0);
 
-    const requested = recordRequests(page);
+    const requested = await recordRequests(page);
     const listed = page.waitForResponse((res) => new URL(res.url()).pathname === '/api/modules');
     await page.goto('/');
     // The boot asked, so the absence below is the loader deciding, not the
@@ -195,12 +202,11 @@ test.describe.serial('Code modules in the browser', () => {
   test('its route renders in the admin shell on the host React, theme, router and language', {
     tag: ['@ui', '@modules'],
   }, async ({ page }) => {
+    const requested = await recordRequests(page);
     await page.addInitScript((themeId) => {
       window.localStorage.setItem('at-theme', themeId);
       window.localStorage.setItem('i18nextLng', 'nb');
     }, HOST_THEME);
-
-    const requested = recordRequests(page);
     await page.goto(`/${VALID}`);
     await waitForBoot(page);
 
@@ -324,7 +330,7 @@ test.describe.serial('Code modules in the browser', () => {
       (await request.get(`/api/modules/${CLIENT_INCOMPATIBLE}/client/index.js`)).status()
     ).toBe(404);
 
-    const requested = recordRequests(page);
+    const requested = await recordRequests(page);
     await page.goto('/modules');
     await waitForBoot(page);
     await expect(statusChip(page, CLIENT_INCOMPATIBLE)).toHaveAttribute('data-status', 'incompatible');
@@ -387,7 +393,7 @@ test.describe.serial('Code modules in the browser', () => {
   test('?modules=off loads no module code and says so', {
     tag: ['@ui', '@modules'],
   }, async ({ page }) => {
-    const requested = recordRequests(page);
+    const requested = await recordRequests(page);
     await page.goto('/modules?modules=off');
     await waitForBoot(page);
     await expect(page.getByTestId('code-modules-safe-mode')).toBeVisible({ timeout: 15_000 });
