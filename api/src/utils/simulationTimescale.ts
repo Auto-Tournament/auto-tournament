@@ -1,5 +1,5 @@
 /**
- * Allowed range for `simulation_timescale` (MatchZy's `host_timescale` in
+ * Allowed range for `simulation_timescale` (Auto Tournament CS2's `host_timescale` in
  * simulation mode). Simulation only exists for testing, so the ceiling is set by
  * how fast a bracket can usefully be played through rather than by bot realism;
  * the Settings page warns about odd bot behaviour above 2×.

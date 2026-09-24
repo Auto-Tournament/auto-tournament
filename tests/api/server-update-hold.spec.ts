@@ -32,7 +32,7 @@ interface HoldBody {
 
 async function getHold(
   request: APIRequestContext,
-  headers: Record<string, string> = { 'X-MatchZy-Token': TOKEN }
+  headers: Record<string, string> = { 'X-Auto-Tournament-Token': TOKEN }
 ): Promise<{ status: number; body: HoldBody }> {
   const response = await request.get(PATH, { headers });
   return { status: response.status(), body: (await response.json().catch(() => ({}))) as HoldBody };
@@ -93,7 +93,7 @@ test.describe('update hold endpoint', () => {
     const none = await getHold(request, {});
     expect(none.status, 'an untokened poll must be refused').toBe(401);
 
-    const wrong = await getHold(request, { 'X-MatchZy-Token': `${TOKEN}-wrong` });
+    const wrong = await getHold(request, { 'X-Auto-Tournament-Token': `${TOKEN}-wrong` });
     expect(wrong.status, 'a wrong token must be refused').toBe(401);
   });
 

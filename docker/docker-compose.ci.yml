@@ -11,6 +11,6 @@
 # MAT_IMAGE must match the tag the workflow's build job gives the image.
 
 services:
-  matchzy-tournament:
-    image: ${MAT_IMAGE:-matchzy-tournament:ci}
+  auto-tournament:
+    image: ${MAT_IMAGE:-auto-tournament:ci}
     pull_policy: never

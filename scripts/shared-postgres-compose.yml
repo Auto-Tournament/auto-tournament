@@ -2,7 +2,7 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: matchzy-test-postgres-shared
+    container_name: auto-tournament-test-postgres-shared
     restart: unless-stopped
     environment:
       - POSTGRES_USER=${DB_USER:-postgres}
@@ -17,9 +17,9 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - matchzy-test-network
+      - auto-tournament-test-network
 
 networks:
-  matchzy-test-network:
+  auto-tournament-test-network:
     driver: bridge
 

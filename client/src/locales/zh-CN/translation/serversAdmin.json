@@ -170,7 +170,7 @@
       "noServers": "没有可用的服务器",
       "refreshServers": "刷新服务器列表",
       "noEvents": "尚未收到此服务器的事件。",
-      "noEventsHint": "15 秒后仍未收到事件。请检查你的 CS2 服务器是否已配置为使用正确的 X-MatchZy-Token 将 MatchZy Webhook 发送到 /api/events/:matchSlugOrServerId。",
+      "noEventsHint": "15 秒后仍未收到事件。请检查你的 CS2 服务器是否已配置为使用正确的 X-Auto-Tournament-Token 将 Auto Tournament CS2 Webhook 发送到 /api/events/:matchSlugOrServerId。",
       "waiting": "正在等待服务器事件…",
       "footer_one": "显示 {{count}} 条事件（最多 100 条）",
       "footer_other": "显示 {{count}} 条事件（最多 100 条）",

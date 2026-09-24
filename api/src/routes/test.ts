@@ -240,7 +240,7 @@ router.post('/match-state', requireAuth, async (req: Request, res: Response): Pr
 });
 
 /**
- * Test-only helper: apply a MatchZy match report as if it arrived from a server.
+ * Test-only helper: apply an Auto Tournament CS2 match report as if it arrived from a server.
  *
  * POST /api/test/match-report  { slug, report }
  *
@@ -1053,6 +1053,10 @@ router.get('/cs2-tables', requireAuth, async (_req: Request, res: Response): Pro
         mapPoolNames,
         ledger: await cs2Ledger(client),
         firstMigration: first ? { id: first.id, checksum: migrationChecksum(first.up) } : null,
+        declared: (cs2Module()?.migrations ?? []).map((m) => ({
+          id: m.id,
+          checksum: migrationChecksum(m.up),
+        })),
         state: getModuleMigrationState(CS2_MODULE_ID) ?? null,
         schema: await describeCs2Schema(client),
       };
@@ -1322,6 +1326,11 @@ router.post(
             ),
           };
           const ledger = await cs2Ledger(client);
+          // Then CS2's later migrations, as its runner does on boot, so the
+          // schema compares with a fresh database's.
+          for (const migration of cs2Module()?.migrations?.slice(1) ?? []) {
+            await client.query(migration.up);
+          }
           const schema = await describeCs2Schema(client);
 
           await client.query('BEGIN');

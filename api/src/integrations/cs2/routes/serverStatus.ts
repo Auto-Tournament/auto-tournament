@@ -72,7 +72,7 @@ router.get('/:id/status', async (req: Request, res: Response) => {
       });
     }
 
-    // Prefer detailed status from the MatchZy plugin ConVars (includes current match slug)
+    // Prefer detailed status from the Auto Tournament CS2 plugin ConVars (includes current match slug)
     // For lightweight UI checks we allow using a short-lived cache buffer to avoid
     // flapping between online/offline. Manual checks (e.g. "Test Connection") call
     // this route without the ?cached=true flag and therefore always bypass the cache.
@@ -144,7 +144,7 @@ router.get('/:id/status', async (req: Request, res: Response) => {
 
     // Derive a more accurate status by combining plugin ConVars with our DB view of
     // which matches are actually running on this server. This helps in cases where
-    // the MatchZy plugin has not yet updated its custom status ConVars and is still
+    // the Auto Tournament CS2 plugin has not yet updated its custom status ConVars and is still
     // reporting "idle" even though a match is already loaded or live.
     let effectiveStatus = statusInfo.status;
     let effectiveMatchSlug = statusInfo.matchSlug;

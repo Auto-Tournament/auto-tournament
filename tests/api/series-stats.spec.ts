@@ -105,7 +105,7 @@ test.describe.serial('Series stats', () => {
 
     const headers = {
       'Content-Type': 'application/json',
-      'X-MatchZy-Token': process.env.SERVER_TOKEN ?? 'server123',
+      'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
     };
 
     // Map 1, then map 2 with smaller numbers. If only the last map is kept, the

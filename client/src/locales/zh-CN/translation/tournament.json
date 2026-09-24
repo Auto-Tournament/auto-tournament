@@ -129,8 +129,8 @@
       "overtimeDisabledNoDraws": "加时：已禁用（不允许平局，按总伤害决胜）",
       "overtimeSegments_one": "加时段数：{{count}} 段",
       "overtimeSegments_other": "加时段数：{{count}} 段",
-      "overtimeSegmentsDefault": "加时段数：MatchZy 默认值",
-      "overtimeSegmentsDefaultUnlimited": "加时段数：MatchZy 默认值（通常不限）"
+      "overtimeSegmentsDefault": "加时段数：Auto Tournament CS2 默认值",
+      "overtimeSegmentsDefaultUnlimited": "加时段数：Auto Tournament CS2 默认值（通常不限）"
     },
     "toasts": {
       "loadTemplateFailed": "加载模板失败",
@@ -307,10 +307,10 @@
         "disabledNoDraws": "禁用 – 不允许平局（按总伤害决胜）"
       },
       "modeHelper": "标准加时会持续加打，直到一方领先。“允许平局”会让打平的地图以平局结束，而“不允许平局”则按队伍总伤害决出胜者。",
-      "tooltip": "控制加时行为以及达到最大回合数打平时的处理方式。这些设置会以 overtimeMode/overtimeSegments 传给 MatchZy，含义与随机分队赛事和手动比赛一致。",
+      "tooltip": "控制加时行为以及达到最大回合数打平时的处理方式。这些设置会以 overtimeMode/overtimeSegments 传给 Auto Tournament CS2，含义与随机分队赛事和手动比赛一致。",
       "shuffleTooltip": "控制随机分队比赛的加时行为，以及达到最大回合数打平时的判定方式。禁用加时后，打平的比赛可以保持平局，也可以按队伍总伤害决出胜者，取决于所选选项。",
       "segmentsLabel": "加时段数（可选）",
-      "segmentsHelper": "可选：限制加时段数。留空则使用 MatchZy 默认值。",
+      "segmentsHelper": "可选：限制加时段数。留空则使用 Auto Tournament CS2 默认值。",
       "segmentsHelperValue_one": "将加时限制为 {{count}} 段。加时后仍打平时，按队伍总伤害决胜。",
       "segmentsHelperValue_other": "将加时限制为 {{count}} 段。加时后仍打平时，按队伍总伤害决胜。"
     },
@@ -350,7 +350,7 @@
       "teamSizeTooltip": "每队人数。常见选项：4v4、5v5、6v6。每队最少 2 人，最多 10 人。",
       "teamSizeHelper": "每队人数（默认 5，即 5v5；范围 2–10）",
       "maxRoundsLabel": "最大回合数",
-      "maxRoundsTooltip": "每场比赛的最大回合数。该值会作为 mp_maxrounds 直接传给 MatchZy。例如：6 = MR6，24 = MR24。",
+      "maxRoundsTooltip": "每场比赛的最大回合数。该值会作为 mp_maxrounds 直接传给 Auto Tournament CS2。例如：6 = MR6，24 = MR24。",
       "maxRoundsHelper": "比赛最多打 {{maxRounds}} 回合；先赢得 {{winRounds}} 回合者获胜",
       "maxRoundsHelperEmpty": "每场比赛的最大回合数（默认 24，最大 30）",
       "eloTemplateLabel": "ELO 计算模板",
@@ -521,7 +521,7 @@
         "moreTeams": "More teams",
         "shuffleTitle": "Shuffle settings",
         "cs2Title": "Counter-Strike 2 settings",
-        "cs2Help": "Passed to MatchZy by the Counter-Strike 2 game module.",
+        "cs2Help": "Passed to Auto Tournament CS2 by the Counter-Strike 2 game module.",
         "overtime": {
           "enabled": "Overtime",
           "disabledDraws": "Off, draws allowed",

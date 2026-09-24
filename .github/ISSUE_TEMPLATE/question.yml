@@ -68,7 +68,7 @@ body:
       placeholder: |
         - Deployment: Docker / Local
         - Runtime: Bun 1.0.20 / Node.js 20.11.0
-        - MatchZy Version: v1.3.6
+        - Auto Tournament CS2 Version: v2.0.0
     validations:
       required: false
 

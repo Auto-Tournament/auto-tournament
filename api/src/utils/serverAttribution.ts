@@ -1,5 +1,5 @@
 /**
- * Which game server a request from MatchZy came from.
+ * Which game server a request from Auto Tournament CS2 came from.
  *
  * Every server posts events to the same `/api/events` URL and match events carry
  * only `matchid`, so MAT could not tell two servers apart. When one match ended
@@ -76,7 +76,7 @@ export type ConfigFetchVerdict = { ok: true } | { ok: false; reason: string };
  * A fetch that names a server or match id is the plugin acting on a load MAT
  * sent earlier. If the match has since moved to another server, or the slug now
  * belongs to a different match (tournament reset), serving the config would
- * start a second copy of a match — refuse it. MatchZy then fails the load and
+ * start a second copy of a match — refuse it. Auto Tournament CS2 then fails the load and
  * stays idle.
  */
 export function checkConfigFetch(
@@ -106,7 +106,7 @@ export function checkConfigFetch(
  *
  * The upload URL names a slug, but it is a per-server setting that MAT
  * overwrites when it loads the next match — while the previous match's last
- * demo may still be waiting to upload. The `MatchZy-MatchId` header is stamped
+ * demo may still be waiting to upload. The `Auto-Tournament-MatchId` header is stamped
  * by the plugin when the demo was recorded, so it wins when it is MAT's numeric
  * id. A matchid of 0 or a non-number falls back to the URL slug.
  */
@@ -130,8 +130,8 @@ export function isActiveMatchStatus(status: string | null | undefined): boolean 
  *
  * The plugin reports phase `idle` whenever no match is set up, and keeps
  * posting reports in that state (warmup_start after a reset or restart).
- * MatchZy-Enhanced up to 1.4.28 also kept the last match id in
- * `matchzy_tournament_match`, so such a report can still name the previous match.
+ * Auto Tournament CS2 up to 1.4.28 also kept the last match id in
+ * `at_tournament_match`, so such a report can still name the previous match.
  */
 export function isIdleServerReport(
   report: { match?: { phase?: string | null } } | null | undefined

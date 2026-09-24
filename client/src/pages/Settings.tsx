@@ -67,8 +67,8 @@ function a11yProps(index: number) {
 export default function Settings() {
   const { setHeaderActions } = usePageHeader();
   const { showSuccess, showError, showSnackbar } = useSnackbar();
-  const DEFAULT_MATCHZY_CHAT_PREFIX = '[{Green}MAT{Default}]';
-  const DEFAULT_MATCHZY_ADMIN_CHAT_PREFIX = '[{Red}ADMIN{Default}]';
+  const DEFAULT_AT_CHAT_PREFIX = '[{Green}MAT{Default}]';
+  const DEFAULT_AT_ADMIN_CHAT_PREFIX = '[{Red}ADMIN{Default}]';
   const [webhookUrl, setWebhookUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -78,107 +78,107 @@ export default function Settings() {
   const [initialSimulateMatches, setInitialSimulateMatches] = useState(false);
   const [simulationTimescale, setSimulationTimescale] = useState<number>(1);
   const [initialSimulationTimescale, setInitialSimulationTimescale] = useState<number>(1);
-  const [matchzyChatPrefix, setMatchzyChatPrefix] = useState(DEFAULT_MATCHZY_CHAT_PREFIX);
-  const [initialMatchzyChatPrefix, setInitialMatchzyChatPrefix] =
-    useState(DEFAULT_MATCHZY_CHAT_PREFIX);
-  const [matchzyAdminChatPrefix, setMatchzyAdminChatPrefix] = useState(
-    DEFAULT_MATCHZY_ADMIN_CHAT_PREFIX
+  const [atChatPrefix, setAtChatPrefix] = useState(DEFAULT_AT_CHAT_PREFIX);
+  const [initialAtChatPrefix, setInitialAtChatPrefix] =
+    useState(DEFAULT_AT_CHAT_PREFIX);
+  const [atAdminChatPrefix, setAtAdminChatPrefix] = useState(
+    DEFAULT_AT_ADMIN_CHAT_PREFIX
   );
-  const [initialMatchzyAdminChatPrefix, setInitialMatchzyAdminChatPrefix] = useState(
-    DEFAULT_MATCHZY_ADMIN_CHAT_PREFIX
+  const [initialAtAdminChatPrefix, setInitialAtAdminChatPrefix] = useState(
+    DEFAULT_AT_ADMIN_CHAT_PREFIX
   );
-  const [matchzyKnifeEnabledDefault, setMatchzyKnifeEnabledDefault] = useState(true);
-  const [initialMatchzyKnifeEnabledDefault, setInitialMatchzyKnifeEnabledDefault] = useState(true);
+  const [atKnifeEnabledDefault, setAtKnifeEnabledDefault] = useState(true);
+  const [initialAtKnifeEnabledDefault, setInitialAtKnifeEnabledDefault] = useState(true);
   const [ratingsEnabled, setRatingsEnabled] = useState(true);
   const [initialRatingsEnabled, setInitialRatingsEnabled] = useState(true);
-  const [matchzyDebugChatEnabled, setMatchzyDebugChatEnabled] = useState(false);
-  const [initialMatchzyDebugChatEnabled, setInitialMatchzyDebugChatEnabled] = useState(false);
+  const [atDebugChatEnabled, setAtDebugChatEnabled] = useState(false);
+  const [initialAtDebugChatEnabled, setInitialAtDebugChatEnabled] = useState(false);
   const [allowSelfRegister, setAllowSelfRegister] = useState(false);
   const [initialAllowSelfRegister, setInitialAllowSelfRegister] = useState(false);
-  // MatchZy core defaults
-  const [matchzyAutostartMode, setMatchzyAutostartMode] = useState<0 | 1 | 2>(1);
-  const [initialMatchzyAutostartMode, setInitialMatchzyAutostartMode] = useState<0 | 1 | 2>(1);
-  const [matchzyMinimumReadyRequired, setMatchzyMinimumReadyRequired] = useState<number>(0);
-  const [initialMatchzyMinimumReadyRequired, setInitialMatchzyMinimumReadyRequired] =
+  // Auto Tournament CS2 core defaults
+  const [atAutostartMode, setAtAutostartMode] = useState<0 | 1 | 2>(1);
+  const [initialAtAutostartMode, setInitialAtAutostartMode] = useState<0 | 1 | 2>(1);
+  const [atMinimumReadyRequired, setAtMinimumReadyRequired] = useState<number>(0);
+  const [initialAtMinimumReadyRequired, setInitialAtMinimumReadyRequired] =
     useState<number>(0);
-  const [matchzyAllowForceReady, setMatchzyAllowForceReady] = useState<boolean>(true);
-  const [initialMatchzyAllowForceReady, setInitialMatchzyAllowForceReady] =
+  const [atAllowForceReady, setAtAllowForceReady] = useState<boolean>(true);
+  const [initialAtAllowForceReady, setInitialAtAllowForceReady] =
     useState<boolean>(true);
-  const [matchzyKickWhenNoMatchLoaded, setMatchzyKickWhenNoMatchLoaded] =
+  const [atKickWhenNoMatchLoaded, setAtKickWhenNoMatchLoaded] =
     useState<boolean>(false);
-  const [initialMatchzyKickWhenNoMatchLoaded, setInitialMatchzyKickWhenNoMatchLoaded] =
+  const [initialAtKickWhenNoMatchLoaded, setInitialAtKickWhenNoMatchLoaded] =
     useState<boolean>(false);
-  const [matchzyWhitelistEnabledDefault, setMatchzyWhitelistEnabledDefault] =
+  const [atWhitelistEnabledDefault, setAtWhitelistEnabledDefault] =
     useState<boolean>(false);
-  const [initialMatchzyWhitelistEnabledDefault, setInitialMatchzyWhitelistEnabledDefault] =
+  const [initialAtWhitelistEnabledDefault, setInitialAtWhitelistEnabledDefault] =
     useState<boolean>(false);
-  const [matchzyPauseAfterRestore, setMatchzyPauseAfterRestore] = useState<boolean>(true);
-  const [initialMatchzyPauseAfterRestore, setInitialMatchzyPauseAfterRestore] =
+  const [atPauseAfterRestore, setAtPauseAfterRestore] = useState<boolean>(true);
+  const [initialAtPauseAfterRestore, setInitialAtPauseAfterRestore] =
     useState<boolean>(true);
-  const [matchzyStopCommandAvailable, setMatchzyStopCommandAvailable] =
+  const [atStopCommandAvailable, setAtStopCommandAvailable] =
     useState<boolean>(false);
-  const [initialMatchzyStopCommandAvailable, setInitialMatchzyStopCommandAvailable] =
+  const [initialAtStopCommandAvailable, setInitialAtStopCommandAvailable] =
     useState<boolean>(false);
-  const [matchzyStopCommandNoDamage, setMatchzyStopCommandNoDamage] = useState<boolean>(false);
-  const [initialMatchzyStopCommandNoDamage, setInitialMatchzyStopCommandNoDamage] =
+  const [atStopCommandNoDamage, setAtStopCommandNoDamage] = useState<boolean>(false);
+  const [initialAtStopCommandNoDamage, setInitialAtStopCommandNoDamage] =
     useState<boolean>(false);
-  const [matchzyUsePauseCommandForTacticalPause, setMatchzyUsePauseCommandForTacticalPause] =
+  const [atUsePauseCommandForTacticalPause, setAtUsePauseCommandForTacticalPause] =
     useState<boolean>(false);
   const [
-    initialMatchzyUsePauseCommandForTacticalPause,
-    setInitialMatchzyUsePauseCommandForTacticalPause,
+    initialAtUsePauseCommandForTacticalPause,
+    setInitialAtUsePauseCommandForTacticalPause,
   ] = useState<boolean>(false);
-  // '' is a real value here: it tells MatchZy to leave the server's own
+  // '' is a real value here: it tells Auto Tournament CS2 to leave the server's own
   // hostname alone, so it is never folded into the default on the way in or out.
-  const [matchzyHostnameFormat, setMatchzyHostnameFormat] = useState<string>('{TEAM1} vs {TEAM2}');
-  const [initialMatchzyHostnameFormat, setInitialMatchzyHostnameFormat] = useState<string>('{TEAM1} vs {TEAM2}');
-  const [matchzyDemoPath, setMatchzyDemoPath] = useState<string>('MatchZy/');
-  const [initialMatchzyDemoPath, setInitialMatchzyDemoPath] = useState<string>('MatchZy/');
-  const [matchzyDemoNameFormat, setMatchzyDemoNameFormat] = useState<string>(
+  const [atHostnameFormat, setAtHostnameFormat] = useState<string>('{TEAM1} vs {TEAM2}');
+  const [initialAtHostnameFormat, setInitialAtHostnameFormat] = useState<string>('{TEAM1} vs {TEAM2}');
+  const [atDemoPath, setAtDemoPath] = useState<string>('AutoTournamentCS2/');
+  const [initialAtDemoPath, setInitialAtDemoPath] = useState<string>('AutoTournamentCS2/');
+  const [atDemoNameFormat, setAtDemoNameFormat] = useState<string>(
     '{TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}'
   );
-  const [initialMatchzyDemoNameFormat, setInitialMatchzyDemoNameFormat] = useState<string>(
+  const [initialAtDemoNameFormat, setInitialAtDemoNameFormat] = useState<string>(
     '{TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}'
   );
-  const [matchzySeriesEndKickDelayNoDemo, setMatchzySeriesEndKickDelayNoDemo] =
+  const [atSeriesEndKickDelayNoDemo, setAtSeriesEndKickDelayNoDemo] =
     useState<number>(5);
-  const [initialMatchzySeriesEndKickDelayNoDemo, setInitialMatchzySeriesEndKickDelayNoDemo] =
+  const [initialAtSeriesEndKickDelayNoDemo, setInitialAtSeriesEndKickDelayNoDemo] =
     useState<number>(5);
-  const [matchzySeriesEndKickDelayDemoNoUpload, setMatchzySeriesEndKickDelayDemoNoUpload] =
+  const [atSeriesEndKickDelayDemoNoUpload, setAtSeriesEndKickDelayDemoNoUpload] =
     useState<number>(10);
   const [
-    initialMatchzySeriesEndKickDelayDemoNoUpload,
-    setInitialMatchzySeriesEndKickDelayDemoNoUpload,
+    initialAtSeriesEndKickDelayDemoNoUpload,
+    setInitialAtSeriesEndKickDelayDemoNoUpload,
   ] = useState<number>(10);
-  const [matchzySeriesEndKickDelayDemoUpload, setMatchzySeriesEndKickDelayDemoUpload] =
+  const [atSeriesEndKickDelayDemoUpload, setAtSeriesEndKickDelayDemoUpload] =
     useState<number>(60);
-  const [initialMatchzySeriesEndKickDelayDemoUpload, setInitialMatchzySeriesEndKickDelayDemoUpload] =
+  const [initialAtSeriesEndKickDelayDemoUpload, setInitialAtSeriesEndKickDelayDemoUpload] =
     useState<number>(60);
-  // MatchZy Enhanced v1.3.0 settings
-  const [matchzyAutoreadyEnabled, setMatchzyAutoreadyEnabled] = useState<0 | 1 | null>(null);
-  const [initialMatchzyAutoreadyEnabled, setInitialMatchzyAutoreadyEnabled] = useState<0 | 1 | null>(null);
-  const [matchzyBothTeamsUnpauseRequired, setMatchzyBothTeamsUnpauseRequired] = useState<0 | 1 | null>(null);
-  const [initialMatchzyBothTeamsUnpauseRequired, setInitialMatchzyBothTeamsUnpauseRequired] = useState<0 | 1 | null>(null);
-  const [matchzyMaxPausesPerTeam, setMatchzyMaxPausesPerTeam] = useState<number | null>(null);
-  const [initialMatchzyMaxPausesPerTeam, setInitialMatchzyMaxPausesPerTeam] = useState<number | null>(null);
-  const [matchzyPauseDuration, setMatchzyPauseDuration] = useState<number | null>(null);
-  const [initialMatchzyPauseDuration, setInitialMatchzyPauseDuration] = useState<number | null>(null);
-  const [matchzySideSelectionEnabled, setMatchzySideSelectionEnabled] = useState<0 | 1 | null>(null);
-  const [initialMatchzySideSelectionEnabled, setInitialMatchzySideSelectionEnabled] = useState<0 | 1 | null>(null);
-  const [matchzySideSelectionTime, setMatchzySideSelectionTime] = useState<number | null>(null);
-  const [initialMatchzySideSelectionTime, setInitialMatchzySideSelectionTime] = useState<number | null>(null);
-  const [matchzyGgEnabled, setMatchzyGgEnabled] = useState<0 | 1 | null>(null);
-  const [initialMatchzyGgEnabled, setInitialMatchzyGgEnabled] = useState<0 | 1 | null>(null);
-  const [matchzyGgThreshold, setMatchzyGgThreshold] = useState<number | null>(null);
-  const [initialMatchzyGgThreshold, setInitialMatchzyGgThreshold] = useState<number | null>(null);
-  const [matchzyGgMinScoreDiff, setMatchzyGgMinScoreDiff] = useState<number | null>(null);
-  const [initialMatchzyGgMinScoreDiff, setInitialMatchzyGgMinScoreDiff] = useState<number | null>(null);
-  const [matchzyFfwEnabled, setMatchzyFfwEnabled] = useState<0 | 1 | null>(null);
-  const [initialMatchzyFfwEnabled, setInitialMatchzyFfwEnabled] = useState<0 | 1 | null>(null);
-  const [matchzyFfwTime, setMatchzyFfwTime] = useState<number | null>(null);
-  const [initialMatchzyFfwTime, setInitialMatchzyFfwTime] = useState<number | null>(null);
-  const [matchzyDemoRecordingEnabled, setMatchzyDemoRecordingEnabled] = useState<0 | 1 | null>(null);
-  const [initialMatchzyDemoRecordingEnabled, setInitialMatchzyDemoRecordingEnabled] = useState<0 | 1 | null>(null);
+  // Auto Tournament CS2 v1.3.0 settings
+  const [atAutoreadyEnabled, setAtAutoreadyEnabled] = useState<0 | 1 | null>(null);
+  const [initialAtAutoreadyEnabled, setInitialAtAutoreadyEnabled] = useState<0 | 1 | null>(null);
+  const [atBothTeamsUnpauseRequired, setAtBothTeamsUnpauseRequired] = useState<0 | 1 | null>(null);
+  const [initialAtBothTeamsUnpauseRequired, setInitialAtBothTeamsUnpauseRequired] = useState<0 | 1 | null>(null);
+  const [atMaxPausesPerTeam, setAtMaxPausesPerTeam] = useState<number | null>(null);
+  const [initialAtMaxPausesPerTeam, setInitialAtMaxPausesPerTeam] = useState<number | null>(null);
+  const [atPauseDuration, setAtPauseDuration] = useState<number | null>(null);
+  const [initialAtPauseDuration, setInitialAtPauseDuration] = useState<number | null>(null);
+  const [atSideSelectionEnabled, setAtSideSelectionEnabled] = useState<0 | 1 | null>(null);
+  const [initialAtSideSelectionEnabled, setInitialAtSideSelectionEnabled] = useState<0 | 1 | null>(null);
+  const [atSideSelectionTime, setAtSideSelectionTime] = useState<number | null>(null);
+  const [initialAtSideSelectionTime, setInitialAtSideSelectionTime] = useState<number | null>(null);
+  const [atGgEnabled, setAtGgEnabled] = useState<0 | 1 | null>(null);
+  const [initialAtGgEnabled, setInitialAtGgEnabled] = useState<0 | 1 | null>(null);
+  const [atGgThreshold, setAtGgThreshold] = useState<number | null>(null);
+  const [initialAtGgThreshold, setInitialAtGgThreshold] = useState<number | null>(null);
+  const [atGgMinScoreDiff, setAtGgMinScoreDiff] = useState<number | null>(null);
+  const [initialAtGgMinScoreDiff, setInitialAtGgMinScoreDiff] = useState<number | null>(null);
+  const [atFfwEnabled, setAtFfwEnabled] = useState<0 | 1 | null>(null);
+  const [initialAtFfwEnabled, setInitialAtFfwEnabled] = useState<0 | 1 | null>(null);
+  const [atFfwTime, setAtFfwTime] = useState<number | null>(null);
+  const [initialAtFfwTime, setInitialAtFfwTime] = useState<number | null>(null);
+  const [atDemoRecordingEnabled, setAtDemoRecordingEnabled] = useState<0 | 1 | null>(null);
+  const [initialAtDemoRecordingEnabled, setInitialAtDemoRecordingEnabled] = useState<0 | 1 | null>(null);
   const [resetApiDialogOpen, setResetApiDialogOpen] = useState(false);
   const [resettingApi, setResettingApi] = useState(false);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -218,56 +218,56 @@ export default function Settings() {
       const webhook = response.settings.webhookUrl ?? '';
       const simulate = response.settings.simulateMatches ?? false;
       const timescale = response.settings.simulationTimescale ?? 1;
-      const chatPrefix = response.settings.matchzyChatPrefix ?? DEFAULT_MATCHZY_CHAT_PREFIX;
+      const chatPrefix = response.settings.atChatPrefix ?? DEFAULT_AT_CHAT_PREFIX;
       const adminChatPrefix =
-        response.settings.matchzyAdminChatPrefix ?? DEFAULT_MATCHZY_ADMIN_CHAT_PREFIX;
+        response.settings.atAdminChatPrefix ?? DEFAULT_AT_ADMIN_CHAT_PREFIX;
       const knifeEnabled =
-        response.settings.matchzyKnifeEnabledDefault !== undefined
-          ? response.settings.matchzyKnifeEnabledDefault
+        response.settings.atKnifeEnabledDefault !== undefined
+          ? response.settings.atKnifeEnabledDefault
           : true;
       const ratingsEnabledValue =
         response.settings.ratingsEnabled !== undefined ? response.settings.ratingsEnabled : true;
       const debugChatEnabled =
-        response.settings.matchzyDebugChatEnabled !== undefined
-          ? response.settings.matchzyDebugChatEnabled
+        response.settings.atDebugChatEnabled !== undefined
+          ? response.settings.atDebugChatEnabled
           : false;
       const allowSelfRegisterValue =
         response.settings.allowSelfRegister !== undefined
           ? response.settings.allowSelfRegister
           : false;
-      // MatchZy core defaults
-      const autostartMode = response.settings.matchzyAutostartMode ?? 1;
-      const minimumReadyRequired = response.settings.matchzyMinimumReadyRequired ?? 0;
-      const allowForceReady = response.settings.matchzyAllowForceReady ?? true;
-      const kickWhenNoMatchLoaded = response.settings.matchzyKickWhenNoMatchLoaded ?? false;
-      const whitelistEnabledDefault = response.settings.matchzyWhitelistEnabledDefault ?? false;
-      const pauseAfterRestore = response.settings.matchzyPauseAfterRestore ?? true;
-      const stopCommandAvailable = response.settings.matchzyStopCommandAvailable ?? false;
-      const stopCommandNoDamage = response.settings.matchzyStopCommandNoDamage ?? false;
+      // Auto Tournament CS2 core defaults
+      const autostartMode = response.settings.atAutostartMode ?? 1;
+      const minimumReadyRequired = response.settings.atMinimumReadyRequired ?? 0;
+      const allowForceReady = response.settings.atAllowForceReady ?? true;
+      const kickWhenNoMatchLoaded = response.settings.atKickWhenNoMatchLoaded ?? false;
+      const whitelistEnabledDefault = response.settings.atWhitelistEnabledDefault ?? false;
+      const pauseAfterRestore = response.settings.atPauseAfterRestore ?? true;
+      const stopCommandAvailable = response.settings.atStopCommandAvailable ?? false;
+      const stopCommandNoDamage = response.settings.atStopCommandNoDamage ?? false;
       const usePauseCommandForTacticalPause =
-        response.settings.matchzyUsePauseCommandForTacticalPause ?? false;
-      const hostnameFormat = response.settings.matchzyHostnameFormat ?? '{TEAM1} vs {TEAM2}';
-      const demoPath = response.settings.matchzyDemoPath ?? 'MatchZy/';
+        response.settings.atUsePauseCommandForTacticalPause ?? false;
+      const hostnameFormat = response.settings.atHostnameFormat ?? '{TEAM1} vs {TEAM2}';
+      const demoPath = response.settings.atDemoPath ?? 'AutoTournamentCS2/';
       const demoNameFormat =
-        response.settings.matchzyDemoNameFormat ?? '{TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}';
-      const seriesEndKickDelayNoDemo = response.settings.matchzySeriesEndKickDelayNoDemo ?? 5;
+        response.settings.atDemoNameFormat ?? '{TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}';
+      const seriesEndKickDelayNoDemo = response.settings.atSeriesEndKickDelayNoDemo ?? 5;
       const seriesEndKickDelayDemoNoUpload =
-        response.settings.matchzySeriesEndKickDelayDemoNoUpload ?? 10;
+        response.settings.atSeriesEndKickDelayDemoNoUpload ?? 10;
       const seriesEndKickDelayDemoUpload =
-        response.settings.matchzySeriesEndKickDelayDemoUpload ?? 60;
-      // MatchZy Enhanced v1.3.0 settings
-      const matchzyAutoready = response.settings.matchzyAutoreadyEnabled ?? null;
-      const matchzyBothTeamsUnpause = response.settings.matchzyBothTeamsUnpauseRequired ?? null;
-      const matchzyMaxPauses = response.settings.matchzyMaxPausesPerTeam ?? null;
-      const matchzyPauseDur = response.settings.matchzyPauseDuration ?? null;
-      const matchzySideSelEnabled = response.settings.matchzySideSelectionEnabled ?? null;
-      const matchzySideSelTime = response.settings.matchzySideSelectionTime ?? null;
-      const matchzyGg = response.settings.matchzyGgEnabled ?? null;
-      const matchzyGgThresh = response.settings.matchzyGgThreshold ?? null;
-      const matchzyGgMinDiff = response.settings.matchzyGgMinScoreDiff ?? null;
-      const matchzyFfw = response.settings.matchzyFfwEnabled ?? null;
-      const matchzyFfwT = response.settings.matchzyFfwTime ?? null;
-      const matchzyDemo = response.settings.matchzyDemoRecordingEnabled ?? null;
+        response.settings.atSeriesEndKickDelayDemoUpload ?? 60;
+      // Auto Tournament CS2 v1.3.0 settings
+      const atAutoready = response.settings.atAutoreadyEnabled ?? null;
+      const atBothTeamsUnpause = response.settings.atBothTeamsUnpauseRequired ?? null;
+      const atMaxPauses = response.settings.atMaxPausesPerTeam ?? null;
+      const atPauseDur = response.settings.atPauseDuration ?? null;
+      const atSideSelEnabled = response.settings.atSideSelectionEnabled ?? null;
+      const atSideSelTime = response.settings.atSideSelectionTime ?? null;
+      const atGg = response.settings.atGgEnabled ?? null;
+      const atGgThresh = response.settings.atGgThreshold ?? null;
+      const atGgMinDiff = response.settings.atGgMinScoreDiff ?? null;
+      const atFfw = response.settings.atFfwEnabled ?? null;
+      const atFfwT = response.settings.atFfwTime ?? null;
+      const atDemo = response.settings.atDemoRecordingEnabled ?? null;
       
       setWebhookUrl(webhook);
       setInitialWebhookUrl(webhook);
@@ -275,73 +275,73 @@ export default function Settings() {
       setInitialSimulateMatches(simulate);
       setSimulationTimescale(timescale);
       setInitialSimulationTimescale(timescale);
-      setMatchzyChatPrefix(chatPrefix);
-      setInitialMatchzyChatPrefix(chatPrefix);
-      setMatchzyAdminChatPrefix(adminChatPrefix);
-      setInitialMatchzyAdminChatPrefix(adminChatPrefix);
-      setMatchzyKnifeEnabledDefault(knifeEnabled);
-      setInitialMatchzyKnifeEnabledDefault(knifeEnabled);
-      setMatchzyDebugChatEnabled(debugChatEnabled);
-      setInitialMatchzyDebugChatEnabled(debugChatEnabled);
+      setAtChatPrefix(chatPrefix);
+      setInitialAtChatPrefix(chatPrefix);
+      setAtAdminChatPrefix(adminChatPrefix);
+      setInitialAtAdminChatPrefix(adminChatPrefix);
+      setAtKnifeEnabledDefault(knifeEnabled);
+      setInitialAtKnifeEnabledDefault(knifeEnabled);
+      setAtDebugChatEnabled(debugChatEnabled);
+      setInitialAtDebugChatEnabled(debugChatEnabled);
       setAllowSelfRegister(allowSelfRegisterValue);
       setInitialAllowSelfRegister(allowSelfRegisterValue);
       setRatingsEnabled(ratingsEnabledValue);
       setInitialRatingsEnabled(ratingsEnabledValue);
-      setMatchzyAutostartMode(autostartMode);
-      setInitialMatchzyAutostartMode(autostartMode);
-      setMatchzyMinimumReadyRequired(minimumReadyRequired);
-      setInitialMatchzyMinimumReadyRequired(minimumReadyRequired);
-      setMatchzyAllowForceReady(allowForceReady);
-      setInitialMatchzyAllowForceReady(allowForceReady);
-      setMatchzyKickWhenNoMatchLoaded(kickWhenNoMatchLoaded);
-      setInitialMatchzyKickWhenNoMatchLoaded(kickWhenNoMatchLoaded);
-      setMatchzyWhitelistEnabledDefault(whitelistEnabledDefault);
-      setInitialMatchzyWhitelistEnabledDefault(whitelistEnabledDefault);
-      setMatchzyPauseAfterRestore(pauseAfterRestore);
-      setInitialMatchzyPauseAfterRestore(pauseAfterRestore);
-      setMatchzyStopCommandAvailable(stopCommandAvailable);
-      setInitialMatchzyStopCommandAvailable(stopCommandAvailable);
-      setMatchzyStopCommandNoDamage(stopCommandNoDamage);
-      setInitialMatchzyStopCommandNoDamage(stopCommandNoDamage);
-      setMatchzyUsePauseCommandForTacticalPause(usePauseCommandForTacticalPause);
-      setInitialMatchzyUsePauseCommandForTacticalPause(usePauseCommandForTacticalPause);
-      setMatchzyHostnameFormat(hostnameFormat);
-      setInitialMatchzyHostnameFormat(hostnameFormat);
-      setMatchzyDemoPath(demoPath);
-      setInitialMatchzyDemoPath(demoPath);
-      setMatchzyDemoNameFormat(demoNameFormat);
-      setInitialMatchzyDemoNameFormat(demoNameFormat);
-      setMatchzySeriesEndKickDelayNoDemo(seriesEndKickDelayNoDemo);
-      setInitialMatchzySeriesEndKickDelayNoDemo(seriesEndKickDelayNoDemo);
-      setMatchzySeriesEndKickDelayDemoNoUpload(seriesEndKickDelayDemoNoUpload);
-      setInitialMatchzySeriesEndKickDelayDemoNoUpload(seriesEndKickDelayDemoNoUpload);
-      setMatchzySeriesEndKickDelayDemoUpload(seriesEndKickDelayDemoUpload);
-      setInitialMatchzySeriesEndKickDelayDemoUpload(seriesEndKickDelayDemoUpload);
-      // MatchZy Enhanced
-      setMatchzyAutoreadyEnabled(matchzyAutoready);
-      setInitialMatchzyAutoreadyEnabled(matchzyAutoready);
-      setMatchzyBothTeamsUnpauseRequired(matchzyBothTeamsUnpause);
-      setInitialMatchzyBothTeamsUnpauseRequired(matchzyBothTeamsUnpause);
-      setMatchzyMaxPausesPerTeam(matchzyMaxPauses);
-      setInitialMatchzyMaxPausesPerTeam(matchzyMaxPauses);
-      setMatchzyPauseDuration(matchzyPauseDur);
-      setInitialMatchzyPauseDuration(matchzyPauseDur);
-      setMatchzySideSelectionEnabled(matchzySideSelEnabled);
-      setInitialMatchzySideSelectionEnabled(matchzySideSelEnabled);
-      setMatchzySideSelectionTime(matchzySideSelTime);
-      setInitialMatchzySideSelectionTime(matchzySideSelTime);
-      setMatchzyGgEnabled(matchzyGg);
-      setInitialMatchzyGgEnabled(matchzyGg);
-      setMatchzyGgThreshold(matchzyGgThresh);
-      setInitialMatchzyGgThreshold(matchzyGgThresh);
-      setMatchzyGgMinScoreDiff(matchzyGgMinDiff);
-      setInitialMatchzyGgMinScoreDiff(matchzyGgMinDiff);
-      setMatchzyFfwEnabled(matchzyFfw);
-      setInitialMatchzyFfwEnabled(matchzyFfw);
-      setMatchzyFfwTime(matchzyFfwT);
-      setInitialMatchzyFfwTime(matchzyFfwT);
-      setMatchzyDemoRecordingEnabled(matchzyDemo);
-      setInitialMatchzyDemoRecordingEnabled(matchzyDemo);
+      setAtAutostartMode(autostartMode);
+      setInitialAtAutostartMode(autostartMode);
+      setAtMinimumReadyRequired(minimumReadyRequired);
+      setInitialAtMinimumReadyRequired(minimumReadyRequired);
+      setAtAllowForceReady(allowForceReady);
+      setInitialAtAllowForceReady(allowForceReady);
+      setAtKickWhenNoMatchLoaded(kickWhenNoMatchLoaded);
+      setInitialAtKickWhenNoMatchLoaded(kickWhenNoMatchLoaded);
+      setAtWhitelistEnabledDefault(whitelistEnabledDefault);
+      setInitialAtWhitelistEnabledDefault(whitelistEnabledDefault);
+      setAtPauseAfterRestore(pauseAfterRestore);
+      setInitialAtPauseAfterRestore(pauseAfterRestore);
+      setAtStopCommandAvailable(stopCommandAvailable);
+      setInitialAtStopCommandAvailable(stopCommandAvailable);
+      setAtStopCommandNoDamage(stopCommandNoDamage);
+      setInitialAtStopCommandNoDamage(stopCommandNoDamage);
+      setAtUsePauseCommandForTacticalPause(usePauseCommandForTacticalPause);
+      setInitialAtUsePauseCommandForTacticalPause(usePauseCommandForTacticalPause);
+      setAtHostnameFormat(hostnameFormat);
+      setInitialAtHostnameFormat(hostnameFormat);
+      setAtDemoPath(demoPath);
+      setInitialAtDemoPath(demoPath);
+      setAtDemoNameFormat(demoNameFormat);
+      setInitialAtDemoNameFormat(demoNameFormat);
+      setAtSeriesEndKickDelayNoDemo(seriesEndKickDelayNoDemo);
+      setInitialAtSeriesEndKickDelayNoDemo(seriesEndKickDelayNoDemo);
+      setAtSeriesEndKickDelayDemoNoUpload(seriesEndKickDelayDemoNoUpload);
+      setInitialAtSeriesEndKickDelayDemoNoUpload(seriesEndKickDelayDemoNoUpload);
+      setAtSeriesEndKickDelayDemoUpload(seriesEndKickDelayDemoUpload);
+      setInitialAtSeriesEndKickDelayDemoUpload(seriesEndKickDelayDemoUpload);
+      // Auto Tournament CS2
+      setAtAutoreadyEnabled(atAutoready);
+      setInitialAtAutoreadyEnabled(atAutoready);
+      setAtBothTeamsUnpauseRequired(atBothTeamsUnpause);
+      setInitialAtBothTeamsUnpauseRequired(atBothTeamsUnpause);
+      setAtMaxPausesPerTeam(atMaxPauses);
+      setInitialAtMaxPausesPerTeam(atMaxPauses);
+      setAtPauseDuration(atPauseDur);
+      setInitialAtPauseDuration(atPauseDur);
+      setAtSideSelectionEnabled(atSideSelEnabled);
+      setInitialAtSideSelectionEnabled(atSideSelEnabled);
+      setAtSideSelectionTime(atSideSelTime);
+      setInitialAtSideSelectionTime(atSideSelTime);
+      setAtGgEnabled(atGg);
+      setInitialAtGgEnabled(atGg);
+      setAtGgThreshold(atGgThresh);
+      setInitialAtGgThreshold(atGgThresh);
+      setAtGgMinScoreDiff(atGgMinDiff);
+      setInitialAtGgMinScoreDiff(atGgMinDiff);
+      setAtFfwEnabled(atFfw);
+      setInitialAtFfwEnabled(atFfw);
+      setAtFfwTime(atFfwT);
+      setInitialAtFfwTime(atFfwT);
+      setAtDemoRecordingEnabled(atDemo);
+      setInitialAtDemoRecordingEnabled(atDemo);
     } catch (err) {
       const message = err instanceof Error ? err.message : t('settingsPage.errors.loadSettings');
       showError(message);
@@ -365,7 +365,7 @@ export default function Settings() {
   }, [setHeaderActions]);
 
   const handleSave = useCallback(
-    async (showSuccessMessage = true, overrides?: { matchzyDebugChatEnabled?: boolean }) => {
+    async (showSuccessMessage = true, overrides?: { atDebugChatEnabled?: boolean }) => {
       setSaving(true);
 
       // Cancel any pending auto-save
@@ -377,42 +377,42 @@ export default function Settings() {
       try {
         const payload = {
           webhookUrl: webhookUrl.trim() === '' ? null : webhookUrl.trim(),
-          matchzyChatPrefix: matchzyChatPrefix.trim() === '' ? null : matchzyChatPrefix.trim(),
-          matchzyAdminChatPrefix:
-            matchzyAdminChatPrefix.trim() === '' ? null : matchzyAdminChatPrefix.trim(),
-          matchzyKnifeEnabledDefault,
+          atChatPrefix: atChatPrefix.trim() === '' ? null : atChatPrefix.trim(),
+          atAdminChatPrefix:
+            atAdminChatPrefix.trim() === '' ? null : atAdminChatPrefix.trim(),
+          atKnifeEnabledDefault,
           ratingsEnabled,
-          matchzyDebugChatEnabled: overrides?.matchzyDebugChatEnabled ?? matchzyDebugChatEnabled,
+          atDebugChatEnabled: overrides?.atDebugChatEnabled ?? atDebugChatEnabled,
           allowSelfRegister,
-          // MatchZy core defaults
-          matchzyAutostartMode,
-          matchzyMinimumReadyRequired,
-          matchzyAllowForceReady,
-          matchzyKickWhenNoMatchLoaded,
-          matchzyWhitelistEnabledDefault,
-          matchzyPauseAfterRestore,
-          matchzyStopCommandAvailable,
-          matchzyStopCommandNoDamage,
-          matchzyUsePauseCommandForTacticalPause,
-          matchzyHostnameFormat: matchzyHostnameFormat.trim(),
-          matchzyDemoPath: matchzyDemoPath.trim(),
-          matchzyDemoNameFormat: matchzyDemoNameFormat.trim(),
-          matchzySeriesEndKickDelayNoDemo,
-          matchzySeriesEndKickDelayDemoNoUpload,
-          matchzySeriesEndKickDelayDemoUpload,
-          // MatchZy Enhanced v1.3.0 settings
-          matchzyAutoreadyEnabled,
-          matchzyBothTeamsUnpauseRequired,
-          matchzyMaxPausesPerTeam,
-          matchzyPauseDuration,
-          matchzySideSelectionEnabled,
-          matchzySideSelectionTime,
-          matchzyGgEnabled,
-          matchzyGgThreshold,
-          matchzyGgMinScoreDiff,
-          matchzyFfwEnabled,
-          matchzyFfwTime,
-          matchzyDemoRecordingEnabled,
+          // Auto Tournament CS2 core defaults
+          atAutostartMode,
+          atMinimumReadyRequired,
+          atAllowForceReady,
+          atKickWhenNoMatchLoaded,
+          atWhitelistEnabledDefault,
+          atPauseAfterRestore,
+          atStopCommandAvailable,
+          atStopCommandNoDamage,
+          atUsePauseCommandForTacticalPause,
+          atHostnameFormat: atHostnameFormat.trim(),
+          atDemoPath: atDemoPath.trim(),
+          atDemoNameFormat: atDemoNameFormat.trim(),
+          atSeriesEndKickDelayNoDemo,
+          atSeriesEndKickDelayDemoNoUpload,
+          atSeriesEndKickDelayDemoUpload,
+          // Auto Tournament CS2 v1.3.0 settings
+          atAutoreadyEnabled,
+          atBothTeamsUnpauseRequired,
+          atMaxPausesPerTeam,
+          atPauseDuration,
+          atSideSelectionEnabled,
+          atSideSelectionTime,
+          atGgEnabled,
+          atGgThreshold,
+          atGgMinScoreDiff,
+          atFfwEnabled,
+          atFfwTime,
+          atDemoRecordingEnabled,
           // Only send developer options from dev builds to keep this feature
           // clearly scoped to development environments.
           ...(isDev && { simulateMatches, simulationTimescale }),
@@ -422,57 +422,57 @@ export default function Settings() {
         const newWebhook = response.settings.webhookUrl ?? '';
         const newSimulate = response.settings.simulateMatches ?? false;
         const newTimescale = response.settings.simulationTimescale ?? 1;
-        const newChatPrefix = response.settings.matchzyChatPrefix ?? DEFAULT_MATCHZY_CHAT_PREFIX;
+        const newChatPrefix = response.settings.atChatPrefix ?? DEFAULT_AT_CHAT_PREFIX;
         const newAdminChatPrefix =
-          response.settings.matchzyAdminChatPrefix ?? DEFAULT_MATCHZY_ADMIN_CHAT_PREFIX;
+          response.settings.atAdminChatPrefix ?? DEFAULT_AT_ADMIN_CHAT_PREFIX;
         const newKnifeEnabled =
-          response.settings.matchzyKnifeEnabledDefault !== undefined
-            ? response.settings.matchzyKnifeEnabledDefault
+          response.settings.atKnifeEnabledDefault !== undefined
+            ? response.settings.atKnifeEnabledDefault
             : true;
         const newRatingsEnabled =
           response.settings.ratingsEnabled !== undefined
             ? response.settings.ratingsEnabled
             : true;
         const newDebugChatEnabled =
-          response.settings.matchzyDebugChatEnabled !== undefined
-            ? response.settings.matchzyDebugChatEnabled
+          response.settings.atDebugChatEnabled !== undefined
+            ? response.settings.atDebugChatEnabled
             : false;
         const newAllowSelfRegister =
           response.settings.allowSelfRegister !== undefined
             ? response.settings.allowSelfRegister
             : false;
-        const newAutostartMode = response.settings.matchzyAutostartMode ?? 1;
-        const newMinimumReadyRequired = response.settings.matchzyMinimumReadyRequired ?? 0;
-        const newAllowForceReady = response.settings.matchzyAllowForceReady ?? true;
-        const newKickWhenNoMatchLoaded = response.settings.matchzyKickWhenNoMatchLoaded ?? false;
-        const newWhitelistEnabledDefault = response.settings.matchzyWhitelistEnabledDefault ?? false;
-        const newPauseAfterRestore = response.settings.matchzyPauseAfterRestore ?? true;
-        const newStopCommandAvailable = response.settings.matchzyStopCommandAvailable ?? false;
-        const newStopCommandNoDamage = response.settings.matchzyStopCommandNoDamage ?? false;
+        const newAutostartMode = response.settings.atAutostartMode ?? 1;
+        const newMinimumReadyRequired = response.settings.atMinimumReadyRequired ?? 0;
+        const newAllowForceReady = response.settings.atAllowForceReady ?? true;
+        const newKickWhenNoMatchLoaded = response.settings.atKickWhenNoMatchLoaded ?? false;
+        const newWhitelistEnabledDefault = response.settings.atWhitelistEnabledDefault ?? false;
+        const newPauseAfterRestore = response.settings.atPauseAfterRestore ?? true;
+        const newStopCommandAvailable = response.settings.atStopCommandAvailable ?? false;
+        const newStopCommandNoDamage = response.settings.atStopCommandNoDamage ?? false;
         const newUsePauseCommandForTacticalPause =
-          response.settings.matchzyUsePauseCommandForTacticalPause ?? false;
-        const newHostnameFormat = response.settings.matchzyHostnameFormat ?? '{TEAM1} vs {TEAM2}';
-        const newDemoPath = response.settings.matchzyDemoPath ?? 'MatchZy/';
+          response.settings.atUsePauseCommandForTacticalPause ?? false;
+        const newHostnameFormat = response.settings.atHostnameFormat ?? '{TEAM1} vs {TEAM2}';
+        const newDemoPath = response.settings.atDemoPath ?? 'AutoTournamentCS2/';
         const newDemoNameFormat =
-          response.settings.matchzyDemoNameFormat ?? '{TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}';
-        const newSeriesEndKickDelayNoDemo = response.settings.matchzySeriesEndKickDelayNoDemo ?? 5;
+          response.settings.atDemoNameFormat ?? '{TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}';
+        const newSeriesEndKickDelayNoDemo = response.settings.atSeriesEndKickDelayNoDemo ?? 5;
         const newSeriesEndKickDelayDemoNoUpload =
-          response.settings.matchzySeriesEndKickDelayDemoNoUpload ?? 10;
+          response.settings.atSeriesEndKickDelayDemoNoUpload ?? 10;
         const newSeriesEndKickDelayDemoUpload =
-          response.settings.matchzySeriesEndKickDelayDemoUpload ?? 60;
-        // MatchZy Enhanced v1.3.0 settings
-        const newMatchzyAutoready = response.settings.matchzyAutoreadyEnabled ?? null;
-        const newMatchzyBothTeamsUnpause = response.settings.matchzyBothTeamsUnpauseRequired ?? null;
-        const newMatchzyMaxPauses = response.settings.matchzyMaxPausesPerTeam ?? null;
-        const newMatchzyPauseDur = response.settings.matchzyPauseDuration ?? null;
-        const newMatchzySideSelEnabled = response.settings.matchzySideSelectionEnabled ?? null;
-        const newMatchzySideSelTime = response.settings.matchzySideSelectionTime ?? null;
-        const newMatchzyGg = response.settings.matchzyGgEnabled ?? null;
-        const newMatchzyGgThresh = response.settings.matchzyGgThreshold ?? null;
-        const newMatchzyGgMinDiff = response.settings.matchzyGgMinScoreDiff ?? null;
-        const newMatchzyFfw = response.settings.matchzyFfwEnabled ?? null;
-        const newMatchzyFfwT = response.settings.matchzyFfwTime ?? null;
-        const newMatchzyDemo = response.settings.matchzyDemoRecordingEnabled ?? null;
+          response.settings.atSeriesEndKickDelayDemoUpload ?? 60;
+        // Auto Tournament CS2 v1.3.0 settings
+        const newAtAutoready = response.settings.atAutoreadyEnabled ?? null;
+        const newAtBothTeamsUnpause = response.settings.atBothTeamsUnpauseRequired ?? null;
+        const newAtMaxPauses = response.settings.atMaxPausesPerTeam ?? null;
+        const newAtPauseDur = response.settings.atPauseDuration ?? null;
+        const newAtSideSelEnabled = response.settings.atSideSelectionEnabled ?? null;
+        const newAtSideSelTime = response.settings.atSideSelectionTime ?? null;
+        const newAtGg = response.settings.atGgEnabled ?? null;
+        const newAtGgThresh = response.settings.atGgThreshold ?? null;
+        const newAtGgMinDiff = response.settings.atGgMinScoreDiff ?? null;
+        const newAtFfw = response.settings.atFfwEnabled ?? null;
+        const newAtFfwT = response.settings.atFfwTime ?? null;
+        const newAtDemo = response.settings.atDemoRecordingEnabled ?? null;
         
         // Compute deltas before updating state
         const simulationToggled = isDev && newSimulate !== initialSimulateMatches;
@@ -485,73 +485,73 @@ export default function Settings() {
         setInitialSimulateMatches(newSimulate);
         setSimulationTimescale(newTimescale);
         setInitialSimulationTimescale(newTimescale);
-        setMatchzyChatPrefix(newChatPrefix);
-        setInitialMatchzyChatPrefix(newChatPrefix);
-        setMatchzyAdminChatPrefix(newAdminChatPrefix);
-        setInitialMatchzyAdminChatPrefix(newAdminChatPrefix);
-        setMatchzyKnifeEnabledDefault(newKnifeEnabled);
-        setInitialMatchzyKnifeEnabledDefault(newKnifeEnabled);
+        setAtChatPrefix(newChatPrefix);
+        setInitialAtChatPrefix(newChatPrefix);
+        setAtAdminChatPrefix(newAdminChatPrefix);
+        setInitialAtAdminChatPrefix(newAdminChatPrefix);
+        setAtKnifeEnabledDefault(newKnifeEnabled);
+        setInitialAtKnifeEnabledDefault(newKnifeEnabled);
         setRatingsEnabled(newRatingsEnabled);
         setInitialRatingsEnabled(newRatingsEnabled);
-        setMatchzyDebugChatEnabled(newDebugChatEnabled);
-        setInitialMatchzyDebugChatEnabled(newDebugChatEnabled);
+        setAtDebugChatEnabled(newDebugChatEnabled);
+        setInitialAtDebugChatEnabled(newDebugChatEnabled);
         setAllowSelfRegister(newAllowSelfRegister);
         setInitialAllowSelfRegister(newAllowSelfRegister);
-        setMatchzyAutostartMode(newAutostartMode);
-        setInitialMatchzyAutostartMode(newAutostartMode);
-        setMatchzyMinimumReadyRequired(newMinimumReadyRequired);
-        setInitialMatchzyMinimumReadyRequired(newMinimumReadyRequired);
-        setMatchzyAllowForceReady(newAllowForceReady);
-        setInitialMatchzyAllowForceReady(newAllowForceReady);
-        setMatchzyKickWhenNoMatchLoaded(newKickWhenNoMatchLoaded);
-        setInitialMatchzyKickWhenNoMatchLoaded(newKickWhenNoMatchLoaded);
-        setMatchzyWhitelistEnabledDefault(newWhitelistEnabledDefault);
-        setInitialMatchzyWhitelistEnabledDefault(newWhitelistEnabledDefault);
-        setMatchzyPauseAfterRestore(newPauseAfterRestore);
-        setInitialMatchzyPauseAfterRestore(newPauseAfterRestore);
-        setMatchzyStopCommandAvailable(newStopCommandAvailable);
-        setInitialMatchzyStopCommandAvailable(newStopCommandAvailable);
-        setMatchzyStopCommandNoDamage(newStopCommandNoDamage);
-        setInitialMatchzyStopCommandNoDamage(newStopCommandNoDamage);
-        setMatchzyUsePauseCommandForTacticalPause(newUsePauseCommandForTacticalPause);
-        setInitialMatchzyUsePauseCommandForTacticalPause(newUsePauseCommandForTacticalPause);
-        setMatchzyHostnameFormat(newHostnameFormat);
-        setInitialMatchzyHostnameFormat(newHostnameFormat);
-        setMatchzyDemoPath(newDemoPath);
-        setInitialMatchzyDemoPath(newDemoPath);
-        setMatchzyDemoNameFormat(newDemoNameFormat);
-        setInitialMatchzyDemoNameFormat(newDemoNameFormat);
-        setMatchzySeriesEndKickDelayNoDemo(newSeriesEndKickDelayNoDemo);
-        setInitialMatchzySeriesEndKickDelayNoDemo(newSeriesEndKickDelayNoDemo);
-        setMatchzySeriesEndKickDelayDemoNoUpload(newSeriesEndKickDelayDemoNoUpload);
-        setInitialMatchzySeriesEndKickDelayDemoNoUpload(newSeriesEndKickDelayDemoNoUpload);
-        setMatchzySeriesEndKickDelayDemoUpload(newSeriesEndKickDelayDemoUpload);
-        setInitialMatchzySeriesEndKickDelayDemoUpload(newSeriesEndKickDelayDemoUpload);
-        // MatchZy Enhanced
-        setMatchzyAutoreadyEnabled(newMatchzyAutoready);
-        setInitialMatchzyAutoreadyEnabled(newMatchzyAutoready);
-        setMatchzyBothTeamsUnpauseRequired(newMatchzyBothTeamsUnpause);
-        setInitialMatchzyBothTeamsUnpauseRequired(newMatchzyBothTeamsUnpause);
-        setMatchzyMaxPausesPerTeam(newMatchzyMaxPauses);
-        setInitialMatchzyMaxPausesPerTeam(newMatchzyMaxPauses);
-        setMatchzyPauseDuration(newMatchzyPauseDur);
-        setInitialMatchzyPauseDuration(newMatchzyPauseDur);
-        setMatchzySideSelectionEnabled(newMatchzySideSelEnabled);
-        setInitialMatchzySideSelectionEnabled(newMatchzySideSelEnabled);
-        setMatchzySideSelectionTime(newMatchzySideSelTime);
-        setInitialMatchzySideSelectionTime(newMatchzySideSelTime);
-        setMatchzyGgEnabled(newMatchzyGg);
-        setInitialMatchzyGgEnabled(newMatchzyGg);
-        setMatchzyGgThreshold(newMatchzyGgThresh);
-        setInitialMatchzyGgThreshold(newMatchzyGgThresh);
-        setMatchzyGgMinScoreDiff(newMatchzyGgMinDiff);
-        setInitialMatchzyGgMinScoreDiff(newMatchzyGgMinDiff);
-        setMatchzyFfwEnabled(newMatchzyFfw);
-        setInitialMatchzyFfwEnabled(newMatchzyFfw);
-        setMatchzyFfwTime(newMatchzyFfwT);
-        setInitialMatchzyFfwTime(newMatchzyFfwT);
-        setMatchzyDemoRecordingEnabled(newMatchzyDemo);
-        setInitialMatchzyDemoRecordingEnabled(newMatchzyDemo);
+        setAtAutostartMode(newAutostartMode);
+        setInitialAtAutostartMode(newAutostartMode);
+        setAtMinimumReadyRequired(newMinimumReadyRequired);
+        setInitialAtMinimumReadyRequired(newMinimumReadyRequired);
+        setAtAllowForceReady(newAllowForceReady);
+        setInitialAtAllowForceReady(newAllowForceReady);
+        setAtKickWhenNoMatchLoaded(newKickWhenNoMatchLoaded);
+        setInitialAtKickWhenNoMatchLoaded(newKickWhenNoMatchLoaded);
+        setAtWhitelistEnabledDefault(newWhitelistEnabledDefault);
+        setInitialAtWhitelistEnabledDefault(newWhitelistEnabledDefault);
+        setAtPauseAfterRestore(newPauseAfterRestore);
+        setInitialAtPauseAfterRestore(newPauseAfterRestore);
+        setAtStopCommandAvailable(newStopCommandAvailable);
+        setInitialAtStopCommandAvailable(newStopCommandAvailable);
+        setAtStopCommandNoDamage(newStopCommandNoDamage);
+        setInitialAtStopCommandNoDamage(newStopCommandNoDamage);
+        setAtUsePauseCommandForTacticalPause(newUsePauseCommandForTacticalPause);
+        setInitialAtUsePauseCommandForTacticalPause(newUsePauseCommandForTacticalPause);
+        setAtHostnameFormat(newHostnameFormat);
+        setInitialAtHostnameFormat(newHostnameFormat);
+        setAtDemoPath(newDemoPath);
+        setInitialAtDemoPath(newDemoPath);
+        setAtDemoNameFormat(newDemoNameFormat);
+        setInitialAtDemoNameFormat(newDemoNameFormat);
+        setAtSeriesEndKickDelayNoDemo(newSeriesEndKickDelayNoDemo);
+        setInitialAtSeriesEndKickDelayNoDemo(newSeriesEndKickDelayNoDemo);
+        setAtSeriesEndKickDelayDemoNoUpload(newSeriesEndKickDelayDemoNoUpload);
+        setInitialAtSeriesEndKickDelayDemoNoUpload(newSeriesEndKickDelayDemoNoUpload);
+        setAtSeriesEndKickDelayDemoUpload(newSeriesEndKickDelayDemoUpload);
+        setInitialAtSeriesEndKickDelayDemoUpload(newSeriesEndKickDelayDemoUpload);
+        // Auto Tournament CS2
+        setAtAutoreadyEnabled(newAtAutoready);
+        setInitialAtAutoreadyEnabled(newAtAutoready);
+        setAtBothTeamsUnpauseRequired(newAtBothTeamsUnpause);
+        setInitialAtBothTeamsUnpauseRequired(newAtBothTeamsUnpause);
+        setAtMaxPausesPerTeam(newAtMaxPauses);
+        setInitialAtMaxPausesPerTeam(newAtMaxPauses);
+        setAtPauseDuration(newAtPauseDur);
+        setInitialAtPauseDuration(newAtPauseDur);
+        setAtSideSelectionEnabled(newAtSideSelEnabled);
+        setInitialAtSideSelectionEnabled(newAtSideSelEnabled);
+        setAtSideSelectionTime(newAtSideSelTime);
+        setInitialAtSideSelectionTime(newAtSideSelTime);
+        setAtGgEnabled(newAtGg);
+        setInitialAtGgEnabled(newAtGg);
+        setAtGgThreshold(newAtGgThresh);
+        setInitialAtGgThreshold(newAtGgThresh);
+        setAtGgMinScoreDiff(newAtGgMinDiff);
+        setInitialAtGgMinScoreDiff(newAtGgMinDiff);
+        setAtFfwEnabled(newAtFfw);
+        setInitialAtFfwEnabled(newAtFfw);
+        setAtFfwTime(newAtFfwT);
+        setInitialAtFfwTime(newAtFfwT);
+        setAtDemoRecordingEnabled(newAtDemo);
+        setInitialAtDemoRecordingEnabled(newAtDemo);
 
         if (showSuccessMessage) {
           showSuccess(t('settingsPage.success.saveSettings'));
@@ -578,7 +578,7 @@ export default function Settings() {
         }
 
         window.dispatchEvent(
-          new CustomEvent<SettingsResponse['settings']>('matchzy:settingsUpdated', {
+          new CustomEvent<SettingsResponse['settings']>('at:settingsUpdated', {
             detail: response.settings,
           })
         );
@@ -592,41 +592,41 @@ export default function Settings() {
     },
     [
       webhookUrl,
-      matchzyChatPrefix,
-      matchzyAdminChatPrefix,
-      matchzyKnifeEnabledDefault,
+      atChatPrefix,
+      atAdminChatPrefix,
+      atKnifeEnabledDefault,
       ratingsEnabled,
-      matchzyDebugChatEnabled,
+      atDebugChatEnabled,
       simulateMatches,
       simulationTimescale,
       allowSelfRegister,
-      matchzyAutostartMode,
-      matchzyMinimumReadyRequired,
-      matchzyAllowForceReady,
-      matchzyKickWhenNoMatchLoaded,
-      matchzyWhitelistEnabledDefault,
-      matchzyPauseAfterRestore,
-      matchzyStopCommandAvailable,
-      matchzyStopCommandNoDamage,
-      matchzyUsePauseCommandForTacticalPause,
-      matchzyHostnameFormat,
-      matchzyDemoPath,
-      matchzyDemoNameFormat,
-      matchzySeriesEndKickDelayNoDemo,
-      matchzySeriesEndKickDelayDemoNoUpload,
-      matchzySeriesEndKickDelayDemoUpload,
-      matchzyAutoreadyEnabled,
-      matchzyBothTeamsUnpauseRequired,
-      matchzyMaxPausesPerTeam,
-      matchzyPauseDuration,
-      matchzySideSelectionEnabled,
-      matchzySideSelectionTime,
-      matchzyGgEnabled,
-      matchzyGgThreshold,
-      matchzyGgMinScoreDiff,
-      matchzyFfwEnabled,
-      matchzyFfwTime,
-      matchzyDemoRecordingEnabled,
+      atAutostartMode,
+      atMinimumReadyRequired,
+      atAllowForceReady,
+      atKickWhenNoMatchLoaded,
+      atWhitelistEnabledDefault,
+      atPauseAfterRestore,
+      atStopCommandAvailable,
+      atStopCommandNoDamage,
+      atUsePauseCommandForTacticalPause,
+      atHostnameFormat,
+      atDemoPath,
+      atDemoNameFormat,
+      atSeriesEndKickDelayNoDemo,
+      atSeriesEndKickDelayDemoNoUpload,
+      atSeriesEndKickDelayDemoUpload,
+      atAutoreadyEnabled,
+      atBothTeamsUnpauseRequired,
+      atMaxPausesPerTeam,
+      atPauseDuration,
+      atSideSelectionEnabled,
+      atSideSelectionTime,
+      atGgEnabled,
+      atGgThreshold,
+      atGgMinScoreDiff,
+      atFfwEnabled,
+      atFfwTime,
+      atDemoRecordingEnabled,
       isDev,
       showSuccess,
       showError,
@@ -641,39 +641,39 @@ export default function Settings() {
     // Save immediately when field loses focus (if values changed)
     if (
       webhookUrl !== initialWebhookUrl ||
-      matchzyChatPrefix !== initialMatchzyChatPrefix ||
-      matchzyAdminChatPrefix !== initialMatchzyAdminChatPrefix ||
-      matchzyKnifeEnabledDefault !== initialMatchzyKnifeEnabledDefault ||
+      atChatPrefix !== initialAtChatPrefix ||
+      atAdminChatPrefix !== initialAtAdminChatPrefix ||
+      atKnifeEnabledDefault !== initialAtKnifeEnabledDefault ||
       ratingsEnabled !== initialRatingsEnabled ||
-      matchzyDebugChatEnabled !== initialMatchzyDebugChatEnabled ||
+      atDebugChatEnabled !== initialAtDebugChatEnabled ||
       allowSelfRegister !== initialAllowSelfRegister ||
-      matchzyAutostartMode !== initialMatchzyAutostartMode ||
-      matchzyMinimumReadyRequired !== initialMatchzyMinimumReadyRequired ||
-      matchzyAllowForceReady !== initialMatchzyAllowForceReady ||
-      matchzyKickWhenNoMatchLoaded !== initialMatchzyKickWhenNoMatchLoaded ||
-      matchzyWhitelistEnabledDefault !== initialMatchzyWhitelistEnabledDefault ||
-      matchzyPauseAfterRestore !== initialMatchzyPauseAfterRestore ||
-      matchzyStopCommandAvailable !== initialMatchzyStopCommandAvailable ||
-      matchzyStopCommandNoDamage !== initialMatchzyStopCommandNoDamage ||
-      matchzyUsePauseCommandForTacticalPause !== initialMatchzyUsePauseCommandForTacticalPause ||
-      matchzyHostnameFormat !== initialMatchzyHostnameFormat ||
-      matchzyDemoPath !== initialMatchzyDemoPath ||
-      matchzyDemoNameFormat !== initialMatchzyDemoNameFormat ||
-      matchzySeriesEndKickDelayNoDemo !== initialMatchzySeriesEndKickDelayNoDemo ||
-      matchzySeriesEndKickDelayDemoNoUpload !== initialMatchzySeriesEndKickDelayDemoNoUpload ||
-      matchzySeriesEndKickDelayDemoUpload !== initialMatchzySeriesEndKickDelayDemoUpload ||
-      matchzyAutoreadyEnabled !== initialMatchzyAutoreadyEnabled ||
-      matchzyBothTeamsUnpauseRequired !== initialMatchzyBothTeamsUnpauseRequired ||
-      matchzyMaxPausesPerTeam !== initialMatchzyMaxPausesPerTeam ||
-      matchzyPauseDuration !== initialMatchzyPauseDuration ||
-      matchzySideSelectionEnabled !== initialMatchzySideSelectionEnabled ||
-      matchzySideSelectionTime !== initialMatchzySideSelectionTime ||
-      matchzyGgEnabled !== initialMatchzyGgEnabled ||
-      matchzyGgThreshold !== initialMatchzyGgThreshold ||
-      matchzyGgMinScoreDiff !== initialMatchzyGgMinScoreDiff ||
-      matchzyFfwEnabled !== initialMatchzyFfwEnabled ||
-      matchzyFfwTime !== initialMatchzyFfwTime ||
-      matchzyDemoRecordingEnabled !== initialMatchzyDemoRecordingEnabled ||
+      atAutostartMode !== initialAtAutostartMode ||
+      atMinimumReadyRequired !== initialAtMinimumReadyRequired ||
+      atAllowForceReady !== initialAtAllowForceReady ||
+      atKickWhenNoMatchLoaded !== initialAtKickWhenNoMatchLoaded ||
+      atWhitelistEnabledDefault !== initialAtWhitelistEnabledDefault ||
+      atPauseAfterRestore !== initialAtPauseAfterRestore ||
+      atStopCommandAvailable !== initialAtStopCommandAvailable ||
+      atStopCommandNoDamage !== initialAtStopCommandNoDamage ||
+      atUsePauseCommandForTacticalPause !== initialAtUsePauseCommandForTacticalPause ||
+      atHostnameFormat !== initialAtHostnameFormat ||
+      atDemoPath !== initialAtDemoPath ||
+      atDemoNameFormat !== initialAtDemoNameFormat ||
+      atSeriesEndKickDelayNoDemo !== initialAtSeriesEndKickDelayNoDemo ||
+      atSeriesEndKickDelayDemoNoUpload !== initialAtSeriesEndKickDelayDemoNoUpload ||
+      atSeriesEndKickDelayDemoUpload !== initialAtSeriesEndKickDelayDemoUpload ||
+      atAutoreadyEnabled !== initialAtAutoreadyEnabled ||
+      atBothTeamsUnpauseRequired !== initialAtBothTeamsUnpauseRequired ||
+      atMaxPausesPerTeam !== initialAtMaxPausesPerTeam ||
+      atPauseDuration !== initialAtPauseDuration ||
+      atSideSelectionEnabled !== initialAtSideSelectionEnabled ||
+      atSideSelectionTime !== initialAtSideSelectionTime ||
+      atGgEnabled !== initialAtGgEnabled ||
+      atGgThreshold !== initialAtGgThreshold ||
+      atGgMinScoreDiff !== initialAtGgMinScoreDiff ||
+      atFfwEnabled !== initialAtFfwEnabled ||
+      atFfwTime !== initialAtFfwTime ||
+      atDemoRecordingEnabled !== initialAtDemoRecordingEnabled ||
       (isDev &&
         (simulateMatches !== initialSimulateMatches ||
           simulationTimescale !== initialSimulationTimescale))
@@ -715,39 +715,39 @@ export default function Settings() {
     // Don't auto-save if values haven't changed
     if (
       webhookUrl === initialWebhookUrl &&
-      matchzyChatPrefix === initialMatchzyChatPrefix &&
-      matchzyAdminChatPrefix === initialMatchzyAdminChatPrefix &&
-      matchzyKnifeEnabledDefault === initialMatchzyKnifeEnabledDefault &&
-      matchzyDebugChatEnabled === initialMatchzyDebugChatEnabled &&
+      atChatPrefix === initialAtChatPrefix &&
+      atAdminChatPrefix === initialAtAdminChatPrefix &&
+      atKnifeEnabledDefault === initialAtKnifeEnabledDefault &&
+      atDebugChatEnabled === initialAtDebugChatEnabled &&
       ratingsEnabled === initialRatingsEnabled &&
       allowSelfRegister === initialAllowSelfRegister &&
-      matchzyAutostartMode === initialMatchzyAutostartMode &&
-      matchzyMinimumReadyRequired === initialMatchzyMinimumReadyRequired &&
-      matchzyAllowForceReady === initialMatchzyAllowForceReady &&
-      matchzyKickWhenNoMatchLoaded === initialMatchzyKickWhenNoMatchLoaded &&
-      matchzyWhitelistEnabledDefault === initialMatchzyWhitelistEnabledDefault &&
-      matchzyPauseAfterRestore === initialMatchzyPauseAfterRestore &&
-      matchzyStopCommandAvailable === initialMatchzyStopCommandAvailable &&
-      matchzyStopCommandNoDamage === initialMatchzyStopCommandNoDamage &&
-      matchzyUsePauseCommandForTacticalPause === initialMatchzyUsePauseCommandForTacticalPause &&
-      matchzyHostnameFormat === initialMatchzyHostnameFormat &&
-      matchzyDemoPath === initialMatchzyDemoPath &&
-      matchzyDemoNameFormat === initialMatchzyDemoNameFormat &&
-      matchzySeriesEndKickDelayNoDemo === initialMatchzySeriesEndKickDelayNoDemo &&
-      matchzySeriesEndKickDelayDemoNoUpload === initialMatchzySeriesEndKickDelayDemoNoUpload &&
-      matchzySeriesEndKickDelayDemoUpload === initialMatchzySeriesEndKickDelayDemoUpload &&
-      matchzyAutoreadyEnabled === initialMatchzyAutoreadyEnabled &&
-      matchzyBothTeamsUnpauseRequired === initialMatchzyBothTeamsUnpauseRequired &&
-      matchzyMaxPausesPerTeam === initialMatchzyMaxPausesPerTeam &&
-      matchzyPauseDuration === initialMatchzyPauseDuration &&
-      matchzySideSelectionEnabled === initialMatchzySideSelectionEnabled &&
-      matchzySideSelectionTime === initialMatchzySideSelectionTime &&
-      matchzyGgEnabled === initialMatchzyGgEnabled &&
-      matchzyGgThreshold === initialMatchzyGgThreshold &&
-      matchzyGgMinScoreDiff === initialMatchzyGgMinScoreDiff &&
-      matchzyFfwEnabled === initialMatchzyFfwEnabled &&
-      matchzyFfwTime === initialMatchzyFfwTime &&
-      matchzyDemoRecordingEnabled === initialMatchzyDemoRecordingEnabled &&
+      atAutostartMode === initialAtAutostartMode &&
+      atMinimumReadyRequired === initialAtMinimumReadyRequired &&
+      atAllowForceReady === initialAtAllowForceReady &&
+      atKickWhenNoMatchLoaded === initialAtKickWhenNoMatchLoaded &&
+      atWhitelistEnabledDefault === initialAtWhitelistEnabledDefault &&
+      atPauseAfterRestore === initialAtPauseAfterRestore &&
+      atStopCommandAvailable === initialAtStopCommandAvailable &&
+      atStopCommandNoDamage === initialAtStopCommandNoDamage &&
+      atUsePauseCommandForTacticalPause === initialAtUsePauseCommandForTacticalPause &&
+      atHostnameFormat === initialAtHostnameFormat &&
+      atDemoPath === initialAtDemoPath &&
+      atDemoNameFormat === initialAtDemoNameFormat &&
+      atSeriesEndKickDelayNoDemo === initialAtSeriesEndKickDelayNoDemo &&
+      atSeriesEndKickDelayDemoNoUpload === initialAtSeriesEndKickDelayDemoNoUpload &&
+      atSeriesEndKickDelayDemoUpload === initialAtSeriesEndKickDelayDemoUpload &&
+      atAutoreadyEnabled === initialAtAutoreadyEnabled &&
+      atBothTeamsUnpauseRequired === initialAtBothTeamsUnpauseRequired &&
+      atMaxPausesPerTeam === initialAtMaxPausesPerTeam &&
+      atPauseDuration === initialAtPauseDuration &&
+      atSideSelectionEnabled === initialAtSideSelectionEnabled &&
+      atSideSelectionTime === initialAtSideSelectionTime &&
+      atGgEnabled === initialAtGgEnabled &&
+      atGgThreshold === initialAtGgThreshold &&
+      atGgMinScoreDiff === initialAtGgMinScoreDiff &&
+      atFfwEnabled === initialAtFfwEnabled &&
+      atFfwTime === initialAtFfwTime &&
+      atDemoRecordingEnabled === initialAtDemoRecordingEnabled &&
       (!isDev ||
         (simulateMatches === initialSimulateMatches &&
           simulationTimescale === initialSimulationTimescale))
@@ -771,73 +771,73 @@ export default function Settings() {
     };
   }, [
     webhookUrl,
-    matchzyChatPrefix,
-    matchzyAdminChatPrefix,
-    matchzyKnifeEnabledDefault,
-    matchzyDebugChatEnabled,
+    atChatPrefix,
+    atAdminChatPrefix,
+    atKnifeEnabledDefault,
+    atDebugChatEnabled,
     ratingsEnabled,
     allowSelfRegister,
-    matchzyAutostartMode,
-    matchzyMinimumReadyRequired,
-    matchzyAllowForceReady,
-    matchzyKickWhenNoMatchLoaded,
-    matchzyWhitelistEnabledDefault,
-    matchzyPauseAfterRestore,
-    matchzyStopCommandAvailable,
-    matchzyStopCommandNoDamage,
-    matchzyUsePauseCommandForTacticalPause,
-    matchzyHostnameFormat,
-    matchzyDemoPath,
-    matchzyDemoNameFormat,
-    matchzySeriesEndKickDelayNoDemo,
-    matchzySeriesEndKickDelayDemoNoUpload,
-    matchzySeriesEndKickDelayDemoUpload,
-    matchzyAutoreadyEnabled,
-    matchzyBothTeamsUnpauseRequired,
-    matchzyMaxPausesPerTeam,
-    matchzyPauseDuration,
-    matchzySideSelectionEnabled,
-    matchzySideSelectionTime,
-    matchzyGgEnabled,
-    matchzyGgThreshold,
-    matchzyGgMinScoreDiff,
-    matchzyFfwEnabled,
-    matchzyFfwTime,
-    matchzyDemoRecordingEnabled,
+    atAutostartMode,
+    atMinimumReadyRequired,
+    atAllowForceReady,
+    atKickWhenNoMatchLoaded,
+    atWhitelistEnabledDefault,
+    atPauseAfterRestore,
+    atStopCommandAvailable,
+    atStopCommandNoDamage,
+    atUsePauseCommandForTacticalPause,
+    atHostnameFormat,
+    atDemoPath,
+    atDemoNameFormat,
+    atSeriesEndKickDelayNoDemo,
+    atSeriesEndKickDelayDemoNoUpload,
+    atSeriesEndKickDelayDemoUpload,
+    atAutoreadyEnabled,
+    atBothTeamsUnpauseRequired,
+    atMaxPausesPerTeam,
+    atPauseDuration,
+    atSideSelectionEnabled,
+    atSideSelectionTime,
+    atGgEnabled,
+    atGgThreshold,
+    atGgMinScoreDiff,
+    atFfwEnabled,
+    atFfwTime,
+    atDemoRecordingEnabled,
     initialWebhookUrl,
-    initialMatchzyChatPrefix,
-    initialMatchzyAdminChatPrefix,
-    initialMatchzyKnifeEnabledDefault,
-    initialMatchzyDebugChatEnabled,
+    initialAtChatPrefix,
+    initialAtAdminChatPrefix,
+    initialAtKnifeEnabledDefault,
+    initialAtDebugChatEnabled,
     initialRatingsEnabled,
     initialAllowSelfRegister,
-    initialMatchzyAutostartMode,
-    initialMatchzyMinimumReadyRequired,
-    initialMatchzyAllowForceReady,
-    initialMatchzyKickWhenNoMatchLoaded,
-    initialMatchzyWhitelistEnabledDefault,
-    initialMatchzyPauseAfterRestore,
-    initialMatchzyStopCommandAvailable,
-    initialMatchzyStopCommandNoDamage,
-    initialMatchzyUsePauseCommandForTacticalPause,
-    initialMatchzyHostnameFormat,
-    initialMatchzyDemoPath,
-    initialMatchzyDemoNameFormat,
-    initialMatchzySeriesEndKickDelayNoDemo,
-    initialMatchzySeriesEndKickDelayDemoNoUpload,
-    initialMatchzySeriesEndKickDelayDemoUpload,
-    initialMatchzyAutoreadyEnabled,
-    initialMatchzyBothTeamsUnpauseRequired,
-    initialMatchzyMaxPausesPerTeam,
-    initialMatchzyPauseDuration,
-    initialMatchzySideSelectionEnabled,
-    initialMatchzySideSelectionTime,
-    initialMatchzyGgEnabled,
-    initialMatchzyGgThreshold,
-    initialMatchzyGgMinScoreDiff,
-    initialMatchzyFfwEnabled,
-    initialMatchzyFfwTime,
-    initialMatchzyDemoRecordingEnabled,
+    initialAtAutostartMode,
+    initialAtMinimumReadyRequired,
+    initialAtAllowForceReady,
+    initialAtKickWhenNoMatchLoaded,
+    initialAtWhitelistEnabledDefault,
+    initialAtPauseAfterRestore,
+    initialAtStopCommandAvailable,
+    initialAtStopCommandNoDamage,
+    initialAtUsePauseCommandForTacticalPause,
+    initialAtHostnameFormat,
+    initialAtDemoPath,
+    initialAtDemoNameFormat,
+    initialAtSeriesEndKickDelayNoDemo,
+    initialAtSeriesEndKickDelayDemoNoUpload,
+    initialAtSeriesEndKickDelayDemoUpload,
+    initialAtAutoreadyEnabled,
+    initialAtBothTeamsUnpauseRequired,
+    initialAtMaxPausesPerTeam,
+    initialAtPauseDuration,
+    initialAtSideSelectionEnabled,
+    initialAtSideSelectionTime,
+    initialAtGgEnabled,
+    initialAtGgThreshold,
+    initialAtGgMinScoreDiff,
+    initialAtFfwEnabled,
+    initialAtFfwTime,
+    initialAtDemoRecordingEnabled,
     simulateMatches,
     initialSimulateMatches,
     initialSimulationTimescale,
@@ -1086,8 +1086,8 @@ export default function Settings() {
                     <Stack spacing={2}>
                       <TextField
                         label={t('settingsPage.matchRating.chatDefaults.chatPrefixLabel')}
-                        value={matchzyChatPrefix}
-                        onChange={(event) => setMatchzyChatPrefix(event.target.value)}
+                        value={atChatPrefix}
+                        onChange={(event) => setAtChatPrefix(event.target.value)}
                         onBlur={handleFieldBlur}
                         onKeyDown={handleFieldKeyDown}
                         helperText={t('settingsPage.matchRating.chatDefaults.chatPrefixHelper')}
@@ -1095,8 +1095,8 @@ export default function Settings() {
                       />
                       <TextField
                         label={t('settingsPage.matchRating.chatDefaults.adminChatPrefixLabel')}
-                        value={matchzyAdminChatPrefix}
-                        onChange={(event) => setMatchzyAdminChatPrefix(event.target.value)}
+                        value={atAdminChatPrefix}
+                        onChange={(event) => setAtAdminChatPrefix(event.target.value)}
                         onBlur={handleFieldBlur}
                         onKeyDown={handleFieldKeyDown}
                         helperText={t('settingsPage.matchRating.chatDefaults.adminChatPrefixHelper')}
@@ -1105,8 +1105,8 @@ export default function Settings() {
                       <FormControlLabel
                         control={
                           <Switch
-                            checked={matchzyKnifeEnabledDefault}
-                            onChange={(event) => setMatchzyKnifeEnabledDefault(event.target.checked)}
+                            checked={atKnifeEnabledDefault}
+                            onChange={(event) => setAtKnifeEnabledDefault(event.target.checked)}
                             color="primary"
                             size="small"
                           />
@@ -1124,7 +1124,7 @@ export default function Settings() {
                   <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={ACCORDION_SUMMARY_SX}>
                     <Box>
                       <Typography variant="h6" fontWeight={600}>
-                        {t('settingsPage.matchRating.matchzyEnhanced.demo.title')}
+                        {t('settingsPage.matchRating.atEnhanced.demo.title')}
                       </Typography>
                     </Box>
                   </AccordionSummary>
@@ -1133,53 +1133,53 @@ export default function Settings() {
                       <FormControlLabel
                         control={
                           <Switch
-                            checked={matchzyDemoRecordingEnabled !== 0}
+                            checked={atDemoRecordingEnabled !== 0}
                             onChange={(e) =>
-                              setMatchzyDemoRecordingEnabled(e.target.checked ? 1 : 0)
+                              setAtDemoRecordingEnabled(e.target.checked ? 1 : 0)
                             }
                             color="primary"
                             size="small"
                           />
                         }
-                        label={t('settingsPage.matchRating.matchzyEnhanced.demo.enabled')}
+                        label={t('settingsPage.matchRating.atEnhanced.demo.enabled')}
                       />
                       <Typography variant="caption" color="text.secondary" display="block">
-                        {t('settingsPage.matchRating.matchzyEnhanced.demo.description')}
+                        {t('settingsPage.matchRating.atEnhanced.demo.description')}
                       </Typography>
 
                       <Divider />
 
                       <Typography variant="subtitle1" fontWeight={600}>
-                        {t('settingsPage.matchRating.matchzyCore.demos.title')}
+                        {t('settingsPage.matchRating.atCore.demos.title')}
                       </Typography>
                       <TextField
-                        label={t('settingsPage.matchRating.matchzyCore.hostname.formatLabel')}
-                        value={matchzyHostnameFormat}
-                        onChange={(e) => setMatchzyHostnameFormat(e.target.value)}
+                        label={t('settingsPage.matchRating.atCore.hostname.formatLabel')}
+                        value={atHostnameFormat}
+                        onChange={(e) => setAtHostnameFormat(e.target.value)}
                         onBlur={handleFieldBlur}
                         onKeyDown={handleFieldKeyDown}
-                        helperText={t('settingsPage.matchRating.matchzyCore.hostname.formatHelper')}
+                        helperText={t('settingsPage.matchRating.atCore.hostname.formatHelper')}
                         fullWidth
                         size="small"
-                        inputProps={{ 'data-testid': 'matchzy-hostname-format-input' }}
+                        inputProps={{ 'data-testid': 'at-hostname-format-input' }}
                       />
                       <TextField
-                        label={t('settingsPage.matchRating.matchzyCore.demos.demoPathLabel')}
-                        value={matchzyDemoPath}
-                        onChange={(e) => setMatchzyDemoPath(e.target.value)}
+                        label={t('settingsPage.matchRating.atCore.demos.demoPathLabel')}
+                        value={atDemoPath}
+                        onChange={(e) => setAtDemoPath(e.target.value)}
                         onBlur={handleFieldBlur}
                         onKeyDown={handleFieldKeyDown}
-                        helperText={t('settingsPage.matchRating.matchzyCore.demos.demoPathHelper')}
+                        helperText={t('settingsPage.matchRating.atCore.demos.demoPathHelper')}
                         fullWidth
                         size="small"
                       />
                       <TextField
-                        label={t('settingsPage.matchRating.matchzyCore.demos.demoNameFormatLabel')}
-                        value={matchzyDemoNameFormat}
-                        onChange={(e) => setMatchzyDemoNameFormat(e.target.value)}
+                        label={t('settingsPage.matchRating.atCore.demos.demoNameFormatLabel')}
+                        value={atDemoNameFormat}
+                        onChange={(e) => setAtDemoNameFormat(e.target.value)}
                         onBlur={handleFieldBlur}
                         onKeyDown={handleFieldKeyDown}
-                        helperText={t('settingsPage.matchRating.matchzyCore.demos.demoNameFormatHelper')}
+                        helperText={t('settingsPage.matchRating.atCore.demos.demoNameFormatHelper')}
                         fullWidth
                         size="small"
                       />
@@ -1187,17 +1187,17 @@ export default function Settings() {
                       <Divider />
 
                       <Typography variant="subtitle1" fontWeight={600}>
-                        {t('settingsPage.matchRating.matchzyCore.seriesEnd.title')}
+                        {t('settingsPage.matchRating.atCore.seriesEnd.title')}
                       </Typography>
                       <Stack spacing={2}>
                         <TextField
-                          label={t('settingsPage.matchRating.matchzyCore.seriesEnd.kickDelayNoDemoLabel')}
+                          label={t('settingsPage.matchRating.atCore.seriesEnd.kickDelayNoDemoLabel')}
                           type="number"
-                          value={matchzySeriesEndKickDelayNoDemo}
+                          value={atSeriesEndKickDelayNoDemo}
                           onChange={(e) => {
                             const v = parseInt(e.target.value, 10);
                             if (!Number.isFinite(v)) return;
-                            setMatchzySeriesEndKickDelayNoDemo(v);
+                            setAtSeriesEndKickDelayNoDemo(v);
                           }}
                           onBlur={handleFieldBlur}
                           onKeyDown={handleFieldKeyDown}
@@ -1207,14 +1207,14 @@ export default function Settings() {
                         />
                         <TextField
                           label={t(
-                            'settingsPage.matchRating.matchzyCore.seriesEnd.kickDelayDemoNoUploadLabel'
+                            'settingsPage.matchRating.atCore.seriesEnd.kickDelayDemoNoUploadLabel'
                           )}
                           type="number"
-                          value={matchzySeriesEndKickDelayDemoNoUpload}
+                          value={atSeriesEndKickDelayDemoNoUpload}
                           onChange={(e) => {
                             const v = parseInt(e.target.value, 10);
                             if (!Number.isFinite(v)) return;
-                            setMatchzySeriesEndKickDelayDemoNoUpload(v);
+                            setAtSeriesEndKickDelayDemoNoUpload(v);
                           }}
                           onBlur={handleFieldBlur}
                           onKeyDown={handleFieldKeyDown}
@@ -1224,14 +1224,14 @@ export default function Settings() {
                         />
                         <TextField
                           label={t(
-                            'settingsPage.matchRating.matchzyCore.seriesEnd.kickDelayDemoUploadLabel'
+                            'settingsPage.matchRating.atCore.seriesEnd.kickDelayDemoUploadLabel'
                           )}
                           type="number"
-                          value={matchzySeriesEndKickDelayDemoUpload}
+                          value={atSeriesEndKickDelayDemoUpload}
                           onChange={(e) => {
                             const v = parseInt(e.target.value, 10);
                             if (!Number.isFinite(v)) return;
-                            setMatchzySeriesEndKickDelayDemoUpload(v);
+                            setAtSeriesEndKickDelayDemoUpload(v);
                           }}
                           onBlur={handleFieldBlur}
                           onKeyDown={handleFieldKeyDown}
@@ -1240,7 +1240,7 @@ export default function Settings() {
                           fullWidth
                         />
                         <Typography variant="caption" color="text.secondary">
-                          {t('settingsPage.matchRating.matchzyCore.seriesEnd.kickDelayHelper')}
+                          {t('settingsPage.matchRating.atCore.seriesEnd.kickDelayHelper')}
                         </Typography>
                       </Stack>
                     </Stack>
@@ -1253,17 +1253,17 @@ export default function Settings() {
             <TabPanel value={tabIndex} index={3}>
               <Stack spacing={3}>
                 <Alert severity="warning">
-                  {t('settingsPage.matchRating.matchzyCore.expert.description')}
+                  {t('settingsPage.matchRating.atCore.expert.description')}
                 </Alert>
 
                 <Accordion defaultExpanded sx={ACCORDION_SX}>
                   <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={ACCORDION_SUMMARY_SX}>
                     <Box>
                       <Typography variant="h6" fontWeight={600}>
-                        {t('settingsPage.matchRating.matchzyCore.title')}
+                        {t('settingsPage.matchRating.atCore.title')}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {t('settingsPage.matchRating.matchzyCore.description')}
+                        {t('settingsPage.matchRating.atCore.description')}
                       </Typography>
                     </Box>
                   </AccordionSummary>
@@ -1272,22 +1272,22 @@ export default function Settings() {
                       {/* Ready / flow */}
                       <Box>
                         <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                          {t('settingsPage.matchRating.matchzyCore.ready.title')}
+                          {t('settingsPage.matchRating.atCore.ready.title')}
                         </Typography>
                         <Stack spacing={2}>
                           <TextField
-                            label={t('settingsPage.matchRating.matchzyCore.ready.minimumReadyLabel')}
+                            label={t('settingsPage.matchRating.atCore.ready.minimumReadyLabel')}
                             type="number"
-                            value={matchzyMinimumReadyRequired}
+                            value={atMinimumReadyRequired}
                             onChange={(e) => {
                               const v = parseInt(e.target.value, 10);
                               if (!Number.isFinite(v)) return;
-                              setMatchzyMinimumReadyRequired(v);
+                              setAtMinimumReadyRequired(v);
                             }}
                             onBlur={handleFieldBlur}
                             onKeyDown={handleFieldKeyDown}
                             helperText={t(
-                              'settingsPage.matchRating.matchzyCore.ready.minimumReadyHelper'
+                              'settingsPage.matchRating.atCore.ready.minimumReadyHelper'
                             )}
                             inputProps={{ min: 0, max: 10 }}
                             size="small"
@@ -1296,13 +1296,13 @@ export default function Settings() {
                           <FormControlLabel
                             control={
                               <Switch
-                                checked={matchzyAllowForceReady}
-                                onChange={(e) => setMatchzyAllowForceReady(e.target.checked)}
+                                checked={atAllowForceReady}
+                                onChange={(e) => setAtAllowForceReady(e.target.checked)}
                                 color="primary"
                                 size="small"
                               />
                             }
-                            label={t('settingsPage.matchRating.matchzyCore.ready.allowForceReady')}
+                            label={t('settingsPage.matchRating.atCore.ready.allowForceReady')}
                           />
                         </Stack>
                       </Box>
@@ -1319,37 +1319,37 @@ export default function Settings() {
                         }}
                       >
                         <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                          {t('settingsPage.matchRating.matchzyCore.expert.title')}
+                          {t('settingsPage.matchRating.atCore.expert.title')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" mb={2}>
-                          {t('settingsPage.matchRating.matchzyCore.expert.description')}
+                          {t('settingsPage.matchRating.atCore.expert.description')}
                         </Typography>
 
                         <Stack spacing={2}>
                           <TextField
                             select
                             label={t(
-                              'settingsPage.matchRating.matchzyCore.expert.autostartMode.label'
+                              'settingsPage.matchRating.atCore.expert.autostartMode.label'
                             )}
-                            value={matchzyAutostartMode}
+                            value={atAutostartMode}
                             onChange={(e) =>
-                              setMatchzyAutostartMode(Number(e.target.value) as 0 | 1 | 2)
+                              setAtAutostartMode(Number(e.target.value) as 0 | 1 | 2)
                             }
                             onBlur={handleFieldBlur}
                             helperText={t(
-                              'settingsPage.matchRating.matchzyCore.expert.autostartMode.helper'
+                              'settingsPage.matchRating.atCore.expert.autostartMode.helper'
                             )}
                             size="small"
                             fullWidth
                           >
                             <option value={0}>
-                              {t('settingsPage.matchRating.matchzyCore.expert.autostartMode.options.0')}
+                              {t('settingsPage.matchRating.atCore.expert.autostartMode.options.0')}
                             </option>
                             <option value={1}>
-                              {t('settingsPage.matchRating.matchzyCore.expert.autostartMode.options.1')}
+                              {t('settingsPage.matchRating.atCore.expert.autostartMode.options.1')}
                             </option>
                             <option value={2}>
-                              {t('settingsPage.matchRating.matchzyCore.expert.autostartMode.options.2')}
+                              {t('settingsPage.matchRating.atCore.expert.autostartMode.options.2')}
                             </option>
                           </TextField>
 
@@ -1358,33 +1358,33 @@ export default function Settings() {
                           {/* Access / server lockdown */}
                           <Box>
                             <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                              {t('settingsPage.matchRating.matchzyCore.access.title')}
+                              {t('settingsPage.matchRating.atCore.access.title')}
                             </Typography>
                             <Stack spacing={1}>
                               <FormControlLabel
                                 control={
                                   <Switch
-                                    checked={matchzyKickWhenNoMatchLoaded}
-                                    onChange={(e) => setMatchzyKickWhenNoMatchLoaded(e.target.checked)}
+                                    checked={atKickWhenNoMatchLoaded}
+                                    onChange={(e) => setAtKickWhenNoMatchLoaded(e.target.checked)}
                                     color="primary"
                                     size="small"
                                   />
                                 }
                                 label={t(
-                                  'settingsPage.matchRating.matchzyCore.access.kickWhenNoMatchLoaded'
+                                  'settingsPage.matchRating.atCore.access.kickWhenNoMatchLoaded'
                                 )}
                               />
                               <FormControlLabel
                                 control={
                                   <Switch
-                                    checked={matchzyWhitelistEnabledDefault}
-                                    onChange={(e) => setMatchzyWhitelistEnabledDefault(e.target.checked)}
+                                    checked={atWhitelistEnabledDefault}
+                                    onChange={(e) => setAtWhitelistEnabledDefault(e.target.checked)}
                                     color="primary"
                                     size="small"
                                   />
                                 }
                                 label={t(
-                                  'settingsPage.matchRating.matchzyCore.access.whitelistEnabledDefault'
+                                  'settingsPage.matchRating.atCore.access.whitelistEnabledDefault'
                                 )}
                               />
                             </Stack>
@@ -1395,62 +1395,62 @@ export default function Settings() {
                           {/* Admin tools */}
                           <Box>
                             <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                              {t('settingsPage.matchRating.matchzyCore.adminTools.title')}
+                              {t('settingsPage.matchRating.atCore.adminTools.title')}
                             </Typography>
                             <Stack spacing={1}>
                               <FormControlLabel
                                 control={
                                   <Switch
-                                    checked={matchzyPauseAfterRestore}
-                                    onChange={(e) => setMatchzyPauseAfterRestore(e.target.checked)}
+                                    checked={atPauseAfterRestore}
+                                    onChange={(e) => setAtPauseAfterRestore(e.target.checked)}
                                     color="primary"
                                     size="small"
                                   />
                                 }
                                 label={t(
-                                  'settingsPage.matchRating.matchzyCore.adminTools.pauseAfterRestore'
+                                  'settingsPage.matchRating.atCore.adminTools.pauseAfterRestore'
                                 )}
                               />
                               <FormControlLabel
                                 control={
                                   <Switch
-                                    checked={matchzyStopCommandAvailable}
-                                    onChange={(e) => setMatchzyStopCommandAvailable(e.target.checked)}
+                                    checked={atStopCommandAvailable}
+                                    onChange={(e) => setAtStopCommandAvailable(e.target.checked)}
                                     color="primary"
                                     size="small"
                                   />
                                 }
                                 label={t(
-                                  'settingsPage.matchRating.matchzyCore.adminTools.stopCommandAvailable'
+                                  'settingsPage.matchRating.atCore.adminTools.stopCommandAvailable'
                                 )}
                               />
                               <FormControlLabel
                                 control={
                                   <Switch
-                                    checked={matchzyStopCommandNoDamage}
-                                    onChange={(e) => setMatchzyStopCommandNoDamage(e.target.checked)}
+                                    checked={atStopCommandNoDamage}
+                                    onChange={(e) => setAtStopCommandNoDamage(e.target.checked)}
                                     color="primary"
                                     size="small"
-                                    disabled={!matchzyStopCommandAvailable}
+                                    disabled={!atStopCommandAvailable}
                                   />
                                 }
                                 label={t(
-                                  'settingsPage.matchRating.matchzyCore.adminTools.stopCommandNoDamage'
+                                  'settingsPage.matchRating.atCore.adminTools.stopCommandNoDamage'
                                 )}
                               />
                               <FormControlLabel
                                 control={
                                   <Switch
-                                    checked={matchzyUsePauseCommandForTacticalPause}
+                                    checked={atUsePauseCommandForTacticalPause}
                                     onChange={(e) =>
-                                      setMatchzyUsePauseCommandForTacticalPause(e.target.checked)
+                                      setAtUsePauseCommandForTacticalPause(e.target.checked)
                                     }
                                     color="primary"
                                     size="small"
                                   />
                                 }
                                 label={t(
-                                  'settingsPage.matchRating.matchzyCore.adminTools.usePauseForTacticalPause'
+                                  'settingsPage.matchRating.atCore.adminTools.usePauseForTacticalPause'
                                 )}
                               />
                             </Stack>
@@ -1465,10 +1465,10 @@ export default function Settings() {
                   <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={ACCORDION_SUMMARY_SX}>
                     <Box>
                       <Typography variant="h6" fontWeight={600}>
-                        {t('settingsPage.matchRating.matchzyEnhanced.title')}
+                        {t('settingsPage.matchRating.atEnhanced.title')}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {t('settingsPage.matchRating.matchzyEnhanced.description')}
+                        {t('settingsPage.matchRating.atEnhanced.description')}
                       </Typography>
                     </Box>
                   </AccordionSummary>
@@ -1477,21 +1477,21 @@ export default function Settings() {
                       {/* Auto-Ready System */}
                       <Box>
                         <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                          {t('settingsPage.matchRating.matchzyEnhanced.autoready.title')}
+                          {t('settingsPage.matchRating.atEnhanced.autoready.title')}
                         </Typography>
                         <FormControlLabel
                           control={
                             <Switch
-                              checked={matchzyAutoreadyEnabled === 1}
-                              onChange={(e) => setMatchzyAutoreadyEnabled(e.target.checked ? 1 : 0)}
+                              checked={atAutoreadyEnabled === 1}
+                              onChange={(e) => setAtAutoreadyEnabled(e.target.checked ? 1 : 0)}
                               color="primary"
                               size="small"
                             />
                           }
-                          label={t('settingsPage.matchRating.matchzyEnhanced.autoready.label')}
+                          label={t('settingsPage.matchRating.atEnhanced.autoready.label')}
                         />
                         <Typography variant="caption" color="text.secondary" display="block">
-                          {t('settingsPage.matchRating.matchzyEnhanced.autoready.description')}
+                          {t('settingsPage.matchRating.atEnhanced.autoready.description')}
                         </Typography>
                       </Box>
 
@@ -1500,49 +1500,49 @@ export default function Settings() {
                       {/* Pause System */}
                       <Box>
                         <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                          {t('settingsPage.matchRating.matchzyEnhanced.pause.title')}
+                          {t('settingsPage.matchRating.atEnhanced.pause.title')}
                         </Typography>
                         <Stack spacing={2}>
                           <FormControlLabel
                             control={
                               <Switch
-                                checked={matchzyBothTeamsUnpauseRequired === 1}
+                                checked={atBothTeamsUnpauseRequired === 1}
                                 onChange={(e) =>
-                                  setMatchzyBothTeamsUnpauseRequired(e.target.checked ? 1 : 0)
+                                  setAtBothTeamsUnpauseRequired(e.target.checked ? 1 : 0)
                                 }
                                 color="primary"
                                 size="small"
                               />
                             }
-                            label={t('settingsPage.matchRating.matchzyEnhanced.pause.bothTeamsUnpause')}
+                            label={t('settingsPage.matchRating.atEnhanced.pause.bothTeamsUnpause')}
                           />
                           <TextField
-                            label={t('settingsPage.matchRating.matchzyEnhanced.pause.maxPausesLabel')}
+                            label={t('settingsPage.matchRating.atEnhanced.pause.maxPausesLabel')}
                             type="number"
-                            value={matchzyMaxPausesPerTeam ?? ''}
+                            value={atMaxPausesPerTeam ?? ''}
                             onChange={(e) => {
                               const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
-                              setMatchzyMaxPausesPerTeam(isNaN(val as number) ? null : val);
+                              setAtMaxPausesPerTeam(isNaN(val as number) ? null : val);
                             }}
                             onBlur={handleFieldBlur}
-                            helperText={t('settingsPage.matchRating.matchzyEnhanced.pause.maxPausesHelper')}
+                            helperText={t('settingsPage.matchRating.atEnhanced.pause.maxPausesHelper')}
                             inputProps={{ min: 0, max: 999 }}
                             size="small"
                             fullWidth
                           />
                           <TextField
                             label={t(
-                              'settingsPage.matchRating.matchzyEnhanced.pause.pauseDurationLabel'
+                              'settingsPage.matchRating.atEnhanced.pause.pauseDurationLabel'
                             )}
                             type="number"
-                            value={matchzyPauseDuration ?? ''}
+                            value={atPauseDuration ?? ''}
                             onChange={(e) => {
                               const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
-                              setMatchzyPauseDuration(isNaN(val as number) ? null : val);
+                              setAtPauseDuration(isNaN(val as number) ? null : val);
                             }}
                             onBlur={handleFieldBlur}
                             helperText={t(
-                              'settingsPage.matchRating.matchzyEnhanced.pause.pauseDurationHelper'
+                              'settingsPage.matchRating.atEnhanced.pause.pauseDurationHelper'
                             )}
                             inputProps={{ min: 0, max: 999 }}
                             size="small"
@@ -1556,36 +1556,36 @@ export default function Settings() {
                       {/* Side Selection */}
                       <Box>
                         <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                          {t('settingsPage.matchRating.matchzyEnhanced.sideSelection.title')}
+                          {t('settingsPage.matchRating.atEnhanced.sideSelection.title')}
                         </Typography>
                         <Stack spacing={2}>
                           <FormControlLabel
                             control={
                               <Switch
-                                checked={matchzySideSelectionEnabled === 1}
+                                checked={atSideSelectionEnabled === 1}
                                 onChange={(e) =>
-                                  setMatchzySideSelectionEnabled(e.target.checked ? 1 : 0)
+                                  setAtSideSelectionEnabled(e.target.checked ? 1 : 0)
                                 }
                                 color="primary"
                                 size="small"
                               />
                             }
-                            label={t('settingsPage.matchRating.matchzyEnhanced.sideSelection.enabled')}
+                            label={t('settingsPage.matchRating.atEnhanced.sideSelection.enabled')}
                           />
                           <TextField
-                            label={t('settingsPage.matchRating.matchzyEnhanced.sideSelection.timeLabel')}
+                            label={t('settingsPage.matchRating.atEnhanced.sideSelection.timeLabel')}
                             type="number"
-                            value={matchzySideSelectionTime ?? ''}
+                            value={atSideSelectionTime ?? ''}
                             onChange={(e) => {
                               const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
-                              setMatchzySideSelectionTime(isNaN(val as number) ? null : val);
+                              setAtSideSelectionTime(isNaN(val as number) ? null : val);
                             }}
                             onBlur={handleFieldBlur}
-                            helperText={t('settingsPage.matchRating.matchzyEnhanced.sideSelection.timeHelper')}
+                            helperText={t('settingsPage.matchRating.atEnhanced.sideSelection.timeHelper')}
                             inputProps={{ min: 1, max: 999 }}
                             size="small"
                             fullWidth
-                            disabled={matchzySideSelectionEnabled !== 1}
+                            disabled={atSideSelectionEnabled !== 1}
                           />
                         </Stack>
                       </Box>
@@ -1595,49 +1595,49 @@ export default function Settings() {
                       {/* .gg Command */}
                       <Box>
                         <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                          {t('settingsPage.matchRating.matchzyEnhanced.gg.title')}
+                          {t('settingsPage.matchRating.atEnhanced.gg.title')}
                         </Typography>
                         <Stack spacing={2}>
                           <FormControlLabel
                             control={
                               <Switch
-                                checked={matchzyGgEnabled === 1}
-                                onChange={(e) => setMatchzyGgEnabled(e.target.checked ? 1 : 0)}
+                                checked={atGgEnabled === 1}
+                                onChange={(e) => setAtGgEnabled(e.target.checked ? 1 : 0)}
                                 color="primary"
                                 size="small"
                               />
                             }
-                            label={t('settingsPage.matchRating.matchzyEnhanced.gg.enabled')}
+                            label={t('settingsPage.matchRating.atEnhanced.gg.enabled')}
                           />
                           <TextField
-                            label={t('settingsPage.matchRating.matchzyEnhanced.gg.thresholdLabel')}
+                            label={t('settingsPage.matchRating.atEnhanced.gg.thresholdLabel')}
                             type="number"
-                            value={matchzyGgThreshold ?? ''}
+                            value={atGgThreshold ?? ''}
                             onChange={(e) => {
                               const val = e.target.value === '' ? null : parseFloat(e.target.value);
-                              setMatchzyGgThreshold(isNaN(val as number) ? null : val);
+                              setAtGgThreshold(isNaN(val as number) ? null : val);
                             }}
                             onBlur={handleFieldBlur}
-                            helperText={t('settingsPage.matchRating.matchzyEnhanced.gg.thresholdHelper')}
+                            helperText={t('settingsPage.matchRating.atEnhanced.gg.thresholdHelper')}
                             inputProps={{ min: 0, max: 1, step: 0.1 }}
                             size="small"
                             fullWidth
-                            disabled={matchzyGgEnabled !== 1}
+                            disabled={atGgEnabled !== 1}
                           />
                           <TextField
-                            label={t('settingsPage.matchRating.matchzyEnhanced.gg.minScoreDiffLabel')}
+                            label={t('settingsPage.matchRating.atEnhanced.gg.minScoreDiffLabel')}
                             type="number"
-                            value={matchzyGgMinScoreDiff ?? ''}
+                            value={atGgMinScoreDiff ?? ''}
                             onChange={(e) => {
                               const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
-                              setMatchzyGgMinScoreDiff(isNaN(val as number) ? null : val);
+                              setAtGgMinScoreDiff(isNaN(val as number) ? null : val);
                             }}
                             onBlur={handleFieldBlur}
-                            helperText={t('settingsPage.matchRating.matchzyEnhanced.gg.minScoreDiffHelper')}
+                            helperText={t('settingsPage.matchRating.atEnhanced.gg.minScoreDiffHelper')}
                             inputProps={{ min: 0, max: 16 }}
                             size="small"
                             fullWidth
-                            disabled={matchzyGgEnabled !== 1}
+                            disabled={atGgEnabled !== 1}
                           />
                         </Stack>
                       </Box>
@@ -1647,34 +1647,34 @@ export default function Settings() {
                       {/* FFW System */}
                       <Box>
                         <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                          {t('settingsPage.matchRating.matchzyEnhanced.ffw.title')}
+                          {t('settingsPage.matchRating.atEnhanced.ffw.title')}
                         </Typography>
                         <Stack spacing={2}>
                           <FormControlLabel
                             control={
                               <Switch
-                                checked={matchzyFfwEnabled === 1}
-                                onChange={(e) => setMatchzyFfwEnabled(e.target.checked ? 1 : 0)}
+                                checked={atFfwEnabled === 1}
+                                onChange={(e) => setAtFfwEnabled(e.target.checked ? 1 : 0)}
                                 color="primary"
                                 size="small"
                               />
                             }
-                            label={t('settingsPage.matchRating.matchzyEnhanced.ffw.enabled')}
+                            label={t('settingsPage.matchRating.atEnhanced.ffw.enabled')}
                           />
                           <TextField
-                            label={t('settingsPage.matchRating.matchzyEnhanced.ffw.timeLabel')}
+                            label={t('settingsPage.matchRating.atEnhanced.ffw.timeLabel')}
                             type="number"
-                            value={matchzyFfwTime ?? ''}
+                            value={atFfwTime ?? ''}
                             onChange={(e) => {
                               const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
-                              setMatchzyFfwTime(isNaN(val as number) ? null : val);
+                              setAtFfwTime(isNaN(val as number) ? null : val);
                             }}
                             onBlur={handleFieldBlur}
-                            helperText={t('settingsPage.matchRating.matchzyEnhanced.ffw.timeHelper')}
+                            helperText={t('settingsPage.matchRating.atEnhanced.ffw.timeHelper')}
                             inputProps={{ min: 1, max: 999 }}
                             size="small"
                             fullWidth
-                            disabled={matchzyFfwEnabled !== 1}
+                            disabled={atFfwEnabled !== 1}
                           />
                         </Stack>
                       </Box>
@@ -1697,12 +1697,12 @@ export default function Settings() {
                     <FormControlLabel
                       control={
                         <Switch
-                          checked={matchzyDebugChatEnabled}
+                          checked={atDebugChatEnabled}
                           onChange={(e) => {
                             const newValue = e.target.checked;
-                            setMatchzyDebugChatEnabled(newValue);
+                            setAtDebugChatEnabled(newValue);
                             // Pass the new value as an override to handleSave since state updates are async
-                            void handleSave(true, { matchzyDebugChatEnabled: newValue });
+                            void handleSave(true, { atDebugChatEnabled: newValue });
                           }}
                           size="small"
                           color="primary"
@@ -1853,72 +1853,72 @@ export default function Settings() {
                   try {
                     const resetPayload: {
                       webhookUrl: null;
-                      matchzyChatPrefix: null;
-                      matchzyAdminChatPrefix: null;
-                      matchzyKnifeEnabledDefault: null;
-                      matchzyDebugChatEnabled?: boolean;
+                      atChatPrefix: null;
+                      atAdminChatPrefix: null;
+                      atKnifeEnabledDefault: null;
+                      atDebugChatEnabled?: boolean;
                       simulateMatches?: boolean;
-                      // MatchZy core defaults
-                      matchzyMinimumReadyRequired?: null;
-                      matchzyAllowForceReady?: null;
-                      matchzyKickWhenNoMatchLoaded?: null;
-                      matchzyWhitelistEnabledDefault?: null;
-                      matchzyPauseAfterRestore?: null;
-                      matchzyStopCommandAvailable?: null;
-                      matchzyStopCommandNoDamage?: null;
-                      matchzyUsePauseCommandForTacticalPause?: null;
-                      matchzyHostnameFormat?: null;
-                      matchzyDemoPath?: null;
-                      matchzyDemoNameFormat?: null;
-                      matchzySeriesEndKickDelayNoDemo?: null;
-                      matchzySeriesEndKickDelayDemoNoUpload?: null;
-                      matchzySeriesEndKickDelayDemoUpload?: null;
-                      // MatchZy Enhanced v1.3.0 settings - reset to null (use tournament defaults)
-                      matchzyAutoreadyEnabled: null;
-                      matchzyBothTeamsUnpauseRequired: null;
-                      matchzyMaxPausesPerTeam: null;
-                      matchzyPauseDuration: null;
-                      matchzySideSelectionEnabled: null;
-                      matchzySideSelectionTime: null;
-                      matchzyGgEnabled: null;
-                      matchzyGgThreshold: null;
-                      matchzyGgMinScoreDiff: null;
-                      matchzyFfwEnabled: null;
-                      matchzyFfwTime: null;
-                      matchzyDemoRecordingEnabled: null;
+                      // Auto Tournament CS2 core defaults
+                      atMinimumReadyRequired?: null;
+                      atAllowForceReady?: null;
+                      atKickWhenNoMatchLoaded?: null;
+                      atWhitelistEnabledDefault?: null;
+                      atPauseAfterRestore?: null;
+                      atStopCommandAvailable?: null;
+                      atStopCommandNoDamage?: null;
+                      atUsePauseCommandForTacticalPause?: null;
+                      atHostnameFormat?: null;
+                      atDemoPath?: null;
+                      atDemoNameFormat?: null;
+                      atSeriesEndKickDelayNoDemo?: null;
+                      atSeriesEndKickDelayDemoNoUpload?: null;
+                      atSeriesEndKickDelayDemoUpload?: null;
+                      // Auto Tournament CS2 v1.3.0 settings - reset to null (use tournament defaults)
+                      atAutoreadyEnabled: null;
+                      atBothTeamsUnpauseRequired: null;
+                      atMaxPausesPerTeam: null;
+                      atPauseDuration: null;
+                      atSideSelectionEnabled: null;
+                      atSideSelectionTime: null;
+                      atGgEnabled: null;
+                      atGgThreshold: null;
+                      atGgMinScoreDiff: null;
+                      atFfwEnabled: null;
+                      atFfwTime: null;
+                      atDemoRecordingEnabled: null;
                     } = {
                       webhookUrl: null,
-                      matchzyChatPrefix: null,
-                      matchzyAdminChatPrefix: null,
-                      matchzyKnifeEnabledDefault: null,
-                      matchzyDebugChatEnabled: false,
-                      matchzyMinimumReadyRequired: null,
-                      matchzyAllowForceReady: null,
-                      matchzyKickWhenNoMatchLoaded: null,
-                      matchzyWhitelistEnabledDefault: null,
-                      matchzyPauseAfterRestore: null,
-                      matchzyStopCommandAvailable: null,
-                      matchzyStopCommandNoDamage: null,
-                      matchzyUsePauseCommandForTacticalPause: null,
-                      matchzyHostnameFormat: null,
-                      matchzyDemoPath: null,
-                      matchzyDemoNameFormat: null,
-                      matchzySeriesEndKickDelayNoDemo: null,
-                      matchzySeriesEndKickDelayDemoNoUpload: null,
-                      matchzySeriesEndKickDelayDemoUpload: null,
-                      // MatchZy Enhanced - reset to null to use tournament defaults
-                      matchzyAutoreadyEnabled: null,
-                      matchzyBothTeamsUnpauseRequired: null,
-                      matchzyMaxPausesPerTeam: null,
-                      matchzyPauseDuration: null,
-                      matchzySideSelectionEnabled: null,
-                      matchzySideSelectionTime: null,
-                      matchzyGgEnabled: null,
-                      matchzyGgThreshold: null,
-                      matchzyGgMinScoreDiff: null,
-                      matchzyFfwEnabled: null,
-                      matchzyFfwTime: null,
-                      matchzyDemoRecordingEnabled: null,
+                      atChatPrefix: null,
+                      atAdminChatPrefix: null,
+                      atKnifeEnabledDefault: null,
+                      atDebugChatEnabled: false,
+                      atMinimumReadyRequired: null,
+                      atAllowForceReady: null,
+                      atKickWhenNoMatchLoaded: null,
+                      atWhitelistEnabledDefault: null,
+                      atPauseAfterRestore: null,
+                      atStopCommandAvailable: null,
+                      atStopCommandNoDamage: null,
+                      atUsePauseCommandForTacticalPause: null,
+                      atHostnameFormat: null,
+                      atDemoPath: null,
+                      atDemoNameFormat: null,
+                      atSeriesEndKickDelayNoDemo: null,
+                      atSeriesEndKickDelayDemoNoUpload: null,
+                      atSeriesEndKickDelayDemoUpload: null,
+                      // Auto Tournament CS2 - reset to null to use tournament defaults
+                      atAutoreadyEnabled: null,
+                      atBothTeamsUnpauseRequired: null,
+                      atMaxPausesPerTeam: null,
+                      atPauseDuration: null,
+                      atSideSelectionEnabled: null,
+                      atSideSelectionTime: null,
+                      atGgEnabled: null,
+                      atGgThreshold: null,
+                      atGgMinScoreDiff: null,
+                      atFfwEnabled: null,
+                      atFfwTime: null,
+                      atDemoRecordingEnabled: null,
                       ...(isDev && { simulateMatches: false }),
                     };
 
@@ -1930,121 +1930,121 @@ export default function Settings() {
                     const newWebhook = response.settings.webhookUrl ?? '';
                     const newSimulate = response.settings.simulateMatches ?? false;
                     const newChatPrefix =
-                      response.settings.matchzyChatPrefix ?? DEFAULT_MATCHZY_CHAT_PREFIX;
+                      response.settings.atChatPrefix ?? DEFAULT_AT_CHAT_PREFIX;
                     const newAdminChatPrefix =
-                      response.settings.matchzyAdminChatPrefix ??
-                      DEFAULT_MATCHZY_ADMIN_CHAT_PREFIX;
+                      response.settings.atAdminChatPrefix ??
+                      DEFAULT_AT_ADMIN_CHAT_PREFIX;
                     const newKnifeEnabled =
-                      response.settings.matchzyKnifeEnabledDefault !== undefined
-                        ? response.settings.matchzyKnifeEnabledDefault
+                      response.settings.atKnifeEnabledDefault !== undefined
+                        ? response.settings.atKnifeEnabledDefault
                         : true;
                     const newDebugChatEnabled =
-                      response.settings.matchzyDebugChatEnabled !== undefined
-                        ? response.settings.matchzyDebugChatEnabled
+                      response.settings.atDebugChatEnabled !== undefined
+                        ? response.settings.atDebugChatEnabled
                         : false;
-                    const newMinimumReadyRequired = response.settings.matchzyMinimumReadyRequired ?? 0;
-                    const newAllowForceReady = response.settings.matchzyAllowForceReady ?? true;
-                    const newKickWhenNoMatchLoaded = response.settings.matchzyKickWhenNoMatchLoaded ?? false;
-                    const newWhitelistEnabledDefault = response.settings.matchzyWhitelistEnabledDefault ?? false;
-                    const newPauseAfterRestore = response.settings.matchzyPauseAfterRestore ?? true;
-                    const newStopCommandAvailable = response.settings.matchzyStopCommandAvailable ?? false;
-                    const newStopCommandNoDamage = response.settings.matchzyStopCommandNoDamage ?? false;
+                    const newMinimumReadyRequired = response.settings.atMinimumReadyRequired ?? 0;
+                    const newAllowForceReady = response.settings.atAllowForceReady ?? true;
+                    const newKickWhenNoMatchLoaded = response.settings.atKickWhenNoMatchLoaded ?? false;
+                    const newWhitelistEnabledDefault = response.settings.atWhitelistEnabledDefault ?? false;
+                    const newPauseAfterRestore = response.settings.atPauseAfterRestore ?? true;
+                    const newStopCommandAvailable = response.settings.atStopCommandAvailable ?? false;
+                    const newStopCommandNoDamage = response.settings.atStopCommandNoDamage ?? false;
                     const newUsePauseCommandForTacticalPause =
-                      response.settings.matchzyUsePauseCommandForTacticalPause ?? false;
+                      response.settings.atUsePauseCommandForTacticalPause ?? false;
                     const newHostnameFormat =
-                      response.settings.matchzyHostnameFormat ?? '{TEAM1} vs {TEAM2}';
-                    const newDemoPath = response.settings.matchzyDemoPath ?? 'MatchZy/';
+                      response.settings.atHostnameFormat ?? '{TEAM1} vs {TEAM2}';
+                    const newDemoPath = response.settings.atDemoPath ?? 'AutoTournamentCS2/';
                     const newDemoNameFormat =
-                      response.settings.matchzyDemoNameFormat ??
+                      response.settings.atDemoNameFormat ??
                       '{TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}';
                     const newSeriesEndKickDelayNoDemo =
-                      response.settings.matchzySeriesEndKickDelayNoDemo ?? 5;
+                      response.settings.atSeriesEndKickDelayNoDemo ?? 5;
                     const newSeriesEndKickDelayDemoNoUpload =
-                      response.settings.matchzySeriesEndKickDelayDemoNoUpload ?? 10;
+                      response.settings.atSeriesEndKickDelayDemoNoUpload ?? 10;
                     const newSeriesEndKickDelayDemoUpload =
-                      response.settings.matchzySeriesEndKickDelayDemoUpload ?? 60;
-                    // MatchZy Enhanced settings
-                    const newMatchzyAutoready = response.settings.matchzyAutoreadyEnabled ?? null;
-                    const newMatchzyBothTeamsUnpause = response.settings.matchzyBothTeamsUnpauseRequired ?? null;
-                    const newMatchzyMaxPauses = response.settings.matchzyMaxPausesPerTeam ?? null;
-                    const newMatchzyPauseDur = response.settings.matchzyPauseDuration ?? null;
-                    const newMatchzySideSelEnabled = response.settings.matchzySideSelectionEnabled ?? null;
-                    const newMatchzySideSelTime = response.settings.matchzySideSelectionTime ?? null;
-                    const newMatchzyGg = response.settings.matchzyGgEnabled ?? null;
-                    const newMatchzyGgThresh = response.settings.matchzyGgThreshold ?? null;
-                    const newMatchzyGgMinDiff = response.settings.matchzyGgMinScoreDiff ?? null;
-                    const newMatchzyFfw = response.settings.matchzyFfwEnabled ?? null;
-                    const newMatchzyFfwT = response.settings.matchzyFfwTime ?? null;
-                    const newMatchzyDemo = response.settings.matchzyDemoRecordingEnabled ?? null;
+                      response.settings.atSeriesEndKickDelayDemoUpload ?? 60;
+                    // Auto Tournament CS2 settings
+                    const newAtAutoready = response.settings.atAutoreadyEnabled ?? null;
+                    const newAtBothTeamsUnpause = response.settings.atBothTeamsUnpauseRequired ?? null;
+                    const newAtMaxPauses = response.settings.atMaxPausesPerTeam ?? null;
+                    const newAtPauseDur = response.settings.atPauseDuration ?? null;
+                    const newAtSideSelEnabled = response.settings.atSideSelectionEnabled ?? null;
+                    const newAtSideSelTime = response.settings.atSideSelectionTime ?? null;
+                    const newAtGg = response.settings.atGgEnabled ?? null;
+                    const newAtGgThresh = response.settings.atGgThreshold ?? null;
+                    const newAtGgMinDiff = response.settings.atGgMinScoreDiff ?? null;
+                    const newAtFfw = response.settings.atFfwEnabled ?? null;
+                    const newAtFfwT = response.settings.atFfwTime ?? null;
+                    const newAtDemo = response.settings.atDemoRecordingEnabled ?? null;
 
                     setWebhookUrl(newWebhook);
                     setInitialWebhookUrl(newWebhook);
                     setSimulateMatches(newSimulate);
                     setInitialSimulateMatches(newSimulate);
-                    setMatchzyChatPrefix(newChatPrefix);
-                    setInitialMatchzyChatPrefix(newChatPrefix);
-                    setMatchzyAdminChatPrefix(newAdminChatPrefix);
-                    setInitialMatchzyAdminChatPrefix(newAdminChatPrefix);
-                    setMatchzyKnifeEnabledDefault(newKnifeEnabled);
-                    setInitialMatchzyKnifeEnabledDefault(newKnifeEnabled);
-                    setMatchzyDebugChatEnabled(newDebugChatEnabled);
-                    setInitialMatchzyDebugChatEnabled(newDebugChatEnabled);
-                    setMatchzyMinimumReadyRequired(newMinimumReadyRequired);
-                    setInitialMatchzyMinimumReadyRequired(newMinimumReadyRequired);
-                    setMatchzyAllowForceReady(newAllowForceReady);
-                    setInitialMatchzyAllowForceReady(newAllowForceReady);
-                    setMatchzyKickWhenNoMatchLoaded(newKickWhenNoMatchLoaded);
-                    setInitialMatchzyKickWhenNoMatchLoaded(newKickWhenNoMatchLoaded);
-                    setMatchzyWhitelistEnabledDefault(newWhitelistEnabledDefault);
-                    setInitialMatchzyWhitelistEnabledDefault(newWhitelistEnabledDefault);
-                    setMatchzyPauseAfterRestore(newPauseAfterRestore);
-                    setInitialMatchzyPauseAfterRestore(newPauseAfterRestore);
-                    setMatchzyStopCommandAvailable(newStopCommandAvailable);
-                    setInitialMatchzyStopCommandAvailable(newStopCommandAvailable);
-                    setMatchzyStopCommandNoDamage(newStopCommandNoDamage);
-                    setInitialMatchzyStopCommandNoDamage(newStopCommandNoDamage);
-                    setMatchzyUsePauseCommandForTacticalPause(newUsePauseCommandForTacticalPause);
-                    setInitialMatchzyUsePauseCommandForTacticalPause(newUsePauseCommandForTacticalPause);
-                    setMatchzyHostnameFormat(newHostnameFormat);
-                    setInitialMatchzyHostnameFormat(newHostnameFormat);
-                    setMatchzyDemoPath(newDemoPath);
-                    setInitialMatchzyDemoPath(newDemoPath);
-                    setMatchzyDemoNameFormat(newDemoNameFormat);
-                    setInitialMatchzyDemoNameFormat(newDemoNameFormat);
-                    setMatchzySeriesEndKickDelayNoDemo(newSeriesEndKickDelayNoDemo);
-                    setInitialMatchzySeriesEndKickDelayNoDemo(newSeriesEndKickDelayNoDemo);
-                    setMatchzySeriesEndKickDelayDemoNoUpload(newSeriesEndKickDelayDemoNoUpload);
-                    setInitialMatchzySeriesEndKickDelayDemoNoUpload(newSeriesEndKickDelayDemoNoUpload);
-                    setMatchzySeriesEndKickDelayDemoUpload(newSeriesEndKickDelayDemoUpload);
-                    setInitialMatchzySeriesEndKickDelayDemoUpload(newSeriesEndKickDelayDemoUpload);
-                    // MatchZy Enhanced
-                    setMatchzyAutoreadyEnabled(newMatchzyAutoready);
-                    setInitialMatchzyAutoreadyEnabled(newMatchzyAutoready);
-                    setMatchzyBothTeamsUnpauseRequired(newMatchzyBothTeamsUnpause);
-                    setInitialMatchzyBothTeamsUnpauseRequired(newMatchzyBothTeamsUnpause);
-                    setMatchzyMaxPausesPerTeam(newMatchzyMaxPauses);
-                    setInitialMatchzyMaxPausesPerTeam(newMatchzyMaxPauses);
-                    setMatchzyPauseDuration(newMatchzyPauseDur);
-                    setInitialMatchzyPauseDuration(newMatchzyPauseDur);
-                    setMatchzySideSelectionEnabled(newMatchzySideSelEnabled);
-                    setInitialMatchzySideSelectionEnabled(newMatchzySideSelEnabled);
-                    setMatchzySideSelectionTime(newMatchzySideSelTime);
-                    setInitialMatchzySideSelectionTime(newMatchzySideSelTime);
-                    setMatchzyGgEnabled(newMatchzyGg);
-                    setInitialMatchzyGgEnabled(newMatchzyGg);
-                    setMatchzyGgThreshold(newMatchzyGgThresh);
-                    setInitialMatchzyGgThreshold(newMatchzyGgThresh);
-                    setMatchzyGgMinScoreDiff(newMatchzyGgMinDiff);
-                    setInitialMatchzyGgMinScoreDiff(newMatchzyGgMinDiff);
-                    setMatchzyFfwEnabled(newMatchzyFfw);
-                    setInitialMatchzyFfwEnabled(newMatchzyFfw);
-                    setMatchzyFfwTime(newMatchzyFfwT);
-                    setInitialMatchzyFfwTime(newMatchzyFfwT);
-                    setMatchzyDemoRecordingEnabled(newMatchzyDemo);
-                    setInitialMatchzyDemoRecordingEnabled(newMatchzyDemo);
+                    setAtChatPrefix(newChatPrefix);
+                    setInitialAtChatPrefix(newChatPrefix);
+                    setAtAdminChatPrefix(newAdminChatPrefix);
+                    setInitialAtAdminChatPrefix(newAdminChatPrefix);
+                    setAtKnifeEnabledDefault(newKnifeEnabled);
+                    setInitialAtKnifeEnabledDefault(newKnifeEnabled);
+                    setAtDebugChatEnabled(newDebugChatEnabled);
+                    setInitialAtDebugChatEnabled(newDebugChatEnabled);
+                    setAtMinimumReadyRequired(newMinimumReadyRequired);
+                    setInitialAtMinimumReadyRequired(newMinimumReadyRequired);
+                    setAtAllowForceReady(newAllowForceReady);
+                    setInitialAtAllowForceReady(newAllowForceReady);
+                    setAtKickWhenNoMatchLoaded(newKickWhenNoMatchLoaded);
+                    setInitialAtKickWhenNoMatchLoaded(newKickWhenNoMatchLoaded);
+                    setAtWhitelistEnabledDefault(newWhitelistEnabledDefault);
+                    setInitialAtWhitelistEnabledDefault(newWhitelistEnabledDefault);
+                    setAtPauseAfterRestore(newPauseAfterRestore);
+                    setInitialAtPauseAfterRestore(newPauseAfterRestore);
+                    setAtStopCommandAvailable(newStopCommandAvailable);
+                    setInitialAtStopCommandAvailable(newStopCommandAvailable);
+                    setAtStopCommandNoDamage(newStopCommandNoDamage);
+                    setInitialAtStopCommandNoDamage(newStopCommandNoDamage);
+                    setAtUsePauseCommandForTacticalPause(newUsePauseCommandForTacticalPause);
+                    setInitialAtUsePauseCommandForTacticalPause(newUsePauseCommandForTacticalPause);
+                    setAtHostnameFormat(newHostnameFormat);
+                    setInitialAtHostnameFormat(newHostnameFormat);
+                    setAtDemoPath(newDemoPath);
+                    setInitialAtDemoPath(newDemoPath);
+                    setAtDemoNameFormat(newDemoNameFormat);
+                    setInitialAtDemoNameFormat(newDemoNameFormat);
+                    setAtSeriesEndKickDelayNoDemo(newSeriesEndKickDelayNoDemo);
+                    setInitialAtSeriesEndKickDelayNoDemo(newSeriesEndKickDelayNoDemo);
+                    setAtSeriesEndKickDelayDemoNoUpload(newSeriesEndKickDelayDemoNoUpload);
+                    setInitialAtSeriesEndKickDelayDemoNoUpload(newSeriesEndKickDelayDemoNoUpload);
+                    setAtSeriesEndKickDelayDemoUpload(newSeriesEndKickDelayDemoUpload);
+                    setInitialAtSeriesEndKickDelayDemoUpload(newSeriesEndKickDelayDemoUpload);
+                    // Auto Tournament CS2
+                    setAtAutoreadyEnabled(newAtAutoready);
+                    setInitialAtAutoreadyEnabled(newAtAutoready);
+                    setAtBothTeamsUnpauseRequired(newAtBothTeamsUnpause);
+                    setInitialAtBothTeamsUnpauseRequired(newAtBothTeamsUnpause);
+                    setAtMaxPausesPerTeam(newAtMaxPauses);
+                    setInitialAtMaxPausesPerTeam(newAtMaxPauses);
+                    setAtPauseDuration(newAtPauseDur);
+                    setInitialAtPauseDuration(newAtPauseDur);
+                    setAtSideSelectionEnabled(newAtSideSelEnabled);
+                    setInitialAtSideSelectionEnabled(newAtSideSelEnabled);
+                    setAtSideSelectionTime(newAtSideSelTime);
+                    setInitialAtSideSelectionTime(newAtSideSelTime);
+                    setAtGgEnabled(newAtGg);
+                    setInitialAtGgEnabled(newAtGg);
+                    setAtGgThreshold(newAtGgThresh);
+                    setInitialAtGgThreshold(newAtGgThresh);
+                    setAtGgMinScoreDiff(newAtGgMinDiff);
+                    setInitialAtGgMinScoreDiff(newAtGgMinDiff);
+                    setAtFfwEnabled(newAtFfw);
+                    setInitialAtFfwEnabled(newAtFfw);
+                    setAtFfwTime(newAtFfwT);
+                    setInitialAtFfwTime(newAtFfwT);
+                    setAtDemoRecordingEnabled(newAtDemo);
+                    setInitialAtDemoRecordingEnabled(newAtDemo);
 
                     window.dispatchEvent(
-                      new CustomEvent<SettingsResponse['settings']>('matchzy:settingsUpdated', {
+                      new CustomEvent<SettingsResponse['settings']>('at:settingsUpdated', {
                         detail: response.settings,
                       })
                     );

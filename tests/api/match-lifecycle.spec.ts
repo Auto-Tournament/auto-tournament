@@ -27,7 +27,7 @@ const MAPS = ['de_mirage', 'de_inferno', 'de_ancient', 'de_anubis', 'de_dust2', 
 
 const SERVER_HEADERS = {
   'Content-Type': 'application/json',
-  'X-MatchZy-Token': process.env.SERVER_TOKEN ?? 'server123',
+  'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
 };
 
 const TEAMS: Team[] = ['alpha', 'bravo', 'charlie', 'delta'].map((name, t) => ({
@@ -231,7 +231,7 @@ test.describe.serial('Series results through applySeriesResult', () => {
     'a series finished by an admin leaves the same state as one finished by the game',
     { tag: ['@api', '@regression'] },
     async ({ request }) => {
-      // By the game: two maps, then MatchZy's series_end.
+      // By the game: two maps, then Auto Tournament CS2's series_end.
       await startTournament(request);
       let [slug] = await semiFinals(request);
       await playTwoMapsForTeam1(request, slug);

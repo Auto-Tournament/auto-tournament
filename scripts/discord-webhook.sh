@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# MatchZy Auto Tournament - Discord Webhook Script
+# Auto Tournament - Discord Webhook Script
 # Sends a Discord webhook notification for a release
 
 # Colors for output
@@ -24,12 +24,12 @@ fi
 
 # Configuration
 DOCKER_USERNAME="${DOCKER_USERNAME:-sivertio}"
-IMAGE_NAME="matchzy-auto-tournament"
+IMAGE_NAME="auto-tournament"
 DOCKER_IMAGE="${DOCKER_USERNAME}/${IMAGE_NAME}"
 REPO_OWNER="Auto-Tournament"
 REPO_NAME="auto-tournament"
 
-echo -e "${GREEN}MatchZy Auto Tournament - Discord Webhook${NC}"
+echo -e "${GREEN}Auto Tournament - Discord Webhook${NC}"
 echo "========================================="
 echo ""
 
@@ -179,7 +179,7 @@ if command -v jq &> /dev/null; then
     
     jq -n \
         --arg content "🚀 **New Release: v${NEW_VERSION}**" \
-        --arg title "MatchZy Auto Tournament v${NEW_VERSION}" \
+        --arg title "Auto Tournament v${NEW_VERSION}" \
         --arg description "A new version has been released!" \
         --arg changelog "$(cat /tmp/changelog.txt)" \
         --arg dockerhub "https://hub.docker.com/r/${DOCKER_USERNAME}/${IMAGE_NAME}" \
@@ -209,7 +209,7 @@ if command -v jq &> /dev/null; then
               }
             ],
             footer: {
-              text: "MatchZy Auto Tournament"
+              text: "Auto Tournament"
             },
             timestamp: $timestamp
           }]
@@ -224,7 +224,7 @@ else
 {
   "content": "🚀 **New Release: v${NEW_VERSION}**",
   "embeds": [{
-    "title": "MatchZy Auto Tournament v${NEW_VERSION}",
+    "title": "Auto Tournament v${NEW_VERSION}",
     "description": "A new version has been released!",
     "color": 3066993,
     "fields": [
@@ -245,7 +245,7 @@ else
       }
     ],
     "footer": {
-      "text": "MatchZy Auto Tournament"
+      "text": "Auto Tournament"
     },
     "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
   }]

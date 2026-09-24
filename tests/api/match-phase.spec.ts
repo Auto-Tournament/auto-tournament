@@ -8,7 +8,7 @@ import type { Team } from '../helpers/teams';
  * Plugin phase → match status.
  *
  * `mapPhaseToLiveStatus` defaults to 'warmup', so every phase name it does not
- * know silently reads as WARMUP. MatchZy Enhanced reports `knife_decision`
+ * know silently reads as WARMUP. Auto Tournament CS2 reports `knife_decision`
  * while the knife winner picks a side, and MAT had no case for it — so the UI
  * dropped back to WARMUP mid-knife, which is the reported bug. `paused` and
  * `round_restore` had the same hole: both happen inside a live match.
@@ -17,7 +17,7 @@ import type { Team } from '../helpers/teams';
  * these inject one through the test-only endpoint instead.
  *
  * @tag api
- * @tag matchzy
+ * @tag cs2-plugin
  * @tag regression
  */
 
@@ -82,7 +82,7 @@ test.describe.serial('Plugin phase to match status', () => {
 
   test(
     'side selection after the knife round does not read as warmup',
-    { tag: ['@api', '@matchzy', '@regression'] },
+    { tag: ['@api', '@cs2-plugin', '@regression'] },
     async ({ request }) => {
       await applyPhase(request, slug, 'knife_decision');
 
@@ -98,7 +98,7 @@ test.describe.serial('Plugin phase to match status', () => {
 
   test(
     'a paused match stays live',
-    { tag: ['@api', '@matchzy', '@regression'] },
+    { tag: ['@api', '@cs2-plugin', '@regression'] },
     async ({ request }) => {
       await applyPhase(request, slug, 'paused');
 
@@ -110,7 +110,7 @@ test.describe.serial('Plugin phase to match status', () => {
 
   test(
     'a round restore stays live',
-    { tag: ['@api', '@matchzy', '@regression'] },
+    { tag: ['@api', '@cs2-plugin', '@regression'] },
     async ({ request }) => {
       await applyPhase(request, slug, 'round_restore');
 
@@ -122,7 +122,7 @@ test.describe.serial('Plugin phase to match status', () => {
 
   test(
     'CONTROL: a real warmup still reads as warmup',
-    { tag: ['@api', '@matchzy'] },
+    { tag: ['@api', '@cs2-plugin'] },
     async ({ request }) => {
       await applyPhase(request, slug, 'warmup');
 

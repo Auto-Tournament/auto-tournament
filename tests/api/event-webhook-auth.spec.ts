@@ -6,7 +6,7 @@ import { test, expect, type APIRequestContext } from '@playwright/test';
  * `POST /api/events` and `POST /api/events/:matchSlugOrServerId` are what move
  * the score. They were unauthenticated: anyone who could reach the API could
  * post a `series_end` and decide who won. They now require the same
- * `X-MatchZy-Token` the plugin is already configured to send.
+ * `X-Auto-Tournament-Token` the plugin is already configured to send.
  *
  * The token is deliberately checked *before* the payload, so a forged event is
  * refused without the handler ever looking at it.
@@ -20,7 +20,7 @@ const TOKEN = process.env.SERVER_TOKEN ?? 'server123';
 
 const authed = {
   'Content-Type': 'application/json',
-  'X-MatchZy-Token': TOKEN,
+  'X-Auto-Tournament-Token': TOKEN,
 };
 
 /** A real event shape, so a rejection can only be about the credential. */
@@ -66,7 +66,7 @@ test.describe('game event webhook authentication', () => {
       const response = await post(
         request,
         path,
-        { 'Content-Type': 'application/json', 'X-MatchZy-Token': `${TOKEN}-wrong` },
+        { 'Content-Type': 'application/json', 'X-Auto-Tournament-Token': `${TOKEN}-wrong` },
         seriesStart('some-server')
       );
       expect(response.status(), `${path} should refuse a wrong token`).toBe(401);
@@ -82,7 +82,7 @@ test.describe('game event webhook authentication', () => {
       const response = await post(
         request,
         '/api/events',
-        { 'Content-Type': 'application/json', 'X-MatchZy-Token': candidate },
+        { 'Content-Type': 'application/json', 'X-Auto-Tournament-Token': candidate },
         seriesStart('near-miss-probe')
       );
       expect(response.status(), `token "${candidate}" should give ${expected}`).toBe(expected);

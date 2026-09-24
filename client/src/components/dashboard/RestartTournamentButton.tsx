@@ -87,7 +87,7 @@ export const RestartTournamentButton: React.FC<RestartTournamentButtonProps> = (
             </Typography>
             <Box component="ul" sx={{ mt: 0, mb: 2, pl: 2 }}>
               <Typography component="li" variant="body2" color="text.secondary">
-                Run matchzy_endmatch on all servers with loaded/live matches
+                Run at_endmatch on all servers with loaded/live matches
               </Typography>
               <Typography component="li" variant="body2" color="text.secondary">
                 Reset matches to 'ready' status

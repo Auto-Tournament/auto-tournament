@@ -1,24 +1,26 @@
 /**
- * MatchZy Event Types
- * Based on official documentation: https://shobhit-pathak.github.io/MatchZy/events.html
+ * Auto Tournament CS2 event types.
  *
- * Note: MatchZy implements a subset of Get5 events compatible with CS2
+ * Auto Tournament CS2 is forked from MatchZy by shobhit-pathak, and its events
+ * keep the upstream schema: https://shobhit-pathak.github.io/MatchZy/events.html
+ *
+ * Note: Auto Tournament CS2 implements a subset of Get5 events compatible with CS2
  */
 
-export interface MatchZyBaseEvent {
+export interface PluginBaseEvent {
   event: string;
   matchid: string | number;
 }
 
 // Series Events
-export interface SeriesStartEvent extends MatchZyBaseEvent {
+export interface SeriesStartEvent extends PluginBaseEvent {
   event: 'series_start';
   team1_name: string;
   team2_name: string;
   num_maps: number;
 }
 
-export interface SeriesEndEvent extends MatchZyBaseEvent {
+export interface SeriesEndEvent extends PluginBaseEvent {
   event: 'series_end';
   team1_series_score: number;
   team2_series_score: number;
@@ -27,7 +29,7 @@ export interface SeriesEndEvent extends MatchZyBaseEvent {
 }
 
 // Map Events
-export interface MapResultEvent extends MatchZyBaseEvent {
+export interface MapResultEvent extends PluginBaseEvent {
   event: 'map_result';
   map_number: number;
   map_name: string;
@@ -36,14 +38,14 @@ export interface MapResultEvent extends MatchZyBaseEvent {
   winner: string;
 }
 
-export interface MapPickedEvent extends MatchZyBaseEvent {
+export interface MapPickedEvent extends PluginBaseEvent {
   event: 'map_picked';
   map_name: string;
   map_number: number;
   picked_by: string;
 }
 
-export interface SidePickedEvent extends MatchZyBaseEvent {
+export interface SidePickedEvent extends PluginBaseEvent {
   event: 'side_picked';
   map_name: string;
   map_number: number;
@@ -51,14 +53,14 @@ export interface SidePickedEvent extends MatchZyBaseEvent {
   picked_by: string;
 }
 
-export interface MapVetoedEvent extends MatchZyBaseEvent {
+export interface MapVetoedEvent extends PluginBaseEvent {
   event: 'map_vetoed';
   map_name: string;
   vetoed_by: string;
 }
 
 // Round Events
-export interface RoundEndEvent extends MatchZyBaseEvent {
+export interface RoundEndEvent extends PluginBaseEvent {
   event: 'round_end';
   map_number: number;
   round_number: number;
@@ -69,7 +71,7 @@ export interface RoundEndEvent extends MatchZyBaseEvent {
   team2_score: number;
 }
 
-export interface RoundMVPEvent extends MatchZyBaseEvent {
+export interface RoundMVPEvent extends PluginBaseEvent {
   event: 'round_mvp';
   round_number: number;
   player: {
@@ -80,7 +82,7 @@ export interface RoundMVPEvent extends MatchZyBaseEvent {
 }
 
 // Player Events
-export interface PlayerConnectEvent extends MatchZyBaseEvent {
+export interface PlayerConnectEvent extends PluginBaseEvent {
   event: 'player_connect';
   player: {
     steamid: string;
@@ -89,7 +91,7 @@ export interface PlayerConnectEvent extends MatchZyBaseEvent {
   };
 }
 
-export interface PlayerDisconnectEvent extends MatchZyBaseEvent {
+export interface PlayerDisconnectEvent extends PluginBaseEvent {
   event: 'player_disconnect';
   player: {
     steamid: string;
@@ -99,7 +101,7 @@ export interface PlayerDisconnectEvent extends MatchZyBaseEvent {
 }
 
 // Player Ready Events
-export interface PlayerReadyEvent extends MatchZyBaseEvent {
+export interface PlayerReadyEvent extends PluginBaseEvent {
   event: 'player_ready';
   player: {
     steamid: string;
@@ -113,7 +115,7 @@ export interface PlayerReadyEvent extends MatchZyBaseEvent {
   expected_total: number;
 }
 
-export interface PlayerUnreadyEvent extends MatchZyBaseEvent {
+export interface PlayerUnreadyEvent extends PluginBaseEvent {
   event: 'player_unready';
   player: {
     steamid: string;
@@ -127,7 +129,7 @@ export interface PlayerUnreadyEvent extends MatchZyBaseEvent {
   expected_total: number;
 }
 
-export interface TeamReadyEvent extends MatchZyBaseEvent {
+export interface TeamReadyEvent extends PluginBaseEvent {
   event: 'team_ready';
   team: 'team1' | 'team2';
   ready_count: number;
@@ -135,7 +137,7 @@ export interface TeamReadyEvent extends MatchZyBaseEvent {
   expected_total: number;
 }
 
-export interface AllPlayersReadyEvent extends MatchZyBaseEvent {
+export interface AllPlayersReadyEvent extends PluginBaseEvent {
   event: 'all_players_ready';
   ready_count_team1: number;
   ready_count_team2: number;
@@ -143,7 +145,7 @@ export interface AllPlayersReadyEvent extends MatchZyBaseEvent {
   countdown_started: boolean;
 }
 
-export interface PlayerDeathEvent extends MatchZyBaseEvent {
+export interface PlayerDeathEvent extends PluginBaseEvent {
   event: 'player_death';
   attacker: {
     steamid: string;
@@ -165,7 +167,7 @@ export interface PlayerDeathEvent extends MatchZyBaseEvent {
 }
 
 // Bomb Events
-export interface BombPlantedEvent extends MatchZyBaseEvent {
+export interface BombPlantedEvent extends PluginBaseEvent {
   event: 'bomb_planted';
   player: {
     steamid: string;
@@ -175,7 +177,7 @@ export interface BombPlantedEvent extends MatchZyBaseEvent {
   site: 'A' | 'B';
 }
 
-export interface BombDefusedEvent extends MatchZyBaseEvent {
+export interface BombDefusedEvent extends PluginBaseEvent {
   event: 'bomb_defused';
   player: {
     steamid: string;
@@ -185,13 +187,13 @@ export interface BombDefusedEvent extends MatchZyBaseEvent {
   site: 'A' | 'B';
 }
 
-export interface BombExplodedEvent extends MatchZyBaseEvent {
+export interface BombExplodedEvent extends PluginBaseEvent {
   event: 'bomb_exploded';
   site: 'A' | 'B';
 }
 
 // Side Swap
-export interface SideSwapEvent extends MatchZyBaseEvent {
+export interface SideSwapEvent extends PluginBaseEvent {
   event: 'side_swap';
   map_number: number;
   team1_side?: string;
@@ -199,29 +201,29 @@ export interface SideSwapEvent extends MatchZyBaseEvent {
 }
 
 // Going Live
-export interface GoingLiveEvent extends MatchZyBaseEvent {
+export interface GoingLiveEvent extends PluginBaseEvent {
   event: 'going_live';
   map_number: number;
 }
 
 // Match Phase Events
-export interface WarmupEndedEvent extends MatchZyBaseEvent {
+export interface WarmupEndedEvent extends PluginBaseEvent {
   event: 'warmup_ended';
   map_number: number;
 }
 
-export interface KnifeRoundStartedEvent extends MatchZyBaseEvent {
+export interface KnifeRoundStartedEvent extends PluginBaseEvent {
   event: 'knife_round_started';
   map_number: number;
 }
 
-export interface KnifeRoundEndedEvent extends MatchZyBaseEvent {
+export interface KnifeRoundEndedEvent extends PluginBaseEvent {
   event: 'knife_round_ended';
   map_number: number;
   winner: 'team1' | 'team2';
 }
 
-export interface RoundStartedEvent extends MatchZyBaseEvent {
+export interface RoundStartedEvent extends PluginBaseEvent {
   event: 'round_started';
   map_number: number;
   round_number: number;
@@ -229,21 +231,21 @@ export interface RoundStartedEvent extends MatchZyBaseEvent {
   team2_score: number;
 }
 
-export interface HalftimeStartedEvent extends MatchZyBaseEvent {
+export interface HalftimeStartedEvent extends PluginBaseEvent {
   event: 'halftime_started';
   map_number: number;
   team1_score: number;
   team2_score: number;
 }
 
-export interface OvertimeStartedEvent extends MatchZyBaseEvent {
+export interface OvertimeStartedEvent extends PluginBaseEvent {
   event: 'overtime_started';
   map_number: number;
   overtime_number: number;
 }
 
 // Pause System Events
-export interface MatchPausedEvent extends MatchZyBaseEvent {
+export interface MatchPausedEvent extends PluginBaseEvent {
   event: 'match_paused';
   map_number: number;
   paused_by: {
@@ -256,7 +258,7 @@ export interface MatchPausedEvent extends MatchZyBaseEvent {
   pause_time: number;
 }
 
-export interface UnpauseRequestedEvent extends MatchZyBaseEvent {
+export interface UnpauseRequestedEvent extends PluginBaseEvent {
   event: 'unpause_requested';
   map_number: number;
   team: 'team1' | 'team2';
@@ -264,22 +266,22 @@ export interface UnpauseRequestedEvent extends MatchZyBaseEvent {
   teams_needed: number;
 }
 
-export interface MatchUnpausedEvent extends MatchZyBaseEvent {
+export interface MatchUnpausedEvent extends PluginBaseEvent {
   event: 'match_unpaused';
   map_number: number;
   pause_duration: number;
 }
 
 // Backup Loaded
-export interface BackupLoadedEvent extends MatchZyBaseEvent {
+export interface BackupLoadedEvent extends PluginBaseEvent {
   event: 'backup_loaded';
   map_number: number;
   round_number: number;
   filename?: string;
 }
 
-// Stats Update (Note: This may be limited in MatchZy compared to Get5)
-export interface PlayerStatsUpdateEvent extends MatchZyBaseEvent {
+// Stats Update (Note: This may be limited in Auto Tournament CS2 compared to Get5)
+export interface PlayerStatsUpdateEvent extends PluginBaseEvent {
   event: 'player_stats_update';
   player: {
     steamid: string;
@@ -297,7 +299,7 @@ export interface PlayerStatsUpdateEvent extends MatchZyBaseEvent {
   };
 }
 
-// Server-level events from MatchZy Enhanced.
+// Server-level events from Auto Tournament CS2.
 //
 // These carry matchid -1 (or none at all) and describe the server rather than a
 // match. They were declared in serverTrackingService and left out of the union
@@ -335,18 +337,18 @@ export interface ServerHealthEvent {
 }
 
 /**
- * Connectivity probe. MatchZy sends this to verify the server can reach our
+ * Connectivity probe. Auto Tournament CS2 sends this to verify the server can reach our
  * /api/events endpoint; both spellings are in the wild.
  */
 export interface ServerTestEvent {
-  event: 'test_event' | 'MatchZyTestEvent';
+  event: 'test_event' | 'PluginTestEvent';
   server_id?: string;
   matchid?: number | string;
   timestamp?: number;
 }
 
 // Union type of all events
-export type MatchZyEvent =
+export type PluginEvent =
   | SeriesStartEvent
   | SeriesEndEvent
   | MapResultEvent

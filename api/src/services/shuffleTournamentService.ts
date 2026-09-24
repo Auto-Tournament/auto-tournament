@@ -24,13 +24,13 @@ export interface ShuffleTournamentConfig {
   teamSize: number; // Number of players per team, default: 5
   /**
    * Shuffle tournaments always use an explicit max-rounds limit.
-   * This directly maps to MatchZy's mp_maxrounds.
+   * This directly maps to Auto Tournament CS2's mp_maxrounds.
    */
   maxRounds: number; // Required, default: 24 (validated below)
   overtimeMode: 'enabled' | 'disabled';
   /**
    * Optional: max number of overtime segments (maps) allowed before match ends in a draw.
-   * Mapped to MatchZy's overtime limit cvar. If undefined or 0, MatchZy default (unlimited)
+   * Mapped to Auto Tournament CS2's overtime limit cvar. If undefined or 0, Auto Tournament CS2 default (unlimited)
    * behavior is used.
    */
   overtimeSegments?: number;

@@ -5,7 +5,7 @@ export interface NormalizedPlayer {
 }
 
 /**
- * Normalize player data coming from match configs, MatchZy payloads, or legacy formats.
+ * Normalize player data coming from match configs, Auto Tournament CS2 payloads, or legacy formats.
  */
 export function normalizeConfigPlayers(players: unknown): NormalizedPlayer[] {
   if (!players) return [];

@@ -170,7 +170,7 @@
       "noServers": "Nessun server disponibile",
       "refreshServers": "Aggiorna elenco server",
       "noEvents": "Ancora nessun evento ricevuto da questo server.",
-      "noEventsHint": "Ancora nessun evento dopo 15 secondi. Verifica che il tuo server CS2 sia configurato per inviare i webhook MatchZy a /api/events/:matchSlugOrServerId con il X-MatchZy-Token corretto.",
+      "noEventsHint": "Ancora nessun evento dopo 15 secondi. Verifica che il tuo server CS2 sia configurato per inviare i webhook Auto Tournament CS2 a /api/events/:matchSlugOrServerId con il X-Auto-Tournament-Token corretto.",
       "waiting": "In attesa di eventi dal server...",
       "footer_one": "{{count}} evento visualizzato (max 100)",
       "footer_other": "{{count}} eventi visualizzati (max 100)",

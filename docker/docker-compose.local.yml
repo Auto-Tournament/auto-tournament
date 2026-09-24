@@ -20,28 +20,28 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: matchzy-postgres
+    container_name: auto-tournament-postgres
     restart: unless-stopped
     environment:
       - POSTGRES_USER=${DB_USER:-postgres}
       - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
-      - POSTGRES_DB=${DB_NAME:-matchzy_tournament}
+      - POSTGRES_DB=${DB_NAME:-auto_tournament}
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres}']
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - matchzy-network
+      - auto-tournament-network
 
-  matchzy-tournament:
+  auto-tournament:
     build:
       context: ..
       dockerfile: docker/Dockerfile
       args:
         # Enable developer menus/tools in the client build (see client/src/hooks/useIsDevelopment.ts)
         VITE_ENABLE_DEV_PAGE: "true"
-    container_name: matchzy-tournament-api
+    container_name: auto-tournament
     restart: unless-stopped
     depends_on:
       postgres:
@@ -68,11 +68,11 @@ services:
       # keep it off for local "prod-like" and E2E stacks by default.
       - GAMES_ENRICH=${GAMES_ENRICH:-off}
       # Allow simulation settings in local "prod-like" builds
-      - MATCHZY_ENABLE_SIMULATION_IN_PROD=true
+      - AT_ENABLE_SIMULATION_IN_PROD=true
       # Docker service name for DB connection (not from .env)
       - DB_HOST=postgres
       # Computed DATABASE_URL (uses DB_* vars from .env or defaults)
-      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-auto_tournament}
       # SESSION_SECRET should be set in .env (required for session persistence)
       # If not set, a default is used but sessions won't persist across restarts
       - SESSION_SECRET=${SESSION_SECRET:-}
@@ -87,8 +87,8 @@ services:
       retries: 3
       start_period: 10s
     networks:
-      - matchzy-network
+      - auto-tournament-network
 
 networks:
-  matchzy-network:
+  auto-tournament-network:
     driver: bridge

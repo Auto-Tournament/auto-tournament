@@ -13,7 +13,7 @@ import { bootCodeModules } from './module-loader/boot';
 
 // Log application version on startup (injected by Vite from package.json)
 
-console.info('[MatchZy] App version:', __APP_VERSION__);
+console.info('[Auto Tournament] App version:', __APP_VERSION__);
 
 // Ember's favicon is baked into index.html; swap it for the active theme's
 // recoloured ram logo otherwise.

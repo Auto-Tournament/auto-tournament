@@ -18,7 +18,7 @@ function isProbablyOkToMatchEnglish(s) {
   // Keys that are often identical across languages or are proper nouns/tech terms.
   const exactOk = new Set([
     'ELO',
-    'MatchZy',
+    'Auto Tournament CS2',
     'CS2',
     'CS',
     // Proper nouns / providers
@@ -27,7 +27,7 @@ function isProbablyOkToMatchEnglish(s) {
     'Discord',
     'Keycloak',
     // App name / brand (usually not translated)
-    'Matchzy Auto Tournament',
+    'Auto Tournament',
   ]);
   if (exactOk.has(s)) return true;
   // Pure placeholder values (used as labels elsewhere)

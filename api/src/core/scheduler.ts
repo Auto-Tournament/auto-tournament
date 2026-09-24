@@ -358,14 +358,14 @@ export class Scheduler {
 
     // For shuffle round advancement and other batch-style allocations we want
     // to avoid starting only a subset of a round's matches while the rest sit
-    // "waiting for server". Follow the MatchZy guidance and poll until we have
+    // "waiting for server". Follow the Auto Tournament CS2 guidance and poll until we have
     // enough truly idle servers (status=idle, beyond grace period) to cover
     // the requested ready matches, or until a reasonable timeout is reached.
     // Never wait for more servers than exist (#226): with more matches than
     // servers, start one per server and poll the rest (see batchServerTarget).
     const { servers: configuredServers } = await this.getAllocationStatus(tournamentId);
     const requiredServers = batchServerTarget(readyMatches.length, configuredServers);
-    const POLL_INTERVAL_MS = 10_000; // 10s, per MatchZy best practices
+    const POLL_INTERVAL_MS = 10_000; // 10s, per Auto Tournament CS2 best practices
     const MAX_WAIT_MS = 15 * 60 * 1000; // 15 minutes hard cap
     const deadline = Date.now() + MAX_WAIT_MS;
 

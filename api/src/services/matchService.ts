@@ -49,7 +49,7 @@ class MatchService {
       });
 
     // The integration builds the stored config from the admin's settings
-    // (for CS2: simulation, round limit, default MatchZy Enhanced cvars and
+    // (for CS2: simulation, round limit, default Auto Tournament CS2 cvars and
     // admins, so manual matches behave like tournament-generated matches).
     const config = await buildMatchConfigFor(
       {
@@ -203,7 +203,7 @@ class MatchService {
   }
 
   /**
-   * Get match config (raw JSON for MatchZy)
+   * Get match config (raw JSON for Auto Tournament CS2)
    */
   async getMatchConfig(slug: string): Promise<MatchConfig | null> {
     const match = await db.getOneAsync<Match>('matches', 'slug = ?', [slug]);

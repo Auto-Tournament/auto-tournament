@@ -8,7 +8,7 @@ import type { Team } from '../helpers/teams';
 /**
  * Player stats are matched by steamid, not by the team block they arrive in.
  *
- * MatchZy has shipped `round_end` payloads that list team 2's players inside
+ * Auto Tournament CS2 has shipped `round_end` payloads that list team 2's players inside
  * the `team1` block. MAT looked each roster player up in its own side's
  * dictionary, so every player missed and their match history showed 0 kills,
  * 0 damage and 0.0 ADR after a finished match (QA, MAT 2.4.6). Matching on
@@ -23,7 +23,7 @@ const MAPS = ['de_mirage', 'de_inferno', 'de_ancient', 'de_anubis', 'de_dust2', 
 
 const SERVER_HEADERS = {
   'Content-Type': 'application/json',
-  'X-MatchZy-Token': process.env.SERVER_TOKEN ?? 'server123',
+  'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
 };
 
 function playerBlock(team: Team, kills: number, damage: number) {

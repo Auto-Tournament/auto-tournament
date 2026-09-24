@@ -2,7 +2,7 @@
  * Core access to a match's integration-owned config.
  *
  * `matches.config` is a blob owned by the match's game integration (for CS2,
- * the MatchZy match config). The core does not build it and does not read its
+ * the Auto Tournament CS2 match config). The core does not build it and does not read its
  * fields: it asks the integration to build it (`buildMatchConfigFor`) and to
  * describe it (`describeMatch`). Where an API response still forwards the
  * blob to the client as-is, `parseStoredMatchConfig` only turns the stored

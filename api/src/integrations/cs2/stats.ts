@@ -1,6 +1,6 @@
 /**
  * CS2 player stats: the `statsSchema` metrics, and the mappers between them,
- * MatchZy's per-player stat records and the CS2 columns of
+ * Auto Tournament CS2's per-player stat records and the CS2 columns of
  * `player_match_stats`.
  *
  * The core persists `PlayerStatLine`s and rates players from their metrics;
@@ -12,7 +12,7 @@
 import type { StatsSchema } from '../types';
 
 /**
- * The metrics MatchZy reports, i.e. the CS2 columns of `player_match_stats`
+ * The metrics Auto Tournament CS2 reports, i.e. the CS2 columns of `player_match_stats`
  * (`damage` is `total_damage`). The same for every tournament today;
  * `statsSchema` is a function so a mode that records less (or more) can say
  * so later.
@@ -57,13 +57,13 @@ export const CS2_STATS_SCHEMA: StatsSchema = {
 };
 
 /**
- * A MatchZy per-player stat record (`damage`, `headshot_kills`, `mvp`, …, in
+ * An Auto Tournament CS2 per-player stat record (`damage`, `headshot_kills`, `mvp`, …, in
  * snake or camel case) as metrics. ADR is damage / rounds, two decimals, as
  * stored in `player_match_stats.adr`.
  *
- * Values are passed through as MatchZy sent them (no coercion), as before.
+ * Values are passed through as Auto Tournament CS2 sent them (no coercion), as before.
  */
-export function metricsFromMatchZyStats(raw: Record<string, unknown>): Record<string, number> {
+export function metricsFromPluginStats(raw: Record<string, unknown>): Record<string, number> {
   const stats = raw as {
     rounds_played?: number;
     roundsPlayed?: number;
@@ -101,7 +101,7 @@ export function metricsFromMatchZyStats(raw: Record<string, unknown>): Record<st
 }
 
 /**
- * The CS2 columns of a `player_match_stats` row. A player MatchZy reported
+ * The CS2 columns of a `player_match_stats` row. A player Auto Tournament CS2 reported
  * nothing for (`{}`) gets zeros everywhere.
  */
 export function cs2PlayerStatsColumns(metrics: Record<string, number>): Record<string, unknown> {

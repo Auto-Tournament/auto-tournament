@@ -14,18 +14,18 @@ import { serverInitializationService } from './serverInitializationService';
 import { settingsService } from '../../../services/settingsService';
 import { cs2Settings } from '../settingsReaders';
 import {
-  getMatchZyLoadMatchCommand,
-  getMatchZyServerConfigCommands,
+  getPluginLoadMatchCommand,
+  getPluginServerConfigCommands,
   redactLoadMatchCommand,
-} from '../utils/matchzyRconCommands';
+} from '../utils/pluginRconCommands';
 import { resolveSeriesEndKickDelays, serverTurnoverTracker, tvDelayFromCvars } from '../utils/serverTurnover';
 import { matchConfigFetchTracker } from '../../../services/matchConfigFetchTracker';
-import { classifyClearQueuedReply, classifyLoadMatchReply } from '../../../utils/matchzyServerReplies';
+import { classifyClearQueuedReply, classifyLoadMatchReply } from '../../../utils/pluginServerReplies';
 import { serverStatusService, ServerStatus } from './serverStatusService';
 import { buildMatchConfigUrl, buildServerEventsUrl } from '../../../utils/serverAttribution';
 
 /**
- * How long to wait for MatchZy to fetch the match config after the load command.
+ * How long to wait for Auto Tournament CS2 to fetch the match config after the load command.
  * Observed locally at well under a second; the headroom is for a busy server.
  */
 const CONFIG_FETCH_TIMEOUT_MS = 10_000;
@@ -112,17 +112,17 @@ export async function loadMatchOnServer(
 
     // Never expose tokens in logs or API responses.
     const redactSensitiveCommand = (command: string): string => {
-      // MatchZy demo upload token / header value
-      if (command.startsWith('matchzy_demo_upload_header_value ')) {
-        return 'matchzy_demo_upload_header_value "REDACTED"';
+      // Auto Tournament CS2 demo upload token / header value
+      if (command.startsWith('at_demo_upload_header_value ')) {
+        return 'at_demo_upload_header_value "REDACTED"';
       }
-      // MatchZy webhook token / header value (defense-in-depth; currently not set here)
-      if (command.startsWith('matchzy_remote_log_header_value ')) {
-        return 'matchzy_remote_log_header_value "REDACTED"';
+      // Auto Tournament CS2 webhook token / header value (defense-in-depth; currently not set here)
+      if (command.startsWith('at_remote_log_header_value ')) {
+        return 'at_remote_log_header_value "REDACTED"';
       }
       // Match report token (defense-in-depth; currently not set here)
-      if (command.startsWith('matchzy_report_token ')) {
-        return 'matchzy_report_token "REDACTED"';
+      if (command.startsWith('at_report_token ')) {
+        return 'at_report_token "REDACTED"';
       }
       return command;
     };
@@ -148,30 +148,30 @@ export async function loadMatchOnServer(
       log.success(`[MATCH LOADING] Server ${serverId} initialized with persistent configuration`);
     }
 
-    // STEP 1.5: Apply MatchZy global defaults from Settings.
-    // Even though these are persisted by MatchZy Enhanced, we re-apply them on
+    // STEP 1.5: Apply Auto Tournament CS2 global defaults from Settings.
+    // Even though these are persisted by Auto Tournament CS2, we re-apply them on
     // each match load so updates take effect without requiring a server init reset.
     try {
-      const matchzyCore = await cs2Settings.getMatchzyCoreDefaults();
+      const atCore = await cs2Settings.getAtCoreDefaults();
       // Simulated series only have bots; MAT waits for the demo upload itself,
       // so the plugin should not hold the server for the admin's kick delay.
       const kickDelays = resolveSeriesEndKickDelays(
-        matchzyCore,
+        atCore,
         await settingsService.isSimulationModeEnabled()
       );
-      const cmds = getMatchZyServerConfigCommands({
-        autostartMode: matchzyCore.autostartMode,
-        minimumReadyRequired: matchzyCore.minimumReadyRequired,
-        allowForceReady: matchzyCore.allowForceReady,
-        kickWhenNoMatchLoaded: matchzyCore.kickWhenNoMatchLoaded,
-        whitelistEnabledDefault: matchzyCore.whitelistEnabledDefault,
-        pauseAfterRestore: matchzyCore.pauseAfterRestore,
-        stopCommandAvailable: matchzyCore.stopCommandAvailable,
-        stopCommandNoDamage: matchzyCore.stopCommandNoDamage,
-        usePauseCommandForTacticalPause: matchzyCore.usePauseCommandForTacticalPause,
-        hostnameFormat: matchzyCore.hostnameFormat,
-        demoPath: matchzyCore.demoPath,
-        demoNameFormat: matchzyCore.demoNameFormat,
+      const cmds = getPluginServerConfigCommands({
+        autostartMode: atCore.autostartMode,
+        minimumReadyRequired: atCore.minimumReadyRequired,
+        allowForceReady: atCore.allowForceReady,
+        kickWhenNoMatchLoaded: atCore.kickWhenNoMatchLoaded,
+        whitelistEnabledDefault: atCore.whitelistEnabledDefault,
+        pauseAfterRestore: atCore.pauseAfterRestore,
+        stopCommandAvailable: atCore.stopCommandAvailable,
+        stopCommandNoDamage: atCore.stopCommandNoDamage,
+        usePauseCommandForTacticalPause: atCore.usePauseCommandForTacticalPause,
+        hostnameFormat: atCore.hostnameFormat,
+        demoPath: atCore.demoPath,
+        demoNameFormat: atCore.demoNameFormat,
         ...kickDelays,
       });
       for (const cmd of cmds) {
@@ -181,18 +181,18 @@ export async function loadMatchOnServer(
       }
     } catch (coreError) {
       log.warn(
-        `[MATCH LOADING] Failed to apply MatchZy global defaults for ${matchSlug} on ${serverId}`,
+        `[MATCH LOADING] Failed to apply Auto Tournament CS2 global defaults for ${matchSlug} on ${serverId}`,
         coreError as Error
       );
     }
 
     // STEP 1.6: Ensure demo prerequisites and per-match upload endpoint are configured.
-    // - Demo recording is controlled by match config cvars (matchzy_demo_recording_enabled)
+    // - Demo recording is controlled by match config cvars (at_demo_recording_enabled)
     // - Actual demo creation requires GOTV enabled (tv_enable 1)
     // - Demo uploads must target a match-specific URL: POST /api/demos/:matchSlug/upload
     //
     // We configure these via RCON (not match JSON) to avoid leaking SERVER_TOKEN.
-    const demoRecordingFlagRaw = cvars['matchzy_demo_recording_enabled'];
+    const demoRecordingFlagRaw = cvars['at_demo_recording_enabled'];
     const demoRecordingEnabled =
       demoRecordingFlagRaw === undefined ? true : String(demoRecordingFlagRaw).trim() !== '0';
 
@@ -209,9 +209,9 @@ export async function loadMatchOnServer(
           // Ensure GOTV is enabled so tv_record actually produces a .dem file.
           'tv_enable 1',
           // Configure per-match upload URL + auth header.
-          `matchzy_demo_upload_url "${baseUrl}/api/demos/${matchSlug}/upload"`,
-          `matchzy_demo_upload_header_key "X-MatchZy-Token"`,
-          `matchzy_demo_upload_header_value "${serverToken}"`,
+          `at_demo_upload_url "${baseUrl}/api/demos/${matchSlug}/upload"`,
+          `at_demo_upload_header_key "X-Auto-Tournament-Token"`,
+          `at_demo_upload_header_value "${serverToken}"`,
         ];
 
         const errors: string[] = [];
@@ -249,7 +249,7 @@ export async function loadMatchOnServer(
     } else {
       log.info('[DEMO_CONFIG] DEMO_RECORDING_DISABLED', { matchSlug, serverId });
       // Avoid stale demo upload endpoints from previous matches.
-      const disableCmd = 'matchzy_demo_upload_url ""';
+      const disableCmd = 'at_demo_upload_url ""';
       const result = await rconService.sendCommand(serverId, disableCmd);
       results.push({ success: result.success, command: disableCmd, error: result.error });
       await delay(150);
@@ -289,9 +289,9 @@ export async function loadMatchOnServer(
     // Load match on server
     // Server initialization has already ensured webhook, auth, and core config are set and persisted
     log.success(`✅ Server ${serverId} ready. Loading match ${matchSlug}`);
-    // The header args make MatchZy authenticate its config fetch; the config
+    // The header args make Auto Tournament CS2 authenticate its config fetch; the config
     // endpoint refuses it otherwise (requireMatchConfigAccess).
-    const loadCommand = getMatchZyLoadMatchCommand(configUrl, process.env.SERVER_TOKEN);
+    const loadCommand = getPluginLoadMatchCommand(configUrl, process.env.SERVER_TOKEN);
     const safeLoadCommand = redactLoadMatchCommand(loadCommand);
     log.info(`Sending load command to ${serverId}: ${safeLoadCommand}`);
     const loadCommandSentAt = Date.now();
@@ -304,7 +304,7 @@ export async function loadMatchOnServer(
 
     const reply = classifyLoadMatchReply(loadResult.response);
     const gotvInactive = reply === 'gotv_inactive';
-    // MatchZy has several refusals and they share no common wording. These are
+    // Auto Tournament CS2 has several refusals and they share no common wording. These are
     // the ones we know; the config-fetch check below is what catches the rest.
     const alreadySetUp = reply === 'already_setup';
     const pluginReportedFailure = reply === 'failed';
@@ -319,10 +319,10 @@ export async function loadMatchOnServer(
 
     if (pluginReportedFailure || gotvInactive || alreadySetUp) {
       const errorMessage = gotvInactive
-        ? 'MatchZy refused to load because GOTV is disabled. Enable GOTV (tv_enable 1) and retry.'
+        ? 'Auto Tournament CS2 refused to load because GOTV is disabled. Enable GOTV (tv_enable 1) and retry.'
         : alreadySetUp
-        ? 'MatchZy refused the match because the server still has a previous match set up. End or cancel that match on the server, then load this one again.'
-        : 'MatchZy plugin reported that it failed to load the match. Check the server console for the detailed error.';
+        ? 'Auto Tournament CS2 refused the match because the server still has a previous match set up. End or cancel that match on the server, then load this one again.'
+        : 'Auto Tournament CS2 plugin reported that it failed to load the match. Check the server console for the detailed error.';
 
       handlePluginFailure(errorMessage);
 
@@ -335,7 +335,7 @@ export async function loadMatchOnServer(
       };
     }
 
-    // The previous series on this server is in postgame. MatchZy stored the URL
+    // The previous series on this server is in postgame. Auto Tournament CS2 stored the URL
     // and fetches it after its reset, which can be minutes away (demo upload +
     // kick delay), so waiting for the fetch here would always "fail". Treating
     // that as a failure is what put one match on two servers: MAT re-allocated
@@ -373,7 +373,7 @@ export async function loadMatchOnServer(
       };
     }
 
-    // RCON accepting the command only means it was delivered. MatchZy still has
+    // RCON accepting the command only means it was delivered. Auto Tournament CS2 still has
     // to fetch the config, and when it refuses it does so without telling RCON
     // anything we can rely on - which is how a match could be marked "loaded"
     // while the server sat on the previous map.
@@ -396,7 +396,7 @@ export async function loadMatchOnServer(
 
         if (!fetched) {
           const errorMessage =
-            'MatchZy never fetched the match config, so the match did not load. ' +
+            'Auto Tournament CS2 never fetched the match config, so the match did not load. ' +
             'The server is still running whatever it had before. Check the server console for the reason it refused.';
           handlePluginFailure(errorMessage);
 
@@ -422,7 +422,7 @@ export async function loadMatchOnServer(
       // older ones up to date. It is sent only after a real (not queued) load:
       // the plugin clears its event retry queue when the URL changes, and during
       // a previous series' postgame that queue can still hold its final events.
-      const webhookCmd = `matchzy_remote_log_url "${buildServerEventsUrl(baseUrl, serverId)}"`;
+      const webhookCmd = `at_remote_log_url "${buildServerEventsUrl(baseUrl, serverId)}"`;
       const webhookResult = await rconService.sendCommand(serverId, webhookCmd);
       results.push({ success: webhookResult.success, command: webhookCmd, error: webhookResult.error });
       matchLiveStatsService.reset(match.slug);
@@ -481,9 +481,9 @@ export type CancelQueuedLoadOutcome = 'cleared' | 'none' | 'restarted' | 'skippe
 /**
  * Make sure a server will not later load a match MAT has moved elsewhere.
  *
- * MatchZy-Enhanced queues a load sent during postgame and runs it after the
- * series resets. Newer plugins (MatchZy-Enhanced#16) drop it with
- * `matchzy_clear_queued_match`. 1.4.24 has no such command; there the queue is
+ * Auto Tournament CS2 queues a load sent during postgame and runs it after the
+ * series resets. Newer plugins (cs2-plugin#16) drop it with
+ * `at_clear_queued_match`. 1.4.24 has no such command; there the queue is
  * only consumed by a reset, so `css_restart` is sent — but only when the plugin
  * reports `queued`, since restarting a server in any other state could end a
  * match that is really being played there. On 1.4.24 that restart makes the
@@ -496,7 +496,7 @@ export async function cancelQueuedLoad(
   matchSlug: string
 ): Promise<CancelQueuedLoadOutcome> {
   try {
-    const reply = await rconService.sendCommand(serverId, 'matchzy_clear_queued_match');
+    const reply = await rconService.sendCommand(serverId, 'at_clear_queued_match');
     const outcome = reply.success ? classifyClearQueuedReply(reply.response) : 'unsupported';
     if (outcome !== 'unsupported') {
       log.info('[MATCH LOADING] Cleared queued load before moving match', {
@@ -510,7 +510,7 @@ export async function cancelQueuedLoad(
     const status = await serverStatusService.getServerStatus(serverId);
     if (status.online && status.status === ServerStatus.QUEUED) {
       log.warn(
-        '[MATCH LOADING] Plugin has no matchzy_clear_queued_match; restarting the server to drop its queued load',
+        '[MATCH LOADING] Plugin has no at_clear_queued_match; restarting the server to drop its queued load',
         { serverId, matchSlug }
       );
       await rconService.sendCommand(serverId, 'css_restart');

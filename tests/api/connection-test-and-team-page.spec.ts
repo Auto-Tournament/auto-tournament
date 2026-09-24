@@ -10,7 +10,7 @@ import { computeTeamStanding, globalMatchNumbers } from '../../api/src/utils/tea
 /**
  * QA pass on admin and player pages (MAT 2.4.10).
  *
- * "Test connection" repointed a live server's `matchzy_remote_log_url` at a
+ * "Test connection" repointed a live server's `at_remote_log_url` at a
  * `test_<host>_<port>` address and left it there, then polled for the test
  * event under that id while the plugin reported its real id — a false
  * "server cannot reach the API". The team page ranked a team among every team
@@ -36,7 +36,7 @@ test.describe('Connection test does not change server config', () => {
       path.join(__dirname, '../../api/src/integrations/cs2/routes/rcon.ts'),
       'utf8'
     );
-    expect(source).not.toContain('getMatchZyWebhookCommands');
+    expect(source).not.toContain('getPluginWebhookCommands');
     expect(source).not.toMatch(/test_\$\{host/);
   });
 

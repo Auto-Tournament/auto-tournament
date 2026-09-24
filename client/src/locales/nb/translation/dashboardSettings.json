@@ -98,12 +98,11 @@
       "players": "Spillere og tilgang",
       "matches": "Kamper og rating",
       "advanced": "Avansert",
-      "matchzy": "MatchZy",
       "developer": "Utvikler / simulering"
     },
     "integrations": {
       "webhook": {
-        "title": "MatchZy-webhook",
+        "title": "Auto Tournament CS2-webhook",
         "description": "Webhook-URL som CS2-serverne kan nå.",
         "label": "Webhook-URL",
         "helper": "Eksempel: https://ditt-domene.no"
@@ -134,14 +133,14 @@
     },
     "matchRating": {
       "chatDefaults": {
-        "title": "MatchZy chat- og knivstandarder",
+        "title": "Auto Tournament CS2 chat- og knivstandarder",
         "description": "Konfigurer chat‑prefikser og standard oppførsel for knivrunde.",
         "chatPrefixLabel": "Chat‑prefiks",
         "chatPrefixHelper": "Standard: \"[{Green}Auto Tournament{Default}]\". La stå tomt for standard.",
         "adminChatPrefixLabel": "Admin chat‑prefiks",
         "adminChatPrefixHelper": "Standard: \"[{Red}ADMIN{Default}]\". La stå tomt for standard.",
         "knifeToggleLabel": "Aktiver knivrunder som standard for nye kamper",
-        "knifeNote": "Gjelder kun når MatchZy ellers ville kjørt knivrunde."
+        "knifeNote": "Gjelder kun når Auto Tournament CS2 ellers ville kjørt knivrunde."
       },
       "ratings": {
         "title": "Ratingoppdateringer",
@@ -149,8 +148,8 @@
         "toggleLabel": "Oppdater spiller-rating etter kamper",
         "note": "Statistikk spores fortsatt selv om rating er deaktivert."
       },
-      "matchzyCore": {
-        "title": "MatchZy core-standarder",
+      "atCore": {
+        "title": "Auto Tournament CS2 core-standarder",
         "description": "Disse standardene sendes til servere under initialisering og før hver kamp lastes inn.",
         "expert": {
           "title": "Ekspertinnstillinger",
@@ -190,7 +189,7 @@
         "demos": {
           "title": "Demoer",
           "demoPathLabel": "Demo-sti (relativ til csgo/)",
-          "demoPathHelper": "Må slutte med '/'. Standard: MatchZy/",
+          "demoPathHelper": "Må slutte med '/'. Standard: AutoTournamentCS2/",
           "demoNameFormatLabel": "Demo-filnavnformat (uten .dem)",
           "demoNameFormatHelper": "Tokener: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
         },
@@ -202,9 +201,9 @@
           "kickDelayHelper": "Legges oppå mp_match_restart_delay."
         }
       },
-      "matchzyEnhanced": {
+      "atEnhanced": {
         "title": "Auto Tournament CS2‑funksjoner",
-        "description": "Avanserte match‑funksjoner. La stå tomt for MatchZy‑standard.",
+        "description": "Avanserte match‑funksjoner. La stå tomt for Auto Tournament CS2‑standard.",
         "autoready": {
           "title": "Auto‑ready",
           "label": "Auto‑marker spillere som ready når de joiner",
@@ -257,7 +256,7 @@
       "title": "Utvikleralternativer",
       "description": "Kun for lokal utvikling – ikke bruk i produksjon.",
       "simulateToggleLabel": "Simuler kamper (bruk bot-styrte demo-kamper i stedet for ekte spillere)",
-      "simulateNote": "Når aktivert, inkluderer genererte MatchZy-konfiger \"simulation\": true for automatiserte demo-kamper.",
+      "simulateNote": "Når aktivert, inkluderer genererte Auto Tournament CS2-konfiger \"simulation\": true for automatiserte demo-kamper.",
       "timescaleTitle": "Simuleringshastighet",
       "timescaleDescription": "Styrer hvor raskt simulerte kamper kjører. Høyere verdier gjør bots og runde-flow raskere. Gjelder kun når simulering er aktivert.",
       "timescaleWarning": "Hastigheter over 2.0 kan være litt ustabile og gi rar bot-oppførsel, men fungerer fint for rask lokal testing.",
@@ -275,8 +274,8 @@
         "confirmLoading": "Tilbakestiller…"
       },
       "debugChat": {
-        "label": "Aktiver MatchZy debug-chatmeldinger",
-        "description": "Når aktivert, skriver MatchZy ekstra debug-meldinger (connect/disconnect, event-traces osv.) i in-game chat. Bruk kun for utvikling og testing."
+        "label": "Aktiver Auto Tournament CS2 debug-chatmeldinger",
+        "description": "Når aktivert, skriver Auto Tournament CS2 ekstra debug-meldinger (connect/disconnect, event-traces osv.) i in-game chat. Bruk kun for utvikling og testing."
       }
     },
     "footer": {

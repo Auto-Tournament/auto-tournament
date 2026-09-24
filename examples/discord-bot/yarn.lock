@@ -424,6 +424,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"auto-tournament-discord-bot-example@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "auto-tournament-discord-bot-example@workspace:."
+  dependencies:
+    "@types/node": "npm:^20.14.0"
+    discord.js: "npm:^14.16.3"
+    openapi-typescript: "npm:^7.4.0"
+    socket.io-client: "npm:^4.8.1"
+    tsx: "npm:^4.19.0"
+    typescript: "npm:^5.6.0"
+  languageName: unknown
+  linkType: soft
+
 "balanced-match@npm:^1.0.0":
   version: 1.0.2
   resolution: "balanced-match@npm:1.0.2"
@@ -745,19 +758,6 @@ __metadata:
   checksum: 10c0/a8ddd0347b5bd4da765c29af111e4fb596707724a488d5a068bcd9bda805523bd5dc77fcbb1ec26de89c692c4031ec9ab2cef50b4eafef5ef8a2c44326453f65
   languageName: node
   linkType: hard
-
-"matchzy-discord-bot-example@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "matchzy-discord-bot-example@workspace:."
-  dependencies:
-    "@types/node": "npm:^20.14.0"
-    discord.js: "npm:^14.16.3"
-    openapi-typescript: "npm:^7.4.0"
-    socket.io-client: "npm:^4.8.1"
-    tsx: "npm:^4.19.0"
-    typescript: "npm:^5.6.0"
-  languageName: unknown
-  linkType: soft
 
 "minimatch@npm:5.1.9":
   version: 5.1.9

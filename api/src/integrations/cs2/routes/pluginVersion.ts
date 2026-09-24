@@ -1,15 +1,15 @@
 import { Router, Request, Response } from 'express';
-import { getLatestMatchZyVersion } from '../services/matchzyVersionService';
+import { getLatestPluginVersion } from '../services/pluginVersionService';
 
 const router = Router();
 
 /**
- * GET /api/matchzy/latest-version
- * Get the latest MatchZy Enhanced version from GitHub (cached)
+ * GET /api/cs2-plugin/latest-version
+ * Get the latest Auto Tournament CS2 version from GitHub (cached)
  */
 router.get('/latest-version', async (_req: Request, res: Response) => {
   try {
-    const versionInfo = await getLatestMatchZyVersion();
+    const versionInfo = await getLatestPluginVersion();
     
     if (!versionInfo) {
       return res.status(200).json({

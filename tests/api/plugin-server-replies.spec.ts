@@ -4,7 +4,7 @@ import {
   classifyLoadMatchReply,
   isAllocatableStatus,
   parseConVarReply,
-} from '../../api/src/utils/matchzyServerReplies';
+} from '../../api/src/utils/pluginServerReplies';
 import {
   buildMatchConfigUrl,
   buildServerEventsUrl,
@@ -14,10 +14,10 @@ import {
 } from '../../api/src/utils/serverAttribution';
 
 /**
- * Reading what MatchZy says back, and deciding which server/match a request
+ * Reading what Auto Tournament CS2 says back, and deciding which server/match a request
  * belongs to.
  *
- * Seen on real servers (MatchZy-Enhanced 1.4.24, MR4 BO3 simulation): the final
+ * Seen on real servers (Auto Tournament CS2 1.4.24, MR4 BO3 simulation): the final
  * became ready while its server was in postgame. The plugin queued the load,
  * MAT waited 10s for a config fetch that only comes after the reset, gave the
  * match to a second server, and the first server played it too. Events from
@@ -29,7 +29,7 @@ import {
  * @tag api
  * @tag regression
  */
-test.describe('MatchZy replies and server attribution', () => {
+test.describe('Auto Tournament CS2 replies and server attribution', () => {
   test('a queued load is recognised, not treated as a refusal', () => {
     const observed =
       '[MAT] [LoadMatchDataCommand] Current match 13 is finishing. Queued next match from URL: ' +
@@ -37,10 +37,10 @@ test.describe('MatchZy replies and server attribution', () => {
     expect(classifyLoadMatchReply(observed)).toBe('queued');
     expect(
       classifyLoadMatchReply(
-        '[matchzy match load] Current match 13 is postgame. Queued next match from URL: http://x/api/matches/r2m1.json'
+        '[at match load] Current match 13 is postgame. Queued next match from URL: http://x/api/matches/r2m1.json'
       )
     ).toBe('queued');
-    // MatchZy-Enhanced#16 appends a machine-readable token.
+    // cs2-plugin#16 appends a machine-readable token.
     expect(
       classifyLoadMatchReply(
         '[LoadMatchDataCommand] Current match 13 is finishing. Queued next match r2m1 from URL: ' +
@@ -57,7 +57,7 @@ test.describe('MatchZy replies and server attribution', () => {
     expect(
       classifyClearQueuedReply('[MatchQueue] No queued match to clear. cleared_queued_match=none')
     ).toBe('none');
-    expect(classifyClearQueuedReply('Unknown command "matchzy_clear_queued_match"!')).toBe('unsupported');
+    expect(classifyClearQueuedReply('Unknown command "at_clear_queued_match"!')).toBe('unsupported');
     expect(classifyClearQueuedReply('')).toBe('unsupported');
   });
 
@@ -75,23 +75,23 @@ test.describe('MatchZy replies and server attribution', () => {
   test('convar replies parse in the unquoted FakeConVar form and the quoted form', () => {
     // CounterStrikeSharp FakeConVar: `{name} = {value}`. The old quoted-only
     // pattern read this as "no status", which defaulted to idle.
-    expect(parseConVarReply('matchzy_tournament_status = postgame', 'matchzy_tournament_status')).toBe(
+    expect(parseConVarReply('at_tournament_status = postgame', 'at_tournament_status')).toBe(
       'postgame'
     );
-    expect(parseConVarReply('matchzy_tournament_updated = 1789509788\n')).toBe('1789509788');
-    expect(parseConVarReply('matchzy_tournament_next_match = ', 'matchzy_tournament_next_match')).toBe('');
-    expect(parseConVarReply('"matchzy_tournament_status" = "idle" ( def. "idle" )')).toBe('idle');
+    expect(parseConVarReply('at_tournament_updated = 1789509788\n')).toBe('1789509788');
+    expect(parseConVarReply('at_tournament_next_match = ', 'at_tournament_next_match')).toBe('');
+    expect(parseConVarReply('"at_tournament_status" = "idle" ( def. "idle" )')).toBe('idle');
     expect(parseConVarReply('mp_maxrounds = 24 ( def. "24" )', 'mp_maxrounds')).toBe('24');
-    expect(parseConVarReply('Unknown command "matchzy_tournament_status"!')).toBeNull();
-    expect(parseConVarReply('other_var = 1', 'matchzy_tournament_status')).toBeNull();
+    expect(parseConVarReply('Unknown command "at_tournament_status"!')).toBeNull();
+    expect(parseConVarReply('other_var = 1', 'at_tournament_status')).toBeNull();
     expect(parseConVarReply(undefined)).toBeNull();
   });
 
   test('an autostarted warmup with no match loaded is allocatable; warmup with a match is not', () => {
-    // Seen after restarting servers with matchzy_autostart_mode 1 (MatchZy-Enhanced
+    // Seen after restarting servers with at_autostart_mode 1 (Auto Tournament CS2
     // 1.4.28): `[UpdateTournamentStatus] Status: warmup, Match: , Timestamp: 1789547159`.
     // All three servers read as busy and the start dialog found no free server.
-    const matchVar = parseConVarReply('matchzy_tournament_match = ', 'matchzy_tournament_match') || null;
+    const matchVar = parseConVarReply('at_tournament_match = ', 'at_tournament_match') || null;
     expect(matchVar).toBeNull();
     expect(isAllocatableStatus('warmup', matchVar)).toBe(true);
     expect(isAllocatableStatus('warmup', '')).toBe(true);

@@ -52,14 +52,14 @@ function isProbablyOkToMatchEnglish(s) {
   // Keep aligned with check-english-fallback-strings.mjs
   const exactOk = new Set([
     'ELO',
-    'MatchZy',
+    'Auto Tournament CS2',
     'CS2',
     'CS',
     'Steam',
     'GitHub',
     'Discord',
     'Keycloak',
-    'Matchzy Auto Tournament',
+    'Auto Tournament',
   ]);
   if (exactOk.has(s)) return true;
   if (/^\{\{[^}]+\}\}$/.test(s)) return true;
@@ -145,8 +145,8 @@ async function fetchWithTimeout(url, { timeoutMs = 20000 } = {}) {
  * Replace placeholders with stable tokens to protect them from translation.
  * Supports:
  * - i18next vars: {{...}}
- * - MatchZy tokens: {TIME}, {MATCH_ID}, etc
- * - Keep anything inside [] like [ADMIN], [MatchZy]
+ * - Auto Tournament CS2 tokens: {TIME}, {MATCH_ID}, etc
+ * - Keep anything inside [] like [ADMIN], [Auto Tournament]
  * @param {string} s
  */
 function maskPlaceholders(s) {

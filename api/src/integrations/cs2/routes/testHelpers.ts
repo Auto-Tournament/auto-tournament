@@ -22,7 +22,7 @@ function isE2eTestHelperEnabled(): boolean {
  *
  * POST /api/test/server-status  { serverId, status, updatedAt?, online?, matchSlug? }
  *
- * Allocation decisions hinge on what the MatchZy plugin reports through its
+ * Allocation decisions hinge on what the Auto Tournament CS2 plugin reports through its
  * convars, and CI has no CS2 server to report anything — so without this the
  * idle/busy paths cannot be exercised at all.
  *

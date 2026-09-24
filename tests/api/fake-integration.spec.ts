@@ -8,7 +8,7 @@ import { signInViaRequest } from '../helpers/auth';
  * no veto, no live events and no stats: `allocate` assigns at once, and
  * results arrive as `NormalizedEvent[]` on
  * `POST /api/test/integration/fake/:slug/events`, straight into the core's
- * `matchLifecycle.ingest`. No MatchZy event, RCON call or server row is on the
+ * `matchLifecycle.ingest`. No Auto Tournament CS2 event, RCON call or server row is on the
  * path. The tournament is created, started, allocated, reported and
  * progressed through the bracket by the core alone.
  *

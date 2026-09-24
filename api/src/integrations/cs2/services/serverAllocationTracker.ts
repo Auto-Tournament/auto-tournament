@@ -11,7 +11,7 @@ export interface ServerAllocationEntry {
 /**
  * Lightweight in-memory tracker for server allocation state.
  *
- * This augments (but does not replace) the MatchZy plugin convars
+ * This augments (but does not replace) the Auto Tournament CS2 plugin convars
  * used by `serverStatusService`. It helps the allocator avoid
  * repeatedly probing servers that we *know* are currently running
  * a match or are in the immediate "postgame" window after a match

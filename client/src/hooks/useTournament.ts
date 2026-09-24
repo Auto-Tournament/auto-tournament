@@ -103,7 +103,7 @@ export const useTournament = () => {
     };
     maxRounds?: number;
     overtimeMode?: 'enabled' | 'disabled';
-    /** null clears the setting back to the MatchZy default. */
+    /** null clears the setting back to the Auto Tournament CS2 default. */
     overtimeSegments?: number | null;
   }) => {
     const response = await api[tournament ? 'put' : 'post']<

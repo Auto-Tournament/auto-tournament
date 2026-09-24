@@ -98,13 +98,12 @@
       "players": "Players & Access",
       "matches": "Matches & Ratings",
       "advanced": "Advanced",
-      "matchzy": "MatchZy",
       "developer": "Developer / Simulation"
     },
     "integrations": {
       "webhook": {
-        "title": "MatchZy Webhook",
-        "description": "MatchZy webhook URL that your CS2 servers can reach.",
+        "title": "Auto Tournament CS2 Webhook",
+        "description": "Auto Tournament CS2 webhook URL that your CS2 servers can reach.",
         "label": "Webhook URL",
         "helper": "Example: https://your-domain.com"
       },
@@ -134,14 +133,14 @@
     },
     "matchRating": {
       "chatDefaults": {
-        "title": "MatchZy Chat & Knife Defaults",
+        "title": "Auto Tournament CS2 Chat & Knife Defaults",
         "description": "Configure in-game chat prefixes and default knife round behavior.",
         "chatPrefixLabel": "Chat Prefix",
         "chatPrefixHelper": "Default: \"[{Green}Auto Tournament{Default}]\". Leave blank to reset to the default prefix.",
         "adminChatPrefixLabel": "Admin Chat Prefix",
         "adminChatPrefixHelper": "Default: \"[{Red}ADMIN{Default}]\". Leave blank to reset to the default admin prefix.",
         "knifeToggleLabel": "Enable knife rounds by default for new matches (when sides are not pre-selected)",
-        "knifeNote": "Applies only when MatchZy would normally run a knife round; explicit side picks or shuffle-assigned sides are not changed."
+        "knifeNote": "Applies only when Auto Tournament CS2 would normally run a knife round; explicit side picks or shuffle-assigned sides are not changed."
       },
       "ratings": {
         "title": "Rating Updates",
@@ -149,8 +148,8 @@
         "toggleLabel": "Update player ratings from completed matches",
         "note": "When disabled, all matches will still track stats (ADR, K/D, etc.), but player Skill Ratings will remain unchanged."
       },
-      "matchzyCore": {
-        "title": "MatchZy Core Defaults",
+      "atCore": {
+        "title": "Auto Tournament CS2 Core Defaults",
         "description": "These defaults are sent to servers during initialization and before each match load.",
         "expert": {
           "title": "Expert settings",
@@ -190,7 +189,7 @@
         "demos": {
           "title": "Demos",
           "demoPathLabel": "Demo path (relative to csgo/)",
-          "demoPathHelper": "Must end with '/'. Default: MatchZy/",
+          "demoPathHelper": "Must end with '/'. Default: AutoTournamentCS2/",
           "demoNameFormatLabel": "Demo filename format (without .dem)",
           "demoNameFormatHelper": "Tokens: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
         },
@@ -202,9 +201,9 @@
           "kickDelayHelper": "Added on top of mp_match_restart_delay."
         }
       },
-      "matchzyEnhanced": {
+      "atEnhanced": {
         "title": "CS2 plugin features",
-        "description": "Configure advanced match features. Leave settings empty to use MatchZy plugin defaults.",
+        "description": "Configure advanced match features. Leave settings empty to use Auto Tournament CS2 plugin defaults.",
         "autoready": {
           "title": "Auto-Ready System",
           "label": "Auto-mark players as ready when they join",
@@ -257,7 +256,7 @@
       "title": "Developer Options",
       "description": "Local development helpers only; don't enable in production.",
       "simulateToggleLabel": "Simulate matches (use bot-driven demo matches instead of real players)",
-      "simulateNote": "When enabled, generated MatchZy configs include \"simulation\": true for automated demo matches.",
+      "simulateNote": "When enabled, generated Auto Tournament CS2 configs include \"simulation\": true for automated demo matches.",
       "timescaleTitle": "Simulation Timescale",
       "timescaleDescription": "Controls how fast simulated matches run. Higher values speed up bots and round flow. This only applies when simulation is enabled.",
       "timescaleWarning": "Speeds above 2.0 can be a bit unstable and may cause odd bot behavior, but are fine to use for quick local testing.",
@@ -275,8 +274,8 @@
         "confirmLoading": "Resetting…"
       },
       "debugChat": {
-        "label": "Enable MatchZy debug chat messages",
-        "description": "When enabled, MatchZy will print additional debug messages (like player connects, disconnects, and event traces) into in-game chat. Use this only for development and testing – not during live events."
+        "label": "Enable Auto Tournament CS2 debug chat messages",
+        "description": "When enabled, Auto Tournament CS2 will print additional debug messages (like player connects, disconnects, and event traces) into in-game chat. Use this only for development and testing – not during live events."
       }
     },
     "footer": {

@@ -10,8 +10,8 @@
       "servers": "Serwery",
       "maps": "Mapy i pule map"
     },
-    "matchzyDbDown": {
-      "title": "Baza danych MatchZy niedostępna",
+    "atDbDown": {
+      "title": "Baza danych Auto Tournament CS2 niedostępna",
       "body_one": "{{count}} serwer zgłasza, że plugin nie może połączyć się ze swoją bazą danych. Może to wpłynąć na backupy i kolejkę zdarzeń.",
       "body_few": "{{count}} serwery zgłaszają, że plugin nie może połączyć się ze swoją bazą danych. Może to wpłynąć na backupy i kolejkę zdarzeń.",
       "body_many": "{{count}} serwerów zgłasza, że plugin nie może połączyć się ze swoją bazą danych. Może to wpłynąć na backupy i kolejkę zdarzeń.",
@@ -432,7 +432,7 @@
       "message_other": "Czy na pewno chcesz usunąć {{count}} serwerów? Tej operacji nie można cofnąć."
     },
     "autoConfig": {
-      "configuring": "Konfigurowanie nowych serwerów (wysyłanie konfiguracji MatchZy przez RCON)…",
+      "configuring": "Konfigurowanie nowych serwerów (wysyłanie konfiguracji Auto Tournament CS2 przez RCON)…",
       "done": "Nowe serwery skonfigurowane. Odświeżanie statusu…"
     },
     "checkServerLogs": "Sprawdź konsolę/logi serwera gry, aby zobaczyć, czy wtyczka Auto Tournament odbiera konfigurację i wysyła zdarzenia.",
@@ -569,16 +569,16 @@
     "rconPasswordHelper": "Hasło dostępu RCON do serwera",
     "enabledLabel": "Serwer włączony",
     "enabledHelper": "Wyłączone serwery nie będą używane do meczów",
-    "overridesTitle": "Nadpisania MatchZy (opcjonalnie)",
-    "overridesDescription": "Te ustawienia nadpisują globalne wartości domyślne MatchZy tylko dla tego serwera. Pozostaw puste, aby użyć wartości globalnych z Ustawień.",
+    "overridesTitle": "Nadpisania Auto Tournament CS2 (opcjonalnie)",
+    "overridesDescription": "Te ustawienia nadpisują globalne wartości domyślne Auto Tournament CS2 tylko dla tego serwera. Pozostaw puste, aby użyć wartości globalnych z Ustawień.",
     "chatPrefixLabel": "Nadpisanie prefiksu czatu",
     "chatPrefixPlaceholder": "[{Green}Auto Tournament{Default}]",
-    "chatPrefixHelper": "Nadpisuje matchzy_chat_prefix na tym serwerze (opcjonalnie)",
+    "chatPrefixHelper": "Nadpisuje at_chat_prefix na tym serwerze (opcjonalnie)",
     "adminChatPrefixLabel": "Nadpisanie prefiksu czatu admina",
     "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
-    "adminChatPrefixHelper": "Nadpisuje matchzy_admin_chat_prefix na tym serwerze (opcjonalnie)",
+    "adminChatPrefixHelper": "Nadpisuje at_admin_chat_prefix na tym serwerze (opcjonalnie)",
     "knifeOverrideLabel": "Domyślnie włącz rundę knife (nadpisanie)",
-    "knifeOverrideHelper": "Gdy ustawione, nadpisuje matchzy_knife_enabled_default dla tego serwera. Pozostaw w stanie nieokreślonym, aby użyć globalnej wartości domyślnej.",
+    "knifeOverrideHelper": "Gdy ustawione, nadpisuje at_knife_enabled_default dla tego serwera. Pozostaw w stanie nieokreślonym, aby użyć globalnej wartości domyślnej.",
     "testConnectivity": "Testuj łączność",
     "testingConnectivity": "Testowanie łączności…",
     "connectivity": {

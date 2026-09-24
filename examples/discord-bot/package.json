@@ -1,8 +1,8 @@
 {
-  "name": "matchzy-discord-bot-example",
+  "name": "auto-tournament-discord-bot-example",
   "version": "0.1.0",
   "private": true,
-  "description": "Boilerplate Discord bot for a MatchZy Auto Tournament instance",
+  "description": "Boilerplate Discord bot for an Auto Tournament instance",
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",

@@ -356,7 +356,7 @@ export interface IntegrationNavItem {
  * shown on every admin page (3.0 phase E).
  *
  * CS2 fills it with the webhook URL — what a CS2 server reaches the platform
- * on — and with the MatchZy plugin's database health, which is the plugin's
+ * on — and with the Auto Tournament CS2 plugin's database health, which is the plugin's
  * own connection on the game server and has no meaning anywhere else. The core
  * shell has no opinion about either: it renders the slot and nothing else, so
  * an instance whose tournament needs no servers is never nagged about settings

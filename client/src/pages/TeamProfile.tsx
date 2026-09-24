@@ -13,7 +13,7 @@ import { useAuth } from '../contexts/AuthContext';
  * Public team profile (`/t/team/:teamId`).
  *
  * Distinct from `/team/:teamId` (`TeamMatch`), which is the team's live
- * match/server page used during play by players and MatchZy flows — this
+ * match/server page used during play by players and Auto Tournament CS2 flows — this
  * page never touches that route or its behaviour. It is a read-only overview
  * anyone can open: crest/name, roster with ratings, and the current
  * tournament's status plus recent results.

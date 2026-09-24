@@ -10,8 +10,8 @@
       "servers": "Servidores",
       "maps": "Mapas e pools"
     },
-    "matchzyDbDown": {
-      "title": "Base de dados do MatchZy inacessível",
+    "atDbDown": {
+      "title": "Base de dados do Auto Tournament CS2 inacessível",
       "body_one": "{{count}} servidor indica que o plugin não consegue aceder à base de dados. As cópias de segurança e a fila de eventos podem ser afetadas.",
       "body_other": "{{count}} servidores indicam que o plugin não consegue aceder à base de dados. As cópias de segurança e a fila de eventos podem ser afetadas."
     }
@@ -424,7 +424,7 @@
       "message_other": "Tem a certeza de que pretende eliminar {{count}} servidores? Esta ação não pode ser anulada."
     },
     "autoConfig": {
-      "configuring": "A configurar novos servidores (a enviar configuração MatchZy via RCON)…",
+      "configuring": "A configurar novos servidores (a enviar configuração Auto Tournament CS2 via RCON)…",
       "done": "Novos servidores configurados. A atualizar estado…"
     },
     "checkServerLogs": "Verifique a consola/logs do servidor de jogo para ver se o plugin Auto Tournament recebe configuração e envia eventos.",
@@ -539,16 +539,16 @@
     "rconPasswordHelper": "Palavra-passe para acesso RCON ao servidor",
     "enabledLabel": "Servidor ativado",
     "enabledHelper": "Servidores desativados não serão usados em jogos",
-    "overridesTitle": "Substituições MatchZy (opcional)",
-    "overridesDescription": "Estas definições substituem as predefinições globais do MatchZy apenas para este servidor. Deixe em branco para usar os valores globais das Definições.",
+    "overridesTitle": "Substituições Auto Tournament CS2 (opcional)",
+    "overridesDescription": "Estas definições substituem as predefinições globais do Auto Tournament CS2 apenas para este servidor. Deixe em branco para usar os valores globais das Definições.",
     "chatPrefixLabel": "Substituição do prefixo do chat",
     "chatPrefixPlaceholder": "[{Green}Auto Tournament{Default}]",
-    "chatPrefixHelper": "Substitui matchzy_chat_prefix neste servidor (opcional)",
+    "chatPrefixHelper": "Substitui at_chat_prefix neste servidor (opcional)",
     "adminChatPrefixLabel": "Substituição do prefixo do chat admin",
     "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
-    "adminChatPrefixHelper": "Substitui matchzy_admin_chat_prefix neste servidor (opcional)",
+    "adminChatPrefixHelper": "Substitui at_admin_chat_prefix neste servidor (opcional)",
     "knifeOverrideLabel": "Ronda knife ativada por defeito (substituição)",
-    "knifeOverrideHelper": "Quando definido, substitui matchzy_knife_enabled_default para este servidor. Deixe em estado indeterminado para usar a predefinição global.",
+    "knifeOverrideHelper": "Quando definido, substitui at_knife_enabled_default para este servidor. Deixe em estado indeterminado para usar a predefinição global.",
     "testConnectivity": "Testar conectividade",
     "testingConnectivity": "A testar conectividade…",
     "connectivity": {

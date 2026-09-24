@@ -99,15 +99,15 @@ test.describe('Integration boundary lint', () => {
     expect(source).not.toMatch(/LEGACY_CORE_IMPORTS|isLegacyCoreImport/);
   });
 
-  test('api/src/core must not import rconService or the MatchZy event types by any path', async () => {
+  test('api/src/core must not import rconService or the Auto Tournament CS2 event types by any path', async () => {
     expect(
       await lint(
         'api/src/core/scheduler.ts',
         [
           // Through a core-looking path (a copy or re-export shim) ...
           "import { rconService } from '../services/rconService';",
-          "import type { MatchZyEvent } from '../types/matchzy-events.types';",
-          "import type { E } from '../types/matchzy-events';",
+          "import type { PluginEvent } from '../types/plugin-events.types';",
+          "import type { E } from '../types/plugin-events';",
           // ... an alias path ...
           "import { rcon } from '@/services/rconService';",
           // ... any import form, deeper in core.
@@ -116,7 +116,7 @@ test.describe('Integration boundary lint', () => {
       )
     ).toEqual(Array(5).fill('coreForbiddenModule'));
     expect(
-      await lint('api/src/core/sub/x.ts', "export * from '../../integrations/cs2/events/matchzy-events.types';")
+      await lint('api/src/core/sub/x.ts', "export * from '../../integrations/cs2/events/plugin-events.types';")
     ).toEqual(['coreForbiddenModule', 'coreToIntegration']);
   });
 

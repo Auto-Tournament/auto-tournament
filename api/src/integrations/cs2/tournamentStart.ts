@@ -16,7 +16,7 @@ import { cs2UpdateService } from './services/cs2UpdateService';
 
 
 /**
- * Ensure MatchZy webhooks are configured for all enabled servers at the moment
+ * Ensure Auto Tournament CS2 webhooks are configured for all enabled servers at the moment
  * a tournament is started. This mirrors the behaviour of the Servers page
  * (which configures webhooks when testing server status) so that admins don't
  * have to visit the Servers view before allocations begin.

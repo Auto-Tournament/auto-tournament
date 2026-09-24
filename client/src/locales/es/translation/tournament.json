@@ -129,8 +129,8 @@
       "overtimeDisabledNoDraws": "Prórroga: desactivada (sin empates: decide el daño)",
       "overtimeSegments_one": "Tramos de prórroga: {{count}} tramo",
       "overtimeSegments_other": "Tramos de prórroga: {{count}} tramos",
-      "overtimeSegmentsDefault": "Tramos de prórroga: valor predeterminado de MatchZy",
-      "overtimeSegmentsDefaultUnlimited": "Tramos de prórroga: valor predeterminado de MatchZy (normalmente ilimitado)"
+      "overtimeSegmentsDefault": "Tramos de prórroga: valor predeterminado de Auto Tournament CS2",
+      "overtimeSegmentsDefaultUnlimited": "Tramos de prórroga: valor predeterminado de Auto Tournament CS2 (normalmente ilimitado)"
     },
     "toasts": {
       "loadTemplateFailed": "No se pudo cargar la plantilla",
@@ -307,10 +307,10 @@
         "disabledNoDraws": "Desactivada: sin empates (desempate por daño)"
       },
       "modeHelper": "La prórroga estándar juega tramos adicionales hasta que un equipo queda por delante. «Se permiten empates» deja el mapa igualado en empate, mientras que «sin empates» lo decide por el daño total del equipo.",
-      "tooltip": "Controla el comportamiento de la prórroga y cómo se resuelven los empates al llegar al máximo de rondas. Estos ajustes se envían a MatchZy como overtimeMode/overtimeSegments y tienen el mismo significado que en los torneos shuffle y los partidos manuales.",
+      "tooltip": "Controla el comportamiento de la prórroga y cómo se resuelven los empates al llegar al máximo de rondas. Estos ajustes se envían an Auto Tournament CS2 como overtimeMode/overtimeSegments y tienen el mismo significado que en los torneos shuffle y los partidos manuales.",
       "shuffleTooltip": "Controla el comportamiento de la prórroga en los partidos shuffle y cómo se resuelven los empates al llegar al máximo de rondas. Con la prórroga desactivada, los partidos igualados pueden quedar en empate o decidirse por el daño total del equipo, según la opción elegida.",
       "segmentsLabel": "Tramos de prórroga (opcional)",
-      "segmentsHelper": "Opcional: limita el número de tramos de prórroga. Déjalo vacío para el valor predeterminado de MatchZy.",
+      "segmentsHelper": "Opcional: limita el número de tramos de prórroga. Déjalo vacío para el valor predeterminado de Auto Tournament CS2.",
       "segmentsHelperValue_one": "Limita la prórroga a {{count}} tramo. Si sigue el empate tras la prórroga, decide el daño total del equipo.",
       "segmentsHelperValue_other": "Limita la prórroga a {{count}} tramos. Si sigue el empate tras la prórroga, decide el daño total del equipo."
     },
@@ -350,7 +350,7 @@
       "teamSizeTooltip": "Número de jugadores por equipo. Opciones habituales: 4v4, 5v5, 6v6. Mínimo 2 jugadores y máximo 10 por equipo.",
       "teamSizeHelper": "Número de jugadores por equipo (predeterminado: 5 para 5v5, rango: 2-10)",
       "maxRoundsLabel": "Rondas máximas",
-      "maxRoundsTooltip": "Número máximo de rondas por partido. Este valor se envía directamente a MatchZy como mp_maxrounds. Ejemplo: 6 = MR6, 24 = MR24.",
+      "maxRoundsTooltip": "Número máximo de rondas por partido. Este valor se envía directamente an Auto Tournament CS2 como mp_maxrounds. Ejemplo: 6 = MR6, 24 = MR24.",
       "maxRoundsHelper": "El partido se juega hasta {{maxRounds}} rondas; gana el primero en llegar a {{winRounds}} rondas",
       "maxRoundsHelperEmpty": "Número máximo de rondas por partido (predeterminado: 24, máximo: 30)",
       "eloTemplateLabel": "Plantilla de cálculo de ELO",
@@ -521,7 +521,7 @@
         "moreTeams": "More teams",
         "shuffleTitle": "Shuffle settings",
         "cs2Title": "Counter-Strike 2 settings",
-        "cs2Help": "Passed to MatchZy by the Counter-Strike 2 game module.",
+        "cs2Help": "Passed to Auto Tournament CS2 by the Counter-Strike 2 game module.",
         "overtime": {
           "enabled": "Overtime",
           "disabledDraws": "Off, draws allowed",

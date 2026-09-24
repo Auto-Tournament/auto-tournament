@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# MatchZy Auto Tournament - Release Script
+# Auto Tournament - Release Script
 # Builds project, builds Docker image, bumps version, commits, and releases
 
 # Colors for output
@@ -113,7 +113,7 @@ GHCR_OWNER="${GHCR_OWNER:-auto-tournament}"
 GHCR_IMAGE="ghcr.io/${GHCR_OWNER}/auto-tournament"
 DOCKER_IMAGE_NEW="${DOCKER_USERNAME}/auto-tournament"
 RELEASE_IMAGES=("$GHCR_IMAGE" "$DOCKER_IMAGE_NEW" "$DOCKER_IMAGE")
-BUILDER_NAME="matchzy-release"
+BUILDER_NAME="auto-tournament-release"
 REPO_OWNER="Auto-Tournament"
 REPO_NAME="auto-tournament"
 
@@ -128,7 +128,7 @@ case "$RELEASE_CHANNEL" in
         ;;
 esac
 
-echo -e "${GREEN}MatchZy Auto Tournament - Release${NC}"
+echo -e "${GREEN}Auto Tournament - Release${NC}"
 echo "========================================="
 echo ""
 
@@ -197,7 +197,7 @@ fi
 # Early safety confirmation before doing anything destructive
 echo -e "${YELLOW}This script will:${NC}"
 echo "  - Check disk space and Docker status"
-echo "  - Stop and remove existing MatchZy-related containers/images"
+echo "  - Stop and remove existing Auto Tournament containers/images"
 echo "  - Prune Docker build and system caches"
 echo "  - Build, test, tag, and publish a new release"
 echo ""
@@ -359,7 +359,7 @@ if [ "$RELEASE_SKIP_DOCKER_BUILD" != "true" ]; then
 
     # Stop and remove any running containers related to this project
     echo -e "${BLUE}Stopping and removing containers...${NC}"
-    CONTAINERS=$(docker ps -a --filter "name=matchzy" --format "{{.ID}}" 2>/dev/null || true)
+    CONTAINERS=$(docker ps -a --filter "name=auto-tournament" --format "{{.ID}}" 2>/dev/null || true)
     if [ -n "$CONTAINERS" ]; then
         echo "$CONTAINERS" | while read -r id; do
             [ -n "$id" ] && docker stop "$id" 2>/dev/null || true

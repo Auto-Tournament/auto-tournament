@@ -24,7 +24,7 @@ endpoints worth using, see [API.md](API.md). To generate a client, use
 | --- | --- |
 | `public` | No credential needed |
 | `admin` | An admin session, or a service token (`API_TOKENS`; `API_TOKENS_READONLY` for `GET`) |
-| `server token` | `X-MatchZy-Token` — for CS2 game servers, not for bots |
+| `server token` | `X-Auto-Tournament-Token` — for CS2 game servers, not for bots |
 
 `public` means the middleware requires nothing. A few of these still resolve
 the caller's identity from a cookie and change what they return, or reject the
@@ -134,17 +134,17 @@ Demo upload from the game server, and download.
 | `GET` | `/api/demos/:matchSlug/status` | admin |
 | `GET` | `/api/demos/:matchSlug/info` | admin |
 
-### MatchZy
+### Auto Tournament CS2
 
-Auto Tournament CS2 plugin (formerly MatchZy Enhanced) version information.
+Auto Tournament CS2 plugin version information.
 
 | Method | Path | Auth |
 | --- | --- | --- |
-| `GET` | `/api/matchzy/latest-version` | public |
+| `GET` | `/api/cs2-plugin/latest-version` | public |
 
 ### Events
 
-MatchZy webhooks in, and the recorded event log out.
+Auto Tournament CS2 webhooks in, and the recorded event log out.
 
 | Method | Path | Auth |
 | --- | --- | --- |

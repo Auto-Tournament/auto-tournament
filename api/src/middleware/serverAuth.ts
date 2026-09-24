@@ -6,10 +6,10 @@ import { checkAdminAccess } from './auth';
 /**
  * Authentication for requests coming from CS2 game servers.
  *
- * The credential is `SERVER_TOKEN`, presented as `X-MatchZy-Token`. MAT
- * configures the plugin to send it — see `getMatchZyWebhookCommands`, which
- * sets `matchzy_remote_log_header_key`/`_value` alongside the webhook URL, and
- * `getMatchZyDemoUploadCommands`, which does the same for demo uploads.
+ * The credential is `SERVER_TOKEN`, presented as `X-Auto-Tournament-Token`. MAT
+ * configures the plugin to send it — see `getPluginWebhookCommands`, which
+ * sets `at_remote_log_header_key`/`_value` alongside the webhook URL, and
+ * `getPluginDemoUploadCommands`, which does the same for demo uploads.
  *
  * This is a different credential from the service tokens in `middleware/auth`:
  * one game server token is shared by the fleet and only unlocks the ingest
@@ -52,7 +52,7 @@ function tokensMatch(presented: string, expected: string): boolean {
 }
 
 function presentedToken(req: Request): string | null {
-  const raw = req.headers['x-matchzy-token'];
+  const raw = req.headers['x-auto-tournament-token'];
   const value = Array.isArray(raw) ? raw[0] : raw;
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();
@@ -60,7 +60,7 @@ function presentedToken(req: Request): string | null {
 }
 
 /**
- * Require a valid `X-MatchZy-Token`.
+ * Require a valid `X-Auto-Tournament-Token`.
  *
  * Used by endpoints only a game server should reach: match reports, demo
  * uploads.
@@ -92,7 +92,7 @@ export function validateServerToken(req: Request, res: Response, next: NextFunct
 }
 
 /**
- * Require a valid `X-MatchZy-Token` on the game event webhooks.
+ * Require a valid `X-Auto-Tournament-Token` on the game event webhooks.
  *
  * Same credential as `validateServerToken`, but it distinguishes a *missing*
  * token from a *wrong* one so the compatibility shim above can exist, and it
@@ -100,7 +100,7 @@ export function validateServerToken(req: Request, res: Response, next: NextFunct
  * whoever reads the log is most likely staring at a match that has stopped
  * updating.
  *
- * On the retry behaviour: MatchZy queues events locally and retries 4xx
+ * On the retry behaviour: Auto Tournament CS2 queues events locally and retries 4xx
  * responses with backoff (30s, 1m, 2m … up to 20 attempts). A server rejected
  * here is therefore not losing events — it holds them, and they flush once the
  * token is configured. That is what makes enforcing this survivable mid-match.
@@ -130,7 +130,7 @@ export function validateEventToken(req: Request, res: Response, next: NextFuncti
     // A wrong token is never let through, shim or not: a server MAT configured
     // sends the right one, so this is either an attacker or a server pointed at
     // the wrong instance.
-    log.authFailed(req.path, 'Game event rejected: X-MatchZy-Token does not match SERVER_TOKEN');
+    log.authFailed(req.path, 'Game event rejected: X-Auto-Tournament-Token does not match SERVER_TOKEN');
     res.status(401).json({
       success: false,
       error: 'Unauthorized - Invalid server token',
@@ -140,7 +140,7 @@ export function validateEventToken(req: Request, res: Response, next: NextFuncti
 
   if (allowUnauthenticatedEvents()) {
     log.warn(
-      '[EVENTS] Accepted a game event with no X-MatchZy-Token because ' +
+      '[EVENTS] Accepted a game event with no X-Auto-Tournament-Token because ' +
         'ALLOW_UNAUTHENTICATED_EVENTS is set. Anyone who can reach this API can forge ' +
         'events while that is on. Re-bootstrap this server and unset it.',
       { path: req.path, ip: req.ip ?? req.socket?.remoteAddress }
@@ -150,7 +150,7 @@ export function validateEventToken(req: Request, res: Response, next: NextFuncti
 
   log.authFailed(
     req.path,
-    'Game event rejected: no X-MatchZy-Token. The server was configured without the ' +
+    'Game event rejected: no X-Auto-Tournament-Token. The server was configured without the ' +
       'webhook token — reconnect it so it re-fetches /api/servers/:id/bootstrap, or set ' +
       'ALLOW_UNAUTHENTICATED_EVENTS=true to accept these while you do.'
   );
@@ -161,15 +161,15 @@ export function validateEventToken(req: Request, res: Response, next: NextFuncti
 }
 
 /**
- * Guard for `GET /api/matches/:slug.json`, the match config MatchZy downloads.
+ * Guard for `GET /api/matches/:slug.json`, the match config Auto Tournament CS2 downloads.
  *
  * The config carries both rosters with their Steam IDs and the server's match
  * setup, and match slugs are guessable (`r1m1`), so it is not public. Two
  * callers are let through:
  *
- * - **A game server**, presenting `X-MatchZy-Token: <SERVER_TOKEN>`. MAT sends
+ * - **A game server**, presenting `X-Auto-Tournament-Token: <SERVER_TOKEN>`. MAT sends
  *   the header name and value as extra arguments on the load command
- *   (`getMatchZyLoadMatchCommand`), and MatchZy adds them to its fetch. There
+ *   (`getPluginLoadMatchCommand`), and Auto Tournament CS2 adds them to its fetch. There
  *   is no per-server secret: this is the same fleet-wide token the event
  *   webhook and report upload use.
  * - **An admin**, by session or service token (read-only scope is enough) —
@@ -182,7 +182,7 @@ export function validateEventToken(req: Request, res: Response, next: NextFuncti
  */
 /**
  * `res.locals` key set when a config fetch was authenticated as a game server
- * rather than an admin. Only such a fetch proves MatchZy accepted a load.
+ * rather than an admin. Only such a fetch proves Auto Tournament CS2 accepted a load.
  */
 export const MATCH_CONFIG_FETCHED_BY_SERVER = 'matchConfigFetchedByServer';
 
@@ -208,7 +208,7 @@ export async function requireMatchConfigAccess(
     }
     return refuse(
       validToken
-        ? 'X-MatchZy-Token does not match SERVER_TOKEN'
+        ? 'X-Auto-Tournament-Token does not match SERVER_TOKEN'
         : 'SERVER_TOKEN is not set, so no game server can authenticate'
     );
   }
@@ -222,5 +222,5 @@ export async function requireMatchConfigAccess(
     res.status(500).json({ success: false, error: 'Failed to verify permissions' });
     return;
   }
-  refuse(`no X-MatchZy-Token and not an admin (${admin.logReason})`);
+  refuse(`no X-Auto-Tournament-Token and not an admin (${admin.logReason})`);
 }

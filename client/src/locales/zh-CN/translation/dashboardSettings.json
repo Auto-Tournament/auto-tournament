@@ -98,13 +98,12 @@
       "players": "选手与访问控制",
       "matches": "比赛与评分",
       "advanced": "高级",
-      "matchzy": "MatchZy",
       "developer": "开发者 / 模拟"
     },
     "integrations": {
       "webhook": {
-        "title": "MatchZy Webhook 地址",
-        "description": "供 CS2 服务器访问的 MatchZy Webhook 地址。",
+        "title": "Auto Tournament CS2 Webhook 地址",
+        "description": "供 CS2 服务器访问的 Auto Tournament CS2 Webhook 地址。",
         "label": "Webhook 地址",
         "helper": "示例：https://your-domain.com"
       },
@@ -134,14 +133,14 @@
     },
     "matchRating": {
       "chatDefaults": {
-        "title": "MatchZy 聊天与刀局默认值",
+        "title": "Auto Tournament CS2 聊天与刀局默认值",
         "description": "配置游戏内聊天前缀和默认刀局行为。",
         "chatPrefixLabel": "聊天前缀",
         "chatPrefixHelper": "默认值：\"[{Green}Auto Tournament{Default}]\"。留空以重置为默认前缀。",
         "adminChatPrefixLabel": "管理员聊天前缀",
         "adminChatPrefixHelper": "默认值：\"[{Red}ADMIN{Default}]\"。留空以重置为默认管理员前缀。",
         "knifeToggleLabel": "对未预先选择阵营的新比赛默认启用刀局",
-        "knifeNote": "仅在 MatchZy 正常会运行刀局时生效；不会改变显式选择阵营或洗牌分配阵营的情况。"
+        "knifeNote": "仅在 Auto Tournament CS2 正常会运行刀局时生效；不会改变显式选择阵营或洗牌分配阵营的情况。"
       },
       "ratings": {
         "title": "评分更新",
@@ -149,8 +148,8 @@
         "toggleLabel": "根据完成的比赛更新玩家评分",
         "note": "禁用后，所有比赛仍会记录数据（ADR、K/D 等），但玩家 Skill Rating 将保持不变。"
       },
-      "matchzyCore": {
-        "title": "MatchZy 核心默认值",
+      "atCore": {
+        "title": "Auto Tournament CS2 核心默认值",
         "description": "这些默认值会在服务器初始化以及每次加载比赛前下发到服务器。",
         "expert": {
           "title": "专家设置",
@@ -190,7 +189,7 @@
         "demos": {
           "title": "Demo",
           "demoPathLabel": "Demo 路径（相对于 csgo/）",
-          "demoPathHelper": "必须以 “/” 结尾。默认：MatchZy/",
+          "demoPathHelper": "必须以 “/” 结尾。默认：AutoTournamentCS2/",
           "demoNameFormatLabel": "Demo 文件名格式（不含 .dem）",
           "demoNameFormatHelper": "可用标记：{TIME}、{MATCH_ID}、{MAP}、{MAPNUMBER}、{TEAM1}、{TEAM2}"
         },
@@ -202,9 +201,9 @@
           "kickDelayHelper": "在 mp_match_restart_delay 的基础上额外增加。"
         }
       },
-      "matchzyEnhanced": {
+      "atEnhanced": {
         "title": "Auto Tournament CS2 功能",
-        "description": "配置高级比赛功能。留空设置以使用 MatchZy 插件默认值。",
+        "description": "配置高级比赛功能。留空设置以使用 Auto Tournament CS2 插件默认值。",
         "autoready": {
           "title": "自动准备系统",
           "label": "玩家加入时自动标记为已准备",
@@ -257,7 +256,7 @@
       "title": "开发者选项",
       "description": "仅用于本地开发，请勿在生产环境启用。",
       "simulateToggleLabel": "模拟比赛（使用机器人驱动的 Demo 比赛代替真实玩家）",
-      "simulateNote": "启用后，生成的 MatchZy 配置会包含 \"simulation\": true 字段，用于自动化 Demo 比赛。",
+      "simulateNote": "启用后，生成的 Auto Tournament CS2 配置会包含 \"simulation\": true 字段，用于自动化 Demo 比赛。",
       "timescaleTitle": "模拟时间倍率",
       "timescaleDescription": "控制模拟比赛的运行速度。数值越高，机器人和回合流程越快。仅在启用模拟时生效。",
       "timescaleWarning": "大于 2.0 的速度可能略显不稳定，并可能导致奇怪的机器人行为，但适合快速本地测试。",
@@ -275,8 +274,8 @@
         "confirmLoading": "正在重置…"
       },
       "debugChat": {
-        "label": "启用 MatchZy 调试聊天消息",
-        "description": "启用后，MatchZy 会在游戏内聊天中打印额外的调试消息（例如玩家连接/断开、事件追踪等）。仅建议在开发和测试环境中使用，请不要在正式赛事中启用。"
+        "label": "启用 Auto Tournament CS2 调试聊天消息",
+        "description": "启用后，Auto Tournament CS2 会在游戏内聊天中打印额外的调试消息（例如玩家连接/断开、事件追踪等）。仅建议在开发和测试环境中使用，请不要在正式赛事中启用。"
       }
     },
     "footer": {

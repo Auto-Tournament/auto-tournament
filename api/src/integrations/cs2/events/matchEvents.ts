@@ -1,7 +1,7 @@
 /**
- * MatchZy event handling on the CS2 side of the event adapter.
+ * Auto Tournament CS2 event handling on the CS2 side of the event adapter.
  *
- * `handleMatchEvent` applies what is CS2's own for one MatchZy event: log
+ * `handleMatchEvent` applies what is CS2's own for one Auto Tournament CS2 event: log
  * lines, the live score and per-player stats (`matchLiveStatsService`), who is
  * connected (`playerConnectionService`), the match going live, and the guards
  * for stale or late events (`isStaleMapEvent`, `shouldAcceptPlayEvent`). It
@@ -10,7 +10,7 @@
  * bracket progression, stats and ratings. An event the adapter drops (a stale
  * map, an unknown match) returns `[]`.
  *
- * Also here, because it reads MatchZy payloads: the per-player stats sources
+ * Also here, because it reads Auto Tournament CS2 payloads: the per-player stats sources
  * the core asks for at series end (`seriesPlayerStats`, exposed through the
  * integration).
  */
@@ -29,21 +29,21 @@ import { matchLifecycle } from '../../../core/matchLifecycle';
 import { isMatchFinalized } from '../../../utils/matchStatusHelpers';
 import type { DbMatchRow } from '../../../types/database.types';
 import type { NormalizedEvent } from '../../types';
-import type { MatchZyEvent } from './matchzy-events.types';
+import type { PluginEvent } from './plugin-events.types';
 import { normalize } from './normalize';
 
 /**
- * Apply one MatchZy event: the CS2 side effects here, then the lifecycle
+ * Apply one Auto Tournament CS2 event: the CS2 side effects here, then the lifecycle
  * events in the core. What the events route does after its own checks, and
  * what replaying a stored event does.
  */
-export async function applyMatchEvent(event: MatchZyEvent, knownSlug?: string): Promise<void> {
+export async function applyMatchEvent(event: PluginEvent, knownSlug?: string): Promise<void> {
   const lifecycleEvents = await handleMatchEvent(event, knownSlug);
   await matchLifecycle.ingest(lifecycleEvents);
 }
 
 /**
- * CS2 side effects of one MatchZy event. Returns the normalized events for
+ * CS2 side effects of one Auto Tournament CS2 event. Returns the normalized events for
  * `matchLifecycle.ingest`, or `[]` when the event must not reach the core.
  *
  * Events that need their match look it up by the payload's `matchid`, as they
@@ -51,7 +51,7 @@ export async function applyMatchEvent(event: MatchZyEvent, knownSlug?: string): 
  * labels the events that do not, so they cost no extra query.
  */
 export async function handleMatchEvent(
-  event: MatchZyEvent,
+  event: PluginEvent,
   knownSlug?: string
 ): Promise<NormalizedEvent[]> {
   const eventData = event as unknown as Record<string, unknown>;
@@ -59,7 +59,7 @@ export async function handleMatchEvent(
   switch (event.event) {
     // Match Lifecycle Events
     case 'series_start': {
-      // MatchZy sends the names nested (team1.name); the flat *_name fields it
+      // Auto Tournament CS2 sends the names nested (team1.name); the flat *_name fields it
       // used to log were always undefined.
       const seriesTeam1 =
         (eventData.team1 as { name?: string } | undefined)?.name ??
@@ -97,7 +97,7 @@ export async function handleMatchEvent(
       return [];
 
     case 'map_result': {
-      // MatchZy sends the teams nested: team1: { name, score, series_score },
+      // Auto Tournament CS2 sends the teams nested: team1: { name, score, series_score },
       // winner: { side, team }. The flat team1_name / team1_score fields this
       // used to read don't exist, so the line logged "undefined undefined-undefined".
       const t1 = (eventData.team1 ?? {}) as { name?: string; score?: number; series_score?: number };
@@ -142,7 +142,7 @@ export async function handleMatchEvent(
         return [];
       }
       // Ignore late "going_live" events for matches that are already
-      // finalized. Some MatchZy setups can emit stray lifecycle events after
+      // finalized. Some Auto Tournament CS2 setups can emit stray lifecycle events after
       // series_end / restore, and we never want to resurrect a completed
       // match back into the LIVE state.
       if (!shouldAcceptPlayEvent(liveMatch, 'going_live', event.matchid)) {
@@ -230,7 +230,7 @@ export async function handleMatchEvent(
       const updates: Partial<MatchLiveStats> = parseScorePayload(eventData, 'live');
 
       // Also capture per‑player stats from this round_end payload if present.
-      // MatchZy includes a full "players" array with cumulative stats for each side.
+      // Auto Tournament CS2 includes a full "players" array with cumulative stats for each side.
       const snapshot = extractPlayerStatsFromEvent(eventData);
       if (snapshot) {
         updates.playerStats = snapshot;
@@ -269,10 +269,10 @@ export async function handleMatchEvent(
       });
       const match = await resolveMatch(event.matchid);
       if (!match) return [];
-      // The knife winner still has to pick a side, and MatchZy emits no event
+      // The knife winner still has to pick a side, and Auto Tournament CS2 emits no event
       // for that choice — the next signal is `going_live`. Reporting warmup
       // here dropped the UI out of the knife round for the whole selection
-      // window (matchzy_side_selection_time, 60s by default), which is what
+      // window (at_side_selection_time, 60s by default), which is what
       // users saw: "it looks like it goes back to warmup, but they are
       // picking sides". Stay on 'knife' until the match actually starts.
       updateLiveStats(match, { status: 'knife' });
@@ -293,7 +293,7 @@ export async function handleMatchEvent(
       if (await isStaleMapEvent(match, eventData.map_number, 'round_started')) {
         return [];
       }
-      // Some MatchZy setups are flaky about emitting the "going_live" event,
+      // Some Auto Tournament CS2 setups are flaky about emitting the "going_live" event,
       // but they will always emit round_started once the pistol actually begins.
       // To avoid matches getting visually "stuck in warmup" on the UI
       // (status=loaded) while rounds are in fact being played, we treat the
@@ -365,12 +365,12 @@ export async function handleMatchEvent(
  * `knownSlug`, else the payload's id: a `series_end` for a match that cannot
  * be found keeps it, so the core can say so.
  *
- * `map.result` also carries the series score MatchZy reports with it (the core
+ * `map.result` also carries the series score Auto Tournament CS2 reports with it (the core
  * finishes a series on it); a `map_result` without a usable map number is
  * taken as the match's current map, as before.
  */
 function lifecycleEvents(
-  event: MatchZyEvent,
+  event: PluginEvent,
   match: DbMatchRow | null,
   knownSlug?: string
 ): NormalizedEvent[] {
@@ -468,7 +468,7 @@ async function isStaleMapEvent(
  * Gate for events that mean "a map is being played" (going_live, round_started),
  * which would otherwise move the match back to live.
  *
- * A finalized match (see isMatchFinalized) ignores them: some MatchZy setups
+ * A finalized match (see isMatchFinalized) ignores them: some Auto Tournament CS2 setups
  * emit stray lifecycle events after series_end / restore, and a finished match
  * must never be resurrected. A match that only *says* completed — no winner,
  * no completed_at — was flipped without a series result, so play events for it
@@ -556,7 +556,7 @@ function playerMatchesCollection(collection: unknown, steamId: string): boolean 
   }
 
   if (typeof collection === 'object') {
-    // Direct key lookup (MatchZy format {steamId: name})
+    // Direct key lookup (Auto Tournament CS2 format {steamId: name})
     if (Object.prototype.hasOwnProperty.call(collection, steamId)) {
       return true;
     }
@@ -758,7 +758,7 @@ function statsFromLines(lines: PlayerStatLine[]): StatsBySteamId {
 }
 
 /**
- * Per-player stats for a finished series, per side as MatchZy filed them.
+ * Per-player stats for a finished series, per side as Auto Tournament CS2 filed them.
  * `GameIntegration.seriesPlayerStats` turns them into stat lines (../stats).
  *
  * Preferred source: the series totals built from `round_end` events (see
@@ -796,7 +796,7 @@ export async function seriesPlayerStats(
         team1_players?: StatsBySteamId;
         team2_players?: StatsBySteamId;
       };
-      // MatchZy format: {steamId: {kills, deaths, assists, damage, ...}}
+      // Auto Tournament CS2 format: {steamId: {kills, deaths, assists, damage, ...}}
       if (eventData.team1_players) {
         team1PlayerStats = eventData.team1_players;
       }

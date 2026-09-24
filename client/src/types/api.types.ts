@@ -29,11 +29,11 @@ export interface Server {
   currentMatch?: string | null;
   reachableFromApi?: boolean;
   serverCanReachApi?: boolean;
-  // Server tracking fields (from MatchZy Enhanced server_configured event)
-  pluginVersion?: string | null; // MatchZy Enhanced version (e.g., "1.3.6")
+  // Server tracking fields (from Auto Tournament CS2 server_configured event)
+  pluginVersion?: string | null; // Auto Tournament CS2 version (e.g., "1.3.6")
   hostname?: string | null; // CS2 server hostname (from hostname convar)
   lastSeen?: number | null; // Unix timestamp of last event received (heartbeat)
-  /** Unix timestamp when we last sent persistent config via RCON. Set before MatchZy sends events. */
+  /** Unix timestamp when we last sent persistent config via RCON. Set before Auto Tournament CS2 sends events. */
   persistentConfigSent?: number | null;
   /** If set, the server has reported a CS2 update is required (Steam required_version). */
   cs2RequiredVersion?: number | null;
@@ -49,26 +49,26 @@ export interface Server {
   cs2VersionString?: string | null;
   /** Unix timestamp when version/build was last fetched via RCON. */
   cs2VersionFetchedAt?: number | null;
-  /** Best-effort: MatchZy plugin DB reachable. */
-  matchzyDbOk?: boolean | null;
+  /** Best-effort: Auto Tournament CS2 plugin DB reachable. */
+  atDbOk?: boolean | null;
   /** Best-effort: 'sqlite' | 'mysql'. */
-  matchzyDbType?: string | null;
+  atDbType?: string | null;
   /** Best-effort: last DB error message (if any). */
-  matchzyDbError?: string | null;
+  atDbError?: string | null;
   /** Unix timestamp when DB was last reported OK. */
-  matchzyDbLastOkAt?: number | null;
+  atDbLastOkAt?: number | null;
   /** Unix timestamp when DB health was last reported. */
-  matchzyDbLastSeenAt?: number | null;
+  atDbLastSeenAt?: number | null;
   /** Unix timestamp when server last successfully sent any event to /api/events. */
   serverCanReachApiAt?: number | null;
-  // Optional real-time status values reported by the MatchZy plugin and
+  // Optional real-time status values reported by the Auto Tournament CS2 plugin and
   // allocator. These are populated by /api/servers/:id/status and are used
   // purely for UI display on the Servers page.
   pluginStatus?: string | null;
   allocationState?: string | null;
   allocationMatchSlug?: string | null;
   ipBanned?: boolean; // True if server has banned our IP address
-  matchzyConfig?: {
+  atConfig?: {
     chatPrefix?: string | null;
     adminChatPrefix?: string | null;
     knifeEnabledDefault?: boolean | null;
@@ -81,7 +81,7 @@ export interface Server {
     playoutEnabledDefault?: boolean | null;
     resetCvarsOnSeriesEnd?: boolean | null;
     usePauseCommandForTacticalPause?: boolean | null;
-    /** MatchZy Enhanced: 0=idle, 1=match, 2=practice */
+    /** Auto Tournament CS2: 0=idle, 1=match, 2=practice */
     autostartMode?: 0 | 1 | 2 | null;
     demoPath?: string | null;
     hostnameFormat?: string | null;
@@ -336,42 +336,42 @@ export interface SettingsResponse extends ApiResponse {
     defaultPlayerElo: number;
     simulateMatches: boolean;
     simulationTimescale?: number;
-    matchzyChatPrefix?: string | null;
-    matchzyAdminChatPrefix?: string | null;
-    matchzyKnifeEnabledDefault?: boolean;
-    matchzyDebugChatEnabled?: boolean;
+    atChatPrefix?: string | null;
+    atAdminChatPrefix?: string | null;
+    atKnifeEnabledDefault?: boolean;
+    atDebugChatEnabled?: boolean;
     ratingsEnabled?: boolean;
     allowSelfRegister?: boolean;
-    // MatchZy core defaults
-    matchzyAutostartMode?: 0 | 1 | 2;
-    matchzyMinimumReadyRequired?: number;
-    matchzyAllowForceReady?: boolean;
-    matchzyKickWhenNoMatchLoaded?: boolean;
-    matchzyWhitelistEnabledDefault?: boolean;
-    matchzyPauseAfterRestore?: boolean;
-    matchzyStopCommandAvailable?: boolean;
-    matchzyStopCommandNoDamage?: boolean;
-    matchzyUsePauseCommandForTacticalPause?: boolean;
+    // Auto Tournament CS2 core defaults
+    atAutostartMode?: 0 | 1 | 2;
+    atMinimumReadyRequired?: number;
+    atAllowForceReady?: boolean;
+    atKickWhenNoMatchLoaded?: boolean;
+    atWhitelistEnabledDefault?: boolean;
+    atPauseAfterRestore?: boolean;
+    atStopCommandAvailable?: boolean;
+    atStopCommandNoDamage?: boolean;
+    atUsePauseCommandForTacticalPause?: boolean;
     /** '' means: leave each server's own hostname alone. */
-    matchzyHostnameFormat?: string;
-    matchzyDemoPath?: string;
-    matchzyDemoNameFormat?: string;
-    matchzySeriesEndKickDelayNoDemo?: number;
-    matchzySeriesEndKickDelayDemoNoUpload?: number;
-    matchzySeriesEndKickDelayDemoUpload?: number;
-    // MatchZy Enhanced v1.3.0 settings (null = use tournament defaults)
-    matchzyAutoreadyEnabled?: 0 | 1 | null;
-    matchzyBothTeamsUnpauseRequired?: 0 | 1 | null;
-    matchzyMaxPausesPerTeam?: number | null;
-    matchzyPauseDuration?: number | null;
-    matchzySideSelectionEnabled?: 0 | 1 | null;
-    matchzySideSelectionTime?: number | null;
-    matchzyGgEnabled?: 0 | 1 | null;
-    matchzyGgThreshold?: number | null;
-    matchzyGgMinScoreDiff?: number | null;
-    matchzyFfwEnabled?: 0 | 1 | null;
-    matchzyFfwTime?: number | null;
-    matchzyDemoRecordingEnabled?: 0 | 1 | null;
+    atHostnameFormat?: string;
+    atDemoPath?: string;
+    atDemoNameFormat?: string;
+    atSeriesEndKickDelayNoDemo?: number;
+    atSeriesEndKickDelayDemoNoUpload?: number;
+    atSeriesEndKickDelayDemoUpload?: number;
+    // Auto Tournament CS2 v1.3.0 settings (null = use tournament defaults)
+    atAutoreadyEnabled?: 0 | 1 | null;
+    atBothTeamsUnpauseRequired?: 0 | 1 | null;
+    atMaxPausesPerTeam?: number | null;
+    atPauseDuration?: number | null;
+    atSideSelectionEnabled?: 0 | 1 | null;
+    atSideSelectionTime?: number | null;
+    atGgEnabled?: 0 | 1 | null;
+    atGgThreshold?: number | null;
+    atGgMinScoreDiff?: number | null;
+    atFfwEnabled?: 0 | 1 | null;
+    atFfwTime?: number | null;
+    atDemoRecordingEnabled?: 0 | 1 | null;
   };
 }
 

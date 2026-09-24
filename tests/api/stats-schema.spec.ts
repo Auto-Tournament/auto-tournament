@@ -3,7 +3,7 @@ import { getIntegration } from '../../api/src/integrations/registry';
 import {
   cs2PlayerStatsColumns,
   cs2PlayerStatsMetrics,
-  metricsFromMatchZyStats,
+  metricsFromPluginStats,
 } from '../../api/src/integrations/cs2/stats';
 import {
   BALANCED_STATS_V1_WEIGHTS,
@@ -121,7 +121,7 @@ function rng(seed: number): () => number {
 const schema = getIntegration('cs2').statsSchema(null);
 
 test.describe('CS2 stats through statsSchema', () => {
-  test('MatchZy stats -> metrics -> columns matches the old insert', () => {
+  test('Auto Tournament CS2 stats -> metrics -> columns matches the old insert', () => {
     const next = rng(1);
     const int = (max: number) => Math.floor(next() * max);
     const samples: LegacyStats[] = [
@@ -149,11 +149,11 @@ test.describe('CS2 stats through statsSchema', () => {
       samples.push(sample);
     }
     for (const raw of samples) {
-      const columns = cs2PlayerStatsColumns(metricsFromMatchZyStats(raw));
+      const columns = cs2PlayerStatsColumns(metricsFromPluginStats(raw));
       expect(columns).toEqual(legacyColumns(raw));
       expect(Object.keys(columns)).toEqual(Object.keys(legacyColumns(raw)));
     }
-    // A player MatchZy reported nothing for.
+    // A player Auto Tournament CS2 reported nothing for.
     expect(cs2PlayerStatsColumns({})).toEqual(legacyColumns({}));
   });
 

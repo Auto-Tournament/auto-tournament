@@ -71,7 +71,7 @@ export interface MatchConfig {
   num_maps?: number;
   players_per_team?: number;
   /**
-   * Per-map starting sides for MatchZy.
+   * Per-map starting sides for Auto Tournament CS2.
    * Values are plugin-facing tokens:
    * - 'team1_ct'  -> Team 1 starts CT on that map
    * - 'team2_ct'  -> Team 2 starts CT on that map
@@ -92,12 +92,12 @@ export interface MatchConfig {
    */
   vetoDisabled?: boolean;
   /**
-   * MatchZy simulation mode flag.
+   * Auto Tournament CS2 simulation mode flag.
    * When true, the plugin runs the match in simulation mode (bots instead of human players).
    */
   simulation?: boolean;
   /**
-   * Optional simulation speed multiplier for MatchZy.
+   * Optional simulation speed multiplier for Auto Tournament CS2.
    * When provided alongside simulation: true, controls how fast the simulated match runs.
    */
   simulation_timescale?: number;

@@ -113,7 +113,7 @@ export function requestActorId(req: Request): string | null {
  * The outcome of checking a request for admin rights, without answering it.
  *
  * `requireAuth` turns a refusal into its response. Routes that accept an admin
- * *or* another credential (the match config MatchZy downloads, see
+ * *or* another credential (the match config Auto Tournament CS2 downloads, see
  * `requireMatchConfigAccess`) call this directly so they can answer a refusal
  * their own way.
  */

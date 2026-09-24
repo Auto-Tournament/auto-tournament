@@ -14,7 +14,7 @@ import type { DbTournamentRow } from '../../api/src/types/database.types';
  * Seen on real servers (MAT 2.4.7, MR4 Bo1): after the simulated veto, "Stored
  * fresh config for match r1m2 after automated veto" stored `maxRounds: 24`. The
  * veto simulation built the tournament by hand without maxRounds, overtime or
- * team size, so config generation fell back to MatchZy defaults. The config
+ * team size, so config generation fell back to Auto Tournament CS2 defaults. The config
  * served to servers was rebuilt correctly, which hid it.
  *
  * @tag api

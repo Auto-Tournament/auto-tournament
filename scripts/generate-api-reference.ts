@@ -113,7 +113,7 @@ endpoints worth using, see [API.md](API.md). To generate a client, use
 | --- | --- |
 | \`public\` | No credential needed |
 | \`admin\` | An admin session, or a service token (\`API_TOKENS\`; \`API_TOKENS_READONLY\` for \`GET\`) |
-| \`server token\` | \`X-MatchZy-Token\` — for CS2 game servers, not for bots |
+| \`server token\` | \`X-Auto-Tournament-Token\` — for CS2 game servers, not for bots |
 
 \`public\` means the middleware requires nothing. A few of these still resolve
 the caller's identity from a cookie and change what they return, or reject the

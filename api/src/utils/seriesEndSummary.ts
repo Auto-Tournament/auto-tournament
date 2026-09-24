@@ -1,7 +1,7 @@
 /**
  * The one-line series result MAT logs on `series_end`.
  *
- * MatchZy's `series_end` payload carries scores and a winner side but no team
+ * Auto Tournament CS2's `series_end` payload carries scores and a winner side but no team
  * names (only `series_start` has them), so reading `team1_name` off the event
  * logged "SERIES ENDED: undefined 0-1 undefined" for every match. Names come
  * from the payload when a plugin sends them, otherwise from what MAT knows

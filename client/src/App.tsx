@@ -295,7 +295,7 @@ function AppRoutes() {
       {/*
         Public team profile. Deliberately not `/team/:teamId` or `/teams/:teamId`:
         the former is the team's live match/server page (`TeamMatch`, used during
-        play by players and MatchZy flows) and must keep its URL unchanged; the
+        play by players and Auto Tournament CS2 flows) and must keep its URL unchanged; the
         latter would sit under the admin-only `/teams` list. `/t/team/:teamId`
         avoids both.
       */}

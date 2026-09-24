@@ -9,9 +9,9 @@ export interface Server {
   port: number;
   password: string;
   enabled: number; // PostgreSQL stores boolean as 0/1 in INTEGER column
-  matchzy_config?: string | null; // JSON blob with per-server MatchZy ConVar overrides
+  at_config?: string | null; // JSON blob with per-server Auto Tournament CS2 ConVar overrides
   persistent_config_sent?: number | null; // Unix timestamp when persistent config was last sent
-  plugin_version?: string | null; // MatchZy Enhanced version (e.g., "1.3.6")
+  plugin_version?: string | null; // Auto Tournament CS2 version (e.g., "1.3.6")
   hostname?: string | null; // CS2 server hostname (from hostname convar)
   last_seen?: number | null; // Unix timestamp of last event received (heartbeat)
   status?: string | null; // 'online', 'offline', 'unknown'
@@ -29,16 +29,16 @@ export interface Server {
   cs2_version_string?: string | null;
   /** Unix timestamp when version/build was last fetched via RCON. */
   cs2_version_fetched_at?: number | null;
-  /** Best-effort: MatchZy plugin DB reachable (1/0). */
-  matchzy_db_ok?: number | null;
+  /** Best-effort: Auto Tournament CS2 plugin DB reachable (1/0). */
+  at_db_ok?: number | null;
   /** Best-effort: 'sqlite' | 'mysql'. */
-  matchzy_db_type?: string | null;
+  at_db_type?: string | null;
   /** Best-effort: last DB error message (if any). */
-  matchzy_db_error?: string | null;
+  at_db_error?: string | null;
   /** Unix timestamp when DB was last reported OK. */
-  matchzy_db_last_ok_at?: number | null;
+  at_db_last_ok_at?: number | null;
   /** Unix timestamp when DB health was last reported. */
-  matchzy_db_last_seen_at?: number | null;
+  at_db_last_seen_at?: number | null;
   /** Unix timestamp when server last successfully sent any event to /api/events. */
   server_can_reach_api_at?: number | null;
   created_at: number;
@@ -52,7 +52,7 @@ export interface CreateServerInput {
   port: number;
   password: string;
   enabled?: boolean; // Optional, defaults to true
-  matchzyConfig?: MatchzyServerConfigInput;
+  atConfig?: AtServerConfigInput;
 }
 
 export interface UpdateServerInput {
@@ -61,7 +61,7 @@ export interface UpdateServerInput {
   port?: number;
   password?: string;
   enabled?: boolean;
-  matchzyConfig?: MatchzyServerConfigInput | null;
+  atConfig?: AtServerConfigInput | null;
 }
 
 export interface BatchUpdateInput {
@@ -76,15 +76,15 @@ export interface ServerResponse {
   port: number;
   password: string;
   enabled: boolean;
-  matchzyConfig: MatchzyServerConfig | null;
+  atConfig: AtServerConfig | null;
   created_at: number;
   updated_at: number;
-  // Server tracking fields (from MatchZy Enhanced server_configured event)
-  pluginVersion?: string | null; // MatchZy Enhanced version (e.g., "1.3.6")
+  // Server tracking fields (from Auto Tournament CS2 server_configured event)
+  pluginVersion?: string | null; // Auto Tournament CS2 version (e.g., "1.3.6")
   hostname?: string | null; // CS2 server hostname (from hostname convar)
   lastSeen?: number | null; // Unix timestamp of last event received (heartbeat)
   status?: string | null; // 'online', 'offline', 'unknown'
-  /** Unix timestamp when we last sent persistent config via RCON. Set before MatchZy sends events. */
+  /** Unix timestamp when we last sent persistent config via RCON. Set before Auto Tournament CS2 sends events. */
   persistentConfigSent?: number | null;
   /** If set, the server has reported a CS2 update is required (Steam required_version). */
   cs2RequiredVersion?: number | null;
@@ -100,27 +100,27 @@ export interface ServerResponse {
   cs2VersionString?: string | null;
   /** Unix timestamp when version/build was last fetched via RCON. */
   cs2VersionFetchedAt?: number | null;
-  /** Best-effort: MatchZy plugin DB reachable. */
-  matchzyDbOk?: boolean | null;
+  /** Best-effort: Auto Tournament CS2 plugin DB reachable. */
+  atDbOk?: boolean | null;
   /** Best-effort: 'sqlite' | 'mysql'. */
-  matchzyDbType?: string | null;
+  atDbType?: string | null;
   /** Best-effort: last DB error message (if any). */
-  matchzyDbError?: string | null;
+  atDbError?: string | null;
   /** Unix timestamp when DB was last reported OK. */
-  matchzyDbLastOkAt?: number | null;
+  atDbLastOkAt?: number | null;
   /** Unix timestamp when DB health was last reported. */
-  matchzyDbLastSeenAt?: number | null;
+  atDbLastSeenAt?: number | null;
   /** Unix timestamp when server last successfully sent any event to /api/events. */
   serverCanReachApiAt?: number | null;
 }
 
 /**
- * Per-server MatchZy configuration (backend representation)
+ * Per-server Auto Tournament CS2 configuration (backend representation)
  * This is intentionally a small, opinionated subset of all possible ConVars.
  * Note: Chat prefixes and knife round defaults are configured at the global/tournament/match level,
  * not per-server. Only server-specific operational settings are included here.
  */
-export interface MatchzyServerConfig {
+export interface AtServerConfig {
   // Common operational toggles (all optional; null/undefined = do not touch)
   minimumReadyRequired?: number | null;
   pauseAfterRestore?: boolean | null;
@@ -132,7 +132,7 @@ export interface MatchzyServerConfig {
   resetCvarsOnSeriesEnd?: boolean | null;
   usePauseCommandForTacticalPause?: boolean | null;
   /**
-   * MatchZy Enhanced autostart mode:
+   * Auto Tournament CS2 autostart mode:
    * 0 = idle/sleep, 1 = match mode, 2 = practice mode
    */
   autostartMode?: 0 | 1 | 2 | null;
@@ -147,10 +147,10 @@ export interface MatchzyServerConfig {
 }
 
 /**
- * Shape accepted from API clients (frontend) – same as MatchzyServerConfig for now.
+ * Shape accepted from API clients (frontend) – same as AtServerConfig for now.
  * Defined separately in case we want stricter validation later.
  */
-export type MatchzyServerConfigInput = MatchzyServerConfig;
+export type AtServerConfigInput = AtServerConfig;
 
 export interface BatchOperationResult {
   success: boolean;

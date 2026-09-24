@@ -203,9 +203,9 @@ a bot maps the Discord user running a command to their MAT player.
 | `POST /matches/:slug/reallocate` | token (admin) | Move to another server |
 | `PATCH /matches/:slug/status` | token (admin) | |
 | `POST /matches/:slug/force-cancel` | token (admin) | |
-| `GET /matches/:slug.json` | public | The MatchZy config. This is what the game server fetches |
+| `GET /matches/:slug.json` | public | The Auto Tournament CS2 config. This is what the game server fetches |
 
-`config` is a full MatchZy match config (`matchid`, `team1`, `team2`, `num_maps`,
+`config` is a full Auto Tournament CS2 match config (`matchid`, `team1`, `team2`, `num_maps`,
 `maplist`, …) — see `api/src/types/match.types.ts`. For a shuffle tournament,
 `POST /tournament/:id/manual-matches` is the friendlier door: it takes player IDs
 and builds the config for you.
@@ -346,7 +346,7 @@ server.
 | --- | --- |
 | `API_TOKENS` | Full-admin service tokens |
 | `API_TOKENS_READONLY` | Read-only service tokens |
-| `SERVER_TOKEN` | Game-server credential for MatchZy webhooks and demo uploads (`X-MatchZy-Token`). Unrelated to service tokens — it gates the ingest endpoints only, never the admin API |
+| `SERVER_TOKEN` | Game-server credential for Auto Tournament CS2 webhooks and demo uploads (`X-Auto-Tournament-Token`). Unrelated to service tokens — it gates the ingest endpoints only, never the admin API |
 | `ALLOW_UNAUTHENTICATED_EVENTS` | Migration shim: accept game events with no token. Off by default; see `example.env` |
 | `ADMIN_STEAM_IDS` | Steam IDs always granted admin, for human sign-in |
 | `SESSION_SECRET` | Signs admin session cookies |

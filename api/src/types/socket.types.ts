@@ -51,7 +51,7 @@ export interface MatchEventData {
 
 /**
  * A game server's webhook event as the integration received it (CS2: a
- * MatchZy event, typed in integrations/cs2/events/matchzy-events.types.ts).
+ * Auto Tournament CS2 event, typed in integrations/cs2/events/plugin-events.types.ts).
  * The core only relays and logs these, so it needs no more than the name.
  */
 export interface GameWebhookEvent {

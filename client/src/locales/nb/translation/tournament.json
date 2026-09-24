@@ -129,8 +129,8 @@
       "overtimeDisabledNoDraws": "Overtid: Av (ingen uavgjort – skade avgjør)",
       "overtimeSegments_one": "Overtidsperioder: {{count}} periode",
       "overtimeSegments_other": "Overtidsperioder: {{count}} perioder",
-      "overtimeSegmentsDefault": "Overtidsperioder: MatchZy-standard",
-      "overtimeSegmentsDefaultUnlimited": "Overtidsperioder: MatchZy-standard (vanligvis ubegrenset)"
+      "overtimeSegmentsDefault": "Overtidsperioder: Auto Tournament CS2-standard",
+      "overtimeSegmentsDefaultUnlimited": "Overtidsperioder: Auto Tournament CS2-standard (vanligvis ubegrenset)"
     },
     "toasts": {
       "loadTemplateFailed": "Kunne ikke laste malen",
@@ -307,10 +307,10 @@
         "disabledNoDraws": "Av – ingen uavgjort (skade avgjør)"
       },
       "modeHelper": "Vanlig overtid spiller ekstra perioder til ett lag leder. «Uavgjort tillates» lar et likt kart ende uavgjort, mens «ingen uavgjort» avgjør det på samlet lagskade.",
-      "tooltip": "Styr hvordan overtid fungerer og hvordan uavgjort ved maks runder håndteres. Innstillingene sendes videre til MatchZy som overtimeMode/overtimeSegments og har samme betydning som i shuffle-turneringer og manuelle kamper.",
+      "tooltip": "Styr hvordan overtid fungerer og hvordan uavgjort ved maks runder håndteres. Innstillingene sendes videre til Auto Tournament CS2 som overtimeMode/overtimeSegments og har samme betydning som i shuffle-turneringer og manuelle kamper.",
       "shuffleTooltip": "Styr hvordan overtid fungerer i shuffle-kamper og hvordan uavgjort ved maks runder avgjøres. Når overtid er av, kan like kamper enten ende uavgjort eller avgjøres på samlet lagskade, avhengig av hvilket valg du tar.",
       "segmentsLabel": "Overtidsperioder (valgfritt)",
-      "segmentsHelper": "Valgfritt: begrens antall overtidsperioder. La feltet stå tomt for MatchZy-standard.",
+      "segmentsHelper": "Valgfritt: begrens antall overtidsperioder. La feltet stå tomt for Auto Tournament CS2-standard.",
       "segmentsHelperValue_one": "Begrens overtiden til {{count}} periode. Er det fortsatt likt etter overtid, avgjør samlet lagskade.",
       "segmentsHelperValue_other": "Begrens overtiden til {{count}} perioder. Er det fortsatt likt etter overtid, avgjør samlet lagskade."
     },
@@ -350,7 +350,7 @@
       "teamSizeTooltip": "Antall spillere per lag. Vanlige valg: 4v4, 5v5, 6v6. Minst 2 og høyst 10 spillere per lag.",
       "teamSizeHelper": "Antall spillere per lag (standard: 5 for 5v5, område: 2–10)",
       "maxRoundsLabel": "Maks runder",
-      "maxRoundsTooltip": "Maksimalt antall runder per kamp. Verdien sendes direkte til MatchZy som mp_maxrounds. Eksempel: 6 = MR6, 24 = MR24.",
+      "maxRoundsTooltip": "Maksimalt antall runder per kamp. Verdien sendes direkte til Auto Tournament CS2 som mp_maxrounds. Eksempel: 6 = MR6, 24 = MR24.",
       "maxRoundsHelper": "Kampen spilles i opptil {{maxRounds}} runder; først til {{winRounds}} runder vinner",
       "maxRoundsHelperEmpty": "Maksimalt antall runder per kamp (standard: 24, maks: 30)",
       "eloTemplateLabel": "ELO-beregningsmal",
@@ -521,7 +521,7 @@
         "moreTeams": "Flere lag",
         "shuffleTitle": "Shuffle-innstillinger",
         "cs2Title": "Counter-Strike 2-innstillinger",
-        "cs2Help": "Sendes til MatchZy av spillmodulen for Counter-Strike 2.",
+        "cs2Help": "Sendes til Auto Tournament CS2 av spillmodulen for Counter-Strike 2.",
         "overtime": {
           "enabled": "Overtid",
           "disabledDraws": "Av, uavgjort tillatt",

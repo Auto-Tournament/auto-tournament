@@ -69,7 +69,7 @@ body:
         - Deployment: Docker (docker compose)
         - Runtime: Bun 1.0.20+ or Node.js 20+
         - OS: Any (Linux/Windows/macOS)
-        - MatchZy Version: v1.3.6+
+        - Auto Tournament CS2 Version: v2.0.0
         - Other: Steam account required for authentication testing
     validations:
       required: true

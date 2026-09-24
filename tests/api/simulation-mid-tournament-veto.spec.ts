@@ -21,7 +21,7 @@ import type { Team } from '../helpers/teams';
  * veto that nobody was going to do.
  *
  * Needs simulation to be allowed: CI runs NODE_ENV=production with
- * MATCHZY_ENABLE_SIMULATION_IN_PROD=true. Where it is not allowed the settings
+ * AT_ENABLE_SIMULATION_IN_PROD=true. Where it is not allowed the settings
  * API ignores the flag, and the tests skip rather than fail.
  *
  * @tag api

@@ -2,7 +2,7 @@
  * CS2 startup work and background jobs, run through `cs2Integration.start()`
  * and `stop()`.
  *
- * Moved from `index.ts` unchanged: configure the MatchZy webhook on every
+ * Moved from `index.ts` unchanged: configure the Auto Tournament CS2 webhook on every
  * enabled server that needs it, then fetch the latest plugin version and start
  * the server health monitor (which also runs the CS2 fleet/update checks).
  */
@@ -12,7 +12,7 @@ import { settingsService } from '../../services/settingsService';
 import { serverService } from './services/serverService';
 import { rconService } from './services/rconService';
 import { serverInitializationService } from './services/serverInitializationService';
-import { initMatchZyVersionService } from './services/matchzyVersionService';
+import { initPluginVersionService } from './services/pluginVersionService';
 import { healthMonitoringService } from './services/healthMonitoringService';
 
 export async function startCs2(): Promise<void> {
@@ -20,8 +20,8 @@ export async function startCs2(): Promise<void> {
     log.warn('Failed to auto-configure server webhooks on startup', { error });
   });
 
-  // Fetch latest MatchZy Enhanced version (fire-and-forget, cached for 1 hour)
-  initMatchZyVersionService();
+  // Fetch latest Auto Tournament CS2 version (fire-and-forget, cached for 1 hour)
+  initPluginVersionService();
 
   // Start health monitoring for server tracking
   // Checks every minute to mark inactive servers as offline
@@ -115,7 +115,7 @@ async function bootstrapServerWebhooks(): Promise<void> {
             force: needsRetry,
           });
           log.success(
-            `[STARTUP] ${serverInfo.id}: ${needsInit ? 'Configured' : 'Retry sent'} – waiting for MatchZy events`
+            `[STARTUP] ${serverInfo.id}: ${needsInit ? 'Configured' : 'Retry sent'} – waiting for Auto Tournament CS2 events`
           );
         } else {
           // Server is already configured and has sent events - just log status

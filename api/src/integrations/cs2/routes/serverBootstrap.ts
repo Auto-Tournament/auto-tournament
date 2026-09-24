@@ -5,17 +5,17 @@ import { cs2Settings } from '../settingsReaders';
 import { serverService } from '../services/serverService';
 import { log } from '../../../utils/logger';
 import {
-  getMatchZyWebhookCommands,
-  getMatchZyCoreSettingsCommands,
-  getMatchZyServerConfigCommands,
-} from '../utils/matchzyRconCommands';
+  getPluginWebhookCommands,
+  getPluginCoreSettingsCommands,
+  getPluginServerConfigCommands,
+} from '../utils/pluginRconCommands';
 
 const router = Router();
 
 /**
  * GET /api/servers/:id/bootstrap
  *
- * Server-only endpoint. Used by MatchZy Enhanced to fetch a single initialization payload
+ * Server-only endpoint. Used by Auto Tournament CS2 to fetch a single initialization payload
  * instead of requiring many individual RCON commands with delays.
  */
 router.get('/:id/bootstrap', validateServerToken, async (req: Request, res: Response) => {
@@ -46,31 +46,31 @@ router.get('/:id/bootstrap', validateServerToken, async (req: Request, res: Resp
       });
     }
 
-    const [chatPrefix, adminChatPrefix, knifeEnabledDefault, debugChatEnabled, matchzyCoreDefaults] =
+    const [chatPrefix, adminChatPrefix, knifeEnabledDefault, debugChatEnabled, atCoreDefaults] =
       await Promise.all([
-        cs2Settings.getMatchzyChatPrefix(),
-        cs2Settings.getMatchzyAdminChatPrefix(),
+        cs2Settings.getAtChatPrefix(),
+        cs2Settings.getAtAdminChatPrefix(),
         cs2Settings.isKnifeRoundEnabledByDefault(),
-        cs2Settings.isMatchzyDebugChatEnabled(),
-        cs2Settings.getMatchzyCoreDefaults(),
+        cs2Settings.isAtDebugChatEnabled(),
+        cs2Settings.getAtCoreDefaults(),
       ]);
 
-    const perServerOverrides = server.matchzyConfig ?? {};
-    const mergedServerConfig = { ...matchzyCoreDefaults, ...perServerOverrides };
+    const perServerOverrides = server.atConfig ?? {};
+    const mergedServerConfig = { ...atCoreDefaults, ...perServerOverrides };
 
     const commands: string[] = [
       // Ensure any queued events don't keep retrying against a stale URL.
-      'matchzy_clear_event_queue',
+      'at_clear_event_queue',
       // Ensure server_id is set (even if the controller sets it separately via RCON).
-      `matchzy_server_id "${serverId}"`,
-      ...getMatchZyWebhookCommands(baseUrl, serverToken, null, serverId),
-      ...getMatchZyCoreSettingsCommands({
+      `at_server_id "${serverId}"`,
+      ...getPluginWebhookCommands(baseUrl, serverToken, null, serverId),
+      ...getPluginCoreSettingsCommands({
         chatPrefix,
         adminChatPrefix,
         knifeEnabledDefault,
         debugChatEnabled,
       }),
-      ...getMatchZyServerConfigCommands(mergedServerConfig),
+      ...getPluginServerConfigCommands(mergedServerConfig),
     ];
 
     return res.json({

@@ -27,7 +27,7 @@ export function MatchServerPanel({
     );
   }
 
-  // The API sends an English label alongside the raw MatchZy status; translate
+  // The API sends an English label alongside the raw Auto Tournament CS2 status; translate
   // the known statuses and fall back to that label for anything new.
   const statusLabel = server.status
     ? t(`matchInfo.server.statusLabels.${server.status}`, {

@@ -129,8 +129,8 @@
       "overtimeDisabledNoDraws": "Prolongamento: desativado (sem empates – o dano decide)",
       "overtimeSegments_one": "Segmentos de prolongamento: {{count}} segmento",
       "overtimeSegments_other": "Segmentos de prolongamento: {{count}} segmentos",
-      "overtimeSegmentsDefault": "Segmentos de prolongamento: predefinição do MatchZy",
-      "overtimeSegmentsDefaultUnlimited": "Segmentos de prolongamento: predefinição do MatchZy (normalmente ilimitado)"
+      "overtimeSegmentsDefault": "Segmentos de prolongamento: predefinição do Auto Tournament CS2",
+      "overtimeSegmentsDefaultUnlimited": "Segmentos de prolongamento: predefinição do Auto Tournament CS2 (normalmente ilimitado)"
     },
     "toasts": {
       "loadTemplateFailed": "Não foi possível carregar o modelo",
@@ -307,10 +307,10 @@
         "disabledNoDraws": "Desativado – sem empates (desempate por dano)"
       },
       "modeHelper": "O prolongamento padrão joga segmentos extra até uma equipa ficar à frente. «Empates permitidos» termina um mapa empatado em empate, enquanto «sem empates» decide pelo dano total da equipa.",
-      "tooltip": "Controla o comportamento do prolongamento e como são resolvidos os empates no máximo de rondas. Estas definições são enviadas ao MatchZy como overtimeMode/overtimeSegments e têm o mesmo significado que nos torneios shuffle e nos jogos manuais.",
+      "tooltip": "Controla o comportamento do prolongamento e como são resolvidos os empates no máximo de rondas. Estas definições são enviadas ao Auto Tournament CS2 como overtimeMode/overtimeSegments e têm o mesmo significado que nos torneios shuffle e nos jogos manuais.",
       "shuffleTooltip": "Controla o comportamento do prolongamento nos jogos shuffle e como são decididos os empates no máximo de rondas. Com o prolongamento desativado, os jogos empatados podem ficar empatados ou ser decididos pelo dano total da equipa, consoante a opção escolhida.",
       "segmentsLabel": "Segmentos de prolongamento (opcional)",
-      "segmentsHelper": "Opcional: limita o número de segmentos de prolongamento. Deixa vazio para a predefinição do MatchZy.",
+      "segmentsHelper": "Opcional: limita o número de segmentos de prolongamento. Deixa vazio para a predefinição do Auto Tournament CS2.",
       "segmentsHelperValue_one": "Limita o prolongamento a {{count}} segmento. Se o empate persistir, decide o dano total da equipa.",
       "segmentsHelperValue_other": "Limita o prolongamento a {{count}} segmentos. Se o empate persistir, decide o dano total da equipa."
     },
@@ -350,7 +350,7 @@
       "teamSizeTooltip": "Número de jogadores por equipa. Opções comuns: 4v4, 5v5, 6v6. Mínimo de 2 e máximo de 10 jogadores por equipa.",
       "teamSizeHelper": "Número de jogadores por equipa (predefinição: 5 para 5v5, intervalo: 2-10)",
       "maxRoundsLabel": "Rondas máximas",
-      "maxRoundsTooltip": "Número máximo de rondas por jogo. Este valor é enviado diretamente ao MatchZy como mp_maxrounds. Exemplo: 6 = MR6, 24 = MR24.",
+      "maxRoundsTooltip": "Número máximo de rondas por jogo. Este valor é enviado diretamente ao Auto Tournament CS2 como mp_maxrounds. Exemplo: 6 = MR6, 24 = MR24.",
       "maxRoundsHelper": "O jogo é disputado até {{maxRounds}} rondas; vence quem chegar primeiro a {{winRounds}} rondas",
       "maxRoundsHelperEmpty": "Número máximo de rondas por jogo (predefinição: 24, máx.: 30)",
       "eloTemplateLabel": "Modelo de cálculo de ELO",
@@ -521,7 +521,7 @@
         "moreTeams": "More teams",
         "shuffleTitle": "Shuffle settings",
         "cs2Title": "Counter-Strike 2 settings",
-        "cs2Help": "Passed to MatchZy by the Counter-Strike 2 game module.",
+        "cs2Help": "Passed to Auto Tournament CS2 by the Counter-Strike 2 game module.",
         "overtime": {
           "enabled": "Overtime",
           "disabledDraws": "Off, draws allowed",

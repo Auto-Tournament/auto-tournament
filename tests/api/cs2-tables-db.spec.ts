@@ -40,6 +40,7 @@ interface Cs2TablesView {
   mapPoolNames: string[];
   ledger: Array<{ id: string; checksum: string }>;
   firstMigration: { id: string; checksum: string } | null;
+  declared: Array<{ id: string; checksum: string }>;
   state: { status: 'ok' | 'failed'; applied: string[]; reason?: string } | null;
   schema: Cs2Schema;
 }
@@ -145,7 +146,8 @@ test.describe.serial('CS2 tables on the database', () => {
     expect(v.legacyTables).toEqual(OLD_GONE);
     expect(v.state?.status).toBe('ok');
     expect(v.firstMigration?.id).toBe('001-tables');
-    expect(v.ledger).toEqual([v.firstMigration]);
+    expect(v.ledger).toEqual(v.declared);
+    expect(v.declared.map((m) => m.id)).toEqual(CS2_MIGRATIONS.map((m) => m.id));
     // The CS2 seed ran on them.
     expect(v.counts.cs2_maps).toBeGreaterThan(0);
     expect(v.mapPoolNames).toContain('Active Duty');
@@ -347,7 +349,7 @@ test.describe.serial('CS2 tables on the database', () => {
       expect(after.tables).toEqual(NEW_NAMES);
       expect(after.legacyTables).toEqual(OLD_GONE);
       expect(after.ledger).toEqual(before.ledger);
-      expect(after.state).toEqual({ moduleId: 'cs2', status: 'ok', applied: ['001-tables'] });
+      expect(after.state).toEqual({ moduleId: 'cs2', status: 'ok', applied: CS2_MIGRATIONS.map((m) => m.id) });
       expect(after.schema).toEqual(before.schema);
       expect(after.mapPoolNames).toContain('Active Duty');
     });

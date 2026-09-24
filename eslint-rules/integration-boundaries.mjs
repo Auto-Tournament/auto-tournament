@@ -17,8 +17,8 @@
  *    another integration and not the registry (the registry imports every
  *    integration, so that would be a cycle and a back door to the others).
  *
- * 3. `api/src/core/**` must not import `rconService` or the MatchZy event
- *    types (`types/matchzy-events`) by any path, relative or not.
+ * 3. `api/src/core/**` must not import `rconService` or the Auto Tournament CS2 event
+ *    types (`types/plugin-events`) by any path, relative or not.
  *
  * `registry.ts` and `types.ts` themselves are not restricted. There are no
  * exceptions: the legacy allowlist emptied out in PR 7b and was removed in
@@ -41,7 +41,7 @@ const SHARED = new Set(['registry', 'types']);
  * back under a core directory. Matched on the last path segment, without
  * extension, of every import specifier in `api/src/core/**`.
  */
-const CORE_FORBIDDEN_MODULES = new Set(['rconService', 'matchzy-events', 'matchzy-events.types']);
+const CORE_FORBIDDEN_MODULES = new Set(['rconService', 'plugin-events', 'plugin-events.types']);
 
 function isCoreDir(root, filename) {
   const rel = path.relative(root, filename).split(path.sep);

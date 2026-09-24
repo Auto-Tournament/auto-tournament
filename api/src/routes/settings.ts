@@ -48,7 +48,7 @@ async function startAutoVetoForRunningTournament(tournamentId: number): Promise<
 
 /**
  * The settings response: the core's fields, then each integration's
- * (`readInstanceSettings`, CS2: the simulation and `matchzy_*` defaults).
+ * (`readInstanceSettings`, CS2: the simulation and `at_*` defaults).
  */
 const mapSettingsResponse = async () => {
   const webhookUrl = await settingsService.getWebhookUrl();

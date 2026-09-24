@@ -16,7 +16,7 @@ permissions:
 env:
   # Tag given to the image the build job produces and every shard loads.
   # docker/docker-compose.ci.yml points the app service at it.
-  MAT_IMAGE: matchzy-tournament:ci
+  MAT_IMAGE: auto-tournament:ci
   SHARD_TOTAL: 4
 
 jobs:

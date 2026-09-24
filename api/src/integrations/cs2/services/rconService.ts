@@ -5,7 +5,7 @@ import { ServerResponse } from '../../../types/server.types';
 import { RconCommandResponse } from '../types/rcon.types';
 import { log } from '../../../utils/logger';
 import { isLostReplyError, isServerRestartCommand } from '../utils/rconRestartOutcome';
-import { getMatchZyLoadMatchCommand } from '../utils/matchzyRconCommands';
+import { getPluginLoadMatchCommand } from '../utils/pluginRconCommands';
 
 /**
  * RCON Service for sending commands to CS2 servers
@@ -552,7 +552,7 @@ export class RconService {
   }
 
   /**
-   * Helper methods for common CS2/MatchZy commands
+   * Helper methods for common CS2 commands
    */
   commands = {
     /**
@@ -584,29 +584,29 @@ export class RconService {
       this.sendCommand(serverId, `kick "${playerName}"`),
 
     /**
-     * Execute MatchZy command
+     * Run a plugin command (`at_<command>`)
      */
-    matchzy: (serverId: string, matchzyCommand: string) =>
-      this.sendCommand(serverId, `matchzy_${matchzyCommand}`),
+    plugin: (serverId: string, command: string) =>
+      this.sendCommand(serverId, `at_${command}`),
 
     /**
-     * Load a match config (MatchZy)
+     * Load a match config (Auto Tournament CS2)
      */
     loadMatch: (serverId: string, configUrl: string) =>
-      this.sendCommand(serverId, getMatchZyLoadMatchCommand(configUrl, process.env.SERVER_TOKEN)),
+      this.sendCommand(serverId, getPluginLoadMatchCommand(configUrl, process.env.SERVER_TOKEN)),
 
     /**
-     * End current match (MatchZy)
+     * End current match (Auto Tournament CS2)
      */
     endMatch: (serverId: string) => this.sendCommand(serverId, 'css_restart'),
 
     /**
-     * Pause match (MatchZy)
+     * Pause match (Auto Tournament CS2)
      */
     pauseMatch: (serverId: string) => this.sendCommand(serverId, 'css_pause'),
 
     /**
-     * Unpause match (MatchZy)
+     * Unpause match (Auto Tournament CS2)
      */
     unpauseMatch: (serverId: string) => this.sendCommand(serverId, 'css_unpause'),
   };

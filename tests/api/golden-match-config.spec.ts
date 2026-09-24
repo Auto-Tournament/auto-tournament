@@ -10,10 +10,10 @@ import {
 } from '../helpers/golden';
 
 /**
- * Golden MatchZy match configs, one file per format.
+ * Golden Auto Tournament CS2 match configs, one file per format.
  *
  * Characterization test: it records the JSON that GET /api/matches/:slug.json
- * serves today (the URL the MatchZy plugin loads a match from) and fails when
+ * serves today (the URL the Auto Tournament CS2 plugin loads a match from) and fails when
  * any of it changes. It is the safety net for moving config building out of
  * the bracket generators and behind the CS2 game module; the served config
  * must stay identical through that refactor.
@@ -89,7 +89,7 @@ let serverContext: APIRequestContext;
 
 async function fetchServedConfig(match: MatchListRow): Promise<Config> {
   const res = await serverContext.get(`/api/matches/${match.slug}.json`, {
-    headers: { 'X-MatchZy-Token': process.env.SERVER_TOKEN ?? 'server123' },
+    headers: { 'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123' },
   });
   expect(res.ok(), `config for ${match.slug}: ${res.status()} ${await res.text()}`).toBe(true);
   const config = (await res.json()) as Config;
@@ -130,7 +130,7 @@ async function snapshotTournament(request: APIRequestContext, name: string): Pro
   expectGolden(`match-config-${name}`, normalizeForGolden(snapshot, { replace: COMMON_REPLACE }));
 }
 
-test.describe.serial('Golden MatchZy match configs', () => {
+test.describe.serial('Golden Auto Tournament CS2 match configs', () => {
   test.beforeAll(async ({ playwright }) => {
     const request = await playwright.request.newContext({
       baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069',
@@ -317,7 +317,7 @@ test.describe.serial('Golden MatchZy match configs', () => {
         map_sides: ['team1_ct', 'team2_ct', 'knife'],
         cvars: {
           mp_maxrounds: 24,
-          matchzy_knife_enabled_default: 1,
+          at_knife_enabled_default: 1,
           mp_overtime_enable: 1,
           mp_overtime_maxrounds: 6,
         },

@@ -5,9 +5,9 @@ import { normalize } from '../../api/src/integrations/cs2/events/normalize';
 import type { NormalizedEvent } from '../../api/src/integrations/types';
 
 /**
- * The CS2 adapter's MatchZy -> NormalizedEvent mapping (pure, no API).
+ * The CS2 adapter's Auto Tournament CS2 -> NormalizedEvent mapping (pure, no API).
  *
- * Feeds the captured Bo3 (tests/fixtures/matchzy-bo3-sequence.json, the same
+ * Feeds the captured Bo3 (tests/fixtures/plugin-bo3-sequence.json, the same
  * sequence event-replay-golden.spec.ts replays against the API) through
  * `normalize()` and checks the neutral sequence the core will ingest in PR 6b:
  * one series start and end, a start and a result per map, score updates from
@@ -16,7 +16,7 @@ import type { NormalizedEvent } from '../../api/src/integrations/types';
  * @tag api
  */
 
-const FIXTURE_PATH = path.resolve(__dirname, '../fixtures/matchzy-bo3-sequence.json');
+const FIXTURE_PATH = path.resolve(__dirname, '../fixtures/plugin-bo3-sequence.json');
 const fixture = JSON.parse(fs.readFileSync(FIXTURE_PATH, 'utf8')) as {
   maps: string[];
   events: Array<Record<string, unknown>>;

@@ -86,7 +86,7 @@ Monitor Docker resource usage:
 docker stats
 
 # Check container count
-docker ps | grep matchzy-test-shard | wc -l
+docker ps | grep auto-tournament-test-shard | wc -l
 
 # Check port usage
 lsof -i :3069-3080

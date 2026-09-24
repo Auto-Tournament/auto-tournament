@@ -10,8 +10,8 @@
       "servers": "Serveurs",
       "maps": "Cartes & pools"
     },
-    "matchzyDbDown": {
-      "title": "Base de données MatchZy injoignable",
+    "atDbDown": {
+      "title": "Base de données Auto Tournament CS2 injoignable",
       "body_one": "{{count}} serveur signale que le plugin ne peut pas joindre sa base de données. Les sauvegardes et la file d’événements peuvent être affectées.",
       "body_other": "{{count}} serveurs signalent que le plugin ne peut pas joindre sa base de données. Les sauvegardes et la file d’événements peuvent être affectées."
     }
@@ -424,7 +424,7 @@
       "message_other": "Voulez-vous vraiment supprimer {{count}} serveurs ? Cette action est irréversible."
     },
     "autoConfig": {
-      "configuring": "Configuration des nouveaux serveurs (envoi de la config MatchZy via RCON)…",
+      "configuring": "Configuration des nouveaux serveurs (envoi de la config Auto Tournament CS2 via RCON)…",
       "done": "Nouveaux serveurs configurés. Actualisation du statut…"
     },
     "checkServerLogs": "Consultez la console / les logs du serveur de jeu pour vérifier que le plugin Auto Tournament reçoit la config et envoie des événements.",
@@ -539,16 +539,16 @@
     "rconPasswordHelper": "Mot de passe pour l’accès RCON au serveur",
     "enabledLabel": "Serveur activé",
     "enabledHelper": "Les serveurs désactivés ne seront pas utilisés pour les matchs",
-    "overridesTitle": "Surcharges MatchZy (optionnel)",
-    "overridesDescription": "Ces paramètres surchargent les valeurs globales MatchZy uniquement pour ce serveur. Laissez vide pour utiliser les valeurs globales dans Paramètres.",
+    "overridesTitle": "Surcharges Auto Tournament CS2 (optionnel)",
+    "overridesDescription": "Ces paramètres surchargent les valeurs globales Auto Tournament CS2 uniquement pour ce serveur. Laissez vide pour utiliser les valeurs globales dans Paramètres.",
     "chatPrefixLabel": "Surcharge du préfixe de chat",
     "chatPrefixPlaceholder": "[{Green}Auto Tournament{Default}]",
-    "chatPrefixHelper": "Surcharge matchzy_chat_prefix sur ce serveur (optionnel)",
+    "chatPrefixHelper": "Surcharge at_chat_prefix sur ce serveur (optionnel)",
     "adminChatPrefixLabel": "Surcharge du préfixe de chat admin",
     "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
-    "adminChatPrefixHelper": "Surcharge matchzy_admin_chat_prefix sur ce serveur (optionnel)",
+    "adminChatPrefixHelper": "Surcharge at_admin_chat_prefix sur ce serveur (optionnel)",
     "knifeOverrideLabel": "Couteau activé par défaut (surcharge)",
-    "knifeOverrideHelper": "Si défini, surcharge matchzy_knife_enabled_default pour ce serveur. Laissez indéterminé pour utiliser la valeur globale.",
+    "knifeOverrideHelper": "Si défini, surcharge at_knife_enabled_default pour ce serveur. Laissez indéterminé pour utiliser la valeur globale.",
     "testConnectivity": "Tester la connectivité",
     "testingConnectivity": "Test de connectivité…",
     "connectivity": {

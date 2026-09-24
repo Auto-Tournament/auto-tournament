@@ -93,7 +93,7 @@ export interface Match {
   config?: MatchConfig;
 }
 
-/** The MatchZy config MAT hands the game server. Only the parts used here. */
+/** The Auto Tournament CS2 config MAT hands the game server. Only the parts used here. */
 export interface MatchConfig {
   team1?: { name?: string };
   team2?: { name?: string };
@@ -148,7 +148,7 @@ export function matchLabel(match: Pick<Match, 'slug' | 'bracket' | 'round' | 'ma
  *
  * There are two places a team name can live and which one is populated depends
  * on how the match was made: tournament matches join to the `teams` table and
- * get a `team1` object, manual matches only ever have the name in the MatchZy
+ * get a `team1` object, manual matches only ever have the name in the Auto Tournament CS2
  * config. Reading just the first gives "TBD" for every manual match.
  */
 

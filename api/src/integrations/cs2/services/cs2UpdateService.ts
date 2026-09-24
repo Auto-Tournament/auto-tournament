@@ -38,7 +38,7 @@ async function callUpToDateCheck(installedBuildId: number, apiKey: string | null
   const response = await fetch(url, {
     headers: {
       Accept: 'application/json',
-      'User-Agent': 'MatchZy-Auto-Tournament',
+      'User-Agent': 'Auto-Tournament',
     },
   });
 

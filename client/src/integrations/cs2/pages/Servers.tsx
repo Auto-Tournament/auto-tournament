@@ -62,8 +62,8 @@ export default function Servers() {
   const [retryingAll, setRetryingAll] = useState(false);
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
   const [statusCheckingIds, setStatusCheckingIds] = useState<Set<string>>(() => new Set());
-  const [latestMatchZyVersion, setLatestMatchZyVersion] = useState<string | null>(null);
-  const [latestMatchZyReleaseUrl, setLatestMatchZyReleaseUrl] = useState<string | null>(null);
+  const [latestPluginVersion, setLatestPluginVersion] = useState<string | null>(null);
+  const [latestPluginReleaseUrl, setLatestPluginReleaseUrl] = useState<string | null>(null);
   const [cs2OutdatedSnackbarKey, setCs2OutdatedSnackbarKey] = useState<SnackbarKey | null>(null);
   const { t } = useModuleTranslation('cs2');
 
@@ -206,7 +206,7 @@ export default function Servers() {
       setServers(serversWithStatus);
 
       // Check status for all enabled servers (including unconfigured) so we can show
-      // "API can reach server" / "server can reach API" even when MatchZy hasn't sent events yet.
+      // "API can reach server" / "server can reach API" even when Auto Tournament CS2 hasn't sent events yet.
       const enabledServersToCheck = serverList.filter((s) => s.enabled);
 
       if (enabledServersToCheck.length === 0) {
@@ -614,13 +614,13 @@ export default function Servers() {
     void loadServers({ useCached: false });
     void loadAllocationStatus();
     
-    // Fetch latest MatchZy Enhanced version from GitHub
+    // Fetch latest Auto Tournament CS2 version from GitHub
     api
-      .get<{ success: boolean; version?: string; releaseUrl?: string }>('/api/matchzy/latest-version')
+      .get<{ success: boolean; version?: string; releaseUrl?: string }>('/api/cs2-plugin/latest-version')
       .then((response) => {
         if (response.success && response.version) {
-          setLatestMatchZyVersion(response.version);
-          setLatestMatchZyReleaseUrl(response.releaseUrl ?? null);
+          setLatestPluginVersion(response.version);
+          setLatestPluginReleaseUrl(response.releaseUrl ?? null);
         }
       })
       .catch(() => {
@@ -926,13 +926,13 @@ export default function Servers() {
                     )}
                   </Box>
                   {(() => {
-                    if (!latestMatchZyVersion) return null;
+                    if (!latestPluginVersion) return null;
                     const serversWithVersion = servers.filter((s) => s.pluginVersion);
                     const comparisons = serversWithVersion
                       .map((s) => {
                         const v = s.pluginVersion;
                         if (!v) return null;
-                        return compareDottedVersions(v, latestMatchZyVersion);
+                        return compareDottedVersions(v, latestPluginVersion);
                       })
                       .filter((x): x is number => typeof x === 'number');
 
@@ -942,7 +942,7 @@ export default function Servers() {
 
                     const boxColor = olderCount > 0 ? 'warning' : 'info';
                     const releaseHref =
-                      latestMatchZyReleaseUrl ??
+                      latestPluginReleaseUrl ??
                       'https://github.com/Auto-Tournament/cs2-plugin/releases';
 
                     return (
@@ -964,7 +964,7 @@ export default function Servers() {
                           display="block"
                           mb={0.5}
                         >
-                          {t('serversPage.fleet.latestRelease', { version: latestMatchZyVersion })}
+                          {t('serversPage.fleet.latestRelease', { version: latestPluginVersion })}
                         </Typography>
                         {olderCount > 0 && (
                           <Typography variant="caption" sx={{ color: 'inherit' }} display="block">
@@ -1102,8 +1102,8 @@ export default function Servers() {
                 const inGraceWindow = !!allocSnapshot?.inGraceWindow;
                 const secondsUntilReady = allocSnapshot?.secondsUntilReady ?? null;
                 
-                // Config sent via RCON but MatchZy hasn't sent events yet (lastSeen still null)
-                const configSentWaitingForMatchzy =
+                // Config sent via RCON but Auto Tournament CS2 hasn't sent events yet (lastSeen still null)
+                const configSentWaitingForPlugin =
                   server.enabled && !server.lastSeen && !!server.persistentConfigSent;
                 // Not initialized: we haven't sent config, or we don't know (no persistentConfigSent)
                 const needsInitialization =
@@ -1121,7 +1121,7 @@ export default function Servers() {
                       cursor: 'pointer',
                       borderColor: needsInitialization
                         ? 'error.main'
-                        : configSentWaitingForMatchzy
+                        : configSentWaitingForPlugin
                         ? 'info.main'
                         : 'divider',
                       boxShadow: selected ? ring : undefined,
@@ -1227,7 +1227,7 @@ export default function Servers() {
                         <Box display="flex" alignItems="center" gap={1.25} mb={0.75}>
                           <StatusDot
                             state={
-                              isChecking || configSentWaitingForMatchzy
+                              isChecking || configSentWaitingForPlugin
                                 ? 'loading'
                                 : !server.enabled || server.status === 'disabled'
                                 ? 'free'
@@ -1508,7 +1508,7 @@ export default function Servers() {
                               sx={{ fontWeight: 600 }}
                             />
                           )}
-                          {server.enabled && server.matchzyDbOk === false && (
+                          {server.enabled && server.atDbOk === false && (
                             <Tooltip
                               arrow
                               title={
@@ -1518,7 +1518,7 @@ export default function Servers() {
                                   </Typography>
                                   <Typography variant="body2">
                                     {t('serversPage.tooltips.pluginDbBody', {
-                                      path: 'sudo csm → Tools → MatchZy DB: verify/repair',
+                                      path: 'sudo csm → Tools → Auto Tournament CS2 DB: verify/repair',
                                     })}
                                   </Typography>
                                   <Link
