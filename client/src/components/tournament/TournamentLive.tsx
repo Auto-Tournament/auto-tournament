@@ -32,6 +32,7 @@ import type { Map, MatchesResponse } from '../../types/api.types';
 import type { Tournament } from '../../types';
 import { getMapDisplayName } from '../../constants/maps';
 import { radii } from '../../theme/tokens';
+import { tournamentTabPath } from '../../paths';
 
 interface TournamentLiveProps {
   tournament: {
@@ -432,7 +433,7 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
                 variant="outlined"
                 fullWidth
                 startIcon={<EmojiEventsIcon />}
-                onClick={() => window.open(`/tournament/${tournamentId}/leaderboard`, '_blank')}
+                onClick={() => window.open(tournamentTabPath(tournamentId, 'standings'), '_blank')}
               >
                 {t('nav.leaderboard')}
               </Button>

@@ -65,6 +65,7 @@ const LEGACY_STEP_STORAGE_KEY = 'tournament_form_step';
 const EMPTY_EVENT_PAGE: EventPageFields = {
   description: '',
   location: '',
+  organizer: '',
   rulebookUrl: '',
   rules: [],
   prizes: [],

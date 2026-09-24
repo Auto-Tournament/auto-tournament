@@ -8707,6 +8707,140 @@
         }
       }
     },
+    "/api/tournament/{id}/bracket": {
+      "get": {
+        "tags": [
+          "Tournament"
+        ],
+        "summary": "Get the tournament's bracket and matches (public)",
+        "description": "No session. What the public tournament page's Bracket and Matches tabs\ndraw: every match with its round, status, teams, winner and score, the\nround count, and the Swiss or round robin standings.\n\nA read-only, allow-listed copy of the admin `GET /api/tournament/bracket`.\nEach match carries only `id`, `slug`, `round`, `matchNumber`, `status`,\n`nextMatchId`, the timestamps, `team1` / `team2` / `winner` (id, name,\ntag), the score fields and `mapResults`. Never the game server\n(`serverId`), the game module's match `config` (Steam IDs, in-game\nadmins, cvars) or per-player stats. The tournament object is the one\n`GET /api/tournament/{id}/leaderboard` already returns.\n\nUnlike the admin route it does not run the completion check; it only\nreads.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Tournament ID (this instance's one tournament)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The bracket",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "tournament": {
+                      "type": "object"
+                    },
+                    "totalRounds": {
+                      "type": "integer"
+                    },
+                    "matches": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "slug": {
+                            "type": "string",
+                            "example": "r1m1"
+                          },
+                          "round": {
+                            "type": "integer"
+                          },
+                          "matchNumber": {
+                            "type": "integer"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "pending",
+                              "ready",
+                              "loaded",
+                              "live",
+                              "completed"
+                            ]
+                          },
+                          "nextMatchId": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "team1": {
+                            "type": "object",
+                            "nullable": true,
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "tag": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "team2": {
+                            "type": "object",
+                            "nullable": true
+                          },
+                          "winner": {
+                            "type": "object",
+                            "nullable": true
+                          },
+                          "team1Score": {
+                            "type": "integer"
+                          },
+                          "team2Score": {
+                            "type": "integer"
+                          },
+                          "mapResults": {
+                            "type": "array",
+                            "items": {
+                              "type": "object"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "swissStandings": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "roundRobinStandings": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not this instance's tournament"
+          },
+          "404": {
+            "description": "No tournament exists"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/tournament/{id}/check-completion": {
       "post": {
         "tags": [

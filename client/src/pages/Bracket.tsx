@@ -21,6 +21,7 @@ import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import { useNavigate } from 'react-router-dom';
+import { tournamentTabPath } from '../paths';
 import BracketsViewerVisualization from '../components/visualizations/BracketsViewerVisualization';
 import SwissView from '../components/visualizations/SwissView';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
@@ -578,7 +579,7 @@ export default function Bracket() {
                 <Button
                   size="small"
                   variant="outlined"
-                  onClick={() => navigate('/tournament/1/leaderboard')}
+                  onClick={() => navigate(tournamentTabPath(tournament.id, 'standings'))}
                 >
                   {t('bracket.shuffleNoVisual.standings')}
                 </Button>

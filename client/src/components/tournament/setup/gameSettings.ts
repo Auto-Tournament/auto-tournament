@@ -24,6 +24,7 @@ const CORE_SETTING_KEYS = new Set([
   'customVetoOrder',
   'description',
   'location',
+  'organizer',
   'rules',
   'rulebookUrl',
   'prizes',

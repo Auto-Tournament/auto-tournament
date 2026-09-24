@@ -8,8 +8,6 @@ import {
   CardContent,
   Typography,
   Alert,
-  CircularProgress,
-  Container,
   Stack,
   Chip,
   Table,
@@ -37,8 +35,7 @@ import { api } from '../utils/api';
 import { getPlayerPageUrl } from '../utils/playerLinks';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { PlayerName } from '../components/player/PlayerName';
-import { TopNavBar } from '../components/layout/TopNavBar';
-import { TournamentPageHeader } from '../components/tournament/overview/TournamentPageHeader';
+import { TabEmpty, TabLoading } from '../components/tournament/page/TabState';
 import { TeamNameLink } from '../components/team/TeamNameLink';
 import type { Tournament } from '../types/tournament.types';
 import { useIntegrationFor } from '../integrations/registry';
@@ -105,11 +102,7 @@ export default function TournamentLeaderboard() {
   // Before the early returns below: a hook, re-rendering when a code module arrives.
   const gameIntegration = useIntegrationFor(data?.tournament);
 
-  // Always set a reasonable tab title, even before the tournament data loads (or if it doesn't exist yet).
-  useEffect(() => {
-    document.title = t('nav.leaderboard');
-  }, [t]);
-
+  // The page title is the tournament page's (`TournamentPage`), like the header.
   const loadStandings = async (showLoading = true) => {
     if (!id) return;
 
@@ -125,9 +118,6 @@ export default function TournamentLeaderboard() {
 
       if (response) {
         setData(response);
-        if (response.tournament) {
-          document.title = `${response.tournament.name}${t('leaderboardPage.titleSuffix')}`;
-        }
       }
     } catch (err: unknown) {
       // Treat 404 / "not found" as a normal empty state instead of a hard error,
@@ -277,75 +267,22 @@ export default function TournamentLeaderboard() {
   }, [data]);
 
   if (loading) {
-    return (
-      <Box minHeight="100vh" bgcolor="transparent">
-        <TopNavBar />
-        <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
-          <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-            <CircularProgress />
-          </Box>
-        </Container>
-      </Box>
-    );
+    return <TabLoading label={t('overviewPage.loading')} />;
   }
 
   if (error) {
-    return (
-      <Box minHeight="100vh" bgcolor="transparent">
-        <TopNavBar />
-        <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
-          <Alert severity="error">{error}</Alert>
-        </Container>
-      </Box>
-    );
+    return <Alert severity="error">{error}</Alert>;
   }
 
-  // If there's simply no data (for example, no tournament has been created yet),
-  // show a gentle empty state instead of crashing or displaying an error.
+  // The tournament page says "not found" itself; no data here means the
+  // standings could not be worked out yet.
   if (!data) {
     return (
-      <Box
-        minHeight="100vh"
-        bgcolor="transparent"
-        data-testid="public-leaderboard-page"
-      >
-        <TopNavBar />
-        <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
-          <Stack spacing={3}>
-            <Card>
-              <CardContent>
-                <Box
-                  display="flex"
-                  alignItems="center"
-                  gap={2}
-                  role="status"
-                  aria-live="polite"
-                  aria-labelledby="tournament-leaderboard-empty-title"
-                  aria-describedby="tournament-leaderboard-empty-description"
-                >
-                  <EmojiEventsIcon sx={{ fontSize: 40, color: 'text.disabled' }} aria-hidden="true" />
-                  <Box>
-                    <Typography
-                      id="tournament-leaderboard-empty-title"
-                      variant="h5"
-                      component="h2"
-                      fontWeight={600}
-                    >
-                      {t('leaderboardPage.emptyTitle')}
-                    </Typography>
-                    <Typography
-                      id="tournament-leaderboard-empty-description"
-                      variant="body2"
-                      color="text.secondary"
-                    >
-                      {t('leaderboardPage.emptyDescription')}
-                    </Typography>
-                  </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          </Stack>
-        </Container>
+      <Box data-testid="public-leaderboard-page">
+        <TabEmpty
+          title={t('leaderboardPage.emptyTitle')}
+          description={t('leaderboardPage.emptyDescription')}
+        />
       </Box>
     );
   }
@@ -487,38 +424,22 @@ export default function TournamentLeaderboard() {
   };
 
   return (
-    <Box
-      minHeight="100vh"
-      // Transparent so the page sits on the body's paper colour.
-      bgcolor="transparent"
-      data-testid="public-leaderboard-page"
-    >
-      <TopNavBar />
-      <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
+    // The Standings tab of the tournament page, which owns the header and tabs.
+    <Box data-testid="public-leaderboard-page">
         <Stack spacing={3}>
-          {/* The same header and tabs as the Overview page, so the two read
-              as one tournament page and there is a way back. */}
-          <TournamentPageHeader
-            tournamentId={tournament.id}
-            name={tournament.name}
-            status={tournament.status}
-            tab="leaderboard"
-            chips={
-              <>
-                <Chip label={tournamentTypeLabel} size="small" variant="outlined" />
-                {roundStatus && (
-                  <Chip
-                    label={t('leaderboardPage.roundOf', {
-                      current: roundStatus.roundNumber,
-                      total: totalRounds,
-                    })}
-                    size="small"
-                    variant="outlined"
-                  />
-                )}
-              </>
-            }
-          />
+          <Box display="flex" gap={1} flexWrap="wrap">
+            <Chip label={tournamentTypeLabel} size="small" variant="outlined" />
+            {roundStatus && (
+              <Chip
+                label={t('leaderboardPage.roundOf', {
+                  current: roundStatus.roundNumber,
+                  total: totalRounds,
+                })}
+                size="small"
+                variant="outlined"
+              />
+            )}
+          </Box>
 
           {(topPerformers || (roundStatus && isActive) || isComplete) && (
           <Card>
@@ -1013,7 +934,6 @@ export default function TournamentLeaderboard() {
             </CardContent>
           </Card>
         </Stack>
-      </Container>
     </Box>
   );
 }
