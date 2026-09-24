@@ -45,7 +45,6 @@ import { ProfileHeader } from '../components/player/profile/ProfileHeader';
 import { GameSwitch } from '../components/player/profile/GameSwitch';
 import { StatsGrid, type ProfileStat } from '../components/player/profile/StatsGrid';
 import { useGameCapabilities } from '../hooks/useGameCapabilities';
-import { integrationFor } from '../integrations/registry';
 import { RatingChart } from '../components/player/profile/RatingChart';
 import { RecentMatches, type RecentMatchEntry } from '../components/player/profile/RecentMatches';
 import type { PlayerDetail } from '../types/api.types';
@@ -262,7 +261,11 @@ export default function PlayerProfile() {
   // Kills, deaths, assists, headshots, damage and the demo link are things the
   // game measured. A game that measures none of them has no column of N/A to
   // show — it has no column (3.0 phase D, PR D10).
-  const { capabilities: gameCapabilities } = useGameCapabilities();
+  const {
+    capabilities: gameCapabilities,
+    integration: gameIntegration,
+    tournamentId: gameTournamentId,
+  } = useGameCapabilities();
   const showGameStats = gameCapabilities.playerStats;
   const showDemos = gameCapabilities.demos;
   const { matchSlug: statusMatchSlug } = useCurrentMatchStatus(
@@ -863,15 +866,13 @@ export default function PlayerProfile() {
   const losses = uniqueMatchHistory.length - wins;
 
   // Use the most recent match's tournament for leaderboard link (if available)
-  const latestTournamentMatch = uniqueMatchHistory.find((m) => m.tournamentId);
-  const latestTournamentId = latestTournamentMatch?.tournamentId;
-  // What that tournament's module shows in place of the columns above, when
-  // its game measures nothing itself: manual reporting lists the custom fields
-  // the tournament asked reporters for. CS2 leaves the slot empty — its
-  // numbers are the rest of this page.
-  const TournamentStatsView = latestTournamentMatch
-    ? integrationFor(latestTournamentMatch).tournamentStatsView
-    : undefined;
+  const latestTournamentId = uniqueMatchHistory.find((m) => m.tournamentId)?.tournamentId;
+  // What the tournament's module shows in place of the columns this page
+  // leaves out, when its game measures nothing itself: manual reporting lists
+  // the custom fields the tournament asked reporters for. CS2 leaves the slot
+  // empty — its numbers are the rest of this page. Only for a player who has
+  // played: someone with no matches has no part in those totals.
+  const TournamentStatsView = gameIntegration.tournamentStatsView;
   const hasAnyMatches = uniqueMatchHistory.length > 0;
 
   // --- New profile header/stats/rating-chart/recent-matches section ---
@@ -1350,8 +1351,8 @@ export default function PlayerProfile() {
             />
           )}
 
-          {TournamentStatsView && latestTournamentId !== undefined && (
-            <TournamentStatsView tournamentId={latestTournamentId} />
+          {TournamentStatsView && gameTournamentId !== null && hasAnyMatches && (
+            <TournamentStatsView tournamentId={gameTournamentId} />
           )}
 
           {/* Rating History */}
