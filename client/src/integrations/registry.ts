@@ -73,6 +73,17 @@ export function listIntegrations(): ClientGameIntegration[] {
 }
 
 /**
+ * The routes to mount: every registered module's, including a code module
+ * that broke while rendering. Its page stays mounted, so the slot boundary
+ * around it keeps saying why, rather than the path turning into a 404 when
+ * the routes re-render on the failure. (Slots and nav leave it out, through
+ * `listIntegrations`.)
+ */
+export function listRouteIntegrations(): ClientGameIntegration[] {
+  return Object.values(INTEGRATIONS).concat(CODE_MODULES);
+}
+
+/**
  * The integration behind a `game` value, or the "module not installed"
  * placeholder when this instance has none for it.
  *
