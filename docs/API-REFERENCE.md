@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 264 of them, 181 behind auth —
+Every endpoint this API serves — 271 of them, 187 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -449,6 +449,17 @@ Games an admin imported as a pack file: list, import, remove, and the pack tile.
 | `POST` | `/api/packs/index/:slug` | admin |
 | `DELETE` | `/api/packs/:slug` | admin |
 
+### Modules
+
+Code modules: list built-in and on-disk modules, enable or disable one from the next restart, and serve its client files. Admin only, except the client files. Modules are installed on disk, never through the API.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/modules/:id/client/*` | public |
+| `GET` | `/api/modules` | admin |
+| `POST` | `/api/modules/:id/enable` | admin |
+| `POST` | `/api/modules/:id/disable` | admin |
+
 ### Me
 
 The signed-in player's own data, e.g. the games they play.
@@ -508,6 +519,9 @@ E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
 | `GET` | `/api/test/fake-pack-index/index.json` | public |
 | `GET` | `/api/test/fake-pack-index/packs/:file` | public |
 | `GET` | `/api/test/fake-pack-index/icons/:file` | public |
+| `POST` | `/api/test/modules/fixture` | admin |
+| `POST` | `/api/test/modules/rescan` | admin |
+| `DELETE` | `/api/test/modules/fixtures` | admin |
 
 ### Auth
 

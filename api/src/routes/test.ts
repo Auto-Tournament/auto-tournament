@@ -30,6 +30,10 @@ import {
 } from '../config/schemaMigrations';
 import { playerIdentity } from '../services/playerIdentity';
 import { teamMembers } from '../services/teamMembers';
+import { listModules, MODULE_ENABLED_KEY_PREFIX, modulesDir, scanDiskModules } from '../modules/loader';
+import { isValidModuleId } from '../modules/manifest';
+import fs from 'fs';
+import path from 'path';
 
 const router = Router();
 
@@ -1533,6 +1537,140 @@ router.get('/fake-pack-index/icons/:file', (req: Request, res: Response): void =
   }
   res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
   res.send(FAKE_INDEX_TILE);
+});
+
+/**
+ * Test-only code-module fixtures.
+ *
+ * Code modules are installed by putting a folder in `DATA_DIR/modules/` and
+ * are only scanned at boot (`modules/loader.ts`). The E2E suite runs against
+ * the release image, whose `DATA_DIR` the test runner cannot write to and
+ * which it cannot restart, so these write a fixture module there and run the
+ * scan again, which is what a restart would do for a module not yet loaded.
+ *
+ *   POST   /api/test/modules/fixture  { id, kind }  write DATA_DIR/modules/<id>/, rescan
+ *   POST   /api/test/modules/rescan                 scan again
+ *   DELETE /api/test/modules/fixtures               remove every fixture folder
+ *
+ * The fixtures are fixed here, not sent by the test, and their ids must start
+ * with `fixture-`, so even with the helpers on nothing but these few files
+ * can be written, and cleaning up cannot touch a real module.
+ *
+ * Kinds:
+ *   valid         a GameIntegration with a client half (index.js, style.css)
+ *   incompatible  a valid module built for server API ^0.3.0
+ *   throws        a server entry that throws while it is imported
+ *   mismatched-id module.json names its id '../<id>'
+ */
+const MODULE_FIXTURE_KINDS = ['valid', 'incompatible', 'throws', 'mismatched-id'] as const;
+type ModuleFixtureKind = (typeof MODULE_FIXTURE_KINDS)[number];
+
+function moduleFixtureFiles(id: string, kind: ModuleFixtureKind): Record<string, string> {
+  const manifest = {
+    id: kind === 'mismatched-id' ? `../${id}` : id,
+    name: `Fixture ${id}`,
+    version: '1.0.0',
+    serverApi: kind === 'incompatible' ? '^0.3.0' : '^0.1.0',
+    clientApi: '^0.1.0',
+    server: 'server/index.js',
+    client: 'client/index.js',
+  };
+  const integration = `const integration = {
+  id: ${JSON.stringify(id)},
+  displayName: ${JSON.stringify(`Fixture ${id}`)},
+  capabilities: { servers: false, veto: false, liveEvents: false, demos: false, playerStats: false },
+  // Kept out of the game catalogue, so loading it changes nothing else.
+  catalog: null,
+  statsSchema: () => ({ metrics: [] }),
+  async buildMatchConfig() {
+    return {};
+  },
+  describeMatch: () => ({
+    seriesLength: 1,
+    maps: [],
+    team1: { name: 'Team 1', players: [] },
+    team2: { name: 'Team 2', players: [] },
+  }),
+  async capacity() {
+    return null;
+  },
+  async allocate() {
+    return { status: 'failed', error: 'fixture module', retryable: false };
+  },
+  async restart() {
+    return { ok: false, error: 'fixture module' };
+  },
+};
+export default integration;
+`;
+  return {
+    'module.json': JSON.stringify(manifest, null, 2),
+    // server/index.js is ESM; Node reads that from the nearest package.json.
+    'package.json': JSON.stringify({ type: 'module' }),
+    'server/index.js':
+      kind === 'throws'
+        ? `throw new Error(${JSON.stringify(`fixture ${id} exploded at import`)});\n`
+        : integration,
+    'client/index.js': `export default { id: ${JSON.stringify(id)} };\n`,
+    'client/style.css': '.fixture-module { color: inherit; }\n',
+  };
+}
+
+router.post('/modules/fixture', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (!fakeIgdbEnabled(res)) return;
+  const { id, kind } = (req.body ?? {}) as { id?: unknown; kind?: unknown };
+  if (typeof id !== 'string' || !isValidModuleId(id) || !id.startsWith('fixture-')) {
+    res.status(400).json({ success: false, error: "id must be a valid module id starting with 'fixture-'" });
+    return;
+  }
+  if (!MODULE_FIXTURE_KINDS.includes(kind as ModuleFixtureKind)) {
+    res.status(400).json({ success: false, error: `kind must be one of ${MODULE_FIXTURE_KINDS.join(', ')}` });
+    return;
+  }
+  try {
+    const dir = path.join(modulesDir(), id);
+    for (const [file, contents] of Object.entries(moduleFixtureFiles(id, kind as ModuleFixtureKind))) {
+      await fs.promises.mkdir(path.dirname(path.join(dir, file)), { recursive: true });
+      await fs.promises.writeFile(path.join(dir, file), contents);
+    }
+    await scanDiskModules();
+    res.json({ success: true, modules: await listModules() });
+  } catch (err) {
+    log.error('Error in POST /api/test/modules/fixture', err);
+    res.status(500).json({ success: false, error: (err as Error).message });
+  }
+});
+
+router.post('/modules/rescan', requireAuth, async (_req: Request, res: Response): Promise<void> => {
+  if (!fakeIgdbEnabled(res)) return;
+  try {
+    // What boot does next for a module it loaded: start it.
+    for (const integration of await scanDiskModules()) {
+      await integration.start?.();
+    }
+    res.json({ success: true, modules: await listModules() });
+  } catch (err) {
+    log.error('Error in POST /api/test/modules/rescan', err);
+    res.status(500).json({ success: false, error: (err as Error).message });
+  }
+});
+
+router.delete('/modules/fixtures', requireAuth, async (_req: Request, res: Response): Promise<void> => {
+  if (!fakeIgdbEnabled(res)) return;
+  try {
+    const entries = await fs.promises.readdir(modulesDir()).catch(() => [] as string[]);
+    const removed: string[] = [];
+    for (const name of entries) {
+      if (!name.startsWith('fixture-') || !isValidModuleId(name)) continue;
+      await fs.promises.rm(path.join(modulesDir(), name), { recursive: true, force: true });
+      await db.setAppSettingAsync(`${MODULE_ENABLED_KEY_PREFIX}${name}`, null);
+      removed.push(name);
+    }
+    res.json({ success: true, removed });
+  } catch (err) {
+    log.error('Error in DELETE /api/test/modules/fixtures', err);
+    res.status(500).json({ success: false, error: (err as Error).message });
+  }
 });
 
 export default router;
