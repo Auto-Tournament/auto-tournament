@@ -64,3 +64,4 @@ export { ManageStatusTile } from '../components/manage/StatusStrip';
 
 // Labels
 export { getRoundLabel, getBracketMatchLabel } from '../utils/matchUtils';
+export { CLIENT_API_VERSION } from './version';

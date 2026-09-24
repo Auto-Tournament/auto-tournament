@@ -271,6 +271,58 @@
     "notInstalled": {
       "title": "Spillmodulen for {{game}} er ikke installert",
       "body": "De spillspesifikke delene av turneringen er skjult, og kampene kan ikke kjøres før modulen er installert igjen."
+    },
+    "code": {
+      "chip": "Kodemodul",
+      "hint": "Installert på serverens disk av den som drifter den.",
+      "noReason": "ingen grunn oppgitt",
+      "broken": "Denne modulen er ødelagt: {{reason}}",
+      "status": {
+        "ok": "OK",
+        "incompatible": "Ikke kompatibel",
+        "broken": "Ødelagt",
+        "disabled": "Deaktivert"
+      },
+      "enable": "Aktiver",
+      "disable": "Deaktiver",
+      "enabled": "Aktiverte {{name}}",
+      "disabled": "Deaktiverte {{name}}",
+      "toggleFailed": "Kunne ikke endre modulen",
+      "listFailed": "Kunne ikke lese kodemodulene: {{reason}}",
+      "safeMode": "Sikker modus: ingen kodemoduler ble lastet på denne siden. Åpne den uten ?modules=off for å laste dem igjen.",
+      "slotFailed": "Modulen {{id}} feilet her. Modulsiden forteller hvorfor.",
+      "reload": {
+        "body": "Last inn siden på nytt for å laste inn eller fjerne modulens kode.",
+        "action": "Last inn på nytt"
+      },
+      "confirm": {
+        "title": "Aktivere {{name}}?",
+        "warningTitle": "Dette er en kodemodul.",
+        "warning": "Den kjører inne i Auto Tournaments server med full tilgang til databasen, filene og hemmelighetene dine, og i nettleseren til hver admin og spiller som åpner en side den tegner, med deres tillatelser. Auto Tournament gjennomgår ikke kodemoduler og kjører dem ikke i sandkasse. Aktiver den bare hvis du stoler like mye på forfatteren som på denne plattformen.",
+        "source": "Kom fra",
+        "onDisk": "Denne serverens disk",
+        "version": "Versjon",
+        "clientApi": "Klient-API",
+        "serverApi": "Server-API",
+        "none": "ikke oppgitt",
+        "typeId": "Skriv {{id}} for å aktivere den."
+      },
+      "failure": {
+        "badEntry": "koden serveres ikke fra {{prefix}}",
+        "noClientApi": "den oppgir ikke hvilke klient-API-versjoner den støtter; denne plattformen har {{platform}}",
+        "badClientApi": "klient-API-området «{{range}}» er ikke et gyldig semver-område",
+        "outOfRange": "laget for klient-API {{range}}; denne plattformen har {{platform}}",
+        "notFound": "koden mangler (HTTP 404)",
+        "httpError": "koden kunne ikke hentes (HTTP {{status}})",
+        "notJavaScript": "koden serveres som {{contentType}}, ikke JavaScript",
+        "importFailed": "koden kunne ikke lastes: {{error}}",
+        "timeout": "koden ble ikke lastet innen {{seconds}} sekunder",
+        "sharedFailed": "plattformen kunne ikke dele pakkene sine med den: {{error}}",
+        "badExport": "koden er ikke en moduldefinisjon: {{detail}}",
+        "idMismatch": "koden kaller seg «{{id}}», men er installert som «{{expected}}»",
+        "idTaken": "«{{id}}» er allerede en innebygd modul",
+        "render": "delen «{{slot}}» feilet under tegning: {{error}}"
+      }
     }
   }
 }

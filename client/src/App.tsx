@@ -37,6 +37,7 @@ import { GamesOnboardingRedirect } from './components/games/GamesOnboardingRedir
 import WelcomeGames from './pages/WelcomeGames';
 import { ImpersonationBanner } from './components/common/ImpersonationBanner';
 import { listIntegrations } from './integrations/registry';
+import { ModuleBootGate } from './module-loader/ModuleBootGate';
 import { adminRoute, paths, playerProfilePath } from './paths';
 
 interface ProtectedRouteProps {
@@ -401,7 +402,11 @@ export default function App() {
                   account, from whatever page the player lands on. The API
                   decides whether it is due. */}
               <GamesOnboardingRedirect />
-              <AppRoutes />
+              {/* Code modules load before the routes render, since the
+                  routes and every slot read the registry synchronously. */}
+              <ModuleBootGate>
+                <AppRoutes />
+              </ModuleBootGate>
             </PageHeaderProvider>
           </SnackbarProvider>
         </AuthProvider>

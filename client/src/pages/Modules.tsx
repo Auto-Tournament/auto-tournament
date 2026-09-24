@@ -5,9 +5,11 @@
  * would be a lie:
  *
  * - **Modules** are code. CS2 reads rounds off a game server; manual
- *   reporting takes a captain's word for the result. They ship with the app
- *   and this page shows them so an admin can see what is installed, not so
- *   they can change it.
+ *   reporting takes a captain's word for the result. The built-in ones ship
+ *   with the app and this page shows them so an admin can see what is
+ *   installed, not so they can change it. Code modules an operator put on
+ *   the server's disk are listed beside them (`CodeModuleList`), and can be
+ *   enabled and disabled here, never uploaded.
  * - **Game packs** are files. A pack describes a game — a name, a tile, the
  *   settings a reported game needs — and runs on one of the modules above.
  *   Nothing in a pack executes, which is why an admin can import one from
@@ -42,6 +44,7 @@ import { useTranslation } from 'react-i18next';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { usePageHeader } from '../contexts/PageHeaderContext';
 import { ModuleIcon } from '../components/common/ModuleIcon';
+import { CodeModuleList } from '../components/modules/CodeModuleList';
 import { listIntegrations } from '../integrations/registry';
 import { api } from '../utils/api';
 
@@ -371,6 +374,7 @@ export default function Modules() {
                 </CardContent>
               </Card>
             ))}
+            <CodeModuleList />
           </Stack>
         </Box>
 
