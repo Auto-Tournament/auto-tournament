@@ -216,7 +216,7 @@ function configureKeycloakStrategy(): void {
   const callbackURL = `${baseUrl}${callbackPath}`;
 
   // passport-keycloak-oauth2-oidc expects authServerURL and realm; derive them from issuer URL when possible.
-  // Example issuer: https://sso.example.com/realms/matchzy
+  // Example issuer: https://sso.example.com/realms/auto-tournament
   let authServerURL = issuerUrl;
   let realm = 'master';
 

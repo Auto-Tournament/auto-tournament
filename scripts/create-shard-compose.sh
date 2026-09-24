@@ -8,14 +8,14 @@ TEMP_COMPOSE=$3
 # Read the original compose file and modify it
 awk -v shard_num="$SHARD_NUM" '
 BEGIN { in_build = 0; build_indent = "" }
-/matchzy-postgres-dev/ {
-  gsub(/matchzy-postgres-dev/, "matchzy-postgres-dev-shard-" shard_num)
+/auto-tournament-postgres-dev/ {
+  gsub(/auto-tournament-postgres-dev/, "auto-tournament-postgres-dev-shard-" shard_num)
 }
-/matchzy-tournament-dev/ {
-  gsub(/matchzy-tournament-dev/, "matchzy-tournament-dev-shard-" shard_num)
+/auto-tournament-dev/ {
+  gsub(/auto-tournament-dev/, "auto-tournament-dev-shard-" shard_num)
 }
 /^[[:space:]]*build:/ {
-  print "    image: matchzy-test:sharded"
+  print "    image: auto-tournament-test:sharded"
   in_build = 1
   build_indent = ""
   next

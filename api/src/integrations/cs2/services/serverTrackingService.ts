@@ -1,8 +1,8 @@
 /**
  * Server Tracking Service
- * Handles automatic server registration and health monitoring from MatchZy Enhanced
+ * Handles automatic server registration and health monitoring from Auto Tournament CS2
  * 
- * MatchZy servers send a 'server_configured' event when they connect to the API.
+ * Auto Tournament CS2 servers send a 'server_configured' event when they connect to the API.
  * We track:
  * - Server registration and configuration
  * - Heartbeat (last_seen timestamp on every event)
@@ -17,10 +17,10 @@ import type {
   ServerConfiguredEvent,
   Cs2UpdateRequiredEvent,
   ServerHealthEvent,
-} from '../events/matchzy-events.types';
+} from '../events/plugin-events.types';
 
 // Re-exported so existing importers keep working now that these live with the
-// other MatchZy event types.
+// other Auto Tournament CS2 event types.
 export type { ServerConfiguredEvent, Cs2UpdateRequiredEvent, ServerHealthEvent };
 
 class ServerTrackingService {
@@ -95,7 +95,7 @@ class ServerTrackingService {
   }
 
   /**
-   * Handle server_configured event from MatchZy
+   * Handle server_configured event from Auto Tournament CS2
    * Registers or updates server information
    */
   async handleServerConfigured(event: ServerConfiguredEvent): Promise<void> {
@@ -160,17 +160,17 @@ class ServerTrackingService {
   ): Promise<void> {
     const now = Math.floor(Date.now() / 1000);
     const ts = Math.floor(health.timestamp ?? now);
-    const matchzyDbLastOkAt = health.dbOk ? ts : null;
+    const atDbLastOkAt = health.dbOk ? ts : null;
 
     try {
       await db.updateAsync(
         'cs2_servers',
         {
-          matchzy_db_ok: health.dbOk ? 1 : 0,
-          matchzy_db_type: health.dbType,
-          matchzy_db_error: health.dbOk ? null : health.dbError ?? null,
-          matchzy_db_last_ok_at: matchzyDbLastOkAt,
-          matchzy_db_last_seen_at: ts,
+          at_db_ok: health.dbOk ? 1 : 0,
+          at_db_type: health.dbType,
+          at_db_error: health.dbOk ? null : health.dbError ?? null,
+          at_db_last_ok_at: atDbLastOkAt,
+          at_db_last_seen_at: ts,
           server_can_reach_api_at: now,
           updated_at: now,
         },

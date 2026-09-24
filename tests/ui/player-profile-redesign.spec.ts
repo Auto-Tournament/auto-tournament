@@ -10,7 +10,7 @@ import type { Team } from '../helpers/teams';
  * A player with a few recorded matches should see the new stats grid
  * (MATCHES, WIN RATE, …) and the recent-matches list, built from real match
  * data recorded through the same `round_end` / `series_end` event path
- * MatchZy servers use — not fabricated numbers.
+ * Auto Tournament CS2 servers use — not fabricated numbers.
  *
  * @tag ui
  * @tag public
@@ -19,7 +19,7 @@ import type { Team } from '../helpers/teams';
 
 const SERVER_HEADERS = {
   'Content-Type': 'application/json',
-  'X-MatchZy-Token': process.env.SERVER_TOKEN ?? 'server123',
+  'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
 };
 
 function statsPayload(team: Team, kills: number, deaths: number) {

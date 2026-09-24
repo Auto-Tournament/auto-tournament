@@ -30,9 +30,9 @@ test.describe('The API docs page', () => {
     expect(page.ok(), `the page itself: ${page.status()}`).toBe(true);
     const html = await page.text();
     expect(html).toContain('swagger-ui');
-    // The tab said "MatchZy API Docs" until 3.0 renamed the project.
+    // The tab said "Auto Tournament CS2 API Docs" until 3.0 renamed the project.
     expect(html).toContain('<title>Auto Tournament API</title>');
-    expect(html).not.toContain('MatchZy API Docs');
+    expect(html).not.toContain('Auto Tournament CS2 API Docs');
 
     // Every asset the page asks for. A wrong one is not a 404 — it is the
     // SPA's index.html with a 200 and `text/html`, which is exactly why this

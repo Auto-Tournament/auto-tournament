@@ -15,7 +15,7 @@ export const ManualMatchReviewStep: React.FC<ManualMatchReviewStepProps> = ({
   if (!config) {
     return (
       <Typography variant="body2" color="text.secondary">
-        Complete the maps and rules on the previous step to see the final MatchZy config preview.
+        Complete the maps and rules on the previous step to see the final Auto Tournament CS2 config preview.
       </Typography>
     );
   }
@@ -24,7 +24,7 @@ export const ManualMatchReviewStep: React.FC<ManualMatchReviewStepProps> = ({
     <Stack spacing={2}>
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <Typography variant="subtitle1" fontWeight={600}>
-          MatchZy Config (JSON)
+          Auto Tournament CS2 Config (JSON)
         </Typography>
         <Button variant="outlined" size="small" onClick={onOpenSaveTemplate}>
           Save as template

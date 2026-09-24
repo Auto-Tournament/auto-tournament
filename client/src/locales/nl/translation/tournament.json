@@ -129,8 +129,8 @@
       "overtimeDisabledNoDraws": "Overtime: uitgeschakeld (geen gelijkspel – schade beslist)",
       "overtimeSegments_one": "Overtime-segmenten: {{count}} segment",
       "overtimeSegments_other": "Overtime-segmenten: {{count}} segmenten",
-      "overtimeSegmentsDefault": "Overtime-segmenten: standaardwaarde van MatchZy",
-      "overtimeSegmentsDefaultUnlimited": "Overtime-segmenten: standaardwaarde van MatchZy (meestal onbeperkt)"
+      "overtimeSegmentsDefault": "Overtime-segmenten: standaardwaarde van Auto Tournament CS2",
+      "overtimeSegmentsDefaultUnlimited": "Overtime-segmenten: standaardwaarde van Auto Tournament CS2 (meestal onbeperkt)"
     },
     "toasts": {
       "loadTemplateFailed": "Sjabloon laden is mislukt",
@@ -307,10 +307,10 @@
         "disabledNoDraws": "Uitgeschakeld – geen gelijkspel (schade beslist)"
       },
       "modeHelper": "Standaard overtime speelt extra segmenten tot een ploeg voorstaat. “Gelijkspel toegestaan” laat een gelijke kaart in een gelijkspel eindigen, terwijl “geen gelijkspel” beslist op basis van de totale ploegschade.",
-      "tooltip": "Bepaalt hoe overtime werkt en hoe gelijke stand bij het maximale aantal rondes wordt afgehandeld. Deze instellingen gaan als overtimeMode/overtimeSegments naar MatchZy en betekenen hetzelfde als bij shuffle-toernooien en handmatige wedstrijden.",
+      "tooltip": "Bepaalt hoe overtime werkt en hoe gelijke stand bij het maximale aantal rondes wordt afgehandeld. Deze instellingen gaan als overtimeMode/overtimeSegments naar Auto Tournament CS2 en betekenen hetzelfde als bij shuffle-toernooien en handmatige wedstrijden.",
       "shuffleTooltip": "Bepaalt hoe overtime werkt bij shuffle-wedstrijden en hoe een gelijke stand bij het maximale aantal rondes wordt beslist. Met overtime uitgeschakeld kan een gelijke wedstrijd in een gelijkspel eindigen of worden beslist door de totale ploegschade, afhankelijk van je keuze.",
       "segmentsLabel": "Overtime-segmenten (optioneel)",
-      "segmentsHelper": "Optioneel: beperk het aantal overtime-segmenten. Laat leeg voor de standaardwaarde van MatchZy.",
+      "segmentsHelper": "Optioneel: beperk het aantal overtime-segmenten. Laat leeg voor de standaardwaarde van Auto Tournament CS2.",
       "segmentsHelperValue_one": "Beperk overtime tot {{count}} segment. Blijft het daarna gelijk, dan beslist de totale ploegschade.",
       "segmentsHelperValue_other": "Beperk overtime tot {{count}} segmenten. Blijft het daarna gelijk, dan beslist de totale ploegschade."
     },
@@ -350,7 +350,7 @@
       "teamSizeTooltip": "Aantal spelers per ploeg. Gebruikelijke opties: 4v4, 5v5, 6v6. Minimaal 2 en maximaal 10 spelers per ploeg.",
       "teamSizeHelper": "Aantal spelers per ploeg (standaard: 5 voor 5v5, bereik: 2-10)",
       "maxRoundsLabel": "Max. rondes",
-      "maxRoundsTooltip": "Maximaal aantal rondes per wedstrijd. Deze waarde gaat rechtstreeks als mp_maxrounds naar MatchZy. Voorbeeld: 6 = MR6, 24 = MR24.",
+      "maxRoundsTooltip": "Maximaal aantal rondes per wedstrijd. Deze waarde gaat rechtstreeks als mp_maxrounds naar Auto Tournament CS2. Voorbeeld: 6 = MR6, 24 = MR24.",
       "maxRoundsHelper": "De wedstrijd gaat tot {{maxRounds}} rondes; wie als eerste {{winRounds}} rondes wint, wint",
       "maxRoundsHelperEmpty": "Maximaal aantal rondes per wedstrijd (standaard: 24, max: 30)",
       "eloTemplateLabel": "ELO-berekeningssjabloon",
@@ -521,7 +521,7 @@
         "moreTeams": "More teams",
         "shuffleTitle": "Shuffle settings",
         "cs2Title": "Counter-Strike 2 settings",
-        "cs2Help": "Passed to MatchZy by the Counter-Strike 2 game module.",
+        "cs2Help": "Passed to Auto Tournament CS2 by the Counter-Strike 2 game module.",
         "overtime": {
           "enabled": "Overtime",
           "disabledDraws": "Off, draws allowed",

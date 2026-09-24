@@ -432,7 +432,7 @@ export function useCreateManualMatchModal({
       ? existingTeam2?.name ?? ''
       : team2NewName || t('teamMatchHistory.team2');
 
-  // Preview the config that would be sent to MatchZy, for review step.
+  // Preview the config that would be sent to Auto Tournament CS2, for review step.
   // Teams are **optional** for manual matches: when no teams are selected,
   // we fall back to generic "Team 1"/"Team 2" labels and empty player lists.
   let previewConfig: MatchConfig | null = null;
@@ -464,9 +464,9 @@ export function useCreateManualMatchModal({
       const cvars: Record<string, string | number> = {};
       cvars.mp_maxrounds = safeMaxRounds;
       if (knifeMode === 'enabled') {
-        cvars.matchzy_knife_enabled_default = 1;
+        cvars.at_knife_enabled_default = 1;
       } else if (knifeMode === 'disabled') {
-        cvars.matchzy_knife_enabled_default = 0;
+        cvars.at_knife_enabled_default = 0;
       }
       // Overtime configuration for manual matches – mapped to standard CS2 cvars.
       // This lets admins control whether overtime is played, and how long each

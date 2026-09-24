@@ -898,7 +898,7 @@ const Tournament: React.FC = () => {
         maxRounds,
         overtimeMode,
         // null, not undefined: the API leaves an absent field alone, so
-        // sending undefined made "back to the MatchZy default" unsaveable.
+        // sending undefined made "back to the Auto Tournament CS2 default" unsaveable.
         overtimeSegments: typeof overtimeSegments === 'number' ? overtimeSegments : null,
       };
 

@@ -11,7 +11,7 @@ import type { SettingDefinition, SettingWriteContext } from '../integrations/typ
 
 /**
  * An `app_settings` key: one of `CoreSettingKey`, or a key an integration
- * declares in `instanceSettings` (CS2: the `matchzy_*` and simulation keys).
+ * declares in `instanceSettings` (CS2: the `at_*` and simulation keys).
  * Checked at run time against that union.
  */
 export type AppSettingKey = CoreSettingKey | (string & {});
@@ -313,17 +313,17 @@ class SettingsService {
   }
 
   /**
-   * Returns true when simulation mode should be enabled for generated MatchZy configs.
+   * Returns true when simulation mode should be enabled for generated Auto Tournament CS2 configs.
    *
    * This is intended as a **development-only** helper; in production environments
    * it always returns false unless explicitly overridden via environment.
    */
   async isSimulationModeEnabled(): Promise<boolean> {
     // By default, hard-disable simulation in production for safety. It can be
-    // explicitly enabled by setting MATCHZY_ENABLE_SIMULATION_IN_PROD=true in
+    // explicitly enabled by setting AT_ENABLE_SIMULATION_IN_PROD=true in
     // the API environment (e.g. for test events or lab environments).
     if (process.env.NODE_ENV === 'production') {
-      if (process.env.MATCHZY_ENABLE_SIMULATION_IN_PROD?.toLowerCase() !== 'true') {
+      if (process.env.AT_ENABLE_SIMULATION_IN_PROD?.toLowerCase() !== 'true') {
         return false;
       }
     }

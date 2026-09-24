@@ -5,7 +5,7 @@ import type { TournamentRulesStepProps as Cs2MatchSettingsProps } from '../../ty
 
 /**
  * Round limit and overtime, which the Counter-Strike 2 module passes to
- * MatchZy (mp_maxrounds, overtimeMode / overtimeSegments). Same rules for
+ * Auto Tournament CS2 (mp_maxrounds, overtimeMode / overtimeSegments). Same rules for
  * shuffle and bracket tournaments.
  */
 export function Cs2MatchSettings({

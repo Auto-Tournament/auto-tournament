@@ -76,7 +76,7 @@ class HealthMonitoringService {
         const heartbeatRecent =
           typeof lastSeen === 'number' && now - lastSeen <= this.HEARTBEAT_RECENT_THRESHOLD_SECONDS;
 
-        // If we saw MatchZy events recently, treat server as Online even if reachability checks fail.
+        // If we saw Auto Tournament CS2 events recently, treat server as Online even if reachability checks fail.
         // This matches the desired semantics: Online = (recent events) OR (reachable from API).
         if (heartbeatRecent) {
           serverTrackingService.recordReachability(server.id, true);

@@ -9,7 +9,7 @@ import {
  * Which match a report posted by the plugin applies to (pure rules, no API).
  *
  * Seen on the QA servers: r1m4 completed on s_3 at 1789549362. The plugin reset
- * to idle at 1789549498 but kept reporting `matchzy_tournament_match = 36`
+ * to idle at 1789549498 but kept reporting `at_tournament_match = 36`
  * (r1m4's id). MAT then ingested two reports for r1m4 from s_3 at 1789549538,
  * after the reset and before r1m1 was loaded there at 1789549547. The route also fell
  * back to `SELECT * FROM matches WHERE server_id = ?` with no status filter, so

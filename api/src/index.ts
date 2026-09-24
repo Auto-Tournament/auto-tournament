@@ -48,6 +48,7 @@ import { configurePassportAuth, passport } from './config/passport';
 import session from 'express-session';
 import connectPgSimple from 'connect-pg-simple';
 import { isIP } from 'net';
+import { DATABASE_NAME, DatabaseRenameRefused } from './config/databaseRename';
 
 const app = express();
 const httpServer = createServer(app);
@@ -67,7 +68,7 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Session + Passport
-const sessionSecret = process.env.SESSION_SECRET || 'matchzy-dev-session-secret';
+const sessionSecret = process.env.SESSION_SECRET || 'auto-tournament-dev-session-secret';
 const PgSession = connectPgSimple(session);
 
 // Reuse the same connection string logic as the main DatabaseManager so the
@@ -78,7 +79,7 @@ const sessionDbConnectionString =
   process.env.DATABASE_URL ||
   `postgresql://${process.env.DB_USER || 'postgres'}:${process.env.DB_PASSWORD || 'postgres'}@${
     process.env.DB_HOST || '127.0.0.1'
-  }:${process.env.DB_PORT || '5432'}/${process.env.DB_NAME || 'matchzy_tournament'}`;
+  }:${process.env.DB_PORT || '5432'}/${process.env.DB_NAME || DATABASE_NAME}`;
 
 // Determine if we should use secure cookies (HTTPS only)
 // Check FRONTEND_BASE_URL to see if we're using HTTPS
@@ -282,7 +283,7 @@ app.get('/', (_req: Request, res: Response) => {
         note: 'Match management - webhooks auto-configured on load',
         list: 'GET /api/matches (auth required)',
         get: 'GET /api/matches/:slug (auth required)',
-        getConfig: 'GET /api/matches/:slug.json (X-MatchZy-Token or admin auth required - for MatchZy)',
+        getConfig: 'GET /api/matches/:slug.json (X-Auto-Tournament-Token or admin auth required - for Auto Tournament CS2)',
         create: 'POST /api/matches (auth required)',
         load: 'POST /api/matches/:slug/load (auth required, webhooks auto-configured)',
         loadNoWebhook: 'POST /api/matches/:slug/load?skipWebhook=true (skip webhook setup)',
@@ -290,8 +291,8 @@ app.get('/', (_req: Request, res: Response) => {
         delete: 'DELETE /api/matches/:slug (auth required)',
       },
       events: {
-        note: 'MatchZy event webhooks - receive game events',
-        webhook: 'POST /api/events (X-MatchZy-Token required)',
+        note: 'Auto Tournament CS2 event webhooks - receive game events',
+        webhook: 'POST /api/events (X-Auto-Tournament-Token required)',
         getEvents: 'GET /api/events/:matchSlug (auth required)',
       },
       settings: {
@@ -502,7 +503,7 @@ process.on('uncaughtException', (err) => {
       reportEventAuth();
 
       // Recover matches and start the game integrations (CS2: bootstrap server
-      // webhooks, fetch the MatchZy version, start health monitoring) now the
+      // webhooks, fetch the Auto Tournament CS2 version, start health monitoring) now the
       // database is ready.
       Promise.all([
         ...listIntegrations().map((integration) =>
@@ -563,6 +564,10 @@ process.on('uncaughtException', (err) => {
     });
   } catch (error) {
     const err = error as NodeJS.ErrnoException;
+    if (error instanceof DatabaseRenameRefused) {
+      log.error(`[PostgreSQL] Not starting: ${error.message}`);
+      process.exit(1);
+    }
     log.error('Failed to initialize database', err);
 
     const msg = typeof err?.message === 'string' ? err.message : '';
@@ -684,7 +689,7 @@ function reportEventAuth(): void {
 
   log.warn(
     '[Startup] ALLOW_UNAUTHENTICATED_EVENTS is set: game events with no ' +
-      'X-MatchZy-Token are accepted. Anyone who can reach this API can forge match ' +
+      'X-Auto-Tournament-Token are accepted. Anyone who can reach this API can forge match ' +
       'events. Reconnect your servers so they re-fetch their webhook config, then ' +
       'unset this.'
   );

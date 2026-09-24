@@ -50,7 +50,7 @@ export const isShuffleMatch = (match: MatchLike): boolean => {
 
 /**
  * Frontend-level veto disable flag used by cards, team view and match modal.
- * This is separate from MatchZy's skip_veto flag, which is handled entirely
+ * This is separate from Auto Tournament CS2's skip_veto flag, which is handled entirely
  * on the server/plugin side.
  *
  * For manual matches: veto is disabled by default, but can be enabled via

@@ -69,7 +69,7 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   preMatchView: VetoInterface,
   preMatchHistory: MatchVetoHistory,
 
-  // The webhook URL a CS2 server reaches the platform on, and the MatchZy
+  // The webhook URL a CS2 server reaches the platform on, and the Auto Tournament CS2
   // plugin's own database: both are settings only this game has, so the
   // shell's warnings about them are this module's (3.0 phase E).
   adminGlobalWarning: Cs2AdminWarnings,

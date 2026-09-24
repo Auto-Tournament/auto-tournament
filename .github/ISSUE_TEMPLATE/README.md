@@ -40,9 +40,9 @@ For usage and configuration questions. Includes:
 ### 🖥️ CS2 Server Setup Help (`server_help.yml`)
 For troubleshooting CS2 server configuration and connectivity. Includes:
 - **Required:** Issue type, problem description, what you've tried
-- **Required:** Server OS, MatchZy version, server logs
+- **Required:** Server OS, Auto Tournament CS2 version, server logs
 - Network and configuration details
-- Specific to CS2/MatchZy server issues
+- Specific to CS2 server issues
 
 ### ⚡ Performance Issue (`performance_issue.yml`)
 For reporting slow performance, lag, or resource usage problems. Includes:

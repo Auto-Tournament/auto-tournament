@@ -174,7 +174,7 @@
       "noServers": "Brak dostępnych serwerów",
       "refreshServers": "Odśwież listę serwerów",
       "noEvents": "Nie odebrano jeszcze zdarzeń z tego serwera.",
-      "noEventsHint": "Nadal brak zdarzeń po 15 sekundach. Sprawdź, czy serwer CS2 wysyła webhooki MatchZy na /api/events/:matchSlugOrServerId z poprawnym X-MatchZy-Token.",
+      "noEventsHint": "Nadal brak zdarzeń po 15 sekundach. Sprawdź, czy serwer CS2 wysyła webhooki Auto Tournament CS2 na /api/events/:matchSlugOrServerId z poprawnym X-Auto-Tournament-Token.",
       "waiting": "Oczekiwanie na zdarzenia z serwera…",
       "footer_one": "Wyświetlane: {{count}} zdarzenie (maks. 100)",
       "footer_few": "Wyświetlane: {{count}} zdarzenia (maks. 100)",

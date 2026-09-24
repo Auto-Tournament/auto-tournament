@@ -10,8 +10,8 @@
       "servers": "Spelservers",
       "maps": "Kaarten & map-pools"
     },
-    "matchzyDbDown": {
-      "title": "MatchZy-database onbereikbaar",
+    "atDbDown": {
+      "title": "Auto Tournament CS2-database onbereikbaar",
       "body_one": "{{count}} server meldt dat de plugin zijn database niet kan bereiken. Back-ups en de eventwachtrij kunnen hierdoor last hebben.",
       "body_other": "{{count}} servers melden dat de plugin zijn database niet kan bereiken. Back-ups en de eventwachtrij kunnen hierdoor last hebben."
     }
@@ -424,7 +424,7 @@
       "message_other": "Weet je zeker dat je {{count}} servers wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
     },
     "autoConfig": {
-      "configuring": "Nieuwe servers configureren (MatchZy-config via RCON versturen)…",
+      "configuring": "Nieuwe servers configureren (Auto Tournament CS2-config via RCON versturen)…",
       "done": "Nieuwe servers geconfigureerd. Status verversen…"
     },
     "checkServerLogs": "Controleer de gameserverconsole/logs om te zien of de Auto Tournament-plugin config ontvangt en events verstuurt.",
@@ -539,16 +539,16 @@
     "rconPasswordHelper": "Wachtwoord voor RCON-toegang tot de server",
     "enabledLabel": "Server ingeschakeld",
     "enabledHelper": "Uitgeschakelde servers worden niet gebruikt voor wedstrijden",
-    "overridesTitle": "MatchZy-overschrijvingen (optioneel)",
-    "overridesDescription": "Deze instellingen overschrijven de globale MatchZy-standaarden alleen voor deze server. Laat leeg om de globale waarden uit Instellingen te gebruiken.",
+    "overridesTitle": "Auto Tournament CS2-overschrijvingen (optioneel)",
+    "overridesDescription": "Deze instellingen overschrijven de globale Auto Tournament CS2-standaarden alleen voor deze server. Laat leeg om de globale waarden uit Instellingen te gebruiken.",
     "chatPrefixLabel": "Chatprefix-overschrijving",
     "chatPrefixPlaceholder": "[{Green}Auto Tournament{Default}]",
-    "chatPrefixHelper": "Overschrijft matchzy_chat_prefix op deze server (optioneel)",
+    "chatPrefixHelper": "Overschrijft at_chat_prefix op deze server (optioneel)",
     "adminChatPrefixLabel": "Admin-chatprefix-overschrijving",
     "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
-    "adminChatPrefixHelper": "Overschrijft matchzy_admin_chat_prefix op deze server (optioneel)",
+    "adminChatPrefixHelper": "Overschrijft at_admin_chat_prefix op deze server (optioneel)",
     "knifeOverrideLabel": "Knife-round standaard ingeschakeld (overschrijven)",
-    "knifeOverrideHelper": "Wanneer ingesteld, overschrijft dit matchzy_knife_enabled_default voor deze server. Laat in onbepaalde staat om de globale standaard te gebruiken.",
+    "knifeOverrideHelper": "Wanneer ingesteld, overschrijft dit at_knife_enabled_default voor deze server. Laat in onbepaalde staat om de globale standaard te gebruiken.",
     "testConnectivity": "Connectiviteit testen",
     "testingConnectivity": "Connectiviteit testen…",
     "connectivity": {

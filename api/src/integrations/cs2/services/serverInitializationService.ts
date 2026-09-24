@@ -1,26 +1,26 @@
 /**
  * Server Initialization Service
- * Handles sending persistent MatchZy configuration to servers on first connection
+ * Handles sending persistent Auto Tournament CS2 configuration to servers on first connection
  * 
- * With the updated MatchZy plugin, certain configuration values are now persisted
+ * With the updated Auto Tournament CS2 plugin, certain configuration values are now persisted
  * to the server's database and survive restarts. This means we only need to send
  * them once (or when they change), not on every match load.
  * 
- * Before sending config we run matchzy_clear_event_queue so the server does not
+ * Before sending config we run at_clear_event_queue so the server does not
  * keep retrying webhooks against a wrong URL.
  *
  * Persistent configuration includes:
- * - matchzy_remote_log_url (webhook endpoint)
- * - matchzy_chat_prefix
- * - matchzy_admin_chat_prefix
- * - matchzy_server_id
+ * - at_remote_log_url (webhook endpoint)
+ * - at_chat_prefix
+ * - at_admin_chat_prefix
+ * - at_server_id
  */
 
 import { db } from '../../../config/database';
 import { rconService } from './rconService';
 import { log } from '../../../utils/logger';
-import { getMatchZyBootstrapCommands } from '../utils/matchzyRconCommands';
-// NOTE: Remaining MatchZy configuration is fetched by the server itself
+import { getPluginBootstrapCommands } from '../utils/pluginRconCommands';
+// NOTE: Remaining Auto Tournament CS2 configuration is fetched by the server itself
 // via /api/servers/:id/bootstrap to avoid RCON command churn.
 
 export interface ServerInitializationResult {
@@ -125,7 +125,7 @@ class ServerInitializationService {
 
       // Token before URL: the plugin fetches the bootstrap URL as soon as it is
       // set, with whatever token it holds at that moment (see helper).
-      const commands = getMatchZyBootstrapCommands(baseUrl, serverId, serverToken);
+      const commands = getPluginBootstrapCommands(baseUrl, serverId, serverToken);
 
       for (const cmd of commands) {
         const result = await rconService.sendCommand(serverId, cmd);

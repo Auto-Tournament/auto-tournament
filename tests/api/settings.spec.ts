@@ -14,7 +14,7 @@ import { log } from '../../api/src/utils/logger';
 /**
  * 3.0 phase C, PR 11: the settings namespace. `app_settings` keys are the
  * core's (`CORE_SETTINGS`) plus the ones integrations declare
- * (`instanceSettings`; CS2: the `matchzy_*` and simulation keys), and
+ * (`instanceSettings`; CS2: the `at_*` and simulation keys), and
  * `PUT /api/settings` applies the union.
  *
  * The first part runs without a server. The legacy settings service
@@ -59,41 +59,41 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
     | 'webhook_url'
     | 'simulate_matches'
     | 'simulation_timescale'
-    | 'matchzy_chat_prefix'
-    | 'matchzy_admin_chat_prefix'
-    | 'matchzy_knife_enabled_default'
-    | 'matchzy_debug_chat'
+    | 'at_chat_prefix'
+    | 'at_admin_chat_prefix'
+    | 'at_knife_enabled_default'
+    | 'at_debug_chat'
     | 'ratings_enabled'
     | 'allow_self_register'
-    // MatchZy core defaults (persisted convars)
-    | 'matchzy_autostart_mode'
-    | 'matchzy_minimum_ready_required'
-    | 'matchzy_allow_force_ready'
-    | 'matchzy_kick_when_no_match_loaded'
-    | 'matchzy_whitelist_enabled_default'
-    | 'matchzy_pause_after_restore'
-    | 'matchzy_stop_command_available'
-    | 'matchzy_stop_command_no_damage'
-    | 'matchzy_use_pause_command_for_tactical_pause'
-    | 'matchzy_hostname_format'
-    | 'matchzy_demo_path'
-    | 'matchzy_demo_name_format'
-    | 'matchzy_series_end_kick_delay_no_demo'
-    | 'matchzy_series_end_kick_delay_demo_no_upload'
-    | 'matchzy_series_end_kick_delay_demo_upload'
-    // MatchZy Enhanced v1.3.0 settings
-    | 'matchzy_autoready_enabled'
-    | 'matchzy_both_teams_unpause_required'
-    | 'matchzy_max_pauses_per_team'
-    | 'matchzy_pause_duration'
-    | 'matchzy_side_selection_enabled'
-    | 'matchzy_side_selection_time'
-    | 'matchzy_gg_enabled'
-    | 'matchzy_gg_threshold'
-    | 'matchzy_gg_min_score_diff'
-    | 'matchzy_ffw_enabled'
-    | 'matchzy_ffw_time'
-    | 'matchzy_demo_recording_enabled'
+    // Auto Tournament CS2 core defaults (persisted convars)
+    | 'at_autostart_mode'
+    | 'at_minimum_ready_required'
+    | 'at_allow_force_ready'
+    | 'at_kick_when_no_match_loaded'
+    | 'at_whitelist_enabled_default'
+    | 'at_pause_after_restore'
+    | 'at_stop_command_available'
+    | 'at_stop_command_no_damage'
+    | 'at_use_pause_command_for_tactical_pause'
+    | 'at_hostname_format'
+    | 'at_demo_path'
+    | 'at_demo_name_format'
+    | 'at_series_end_kick_delay_no_demo'
+    | 'at_series_end_kick_delay_demo_no_upload'
+    | 'at_series_end_kick_delay_demo_upload'
+    // Auto Tournament CS2 v1.3.0 settings
+    | 'at_autoready_enabled'
+    | 'at_both_teams_unpause_required'
+    | 'at_max_pauses_per_team'
+    | 'at_pause_duration'
+    | 'at_side_selection_enabled'
+    | 'at_side_selection_time'
+    | 'at_gg_enabled'
+    | 'at_gg_threshold'
+    | 'at_gg_min_score_diff'
+    | 'at_ffw_enabled'
+    | 'at_ffw_time'
+    | 'at_demo_recording_enabled'
     // IGDB (game catalogue) credentials. The secret is write-only: it is never
     // returned by any endpoint, and env (IGDB_CLIENT_ID / IGDB_CLIENT_SECRET) wins.
     | 'igdb_client_id'
@@ -104,41 +104,41 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
     'webhook_url',
     'simulate_matches',
     'simulation_timescale',
-    'matchzy_chat_prefix',
-    'matchzy_admin_chat_prefix',
-    'matchzy_knife_enabled_default',
-    'matchzy_debug_chat',
+    'at_chat_prefix',
+    'at_admin_chat_prefix',
+    'at_knife_enabled_default',
+    'at_debug_chat',
     'ratings_enabled',
     'allow_self_register',
-    // MatchZy core defaults (persisted convars)
-    'matchzy_autostart_mode',
-    'matchzy_minimum_ready_required',
-    'matchzy_allow_force_ready',
-    'matchzy_kick_when_no_match_loaded',
-    'matchzy_whitelist_enabled_default',
-    'matchzy_pause_after_restore',
-    'matchzy_stop_command_available',
-    'matchzy_stop_command_no_damage',
-    'matchzy_use_pause_command_for_tactical_pause',
-    'matchzy_hostname_format',
-    'matchzy_demo_path',
-    'matchzy_demo_name_format',
-    'matchzy_series_end_kick_delay_no_demo',
-    'matchzy_series_end_kick_delay_demo_no_upload',
-    'matchzy_series_end_kick_delay_demo_upload',
-    // MatchZy Enhanced v1.3.0 settings
-    'matchzy_autoready_enabled',
-    'matchzy_both_teams_unpause_required',
-    'matchzy_max_pauses_per_team',
-    'matchzy_pause_duration',
-    'matchzy_side_selection_enabled',
-    'matchzy_side_selection_time',
-    'matchzy_gg_enabled',
-    'matchzy_gg_threshold',
-    'matchzy_gg_min_score_diff',
-    'matchzy_ffw_enabled',
-    'matchzy_ffw_time',
-    'matchzy_demo_recording_enabled',
+    // Auto Tournament CS2 core defaults (persisted convars)
+    'at_autostart_mode',
+    'at_minimum_ready_required',
+    'at_allow_force_ready',
+    'at_kick_when_no_match_loaded',
+    'at_whitelist_enabled_default',
+    'at_pause_after_restore',
+    'at_stop_command_available',
+    'at_stop_command_no_damage',
+    'at_use_pause_command_for_tactical_pause',
+    'at_hostname_format',
+    'at_demo_path',
+    'at_demo_name_format',
+    'at_series_end_kick_delay_no_demo',
+    'at_series_end_kick_delay_demo_no_upload',
+    'at_series_end_kick_delay_demo_upload',
+    // Auto Tournament CS2 v1.3.0 settings
+    'at_autoready_enabled',
+    'at_both_teams_unpause_required',
+    'at_max_pauses_per_team',
+    'at_pause_duration',
+    'at_side_selection_enabled',
+    'at_side_selection_time',
+    'at_gg_enabled',
+    'at_gg_threshold',
+    'at_gg_min_score_diff',
+    'at_ffw_enabled',
+    'at_ffw_time',
+    'at_demo_recording_enabled',
     'igdb_client_id',
     'igdb_client_secret',
   ];
@@ -161,19 +161,19 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
         const trimmed = value.trim();
 
         // An empty hostname format is a real choice, not an absent one: it is how
-        // MatchZy is told to leave the server's own `hostname` alone. Every other
+        // Auto Tournament CS2 is told to leave the server's own `hostname` alone. Every other
         // setting folds "" to NULL and falls back to its default, which would make
         // "don't touch my hostname" indistinguishable from "never configured".
-        if (key === 'matchzy_hostname_format') {
-          // The value is sent as `matchzy_hostname_format "<value>"`, so an
+        if (key === 'at_hostname_format') {
+          // The value is sent as `at_hostname_format "<value>"`, so an
           // embedded quote would terminate the argument and produce a malformed
           // command. Drop them on write, so what is stored is what is sent.
           const sanitized = trimmed.replace(/"/g, '');
           await db.setAppSettingAsync(key, sanitized);
           log.success(
             sanitized === ''
-              ? 'matchzy_hostname_format cleared - servers keep their own hostname'
-              : `matchzy_hostname_format updated to ${sanitized}`
+              ? 'at_hostname_format cleared - servers keep their own hostname'
+              : `at_hostname_format updated to ${sanitized}`
           );
           return;
         }
@@ -218,15 +218,15 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
           return;
         }
 
-        if (key === 'matchzy_chat_prefix' || key === 'matchzy_admin_chat_prefix') {
+        if (key === 'at_chat_prefix' || key === 'at_admin_chat_prefix') {
           await db.setAppSettingAsync(key, trimmed);
           log.success(
-            `MatchZy ${key === 'matchzy_chat_prefix' ? 'chat prefix' : 'admin chat prefix'} updated`
+            `Auto Tournament CS2 ${key === 'at_chat_prefix' ? 'chat prefix' : 'admin chat prefix'} updated`
           );
           return;
         }
 
-        if (key === 'matchzy_knife_enabled_default') {
+        if (key === 'at_knife_enabled_default') {
           const normalized = trimmed.toLowerCase();
           const isEnabled =
             normalized === '1' ||
@@ -235,7 +235,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
             normalized === 'on' ||
             normalized === 'enabled';
           await db.setAppSettingAsync(key, isEnabled ? '1' : '0');
-          log.success(`MatchZy knife round default ${isEnabled ? 'enabled' : 'disabled'}`);
+          log.success(`Auto Tournament CS2 knife round default ${isEnabled ? 'enabled' : 'disabled'}`);
           return;
         }
 
@@ -252,7 +252,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
           return;
         }
 
-        if (key === 'matchzy_debug_chat') {
+        if (key === 'at_debug_chat') {
           const normalized = trimmed.toLowerCase();
           const isEnabled =
             normalized === '1' ||
@@ -261,7 +261,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
             normalized === 'on' ||
             normalized === 'enabled';
           await db.setAppSettingAsync(key, isEnabled ? '1' : '0');
-          log.success(`MatchZy debug chat ${isEnabled ? 'enabled' : 'disabled'}`);
+          log.success(`Auto Tournament CS2 debug chat ${isEnabled ? 'enabled' : 'disabled'}`);
           return;
         }
 
@@ -278,15 +278,15 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
           return;
         }
 
-        // MatchZy core boolean settings (0/1)
+        // Auto Tournament CS2 core boolean settings (0/1)
         if (
-          key === 'matchzy_allow_force_ready' ||
-          key === 'matchzy_kick_when_no_match_loaded' ||
-          key === 'matchzy_whitelist_enabled_default' ||
-          key === 'matchzy_pause_after_restore' ||
-          key === 'matchzy_stop_command_available' ||
-          key === 'matchzy_stop_command_no_damage' ||
-          key === 'matchzy_use_pause_command_for_tactical_pause'
+          key === 'at_allow_force_ready' ||
+          key === 'at_kick_when_no_match_loaded' ||
+          key === 'at_whitelist_enabled_default' ||
+          key === 'at_pause_after_restore' ||
+          key === 'at_stop_command_available' ||
+          key === 'at_stop_command_no_damage' ||
+          key === 'at_use_pause_command_for_tactical_pause'
         ) {
           const normalized = trimmed.toLowerCase();
           const isEnabled =
@@ -300,28 +300,28 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
           return;
         }
 
-        // MatchZy core integer settings
+        // Auto Tournament CS2 core integer settings
         if (
-          key === 'matchzy_autostart_mode' ||
-          key === 'matchzy_minimum_ready_required' ||
-          key === 'matchzy_series_end_kick_delay_no_demo' ||
-          key === 'matchzy_series_end_kick_delay_demo_no_upload' ||
-          key === 'matchzy_series_end_kick_delay_demo_upload'
+          key === 'at_autostart_mode' ||
+          key === 'at_minimum_ready_required' ||
+          key === 'at_series_end_kick_delay_no_demo' ||
+          key === 'at_series_end_kick_delay_demo_no_upload' ||
+          key === 'at_series_end_kick_delay_demo_upload'
         ) {
           const parsed = Number(trimmed);
           if (!Number.isInteger(parsed)) {
             throw new Error(`${key} must be an integer`);
           }
-          if (key === 'matchzy_autostart_mode' && (parsed < 0 || parsed > 2)) {
-            throw new Error('matchzy_autostart_mode must be 0, 1, or 2');
+          if (key === 'at_autostart_mode' && (parsed < 0 || parsed > 2)) {
+            throw new Error('at_autostart_mode must be 0, 1, or 2');
           }
-          if (key === 'matchzy_minimum_ready_required' && (parsed < 0 || parsed > 10)) {
-            throw new Error('matchzy_minimum_ready_required must be 0-10');
+          if (key === 'at_minimum_ready_required' && (parsed < 0 || parsed > 10)) {
+            throw new Error('at_minimum_ready_required must be 0-10');
           }
           if (
-            (key === 'matchzy_series_end_kick_delay_no_demo' ||
-              key === 'matchzy_series_end_kick_delay_demo_no_upload' ||
-              key === 'matchzy_series_end_kick_delay_demo_upload') &&
+            (key === 'at_series_end_kick_delay_no_demo' ||
+              key === 'at_series_end_kick_delay_demo_no_upload' ||
+              key === 'at_series_end_kick_delay_demo_upload') &&
             (parsed < 0 || parsed > 600)
           ) {
             throw new Error(`${key} must be 0-600 seconds`);
@@ -331,29 +331,29 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
           return;
         }
 
-        // MatchZy core string settings
-        if (key === 'matchzy_demo_path') {
-          // MatchZy expects a path relative to csgo/ and it must end with "/".
+        // Auto Tournament CS2 core string settings
+        if (key === 'at_demo_path') {
+          // Auto Tournament CS2 expects a path relative to csgo/ and it must end with "/".
           const normalized = trimmed.endsWith('/') ? trimmed : `${trimmed}/`;
           await db.setAppSettingAsync(key, normalized);
-          log.success('matchzy_demo_path updated');
+          log.success('at_demo_path updated');
           return;
         }
 
-        if (key === 'matchzy_demo_name_format') {
+        if (key === 'at_demo_name_format') {
           await db.setAppSettingAsync(key, trimmed);
-          log.success('matchzy_demo_name_format updated');
+          log.success('at_demo_name_format updated');
           return;
         }
 
-        // MatchZy Enhanced v1.3.0 boolean settings (0/1)
+        // Auto Tournament CS2 v1.3.0 boolean settings (0/1)
         if (
-          key === 'matchzy_autoready_enabled' ||
-          key === 'matchzy_both_teams_unpause_required' ||
-          key === 'matchzy_side_selection_enabled' ||
-          key === 'matchzy_gg_enabled' ||
-          key === 'matchzy_ffw_enabled' ||
-          key === 'matchzy_demo_recording_enabled'
+          key === 'at_autoready_enabled' ||
+          key === 'at_both_teams_unpause_required' ||
+          key === 'at_side_selection_enabled' ||
+          key === 'at_gg_enabled' ||
+          key === 'at_ffw_enabled' ||
+          key === 'at_demo_recording_enabled'
         ) {
           const normalized = trimmed.toLowerCase();
           const isEnabled =
@@ -367,13 +367,13 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
           return;
         }
 
-        // MatchZy Enhanced integer settings
+        // Auto Tournament CS2 integer settings
         if (
-          key === 'matchzy_max_pauses_per_team' ||
-          key === 'matchzy_pause_duration' ||
-          key === 'matchzy_side_selection_time' ||
-          key === 'matchzy_ffw_time' ||
-          key === 'matchzy_gg_min_score_diff'
+          key === 'at_max_pauses_per_team' ||
+          key === 'at_pause_duration' ||
+          key === 'at_side_selection_time' ||
+          key === 'at_ffw_time' ||
+          key === 'at_gg_min_score_diff'
         ) {
           const parsed = Number(trimmed);
           if (!Number.isInteger(parsed)) {
@@ -381,20 +381,20 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
           }
 
           // Validate ranges
-          if (key === 'matchzy_max_pauses_per_team' && (parsed < 0 || parsed > 999)) {
-            throw new Error('matchzy_max_pauses_per_team must be 0-999');
+          if (key === 'at_max_pauses_per_team' && (parsed < 0 || parsed > 999)) {
+            throw new Error('at_max_pauses_per_team must be 0-999');
           }
-          if (key === 'matchzy_pause_duration' && (parsed < 0 || parsed > 999)) {
-            throw new Error('matchzy_pause_duration must be 0-999 seconds');
+          if (key === 'at_pause_duration' && (parsed < 0 || parsed > 999)) {
+            throw new Error('at_pause_duration must be 0-999 seconds');
           }
-          if (key === 'matchzy_side_selection_time' && (parsed < 1 || parsed > 999)) {
-            throw new Error('matchzy_side_selection_time must be 1-999 seconds');
+          if (key === 'at_side_selection_time' && (parsed < 1 || parsed > 999)) {
+            throw new Error('at_side_selection_time must be 1-999 seconds');
           }
-          if (key === 'matchzy_ffw_time' && (parsed < 1 || parsed > 999)) {
-            throw new Error('matchzy_ffw_time must be 1-999 seconds');
+          if (key === 'at_ffw_time' && (parsed < 1 || parsed > 999)) {
+            throw new Error('at_ffw_time must be 1-999 seconds');
           }
-          if (key === 'matchzy_gg_min_score_diff' && (parsed < 0 || parsed > 16)) {
-            throw new Error('matchzy_gg_min_score_diff must be 0-16');
+          if (key === 'at_gg_min_score_diff' && (parsed < 0 || parsed > 16)) {
+            throw new Error('at_gg_min_score_diff must be 0-16');
           }
 
           await db.setAppSettingAsync(key, String(parsed));
@@ -402,14 +402,14 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
           return;
         }
 
-        // MatchZy Enhanced float settings
-        if (key === 'matchzy_gg_threshold') {
+        // Auto Tournament CS2 float settings
+        if (key === 'at_gg_threshold') {
           const parsed = Number(trimmed);
           if (!Number.isFinite(parsed) || parsed < 0 || parsed > 1) {
-            throw new Error('matchzy_gg_threshold must be 0.0-1.0');
+            throw new Error('at_gg_threshold must be 0.0-1.0');
           }
           await db.setAppSettingAsync(key, String(parsed));
-          log.success(`matchzy_gg_threshold updated to ${parsed}`);
+          log.success(`at_gg_threshold updated to ${parsed}`);
           return;
         }
       }
@@ -420,10 +420,10 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
 
     async isSimulationModeEnabled(): Promise<boolean> {
       // By default, hard-disable simulation in production for safety. It can be
-      // explicitly enabled by setting MATCHZY_ENABLE_SIMULATION_IN_PROD=true in
+      // explicitly enabled by setting AT_ENABLE_SIMULATION_IN_PROD=true in
       // the API environment (e.g. for test events or lab environments).
       if (process.env.NODE_ENV === 'production') {
-        if (process.env.MATCHZY_ENABLE_SIMULATION_IN_PROD?.toLowerCase() !== 'true') {
+        if (process.env.AT_ENABLE_SIMULATION_IN_PROD?.toLowerCase() !== 'true') {
           return false;
         }
       }
@@ -473,80 +473,80 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
       webhookUrl,
       simulateMatches,
       simulationTimescale,
-      matchzyChatPrefix,
-      matchzyAdminChatPrefix,
-      matchzyKnifeEnabledDefault,
+      atChatPrefix,
+      atAdminChatPrefix,
+      atKnifeEnabledDefault,
       ratingsEnabled,
-      matchzyDebugChatEnabled,
+      atDebugChatEnabled,
       allowSelfRegister,
-      // MatchZy core defaults
-      matchzyAutostartMode,
-      matchzyMinimumReadyRequired,
-      matchzyAllowForceReady,
-      matchzyKickWhenNoMatchLoaded,
-      matchzyWhitelistEnabledDefault,
-      matchzyPauseAfterRestore,
-      matchzyStopCommandAvailable,
-      matchzyStopCommandNoDamage,
-      matchzyUsePauseCommandForTacticalPause,
-      matchzyHostnameFormat,
-      matchzyDemoPath,
-      matchzyDemoNameFormat,
-      matchzySeriesEndKickDelayNoDemo,
-      matchzySeriesEndKickDelayDemoNoUpload,
-      matchzySeriesEndKickDelayDemoUpload,
-      // MatchZy Enhanced v1.3.0 settings
-      matchzyAutoreadyEnabled,
-      matchzyBothTeamsUnpauseRequired,
-      matchzyMaxPausesPerTeam,
-      matchzyPauseDuration,
-      matchzySideSelectionEnabled,
-      matchzySideSelectionTime,
-      matchzyGgEnabled,
-      matchzyGgThreshold,
-      matchzyGgMinScoreDiff,
-      matchzyFfwEnabled,
-      matchzyFfwTime,
-      matchzyDemoRecordingEnabled,
+      // Auto Tournament CS2 core defaults
+      atAutostartMode,
+      atMinimumReadyRequired,
+      atAllowForceReady,
+      atKickWhenNoMatchLoaded,
+      atWhitelistEnabledDefault,
+      atPauseAfterRestore,
+      atStopCommandAvailable,
+      atStopCommandNoDamage,
+      atUsePauseCommandForTacticalPause,
+      atHostnameFormat,
+      atDemoPath,
+      atDemoNameFormat,
+      atSeriesEndKickDelayNoDemo,
+      atSeriesEndKickDelayDemoNoUpload,
+      atSeriesEndKickDelayDemoUpload,
+      // Auto Tournament CS2 v1.3.0 settings
+      atAutoreadyEnabled,
+      atBothTeamsUnpauseRequired,
+      atMaxPausesPerTeam,
+      atPauseDuration,
+      atSideSelectionEnabled,
+      atSideSelectionTime,
+      atGgEnabled,
+      atGgThreshold,
+      atGgMinScoreDiff,
+      atFfwEnabled,
+      atFfwTime,
+      atDemoRecordingEnabled,
     } = req.body as {
       webhookUrl?: unknown;
       simulateMatches?: unknown;
       simulationTimescale?: unknown;
-      matchzyChatPrefix?: unknown;
-      matchzyAdminChatPrefix?: unknown;
-      matchzyKnifeEnabledDefault?: unknown;
+      atChatPrefix?: unknown;
+      atAdminChatPrefix?: unknown;
+      atKnifeEnabledDefault?: unknown;
       ratingsEnabled?: unknown;
-      matchzyDebugChatEnabled?: unknown;
+      atDebugChatEnabled?: unknown;
       allowSelfRegister?: unknown;
-      // MatchZy core defaults
-      matchzyAutostartMode?: unknown;
-      matchzyMinimumReadyRequired?: unknown;
-      matchzyAllowForceReady?: unknown;
-      matchzyKickWhenNoMatchLoaded?: unknown;
-      matchzyWhitelistEnabledDefault?: unknown;
-      matchzyPauseAfterRestore?: unknown;
-      matchzyStopCommandAvailable?: unknown;
-      matchzyStopCommandNoDamage?: unknown;
-      matchzyUsePauseCommandForTacticalPause?: unknown;
-      matchzyHostnameFormat?: unknown;
-      matchzyDemoPath?: unknown;
-      matchzyDemoNameFormat?: unknown;
-      matchzySeriesEndKickDelayNoDemo?: unknown;
-      matchzySeriesEndKickDelayDemoNoUpload?: unknown;
-      matchzySeriesEndKickDelayDemoUpload?: unknown;
-      // MatchZy Enhanced v1.3.0 settings
-      matchzyAutoreadyEnabled?: unknown;
-      matchzyBothTeamsUnpauseRequired?: unknown;
-      matchzyMaxPausesPerTeam?: unknown;
-      matchzyPauseDuration?: unknown;
-      matchzySideSelectionEnabled?: unknown;
-      matchzySideSelectionTime?: unknown;
-      matchzyGgEnabled?: unknown;
-      matchzyGgThreshold?: unknown;
-      matchzyGgMinScoreDiff?: unknown;
-      matchzyFfwEnabled?: unknown;
-      matchzyFfwTime?: unknown;
-      matchzyDemoRecordingEnabled?: unknown;
+      // Auto Tournament CS2 core defaults
+      atAutostartMode?: unknown;
+      atMinimumReadyRequired?: unknown;
+      atAllowForceReady?: unknown;
+      atKickWhenNoMatchLoaded?: unknown;
+      atWhitelistEnabledDefault?: unknown;
+      atPauseAfterRestore?: unknown;
+      atStopCommandAvailable?: unknown;
+      atStopCommandNoDamage?: unknown;
+      atUsePauseCommandForTacticalPause?: unknown;
+      atHostnameFormat?: unknown;
+      atDemoPath?: unknown;
+      atDemoNameFormat?: unknown;
+      atSeriesEndKickDelayNoDemo?: unknown;
+      atSeriesEndKickDelayDemoNoUpload?: unknown;
+      atSeriesEndKickDelayDemoUpload?: unknown;
+      // Auto Tournament CS2 v1.3.0 settings
+      atAutoreadyEnabled?: unknown;
+      atBothTeamsUnpauseRequired?: unknown;
+      atMaxPausesPerTeam?: unknown;
+      atPauseDuration?: unknown;
+      atSideSelectionEnabled?: unknown;
+      atSideSelectionTime?: unknown;
+      atGgEnabled?: unknown;
+      atGgThreshold?: unknown;
+      atGgMinScoreDiff?: unknown;
+      atFfwEnabled?: unknown;
+      atFfwTime?: unknown;
+      atDemoRecordingEnabled?: unknown;
     };
 
     try {
@@ -566,9 +566,9 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
       if (simulateMatches !== undefined) {
         // This is a **developer-only** option.
         // In production, ignore it by default for safety, unless explicitly enabled
-        // via MATCHZY_ENABLE_SIMULATION_IN_PROD=true (e.g. lab/test environments).
+        // via AT_ENABLE_SIMULATION_IN_PROD=true (e.g. lab/test environments).
         const simulationAllowedInProd =
-          process.env.MATCHZY_ENABLE_SIMULATION_IN_PROD?.toLowerCase() === 'true';
+          process.env.AT_ENABLE_SIMULATION_IN_PROD?.toLowerCase() === 'true';
         if (process.env.NODE_ENV === 'production' && !simulationAllowedInProd) {
           log.warn(
             'Received simulateMatches setting update in production environment – ignoring for safety'
@@ -613,50 +613,50 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
         await settingsService.setSetting('simulation_timescale', value);
       }
 
-      if (matchzyChatPrefix !== undefined) {
-        if (typeof matchzyChatPrefix !== 'string' && matchzyChatPrefix !== null) {
+      if (atChatPrefix !== undefined) {
+        if (typeof atChatPrefix !== 'string' && atChatPrefix !== null) {
           return res.status(400).json({
             success: false,
-            error: 'matchzyChatPrefix must be a string or null',
+            error: 'atChatPrefix must be a string or null',
           });
         }
 
         await settingsService.setSetting(
-          'matchzy_chat_prefix',
-          typeof matchzyChatPrefix === 'string' ? matchzyChatPrefix : null
+          'at_chat_prefix',
+          typeof atChatPrefix === 'string' ? atChatPrefix : null
         );
       }
 
-      if (matchzyAdminChatPrefix !== undefined) {
-        if (typeof matchzyAdminChatPrefix !== 'string' && matchzyAdminChatPrefix !== null) {
+      if (atAdminChatPrefix !== undefined) {
+        if (typeof atAdminChatPrefix !== 'string' && atAdminChatPrefix !== null) {
           return res.status(400).json({
             success: false,
-            error: 'matchzyAdminChatPrefix must be a string or null',
+            error: 'atAdminChatPrefix must be a string or null',
           });
         }
 
         await settingsService.setSetting(
-          'matchzy_admin_chat_prefix',
-          typeof matchzyAdminChatPrefix === 'string' ? matchzyAdminChatPrefix : null
+          'at_admin_chat_prefix',
+          typeof atAdminChatPrefix === 'string' ? atAdminChatPrefix : null
         );
       }
 
-      if (matchzyKnifeEnabledDefault !== undefined) {
-        if (typeof matchzyKnifeEnabledDefault !== 'boolean' && matchzyKnifeEnabledDefault !== null) {
+      if (atKnifeEnabledDefault !== undefined) {
+        if (typeof atKnifeEnabledDefault !== 'boolean' && atKnifeEnabledDefault !== null) {
           return res.status(400).json({
             success: false,
-            error: 'matchzyKnifeEnabledDefault must be a boolean or null',
+            error: 'atKnifeEnabledDefault must be a boolean or null',
           });
         }
 
         const value =
-          matchzyKnifeEnabledDefault === null
+          atKnifeEnabledDefault === null
             ? null
-            : matchzyKnifeEnabledDefault === true
+            : atKnifeEnabledDefault === true
             ? '1'
             : '0';
 
-        await settingsService.setSetting('matchzy_knife_enabled_default', value);
+        await settingsService.setSetting('at_knife_enabled_default', value);
       }
 
       if (ratingsEnabled !== undefined) {
@@ -673,22 +673,22 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
         await settingsService.setSetting('ratings_enabled', value);
       }
 
-      if (matchzyDebugChatEnabled !== undefined) {
-        if (typeof matchzyDebugChatEnabled !== 'boolean' && matchzyDebugChatEnabled !== null) {
+      if (atDebugChatEnabled !== undefined) {
+        if (typeof atDebugChatEnabled !== 'boolean' && atDebugChatEnabled !== null) {
           return res.status(400).json({
             success: false,
-            error: 'matchzyDebugChatEnabled must be a boolean or null',
+            error: 'atDebugChatEnabled must be a boolean or null',
           });
         }
 
         const value =
-          matchzyDebugChatEnabled === null
+          atDebugChatEnabled === null
             ? null
-            : matchzyDebugChatEnabled === true
+            : atDebugChatEnabled === true
             ? '1'
             : '0';
 
-        await settingsService.setSetting('matchzy_debug_chat', value);
+        await settingsService.setSetting('at_debug_chat', value);
       }
 
       if (allowSelfRegister !== undefined) {
@@ -705,32 +705,32 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
         await settingsService.setSetting('allow_self_register', value);
       }
 
-      if (matchzyMinimumReadyRequired !== undefined) {
+      if (atMinimumReadyRequired !== undefined) {
         if (
-          typeof matchzyMinimumReadyRequired !== 'number' &&
-          matchzyMinimumReadyRequired !== null
+          typeof atMinimumReadyRequired !== 'number' &&
+          atMinimumReadyRequired !== null
         ) {
           return res.status(400).json({
             success: false,
-            error: 'matchzyMinimumReadyRequired must be a number or null',
+            error: 'atMinimumReadyRequired must be a number or null',
           });
         }
         await settingsService.setSetting(
-          'matchzy_minimum_ready_required',
-          matchzyMinimumReadyRequired === null ? null : String(matchzyMinimumReadyRequired)
+          'at_minimum_ready_required',
+          atMinimumReadyRequired === null ? null : String(atMinimumReadyRequired)
         );
       }
 
-      if (matchzyAutostartMode !== undefined) {
-        if (typeof matchzyAutostartMode !== 'number' && matchzyAutostartMode !== null) {
+      if (atAutostartMode !== undefined) {
+        if (typeof atAutostartMode !== 'number' && atAutostartMode !== null) {
           return res.status(400).json({
             success: false,
-            error: 'matchzyAutostartMode must be a number (0-2) or null',
+            error: 'atAutostartMode must be a number (0-2) or null',
           });
         }
         await settingsService.setSetting(
-          'matchzy_autostart_mode',
-          matchzyAutostartMode === null ? null : String(matchzyAutostartMode)
+          'at_autostart_mode',
+          atAutostartMode === null ? null : String(atAutostartMode)
         );
       }
 
@@ -771,269 +771,269 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
         return;
       };
 
-      // MatchZy core defaults (booleans)
-      if (matchzyAllowForceReady !== undefined) {
-        const resp = await putBoolOrNull('matchzy_allow_force_ready', matchzyAllowForceReady, 'matchzyAllowForceReady');
+      // Auto Tournament CS2 core defaults (booleans)
+      if (atAllowForceReady !== undefined) {
+        const resp = await putBoolOrNull('at_allow_force_ready', atAllowForceReady, 'atAllowForceReady');
         if (resp) return resp;
       }
-      if (matchzyKickWhenNoMatchLoaded !== undefined) {
-        const resp = await putBoolOrNull('matchzy_kick_when_no_match_loaded', matchzyKickWhenNoMatchLoaded, 'matchzyKickWhenNoMatchLoaded');
+      if (atKickWhenNoMatchLoaded !== undefined) {
+        const resp = await putBoolOrNull('at_kick_when_no_match_loaded', atKickWhenNoMatchLoaded, 'atKickWhenNoMatchLoaded');
         if (resp) return resp;
       }
-      if (matchzyWhitelistEnabledDefault !== undefined) {
-        const resp = await putBoolOrNull('matchzy_whitelist_enabled_default', matchzyWhitelistEnabledDefault, 'matchzyWhitelistEnabledDefault');
+      if (atWhitelistEnabledDefault !== undefined) {
+        const resp = await putBoolOrNull('at_whitelist_enabled_default', atWhitelistEnabledDefault, 'atWhitelistEnabledDefault');
         if (resp) return resp;
       }
-      if (matchzyPauseAfterRestore !== undefined) {
-        const resp = await putBoolOrNull('matchzy_pause_after_restore', matchzyPauseAfterRestore, 'matchzyPauseAfterRestore');
+      if (atPauseAfterRestore !== undefined) {
+        const resp = await putBoolOrNull('at_pause_after_restore', atPauseAfterRestore, 'atPauseAfterRestore');
         if (resp) return resp;
       }
-      if (matchzyStopCommandAvailable !== undefined) {
-        const resp = await putBoolOrNull('matchzy_stop_command_available', matchzyStopCommandAvailable, 'matchzyStopCommandAvailable');
+      if (atStopCommandAvailable !== undefined) {
+        const resp = await putBoolOrNull('at_stop_command_available', atStopCommandAvailable, 'atStopCommandAvailable');
         if (resp) return resp;
       }
-      if (matchzyStopCommandNoDamage !== undefined) {
-        const resp = await putBoolOrNull('matchzy_stop_command_no_damage', matchzyStopCommandNoDamage, 'matchzyStopCommandNoDamage');
+      if (atStopCommandNoDamage !== undefined) {
+        const resp = await putBoolOrNull('at_stop_command_no_damage', atStopCommandNoDamage, 'atStopCommandNoDamage');
         if (resp) return resp;
       }
-      if (matchzyUsePauseCommandForTacticalPause !== undefined) {
-        const resp = await putBoolOrNull('matchzy_use_pause_command_for_tactical_pause', matchzyUsePauseCommandForTacticalPause, 'matchzyUsePauseCommandForTacticalPause');
+      if (atUsePauseCommandForTacticalPause !== undefined) {
+        const resp = await putBoolOrNull('at_use_pause_command_for_tactical_pause', atUsePauseCommandForTacticalPause, 'atUsePauseCommandForTacticalPause');
         if (resp) return resp;
       }
 
-      // MatchZy core defaults (strings)
+      // Auto Tournament CS2 core defaults (strings)
       // Note: an empty string is preserved here rather than clearing the setting.
-      // "" is how MatchZy is told to leave the server's own hostname alone.
-      if (matchzyHostnameFormat !== undefined) {
-        const resp = await putStringOrNull('matchzy_hostname_format', matchzyHostnameFormat, 'matchzyHostnameFormat');
+      // "" is how Auto Tournament CS2 is told to leave the server's own hostname alone.
+      if (atHostnameFormat !== undefined) {
+        const resp = await putStringOrNull('at_hostname_format', atHostnameFormat, 'atHostnameFormat');
         if (resp) return resp;
       }
-      if (matchzyDemoPath !== undefined) {
-        const resp = await putStringOrNull('matchzy_demo_path', matchzyDemoPath, 'matchzyDemoPath');
+      if (atDemoPath !== undefined) {
+        const resp = await putStringOrNull('at_demo_path', atDemoPath, 'atDemoPath');
         if (resp) return resp;
       }
-      if (matchzyDemoNameFormat !== undefined) {
-        const resp = await putStringOrNull('matchzy_demo_name_format', matchzyDemoNameFormat, 'matchzyDemoNameFormat');
-        if (resp) return resp;
-      }
-
-      // MatchZy core defaults (numbers)
-      if (matchzySeriesEndKickDelayNoDemo !== undefined) {
-        const resp = await putNumberOrNull('matchzy_series_end_kick_delay_no_demo', matchzySeriesEndKickDelayNoDemo, 'matchzySeriesEndKickDelayNoDemo');
-        if (resp) return resp;
-      }
-      if (matchzySeriesEndKickDelayDemoNoUpload !== undefined) {
-        const resp = await putNumberOrNull('matchzy_series_end_kick_delay_demo_no_upload', matchzySeriesEndKickDelayDemoNoUpload, 'matchzySeriesEndKickDelayDemoNoUpload');
-        if (resp) return resp;
-      }
-      if (matchzySeriesEndKickDelayDemoUpload !== undefined) {
-        const resp = await putNumberOrNull('matchzy_series_end_kick_delay_demo_upload', matchzySeriesEndKickDelayDemoUpload, 'matchzySeriesEndKickDelayDemoUpload');
+      if (atDemoNameFormat !== undefined) {
+        const resp = await putStringOrNull('at_demo_name_format', atDemoNameFormat, 'atDemoNameFormat');
         if (resp) return resp;
       }
 
-      // MatchZy Enhanced v1.3.0 settings
-      if (matchzyAutoreadyEnabled !== undefined) {
+      // Auto Tournament CS2 core defaults (numbers)
+      if (atSeriesEndKickDelayNoDemo !== undefined) {
+        const resp = await putNumberOrNull('at_series_end_kick_delay_no_demo', atSeriesEndKickDelayNoDemo, 'atSeriesEndKickDelayNoDemo');
+        if (resp) return resp;
+      }
+      if (atSeriesEndKickDelayDemoNoUpload !== undefined) {
+        const resp = await putNumberOrNull('at_series_end_kick_delay_demo_no_upload', atSeriesEndKickDelayDemoNoUpload, 'atSeriesEndKickDelayDemoNoUpload');
+        if (resp) return resp;
+      }
+      if (atSeriesEndKickDelayDemoUpload !== undefined) {
+        const resp = await putNumberOrNull('at_series_end_kick_delay_demo_upload', atSeriesEndKickDelayDemoUpload, 'atSeriesEndKickDelayDemoUpload');
+        if (resp) return resp;
+      }
+
+      // Auto Tournament CS2 v1.3.0 settings
+      if (atAutoreadyEnabled !== undefined) {
         if (
-          typeof matchzyAutoreadyEnabled !== 'number' &&
-          typeof matchzyAutoreadyEnabled !== 'boolean' &&
-          matchzyAutoreadyEnabled !== null
+          typeof atAutoreadyEnabled !== 'number' &&
+          typeof atAutoreadyEnabled !== 'boolean' &&
+          atAutoreadyEnabled !== null
         ) {
           return res.status(400).json({
             success: false,
-            error: 'matchzyAutoreadyEnabled must be 0, 1, boolean, or null',
+            error: 'atAutoreadyEnabled must be 0, 1, boolean, or null',
           });
         }
         const value =
-          matchzyAutoreadyEnabled === null
+          atAutoreadyEnabled === null
             ? null
-            : matchzyAutoreadyEnabled === true || matchzyAutoreadyEnabled === 1
+            : atAutoreadyEnabled === true || atAutoreadyEnabled === 1
             ? '1'
             : '0';
-        await settingsService.setSetting('matchzy_autoready_enabled', value);
+        await settingsService.setSetting('at_autoready_enabled', value);
       }
 
-      if (matchzyBothTeamsUnpauseRequired !== undefined) {
+      if (atBothTeamsUnpauseRequired !== undefined) {
         if (
-          typeof matchzyBothTeamsUnpauseRequired !== 'number' &&
-          typeof matchzyBothTeamsUnpauseRequired !== 'boolean' &&
-          matchzyBothTeamsUnpauseRequired !== null
+          typeof atBothTeamsUnpauseRequired !== 'number' &&
+          typeof atBothTeamsUnpauseRequired !== 'boolean' &&
+          atBothTeamsUnpauseRequired !== null
         ) {
           return res.status(400).json({
             success: false,
-            error: 'matchzyBothTeamsUnpauseRequired must be 0, 1, boolean, or null',
+            error: 'atBothTeamsUnpauseRequired must be 0, 1, boolean, or null',
           });
         }
         const value =
-          matchzyBothTeamsUnpauseRequired === null
+          atBothTeamsUnpauseRequired === null
             ? null
-            : matchzyBothTeamsUnpauseRequired === true || matchzyBothTeamsUnpauseRequired === 1
+            : atBothTeamsUnpauseRequired === true || atBothTeamsUnpauseRequired === 1
             ? '1'
             : '0';
-        await settingsService.setSetting('matchzy_both_teams_unpause_required', value);
+        await settingsService.setSetting('at_both_teams_unpause_required', value);
       }
 
-      if (matchzyMaxPausesPerTeam !== undefined) {
+      if (atMaxPausesPerTeam !== undefined) {
         if (
-          typeof matchzyMaxPausesPerTeam !== 'number' &&
-          matchzyMaxPausesPerTeam !== null
+          typeof atMaxPausesPerTeam !== 'number' &&
+          atMaxPausesPerTeam !== null
         ) {
           return res.status(400).json({
             success: false,
-            error: 'matchzyMaxPausesPerTeam must be a number or null',
+            error: 'atMaxPausesPerTeam must be a number or null',
           });
         }
         await settingsService.setSetting(
-          'matchzy_max_pauses_per_team',
-          matchzyMaxPausesPerTeam === null ? null : String(matchzyMaxPausesPerTeam)
+          'at_max_pauses_per_team',
+          atMaxPausesPerTeam === null ? null : String(atMaxPausesPerTeam)
         );
       }
 
-      if (matchzyPauseDuration !== undefined) {
-        if (typeof matchzyPauseDuration !== 'number' && matchzyPauseDuration !== null) {
+      if (atPauseDuration !== undefined) {
+        if (typeof atPauseDuration !== 'number' && atPauseDuration !== null) {
           return res.status(400).json({
             success: false,
-            error: 'matchzyPauseDuration must be a number or null',
+            error: 'atPauseDuration must be a number or null',
           });
         }
         await settingsService.setSetting(
-          'matchzy_pause_duration',
-          matchzyPauseDuration === null ? null : String(matchzyPauseDuration)
+          'at_pause_duration',
+          atPauseDuration === null ? null : String(atPauseDuration)
         );
       }
 
-      if (matchzySideSelectionEnabled !== undefined) {
+      if (atSideSelectionEnabled !== undefined) {
         if (
-          typeof matchzySideSelectionEnabled !== 'number' &&
-          typeof matchzySideSelectionEnabled !== 'boolean' &&
-          matchzySideSelectionEnabled !== null
+          typeof atSideSelectionEnabled !== 'number' &&
+          typeof atSideSelectionEnabled !== 'boolean' &&
+          atSideSelectionEnabled !== null
         ) {
           return res.status(400).json({
             success: false,
-            error: 'matchzySideSelectionEnabled must be 0, 1, boolean, or null',
+            error: 'atSideSelectionEnabled must be 0, 1, boolean, or null',
           });
         }
         const value =
-          matchzySideSelectionEnabled === null
+          atSideSelectionEnabled === null
             ? null
-            : matchzySideSelectionEnabled === true || matchzySideSelectionEnabled === 1
+            : atSideSelectionEnabled === true || atSideSelectionEnabled === 1
             ? '1'
             : '0';
-        await settingsService.setSetting('matchzy_side_selection_enabled', value);
+        await settingsService.setSetting('at_side_selection_enabled', value);
       }
 
-      if (matchzySideSelectionTime !== undefined) {
+      if (atSideSelectionTime !== undefined) {
         if (
-          typeof matchzySideSelectionTime !== 'number' &&
-          matchzySideSelectionTime !== null
+          typeof atSideSelectionTime !== 'number' &&
+          atSideSelectionTime !== null
         ) {
           return res.status(400).json({
             success: false,
-            error: 'matchzySideSelectionTime must be a number or null',
+            error: 'atSideSelectionTime must be a number or null',
           });
         }
         await settingsService.setSetting(
-          'matchzy_side_selection_time',
-          matchzySideSelectionTime === null ? null : String(matchzySideSelectionTime)
+          'at_side_selection_time',
+          atSideSelectionTime === null ? null : String(atSideSelectionTime)
         );
       }
 
-      if (matchzyGgEnabled !== undefined) {
+      if (atGgEnabled !== undefined) {
         if (
-          typeof matchzyGgEnabled !== 'number' &&
-          typeof matchzyGgEnabled !== 'boolean' &&
-          matchzyGgEnabled !== null
+          typeof atGgEnabled !== 'number' &&
+          typeof atGgEnabled !== 'boolean' &&
+          atGgEnabled !== null
         ) {
           return res.status(400).json({
             success: false,
-            error: 'matchzyGgEnabled must be 0, 1, boolean, or null',
+            error: 'atGgEnabled must be 0, 1, boolean, or null',
           });
         }
         const value =
-          matchzyGgEnabled === null
+          atGgEnabled === null
             ? null
-            : matchzyGgEnabled === true || matchzyGgEnabled === 1
+            : atGgEnabled === true || atGgEnabled === 1
             ? '1'
             : '0';
-        await settingsService.setSetting('matchzy_gg_enabled', value);
+        await settingsService.setSetting('at_gg_enabled', value);
       }
 
-      if (matchzyGgThreshold !== undefined) {
-        if (typeof matchzyGgThreshold !== 'number' && matchzyGgThreshold !== null) {
+      if (atGgThreshold !== undefined) {
+        if (typeof atGgThreshold !== 'number' && atGgThreshold !== null) {
           return res.status(400).json({
             success: false,
-            error: 'matchzyGgThreshold must be a number (0.0-1.0) or null',
+            error: 'atGgThreshold must be a number (0.0-1.0) or null',
           });
         }
         await settingsService.setSetting(
-          'matchzy_gg_threshold',
-          matchzyGgThreshold === null ? null : String(matchzyGgThreshold)
+          'at_gg_threshold',
+          atGgThreshold === null ? null : String(atGgThreshold)
         );
       }
 
-      if (matchzyGgMinScoreDiff !== undefined) {
-        if (typeof matchzyGgMinScoreDiff !== 'number' && matchzyGgMinScoreDiff !== null) {
+      if (atGgMinScoreDiff !== undefined) {
+        if (typeof atGgMinScoreDiff !== 'number' && atGgMinScoreDiff !== null) {
           return res.status(400).json({
             success: false,
-            error: 'matchzyGgMinScoreDiff must be a number (0-16) or null',
+            error: 'atGgMinScoreDiff must be a number (0-16) or null',
           });
         }
         await settingsService.setSetting(
-          'matchzy_gg_min_score_diff',
-          matchzyGgMinScoreDiff === null ? null : String(matchzyGgMinScoreDiff)
+          'at_gg_min_score_diff',
+          atGgMinScoreDiff === null ? null : String(atGgMinScoreDiff)
         );
       }
 
-      if (matchzyFfwEnabled !== undefined) {
+      if (atFfwEnabled !== undefined) {
         if (
-          typeof matchzyFfwEnabled !== 'number' &&
-          typeof matchzyFfwEnabled !== 'boolean' &&
-          matchzyFfwEnabled !== null
+          typeof atFfwEnabled !== 'number' &&
+          typeof atFfwEnabled !== 'boolean' &&
+          atFfwEnabled !== null
         ) {
           return res.status(400).json({
             success: false,
-            error: 'matchzyFfwEnabled must be 0, 1, boolean, or null',
+            error: 'atFfwEnabled must be 0, 1, boolean, or null',
           });
         }
         const value =
-          matchzyFfwEnabled === null
+          atFfwEnabled === null
             ? null
-            : matchzyFfwEnabled === true || matchzyFfwEnabled === 1
+            : atFfwEnabled === true || atFfwEnabled === 1
             ? '1'
             : '0';
-        await settingsService.setSetting('matchzy_ffw_enabled', value);
+        await settingsService.setSetting('at_ffw_enabled', value);
       }
 
-      if (matchzyFfwTime !== undefined) {
-        if (typeof matchzyFfwTime !== 'number' && matchzyFfwTime !== null) {
+      if (atFfwTime !== undefined) {
+        if (typeof atFfwTime !== 'number' && atFfwTime !== null) {
           return res.status(400).json({
             success: false,
-            error: 'matchzyFfwTime must be a number or null',
+            error: 'atFfwTime must be a number or null',
           });
         }
         await settingsService.setSetting(
-          'matchzy_ffw_time',
-          matchzyFfwTime === null ? null : String(matchzyFfwTime)
+          'at_ffw_time',
+          atFfwTime === null ? null : String(atFfwTime)
         );
       }
 
-      if (matchzyDemoRecordingEnabled !== undefined) {
+      if (atDemoRecordingEnabled !== undefined) {
         if (
-          typeof matchzyDemoRecordingEnabled !== 'number' &&
-          typeof matchzyDemoRecordingEnabled !== 'boolean' &&
-          matchzyDemoRecordingEnabled !== null
+          typeof atDemoRecordingEnabled !== 'number' &&
+          typeof atDemoRecordingEnabled !== 'boolean' &&
+          atDemoRecordingEnabled !== null
         ) {
           return res.status(400).json({
             success: false,
-            error: 'matchzyDemoRecordingEnabled must be 0, 1, boolean, or null',
+            error: 'atDemoRecordingEnabled must be 0, 1, boolean, or null',
           });
         }
         const value =
-          matchzyDemoRecordingEnabled === null
+          atDemoRecordingEnabled === null
             ? null
-            : matchzyDemoRecordingEnabled === true || matchzyDemoRecordingEnabled === 1
+            : atDemoRecordingEnabled === true || atDemoRecordingEnabled === 1
             ? '1'
             : '0';
-        await settingsService.setSetting('matchzy_demo_recording_enabled', value);
+        await settingsService.setSetting('at_demo_recording_enabled', value);
       }
 
       return res.json({
@@ -1125,39 +1125,39 @@ const LEGACY_FIELDS = [
   'webhookUrl',
   'simulateMatches',
   'simulationTimescale',
-  'matchzyChatPrefix',
-  'matchzyAdminChatPrefix',
-  'matchzyKnifeEnabledDefault',
+  'atChatPrefix',
+  'atAdminChatPrefix',
+  'atKnifeEnabledDefault',
   'ratingsEnabled',
-  'matchzyDebugChatEnabled',
+  'atDebugChatEnabled',
   'allowSelfRegister',
-  'matchzyMinimumReadyRequired',
-  'matchzyAutostartMode',
-  'matchzyAllowForceReady',
-  'matchzyKickWhenNoMatchLoaded',
-  'matchzyWhitelistEnabledDefault',
-  'matchzyPauseAfterRestore',
-  'matchzyStopCommandAvailable',
-  'matchzyStopCommandNoDamage',
-  'matchzyUsePauseCommandForTacticalPause',
-  'matchzyHostnameFormat',
-  'matchzyDemoPath',
-  'matchzyDemoNameFormat',
-  'matchzySeriesEndKickDelayNoDemo',
-  'matchzySeriesEndKickDelayDemoNoUpload',
-  'matchzySeriesEndKickDelayDemoUpload',
-  'matchzyAutoreadyEnabled',
-  'matchzyBothTeamsUnpauseRequired',
-  'matchzyMaxPausesPerTeam',
-  'matchzyPauseDuration',
-  'matchzySideSelectionEnabled',
-  'matchzySideSelectionTime',
-  'matchzyGgEnabled',
-  'matchzyGgThreshold',
-  'matchzyGgMinScoreDiff',
-  'matchzyFfwEnabled',
-  'matchzyFfwTime',
-  'matchzyDemoRecordingEnabled',
+  'atMinimumReadyRequired',
+  'atAutostartMode',
+  'atAllowForceReady',
+  'atKickWhenNoMatchLoaded',
+  'atWhitelistEnabledDefault',
+  'atPauseAfterRestore',
+  'atStopCommandAvailable',
+  'atStopCommandNoDamage',
+  'atUsePauseCommandForTacticalPause',
+  'atHostnameFormat',
+  'atDemoPath',
+  'atDemoNameFormat',
+  'atSeriesEndKickDelayNoDemo',
+  'atSeriesEndKickDelayDemoNoUpload',
+  'atSeriesEndKickDelayDemoUpload',
+  'atAutoreadyEnabled',
+  'atBothTeamsUnpauseRequired',
+  'atMaxPausesPerTeam',
+  'atPauseDuration',
+  'atSideSelectionEnabled',
+  'atSideSelectionTime',
+  'atGgEnabled',
+  'atGgThreshold',
+  'atGgMinScoreDiff',
+  'atFfwEnabled',
+  'atFfwTime',
+  'atDemoRecordingEnabled',
 ];
 
 const SAMPLE_VALUES: unknown[] = [
@@ -1193,7 +1193,7 @@ const SAMPLE_VALUES: unknown[] = [
   'enabled',
   'off',
   '0.3',
-  'MatchZy',
+  'Auto Tournament CS2',
   'demos/',
   '  "quoted" {TEAM1}  ',
   'https://example.com/',
@@ -1207,7 +1207,7 @@ const SAMPLE_VALUES: unknown[] = [
 const INITIAL_STORES: Array<Record<string, string | null>> = [
   {},
   { simulate_matches: '1' },
-  { simulate_matches: '0', matchzy_hostname_format: 'x' },
+  { simulate_matches: '0', at_hostname_format: 'x' },
 ];
 
 function mulberry32(seed: number) {
@@ -1240,9 +1240,9 @@ test.describe('settings namespace', () => {
     const coreKeys = CORE_SETTINGS.map((definition) => definition.key);
     expect(coreKeys.filter((key) => cs2Keys.includes(key))).toEqual([]);
     for (const key of cs2Keys) {
-      expect(key.startsWith('matchzy_') || key.startsWith('simulat'), key).toBe(true);
+      expect(key.startsWith('at_') || key.startsWith('simulat'), key).toBe(true);
     }
-    expect(coreKeys.some((key) => key.startsWith('matchzy_'))).toBe(false);
+    expect(coreKeys.some((key) => key.startsWith('at_'))).toBe(false);
 
     // setupSchema.instance declares the same keys.
     expect(cs2.setupSchema?.instance).toBe(CS2_INSTANCE_SCHEMA);
@@ -1295,23 +1295,23 @@ test.describe('settings namespace', () => {
   test('simulation stays ignored in production unless allowed', async () => {
     const saved = {
       nodeEnv: process.env.NODE_ENV,
-      allow: process.env.MATCHZY_ENABLE_SIMULATION_IN_PROD,
+      allow: process.env.AT_ENABLE_SIMULATION_IN_PROD,
     };
     try {
       process.env.NODE_ENV = 'production';
       for (const allow of [undefined, 'true', 'false']) {
-        if (allow === undefined) delete process.env.MATCHZY_ENABLE_SIMULATION_IN_PROD;
-        else process.env.MATCHZY_ENABLE_SIMULATION_IN_PROD = allow;
+        if (allow === undefined) delete process.env.AT_ENABLE_SIMULATION_IN_PROD;
+        else process.env.AT_ENABLE_SIMULATION_IN_PROD = allow;
         for (const value of SAMPLE_VALUES) {
-          await compare({}, { simulateMatches: value, matchzyChatPrefix: 'x' });
+          await compare({}, { simulateMatches: value, atChatPrefix: 'x' });
           await compare({ simulate_matches: '1' }, { simulateMatches: value });
         }
       }
     } finally {
       if (saved.nodeEnv === undefined) delete process.env.NODE_ENV;
       else process.env.NODE_ENV = saved.nodeEnv;
-      if (saved.allow === undefined) delete process.env.MATCHZY_ENABLE_SIMULATION_IN_PROD;
-      else process.env.MATCHZY_ENABLE_SIMULATION_IN_PROD = saved.allow;
+      if (saved.allow === undefined) delete process.env.AT_ENABLE_SIMULATION_IN_PROD;
+      else process.env.AT_ENABLE_SIMULATION_IN_PROD = saved.allow;
     }
   });
 });
@@ -1352,35 +1352,35 @@ test.describe('settings API', () => {
     const before = await getSettings(request);
     try {
       const ok = await request.put('/api/settings', {
-        data: { matchzyGgThreshold: 0.4, matchzyFfwTime: 30 },
+        data: { atGgThreshold: 0.4, atFfwTime: 30 },
       });
       expect(ok.status(), await ok.text()).toBe(200);
       const saved = ((await ok.json()) as { settings: Record<string, unknown> }).settings;
-      expect(saved.matchzyGgThreshold).toBe(0.4);
-      expect(saved.matchzyFfwTime).toBe(30);
+      expect(saved.atGgThreshold).toBe(0.4);
+      expect(saved.atFfwTime).toBe(30);
 
       const badType = await request.put('/api/settings', {
-        data: { matchzyGgThreshold: 'high' },
+        data: { atGgThreshold: 'high' },
       });
       expect(badType.status()).toBe(400);
       expect(await badType.json()).toEqual({
         success: false,
-        error: 'matchzyGgThreshold must be a number (0.0-1.0) or null',
+        error: 'atGgThreshold must be a number (0.0-1.0) or null',
       });
 
       const outOfRange = await request.put('/api/settings', {
-        data: { matchzyFfwTime: 0 },
+        data: { atFfwTime: 0 },
       });
       expect(outOfRange.status()).toBe(400);
       expect(await outOfRange.json()).toEqual({
         success: false,
-        error: 'matchzy_ffw_time must be 1-999 seconds',
+        error: 'at_ffw_time must be 1-999 seconds',
       });
     } finally {
       await request.put('/api/settings', {
         data: {
-          matchzyGgThreshold: before.matchzyGgThreshold ?? null,
-          matchzyFfwTime: before.matchzyFfwTime ?? null,
+          atGgThreshold: before.atGgThreshold ?? null,
+          atFfwTime: before.atFfwTime ?? null,
         },
       });
     }

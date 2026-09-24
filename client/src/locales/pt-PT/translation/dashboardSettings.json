@@ -7,13 +7,12 @@
       "players": "Jogadores e acesso",
       "matches": "Jogos e rating",
       "advanced": "Avançado",
-      "matchzy": "MatchZy",
       "developer": "Programador / simulação"
     },
     "integrations": {
       "webhook": {
-        "title": "Webhook do MatchZy",
-        "description": "URL de webhook do MatchZy que os teus servidores CS2 conseguem alcançar.",
+        "title": "Webhook do Auto Tournament CS2",
+        "description": "URL de webhook do Auto Tournament CS2 que os teus servidores CS2 conseguem alcançar.",
         "label": "URL de webhook",
         "helper": "Exemplo: https://o-teu-dominio.com"
       },
@@ -49,17 +48,17 @@
         "note": "Quando desativado, os jogos continuam a registar estatísticas (ADR, K/D, etc.), mas o Skill Rating mantém-se inalterado."
       },
       "chatDefaults": {
-        "title": "Predefinições do MatchZy (chat e knife)",
+        "title": "Predefinições do Auto Tournament CS2 (chat e knife)",
         "description": "Configura os prefíxos do chat no jogo e o comportamento padrão da ronda de knife.",
         "chatPrefixLabel": "Prefíxo do chat",
         "chatPrefixHelper": "Predefinição: \"[{Green}Auto Tournament{Default}]\". Deixa vazio para repor o prefíxo padrão.",
         "adminChatPrefixLabel": "Prefíxo de chat admin",
         "adminChatPrefixHelper": "Predefinição: \"[{Red}ADMIN{Default}]\". Deixa vazio para repor o prefíxo de admin padrão.",
         "knifeToggleLabel": "Ativar rondas de knife por defeito para novos jogos (quando os lados não estão pré-selecionados)",
-        "knifeNote": "Aplica-se apenas quando o MatchZy normalmente executaria uma ronda de knife; escolhas explícitas de lado não são alteradas."
+        "knifeNote": "Aplica-se apenas quando o Auto Tournament CS2 normalmente executaria uma ronda de knife; escolhas explícitas de lado não são alteradas."
       },
-      "matchzyCore": {
-        "title": "Predefinições do MatchZy Core",
+      "atCore": {
+        "title": "Predefinições do Auto Tournament CS2 Core",
         "description": "Estas predefinições são enviadas para os servidores durante a inicialização e antes de cada carregamento de jogo.",
         "expert": {
           "title": "Definições avançadas",
@@ -99,7 +98,7 @@
         "demos": {
           "title": "Demos (GOTV)",
           "demoPathLabel": "Caminho dos demos (relativo a csgo/)",
-          "demoPathHelper": "Tem de terminar com '/'. Predefinição: MatchZy/",
+          "demoPathHelper": "Tem de terminar com '/'. Predefinição: AutoTournamentCS2/",
           "demoNameFormatLabel": "Formato do nome do demo (sem .dem)",
           "demoNameFormatHelper": "Marcadores: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
         },
@@ -111,9 +110,9 @@
           "kickDelayHelper": "Adicionado por cima de mp_match_restart_delay."
         }
       },
-      "matchzyEnhanced": {
+      "atEnhanced": {
         "title": "Funcionalidades Auto Tournament CS2",
-        "description": "Configura funcionalidades avançadas de jogo. Deixa os campos vazios para usar as predefinições do MatchZy.",
+        "description": "Configura funcionalidades avançadas de jogo. Deixa os campos vazios para usar as predefinições do Auto Tournament CS2.",
         "autoready": {
           "title": "Auto-ready",
           "label": "Marcar automaticamente jogadores como prontos ao entrar",
@@ -184,8 +183,8 @@
         "confirmLoading": "A repor…"
       },
       "debugChat": {
-        "label": "Ativar mensagens de chat de debug do MatchZy",
-        "description": "Quando ativado, o MatchZy vai imprimir mensagens de debug adicionais (conexões/desconexões, traces de eventos, etc.) no chat. Usa apenas para desenvolvimento e testes."
+        "label": "Ativar mensagens de chat de debug do Auto Tournament CS2",
+        "description": "Quando ativado, o Auto Tournament CS2 vai imprimir mensagens de debug adicionais (conexões/desconexões, traces de eventos, etc.) no chat. Usa apenas para desenvolvimento e testes."
       }
     },
     "footer": {

@@ -5,8 +5,8 @@ import { createTestServer, deleteServer } from '../helpers/servers';
 /**
  * Server hostname format.
  *
- * MatchZy overwrites a server's `hostname` on every match load, using
- * `matchzy_hostname_format`. MAT never sent that cvar, so the plugin default
+ * Auto Tournament CS2 overwrites a server's `hostname` on every match load, using
+ * `at_hostname_format`. MAT never sent that cvar, so the plugin default
  * ("{TEAM1} vs {TEAM2}") always won and the hostname an operator had set in
  * their own server.cfg was silently replaced with no way to stop it.
  *
@@ -16,7 +16,7 @@ import { createTestServer, deleteServer } from '../helpers/servers';
  * impossible to express — so this setting deliberately does not.
  *
  * @tag api
- * @tag matchzy
+ * @tag cs2-plugin
  * @tag settings
  */
 
@@ -28,7 +28,7 @@ async function bootstrapCommands(
   serverId: string
 ): Promise<string[]> {
   const response = await request.get(`/api/servers/${serverId}/bootstrap`, {
-    headers: { 'X-MatchZy-Token': process.env.SERVER_TOKEN ?? 'server123' },
+    headers: { 'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123' },
   });
   expect(response.ok(), `bootstrap failed: ${await response.text()}`).toBe(true);
   const body = (await response.json()) as { commands: string[] };
@@ -37,7 +37,7 @@ async function bootstrapCommands(
 
 async function setHostnameFormat(request: APIRequestContext, value: string | null) {
   const response = await request.put('/api/settings', {
-    data: { matchzyHostnameFormat: value },
+    data: { atHostnameFormat: value },
   });
   expect(response.ok(), `settings PUT failed: ${await response.text()}`).toBe(true);
 }
@@ -45,11 +45,11 @@ async function setHostnameFormat(request: APIRequestContext, value: string | nul
 async function readHostnameFormat(request: APIRequestContext): Promise<string | undefined> {
   const response = await request.get('/api/settings');
   expect(response.ok()).toBe(true);
-  const body = (await response.json()) as { settings: { matchzyHostnameFormat?: string } };
-  return body.settings.matchzyHostnameFormat;
+  const body = (await response.json()) as { settings: { atHostnameFormat?: string } };
+  return body.settings.atHostnameFormat;
 }
 
-test.describe.serial('MatchZy hostname format', () => {
+test.describe.serial('Auto Tournament CS2 hostname format', () => {
   let serverId: string;
 
   test.beforeEach(async ({ page, request }) => {
@@ -69,48 +69,48 @@ test.describe.serial('MatchZy hostname format', () => {
 
   test(
     'defaults to the plugin format and sends it to the server',
-    { tag: ['@api', '@matchzy', '@settings'] },
+    { tag: ['@api', '@cs2-plugin', '@settings'] },
     async ({ request }) => {
       await setHostnameFormat(request, null);
 
       expect(await readHostnameFormat(request)).toBe(PLUGIN_DEFAULT);
       expect(await bootstrapCommands(request, serverId)).toContain(
-        `matchzy_hostname_format "${PLUGIN_DEFAULT}"`
+        `at_hostname_format "${PLUGIN_DEFAULT}"`
       );
     }
   );
 
   test(
     'a configured format reaches the server',
-    { tag: ['@api', '@matchzy', '@settings'] },
+    { tag: ['@api', '@cs2-plugin', '@settings'] },
     async ({ request }) => {
       await setHostnameFormat(request, 'LAN #{MATCH_ID} - {TEAM1} vs {TEAM2}');
 
       expect(await readHostnameFormat(request)).toBe('LAN #{MATCH_ID} - {TEAM1} vs {TEAM2}');
       expect(await bootstrapCommands(request, serverId)).toContain(
-        'matchzy_hostname_format "LAN #{MATCH_ID} - {TEAM1} vs {TEAM2}"'
+        'at_hostname_format "LAN #{MATCH_ID} - {TEAM1} vs {TEAM2}"'
       );
     }
   );
 
   test(
     'an empty format survives the round trip and tells the server to keep its own hostname',
-    { tag: ['@api', '@matchzy', '@settings'] },
+    { tag: ['@api', '@cs2-plugin', '@settings'] },
     async ({ request }) => {
       await setHostnameFormat(request, '');
 
       // The interesting assertion: "" must not come back as the default. If it
-      // did, an operator could never stop MatchZy renaming their server.
+      // did, an operator could never stop Auto Tournament CS2 renaming their server.
       expect(await readHostnameFormat(request)).toBe('');
       expect(await bootstrapCommands(request, serverId)).toContain(
-        'matchzy_hostname_format ""'
+        'at_hostname_format ""'
       );
     }
   );
 
   test(
     'strips quotes that would break the RCON command',
-    { tag: ['@api', '@matchzy', '@settings'] },
+    { tag: ['@api', '@cs2-plugin', '@settings'] },
     async ({ request }) => {
       await setHostnameFormat(request, 'My "LAN" server');
 
@@ -118,14 +118,14 @@ test.describe.serial('MatchZy hostname format', () => {
       // with a malformed command rather than the intended hostname.
       expect(await readHostnameFormat(request)).toBe('My LAN server');
       expect(await bootstrapCommands(request, serverId)).toContain(
-        'matchzy_hostname_format "My LAN server"'
+        'at_hostname_format "My LAN server"'
       );
     }
   );
 
   test(
     'tells the server where to push match reports',
-    { tag: ['@api', '@matchzy', '@regression'] },
+    { tag: ['@api', '@cs2-plugin', '@regression'] },
     async ({ request }) => {
       const commands = await bootstrapCommands(request, serverId);
 
@@ -135,10 +135,10 @@ test.describe.serial('MatchZy hostname format', () => {
       // string and every match report is lost, taking phase reconciliation and
       // connection snapshots with it.
       expect(commands).toContain(
-        `matchzy_report_endpoint "http://localhost:3069/api/events/report"`
+        `at_report_endpoint "http://localhost:3069/api/events/report"`
       );
       expect(
-        commands.some((c) => c.startsWith('matchzy_report_token ')),
+        commands.some((c) => c.startsWith('at_report_token ')),
         'the plugin needs a token to authenticate its upload'
       ).toBe(true);
     }
@@ -146,7 +146,7 @@ test.describe.serial('MatchZy hostname format', () => {
 
   test(
     'clearing the setting with null restores the default',
-    { tag: ['@api', '@matchzy', '@settings'] },
+    { tag: ['@api', '@cs2-plugin', '@settings'] },
     async ({ request }) => {
       await setHostnameFormat(request, '');
       expect(await readHostnameFormat(request)).toBe('');
@@ -155,7 +155,7 @@ test.describe.serial('MatchZy hostname format', () => {
 
       expect(await readHostnameFormat(request)).toBe(PLUGIN_DEFAULT);
       expect(await bootstrapCommands(request, serverId)).toContain(
-        `matchzy_hostname_format "${PLUGIN_DEFAULT}"`
+        `at_hostname_format "${PLUGIN_DEFAULT}"`
       );
     }
   );

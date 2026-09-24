@@ -8,7 +8,7 @@ import type { Team } from '../helpers/teams';
 /**
  * A server that is assigned and answering must not read as "not assigned yet".
  *
- * `/api/players/:id/current-match` reports `server.status` as a MatchZy plugin
+ * `/api/players/:id/current-match` reports `server.status` as an Auto Tournament CS2 plugin
  * status — idle | loading | warmup | knife | live | ... — and only fills it in
  * when the server actually answered. The player page used to test that against
  * `'online' | 'checking' | 'loading'`, two of which this endpoint never

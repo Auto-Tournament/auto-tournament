@@ -19,14 +19,15 @@
 
 </div>
 
-> **Formerly MatchZy Auto Tournament.** Same project, maintainer and code, now in the
+> **Renamed to Auto Tournament.** Same project, maintainer and code, now in the
 > [Auto-Tournament](https://github.com/Auto-Tournament) organisation. Your install keeps
 > working, and the Docker image keeps its old name for now. From 3.0 it will support
 > more games and tournament formats as modules, with CS2 as the built-in game.
 
 Auto Tournament (currently 2.4.13) talks to CS2 servers running
-[Auto Tournament CS2](https://github.com/Auto-Tournament/cs2-plugin), the CS2 plugin (formerly MatchZy Enhanced). It is used
-for organised tournaments and for a quick 5v5 or 2v2 with friends.
+[Auto Tournament CS2](https://github.com/Auto-Tournament/cs2-plugin), the CS2 plugin. It is used
+for organised tournaments and for a quick 5v5 or 2v2 with friends. Auto Tournament CS2 is forked from
+[MatchZy](https://github.com/shobhit-pathak/MatchZy) by shobhit-pathak.
 
 ## What it does
 
@@ -46,7 +47,7 @@ Screenshots are in the docs: https://docs.autotournament.gg
 ## Quick start
 
 You need Docker with Docker Compose, and CS2 servers with
-[Auto Tournament CS2 v1.3.0+](https://github.com/Auto-Tournament/cs2-plugin/releases)
+[Auto Tournament CS2 v2.0.0+](https://github.com/Auto-Tournament/cs2-plugin/releases)
 and RCON access.
 
 ```bash
@@ -76,13 +77,13 @@ Back up the database, pull the new image and recreate the containers:
 
 ```bash
 mkdir -p backups
-docker compose --env-file .env -f docker/docker-compose.yml exec -T postgres pg_dump -U "${DB_USER:-postgres}" "${DB_NAME:-matchzy_tournament}" > "backups/mat-$(date +%F-%H%M%S).sql"
+docker compose --env-file .env -f docker/docker-compose.yml exec -T postgres pg_dump -U "${DB_USER:-postgres}" "${DB_NAME:-auto_tournament}" > "backups/mat-$(date +%F-%H%M%S).sql"
 
 docker compose --env-file .env -f docker/docker-compose.yml pull
 docker compose --env-file .env -f docker/docker-compose.yml up -d
 
 # migrations run on startup
-docker compose --env-file .env -f docker/docker-compose.yml logs -f matchzy-tournament
+docker compose --env-file .env -f docker/docker-compose.yml logs -f auto-tournament
 ```
 
 More in [Updating](https://docs.autotournament.gg/guides/updating). If you

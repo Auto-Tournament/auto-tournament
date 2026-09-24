@@ -3,12 +3,12 @@ import { signInViaRequest, getAuthHeader, DEFAULT_PLAYER_STEAM_ID } from '../hel
 import { setupTournament } from '../helpers/tournamentSetup';
 
 /**
- * The match config MatchZy downloads is not public.
+ * The match config Auto Tournament CS2 downloads is not public.
  *
  * GET /api/matches/:slug.json carries both rosters with their Steam IDs and the
  * match setup, and slugs are guessable (r1m1). It used to answer anyone. Now a
- * game server presents `X-MatchZy-Token: <SERVER_TOKEN>` — MAT passes the
- * header on the `matchzy_loadmatch_url` line — and admins get in by session or
+ * game server presents `X-Auto-Tournament-Token: <SERVER_TOKEN>` — MAT passes the
+ * header on the `at_loadmatch_url` line — and admins get in by session or
  * service token.
  *
  * @tag api
@@ -77,7 +77,7 @@ test.describe.serial('Match config download auth', () => {
 
   test('a wrong header is refused', { tag: ['@api', '@auth', '@regression'] }, async () => {
     const res = await anonymous.get(`/api/matches/${match.slug}.json`, {
-      headers: { 'X-MatchZy-Token': `${SERVER_TOKEN}-wrong` },
+      headers: { 'X-Auto-Tournament-Token': `${SERVER_TOKEN}-wrong` },
     });
     expect(res.status()).toBe(401);
     expect(await res.text()).not.toContain('team1');
@@ -94,7 +94,7 @@ test.describe.serial('Match config download auth', () => {
     tag: ['@api', '@auth', '@regression'],
   }, async ({ request }) => {
     const asServer = await anonymous.get(`/api/matches/${match.slug}.json`, {
-      headers: { 'X-MatchZy-Token': SERVER_TOKEN },
+      headers: { 'X-Auto-Tournament-Token': SERVER_TOKEN },
     });
     expect(asServer.status()).toBe(200);
 
@@ -146,11 +146,11 @@ test.describe.serial('Match config download auth', () => {
     expect(res.status(), JSON.stringify(body)).toBe(200);
 
     const load = (body.rconResponses ?? []).find((r) =>
-      r.command.startsWith('matchzy_loadmatch_url ')
+      r.command.startsWith('at_loadmatch_url ')
     );
     expect(load, 'the load command is reported').toBeTruthy();
     expect(load!.command).toMatch(
-      new RegExp(`^matchzy_loadmatch_url "[^"]*/api/matches/${match.slug}\\.json[^"]*" "X-MatchZy-Token" "REDACTED"$`)
+      new RegExp(`^at_loadmatch_url "[^"]*/api/matches/${match.slug}\\.json[^"]*" "X-Auto-Tournament-Token" "REDACTED"$`)
     );
     expect(JSON.stringify(body)).not.toContain(SERVER_TOKEN);
   });

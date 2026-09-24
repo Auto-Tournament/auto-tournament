@@ -8,7 +8,7 @@ import { MANUAL_REPORT_GAME_ID } from '../../api/src/integrations/manual-report/
  * The webhook URL belongs to the integration that needs it, not to the start
  * route (3.0 phase C left this as the last "start still assumes servers").
  *
- * It is where MatchZy on a CS2 server posts its events, so CS2 asks for it
+ * It is where Auto Tournament CS2 on a CS2 server posts its events, so CS2 asks for it
  * and refuses to start a tournament without one — unchanged, down to the
  * message and the status. A game whose module has no servers has nothing to
  * reach back, so its tournament starts with the setting empty.

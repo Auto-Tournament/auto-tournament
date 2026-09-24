@@ -19,7 +19,7 @@ import { setupTournament } from '../helpers/tournamentSetup';
 
 const SERVER_HEADERS = {
   'Content-Type': 'application/json',
-  'X-MatchZy-Token': process.env.SERVER_TOKEN ?? 'server123',
+  'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
 };
 
 type ListedMatch = {
@@ -170,18 +170,18 @@ test.describe.serial('Match attribution across servers', () => {
   );
 
   test(
-    'a demo is stored on the match its MatchZy-MatchId names, not the URL slug',
+    'a demo is stored on the match its Auto-Tournament-MatchId names, not the URL slug',
     { tag: ['@api', '@regression'] },
     async ({ request }) => {
       const upload = (urlSlug: string, matchIdHeader: string, filename: string) =>
         request.post(`/api/demos/${urlSlug}/upload`, {
           headers: {
-            'X-MatchZy-Token': SERVER_HEADERS['X-MatchZy-Token'],
+            'X-Auto-Tournament-Token': SERVER_HEADERS['X-Auto-Tournament-Token'],
             'Content-Type': 'application/octet-stream',
-            'MatchZy-FileName': filename,
-            'MatchZy-MatchId': matchIdHeader,
-            'MatchZy-MapNumber': '0',
-            'MatchZy-RoundNumber': '4',
+            'Auto-Tournament-FileName': filename,
+            'Auto-Tournament-MatchId': matchIdHeader,
+            'Auto-Tournament-MapNumber': '0',
+            'Auto-Tournament-RoundNumber': '4',
           },
           data: Buffer.from('fake demo bytes'),
         });

@@ -1,6 +1,6 @@
 # MAT Discord bot — boilerplate
 
-A small, working Discord bot for a [MatchZy Auto Tournament](../../README.md)
+A small, working Discord bot for an [Auto Tournament](../../README.md)
 instance. Three commands, chosen to show the shapes most bot commands take:
 
 | Command | Shows |

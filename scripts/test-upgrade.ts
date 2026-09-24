@@ -21,10 +21,24 @@
  *      map_pools held (read from Postgres before and after), the rows that
  *      point into them still do, the old names are gone, CS2's 001-tables
  *      migration is recorded, and running the handover again does nothing.
+ *      The database itself was renamed too: 2.4.15 keeps its data in
+ *      `matchzy_tournament`, 3.0 in `auto_tournament`. Before the successful
+ *      start, the new build is started three times in states where it must
+ *      refuse to rename and exit, and each is checked to have changed nothing:
+ *      configured with the old name, with another session connected to the
+ *      old database (which must still be connected afterwards), and as a role
+ *      without the right to rename it. Then the real start renames it in
+ *      place, and every check above reads the data back from
+ *      `auto_tournament`. The plugin names 2.4.15 stored (`matchzy_*`
+ *      settings keys, the `cvars` of stored match configs, the `matchzy_*`
+ *      columns of the servers table) read back under `at_*` with the same
+ *      values.
  *   6. Repeats the boot-and-check step (minus the seeding) against a second,
  *      completely empty database, so the same script covers both paths, and
  *      checks that CS2's tables there have the same columns, indexes,
- *      constraints, sequences and keys as on the upgraded one.
+ *      constraints, sequences and keys as on the upgraded one. An empty
+ *      `matchzy_tournament` sits beside it: with both names present the new
+ *      build must log an error, leave both alone and use `auto_tournament`.
  *
  * Usage:
  *   yarn test:upgrade
@@ -42,7 +56,7 @@ import { request as pwRequest, type APIRequestContext } from '@playwright/test';
 // from" baseline.
 const OLD_IMAGE = 'sivertio/matchzy-auto-tournament:2.4.15';
 
-const NEW_IMAGE_TAG = 'matchzy-tournament:upgrade-test';
+const NEW_IMAGE_TAG = 'auto-tournament:upgrade-test';
 const RUN_ID = `${Date.now()}`;
 const NETWORK = `mat-upgrade-net-${RUN_ID}`;
 const POSTGRES_NAME = `mat-upgrade-pg-${RUN_ID}`;
@@ -51,9 +65,15 @@ const HOST_PORT = process.env.UPGRADE_TEST_PORT ?? '31370';
 const BASE_URL = `http://localhost:${HOST_PORT}`;
 const SERVER_TOKEN = 'upgrade-test-server-token-0123456789';
 const SESSION_SECRET = 'upgrade-test-session-secret-0123456789';
-const DB_NAME = 'matchzy_tournament';
+/** 2.4.15's database name, and the name 3.0 renames it to on first start. */
+const OLD_DB_NAME = 'matchzy_tournament';
+const DB_NAME = 'auto_tournament';
 const DB_USER = 'postgres';
 const DB_PASSWORD = 'postgres';
+/** The header 2.4.15 reads the server token from (3.0: X-Auto-Tournament-Token). */
+const OLD_TOKEN_HEADER = 'X-MatchZy-Token';
+const UPGRADE_CHAT_PREFIX = 'UPGRADE';
+const UPGRADE_FFW_TIME = 123;
 
 // Skip the (slow) docker build and reuse an image already built/tagged with
 // this name — handy for iterating on the seeding/assertion logic locally.
@@ -157,9 +177,9 @@ function createNetwork(name: string) {
   sh('docker', ['network', 'create', name]);
 }
 
-function startPostgres(name: string, network: string) {
+function startPostgres(name: string, network: string, database: string) {
   step = `start postgres (${name})`;
-  log(`Starting Postgres container ${name} ...`);
+  log(`Starting Postgres container ${name} (database ${database}) ...`);
   sh('docker', [
     'run',
     '-d',
@@ -172,7 +192,7 @@ function startPostgres(name: string, network: string) {
     '-e',
     `POSTGRES_PASSWORD=${DB_PASSWORD}`,
     '-e',
-    `POSTGRES_DB=${DB_NAME}`,
+    `POSTGRES_DB=${database}`,
     'postgres:16-alpine',
   ]);
 }
@@ -188,9 +208,20 @@ async function waitForPostgres(name: string) {
   });
 }
 
-function runApp(image: string, network: string, postgresName: string) {
+interface AppDatabase {
+  database?: string;
+  user?: string;
+  password?: string;
+}
+
+function runApp(
+  image: string,
+  network: string,
+  postgresName: string,
+  { database = DB_NAME, user = DB_USER, password = DB_PASSWORD }: AppDatabase = {}
+) {
   step = `start app (${image})`;
-  log(`Starting ${image} against ${postgresName} ...`);
+  log(`Starting ${image} against ${postgresName} (database ${database}, role ${user}) ...`);
   sh('docker', [
     'run',
     '-d',
@@ -205,7 +236,7 @@ function runApp(image: string, network: string, postgresName: string) {
     '-e',
     'PORT=3000',
     '-e',
-    `DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${postgresName}:5432/${DB_NAME}`,
+    `DATABASE_URL=postgresql://${user}:${password}@${postgresName}:5432/${database}`,
     '-e',
     `FRONTEND_BASE_URL=${BASE_URL}`,
     '-e',
@@ -246,6 +277,34 @@ function containerLogs(name: string, tail = 200): string {
   } catch {
     return '(logs unavailable)';
   }
+}
+
+/**
+ * Everything a container wrote, stdout and stderr together, with JSON-escaped
+ * quotes unescaped (the production logger may write a line as JSON).
+ */
+function containerOutput(name: string): string {
+  const result = spawnSync('docker', ['logs', name], { encoding: 'utf8' });
+  return `${result.stdout ?? ''}${result.stderr ?? ''}`.replace(/\\"/g, '"');
+}
+
+/** Wait for a container to exit by itself; returns its exit code. */
+async function waitForExit(name: string, timeoutMs = 90_000): Promise<number> {
+  let exitCode = -1;
+  await waitFor(
+    `${name} to exit`,
+    async () => {
+      const state = sh('docker', ['inspect', '-f', '{{.State.Status}} {{.State.ExitCode}}', name], {
+        quiet: true,
+      }).trim();
+      const [status, code] = state.split(' ');
+      if (status !== 'exited' && status !== 'dead') return false;
+      exitCode = Number(code);
+      return true;
+    },
+    { timeoutMs, intervalMs: 1_000 }
+  );
+  return exitCode;
 }
 
 // ---------------------------------------------------------------------------
@@ -329,6 +388,17 @@ async function seed(ctx: APIRequestContext): Promise<SeedResult> {
     throw new Error(`setting webhookUrl failed: ${settingsRes.status()} ${await settingsRes.text()}`);
   }
 
+  // Plugin settings, under 2.4.15's names: stored as matchzy_* keys, which
+  // 3.0 reads back as at_* (checked in pluginSettingsOf).
+  const pluginSettingsRes = await ctx.put('/api/settings', {
+    data: { matchzyChatPrefix: UPGRADE_CHAT_PREFIX, matchzyFfwTime: UPGRADE_FFW_TIME },
+  });
+  if (!pluginSettingsRes.ok()) {
+    throw new Error(
+      `setting the plugin settings failed: ${pluginSettingsRes.status()} ${await pluginSettingsRes.text()}`
+    );
+  }
+
   // Sign-ins: link two of the players to external auth providers, the way a
   // real Discord/GitHub sign-in would (test-only helper; no OAuth required).
   for (const [provider, steamId] of [
@@ -344,7 +414,7 @@ async function seed(ctx: APIRequestContext): Promise<SeedResult> {
   }
 
   // Tournament: create, start, then play the single match to completion via
-  // the real MatchZy event-ingest path (same as tests/api/series-stats.spec.ts
+  // the real event-ingest path (same as tests/api/series-stats.spec.ts
   // and tests/api/swapped-team-player-stats.spec.ts).
   await ctx.delete('/api/tournament').catch(() => undefined);
   const tournamentRes = await ctx.post('/api/tournament', {
@@ -388,7 +458,8 @@ async function seed(ctx: APIRequestContext): Promise<SeedResult> {
     { timeoutMs: 30_000, intervalMs: 1_000 }
   );
 
-  const serverHeaders = { 'Content-Type': 'application/json', 'X-MatchZy-Token': SERVER_TOKEN };
+  // 2.4.15 reads the server token from its old header name.
+  const serverHeaders = { 'Content-Type': 'application/json', [OLD_TOKEN_HEADER]: SERVER_TOKEN };
   const playerBlock = (steamIds: string[], kills: number, damage: number) => ({
     players: steamIds.map((steamId, i) => ({
       steamid: steamId,
@@ -446,7 +517,11 @@ async function seed(ctx: APIRequestContext): Promise<SeedResult> {
 }
 
 /** Deterministic snapshot of everything the seed step wrote, read back purely through the API. */
-async function snapshot(ctx: APIRequestContext, seeded: SeedResult) {
+async function snapshot(
+  ctx: APIRequestContext,
+  seeded: SeedResult,
+  apiVersion: 'old' | 'new' = 'new'
+) {
   await loginAdmin(ctx);
 
   const playersRes = await ctx.get('/api/players');
@@ -513,8 +588,17 @@ async function snapshot(ctx: APIRequestContext, seeded: SeedResult) {
   };
 
   const settingsRes = await ctx.get('/api/settings');
-  const settingsBody = (await settingsRes.json()) as { settings?: { webhookUrl?: string } };
-  const settings = { webhookUrl: settingsBody.settings?.webhookUrl };
+  const settingsBody = (await settingsRes.json()) as {
+    settings?: Record<string, unknown> & { webhookUrl?: string };
+  };
+  // The plugin settings under each version's own field names: 2.4.15 answers
+  // matchzyChatPrefix, 3.0 atChatPrefix. Each is read strictly by its own name.
+  const prefix = apiVersion === 'old' ? 'matchzy' : 'at';
+  const settings = {
+    webhookUrl: settingsBody.settings?.webhookUrl,
+    pluginChatPrefix: settingsBody.settings?.[`${prefix}ChatPrefix`],
+    pluginFfwTime: settingsBody.settings?.[`${prefix}FfwTime`],
+  };
 
   const perPlayer: Record<
     string,
@@ -643,7 +727,7 @@ async function assertMigrationsAreNoOpNow(ctx: APIRequestContext) {
 // ---------------------------------------------------------------------------
 
 /** One JSON value from a query run inside the Postgres container. */
-function psqlJson<T>(postgresName: string, sql: string): T {
+function psqlJson<T>(postgresName: string, sql: string, database = DB_NAME): T {
   const out = sh('docker', [
     'exec',
     postgresName,
@@ -651,7 +735,7 @@ function psqlJson<T>(postgresName: string, sql: string): T {
     '-U',
     DB_USER,
     '-d',
-    DB_NAME,
+    database,
     '-At',
     '-v',
     'ON_ERROR_STOP=1',
@@ -661,7 +745,7 @@ function psqlJson<T>(postgresName: string, sql: string): T {
   return JSON.parse(out) as T;
 }
 
-function psqlExec(postgresName: string, sql: string) {
+function psqlExec(postgresName: string, sql: string, database = DB_NAME) {
   sh('docker', [
     'exec',
     postgresName,
@@ -669,7 +753,7 @@ function psqlExec(postgresName: string, sql: string) {
     '-U',
     DB_USER,
     '-d',
-    DB_NAME,
+    database,
     '-v',
     'ON_ERROR_STOP=1',
     '-c',
@@ -683,6 +767,14 @@ interface Cs2TableNames {
   map_pools: string;
 }
 
+/** Where a version keeps CS2's rows: its database, tables and plugin columns. */
+interface Cs2Layout {
+  database: string;
+  tables: Cs2TableNames;
+  /** Prefix of the plugin's columns on the servers table. */
+  pluginColumns: 'matchzy_' | 'at_';
+}
+
 const LEGACY_CS2_TABLE_NAMES: Cs2TableNames = {
   servers: 'servers',
   maps: 'maps',
@@ -694,6 +786,15 @@ const CS2_TABLE_NAMES: Cs2TableNames = {
   map_pools: 'cs2_map_pools',
 };
 
+const LEGACY_CS2_LAYOUT: Cs2Layout = {
+  database: OLD_DB_NAME,
+  tables: LEGACY_CS2_TABLE_NAMES,
+  pluginColumns: 'matchzy_',
+};
+const CS2_LAYOUT: Cs2Layout = { database: DB_NAME, tables: CS2_TABLE_NAMES, pluginColumns: 'at_' };
+
+const UPGRADE_SERVER_PLUGIN_CONFIG = '{"chatPrefix":"UPG","minimumReadyRequired":3}';
+
 const UPGRADE_POOL_NAME = 'Upgrade Test Pool';
 const UPGRADE_TEMPLATE_NAME = 'Upgrade Test Template';
 
@@ -701,7 +802,8 @@ const UPGRADE_TEMPLATE_NAME = 'Upgrade Test Template';
  * On the OLD version's database: a custom map pool (an id the pools sequence
  * handed out for the host, not only the seeded ones) and a tournament
  * template that references it, so core's key from tournament_templates onto
- * the pools table is exercised by real rows.
+ * the pools table is exercised by real rows. And values in the servers
+ * table's matchzy_* columns, which 3.0 renames to at_*.
  */
 function seedCs2Rows(postgresName: string) {
   step = 'seed CS2 rows on the old database';
@@ -711,7 +813,12 @@ function seedCs2Rows(postgresName: string) {
        VALUES ('${UPGRADE_POOL_NAME}', '["de_dust2","de_mirage"]', 0, 1);
      INSERT INTO tournament_templates (name, type, format, settings, map_pool_id)
        SELECT '${UPGRADE_TEMPLATE_NAME}', 'single_elimination', 'bo1', '{}', id
-         FROM map_pools WHERE name = '${UPGRADE_POOL_NAME}';`
+         FROM map_pools WHERE name = '${UPGRADE_POOL_NAME}';
+     UPDATE servers
+        SET matchzy_config = '${UPGRADE_SERVER_PLUGIN_CONFIG}',
+            matchzy_db_type = 'sqlite',
+            matchzy_db_error = 'upgrade-test error text';`,
+    OLD_DB_NAME
   );
 }
 
@@ -720,15 +827,21 @@ function seedCs2Rows(postgresName: string) {
  * its own (status, last_seen and updated_at move with the health monitor),
  * plus the core rows that point into them.
  */
-function cs2Rows(postgresName: string, names: Cs2TableNames) {
+function cs2Rows(postgresName: string, layout: Cs2Layout) {
+  const names = layout.tables;
+  const p = layout.pluginColumns;
   const agg = (select: string, order: string) =>
     psqlJson<unknown[]>(
       postgresName,
-      `SELECT COALESCE(json_agg(t ORDER BY ${order}), '[]'::json) FROM (${select}) t`
+      `SELECT COALESCE(json_agg(t ORDER BY ${order}), '[]'::json) FROM (${select}) t`,
+      layout.database
     );
   return {
     servers: agg(
-      `SELECT id, name, host, port, password, enabled, created_at FROM ${names.servers}`,
+      `SELECT id, name, host, port, password, enabled, created_at,
+              ${p}config AS plugin_config, ${p}db_type AS plugin_db_type,
+              ${p}db_error AS plugin_db_error
+         FROM ${names.servers}`,
       'id'
     ),
     maps: agg(`SELECT id, display_name, image_url, created_at FROM ${names.maps}`, 'id'),
@@ -769,6 +882,7 @@ interface Cs2TablesView {
   legacyTables: Record<string, boolean>;
   ledger: Array<{ id: string; checksum: string }>;
   firstMigration: { id: string; checksum: string } | null;
+  declared: Array<{ id: string; checksum: string }>;
   state: { status: string; applied: string[]; reason?: string } | null;
   schema: { tables: Record<string, unknown>; foreignKeys: unknown[] };
 }
@@ -805,9 +919,11 @@ async function assertCs2TablesHandedOver(ctx: APIRequestContext, label: string) 
       `${label}: CS2 declares no 001-tables migration: ${JSON.stringify(view.firstMigration)}`
     );
   }
-  if (JSON.stringify(view.ledger) !== JSON.stringify([view.firstMigration])) {
+  // Every migration CS2 declares is recorded, with the checksum of its SQL:
+  // 001-tables adopted by the handover, the later ones run by CS2's runner.
+  if (JSON.stringify(view.ledger) !== JSON.stringify(view.declared)) {
     throw new Error(
-      `${label}: CS2's ledger is ${JSON.stringify(view.ledger)}, expected ${JSON.stringify([view.firstMigration])}.`
+      `${label}: CS2's ledger is ${JSON.stringify(view.ledger)}, expected ${JSON.stringify(view.declared)}.`
     );
   }
   if (view.state?.status !== 'ok') {
@@ -834,7 +950,7 @@ async function assertCs2TablesHandedOver(ctx: APIRequestContext, label: string) 
   }
   log(
     `${label}: cs2_servers, cs2_maps and cs2_map_pools in place, old names gone, ` +
-      '001-tables recorded, handover idempotent.'
+      `${view.declared.map((m) => m.id).join(', ')} recorded, handover idempotent.`
   );
   return view.schema;
 }
@@ -854,31 +970,280 @@ function assertSameCs2Schema(label: string, expected: unknown, actual: unknown) 
 let upgradedCs2Schema: unknown = null;
 
 // ---------------------------------------------------------------------------
+// The plugin names 2.4.15 stored (settings keys, match config cvars), and the
+// database rename (api/src/config/databaseRename.ts)
+// ---------------------------------------------------------------------------
+
+const LEGACY_PLUGIN_PREFIX = 'matchzy_';
+const PLUGIN_PREFIX = 'at_';
+
+/** `matchzy_x` → `at_x`; anything else unchanged. */
+function toNewPluginName(name: string): string {
+  return name.startsWith(LEGACY_PLUGIN_PREFIX)
+    ? PLUGIN_PREFIX + name.slice(LEGACY_PLUGIN_PREFIX.length)
+    : name;
+}
+
+interface PluginNames {
+  settings: Array<{ key: string; value: string | null }>;
+  matchConfigs: Array<{ slug: string; config: string }>;
+}
+
+function pluginNamesIn(postgresName: string, database: string): PluginNames {
+  return {
+    settings: psqlJson(
+      postgresName,
+      `SELECT COALESCE(json_agg(t ORDER BY t.key), '[]'::json)
+         FROM (SELECT key, value FROM app_settings
+                WHERE starts_with(key, '${LEGACY_PLUGIN_PREFIX}')
+                   OR starts_with(key, '${PLUGIN_PREFIX}')) t`,
+      database
+    ),
+    matchConfigs: psqlJson(
+      postgresName,
+      `SELECT COALESCE(json_agg(t ORDER BY t.slug), '[]'::json)
+         FROM (SELECT slug, config FROM matches) t`,
+      database
+    ),
+  };
+}
+
+/**
+ * Every setting and match config 2.4.15 stored under a matchzy_* name is
+ * there under the at_* name with the same value, no matchzy_* name is left,
+ * and nothing else in a stored config changed.
+ */
+function assertPluginNamesRenamed(label: string, before: PluginNames, after: PluginNames) {
+  const legacySettings = before.settings.filter((s) => s.key.startsWith(LEGACY_PLUGIN_PREFIX));
+  if (legacySettings.length === 0) {
+    throw new Error(`${label}: 2.4.15 stored no matchzy_* settings; the seed did not take.`);
+  }
+  const afterByKey = new Map(after.settings.map((s) => [s.key, s.value]));
+  for (const { key, value } of legacySettings) {
+    const newKey = toNewPluginName(key);
+    if (!afterByKey.has(newKey) || afterByKey.get(newKey) !== value) {
+      throw new Error(
+        `${label}: setting ${key}=${JSON.stringify(value)} did not become ${newKey} ` +
+          `(found ${JSON.stringify(afterByKey.get(newKey))}).`
+      );
+    }
+  }
+  const leftOver = after.settings.filter((s) => s.key.startsWith(LEGACY_PLUGIN_PREFIX));
+  if (leftOver.length > 0) {
+    throw new Error(`${label}: settings still under a 2.x name: ${JSON.stringify(leftOver)}`);
+  }
+
+  const withLegacyCvars = before.matchConfigs.filter((m) =>
+    m.config.includes(`"${LEGACY_PLUGIN_PREFIX}`)
+  );
+  if (withLegacyCvars.length === 0) {
+    throw new Error(`${label}: 2.4.15 stored no match config with matchzy_* cvars.`);
+  }
+  const afterBySlug = new Map(after.matchConfigs.map((m) => [m.slug, m.config]));
+  for (const { slug, config } of before.matchConfigs) {
+    const old = JSON.parse(config) as { cvars?: Record<string, unknown> };
+    const expected = {
+      ...old,
+      ...(old.cvars
+        ? {
+            cvars: Object.fromEntries(
+              Object.entries(old.cvars).map(([k, v]) => [toNewPluginName(k), v])
+            ),
+          }
+        : {}),
+    };
+    const actualText = afterBySlug.get(slug);
+    if (actualText === undefined) throw new Error(`${label}: match ${slug} is gone.`);
+    if (actualText.includes(`"${LEGACY_PLUGIN_PREFIX}`)) {
+      throw new Error(`${label}: match ${slug}'s stored config still has matchzy_* names.`);
+    }
+    if (JSON.stringify(JSON.parse(actualText)) !== JSON.stringify(expected)) {
+      throw new Error(
+        `${label}: match ${slug}'s stored config changed beyond the rename.\n` +
+          `--- expected ---\n${JSON.stringify(expected, null, 2)}\n--- found ---\n${actualText}`
+      );
+    }
+  }
+  log(
+    `${label}: ${legacySettings.length} setting(s) and ${withLegacyCvars.length} stored match ` +
+      'config(s) read back under at_* names with the same values.'
+  );
+}
+
+/** The databases in the cluster that carry either name. */
+function platformDatabases(postgresName: string): string[] {
+  return psqlJson<string[]>(
+    postgresName,
+    `SELECT COALESCE(json_agg(datname ORDER BY datname), '[]'::json)
+       FROM pg_database WHERE datname IN ('${OLD_DB_NAME}', '${DB_NAME}')`,
+    'postgres'
+  );
+}
+
+function assertDatabases(label: string, postgresName: string, expected: string[]) {
+  const actual = platformDatabases(postgresName);
+  if (JSON.stringify(actual) !== JSON.stringify([...expected].sort())) {
+    throw new Error(`${label}: databases are ${JSON.stringify(actual)}, expected ${JSON.stringify(expected)}.`);
+  }
+}
+
+/**
+ * Start the new build in a state where it must refuse to rename the database:
+ * it must exit by itself, say why, and leave both database names as they were.
+ */
+async function assertRefusedToStart(
+  label: string,
+  postgresName: string,
+  appDatabase: AppDatabase,
+  expectedInLogs: string
+) {
+  step = `refused start: ${label}`;
+  removeApp();
+  const databasesBefore = platformDatabases(postgresName);
+  runApp(NEW_IMAGE_TAG, NETWORK, postgresName, appDatabase);
+  const exitCode = await waitForExit(APP_NAME);
+  const output = containerOutput(APP_NAME);
+  if (exitCode === 0) {
+    throw new Error(`${label}: the new build exited 0 instead of refusing.\n${output}`);
+  }
+  if (!output.includes(expectedInLogs)) {
+    throw new Error(`${label}: the logs do not say ${JSON.stringify(expectedInLogs)}.\n${output}`);
+  }
+  assertDatabases(label, postgresName, databasesBefore);
+  removeApp();
+  log(`${label}: refused to start (exit ${exitCode}), said why, changed nothing.`);
+}
+
+const HOLDER_APP_NAME = 'upgrade-test-holder';
+
+/** Keep a session connected to the old database, as a still-running 2.x would. */
+async function holdOldDatabase(postgresName: string) {
+  step = 'connect a session to the old database';
+  sh('docker', [
+    'exec',
+    '-d',
+    '-e',
+    `PGAPPNAME=${HOLDER_APP_NAME}`,
+    postgresName,
+    'psql',
+    '-U',
+    DB_USER,
+    '-d',
+    OLD_DB_NAME,
+    '-c',
+    'SELECT pg_sleep(600)',
+  ]);
+  await waitFor('the holder session to connect', async () => holderSessions(postgresName) > 0, {
+    timeoutMs: 30_000,
+    intervalMs: 500,
+  });
+}
+
+function holderSessions(postgresName: string): number {
+  return psqlJson<number>(
+    postgresName,
+    `SELECT COUNT(*) FROM pg_stat_activity
+      WHERE datname = '${OLD_DB_NAME}' AND application_name = '${HOLDER_APP_NAME}'`,
+    'postgres'
+  );
+}
+
+/** The test ends its own holder session; the platform never does. */
+function releaseOldDatabase(postgresName: string) {
+  psqlJson<unknown>(
+    postgresName,
+    `SELECT COALESCE(json_agg(pg_terminate_backend(pid)), '[]'::json) FROM pg_stat_activity
+      WHERE datname = '${OLD_DB_NAME}' AND application_name = '${HOLDER_APP_NAME}'`,
+    'postgres'
+  );
+}
+
+const LIMITED_ROLE = 'upgrade_test_limited';
+const LIMITED_PASSWORD = 'limited';
+
+/**
+ * The three states in which the new build must refuse to rename the 2.4.15
+ * database, each checked to change nothing. Runs with the old app stopped.
+ */
+async function assertRenameRefusals(postgresName: string) {
+  // DB_NAME still set to the 2.x name, as in a .env copied from 2.x's example.
+  await assertRefusedToStart(
+    'Configured with the old database name',
+    postgresName,
+    { database: OLD_DB_NAME },
+    'its 2.x name'
+  );
+
+  // Something else is connected to the old database. It must still be
+  // connected afterwards: the platform never terminates a connection.
+  await holdOldDatabase(postgresName);
+  await assertRefusedToStart(
+    'Another session connected to the old database',
+    postgresName,
+    {},
+    'other session(s) are connected to it'
+  );
+  if (holderSessions(postgresName) !== 1) {
+    throw new Error('The session connected to the old database was closed by the platform.');
+  }
+  releaseOldDatabase(postgresName);
+  await waitFor('the holder session to go', async () => holderSessions(postgresName) === 0, {
+    timeoutMs: 30_000,
+    intervalMs: 500,
+  });
+
+  // A role that may connect but may not rename the database.
+  psqlExec(
+    postgresName,
+    `CREATE ROLE ${LIMITED_ROLE} LOGIN PASSWORD '${LIMITED_PASSWORD}' NOCREATEDB NOSUPERUSER`,
+    'postgres'
+  );
+  await assertRefusedToStart(
+    'A role without the right to rename',
+    postgresName,
+    { user: LIMITED_ROLE, password: LIMITED_PASSWORD },
+    `ALTER DATABASE ${OLD_DB_NAME} RENAME TO ${DB_NAME};`
+  );
+  psqlExec(postgresName, `DROP ROLE ${LIMITED_ROLE}`, 'postgres');
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
 async function runUpgradedDatabasePath() {
   log('=== Path 1: upgrading an existing 1x/2x database ===');
   createNetwork(NETWORK);
-  startPostgres(POSTGRES_NAME, NETWORK);
+  // 2.4.15's compose file created its database under the 2.x name.
+  startPostgres(POSTGRES_NAME, NETWORK, OLD_DB_NAME);
   await waitForPostgres(POSTGRES_NAME);
 
-  runApp(OLD_IMAGE, NETWORK, POSTGRES_NAME);
+  runApp(OLD_IMAGE, NETWORK, POSTGRES_NAME, { database: OLD_DB_NAME });
   await waitForAppHealthy();
 
   const ctx = await pwRequest.newContext({ baseURL: BASE_URL });
   try {
     const seeded = await seed(ctx);
-    const before = await snapshot(ctx, seeded);
+    const before = await snapshot(ctx, seeded, 'old');
     seedCs2Rows(POSTGRES_NAME);
-    const cs2Before = cs2Rows(POSTGRES_NAME, LEGACY_CS2_TABLE_NAMES);
+    const cs2Before = cs2Rows(POSTGRES_NAME, LEGACY_CS2_LAYOUT);
+    const pluginNamesBefore = pluginNamesIn(POSTGRES_NAME, OLD_DB_NAME);
     log(`Seeded and snapshotted data on ${OLD_IMAGE}.`);
 
     step = 'stop old container';
     removeApp();
 
+    step = 'verify the new build refuses to rename when it must not';
+    await assertRenameRefusals(POSTGRES_NAME);
+
+    step = 'start the new build; it renames the database';
     runApp(NEW_IMAGE_TAG, NETWORK, POSTGRES_NAME);
     await waitForAppHealthy();
+    assertDatabases('Upgrade', POSTGRES_NAME, [DB_NAME]);
+    if (!containerOutput(APP_NAME).includes(`Renamed the 2.x database "${OLD_DB_NAME}"`)) {
+      throw new Error('The new build did not log the database rename.');
+    }
+    log(`Upgrade: ${OLD_DB_NAME} renamed to ${DB_NAME} in place.`);
 
     step = 'verify migrations ran';
     const appliedFirstBoot = await assertMigrationsApplied(ctx);
@@ -890,8 +1255,12 @@ async function runUpgradedDatabasePath() {
 
     step = 'verify CS2 took over its tables';
     upgradedCs2Schema = await assertCs2TablesHandedOver(ctx, 'Upgrade');
-    const cs2AfterUpgrade = cs2Rows(POSTGRES_NAME, CS2_TABLE_NAMES);
+    const cs2AfterUpgrade = cs2Rows(POSTGRES_NAME, CS2_LAYOUT);
     assertCs2RowsSurvived('Upgrade (old -> current build)', cs2Before, cs2AfterUpgrade);
+
+    step = 'verify the stored plugin names were renamed';
+    const pluginNamesAfter = pluginNamesIn(POSTGRES_NAME, DB_NAME);
+    assertPluginNamesRenamed('Upgrade (old -> current build)', pluginNamesBefore, pluginNamesAfter);
 
     // Boot twice more: nothing should change, and no new migration should
     // ever be (re-)applied.
@@ -913,14 +1282,19 @@ async function runUpgradedDatabasePath() {
       assertEqual(`Reboot #${boot}`, afterUpgrade, snap);
       const schema = await assertCs2TablesHandedOver(ctx, `Reboot #${boot}`);
       assertSameCs2Schema(`Reboot #${boot}`, upgradedCs2Schema, schema);
-      assertCs2RowsSurvived(
-        `Reboot #${boot}`,
-        cs2AfterUpgrade,
-        cs2Rows(POSTGRES_NAME, CS2_TABLE_NAMES)
-      );
+      assertCs2RowsSurvived(`Reboot #${boot}`, cs2AfterUpgrade, cs2Rows(POSTGRES_NAME, CS2_LAYOUT));
+      assertDatabases(`Reboot #${boot}`, POSTGRES_NAME, [DB_NAME]);
+      if (
+        JSON.stringify(pluginNamesIn(POSTGRES_NAME, DB_NAME)) !== JSON.stringify(pluginNamesAfter)
+      ) {
+        throw new Error(`Reboot #${boot}: the stored plugin names changed again.`);
+      }
     }
 
-    log('Path 1 (upgrade) passed: migrations ran once, data survived, reboots changed nothing.');
+    log(
+      'Path 1 (upgrade) passed: database renamed in place (refused when it must), migrations ' +
+        'ran once, data survived, reboots changed nothing.'
+    );
   } finally {
     await ctx.dispose();
     // Path 2 reuses APP_NAME (on its own network/database) — remove this
@@ -939,11 +1313,29 @@ async function runFreshDatabasePath() {
   const freshPg = `${POSTGRES_NAME}-fresh`;
   createNetwork(freshNetwork);
   try {
-    startPostgres(freshPg, freshNetwork);
+    startPostgres(freshPg, freshNetwork, DB_NAME);
     await waitForPostgres(freshPg);
+    // An empty database under the 2.x name beside it: with both names there,
+    // the new build must log an error, touch neither, and use the new one.
+    psqlExec(freshPg, `CREATE DATABASE ${OLD_DB_NAME}`, 'postgres');
 
     runApp(NEW_IMAGE_TAG, freshNetwork, freshPg);
     await waitForAppHealthy();
+
+    step = 'verify both database names were left alone';
+    assertDatabases('Fresh database beside an old one', freshPg, [OLD_DB_NAME, DB_NAME]);
+    if (!containerOutput(APP_NAME).includes(`Both "${OLD_DB_NAME}" and "${DB_NAME}" exist`)) {
+      throw new Error('With both database names present, the new build did not log the error.');
+    }
+    const oldTables = psqlJson<number>(
+      freshPg,
+      "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public'",
+      OLD_DB_NAME
+    );
+    if (oldTables !== 0) {
+      throw new Error(`The new build wrote ${oldTables} table(s) into ${OLD_DB_NAME}.`);
+    }
+    log(`Fresh database: with ${OLD_DB_NAME} beside it, logged the error and used ${DB_NAME}.`);
 
     const ctx = await pwRequest.newContext({ baseURL: BASE_URL });
     try {

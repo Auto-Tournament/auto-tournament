@@ -25,11 +25,11 @@ import { setupTournament } from '../helpers/tournamentSetup';
 
 /**
  * These posts stand in for the game server, so they carry the game server's
- * credential — `/api/events/*` requires `X-MatchZy-Token`.
+ * credential — `/api/events/*` requires `X-Auto-Tournament-Token`.
  */
 const SERVER_HEADERS = {
   'Content-Type': 'application/json',
-  'X-MatchZy-Token': process.env.SERVER_TOKEN ?? 'server123',
+  'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
 };
 
 type AvailabilityServer = {

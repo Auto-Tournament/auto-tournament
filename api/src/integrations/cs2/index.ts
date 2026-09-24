@@ -1,14 +1,14 @@
 /**
- * CS2 (MatchZy) game integration.
+ * CS2 (Auto Tournament CS2) game integration.
  *
- * Owns the MatchZy match config: `buildMatchConfig` (./matchConfig) builds the
+ * Owns the Auto Tournament CS2 match config: `buildMatchConfig` (./matchConfig) builds the
  * `matches.config` blob for tournament and standalone matches, and
  * `describeMatch` is the only reader of it the core uses. It also owns the
  * game servers: RCON, the server fleet and its status, bootstrap, health and
  * CS2 update monitoring, and demos (`services/`, `utils/`, `routes/`), mounted
  * through `legacyRoutes` and started through `start()`. Event ingest is the
- * `events/` adapter: the MatchZy webhooks (`/api/events`), the match report
- * and connection snapshot, and `normalize()`, which maps MatchZy events to
+ * `events/` adapter: the Auto Tournament CS2 webhooks (`/api/events`), the match report
+ * and connection snapshot, and `normalize()`, which maps Auto Tournament CS2 events to
  * `NormalizedEvent`s. The adapter applies the CS2-only side effects (live
  * score, connections, stale-event guards) and hands the rest to the core's
  * `matchLifecycle.ingest`; the core calls back into `release`,
@@ -28,7 +28,7 @@
  * fetch, and the default data behind `seed`. `validateTournamentSettings`
  * (./tournamentSettings) checks the CS2 tournament fields on create and
  * update: the map pool, the shuffle map sequence and max rounds, and the veto
- * order. The `matchzy_*` and simulation app settings are CS2's
+ * order. The `at_*` and simulation app settings are CS2's
  * `instanceSettings` (./settings), read through `cs2Settings`
  * (./settingsReaders).
  *
@@ -60,7 +60,7 @@ import {
   CS2_STATS_SCHEMA,
   cs2PlayerStatsColumns,
   cs2PlayerStatsMetrics,
-  metricsFromMatchZyStats,
+  metricsFromPluginStats,
 } from './stats';
 
 function looksLikeTournamentResponse(value: unknown): value is TournamentResponse {
@@ -373,14 +373,14 @@ export const cs2Integration: GameIntegration = {
     };
   },
 
-  /** Persistent MatchZy webhook config on every enabled server, so allocation's connectivity checks pass. */
+  /** Persistent Auto Tournament CS2 webhook config on every enabled server, so allocation's connectivity checks pass. */
   async prepareStart(_scope) {
     const { bootstrapServerWebhooksForTournamentStart } = await import('./tournamentStart');
     await bootstrapServerWebhooksForTournamentStart();
   },
 
   /**
-   * The webhook URL from Settings: where MatchZy on the server posts its
+   * The webhook URL from Settings: where Auto Tournament CS2 on the server posts its
    * events, and the base of the match config and demo upload URLs it is
    * given. Rejects when it is not configured, which blocks the start.
    */
@@ -425,7 +425,7 @@ export const cs2Integration: GameIntegration = {
     await serverInitializationService.initializeServer(ctx.resourceId, false);
   },
 
-  /** The MatchZy status convar, read through the short status cache. */
+  /** The Auto Tournament CS2 status convar, read through the short status cache. */
   async resourceStatus(resourceId) {
     const { serverStatusService } = await import('./services/serverStatusService');
     const statusInfo = await serverStatusService.getServerStatus(resourceId);
@@ -436,7 +436,7 @@ export const cs2Integration: GameIntegration = {
     };
   },
 
-  /** MatchZy's series stats as stat lines, team1's block first (./stats maps the fields). */
+  /** Auto Tournament CS2's series stats as stat lines, team1's block first (./stats maps the fields). */
   async seriesPlayerStats(slug) {
     const { seriesPlayerStats } = await import('./events/matchEvents');
     const bySide = await seriesPlayerStats(slug);
@@ -445,7 +445,7 @@ export const cs2Integration: GameIntegration = {
         account: { provider: 'steam', externalId: steamId },
         name: '',
         team,
-        metrics: metricsFromMatchZyStats(stats ?? {}),
+        metrics: metricsFromPluginStats(stats ?? {}),
       }))
     );
   },
@@ -473,15 +473,15 @@ export const cs2Integration: GameIntegration = {
     return { team1: steamIds(cfg.team1?.players), team2: steamIds(cfg.team2?.players) };
   },
 
-  /** A stored MatchZy event through the same handling as the events route, minus its checks. */
+  /** A stored Auto Tournament CS2 event through the same handling as the events route, minus its checks. */
   async replayEvent(event) {
     const { applyMatchEvent } = await import('./events/matchEvents');
-    await applyMatchEvent(event as import('./events/matchzy-events.types').MatchZyEvent);
+    await applyMatchEvent(event as import('./events/plugin-events.types').PluginEvent);
   },
 
   /**
    * /api/servers (bootstrap, fleet, status), /api/rcon, /api/demos,
-   * /api/matchzy, /api/events, /api/veto, /api/maps and /api/map-pools, at their existing URLs. Loaded on first call, not with the
+   * /api/cs2-plugin, /api/events, /api/veto, /api/maps and /api/map-pools, at their existing URLs. Loaded on first call, not with the
    * registry (see the note at the top).
    */
   legacyRoutes() {
@@ -491,7 +491,7 @@ export const cs2Integration: GameIntegration = {
     return cs2LegacyRoutes;
   },
 
-  /** Server webhook bootstrap, then the MatchZy version fetch and the health monitor. */
+  /** Server webhook bootstrap, then the Auto Tournament CS2 version fetch and the health monitor. */
   async start() {
     const { startCs2 } = await import('./startup');
     await startCs2();
@@ -513,7 +513,7 @@ export const cs2Integration: GameIntegration = {
     await refreshConnectionsFromServer(slug, opts);
   },
 
-  /** The MatchZy match report: fetched over RCON from the server, or passed in. */
+  /** The Auto Tournament CS2 match report: fetched over RCON from the server, or passed in. */
   async syncMatchState(slug, source) {
     const { fetchMatchReport, applyMatchReport } = await import(
       './events/connectionSnapshotService'

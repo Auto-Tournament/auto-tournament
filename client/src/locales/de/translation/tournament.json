@@ -129,8 +129,8 @@
       "overtimeDisabledNoDraws": "Verlängerung: deaktiviert (kein Unentschieden – Schaden entscheidet)",
       "overtimeSegments_one": "Verlängerungsabschnitte: {{count}} Abschnitt",
       "overtimeSegments_other": "Verlängerungsabschnitte: {{count}} Abschnitte",
-      "overtimeSegmentsDefault": "Verlängerungsabschnitte: MatchZy-Standard",
-      "overtimeSegmentsDefaultUnlimited": "Verlängerungsabschnitte: MatchZy-Standard (normalerweise unbegrenzt)"
+      "overtimeSegmentsDefault": "Verlängerungsabschnitte: Auto Tournament CS2-Standard",
+      "overtimeSegmentsDefaultUnlimited": "Verlängerungsabschnitte: Auto Tournament CS2-Standard (normalerweise unbegrenzt)"
     },
     "toasts": {
       "loadTemplateFailed": "Vorlage konnte nicht geladen werden",
@@ -307,10 +307,10 @@
         "disabledNoDraws": "Deaktiviert – kein Unentschieden (Schaden entscheidet)"
       },
       "modeHelper": "Bei normaler Verlängerung werden zusätzliche Abschnitte gespielt, bis ein Team vorne liegt. „Unentschieden erlaubt“ beendet eine ausgeglichene Karte remis, „kein Unentschieden“ entscheidet sie über den Gesamtschaden des Teams.",
-      "tooltip": "Steuert das Verhalten der Verlängerung und wie Gleichstände bei maximaler Rundenzahl behandelt werden. Diese Einstellungen werden als overtimeMode/overtimeSegments an MatchZy weitergegeben und haben dieselbe Bedeutung wie bei Shuffle-Turnieren und manuellen Matches.",
+      "tooltip": "Steuert das Verhalten der Verlängerung und wie Gleichstände bei maximaler Rundenzahl behandelt werden. Diese Einstellungen werden als overtimeMode/overtimeSegments an Auto Tournament CS2 weitergegeben und haben dieselbe Bedeutung wie bei Shuffle-Turnieren und manuellen Matches.",
       "shuffleTooltip": "Steuert das Verhalten der Verlängerung in Shuffle-Matches und wie Gleichstände bei maximaler Rundenzahl entschieden werden. Ist die Verlängerung deaktiviert, können ausgeglichene Matches je nach gewählter Option unentschieden bleiben oder über den Gesamtschaden des Teams entschieden werden.",
       "segmentsLabel": "Verlängerungsabschnitte (optional)",
-      "segmentsHelper": "Optional: Anzahl der Verlängerungsabschnitte begrenzen. Leer lassen für den MatchZy-Standard.",
+      "segmentsHelper": "Optional: Anzahl der Verlängerungsabschnitte begrenzen. Leer lassen für den Auto Tournament CS2-Standard.",
       "segmentsHelperValue_one": "Verlängerung auf {{count}} Abschnitt begrenzen. Steht es danach weiter gleich, entscheidet der Gesamtschaden des Teams.",
       "segmentsHelperValue_other": "Verlängerung auf {{count}} Abschnitte begrenzen. Steht es danach weiter gleich, entscheidet der Gesamtschaden des Teams."
     },
@@ -350,7 +350,7 @@
       "teamSizeTooltip": "Anzahl der Spieler pro Team. Übliche Optionen: 4v4, 5v5, 6v6. Mindestens 2, höchstens 10 Spieler pro Team.",
       "teamSizeHelper": "Anzahl der Spieler pro Team (Standard: 5 für 5v5, Bereich: 2–10)",
       "maxRoundsLabel": "Maximale Runden",
-      "maxRoundsTooltip": "Maximale Rundenzahl pro Match. Der Wert wird direkt als mp_maxrounds an MatchZy übergeben. Beispiel: 6 = MR6, 24 = MR24.",
+      "maxRoundsTooltip": "Maximale Rundenzahl pro Match. Der Wert wird direkt als mp_maxrounds an Auto Tournament CS2 übergeben. Beispiel: 6 = MR6, 24 = MR24.",
       "maxRoundsHelper": "Das Match geht über bis zu {{maxRounds}} Runden; Sieger ist, wer zuerst {{winRounds}} Runden gewinnt",
       "maxRoundsHelperEmpty": "Maximale Rundenzahl pro Match (Standard: 24, max.: 30)",
       "eloTemplateLabel": "ELO-Berechnungsvorlage",
@@ -521,7 +521,7 @@
         "moreTeams": "More teams",
         "shuffleTitle": "Shuffle settings",
         "cs2Title": "Counter-Strike 2 settings",
-        "cs2Help": "Passed to MatchZy by the Counter-Strike 2 game module.",
+        "cs2Help": "Passed to Auto Tournament CS2 by the Counter-Strike 2 game module.",
         "overtime": {
           "enabled": "Overtime",
           "disabledDraws": "Off, draws allowed",

@@ -9,7 +9,7 @@ import type { DbMatchRow } from '../types/database.types';
  * Settle MAT's own record after a match has been ended on the game server.
  *
  * Ending a match is two separate things: telling the CS2 server to stop, and
- * recording that it stopped. MatchZy's end command emits no event, so nothing
+ * recording that it stopped. Auto Tournament CS2's end command emits no event, so nothing
  * tells MAT about it — the row has to be settled here or it stays 'live'
  * forever. That is exactly what "End Match" did: it sent the RCON command and
  * left the Matches tab showing LIVE indefinitely.

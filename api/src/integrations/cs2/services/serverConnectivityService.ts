@@ -2,7 +2,7 @@ import { log } from '../../../utils/logger';
 
 /**
  * Lightweight in-memory tracking of "test event" connectivity checks
- * from MatchZy servers back to this API.
+ * from Auto Tournament CS2 servers back to this API.
  *
  * When a server sends a special test event (e.g. via css_te), the
  * events route records that here. The server status route can then

@@ -7,13 +7,12 @@
       "players": "Gracze i dostęp",
       "matches": "Mecze i rating",
       "advanced": "Zaawansowane",
-      "matchzy": "MatchZy",
       "developer": "Deweloper / symulacja"
     },
     "integrations": {
       "webhook": {
-        "title": "Webhook MatchZy",
-        "description": "URL webhooka MatchZy, do którego mogą dotrzeć Twoje serwery CS2.",
+        "title": "Webhook Auto Tournament CS2",
+        "description": "URL webhooka Auto Tournament CS2, do którego mogą dotrzeć Twoje serwery CS2.",
         "label": "URL webhooka",
         "helper": "Przykład: https://twoja-domena.pl"
       },
@@ -49,17 +48,17 @@
         "note": "Gdy wyłączone, mecze nadal będą zapisywać statystyki (ADR, K/D, itd.), ale Skill Rating pozostanie bez zmian."
       },
       "chatDefaults": {
-        "title": "Domyślne ustawienia MatchZy (chat i knife)",
+        "title": "Domyślne ustawienia Auto Tournament CS2 (chat i knife)",
         "description": "Skonfiguruj prefiksy czatu w grze oraz domyślne zachowanie rundy knife.",
         "chatPrefixLabel": "Prefiks czatu",
         "chatPrefixHelper": "Domyślnie: \"[{Green}Auto Tournament{Default}]\". Zostaw puste, aby przywrócić wartość domyślną.",
         "adminChatPrefixLabel": "Prefiks czatu admina",
         "adminChatPrefixHelper": "Domyślnie: \"[{Red}ADMIN{Default}]\". Zostaw puste, aby przywrócić wartość domyślną.",
         "knifeToggleLabel": "Domyślnie włącz rundy knife dla nowych meczów (gdy strony nie są wcześniej wybrane)",
-        "knifeNote": "Dotyczy tylko sytuacji, gdy MatchZy normalnie uruchomiłby rundę knife; jawne wybory stron nie są zmieniane."
+        "knifeNote": "Dotyczy tylko sytuacji, gdy Auto Tournament CS2 normalnie uruchomiłby rundę knife; jawne wybory stron nie są zmieniane."
       },
-      "matchzyCore": {
-        "title": "Domyślne ustawienia MatchZy Core",
+      "atCore": {
+        "title": "Domyślne ustawienia Auto Tournament CS2 Core",
         "description": "Te ustawienia są wysyłane na serwery podczas inicjalizacji oraz przed każdym wczytaniem meczu.",
         "expert": {
           "title": "Ustawienia zaawansowane",
@@ -99,7 +98,7 @@
         "demos": {
           "title": "Dema",
           "demoPathLabel": "Ścieżka dem (względem csgo/)",
-          "demoPathHelper": "Musi kończyć się '/'. Domyślnie: MatchZy/",
+          "demoPathHelper": "Musi kończyć się '/'. Domyślnie: AutoTournamentCS2/",
           "demoNameFormatLabel": "Format nazwy pliku dema (bez .dem)",
           "demoNameFormatHelper": "Tokeny: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
         },
@@ -111,9 +110,9 @@
           "kickDelayHelper": "Dodawane ponad mp_match_restart_delay."
         }
       },
-      "matchzyEnhanced": {
+      "atEnhanced": {
         "title": "Funkcje Auto Tournament CS2",
-        "description": "Skonfiguruj zaawansowane funkcje meczu. Zostaw pola puste, aby użyć domyślnych ustawień MatchZy.",
+        "description": "Skonfiguruj zaawansowane funkcje meczu. Zostaw pola puste, aby użyć domyślnych ustawień Auto Tournament CS2.",
         "autoready": {
           "title": "Auto-ready",
           "label": "Automatycznie oznaczaj graczy jako gotowych po dołączeniu",
@@ -184,8 +183,8 @@
         "confirmLoading": "Resetowanie…"
       },
       "debugChat": {
-        "label": "Włącz wiadomości debug w czacie MatchZy",
-        "description": "Gdy włączone, MatchZy będzie wypisywać dodatkowe wiadomości debug (połączenia/rozłączenia, śledzenie zdarzeń, itd.) na czacie. Używaj tylko do rozwoju i testów."
+        "label": "Włącz wiadomości debug w czacie Auto Tournament CS2",
+        "description": "Gdy włączone, Auto Tournament CS2 będzie wypisywać dodatkowe wiadomości debug (połączenia/rozłączenia, śledzenie zdarzeń, itd.) na czacie. Używaj tylko do rozwoju i testów."
       }
     },
     "footer": {

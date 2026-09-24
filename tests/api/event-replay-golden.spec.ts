@@ -10,9 +10,9 @@ import { executeVetoActions, getCSMajorBO3Actions } from '../helpers/veto';
 import { expectGolden, getOk, normalizeForGolden, resetDatabaseForGolden } from '../helpers/golden';
 
 /**
- * Golden replay of a full MatchZy BO3 event sequence.
+ * Golden replay of a full Auto Tournament CS2 BO3 event sequence.
  *
- * Characterization test: it plays tests/fixtures/matchzy-bo3-sequence.json (a
+ * Characterization test: it plays tests/fixtures/plugin-bo3-sequence.json (a
  * captured Bo3 - series_start, going_live/round_end/halftime/side_swap/
  * map_result per map, series_end) against a real match created through veto,
  * then records what the app shows afterwards through its own API. It is the
@@ -21,7 +21,7 @@ import { expectGolden, getOk, normalizeForGolden, resetDatabaseForGolden } from 
  * refactor.
  *
  * Two goldens:
- * - `event-replay-config.json` — the config MatchZy would load, served right
+ * - `event-replay-config.json` — the config Auto Tournament CS2 would load, served right
  *   after veto (before any event is posted). This is the same served-config
  *   shape as golden-match-config.spec.ts, but for a match that then actually
  *   gets played out.
@@ -49,7 +49,7 @@ import { expectGolden, getOk, normalizeForGolden, resetDatabaseForGolden } from 
  * @tag golden
  */
 
-const FIXTURE_PATH = path.resolve(__dirname, '../fixtures/matchzy-bo3-sequence.json');
+const FIXTURE_PATH = path.resolve(__dirname, '../fixtures/plugin-bo3-sequence.json');
 
 interface FixtureTeam {
   id: string;
@@ -77,7 +77,7 @@ const VETO_MAP_POOL = [
 const SERVER_ID = 'golden-replay-server';
 const SERVER_HEADERS = {
   'Content-Type': 'application/json',
-  'X-MatchZy-Token': process.env.SERVER_TOKEN ?? 'server123',
+  'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
 };
 
 const COMMON_REPLACE = {
@@ -110,7 +110,7 @@ interface MatchListRow {
 async function fetchServedConfig(request: APIRequestContext, match: MatchListRow) {
   // The header MAT puts on the load command, as the plugin sends it.
   const res = await request.get(`/api/matches/${match.slug}.json`, {
-    headers: { 'X-MatchZy-Token': process.env.SERVER_TOKEN ?? 'server123' },
+    headers: { 'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123' },
   });
   expect(res.ok(), `config for ${match.slug}: ${res.status()} ${await res.text()}`).toBe(true);
   const config = (await res.json()) as Record<string, unknown> & { matchid?: number };
@@ -118,7 +118,7 @@ async function fetchServedConfig(request: APIRequestContext, match: MatchListRow
   return { ...config, matchid: '<matchid>' as unknown as number };
 }
 
-test.describe.serial('Golden MatchZy BO3 event replay', () => {
+test.describe.serial('Golden Auto Tournament CS2 BO3 event replay', () => {
   const fixture = loadFixture();
   let team1: Team;
   let team2: Team;

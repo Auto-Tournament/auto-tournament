@@ -283,7 +283,7 @@ export const ServerEventsMonitor: React.FC = () => {
       case 'player_stats_update':
         return c.sideCt;
       case 'test_event':
-      case 'MatchZyTestEvent':
+      case 'PluginTestEvent':
         return c.accent2;
       case 'demo_recording_start':
       case 'demo_recording_stop':
@@ -452,7 +452,7 @@ const EventItem: React.FC<{
 
   const payload = event.event as Record<string, unknown>;
 
-  // Many MatchZy events include map_number; surface it when present
+  // Many Auto Tournament CS2 events include map_number; surface it when present
   const rawMapNumber = payload['map_number'];
   const mapNumber = typeof rawMapNumber === 'number' ? (rawMapNumber as number) : undefined;
 

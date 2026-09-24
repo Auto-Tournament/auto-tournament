@@ -10,8 +10,8 @@
       "servers": "Servidores",
       "maps": "Mapas y pools"
     },
-    "matchzyDbDown": {
-      "title": "Base de datos de MatchZy inaccesible",
+    "atDbDown": {
+      "title": "Base de datos de Auto Tournament CS2 inaccesible",
       "body_one": "{{count}} servidor informa de que el plugin no puede acceder a su base de datos. Las copias de seguridad y la cola de eventos pueden verse afectadas.",
       "body_other": "{{count}} servidores informan de que el plugin no puede acceder a su base de datos. Las copias de seguridad y la cola de eventos pueden verse afectadas."
     }
@@ -424,7 +424,7 @@
       "message_other": "¿Seguro que quieres eliminar {{count}} servidores? Esta acción no se puede deshacer."
     },
     "autoConfig": {
-      "configuring": "Configurando nuevos servidores (enviando configuración de MatchZy por RCON)…",
+      "configuring": "Configurando nuevos servidores (enviando configuración de Auto Tournament CS2 por RCON)…",
       "done": "Nuevos servidores configurados. Actualizando estado…"
     },
     "checkServerLogs": "Revisa la consola/logs del servidor de juego para ver si el plugin de Auto Tournament recibe la configuración y envía eventos.",
@@ -539,16 +539,16 @@
     "rconPasswordHelper": "Contraseña para acceso RCON al servidor",
     "enabledLabel": "Servidor activado",
     "enabledHelper": "Los servidores desactivados no se usarán para partidos",
-    "overridesTitle": "Sobrescrituras de MatchZy (opcional)",
-    "overridesDescription": "Estos ajustes sobrescriben los valores globales de MatchZy solo para este servidor. Déjalo en blanco para usar los valores globales de Ajustes.",
+    "overridesTitle": "Sobrescrituras de Auto Tournament CS2 (opcional)",
+    "overridesDescription": "Estos ajustes sobrescriben los valores globales de Auto Tournament CS2 solo para este servidor. Déjalo en blanco para usar los valores globales de Ajustes.",
     "chatPrefixLabel": "Sobrescritura del prefijo de chat",
     "chatPrefixPlaceholder": "[{Green}Auto Tournament{Default}]",
-    "chatPrefixHelper": "Sobrescribe matchzy_chat_prefix en este servidor (opcional)",
+    "chatPrefixHelper": "Sobrescribe at_chat_prefix en este servidor (opcional)",
     "adminChatPrefixLabel": "Sobrescritura del prefijo de chat de admin",
     "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
-    "adminChatPrefixHelper": "Sobrescribe matchzy_admin_chat_prefix en este servidor (opcional)",
+    "adminChatPrefixHelper": "Sobrescribe at_admin_chat_prefix en este servidor (opcional)",
     "knifeOverrideLabel": "Ronda de knife activada por defecto (sobrescritura)",
-    "knifeOverrideHelper": "Cuando se configura, sobrescribe matchzy_knife_enabled_default para este servidor. Déjalo en estado indeterminado para usar el valor global.",
+    "knifeOverrideHelper": "Cuando se configura, sobrescribe at_knife_enabled_default para este servidor. Déjalo en estado indeterminado para usar el valor global.",
     "testConnectivity": "Probar conectividad",
     "testingConnectivity": "Probando conectividad…",
     "connectivity": {

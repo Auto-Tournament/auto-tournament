@@ -16,7 +16,7 @@ import { log } from '../../../utils/logger';
  * "nothing to say".
  *
  * **Credential.** The fleet-wide `SERVER_TOKEN`, presented as
- * `X-MatchZy-Token`, the same one the host's servers already use for event
+ * `X-Auto-Tournament-Token`, the same one the host's servers already use for event
  * ingest, demo upload and `GET /api/servers/:id/bootstrap`. No new secret.
  * The endpoint is read-only and returns no roster, score or address, so
  * widening that token's reach here costs nothing.
@@ -35,9 +35,9 @@ const router = Router();
  *       Valve update. The hold is on while any match is loaded or live, and
  *       while the tournament is in progress — MAT's allocator may give any
  *       enabled server the next match at any moment, so the answer is
- *       fleet-wide. Requires the game server token (`X-MatchZy-Token`).
+ *       fleet-wide. Requires the game server token (`X-Auto-Tournament-Token`).
  *     security:
- *       - matchzyServerToken: []
+ *       - atServerToken: []
  *     responses:
  *       200:
  *         description: The current hold state

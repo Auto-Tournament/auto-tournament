@@ -31,7 +31,7 @@ export async function updateRatingsForMatch(
 ): Promise<void> {
   try {
     // Idempotency guard: if ratings have already been recorded for this match,
-    // skip re-applying them. Some MatchZy setups can emit duplicate
+    // skip re-applying them. Some Auto Tournament CS2 setups can emit duplicate
     // series_end/finalization events for the same match, and we only ever want
     // to apply rating changes once per matchSlug.
     const existingHistory = await db.queryOneAsync<{ count: number | string }>(
@@ -121,7 +121,7 @@ async function persistPlayerMatchStats(options: {
   const now = Math.floor(Date.now() / 1000);
 
   // Look players up by account id, not by which side the game filed them
-  // under. MatchZy has shipped payloads that list team2's players inside the
+  // under. Auto Tournament CS2 has shipped payloads that list team2's players inside the
   // `team1` block, which made every one of those players land on 0 kills /
   // 0 damage / 0.0 ADR in their match history. Matching on the id is correct
   // either way. A later line for the same account wins.

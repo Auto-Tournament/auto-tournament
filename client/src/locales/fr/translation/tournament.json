@@ -129,8 +129,8 @@
       "overtimeDisabledNoDraws": "Prolongation : désactivée (pas de match nul – les dégâts départagent)",
       "overtimeSegments_one": "Périodes de prolongation : {{count}} période",
       "overtimeSegments_other": "Périodes de prolongation : {{count}} périodes",
-      "overtimeSegmentsDefault": "Périodes de prolongation : valeur par défaut de MatchZy",
-      "overtimeSegmentsDefaultUnlimited": "Périodes de prolongation : valeur par défaut de MatchZy (généralement illimitée)"
+      "overtimeSegmentsDefault": "Périodes de prolongation : valeur par défaut de Auto Tournament CS2",
+      "overtimeSegmentsDefaultUnlimited": "Périodes de prolongation : valeur par défaut de Auto Tournament CS2 (généralement illimitée)"
     },
     "toasts": {
       "loadTemplateFailed": "Échec du chargement du modèle",
@@ -307,10 +307,10 @@
         "disabledNoDraws": "Désactivée – pas de match nul (départage aux dégâts)"
       },
       "modeHelper": "La prolongation standard ajoute des périodes jusqu’à ce qu’une équipe prenne l’avantage. « Matchs nuls autorisés » laisse une carte à égalité se terminer par un nul, tandis que « pas de match nul » la départage aux dégâts totaux de l’équipe.",
-      "tooltip": "Contrôle le comportement de la prolongation et la gestion des égalités au nombre de tours maximum. Ces réglages sont transmis à MatchZy sous la forme overtimeMode/overtimeSegments et ont la même signification que pour les tournois shuffle et les matchs manuels.",
+      "tooltip": "Contrôle le comportement de la prolongation et la gestion des égalités au nombre de tours maximum. Ces réglages sont transmis à Auto Tournament CS2 sous la forme overtimeMode/overtimeSegments et ont la même signification que pour les tournois shuffle et les matchs manuels.",
       "shuffleTooltip": "Contrôle le comportement de la prolongation pour les matchs shuffle et la façon dont les égalités sont départagées au nombre de tours maximum. Lorsque la prolongation est désactivée, les matchs à égalité peuvent rester nuls ou être départagés aux dégâts totaux de l’équipe, selon l’option choisie.",
       "segmentsLabel": "Périodes de prolongation (facultatif)",
-      "segmentsHelper": "Facultatif : limiter le nombre de périodes de prolongation. Laissez vide pour la valeur par défaut de MatchZy.",
+      "segmentsHelper": "Facultatif : limiter le nombre de périodes de prolongation. Laissez vide pour la valeur par défaut de Auto Tournament CS2.",
       "segmentsHelperValue_one": "Limiter la prolongation à {{count}} période. En cas d’égalité après la prolongation, les dégâts totaux de l’équipe départagent.",
       "segmentsHelperValue_other": "Limiter la prolongation à {{count}} périodes. En cas d’égalité après la prolongation, les dégâts totaux de l’équipe départagent."
     },
@@ -350,7 +350,7 @@
       "teamSizeTooltip": "Nombre de joueurs par équipe. Options courantes : 4v4, 5v5, 6v6. Minimum 2 joueurs, maximum 10 par équipe.",
       "teamSizeHelper": "Nombre de joueurs par équipe (par défaut : 5 pour du 5v5, plage : 2 à 10)",
       "maxRoundsLabel": "Tours maximum",
-      "maxRoundsTooltip": "Nombre maximum de tours par match. Cette valeur est transmise telle quelle à MatchZy via mp_maxrounds. Exemple : 6 = MR6, 24 = MR24.",
+      "maxRoundsTooltip": "Nombre maximum de tours par match. Cette valeur est transmise telle quelle à Auto Tournament CS2 via mp_maxrounds. Exemple : 6 = MR6, 24 = MR24.",
       "maxRoundsHelper": "Le match se joue en {{maxRounds}} tours maximum ; le premier à {{winRounds}} tours l’emporte",
       "maxRoundsHelperEmpty": "Nombre maximum de tours par match (par défaut : 24, max : 30)",
       "eloTemplateLabel": "Modèle de calcul ELO",
@@ -521,7 +521,7 @@
         "moreTeams": "More teams",
         "shuffleTitle": "Shuffle settings",
         "cs2Title": "Counter-Strike 2 settings",
-        "cs2Help": "Passed to MatchZy by the Counter-Strike 2 game module.",
+        "cs2Help": "Passed to Auto Tournament CS2 by the Counter-Strike 2 game module.",
         "overtime": {
           "enabled": "Overtime",
           "disabledDraws": "Off, draws allowed",

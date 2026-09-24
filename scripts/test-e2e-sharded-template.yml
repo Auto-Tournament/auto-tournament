@@ -1,7 +1,7 @@
 # Template compose file for sharded tests - uses pre-built image and shared PostgreSQL
 services:
-  matchzy-tournament:
-    image: matchzy-test:sharded
+  auto-tournament:
+    image: auto-tournament-test:sharded
     container_name: SHARD_APP_NAME
     restart: unless-stopped
     ports:
@@ -29,12 +29,12 @@ services:
       retries: 3
       start_period: 10s
     networks:
-      - matchzy-test-network
+      - auto-tournament-test-network
 
 networks:
-  matchzy-test-network:
+  auto-tournament-test-network:
     external: true
-    name: matchzy-test-network
+    name: auto-tournament-test-network
 
 volumes:
   matchzy-data:

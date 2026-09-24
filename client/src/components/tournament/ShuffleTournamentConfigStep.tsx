@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 /**
  * The three meaningful overtime configurations, derived from the
- * (overtimeMode, overtimeSegments) pair that is sent to MatchZy:
+ * (overtimeMode, overtimeSegments) pair that is sent to Auto Tournament CS2:
  * - enabled            → 'enabled' + null/N segments
  * - disabledDraws      → 'disabled' + null (no overtime, draws allowed)
  * - disabledNoDraws    → 'disabled' + 0 (no overtime, damage tiebreak)
@@ -21,12 +21,12 @@ export function deriveOvertimeOption(
 
 export interface ShuffleTournamentSettings {
   teamSize: number; // Number of players per team (default: 5)
-  maxRounds: number; // Directly controls mp_maxrounds in the MatchZy config
+  maxRounds: number; // Directly controls mp_maxrounds in the Auto Tournament CS2 config
   eloTemplateId?: string; // ELO calculation template ID (optional, defaults to "Pure Win/Loss")
   overtimeMode?: 'enabled' | 'disabled';
   /**
    * See docs/guides/shuffle-tournaments.md for full semantics.
-   * - undefined/null → MatchZy default (usually unlimited OT, draws allowed)
+   * - undefined/null → Auto Tournament CS2 default (usually unlimited OT, draws allowed)
    * - 0 with overtimeMode === 'disabled' → "no OT, no draws" (force winner by damage)
    * - >0 with overtimeMode === 'enabled' → OT with damage tiebreak after N segments
    */

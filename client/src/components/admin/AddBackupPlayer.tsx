@@ -269,7 +269,7 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
 
           <Alert severity="warning" sx={{ fontSize: '0.85rem' }}>
             <Typography variant="caption" display="block" gutterBottom>
-              ⚙️ <strong>Underlying command:</strong> <code>matchzy_addplayer &lt;steam64&gt; &lt;team1|team2|spec&gt; [name]</code>
+              ⚙️ <strong>Underlying command:</strong> <code>at_addplayer &lt;steam64&gt; &lt;team1|team2|spec&gt; [name]</code>
             </Typography>
             <Typography variant="caption">
               ⚠️ <strong>Important:</strong> The player must reconnect to the server after being

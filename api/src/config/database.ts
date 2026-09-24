@@ -20,6 +20,7 @@ import { getSchemaSQL, getSchemaColumns } from './database.schema';
 import { runSchemaMigrations } from './schemaMigrations';
 import { markModuleMigrationsFailed, runModuleMigrations } from './moduleMigrations';
 import { CS2_MODULE_ID, handOverCs2Tables } from './cs2TableHandover';
+import { DATABASE_NAME, renameLegacyDatabase } from './databaseRename';
 
 const MAX_DB_VALUES_SAMPLE = 5;
 
@@ -40,6 +41,7 @@ function convertPlaceholders(sql: string, params: unknown[]): { sql: string; par
  */
 class DatabaseManager {
   private postgresPool?: Pool;
+  private connectionString: string;
   private initialized = false;
 
   constructor() {
@@ -50,7 +52,8 @@ class DatabaseManager {
         // Default to explicit IPv4 loopback instead of "localhost" so we don't
         // accidentally hit ::1 (IPv6) on hosts where Docker only binds 127.0.0.1.
         process.env.DB_HOST || '127.0.0.1'
-      }:${process.env.DB_PORT || '5432'}/${process.env.DB_NAME || 'matchzy_tournament'}`;
+      }:${process.env.DB_PORT || '5432'}/${process.env.DB_NAME || DATABASE_NAME}`;
+    this.connectionString = connString;
 
     this.postgresPool = new Pool({
       connectionString: connString,
@@ -73,6 +76,11 @@ class DatabaseManager {
     if (!this.postgresPool) {
       throw new Error('PostgreSQL pool not initialized');
     }
+
+    // An install upgraded from 2.x still has its database under the 2.x name.
+    // Rename it before anything connects (see databaseRename.ts). Throws
+    // DatabaseRenameRefused when the platform must not start.
+    await renameLegacyDatabase(this.connectionString, { connectionTimeoutMillis: 5000 });
 
     // Test connection
     const client = await this.postgresPool.connect();

@@ -7,13 +7,12 @@
       "players": "Spelers & toegang",
       "matches": "Wedstrijden & ratings",
       "advanced": "Geavanceerd",
-      "matchzy": "MatchZy",
       "developer": "Ontwikkelaar / simulatie"
     },
     "integrations": {
       "webhook": {
-        "title": "MatchZy webhook",
-        "description": "MatchZy webhook-URL die je CS2-servers kunnen bereiken.",
+        "title": "Auto Tournament CS2 webhook",
+        "description": "Auto Tournament CS2 webhook-URL die je CS2-servers kunnen bereiken.",
         "label": "Webhook-URL",
         "helper": "Voorbeeld: https://jouw-domein.nl"
       },
@@ -49,17 +48,17 @@
         "note": "Wanneer uitgeschakeld, blijven wedstrijden statistieken bijhouden (ADR, K/D, etc.), maar Skill Ratings veranderen niet."
       },
       "chatDefaults": {
-        "title": "MatchZy chat- & knife-standaarden",
+        "title": "Auto Tournament CS2 chat- & knife-standaarden",
         "description": "Configureer chat-prefixen in-game en het standaard knife-round gedrag.",
         "chatPrefixLabel": "Chat-prefix",
         "chatPrefixHelper": "Standaard: \"[{Green}Auto Tournament{Default}]\". Laat leeg om terug te zetten naar de standaard.",
         "adminChatPrefixLabel": "Admin chat-prefix",
         "adminChatPrefixHelper": "Standaard: \"[{Red}ADMIN{Default}]\". Laat leeg om terug te zetten naar de standaard.",
         "knifeToggleLabel": "Knife-rounds standaard inschakelen voor nieuwe wedstrijden (wanneer sides niet vooraf gekozen zijn)",
-        "knifeNote": "Geldt alleen wanneer MatchZy normaal een knife-round zou spelen; expliciete side-picks worden niet aangepast."
+        "knifeNote": "Geldt alleen wanneer Auto Tournament CS2 normaal een knife-round zou spelen; expliciete side-picks worden niet aangepast."
       },
-      "matchzyCore": {
-        "title": "MatchZy Core-standaarden",
+      "atCore": {
+        "title": "Auto Tournament CS2 Core-standaarden",
         "description": "Deze standaarden worden naar servers gestuurd tijdens initialisatie en vóór elke wedstrijd-load.",
         "expert": {
           "title": "Expertinstellingen",
@@ -99,7 +98,7 @@
         "demos": {
           "title": "Demo’s",
           "demoPathLabel": "Demo-pad (relatief aan csgo/)",
-          "demoPathHelper": "Moet eindigen op '/'. Standaard: MatchZy/",
+          "demoPathHelper": "Moet eindigen op '/'. Standaard: AutoTournamentCS2/",
           "demoNameFormatLabel": "Demo-bestandsnaamformaat (zonder .dem)",
           "demoNameFormatHelper": "Plaatsvervangers: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
         },
@@ -111,9 +110,9 @@
           "kickDelayHelper": "Wordt opgeteld bij mp_match_restart_delay."
         }
       },
-      "matchzyEnhanced": {
+      "atEnhanced": {
         "title": "Auto Tournament CS2-functies",
-        "description": "Configureer geavanceerde match-functies. Laat velden leeg om de MatchZy-standaard te gebruiken.",
+        "description": "Configureer geavanceerde match-functies. Laat velden leeg om de Auto Tournament CS2-standaard te gebruiken.",
         "autoready": {
           "title": "Auto-ready",
           "label": "Markeer spelers automatisch als ready wanneer ze joinen",
@@ -166,7 +165,7 @@
       "title": "Ontwikkelaarsopties",
       "description": "Alleen voor lokale ontwikkeling; niet inschakelen in productie.",
       "simulateToggleLabel": "Simuleer wedstrijden (gebruik bot-gestuurde demo-wedstrijden i.p.v. echte spelers)",
-      "simulateNote": "Wanneer ingeschakeld, bevatten gegenereerde MatchZy-configs \"simulation\": true voor geautomatiseerde demo-wedstrijden.",
+      "simulateNote": "Wanneer ingeschakeld, bevatten gegenereerde Auto Tournament CS2-configs \"simulation\": true voor geautomatiseerde demo-wedstrijden.",
       "timescaleTitle": "Simulatie-snelheid",
       "timescaleDescription": "Bepaalt hoe snel gesimuleerde wedstrijden lopen. Hogere waarden versnellen bots en rondes. Dit geldt alleen wanneer simulatie is ingeschakeld.",
       "timescaleWarning": "Snelheden boven 2.0 kunnen instabiel zijn en vreemd bot-gedrag veroorzaken, maar zijn ok voor snelle lokale tests.",
@@ -184,8 +183,8 @@
         "confirmLoading": "Resetten…"
       },
       "debugChat": {
-        "label": "MatchZy debug-chatberichten inschakelen",
-        "description": "Wanneer ingeschakeld, toont MatchZy extra debug-berichten (connects/disconnects, event-traces, etc.) in de chat. Gebruik dit alleen voor ontwikkeling en testen."
+        "label": "Auto Tournament CS2 debug-chatberichten inschakelen",
+        "description": "Wanneer ingeschakeld, toont Auto Tournament CS2 extra debug-berichten (connects/disconnects, event-traces, etc.) in de chat. Gebruik dit alleen voor ontwikkeling en testen."
       }
     },
     "footer": {

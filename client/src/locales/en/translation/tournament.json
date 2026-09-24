@@ -129,8 +129,8 @@
       "overtimeDisabledNoDraws": "Overtime: Disabled (no draws – damage tiebreak)",
       "overtimeSegments_one": "Overtime Segments: {{count}} segment",
       "overtimeSegments_other": "Overtime Segments: {{count}} segments",
-      "overtimeSegmentsDefault": "Overtime Segments: MatchZy default",
-      "overtimeSegmentsDefaultUnlimited": "Overtime Segments: MatchZy default (usually unlimited)"
+      "overtimeSegmentsDefault": "Overtime Segments: Auto Tournament CS2 default",
+      "overtimeSegmentsDefaultUnlimited": "Overtime Segments: Auto Tournament CS2 default (usually unlimited)"
     },
     "toasts": {
       "loadTemplateFailed": "Failed to load template",
@@ -307,10 +307,10 @@
         "disabledNoDraws": "Disabled – no draws (damage tiebreak)"
       },
       "modeHelper": "Standard overtime plays extra segments until a team finishes ahead. \"Draws allowed\" ends a tied map as a draw, while \"no draws\" decides it by total team damage.",
-      "tooltip": "Control overtime behaviour and how ties at max rounds are handled. These settings are passed through to MatchZy as overtimeMode/overtimeSegments and share the same semantics as shuffle tournaments and manual matches.",
+      "tooltip": "Control overtime behaviour and how ties at max rounds are handled. These settings are passed through to the Auto Tournament CS2 plugin as overtimeMode/overtimeSegments and share the same semantics as shuffle tournaments and manual matches.",
       "shuffleTooltip": "Control overtime behavior for shuffle matches and how ties are decided at max rounds. When overtime is disabled, tied matches can either remain draws or be decided by total team damage, depending on which option you choose.",
       "segmentsLabel": "Overtime segments (optional)",
-      "segmentsHelper": "Optional: limit the number of overtime segments. Leave empty for MatchZy default.",
+      "segmentsHelper": "Optional: limit the number of overtime segments. Leave empty for Auto Tournament CS2 default.",
       "segmentsHelperValue_one": "Limit overtime to {{count}} segment. Ties after overtime are decided by total team damage.",
       "segmentsHelperValue_other": "Limit overtime to {{count}} segments. Ties after overtime are decided by total team damage."
     },
@@ -350,7 +350,7 @@
       "teamSizeTooltip": "Number of players per team. Common options: 4v4, 5v5, 6v6. Minimum 2 players, maximum 10 players per team.",
       "teamSizeHelper": "Number of players per team (default: 5 for 5v5, range: 2-10)",
       "maxRoundsLabel": "Max Rounds",
-      "maxRoundsTooltip": "Maximum number of rounds per match. This value is passed directly to MatchZy as mp_maxrounds. Example: 6 = MR6, 24 = MR24.",
+      "maxRoundsTooltip": "Maximum number of rounds per match. This value is passed to the Auto Tournament CS2 plugin as mp_maxrounds. Example: 6 = MR6, 24 = MR24.",
       "maxRoundsHelper": "Match plays up to {{maxRounds}} rounds; winner is first to {{winRounds}} rounds",
       "maxRoundsHelperEmpty": "Maximum number of rounds per match (default: 24, max: 30)",
       "eloTemplateLabel": "ELO Calculation Template",
@@ -521,7 +521,7 @@
         "moreTeams": "More teams",
         "shuffleTitle": "Shuffle settings",
         "cs2Title": "Counter-Strike 2 settings",
-        "cs2Help": "Passed to MatchZy by the Counter-Strike 2 game module.",
+        "cs2Help": "Passed to the Auto Tournament CS2 plugin by the Counter-Strike 2 game module.",
         "overtime": {
           "enabled": "Overtime",
           "disabledDraws": "Off, draws allowed",

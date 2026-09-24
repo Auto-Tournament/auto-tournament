@@ -9,7 +9,7 @@
  * time, batch waves, and starting or restarting a tournament.
  *
  * A server is free when it is enabled, has reported in, answers RCON, reports
- * idle through the MatchZy convars, has no loaded/live match in our database,
+ * idle through the Auto Tournament CS2 convars, has no loaded/live match in our database,
  * is past its turnover (grace period, demo upload; see utils/serverTurnover),
  * runs a verified CS2 build, and has recently proven it can reach our webhook.
  */
@@ -158,7 +158,7 @@ export class Cs2ServerPool {
     // configured servers, even if the in‑memory allocation tracker currently
     // considers them "busy" or "preparing". The tracker is an optimisation
     // aid for the allocator itself, but the authoritative truth about whether
-    // a server is actually idle comes from MatchZy's ConVars plus our DB
+    // a server is actually idle comes from Auto Tournament CS2's ConVars plus our DB
     // (loaded/live matches). By not filtering on `serverAllocationTracker` here
     // we ensure that UIs – including the manual match creator – always see a
     // complete snapshot of online servers together with their allocatable flag.
@@ -184,7 +184,7 @@ export class Cs2ServerPool {
       })
     );
 
-    // For the status view we primarily trust the MatchZy tournament status
+    // For the status view we primarily trust the Auto Tournament CS2 tournament status
     // (convars) as the source of truth about whether a server is actually idle.
     // We still surface any DB‑backed "busy" matches as metadata so the UI can
     // highlight potential mismatches, but we no longer block allocatability
@@ -258,7 +258,7 @@ export class Cs2ServerPool {
       const pluginSaysIdle = isAllocatableStatus(status, matchSlug);
       const dbSaysBusy = dbBusy !== null;
 
-      // A freshly loaded match legitimately looks idle for a moment: MatchZy has
+      // A freshly loaded match legitimately looks idle for a moment: Auto Tournament CS2 has
       // not flipped its convar yet. Past that window, a server the plugin calls
       // idle while our own row still says "loaded" means the row is stale - the
       // match was abandoned, or the load only appeared to succeed. Holding the
@@ -383,12 +383,12 @@ export class Cs2ServerPool {
 
   /**
    * Get all available servers (enabled, online, and ready for allocation)
-   * Uses MatchZy's matchzy_tournament_status convar to determine availability
+   * Uses Auto Tournament CS2's at_tournament_status convar to determine availability
    *
-   * According to MatchZy server allocation status documentation:
+   * According to Auto Tournament CS2 server allocation status documentation:
    * - Only allocate when status is effectively idle (idle / postgame)
    * - Wait a short grace period after status becomes idle/postgame
-   * - Check `matchzy_tournament_match` and `matchzy_tournament_updated` convars
+   * - Check `at_tournament_match` and `at_tournament_updated` convars
    */
   async getAvailableServers(): Promise<ServerResponse[]> {
     const enabledServers = await serverService.getAllServers(true); // Get only enabled servers
@@ -407,12 +407,12 @@ export class Cs2ServerPool {
     });
 
     // We intentionally do NOT pre‑filter enabled servers by DB "busy" state
-    // here. Instead we trust the MatchZy tournament status convars as the
+    // here. Instead we trust the Auto Tournament CS2 tournament status convars as the
     // authoritative view: if the plugin reports the server as idle, we allow
     // allocation even if our DB still has legacy loaded/live matches attached.
     const candidateServers = configuredServers;
 
-    // Check each server's MatchZy tournament status
+    // Check each server's Auto Tournament CS2 tournament status
     const statusChecks = await Promise.all(
       candidateServers.map(async (server) => {
         try {
@@ -436,7 +436,7 @@ export class Cs2ServerPool {
             };
           }
 
-          // If the basic RCON connection works, query the MatchZy tournament
+          // If the basic RCON connection works, query the Auto Tournament CS2 tournament
           // status convars to determine whether the server is actually idle
           // and ready to be used for a match.
           const serverStatus = await serverStatusService.getServerStatus(server.id);
@@ -461,7 +461,7 @@ export class Cs2ServerPool {
     let onlineServers = statusChecks.filter((s) => s.online);
 
     // Also filter out servers that are currently in the process of being allocated
-    // a match. This prevents multiple concurrent loads (`matchzy_loadmatch_url`)
+    // a match. This prevents multiple concurrent loads (`at_loadmatch_url`)
     // from different code paths targeting the same physical server.
     onlineServers = onlineServers.filter((s) => !this.allocatingServers.has(s.server.id));
 
@@ -483,7 +483,7 @@ export class Cs2ServerPool {
     );
     const dbBusyServers = new Set(dbBusyRows.map((row) => row.server_id));
 
-    // Filter servers based on MatchZy tournament status
+    // Filter servers based on Auto Tournament CS2 tournament status
     const availableServers: ServerResponse[] = [];
     for (const check of onlineServers) {
       const { server, status, matchSlug, updatedAt } = check;
@@ -504,7 +504,7 @@ export class Cs2ServerPool {
         continue;
       }
 
-      // Follow MatchZy spec: only allocate an idle server (or one left in
+      // Follow Auto Tournament CS2 spec: only allocate an idle server (or one left in
       // 'error' - see isAllocatableStatus). "postgame" and "queued" are busy: a
       // load sent then is queued by the plugin and runs minutes later.
       if (!isAllocatableStatus(status, matchSlug)) {
@@ -701,7 +701,7 @@ export class Cs2ServerPool {
       // Emit websocket event for server assignment
       await this.emitServerAssigned(matchSlug, server.id);
 
-      // Load match on server and let MatchZy validate the config
+      // Load match on server and let Auto Tournament CS2 validate the config
       const loadResult = await loadMatchOnServer(matchSlug, server.id, { baseUrl });
 
       if (loadResult.success) {
@@ -1202,7 +1202,7 @@ export class Cs2ServerPool {
    * Best-effort end of a match on its server (force-cancel). Throws when the
    * server cannot be told; the caller carries on regardless.
    *
-   * `css_endmatch` is the MatchZy console command that ends and resets the
+   * `css_endmatch` is the Auto Tournament CS2 console command that ends and resets the
    * current match (`ConsoleCommand("css_endmatch", "Ends and resets the
    * current match")` in `src/ConsoleCommands.cs` of the plugin — it's
    * registered as an alias of the legacy `get5_endmatch` name, both bound to

@@ -145,7 +145,7 @@ export interface CreateTournamentInput {
    * Optional global overtime policy hint (applies to all tournament types).
    *
    * Semantics are shared with shuffle tournaments and manual matches:
-   * - undefined / omitted → MatchZy default behaviour (usually unlimited OT, draws allowed)
+   * - undefined / omitted → Auto Tournament CS2 default behaviour (usually unlimited OT, draws allowed)
    * - 0 with overtimeMode === 'disabled' → "no OT, no draws" (force winner by damage tiebreak)
    * - >0 with overtimeMode === 'enabled' → standard OT, then damage tiebreak after N segments
    */
@@ -162,7 +162,7 @@ export interface UpdateTournamentInput {
   maxRounds?: number;
   overtimeMode?: 'enabled' | 'disabled';
   /**
-   * null clears the setting back to the MatchZy default (unlimited overtime,
+   * null clears the setting back to the Auto Tournament CS2 default (unlimited overtime,
    * or draws allowed when overtime is disabled). 0 with overtimeMode
    * 'disabled' means "no overtime, no draws" (damage tiebreak).
    */

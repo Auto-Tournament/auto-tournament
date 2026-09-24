@@ -183,7 +183,7 @@ const coreRoutes: MountedRouter[] = [
 
 /**
  * Routes owned by game integrations that keep their pre-module URLs
- * (CS2: /api/servers ×3, /api/rcon, /api/demos, /api/matchzy, /api/events, /api/veto,
+ * (CS2: /api/servers ×3, /api/rcon, /api/demos, /api/cs2-plugin, /api/events, /api/veto,
  * /api/maps, /api/map-pools). They come first:
  * no core prefix overlaps them, and each integration returns its own routers
  * in match order.

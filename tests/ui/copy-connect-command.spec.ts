@@ -77,7 +77,7 @@ test.describe.serial('Copy console command over plain HTTP', () => {
     const live = await request.post(`/api/events/${match!.slug}`, {
       headers: {
         'Content-Type': 'application/json',
-        'X-MatchZy-Token': process.env.SERVER_TOKEN ?? 'server123',
+        'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
       },
       data: { event: 'going_live', matchid: match!.slug, map_number: 0 },
     });

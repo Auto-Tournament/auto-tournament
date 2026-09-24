@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# MatchZy Auto Tournament - Docker Test Script
+# Auto Tournament - Docker Test Script
 # This script builds, runs, tests, and cleans up the Docker container
 
 # Colors for output
@@ -12,12 +12,12 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-CONTAINER_NAME="matchzy-tournament-dev"
-IMAGE_NAME="matchzy-auto-tournament:test"
+CONTAINER_NAME="auto-tournament-dev"
+IMAGE_NAME="auto-tournament:test"
 TEST_PORT=3069
 COMPOSE_FILE="docker/docker-compose.local.yml"
 
-echo -e "${BLUE}MatchZy Auto Tournament - Docker Test${NC}"
+echo -e "${BLUE}Auto Tournament - Docker Test${NC}"
 echo "========================================="
 echo ""
 

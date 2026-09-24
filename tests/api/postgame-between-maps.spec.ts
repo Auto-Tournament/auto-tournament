@@ -5,7 +5,7 @@ import { getAuthHeader, signInViaRequest } from '../helpers/auth';
 /**
  * Plugin `postgame` between maps must not end a series.
  *
- * Reproduced on real CS2 servers (MatchZy Enhanced 1.4.24): in a single
+ * Reproduced on real CS2 servers (Auto Tournament CS2 1.4.24): in a single
  * elimination BO3, every Round 1 match went `completed` the moment map 1
  * ended. Winner stayed null, the final never got its teams, and MAT then
  * dropped the rest of the series the server kept playing:
@@ -24,7 +24,7 @@ import { getAuthHeader, signInViaRequest } from '../helpers/auth';
  * `winner: { side, team }`, numeric matchid).
  *
  * @tag api
- * @tag matchzy
+ * @tag cs2-plugin
  * @tag regression
  */
 
@@ -32,7 +32,7 @@ const MAPS = ['de_mirage', 'de_inferno', 'de_ancient', 'de_anubis', 'de_dust2', 
 
 const SERVER_HEADERS = {
   'Content-Type': 'application/json',
-  'X-MatchZy-Token': process.env.SERVER_TOKEN ?? 'server123',
+  'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
 };
 
 type ListedMatch = {
@@ -58,7 +58,7 @@ async function matchBySlug(request: APIRequestContext, slug: string): Promise<Li
   return found!;
 }
 
-/** The report MatchZy Enhanced POSTs when a map has just ended. */
+/** The report Auto Tournament CS2 POSTs when a map has just ended. */
 async function postgameReport(
   request: APIRequestContext,
   slug: string,
@@ -143,7 +143,7 @@ function finalHasTeam(final: ListedMatch, teamId: string): boolean {
 test.describe.serial('Plugin postgame between maps', () => {
   test(
     'BO3: postgame after map 1 keeps the series live; series_end finishes it and advances the winner',
-    { tag: ['@api', '@matchzy', '@regression'] },
+    { tag: ['@api', '@cs2-plugin', '@regression'] },
     async ({ request }) => {
       await signInViaRequest(request);
       const setup = await setupTournament(request, {
@@ -234,7 +234,7 @@ test.describe.serial('Plugin postgame between maps', () => {
 
   test(
     'recovery: a match left completed with no series result still takes its later events',
-    { tag: ['@api', '@matchzy', '@regression'] },
+    { tag: ['@api', '@cs2-plugin', '@regression'] },
     async ({ request }) => {
       await signInViaRequest(request);
       const setup = await setupTournament(request, {
@@ -289,7 +289,7 @@ test.describe.serial('Plugin postgame between maps', () => {
 
   test(
     'BO1: postgame + map_result + series_end completes normally',
-    { tag: ['@api', '@matchzy', '@regression'] },
+    { tag: ['@api', '@cs2-plugin', '@regression'] },
     async ({ request }) => {
       await signInViaRequest(request);
       const setup = await setupTournament(request, {

@@ -1,4 +1,4 @@
-# Contributing to MatchZy Auto Tournament
+# Contributing to Auto Tournament
 
 The full guide is in the docs:
 [Development → Contributing](https://docs.autotournament.gg/developer/contributing).
@@ -40,7 +40,7 @@ yarn dev              # API and client together
 
 ## Reporting bugs
 
-[Open an issue](https://github.com/sivert-io/matchzy-auto-tournament/issues/new/choose)
+[Open an issue](https://github.com/Auto-Tournament/auto-tournament/issues/new/choose)
 with what happened, how to reproduce it, what you expected, and your setup (OS,
 Docker version, MAT version).
 
@@ -50,7 +50,7 @@ credited.
 
 ## Questions
 
-Ask in [GitHub Discussions](https://github.com/sivert-io/matchzy-auto-tournament/discussions)
+Ask in [GitHub Discussions](https://github.com/Auto-Tournament/auto-tournament/discussions)
 or on [Discord](https://discord.gg/n7gHYau7aW).
 
 ## Code of conduct

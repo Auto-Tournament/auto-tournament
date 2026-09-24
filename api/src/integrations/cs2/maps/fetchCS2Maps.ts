@@ -18,7 +18,7 @@ const GITHUB_RAW_BASE =
 function getGitHubHeaders(): Record<string, string> {
   const headers: Record<string, string> = {
     Accept: 'application/vnd.github.v3+json',
-    'User-Agent': 'matchzy-auto-tournament',
+    'User-Agent': 'auto-tournament',
   };
 
   // Use GitHub token if available (helps avoid rate limits)

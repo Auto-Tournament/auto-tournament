@@ -5,7 +5,7 @@ import type { MatchConfig, MatchPlayer } from '../../types/match.types';
 import { log } from '../../utils/logger';
 import { settingsService } from '../../services/settingsService';
 import { cs2Settings } from './settingsReaders';
-import { matchzyConfigService } from './services/matchzyConfigService';
+import { pluginConfigService } from './services/pluginConfigService';
 import { simulationTvCvars } from './utils/serverTurnover';
 
 /**
@@ -100,21 +100,21 @@ export const generateMatchConfig = async (
 
   const numMaps = tournament.format === 'bo1' ? 1 : tournament.format === 'bo3' ? 3 : 5;
 
-  // Parse players from database and convert to MatchZy format
+  // Parse players from database and convert to Auto Tournament CS2 format
   // Database format: {0: {name, steamId}, 1: {name, steamId}}
-  // MatchZy format: {steamId: name, steamId2: name2}
-  const convertPlayersToMatchZyFormat = (playersJson: string): Record<string, string> => {
+  // Auto Tournament CS2 format: {steamId: name, steamId2: name2}
+  const convertPlayersToPluginFormat = (playersJson: string): Record<string, string> => {
     try {
       const parsed = JSON.parse(playersJson || '{}');
       const result: Record<string, string> = {};
 
-      // If it's already in MatchZy format (all keys are Steam IDs), return as-is
+      // If it's already in Auto Tournament CS2 format (all keys are Steam IDs), return as-is
       const keys = Object.keys(parsed);
       if (keys.length > 0 && keys.every((k) => /^7656\d{13}$/.test(k))) {
         return parsed;
       }
 
-      // Convert from database array-like format to MatchZy format
+      // Convert from database array-like format to Auto Tournament CS2 format
       Object.values(parsed).forEach((player: unknown) => {
         if (
           player &&
@@ -136,8 +136,8 @@ export const generateMatchConfig = async (
     }
   };
 
-  const team1Players = team1 ? convertPlayersToMatchZyFormat(team1.players) : {};
-  const team2Players = team2 ? convertPlayersToMatchZyFormat(team2.players) : {};
+  const team1Players = team1 ? convertPlayersToPluginFormat(team1.players) : {};
+  const team2Players = team2 ? convertPlayersToPluginFormat(team2.players) : {};
   const team1Count = Object.keys(team1Players).length;
   const team2Count = Object.keys(team2Players).length;
 
@@ -188,7 +188,7 @@ export const generateMatchConfig = async (
           maplist = maplist.slice(0, numMaps); // ensure we only have the number of maps we need
 
           // 2c) Translate side picks (UI is per-map; backend previously only had a global toggle)
-          // MatchZy format: 'team1_ct' means team1 starts CT, 'team2_ct' means team2 starts CT (team1 starts T)
+          // Auto Tournament CS2 format: 'team1_ct' means team1 starts CT, 'team2_ct' means team2 starts CT (team1 starts T)
           per_map_sides = ordered.map((p, index) => {
             let result: PerMapSide;
             if (p.sideTeam1 === 'CT') {
@@ -198,11 +198,11 @@ export const generateMatchConfig = async (
             } else {
               result = 'knife';
             }
-            log.debug('Translating side pick to MatchZy format', {
+            log.debug('Translating side pick to Auto Tournament CS2 format', {
               mapName: p.mapName,
               mapIndex: index,
               sideTeam1: p.sideTeam1,
-              matchZySide: result,
+              pluginSide: result,
             });
             return result;
           });
@@ -223,7 +223,7 @@ export const generateMatchConfig = async (
     }
   }
 
-  // 3) Use per_map_sides for map_sides - MatchZy expects map_sides array to correspond
+  // 3) Use per_map_sides for map_sides - Auto Tournament CS2 expects map_sides array to correspond
   //    to each map in maplist. If we have veto picks, use them; otherwise use defaults.
   let map_sides: Array<'team1_ct' | 'team2_ct' | 'knife'>;
   if (maplist && maplist.length > 0 && per_map_sides.some((s) => s !== 'knife')) {
@@ -243,24 +243,24 @@ export const generateMatchConfig = async (
 
   const maxRounds = resolveMaxRounds(tournament);
 
-  // In MatchZy Enhanced, min_players_to_ready is interpreted as a per-team threshold.
+  // In Auto Tournament CS2, min_players_to_ready is interpreted as a per-team threshold.
   // 0 = everyone connected on that team must ready.
-  const minPlayersToReadyRaw = await cs2Settings.getMatchzyMinimumReadyRequired();
+  const minPlayersToReadyRaw = await cs2Settings.getAtMinimumReadyRequired();
   const minPlayersToReady = Math.max(0, Math.min(playersPerTeam, minPlayersToReadyRaw));
   
-  // Generate MatchZy Enhanced v1.3.0 cvars based on tournament type
-  const matchzyEnhancedCvars = await matchzyConfigService.generateMatchzyEnhancedCvars(tournament.type);
+  // Generate Auto Tournament CS2 v1.3.0 cvars based on tournament type
+  const atEnhancedCvars = await pluginConfigService.generateAtEnhancedCvars(tournament.type);
   
   const cvars: Record<string, string | number> = {
     mp_maxrounds: maxRounds,
-    // Add MatchZy Enhanced cvars
-    ...matchzyEnhancedCvars,
+    // Add Auto Tournament CS2 cvars
+    ...atEnhancedCvars,
     // Simulated matches: short SourceTV delay so the demo stops and uploads quickly.
     ...simulationTvCvars(simulation),
   };
 
   const config: MatchConfig = {
-    // MatchZy expects numeric matchid; fall back to 0 only if we somehow
+    // Auto Tournament CS2 expects numeric matchid; fall back to 0 only if we somehow
     // don't have a DB row yet (should be rare, but keeps config valid).
     matchid: existingMatch?.id ?? 0,
     num_maps: numMaps,
@@ -283,7 +283,7 @@ export const generateMatchConfig = async (
     // Round limit configuration
     cvars,
 
-    // Explicit round-limit metadata for MatchZy JSON consumers
+    // Explicit round-limit metadata for Auto Tournament CS2 JSON consumers
     maxRounds,
     overtimeMode: tournament.overtimeMode,
     overtimeSegments: tournament.overtimeSegments,
@@ -394,7 +394,7 @@ async function generateShuffleMatchConfig(
   }
 
   // Convert players
-  const convertPlayersToMatchZyFormat = (playersJson: string): Record<string, string> => {
+  const convertPlayersToPluginFormat = (playersJson: string): Record<string, string> => {
     try {
       const parsed = JSON.parse(playersJson || '{}');
       const result: Record<string, string> = {};
@@ -425,8 +425,8 @@ async function generateShuffleMatchConfig(
     }
   };
 
-  const team1Players = team1 ? convertPlayersToMatchZyFormat(team1.players) : {};
-  const team2Players = team2 ? convertPlayersToMatchZyFormat(team2.players) : {};
+  const team1Players = team1 ? convertPlayersToPluginFormat(team1.players) : {};
+  const team2Players = team2 ? convertPlayersToPluginFormat(team2.players) : {};
   const team1Count = Object.keys(team1Players).length;
   const team2Count = Object.keys(team2Players).length;
 
@@ -442,13 +442,13 @@ async function generateShuffleMatchConfig(
   const simulation = await getSimulationFlag();
   const simulationTimescale = simulation ? await getSimulationTimescale() : undefined;
 
-  // Generate MatchZy Enhanced v1.3.0 cvars based on tournament type (shuffle)
-  const matchzyEnhancedCvars = await matchzyConfigService.generateMatchzyEnhancedCvars('shuffle');
+  // Generate Auto Tournament CS2 v1.3.0 cvars based on tournament type (shuffle)
+  const atEnhancedCvars = await pluginConfigService.generateAtEnhancedCvars('shuffle');
   
   const cvars: Record<string, string | number> = {
     mp_maxrounds: maxRounds,
-    // Add MatchZy Enhanced cvars
-    ...matchzyEnhancedCvars,
+    // Add Auto Tournament CS2 cvars
+    ...atEnhancedCvars,
     // Simulated matches: short SourceTV delay so the demo stops and uploads quickly.
     ...simulationTvCvars(simulation),
   };
@@ -462,7 +462,7 @@ async function generateShuffleMatchConfig(
       : Math.max(team1Count, team2Count, 1);
 
   const config: MatchConfig = {
-    // MatchZy expects matchid to be an integer; use the numeric DB id when available.
+    // Auto Tournament CS2 expects matchid to be an integer; use the numeric DB id when available.
     // Fall back to 0 only if the match row is unexpectedly missing.
     matchid: matchId ?? 0,
     num_maps: 1, // Shuffle tournaments are always BO1
@@ -480,14 +480,14 @@ async function generateShuffleMatchConfig(
     // Round limit and overtime configuration
     cvars,
 
-    // Explicit round-limit metadata for MatchZy JSON consumers
+    // Explicit round-limit metadata for Auto Tournament CS2 JSON consumers
     maxRounds,
     overtimeMode: tournament.overtimeMode,
     overtimeSegments: tournament.overtimeSegments,
 
     spectators: { players: {} },
 
-    // Expected players are purely informational for our own UIs. MatchZy uses
+    // Expected players are purely informational for our own UIs. Auto Tournament CS2 uses
     // players_per_team + min_players_to_ready as the authoritative values.
     expected_players_total: playersPerTeam * 2,
     expected_players_team1: playersPerTeam,
@@ -532,7 +532,7 @@ async function generateShuffleMatchConfig(
     team2: config.team2.name,
     maxRounds,
     cvars,
-    matchzyProfile: 'shuffle',
+    atProfile: 'shuffle',
   });
 
   return config;
@@ -543,9 +543,9 @@ async function generateShuffleMatchConfig(
 // ---------------------------------------------------------------------------
 
 /**
- * The config stored for a new standalone match: the admin's MatchZy config
+ * The config stored for a new standalone match: the admin's Auto Tournament CS2 config
  * from the "Create manual match" modal, with the instance-wide rules applied
- * (simulation mode, the primary tournament's round limit, the default MatchZy
+ * (simulation mode, the primary tournament's round limit, the default Auto Tournament CS2
  * Enhanced cvars and the admin list), so manual matches behave like
  * tournament-generated ones.
  */
@@ -587,20 +587,20 @@ export async function buildStandaloneMatchConfig(
       };
     }
 
-    // Apply MatchZy Enhanced v1.3.0 cvars for manual matches.
+    // Apply Auto Tournament CS2 v1.3.0 cvars for manual matches.
     // Use the 'default' profile (safe, permissive settings) unless the config
-    // already includes specific MatchZy Enhanced cvars (allowing customization).
-    const hasMatchzyEnhancedCvars =
+    // already includes specific Auto Tournament CS2 cvars (allowing customization).
+    const hasAtEnhancedCvars =
       config.cvars &&
-      ('matchzy_autoready_enabled' in config.cvars ||
-        'matchzy_gg_enabled' in config.cvars ||
-        'matchzy_ffw_enabled' in config.cvars);
+      ('at_autoready_enabled' in config.cvars ||
+        'at_gg_enabled' in config.cvars ||
+        'at_ffw_enabled' in config.cvars);
 
-    if (!hasMatchzyEnhancedCvars) {
-      const matchzyEnhancedCvars = matchzyConfigService.getDefaultMatchzyEnhancedCvars();
+    if (!hasAtEnhancedCvars) {
+      const atEnhancedCvars = pluginConfigService.getDefaultAtEnhancedCvars();
       config.cvars = {
         ...(config.cvars || {}),
-        ...matchzyEnhancedCvars,
+        ...atEnhancedCvars,
       };
       log.debug('Applied default Auto Tournament CS2 cvars to manual match', {
         matchSlug: slug,
@@ -663,9 +663,9 @@ function normalizeManualPlayers(value: unknown): MatchPlayer {
 }
 
 /**
- * The config served to MatchZy for a standalone match (round 0): the stored
+ * The config served to Auto Tournament CS2 for a standalone match (round 0): the stored
  * config, not a tournament-backed rebuild, so admins can run ad hoc matches
- * independent from the bracket. Fills in the fields MatchZy requires.
+ * independent from the bracket. Fills in the fields Auto Tournament CS2 requires.
  *
  * Returns null when the match does not exist.
  */
@@ -684,7 +684,7 @@ export async function serveStandaloneMatchConfig(slug: string): Promise<MatchCon
     storedConfig = {};
   }
 
-  // Ensure required fields for MatchZy are present.
+  // Ensure required fields for Auto Tournament CS2 are present.
   return {
     ...storedConfig,
     matchid: match.id,

@@ -10,8 +10,8 @@
       "servers": "Server",
       "maps": "Mappe e pool"
     },
-    "matchzyDbDown": {
-      "title": "Database MatchZy non raggiungibile",
+    "atDbDown": {
+      "title": "Database Auto Tournament CS2 non raggiungibile",
       "body_one": "{{count}} server segnala che il plugin non riesce a raggiungere il proprio database. Backup e coda eventi potrebbero risentirne.",
       "body_other": "{{count}} server segnalano che il plugin non riesce a raggiungere il proprio database. Backup e coda eventi potrebbero risentirne."
     }
@@ -424,7 +424,7 @@
       "message_other": "Vuoi davvero eliminare {{count}} server? Questa azione non può essere annullata."
     },
     "autoConfig": {
-      "configuring": "Configurazione nuovi server (invio config MatchZy via RCON)…",
+      "configuring": "Configurazione nuovi server (invio config Auto Tournament CS2 via RCON)…",
       "done": "Nuovi server configurati. Aggiornamento stato…"
     },
     "checkServerLogs": "Controlla la console/log del server di gioco per verificare che il plugin Auto Tournament riceva la configurazione e invii eventi.",
@@ -539,16 +539,16 @@
     "rconPasswordHelper": "Password per l’accesso RCON al server",
     "enabledLabel": "Server abilitato",
     "enabledHelper": "I server disabilitati non verranno usati per i match",
-    "overridesTitle": "Override MatchZy (opzionale)",
-    "overridesDescription": "Queste impostazioni sovrascrivono i predefiniti globali di MatchZy solo per questo server. Lascia vuoto per usare i valori globali dalle Impostazioni.",
+    "overridesTitle": "Override Auto Tournament CS2 (opzionale)",
+    "overridesDescription": "Queste impostazioni sovrascrivono i predefiniti globali di Auto Tournament CS2 solo per questo server. Lascia vuoto per usare i valori globali dalle Impostazioni.",
     "chatPrefixLabel": "Override prefisso chat",
     "chatPrefixPlaceholder": "[{Green}Auto Tournament{Default}]",
-    "chatPrefixHelper": "Sovrascrive matchzy_chat_prefix su questo server (opzionale)",
+    "chatPrefixHelper": "Sovrascrive at_chat_prefix su questo server (opzionale)",
     "adminChatPrefixLabel": "Override prefisso chat admin",
     "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
-    "adminChatPrefixHelper": "Sovrascrive matchzy_admin_chat_prefix su questo server (opzionale)",
+    "adminChatPrefixHelper": "Sovrascrive at_admin_chat_prefix su questo server (opzionale)",
     "knifeOverrideLabel": "Knife round abilitata di default (override)",
-    "knifeOverrideHelper": "Se impostato, sovrascrive matchzy_knife_enabled_default per questo server. Lascia indeterminato per usare il predefinito globale.",
+    "knifeOverrideHelper": "Se impostato, sovrascrive at_knife_enabled_default per questo server. Lascia indeterminato per usare il predefinito globale.",
     "testConnectivity": "Test connettività",
     "testingConnectivity": "Test connettività…",
     "connectivity": {

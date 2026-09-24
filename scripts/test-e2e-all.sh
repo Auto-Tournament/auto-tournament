@@ -8,13 +8,13 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}MatchZy Auto Tournament - Full E2E Test Suite${NC}"
+echo -e "${BLUE}Auto Tournament - Full E2E Test Suite${NC}"
 echo "========================================="
 echo ""
 
 # Configuration
 COMPOSE_FILE="docker/docker-compose.local.yml"
-COMPOSE_PROJECT="matchzy-test"
+COMPOSE_PROJECT="auto-tournament-test"
 TEST_TIMEOUT=300 # 5 minutes timeout for tests
 
 # Cleanup function
@@ -44,7 +44,7 @@ fi
 export SERVER_TOKEN="${SERVER_TOKEN:-server123}"
 export DB_USER="${DB_USER:-postgres}"
 export DB_PASSWORD="${DB_PASSWORD:-postgres}"
-export DB_NAME="${DB_NAME:-matchzy_tournament}"
+export DB_NAME="${DB_NAME:-auto_tournament}"
 export ENABLE_TEST_ENDPOINTS="${ENABLE_TEST_ENDPOINTS:-true}"
 export MAT_TEST_INTEGRATION="${MAT_TEST_INTEGRATION:-1}"
 export API_TOKENS="${API_TOKENS:-ci-admin:ci-admin-token-0123456789abcdef}"
@@ -86,7 +86,7 @@ while ! curl -f -s http://localhost:3069/health > /dev/null 2>&1; do
   if [ $elapsed -ge $timeout ]; then
     echo -e "${RED}❌ Application failed to start within ${timeout} seconds${NC}"
     echo -e "${YELLOW}Container logs:${NC}"
-    docker compose --env-file .env -f "${COMPOSE_FILE}" -p "${COMPOSE_PROJECT}" logs matchzy-tournament --tail=50
+    docker compose --env-file .env -f "${COMPOSE_FILE}" -p "${COMPOSE_PROJECT}" logs auto-tournament --tail=50
     exit 1
   fi
   sleep 2

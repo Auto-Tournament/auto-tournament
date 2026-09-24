@@ -7,10 +7,10 @@ import type { Team } from '../helpers/teams';
 /**
  * Knife round → side selection → live.
  *
- * MatchZy emits `knife_round_started`, then `knife_round_ended` carrying the
+ * Auto Tournament CS2 emits `knife_round_started`, then `knife_round_ended` carrying the
  * winner, then `going_live` once the winner has chosen a side. It emits nothing
  * for the choice itself, so the gap between the last two events is the whole
- * selection window — `matchzy_side_selection_time`, 60 seconds by default.
+ * selection window — `at_side_selection_time`, 60 seconds by default.
  *
  * MAT used to report 'warmup' on `knife_round_ended`, so for that entire window
  * the UI dropped out of the knife round and claimed the match was warming up.
@@ -18,13 +18,13 @@ import type { Team } from '../helpers/teams';
  * knife round actually produces.
  *
  * @tag api
- * @tag matchzy
+ * @tag cs2-plugin
  * @tag regression
  */
 
 const HEADERS = {
   'Content-Type': 'application/json',
-  'X-MatchZy-Token': process.env.SERVER_TOKEN ?? 'server123',
+  'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
 };
 
 async function sendEvent(request: APIRequestContext, slug: string, payload: object) {
@@ -64,7 +64,7 @@ test.describe.serial('Knife round side selection', () => {
 
   test(
     'stays on the knife round while the winner picks a side, then goes live',
-    { tag: ['@api', '@matchzy', '@regression'] },
+    { tag: ['@api', '@cs2-plugin', '@regression'] },
     async ({ request }) => {
       await sendEvent(request, slug, {
         event: 'knife_round_started',

@@ -129,8 +129,8 @@
       "overtimeDisabledNoDraws": "Overtime: disattivato (nessun pareggio – decide il danno)",
       "overtimeSegments_one": "Segmenti di overtime: {{count}} segmento",
       "overtimeSegments_other": "Segmenti di overtime: {{count}} segmenti",
-      "overtimeSegmentsDefault": "Segmenti di overtime: predefinito di MatchZy",
-      "overtimeSegmentsDefaultUnlimited": "Segmenti di overtime: predefinito di MatchZy (di solito illimitato)"
+      "overtimeSegmentsDefault": "Segmenti di overtime: predefinito di Auto Tournament CS2",
+      "overtimeSegmentsDefaultUnlimited": "Segmenti di overtime: predefinito di Auto Tournament CS2 (di solito illimitato)"
     },
     "toasts": {
       "loadTemplateFailed": "Impossibile caricare il modello",
@@ -307,10 +307,10 @@
         "disabledNoDraws": "Disattivato – nessun pareggio (spareggio al danno)"
       },
       "modeHelper": "L'overtime standard gioca segmenti extra finché una squadra non passa in vantaggio. «Pareggi consentiti» chiude in parità una mappa in equilibrio, mentre «nessun pareggio» la decide in base al danno totale della squadra.",
-      "tooltip": "Controlla il comportamento dell'overtime e come vengono gestiti i pareggi al massimo dei round. Queste impostazioni vengono passate a MatchZy come overtimeMode/overtimeSegments e hanno lo stesso significato dei tornei shuffle e dei match manuali.",
+      "tooltip": "Controlla il comportamento dell'overtime e come vengono gestiti i pareggi al massimo dei round. Queste impostazioni vengono passate an Auto Tournament CS2 come overtimeMode/overtimeSegments e hanno lo stesso significato dei tornei shuffle e dei match manuali.",
       "shuffleTooltip": "Controlla il comportamento dell'overtime nei match shuffle e come vengono decisi i pareggi al massimo dei round. Con l'overtime disattivato, i match in parità possono restare pareggi oppure essere decisi dal danno totale della squadra, a seconda dell'opzione scelta.",
       "segmentsLabel": "Segmenti di overtime (facoltativo)",
-      "segmentsHelper": "Facoltativo: limita il numero di segmenti di overtime. Lascia vuoto per il valore predefinito di MatchZy.",
+      "segmentsHelper": "Facoltativo: limita il numero di segmenti di overtime. Lascia vuoto per il valore predefinito di Auto Tournament CS2.",
       "segmentsHelperValue_one": "Limita l'overtime a {{count}} segmento. In caso di parità dopo l'overtime decide il danno totale della squadra.",
       "segmentsHelperValue_other": "Limita l'overtime a {{count}} segmenti. In caso di parità dopo l'overtime decide il danno totale della squadra."
     },
@@ -350,7 +350,7 @@
       "teamSizeTooltip": "Numero di giocatori per squadra. Opzioni comuni: 4v4, 5v5, 6v6. Minimo 2 e massimo 10 giocatori per squadra.",
       "teamSizeHelper": "Numero di giocatori per squadra (predefinito: 5 per il 5v5, intervallo: 2-10)",
       "maxRoundsLabel": "Round massimi",
-      "maxRoundsTooltip": "Numero massimo di round per match. Il valore viene passato direttamente a MatchZy come mp_maxrounds. Esempio: 6 = MR6, 24 = MR24.",
+      "maxRoundsTooltip": "Numero massimo di round per match. Il valore viene passato direttamente an Auto Tournament CS2 come mp_maxrounds. Esempio: 6 = MR6, 24 = MR24.",
       "maxRoundsHelper": "Il match si gioca fino a {{maxRounds}} round; vince chi arriva prima a {{winRounds}} round",
       "maxRoundsHelperEmpty": "Numero massimo di round per match (predefinito: 24, max: 30)",
       "eloTemplateLabel": "Modello di calcolo ELO",
@@ -521,7 +521,7 @@
         "moreTeams": "More teams",
         "shuffleTitle": "Shuffle settings",
         "cs2Title": "Counter-Strike 2 settings",
-        "cs2Help": "Passed to MatchZy by the Counter-Strike 2 game module.",
+        "cs2Help": "Passed to Auto Tournament CS2 by the Counter-Strike 2 game module.",
         "overtime": {
           "enabled": "Overtime",
           "disabledDraws": "Off, draws allowed",

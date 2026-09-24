@@ -131,8 +131,8 @@
       "overtimeDisabledNoDraws": "Dogrywka: wyłączona (bez remisów – rozstrzygają obrażenia)",
       "overtimeSegments_one": "Segmenty dogrywki: {{count}} segment",
       "overtimeSegments_other": "Segmenty dogrywki: {{count}} segmentów",
-      "overtimeSegmentsDefault": "Segmenty dogrywki: domyślne ustawienie MatchZy",
-      "overtimeSegmentsDefaultUnlimited": "Segmenty dogrywki: domyślne ustawienie MatchZy (zwykle bez limitu)"
+      "overtimeSegmentsDefault": "Segmenty dogrywki: domyślne ustawienie Auto Tournament CS2",
+      "overtimeSegmentsDefaultUnlimited": "Segmenty dogrywki: domyślne ustawienie Auto Tournament CS2 (zwykle bez limitu)"
     },
     "toasts": {
       "loadTemplateFailed": "Nie udało się wczytać szablonu",
@@ -309,10 +309,10 @@
         "disabledNoDraws": "Wyłączona – bez remisów (rozstrzygają obrażenia)"
       },
       "modeHelper": "Standardowa dogrywka dodaje kolejne segmenty, aż jedna drużyna wyjdzie na prowadzenie. „Remisy dozwolone” kończą wyrównaną mapę remisem, a „bez remisów” rozstrzyga ją sumą obrażeń drużyny.",
-      "tooltip": "Określa działanie dogrywki i sposób rozstrzygania remisów przy maksymalnej liczbie rund. Ustawienia trafiają do MatchZy jako overtimeMode/overtimeSegments i mają to samo znaczenie co w turniejach shuffle i meczach ręcznych.",
+      "tooltip": "Określa działanie dogrywki i sposób rozstrzygania remisów przy maksymalnej liczbie rund. Ustawienia trafiają do Auto Tournament CS2 jako overtimeMode/overtimeSegments i mają to samo znaczenie co w turniejach shuffle i meczach ręcznych.",
       "shuffleTooltip": "Określa działanie dogrywki w meczach shuffle i sposób rozstrzygania remisów przy maksymalnej liczbie rund. Gdy dogrywka jest wyłączona, wyrównane mecze mogą kończyć się remisem albo być rozstrzygane sumą obrażeń drużyny — zależnie od wybranej opcji.",
       "segmentsLabel": "Segmenty dogrywki (opcjonalnie)",
-      "segmentsHelper": "Opcjonalnie: ogranicz liczbę segmentów dogrywki. Zostaw puste, aby użyć domyślnego ustawienia MatchZy.",
+      "segmentsHelper": "Opcjonalnie: ogranicz liczbę segmentów dogrywki. Zostaw puste, aby użyć domyślnego ustawienia Auto Tournament CS2.",
       "segmentsHelperValue_one": "Ogranicz dogrywkę do {{count}} segmentu. Jeśli po dogrywce nadal jest remis, rozstrzyga suma obrażeń drużyny.",
       "segmentsHelperValue_other": "Ogranicz dogrywkę do {{count}} segmentów. Jeśli po dogrywce nadal jest remis, rozstrzyga suma obrażeń drużyny."
     },
@@ -352,7 +352,7 @@
       "teamSizeTooltip": "Liczba graczy w drużynie. Typowe opcje: 4v4, 5v5, 6v6. Minimum 2, maksimum 10 graczy w drużynie.",
       "teamSizeHelper": "Liczba graczy w drużynie (domyślnie: 5 dla 5v5, zakres: 2–10)",
       "maxRoundsLabel": "Maksymalna liczba rund",
-      "maxRoundsTooltip": "Maksymalna liczba rund w meczu. Wartość trafia bezpośrednio do MatchZy jako mp_maxrounds. Przykład: 6 = MR6, 24 = MR24.",
+      "maxRoundsTooltip": "Maksymalna liczba rund w meczu. Wartość trafia bezpośrednio do Auto Tournament CS2 jako mp_maxrounds. Przykład: 6 = MR6, 24 = MR24.",
       "maxRoundsHelper": "Mecz trwa maksymalnie {{maxRounds}} rund; wygrywa pierwsza drużyna z {{winRounds}} rundami",
       "maxRoundsHelperEmpty": "Maksymalna liczba rund w meczu (domyślnie: 24, maks.: 30)",
       "eloTemplateLabel": "Szablon obliczania ELO",
@@ -523,7 +523,7 @@
         "moreTeams": "More teams",
         "shuffleTitle": "Shuffle settings",
         "cs2Title": "Counter-Strike 2 settings",
-        "cs2Help": "Passed to MatchZy by the Counter-Strike 2 game module.",
+        "cs2Help": "Passed to Auto Tournament CS2 by the Counter-Strike 2 game module.",
         "overtime": {
           "enabled": "Overtime",
           "disabledDraws": "Off, draws allowed",

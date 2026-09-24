@@ -149,7 +149,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
         port: portNum,
         password: password.trim(),
         enabled,
-        matchzyConfig: null,
+        atConfig: null,
       };
 
       if (isEditing) {
@@ -160,7 +160,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
           port: payload.port,
           password: payload.password,
           enabled: payload.enabled,
-          matchzyConfig: payload.matchzyConfig,
+          atConfig: payload.atConfig,
         });
         console.log('Server updated successfully');
         showSuccess(t('serverModal.success.serverUpdated'));

@@ -91,7 +91,7 @@ type MatchReportPlayerStats = {
   [key: string]: unknown;
 };
 
-const MATCH_REPORT_COMMANDS = ['matchzy_match_report', 'css_match_report'];
+const MATCH_REPORT_COMMANDS = ['at_match_report', 'css_match_report'];
 const REFRESH_TTL_MS = 5000;
 const REPORT_ERROR_LOG_COOLDOWN_MS = 30000;
 
@@ -336,7 +336,7 @@ async function updateLiveStatsFromReport(matchSlug: string, report: MatchReport)
   };
 
   // Only override live player stats if the report actually contains them.
-  // MatchZy match reports often omit per‑player stats, while the round_end
+  // Auto Tournament CS2 match reports often omit per‑player stats, while the round_end
   // webhook events include a full players[] array. In that case, we want to
   // preserve the richer snapshot built from round_end instead of wiping it.
   if (playerStats) {
@@ -427,7 +427,7 @@ function extractPlayerStats(report: MatchReport): MatchPlayerStatsSnapshot | nul
         const stats = player.stats ?? {};
 
         // If the report doesn't include any numeric stats for this player yet,
-        // skip creating a line entirely. MatchZy round_end webhooks carry full
+        // skip creating a line entirely. Auto Tournament CS2 round_end webhooks carry full
         // cumulative stats, but match reports often only contain roster info
         // with an empty "stats" object. In that case we *don't* want to
         // overwrite a richer live snapshot with a bunch of zeroes.
@@ -502,11 +502,11 @@ function toMillis(value?: number | null): number {
  *
  * The default is 'warmup', so any phase missing from this switch silently reads
  * as WARMUP. That is how a knife round's side selection came to show the match
- * as warming up: MatchZy Enhanced reports `knife_decision` while the winning
+ * as warming up: Auto Tournament CS2 reports `knife_decision` while the winning
  * team picks a side, and nothing here knew the name. The same held for a paused
  * match and for a round restore, both of which are plainly live.
  *
- * Phase names come from `GetMatchPhaseLabel()` in MatchZy Enhanced
+ * Phase names come from `GetMatchPhaseLabel()` in Auto Tournament CS2
  * (src/MatchReportCommand.cs); keep this in step with it.
  */
 function mapPhaseToLiveStatus(phase?: string) {
@@ -559,7 +559,7 @@ async function reconcileMatchStatusFromPhase(
     case 'round_restore':
     case 'halftime':
     case 'postgame':
-      // `postgame` is NOT "the series is over". MatchZy Enhanced reports it
+      // `postgame` is NOT "the series is over". Auto Tournament CS2 reports it
       // after every map, including between maps of a BO3/BO5, and its report
       // POST lands before that map's map_result / series_end. Mapping it to
       // 'completed' finished BO3s after map 1 with no winner and no bracket

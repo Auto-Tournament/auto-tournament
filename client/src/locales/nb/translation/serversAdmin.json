@@ -170,7 +170,7 @@
       "noServers": "Ingen servere tilgjengelig",
       "refreshServers": "Oppdater serverlisten",
       "noEvents": "Ingen hendelser mottatt fra denne serveren ennå.",
-      "noEventsHint": "Fortsatt ingen hendelser etter 15 sekunder. Sjekk at CS2-serveren er satt opp til å sende MatchZy-webhooks til /api/events/:matchSlugOrServerId med riktig X-MatchZy-Token.",
+      "noEventsHint": "Fortsatt ingen hendelser etter 15 sekunder. Sjekk at CS2-serveren er satt opp til å sende Auto Tournament CS2-webhooks til /api/events/:matchSlugOrServerId med riktig X-Auto-Tournament-Token.",
       "waiting": "Venter på hendelser fra serveren …",
       "footer_one": "Viser {{count}} hendelse (maks 100)",
       "footer_other": "Viser {{count}} hendelser (maks 100)",

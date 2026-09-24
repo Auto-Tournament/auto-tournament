@@ -9,7 +9,7 @@ import { createServer, deleteServer } from '../helpers/servers';
  * Reported on Discord: "When the match is live and I click 'End Match' in the
  * Admin Controls, it still shows 'LIVE' in the Matches tab."
  *
- * /api/rcon/end-match sent an RCON command and stopped there. MatchZy emits no
+ * /api/rcon/end-match sent an RCON command and stopped there. Auto Tournament CS2 emits no
  * event when a match is force-ended, so nothing ever told MAT, and the row
  * stayed 'live' indefinitely.
  *

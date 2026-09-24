@@ -9,7 +9,7 @@ import { createTestServer, deleteServer } from '../helpers/servers';
  * route did not exist, so every attempt 404'd and the UI reported "failed to
  * add player to match" — the reported bug, and not only for spectators.
  *
- * MatchZy reports refusals (no match set up, halftime, already on a team, bad
+ * Auto Tournament CS2 reports refusals (no match set up, halftime, already on a team, bad
  * Steam ID) in the *reply text* while the RCON call itself succeeds, so the
  * route has to read the reply. A fake test server answers "fake_response",
  * which is exactly an unconfirmed add — so the refusal path is what CI can
@@ -70,7 +70,7 @@ test.describe.serial('Add player to match', () => {
         nickname: 'Caster',
       });
 
-      // A fake server answers without MatchZy's "successfully" confirmation.
+      // A fake server answers without Auto Tournament CS2's "successfully" confirmation.
       // Reporting success off `result.success` alone would tell an admin the
       // spectator was added when nothing happened.
       expect(res.status()).toBe(400);

@@ -238,7 +238,7 @@ class TournamentService {
       max_rounds: maxRounds ?? 24,
       overtime_mode: overtimeMode ?? 'enabled',
       // Keep semantics aligned with shuffle and manual matches:
-      // - NULL → MatchZy default (unlimited OT / draws)
+      // - NULL → Auto Tournament CS2 default (unlimited OT / draws)
       // - 0 with overtimeMode === 'disabled' → "no OT, no draws" (damage tiebreak)
       // - >0 with overtimeMode === 'enabled' → OT with damage tiebreak after N segments
       overtime_segments:
@@ -325,7 +325,7 @@ class TournamentService {
     if (overtimeMode) {
       updates.overtime_mode = overtimeMode;
     }
-    // `null` is meaningful here (back to the MatchZy default), so only an
+    // `null` is meaningful here (back to the Auto Tournament CS2 default), so only an
     // absent field leaves the stored value alone. Without this an existing
     // tournament could never be switched off "no draws (0)" again.
     if (overtimeSegments !== undefined) {

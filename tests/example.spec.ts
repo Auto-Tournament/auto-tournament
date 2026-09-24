@@ -17,7 +17,7 @@ test('has title', { tag: ['@example'] }, async ({ page }) => {
   }
 
   // Expect a title "to contain" a substring.
-  await expect(page).toHaveTitle(/Login|Dashboard|MatchZy/i);
+  await expect(page).toHaveTitle(/Login|Dashboard|Auto Tournament/i);
 });
 
 test('login page exposes the Steam sign-in button', { tag: ['@example'] }, async ({ page }) => {

@@ -1,5 +1,5 @@
 /**
- * The CS2 instance settings: the `app_settings` keys CS2 owns (the `matchzy_*`
+ * The CS2 instance settings: the `app_settings` keys CS2 owns (the `at_*`
  * defaults sent to servers, and the simulation switches), with how each is
  * stored (`normalize`) and edited through `PUT /api/settings`
  * (`field`, `order`, `applyRequest`). `CS2_INSTANCE_SCHEMA` is the same list
@@ -29,39 +29,39 @@ import {
 export type Cs2SettingKey =
   | 'simulate_matches'
   | 'simulation_timescale'
-  | 'matchzy_chat_prefix'
-  | 'matchzy_admin_chat_prefix'
-  | 'matchzy_knife_enabled_default'
-  | 'matchzy_debug_chat'
-  // MatchZy core defaults (persisted convars)
-  | 'matchzy_autostart_mode'
-  | 'matchzy_minimum_ready_required'
-  | 'matchzy_allow_force_ready'
-  | 'matchzy_kick_when_no_match_loaded'
-  | 'matchzy_whitelist_enabled_default'
-  | 'matchzy_pause_after_restore'
-  | 'matchzy_stop_command_available'
-  | 'matchzy_stop_command_no_damage'
-  | 'matchzy_use_pause_command_for_tactical_pause'
-  | 'matchzy_hostname_format'
-  | 'matchzy_demo_path'
-  | 'matchzy_demo_name_format'
-  | 'matchzy_series_end_kick_delay_no_demo'
-  | 'matchzy_series_end_kick_delay_demo_no_upload'
-  | 'matchzy_series_end_kick_delay_demo_upload'
-  // MatchZy Enhanced v1.3.0 settings
-  | 'matchzy_autoready_enabled'
-  | 'matchzy_both_teams_unpause_required'
-  | 'matchzy_max_pauses_per_team'
-  | 'matchzy_pause_duration'
-  | 'matchzy_side_selection_enabled'
-  | 'matchzy_side_selection_time'
-  | 'matchzy_gg_enabled'
-  | 'matchzy_gg_threshold'
-  | 'matchzy_gg_min_score_diff'
-  | 'matchzy_ffw_enabled'
-  | 'matchzy_ffw_time'
-  | 'matchzy_demo_recording_enabled';
+  | 'at_chat_prefix'
+  | 'at_admin_chat_prefix'
+  | 'at_knife_enabled_default'
+  | 'at_debug_chat'
+  // Auto Tournament CS2 core defaults (persisted convars)
+  | 'at_autostart_mode'
+  | 'at_minimum_ready_required'
+  | 'at_allow_force_ready'
+  | 'at_kick_when_no_match_loaded'
+  | 'at_whitelist_enabled_default'
+  | 'at_pause_after_restore'
+  | 'at_stop_command_available'
+  | 'at_stop_command_no_damage'
+  | 'at_use_pause_command_for_tactical_pause'
+  | 'at_hostname_format'
+  | 'at_demo_path'
+  | 'at_demo_name_format'
+  | 'at_series_end_kick_delay_no_demo'
+  | 'at_series_end_kick_delay_demo_no_upload'
+  | 'at_series_end_kick_delay_demo_upload'
+  // Auto Tournament CS2 v1.3.0 settings
+  | 'at_autoready_enabled'
+  | 'at_both_teams_unpause_required'
+  | 'at_max_pauses_per_team'
+  | 'at_pause_duration'
+  | 'at_side_selection_enabled'
+  | 'at_side_selection_time'
+  | 'at_gg_enabled'
+  | 'at_gg_threshold'
+  | 'at_gg_min_score_diff'
+  | 'at_ffw_enabled'
+  | 'at_ffw_time'
+  | 'at_demo_recording_enabled';
 
 type Cs2Setting = SettingDefinition & { key: Cs2SettingKey; schema: JSONSchema };
 
@@ -71,7 +71,7 @@ function integerSchema(minimum: number, maximum: number): JSONSchema {
   return { type: 'string', pattern: '^-?\\d+$', 'x-minimum': minimum, 'x-maximum': maximum };
 }
 
-/** A MatchZy on/off convar edited as a boolean. */
+/** An Auto Tournament CS2 on/off convar edited as a boolean. */
 function flag(key: Cs2SettingKey, field: string, order: number): Cs2Setting {
   return {
     key,
@@ -83,7 +83,7 @@ function flag(key: Cs2SettingKey, field: string, order: number): Cs2Setting {
   };
 }
 
-/** A MatchZy Enhanced on/off setting, edited as 0 / 1 / a boolean. */
+/** A Auto Tournament CS2 on/off setting, edited as 0 / 1 / a boolean. */
 function binary(key: Cs2SettingKey, field: string, order: number): Cs2Setting {
   return { ...flag(key, field, order), applyRequest: binaryRequest(field) };
 }
@@ -132,9 +132,9 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
     async applyRequest(simulateMatches, ctx) {
       // This is a **developer-only** option.
       // In production, ignore it by default for safety, unless explicitly enabled
-      // via MATCHZY_ENABLE_SIMULATION_IN_PROD=true (e.g. lab/test environments).
+      // via AT_ENABLE_SIMULATION_IN_PROD=true (e.g. lab/test environments).
       const simulationAllowedInProd =
-        process.env.MATCHZY_ENABLE_SIMULATION_IN_PROD?.toLowerCase() === 'true';
+        process.env.AT_ENABLE_SIMULATION_IN_PROD?.toLowerCase() === 'true';
       if (process.env.NODE_ENV === 'production' && !simulationAllowedInProd) {
         log.warn(
           'Received simulateMatches setting update in production environment – ignoring for safety'
@@ -186,68 +186,68 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
     },
   },
   {
-    key: 'matchzy_chat_prefix',
-    field: 'matchzyChatPrefix',
+    key: 'at_chat_prefix',
+    field: 'atChatPrefix',
     order: 40,
     schema: { type: 'string' },
-    normalize: normalizeText('MatchZy chat prefix updated'),
-    applyRequest: stringRequest('matchzyChatPrefix'),
+    normalize: normalizeText('Auto Tournament CS2 chat prefix updated'),
+    applyRequest: stringRequest('atChatPrefix'),
   },
   {
-    key: 'matchzy_admin_chat_prefix',
-    field: 'matchzyAdminChatPrefix',
+    key: 'at_admin_chat_prefix',
+    field: 'atAdminChatPrefix',
     order: 50,
     schema: { type: 'string' },
-    normalize: normalizeText('MatchZy admin chat prefix updated'),
-    applyRequest: stringRequest('matchzyAdminChatPrefix'),
+    normalize: normalizeText('Auto Tournament CS2 admin chat prefix updated'),
+    applyRequest: stringRequest('atAdminChatPrefix'),
   },
   {
-    ...flag('matchzy_knife_enabled_default', 'matchzyKnifeEnabledDefault', 60),
-    normalize: normalizeFlag('MatchZy knife round default'),
+    ...flag('at_knife_enabled_default', 'atKnifeEnabledDefault', 60),
+    normalize: normalizeFlag('Auto Tournament CS2 knife round default'),
   },
   // order 70: the core's ratingsEnabled
   {
-    ...flag('matchzy_debug_chat', 'matchzyDebugChatEnabled', 80),
-    normalize: normalizeFlag('MatchZy debug chat'),
+    ...flag('at_debug_chat', 'atDebugChatEnabled', 80),
+    normalize: normalizeFlag('Auto Tournament CS2 debug chat'),
   },
   // order 90: the core's allowSelfRegister
-  integer('matchzy_minimum_ready_required', 'matchzyMinimumReadyRequired', 100, {
+  integer('at_minimum_ready_required', 'atMinimumReadyRequired', 100, {
     min: 0,
     max: 10,
-    message: 'matchzy_minimum_ready_required must be 0-10',
+    message: 'at_minimum_ready_required must be 0-10',
   }),
   integer(
-    'matchzy_autostart_mode',
-    'matchzyAutostartMode',
+    'at_autostart_mode',
+    'atAutostartMode',
     110,
-    { min: 0, max: 2, message: 'matchzy_autostart_mode must be 0, 1, or 2' },
+    { min: 0, max: 2, message: 'at_autostart_mode must be 0, 1, or 2' },
     'a number (0-2)'
   ),
-  // MatchZy core defaults (booleans)
-  flag('matchzy_allow_force_ready', 'matchzyAllowForceReady', 120),
-  flag('matchzy_kick_when_no_match_loaded', 'matchzyKickWhenNoMatchLoaded', 130),
-  flag('matchzy_whitelist_enabled_default', 'matchzyWhitelistEnabledDefault', 140),
-  flag('matchzy_pause_after_restore', 'matchzyPauseAfterRestore', 150),
-  flag('matchzy_stop_command_available', 'matchzyStopCommandAvailable', 160),
-  flag('matchzy_stop_command_no_damage', 'matchzyStopCommandNoDamage', 170),
+  // Auto Tournament CS2 core defaults (booleans)
+  flag('at_allow_force_ready', 'atAllowForceReady', 120),
+  flag('at_kick_when_no_match_loaded', 'atKickWhenNoMatchLoaded', 130),
+  flag('at_whitelist_enabled_default', 'atWhitelistEnabledDefault', 140),
+  flag('at_pause_after_restore', 'atPauseAfterRestore', 150),
+  flag('at_stop_command_available', 'atStopCommandAvailable', 160),
+  flag('at_stop_command_no_damage', 'atStopCommandNoDamage', 170),
   flag(
-    'matchzy_use_pause_command_for_tactical_pause',
-    'matchzyUsePauseCommandForTacticalPause',
+    'at_use_pause_command_for_tactical_pause',
+    'atUsePauseCommandForTacticalPause',
     180
   ),
-  // MatchZy core defaults (strings)
+  // Auto Tournament CS2 core defaults (strings)
   {
-    key: 'matchzy_hostname_format',
-    field: 'matchzyHostnameFormat',
+    key: 'at_hostname_format',
+    field: 'atHostnameFormat',
     order: 190,
     schema: { type: 'string' },
     // An empty hostname format is a real choice, not an absent one: it is how
-    // MatchZy is told to leave the server's own `hostname` alone. Every other
+    // Auto Tournament CS2 is told to leave the server's own `hostname` alone. Every other
     // setting folds "" to NULL and falls back to its default, which would make
     // "don't touch my hostname" indistinguishable from "never configured".
     keepEmpty: true,
     normalize(trimmed) {
-      // The value is sent as `matchzy_hostname_format "<value>"`, so an
+      // The value is sent as `at_hostname_format "<value>"`, so an
       // embedded quote would terminate the argument and produce a malformed
       // command. Drop them on write, so what is stored is what is sent.
       const sanitized = trimmed.replace(/"/g, '');
@@ -255,88 +255,88 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
         value: sanitized,
         message:
           sanitized === ''
-            ? 'matchzy_hostname_format cleared - servers keep their own hostname'
-            : `matchzy_hostname_format updated to ${sanitized}`,
+            ? 'at_hostname_format cleared - servers keep their own hostname'
+            : `at_hostname_format updated to ${sanitized}`,
       };
     },
-    applyRequest: stringRequest('matchzyHostnameFormat'),
+    applyRequest: stringRequest('atHostnameFormat'),
   },
   {
-    key: 'matchzy_demo_path',
-    field: 'matchzyDemoPath',
+    key: 'at_demo_path',
+    field: 'atDemoPath',
     order: 200,
     schema: { type: 'string' },
     normalize(trimmed) {
-      // MatchZy expects a path relative to csgo/ and it must end with "/".
+      // Auto Tournament CS2 expects a path relative to csgo/ and it must end with "/".
       const normalized = trimmed.endsWith('/') ? trimmed : `${trimmed}/`;
-      return { value: normalized, message: 'matchzy_demo_path updated' };
+      return { value: normalized, message: 'at_demo_path updated' };
     },
-    applyRequest: stringRequest('matchzyDemoPath'),
+    applyRequest: stringRequest('atDemoPath'),
   },
   {
-    key: 'matchzy_demo_name_format',
-    field: 'matchzyDemoNameFormat',
+    key: 'at_demo_name_format',
+    field: 'atDemoNameFormat',
     order: 210,
     schema: { type: 'string' },
-    normalize: normalizeText('matchzy_demo_name_format updated'),
-    applyRequest: stringRequest('matchzyDemoNameFormat'),
+    normalize: normalizeText('at_demo_name_format updated'),
+    applyRequest: stringRequest('atDemoNameFormat'),
   },
-  // MatchZy core defaults (numbers)
-  kickDelay('matchzy_series_end_kick_delay_no_demo', 'matchzySeriesEndKickDelayNoDemo', 220),
+  // Auto Tournament CS2 core defaults (numbers)
+  kickDelay('at_series_end_kick_delay_no_demo', 'atSeriesEndKickDelayNoDemo', 220),
   kickDelay(
-    'matchzy_series_end_kick_delay_demo_no_upload',
-    'matchzySeriesEndKickDelayDemoNoUpload',
+    'at_series_end_kick_delay_demo_no_upload',
+    'atSeriesEndKickDelayDemoNoUpload',
     230
   ),
-  kickDelay('matchzy_series_end_kick_delay_demo_upload', 'matchzySeriesEndKickDelayDemoUpload', 240),
-  // MatchZy Enhanced v1.3.0 settings
-  binary('matchzy_autoready_enabled', 'matchzyAutoreadyEnabled', 250),
-  binary('matchzy_both_teams_unpause_required', 'matchzyBothTeamsUnpauseRequired', 260),
-  integer('matchzy_max_pauses_per_team', 'matchzyMaxPausesPerTeam', 270, {
+  kickDelay('at_series_end_kick_delay_demo_upload', 'atSeriesEndKickDelayDemoUpload', 240),
+  // Auto Tournament CS2 v1.3.0 settings
+  binary('at_autoready_enabled', 'atAutoreadyEnabled', 250),
+  binary('at_both_teams_unpause_required', 'atBothTeamsUnpauseRequired', 260),
+  integer('at_max_pauses_per_team', 'atMaxPausesPerTeam', 270, {
     min: 0,
     max: 999,
-    message: 'matchzy_max_pauses_per_team must be 0-999',
+    message: 'at_max_pauses_per_team must be 0-999',
   }),
-  integer('matchzy_pause_duration', 'matchzyPauseDuration', 280, {
+  integer('at_pause_duration', 'atPauseDuration', 280, {
     min: 0,
     max: 999,
-    message: 'matchzy_pause_duration must be 0-999 seconds',
+    message: 'at_pause_duration must be 0-999 seconds',
   }),
-  binary('matchzy_side_selection_enabled', 'matchzySideSelectionEnabled', 290),
-  integer('matchzy_side_selection_time', 'matchzySideSelectionTime', 300, {
+  binary('at_side_selection_enabled', 'atSideSelectionEnabled', 290),
+  integer('at_side_selection_time', 'atSideSelectionTime', 300, {
     min: 1,
     max: 999,
-    message: 'matchzy_side_selection_time must be 1-999 seconds',
+    message: 'at_side_selection_time must be 1-999 seconds',
   }),
-  binary('matchzy_gg_enabled', 'matchzyGgEnabled', 310),
+  binary('at_gg_enabled', 'atGgEnabled', 310),
   {
-    key: 'matchzy_gg_threshold',
-    field: 'matchzyGgThreshold',
+    key: 'at_gg_threshold',
+    field: 'atGgThreshold',
     order: 320,
     schema: { type: 'string', 'x-minimum': 0, 'x-maximum': 1 },
     normalize(trimmed) {
       const parsed = Number(trimmed);
       if (!Number.isFinite(parsed) || parsed < 0 || parsed > 1) {
-        throw new Error('matchzy_gg_threshold must be 0.0-1.0');
+        throw new Error('at_gg_threshold must be 0.0-1.0');
       }
-      return { value: String(parsed), message: `matchzy_gg_threshold updated to ${parsed}` };
+      return { value: String(parsed), message: `at_gg_threshold updated to ${parsed}` };
     },
-    applyRequest: numberRequest('matchzyGgThreshold', 'a number (0.0-1.0)'),
+    applyRequest: numberRequest('atGgThreshold', 'a number (0.0-1.0)'),
   },
   integer(
-    'matchzy_gg_min_score_diff',
-    'matchzyGgMinScoreDiff',
+    'at_gg_min_score_diff',
+    'atGgMinScoreDiff',
     330,
-    { min: 0, max: 16, message: 'matchzy_gg_min_score_diff must be 0-16' },
+    { min: 0, max: 16, message: 'at_gg_min_score_diff must be 0-16' },
     'a number (0-16)'
   ),
-  binary('matchzy_ffw_enabled', 'matchzyFfwEnabled', 340),
-  integer('matchzy_ffw_time', 'matchzyFfwTime', 350, {
+  binary('at_ffw_enabled', 'atFfwEnabled', 340),
+  integer('at_ffw_time', 'atFfwTime', 350, {
     min: 1,
     max: 999,
-    message: 'matchzy_ffw_time must be 1-999 seconds',
+    message: 'at_ffw_time must be 1-999 seconds',
   }),
-  binary('matchzy_demo_recording_enabled', 'matchzyDemoRecordingEnabled', 360),
+  binary('at_demo_recording_enabled', 'atDemoRecordingEnabled', 360),
 ];
 
 /**

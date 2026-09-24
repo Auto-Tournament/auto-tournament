@@ -1,5 +1,5 @@
 /**
- * Typed readers for the CS2 instance settings (./settings), with the MatchZy
+ * Typed readers for the CS2 instance settings (./settings), with the Auto Tournament CS2
  * defaults applied. Moved unchanged from the core settings service; the
  * values still come from the core settings store.
  *
@@ -16,22 +16,22 @@ class Cs2Settings {
     return settingsService.getSetting(key);
   }
 
-  async getMatchzyChatPrefix(): Promise<string | null> {
-    const value = await this.getSetting('matchzy_chat_prefix');
+  async getAtChatPrefix(): Promise<string | null> {
+    const value = await this.getSetting('at_chat_prefix');
     const trimmed = value ? value.trim() : '';
     // Default to a sensible prefix if none is configured explicitly
     return trimmed !== '' ? trimmed : '[{Green}Auto Tournament{Default}]';
   }
 
-  async getMatchzyAdminChatPrefix(): Promise<string | null> {
-    const value = await this.getSetting('matchzy_admin_chat_prefix');
+  async getAtAdminChatPrefix(): Promise<string | null> {
+    const value = await this.getSetting('at_admin_chat_prefix');
     const trimmed = value ? value.trim() : '';
     // Default to a sensible admin prefix if none is configured explicitly
     return trimmed !== '' ? trimmed : '[{Red}ADMIN{Default}]';
   }
 
-  async isMatchzyDebugChatEnabled(): Promise<boolean> {
-    const value = await this.getSetting('matchzy_debug_chat');
+  async isAtDebugChatEnabled(): Promise<boolean> {
+    const value = await this.getSetting('at_debug_chat');
     if (!value) {
       // Explicit default: debug chat off unless enabled.
       return false;
@@ -41,9 +41,9 @@ class Cs2Settings {
   }
 
   async isKnifeRoundEnabledByDefault(): Promise<boolean> {
-    const value = await this.getSetting('matchzy_knife_enabled_default');
+    const value = await this.getSetting('at_knife_enabled_default');
     if (!value) {
-      // Defer to MatchZy plugin defaults when not explicitly configured
+      // Defer to Auto Tournament CS2 plugin defaults when not explicitly configured
       return true;
     }
 
@@ -51,125 +51,125 @@ class Cs2Settings {
     return normalized === '1' || normalized === 'true' || normalized === 'yes';
   }
 
-  async getMatchzyMinimumReadyRequired(): Promise<number> {
-    const value = await this.getSetting('matchzy_minimum_ready_required');
-    if (!value) return 0; // MatchZy Enhanced default (0 = everyone connected must ready)
+  async getAtMinimumReadyRequired(): Promise<number> {
+    const value = await this.getSetting('at_minimum_ready_required');
+    if (!value) return 0; // Auto Tournament CS2 default (0 = everyone connected must ready)
     const parsed = Number(value);
     if (!Number.isInteger(parsed) || parsed < 0) return 0;
     return parsed;
   }
 
-  async getMatchzyAutostartMode(): Promise<0 | 1 | 2> {
-    const value = await this.getSetting('matchzy_autostart_mode');
-    if (!value) return 1; // MatchZy default
+  async getAtAutostartMode(): Promise<0 | 1 | 2> {
+    const value = await this.getSetting('at_autostart_mode');
+    if (!value) return 1; // Auto Tournament CS2 default
     const parsed = Number(value);
     if (!Number.isInteger(parsed) || parsed < 0 || parsed > 2) return 1;
     return parsed as 0 | 1 | 2;
   }
 
-  async isMatchzyAllowForceReadyEnabled(): Promise<boolean> {
-    const value = await this.getSetting('matchzy_allow_force_ready');
-    if (!value) return true; // MatchZy default
+  async isAtAllowForceReadyEnabled(): Promise<boolean> {
+    const value = await this.getSetting('at_allow_force_ready');
+    if (!value) return true; // Auto Tournament CS2 default
     const normalized = value.toLowerCase();
     return normalized === '1' || normalized === 'true' || normalized === 'yes';
   }
 
-  async isMatchzyKickWhenNoMatchLoadedEnabled(): Promise<boolean> {
-    const value = await this.getSetting('matchzy_kick_when_no_match_loaded');
-    if (!value) return false; // MatchZy default
+  async isAtKickWhenNoMatchLoadedEnabled(): Promise<boolean> {
+    const value = await this.getSetting('at_kick_when_no_match_loaded');
+    if (!value) return false; // Auto Tournament CS2 default
     const normalized = value.toLowerCase();
     return normalized === '1' || normalized === 'true' || normalized === 'yes';
   }
 
-  async isMatchzyWhitelistEnabledDefault(): Promise<boolean> {
-    const value = await this.getSetting('matchzy_whitelist_enabled_default');
-    if (!value) return false; // MatchZy default
+  async isAtWhitelistEnabledDefault(): Promise<boolean> {
+    const value = await this.getSetting('at_whitelist_enabled_default');
+    if (!value) return false; // Auto Tournament CS2 default
     const normalized = value.toLowerCase();
     return normalized === '1' || normalized === 'true' || normalized === 'yes';
   }
 
-  async isMatchzyPauseAfterRestoreEnabled(): Promise<boolean> {
-    const value = await this.getSetting('matchzy_pause_after_restore');
-    if (!value) return true; // MatchZy default
+  async isAtPauseAfterRestoreEnabled(): Promise<boolean> {
+    const value = await this.getSetting('at_pause_after_restore');
+    if (!value) return true; // Auto Tournament CS2 default
     const normalized = value.toLowerCase();
     return normalized === '1' || normalized === 'true' || normalized === 'yes';
   }
 
-  async isMatchzyStopCommandAvailable(): Promise<boolean> {
-    const value = await this.getSetting('matchzy_stop_command_available');
-    if (!value) return false; // MatchZy default
+  async isAtStopCommandAvailable(): Promise<boolean> {
+    const value = await this.getSetting('at_stop_command_available');
+    if (!value) return false; // Auto Tournament CS2 default
     const normalized = value.toLowerCase();
     return normalized === '1' || normalized === 'true' || normalized === 'yes';
   }
 
-  async isMatchzyStopCommandNoDamage(): Promise<boolean> {
-    const value = await this.getSetting('matchzy_stop_command_no_damage');
-    if (!value) return false; // MatchZy default
+  async isAtStopCommandNoDamage(): Promise<boolean> {
+    const value = await this.getSetting('at_stop_command_no_damage');
+    if (!value) return false; // Auto Tournament CS2 default
     const normalized = value.toLowerCase();
     return normalized === '1' || normalized === 'true' || normalized === 'yes';
   }
 
-  async isMatchzyUsePauseCommandForTacticalPause(): Promise<boolean> {
-    const value = await this.getSetting('matchzy_use_pause_command_for_tactical_pause');
-    if (!value) return false; // MatchZy default
+  async isAtUsePauseCommandForTacticalPause(): Promise<boolean> {
+    const value = await this.getSetting('at_use_pause_command_for_tactical_pause');
+    if (!value) return false; // Auto Tournament CS2 default
     const normalized = value.toLowerCase();
     return normalized === '1' || normalized === 'true' || normalized === 'yes';
   }
 
   /**
-   * Hostname format MatchZy applies when a match loads.
+   * Hostname format Auto Tournament CS2 applies when a match loads.
    *
    * Returns `''` when the operator has explicitly cleared it, which tells the
    * plugin to leave the server's own `hostname` (from server.cfg) untouched.
-   * A missing row means "never configured", which keeps MatchZy's own default.
+   * A missing row means "never configured", which keeps Auto Tournament CS2's own default.
    * The two are deliberately distinct — see `setSetting`.
    */
-  async getMatchzyHostnameFormat(): Promise<string> {
-    const value = await this.getSetting('matchzy_hostname_format');
-    if (value === null) return '{TEAM1} vs {TEAM2}'; // MatchZy default
+  async getAtHostnameFormat(): Promise<string> {
+    const value = await this.getSetting('at_hostname_format');
+    if (value === null) return '{TEAM1} vs {TEAM2}'; // Auto Tournament CS2 default
     return value.trim();
   }
 
-  async getMatchzyDemoPath(): Promise<string> {
-    const value = await this.getSetting('matchzy_demo_path');
-    if (!value) return 'MatchZy/'; // MatchZy default
+  async getAtDemoPath(): Promise<string> {
+    const value = await this.getSetting('at_demo_path');
+    if (!value) return 'AutoTournamentCS2/'; // default folder, relative to csgo/
     const trimmed = value.trim();
-    if (!trimmed) return 'MatchZy/';
+    if (!trimmed) return 'AutoTournamentCS2/';
     return trimmed.endsWith('/') ? trimmed : `${trimmed}/`;
   }
 
-  async getMatchzyDemoNameFormat(): Promise<string> {
-    const value = await this.getSetting('matchzy_demo_name_format');
-    if (!value) return '{TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}'; // MatchZy default
+  async getAtDemoNameFormat(): Promise<string> {
+    const value = await this.getSetting('at_demo_name_format');
+    if (!value) return '{TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}'; // Auto Tournament CS2 default
     const trimmed = value.trim();
     return trimmed !== '' ? trimmed : '{TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}';
   }
 
-  async getMatchzySeriesEndKickDelayNoDemo(): Promise<number> {
-    const value = await this.getSetting('matchzy_series_end_kick_delay_no_demo');
-    if (!value) return 5; // MatchZy default
+  async getAtSeriesEndKickDelayNoDemo(): Promise<number> {
+    const value = await this.getSetting('at_series_end_kick_delay_no_demo');
+    if (!value) return 5; // Auto Tournament CS2 default
     const parsed = Number(value);
     if (!Number.isInteger(parsed) || parsed < 0) return 5;
     return parsed;
   }
 
-  async getMatchzySeriesEndKickDelayDemoNoUpload(): Promise<number> {
-    const value = await this.getSetting('matchzy_series_end_kick_delay_demo_no_upload');
-    if (!value) return 10; // MatchZy default
+  async getAtSeriesEndKickDelayDemoNoUpload(): Promise<number> {
+    const value = await this.getSetting('at_series_end_kick_delay_demo_no_upload');
+    if (!value) return 10; // Auto Tournament CS2 default
     const parsed = Number(value);
     if (!Number.isInteger(parsed) || parsed < 0) return 10;
     return parsed;
   }
 
-  async getMatchzySeriesEndKickDelayDemoUpload(): Promise<number> {
-    const value = await this.getSetting('matchzy_series_end_kick_delay_demo_upload');
-    if (!value) return 60; // MatchZy default
+  async getAtSeriesEndKickDelayDemoUpload(): Promise<number> {
+    const value = await this.getSetting('at_series_end_kick_delay_demo_upload');
+    if (!value) return 60; // Auto Tournament CS2 default
     const parsed = Number(value);
     if (!Number.isInteger(parsed) || parsed < 0) return 60;
     return parsed;
   }
 
-  async getMatchzyCoreDefaults(): Promise<{
+  async getAtCoreDefaults(): Promise<{
     autostartMode: 0 | 1 | 2;
     minimumReadyRequired: number;
     allowForceReady: boolean;
@@ -203,21 +203,21 @@ class Cs2Settings {
       seriesEndKickDelayDemoNoUpload,
       seriesEndKickDelayDemoUpload,
     ] = await Promise.all([
-      this.getMatchzyAutostartMode(),
-      this.getMatchzyMinimumReadyRequired(),
-      this.isMatchzyAllowForceReadyEnabled(),
-      this.isMatchzyKickWhenNoMatchLoadedEnabled(),
-      this.isMatchzyWhitelistEnabledDefault(),
-      this.isMatchzyPauseAfterRestoreEnabled(),
-      this.isMatchzyStopCommandAvailable(),
-      this.isMatchzyStopCommandNoDamage(),
-      this.isMatchzyUsePauseCommandForTacticalPause(),
-      this.getMatchzyHostnameFormat(),
-      this.getMatchzyDemoPath(),
-      this.getMatchzyDemoNameFormat(),
-      this.getMatchzySeriesEndKickDelayNoDemo(),
-      this.getMatchzySeriesEndKickDelayDemoNoUpload(),
-      this.getMatchzySeriesEndKickDelayDemoUpload(),
+      this.getAtAutostartMode(),
+      this.getAtMinimumReadyRequired(),
+      this.isAtAllowForceReadyEnabled(),
+      this.isAtKickWhenNoMatchLoadedEnabled(),
+      this.isAtWhitelistEnabledDefault(),
+      this.isAtPauseAfterRestoreEnabled(),
+      this.isAtStopCommandAvailable(),
+      this.isAtStopCommandNoDamage(),
+      this.isAtUsePauseCommandForTacticalPause(),
+      this.getAtHostnameFormat(),
+      this.getAtDemoPath(),
+      this.getAtDemoNameFormat(),
+      this.getAtSeriesEndKickDelayNoDemo(),
+      this.getAtSeriesEndKickDelayDemoNoUpload(),
+      this.getAtSeriesEndKickDelayDemoUpload(),
     ]);
 
     return {
@@ -240,22 +240,22 @@ class Cs2Settings {
   }
 
   /**
-   * Get MatchZy Enhanced v1.3.0 global configuration overrides.
+   * Get Auto Tournament CS2 v1.3.0 global configuration overrides.
    * Returns null for any setting that is not explicitly configured (use tournament defaults).
    */
-  async getMatchzyEnhancedSettings(): Promise<{
-    matchzy_autoready_enabled: 0 | 1 | null;
-    matchzy_both_teams_unpause_required: 0 | 1 | null;
-    matchzy_max_pauses_per_team: number | null;
-    matchzy_pause_duration: number | null;
-    matchzy_side_selection_enabled: 0 | 1 | null;
-    matchzy_side_selection_time: number | null;
-    matchzy_gg_enabled: 0 | 1 | null;
-    matchzy_gg_threshold: number | null;
-    matchzy_gg_min_score_diff: number | null;
-    matchzy_ffw_enabled: 0 | 1 | null;
-    matchzy_ffw_time: number | null;
-    matchzy_demo_recording_enabled: 0 | 1 | null;
+  async getAtEnhancedSettings(): Promise<{
+    at_autoready_enabled: 0 | 1 | null;
+    at_both_teams_unpause_required: 0 | 1 | null;
+    at_max_pauses_per_team: number | null;
+    at_pause_duration: number | null;
+    at_side_selection_enabled: 0 | 1 | null;
+    at_side_selection_time: number | null;
+    at_gg_enabled: 0 | 1 | null;
+    at_gg_threshold: number | null;
+    at_gg_min_score_diff: number | null;
+    at_ffw_enabled: 0 | 1 | null;
+    at_ffw_time: number | null;
+    at_demo_recording_enabled: 0 | 1 | null;
   }> {
     const parseBooleanSetting = async (key: Cs2SettingKey): Promise<0 | 1 | null> => {
       const value = await this.getSetting(key);
@@ -279,20 +279,20 @@ class Cs2Settings {
     };
 
     return {
-      matchzy_autoready_enabled: await parseBooleanSetting('matchzy_autoready_enabled'),
-      matchzy_both_teams_unpause_required: await parseBooleanSetting(
-        'matchzy_both_teams_unpause_required'
+      at_autoready_enabled: await parseBooleanSetting('at_autoready_enabled'),
+      at_both_teams_unpause_required: await parseBooleanSetting(
+        'at_both_teams_unpause_required'
       ),
-      matchzy_max_pauses_per_team: await parseIntSetting('matchzy_max_pauses_per_team'),
-      matchzy_pause_duration: await parseIntSetting('matchzy_pause_duration'),
-      matchzy_side_selection_enabled: await parseBooleanSetting('matchzy_side_selection_enabled'),
-      matchzy_side_selection_time: await parseIntSetting('matchzy_side_selection_time'),
-      matchzy_gg_enabled: await parseBooleanSetting('matchzy_gg_enabled'),
-      matchzy_gg_threshold: await parseFloatSetting('matchzy_gg_threshold'),
-      matchzy_gg_min_score_diff: await parseIntSetting('matchzy_gg_min_score_diff'),
-      matchzy_ffw_enabled: await parseBooleanSetting('matchzy_ffw_enabled'),
-      matchzy_ffw_time: await parseIntSetting('matchzy_ffw_time'),
-      matchzy_demo_recording_enabled: await parseBooleanSetting('matchzy_demo_recording_enabled'),
+      at_max_pauses_per_team: await parseIntSetting('at_max_pauses_per_team'),
+      at_pause_duration: await parseIntSetting('at_pause_duration'),
+      at_side_selection_enabled: await parseBooleanSetting('at_side_selection_enabled'),
+      at_side_selection_time: await parseIntSetting('at_side_selection_time'),
+      at_gg_enabled: await parseBooleanSetting('at_gg_enabled'),
+      at_gg_threshold: await parseFloatSetting('at_gg_threshold'),
+      at_gg_min_score_diff: await parseIntSetting('at_gg_min_score_diff'),
+      at_ffw_enabled: await parseBooleanSetting('at_ffw_enabled'),
+      at_ffw_time: await parseIntSetting('at_ffw_time'),
+      at_demo_recording_enabled: await parseBooleanSetting('at_demo_recording_enabled'),
     };
   }
 }
@@ -303,50 +303,50 @@ export const cs2Settings = new Cs2Settings();
 export async function readCs2InstanceSettings(): Promise<Record<string, unknown>> {
   const simulateMatches = await settingsService.isSimulationModeEnabled();
   const simulationTimescale = await settingsService.getSimulationTimescale();
-  const matchzyChatPrefix = await cs2Settings.getMatchzyChatPrefix();
-  const matchzyAdminChatPrefix = await cs2Settings.getMatchzyAdminChatPrefix();
-  const matchzyKnifeEnabledDefault = await cs2Settings.isKnifeRoundEnabledByDefault();
-  const matchzyDebugChatEnabled = await cs2Settings.isMatchzyDebugChatEnabled();
-  const matchzyCore = await cs2Settings.getMatchzyCoreDefaults();
+  const atChatPrefix = await cs2Settings.getAtChatPrefix();
+  const atAdminChatPrefix = await cs2Settings.getAtAdminChatPrefix();
+  const atKnifeEnabledDefault = await cs2Settings.isKnifeRoundEnabledByDefault();
+  const atDebugChatEnabled = await cs2Settings.isAtDebugChatEnabled();
+  const atCore = await cs2Settings.getAtCoreDefaults();
 
-  // MatchZy Enhanced v1.3.0 settings
-  const matchzyEnhanced = await cs2Settings.getMatchzyEnhancedSettings();
+  // Auto Tournament CS2 v1.3.0 settings
+  const atEnhanced = await cs2Settings.getAtEnhancedSettings();
 
   return {
     simulateMatches,
     simulationTimescale,
-    matchzyChatPrefix,
-    matchzyAdminChatPrefix,
-    matchzyKnifeEnabledDefault,
-    matchzyDebugChatEnabled,
-    // MatchZy core defaults
-    matchzyAutostartMode: matchzyCore.autostartMode,
-    matchzyMinimumReadyRequired: matchzyCore.minimumReadyRequired,
-    matchzyAllowForceReady: matchzyCore.allowForceReady,
-    matchzyKickWhenNoMatchLoaded: matchzyCore.kickWhenNoMatchLoaded,
-    matchzyWhitelistEnabledDefault: matchzyCore.whitelistEnabledDefault,
-    matchzyPauseAfterRestore: matchzyCore.pauseAfterRestore,
-    matchzyStopCommandAvailable: matchzyCore.stopCommandAvailable,
-    matchzyStopCommandNoDamage: matchzyCore.stopCommandNoDamage,
-    matchzyUsePauseCommandForTacticalPause: matchzyCore.usePauseCommandForTacticalPause,
-    matchzyHostnameFormat: matchzyCore.hostnameFormat,
-    matchzyDemoPath: matchzyCore.demoPath,
-    matchzyDemoNameFormat: matchzyCore.demoNameFormat,
-    matchzySeriesEndKickDelayNoDemo: matchzyCore.seriesEndKickDelayNoDemo,
-    matchzySeriesEndKickDelayDemoNoUpload: matchzyCore.seriesEndKickDelayDemoNoUpload,
-    matchzySeriesEndKickDelayDemoUpload: matchzyCore.seriesEndKickDelayDemoUpload,
-    // MatchZy Enhanced v1.3.0 settings (null = use tournament defaults)
-    matchzyAutoreadyEnabled: matchzyEnhanced.matchzy_autoready_enabled,
-    matchzyBothTeamsUnpauseRequired: matchzyEnhanced.matchzy_both_teams_unpause_required,
-    matchzyMaxPausesPerTeam: matchzyEnhanced.matchzy_max_pauses_per_team,
-    matchzyPauseDuration: matchzyEnhanced.matchzy_pause_duration,
-    matchzySideSelectionEnabled: matchzyEnhanced.matchzy_side_selection_enabled,
-    matchzySideSelectionTime: matchzyEnhanced.matchzy_side_selection_time,
-    matchzyGgEnabled: matchzyEnhanced.matchzy_gg_enabled,
-    matchzyGgThreshold: matchzyEnhanced.matchzy_gg_threshold,
-    matchzyGgMinScoreDiff: matchzyEnhanced.matchzy_gg_min_score_diff,
-    matchzyFfwEnabled: matchzyEnhanced.matchzy_ffw_enabled,
-    matchzyFfwTime: matchzyEnhanced.matchzy_ffw_time,
-    matchzyDemoRecordingEnabled: matchzyEnhanced.matchzy_demo_recording_enabled,
+    atChatPrefix,
+    atAdminChatPrefix,
+    atKnifeEnabledDefault,
+    atDebugChatEnabled,
+    // Auto Tournament CS2 core defaults
+    atAutostartMode: atCore.autostartMode,
+    atMinimumReadyRequired: atCore.minimumReadyRequired,
+    atAllowForceReady: atCore.allowForceReady,
+    atKickWhenNoMatchLoaded: atCore.kickWhenNoMatchLoaded,
+    atWhitelistEnabledDefault: atCore.whitelistEnabledDefault,
+    atPauseAfterRestore: atCore.pauseAfterRestore,
+    atStopCommandAvailable: atCore.stopCommandAvailable,
+    atStopCommandNoDamage: atCore.stopCommandNoDamage,
+    atUsePauseCommandForTacticalPause: atCore.usePauseCommandForTacticalPause,
+    atHostnameFormat: atCore.hostnameFormat,
+    atDemoPath: atCore.demoPath,
+    atDemoNameFormat: atCore.demoNameFormat,
+    atSeriesEndKickDelayNoDemo: atCore.seriesEndKickDelayNoDemo,
+    atSeriesEndKickDelayDemoNoUpload: atCore.seriesEndKickDelayDemoNoUpload,
+    atSeriesEndKickDelayDemoUpload: atCore.seriesEndKickDelayDemoUpload,
+    // Auto Tournament CS2 v1.3.0 settings (null = use tournament defaults)
+    atAutoreadyEnabled: atEnhanced.at_autoready_enabled,
+    atBothTeamsUnpauseRequired: atEnhanced.at_both_teams_unpause_required,
+    atMaxPausesPerTeam: atEnhanced.at_max_pauses_per_team,
+    atPauseDuration: atEnhanced.at_pause_duration,
+    atSideSelectionEnabled: atEnhanced.at_side_selection_enabled,
+    atSideSelectionTime: atEnhanced.at_side_selection_time,
+    atGgEnabled: atEnhanced.at_gg_enabled,
+    atGgThreshold: atEnhanced.at_gg_threshold,
+    atGgMinScoreDiff: atEnhanced.at_gg_min_score_diff,
+    atFfwEnabled: atEnhanced.at_ffw_enabled,
+    atFfwTime: atEnhanced.at_ffw_time,
+    atDemoRecordingEnabled: atEnhanced.at_demo_recording_enabled,
   };
 }

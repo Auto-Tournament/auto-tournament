@@ -1,14 +1,14 @@
 /**
- * Helper functions to generate MatchZy RCON configuration commands
+ * Helper functions to generate Auto Tournament CS2 RCON configuration commands
  */
 
 import { buildServerEventsUrl } from '../../../utils/serverAttribution';
 
 /**
- * Get RCON commands to configure MatchZy webhook
+ * Get RCON commands to configure Auto Tournament CS2 webhook
  * Uses match slug in URL path for better event tracking
  */
-export function getMatchZyWebhookCommands(
+export function getPluginWebhookCommands(
   baseUrl: string,
   serverToken: string,
   matchSlug?: string | null,
@@ -22,17 +22,17 @@ export function getMatchZyWebhookCommands(
     : buildServerEventsUrl(baseUrl, serverId);
 
   return [
-    `matchzy_remote_log_url "${webhookUrl}"`,
-    `matchzy_remote_log_header_key "X-MatchZy-Token"`,
-    `matchzy_remote_log_header_value "${serverToken}"`,
+    `at_remote_log_url "${webhookUrl}"`,
+    `at_remote_log_header_key "X-Auto-Tournament-Token"`,
+    `at_remote_log_header_value "${serverToken}"`,
     // Where the plugin pushes full match reports. Without this the plugin's
     // upload is skipped and the report is only offered as the reply to an RCON
     // command — which it builds asynchronously, long after the RCON response has
     // been sent, so MAT reads an empty string and drops the report entirely.
-    // `matchzy_report_server_id` needs no command: the plugin sets it from
-    // `matchzy_server_id`, which is already sent during initialization.
-    `matchzy_report_endpoint "${baseUrl}/api/events/report"`,
-    `matchzy_report_token "${serverToken}"`,
+    // `at_report_server_id` needs no command: the plugin sets it from
+    // `at_server_id`, which is already sent during initialization.
+    `at_report_endpoint "${baseUrl}/api/events/report"`,
+    `at_report_token "${serverToken}"`,
     `get5_check_auths true`, // Enable auth check to prevent random players
   ];
 }
@@ -41,51 +41,51 @@ export function getMatchZyWebhookCommands(
  * Get RCON commands that point a server at MAT's bootstrap endpoint.
  *
  * Order matters: the plugin fetches the bootstrap URL the moment
- * `matchzy_bootstrap_url` is set, using whatever token it has persisted at that
+ * `at_bootstrap_url` is set, using whatever token it has persisted at that
  * point, and does not refetch when the token changes afterwards. On a server
  * last configured by another MAT instance, setting the URL first sends the stale
  * token, gets a 401, and leaves the server unconfigured. So the token goes
  * before the URL, and the URL is the last command.
  */
-export function getMatchZyBootstrapCommands(
+export function getPluginBootstrapCommands(
   baseUrl: string,
   serverId: string,
   serverToken: string
 ): string[] {
   const bootstrapUrl = `${baseUrl}/api/servers/${serverId}/bootstrap`;
   return [
-    'matchzy_clear_event_queue',
-    `matchzy_server_id "${serverId}"`,
-    `matchzy_bootstrap_token "${serverToken}"`,
-    `matchzy_bootstrap_url "${bootstrapUrl}"`,
+    'at_clear_event_queue',
+    `at_server_id "${serverId}"`,
+    `at_bootstrap_token "${serverToken}"`,
+    `at_bootstrap_url "${bootstrapUrl}"`,
   ];
 }
 
 /**
  * Get RCON commands to configure match report upload endpoint
  */
-export function getMatchZyReportUploadCommands(
+export function getPluginReportUploadCommands(
   baseUrl: string,
   serverToken: string,
   serverId: string
 ): string[] {
   const reportEndpoint = `${baseUrl}/api/events/report`;
   return [
-    `matchzy_report_endpoint "${reportEndpoint}"`,
-    `matchzy_report_server_id "${serverId}"`,
-    `matchzy_report_token "${serverToken}"`,
+    `at_report_endpoint "${reportEndpoint}"`,
+    `at_report_server_id "${serverId}"`,
+    `at_report_token "${serverToken}"`,
   ];
 }
 
 /**
- * Get RCON commands to configure MatchZy demo upload
+ * Get RCON commands to configure Auto Tournament CS2 demo upload
  * Returns array of commands to set URL and authentication headers
  * (Similar to webhook configuration)
  * 
  * @param matchSlug - Optional match slug for specific match upload endpoint. 
  *                    If null, sets base upload URL (for server initialization)
  */
-export function getMatchZyDemoUploadCommands(
+export function getPluginDemoUploadCommands(
   baseUrl: string,
   matchSlug: string | null,
   serverToken: string
@@ -95,60 +95,60 @@ export function getMatchZyDemoUploadCommands(
     : `${baseUrl}/api/demos/upload`;
     
   return [
-    `matchzy_demo_upload_url "${uploadUrl}"`,
-    `matchzy_demo_upload_header_key "X-MatchZy-Token"`,
-    `matchzy_demo_upload_header_value "${serverToken}"`,
+    `at_demo_upload_url "${uploadUrl}"`,
+    `at_demo_upload_header_key "X-Auto-Tournament-Token"`,
+    `at_demo_upload_header_value "${serverToken}"`,
   ];
 }
 
 /**
- * @deprecated Use getMatchZyDemoUploadCommands() instead
+ * @deprecated Use getPluginDemoUploadCommands() instead
  * Kept for backward compatibility
  */
-export function getMatchZyDemoUploadCommand(baseUrl: string, matchSlug: string): string {
-  return `matchzy_demo_upload_url "${baseUrl}/api/demos/${matchSlug}/upload"`;
+export function getPluginDemoUploadCommand(baseUrl: string, matchSlug: string): string {
+  return `at_demo_upload_url "${baseUrl}/api/demos/${matchSlug}/upload"`;
 }
 
 /**
  * Header the game server presents when it downloads its match config. Same
  * header, same `SERVER_TOKEN`, as the event webhook and demo upload.
  */
-export const MATCH_CONFIG_AUTH_HEADER = 'X-MatchZy-Token';
+export const MATCH_CONFIG_AUTH_HEADER = 'X-Auto-Tournament-Token';
 
 /**
- * The RCON command that tells MatchZy to load a match.
+ * The RCON command that tells Auto Tournament CS2 to load a match.
  *
- * `matchzy_loadmatch_url "<url>" "<header name>" "<header value>"` — MatchZy
+ * `at_loadmatch_url "<url>" "<header name>" "<header value>"` — Auto Tournament CS2
  * adds the header to its config fetch, and keeps it for a load it queues
  * behind a series in postgame. It has taken the two extra arguments since
- * MatchZy 0.6.0, so every MatchZy-Enhanced build does. The config endpoint
+ * Auto Tournament CS2 0.6.0, so every Auto Tournament CS2 build does. The config endpoint
  * refuses a fetch without the header (see `requireMatchConfigAccess`).
  *
  * Without a token the bare command is sent; the fetch is then refused, which
  * is the right outcome for an instance with no `SERVER_TOKEN`.
  */
-export function getMatchZyLoadMatchCommand(
+export function getPluginLoadMatchCommand(
   configUrl: string,
   serverToken: string | null | undefined
 ): string {
   if (!serverToken) {
-    return `matchzy_loadmatch_url "${configUrl}"`;
+    return `at_loadmatch_url "${configUrl}"`;
   }
-  return `matchzy_loadmatch_url "${configUrl}" "${MATCH_CONFIG_AUTH_HEADER}" "${serverToken}"`;
+  return `at_loadmatch_url "${configUrl}" "${MATCH_CONFIG_AUTH_HEADER}" "${serverToken}"`;
 }
 
 /** The load command as it may appear in logs and API responses: token hidden. */
 export function redactLoadMatchCommand(command: string): string {
-  return command.replace(/^(matchzy_loadmatch_url "[^"]*" "[^"]*" )"[^"]*"$/, '$1"REDACTED"');
+  return command.replace(/^(at_loadmatch_url "[^"]*" "[^"]*" )"[^"]*"$/, '$1"REDACTED"');
 }
 
 /**
- * Get RCON commands for core MatchZy settings that we want to control from the app:
+ * Get RCON commands for core Auto Tournament CS2 settings that we want to control from the app:
  * - Chat prefixes
  * - Knife round enabled-by-default toggle
  * - Debug chat toggle
  */
-export function getMatchZyCoreSettingsCommands(options: {
+export function getPluginCoreSettingsCommands(options: {
   chatPrefix: string | null;
   adminChatPrefix: string | null;
   knifeEnabledDefault: boolean | null;
@@ -157,31 +157,31 @@ export function getMatchZyCoreSettingsCommands(options: {
   const commands: string[] = [];
 
   if (options.chatPrefix !== null) {
-    commands.push(`matchzy_chat_prefix "${options.chatPrefix}"`);
+    commands.push(`at_chat_prefix "${options.chatPrefix}"`);
   }
 
   if (options.adminChatPrefix !== null) {
-    commands.push(`matchzy_admin_chat_prefix "${options.adminChatPrefix}"`);
+    commands.push(`at_admin_chat_prefix "${options.adminChatPrefix}"`);
   }
 
   if (options.knifeEnabledDefault !== null) {
-    commands.push(`matchzy_knife_enabled_default ${options.knifeEnabledDefault ? '1' : '0'}`);
+    commands.push(`at_knife_enabled_default ${options.knifeEnabledDefault ? '1' : '0'}`);
   }
 
   if (options.debugChatEnabled !== null) {
-    commands.push(`matchzy_debug_chat ${options.debugChatEnabled ? '1' : '0'}`);
+    commands.push(`at_debug_chat ${options.debugChatEnabled ? '1' : '0'}`);
   }
 
   return commands;
 }
 
 /**
- * Get RCON commands for per-server MatchZy configuration overrides.
+ * Get RCON commands for per-server Auto Tournament CS2 configuration overrides.
  * All fields are optional; null/undefined means "do not touch this ConVar".
  * Note: Chat prefixes and knife round defaults are not per-server settings;
  * they are configured at the global/tournament/match level.
  */
-export function getMatchZyServerConfigCommands(config: {
+export function getPluginServerConfigCommands(config: {
   minimumReadyRequired?: number | null;
   allowForceReady?: boolean | null;
   pauseAfterRestore?: boolean | null;
@@ -193,12 +193,12 @@ export function getMatchZyServerConfigCommands(config: {
   resetCvarsOnSeriesEnd?: boolean | null;
   usePauseCommandForTacticalPause?: boolean | null;
   /**
-   * MatchZy Enhanced autostart mode:
+   * Auto Tournament CS2 autostart mode:
    * 0 = idle/sleep, 1 = match mode, 2 = practice mode
    */
   autostartMode?: 0 | 1 | 2 | null;
   /**
-   * Hostname MatchZy applies on match load. `''` is a meaningful value: it tells
+   * Hostname Auto Tournament CS2 applies on match load. `''` is a meaningful value: it tells
    * the plugin to leave the server's own `hostname` alone.
    */
   hostnameFormat?: string | null;
@@ -217,67 +217,67 @@ export function getMatchZyServerConfigCommands(config: {
     config.minimumReadyRequired !== null &&
     Number.isFinite(config.minimumReadyRequired)
   ) {
-    commands.push(`matchzy_minimum_ready_required ${config.minimumReadyRequired}`);
+    commands.push(`at_minimum_ready_required ${config.minimumReadyRequired}`);
   }
   if (config.allowForceReady !== undefined && config.allowForceReady !== null) {
-    commands.push(`matchzy_allow_force_ready ${config.allowForceReady ? '1' : '0'}`);
+    commands.push(`at_allow_force_ready ${config.allowForceReady ? '1' : '0'}`);
   }
   if (config.pauseAfterRestore !== undefined && config.pauseAfterRestore !== null) {
-    commands.push(`matchzy_pause_after_restore ${config.pauseAfterRestore ? '1' : '0'}`);
+    commands.push(`at_pause_after_restore ${config.pauseAfterRestore ? '1' : '0'}`);
   }
   if (config.stopCommandAvailable !== undefined && config.stopCommandAvailable !== null) {
-    commands.push(`matchzy_stop_command_available ${config.stopCommandAvailable ? '1' : '0'}`);
+    commands.push(`at_stop_command_available ${config.stopCommandAvailable ? '1' : '0'}`);
   }
   if (config.stopCommandNoDamage !== undefined && config.stopCommandNoDamage !== null) {
-    commands.push(`matchzy_stop_command_no_damage ${config.stopCommandNoDamage ? '1' : '0'}`);
+    commands.push(`at_stop_command_no_damage ${config.stopCommandNoDamage ? '1' : '0'}`);
   }
   if (config.whitelistEnabledDefault !== undefined && config.whitelistEnabledDefault !== null) {
     commands.push(
-      `matchzy_whitelist_enabled_default ${config.whitelistEnabledDefault ? '1' : '0'}`
+      `at_whitelist_enabled_default ${config.whitelistEnabledDefault ? '1' : '0'}`
     );
   }
   if (config.kickWhenNoMatchLoaded !== undefined && config.kickWhenNoMatchLoaded !== null) {
-    commands.push(`matchzy_kick_when_no_match_loaded ${config.kickWhenNoMatchLoaded ? '1' : '0'}`);
+    commands.push(`at_kick_when_no_match_loaded ${config.kickWhenNoMatchLoaded ? '1' : '0'}`);
   }
   if (config.playoutEnabledDefault !== undefined && config.playoutEnabledDefault !== null) {
-    commands.push(`matchzy_playout_enabled_default ${config.playoutEnabledDefault ? '1' : '0'}`);
+    commands.push(`at_playout_enabled_default ${config.playoutEnabledDefault ? '1' : '0'}`);
   }
   if (config.resetCvarsOnSeriesEnd !== undefined && config.resetCvarsOnSeriesEnd !== null) {
-    commands.push(`matchzy_reset_cvars_on_series_end ${config.resetCvarsOnSeriesEnd ? '1' : '0'}`);
+    commands.push(`at_reset_cvars_on_series_end ${config.resetCvarsOnSeriesEnd ? '1' : '0'}`);
   }
   if (
     config.usePauseCommandForTacticalPause !== undefined &&
     config.usePauseCommandForTacticalPause !== null
   ) {
     commands.push(
-      `matchzy_use_pause_command_for_tactical_pause ${
+      `at_use_pause_command_for_tactical_pause ${
         config.usePauseCommandForTacticalPause ? '1' : '0'
       }`
     );
   }
 
   if (config.autostartMode !== undefined && config.autostartMode !== null) {
-    commands.push(`matchzy_autostart_mode ${config.autostartMode}`);
+    commands.push(`at_autostart_mode ${config.autostartMode}`);
   }
 
-  // Emitted even when empty — `matchzy_hostname_format ""` is how the plugin is
+  // Emitted even when empty — `at_hostname_format ""` is how the plugin is
   // told not to overwrite the hostname set in the server's own config.
   if (config.hostnameFormat !== undefined && config.hostnameFormat !== null) {
-    commands.push(`matchzy_hostname_format "${config.hostnameFormat}"`);
+    commands.push(`at_hostname_format "${config.hostnameFormat}"`);
   }
 
   if (config.demoPath !== undefined && config.demoPath !== null) {
-    commands.push(`matchzy_demo_path "${config.demoPath}"`);
+    commands.push(`at_demo_path "${config.demoPath}"`);
   }
   if (config.demoNameFormat !== undefined && config.demoNameFormat !== null) {
-    commands.push(`matchzy_demo_name_format "${config.demoNameFormat}"`);
+    commands.push(`at_demo_name_format "${config.demoNameFormat}"`);
   }
   if (
     config.seriesEndKickDelayNoDemo !== undefined &&
     config.seriesEndKickDelayNoDemo !== null &&
     Number.isFinite(config.seriesEndKickDelayNoDemo)
   ) {
-    commands.push(`matchzy_series_end_kick_delay_no_demo ${config.seriesEndKickDelayNoDemo}`);
+    commands.push(`at_series_end_kick_delay_no_demo ${config.seriesEndKickDelayNoDemo}`);
   }
   if (
     config.seriesEndKickDelayDemoNoUpload !== undefined &&
@@ -285,7 +285,7 @@ export function getMatchZyServerConfigCommands(config: {
     Number.isFinite(config.seriesEndKickDelayDemoNoUpload)
   ) {
     commands.push(
-      `matchzy_series_end_kick_delay_demo_no_upload ${config.seriesEndKickDelayDemoNoUpload}`
+      `at_series_end_kick_delay_demo_no_upload ${config.seriesEndKickDelayDemoNoUpload}`
     );
   }
   if (
@@ -294,28 +294,28 @@ export function getMatchZyServerConfigCommands(config: {
     Number.isFinite(config.seriesEndKickDelayDemoUpload)
   ) {
     commands.push(
-      `matchzy_series_end_kick_delay_demo_upload ${config.seriesEndKickDelayDemoUpload}`
+      `at_series_end_kick_delay_demo_upload ${config.seriesEndKickDelayDemoUpload}`
     );
   }
   if (config.demoUploadUrl !== undefined && config.demoUploadUrl !== null) {
-    commands.push(`matchzy_demo_upload_url "${config.demoUploadUrl}"`);
+    commands.push(`at_demo_upload_url "${config.demoUploadUrl}"`);
   }
 
   if (config.debugChatEnabled !== undefined && config.debugChatEnabled !== null) {
-    commands.push(`matchzy_debug_chat ${config.debugChatEnabled ? '1' : '0'}`);
+    commands.push(`at_debug_chat ${config.debugChatEnabled ? '1' : '0'}`);
   }
 
   return commands;
 }
 
 /**
- * Get RCON commands to disable MatchZy webhook
+ * Get RCON commands to disable Auto Tournament CS2 webhook
  */
 export function getDisableWebhookCommands(): string[] {
   return [
-    'matchzy_remote_log_url ""',
-    'matchzy_remote_log_header_key ""',
-    'matchzy_remote_log_header_value ""',
+    'at_remote_log_url ""',
+    'at_remote_log_header_key ""',
+    'at_remote_log_header_value ""',
   ];
 }
 

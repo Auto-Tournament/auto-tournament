@@ -170,7 +170,7 @@
       "noServers": "Geen servers beschikbaar",
       "refreshServers": "Serverlijst vernieuwen",
       "noEvents": "Nog geen events van deze server ontvangen.",
-      "noEventsHint": "Na 15 seconden nog steeds geen events. Controleer of je CS2-server is ingesteld om MatchZy-webhooks naar /api/events/:matchSlugOrServerId te sturen met de juiste X-MatchZy-Token.",
+      "noEventsHint": "Na 15 seconden nog steeds geen events. Controleer of je CS2-server is ingesteld om Auto Tournament CS2-webhooks naar /api/events/:matchSlugOrServerId te sturen met de juiste X-Auto-Tournament-Token.",
       "waiting": "Wachten op events van de server…",
       "footer_one": "{{count}} event getoond (max. 100)",
       "footer_other": "{{count}} events getoond (max. 100)",

@@ -1,13 +1,13 @@
 /**
  * Server -> API reachability check for "Test connection".
  *
- * The check used to point `matchzy_remote_log_url` at a throwaway
+ * The check used to point `at_remote_log_url` at a throwaway
  * `test_<host>_<port>` address, fire `css_te`, and poll for an event under that
  * id. Two problems:
  *
  *  - the convars were never restored, so testing a live server repointed its
  *    event stream at a URL no match listens to;
- *  - the plugin puts its own `matchzy_server_id` in the payload, and the events
+ *  - the plugin puts its own `at_server_id` in the payload, and the events
  *    route prefers that, so the test event landed under the real id (`s_1`) and
  *    the check reported "cannot reach the API" for a server that just did.
  *
@@ -21,8 +21,8 @@
 
 /** Convar queries (no value = read) plus the test-event trigger. Nothing here sets a convar. */
 export const CONNECTION_TEST_QUERIES = {
-  serverId: 'matchzy_server_id',
-  remoteLogUrl: 'matchzy_remote_log_url',
+  serverId: 'at_server_id',
+  remoteLogUrl: 'at_remote_log_url',
 } as const;
 
 export const CONNECTION_TEST_TRIGGER = 'css_te';

@@ -151,6 +151,91 @@ export async function backfillTeamMembers(client: Queryable): Promise<TeamMember
   return result;
 }
 
+/** The 2.x prefix of the CS2 plugin's names, and the 3.0 one. */
+const LEGACY_PLUGIN_PREFIX = 'matchzy_';
+const PLUGIN_PREFIX = 'at_';
+
+export interface PluginNamesResult {
+  /** `app_settings` rows renamed from `matchzy_*` to `at_*`. */
+  settings: number;
+  /** `matchzy_*` settings left alone because the `at_*` key exists too. */
+  settingsSkipped: number;
+  /** Stored match configs whose `cvars` were renamed. */
+  matchConfigs: number;
+}
+
+/**
+ * 3.0 renamed the CS2 plugin's console variables from `matchzy_*` to `at_*`,
+ * and the platform's own settings that mirror them with it. Rename what 2.x
+ * stored under the old names:
+ * - `app_settings` keys (`matchzy_chat_prefix` → `at_chat_prefix`, …), unless
+ *   the new key exists already, in which case the old row is left as it is;
+ * - the `cvars` of stored match configs, so a match created before the
+ *   upgrade and loaded after it sends `at_*` to the server.
+ *
+ * Only rows that still carry an old name are touched, so running it again
+ * changes nothing. A config that is not valid JSON is left alone.
+ */
+export async function renamePluginNames(client: Queryable): Promise<PluginNamesResult> {
+  const renamed = await client.query(
+    `UPDATE app_settings s
+        SET key = $2 || substr(s.key, length($1) + 1)
+      WHERE starts_with(s.key, $1)
+        AND NOT EXISTS (
+          SELECT 1 FROM app_settings n WHERE n.key = $2 || substr(s.key, length($1) + 1)
+        )`,
+    [LEGACY_PLUGIN_PREFIX, PLUGIN_PREFIX]
+  );
+  const left = await client.query<{ n: string }>(
+    'SELECT COUNT(*)::text AS n FROM app_settings WHERE starts_with(key, $1)',
+    [LEGACY_PLUGIN_PREFIX]
+  );
+
+  const { rows } = await client.query<{ id: number; config: string }>(
+    'SELECT id, config FROM matches WHERE strpos(config, $1) > 0 ORDER BY id',
+    [`"${LEGACY_PLUGIN_PREFIX}`]
+  );
+  let matchConfigs = 0;
+  for (const row of rows) {
+    let config: unknown;
+    try {
+      config = JSON.parse(row.config);
+    } catch {
+      continue;
+    }
+    if (!config || typeof config !== 'object' || Array.isArray(config)) continue;
+    const cvars = (config as { cvars?: unknown }).cvars;
+    if (!cvars || typeof cvars !== 'object' || Array.isArray(cvars)) continue;
+
+    let changed = false;
+    const next: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(cvars as Record<string, unknown>)) {
+      const newKey = key.startsWith(LEGACY_PLUGIN_PREFIX)
+        ? PLUGIN_PREFIX + key.slice(LEGACY_PLUGIN_PREFIX.length)
+        : key;
+      if (newKey !== key && !Object.prototype.hasOwnProperty.call(cvars, newKey)) {
+        next[newKey] = value;
+        changed = true;
+      } else {
+        next[key] = value;
+      }
+    }
+    if (!changed) continue;
+    (config as { cvars: unknown }).cvars = next;
+    await client.query('UPDATE matches SET config = $1 WHERE id = $2', [
+      JSON.stringify(config),
+      row.id,
+    ]);
+    matchConfigs++;
+  }
+
+  return {
+    settings: renamed.rowCount ?? 0,
+    settingsSkipped: Number(left.rows[0]?.n ?? 0),
+    matchConfigs,
+  };
+}
+
 /** In the order they run. Append only. */
 export const SCHEMA_MIGRATIONS: readonly SchemaMigration[] = [
   {
@@ -174,6 +259,23 @@ export const SCHEMA_MIGRATIONS: readonly SchemaMigration[] = [
             ? `, ${skipped} roster entr${skipped === 1 ? 'y' : 'ies'} without a player row skipped`
             : '')
       );
+    },
+  },
+  {
+    id: '2026-09-24-plugin-names',
+    description: 'Rename the CS2 plugin names 2.x stored (settings keys, match config cvars) to at_*',
+    async up(client) {
+      const { settings, settingsSkipped, matchConfigs } = await renamePluginNames(client);
+      log.success(
+        `[PostgreSQL] Renamed the CS2 plugin names to at_*: ${settings} setting(s), ` +
+          `${matchConfigs} stored match config(s)`
+      );
+      if (settingsSkipped > 0) {
+        log.warn(
+          `[PostgreSQL] ${settingsSkipped} setting(s) under a 2.x name were left alone because ` +
+            'the at_* setting exists too. The at_* value is the one in use.'
+        );
+      }
     },
   },
 ];

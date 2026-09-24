@@ -83,11 +83,11 @@ body:
       required: true
 
   - type: input
-    id: matchzy-version
+    id: plugin-version
     attributes:
       label: Auto Tournament CS2 plugin version
-      description: What version of the CS2 plugin (Auto Tournament CS2, formerly MatchZy Enhanced) is on your CS2 servers?
-      placeholder: "e.g., v1.3.6"
+      description: What version of the CS2 plugin (Auto Tournament CS2) is on your CS2 servers?
+      placeholder: "e.g., v2.0.0"
     validations:
       required: false
 
@@ -106,7 +106,7 @@ body:
         [ERROR] WebSocket connection failed: net::ERR_CONNECTION_REFUSED
         ```
         
-        API Logs (docker logs matchzy-api):
+        API Logs (docker logs auto-tournament):
         ```
         [ERROR] matchAllocationService: No available servers for match-1
         [ERROR] Failed to start tournament: Server allocation failed

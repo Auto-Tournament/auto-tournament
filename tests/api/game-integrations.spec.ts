@@ -69,7 +69,7 @@ test.describe('Game integration registry', () => {
     expect(() => registerIntegration(getIntegration('cs2'))).toThrow(/already registered/);
   });
 
-  test('cs2 stats schema is a function of the tournament and lists the MatchZy metrics', () => {
+  test('cs2 stats schema is a function of the tournament and lists the Auto Tournament CS2 metrics', () => {
     const cs2 = getIntegration('cs2');
     const standalone = cs2.statsSchema(null);
     const inTournament = cs2.statsSchema({
@@ -98,7 +98,7 @@ test.describe('Game integration registry', () => {
     expect(inTournament.metrics.map((m) => m.key)).toEqual(keys);
   });
 
-  test('cs2 describeMatch reads the MatchZy config into the neutral shape', () => {
+  test('cs2 describeMatch reads the Auto Tournament CS2 config into the neutral shape', () => {
     const config = {
       matchid: 7,
       skip_veto: true,

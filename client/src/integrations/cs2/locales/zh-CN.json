@@ -10,8 +10,8 @@
       "servers": "服务器",
       "maps": "地图与地图池"
     },
-    "matchzyDbDown": {
-      "title": "无法连接 MatchZy 数据库",
+    "atDbDown": {
+      "title": "无法连接 Auto Tournament CS2 数据库",
       "body_one": "{{count}} 台服务器报告插件无法连接其数据库。备份和事件队列可能受到影响。",
       "body_other": "{{count}} 台服务器报告插件无法连接其数据库。备份和事件队列可能受到影响。"
     }
@@ -424,7 +424,7 @@
       "message_other": "确定要删除 {{count}} 台服务器吗？该操作无法撤销。"
     },
     "autoConfig": {
-      "configuring": "正在配置新服务器（通过 RCON 发送 MatchZy 配置）…",
+      "configuring": "正在配置新服务器（通过 RCON 发送 Auto Tournament CS2 配置）…",
       "done": "新服务器已配置，正在刷新状态…"
     },
     "checkServerLogs": "请查看游戏服务器控制台/日志，确认 Auto Tournament 插件是否收到配置并发送事件。",
@@ -539,16 +539,16 @@
     "rconPasswordHelper": "用于 RCON 访问服务器的密码",
     "enabledLabel": "服务器启用",
     "enabledHelper": "被禁用的服务器不会用于比赛",
-    "overridesTitle": "MatchZy 覆盖配置（可选）",
-    "overridesDescription": "这些设置仅覆盖此服务器的全局 MatchZy 默认值。留空则使用“设置”中的全局值。",
+    "overridesTitle": "Auto Tournament CS2 覆盖配置（可选）",
+    "overridesDescription": "这些设置仅覆盖此服务器的全局 Auto Tournament CS2 默认值。留空则使用“设置”中的全局值。",
     "chatPrefixLabel": "聊天前缀覆盖",
     "chatPrefixPlaceholder": "[{Green}Auto Tournament{Default}]",
-    "chatPrefixHelper": "覆盖此服务器上的 matchzy_chat_prefix（可选）",
+    "chatPrefixHelper": "覆盖此服务器上的 at_chat_prefix（可选）",
     "adminChatPrefixLabel": "管理员聊天前缀覆盖",
     "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
-    "adminChatPrefixHelper": "覆盖此服务器上的 matchzy_admin_chat_prefix（可选）",
+    "adminChatPrefixHelper": "覆盖此服务器上的 at_admin_chat_prefix（可选）",
     "knifeOverrideLabel": "默认启用刀局（覆盖）",
-    "knifeOverrideHelper": "设置后会覆盖此服务器上的 matchzy_knife_enabled_default。保持中间态以使用全局默认值。",
+    "knifeOverrideHelper": "设置后会覆盖此服务器上的 at_knife_enabled_default。保持中间态以使用全局默认值。",
     "testConnectivity": "测试连通性",
     "testingConnectivity": "正在测试连通性…",
     "connectivity": {

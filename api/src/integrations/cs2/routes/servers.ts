@@ -199,7 +199,7 @@ router.post('/', async (req: Request, res: Response) => {
       setImmediate(() => {
         void scheduler.tryImmediateAllocation();
       });
-      // Send persistent config (webhook, etc.) so MatchZy can start sending events and server becomes "initialized"
+      // Send persistent config (webhook, etc.) so Auto Tournament CS2 can start sending events and server becomes "initialized"
       setImmediate(async () => {
         try {
           const baseUrl = await settingsService.getWebhookUrl();

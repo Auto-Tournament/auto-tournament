@@ -10,8 +10,8 @@
       "servers": "Servere",
       "maps": "Kart og kartpooler"
     },
-    "matchzyDbDown": {
-      "title": "MatchZy-databasen er utilgjengelig",
+    "atDbDown": {
+      "title": "Auto Tournament CS2-databasen er utilgjengelig",
       "body_one": "{{count}} server melder at pluginen ikke når databasen sin. Backuper og hendelseskøen kan bli berørt.",
       "body_other": "{{count}} servere melder at pluginen ikke når databasen sin. Backuper og hendelseskøen kan bli berørt."
     }
@@ -424,7 +424,7 @@
       "message_other": "Er du sikker på at du vil slette {{count}} servere? Dette kan ikke angres."
     },
     "autoConfig": {
-      "configuring": "Konfigurerer nye servere (sender MatchZy-konfig via RCON)…",
+      "configuring": "Konfigurerer nye servere (sender Auto Tournament CS2-konfig via RCON)…",
       "done": "Nye servere konfigurert. Oppdaterer status…"
     },
     "checkServerLogs": "Sjekk spillserverens konsoll/logger for å se om Auto Tournament-pluginet mottar konfigurasjon og sender hendelser.",
@@ -539,16 +539,16 @@
     "rconPasswordHelper": "Passord for RCON-tilgang til serveren",
     "enabledLabel": "Server aktivert",
     "enabledHelper": "Deaktiverte servere brukes ikke til kamper",
-    "overridesTitle": "MatchZy-overstyringer (valgfritt)",
-    "overridesDescription": "Disse innstillingene overstyrer globale MatchZy-standarder kun for denne serveren. La stå tomt for å bruke globale verdier fra Innstillinger.",
+    "overridesTitle": "Auto Tournament CS2-overstyringer (valgfritt)",
+    "overridesDescription": "Disse innstillingene overstyrer globale Auto Tournament CS2-standarder kun for denne serveren. La stå tomt for å bruke globale verdier fra Innstillinger.",
     "chatPrefixLabel": "Overstyr chat-prefiks",
     "chatPrefixPlaceholder": "[{Green}Auto Tournament{Default}]",
-    "chatPrefixHelper": "Overstyrer matchzy_chat_prefix på denne serveren (valgfritt)",
+    "chatPrefixHelper": "Overstyrer at_chat_prefix på denne serveren (valgfritt)",
     "adminChatPrefixLabel": "Overstyr admin-chat-prefiks",
     "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
-    "adminChatPrefixHelper": "Overstyrer matchzy_admin_chat_prefix på denne serveren (valgfritt)",
+    "adminChatPrefixHelper": "Overstyrer at_admin_chat_prefix på denne serveren (valgfritt)",
     "knifeOverrideLabel": "Knivrunde aktivert som standard (overstyr)",
-    "knifeOverrideHelper": "Når satt, overstyrer matchzy_knife_enabled_default for denne serveren. La stå ubestemt for å bruke global standard.",
+    "knifeOverrideHelper": "Når satt, overstyrer at_knife_enabled_default for denne serveren. La stå ubestemt for å bruke global standard.",
     "testConnectivity": "Test tilkobling",
     "testingConnectivity": "Tester tilkobling…",
     "connectivity": {

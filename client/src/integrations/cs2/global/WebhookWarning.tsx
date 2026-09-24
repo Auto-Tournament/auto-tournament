@@ -49,11 +49,11 @@ export const WebhookWarning: React.FC<AdminGlobalWarningProps> = ({ onOpenSettin
       setWebhookConfigured(Boolean(customEvent.detail?.webhookConfigured));
     };
 
-    window.addEventListener('matchzy:settingsUpdated', handleSettingsUpdated);
+    window.addEventListener('at:settingsUpdated', handleSettingsUpdated);
 
     return () => {
       isMounted = false;
-      window.removeEventListener('matchzy:settingsUpdated', handleSettingsUpdated);
+      window.removeEventListener('at:settingsUpdated', handleSettingsUpdated);
     };
   }, []);
 

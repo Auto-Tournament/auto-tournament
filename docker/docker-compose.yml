@@ -22,18 +22,22 @@
 # with no `:latest` tag. Once 3.0 is out, point `image:` below at one of:
 #   image: ghcr.io/auto-tournament/auto-tournament:latest
 #   image: sivertio/auto-tournament:latest
-# Renaming the `matchzy-tournament*` / `matchzy-postgres` service, container
-# and database names below is a separate, breaking decision — not done here.
+# Upgrading from 2.x (https://docs.autotournament.gg/guides/upgrading-to-3):
+# 3.0 renamed the service, the containers and the database. Run
+# `docker compose down` with your OLD compose file before switching to this
+# one, so the old app container does not keep port 3069. The `postgres-data`
+# volume keeps its name, so your data stays where it is, and the platform
+# renames the database to auto_tournament in place on its first start.
 
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: matchzy-postgres
+    container_name: auto-tournament-postgres
     restart: unless-stopped
     environment:
       - POSTGRES_USER=${DB_USER:-postgres}
       - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
-      - POSTGRES_DB=${DB_NAME:-matchzy_tournament}
+      - POSTGRES_DB=${DB_NAME:-auto_tournament}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -42,11 +46,11 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - matchzy-network
+      - auto-tournament-network
 
-  matchzy-tournament:
+  auto-tournament:
     image: sivertio/matchzy-auto-tournament:latest
-    container_name: matchzy-tournament-api
+    container_name: auto-tournament
     restart: unless-stopped
     depends_on:
       postgres:
@@ -62,7 +66,7 @@ services:
       # Docker service name for DB connection (not from .env)
       - DB_HOST=postgres
       # Computed DATABASE_URL (uses DB_* vars from .env or defaults)
-      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-auto_tournament}
       # SESSION_SECRET should be set in .env (required for session persistence)
       # If not set, a default is used but sessions won't persist across restarts
       - SESSION_SECRET=${SESSION_SECRET:-}
@@ -77,10 +81,10 @@ services:
       retries: 3
       start_period: 10s
     networks:
-      - matchzy-network
+      - auto-tournament-network
 
 networks:
-  matchzy-network:
+  auto-tournament-network:
     driver: bridge
 
 volumes:

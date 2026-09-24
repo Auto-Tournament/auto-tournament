@@ -34,11 +34,11 @@
         "name": "X-API-Token",
         "description": "Service token, as an alternative to `Authorization: Bearer <token>`."
       },
-      "matchzyServerToken": {
+      "atServerToken": {
         "type": "apiKey",
         "in": "header",
-        "name": "X-MatchZy-Token",
-        "description": "Server-to-API authentication (webhooks, reports, demo uploads, match config fetch). Send `X-MatchZy-Token: <token>`."
+        "name": "X-Auto-Tournament-Token",
+        "description": "Server-to-API authentication (webhooks, reports, demo uploads, match config fetch). Send `X-Auto-Tournament-Token: <token>`."
       }
     },
     "schemas": {
@@ -292,6 +292,10 @@
       "description": "Sign-in flows, admin identity, impersonation."
     },
     {
+      "name": "Auto Tournament CS2",
+      "description": "Auto Tournament CS2 plugin version information."
+    },
+    {
       "name": "Demos",
       "description": "Demo upload from the game server, and download."
     },
@@ -301,7 +305,7 @@
     },
     {
       "name": "Events",
-      "description": "MatchZy webhooks in, and the recorded event log out."
+      "description": "Auto Tournament CS2 webhooks in, and the recorded event log out."
     },
     {
       "name": "Game packs",
@@ -346,10 +350,6 @@
     {
       "name": "Matches",
       "description": "Create, load, restart and cancel matches; read match state."
-    },
-    {
-      "name": "MatchZy",
-      "description": "Auto Tournament CS2 plugin (formerly MatchZy Enhanced) version information."
     },
     {
       "name": "Me",
@@ -864,6 +864,20 @@
         }
       }
     },
+    "/api/cs2-plugin/latest-version": {
+      "get": {
+        "tags": [
+          "Auto Tournament CS2"
+        ],
+        "summary": "GET /api/cs2-plugin/latest-version",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/demos/{matchSlug}/download/{mapNumber}?": {
       "get": {
         "tags": [
@@ -984,7 +998,7 @@
         ],
         "security": [
           {
-            "matchzyServerToken": []
+            "atServerToken": []
           }
         ]
       }
@@ -1137,7 +1151,7 @@
         },
         "security": [
           {
-            "matchzyServerToken": []
+            "atServerToken": []
           }
         ]
       }
@@ -1204,7 +1218,7 @@
         },
         "security": [
           {
-            "matchzyServerToken": []
+            "atServerToken": []
           }
         ]
       }
@@ -1279,7 +1293,7 @@
         ],
         "security": [
           {
-            "matchzyServerToken": []
+            "atServerToken": []
           }
         ]
       }
@@ -2536,11 +2550,11 @@
         "tags": [
           "Matches"
         ],
-        "summary": "Match config for MatchZy",
-        "description": "The MatchZy match config the game server downloads when MAT sends\n`matchzy_loadmatch_url \"<url>\" \"X-MatchZy-Token\" \"<SERVER_TOKEN>\"`.\nAssembled fresh from the database on every request.\n\nRequires `X-MatchZy-Token: <SERVER_TOKEN>` (game servers) or admin\nauth: a session, or a service token (read-only scope is enough). A\nrequest presenting a wrong `X-MatchZy-Token` is refused even with an\nadmin session.\n\n`server_id` and `match_id` are added by MAT to the URL it sends; when\npresent, the fetch is refused with 409 if the match has since moved to\nanother server or the slug now belongs to a different match.\n",
+        "summary": "Match config for Auto Tournament CS2",
+        "description": "The Auto Tournament CS2 match config the game server downloads when MAT sends\n`at_loadmatch_url \"<url>\" \"X-Auto-Tournament-Token\" \"<SERVER_TOKEN>\"`.\nAssembled fresh from the database on every request.\n\nRequires `X-Auto-Tournament-Token: <SERVER_TOKEN>` (game servers) or admin\nauth: a session, or a service token (read-only scope is enough). A\nrequest presenting a wrong `X-Auto-Tournament-Token` is refused even with an\nadmin session.\n\n`server_id` and `match_id` are added by MAT to the URL it sends; when\npresent, the fetch is refused with 409 if the match has since moved to\nanother server or the slug now belongs to a different match.\n",
         "security": [
           {
-            "matchzyServerToken": []
+            "atServerToken": []
           },
           {
             "bearerAuth": []
@@ -2577,10 +2591,10 @@
         ],
         "responses": {
           "200": {
-            "description": "MatchZy match config (JSON)"
+            "description": "Auto Tournament CS2 match config (JSON)"
           },
           "401": {
-            "description": "Missing or wrong X-MatchZy-Token and no admin auth"
+            "description": "Missing or wrong X-Auto-Tournament-Token and no admin auth"
           },
           "404": {
             "description": "Match not found"
@@ -2781,20 +2795,6 @@
             "apiToken": []
           }
         ]
-      }
-    },
-    "/api/matchzy/latest-version": {
-      "get": {
-        "tags": [
-          "MatchZy"
-        ],
-        "summary": "GET /api/matchzy/latest-version",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
       }
     },
     "/api/me/connections": {
@@ -4916,10 +4916,10 @@
           "Servers"
         ],
         "summary": "Whether game hosts should pause automatic CS2 updates",
-        "description": "Polled by CS2 Server Manager before it restarts an idle server for a Valve update. The hold is on while any match is loaded or live, and while the tournament is in progress — MAT's allocator may give any enabled server the next match at any moment, so the answer is fleet-wide. Requires the game server token (`X-MatchZy-Token`).\n",
+        "description": "Polled by CS2 Server Manager before it restarts an idle server for a Valve update. The hold is on while any match is loaded or live, and while the tournament is in progress — MAT's allocator may give any enabled server the next match at any moment, so the answer is fleet-wide. Requires the game server token (`X-Auto-Tournament-Token`).\n",
         "security": [
           {
-            "matchzyServerToken": []
+            "atServerToken": []
           }
         ],
         "responses": {
@@ -5169,7 +5169,7 @@
         ],
         "security": [
           {
-            "matchzyServerToken": []
+            "atServerToken": []
           }
         ]
       }

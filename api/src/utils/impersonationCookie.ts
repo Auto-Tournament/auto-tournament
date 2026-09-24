@@ -28,7 +28,7 @@ const PAYLOAD_PREFIX = 'impersonate:';
 
 function getSecret(): string {
   const s = process.env.SESSION_SECRET;
-  return typeof s === 'string' && s.trim().length > 0 ? s.trim() : 'matchzy-dev-session-secret';
+  return typeof s === 'string' && s.trim().length > 0 ? s.trim() : 'auto-tournament-dev-session-secret';
 }
 
 function hmac(key: string, value: string): string {

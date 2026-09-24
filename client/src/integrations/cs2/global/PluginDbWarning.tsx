@@ -1,8 +1,8 @@
 /**
- * The admin shell's "MatchZy DB unreachable" warning, which belongs to CS2
+ * The admin shell's "Auto Tournament CS2 DB unreachable" warning, which belongs to CS2
  * (3.0 phase E).
  *
- * `matchzyDbOk` is the MatchZy plugin's own report, from a CS2 game server,
+ * `atDbOk` is the Auto Tournament CS2 plugin's own report, from a CS2 game server,
  * about the database it writes backups and its event queue to. It is named
  * after the plugin in the copy, and there is no such thing on an instance
  * whose results are typed in by a captain — the shell used to poll `/api/servers`
@@ -18,7 +18,7 @@ import * as React from 'react';
 import type { SnackbarKey } from 'notistack';
 import { useSnackbar, api, useModuleTranslation } from '../../../module-sdk';
 
-export const MatchzyDbWarning: React.FC = () => {
+export const PluginDbWarning: React.FC = () => {
   const { t } = useModuleTranslation('cs2');
   const { showPersistentError, closeSnackbar } = useSnackbar();
   const [dbHealthSnackbarKey, setDbHealthSnackbarKey] = React.useState<SnackbarKey | null>(null);
@@ -31,22 +31,22 @@ export const MatchzyDbWarning: React.FC = () => {
       try {
         const response = await api.get<{
           success: boolean;
-          servers?: Array<{ enabled?: boolean; matchzyDbOk?: boolean | null }>;
+          servers?: Array<{ enabled?: boolean; atDbOk?: boolean | null }>;
         }>('/api/servers');
         if (cancelled) return;
         const servers = response.servers ?? [];
         const downCount = servers.filter(
-          (s) => s.enabled !== false && s.matchzyDbOk === false
+          (s) => s.enabled !== false && s.atDbOk === false
         ).length;
 
         if (downCount > 0) {
           if (!dbHealthSnackbarKey) {
             const key = showPersistentError(
               <span>
-                <strong>{t('layout.matchzyDbDown.title')}</strong> —{' '}
-                {t('layout.matchzyDbDown.body', { count: downCount })}
+                <strong>{t('layout.atDbDown.title')}</strong> —{' '}
+                {t('layout.atDbDown.body', { count: downCount })}
               </span>,
-              'matchzy-db-down'
+              'at-db-down'
             );
             setDbHealthSnackbarKey(key);
           }

@@ -46,7 +46,7 @@ async function playRatedMatch(request: APIRequestContext, name: string) {
   const res = await request.post(`/api/events/${slug}`, {
     headers: {
       'Content-Type': 'application/json',
-      'X-MatchZy-Token': process.env.SERVER_TOKEN ?? 'server123',
+      'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
     },
     data: {
       event: 'series_end',

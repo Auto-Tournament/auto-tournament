@@ -26,31 +26,31 @@ if (!fs.existsSync(DEMOS_DIR)) {
 
 /**
  * POST /api/demos/:matchSlug/upload
- * Upload demo file from MatchZy server
+ * Upload demo file from Auto Tournament CS2 server
  * Protected by server token validation
- * Follows MatchZy API specification for demo uploads
+ * Follows Auto Tournament CS2 API specification for demo uploads
  * 
  * Headers expected:
- * - MatchZy-FileName (required)
- * - MatchZy-MatchId (required)
- * - MatchZy-MapNumber (required)
- * - MatchZy-RoundNumber (always present)
+ * - Auto-Tournament-FileName (required)
+ * - Auto-Tournament-MatchId (required)
+ * - Auto-Tournament-MapNumber (required)
+ * - Auto-Tournament-RoundNumber (always present)
  * - Get5-* headers (compatibility, always present)
  */
 router.post(
   '/:matchSlug/upload',
   validateServerToken,
   // CRITICAL: Use express.raw() to handle binary data correctly
-  // This follows MatchZy API specification exactly
+  // This follows Auto Tournament CS2 API specification exactly
   express.raw({ type: 'application/octet-stream', limit: '500mb' }),
   async (req: Request, res: Response) => {
     const { matchSlug: urlMatchSlug } = req.params;
     // The slug the demo is stored under. Starts as the URL slug and is replaced
-    // by the match the MatchZy-MatchId header names, once resolved below.
+    // by the match the Auto-Tournament-MatchId header names, once resolved below.
     let matchSlug = urlMatchSlug;
 
     try {
-      // Read MatchZy headers (with Get5 fallbacks for compatibility)
+      // Read Auto Tournament CS2 headers (with Get5 fallbacks for compatibility)
       // Headers are normalized to lowercase by Express
       // Headers can be string | string[], so we take the first value if it's an array
       const getHeaderValue = (value: string | string[] | undefined): string | undefined => {
@@ -60,41 +60,41 @@ router.post(
         return value;
       };
 
-      const matchzyFilename =
-        getHeaderValue(req.headers['matchzy-filename']) ||
+      const atFilename =
+        getHeaderValue(req.headers['auto-tournament-filename']) ||
         getHeaderValue(req.headers['get5-filename']);
-      const matchzyMatchId =
-        getHeaderValue(req.headers['matchzy-matchid']) ||
+      const atMatchId =
+        getHeaderValue(req.headers['auto-tournament-matchid']) ||
         getHeaderValue(req.headers['get5-matchid']);
-      const matchzyMapNumber =
-        getHeaderValue(req.headers['matchzy-mapnumber']) ||
+      const atMapNumber =
+        getHeaderValue(req.headers['auto-tournament-mapnumber']) ||
         getHeaderValue(req.headers['get5-mapnumber']);
-      const matchzyRoundNumber =
-        getHeaderValue(req.headers['matchzy-roundnumber']) ||
+      const atRoundNumber =
+        getHeaderValue(req.headers['auto-tournament-roundnumber']) ||
         getHeaderValue(req.headers['get5-roundnumber']);
 
-      // Validate required headers (per MatchZy API spec)
-      if (!matchzyFilename || !matchzyMatchId || matchzyMapNumber === undefined) {
+      // Validate required headers (per Auto Tournament CS2 API spec)
+      if (!atFilename || !atMatchId || atMapNumber === undefined) {
         const missingHeaders: string[] = [];
-        if (!matchzyFilename) missingHeaders.push('MatchZy-FileName (or Get5-FileName)');
-        if (!matchzyMatchId) missingHeaders.push('MatchZy-MatchId (or Get5-MatchId)');
-        if (matchzyMapNumber === undefined)
-          missingHeaders.push('MatchZy-MapNumber (or Get5-MapNumber)');
+        if (!atFilename) missingHeaders.push('Auto-Tournament-FileName (or Get5-FileName)');
+        if (!atMatchId) missingHeaders.push('Auto-Tournament-MatchId (or Get5-MatchId)');
+        if (atMapNumber === undefined)
+          missingHeaders.push('Auto-Tournament-MapNumber (or Get5-MapNumber)');
 
         log.warn('[Demo Upload] Missing required headers', {
           matchSlug,
           missingHeaders,
           received: {
-            filename: matchzyFilename || 'missing',
-            matchId: matchzyMatchId || 'missing',
-            mapNumber: matchzyMapNumber ?? 'missing',
+            filename: atFilename || 'missing',
+            matchId: atMatchId || 'missing',
+            mapNumber: atMapNumber ?? 'missing',
           },
         });
 
         return res.status(400).json({
           success: false,
           error: 'Missing required headers',
-          required: ['MatchZy-FileName', 'MatchZy-MatchId', 'MatchZy-MapNumber'],
+          required: ['Auto-Tournament-FileName', 'Auto-Tournament-MatchId', 'Auto-Tournament-MapNumber'],
           missing: missingHeaders,
         });
       }
@@ -115,29 +115,29 @@ router.post(
 
       log.info('[Demo Upload] Upload request received', {
         matchSlug,
-        filename: matchzyFilename,
-        matchId: matchzyMatchId,
-        mapNumber: matchzyMapNumber,
-        roundNumber: matchzyRoundNumber,
+        filename: atFilename,
+        matchId: atMatchId,
+        mapNumber: atMapNumber,
+        roundNumber: atRoundNumber,
         fileSize: req.body.length,
         fileSizeMB: (req.body.length / 1024 / 1024).toFixed(2),
         headers: {
-          'MatchZy-FileName': matchzyFilename,
-          'MatchZy-MatchId': matchzyMatchId,
-          'MatchZy-MapNumber': matchzyMapNumber,
-          'MatchZy-RoundNumber': matchzyRoundNumber || 'not provided',
+          'Auto-Tournament-FileName': atFilename,
+          'Auto-Tournament-MatchId': atMatchId,
+          'Auto-Tournament-MapNumber': atMapNumber,
+          'Auto-Tournament-RoundNumber': atRoundNumber || 'not provided',
         },
       });
 
       // Which match is this demo from? The URL slug is only the server's current
       // upload setting, which MAT overwrites when it loads the next match - and
-      // the previous match's last demo uploads after that (MatchZy waits for
+      // the previous match's last demo uploads after that (Auto Tournament CS2 waits for
       // tv_delay first). That is how r1m1's de_train demo landed on r2m1. The
-      // MatchZy-MatchId header is stamped when the demo was recorded, so when it
+      // Auto-Tournament-MatchId header is stamped when the demo was recorded, so when it
       // is one of MAT's numeric ids it decides. An id that no longer exists
       // (the tournament was reset, and the slug now belongs to a new match) is
       // rejected rather than attached to whatever reuses the slug.
-      const headerMatchId = demoMatchIdFromHeader(matchzyMatchId);
+      const headerMatchId = demoMatchIdFromHeader(atMatchId);
       let match: DbMatchRow | null | undefined;
       if (headerMatchId !== null) {
         match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
@@ -146,8 +146,8 @@ router.post(
         if (!match) {
           log.warn('[Demo Upload] Rejected: demo belongs to a match that no longer exists', {
             urlMatchSlug,
-            matchId: matchzyMatchId,
-            filename: matchzyFilename,
+            matchId: atMatchId,
+            filename: atFilename,
           });
           return res.status(410).json({
             success: false,
@@ -159,7 +159,7 @@ router.post(
             urlMatchSlug,
             matchId: headerMatchId,
             resolvedMatchSlug: match.slug,
-            filename: matchzyFilename,
+            filename: atFilename,
           });
         }
       } else {
@@ -177,18 +177,18 @@ router.post(
       }
       matchSlug = match.slug;
 
-      // Create match-specific folder (following MatchZy pattern)
+      // Create match-specific folder (following Auto Tournament CS2 pattern)
       const matchFolder = path.join(DEMOS_DIR, matchSlug);
       if (!fs.existsSync(matchFolder)) {
         fs.mkdirSync(matchFolder, { recursive: true });
       }
 
-      // Use MatchZy's filename (sanitize to prevent path traversal)
+      // Use Auto Tournament CS2's filename (sanitize to prevent path traversal)
       const sanitizeFilename = (filename: string): string => {
         // Remove any path separators and resolve to just the filename
         return path.basename(filename);
       };
-      const filename = sanitizeFilename(matchzyFilename); // Validated above
+      const filename = sanitizeFilename(atFilename); // Validated above
       const filepath = path.join(matchFolder, filename);
 
       // Write binary data to file (req.body is a Buffer from express.raw())
@@ -210,7 +210,7 @@ router.post(
       await db.updateAsync('matches', { demo_file_path: relativePath }, 'slug = ?', [matchSlug]);
 
       // Also store demo path per map if map number is provided
-      const mapNumber = parseInt(matchzyMapNumber, 10);
+      const mapNumber = parseInt(atMapNumber, 10);
       if (!isNaN(mapNumber)) {
         try {
           // Update the map result with demo file path
@@ -237,9 +237,9 @@ router.post(
       log.success('[Demo Upload] Demo uploaded successfully', {
         matchSlug,
         filename,
-        matchId: matchzyMatchId,
-        mapNumber: matchzyMapNumber,
-        roundNumber: matchzyRoundNumber,
+        matchId: atMatchId,
+        mapNumber: atMapNumber,
+        roundNumber: atRoundNumber,
         path: relativePath,
         fileSize: `${fileSizeMB} MB`,
         fileSizeBytes: fileSize,
@@ -269,12 +269,12 @@ router.post(
         });
       }
 
-      // Return success response (per MatchZy API spec - 200-299 status codes are success)
+      // Return success response (per Auto Tournament CS2 API spec - 200-299 status codes are success)
       return res.status(200).json({
         success: true,
         message: 'Demo uploaded successfully',
-        matchId: matchzyMatchId,
-        mapNumber: parseInt(matchzyMapNumber, 10),
+        matchId: atMatchId,
+        mapNumber: parseInt(atMapNumber, 10),
         filename,
         fileSize: fileSize,
         savedPath: relativePath,
@@ -423,7 +423,7 @@ router.get(
  *    - "DEMO UPLOAD CONFIGURED SUCCESSFULLY"
  *    - Or "DEMO UPLOAD CONFIGURATION FAILED"
  * 3. When a demo is uploaded, you'll see:
- *    - "DEMO UPLOAD RECEIVED FROM MATCHZY"
+ *    - "DEMO UPLOAD RECEIVED"
  *    - "DEMO UPLOAD COMPLETED SUCCESSFULLY"
  * 4. Verify webhook_url is set in Settings (required for demo upload URL)
  */
@@ -476,7 +476,7 @@ router.get('/:matchSlug/status', requireAuth, async (req: Request, res: Response
       demoFileSize: demoExists ? demoFileSize : 0,
       demoFileSizeFormatted: demoExists ? `${(demoFileSize / 1024 / 1024).toFixed(2)} MB` : null,
       note: expectedUploadUrl
-        ? 'MatchZy should upload demos to the expected URL after match/map completion'
+        ? 'Auto Tournament CS2 should upload demos to the expected URL after match/map completion'
         : 'Webhook URL not configured - demo uploads will not work',
     });
     return;

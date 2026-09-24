@@ -6,7 +6,7 @@ import {
   safeDisconnect,
   type ConnectionTestClient,
 } from '../../api/src/integrations/cs2/utils/connectionTest';
-import { parseConVarReply } from '../../api/src/utils/matchzyServerReplies';
+import { parseConVarReply } from '../../api/src/utils/pluginServerReplies';
 
 /**
  * "Test connection" answered 500 in MAT 2.4.11: the route's `finally` called
@@ -38,9 +38,9 @@ function fakeClient(opts: FakeOptions): ConnectionTestClient & { sent: string[];
     },
     async send(command: string) {
       client.sent.push(command);
-      if (command === 'matchzy_server_id') return `matchzy_server_id = ${opts.serverId ?? ''}`;
-      if (command === 'matchzy_remote_log_url') {
-        return `matchzy_remote_log_url = ${opts.remoteLogUrl ?? ''}`;
+      if (command === 'at_server_id') return `at_server_id = ${opts.serverId ?? ''}`;
+      if (command === 'at_remote_log_url') {
+        return `at_remote_log_url = ${opts.remoteLogUrl ?? ''}`;
       }
       if (command === 'css_te') opts.onTrigger?.();
       return '';
@@ -89,7 +89,7 @@ test.describe('Connection test result path', () => {
       ...fakeTime(),
     });
     expect(result).toBe('unreachable');
-    expect(client.sent).toEqual(['matchzy_server_id', 'matchzy_remote_log_url', 'css_te']);
+    expect(client.sent).toEqual(['at_server_id', 'at_remote_log_url', 'css_te']);
   });
 
   test('unconfigured server (no event URL) is unknown and never triggers css_te', async () => {

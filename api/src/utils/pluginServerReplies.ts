@@ -1,5 +1,5 @@
 /**
- * Parsing for the text MatchZy / CounterStrikeSharp send back over RCON.
+ * Parsing for the text Auto Tournament CS2 / CounterStrikeSharp send back over RCON.
  *
  * Kept free of I/O so the classification can be checked without a CS2 server.
  */
@@ -8,7 +8,7 @@
  * Read the value out of a convar query reply.
  *
  * MAT used to accept only the Source 1 shape, `"name" = "value"`. The
- * `matchzy_tournament_*` convars are CounterStrikeSharp FakeConVars, which
+ * `at_tournament_*` convars are CounterStrikeSharp FakeConVars, which
  * answer a bare query with `name = value` — no quotes — so the old pattern
  * never matched and every server read as idle with no timestamp. Both shapes
  * are accepted here.
@@ -53,18 +53,18 @@ export type LoadMatchReply =
   | 'unknown';
 
 /**
- * Classify the RCON reply to `matchzy_loadmatch_url`.
+ * Classify the RCON reply to `at_loadmatch_url`.
  *
  * The queued reply matters most: while the previous series is in postgame,
- * MatchZy-Enhanced stores the URL and fetches it only after its reset — minutes
+ * Auto Tournament CS2 stores the URL and fetches it only after its reset — minutes
  * later. MAT waited 10s for the fetch, called the load failed, and gave the
  * match to another server; the first server then loaded it too, and both
  * servers played the same match.
  *
- * Wordings seen in MatchZy-Enhanced 1.4.24:
+ * Wordings seen in Auto Tournament CS2 1.4.24:
  *   "[LoadMatchDataCommand] Current match 13 is finishing. Queued next match from URL: … to load after reset."
- *   "[matchzy match load] Current match 13 is postgame. Queued next match from URL: …"
- * Later versions (MatchZy-Enhanced#16) end the reply with a machine-readable
+ *   "[at match load] Current match 13 is postgame. Queued next match from URL: …"
+ * Later versions (cs2-plugin#16) end the reply with a machine-readable
  * `queued_match=<config name>`, e.g. `queued_match=r2m1`.
  */
 export function classifyLoadMatchReply(response: string | null | undefined): LoadMatchReply {
@@ -92,11 +92,11 @@ export type ClearQueuedReply =
   | 'cleared'
   /** The plugin understood the command and had nothing queued. */
   | 'none'
-  /** No recognisable answer: a plugin without `matchzy_clear_queued_match`. */
+  /** No recognisable answer: a plugin without `at_clear_queued_match`. */
   | 'unsupported';
 
 /**
- * Classify the reply to `matchzy_clear_queued_match` (MatchZy-Enhanced#16+):
+ * Classify the reply to `at_clear_queued_match` (cs2-plugin#16+):
  * `cleared_queued_match=<id>`, or `cleared_queued_match=none` when nothing was
  * queued. `css_restart` / `css_endmatch` include the same token.
  */
@@ -109,14 +109,14 @@ export function classifyClearQueuedReply(response: string | null | undefined): C
 /**
  * Can MAT send a new match to a server reporting this status?
  *
- * Idle, obviously. 'error' too: MatchZy sets it when a load or queued load
+ * Idle, obviously. 'error' too: Auto Tournament CS2 sets it when a load or queued load
  * fails and leaves it there until the next load, usually with no match set up.
  * Blocking on it would strand the server. If a match is in fact still set up,
  * the plugin refuses the load and MAT reports that.
  *
- * 'warmup' with no match loaded too. With `matchzy_autostart_mode 1` the
+ * 'warmup' with no match loaded too. With `at_autostart_mode 1` the
  * plugin starts warmup on every map load, match or not, so a freshly restarted
- * server reports `warmup` with an empty `matchzy_tournament_match` and never
+ * server reports `warmup` with an empty `at_tournament_match` and never
  * goes idle by itself. Treating that as busy left every server unallocatable
  * after a restart. Warmup with a match loaded is a match waiting for players
  * and stays busy. (The plugin never clears the match convar, only overwrites

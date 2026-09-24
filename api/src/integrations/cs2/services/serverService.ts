@@ -77,9 +77,9 @@ export class ServerService {
       throw new Error('Port must be between 1 and 65535');
     }
 
-    const matchzyConfig =
-      input.matchzyConfig && Object.keys(input.matchzyConfig).length > 0
-        ? JSON.stringify(input.matchzyConfig)
+    const atConfig =
+      input.atConfig && Object.keys(input.atConfig).length > 0
+        ? JSON.stringify(input.atConfig)
         : null;
 
     await db.insertAsync('cs2_servers', {
@@ -89,7 +89,7 @@ export class ServerService {
       port: input.port,
       password: input.password,
       enabled: input.enabled !== undefined ? (input.enabled ? 1 : 0) : 1,
-      matchzy_config: matchzyConfig,
+      at_config: atConfig,
     });
 
     log.serverCreated(input.id, input.name);
@@ -136,10 +136,10 @@ export class ServerService {
     if (input.password !== undefined) updateData.password = input.password;
     if (input.enabled !== undefined) updateData.enabled = input.enabled ? 1 : 0;
 
-    if (input.matchzyConfig !== undefined) {
+    if (input.atConfig !== undefined) {
       const hasKeys =
-        input.matchzyConfig && Object.keys(input.matchzyConfig).length > 0;
-      updateData.matchzy_config = hasKeys ? JSON.stringify(input.matchzyConfig) : null;
+        input.atConfig && Object.keys(input.atConfig).length > 0;
+      updateData.at_config = hasKeys ? JSON.stringify(input.atConfig) : null;
     }
 
     await db.updateAsync('cs2_servers', updateData, 'id = ?', [id]);
@@ -243,13 +243,13 @@ export class ServerService {
    * Convert database row to response (includes password for RCON)
    */
   private toResponse(server: Server): ServerResponse {
-    let matchzyConfig: ServerResponse['matchzyConfig'] = null;
-    if (server.matchzy_config) {
+    let atConfig: ServerResponse['atConfig'] = null;
+    if (server.at_config) {
       try {
-        matchzyConfig = JSON.parse(server.matchzy_config);
+        atConfig = JSON.parse(server.at_config);
       } catch {
-        matchzyConfig = null;
-        log.warn('Failed to parse matchzy_config for server', { id: server.id });
+        atConfig = null;
+        log.warn('Failed to parse at_config for server', { id: server.id });
       }
     }
 
@@ -260,7 +260,7 @@ export class ServerService {
       port: server.port,
       password: server.password,
       enabled: server.enabled === 1,
-      matchzyConfig,
+      atConfig,
       created_at: server.created_at,
       updated_at: server.updated_at,
       // Server tracking fields
@@ -276,14 +276,14 @@ export class ServerService {
       cs2BuildId: server.cs2_build_id ?? null,
       cs2VersionString: server.cs2_version_string ?? null,
       cs2VersionFetchedAt: server.cs2_version_fetched_at ?? null,
-      matchzyDbOk:
-        typeof server.matchzy_db_ok === 'number'
-          ? server.matchzy_db_ok === 1
-          : server.matchzy_db_ok ?? null,
-      matchzyDbType: server.matchzy_db_type ?? null,
-      matchzyDbError: server.matchzy_db_error ?? null,
-      matchzyDbLastOkAt: server.matchzy_db_last_ok_at ?? null,
-      matchzyDbLastSeenAt: server.matchzy_db_last_seen_at ?? null,
+      atDbOk:
+        typeof server.at_db_ok === 'number'
+          ? server.at_db_ok === 1
+          : server.at_db_ok ?? null,
+      atDbType: server.at_db_type ?? null,
+      atDbError: server.at_db_error ?? null,
+      atDbLastOkAt: server.at_db_last_ok_at ?? null,
+      atDbLastSeenAt: server.at_db_last_seen_at ?? null,
       serverCanReachApiAt: server.server_can_reach_api_at ?? null,
     };
   }

@@ -51,7 +51,7 @@ export function getSchemaSQL(): string {
       team_size INTEGER DEFAULT 5, -- Number of players per team (default: 5 for 5v5)
       max_rounds INTEGER DEFAULT 24, -- cs2-owned: max rounds per map
       overtime_mode TEXT DEFAULT 'enabled', -- cs2-owned: 'enabled' or 'disabled'
-      overtime_segments INTEGER, -- cs2-owned. Optional: max number of overtime segments (MatchZy overtime_limit). NULL/0 = unlimited.
+      overtime_segments INTEGER, -- cs2-owned. Optional: max number of overtime segments (Auto Tournament CS2 overtime_limit). NULL/0 = unlimited.
       elo_template_id TEXT, -- Reference to elo_calculation_templates table (nullable)
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,

@@ -1,7 +1,7 @@
 import { rconService } from './rconService';
 import { serverService } from './serverService';
 import { log } from '../../../utils/logger';
-import { parseConVarReply } from '../../../utils/matchzyServerReplies';
+import { parseConVarReply } from '../../../utils/pluginServerReplies';
 
 /**
  * Server Status Values
@@ -28,10 +28,10 @@ const STATUS_CACHE_TTL_MS = 10_000; // 10 seconds of "buffer" for lightweight st
 
 export class ServerStatusService {
   // Custom ConVar names (must be unique to avoid conflicts)
-  private readonly STATUS_VAR = 'matchzy_tournament_status';
-  private readonly MATCH_SLUG_VAR = 'matchzy_tournament_match';
-  private readonly NEXT_MATCH_VAR = 'matchzy_tournament_next_match';
-  private readonly UPDATE_TIME_VAR = 'matchzy_tournament_updated';
+  private readonly STATUS_VAR = 'at_tournament_status';
+  private readonly MATCH_SLUG_VAR = 'at_tournament_match';
+  private readonly NEXT_MATCH_VAR = 'at_tournament_next_match';
+  private readonly UPDATE_TIME_VAR = 'at_tournament_updated';
 
   /**
    * In-memory cache of the most recent status per server. This is used as a
@@ -270,6 +270,6 @@ export function primeServerStatusForTests(
   });
 }
 
-export { isAllocatableStatus } from '../../../utils/matchzyServerReplies';
+export { isAllocatableStatus } from '../../../utils/pluginServerReplies';
 
 export const serverStatusService = new ServerStatusService();

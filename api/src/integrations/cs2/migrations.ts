@@ -17,11 +17,17 @@
  * this module's migrations run (config/cs2TableHandover.ts), so both end in
  * the same schema. That handover also reads the column list from this SQL, so
  * keep each column on its own line in the `CREATE TABLE` bodies.
+ *
+ * `001-tables` still says `matchzy_*` for six columns of `cs2_servers`, and
+ * its comments name the plugin's 2.x name: its SQL is checksummed and never
+ * changes. `002-at-columns` renames those columns to `at_*`, on a fresh and an
+ * upgraded database alike.
  */
 
 import type { ModuleMigration } from '../types';
 
 export const CS2_TABLES_MIGRATION_ID = '001-tables';
+export const CS2_AT_COLUMNS_MIGRATION_ID = '002-at-columns';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -87,6 +93,18 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
     CREATE INDEX IF NOT EXISTS cs2_map_pools_name_idx ON cs2_map_pools(name);
     CREATE INDEX IF NOT EXISTS cs2_map_pools_default_idx ON cs2_map_pools(is_default);
     CREATE INDEX IF NOT EXISTS cs2_map_pools_enabled_idx ON cs2_map_pools(enabled);
+`,
+  },
+  {
+    // 3.0: the plugin is Auto Tournament CS2, and its columns say so.
+    id: CS2_AT_COLUMNS_MIGRATION_ID,
+    up: `
+    ALTER TABLE cs2_servers RENAME COLUMN matchzy_config TO at_config;
+    ALTER TABLE cs2_servers RENAME COLUMN matchzy_db_ok TO at_db_ok;
+    ALTER TABLE cs2_servers RENAME COLUMN matchzy_db_type TO at_db_type;
+    ALTER TABLE cs2_servers RENAME COLUMN matchzy_db_error TO at_db_error;
+    ALTER TABLE cs2_servers RENAME COLUMN matchzy_db_last_ok_at TO at_db_last_ok_at;
+    ALTER TABLE cs2_servers RENAME COLUMN matchzy_db_last_seen_at TO at_db_last_seen_at;
 `,
   },
 ];

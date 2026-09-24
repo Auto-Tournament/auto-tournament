@@ -10,7 +10,7 @@ import { signInViaRequest } from '../helpers/auth';
  * so those tests skip themselves there. To run them locally, start the API with
  * e.g. DISCORD_CLIENT_ID=123456789012345678 DISCORD_CLIENT_SECRET=fake
  * GITHUB_CLIENT_ID=Iv1.fake GITHUB_CLIENT_SECRET=fake GOOGLE_CLIENT_ID=fake GOOGLE_CLIENT_SECRET=fake
- * KEYCLOAK_ISSUER_URL=https://sso.invalid/realms/test KEYCLOAK_CLIENT_ID=matchzy.
+ * KEYCLOAK_ISSUER_URL=https://sso.invalid/realms/test KEYCLOAK_CLIENT_ID=auto-tournament.
  *
  * @tag api
  * @tag auth

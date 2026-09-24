@@ -77,12 +77,12 @@ const options: swaggerJsdoc.Options = {
           description:
             'Service token, as an alternative to `Authorization: Bearer <token>`.',
         },
-        matchzyServerToken: {
+        atServerToken: {
           type: 'apiKey',
           in: 'header',
-          name: 'X-MatchZy-Token',
+          name: 'X-Auto-Tournament-Token',
           description:
-            'Server-to-API authentication (webhooks, reports, demo uploads, match config fetch). Send `X-MatchZy-Token: <token>`.',
+            'Server-to-API authentication (webhooks, reports, demo uploads, match config fetch). Send `X-Auto-Tournament-Token: <token>`.',
         },
       },
       schemas: {
@@ -322,8 +322,8 @@ const options: swaggerJsdoc.Options = {
 /** How each guard maps onto the security schemes declared above. */
 const SECURITY_BY_GUARD: Record<Guard, Array<Record<string, string[]>>> = {
   admin: [{ bearerAuth: [] }, { apiToken: [] }],
-  'server token': [{ matchzyServerToken: [] }],
-  'server token or admin': [{ matchzyServerToken: [] }, { bearerAuth: [] }, { apiToken: [] }],
+  'server token': [{ atServerToken: [] }],
+  'server token or admin': [{ atServerToken: [] }, { bearerAuth: [] }, { apiToken: [] }],
 };
 
 interface OperationObject {

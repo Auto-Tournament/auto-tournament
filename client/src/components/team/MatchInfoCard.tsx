@@ -181,7 +181,7 @@ export function MatchInfoCard({
       : serverViewerIsTeamMember;
 
   const serverStatus = match.server?.status ?? null;
-  // `server.status` here is a MatchZy plugin status — idle | loading | warmup |
+  // `server.status` here is an Auto Tournament CS2 plugin status — idle | loading | warmup |
   // knife | live | paused | halftime | postgame | queued | error — and
   // /api/players/:id/current-match only fills it in when the server actually
   // answered. So any value at all means the server is reachable.

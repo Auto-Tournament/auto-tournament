@@ -28,7 +28,7 @@ const MAPS = ['de_mirage', 'de_inferno', 'de_ancient', 'de_anubis', 'de_dust2', 
 
 const HEADERS = {
   'Content-Type': 'application/json',
-  'X-MatchZy-Token': process.env.SERVER_TOKEN ?? 'server123',
+  'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
 };
 
 test.describe('Exhausted series decision (unit)', () => {
@@ -87,7 +87,7 @@ async function startBo3(request: APIRequestContext, teams: Team[]) {
   expect(started.ok(), `tournament start failed: ${await started.text()}`).toBe(true);
 }
 
-/** A map_result shaped like MatchZy's: nested team scores and a winner object. */
+/** A map_result shaped like Auto Tournament CS2's: nested team scores and a winner object. */
 async function sendMapResult(
   request: APIRequestContext,
   slug: string,

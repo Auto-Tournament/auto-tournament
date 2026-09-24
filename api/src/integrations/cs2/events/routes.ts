@@ -1,6 +1,6 @@
 /**
  * Events Routes (CS2 event adapter)
- * Handles MatchZy webhook events at /api/events — the URL every MatchZy
+ * Handles Auto Tournament CS2 webhook events at /api/events — the URL every Auto Tournament CS2
  * plugin in the field is configured with, so it must not change. Mounted
  * through the CS2 integration's `legacyRoutes`.
  *
@@ -10,12 +10,12 @@
  * `normalize()` makes of the event then goes to the core's
  * `matchLifecycle.ingest`, which owns map results and series results.
  *
- * MatchZy Enhanced Retry System:
+ * Auto Tournament CS2 Retry System:
  * - Events are automatically retried on failure with exponential backoff
  * - Local queue on server survives API downtime
- * - Return 200 OK: Event successfully received (MatchZy marks as sent)
- * - Return 4xx: Validation error (MatchZy will still retry)
- * - Return 5xx: Server error (MatchZy retries with exponential backoff)
+ * - Return 200 OK: Event successfully received (Auto Tournament CS2 marks as sent)
+ * - Return 4xx: Validation error (Auto Tournament CS2 will still retry)
+ * - Return 5xx: Server error (Auto Tournament CS2 retries with exponential backoff)
  * - Retry schedule: 30s, 1m, 2m, 4m, 8m, 16m, 32m (max 20 attempts)
  * - No events lost during API outages!
  */
@@ -23,7 +23,7 @@
 import { Router, Request, Response } from 'express';
 import { requireAuth } from '../../../middleware/auth';
 import { validateEventToken, validateServerToken } from '../../../middleware/serverAuth';
-import { MatchZyEvent } from './matchzy-events.types';
+import { PluginEvent } from './plugin-events.types';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { logWebhookEvent } from '../../../utils/eventLogger';
@@ -74,7 +74,7 @@ router.get('/test', (req: Request, res: Response) => {
 
 /**
  * POST /api/events
- * Receive MatchZy events via webhook (legacy endpoint without server ID)
+ * Receive Auto Tournament CS2 events via webhook (legacy endpoint without server ID)
  */
 router.post('/', validateEventToken, async (req: Request, res: Response) => {
   await handleEventRequest(req, res, undefined);
@@ -170,7 +170,7 @@ router.post('/report', validateServerToken, async (req: Request, res: Response) 
 
 /**
  * POST /api/events/:matchSlugOrServerId
- * Receive MatchZy events via webhook with match slug or server ID in URL
+ * Receive Auto Tournament CS2 events via webhook with match slug or server ID in URL
  */
 router.post('/:matchSlugOrServerId', validateEventToken, async (req: Request, res: Response) => {
   const identifier = req.params.matchSlugOrServerId;
@@ -185,7 +185,7 @@ async function handleEventRequest(
   res: Response,
   matchSlugOrServerIdFromUrl?: string
 ): Promise<Response> {
-  const body = req.body as MatchZyEvent | undefined;
+  const body = req.body as PluginEvent | undefined;
   const eventType = body?.event;
   const payloadServerId = (body as { server_id?: string })?.server_id;
   // Set by MAT in the webhook URL it gives each server (see serverAttribution).
@@ -199,7 +199,7 @@ async function handleEventRequest(
   });
 
   try {
-    const event: MatchZyEvent | undefined = body;
+    const event: PluginEvent | undefined = body;
 
     if (!event?.event) {
       log.warn('[EVENTS] Rejected: missing event type', { path: req.path });
@@ -241,7 +241,7 @@ async function handleEventRequest(
     const serverId =
       sourceServerId || resolvedMatch?.server_id || matchSlugOrServerIdFromUrl || 'unknown';
 
-    // Handle server_configured event from MatchZy Enhanced
+    // Handle server_configured event from Auto Tournament CS2
     // Sent when server is configured with webhook URL or on startup
     if (event.event === 'server_configured') {
       const ev = event as ServerConfiguredEvent;
@@ -265,15 +265,15 @@ async function handleEventRequest(
       });
     }
 
-    // Handle special connectivity test events from MatchZy.
+    // Handle special connectivity test events from Auto Tournament CS2.
     // These are used to verify that the server can reach our /api/events endpoint.
-    if (event.event === 'test_event' || event.event === 'MatchZyTestEvent') {
+    if (event.event === 'test_event' || event.event === 'PluginTestEvent') {
       if (serverId && serverId !== 'unknown') {
         recordServerTestEvent(serverId);
       }
     }
 
-    // Handle CS2 update-required marker from MatchZy Enhanced safe auto-updater.
+    // Handle CS2 update-required marker from Auto Tournament CS2 safe auto-updater.
     // This is a server-level signal (matchid=-1) and should not enter the match event pipeline.
     if (event.event === 'cs2_update_required') {
       const ev = event as Cs2UpdateRequiredEvent;
@@ -417,15 +417,15 @@ async function handleEventRequest(
     // Emit real-time event via Socket.io
     emitMatchEvent(actualMatchSlug, event);
 
-    // Respond to MatchZy - 200 OK tells MatchZy the event was successfully received
+    // Respond to Auto Tournament CS2 - 200 OK tells Auto Tournament CS2 the event was successfully received
     return res.status(200).json({
       success: true,
       message: 'Event received',
     });
   } catch (error) {
-    log.error('Error processing MatchZy event', error);
+    log.error('Error processing Auto Tournament CS2 event', error);
     
-    // Return 500 so MatchZy's automatic retry system will queue this event
+    // Return 500 so Auto Tournament CS2's automatic retry system will queue this event
     // and retry with exponential backoff. This ensures no events are lost
     // during temporary API issues (database timeouts, memory issues, etc.)
     return res.status(500).json({
