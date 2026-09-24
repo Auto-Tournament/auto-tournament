@@ -27,9 +27,8 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ErrorIcon from '@mui/icons-material/Error';
 import CloseIcon from '@mui/icons-material/Close';
-import { api, apiErrorMessage } from '../../../utils/api';
 import type { Server } from '../../../types';
-import { useSnackbar } from '../../../contexts/SnackbarContext';
+import { api, apiErrorMessage, useSnackbar } from '../../../module-sdk';
 import { useTranslation } from 'react-i18next';
 import type { BatchResourceDialogProps as BatchServerModalProps } from '../../types';
 

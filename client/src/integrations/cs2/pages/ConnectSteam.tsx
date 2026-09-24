@@ -4,9 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../contexts/AuthContext';
 import { SteamIcon } from '../../../components/icons/SteamIcon';
-import { PlayerAvatar } from '../../../components/player/PlayerAvatar';
+import { PlayerAvatar } from '../../../module-sdk';
 import { generateAvatarDataUrl } from '../../../generation/avatar';
-import { tokens } from '../../../theme/tokens';
+import { tokens } from '../../../module-sdk';
 
 export default function ConnectSteam() {
   const {

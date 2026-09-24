@@ -1,7 +1,7 @@
 import { Grid } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import MapIcon from '@mui/icons-material/Map';
-import { EmptyState } from '../../../components/shared/EmptyState';
+import { EmptyState } from '../../../module-sdk';
 import { MapCard } from './MapCard';
 import type { Map } from '../../../types/api.types';
 

@@ -31,7 +31,7 @@ import {
   Typography,
 } from '@mui/material';
 import MilitaryTechIcon from '@mui/icons-material/MilitaryTech';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useAuth } from '../../../module-sdk';
 import type { TeamAdminPanelProps } from '../../types';
 import { isNotOurs, manualReportApi, type TeamMember } from '../api';
 

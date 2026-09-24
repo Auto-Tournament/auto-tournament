@@ -2,9 +2,9 @@ import React from 'react';
 import { Box, Paper, Typography, Chip, Grid, Link as MuiLink } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getBracketMatchLabel } from '../../../utils/matchUtils';
 import type { ManageResourcesProps as ServerGridProps } from '../../types';
 import { paths } from '../../../paths';
+import { getBracketMatchLabel } from '../../../module-sdk';
 
 function timeAgo(unixSeconds: number | null, t: (key: string, opts?: Record<string, unknown>) => string): string {
   if (!unixSeconds) return t('managePage.servers.never');

@@ -39,6 +39,7 @@ import testRoutes from './test';
 import authRoutes from './auth';
 import gamesRoutes from './games';
 import gamePackRoutes from './gamePacks';
+import moduleRoutes from './modules';
 import meRoutes from './me';
 
 export interface MountedRouter {
@@ -151,6 +152,13 @@ const coreRoutes: MountedRouter[] = [
     title: 'Game packs',
     description:
       'Games an admin imported as a pack file: list, import, remove, and the pack tile. Admin only, except the tile.',
+  },
+  {
+    prefix: '/api/modules',
+    router: moduleRoutes,
+    title: 'Modules',
+    description:
+      'Code modules: list built-in and on-disk modules, enable or disable one from the next restart, and serve its client files. Admin only, except the client files. Modules are installed on disk, never through the API.',
   },
   {
     prefix: '/api/me',

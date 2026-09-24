@@ -34,6 +34,7 @@ import { cleanupOldLogs } from './utils/eventLogger';
 import { initializeSocket } from './services/socketService';
 import { routeTable } from './routes/routeTable';
 import { listIntegrations } from './integrations/registry';
+import { diskModuleRoutes, scanDiskModules } from './modules/loader';
 import { recoverActiveMatches } from './services/matchRecoveryService';
 import { enrichBuiltinGames } from './services/gameEnrichmentService';
 import { scheduler } from './core/scheduler';
@@ -373,6 +374,11 @@ for (const { prefix, router } of routeTable) {
   app.use(prefix, router);
 }
 
+// Legacy routes of code modules loaded from DATA_DIR/modules. They are added
+// to this router when the modules load, after the database is up, so it has to
+// be in place before the SPA and the 404 handler below.
+app.use(diskModuleRoutes);
+
 // Serve frontend at /app (built client lives under api/public)
 app.use('/app', express.static(PUBLIC_DIR));
 
@@ -430,6 +436,13 @@ process.on('uncaughtException', (err) => {
     // Initialize database first (including schema)
     await db.init();
     log.success('Database initialized successfully');
+
+    // Code modules an operator put in DATA_DIR/modules: each enabled,
+    // compatible one is loaded and registered next to the built-ins. After the
+    // database, which holds which ones are enabled; before the packs and the
+    // integrations' start(), which read the registry. Never throws: a broken
+    // module is recorded as broken, and the platform boots without it.
+    await scanDiskModules();
 
     // The games this instance can run: the packs it ships with, installed
     // once each (an admin's removals and replacements are respected), and
