@@ -87,7 +87,7 @@
         "typescript"
     ],
     "author": "",
-    "license": "PolyForm-Noncommercial-1.0.0",
+    "license": "SEE LICENSE IN LICENSE",
     "devDependencies": {
         "@axe-core/playwright": "^4.13.0",
         "@playwright/test": "^1.56.1",
