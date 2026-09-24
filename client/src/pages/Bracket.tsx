@@ -1,3 +1,4 @@
+import { pageTitle } from '../utils/pageTitle';
 import { useState, useEffect, useRef } from 'react';
 import {
   Box,
@@ -35,6 +36,7 @@ import { useResourceAvailability } from '../hooks/useResourceAvailability';
 import { useIntegrationFor } from '../integrations/registry';
 import { api } from '../utils/api';
 import { StartTournamentButton } from '../components/dashboard';
+import { PageHead } from '../components/common/ui';
 import type { Match } from '../types';
 import { useTranslation } from 'react-i18next';
 
@@ -147,7 +149,7 @@ export default function Bracket() {
 
   // Set dynamic page title
   useEffect(() => {
-    document.title = t('layout.pageTitle.bracket');
+    document.title = pageTitle(t('layout.pageTitle.bracket'));
   }, [t]);
 
   // For shuffle tournaments, we always render the list view (no visual bracket).
@@ -226,9 +228,13 @@ export default function Bracket() {
     );
   }
 
+  // The states below have no tournament header of their own.
+  const pageHead = <PageHead title={t('layout.pageTitle.bracket')} />;
+
   if (error) {
     return (
       <Box sx={{ width: '100%', height: '100%' }}>
+        {pageHead}
         <Alert severity="error">{error}</Alert>
       </Box>
     );
@@ -237,6 +243,7 @@ export default function Bracket() {
   if (!tournament) {
     return (
       <Box>
+        {pageHead}
         <EmptyState
           icon={AccountTreeOutlinedIcon}
           title={t('bracket.empty.noBracketTitle')}
@@ -253,6 +260,7 @@ export default function Bracket() {
   if (tournament.type === 'shuffle' && !matches.length) {
     return (
       <Box sx={{ width: '100%', height: '100%' }}>
+        {pageHead}
         <Card data-testid="bracket-empty-state" sx={{ textAlign: 'center', py: 8, px: 3 }}>
           <EmojiEventsIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -283,6 +291,7 @@ export default function Bracket() {
   if (!matches.length) {
     return (
       <Box sx={{ width: '100%', height: '100%' }}>
+        {pageHead}
         <Card data-testid="bracket-empty-state" sx={{ textAlign: 'center', py: 8 }}>
           <EmojiEventsIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -413,7 +422,13 @@ export default function Bracket() {
           >
             <Box display="flex" alignItems="center" gap={2} minWidth={0}>
               <Box data-testid="bracket-tournament-info" minWidth={0}>
-                <Typography variant="h4" fontWeight={600} gutterBottom sx={{ overflowWrap: 'anywhere' }}>
+                <Typography
+                  variant="h4"
+                  component="h1"
+                  fontWeight={600}
+                  gutterBottom
+                  sx={{ overflowWrap: 'anywhere' }}
+                >
                   {tournament.name}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">

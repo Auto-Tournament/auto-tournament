@@ -25,7 +25,13 @@
     "goToAdminDashboard": "Gå til admin-dashboard",
     "goToAdminDashboardHint": "Du ser spillerprofilen din. Åpne admin-dashboardet for å administrere lag, turneringer og servere.",
     "siteMenu": "Sidemeny",
-    "accountMenu": "Kontomeny"
+    "accountMenu": "Kontomeny",
+    "admin": "Admin",
+    "teams": "Lag",
+    "leaderboards": "Topplister",
+    "theme": "Tema",
+    "language": "Språk",
+    "signIn": "Logg inn"
   },
   "layout": {
     "pageTitle": {

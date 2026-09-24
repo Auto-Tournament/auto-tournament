@@ -22,7 +22,13 @@
     "goToAdminDashboard": "Vai al pannello admin",
     "goToAdminDashboardHint": "Stai visualizzando il tuo profilo giocatore. Apri il pannello admin per gestire squadre, tornei e server.",
     "siteMenu": "Site menu",
-    "accountMenu": "Account menu"
+    "accountMenu": "Account menu",
+    "admin": "Admin",
+    "teams": "Teams",
+    "leaderboards": "Leaderboards",
+    "theme": "Theme",
+    "language": "Language",
+    "signIn": "Sign in"
   },
   "layout": {
     "pageTitle": {

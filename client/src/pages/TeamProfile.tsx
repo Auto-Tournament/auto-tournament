@@ -1,3 +1,4 @@
+import { pageTitle } from '../utils/pageTitle';
 import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, Box, CircularProgress, Container, Stack } from '@mui/material';
@@ -26,9 +27,9 @@ export default function TeamProfile() {
     useTeamProfileData(teamId);
 
   useEffect(() => {
-    document.title = team?.name
-      ? t('teamProfile.pageTitle', { name: team.name })
-      : t('teamProfile.roster.title');
+    document.title = pageTitle(
+      team?.name ? t('teamProfile.pageTitle', { name: team.name }) : t('teamProfile.roster.title')
+    );
   }, [team, t]);
 
   if (loading) {
@@ -46,7 +47,7 @@ export default function TeamProfile() {
     return (
       <Box minHeight="100vh" bgcolor="transparent">
         <TopNavBar />
-        <Container maxWidth="md">
+        <Container maxWidth="lg">
           <Box py={6}>
             <Alert severity="error" data-testid="team-profile-not-found">
               {t('teamProfile.notFound')}
@@ -60,7 +61,7 @@ export default function TeamProfile() {
   return (
     <Box minHeight="100vh" bgcolor="transparent" data-testid="team-profile-page">
       <TopNavBar />
-      <Container maxWidth="md">
+      <Container maxWidth="lg">
         <Box py={6}>
           <Stack spacing={3}>
             {error && <Alert severity="error">{error}</Alert>}

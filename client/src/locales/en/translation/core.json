@@ -25,7 +25,13 @@
     "goToAdminDashboard": "Go to Admin Dashboard",
     "goToAdminDashboardHint": "You're viewing your player profile. Open the admin dashboard to manage teams, tournaments, and servers.",
     "siteMenu": "Site menu",
-    "accountMenu": "Account menu"
+    "accountMenu": "Account menu",
+    "admin": "Admin",
+    "teams": "Teams",
+    "leaderboards": "Leaderboards",
+    "theme": "Theme",
+    "language": "Language",
+    "signIn": "Sign in"
   },
   "layout": {
     "pageTitle": {

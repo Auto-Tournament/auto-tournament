@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import { usePageHeader } from '../contexts/PageHeaderContext';
+import { pageTitle } from '../utils/pageTitle';
+import { useState, useEffect, useCallback, type ReactNode } from 'react';
+import { PageHead } from '../components/common/ui';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import {
   Box,
@@ -30,7 +31,6 @@ import { useTranslation } from 'react-i18next';
 
 export default function Teams() {
   const { t } = useTranslation();
-  const { setHeaderActions } = usePageHeader();
   const { showSuccess, showError, showWarning } = useSnackbar();
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,104 +43,97 @@ export default function Teams() {
 
   // Set dynamic page title
   useEffect(() => {
-    document.title = t('layout.pageTitle.teams');
+    document.title = pageTitle(t('layout.pageTitle.teams'));
   }, [t]);
 
-  // Set header actions
-  useEffect(() => {
-    if (teams.length > 0) {
-      const visibleTeamsForHeader = teams.filter((team) => !team.id.startsWith('shuffle-'));
-      const allVisibleSelected =
-        visibleTeamsForHeader.length > 0 &&
-        visibleTeamsForHeader.every((team) => selectedTeamIds.has(team.id));
+  // The page head's buttons
+  let headerActions: ReactNode = null;
+  if (teams.length > 0) {
+    const visibleTeamsForHeader = teams.filter((team) => !team.id.startsWith('shuffle-'));
+    const allVisibleSelected =
+      visibleTeamsForHeader.length > 0 &&
+      visibleTeamsForHeader.every((team) => selectedTeamIds.has(team.id));
 
-      setHeaderActions(
-        <Box display="flex" gap={2}>
-          <Button
-            variant={selectionMode ? 'contained' : 'outlined'}
-            color={selectionMode ? 'secondary' : 'inherit'}
-            size="small"
-            onClick={() => {
-              setSelectionMode((prev) => !prev);
-              if (selectionMode) {
-                setSelectedTeamIds(() => new Set());
-              }
-            }}
-          >
-            {selectionMode ? t('teamsPage.headerSelect.done') : t('teamsPage.headerSelect.select')}
-          </Button>
-          {selectionMode && (
-            <>
-              <Button
-                variant="outlined"
-                color="inherit"
-                size="small"
-                disabled={visibleTeamsForHeader.length === 0}
-                onClick={() => {
-                  setSelectedTeamIds((prev) => {
-                    const next = new Set(prev);
-                    if (allVisibleSelected) {
-                      visibleTeamsForHeader.forEach((team) => {
-                        next.delete(team.id);
-                      });
-                    } else {
-                      visibleTeamsForHeader.forEach((team) => {
-                        next.add(team.id);
-                      });
-                    }
-                    return next;
-                  });
-                }}
-              >
-                {allVisibleSelected
-                  ? t('teamsPage.headerSelect.unselectAll')
-                  : t('teamsPage.headerSelect.selectAll')}
-              </Button>
-              <Button
-                variant="outlined"
-                color="error"
-                size="small"
-                disabled={selectedTeamIds.size === 0}
-                onClick={() => {
-                  if (selectedTeamIds.size === 0) return;
-                  setBulkDeleteConfirmOpen(true);
-                }}
-              >
-                {t('teamsPage.headerSelect.deleteSelected')}
-              </Button>
-            </>
-          )}
-          {!selectionMode && (
-            <>
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => setImportModalOpen(true)}
-                data-testid="import-teams-button"
-              >
-                {t('teamsPage.headerActions.importJson')}
-              </Button>
-              <Button
-                data-testid="add-team-button"
-                variant="contained"
-                size="small"
-                startIcon={<AddIcon />}
-                onClick={() => handleOpenModal()}
-              >
-                {t('teamsPage.headerActions.addTeam')}
-              </Button>
-            </>
-          )}
-        </Box>
-      );
-    } else {
-      setHeaderActions(null);
-    }
-
-    return () => {
-      setHeaderActions(null);
-    };
-  }, [teams, setHeaderActions, selectionMode, selectedTeamIds, t]);
+    headerActions = (
+      <Box display="flex" gap={2} flexWrap="wrap">
+        <Button
+          variant={selectionMode ? 'contained' : 'outlined'}
+          color={selectionMode ? 'secondary' : 'inherit'}
+          size="small"
+          onClick={() => {
+            setSelectionMode((prev) => !prev);
+            if (selectionMode) {
+              setSelectedTeamIds(() => new Set());
+            }
+          }}
+        >
+          {selectionMode ? t('teamsPage.headerSelect.done') : t('teamsPage.headerSelect.select')}
+        </Button>
+        {selectionMode && (
+          <>
+            <Button
+              variant="outlined"
+              color="inherit"
+              size="small"
+              disabled={visibleTeamsForHeader.length === 0}
+              onClick={() => {
+                setSelectedTeamIds((prev) => {
+                  const next = new Set(prev);
+                  if (allVisibleSelected) {
+                    visibleTeamsForHeader.forEach((team) => {
+                      next.delete(team.id);
+                    });
+                  } else {
+                    visibleTeamsForHeader.forEach((team) => {
+                      next.add(team.id);
+                    });
+                  }
+                  return next;
+                });
+              }}
+            >
+              {allVisibleSelected
+                ? t('teamsPage.headerSelect.unselectAll')
+                : t('teamsPage.headerSelect.selectAll')}
+            </Button>
+            <Button
+              variant="outlined"
+              color="error"
+              size="small"
+              disabled={selectedTeamIds.size === 0}
+              onClick={() => {
+                if (selectedTeamIds.size === 0) return;
+                setBulkDeleteConfirmOpen(true);
+              }}
+            >
+              {t('teamsPage.headerSelect.deleteSelected')}
+            </Button>
+          </>
+        )}
+        {!selectionMode && (
+          <>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => setImportModalOpen(true)}
+              data-testid="import-teams-button"
+            >
+              {t('teamsPage.headerActions.importJson')}
+            </Button>
+            <Button
+              data-testid="add-team-button"
+              variant="contained"
+              size="small"
+              startIcon={<AddIcon />}
+              onClick={() => handleOpenModal()}
+            >
+              {t('teamsPage.headerActions.addTeam')}
+            </Button>
+          </>
+        )}
+      </Box>
+    );
+  }
 
   const loadTeams = useCallback(async () => {
     try {
@@ -236,8 +229,11 @@ export default function Teams() {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
+      <Box>
+        <PageHead title={t('layout.pageTitle.teams')} />
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+          <CircularProgress />
+        </Box>
       </Box>
     );
   }
@@ -248,6 +244,7 @@ export default function Teams() {
 
   return (
     <Box data-testid="teams-page" sx={{ width: '100%', height: '100%' }}>
+      <PageHead title={t('layout.pageTitle.teams')} actions={headerActions} />
       {hasHiddenShuffleTeams && (
         <Box mb={2}>
           <Typography variant="body2" color="text.secondary">

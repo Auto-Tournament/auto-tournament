@@ -21,7 +21,8 @@ import type {
 } from '../cs2.types';
 import type { SnackbarKey } from 'notistack';
 import {
-  usePageHeader,
+  PageHead,
+  pageTitle,
   api,
   EmptyState,
   ConfirmDialog,
@@ -36,7 +37,6 @@ import {
 } from '../../../module-sdk';
 
 export default function Servers() {
-  const { setHeaderActions } = usePageHeader();
   const [servers, setServers] = useState<Server[]>([]);
   const { showError, showSnackbar, showPersistentError, closeSnackbar } = useSnackbar();
   const [modalOpen, setModalOpen] = useState(false);
@@ -105,7 +105,7 @@ export default function Servers() {
 
   // Set dynamic page title
   useEffect(() => {
-    document.title = t('serversPage.title');
+    document.title = pageTitle(t('serversPage.title'));
   }, [t]);
 
   const checkServerStatus = async (
@@ -466,153 +466,134 @@ export default function Servers() {
     t,
   ]);
 
-  // Set header actions
-  useEffect(() => {
-    if (servers.length > 0) {
-      const allSelected =
-        servers.length > 0 && servers.every((server) => selectedServerIds.has(server.id));
+  // The page head's buttons
+  let headerActions: React.ReactNode = null;
+  if (servers.length > 0) {
+    const allSelected =
+      servers.length > 0 && servers.every((server) => selectedServerIds.has(server.id));
 
-      setHeaderActions(
-        <Box display="flex" gap={2}>
-          {!selectionMode && (
-            <>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={refreshing ? <CircularProgress size={20} /> : <RefreshIcon />}
-                onClick={() => {
-                  void loadServers({ useCached: false });
-                  void loadAllocationStatus();
-                }}
-                disabled={refreshing}
-              >
-                {refreshing
-                  ? t('serversPage.headerActions.refreshChecking')
-                  : t('serversPage.headerActions.refresh')}
-              </Button>
-              {uninitializedCount > 0 && (
-                <Button
-                  variant="outlined"
-                  size="small"
-                  color="warning"
-                  startIcon={
-                    retryingAll ? (
-                      <CircularProgress size={20} />
-                    ) : (
-                      <RefreshIcon />
-                    )
-                  }
-                  onClick={() => void handleRetryAllUninitialized()}
-                  disabled={retryingAll || refreshing}
-                >
-                  {retryingAll
-                    ? t('serversPage.headerActions.retryUninitializedChecking')
-                    : t('serversPage.headerActions.retryUninitialized', {
-                        count: uninitializedCount,
-                      })}
-                </Button>
-              )}
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<AddIcon />}
-                onClick={() => setBatchModalOpen(true)}
-              >
-                {t('serversPage.headerActions.batchAdd')}
-              </Button>
-            </>
-          )}
-          {servers.length > 0 && (
-            <>
-              <Button
-                variant={selectionMode ? 'contained' : 'outlined'}
-                color={selectionMode ? 'secondary' : 'inherit'}
-                size="small"
-                onClick={() => {
-                  setSelectionMode((prev) => !prev);
-                  if (selectionMode) {
-                    setSelectedServerIds(() => new Set());
-                  }
-                }}
-              >
-                {selectionMode
-                  ? t('serversPage.headerActions.done')
-                  : t('serversPage.headerActions.select')}
-              </Button>
-              {selectionMode && (
-                <>
-                  <Button
-                    variant="outlined"
-                    color="inherit"
-                    size="small"
-                    disabled={servers.length === 0}
-                    onClick={() => {
-                      setSelectedServerIds((prev) => {
-                        const next = new Set(prev);
-                        if (allSelected) {
-                          next.clear();
-                        } else {
-                          servers.forEach((server) => {
-                            next.add(server.id);
-                          });
-                        }
-                        return next;
-                      });
-                    }}
-                  >
-                    {allSelected
-                      ? t('serversPage.headerActions.unselectAll')
-                      : t('serversPage.headerActions.selectAll')}
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    size="small"
-                    disabled={selectedServerIds.size === 0}
-                    onClick={() => {
-                      if (selectedServerIds.size === 0) return;
-                      setBulkDeleteConfirmOpen(true);
-                    }}
-                  >
-                    {t('serversPage.headerActions.deleteSelected')}
-                  </Button>
-                </>
-              )}
-            </>
-          )}
-          {!selectionMode && (
+    headerActions = (
+      <Box display="flex" gap={2} flexWrap="wrap">
+        {!selectionMode && (
+          <>
             <Button
-              data-testid="add-server-button"
-              variant="contained"
+              variant="outlined"
+              size="small"
+              startIcon={refreshing ? <CircularProgress size={20} /> : <RefreshIcon />}
+              onClick={() => {
+                void loadServers({ useCached: false });
+                void loadAllocationStatus();
+              }}
+              disabled={refreshing}
+            >
+              {refreshing
+                ? t('serversPage.headerActions.refreshChecking')
+                : t('serversPage.headerActions.refresh')}
+            </Button>
+            {uninitializedCount > 0 && (
+              <Button
+                variant="outlined"
+                size="small"
+                color="warning"
+                startIcon={
+                  retryingAll ? (
+                    <CircularProgress size={20} />
+                  ) : (
+                    <RefreshIcon />
+                  )
+                }
+                onClick={() => void handleRetryAllUninitialized()}
+                disabled={retryingAll || refreshing}
+              >
+                {retryingAll
+                  ? t('serversPage.headerActions.retryUninitializedChecking')
+                  : t('serversPage.headerActions.retryUninitialized', {
+                      count: uninitializedCount,
+                    })}
+              </Button>
+            )}
+            <Button
+              variant="outlined"
               size="small"
               startIcon={<AddIcon />}
-              onClick={() => handleOpenModal()}
+              onClick={() => setBatchModalOpen(true)}
             >
-              {t('serversPage.headerActions.addServer')}
+              {t('serversPage.headerActions.batchAdd')}
             </Button>
-          )}
-        </Box>
-      );
-    } else {
-      setHeaderActions(null);
-    }
-
-    return () => {
-      setHeaderActions(null);
-    };
-  }, [
-    servers,
-    refreshing,
-    setHeaderActions,
-    loadServers,
-    loadAllocationStatus,
-    selectionMode,
-    selectedServerIds,
-    uninitializedCount,
-    retryingAll,
-    handleRetryAllUninitialized,
-    t,
-  ]);
+          </>
+        )}
+        {servers.length > 0 && (
+          <>
+            <Button
+              variant={selectionMode ? 'contained' : 'outlined'}
+              color={selectionMode ? 'secondary' : 'inherit'}
+              size="small"
+              onClick={() => {
+                setSelectionMode((prev) => !prev);
+                if (selectionMode) {
+                  setSelectedServerIds(() => new Set());
+                }
+              }}
+            >
+              {selectionMode
+                ? t('serversPage.headerActions.done')
+                : t('serversPage.headerActions.select')}
+            </Button>
+            {selectionMode && (
+              <>
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  size="small"
+                  disabled={servers.length === 0}
+                  onClick={() => {
+                    setSelectedServerIds((prev) => {
+                      const next = new Set(prev);
+                      if (allSelected) {
+                        next.clear();
+                      } else {
+                        servers.forEach((server) => {
+                          next.add(server.id);
+                        });
+                      }
+                      return next;
+                    });
+                  }}
+                >
+                  {allSelected
+                    ? t('serversPage.headerActions.unselectAll')
+                    : t('serversPage.headerActions.selectAll')}
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  size="small"
+                  disabled={selectedServerIds.size === 0}
+                  onClick={() => {
+                    if (selectedServerIds.size === 0) return;
+                    setBulkDeleteConfirmOpen(true);
+                  }}
+                >
+                  {t('serversPage.headerActions.deleteSelected')}
+                </Button>
+              </>
+            )}
+          </>
+        )}
+        {!selectionMode && (
+          <Button
+            data-testid="add-server-button"
+            variant="contained"
+            size="small"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpenModal()}
+          >
+            {t('serversPage.headerActions.addServer')}
+          </Button>
+        )}
+      </Box>
+    );
+  }
 
   useEffect(() => {
     // Initial page load uses cached status to avoid hammering servers when the
@@ -870,6 +851,7 @@ export default function Servers() {
 
   return (
     <Box data-testid="servers-page" sx={{ width: '100%', height: '100%' }}>
+      <PageHead title={t('serversPage.title')} actions={headerActions} />
       {servers.length === 0 ? (
           <Box>
             <EmptyState

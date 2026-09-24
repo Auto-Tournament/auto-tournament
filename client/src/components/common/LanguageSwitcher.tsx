@@ -1,14 +1,17 @@
 import React from 'react';
-import { Box, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
+import { Box, ListItemText, Menu, MenuItem } from '@mui/material';
+import CheckIcon from '@mui/icons-material/Check';
 import { useTranslation } from 'react-i18next';
 import * as Flags from 'country-flag-icons/react/3x2';
 import { tokens } from '../../theme/tokens';
 
-const LANGUAGES: {
+type Language = {
   code: string;
   flagCode: string;
   label: string;
-}[] = [
+};
+
+const LANGUAGES: Language[] = [
   { code: 'en', flagCode: 'GB', label: 'English' },
   { code: 'fr', flagCode: 'FR', label: 'Français' },
   { code: 'de', flagCode: 'DE', label: 'Deutsch' },
@@ -24,7 +27,7 @@ const LANGUAGES: {
 type FlagComponent = React.ComponentType<Record<string, never>>;
 const FlagByCode = Flags as unknown as Record<string, FlagComponent>;
 
-function FlagIcon({ code }: { code: string }) {
+export function FlagIcon({ code }: { code: string }) {
   const C = FlagByCode[code] ?? FlagByCode.GB;
   return (
     <Box
@@ -32,6 +35,7 @@ function FlagIcon({ code }: { code: string }) {
       sx={{
         width: 26,
         height: 19,
+        flexShrink: 0,
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -65,60 +69,54 @@ function normalizeLanguageCode(raw: string): string {
   return 'en';
 }
 
-export const LanguageSwitcher: React.FC = () => {
+/** The language the UI is in now, for the account menu's "Language" row. */
+export function useCurrentLanguage(): Language {
   const { i18n } = useTranslation();
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const current = normalizeLanguageCode(i18n.language || i18n.resolvedLanguage || 'en');
+  return LANGUAGES.find((l) => l.code === current) ?? LANGUAGES[0];
+}
 
-  const raw = i18n.language || i18n.resolvedLanguage || 'en';
-  const current = normalizeLanguageCode(raw);
-  const currentLang = LANGUAGES.find((l) => l.code === current) ?? LANGUAGES[0];
+export type LanguageMenuProps = {
+  /** Where the menu opens: the account button, so it reads as a sub-menu. */
+  anchorEl: HTMLElement | null;
+  onClose: () => void;
+};
 
-  const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+/** The language picker. It lives in the account menu, next to the theme. */
+export const LanguageMenu: React.FC<LanguageMenuProps> = ({ anchorEl, onClose }) => {
+  const { t, i18n } = useTranslation();
+  const current = useCurrentLanguage();
 
   const handleSelect = (code: string) => {
     void i18n.changeLanguage(code);
-    handleClose();
+    onClose();
   };
 
-  const isSelected = (code: string) => code === current;
-
   return (
-    <>
-      <Tooltip title={currentLang.label}>
-        <IconButton
-          onClick={handleOpen}
-          size="small"
-          aria-label={`Language: ${currentLang.label}`}
-          sx={{ p: 0.75 }}
+    <Menu
+      anchorEl={anchorEl}
+      open={Boolean(anchorEl)}
+      onClose={onClose}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      slotProps={{ list: { 'aria-label': t('nav.language') } }}
+    >
+      {LANGUAGES.map(({ code, flagCode, label }) => (
+        <MenuItem
+          key={code}
+          selected={code === current.code}
+          onClick={() => handleSelect(code)}
+          lang={code}
+          data-testid={`language-option-${code}`}
+          sx={{ minHeight: 40, gap: 1.25 }}
         >
-          <FlagIcon code={currentLang.flagCode} />
-        </IconButton>
-      </Tooltip>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-      >
-        {LANGUAGES.map(({ code, flagCode, label }) => (
-          <MenuItem
-            key={code}
-            selected={isSelected(code)}
-            onClick={() => handleSelect(code)}
-            sx={{ minHeight: 40 }}
-            aria-label={label}
-          >
-            <FlagIcon code={flagCode} />
-          </MenuItem>
-        ))}
-      </Menu>
-    </>
+          <FlagIcon code={flagCode} />
+          <ListItemText primary={label} />
+          {code === current.code ? (
+            <CheckIcon fontSize="small" sx={{ ml: 1, color: 'primary.main' }} />
+          ) : null}
+        </MenuItem>
+      ))}
+    </Menu>
   );
 };

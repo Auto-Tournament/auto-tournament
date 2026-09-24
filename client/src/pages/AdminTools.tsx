@@ -14,6 +14,8 @@ import { LogViewer } from '../components/admin/LogViewer';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { useInstalledIntegrations } from '../integrations/registry';
 import { useTranslation } from 'react-i18next';
+import { PageHead } from '../components/common/ui';
+import { pageTitle } from '../utils/pageTitle';
 
 /**
  * Admin tools: logs and maintenance, which every instance has, then each
@@ -32,7 +34,7 @@ const AdminTools: React.FC = () => {
 
   // Set dynamic page title
   React.useEffect(() => {
-    document.title = t('layout.pageTitle.adminTools');
+    document.title = pageTitle(t('layout.pageTitle.adminTools'));
   }, [t]);
 
   const handleRecovery = async () => {
@@ -56,10 +58,7 @@ const AdminTools: React.FC = () => {
 
   return (
     <Box sx={{ width: '100%', height: '100%' }} data-testid="admin-tools-page">
-      {/* The shell header above already shows the page title; only the description stays. */}
-      <Typography variant="body2" color="text.secondary" mb={3}>
-        {t('adminToolsPage.description')}
-      </Typography>
+      <PageHead title={t('layout.pageTitle.adminTools')} subtitle={t('adminToolsPage.description')} />
 
       {/* Match recovery */}
       <Box component="section" data-testid="admin-tools-recovery">

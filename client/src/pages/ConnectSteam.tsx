@@ -1,3 +1,4 @@
+import { pageTitle } from '../utils/pageTitle';
 import { useEffect } from 'react';
 import { Box, Button, Container, Typography, Card, CardContent, Stack } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -31,7 +32,7 @@ export default function ConnectSteam() {
   const { t } = useTranslation();
 
   useEffect(() => {
-    document.title = t('connectSteam.title');
+    document.title = pageTitle(t('connectSteam.title'));
   }, [t]);
 
   useEffect(() => {

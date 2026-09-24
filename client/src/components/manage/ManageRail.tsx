@@ -33,6 +33,7 @@ import { useManageRailCounts } from '../../contexts/ManageRailContext';
 import { moduleNavItems, navItemLabel } from '../../utils/moduleNavLabels';
 import { paths } from '../../paths';
 import { RAIL_COLUMN_MIN_WIDTH } from '../../constants/adminLayout';
+import { BELOW_NAV_STICKY_TOP } from '../../constants/navBar';
 
 const DOCS_URL = 'https://docs.autotournament.gg';
 
@@ -191,7 +192,7 @@ export const ManageRail: React.FC = () => {
         displayPrint: 'none',
         [RAIL_COLUMN_MIN_WIDTH]: {
           position: 'sticky',
-          top: 0,
+          top: BELOW_NAV_STICKY_TOP,
           alignSelf: 'flex-start',
           width: 220,
           flex: '0 0 220px',
@@ -214,7 +215,7 @@ export const ManageRail: React.FC = () => {
             // Taller than the window (a small laptop, every group open):
             // the rail scrolls on its own instead of hiding its last items.
             maxHeight:
-              'calc(100vh - var(--mat-impersonation-height, 0px) - 64px - 48px)',
+              `calc(100vh - ${BELOW_NAV_STICKY_TOP} - 24px)`,
           },
         }}
       >

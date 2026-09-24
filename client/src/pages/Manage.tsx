@@ -1,7 +1,8 @@
+import { pageTitle } from '../utils/pageTitle';
 import { useEffect, useMemo, useState } from 'react';
-import { Box, Typography, Button, TextField, Dialog, DialogTitle, DialogContent, DialogActions, LinearProgress } from '@mui/material';
+import { Box, Button, TextField, Dialog, DialogTitle, DialogContent, DialogActions, LinearProgress } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { usePageHeader } from '../contexts/PageHeaderContext';
+import { PageHead } from '../components/common/ui';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { useManageData } from '../hooks/useManageData';
 import { api } from '../utils/api';
@@ -30,7 +31,6 @@ export default function Manage() {
   const ServerGrid = shellModule(shell, (i) => i.dashboardWidgets.manageResources)
     ?.dashboardWidgets.manageResources;
   const { t } = useTranslation();
-  const { setHeaderActions } = usePageHeader();
   const { showSuccess, showError } = useSnackbar();
   const { loading, tournament, matches, availability, refresh } = useManageData();
   // The status strip's own tile, from the module the availability above came
@@ -52,7 +52,7 @@ export default function Manage() {
   const [announcing, setAnnouncing] = useState(false);
 
   useEffect(() => {
-    document.title = t('managePage.title');
+    document.title = pageTitle(t('managePage.title'));
   }, [t]);
 
   const statusCounts = useMemo(
@@ -90,20 +90,6 @@ export default function Manage() {
     }
   };
 
-  useEffect(() => {
-    setHeaderActions(
-      <Button
-        variant="outlined"
-        onClick={() => setAnnounceOpen(true)}
-        disabled={!summary || summary.resourceCount === 0}
-      >
-        {t('managePage.announce.button')}
-      </Button>
-    );
-    return () => setHeaderActions(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setHeaderActions, t, summary?.resourceCount]);
-
   if (loading) {
     return (
       <Box>
@@ -114,14 +100,19 @@ export default function Manage() {
 
   return (
     <Box data-testid="manage-page" sx={{ width: '100%' }}>
-      <Box mb={2}>
-        <Typography variant="body2" color="text.secondary">
-          {tournament?.name ?? t('managePage.noTournament')}
-        </Typography>
-        <Typography variant="h4" fontWeight={700}>
-          {t('managePage.needsYouHeading')}
-        </Typography>
-      </Box>
+      <PageHead
+        eyebrow={tournament?.name ?? t('managePage.noTournament')}
+        title={t('managePage.needsYouHeading')}
+        actions={
+          <Button
+            variant="outlined"
+            onClick={() => setAnnounceOpen(true)}
+            disabled={!summary || summary.resourceCount === 0}
+          >
+            {t('managePage.announce.button')}
+          </Button>
+        }
+      />
 
       {/* The rail beside this is the admin shell's (`Layout`), on every
           admin page; this page hands it the "Needs you" count. */}

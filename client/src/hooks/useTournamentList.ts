@@ -38,14 +38,14 @@ interface UseTournamentListResult {
 /**
  * 3.0 hosts exactly one tournament row, always this id (see
  * `LEGACY_TOURNAMENT_ID` in `api/src/utils/tournamentRow.ts` — the one place
- * allowed to know it on the backend). The nav bar's leaderboard link already
- * relies on the same fact. It's needed here because `GET /api/tournament` is
- * admin-only; the per-id leaderboard route is the one tournament endpoint
- * that answers for anonymous visitors, so it's what "the existing public
+ * allowed to know it on the backend). The top bar's Teams and Leaderboards
+ * links read it too, so this stays the client's one copy. It's needed here
+ * because `GET /api/tournament` is admin-only; the per-id leaderboard route
+ * is the one tournament endpoint that answers for anonymous visitors, so it's what "the existing public
  * endpoint" in this hook's job is. 3.1's `GET /api/tournaments` drops the
  * need for a known id entirely.
  */
-const CURRENT_TOURNAMENT_ID = 1;
+export const CURRENT_TOURNAMENT_ID = 1;
 
 function toSummary(tournament: Tournament): TournamentSummary {
   return {

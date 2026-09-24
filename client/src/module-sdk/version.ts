@@ -67,5 +67,11 @@
  * - `instanceSettings: { labelKey, section }` (no props): the module's tab on
  *   Settings. CS2: the webhook URL and the map sync, which were core's.
  * - `links.settings(moduleId?)` opens Settings, on that module's tab.
+ *
+ * 0.2.3 (additive): `pageTitle(name)`, "Name · Auto Tournament" for
+ * `document.title`. The shell prints no page title any more (design audit
+ * chunk 1): a page renders its own `PageHead`, with its buttons as `actions`.
+ * `usePageHeader` is deprecated but still works: buttons a module hands it
+ * show in a plain row above the page. Drop it at the next breaking bump.
  */
-export const CLIENT_API_VERSION = '0.2.2';
+export const CLIENT_API_VERSION = '0.2.3';

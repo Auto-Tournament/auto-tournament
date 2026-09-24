@@ -1,3 +1,4 @@
+import { pageTitle } from '../utils/pageTitle';
 import { useMemo, useState } from 'react';
 import { useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
@@ -61,7 +62,7 @@ export default function Browse() {
   const [where, setWhere] = useState<WhereFilter>('all');
 
   useEffect(() => {
-    document.title = t('browsePage.title');
+    document.title = pageTitle(t('browsePage.title'));
   }, [t]);
 
   const gameOptions = useMemo(() => {

@@ -22,7 +22,13 @@
     "goToAdminDashboard": "Ir al panel de administración",
     "goToAdminDashboardHint": "Estás viendo tu perfil de jugador. Abre el panel de administración para gestionar equipos, torneos y servidores.",
     "siteMenu": "Site menu",
-    "accountMenu": "Account menu"
+    "accountMenu": "Account menu",
+    "admin": "Admin",
+    "teams": "Teams",
+    "leaderboards": "Leaderboards",
+    "theme": "Theme",
+    "language": "Language",
+    "signIn": "Sign in"
   },
   "layout": {
     "pageTitle": {

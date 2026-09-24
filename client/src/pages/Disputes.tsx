@@ -17,6 +17,8 @@
 import { useEffect } from 'react';
 import { Box, Card, CardContent, LinearProgress, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { pageTitle } from '../utils/pageTitle';
+import { PageHead } from '../components/common/ui';
 import { useTournamentStatus } from '../hooks/useTournamentStatus';
 import { useIntegrationFor } from '../integrations/registry';
 
@@ -25,7 +27,7 @@ export default function Disputes() {
   const { tournament, loading } = useTournamentStatus();
 
   useEffect(() => {
-    document.title = t('disputes.title');
+    document.title = pageTitle(t('disputes.title'));
   }, [t]);
 
   const DisputesView = useIntegrationFor(tournament).adminDisputesView;
@@ -33,12 +35,7 @@ export default function Disputes() {
   return (
     <Box data-testid="disputes-page" sx={{ width: '100%' }}>
       <Stack spacing={3} sx={{ width: '100%', maxWidth: 1100 }}>
-        <Box>
-          {/* The shell header above already shows the page title; only the description stays. */}
-          <Typography variant="body2" color="text.secondary">
-            {t('disputes.subheading')}
-          </Typography>
-        </Box>
+        <PageHead title={t('disputes.title')} subtitle={t('disputes.subheading')} sx={{ mb: 0 }} />
 
         {loading ? (
           <LinearProgress />

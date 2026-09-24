@@ -43,6 +43,11 @@ export { useSocket } from '../hooks/useSocket';
 
 // Host contexts
 export { useSnackbar } from '../contexts/SnackbarContext';
+/**
+ * @deprecated since client API 0.2.3. Render the SDK's `PageHead` with the
+ * buttons as its `actions` instead. Buttons handed to it still show, in a
+ * plain row above the page; it goes at the next breaking bump.
+ */
 export { usePageHeader } from '../contexts/PageHeaderContext';
 
 /**
@@ -98,6 +103,8 @@ export type {
   FactGridProps,
 } from '../components/common/ui';
 export { PlayerAvatar } from '../components/player/PlayerAvatar';
+// "Page · Auto Tournament" for document.title (client API 0.2.3)
+export { pageTitle } from '../utils/pageTitle';
 export { ManageStatusTile } from '../components/manage/StatusStrip';
 
 // Strings

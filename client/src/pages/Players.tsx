@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import { usePageHeader } from '../contexts/PageHeaderContext';
+import { pageTitle } from '../utils/pageTitle';
+import { useState, useEffect, useCallback, type ReactNode } from 'react';
+import { PageHead } from '../components/common/ui';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import {
   Box,
@@ -37,7 +38,6 @@ import { useAuth } from '../contexts/AuthContext';
 
 export default function Players() {
   const { t } = useTranslation();
-  const { setHeaderActions } = usePageHeader();
   const { showSuccess, showError, showWarning } = useSnackbar();
   const { startImpersonation } = useAuth();
   const [players, setPlayers] = useState<PlayerDetail[]>([]);
@@ -53,7 +53,7 @@ export default function Players() {
 
   // Set dynamic page title
   useEffect(() => {
-    document.title = t('layout.pageTitle.players');
+    document.title = pageTitle(t('layout.pageTitle.players'));
   }, [t]);
 
   const handleImpersonate = async (player: PlayerDetail) => {
@@ -70,95 +70,88 @@ export default function Players() {
     setModalOpen(true);
   };
 
-  // Set header actions
-  useEffect(() => {
-    if (players.length > 0) {
-      const allVisibleSelected =
-        filteredPlayers.length > 0 &&
-        filteredPlayers.every((player) => selectedPlayerIds.has(player.id));
+  // The page head's buttons
+  let headerActions: ReactNode = null;
+  if (players.length > 0) {
+    const allVisibleSelected =
+      filteredPlayers.length > 0 &&
+      filteredPlayers.every((player) => selectedPlayerIds.has(player.id));
 
-      setHeaderActions(
-        <Box display="flex" gap={2}>
-          <Button
-            variant={selectionMode ? 'contained' : 'outlined'}
-            color={selectionMode ? 'secondary' : 'inherit'}
-            size="small"
-            onClick={() => {
-              setSelectionMode((prev) => !prev);
-              if (selectionMode) {
-                setSelectedPlayerIds(() => new Set());
-              }
-            }}
-          >
-            {selectionMode ? t('playersPage.headerSelect.done') : t('playersPage.headerSelect.select')}
-          </Button>
-          {selectionMode && (
-            <>
-              <Button
-                variant="outlined"
-                color="inherit"
-                size="small"
-                disabled={filteredPlayers.length === 0}
-                onClick={() => {
-                  setSelectedPlayerIds((prev) => {
-                    const next = new Set(prev);
-                    if (allVisibleSelected) {
-                      filteredPlayers.forEach((player) => {
-                        next.delete(player.id);
-                      });
-                    } else {
-                      filteredPlayers.forEach((player) => {
-                        next.add(player.id);
-                      });
-                    }
-                    return next;
-                  });
-                }}
-              >
-                {allVisibleSelected
-                  ? t('playersPage.headerSelect.unselectAll')
-                  : t('playersPage.headerSelect.selectAll')}
-              </Button>
-              <Button
-                variant="outlined"
-                color="error"
-                size="small"
-                disabled={selectedPlayerIds.size === 0}
-                onClick={() => {
-                  if (selectedPlayerIds.size === 0) return;
-                  setBulkDeleteConfirmOpen(true);
-                }}
-              >
-                {t('playersPage.headerSelect.deleteSelected')}
-              </Button>
-            </>
-          )}
-          {!selectionMode && (
-            <>
-              <Button variant="outlined" size="small" onClick={() => setImportModalOpen(true)}>
-                {t('playersPage.headerActions.import')}
-              </Button>
-              <Button
-                variant="contained"
-                size="small"
-                startIcon={<AddIcon />}
-                onClick={() => handleOpenModal()}
-                data-testid="add-player-button"
-              >
-                {t('playersPage.headerActions.addPlayer')}
-              </Button>
-            </>
-          )}
-        </Box>
-      );
-    } else {
-      setHeaderActions(null);
-    }
-
-    return () => {
-      setHeaderActions(null);
-    };
-  }, [players.length, setHeaderActions, selectionMode, selectedPlayerIds, filteredPlayers, t]);
+    headerActions = (
+      <Box display="flex" gap={2} flexWrap="wrap">
+        <Button
+          variant={selectionMode ? 'contained' : 'outlined'}
+          color={selectionMode ? 'secondary' : 'inherit'}
+          size="small"
+          onClick={() => {
+            setSelectionMode((prev) => !prev);
+            if (selectionMode) {
+              setSelectedPlayerIds(() => new Set());
+            }
+          }}
+        >
+          {selectionMode ? t('playersPage.headerSelect.done') : t('playersPage.headerSelect.select')}
+        </Button>
+        {selectionMode && (
+          <>
+            <Button
+              variant="outlined"
+              color="inherit"
+              size="small"
+              disabled={filteredPlayers.length === 0}
+              onClick={() => {
+                setSelectedPlayerIds((prev) => {
+                  const next = new Set(prev);
+                  if (allVisibleSelected) {
+                    filteredPlayers.forEach((player) => {
+                      next.delete(player.id);
+                    });
+                  } else {
+                    filteredPlayers.forEach((player) => {
+                      next.add(player.id);
+                    });
+                  }
+                  return next;
+                });
+              }}
+            >
+              {allVisibleSelected
+                ? t('playersPage.headerSelect.unselectAll')
+                : t('playersPage.headerSelect.selectAll')}
+            </Button>
+            <Button
+              variant="outlined"
+              color="error"
+              size="small"
+              disabled={selectedPlayerIds.size === 0}
+              onClick={() => {
+                if (selectedPlayerIds.size === 0) return;
+                setBulkDeleteConfirmOpen(true);
+              }}
+            >
+              {t('playersPage.headerSelect.deleteSelected')}
+            </Button>
+          </>
+        )}
+        {!selectionMode && (
+          <>
+            <Button variant="outlined" size="small" onClick={() => setImportModalOpen(true)}>
+              {t('playersPage.headerActions.import')}
+            </Button>
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<AddIcon />}
+              onClick={() => handleOpenModal()}
+              data-testid="add-player-button"
+            >
+              {t('playersPage.headerActions.addPlayer')}
+            </Button>
+          </>
+        )}
+      </Box>
+    );
+  }
 
   const loadPlayers = useCallback(async () => {
     try {
@@ -269,14 +262,18 @@ export default function Players() {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
+      <Box>
+        <PageHead title={t('layout.pageTitle.players')} />
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+          <CircularProgress />
+        </Box>
       </Box>
     );
   }
 
   return (
     <Box data-testid="players-page" sx={{ width: '100%', height: '100%' }}>
+      <PageHead title={t('layout.pageTitle.players')} actions={headerActions} />
       {players.length > 0 && (
         <Box mb={3}>
           <TextField
