@@ -1,3 +1,4 @@
+import { pageTitle } from '../utils/pageTitle';
 import React, { useEffect, useState } from 'react';
 import { Box, Card, Button, Alert, Container, Link, Stack, Typography } from '@mui/material';
 import { OpenInNew as OpenInNewIcon } from '@mui/icons-material';
@@ -41,7 +42,7 @@ export default function Login() {
     }
     hasLoadedProvidersRef.current = true;
 
-    document.title = t('login.title');
+    document.title = pageTitle(t('login.title'));
   }, [t]);
 
   useEffect(() => {

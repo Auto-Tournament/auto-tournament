@@ -1,3 +1,4 @@
+import { pageTitle } from '../utils/pageTitle';
 import React, { useState } from 'react';
 import {
   Card,
@@ -34,6 +35,7 @@ import { generateTeamName } from '../generation/teamName';
 import { generatePlayerProfile } from '../generation/playerProfile';
 import { generateDiscordId } from '../generation/discordId';
 import { useTranslation } from 'react-i18next';
+import { PageHead } from '../components/common/ui';
 
 const Development: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -47,7 +49,7 @@ const Development: React.FC = () => {
   const { t } = useTranslation();
 
   // Set dynamic page title
-  document.title = t('layout.pageTitle.devTools');
+  document.title = pageTitle(t('layout.pageTitle.devTools'));
 
   const handleCreateTestTeams = async (count: number) => {
     setLoading(true);
@@ -410,6 +412,7 @@ const Development: React.FC = () => {
 
   return (
     <Box sx={{ width: '100%', height: '100%' }}>
+      <PageHead title={t('layout.pageTitle.devTools')} />
       <Alert severity="warning" sx={{ mb: 3 }}>
         {t('devToolsPage.alert')}
       </Alert>

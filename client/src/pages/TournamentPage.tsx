@@ -10,6 +10,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../hooks/useSocket';
 import { onSocketReconnect } from '../utils/socketResync';
 import { TOURNAMENT_TABS, tournamentTabPath, type TournamentTab } from '../paths';
+import { pageTitle } from '../utils/pageTitle';
 
 /** The tab a path is on: `/tournament/1/bracket` → 'bracket', `/tournament/1` → 'overview'. */
 function tabOf(pathname: string): TournamentTab {
@@ -65,13 +66,14 @@ export default function TournamentPage() {
 
   useEffect(() => {
     if (!tournament) {
-      document.title = t('overviewPage.tabs.overview');
+      document.title = pageTitle(t('overviewPage.tabs.overview'));
       return;
     }
-    document.title =
+    document.title = pageTitle(
       tab === 'overview'
         ? tournament.name
-        : `${t(`overviewPage.tabs.${tab}`)} · ${tournament.name}`;
+        : `${t(`overviewPage.tabs.${tab}`)} · ${tournament.name}`
+    );
   }, [tournament, tab, t]);
 
   if (overview.loading) {

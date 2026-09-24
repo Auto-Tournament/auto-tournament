@@ -1,3 +1,4 @@
+import { pageTitle } from '../utils/pageTitle';
 import { useEffect, useState } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import {
@@ -81,9 +82,9 @@ export default function TeamMatch() {
 
   useEffect(() => {
     if (team?.name) {
-      document.title = team.name;
+      document.title = pageTitle(team.name);
     } else {
-      document.title = t('teamPage.pageTitle');
+      document.title = pageTitle(t('teamPage.pageTitle'));
     }
   }, [team, t]);
 
@@ -114,7 +115,7 @@ export default function TeamMatch() {
     return (
       <Box minHeight="100vh" bgcolor="transparent">
         <TopNavBar />
-        <Container maxWidth="md">
+        <Container maxWidth="lg">
           <Box py={6}>
             <Alert severity="error">{error}</Alert>
           </Box>
@@ -131,7 +132,7 @@ export default function TeamMatch() {
     return (
       <Box minHeight="100vh" bgcolor="transparent">
         <TopNavBar />
-        <Container maxWidth="md">
+        <Container maxWidth="lg">
           <Stack spacing={3} py={6}>
             <TeamHeader team={team} hideSoundControls />
             {teamId && (
@@ -240,7 +241,7 @@ export default function TeamMatch() {
   return (
     <Box minHeight="100vh" bgcolor="transparent">
       <TopNavBar />
-      <Container maxWidth="md">
+      <Container maxWidth="lg">
         <Box py={6}>
           <Stack spacing={3}>
             {tournamentName && (

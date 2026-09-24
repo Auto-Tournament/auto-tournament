@@ -19,8 +19,9 @@ import { Box, Button, Card, CardContent, Chip, Stack, Typography } from '@mui/ma
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import { useTranslation } from 'react-i18next';
+import { pageTitle } from '../utils/pageTitle';
 import { useSnackbar } from '../contexts/SnackbarContext';
-import { usePageHeader } from '../contexts/PageHeaderContext';
+import { PageHead } from '../components/common/ui';
 import { CodeModuleList } from '../components/modules/CodeModuleList';
 import { CatalogTile, GameCatalog } from '../components/catalog/GameCatalog';
 import type { CatalogListing } from '../components/catalog/catalogApi';
@@ -33,14 +34,13 @@ const MAX_PACK_BYTES = 2_000_000;
 export default function Modules() {
   const { t } = useTranslation();
   const { showSuccess, showError } = useSnackbar();
-  const { setHeaderActions } = usePageHeader();
   const [busy, setBusy] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [catalogModules, setCatalogModules] = useState<ReadonlySet<string>>(new Set());
   const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    document.title = t('modulesPage.title');
+    document.title = pageTitle(t('modulesPage.title'));
   }, [t]);
 
   // Modules the catalog shows are managed there, not in the on-disk list too.
@@ -121,20 +121,17 @@ export default function Modules() {
     }
   };
 
-  useEffect(() => {
-    setHeaderActions(
-      <Button
-        variant="outlined"
-        startIcon={<UploadFileIcon />}
-        disabled={busy}
-        onClick={() => fileInput.current?.click()}
-        data-testid="modules-import"
-      >
-        {t('modulesPage.import.action')}
-      </Button>
-    );
-    return () => setHeaderActions(null);
-  }, [busy, setHeaderActions, t]);
+  const headerActions = (
+    <Button
+      variant="outlined"
+      startIcon={<UploadFileIcon />}
+      disabled={busy}
+      onClick={() => fileInput.current?.click()}
+      data-testid="modules-import"
+    >
+      {t('modulesPage.import.action')}
+    </Button>
+  );
 
   // Only the ones compiled in: a code module that loaded is in the registry
   // too, but it is listed by the catalog or `CodeModuleList` with its own
@@ -158,12 +155,12 @@ export default function Modules() {
       />
 
       <Stack spacing={4} sx={{ width: '100%', maxWidth: 1100 }}>
-        <Box>
-          {/* The shell header above already shows the page title; only the description stays. */}
-          <Typography variant="body2" color="text.secondary">
-            {t('modulesPage.subheading')}
-          </Typography>
-        </Box>
+        <PageHead
+          title={t('layout.pageTitle.modules')}
+          subtitle={t('modulesPage.subheading')}
+          actions={headerActions}
+          sx={{ mb: 0 }}
+        />
 
         <Box component="section">
           <Typography variant="h6" fontWeight={700} mb={1}>

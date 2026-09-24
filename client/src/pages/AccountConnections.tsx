@@ -1,3 +1,4 @@
+import { pageTitle } from '../utils/pageTitle';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 import {
@@ -205,7 +206,7 @@ export default function AccountConnections() {
   }, []);
 
   useEffect(() => {
-    document.title = t('account.title');
+    document.title = pageTitle(t('account.title'));
   }, [t]);
 
   useEffect(() => {

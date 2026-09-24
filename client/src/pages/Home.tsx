@@ -1,3 +1,4 @@
+import { pageTitle } from '../utils/pageTitle';
 import { useEffect, useMemo, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import {
@@ -83,7 +84,7 @@ export default function Home() {
   } = useTeamMatchData(myTeam?.id ?? undefined);
 
   useEffect(() => {
-    document.title = t('home.title');
+    document.title = pageTitle(t('home.title'));
   }, [t]);
 
   useEffect(() => {

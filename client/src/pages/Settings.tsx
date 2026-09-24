@@ -1,5 +1,6 @@
+import { pageTitle } from '../utils/pageTitle';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { usePageHeader } from '../contexts/PageHeaderContext';
+import { PageHead } from '../components/common/ui';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import {
   Box,
@@ -73,7 +74,6 @@ function a11yProps(index: string) {
 }
 
 export default function Settings() {
-  const { setHeaderActions } = usePageHeader();
   const { showSuccess, showError, showSnackbar } = useSnackbar();
   const DEFAULT_AT_CHAT_PREFIX = '[{Green}MAT{Default}]';
   const DEFAULT_AT_ADMIN_CHAT_PREFIX = '[{Red}ADMIN{Default}]';
@@ -386,18 +386,9 @@ export default function Settings() {
   }, [showError, t]);
 
   useEffect(() => {
-    document.title = t('settingsPage.title');
+    document.title = pageTitle(t('settingsPage.title'));
     void fetchSettings();
   }, [fetchSettings, t]);
-
-  useEffect(() => {
-    // No header actions needed for settings page
-    setHeaderActions(null);
-
-    return () => {
-      setHeaderActions(null);
-    };
-  }, [setHeaderActions]);
 
   const handleSave = useCallback(
     async (showSuccessMessage = true, overrides?: { atDebugChatEnabled?: boolean }) => {
@@ -875,9 +866,7 @@ export default function Settings() {
 
   return (
     <Box sx={{ width: '100%', height: '100%' }}>
-      <Typography variant="body2" color="text.secondary" mb={4}>
-        {t('settingsPage.intro')}
-      </Typography>
+      <PageHead title={t('layout.pageTitle.settings')} subtitle={t('settingsPage.intro')} />
 
       {loading && (
         <Paper sx={{ p: 3, mb: 3 }}>

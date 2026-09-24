@@ -1,3 +1,4 @@
+import { pageTitle } from '../utils/pageTitle';
 import { useState, useEffect, useCallback } from 'react';
 import { Box, Typography, Grid, LinearProgress, Snackbar, Alert, Stack, Button, Chip } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
@@ -18,6 +19,7 @@ import { api } from '../utils/api';
 import type { Match, MatchEvent, MatchesResponse } from '../types';
 import ConfirmDialog from '../components/modals/ConfirmDialog';
 import { useTranslation } from 'react-i18next';
+import { PageHead } from '../components/common/ui';
 
 export default function Matches() {
   // One read of the tournament for both of this page's game-dependent parts:
@@ -147,7 +149,7 @@ export default function Matches() {
 
   // Set dynamic page title
   useEffect(() => {
-    document.title = t('layout.pageTitle.matches');
+    document.title = pageTitle(t('layout.pageTitle.matches'));
   }, [t]);
 
   // Initialize Socket.io connection (mount-only)
@@ -362,6 +364,7 @@ export default function Matches() {
   if (error) {
     return (
       <Box>
+        <PageHead title={t('layout.pageTitle.matches')} />
         <Typography variant="h6" color="error" gutterBottom>
           {t('matchesPage.errors.loadTitle')}
         </Typography>
@@ -387,6 +390,7 @@ export default function Matches() {
 
   return (
     <Box data-testid="matches-page" sx={{ width: '100%', height: '100%' }}>
+      <PageHead title={t('layout.pageTitle.matches')} />
       {QueueBanner && (
         <QueueBanner
           availability={serverAllocationStatus}

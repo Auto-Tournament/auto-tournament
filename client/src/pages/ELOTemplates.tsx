@@ -1,5 +1,6 @@
+import { pageTitle } from '../utils/pageTitle';
 import { useState, useEffect, useCallback } from 'react';
-import { usePageHeader } from '../contexts/PageHeaderContext';
+import { PageHead } from '../components/common/ui';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import {
   Box,
@@ -30,7 +31,6 @@ import type { EloCalculationTemplate } from '../types/elo.types';
 import { useTranslation } from 'react-i18next';
 
 export default function ELOTemplates() {
-  const { setHeaderActions } = usePageHeader();
   const { showSuccess, showError } = useSnackbar();
   const [templates, setTemplates] = useState<EloCalculationTemplate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,31 +61,9 @@ export default function ELOTemplates() {
   }, [showError, t]);
 
   useEffect(() => {
-  document.title = t('layout.pageTitle.eloTemplates');
+  document.title = pageTitle(t('layout.pageTitle.eloTemplates'));
   loadTemplates();
 }, [loadTemplates, t]);
-
-  useEffect(() => {
-    setHeaderActions(
-      <Box display="flex" gap={1}>
-        <Button
-          variant="contained"
-          size="small"
-          startIcon={<AddIcon />}
-          onClick={() => handleOpenEditor()}
-        >
-        {t('eloTemplatesPage.header.createTemplate')}
-        </Button>
-        <Button variant="outlined" size="small" onClick={() => setImportModalOpen(true)}>
-        {t('eloTemplatesPage.header.importJson')}
-        </Button>
-      </Box>
-    );
-
-    return () => {
-      setHeaderActions(null);
-    };
-}, [setHeaderActions, t]);
 
   const handleOpenEditor = (template?: EloCalculationTemplate) => {
     setEditingTemplate(template || null);
@@ -176,16 +154,41 @@ export default function ELOTemplates() {
     return activeWeights || t('eloTemplatesPage.weights.noAdjustmentsPure');
   };
 
+  const pageHead = (
+    <PageHead
+      title={t('layout.pageTitle.eloTemplates')}
+      actions={
+        <>
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpenEditor()}
+          >
+            {t('eloTemplatesPage.header.createTemplate')}
+          </Button>
+          <Button variant="outlined" size="small" onClick={() => setImportModalOpen(true)}>
+            {t('eloTemplatesPage.header.importJson')}
+          </Button>
+        </>
+      }
+    />
+  );
+
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
+      <Box>
+        {pageHead}
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+          <CircularProgress />
+        </Box>
       </Box>
     );
   }
 
   return (
     <Box sx={{ width: '100%', height: '100%' }}>
+      {pageHead}
       {templates.length === 0 ? (
         <EmptyState
           icon={InfoIcon}

@@ -1,6 +1,7 @@
+import { pageTitle } from '../utils/pageTitle';
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { usePageHeader } from '../contexts/PageHeaderContext';
+import { PageHead } from '../components/common/ui';
 import {
   Box,
   Typography,
@@ -56,7 +57,6 @@ const FORMAT_LABELS: Record<string, string> = {
 };
 
 export default function Templates() {
-  const { setHeaderActions } = usePageHeader();
   const navigate = useNavigate();
   const [templates, setTemplates] = useState<TournamentTemplate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,23 +76,6 @@ export default function Templates() {
   const [selectedMapPool, setSelectedMapPool] = useState<string>('');
   const [loadingMaps, setLoadingMaps] = useState(false);
   const { t } = useTranslation();
-
-  useEffect(() => {
-    setHeaderActions(
-      <Button
-        variant="contained"
-        size="small"
-        startIcon={<AddIcon />}
-        onClick={() => navigate('/tournament')}
-      >
-        {t('templatesPage.header.createFromTournament')}
-      </Button>
-    );
-
-    return () => {
-      setHeaderActions(null);
-    };
-  }, [setHeaderActions, navigate, t]);
 
   const loadTournamentStatus = useCallback(async () => {
     try {
@@ -187,7 +170,7 @@ export default function Templates() {
   }, [showError, t]);
 
   useEffect(() => {
-    document.title = t('layout.pageTitle.templates');
+    document.title = pageTitle(t('layout.pageTitle.templates'));
     loadTemplates();
     loadTournamentStatus();
     loadMaps();
@@ -300,21 +283,21 @@ export default function Templates() {
     navigate(`/tournament?${params.toString()}`);
   };
 
-  useEffect(() => {
-    setHeaderActions(
-      <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate('/tournament')}>
-        {t('templatesPage.header.createFromTournament')}
-      </Button>
-    );
-
-    return () => {
-      setHeaderActions(null);
-    };
-  }, [setHeaderActions, navigate, t]);
+  const pageHead = (
+    <PageHead
+      title={t('layout.pageTitle.templates')}
+      actions={
+        <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate('/tournament')}>
+          {t('templatesPage.header.createFromTournament')}
+        </Button>
+      }
+    />
+  );
 
   if (loading) {
     return (
       <Box sx={{ width: '100%', height: '100%' }}>
+        {pageHead}
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
           <CircularProgress />
         </Box>
@@ -324,6 +307,7 @@ export default function Templates() {
 
   return (
     <Box sx={{ width: '100%', height: '100%' }}>
+      {pageHead}
       {templates.length === 0 ? (
         // The same empty state as Teams, Players, Maps and Ratings: icon,
         // title, what to do, and the button that does it.

@@ -1,6 +1,7 @@
+import { pageTitle } from '../utils/pageTitle';
 import { useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Box, Button, CircularProgress, Grid, Stack, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Grid, Stack } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useTournamentList } from '../hooks/useTournamentList';
 import { useAdminHomeData } from '../hooks/useAdminHomeData';
@@ -10,6 +11,7 @@ import { TournamentsList } from '../components/adminHome/TournamentsList';
 import { SiteLinksGrid } from '../components/adminHome/SiteLinksGrid';
 import { useShellIntegrations, shellModule } from '../hooks/useShellIntegrations';
 import { PeopleOverviewCard } from '../components/adminHome/PeopleOverviewCard';
+import { PageHead } from '../components/common/ui';
 
 declare const __APP_VERSION__: string | undefined;
 
@@ -46,7 +48,7 @@ export default function AdminHome() {
   );
 
   useEffect(() => {
-    document.title = t('dashboard.title');
+    document.title = pageTitle(t('dashboard.title'));
   }, [t]);
 
   // 3.0 hosts exactly one tournament row (see `useTournamentList`), so
@@ -66,33 +68,25 @@ export default function AdminHome() {
   return (
     <Box component="main" data-testid="dashboard-page" sx={{ flexGrow: 1, backgroundColor: 'transparent' }}>
       <Stack spacing={4} sx={{ width: '100%', maxWidth: 1700, mx: 'auto', pb: 5 }}>
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          justifyContent="space-between"
-          alignItems={{ xs: 'flex-start', sm: 'flex-end' }}
-          spacing={2}
-        >
-          <Box>
-            <Typography variant="h4" fontWeight={700}>
-              {t('dashboard.header.brand')}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {t('dashboard.header.version', {
-                version: typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : t('dashboard.header.unknownVersion'),
-              })}
-            </Typography>
-          </Box>
-          {canCreateTournament && (
-            <Button
-              component={RouterLink}
-              to="/tournament"
-              variant="contained"
-              data-testid="admin-home-create-tournament"
-            >
-              {t('dashboard.header.createTournament')}
-            </Button>
-          )}
-        </Stack>
+        <PageHead
+          title={t('dashboard.header.brand')}
+          subtitle={t('dashboard.header.version', {
+            version: typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : t('dashboard.header.unknownVersion'),
+          })}
+          actions={
+            canCreateTournament && (
+              <Button
+                component={RouterLink}
+                to="/tournament"
+                variant="contained"
+                data-testid="admin-home-create-tournament"
+              >
+                {t('dashboard.header.createTournament')}
+              </Button>
+            )
+          }
+          sx={{ mb: 0 }}
+        />
 
         {loading ? (
           <Box display="flex" justifyContent="center" py={6}>

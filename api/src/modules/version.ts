@@ -22,4 +22,4 @@ export const SERVER_API_VERSION = '0.1.0';
  * a module the browser would refuse is never loaded on the server either.
  * Keep the two equal.
  */
-export const CLIENT_API_VERSION = '0.2.2';
+export const CLIENT_API_VERSION = '0.2.3';

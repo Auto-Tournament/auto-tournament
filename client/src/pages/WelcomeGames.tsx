@@ -1,3 +1,4 @@
+import { pageTitle } from '../utils/pageTitle';
 /* global AbortController */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -191,6 +192,10 @@ export default function WelcomeGames() {
   const supportedLabel = t('games.welcome.supportedLegend');
   const continueLabel = isEdit ? t('games.profile.save') : t('games.welcome.continue');
   const heading = isEdit ? t('games.profile.title') : t('games.prompt.title');
+
+  useEffect(() => {
+    document.title = pageTitle(heading);
+  }, [heading]);
   const description = isEdit ? t('games.profile.description') : t('games.prompt.description');
 
   const save = async () => {

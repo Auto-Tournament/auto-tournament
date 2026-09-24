@@ -1,3 +1,4 @@
+import { pageTitle } from '../utils/pageTitle';
 /* global AbortController */
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
@@ -380,7 +381,7 @@ export default function PlayerProfile() {
       }
 
       setPlayer(summaryResponse.player);
-      document.title = t('playerPage.pageTitle', { name: summaryResponse.player.name });
+      document.title = pageTitle(t('playerPage.pageTitle', { name: summaryResponse.player.name }));
 
       // Resolve team membership (used for "My Team" even when player has no current match)
       try {
@@ -762,7 +763,7 @@ export default function PlayerProfile() {
     return (
       <Box minHeight="100vh" bgcolor="transparent">
         <TopNavBar />
-        <Container maxWidth="md">
+        <Container maxWidth="lg">
           <Box
             display="flex"
             justifyContent="center"
@@ -1024,7 +1025,7 @@ export default function PlayerProfile() {
       data-testid="public-player-page"
     >
       <TopNavBar />
-      <Container maxWidth="md">
+      <Container maxWidth="lg">
         <Box py={6}>
         <Stack spacing={3}>
           <MatchNotificationAudio

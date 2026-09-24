@@ -55,6 +55,12 @@ test.describe.serial('Admin navigation', () => {
       await expect(page.locator('.MuiDrawer-root')).toHaveCount(0);
       await expect(page.getByRole('button', { name: /navigation menu/i })).toHaveCount(0);
 
+      // An admin's links: Admin, Manage, Browse. No player links.
+      await expect(page.getByTestId('nav-admin')).toHaveAttribute('aria-current', 'page');
+      await expect(page.getByTestId('nav-browse')).toBeVisible();
+      await expect(page.getByTestId('nav-home')).toHaveCount(0);
+      await expect(page.getByTestId('nav-leaderboards')).toHaveCount(0);
+
       await page.getByTestId('nav-manage').click();
       await expect(page).toHaveURL(/\/manage$/);
       const rail = page.getByTestId('manage-rail');
@@ -69,6 +75,10 @@ test.describe.serial('Admin navigation', () => {
         // Still in the same layout, with the page it opened marked.
         await expect(rail).toBeVisible();
         await expect(page.getByTestId(`manage-rail-${key}`)).toHaveAttribute('aria-current', 'page');
+        // The shell prints no title of its own: one H1, the page's, and the
+        // tab says "Page · Auto Tournament".
+        await expect(page.locator('h1'), `one h1 on ${key}`).toHaveCount(1);
+        await expect(page).toHaveTitle(/ · Auto Tournament$/);
       }
 
       // The sidebar's documentation link lives on in the rail.
@@ -116,8 +126,16 @@ test.describe.serial('Admin navigation', () => {
       await page.goto('/');
       await expect(page.getByTestId('nav-home')).toBeVisible({ timeout: 15000 });
       await expect(page.getByTestId('nav-manage')).toHaveCount(0);
+      await expect(page.getByTestId('nav-admin')).toHaveCount(0);
       await expect(page.getByTestId('manage-rail')).toHaveCount(0);
       await expect(page.locator('a[href="/manage"]')).toHaveCount(0);
+      // A player's links: Home, Browse, and the current tournament's Teams
+      // and Standings tabs (never a hard-coded leaderboard).
+      await expect(page.getByTestId('nav-teams')).toHaveAttribute('href', /^\/tournament\/\d+\/teams$/);
+      await expect(page.getByTestId('nav-leaderboards')).toHaveAttribute(
+        'href',
+        /^\/tournament\/\d+\/standings$/
+      );
 
       // Typing the address sends them to their own page, still without it.
       await page.goto('/manage');

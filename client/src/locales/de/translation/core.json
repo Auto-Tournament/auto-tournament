@@ -22,7 +22,13 @@
     "goToAdminDashboard": "Zum Admin-Dashboard",
     "goToAdminDashboardHint": "Du siehst dein Spielerprofil. Öffne das Admin-Dashboard, um Teams, Turniere und Server zu verwalten.",
     "siteMenu": "Site menu",
-    "accountMenu": "Account menu"
+    "accountMenu": "Account menu",
+    "admin": "Admin",
+    "teams": "Teams",
+    "leaderboards": "Leaderboards",
+    "theme": "Theme",
+    "language": "Language",
+    "signIn": "Sign in"
   },
   "layout": {
     "pageTitle": {

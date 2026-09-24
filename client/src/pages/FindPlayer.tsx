@@ -1,3 +1,4 @@
+import { pageTitle } from '../utils/pageTitle';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -48,7 +49,7 @@ export default function FindPlayer() {
   const { showError } = useSnackbar();
 
   useEffect(() => {
-    document.title = t('findPlayer.title');
+    document.title = pageTitle(t('findPlayer.title'));
   }, [t]);
 
   useEffect(() => {

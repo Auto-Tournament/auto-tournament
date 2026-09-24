@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { usePageHeader, useSnackbar, useModuleTranslation } from '../../../module-sdk';
+import { PageHead, pageTitle, useSnackbar, useModuleTranslation } from '../../../module-sdk';
 import { Box, Button, CircularProgress, Tabs, Tab } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import MapIcon from '@mui/icons-material/Map';
@@ -15,7 +15,6 @@ import type { Map, MapsResponse, MapPool, MapPoolsResponse } from '../cs2.types'
 import { ConfirmDialog } from '../../../module-sdk';
 
 export default function Maps() {
-  const { setHeaderActions } = usePageHeader();
   const { showSuccess, showError } = useSnackbar();
   const { t } = useModuleTranslation('cs2');
   const [maps, setMaps] = useState<Map[]>([]);
@@ -39,47 +38,40 @@ export default function Maps() {
 
   // Set dynamic page title
   useEffect(() => {
-    document.title = t('mapsPage.title');
+    document.title = pageTitle(t('mapsPage.title'));
   }, [t]);
 
-  // Set header actions
-  useEffect(() => {
-    setHeaderActions(
-      activeTab === 0 ? (
-        <Button
-          data-testid="add-map-button"
-          variant="contained"
-          size="small"
-          startIcon={<AddIcon />}
-          onClick={() => {
-            setEditingMap(null);
-            setModalOpen(true);
-            setActionsModalOpen(false);
-          }}
-        >
-          {t('mapsPage.headerActions.addMap')}
-        </Button>
-      ) : (
-        <Button
-          data-testid="create-map-pool-button"
-          variant="contained"
-          size="small"
-          startIcon={<AddIcon />}
-          onClick={() => {
-            setEditingMapPool(null);
-            setMapPoolModalOpen(true);
-            setPoolActionsModalOpen(false);
-          }}
-        >
-          {t('mapsPage.headerActions.createMapPool')}
-        </Button>
-      )
+  // The page head's button: add to whichever tab is open.
+  const headerActions =
+    activeTab === 0 ? (
+      <Button
+        data-testid="add-map-button"
+        variant="contained"
+        size="small"
+        startIcon={<AddIcon />}
+        onClick={() => {
+          setEditingMap(null);
+          setModalOpen(true);
+          setActionsModalOpen(false);
+        }}
+      >
+        {t('mapsPage.headerActions.addMap')}
+      </Button>
+    ) : (
+      <Button
+        data-testid="create-map-pool-button"
+        variant="contained"
+        size="small"
+        startIcon={<AddIcon />}
+        onClick={() => {
+          setEditingMapPool(null);
+          setMapPoolModalOpen(true);
+          setPoolActionsModalOpen(false);
+        }}
+      >
+        {t('mapsPage.headerActions.createMapPool')}
+      </Button>
     );
-
-    return () => {
-      setHeaderActions(null);
-    };
-  }, [activeTab, setHeaderActions, t]);
 
   const loadMaps = useCallback(async () => {
     try {
@@ -286,14 +278,18 @@ export default function Maps() {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
+      <Box>
+        <PageHead title={t('mapsPage.title')} />
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+          <CircularProgress />
+        </Box>
       </Box>
     );
   }
 
   return (
     <Box data-testid="maps-page" sx={{ width: '100%', height: '100%' }}>
+      <PageHead title={t('mapsPage.title')} actions={headerActions} />
       <Tabs value={activeTab} onChange={(_, newValue) => setActiveTab(newValue)} sx={{ mb: 3 }}>
         <Tab
           data-testid="maps-tab"
