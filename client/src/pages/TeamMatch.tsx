@@ -25,6 +25,7 @@ import { TopNavBar } from '../components/layout/TopNavBar';
 import { useTranslation } from 'react-i18next';
 import { getTeamProfileUrl } from '../utils/teamLinks';
 import { integrationFor } from '../integrations/registry';
+import { ModuleNotInstalledNotice } from '../components/common/ModuleNotInstalledNotice';
 
 export default function TeamMatch() {
   const { teamId } = useParams<{ teamId: string }>();
@@ -290,6 +291,8 @@ export default function TeamMatch() {
                 }}
               />
             )}
+
+            <ModuleNotInstalledNotice integration={integration} />
 
             {reportSlug && ReportPanel && (
               <ReportPanel matchSlug={reportSlug} matchStatus={match?.status} />
