@@ -11,6 +11,8 @@ interface VetoHistory {
   actions: VetoAction[];
   team1Name?: string;
   team2Name?: string;
+  /** Map id -> the admin's display name, sent with the veto. */
+  mapNames: Map<string, string>;
 }
 
 /**
@@ -28,7 +30,12 @@ function useVetoHistory(matchSlug: string): VetoHistory | null {
         if (cancelled || !res.success || !res.veto) return;
         const actions = Array.isArray(res.veto.actions) ? [...res.veto.actions] : [];
         actions.sort((a, b) => (a.step || 0) - (b.step || 0));
-        setHistory({ actions, team1Name: res.veto.team1Name, team2Name: res.veto.team2Name });
+        setHistory({
+          actions,
+          team1Name: res.veto.team1Name,
+          team2Name: res.veto.team2Name,
+          mapNames: new Map((res.maps ?? []).map((m) => [m.id, m.displayName])),
+        });
       })
       // A match with no veto (no map pool, veto off) answers 404: no history.
       .catch(() => undefined);
@@ -86,7 +93,11 @@ export function MatchVetoHistory({ matchSlug }: MatchVetoHistoryProps) {
                   sx={{ mx: 1 }}
                 />
                 <Box component="span" sx={vetoMapNameSx(action.action)}>
-                  {action.mapName ? getMapDisplayName(action.mapName) || action.mapName : '—'}
+                  {action.mapName
+                    ? history.mapNames.get(action.mapName) ||
+                      getMapDisplayName(action.mapName) ||
+                      action.mapName
+                    : '—'}
                 </Box>
                 {action.side ? ` (${t('vetoInterface.startingSide', { side: action.side })})` : ''}
               </Typography>

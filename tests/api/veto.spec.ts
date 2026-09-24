@@ -410,4 +410,39 @@ test.describe.serial('Veto API', () => {
 
     expect(allowed.ok()).toBe(true);
   });
+
+  test('sends each map\'s display name with the veto, the same for players and admins', {
+    tag: ['@api', '@veto', '@maps', '@regression'],
+  }, async ({ request }) => {
+    const tournament = await createAndStartTournament(request, {
+      name: `Veto Map Names ${Date.now()}`,
+      type: 'single_elimination',
+      format: 'bo1',
+      maps,
+      teamIds: [team1Id, team2Id],
+    });
+    expect(tournament).toBeTruthy();
+    const match = await findMatchByTeams(request, team1Id, team2Id);
+    expect(match).toBeTruthy();
+
+    // What the admin's Maps page calls these maps.
+    const adminMaps = (await (await request.get('/api/maps')).json()).maps as Array<{
+      id: string;
+      displayName: string;
+    }>;
+    const adminName = new Map(adminMaps.map((m) => [m.id, m.displayName]));
+
+    // A player on the match cannot read /api/maps (admin only), so the veto
+    // itself carries the names: before, the board guessed them from the id.
+    expect(await impersonatePlayer(request, actingSteamIdFor(team1))).toBe(true);
+    const body = await (await request.get(`/api/veto/${match!.slug}`)).json();
+    await stopImpersonating(request);
+
+    expect(body.success).toBe(true);
+    expect(Array.isArray(body.maps)).toBe(true);
+    expect(body.maps.map((m: { id: string }) => m.id).sort()).toEqual([...maps].sort());
+    for (const m of body.maps as Array<{ id: string; displayName: string }>) {
+      expect(m.displayName).toBe(adminName.get(m.id) ?? m.id);
+    }
+  });
 });

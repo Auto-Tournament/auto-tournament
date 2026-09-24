@@ -16,9 +16,9 @@ import { Link as RouterLink } from 'react-router-dom';
 import { VetoMapCard } from './VetoMapCard';
 import { getMapData, getMapDisplayName } from '../maps/mapData';
 import { getVetoOrder } from './vetoOrders';
-import type { MapSide, MapsResponse, VetoState } from '../cs2.types';
+import type { MapSide, VetoMapInfo, VetoState, VetoStateResponse } from '../cs2.types';
 import { FadeInImage } from '../common/FadeInImage';
-import { onSocketReconnect, useSocket, api, tokens, mono, withAlpha, useModuleTranslation } from '../../../module-sdk';
+import { onSocketReconnect, useSocket, tokens, mono, withAlpha, useModuleTranslation } from '../../../module-sdk';
 import { vetoHistoryRowSx, vetoMapNameSx } from './vetoStyles';
 import type { PreMatchViewProps as VetoInterfaceProps } from '../../types';
 
@@ -76,25 +76,12 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   const isRepoImageUrl = (url: string | null | undefined): boolean =>
     !!url && url.includes('cs2-server-manager') && url.includes('map_thumbnails');
 
-  const loadMaps = useCallback(async () => {
-    try {
-      const response = await api.get<MapsResponse>('/api/maps');
-      const mapsMap = new Map<
-        string,
-        { id: string; displayName: string; imageUrl: string | null }
-      >();
-      response.maps?.forEach((map) => {
-        mapsMap.set(map.id, {
-          id: map.id,
-          displayName: map.displayName,
-          imageUrl: map.imageUrl,
-        });
-      });
-      setAllMaps(mapsMap);
-    } catch (err) {
-      console.error('Error loading maps:', err);
-      // Continue without map data - will use fallback display names
-    }
+  // The veto response carries its maps' names and pictures (`maps`), so
+  // players never need the admin-only `/api/maps` — which answered them with
+  // a 403 and left them with names guessed from the map id.
+  const storeMapInfo = useCallback((maps: VetoMapInfo[] | undefined) => {
+    if (!maps || maps.length === 0) return;
+    setAllMaps(new Map(maps.map((map) => [map.id, map])));
   }, []);
 
   const loadVetoState = useCallback(async () => {
@@ -103,9 +90,10 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
 
     try {
       const response = await fetch(`/api/veto/${matchSlug}`);
-      const data = await response.json();
+      const data = (await response.json()) as VetoStateResponse & { veto: VetoState };
 
       if (data.success) {
+        storeMapInfo(data.maps);
         setVetoState(data.veto);
         if (data.veto.status === 'completed') {
           onCompleteRef.current?.();
@@ -119,11 +107,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [matchSlug, t, translateVetoError]);
-
-  useEffect(() => {
-    loadMaps();
-  }, [loadMaps]);
+  }, [matchSlug, t, translateVetoError, storeMapInfo]);
 
   useEffect(() => {
     loadVetoState();
@@ -150,8 +134,9 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     const offReconnect = onSocketReconnect(socket, () => {
       void fetch(`/api/veto/${matchSlug}`)
         .then((response) => response.json())
-        .then((data: { success?: boolean; veto?: VetoState }) => {
+        .then((data: { success?: boolean; veto?: VetoState; maps?: VetoMapInfo[] }) => {
           if (data.success && data.veto) {
+            storeMapInfo(data.maps);
             setVetoState(data.veto);
             if (data.veto.status === 'completed') {
               onCompleteRef.current?.();
@@ -165,7 +150,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       offReconnect();
       socket.off(vetoEvent, onVetoUpdate);
     };
-  }, [socket, matchSlug]);
+  }, [socket, matchSlug, storeMapInfo]);
 
   // Memoize mapsToShow - must be called before any early returns (Rules of Hooks)
   const mapsToShow = useMemo(() => {
