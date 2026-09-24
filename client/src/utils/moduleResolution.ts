@@ -34,7 +34,6 @@ export function missingModuleIntegration(game: GameId): ClientGameIntegration {
     },
     matchPanels: {},
     tournamentSetupSteps: {},
-    standaloneMatchSteps: {},
     resourceDialogs: {},
     dashboardWidgets: {},
     routes: [],

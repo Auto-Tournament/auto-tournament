@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Button, Stack, Typography } from '@mui/material';
-import type { MatchConfig } from '../../types';
+import type { StandaloneMatchConfig as MatchConfig } from './standaloneTypes';
 
 interface ManualMatchReviewStepProps {
   config: MatchConfig | null;

@@ -1,8 +1,7 @@
 import React from 'react';
 import { Autocomplete, Box, TextField, Typography, MenuItem } from '@mui/material';
-import type { Team } from '../../types';
-import { PlayerAvatar } from '../player/PlayerAvatar';
-import type { PlayerDetail } from '../../types/api.types';
+import { PlayerAvatar } from '../../../module-sdk';
+import type { PlayerDetail, Team } from './standaloneTypes';
 
 interface ManualMatchBasicsStepProps {
   submitAttempted: boolean;

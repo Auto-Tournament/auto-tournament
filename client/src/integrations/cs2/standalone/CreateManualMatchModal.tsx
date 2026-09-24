@@ -14,26 +14,31 @@ import {
   StepLabel,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import SaveMapPoolModal from './SaveMapPoolModal';
+import { useModuleTranslation } from '../../../module-sdk';
+import type { StandaloneMatchProps } from '../../types';
+import SaveMapPoolModal from '../maps/SaveMapPoolModal';
 import { useCreateManualMatchModal } from './useCreateManualMatchModal';
 import { ManualMatchChooseModeStep } from './ManualMatchChooseModeStep';
 import { ManualMatchBasicsStep } from './ManualMatchBasicsStep';
-import { useShellIntegrations, shellModule } from '../../hooks/useShellIntegrations';
 import { ManualMatchReviewStep } from './ManualMatchReviewStep';
-import { useTranslation } from 'react-i18next';
+import { ManualMatchMapsRulesStep as RulesStep } from './ManualMatchMapsRulesStep';
+import { ManualMatchMapsStep as ContentStep } from './ManualMatchMapsStep';
 
-interface CreateManualMatchModalProps {
-  open: boolean;
-  onClose: () => void;
-  onCreated: (matchSlug: string) => void;
-}
-
-export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
+/**
+ * The standalone match dialog (`standaloneMatch`, client API 0.2.0): a match
+ * outside the bracket, with its series length, veto, sides, rounds, overtime
+ * and maps, and the teams that play it.
+ *
+ * All of it is CS2's, so all of it is here: core opens the dialog from the
+ * match list and hears back the new match's slug. It used to be core's, with
+ * the rules and maps steps as two slots fed 37 props of state core kept.
+ */
+export const CreateManualMatchModal: React.FC<StandaloneMatchProps> = ({
   open,
   onClose,
   onCreated,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
   const handleDialogClose = (
     _event: React.SyntheticEvent | Event,
     reason: 'backdropClick' | 'escapeKeyDown'
@@ -126,15 +131,6 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
     },
   } = useCreateManualMatchModal({ open, onCreated, onClose });
 
-  // Standalone matches are created for the game this instance runs — the
-  // tournament's module (3.0 phase E), and every installed one before there
-  // is a tournament, because a standalone match can be created first.
-  const { shell } = useShellIntegrations();
-  const RulesStep = shellModule(shell, (i) => i.standaloneMatchSteps.rules)?.standaloneMatchSteps
-    .rules;
-  const ContentStep = shellModule(shell, (i) => i.standaloneMatchSteps.content)
-    ?.standaloneMatchSteps.content;
-
   return (
     <>
       <Dialog open={open} onClose={handleDialogClose} fullWidth maxWidth="sm" disableEscapeKeyDown>
@@ -185,7 +181,7 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
               />
             )}
 
-            {activeStep === 1 && RulesStep && (
+            {activeStep === 1 && (
               <RulesStep
                 activeStep={activeStep}
                 useVeto={useVeto}
@@ -217,7 +213,7 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
               />
             )}
 
-            {activeStep === 2 && ContentStep && (
+            {activeStep === 2 && (
               <ContentStep
                 activeStep={activeStep}
                 maps={maps}

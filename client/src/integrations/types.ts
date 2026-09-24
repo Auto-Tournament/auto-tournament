@@ -123,7 +123,7 @@ export interface PreMatchHistoryProps {
 }
 
 // ---------------------------------------------------------------------------
-// Tournament setup and standalone match steps
+// Tournament setup steps, and the standalone match
 // ---------------------------------------------------------------------------
 
 /** The game's match rules inside the tournament setup (CS2: rounds, overtime). */
@@ -199,61 +199,21 @@ export interface TournamentGameSettingsStepProps {
   disabled?: boolean;
 }
 
-export type StartingSide = 'knife' | 'team1_ct' | 'team2_ct';
-
-/** Standalone match: series length, veto, sides, rounds and roster size. */
-export interface StandaloneRulesStepProps {
-  activeStep: number;
-
-  bestOf: 'bo1' | 'bo3' | 'bo5';
-  onBestOfChange: (format: 'bo1' | 'bo3' | 'bo5') => void;
-
-  useVeto: boolean;
-  onUseVetoChange: (value: boolean) => void;
-
-  requiredMaps: number;
-  selectedMapsCount: number;
-  hasVetoMapCountError: boolean;
-  hasSeriesMapCountError: boolean;
-
-  startingSide: StartingSide;
-  onStartingSideChange: (side: StartingSide) => void;
-  mapSideSelections: Array<StartingSide>;
-  onMapSideSelectionsChange: (index: number, side: StartingSide) => void;
-
-  maxRounds: number;
-  onMaxRoundsChange: (value: number) => void;
-
-  // Overtime configuration for manual matches
-  overtimeEnabled: boolean;
-  onOvertimeEnabledChange: (value: boolean) => void;
-  overtimeMaxRounds: number | null;
-  onOvertimeMaxRoundsChange: (value: number | null) => void;
-
-  playersPerTeam: number;
-  onPlayersPerTeamChange: (value: number) => void;
-}
-
-/** Standalone match: the game content (CS2: maps) for the series. */
-export interface StandaloneContentStepProps {
-  activeStep: number;
-
-  maps: string[];
-  mapPools: MapPool[];
-  availableMaps: MapType[];
-  selectedMapPool: string;
-  loadingMaps: boolean;
-  saving: boolean;
-  onMapPoolChange: (poolId: string) => void;
-  onMapsChange: (maps: string[]) => void;
-  onMapRemove: (mapId: string) => void;
-  onOpenSaveMapPool: () => void;
-
-  useVeto: boolean;
-  requiredMaps: number;
-  selectedMapsCount: number;
-  hasVetoMapCountError: boolean;
-  hasSeriesMapCountError: boolean;
+/**
+ * A match outside the bracket, created from the admin match list (client API
+ * 0.2.0).
+ *
+ * The module owns the whole dialog: whatever a match of its game needs
+ * (CS2: series length, veto, sides, rounds, overtime, maps, teams) is its
+ * form, and core only opens it. It used to be two slots, `rules` and
+ * `content`, fed 37 props of state core kept. A module that leaves this out
+ * has no standalone matches, and the match list offers none.
+ */
+export interface StandaloneMatchProps {
+  open: boolean;
+  onClose: () => void;
+  /** The match was created; core closes the dialog and reloads the list. */
+  onCreated: (matchSlug: string) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -807,10 +767,8 @@ export interface ClientGameIntegration {
     settings?: ComponentType<TournamentGameSettingsStepProps>;
   };
 
-  standaloneMatchSteps: {
-    rules?: ComponentType<StandaloneRulesStepProps>;
-    content?: ComponentType<StandaloneContentStepProps>;
-  };
+  /** The admin match list's "create match" dialog (CS2: the whole standalone match form). */
+  standaloneMatch?: ComponentType<StandaloneMatchProps>;
 
   resourceDialogs: {
     add?: ComponentType<ResourceDialogProps>;

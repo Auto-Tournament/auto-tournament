@@ -1,6 +1,38 @@
 import React from 'react';
 import { Box, FormControlLabel, MenuItem, Switch, TextField, Typography } from '@mui/material';
-import type { StandaloneRulesStepProps as ManualMatchMapsRulesStepProps } from '../../types';
+import type { StartingSide } from './standaloneTypes';
+
+/** The dialog's rules step: series length, veto, sides, rounds and roster size. */
+interface ManualMatchMapsRulesStepProps {
+  activeStep: number;
+
+  bestOf: 'bo1' | 'bo3' | 'bo5';
+  onBestOfChange: (format: 'bo1' | 'bo3' | 'bo5') => void;
+
+  useVeto: boolean;
+  onUseVetoChange: (value: boolean) => void;
+
+  requiredMaps: number;
+  selectedMapsCount: number;
+  hasVetoMapCountError: boolean;
+  hasSeriesMapCountError: boolean;
+
+  startingSide: StartingSide;
+  onStartingSideChange: (side: StartingSide) => void;
+  mapSideSelections: Array<StartingSide>;
+  onMapSideSelectionsChange: (index: number, side: StartingSide) => void;
+
+  maxRounds: number;
+  onMaxRoundsChange: (value: number) => void;
+
+  overtimeEnabled: boolean;
+  onOvertimeEnabledChange: (value: boolean) => void;
+  overtimeMaxRounds: number | null;
+  onOvertimeMaxRoundsChange: (value: number | null) => void;
+
+  playersPerTeam: number;
+  onPlayersPerTeamChange: (value: number) => void;
+}
 
 export const ManualMatchMapsRulesStep: React.FC<ManualMatchMapsRulesStepProps> = ({
   activeStep,

@@ -11,7 +11,7 @@ import {
   Typography,
 } from '@mui/material';
 import type { MatchTemplate } from './useCreateManualMatchModal';
-import { useTranslation } from 'react-i18next';
+import { useModuleTranslation } from '../../../module-sdk';
 
 interface ManualMatchChooseModeStepProps {
   templates: MatchTemplate[];
@@ -24,7 +24,7 @@ export const ManualMatchChooseModeStep: React.FC<ManualMatchChooseModeStepProps>
   selectedTemplateId,
   onTemplateChange,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
 
   return (
     <Box display="flex" flexDirection="column" gap={2}>

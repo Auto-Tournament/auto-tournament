@@ -1,24 +1,22 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { api } from '../../utils/api';
-import { useSnackbar } from '../../contexts/SnackbarContext';
+import { api, useModuleTranslation, useSnackbar } from '../../../module-sdk';
 import type {
-  Server,
-  ServersResponse,
-  MatchConfig,
-  MatchResponse,
-  TeamsResponse,
-  Team,
-} from '../../types';
-import type {
-  MapsResponse,
   Map as MapType,
   MapPool,
   MapPoolsResponse,
+  MapsResponse,
+  Server,
+  ServersResponse,
+} from '../cs2.types';
+import type {
+  MatchResponse,
+  MatchesResponse,
   PlayerDetail,
   PlayersResponse,
-  MatchesResponse,
-} from '../../types/api.types';
+  StandaloneMatchConfig as MatchConfig,
+  Team,
+  TeamsResponse,
+} from './standaloneTypes';
 
 export interface MatchTemplate {
   id: string;
@@ -84,7 +82,7 @@ export function useCreateManualMatchModal({
   onClose,
 }: UseCreateManualMatchModalParams) {
   const { showError } = useSnackbar();
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
 
   const [servers, setServers] = useState<Server[]>([]);
   const [loadingServers, setLoadingServers] = useState(false);

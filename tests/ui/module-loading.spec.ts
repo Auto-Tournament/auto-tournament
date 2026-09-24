@@ -46,7 +46,6 @@ export default {
   teamAdminPanel: Slot,
   matchPanels: {},
   tournamentSetupSteps: {},
-  standaloneMatchSteps: {},
   resourceDialogs: {},
   dashboardWidgets: {},
   routes: [],

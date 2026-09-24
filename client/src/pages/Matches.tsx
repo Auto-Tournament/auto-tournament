@@ -7,7 +7,6 @@ import { onSocketReconnect } from '../utils/socketResync';
 import { useNavigate } from 'react-router-dom';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
-import { CreateManualMatchModal } from '../components/modals/CreateManualMatchModal';
 import { EmptyState } from '../components/shared/EmptyState';
 import { StatusLegend } from '../components/shared/StatusLegend';
 import { MatchCard } from '../components/shared/MatchCard';
@@ -34,6 +33,11 @@ export default function Matches() {
   } = useShellIntegrations();
   const ServerAllocationWidget = shellModule(shell, (i) => i.matchPanels.adminView)?.matchPanels
     .adminView;
+  // The "create match" dialog is the module's whole form (client API 0.2.0):
+  // the tournament's module, or before there is one the first installed
+  // module that has one, because a standalone match can be created first. A
+  // module with no standalone matches fills nothing, and the list offers none.
+  const StandaloneMatchDialog = shellModule(shell, (i) => i.standaloneMatch)?.standaloneMatch;
   const navigate = useNavigate();
   const [upcomingMatches, setUpcomingMatches] = useState<Match[]>([]);
   const [liveMatches, setLiveMatches] = useState<Match[]>([]);
@@ -474,7 +478,7 @@ export default function Matches() {
                 {t('matchesPage.bulkSelect.deleteSelected')}
               </Button>
             )}
-            {!selectionMode && (
+            {!selectionMode && StandaloneMatchDialog && (
               <Button variant="contained" size="small" onClick={() => setCreateMatchOpen(true)}>
                 {t('matchesPage.header.createMatch')}
               </Button>
@@ -505,11 +509,13 @@ export default function Matches() {
             actionIcon={AddIcon}
             onAction={() => navigate('/tournament')}
           />
-          <Box display="flex" justifyContent="center" mt={2}>
-            <Button variant="outlined" onClick={() => setCreateMatchOpen(true)}>
-              {t('matchesPage.empty.createManual')}
-            </Button>
-          </Box>
+          {StandaloneMatchDialog && (
+            <Box display="flex" justifyContent="center" mt={2}>
+              <Button variant="outlined" onClick={() => setCreateMatchOpen(true)}>
+                {t('matchesPage.empty.createManual')}
+              </Button>
+            </Box>
+          )}
         </Box>
       )}
 
@@ -690,17 +696,19 @@ export default function Matches() {
         />
       )}
 
-      {/* Create manual match modal */}
-      <CreateManualMatchModal
-        open={createMatchOpen}
-        onClose={() => setCreateMatchOpen(false)}
-        onCreated={async (slug) => {
-          setCreateMatchOpen(false);
-          showSuccess(t('matchesPage.create.success', { slug }));
+      {/* Create a standalone match: the module's dialog */}
+      {StandaloneMatchDialog && (
+        <StandaloneMatchDialog
+          open={createMatchOpen}
+          onClose={() => setCreateMatchOpen(false)}
+          onCreated={async (slug) => {
+            setCreateMatchOpen(false);
+            showSuccess(t('matchesPage.create.success', { slug }));
 
-          void fetchMatches();
-        }}
-      />
+            void fetchMatches();
+          }}
+        />
+      )}
 
       <ConfirmDialog
         open={selectionMode && bulkDeleteConfirmOpen}

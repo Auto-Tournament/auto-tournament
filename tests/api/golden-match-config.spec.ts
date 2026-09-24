@@ -288,7 +288,7 @@ test.describe.serial('Golden Auto Tournament CS2 match configs', () => {
     await request.delete(`/api/matches/${slug}`, { headers: getAuthHeader() });
 
     // The payload the "Create manual match" modal posts
-    // (client/src/components/modals/useCreateManualMatchModal.ts): an existing
+    // (client/src/integrations/cs2/standalone/useCreateManualMatchModal.ts): an existing
     // team against an ad-hoc roster, Bo3 without veto, fixed sides.
     const [team1] = TEAMS;
     const created = await postOk<{ match: { id: number; slug: string } }>(request, '/api/matches', {

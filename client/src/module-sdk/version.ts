@@ -30,5 +30,8 @@
  *   module's own answer, of which core reads only `nextAllocationInSeconds`.
  * - `resourceDialogs.add` / `.batchAdd` take `{ open, onClose, onSaved }`
  *   (were `server`, `servers` / `existingServers`, `onSave(createdIds)`).
+ * - `standaloneMatchSteps.rules` / `.content` (21 + 16 props of core-held
+ *   state) are gone; one optional slot, `standaloneMatch`, takes
+ *   `{ open, onClose, onCreated(matchSlug) }` and owns the whole form.
  */
 export const CLIENT_API_VERSION = '0.2.0';

@@ -16,8 +16,7 @@ import { VetoInterface } from './veto/VetoInterface';
 import { MatchVetoHistory } from './veto/MatchVetoHistory';
 import { Cs2MatchSettings } from './setup/Cs2MatchSettings';
 import { MapPoolStep } from './setup/MapPoolStep';
-import { ManualMatchMapsRulesStep } from './standalone/ManualMatchMapsRulesStep';
-import { ManualMatchMapsStep } from './standalone/ManualMatchMapsStep';
+import { CreateManualMatchModal } from './standalone/CreateManualMatchModal';
 import { Cs2AdminWarnings } from './global/Cs2AdminWarnings';
 import { Cs2StartConfirm } from './start/Cs2StartConfirm';
 import { Cs2StartPreflight } from './start/Cs2StartPreflight';
@@ -115,10 +114,8 @@ export const cs2ClientIntegration: ClientGameIntegration = {
     content: MapPoolStep,
   },
 
-  standaloneMatchSteps: {
-    rules: ManualMatchMapsRulesStep,
-    content: ManualMatchMapsStep,
-  },
+  // A match outside the bracket: the whole form is CS2's, core only opens it.
+  standaloneMatch: CreateManualMatchModal,
 
   resourceDialogs: {
     add: AddServerDialog,
