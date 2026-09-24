@@ -198,7 +198,8 @@
       "leaderboardTooltip": "Ouvrir le classement public à partager avec les joueurs",
       "restartTooltip": "Terminer tous les matchs actifs sur les serveurs et les recharger (utile pour les matchs bloqués)",
       "resetTooltip": "Terminer tous les matchs et réinitialiser le tournoi en mode configuration (conserve les réglages mais efface toutes les données de match)",
-      "reset": "Réinitialiser en configuration"
+      "reset": "Réinitialiser en configuration",
+      "dangerZone": "Danger zone"
     },
     "reviewCard": {
       "needPlayersWarning": "Il faut au moins {{minPlayers}} joueurs pour lancer le tournoi (matchs en {{teamSize}}v{{teamSize}}). Actuellement inscrits : {{registered}}",

@@ -97,19 +97,6 @@ export function TournamentFormActions({
             {t('common.cancel')}
           </Button>
         )}
-        {tournamentExists && (
-          <Tooltip title={t('tournament.tooltips.deleteTournament')} enterDelay={500}>
-            <Button
-              variant="outlined"
-              color="error"
-              startIcon={<DeleteForeverIcon />}
-              onClick={onDelete}
-              disabled={saving}
-            >
-              {t('common.delete')}
-            </Button>
-          </Tooltip>
-        )}
         {onSaveTemplate && (
           <Tooltip title={t('tournament.formActions.saveTemplateTooltip')} enterDelay={500}>
             <Button
@@ -130,6 +117,22 @@ export function TournamentFormActions({
               }}
             >
               {t('tournament.formActions.saveAsTemplate')}
+            </Button>
+          </Tooltip>
+        )}
+        {/* Delete sits apart, at the far end of the row: it was between
+            Cancel and "Save as template", one slip from the save buttons. */}
+        {tournamentExists && (
+          <Tooltip title={t('tournament.tooltips.deleteTournament')} enterDelay={500}>
+            <Button
+              variant="outlined"
+              color="error"
+              startIcon={<DeleteForeverIcon />}
+              onClick={onDelete}
+              disabled={saving}
+              sx={{ ml: { sm: 'auto' } }}
+            >
+              {t('common.delete')}
             </Button>
           </Tooltip>
         )}

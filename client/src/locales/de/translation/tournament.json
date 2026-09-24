@@ -198,7 +198,8 @@
       "leaderboardTooltip": "Öffne die öffentliche Bestenliste, die du mit den Spielern teilen kannst",
       "restartTooltip": "Alle aktiven Matches auf den Servern beenden und neu laden (hilfreich bei hängenden Matches)",
       "resetTooltip": "Alle Matches beenden und das Turnier in den Einrichtungsmodus zurücksetzen (behält die Turniereinstellungen, löscht aber alle Matchdaten)",
-      "reset": "Auf Einrichtung zurücksetzen"
+      "reset": "Auf Einrichtung zurücksetzen",
+      "dangerZone": "Danger zone"
     },
     "reviewCard": {
       "needPlayersWarning": "Zum Start des Turniers werden mindestens {{minPlayers}} Spieler benötigt ({{teamSize}}v{{teamSize}}-Matches). Aktuell registriert: {{registered}}",

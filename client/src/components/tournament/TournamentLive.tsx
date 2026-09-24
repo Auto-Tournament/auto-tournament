@@ -11,6 +11,8 @@ import {
   Tooltip,
   IconButton,
   TextField,
+  Stack,
+  Divider,
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
@@ -435,53 +437,84 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
               </Button>
             </span>
           </Tooltip>
-          {tournament.status === 'in_progress' && (
-            <Tooltip
-              title={t('tournament.live.restartTooltip')}
-              PopperProps={{ style: { zIndex: 1200 } }}
-              enterDelay={500}
-            >
-              <Box flex={1} minWidth={200}>
-                <RestartTournamentButton fullWidth variant="outlined" size="medium" />
-              </Box>
-            </Tooltip>
-          )}
-          <Tooltip
-            title={t('tournament.live.resetTooltip')}
-            PopperProps={{ style: { zIndex: 1200 } }}
-            enterDelay={500}
+        </Box>
+
+        {/* What changes or ends the running tournament sits apart from the
+            everyday buttons above, each with a line saying what it does. It
+            used to be one row of five differently coloured buttons: filled
+            orange, outlined, outlined amber, and two outlined red. */}
+        <Box
+          component="section"
+          aria-labelledby="tournament-danger-zone-title"
+          data-testid="tournament-danger-zone"
+          sx={{
+            mt: 3,
+            p: 2,
+            border: 1,
+            borderColor: 'error.main',
+            borderRadius: 2,
+          }}
+        >
+          <Typography
+            id="tournament-danger-zone-title"
+            variant="subtitle2"
+            fontWeight={600}
+            color="error.main"
+            gutterBottom
           >
-            <span>
+            {t('tournament.live.dangerZone')}
+          </Typography>
+          <Stack divider={<Divider flexItem />} spacing={1.5}>
+            {tournament.status === 'in_progress' && (
+              <DangerRow description={t('tournament.live.restartTooltip')}>
+                <RestartTournamentButton variant="outlined" size="small" />
+              </DangerRow>
+            )}
+            <DangerRow description={t('tournament.live.resetTooltip')}>
               <Button
                 variant="outlined"
                 color="error"
+                size="small"
                 startIcon={<RestartAltIcon />}
                 onClick={onReset}
                 disabled={saving}
               >
                 {t('tournament.live.reset')}
               </Button>
-            </span>
-          </Tooltip>
-          <Tooltip
-            title={t('tournament.tooltips.deleteTournament')}
-            PopperProps={{ style: { zIndex: 1200 } }}
-            enterDelay={500}
-          >
-            <span>
+            </DangerRow>
+            <DangerRow description={t('tournament.tooltips.deleteTournament')}>
               <Button
                 variant="outlined"
                 color="error"
+                size="small"
                 startIcon={<DeleteForeverIcon />}
                 onClick={onDelete}
                 disabled={saving}
               >
                 {t('common.delete')}
               </Button>
-            </span>
-          </Tooltip>
+            </DangerRow>
+          </Stack>
         </Box>
       </CardContent>
     </Card>
   );
 };
+
+/** One danger-zone action: what it does on the left, its button on the right. */
+function DangerRow({ description, children }: { description: string; children: React.ReactNode }) {
+  return (
+    <Box
+      display="flex"
+      alignItems={{ xs: 'flex-start', sm: 'center' }}
+      flexDirection={{ xs: 'column', sm: 'row' }}
+      justifyContent="space-between"
+      gap={1.5}
+    >
+      <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
+        {description}
+      </Typography>
+      <Box sx={{ flexShrink: 0, '& .MuiButton-root': { whiteSpace: 'nowrap' } }}>{children}</Box>
+    </Box>
+  );
+}

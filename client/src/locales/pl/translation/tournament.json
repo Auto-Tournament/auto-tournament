@@ -200,7 +200,8 @@
       "leaderboardTooltip": "Otwórz publiczną tabelę wyników, którą możesz udostępnić graczom",
       "restartTooltip": "Zakończ wszystkie aktywne mecze na serwerach i wczytaj je ponownie (przydatne przy zablokowanych meczach)",
       "resetTooltip": "Zakończ wszystkie mecze i przywróć turniej do trybu konfiguracji (zachowuje ustawienia, ale usuwa wszystkie dane meczów)",
-      "reset": "Przywróć do konfiguracji"
+      "reset": "Przywróć do konfiguracji",
+      "dangerZone": "Danger zone"
     },
     "reviewCard": {
       "needPlayersWarning": "Do rozpoczęcia turnieju potrzeba co najmniej {{minPlayers}} graczy (mecze {{teamSize}}v{{teamSize}}). Obecnie zarejestrowanych: {{registered}}",
