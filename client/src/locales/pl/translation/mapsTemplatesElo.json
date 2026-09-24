@@ -3,7 +3,6 @@
     "header": {
       "createFromTournament": "Utwórz szablon z turnieju"
     },
-    "empty": "Brak szablonów. Utwórz pierwszy szablon na stronie Turniej.",
     "errors": {
       "load": "Nie udało się wczytać szablonów"
     },
@@ -39,7 +38,9 @@
         "chooseMaps": "Choose maps..."
       },
       "save": "Zapisz"
-    }
+    },
+    "emptyTitle": "No templates yet",
+    "emptyDescription": "Save a tournament's setup as a template from the Tournament page, then start new tournaments from it here."
   },
   "saveTemplateModal": {
     "title": "Zapisz jako szablon",

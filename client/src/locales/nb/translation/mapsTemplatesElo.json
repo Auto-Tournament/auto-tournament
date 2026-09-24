@@ -3,7 +3,6 @@
     "header": {
       "createFromTournament": "Opprett mal fra turnering"
     },
-    "empty": "Ingen maler ennå. Opprett den første malen din fra turneringssiden.",
     "errors": {
       "load": "Klarte ikke å laste maler"
     },
@@ -39,7 +38,9 @@
         "chooseMaps": "Velg kart..."
       },
       "save": "Lagre"
-    }
+    },
+    "emptyTitle": "Ingen maler ennå",
+    "emptyDescription": "Lagre oppsettet til en turnering som mal fra Turnering-siden, og start nye turneringer fra den her."
   },
   "saveTemplateModal": {
     "title": "Lagre som mal",

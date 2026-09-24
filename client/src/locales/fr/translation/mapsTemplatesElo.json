@@ -3,7 +3,6 @@
     "header": {
       "createFromTournament": "Créer un modèle à partir du tournoi"
     },
-    "empty": "Aucun modèle pour le moment. Créez votre premier modèle depuis la page Tournoi.",
     "errors": {
       "load": "Impossible de charger les modèles"
     },
@@ -39,7 +38,9 @@
         "chooseMaps": "Choose maps..."
       },
       "save": "Enregistrer"
-    }
+    },
+    "emptyTitle": "No templates yet",
+    "emptyDescription": "Save a tournament's setup as a template from the Tournament page, then start new tournaments from it here."
   },
   "saveTemplateModal": {
     "title": "Enregistrer comme modèle",

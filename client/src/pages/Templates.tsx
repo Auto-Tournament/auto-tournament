@@ -30,6 +30,7 @@ import {
   Edit as EditIcon,
   Add as AddIcon,
   ContentCopy as CopyIcon,
+  Description as DescriptionIcon,
 } from '@mui/icons-material';
 import { api } from '../utils/api';
 import type { TournamentTemplate } from '../types/tournament.types';
@@ -38,6 +39,7 @@ import { TOURNAMENT_TYPES, MATCH_FORMATS } from '../constants/tournament';
 import type { Map, MapPool } from '../types/api.types';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import ConfirmDialog from '../components/modals/ConfirmDialog';
+import { EmptyState } from '../components/shared/EmptyState';
 import { useTranslation } from 'react-i18next';
 
 const TOURNAMENT_TYPE_LABELS: Record<string, string> = {
@@ -323,13 +325,16 @@ export default function Templates() {
   return (
     <Box sx={{ width: '100%', height: '100%' }}>
       {templates.length === 0 ? (
-        <Card>
-          <CardContent>
-            <Typography variant="body1" color="text.secondary" align="center" py={4}>
-              {t('templatesPage.empty')}
-            </Typography>
-          </CardContent>
-        </Card>
+        // The same empty state as Teams, Players, Maps and Ratings: icon,
+        // title, what to do, and the button that does it.
+        <EmptyState
+          icon={DescriptionIcon}
+          title={t('templatesPage.emptyTitle')}
+          description={t('templatesPage.emptyDescription')}
+          actionLabel={t('templatesPage.header.createFromTournament')}
+          actionIcon={AddIcon}
+          onAction={() => navigate('/tournament')}
+        />
       ) : (
         <Grid container spacing={2}>
           {templates.map((template) => (

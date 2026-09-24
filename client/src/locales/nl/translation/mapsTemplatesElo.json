@@ -3,7 +3,6 @@
     "header": {
       "createFromTournament": "Sjabloon maken vanuit toernooi"
     },
-    "empty": "Nog geen sjablonen. Maak je eerste sjabloon op de toernooipagina.",
     "errors": {
       "load": "Kan sjablonen niet laden"
     },
@@ -39,7 +38,9 @@
         "chooseMaps": "Choose maps..."
       },
       "save": "Opslaan"
-    }
+    },
+    "emptyTitle": "No templates yet",
+    "emptyDescription": "Save a tournament's setup as a template from the Tournament page, then start new tournaments from it here."
   },
   "saveTemplateModal": {
     "title": "Opslaan als sjabloon",

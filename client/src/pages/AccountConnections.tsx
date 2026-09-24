@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 import {
   Alert,
@@ -184,7 +184,6 @@ export default function AccountConnections() {
   const [savingGames, setSavingGames] = useState(false);
   const [removing, setRemoving] = useState<SignInMethod | null>(null);
   const [busy, setBusy] = useState(false);
-  const gamesRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
     try {
@@ -282,6 +281,53 @@ export default function AccountConnections() {
       ]
     : [];
 
+  const gamesFirst = !readOnly && games !== null && games.length === 0;
+  const gamesSection = games !== null && (
+    <Box sx={{ scrollMarginTop: 96, mt: gamesFirst ? 0 : 6, mb: gamesFirst ? 5 : 0 }}>
+      <Section id="account-games" title={t('games.profile.title')} description={t('games.profile.description')}>
+        <Box
+          sx={{
+            bgcolor: color.paper2,
+            border: `1px solid ${color.rule}`,
+            borderRadius: `${radius.lg}px`,
+            p: { xs: 2, sm: 3 },
+          }}
+        >
+          {readOnly ? (
+            <Typography sx={muted}>
+              {games.length === 0
+                ? t('games.profile.empty')
+                : games.map((g) => g.name).join(', ')}
+            </Typography>
+          ) : (
+            <>
+              <GamePicker value={draftGames} onChange={setDraftGames} />
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
+                <Button
+                  onClick={() => setDraftGames(games)}
+                  disabled={!gamesChanged || savingGames}
+                >
+                  {t('games.profile.cancel')}
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={() => void saveGames()}
+                  disabled={!gamesChanged || savingGames}
+                  startIcon={
+                    savingGames ? <CircularProgress size={16} color="inherit" /> : undefined
+                  }
+                  data-testid="account-games-save"
+                >
+                  {t('games.profile.save')}
+                </Button>
+              </Box>
+            </>
+          )}
+        </Box>
+      </Section>
+    </Box>
+  );
+
   return (
     <Box minHeight="100vh" bgcolor="transparent">
       <TopNavBar />
@@ -368,38 +414,10 @@ export default function AccountConnections() {
                 </Alert>
               )}
 
-              {!readOnly && games !== null && games.length === 0 && (
-                <Box
-                  role="status"
-                  data-testid="account-games-callout"
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'minmax(0, 1fr) auto' },
-                    gap: 2,
-                    alignItems: 'center',
-                    px: 3,
-                    py: 2,
-                    mb: 5,
-                    border: `1px solid ${color.accent}`,
-                    borderRadius: `${radius.lg}px`,
-                  }}
-                >
-                  <Box>
-                    <Typography fontWeight={600}>{t('account.callout.title')}</Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {t('account.callout.body')}
-                    </Typography>
-                  </Box>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    sx={{ justifySelf: 'start' }}
-                    onClick={() => gamesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                  >
-                    {t('account.callout.action')}
-                  </Button>
-                </Box>
-              )}
+              {/* No games picked yet: the games section comes first, instead of
+                  a banner at the top pointing at the same section at the
+                  bottom (the page used to show both). */}
+              {gamesFirst && gamesSection}
 
               <Section id="account-game-accounts" title={t('account.gameAccounts.title')} description={t('account.gameAccounts.description')}>
                 <ListPanel label={t('account.gameAccounts.title')}>
@@ -521,51 +539,7 @@ export default function AccountConnections() {
                 </ListPanel>
               </Section>
 
-              {games !== null && (
-                <Box ref={gamesRef} sx={{ scrollMarginTop: 96, mt: 6 }}>
-                  <Section id="account-games" title={t('games.profile.title')} description={t('games.profile.description')}>
-                    <Box
-                      sx={{
-                        bgcolor: color.paper2,
-                        border: `1px solid ${color.rule}`,
-                        borderRadius: `${radius.lg}px`,
-                        p: { xs: 2, sm: 3 },
-                      }}
-                    >
-                      {readOnly ? (
-                        <Typography sx={muted}>
-                          {games.length === 0
-                            ? t('games.profile.empty')
-                            : games.map((g) => g.name).join(', ')}
-                        </Typography>
-                      ) : (
-                        <>
-                          <GamePicker value={draftGames} onChange={setDraftGames} />
-                          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
-                            <Button
-                              onClick={() => setDraftGames(games)}
-                              disabled={!gamesChanged || savingGames}
-                            >
-                              {t('games.profile.cancel')}
-                            </Button>
-                            <Button
-                              variant="contained"
-                              onClick={() => void saveGames()}
-                              disabled={!gamesChanged || savingGames}
-                              startIcon={
-                                savingGames ? <CircularProgress size={16} color="inherit" /> : undefined
-                              }
-                              data-testid="account-games-save"
-                            >
-                              {t('games.profile.save')}
-                            </Button>
-                          </Box>
-                        </>
-                      )}
-                    </Box>
-                  </Section>
-                </Box>
-              )}
+              {!gamesFirst && gamesSection}
             </Box>
           </Box>
         )}
