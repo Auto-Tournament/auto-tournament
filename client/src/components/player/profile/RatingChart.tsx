@@ -18,7 +18,7 @@ export interface RatingChartProps {
 /**
  * Flat single-line rating trend for the last N matches — no area fill, no
  * grid, no glow, just a stroked line in the theme accent colour. Reuses the
- * same rating-history data as the detailed ELO chart further down the page.
+ * player's rating history, starting from their starting rating.
  */
 export function RatingChart({ history, limit = 20 }: RatingChartProps) {
   const { t, i18n } = useTranslation();

@@ -46,16 +46,6 @@
     "winsLosses": "Winst / Verlies",
     "recentFormHighlights": "Vorm & highlights",
     "averageAdr": "Gem. ADR",
-    "round": "Ronde",
-    "kills": "Eliminaties",
-    "deaths": "Doden",
-    "assists": "Assistenties",
-    "hsPercent": "HS-%",
-    "dmg": "DMG",
-    "rating": "Beoordeling",
-    "result": "Resultaat",
-    "baseline": "Basislijn",
-    "matchHistory": "Wedstrijdgeschiedenis",
     "profileTitle": "Spelerprofiel",
     "discordId": {
       "title": "Jouw Discord-ID",
@@ -72,19 +62,10 @@
     "openTeam": "Ploeg openen: {{team}}",
     "you": "Jij",
     "noMatchHistory": "Nog geen wedstrijdgeschiedenis",
-    "demo": "Demo",
     "downloadDemo": "Demo downloaden",
-    "showingLastMatches": "Laatste {{shown}} wedstrijden worden getoond. Totaal: {{total}}",
     "noMatchesYet": "Nog geen wedstrijden",
     "pageTitle": "{{name}} – spelersprofiel",
     "loadFailed": "Kan spelersgegevens niet laden",
-    "eloChart": {
-      "title": "ELO-verloop",
-      "noHistory": "Geen ratinggeschiedenis beschikbaar",
-      "startingElo": "Start-ELO",
-      "currentElo": "Huidige ELO",
-      "totalChange": "Totale verandering"
-    },
     "performanceChart": {
       "title": "Prestatietrends",
       "noData": "Nog geen bruikbare prestatiegegevens – speel een paar rondes om ADR- en K/D-trends te zien.",
@@ -112,7 +93,8 @@
     },
     "recentMatches": {
       "title": "Recent matches",
-      "statsNote": "Kills / deaths. Stats shown depend on what the game module reports."
+      "statsNote": "Kills / deaths. Stats shown depend on what the game module reports.",
+      "roundAndRating": "{{round}} · rating {{rating}}"
     },
     "gameSwitchLabel": "Game"
   },
