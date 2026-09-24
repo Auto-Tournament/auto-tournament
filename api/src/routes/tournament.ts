@@ -117,7 +117,7 @@ router.get('/allocation-status', async (req: Request, res: Response) => {
  *     tags: [Tournament]
  *     summary: Which game the current tournament is for (public)
  *     description: |
- *       One field, no session. `GET /api/tournament` is admin-only, but a
+ *       Two fields, no session. `GET /api/tournament` is admin-only, but a
  *       player's own profile has to know whether this instance is running a
  *       game that measures kills and ADR or one that measures nothing, so it
  *       can leave those columns out rather than fill them with "N/A"
