@@ -627,5 +627,51 @@
       "mapsRequired": "Please select at least one map",
       "saveFailed": "Failed to save map pool"
     }
+  },
+  "manualMatchModal": {
+    "title": "Handmatige wedstrijd maken",
+    "steps": {
+      "matchSetup": "Wedstrijdinstellingen",
+      "rules": "Regels",
+      "maps": "Kaarten",
+      "teams": "Ploegen",
+      "review": "Controle"
+    },
+    "description": "Maak een losse wedstrijd die onafhankelijk is van het toernooischema. De API wijst automatisch een beschikbare server toe.",
+    "buttons": {
+      "next": "Volgende",
+      "back": "Terug",
+      "create": "Wedstrijd maken",
+      "creating": "Aanmaken…"
+    },
+    "saveTemplate": {
+      "title": "Wedstrijdsjabloon opslaan",
+      "nameLabel": "Sjabloonnaam",
+      "nameHelper": "Bijv.: BO1 Inferno knife, BO3 kaartpool, enz.",
+      "description": "De huidige kaarten, serieformaat, CT-side-regel, veto-schakelaar, knife-modus en spelers per ploeg worden in dit sjabloon opgeslagen.",
+      "save": "Opslaan"
+    },
+    "chooseMode": {
+      "heading": "Hoe wil je deze wedstrijd maken?",
+      "template": {
+        "title": "Kies sjabloon",
+        "description": "Laad een preset voor kaarten, formaat en regels, en kies daarna de ploegen.",
+        "label": "Wedstrijdsjabloon",
+        "none": "Geen",
+        "empty": "Nog geen sjablonen opgeslagen. Configureer een wedstrijd en sla die op als sjabloon."
+      },
+      "custom": {
+        "title": "Nieuwe wedstrijd maken",
+        "description": "Configureer kaarten, regels, sides en ploegen vanaf nul."
+      }
+    },
+    "errors": {
+      "slugAndMapsRequired": "Een slug en minimaal één kaart zijn vereist.",
+      "teamsMustDiffer": "Team 1 en team 2 moeten verschillende teams zijn.",
+      "invalidMapSelectionVeto": "Ongeldige kaartselectie voor veto. Selecteer precies 7 kaarten of schakel veto uit.",
+      "invalidMapSelectionFormat": "Ongeldige kaartselectie voor dit serieformaat. Selecteer het juiste aantal kaarten.",
+      "configIncomplete": "De matchconfiguratie is onvolledig. Controleer de instellingen.",
+      "createFailed": "Aanmaken van match mislukt. Probeer het opnieuw."
+    }
   }
 }

@@ -12,7 +12,7 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
-import type { Map } from '../../../types/api.types';
+import type { Map } from '../cs2.types';
 import { FadeInImage } from '../common/FadeInImage';
 import { useModuleTranslation } from '../../../module-sdk';
 

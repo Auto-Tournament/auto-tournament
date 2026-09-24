@@ -80,52 +80,6 @@
       "grandFinalReset": "Grand Final Reset"
     }
   },
-  "manualMatchModal": {
-    "title": "Créer un match manuel",
-    "steps": {
-      "matchSetup": "Configuration du match",
-      "rules": "Règles",
-      "maps": "Cartes",
-      "teams": "Équipes",
-      "review": "Récapitulatif"
-    },
-    "description": "Créez un match autonome, indépendant du tableau du tournoi. L’API allouera automatiquement un serveur disponible.",
-    "buttons": {
-      "next": "Suivant",
-      "back": "Retour",
-      "create": "Créer le match",
-      "creating": "Création…"
-    },
-    "saveTemplate": {
-      "title": "Enregistrer un modèle de match",
-      "nameLabel": "Nom du modèle",
-      "nameHelper": "Ex. : BO1 Inferno knife, BO3 pool de cartes, etc.",
-      "description": "Les cartes actuelles, le format de série, la règle côté CT, l’option de veto, le mode knife et le nombre de joueurs par équipe seront enregistrés dans ce modèle.",
-      "save": "Enregistrer"
-    },
-    "chooseMode": {
-      "heading": "Comment souhaitez-vous créer ce match ?",
-      "template": {
-        "title": "Choisir un modèle",
-        "description": "Chargez un préréglage pour les cartes, le format et les règles, puis choisissez les équipes.",
-        "label": "Modèle de match",
-        "none": "Aucun",
-        "empty": "Aucun modèle enregistré pour le moment. Configurez un match et enregistrez-le comme modèle."
-      },
-      "custom": {
-        "title": "Créer un nouveau match",
-        "description": "Configurez les cartes, les règles, les camps et les équipes depuis zéro."
-      }
-    },
-    "errors": {
-      "slugAndMapsRequired": "Le slug et au moins une carte sont requis.",
-      "teamsMustDiffer": "L'équipe 1 et l'équipe 2 doivent être différentes.",
-      "invalidMapSelectionVeto": "Sélection de cartes invalide pour le veto. Veuillez sélectionner exactement 7 cartes ou désactiver le veto.",
-      "invalidMapSelectionFormat": "Sélection de cartes invalide pour ce format. Veuillez sélectionner le nombre correct de cartes.",
-      "configIncomplete": "La configuration du match est incomplète. Veuillez vérifier les paramètres.",
-      "createFailed": "Échec de la création du match. Veuillez réessayer."
-    }
-  },
   "matchDetailsModal": {
     "delete": {
       "dialogTitle": "Supprimer le match",

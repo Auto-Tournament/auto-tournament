@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { api, useModuleTranslation } from '../../../module-sdk';
-import type { MapPool, MapPoolResponse, MapsResponse, Map } from '../../../types/api.types';
+import type { MapPool, MapPoolResponse, MapsResponse, Map } from '../cs2.types';
 
 interface MapPoolModalProps {
   open: boolean;

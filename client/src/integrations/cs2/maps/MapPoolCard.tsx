@@ -1,5 +1,5 @@
 import { Card, CardContent, Typography, Box, Chip } from '@mui/material';
-import type { MapPool, Map as MapType } from '../../../types/api.types';
+import type { MapPool, Map as MapType } from '../cs2.types';
 import { useModuleTranslation } from '../../../module-sdk';
 
 interface MapPoolCardProps {

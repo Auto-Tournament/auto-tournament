@@ -3,7 +3,7 @@ import AddIcon from '@mui/icons-material/Add';
 import MapIcon from '@mui/icons-material/Map';
 import { EmptyState, useModuleTranslation } from '../../../module-sdk';
 import { MapCard } from './MapCard';
-import type { Map } from '../../../types/api.types';
+import type { Map } from '../cs2.types';
 
 interface MapsTabProps {
   maps: Map[];

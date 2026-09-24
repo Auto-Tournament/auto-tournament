@@ -32,8 +32,8 @@
  * `../../../utils/api` are caught at any depth, as in integration-boundaries.
  *
  * This is the boundary of item 8c in DESIGN-module-client-api.md. It is
- * registered as **warn**: the current count is the baseline to burn down,
- * and flips to error when CS2 compiles against the SDK alone.
+ * registered as an **error**, except on the two CS2 tournament setup steps
+ * that item 10 is rewriting, where it is still a warning (eslint.config.mjs).
  */
 
 import path from 'node:path';

@@ -627,5 +627,51 @@
       "mapsRequired": "Velg minst ett kart",
       "saveFailed": "Kunne ikke lagre kartpoolen"
     }
+  },
+  "manualMatchModal": {
+    "title": "Opprett manuell kamp",
+    "steps": {
+      "matchSetup": "Kampoppsett",
+      "rules": "Regler",
+      "maps": "Kart",
+      "teams": "Lag",
+      "review": "Oppsummering"
+    },
+    "description": "Opprett en frittstående kamp som er uavhengig av turneringsoppsettet. API-et tildeler automatisk en tilgjengelig server for deg.",
+    "buttons": {
+      "next": "Neste",
+      "back": "Tilbake",
+      "create": "Opprett kamp",
+      "creating": "Oppretter…"
+    },
+    "saveTemplate": {
+      "title": "Lagre kampmal",
+      "nameLabel": "Malnavn",
+      "nameHelper": "For eksempel: BO1 Inferno kniv, BO3 kartpool, osv.",
+      "description": "Nåværende kart, serieformat, CT-side-regel, veto-bryter, knivmodus og spillere per lag blir lagret i denne malen.",
+      "save": "Lagre"
+    },
+    "chooseMode": {
+      "heading": "Hvordan vil du opprette denne kampen?",
+      "template": {
+        "title": "Velg mal",
+        "description": "Last inn en forhåndsinnstilling for kart, format og regler, og velg deretter lagene.",
+        "label": "Kampmal",
+        "none": "Ingen",
+        "empty": "Ingen maler lagret ennå. Konfigurer en kamp og lagre den som en mal."
+      },
+      "custom": {
+        "title": "Opprett ny kamp",
+        "description": "Konfigurer kart, regler, sider og lag fra bunnen av."
+      }
+    },
+    "errors": {
+      "slugAndMapsRequired": "Slug og minst ett kart er påkrevd.",
+      "teamsMustDiffer": "Lag 1 og lag 2 må være forskjellige.",
+      "invalidMapSelectionVeto": "Ugyldig kartvalg for veto. Velg nøyaktig 7 kart eller deaktiver veto.",
+      "invalidMapSelectionFormat": "Ugyldig kartvalg for dette serieformatet. Velg riktig antall kart.",
+      "configIncomplete": "Matchkonfigurasjonen er ufullstendig. Kontroller innstillingene.",
+      "createFailed": "Kunne ikke opprette kampen. Prøv igjen."
+    }
   }
 }

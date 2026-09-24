@@ -98,30 +98,6 @@ export interface ServerResponse extends ApiResponse {
   server: Server;
 }
 
-export interface ServerStatusResponse extends ApiResponse {
-  serverId: string;
-  status: string;
-  isAvailable: boolean;
-  currentMatch: string | null;
-  queuedMatch?: string | null;
-  playerCount?: number;
-  reachableFromApi?: boolean;
-  serverCanReachApi?: boolean;
-  pluginStatus?: string | null;
-  allocationState?: string | null;
-  allocationMatchSlug?: string | null;
-  ipBanned?: boolean; // True if server has banned our IP address
-  cs2BuildId?: number | null;
-  cs2VersionString?: string | null;
-  cs2VersionFetchedAt?: number | null;
-  /** If set, Steam reports this server is out of date (required_version). */
-  cs2RequiredVersion?: number | null;
-  /** Best-effort: phase of the update signal ('available'|'shutdown'). */
-  cs2UpdatePhase?: string | null;
-  /** Unix timestamp when MAT last checked UpToDateCheck for this server. */
-  cs2UpdateCheckedAt?: number | null;
-}
-
 export interface ServerAllocationInfo {
   id: string;
   name: string;
@@ -387,10 +363,6 @@ export interface Map {
 export interface MapsResponse extends ApiResponse {
   maps: Map[];
   count: number;
-}
-
-export interface MapResponse extends ApiResponse {
-  map: Map;
 }
 
 // Map pool types

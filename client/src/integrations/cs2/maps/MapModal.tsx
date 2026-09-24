@@ -16,7 +16,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 import { api, useSnackbar, useModuleTranslation } from '../../../module-sdk';
-import type { Map, MapResponse } from '../../../types/api.types';
+import type { Map, MapResponse } from '../cs2.types';
 import { FadeInImage } from '../common/FadeInImage';
 
 interface MapModalProps {

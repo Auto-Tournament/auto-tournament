@@ -330,14 +330,26 @@ export default [
 
   // Module SDK boundary (item 8c). A client game module reaches platform code
   // only through client/src/module-sdk and integrations/types, and uses the
-  // host's copy of the shared packages. Warn, not error: today's count is the
-  // baseline to burn down, and it flips to error once CS2 compiles against the
-  // SDK alone. See eslint-rules/module-sdk-boundary.mjs.
+  // host's copy of the shared packages. An error, so no new bypass creeps in.
+  // See eslint-rules/module-sdk-boundary.mjs.
   {
     files: ['client/src/integrations/**/*.{ts,tsx}'],
     plugins: {
       'module-sdk': moduleSdkBoundary,
     },
+    rules: {
+      'module-sdk/module-sdk-boundary': 'error',
+    },
+  },
+
+  // The two CS2 tournament setup steps still import core helpers. They are
+  // being rewritten together with moving CS2's columns off core's tables
+  // (item 10), and stay a warning until then. Do not add files here.
+  {
+    files: [
+      'client/src/integrations/cs2/setup/Cs2MatchSettings.tsx',
+      'client/src/integrations/cs2/setup/MapPoolStep.tsx',
+    ],
     rules: {
       'module-sdk/module-sdk-boundary': 'warn',
     },
