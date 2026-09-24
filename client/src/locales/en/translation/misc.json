@@ -337,9 +337,20 @@
     "failed": "{{name}}: {{reason}}",
     "failedFallback": "the operation failed",
     "feed": {
-      "cache": "Showing the last catalog this instance saw ({{reason}}). Games in this image still install without a network.",
+      "cache": "Showing the catalog from {{time}}: the online catalog could not be reached ({{reason}}). Games in this image still install without a network.",
       "none": "The online catalog could not be reached ({{reason}}). Showing the games inside this image; they install without a network.",
-      "unknown": "no reason given"
+      "unknown": "no reason given",
+      "cacheRefreshing": "Showing the catalog from {{time}} while the online catalog loads.",
+      "noneRefreshing": "Loading the online catalog… Meanwhile these are the games inside this image; they install without a network.",
+      "reason": {
+        "timeout": "it did not answer in time",
+        "unreachable": "it could not be reached",
+        "bad_response": "its answer was not a catalog",
+        "newer_schema": "it is written for a newer Auto Tournament",
+        "too_large": "it is too large",
+        "offline": "CATALOG_OFFLINE is set",
+        "http": "it answered with HTTP {{status}}"
+      }
     },
     "kind": {
       "module": "Code module"

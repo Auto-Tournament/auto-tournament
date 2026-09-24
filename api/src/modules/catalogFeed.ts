@@ -17,10 +17,17 @@
  * - **Snapshot**: `bundled-packs/` and `bundled-modules/`, what installs with
  *   no network at all.
  *
- * Nothing is fetched until an admin opens the catalog.
+ * Nothing is fetched until an admin opens the catalog. Opening it waits on
+ * the network for at most `PAGE_WAIT_MS`; a slower fetch finishes in the
+ * background while the page shows the cache. Every connection is retried
+ * once when it stalls or is reset: on a path that drops some TLS handshakes
+ * (seen behind a WireGuard tunnel with a smaller MTU than the container's
+ * bridge) one try in three hung until its deadline, a second try did not.
  */
 
 import fs from 'fs/promises';
+import http from 'http';
+import https from 'https';
 import path from 'path';
 import fetch from 'node-fetch';
 import semver from 'semver';
@@ -38,14 +45,26 @@ export const RELEASE_URL_PREFIX = 'https://github.com/Auto-Tournament/';
 
 export const MAX_FEED_BYTES = 2_000_000;
 export const MAX_ARCHIVE_BYTES = 64 * 1024 * 1024;
-const FEED_TIMEOUT_MS = 5_000;
+/** One try at the feed, body included; a stalled try is retried once. */
+const FEED_ATTEMPT_TIMEOUT_MS = 4_000;
+/** How long opening the catalog waits on the network before showing the cache. */
+const PAGE_WAIT_MS = 2_000;
+/** After a failed fetch, list from the cache for this long before trying the network again. */
+const RETRY_AFTER_FAILURE_MS = 15_000;
+/** A whole release download, both tries and both files. */
 const DOWNLOAD_TIMEOUT_MS = 60_000;
+/** One try at a release file, until its answer starts; retried once. */
+const DOWNLOAD_ATTEMPT_TIMEOUT_MS = 10_000;
 
 interface Overrides {
   catalogUrl?: string | null;
   releasePrefix?: string | null;
+  /** One try at the feed. */
   feedTimeoutMs?: number;
+  pageWaitMs?: number;
+  retryAfterFailureMs?: number;
   downloadTimeoutMs?: number;
+  downloadAttemptTimeoutMs?: number;
   snapshotDir?: string | null;
   cacheFile?: string | null;
   /** Origins a release download may redirect to, besides GitHub's asset hosts. */
@@ -57,6 +76,7 @@ let overrides: Overrides = {};
 /** Test-only: point the catalog at the fixture feed and snapshot. `null` resets. */
 export function setCatalogOverridesForTests(next: Overrides | null): void {
   overrides = next ?? {};
+  generation++;
 }
 
 export function catalogUrl(): string {
@@ -134,8 +154,12 @@ export interface RemoteFeed {
   modules: CatalogModuleEntry[];
   /** `remote`: fetched now. `cache`: the last copy. `none`: no feed at all. */
   from: 'remote' | 'cache' | 'none';
-  /** Why the feed is not fresh. */
-  error: string | null;
+  /** Why the feed is not fresh, as a code (`FeedErrorCode`). */
+  error: FeedErrorCode | null;
+  /** When the entries listed were fetched (for `cache`, when the copy was written). */
+  fetchedAt: string | null;
+  /** A fetch is still running in the background; reading again soon may get the live feed. */
+  refreshing: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -234,8 +258,9 @@ function parsePacks(raw: unknown): CatalogPackEntry[] {
 }
 
 function parseFeed(body: string): { packs: CatalogPackEntry[]; modules: CatalogModuleEntry[] } {
-  const parsed = JSON.parse(body) as { schema?: unknown; packs?: unknown; modules?: unknown };
-  if (parsed.schema !== 1) throw new Error('the catalog is written for a newer Auto Tournament');
+  const parsed = JSON.parse(body) as { schema?: unknown; packs?: unknown; modules?: unknown } | null;
+  if (!parsed || typeof parsed !== 'object') throw new CatalogFetchError('bad_response', SENTENCES.bad_response);
+  if (parsed.schema !== 1) throw new CatalogFetchError('newer_schema', SENTENCES.newer_schema);
   return { packs: parsePacks(parsed.packs), modules: parseModules(parsed.modules, 'remote') };
 }
 
@@ -243,63 +268,249 @@ function parseFeed(body: string): { packs: CatalogPackEntry[]; modules: CatalogM
 // Fetching
 // ---------------------------------------------------------------------------
 
-async function fetchBytes(url: string, limit: number, timeoutMs: number): Promise<Buffer> {
-  // node-fetch's own timeout covers the whole request, body included; `size`
-  // stops reading past the limit instead of buffering a huge body first.
-  const response = await fetch(url, { timeout: timeoutMs, size: limit, redirect: 'follow' });
-  if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-  const declared = Number(response.headers.get('content-length') || 0);
-  if (declared > limit) throw new Error('the file is too large');
-  return response.buffer();
+/**
+ * Why the feed is not fresh, as a code the client translates (never a
+ * sentence). `http_<status>` is an answer that was not a 2xx.
+ */
+export type FeedErrorCode =
+  | 'timeout'
+  | 'unreachable'
+  | 'bad_response'
+  | 'newer_schema'
+  | 'too_large'
+  | 'offline'
+  | `http_${number}`;
+
+class CatalogFetchError extends Error {
+  constructor(
+    readonly code: FeedErrorCode,
+    message: string
+  ) {
+    super(message);
+  }
 }
 
+const SENTENCES: Record<string, string> = {
+  timeout: 'it did not answer in time',
+  unreachable: 'it could not be reached',
+  bad_response: 'its answer was not a catalog',
+  newer_schema: 'the catalog is written for a newer Auto Tournament',
+  too_large: 'the file is too large',
+  offline: 'CATALOG_OFFLINE is set',
+};
+
+function errorCode(error: unknown): FeedErrorCode {
+  if (error instanceof CatalogFetchError) return error.code;
+  if (error instanceof SyntaxError) return 'bad_response';
+  const err = error as { type?: string; name?: string };
+  if (err?.type === 'request-timeout' || err?.type === 'body-timeout' || err?.type === 'aborted') return 'timeout';
+  if (err?.name === 'AbortError') return 'timeout';
+  if (err?.type === 'max-size') return 'too_large';
+  return 'unreachable';
+}
+
+/** A sentence, for the log and for a failed install's message. */
 function describe(error: unknown): string {
-  const err = error as { type?: string; name?: string; message?: string };
-  if (err?.type === 'request-timeout' || err?.type === 'body-timeout') return 'it did not answer in time';
-  if (err?.type === 'aborted' || err?.name === 'AbortError') return 'it did not answer in time';
-  if (err?.type === 'max-size') return 'the file is too large';
-  return err?.message || 'unknown error';
+  if (error instanceof CatalogFetchError) return error.message;
+  const code = errorCode(error);
+  if (code === 'unreachable') return (error as Error)?.message || SENTENCES.unreachable;
+  return SENTENCES[code] ?? code;
 }
 
-/** The remote feed now, or its last copy, or nothing. Never throws. */
-export async function readRemoteFeed(): Promise<RemoteFeed> {
+/**
+ * Connections for the feed and the downloads. With `autoSelectFamily` a
+ * connection moves on to the next address (IPv4 and IPv6 interleaved) 250 ms
+ * after one that does not answer instead of waiting on it; Node 20 does that
+ * by default, it is set here so the catalog does not depend on the default.
+ * No keep-alive: a retry gets a new connection, not the one that stalled.
+ */
+const AGENT_OPTIONS = { keepAlive: false, autoSelectFamily: true, autoSelectFamilyAttemptTimeout: 250 };
+const httpsAgent = new https.Agent(AGENT_OPTIONS);
+const httpAgent = new http.Agent(AGENT_OPTIONS);
+const agentFor = (url: URL): http.Agent => (url.protocol === 'http:' ? httpAgent : httpsAgent);
+
+/** Failures worth one more connection: a stall or a reset, not an answer. */
+const RETRY_SYSTEM_CODES = new Set(['ECONNRESET', 'EPIPE', 'ECONNABORTED', 'ETIMEDOUT']);
+
+function worthRetrying(error: unknown): boolean {
+  if (error instanceof CatalogFetchError) return error.code === 'timeout';
+  const err = error as { type?: string; code?: string; message?: string };
+  if (err?.type === 'request-timeout' || err?.type === 'body-timeout') return true;
+  return err?.type === 'system' && (RETRY_SYSTEM_CODES.has(err.code ?? '') || /socket hang up/i.test(err.message ?? ''));
+}
+
+interface GetOptions {
+  limit: number;
+  /** How long one connection may go without answering before it is dropped (and retried once). */
+  attemptTimeoutMs: number;
+  /** `all`: that deadline covers the body too. `headers`: only until the answer starts. */
+  attemptCovers: 'all' | 'headers';
+  redirect: 'follow' | 'manual';
+  /** One deadline over every attempt, bodies included. */
+  signal?: AbortSignal;
+  headers?: Record<string, string>;
+}
+
+type Got = { kind: 'redirect'; location: string | null } | { kind: 'body'; body: Buffer };
+
+/** One GET on a new connection. `size` stops reading past the limit instead of buffering it first. */
+async function getOnce(url: string, options: GetOptions): Promise<Got> {
+  const controller = new AbortController();
+  const outer = options.signal;
+  const abort = () => controller.abort();
+  if (outer?.aborted) abort();
+  else outer?.addEventListener('abort', abort, { once: true });
+  let stalled = false;
+  let timer: ReturnType<typeof setTimeout> | null = setTimeout(() => {
+    stalled = true;
+    controller.abort();
+  }, options.attemptTimeoutMs);
+  try {
+    const response = await fetch(url, {
+      agent: agentFor,
+      redirect: options.redirect,
+      size: options.limit,
+      // node-fetch 2 declares its own AbortSignal type; Node's has the same shape.
+      signal: controller.signal as unknown as NonNullable<Parameters<typeof fetch>[1]>['signal'],
+      headers: options.headers,
+    });
+    if (options.redirect === 'manual' && response.status >= 300 && response.status < 400) {
+      response.body.resume();
+      return { kind: 'redirect', location: response.headers.get('location') };
+    }
+    if (!response.ok) {
+      response.body.resume();
+      throw new CatalogFetchError(`http_${response.status}`, `${response.status} ${response.statusText}`);
+    }
+    const declared = Number(response.headers.get('content-length') || 0);
+    if (declared > options.limit) throw new CatalogFetchError('too_large', SENTENCES.too_large);
+    if (options.attemptCovers === 'headers' && timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
+    return { kind: 'body', body: await response.buffer() };
+  } catch (error) {
+    if (stalled && !outer?.aborted) throw new CatalogFetchError('timeout', SENTENCES.timeout);
+    throw error;
+  } finally {
+    if (timer) clearTimeout(timer);
+    outer?.removeEventListener('abort', abort);
+  }
+}
+
+/** `getOnce`, and once more on a new connection when the first stalled or was reset. */
+async function get(url: string, options: GetOptions): Promise<Got> {
+  try {
+    return await getOnce(url, options);
+  } catch (error) {
+    if (options.signal?.aborted || !worthRetrying(error)) throw error;
+    log.info(`[CATALOG] ${url}: ${describe(error)}; trying once more on a new connection`);
+    return getOnce(url, options);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// The feed: fetched in the background, never waited on for long
+// ---------------------------------------------------------------------------
+
+/** Bumped when the test overrides change, so a fetch started before does not write the new cache. */
+let generation = 0;
+let inFlight: { generation: number; promise: Promise<RemoteFeed> } | null = null;
+/** The last fetch failed: why and when, so the next few page loads do not each wait on it again. */
+let lastFailure: { generation: number; code: FeedErrorCode; at: number } | null = null;
+
+async function fetchFeedNow(gen: number): Promise<RemoteFeed> {
   const url = catalogUrl();
   const base = new URL('.', url).toString();
-  if (catalogOffline()) {
-    const cached = await readCachedFeed();
-    return cached
-      ? { base, ...cached, from: 'cache', error: 'CATALOG_OFFLINE is set' }
-      : { base: null, packs: [], modules: [], from: 'none', error: 'CATALOG_OFFLINE is set' };
-  }
+  const file = cacheFile();
   try {
-    const body = (await fetchBytes(url, MAX_FEED_BYTES, overrides.feedTimeoutMs ?? FEED_TIMEOUT_MS)).toString('utf8');
+    const got = await get(url, {
+      limit: MAX_FEED_BYTES,
+      attemptTimeoutMs: overrides.feedTimeoutMs ?? FEED_ATTEMPT_TIMEOUT_MS,
+      attemptCovers: 'all',
+      redirect: 'follow',
+    });
+    if (got.kind !== 'body') throw new CatalogFetchError('bad_response', SENTENCES.bad_response);
+    const body = got.body.toString('utf8');
     const feed = parseFeed(body);
-    await writeCachedFeed(body);
-    return { base, ...feed, from: 'remote', error: null };
-  } catch (error) {
-    const reason = describe(error);
-    const cached = await readCachedFeed();
-    if (cached) {
-      log.warn(`[CATALOG] Using the cached catalog: ${reason}`);
-      return { base, ...cached, from: 'cache', error: reason };
+    if (gen === generation) {
+      await writeCachedFeed(file, body);
+      lastFailure = null;
     }
-    log.warn(`[CATALOG] No catalog feed; offering the offline snapshot only: ${reason}`);
-    return { base: null, packs: [], modules: [], from: 'none', error: reason };
+    return { base, ...feed, from: 'remote', error: null, fetchedAt: new Date().toISOString(), refreshing: false };
+  } catch (error) {
+    const code = errorCode(error);
+    if (gen === generation) lastFailure = { generation: gen, code, at: Date.now() };
+    const fallback = await fallbackFeed(base, file, code, false);
+    log.warn(
+      fallback.from === 'cache'
+        ? `[CATALOG] Using the catalog cached at ${fallback.fetchedAt}: ${describe(error)}`
+        : `[CATALOG] No catalog feed; offering the offline snapshot only: ${describe(error)}`
+    );
+    return fallback;
   }
 }
 
-async function readCachedFeed(): Promise<{ packs: CatalogPackEntry[]; modules: CatalogModuleEntry[] } | null> {
+/** Fetch the feed, or join the fetch already running. Never throws. */
+export function refreshRemoteFeed(): Promise<RemoteFeed> {
+  if (inFlight && inFlight.generation === generation) return inFlight.promise;
+  const gen = generation;
+  const promise = fetchFeedNow(gen).finally(() => {
+    if (inFlight?.promise === promise) inFlight = null;
+  });
+  inFlight = { generation: gen, promise };
+  return promise;
+}
+
+/** The last copy, or nothing, and why the live feed is not shown. */
+async function fallbackFeed(base: string, file: string, code: FeedErrorCode, refreshing: boolean): Promise<RemoteFeed> {
+  const cached = await readCachedFeed(file);
+  return cached
+    ? { base, ...cached.feed, from: 'cache', error: code, fetchedAt: cached.at, refreshing }
+    : { base: null, packs: [], modules: [], from: 'none', error: code, fetchedAt: null, refreshing };
+}
+
+/**
+ * The remote feed now, or its last copy, or nothing. Never throws, and never
+ * waits on the network longer than `PAGE_WAIT_MS`: past that it returns the
+ * last copy marked `refreshing`, and the fetch finishes in the background
+ * for the next read. For `RETRY_AFTER_FAILURE_MS` after a failed fetch it
+ * returns the last copy without trying again.
+ */
+export async function readRemoteFeed(): Promise<RemoteFeed> {
+  const base = new URL('.', catalogUrl()).toString();
+  if (catalogOffline()) return fallbackFeed(base, cacheFile(), 'offline', false);
+  const failed = lastFailure?.generation === generation ? lastFailure : null;
+  if (!inFlight && failed && Date.now() - failed.at < (overrides.retryAfterFailureMs ?? RETRY_AFTER_FAILURE_MS)) {
+    return fallbackFeed(base, cacheFile(), failed.code, false);
+  }
+  const refresh = refreshRemoteFeed();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const waited = await Promise.race([
+    refresh,
+    new Promise<null>((resolve) => {
+      timer = setTimeout(() => resolve(null), overrides.pageWaitMs ?? PAGE_WAIT_MS);
+    }),
+  ]);
+  clearTimeout(timer);
+  return waited ?? fallbackFeed(base, cacheFile(), 'timeout', true);
+}
+
+async function readCachedFeed(
+  file: string
+): Promise<{ feed: { packs: CatalogPackEntry[]; modules: CatalogModuleEntry[] }; at: string } | null> {
   try {
-    return parseFeed(await fs.readFile(cacheFile(), 'utf8'));
+    const [body, stat] = await Promise.all([fs.readFile(file, 'utf8'), fs.stat(file)]);
+    return { feed: parseFeed(body), at: stat.mtime.toISOString() };
   } catch {
     return null;
   }
 }
 
-async function writeCachedFeed(body: string): Promise<void> {
+async function writeCachedFeed(file: string, body: string): Promise<void> {
   try {
-    await fs.mkdir(path.dirname(cacheFile()), { recursive: true });
-    await fs.writeFile(cacheFile(), body, 'utf8');
+    await fs.mkdir(path.dirname(file), { recursive: true });
+    await fs.writeFile(file, body, 'utf8');
   } catch (error) {
     log.warn(`[CATALOG] Could not cache the catalog: ${(error as Error).message}`);
   }
@@ -324,7 +535,6 @@ export interface ReleaseBytes {
   signature: Buffer;
 }
 
-/** Download a remote release and its `.sig`. Throws with a sentence. */
 /**
  * The hosts GitHub serves release assets from. A release URL on github.com
  * answers with one redirect to one of these; nothing else is followed.
@@ -341,33 +551,29 @@ export function allowedRedirectUrl(url: URL): boolean {
 /**
  * One release file. Redirects are not followed blindly — at most one hop, to
  * an allowed asset host (`allowedRedirectUrl`) — and the caller's signal is
- * one deadline for the whole download, bodies included.
+ * one deadline for the whole download, bodies included. A connection that
+ * does not start answering within `DOWNLOAD_ATTEMPT_TIMEOUT_MS`, or is
+ * reset, is tried once more.
  */
 async function fetchReleaseFile(url: string, limit: number, signal: AbortSignal): Promise<Buffer> {
   let target = url;
   for (let hop = 0; ; hop++) {
-    const response = await fetch(target, {
+    const got = await get(target, {
+      limit,
+      signal,
+      attemptTimeoutMs: overrides.downloadAttemptTimeoutMs ?? DOWNLOAD_ATTEMPT_TIMEOUT_MS,
+      attemptCovers: 'headers',
       redirect: 'manual',
-      size: limit,
-      // node-fetch 2 declares its own AbortSignal type; Node's has the same shape.
-      signal: signal as unknown as NonNullable<Parameters<typeof fetch>[1]>['signal'],
       headers: { accept: 'application/octet-stream' },
     });
-    if (response.status >= 300 && response.status < 400) {
-      if (hop >= 1) throw new Error('it redirected more than once');
-      const location = response.headers.get('location');
-      if (!location) throw new Error('it redirected nowhere');
-      const next = new URL(location, target);
-      if (!allowedRedirectUrl(next)) {
-        throw new Error(`it redirected to ${next.protocol}//${next.host}, which this platform does not download from`);
-      }
-      target = next.toString();
-      continue;
+    if (got.kind === 'body') return got.body;
+    if (hop >= 1) throw new Error('it redirected more than once');
+    if (!got.location) throw new Error('it redirected nowhere');
+    const next = new URL(got.location, target);
+    if (!allowedRedirectUrl(next)) {
+      throw new Error(`it redirected to ${next.protocol}//${next.host}, which this platform does not download from`);
     }
-    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-    const declared = Number(response.headers.get('content-length') || 0);
-    if (declared > limit) throw new Error('the file is too large');
-    return response.buffer();
+    target = next.toString();
   }
 }
 

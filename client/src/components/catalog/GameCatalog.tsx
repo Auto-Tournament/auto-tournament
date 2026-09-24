@@ -39,6 +39,7 @@ import {
 import CodeIcon from '@mui/icons-material/Code';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { ModuleIcon } from '../common/ModuleIcon';
 import { listIntegrations } from '../../integrations/registry';
@@ -64,6 +65,34 @@ const STATE_COLOR: Record<CatalogState, 'default' | 'success' | 'info' | 'warnin
 
 /** Show a search box once the list is longer than this. */
 const SEARCH_FROM = 8;
+/** While the server is still fetching the feed, list again this often, this many times. */
+const FEED_REFRESH_DELAY_MS = 3000;
+const FEED_REFRESH_TRIES = 3;
+/** Reason codes with their own sentence under `catalog.feed.reason`, besides `http_<status>`. */
+const FEED_REASONS = ['timeout', 'unreachable', 'bad_response', 'newer_schema', 'too_large', 'offline'];
+
+/**
+ * The banner over a catalog whose feed is not fresh. The API gives a reason
+ * code, never a sentence, so every word here is translated.
+ */
+function feedMessage(t: TFunction, feed: CatalogListing['feed'], language: string): string {
+  const code = feed.error ?? '';
+  const http = /^http_(\d{3})$/.exec(code);
+  const reason = http
+    ? t('catalog.feed.reason.http', { status: http[1] })
+    : FEED_REASONS.includes(code)
+      ? t(`catalog.feed.reason.${code}`)
+      : t('catalog.feed.unknown');
+  if (feed.from === 'cache') {
+    const at = feed.fetchedAt ? new Date(feed.fetchedAt) : null;
+    const time =
+      at && !Number.isNaN(at.getTime())
+        ? at.toLocaleString(language, { dateStyle: 'medium', timeStyle: 'short' })
+        : t('catalog.feed.unknown');
+    return t(feed.refreshing ? 'catalog.feed.cacheRefreshing' : 'catalog.feed.cache', { time, reason });
+  }
+  return t(feed.refreshing ? 'catalog.feed.noneRefreshing' : 'catalog.feed.none', { reason });
+}
 
 /** One square tile, or the game's initials when it has no art of its own. */
 export function CatalogTile({ src, name, size = 56 }: { src: string | null; name: string; size?: number }) {
@@ -114,7 +143,7 @@ interface GameCatalogProps {
 }
 
 export function GameCatalog({ showBuiltins = false, onListing, onChanged, refreshKey = 0 }: GameCatalogProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { showSuccess, showError } = useSnackbar();
   const [listing, setListing] = useState<CatalogListing | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -139,9 +168,22 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
     }
   }, [t]);
 
+  const refreshTries = useRef(0);
   useEffect(() => {
+    refreshTries.current = 0;
     void load();
   }, [load, refreshKey]);
+
+  // The server answers within a couple of seconds and keeps fetching the
+  // feed in the background; list again a few times to pick it up.
+  useEffect(() => {
+    if (!listing?.feed.refreshing || refreshTries.current >= FEED_REFRESH_TRIES) return;
+    const timer = window.setTimeout(() => {
+      refreshTries.current += 1;
+      void load();
+    }, FEED_REFRESH_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [listing, load]);
 
   const key = (item: CatalogItem) => `${item.kind}:${item.id}`;
 
@@ -375,9 +417,7 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
     <Stack spacing={2} data-testid="game-catalog">
       {feed.stale && (
         <Alert severity={feed.from === 'cache' ? 'info' : 'warning'} data-testid="catalog-feed-stale">
-          {t(feed.from === 'cache' ? 'catalog.feed.cache' : 'catalog.feed.none', {
-            reason: feed.error ?? t('catalog.feed.unknown'),
-          })}
+          {feedMessage(t, feed, i18n.language)}
         </Alert>
       )}
       {restartPending.length > 0 && (

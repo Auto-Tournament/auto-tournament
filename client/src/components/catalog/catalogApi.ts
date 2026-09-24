@@ -39,7 +39,16 @@ export interface CatalogItem {
 }
 
 export interface CatalogListing {
-  feed: { from: 'remote' | 'cache' | 'none'; stale: boolean; error: string | null };
+  feed: {
+    from: 'remote' | 'cache' | 'none';
+    stale: boolean;
+    /** A code, translated under `catalog.feed.reason`: `timeout`, `unreachable`, `bad_response`, `newer_schema`, `too_large`, `offline`, `http_<status>`. */
+    error: string | null;
+    /** When the listed feed was fetched; for `cache`, when the copy was written. */
+    fetchedAt?: string | null;
+    /** The server is still fetching the feed: list again shortly. */
+    refreshing?: boolean;
+  };
   platform: { serverApi: string; clientApi: string };
   items: CatalogItem[];
 }
