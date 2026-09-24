@@ -198,7 +198,8 @@
       "leaderboardTooltip": "打开可分享给玩家的公开排行榜页面",
       "restartTooltip": "结束服务器上所有进行中的比赛并重新加载（适用于卡住的比赛）",
       "resetTooltip": "结束所有比赛并将赛事重置为设置状态（保留赛事设置，但清除所有比赛数据）",
-      "reset": "重置为设置状态"
+      "reset": "重置为设置状态",
+      "dangerZone": "Danger zone"
     },
     "reviewCard": {
       "needPlayersWarning": "至少需要 {{minPlayers}} 名玩家才能开始赛事（{{teamSize}}v{{teamSize}} 比赛）。当前已注册：{{registered}}",

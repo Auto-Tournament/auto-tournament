@@ -198,7 +198,8 @@
       "leaderboardTooltip": "Åpne den offentlige ledertavlen du kan dele med spillerne",
       "restartTooltip": "Avslutt alle aktive kamper på serverne og last dem inn på nytt (nyttig for kamper som har låst seg)",
       "resetTooltip": "Avslutt alle kamper og tilbakestill turneringen til oppsettmodus (beholder turneringsinnstillingene, men sletter alle kampdata)",
-      "reset": "Tilbakestill til oppsett"
+      "reset": "Tilbakestill til oppsett",
+      "dangerZone": "Faresone"
     },
     "reviewCard": {
       "needPlayersWarning": "Du trenger minst {{minPlayers}} spillere for å starte turneringen ({{teamSize}}v{{teamSize}}-kamper). Registrert nå: {{registered}}",

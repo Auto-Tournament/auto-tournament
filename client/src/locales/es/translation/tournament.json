@@ -198,7 +198,8 @@
       "leaderboardTooltip": "Abre la clasificación pública para compartirla con los jugadores",
       "restartTooltip": "Finaliza todos los partidos activos en los servidores y vuelve a cargarlos (útil para partidos bloqueados)",
       "resetTooltip": "Finaliza todos los partidos y restablece el torneo al modo de configuración (mantiene los ajustes pero borra todos los datos de partido)",
-      "reset": "Restablecer a configuración"
+      "reset": "Restablecer a configuración",
+      "dangerZone": "Danger zone"
     },
     "reviewCard": {
       "needPlayersWarning": "Se necesitan al menos {{minPlayers}} jugadores para empezar el torneo (partidos {{teamSize}}v{{teamSize}}). Registrados ahora: {{registered}}",

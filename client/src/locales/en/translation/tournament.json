@@ -198,7 +198,8 @@
       "leaderboardTooltip": "Open the public leaderboard page to share with players",
       "restartTooltip": "End all active matches on servers and reload them (useful for stuck matches)",
       "resetTooltip": "End all matches and reset tournament to setup mode (keeps tournament settings but clears all match data)",
-      "reset": "Reset to Setup"
+      "reset": "Reset to Setup",
+      "dangerZone": "Danger zone"
     },
     "reviewCard": {
       "needPlayersWarning": "Need at least {{minPlayers}} players to start the tournament ({{teamSize}}v{{teamSize}} matches). Currently registered: {{registered}}",

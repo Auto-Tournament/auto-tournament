@@ -198,7 +198,8 @@
       "leaderboardTooltip": "Open het openbare klassement om met spelers te delen",
       "restartTooltip": "Beëindig alle actieve wedstrijden op de servers en laad ze opnieuw (handig bij vastgelopen wedstrijden)",
       "resetTooltip": "Beëindig alle wedstrijden en zet het toernooi terug naar de instelmodus (behoudt de instellingen maar wist alle wedstrijdgegevens)",
-      "reset": "Terug naar instellen"
+      "reset": "Terug naar instellen",
+      "dangerZone": "Danger zone"
     },
     "reviewCard": {
       "needPlayersWarning": "Er zijn minstens {{minPlayers}} spelers nodig om het toernooi te starten ({{teamSize}}v{{teamSize}}-wedstrijden). Nu geregistreerd: {{registered}}",

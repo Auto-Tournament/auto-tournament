@@ -198,7 +198,8 @@
       "leaderboardTooltip": "Apri la classifica pubblica da condividere con i giocatori",
       "restartTooltip": "Termina tutti i match attivi sui server e ricaricali (utile per i match bloccati)",
       "resetTooltip": "Termina tutti i match e reimposta il torneo in modalità configurazione (mantiene le impostazioni ma cancella tutti i dati dei match)",
-      "reset": "Reimposta su configurazione"
+      "reset": "Reimposta su configurazione",
+      "dangerZone": "Danger zone"
     },
     "reviewCard": {
       "needPlayersWarning": "Servono almeno {{minPlayers}} giocatori per avviare il torneo (match {{teamSize}}v{{teamSize}}). Registrati finora: {{registered}}",
