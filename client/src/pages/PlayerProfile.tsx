@@ -51,6 +51,7 @@ import type { PlayerDetail } from '../types/api.types';
 import { useAuth } from '../contexts/AuthContext';
 import { useCurrentMatchStatus } from '../hooks/useCurrentMatchStatus';
 import { useTranslation } from 'react-i18next';
+import { useRoundLabel } from '../hooks/useRoundLabel';
 import { ratingHistoryBaseline } from '../utils/eloProgression';
 import type {
   Team,
@@ -258,6 +259,7 @@ export default function PlayerProfile() {
   const socketRef = useRef<Socket | null>(null);
   const { playerSteamId, hasPlayerRecord, impersonation } = useAuth();
   const { t } = useTranslation();
+  const getRoundLabel = useRoundLabel();
   // Kills, deaths, assists, headshots, damage and the demo link are things the
   // game measured. A game that measures none of them has no column of N/A to
   // show — it has no column (3.0 phase D, PR D10).
@@ -760,14 +762,6 @@ export default function PlayerProfile() {
     return () => clearInterval(timer);
   }, [allocationCountdown.nextAllocationInSeconds]);
 
-  const getRoundLabel = (round: number) => {
-    if (round === 1) return t('rounds.round1');
-    if (round === 2) return t('rounds.round2');
-    if (round === 3) return t('rounds.quarterfinals');
-    if (round === 4) return t('rounds.semifinals');
-    if (round === 5) return t('rounds.finals');
-    return t('rounds.roundN', { n: round });
-  };
 
   if (loading) {
     return (

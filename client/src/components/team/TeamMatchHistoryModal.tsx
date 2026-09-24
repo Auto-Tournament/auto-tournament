@@ -22,6 +22,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { useTranslation } from 'react-i18next';
+import { useRoundLabel } from '../../hooks/useRoundLabel';
 import { formatDate, getBracketMatchLabel } from '../../utils/matchUtils';
 import { MapAccordion } from './MapAccordion';
 import type { Match, PlayerStats, TeamMatchHistory } from '../../types';
@@ -42,14 +43,7 @@ export function TeamMatchHistoryModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getRoundLabel = (round: number) => {
-    if (round === 1) return t('rounds.round1');
-    if (round === 2) return t('rounds.round2');
-    if (round === 3) return t('rounds.quarterfinals');
-    if (round === 4) return t('rounds.semifinals');
-    if (round === 5) return t('rounds.finals');
-    return t('rounds.roundN', { n: round });
-  };
+  const getRoundLabel = useRoundLabel();
 
   useEffect(() => {
     if (!matchHistory) {

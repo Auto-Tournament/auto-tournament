@@ -24,6 +24,7 @@ import { useTournamentList } from '../hooks/useTournamentList';
 import { fetchMyGames, type GameSummary } from '../components/games/gamesApi';
 import { api } from '../utils/api';
 import { MATCH_FORMATS } from '../constants/tournament';
+import { eliminationRoundCount, getRoundLabel } from '../utils/matchUtils';
 
 interface ViewerTeam {
   id: string;
@@ -52,15 +53,6 @@ function steamConnectUri(server: { host: string; port: number; password?: string
   return `steam://run/730//${params}`;
 }
 
-/** Round number -> a human label, same mapping used on the team match page. */
-function roundLabel(round: number, t: (key: string, opts?: Record<string, unknown>) => string): string {
-  if (round === 1) return t('rounds.round1');
-  if (round === 2) return t('rounds.round2');
-  if (round === 3) return t('rounds.quarterfinals');
-  if (round === 4) return t('rounds.semifinals');
-  if (round === 5) return t('rounds.finals');
-  return t('rounds.roundN', { n: round });
-}
 
 /**
  * Home: the signed-in player's own landing page — their games, next match,
@@ -284,7 +276,12 @@ export default function Home() {
                       {match.opponent?.name ?? t('home.tbd')}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {[currentTournament?.name, roundLabel(match.round, t), formatBadge(match.matchFormat)]
+                      {[currentTournament?.name, getRoundLabel(
+                        match.round,
+                        currentTournament
+                          ? eliminationRoundCount(currentTournament.teamCount, currentTournament.type)
+                          : undefined
+                      ), formatBadge(match.matchFormat)]
                         .filter(Boolean)
                         .join(' · ')}
                     </Typography>

@@ -13,6 +13,7 @@ import type { Id, Stage, ParticipantResult } from 'brackets-model';
 import type { Group, Round, Match as ViewerMatch, Participant } from 'brackets-viewer';
 import '../../brackets-viewer/style.scss';
 import { deriveSeriesScore } from '../../utils/matchScoreDisplay';
+import { getRoundLabel } from '../../utils/matchUtils';
 
 interface BracketsViewerVisualizationProps {
   matches: Array<Match & { liveStats?: MatchLiveStats | null }>;
@@ -651,6 +652,14 @@ export default function BracketsViewerVisualization({
           highlightParticipantOnHover: true,
           // Round robin table in the server's tiebreak order, strict ranks.
           rankingOrder,
+          // Single-elimination columns carry the same names as the rest of
+          // the app ("Quarterfinals", "Semifinals", "Finals"), not the
+          // viewer's own "Round 1 … Final Round". '' falls back to the
+          // viewer's names for the other bracket kinds.
+          customRoundName: (info) =>
+            info.groupType === 'single-bracket'
+              ? getRoundLabel(info.roundNumber, info.roundCount)
+              : '',
           onMatchClick: (match) => {
             // Find the original match by ID
             const originalMatch = findOriginalMatch(match.id);
