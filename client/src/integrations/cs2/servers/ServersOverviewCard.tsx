@@ -1,9 +1,8 @@
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Card, CardContent, Stack, Typography } from '@mui/material';
-import { useModuleTranslation } from '../../../module-sdk';
+import { links, useModuleTranslation } from '../../../module-sdk';
 import type { ServerFleetCounts } from '../../../hooks/useAdminHomeData';
 import type { AdminHomeResourcesProps as ServersOverviewCardProps } from '../../types';
-import { paths } from '../../../paths';
 
 /** A thin stacked bar: in-match / free / offline, in that order (matches the Manage server grid's chip colours). */
 function FleetBar({ fleet }: { fleet: ServerFleetCounts }) {
@@ -44,7 +43,7 @@ export function ServersOverviewCard({ fleet, pluginVersions }: ServersOverviewCa
           </Typography>
           <Typography
             component={RouterLink}
-            to={paths.servers}
+            to={links.servers()}
             variant="body2"
             color="text.secondary"
             sx={{ textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}

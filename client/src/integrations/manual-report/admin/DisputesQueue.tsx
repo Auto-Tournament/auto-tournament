@@ -32,8 +32,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useModuleTranslation } from '../../../module-sdk';
-import { io } from 'socket.io-client';
+import { useModuleTranslation, useSocket } from '../../../module-sdk';
 import {
   Alert,
   Box,
@@ -151,8 +150,9 @@ export function DisputesQueue({ tournamentId }: AdminDisputesViewProps) {
 
   // Live, on the module's own emit. A dispute raised on a team page appears
   // here, and one another admin settles disappears, with no reload.
+  const socket = useSocket();
+
   useEffect(() => {
-    const socket = io();
     const onReport = (data?: { matchSlug?: string }) => {
       void load();
       if (data?.matchSlug && data.matchSlug === openSlug) void loadDetail(data.matchSlug);
@@ -160,9 +160,8 @@ export function DisputesQueue({ tournamentId }: AdminDisputesViewProps) {
     socket.on('match:report', onReport);
     return () => {
       socket.off('match:report', onReport);
-      socket.close();
     };
-  }, [load, loadDetail, openSlug]);
+  }, [socket, load, loadDetail, openSlug]);
 
   const openRow = useCallback(
     (row: DisputeRow) => {

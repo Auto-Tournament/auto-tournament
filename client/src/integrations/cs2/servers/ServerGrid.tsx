@@ -2,8 +2,7 @@ import React from 'react';
 import { Box, Paper, Typography, Chip, Grid, Link as MuiLink } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import type { ManageResourcesProps as ServerGridProps } from '../../types';
-import { paths } from '../../../paths';
-import { getBracketMatchLabel, useModuleTranslation } from '../../../module-sdk';
+import { getBracketMatchLabel, links, useModuleTranslation } from '../../../module-sdk';
 
 function timeAgo(unixSeconds: number | null, t: (key: string, opts?: Record<string, unknown>) => string): string {
   if (!unixSeconds) return t('managePage.servers.never');
@@ -29,7 +28,7 @@ export const ServerGrid: React.FC<ServerGridProps> = ({ servers, matches }) => {
         <Typography variant="h6" fontWeight={600}>
           {t('managePage.servers.heading')}
         </Typography>
-        <MuiLink component={RouterLink} to={paths.servers} variant="body2" color="text.secondary">
+        <MuiLink component={RouterLink} to={links.servers()} variant="body2" color="text.secondary">
           {t('managePage.servers.viewAll')}
         </MuiLink>
       </Box>

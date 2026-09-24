@@ -17,7 +17,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 import { api, useSnackbar, useModuleTranslation } from '../../../module-sdk';
 import type { Map, MapResponse } from '../../../types/api.types';
-import { FadeInImage } from '../../../components/common/FadeInImage';
+import { FadeInImage } from '../common/FadeInImage';
 
 interface MapModalProps {
   open: boolean;

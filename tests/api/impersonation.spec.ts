@@ -57,6 +57,9 @@ test.describe.serial('Admin impersonation API', () => {
       const before = await (await request.get('/api/auth/me')).json();
       expect(before.steamId).toBe(DEFAULT_ADMIN_STEAM_ID);
       expect(before.impersonation.active).toBe(false);
+      // The game-neutral account id game modules identify a player by.
+      expect(typeof before.uid).toBe('string');
+      expect(before.uid).not.toBe('');
 
       expect(await impersonatePlayer(request, playerSteamId)).toBe(true);
 
@@ -64,12 +67,16 @@ test.describe.serial('Admin impersonation API', () => {
       expect(during.steamId).toBe(playerSteamId);
       expect(during.impersonation.active).toBe(true);
       expect(during.impersonation.realSteamId).toBe(DEFAULT_ADMIN_STEAM_ID);
+      // It follows the effective identity, like the Steam ID does.
+      expect(typeof during.uid).toBe('string');
+      expect(during.uid).not.toBe(before.uid);
 
       expect(await stopImpersonating(request)).toBe(true);
 
       const after = await (await request.get('/api/auth/me')).json();
       expect(after.steamId).toBe(DEFAULT_ADMIN_STEAM_ID);
       expect(after.impersonation.active).toBe(false);
+      expect(after.uid).toBe(before.uid);
     }
   );
 

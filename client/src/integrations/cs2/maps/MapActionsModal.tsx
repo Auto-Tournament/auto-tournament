@@ -13,7 +13,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 import type { Map } from '../../../types/api.types';
-import { FadeInImage } from '../../../components/common/FadeInImage';
+import { FadeInImage } from '../common/FadeInImage';
 import { useModuleTranslation } from '../../../module-sdk';
 
 interface MapActionsModalProps {

@@ -139,8 +139,9 @@ function deps(overrides: Partial<LoadDeps> = {}): LoadDeps {
 // ---------------------------------------------------------------------------
 
 test.describe('Client API range', () => {
-  test('the platform publishes 0.1.0', () => {
-    expect(CLIENT_API_VERSION).toBe('0.1.0');
+  test('the platform publishes 0.1.1, which a module built for ^0.1.0 still loads on', () => {
+    expect(CLIENT_API_VERSION).toBe('0.1.1');
+    expect(checkClientApi('^0.1.0', CLIENT_API_VERSION)).toBeNull();
     // Re-exported from the SDK barrel, where a module reads it.
     const sdk = readFileSync(join(CLIENT, 'src/module-sdk/index.ts'), 'utf8');
     expect(sdk).toContain("export { CLIENT_API_VERSION } from './version';");
@@ -562,7 +563,7 @@ test.describe('Loading code modules', () => {
       failure: {
         stage: 'contract',
         code: 'outOfRange',
-        message: 'built for client API ^0.3.0; this platform provides 0.1.0',
+        message: 'built for client API ^0.3.0; this platform provides 0.1.1',
       },
     });
   });
@@ -718,7 +719,11 @@ test.describe('Shared-package shims', () => {
     expect(router.has('useFetcher')).toBe(false);
 
     const sdk = await exportNames(join(CLIENT, 'src/module-sdk/index.ts'), nodeResolve);
-    for (const name of ['CLIENT_API_VERSION', 'api', 'useAuth', 'ConfirmDialog', 'tokens']) {
+    for (const name of [
+      'CLIENT_API_VERSION', 'api', 'useAuth', 'ConfirmDialog', 'tokens',
+      // 0.1.1
+      'links', 'openMatchDetails', 'useSocket', 'SegmentedControl',
+    ]) {
       expect(sdk.has(name), name).toBe(true);
     }
     expect(sdk.has('ModuleAuth')).toBe(false);

@@ -1,7 +1,7 @@
 import { Card, CardContent, Typography, Box } from '@mui/material';
 import MapIcon from '@mui/icons-material/Map';
 import type { Map } from '../../../types/api.types';
-import { FadeInImage } from '../../../components/common/FadeInImage';
+import { FadeInImage } from '../common/FadeInImage';
 
 interface MapCardProps {
   map: Map;

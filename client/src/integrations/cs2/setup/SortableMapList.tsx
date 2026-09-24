@@ -26,11 +26,15 @@ import {
   DragHandle as DragHandleIcon,
   Close as CloseIcon,
 } from '@mui/icons-material';
-import type { Map as MapType } from '../../types/api.types';
+/** What the list reads of a map: a CS2 map row has more, and still fits. */
+interface SortableMap {
+  id: string;
+  displayName: string;
+}
 
 interface SortableMapListProps {
   maps: string[];
-  availableMaps: MapType[];
+  availableMaps: SortableMap[];
   onMapsReorder: (newOrder: string[]) => void;
   onMapRemove?: (mapId: string) => void;
   disabled?: boolean;

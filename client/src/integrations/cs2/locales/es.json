@@ -1,10 +1,4 @@
 {
-  "connectSteam": {
-    "title": "Conecta tu cuenta de Steam",
-    "bodyIntro": "Ya casi está listo. Para usar la plataforma del torneo con esta cuenta (por ejemplo, después de iniciar sesión con Discord, Keycloak o GitHub), necesitas vincular un perfil de Steam.",
-    "bodyRequirement": "Vincular Steam permite que el sistema te reconozca como jugador y es necesario para iniciar sesión con proveedores que no sean Steam.",
-    "button": "Conectar con Steam"
-  },
   "nav": {
     "servers": "Servidores",
     "maps": "Mapas y pools"
