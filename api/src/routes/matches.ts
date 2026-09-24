@@ -71,7 +71,7 @@ async function getMatchDetailsBySlug(slug: string): Promise<MatchListItem | null
       LEFT JOIN teams t1 ON m.team1_id = t1.id
       LEFT JOIN teams t2 ON m.team2_id = t2.id
       LEFT JOIN teams w ON m.winner_id = w.id
-      LEFT JOIN servers s ON m.server_id = s.id
+      LEFT JOIN cs2_servers s ON m.server_id = s.id
       WHERE m.slug = ?
       LIMIT 1
     `,
@@ -625,7 +625,7 @@ router.get('/', async (req: Request, res: Response) => {
       LEFT JOIN teams t1 ON m.team1_id = t1.id
       LEFT JOIN teams t2 ON m.team2_id = t2.id
       LEFT JOIN teams w ON m.winner_id = w.id
-      LEFT JOIN servers s ON m.server_id = s.id
+      LEFT JOIN cs2_servers s ON m.server_id = s.id
     `;
 
     const params: unknown[] = [];

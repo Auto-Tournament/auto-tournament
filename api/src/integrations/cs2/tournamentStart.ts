@@ -141,7 +141,7 @@ export async function preflightServersUpToDateForTournamentStart(): Promise<
       // Persist latest known version output + build id (best-effort) and the UpToDateCheck outcome.
       if (check.upToDate) {
         await db.updateAsync(
-          'servers',
+          'cs2_servers',
           {
             cs2_build_id: installedBuildId,
             cs2_version_string: cs2VersionString,
@@ -157,7 +157,7 @@ export async function preflightServersUpToDateForTournamentStart(): Promise<
         );
       } else {
         await db.updateAsync(
-          'servers',
+          'cs2_servers',
           {
             cs2_build_id: installedBuildId,
             cs2_version_string: cs2VersionString,

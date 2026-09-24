@@ -16,9 +16,15 @@
  *      and starts it against the SAME Postgres data.
  *   5. Asserts: the hand-written migrations ran (and are idempotent), the API
  *      returns the same data as before the upgrade, and booting twice more
- *      changes nothing.
+ *      changes nothing. CS2's tables were renamed in place: cs2_servers,
+ *      cs2_maps and cs2_map_pools hold exactly the rows servers, maps and
+ *      map_pools held (read from Postgres before and after), the rows that
+ *      point into them still do, the old names are gone, CS2's 001-tables
+ *      migration is recorded, and running the handover again does nothing.
  *   6. Repeats the boot-and-check step (minus the seeding) against a second,
- *      completely empty database, so the same script covers both paths.
+ *      completely empty database, so the same script covers both paths, and
+ *      checks that CS2's tables there have the same columns, indexes,
+ *      constraints, sequences and keys as on the upgraded one.
  *
  * Usage:
  *   yarn test:upgrade
@@ -630,6 +636,224 @@ async function assertMigrationsAreNoOpNow(ctx: APIRequestContext) {
 }
 
 // ---------------------------------------------------------------------------
+// CS2's tables (DESIGN-modules §6 item 10): 2.x's servers, maps and map_pools
+// become cs2_servers, cs2_maps and cs2_map_pools, renamed in place by
+// api/src/config/cs2TableHandover.ts. Rows are read straight from Postgres,
+// so the check does not depend on either version's API shape.
+// ---------------------------------------------------------------------------
+
+/** One JSON value from a query run inside the Postgres container. */
+function psqlJson<T>(postgresName: string, sql: string): T {
+  const out = sh('docker', [
+    'exec',
+    postgresName,
+    'psql',
+    '-U',
+    DB_USER,
+    '-d',
+    DB_NAME,
+    '-At',
+    '-v',
+    'ON_ERROR_STOP=1',
+    '-c',
+    sql,
+  ]).trim();
+  return JSON.parse(out) as T;
+}
+
+function psqlExec(postgresName: string, sql: string) {
+  sh('docker', [
+    'exec',
+    postgresName,
+    'psql',
+    '-U',
+    DB_USER,
+    '-d',
+    DB_NAME,
+    '-v',
+    'ON_ERROR_STOP=1',
+    '-c',
+    sql,
+  ]);
+}
+
+interface Cs2TableNames {
+  servers: string;
+  maps: string;
+  map_pools: string;
+}
+
+const LEGACY_CS2_TABLE_NAMES: Cs2TableNames = {
+  servers: 'servers',
+  maps: 'maps',
+  map_pools: 'map_pools',
+};
+const CS2_TABLE_NAMES: Cs2TableNames = {
+  servers: 'cs2_servers',
+  maps: 'cs2_maps',
+  map_pools: 'cs2_map_pools',
+};
+
+const UPGRADE_POOL_NAME = 'Upgrade Test Pool';
+const UPGRADE_TEMPLATE_NAME = 'Upgrade Test Template';
+
+/**
+ * On the OLD version's database: a custom map pool (an id the pools sequence
+ * handed out for the host, not only the seeded ones) and a tournament
+ * template that references it, so core's key from tournament_templates onto
+ * the pools table is exercised by real rows.
+ */
+function seedCs2Rows(postgresName: string) {
+  step = 'seed CS2 rows on the old database';
+  psqlExec(
+    postgresName,
+    `INSERT INTO map_pools (name, map_ids, is_default, enabled)
+       VALUES ('${UPGRADE_POOL_NAME}', '["de_dust2","de_mirage"]', 0, 1);
+     INSERT INTO tournament_templates (name, type, format, settings, map_pool_id)
+       SELECT '${UPGRADE_TEMPLATE_NAME}', 'single_elimination', 'bo1', '{}', id
+         FROM map_pools WHERE name = '${UPGRADE_POOL_NAME}';`
+  );
+}
+
+/**
+ * The rows of CS2's three tables, in the columns neither version rewrites on
+ * its own (status, last_seen and updated_at move with the health monitor),
+ * plus the core rows that point into them.
+ */
+function cs2Rows(postgresName: string, names: Cs2TableNames) {
+  const agg = (select: string, order: string) =>
+    psqlJson<unknown[]>(
+      postgresName,
+      `SELECT COALESCE(json_agg(t ORDER BY ${order}), '[]'::json) FROM (${select}) t`
+    );
+  return {
+    servers: agg(
+      `SELECT id, name, host, port, password, enabled, created_at FROM ${names.servers}`,
+      'id'
+    ),
+    maps: agg(`SELECT id, display_name, image_url, created_at FROM ${names.maps}`, 'id'),
+    mapPools: agg(
+      `SELECT id, name, map_ids, is_default, enabled, created_at FROM ${names.map_pools}`,
+      'id'
+    ),
+    templates: agg(
+      `SELECT t.name, t.map_pool_id, p.name AS pool_name
+         FROM tournament_templates t LEFT JOIN ${names.map_pools} p ON p.id = t.map_pool_id`,
+      'name'
+    ),
+    matchServers: agg('SELECT slug, server_id FROM matches', 'slug'),
+  };
+}
+
+type Cs2Rows = ReturnType<typeof cs2Rows>;
+
+function assertCs2RowsSurvived(label: string, before: Cs2Rows, after: Cs2Rows) {
+  const a = JSON.stringify(before);
+  const b = JSON.stringify(after);
+  if (a !== b) {
+    throw new Error(
+      `${label}: CS2 rows differ.\n--- before ---\n${JSON.stringify(before, null, 2)}\n--- after ---\n${JSON.stringify(after, null, 2)}`
+    );
+  }
+  if (before.servers.length === 0 || before.maps.length === 0 || before.mapPools.length === 0) {
+    throw new Error(`${label}: expected the old database to have servers, maps and map pools.`);
+  }
+  log(
+    `${label}: ${before.servers.length} server(s), ${before.maps.length} map(s), ` +
+      `${before.mapPools.length} map pool(s) and the rows pointing at them survived unchanged.`
+  );
+}
+
+interface Cs2TablesView {
+  tables: Record<string, boolean>;
+  legacyTables: Record<string, boolean>;
+  ledger: Array<{ id: string; checksum: string }>;
+  firstMigration: { id: string; checksum: string } | null;
+  state: { status: string; applied: string[]; reason?: string } | null;
+  schema: { tables: Record<string, unknown>; foreignKeys: unknown[] };
+}
+
+interface Cs2HandoverReport {
+  renamed: unknown[];
+  renamedObjects: unknown[];
+  columnsAdded: unknown[];
+  recorded: boolean;
+  conflicts: unknown[];
+  pending: unknown[];
+}
+
+/**
+ * After boot: the three cs2_* tables exist, the 2.x names are gone, CS2's
+ * first migration is recorded (with the checksum of the SQL CS2 ships), the
+ * module is ok, and running the handover again does nothing. Returns the
+ * schema, so the fresh-database path can be compared with it.
+ */
+async function assertCs2TablesHandedOver(ctx: APIRequestContext, label: string) {
+  const res = await ctx.get('/api/test/cs2-tables');
+  if (!res.ok()) {
+    throw new Error(`GET /api/test/cs2-tables failed: ${res.status()} ${await res.text()}`);
+  }
+  const view = (await res.json()) as Cs2TablesView;
+  for (const name of Object.values(CS2_TABLE_NAMES)) {
+    if (!view.tables[name]) throw new Error(`${label}: ${name} does not exist.`);
+  }
+  for (const name of Object.values(LEGACY_CS2_TABLE_NAMES)) {
+    if (view.legacyTables[name]) throw new Error(`${label}: the old table ${name} is still there.`);
+  }
+  if (view.firstMigration?.id !== '001-tables') {
+    throw new Error(
+      `${label}: CS2 declares no 001-tables migration: ${JSON.stringify(view.firstMigration)}`
+    );
+  }
+  if (JSON.stringify(view.ledger) !== JSON.stringify([view.firstMigration])) {
+    throw new Error(
+      `${label}: CS2's ledger is ${JSON.stringify(view.ledger)}, expected ${JSON.stringify([view.firstMigration])}.`
+    );
+  }
+  if (view.state?.status !== 'ok') {
+    throw new Error(`${label}: the CS2 module is not ok: ${JSON.stringify(view.state)}`);
+  }
+
+  const again = await ctx.post('/api/test/cs2-tables/handover', { data: {} });
+  if (!again.ok()) {
+    throw new Error(
+      `POST /api/test/cs2-tables/handover failed: ${again.status()} ${await again.text()}`
+    );
+  }
+  const { report } = (await again.json()) as { report: Cs2HandoverReport };
+  const changed =
+    report.renamed.length +
+    report.renamedObjects.length +
+    report.columnsAdded.length +
+    report.conflicts.length +
+    report.pending.length;
+  if (changed > 0 || report.recorded) {
+    throw new Error(
+      `${label}: running the CS2 handover again did something: ${JSON.stringify(report)}`
+    );
+  }
+  log(
+    `${label}: cs2_servers, cs2_maps and cs2_map_pools in place, old names gone, ` +
+      '001-tables recorded, handover idempotent.'
+  );
+  return view.schema;
+}
+
+function assertSameCs2Schema(label: string, expected: unknown, actual: unknown) {
+  const a = JSON.stringify(expected);
+  const b = JSON.stringify(actual);
+  if (a !== b) {
+    throw new Error(
+      `${label}: CS2's tables differ.\n--- upgraded ---\n${JSON.stringify(expected, null, 2)}\n--- this database ---\n${JSON.stringify(actual, null, 2)}`
+    );
+  }
+  log(`${label}: same CS2 columns, indexes, constraints, sequences and keys as the upgraded database.`);
+}
+
+/** Set by path 1, compared against by the reboots and by path 2. */
+let upgradedCs2Schema: unknown = null;
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -646,6 +870,8 @@ async function runUpgradedDatabasePath() {
   try {
     const seeded = await seed(ctx);
     const before = await snapshot(ctx, seeded);
+    seedCs2Rows(POSTGRES_NAME);
+    const cs2Before = cs2Rows(POSTGRES_NAME, LEGACY_CS2_TABLE_NAMES);
     log(`Seeded and snapshotted data on ${OLD_IMAGE}.`);
 
     step = 'stop old container';
@@ -661,6 +887,11 @@ async function runUpgradedDatabasePath() {
     step = 'verify data survived the upgrade';
     const afterUpgrade = await snapshot(ctx, seeded);
     assertEqual('Upgrade (old -> current build)', before, afterUpgrade);
+
+    step = 'verify CS2 took over its tables';
+    upgradedCs2Schema = await assertCs2TablesHandedOver(ctx, 'Upgrade');
+    const cs2AfterUpgrade = cs2Rows(POSTGRES_NAME, CS2_TABLE_NAMES);
+    assertCs2RowsSurvived('Upgrade (old -> current build)', cs2Before, cs2AfterUpgrade);
 
     // Boot twice more: nothing should change, and no new migration should
     // ever be (re-)applied.
@@ -680,6 +911,13 @@ async function runUpgradedDatabasePath() {
 
       const snap = await snapshot(ctx, seeded);
       assertEqual(`Reboot #${boot}`, afterUpgrade, snap);
+      const schema = await assertCs2TablesHandedOver(ctx, `Reboot #${boot}`);
+      assertSameCs2Schema(`Reboot #${boot}`, upgradedCs2Schema, schema);
+      assertCs2RowsSurvived(
+        `Reboot #${boot}`,
+        cs2AfterUpgrade,
+        cs2Rows(POSTGRES_NAME, CS2_TABLE_NAMES)
+      );
     }
 
     log('Path 1 (upgrade) passed: migrations ran once, data survived, reboots changed nothing.');
@@ -715,6 +953,11 @@ async function runFreshDatabasePath() {
       step = 'verify migrations ran on a fresh database';
       await assertMigrationsApplied(ctx);
       await assertMigrationsAreNoOpNow(ctx);
+
+      step = 'verify CS2 created its tables on a fresh database';
+      const freshCs2Schema = await assertCs2TablesHandedOver(ctx, 'Fresh database');
+      if (!upgradedCs2Schema) throw new Error('Path 1 did not record the upgraded CS2 schema.');
+      assertSameCs2Schema('Fresh database', upgradedCs2Schema, freshCs2Schema);
 
       step = 'verify a fresh database starts empty';
       const playersRes = await ctx.get('/api/players');

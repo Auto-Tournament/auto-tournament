@@ -16,8 +16,8 @@ export class ServerService {
    */
   async getAllServers(onlyEnabled = false): Promise<ServerResponse[]> {
     const servers = onlyEnabled
-      ? await db.getAllAsync<Server>('servers', 'enabled = ?', [1])
-      : await db.getAllAsync<Server>('servers');
+      ? await db.getAllAsync<Server>('cs2_servers', 'enabled = ?', [1])
+      : await db.getAllAsync<Server>('cs2_servers');
 
     return servers.map(this.toResponse);
   }
@@ -26,7 +26,7 @@ export class ServerService {
    * Get server by ID
    */
   async getServerById(id: string): Promise<ServerResponse | null> {
-    const server = await db.getOneAsync<Server>('servers', 'id = ?', [id]);
+    const server = await db.getOneAsync<Server>('cs2_servers', 'id = ?', [id]);
     return server ? this.toResponse(server) : null;
   }
 
@@ -34,7 +34,7 @@ export class ServerService {
    * Check if a server with the same host:port already exists
    */
   private async getServerByHostPort(host: string, port: number, excludeId?: string): Promise<Server | null> {
-    const servers = await db.getAllAsync<Server>('servers', 'host = ? AND port = ?', [host, port]);
+    const servers = await db.getAllAsync<Server>('cs2_servers', 'host = ? AND port = ?', [host, port]);
 
     // If excludeId is provided, filter it out (for updates)
     if (excludeId) {
@@ -82,7 +82,7 @@ export class ServerService {
         ? JSON.stringify(input.matchzyConfig)
         : null;
 
-    await db.insertAsync('servers', {
+    await db.insertAsync('cs2_servers', {
       id: input.id,
       name: input.name,
       host: input.host,
@@ -142,7 +142,7 @@ export class ServerService {
       updateData.matchzy_config = hasKeys ? JSON.stringify(input.matchzyConfig) : null;
     }
 
-    await db.updateAsync('servers', updateData, 'id = ?', [id]);
+    await db.updateAsync('cs2_servers', updateData, 'id = ?', [id]);
 
     log.serverUpdated(id, input.name || existing.name);
     const result = await this.getServerById(id);
@@ -159,7 +159,7 @@ export class ServerService {
       throw new Error(`Server with ID '${id}' not found`);
     }
 
-    await db.deleteAsync('servers', 'id = ?', [id]);
+    await db.deleteAsync('cs2_servers', 'id = ?', [id]);
     log.serverDeleted(id, existing.name);
   }
 
@@ -173,7 +173,7 @@ export class ServerService {
     }
 
     await db.updateAsync(
-      'servers',
+      'cs2_servers',
       {
         enabled: enabled ? 1 : 0,
         updated_at: Math.floor(Date.now() / 1000),

@@ -1,7 +1,8 @@
 import express, { Router, type NextFunction, type Request, type Response } from 'express';
+import type { PoolClient } from 'pg';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
-import { integrationForMatch } from '../integrations/registry';
+import { integrationForMatch, listIntegrations } from '../integrations/registry';
 import type { ModuleMigration, ResultMeta, SeriesResult } from '../integrations/types';
 import { matchLifecycle } from '../core/matchLifecycle';
 import { db } from '../config/database';
@@ -30,9 +31,15 @@ import {
 } from '../config/schemaMigrations';
 import {
   getModuleMigrationState,
+  migrationChecksum,
   moduleNamespace,
   runModuleMigrations,
 } from '../config/moduleMigrations';
+import {
+  CS2_MODULE_ID,
+  LEGACY_CS2_TABLES,
+  handOverCs2Tables,
+} from '../config/cs2TableHandover';
 import { playerIdentity } from '../services/playerIdentity';
 import { teamMembers } from '../services/teamMembers';
 import { forgetModuleEnabled, listModules, modulesDir, scanDiskModules } from '../modules/loader';
@@ -886,6 +893,474 @@ router.post(
     } catch (err) {
       log.error('Error in POST /api/test/module-migrations/reset', err as Error);
       res.status(500).json({ success: false, error: 'Failed to reset the fixture module' });
+    }
+  }
+);
+
+/*
+ * Test-only: CS2's tables (DESIGN-modules §6 item 10). CS2 owns cs2_servers,
+ * cs2_maps and cs2_map_pools, created by its own migration on a fresh
+ * database and renamed from the 2.x servers, maps and map_pools on an
+ * upgraded one (config/cs2TableHandover.ts).
+ *
+ *   GET  /api/test/cs2-tables                   which tables exist, CS2's ledger
+ *                                               and state, and the schema of the
+ *                                               three tables and every key onto them
+ *   POST /api/test/cs2-tables/handover          run the handover again (a no-op
+ *                                               once done)
+ *   POST /api/test/cs2-tables/foreign-keys      probe the keys onto them, in a
+ *                                               transaction that is rolled back
+ *   POST /api/test/cs2-tables/handover-probe    run the handover on a 2.4-shaped
+ *        Body: { scenario }                     copy in a scratch schema, twice
+ *
+ * The upgrade test (scripts/test-upgrade.ts) reads the first two as well.
+ */
+
+type SqlClient = Pick<PoolClient, 'query'>;
+
+const CS2_TABLES = LEGACY_CS2_TABLES.map((t) => t.to);
+const LEGACY_TABLES = LEGACY_CS2_TABLES.map((t) => t.from);
+
+/**
+ * The schema of CS2's tables, in an order that does not depend on how they
+ * came to be (columns by name, not position), so a fresh database and an
+ * upgraded one compare equal.
+ */
+async function describeCs2Schema(client: SqlClient) {
+  const tables = [...CS2_TABLES];
+  const { rows: columns } = await client.query<{
+    table_name: string;
+    column_name: string;
+    data_type: string;
+    is_nullable: string;
+    column_default: string | null;
+  }>(
+    `SELECT table_name, column_name, data_type, is_nullable, column_default
+       FROM information_schema.columns
+      WHERE table_schema = current_schema() AND table_name = ANY($1::text[])
+      ORDER BY table_name, column_name`,
+    [tables]
+  );
+  const { rows: indexes } = await client.query<{ tablename: string; indexname: string; indexdef: string }>(
+    `SELECT tablename, indexname, replace(indexdef, current_schema() || '.', '') AS indexdef
+       FROM pg_indexes
+      WHERE schemaname = current_schema() AND tablename = ANY($1::text[])
+      ORDER BY tablename, indexname`,
+    [tables]
+  );
+  const { rows: constraints } = await client.query<{ table_name: string; conname: string; def: string }>(
+    `SELECT cl.relname AS table_name, c.conname, pg_get_constraintdef(c.oid) AS def
+       FROM pg_constraint c
+       JOIN pg_class cl ON cl.oid = c.conrelid
+       JOIN pg_namespace n ON n.oid = cl.relnamespace
+      WHERE n.nspname = current_schema() AND cl.relname = ANY($1::text[])
+      ORDER BY cl.relname, c.conname`,
+    [tables]
+  );
+  const { rows: sequences } = await client.query<{ table_name: string; seqname: string }>(
+    `SELECT c.relname AS table_name, s.relname AS seqname
+       FROM pg_depend d
+       JOIN pg_class s ON s.oid = d.objid AND s.relkind = 'S'
+       JOIN pg_class c ON c.oid = d.refobjid
+       JOIN pg_namespace n ON n.oid = c.relnamespace
+      WHERE d.classid = 'pg_class'::regclass AND d.refclassid = 'pg_class'::regclass
+        AND n.nspname = current_schema() AND c.relname = ANY($1::text[])
+      ORDER BY c.relname, s.relname`,
+    [tables]
+  );
+  const { rows: foreignKeys } = await client.query<{ table_name: string; conname: string; def: string }>(
+    `SELECT cl.relname AS table_name, c.conname, pg_get_constraintdef(c.oid) AS def
+       FROM pg_constraint c
+       JOIN pg_class cl ON cl.oid = c.conrelid
+       JOIN pg_class ref ON ref.oid = c.confrelid
+       JOIN pg_namespace n ON n.oid = ref.relnamespace
+      WHERE c.contype = 'f' AND n.nspname = current_schema() AND ref.relname = ANY($1::text[])
+      ORDER BY cl.relname, c.conname`,
+    [tables]
+  );
+
+  const schema: Record<string, unknown> = {};
+  for (const table of tables) {
+    schema[table] = {
+      columns: columns
+        .filter((c) => c.table_name === table)
+        .map((c) => ({
+          name: c.column_name,
+          type: c.data_type,
+          nullable: c.is_nullable === 'YES',
+          default: c.column_default,
+        })),
+      indexes: indexes
+        .filter((i) => i.tablename === table)
+        .map((i) => ({ name: i.indexname, definition: i.indexdef })),
+      constraints: constraints
+        .filter((c) => c.table_name === table)
+        .map((c) => ({ name: c.conname, definition: c.def })),
+      sequences: sequences.filter((s) => s.table_name === table).map((s) => s.seqname),
+    };
+  }
+  return {
+    tables: schema,
+    foreignKeys: foreignKeys.map((f) => ({ table: f.table_name, name: f.conname, definition: f.def })),
+  };
+}
+
+async function existingTables(client: SqlClient, names: string[]): Promise<Record<string, boolean>> {
+  const { rows } = await client.query<{ relname: string }>(
+    `SELECT c.relname
+       FROM pg_class c
+       JOIN pg_namespace n ON n.oid = c.relnamespace
+      WHERE n.nspname = current_schema() AND c.relkind IN ('r', 'p') AND c.relname = ANY($1::text[])`,
+    [names]
+  );
+  const present = new Set(rows.map((r) => r.relname));
+  return Object.fromEntries(names.map((name) => [name, present.has(name)]));
+}
+
+async function cs2Ledger(client: SqlClient) {
+  const { rows } = await client.query<{ migration_id: string; checksum: string }>(
+    `SELECT migration_id, checksum FROM module_migrations WHERE module_id = $1 ORDER BY migration_id`,
+    [CS2_MODULE_ID]
+  );
+  return rows.map((r) => ({ id: r.migration_id, checksum: r.checksum }));
+}
+
+function cs2Module() {
+  return listIntegrations().find((integration) => integration.id === CS2_MODULE_ID);
+}
+
+router.get('/cs2-tables', requireAuth, async (_req: Request, res: Response): Promise<void> => {
+  if (isTestHelperDisabled(res)) return;
+  try {
+    const body = await db.withClient(async (client) => {
+      const tables = await existingTables(client, CS2_TABLES);
+      const counts: Record<string, number> = {};
+      for (const table of CS2_TABLES) {
+        if (!tables[table]) continue;
+        const { rows } = await client.query<{ n: string }>(`SELECT COUNT(*)::text AS n FROM ${table}`);
+        counts[table] = Number(rows[0]?.n ?? 0);
+      }
+      const mapPoolNames = tables.cs2_map_pools
+        ? (await client.query<{ name: string }>('SELECT name FROM cs2_map_pools ORDER BY name')).rows.map(
+            (r) => r.name
+          )
+        : [];
+      const first = cs2Module()?.migrations?.[0];
+      return {
+        tables,
+        legacyTables: await existingTables(client, LEGACY_TABLES),
+        counts,
+        mapPoolNames,
+        ledger: await cs2Ledger(client),
+        firstMigration: first ? { id: first.id, checksum: migrationChecksum(first.up) } : null,
+        state: getModuleMigrationState(CS2_MODULE_ID) ?? null,
+        schema: await describeCs2Schema(client),
+      };
+    });
+    res.json({ success: true, ...body });
+  } catch (err) {
+    log.error('Error in GET /api/test/cs2-tables', err as Error);
+    res.status(500).json({ success: false, error: 'Failed to read the CS2 tables' });
+  }
+});
+
+router.post(
+  '/cs2-tables/handover',
+  requireAuth,
+  async (_req: Request, res: Response): Promise<void> => {
+    if (isTestHelperDisabled(res)) return;
+    try {
+      const report = await db.withClient((client) => handOverCs2Tables(client, cs2Module()));
+      res.json({ success: true, report });
+    } catch (err) {
+      log.error('Error in POST /api/test/cs2-tables/handover', err as Error);
+      res.status(500).json({ success: false, error: 'Failed to run the handover' });
+    }
+  }
+);
+
+interface ForeignKeyProbe {
+  code: string | null;
+  constraint: string | null;
+}
+
+/** Run `sql` under a savepoint and report the error it raised, if any. */
+async function probe(client: SqlClient, sql: string, params: unknown[]): Promise<ForeignKeyProbe> {
+  await client.query('SAVEPOINT fk_probe');
+  try {
+    await client.query(sql, params);
+    await client.query('RELEASE SAVEPOINT fk_probe');
+    return { code: null, constraint: null };
+  } catch (err) {
+    await client.query('ROLLBACK TO SAVEPOINT fk_probe');
+    const e = err as { code?: string; constraint?: string };
+    return { code: e.code ?? null, constraint: e.constraint ?? null };
+  }
+}
+
+router.post(
+  '/cs2-tables/foreign-keys',
+  requireAuth,
+  async (_req: Request, res: Response): Promise<void> => {
+    if (isTestHelperDisabled(res)) return;
+    try {
+      const result = await db.withClient(async (client) => {
+        await client.query('BEGIN');
+        try {
+          const { rows: maxPool } = await client.query<{ id: number }>(
+            'SELECT COALESCE(MAX(id), 0) + 1000 AS id FROM cs2_map_pools'
+          );
+          const missingPoolId = maxPool[0].id;
+
+          // A template pointing at a pool that does not exist.
+          const templateMissingPool = await probe(
+            client,
+            `INSERT INTO tournament_templates (name, type, format, settings, map_pool_id)
+             VALUES ('fk-probe', 'single_elimination', 'bo1', '{}', $1)`,
+            [missingPoolId]
+          );
+          const manualTemplateMissingPool = await probe(
+            client,
+            `INSERT INTO manual_match_templates (name, best_of, starting_side, knife_mode, map_pool_id)
+             VALUES ('fk-probe', 'bo1', 'knife', 'default', $1)`,
+            [missingPoolId]
+          );
+          // A match on a server that does not exist.
+          const matchMissingServer = await probe(
+            client,
+            `INSERT INTO matches (slug, tournament_id, round, match_number, config, server_id)
+             VALUES ('fk-probe-match', NULL, 0, 0, '{}', 'fk-probe-no-such-server')`,
+            []
+          );
+
+          // ON DELETE SET NULL: deleting a pool clears the template's reference.
+          const { rows: pool } = await client.query<{ id: number }>(
+            `INSERT INTO cs2_map_pools (name, map_ids) VALUES ('fk-probe-pool', '[]') RETURNING id`
+          );
+          const { rows: template } = await client.query<{ id: number }>(
+            `INSERT INTO tournament_templates (name, type, format, settings, map_pool_id)
+             VALUES ('fk-probe', 'single_elimination', 'bo1', '{}', $1) RETURNING id`,
+            [pool[0].id]
+          );
+          await client.query('DELETE FROM cs2_map_pools WHERE id = $1', [pool[0].id]);
+          const { rows: after } = await client.query<{ map_pool_id: number | null }>(
+            'SELECT map_pool_id FROM tournament_templates WHERE id = $1',
+            [template[0].id]
+          );
+          return {
+            templateMissingPool,
+            manualTemplateMissingPool,
+            matchMissingServer,
+            templatePoolAfterPoolDeleted: after[0]?.map_pool_id ?? null,
+          };
+        } finally {
+          await client.query('ROLLBACK');
+        }
+      });
+      res.json({ success: true, ...result });
+    } catch (err) {
+      log.error('Error in POST /api/test/cs2-tables/foreign-keys', err as Error);
+      res.status(500).json({ success: false, error: 'Failed to probe the foreign keys' });
+    }
+  }
+);
+
+/** The scratch schema the handover probe builds a 2.4-shaped database in. */
+const HANDOVER_PROBE_SCHEMA = 'test_cs2_handover_probe';
+
+/**
+ * CS2's three tables as 2.4.15 created them (config/database.schema.ts at
+ * v2.4.15), plus the two core tables with keys onto them, trimmed to the key
+ * columns.
+ */
+const LEGACY_CS2_DDL = `
+  CREATE TABLE servers (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    host TEXT NOT NULL,
+    port INTEGER NOT NULL,
+    password TEXT NOT NULL,
+    enabled INTEGER NOT NULL DEFAULT 1,
+    matchzy_config TEXT,
+    persistent_config_sent INTEGER,
+    plugin_version TEXT,
+    hostname TEXT,
+    last_seen INTEGER,
+    status TEXT DEFAULT 'unknown',
+    cs2_required_version INTEGER,
+    cs2_update_phase TEXT,
+    cs2_update_required_at INTEGER,
+    cs2_update_checked_at INTEGER,
+    cs2_build_id INTEGER,
+    cs2_version_string TEXT,
+    cs2_version_fetched_at INTEGER,
+    matchzy_db_ok INTEGER,
+    matchzy_db_type TEXT,
+    matchzy_db_error TEXT,
+    matchzy_db_last_ok_at INTEGER,
+    matchzy_db_last_seen_at INTEGER,
+    server_can_reach_api_at INTEGER,
+    created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+    updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+  );
+  CREATE INDEX idx_servers_status ON servers(status);
+  CREATE INDEX idx_servers_last_seen ON servers(last_seen);
+  CREATE INDEX idx_servers_enabled ON servers(enabled);
+  CREATE TABLE maps (
+    id TEXT PRIMARY KEY,
+    display_name TEXT NOT NULL,
+    image_url TEXT,
+    created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+    updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+  );
+  CREATE INDEX idx_maps_id ON maps(id);
+  CREATE TABLE map_pools (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    map_ids TEXT NOT NULL,
+    is_default INTEGER NOT NULL DEFAULT 0,
+    enabled INTEGER NOT NULL DEFAULT 1,
+    created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+    updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+  );
+  CREATE INDEX idx_map_pools_name ON map_pools(name);
+  CREATE INDEX idx_map_pools_default ON map_pools(is_default);
+  CREATE INDEX idx_map_pools_enabled ON map_pools(enabled);
+  CREATE TABLE matches (
+    id SERIAL PRIMARY KEY,
+    slug TEXT NOT NULL UNIQUE,
+    server_id TEXT,
+    FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE SET NULL
+  );
+  CREATE TABLE tournament_templates (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    map_pool_id INTEGER,
+    FOREIGN KEY (map_pool_id) REFERENCES map_pools(id) ON DELETE SET NULL
+  );
+  CREATE TABLE module_migrations (
+    module_id TEXT NOT NULL,
+    migration_id TEXT NOT NULL,
+    checksum TEXT NOT NULL,
+    applied_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+    PRIMARY KEY (module_id, migration_id)
+  );
+  INSERT INTO servers (id, name, host, port, password) VALUES
+    ('probe-1', 'Probe One', '10.0.0.1', 27015, 'secret-1'),
+    ('probe-2', 'Probe Two', '10.0.0.2', 27016, 'secret-2');
+  INSERT INTO maps (id, display_name) VALUES ('de_dust2', 'Dust II'), ('de_mirage', 'Mirage');
+  INSERT INTO map_pools (name, map_ids) VALUES
+    ('Probe Pool A', '["de_dust2"]'),
+    ('Probe Pool B', '["de_dust2","de_mirage"]');
+  INSERT INTO matches (slug, server_id) VALUES ('probe-match', 'probe-2');
+  INSERT INTO tournament_templates (name, map_pool_id)
+    SELECT 'Probe Template', id FROM map_pools WHERE name = 'Probe Pool B';
+`;
+
+/**
+ * What to do to the 2.4-shaped copy before the handover runs:
+ * - `legacy`: nothing, a 2.4.15 database as it is.
+ * - `old-install`: an older install, missing a column and an index 2.4.15 has.
+ * - `renamed-by-hand`: `servers` already renamed (dependents and ledger not),
+ *   as if someone had started the job by hand.
+ * - `both`: a `cs2_maps` exists beside `maps`: must be refused, not merged.
+ */
+const HANDOVER_PROBE_SCENARIOS: Record<string, string> = {
+  legacy: '',
+  'old-install': `ALTER TABLE servers DROP COLUMN server_can_reach_api_at;
+                  DROP INDEX idx_servers_enabled;`,
+  'renamed-by-hand': 'ALTER TABLE servers RENAME TO cs2_servers;',
+  both: `CREATE TABLE cs2_maps (id TEXT PRIMARY KEY, display_name TEXT NOT NULL);`,
+};
+
+router.post(
+  '/cs2-tables/handover-probe',
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    if (isTestHelperDisabled(res)) return;
+    const { scenario } = (req.body ?? {}) as { scenario?: unknown };
+    if (typeof scenario !== 'string' || !Object.prototype.hasOwnProperty.call(HANDOVER_PROBE_SCENARIOS, scenario)) {
+      res.status(400).json({
+        success: false,
+        error: `Field "scenario" must be one of ${Object.keys(HANDOVER_PROBE_SCENARIOS).join(', ')}`,
+      });
+      return;
+    }
+    try {
+      const result = await db.withClient(async (client) => {
+        const { rows } = await client.query<{ search_path: string }>('SHOW search_path');
+        const searchPath = rows[0].search_path;
+        try {
+          await client.query(`DROP SCHEMA IF EXISTS ${HANDOVER_PROBE_SCHEMA} CASCADE`);
+          await client.query(`CREATE SCHEMA ${HANDOVER_PROBE_SCHEMA}`);
+          await client.query(`SET search_path TO ${HANDOVER_PROBE_SCHEMA}`);
+          await client.query(LEGACY_CS2_DDL);
+          if (HANDOVER_PROBE_SCENARIOS[scenario]) {
+            await client.query(HANDOVER_PROBE_SCENARIOS[scenario]);
+          }
+
+          const first = await handOverCs2Tables(client, cs2Module());
+          const second = await handOverCs2Tables(client, cs2Module());
+
+          const all = [...CS2_TABLES, ...LEGACY_TABLES];
+          const tables = await existingTables(client, all);
+          const rowsOf = async (sql: string) => (await client.query(sql)).rows;
+          const data = {
+            servers: tables.cs2_servers
+              ? await rowsOf('SELECT id, name, host, port, password FROM cs2_servers ORDER BY id')
+              : null,
+            maps: tables.cs2_maps ? await rowsOf('SELECT id FROM cs2_maps ORDER BY id') : null,
+            legacyMaps: tables.maps ? await rowsOf('SELECT id FROM maps ORDER BY id') : null,
+            mapPools: tables.cs2_map_pools
+              ? await rowsOf('SELECT id, name, map_ids FROM cs2_map_pools ORDER BY id')
+              : null,
+            match: await rowsOf('SELECT slug, server_id FROM matches'),
+            template: await rowsOf(
+              `SELECT t.name, p.name AS pool
+                 FROM tournament_templates t
+                 LEFT JOIN cs2_map_pools p ON p.id = t.map_pool_id`
+            ),
+          };
+          const ledger = await cs2Ledger(client);
+          const schema = await describeCs2Schema(client);
+
+          await client.query('BEGIN');
+          // The renamed sequence still hands out ids after the old ones.
+          const nextPoolId = tables.cs2_map_pools
+            ? (
+                await client.query<{ id: number }>(
+                  `INSERT INTO cs2_map_pools (name, map_ids) VALUES ('Probe Pool C', '[]') RETURNING id`
+                )
+              ).rows[0].id
+            : null;
+          // The template's key still points at the renamed pools table.
+          const templateMissingPool = await probe(
+            client,
+            `INSERT INTO tournament_templates (name, map_pool_id) VALUES ('Probe Missing', 999999)`,
+            []
+          );
+          await client.query('ROLLBACK');
+
+          return {
+            first,
+            second,
+            tables,
+            ledger,
+            schema,
+            data,
+            nextPoolId,
+            templateMissingPool,
+          };
+        } finally {
+          await client.query('ROLLBACK').catch(() => undefined);
+          await client.query(`SET search_path TO ${searchPath}`);
+          await client.query(`DROP SCHEMA IF EXISTS ${HANDOVER_PROBE_SCHEMA} CASCADE`);
+        }
+      });
+      res.json({ success: true, ...result });
+    } catch (err) {
+      log.error('Error in POST /api/test/cs2-tables/handover-probe', err as Error);
+      res.status(500).json({ success: false, error: (err as Error).message });
     }
   }
 );

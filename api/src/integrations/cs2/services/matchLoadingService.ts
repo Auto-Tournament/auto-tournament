@@ -383,7 +383,7 @@ export async function loadMatchOnServer(
     // would never fetch, and failing those would be a regression.
     if (loadResult.success) {
       const server = await db.queryOneAsync<{ server_can_reach_api_at: number | null }>(
-        'SELECT server_can_reach_api_at FROM servers WHERE id = ?',
+        'SELECT server_can_reach_api_at FROM cs2_servers WHERE id = ?',
         [serverId]
       );
 

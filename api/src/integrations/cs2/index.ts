@@ -45,6 +45,7 @@ import type { MatchReport } from './events/connectionSnapshotService';
 import { normalizeConfigPlayers } from '../../utils/playerTransform';
 import { validateCs2TournamentSettings } from './tournamentSettings';
 import { CS2_INSTANCE_SCHEMA, CS2_INSTANCE_SETTINGS } from './settings';
+import { CS2_MIGRATIONS } from './migrations';
 import type { ServerActionResult, ServerAllocationResult } from './allocation';
 import type {
   AllocateResult,
@@ -255,6 +256,13 @@ export const cs2Integration: GameIntegration = {
   validateTournamentSettings(input) {
     return validateCs2TournamentSettings(input);
   },
+
+  /**
+   * `cs2_servers`, `cs2_maps` and `cs2_map_pools` (./migrations). An install
+   * upgraded from 2.x has them already, renamed from `servers`, `maps` and
+   * `map_pools` by core before this runs (config/cs2TableHandover.ts).
+   */
+  migrations: CS2_MIGRATIONS,
 
   /** The map catalogue (when the table is empty) and the default map pools. */
   async seed(client) {

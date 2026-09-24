@@ -7,39 +7,10 @@
  */
 export function getSchemaSQL(): string {
   return `
-    -- Servers table
-    CREATE TABLE IF NOT EXISTS servers (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      host TEXT NOT NULL,
-      port INTEGER NOT NULL,
-      password TEXT NOT NULL,
-      enabled INTEGER NOT NULL DEFAULT 1,
-      matchzy_config TEXT, -- JSON blob with per-server MatchZy ConVar overrides
-      persistent_config_sent INTEGER, -- Unix timestamp when persistent config was last sent (NULL = never sent)
-      plugin_version TEXT, -- MatchZy Enhanced version (e.g., "1.3.6")
-      hostname TEXT, -- Server hostname from CS2 (from hostname convar)
-      last_seen INTEGER, -- Unix timestamp of last event received (heartbeat)
-      status TEXT DEFAULT 'unknown', -- 'online', 'offline', 'unknown'
-      cs2_required_version INTEGER, -- If set, server has reported CS2 update required
-      cs2_update_phase TEXT, -- 'available' | 'shutdown' (best-effort)
-      cs2_update_required_at INTEGER, -- Unix timestamp when update was last reported
-      cs2_update_checked_at INTEGER, -- Unix timestamp when CS2 UpToDateCheck was last performed by MAT (Steam API)
-      cs2_build_id INTEGER, -- Best-effort: CS2 server build ID parsed from the version output
-      cs2_version_string TEXT, -- Best-effort: raw/parsed version output (display only)
-      cs2_version_fetched_at INTEGER, -- Unix timestamp when cs2_version_string/build_id was last fetched via RCON
-      matchzy_db_ok INTEGER, -- Best-effort: MatchZy plugin DB reachable (1/0)
-      matchzy_db_type TEXT, -- Best-effort: 'sqlite' | 'mysql'
-      matchzy_db_error TEXT, -- Best-effort: last DB error message (if any)
-      matchzy_db_last_ok_at INTEGER, -- Unix timestamp when DB was last reported OK
-      matchzy_db_last_seen_at INTEGER, -- Unix timestamp when DB health was last reported
-      server_can_reach_api_at INTEGER, -- Unix timestamp when server last successfully sent any event to /api/events
-      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
-      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
-    );
-    
-    CREATE INDEX IF NOT EXISTS idx_servers_status ON servers(status);
-    CREATE INDEX IF NOT EXISTS idx_servers_last_seen ON servers(last_seen);
+    -- CS2's tables (cs2_servers, cs2_maps, cs2_map_pools) are not here: CS2
+    -- creates them with its own migrations (integrations/cs2/migrations.ts),
+    -- and an install upgraded from 2.x has them renamed from servers, maps and
+    -- map_pools (config/cs2TableHandover.ts).
 
     -- Application settings table
     CREATE TABLE IF NOT EXISTS app_settings (
@@ -123,7 +94,9 @@ export function getSchemaSQL(): string {
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       loaded_at INTEGER,
       completed_at INTEGER,
-      FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE SET NULL,
+      -- server_id references cs2_servers(id) ON DELETE SET NULL. That table is
+      -- CS2's and does not exist yet when this runs on a fresh database, so the
+      -- key is added in database.ts once CS2's migrations have created it.
       FOREIGN KEY (tournament_id) REFERENCES tournament(id) ON DELETE CASCADE,
       FOREIGN KEY (team1_id) REFERENCES teams(id) ON DELETE SET NULL,
       FOREIGN KEY (team2_id) REFERENCES teams(id) ON DELETE SET NULL,
@@ -172,34 +145,6 @@ export function getSchemaSQL(): string {
     CREATE INDEX IF NOT EXISTS idx_match_map_results_slug ON match_map_results(match_slug);
     CREATE INDEX IF NOT EXISTS idx_match_map_results_map ON match_map_results(map_number);
 
-    CREATE INDEX IF NOT EXISTS idx_servers_enabled ON servers(enabled);
-
-    -- Maps table (cs2-owned: integrations/cs2/maps, seeded by the CS2 seed hook)
-    CREATE TABLE IF NOT EXISTS maps (
-      id TEXT PRIMARY KEY,
-      display_name TEXT NOT NULL,
-      image_url TEXT,
-      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
-      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
-    );
-
-    CREATE INDEX IF NOT EXISTS idx_maps_id ON maps(id);
-
-    -- Map pools table (cs2-owned: integrations/cs2/maps, seeded by the CS2 seed hook)
-    CREATE TABLE IF NOT EXISTS map_pools (
-      id SERIAL PRIMARY KEY,
-      name TEXT NOT NULL UNIQUE,
-      map_ids TEXT NOT NULL,
-      is_default INTEGER NOT NULL DEFAULT 0,
-      enabled INTEGER NOT NULL DEFAULT 1,
-      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
-      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
-    );
-
-    CREATE INDEX IF NOT EXISTS idx_map_pools_name ON map_pools(name);
-    CREATE INDEX IF NOT EXISTS idx_map_pools_default ON map_pools(is_default);
-    CREATE INDEX IF NOT EXISTS idx_map_pools_enabled ON map_pools(enabled);
-
     -- Tournament templates table
     CREATE TABLE IF NOT EXISTS tournament_templates (
       id SERIAL PRIMARY KEY,
@@ -213,8 +158,9 @@ export function getSchemaSQL(): string {
       settings TEXT NOT NULL,
       game TEXT NOT NULL DEFAULT 'cs2', -- Game integration that owns this row (integrations/registry)
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
-      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
-      FOREIGN KEY (map_pool_id) REFERENCES map_pools(id) ON DELETE SET NULL
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+      -- map_pool_id references cs2_map_pools(id) ON DELETE SET NULL, added in
+      -- database.ts once CS2's migrations have created that table.
     );
 
     CREATE INDEX IF NOT EXISTS idx_tournament_templates_name ON tournament_templates(name);
@@ -237,8 +183,9 @@ export function getSchemaSQL(): string {
       maps TEXT, -- JSON array of map IDs
       game TEXT NOT NULL DEFAULT 'cs2', -- Game integration that owns this row (integrations/registry)
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
-      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
-      FOREIGN KEY (map_pool_id) REFERENCES map_pools(id) ON DELETE SET NULL
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+      -- map_pool_id references cs2_map_pools(id) ON DELETE SET NULL, added in
+      -- database.ts once CS2's migrations have created that table.
     );
 
     CREATE INDEX IF NOT EXISTS idx_manual_match_templates_name ON manual_match_templates(name);
@@ -627,13 +574,19 @@ export interface SchemaColumn {
 /**
  * Every column declared by `getSchemaSQL()`, derived from the schema itself.
  *
+ * Core's tables only. A module's tables (CS2's `cs2_servers`, `cs2_maps`,
+ * `cs2_map_pools`) are not in core's schema, so this pass never adds a column
+ * to them: a module changes its own columns with a new migration of its own
+ * (`GameIntegration.migrations`, see integrations/cs2/migrations.ts).
+ *
  * `CREATE TABLE IF NOT EXISTS` only ever creates missing *tables* — it never adds
  * a column to a table that already exists. Instances that were created before a
  * column was introduced therefore need an explicit `ALTER TABLE ADD COLUMN`.
  * That list used to be maintained by hand and drifted from the schema, which is
- * how upgraded instances ended up without `servers.status` and crashed the
- * health monitor with `column "status" does not exist`. Deriving it here means
- * adding a column to the schema is enough — there is no second list to forget.
+ * how upgraded instances ended up without `servers.status` (now CS2's
+ * `cs2_servers.status`) and crashed the health monitor with `column "status"
+ * does not exist`. Deriving it here means adding a column to the schema is
+ * enough — there is no second list to forget.
  *
  * The definition is sanitised so it is legal on a table that already has rows:
  * - `PRIMARY KEY` / `UNIQUE` / `REFERENCES` are dropped (constraints belong to
@@ -642,7 +595,16 @@ export interface SchemaColumn {
  *   Postgres cannot add a NOT NULL column to a non-empty table without one.
  */
 export function getSchemaColumns(): SchemaColumn[] {
-  const sql = getSchemaSQL();
+  return parseSchemaColumns(getSchemaSQL());
+}
+
+/**
+ * The columns of every `CREATE TABLE IF NOT EXISTS` in `sql`, sanitised as
+ * described on `getSchemaColumns`. Each column must sit on its own line.
+ * Also used by config/cs2TableHandover.ts on CS2's first migration, to bring
+ * a renamed 2.x table to the columns that migration declares.
+ */
+export function parseSchemaColumns(sql: string): SchemaColumn[] {
   const columns: SchemaColumn[] = [];
 
   const tableRe = /CREATE TABLE IF NOT EXISTS\s+(\w+)\s*\(([\s\S]*?)\n\s*\);/g;

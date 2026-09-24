@@ -1305,7 +1305,7 @@ router.post('/wipe-table/:table', async (req: Request, res: Response) => {
     } else if (table === 'map_pools') {
       // Delete related data first
       await db.execAsync('DELETE FROM tournament_templates WHERE map_pool_id IS NOT NULL');
-      await db.execAsync('DELETE FROM map_pools');
+      await db.execAsync('DELETE FROM cs2_map_pools');
     } else if (table === 'tournament_templates') {
       await db.execAsync('DELETE FROM tournament_templates');
     } else if (table === 'elo_calculation_templates') {
@@ -1315,7 +1315,13 @@ router.post('/wipe-table/:table', async (req: Request, res: Response) => {
       );
       await db.execAsync("DELETE FROM elo_calculation_templates WHERE id != 'pure-win-loss'");
     } else {
-      await db.execAsync(`DELETE FROM ${table}`);
+      // The path keeps the names it has always had; CS2's tables are
+      // `cs2_servers` and `cs2_maps` since CS2 owns them (cs2/migrations.ts).
+      const WIPE_TABLE_NAMES: Record<string, string> = {
+        servers: 'cs2_servers',
+        maps: 'cs2_maps',
+      };
+      await db.execAsync(`DELETE FROM ${WIPE_TABLE_NAMES[table] ?? table}`);
     }
 
     log.success(`[DATABASE] Table ${table} wiped successfully`);

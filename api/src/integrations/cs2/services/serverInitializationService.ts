@@ -37,7 +37,7 @@ class ServerInitializationService {
   async isServerInitialized(serverId: string): Promise<boolean> {
     try {
       const server = await db.queryOneAsync<{ persistent_config_sent: number | null }>(
-        'SELECT persistent_config_sent FROM servers WHERE id = ?',
+        'SELECT persistent_config_sent FROM cs2_servers WHERE id = ?',
         [serverId]
       );
       return server?.persistent_config_sent !== null;
@@ -53,7 +53,7 @@ class ServerInitializationService {
   async markServerInitialized(serverId: string): Promise<void> {
     try {
       await db.updateAsync(
-        'servers',
+        'cs2_servers',
         { persistent_config_sent: Math.floor(Date.now() / 1000) },
         'id = ?',
         [serverId]
@@ -71,7 +71,7 @@ class ServerInitializationService {
   async resetServerInitialization(serverId: string): Promise<void> {
     try {
       await db.updateAsync(
-        'servers',
+        'cs2_servers',
         { persistent_config_sent: null },
         'id = ?',
         [serverId]
@@ -173,7 +173,7 @@ class ServerInitializationService {
    */
   async resetAllServers(): Promise<void> {
     try {
-      await db.queryAsync('UPDATE servers SET persistent_config_sent = NULL');
+      await db.queryAsync('UPDATE cs2_servers SET persistent_config_sent = NULL');
       log.info('[SERVER-INIT] All servers reset - will be reconfigured on next use');
     } catch (error) {
       log.error('Failed to reset all servers', error as Error);

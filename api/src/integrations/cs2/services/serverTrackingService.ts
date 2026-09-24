@@ -61,7 +61,7 @@ class ServerTrackingService {
 
     // Only update when it actually changes to avoid noisy writes/logs.
     const result = await db.updateAsync(
-      'servers',
+      'cs2_servers',
       { status: 'online', updated_at: now },
       "id = ? AND (status IS NULL OR status != 'online')",
       [serverId]
@@ -80,7 +80,7 @@ class ServerTrackingService {
 
     // Only update when it actually changes to avoid noisy writes/logs.
     const result = await db.updateAsync(
-      'servers',
+      'cs2_servers',
       { status: 'offline', updated_at: now },
       "id = ? AND (status IS NULL OR status != 'offline')",
       [serverId]
@@ -106,14 +106,14 @@ class ServerTrackingService {
 
       // Check if server exists
       const existingServer = await db.queryOneAsync<{ id: string }>(
-        'SELECT id FROM servers WHERE id = ?',
+        'SELECT id FROM cs2_servers WHERE id = ?',
         [server_id]
       );
 
       if (existingServer) {
         // Update existing server
         await db.updateAsync(
-          'servers',
+          'cs2_servers',
           {
             hostname,
             plugin_version,
@@ -164,7 +164,7 @@ class ServerTrackingService {
 
     try {
       await db.updateAsync(
-        'servers',
+        'cs2_servers',
         {
           matchzy_db_ok: health.dbOk ? 1 : 0,
           matchzy_db_type: health.dbType,
@@ -192,7 +192,7 @@ class ServerTrackingService {
     const phase = opts?.phase ?? null;
     try {
       await db.updateAsync(
-        'servers',
+        'cs2_servers',
         {
           cs2_required_version: requiredVersion,
           cs2_update_phase: phase,
@@ -218,7 +218,7 @@ class ServerTrackingService {
       const now = Math.floor(Date.now() / 1000);
 
       const result = await db.updateAsync(
-        'servers',
+        'cs2_servers',
         {
           last_seen: now,
           status: 'online',
@@ -254,7 +254,7 @@ class ServerTrackingService {
 
       // Find servers that were online but haven't sent events recently
       const inactiveServers = await db.queryAsync<{ id: string; name: string }>(
-        `SELECT id, name FROM servers 
+        `SELECT id, name FROM cs2_servers 
          WHERE status = 'online' 
          AND last_seen IS NOT NULL 
          AND last_seen < ?`,
@@ -265,7 +265,7 @@ class ServerTrackingService {
         // Mark as offline
         for (const server of inactiveServers) {
           await db.updateAsync(
-            'servers',
+            'cs2_servers',
             {
               status: 'offline',
               updated_at: Math.floor(Date.now() / 1000),
@@ -303,19 +303,19 @@ class ServerTrackingService {
   }> {
     try {
       const total = await db.queryOneAsync<{ count: number }>(
-        'SELECT COUNT(*) as count FROM servers'
+        'SELECT COUNT(*) as count FROM cs2_servers'
       );
 
       const online = await db.queryOneAsync<{ count: number }>(
-        "SELECT COUNT(*) as count FROM servers WHERE status = 'online'"
+        "SELECT COUNT(*) as count FROM cs2_servers WHERE status = 'online'"
       );
 
       const offline = await db.queryOneAsync<{ count: number }>(
-        "SELECT COUNT(*) as count FROM servers WHERE status = 'offline'"
+        "SELECT COUNT(*) as count FROM cs2_servers WHERE status = 'offline'"
       );
 
       const unknown = await db.queryOneAsync<{ count: number }>(
-        "SELECT COUNT(*) as count FROM servers WHERE status = 'unknown' OR status IS NULL"
+        "SELECT COUNT(*) as count FROM cs2_servers WHERE status = 'unknown' OR status IS NULL"
       );
 
       return {
