@@ -86,7 +86,7 @@
         "maps": "Tøm kart",
         "mapPools": "Tøm kartpooler",
         "tournamentTemplates": "Tøm turneringsmaler",
-        "eloTemplates": "Tøm ELO-maler"
+        "eloTemplates": "Tøm ratingmaler"
       },
       "matchEvents": {
         "title": "Kamp-hendelser og resultater",

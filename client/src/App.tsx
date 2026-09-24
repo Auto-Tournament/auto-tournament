@@ -395,6 +395,11 @@ function AppRoutes() {
           ))}
         <Route path={adminRoute(paths.templates)} element={<Templates />} />
         <Route path={adminRoute(paths.eloTemplates)} element={<ELOTemplates />} />
+        {/* The page was renamed Ratings; old bookmarks still land on it. */}
+        <Route
+          path={adminRoute(paths.eloTemplatesLegacy)}
+          element={<Navigate to={paths.eloTemplates} replace />}
+        />
         {isDevelopment && <Route path={adminRoute(paths.dev)} element={<Development />} />}
         {/* Nested catch-all so removed/unknown child routes (e.g. /public) show a proper 404 within the app shell */}
         {/* A path no route matches may be a code module's that has not

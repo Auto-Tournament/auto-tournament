@@ -72,7 +72,7 @@
       },
       "ratings": {
         "label": "Ratings",
-        "hint": "ELO templates"
+        "hint": "How ratings are calculated"
       },
       "settings": {
         "label": "Settings",

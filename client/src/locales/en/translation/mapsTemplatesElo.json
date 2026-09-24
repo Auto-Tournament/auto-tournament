@@ -68,27 +68,27 @@
   },
   "eloTemplatesPage": {
     "errors": {
-      "load": "Failed to load ELO templates"
+      "load": "Failed to load rating templates"
     },
     "header": {
       "createTemplate": "Create Template",
       "importJson": "Import from JSON"
     },
     "empty": {
-      "title": "No ELO Calculation Templates",
+      "title": "No rating templates",
       "description": "Create your first template to customize how player statistics influence ELO adjustments",
       "action": "Create Template"
     },
     "delete": {
-      "title": "Delete ELO Template",
+      "title": "Delete rating template",
       "message": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
       "success": "Template \"{{name}}\" deleted successfully",
       "error": "Failed to delete template",
       "defaultProtected": "The default \"pure-win-loss\" template cannot be deleted."
     },
     "import": {
-      "success_one": "Imported {{count}} ELO template",
-      "success_other": "Imported {{count}} ELO templates"
+      "success_one": "Imported {{count}} rating template",
+      "success_other": "Imported {{count}} rating templates"
     },
     "weights": {
       "noAdjustmentsPure": "No stat adjustments (Pure Win/Loss)"
@@ -114,8 +114,8 @@
       "maxAdjustment": "Max: {{value}}"
     },
     "importModal": {
-      "title": "Import ELO Templates from JSON",
-      "introTitle": "Paste JSON with ELO template definitions below.",
+      "title": "Import rating templates from JSON",
+      "introTitle": "Paste JSON with rating template definitions below.",
       "introBody": "Expected format: array of templates with name, optional description, enabled, weights, maxAdjustment, and minAdjustment. If you omit id, it will be generated from the name.",
       "jsonLabel": "JSON Data",
       "validJsonTitle": "✓ Valid JSON!",
@@ -126,8 +126,8 @@
       "validJsonBody_other": "Found {{count}} templates."
     },
     "editor": {
-      "titleEdit": "Edit ELO Template",
-      "titleCreate": "Create ELO Template",
+      "titleEdit": "Edit rating template",
+      "titleCreate": "Create rating template",
       "info": "Configure how individual player statistics influence ELO adjustments. Weights are applied after OpenSkill calculates the base ELO change (win/loss). Positive weights increase ELO, negative weights decrease it.",
       "nameLabel": "Template Name",
       "nameDefaultLocked": "Default template name cannot be changed",
