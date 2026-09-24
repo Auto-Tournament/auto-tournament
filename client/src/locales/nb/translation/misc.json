@@ -337,9 +337,20 @@
     "failed": "{{name}}: {{reason}}",
     "failedFallback": "operasjonen feilet",
     "feed": {
-      "cache": "Viser den siste katalogen denne instansen så ({{reason}}). Spill i dette imaget kan fortsatt installeres uten nett.",
+      "cache": "Viser katalogen fra {{time}}: fikk ikke kontakt med den nettbaserte katalogen ({{reason}}). Spill i dette imaget kan fortsatt installeres uten nett.",
       "none": "Fikk ikke kontakt med den nettbaserte katalogen ({{reason}}). Viser spillene i dette imaget; de installeres uten nett.",
-      "unknown": "ingen grunn oppgitt"
+      "unknown": "ingen grunn oppgitt",
+      "cacheRefreshing": "Viser katalogen fra {{time}} mens den nettbaserte katalogen lastes.",
+      "noneRefreshing": "Laster den nettbaserte katalogen … Imens vises spillene i dette imaget; de installeres uten nett.",
+      "reason": {
+        "timeout": "den svarte ikke i tide",
+        "unreachable": "den kunne ikke nås",
+        "bad_response": "svaret var ikke en katalog",
+        "newer_schema": "den er laget for en nyere Auto Tournament",
+        "too_large": "den er for stor",
+        "offline": "CATALOG_OFFLINE er satt",
+        "http": "den svarte med HTTP {{status}}"
+      }
     },
     "kind": {
       "module": "Kodemodul"

@@ -55,6 +55,7 @@ import {
   snapshotDir,
   type CatalogModuleEntry,
   type CatalogRelease,
+  type FeedErrorCode,
   type RemoteFeed,
   type ReleaseBytes,
 } from './catalogFeed';
@@ -250,7 +251,16 @@ export interface CatalogItem {
 }
 
 export interface CatalogListing {
-  feed: { from: RemoteFeed['from']; stale: boolean; error: string | null };
+  feed: {
+    from: RemoteFeed['from'];
+    stale: boolean;
+    /** A code the client translates: `timeout`, `unreachable`, `bad_response`, `newer_schema`, `too_large`, `offline`, `http_<status>`. */
+    error: FeedErrorCode | null;
+    /** When the listed feed was fetched; for `cache`, when the copy was written. */
+    fetchedAt: string | null;
+    /** Still fetching in the background: list again shortly for the live feed. */
+    refreshing: boolean;
+  };
   platform: { serverApi: string; clientApi: string };
   items: CatalogItem[];
 }
@@ -449,7 +459,13 @@ export async function listCatalog(): Promise<CatalogListing> {
   }
 
   return {
-    feed: { from: feed.from, stale: feed.from !== 'remote', error: feed.error },
+    feed: {
+      from: feed.from,
+      stale: feed.from !== 'remote',
+      error: feed.error,
+      fetchedAt: feed.fetchedAt,
+      refreshing: feed.refreshing,
+    },
     platform: platformApiVersions(),
     items,
   };

@@ -69,10 +69,15 @@ function fail(res: Response, error: unknown, what: string): void {
  *     summary: Every game this instance has or can install
  *     description: |
  *       Packs and code modules in one list, merged from the remote feed
- *       (`catalog.json` in Auto-Tournament/packs, fetched now with a short
- *       timeout), its last cached copy, and the image's offline snapshot.
- *       `feed.stale` is true when the feed could not be fetched; installing
- *       from the snapshot still works. Each item has a `state` — available,
+ *       (`catalog.json` in Auto-Tournament/packs), its last cached copy, and
+ *       the image's offline snapshot. The answer waits on the feed for about
+ *       two seconds at most; a slower fetch continues in the background and
+ *       `feed.refreshing` says to list again shortly. `feed.stale` is true
+ *       when the listed feed is not a fresh one; `feed.error` then holds a
+ *       code (`timeout`, `unreachable`, `bad_response`, `newer_schema`,
+ *       `too_large`, `offline` or `http_<status>`) and `feed.fetchedAt` when
+ *       the cached copy was fetched. Installing from the snapshot still
+ *       works. Each item has a `state` — available,
  *       installed, update-available, disabled, broken, incompatible or
  *       builtin — with a `reason` where there is one, and `restartRequired`
  *       when the running process differs from what is installed.

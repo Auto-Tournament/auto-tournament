@@ -44,7 +44,13 @@ interface Item {
 }
 
 interface Listing {
-  feed: { from: 'remote' | 'cache' | 'none'; stale: boolean; error: string | null };
+  feed: {
+    from: 'remote' | 'cache' | 'none';
+    stale: boolean;
+    error: string | null;
+    fetchedAt: string | null;
+    refreshing: boolean;
+  };
   platform: { serverApi: string; clientApi: string };
   items: Item[];
 }
@@ -362,14 +368,17 @@ test.describe.serial('Game catalog', () => {
   test('a feed that is down is served from its cache; one that hangs times out', async ({ request }) => {
     await fakeCatalog(request, { feed: 'down' });
     let listing = await catalog(request);
-    expect(listing.feed).toMatchObject({ from: 'cache', stale: true });
+    // A code, not a sentence: the client translates it. And when the copy is from.
+    expect(listing.feed).toMatchObject({ from: 'cache', stale: true, error: 'http_503', refreshing: false });
+    expect(Date.parse(listing.feed.fetchedAt ?? '')).not.toBeNaN();
     expect(listing.items.some((row) => row.id === ids.tampered)).toBe(true);
 
     await fakeCatalog(request, { feed: 'hang', resetCache: true });
     const started = Date.now();
     listing = await catalog(request);
+    // The page waits about two seconds, not the fetch's two tries.
     expect(Date.now() - started).toBeLessThan(3500);
-    expect(listing.feed).toMatchObject({ from: 'none', stale: true, error: expect.stringMatching(/in time/) });
+    expect(listing.feed).toMatchObject({ from: 'none', stale: true, error: 'timeout', fetchedAt: null, refreshing: true });
     // Still offered: the offline snapshot's module and packs.
     expect(listing.items.find((row) => row.id === ids.offline)).toBeTruthy();
     expect(listing.items.some((row) => row.kind === 'pack' && row.available?.from === 'snapshot')).toBe(true);
