@@ -32,6 +32,7 @@
   "tests/api/match-phase.spec.ts": 15.2,
   "tests/api/matchzy-enhanced.spec.ts": 7.2,
   "tests/api/matchzy-hostname.spec.ts": 4.1,
+  "tests/api/module-sdk-boundary.spec.ts": 0.5,
   "tests/api/oauth-state-store.spec.ts": 0.5,
   "tests/api/oauth-state.spec.ts": 0.5,
   "tests/api/openapi-spec.spec.ts": 0.5,
