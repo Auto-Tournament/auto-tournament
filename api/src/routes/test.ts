@@ -35,7 +35,7 @@ import {
 } from '../config/moduleMigrations';
 import { playerIdentity } from '../services/playerIdentity';
 import { teamMembers } from '../services/teamMembers';
-import { listModules, MODULE_ENABLED_KEY_PREFIX, modulesDir, scanDiskModules } from '../modules/loader';
+import { forgetModuleEnabled, listModules, modulesDir, scanDiskModules } from '../modules/loader';
 import { isValidModuleId } from '../modules/manifest';
 import fs from 'fs';
 import path from 'path';
@@ -1865,7 +1865,7 @@ router.delete('/modules/fixtures', requireAuth, async (_req: Request, res: Respo
     for (const name of entries) {
       if (!name.startsWith('fixture-') || !isValidModuleId(name)) continue;
       await fs.promises.rm(path.join(modulesDir(), name), { recursive: true, force: true });
-      await db.setAppSettingAsync(`${MODULE_ENABLED_KEY_PREFIX}${name}`, null);
+      await forgetModuleEnabled(name);
       removed.push(name);
     }
     res.json({ success: true, removed });

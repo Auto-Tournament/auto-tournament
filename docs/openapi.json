@@ -357,7 +357,7 @@
     },
     {
       "name": "Modules",
-      "description": "Code modules: list built-in and on-disk modules, enable or disable one from the next restart, and serve its client files. Admin only, except the client files. Modules are installed on disk, never through the API."
+      "description": "Code modules: list built-in and on-disk modules, enable or disable one from the next restart, and serve its client files. Admin only, except the client files and the public manifest of modules to load. Modules are installed on disk, never through the API."
     },
     {
       "name": "Players",
@@ -2977,6 +2977,59 @@
         "responses": {
           "200": {
             "description": "The modules"
+          }
+        }
+      }
+    },
+    "/api/modules/public": {
+      "get": {
+        "tags": [
+          "Modules"
+        ],
+        "summary": "The code modules a browser should load (public)",
+        "description": "The public manifest the client loader reads at boot, for every\nvisitor: players and signed-out visitors render module slots too.\nLists only code modules that are enabled, loaded and have a client\nhalf, with exactly `id`, `version`, `clientApi` and `client.entry`.\nNever reasons, disabled, broken or incompatible modules, the server\nAPI or the switch state: those are on the admin-only `GET\n/api/modules`. Built-in modules are compiled into the app and are\nnot listed, so a stock install answers an empty list. Served from\nmemory, cacheable for a few seconds.\n",
+        "responses": {
+          "200": {
+            "description": "The modules to load",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "modules": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "version": {
+                            "type": "string"
+                          },
+                          "clientApi": {
+                            "type": "string",
+                            "description": "The semver range of client APIs the module works with"
+                          },
+                          "client": {
+                            "type": "object",
+                            "properties": {
+                              "entry": {
+                                "type": "string",
+                                "example": "/api/modules/example/client/index.js"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }

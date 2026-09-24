@@ -1,4 +1,4 @@
-import { test, expect, type APIRequestContext } from '@playwright/test';
+import { test, expect, type APIRequestContext, type PlaywrightWorkerArgs } from '@playwright/test';
 import { signInViaRequest } from '../helpers/auth';
 
 /**
@@ -21,6 +21,12 @@ import { signInViaRequest } from '../helpers/auth';
  * an id that would be a path, a client path that climbs out of the module's
  * `client/` folder, and a missing client file that must be a real 404 rather
  * than the app's index.html.
+ *
+ * And the public manifest, `GET /api/modules/public`, which every visitor's
+ * browser loads modules from: open to a stranger, listing only enabled,
+ * loaded modules with a client half, and only `id`, `version`, `clientApi`
+ * and `client.entry` for each. Never a reason or a module an admin has not
+ * switched on.
  *
  * @tag api
  * @tag modules
@@ -48,6 +54,7 @@ const THROWS = `fixture-throws-${RUN}`;
 const MISMATCHED = `fixture-mismatched-${RUN}`;
 const MIGRATES = `fixture-migrates-${RUN}`;
 const BAD_MIGRATION = `fixture-badmig-${RUN}`;
+const OFF = `fixture-off-${RUN}`;
 
 async function listModules(request: APIRequestContext): Promise<{
   platform: { clientApi: string; serverApi: string };
@@ -72,6 +79,44 @@ async function writeFixture(request: APIRequestContext, id: string, kind: string
 async function rescan(request: APIRequestContext): Promise<void> {
   const response = await request.post('/api/test/modules/rescan');
   expect(response.status(), `rescanning: ${await response.text()}`).toBe(200);
+}
+
+/** The only fields the public manifest may carry for a module. */
+const PUBLIC_FIELDS = ['client', 'clientApi', 'id', 'version'];
+
+interface PublicManifest {
+  success: boolean;
+  modules: Array<{ id: string; version: string; clientApi: string; client: { entry: string } }>;
+}
+
+/**
+ * `GET /api/modules/public` as a stranger: a fresh context with no session,
+ * which is what a signed-out visitor's browser is.
+ */
+async function strangerManifest(
+  playwright: PlaywrightWorkerArgs['playwright'],
+  baseURL: string | undefined
+): Promise<{ body: PublicManifest; cacheControl: string | undefined }> {
+  const stranger = await playwright.request.newContext({ baseURL });
+  try {
+    const response = await stranger.get('/api/modules/public');
+    expect(response.status(), `public manifest: ${await response.text()}`).toBe(200);
+    return { body: await response.json(), cacheControl: response.headers()['cache-control'] };
+  } finally {
+    await stranger.dispose();
+  }
+}
+
+/** Every key anywhere in a JSON value, however deep. */
+function keysDeep(value: unknown, into: Set<string> = new Set()): Set<string> {
+  if (Array.isArray(value)) value.forEach((item) => keysDeep(item, into));
+  else if (value && typeof value === 'object') {
+    for (const [key, inner] of Object.entries(value)) {
+      into.add(key);
+      keysDeep(inner, into);
+    }
+  }
+  return into;
 }
 
 test.describe.serial('Code modules on disk', () => {
@@ -145,6 +190,32 @@ test.describe.serial('Code modules on disk', () => {
     });
   });
 
+  test('a stranger gets the public manifest, listing the loaded module with only the public fields', {
+    tag: ['@api', '@modules'],
+  }, async ({ playwright }, testInfo) => {
+    const { body, cacheControl } = await strangerManifest(playwright, testInfo.project.use.baseURL);
+    expect(body.success).toBe(true);
+    expect(Array.isArray(body.modules)).toBe(true);
+    // Short-lived and shareable: every visitor's browser asks for it.
+    expect(cacheControl).toMatch(/max-age=\d+/);
+    expect(cacheControl).not.toMatch(/private|no-store/);
+
+    const valid = body.modules.find((module) => module.id === VALID);
+    expect(valid, `${VALID} is enabled and loaded, so it is public`).toBeTruthy();
+    expect(Object.keys(valid!).sort()).toEqual(PUBLIC_FIELDS);
+    expect(Object.keys(valid!.client)).toEqual(['entry']);
+    expect(valid).toEqual({
+      id: VALID,
+      version: '1.0.0',
+      clientApi: '^0.1.0',
+      client: { entry: `/api/modules/${VALID}/client/index.js` },
+    });
+
+    // Built-in modules are compiled into the app: never listed.
+    expect(body.modules.map((module) => module.id)).not.toContain('cs2');
+    expect(body.modules.map((module) => module.id)).not.toContain('manual-report');
+  });
+
   test('client files are served with their content type, and a missing one is a real 404', {
     tag: ['@api', '@modules'],
   }, async ({ request }) => {
@@ -189,6 +260,11 @@ test.describe.serial('Code modules on disk', () => {
     expect(body.module).toMatchObject({ id: VALID, enabled: false, status: 'ok', client: null });
 
     expect((await request.get(`/api/modules/${VALID}/client/index.js`)).status()).toBe(404);
+    // And no browser is told to load it any more.
+    const publicIds = (await (await request.get('/api/modules/public')).json()).modules.map(
+      (module: { id: string }) => module.id
+    );
+    expect(publicIds).not.toContain(VALID);
   });
 
   test('a module built for another server API is incompatible, with the reason', {
@@ -289,6 +365,48 @@ test.describe.serial('Code modules on disk', () => {
         data: { id, kind: 'valid' },
       });
       expect(response.status(), `fixture ${id}`).toBe(400);
+    }
+  });
+
+  test('the public manifest lists no disabled, broken or incompatible module, and no reason', {
+    tag: ['@api', '@modules'],
+  }, async ({ request, playwright }, testInfo) => {
+    // A valid module that was never enabled.
+    await writeFixture(request, OFF, 'valid');
+    expect((await moduleRow(request, OFF)).status).toBe('disabled');
+
+    // What the admin list says about each, so the test cannot pass by
+    // accident: every one of these is on disk and listed there.
+    const admin = new Map((await listModules(request)).modules.map((module) => [module.id, module]));
+    expect(admin.get(MIGRATES)).toMatchObject({ status: 'ok', enabled: true });
+    const hidden: Array<[string, string]> = [
+      [OFF, 'disabled'],
+      [VALID, 'ok'], // loaded, then disabled: stays loaded until a restart
+      [INCOMPATIBLE, 'incompatible'],
+      [THROWS, 'broken'],
+      [BAD_MIGRATION, 'broken'],
+      [MISMATCHED, 'broken'],
+    ];
+    for (const [id, status] of hidden) {
+      expect(admin.get(id)?.status, `${id} in the admin list`).toBe(status);
+    }
+    expect(admin.get(VALID)?.enabled).toBe(false);
+
+    const { body } = await strangerManifest(playwright, testInfo.project.use.baseURL);
+    const ids = body.modules.map((module) => module.id);
+    // An enabled, loaded module with a client half is listed ...
+    expect(ids).toContain(MIGRATES);
+    // ... and nothing that is not.
+    for (const [id] of hidden) expect(ids, id).not.toContain(id);
+
+    for (const module of body.modules) {
+      expect(Object.keys(module).sort(), module.id).toEqual(PUBLIC_FIELDS);
+      expect(module.client.entry.startsWith(`/api/modules/${module.id}/`), module.id).toBe(true);
+    }
+    // Nothing an admin would keep to themselves, at any depth.
+    const keys = keysDeep(body);
+    for (const secret of ['reason', 'enabled', 'status', 'serverApi', 'source', 'platform']) {
+      expect(keys.has(secret), `the public manifest must not carry '${secret}'`).toBe(false);
     }
   });
 

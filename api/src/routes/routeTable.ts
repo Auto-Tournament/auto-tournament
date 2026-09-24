@@ -158,7 +158,7 @@ const coreRoutes: MountedRouter[] = [
     router: moduleRoutes,
     title: 'Modules',
     description:
-      'Code modules: list built-in and on-disk modules, enable or disable one from the next restart, and serve its client files. Admin only, except the client files. Modules are installed on disk, never through the API.',
+      'Code modules: list built-in and on-disk modules, enable or disable one from the next restart, and serve its client files. Admin only, except the client files and the public manifest of modules to load. Modules are installed on disk, never through the API.',
   },
   {
     prefix: '/api/me',

@@ -11,8 +11,8 @@ import { loadCodeModules, type LoadDeps } from '../../client/src/module-loader/l
 import {
   COMPONENT_SLOTS,
   entryProblem,
-  modulesToLoad,
   parseModuleListing,
+  parsePublicManifest,
   type LoadableModule,
   type ModuleListEntry,
 } from '../../client/src/module-loader/manifest';
@@ -74,7 +74,20 @@ function moduleDef(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function listed(overrides: Partial<ModuleListEntry> = {}): LoadableModule {
+/** A module as the public manifest lists it. */
+function listed(overrides: Partial<LoadableModule> = {}): LoadableModule {
+  const id = overrides.id ?? 'fixture';
+  return {
+    id,
+    version: '1.0.0',
+    clientApi: '^0.1.0',
+    client: { entry: `/api/modules/${id}/client/index.js` },
+    ...overrides,
+  };
+}
+
+/** A module as the admin list shows it. */
+function adminRow(overrides: Partial<ModuleListEntry> = {}): ModuleListEntry {
   const id = overrides.id ?? 'fixture';
   return {
     id,
@@ -88,7 +101,7 @@ function listed(overrides: Partial<ModuleListEntry> = {}): LoadableModule {
     reason: null,
     client: { entry: `/api/modules/${id}/client/index.js` },
     ...overrides,
-  } as LoadableModule;
+  };
 }
 
 const js = (body = 'export default {}') =>
@@ -186,26 +199,61 @@ test.describe('Client API range', () => {
 // ---------------------------------------------------------------------------
 
 test.describe('Module list', () => {
-  test('only enabled disk modules the server is fine with, with client code, are loaded', () => {
-    const modules: ModuleListEntry[] = [
+  test('the public manifest keeps only the public fields, and drops what cannot be loaded', () => {
+    expect(parsePublicManifest(null)).toBeNull();
+    expect(parsePublicManifest('<!doctype html>')).toBeNull();
+    expect(parsePublicManifest({ success: true })).toBeNull();
+    expect(parsePublicManifest({ success: true, modules: [] })).toEqual([]);
+
+    const modules = parsePublicManifest({
+      success: true,
+      modules: [
+        // Whatever else a server sends is not carried into the loader.
+        { ...listed({ id: 'good' }), reason: 'leaked', enabled: true, serverApi: '^0.1.0' },
+        { ...listed({ id: 'no-range' }), clientApi: undefined },
+        { id: 'no-client', version: '1.0.0', clientApi: '^0.1.0', client: null },
+        { id: 'bad-entry', version: '1.0.0', clientApi: '^0.1.0', client: { entry: 42 } },
+        null,
+        { nope: true },
+      ],
+    });
+    expect(modules).toEqual([
       listed({ id: 'good' }),
-      { ...listed({ id: 'cs2' }), source: 'builtin', client: null },
-      listed({ id: 'off', enabled: false, status: 'disabled' }),
-      listed({ id: 'old', status: 'incompatible', reason: 'built for ^0.3' }),
-      listed({ id: 'bad', status: 'broken', reason: 'module.json is not JSON' }),
-      { ...listed({ id: 'server-only' }), client: null },
-    ];
-    expect(modulesToLoad(modules).map((m) => m.id)).toEqual(['good']);
+      listed({ id: 'no-range', clientApi: null }),
+    ]);
   });
 
-  test('a body that is not the listing is "no modules", not a crash', () => {
+  test('a manifest is a claim: the loader still refuses a bad entry or range it lists', async () => {
+    const imported: string[] = [];
+    const manifest = parsePublicManifest({
+      modules: [
+        listed({ id: 'elsewhere', client: { entry: 'https://example.com/x.js' } }),
+        listed({ id: 'future', clientApi: '^9.0.0' }),
+        listed({ id: 'no-range', clientApi: null }),
+      ],
+    });
+    const results = await loadCodeModules(manifest!, deps({
+      importModule: async (url) => {
+        imported.push(url);
+        return { default: moduleDef() };
+      },
+    }));
+    expect(results.map((r) => (r.ok ? 'ok' : r.failure.code))).toEqual([
+      'badEntry',
+      'outOfRange',
+      'noClientApi',
+    ]);
+    expect(imported, 'nothing refused is fetched').toEqual([]);
+  });
+
+  test('a body that is not the admin listing is "no modules", not a crash', () => {
     expect(parseModuleListing(null)).toBeNull();
     expect(parseModuleListing('<!doctype html>')).toBeNull();
     expect(parseModuleListing({ success: true })).toBeNull();
     const listing = parseModuleListing({
       success: true,
       platform: { clientApi: '0.1.0', serverApi: '0.1.0' },
-      modules: [listed(), null, { nope: true }],
+      modules: [adminRow(), null, { nope: true }],
     });
     expect(listing?.platform.clientApi).toBe('0.1.0');
     expect(listing?.modules.map((m) => m.id)).toEqual(['fixture']);

@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 275 of them, 191 behind auth —
+Every endpoint this API serves — 276 of them, 191 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -451,10 +451,11 @@ Games an admin imported as a pack file: list, import, remove, and the pack tile.
 
 ### Modules
 
-Code modules: list built-in and on-disk modules, enable or disable one from the next restart, and serve its client files. Admin only, except the client files. Modules are installed on disk, never through the API.
+Code modules: list built-in and on-disk modules, enable or disable one from the next restart, and serve its client files. Admin only, except the client files and the public manifest of modules to load. Modules are installed on disk, never through the API.
 
 | Method | Path | Auth |
 | --- | --- | --- |
+| `GET` | `/api/modules/public` | public |
 | `GET` | `/api/modules/:id/client/*` | public |
 | `GET` | `/api/modules` | admin |
 | `POST` | `/api/modules/:id/enable` | admin |
