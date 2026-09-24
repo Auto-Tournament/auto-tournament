@@ -1,6 +1,5 @@
 {
   "adminToolsPage": {
-    "title": "Adminverktøy",
     "description": "Kjør vanlige kamp- og serverhandlinger på tvers av CS2-serverne dine. Hurtighandlinger vises først, med mer avanserte verktøy under.",
     "header": {
       "refresh": "Oppdater servere"
@@ -64,7 +63,7 @@
         "description": "Start kampen med en gang."
       },
       "matchEnd": {
-        "label": "Avslutt kampen (css_restart)",
+        "label": "Avslutt kampen",
         "description": "Tvinger den pågående kampen på de valgte serverne til å avslutte og setter dem tilbake til warmup med css_restart."
       },
       "forcePause": {
@@ -110,7 +109,7 @@
         "inputLabel": "Rundenummer"
       },
       "cleanServers": {
-        "label": "Rydd servere (css_restart)",
+        "label": "Rydd servere",
         "description": "Avslutter alle pågående kamper på de valgte serverne og setter dem tilbake til warmup med css_restart. Kan ikke angres."
       },
       "changeMap": {

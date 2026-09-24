@@ -449,7 +449,6 @@
   },
   "disputes": {
     "title": "Disputes",
-    "heading": "Disputes",
     "subheading": "Results the two teams could not agree on, and reports nobody answered in time.",
     "empty": {
       "title": "Nothing to settle",

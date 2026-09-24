@@ -439,7 +439,6 @@
   },
   "disputes": {
     "title": "Tvister",
-    "heading": "Tvister",
     "subheading": "Resultater lagene ikke ble enige om, og rapporter ingen svarte på i tide.",
     "empty": {
       "title": "Ingenting å avgjøre",

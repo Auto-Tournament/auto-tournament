@@ -1,6 +1,5 @@
 {
   "adminToolsPage": {
-    "title": "管理工具",
     "description": "在所有 CS2 服务器上批量执行常用比赛与服务器操作。常用操作会优先展示，更高级的工具可以在下方展开查看。",
     "header": {
       "refresh": "刷新服务器"

@@ -16,8 +16,8 @@
       "openSettings": "Open settings",
       "steam": "Steam sign-in",
       "serversTodo": "Connect a server",
-      "serversDone": "{{count}} server connected",
-      "serversDonePlural": "{{count}} servers connected",
+      "serversDone": "{{count}} server added",
+      "serversDonePlural": "{{count}} servers added",
       "discord": "Discord sign-in (optional)",
       "igdb": "Game covers via IGDB (optional)"
     },

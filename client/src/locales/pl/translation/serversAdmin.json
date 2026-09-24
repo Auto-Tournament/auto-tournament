@@ -1,6 +1,5 @@
 {
   "adminToolsPage": {
-    "title": "Narzędzia admina",
     "description": "Uruchamiaj typowe akcje dla meczów i serwerów na swoich serwerach CS2. Najpierw wyświetlane są szybkie akcje, a poniżej dostępne są bardziej zaawansowane narzędzia.",
     "header": {
       "refresh": "Odśwież serwery"
@@ -68,7 +67,7 @@
         "description": "Natychmiast rozpocznij mecz."
       },
       "matchEnd": {
-        "label": "Zakończ mecz (css_restart)",
+        "label": "Zakończ mecz",
         "description": "Wymuś zakończenie bieżącego meczu na wybranych serwerach i przywróć je do rozgrzewki za pomocą css_restart."
       },
       "forcePause": {
@@ -114,7 +113,7 @@
         "inputLabel": "Numer rundy"
       },
       "cleanServers": {
-        "label": "Wyczyść serwery (css_restart)",
+        "label": "Wyczyść serwery",
         "description": "Zakończ trwające mecze na wybranych serwerach i przywróć je do rozgrzewki za pomocą css_restart. Ta operacja jest destrukcyjna."
       },
       "changeMap": {

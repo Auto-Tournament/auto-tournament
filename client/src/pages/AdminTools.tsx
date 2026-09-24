@@ -183,10 +183,13 @@ const AdminTools: React.FC = () => {
           />
         )}
 
+        {/* Outlined in the theme's colour, red only when the command is
+            destructive. Four full-strength colours (red, yellow, green, blue)
+            on one page matched nothing else in the app. */}
         <Button
           fullWidth
-          variant="contained"
-          color={command.color || 'primary'}
+          variant="outlined"
+          color={command.color === 'error' ? 'error' : 'primary'}
           size="small"
           startIcon={executing ? <CircularProgress size={16} /> : <PlayArrowIcon />}
           onClick={() => handleExecuteCommand(command)}
@@ -222,9 +225,7 @@ const AdminTools: React.FC = () => {
 
   return (
     <Box sx={{ width: '100%', height: '100%' }}>
-      <Typography variant="h5" fontWeight={600} mb={1.5}>
-        {t('adminToolsPage.title')}
-      </Typography>
+      {/* The shell header above already shows the page title; only the description stays. */}
       <Typography variant="body2" color="text.secondary" mb={3}>
         {t('adminToolsPage.description')}
       </Typography>
@@ -268,7 +269,7 @@ const AdminTools: React.FC = () => {
               <Button
                 fullWidth
                 variant="contained"
-                color="info"
+                color="primary"
                 onClick={() =>
                   executeCommand(
                     selectedServerId === 'all' ? servers.map((s) => s.id) : [selectedServerId],
