@@ -214,9 +214,21 @@ export interface CS2MapData {
   thumbnail: string;
 }
 
+/** A veto map's display name and picture, as the admin set them. */
+export interface VetoMapInfo {
+  id: string;
+  displayName: string;
+  imageUrl: string | null;
+}
+
 /** `GET /api/veto/:matchSlug`. A spectator's copy carries only some fields. */
 export interface VetoStateResponse extends Cs2ApiResponse {
   veto?: Partial<VetoState>;
+  /**
+   * Names and pictures of the veto's maps, sent with the veto so players do
+   * not need the admin-only `/api/maps` (and see the same names admins do).
+   */
+  maps?: VetoMapInfo[];
 }
 
 // ---------------------------------------------------------------------------

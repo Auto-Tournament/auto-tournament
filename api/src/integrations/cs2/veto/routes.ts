@@ -19,8 +19,33 @@ import { normalizeConfigPlayers } from '../../../utils/playerTransform';
 import { resolveViewerIdentity } from '../../../utils/viewerIdentity';
 import { requireAuth } from '../../../middleware/auth';
 import { tournamentRowToResponse } from '../../../utils/tournamentRow';
+import { mapService } from '../maps/mapService';
 
 const router = Router();
+
+/** A veto map as the board shows it: the admin's display name and picture. */
+export interface VetoMapInfo {
+  id: string;
+  displayName: string;
+  imageUrl: string | null;
+}
+
+/**
+ * Names and pictures for the maps in a veto, from CS2's own maps table.
+ *
+ * Sent with the veto so a player's board does not have to read `/api/maps`,
+ * which is admin-only: before, every player got a 403 and fell back to names
+ * guessed from the map id ("Ancient Night" where the admin sees "Ancient
+ * (Night)"). A map missing from the table keeps its id as its name.
+ */
+async function vetoMapInfo(mapIds: string[]): Promise<VetoMapInfo[]> {
+  const known = new Map((await mapService.getAllMaps()).map((m) => [m.id, m]));
+  return mapIds.map((id) => ({
+    id,
+    displayName: known.get(id)?.displayName ?? id,
+    imageUrl: known.get(id)?.imageUrl ?? null,
+  }));
+}
 
 /**
  * Steam ID this request should be treated as.
@@ -290,12 +315,14 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
       return res.json({
         success: true,
         veto: publicVeto,
+        maps: await vetoMapInfo(vetoState.allMaps ?? tournamentMaps),
       });
     }
 
     return res.json({
       success: true,
       veto: vetoState,
+      maps: await vetoMapInfo(vetoState.allMaps ?? tournamentMaps),
     });
   } catch (error) {
     log.error('Error getting veto state', error);
