@@ -38,6 +38,7 @@ import { getPlayerPageUrl } from '../utils/playerLinks';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { PlayerName } from '../components/player/PlayerName';
 import { TopNavBar } from '../components/layout/TopNavBar';
+import { TournamentPageHeader } from '../components/tournament/overview/TournamentPageHeader';
 import { TeamNameLink } from '../components/team/TeamNameLink';
 import type { Tournament } from '../types/tournament.types';
 import { useIntegrationFor } from '../integrations/registry';
@@ -495,58 +496,36 @@ export default function TournamentLeaderboard() {
       <TopNavBar />
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
         <Stack spacing={3}>
-          {/* Tournament Header */}
+          {/* The same header and tabs as the Overview page, so the two read
+              as one tournament page and there is a way back. */}
+          <TournamentPageHeader
+            tournamentId={tournament.id}
+            name={tournament.name}
+            status={tournament.status}
+            tab="leaderboard"
+            chips={
+              <>
+                <Chip label={tournamentTypeLabel} size="small" variant="outlined" />
+                {roundStatus && (
+                  <Chip
+                    label={t('leaderboardPage.roundOf', {
+                      current: roundStatus.roundNumber,
+                      total: totalRounds,
+                    })}
+                    size="small"
+                    variant="outlined"
+                  />
+                )}
+              </>
+            }
+          />
+
+          {(topPerformers || (roundStatus && isActive) || isComplete) && (
           <Card>
             <CardContent>
-              <Box display="flex" alignItems="center" gap={2} mb={2}>
-                <Box
-                  sx={{
-                    width: 56,
-                    height: 56,
-                    flex: 'none',
-                    display: 'grid',
-                    placeItems: 'center',
-                    borderRadius: `${tokens.radius.md}px`,
-                    bgcolor: 'primary.main',
-                    color: 'primary.contrastText',
-                  }}
-                >
-                  <EmojiEventsIcon sx={{ fontSize: 30 }} />
-                </Box>
-                <Box flex={1} minWidth={0}>
-                  <Typography variant="h3" gutterBottom>
-                    {tournament.name}
-                  </Typography>
-                  <Box display="flex" gap={1} flexWrap="wrap">
-                    <Chip
-                      label={
-                        isComplete
-                          ? t('leaderboardPage.completed')
-                          : isActive
-                            ? t('leaderboardPage.inProgress')
-                            : t('leaderboardPage.setup')
-                      }
-                      // Homepage chips: finished is solid orange, in progress is live green.
-                      color={isComplete ? 'primary' : isActive ? 'success' : 'default'}
-                      sx={{ fontWeight: 600 }}
-                    />
-                    <Chip label={tournamentTypeLabel} />
-                    {roundStatus && (
-                      <Chip
-                        label={t('leaderboardPage.roundOf', {
-                          current: roundStatus.roundNumber,
-                          total: totalRounds,
-                        })}
-                        variant="outlined"
-                      />
-                    )}
-                  </Box>
-                </Box>
-              </Box>
-
               {/* Quick-glance top performers */}
               {topPerformers && (
-                <Box mt={3}>
+                <Box mb={roundStatus && isActive ? 3 : 0}>
                   <Grid container spacing={2}>
                     <Grid size={{ xs: 12, md: showGameStats ? 6 : 12 }}>
                       <Typography variant="subtitle2" fontWeight={600} gutterBottom>
@@ -583,6 +562,7 @@ export default function TournamentLeaderboard() {
                                   name={player.name}
                                   // Leaderboard entries currently don't expose isAdmin; this can be extended later.
                                   variant="body2"
+                                  sx={{ display: 'inline' }}
                                 />
                               </Typography>
                               <Chip
@@ -631,6 +611,7 @@ export default function TournamentLeaderboard() {
                                 <PlayerName
                                   name={player.name}
                                   variant="body2"
+                                  sx={{ display: 'inline' }}
                                 />
                               </Typography>
                               <Chip
@@ -681,6 +662,7 @@ export default function TournamentLeaderboard() {
               )}
             </CardContent>
           </Card>
+          )}
 
           {/* The game's own statistics, when the page's CS2 columns are not
               them: manual reporting lists the tournament's custom fields. */}
