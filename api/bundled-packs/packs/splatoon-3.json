@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "slug": "splatoon-3",
+  "name": "Splatoon 3",
+  "engine": "manual-report",
+  "version": "1.0.0",
+  "description": "Four-a-side team shooter, reported by the maps played.",
+  "icon": "../icons/splatoon-3.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  },
+  "stats": [
+    {
+      "key": "knockouts",
+      "label": "Knockouts",
+      "type": "integer",
+      "scope": "player"
+    },
+    {
+      "key": "deaths",
+      "label": "Deaths",
+      "type": "integer",
+      "scope": "player"
+    }
+  ]
+}

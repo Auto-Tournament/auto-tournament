@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "slug": "hearthstone",
+  "name": "Hearthstone",
+  "engine": "manual-report",
+  "version": "1.0.0",
+  "description": "One-on-one digital card game. Report games won in the set.",
+  "icon": "../icons/hearthstone.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  }
+}

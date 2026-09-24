@@ -111,6 +111,13 @@ const POPULAR_GAMES: Array<{ slug: string; name: string; aliases?: string[] }> =
   { slug: 'osu', name: 'osu!' },
   { slug: 'team-fortress-2', name: 'Team Fortress 2', aliases: ['tf2'] },
   { slug: 'age-of-empires-ii', name: 'Age of Empires II', aliases: ['aoe2', 'aoe'] },
+  { slug: 'fortnite', name: 'Fortnite' },
+  { slug: 'apex-legends', name: 'Apex Legends' },
+  { slug: 'pubg-battlegrounds', name: 'PUBG: Battlegrounds', aliases: ['pubg'] },
+  { slug: 'starcraft-ii', name: 'StarCraft II', aliases: ['sc2'] },
+  { slug: 'mobile-legends-bang-bang', name: 'Mobile Legends: Bang Bang', aliases: ['mlbb'] },
+  { slug: 'teamfight-tactics', name: 'Teamfight Tactics', aliases: ['tft'] },
+  { slug: 'marvel-rivals', name: 'Marvel Rivals' },
 ];
 
 export { slugify };

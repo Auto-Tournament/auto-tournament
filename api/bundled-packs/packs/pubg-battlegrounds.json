@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "slug": "pubg-battlegrounds",
+  "name": "PUBG: Battlegrounds",
+  "engine": "manual-report",
+  "aliases": [
+    "pubg"
+  ],
+  "version": "1.0.0",
+  "description": "Squad battle royale. Placement and eliminations each match.",
+  "icon": "../icons/pubg-battlegrounds.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  },
+  "stats": [
+    {
+      "key": "kills",
+      "label": "Kills",
+      "type": "integer",
+      "scope": "player"
+    },
+    {
+      "key": "placement",
+      "label": "Placement",
+      "type": "integer",
+      "scope": "team"
+    }
+  ]
+}
