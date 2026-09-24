@@ -878,7 +878,7 @@
           "Catalog"
         ],
         "summary": "Every game this instance has or can install",
-        "description": "Packs and code modules in one list, merged from the remote feed\n(`catalog.json` in Auto-Tournament/packs, fetched now with a short\ntimeout), its last cached copy, and the image's offline snapshot.\n`feed.stale` is true when the feed could not be fetched; installing\nfrom the snapshot still works. Each item has a `state` — available,\ninstalled, update-available, disabled, broken, incompatible or\nbuiltin — with a `reason` where there is one, and `restartRequired`\nwhen the running process differs from what is installed.\n",
+        "description": "Packs and code modules in one list, merged from the remote feed\n(`catalog.json` in Auto-Tournament/packs), its last cached copy, and\nthe image's offline snapshot. The answer waits on the feed for about\ntwo seconds at most; a slower fetch continues in the background and\n`feed.refreshing` says to list again shortly. `feed.stale` is true\nwhen the listed feed is not a fresh one; `feed.error` then holds a\ncode (`timeout`, `unreachable`, `bad_response`, `newer_schema`,\n`too_large`, `offline` or `http_<status>`) and `feed.fetchedAt` when\nthe cached copy was fetched. Installing from the snapshot still\nworks. Each item has a `state` — available,\ninstalled, update-available, disabled, broken, incompatible or\nbuiltin — with a `reason` where there is one, and `restartRequired`\nwhen the running process differs from what is installed.\n",
         "security": [
           {
             "bearerAuth": []
