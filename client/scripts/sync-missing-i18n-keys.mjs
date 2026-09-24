@@ -1,24 +1,25 @@
+/**
+ * Copy keys a language lacks from English, for core's topic files and for
+ * each module's namespace (`integrations/<id>/locales/<lang>.json`, created
+ * when a module has no file for a language yet). Never overwrites a value a
+ * language already has, so a translation is never replaced by English.
+ */
+
 import fs from 'node:fs';
 import path from 'node:path';
-
-function exists(p) {
-  try {
-    fs.accessSync(p, fs.constants.R_OK);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function isPlainObject(v) {
-  return typeof v === 'object' && v !== null && !Array.isArray(v);
-}
-
-function readJson(filePath) {
-  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-}
+import {
+  CORE_NAMESPACE,
+  exists,
+  isPlainObject,
+  languages,
+  localesDir,
+  namespaceFiles,
+  namespaces,
+  readJson,
+} from './i18n-namespaces.mjs';
 
 function writeJson(filePath, obj) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(obj, null, 2)}\n`, 'utf8');
 }
 
@@ -40,9 +41,6 @@ function mergeMissing(target, source) {
   }
 }
 
-const repoRoot = path.resolve(process.cwd(), '..');
-const localesDir = path.join(repoRoot, 'client', 'src', 'locales');
-
 if (!exists(localesDir)) {
   console.error('ERROR: locales dir not found:', localesDir);
   process.exit(1);
@@ -54,37 +52,33 @@ if (!exists(enDir)) {
   process.exit(1);
 }
 
-const enFiles = fs.readdirSync(enDir).filter((f) => f.endsWith('.json')).sort((a, b) => a.localeCompare(b));
-/** @type {Map<string, any>} */
-const enByFile = new Map(enFiles.map((f) => [f, readJson(path.join(enDir, f))]));
-
-const locales = fs
-  .readdirSync(localesDir, { withFileTypes: true })
-  .filter((d) => d.isDirectory())
-  .map((d) => d.name)
-  .filter((name) => name !== 'en')
-  .sort((a, b) => a.localeCompare(b));
+const locales = languages().filter((name) => name !== 'en');
 
 let filesChanged = 0;
 
-for (const locale of locales) {
-  const dir = path.join(localesDir, locale, 'translation');
-  if (!exists(dir)) continue;
+for (const ns of namespaces()) {
+  // Pairs each English file with the same file in another language: core's
+  // topic files by name, a module's single file by language.
+  const enFiles = namespaceFiles(ns, 'en').filter(exists);
 
-  for (const f of enFiles) {
-    const targetPath = path.join(dir, f);
-    const enObj = enByFile.get(f);
-    if (!enObj) continue;
+  for (const locale of locales) {
+    for (const enPath of enFiles) {
+      const targetPath =
+        ns === CORE_NAMESPACE
+          ? path.join(localesDir, locale, 'translation', path.basename(enPath))
+          : namespaceFiles(ns, locale)[0];
+      const enObj = readJson(enPath);
 
-    /** @type {any} */
-    const before = exists(targetPath) ? readJson(targetPath) : {};
-    /** @type {any} */
-    const after = structuredClone(before);
-    mergeMissing(after, enObj);
+      /** @type {any} */
+      const before = exists(targetPath) ? readJson(targetPath) : {};
+      /** @type {any} */
+      const after = structuredClone(before);
+      mergeMissing(after, enObj);
 
-    if (JSON.stringify(before) !== JSON.stringify(after)) {
-      writeJson(targetPath, after);
-      filesChanged++;
+      if (JSON.stringify(before) !== JSON.stringify(after)) {
+        writeJson(targetPath, after);
+        filesChanged++;
+      }
     }
   }
 }

@@ -14,7 +14,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 import type { Map } from '../../../types/api.types';
 import { FadeInImage } from '../../../components/common/FadeInImage';
-import { useTranslation } from 'react-i18next';
+import { useModuleTranslation } from '../../../module-sdk';
 
 interface MapActionsModalProps {
   open: boolean;
@@ -31,7 +31,7 @@ export default function MapActionsModal({
   onEdit,
   onDelete,
 }: MapActionsModalProps) {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
 
   if (!map) return null;
 

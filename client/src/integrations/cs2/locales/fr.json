@@ -1,0 +1,600 @@
+{
+  "connectSteam": {
+    "title": "Lier votre compte Steam",
+    "bodyIntro": "Vous y êtes presque. Pour utiliser la plateforme de tournoi avec ce compte (par exemple après une connexion via Discord, Keycloak ou GitHub), vous devez lier un profil Steam.",
+    "bodyRequirement": "Le lien avec Steam permet au système de vous reconnaître en tant que joueur et est nécessaire pour se connecter via des fournisseurs autres que Steam.",
+    "button": "Se connecter avec Steam"
+  },
+  "nav": {
+    "servers": "Serveurs",
+    "maps": "Cartes & pools"
+  },
+  "layout": {
+    "webhookNotConfigured": "L’URL du webhook n’est pas configurée. Les matchs et serveurs ne peuvent pas recevoir d’événements tant qu’elle n’est pas définie.",
+    "openSettings": "Ouvrir les paramètres",
+    "pageTitle": {
+      "servers": "Serveurs",
+      "maps": "Cartes & pools"
+    },
+    "matchzyDbDown": {
+      "title": "Base de données MatchZy injoignable",
+      "body_one": "{{count}} serveur signale que le plugin ne peut pas joindre sa base de données. Les sauvegardes et la file d’événements peuvent être affectées.",
+      "body_other": "{{count}} serveurs signalent que le plugin ne peut pas joindre sa base de données. Les sauvegardes et la file d’événements peuvent être affectées."
+    }
+  },
+  "dashboard": {
+    "site": {
+      "servers": {
+        "label": "Servers",
+        "hint": "Connect, update, health"
+      },
+      "maps": {
+        "label": "Maps",
+        "hint": "Pools and images"
+      }
+    },
+    "servers": {
+      "title": "Servers",
+      "open": "Open",
+      "online": "online",
+      "inMatch": "In a match",
+      "free": "Free",
+      "offline": "Offline",
+      "plugin": "Plugin",
+      "pluginSame": "{{version}}, all servers match",
+      "pluginMixed": "{{count}} plugin versions in use",
+      "none": "No servers connected yet."
+    }
+  },
+  "managePage": {
+    "rail": {
+      "servers": "Servers",
+      "maps": "Maps"
+    },
+    "status": {
+      "serversFree": "SERVERS FREE"
+    },
+    "servers": {
+      "heading": "Servers",
+      "viewAll": "All servers",
+      "none": "No servers configured yet.",
+      "inMatch": "In match",
+      "free": "Free",
+      "offline": "Offline",
+      "lastHeartbeat": "Last heartbeat {{time}} ago",
+      "never": "never"
+    }
+  },
+  "mapsPage": {
+    "title": "Cartes et pools de cartes",
+    "tabs": {
+      "maps": "Cartes",
+      "mapPools": "Pools de cartes"
+    },
+    "headerActions": {
+      "addMap": "Ajouter une carte",
+      "createMapPool": "Créer un pool de cartes"
+    },
+    "errors": {
+      "loadMaps": "Impossible de charger les cartes",
+      "loadPools": "Impossible de charger les pools de cartes",
+      "defaultPoolCannotDelete": "Le pool de cartes par défaut ne peut pas être supprimé.",
+      "setDefaultPool": "Impossible de définir le pool de cartes par défaut",
+      "togglePool": "Impossible de changer le statut du pool de cartes",
+      "deleteMap": "Impossible de supprimer la carte",
+      "deletePool": "Impossible de supprimer le pool de cartes"
+    },
+    "success": {
+      "mapDeleted": "Carte supprimée avec succès"
+    },
+    "confirmDeleteMap": {
+      "title": "Supprimer la carte",
+      "message": "Voulez-vous vraiment supprimer \"{{name}}\" ? Cette action est irréversible."
+    },
+    "confirmDeletePool": {
+      "title": "Supprimer le pool de cartes",
+      "message": "Voulez-vous vraiment supprimer \"{{name}}\" ? Cette action est irréversible."
+    }
+  },
+  "mapModal": {
+    "titleCreate": "Ajouter une carte",
+    "titleEdit": "Modifier la carte",
+    "workshop": {
+      "inputLabel": "URL ou ID du Steam Workshop",
+      "inputPlaceholder": "https://steamcommunity.com/sharedfiles/filedetails/?id=1234567890",
+      "inputHelper": "Collez une URL du Workshop ou un ID numérique pour remplir automatiquement le nom et l’image.",
+      "found": "Trouvé : {{title}}",
+      "lookupFailed": "Échec de la recherche dans le Workshop"
+    },
+    "mapIdLabel": "ID de carte",
+    "mapIdPlaceholder": "de_dust2",
+    "mapIdHelper": "Lettres minuscules, chiffres et underscores uniquement (de_dust2)",
+    "displayNameLabel": "Nom d’affichage",
+    "displayNamePlaceholder": "Dust II",
+    "mapImageLabel": "Image de la carte",
+    "uploadButton": "Téléverser une image",
+    "fetchFromGitHub": "Récupérer depuis GitHub",
+    "uploadHelper": "Téléversez une image PNG, JPG, GIF ou WebP (max 5 Mo)",
+    "previewLabel": "Aperçu :",
+    "removeImage": "Retirer l’image",
+    "errors": {
+      "mapIdRequired": "L’ID de carte est requis",
+      "displayNameRequired": "Le nom d’affichage est requis",
+      "mapIdInvalid": "L’ID de carte ne peut contenir que des minuscules, des chiffres et des underscores",
+      "invalidFileType": "Type de fichier invalide. Veuillez choisir une image PNG, JPG, GIF ou WebP.",
+      "fileTooLarge": "Fichier trop volumineux. Veuillez choisir une image de moins de 5 Mo.",
+      "readFileFailed": "Impossible de lire le fichier image",
+      "fetchImageIdRequired": "Veuillez d’abord saisir un ID de carte",
+      "fetchImageFailed": "Impossible de récupérer l’image. Vous pouvez téléverser une image à la place.",
+      "imageNotFound": "Aucune image trouvée pour {{id}}. Vous pouvez téléverser une image à la place.",
+      "uploadFailed": "Impossible de téléverser l’image",
+      "saveFailed": "Impossible d’enregistrer la carte"
+    },
+    "success": {
+      "mapUpdated": "Carte mise à jour",
+      "mapCreated": "Carte créée"
+    },
+    "buttons": {
+      "cancel": "Annuler",
+      "saving": "Enregistrement…",
+      "update": "Mettre à jour",
+      "create": "Créer"
+    }
+  },
+  "mapActionsModal": {
+    "mapId": "ID de carte",
+    "preview": "Aperçu",
+    "edit": "Modifier"
+  },
+  "mapPoolActionsModal": {
+    "defaultChip": "Par défaut",
+    "status": {
+      "label": "Statut",
+      "enabled": "Activé",
+      "disabled": "Désactivé"
+    },
+    "maps": {
+      "label": "Cartes ({{count}})"
+    },
+    "actions": {
+      "edit": "Modifier",
+      "enable": "Activer",
+      "disable": "Désactiver",
+      "setDefault": "Définir par défaut"
+    }
+  },
+  "batchServerModal": {
+    "title": "Créer des serveurs en lot",
+    "info": "Créez plusieurs serveurs avec des ports qui augmentent par 10 (27015, 27025, 27035...). Parfait pour les LAN avec des serveurs sur la même machine.",
+    "sections": {
+      "identification": {
+        "title": "Identification du serveur"
+      },
+      "connection": {
+        "title": "Paramètres de connexion"
+      },
+      "configuration": {
+        "title": "Configuration du serveur"
+      }
+    },
+    "baseId": {
+      "label": "ID de base",
+      "placeholder": "server",
+      "helper": "Les ID de serveur seront : base_1, base_2, base_3..."
+    },
+    "baseName": {
+      "label": "Nom de base",
+      "placeholder": "Auto Tournament",
+      "helper": "Les noms de serveur seront : Base #1, Base #2, Base #3..."
+    },
+    "host": {
+      "label": "Hôte / adresse IP",
+      "placeholder": "192.168.1.100"
+    },
+    "rconPassword": {
+      "label": "Mot de passe RCON",
+      "placeholder": "shared-rcon-password",
+      "helper": "Même mot de passe pour tous les serveurs"
+    },
+    "numServers": {
+      "label": "Nombre de serveurs",
+      "placeholder": "3",
+      "helper": "Max : 50"
+    },
+    "assignPorts": {
+      "label": "Attribuer les ports",
+      "helper": "API → serveur (test RCON)"
+    },
+    "serverPortLabel": "Serveur #{{index}}",
+    "portPlaceholder": "27015",
+    "enabled": {
+      "label": "Serveurs activés",
+      "helper": "Tous les serveurs seront créés comme activés/désactivés"
+    },
+    "preview": {
+      "more": "...et {{count}} de plus",
+      "titleFirst10": "Aperçu (10 premiers)",
+      "titleAll": "Aperçu (tous)"
+    },
+    "checkServersButton": {
+      "default": "Vérifier les serveurs",
+      "checking": "Vérification…"
+    },
+    "createServersButton": {
+      "creating": "Création…",
+      "default_one": "Créer {{count}} serveur",
+      "default_other": "Créer {{count}} serveurs"
+    },
+    "warnings": {
+      "notAllVerified": "Certains serveurs n’ont pas passé les vérifications de connectivité. Ils seront enregistrés, mais peuvent apparaître hors ligne jusqu’à ce que RCON et le webhook soient configurés."
+    },
+    "success": {
+      "createdAll_one": "{{count}} serveur créé",
+      "createdAll_other": "{{count}} serveurs créés"
+    },
+    "errors": {
+      "baseNameRequired": "Le nom de base est requis",
+      "baseIdRequired": "L’ID de base est requis",
+      "hostRequired": "L’hôte est requis",
+      "countRange": "Le nombre de serveurs doit être compris entre 1 et 50",
+      "passwordRequired": "Le mot de passe RCON est requis",
+      "portRange": "Le port du serveur #{{index}} doit être compris entre 1 et 65535",
+      "connectionFailed": "Connexion échouée",
+      "createFailed": "Impossible de créer les serveurs",
+      "partialCreate": "{{created}}/{{total}} serveurs créés. Erreurs :\n{{details}}"
+    }
+  },
+  "matchesPage": {
+    "allocation": {
+      "nextServers": "Prochaine allocation de serveurs dans {{seconds}}s"
+    },
+    "card": {
+      "waitingForServers": "En attente de serveurs...",
+      "allocatingNow": "Attribution en cours...",
+      "allocatesIn": "Attribution dans {{time}}"
+    },
+    "allocationWidget": {
+      "title": "État d'attribution des serveurs",
+      "available": "Disponibles :",
+      "busy": "Occupés :",
+      "cooling": "En refroidissement :",
+      "offline": "Hors ligne :",
+      "waitingMatches_one": "En attente : {{count}} match",
+      "waitingMatches_other": "En attente : {{count}} matchs",
+      "statusLine": "Statut : {{status}}",
+      "statusReady": "Prêt",
+      "statusCooling": "Refroidissement",
+      "statusBusy": "Occupé",
+      "statusOffline": "Hors ligne",
+      "readyIn": "Prêt dans : {{time}}"
+    }
+  },
+  "vetoInterface": {
+    "vetoNotAvailable": "Veto non disponible pour ce match",
+    "vetoUnavailable": "Les détails du veto ne sont pas disponibles pour ce compte. Connectez-vous en tant que joueur de l'une des deux équipes pour continuer le veto.",
+    "vetoCompleted": "Veto terminé !",
+    "vetoCompletedSubtitle": "La sélection de cartes est terminée. Le match va démarrer prochainement.",
+    "selectedMaps": "Cartes sélectionnées",
+    "yourTurnToBan": "C'EST LE TOUR DE VOTRE ÉQUIPE DE BANNIR UNE CARTE",
+    "yourTurnToPick": "C'EST LE TOUR DE VOTRE ÉQUIPE DE CHOISIR UNE CARTE",
+    "yourTurnToChooseSide": "C'EST LE TOUR DE VOTRE ÉQUIPE DE CHOISIR UN CÔTÉ",
+    "clickMapToConfirm": "Cliquez sur l'une des cartes surlignées ci-dessous pour confirmer votre choix.",
+    "waitingToBan": "En attente que {{team}} bannisse une carte",
+    "waitingToPick": "En attente que {{team}} choisisse une carte",
+    "waitingToChooseSide": "En attente que {{team}} choisisse un côté",
+    "pageUpdatesAutomatically": "Gardez cette page ouverte – elle se mettra à jour automatiquement quand ce sera votre tour.",
+    "stepOf": "Étape {{current}} sur {{total}}",
+    "banPhase": "Phase de ban",
+    "pickPhase": "Phase de pick",
+    "sideChoice": "Choix de côté",
+    "chooseYourStartingSide": "Choisissez votre côté de départ",
+    "waitingForSidePick": "En attente que {{team}} choisisse son côté de départ...",
+    "counterTerrorist": "Anti-Terroriste",
+    "terrorist": "Terroriste",
+    "vetoHistory": "Historique du veto",
+    "historyStep": "Étape {{step}} :",
+    "startingSide": "Départ {{side}}",
+    "otherTeam": "l'autre équipe",
+    "actionLabels": {
+      "ban": "BAN",
+      "pick": "PICK",
+      "side_pick": "CHOIX DE CÔTÉ"
+    },
+    "mapBadge": "CARTE {{n}}",
+    "mapCardAria": {
+      "ban": "Bannir {{map}}",
+      "pick": "Choisir {{map}}",
+      "banned": "{{map}} (bannie)",
+      "picked": "{{map}} (choisie)"
+    },
+    "errors": {
+      "failedToLoadVetoState": "Impossible de charger l'état du veto",
+      "failedToProcessVetoAction": "Impossible de traiter l'action de veto",
+      "failedToSubmitVetoAction": "Impossible de soumettre l'action de veto",
+      "failedToPickSide": "Impossible de choisir le côté",
+      "notYourTurn": "Ce n'est pas votre tour. En attente de l'autre équipe.",
+      "vetoAlreadyCompleted": "Veto déjà terminé",
+      "invalidMapSelection": "Sélection de carte invalide",
+      "invalidSideSelection": "Sélection de côté invalide",
+      "noMapToPickSide": "Aucune carte pour choisir le côté",
+      "matchNotFound": "Match introuvable",
+      "unauthorized": "Seuls les joueurs d'une des deux équipes participantes peuvent effectuer des actions de veto pour ce match."
+    },
+    "decider": "Decider"
+  },
+  "matchInfo": {
+    "server": {
+      "waitingTitle": "En attente d’attribution d’un serveur",
+      "waitingBody": "Un serveur sera attribué automatiquement dès qu’il y en aura un de libre. Après chaque match, les serveurs passent par une courte période de refroidissement (environ 2 minutes) pour permettre l’envoi des démos et la réinitialisation complète du serveur. Cette page se mettra à jour automatiquement quand votre serveur sera prêt.",
+      "serverName": "Serveur : {{name}}",
+      "status": "Statut : {{status}}",
+      "connect": "Se connecter au serveur",
+      "connecting": "✓ Connexion...",
+      "copyCommand": "Copier la commande console",
+      "copied": "✓ Copié !",
+      "statusLabels": {
+        "idle": "Disponible",
+        "loading": "Chargement",
+        "warmup": "Échauffement – rejoignez maintenant !",
+        "knife": "Manche knife",
+        "live": "En direct",
+        "paused": "En pause",
+        "halftime": "Mi-temps",
+        "postgame": "Match terminé",
+        "queued": "Prochain match en file d’attente",
+        "error": "Erreur"
+      }
+    }
+  },
+  "serversPage": {
+    "title": "Serveurs",
+    "headerActions": {
+      "refreshChecking": "Vérification…",
+      "refresh": "Actualiser le statut",
+      "batchAdd": "Ajout en lot",
+      "addServer": "Ajouter un serveur",
+      "retryUninitialized": "Réessayer les serveurs non initialisés ({{count}})",
+      "retryUninitializedChecking": "Nouvel essai…",
+      "select": "Sélectionner",
+      "done": "Terminer la sélection",
+      "selectAll": "Tout sélectionner",
+      "unselectAll": "Tout désélectionner",
+      "deleteSelected": "Supprimer la sélection"
+    },
+    "empty": {
+      "title": "Aucun serveur enregistré",
+      "description": "Ajoutez votre premier serveur CS2 pour démarrer le tournoi",
+      "addServer": "Ajouter un serveur",
+      "batchAdd": "Ou ajouter plusieurs serveurs en lot"
+    },
+    "errors": {
+      "loadServers": "Impossible de charger les serveurs",
+      "noMatchesForServer": "Aucun match trouvé pour ce serveur",
+      "loadCurrentMatch": "Impossible de charger le match en cours pour ce serveur",
+      "bulkDelete": "Impossible de supprimer un ou plusieurs serveurs"
+    },
+    "allocation": {
+      "title": "Allocation des serveurs",
+      "loading": "Chargement de l’état d’allocation…",
+      "empty": "Aucune donnée d’allocation disponible.",
+      "available": "Serveurs disponibles :",
+      "waiting": "Matchs en attente de serveur :",
+      "nextPass": "Prochain passage de l’allocateur dans ~{{seconds}} s",
+      "cooldownLabel": "Refroidissement",
+      "cooldownDescription": "Match terminé récemment — en refroidissement pour permettre l’upload des démos et la réinitialisation complète du serveur (environ 2 minutes).",
+      "cooldownEta": "Prêt dans ~{{seconds}} s"
+    },
+    "statusChip": {
+      "checking": "Vérification…",
+      "disabled": "Désactivé",
+      "offline": "Hors ligne",
+      "onlineOk": "En ligne (API ↔ serveur OK)",
+      "onlineRconOnly": "En ligne (RCON uniquement)",
+      "rconFailed": "Échec RCON",
+      "onlineTesting": "En ligne (test)",
+      "noEventsYet": "Aucun événement pour l’instant",
+      "notConfigured": "Non configuré",
+      "onlineIdle": "En ligne (inactif — aucun événement récent)",
+      "onlineActive": "En ligne (actif)",
+      "online": "En ligne"
+    },
+    "ipBanned": {
+      "title": "Le serveur a peut-être banni notre IP",
+      "message": "Le serveur est joignable mais refuse l’authentification RCON de manière répétée. Cela peut indiquer un ban IP. Si le mot de passe RCON est correct, vérifiez la liste de bans du serveur et débannissez notre adresse IP."
+    },
+    "connectivity": {
+      "apiToServer": "API Auto Tournament → serveur CS2",
+      "serverToApi": "Serveur → API (/api/events)",
+      "unreachable": "Injoignable",
+      "reachable": "Joignable",
+      "unknown": "Inconnu",
+      "loading": "Chargement…",
+      "pluginLabel": "Auto Tournament CS2 :"
+    },
+    "currentMatch": {
+      "view": "Voir le match",
+      "loading": "Chargement…",
+      "queuedPrefix": "En file d’attente : "
+    },
+    "labels": {
+      "host": "Hôte :",
+      "port": "Port :",
+      "id": "ID :",
+      "cs2Name": "Nom CS2 :",
+      "plugin": "Plugin :",
+      "cs2BuildValue": "build {{build}}"
+    },
+    "bulkDelete": {
+      "title": "Supprimer des serveurs",
+      "message_one": "Voulez-vous vraiment supprimer {{count}} serveur ? Cette action est irréversible.",
+      "message_other": "Voulez-vous vraiment supprimer {{count}} serveurs ? Cette action est irréversible."
+    },
+    "autoConfig": {
+      "configuring": "Configuration des nouveaux serveurs (envoi de la config MatchZy via RCON)…",
+      "done": "Nouveaux serveurs configurés. Actualisation du statut…"
+    },
+    "checkServerLogs": "Consultez la console / les logs du serveur de jeu pour vérifier que le plugin Auto Tournament reçoit la config et envoie des événements.",
+    "fleet": {
+      "title": "État du parc de serveurs",
+      "total_one": "{{count}} serveur",
+      "total_other": "{{count}} serveurs",
+      "online": "en ligne",
+      "offline": "hors ligne",
+      "notConfigured": "non configuré",
+      "disabled": "désactivé",
+      "latestRelease": "Dernière version de Auto Tournament CS2 : v{{version}}",
+      "olderVersion_one": "{{count}} serveur utilise une version plus ancienne que la dernière release.",
+      "olderVersion_other": "{{count}} serveurs utilisent une version plus ancienne que la dernière release.",
+      "newerVersion_one": "{{count}} serveur utilise une version plus récente que la dernière release GitHub (probablement un build non publié).",
+      "newerVersion_other": "{{count}} serveurs utilisent une version plus récente que la dernière release GitHub (probablement un build non publié).",
+      "downloadLatest": "Télécharger la dernière version"
+    },
+    "cs2Update": {
+      "title": "Mise à jour CS2 requise",
+      "snackbarBody_one": "{{count}} serveur n’est pas à jour. Mettez à jour l’installation du serveur puis redémarrez-le.",
+      "snackbarBody_other": "{{count}} serveurs ne sont pas à jour. Mettez à jour l’installation des serveurs puis redémarrez-les.",
+      "fleetTitle": "Serveurs CS2 obsolètes — mise à jour requise",
+      "fleetBody_one": "{{count}} serveur a signalé une mise à jour CS2 requise par Steam. Mettez à jour l’installation du serveur (SteamCMD/hôte) puis redémarrez-le.",
+      "fleetBody_other": "{{count}} serveurs ont signalé une mise à jour CS2 requise par Steam. Mettez à jour l’installation des serveurs (SteamCMD/hôte) puis redémarrez-les."
+    },
+    "versionMismatch": {
+      "title": "Versions différentes détectées",
+      "chip_one": "v{{version}} : {{count}} serveur",
+      "chip_other": "v{{version}} : {{count}} serveurs",
+      "recommended": "Recommandé : mettez à jour tous les serveurs en v{{version}} pour plus de cohérence"
+    },
+    "notInitialized": {
+      "title": "Serveur non initialisé",
+      "checking": "Vérification de la connectivité…",
+      "rconUnreachable": "RCON injoignable. Vérifiez l’hôte, le port et que le serveur de jeu est lancé. Utilisez Réessayer une fois qu’il est joignable.",
+      "noEvents": "RCON joignable, mais le plugin Auto Tournament n’a envoyé aucun événement. Cliquez sur Réessayer pour le configurer.",
+      "notChecked": "Connectivité pas encore vérifiée. Consultez l’état ci-dessous. Cliquez sur Réessayer pour configurer le serveur une fois RCON joignable."
+    },
+    "chips": {
+      "versionMismatch": "Version différente",
+      "ipBanned": "IP bannie",
+      "cs2Build": "Build CS2 {{build}}",
+      "pluginDbDown": "BDD du plugin hors service",
+      "cs2UpdateRequired": "Mise à jour CS2 requise ({{version}})"
+    },
+    "tooltips": {
+      "fixGuide": "Guide de résolution",
+      "disabledTitle": "Serveur désactivé",
+      "disabledBody": "Les serveurs désactivés sont ignorés par l’attribution et les vérifications de santé.",
+      "noEventsTitle": "Aucun événement reçu du plugin Auto Tournament pour l’instant",
+      "noEventsBody": "Auto Tournament a envoyé la configuration du webhook via RCON mais n’a reçu aucun événement. En général, le serveur ne peut pas joindre l’URL du webhook Auto Tournament, ou le plugin Auto Tournament ne tourne pas.",
+      "notConfiguredTitle": "Non configuré",
+      "notConfiguredBody": "Auto Tournament n’a pas encore envoyé la configuration persistante à ce serveur. Utilisez Réessayer pour l’initialiser.",
+      "unreachableTitle": "Serveur injoignable depuis Auto Tournament",
+      "unreachableBody": "Auto Tournament ne peut pas joindre le serveur via RCON. Vérifiez l’hôte/le port, le mot de passe RCON, le pare-feu et que le serveur est lancé.",
+      "webhookTitle": "Le serveur ne peut pas joindre Auto Tournament (webhook)",
+      "webhookBody": "Auto Tournament peut joindre le serveur via RCON, mais le serveur ne peut pas joindre le webhook de Auto Tournament. Vérifiez le trafic sortant, le DNS et l’URL du webhook configurée.",
+      "versionDiffTitle": "Les versions du plugin diffèrent selon les serveurs",
+      "versionDiffBody": "Certains serveurs utilisent une autre version de Auto Tournament CS2. Si vous utilisez CSM, exécutez {{command}} puis redémarrez les serveurs.",
+      "ipBannedTitle": "IP bannie par RCON",
+      "ipBannedBody": "Le serveur a temporairement banni l’IP de Auto Tournament après plusieurs échecs d’authentification RCON. Corrigez le mot de passe RCON et débannissez l’IP.",
+      "pluginDbTitle": "Le plugin Auto Tournament ne peut pas joindre sa base de données.",
+      "pluginDbBody": "Si vous utilisez CSM, exécutez {{path}}.",
+      "cs2UpdateBody": "Auto Tournament a vérifié que le build de ce serveur est en retard sur Steam. Il est exclu des nouvelles attributions (et du lancement du tournoi) jusqu’à sa mise à jour.",
+      "retryInit": "Réessayer l’initialisation du serveur (envoyer la configuration persistante via RCON)"
+    },
+    "lastActive": {
+      "justNow": "Actif à l’instant",
+      "minutesAgo_one": "Actif il y a {{count}} minute",
+      "minutesAgo_other": "Actif il y a {{count}} minutes",
+      "hoursAgo_one": "Actif il y a {{count}} heure",
+      "hoursAgo_other": "Actif il y a {{count}} heures",
+      "daysAgo_one": "Actif il y a {{count}} jour",
+      "daysAgo_other": "Actif il y a {{count}} jours"
+    },
+    "pluginStatus": {
+      "idle": "Inactif",
+      "loading": "Chargement",
+      "warmup": "Warmup",
+      "knife": "Manche knife",
+      "live": "Live",
+      "playing": "En jeu",
+      "paused": "En pause",
+      "halftime": "Mi-temps",
+      "postgame": "Fin de match",
+      "queued": "En file d’attente",
+      "error": "Erreur"
+    },
+    "retry": {
+      "sendingConfig": "Envoi de la configuration persistante au serveur…",
+      "triggered": "Initialisation du serveur déclenchée",
+      "failed": "Impossible de relancer l’initialisation : {{message}}",
+      "retryingAll_one": "Nouvelle tentative d’initialisation pour {{count}} serveur…",
+      "retryingAll_other": "Nouvelle tentative d’initialisation pour {{count}} serveurs…",
+      "triggeredAll_one": "Nouvelle tentative lancée pour {{count}} serveur",
+      "triggeredAll_other": "Nouvelle tentative lancée pour {{count}} serveurs",
+      "failedAll": "Échec de la nouvelle tentative : {{message}}"
+    }
+  },
+  "serverModal": {
+    "titleCreate": "Ajouter un serveur",
+    "titleEdit": "Modifier le serveur",
+    "serverNameLabel": "Nom du serveur",
+    "serverNamePlaceholder": "Serveur match #1",
+    "hostLabel": "Hôte / adresse IP",
+    "hostPlaceholder": "192.168.1.100",
+    "portLabel": "Port :",
+    "portPlaceholder": "27015",
+    "rconPasswordLabel": "Mot de passe RCON",
+    "rconPasswordPlaceholder": "your-rcon-password",
+    "rconPasswordHelper": "Mot de passe pour l’accès RCON au serveur",
+    "enabledLabel": "Serveur activé",
+    "enabledHelper": "Les serveurs désactivés ne seront pas utilisés pour les matchs",
+    "overridesTitle": "Surcharges MatchZy (optionnel)",
+    "overridesDescription": "Ces paramètres surchargent les valeurs globales MatchZy uniquement pour ce serveur. Laissez vide pour utiliser les valeurs globales dans Paramètres.",
+    "chatPrefixLabel": "Surcharge du préfixe de chat",
+    "chatPrefixPlaceholder": "[{Green}Auto Tournament{Default}]",
+    "chatPrefixHelper": "Surcharge matchzy_chat_prefix sur ce serveur (optionnel)",
+    "adminChatPrefixLabel": "Surcharge du préfixe de chat admin",
+    "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
+    "adminChatPrefixHelper": "Surcharge matchzy_admin_chat_prefix sur ce serveur (optionnel)",
+    "knifeOverrideLabel": "Couteau activé par défaut (surcharge)",
+    "knifeOverrideHelper": "Si défini, surcharge matchzy_knife_enabled_default pour ce serveur. Laissez indéterminé pour utiliser la valeur globale.",
+    "testConnectivity": "Tester la connectivité",
+    "testingConnectivity": "Test de connectivité…",
+    "connectivity": {
+      "apiToServer": "API Auto Tournament → serveur CS2 :",
+      "serverToApi": "Serveur → API (/api/events) :",
+      "reachable": "Joignable",
+      "unreachable": "Injoignable"
+    },
+    "errors": {
+      "nameRequired": "Le nom du serveur est requis",
+      "hostRequired": "L’hôte est requis",
+      "portInvalid": "Le port doit être un nombre valide entre 1 et 65535",
+      "rconRequired": "Le mot de passe RCON est requis",
+      "idGenerationFailed": "Impossible de générer l’ID du serveur. Ajustez le nom du serveur.",
+      "duplicateId": "Le nom du serveur crée un ID dupliqué '{{id}}'. Choisissez un autre nom.",
+      "duplicateHostPort": "Un serveur avec hôte:port '{{host}}:{{port}}' existe déjà (ID : {{id}}, Nom : {{name}})",
+      "testConnectionSaveFirst": "Enregistrez d’abord le serveur avant de tester la connexion",
+      "testConnectionFailed": "Échec du test de connexion",
+      "saveFailed": "Impossible d’enregistrer le serveur",
+      "deleteFailed": "Impossible de supprimer le serveur",
+      "rconReachableApiUnreachable": "Le serveur est joignable via RCON, mais il n’a pas pu joindre l’endpoint API (événement de test manquant).",
+      "serverOffline": "Le serveur semble hors ligne ou injoignable via RCON.",
+      "rconReachableApiUnknown": "RCON works. The server has no event URL yet, so its connection back to the API can't be checked until it is saved and configured."
+    },
+    "success": {
+      "connectivityOk": "Connectivité bidirectionnelle vérifiée : le serveur est en ligne et peut joindre l’API.",
+      "serverUpdated": "Serveur mis à jour",
+      "serverCreated": "Serveur créé",
+      "serverDeleted": "Serveur supprimé"
+    },
+    "buttons": {
+      "deleteServer": "Supprimer le serveur",
+      "cancel": "Annuler",
+      "saving": "Enregistrement…",
+      "saveChanges": "Enregistrer",
+      "addServer": "Ajouter un serveur"
+    },
+    "confirmDelete": {
+      "title": "Supprimer le serveur",
+      "message": "Voulez-vous vraiment supprimer \"{{name}}\" ? Cette action est irréversible."
+    }
+  }
+}

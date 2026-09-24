@@ -316,59 +316,6 @@
     "matchesCount_one": "{{count}} partido",
     "matchesCount_other": "{{count}} partidos"
   },
-  "vetoInterface": {
-    "vetoNotAvailable": "El veto no está disponible para este partido",
-    "vetoUnavailable": "Los detalles del veto no están disponibles para esta cuenta. Inicia sesión como jugador de uno de los dos equipos para continuar el veto.",
-    "vetoCompleted": "¡Veto completado!",
-    "vetoCompletedSubtitle": "La selección de mapas ha terminado. El partido comenzará en breve.",
-    "selectedMaps": "Mapas seleccionados",
-    "yourTurnToBan": "ES EL TURNO DE TU EQUIPO PARA BANNEAR UN MAPA",
-    "yourTurnToPick": "ES EL TURNO DE TU EQUIPO PARA ELEGIR UN MAPA",
-    "yourTurnToChooseSide": "ES EL TURNO DE TU EQUIPO PARA ELEGIR UN LADO",
-    "clickMapToConfirm": "Haz clic en uno de los mapas resaltados para confirmar tu elección.",
-    "waitingToBan": "Esperando a {{team}} para bannear un mapa",
-    "waitingToPick": "Esperando a {{team}} para elegir un mapa",
-    "waitingToChooseSide": "Esperando a {{team}} para elegir un lado",
-    "pageUpdatesAutomatically": "Mantén esta página abierta – se actualizará automáticamente cuando sea tu turno.",
-    "stepOf": "Paso {{current}} de {{total}}",
-    "banPhase": "Fase de ban",
-    "pickPhase": "Fase de pick",
-    "sideChoice": "Elección de lado",
-    "chooseYourStartingSide": "Elige tu lado de inicio",
-    "waitingForSidePick": "Esperando a {{team}} para elegir su lado de inicio...",
-    "counterTerrorist": "Contraterrorista",
-    "terrorist": "Terrorista",
-    "vetoHistory": "Historial del veto",
-    "historyStep": "Paso {{step}}:",
-    "startingSide": "Inicio {{side}}",
-    "otherTeam": "el otro equipo",
-    "actionLabels": {
-      "ban": "BAN",
-      "pick": "PICK",
-      "side_pick": "ELECCIÓN DE LADO"
-    },
-    "mapBadge": "MAPA {{n}}",
-    "mapCardAria": {
-      "ban": "Banear {{map}}",
-      "pick": "Elegir {{map}}",
-      "banned": "{{map}} (baneado)",
-      "picked": "{{map}} (elegido)"
-    },
-    "errors": {
-      "failedToLoadVetoState": "Error al cargar el estado del veto",
-      "failedToProcessVetoAction": "Error al procesar la acción de veto",
-      "failedToSubmitVetoAction": "Error al enviar la acción de veto",
-      "failedToPickSide": "Error al elegir el lado",
-      "notYourTurn": "No es tu turno. Esperando al otro equipo.",
-      "vetoAlreadyCompleted": "Veto ya completado",
-      "invalidMapSelection": "Selección de mapa inválida",
-      "invalidSideSelection": "Selección de lado inválida",
-      "noMapToPickSide": "No hay mapa para elegir el lado",
-      "matchNotFound": "Partido no encontrado",
-      "unauthorized": "Solo los jugadores de uno de los dos equipos participantes pueden realizar acciones de veto para este partido."
-    },
-    "decider": "Decider"
-  },
   "discordId": {
     "noDiscord": "Sin Discord",
     "noDiscordTooltip": "Sin ID de Discord, así que no se puede contactar con este jugador por Discord.",
@@ -415,28 +362,6 @@
       "vs": "VS",
       "tbd": "Por definir",
       "gamesWon": "Games won"
-    },
-    "server": {
-      "waitingTitle": "Esperando asignación de servidor",
-      "waitingBody": "Se asignará un servidor automáticamente en cuanto haya uno disponible. Después de cada partido, los servidores entran en un breve periodo de enfriamiento (unos 2 minutos) para que las demos se suban y el servidor se reinicie por completo. Esta página se actualizará automáticamente cuando tu servidor esté listo.",
-      "serverName": "Servidor: {{name}}",
-      "status": "Estado: {{status}}",
-      "connect": "Conectar al servidor",
-      "connecting": "✓ Conectando...",
-      "copyCommand": "Copiar comando de consola",
-      "copied": "✓ ¡Copiado!",
-      "statusLabels": {
-        "idle": "Disponible",
-        "loading": "Cargando",
-        "warmup": "Calentamiento – ¡únete ya!",
-        "knife": "Ronda de knife",
-        "live": "En directo",
-        "paused": "En pausa",
-        "halftime": "Descanso",
-        "postgame": "Partido terminado",
-        "queued": "Siguiente partido en cola",
-        "error": "Error"
-      }
     },
     "performance": {
       "title": "Rendimiento de los jugadores",
@@ -510,77 +435,6 @@
       "recentResults": "Recent results",
       "win": "Win",
       "loss": "Loss"
-    }
-  },
-  "manualReport": {
-    "title": "Match result",
-    "unknownTeam": "the other team",
-    "state": {
-      "nothing": "No result reported yet. Whoever played it, report the score.",
-      "waitingOpponent": "Reported. Waiting for {{team}} to confirm.",
-      "needsAnswer": "{{team}} reported this result. Confirm it if it is right.",
-      "disputed": "This result is disputed. An admin will decide it.",
-      "awaitingAdmin": "Waiting for an admin to decide this match.",
-      "confirmed": "Both teams agree on this result."
-    },
-    "deadline": {
-      "autoConfirm": "Confirms on its own in {{minutes}} min if nobody answers.",
-      "autoConfirmSoon": "Confirms on its own any moment now.",
-      "escalate": "Goes to an admin in {{minutes}} min if nobody answers.",
-      "escalateSoon": "Goes to an admin any moment now."
-    },
-    "score": "{{team1}} {{score1}} – {{score2}} {{team2}}",
-    "game": "Game {{number}}",
-    "note": "Note",
-    "notePlaceholder": "Anything the other team should know (optional)",
-    "noteGiven": "Note: {{note}}",
-    "disputeReason": "What is wrong with it?",
-    "disputeReasonGiven": "Disputed: {{reason}}",
-    "formHint": "Scores for {{team1}} and {{team2}}, game by game.",
-    "actions": {
-      "report": "Report the score",
-      "reportAgain": "Report a different score",
-      "submit": "Send report",
-      "cancel": "Cancel",
-      "confirm": "Confirm",
-      "dispute": "Dispute",
-      "disputeSubmit": "Send dispute",
-      "withdraw": "Withdraw my report"
-    },
-    "errors": {
-      "stale": "This report changed while it was on your screen. Read it again before you confirm.",
-      "incomplete": "Fill in both scores for at least one game.",
-      "failed": "That did not go through. Try again."
-    },
-    "captains": {
-      "title": "Captains",
-      "hint": "Only a captain can report or confirm a result for this team.",
-      "make": "Make captain",
-      "remove": "Remove captain",
-      "isCaptain": "Captain",
-      "empty": "Nobody on this team has signed in yet, so there is nobody to appoint.",
-      "unknown": "Unknown player",
-      "failed": "Could not change that. Try again."
-    },
-    "stats": {
-      "hint": "The extra numbers this tournament asks for. Leave a field blank if nobody has one.",
-      "required": "required",
-      "recorded": "Reported stats",
-      "value": "{{subject}}: {{value}}{{suffix}}",
-      "errors": {
-        "number": "{{field}} for {{subject}} has to be a number.",
-        "integer": "{{field}} for {{subject}} has to be a whole number.",
-        "range": "{{field}} for {{subject}} is too big to be a real number.",
-        "tooLong": "{{field}} for {{subject}} is longer than {{max}} characters.",
-        "missing": "{{field}} is required, and nothing is filled in for {{team}}."
-      },
-      "tournamentTitle": "Reported stats",
-      "tournamentHelp": "Added up from confirmed reports. A result still waiting for the opponent is not counted here.",
-      "byTeam": "By team",
-      "byPlayer": "By player",
-      "team": "Team",
-      "player": "Player",
-      "matches": "Matches"
     }
   },
   "disputes": {

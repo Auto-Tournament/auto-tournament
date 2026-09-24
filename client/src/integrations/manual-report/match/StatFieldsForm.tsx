@@ -13,7 +13,7 @@
  */
 
 import { Box, Stack, TextField, Typography } from '@mui/material';
-import { useTranslation } from 'react-i18next';
+import { useModuleTranslation } from '../../../module-sdk';
 import type { CustomStatField, MatchReportView } from '../api';
 import { MAX_TEXT, cellKey, sidesOf, subjectsFor, type StatDraft } from './statFields';
 
@@ -35,7 +35,7 @@ export function StatFieldsForm({
   disabled,
   testIdPrefix,
 }: StatFieldsFormProps) {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('manual-report');
   const unknownTeam = t('manualReport.unknownTeam');
   const sides = sidesOf(view);
 

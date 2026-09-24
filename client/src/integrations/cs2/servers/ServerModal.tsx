@@ -18,8 +18,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import { api, apiErrorMessage, useSnackbar, ConfirmDialog } from '../../../module-sdk';
-import { useTranslation } from 'react-i18next';
+import { api, apiErrorMessage, useSnackbar, ConfirmDialog, useModuleTranslation } from '../../../module-sdk';
 import type { ResourceDialogProps as ServerModalProps } from '../../types';
 
 const slugifyServerName = (name: string): string => {
@@ -49,7 +48,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
   const [showPassword, setShowPassword] = useState(false);
 
   const isEditing = !!server;
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
 
   useEffect(() => {
     if (server) {

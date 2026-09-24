@@ -5,8 +5,7 @@ import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
 import type { ServerAllocationInfo } from '../../../types';
-import { getBracketMatchLabel } from '../../../module-sdk';
-import { useTranslation } from 'react-i18next';
+import { getBracketMatchLabel, useModuleTranslation } from '../../../module-sdk';
 import type { MatchAllocationPanelProps as ServerAllocationWidgetProps } from '../../types';
 
 export const ServerAllocationWidget: React.FC<ServerAllocationWidgetProps> = ({
@@ -14,7 +13,7 @@ export const ServerAllocationWidget: React.FC<ServerAllocationWidgetProps> = ({
   gracePeriodSeconds,
   requiredServerCount = 0,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
   // Initialize local countdowns from server data using useMemo to avoid setState in effect
   const initialCountdowns = React.useMemo(() => {
     const countdowns = new Map<string, number>();

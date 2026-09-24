@@ -1,10 +1,9 @@
 import React from 'react';
 import { Box, Paper, Typography, Chip, Grid, Link as MuiLink } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import type { ManageResourcesProps as ServerGridProps } from '../../types';
 import { paths } from '../../../paths';
-import { getBracketMatchLabel } from '../../../module-sdk';
+import { getBracketMatchLabel, useModuleTranslation } from '../../../module-sdk';
 
 function timeAgo(unixSeconds: number | null, t: (key: string, opts?: Record<string, unknown>) => string): string {
   if (!unixSeconds) return t('managePage.servers.never');
@@ -21,7 +20,7 @@ function timeAgo(unixSeconds: number | null, t: (key: string, opts?: Record<stri
  * polls. Offline servers are highlighted with an error-coloured border.
  */
 export const ServerGrid: React.FC<ServerGridProps> = ({ servers, matches }) => {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
   const bySlug = new Map(matches.map((m) => [m.slug, m]));
 
   return (

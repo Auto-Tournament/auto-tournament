@@ -37,7 +37,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useModuleTranslation } from '../../../module-sdk';
 import { io } from 'socket.io-client';
 import {
   Alert,
@@ -121,7 +121,7 @@ function shownReport(view: MatchReportView): MatchReport | null {
 }
 
 export function ManualReportPanel({ matchSlug, matchStatus }: MatchReportPanelProps) {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('manual-report');
 
   const [view, setView] = useState<MatchReportView | null>(null);
   const [hidden, setHidden] = useState(false);

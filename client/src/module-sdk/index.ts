@@ -29,6 +29,7 @@
  * reflex.
  */
 
+import { useTranslation } from 'react-i18next';
 import { useAuth as useAuthInternal } from '../contexts/AuthContext';
 
 // Data access
@@ -61,6 +62,36 @@ export { EmptyState } from '../components/shared/EmptyState';
 export { StatusDot } from '../components/common/ui';
 export { PlayerAvatar } from '../components/player/PlayerAvatar';
 export { ManageStatusTile } from '../components/manage/StatusStrip';
+
+// Strings
+
+/** Core's own i18next namespace, where strings every page shares live. */
+export const CORE_NAMESPACE = 'translation';
+
+/**
+ * `useTranslation` for a module's own components: `t` reads the module's
+ * namespace (its id, filled from `ClientGameIntegration.locales`) first, and
+ * core's after it, so `t('serversPage.title')` is the module's string and
+ * `t('common.cancel')` is still core's. Within each namespace a string the
+ * viewer's language lacks is the module's English, before anything else.
+ *
+ * Pass the module's id. Pass the same `t` to `<Trans t={t}>`, which otherwise
+ * reads core's namespace only.
+ */
+export function useModuleTranslation(moduleId: string) {
+  return useTranslation(moduleNamespaces(moduleId), { nsMode: 'fallback' });
+}
+
+/** One array per module, so the namespaces a hook passes stay the same object across renders. */
+const namespacesByModule = new Map<string, readonly [string, string]>();
+function moduleNamespaces(moduleId: string): readonly [string, string] {
+  let namespaces = namespacesByModule.get(moduleId);
+  if (!namespaces) {
+    namespaces = [moduleId, CORE_NAMESPACE];
+    namespacesByModule.set(moduleId, namespaces);
+  }
+  return namespaces;
+}
 
 // Labels
 export { getRoundLabel, getBracketMatchLabel } from '../utils/matchUtils';

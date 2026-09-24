@@ -5,9 +5,6 @@
       "loadTitle": "Fout bij het laden van wedstrijden",
       "bulkDelete": "Kan een of meer wedstrijden niet verwijderen"
     },
-    "allocation": {
-      "nextServers": "Volgende servertoewijzing over {{seconds}}s"
-    },
     "header": {
       "createMatch": "Wedstrijd maken"
     },
@@ -44,9 +41,6 @@
       "matchNumber": "Wedstrijd #{{number}}",
       "server": "Server: {{name}}",
       "queuePosition": "Positie in wachtrij: #{{position}}",
-      "waitingForServers": "Wachten op servers...",
-      "allocatingNow": "Nu toewijzen...",
-      "allocatesIn": "Toewijzing over {{time}}",
       "shuffle": "Shuffle",
       "shuffleManual": "Shuffle handmatig",
       "manual": "Handmatig",
@@ -77,21 +71,6 @@
       "completed": "De wedstrijd is afgelopen. De winnaar is bepaald en het schema is bijgewerkt.",
       "proTipTitle": "Tip:",
       "proTip": "Als een wedstrijd \"Wachten op spelers (X/Y)\" toont, is de server klaar en moeten spelers verbinden. Zodra alle verwachte spelers verbonden en klaar zijn, start de wedstrijd automatisch."
-    },
-    "allocationWidget": {
-      "title": "Status servertoewijzing",
-      "available": "Beschikbaar:",
-      "busy": "Bezet:",
-      "cooling": "Afkoelen:",
-      "offline": "Offline:",
-      "waitingMatches_one": "Wachtend: {{count}} wedstrijd",
-      "waitingMatches_other": "Wachtend: {{count}} wedstrijden",
-      "statusLine": "Status: {{status}}",
-      "statusReady": "Klaar",
-      "statusCooling": "Afkoelen",
-      "statusBusy": "Bezet",
-      "statusOffline": "Offline",
-      "readyIn": "Klaar over: {{time}}"
     },
     "latestEvent": "Laatste: {{event}}",
     "matchLabel": {

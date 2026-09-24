@@ -8,7 +8,7 @@
  */
 
 import { isValidRange, satisfies } from './semverRange';
-import type { ClientGameIntegration } from '../integrations/types';
+import type { ClientGameIntegration, IntegrationNavLabelSurface } from '../integrations/types';
 import {
   CAPABILITY_KEYS,
   COMPONENT_SLOTS,
@@ -17,6 +17,7 @@ import {
   getPath,
   type ModuleFailure,
 } from './manifest';
+import { localesProblem } from './moduleLocales';
 
 /**
  * Null when `platform` satisfies the module's declared `range`
@@ -74,6 +75,14 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
 
 const optionalString = (value: unknown) => value === undefined || typeof value === 'string';
 
+const NAV_LABEL_SURFACES: readonly string[] = [
+  'nav',
+  'pageTitle',
+  'rail',
+  'siteLabel',
+  'siteHint',
+] satisfies readonly IntegrationNavLabelSurface[];
+
 /** What is wrong with the shape, or null. Each answer names the field, for the module's author. */
 function shapeProblem(def: Record<string, unknown>): string | null {
   if (!isObject(def.capabilities)) return 'capabilities is missing';
@@ -119,7 +128,17 @@ function shapeProblem(def: Record<string, unknown>): string | null {
       return `navItems[${index}] needs a key and a path`;
     }
     if (!isComponent(item.icon)) return `navItems[${index}].icon is not a component`;
+    if (item.labels !== undefined) {
+      if (!isObject(item.labels)) return `navItems[${index}].labels is not an object`;
+      for (const [surface, key] of Object.entries(item.labels)) {
+        if (!NAV_LABEL_SURFACES.includes(surface)) return `navItems[${index}].labels.${surface} is not a label`;
+        if (typeof key !== 'string') return `navItems[${index}].labels.${surface} is not a string`;
+      }
+    }
   }
+
+  const locales = localesProblem(def.locales);
+  if (locales) return locales;
 
   if (
     def.catalogGames !== undefined &&

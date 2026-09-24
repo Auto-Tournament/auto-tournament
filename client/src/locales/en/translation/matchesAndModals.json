@@ -5,9 +5,6 @@
       "loadTitle": "Error loading matches",
       "bulkDelete": "Failed to delete one or more matches"
     },
-    "allocation": {
-      "nextServers": "Next servers allocated in {{seconds}}s"
-    },
     "header": {
       "createMatch": "Create Match"
     },
@@ -44,9 +41,6 @@
       "matchNumber": "Match #{{number}}",
       "server": "Server: {{name}}",
       "queuePosition": "Queue Position: #{{position}}",
-      "waitingForServers": "Waiting for servers...",
-      "allocatingNow": "Allocating now...",
-      "allocatesIn": "Allocates in {{time}}",
       "shuffle": "Shuffle",
       "shuffleManual": "Shuffle manual",
       "manual": "Manual",
@@ -77,21 +71,6 @@
       "completed": "Match has finished. Winner has been determined and bracket has been updated.",
       "proTipTitle": "Pro Tip:",
       "proTip": "When a match shows \"Waiting for players (X/Y)\", the server is ready and players should connect. Once all expected players connect and ready up, the match will automatically start."
-    },
-    "allocationWidget": {
-      "title": "Server Allocation Status",
-      "available": "Available:",
-      "busy": "Busy:",
-      "cooling": "Cooling:",
-      "offline": "Offline:",
-      "waitingMatches_one": "Waiting: {{count}} match",
-      "waitingMatches_other": "Waiting: {{count}} matches",
-      "statusLine": "Status: {{status}}",
-      "statusReady": "Ready",
-      "statusCooling": "Cooling",
-      "statusBusy": "Busy",
-      "statusOffline": "Offline",
-      "readyIn": "Ready in: {{time}}"
     },
     "latestEvent": "Latest: {{event}}",
     "matchLabel": {

@@ -22,8 +22,12 @@ import { ManualReportPanel } from './match/ManualReportPanel';
 import { ManualReportSetupStep } from './setup/ManualReportSetupStep';
 import { CustomStatsTables } from './stats/CustomStatsTables';
 import { TeamCaptainsCard } from './team/TeamCaptainsCard';
+import { manualReportLocales } from './locales';
 export const manualReportClientIntegration: ClientGameIntegration = {
   id: 'manual-report',
+
+  // Its strings, namespace 'manual-report' (item 6).
+  locales: manualReportLocales,
 
   runsAnyCatalogGame: true,
 

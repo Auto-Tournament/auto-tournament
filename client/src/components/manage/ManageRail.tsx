@@ -10,6 +10,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { useTranslation } from 'react-i18next';
 import { useShellIntegrations } from '../../hooks/useShellIntegrations';
+import { moduleNavItems, navItemLabel } from '../../utils/moduleNavLabels';
 
 interface ManageRailItem {
   key: string;
@@ -49,12 +50,13 @@ export const ManageRail: React.FC<ManageRailProps> = ({ needsYouCount }) => {
     { key: 'bracket', label: t('managePage.rail.bracket'), path: '/bracket', icon: <AccountTreeIcon /> },
     { key: 'teams', label: t('managePage.rail.teams'), path: '/teams', icon: <GroupsIcon /> },
     { key: 'players', label: t('managePage.rail.players'), path: '/players', icon: <PersonIcon /> },
-    // The game integration's pages (CS2: Servers, Maps) sit after Players.
-    ...shell.flatMap((integration) => integration.navItems).map(({ key, path, icon: Icon }) => ({
-      key,
-      label: t(`managePage.rail.${key}`),
-      path,
-      icon: <Icon />,
+    // The game integration's pages (CS2: Servers, Maps) sit after Players,
+    // labelled from the module's own strings.
+    ...moduleNavItems(shell).map((item) => ({
+      key: item.key,
+      label: navItemLabel(t, item, 'rail'),
+      path: item.path,
+      icon: <item.icon />,
     })),
     { key: 'tournament', label: t('managePage.rail.tournament'), path: '/tournament', icon: <EmojiEventsIcon /> },
     { key: 'settings', label: t('managePage.rail.settings'), path: '/settings', icon: <SettingsIcon /> },

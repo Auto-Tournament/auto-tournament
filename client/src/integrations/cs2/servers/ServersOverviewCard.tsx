@@ -1,6 +1,6 @@
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Card, CardContent, Stack, Typography } from '@mui/material';
-import { useTranslation } from 'react-i18next';
+import { useModuleTranslation } from '../../../module-sdk';
 import type { ServerFleetCounts } from '../../../hooks/useAdminHomeData';
 import type { AdminHomeResourcesProps as ServersOverviewCardProps } from '../../types';
 import { paths } from '../../../paths';
@@ -33,7 +33,7 @@ function FleetBar({ fleet }: { fleet: ServerFleetCounts }) {
  * server-availability + servers endpoints Manage and Servers already use.
  */
 export function ServersOverviewCard({ fleet, pluginVersions }: ServersOverviewCardProps) {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
 
   return (
     <Card variant="outlined" data-testid="admin-home-servers-card">

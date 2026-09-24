@@ -12,6 +12,8 @@ import { cs2ClientIntegration } from './cs2';
 import { manualReportClientIntegration } from './manual-report';
 import { resolveIntegration } from '../utils/moduleResolution';
 import { isBroken } from '../module-loader/moduleState';
+import { registerModuleLocales } from '../module-loader/moduleLocales';
+import i18n from '../i18n';
 import { DEFAULT_GAME, type ClientGameIntegration, type GameId, type GameOwned } from './types';
 
 // CS2 first, the same order the API registers them in: the two overlap on
@@ -22,6 +24,12 @@ const INTEGRATIONS: Record<string, ClientGameIntegration> = {
   [cs2ClientIntegration.id]: cs2ClientIntegration,
   [manualReportClientIntegration.id]: manualReportClientIntegration,
 };
+
+// Each built-in's strings become its namespace now, before anything renders:
+// the same step the loader takes for a code module (see `moduleLocales`).
+for (const integration of Object.values(INTEGRATIONS)) {
+  registerModuleLocales(i18n, integration.id, integration.locales);
+}
 
 /**
  * Code modules loaded at runtime (DESIGN-module-client-api.md, 8a), in load
