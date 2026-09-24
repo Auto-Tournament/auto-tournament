@@ -47,16 +47,6 @@
     "winsLosses": "胜 / 负",
     "recentFormHighlights": "近期表现与亮点",
     "averageAdr": "平均 ADR",
-    "round": "轮次",
-    "kills": "击杀",
-    "deaths": "死亡",
-    "assists": "助攻",
-    "hsPercent": "爆头%",
-    "dmg": "伤害",
-    "rating": "评分",
-    "result": "结果",
-    "baseline": "基准",
-    "matchHistory": "比赛记录",
     "discordId": {
       "title": "你的 Discord ID",
       "description": "填写你的 Discord 用户 ID，方便赛事组织者通过 Discord 联系你。仅组织者可见，不会显示在你的公开主页上。",
@@ -72,19 +62,10 @@
     "openTeam": "打开战队：{{team}}",
     "you": "你",
     "noMatchHistory": "暂无比赛记录",
-    "demo": "录像",
     "downloadDemo": "下载录像",
-    "showingLastMatches": "显示最近 {{shown}} 场比赛，共 {{total}} 场",
     "noMatchesYet": "暂无比赛",
     "pageTitle": "{{name}} – 玩家资料",
     "loadFailed": "无法加载玩家数据",
-    "eloChart": {
-      "title": "ELO 走势",
-      "noHistory": "暂无评分历史",
-      "startingElo": "初始 ELO",
-      "currentElo": "当前 ELO",
-      "totalChange": "总变化"
-    },
     "performanceChart": {
       "title": "表现走势",
       "noData": "暂无有效的表现数据 —— 打几回合后即可查看 ADR 与 K/D 走势。",
@@ -112,7 +93,8 @@
     },
     "recentMatches": {
       "title": "Recent matches",
-      "statsNote": "Kills / deaths. Stats shown depend on what the game module reports."
+      "statsNote": "Kills / deaths. Stats shown depend on what the game module reports.",
+      "roundAndRating": "{{round}} · rating {{rating}}"
     },
     "gameSwitchLabel": "Game"
   },

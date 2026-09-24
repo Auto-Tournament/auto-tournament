@@ -46,16 +46,6 @@
     "winsLosses": "Victorias / Derrotas",
     "recentFormHighlights": "Racha reciente y destacados",
     "averageAdr": "ADR medio",
-    "round": "Ronda",
-    "kills": "Bajas",
-    "deaths": "Muertes",
-    "assists": "Asistencias",
-    "hsPercent": "% HS",
-    "dmg": "Daño",
-    "rating": "Valoración",
-    "result": "Resultado",
-    "baseline": "Base",
-    "matchHistory": "Historial de partidos",
     "profileTitle": "Perfil del jugador",
     "discordId": {
       "title": "Tu ID de Discord",
@@ -72,19 +62,10 @@
     "openTeam": "Abrir equipo: {{team}}",
     "you": "Tú",
     "noMatchHistory": "Aún no hay historial de partidos",
-    "demo": "Demo",
     "downloadDemo": "Descargar demo",
-    "showingLastMatches": "Mostrando los últimos {{shown}} partidos. Total: {{total}}",
     "noMatchesYet": "Aún no hay partidos",
     "pageTitle": "{{name}} – perfil del jugador",
     "loadFailed": "No se pudieron cargar los datos del jugador",
-    "eloChart": {
-      "title": "Evolución del ELO",
-      "noHistory": "No hay historial de clasificación disponible",
-      "startingElo": "ELO inicial",
-      "currentElo": "ELO actual",
-      "totalChange": "Cambio total"
-    },
     "performanceChart": {
       "title": "Tendencias de rendimiento",
       "noData": "Aún no hay datos de rendimiento significativos: juega algunas rondas para ver las tendencias de ADR y K/D.",
@@ -112,7 +93,8 @@
     },
     "recentMatches": {
       "title": "Recent matches",
-      "statsNote": "Kills / deaths. Stats shown depend on what the game module reports."
+      "statsNote": "Kills / deaths. Stats shown depend on what the game module reports.",
+      "roundAndRating": "{{round}} · rating {{rating}}"
     },
     "gameSwitchLabel": "Game"
   },

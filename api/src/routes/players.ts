@@ -1257,7 +1257,10 @@ router.get('/:playerId/summary', async (req: Request, res: Response) => {
         pms.kills,
         pms.deaths,
         pms.assists,
-        pms.headshots
+        pms.headshots,
+        -- Whether there is a demo to download: the profile only offers the
+        -- button for a match that has one.
+        (m.demo_file_path IS NOT NULL) as has_demo
       FROM player_match_stats pms
       JOIN matches m ON pms.match_slug = m.slug
       LEFT JOIN teams t1 ON m.team1_id = t1.id
@@ -1300,6 +1303,7 @@ router.get('/:playerId/summary', async (req: Request, res: Response) => {
       deaths?: number | null;
       assists?: number | null;
       headshots?: number | null;
+      has_demo?: boolean;
     };
 
     const rawMatches = await db.queryAsync<RawMatchRow>(query, params);

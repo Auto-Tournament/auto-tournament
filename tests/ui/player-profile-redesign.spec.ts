@@ -129,24 +129,17 @@ test.describe('Redesigned player profile', () => {
       await expect(row).toBeVisible();
       await expect(row).toContainText('20 / 10');
 
-      // CS2 measures kills, damage and headshots and records demos, so its
-      // profile keeps every one of those columns and tiles. The manually
-      // reported game's spec (manual-report-stats-pages.spec.ts) pins the
-      // other side: the same page with none of them.
+      // CS2 measures kills and damage, so its profile keeps those tiles. The
+      // manually reported game's spec (manual-report-stats-pages.spec.ts)
+      // pins the other side: the same page with none of them.
       await expect(page.getByTestId('profile-stat-adr')).toBeVisible();
       await expect(page.getByTestId('profile-stat-kd')).toBeVisible();
-      await expect(page.getByTestId('profile-match-history').locator('thead th')).toHaveText([
-        'Round',
-        'Opponent',
-        'Kills',
-        'Deaths',
-        'Assists',
-        'HS%',
-        'DMG',
-        'Rating',
-        'Result',
-        'Demo',
-      ]);
+
+      // Recent matches is the profile's only match list: the older "Match
+      // History" table and "ELO Progression" chart are gone. Its row says
+      // what the player's rating was after the match.
+      await expect(page.getByTestId('profile-match-history')).toHaveCount(0);
+      await expect(row).toContainText(/rating \d+/);
 
       // Profile header team chip links to that team's public profile page
       // (/t/team/:teamId), not the in-match/server team page (/team/:teamId).

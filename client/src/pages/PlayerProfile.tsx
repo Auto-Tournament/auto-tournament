@@ -11,26 +11,17 @@ import {
   Container,
   Stack,
   Chip,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Button,
   Tooltip,
-  IconButton,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
-import DownloadIcon from '@mui/icons-material/Download';
 import { api } from '../utils/api';
 import { onSocketReconnect } from '../utils/socketResync';
 import { io, Socket } from 'socket.io-client';
-import { ELOProgressionChart } from '../components/player/ELOProgressionChart';
 import { PerformanceMetricsChart } from '../components/player/PerformanceMetricsChart';
 import { MatchInfoCard } from '../components/team/MatchInfoCard';
 import { PlayerMatchDetailsModal } from '../components/player/PlayerMatchDetailsModal';
@@ -100,6 +91,8 @@ interface MatchHistoryEntry {
   deaths?: number;
   assists?: number;
   headshots?: number;
+  /** The match has a recorded demo to download. */
+  hasDemo?: boolean;
 }
 
 function normalizeMatchForPlayerView(rawMatch: TeamMatchInfo, steamId: string): TeamMatchInfo {
@@ -362,6 +355,7 @@ export default function PlayerProfile() {
           deaths?: number;
           assists?: number;
           headshots?: number;
+          has_demo?: boolean;
         }>;
         games?: Array<{ id: string; name: string }>;
       };
@@ -446,6 +440,7 @@ export default function PlayerProfile() {
           deaths: m.deaths,
           assists: m.assists,
           headshots: m.headshots,
+          hasDemo: m.has_demo === true,
         }))
       );
 
@@ -861,7 +856,6 @@ export default function PlayerProfile() {
   }
 
   // Baseline row matches the "Starting ELO" the chart shows (see utils/eloProgression).
-  const baselineRating = ratingHistoryBaseline(player.startingElo);
   const wins = uniqueMatchHistory.filter((m) => m.wonMatch).length;
   const losses = uniqueMatchHistory.length - wins;
 
@@ -958,9 +952,25 @@ export default function PlayerProfile() {
       wonMatch: m.wonMatch,
       opponentName,
       roundLabel: getRoundLabel(m.round),
+      ratingAfter: ratingBySlug.get(m.slug),
+      // Only a game that records demos, and only a match that has one: no
+      // download button that leads nowhere.
+      hasDemo: showDemos && m.hasDemo === true,
       ...(showGameStats ? { kills: m.kills, deaths: m.deaths } : {}),
     };
   });
+  // The rating trend starts at the player's starting rating, so the first
+  // match already draws a line (the old ELO chart did the same).
+  const ratingChartHistory =
+    ratingHistory.length > 0
+      ? [
+          {
+            eloAfter: ratingHistoryBaseline(player.startingElo),
+            createdAt: Math.min(...ratingHistory.map((e) => e.createdAt)) - 1,
+          },
+          ...ratingHistory.map((entry) => ({ eloAfter: entry.eloAfter, createdAt: entry.createdAt })),
+        ]
+      : [];
   // --- end new profile section ---
 
   const tournamentIsActive = currentTournamentStatus === 'in_progress';
@@ -1002,7 +1012,9 @@ export default function PlayerProfile() {
   let bestAdrMatch: MatchHistoryEntry | null = null;
   let worstAdrMatch: MatchHistoryEntry | null = null;
   for (const m of recentMatches) {
-    if (m.adr === undefined) continue;
+    // No ADR, or 0 (a result set by an admin or reported by hand records no
+    // damage): not a "best" or "toughest" match, just no data.
+    if (typeof m.adr !== 'number' || m.adr <= 0) continue;
     if (!bestAdrMatch || (bestAdrMatch.adr ?? 0) < m.adr) {
       bestAdrMatch = m;
     }
@@ -1112,10 +1124,7 @@ export default function PlayerProfile() {
                     {t('playerPage.ratingChart.sectionTitle')}
                   </Typography>
                   <RatingChart
-                    history={ratingHistory.map((entry) => ({
-                      eloAfter: entry.eloAfter,
-                      createdAt: entry.createdAt,
-                    }))}
+                    history={ratingChartHistory}
                   />
                 </CardContent>
               </Card>
@@ -1329,19 +1338,6 @@ export default function PlayerProfile() {
             </Card>
           )}
 
-          {/* Skill Rating Progression Chart */}
-          {ratingHistory.length > 0 && player && (
-            <ELOProgressionChart
-              history={ratingHistory.map((entry) => ({
-                eloBefore: entry.eloBefore,
-                baseEloAfter: entry.baseEloAfter ?? null,
-                createdAt: entry.createdAt,
-              }))}
-              currentElo={player.currentElo}
-              startingElo={player.startingElo}
-            />
-          )}
-
           {/* Performance Metrics Chart. Kills, deaths, assists and ADR over
               time — nothing to plot for a game that measures none of them. */}
           {showGameStats && uniqueMatchHistory.length > 0 && (
@@ -1358,163 +1354,6 @@ export default function PlayerProfile() {
 
           {TournamentStatsView && gameTournamentId !== null && hasAnyMatches && (
             <TournamentStatsView tournamentId={gameTournamentId} />
-          )}
-
-          {/* Rating History */}
-          {/* Match History */}
-          {uniqueMatchHistory.length > 0 && (
-            <Card>
-              <CardContent>
-                <Typography variant="h6" fontWeight={600} gutterBottom>
-                  {t('playerPage.matchHistory')}
-                </Typography>
-                <TableContainer>
-                  <Table size="small" data-testid="profile-match-history">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell align="left">{t('playerPage.round')}</TableCell>
-                        <TableCell>{t('playerPage.opponent')}</TableCell>
-                        {showGameStats && (
-                          <>
-                            <TableCell align="right">{t('playerPage.kills')}</TableCell>
-                            <TableCell align="right">{t('playerPage.deaths')}</TableCell>
-                            <TableCell align="right">{t('playerPage.assists')}</TableCell>
-                            <TableCell align="right">{t('playerPage.hsPercent')}</TableCell>
-                            <TableCell align="right">{t('playerPage.dmg')}</TableCell>
-                          </>
-                        )}
-                        <TableCell align="right">{t('playerPage.rating')}</TableCell>
-                        <TableCell>{t('playerPage.result')}</TableCell>
-                        {showDemos && <TableCell>{t('playerPage.demo')}</TableCell>}
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {uniqueMatchHistory.slice(0, 10).map((match) => {
-                        const isTeam1 = match.team === 'team1';
-                        const opponentName = isTeam1
-                          ? match.team2Name || t('playerPage.opponent')
-                          : match.team1Name || t('playerPage.opponent');
-
-                        return (
-                          <TableRow
-                            key={match.slug}
-                            hover
-                            sx={{ cursor: 'pointer' }}
-                            onClick={() => setSelectedMatch(match)}
-                          >
-                            <TableCell align="left">#{match.round}</TableCell>
-                            <TableCell>
-                              <Typography variant="body2" noWrap sx={{ maxWidth: 220 }}>
-                                {t('teamMatchHistory.vs')} {opponentName}
-                              </Typography>
-                            </TableCell>
-                            {showGameStats && (
-                              <>
-                                <TableCell align="right">
-                                  {typeof match.kills === 'number' ? match.kills : 'N/A'}
-                                </TableCell>
-                                <TableCell align="right">
-                                  {typeof match.deaths === 'number' ? match.deaths : 'N/A'}
-                                </TableCell>
-                                <TableCell align="right">
-                                  {typeof match.assists === 'number' ? match.assists : 'N/A'}
-                                </TableCell>
-                                <TableCell align="right">
-                                  {typeof match.kills === 'number' &&
-                                  typeof match.headshots === 'number' &&
-                                  match.kills > 0
-                                    ? `${Math.round((match.headshots / match.kills) * 100)}%`
-                                    : 'N/A'}
-                                </TableCell>
-                                <TableCell align="right">
-                                  {typeof match.totalDamage === 'number'
-                                    ? match.totalDamage.toLocaleString()
-                                    : 'N/A'}
-                                </TableCell>
-                              </>
-                            )}
-                            <TableCell align="right">
-                              {ratingBySlug.has(match.slug)
-                                ? ratingBySlug.get(match.slug)
-                                : 'N/A'}
-                            </TableCell>
-                            <TableCell>
-                              <Chip
-                                label={match.wonMatch ? t('playerPage.win') : t('playerPage.loss')}
-                                size="small"
-                                color={match.wonMatch ? 'success' : 'error'}
-                              />
-                            </TableCell>
-                            {showDemos && (
-                              <TableCell>
-                                <Tooltip title={t('playerPage.downloadDemo')}>
-                                  <span>
-                                    <IconButton
-                                      size="small"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        const link = document.createElement('a');
-                                        link.href = `/api/demos/${match.slug}/download`;
-                                        link.download = '';
-                                        document.body.appendChild(link);
-                                        link.click();
-                                        document.body.removeChild(link);
-                                      }}
-                                      disabled={match.status !== 'completed'}
-                                    >
-                                      <DownloadIcon fontSize="inherit" />
-                                    </IconButton>
-                                  </span>
-                                </Tooltip>
-                              </TableCell>
-                            )}
-                          </TableRow>
-                        );
-                      })}
-                      {/* Baseline row (non-clickable) */}
-                      <TableRow hover={false} sx={{ cursor: 'default' }}>
-                        <TableCell align="left">
-                          <Typography variant="body2" color="text.secondary" noWrap>
-                            {t('playerPage.baseline')}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>—</TableCell>
-                        {showGameStats && (
-                          <>
-                            <TableCell align="right">—</TableCell>
-                            <TableCell align="right">—</TableCell>
-                            <TableCell align="right">—</TableCell>
-                            <TableCell align="right">—</TableCell>
-                            <TableCell align="right">—</TableCell>
-                          </>
-                        )}
-                        <TableCell align="right">
-                          <strong>{baselineRating}</strong>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" color="text.secondary" noWrap>
-                            —
-                          </Typography>
-                        </TableCell>
-                        {showDemos && <TableCell>—</TableCell>}
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-                {uniqueMatchHistory.length > 10 && (
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ mt: 1, display: 'block' }}
-                  >
-                    {t('playerPage.showingLastMatches', {
-                      shown: 10,
-                      total: uniqueMatchHistory.length,
-                    })}
-                  </Typography>
-                )}
-              </CardContent>
-            </Card>
           )}
 
           {(assignedTeam || (currentTeam && currentTeam.players?.length)) && (

@@ -215,16 +215,11 @@ test.describe.serial('Stats pages follow the tournament game', () => {
       // undefined for every match, CS2's included.
       await expect(page.getByTestId('profile-tournament-leaderboard')).toBeVisible();
 
-      // The match history has exactly the columns a reported game can fill.
-      // An exact list, not a missing one: it retries until the page has asked
-      // the module (while it asks, the answer is CS2's), and it fails on an
-      // empty table too.
-      await expect(page.getByTestId('profile-match-history').locator('thead th')).toHaveText([
-        'Round',
-        'Opponent',
-        'Rating',
-        'Result',
-      ]);
+      // The match list shows the reported match, with no kills/deaths (the
+      // game measures none) and no demo to download.
+      await expect(page.getByTestId('profile-recent-matches')).toBeVisible();
+      await expect(page.getByTestId('profile-recent-matches')).not.toContainText(' / ');
+      await expect(page.getByRole('link', { name: 'Download demo' })).toHaveCount(0);
       await expect(page.getByRole('button', { name: 'Download demo' })).toHaveCount(0);
 
       // Stats grid: the tiles that exist, and not the ones that cannot.

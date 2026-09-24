@@ -47,16 +47,6 @@
     "winsLosses": "Seire / tap",
     "recentFormHighlights": "Form og høydepunkter",
     "averageAdr": "Gjennomsnittlig ADR",
-    "round": "Runde",
-    "kills": "Drap",
-    "deaths": "Dødsfall",
-    "assists": "Assist",
-    "hsPercent": "HS-prosent",
-    "dmg": "DMG",
-    "rating": "Spillrating",
-    "result": "Resultat",
-    "baseline": "Basislinje",
-    "matchHistory": "Kamphistorikk",
     "discordId": {
       "title": "Din Discord-ID",
       "description": "Legg inn Discord-bruker-ID-en din, så turneringsarrangørene kan nå deg på Discord. Bare arrangørene kan se den, og den vises aldri på den offentlige profilen din.",
@@ -72,19 +62,10 @@
     "openTeam": "Åpne lag: {{team}}",
     "you": "Deg",
     "noMatchHistory": "Ingen kamphistorikk ennå",
-    "demo": "Demo",
     "downloadDemo": "Last ned demo",
-    "showingLastMatches": "Viser de siste {{shown}} kampene. Totalt: {{total}}",
     "noMatchesYet": "Ingen kamper ennå",
     "pageTitle": "{{name}} – spillerprofil",
     "loadFailed": "Kunne ikke laste spillerdata",
-    "eloChart": {
-      "title": "ELO-utvikling",
-      "noHistory": "Ingen ratinghistorikk tilgjengelig",
-      "startingElo": "Start-ELO",
-      "currentElo": "Nåværende ELO",
-      "totalChange": "Total endring"
-    },
     "performanceChart": {
       "title": "Prestasjonsutvikling",
       "noData": "Ingen meningsfylte prestasjonsdata ennå – spill noen runder for å se ADR- og K/D-utvikling.",
@@ -112,7 +93,8 @@
     },
     "recentMatches": {
       "title": "Siste kamper",
-      "statsNote": "Drap / død. Statistikken som vises avhenger av hva spillmodulen rapporterer."
+      "statsNote": "Drap / død. Statistikken som vises avhenger av hva spillmodulen rapporterer.",
+      "roundAndRating": "{{round}} · rating {{rating}}"
     },
     "gameSwitchLabel": "Spill"
   },

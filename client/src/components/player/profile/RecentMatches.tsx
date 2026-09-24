@@ -1,7 +1,10 @@
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import DownloadIcon from '@mui/icons-material/Download';
 import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 import { mono } from '../../../theme/tokens';
@@ -14,6 +17,10 @@ export interface RecentMatchEntry {
   roundLabel: string;
   kills?: number;
   deaths?: number;
+  /** The player's rating after this match, when the match was rated. */
+  ratingAfter?: number;
+  /** A recorded demo can be downloaded (only for a game that records demos). */
+  hasDemo?: boolean;
 }
 
 export interface RecentMatchesProps {
@@ -28,10 +35,10 @@ export interface RecentMatchesProps {
 }
 
 /**
- * Compact recent-matches list: W/L tile, opponent, round label, kills/deaths.
- * Per-map name and score are not shown here — they are not part of this
- * player's aggregated match-stats row, only of the full match record — click
- * a row to open the full match details modal (unchanged, further down).
+ * The profile's match list: W/L tile, opponent, round and rating after the
+ * match, kills/deaths, and the demo when there is one. It replaced the older
+ * "Match History" table; assists, headshots and damage are in the match
+ * details modal a click on the row opens.
  */
 export function RecentMatches({
   matches,
@@ -70,7 +77,7 @@ export function RecentMatches({
             data-testid={`profile-recent-match-${match.slug}`}
             sx={{
               display: 'grid',
-              gridTemplateColumns: '2.2rem minmax(0, 1fr) auto',
+              gridTemplateColumns: '2.2rem minmax(0, 1fr) auto auto',
               gap: 1.5,
               alignItems: 'center',
               px: 2,
@@ -104,14 +111,39 @@ export function RecentMatches({
                 {t('teamMatchHistory.vs')} {match.opponentName}
               </Typography>
               <Typography variant="caption" color="text.secondary" noWrap component="div">
-                {match.roundLabel}
+                {typeof match.ratingAfter === 'number'
+                  ? t('playerPage.recentMatches.roundAndRating', {
+                      round: match.roundLabel,
+                      rating: match.ratingAfter,
+                    })
+                  : match.roundLabel}
               </Typography>
             </Box>
             <Typography variant="body2" sx={{ ...mono }} color="text.secondary" whiteSpace="nowrap">
-              {typeof match.kills === 'number' && typeof match.deaths === 'number'
-                ? `${match.kills} / ${match.deaths}`
-                : ''}
+              {typeof match.kills !== 'number' || typeof match.deaths !== 'number'
+                ? ''
+                : match.kills === 0 && match.deaths === 0
+                  ? // No kills and no deaths: nothing was recorded for this player.
+                    '—'
+                  : `${match.kills} / ${match.deaths}`}
             </Typography>
+            <Box sx={{ width: 32, display: 'flex', justifyContent: 'center' }}>
+              {match.hasDemo && (
+                <Tooltip title={t('playerPage.downloadDemo')}>
+                  <IconButton
+                    size="small"
+                    component="a"
+                    href={`/api/demos/${match.slug}/download`}
+                    download
+                    aria-label={t('playerPage.downloadDemo')}
+                    data-testid={`profile-recent-match-demo-${match.slug}`}
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <DownloadIcon fontSize="inherit" />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Box>
           </Box>
         ))}
       </CardContent>
