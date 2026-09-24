@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 264 of them, 181 behind auth —
+Every endpoint this API serves — 267 of them, 184 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -483,6 +483,9 @@ E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
 | `POST` | `/api/test/linked-accounts/backfill` | admin |
 | `GET` | `/api/test/schema-migrations` | admin |
 | `POST` | `/api/test/schema-migrations/run` | admin |
+| `GET` | `/api/test/module-migrations` | admin |
+| `POST` | `/api/test/module-migrations/run` | admin |
+| `POST` | `/api/test/module-migrations/reset` | admin |
 | `GET` | `/api/test/player-identity/resolve` | admin |
 | `GET` | `/api/test/oauth/:provider` | public |
 | `POST` | `/api/test/oauth/:provider/link` | public |
