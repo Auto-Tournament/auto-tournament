@@ -19,7 +19,21 @@ import CloseIcon from '@mui/icons-material/Close';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { api, apiErrorMessage, useSnackbar, ConfirmDialog, useModuleTranslation } from '../../../module-sdk';
-import type { ResourceDialogProps as ServerModalProps } from '../../types';
+import type { Server } from '../cs2.types';
+
+/**
+ * Add or edit one server. The Servers page opens it with the server to edit;
+ * the `resourceDialogs.add` slot opens it through `AddServerDialog`, which
+ * fetches the list itself.
+ */
+export interface ServerModalProps {
+  open: boolean;
+  server: Server | null;
+  /** All existing servers, for duplicate checking. */
+  servers: Server[];
+  onClose: () => void;
+  onSave: (createdIds?: string[]) => void;
+}
 
 const slugifyServerName = (name: string): string => {
   const base = name
