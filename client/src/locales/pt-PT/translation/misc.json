@@ -116,11 +116,6 @@
       "profile": "Profile",
       "connections": "Connections"
     },
-    "callout": {
-      "title": "Pick the games you play",
-      "body": "Tournaments for your games are shown first.",
-      "action": "Pick games"
-    },
     "gameAccounts": {
       "title": "Game accounts",
       "description": "Each game needs its own account so matches know who you are.",
@@ -181,8 +176,9 @@
       "title": "Open for your games",
       "browseAll": "Browse all tournaments",
       "empty": "No open tournaments for your games right now.",
-      "emptyNoGames": "Pick the games you play to see open tournaments for them.",
-      "steamLinked": "Steam linked"
+      "steamLinked": "Steam linked",
+      "titleAll": "Open tournaments",
+      "emptyAll": "No open tournaments right now."
     }
   },
   "browsePage": {

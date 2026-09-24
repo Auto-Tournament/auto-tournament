@@ -3,7 +3,6 @@
     "header": {
       "createFromTournament": "Create Template from Tournament"
     },
-    "empty": "No templates yet. Create your first template from the Tournament page.",
     "errors": {
       "load": "Failed to load templates"
     },
@@ -39,7 +38,9 @@
         "chooseMaps": "Choose maps..."
       },
       "save": "Save"
-    }
+    },
+    "emptyTitle": "No templates yet",
+    "emptyDescription": "Save a tournament's setup as a template from the Tournament page, then start new tournaments from it here."
   },
   "saveTemplateModal": {
     "title": "Save as Template",

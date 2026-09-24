@@ -3,7 +3,6 @@
     "header": {
       "createFromTournament": "Crear plantilla desde el torneo"
     },
-    "empty": "Aún no hay plantillas. Crea tu primera plantilla desde la página Torneo.",
     "errors": {
       "load": "No se pudieron cargar las plantillas"
     },
@@ -39,7 +38,9 @@
         "chooseMaps": "Choose maps..."
       },
       "save": "Guardar"
-    }
+    },
+    "emptyTitle": "No templates yet",
+    "emptyDescription": "Save a tournament's setup as a template from the Tournament page, then start new tournaments from it here."
   },
   "saveTemplateModal": {
     "title": "Guardar como plantilla",

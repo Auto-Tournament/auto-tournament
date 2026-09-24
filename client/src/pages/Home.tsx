@@ -168,16 +168,19 @@ export default function Home() {
     return [currentTournament];
   }, [currentTournament, myTeam, teamInCurrentTournament]);
 
+  // Before any games are picked there is nothing to filter by, so every open
+  // tournament is shown rather than none (the section used to be empty until
+  // the player picked their games).
+  const noGamesPicked = !gamesLoading && myGameSlugs.size === 0;
   const openForYourGames = useMemo(() => {
     const myTournamentIds = new Set(myTournaments.map((tour) => tour.id));
     return tournaments.filter(
       (tour) =>
         !myTournamentIds.has(tour.id) &&
         (tour.status === 'setup' || tour.status === 'ready') &&
-        tour.game &&
-        myGameSlugs.has(tour.game)
+        (noGamesPicked || (tour.game && myGameSlugs.has(tour.game)))
     );
-  }, [tournaments, myTournaments, myGameSlugs]);
+  }, [tournaments, myTournaments, myGameSlugs, noGamesPicked]);
 
   const tournamentState = (tournament: (typeof tournaments)[number]) => {
     if (tournament.status === 'completed') {
@@ -377,7 +380,7 @@ export default function Home() {
             <Box>
               <Stack direction="row" justifyContent="space-between" alignItems="baseline" sx={{ mb: 2 }}>
                 <Typography variant="h5" fontWeight={700}>
-                  {t('home.openForYourGames.title')}
+                  {noGamesPicked ? t('home.openForYourGames.titleAll') : t('home.openForYourGames.title')}
                 </Typography>
                 <Link component={RouterLink} to="/browse" variant="body2" underline="hover">
                   {t('home.openForYourGames.browseAll')}
@@ -385,21 +388,10 @@ export default function Home() {
               </Stack>
               {openForYourGames.length === 0 ? (
                 <Alert severity="info" data-testid="home-open-empty">
-                  {myGameSlugs.size === 0 ? (
-                    <>
-                      {t('home.openForYourGames.emptyNoGames')}{' '}
-                      <Link component={RouterLink} to="/welcome/games?edit=1">
-                        {t('home.editGames')}
-                      </Link>
-                    </>
-                  ) : (
-                    <>
-                      {t('home.openForYourGames.empty')}{' '}
-                      <Link component={RouterLink} to="/browse">
-                        {t('home.openForYourGames.browseAll')}
-                      </Link>
-                    </>
-                  )}
+                  {noGamesPicked ? t('home.openForYourGames.emptyAll') : t('home.openForYourGames.empty')}{' '}
+                  <Link component={RouterLink} to="/browse">
+                    {t('home.openForYourGames.browseAll')}
+                  </Link>
                 </Alert>
               ) : (
                 <Grid container spacing={2}>

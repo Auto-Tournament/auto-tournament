@@ -3,7 +3,6 @@
     "header": {
       "createFromTournament": "Vorlage aus Turnier erstellen"
     },
-    "empty": "Noch keine Vorlagen. Erstelle deine erste Vorlage auf der Turnierseite.",
     "errors": {
       "load": "Vorlagen konnten nicht geladen werden"
     },
@@ -39,7 +38,9 @@
         "chooseMaps": "Choose maps..."
       },
       "save": "Speichern"
-    }
+    },
+    "emptyTitle": "No templates yet",
+    "emptyDescription": "Save a tournament's setup as a template from the Tournament page, then start new tournaments from it here."
   },
   "saveTemplateModal": {
     "title": "Als Vorlage sichern",

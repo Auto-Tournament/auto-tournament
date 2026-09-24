@@ -3,7 +3,6 @@
     "header": {
       "createFromTournament": "从锦标赛创建模板"
     },
-    "empty": "还没有模板。请在“锦标赛”页面创建你的第一个模板。",
     "errors": {
       "load": "加载模板失败"
     },
@@ -39,7 +38,9 @@
         "chooseMaps": "Choose maps..."
       },
       "save": "保存"
-    }
+    },
+    "emptyTitle": "No templates yet",
+    "emptyDescription": "Save a tournament's setup as a template from the Tournament page, then start new tournaments from it here."
   },
   "saveTemplateModal": {
     "title": "保存为模板",
