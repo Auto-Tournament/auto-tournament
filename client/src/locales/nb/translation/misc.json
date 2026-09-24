@@ -71,7 +71,10 @@
       "gridTitle": "Populære spill",
       "continue": "Fortsett",
       "notNow": "Ikke nå",
-      "selectedGames": "Valgte spill"
+      "selectedGames": "Valgte spill",
+      "selectedCount": "{{count}} av {{max}} valgt",
+      "pickOne": "Velg minst ett spill",
+      "supportedLegend": "Turneringer spilles her"
     },
     "igdb": {
       "title": "Spilldata fra IGDB",
