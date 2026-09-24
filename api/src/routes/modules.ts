@@ -29,9 +29,6 @@ import {
 
 const router = Router();
 
-/** How long a browser may reuse the public manifest before asking again. */
-const PUBLIC_MANIFEST_MAX_AGE_S = 15;
-
 /**
  * @openapi
  * /api/modules/public:
@@ -47,7 +44,9 @@ const PUBLIC_MANIFEST_MAX_AGE_S = 15;
  *       API or the switch state: those are on the admin-only `GET
  *       /api/modules`. Built-in modules are compiled into the app and are
  *       not listed, so a stock install answers an empty list. Served from
- *       memory, cacheable for a few seconds.
+ *       memory with an ETag and `Cache-Control: public, no-cache`: a cache
+ *       may keep it, but revalidates on each page load (a 304 when nothing
+ *       changed), so enabling or disabling a module shows on the next load.
  *     responses:
  *       200:
  *         description: The modules to load
@@ -73,7 +72,10 @@ const PUBLIC_MANIFEST_MAX_AGE_S = 15;
 router.get('/public', async (_req: Request, res: Response) => {
   try {
     const modules = await listPublicModules();
-    res.setHeader('Cache-Control', `public, max-age=${PUBLIC_MANIFEST_MAX_AGE_S}`);
+    // Stored, but revalidated on every use: Express's ETag makes that a 304
+    // with no body when nothing changed. A max-age would make a browser boot
+    // from a list that no longer holds after a module is switched on or off.
+    res.setHeader('Cache-Control', 'public, no-cache');
     res.json({ success: true, modules });
   } catch (error) {
     log.error('[MODULES] Failed to list the public module manifest', error);

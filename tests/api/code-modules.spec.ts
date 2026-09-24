@@ -96,12 +96,16 @@ interface PublicManifest {
 async function strangerManifest(
   playwright: PlaywrightWorkerArgs['playwright'],
   baseURL: string | undefined
-): Promise<{ body: PublicManifest; cacheControl: string | undefined }> {
+): Promise<{ body: PublicManifest; cacheControl: string | undefined; etag: string | undefined }> {
   const stranger = await playwright.request.newContext({ baseURL });
   try {
     const response = await stranger.get('/api/modules/public');
     expect(response.status(), `public manifest: ${await response.text()}`).toBe(200);
-    return { body: await response.json(), cacheControl: response.headers()['cache-control'] };
+    return {
+      body: await response.json(),
+      cacheControl: response.headers()['cache-control'],
+      etag: response.headers()['etag'],
+    };
   } finally {
     await stranger.dispose();
   }
@@ -193,12 +197,28 @@ test.describe.serial('Code modules on disk', () => {
   test('a stranger gets the public manifest, listing the loaded module with only the public fields', {
     tag: ['@api', '@modules'],
   }, async ({ playwright }, testInfo) => {
-    const { body, cacheControl } = await strangerManifest(playwright, testInfo.project.use.baseURL);
+    const { body, cacheControl, etag } = await strangerManifest(
+      playwright,
+      testInfo.project.use.baseURL
+    );
     expect(body.success).toBe(true);
     expect(Array.isArray(body.modules)).toBe(true);
-    // Short-lived and shareable: every visitor's browser asks for it.
-    expect(cacheControl).toMatch(/max-age=\d+/);
-    expect(cacheControl).not.toMatch(/private|no-store/);
+    // Shareable, but revalidated on every page load, so a module switched on
+    // or off shows on the next load rather than after a max-age.
+    expect(cacheControl).toMatch(/\bpublic\b/);
+    expect(cacheControl).toMatch(/\bno-cache\b/);
+    expect(cacheControl).not.toMatch(/private|no-store|max-age=[1-9]/);
+    // Revalidating is cheap: an unchanged manifest is a 304 with no body.
+    expect(etag, 'the manifest carries an ETag').toBeTruthy();
+    const again = await playwright.request.newContext({ baseURL: testInfo.project.use.baseURL });
+    try {
+      const revalidated = await again.get('/api/modules/public', {
+        headers: { 'If-None-Match': etag! },
+      });
+      expect(revalidated.status()).toBe(304);
+    } finally {
+      await again.dispose();
+    }
 
     const valid = body.modules.find((module) => module.id === VALID);
     expect(valid, `${VALID} is enabled and loaded, so it is public`).toBeTruthy();
