@@ -303,7 +303,10 @@ export interface ManageResourcesProps {
 export type IntegrationRouteScope = 'admin' | 'admin-standalone';
 
 export interface IntegrationRoute {
-  /** Path from `paths.ts`. `admin` routes use it without the leading slash. */
+  /**
+   * The page's URL, from the SDK's `links` (`links.servers()`). Core nests an
+   * `admin` route in the shell itself, so the leading slash is optional there.
+   */
   path: string;
   scope: IntegrationRouteScope;
   element: ReactElement;

@@ -18,8 +18,7 @@
 
 import type { ReactNode } from 'react';
 import { Box, TextField, Typography } from '@mui/material';
-import { useModuleTranslation } from '../../../module-sdk';
-import { SegmentedControl } from '../../../components/tournament/setup/SegmentedControl';
+import { SegmentedControl, useModuleTranslation } from '../../../module-sdk';
 import type { TournamentGameSettingsStepProps } from '../../types';
 
 /** The module's key inside `tournament.settings`. */

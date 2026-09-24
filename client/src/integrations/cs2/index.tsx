@@ -6,7 +6,7 @@
 import StorageIcon from '@mui/icons-material/Storage';
 import MapIcon from '@mui/icons-material/Map';
 import type { ClientGameIntegration } from '../types';
-import { adminRoute, paths } from '../../paths';
+import { links } from '../../module-sdk';
 import { MatchServerPanel } from './match/MatchServerPanel';
 import { ServerAllocationWidget } from './servers/ServerAllocationWidget';
 import ServerModal from './servers/ServerModal';
@@ -36,7 +36,6 @@ import {
 import { Cs2ServersFreeTile } from './manage/Cs2ServersFreeTile';
 import Servers from './pages/Servers';
 import Maps from './pages/Maps';
-import ConnectSteam from './pages/ConnectSteam';
 import { cs2Locales } from './locales';
 
 export const cs2ClientIntegration: ClientGameIntegration = {
@@ -82,7 +81,7 @@ export const cs2ClientIntegration: ClientGameIntegration = {
     confirmView: Cs2StartConfirm,
     confirmLabel: 'Yes, Start Anyway',
     cancelLabel: 'Check Servers',
-    cancelPath: paths.servers,
+    cancelPath: links.servers(),
     confirmColor: 'warning',
     ownsFailure: (error) => parseCs2OutdatedError(error) !== null,
     failureView: Cs2OutdatedServersDialog,
@@ -132,15 +131,16 @@ export const cs2ClientIntegration: ClientGameIntegration = {
     manageResources: ServerGrid,
   },
 
+  // At URLs the platform keeps. The Steam connect page these used to include
+  // is core's now: Steam is the platform's sign-in, not this game's.
   routes: [
-    { path: paths.connectSteam, scope: 'admin-standalone', element: <ConnectSteam /> },
-    { path: adminRoute(paths.servers), scope: 'admin', element: <Servers /> },
-    { path: adminRoute(paths.maps), scope: 'admin', element: <Maps /> },
+    { path: links.servers(), scope: 'admin', element: <Servers /> },
+    { path: links.maps(), scope: 'admin', element: <Maps /> },
   ],
 
   // Labelled from this module's own strings: `cs2:nav.servers` and so on.
   navItems: [
-    { key: 'servers', path: paths.servers, icon: StorageIcon },
-    { key: 'maps', path: paths.maps, icon: MapIcon },
+    { key: 'servers', path: links.servers(), icon: StorageIcon },
+    { key: 'maps', path: links.maps(), icon: MapIcon },
   ],
 };

@@ -35,6 +35,15 @@ interface AuthContextType {
    */
   playerSteamId: string | null;
   /**
+   * The same player's game-neutral account id (`players.uid`), from
+   * /api/auth/me. Null when nobody is signed in or the Steam identity has no
+   * players row yet. Follows impersonation like `playerSteamId` does.
+   *
+   * This, not the Steam ID, is how game modules identify a player
+   * (DESIGN-module-client-api.md, decision 5).
+   */
+  playerUid: string | null;
+  /**
    * Helper for starting the Steam login flow. This simply redirects the user
    * to /api/auth/steam and lets the backend/Passport process take over.
    */
@@ -122,6 +131,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [playerSteamId, setPlayerSteamId] = useState<string | null>(null);
+  const [playerUid, setPlayerUid] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [adminHasSteamLinked, setAdminHasSteamLinked] = useState(false);
   const [adminProvider, setAdminProvider] = useState<string | null>(null);
@@ -152,6 +162,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           if (!response.ok) {
             setPlayerSteamId(null);
+            setPlayerUid(null);
             setHasPlayerRecord(false);
             return;
           }
@@ -159,6 +170,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const data: {
             authenticated?: boolean;
             steamId?: string;
+            uid?: string | null;
             hasPlayerRecord?: boolean;
             avatarUrl?: string;
             impersonation?: {
@@ -168,6 +180,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               realSteamId?: string | null;
             };
           } = await response.json();
+
+          // The effective identity's account id. /api/auth/me resolves the
+          // identity the same way /api/auth/admin/me does (session first,
+          // then cookie), so it matches whichever branch sets the Steam ID.
+          setPlayerUid(
+            data.authenticated && typeof data.uid === 'string' && data.uid !== '' ? data.uid : null
+          );
 
           // /api/auth/me reports the *effective* identity, so an active
           // impersonation is authoritative even when an admin session exists.
@@ -218,6 +237,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           cookieSteamId = null;
           cookieHasPlayerRecord = false;
           setPlayerSteamId(null);
+          setPlayerUid(null);
           setHasPlayerRecord(false);
         }
       };
@@ -377,6 +397,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const steamIdToClear = playerSteamId;
     setIsAdmin(false);
     setPlayerSteamId(null);
+    setPlayerUid(null);
     setImpersonation(null);
     setHasPlayerRecord(false);
     setAdminProvider(null);
@@ -428,6 +449,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         logout,
         isAuthenticated: isAdmin,
         playerSteamId,
+        playerUid,
         isPlayerAuthenticated: !!playerSteamId,
         needsSteamLink: isAdmin && !adminHasSteamLinked,
         isLoading,

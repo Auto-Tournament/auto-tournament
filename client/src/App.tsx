@@ -28,6 +28,7 @@ import TournamentOverview from './pages/TournamentOverview';
 import Home from './pages/Home';
 import Browse from './pages/Browse';
 import AccountConnections from './pages/AccountConnections';
+import ConnectSteam from './pages/ConnectSteam';
 import Templates from './pages/Templates';
 import ELOTemplates from './pages/ELOTemplates';
 import Layout from './components/layout/Layout';
@@ -39,6 +40,7 @@ import { ImpersonationBanner } from './components/common/ImpersonationBanner';
 import { listRouteIntegrations } from './integrations/registry';
 import { useModuleState } from './module-loader/useModuleState';
 import { ModulePendingRoute } from './components/common/ModuleNotInstalledNotice';
+import { MatchDetailsHost } from './components/modals/MatchDetailsHost';
 import { adminRoute, paths, playerProfilePath } from './paths';
 
 interface ProtectedRouteProps {
@@ -234,7 +236,7 @@ function AppRoutes() {
     return null; // Loading state is handled by ProtectedRoute
   }
 
-  // Pages the game integrations own (CS2: Servers, Maps, Steam connect).
+  // Pages the game integrations own (CS2: Servers, Maps).
   //
   // Every installed module's, not just the one the tournament runs: the
   // *links* to these pages follow the game (see `useShellIntegrations`), but
@@ -259,8 +261,18 @@ function AppRoutes() {
         }
       />
 
-      {/* Admin-only pages outside the shell, owned by the game integration
-          (CS2: the admin Steam linking flow at /connect-steam) */}
+      {/* Linking Steam to an admin who signed in with another provider. Steam
+          is the platform's sign-in, so this page is core's for every game. */}
+      <Route
+        path={paths.connectSteam}
+        element={
+          <ProtectedRoute>
+            <ConnectSteam />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Admin-only pages outside the shell, owned by a game integration */}
       {integrationRoutes
         .filter((route) => route.scope === 'admin-standalone')
         .map((route) => (
@@ -377,7 +389,9 @@ function AppRoutes() {
         {integrationRoutes
           .filter((route) => route.scope === 'admin')
           .map((route) => (
-            <Route key={route.path} path={route.path} element={route.element} />
+            // A module names its page by URL (`links.servers()`); nested in
+            // the shell, the route is that URL without its leading slash.
+            <Route key={route.path} path={adminRoute(route.path)} element={route.element} />
           ))}
         <Route path={adminRoute(paths.templates)} element={<Templates />} />
         <Route path={adminRoute(paths.eloTemplates)} element={<ELOTemplates />} />
@@ -411,6 +425,10 @@ export default function App() {
                   starts them); a module's routes and slots show a pending
                   state until it arrives, and re-render when it does. */}
               <AppRoutes />
+              {/* The one match details dialog a game module opens with the
+                  SDK's openMatchDetails(slug). Core's, so it needs no module
+                  to have arrived. Core pages keep their own. */}
+              <MatchDetailsHost />
             </PageHeaderProvider>
           </SnackbarProvider>
         </AuthProvider>

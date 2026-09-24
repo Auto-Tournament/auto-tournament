@@ -1,10 +1,4 @@
 {
-  "connectSteam": {
-    "title": "Koble til Steam-kontoen din",
-    "bodyIntro": "Du er nesten ferdig. For å bruke turneringsplattformen med denne kontoen (for eksempel etter innlogging med Discord, Keycloak eller GitHub) må du koble til en Steam-profil.",
-    "bodyRequirement": "Ved å koble til Steam kan systemet gjenkjenne deg som spiller, og det kreves for å logge inn via andre leverandører enn Steam.",
-    "button": "Koble til med Steam"
-  },
   "nav": {
     "servers": "Servere",
     "maps": "Kart og kartpooler"

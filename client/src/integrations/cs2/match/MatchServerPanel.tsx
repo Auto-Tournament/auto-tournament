@@ -1,7 +1,7 @@
 import { Box, Button, Typography, Alert } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { FadeInImage } from '../../../components/common/FadeInImage';
+import { FadeInImage } from '../common/FadeInImage';
 import { tokens, mono, withAlpha, useModuleTranslation } from '../../../module-sdk';
 import type { MatchConnectPanelProps as MatchServerPanelProps } from '../../types';
 

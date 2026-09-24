@@ -1,7 +1,6 @@
 import { Box, TextField, Typography } from '@mui/material';
-import { useModuleTranslation } from '../../../module-sdk';
+import { SegmentedControl, useModuleTranslation } from '../../../module-sdk';
 import { deriveOvertimeOption, type OvertimeOption } from '../../../components/tournament/ShuffleTournamentConfigStep';
-import { SegmentedControl } from '../../../components/tournament/setup/SegmentedControl';
 import type { TournamentRulesStepProps as Cs2MatchSettingsProps } from '../../types';
 
 /**

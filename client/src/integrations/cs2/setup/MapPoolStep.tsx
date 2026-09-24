@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { Warning as WarningIcon } from '@mui/icons-material';
 import { useModuleTranslation } from '../../../module-sdk';
-import { SortableMapList } from '../../../components/tournament/SortableMapList';
+import { SortableMapList } from './SortableMapList';
 import { validateMapCount, requiresVeto } from '../../../utils/tournamentVerification';
 import type { TournamentContentStepProps as MapPoolStepProps } from '../../types';
 

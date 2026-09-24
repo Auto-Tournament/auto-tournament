@@ -23,7 +23,7 @@ import {
   signImpersonatedSteamId,
   IMPERSONATION_COOKIE_NAME,
 } from '../utils/impersonationCookie';
-import { resolveViewerIdentity } from '../utils/viewerIdentity';
+import { resolveViewerAccount, resolveViewerIdentity } from '../utils/viewerIdentity';
 import { authenticateServiceToken, requireAuth } from '../middleware/auth';
 import {
   peekOAuthLinkIntent,
@@ -1032,11 +1032,24 @@ router.get('/me', async (req: Request, res: Response) => {
       // treat lookup failure as no record
     }
 
+    // The same account by its game-neutral `players.uid`, which is how game
+    // modules name a player (DESIGN-module-client-api.md, decision 5). Null
+    // for a signed-in Steam user with no players row yet.
+    let uid: string | null = null;
+    if (hasPlayerRecord) {
+      try {
+        uid = (await resolveViewerAccount(req)).uid;
+      } catch {
+        // best-effort: the Steam identity above still answers
+      }
+    }
+
     log.debug('/api/auth/me: returning authenticated Steam identity', { steamId, hasPlayerRecord });
 
     return res.json({
       authenticated: true,
       steamId,
+      uid,
       hasPlayerRecord,
       impersonation: identity.isImpersonating
         ? {

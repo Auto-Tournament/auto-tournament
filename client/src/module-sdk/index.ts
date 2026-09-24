@@ -22,12 +22,17 @@
  *
  * This file will become a versioned public API (`clientApi`, 0.x in
  * lockstep with the platform until a module that is not ours depends on it).
- * Adding an export is a minor; removing, renaming or narrowing one is a
- * major. So it starts small on purpose: what CS2 and manual-report use today
- * and the design note lists, re-exported unchanged. Anything a module still
+ * Adding an export is a patch (`^0.1.0` still matches); removing, renaming or
+ * narrowing one is a break. So it starts small on purpose: what CS2 and
+ * manual-report use today and the design note lists, re-exported unchanged. Anything a module still
  * reaches past it is a finding to review, not something to add here by
  * reflex.
  */
+
+// Links first: bundled modules read them while their integration object is
+// built, so `./links` (which imports only `paths`) has to be evaluated before
+// any import below could lead back into a module.
+export { links } from './links';
 
 import { useTranslation } from 'react-i18next';
 import { useAuth as useAuthInternal } from '../contexts/AuthContext';
@@ -35,6 +40,7 @@ import { useAuth as useAuthInternal } from '../contexts/AuthContext';
 // Data access
 export { api, apiErrorMessage } from '../utils/api';
 export { onSocketReconnect } from '../utils/socketResync';
+export { useSocket } from '../hooks/useSocket';
 
 // Host contexts
 export { useSnackbar } from '../contexts/SnackbarContext';
@@ -43,12 +49,30 @@ export { usePageHeader } from '../contexts/PageHeaderContext';
 /**
  * What a module may know about the viewer: whether they are an admin, and who
  * they are. The platform's auth context carries more (login and logout flows,
- * impersonation, provider profile); a module gets none of it.
+ * impersonation, provider profile); a module gets none of it. Signing in,
+ * Steam included, is the platform's.
  */
-export type ModuleAuth = Pick<
-  ReturnType<typeof useAuthInternal>,
-  'isAuthenticated' | 'isLoading' | 'isPlayerAuthenticated' | 'playerSteamId'
->;
+export type ModuleAuth = {
+  /** An admin session is active. */
+  isAuthenticated: boolean;
+  /** The platform is still finding out who the viewer is. */
+  isLoading: boolean;
+  /** Someone is signed in as a player (admins who linked Steam included). */
+  isPlayerAuthenticated: boolean;
+  /**
+   * The viewer's game-neutral account id (`players.uid`), or null when
+   * nobody is signed in or the account has no players row yet. Follows
+   * impersonation. This is how a module identifies a player: a module that
+   * needs a game account id (CS2's Steam ID) maps the uid to it from its own
+   * data (DESIGN-module-client-api.md, decision 5).
+   */
+  playerUid: string | null;
+  /**
+   * @deprecated Identify players by `playerUid`. Kept so 0.1.0 modules still
+   * load; it goes in the next breaking version.
+   */
+  playerSteamId: string | null;
+};
 
 /** The host's auth context, narrowed to {@link ModuleAuth}. Same hook, same value. */
 export const useAuth: () => ModuleAuth = useAuthInternal;
@@ -56,8 +80,12 @@ export const useAuth: () => ModuleAuth = useAuthInternal;
 // Design tokens
 export { tokens, mono, withAlpha } from '../theme/tokens';
 
+// Match details: core's dialog, opened by slug (decision 7)
+export { openMatchDetails } from '../components/modals/matchDetailsOpener';
+
 // Components
 export { default as ConfirmDialog } from '../components/modals/ConfirmDialog';
+export { SegmentedControl } from '../components/tournament/setup/SegmentedControl';
 export { EmptyState } from '../components/shared/EmptyState';
 export { StatusDot } from '../components/common/ui';
 export { PlayerAvatar } from '../components/player/PlayerAvatar';
