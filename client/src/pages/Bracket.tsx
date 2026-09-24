@@ -11,7 +11,6 @@ import {
   ToggleButtonGroup,
   IconButton,
   Chip,
-  Card,
   Tooltip,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -36,9 +35,9 @@ import { useResourceAvailability } from '../hooks/useResourceAvailability';
 import { useIntegrationFor } from '../integrations/registry';
 import { api } from '../utils/api';
 import { StartTournamentButton } from '../components/dashboard';
-import { PageHead } from '../components/common/ui';
 import type { Match } from '../types';
 import { useTranslation } from 'react-i18next';
+import { PageHead, Panel, RowList, SectionHead } from '../components/common/ui';
 
 // Interfaces are now imported from useBracket hook
 
@@ -261,7 +260,7 @@ export default function Bracket() {
     return (
       <Box sx={{ width: '100%', height: '100%' }}>
         {pageHead}
-        <Card data-testid="bracket-empty-state" sx={{ textAlign: 'center', py: 8, px: 3 }}>
+        <Panel data-testid="bracket-empty-state" sx={{ textAlign: 'center', py: 8, px: 3 }}>
           <EmojiEventsIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
             {t('bracket.shuffleEmpty.title')}
@@ -283,7 +282,7 @@ export default function Bracket() {
               {t('bracket.shuffleEmpty.viewLeaderboard')}
             </Button>
           </Stack>
-        </Card>
+        </Panel>
       </Box>
     );
   }
@@ -292,7 +291,7 @@ export default function Bracket() {
     return (
       <Box sx={{ width: '100%', height: '100%' }}>
         {pageHead}
-        <Card data-testid="bracket-empty-state" sx={{ textAlign: 'center', py: 8 }}>
+        <Panel data-testid="bracket-empty-state" sx={{ textAlign: 'center', py: 8, px: 3 }}>
           <EmojiEventsIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
             {t('bracket.notGenerated.title')}
@@ -303,7 +302,7 @@ export default function Bracket() {
           <Button variant="contained" onClick={() => navigate('/tournament')}>
             {t('bracket.notGenerated.goToSettings')}
           </Button>
-        </Card>
+        </Panel>
       </Box>
     );
   }
@@ -406,95 +405,73 @@ export default function Bracket() {
       {/* Header - hidden in fullscreen mode */}
       {!isFullscreen && (
         <>
-          {/* Title and controls share a row from `sm` up. On a phone they
-              stack and the controls wrap, instead of breaking the name over
-              three lines and pushing Refresh off the screen. */}
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: { xs: 'column', sm: 'row' },
-              justifyContent: 'space-between',
-              alignItems: { xs: 'flex-start', sm: 'center' },
-              gap: 2,
-              mb: { xs: 2, sm: 4 },
-              p: { xs: 0, sm: 2 },
-            }}
-          >
-            <Box display="flex" alignItems="center" gap={2} minWidth={0}>
-              <Box data-testid="bracket-tournament-info" minWidth={0}>
-                <Typography
-                  variant="h4"
-                  component="h1"
-                  fontWeight={600}
-                  gutterBottom
-                  sx={{ overflowWrap: 'anywhere' }}
-                >
-                  {tournament.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {t(`tournament.typeSelector.types.${tournament.type}.label`)} •{' '}
-                  {tournament.format.toUpperCase()}
-                </Typography>
+          {/* The page's head (the drafts' `.head`): the tournament on the
+              left, the view controls on the right; they wrap under the name
+              on a phone. */}
+          <PageHead
+            data-testid="bracket-tournament-info"
+            title={tournament.name}
+            subtitle={`${t(`tournament.typeSelector.types.${tournament.type}.label`)} • ${tournament.format.toUpperCase()}`}
+            actions={
+              <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
+            {tournament.status === 'setup' && (
+              <StartTournamentButton variant="contained" size="medium" onSuccess={loadBracket} />
+            )}
+            <ToggleButtonGroup
+              value={effectiveViewMode}
+              exclusive
+              onChange={(_, newMode) => {
+                if (!newMode) return;
+                // Shuffle tournaments do not support visual mode
+                if (tournament.type === 'shuffle' && newMode === 'visual') return;
+                setViewMode(newMode);
+              }}
+              size="small"
+            >
+              <Tooltip
+                title={
+                  tournament.type === 'shuffle'
+                    ? t('bracket.view.shuffleNoVisual')
+                    : ''
+                }
+                disableHoverListener={tournament.type !== 'shuffle'}
+                enterDelay={500}
+              >
+                <span>
+                  <ToggleButton value="visual" disabled={tournament.type === 'shuffle'}>
+                    <AccountTreeOutlinedIcon sx={{ mr: 1 }} fontSize="small" />
+                    {t('bracket.view.visual')}
+                  </ToggleButton>
+                </span>
+              </Tooltip>
+              <ToggleButton value="list">
+                <ViewListIcon sx={{ mr: 1 }} fontSize="small" />
+                {t('bracket.view.list')}
+              </ToggleButton>
+            </ToggleButtonGroup>
+            <Button
+              variant="outlined"
+              startIcon={<RefreshIcon />}
+              onClick={loadBracket}
+              size="small"
+            >
+              {t('bracket.view.refresh')}
+            </Button>
+            <IconButton
+              onClick={toggleFullscreen}
+              color="primary"
+              title={isFullscreen ? t('bracket.view.exitFullscreen') : t('bracket.view.enterFullscreen')}
+            >
+              {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+            </IconButton>
               </Box>
-            </Box>
-            <Box display="flex" gap={{ xs: 1, sm: 2 }} alignItems="center" flexWrap="wrap">
-              {tournament.status === 'setup' && (
-                <StartTournamentButton variant="contained" size="medium" onSuccess={loadBracket} />
-              )}
-              <ToggleButtonGroup
-                value={effectiveViewMode}
-                exclusive
-                onChange={(_, newMode) => {
-                  if (!newMode) return;
-                  // Shuffle tournaments do not support visual mode
-                  if (tournament.type === 'shuffle' && newMode === 'visual') return;
-                  setViewMode(newMode);
-                }}
-                size="small"
-              >
-                <Tooltip
-                  title={
-                    tournament.type === 'shuffle'
-                      ? t('bracket.view.shuffleNoVisual')
-                      : ''
-                  }
-                  disableHoverListener={tournament.type !== 'shuffle'}
-                  enterDelay={500}
-                >
-                  <span>
-                    <ToggleButton value="visual" disabled={tournament.type === 'shuffle'}>
-                      <AccountTreeOutlinedIcon sx={{ mr: 1 }} fontSize="small" />
-                      {t('bracket.view.visual')}
-                    </ToggleButton>
-                  </span>
-                </Tooltip>
-                <ToggleButton value="list">
-                  <ViewListIcon sx={{ mr: 1 }} fontSize="small" />
-                  {t('bracket.view.list')}
-                </ToggleButton>
-              </ToggleButtonGroup>
-              <Button
-                variant="outlined"
-                startIcon={<RefreshIcon />}
-                onClick={loadBracket}
-                size="small"
-              >
-                {t('bracket.view.refresh')}
-              </Button>
-              <IconButton
-                onClick={toggleFullscreen}
-                color="primary"
-                title={isFullscreen ? t('bracket.view.exitFullscreen') : t('bracket.view.enterFullscreen')}
-              >
-                {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
-              </IconButton>
-            </Box>
-          </Box>
+            }
+          />
         </>
       )}
 
       {!isFullscreen && (
-        <Box px={2}>
+        <Box>
           <ChampionBanner tournament={tournament} />
         </Box>
       )}
@@ -634,20 +611,17 @@ export default function Bracket() {
               if (visibleMatches.length === 0) return null;
 
               return (
-                <Box key={round} mb={4}>
-                  <Typography variant="h6" fontWeight={600} mb={2}>
-                    {getBracketRoundLabel(round)}
-                    {tournament.type === 'shuffle' && getRoundMapLabel(round) && (
-                      <Chip
-                        label={getRoundMapLabel(round)!}
-                        size="small"
-                        sx={{ ml: 1 }}
-                        color="primary"
-                        variant="outlined"
-                      />
-                    )}
-                  </Typography>
-                  <Stack spacing={1.5}>
+                <Box component="section" key={round} mb={6} aria-labelledby={`bracket-round-${round}`}>
+                  <SectionHead
+                    id={`bracket-round-${round}`}
+                    title={getBracketRoundLabel(round)}
+                    action={
+                      tournament.type === 'shuffle' && getRoundMapLabel(round) ? (
+                        <Chip label={getRoundMapLabel(round)!} size="small" />
+                      ) : undefined
+                    }
+                  />
+                  <RowList>
                     {visibleMatches.map((match) => (
                       <MatchListCard
                         key={match.id}
@@ -658,7 +632,7 @@ export default function Bracket() {
                         onClick={() => handleMatchClick(match)}
                       />
                     ))}
-                  </Stack>
+                  </RowList>
                 </Box>
               );
             })}

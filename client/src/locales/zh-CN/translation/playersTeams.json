@@ -14,7 +14,10 @@
     "searchError": "搜索选手失败，请重试。",
     "modalTitle": "找到多名选手",
     "modalSelectPrompt": "找到 {{count}} 名选手，选择一位查看其资料：",
-    "modalElo": "ELO：{{elo}}"
+    "modalElo": "ELO：{{elo}}",
+    "directoryLabel": "Players",
+    "directoryNoMatch": "Nobody here matches that. Press Enter to look it up on Steam.",
+    "directoryMore": "{{count}} more. Type to narrow the list."
   },
   "playerPage": {
     "playerNotFound": "该选手不存在。",
@@ -255,7 +258,11 @@
     },
     "loadError": "加载战队失败",
     "importSuccess": "成功导入 {{count}} 支战队",
-    "viewPublicPage": "View public team page"
+    "viewPublicPage": "View public team page",
+    "rowActions": "Actions for {{name}}",
+    "edit": "Edit",
+    "noPlayers": "No players yet",
+    "matchLinkCopied": "Team match link copied"
   },
   "playersPage": {
     "headerSelect": {
@@ -295,7 +302,9 @@
     "skillRatingTooltip": "Skill Rating 基于 OpenSkill，数值越高越好。",
     "skillRatingLabel": "Skill Rating：{{elo}}",
     "matchesCount_one": "{{count}} 场比赛",
-    "matchesCount_other": "{{count}} 场比赛"
+    "matchesCount_other": "{{count}} 场比赛",
+    "rowActions": "Actions for {{name}}",
+    "edit": "Edit"
   },
   "discordId": {
     "noDiscord": "无 Discord",

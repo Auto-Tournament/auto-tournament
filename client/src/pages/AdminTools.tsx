@@ -1,3 +1,4 @@
+import { pageTitle } from '../utils/pageTitle';
 import React from 'react';
 import {
   Typography,
@@ -6,7 +7,6 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Divider,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { api } from '../utils/api';
@@ -14,8 +14,7 @@ import { LogViewer } from '../components/admin/LogViewer';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { useInstalledIntegrations } from '../integrations/registry';
 import { useTranslation } from 'react-i18next';
-import { PageHead } from '../components/common/ui';
-import { pageTitle } from '../utils/pageTitle';
+import { PageHead, SectionHead } from '../components/common/ui';
 
 /**
  * Admin tools: logs and maintenance, which every instance has, then each
@@ -61,10 +60,8 @@ const AdminTools: React.FC = () => {
       <PageHead title={t('layout.pageTitle.adminTools')} subtitle={t('adminToolsPage.description')} />
 
       {/* Match recovery */}
-      <Box component="section" data-testid="admin-tools-recovery">
-        <Typography variant="h5" fontWeight={600} mb={2}>
-          {t('adminToolsPage.recovery.title')}
-        </Typography>
+      <Box component="section" data-testid="admin-tools-recovery" aria-labelledby="admin-tools-recovery-heading">
+        <SectionHead id="admin-tools-recovery-heading" title={t('adminToolsPage.recovery.title')} sx={{ mb: 1 }} />
         <Typography variant="body2" color="text.secondary" mb={2}>
           {t('adminToolsPage.recovery.description')}
         </Typography>
@@ -73,16 +70,14 @@ const AdminTools: React.FC = () => {
         </Button>
       </Box>
 
-      <Divider sx={{ my: 4 }} />
-
       {/* Logs */}
-      <Box component="section" data-testid="admin-tools-logs">
-        <Typography variant="h5" fontWeight={600} mb={3}>
-          {t('adminToolsPage.monitoring.title')}
-        </Typography>
+      <Box component="section" mt={6} data-testid="admin-tools-logs" aria-labelledby="admin-tools-logs-heading">
+        <SectionHead id="admin-tools-logs-heading" title={t('adminToolsPage.monitoring.title')} />
         <Accordion>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="h6">{t('adminToolsPage.monitoring.appLogs')}</Typography>
+            <Typography variant="subtitle1" component="h3" fontWeight={600}>
+              {t('adminToolsPage.monitoring.appLogs')}
+            </Typography>
           </AccordionSummary>
           <AccordionDetails>
             <LogViewer />
@@ -92,8 +87,7 @@ const AdminTools: React.FC = () => {
 
       {/* Each installed module's own tools, after core's */}
       {moduleSections.map(({ id, Section }) => (
-        <Box key={id} data-testid={`admin-tools-module-${id}`}>
-          <Divider sx={{ my: 4 }} />
+        <Box key={id} mt={6} data-testid={`admin-tools-module-${id}`}>
           <Section />
         </Box>
       ))}

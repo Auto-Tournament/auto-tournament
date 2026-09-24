@@ -1,28 +1,20 @@
 import { pageTitle } from '../utils/pageTitle';
-import { useState, useEffect, useCallback, type ReactNode } from 'react';
-import { PageHead } from '../components/common/ui';
+import { useState, useEffect, useCallback } from 'react';
 import { useSnackbar } from '../contexts/SnackbarContext';
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Typography,
-  Grid,
-  Chip,
-  CircularProgress,
-  IconButton,
-  Tooltip,
-} from '@mui/material';
+import { Box, Button, Typography, Chip, Checkbox, CircularProgress } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import GroupsIcon from '@mui/icons-material/Groups';
+import EditIcon from '@mui/icons-material/Edit';
+import PublicIcon from '@mui/icons-material/Public';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { Link as RouterLink } from 'react-router-dom';
+import LinkIcon from '@mui/icons-material/Link';
 import { api } from '../utils/api';
 import TeamModal from '../components/modals/TeamModal';
 import { TeamImportModal } from '../components/modals/TeamImportModal';
-import { TeamLinkActions } from '../components/teams/TeamLinkActions';
-import { getTeamProfileUrl } from '../utils/teamLinks';
+import { copyTeamMatchUrl, getTeamMatchUrl, getTeamProfileUrl } from '../utils/teamLinks';
+import { PageHead, Row, RowList } from '../components/common/ui';
+import { RowMenu } from '../components/common/RowMenu';
+import { tokens } from '../theme/tokens';
 import { EmptyState } from '../components/shared/EmptyState';
 import ConfirmDialog from '../components/modals/ConfirmDialog';
 import { ImportWarningsMessage } from '../components/shared/ImportWarningsMessage';
@@ -45,95 +37,6 @@ export default function Teams() {
   useEffect(() => {
     document.title = pageTitle(t('layout.pageTitle.teams'));
   }, [t]);
-
-  // The page head's buttons
-  let headerActions: ReactNode = null;
-  if (teams.length > 0) {
-    const visibleTeamsForHeader = teams.filter((team) => !team.id.startsWith('shuffle-'));
-    const allVisibleSelected =
-      visibleTeamsForHeader.length > 0 &&
-      visibleTeamsForHeader.every((team) => selectedTeamIds.has(team.id));
-
-    headerActions = (
-      <Box display="flex" gap={2} flexWrap="wrap">
-        <Button
-          variant={selectionMode ? 'contained' : 'outlined'}
-          color={selectionMode ? 'secondary' : 'inherit'}
-          size="small"
-          onClick={() => {
-            setSelectionMode((prev) => !prev);
-            if (selectionMode) {
-              setSelectedTeamIds(() => new Set());
-            }
-          }}
-        >
-          {selectionMode ? t('teamsPage.headerSelect.done') : t('teamsPage.headerSelect.select')}
-        </Button>
-        {selectionMode && (
-          <>
-            <Button
-              variant="outlined"
-              color="inherit"
-              size="small"
-              disabled={visibleTeamsForHeader.length === 0}
-              onClick={() => {
-                setSelectedTeamIds((prev) => {
-                  const next = new Set(prev);
-                  if (allVisibleSelected) {
-                    visibleTeamsForHeader.forEach((team) => {
-                      next.delete(team.id);
-                    });
-                  } else {
-                    visibleTeamsForHeader.forEach((team) => {
-                      next.add(team.id);
-                    });
-                  }
-                  return next;
-                });
-              }}
-            >
-              {allVisibleSelected
-                ? t('teamsPage.headerSelect.unselectAll')
-                : t('teamsPage.headerSelect.selectAll')}
-            </Button>
-            <Button
-              variant="outlined"
-              color="error"
-              size="small"
-              disabled={selectedTeamIds.size === 0}
-              onClick={() => {
-                if (selectedTeamIds.size === 0) return;
-                setBulkDeleteConfirmOpen(true);
-              }}
-            >
-              {t('teamsPage.headerSelect.deleteSelected')}
-            </Button>
-          </>
-        )}
-        {!selectionMode && (
-          <>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => setImportModalOpen(true)}
-              data-testid="import-teams-button"
-            >
-              {t('teamsPage.headerActions.importJson')}
-            </Button>
-            <Button
-              data-testid="add-team-button"
-              variant="contained"
-              size="small"
-              startIcon={<AddIcon />}
-              onClick={() => handleOpenModal()}
-            >
-              {t('teamsPage.headerActions.addTeam')}
-            </Button>
-          </>
-        )}
-      </Box>
-    );
-  }
 
   const loadTeams = useCallback(async () => {
     try {
@@ -229,22 +132,111 @@ export default function Teams() {
 
   if (loading) {
     return (
-      <Box>
+      <>
         <PageHead title={t('layout.pageTitle.teams')} />
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-          <CircularProgress />
-        </Box>
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress />
       </Box>
+      </>
     );
   }
 
   // Hide shuffle-generated temporary teams from admin UI (IDs prefixed with "shuffle-")
   const visibleTeams = teams.filter((team) => !team.id.startsWith('shuffle-'));
   const hasHiddenShuffleTeams = teams.some((team) => team.id.startsWith('shuffle-'));
+  const allVisibleSelected =
+    visibleTeams.length > 0 && visibleTeams.every((team) => selectedTeamIds.has(team.id));
+
+  const copyMatchLink = async (teamId: string) => {
+    if (await copyTeamMatchUrl(teamId)) showSuccess(t('teamsPage.matchLinkCopied'));
+  };
+
+  // The page's own actions, beside its title (the drafts' `.head`), once
+  // there is a team; the empty state offers them itself.
+  const headActions =
+    teams.length === 0 ? null : (
+      <>
+        <Button
+          variant={selectionMode ? 'contained' : 'outlined'}
+          color={selectionMode ? 'secondary' : 'inherit'}
+          size="small"
+          onClick={() => {
+            setSelectionMode((prev) => !prev);
+            if (selectionMode) {
+              setSelectedTeamIds(() => new Set());
+            }
+          }}
+        >
+          {selectionMode ? t('teamsPage.headerSelect.done') : t('teamsPage.headerSelect.select')}
+        </Button>
+        {selectionMode && (
+          <>
+            <Button
+              variant="outlined"
+              color="inherit"
+              size="small"
+              disabled={visibleTeams.length === 0}
+              onClick={() => {
+                setSelectedTeamIds((prev) => {
+                  const next = new Set(prev);
+                  if (allVisibleSelected) {
+                    visibleTeams.forEach((team) => {
+                      next.delete(team.id);
+                    });
+                  } else {
+                    visibleTeams.forEach((team) => {
+                      next.add(team.id);
+                    });
+                  }
+                  return next;
+                });
+              }}
+            >
+              {allVisibleSelected
+                ? t('teamsPage.headerSelect.unselectAll')
+                : t('teamsPage.headerSelect.selectAll')}
+            </Button>
+            <Button
+              variant="outlined"
+              color="error"
+              size="small"
+              disabled={selectedTeamIds.size === 0}
+              onClick={() => {
+                if (selectedTeamIds.size === 0) return;
+                setBulkDeleteConfirmOpen(true);
+              }}
+            >
+              {t('teamsPage.headerSelect.deleteSelected')}
+            </Button>
+          </>
+        )}
+        {!selectionMode && (
+          <>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => setImportModalOpen(true)}
+              data-testid="import-teams-button"
+            >
+              {t('teamsPage.headerActions.importJson')}
+            </Button>
+            <Button
+              data-testid="add-team-button"
+              variant="contained"
+              size="small"
+              startIcon={<AddIcon />}
+              onClick={() => handleOpenModal()}
+            >
+              {t('teamsPage.headerActions.addTeam')}
+            </Button>
+          </>
+        )}
+      </>
+    );
 
   return (
     <Box data-testid="teams-page" sx={{ width: '100%', height: '100%' }}>
-      <PageHead title={t('layout.pageTitle.teams')} actions={headerActions} />
+      <PageHead title={t('layout.pageTitle.teams')} actions={headActions} />
       {hasHiddenShuffleTeams && (
         <Box mb={2}>
           <Typography variant="body2" color="text.secondary">
@@ -273,23 +265,23 @@ export default function Teams() {
           </Box>
         </Box>
       ) : (
-        <Grid container spacing={2}>
+        // One row per team (the drafts' `.row-list.panel`): name and tag,
+        // the roster at a glance, and the links behind the row's menu. A
+        // click on the row edits the team, or picks it while selecting.
+        <RowList data-testid="teams-list" aria-label={t('layout.pageTitle.teams')}>
           {visibleTeams.map((team) => {
             // Slugify team name for test ID (matches test expectations)
             const teamNameSlug = team.name.toLowerCase().replace(/\s+/g, '-');
+            const selected = selectedTeamIds.has(team.id);
+            const roster = team.players ?? [];
+            const count = roster.length;
             return (
-            <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }} key={team.id}>
-              <Card
+              <Row
+                key={team.id}
                 data-testid={`team-card-${teamNameSlug}`}
-                sx={{
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
-                  border: selectedTeamIds.has(team.id) ? 2 : 1,
-                  borderStyle: 'solid',
-                  borderColor: selectedTeamIds.has(team.id) ? 'primary.main' : 'divider',
-                  '&:hover': {
-                    bgcolor: 'var(--at-paper3)',
-                  },
+                columns={{
+                  xs: selectionMode ? 'auto minmax(0, 1fr) auto' : 'minmax(0, 1fr) auto',
+                  sm: selectionMode ? 'auto minmax(0, 1fr) auto auto' : 'minmax(0, 1fr) auto auto',
                 }}
                 onClick={() => {
                   if (selectionMode) {
@@ -298,52 +290,81 @@ export default function Teams() {
                     handleOpenModal(team);
                   }
                 }}
+                sx={{
+                  cursor: 'pointer',
+                  py: 1.5,
+                  bgcolor: selected ? tokens.color.paper3 : 'transparent',
+                  '&:hover': { bgcolor: tokens.color.paper3 },
+                  '&:first-of-type': { borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit' },
+                  '&:last-of-type': { borderBottomLeftRadius: 'inherit', borderBottomRightRadius: 'inherit' },
+                }}
               >
-                <CardContent>
-                  <Box display="flex" justifyContent="space-between" alignItems="start" mb={2}>
-                    <Box>
-                      <Typography variant="h6" fontWeight={600} gutterBottom>
-                        {team.name}
-                      </Typography>
-                      {team.tag && <Chip label={team.tag} size="small" sx={{ fontWeight: 600 }} />}
-                    </Box>
-                    <Box display="flex" gap={0.5}>
-                      <Tooltip title={t('teamsPage.viewPublicPage')}>
-                        <IconButton
-                          size="small"
-                          component={RouterLink}
-                          to={getTeamProfileUrl(team.id)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          data-testid={`team-view-page-${teamNameSlug}`}
-                        >
-                          <OpenInNewIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <TeamLinkActions teamId={team.id} />
-                    </Box>
-                  </Box>
-
-                  <Box display="flex" alignItems="center" gap={1} mb={1}>
-                    <GroupsIcon fontSize="small" color="action" />
-                    <Typography variant="body2" color="text.secondary">
-                      {(() => {
-                        const count = team.players?.length ?? 0;
-                        const key =
-                          count === 1
-                            ? 'teamsPage.playersCount.one'
-                            : 'teamsPage.playersCount.other';
-                        return t(key, { count });
-                      })()}
+                {selectionMode && (
+                  <Checkbox
+                    size="small"
+                    checked={selected}
+                    onClick={(event) => event.stopPropagation()}
+                    onChange={() => toggleTeamSelected(team.id)}
+                    slotProps={{ input: { 'aria-label': team.name } }}
+                    sx={{ m: -1 }}
+                  />
+                )}
+                <Box sx={{ minWidth: 0 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+                    <Typography variant="body1" fontWeight={600} noWrap>
+                      {team.name}
                     </Typography>
+                    {team.tag && <Chip label={team.tag} size="small" />}
                   </Box>
-                </CardContent>
-              </Card>
-            </Grid>
+                  {/* The roster at a glance. */}
+                  <Typography variant="body2" color="text.secondary" noWrap>
+                    {count > 0
+                      ? roster.map((player) => player.name).join(', ')
+                      : t('teamsPage.noPlayers')}
+                  </Typography>
+                </Box>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ display: { xs: 'none', sm: 'block' }, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}
+                >
+                  {t(count === 1 ? 'teamsPage.playersCount.one' : 'teamsPage.playersCount.other', { count })}
+                </Typography>
+                <RowMenu
+                  label={t('teamsPage.rowActions', { name: team.name })}
+                  data-testid={`team-actions-${teamNameSlug}`}
+                  items={[
+                    {
+                      key: 'edit',
+                      label: t('teamsPage.edit'),
+                      icon: <EditIcon fontSize="small" />,
+                      onClick: () => handleOpenModal(team),
+                    },
+                    {
+                      key: 'public',
+                      label: t('teamsPage.viewPublicPage'),
+                      icon: <PublicIcon fontSize="small" />,
+                      href: getTeamProfileUrl(team.id),
+                      'data-testid': `team-view-page-${teamNameSlug}`,
+                    },
+                    {
+                      key: 'match',
+                      label: t('teamLinkActions.open'),
+                      icon: <OpenInNewIcon fontSize="small" />,
+                      href: getTeamMatchUrl(team.id),
+                    },
+                    {
+                      key: 'copy',
+                      label: t('teamLinkActions.copy'),
+                      icon: <LinkIcon fontSize="small" />,
+                      onClick: () => void copyMatchLink(team.id),
+                    },
+                  ]}
+                />
+              </Row>
             );
           })}
-        </Grid>
+        </RowList>
       )}
 
       <TeamModal

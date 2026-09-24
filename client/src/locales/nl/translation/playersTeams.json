@@ -14,7 +14,10 @@
     "searchError": "Zoeken naar speler mislukt. Probeer opnieuw.",
     "modalTitle": "Meerdere spelers gevonden",
     "modalSelectPrompt": "{{count}} spelers gevonden. Selecteer er één om het profiel te bekijken:",
-    "modalElo": "ELO-score: {{elo}}"
+    "modalElo": "ELO-score: {{elo}}",
+    "directoryLabel": "Players",
+    "directoryNoMatch": "Nobody here matches that. Press Enter to look it up on Steam.",
+    "directoryMore": "{{count}} more. Type to narrow the list."
   },
   "playerPage": {
     "playerNotFound": "Deze speler bestaat niet.",
@@ -255,7 +258,11 @@
     },
     "loadError": "Kon teams niet laden",
     "importSuccess": "{{count}} team(s) succesvol geïmporteerd",
-    "viewPublicPage": "View public team page"
+    "viewPublicPage": "View public team page",
+    "rowActions": "Actions for {{name}}",
+    "edit": "Edit",
+    "noPlayers": "No players yet",
+    "matchLinkCopied": "Team match link copied"
   },
   "playersPage": {
     "headerSelect": {
@@ -295,7 +302,9 @@
     "skillRatingTooltip": "Skill Rating is gebaseerd op OpenSkill; hoger is beter.",
     "skillRatingLabel": "Vaardigheidsrating: {{elo}}",
     "matchesCount_one": "{{count}} wedstrijd",
-    "matchesCount_other": "{{count}} wedstrijden"
+    "matchesCount_other": "{{count}} wedstrijden",
+    "rowActions": "Actions for {{name}}",
+    "edit": "Edit"
   },
   "discordId": {
     "noDiscord": "Geen Discord",

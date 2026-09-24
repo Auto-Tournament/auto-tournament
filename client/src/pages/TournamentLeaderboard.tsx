@@ -4,8 +4,6 @@ import { io } from 'socket.io-client';
 import { onSocketReconnect } from '../utils/socketResync';
 import {
   Box,
-  Card,
-  CardContent,
   Typography,
   Alert,
   Stack,
@@ -40,6 +38,7 @@ import { TeamNameLink } from '../components/team/TeamNameLink';
 import type { Tournament } from '../types/tournament.types';
 import { useIntegrationFor } from '../integrations/registry';
 import { tokens, mono, fontMono, radii } from '../theme/tokens';
+import { Panel, SectionHead } from '../components/common/ui';
 
 /** Right-aligned (numeric) body cells use the mono face. */
 const numericCellsSx = {
@@ -442,8 +441,7 @@ export default function TournamentLeaderboard() {
           </Box>
 
           {(topPerformers || (roundStatus && isActive) || isComplete) && (
-          <Card>
-            <CardContent>
+          <Panel sx={{ p: 3 }}>
               {/* Quick-glance top performers */}
               {topPerformers && (
                 <Box mb={roundStatus && isActive ? 3 : 0}>
@@ -489,7 +487,7 @@ export default function TournamentLeaderboard() {
                               <Chip
                                 label={`${player.matchWins}${t('leaderboardPage.winsShort')} / ${player.matchLosses}${t('leaderboardPage.lossesShort')}`}
                                 size="small"
-                                color={index === 0 ? 'primary' : 'default'}
+                                sx={index === 0 ? { color: tokens.color.accent } : undefined}
                               />
                             </Box>
                           ))}
@@ -538,8 +536,7 @@ export default function TournamentLeaderboard() {
                               <Chip
                                 label={`${player.averageAdr?.toFixed(1) ?? 'N/A'} ADR`}
                                 size="small"
-                                variant={index === 0 ? 'filled' : 'outlined'}
-                                color={index === 0 ? 'secondary' : 'default'}
+                                sx={index === 0 ? { color: tokens.color.accent } : undefined}
                               />
                             </Box>
                           ))}
@@ -581,8 +578,7 @@ export default function TournamentLeaderboard() {
                   {t('leaderboardPage.tournamentCompletedAlert')}
                 </Alert>
               )}
-            </CardContent>
-          </Card>
+          </Panel>
           )}
 
           {/* The game's own statistics, when the page's CS2 columns are not
@@ -591,19 +587,13 @@ export default function TournamentLeaderboard() {
 
           {/* Team Standings (for standard tournaments) */}
           {teams && teams.length > 0 && (
-            <Card sx={{ mb: 3 }}>
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={2}>
-                  <EmojiEventsIcon color="secondary" />
-                  <Typography variant="h5" fontWeight={600}>
-                    {t('leaderboardPage.teamStandings')}
-                  </Typography>
-                  <Chip
-                    label={t('leaderboardPage.teamsCount', { count: teams.length })}
-                    size="small"
-                    variant="outlined"
-                  />
-                </Box>
+            <Box component="section" aria-labelledby="leaderboard-team-standings">
+              <SectionHead
+                id="leaderboard-team-standings"
+                title={t('leaderboardPage.teamStandings')}
+                action={<Chip label={t('leaderboardPage.teamsCount', { count: teams.length })} size="small" />}
+              />
+              <Panel sx={{ p: { xs: 1, sm: 2 } }}>
                 <TableContainer>
                   <Table size="small" sx={numericCellsSx}>
                     <TableHead>
@@ -691,24 +681,27 @@ export default function TournamentLeaderboard() {
                     </TableBody>
                   </Table>
                 </TableContainer>
-              </CardContent>
-            </Card>
+              </Panel>
+            </Box>
           )}
 
           {/* Player Leaderboard */}
-          <Card data-testid="public-leaderboard">
-            <CardContent>
+          <Box component="section" data-testid="public-leaderboard" aria-labelledby="leaderboard-players">
               <Box
                 display="flex"
                 justifyContent="space-between"
-                alignItems="center"
-                mb={3}
+                alignItems="baseline"
+                mb={2}
                 flexWrap="wrap"
                 gap={2}
               >
                 <Box display="flex" alignItems="center" gap={1}>
-                  <EmojiEventsIcon color="primary" />
-                  <Typography variant="h5" fontWeight={600}>
+                  <Typography
+                    id="leaderboard-players"
+                    variant="h5"
+                    component="h2"
+                    sx={{ letterSpacing: '-0.025em', lineHeight: 1.1 }}
+                  >
                     {t('leaderboardPage.leaderboardTitle')}
                   </Typography>
                   <Chip
@@ -717,7 +710,6 @@ export default function TournamentLeaderboard() {
                       total: leaderboard.length,
                     })}
                     size="small"
-                    variant="outlined"
                   />
                 </Box>
                 <Box display="flex" gap={1} flexWrap="wrap">
@@ -768,7 +760,7 @@ export default function TournamentLeaderboard() {
                   </Typography>
                 </Box>
               ) : (
-                <TableContainer>
+                <TableContainer component={Panel} sx={{ p: { xs: 1, sm: 2 } }}>
                   <Table sx={numericCellsSx}>
                     <TableHead>
                       <TableRow>
@@ -913,13 +905,11 @@ export default function TournamentLeaderboard() {
                   </Table>
                 </TableContainer>
               )}
-            </CardContent>
-          </Card>
+          </Box>
 
-          {/* Info Card */}
-          <Card>
-            <CardContent>
-              <Typography variant="h6" fontWeight={600} gutterBottom>
+          {/* About the format */}
+          <Panel sx={{ p: 3 }}>
+              <Typography variant="h6" component="h2" fontWeight={600} gutterBottom>
                 {tournamentTypeLabel}
               </Typography>
               {tournamentTypeDescription && (
@@ -931,8 +921,7 @@ export default function TournamentLeaderboard() {
                 Click on any player&apos;s name or the &quot;View&quot; link to see their detailed
                 profile, match history, and Skill Rating progression.
               </Typography>
-            </CardContent>
-          </Card>
+          </Panel>
         </Stack>
     </Box>
   );
