@@ -12,30 +12,15 @@
     "dashboard": "Overzicht",
     "manage": "Manage",
     "tournament": "Toernooi",
-    "bracket": "Schema",
-    "matches": "Wedstrijden",
-    "teams": "Ploegen",
     "players": "Spelers",
     "leaderboard": "Ranglijst",
-    "templates": "Sjablonen",
-    "eloTemplates": "ELO-berekening",
-    "adminTools": "Admin-tools",
     "publicLinks": "Publieke links",
-    "devTools": "Dev-tools",
-    "settings": "Instellingen",
-    "resourcesSection": "Bronnen",
-    "tournamentSection": "Toernooi",
-    "configurationSection": "Configuratie",
-    "systemSection": "Systeem",
-    "documentation": "Documentatie",
     "signOut": "Uitloggen",
     "linkSteam": "Steam koppelen",
     "myProfile": "Mijn profiel",
     "accountConnections": "Account settings",
     "goToAdminDashboard": "Ga naar admin-dashboard",
     "goToAdminDashboardHint": "Je bekijkt je spelersprofiel. Open het admin-dashboard om teams, toernooien en servers te beheren.",
-    "disputes": "Disputes",
-    "modules": "Modules",
     "siteMenu": "Site menu",
     "accountMenu": "Account menu"
   },
@@ -57,12 +42,10 @@
       "disputes": "Disputes",
       "modules": "Modules"
     },
-    "openDrawer": "Navigatiemenu openen",
     "steamUnavailable": {
       "title": "Steam-integratie niet beschikbaar",
       "body": "Inloggen en het opzoeken van vanity-URL's werken mogelijk niet. Controleer de serverconfiguratie en de verbinding."
-    },
-    "closeDrawer": "Close navigation menu"
+    }
   },
   "common": {
     "delete": "Verwijderen",

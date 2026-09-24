@@ -7,7 +7,6 @@ import {
   Menu,
   MenuItem,
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
 import ExploreOutlinedIcon from '@mui/icons-material/ExploreOutlined';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
@@ -23,6 +22,7 @@ import { PlayerAvatar } from '../player/PlayerAvatar';
 import { generateAvatarDataUrl } from '../../generation/avatar';
 import { api } from '../../utils/api';
 import { fontDisplay } from '../../theme/tokens';
+import { paths } from '../../paths';
 
 /** Top-bar text links: ink2 at rest, ink on hover, like the website nav. */
 const navLinkSx = {
@@ -52,17 +52,13 @@ function readCachedPlayerAvatarUrl(steamId: string): string | undefined {
 
 interface SharedNavBarProps {
   /**
-   * Optional sidebar menu button for admin layouts.
-   * When rendered in public layouts, this is typically omitted.
+   * Set by the admin shell on the pages its rail lists, so "Manage" reads as
+   * where the admin is.
    */
-  showMenuButton?: boolean;
-  onMenuClick?: () => void;
+  adminArea?: boolean;
 }
 
-export const SharedNavBar: React.FC<SharedNavBarProps> = ({
-  showMenuButton,
-  onMenuClick,
-}) => {
+export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false }) => {
   const {
     playerSteamId,
     isAuthenticated,
@@ -222,11 +218,26 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
     waiting_server: t('nav.matchStatus.waitingServer'),
     match_ready: t('nav.matchStatus.matchReady'),
   };
-  const siteLinks = [
-    { to: '/', label: t('nav.home'), testId: 'nav-home' },
-    { to: '/browse', label: t('nav.browse'), testId: 'nav-browse' },
-    { to: '/player', label: t('nav.players'), testId: undefined },
-    { to: '/tournament/1/leaderboard', label: t('nav.leaderboard'), testId: undefined },
+  // The way into the admin pages: only for a real admin session. While
+  // impersonating, the UI behaves as the player and shows no admin links.
+  const showAdminLinks = isAuthenticated && !impersonation;
+  const siteLinks: { to: string; label: string; testId?: string; current: boolean }[] = [
+    { to: '/', label: t('nav.home'), testId: 'nav-home', current: location.pathname === '/' },
+    ...(showAdminLinks
+      ? [{ to: paths.manage, label: t('nav.manage'), testId: 'nav-manage', current: adminArea }]
+      : []),
+    {
+      to: '/browse',
+      label: t('nav.browse'),
+      testId: 'nav-browse',
+      current: location.pathname === '/browse',
+    },
+    { to: '/player', label: t('nav.players'), current: location.pathname === '/player' },
+    {
+      to: '/tournament/1/leaderboard',
+      label: t('nav.leaderboard'),
+      current: location.pathname === '/tournament/1/leaderboard',
+    },
   ];
 
   const ctaLabel =
@@ -237,18 +248,6 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
 
   return (
     <>
-      {showMenuButton && (
-        <IconButton
-          color="inherit"
-          aria-label={t('layout.openDrawer')}
-          onClick={onMenuClick}
-          edge="start"
-          sx={{ mr: 2 }}
-        >
-          <MenuIcon />
-        </IconButton>
-      )}
-
       <Box
         sx={{
           flexGrow: 1,
@@ -295,7 +294,8 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
               component={RouterLink}
               to={link.to}
               size="small"
-              sx={navLinkSx}
+              sx={[navLinkSx, link.current && { color: 'text.primary' }]}
+              aria-current={link.current ? 'page' : undefined}
               data-testid={link.testId}
             >
               {link.label}
@@ -329,8 +329,10 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
                 key={link.to}
                 component={RouterLink}
                 to={link.to}
-                selected={location.pathname === link.to}
+                selected={link.current}
+                aria-current={link.current ? 'page' : undefined}
                 onClick={() => setSiteMenuAnchor(null)}
+                data-testid={link.testId ? `${link.testId}-menu-item` : undefined}
               >
                 {link.label}
               </MenuItem>

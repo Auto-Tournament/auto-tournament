@@ -319,7 +319,23 @@
       "teams": "Teams",
       "players": "Players",
       "tournament": "Tournament setup",
-      "settings": "Settings"
+      "settings": "Settings",
+      "label": "Admin",
+      "disputes": "Disputes",
+      "publicPage": "Public page",
+      "modules": "Modules",
+      "templates": "Templates",
+      "ratings": "Ratings",
+      "adminTools": "Admin tools",
+      "devTools": "Dev tools",
+      "documentation": "Documentation",
+      "groups": {
+        "operate": "Operate",
+        "tournament": "Tournament",
+        "people": "People",
+        "game": "Game",
+        "configuration": "Configuration"
+      }
     },
     "status": {
       "live": "LIVE",

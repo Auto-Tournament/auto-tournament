@@ -319,7 +319,23 @@
       "teams": "Lag",
       "players": "Spillere",
       "tournament": "Turneringsoppsett",
-      "settings": "Innstillinger"
+      "settings": "Innstillinger",
+      "label": "Admin",
+      "disputes": "Tvister",
+      "publicPage": "Offentlig side",
+      "modules": "Moduler",
+      "templates": "Maler",
+      "ratings": "Rating",
+      "adminTools": "Adminverktøy",
+      "devTools": "Dev-verktøy",
+      "documentation": "Dokumentasjon",
+      "groups": {
+        "operate": "Drift",
+        "tournament": "Turnering",
+        "people": "Deltakere",
+        "game": "Spill",
+        "configuration": "Konfigurasjon"
+      }
     },
     "status": {
       "live": "LIVE",

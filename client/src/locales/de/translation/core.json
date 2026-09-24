@@ -12,30 +12,15 @@
     "dashboard": "Übersicht",
     "manage": "Manage",
     "tournament": "Turnier",
-    "bracket": "Turnierbaum",
-    "matches": "Spiele",
-    "teams": "Mannschaften",
     "players": "Spieler",
     "leaderboard": "Rangliste",
-    "templates": "Vorlagen",
-    "eloTemplates": "ELO-Berechnung",
-    "adminTools": "Admin-Tools",
     "publicLinks": "Öffentliche Links",
-    "devTools": "Dev-Tools",
-    "settings": "Einstellungen",
-    "resourcesSection": "Ressourcen",
-    "tournamentSection": "Turnier",
-    "configurationSection": "Konfiguration",
-    "systemSection": "Systembereich",
-    "documentation": "Dokumentation",
     "signOut": "Abmelden",
     "linkSteam": "Steam verknüpfen",
     "myProfile": "Mein Profil",
     "accountConnections": "Account settings",
     "goToAdminDashboard": "Zum Admin-Dashboard",
     "goToAdminDashboardHint": "Du siehst dein Spielerprofil. Öffne das Admin-Dashboard, um Teams, Turniere und Server zu verwalten.",
-    "disputes": "Disputes",
-    "modules": "Modules",
     "siteMenu": "Site menu",
     "accountMenu": "Account menu"
   },
@@ -57,12 +42,10 @@
       "disputes": "Disputes",
       "modules": "Modules"
     },
-    "openDrawer": "Navigationsmenü öffnen",
     "steamUnavailable": {
       "title": "Steam-Integration nicht verfügbar",
       "body": "Anmeldungen und das Auflösen von Vanity-URLs funktionieren eventuell nicht. Prüfe die Serverkonfiguration und die Verbindung."
-    },
-    "closeDrawer": "Close navigation menu"
+    }
   },
   "common": {
     "delete": "Löschen",

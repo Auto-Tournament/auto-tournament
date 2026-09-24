@@ -5,7 +5,7 @@ import { ensureSignedIn, signInViaRequest } from '../helpers/auth';
  * The admin shell shows the chrome of the game the tournament runs, and no
  * other game's (3.0 phase E).
  *
- * Until now the sidebar, the manage rail, the admin home's link grid and its
+ * Until now the admin nav, the manage rail, the admin home's link grid and its
  * fleet card were asked of the instance, which meant CS2 — so an instance
  * running Rocket League through manual reporting still listed Servers and
  * Maps, and still offered a server card on pages where a server can never
@@ -80,7 +80,7 @@ test.describe.serial('The shell follows the tournament game', () => {
       await expect(page.getByTestId('admin-home-site-link-maps')).toHaveCount(0);
       await expect(page.getByTestId('admin-home-servers-card')).toHaveCount(0);
 
-      // The sidebar links to CS2's pages with real hrefs; neither is there.
+      // Nothing on the page links to CS2's pages (the top bar included).
       await expect(page.locator('a[href="/servers"]')).toHaveCount(0);
       await expect(page.locator('a[href="/maps"]')).toHaveCount(0);
 
@@ -90,6 +90,10 @@ test.describe.serial('The shell follows the tournament game', () => {
       await expect(page.getByTestId('manage-rail-matches')).toBeVisible();
       await expect(page.getByTestId('manage-rail-servers')).toHaveCount(0);
       await expect(page.getByTestId('manage-rail-maps')).toHaveCount(0);
+      // A game with no pages of its own leaves the rail's game group out; a
+      // result that can be argued about brings Disputes in.
+      await expect(page.getByTestId('manage-rail-group-game')).toHaveCount(0);
+      await expect(page.getByTestId('manage-rail-disputes')).toBeVisible();
       await expect(page.getByTestId('manage-servers')).toHaveCount(0);
 
       // The page behind the hidden link still answers, so a bookmark or a

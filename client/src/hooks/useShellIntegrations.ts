@@ -1,8 +1,8 @@
 /**
  * Which module's chrome the admin shell shows (3.0 phase E).
  *
- * The surfaces that are not about one tournament — the sidebar, the manage
- * rail, the admin home's link grid and its resource card, the match list's
+ * The surfaces that are not about one tournament — the admin rail, the
+ * admin home's link grid and its resource card, the match list's
  * allocation panel — asked the instance, which meant CS2 ("3.0 runs one game
  * per instance"). So a Rocket League instance still
  * listed Servers and Maps and still showed a CS2 server card on a page that

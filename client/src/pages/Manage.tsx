@@ -12,7 +12,7 @@ import {
   manageMatchRefs,
 } from '../utils/manageSelectors';
 import { getGlobalMatchNumber, getRoundLabel } from '../utils/matchUtils';
-import { ManageRail } from '../components/manage/ManageRail';
+import { usePublishNeedsYouCount } from '../contexts/ManageRailContext';
 import { StatusStrip } from '../components/manage/StatusStrip';
 import { NeedsYouQueue } from '../components/manage/NeedsYouQueue';
 import { useIntegrationFor } from '../integrations/registry';
@@ -70,6 +70,8 @@ export default function Manage() {
     [matches, availability, manageNeedsYou, moduleT]
   );
   const recentEvents = useMemo(() => computeRecentEvents(matches), [matches]);
+  // The shell's rail shows it next to "Needs you" while this page is open.
+  usePublishNeedsYouCount(loading ? null : needsYouItems.length);
 
   const handleAnnounce = async () => {
     if (!announceText.trim()) return;
@@ -121,44 +123,30 @@ export default function Manage() {
         </Typography>
       </Box>
 
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 2,
-          '@media (min-width: 820.1px)': {
-            flexDirection: 'row',
-            gap: 3,
-          },
+      {/* The rail beside this is the admin shell's (`Layout`), on every
+          admin page; this page hands it the "Needs you" count. */}
+      <StatusStrip
+        counts={statusCounts}
+        resourceTile={
+          ResourceStatusTile ? (
+            <ResourceStatusTile availability={availability} />
+          ) : null
+        }
+      />
+
+      <NeedsYouQueue
+        items={needsYouItems}
+        onDecide={(slug) => {
+          const match = matches.find((m) => m.slug === slug);
+          if (match) setSelectedMatch(match);
         }}
-      >
-        <ManageRail needsYouCount={needsYouItems.length} />
+        onActionDone={refresh}
+      />
 
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <StatusStrip
-            counts={statusCounts}
-            resourceTile={
-              ResourceStatusTile ? (
-                <ResourceStatusTile availability={availability} />
-              ) : null
-            }
-          />
+      {/* The module asks for its own resources and what runs on them. */}
+      {ServerGrid && <ServerGrid tournamentId={tournament?.id ?? null} />}
 
-          <NeedsYouQueue
-            items={needsYouItems}
-            onDecide={(slug) => {
-              const match = matches.find((m) => m.slug === slug);
-              if (match) setSelectedMatch(match);
-            }}
-            onActionDone={refresh}
-          />
-
-          {/* The module asks for its own resources and what runs on them. */}
-          {ServerGrid && <ServerGrid tournamentId={tournament?.id ?? null} />}
-
-          <RecentLog events={recentEvents} />
-        </Box>
-      </Box>
+      <RecentLog events={recentEvents} />
 
       {selectedMatch && (
         <MatchDetailsModal

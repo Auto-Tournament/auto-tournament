@@ -12,30 +12,15 @@
     "dashboard": "Painel de Controlo",
     "manage": "Manage",
     "tournament": "Torneio",
-    "bracket": "Quadro",
-    "matches": "Jogos",
-    "teams": "Equipas",
     "players": "Jogadores",
     "leaderboard": "Classificação",
-    "templates": "Modelos",
-    "eloTemplates": "Cálculo ELO",
-    "adminTools": "Ferramentas admin",
     "publicLinks": "Links públicos",
-    "devTools": "Ferramentas dev",
-    "settings": "Definições",
-    "resourcesSection": "Recursos",
-    "tournamentSection": "Torneio",
-    "configurationSection": "Configuração",
-    "systemSection": "Sistema",
-    "documentation": "Documentação",
     "signOut": "Terminar sessão",
     "linkSteam": "Ligar Steam",
     "myProfile": "O meu perfil",
     "accountConnections": "Account settings",
     "goToAdminDashboard": "Ir para o painel de administração",
     "goToAdminDashboardHint": "Estás a ver o teu perfil de jogador. Abre o painel de administração para gerir equipas, torneios e servidores.",
-    "disputes": "Disputes",
-    "modules": "Modules",
     "siteMenu": "Site menu",
     "accountMenu": "Account menu"
   },
@@ -57,12 +42,10 @@
       "disputes": "Disputes",
       "modules": "Modules"
     },
-    "openDrawer": "Abrir menu de navegação",
     "steamUnavailable": {
       "title": "Integração com a Steam indisponível",
       "body": "O início de sessão e a pesquisa de URLs personalizados podem não funcionar. Verifique a configuração do servidor e a ligação."
-    },
-    "closeDrawer": "Close navigation menu"
+    }
   },
   "common": {
     "delete": "Eliminar",
