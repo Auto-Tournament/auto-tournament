@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "slug": "mario-kart-8-deluxe",
+  "name": "Mario Kart 8 Deluxe",
+  "engine": "manual-report",
+  "aliases": [
+    "mk8dx",
+    "mario-kart"
+  ],
+  "version": "1.0.0",
+  "description": "Kart racing. Report finishing position and points each race.",
+  "icon": "../icons/mario-kart-8-deluxe.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  },
+  "stats": [
+    {
+      "key": "position",
+      "label": "Position",
+      "type": "integer",
+      "scope": "player"
+    },
+    {
+      "key": "points",
+      "label": "Points",
+      "type": "integer",
+      "scope": "player"
+    }
+  ]
+}

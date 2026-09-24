@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "slug": "mobile-legends-bang-bang",
+  "name": "Mobile Legends: Bang Bang",
+  "engine": "manual-report",
+  "aliases": [
+    "mlbb"
+  ],
+  "version": "1.0.0",
+  "description": "Five-a-side mobile MOBA. One map per game.",
+  "icon": "../icons/mobile-legends-bang-bang.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  },
+  "stats": [
+    {
+      "key": "kills",
+      "label": "Kills",
+      "type": "integer",
+      "scope": "player"
+    },
+    {
+      "key": "deaths",
+      "label": "Deaths",
+      "type": "integer",
+      "scope": "player"
+    },
+    {
+      "key": "assists",
+      "label": "Assists",
+      "type": "integer",
+      "scope": "player"
+    }
+  ]
+}

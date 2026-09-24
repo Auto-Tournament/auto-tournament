@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "slug": "mortal-kombat-1",
+  "name": "Mortal Kombat 1",
+  "engine": "manual-report",
+  "aliases": [
+    "mk1"
+  ],
+  "version": "1.0.0",
+  "description": "Fighting game. Report games won in the set.",
+  "icon": "../icons/mortal-kombat-1.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  }
+}

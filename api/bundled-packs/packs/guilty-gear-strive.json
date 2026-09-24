@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "slug": "guilty-gear-strive",
+  "name": "Guilty Gear -Strive-",
+  "engine": "manual-report",
+  "aliases": [
+    "ggst"
+  ],
+  "version": "1.0.0",
+  "description": "Fighting game. Report games won in the set.",
+  "icon": "../icons/guilty-gear-strive.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  }
+}

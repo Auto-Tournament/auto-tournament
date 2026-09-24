@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "slug": "halo-infinite",
+  "name": "Halo Infinite",
+  "engine": "manual-report",
+  "version": "1.0.0",
+  "description": "Four-a-side arena shooter, reported by the maps played.",
+  "icon": "../icons/halo-infinite.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  },
+  "stats": [
+    {
+      "key": "kills",
+      "label": "Kills",
+      "type": "integer",
+      "scope": "player"
+    },
+    {
+      "key": "deaths",
+      "label": "Deaths",
+      "type": "integer",
+      "scope": "player"
+    },
+    {
+      "key": "assists",
+      "label": "Assists",
+      "type": "integer",
+      "scope": "player"
+    }
+  ]
+}

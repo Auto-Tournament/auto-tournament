@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "slug": "clash-royale",
+  "name": "Clash Royale",
+  "engine": "manual-report",
+  "version": "1.0.0",
+  "description": "One-on-one mobile card battler. Report games won in the set.",
+  "icon": "../icons/clash-royale.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  }
+}

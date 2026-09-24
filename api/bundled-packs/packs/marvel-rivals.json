@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "slug": "marvel-rivals",
+  "name": "Marvel Rivals",
+  "engine": "manual-report",
+  "version": "1.0.0",
+  "description": "Six-a-side hero shooter, reported by the maps played.",
+  "icon": "../icons/marvel-rivals.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  },
+  "stats": [
+    {
+      "key": "eliminations",
+      "label": "Eliminations",
+      "type": "integer",
+      "scope": "player"
+    },
+    {
+      "key": "deaths",
+      "label": "Deaths",
+      "type": "integer",
+      "scope": "player"
+    },
+    {
+      "key": "assists",
+      "label": "Assists",
+      "type": "integer",
+      "scope": "player"
+    }
+  ]
+}

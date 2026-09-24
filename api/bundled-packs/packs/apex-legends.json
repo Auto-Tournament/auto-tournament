@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "slug": "apex-legends",
+  "name": "Apex Legends",
+  "engine": "manual-report",
+  "version": "1.0.0",
+  "description": "Three-a-side battle royale. Placement and kills each match.",
+  "icon": "../icons/apex-legends.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  },
+  "stats": [
+    {
+      "key": "kills",
+      "label": "Kills",
+      "type": "integer",
+      "scope": "player"
+    },
+    {
+      "key": "placement",
+      "label": "Placement",
+      "type": "integer",
+      "scope": "team"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "slug": "starcraft-ii",
+  "name": "StarCraft II",
+  "engine": "manual-report",
+  "aliases": [
+    "sc2"
+  ],
+  "version": "1.0.0",
+  "description": "One-on-one real-time strategy. Report games won in the set.",
+  "icon": "../icons/starcraft-ii.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  }
+}
