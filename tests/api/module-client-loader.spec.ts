@@ -138,10 +138,10 @@ function deps(overrides: Partial<LoadDeps> = {}): LoadDeps {
 // ---------------------------------------------------------------------------
 
 test.describe('Client API range', () => {
-  test('the platform publishes 0.2.3, which a module built for ^0.2.0 loads on and one built for ^0.1.0 does not', () => {
+  test('the platform publishes 0.2.4, which a module built for ^0.2.0 loads on and one built for ^0.1.0 does not', () => {
     // 0.2.0 reshaped slots to take ids (item 8b): a break, so the minor moved; 0.2.1 only added SDK exports.
-    // 0.2.2 added two optional slots and 0.2.3 an SDK export: patches, which ^0.2.0 still matches.
-    expect(CLIENT_API_VERSION).toBe('0.2.3');
+    // 0.2.2 added two optional slots, 0.2.3 and 0.2.4 SDK exports: patches, which ^0.2.0 still matches.
+    expect(CLIENT_API_VERSION).toBe('0.2.4');
     expect(checkClientApi('^0.2.0', CLIENT_API_VERSION)).toBeNull();
     expect(checkClientApi('^0.1.0', CLIENT_API_VERSION)?.code).toBe('outOfRange');
     // Re-exported from the SDK barrel, where a module reads it.
@@ -577,7 +577,7 @@ test.describe('Loading code modules', () => {
       failure: {
         stage: 'contract',
         code: 'outOfRange',
-        message: 'built for client API ^0.3.0; this platform provides 0.2.3',
+        message: 'built for client API ^0.3.0; this platform provides 0.2.4',
       },
     });
   });
@@ -741,6 +741,8 @@ test.describe('Shared-package shims', () => {
       'PageHead', 'SectionHead', 'Panel', 'RowList', 'Row', 'FactGrid', 'radii',
       // 0.2.3
       'pageTitle',
+      // 0.2.4
+      'useIsDevelopment',
     ]) {
       expect(sdk.has(name), name).toBe(true);
     }

@@ -1,6 +1,7 @@
 /**
  * CS2's tab on the Settings page (slot `instanceSettings`, client API 0.2.2):
- * the webhook URL its servers call back on, and the map sync.
+ * the webhook URL its servers call back on, the map sync, and the defaults
+ * sent to every server with a match (`Cs2ServerDefaults`).
  *
  * Both were the first thing on core's Settings page until the module split
  * (audit chunk 9). The API is unchanged: the webhook URL is still the
@@ -24,11 +25,13 @@ import SyncIcon from '@mui/icons-material/Sync';
 import { api, useModuleTranslation, useSnackbar } from '../../../module-sdk';
 import type { InstanceSettingsSectionProps } from '../../types';
 import type { MapSyncResponse, WebhookSettings, WebhookSettingsResponse } from '../cs2.types';
+import { Cs2ServerDefaults } from './Cs2ServerDefaults';
 
 export const Cs2SettingsSection: React.FC<InstanceSettingsSectionProps> = () => {
   const { t } = useModuleTranslation('cs2');
   const { showSuccess, showError } = useSnackbar();
   const [loading, setLoading] = useState(true);
+  const [initialSettings, setInitialSettings] = useState<Record<string, unknown> | undefined>();
   const [webhookUrl, setWebhookUrl] = useState('');
   const [savedWebhookUrl, setSavedWebhookUrl] = useState('');
   const [syncingMaps, setSyncingMaps] = useState(false);
@@ -44,6 +47,7 @@ export const Cs2SettingsSection: React.FC<InstanceSettingsSectionProps> = () => 
         if (active) {
           setWebhookUrl(url);
           setSavedWebhookUrl(url);
+          setInitialSettings(response.settings as Record<string, unknown> | undefined);
         }
       } catch (err) {
         if (active) showError(err instanceof Error ? err.message : t('settings.loadFailed'));
@@ -186,6 +190,10 @@ export const Cs2SettingsSection: React.FC<InstanceSettingsSectionProps> = () => 
           {syncingMaps ? t('settings.mapSync.buttonSyncing') : t('settings.mapSync.buttonIdle')}
         </Button>
       </Box>
+
+      <Divider />
+
+      <Cs2ServerDefaults initial={initialSettings} />
     </Stack>
   );
 };

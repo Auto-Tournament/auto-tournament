@@ -344,7 +344,7 @@ test.describe.serial('Code modules in the browser', () => {
     await expect(statusChip(page, CLIENT_INCOMPATIBLE)).toHaveAttribute('data-status', 'incompatible');
     const reason = page.getByTestId(`code-module-${CLIENT_INCOMPATIBLE}-reason`);
     await expect(reason).toContainText('^0.3.0');
-    await expect(reason).toContainText('0.2.3');
+    await expect(reason).toContainText('0.2.4');
 
     expect(
       requested.filter((p) => p.startsWith(`/api/modules/${CLIENT_INCOMPATIBLE}/`)),

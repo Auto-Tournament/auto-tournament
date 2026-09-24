@@ -73,5 +73,10 @@
  * chunk 1): a page renders its own `PageHead`, with its buttons as `actions`.
  * `usePageHeader` is deprecated but still works: buttons a module hands it
  * show in a plain row above the page. Drop it at the next breaking bump.
+ *
+ * 0.2.4 (added, not a break): `useIsDevelopment()`, whether the host's
+ * development tools are on. A module built on its own cannot read the host's
+ * build flags; CS2 uses it for its simulation settings, which moved from
+ * core's Settings to its own tab with the rest of its server defaults.
  */
-export const CLIENT_API_VERSION = '0.2.3';
+export const CLIENT_API_VERSION = '0.2.4';

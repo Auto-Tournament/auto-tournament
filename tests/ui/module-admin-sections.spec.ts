@@ -52,19 +52,27 @@ test.describe('Module sections on Admin tools and Settings', () => {
   );
 
   test(
-    'with CS2 installed, Settings has a CS2 tab with the webhook URL and map sync',
+    'with CS2 installed, Settings has a CS2 tab with the webhook URL, map sync and server defaults',
     { tag: ['@ui', '@modules', '@settings'] },
     async ({ page }) => {
       await page.goto('/settings');
       const tab = page.getByTestId('settings-tab-module-cs2');
       await expect(tab).toBeVisible({ timeout: 30000 });
 
-      // Core's first tab no longer carries CS2's fields.
+      // Core's tabs no longer carry CS2's fields, and "Advanced" (all CS2) is gone.
       await expect(page.getByTestId('settings-webhook-url-input')).toHaveCount(0);
+      await expect(page.locator('#settings-tab-advanced')).toHaveCount(0);
+      await page.locator('#settings-tab-matches').click();
+      await expect(page.locator('#settings-tabpanel-matches')).toBeVisible();
+      await expect(page.getByTestId('cs2-server-defaults')).toHaveCount(0);
 
       await tab.click();
       await expect(page.getByTestId('settings-webhook-url-input')).toBeVisible({ timeout: 15000 });
       await expect(page.getByTestId('cs2-settings-map-sync')).toBeVisible();
+      // The defaults sent to every CS2 server moved here from core's tabs.
+      await expect(page.getByTestId('cs2-server-defaults')).toBeVisible();
+      await expect(page.getByTestId('at-hostname-format-input')).toBeAttached();
+      await expect(page.getByTestId('cs2-settings-reset-button')).toBeVisible();
 
       // `links.settings('cs2')` opens the tab directly.
       await page.goto('/settings?section=cs2');
@@ -88,7 +96,7 @@ test.describe('Module sections on Admin tools and Settings', () => {
 
       // A link to CS2's tab lands on core's first tab instead.
       await page.goto('/settings?section=cs2');
-      await expect(page.getByTestId('settings-save-button')).toBeVisible({ timeout: 15000 });
+      await expect(page.getByTestId('settings-version')).toBeVisible({ timeout: 15000 });
       await expect(page.getByRole('tab', { selected: true })).toHaveAttribute(
         'id',
         'settings-tab-integrations'
@@ -96,6 +104,8 @@ test.describe('Module sections on Admin tools and Settings', () => {
       await expect(page.getByTestId('settings-tab-module-cs2')).toHaveCount(0);
       await expect(page.getByTestId('settings-webhook-url-input')).toHaveCount(0);
       await expect(page.getByTestId('cs2-settings-map-sync')).toHaveCount(0);
+      await expect(page.getByTestId('cs2-server-defaults')).toHaveCount(0);
+      await expect(page.locator('#settings-tab-advanced')).toHaveCount(0);
     }
   );
 });

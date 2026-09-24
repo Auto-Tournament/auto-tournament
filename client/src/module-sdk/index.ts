@@ -49,6 +49,12 @@ export { useSnackbar } from '../contexts/SnackbarContext';
  * plain row above the page; it goes at the next breaking bump.
  */
 export { usePageHeader } from '../contexts/PageHeaderContext';
+/**
+ * Whether the host's development tools are on (a dev server, or a build with
+ * `VITE_ENABLE_DEV_PAGE`). A module built on its own cannot read the host's
+ * build flags, so it asks here (0.2.4; CS2: its simulation settings).
+ */
+export { useIsDevelopment } from '../hooks/useIsDevelopment';
 
 /**
  * What a module may know about the viewer: whether they are an admin, and who
