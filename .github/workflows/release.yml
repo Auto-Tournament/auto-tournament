@@ -37,9 +37,11 @@ concurrency:
 #   (stable channel only; the beta channel skips the Discord post)
 # - DOCKER_USERNAME: Docker Hub username used for docker login and image naming
 # - DOCKER_PASSWORD: Docker Hub access token/password for docker login
-# - MODULE_SIGNING_KEY: Ed25519 private key (PEM) that signs the code modules
-#   in the image's offline snapshot (CS2); its public key is compiled into
-#   api/src/modules/trustedKeys.ts
+# - MODULE_SIGNING_KEY (in the `module-signing` environment, not the repo):
+#   the Ed25519 private key, as PEM text, that signs the code modules in the
+#   image's offline snapshot (CS2); its public key is compiled into
+#   api/src/modules/trustedKeys.ts. Only the module-snapshot-sign job reads it,
+#   and that job installs nothing.
 # Optional secret:
 # - RELEASE_GITHUB_TOKEN: PAT with repo permissions for the bump push, tags and release
 #   If omitted, workflow falls back to the auto-generated github.token.
@@ -117,9 +119,139 @@ jobs:
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "sha=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
 
+  # CS2 rides in the image only as a signed release in its offline snapshot
+  # (DESIGN-modules §10). Built without secrets, signed in a job that installs
+  # nothing, verified against the compiled keys, then copied into each image.
+  module-snapshot:
+    name: Build the module snapshot (unsigned)
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+          fetch-depth: 0
+
+      - name: Refuse a commit that is not on main
+        env:
+          SHA: ${{ needs.prepare.outputs.sha }}
+        run: |
+          git fetch --no-tags origin main
+          git merge-base --is-ancestor "$SHA" origin/main || { echo "::error::$SHA is not on main"; exit 1; }
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+
+      # CS2's version is the platform's.
+      - name: Apply version to workspace
+        shell: bash
+        env:
+          EXPECTED_VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          set -euo pipefail
+          version=$(bash scripts/release-version.sh "$EXPECTED_VERSION" --apply)
+          [ "$version" = "$EXPECTED_VERSION" ] || { echo "Version mismatch: $version" >&2; exit 1; }
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build and pack (unsigned)
+        run: bash scripts/build-module-snapshot.sh --unsigned
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: module-snapshot-unsigned
+          path: api/bundled-modules
+          include-hidden-files: false
+          retention-days: 3
+
+  module-snapshot-sign:
+    name: Sign the module snapshot
+    needs: [prepare, module-snapshot]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    # The only job that can read MODULE_SIGNING_KEY; the environment's
+    # required reviewer approves each run.
+    environment: module-signing
+    permissions:
+      contents: read
+    steps:
+      # For scripts/sign-module.mjs only. Nothing is installed.
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+          fetch-depth: 0
+
+      - name: Refuse a commit that is not on main
+        env:
+          SHA: ${{ needs.prepare.outputs.sha }}
+        run: |
+          git fetch --no-tags origin main
+          git merge-base --is-ancestor "$SHA" origin/main || { echo "::error::$SHA is not on main"; exit 1; }
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: module-snapshot-unsigned
+          path: ${{ runner.temp }}/snapshot
+
+      - name: Sign (Node's built-in crypto, no dependencies)
+        env:
+          MODULE_SIGNING_KEY: ${{ secrets.MODULE_SIGNING_KEY }}
+        run: node scripts/sign-module.mjs --snapshot "$RUNNER_TEMP/snapshot"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: module-snapshot
+          path: ${{ runner.temp }}/snapshot
+          retention-days: 3
+
+  module-snapshot-verify:
+    name: Verify the module snapshot
+    needs: [prepare, module-snapshot-sign]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: module-snapshot
+          path: api/bundled-modules
+
+      # Against the keys compiled into this commit, nothing from the environment.
+      - name: Verify
+        run: bash scripts/build-module-snapshot.sh --verify
+
   build:
     name: Build ${{ matrix.platform }}
-    needs: prepare
+    needs: [prepare, module-snapshot-verify]
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 60
     strategy:
@@ -165,17 +297,14 @@ jobs:
           fi
           grep -H '"version"' package.json api/package.json client/package.json
 
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-
-      # CS2 is a catalog module (DESIGN-modules §10): the image carries it only
-      # in its offline snapshot, signed with the release key, and installs it
-      # when an admin asks (or on an upgrade whose database has CS2 data). The
-      # script checks the signature against the keys compiled into this commit.
-      - name: Build the offline module snapshot (CS2)
-        env:
-          MODULE_SIGNING_KEY: ${{ secrets.MODULE_SIGNING_KEY }}
-        run: bash scripts/build-module-snapshot.sh
+      # The signed, verified snapshot (module-snapshot-* jobs above). The
+      # image installs CS2 from it when an admin asks, or on an upgrade whose
+      # database has CS2 data.
+      - name: Add the offline module snapshot (CS2)
+        uses: actions/download-artifact@v4
+        with:
+          name: module-snapshot
+          path: api/bundled-modules
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3

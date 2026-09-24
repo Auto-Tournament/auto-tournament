@@ -1557,6 +1557,42 @@ async function runFreshDatabasePath() {
         throw new Error('Expected a fresh database to have no tournament.');
       }
 
+      // Uninstall, restart (the code unloads), purge: CS2's tables and the
+      // core keys into them go, in one transaction, and nothing else.
+      step = 'uninstall CS2 through the catalog';
+      const uninstall = await ctx.delete('/api/catalog/modules/cs2', { data: {} });
+      if (!uninstall.ok()) {
+        throw new Error(`Uninstalling CS2 failed: ${uninstall.status()} ${await uninstall.text()}`);
+      }
+      step = 'restart after uninstalling CS2';
+      removeApp();
+      runApp(NEW_IMAGE_TAG, freshNetwork, freshPg, {}, `${DATA_VOLUME}-fresh`);
+      await waitForAppHealthy();
+      await loginAdmin(ctx);
+      step = 'purge CS2';
+      const purge = await ctx.post('/api/catalog/modules/cs2/purge', { data: { confirm: 'cs2' } });
+      if (!purge.ok()) throw new Error(`Purging CS2 failed: ${purge.status()} ${await purge.text()}`);
+      const cs2TablesLeft = psqlJson<number>(
+        freshPg,
+        "SELECT COUNT(*) FROM pg_tables WHERE schemaname = 'public' AND tablename LIKE 'cs2\\_%'",
+        DB_NAME
+      );
+      const cs2LedgerLeft = psqlJson<number>(
+        freshPg,
+        "SELECT COUNT(*) FROM module_migrations WHERE module_id = 'cs2'",
+        DB_NAME
+      );
+      if (cs2TablesLeft !== 0 || cs2LedgerLeft !== 0) {
+        throw new Error(`After the purge: ${cs2TablesLeft} cs2_* table(s) and ${cs2LedgerLeft} ledger row(s) left.`);
+      }
+      const coreTables = psqlJson<number>(
+        freshPg,
+        "SELECT COUNT(*) FROM pg_tables WHERE schemaname = 'public' AND tablename IN ('matches', 'manual_match_templates', 'tournament')",
+        DB_NAME
+      );
+      if (coreTables !== 3) throw new Error('The purge touched core tables.');
+      log('Fresh database: CS2 uninstalled, restarted and purged — its tables and the core keys into them are gone, core is intact.');
+
       log('Path 2 (fresh database) passed: migrations ran, and the app boots clean and empty.');
     } finally {
       await ctx.dispose();
