@@ -11,7 +11,6 @@ import {
   Button,
   LinearProgress,
   Divider,
-  CircularProgress,
   Tabs,
   Tab,
   Accordion,
@@ -25,21 +24,29 @@ import {
 } from '@mui/material';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import SyncIcon from '@mui/icons-material/Sync';
+
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { api } from '../utils/api';
 import type { SettingsResponse } from '../types/api.types';
 import { useIsDevelopment } from '../hooks/useIsDevelopment';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { IgdbCredentialsCard } from '../components/games/IgdbCredentialsCard';
 import { radii } from '../theme/tokens';
+import { useInstalledIntegrations } from '../integrations/registry';
 
 declare const __APP_VERSION__: string | undefined;
 
 interface TabPanelProps {
   children?: React.ReactNode;
-  index: number;
-  value: number;
+  index: string;
+  value: string;
+  'data-testid'?: string;
+}
+
+/** A module's tab key: its settings live on a tab of their own (`instanceSettings`). */
+function moduleTabKey(moduleId: string): string {
+  return `module-${moduleId}`;
 }
 
 function TabPanel(props: TabPanelProps) {
@@ -58,7 +65,7 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
-function a11yProps(index: number) {
+function a11yProps(index: string) {
   return {
     id: `settings-tab-${index}`,
     'aria-controls': `settings-tabpanel-${index}`,
@@ -70,11 +77,8 @@ export default function Settings() {
   const { showSuccess, showError, showSnackbar } = useSnackbar();
   const DEFAULT_AT_CHAT_PREFIX = '[{Green}MAT{Default}]';
   const DEFAULT_AT_ADMIN_CHAT_PREFIX = '[{Red}ADMIN{Default}]';
-  const [webhookUrl, setWebhookUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [syncingMaps, setSyncingMaps] = useState(false);
-  const [initialWebhookUrl, setInitialWebhookUrl] = useState('');
   const [simulateMatches, setSimulateMatches] = useState(false);
   const [initialSimulateMatches, setInitialSimulateMatches] = useState(false);
   const [simulationTimescale, setSimulationTimescale] = useState<number>(1);
@@ -185,8 +189,41 @@ export default function Settings() {
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const isDev = useIsDevelopment();
-  const [tabIndex, setTabIndex] = useState(0);
   const { t } = useTranslation();
+
+  // Tabs: core's, then one per installed module that has settings of its own,
+  // then Developer. `?section=<module id>` opens that module's tab (the SDK's
+  // `links.settings(id)`); a code module may arrive after the page mounts.
+  const [searchParams] = useSearchParams();
+  const requestedSection = searchParams.get('section');
+  const moduleSettings = useInstalledIntegrations().flatMap((integration) =>
+    integration.instanceSettings
+      ? [
+          {
+            id: integration.id,
+            labelKey: integration.instanceSettings.labelKey,
+            Section: integration.instanceSettings.section,
+          },
+        ]
+      : []
+  );
+  const moduleTabKeys = moduleSettings.map(({ id }) => moduleTabKey(id)).join(' ');
+  const [tab, setTab] = useState<string>('integrations');
+  useEffect(() => {
+    if (!requestedSection) return;
+    const key = moduleTabKey(requestedSection);
+    if (moduleTabKeys.split(' ').includes(key)) setTab(key);
+  }, [requestedSection, moduleTabKeys]);
+  const tabKeys = [
+    'integrations',
+    'players',
+    'matches',
+    'advanced',
+    ...moduleTabKeys.split(' ').filter(Boolean),
+    ...(isDev ? ['developer'] : []),
+  ];
+  // A module tab whose module broke or went away falls back to the first tab.
+  const activeTab = tabKeys.includes(tab) ? tab : 'integrations';
 
   const ACCORDION_SX = {
     bgcolor: 'background.paper',
@@ -207,8 +244,8 @@ export default function Settings() {
     borderColor: 'divider',
   } as const;
 
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setTabIndex(newValue);
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: string) => {
+    setTab(newValue);
   };
 
   const fetchSettings = useCallback(async () => {
@@ -216,7 +253,6 @@ export default function Settings() {
 
     try {
       const response: SettingsResponse = await api.get('/api/settings');
-      const webhook = response.settings.webhookUrl ?? '';
       const simulate = response.settings.simulateMatches ?? false;
       const timescale = response.settings.simulationTimescale ?? 1;
       const chatPrefix = response.settings.atChatPrefix ?? DEFAULT_AT_CHAT_PREFIX;
@@ -270,8 +306,6 @@ export default function Settings() {
       const atFfwT = response.settings.atFfwTime ?? null;
       const atDemo = response.settings.atDemoRecordingEnabled ?? null;
       
-      setWebhookUrl(webhook);
-      setInitialWebhookUrl(webhook);
       setSimulateMatches(simulate);
       setInitialSimulateMatches(simulate);
       setSimulationTimescale(timescale);
@@ -377,7 +411,6 @@ export default function Settings() {
 
       try {
         const payload = {
-          webhookUrl: webhookUrl.trim() === '' ? null : webhookUrl.trim(),
           atChatPrefix: atChatPrefix.trim() === '' ? null : atChatPrefix.trim(),
           atAdminChatPrefix:
             atAdminChatPrefix.trim() === '' ? null : atAdminChatPrefix.trim(),
@@ -420,7 +453,6 @@ export default function Settings() {
         };
 
         const response: SettingsResponse = await api.put('/api/settings', payload);
-        const newWebhook = response.settings.webhookUrl ?? '';
         const newSimulate = response.settings.simulateMatches ?? false;
         const newTimescale = response.settings.simulationTimescale ?? 1;
         const newChatPrefix = response.settings.atChatPrefix ?? DEFAULT_AT_CHAT_PREFIX;
@@ -480,8 +512,6 @@ export default function Settings() {
         const timescaleChanged =
           isDev && newTimescale !== initialSimulationTimescale;
 
-        setWebhookUrl(newWebhook);
-        setInitialWebhookUrl(newWebhook);
         setSimulateMatches(newSimulate);
         setInitialSimulateMatches(newSimulate);
         setSimulationTimescale(newTimescale);
@@ -592,7 +622,6 @@ export default function Settings() {
       }
     },
     [
-      webhookUrl,
       atChatPrefix,
       atAdminChatPrefix,
       atKnifeEnabledDefault,
@@ -641,7 +670,6 @@ export default function Settings() {
   const handleFieldBlur = () => {
     // Save immediately when field loses focus (if values changed)
     if (
-      webhookUrl !== initialWebhookUrl ||
       atChatPrefix !== initialAtChatPrefix ||
       atAdminChatPrefix !== initialAtAdminChatPrefix ||
       atKnifeEnabledDefault !== initialAtKnifeEnabledDefault ||
@@ -715,7 +743,6 @@ export default function Settings() {
 
     // Don't auto-save if values haven't changed
     if (
-      webhookUrl === initialWebhookUrl &&
       atChatPrefix === initialAtChatPrefix &&
       atAdminChatPrefix === initialAtAdminChatPrefix &&
       atKnifeEnabledDefault === initialAtKnifeEnabledDefault &&
@@ -771,7 +798,6 @@ export default function Settings() {
       }
     };
   }, [
-    webhookUrl,
     atChatPrefix,
     atAdminChatPrefix,
     atKnifeEnabledDefault,
@@ -805,7 +831,6 @@ export default function Settings() {
     atFfwEnabled,
     atFfwTime,
     atDemoRecordingEnabled,
-    initialWebhookUrl,
     initialAtChatPrefix,
     initialAtAdminChatPrefix,
     initialAtKnifeEnabledDefault,
@@ -848,82 +873,6 @@ export default function Settings() {
     handleSave,
   ]);
 
-  const handleSyncMaps = async () => {
-    setSyncingMaps(true);
-
-    try {
-      const response = await api.post<{
-        success: boolean;
-        message?: string;
-        stats?: { total: number; added: number; skipped: number; errors: number };
-        errors?: string[];
-        error?: string;
-        errorType?: 'rate_limit' | 'github_error' | 'unknown';
-      }>('/api/maps/sync');
-
-      if (response.success) {
-        showSuccess(
-          `Map sync completed! ${response.stats?.added || 0} new map(s) added, ${
-            response.stats?.skipped || 0
-          } already existed.`
-        );
-        if (response.errors && response.errors.length > 0) {
-          showError(`Some maps failed to sync: ${response.errors.join(', ')}`);
-        }
-      } else {
-        // Handle different error types with user-friendly messages
-        let errorMessage = response.error || 'Failed to sync maps';
-
-        if (response.errorType === 'rate_limit') {
-          errorMessage =
-            'GitHub API rate limit exceeded. Please try again in a few minutes. You can set GITHUB_TOKEN environment variable to increase the rate limit.';
-        } else if (response.errorType === 'github_error') {
-          errorMessage =
-            'Unable to reach GitHub repository. Please check your internet connection and try again later.';
-        }
-
-        showError(errorMessage);
-      }
-    } catch (err: unknown) {
-      // Handle API errors (network, 429, 503, etc.)
-      let errorMessage = 'Failed to sync maps';
-
-      if (err && typeof err === 'object' && 'response' in err) {
-        const apiError = err as {
-          response?: { data?: { error?: string; errorType?: string }; status?: number };
-        };
-        const status = apiError.response?.status;
-        const errorData = apiError.response?.data;
-
-        if (status === 429) {
-          errorMessage =
-            'GitHub API rate limit exceeded. Please try again in a few minutes. You can set GITHUB_TOKEN environment variable to increase the rate limit.';
-        } else if (status === 503) {
-          errorMessage =
-            'Unable to reach GitHub repository. Please check your internet connection and try again later.';
-        } else if (errorData?.error) {
-          errorMessage = errorData.error;
-          // Check error type for additional context
-          if (errorData.errorType === 'rate_limit') {
-            errorMessage = 'GitHub API rate limit exceeded. Please try again in a few minutes.';
-          }
-        }
-      } else if (err instanceof Error) {
-        // Check if error message contains rate limit info
-        const errMsg = err.message.toLowerCase();
-        if (errMsg.includes('rate limit') || errMsg.includes('rate limit exceeded')) {
-          errorMessage = 'GitHub API rate limit exceeded. Please try again in a few minutes.';
-        } else {
-          errorMessage = err.message;
-        }
-      }
-
-      showError(errorMessage);
-    } finally {
-      setSyncingMaps(false);
-    }
-  };
-
   return (
     <Box sx={{ width: '100%', height: '100%' }}>
       <Typography variant="body2" color="text.secondary" mb={4}>
@@ -941,7 +890,7 @@ export default function Settings() {
           <Paper sx={{ mb: 2 }}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
               <Tabs
-                value={tabIndex}
+                value={activeTab}
                 onChange={handleTabChange}
                 textColor="secondary"
                 indicatorColor="secondary"
@@ -949,68 +898,57 @@ export default function Settings() {
                 variant="scrollable"
                 scrollButtons="auto"
               >
-                <Tab label={t('settingsPage.tabs.integrations')} {...a11yProps(0)} />
-                <Tab label={t('settingsPage.tabs.players')} {...a11yProps(1)} />
-                <Tab label={t('settingsPage.tabs.matches')} {...a11yProps(2)} />
-                <Tab label={t('settingsPage.tabs.advanced')} {...a11yProps(3)} />
-                {isDev && <Tab label={t('settingsPage.tabs.developer')} {...a11yProps(4)} />}
+                <Tab
+                  label={t('settingsPage.tabs.integrations')}
+                  value="integrations"
+                  {...a11yProps('integrations')}
+                />
+                <Tab label={t('settingsPage.tabs.players')} value="players" {...a11yProps('players')} />
+                <Tab label={t('settingsPage.tabs.matches')} value="matches" {...a11yProps('matches')} />
+                <Tab
+                  label={t('settingsPage.tabs.advanced')}
+                  value="advanced"
+                  {...a11yProps('advanced')}
+                />
+                {moduleSettings.map(({ id, labelKey }) => (
+                  <Tab
+                    key={id}
+                    label={t(labelKey, { ns: id })}
+                    value={moduleTabKey(id)}
+                    data-testid={`settings-tab-module-${id}`}
+                    {...a11yProps(moduleTabKey(id))}
+                  />
+                ))}
+                {isDev && (
+                  <Tab
+                    label={t('settingsPage.tabs.developer')}
+                    value="developer"
+                    {...a11yProps('developer')}
+                  />
+                )}
               </Tabs>
             </Box>
 
-            <TabPanel value={tabIndex} index={0}>
+            <TabPanel value={activeTab} index="integrations">
               <Stack spacing={3}>
-                <Box>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
-                    {t('settingsPage.integrations.webhook.title')}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" mb={2}>
-                    {t('settingsPage.integrations.webhook.description')}
-                  </Typography>
-                  <TextField
-                    label={t('settingsPage.integrations.webhook.label')}
-                    value={webhookUrl}
-                    onChange={(event) => setWebhookUrl(event.target.value)}
-                    onBlur={handleFieldBlur}
-                    onKeyDown={handleFieldKeyDown}
-                    helperText={t('settingsPage.integrations.webhook.helper')}
-                    fullWidth
-                    required
-                    error={!loading && webhookUrl.trim() === ''}
-                    slotProps={{
-                      htmlInput: { 'data-testid': 'settings-webhook-url-input' },
-                    }}
-                  />
-                </Box>
-
-                <Divider />
-
                 <IgdbCredentialsCard />
-
-                <Divider />
-
-                <Box>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
-                    {t('settingsPage.integrations.mapSync.title')}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" mb={2}>
-                    {t('settingsPage.integrations.mapSync.description')}
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    startIcon={syncingMaps ? <CircularProgress size={16} /> : <SyncIcon />}
-                    onClick={handleSyncMaps}
-                    disabled={syncingMaps || loading}
-                  >
-                    {syncingMaps
-                      ? t('settingsPage.integrations.mapSync.buttonSyncing')
-                      : t('settingsPage.integrations.mapSync.buttonIdle')}
-                  </Button>
-                </Box>
               </Stack>
             </TabPanel>
 
+            {/* Each installed module's own settings (CS2: webhook URL, map sync) */}
+            {moduleSettings.map(({ id, Section }) => (
+              <TabPanel
+                key={id}
+                value={activeTab}
+                index={moduleTabKey(id)}
+                data-testid={`settings-module-${id}`}
+              >
+                <Section />
+              </TabPanel>
+            ))}
+
             {/* Players & access control */}
-            <TabPanel value={tabIndex} index={1}>
+            <TabPanel value={activeTab} index="players">
               <Stack spacing={3}>
                 <Box>
                   <Typography variant="h6" fontWeight={600} gutterBottom>
@@ -1041,7 +979,7 @@ export default function Settings() {
             </TabPanel>
 
             {/* Match behavior and rating rules */}
-            <TabPanel value={tabIndex} index={2}>
+            <TabPanel value={activeTab} index="matches">
               <Stack spacing={3}>
                 <Accordion defaultExpanded sx={ACCORDION_SX}>
                   <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={ACCORDION_SUMMARY_SX}>
@@ -1251,7 +1189,7 @@ export default function Settings() {
             </TabPanel>
 
             {/* Advanced settings */}
-            <TabPanel value={tabIndex} index={3}>
+            <TabPanel value={activeTab} index="advanced">
               <Stack spacing={3}>
                 <Alert severity="warning">
                   {t('settingsPage.matchRating.atCore.expert.description')}
@@ -1686,7 +1624,7 @@ export default function Settings() {
             </TabPanel>
 
             {isDev && (
-              <TabPanel value={tabIndex} index={4}>
+              <TabPanel value={activeTab} index="developer">
                 <Stack spacing={3}>
                   <Box>
                     <Typography variant="h6" fontWeight={600} gutterBottom>
@@ -1853,7 +1791,6 @@ export default function Settings() {
                   // Save default values to server
                   try {
                     const resetPayload: {
-                      webhookUrl: null;
                       atChatPrefix: null;
                       atAdminChatPrefix: null;
                       atKnifeEnabledDefault: null;
@@ -1888,7 +1825,6 @@ export default function Settings() {
                       atFfwTime: null;
                       atDemoRecordingEnabled: null;
                     } = {
-                      webhookUrl: null,
                       atChatPrefix: null,
                       atAdminChatPrefix: null,
                       atKnifeEnabledDefault: null,
@@ -1928,7 +1864,6 @@ export default function Settings() {
                       resetPayload
                     );
 
-                    const newWebhook = response.settings.webhookUrl ?? '';
                     const newSimulate = response.settings.simulateMatches ?? false;
                     const newChatPrefix =
                       response.settings.atChatPrefix ?? DEFAULT_AT_CHAT_PREFIX;
@@ -1978,8 +1913,6 @@ export default function Settings() {
                     const newAtFfwT = response.settings.atFfwTime ?? null;
                     const newAtDemo = response.settings.atDemoRecordingEnabled ?? null;
 
-                    setWebhookUrl(newWebhook);
-                    setInitialWebhookUrl(newWebhook);
                     setSimulateMatches(newSimulate);
                     setInitialSimulateMatches(newSimulate);
                     setAtChatPrefix(newChatPrefix);

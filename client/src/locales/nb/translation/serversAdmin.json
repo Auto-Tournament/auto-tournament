@@ -1,33 +1,6 @@
 {
   "adminToolsPage": {
-    "description": "Kjør vanlige kamp- og serverhandlinger på tvers av CS2-serverne dine. Hurtighandlinger vises først, med mer avanserte verktøy under.",
-    "header": {
-      "refresh": "Oppdater servere"
-    },
-    "serverSelect": {
-      "label": "Målserver(e)",
-      "allServersChip": "Alle servere",
-      "sendStatus": "Send status",
-      "allServersDescription_one": "Kjør på {{count}} server",
-      "allServersDescription_other": "Kjør på alle {{count}} servere"
-    },
-    "command": {
-      "execute": "Kjør"
-    },
-    "customRconWarning": "Advarsel: bruk med forsiktighet!",
-    "results": {
-      "title": "Resultater",
-      "successChip": "✓ Vellykket",
-      "failedChip": "✗ Feilet",
-      "errorPrefix": "Feil:"
-    },
-    "quickActions": {
-      "title": "Hurtighandlinger"
-    },
-    "advanced": {
-      "title": "Avanserte verktøy"
-    },
-    "noServers": "Fant ingen aktiverte servere. Legg til og aktiver servere på Servere-siden.",
+    "description": "Logger og vedlikehold for dette nettstedet. Installerte spillmoduler legger til egne verktøy nedenfor.",
     "recovery": {
       "title": "Kampgjenoppretting",
       "description": "Hvis API-et eller serverne ble startet på nytt under en turnering og kampstatusen ser usynkron ut (f.eks. kamper som sitter fast i warmup eller mangler live-score), kan du manuelt starte en gjenoppretting. Dette ber alle servere om sin nåværende kamp-rapport, synkroniserer score/faser og re-konfigurerer webhooks og demo-opplasting der det er mulig.",
@@ -38,113 +11,7 @@
     },
     "monitoring": {
       "title": "Overvåking og logger",
-      "serverEvents": "Overvåk serverhendelser",
       "appLogs": "Applikasjonslogger"
-    },
-    "toasts": {
-      "commandExecuted_one": "Kommandoen ble kjørt på {{count}} server",
-      "commandExecuted_other": "Kommandoen ble kjørt på {{count}} servere",
-      "commandPartial": "Kommandoen lyktes på {{succeeded}} av {{total}} servere ({{failed}} feilet)",
-      "commandFailed": "Kunne ikke kjøre kommandoen"
-    },
-    "categories": {
-      "matchControl": "Kampstyring",
-      "matchSettings": "Kampinnstillinger",
-      "backupRestore": "Backup og gjenoppretting",
-      "serverMgmt": "Serveradministrasjon",
-      "teamMgmt": "Lagadministrasjon",
-      "practiceMode": "Treningsmodus",
-      "adminComm": "Admin-meldinger",
-      "advanced": "Avansert RCON"
-    },
-    "commands": {
-      "matchStart": {
-        "label": "Start kampen",
-        "description": "Start kampen med en gang."
-      },
-      "matchEnd": {
-        "label": "Avslutt kampen",
-        "description": "Tvinger den pågående kampen på de valgte serverne til å avslutte og setter dem tilbake til warmup med css_restart."
-      },
-      "forcePause": {
-        "label": "Tving pause",
-        "description": "Tving kampen på pause."
-      },
-      "forceUnpause": {
-        "label": "Tving fortsett",
-        "description": "Tving kampen til å fortsette etter pause."
-      },
-      "skipVeto": {
-        "label": "Hopp over veto",
-        "description": "Hopp over veto-fasen."
-      },
-      "toggleKnife": {
-        "label": "Knivrunde av/på",
-        "description": "Slå knivrunden for sidevalg av eller på (alias: rk)."
-      },
-      "togglePlayout": {
-        "label": "Spill ut alle runder av/på",
-        "description": "Slå av eller på at alle runder spilles ut."
-      },
-      "toggleWhitelist": {
-        "label": "Whitelist av/på",
-        "description": "Slå lag-whitelisten av eller på."
-      },
-      "showSettings": {
-        "label": "Vis innstillinger",
-        "description": "Vis gjeldende kampinnstillinger."
-      },
-      "reloadAdmins": {
-        "label": "Last inn admins på nytt",
-        "description": "Last inn adminlisten fra admins.json på nytt."
-      },
-      "readyRequired": {
-        "label": "Antall spillere som må være klare",
-        "description": "Angi hvor mange spillere som må være klare før kampen starter.",
-        "inputLabel": "Antall spillere"
-      },
-      "restoreBackup": {
-        "label": "Gjenopprett rundebackup",
-        "description": "Sett kampen tilbake til en bestemt runde.",
-        "inputLabel": "Rundenummer"
-      },
-      "cleanServers": {
-        "label": "Rydd servere",
-        "description": "Avslutter alle pågående kamper på de valgte serverne og setter dem tilbake til warmup med css_restart. Kan ikke angres."
-      },
-      "changeMap": {
-        "label": "Bytt kart",
-        "description": "Bytt til et annet kart (css_map <mapname>).",
-        "inputLabel": "Kartnavn (de_dust2)"
-      },
-      "team1Name": {
-        "label": "Sett navn på lag 1",
-        "description": "Angi navnet på lag 1.",
-        "inputLabel": "Lagnavn"
-      },
-      "team2Name": {
-        "label": "Sett navn på lag 2",
-        "description": "Angi navnet på lag 2.",
-        "inputLabel": "Lagnavn"
-      },
-      "startPractice": {
-        "label": "Start treningsmodus",
-        "description": "Slå på treningsmodus med .-kommandoer."
-      },
-      "exitPractice": {
-        "label": "Avslutt treningsmodus",
-        "description": "Slå av treningsmodus."
-      },
-      "broadcast": {
-        "label": "Send melding til alle",
-        "description": "Send en adminmelding til alle spillerne.",
-        "inputLabel": "Melding"
-      },
-      "customRcon": {
-        "label": "Kjør egen RCON-kommando",
-        "description": "Kjør en hvilken som helst RCON-kommando direkte.",
-        "inputLabel": "RCON-kommando"
-      }
     },
     "logs": {
       "loadFailed": "Kunne ikke laste loggene",
@@ -154,29 +21,6 @@
       "empty": "Ingen logger å vise",
       "footer": "Viser de {{count}} nyeste loggoppføringene",
       "footerAutoRefresh": "Viser de {{count}} nyeste loggoppføringene (oppdateres automatisk)"
-    },
-    "events": {
-      "healthCheckFailed": "Helsesjekken av hendelses-API-et feilet. Sjekk at API-et kjører og at /api/events/test svarer.",
-      "loadFailed": "Kunne ikke laste hendelsene",
-      "connected": "Tilkoblet",
-      "disconnected": "Frakoblet",
-      "paused": "Pauset",
-      "pause": "Pause",
-      "resume": "Fortsett",
-      "refresh": "Oppdater hendelser",
-      "clear": "Tøm konsollen",
-      "filterLabel": "Filtrer på server (valgfritt)",
-      "noServers": "Ingen servere tilgjengelig",
-      "refreshServers": "Oppdater serverlisten",
-      "noEvents": "Ingen hendelser mottatt fra denne serveren ennå.",
-      "noEventsHint": "Fortsatt ingen hendelser etter 15 sekunder. Sjekk at CS2-serveren er satt opp til å sende Auto Tournament CS2-webhooks til /api/events/:matchSlugOrServerId med riktig X-Auto-Tournament-Token.",
-      "waiting": "Venter på hendelser fra serveren …",
-      "footer_one": "Viser {{count}} hendelse (maks 100)",
-      "footer_other": "Viser {{count}} hendelser (maks 100)",
-      "footerForServer_one": "Viser {{count}} hendelse for server {{server}} (maks 100)",
-      "footerForServer_other": "Viser {{count}} hendelser for server {{server}} (maks 100)",
-      "realtime": "Hendelser oppdateres i sanntid via WebSocket",
-      "downloadDemo": "Last ned demo"
     }
   },
   "servers": {

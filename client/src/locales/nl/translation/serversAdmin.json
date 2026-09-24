@@ -1,33 +1,5 @@
 {
   "adminToolsPage": {
-    "description": "Voer veelgebruikte wedstrijd- en serveracties uit op je CS2-servers. Snelle acties worden eerst getoond; meer geavanceerde tools vind je hieronder.",
-    "header": {
-      "refresh": "Servers vernieuwen"
-    },
-    "serverSelect": {
-      "label": "Doelserver(s)",
-      "allServersChip": "Alle servers",
-      "sendStatus": "Status sturen",
-      "allServersDescription_one": "Uitvoeren op {{count}} server",
-      "allServersDescription_other": "Uitvoeren op alle {{count}} servers"
-    },
-    "command": {
-      "execute": "Uitvoeren"
-    },
-    "customRconWarning": "Waarschuwing: voorzichtig gebruiken!",
-    "results": {
-      "title": "Uitvoerresultaten",
-      "successChip": "✓ Gelukt",
-      "failedChip": "✗ Mislukt",
-      "errorPrefix": "Fout:"
-    },
-    "quickActions": {
-      "title": "Snelle acties"
-    },
-    "advanced": {
-      "title": "Geavanceerde tools"
-    },
-    "noServers": "Geen ingeschakelde servers gevonden. Voeg servers toe en schakel ze in op de pagina Spelservers.",
     "recovery": {
       "title": "Wedstrijdherstel",
       "description": "Als de API of servers tijdens een toernooi zijn herstart en de wedstrijdstatus niet meer klopt (bijv. wedstrijden hangen in warmup of live scores ontbreken), kun je handmatig een herstelrun starten. Dit vraagt alle servers om hun huidige wedstrijdrapport, synchroniseert scores/fases opnieuw en configureert webhooks en demo-uploads waar mogelijk.",
@@ -38,113 +10,7 @@
     },
     "monitoring": {
       "title": "Monitoring & logs",
-      "serverEvents": "Server-eventmonitor",
       "appLogs": "Applicatielogs"
-    },
-    "toasts": {
-      "commandExecuted_one": "Commando uitgevoerd op {{count}} server",
-      "commandExecuted_other": "Commando uitgevoerd op {{count}} servers",
-      "commandPartial": "Commando gelukt op {{succeeded}} van {{total}} servers ({{failed}} mislukt)",
-      "commandFailed": "Commando uitvoeren mislukt"
-    },
-    "categories": {
-      "matchControl": "Wedstrijdbeheer",
-      "matchSettings": "Wedstrijdinstellingen",
-      "backupRestore": "Back-up & herstel",
-      "serverMgmt": "Serverbeheer",
-      "teamMgmt": "Teambeheer",
-      "practiceMode": "Oefenmodus",
-      "adminComm": "Admin-communicatie",
-      "advanced": "Geavanceerde RCON"
-    },
-    "commands": {
-      "matchStart": {
-        "label": "Wedstrijd starten",
-        "description": "Start de wedstrijd direct."
-      },
-      "matchEnd": {
-        "label": "Wedstrijd beëindigen",
-        "description": "Beëindig de huidige wedstrijd geforceerd op de geselecteerde servers en zet ze terug naar warmup met css_restart."
-      },
-      "forcePause": {
-        "label": "Geforceerd pauzeren",
-        "description": "Pauzeer de wedstrijd geforceerd."
-      },
-      "forceUnpause": {
-        "label": "Pauze geforceerd opheffen",
-        "description": "Hef de pauze van de wedstrijd geforceerd op."
-      },
-      "skipVeto": {
-        "label": "Veto overslaan",
-        "description": "Sla de vetofase over."
-      },
-      "toggleKnife": {
-        "label": "Knife-round aan/uit",
-        "description": "Zet de knife-round voor de sidekeuze aan of uit (alias: rk)."
-      },
-      "togglePlayout": {
-        "label": "Playout aan/uit",
-        "description": "Zet het uitspelen van alle rondes aan of uit."
-      },
-      "toggleWhitelist": {
-        "label": "Whitelist aan/uit",
-        "description": "Zet de teamwhitelist aan of uit."
-      },
-      "showSettings": {
-        "label": "Instellingen tonen",
-        "description": "Toon de huidige wedstrijdinstellingen."
-      },
-      "reloadAdmins": {
-        "label": "Admins herladen",
-        "description": "Laad de adminlijst opnieuw uit admins.json."
-      },
-      "readyRequired": {
-        "label": "Aantal spelers voor ready instellen",
-        "description": "Stel in hoeveel spelers ready moeten zijn voordat de wedstrijd start.",
-        "inputLabel": "Aantal spelers"
-      },
-      "restoreBackup": {
-        "label": "Rondeback-up herstellen",
-        "description": "Zet de wedstrijd terug naar een specifieke ronde.",
-        "inputLabel": "Rondenummer"
-      },
-      "cleanServers": {
-        "label": "Servers opschonen",
-        "description": "Beëindig lopende wedstrijden op de geselecteerde servers en zet ze terug naar warmup met css_restart. Dit is destructief."
-      },
-      "changeMap": {
-        "label": "Map wisselen",
-        "description": "Wissel naar een andere map (css_map <mapname>).",
-        "inputLabel": "Mapnaam (de_dust2)"
-      },
-      "team1Name": {
-        "label": "Naam team 1 instellen",
-        "description": "Stel de naam van team 1 in.",
-        "inputLabel": "Teamnaam"
-      },
-      "team2Name": {
-        "label": "Naam team 2 instellen",
-        "description": "Stel de naam van team 2 in.",
-        "inputLabel": "Teamnaam"
-      },
-      "startPractice": {
-        "label": "Oefenmodus starten",
-        "description": "Zet de oefenmodus aan met .commands."
-      },
-      "exitPractice": {
-        "label": "Oefenmodus verlaten",
-        "description": "Zet de oefenmodus uit."
-      },
-      "broadcast": {
-        "label": "Bericht uitzenden",
-        "description": "Stuur een adminbericht naar alle spelers.",
-        "inputLabel": "Bericht"
-      },
-      "customRcon": {
-        "label": "Eigen RCON-commando uitvoeren",
-        "description": "Voer direct een willekeurig RCON-commando uit.",
-        "inputLabel": "RCON-commando"
-      }
     },
     "logs": {
       "loadFailed": "Logs laden mislukt",
@@ -155,29 +21,7 @@
       "footer": "De {{count}} meest recente logregels worden getoond",
       "footerAutoRefresh": "De {{count}} meest recente logregels worden getoond (automatisch vernieuwd)"
     },
-    "events": {
-      "healthCheckFailed": "Health check van de events-API mislukt. Controleer of de API draait en /api/events/test bereikbaar is.",
-      "loadFailed": "Events laden mislukt",
-      "connected": "Verbonden",
-      "disconnected": "Verbinding verbroken",
-      "paused": "Gepauzeerd",
-      "pause": "Pauzeren",
-      "resume": "Hervatten",
-      "refresh": "Events vernieuwen",
-      "clear": "Console wissen",
-      "filterLabel": "Filteren op server (optioneel)",
-      "noServers": "Geen servers beschikbaar",
-      "refreshServers": "Serverlijst vernieuwen",
-      "noEvents": "Nog geen events van deze server ontvangen.",
-      "noEventsHint": "Na 15 seconden nog steeds geen events. Controleer of je CS2-server is ingesteld om Auto Tournament CS2-webhooks naar /api/events/:matchSlugOrServerId te sturen met de juiste X-Auto-Tournament-Token.",
-      "waiting": "Wachten op events van de server…",
-      "footer_one": "{{count}} event getoond (max. 100)",
-      "footer_other": "{{count}} events getoond (max. 100)",
-      "footerForServer_one": "{{count}} event getoond voor server {{server}} (max. 100)",
-      "footerForServer_other": "{{count}} events getoond voor server {{server}} (max. 100)",
-      "realtime": "Events worden in realtime bijgewerkt via WebSocket",
-      "downloadDemo": "Demo downloaden"
-    }
+    "description": "Logs and maintenance for this site. Installed game modules add their own tools below."
   },
   "servers": {
     "allocation": {

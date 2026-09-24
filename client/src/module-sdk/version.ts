@@ -58,5 +58,14 @@
  * 0.2.1 (additive): the 3.0 drafts' page patterns, `PageHead`,
  * `SectionHead`, `Panel`, `RowList`, `Row` and `FactGrid` (with their
  * prop types), and `radii`, the radius tokens as CSS lengths for `sx`.
+ *
+ * 0.2.2 (added, not a break; audit chunk 9, "module ownership"): two optional
+ * slots for the instance-wide admin pages, shown for every installed module
+ * whatever game the tournament is.
+ * - `adminToolsSection` (no props): the module's section of Admin tools.
+ *   CS2: its RCON console and server events monitor, which were core's.
+ * - `instanceSettings: { labelKey, section }` (no props): the module's tab on
+ *   Settings. CS2: the webhook URL and the map sync, which were core's.
+ * - `links.settings(moduleId?)` opens Settings, on that module's tab.
  */
-export const CLIENT_API_VERSION = '0.2.1';
+export const CLIENT_API_VERSION = '0.2.2';

@@ -1,19 +1,16 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { api } from '../utils/api';
+import { api, useModuleTranslation } from '../../../module-sdk';
+import type { RconResult, RconResultsResponse } from '../cs2.types';
 
-export interface ExecutionResult {
-  serverId: string;
-  serverName: string;
-  success: boolean;
-  error?: string;
-  response?: string;
-}
-
-export const useAdminCommands = () => {
-  const { t } = useTranslation();
+/**
+ * Runs an RCON command on one or more CS2 servers through CS2's own routes
+ * (`/api/rcon/broadcast`, `/api/rcon/command`), and keeps the per-server
+ * results and a toast message for the Admin tools section.
+ */
+export const useRconCommands = () => {
+  const { t } = useModuleTranslation('cs2');
   const [executing, setExecuting] = useState(false);
-  const [results, setResults] = useState<ExecutionResult[]>([]);
+  const [results, setResults] = useState<RconResult[]>([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -27,17 +24,14 @@ export const useAdminCommands = () => {
     setSuccess('');
 
     try {
-      let response;
+      let response: RconResultsResponse;
 
       if (command === 'asay') {
         // Special handling for broadcast
-        response = await api.post<{ success: boolean; results: ExecutionResult[] }>(
-          '/api/rcon/broadcast',
-          {
-            serverIds,
-            message: value || '',
-          }
-        );
+        response = await api.post<RconResultsResponse>('/api/rcon/broadcast', {
+          serverIds,
+          message: value || '',
+        });
       } else {
         // Generic command execution
         const payload: {
@@ -64,10 +58,7 @@ export const useAdminCommands = () => {
           payload.value = value;
         }
 
-        response = await api.post<{ success: boolean; results: ExecutionResult[] }>(
-          '/api/rcon/command',
-          payload
-        );
+        response = await api.post<RconResultsResponse>('/api/rcon/command', payload);
       }
 
       if (response.success) {
@@ -79,27 +70,22 @@ export const useAdminCommands = () => {
         const failCount = total - successCount;
         setSuccess(
           failCount > 0
-            ? t('adminToolsPage.toasts.commandPartial', {
+            ? t('adminTools.toasts.commandPartial', {
                 succeeded: successCount,
                 failed: failCount,
                 total,
               })
-            : t('adminToolsPage.toasts.commandExecuted', { count: successCount })
+            : t('adminTools.toasts.commandExecuted', { count: successCount })
         );
       } else {
-        setError(t('adminToolsPage.toasts.commandFailed'));
+        setError(t('adminTools.toasts.commandFailed'));
       }
     } catch (err) {
       const error = err as Error;
-      setError(error.message || t('adminToolsPage.toasts.commandFailed'));
+      setError(error.message || t('adminTools.toasts.commandFailed'));
     } finally {
       setExecuting(false);
     }
-  };
-
-  const clearMessages = () => {
-    setError('');
-    setSuccess('');
   };
 
   return {
@@ -108,6 +94,5 @@ export const useAdminCommands = () => {
     error,
     success,
     executeCommand,
-    clearMessages,
   };
 };

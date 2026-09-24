@@ -707,5 +707,187 @@
     },
     "info_one": "Dette lagrer en kartpool med {{count}} kart.",
     "info_other": "Dette lagrer en kartpool med {{count}} kart."
+  },
+  "adminTools": {
+    "title": "Counter-Strike 2-servere",
+    "description": "Kjør vanlige kamp- og serverhandlinger på CS2-serverne dine. Hurtighandlinger vises først, mer avanserte verktøy lenger ned.",
+    "refresh": "Oppdater servere",
+    "serverSelect": {
+      "label": "Målserver(e)",
+      "allServersChip": "Alle servere",
+      "sendStatus": "Send status",
+      "allServersDescription_one": "Kjør på {{count}} server",
+      "allServersDescription_other": "Kjør på alle {{count}} servere"
+    },
+    "command": {
+      "execute": "Kjør"
+    },
+    "customRconWarning": "Advarsel: bruk med forsiktighet!",
+    "results": {
+      "title": "Resultater",
+      "successChip": "✓ Vellykket",
+      "failedChip": "✗ Feilet",
+      "errorPrefix": "Feil:"
+    },
+    "quickActions": {
+      "title": "Hurtighandlinger"
+    },
+    "advanced": {
+      "title": "Avanserte verktøy"
+    },
+    "noServers": "Fant ingen aktiverte servere. Legg til og aktiver servere på Servere-siden.",
+    "toasts": {
+      "commandExecuted_one": "Kommandoen ble kjørt på {{count}} server",
+      "commandExecuted_other": "Kommandoen ble kjørt på {{count}} servere",
+      "commandPartial": "Kommandoen lyktes på {{succeeded}} av {{total}} servere ({{failed}} feilet)",
+      "commandFailed": "Kunne ikke kjøre kommandoen"
+    },
+    "commands": {
+      "matchStart": {
+        "label": "Start kampen",
+        "description": "Start kampen med en gang."
+      },
+      "matchEnd": {
+        "label": "Avslutt kampen",
+        "description": "Tvinger den pågående kampen på de valgte serverne til å avslutte og setter dem tilbake til warmup med css_restart."
+      },
+      "forcePause": {
+        "label": "Tving pause",
+        "description": "Tving kampen på pause."
+      },
+      "forceUnpause": {
+        "label": "Tving fortsett",
+        "description": "Tving kampen til å fortsette etter pause."
+      },
+      "skipVeto": {
+        "label": "Hopp over veto",
+        "description": "Hopp over veto-fasen."
+      },
+      "toggleKnife": {
+        "label": "Knivrunde av/på",
+        "description": "Slå knivrunden for sidevalg av eller på (alias: rk)."
+      },
+      "togglePlayout": {
+        "label": "Spill ut alle runder av/på",
+        "description": "Slå av eller på at alle runder spilles ut."
+      },
+      "toggleWhitelist": {
+        "label": "Whitelist av/på",
+        "description": "Slå lag-whitelisten av eller på."
+      },
+      "showSettings": {
+        "label": "Vis innstillinger",
+        "description": "Vis gjeldende kampinnstillinger."
+      },
+      "reloadAdmins": {
+        "label": "Last inn admins på nytt",
+        "description": "Last inn adminlisten fra admins.json på nytt."
+      },
+      "readyRequired": {
+        "label": "Antall spillere som må være klare",
+        "description": "Angi hvor mange spillere som må være klare før kampen starter.",
+        "inputLabel": "Antall spillere"
+      },
+      "restoreBackup": {
+        "label": "Gjenopprett rundebackup",
+        "description": "Sett kampen tilbake til en bestemt runde.",
+        "inputLabel": "Rundenummer"
+      },
+      "cleanServers": {
+        "label": "Rydd servere",
+        "description": "Avslutter alle pågående kamper på de valgte serverne og setter dem tilbake til warmup med css_restart. Kan ikke angres."
+      },
+      "changeMap": {
+        "label": "Bytt kart",
+        "description": "Bytt til et annet kart (css_map <mapname>).",
+        "inputLabel": "Kartnavn (de_dust2)"
+      },
+      "team1Name": {
+        "label": "Sett navn på lag 1",
+        "description": "Angi navnet på lag 1.",
+        "inputLabel": "Lagnavn"
+      },
+      "team2Name": {
+        "label": "Sett navn på lag 2",
+        "description": "Angi navnet på lag 2.",
+        "inputLabel": "Lagnavn"
+      },
+      "startPractice": {
+        "label": "Start treningsmodus",
+        "description": "Slå på treningsmodus med .-kommandoer."
+      },
+      "exitPractice": {
+        "label": "Avslutt treningsmodus",
+        "description": "Slå av treningsmodus."
+      },
+      "broadcast": {
+        "label": "Send melding til alle",
+        "description": "Send en adminmelding til alle spillerne.",
+        "inputLabel": "Melding"
+      },
+      "customRcon": {
+        "label": "Kjør egen RCON-kommando",
+        "description": "Kjør en hvilken som helst RCON-kommando direkte.",
+        "inputLabel": "RCON-kommando"
+      }
+    },
+    "categories": {
+      "matchControl": "Kampstyring",
+      "matchSettings": "Kampinnstillinger",
+      "backupRestore": "Backup og gjenoppretting",
+      "serverMgmt": "Serveradministrasjon",
+      "teamMgmt": "Lagadministrasjon",
+      "practiceMode": "Treningsmodus",
+      "adminComm": "Admin-meldinger",
+      "advanced": "Avansert RCON"
+    },
+    "events": {
+      "title": "Overvåk serverhendelser",
+      "healthCheckFailed": "Helsesjekken av hendelses-API-et feilet. Sjekk at API-et kjører og at /api/events/test svarer.",
+      "loadFailed": "Kunne ikke laste hendelsene",
+      "connected": "Tilkoblet",
+      "disconnected": "Frakoblet",
+      "paused": "Pauset",
+      "pause": "Pause",
+      "resume": "Fortsett",
+      "refresh": "Oppdater hendelser",
+      "clear": "Tøm konsollen",
+      "filterLabel": "Filtrer på server (valgfritt)",
+      "noServers": "Ingen servere tilgjengelig",
+      "refreshServers": "Oppdater serverlisten",
+      "noEvents": "Ingen hendelser mottatt fra denne serveren ennå.",
+      "noEventsHint": "Fortsatt ingen hendelser etter 15 sekunder. Sjekk at CS2-serveren er satt opp til å sende Auto Tournament CS2-webhooks til /api/events/:matchSlugOrServerId med riktig X-Auto-Tournament-Token.",
+      "waiting": "Venter på hendelser fra serveren …",
+      "footer_one": "Viser {{count}} hendelse (maks 100)",
+      "footer_other": "Viser {{count}} hendelser (maks 100)",
+      "footerForServer_one": "Viser {{count}} hendelse for server {{server}} (maks 100)",
+      "footerForServer_other": "Viser {{count}} hendelser for server {{server}} (maks 100)",
+      "realtime": "Hendelser oppdateres i sanntid via WebSocket",
+      "downloadDemo": "Last ned demo"
+    }
+  },
+  "settings": {
+    "tab": "Counter-Strike 2",
+    "saved": "Innstillinger lagret",
+    "saveFailed": "Kunne ikke lagre innstillingene",
+    "loadFailed": "Kunne ikke laste innstillingene",
+    "webhook": {
+      "title": "Auto Tournament CS2-webhook",
+      "description": "Webhook-URL som CS2-serverne kan nå.",
+      "label": "Webhook-URL",
+      "helper": "Eksempel: https://ditt-domene.no"
+    },
+    "mapSync": {
+      "title": "Kartsynkronisering",
+      "description": "Synk CS2-kart fra GitHub-repositoriet.",
+      "buttonSyncing": "Synkroniserer kart...",
+      "buttonIdle": "Synkroniser CS2-kart",
+      "success": "Kartsynk fullført! {{added}} nye kart lagt til, {{skipped}} fantes allerede.",
+      "partialError": "Noen kart kunne ikke synkroniseres: {{errors}}",
+      "failed": "Klarte ikke å synkronisere kart",
+      "rateLimit": "GitHub API rate limit er nådd. Prøv igjen om noen minutter. Du kan sette miljøvariabelen GITHUB_TOKEN for å øke rate limit.",
+      "rateLimitShort": "GitHub API rate limit er nådd. Prøv igjen om noen minutter.",
+      "githubError": "Klarte ikke å nå GitHub-repositoriet. Sjekk nettverket ditt og prøv igjen senere."
+    }
   }
 }

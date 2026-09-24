@@ -119,7 +119,7 @@ test.describe.serial('Game catalog', () => {
     const listing = await catalog(request);
     expect(listing.feed.from).toBe('remote');
     expect(listing.feed.stale).toBe(false);
-    expect(listing.platform).toEqual({ serverApi: '0.1.0', clientApi: '0.2.1' });
+    expect(listing.platform).toEqual({ serverApi: '0.1.0', clientApi: '0.2.2' });
 
     const good = listing.items.find((row) => row.id === ids.good);
     expect(good).toMatchObject({ kind: 'module', state: 'available', installed: null, available: { version: '1.0.0', from: 'remote' } });

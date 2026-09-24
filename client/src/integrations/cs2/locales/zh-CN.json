@@ -707,5 +707,187 @@
     },
     "info_one": "将保存一个包含 {{count}} 张地图的地图池。",
     "info_other": "将保存一个包含 {{count}} 张地图的地图池。"
+  },
+  "adminTools": {
+    "description": "在所有 CS2 服务器上批量执行常用比赛与服务器操作。常用操作会优先展示，更高级的工具可以在下方展开查看。",
+    "refresh": "刷新服务器",
+    "serverSelect": {
+      "label": "目标服务器",
+      "allServersChip": "全部服务器",
+      "sendStatus": "发送 status 命令",
+      "allServersDescription_one": "在 {{count}} 台服务器上运行",
+      "allServersDescription_other": "在全部 {{count}} 台服务器上运行"
+    },
+    "command": {
+      "execute": "执行"
+    },
+    "customRconWarning": "警告：请谨慎使用！",
+    "results": {
+      "title": "执行结果",
+      "successChip": "✓ 成功",
+      "failedChip": "✗ 失败",
+      "errorPrefix": "错误："
+    },
+    "quickActions": {
+      "title": "快速操作"
+    },
+    "advanced": {
+      "title": "高级工具"
+    },
+    "noServers": "未找到已启用的服务器。请在“服务器”页面添加并启用至少一台服务器。",
+    "toasts": {
+      "commandExecuted_one": "命令已在 {{count}} 台服务器上执行",
+      "commandExecuted_other": "命令已在 {{count}} 台服务器上执行",
+      "commandPartial": "命令在 {{total}} 台服务器中的 {{succeeded}} 台上执行成功（{{failed}} 台失败）",
+      "commandFailed": "执行命令失败"
+    },
+    "commands": {
+      "matchStart": {
+        "label": "开始比赛",
+        "description": "立即开始比赛。"
+      },
+      "matchEnd": {
+        "label": "结束比赛（css_restart）",
+        "description": "强制结束所选服务器上的当前比赛，并使用 css_restart 将其重置为热身。"
+      },
+      "forcePause": {
+        "label": "强制暂停",
+        "description": "强制暂停比赛。"
+      },
+      "forceUnpause": {
+        "label": "强制取消暂停",
+        "description": "强制取消比赛暂停。"
+      },
+      "skipVeto": {
+        "label": "跳过选图",
+        "description": "跳过选图（veto）阶段。"
+      },
+      "toggleKnife": {
+        "label": "切换刀局",
+        "description": "开启或关闭用于选边的刀局（别名：rk）。"
+      },
+      "togglePlayout": {
+        "label": "切换打满全部回合",
+        "description": "开启或关闭打满全部回合。"
+      },
+      "toggleWhitelist": {
+        "label": "切换白名单",
+        "description": "开启或关闭战队白名单。"
+      },
+      "showSettings": {
+        "label": "显示设置",
+        "description": "显示当前比赛设置。"
+      },
+      "reloadAdmins": {
+        "label": "重新加载管理员",
+        "description": "从 admins.json 重新加载管理员列表。"
+      },
+      "readyRequired": {
+        "label": "设置需准备的玩家数",
+        "description": "设置比赛开始前需要准备的玩家数量。",
+        "inputLabel": "玩家数量"
+      },
+      "restoreBackup": {
+        "label": "恢复回合备份",
+        "description": "将比赛恢复到指定回合。",
+        "inputLabel": "回合编号"
+      },
+      "cleanServers": {
+        "label": "清理服务器（css_restart）",
+        "description": "结束所选服务器上正在进行的比赛，并使用 css_restart 将其重置为热身。此操作具有破坏性。"
+      },
+      "changeMap": {
+        "label": "更换地图",
+        "description": "切换到其他地图（css_map <mapname>）。",
+        "inputLabel": "地图名称（de_dust2）"
+      },
+      "team1Name": {
+        "label": "设置战队 1 名称",
+        "description": "设置战队 1 的名称。",
+        "inputLabel": "战队名称"
+      },
+      "team2Name": {
+        "label": "设置战队 2 名称",
+        "description": "设置战队 2 的名称。",
+        "inputLabel": "战队名称"
+      },
+      "startPractice": {
+        "label": "开启练习模式",
+        "description": "开启支持 .commands 的练习模式。"
+      },
+      "exitPractice": {
+        "label": "退出练习模式",
+        "description": "关闭练习模式。"
+      },
+      "broadcast": {
+        "label": "广播消息",
+        "description": "向所有玩家发送管理员消息。",
+        "inputLabel": "消息"
+      },
+      "customRcon": {
+        "label": "执行自定义 RCON 命令",
+        "description": "直接执行任意 RCON 命令。",
+        "inputLabel": "RCON 命令"
+      }
+    },
+    "categories": {
+      "matchControl": "比赛控制",
+      "matchSettings": "比赛设置",
+      "backupRestore": "备份与恢复",
+      "serverMgmt": "服务器管理",
+      "teamMgmt": "战队管理",
+      "practiceMode": "练习模式",
+      "adminComm": "管理员通知",
+      "advanced": "高级 RCON"
+    },
+    "events": {
+      "title": "服务器事件监控",
+      "healthCheckFailed": "事件 API 健康检查失败。请检查 API 是否正在运行，以及 /api/events/test 是否可访问。",
+      "loadFailed": "加载事件失败",
+      "connected": "已连接",
+      "disconnected": "已断开",
+      "paused": "已暂停",
+      "pause": "暂停",
+      "resume": "继续",
+      "refresh": "刷新事件",
+      "clear": "清空控制台",
+      "filterLabel": "按服务器筛选（可选）",
+      "noServers": "没有可用的服务器",
+      "refreshServers": "刷新服务器列表",
+      "noEvents": "尚未收到此服务器的事件。",
+      "noEventsHint": "15 秒后仍未收到事件。请检查你的 CS2 服务器是否已配置为使用正确的 X-Auto-Tournament-Token 将 Auto Tournament CS2 Webhook 发送到 /api/events/:matchSlugOrServerId。",
+      "waiting": "正在等待服务器事件…",
+      "footer_one": "显示 {{count}} 条事件（最多 100 条）",
+      "footer_other": "显示 {{count}} 条事件（最多 100 条）",
+      "footerForServer_one": "显示服务器 {{server}} 的 {{count}} 条事件（最多 100 条）",
+      "footerForServer_other": "显示服务器 {{server}} 的 {{count}} 条事件（最多 100 条）",
+      "realtime": "事件通过 WebSocket 实时更新",
+      "downloadDemo": "下载 Demo"
+    },
+    "title": "Counter-Strike 2 servers"
+  },
+  "settings": {
+    "webhook": {
+      "title": "Auto Tournament CS2 Webhook 地址",
+      "description": "供 CS2 服务器访问的 Auto Tournament CS2 Webhook 地址。",
+      "label": "Webhook 地址",
+      "helper": "示例：https://your-domain.com"
+    },
+    "mapSync": {
+      "title": "地图同步",
+      "description": "从 GitHub 仓库同步 CS2 地图。",
+      "buttonSyncing": "正在同步地图…",
+      "buttonIdle": "同步 CS2 地图",
+      "success": "地图同步完成！新增 {{added}} 张地图，{{skipped}} 张已存在。",
+      "partialError": "部分地图同步失败：{{errors}}",
+      "failed": "同步地图失败",
+      "rateLimit": "GitHub API 访问频率受限。请几分钟后重试。你可以设置 GITHUB_TOKEN 环境变量以提高限额。",
+      "rateLimitShort": "GitHub API 访问频率受限。请几分钟后重试。",
+      "githubError": "无法访问 GitHub 仓库。请检查你的网络连接并稍后重试。"
+    },
+    "tab": "Counter-Strike 2",
+    "saved": "Settings saved",
+    "saveFailed": "Failed to save settings",
+    "loadFailed": "Failed to load settings"
   }
 }
