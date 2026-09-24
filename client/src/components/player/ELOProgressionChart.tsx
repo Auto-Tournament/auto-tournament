@@ -164,46 +164,47 @@ export function ELOProgressionChart({
             );
           })}
         </svg>
+      </Box>
 
-        {/* Stats summary */}
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          mt={2}
-          pt={2}
-          borderTop="1px solid"
-          borderColor="divider"
-        >
-          <Box>
-            <Typography variant="caption" color="text.secondary">
-              {t('playerPage.eloChart.startingElo')}
-            </Typography>
-            <Typography variant="body2" fontWeight={600}>
-              {displayStartingElo}
-            </Typography>
-          </Box>
-          <Box textAlign="center">
-            <Typography variant="caption" color="text.secondary">
-              {t('playerPage.eloChart.currentElo')}
-            </Typography>
-            <Typography variant="body2" fontWeight={600} color="primary.main">
-              {currentElo}
-            </Typography>
-          </Box>
-          <Box textAlign="right">
-            <Typography variant="caption" color="text.secondary">
-              {t('playerPage.eloChart.totalChange')}
-            </Typography>
-            <Typography
-              variant="body2"
-              fontWeight={600}
-              color={totalChange >= 0 ? 'success.main' : 'error.main'}
-              data-testid="elo-total-change"
-            >
-              {totalChange >= 0 ? '+' : ''}
-              {totalChange}
-            </Typography>
-          </Box>
+      {/* Stats summary: outside the fixed-height chart box above. Inside it,
+          it spilled out of the card and over the next section's heading. */}
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        mt={2}
+        pt={2}
+        borderTop="1px solid"
+        borderColor="divider"
+      >
+        <Box>
+          <Typography variant="caption" color="text.secondary">
+            {t('playerPage.eloChart.startingElo')}
+          </Typography>
+          <Typography variant="body2" fontWeight={600}>
+            {displayStartingElo}
+          </Typography>
+        </Box>
+        <Box textAlign="center">
+          <Typography variant="caption" color="text.secondary">
+            {t('playerPage.eloChart.currentElo')}
+          </Typography>
+          <Typography variant="body2" fontWeight={600} color="primary.main">
+            {currentElo}
+          </Typography>
+        </Box>
+        <Box textAlign="right">
+          <Typography variant="caption" color="text.secondary">
+            {t('playerPage.eloChart.totalChange')}
+          </Typography>
+          <Typography
+            variant="body2"
+            fontWeight={600}
+            color={totalChange >= 0 ? 'success.main' : 'error.main'}
+            data-testid="elo-total-change"
+          >
+            {totalChange >= 0 ? '+' : ''}
+            {totalChange}
+          </Typography>
         </Box>
       </Box>
     </Paper>
