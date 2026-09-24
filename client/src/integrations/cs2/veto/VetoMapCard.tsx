@@ -3,7 +3,7 @@ import { Card, CardActionArea, CardContent, Typography, Box, Chip } from '@mui/m
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import BlockIcon from '@mui/icons-material/Block';
 import type { MapSide, VetoActionType } from '../../../types';
-import { FadeInImage } from '../../../components/common/FadeInImage';
+import { FadeInImage } from '../common/FadeInImage';
 import { tokens, mono, withAlpha, useModuleTranslation } from '../../../module-sdk';
 
 const { color, radius, ease, duration } = tokens;

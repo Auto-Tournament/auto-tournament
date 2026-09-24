@@ -23,8 +23,7 @@
 import React, { useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { paths } from '../../../paths';
-import { ConfirmDialog, api, useModuleTranslation } from '../../../module-sdk';
+import { ConfirmDialog, api, links, useModuleTranslation } from '../../../module-sdk';
 import type { TournamentStartFailureProps } from '../../types';
 
 export interface OutdatedServer {
@@ -109,7 +108,7 @@ export const Cs2OutdatedServersDialog: React.FC<TournamentStartFailureProps> = (
       loading={disablingOutdated}
       onCancel={() => {
         onClose();
-        navigate(paths.servers);
+        navigate(links.servers());
       }}
       onConfirm={async () => {
         if (disablingOutdated) return;

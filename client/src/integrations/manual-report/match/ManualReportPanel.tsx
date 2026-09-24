@@ -37,8 +37,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useModuleTranslation } from '../../../module-sdk';
-import { io } from 'socket.io-client';
+import { useModuleTranslation, useSocket } from '../../../module-sdk';
 import {
   Alert,
   Box,
@@ -181,8 +180,9 @@ export function ManualReportPanel({ matchSlug, matchStatus }: MatchReportPanelPr
     };
   }, [matchSlug, matchStatus, apply]);
 
+  const socket = useSocket();
+
   useEffect(() => {
-    const socket = io();
     const onReport = (data?: { matchSlug?: string }) => {
       if (data?.matchSlug && data.matchSlug !== matchSlug) return;
       void load();
@@ -190,9 +190,8 @@ export function ManualReportPanel({ matchSlug, matchStatus }: MatchReportPanelPr
     socket.on('match:report', onReport);
     return () => {
       socket.off('match:report', onReport);
-      socket.close();
     };
-  }, [matchSlug, load]);
+  }, [socket, matchSlug, load]);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 30_000);

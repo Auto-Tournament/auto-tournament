@@ -15,8 +15,7 @@
  */
 
 import * as React from 'react';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
+import { Box, Button } from '@mui/material';
 import { useSnackbar, api, useModuleTranslation } from '../../../module-sdk';
 import type { SettingsResponse } from '../../../types/api.types';
 import type { AdminGlobalWarningProps } from '../../types';

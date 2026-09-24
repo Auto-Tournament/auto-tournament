@@ -1,12 +1,21 @@
 import { useEffect } from 'react';
 import { Box, Button, Container, Typography, Card, CardContent, Stack } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../contexts/AuthContext';
-import { SteamIcon } from '../../../components/icons/SteamIcon';
-import { PlayerAvatar, useModuleTranslation } from '../../../module-sdk';
-import { generateAvatarDataUrl } from '../../../generation/avatar';
-import { tokens } from '../../../module-sdk';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '../contexts/AuthContext';
+import { SteamIcon } from '../components/icons/SteamIcon';
+import { PlayerAvatar } from '../components/player/PlayerAvatar';
+import { generateAvatarDataUrl } from '../generation/avatar';
+import { tokens } from '../theme/tokens';
 
+/**
+ * `/connect-steam`: an admin who signed in with another provider links a Steam
+ * account before the dashboard opens.
+ *
+ * Steam is the platform's own sign-in provider, used by admins of every game,
+ * so this page is core's, not a game module's (DESIGN-module-client-api.md,
+ * decision 8).
+ */
 export default function ConnectSteam() {
   const {
     isAuthenticated,
@@ -19,7 +28,7 @@ export default function ConnectSteam() {
     adminProfileAvatarUrl,
   } = useAuth();
   const navigate = useNavigate();
-  const { t } = useModuleTranslation('cs2');
+  const { t } = useTranslation();
 
   useEffect(() => {
     document.title = t('connectSteam.title');

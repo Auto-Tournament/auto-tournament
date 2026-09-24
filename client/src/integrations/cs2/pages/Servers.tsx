@@ -13,8 +13,7 @@ import DnsIcon from '@mui/icons-material/Dns';
 import ReplayIcon from '@mui/icons-material/Replay';
 import ServerModal from '../servers/ServerModal';
 import BatchServerModal from '../servers/BatchServerModal';
-import MatchDetailsModal from '../../../components/modals/MatchDetailsModal';
-import type { Match, Server, ServersResponse, ServerStatusResponse, MatchesResponse } from '../../../types';
+import type { Server, ServersResponse, ServerStatusResponse, MatchesResponse } from '../../../types';
 import type { SnackbarKey } from 'notistack';
 import {
   usePageHeader,
@@ -22,7 +21,7 @@ import {
   EmptyState,
   ConfirmDialog,
   useSnackbar,
-  getRoundLabel,
+  openMatchDetails,
   tokens,
   mono,
   withAlpha,
@@ -38,7 +37,6 @@ export default function Servers() {
   const [batchModalOpen, setBatchModalOpen] = useState(false);
   const [editingServer, setEditingServer] = useState<Server | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [loadingMatchServerId, setLoadingMatchServerId] = useState<string | null>(null);
   const [allocationLoading, setAllocationLoading] = useState(false);
   const [allocationStatus, setAllocationStatus] = useState<{
@@ -711,7 +709,8 @@ export default function Servers() {
           (m) => m.status === 'live' || m.status === 'loaded'
         );
         const matchToShow = activeMatches[0] || response.matches[0];
-        setSelectedMatch(matchToShow as Match);
+        // Core's match details dialog; resolves once it is showing.
+        await openMatchDetails(matchToShow.slug);
       } else {
         showError(t('serversPage.errors.noMatchesForServer'));
       }
@@ -1847,15 +1846,6 @@ export default function Servers() {
         onSave={handleSave}
         existingServers={servers}
       />
-
-      {selectedMatch && (
-        <MatchDetailsModal
-          match={selectedMatch}
-          matchNumber={selectedMatch.matchNumber || selectedMatch.id}
-          roundLabel={getRoundLabel(selectedMatch.round)}
-          onClose={() => setSelectedMatch(null)}
-        />
-      )}
 
       <ConfirmDialog
         open={selectionMode && bulkDeleteConfirmOpen}

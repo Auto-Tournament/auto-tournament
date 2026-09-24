@@ -8,8 +8,11 @@
  *
  * It stays `0.x` in lockstep with the platform until a module that is not
  * ours depends on it. Under semver a `0.x` minor may break, so a module's
- * `^0.1.0` already means "0.1 only". Bump the minor for an added slot, prop,
- * SDK export or shared package, and treat any removal or narrowing as a
- * break.
+ * `^0.1.0` already means "0.1 only". Bump the patch for an added slot, prop,
+ * SDK export or shared package, which `^0.1.0` still matches, and the minor
+ * for any removal or narrowing, which is a break.
+ *
+ * 0.1.1: `links`, `openMatchDetails`, `useSocket`, `SegmentedControl`, and
+ * `useAuth().playerUid`.
  */
-export const CLIENT_API_VERSION = '0.1.0';
+export const CLIENT_API_VERSION = '0.1.1';

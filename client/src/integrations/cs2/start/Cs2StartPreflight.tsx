@@ -24,8 +24,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
 import { Trans } from 'react-i18next';
-import { paths } from '../../../paths';
-import { ConfirmDialog, api, useModuleTranslation } from '../../../module-sdk';
+import { ConfirmDialog, api, links, useModuleTranslation } from '../../../module-sdk';
 import type { TournamentStartPreflightProps } from '../../types';
 
 export const Cs2StartPreflight: React.FC<TournamentStartPreflightProps> = ({
@@ -166,7 +165,7 @@ export const Cs2StartPreflight: React.FC<TournamentStartPreflightProps> = ({
       onConfirm={onProceed}
       onCancel={() => {
         onCancel();
-        navigate(paths.servers);
+        navigate(links.servers());
       }}
       confirmColor="warning"
     />

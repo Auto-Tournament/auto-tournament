@@ -1,10 +1,4 @@
 {
-  "connectSteam": {
-    "title": "Lier votre compte Steam",
-    "bodyIntro": "Vous y êtes presque. Pour utiliser la plateforme de tournoi avec ce compte (par exemple après une connexion via Discord, Keycloak ou GitHub), vous devez lier un profil Steam.",
-    "bodyRequirement": "Le lien avec Steam permet au système de vous reconnaître en tant que joueur et est nécessaire pour se connecter via des fournisseurs autres que Steam.",
-    "button": "Se connecter avec Steam"
-  },
   "nav": {
     "servers": "Serveurs",
     "maps": "Cartes & pools"

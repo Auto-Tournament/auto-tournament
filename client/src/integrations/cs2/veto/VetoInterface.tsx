@@ -13,14 +13,13 @@ import {
   LinearProgress,
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
-import { io } from 'socket.io-client';
 import { VetoMapCard } from './VetoMapCard';
 import { getMapData, getMapDisplayName } from '../../../constants/maps';
 import { getVetoOrder } from '../../../constants/vetoOrders';
 import type { VetoState, MapSide } from '../../../types';
 import type { MapsResponse } from '../../../types/api.types';
-import { FadeInImage } from '../../../components/common/FadeInImage';
-import { onSocketReconnect, api, tokens, mono, withAlpha, useModuleTranslation } from '../../../module-sdk';
+import { FadeInImage } from '../common/FadeInImage';
+import { onSocketReconnect, useSocket, api, tokens, mono, withAlpha, useModuleTranslation } from '../../../module-sdk';
 import { vetoHistoryRowSx, vetoMapNameSx } from './vetoStyles';
 import type { PreMatchViewProps as VetoInterfaceProps } from '../../types';
 
@@ -129,23 +128,27 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
 
   useEffect(() => {
     loadVetoState();
+  }, [loadVetoState]);
 
-    // Setup Socket.IO for real-time veto updates
-    const newSocket = io();
+  // Socket.IO for real-time veto updates
+  const socket = useSocket();
 
-    newSocket.on(`veto:update:${matchSlug}`, (updatedVeto: VetoState) => {
+  useEffect(() => {
+    const onVetoUpdate = (updatedVeto: VetoState) => {
       setVetoState(updatedVeto);
       // The board moved on, so a refused action from before is no longer news.
       setActionError('');
       if (updatedVeto.status === 'completed') {
         onCompleteRef.current?.(updatedVeto);
       }
-    });
+    };
+    const vetoEvent = `veto:update:${matchSlug}`;
+    socket.on(vetoEvent, onVetoUpdate);
 
     // A pick or ban made while this socket was down never arrives, which left
     // the board on the wrong turn until a reload. Refetch on reconnect,
     // without the loading state so the board does not flash.
-    const offReconnect = onSocketReconnect(newSocket, () => {
+    const offReconnect = onSocketReconnect(socket, () => {
       void fetch(`/api/veto/${matchSlug}`)
         .then((response) => response.json())
         .then((data: { success?: boolean; veto?: VetoState }) => {
@@ -161,9 +164,9 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
 
     return () => {
       offReconnect();
-      newSocket.close();
+      socket.off(vetoEvent, onVetoUpdate);
     };
-  }, [matchSlug, loadVetoState]);
+  }, [socket, matchSlug]);
 
   // Memoize mapsToShow - must be called before any early returns (Rules of Hooks)
   const mapsToShow = useMemo(() => {
