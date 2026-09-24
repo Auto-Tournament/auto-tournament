@@ -1,11 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { usePageHeader } from '../../../contexts/PageHeaderContext';
-import { useSnackbar } from '../../../contexts/SnackbarContext';
+import { usePageHeader, useSnackbar } from '../../../module-sdk';
 import { Box, Button, CircularProgress, Tabs, Tab } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import MapIcon from '@mui/icons-material/Map';
 import CollectionsIcon from '@mui/icons-material/Collections';
-import { api } from '../../../utils/api';
+import { api } from '../../../module-sdk';
 import MapModal from '../maps/MapModal';
 import MapActionsModal from '../maps/MapActionsModal';
 import MapPoolModal from '../maps/MapPoolModal';
@@ -13,7 +12,7 @@ import MapPoolActionsModal from '../maps/MapPoolActionsModal';
 import { MapsTab } from '../maps/MapsTab';
 import { MapPoolsTab } from '../maps/MapPoolsTab';
 import type { Map, MapsResponse, MapPool, MapPoolsResponse } from '../../../types/api.types';
-import ConfirmDialog from '../../../components/modals/ConfirmDialog';
+import { ConfirmDialog } from '../../../module-sdk';
 import { useTranslation } from 'react-i18next';
 
 export default function Maps() {

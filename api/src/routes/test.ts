@@ -2,7 +2,7 @@ import express, { Router, type NextFunction, type Request, type Response } from 
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
 import { integrationForMatch } from '../integrations/registry';
-import type { ResultMeta, SeriesResult } from '../integrations/types';
+import type { ModuleMigration, ResultMeta, SeriesResult } from '../integrations/types';
 import { matchLifecycle } from '../core/matchLifecycle';
 import { db } from '../config/database';
 import { playerService } from '../services/playerService';
@@ -28,6 +28,11 @@ import {
   backfillTeamMembers,
   runSchemaMigrations,
 } from '../config/schemaMigrations';
+import {
+  getModuleMigrationState,
+  moduleNamespace,
+  runModuleMigrations,
+} from '../config/moduleMigrations';
 import { playerIdentity } from '../services/playerIdentity';
 import { teamMembers } from '../services/teamMembers';
 import { listModules, MODULE_ENABLED_KEY_PREFIX, modulesDir, scanDiskModules } from '../modules/loader';
@@ -748,6 +753,139 @@ router.post(
     } catch (err) {
       log.error('Error in POST /api/test/schema-migrations/run', err as Error);
       res.status(500).json({ success: false, error: 'Failed to run schema migrations' });
+    }
+  }
+);
+
+/*
+ * Test-only: a fixture module's migrations against the real database, so a
+ * spec can prove `runModuleMigrations` (config/moduleMigrations.ts) applies in
+ * order, records, refuses edits and core tables, and rolls back only the
+ * migration that failed. The fixtures live here, not in the request: the
+ * route never runs SQL a caller sends.
+ */
+
+const FIXTURE_MODULE_ID = 'migration-fixture';
+
+const FIXTURE_BASE: ModuleMigration[] = [
+  {
+    id: '001-items',
+    // No IF NOT EXISTS: running it a second time would fail, so a second run
+    // that applies nothing proves it was not re-run.
+    up: 'CREATE TABLE migration_fixture_items (id SERIAL PRIMARY KEY, label TEXT NOT NULL);',
+  },
+  {
+    id: '002-items-label',
+    // Needs 001's table: proves the order.
+    up: `CREATE INDEX migration_fixture_items_label ON migration_fixture_items (label);
+         INSERT INTO migration_fixture_items (label) VALUES ('first');`,
+  },
+];
+const FIXTURE_NOTE: ModuleMigration = {
+  id: '003-items-note',
+  up: 'ALTER TABLE migration_fixture_items ADD COLUMN note TEXT;',
+};
+
+const MIGRATION_FIXTURES: Record<string, ModuleMigration[]> = {
+  v1: FIXTURE_BASE,
+  v2: [...FIXTURE_BASE, FIXTURE_NOTE],
+  // 001 as shipped, then edited: must be refused, and 003 not applied.
+  edited: [
+    { id: '001-items', up: 'CREATE TABLE migration_fixture_items (id SERIAL PRIMARY KEY, label TEXT);' },
+    FIXTURE_BASE[1],
+    FIXTURE_NOTE,
+  ],
+  // 004 creates a table and then fails: only 004 rolls back, 005 never runs.
+  failing: [
+    ...FIXTURE_BASE,
+    FIXTURE_NOTE,
+    {
+      id: '004-broken',
+      up: `CREATE TABLE migration_fixture_partial (id INTEGER);
+           INSERT INTO migration_fixture_items (missing_column) VALUES (1);`,
+    },
+    { id: '005-after', up: 'CREATE TABLE migration_fixture_after (id INTEGER);' },
+  ],
+  // Its own table first, then a core one: refused before either runs.
+  core: [
+    {
+      id: '001-touch-core',
+      up: `CREATE TABLE migration_fixture_sneaky (id INTEGER);
+           ALTER TABLE matches ADD COLUMN migration_fixture_flag TEXT;`,
+    },
+  ],
+};
+
+router.get('/module-migrations', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (isTestHelperDisabled(res)) return;
+  const moduleId = typeof req.query.moduleId === 'string' ? req.query.moduleId : FIXTURE_MODULE_ID;
+  try {
+    const rows = await db.queryAsync<{ migration_id: string; checksum: string }>(
+      'SELECT migration_id, checksum FROM module_migrations WHERE module_id = ? ORDER BY migration_id',
+      [moduleId]
+    );
+    const tables = await db.queryAsync<{ table_name: string }>(
+      `SELECT table_name FROM information_schema.tables
+        WHERE table_schema = current_schema() AND table_name LIKE ?
+        ORDER BY table_name`,
+      [`${moduleNamespace(moduleId).replace(/_/g, '\\_')}%`]
+    );
+    const coreColumns = await db.queryAsync<{ column_name: string }>(
+      `SELECT column_name FROM information_schema.columns
+        WHERE table_schema = current_schema() AND table_name = 'matches'
+          AND column_name LIKE 'migration\\_fixture\\_%'`
+    );
+    res.json({
+      success: true,
+      applied: rows.map((r) => ({ id: r.migration_id, checksum: r.checksum })),
+      tables: tables.map((t) => t.table_name),
+      coreColumns: coreColumns.map((c) => c.column_name),
+      state: getModuleMigrationState(moduleId) ?? null,
+    });
+  } catch (err) {
+    log.error('Error in GET /api/test/module-migrations', err as Error);
+    res.status(500).json({ success: false, error: 'Failed to read module migrations' });
+  }
+});
+
+router.post(
+  '/module-migrations/run',
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    if (isTestHelperDisabled(res)) return;
+    const { fixture } = (req.body ?? {}) as { fixture?: unknown };
+    const migrations =
+      typeof fixture === 'string' && Object.prototype.hasOwnProperty.call(MIGRATION_FIXTURES, fixture)
+        ? MIGRATION_FIXTURES[fixture]
+        : null;
+    if (!migrations) {
+      res.status(400).json({
+        success: false,
+        error: `Field "fixture" must be one of ${Object.keys(MIGRATION_FIXTURES).join(', ')}`,
+      });
+      return;
+    }
+    // Never throws; a refusal or failure is the result, not a 500.
+    const result = await runModuleMigrations({ id: FIXTURE_MODULE_ID, migrations });
+    res.json({ success: true, result });
+  }
+);
+
+router.post(
+  '/module-migrations/reset',
+  requireAuth,
+  async (_req: Request, res: Response): Promise<void> => {
+    if (isTestHelperDisabled(res)) return;
+    try {
+      await db.execAsync(
+        `DROP TABLE IF EXISTS migration_fixture_items, migration_fixture_partial,
+           migration_fixture_after, migration_fixture_sneaky`
+      );
+      await db.runAsync('DELETE FROM module_migrations WHERE module_id = ?', [FIXTURE_MODULE_ID]);
+      res.json({ success: true });
+    } catch (err) {
+      log.error('Error in POST /api/test/module-migrations/reset', err as Error);
+      res.status(500).json({ success: false, error: 'Failed to reset the fixture module' });
     }
   }
 );

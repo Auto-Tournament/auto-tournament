@@ -149,6 +149,20 @@ export const fakeIntegration: GameIntegration = {
   setupSchema: { instance: { type: 'object', properties: {} } },
   instanceSettings: [],
 
+  // One harmless table, so the E2E suite sees a module's migrations run on
+  // boot and again after each wipe (tests/api/module-migrations-db.spec.ts).
+  // Nothing reads it, and this module only exists in test runs.
+  migrations: [
+    {
+      id: '0001-migration-probe',
+      up: `CREATE TABLE fake_migration_probe (
+             id INTEGER PRIMARY KEY,
+             note TEXT NOT NULL
+           );
+           INSERT INTO fake_migration_probe (id, note) VALUES (1, 'module migrations ran');`,
+    },
+  ],
+
   async buildMatchConfig(ctx: BuildMatchConfigContext): Promise<FakeMatchConfig> {
     const standalone = parseConfig(ctx.settings);
     const seriesLength = ctx.tournament

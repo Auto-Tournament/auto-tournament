@@ -24,9 +24,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
 import { Trans, useTranslation } from 'react-i18next';
-import ConfirmDialog from '../../../components/modals/ConfirmDialog';
-import { api } from '../../../utils/api';
 import { paths } from '../../../paths';
+import { ConfirmDialog, api } from '../../../module-sdk';
 import type { TournamentStartPreflightProps } from '../../types';
 
 export const Cs2StartPreflight: React.FC<TournamentStartPreflightProps> = ({

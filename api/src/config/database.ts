@@ -18,6 +18,7 @@ import {
 } from '../utils/dbLogRedaction';
 import { getSchemaSQL, getSchemaColumns } from './database.schema';
 import { runSchemaMigrations } from './schemaMigrations';
+import { runModuleMigrations } from './moduleMigrations';
 
 const MAX_DB_VALUES_SAMPLE = 5;
 
@@ -342,12 +343,26 @@ class DatabaseManager {
       // which they may rely on.
       await runSchemaMigrations(client);
 
+      // Each module's own migrations (GameIntegration.migrations), after
+      // core's schema and before anything uses it. This function also runs
+      // after both wipe paths (resetDatabase), so a wiped database gets them
+      // again. A module whose migrations fail is marked failed and the rest
+      // carry on; see moduleMigrations.ts.
+      const { listIntegrations } = await import('../integrations/registry');
+      const installed = listIntegrations();
+      const installedModuleIds = installed.map((integration) => integration.id);
+      const failedModules = new Set<string>();
+      for (const integration of installed) {
+        const state = await runModuleMigrations(integration, { client, installedModuleIds });
+        if (state.status === 'failed') failedModules.add(integration.id);
+      }
+
       // Integration default data (CS2: the map catalogue when the maps table
       // is empty, then the default map pools). A rejection fails the schema
       // initialisation; the CS2 seed rethrows the same errors the inline map
-      // insert did.
-      const { listIntegrations } = await import('../integrations/registry');
-      for (const integration of listIntegrations()) {
+      // insert did. Not for a module whose tables did not migrate.
+      for (const integration of installed) {
+        if (failedModules.has(integration.id)) continue;
         await integration.seed?.(client);
       }
 

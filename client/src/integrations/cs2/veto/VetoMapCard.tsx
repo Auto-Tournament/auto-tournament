@@ -5,7 +5,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import BlockIcon from '@mui/icons-material/Block';
 import type { MapSide, VetoActionType } from '../../../types';
 import { FadeInImage } from '../../../components/common/FadeInImage';
-import { tokens, mono, withAlpha } from '../../../theme/tokens';
+import { tokens, mono, withAlpha } from '../../../module-sdk';
 
 const { color, radius, ease, duration } = tokens;
 

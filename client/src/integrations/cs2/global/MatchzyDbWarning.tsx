@@ -17,8 +17,7 @@
 import * as React from 'react';
 import type { SnackbarKey } from 'notistack';
 import { useTranslation } from 'react-i18next';
-import { useSnackbar } from '../../../contexts/SnackbarContext';
-import { api } from '../../../utils/api';
+import { useSnackbar, api } from '../../../module-sdk';
 
 export const MatchzyDbWarning: React.FC = () => {
   const { t } = useTranslation();

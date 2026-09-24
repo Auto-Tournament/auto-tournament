@@ -13,7 +13,7 @@
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ManageStatusTile } from '../../../components/manage/StatusStrip';
+import { ManageStatusTile } from '../../../module-sdk';
 import type { ManageStatusTileProps } from '../../types';
 
 export const Cs2ServersFreeTile: React.FC<ManageStatusTileProps> = ({ availability }) => {

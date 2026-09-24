@@ -304,6 +304,18 @@ export interface SeedClient {
   query(sql: string, params?: unknown[]): Promise<{ rows: Array<Record<string, unknown>> }>;
 }
 
+/**
+ * One step of a module's own schema (`GameIntegration.migrations`). `id` never
+ * changes once shipped and `up` is never edited after that: the platform
+ * records a checksum of it and refuses a module whose applied migration no
+ * longer matches. See `config/moduleMigrations.ts` for the naming rules.
+ */
+export interface ModuleMigration {
+  id: string;
+  /** Plain SQL, run in its own transaction. */
+  up: string;
+}
+
 /** JSON Schema document. Kept loose on purpose; the core only stores and forwards it. */
 export type JSONSchema = Record<string, unknown>;
 
@@ -704,6 +716,14 @@ export interface GameIntegration {
    * catalogue when the `maps` table is empty, then the default map pools.
    */
   seed?(db: SeedClient): Promise<void>;
+  /**
+   * The module's own tables, in the order they run. Applied after the core
+   * schema, before `seed`, on every API start and after a database reset;
+   * each once per database (`module_migrations`). Every object a migration
+   * creates or changes is named `<id>_…` (hyphens as underscores); core
+   * tables are off limits. Append only.
+   */
+  migrations?: ReadonlyArray<ModuleMigration>;
 
   // --- setup ---------------------------------------------------------------
 
