@@ -168,7 +168,10 @@ export default function ELOTemplates() {
   const getWeightSummary = (weights: EloCalculationTemplate['weights']): string => {
     const activeWeights = Object.entries(weights)
       .filter(([_, value]) => value !== undefined && value !== 0)
-      .map(([key, value]) => `${key}: ${value > 0 ? '+' : ''}${value}`)
+      .map(
+        ([key, value]) =>
+          `${t(`eloTemplatesPage.stats.${key}.label`, { defaultValue: key })} ${value > 0 ? '+' : ''}${value}`
+      )
       .join(', ');
     return activeWeights || t('eloTemplatesPage.weights.noAdjustmentsPure');
   };
@@ -293,10 +296,7 @@ export default function ELOTemplates() {
                       >
                         {t('eloTemplatesPage.card.weightsTitle')}
                       </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{ fontFamily: 'monospace', fontSize: '0.75rem' }}
-                      >
+                      <Typography variant="body2" color="text.secondary">
                         {getWeightSummary(template.weights)}
                       </Typography>
                     </Box>
@@ -312,17 +312,14 @@ export default function ELOTemplates() {
                         >
                           {t('eloTemplatesPage.card.limitsTitle')}
                         </Typography>
-                        <Typography
-                          variant="body2"
-                          sx={{ fontFamily: 'monospace', fontSize: '0.75rem' }}
-                        >
+                        <Typography variant="body2" color="text.secondary">
                           {template.minAdjustment !== undefined &&
-                            `Min: ${template.minAdjustment}`}
+                            t('eloTemplatesPage.card.minAdjustment', { value: template.minAdjustment })}
                           {template.minAdjustment !== undefined &&
                             template.maxAdjustment !== undefined &&
                             ', '}
                           {template.maxAdjustment !== undefined &&
-                            `Max: ${template.maxAdjustment}`}
+                            t('eloTemplatesPage.card.maxAdjustment', { value: template.maxAdjustment })}
                         </Typography>
                       </Box>
                     )}
