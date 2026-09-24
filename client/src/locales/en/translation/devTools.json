@@ -86,7 +86,7 @@
         "maps": "Wipe Maps",
         "mapPools": "Wipe Map Pools",
         "tournamentTemplates": "Wipe Tourn. Templates",
-        "eloTemplates": "Wipe ELO Templates"
+        "eloTemplates": "Wipe rating templates"
       },
       "matchEvents": {
         "title": "Match Events & Results",

@@ -353,7 +353,7 @@
       "maxRoundsTooltip": "Maximum number of rounds per match. This value is passed to the Auto Tournament CS2 plugin as mp_maxrounds. Example: 6 = MR6, 24 = MR24.",
       "maxRoundsHelper": "Match plays up to {{maxRounds}} rounds; winner is first to {{winRounds}} rounds",
       "maxRoundsHelperEmpty": "Maximum number of rounds per match (default: 24, max: 30)",
-      "eloTemplateLabel": "ELO Calculation Template",
+      "eloTemplateLabel": "Rating template",
       "eloTemplateTooltip": "Choose how ELO is calculated for this tournament. By default, the 'Pure Win/Loss' template only uses match result (win/loss); stats are tracked but do not change ELO. Other templates are optional and add stat-based adjustments on top of the OpenSkill win/loss change if you want Excel-style behavior.",
       "eloDefaultSuffix": "(Default)",
       "eloTemplateHelper": "Pure Win/Loss (default): only match result affects ELO. Player stats are still recorded for leaderboards and exports, but they do not change the rating unless you select a custom template."

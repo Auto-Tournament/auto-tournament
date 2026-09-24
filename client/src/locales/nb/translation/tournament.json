@@ -353,7 +353,7 @@
       "maxRoundsTooltip": "Maksimalt antall runder per kamp. Verdien sendes direkte til Auto Tournament CS2 som mp_maxrounds. Eksempel: 6 = MR6, 24 = MR24.",
       "maxRoundsHelper": "Kampen spilles i opptil {{maxRounds}} runder; først til {{winRounds}} runder vinner",
       "maxRoundsHelperEmpty": "Maksimalt antall runder per kamp (standard: 24, maks: 30)",
-      "eloTemplateLabel": "ELO-beregningsmal",
+      "eloTemplateLabel": "Ratingmal",
       "eloTemplateTooltip": "Velg hvordan ELO beregnes i denne turneringen. Som standard bruker malen «Pure Win/Loss» kun kampresultatet (seier/tap); statistikk registreres, men påvirker ikke ELO. Andre maler er valgfrie og legger statistikkbaserte justeringer oppå OpenSkill-endringen hvis du vil ha Excel-lignende oppførsel.",
       "eloDefaultSuffix": "(standard)",
       "eloTemplateHelper": "Pure Win/Loss (standard): bare kampresultatet påvirker ELO. Spillerstatistikk registreres fortsatt til ledertavler og eksport, men endrer ikke ratingen med mindre du velger en egen mal."

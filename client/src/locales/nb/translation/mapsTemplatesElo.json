@@ -55,27 +55,27 @@
   },
   "eloTemplatesPage": {
     "errors": {
-      "load": "Klarte ikke å laste ELO-maler"
+      "load": "Klarte ikke å laste ratingmaler"
     },
     "header": {
       "createTemplate": "Opprett mal",
       "importJson": "Importer fra JSON"
     },
     "empty": {
-      "title": "Ingen ELO-beregningsmaler",
+      "title": "Ingen ratingmaler",
       "description": "Opprett din første mal for å tilpasse hvordan spillerstatistikk påvirker ELO-justeringer",
       "action": "Opprett mal"
     },
     "delete": {
-      "title": "Slett ELO-mal",
+      "title": "Slett ratingmal",
       "message": "Er du sikker på at du vil slette \"{{name}}\"? Dette kan ikke angres.",
       "success": "Malen \"{{name}}\" ble slettet",
       "error": "Klarte ikke å slette mal",
       "defaultProtected": "Standardmalen \"pure-win-loss\" kan ikke slettes."
     },
     "import": {
-      "success_one": "Importerte {{count}} ELO-mal",
-      "success_other": "Importerte {{count}} ELO-maler"
+      "success_one": "Importerte {{count}} ratingmal",
+      "success_other": "Importerte {{count}} ratingmaler"
     },
     "weights": {
       "noAdjustmentsPure": "Ingen statistikkjusteringer (ren vinn/tap)"
@@ -101,8 +101,8 @@
       "maxAdjustment": "Maks: {{value}}"
     },
     "importModal": {
-      "title": "Importer ELO-maler fra JSON",
-      "introTitle": "Lim inn JSON med ELO-maldefinisjoner under.",
+      "title": "Importer ratingmaler fra JSON",
+      "introTitle": "Lim inn JSON med ratingmaler under.",
       "introBody": "Forventet format: en liste med maler med navn, valgfri beskrivelse, aktivert, vekter, maxAdjustment og minAdjustment. Hvis du utelater id, genereres den fra navnet.",
       "jsonLabel": "JSON-data",
       "validJsonTitle": "✓ Gyldig JSON!",
@@ -113,8 +113,8 @@
       "validJsonBody_other": "Fant {{count}} maler."
     },
     "editor": {
-      "titleEdit": "Rediger ELO-mal",
-      "titleCreate": "Opprett ELO-mal",
+      "titleEdit": "Rediger ratingmal",
+      "titleCreate": "Opprett ratingmal",
       "info": "Konfigurer hvordan individuell spillerstatistikk påvirker ELO-justeringer. Vekter brukes etter at OpenSkill har beregnet grunnendringen i ELO (vinn/tap). Positive vekter øker ELO, negative vekter senker den.",
       "nameLabel": "Malnavn",
       "nameDefaultLocked": "Standard malnavn kan ikke endres",

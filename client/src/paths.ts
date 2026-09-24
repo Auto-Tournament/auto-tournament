@@ -43,7 +43,10 @@ export const paths = {
   /** What this instance can run, and the packs an admin imported. */
   modules: '/modules',
   templates: '/templates',
-  eloTemplates: '/elo-templates',
+  /** Rating templates (how ratings are calculated). Was `/elo-templates`. */
+  eloTemplates: '/ratings',
+  /** The old address of the Ratings page; redirects to `eloTemplates`. */
+  eloTemplatesLegacy: '/elo-templates',
   dev: '/dev',
 } as const;
 

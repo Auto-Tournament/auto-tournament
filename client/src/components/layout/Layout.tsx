@@ -280,7 +280,7 @@ export default function Layout() {
         ])
       ),
       '/templates': { title: t('layout.pageTitle.templates'), icon: DescriptionIcon },
-      '/elo-templates': { title: t('layout.pageTitle.eloTemplates'), icon: TrendingUpIcon },
+      [paths.eloTemplates]: { title: t('layout.pageTitle.eloTemplates'), icon: TrendingUpIcon },
       '/admin': { title: t('layout.pageTitle.adminTools'), icon: CampaignIcon },
       '/settings': { title: t('layout.pageTitle.settings'), icon: SettingsIcon },
       '/dev': {
@@ -317,7 +317,7 @@ export default function Layout() {
   const configurationNavItems = [
     { label: t('nav.modules'), path: '/modules', icon: ExtensionIcon },
     { label: t('nav.templates'), path: '/templates', icon: DescriptionIcon },
-    { label: t('nav.eloTemplates'), path: '/elo-templates', icon: TrendingUpIcon },
+    { label: t('nav.eloTemplates'), path: paths.eloTemplates, icon: TrendingUpIcon },
     { label: t('nav.settings'), path: '/settings', icon: SettingsIcon },
   ];
 
