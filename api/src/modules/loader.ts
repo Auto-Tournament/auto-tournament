@@ -1,0 +1,509 @@
+/**
+ * Code modules on disk: `DATA_DIR/modules/<id>/`, scanned at boot
+ * (DESIGN-modules §4.1, items 7 and 9 of §6).
+ *
+ * A code module is a `GameIntegration` built outside this repo. It is
+ * installed by putting its folder in `DATA_DIR/modules/` or baking it into the
+ * image, and **never through the API** (DESIGN-module-client-api, decision 2):
+ * installing code takes the same access as editing `.env`, so a stolen admin
+ * session cannot become code execution on the host. The API only lists
+ * modules and switches them on and off.
+ *
+ * At boot, for each folder:
+ *
+ *   1. the folder name must be a valid module id (`manifest.ts`);
+ *   2. `module.json` must parse and validate, and its id must be the folder's;
+ *   3. the id must not be a built-in module's;
+ *   4. its `serverApi` (and `clientApi`, if it has a client half) range must
+ *      include this platform's version, or it is `incompatible`;
+ *   5. an operator-placed module starts disabled, and a disabled one stops
+ *      here: it is listed, but none of its code runs;
+ *   6. the server entry is imported, its default export checked as a
+ *      `GameIntegration` whose id is the manifest's, and not already taken;
+ *   7. its migrations run (item 5, see the TODO below), then its seed;
+ *   8. it is registered with `registerIntegration`, and its legacy routes
+ *      mounted.
+ *
+ * Any step that fails marks that module `incompatible` or `broken` with the
+ * reason, and the scan goes on to the next one. **The platform always boots.**
+ *
+ * Enabling or disabling a module takes effect on the next boot: a loaded Node
+ * module cannot be cleanly unloaded, and pretending otherwise would leave its
+ * routes, timers and registry entry behind. The API says so
+ * (`restartRequired`).
+ *
+ * There is no sandbox. A module's server code runs in this process with the
+ * database and the filesystem, exactly as trusted as the image.
+ */
+
+import fs from 'fs';
+import path from 'path';
+import { pathToFileURL } from 'url';
+import { Router } from 'express';
+import { DATA_DIR } from '../config/dataDir';
+import { db } from '../config/database';
+import { log } from '../utils/logger';
+import { hasIntegration, listIntegrations, registerIntegration } from '../integrations/registry';
+import type { GameIntegration, LegacyRouteMount } from '../integrations/types';
+import packageJson from '../../package.json';
+import {
+  compatibilityProblem,
+  isValidModuleId,
+  parseManifest,
+  type ModuleManifest,
+} from './manifest';
+import { integrationFromNamespace, integrationProblem } from './validateIntegration';
+
+export type ModuleStatus = 'ok' | 'incompatible' | 'broken' | 'disabled';
+
+/** One row of `GET /api/modules`. */
+export interface ModuleListing {
+  id: string;
+  name: string;
+  version: string;
+  source: 'builtin' | 'disk';
+  clientApi: string | null;
+  serverApi: string | null;
+  enabled: boolean;
+  status: ModuleStatus;
+  reason: string | null;
+  /** The client entry's URL, for a loaded, enabled module that has one. */
+  client: { entry: string } | null;
+}
+
+/** What the last scan found in one folder. `status: 'ok'` means loaded. */
+interface DiskModule {
+  folder: string;
+  dir: string;
+  manifest: ModuleManifest | null;
+  status: ModuleStatus;
+  reason: string | null;
+}
+
+/** How long a server entry may take to import before it is given up on. */
+const IMPORT_TIMEOUT_MS = 10_000;
+
+/** `app_settings` key holding a disk module's enabled flag. */
+export const MODULE_ENABLED_KEY_PREFIX = 'module_enabled:';
+
+export function modulesDir(): string {
+  return path.join(DATA_DIR, 'modules');
+}
+
+/** Every folder the last scan saw, by folder name. */
+const diskModules = new Map<string, DiskModule>();
+
+/** Ids of the integrations this loader registered, as opposed to built-ins. */
+const loadedFromDisk = new Set<string>();
+
+/**
+ * Where disk modules' legacy routes are mounted. `index.ts` mounts this
+ * router once, after the core routes and before the SPA and the 404 handler,
+ * so routes added to it after boot are still reached.
+ */
+export const diskModuleRoutes = Router();
+
+class ModuleLoadError extends Error {}
+
+function isInside(root: string, candidate: string): boolean {
+  const rel = path.relative(root, candidate);
+  return rel !== '' && !rel.startsWith('..') && !path.isAbsolute(rel);
+}
+
+function messageOf(error: unknown): string {
+  const text = error instanceof Error ? error.message : String(error);
+  return text.length > 500 ? `${text.slice(0, 500)}…` : text;
+}
+
+/** The ids of the modules compiled into this image (CS2, manual-report, …). */
+function builtinIntegrations(): GameIntegration[] {
+  return listIntegrations().filter((integration) => !loadedFromDisk.has(integration.id));
+}
+
+// ---------------------------------------------------------------------------
+// Enabled state
+// ---------------------------------------------------------------------------
+
+async function enabledFlags(): Promise<Map<string, boolean>> {
+  const flags = new Map<string, boolean>();
+  try {
+    for (const row of await db.getAllAppSettingsAsync()) {
+      if (row.key.startsWith(MODULE_ENABLED_KEY_PREFIX)) {
+        flags.set(row.key.slice(MODULE_ENABLED_KEY_PREFIX.length), row.value === 'true');
+      }
+    }
+  } catch (error) {
+    // No database, no enabled modules: the safe reading.
+    log.warn(`[MODULES] Could not read which modules are enabled: ${messageOf(error)}`);
+  }
+  return flags;
+}
+
+async function isModuleEnabled(id: string): Promise<boolean> {
+  return (await enabledFlags()).get(id) === true;
+}
+
+// ---------------------------------------------------------------------------
+// Scanning and loading
+// ---------------------------------------------------------------------------
+
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  let timer: NodeJS.Timeout | undefined;
+  const timeout = new Promise<never>((_resolve, reject) => {
+    timer = setTimeout(() => reject(new ModuleLoadError(message)), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
+async function importServerEntry(dir: string, manifest: ModuleManifest): Promise<unknown> {
+  const realDir = await fs.promises.realpath(dir);
+  let realFile: string;
+  try {
+    realFile = await fs.promises.realpath(path.resolve(realDir, manifest.server));
+  } catch {
+    throw new ModuleLoadError(`The server entry '${manifest.server}' does not exist.`);
+  }
+  if (!isInside(realDir, realFile)) {
+    throw new ModuleLoadError(`The server entry '${manifest.server}' resolves outside the module folder.`);
+  }
+
+  let namespace: unknown;
+  try {
+    namespace = await withTimeout(
+      import(pathToFileURL(realFile).href),
+      IMPORT_TIMEOUT_MS,
+      `Importing the server entry did not finish within ${IMPORT_TIMEOUT_MS / 1000} seconds.`
+    );
+  } catch (error) {
+    if (error instanceof ModuleLoadError) throw error;
+    throw new ModuleLoadError(`The server entry failed to import: ${messageOf(error)}`);
+  }
+  return integrationFromNamespace(namespace);
+}
+
+/** The module's legacy route mounts, checked, before anything is registered. */
+function legacyMountsOf(integration: GameIntegration): LegacyRouteMount[] {
+  const mounts = integration.legacyRoutes?.() ?? [];
+  if (!Array.isArray(mounts)) throw new ModuleLoadError("'legacyRoutes()' must return an array.");
+  for (const mount of mounts) {
+    if (
+      !mount ||
+      typeof mount.prefix !== 'string' ||
+      !mount.prefix.startsWith('/api/') ||
+      typeof mount.router !== 'function'
+    ) {
+      throw new ModuleLoadError(
+        "Each of 'legacyRoutes()' must have a 'prefix' under /api/ and a 'router'."
+      );
+    }
+  }
+  return mounts;
+}
+
+interface Evaluation {
+  record: DiskModule;
+  integration?: GameIntegration;
+}
+
+async function evaluate(folder: string, dir: string): Promise<Evaluation> {
+  const record = (
+    status: ModuleStatus,
+    reason: string | null,
+    manifest: ModuleManifest | null = null
+  ): DiskModule => ({ folder, dir, manifest, status, reason });
+
+  if (!isValidModuleId(folder)) {
+    return {
+      record: record(
+        'broken',
+        `The folder name '${folder.slice(0, 80)}' is not a valid module id: use lowercase letters, digits and single hyphens.`
+      ),
+    };
+  }
+
+  let text: string;
+  try {
+    text = await fs.promises.readFile(path.join(dir, 'module.json'), 'utf8');
+  } catch {
+    return { record: record('broken', 'module.json is missing or cannot be read.') };
+  }
+  let raw: unknown;
+  try {
+    raw = JSON.parse(text);
+  } catch (error) {
+    return { record: record('broken', `module.json is not valid JSON: ${messageOf(error)}`) };
+  }
+  const parsed = parseManifest(raw, folder);
+  if (!parsed.ok) return { record: record('broken', parsed.reason) };
+  const manifest = parsed.manifest;
+
+  if (builtinIntegrations().some((integration) => integration.id === manifest.id)) {
+    return {
+      record: record('broken', `The id '${manifest.id}' is a built-in module's.`, manifest),
+    };
+  }
+
+  const incompatible = compatibilityProblem(manifest);
+  if (incompatible) return { record: record('incompatible', incompatible, manifest) };
+
+  if (!(await isModuleEnabled(manifest.id))) {
+    return { record: record('disabled', null, manifest) };
+  }
+
+  // From here on the module's own code runs.
+  try {
+    const integration = await importServerEntry(dir, manifest);
+    const problem = integrationProblem(integration);
+    if (problem) throw new ModuleLoadError(problem);
+    const loaded = integration as GameIntegration;
+    if (loaded.id !== manifest.id) {
+      throw new ModuleLoadError(
+        `The integration's id is '${loaded.id}' but module.json says '${manifest.id}'.`
+      );
+    }
+    if (hasIntegration(loaded.id)) {
+      throw new ModuleLoadError(`A module with the id '${loaded.id}' is already registered.`);
+    }
+    const mounts = legacyMountsOf(loaded);
+
+    // TODO(item 5): run this module's own migrations here, after it has
+    // validated and before it registers — DESIGN-modules §4.3, "Modules need
+    // migrations of their own". A migration that fails must throw a
+    // ModuleLoadError so the module is marked broken and never registered.
+
+    if (loaded.seed) {
+      try {
+        await db.withClient((client) => loaded.seed!(client));
+      } catch (error) {
+        throw new ModuleLoadError(`Seeding the module's data failed: ${messageOf(error)}`);
+      }
+    }
+
+    registerIntegration(loaded);
+    loadedFromDisk.add(loaded.id);
+    for (const mount of mounts) diskModuleRoutes.use(mount.prefix, mount.router);
+
+    return { record: record('ok', null, manifest), integration: loaded };
+  } catch (error) {
+    return { record: record('broken', messageOf(error), manifest) };
+  }
+}
+
+let scanning: Promise<unknown> = Promise.resolve();
+
+/**
+ * Scan `DATA_DIR/modules` and load every enabled, compatible module not yet
+ * loaded. Returns the integrations it registered, so a caller that runs it
+ * after boot can start them. Never throws.
+ *
+ * Boot runs it once. The test-only helper runs it again to prove what a
+ * restart would do; a module already loaded is left exactly as it is.
+ */
+export function scanDiskModules(): Promise<GameIntegration[]> {
+  const run = scanning.then(scanOnce, scanOnce);
+  scanning = run;
+  return run;
+}
+
+async function scanOnce(): Promise<GameIntegration[]> {
+  const root = modulesDir();
+  let entries: fs.Dirent[];
+  try {
+    entries = await fs.promises.readdir(root, { withFileTypes: true });
+  } catch (error) {
+    // No folder is the stock install: nothing to do, and nothing to say.
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+      log.warn(`[MODULES] Could not read ${root}: ${messageOf(error)}`);
+    }
+    entries = [];
+  }
+
+  const loaded: GameIntegration[] = [];
+  const seen = new Set<string>();
+  for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
+    if (entry.name.startsWith('.')) continue;
+    const dir = path.join(root, entry.name);
+    let isDirectory = entry.isDirectory();
+    if (!isDirectory && entry.isSymbolicLink()) {
+      isDirectory = await fs.promises.stat(dir).then((s) => s.isDirectory(), () => false);
+    }
+    if (!isDirectory) continue;
+    seen.add(entry.name);
+
+    // A loaded module stays loaded, as it is, until the process restarts.
+    if (diskModules.get(entry.name)?.status === 'ok') continue;
+
+    let evaluation: Evaluation;
+    try {
+      evaluation = await evaluate(entry.name, dir);
+    } catch (error) {
+      evaluation = {
+        record: { folder: entry.name, dir, manifest: null, status: 'broken', reason: messageOf(error) },
+      };
+    }
+    diskModules.set(entry.name, evaluation.record);
+    if (evaluation.integration) loaded.push(evaluation.integration);
+
+    const { status, reason, manifest } = evaluation.record;
+    const label = manifest ? `${manifest.id}@${manifest.version}` : entry.name;
+    if (status === 'ok') log.success(`[MODULES] Loaded ${label} from ${dir}`);
+    else if (status === 'disabled') log.info(`[MODULES] ${label} is disabled`);
+    else log.warn(`[MODULES] ${label} is ${status}: ${reason}`);
+  }
+
+  // Folders removed since the last scan are forgotten, unless their module is
+  // loaded: that one is still running.
+  for (const [folder, record] of diskModules) {
+    if (!seen.has(folder) && record.status !== 'ok') diskModules.delete(folder);
+  }
+  return loaded;
+}
+
+// ---------------------------------------------------------------------------
+// Listing and switching
+// ---------------------------------------------------------------------------
+
+function clientEntryUrl(id: string, entry: string): string {
+  return `/api/modules/${id}/client/${entry.slice('client/'.length)}`;
+}
+
+function diskListing(record: DiskModule, enabled: boolean): ModuleListing {
+  const { manifest, status } = record;
+  let reason = record.reason;
+  if (status === 'disabled' && enabled) reason = 'Enabled. It loads on the next restart.';
+  if (status === 'ok' && !enabled) reason = 'Disabled. It stays loaded until the next restart.';
+  return {
+    id: manifest?.id ?? record.folder,
+    name: manifest?.name ?? record.folder,
+    version: manifest?.version ?? '',
+    source: 'disk',
+    clientApi: manifest?.clientApi ?? null,
+    serverApi: manifest?.serverApi ?? null,
+    enabled,
+    status,
+    reason,
+    client:
+      status === 'ok' && enabled && manifest?.client
+        ? { entry: clientEntryUrl(manifest.id, manifest.client) }
+        : null,
+  };
+}
+
+/** Built-in modules first, in registration order, then disk modules by id. */
+export async function listModules(): Promise<ModuleListing[]> {
+  const builtins: ModuleListing[] = builtinIntegrations().map((integration) => ({
+    id: integration.id,
+    name: integration.displayName,
+    version: packageJson.version,
+    source: 'builtin',
+    clientApi: null,
+    serverApi: null,
+    enabled: true,
+    status: 'ok',
+    reason: null,
+    client: null,
+  }));
+
+  const flags = await enabledFlags();
+  const disk = [...diskModules.values()]
+    .sort((a, b) => a.folder.localeCompare(b.folder))
+    .map((record) => diskListing(record, flags.get(record.folder) === true));
+
+  return [...builtins, ...disk];
+}
+
+export type SetEnabledResult =
+  | { ok: true; module: ModuleListing; restartRequired: boolean }
+  | { ok: false; status: 400 | 404; error: string };
+
+/**
+ * Store whether a disk module is enabled. It takes effect on the next boot;
+ * `restartRequired` says whether the running process differs from what was
+ * just stored.
+ */
+export async function setModuleEnabled(id: string, enabled: boolean): Promise<SetEnabledResult> {
+  if (!isValidModuleId(id)) {
+    return { ok: false, status: 400, error: 'Not a valid module id' };
+  }
+  if (builtinIntegrations().some((integration) => integration.id === id)) {
+    return {
+      ok: false,
+      status: 400,
+      error: `'${id}' is a built-in module; it is always on and cannot be switched here`,
+    };
+  }
+  const record = diskModules.get(id);
+  if (!record) {
+    return {
+      ok: false,
+      status: 404,
+      error: `No module '${id}' in ${modulesDir()}. Modules are found when the platform starts.`,
+    };
+  }
+
+  await db.setAppSettingAsync(`${MODULE_ENABLED_KEY_PREFIX}${id}`, enabled ? 'true' : 'false');
+  return {
+    ok: true,
+    module: diskListing(record, enabled),
+    restartRequired: enabled !== (record.status === 'ok'),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Client files
+// ---------------------------------------------------------------------------
+
+const CONTENT_TYPES: Record<string, string> = {
+  '.js': 'text/javascript; charset=utf-8',
+  '.mjs': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.map': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.avif': 'image/avif',
+  '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf',
+  '.otf': 'font/otf',
+  '.txt': 'text/plain; charset=utf-8',
+  '.wasm': 'application/wasm',
+};
+
+export function contentTypeFor(file: string): string {
+  return CONTENT_TYPES[path.extname(file).toLowerCase()] ?? 'application/octet-stream';
+}
+
+/**
+ * The file on disk for `GET /api/modules/<id>/client/<relative>`, or null.
+ *
+ * Only a module that is loaded and enabled serves anything, and only from its
+ * own `client/` folder: a path that resolves anywhere else — through `..`, an
+ * encoded `..`, or a symlink — is null, the same as a file that is not there.
+ */
+export async function resolveClientFile(id: string, relative: string): Promise<string | null> {
+  if (!isValidModuleId(id)) return null;
+  const record = diskModules.get(id);
+  if (!record || record.status !== 'ok' || !record.manifest?.client) return null;
+  if (!(await isModuleEnabled(id))) return null;
+
+  if (!relative || relative.includes('\0') || relative.includes('\\')) return null;
+  if (relative.split('/').some((segment) => segment === '' || segment === '.' || segment === '..')) {
+    return null;
+  }
+
+  try {
+    const clientDir = await fs.promises.realpath(path.join(record.dir, 'client'));
+    const file = await fs.promises.realpath(path.resolve(clientDir, relative));
+    if (!isInside(clientDir, file)) return null;
+    const stat = await fs.promises.stat(file);
+    return stat.isFile() ? file : null;
+  } catch {
+    return null;
+  }
+}

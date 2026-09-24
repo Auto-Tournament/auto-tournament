@@ -356,6 +356,10 @@
       "description": "The signed-in player's own data, e.g. the games they play."
     },
     {
+      "name": "Modules",
+      "description": "Code modules: list built-in and on-disk modules, enable or disable one from the next restart, and serve its client files. Admin only, except the client files. Modules are installed on disk, never through the API."
+    },
+    {
       "name": "Players",
       "description": "Player records, ratings, match history and profiles."
     },
@@ -2951,6 +2955,131 @@
           },
           "403": {
             "description": "Impersonating"
+          }
+        }
+      }
+    },
+    "/api/modules": {
+      "get": {
+        "tags": [
+          "Modules"
+        ],
+        "summary": "Every module, built-in and on disk, with its status",
+        "description": "`platform` is the client and server API versions this instance\nprovides. Each module has a `status`: `ok` (loaded), `disabled`\n(found, not loaded), `incompatible` (its API ranges exclude this\nplatform) or `broken` (it failed to validate or load), with the\n`reason`. `enabled` is the stored switch, which takes effect on the\nnext restart. Built-in modules are always on.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The modules"
+          }
+        }
+      }
+    },
+    "/api/modules/{id}/client/*": {
+      "get": {
+        "tags": [
+          "Modules"
+        ],
+        "summary": "A file from a code module's client folder",
+        "description": "`*` is the file's path under the module's `client/` folder. Served\nfrom `DATA_DIR/modules/<id>/client/` only, for a module that is\nenabled and loaded. A path that resolves outside that folder, a file\nthat is not there, or a module that is not loaded is a JSON 404 —\nnever the app's index.html. Public: players' browsers load module\nslots too.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The file, with its content type (JavaScript as text/javascript)"
+          },
+          "404": {
+            "description": "No such file for a loaded, enabled module"
+          }
+        }
+      }
+    },
+    "/api/modules/{id}/disable": {
+      "post": {
+        "tags": [
+          "Modules"
+        ],
+        "summary": "Disable a code module on disk, from the next restart",
+        "description": "The module stays loaded until the process restarts, but stops\nserving its client files at once. Built-in modules cannot be\ndisabled (400).\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stored"
+          },
+          "400": {
+            "description": "Not a valid module id, or a built-in module"
+          },
+          "404": {
+            "description": "No such module on disk"
+          }
+        }
+      }
+    },
+    "/api/modules/{id}/enable": {
+      "post": {
+        "tags": [
+          "Modules"
+        ],
+        "summary": "Enable a code module on disk, from the next restart",
+        "description": "Stores the switch. A loaded module cannot be unloaded and a new one\nis only loaded at boot, so the change takes effect on the next\nrestart; `restartRequired` says whether the running process differs\nfrom what was stored. Built-in modules cannot be switched (400).\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stored"
+          },
+          "400": {
+            "description": "Not a valid module id, or a built-in module"
+          },
+          "404": {
+            "description": "No such module on disk"
           }
         }
       }
@@ -6415,6 +6544,72 @@
           "Test helpers"
         ],
         "summary": "POST /api/test/module-migrations/run",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/test/modules/fixture": {
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/modules/fixture",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/test/modules/fixtures": {
+      "delete": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "DELETE /api/test/modules/fixtures",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/test/modules/rescan": {
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/modules/rescan",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
