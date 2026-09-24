@@ -369,9 +369,11 @@ export interface IntegrationRoute {
 
 /**
  * The places core shows a module's page link, each with its own label:
- * - `nav`: the admin sidebar entry
+ * - `nav`: the 2.x admin sidebar entry. The sidebar is gone in 3.0 and core
+ *   shows this label nowhere; it stays accepted so a module that sets it
+ *   still loads.
  * - `pageTitle`: the page header while the page is open
- * - `rail`: the manage page's rail
+ * - `rail`: the admin rail beside every admin page (`ManageRail`)
  * - `siteLabel` / `siteHint`: the admin home's site grid tile and its one-liner
  */
 export type IntegrationNavLabelSurface = 'nav' | 'pageTitle' | 'rail' | 'siteLabel' | 'siteHint';

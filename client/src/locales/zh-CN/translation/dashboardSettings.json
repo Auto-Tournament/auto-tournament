@@ -319,7 +319,23 @@
       "teams": "Teams",
       "players": "Players",
       "tournament": "Tournament setup",
-      "settings": "Settings"
+      "settings": "Settings",
+      "disputes": "Disputes",
+      "modules": "Modules",
+      "templates": "模板",
+      "ratings": "ELO 计算",
+      "adminTools": "管理工具",
+      "devTools": "开发工具",
+      "documentation": "文档",
+      "groups": {
+        "tournament": "锦标赛",
+        "configuration": "配置",
+        "operate": "Operate",
+        "people": "People",
+        "game": "Game"
+      },
+      "label": "Admin",
+      "publicPage": "Public page"
     },
     "status": {
       "live": "LIVE",

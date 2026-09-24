@@ -15,30 +15,15 @@
     "dashboard": "控制台",
     "manage": "Manage",
     "tournament": "锦标赛",
-    "bracket": "对阵图",
-    "matches": "比赛",
-    "teams": "战队",
     "players": "选手",
     "leaderboard": "排行榜",
-    "templates": "模板",
-    "eloTemplates": "ELO 计算",
-    "adminTools": "管理工具",
     "publicLinks": "公开链接",
-    "devTools": "开发工具",
-    "settings": "设置",
-    "resourcesSection": "资源",
-    "tournamentSection": "锦标赛",
-    "configurationSection": "配置",
-    "systemSection": "系统",
-    "documentation": "文档",
     "signOut": "退出登录",
     "linkSteam": "关联 Steam",
     "myProfile": "我的资料",
     "accountConnections": "Account settings",
     "goToAdminDashboard": "前往管理控制台",
     "goToAdminDashboardHint": "您正在查看自己的选手资料。打开管理控制台以管理战队、锦标赛和服务器。",
-    "disputes": "Disputes",
-    "modules": "Modules",
     "siteMenu": "Site menu",
     "accountMenu": "Account menu"
   },
@@ -60,12 +45,10 @@
       "disputes": "Disputes",
       "modules": "Modules"
     },
-    "openDrawer": "打开导航菜单",
     "steamUnavailable": {
       "title": "Steam 集成不可用",
       "body": "登录和自定义链接查询可能无法使用。请检查服务器配置和网络连接。"
-    },
-    "closeDrawer": "Close navigation menu"
+    }
   },
   "language": {
     "label": "语言",

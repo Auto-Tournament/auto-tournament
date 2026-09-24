@@ -319,7 +319,23 @@
       "teams": "Teams",
       "players": "Players",
       "tournament": "Tournament setup",
-      "settings": "Settings"
+      "settings": "Settings",
+      "disputes": "Disputes",
+      "modules": "Modules",
+      "templates": "Sjablonen",
+      "ratings": "ELO-berekening",
+      "adminTools": "Admin-tools",
+      "devTools": "Dev-tools",
+      "documentation": "Documentatie",
+      "groups": {
+        "tournament": "Toernooi",
+        "configuration": "Configuratie",
+        "operate": "Operate",
+        "people": "People",
+        "game": "Game"
+      },
+      "label": "Admin",
+      "publicPage": "Public page"
     },
     "status": {
       "live": "LIVE",

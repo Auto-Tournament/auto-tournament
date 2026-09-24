@@ -15,7 +15,7 @@ import { useAuth } from '../../contexts/AuthContext';
  */
 /**
  * CSS variable holding the banner's height, so the admin layout can offset its
- * fixed header and drawers instead of painting over the banner (which made the
+ * fixed header instead of painting over the banner (which made the
  * "stop impersonating" button unclickable at desktop width).
  */
 const BANNER_HEIGHT_VAR = '--mat-impersonation-height';
@@ -68,7 +68,7 @@ export function ImpersonationBanner() {
       sx={{
         position: 'sticky',
         top: 0,
-        // Above the admin layout's fixed AppBar (drawer + 1) and drawers.
+        // Above the admin layout's fixed AppBar.
         zIndex: (theme) => theme.zIndex.drawer + 2,
       }}
       data-testid="impersonation-banner"

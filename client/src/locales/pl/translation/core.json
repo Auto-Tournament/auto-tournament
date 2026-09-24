@@ -12,30 +12,15 @@
     "dashboard": "Panel",
     "manage": "Manage",
     "tournament": "Turniej",
-    "bracket": "Drabinka",
-    "matches": "Mecze",
-    "teams": "Drużyny",
     "players": "Gracze",
     "leaderboard": "Ranking",
-    "templates": "Szablony",
-    "eloTemplates": "Kalkulacja ELO",
-    "adminTools": "Narzędzia admina",
     "publicLinks": "Linki publiczne",
-    "devTools": "Narzędzia dev",
-    "settings": "Ustawienia",
-    "resourcesSection": "Zasoby",
-    "tournamentSection": "Turniej",
-    "configurationSection": "Konfiguracja",
-    "systemSection": "Systemowe",
-    "documentation": "Dokumentacja",
     "signOut": "Wyloguj się",
     "linkSteam": "Połącz Steam",
     "myProfile": "Mój profil",
     "accountConnections": "Account settings",
     "goToAdminDashboard": "Przejdź do panelu administratora",
     "goToAdminDashboardHint": "Wyświetlasz swój profil gracza. Otwórz panel administratora, aby zarządzać drużynami, turniejami i serwerami.",
-    "disputes": "Disputes",
-    "modules": "Modules",
     "siteMenu": "Site menu",
     "accountMenu": "Account menu"
   },
@@ -57,12 +42,10 @@
       "disputes": "Disputes",
       "modules": "Modules"
     },
-    "openDrawer": "Otwórz menu nawigacji",
     "steamUnavailable": {
       "title": "Integracja ze Steam niedostępna",
       "body": "Logowanie i wyszukiwanie po vanity URL mogą nie działać. Sprawdź konfigurację serwera i połączenie."
-    },
-    "closeDrawer": "Close navigation menu"
+    }
   },
   "common": {
     "delete": "Usuń",

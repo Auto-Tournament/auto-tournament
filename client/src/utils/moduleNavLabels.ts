@@ -2,8 +2,8 @@
  * A module's page links as core's surfaces show them, labelled from the
  * module's own strings (item 6; see `IntegrationNavItem`).
  *
- * The sidebar, the page header, the manage rail and the admin home's site grid
- * list the pages of whichever modules the shell shows. Each label is a key in
+ * The page header, the admin rail and the admin home's site grid list the
+ * pages of whichever modules the shell shows. Each label is a key in
  * the module's namespace, never core's, so a module installed from disk
  * labels its pages with nothing in core's locale files.
  */
