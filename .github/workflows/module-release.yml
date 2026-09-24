@@ -1,0 +1,119 @@
+name: Module release
+
+# Publish a signed code-module release (DESIGN-modules §10.2–10.4).
+#
+# Push a tag `module-<id>-v<version>` (e.g. `module-cs2-v3.0.0`). This builds
+# the module with `scripts/modules/<id>/build.sh`, packs it into
+# `<id>-<version>.atmod`, signs it with the MODULE_SIGNING_KEY secret, checks
+# the signature against the keys compiled into this commit (so a secret that
+# does not match the platform's trusted key fails here, not on every
+# install), and publishes a GitHub release with the archive, its `.sig` and
+# `catalog-entry.json`. The release is never marked "latest": that stays the
+# platform's.
+#
+# Adding the release to the catalog is a pull request to Auto-Tournament/packs
+# that pastes catalog-entry.json into catalog.json's `modules`.
+#
+# Required secret: MODULE_SIGNING_KEY — the Ed25519 private key, PEM. It is
+# handed to the signing step only, and nothing prints it.
+
+on:
+  push:
+    tags:
+      - 'module-*-v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: module-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read the module and version from the tag
+        id: tag
+        run: |
+          if [[ ! "$GITHUB_REF_NAME" =~ ^module-([a-z0-9]+(-[a-z0-9]+)*)-v([0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?)$ ]]; then
+            echo "::error::Tag '$GITHUB_REF_NAME' is not module-<id>-v<semver>"
+            exit 1
+          fi
+          echo "id=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+          echo "version=${BASH_REMATCH[3]}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build the module
+        env:
+          MODULE_ID: ${{ steps.tag.outputs.id }}
+        run: |
+          BUILD="scripts/modules/$MODULE_ID/build.sh"
+          if [ ! -f "$BUILD" ]; then
+            echo "::error::No $BUILD: a module release needs a build script that writes the module folder to its first argument"
+            exit 1
+          fi
+          bash "$BUILD" "$RUNNER_TEMP/module/$MODULE_ID"
+
+      - name: Check the version matches the tag
+        env:
+          MODULE_ID: ${{ steps.tag.outputs.id }}
+          VERSION: ${{ steps.tag.outputs.version }}
+        run: |
+          BUILT=$(node -p "require(process.env.RUNNER_TEMP + '/module/' + process.env.MODULE_ID + '/module.json').version")
+          if [ "$BUILT" != "$VERSION" ]; then
+            echo "::error::module.json says $BUILT, the tag says $VERSION"
+            exit 1
+          fi
+
+      - name: Pack and sign
+        env:
+          MODULE_ID: ${{ steps.tag.outputs.id }}
+          MODULE_SIGNING_KEY: ${{ secrets.MODULE_SIGNING_KEY }}
+          URL_BASE: https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}
+        run: |
+          if [ -z "$MODULE_SIGNING_KEY" ]; then
+            echo "::error::The MODULE_SIGNING_KEY secret is not set"
+            exit 1
+          fi
+          node_modules/.bin/tsx scripts/module-release.ts pack "$RUNNER_TEMP/module/$MODULE_ID" \
+            --out "$RUNNER_TEMP/release" --url-base "$URL_BASE"
+
+      # No key here: exactly the check an installing platform runs, against
+      # the public keys compiled into this commit.
+      - name: Verify with the platform's trusted keys
+        env:
+          FILE: ${{ steps.tag.outputs.id }}-${{ steps.tag.outputs.version }}.atmod
+        run: node_modules/.bin/tsx scripts/module-release.ts verify "$RUNNER_TEMP/release/$FILE"
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MODULE_ID: ${{ steps.tag.outputs.id }}
+          VERSION: ${{ steps.tag.outputs.version }}
+        run: |
+          {
+            echo "Signed code module \`$MODULE_ID\` $VERSION for Auto Tournament."
+            echo
+            echo "Install it from the Modules page. To offer it in the catalog, add \`catalog-entry.json\` to \`catalog.json\` in Auto-Tournament/packs."
+            echo
+            echo '```'
+            sha256sum "$RUNNER_TEMP"/release/*.atmod
+            echo '```'
+          } > "$RUNNER_TEMP/notes.md"
+          gh release create "$GITHUB_REF_NAME" \
+            --title "Module $MODULE_ID $VERSION" \
+            --notes-file "$RUNNER_TEMP/notes.md" \
+            --latest=false \
+            "$RUNNER_TEMP"/release/*.atmod \
+            "$RUNNER_TEMP"/release/*.atmod.sig \
+            "$RUNNER_TEMP/release/catalog-entry.json"

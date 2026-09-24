@@ -11,7 +11,7 @@ import {
   writeModuleArchive,
 } from '../../api/src/modules/archive';
 import { signModuleArchive, verifyModuleRelease } from '../../api/src/modules/signature';
-import { keyIdFor, type TrustedKey } from '../../api/src/modules/trustedKeys';
+import { keyIdFor, trustedKeys, type TrustedKey } from '../../api/src/modules/trustedKeys';
 import {
   allowedRedirectUrl,
   allowedReleaseUrl,
@@ -173,6 +173,32 @@ test.describe('Module signature', () => {
     const result = verifyModuleRelease(archive, JSON.stringify(forged), { id: 'demo' }, [trusted]);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toMatch(/does not verify/);
+  });
+});
+
+test.describe('Trusted keys', () => {
+  test('the platform trusts its module release key, and its id is derived from it', () => {
+    const keys = trustedKeys();
+    const release = keys.find((key) => key.keyId === '65322c04183b7d1d');
+    expect(release, 'the 2026 release key is compiled in').toBeTruthy();
+    expect(keyIdFor(release!.publicKey)).toBe(release!.keyId);
+    expect(release!.revoked).toBeFalsy();
+  });
+
+  test('MODULE_TRUSTED_KEYS adds keys, but cannot un-revoke or replace a compiled one', () => {
+    const extra = keypair().trusted;
+    const before = process.env.MODULE_TRUSTED_KEYS;
+    try {
+      process.env.MODULE_TRUSTED_KEYS = `${extra.publicKey}, not-a-key ,${trustedKeys()[0].publicKey}`;
+      const keys = trustedKeys();
+      expect(keys.find((key) => key.keyId === extra.keyId)?.label).toBe('MODULE_TRUSTED_KEYS');
+      // The compiled entry wins over the same key from the environment.
+      expect(keys.filter((key) => key.keyId === '65322c04183b7d1d')).toHaveLength(1);
+      expect(keys.find((key) => key.keyId === '65322c04183b7d1d')?.label).not.toBe('MODULE_TRUSTED_KEYS');
+    } finally {
+      if (before === undefined) delete process.env.MODULE_TRUSTED_KEYS;
+      else process.env.MODULE_TRUSTED_KEYS = before;
+    }
   });
 });
 

@@ -39,10 +39,14 @@ function key(label: string, publicKey: string, revoked = false): TrustedKey {
 
 /**
  * The keys Auto Tournament signs its module releases with. The private half
- * of each is an Actions secret on the repository that publishes releases,
- * never in any repository.
+ * of each is the `MODULE_SIGNING_KEY` Actions secret on
+ * Auto-Tournament/auto-tournament (with an offline backup), never in any
+ * repository. `scripts/module-release.ts keygen` makes the next one.
  */
-const COMPILED_KEYS: TrustedKey[] = [];
+const COMPILED_KEYS: TrustedKey[] = [
+  // 2026-09-24, key id 65322c04183b7d1d.
+  key('Auto Tournament modules 2026', '5mqQ4+XmBSCB+Cj8gvtBga82mVSQUl7Jgvlm3IX2Jk8='),
+];
 
 /** Keys a spec registered in this process (test endpoints only). */
 const extraKeys: TrustedKey[] = [];
