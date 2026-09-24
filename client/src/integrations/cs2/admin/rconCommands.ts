@@ -1,7 +1,9 @@
 /**
- * Labels, descriptions and input labels live in the locale files under
- * `adminToolsPage.commands.<i18nKey>` (label / description / inputLabel) and
- * category titles under `adminToolsPage.categories.<i18nKey>`.
+ * The RCON commands CS2's Admin tools section offers.
+ *
+ * Labels, descriptions and input labels live in CS2's locale files (namespace
+ * `cs2`) under `adminTools.commands.<i18nKey>` (label / description /
+ * inputLabel), and category titles under `adminTools.categories.<i18nKey>`.
  */
 export interface AdminCommand {
   id: string;

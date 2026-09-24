@@ -729,6 +729,33 @@ export interface TournamentStatsViewProps {
   tournamentId: number;
 }
 
+/**
+ * The Admin tools page: this module's own section (client API 0.2.2).
+ *
+ * Admin tools is core's page for what every instance has: the application
+ * logs and match recovery. A game with controls of its own (CS2: RCON on its
+ * servers, and the live feed of their events) brings them here as a section
+ * with its own heading, and fetches what it needs. With the module not
+ * installed, the section is not there.
+ */
+export type AdminToolsSectionProps = Record<string, never>;
+
+/**
+ * The Settings page: this module's own settings, as a tab of its own (client
+ * API 0.2.2). CS2: the webhook URL its servers call back on, and the map sync.
+ *
+ * The section reads and saves its own fields. It may save through
+ * `PUT /api/settings` with only its own fields in the body: every field there
+ * is optional.
+ */
+export type InstanceSettingsSectionProps = Record<string, never>;
+
+export interface InstanceSettingsSlot {
+  /** The tab's label: a key in the module's own namespace (CS2: `settings.tab`). */
+  labelKey: string;
+  section: ComponentType<InstanceSettingsSectionProps>;
+}
+
 // ---------------------------------------------------------------------------
 // The integration
 // ---------------------------------------------------------------------------
@@ -978,6 +1005,18 @@ export interface ClientGameIntegration {
    * counts as no rows.
    */
   adminHomeSetup?: () => Promise<AdminHomeSetupItem[]>;
+
+  /**
+   * The Admin tools page: this module's section, after core's tools (0.2.2).
+   * Shown whenever the module is installed, whatever game the tournament is.
+   */
+  adminToolsSection?: ComponentType<AdminToolsSectionProps>;
+
+  /**
+   * The Settings page: this module's tab, after core's (0.2.2). Shown
+   * whenever the module is installed; `links.settings(id)` opens it.
+   */
+  instanceSettings?: InstanceSettingsSlot;
 
   /** Pages the integration owns. URLs come from `paths.ts`. */
   routes: IntegrationRoute[];

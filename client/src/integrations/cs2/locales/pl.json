@@ -739,5 +739,195 @@
     "info_few": "Zostanie zapisana pula map z {{count}} mapami.",
     "info_many": "Zostanie zapisana pula map z {{count}} mapami.",
     "info_other": "Zostanie zapisana pula map z {{count}} mapami."
+  },
+  "adminTools": {
+    "description": "Uruchamiaj typowe akcje dla meczów i serwerów na swoich serwerach CS2. Najpierw wyświetlane są szybkie akcje, a poniżej dostępne są bardziej zaawansowane narzędzia.",
+    "refresh": "Odśwież serwery",
+    "serverSelect": {
+      "label": "Docelowy serwer(y)",
+      "allServersChip": "Wszystkie serwery",
+      "sendStatus": "Wyślij status",
+      "allServersDescription_one": "Uruchom na {{count}} serwerze",
+      "allServersDescription_few": "Uruchom na wszystkich {{count}} serwerach",
+      "allServersDescription_many": "Uruchom na wszystkich {{count}} serwerach",
+      "allServersDescription_other": "Uruchom na wszystkich {{count}} serwerach"
+    },
+    "command": {
+      "execute": "Wykonaj"
+    },
+    "customRconWarning": "Uwaga: używaj ostrożnie!",
+    "results": {
+      "title": "Wyniki wykonania",
+      "successChip": "✓ Sukces",
+      "failedChip": "✗ Błąd",
+      "errorPrefix": "Błąd:"
+    },
+    "quickActions": {
+      "title": "Szybkie akcje"
+    },
+    "advanced": {
+      "title": "Zaawansowane narzędzia"
+    },
+    "noServers": "Nie znaleziono włączonych serwerów. Dodaj i włącz serwery na stronie Serwery.",
+    "toasts": {
+      "commandExecuted_one": "Komenda wykonana na {{count}} serwerze",
+      "commandExecuted_few": "Komenda wykonana na {{count}} serwerach",
+      "commandExecuted_many": "Komenda wykonana na {{count}} serwerach",
+      "commandExecuted_other": "Komenda wykonana na {{count}} serwerach",
+      "commandPartial": "Komenda powiodła się na {{succeeded}} z {{total}} serwerów (błędy: {{failed}})",
+      "commandFailed": "Nie udało się wykonać komendy"
+    },
+    "commands": {
+      "matchStart": {
+        "label": "Rozpocznij mecz",
+        "description": "Natychmiast rozpocznij mecz."
+      },
+      "matchEnd": {
+        "label": "Zakończ mecz",
+        "description": "Wymuś zakończenie bieżącego meczu na wybranych serwerach i przywróć je do rozgrzewki za pomocą css_restart."
+      },
+      "forcePause": {
+        "label": "Wymuś pauzę",
+        "description": "Wymuś pauzę meczu."
+      },
+      "forceUnpause": {
+        "label": "Wymuś wznowienie",
+        "description": "Wymuś wznowienie meczu."
+      },
+      "skipVeto": {
+        "label": "Pomiń veto",
+        "description": "Pomiń fazę veto."
+      },
+      "toggleKnife": {
+        "label": "Przełącz rundę knife",
+        "description": "Włącz lub wyłącz rundę knife do wyboru strony (alias: rk)."
+      },
+      "togglePlayout": {
+        "label": "Przełącz rozgrywanie wszystkich rund",
+        "description": "Włącz lub wyłącz rozgrywanie wszystkich rund."
+      },
+      "toggleWhitelist": {
+        "label": "Przełącz whitelistę",
+        "description": "Włącz lub wyłącz whitelistę drużyn."
+      },
+      "showSettings": {
+        "label": "Pokaż ustawienia",
+        "description": "Pokaż bieżące ustawienia meczu."
+      },
+      "reloadAdmins": {
+        "label": "Przeładuj adminów",
+        "description": "Przeładuj listę adminów z admins.json."
+      },
+      "readyRequired": {
+        "label": "Ustaw liczbę graczy wymaganych do gotowości",
+        "description": "Ustaw, ilu graczy musi zgłosić gotowość przed startem meczu.",
+        "inputLabel": "Liczba graczy"
+      },
+      "restoreBackup": {
+        "label": "Przywróć backup rundy",
+        "description": "Przywróć mecz do określonej rundy.",
+        "inputLabel": "Numer rundy"
+      },
+      "cleanServers": {
+        "label": "Wyczyść serwery",
+        "description": "Zakończ trwające mecze na wybranych serwerach i przywróć je do rozgrzewki za pomocą css_restart. Ta operacja jest destrukcyjna."
+      },
+      "changeMap": {
+        "label": "Zmień mapę",
+        "description": "Zmień mapę na inną (css_map <mapname>).",
+        "inputLabel": "Nazwa mapy (de_dust2)"
+      },
+      "team1Name": {
+        "label": "Ustaw nazwę drużyny 1",
+        "description": "Ustaw nazwę drużyny 1.",
+        "inputLabel": "Nazwa drużyny"
+      },
+      "team2Name": {
+        "label": "Ustaw nazwę drużyny 2",
+        "description": "Ustaw nazwę drużyny 2.",
+        "inputLabel": "Nazwa drużyny"
+      },
+      "startPractice": {
+        "label": "Włącz tryb treningowy",
+        "description": "Włącz tryb treningowy z komendami .commands."
+      },
+      "exitPractice": {
+        "label": "Wyłącz tryb treningowy",
+        "description": "Wyłącz tryb treningowy."
+      },
+      "broadcast": {
+        "label": "Wyślij komunikat",
+        "description": "Wyślij komunikat admina do wszystkich graczy.",
+        "inputLabel": "Wiadomość"
+      },
+      "customRcon": {
+        "label": "Uruchom własną komendę RCON",
+        "description": "Uruchom dowolną komendę RCON bezpośrednio.",
+        "inputLabel": "Komenda RCON"
+      }
+    },
+    "categories": {
+      "matchControl": "Sterowanie meczem",
+      "matchSettings": "Ustawienia meczu",
+      "backupRestore": "Backup i przywracanie",
+      "serverMgmt": "Zarządzanie serwerem",
+      "teamMgmt": "Zarządzanie drużynami",
+      "practiceMode": "Tryb treningowy",
+      "adminComm": "Komunikaty admina",
+      "advanced": "Zaawansowany RCON"
+    },
+    "events": {
+      "title": "Monitor zdarzeń serwera",
+      "healthCheckFailed": "Sprawdzenie stanu API zdarzeń nie powiodło się. Sprawdź, czy API działa i czy /api/events/test jest osiągalny.",
+      "loadFailed": "Nie udało się wczytać zdarzeń",
+      "connected": "Połączono",
+      "disconnected": "Rozłączono",
+      "paused": "Wstrzymano",
+      "pause": "Wstrzymaj",
+      "resume": "Wznów",
+      "refresh": "Odśwież zdarzenia",
+      "clear": "Wyczyść konsolę",
+      "filterLabel": "Filtruj według serwera (opcjonalnie)",
+      "noServers": "Brak dostępnych serwerów",
+      "refreshServers": "Odśwież listę serwerów",
+      "noEvents": "Nie odebrano jeszcze zdarzeń z tego serwera.",
+      "noEventsHint": "Nadal brak zdarzeń po 15 sekundach. Sprawdź, czy serwer CS2 wysyła webhooki Auto Tournament CS2 na /api/events/:matchSlugOrServerId z poprawnym X-Auto-Tournament-Token.",
+      "waiting": "Oczekiwanie na zdarzenia z serwera…",
+      "footer_one": "Wyświetlane: {{count}} zdarzenie (maks. 100)",
+      "footer_few": "Wyświetlane: {{count}} zdarzenia (maks. 100)",
+      "footer_many": "Wyświetlane: {{count}} zdarzeń (maks. 100)",
+      "footer_other": "Wyświetlane: {{count}} zdarzeń (maks. 100)",
+      "footerForServer_one": "Wyświetlane: {{count}} zdarzenie dla serwera {{server}} (maks. 100)",
+      "footerForServer_few": "Wyświetlane: {{count}} zdarzenia dla serwera {{server}} (maks. 100)",
+      "footerForServer_many": "Wyświetlane: {{count}} zdarzeń dla serwera {{server}} (maks. 100)",
+      "footerForServer_other": "Wyświetlane: {{count}} zdarzeń dla serwera {{server}} (maks. 100)",
+      "realtime": "Zdarzenia aktualizują się w czasie rzeczywistym przez WebSocket",
+      "downloadDemo": "Pobierz demo"
+    },
+    "title": "Counter-Strike 2 servers"
+  },
+  "settings": {
+    "webhook": {
+      "title": "Webhook Auto Tournament CS2",
+      "description": "URL webhooka Auto Tournament CS2, do którego mogą dotrzeć Twoje serwery CS2.",
+      "label": "URL webhooka",
+      "helper": "Przykład: https://twoja-domena.pl"
+    },
+    "mapSync": {
+      "title": "Synchronizacja map",
+      "description": "Synchronizuj mapy CS2 z repozytorium GitHub.",
+      "buttonSyncing": "Synchronizowanie...",
+      "buttonIdle": "Synchronizuj mapy CS2",
+      "success": "Synchronizacja map zakończona! Dodano {{added}} nowych map, {{skipped}} już istniały.",
+      "partialError": "Niektórych map nie udało się zsynchronizować: {{errors}}",
+      "failed": "Nie udało się zsynchronizować map",
+      "rateLimit": "Przekroczono limit zapytań GitHub API. Spróbuj ponownie za kilka minut. Możesz ustawić zmienną środowiskową GITHUB_TOKEN, aby zwiększyć limit.",
+      "rateLimitShort": "Przekroczono limit zapytań GitHub API. Spróbuj ponownie za kilka minut.",
+      "githubError": "Nie udało się połączyć z repozytorium GitHub. Sprawdź połączenie z internetem i spróbuj ponownie później."
+    },
+    "tab": "Counter-Strike 2",
+    "saved": "Settings saved",
+    "saveFailed": "Failed to save settings",
+    "loadFailed": "Failed to load settings"
   }
 }

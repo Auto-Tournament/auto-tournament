@@ -142,6 +142,8 @@ export interface ServerMatchesResponse extends Cs2ApiResponse {
  */
 export interface WebhookSettings {
   webhookConfigured?: boolean;
+  /** The URL itself, as `GET /api/settings` answers it (null when unset). */
+  webhookUrl?: string | null;
 }
 
 export interface WebhookSettingsResponse extends Cs2ApiResponse {
@@ -370,4 +372,44 @@ export interface MapPoolsResponse extends Cs2ApiResponse {
 
 export interface MapPoolResponse extends Cs2ApiResponse {
   mapPool: MapPool;
+}
+
+// ---------------------------------------------------------------------------
+// Admin tools: RCON and the server events monitor
+// ---------------------------------------------------------------------------
+
+/** One server's answer to an RCON command (`POST /api/rcon/command`). */
+export interface RconResult {
+  serverId: string;
+  serverName: string;
+  success: boolean;
+  error?: string;
+  response?: string;
+}
+
+export interface RconResultsResponse extends Cs2ApiResponse {
+  results?: RconResult[];
+}
+
+/** One event a server sent, as the events monitor shows it. */
+export interface ServerEvent {
+  timestamp: number;
+  serverId: string;
+  matchSlug: string;
+  event: {
+    event: string;
+    matchid: string;
+    [key: string]: unknown;
+  };
+}
+
+export interface ServerEventsResponse extends Cs2ApiResponse {
+  events: ServerEvent[];
+}
+
+/** `POST /api/maps/sync`. */
+export interface MapSyncResponse extends Cs2ApiResponse {
+  stats?: { total: number; added: number; skipped: number; errors: number };
+  errors?: string[];
+  errorType?: 'rate_limit' | 'github_error' | 'unknown';
 }

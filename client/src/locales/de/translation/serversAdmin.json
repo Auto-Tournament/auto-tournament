@@ -1,33 +1,5 @@
 {
   "adminToolsPage": {
-    "description": "Führe gängige Match- und Server-Aktionen auf deinen CS2-Servern aus. Schnellaktionen werden zuerst angezeigt, darunter findest du erweiterte Tools.",
-    "header": {
-      "refresh": "Server aktualisieren"
-    },
-    "serverSelect": {
-      "label": "Zielserver",
-      "allServersChip": "Alle Server",
-      "sendStatus": "Status senden",
-      "allServersDescription_one": "Auf {{count}} Server ausführen",
-      "allServersDescription_other": "Auf allen {{count}} Servern ausführen"
-    },
-    "command": {
-      "execute": "Ausführen"
-    },
-    "customRconWarning": "Warnung: mit Vorsicht verwenden!",
-    "results": {
-      "title": "Ausführungsergebnisse",
-      "successChip": "✓ Erfolgreich",
-      "failedChip": "✗ Fehlgeschlagen",
-      "errorPrefix": "Fehler:"
-    },
-    "quickActions": {
-      "title": "Schnellaktionen"
-    },
-    "advanced": {
-      "title": "Erweiterte Tools"
-    },
-    "noServers": "Keine aktivierten Server gefunden. Bitte Server auf der Server-Seite hinzufügen und aktivieren.",
     "recovery": {
       "title": "Match-Wiederherstellung",
       "description": "Wenn API oder Server während eines Turniers neu gestartet wurden und der Match-Status nicht synchron wirkt (z. B. Matches hängen im Warmup oder Live-Scores fehlen), kannst du manuell eine Wiederherstellung starten. Dabei werden alle Server nach ihrem aktuellen Match-Report gefragt, Scores/Phasen neu synchronisiert und Webhooks sowie Demo-Uploads, wo möglich, neu konfiguriert.",
@@ -38,113 +10,7 @@
     },
     "monitoring": {
       "title": "Monitoring & Protokolle",
-      "serverEvents": "Server-Events Monitor",
       "appLogs": "Anwendungs-Logs"
-    },
-    "toasts": {
-      "commandExecuted_one": "Befehl auf {{count}} Server ausgeführt",
-      "commandExecuted_other": "Befehl auf {{count}} Servern ausgeführt",
-      "commandPartial": "Befehl auf {{succeeded}} von {{total}} Servern erfolgreich ({{failed}} fehlgeschlagen)",
-      "commandFailed": "Befehl konnte nicht ausgeführt werden"
-    },
-    "categories": {
-      "matchControl": "Match-Steuerung",
-      "matchSettings": "Match-Einstellungen",
-      "backupRestore": "Backup & Wiederherstellung",
-      "serverMgmt": "Serververwaltung",
-      "teamMgmt": "Teamverwaltung",
-      "practiceMode": "Practice-Modus",
-      "adminComm": "Admin-Kommunikation",
-      "advanced": "Erweitertes RCON"
-    },
-    "commands": {
-      "matchStart": {
-        "label": "Match starten",
-        "description": "Startet das Match sofort."
-      },
-      "matchEnd": {
-        "label": "Match beenden",
-        "description": "Beendet das laufende Match auf den ausgewählten Servern erzwungen und setzt sie mit css_restart ins Warmup zurück."
-      },
-      "forcePause": {
-        "label": "Pause erzwingen",
-        "description": "Pausiert das Match erzwungen."
-      },
-      "forceUnpause": {
-        "label": "Pause erzwungen aufheben",
-        "description": "Hebt die Pause des Matches erzwungen auf."
-      },
-      "skipVeto": {
-        "label": "Veto überspringen",
-        "description": "Überspringt die Veto-Phase."
-      },
-      "toggleKnife": {
-        "label": "Knife-Runde umschalten",
-        "description": "Schaltet die Knife-Runde zur Seitenwahl ein oder aus (Alias: rk)."
-      },
-      "togglePlayout": {
-        "label": "Playout umschalten",
-        "description": "Schaltet das Ausspielen aller Runden ein oder aus."
-      },
-      "toggleWhitelist": {
-        "label": "Whitelist umschalten",
-        "description": "Schaltet die Team-Whitelist ein oder aus."
-      },
-      "showSettings": {
-        "label": "Einstellungen anzeigen",
-        "description": "Zeigt die aktuellen Match-Einstellungen an."
-      },
-      "reloadAdmins": {
-        "label": "Admins neu laden",
-        "description": "Lädt die Admin-Liste aus admins.json neu."
-      },
-      "readyRequired": {
-        "label": "Benötigte Ready-Spieler festlegen",
-        "description": "Legt fest, wie viele Spieler sich bereit melden müssen, bevor das Match startet.",
-        "inputLabel": "Anzahl der Spieler"
-      },
-      "restoreBackup": {
-        "label": "Runden-Backup wiederherstellen",
-        "description": "Setzt das Match auf eine bestimmte Runde zurück.",
-        "inputLabel": "Rundennummer"
-      },
-      "cleanServers": {
-        "label": "Server bereinigen",
-        "description": "Beendet laufende Matches auf den ausgewählten Servern und setzt sie mit css_restart ins Warmup zurück. Das lässt sich nicht rückgängig machen."
-      },
-      "changeMap": {
-        "label": "Karte wechseln",
-        "description": "Wechselt zu einer anderen Karte (css_map <mapname>).",
-        "inputLabel": "Kartenname (de_dust2)"
-      },
-      "team1Name": {
-        "label": "Name von Team 1 festlegen",
-        "description": "Legt den Namen von Team 1 fest.",
-        "inputLabel": "Teamname"
-      },
-      "team2Name": {
-        "label": "Name von Team 2 festlegen",
-        "description": "Legt den Namen von Team 2 fest.",
-        "inputLabel": "Teamname"
-      },
-      "startPractice": {
-        "label": "Practice-Modus starten",
-        "description": "Aktiviert den Practice-Modus mit .commands."
-      },
-      "exitPractice": {
-        "label": "Practice-Modus beenden",
-        "description": "Deaktiviert den Practice-Modus."
-      },
-      "broadcast": {
-        "label": "Nachricht an alle senden",
-        "description": "Sendet eine Admin-Nachricht an alle Spieler.",
-        "inputLabel": "Nachricht"
-      },
-      "customRcon": {
-        "label": "Eigenen RCON-Befehl ausführen",
-        "description": "Führt einen beliebigen RCON-Befehl direkt aus.",
-        "inputLabel": "RCON-Befehl"
-      }
     },
     "logs": {
       "loadFailed": "Logs konnten nicht geladen werden",
@@ -155,29 +21,7 @@
       "footer": "Die {{count}} neuesten Log-Einträge werden angezeigt",
       "footerAutoRefresh": "Die {{count}} neuesten Log-Einträge werden angezeigt (automatische Aktualisierung)"
     },
-    "events": {
-      "healthCheckFailed": "Health-Check der Events-API fehlgeschlagen. Prüfe, ob die API läuft und /api/events/test erreichbar ist.",
-      "loadFailed": "Events konnten nicht geladen werden",
-      "connected": "Verbunden",
-      "disconnected": "Getrennt",
-      "paused": "Pausiert",
-      "pause": "Pausieren",
-      "resume": "Fortsetzen",
-      "refresh": "Events aktualisieren",
-      "clear": "Konsole leeren",
-      "filterLabel": "Nach Server filtern (optional)",
-      "noServers": "Keine Server verfügbar",
-      "refreshServers": "Serverliste aktualisieren",
-      "noEvents": "Von diesem Server wurden noch keine Events empfangen.",
-      "noEventsHint": "Auch nach 15 Sekunden keine Events. Prüfe, ob dein CS2-Server so eingerichtet ist, dass er Auto Tournament CS2-Webhooks mit dem korrekten X-Auto-Tournament-Token an /api/events/:matchSlugOrServerId sendet.",
-      "waiting": "Warte auf Events vom Server…",
-      "footer_one": "{{count}} Event wird angezeigt (max. 100)",
-      "footer_other": "{{count}} Events werden angezeigt (max. 100)",
-      "footerForServer_one": "{{count}} Event für Server {{server}} wird angezeigt (max. 100)",
-      "footerForServer_other": "{{count}} Events für Server {{server}} werden angezeigt (max. 100)",
-      "realtime": "Events werden per WebSocket in Echtzeit aktualisiert",
-      "downloadDemo": "Demo herunterladen"
-    }
+    "description": "Logs and maintenance for this site. Installed game modules add their own tools below."
   },
   "servers": {
     "allocation": {

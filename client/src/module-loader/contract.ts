@@ -103,7 +103,7 @@ function shapeProblem(def: Record<string, unknown>): string | null {
   for (const group of REQUIRED_GROUPS) {
     if (!isObject(def[group])) return `${group} is not an object`;
   }
-  for (const group of ['tournamentStart', 'matchListQueue'] as const) {
+  for (const group of ['tournamentStart', 'matchListQueue', 'instanceSettings'] as const) {
     if (def[group] !== undefined && !isObject(def[group])) return `${group} is not an object`;
   }
   for (const path of COMPONENT_SLOTS) {
@@ -135,6 +135,12 @@ function shapeProblem(def: Record<string, unknown>): string | null {
     if (start.preflight !== undefined && !isObject(start.preflight)) {
       return 'tournamentStart.preflight is not an object';
     }
+  }
+
+  const settings = def.instanceSettings;
+  if (isObject(settings)) {
+    if (typeof settings.labelKey !== 'string') return 'instanceSettings.labelKey is not a string';
+    if (settings.section === undefined) return 'instanceSettings.section is missing';
   }
 
   if (!Array.isArray(def.routes)) return 'routes is not an array';

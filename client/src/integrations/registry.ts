@@ -79,6 +79,17 @@ export function listIntegrations(): ClientGameIntegration[] {
 }
 
 /**
+ * `listIntegrations`, for render: the installed modules, whatever game the
+ * tournament is, re-read when a code module arrives or breaks. For the
+ * instance-wide pages (Admin tools, Settings) that show every installed
+ * module's section.
+ */
+export function useInstalledIntegrations(): ClientGameIntegration[] {
+  useModuleState();
+  return listIntegrations();
+}
+
+/**
  * The routes to mount: every registered module's, including a code module
  * that broke while rendering. Its page stays mounted, so the slot boundary
  * around it keeps saying why, rather than the path turning into a 404 when

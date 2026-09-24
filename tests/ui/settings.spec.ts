@@ -29,7 +29,9 @@ test.describe.serial('Settings UI', () => {
       await expect(page).toHaveTitle(/Settings/i);
       await page.waitForLoadState('networkidle');
 
-      // Check for webhook URL input
+      // The webhook URL is CS2's (its own Settings tab since client API 0.2.2),
+      // and the suite runs with CS2 installed.
+      await page.getByTestId('settings-tab-module-cs2').click({ timeout: 15000 });
       await expect(page.getByTestId('settings-webhook-url-input')).toBeVisible({ timeout: 15000 });
 
       // Save control is present
@@ -46,7 +48,7 @@ test.describe.serial('Settings UI', () => {
       tag: ['@ui', '@settings', '@configuration'],
     },
     async ({ page }) => {
-      await page.goto('/settings');
+      await page.goto('/settings?section=cs2');
       await page.waitForLoadState('networkidle');
 
       const webhookInput = page.getByTestId('settings-webhook-url-input');

@@ -16,13 +16,18 @@
 
 import * as React from 'react';
 import { Box, Button } from '@mui/material';
-import { useSnackbar, api, useModuleTranslation } from '../../../module-sdk';
+import { useNavigate } from 'react-router-dom';
+import { useSnackbar, api, links, useModuleTranslation } from '../../../module-sdk';
 import type { WebhookSettings, WebhookSettingsResponse } from '../cs2.types';
 import type { AdminGlobalWarningProps } from '../../types';
 
-export const WebhookWarning: React.FC<AdminGlobalWarningProps> = ({ onOpenSettings }) => {
+export const WebhookWarning: React.FC<AdminGlobalWarningProps> = () => {
   const { t } = useModuleTranslation('cs2');
   const { showError } = useSnackbar();
+  const navigate = useNavigate();
+  // The field is on CS2's own Settings tab (0.2.2), so open that tab rather
+  // than the page core's `onOpenSettings` goes to.
+  const openSettings = React.useCallback(() => navigate(links.settings('cs2')), [navigate]);
   const hasShownWebhookWarningRef = React.useRef(false);
   const [webhookConfigured, setWebhookConfigured] = React.useState<boolean | null>(null);
 
@@ -69,7 +74,7 @@ export const WebhookWarning: React.FC<AdminGlobalWarningProps> = ({ onOpenSettin
           <Button
             color="inherit"
             size="small"
-            onClick={onOpenSettings}
+            onClick={openSettings}
             sx={{ textDecoration: 'underline' }}
           >
             {t('layout.openSettings')}
@@ -81,7 +86,7 @@ export const WebhookWarning: React.FC<AdminGlobalWarningProps> = ({ onOpenSettin
     if (webhookConfigured === true) {
       hasShownWebhookWarningRef.current = false;
     }
-  }, [webhookConfigured, showError, onOpenSettings, t]);
+  }, [webhookConfigured, showError, openSettings, t]);
 
   return null;
 };

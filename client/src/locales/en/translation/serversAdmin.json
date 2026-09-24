@@ -1,33 +1,6 @@
 {
   "adminToolsPage": {
-    "description": "Run common match and server actions across your CS2 servers. Quick actions are shown first, with more advanced tools available below.",
-    "header": {
-      "refresh": "Refresh Servers"
-    },
-    "serverSelect": {
-      "label": "Target Server(s)",
-      "allServersChip": "All Servers",
-      "sendStatus": "Send Status",
-      "allServersDescription_one": "Run on {{count}} server",
-      "allServersDescription_other": "Run on all {{count}} servers"
-    },
-    "command": {
-      "execute": "Execute"
-    },
-    "customRconWarning": "Warning: Use with caution!",
-    "results": {
-      "title": "Execution Results",
-      "successChip": "✓ Success",
-      "failedChip": "✗ Failed",
-      "errorPrefix": "Error:"
-    },
-    "quickActions": {
-      "title": "Quick Actions"
-    },
-    "advanced": {
-      "title": "Advanced Tools"
-    },
-    "noServers": "No enabled servers found. Please add and enable servers in the Servers page.",
+    "description": "Logs and maintenance for this site. Installed game modules add their own tools below.",
     "recovery": {
       "title": "Match Recovery",
       "description": "If the API or servers were restarted during a tournament and match state looks out of sync (e.g. matches stuck in warmup or missing live scores), you can manually trigger a recovery pass. This will ask all servers for their current match report, resync scores/phases, and reconfigure webhooks and demo uploads where possible.",
@@ -38,113 +11,7 @@
     },
     "monitoring": {
       "title": "Monitoring & Logs",
-      "serverEvents": "Server Events Monitor",
       "appLogs": "Application Logs"
-    },
-    "toasts": {
-      "commandExecuted_one": "Command executed on {{count}} server",
-      "commandExecuted_other": "Command executed on {{count}} servers",
-      "commandPartial": "Command succeeded on {{succeeded}} of {{total}} servers ({{failed}} failed)",
-      "commandFailed": "Failed to execute command"
-    },
-    "categories": {
-      "matchControl": "Match control",
-      "matchSettings": "Match settings",
-      "backupRestore": "Backup & restore",
-      "serverMgmt": "Server management",
-      "teamMgmt": "Team management",
-      "practiceMode": "Practice mode",
-      "adminComm": "Admin communication",
-      "advanced": "Advanced RCON"
-    },
-    "commands": {
-      "matchStart": {
-        "label": "Start match",
-        "description": "Start the match immediately."
-      },
-      "matchEnd": {
-        "label": "End match",
-        "description": "Force end the current match on the selected servers and reset them to warmup using css_restart."
-      },
-      "forcePause": {
-        "label": "Force pause",
-        "description": "Force pause the match."
-      },
-      "forceUnpause": {
-        "label": "Force unpause",
-        "description": "Force unpause the match."
-      },
-      "skipVeto": {
-        "label": "Skip veto",
-        "description": "Skip the veto phase."
-      },
-      "toggleKnife": {
-        "label": "Toggle knife round",
-        "description": "Turn the knife round for side choice on or off (alias: rk)."
-      },
-      "togglePlayout": {
-        "label": "Toggle playout",
-        "description": "Turn playing out all rounds on or off."
-      },
-      "toggleWhitelist": {
-        "label": "Toggle whitelist",
-        "description": "Turn the team whitelist on or off."
-      },
-      "showSettings": {
-        "label": "Show settings",
-        "description": "Show the current match settings."
-      },
-      "reloadAdmins": {
-        "label": "Reload admins",
-        "description": "Reload the admin list from admins.json."
-      },
-      "readyRequired": {
-        "label": "Set players required to ready",
-        "description": "Set how many players must ready up before the match starts.",
-        "inputLabel": "Number of players"
-      },
-      "restoreBackup": {
-        "label": "Restore round backup",
-        "description": "Restore the match to a specific round.",
-        "inputLabel": "Round number"
-      },
-      "cleanServers": {
-        "label": "Clean servers",
-        "description": "End any running match on the selected servers and reset them to warmup using css_restart. This is destructive."
-      },
-      "changeMap": {
-        "label": "Change map",
-        "description": "Change to a different map (css_map <mapname>).",
-        "inputLabel": "Map name (de_dust2)"
-      },
-      "team1Name": {
-        "label": "Set team 1 name",
-        "description": "Set the name of team 1.",
-        "inputLabel": "Team name"
-      },
-      "team2Name": {
-        "label": "Set team 2 name",
-        "description": "Set the name of team 2.",
-        "inputLabel": "Team name"
-      },
-      "startPractice": {
-        "label": "Start practice mode",
-        "description": "Turn on practice mode with .commands."
-      },
-      "exitPractice": {
-        "label": "Exit practice mode",
-        "description": "Turn off practice mode."
-      },
-      "broadcast": {
-        "label": "Broadcast message",
-        "description": "Send an admin message to all players.",
-        "inputLabel": "Message"
-      },
-      "customRcon": {
-        "label": "Run custom RCON command",
-        "description": "Run any RCON command directly.",
-        "inputLabel": "RCON command"
-      }
     },
     "logs": {
       "loadFailed": "Failed to load logs",
@@ -154,29 +21,6 @@
       "empty": "No logs to show",
       "footer": "Showing the {{count}} most recent log entries",
       "footerAutoRefresh": "Showing the {{count}} most recent log entries (auto-refreshing)"
-    },
-    "events": {
-      "healthCheckFailed": "Events API health check failed. Check that the API is running and /api/events/test is reachable.",
-      "loadFailed": "Failed to load events",
-      "connected": "Connected",
-      "disconnected": "Disconnected",
-      "paused": "Paused",
-      "pause": "Pause",
-      "resume": "Resume",
-      "refresh": "Refresh events",
-      "clear": "Clear console",
-      "filterLabel": "Filter by server (optional)",
-      "noServers": "No servers available",
-      "refreshServers": "Refresh server list",
-      "noEvents": "No events received from this server yet.",
-      "noEventsHint": "Still no events after 15 seconds. Check that your CS2 server is set up to send Auto Tournament CS2 webhooks to /api/events/:matchSlugOrServerId with the correct X-Auto-Tournament-Token.",
-      "waiting": "Waiting for events from the server…",
-      "footer_one": "Showing {{count}} event (max 100)",
-      "footer_other": "Showing {{count}} events (max 100)",
-      "footerForServer_one": "Showing {{count}} event for server {{server}} (max 100)",
-      "footerForServer_other": "Showing {{count}} events for server {{server}} (max 100)",
-      "realtime": "Events update in real time via WebSocket",
-      "downloadDemo": "Download demo"
     }
   },
   "servers": {

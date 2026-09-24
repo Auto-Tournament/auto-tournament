@@ -10,24 +10,6 @@
       "developer": "Ontwikkelaar / simulatie"
     },
     "integrations": {
-      "webhook": {
-        "title": "Auto Tournament CS2 webhook",
-        "description": "Auto Tournament CS2 webhook-URL die je CS2-servers kunnen bereiken.",
-        "label": "Webhook-URL",
-        "helper": "Voorbeeld: https://jouw-domein.nl"
-      },
-      "mapSync": {
-        "title": "Kaart-synchronisatie",
-        "description": "Synchroniseer CS2-kaarten vanuit de GitHub-repository.",
-        "buttonSyncing": "Synchroniseren...",
-        "buttonIdle": "CS2-kaarten synchroniseren",
-        "success": "Kaartsynchronisatie voltooid! {{added}} nieuwe kaart(en) toegevoegd, {{skipped}} bestond al.",
-        "partialError": "Sommige kaarten konden niet worden gesynchroniseerd: {{errors}}",
-        "failed": "Kan kaarten niet synchroniseren",
-        "rateLimit": "GitHub API-snelheidslimiet overschreden. Probeer het over een paar minuten opnieuw. U kunt de GITHUB_TOKEN-OMGEVINGSVARIABELE instellen om de snelheidslimiet te verhogen.",
-        "rateLimitShort": "GitHub API-snelheidslimiet overschreden. Probeer het over een paar minuten opnieuw.",
-        "githubError": "Kan GitHub-repository niet bereiken. Controleer uw internetverbinding en probeer het later opnieuw."
-      },
       "steam": {
         "title": "Steam-integratie",
         "apiKeyLabel": "Steam Web API-sleutel",

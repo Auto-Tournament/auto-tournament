@@ -10,24 +10,6 @@
       "developer": "Programador / simulação"
     },
     "integrations": {
-      "webhook": {
-        "title": "Webhook do Auto Tournament CS2",
-        "description": "URL de webhook do Auto Tournament CS2 que os teus servidores CS2 conseguem alcançar.",
-        "label": "URL de webhook",
-        "helper": "Exemplo: https://o-teu-dominio.com"
-      },
-      "mapSync": {
-        "title": "Sincronização de mapas",
-        "description": "Sincroniza mapas de CS2 a partir do repositório GitHub.",
-        "buttonSyncing": "A sincronizar...",
-        "buttonIdle": "Sincronizar mapas de CS2",
-        "success": "Sincronização concluída! {{added}} mapa(s) novo(s) adicionado(s), {{skipped}} já existiam.",
-        "partialError": "Alguns mapas falharam a sincronização: {{errors}}",
-        "failed": "Falha ao sincronizar mapas",
-        "rateLimit": "Foi excedido o limite da API do GitHub. Tenta novamente dentro de alguns minutos. Podes definir a variável de ambiente GITHUB_TOKEN para aumentar o limite.",
-        "rateLimitShort": "Foi excedido o limite da API do GitHub. Tenta novamente dentro de alguns minutos.",
-        "githubError": "Não foi possível aceder ao repositório GitHub. Verifica a tua ligação à internet e tenta novamente mais tarde."
-      },
       "steam": {
         "title": "Integração Steam",
         "apiKeyLabel": "Chave Steam Web API",

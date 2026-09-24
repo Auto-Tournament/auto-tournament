@@ -707,5 +707,187 @@
     },
     "info_one": "Se guardará un pool de mapas con {{count}} mapa.",
     "info_other": "Se guardará un pool de mapas con {{count}} mapas."
+  },
+  "adminTools": {
+    "description": "Ejecuta acciones comunes de partidos y servidores en tus servidores CS2. Las acciones rápidas aparecen primero, con herramientas más avanzadas disponibles abajo.",
+    "refresh": "Actualizar servidores",
+    "serverSelect": {
+      "label": "Servidor(es) objetivo",
+      "allServersChip": "Todos los servidores",
+      "sendStatus": "Enviar estado",
+      "allServersDescription_one": "Ejecutar en {{count}} servidor",
+      "allServersDescription_other": "Ejecutar en los {{count}} servidores"
+    },
+    "command": {
+      "execute": "Ejecutar"
+    },
+    "customRconWarning": "Aviso: úsalo con precaución",
+    "results": {
+      "title": "Resultados de la ejecución",
+      "successChip": "✓ Éxito",
+      "failedChip": "✗ Fallo",
+      "errorPrefix": "Error :"
+    },
+    "quickActions": {
+      "title": "Acciones rápidas"
+    },
+    "advanced": {
+      "title": "Herramientas avanzadas"
+    },
+    "noServers": "No se encontraron servidores activados. Añade y activa servidores en la página Servidores.",
+    "toasts": {
+      "commandExecuted_one": "Comando ejecutado en {{count}} servidor",
+      "commandExecuted_other": "Comando ejecutado en {{count}} servidores",
+      "commandPartial": "El comando funcionó en {{succeeded}} de {{total}} servidores ({{failed}} fallaron)",
+      "commandFailed": "No se pudo ejecutar el comando"
+    },
+    "commands": {
+      "matchStart": {
+        "label": "Iniciar partido",
+        "description": "Inicia el partido inmediatamente."
+      },
+      "matchEnd": {
+        "label": "Terminar partido",
+        "description": "Fuerza el final del partido actual en los servidores seleccionados y los devuelve al calentamiento con css_restart."
+      },
+      "forcePause": {
+        "label": "Forzar pausa",
+        "description": "Fuerza la pausa del partido."
+      },
+      "forceUnpause": {
+        "label": "Forzar reanudación",
+        "description": "Fuerza la reanudación del partido."
+      },
+      "skipVeto": {
+        "label": "Saltar veto",
+        "description": "Salta la fase de veto."
+      },
+      "toggleKnife": {
+        "label": "Activar/desactivar ronda de knife",
+        "description": "Activa o desactiva la ronda de knife para elegir lado (alias: rk)."
+      },
+      "togglePlayout": {
+        "label": "Activar/desactivar playout",
+        "description": "Activa o desactiva jugar todas las rondas."
+      },
+      "toggleWhitelist": {
+        "label": "Activar/desactivar whitelist",
+        "description": "Activa o desactiva la whitelist de equipos."
+      },
+      "showSettings": {
+        "label": "Mostrar ajustes",
+        "description": "Muestra los ajustes actuales del partido."
+      },
+      "reloadAdmins": {
+        "label": "Recargar admins",
+        "description": "Recarga la lista de admins desde admins.json."
+      },
+      "readyRequired": {
+        "label": "Jugadores listos necesarios",
+        "description": "Define cuántos jugadores deben marcarse como listos antes de que empiece el partido.",
+        "inputLabel": "Número de jugadores"
+      },
+      "restoreBackup": {
+        "label": "Restaurar backup de ronda",
+        "description": "Restaura el partido a una ronda concreta.",
+        "inputLabel": "Número de ronda"
+      },
+      "cleanServers": {
+        "label": "Limpiar servidores",
+        "description": "Termina cualquier partido en curso en los servidores seleccionados y los devuelve al calentamiento con css_restart. Es una acción destructiva."
+      },
+      "changeMap": {
+        "label": "Cambiar mapa",
+        "description": "Cambia a otro mapa (css_map <mapname>).",
+        "inputLabel": "Nombre del mapa (de_dust2)"
+      },
+      "team1Name": {
+        "label": "Nombre del equipo 1",
+        "description": "Define el nombre del equipo 1.",
+        "inputLabel": "Nombre del equipo"
+      },
+      "team2Name": {
+        "label": "Nombre del equipo 2",
+        "description": "Define el nombre del equipo 2.",
+        "inputLabel": "Nombre del equipo"
+      },
+      "startPractice": {
+        "label": "Iniciar modo práctica",
+        "description": "Activa el modo práctica con .commands."
+      },
+      "exitPractice": {
+        "label": "Salir del modo práctica",
+        "description": "Desactiva el modo práctica."
+      },
+      "broadcast": {
+        "label": "Mensaje a todos",
+        "description": "Envía un mensaje de admin a todos los jugadores.",
+        "inputLabel": "Mensaje"
+      },
+      "customRcon": {
+        "label": "Ejecutar comando RCON personalizado",
+        "description": "Ejecuta cualquier comando RCON directamente.",
+        "inputLabel": "Comando RCON"
+      }
+    },
+    "categories": {
+      "matchControl": "Control del partido",
+      "matchSettings": "Ajustes del partido",
+      "backupRestore": "Copias de seguridad y restauración",
+      "serverMgmt": "Gestión de servidores",
+      "teamMgmt": "Gestión de equipos",
+      "practiceMode": "Modo práctica",
+      "adminComm": "Comunicación de admin",
+      "advanced": "RCON avanzado"
+    },
+    "events": {
+      "title": "Monitor de eventos del servidor",
+      "healthCheckFailed": "Falló la comprobación de estado de la API de eventos. Revisa que la API esté en marcha y que /api/events/test sea accesible.",
+      "loadFailed": "No se pudieron cargar los eventos",
+      "connected": "Conectado",
+      "disconnected": "Desconectado",
+      "paused": "En pausa",
+      "pause": "Pausar",
+      "resume": "Reanudar",
+      "refresh": "Actualizar eventos",
+      "clear": "Limpiar consola",
+      "filterLabel": "Filtrar por servidor (opcional)",
+      "noServers": "No hay servidores disponibles",
+      "refreshServers": "Actualizar lista de servidores",
+      "noEvents": "Aún no se han recibido eventos de este servidor.",
+      "noEventsHint": "Sigue sin haber eventos tras 15 segundos. Revisa que tu servidor de CS2 esté configurado para enviar webhooks de Auto Tournament CS2 a /api/events/:matchSlugOrServerId con el X-Auto-Tournament-Token correcto.",
+      "waiting": "Esperando eventos del servidor…",
+      "footer_one": "Mostrando {{count}} evento (máx. 100)",
+      "footer_other": "Mostrando {{count}} eventos (máx. 100)",
+      "footerForServer_one": "Mostrando {{count}} evento del servidor {{server}} (máx. 100)",
+      "footerForServer_other": "Mostrando {{count}} eventos del servidor {{server}} (máx. 100)",
+      "realtime": "Los eventos se actualizan en tiempo real por WebSocket",
+      "downloadDemo": "Descargar demo"
+    },
+    "title": "Counter-Strike 2 servers"
+  },
+  "settings": {
+    "webhook": {
+      "title": "Webhook de Auto Tournament CS2",
+      "description": "URL de webhook de Auto Tournament CS2 a la que puedan acceder tus servidores CS2.",
+      "label": "URL de webhook",
+      "helper": "Ejemplo: https://tu-dominio.com"
+    },
+    "mapSync": {
+      "title": "Sincronización de mapas",
+      "description": "Sincroniza mapas de CS2 desde el repositorio de GitHub.",
+      "buttonSyncing": "Sincronizando...",
+      "buttonIdle": "Sincronizar mapas de CS2",
+      "success": "¡Sincronización de mapas completada! {{added}} mapa(s) nuevo(s) añadido(s), {{skipped}} ya existían.",
+      "partialError": "Algunos mapas no se pudieron sincronizar: {{errors}}",
+      "failed": "No se pudieron sincronizar los mapas",
+      "rateLimit": "Se excedió el límite de la API de GitHub. Inténtalo de nuevo en unos minutos. Puedes configurar la variable de entorno GITHUB_TOKEN para aumentar el límite.",
+      "rateLimitShort": "Se excedió el límite de la API de GitHub. Inténtalo de nuevo en unos minutos.",
+      "githubError": "No se pudo acceder al repositorio de GitHub. Comprueba tu conexión a internet e inténtalo más tarde."
+    },
+    "tab": "Counter-Strike 2",
+    "saved": "Settings saved",
+    "saveFailed": "Failed to save settings",
+    "loadFailed": "Failed to load settings"
   }
 }

@@ -99,19 +99,13 @@
     "title": "Settings",
     "intro": "Configure core integrations, in-game defaults, and developer options.",
     "tabs": {
-      "integrations": "Integrations & Webhooks",
+      "integrations": "Integrations",
       "players": "Players & Access",
       "matches": "Matches & Ratings",
       "advanced": "Advanced",
       "developer": "Developer / Simulation"
     },
     "integrations": {
-      "webhook": {
-        "title": "Auto Tournament CS2 Webhook",
-        "description": "Auto Tournament CS2 webhook URL that your CS2 servers can reach.",
-        "label": "Webhook URL",
-        "helper": "Example: https://your-domain.com"
-      },
       "steam": {
         "title": "Steam Integration",
         "apiKeyLabel": "Steam Web API Key",
@@ -122,18 +116,6 @@
         "statusNotConfigured": "Steam API key is not set. Vanity URLs cannot be resolved until you add a key.",
         "statusUnreachable": "Steam API key appears set but Steam could not be reached. Check your network or key.",
         "statusError": "Failed to check Steam API status. Please try again."
-      },
-      "mapSync": {
-        "title": "Map Synchronization",
-        "description": "Sync CS2 maps from the GitHub repository.",
-        "buttonSyncing": "Syncing Maps...",
-        "buttonIdle": "Sync CS2 Maps",
-        "success": "Map sync completed! {{added}} new map(s) added, {{skipped}} already existed.",
-        "partialError": "Some maps failed to sync: {{errors}}",
-        "failed": "Failed to sync maps",
-        "rateLimit": "GitHub API rate limit exceeded. Please try again in a few minutes. You can set GITHUB_TOKEN environment variable to increase the rate limit.",
-        "rateLimitShort": "GitHub API rate limit exceeded. Please try again in a few minutes.",
-        "githubError": "Unable to reach GitHub repository. Please check your internet connection and try again later."
       }
     },
     "matchRating": {

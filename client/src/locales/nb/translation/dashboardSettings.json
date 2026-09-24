@@ -99,19 +99,13 @@
     "title": "Innstillinger",
     "intro": "Konfigurer integrasjoner, spillstandarder og utvikleralternativer.",
     "tabs": {
-      "integrations": "Integrasjoner og webhooks",
+      "integrations": "Integrasjoner",
       "players": "Spillere og tilgang",
       "matches": "Kamper og rating",
       "advanced": "Avansert",
       "developer": "Utvikler / simulering"
     },
     "integrations": {
-      "webhook": {
-        "title": "Auto Tournament CS2-webhook",
-        "description": "Webhook-URL som CS2-serverne kan nå.",
-        "label": "Webhook-URL",
-        "helper": "Eksempel: https://ditt-domene.no"
-      },
       "steam": {
         "title": "Steam-integrasjon",
         "apiKeyLabel": "Steam Web API-nøkkel",
@@ -122,18 +116,6 @@
         "statusNotConfigured": "Steam API-nøkkel er ikke satt.",
         "statusUnreachable": "Steam API-nøkkel er satt, men Steam kan ikke nås.",
         "statusError": "Klarte ikke å sjekke Steam API-status."
-      },
-      "mapSync": {
-        "title": "Kartsynkronisering",
-        "description": "Synk CS2-kart fra GitHub-repositoriet.",
-        "buttonSyncing": "Synkroniserer kart...",
-        "buttonIdle": "Synkroniser CS2-kart",
-        "success": "Kartsynk fullført! {{added}} nye kart lagt til, {{skipped}} fantes allerede.",
-        "partialError": "Noen kart kunne ikke synkroniseres: {{errors}}",
-        "failed": "Klarte ikke å synkronisere kart",
-        "rateLimit": "GitHub API rate limit er nådd. Prøv igjen om noen minutter. Du kan sette miljøvariabelen GITHUB_TOKEN for å øke rate limit.",
-        "rateLimitShort": "GitHub API rate limit er nådd. Prøv igjen om noen minutter.",
-        "githubError": "Klarte ikke å nå GitHub-repositoriet. Sjekk nettverket ditt og prøv igjen senere."
       }
     },
     "matchRating": {

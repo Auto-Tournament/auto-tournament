@@ -707,5 +707,187 @@
     },
     "info_one": "Verrà salvato un pool mappe con {{count}} mappa.",
     "info_other": "Verrà salvato un pool mappe con {{count}} mappe."
+  },
+  "adminTools": {
+    "description": "Esegui azioni comuni sui match e sui server CS2. Le azioni rapide vengono mostrate per prime, con strumenti più avanzati disponibili sotto.",
+    "refresh": "Aggiorna server",
+    "serverSelect": {
+      "label": "Server di destinazione",
+      "allServersChip": "Tutti i server",
+      "sendStatus": "Invia status",
+      "allServersDescription_one": "Esegui su {{count}} server",
+      "allServersDescription_other": "Esegui su tutti i {{count}} server"
+    },
+    "command": {
+      "execute": "Esegui"
+    },
+    "customRconWarning": "Attenzione: usare con cautela!",
+    "results": {
+      "title": "Risultati esecuzione",
+      "successChip": "✓ Successo",
+      "failedChip": "✗ Fallito",
+      "errorPrefix": "Errore:"
+    },
+    "quickActions": {
+      "title": "Azioni rapide"
+    },
+    "advanced": {
+      "title": "Strumenti avanzati"
+    },
+    "noServers": "Nessun server abilitato trovato. Aggiungi e abilita i server nella pagina Server.",
+    "toasts": {
+      "commandExecuted_one": "Comando eseguito su {{count}} server",
+      "commandExecuted_other": "Comando eseguito su {{count}} server",
+      "commandPartial": "Comando riuscito su {{succeeded}} server su {{total}} ({{failed}} falliti)",
+      "commandFailed": "Impossibile eseguire il comando"
+    },
+    "commands": {
+      "matchStart": {
+        "label": "Avvia match",
+        "description": "Avvia subito il match."
+      },
+      "matchEnd": {
+        "label": "Termina match",
+        "description": "Forza la fine del match in corso sui server selezionati e li riporta in warmup con css_restart."
+      },
+      "forcePause": {
+        "label": "Forza pausa",
+        "description": "Forza la pausa del match."
+      },
+      "forceUnpause": {
+        "label": "Forza ripresa",
+        "description": "Forza la ripresa del match."
+      },
+      "skipVeto": {
+        "label": "Salta veto",
+        "description": "Salta la fase di veto."
+      },
+      "toggleKnife": {
+        "label": "Attiva/disattiva knife round",
+        "description": "Attiva o disattiva la knife round per la scelta del lato (alias: rk)."
+      },
+      "togglePlayout": {
+        "label": "Attiva/disattiva playout",
+        "description": "Attiva o disattiva la disputa di tutti i round."
+      },
+      "toggleWhitelist": {
+        "label": "Attiva/disattiva whitelist",
+        "description": "Attiva o disattiva la whitelist delle squadre."
+      },
+      "showSettings": {
+        "label": "Mostra impostazioni",
+        "description": "Mostra le impostazioni attuali del match."
+      },
+      "reloadAdmins": {
+        "label": "Ricarica admin",
+        "description": "Ricarica l’elenco degli admin da admins.json."
+      },
+      "readyRequired": {
+        "label": "Imposta giocatori pronti richiesti",
+        "description": "Imposta quanti giocatori devono essere pronti prima dell’inizio del match.",
+        "inputLabel": "Numero di giocatori"
+      },
+      "restoreBackup": {
+        "label": "Ripristina backup del round",
+        "description": "Riporta il match a un round specifico.",
+        "inputLabel": "Numero del round"
+      },
+      "cleanServers": {
+        "label": "Pulisci server",
+        "description": "Termina qualsiasi match in corso sui server selezionati e li riporta in warmup con css_restart. Operazione distruttiva."
+      },
+      "changeMap": {
+        "label": "Cambia mappa",
+        "description": "Passa a un’altra mappa (css_map <mapname>).",
+        "inputLabel": "Nome mappa (de_dust2)"
+      },
+      "team1Name": {
+        "label": "Imposta nome squadra 1",
+        "description": "Imposta il nome della squadra 1.",
+        "inputLabel": "Nome squadra"
+      },
+      "team2Name": {
+        "label": "Imposta nome squadra 2",
+        "description": "Imposta il nome della squadra 2.",
+        "inputLabel": "Nome squadra"
+      },
+      "startPractice": {
+        "label": "Avvia modalità practice",
+        "description": "Attiva la modalità practice con i .commands."
+      },
+      "exitPractice": {
+        "label": "Esci dalla modalità practice",
+        "description": "Disattiva la modalità practice."
+      },
+      "broadcast": {
+        "label": "Messaggio broadcast",
+        "description": "Invia un messaggio admin a tutti i giocatori.",
+        "inputLabel": "Messaggio"
+      },
+      "customRcon": {
+        "label": "Esegui comando RCON personalizzato",
+        "description": "Esegui direttamente qualsiasi comando RCON.",
+        "inputLabel": "Comando RCON"
+      }
+    },
+    "categories": {
+      "matchControl": "Controllo match",
+      "matchSettings": "Impostazioni match",
+      "backupRestore": "Backup e ripristino",
+      "serverMgmt": "Gestione server",
+      "teamMgmt": "Gestione squadre",
+      "practiceMode": "Modalità practice",
+      "adminComm": "Comunicazioni admin",
+      "advanced": "RCON avanzato"
+    },
+    "events": {
+      "title": "Monitor eventi server",
+      "healthCheckFailed": "Controllo di stato dell’API eventi fallito. Verifica che l’API sia in esecuzione e che /api/events/test sia raggiungibile.",
+      "loadFailed": "Impossibile caricare gli eventi",
+      "connected": "Connesso",
+      "disconnected": "Disconnesso",
+      "paused": "In pausa",
+      "pause": "Pausa",
+      "resume": "Riprendi",
+      "refresh": "Aggiorna eventi",
+      "clear": "Pulisci console",
+      "filterLabel": "Filtra per server (facoltativo)",
+      "noServers": "Nessun server disponibile",
+      "refreshServers": "Aggiorna elenco server",
+      "noEvents": "Ancora nessun evento ricevuto da questo server.",
+      "noEventsHint": "Ancora nessun evento dopo 15 secondi. Verifica che il tuo server CS2 sia configurato per inviare i webhook Auto Tournament CS2 a /api/events/:matchSlugOrServerId con il X-Auto-Tournament-Token corretto.",
+      "waiting": "In attesa di eventi dal server...",
+      "footer_one": "{{count}} evento visualizzato (max 100)",
+      "footer_other": "{{count}} eventi visualizzati (max 100)",
+      "footerForServer_one": "{{count}} evento visualizzato per il server {{server}} (max 100)",
+      "footerForServer_other": "{{count}} eventi visualizzati per il server {{server}} (max 100)",
+      "realtime": "Gli eventi si aggiornano in tempo reale via WebSocket",
+      "downloadDemo": "Scarica demo"
+    },
+    "title": "Counter-Strike 2 servers"
+  },
+  "settings": {
+    "webhook": {
+      "title": "Webhook Auto Tournament CS2",
+      "description": "URL del webhook Auto Tournament CS2 raggiungibile dai tuoi server CS2.",
+      "label": "URL webhook",
+      "helper": "Esempio: https://il-tuo-dominio.com"
+    },
+    "mapSync": {
+      "title": "Sincronizzazione mappe",
+      "description": "Sincronizza le mappe CS2 dal repository GitHub.",
+      "buttonSyncing": "Sincronizzazione...",
+      "buttonIdle": "Sincronizza mappe CS2",
+      "success": "Sincronizzazione mappe completata! {{added}} nuova/e mappa/e aggiunta/e, {{skipped}} esistevano già.",
+      "partialError": "Alcune mappe non sono state sincronizzate: {{errors}}",
+      "failed": "Impossibile sincronizzare le mappe",
+      "rateLimit": "Limite di richieste dell’API GitHub superato. Riprova tra qualche minuto. Puoi impostare la variabile d’ambiente GITHUB_TOKEN per aumentare il rate limit.",
+      "rateLimitShort": "Limite di richieste dell’API GitHub superato. Riprova tra qualche minuto.",
+      "githubError": "Impossibile raggiungere il repository GitHub. Controlla la connessione internet e riprova più tardi."
+    },
+    "tab": "Counter-Strike 2",
+    "saved": "Settings saved",
+    "saveFailed": "Failed to save settings",
+    "loadFailed": "Failed to load settings"
   }
 }

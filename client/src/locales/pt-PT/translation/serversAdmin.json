@@ -1,33 +1,5 @@
 {
   "adminToolsPage": {
-    "description": "Execute ações comuns de jogos e servidores nos seus servidores CS2. As ações rápidas aparecem primeiro, com ferramentas mais avançadas abaixo.",
-    "header": {
-      "refresh": "Atualizar servidores"
-    },
-    "serverSelect": {
-      "label": "Servidor(es) alvo",
-      "allServersChip": "Todos os servidores",
-      "sendStatus": "Enviar estado",
-      "allServersDescription_one": "Executar em {{count}} servidor",
-      "allServersDescription_other": "Executar em todos os {{count}} servidores"
-    },
-    "command": {
-      "execute": "Executar"
-    },
-    "customRconWarning": "Aviso: use com cuidado!",
-    "results": {
-      "title": "Resultados da execução",
-      "successChip": "✓ Sucesso",
-      "failedChip": "✗ Falha",
-      "errorPrefix": "Erro:"
-    },
-    "quickActions": {
-      "title": "Ações rápidas"
-    },
-    "advanced": {
-      "title": "Ferramentas avançadas"
-    },
-    "noServers": "Não foram encontrados servidores ativados. Adicione e ative servidores na página Servidores.",
     "recovery": {
       "title": "Recuperação de jogos",
       "description": "Se a API ou os servidores forem reiniciados durante um torneio e o estado dos jogos parecer dessincronizado (por exemplo, jogos presos no warmup ou sem scores ao vivo), pode acionar manualmente uma recuperação. Isto irá pedir a todos os servidores o relatório do jogo atual, re-sincronizar scores/fases e reconfigurar webhooks e uploads de demos, quando possível.",
@@ -38,113 +10,7 @@
     },
     "monitoring": {
       "title": "Monitorização e logs",
-      "serverEvents": "Monitor de eventos do servidor",
       "appLogs": "Logs da aplicação"
-    },
-    "toasts": {
-      "commandExecuted_one": "Comando executado em {{count}} servidor",
-      "commandExecuted_other": "Comando executado em {{count}} servidores",
-      "commandPartial": "Comando executado com sucesso em {{succeeded}} de {{total}} servidores ({{failed}} falharam)",
-      "commandFailed": "Não foi possível executar o comando"
-    },
-    "categories": {
-      "matchControl": "Controlo do jogo",
-      "matchSettings": "Definições do jogo",
-      "backupRestore": "Cópia de segurança e restauro",
-      "serverMgmt": "Gestão de servidores",
-      "teamMgmt": "Gestão de equipas",
-      "practiceMode": "Modo de treino",
-      "adminComm": "Comunicação de admin",
-      "advanced": "RCON avançado"
-    },
-    "commands": {
-      "matchStart": {
-        "label": "Iniciar jogo",
-        "description": "Inicia o jogo imediatamente."
-      },
-      "matchEnd": {
-        "label": "Terminar jogo",
-        "description": "Força o fim do jogo atual nos servidores selecionados e repõe-nos em warmup com css_restart."
-      },
-      "forcePause": {
-        "label": "Forçar pausa",
-        "description": "Força a pausa do jogo."
-      },
-      "forceUnpause": {
-        "label": "Forçar retoma",
-        "description": "Força a retoma do jogo."
-      },
-      "skipVeto": {
-        "label": "Saltar veto",
-        "description": "Salta a fase de veto."
-      },
-      "toggleKnife": {
-        "label": "Ativar/desativar ronda de faca",
-        "description": "Ativa ou desativa a ronda de faca para escolha de lado (alias: rk)."
-      },
-      "togglePlayout": {
-        "label": "Ativar/desativar playout",
-        "description": "Ativa ou desativa jogar todas as rondas até ao fim."
-      },
-      "toggleWhitelist": {
-        "label": "Ativar/desativar whitelist",
-        "description": "Ativa ou desativa a whitelist das equipas."
-      },
-      "showSettings": {
-        "label": "Mostrar definições",
-        "description": "Mostra as definições atuais do jogo."
-      },
-      "reloadAdmins": {
-        "label": "Recarregar admins",
-        "description": "Recarrega a lista de admins a partir de admins.json."
-      },
-      "readyRequired": {
-        "label": "Definir jogadores necessários para ready",
-        "description": "Define quantos jogadores têm de ficar ready antes de o jogo começar.",
-        "inputLabel": "Número de jogadores"
-      },
-      "restoreBackup": {
-        "label": "Restaurar cópia de segurança da ronda",
-        "description": "Restaura o jogo para uma ronda específica.",
-        "inputLabel": "Número da ronda"
-      },
-      "cleanServers": {
-        "label": "Limpar servidores",
-        "description": "Termina qualquer jogo em curso nos servidores selecionados e repõe-nos em warmup com css_restart. Esta ação é destrutiva."
-      },
-      "changeMap": {
-        "label": "Mudar de mapa",
-        "description": "Muda para outro mapa (css_map <mapname>).",
-        "inputLabel": "Nome do mapa (de_dust2)"
-      },
-      "team1Name": {
-        "label": "Definir nome da equipa 1",
-        "description": "Define o nome da equipa 1.",
-        "inputLabel": "Nome da equipa"
-      },
-      "team2Name": {
-        "label": "Definir nome da equipa 2",
-        "description": "Define o nome da equipa 2.",
-        "inputLabel": "Nome da equipa"
-      },
-      "startPractice": {
-        "label": "Iniciar modo de treino",
-        "description": "Ativa o modo de treino com .commands."
-      },
-      "exitPractice": {
-        "label": "Sair do modo de treino",
-        "description": "Desativa o modo de treino."
-      },
-      "broadcast": {
-        "label": "Difundir mensagem",
-        "description": "Envia uma mensagem de admin a todos os jogadores.",
-        "inputLabel": "Mensagem"
-      },
-      "customRcon": {
-        "label": "Executar comando RCON personalizado",
-        "description": "Executa diretamente qualquer comando RCON.",
-        "inputLabel": "Comando RCON"
-      }
     },
     "logs": {
       "loadFailed": "Não foi possível carregar os logs",
@@ -155,29 +21,7 @@
       "footer": "A mostrar as {{count}} entradas de log mais recentes",
       "footerAutoRefresh": "A mostrar as {{count}} entradas de log mais recentes (atualização automática)"
     },
-    "events": {
-      "healthCheckFailed": "A verificação de estado da API de eventos falhou. Verifique se a API está a correr e se /api/events/test está acessível.",
-      "loadFailed": "Não foi possível carregar os eventos",
-      "connected": "Ligado",
-      "disconnected": "Desligado",
-      "paused": "Em pausa",
-      "pause": "Pausar",
-      "resume": "Retomar",
-      "refresh": "Atualizar eventos",
-      "clear": "Limpar consola",
-      "filterLabel": "Filtrar por servidor (opcional)",
-      "noServers": "Nenhum servidor disponível",
-      "refreshServers": "Atualizar lista de servidores",
-      "noEvents": "Ainda não foram recebidos eventos deste servidor.",
-      "noEventsHint": "Continua sem eventos após 15 segundos. Verifique se o seu servidor CS2 está configurado para enviar webhooks do Auto Tournament CS2 para /api/events/:matchSlugOrServerId com o X-Auto-Tournament-Token correto.",
-      "waiting": "À espera de eventos do servidor…",
-      "footer_one": "A mostrar {{count}} evento (máx. 100)",
-      "footer_other": "A mostrar {{count}} eventos (máx. 100)",
-      "footerForServer_one": "A mostrar {{count}} evento do servidor {{server}} (máx. 100)",
-      "footerForServer_other": "A mostrar {{count}} eventos do servidor {{server}} (máx. 100)",
-      "realtime": "Os eventos são atualizados em tempo real via WebSocket",
-      "downloadDemo": "Transferir demo"
-    }
+    "description": "Logs and maintenance for this site. Installed game modules add their own tools below."
   },
   "servers": {
     "allocation": {
