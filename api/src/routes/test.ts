@@ -45,6 +45,7 @@ import { playerIdentity } from '../services/playerIdentity';
 import { teamMembers } from '../services/teamMembers';
 import { forgetModuleEnabled, listModules, modulesDir, scanDiskModules } from '../modules/loader';
 import { isValidModuleId } from '../modules/manifest';
+import { registerCatalogTestRoutes } from './testCatalog';
 import fs from 'fs';
 import path from 'path';
 
@@ -2300,11 +2301,19 @@ router.post('/packs/reseed', requireAuth, async (req: Request, res: Response): P
   if (!fakeIgdbEnabled(res)) return;
   // `{ forget: [slug] }` first forgets those were ever seeded, so a spec can
   // put a bundled game it removed back exactly as a fresh install has it.
-  const { forget } = (req.body ?? {}) as { forget?: unknown };
+  // `{ preinstall: 'all' | [slug] }` runs it as if PREINSTALL_PACKS said so,
+  // so a spec can see what a stock install (no preinstall) does.
+  const { forget, preinstall } = (req.body ?? {}) as { forget?: unknown; preinstall?: unknown };
   if (Array.isArray(forget)) {
     await forgetBundledPacks(forget.filter((slug): slug is string => typeof slug === 'string'));
   }
-  res.json({ success: true, report: await seedBundledPacks() });
+  const options =
+    preinstall === 'all'
+      ? { preinstall: 'all' as const }
+      : Array.isArray(preinstall)
+        ? { preinstall: new Set(preinstall.filter((slug): slug is string => typeof slug === 'string')) }
+        : {};
+  res.json({ success: true, report: await seedBundledPacks(options) });
 });
 
 router.post('/pack-index', requireAuth, (req: Request, res: Response): void => {
@@ -2644,11 +2653,27 @@ router.delete('/modules/fixtures', requireAuth, async (_req: Request, res: Respo
       await forgetModuleEnabled(name);
       removed.push(name);
     }
+    // What a catalog install leaves beside the folder: the version an update
+    // replaced, and the install and removal records.
+    const previous = path.join(modulesDir(), '.previous');
+    for (const name of await fs.promises.readdir(previous).catch(() => [] as string[])) {
+      if (name.startsWith('fixture-')) await fs.promises.rm(path.join(previous, name), { recursive: true, force: true });
+    }
+    await db.runAsync(
+      "DELETE FROM app_settings WHERE (key LIKE 'module_install:fixture-%' OR key LIKE 'module_removed:fixture-%' OR key LIKE 'module_enabled:fixture-%')"
+    );
     res.json({ success: true, removed });
   } catch (err) {
     log.error('Error in DELETE /api/test/modules/fixtures', err);
     res.status(500).json({ success: false, error: (err as Error).message });
   }
 });
+
+registerCatalogTestRoutes(
+  router,
+  fakeIgdbEnabled,
+  (id, kind) => moduleFixtureFiles(id, kind),
+  { pack: (slug) => FAKE_INDEX_PACKS[slug], tile: FAKE_INDEX_TILE }
+);
 
 export default router;

@@ -541,12 +541,15 @@ export async function forgetBundledPacks(slugs: string[]): Promise<void> {
 }
 
 export interface SeedReport {
+  /** Preinstalled, because `PREINSTALL_PACKS` asked for them. */
   installed: string[];
   updated: string[];
   /** Removed by an admin at some point; left removed. */
   keptRemoved: string[];
   /** Replaced by an admin with their own pack of the same slug; left alone. */
   keptOverridden: string[];
+  /** In the snapshot and not installed: offered in the catalog, nothing more. */
+  available: string[];
   /** Did not validate. Logged; never fatal. */
   skipped: string[];
 }
@@ -561,89 +564,167 @@ async function readSeen(): Promise<Set<string>> {
   }
 }
 
+/** One entry of the snapshot's `index.json`. */
+export interface BundledPackEntry {
+  slug: string;
+  name: string;
+  version: string | null;
+  engine: string;
+  description: string | null;
+  file: string;
+  icon: string | null;
+}
+
 /**
- * Install the games the image ships with — once each.
+ * The entries of `api/bundled-packs/index.json`, or an empty list (and a
+ * warning) when the snapshot is missing or unreadable: a build without it
+ * ships no games, it is not broken.
+ */
+export async function bundledPackEntries(): Promise<BundledPackEntry[]> {
+  let index: { schema?: unknown; packs?: Array<Record<string, unknown>> };
+  try {
+    index = JSON.parse(await fs.readFile(path.join(BUNDLED_PACKS_DIR, 'index.json'), 'utf8'));
+  } catch (error) {
+    log.warn(`[PACKS] No bundled packs at ${BUNDLED_PACKS_DIR}: ${(error as Error).message}`);
+    return [];
+  }
+  if (index.schema !== 1 || !Array.isArray(index.packs)) {
+    log.warn('[PACKS] Bundled index.json is not a schema 1 index');
+    return [];
+  }
+  const text = (value: unknown): string | null =>
+    typeof value === 'string' && value.trim() ? value.trim() : null;
+  const entries: BundledPackEntry[] = [];
+  for (const row of index.packs) {
+    const slug = text(row.slug)?.toLowerCase();
+    const file = text(row.file);
+    if (!slug || !file) continue;
+    entries.push({
+      slug,
+      name: text(row.name) ?? slug,
+      version: text(row.version),
+      engine: text(row.engine) ?? 'manual-report',
+      description: text(row.description),
+      file,
+      icon: text(row.icon),
+    });
+  }
+  return entries;
+}
+
+function insideSnapshot(file: string): string {
+  const resolved = path.resolve(BUNDLED_PACKS_DIR, file);
+  if (!resolved.startsWith(BUNDLED_PACKS_DIR + path.sep)) {
+    throw new Error('the path points outside the bundled packs');
+  }
+  return resolved;
+}
+
+/**
+ * A pack from the snapshot, validated exactly like an uploaded one, with its
+ * tile. Throws with the reason when it does not validate.
+ */
+export async function readBundledPack(
+  entry: Pick<BundledPackEntry, 'file'>
+): Promise<{ definition: GamePackDefinition; tile: string | null }> {
+  const packPath = insideSnapshot(entry.file);
+  const result = validatePack(JSON.parse(await fs.readFile(packPath, 'utf8')));
+  if (!result.ok) throw new Error(result.error);
+  const definition = result.pack;
+  let tile: string | null = null;
+  if (definition.icon) {
+    const iconPath = path.resolve(path.dirname(packPath), definition.icon);
+    if (!iconPath.startsWith(BUNDLED_PACKS_DIR + path.sep)) {
+      throw new Error('icon points outside the bundled packs');
+    }
+    const markup = await fs.readFile(iconPath, 'utf8');
+    const problem = checkTileMarkup(markup);
+    if (problem) throw new Error(problem);
+    tile = markup;
+  }
+  return { definition, tile };
+}
+
+/** The tile the snapshot's index names for a game, checked, or null. */
+export async function bundledPackTile(slug: string): Promise<string | null> {
+  const entry = (await bundledPackEntries()).find((candidate) => candidate.slug === slug);
+  if (!entry?.icon) return null;
+  try {
+    const markup = await fs.readFile(insideSnapshot(entry.icon), 'utf8');
+    return checkTileMarkup(markup) ? null : markup;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Which snapshot packs to install on their own: `PREINSTALL_PACKS`, `all` or
+ * a comma-separated list of slugs. Unset — the default — installs none: a
+ * fresh install has no games until an admin picks them from the catalog
+ * (DESIGN-modules §10.1). CI sets `all`, so the suite has its games.
+ */
+export function preinstallPacksSetting(value = process.env.PREINSTALL_PACKS): 'all' | Set<string> {
+  const raw = (value ?? '').trim().toLowerCase();
+  if (raw === 'all') return 'all';
+  return new Set(
+    raw
+      .split(',')
+      .map((slug) => slug.trim())
+      .filter(Boolean)
+  );
+}
+
+/**
+ * Keep the snapshot's packs in step with the image — without ever adding a
+ * game nobody asked for.
  *
- * The platform carries no list of games in its source. What a fresh install
- * can run on day one is `api/bundled-packs`, a committed snapshot of the
- * `Auto-Tournament/packs` repository, and this puts it into `game_packs`.
- * From then on they are ordinary packs: an admin sees them on the Modules
- * page, can remove any of them, and can replace one with their own.
+ * The platform carries no list of games in its source, and since the game
+ * catalog (DESIGN-modules §10) it installs none on its own either:
+ * `api/bundled-packs` is offered in the catalog as "available", and an admin
+ * installs what they want with one click, network or not. So the rules are:
  *
- * So the rules are about respecting what an admin did:
- *
- * - **Never seen** → install it.
- * - **Seen, and not installed** → an admin removed it. Leave it removed. A
- *   game that comes back on every restart is a game nobody can get rid of.
+ * - **Not installed** → leave it available. Only `PREINSTALL_PACKS` (for an
+ *   operator who wants games on first boot, and for CI) installs it, once:
+ *   a preinstalled game an admin then removed stays removed.
  * - **Installed from here, and the image has a new version** → update it.
  *   That is how a release ships a fixed tile or a new stat field.
- * - **Installed from elsewhere** (uploaded, or from the index) → the admin's
+ * - **Installed from elsewhere** (uploaded, or from the feed) → the admin's
  *   own. Leave it alone, whatever the image carries.
  *
  * A bundled pack is validated exactly like an uploaded one. One that fails is
  * logged and skipped; a bad file in the snapshot must never stop the
  * instance from starting.
  *
- * Runs at boot and after a database wipe (which also clears the `seen` set,
- * so a wiped instance starts with the full list again — the point of a wipe).
- * Always ends by refreshing the cache the catalogue reads.
+ * Runs at boot and after a database wipe. Always ends by refreshing the cache
+ * the catalogue reads.
  */
-export async function seedBundledPacks(): Promise<SeedReport> {
+export async function seedBundledPacks(
+  options: { preinstall?: 'all' | Set<string> } = {}
+): Promise<SeedReport> {
   const report: SeedReport = {
     installed: [],
     updated: [],
     keptRemoved: [],
     keptOverridden: [],
+    available: [],
     skipped: [],
   };
 
   await refreshPackCache();
+  const entries = await bundledPackEntries();
+  if (entries.length === 0) return report;
 
-  let index: { schema?: unknown; packs?: Array<{ slug?: unknown; file?: unknown }> };
-  try {
-    index = JSON.parse(await fs.readFile(path.join(BUNDLED_PACKS_DIR, 'index.json'), 'utf8'));
-  } catch (error) {
-    // A build without the snapshot is a build that ships no games, not a
-    // broken one: CS2 and anything an admin imports still work.
-    log.warn(`[PACKS] No bundled packs at ${BUNDLED_PACKS_DIR}: ${(error as Error).message}`);
-    return report;
-  }
-  if (index.schema !== 1 || !Array.isArray(index.packs)) {
-    log.warn('[PACKS] Bundled index.json is not a schema 1 index; no packs seeded');
-    return report;
-  }
-
+  const preinstall = options.preinstall ?? preinstallPacksSetting();
   const seen = await readSeen();
 
-  for (const entry of index.packs) {
-    const file = typeof entry.file === 'string' ? entry.file : null;
-    const label = typeof entry.slug === 'string' ? entry.slug : String(file);
-    if (!file) {
-      report.skipped.push(label);
-      continue;
-    }
-
+  for (const entry of entries) {
     let definition: GamePackDefinition;
-    let tile: string | null = null;
+    let tile: string | null;
     try {
-      const packPath = path.resolve(BUNDLED_PACKS_DIR, file);
-      const result = validatePack(JSON.parse(await fs.readFile(packPath, 'utf8')));
-      if (!result.ok) throw new Error(result.error);
-      definition = result.pack;
-
-      if (definition.icon) {
-        const iconPath = path.resolve(path.dirname(packPath), definition.icon);
-        if (!iconPath.startsWith(BUNDLED_PACKS_DIR + path.sep)) {
-          throw new Error('icon points outside the bundled packs');
-        }
-        const markup = await fs.readFile(iconPath, 'utf8');
-        const problem = checkTileMarkup(markup);
-        if (problem) throw new Error(problem);
-        tile = markup;
-      }
+      ({ definition, tile } = await readBundledPack(entry));
     } catch (error) {
-      log.warn(`[PACKS] Skipped bundled pack '${label}': ${(error as Error).message}`);
-      report.skipped.push(label);
+      log.warn(`[PACKS] Skipped bundled pack '${entry.slug}': ${(error as Error).message}`);
+      report.skipped.push(entry.slug);
       continue;
     }
 
@@ -652,18 +733,24 @@ export async function seedBundledPacks(): Promise<SeedReport> {
 
     if (existing && existing.source !== 'bundled') {
       report.keptOverridden.push(slug);
+      seen.add(slug);
     } else if (existing) {
       if ((existing.version ?? null) !== (definition.version ?? null)) {
         await installPack(definition, { source: 'bundled', tile });
         report.updated.push(slug);
       }
-    } else if (seen.has(slug)) {
-      report.keptRemoved.push(slug);
+      seen.add(slug);
+    } else if (preinstall === 'all' || preinstall.has(slug)) {
+      if (seen.has(slug)) {
+        report.keptRemoved.push(slug);
+      } else {
+        await installPack(definition, { source: 'bundled', tile });
+        report.installed.push(slug);
+        seen.add(slug);
+      }
     } else {
-      await installPack(definition, { source: 'bundled', tile });
-      report.installed.push(slug);
+      report.available.push(slug);
     }
-    seen.add(slug);
   }
 
   await db.setAppSettingAsync(SEEN_SETTING, JSON.stringify([...seen].sort()));
@@ -672,9 +759,9 @@ export async function seedBundledPacks(): Promise<SeedReport> {
   const changed = report.installed.length + report.updated.length;
   if (changed > 0 || report.skipped.length > 0) {
     log.info(
-      `[PACKS] Bundled packs: ${report.installed.length} installed, ${report.updated.length} updated, ` +
+      `[PACKS] Bundled packs: ${report.installed.length} preinstalled, ${report.updated.length} updated, ` +
         `${report.keptRemoved.length} left removed, ${report.keptOverridden.length} left as the admin's, ` +
-        `${report.skipped.length} skipped`
+        `${report.available.length} available, ${report.skipped.length} skipped`
     );
   }
   return report;

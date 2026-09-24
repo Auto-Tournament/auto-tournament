@@ -55,6 +55,15 @@ export const SWAGGER_UI_DIR = path.join(__dirname, ...upToApiRoot, 'swagger-ui')
 export const BUNDLED_PACKS_DIR = path.join(__dirname, ...upToApiRoot, 'bundled-packs');
 
 /**
+ * The signed code-module releases the image ships with, for installs with no
+ * network (DESIGN-modules §10.1): `index.json` plus `<id>-<version>.atmod`
+ * and its `.sig`. `api/bundled-modules` from source, `/app/bundled-modules`
+ * in the image. Available in the catalog, never installed on their own
+ * (except CS2 on an upgrade that already has CS2 data). Read-only.
+ */
+export const BUNDLED_MODULES_DIR = path.join(__dirname, ...upToApiRoot, 'bundled-modules');
+
+/**
  * Where uploaded map images live: under `DATA_DIR`, the directory
  * `docker/docker-compose.yml` (and `docker-compose.local.yml`) mount the
  * persistent volume on (`./data:/app/data`).

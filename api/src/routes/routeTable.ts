@@ -40,6 +40,7 @@ import authRoutes from './auth';
 import gamesRoutes from './games';
 import gamePackRoutes from './gamePacks';
 import moduleRoutes from './modules';
+import catalogRoutes from './catalog';
 import meRoutes from './me';
 
 export interface MountedRouter {
@@ -158,7 +159,14 @@ const coreRoutes: MountedRouter[] = [
     router: moduleRoutes,
     title: 'Modules',
     description:
-      'Code modules: list built-in and on-disk modules, enable or disable one from the next restart, and serve its client files. Admin only, except the client files and the public manifest of modules to load. Modules are installed on disk, never through the API.',
+      'Code modules: list built-in and on-disk modules, enable or disable one from the next restart, and serve its client files. Admin only, except the client files and the public manifest of modules to load. Modules are installed from the signed catalog (/api/catalog) or on disk, never uploaded.',
+  },
+  {
+    prefix: '/api/catalog',
+    router: catalogRoutes,
+    title: 'Catalog',
+    description:
+      'The game catalog: every pack and code module this instance has or can install, from the feed, its cache and the offline snapshot, with install, update, enable, disable, uninstall and purge. Code modules install only from signed releases. Admin only; writes must be same-site JSON.',
   },
   {
     prefix: '/api/me',

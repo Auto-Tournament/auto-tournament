@@ -296,6 +296,10 @@
       "description": "Auto Tournament CS2 plugin version information."
     },
     {
+      "name": "Catalog",
+      "description": "The game catalog: every pack and code module this instance has or can install, from the feed, its cache and the offline snapshot, with install, update, enable, disable, uninstall and purge. Code modules install only from signed releases. Admin only; writes must be same-site JSON."
+    },
+    {
       "name": "Demos",
       "description": "Demo upload from the game server, and download."
     },
@@ -361,7 +365,7 @@
     },
     {
       "name": "Modules",
-      "description": "Code modules: list built-in and on-disk modules, enable or disable one from the next restart, and serve its client files. Admin only, except the client files and the public manifest of modules to load. Modules are installed on disk, never through the API."
+      "description": "Code modules: list built-in and on-disk modules, enable or disable one from the next restart, and serve its client files. Admin only, except the client files and the public manifest of modules to load. Modules are installed from the signed catalog (/api/catalog) or on disk, never uploaded."
     },
     {
       "name": "Players",
@@ -864,6 +868,419 @@
           },
           "503": {
             "description": "Provider not configured"
+          }
+        }
+      }
+    },
+    "/api/catalog": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "Every game this instance has or can install",
+        "description": "Packs and code modules in one list, merged from the remote feed\n(`catalog.json` in Auto-Tournament/packs, fetched now with a short\ntimeout), its last cached copy, and the image's offline snapshot.\n`feed.stale` is true when the feed could not be fetched; installing\nfrom the snapshot still works. Each item has a `state` — available,\ninstalled, update-available, disabled, broken, incompatible or\nbuiltin — with a `reason` where there is one, and `restartRequired`\nwhen the running process differs from what is installed.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The catalog"
+          }
+        }
+      }
+    },
+    "/api/catalog/modules/{id}": {
+      "delete": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "Uninstall a code module, keeping its data",
+        "description": "Removes its files; its tables, migration ledger and settings stay,\nso installing it again brings everything back. Refused (409) while\nan unfinished tournament uses its game. Same-site JSON only.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Uninstalled"
+          },
+          "404": {
+            "description": "Not installed"
+          },
+          "409": {
+            "description": "In use, built in, or busy"
+          }
+        }
+      }
+    },
+    "/api/catalog/modules/{id}/disable": {
+      "post": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "Switch a code module off",
+        "description": "Its client files stop at once; its server code unloads at the next restart.",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Disabled"
+          },
+          "404": {
+            "description": "Not installed"
+          }
+        }
+      }
+    },
+    "/api/catalog/modules/{id}/enable": {
+      "post": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "Switch an installed code module on, loading it now when possible",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Enabled"
+          },
+          "404": {
+            "description": "Not installed"
+          }
+        }
+      }
+    },
+    "/api/catalog/modules/{id}/icon.svg": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "The tile of a code module in the catalog",
+        "description": "From the offline snapshot or the feed — fetched by this server and\nserved from this origin, checked against the same allowlist an\nimported pack tile is.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The tile",
+            "content": {
+              "image/svg+xml": {}
+            }
+          },
+          "404": {
+            "description": "No tile"
+          }
+        }
+      }
+    },
+    "/api/catalog/modules/{id}/install": {
+      "post": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "Install a code module from a signed release",
+        "description": "Picks the newest release whose API ranges hold this platform,\ndownloads it from our GitHub (falling back to the offline snapshot\nwhen the download fails), verifies its Ed25519 signature against the\nplatform's trusted keys before anything is unpacked, unpacks it\nstrictly into a staging folder, checks `module.json`, moves it into\n`DATA_DIR/modules/<id>/`, switches it on and loads it without a\nrestart. If it does not load (its import, migrations or seed fail),\neverything is rolled back. Same-site JSON only.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Installed; `restartRequired` says whether a restart is needed"
+          },
+          "400": {
+            "description": "Refused — bad signature, tampered or unsafe archive, bad module.json"
+          },
+          "404": {
+            "description": "Not in the catalog"
+          },
+          "409": {
+            "description": "Incompatible, already installed, built in, or busy"
+          },
+          "422": {
+            "description": "It did not load and was rolled back"
+          },
+          "502": {
+            "description": "The download failed and there is no offline copy"
+          }
+        }
+      }
+    },
+    "/api/catalog/modules/{id}/purge": {
+      "post": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "Delete an uninstalled module's data for good",
+        "description": "Drops the tables in the module's namespace (`<id>_…`, never a core\ntable) and deletes its migration ledger and switches, in one\ntransaction. Only for a module that is uninstalled and not loaded\nin this process, with no tournament or match on its game, and with\n`{ \"confirm\": \"<id>\" }` in the body. Same-site JSON only.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Purged; `dropped` lists the tables"
+          },
+          "400": {
+            "description": "Confirmation missing"
+          },
+          "409": {
+            "description": "Still installed or loaded, or in use"
+          }
+        }
+      }
+    },
+    "/api/catalog/modules/{id}/update": {
+      "post": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "Update a code module to the newest compatible signed release",
+        "description": "Verified and unpacked exactly like an install. The running version\ncannot be unloaded, so a loaded module's update answers\n`restartRequired: true`; the previous version is kept and restored\nautomatically if the new one fails to load after the restart. A\nrelease older than, or equal to, the installed one is refused (409).\nSame-site JSON only.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated"
+          },
+          "400": {
+            "description": "Refused — see install"
+          },
+          "409": {
+            "description": "Not newer, incompatible, or busy"
+          }
+        }
+      }
+    },
+    "/api/catalog/packs/{slug}": {
+      "delete": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "Remove an installed game pack",
+        "description": "Refused (409) while a tournament uses the game. Same-site JSON only.",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Removed"
+          },
+          "404": {
+            "description": "Not installed"
+          },
+          "409": {
+            "description": "A tournament uses it, or another operation is running"
+          }
+        }
+      }
+    },
+    "/api/catalog/packs/{slug}/icon.svg": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "The tile of a game pack in the catalog",
+        "description": "From the installed pack, the offline snapshot, or the feed — fetched\nby this server and served from this origin, checked against the same\nallowlist an imported tile is.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The tile",
+            "content": {
+              "image/svg+xml": {}
+            }
+          },
+          "404": {
+            "description": "No tile"
+          }
+        }
+      }
+    },
+    "/api/catalog/packs/{slug}/install": {
+      "post": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "Install or update a game pack from the catalog",
+        "description": "From the feed when it has the newer copy, else from the offline\nsnapshot. Validated exactly like an uploaded pack. Same-site JSON\nonly.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Installed; `item` is its new catalog row"
+          },
+          "400": {
+            "description": "The pack is not valid"
+          },
+          "403": {
+            "description": "Cross-site request"
+          },
+          "404": {
+            "description": "Not in the catalog"
+          },
+          "409": {
+            "description": "Another catalog operation is running"
+          },
+          "502": {
+            "description": "The feed could not be reached and there is no offline copy"
           }
         }
       }
@@ -6130,6 +6547,28 @@
         ]
       }
     },
+    "/api/test/catalog": {
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/catalog",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/test/complete-steam-link": {
       "post": {
         "tags": [
@@ -6280,6 +6719,92 @@
           },
           {
             "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/test/fake-catalog/catalog.json": {
+      "get": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "GET /api/test/fake-catalog/catalog.json",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/test/fake-catalog/icons/{file}": {
+      "get": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "GET /api/test/fake-catalog/icons/:file",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "file",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/test/fake-catalog/packs/{file}": {
+      "get": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "GET /api/test/fake-catalog/packs/:file",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "file",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/test/fake-catalog/releases/{file}": {
+      "get": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "GET /api/test/fake-catalog/releases/:file",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "file",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ]
       }
