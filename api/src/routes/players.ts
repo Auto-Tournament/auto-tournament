@@ -1238,7 +1238,10 @@ router.get('/:playerId/summary', async (req: Request, res: Response) => {
         m.match_number,
         m.status,
         m.completed_at,
-        m.tournament_id as tournamentId,
+        -- Quoted: Postgres folds an unquoted identifier to lower case, so
+        -- without the quotes this came back as tournamentid and every client
+        -- reading tournamentId got undefined.
+        m.tournament_id as "tournamentId",
         m.team1_id,
         m.team2_id,
         m.winner_id,
@@ -1280,7 +1283,6 @@ router.get('/:playerId/summary', async (req: Request, res: Response) => {
       match_number: number;
       status: string;
       completed_at: number;
-      tournamentid?: number;
       tournamentId?: number;
       team1_id?: string | null;
       team2_id?: string | null;
@@ -1492,7 +1494,10 @@ router.get('/:playerId/matches', async (req: Request, res: Response) => {
         m.match_number,
         m.status,
         m.completed_at,
-        m.tournament_id as tournamentId,
+        -- Quoted: Postgres folds an unquoted identifier to lower case, so
+        -- without the quotes this came back as tournamentid and every client
+        -- reading tournamentId got undefined.
+        m.tournament_id as "tournamentId",
         m.team1_id,
         m.team2_id,
         m.winner_id,

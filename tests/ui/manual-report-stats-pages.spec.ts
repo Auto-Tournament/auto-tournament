@@ -209,6 +209,12 @@ test.describe.serial('Stats pages follow the tournament game', () => {
       await page.goto(`/player/${home.steamId}`, { waitUntil: 'domcontentloaded' });
       await expect(page.getByTestId('public-player-page')).toBeVisible({ timeout: 15000 });
 
+      // The way from a player to their tournament. It never appeared: the
+      // query aliased `tournament_id as tournamentId` unquoted, Postgres
+      // returned `tournamentid`, and the page's `m.tournamentId` was
+      // undefined for every match, CS2's included.
+      await expect(page.getByTestId('profile-tournament-leaderboard')).toBeVisible();
+
       // The match history has exactly the columns a reported game can fill.
       // An exact list, not a missing one: it retries until the page has asked
       // the module (while it asks, the answer is CS2's), and it fails on an
