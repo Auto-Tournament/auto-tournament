@@ -32,6 +32,7 @@ import { api } from '../utils/api';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { generateTeamName } from '../generation/teamName';
 import { generatePlayerProfile } from '../generation/playerProfile';
+import { generateDiscordId } from '../generation/discordId';
 import { useTranslation } from 'react-i18next';
 
 const Development: React.FC = () => {
@@ -56,7 +57,8 @@ const Development: React.FC = () => {
         id: string;
         name: string;
         tag: string;
-        players: Array<{ steamId: string; name: string; avatar?: string }>;
+        discordRoleId: string;
+        players: Array<{ steamId: string; name: string; avatar?: string; discordId: string }>;
       }> = [];
 
       const slugify = (value: string) =>
@@ -82,6 +84,9 @@ const Development: React.FC = () => {
               .replace(/[^\p{L}\p{N}]/gu, '')
               .substring(0, 3)
               .toUpperCase() || 'TST',
+          // The Discord role a real roster would be tied to, so anything
+          // mapping teams to roles has something to map.
+          discordRoleId: generateDiscordId(),
           players: Array.from({ length: 5 }, (_, playerIndex) => {
             const globalIndex = i * 5 + playerIndex;
             const uniquePart = String(baseTimestamp + globalIndex)
@@ -94,6 +99,9 @@ const Development: React.FC = () => {
             return {
               steamId,
               name: profile.fullName,
+              // Rosters are imported from signup sheets that carry these, and
+              // a bot looking a player up by Discord ID needs them to exist.
+              discordId: generateDiscordId(),
             };
           }),
         });
@@ -207,6 +215,7 @@ const Development: React.FC = () => {
       const players: Array<{
         id: string; // Steam ID
         name: string;
+        discordId: string;
       }> = [];
 
       // Generate unique Steam IDs
@@ -230,6 +239,10 @@ const Development: React.FC = () => {
         players.push({
           id: steamId,
           name,
+          // So `GET /api/players/by-discord-id/:id` has something to find on
+          // a fresh instance. Imports only ever fill a blank, so this never
+          // overwrites an ID somebody set by hand.
+          discordId: generateDiscordId(),
         });
       }
 
