@@ -3,7 +3,7 @@ import { io } from 'socket.io-client';
 import { api } from '../utils/api';
 import { useIntegrationFor } from '../integrations/registry';
 import { useResourceAvailability } from './useResourceAvailability';
-import type { ResourceAvailability } from '../integrations/types';
+import type { ClientGameIntegration, ResourceAvailability } from '../integrations/types';
 import type { Match } from '../types/match.types';
 import type { Tournament } from '../types/tournament.types';
 import type { MatchesResponse, TournamentResponse } from '../types/api.types';
@@ -28,7 +28,14 @@ export interface ManageData {
  * route itself; a module with no resources is now simply never asked, and the
  * console's queue counts read zero and its resource rows stay empty.
  */
-export function useManageData(): ManageData {
+export function useManageData(
+  /**
+   * The module whose resources to count before there is a tournament (the
+   * shell's, see `useShellIntegrations`): the console still shows the fleet
+   * an admin is setting up for the tournament that does not exist yet.
+   */
+  resourceModuleWithoutTournament: ClientGameIntegration | null = null
+): ManageData {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tournament, setTournament] = useState<Tournament | null>(null);
@@ -59,10 +66,12 @@ export function useManageData(): ManageData {
   }, []);
 
   // Only the tournament's own module knows whether its matches wait for
-  // anything, and where to ask. Null until the tournament is known, so a
-  // manually reported one never asks at all.
-  const { availability, refresh: refreshAvailability } =
-    useResourceAvailability(tournament ? tournamentIntegration : null, 5000);
+  // anything, and where to ask, so a manually reported one never asks at
+  // all. Before there is a tournament, the module the caller names.
+  const { availability, refresh: refreshAvailability } = useResourceAvailability(
+    tournament ? tournamentIntegration : resourceModuleWithoutTournament,
+    5000
+  );
 
   const refresh = useCallback(() => {
     void fetchMatches();

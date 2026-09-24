@@ -62,9 +62,21 @@
       "free": "Ledig",
       "offline": "Offline",
       "lastHeartbeat": "Siste puls {{time}} siden",
-      "never": "aldri",
       "notConfigured": "Ikke satt opp",
-      "notConfiguredHint": "Lagt til, men har ikke meldt seg ennå"
+      "notConfiguredHint": "Lagt til, men har ikke meldt seg ennå",
+      "noHeartbeat": "Ingen puls ennå",
+      "checking": "Sjekker",
+      "loading": "Laster servere",
+      "ready": "Klar for neste kamp",
+      "resting": "Hviler",
+      "readyIn": "Klar igjen om {{count}} s",
+      "busy": "Opptatt",
+      "heldBack": {
+        "demoUpload": "Laster opp demoen fra forrige kamp",
+        "outOfDate": "CS2 på denne serveren må oppdateres",
+        "unverified": "CS2-versjonen er ikke sjekket ennå",
+        "other": "Tar ikke imot kamper akkurat nå"
+      }
     },
     "needsYou": {
       "stale": {

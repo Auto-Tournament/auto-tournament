@@ -1,30 +1,6 @@
 import React from 'react';
-import {
-  Box,
-  Chip,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  ListSubheader,
-  Paper,
-} from '@mui/material';
+import { Box } from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
-import InboxIcon from '@mui/icons-material/Inbox';
-import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
-import AccountTreeIcon from '@mui/icons-material/AccountTree';
-import GavelIcon from '@mui/icons-material/Gavel';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import PublicIcon from '@mui/icons-material/Public';
-import GroupsIcon from '@mui/icons-material/Groups';
-import PersonIcon from '@mui/icons-material/Person';
-import ExtensionIcon from '@mui/icons-material/Extension';
-import DescriptionIcon from '@mui/icons-material/Description';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import SettingsIcon from '@mui/icons-material/Settings';
-import CampaignIcon from '@mui/icons-material/Campaign';
-import BuildIcon from '@mui/icons-material/Build';
-import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import { useTranslation } from 'react-i18next';
 import { useShellIntegrations } from '../../hooks/useShellIntegrations';
 import { useDisputesEntry } from '../../hooks/useDisputesEntry';
@@ -34,6 +10,19 @@ import { moduleNavItems, navItemLabel } from '../../utils/moduleNavLabels';
 import { paths } from '../../paths';
 import { RAIL_COLUMN_MIN_WIDTH } from '../../constants/adminLayout';
 import { BELOW_NAV_STICKY_TOP } from '../../constants/navBar';
+import { tokens, fontMono, radii, textSize } from '../../theme/tokens';
+
+const { color } = tokens;
+
+/** Read by a screen reader, not shown (the draft's `.sr-only`). */
+const visuallyHidden = {
+  position: 'absolute',
+  width: '1px',
+  height: '1px',
+  overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  whiteSpace: 'nowrap',
+} as const;
 
 const DOCS_URL = 'https://docs.autotournament.gg';
 
@@ -41,7 +30,6 @@ interface RailItem {
   key: string;
   label: string;
   to: string;
-  icon: React.ElementType;
   /** Only set where a real count exists; omitted items show no badge. */
   count?: number | null;
   /** Opens outside the app (documentation). */
@@ -87,14 +75,13 @@ export const ManageRail: React.FC = () => {
           key: 'needsYou',
           label: t('managePage.rail.needsYou'),
           to: paths.manage,
-          icon: InboxIcon,
           count: needsYouCount,
         },
-        { key: 'matches', label: t('managePage.rail.matches'), to: paths.matches, icon: SportsEsportsIcon },
-        { key: 'bracket', label: t('managePage.rail.bracket'), to: paths.bracket, icon: AccountTreeIcon },
+        { key: 'matches', label: t('managePage.rail.matches'), to: paths.matches },
+        { key: 'bracket', label: t('managePage.rail.bracket'), to: paths.bracket },
         // Only where a result can be argued about at all (3.0 phase D).
         ...(showDisputes
-          ? [{ key: 'disputes', label: t('managePage.rail.disputes'), to: paths.disputes, icon: GavelIcon }]
+          ? [{ key: 'disputes', label: t('managePage.rail.disputes'), to: paths.disputes }]
           : []),
       ],
     },
@@ -102,7 +89,7 @@ export const ManageRail: React.FC = () => {
       key: 'tournament',
       label: t('managePage.rail.groups.tournament'),
       items: [
-        { key: 'tournament', label: t('managePage.rail.tournament'), to: paths.tournament, icon: EmojiEventsIcon },
+        { key: 'tournament', label: t('managePage.rail.tournament'), to: paths.tournament },
         // What players see, once there is a tournament to show.
         ...(tournamentId !== null
           ? [
@@ -110,7 +97,6 @@ export const ManageRail: React.FC = () => {
                 key: 'publicPage',
                 label: t('managePage.rail.publicPage'),
                 to: paths.tournamentOverview.replace(':id', String(tournamentId)),
-                icon: PublicIcon,
               },
             ]
           : []),
@@ -120,8 +106,8 @@ export const ManageRail: React.FC = () => {
       key: 'people',
       label: t('managePage.rail.groups.people'),
       items: [
-        { key: 'teams', label: t('managePage.rail.teams'), to: paths.teams, icon: GroupsIcon },
-        { key: 'players', label: t('managePage.rail.players'), to: paths.players, icon: PersonIcon },
+        { key: 'teams', label: t('managePage.rail.teams'), to: paths.teams },
+        { key: 'players', label: t('managePage.rail.players'), to: paths.players },
       ],
     },
     {
@@ -131,26 +117,24 @@ export const ManageRail: React.FC = () => {
         key: item.key,
         label: navItemLabel(t, item, 'rail'),
         to: item.path,
-        icon: item.icon,
       })),
     },
     {
       key: 'configuration',
       label: t('managePage.rail.groups.configuration'),
       items: [
-        { key: 'modules', label: t('managePage.rail.modules'), to: paths.modules, icon: ExtensionIcon },
-        { key: 'templates', label: t('managePage.rail.templates'), to: paths.templates, icon: DescriptionIcon },
-        { key: 'ratings', label: t('managePage.rail.ratings'), to: paths.eloTemplates, icon: TrendingUpIcon },
-        { key: 'settings', label: t('managePage.rail.settings'), to: paths.settings, icon: SettingsIcon },
-        { key: 'adminTools', label: t('managePage.rail.adminTools'), to: paths.admin, icon: CampaignIcon },
+        { key: 'modules', label: t('managePage.rail.modules'), to: paths.modules },
+        { key: 'templates', label: t('managePage.rail.templates'), to: paths.templates },
+        { key: 'ratings', label: t('managePage.rail.ratings'), to: paths.eloTemplates },
+        { key: 'settings', label: t('managePage.rail.settings'), to: paths.settings },
+        { key: 'adminTools', label: t('managePage.rail.adminTools'), to: paths.admin },
         ...(isDevelopment
-          ? [{ key: 'devTools', label: t('managePage.rail.devTools'), to: paths.dev, icon: BuildIcon }]
+          ? [{ key: 'devTools', label: t('managePage.rail.devTools'), to: paths.dev }]
           : []),
         {
           key: 'documentation',
           label: t('managePage.rail.documentation'),
           to: DOCS_URL,
-          icon: LibraryBooksIcon,
           external: true,
         },
       ],
@@ -177,19 +161,20 @@ export const ManageRail: React.FC = () => {
   }, [pathname, itemKeys]);
 
   return (
-    <Paper
+    <Box
       component="nav"
-      variant="outlined"
       aria-label={t('managePage.rail.label')}
       data-testid="manage-rail"
       sx={{
         // A horizontal scroller under 820px, so it never makes the page
-        // scroll sideways; a sticky column beside the page above that.
+        // scroll sideways; a sticky column beside the page above that. A
+        // plain list, as in the draft: no box around it, no icons.
         position: 'static',
         width: '100%',
         minWidth: 0,
         flex: '0 0 auto',
         displayPrint: 'none',
+        fontSize: textSize.sm,
         [RAIL_COLUMN_MIN_WIDTH]: {
           position: 'sticky',
           top: BELOW_NAV_STICKY_TOP,
@@ -205,111 +190,105 @@ export const ManageRail: React.FC = () => {
         sx={{
           display: 'flex',
           alignItems: 'center',
+          gap: 0.5,
           overflowX: 'auto',
-          p: 0.5,
           [RAIL_COLUMN_MIN_WIDTH]: {
             display: 'block',
             overflowX: 'hidden',
             overflowY: 'auto',
-            p: 1,
             // Taller than the window (a small laptop, every group open):
             // the rail scrolls on its own instead of hiding its last items.
-            maxHeight:
-              `calc(100vh - ${BELOW_NAV_STICKY_TOP} - 24px)`,
+            maxHeight: `calc(100vh - ${BELOW_NAV_STICKY_TOP} - 24px)`,
           },
         }}
       >
-        {groups.map((group) => (
-          // A group of links, not a <ul>: the items are links, and a <ul>
-          // may only hold <li>s (axe `list`).
-          <List
-            key={group.key}
-            component="div"
-            role="group"
-            dense
-            disablePadding
-            data-testid={`manage-rail-group-${group.key}`}
-            aria-labelledby={`manage-rail-heading-${group.key}`}
-            subheader={
-              <ListSubheader
-                component="div"
-                id={`manage-rail-heading-${group.key}`}
-                disableSticky
-                disableGutters
+        {groups.map((group, index) => (
+          <React.Fragment key={group.key}>
+            {/* Groups are split by a rule, as in the draft; the phone's
+                single row has no room for one. */}
+            {index > 0 && (
+              <Box
+                component="hr"
+                aria-hidden
                 sx={{
-                  // The row on a phone has no room for headings; the list
-                  // keeps its name through aria-labelledby.
-                  position: 'absolute',
-                  width: 1,
-                  height: 1,
-                  overflow: 'hidden',
-                  clip: 'rect(0 0 0 0)',
-                  whiteSpace: 'nowrap',
+                  display: 'none',
                   [RAIL_COLUMN_MIN_WIDTH]: {
-                    position: 'static',
-                    width: 'auto',
-                    height: 'auto',
-                    overflow: 'visible',
-                    clip: 'auto',
-                    px: 1.5,
-                    pt: 1,
-                    pb: 0.25,
-                    lineHeight: 1.6,
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    letterSpacing: '0.04em',
-                    textTransform: 'uppercase',
-                    color: 'text.secondary',
-                    bgcolor: 'transparent',
+                    display: 'block',
+                    border: 0,
+                    borderTop: `1px solid ${color.rule}`,
+                    my: 1.5,
+                    mx: 0,
                   },
                 }}
-              >
+              />
+            )}
+            {/* A group of links, not a <ul>: the items are links, and a
+                <ul> may only hold <li>s (axe `list`). The hidden heading
+                names the group for a screen reader; the rule shows it to
+                everyone else. */}
+            <Box
+              role="group"
+              data-testid={`manage-rail-group-${group.key}`}
+              aria-labelledby={`manage-rail-heading-${group.key}`}
+              sx={{
+                // Holds the hidden heading, which would otherwise widen the
+                // page from wherever the scrolled row put it.
+                position: 'relative',
+                display: 'flex',
+                flex: '0 0 auto',
+                gap: 0.5,
+                [RAIL_COLUMN_MIN_WIDTH]: { display: 'grid' },
+              }}
+            >
+              <Box component="span" id={`manage-rail-heading-${group.key}`} sx={visuallyHidden}>
                 {group.label}
-              </ListSubheader>
-            }
-            sx={{
-              display: 'flex',
-              flex: '0 0 auto',
-              gap: 0.25,
-              [RAIL_COLUMN_MIN_WIDTH]: {
-                display: 'block',
-                '& + &': { mt: 0.5 },
-              },
-            }}
-          >
-            {group.items.map((item) => {
-              const selected = !item.external && isCurrent(pathname, item.to);
-              const Icon = item.icon;
-              const linkProps = item.external
-                ? { component: 'a' as const, href: item.to, target: '_blank', rel: 'noopener noreferrer' }
-                : { component: RouterLink, to: item.to };
-              return (
-                <ListItemButton
-                  key={item.key}
-                  {...linkProps}
-                  data-testid={`manage-rail-${item.key}`}
-                  selected={selected}
-                  aria-current={selected ? 'page' : undefined}
-                  sx={{
-                    borderRadius: 1,
-                    whiteSpace: 'nowrap',
-                    flex: '0 0 auto',
-                    [RAIL_COLUMN_MIN_WIDTH]: { mb: 0.25 },
-                  }}
-                >
-                  <ListItemIcon sx={{ minWidth: 32 }}>
-                    <Icon fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText primary={item.label} />
-                  {typeof item.count === 'number' && item.count > 0 && (
-                    <Chip label={item.count} size="small" color="primary" sx={{ ml: 1 }} />
-                  )}
-                </ListItemButton>
-              );
-            })}
-          </List>
+              </Box>
+              {group.items.map((item) => {
+                const selected = !item.external && isCurrent(pathname, item.to);
+                const linkProps = item.external
+                  ? { component: 'a' as const, href: item.to, target: '_blank', rel: 'noopener noreferrer' }
+                  : { component: RouterLink, to: item.to };
+                return (
+                  <Box
+                    key={item.key}
+                    {...linkProps}
+                    data-testid={`manage-rail-${item.key}`}
+                    aria-current={selected ? 'page' : undefined}
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: 1.5,
+                      flex: '0 0 auto',
+                      px: 1.5,
+                      py: 1,
+                      borderRadius: radii.sm,
+                      color: selected ? color.ink : color.ink2,
+                      bgcolor: selected ? color.paper2 : 'transparent',
+                      textDecoration: 'none',
+                      whiteSpace: 'nowrap',
+                      lineHeight: 1.4,
+                      '&:hover': { bgcolor: color.paper2, color: color.ink },
+                      '&:focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: 2 },
+                    }}
+                  >
+                    {item.label}
+                    {typeof item.count === 'number' && item.count > 0 && (
+                      <Box
+                        component="span"
+                        data-testid={`manage-rail-${item.key}-count`}
+                        sx={{ fontFamily: fontMono, fontSize: textSize.xs, color: color.accent }}
+                      >
+                        {item.count}
+                      </Box>
+                    )}
+                  </Box>
+                );
+              })}
+            </Box>
+          </React.Fragment>
         ))}
       </Box>
-    </Paper>
+    </Box>
   );
 };

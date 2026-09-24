@@ -64,9 +64,21 @@
       "free": "Free",
       "offline": "Offline",
       "lastHeartbeat": "Last heartbeat {{time}} ago",
-      "never": "never",
       "notConfigured": "Not configured",
-      "notConfiguredHint": "Added, but it has not reported in yet"
+      "notConfiguredHint": "Added, but it has not reported in yet",
+      "noHeartbeat": "No heartbeat yet",
+      "checking": "Checking",
+      "loading": "Loading servers",
+      "ready": "Ready for the next match",
+      "resting": "Resting",
+      "readyIn": "Ready again in {{count}}s",
+      "busy": "Busy",
+      "heldBack": {
+        "demoUpload": "Uploading the last match's demo",
+        "outOfDate": "CS2 on this server needs an update",
+        "unverified": "CS2 version not checked yet",
+        "other": "Not taking matches right now"
+      }
     },
     "needsYou": {
       "stale": {
