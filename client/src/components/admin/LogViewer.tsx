@@ -15,6 +15,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 import type { LogEntry, LogsResponse } from '../../types';
+import { radii } from '../../theme/tokens';
 
 export const LogViewer: React.FC = () => {
   const { t } = useTranslation();
@@ -138,7 +139,7 @@ export const LogViewer: React.FC = () => {
               fontSize: '13px',
               bgcolor: 'background.default',
               p: 2,
-              borderRadius: 1,
+              borderRadius: radii.sm,
               '& .log-entry': {
                 py: 0.5,
                 borderBottom: '1px solid',

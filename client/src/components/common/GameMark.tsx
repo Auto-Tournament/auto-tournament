@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Box from '@mui/material/Box';
-import { fontDisplay, gameTintPalette, withAlpha } from '../../theme/tokens';
+import { fontDisplay, gameTintPalette, withAlpha, radii } from '../../theme/tokens';
 import { gameMonogram } from '../games/GameThumb';
 
 /**
@@ -48,7 +48,7 @@ export function GameMark({ name, slug, coverUrl, size = 28 }: GameMarkProps) {
           width: size,
           height: size,
           objectFit: 'cover',
-          borderRadius: 1,
+          borderRadius: radii.sm,
           flexShrink: 0,
           bgcolor: 'background.surface2',
         }}
@@ -64,7 +64,7 @@ export function GameMark({ name, slug, coverUrl, size = 28 }: GameMarkProps) {
       sx={{
         width: size,
         height: size,
-        borderRadius: 1,
+        borderRadius: radii.sm,
         flexShrink: 0,
         display: 'inline-flex',
         alignItems: 'center',

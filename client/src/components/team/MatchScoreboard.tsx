@@ -2,6 +2,12 @@ import { Stack, Typography, Chip, Paper, Box } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { tokens, mono } from '../../theme/tokens';
 
+/**
+ * The score keeps its own size: the `h1` variant is the page title's fluid
+ * size, and a score is a number, not a heading (hence `component="p"`).
+ */
+const scoreSize = '2.75rem';
+
 interface MatchScoreboardProps {
   leftName?: string | null;
   rightName?: string | null;
@@ -60,7 +66,13 @@ export function MatchScoreboard({
           )}
           {!hideSeriesWins && (
             <>
-              <Typography variant="h1" fontWeight={600} color="text.primary" sx={mono}>
+              <Typography
+                variant="h1"
+                component="p"
+                fontWeight={600}
+                color="text.primary"
+                sx={{ ...mono, fontSize: scoreSize }}
+              >
                 {leftSeriesWins}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -103,7 +115,13 @@ export function MatchScoreboard({
           )}
           {!hideSeriesWins && (
             <>
-              <Typography variant="h1" fontWeight={600} color="text.primary" sx={mono}>
+              <Typography
+                variant="h1"
+                component="p"
+                fontWeight={600}
+                color="text.primary"
+                sx={{ ...mono, fontSize: scoreSize }}
+              >
                 {rightSeriesWins}
               </Typography>
               <Typography variant="body2" color="text.secondary">

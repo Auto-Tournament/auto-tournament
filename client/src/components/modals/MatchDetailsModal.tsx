@@ -62,7 +62,7 @@ import {
   deriveCurrentMapScore,
   deriveSeriesScore,
 } from '../../utils/matchScoreDisplay';
-import { tokens, withAlpha } from '../../theme/tokens';
+import { tokens, withAlpha, radii } from '../../theme/tokens';
 import { useIntegrationFor } from '../../integrations/registry';
 
 interface MatchDetailsModalProps {
@@ -667,7 +667,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
             <Box
               sx={{
                 bgcolor: 'action.hover',
-                borderRadius: 2,
+                borderRadius: radii.md,
                 p: 3,
               }}
             >
@@ -935,7 +935,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                                     sx={{
                                       p: 1.5,
                                       bgcolor: idx === 0 ? 'action.selected' : 'action.hover',
-                                      borderRadius: 1,
+                                      borderRadius: radii.sm,
                                     }}
                                   >
                                     <Box
@@ -1020,7 +1020,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                                     sx={{
                                       p: 1.5,
                                       bgcolor: idx === 0 ? 'action.selected' : 'action.hover',
-                                      borderRadius: 1,
+                                      borderRadius: radii.sm,
                                     }}
                                   >
                                     <Box
@@ -1365,7 +1365,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
               component="pre"
               sx={{
                 bgcolor: 'background.default',
-                borderRadius: 1,
+                borderRadius: radii.sm,
                 p: 2,
                 fontFamily: 'monospace',
                 fontSize: 12,

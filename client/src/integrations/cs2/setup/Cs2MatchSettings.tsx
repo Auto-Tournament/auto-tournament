@@ -1,5 +1,5 @@
 import { Box, TextField, Typography } from '@mui/material';
-import { SegmentedControl, useModuleTranslation } from '../../../module-sdk';
+import { SegmentedControl, useModuleTranslation, radii } from '../../../module-sdk';
 import type { TournamentRulesStepProps as Cs2MatchSettingsProps } from '../../types';
 import {
   cs2Patch,
@@ -47,7 +47,7 @@ export function Cs2MatchSettings({ settings, onChange, type, disabled = false }:
       sx={{
         border: 1,
         borderColor: 'divider',
-        borderRadius: 2,
+        borderRadius: radii.md,
         p: 2.5,
         m: 0,
         minWidth: 0,

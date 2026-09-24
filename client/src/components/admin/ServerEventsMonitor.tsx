@@ -24,7 +24,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 import { io, Socket } from 'socket.io-client';
 import type { ServerEvent, ServerEventsResponse } from '../../types';
-import { tokens, fontMono } from '../../theme/tokens';
+import { tokens, fontMono, radii } from '../../theme/tokens';
 
 const c = tokens.color;
 
@@ -510,7 +510,7 @@ const EventItem: React.FC<{
       sx={{
         mb: 2,
         p: 1.5,
-        borderRadius: 1,
+        borderRadius: radii.sm,
         bgcolor: c.paper3,
         borderLeft: '3px solid',
         borderLeftColor: getEventColor(event.event.event),
@@ -566,7 +566,7 @@ const EventItem: React.FC<{
               sx={{
                 color: c.ink2,
                 border: `1px solid ${c.rule}`,
-                borderRadius: 1,
+                borderRadius: radii.sm,
                 p: 0.5,
               }}
             >
@@ -611,7 +611,7 @@ const EventItem: React.FC<{
             mt: 1,
             p: 1,
             bgcolor: c.paper,
-            borderRadius: 1,
+            borderRadius: radii.sm,
             overflow: 'auto',
             fontSize: '0.75rem',
             maxHeight: 400,

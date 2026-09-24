@@ -67,6 +67,34 @@ export const tokens = {
 } as const;
 
 /**
+ * The radius tokens as CSS lengths, ready for `sx`. A bare number in
+ * `sx.borderRadius` is multiplied by the theme's 8px unit (`2` is 16px, not a
+ * token), so surfaces use these instead: `lg` for panels and cards, `md` for
+ * tiles and inset boxes, `sm` for small marks and chips, `pill` for pills.
+ */
+export const radii = {
+  sm: `${tokens.radius.sm}px`,
+  md: `${tokens.radius.md}px`,
+  lg: `${tokens.radius.lg}px`,
+  pill: `${tokens.radius.pill}px`,
+} as const;
+
+/**
+ * The draft's type sizes (`tokens.css` `--text-*`) that the MUI variants do
+ * not already carry. `3xl` is the page title (`PageHead`), `xl` the section
+ * title (`SectionHead`, MUI `h5`).
+ */
+export const textSize = {
+  xs: '0.75rem',
+  sm: '0.8125rem',
+  md: '0.9375rem',
+  lg: '1.125rem',
+  xl: '1.375rem',
+  '2xl': 'clamp(1.6rem, 1.2vw + 1.2rem, 2.1rem)',
+  '3xl': 'clamp(2rem, 2.4vw + 1.2rem, 3rem)',
+} as const;
+
+/**
  * Tints for a game's monogram tile (`GameMark`) when it has no cover image.
  * Picked by hashing the game's catalog slug, so the same game always lands on
  * the same tint — but the colours themselves are theme tokens, never hex

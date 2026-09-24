@@ -16,7 +16,7 @@ import { getMapData, getMapDisplayName } from '../../constants/maps';
 import { formatDuration } from '../../utils/matchUtils';
 import type { MatchMapResult } from '../../types';
 import { FadeInImage } from '../common/FadeInImage';
-import { tokens, withAlpha } from '../../theme/tokens';
+import { tokens, withAlpha, radii } from '../../theme/tokens';
 
 interface MapAccordionProps {
   mapNumber: number;
@@ -116,7 +116,7 @@ export function MapAccordion({
               width={80}
               height={45}
               sx={{
-                borderRadius: 1,
+                borderRadius: radii.sm,
                 flexShrink: 0,
               }}
             />
@@ -181,7 +181,7 @@ export function MapAccordion({
               height={200}
               sx={{
                 width: '100%',
-                borderRadius: 2,
+                borderRadius: radii.md,
               }}
             >
               <Box

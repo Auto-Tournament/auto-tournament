@@ -18,7 +18,7 @@
 
 import type { ReactNode } from 'react';
 import { Box, TextField, Typography } from '@mui/material';
-import { SegmentedControl, useModuleTranslation } from '../../../module-sdk';
+import { SegmentedControl, useModuleTranslation, radii } from '../../../module-sdk';
 import type { TournamentGameSettingsStepProps } from '../../types';
 
 /** The module's key inside `tournament.settings`. */
@@ -107,7 +107,7 @@ export function ManualReportSetupStep({
       sx={{
         border: 1,
         borderColor: 'divider',
-        borderRadius: 2,
+        borderRadius: radii.md,
         p: 2.5,
         m: 0,
         minWidth: 0,

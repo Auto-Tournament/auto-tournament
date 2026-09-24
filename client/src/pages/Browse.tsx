@@ -9,8 +9,6 @@ import {
   Container,
   FormControl,
   InputAdornment,
-  List,
-  ListItem,
   MenuItem,
   Select,
   Stack,
@@ -21,6 +19,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { GameMark } from '../components/common/GameMark';
+import { PageHead, Row, RowList } from '../components/common/ui';
 import { useTournamentList, type TournamentSummary } from '../hooks/useTournamentList';
 import { MATCH_FORMATS } from '../constants/tournament';
 
@@ -104,17 +103,7 @@ export default function Browse() {
     <Box minHeight="100vh" bgcolor="transparent" data-testid="browse-page">
       <TopNavBar />
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          justifyContent="space-between"
-          alignItems={{ xs: 'flex-start', sm: 'center' }}
-          spacing={2}
-          sx={{ mb: 3 }}
-        >
-          <Typography variant="h4" fontWeight={700}>
-            {t('browsePage.title')}
-          </Typography>
-        </Stack>
+        <PageHead title={t('browsePage.title')} sx={{ mb: 3 }} />
 
         <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap sx={{ mb: 3 }}>
           <TextField
@@ -190,18 +179,9 @@ export default function Browse() {
             {t('browsePage.empty')}
           </Typography>
         ) : (
-          <List
-            disablePadding
-            sx={{ border: 1, borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}
-            data-testid="browse-list"
-          >
+          <RowList data-testid="browse-list">
             {filtered.map((tournament) => (
-              <ListItem
-                key={tournament.id}
-                divider
-                data-testid={`browse-tournament-${tournament.id}`}
-                sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}
-              >
+              <Row key={tournament.id} data-testid={`browse-tournament-${tournament.id}`}>
                 <GameMark name={tournament.game ?? tournament.name} slug={tournament.game} size={36} />
                 <Box sx={{ minWidth: 0, flex: '1 1 12rem' }}>
                   <Typography variant="subtitle1" fontWeight={600} noWrap>
@@ -239,9 +219,9 @@ export default function Browse() {
                 >
                   {tournament.isLive ? t('browsePage.watch') : t('browsePage.view')}
                 </Button>
-              </ListItem>
+              </Row>
             ))}
-          </List>
+          </RowList>
         )}
       </Container>
     </Box>

@@ -25,6 +25,7 @@ import { fetchMyGames, type GameSummary } from '../components/games/gamesApi';
 import { api } from '../utils/api';
 import { MATCH_FORMATS } from '../constants/tournament';
 import { eliminationRoundCount, getRoundLabel } from '../utils/matchUtils';
+import { radii } from '../theme/tokens';
 
 interface ViewerTeam {
   id: string;
@@ -326,7 +327,7 @@ export default function Home() {
               ) : (
                 <List
                   disablePadding
-                  sx={{ border: 1, borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}
+                  sx={{ border: 1, borderColor: 'divider', borderRadius: radii.lg, overflow: 'hidden' }}
                   data-testid="home-tournaments-list"
                 >
                   {myTournaments.map((tournament) => {

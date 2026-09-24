@@ -8,7 +8,7 @@ import {
 } from 'notistack';
 import { Alert, GlobalStyles, IconButton, Slide, TransitionProps } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { tokens, withAlpha } from '../theme/tokens';
+import { tokens, withAlpha, radii } from '../theme/tokens';
 
 type ShowSnackbarOptions = {
   /**
@@ -52,7 +52,7 @@ const SNACKBAR_SX = {
   width: 'min(500px, calc(100vw - 24px))',
   minWidth: 0,
   maxWidth: '500px',
-  borderRadius: 2,
+  borderRadius: radii.md,
   boxShadow: `0 18px 40px -18px ${tokens.color.shadow}`,
   fontWeight: 500,
   '& .MuiAlert-icon': {

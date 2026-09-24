@@ -77,7 +77,7 @@ export type ModuleAuth = {
 export const useAuth: () => ModuleAuth = useAuthInternal;
 
 // Design tokens
-export { tokens, mono, withAlpha } from '../theme/tokens';
+export { tokens, radii, mono, withAlpha } from '../theme/tokens';
 
 // Match details: core's dialog, opened by slug (decision 7)
 export { openMatchDetails } from '../components/modals/matchDetailsOpener';
@@ -87,6 +87,16 @@ export { default as ConfirmDialog } from '../components/modals/ConfirmDialog';
 export { SegmentedControl } from '../components/tournament/setup/SegmentedControl';
 export { EmptyState } from '../components/shared/EmptyState';
 export { StatusDot } from '../components/common/ui';
+// Page patterns of the 3.0 drafts (client API 0.2.1)
+export { PageHead, SectionHead, Panel, RowList, Row, FactGrid } from '../components/common/ui';
+export type {
+  PageHeadProps,
+  SectionHeadProps,
+  RowListProps,
+  RowProps,
+  Fact,
+  FactGridProps,
+} from '../components/common/ui';
 export { PlayerAvatar } from '../components/player/PlayerAvatar';
 export { ManageStatusTile } from '../components/manage/StatusStrip';
 

@@ -32,6 +32,7 @@ import type { SettingsResponse } from '../types/api.types';
 import { useIsDevelopment } from '../hooks/useIsDevelopment';
 import { useTranslation } from 'react-i18next';
 import { IgdbCredentialsCard } from '../components/games/IgdbCredentialsCard';
+import { radii } from '../theme/tokens';
 
 declare const __APP_VERSION__: string | undefined;
 
@@ -1314,7 +1315,7 @@ export default function Settings() {
                           bgcolor: (theme) => `${theme.palette.warning.main}14`, // 8% amber wash
                           border: 1,
                           borderColor: 'warning.main',
-                          borderRadius: 1,
+                          borderRadius: radii.sm,
                           p: 2,
                         }}
                       >

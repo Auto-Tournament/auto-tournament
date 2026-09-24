@@ -30,6 +30,7 @@ import { ServerEventsMonitor } from '../components/admin/ServerEventsMonitor';
 import { LogViewer } from '../components/admin/LogViewer';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { useTranslation } from 'react-i18next';
+import { radii } from '../theme/tokens';
 
 interface Server {
   id: string;
@@ -299,7 +300,7 @@ const AdminTools: React.FC = () => {
                   <Box
                     sx={{
                       p: 2,
-                      borderRadius: 1,
+                      borderRadius: radii.sm,
                       border: '1px solid',
                       borderColor: result.success ? 'success.main' : 'error.main',
                       bgcolor: result.success ? 'success.light' : 'error.light',
@@ -325,7 +326,7 @@ const AdminTools: React.FC = () => {
                         sx={{
                           mt: 1,
                           p: 1.5,
-                          borderRadius: 1,
+                          borderRadius: radii.sm,
                           bgcolor: 'background.paper',
                           border: '1px solid',
                           borderColor: 'divider',

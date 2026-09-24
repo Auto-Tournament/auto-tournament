@@ -32,6 +32,7 @@ import {
   withAlpha,
   StatusDot,
   useModuleTranslation,
+  radii,
 } from '../../../module-sdk';
 
 export default function Servers() {
@@ -1034,7 +1035,7 @@ export default function Servers() {
                         bgcolor: (theme) => `${theme.palette.warning.main}14`, // 8% amber wash
                         border: 1, 
                         borderColor: 'warning.main',
-                        borderRadius: 1, 
+                        borderRadius: radii.sm, 
                         p: 1.5,
                         mt: 1
                       }}

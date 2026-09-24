@@ -15,7 +15,7 @@ import {
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
-import { api, useSnackbar, useModuleTranslation } from '../../../module-sdk';
+import { api, useSnackbar, useModuleTranslation, radii } from '../../../module-sdk';
 import type { Map, MapResponse } from '../cs2.types';
 import { FadeInImage } from '../common/FadeInImage';
 
@@ -470,7 +470,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
                 src={previewUrl}
                 alt={displayName || id}
                 height={256}
-                sx={{ width: '100%', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
+                sx={{ width: '100%', border: '1px solid', borderColor: 'divider', borderRadius: radii.sm }}
               />
             </Box>
           )}

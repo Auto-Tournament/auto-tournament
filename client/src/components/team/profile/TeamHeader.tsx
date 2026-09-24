@@ -4,7 +4,7 @@ import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Team } from '../../../types';
-import { fontDisplay, mono } from '../../../theme/tokens';
+import { fontDisplay, mono, radii } from '../../../theme/tokens';
 
 interface TeamHeaderProps {
   team: Team | null;
@@ -37,7 +37,7 @@ export function TeamHeader({ team, canEdit }: TeamHeaderProps) {
               width: 64,
               height: 64,
               flexShrink: 0,
-              borderRadius: 2,
+              borderRadius: radii.md,
               bgcolor: 'background.surface2',
               border: 1,
               borderColor: 'divider',

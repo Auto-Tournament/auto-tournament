@@ -12,6 +12,7 @@ import {
   useModuleTranslation,
   useSnackbar,
   useSocket,
+  radii,
 } from '../../../module-sdk';
 import type { MatchConnectPanelProps } from '../../types';
 import type { CS2MapData, MatchConnectResponse, MatchServer } from '../cs2.types';
@@ -231,7 +232,7 @@ export function MatchServerPanel({ matchSlug, viewerCanJoin, matchStatus }: Matc
           alt={currentMapData.displayName}
           height={180}
           sx={{
-            borderRadius: 2,
+            borderRadius: radii.md,
           }}
         >
           <Box

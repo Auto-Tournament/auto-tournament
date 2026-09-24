@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import { useTranslation } from 'react-i18next';
 import { gameMonogram } from '../../games/GameThumb';
-import { fontDisplay } from '../../../theme/tokens';
+import { fontDisplay, radii } from '../../../theme/tokens';
 
 export interface ProfileGame {
   id: string;
@@ -53,7 +53,7 @@ export function GameSwitch({ games, selectedId, onSelect }: GameSwitchProps) {
               gap: 1,
               px: 1.25,
               py: 0.5,
-              borderRadius: 999,
+              borderRadius: radii.pill,
               border: '1px solid',
               borderColor: selected ? 'text.secondary' : 'divider',
               bgcolor: selected ? 'background.surface2' : 'transparent',

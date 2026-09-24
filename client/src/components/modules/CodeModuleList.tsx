@@ -39,6 +39,7 @@ import { fetchModuleList, MODULES_ENDPOINT } from '../../module-loader/boot';
 import type { ModuleFailure, ModuleListEntry, ModuleServerStatus } from '../../module-loader/manifest';
 import { useModuleState } from '../../module-loader/useModuleState';
 import type { ModuleState } from '../../module-loader/moduleState';
+import { radii } from '../../theme/tokens';
 
 const STATUS_COLOR: Record<ModuleServerStatus, 'success' | 'warning' | 'error' | 'default'> = {
   ok: 'success',
@@ -280,7 +281,7 @@ export function CodeModuleList({ exclude }: { exclude?: ReadonlySet<string> } = 
                   width: 56,
                   height: 56,
                   flex: '0 0 auto',
-                  borderRadius: 1.5,
+                  borderRadius: radii.md,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',

@@ -8,10 +8,12 @@ import '@fontsource/geist-mono/400.css';
 import '@fontsource/geist-mono/500.css';
 import '@fontsource/geist-mono/600.css';
 import { moduleIconVars } from './moduleIcons';
-import { tokens, fontBody, fontDisplay, fontMono, withAlpha } from './tokens';
+import { tokens, fontBody, fontDisplay, fontMono, textSize, withAlpha } from './tokens';
 
 export {
   tokens,
+  radii,
+  textSize,
   fontBody,
   fontDisplay,
   fontMono,
@@ -81,13 +83,16 @@ export const theme = createTheme({
       disabledBackground: withAlpha(color.ink, 0.08),
     },
   },
-  // The base unit stays at the small radius (8px) so existing numeric
-  // `borderRadius: n` in component sx keep their size (1 = 8px, 2 = 16px,
-  // 3 = 24px). Surfaces set the 14px and 22px radii explicitly below.
+  // The base unit stays at the small radius (8px). Components set a radius
+  // with the `radii` tokens (`radii.lg` for panels, `radii.md` for tiles),
+  // never a bare number: `borderRadius: 2` in `sx` is 16px, which is no
+  // token. Surfaces set the 14px and 22px radii explicitly below.
   shape: { borderRadius: radius.sm },
   typography: {
     fontFamily: fontBody,
-    h1: { ...headingBase, letterSpacing: '-0.03em', lineHeight: 1.05, fontSize: '2.75rem' },
+    // The page title (`PageHead`): the draft's `h1`, `--text-3xl`, 32px on a
+    // phone up to 48px on a wide screen.
+    h1: { ...headingBase, letterSpacing: '-0.025em', lineHeight: 1.1, fontSize: textSize['3xl'] },
     h2: { ...headingBase, letterSpacing: '-0.03em', lineHeight: 1.05, fontSize: '2.25rem' },
     h3: { ...headingBase, fontSize: '1.875rem' },
     h4: { ...headingBase, fontSize: '1.75rem' },

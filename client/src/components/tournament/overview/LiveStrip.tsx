@@ -1,6 +1,7 @@
 import { Box, Link as RouterLink } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { LiveChip } from '../../common/ui';
+import { radii } from '../../../theme/tokens';
 
 interface LiveStripProps {
   liveCount: number;
@@ -25,7 +26,7 @@ export function LiveStrip({ liveCount, label, linkLabel, linkTo }: LiveStripProp
         py: 1,
         border: 1,
         borderColor: 'divider',
-        borderRadius: 999,
+        borderRadius: radii.pill,
       }}
     >
       <LiveChip label={label} />

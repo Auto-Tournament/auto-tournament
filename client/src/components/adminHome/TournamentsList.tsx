@@ -3,6 +3,7 @@ import { Box, Button, Card, Chip, List, ListItem, Typography } from '@mui/materi
 import { useTranslation } from 'react-i18next';
 import { GameMark } from '../common/GameMark';
 import type { TournamentSummary } from '../../hooks/useTournamentList';
+import { radii } from '../../theme/tokens';
 
 interface TournamentsListProps {
   tournaments: TournamentSummary[];
@@ -100,7 +101,7 @@ export function TournamentsList({ tournaments, loading }: TournamentsListProps) 
       ) : (
         <List
           disablePadding
-          sx={{ border: 1, borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}
+          sx={{ border: 1, borderColor: 'divider', borderRadius: radii.lg, overflow: 'hidden' }}
         >
           {tournaments.map((tournament) => {
             const { chipKey, chipColor, actionKey } = statusMeta(tournament.status);

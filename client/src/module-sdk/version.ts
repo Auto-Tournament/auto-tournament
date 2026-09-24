@@ -54,5 +54,9 @@
  *   `ResourceQueueSummary`, `ManageNeedsYouInput`, `ManageNeedsYouItem`,
  *   `ManageNeedsYouAction`, `ManageMatchRef`, `AdminHomeSetupItem`. No SDK
  *   exports were added.
+ *
+ * 0.2.1 (additive): the 3.0 drafts' page patterns, `PageHead`,
+ * `SectionHead`, `Panel`, `RowList`, `Row` and `FactGrid` (with their
+ * prop types), and `radii`, the radius tokens as CSS lengths for `sx`.
  */
-export const CLIENT_API_VERSION = '0.2.0';
+export const CLIENT_API_VERSION = '0.2.1';
