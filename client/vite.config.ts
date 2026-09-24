@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
+import { moduleShims } from './vite-plugins/moduleShims';
 
 // Read client package.json to get version
 const packageJson = JSON.parse(
@@ -9,7 +10,9 @@ const packageJson = JSON.parse(
 );
 
 export default defineConfig({
-  plugins: [react()],
+  // moduleShims: the import map and shims that hand runtime-loaded game
+  // modules the host's React, MUI, router and i18next (vite-plugins/moduleShims.ts).
+  plugins: [react(), moduleShims()],
   root: resolve(__dirname),
   define: {
     __APP_VERSION__: JSON.stringify(packageJson.version),

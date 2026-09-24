@@ -11,6 +11,7 @@
 import { cs2ClientIntegration } from './cs2';
 import { manualReportClientIntegration } from './manual-report';
 import { resolveIntegration } from '../utils/moduleResolution';
+import { isBroken } from '../module-loader/moduleState';
 import { DEFAULT_GAME, type ClientGameIntegration, type GameId, type GameOwned } from './types';
 
 // CS2 first, the same order the API registers them in: the two overlap on
@@ -22,8 +23,39 @@ const INTEGRATIONS: Record<string, ClientGameIntegration> = {
   [manualReportClientIntegration.id]: manualReportClientIntegration,
 };
 
+/**
+ * Code modules loaded at runtime (DESIGN-module-client-api.md, 8a), in load
+ * order. Empty on an instance with none, and then this registry answers
+ * exactly as it did before they existed.
+ */
+const CODE_MODULES: ClientGameIntegration[] = [];
+
+/** The ids compiled into this bundle. A code module may not take one. */
+export function builtInIntegrationIds(): string[] {
+  return Object.keys(INTEGRATIONS);
+}
+
+/**
+ * Adds a code module the loader imported and validated. Built-ins come first
+ * and win: a code module with a built-in's id, or one already registered, is
+ * refused rather than shadowing it.
+ */
+export function registerCodeModule(integration: ClientGameIntegration): void {
+  if (INTEGRATIONS[integration.id] || CODE_MODULES.some((m) => m.id === integration.id)) {
+    throw new Error(`a module with id "${integration.id}" is already registered`);
+  }
+  CODE_MODULES.push(integration);
+}
+
+/**
+ * Built-ins, then code modules, minus any code module that broke while
+ * rendering this session: a game it ran then resolves to the "module not
+ * installed" placeholder instead of rendering it again.
+ */
 export function listIntegrations(): ClientGameIntegration[] {
-  return Object.values(INTEGRATIONS);
+  const builtIns = Object.values(INTEGRATIONS);
+  if (CODE_MODULES.length === 0) return builtIns;
+  return builtIns.concat(CODE_MODULES.filter((integration) => !isBroken(integration.id)));
 }
 
 /**

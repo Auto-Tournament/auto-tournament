@@ -271,6 +271,58 @@
     "notInstalled": {
       "title": "The game module for {{game}} isn't installed",
       "body": "The game-specific parts of this tournament are hidden, and its matches can't run until the module is installed again."
+    },
+    "code": {
+      "chip": "Code module",
+      "hint": "Installed on this server's disk by whoever runs it.",
+      "noReason": "no reason given",
+      "broken": "This module is broken: {{reason}}",
+      "status": {
+        "ok": "OK",
+        "incompatible": "Incompatible",
+        "broken": "Broken",
+        "disabled": "Disabled"
+      },
+      "enable": "Enable",
+      "disable": "Disable",
+      "enabled": "Enabled {{name}}",
+      "disabled": "Disabled {{name}}",
+      "toggleFailed": "Could not change that module",
+      "listFailed": "Could not read the code modules: {{reason}}",
+      "safeMode": "Safe mode: no code module was loaded on this page. Open it without ?modules=off to load them again.",
+      "slotFailed": "The {{id}} module failed here. The Modules page says why.",
+      "reload": {
+        "body": "Reload the page to load or unload the module's code.",
+        "action": "Reload"
+      },
+      "confirm": {
+        "title": "Enable {{name}}?",
+        "warningTitle": "This is a code module.",
+        "warning": "It runs inside Auto Tournament's server with full access to your database, files and secrets, and inside the browser of every admin and player who opens a page it draws, with their permissions. Auto Tournament does not review or sandbox code modules. Enable it only if you trust its author as much as you trust this platform.",
+        "source": "Came from",
+        "onDisk": "This server's disk",
+        "version": "Version",
+        "clientApi": "Client API",
+        "serverApi": "Server API",
+        "none": "not declared",
+        "typeId": "Type {{id}} to enable it."
+      },
+      "failure": {
+        "badEntry": "its code is not served from {{prefix}}",
+        "noClientApi": "it declares no client API range; this platform provides {{platform}}",
+        "badClientApi": "its client API range “{{range}}” is not a semver range",
+        "outOfRange": "built for client API {{range}}; this platform provides {{platform}}",
+        "notFound": "its code is missing (HTTP 404)",
+        "httpError": "its code could not be fetched (HTTP {{status}})",
+        "notJavaScript": "its code is served as {{contentType}}, not JavaScript",
+        "importFailed": "its code failed to load: {{error}}",
+        "timeout": "its code did not load within {{seconds}} seconds",
+        "sharedFailed": "the platform could not share its packages with it: {{error}}",
+        "badExport": "its code is not a module definition: {{detail}}",
+        "idMismatch": "its code calls itself “{{id}}”, but it is installed as “{{expected}}”",
+        "idTaken": "“{{id}}” is already a built-in module",
+        "render": "its “{{slot}}” slot failed while rendering: {{error}}"
+      }
     }
   }
 }
