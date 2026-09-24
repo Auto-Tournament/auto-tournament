@@ -3,6 +3,7 @@ import fetch from 'node-fetch';
 import { steamService } from '../services/steamService';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
+import { isSteamSignInWanted } from '../config/authProviders';
 import { URLSearchParams } from 'url';
 
 const router = Router();
@@ -29,10 +30,14 @@ router.use(requireAuth);
 router.get('/status', async (_req: Request, res: Response) => {
   try {
     const health = await steamService.checkSteamWebApiHealth({ force: true });
+    // Steam sign-in turned off on purpose (AUTH_STEAM_ENABLED=false): the
+    // admin shell does not warn about Steam then.
+    const signInEnabled = isSteamSignInWanted();
 
     if (!health.configured) {
       return res.json({
         success: false,
+        signInEnabled,
         configured: false,
         valid: false,
         errorType: health.errorType,
@@ -44,6 +49,7 @@ router.get('/status', async (_req: Request, res: Response) => {
     if (health.ok) {
       return res.json({
         success: true,
+        signInEnabled,
         configured: true,
         valid: true,
         message: 'Steam integration is configured and reachable.',
@@ -52,6 +58,7 @@ router.get('/status', async (_req: Request, res: Response) => {
 
     return res.json({
       success: false,
+      signInEnabled,
       configured: true,
       valid: false,
       errorType: health.errorType,

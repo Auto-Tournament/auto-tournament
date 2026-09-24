@@ -36,6 +36,15 @@ function isOAuthProviderConfigured(provider: 'discord' | 'github' | 'google'): b
 }
 
 /**
+ * Whether Steam sign-in is meant to be on. It is unless AUTH_STEAM_ENABLED
+ * says otherwise; an operator who turned it off on purpose does not want to
+ * be warned that Steam is unreachable.
+ */
+export function isSteamSignInWanted(): boolean {
+  return !process.env.AUTH_STEAM_ENABLED || isEnvFlagOn('AUTH_STEAM_ENABLED');
+}
+
+/**
  * Build the list of configured auth providers based on environment variables.
  *
  * This only exposes **public metadata** (labels, login URLs, issuer URLs).
@@ -46,7 +55,7 @@ export function getAuthProvidersConfig(): AuthProviderConfig[] {
 
   // Steam – Passport/OpenID flow used for player convenience login and admin identity.
   // Unlike the others, Steam is on unless AUTH_STEAM_ENABLED says otherwise.
-  const steamEnvEnabled = !process.env.AUTH_STEAM_ENABLED || isEnvFlagOn('AUTH_STEAM_ENABLED');
+  const steamEnvEnabled = isSteamSignInWanted();
   const steamProvider: SteamAuthProviderConfig = {
     id: 'steam',
     kind: 'steam-openid',
