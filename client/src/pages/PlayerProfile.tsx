@@ -1061,6 +1061,36 @@ export default function PlayerProfile() {
               )}
           </Box>
 
+          {/* The player's current match (veto, connect) comes first: it is
+              what the nav bar's "Your turn in veto" button brings them here
+              for, and below the stats and settings cards it was five screens
+              down on a phone. */}
+          {currentMatch && (
+            <>
+              <TournamentRulesAccordion
+                format={rulesFormatForPlayer}
+                maxRounds={rulesMaxRoundsForPlayer}
+                overtimeMode={rulesOvertimeModeForPlayer}
+                overtimeSegments={rulesOvertimeSegmentsForPlayer}
+              />
+              <MatchInfoCard
+                match={currentMatch}
+                team={currentTeam}
+                tournamentStatus={currentTournamentStatus}
+                vetoCompleted={currentMatch.veto?.status === 'completed'}
+                matchFormat={(currentMatch.matchFormat as 'bo1' | 'bo3' | 'bo5') || 'bo1'}
+                onVetoComplete={handleVetoComplete}
+                getRoundLabel={getRoundLabel}
+                highlightPlayerId={player.id}
+                // Only allow veto and server controls on the player page when the
+                // signed‑in Steam ID matches the profile being viewed. Teammates
+                // visiting this URL can still *see* the page, but cannot drive
+                // the veto or connect for someone else.
+                viewerIsTeamMemberOverride={playerSteamId === steamId}
+              />
+            </>
+          )}
+
           {/* Per-game switch: which game's stats/rating/matches are shown below. */}
           <GameSwitch
             games={profileGames}
@@ -1117,33 +1147,7 @@ export default function PlayerProfile() {
             </>
           )}
 
-          {currentMatch && (
-            <TournamentRulesAccordion
-              format={rulesFormatForPlayer}
-              maxRounds={rulesMaxRoundsForPlayer}
-              overtimeMode={rulesOvertimeModeForPlayer}
-              overtimeSegments={rulesOvertimeSegmentsForPlayer}
-            />
-          )}
-
-          {/* Current / Upcoming Match (connect info) */}
-          {currentMatch ? (
-            <MatchInfoCard
-              match={currentMatch}
-              team={currentTeam}
-              tournamentStatus={currentTournamentStatus}
-              vetoCompleted={currentMatch.veto?.status === 'completed'}
-              matchFormat={(currentMatch.matchFormat as 'bo1' | 'bo3' | 'bo5') || 'bo1'}
-              onVetoComplete={handleVetoComplete}
-              getRoundLabel={getRoundLabel}
-              highlightPlayerId={player.id}
-              // Only allow veto and server controls on the player page when the
-              // signed‑in Steam ID matches the profile being viewed. Teammates
-              // visiting this URL can still *see* the page, but cannot drive
-              // the veto or connect for someone else.
-              viewerIsTeamMemberOverride={playerSteamId === steamId}
-            />
-          ) : (
+          {!currentMatch && (
             <Card>
               <CardContent sx={{ textAlign: 'center', py: 4 }}>
                 <SportsEsportsIcon sx={{ fontSize: 56, color: 'text.secondary', mb: 2 }} />
