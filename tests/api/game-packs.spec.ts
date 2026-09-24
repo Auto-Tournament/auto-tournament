@@ -164,7 +164,11 @@ test.describe.serial('Game packs', () => {
   }, async ({ request }) => {
     const cases: Array<[string, Record<string, unknown>, string]> = [
       ['a newer schema', upload({ schema: 2 }), 'schema'],
-      ['a slug a module ships', upload({ slug: 'rocket-league' }), 'manual-report'],
+      // CS2's own game is code, not a pack, and no pack may take its slug.
+      // (Rocket League used to be the example here; it is a pack itself now,
+      // so importing one with its slug replaces the bundled one — see
+      // tests/api/bundled-packs.spec.ts.)
+      ['a slug a module ships', upload({ slug: 'counter-strike-2' }), 'cs2'],
       ['CS2 as the engine', upload({ engine: 'cs2' }), 'only runs the games it ships'],
       ['an engine that is not installed', upload({ engine: 'halo' }), 'not installed'],
       ['an unknown field', { pack: { ...pack(), wat: true } }, 'unknown field'],

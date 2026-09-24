@@ -1,109 +1,39 @@
 /**
- * The manual-report module's catalogue entries.
+ * Which games the manual-reporting module runs, and what they are called.
  *
- * The module is not a game: it is the way a result reaches MAT when the game
- * cannot send one itself. So it keeps out of the catalogue under its own name
- * (`catalog: null`) and instead ships the titles it comes ready to run, one
- * `games` row each, with itself as their integration. Those games then read as
- * supported, and a tournament can be created for them.
+ * The module ships no list of games. Until 3.0 it carried eighteen of them
+ * here, hardcoded — so adding a game, or fixing one's tile, meant a release.
+ * They are game packs now (`Auto-Tournament/packs`): data, installed on the
+ * instance, each naming this module as its `engine`. A fresh install gets the
+ * ones the image bundles (`seedBundledPacks`); an admin adds and removes the
+ * rest from the Modules page.
  *
- * The slugs are IGDB slugs, the same ones `gameCatalogService`'s popular list
- * uses, so an IGDB or Wikidata result for Rocket League enriches this row
- * rather than adding a second one. Titles already claimed by another module
- * (Counter-Strike 2) are deliberately absent: that game has a real
- * integration, and a module must not take another's rows.
+ * So "a game this module runs" means "an installed pack whose engine is this
+ * module", read from the pack cache — which imports nothing from the
+ * integration registry, so reading it from here is not the cycle rule 2 of
+ * `eslint-rules/integration-boundaries.mjs` forbids.
  *
- * The list is not the limit of what the module runs. `runsAnyCatalogGame`
- * makes it the fallback for every other catalogue id, so a tournament for a
- * game someone found through IGDB search is reported manually too; these
- * entries are only the ones that exist without any search.
- *
- * `icon` is the module's own square tile, shipped in `client/public/games`.
- * Every title in this list has one. A game found through IGDB search has
- * none, and the setup wizard shows its text mark rather than borrowing art
- * that is not that game's.
+ * That is not the limit of what the module runs. `runsAnyCatalogGame` still
+ * makes it the fallback for every catalogue id, so a tournament for a game
+ * found through IGDB search is reported manually too.
  */
 
-import type { GameCatalogEntry } from '../types';
+import { installedPack } from '../../services/packCache';
 
 export const MANUAL_REPORT_GAME_ID = 'manual-report';
 
-/**
- * How a tournament row names a manually reported game. `tournament.game` holds
- * a catalogue id from 3.0 phase D onwards ('rocket-league'), not an
- * integration id, because this module runs many games and the row has to say
- * which one. The module's own id stays valid as a `game` value (the registry
- * resolves an integration id first), and means "a game this instance has no
- * catalogue row for".
- */
-export const MANUAL_REPORT_CATALOG: ReadonlyArray<GameCatalogEntry> = [
-  {
-    slug: 'rocket-league',
-    name: 'Rocket League',
-    aliases: ['rl'],
-    icon: '/games/rocket-league.svg',
-  },
-  { slug: 'valorant', name: 'Valorant', icon: '/games/valorant.svg' },
-  {
-    slug: 'league-of-legends',
-    name: 'League of Legends',
-    aliases: ['lol'],
-    icon: '/games/league-of-legends.svg',
-  },
-  { slug: 'dota-2', name: 'Dota 2', aliases: ['dota'], icon: '/games/dota-2.svg' },
-  { slug: 'deadlock', name: 'Deadlock', icon: '/games/deadlock.svg' },
-  {
-    slug: 'overwatch-2',
-    name: 'Overwatch 2',
-    aliases: ['ow', 'ow2'],
-    icon: '/games/overwatch-2.svg',
-  },
-  {
-    slug: 'rainbow-six-siege',
-    name: 'Rainbow Six Siege',
-    aliases: ['r6', 'r6s', 'siege'],
-    icon: '/games/rainbow-six-siege.svg',
-  },
-  { slug: 'battlefield-6', name: 'Battlefield 6', aliases: ['bf6'], icon: '/games/battlefield-6.svg' },
-  { slug: 'trackmania', name: 'Trackmania', aliases: ['tm'], icon: '/games/trackmania.svg' },
-  { slug: 'chess', name: 'Chess', icon: '/games/chess.svg' },
-  { slug: 'minecraft', name: 'Minecraft', aliases: ['mc'], icon: '/games/minecraft.svg' },
-  {
-    slug: 'ea-sports-fc-25',
-    name: 'EA Sports FC',
-    aliases: ['fifa', 'fc'],
-    icon: '/games/ea-sports-fc-25.svg',
-  },
-  {
-    slug: 'super-smash-bros-ultimate',
-    name: 'Super Smash Bros. Ultimate',
-    aliases: ['smash', 'ssbu'],
-    icon: '/games/super-smash-bros-ultimate.svg',
-  },
-  {
-    slug: 'street-fighter-6',
-    name: 'Street Fighter 6',
-    aliases: ['sf6'],
-    icon: '/games/street-fighter-6.svg',
-  },
-  { slug: 'tekken-8', name: 'Tekken 8', icon: '/games/tekken-8.svg' },
-  { slug: 'osu', name: 'osu!', icon: '/games/osu.svg' },
-  {
-    slug: 'team-fortress-2',
-    name: 'Team Fortress 2',
-    aliases: ['tf2'],
-    icon: '/games/team-fortress-2.svg',
-  },
-  {
-    slug: 'age-of-empires-ii',
-    name: 'Age of Empires II',
-    aliases: ['aoe2', 'aoe'],
-    icon: '/games/age-of-empires-ii.svg',
-  },
-];
+/** The installed pack for a slug, if this module is the one that runs it. */
+function packFor(slug: string) {
+  const pack = installedPack(slug);
+  return pack && pack.engine === MANUAL_REPORT_GAME_ID ? pack : undefined;
+}
 
-/** The name this module shows for a catalogue id it ships, or null. */
+/** True when an installed pack names this module as its engine. */
+export function runsPack(slug: string): boolean {
+  return Boolean(packFor(slug));
+}
+
+/** The name of a game this module runs, or null. */
 export function catalogNameFor(slug: string): string | null {
-  const wanted = slug.trim().toLowerCase();
-  return MANUAL_REPORT_CATALOG.find((entry) => entry.slug === wanted)?.name ?? null;
+  return packFor(slug)?.name ?? null;
 }

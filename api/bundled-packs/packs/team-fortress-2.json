@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "slug": "team-fortress-2",
+  "name": "Team Fortress 2",
+  "engine": "manual-report",
+  "aliases": [
+    "tf2"
+  ],
+  "version": "1.0.0",
+  "description": "Six-a-side class shooter, reported by rounds won.",
+  "icon": "../icons/team-fortress-2.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  },
+  "stats": [
+    {
+      "key": "kills",
+      "label": "Kills",
+      "type": "integer",
+      "scope": "player"
+    },
+    {
+      "key": "deaths",
+      "label": "Deaths",
+      "type": "integer",
+      "scope": "player"
+    }
+  ]
+}

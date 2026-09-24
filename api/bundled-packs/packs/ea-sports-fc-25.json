@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "slug": "ea-sports-fc-25",
+  "name": "EA Sports FC",
+  "engine": "manual-report",
+  "aliases": [
+    "fifa",
+    "fc"
+  ],
+  "version": "1.0.0",
+  "description": "Football. Report the scoreline.",
+  "icon": "../icons/ea-sports-fc-25.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  }
+}

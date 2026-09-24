@@ -44,6 +44,17 @@ export const PUBLIC_DIR = path.join(__dirname, ...upToApiRoot, 'public');
 export const SWAGGER_UI_DIR = path.join(__dirname, ...upToApiRoot, 'swagger-ui');
 
 /**
+ * The game packs the image ships with: a committed snapshot of the
+ * `Auto-Tournament/packs` repository (`scripts/sync-bundled-packs.mjs`),
+ * `api/bundled-packs` from source and `/app/bundled-packs` in the image.
+ *
+ * Read once at boot by `seedBundledPacks`, which installs any it has never
+ * installed before. The directory is build output in the sense that matters —
+ * baked into the image, replaced by every update — so nothing is written here.
+ */
+export const BUNDLED_PACKS_DIR = path.join(__dirname, ...upToApiRoot, 'bundled-packs');
+
+/**
  * Where uploaded map images live: under `DATA_DIR`, the directory
  * `docker/docker-compose.yml` (and `docker-compose.local.yml`) mount the
  * persistent volume on (`./data:/app/data`).

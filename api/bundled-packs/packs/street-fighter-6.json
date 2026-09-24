@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "slug": "street-fighter-6",
+  "name": "Street Fighter 6",
+  "engine": "manual-report",
+  "aliases": [
+    "sf6"
+  ],
+  "version": "1.0.0",
+  "description": "Fighting game. Report games won in the set.",
+  "icon": "../icons/street-fighter-6.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  }
+}

@@ -36,7 +36,7 @@ import type {
   TournamentType,
 } from '../../types/tournament.types';
 import type { DbMatchRow } from '../../types/database.types';
-import { MANUAL_REPORT_CATALOG, MANUAL_REPORT_GAME_ID } from './catalog';
+import { MANUAL_REPORT_GAME_ID, runsPack } from './catalog';
 import { validateSetup } from './setup';
 import {
   adminOverride,
@@ -112,16 +112,15 @@ manualReportTestRoutes.post('/tournament', async (req: Request, res: Response) =
       ? body.game.trim().toLowerCase()
       : MANUAL_REPORT_GAME_ID;
 
-  // Only a game this module ships, or the module itself. The registry would
-  // answer this for any catalogue id, but an integration must not import it
-  // (eslint-rules/integration-boundaries.mjs), and a test helper has no
-  // business creating a tournament for someone else's game anyway.
-  const runnable =
-    game === MANUAL_REPORT_GAME_ID || MANUAL_REPORT_CATALOG.some((entry) => entry.slug === game);
+  // Only an installed game this module runs, or the module itself. The
+  // registry would answer this for any catalogue id, but an integration must
+  // not import it (eslint-rules/integration-boundaries.mjs), and a test helper
+  // has no business creating a tournament for someone else's game anyway.
+  const runnable = game === MANUAL_REPORT_GAME_ID || runsPack(game);
   if (!runnable) {
     return res.status(409).json({
       success: false,
-      error: `Game '${game}' is not one this module ships; use a slug from its catalogue entries`,
+      error: `Game '${game}' is not an installed pack this module runs; add it from the Modules page`,
     });
   }
 

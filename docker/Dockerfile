@@ -135,6 +135,10 @@ COPY --from=build /app/api/public ./public
 # copySwaggerUiAssets in api/esbuild.config.js and SWAGGER_UI_DIR in
 # api/src/config/publicPaths.ts.
 COPY --from=build /app/api/swagger-ui ./swagger-ui
+# The games a fresh install can run: a committed snapshot of the
+# Auto-Tournament/packs repository, seeded into game_packs on first boot.
+# See seedBundledPacks in api/src/services/gamePackService.ts.
+COPY --from=build /app/api/bundled-packs ./bundled-packs
 # The generated OpenAPI spec. Without it, swagger-jsdoc has no .ts sources to
 # read in this image and /api-docs would list every endpoint with none of the
 # hand-written descriptions. See resolveOpenApiSpec in api/src/config/swagger.ts.

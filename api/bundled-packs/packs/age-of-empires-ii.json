@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "slug": "age-of-empires-ii",
+  "name": "Age of Empires II",
+  "engine": "manual-report",
+  "aliases": [
+    "aoe2",
+    "aoe"
+  ],
+  "version": "1.0.0",
+  "description": "Real-time strategy. Report games won.",
+  "icon": "../icons/age-of-empires-ii.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  }
+}

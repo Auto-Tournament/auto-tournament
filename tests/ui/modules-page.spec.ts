@@ -71,7 +71,11 @@ test.describe.serial('Modules page', () => {
       // something to manage.
       await expect(page.getByTestId('module-cs2')).toBeVisible();
       await expect(page.getByTestId('module-manual-report')).toBeVisible();
-      await expect(page.getByTestId('modules-packs-empty')).toBeVisible();
+      // The games the image ships are already here, as packs like any other,
+      // marked as having come with the install.
+      await expect(page.getByTestId('pack-rocket-league')).toBeVisible();
+      await expect(page.getByTestId('pack-rocket-league-bundled')).toBeVisible();
+      await expect(page.getByTestId(`pack-${PACK.slug}`)).toHaveCount(0);
 
       // Import a pack the way a host would: pick the file.
       await page.getByTestId('modules-file-input').setInputFiles(packFiles());
@@ -93,7 +97,8 @@ test.describe.serial('Modules page', () => {
       await page.getByTestId(`pack-${PACK.slug}-remove`).click();
       await page.getByTestId('modules-confirm-remove').click();
       await expect(card).toHaveCount(0, { timeout: 15000 });
-      await expect(page.getByTestId('modules-packs-empty')).toBeVisible();
+      // Only that one: the bundled games are untouched.
+      await expect(page.getByTestId('pack-rocket-league')).toBeVisible();
     }
   );
 

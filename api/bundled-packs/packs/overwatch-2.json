@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "slug": "overwatch-2",
+  "name": "Overwatch 2",
+  "engine": "manual-report",
+  "aliases": [
+    "ow",
+    "ow2"
+  ],
+  "version": "1.0.0",
+  "description": "Five-a-side hero shooter, reported by maps won.",
+  "icon": "../icons/overwatch-2.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  },
+  "stats": [
+    {
+      "key": "eliminations",
+      "label": "Eliminations",
+      "type": "integer",
+      "scope": "player"
+    },
+    {
+      "key": "deaths",
+      "label": "Deaths",
+      "type": "integer",
+      "scope": "player"
+    },
+    {
+      "key": "assists",
+      "label": "Assists",
+      "type": "integer",
+      "scope": "player"
+    }
+  ]
+}

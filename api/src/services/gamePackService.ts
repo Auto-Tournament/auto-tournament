@@ -50,9 +50,34 @@
  * a pack quietly rewritten on the way in is a pack nobody can reason about.
  */
 
+import fs from 'fs/promises';
+import path from 'path';
 import { db } from '../config/database';
+import { BUNDLED_PACKS_DIR } from '../config/publicPaths';
 import { listIntegrations } from '../integrations/registry';
 import { log } from '../utils/logger';
+import {
+  installedPack,
+  installedPacks,
+  refreshPackCache,
+  type GamePackDefinition,
+  type InstalledPack,
+  type PackSource,
+  type PackStatField,
+} from './packCache';
+
+// The read side moved to `./packCache` so an integration can import it
+// without reaching the registry. Re-exported so nothing that already imports
+// it from here has to change.
+export {
+  installedPack,
+  installedPacks,
+  refreshPackCache,
+  type GamePackDefinition,
+  type InstalledPack,
+  type PackSource,
+  type PackStatField,
+} from './packCache';
 
 /** How many packs one instance may hold. A guard, not a design limit. */
 const MAX_PACKS = 200;
@@ -61,58 +86,6 @@ const MAX_ICON_BYTES = 1_000_000;
 const MAX_STAT_FIELDS = 40;
 
 export const PACK_SCHEMA_VERSION = 1;
-
-export interface PackStatField {
-  key: string;
-  label: string;
-  type: 'integer' | 'decimal' | 'text';
-  scope: 'player' | 'team';
-  required?: boolean;
-}
-
-export interface GamePackDefinition {
-  schema: number;
-  slug: string;
-  name: string;
-  engine: string;
-  aliases?: string[];
-  version?: string;
-  description?: string;
-  /**
-   * Where the square tile lives, relative to the pack file — normally
-   * `../icons/<slug>.svg`. Never the markup itself, and never a URL.
-   */
-  icon?: string;
-  report?: {
-    confirmation?: 'opponent' | 'admin';
-    confirmTimeoutMin?: number;
-  };
-  stats?: PackStatField[];
-}
-
-export interface InstalledPack {
-  slug: string;
-  name: string;
-  engine: string;
-  version: string | null;
-  source: 'uploaded' | 'index';
-  origin: string | null;
-  hasIcon: boolean;
-  installedAt: number;
-  definition: GamePackDefinition;
-}
-
-interface PackRow {
-  slug: string;
-  name: string;
-  engine: string;
-  version: string | null;
-  source: string;
-  origin: string | null;
-  definition: string;
-  icon: string | null;
-  installed_at: number;
-}
 
 // ---------------------------------------------------------------------------
 // The tile allowlist
@@ -449,53 +422,6 @@ export function validatePack(
 // Storage, and the cache the catalogue reads
 // ---------------------------------------------------------------------------
 
-/**
- * Installed packs, by slug.
- *
- * `builtinGames()` is synchronous and called on every catalogue read, so the
- * packs it merges cannot come from a query. They are loaded once at startup
- * and refreshed by every write that goes through this file.
- */
-let cache = new Map<string, InstalledPack>();
-
-function toPack(row: PackRow): InstalledPack | null {
-  try {
-    return {
-      slug: row.slug,
-      name: row.name,
-      engine: row.engine,
-      version: row.version,
-      source: row.source === 'index' ? 'index' : 'uploaded',
-      origin: row.origin,
-      hasIcon: Boolean(row.icon),
-      installedAt: row.installed_at,
-      definition: JSON.parse(row.definition) as GamePackDefinition,
-    };
-  } catch (error) {
-    log.error(`[PACKS] Pack '${row.slug}' has unreadable JSON and was skipped`, error);
-    return null;
-  }
-}
-
-export async function refreshPackCache(): Promise<void> {
-  const rows = await db.getAllAsync<PackRow>('game_packs');
-  const next = new Map<string, InstalledPack>();
-  for (const row of rows) {
-    const pack = toPack(row);
-    if (pack) next.set(pack.slug, pack);
-  }
-  cache = next;
-}
-
-/** Every installed pack. Synchronous, from the cache. */
-export function installedPacks(): InstalledPack[] {
-  return [...cache.values()].sort((a, b) => a.name.localeCompare(b.name));
-}
-
-export function installedPack(slug: string): InstalledPack | undefined {
-  return cache.get(slug.trim().toLowerCase());
-}
-
 export async function packIcon(slug: string): Promise<string | null> {
   const row = await db.getOneAsync<{ icon: string | null }>(
     'game_packs',
@@ -508,15 +434,15 @@ export async function packIcon(slug: string): Promise<string | null> {
 export async function installPack(
   definition: GamePackDefinition,
   options: {
-    source?: 'uploaded' | 'index';
+    source?: PackSource;
     origin?: string | null;
     installedBy?: string | null;
     /** The tile's markup, already checked by `checkTileMarkup`. */
     tile?: string | null;
   } = {}
 ): Promise<InstalledPack> {
-  const existing = cache.get(definition.slug);
-  if (!existing && cache.size >= MAX_PACKS) {
+  const existing = installedPack(definition.slug);
+  if (!existing && installedPacks().length >= MAX_PACKS) {
     throw new Error(`This instance already holds ${MAX_PACKS} game packs`);
   }
 
@@ -557,7 +483,7 @@ export async function installPack(
   );
 
   await refreshPackCache();
-  const pack = cache.get(definition.slug);
+  const pack = installedPack(definition.slug);
   if (!pack) throw new Error(`Pack '${definition.slug}' did not survive being stored`);
   log.info(`[PACKS] ${existing ? 'Updated' : 'Installed'} game pack '${definition.slug}'`);
   return pack;
@@ -588,4 +514,168 @@ export async function packIsInUse(slug: string): Promise<boolean> {
 /** The URL a pack's tile is served on. Same origin, so `ModuleIcon` inlines it. */
 export function packIconPath(slug: string): string {
   return `/api/packs/${encodeURIComponent(slug)}/icon.svg`;
+}
+
+// ---------------------------------------------------------------------------
+// Bundled packs
+// ---------------------------------------------------------------------------
+
+/**
+ * `app_settings` key holding every bundled slug this instance has ever
+ * installed. It is the difference between "never seeded" and "removed by an
+ * admin", which the `game_packs` table alone cannot tell apart: both are a
+ * missing row.
+ */
+const SEEN_SETTING = 'bundled_packs_seen';
+
+/**
+ * Test-only: forget that some bundled packs were ever seeded, so the next
+ * seed installs them again as if on a fresh instance. Lets a spec that
+ * removed a bundled game put it back *as bundled* — re-importing it by hand
+ * would make it the admin's, which the seed then leaves alone for good.
+ */
+export async function forgetBundledPacks(slugs: string[]): Promise<void> {
+  const seen = await readSeen();
+  for (const slug of slugs) seen.delete(slug.trim().toLowerCase());
+  await db.setAppSettingAsync(SEEN_SETTING, JSON.stringify([...seen].sort()));
+}
+
+export interface SeedReport {
+  installed: string[];
+  updated: string[];
+  /** Removed by an admin at some point; left removed. */
+  keptRemoved: string[];
+  /** Replaced by an admin with their own pack of the same slug; left alone. */
+  keptOverridden: string[];
+  /** Did not validate. Logged; never fatal. */
+  skipped: string[];
+}
+
+async function readSeen(): Promise<Set<string>> {
+  try {
+    const raw = await db.getAppSettingAsync(SEEN_SETTING);
+    const parsed = raw ? (JSON.parse(raw) as unknown) : [];
+    return new Set(Array.isArray(parsed) ? parsed.filter((v) => typeof v === 'string') : []);
+  } catch {
+    return new Set();
+  }
+}
+
+/**
+ * Install the games the image ships with — once each.
+ *
+ * The platform carries no list of games in its source. What a fresh install
+ * can run on day one is `api/bundled-packs`, a committed snapshot of the
+ * `Auto-Tournament/packs` repository, and this puts it into `game_packs`.
+ * From then on they are ordinary packs: an admin sees them on the Modules
+ * page, can remove any of them, and can replace one with their own.
+ *
+ * So the rules are about respecting what an admin did:
+ *
+ * - **Never seen** → install it.
+ * - **Seen, and not installed** → an admin removed it. Leave it removed. A
+ *   game that comes back on every restart is a game nobody can get rid of.
+ * - **Installed from here, and the image has a new version** → update it.
+ *   That is how a release ships a fixed tile or a new stat field.
+ * - **Installed from elsewhere** (uploaded, or from the index) → the admin's
+ *   own. Leave it alone, whatever the image carries.
+ *
+ * A bundled pack is validated exactly like an uploaded one. One that fails is
+ * logged and skipped; a bad file in the snapshot must never stop the
+ * instance from starting.
+ *
+ * Runs at boot and after a database wipe (which also clears the `seen` set,
+ * so a wiped instance starts with the full list again — the point of a wipe).
+ * Always ends by refreshing the cache the catalogue reads.
+ */
+export async function seedBundledPacks(): Promise<SeedReport> {
+  const report: SeedReport = {
+    installed: [],
+    updated: [],
+    keptRemoved: [],
+    keptOverridden: [],
+    skipped: [],
+  };
+
+  await refreshPackCache();
+
+  let index: { schema?: unknown; packs?: Array<{ slug?: unknown; file?: unknown }> };
+  try {
+    index = JSON.parse(await fs.readFile(path.join(BUNDLED_PACKS_DIR, 'index.json'), 'utf8'));
+  } catch (error) {
+    // A build without the snapshot is a build that ships no games, not a
+    // broken one: CS2 and anything an admin imports still work.
+    log.warn(`[PACKS] No bundled packs at ${BUNDLED_PACKS_DIR}: ${(error as Error).message}`);
+    return report;
+  }
+  if (index.schema !== 1 || !Array.isArray(index.packs)) {
+    log.warn('[PACKS] Bundled index.json is not a schema 1 index; no packs seeded');
+    return report;
+  }
+
+  const seen = await readSeen();
+
+  for (const entry of index.packs) {
+    const file = typeof entry.file === 'string' ? entry.file : null;
+    const label = typeof entry.slug === 'string' ? entry.slug : String(file);
+    if (!file) {
+      report.skipped.push(label);
+      continue;
+    }
+
+    let definition: GamePackDefinition;
+    let tile: string | null = null;
+    try {
+      const packPath = path.resolve(BUNDLED_PACKS_DIR, file);
+      const result = validatePack(JSON.parse(await fs.readFile(packPath, 'utf8')));
+      if (!result.ok) throw new Error(result.error);
+      definition = result.pack;
+
+      if (definition.icon) {
+        const iconPath = path.resolve(path.dirname(packPath), definition.icon);
+        if (!iconPath.startsWith(BUNDLED_PACKS_DIR + path.sep)) {
+          throw new Error('icon points outside the bundled packs');
+        }
+        const markup = await fs.readFile(iconPath, 'utf8');
+        const problem = checkTileMarkup(markup);
+        if (problem) throw new Error(problem);
+        tile = markup;
+      }
+    } catch (error) {
+      log.warn(`[PACKS] Skipped bundled pack '${label}': ${(error as Error).message}`);
+      report.skipped.push(label);
+      continue;
+    }
+
+    const slug = definition.slug;
+    const existing = installedPack(slug);
+
+    if (existing && existing.source !== 'bundled') {
+      report.keptOverridden.push(slug);
+    } else if (existing) {
+      if ((existing.version ?? null) !== (definition.version ?? null)) {
+        await installPack(definition, { source: 'bundled', tile });
+        report.updated.push(slug);
+      }
+    } else if (seen.has(slug)) {
+      report.keptRemoved.push(slug);
+    } else {
+      await installPack(definition, { source: 'bundled', tile });
+      report.installed.push(slug);
+    }
+    seen.add(slug);
+  }
+
+  await db.setAppSettingAsync(SEEN_SETTING, JSON.stringify([...seen].sort()));
+  await refreshPackCache();
+
+  const changed = report.installed.length + report.updated.length;
+  if (changed > 0 || report.skipped.length > 0) {
+    log.info(
+      `[PACKS] Bundled packs: ${report.installed.length} installed, ${report.updated.length} updated, ` +
+        `${report.keptRemoved.length} left removed, ${report.keptOverridden.length} left as the admin's, ` +
+        `${report.skipped.length} skipped`
+    );
+  }
+  return report;
 }

@@ -631,11 +631,16 @@ export interface GameIntegration {
   catalog?: GameCatalogEntry | null;
   /**
    * More catalogue entries the same module ships, for a module that is not one
-   * game: manual-report declares the titles it comes ready to run. Each entry
-   * becomes a `games` row the module is the integration for, so those games
-   * read as supported and a tournament can be created for them. `catalog` (one
-   * entry, named after the module) and `catalogEntries` are independent; a
-   * module with only `catalogEntries` sets `catalog: null`.
+   * game. Each entry becomes a `games` row the module is the integration for,
+   * so those games read as supported and a tournament can be created for
+   * them. `catalog` (one entry, named after the module) and `catalogEntries`
+   * are independent; a module with only `catalogEntries` sets `catalog: null`.
+   *
+   * No module uses this today. Manual reporting did until 3.0 — eighteen
+   * titles in its source — and they are game packs now: data installed on the
+   * instance, naming the module as their `engine`, so adding a game no longer
+   * takes a release. Prefer a pack. This stays for a module whose games
+   * genuinely are code.
    *
    * An entry whose slug another integration already claims is skipped, so a
    * module that ships a CS2 entry never takes CS2's rows.

@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "slug": "minecraft",
+  "name": "Minecraft",
+  "engine": "manual-report",
+  "aliases": [
+    "mc"
+  ],
+  "version": "1.0.0",
+  "description": "Whatever the host builds on it. The captains report who won.",
+  "icon": "../icons/minecraft.svg",
+  "report": {
+    "confirmation": "opponent",
+    "confirmTimeoutMin": 60
+  }
+}
