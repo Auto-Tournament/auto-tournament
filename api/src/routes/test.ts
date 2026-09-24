@@ -1701,6 +1701,13 @@ router.get('/fake-pack-index/icons/:file', (req: Request, res: Response): void =
  *   mismatched-id module.json names its id '../<id>'
  *   migrates      a valid module whose one migration creates `<id>_probe`
  *   bad-migration a valid module whose migration reaches into core's `matches`
+ *
+ * Client-side kinds, each with a server half as valid as `valid`'s:
+ *   client-incompatible   declares client API ^0.3.0
+ *   client-react19        its client imports `use`, which React 18 does not export
+ *   client-render-throws  its client's route throws while it renders
+ *
+ * Every kind's client/index.js is a real client entry (`fixtureClientSource`).
  */
 const MODULE_FIXTURE_KINDS = [
   'valid',
@@ -1709,6 +1716,9 @@ const MODULE_FIXTURE_KINDS = [
   'mismatched-id',
   'migrates',
   'bad-migration',
+  'client-incompatible',
+  'client-react19',
+  'client-render-throws',
 ] as const;
 type ModuleFixtureKind = (typeof MODULE_FIXTURE_KINDS)[number];
 
@@ -1738,13 +1748,94 @@ function migrationsFor(id: string, kind: ModuleFixtureKind): string {
   return '';
 }
 
+/**
+ * A fixture's `client/index.js`, written the way a module build emits it:
+ * plain ESM with no build step, React, MUI, the router and i18next left as
+ * bare imports for the host's import map to resolve (never a bundled React),
+ * and `createElement` where a build would have compiled JSX.
+ *
+ * Its default export is a `ClientGameIntegration` with two admin routes,
+ * `/<id>` and `/<id>/next`. The page proves it runs on the host's instances:
+ * `useState` works (one React), a contained MUI button takes the host theme's
+ * primary colour, and it shows the host's current path and language and
+ * navigates the host's router.
+ */
+function fixtureClientSource(id: string, kind: ModuleFixtureKind): string {
+  const reactNames =
+    kind === 'client-react19'
+      ? // React 19's `use`: the host's React 18 shim has no such export, so
+        // this module must fail to link inside import(), before it renders.
+        'createElement as h, use, useState'
+      : 'createElement as h, useState';
+  const page =
+    kind === 'client-render-throws'
+      ? `function FixturePage() {
+  throw new Error(${JSON.stringify(`fixture ${id} exploded while rendering`)});
+}`
+      : `function FixturePage() {
+  const [clicks, setClicks] = useState(0);
+  const theme = useTheme();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  return h(
+    Box,
+    { 'data-testid': id + '-page', sx: { p: 2 } },
+    h(Typography, { 'data-testid': id + '-path' }, location.pathname),
+    h(Typography, { 'data-testid': id + '-language' }, i18n.language),
+    h(Typography, { 'data-testid': id + '-translated' }, t('modulesPage.code.chip')),
+    h(Typography, { 'data-testid': id + '-primary' }, theme.palette.primary.main),
+    h(
+      Button,
+      {
+        variant: 'contained',
+        color: 'primary',
+        'data-testid': id + '-clicks',
+        onClick: () => setClicks((n) => n + 1),
+      },
+      'Clicked ' + clicks
+    ),
+    h(
+      Button,
+      { variant: 'outlined', 'data-testid': id + '-navigate', onClick: () => navigate('/' + id + '/next') },
+      'Next'
+    )
+  );
+}`;
+  return `import { ${reactNames} } from 'react';
+import { Box, Button, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+
+const id = ${JSON.stringify(id)};
+
+${page}
+
+export default {
+  id,
+  capabilities: { servers: false, veto: false, liveEvents: false, demos: false, playerStats: false },
+  matchPanels: {},
+  tournamentSetupSteps: {},
+  standaloneMatchSteps: {},
+  resourceDialogs: {},
+  dashboardWidgets: {},
+  routes: [
+    { path: id, scope: 'admin', element: h(FixturePage) },
+    { path: id + '/next', scope: 'admin', element: h(FixturePage) },
+  ],
+  navItems: [],
+};
+`;
+}
+
 function moduleFixtureFiles(id: string, kind: ModuleFixtureKind): Record<string, string> {
   const manifest = {
     id: kind === 'mismatched-id' ? `../${id}` : id,
     name: `Fixture ${id}`,
     version: '1.0.0',
     serverApi: kind === 'incompatible' ? '^0.3.0' : '^0.1.0',
-    clientApi: '^0.1.0',
+    clientApi: kind === 'client-incompatible' ? '^0.3.0' : '^0.1.0',
     server: 'server/index.js',
     client: 'client/index.js',
   };
@@ -1784,7 +1875,7 @@ export default integration;
       kind === 'throws'
         ? `throw new Error(${JSON.stringify(`fixture ${id} exploded at import`)});\n`
         : integration,
-    'client/index.js': `export default { id: ${JSON.stringify(id)} };\n`,
+    'client/index.js': fixtureClientSource(id, kind),
     'client/style.css': '.fixture-module { color: inherit; }\n',
   };
 }
