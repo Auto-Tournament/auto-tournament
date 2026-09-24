@@ -21,6 +21,7 @@ import {
 } from '../components/tournament/setup/setupSteps';
 import { DEFAULT_SETUP_GAME } from '../components/tournament/setup/games';
 import { getIntegration } from '../integrations/registry';
+import { useModuleState } from '../module-loader/useModuleState';
 import { DEFAULT_ELO_TEMPLATE_ID } from '../components/tournament/setup/EloTemplateSelect';
 import TournamentChangePreviewModal from '../components/modals/TournamentChangePreviewModal';
 import SaveTemplateModal from '../components/modals/SaveTemplateModal';
@@ -189,6 +190,8 @@ const formFromTournament = (tournament: TournamentRecord): SetupFormValues => {
 
 const Tournament: React.FC = () => {
   const navigate = useNavigate();
+  // Start checks and setup steps come from the game's module: re-render when a code module arrives.
+  useModuleState();
   const { t } = useTranslation();
   const {
     tournament,

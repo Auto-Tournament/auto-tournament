@@ -869,8 +869,10 @@ export default function Layout() {
                 {headerActions && <Box>{headerActions}</Box>}
               </Box>
             )}
-            {/* The tournament's game module is not installed: say so once, on every admin page. */}
-            {!tournamentGameLoading && tournamentIntegration?.notInstalled && (
+            {/* The tournament's game module is not installed (or may still be
+                loading): say so once, on every admin page. */}
+            {!tournamentGameLoading &&
+              (tournamentIntegration?.notInstalled || tournamentIntegration?.modulePending) && (
               <Box sx={{ mb: 3 }}>
                 <ModuleNotInstalledNotice integration={tournamentIntegration} />
               </Box>

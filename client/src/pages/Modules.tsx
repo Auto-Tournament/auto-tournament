@@ -46,6 +46,7 @@ import { usePageHeader } from '../contexts/PageHeaderContext';
 import { ModuleIcon } from '../components/common/ModuleIcon';
 import { CodeModuleList } from '../components/modules/CodeModuleList';
 import { listIntegrations } from '../integrations/registry';
+import { useModuleState } from '../module-loader/useModuleState';
 import { api } from '../utils/api';
 
 interface InstalledPack {
@@ -319,6 +320,8 @@ export default function Modules() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [busy, setHeaderActions, t]);
 
+  // Re-render when a code module arrives, so it is listed.
+  useModuleState();
   const integrations = listIntegrations();
 
   return (

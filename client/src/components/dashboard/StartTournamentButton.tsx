@@ -31,7 +31,7 @@ import ConfirmDialog from '../modals/ConfirmDialog';
 import { api } from '../../utils/api';
 import { useIsDevelopment } from '../../hooks/useIsDevelopment';
 import { useSimulationMode } from '../../hooks/useSimulationMode';
-import { integrationFor } from '../../integrations/registry';
+import { useIntegrationFor } from '../../integrations/registry';
 
 interface StartTournamentButtonProps {
   variant?: 'text' | 'outlined' | 'contained';
@@ -60,7 +60,7 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
   // error snackbar (CS2: servers Steam says are out of date).
   const [failureError, setFailureError] = useState<string | null>(null);
 
-  const integration = integrationFor(tournament);
+  const integration = useIntegrationFor(tournament);
   const startSlot = integration.tournamentStart;
   const ConfirmView = startSlot?.confirmView;
   const FailureView = startSlot?.failureView;

@@ -37,7 +37,7 @@ import { useSnackbar } from '../../contexts/SnackbarContext';
 import { api } from '../../utils/api';
 import { fetchModuleList, MODULES_ENDPOINT } from '../../module-loader/boot';
 import type { ModuleFailure, ModuleListEntry, ModuleServerStatus } from '../../module-loader/manifest';
-import { useModuleState } from '../../module-loader/ModuleBootGate';
+import { useModuleState } from '../../module-loader/useModuleState';
 import type { ModuleState } from '../../module-loader/moduleState';
 
 const STATUS_COLOR: Record<ModuleServerStatus, 'success' | 'warning' | 'error' | 'default'> = {

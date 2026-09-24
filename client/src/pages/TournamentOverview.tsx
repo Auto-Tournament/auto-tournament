@@ -23,7 +23,7 @@ import { PrizesCard } from '../components/tournament/overview/PrizesCard';
 import { RequirementsCard, type Requirement } from '../components/tournament/overview/RequirementsCard';
 import { LiveStrip } from '../components/tournament/overview/LiveStrip';
 import { getMapDisplayName } from '../constants/maps';
-import { integrationFor } from '../integrations/registry';
+import { useIntegrationFor } from '../integrations/registry';
 import { MATCH_FORMATS } from '../constants/tournament';
 
 export default function TournamentOverview() {
@@ -37,6 +37,8 @@ export default function TournamentOverview() {
     loading,
     error,
   } = usePublicTournamentOverview(id);
+  // Before the early returns below: a hook, re-rendering when a code module arrives.
+  const gameIntegration = useIntegrationFor(tournament);
 
   useEffect(() => {
     document.title = tournament ? tournament.name : t('overviewPage.tabs.overview');
@@ -100,7 +102,6 @@ export default function TournamentOverview() {
   // A map veto and an overtime policy are Counter-Strike 2's. A game the
   // platform cannot watch has neither, and a fact line saying "Map veto:
   // Standard" about a chess cup is simply wrong (3.0 phase D, PR D10).
-  const gameIntegration = integrationFor(tournament);
   const capabilities = gameIntegration.capabilities;
   // Overtime is a match rule the game module asks for in setup; a module that
   // asks for none has none to report.

@@ -9,9 +9,15 @@
  */
 
 import { cs2ClientIntegration } from './cs2';
+import { useModuleState } from '../module-loader/useModuleState';
 import { manualReportClientIntegration } from './manual-report';
-import { resolveIntegration } from '../utils/moduleResolution';
-import { isBroken } from '../module-loader/moduleState';
+import { resolveIntegration, resolveIntegrationWhileLoading } from '../utils/moduleResolution';
+import {
+  getModuleState,
+  isBroken,
+  modulesMayArrive,
+  type ModuleState,
+} from '../module-loader/moduleState';
 import { DEFAULT_GAME, type ClientGameIntegration, type GameId, type GameOwned } from './types';
 
 // CS2 first, the same order the API registers them in: the two overlap on
@@ -78,6 +84,56 @@ export function listIntegrations(): ClientGameIntegration[] {
  */
 export function getIntegration(game: GameId | null | undefined): ClientGameIntegration {
   return resolveIntegration(game, listIntegrations());
+}
+
+/**
+ * `getIntegration`, for a page that renders while code modules may still be
+ * loading (DESIGN-module-client-api.md §4.2): the integration, or the
+ * "module pending" placeholder when the module that runs `game` may be one
+ * that has not arrived yet. The placeholder's slots are empty like the
+ * missing-module one, and `modulePending` says why, so the surfaces that
+ * would say "not installed" show a loading state instead.
+ *
+ * A game is pending while `modulesMayArrive`:
+ * - when nothing installed runs it (it would be the missing-module
+ *   placeholder), or
+ * - once the manifest has listed a code module, when only a catch-all module
+ *   (manual reporting) runs it: the code module may claim it outright.
+ *
+ * A built-in that owns the game (CS2) never waits, and nothing waits at all
+ * once the manifest says there is no code module. While the manifest has not
+ * answered, a catch-all game shows the catch-all as before, so a stock
+ * install never holds back manual reporting's slots.
+ *
+ * Not reactive on its own: `useIntegration` re-renders the caller when a
+ * module arrives.
+ */
+export function getIntegrationWhileLoading(
+  game: GameId | null | undefined,
+  state: ModuleState = getModuleState()
+): ClientGameIntegration {
+  return resolveIntegrationWhileLoading(game, listIntegrations(), modulesMayArrive(state), state.manifest);
+}
+
+/**
+ * `getIntegration`, for render: the component re-renders when a code module
+ * arrives, and a game whose module may still be loading answers the "module
+ * pending" placeholder (`getIntegrationWhileLoading`).
+ *
+ * The app renders before code modules have loaded (they never hold back first
+ * paint), so a component that reads the registry while rendering should use
+ * this. On an instance with no code module it answers exactly what
+ * `getIntegration` does as soon as the manifest has said so, and the store it
+ * subscribes to never changes again.
+ */
+export function useIntegration(game: GameId | null | undefined): ClientGameIntegration {
+  const state = useModuleState();
+  return getIntegrationWhileLoading(game, state);
+}
+
+/** `integrationFor(row)`, for render: see `useIntegration`. */
+export function useIntegrationFor(row: GameOwned | null | undefined): ClientGameIntegration {
+  return useIntegration(row?.game);
 }
 
 /**

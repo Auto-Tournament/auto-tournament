@@ -18,7 +18,7 @@ import { useEffect } from 'react';
 import { Box, Card, CardContent, LinearProgress, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useTournamentStatus } from '../hooks/useTournamentStatus';
-import { integrationFor } from '../integrations/registry';
+import { useIntegrationFor } from '../integrations/registry';
 
 export default function Disputes() {
   const { t } = useTranslation();
@@ -28,7 +28,7 @@ export default function Disputes() {
     document.title = t('disputes.title');
   }, [t]);
 
-  const DisputesView = integrationFor(tournament).adminDisputesView;
+  const DisputesView = useIntegrationFor(tournament).adminDisputesView;
 
   return (
     <Box data-testid="disputes-page" sx={{ width: '100%' }}>

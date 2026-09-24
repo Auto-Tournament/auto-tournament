@@ -2,19 +2,23 @@
  * Boot: ask the server which code modules to load, and load them before the
  * routes render (DESIGN-module-client-api.md §4.2).
  *
- * The registry stays synchronous, because 51 call sites read it during
- * render. So loading happens once, up front, and the app renders when it is
- * done — never later than the timeouts below allow, whatever a module does.
+ * The registry stays synchronous, because many call sites read it during
+ * render. Loading happens once, as early as possible (`main.tsx` starts it
+ * before the first render), and settles within the timeouts below whatever a
+ * module does.
  *
  * Every visitor boots from the public manifest, `GET /api/modules/public`:
  * players and signed-out visitors render module slots too (the team match
  * page, profiles, public tournament pages). The admin-only `GET /api/modules`
  * is for the Modules page, where the reasons and disabled modules belong.
  *
- * On an instance with no code module this costs one small, cacheable request
- * and loads nothing else: the loader, the range check and the shared-package
- * registry are a separate chunk, imported only when there is something to
- * load.
+ * Nothing waits for it. The app renders at once; only a module-owned slot or
+ * route whose module has not arrived yet shows a pending state
+ * (`useIntegration` in `integrations/registry`), and re-renders when it does
+ * (`moduleState`). On an instance with no code module this costs one small,
+ * cacheable request and loads nothing else: the loader, the range check and
+ * the shared-package registry are a separate chunk, imported only when there
+ * is something to load, and no pending state is ever drawn.
  */
 
 import {
@@ -23,7 +27,7 @@ import {
   type LoadableModule,
   type ModuleListing,
 } from './manifest';
-import { setBootStatus, setSafeMode } from './moduleState';
+import { setBootStatus, setManifestStatus, setSafeMode } from './moduleState';
 
 /** The admin list: every module with its status and reason. The Modules page. */
 export const MODULES_ENDPOINT = '/api/modules';
@@ -138,7 +142,12 @@ async function run(): Promise<void> {
       return;
     }
     const result = await fetchPublicManifest();
-    if (!result.ok || result.modules.length === 0) return;
+    if (!result.ok || result.modules.length === 0) {
+      // Nothing will arrive: every slot and route answers at once.
+      setManifestStatus('empty');
+      return;
+    }
+    setManifestStatus('listed');
 
     // The loader chunk still checks each entry's URL and clientApi range
     // itself: the manifest says what to load, not that it may be loaded.
