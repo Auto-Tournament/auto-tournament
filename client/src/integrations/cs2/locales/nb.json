@@ -38,6 +38,11 @@
       "pluginSame": "{{version}}, alle servere matcher",
       "pluginMixed": "{{count}} plugin-versjoner i bruk",
       "none": "Ingen servere tilkoblet enda."
+    },
+    "setup": {
+      "serversDone": "{{count}} server lagt til",
+      "serversDonePlural": "{{count}} servere lagt til",
+      "serversTodo": "Koble til en server"
     }
   },
   "managePage": {
@@ -57,6 +62,19 @@
       "offline": "Offline",
       "lastHeartbeat": "Siste puls {{time}} siden",
       "never": "aldri"
+    },
+    "needsYou": {
+      "stale": {
+        "title": "{{server}} har vært lastet en stund",
+        "detail": "{{match}} har sittet fast lenger enn vanlig."
+      },
+      "offline": {
+        "title": "{{server}} svarer ikke",
+        "detail": "{{match}} var på denne serveren. Sist sett {{time}} siden."
+      },
+      "unknownTime": "en stund",
+      "reallocateAction": "Flytt til en annen server",
+      "forceCancelAction": "Tvangsavbryt"
     }
   },
   "mapsPage": {

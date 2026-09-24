@@ -12,6 +12,8 @@ export interface SetupItem {
   /** i18n key for the label; interpolation values, if any. */
   labelKey: string;
   labelValues?: Record<string, unknown>;
+  /** The namespace `labelKey` is in, for a module's row; core's otherwise. */
+  ns?: string;
 }
 
 interface SetupCardProps {
@@ -47,7 +49,7 @@ export function SetupCard({ items }: SetupCardProps) {
                     <RadioButtonUncheckedIcon color="disabled" fontSize="small" />
                   )}
                   <Typography variant="body2" color={item.done ? 'text.primary' : 'text.secondary'}>
-                    {t(item.labelKey, item.labelValues)}
+                    {t(item.labelKey, { ...item.labelValues, ns: item.ns })}
                   </Typography>
                 </Box>
               ))}

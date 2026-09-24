@@ -43,5 +43,16 @@
  *   rules as `value` / `maxRoundsTestId`, and 14 props of map pools, maps and
  *   callbacks); `.settings` gets `type` as well. Added: the optional
  *   `tournamentSetupSteps.review` slot and the `tournamentSetup` model.
+ * - Core reads only `nextAllocationInSeconds` from the availability answer.
+ *   Three optional callbacks (added; not a break) let a module read the rest
+ *   for it: `summarizeAvailability(availability)` → `{ waitingMatches,
+ *   resourceCount }` (the match list's "N in queue", Manage's QUEUED and
+ *   "Announce"), `manageNeedsYou({ availability, matches, t })` → rows for
+ *   Manage's "needs you" queue, and `adminHomeSetup()` → rows for the admin
+ *   home's "Finish setting up" card (CS2: its server row; core no longer
+ *   fetches `/api/servers` for it). New contract types:
+ *   `ResourceQueueSummary`, `ManageNeedsYouInput`, `ManageNeedsYouItem`,
+ *   `ManageNeedsYouAction`, `ManageMatchRef`, `AdminHomeSetupItem`. No SDK
+ *   exports were added.
  */
 export const CLIENT_API_VERSION = '0.2.0';

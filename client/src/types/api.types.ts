@@ -98,42 +98,6 @@ export interface ServerResponse extends ApiResponse {
   server: Server;
 }
 
-export interface ServerAllocationInfo {
-  id: string;
-  name: string;
-  online: boolean;
-  status: string | null;
-  matchSlug: string | null;
-  matchNumber: number | null;
-  matchRound: number | null;
-  /** 'WB' | 'LB' | 'GF' | 'GF_RESET' | 'SE' | null */
-  matchBracket?: string | null;
-  updatedAt: number | null;
-  inGraceWindow: boolean;
-  secondsUntilReady: number | null;
-  allocatable: boolean;
-  /** Why this server cannot take a match right now, if it can't. */
-  notAllocatableReason?:
-    | 'offline'
-    | 'busy'
-    | 'grace-window'
-    | 'demo-upload'
-    | 'cs2-out-of-date'
-    | 'cs2-unverified'
-    | null;
-  /** Set when a 'loaded' row was overridden as stale (past the allocator's staleness window). */
-  staleMatchSlug?: string | null;
-}
-
-export interface ServerAvailabilityResponse extends ApiResponse {
-  availableServerCount: number;
-  gracePeriodSeconds: number;
-  nextAllocationInSeconds: number | null;
-  requiredServerCount: number;
-  servers: ServerAllocationInfo[];
-  simulationEnabled: boolean;
-}
-
 // Team types
 export interface TeamsResponse extends ApiResponse {
   teams: Team[];

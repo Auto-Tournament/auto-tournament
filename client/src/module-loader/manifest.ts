@@ -219,6 +219,13 @@ export const COMPONENT_SLOTS = [
 
 export type ComponentSlot = (typeof COMPONENT_SLOTS)[number];
 
+/**
+ * Plain functions a module hands core, not components: the validator checks
+ * each is a function, and the adapter makes a throw read as "nothing".
+ * (`tournamentStart.ownsFailure` is checked and guarded on its own.)
+ */
+export const CALLBACKS = ['summarizeAvailability', 'manageNeedsYou', 'adminHomeSetup'] as const;
+
 /** Slot groups every integration carries, even when it fills none of them. */
 export const REQUIRED_GROUPS = [
   'matchPanels',

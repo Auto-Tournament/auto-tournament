@@ -23,9 +23,6 @@
       "title": "Finish setting up",
       "openSettings": "Open settings",
       "steam": "Steam sign-in",
-      "serversTodo": "Connect a server",
-      "serversDone": "{{count}} server added",
-      "serversDonePlural": "{{count}} servers added",
       "discord": "Discord sign-in (optional)",
       "igdb": "Game covers via IGDB (optional)"
     },
@@ -332,7 +329,6 @@
     },
     "needsYou": {
       "empty": "Nothing needs you right now.",
-      "unknownTime": "a while",
       "secondsAgo": "{{count}}s",
       "minutesAgo": "{{count}}m",
       "hoursAgo": "{{count}}h",
@@ -342,16 +338,6 @@
         "detail": "Every map was played and the series is still level.",
         "action": "Decide"
       },
-      "stale": {
-        "title": "{{server}} has been loaded for a while",
-        "detail": "{{match}} has been stuck past the usual wait."
-      },
-      "offline": {
-        "title": "{{server}} stopped responding",
-        "detail": "{{match}} was on this server. Last heartbeat {{time}} ago."
-      },
-      "reallocateAction": "Move to another server",
-      "forceCancelAction": "Force cancel",
       "reallocateSuccess": "Match moved to another server",
       "forceCancelSuccess": "Match cancelled",
       "actionFailed": "That didn't go through. Try again.",

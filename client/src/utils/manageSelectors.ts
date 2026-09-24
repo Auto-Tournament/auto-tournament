@@ -1,14 +1,21 @@
 /**
  * Pure data-shaping helpers for the "Manage" console.
  *
- * Everything here derives from data the app already fetches for Matches,
- * Servers and Dashboard (GET /api/matches, GET /api/tournament/server-availability).
- * No new API calls are introduced by this module.
+ * Everything here derives from the matches the page already fetches
+ * (GET /api/matches). What the tournament's game module knows about its own
+ * resources (CS2: servers) it works out itself, from its own availability
+ * answer (`summarizeAvailability`, `manageNeedsYou`), and the page passes the
+ * results in. No new API calls are introduced by this module.
  */
 import i18n from '../i18n';
 import type { Match } from '../types/match.types';
-import type { ServerAllocationInfo } from '../types/api.types';
-import { getRoundLabel, getBracketMatchLabel } from './matchUtils';
+import type {
+  ManageMatchRef,
+  ManageNeedsYouAction,
+  ManageNeedsYouActionKind,
+  ManageNeedsYouItem,
+} from '../integrations/types';
+import { getRoundLabel } from './matchUtils';
 
 /** Mirrors the "does this match have real, assigned teams" check Matches.tsx uses. */
 export function hasAssignedTeams(match: Match): boolean {
@@ -38,7 +45,8 @@ export interface ManageStatusCounts {
  */
 export function computeStatusCounts(
   matches: Match[],
-  serverAvailability: { requiredServerCount: number } | null
+  /** Matches waiting for a resource, from the module's `summarizeAvailability` (0 without one). */
+  queued: number
 ): ManageStatusCounts {
   const live = matches.filter(
     (m) => (m.status === 'live' || m.status === 'loaded') && hasAssignedTeams(m)
@@ -63,39 +71,15 @@ export function computeStatusCounts(
   return {
     live,
     inVeto,
-    queued: serverAvailability?.requiredServerCount ?? 0,
+    queued,
     roundLabel,
   };
 }
 
-export type NeedsYouActionKind = 'decide' | 'reallocate' | 'forceCancel';
-
-export interface NeedsYouAction {
-  kind: NeedsYouActionKind;
-  label: string;
-  matchSlug: string;
-}
-
-export interface NeedsYouItem {
-  id: string;
-  /** Drives the coloured dot: 'ban' (red) for outages, 'warn' (accent) for decisions, 'info' for the rest. */
-  severity: 'ban' | 'warn' | 'info';
-  title: string;
-  detail: string;
-  actions: NeedsYouAction[];
-  /** Present when one of the actions opens the match details/decision dialog. */
-  decisionMatchSlug?: string;
-}
-
-function timeAgoLabel(unixSeconds: number | null | undefined): string {
-  if (!unixSeconds) return i18n.t('managePage.needsYou.unknownTime');
-  const seconds = Math.max(0, Math.floor(Date.now() / 1000) - unixSeconds);
-  if (seconds < 60) return i18n.t('managePage.needsYou.secondsAgo', { count: seconds });
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return i18n.t('managePage.needsYou.minutesAgo', { count: minutes });
-  const hours = Math.floor(minutes / 60);
-  return i18n.t('managePage.needsYou.hoursAgo', { count: hours });
-}
+// The queue's rows are part of the module contract, so a module can add its own.
+export type NeedsYouActionKind = ManageNeedsYouActionKind;
+export type NeedsYouAction = ManageNeedsYouAction;
+export type NeedsYouItem = ManageNeedsYouItem;
 
 function matchDisplayName(match: Match | undefined, slug: string): string {
   if (!match) return slug;
@@ -105,22 +89,30 @@ function matchDisplayName(match: Match | undefined, slug: string): string {
   return slug;
 }
 
+/** The matches as a module's `manageNeedsYou` sees them: slug, status and a name to show. */
+export function manageMatchRefs(matches: Match[]): ManageMatchRef[] {
+  return matches.map((match) => ({
+    slug: match.slug,
+    status: match.status,
+    name: matchDisplayName(match, match.slug),
+  }));
+}
+
 /**
- * Build the "needs you" queue from real match/server state only:
- *  - matches stuck in `needs_decision` (out of maps, still level)
- *  - servers the allocator itself has flagged as stale (`staleMatchSlug`)
- *  - servers offline while still carrying an assigned match
+ * Build the "needs you" queue: matches stuck in `needs_decision` (out of
+ * maps, still level), then whatever the tournament's module reports about its
+ * own resources (CS2: servers offline, or flagged stale by the allocator,
+ * while they hold a match).
  *
  * Each item's actions call the same endpoints AdminMatchControls uses
- * (`/winner`, `/reallocate`, `/force-cancel`), gated the same way that
- * component gates them (reallocate only for ready/loaded matches).
+ * (`/winner`, `/reallocate`, `/force-cancel`).
  */
 export function computeNeedsYouItems(
   matches: Match[],
-  serverAvailability: { servers: ServerAllocationInfo[] } | null
+  /** The module's rows, from its `manageNeedsYou`. */
+  resourceItems: NeedsYouItem[] = []
 ): NeedsYouItem[] {
   const items: NeedsYouItem[] = [];
-  const bySlug = new Map(matches.map((m) => [m.slug, m]));
 
   for (const match of matches) {
     if ((match.status as string) !== 'needs_decision') continue;
@@ -142,60 +134,7 @@ export function computeNeedsYouItems(
     });
   }
 
-  const servers = serverAvailability?.servers ?? [];
-  for (const server of servers) {
-    const slug = server.staleMatchSlug || (!server.online ? server.matchSlug : null);
-    if (!slug) continue;
-
-    const match = bySlug.get(slug);
-    const canReallocate = !match || match.status === 'ready' || match.status === 'loaded';
-    const matchLabel =
-      (server.matchRound !== null &&
-        getBracketMatchLabel({
-          slug,
-          bracket: server.matchBracket ?? null,
-          round: server.matchRound ?? 0,
-          matchNumber: server.matchNumber ?? 0,
-        })) ||
-      matchDisplayName(match, slug);
-
-    const actions: NeedsYouAction[] = [];
-    if (canReallocate) {
-      actions.push({
-        kind: 'reallocate',
-        label: i18n.t('managePage.needsYou.reallocateAction'),
-        matchSlug: slug,
-      });
-    }
-    actions.push({
-      kind: 'forceCancel',
-      label: i18n.t('managePage.needsYou.forceCancelAction'),
-      matchSlug: slug,
-    });
-
-    if (server.staleMatchSlug) {
-      items.push({
-        id: `stale-${server.id}`,
-        severity: 'warn',
-        title: i18n.t('managePage.needsYou.stale.title', { server: server.name }),
-        detail: i18n.t('managePage.needsYou.stale.detail', { match: matchLabel }),
-        actions,
-      });
-    } else {
-      items.push({
-        id: `offline-${server.id}`,
-        severity: 'ban',
-        title: i18n.t('managePage.needsYou.offline.title', { server: server.name }),
-        detail: i18n.t('managePage.needsYou.offline.detail', {
-          match: matchLabel,
-          time: timeAgoLabel(server.updatedAt),
-        }),
-        actions,
-      });
-    }
-  }
-
-  return items;
+  return [...items, ...resourceItems];
 }
 
 export interface RecentEvent {
