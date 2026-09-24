@@ -3,12 +3,11 @@
  * against this platform's version (before any code is fetched), and its
  * default export against `ClientGameIntegration` (after).
  *
- * Pure, and only in the lazily loaded loader chunk: semver is not in the main
- * bundle of an instance that has no code module.
+ * Pure, and only in the lazily loaded loader chunk, so none of it is in the
+ * main bundle of an instance that has no code module.
  */
 
-import satisfies from 'semver/functions/satisfies';
-import validRange from 'semver/ranges/valid';
+import { isValidRange, satisfies } from './semverRange';
 import type { ClientGameIntegration } from '../integrations/types';
 import {
   CAPABILITY_KEYS,
@@ -35,7 +34,7 @@ export function checkClientApi(range: string | null | undefined, platform: strin
       { platform }
     );
   }
-  if (validRange(range) === null) {
+  if (!isValidRange(range)) {
     return failure('contract', 'badClientApi', `its clientApi "${range}" is not a semver range`, {
       range,
     });

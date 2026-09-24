@@ -6,6 +6,7 @@ import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { CLIENT_API_VERSION } from '../../client/src/module-sdk/version';
 import { checkClientApi, validateModuleExport } from '../../client/src/module-loader/contract';
+import { isValidRange, satisfies } from '../../client/src/module-loader/semverRange';
 import { loadCodeModules, type LoadDeps } from '../../client/src/module-loader/loadCodeModules';
 import {
   COMPONENT_SLOTS,
@@ -137,6 +138,37 @@ test.describe('Client API range', () => {
       params: { range: '^0.3.0', platform: '0.1.0' },
       message: 'built for client API ^0.3.0; this platform provides 0.1.0',
     });
+  });
+
+  test('the range check answers exactly as node-semver does', () => {
+    // The client ships its own small checker (semverRange.ts) rather than the
+    // semver package; node-semver is the reference it must agree with.
+    const semver = createRequire(__filename)('semver') as {
+      satisfies: (v: string, r: string) => boolean;
+      validRange: (r: string) => string | null;
+    };
+    const ranges = [
+      '^0.1.0', '^0.1', '^0', '^0.0.3', '^1.2.3', '^1', '^1.x', '~0.1.0', '~0.1', '~1', '~>1.2',
+      '0.1.x', '0.x', '1.2.*', '*', 'x', '', '0.1.0', '=0.1.0', 'v0.1.0', '>=0.1.0', '>0.1.0',
+      '<0.2.0', '<=0.1.0', '>=0.1.0 <0.2.0', '>= 0.1.0 < 0.2.0', '>0.1', '<=0.1', '<0.1',
+      '0.0.1 - 0.2.0', '0.1 - 0.2', '0.1.0 - 1', '^0.2.0 || ^0.1.0', '^2.0.0 || >=0.1.5',
+      '^1.0.0-beta.1', '>=0.1.0-rc.1 <0.1.0',
+    ];
+    const versions = [
+      '0.0.3', '0.0.4', '0.1.0', '0.1.5', '0.2.0', '0.9.9', '1.0.0', '1.2.3', '1.2.4', '1.3.0',
+      '1.9.0', '2.0.0', '0.1.0-rc.1', '0.1.0-rc.2', '1.0.0-beta.2', '1.0.0-alpha',
+    ];
+    for (const range of ranges) {
+      expect(isValidRange(range), `valid ${range}`).toBe(semver.validRange(range) !== null);
+      for (const version of versions) {
+        expect(satisfies(version, range), `${version} in "${range}"`).toBe(
+          semver.satisfies(version, range)
+        );
+      }
+    }
+    for (const bad of ['banana', '^^1.0.0', '1.2.3.4', '>=a', '1.0.0 - ', '~>']) {
+      expect(isValidRange(bad), bad).toBe(semver.validRange(bad) !== null);
+    }
   });
 
   test('no range, or one that is not semver, is refused as such', () => {

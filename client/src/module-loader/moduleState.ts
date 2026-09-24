@@ -4,7 +4,7 @@
  * finished. The Modules page reads it next to what the server reports, and
  * the registry leaves out a module that broke while rendering.
  *
- * In the main bundle, so it holds no React and no semver.
+ * In the main bundle, so it holds no React and no range checking.
  */
 
 import { errorText, failure, type ModuleFailure } from './manifest';

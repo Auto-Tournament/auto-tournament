@@ -1,6 +1,6 @@
 /**
  * The loader's lazy half: imported by `boot.ts` only when the server lists a
- * code module to load, so semver, the validator, the adapter and the
+ * code module to load, so the range check, the validator, the adapter and the
  * shared-package registry cost an instance without one nothing.
  */
 
@@ -18,7 +18,8 @@ export async function loadAndRegister(modules: readonly LoadableModule[]): Promi
     takenIds: builtInIntegrationIds(),
     importModule: (url) => import(/* @vite-ignore */ url),
     prepareShared: provideShared,
-    fetchImpl: (url, init) => fetch(url, { credentials: 'same-origin', ...init }),
+    // Module files are public (players render slots too): a plain fetch.
+    fetchImpl: (url, init) => fetch(url, init),
   });
 
   for (const result of results) {

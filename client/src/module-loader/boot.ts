@@ -7,7 +7,7 @@
  * done — never later than the timeouts below allow, whatever a module does.
  *
  * On an instance with no code module this costs one small request and loads
- * nothing else: the loader, semver and the shared-package registry are a
+ * nothing else: the loader, the range check and the shared-package registry are a
  * separate chunk, imported only when there is something to load.
  */
 
