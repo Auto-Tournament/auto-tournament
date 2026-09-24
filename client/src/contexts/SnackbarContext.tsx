@@ -19,6 +19,8 @@ type ShowSnackbarOptions = {
    * Optional stable key so callers can update/close a specific snackbar.
    */
   key?: SnackbarKey;
+  /** Called once the snackbar has closed, however it was closed. */
+  onClose?: () => void;
 };
 
 interface SnackbarContextType {
@@ -30,7 +32,11 @@ interface SnackbarContextType {
   showSuccess: (message: ReactNode) => SnackbarKey;
   showError: (message: ReactNode) => SnackbarKey;
   showWarning: (message: ReactNode) => SnackbarKey;
-  showPersistentError: (message: ReactNode, key?: SnackbarKey) => SnackbarKey;
+  showPersistentError: (
+    message: ReactNode,
+    key?: SnackbarKey,
+    options?: Pick<ShowSnackbarOptions, 'onClose'>
+  ) => SnackbarKey;
   closeSnackbar: (key?: SnackbarKey) => void;
 }
 
@@ -153,6 +159,7 @@ export function SnackbarProvider({ children }: { children: ReactNode }) {
         persist: options?.persist === true,
         autoHideDuration: options?.persist === true ? undefined : 6000,
         key: options?.key,
+        onClose: options?.onClose ? () => options.onClose?.() : undefined,
         anchorOrigin: {
           vertical: 'bottom',
           horizontal: 'right',
@@ -184,8 +191,12 @@ export function SnackbarProvider({ children }: { children: ReactNode }) {
   );
 
   const showPersistentError = useCallback(
-    (msg: ReactNode, key?: SnackbarKey): SnackbarKey => {
-      return showSnackbar(msg, 'error', { persist: true, key });
+    (
+      msg: ReactNode,
+      key?: SnackbarKey,
+      options?: Pick<ShowSnackbarOptions, 'onClose'>
+    ): SnackbarKey => {
+      return showSnackbar(msg, 'error', { persist: true, key, onClose: options?.onClose });
     },
     [showSnackbar]
   );

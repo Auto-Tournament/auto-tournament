@@ -68,5 +68,63 @@ test.describe.serial('Steam health snackbar', () => {
       });
     }
   );
+
+  test(
+    'stays closed for the rest of the visit once the admin closes it',
+    {
+      tag: ['@ui', '@steam', '@error-handling'],
+    },
+    async ({ page }) => {
+      const warning = page.getByText('Steam integration unavailable');
+      await expect(warning).toBeVisible({ timeout: 10_000 });
+      await page
+        .getByRole('alert')
+        .filter({ has: warning })
+        .getByTestId('snackbar-close-button')
+        .first()
+        .click();
+      await expect(warning).toHaveCount(0);
+
+      // A new page load in the same browser session: the status is still
+      // bad, but the warning was already read and closed.
+      const statusChecked = page.waitForResponse('**/api/steam/status');
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await expect(page.getByTestId('dashboard-page')).toBeVisible({ timeout: 15_000 });
+      await statusChecked;
+      await page.waitForTimeout(1000);
+      await expect(warning).toHaveCount(0);
+    }
+  );
+
+  test(
+    'does not warn when Steam sign-in is turned off on purpose',
+    {
+      tag: ['@ui', '@steam', '@error-handling'],
+    },
+    async ({ page }) => {
+      // Registered after beforeEach's handler, so it answers first.
+      await page.route('**/api/steam/status', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            success: false,
+            signInEnabled: false,
+            configured: false,
+            valid: false,
+            errorType: 'not_configured',
+            error: 'Steam integration is not configured on the server.',
+          }),
+        });
+      });
+
+      const statusChecked = page.waitForResponse('**/api/steam/status');
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await expect(page.getByTestId('dashboard-page')).toBeVisible({ timeout: 15_000 });
+      await statusChecked;
+      await page.waitForTimeout(1000);
+      await expect(page.getByText('Steam integration unavailable')).toHaveCount(0);
+    }
+  );
 });
 

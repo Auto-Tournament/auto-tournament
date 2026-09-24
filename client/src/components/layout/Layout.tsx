@@ -55,6 +55,30 @@ import { paths } from '../../paths';
 const drawerWidth = 240;
 
 /**
+ * Set for the rest of the browser session once an admin closes the Steam
+ * warning: it said what it had to say, and it came back on every page load.
+ * Storage can be missing or refuse (private mode): the warning then simply
+ * shows again next load.
+ */
+const STEAM_WARNING_DISMISSED_KEY = 'mat.steamWarningDismissed';
+
+function steamWarningDismissed(): boolean {
+  try {
+    return window.sessionStorage.getItem(STEAM_WARNING_DISMISSED_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function rememberSteamWarningDismissed(): void {
+  try {
+    window.sessionStorage.setItem(STEAM_WARNING_DISMISSED_KEY, '1');
+  } catch {
+    // Not remembered; it shows again next load.
+  }
+}
+
+/**
  * Sidebar items are pills inset from the drawer edge. When the desktop drawer
  * is collapsed to icons, the pill shrinks to a centred icon button.
  */
@@ -180,6 +204,15 @@ export default function Layout() {
   const [steamHealthSnackbarKey, setSteamHealthSnackbarKey] = React.useState<import('notistack').SnackbarKey | null>(
     null
   );
+  // True while the shell itself closes the Steam warning (Steam recovered, or
+  // the shell unmounts), so that close is not taken for the admin's dismissal.
+  const closingSteamWarningRef = React.useRef(false);
+  // Whether the warning is on screen right now, for the unmount cleanup below
+  // (which cannot read state). Only a warning that is showing gets closed by
+  // the shell: otherwise React's development double-mount would arm
+  // `closingSteamWarningRef` with nothing to close, and swallow the admin's
+  // real dismissal later.
+  const steamWarningShownRef = React.useRef(false);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const contentContainerRef = React.useRef<HTMLDivElement>(null);
   // The saved preference is for the desktop mini/full sidebar only. Reusing it
@@ -306,6 +339,8 @@ export default function Layout() {
       try {
         const response = await api.get<{
           success?: boolean;
+          /** False when Steam sign-in is turned off on purpose (AUTH_STEAM_ENABLED=false). */
+          signInEnabled?: boolean;
           configured?: boolean;
           valid?: boolean;
           errorType?: string;
@@ -318,20 +353,39 @@ export default function Layout() {
         const valid = response.valid;
         const isUnhealthy =
           configured === false || valid === false || response.success === false;
+        // Steam off on purpose is not a fault, and a warning the admin closed
+        // stays closed for this browser session.
+        const shouldWarn =
+          isUnhealthy && response.signInEnabled !== false && !steamWarningDismissed();
 
-        if (isUnhealthy) {
+        if (shouldWarn) {
           if (!steamHealthSnackbarKey) {
             const key = showPersistentError(
               <span>
                 <strong>{t('layout.steamUnavailable.title')}</strong> —{' '}
                 {t('layout.steamUnavailable.body')}
               </span>,
-              'steam-api-health'
+              'steam-api-health',
+              {
+                onClose: () => {
+                  steamWarningShownRef.current = false;
+                  if (closingSteamWarningRef.current) {
+                    closingSteamWarningRef.current = false;
+                    return;
+                  }
+                  rememberSteamWarningDismissed();
+                  setSteamHealthSnackbarKey(null);
+                },
+              }
             );
+            steamWarningShownRef.current = true;
             setSteamHealthSnackbarKey(key);
           }
         } else if (steamHealthSnackbarKey) {
-          closeSnackbar(steamHealthSnackbarKey);
+          if (steamWarningShownRef.current) {
+            closingSteamWarningRef.current = true;
+            closeSnackbar(steamHealthSnackbarKey);
+          }
           setSteamHealthSnackbarKey(null);
         }
       } catch {
@@ -351,7 +405,11 @@ export default function Layout() {
   // shell: after "Sign out" it was still on the login page, in front of a
   // visitor who can do nothing about it.
   React.useEffect(() => {
-    return () => closeSnackbar('steam-api-health');
+    return () => {
+      if (!steamWarningShownRef.current) return;
+      closingSteamWarningRef.current = true;
+      closeSnackbar('steam-api-health');
+    };
   }, [closeSnackbar]);
 
   // What the game's own module needs an admin to fix, wherever they are (3.0
