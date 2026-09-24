@@ -1042,6 +1042,7 @@ export default function PlayerProfile() {
           <Box display="flex" gap={2} flexWrap="wrap" alignItems="center">
             {latestTournamentId && (
               <Button
+                data-testid="profile-tournament-leaderboard"
                 variant="outlined"
                 size="small"
                 startIcon={<EmojiEventsIcon />}
