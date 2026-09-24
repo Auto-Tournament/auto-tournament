@@ -3,7 +3,7 @@ import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { useTranslation } from 'react-i18next';
 import { FadeInImage } from '../../../components/common/FadeInImage';
-import { tokens, mono, withAlpha } from '../../../theme/tokens';
+import { tokens, mono, withAlpha } from '../../../module-sdk';
 import type { MatchConnectPanelProps as MatchServerPanelProps } from '../../types';
 
 export function MatchServerPanel({

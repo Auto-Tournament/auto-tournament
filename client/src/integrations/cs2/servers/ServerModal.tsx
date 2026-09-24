@@ -18,9 +18,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import { api, apiErrorMessage } from '../../../utils/api';
-import { useSnackbar } from '../../../contexts/SnackbarContext';
-import ConfirmDialog from '../../../components/modals/ConfirmDialog';
+import { api, apiErrorMessage, useSnackbar, ConfirmDialog } from '../../../module-sdk';
 import { useTranslation } from 'react-i18next';
 import type { ResourceDialogProps as ServerModalProps } from '../../types';
 

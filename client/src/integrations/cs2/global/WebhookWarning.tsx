@@ -18,8 +18,7 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { useTranslation } from 'react-i18next';
-import { useSnackbar } from '../../../contexts/SnackbarContext';
-import { api } from '../../../utils/api';
+import { useSnackbar, api } from '../../../module-sdk';
 import type { SettingsResponse } from '../../../types/api.types';
 import type { AdminGlobalWarningProps } from '../../types';
 

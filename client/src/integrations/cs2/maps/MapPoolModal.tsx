@@ -15,7 +15,7 @@ import {
   IconButton,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { api } from '../../../utils/api';
+import { api } from '../../../module-sdk';
 import type { MapPool, MapPoolResponse, MapsResponse, Map } from '../../../types/api.types';
 
 interface MapPoolModalProps {

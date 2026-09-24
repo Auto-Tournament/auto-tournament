@@ -17,7 +17,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Alert, Box, Typography } from '@mui/material';
-import { api } from '../../../utils/api';
+import { api } from '../../../module-sdk';
 import type { TournamentStartConfirmProps } from '../../types';
 
 export const Cs2StartConfirm: React.FC<TournamentStartConfirmProps> = ({ open }) => {

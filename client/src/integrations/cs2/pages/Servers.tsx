@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { usePageHeader } from '../../../contexts/PageHeaderContext';
 import { Box, Button, Card, CardContent, Typography, Grid, Chip, CircularProgress, IconButton, Tooltip, Link } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import StorageIcon from '@mui/icons-material/Storage';
@@ -12,19 +11,24 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import UpdateIcon from '@mui/icons-material/Update';
 import DnsIcon from '@mui/icons-material/Dns';
 import ReplayIcon from '@mui/icons-material/Replay';
-import { api } from '../../../utils/api';
 import ServerModal from '../servers/ServerModal';
 import BatchServerModal from '../servers/BatchServerModal';
 import MatchDetailsModal from '../../../components/modals/MatchDetailsModal';
-import { EmptyState } from '../../../components/shared/EmptyState';
-import ConfirmDialog from '../../../components/modals/ConfirmDialog';
 import type { Match, Server, ServersResponse, ServerStatusResponse, MatchesResponse } from '../../../types';
-import { useSnackbar } from '../../../contexts/SnackbarContext';
-import { getRoundLabel } from '../../../utils/matchUtils';
 import { useTranslation } from 'react-i18next';
 import type { SnackbarKey } from 'notistack';
-import { tokens, mono, withAlpha } from '../../../theme/tokens';
-import { StatusDot } from '../../../components/common/ui';
+import {
+  usePageHeader,
+  api,
+  EmptyState,
+  ConfirmDialog,
+  useSnackbar,
+  getRoundLabel,
+  tokens,
+  mono,
+  withAlpha,
+  StatusDot,
+} from '../../../module-sdk';
 
 export default function Servers() {
   const { setHeaderActions } = usePageHeader();

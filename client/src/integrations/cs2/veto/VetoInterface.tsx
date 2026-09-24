@@ -15,15 +15,13 @@ import {
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import { onSocketReconnect } from '../../../utils/socketResync';
 import { VetoMapCard } from './VetoMapCard';
 import { getMapData, getMapDisplayName } from '../../../constants/maps';
 import { getVetoOrder } from '../../../constants/vetoOrders';
-import { api } from '../../../utils/api';
 import type { VetoState, MapSide } from '../../../types';
 import type { MapsResponse } from '../../../types/api.types';
 import { FadeInImage } from '../../../components/common/FadeInImage';
-import { tokens, mono, withAlpha } from '../../../theme/tokens';
+import { onSocketReconnect, api, tokens, mono, withAlpha } from '../../../module-sdk';
 import { vetoHistoryRowSx, vetoMapNameSx } from './vetoStyles';
 import type { PreMatchViewProps as VetoInterfaceProps } from '../../types';
 
