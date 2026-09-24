@@ -348,6 +348,10 @@
       "description": "The map catalogue."
     },
     {
+      "name": "Match connect",
+      "description": "How a player joins a CS2 match: its server, status and current map."
+    },
+    {
       "name": "Matches",
       "description": "Create, load, restart and cancel matches; read match state."
     },
@@ -1326,6 +1330,30 @@
           },
           {
             "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/matches/{slug}/connect": {
+      "get": {
+        "tags": [
+          "Match connect"
+        ],
+        "summary": "GET /api/game/cs2/matches/:slug/connect",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ]
       }

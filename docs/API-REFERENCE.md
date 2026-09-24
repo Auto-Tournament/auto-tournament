@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 280 of them, 195 behind auth —
+Every endpoint this API serves — 281 of them, 195 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -196,6 +196,14 @@ Named sets of maps for veto and match config.
 | `PUT` | `/api/map-pools/:id/set-default` | admin |
 | `PUT` | `/api/map-pools/:id` | admin |
 | `DELETE` | `/api/map-pools/:id` | admin |
+
+### Match connect
+
+How a player joins a CS2 match: its server, status and current map.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/game/cs2/matches/:slug/connect` | public |
 
 ### Test helpers (CS2)
 

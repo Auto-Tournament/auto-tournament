@@ -2,7 +2,7 @@ import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Stack, Typogr
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useEffect, useState } from 'react';
 import { api, useModuleTranslation } from '../../../module-sdk';
-import { getMapDisplayName } from '../../../constants/maps';
+import { getMapDisplayName } from '../maps/mapData';
 import { vetoHistoryRowSx, vetoMapNameSx } from './vetoStyles';
 import type { PreMatchHistoryProps as MatchVetoHistoryProps } from '../../types';
 import type { VetoAction, VetoStateResponse } from '../cs2.types';

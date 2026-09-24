@@ -20,9 +20,7 @@
 
 import type { ComponentType, ReactElement } from 'react';
 import type { SvgIconComponent } from '@mui/icons-material';
-import type { TeamMatchInfo } from '../types';
 import type { MapPool, Map as MapType } from '../types/api.types';
-import type { CS2MapData } from '../types/veto.types';
 
 /** Integration id, the same value as the API's `game` column. */
 export type GameId = 'cs2' | (string & {});
@@ -61,15 +59,23 @@ export interface GameCapabilities {
 // Match panels (team view, admin view)
 // ---------------------------------------------------------------------------
 
-/** How players join the match: server address, connect button, copy command. */
+/**
+ * How players join the match: server address, connect button, copy command.
+ *
+ * The module reads all of it by match slug (client API 0.2.0; it used to be
+ * handed the server, the current map's pictures and the button state).
+ */
 export interface MatchConnectPanelProps {
-  server: TeamMatchInfo['server'];
-  currentMapData: CS2MapData | null;
-  currentMapNumber?: number | null;
-  connected: boolean;
-  copied: boolean;
-  onConnect: () => void;
-  onCopy: () => void;
+  matchSlug: string;
+  /**
+   * Whether this page lets the viewer join. The player page shows the
+   * controls to that player only, even to a teammate looking at it; the
+   * module shows its "waiting" state instead when this is false, and still
+   * checks the viewer itself before it shows an address.
+   */
+  viewerCanJoin: boolean;
+  /** Read again when the match itself moves (loaded → live …). */
+  matchStatus?: string;
 }
 
 /**

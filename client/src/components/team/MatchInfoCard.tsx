@@ -2,8 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Card, CardContent, Typography, Alert } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
-import { getMapData, getMapDisplayName } from '../../constants/maps';
-import { copyTextToClipboard } from '../../utils/clipboard';
 import type { Team, TeamMatchInfo, MatchLiveStats, PlayersResponse } from '../../types';
 // Note: status color is handled by higher-level components; keep imports minimal here.
 import {
@@ -16,7 +14,6 @@ import { MatchPlayerPerformance } from './MatchPlayerPerformance';
 import { MatchMapChips } from './MatchMapChips';
 import { useIntegrationFor } from '../../integrations/registry';
 import { api } from '../../utils/api';
-import { useSnackbar } from '../../contexts/SnackbarContext';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface MatchInfoCardProps {
@@ -68,11 +65,7 @@ export function MatchInfoCard({
   highlightPlayerId,
   viewerIsTeamMemberOverride,
 }: MatchInfoCardProps) {
-  const [copied, setCopied] = useState(false);
-  const [connected, setConnected] = useState(false);
-  const [copyFallbackCommand, setCopyFallbackCommand] = useState<string | null>(null);
   const [playerEloIndex, setPlayerEloIndex] = useState<Record<string, number> | null>(null);
-  const { showError } = useSnackbar();
   const { isAuthenticated } = useAuth();
   const { t } = useTranslation();
 
@@ -92,33 +85,6 @@ export function MatchInfoCard({
   const mapRoundsTeam2 = inMapWarmup ? 0 : liveStats?.team2Score ?? 0;
   const mapNumber = liveStats?.mapNumber ?? match.mapNumber ?? null;
 
-  const mapFromMatchMaps =
-    typeof mapNumber === 'number' && match.maps[mapNumber] ? match.maps[mapNumber] : match.maps[0];
-
-  const configMapList = match.config?.maplist;
-  const mapFromConfig =
-    configMapList && typeof mapNumber === 'number' && configMapList[mapNumber]
-      ? configMapList[mapNumber]
-      : configMapList?.[0];
-
-  const currentMapSlug =
-    liveStats?.mapName || match.currentMap || mapFromMatchMaps || mapFromConfig || null;
-  const currentMapData = useMemo(() => {
-    if (!currentMapSlug) return null;
-    const mapData = getMapData(currentMapSlug);
-    if (mapData) return mapData;
-    // Fallback: construct map data from slug
-    const baseUrl =
-      'https://raw.githubusercontent.com/Auto-Tournament/cs2-server-manager/master/map_thumbnails';
-    return {
-      name: currentMapSlug,
-      displayName: getMapDisplayName(currentMapSlug),
-      // Use full-size webp for the large hero image, and thumbnail for smaller usages
-      image: `${baseUrl}/${currentMapSlug}.webp`,
-      thumbnail: `${baseUrl}/${currentMapSlug}_thumb.webp`,
-    };
-  }, [currentMapSlug]);
-  
   // Calculate overtime if match is live and in overtime
   const maxRounds = match.config?.maxRounds;
   const cvars = (match.config?.cvars || {}) as Record<string, string | number>;
@@ -176,42 +142,6 @@ export function MatchInfoCard({
     typeof viewerIsTeamMemberOverride === 'boolean'
       ? viewerIsTeamMemberOverride
       : serverViewerIsTeamMember;
-
-  const serverStatus = match.server?.status ?? null;
-  // `server.status` here is an Auto Tournament CS2 plugin status — idle | loading | warmup |
-  // knife | live | paused | halftime | postgame | queued | error — and
-  // /api/players/:id/current-match only fills it in when the server actually
-  // answered. So any value at all means the server is reachable.
-  //
-  // This used to compare against 'online' and 'checking', which that endpoint
-  // never produces: only 'loading' could ever match. A server sitting in 'idle'
-  // or 'warmup' with a match loaded therefore read as offline, and the page
-  // claimed it was still waiting for a server to be assigned — verified against
-  // a real CS2 server, which reports 'idle' for a freshly loaded match.
-  //
-  // Live stats still count on their own: they only arrive from a server that is
-  // demonstrably talking to us.
-  const isServerOnlineBase = !!serverStatus && serverStatus !== 'error';
-  const isServerOnline = isServerOnlineBase || !!liveStats;
-
-  // The plugin reports 'idle' for a server that has a match loaded but has not
-  // been asked again since, so a live match could show "Status: Available".
-  // What the match itself is doing is the better answer when we have it.
-  const liveDerivedStatus: string | null = liveStats
-    ? liveStats.status
-    : match.status === 'live'
-      ? 'live'
-      : match.status === 'loaded'
-        ? 'warmup'
-        : null;
-  const effectiveServerStatus =
-    liveDerivedStatus && (!serverStatus || serverStatus === 'idle' || serverStatus === 'queued')
-      ? liveDerivedStatus
-      : serverStatus;
-  const effectiveServer =
-    isServerOnline && match.server
-      ? { ...match.server, status: effectiveServerStatus ?? match.server.status }
-      : null;
 
   const isShuffleMatch = isShuffleMatchGlobal({
     round: match.round,
@@ -299,65 +229,6 @@ export function MatchInfoCard({
     if (!values.length) return null;
     return values.reduce((sum, v) => sum + v, 0) / values.length;
   }, [isShuffleMatch, match.config?.team2?.players, playerEloIndex]);
-
-  const handleConnect = () => {
-    if (!match.server) return;
-
-    const address = `${match.server.host}:${match.server.port}`;
-    const encodedPassword = match.server.password ? encodeURIComponent(match.server.password) : '';
-
-    // Preferred CS2 launch syntax
-    const params = match.server.password
-      ? `+password%20${encodedPassword};%20+connect%20${address}`
-      : `+connect%20${address}`;
-    const steamUri = `steam://run/730//${params}`;
-
-    // Legacy CS:GO/Steam connect syntax as fallback
-    const legacyUri = match.server.password
-      ? `steam://connect/${address}/${match.server.password}`
-      : `steam://connect/${address}`;
-
-    let navigationTriggered = false;
-
-    try {
-      window.location.href = steamUri;
-      navigationTriggered = true;
-    } catch (error) {
-      console.warn('Failed to trigger Steam connect via run/730, falling back.', error);
-    }
-
-    if (!navigationTriggered) {
-      window.location.href = legacyUri;
-    }
-
-    setConnected(true);
-    setTimeout(() => setConnected(false), 3000);
-  };
-
-  const handleCopyIP = async () => {
-    if (!match.server) return;
-    const connectCommand = `connect ${match.server.host}:${match.server.port}${
-      match.server.password ? `; password ${match.server.password}` : ''
-    }`;
-
-    // Reset any previous fallback state
-    setCopyFallbackCommand(null);
-
-    // Copying works over plain HTTP too — `copyTextToClipboard` falls back to
-    // execCommand where `navigator.clipboard` does not exist. Showing the
-    // command is the last resort, not the first response to a non-HTTPS origin:
-    // most LAN users can simply have the button work.
-    const copiedOk = await copyTextToClipboard(connectCommand);
-
-    if (copiedOk) {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-      return;
-    }
-
-    setCopyFallbackCommand(connectCommand);
-    showError(t('matchInfo.copyBlocked'));
-  };
 
   const isManualMatch = match.round === 0;
   // For manual matches, teams exist only in config (no team1_id/team2_id). Use config presence.
@@ -547,26 +418,13 @@ export function MatchInfoCard({
               </Alert>
             )}
 
+            {/* How to join: the module reads the server and the map by slug. */}
             {ConnectPanel && (
               <ConnectPanel
-                server={viewerIsTeamMember ? effectiveServer : null}
-                currentMapData={currentMapData}
-                currentMapNumber={mapNumber}
-                connected={connected}
-                copied={copied}
-                onConnect={handleConnect}
-                onCopy={handleCopyIP}
+                matchSlug={match.slug}
+                viewerCanJoin={viewerIsTeamMember}
+                matchStatus={match.status}
               />
-            )}
-
-            {copyFallbackCommand && (
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ mt: 1, fontFamily: 'monospace' }}
-              >
-                {t('matchInfo.copyFallback', { command: copyFallbackCommand })}
-              </Typography>
             )}
 
             {hasPlayerStats && playerStats && (

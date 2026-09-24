@@ -14,8 +14,8 @@ import {
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { VetoMapCard } from './VetoMapCard';
-import { getMapData, getMapDisplayName } from '../../../constants/maps';
-import { getVetoOrder } from '../../../constants/vetoOrders';
+import { getMapData, getMapDisplayName } from '../maps/mapData';
+import { getVetoOrder } from './vetoOrders';
 import type { MapSide, MapsResponse, VetoState } from '../cs2.types';
 import { FadeInImage } from '../common/FadeInImage';
 import { onSocketReconnect, useSocket, api, tokens, mono, withAlpha, useModuleTranslation } from '../../../module-sdk';
