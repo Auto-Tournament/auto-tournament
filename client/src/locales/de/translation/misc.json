@@ -395,6 +395,7 @@
     "welcome": {
       "title": "Games on this instance",
       "hint": "You run this instance, so you choose the games it offers. Players pick from these."
-    }
+    },
+    "signedBy": "Signed by {{label}} (key {{keyId}})"
   }
 }

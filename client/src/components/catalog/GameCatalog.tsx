@@ -219,6 +219,13 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
   };
 
   const actionsFor = (item: CatalogItem): Array<{ action: CatalogAction; primary?: boolean; danger?: boolean }> => {
+    const all = baseActionsFor(item);
+    // Waiting for a restart: the server refuses new files until then (the
+    // running version still serves its own), so do not offer them.
+    return item.restartRequired ? all.filter(({ action }) => action !== 'install' && action !== 'update') : all;
+  };
+
+  const baseActionsFor = (item: CatalogItem): Array<{ action: CatalogAction; primary?: boolean; danger?: boolean }> => {
     switch (item.state) {
       case 'available':
         return [{ action: 'install', primary: true }];
@@ -304,6 +311,16 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
               {description && (
                 <Typography variant="body2" color="text.secondary">
                   {description}
+                </Typography>
+              )}
+              {item.kind === 'module' && item.installed?.keyId && (
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: 'block' }}
+                  data-testid={`${id}-signed-by`}
+                >
+                  {t('catalog.signedBy', { label: item.installed.keyLabel ?? '', keyId: item.installed.keyId })}
                 </Typography>
               )}
               {showReason && (

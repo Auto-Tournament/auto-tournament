@@ -395,6 +395,7 @@
     "welcome": {
       "title": "Spill på denne instansen",
       "hint": "Du driver denne instansen, så du velger hvilke spill den tilbyr. Spillerne velger blant disse."
-    }
+    },
+    "signedBy": "Signert av {{label}} (nøkkel {{keyId}})"
   }
 }

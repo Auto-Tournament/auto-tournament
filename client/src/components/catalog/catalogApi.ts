@@ -26,7 +26,14 @@ export interface CatalogItem {
   engine: string | null;
   state: CatalogState;
   reason: string | null;
-  installed: { version: string | null; source: string; enabled: boolean } | null;
+  installed: {
+    version: string | null;
+    source: string;
+    enabled: boolean;
+    /** Code modules from the catalog: the key their release was signed with. */
+    keyId?: string | null;
+    keyLabel?: string | null;
+  } | null;
   available: { version: string | null; from: 'remote' | 'snapshot' } | null;
   restartRequired: boolean;
 }
