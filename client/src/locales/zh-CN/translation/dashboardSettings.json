@@ -50,14 +50,6 @@
     },
     "site": {
       "title": "Site",
-      "servers": {
-        "label": "Servers",
-        "hint": "Connect, update, health"
-      },
-      "maps": {
-        "label": "Maps",
-        "hint": "Pools and images"
-      },
       "players": {
         "label": "Players",
         "hint": "Everyone who signed in"
@@ -90,18 +82,6 @@
         "label": "Modules",
         "hint": "Games this instance runs"
       }
-    },
-    "servers": {
-      "title": "Servers",
-      "open": "Open",
-      "online": "online",
-      "inMatch": "In a match",
-      "free": "Free",
-      "offline": "Offline",
-      "plugin": "Plugin",
-      "pluginSame": "{{version}}, all servers match",
-      "pluginMixed": "{{count}} plugin versions in use",
-      "none": "No servers connected yet."
     },
     "people": {
       "title": "People",
@@ -334,8 +314,6 @@
       "bracket": "Bracket",
       "teams": "Teams",
       "players": "Players",
-      "servers": "Servers",
-      "maps": "Maps",
       "tournament": "Tournament setup",
       "settings": "Settings"
     },
@@ -343,7 +321,6 @@
       "live": "LIVE",
       "inVeto": "IN VETO",
       "queued": "QUEUED",
-      "serversFree": "SERVERS FREE",
       "round": "ROUND"
     },
     "needsYou": {
@@ -375,16 +352,6 @@
       "reallocateConfirmBody": "The match will be reassigned to the next available server.",
       "forceCancelConfirmTitle": "Force cancel this match?",
       "forceCancelConfirmBody": "This ends the match immediately and marks it as cancelled, even if the server is unreachable."
-    },
-    "servers": {
-      "heading": "Servers",
-      "viewAll": "All servers",
-      "none": "No servers configured yet.",
-      "inMatch": "In match",
-      "free": "Free",
-      "offline": "Offline",
-      "lastHeartbeat": "Last heartbeat {{time}} ago",
-      "never": "never"
     },
     "recent": {
       "heading": "Recent",

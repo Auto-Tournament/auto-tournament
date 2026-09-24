@@ -23,9 +23,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
-import { Trans, useTranslation } from 'react-i18next';
+import { Trans } from 'react-i18next';
 import { paths } from '../../../paths';
-import { ConfirmDialog, api } from '../../../module-sdk';
+import { ConfirmDialog, api, useModuleTranslation } from '../../../module-sdk';
 import type { TournamentStartPreflightProps } from '../../types';
 
 export const Cs2StartPreflight: React.FC<TournamentStartPreflightProps> = ({
@@ -35,7 +35,7 @@ export const Cs2StartPreflight: React.FC<TournamentStartPreflightProps> = ({
   onCancel,
 }) => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
   const [warning, setWarning] = useState<{
     requiredServers: number;
     availableServers: number;
@@ -130,6 +130,7 @@ export const Cs2StartPreflight: React.FC<TournamentStartPreflightProps> = ({
                 </Typography>
                 <Typography variant="body2">
                   <Trans
+                    t={t}
                     i18nKey="tournament.dialogs.start.insufficientBody"
                     values={{
                       available: t('tournament.counts.availableServers', {

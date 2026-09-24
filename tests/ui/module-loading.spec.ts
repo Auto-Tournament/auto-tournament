@@ -24,12 +24,23 @@ const MR = '/api/test/integration/manual-report';
 const MODULE_ID = 'e2e-late-module';
 const ENTRY = `/api/modules/${MODULE_ID}/client/index.js`;
 
-/** A valid client module: React from the host (through the import map), one slot. */
+const SLOT_TEXT = 'Rendered by the late module';
+
+/**
+ * A valid client module: React and i18next from the host (through the import
+ * map), one slot, and its own strings, which the slot draws from its first
+ * render.
+ */
 const MODULE_SOURCE = `
 import { createElement } from 'react';
-const Slot = () => createElement('div', { 'data-testid': 'e2e-module-slot' }, 'Rendered by the late module');
+import { useTranslation } from 'react-i18next';
+const Slot = () => {
+  const { t } = useTranslation(${JSON.stringify(MODULE_ID)});
+  return createElement('div', { 'data-testid': 'e2e-module-slot' }, t('slot.label'));
+};
 export default {
   id: ${JSON.stringify(MODULE_ID)},
+  locales: { en: { slot: { label: ${JSON.stringify(SLOT_TEXT)} } } },
   capabilities: { servers: false, veto: false, liveEvents: false, demos: false, playerStats: false },
   catalogGames: ['rocket-league'],
   teamAdminPanel: Slot,
@@ -167,6 +178,16 @@ test.describe('Code modules load without holding the page back', () => {
       'is pending while its module loads, then the module',
       { tag: ['@ui', '@modules'] },
       async ({ page }) => {
+        // Every text the slot is ever drawn with, from its first frame.
+        await page.addInitScript(() => {
+          const seen: string[] = [];
+          (window as unknown as { __slotTexts: string[] }).__slotTexts = seen;
+          new window.MutationObserver(() => {
+            const slot = document.querySelector('[data-testid="e2e-module-slot"]');
+            const text = slot?.textContent ?? null;
+            if (text !== null && seen[seen.length - 1] !== text) seen.push(text);
+          }).observe(document, { childList: true, subtree: true, characterData: true });
+        });
         await stubManifest(page, MANIFEST);
         const code = gate();
         await page.route(`**${ENTRY}`, async (route) => {
@@ -191,8 +212,13 @@ test.describe('Code modules load without holding the page back', () => {
         }
 
         // It arrives: the same page, now with the module's component, no reload.
-        await expect(page.getByTestId('e2e-module-slot')).toBeVisible();
+        await expect(page.getByTestId('e2e-module-slot')).toHaveText(SLOT_TEXT);
         await expect(page.getByTestId('module-pending')).toHaveCount(0);
+        // Its strings were registered before it first drew: never the bare key.
+        const texts = await page.evaluate(
+          () => (window as unknown as { __slotTexts: string[] }).__slotTexts
+        );
+        expect(texts).toEqual([SLOT_TEXT]);
       }
     );
 

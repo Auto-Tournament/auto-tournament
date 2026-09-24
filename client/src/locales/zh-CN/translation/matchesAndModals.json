@@ -5,9 +5,6 @@
       "loadTitle": "加载比赛时出错",
       "bulkDelete": "无法删除一场或多场比赛"
     },
-    "allocation": {
-      "nextServers": "下一批服务器分配约在 {{seconds}} 秒后"
-    },
     "header": {
       "createMatch": "创建比赛"
     },
@@ -44,9 +41,6 @@
       "matchNumber": "比赛 #{{number}}",
       "server": "服务器：{{name}}",
       "queuePosition": "队列位置：#{{position}}",
-      "waitingForServers": "等待服务器...",
-      "allocatingNow": "正在分配...",
-      "allocatesIn": "{{time}} 后分配",
       "shuffle": "随机组队",
       "shuffleManual": "随机组队（手动）",
       "manual": "手动",
@@ -77,21 +71,6 @@
       "completed": "比赛已结束。胜者已确定，对阵图已更新。",
       "proTipTitle": "提示：",
       "proTip": "当比赛显示“等待玩家 (X/Y)”时，服务器已就绪，玩家应立即连接。所有预期玩家连接并准备后，比赛将自动开始。"
-    },
-    "allocationWidget": {
-      "title": "服务器分配状态",
-      "available": "可用：",
-      "busy": "占用：",
-      "cooling": "冷却中：",
-      "offline": "离线：",
-      "waitingMatches_one": "等待中：{{count}} 场比赛",
-      "waitingMatches_other": "等待中：{{count}} 场比赛",
-      "statusLine": "状态：{{status}}",
-      "statusReady": "就绪",
-      "statusCooling": "冷却中",
-      "statusBusy": "占用",
-      "statusOffline": "离线",
-      "readyIn": "就绪倒计时：{{time}}"
     },
     "latestEvent": "最新：{{event}}",
     "matchLabel": {

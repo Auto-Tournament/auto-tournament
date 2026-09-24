@@ -28,8 +28,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ErrorIcon from '@mui/icons-material/Error';
 import CloseIcon from '@mui/icons-material/Close';
 import type { Server } from '../../../types';
-import { api, apiErrorMessage, useSnackbar } from '../../../module-sdk';
-import { useTranslation } from 'react-i18next';
+import { api, apiErrorMessage, useSnackbar, useModuleTranslation } from '../../../module-sdk';
 import type { BatchResourceDialogProps as BatchServerModalProps } from '../../types';
 
 interface ServerConfig {
@@ -118,7 +117,7 @@ export default function BatchServerModal({
   const [verificationStatuses, setVerificationStatuses] = useState<Map<number, ServerVerification>>(
     new Map()
   );
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
 
   const resetForm = () => {
     setBaseName('');

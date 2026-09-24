@@ -15,14 +15,14 @@
 
 import React from 'react';
 import { Alert, Box, Typography } from '@mui/material';
-import { useTranslation } from 'react-i18next';
+import { useModuleTranslation } from '../../../module-sdk';
 import type { MatchQueueBannerProps } from '../../types';
 
 export const Cs2AllocationBanner: React.FC<MatchQueueBannerProps> = ({
   availability,
   nextInSeconds,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
 
   const requiredServerCount = availability?.requiredServerCount ?? 0;
   const availableServerCount = availability?.availableServerCount ?? 0;

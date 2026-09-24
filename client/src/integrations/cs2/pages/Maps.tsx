@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { usePageHeader, useSnackbar } from '../../../module-sdk';
+import { usePageHeader, useSnackbar, useModuleTranslation } from '../../../module-sdk';
 import { Box, Button, CircularProgress, Tabs, Tab } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import MapIcon from '@mui/icons-material/Map';
@@ -13,12 +13,11 @@ import { MapsTab } from '../maps/MapsTab';
 import { MapPoolsTab } from '../maps/MapPoolsTab';
 import type { Map, MapsResponse, MapPool, MapPoolsResponse } from '../../../types/api.types';
 import { ConfirmDialog } from '../../../module-sdk';
-import { useTranslation } from 'react-i18next';
 
 export default function Maps() {
   const { setHeaderActions } = usePageHeader();
   const { showSuccess, showError } = useSnackbar();
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
   const [maps, setMaps] = useState<Map[]>([]);
   const [mapPools, setMapPools] = useState<MapPool[]>([]);
   const [loading, setLoading] = useState(true);

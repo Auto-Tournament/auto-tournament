@@ -1,5 +1,5 @@
 import { Box, TextField, Typography } from '@mui/material';
-import { useTranslation } from 'react-i18next';
+import { useModuleTranslation } from '../../../module-sdk';
 import { deriveOvertimeOption, type OvertimeOption } from '../../../components/tournament/ShuffleTournamentConfigStep';
 import { SegmentedControl } from '../../../components/tournament/setup/SegmentedControl';
 import type { TournamentRulesStepProps as Cs2MatchSettingsProps } from '../../types';
@@ -15,7 +15,7 @@ export function Cs2MatchSettings({
   disabled = false,
   maxRoundsTestId,
 }: Cs2MatchSettingsProps) {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
   const overtimeOption = deriveOvertimeOption(value.overtimeMode, value.overtimeSegments);
   const { maxRounds, overtimeSegments } = value;
 

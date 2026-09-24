@@ -1,47 +1,18 @@
-import fs from 'node:fs';
-import path from 'node:path';
+/**
+ * Strings a language has left in English, for core (translation) and for each
+ * module's namespace (integrations/<id>/locales), against that namespace's
+ * own English. Informational: CI does not run it.
+ */
 
-function exists(p) {
-  try {
-    fs.accessSync(p, fs.constants.R_OK);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function readJson(filePath) {
-  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-}
-
-function isPlainObject(v) {
-  return typeof v === 'object' && v !== null && !Array.isArray(v);
-}
-
-function deepMerge(target, source) {
-  for (const [k, v] of Object.entries(source)) {
-    if (isPlainObject(v) && isPlainObject(target[k])) {
-      deepMerge(target[k], v);
-    } else {
-      target[k] = v;
-    }
-  }
-  return target;
-}
-
-function loadLocaleMergedJson(localesDir, localeName) {
-  const dir = path.join(localesDir, localeName, 'translation');
-  if (!exists(dir)) return null;
-  const files = fs
-    .readdirSync(dir)
-    .filter((f) => f.endsWith('.json'))
-    .sort((a, b) => a.localeCompare(b));
-
-  /** @type {Record<string, unknown>} */
-  const merged = {};
-  for (const f of files) deepMerge(merged, readJson(path.join(dir, f)));
-  return merged;
-}
+import {
+  CORE_NAMESPACE,
+  exists,
+  isPlainObject,
+  languages,
+  loadNamespace,
+  localesDir,
+  namespaces,
+} from './i18n-namespaces.mjs';
 
 function isProbablyOkToMatchEnglish(s) {
   // Keys that are often identical across languages or are proper nouns/tech terms.
@@ -109,27 +80,18 @@ function flattenStringLeaves(obj) {
   return out;
 }
 
-const repoRoot = path.resolve(process.cwd(), '..');
-const localesDir = path.join(repoRoot, 'client', 'src', 'locales');
-
 if (!exists(localesDir)) {
   console.error('ERROR: locales dir not found:', localesDir);
   process.exit(1);
 }
 
-const en = loadLocaleMergedJson(localesDir, 'en');
-if (!en) {
+const langs = languages();
+if (!langs.includes('en')) {
   console.error('ERROR: English locale not found at src/locales/en/translation');
   process.exit(1);
 }
 
-const enStrings = flattenStringLeaves(en);
-const locales = fs
-  .readdirSync(localesDir, { withFileTypes: true })
-  .filter((d) => d.isDirectory())
-  .map((d) => d.name)
-  .filter((name) => name !== 'en')
-  .sort((a, b) => a.localeCompare(b));
+const locales = langs.filter((name) => name !== 'en');
 
 const limit = Number(process.env.I18N_FALLBACK_LIMIT ?? '40');
 const onlyLocales = (process.env.I18N_FALLBACK_LOCALES ?? '')
@@ -139,33 +101,39 @@ const onlyLocales = (process.env.I18N_FALLBACK_LOCALES ?? '')
 
 let total = 0;
 
-for (const locale of locales) {
-  if (onlyLocales.length && !onlyLocales.includes(locale)) continue;
-  const merged = loadLocaleMergedJson(localesDir, locale);
-  if (!merged) continue;
-  const locStrings = flattenStringLeaves(merged);
+for (const ns of namespaces()) {
+  const en = loadNamespace(ns, 'en');
+  if (!en) continue;
+  const enStrings = flattenStringLeaves(en);
 
-  /** @type {{ path: string, value: string }[]} */
-  const sameAsEn = [];
+  for (const locale of locales) {
+    if (onlyLocales.length && !onlyLocales.includes(locale)) continue;
+    const merged = loadNamespace(ns, locale);
+    if (!merged) continue;
+    const locStrings = flattenStringLeaves(merged);
 
-  for (const [p, v] of locStrings.entries()) {
-    const enV = enStrings.get(p);
-    if (typeof enV !== 'string') continue;
-    if (v === enV && !isProbablyOkToMatchEnglish(v)) sameAsEn.push({ path: p, value: v });
-  }
+    /** @type {{ path: string, value: string }[]} */
+    const sameAsEn = [];
 
-  if (sameAsEn.length === 0) continue;
-  total += sameAsEn.length;
-  console.log(`\n${locale}: ${sameAsEn.length} string(s) identical to en (excluding obvious OK matches)`);
-  for (const item of sameAsEn.slice(0, limit)) {
-    console.log(`  - ${item.path}: ${JSON.stringify(item.value)}`);
-  }
-  if (sameAsEn.length > limit) {
-    console.log(`  ... (${sameAsEn.length - limit} more)`);
+    for (const [p, v] of locStrings.entries()) {
+      const enV = enStrings.get(p);
+      if (typeof enV !== 'string') continue;
+      if (v === enV && !isProbablyOkToMatchEnglish(v)) sameAsEn.push({ path: p, value: v });
+    }
+
+    if (sameAsEn.length === 0) continue;
+    total += sameAsEn.length;
+    const where = ns === CORE_NAMESPACE ? locale : `${locale} [${ns}]`;
+    console.log(`\n${where}: ${sameAsEn.length} string(s) identical to en (excluding obvious OK matches)`);
+    for (const item of sameAsEn.slice(0, limit)) {
+      console.log(`  - ${item.path}: ${JSON.stringify(item.value)}`);
+    }
+    if (sameAsEn.length > limit) {
+      console.log(`  ... (${sameAsEn.length - limit} more)`);
+    }
   }
 }
 
 console.log(`\nTotal identical-to-en strings (filtered): ${total}`);
 
 if (total > 0) process.exitCode = 2;
-

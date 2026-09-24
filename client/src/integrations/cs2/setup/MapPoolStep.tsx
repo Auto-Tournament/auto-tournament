@@ -12,7 +12,7 @@ import {
   TextField,
 } from '@mui/material';
 import { Warning as WarningIcon } from '@mui/icons-material';
-import { useTranslation } from 'react-i18next';
+import { useModuleTranslation } from '../../../module-sdk';
 import { SortableMapList } from '../../../components/tournament/SortableMapList';
 import { validateMapCount, requiresVeto } from '../../../utils/tournamentVerification';
 import type { TournamentContentStepProps as MapPoolStepProps } from '../../types';
@@ -34,7 +34,7 @@ export function MapPoolStep({
   hideShuffleExplanation = false,
   enableOrdering = true,
 }: MapPoolStepProps) {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
 
   const getMapDisplayName = (mapId: string): string => {
     const map = availableMaps.find((m) => m.id === mapId);

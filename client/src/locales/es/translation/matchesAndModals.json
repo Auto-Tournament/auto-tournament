@@ -5,9 +5,6 @@
       "loadTitle": "Error al cargar los partidos",
       "bulkDelete": "No se pudieron eliminar una o más partidas"
     },
-    "allocation": {
-      "nextServers": "Siguiente asignación de servidores en {{seconds}} s"
-    },
     "header": {
       "createMatch": "Crear partido"
     },
@@ -44,9 +41,6 @@
       "matchNumber": "Partida #{{number}}",
       "server": "Servidor: {{name}}",
       "queuePosition": "Posición en la cola: #{{position}}",
-      "waitingForServers": "Esperando servidores...",
-      "allocatingNow": "Asignando ahora...",
-      "allocatesIn": "Se asigna en {{time}}",
       "shuffle": "Shuffle",
       "shuffleManual": "Shuffle manual",
       "manual": "Manual",
@@ -77,21 +71,6 @@
       "completed": "La partida ha terminado. Se ha determinado el ganador y se ha actualizado el cuadro.",
       "proTipTitle": "Consejo:",
       "proTip": "Cuando una partida muestra \"Esperando jugadores (X/Y)\", el servidor está listo y los jugadores deben conectarse. Cuando todos los jugadores esperados estén conectados y listos, la partida empezará automáticamente."
-    },
-    "allocationWidget": {
-      "title": "Estado de asignación de servidores",
-      "available": "Disponibles:",
-      "busy": "Ocupados:",
-      "cooling": "Enfriando:",
-      "offline": "Sin conexión:",
-      "waitingMatches_one": "En espera: {{count}} partida",
-      "waitingMatches_other": "En espera: {{count}} partidas",
-      "statusLine": "Estado: {{status}}",
-      "statusReady": "Listo",
-      "statusCooling": "Enfriando",
-      "statusBusy": "Ocupado",
-      "statusOffline": "Sin conexión",
-      "readyIn": "Listo en: {{time}}"
     },
     "latestEvent": "Último: {{event}}",
     "matchLabel": {

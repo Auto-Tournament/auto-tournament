@@ -12,12 +12,11 @@
  */
 
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { ManageStatusTile } from '../../../module-sdk';
+import { ManageStatusTile, useModuleTranslation } from '../../../module-sdk';
 import type { ManageStatusTileProps } from '../../types';
 
 export const Cs2ServersFreeTile: React.FC<ManageStatusTileProps> = ({ availability }) => {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
 
   const free = availability?.availableServerCount ?? 0;
   const total = availability?.servers.length ?? 0;

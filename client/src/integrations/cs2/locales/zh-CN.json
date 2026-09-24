@@ -1,0 +1,600 @@
+{
+  "connectSteam": {
+    "title": "关联你的 Steam 账号",
+    "bodyIntro": "快完成了。要使用当前账号访问锦标赛平台（例如通过 Discord、Keycloak 或 GitHub 登录后），你需要先关联一个 Steam 个人资料。",
+    "bodyRequirement": "关联 Steam 让系统能够将你识别为选手，并且是从非 Steam 提供商登录时的必备步骤。",
+    "button": "使用 Steam 关联"
+  },
+  "nav": {
+    "servers": "服务器",
+    "maps": "地图与地图池"
+  },
+  "layout": {
+    "webhookNotConfigured": "尚未配置 Webhook URL。配置完成之前，比赛和服务器无法接收事件。",
+    "openSettings": "打开设置",
+    "pageTitle": {
+      "servers": "服务器",
+      "maps": "地图与地图池"
+    },
+    "matchzyDbDown": {
+      "title": "无法连接 MatchZy 数据库",
+      "body_one": "{{count}} 台服务器报告插件无法连接其数据库。备份和事件队列可能受到影响。",
+      "body_other": "{{count}} 台服务器报告插件无法连接其数据库。备份和事件队列可能受到影响。"
+    }
+  },
+  "dashboard": {
+    "site": {
+      "servers": {
+        "label": "Servers",
+        "hint": "Connect, update, health"
+      },
+      "maps": {
+        "label": "Maps",
+        "hint": "Pools and images"
+      }
+    },
+    "servers": {
+      "title": "Servers",
+      "open": "Open",
+      "online": "online",
+      "inMatch": "In a match",
+      "free": "Free",
+      "offline": "Offline",
+      "plugin": "Plugin",
+      "pluginSame": "{{version}}, all servers match",
+      "pluginMixed": "{{count}} plugin versions in use",
+      "none": "No servers connected yet."
+    }
+  },
+  "managePage": {
+    "rail": {
+      "servers": "Servers",
+      "maps": "Maps"
+    },
+    "status": {
+      "serversFree": "SERVERS FREE"
+    },
+    "servers": {
+      "heading": "Servers",
+      "viewAll": "All servers",
+      "none": "No servers configured yet.",
+      "inMatch": "In match",
+      "free": "Free",
+      "offline": "Offline",
+      "lastHeartbeat": "Last heartbeat {{time}} ago",
+      "never": "never"
+    }
+  },
+  "mapsPage": {
+    "title": "地图与地图池",
+    "tabs": {
+      "maps": "地图",
+      "mapPools": "地图池"
+    },
+    "headerActions": {
+      "addMap": "新增地图",
+      "createMapPool": "创建地图池"
+    },
+    "errors": {
+      "loadMaps": "加载地图失败",
+      "loadPools": "加载地图池失败",
+      "defaultPoolCannotDelete": "默认地图池无法删除。",
+      "setDefaultPool": "设置默认地图池失败",
+      "togglePool": "切换地图池状态失败",
+      "deleteMap": "删除地图失败",
+      "deletePool": "删除地图池失败"
+    },
+    "success": {
+      "mapDeleted": "地图删除成功"
+    },
+    "confirmDeleteMap": {
+      "title": "删除地图",
+      "message": "确定要删除 “{{name}}” 吗？该操作无法撤销。"
+    },
+    "confirmDeletePool": {
+      "title": "删除地图池",
+      "message": "确定要删除 “{{name}}” 吗？该操作无法撤销。"
+    }
+  },
+  "mapModal": {
+    "titleCreate": "新增地图",
+    "titleEdit": "编辑地图",
+    "workshop": {
+      "inputLabel": "Steam 创意工坊 URL 或 ID",
+      "inputPlaceholder": "https://steamcommunity.com/sharedfiles/filedetails/?id=1234567890",
+      "inputHelper": "粘贴创意工坊 URL 或数字 ID，自动填写名称和图片。",
+      "found": "已找到：{{title}}",
+      "lookupFailed": "创意工坊查询失败"
+    },
+    "mapIdLabel": "地图 ID",
+    "mapIdPlaceholder": "de_dust2",
+    "mapIdHelper": "仅允许小写字母、数字和下划线（例如：de_dust2）",
+    "displayNameLabel": "显示名称",
+    "displayNamePlaceholder": "Dust II",
+    "mapImageLabel": "地图图片",
+    "uploadButton": "上传图片",
+    "fetchFromGitHub": "从 GitHub 获取",
+    "uploadHelper": "上传 PNG、JPG、GIF 或 WebP 图片（最大 5MB）",
+    "previewLabel": "预览：",
+    "removeImage": "移除图片",
+    "errors": {
+      "mapIdRequired": "地图 ID 为必填项",
+      "displayNameRequired": "显示名称为必填项",
+      "mapIdInvalid": "地图 ID 只能包含小写字母、数字和下划线",
+      "invalidFileType": "文件类型无效，请选择 PNG、JPG、GIF 或 WebP 图片。",
+      "fileTooLarge": "文件过大，请选择小于 5MB 的图片。",
+      "readFileFailed": "读取图片文件失败",
+      "fetchImageIdRequired": "请先输入地图 ID",
+      "fetchImageFailed": "获取图片失败，你可以改为上传图片。",
+      "imageNotFound": "未找到 ID 为 {{id}} 的图片，你可以改为上传图片。",
+      "uploadFailed": "上传图片失败",
+      "saveFailed": "保存地图失败"
+    },
+    "success": {
+      "mapUpdated": "地图更新成功",
+      "mapCreated": "地图创建成功"
+    },
+    "buttons": {
+      "cancel": "取消",
+      "saving": "正在保存…",
+      "update": "更新",
+      "create": "创建"
+    }
+  },
+  "mapActionsModal": {
+    "mapId": "地图 ID",
+    "preview": "预览",
+    "edit": "编辑"
+  },
+  "mapPoolActionsModal": {
+    "defaultChip": "默认",
+    "status": {
+      "label": "状态",
+      "enabled": "已启用",
+      "disabled": "已禁用"
+    },
+    "maps": {
+      "label": "地图（{{count}}）"
+    },
+    "actions": {
+      "edit": "编辑",
+      "enable": "启用",
+      "disable": "禁用",
+      "setDefault": "设为默认"
+    }
+  },
+  "batchServerModal": {
+    "title": "批量创建服务器",
+    "info": "按端口递增 10（27015、27025、27035…）批量创建多台服务器，非常适合多台服务器位于同一机器的 LAN 环境。",
+    "sections": {
+      "identification": {
+        "title": "服务器标识"
+      },
+      "connection": {
+        "title": "连接设置"
+      },
+      "configuration": {
+        "title": "服务器配置"
+      }
+    },
+    "baseId": {
+      "label": "基础 ID",
+      "placeholder": "server",
+      "helper": "服务器 ID 示例：base_1、base_2、base_3…"
+    },
+    "baseName": {
+      "label": "基础名称",
+      "placeholder": "Auto Tournament",
+      "helper": "服务器名称示例：Base #1、Base #2、Base #3…"
+    },
+    "host": {
+      "label": "主机 / IP 地址",
+      "placeholder": "192.168.1.100"
+    },
+    "rconPassword": {
+      "label": "RCON 密码",
+      "placeholder": "shared-rcon-password",
+      "helper": "所有服务器共用同一密码"
+    },
+    "numServers": {
+      "label": "服务器数量",
+      "placeholder": "3",
+      "helper": "最大值：50"
+    },
+    "assignPorts": {
+      "label": "端口分配",
+      "helper": "API → 服务器（RCON 测试）"
+    },
+    "serverPortLabel": "服务器 #{{index}}",
+    "portPlaceholder": "27015",
+    "enabled": {
+      "label": "服务器启用状态",
+      "helper": "所有服务器将按此设置为启用或禁用"
+    },
+    "preview": {
+      "more": "……以及另外 {{count}} 台",
+      "titleFirst10": "预览（前 10 条）",
+      "titleAll": "预览（全部）"
+    },
+    "checkServersButton": {
+      "default": "检查服务器",
+      "checking": "正在检查…"
+    },
+    "createServersButton": {
+      "creating": "正在创建…",
+      "default_one": "创建 {{count}} 台服务器",
+      "default_other": "创建 {{count}} 台服务器"
+    },
+    "warnings": {
+      "notAllVerified": "部分服务器尚未通过连通性测试。它们仍会被保存，但在正确配置 RCON 和 Webhook 之前可能显示为离线。"
+    },
+    "success": {
+      "createdAll_one": "已创建 {{count}} 台服务器",
+      "createdAll_other": "已创建 {{count}} 台服务器"
+    },
+    "errors": {
+      "baseNameRequired": "基础名称为必填项",
+      "baseIdRequired": "基础 ID 为必填项",
+      "hostRequired": "主机地址为必填项",
+      "countRange": "服务器数量必须在 1 到 50 之间",
+      "passwordRequired": "RCON 密码为必填项",
+      "portRange": "服务器 #{{index}} 端口必须在 1 到 65535 之间",
+      "connectionFailed": "连接失败",
+      "createFailed": "创建服务器失败",
+      "partialCreate": "已创建 {{created}}/{{total}} 台服务器。错误详情：\n{{details}}"
+    }
+  },
+  "matchesPage": {
+    "allocation": {
+      "nextServers": "下一批服务器分配约在 {{seconds}} 秒后"
+    },
+    "card": {
+      "waitingForServers": "等待服务器...",
+      "allocatingNow": "正在分配...",
+      "allocatesIn": "{{time}} 后分配"
+    },
+    "allocationWidget": {
+      "title": "服务器分配状态",
+      "available": "可用：",
+      "busy": "占用：",
+      "cooling": "冷却中：",
+      "offline": "离线：",
+      "waitingMatches_one": "等待中：{{count}} 场比赛",
+      "waitingMatches_other": "等待中：{{count}} 场比赛",
+      "statusLine": "状态：{{status}}",
+      "statusReady": "就绪",
+      "statusCooling": "冷却中",
+      "statusBusy": "占用",
+      "statusOffline": "离线",
+      "readyIn": "就绪倒计时：{{time}}"
+    }
+  },
+  "vetoInterface": {
+    "vetoNotAvailable": "此比赛不支持禁选",
+    "vetoUnavailable": "此账号无法查看禁选详情。请以其中一支队伍的队员身份登录以继续禁选。",
+    "vetoCompleted": "禁选完成！",
+    "vetoCompletedSubtitle": "地图选择已完成。比赛即将开始。",
+    "selectedMaps": "已选地图",
+    "yourTurnToBan": "轮到你的队伍禁用地图",
+    "yourTurnToPick": "轮到你的队伍选择地图",
+    "yourTurnToChooseSide": "轮到你的队伍选择阵营",
+    "clickMapToConfirm": "点击下方高亮地图以确认你的选择。",
+    "waitingToBan": "等待 {{team}} 禁用地图",
+    "waitingToPick": "等待 {{team}} 选择地图",
+    "waitingToChooseSide": "等待 {{team}} 选择阵营",
+    "pageUpdatesAutomatically": "请保持此页面打开——轮到你时将自动更新。",
+    "stepOf": "第 {{current}} 步，共 {{total}} 步",
+    "banPhase": "禁用阶段",
+    "pickPhase": "选择阶段",
+    "sideChoice": "阵营选择",
+    "chooseYourStartingSide": "选择你的初始阵营",
+    "waitingForSidePick": "等待 {{team}} 选择初始阵营...",
+    "counterTerrorist": "反恐精英",
+    "terrorist": "恐怖分子",
+    "vetoHistory": "禁选历史",
+    "historyStep": "第 {{step}} 步：",
+    "startingSide": "初始 {{side}}",
+    "otherTeam": "另一支队伍",
+    "actionLabels": {
+      "ban": "禁用",
+      "pick": "选择",
+      "side_pick": "选边"
+    },
+    "mapBadge": "地图 {{n}}",
+    "mapCardAria": {
+      "ban": "禁用 {{map}}",
+      "pick": "选择 {{map}}",
+      "banned": "{{map}}（已禁用）",
+      "picked": "{{map}}（已选择）"
+    },
+    "errors": {
+      "failedToLoadVetoState": "加载禁选状态失败",
+      "failedToProcessVetoAction": "处理禁选操作失败",
+      "failedToSubmitVetoAction": "提交禁选操作失败",
+      "failedToPickSide": "选择阵营失败",
+      "notYourTurn": "还没到你的回合，等待另一支队伍。",
+      "vetoAlreadyCompleted": "禁选已完成",
+      "invalidMapSelection": "无效的地图选择",
+      "invalidSideSelection": "无效的阵营选择",
+      "noMapToPickSide": "没有地图可供选择阵营",
+      "matchNotFound": "未找到比赛",
+      "unauthorized": "只有参与队伍中的队员才能对此比赛执行禁选操作。"
+    },
+    "decider": "Decider"
+  },
+  "matchInfo": {
+    "server": {
+      "waitingTitle": "等待分配服务器",
+      "waitingBody": "一旦有可用服务器，将自动为你分配。每场比赛结束后，服务器会进入短暂的冷却期（约 2 分钟），以便上传录像并完全重置服务器。服务器就绪后此页面会自动更新。",
+      "serverName": "服务器：{{name}}",
+      "status": "状态：{{status}}",
+      "connect": "连接服务器",
+      "connecting": "✓ 正在连接...",
+      "copyCommand": "复制控制台命令",
+      "copied": "✓ 已复制！",
+      "statusLabels": {
+        "idle": "空闲",
+        "loading": "加载中",
+        "warmup": "热身中 – 立即加入！",
+        "knife": "刀局",
+        "live": "进行中",
+        "paused": "已暂停",
+        "halftime": "半场休息",
+        "postgame": "比赛已结束",
+        "queued": "下一场比赛排队中",
+        "error": "错误"
+      }
+    }
+  },
+  "serversPage": {
+    "title": "服务器",
+    "headerActions": {
+      "refreshChecking": "正在检查…",
+      "refresh": "刷新状态",
+      "retryUninitialized": "重试未初始化 ({{count}})",
+      "retryUninitializedChecking": "正在重试…",
+      "batchAdd": "批量新增",
+      "select": "选择",
+      "done": "完成选择",
+      "selectAll": "全选",
+      "unselectAll": "取消全选",
+      "deleteSelected": "删除所选",
+      "addServer": "新增服务器"
+    },
+    "empty": {
+      "title": "还没有服务器",
+      "description": "添加第一台 CS2 服务器以开始锦标赛",
+      "addServer": "新增服务器",
+      "batchAdd": "或批量新增多个服务器"
+    },
+    "allocation": {
+      "title": "服务器分配",
+      "loading": "正在加载分配状态…",
+      "empty": "暂无分配数据。",
+      "available": "可用服务器：",
+      "waiting": "等待服务器的比赛：",
+      "nextPass": "下一次分配轮约在 ~{{seconds}} 秒后",
+      "cooldownLabel": "冷却",
+      "cooldownDescription": "最近完成了一场比赛——进入冷却，以便上传 Demo 并让服务器完全重置（约 2 分钟）。",
+      "cooldownEta": "约 {{seconds}} 秒后就绪"
+    },
+    "statusChip": {
+      "checking": "正在检查…",
+      "disabled": "已禁用",
+      "offline": "离线",
+      "onlineOk": "在线（API ↔ 服务器正常）",
+      "onlineRconOnly": "在线（仅 RCON 可达）",
+      "rconFailed": "RCON 失败",
+      "onlineTesting": "在线（测试中）",
+      "noEventsYet": "暂无事件",
+      "notConfigured": "未配置",
+      "onlineIdle": "在线（空闲 — 近期无事件）",
+      "onlineActive": "在线（活跃）",
+      "online": "在线"
+    },
+    "ipBanned": {
+      "title": "服务器可能已封禁我们的 IP",
+      "message": "服务器可达但反复拒绝 RCON 身份验证。这可能表示 IP 被封禁。如果 RCON 密码正确，请检查服务器的封禁列表并解封我们的 IP 地址。"
+    },
+    "connectivity": {
+      "apiToServer": "Auto Tournament API → CS2 服务器",
+      "serverToApi": "服务器 → API（/api/events）",
+      "unreachable": "不可达",
+      "reachable": "可达",
+      "unknown": "未知",
+      "loading": "加载中…",
+      "pluginLabel": "Auto Tournament CS2："
+    },
+    "currentMatch": {
+      "view": "查看比赛",
+      "loading": "正在加载…",
+      "queuedPrefix": "已排队："
+    },
+    "labels": {
+      "host": "主机：",
+      "port": "端口：",
+      "id": "ID：",
+      "cs2Name": "CS2 名称：",
+      "plugin": "插件：",
+      "cs2BuildValue": "构建 {{build}}"
+    },
+    "errors": {
+      "loadServers": "加载服务器失败",
+      "noMatchesForServer": "未找到该服务器的比赛",
+      "loadCurrentMatch": "加载该服务器的当前比赛失败",
+      "bulkDelete": "删除一台或多台服务器时出错"
+    },
+    "bulkDelete": {
+      "title": "删除服务器",
+      "message_one": "确定要删除 {{count}} 台服务器吗？该操作无法撤销。",
+      "message_other": "确定要删除 {{count}} 台服务器吗？该操作无法撤销。"
+    },
+    "autoConfig": {
+      "configuring": "正在配置新服务器（通过 RCON 发送 MatchZy 配置）…",
+      "done": "新服务器已配置，正在刷新状态…"
+    },
+    "checkServerLogs": "请查看游戏服务器控制台/日志，确认 Auto Tournament 插件是否收到配置并发送事件。",
+    "fleet": {
+      "title": "服务器集群状态",
+      "total_one": "{{count}} 台服务器",
+      "total_other": "{{count}} 台服务器",
+      "online": "在线",
+      "offline": "离线",
+      "notConfigured": "未配置",
+      "disabled": "已禁用",
+      "latestRelease": "Auto Tournament CS2 最新版本：v{{version}}",
+      "olderVersion_one": "{{count}} 台服务器运行的版本低于最新版本。",
+      "olderVersion_other": "{{count}} 台服务器运行的版本低于最新版本。",
+      "newerVersion_one": "{{count}} 台服务器运行的版本高于 GitHub 最新发布版本（可能是未发布的构建）。",
+      "newerVersion_other": "{{count}} 台服务器运行的版本高于 GitHub 最新发布版本（可能是未发布的构建）。",
+      "downloadLatest": "下载最新版本"
+    },
+    "cs2Update": {
+      "title": "需要更新 CS2",
+      "snackbarBody_one": "{{count}} 台服务器版本过旧。请更新服务器安装并重启。",
+      "snackbarBody_other": "{{count}} 台服务器版本过旧。请更新服务器安装并重启。",
+      "fleetTitle": "CS2 服务器版本过旧 — 需要更新",
+      "fleetBody_one": "{{count}} 台服务器收到 Steam 的 CS2 强制更新通知。请更新服务器安装（SteamCMD/主机）并重启。",
+      "fleetBody_other": "{{count}} 台服务器收到 Steam 的 CS2 强制更新通知。请更新服务器安装（SteamCMD/主机）并重启。"
+    },
+    "versionMismatch": {
+      "title": "检测到版本不一致",
+      "chip_one": "v{{version}}：{{count}} 台服务器",
+      "chip_other": "v{{version}}：{{count}} 台服务器",
+      "recommended": "建议：将所有服务器更新到 v{{version}} 以保持一致"
+    },
+    "notInitialized": {
+      "title": "服务器未初始化",
+      "checking": "正在检查连接…",
+      "rconUnreachable": "无法连接 RCON。请检查主机、端口以及游戏服务器是否正在运行。可以连接后点击“重试”。",
+      "noEvents": "RCON 可连接，但 Auto Tournament 插件尚未发送任何事件。点击“重试”进行配置。",
+      "notChecked": "尚未检查连接，请查看下方状态。RCON 可连接后点击“重试”进行配置。"
+    },
+    "chips": {
+      "versionMismatch": "版本不一致",
+      "ipBanned": "IP 已被封禁",
+      "cs2Build": "CS2 构建 {{build}}",
+      "pluginDbDown": "插件数据库不可用",
+      "cs2UpdateRequired": "需要更新 CS2（{{version}}）"
+    },
+    "tooltips": {
+      "fixGuide": "修复指南",
+      "disabledTitle": "已禁用的服务器",
+      "disabledBody": "已禁用的服务器不会参与分配和健康检查。",
+      "noEventsTitle": "尚未收到 Auto Tournament 插件的事件",
+      "noEventsBody": "Auto Tournament 已通过 RCON 发送 Webhook 配置，但尚未收到任何事件。这通常表示服务器无法访问 Auto Tournament 的 Webhook URL，或 Auto Tournament 插件未运行。",
+      "notConfiguredTitle": "未配置",
+      "notConfiguredBody": "Auto Tournament 尚未向此服务器发送持久配置。点击“重试”进行初始化。",
+      "unreachableTitle": "Auto Tournament 无法连接服务器",
+      "unreachableBody": "Auto Tournament 无法通过 RCON 连接服务器。请检查主机/端口、RCON 密码、防火墙以及服务器是否正在运行。",
+      "webhookTitle": "服务器无法连接 Auto Tournament（Webhook）",
+      "webhookBody": "Auto Tournament 可以通过 RCON 连接服务器，但服务器无法访问 Auto Tournament 的 Webhook。请检查出站网络、DNS 和已配置的 Webhook URL。",
+      "versionDiffTitle": "各服务器的插件版本不一致",
+      "versionDiffBody": "部分服务器运行的 Auto Tournament CS2 版本不同。如果使用 CSM，请运行 {{command}} 并重启服务器。",
+      "ipBannedTitle": "RCON IP 已被封禁",
+      "ipBannedBody": "由于 RCON 认证多次失败，服务器已暂时封禁 Auto Tournament 的 IP。请修正 RCON 密码并解封该 IP。",
+      "pluginDbTitle": "Auto Tournament 插件无法连接其数据库。",
+      "pluginDbBody": "如果使用 CSM，请运行 {{path}}。",
+      "cs2UpdateBody": "Auto Tournament 已确认此服务器的构建版本落后于 Steam。更新前，该服务器不会被分配新比赛（也无法用于开始锦标赛）。",
+      "retryInit": "重试服务器初始化（通过 RCON 发送持久配置）"
+    },
+    "lastActive": {
+      "justNow": "刚刚活跃",
+      "minutesAgo_one": "{{count}} 分钟前活跃",
+      "minutesAgo_other": "{{count}} 分钟前活跃",
+      "hoursAgo_one": "{{count}} 小时前活跃",
+      "hoursAgo_other": "{{count}} 小时前活跃",
+      "daysAgo_one": "{{count}} 天前活跃",
+      "daysAgo_other": "{{count}} 天前活跃"
+    },
+    "pluginStatus": {
+      "idle": "空闲",
+      "loading": "加载中",
+      "warmup": "热身",
+      "knife": "刀局",
+      "live": "进行中",
+      "playing": "比赛中",
+      "paused": "已暂停",
+      "halftime": "半场",
+      "postgame": "赛后",
+      "queued": "排队中",
+      "error": "错误"
+    },
+    "retry": {
+      "sendingConfig": "正在向服务器发送持久配置…",
+      "triggered": "已触发服务器初始化",
+      "failed": "重试初始化失败：{{message}}",
+      "retryingAll_one": "正在为 {{count}} 台服务器重试初始化…",
+      "retryingAll_other": "正在为 {{count}} 台服务器重试初始化…",
+      "triggeredAll_one": "已为 {{count}} 台服务器触发重试",
+      "triggeredAll_other": "已为 {{count}} 台服务器触发重试",
+      "failedAll": "重试失败：{{message}}"
+    }
+  },
+  "serverModal": {
+    "titleCreate": "新增服务器",
+    "titleEdit": "编辑服务器",
+    "serverNameLabel": "服务器名称",
+    "serverNamePlaceholder": "比赛服务器 #1",
+    "hostLabel": "主机 / IP 地址",
+    "hostPlaceholder": "192.168.1.100",
+    "portLabel": "端口",
+    "portPlaceholder": "27015",
+    "rconPasswordLabel": "RCON 密码",
+    "rconPasswordPlaceholder": "your-rcon-password",
+    "rconPasswordHelper": "用于 RCON 访问服务器的密码",
+    "enabledLabel": "服务器启用",
+    "enabledHelper": "被禁用的服务器不会用于比赛",
+    "overridesTitle": "MatchZy 覆盖配置（可选）",
+    "overridesDescription": "这些设置仅覆盖此服务器的全局 MatchZy 默认值。留空则使用“设置”中的全局值。",
+    "chatPrefixLabel": "聊天前缀覆盖",
+    "chatPrefixPlaceholder": "[{Green}Auto Tournament{Default}]",
+    "chatPrefixHelper": "覆盖此服务器上的 matchzy_chat_prefix（可选）",
+    "adminChatPrefixLabel": "管理员聊天前缀覆盖",
+    "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
+    "adminChatPrefixHelper": "覆盖此服务器上的 matchzy_admin_chat_prefix（可选）",
+    "knifeOverrideLabel": "默认启用刀局（覆盖）",
+    "knifeOverrideHelper": "设置后会覆盖此服务器上的 matchzy_knife_enabled_default。保持中间态以使用全局默认值。",
+    "testConnectivity": "测试连通性",
+    "testingConnectivity": "正在测试连通性…",
+    "connectivity": {
+      "apiToServer": "Auto Tournament API → CS2 服务器：",
+      "serverToApi": "服务器 → API（/api/events）：",
+      "reachable": "可达",
+      "unreachable": "不可达"
+    },
+    "errors": {
+      "nameRequired": "服务器名称为必填项",
+      "hostRequired": "主机为必填项",
+      "portInvalid": "端口必须是 1 到 65535 之间的有效数字",
+      "rconRequired": "RCON 密码为必填项",
+      "idGenerationFailed": "无法生成服务器 ID，请调整服务器名称。",
+      "duplicateId": "服务器名称会生成重复 ID “{{id}}”，请选择其他名称。",
+      "duplicateHostPort": "已存在使用主机与端口 '{{host}}:{{port}}' 的服务器（ID：{{id}}，名称：{{name}}）",
+      "testConnectionSaveFirst": "请先保存服务器，然后再测试连通性",
+      "testConnectionFailed": "测试连通性失败",
+      "saveFailed": "保存服务器失败",
+      "deleteFailed": "删除服务器失败",
+      "rconReachableApiUnreachable": "可以通过 RCON 连接到服务器，但服务器无法访问 API 端点（未收到测试事件）。",
+      "serverOffline": "服务器似乎离线或无法通过 RCON 访问。",
+      "rconReachableApiUnknown": "RCON works. The server has no event URL yet, so its connection back to the API can't be checked until it is saved and configured."
+    },
+    "success": {
+      "connectivityOk": "双向连通性验证通过：服务器在线且可以访问 API。",
+      "serverUpdated": "服务器更新成功",
+      "serverCreated": "服务器创建成功",
+      "serverDeleted": "服务器删除成功"
+    },
+    "buttons": {
+      "deleteServer": "删除服务器",
+      "cancel": "取消",
+      "saving": "正在保存…",
+      "saveChanges": "保存更改",
+      "addServer": "新增服务器"
+    },
+    "confirmDelete": {
+      "title": "删除服务器",
+      "message": "确定要删除 “{{name}}” 吗？该操作无法撤销。"
+    }
+  }
+}

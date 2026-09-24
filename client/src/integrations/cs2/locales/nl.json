@@ -1,0 +1,600 @@
+{
+  "connectSteam": {
+    "title": "Koppel je Steam-account",
+    "bodyIntro": "Je bent bijna klaar. Om het toernooiplatform met dit account te gebruiken (bijvoorbeeld nadat je via Discord, Keycloak of GitHub bent ingelogd), moet je een Steam-profiel koppelen.",
+    "bodyRequirement": "Door Steam te koppelen kan het systeem je herkennen als speler en is het vereist om in te loggen via providers die geen Steam zijn.",
+    "button": "Koppelen met Steam"
+  },
+  "nav": {
+    "servers": "Spelservers",
+    "maps": "Kaarten & map-pools"
+  },
+  "layout": {
+    "webhookNotConfigured": "Webhook-URL is niet ingesteld. Wedstrijden en servers kunnen geen events ontvangen totdat dit is ingesteld.",
+    "openSettings": "Instellingen openen",
+    "pageTitle": {
+      "servers": "Spelservers",
+      "maps": "Kaarten & map-pools"
+    },
+    "matchzyDbDown": {
+      "title": "MatchZy-database onbereikbaar",
+      "body_one": "{{count}} server meldt dat de plugin zijn database niet kan bereiken. Back-ups en de eventwachtrij kunnen hierdoor last hebben.",
+      "body_other": "{{count}} servers melden dat de plugin zijn database niet kan bereiken. Back-ups en de eventwachtrij kunnen hierdoor last hebben."
+    }
+  },
+  "dashboard": {
+    "site": {
+      "servers": {
+        "label": "Servers",
+        "hint": "Connect, update, health"
+      },
+      "maps": {
+        "label": "Maps",
+        "hint": "Pools and images"
+      }
+    },
+    "servers": {
+      "title": "Servers",
+      "open": "Open",
+      "online": "online",
+      "inMatch": "In a match",
+      "free": "Free",
+      "offline": "Offline",
+      "plugin": "Plugin",
+      "pluginSame": "{{version}}, all servers match",
+      "pluginMixed": "{{count}} plugin versions in use",
+      "none": "No servers connected yet."
+    }
+  },
+  "managePage": {
+    "rail": {
+      "servers": "Servers",
+      "maps": "Maps"
+    },
+    "status": {
+      "serversFree": "SERVERS FREE"
+    },
+    "servers": {
+      "heading": "Servers",
+      "viewAll": "All servers",
+      "none": "No servers configured yet.",
+      "inMatch": "In match",
+      "free": "Free",
+      "offline": "Offline",
+      "lastHeartbeat": "Last heartbeat {{time}} ago",
+      "never": "never"
+    }
+  },
+  "mapsPage": {
+    "title": "Kaarten & kaartpools",
+    "tabs": {
+      "maps": "Kaarten",
+      "mapPools": "Kaartpools"
+    },
+    "headerActions": {
+      "addMap": "Kaart toevoegen",
+      "createMapPool": "Kaartpool maken"
+    },
+    "errors": {
+      "loadMaps": "Kan kaarten niet laden",
+      "loadPools": "Kan kaartpools niet laden",
+      "defaultPoolCannotDelete": "De standaard kaartpool kan niet worden verwijderd.",
+      "setDefaultPool": "Kan de standaard kaartpool niet instellen",
+      "togglePool": "Kan de status van de kaartpool niet wijzigen",
+      "deleteMap": "Kan kaart niet verwijderen",
+      "deletePool": "Kan kaartpool niet verwijderen"
+    },
+    "success": {
+      "mapDeleted": "Kaart succesvol verwijderd"
+    },
+    "confirmDeleteMap": {
+      "title": "Kaart verwijderen",
+      "message": "Weet je zeker dat je \"{{name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+    },
+    "confirmDeletePool": {
+      "title": "Kaartpool verwijderen",
+      "message": "Weet je zeker dat je \"{{name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+    }
+  },
+  "mapModal": {
+    "titleCreate": "Kaart toevoegen",
+    "titleEdit": "Kaart bewerken",
+    "workshop": {
+      "inputLabel": "Steam Workshop-URL of -ID",
+      "inputPlaceholder": "https://steamcommunity.com/sharedfiles/filedetails/?id=1234567890",
+      "inputHelper": "Plak een Workshop-URL of numerieke ID om naam en afbeelding automatisch in te vullen.",
+      "found": "Gevonden: {{title}}",
+      "lookupFailed": "Opzoeken in Workshop mislukt"
+    },
+    "mapIdLabel": "Kaart-ID",
+    "mapIdPlaceholder": "de_dust2",
+    "mapIdHelper": "Alleen kleine letters, cijfers en underscores (de_dust2)",
+    "displayNameLabel": "Weergavenaam",
+    "displayNamePlaceholder": "Dust II",
+    "mapImageLabel": "Kaartafbeelding",
+    "uploadButton": "Afbeelding uploaden",
+    "fetchFromGitHub": "Ophalen van GitHub",
+    "uploadHelper": "Upload een PNG-, JPG-, GIF- of WebP-afbeelding (max 5MB)",
+    "previewLabel": "Voorbeeld:",
+    "removeImage": "Afbeelding verwijderen",
+    "errors": {
+      "mapIdRequired": "Kaart-ID is verplicht",
+      "displayNameRequired": "Weergavenaam is verplicht",
+      "mapIdInvalid": "Kaart-ID mag alleen kleine letters, cijfers en underscores bevatten",
+      "invalidFileType": "Ongeldig bestandstype. Kies een PNG-, JPG-, GIF- of WebP-afbeelding.",
+      "fileTooLarge": "Bestand te groot. Kies een afbeelding kleiner dan 5MB.",
+      "readFileFailed": "Kan afbeeldingsbestand niet lezen",
+      "fetchImageIdRequired": "Vul eerst een kaart-ID in",
+      "fetchImageFailed": "Kan afbeelding niet ophalen. Je kunt ook een afbeelding uploaden.",
+      "imageNotFound": "Geen afbeelding gevonden voor {{id}}. Je kunt ook een afbeelding uploaden.",
+      "uploadFailed": "Uploaden van afbeelding mislukt",
+      "saveFailed": "Kaart opslaan mislukt"
+    },
+    "success": {
+      "mapUpdated": "Kaart succesvol bijgewerkt",
+      "mapCreated": "Kaart succesvol aangemaakt"
+    },
+    "buttons": {
+      "cancel": "Annuleren",
+      "saving": "Opslaan...",
+      "update": "Bijwerken",
+      "create": "Aanmaken"
+    }
+  },
+  "mapActionsModal": {
+    "mapId": "Kaart-ID",
+    "preview": "Voorbeeld",
+    "edit": "Bewerken"
+  },
+  "mapPoolActionsModal": {
+    "defaultChip": "Standaard",
+    "status": {
+      "label": "Toestand",
+      "enabled": "Ingeschakeld",
+      "disabled": "Uitgeschakeld"
+    },
+    "maps": {
+      "label": "Kaarten ({{count}})"
+    },
+    "actions": {
+      "edit": "Bewerken",
+      "enable": "Inschakelen",
+      "disable": "Uitschakelen",
+      "setDefault": "Als standaard instellen"
+    }
+  },
+  "batchServerModal": {
+    "title": "Servers in bulk aanmaken",
+    "info": "Maak meerdere servers aan met poorten die per 10 oplopen (27015, 27025, 27035...). Ideaal voor LAN-opstellingen met servers op dezelfde machine.",
+    "sections": {
+      "identification": {
+        "title": "Server-identificatie"
+      },
+      "connection": {
+        "title": "Verbindingsinstellingen"
+      },
+      "configuration": {
+        "title": "Serverconfiguratie"
+      }
+    },
+    "baseId": {
+      "label": "Basis-ID",
+      "placeholder": "server",
+      "helper": "Server-ID’s worden: base_1, base_2, base_3..."
+    },
+    "baseName": {
+      "label": "Basisnaam",
+      "placeholder": "Auto Tournament",
+      "helper": "Servernamen worden: Basis #1, Basis #2, Basis #3..."
+    },
+    "host": {
+      "label": "Host / IP-adres",
+      "placeholder": "192.168.1.100"
+    },
+    "rconPassword": {
+      "label": "RCON-wachtwoord",
+      "placeholder": "shared-rcon-password",
+      "helper": "Hetzelfde wachtwoord voor alle servers"
+    },
+    "numServers": {
+      "label": "Aantal servers",
+      "placeholder": "3",
+      "helper": "Maximaal: 50"
+    },
+    "assignPorts": {
+      "label": "Poorten toewijzen",
+      "helper": "API → server (RCON-test)"
+    },
+    "serverPortLabel": "Server nr. {{index}}",
+    "portPlaceholder": "27015",
+    "enabled": {
+      "label": "Servers ingeschakeld",
+      "helper": "Alle servers worden aangemaakt als ingeschakeld/uitgeschakeld"
+    },
+    "preview": {
+      "more": "...en nog {{count}}",
+      "titleFirst10": "Voorbeeld (eerste 10)",
+      "titleAll": "Voorbeeld (alle)"
+    },
+    "checkServersButton": {
+      "default": "Servers controleren",
+      "checking": "Controleren..."
+    },
+    "createServersButton": {
+      "creating": "Aanmaken...",
+      "default_one": "{{count}} server aanmaken",
+      "default_other": "{{count}} servers aanmaken"
+    },
+    "warnings": {
+      "notAllVerified": "Sommige servers zijn niet door de connectiviteitscontrole gekomen. Ze worden opgeslagen, maar kunnen als offline worden weergegeven totdat RCON en webhook zijn geconfigureerd."
+    },
+    "success": {
+      "createdAll_one": "{{count}} server aangemaakt",
+      "createdAll_other": "{{count}} servers aangemaakt"
+    },
+    "errors": {
+      "baseNameRequired": "Basisnaam is verplicht",
+      "baseIdRequired": "Basis-ID is verplicht",
+      "hostRequired": "Host is verplicht",
+      "countRange": "Aantal servers moet tussen 1 en 50 liggen",
+      "passwordRequired": "RCON-wachtwoord is verplicht",
+      "portRange": "Poort van server #{{index}} moet tussen 1 en 65535 liggen",
+      "connectionFailed": "Verbinding mislukt",
+      "createFailed": "Servers aanmaken mislukt",
+      "partialCreate": "{{created}}/{{total}} servers aangemaakt. Fouten:\n{{details}}"
+    }
+  },
+  "matchesPage": {
+    "allocation": {
+      "nextServers": "Volgende servertoewijzing over {{seconds}}s"
+    },
+    "card": {
+      "waitingForServers": "Wachten op servers...",
+      "allocatingNow": "Nu toewijzen...",
+      "allocatesIn": "Toewijzing over {{time}}"
+    },
+    "allocationWidget": {
+      "title": "Status servertoewijzing",
+      "available": "Beschikbaar:",
+      "busy": "Bezet:",
+      "cooling": "Afkoelen:",
+      "offline": "Offline:",
+      "waitingMatches_one": "Wachtend: {{count}} wedstrijd",
+      "waitingMatches_other": "Wachtend: {{count}} wedstrijden",
+      "statusLine": "Status: {{status}}",
+      "statusReady": "Klaar",
+      "statusCooling": "Afkoelen",
+      "statusBusy": "Bezet",
+      "statusOffline": "Offline",
+      "readyIn": "Klaar over: {{time}}"
+    }
+  },
+  "vetoInterface": {
+    "vetoNotAvailable": "Veto niet beschikbaar voor deze match",
+    "vetoUnavailable": "Veto-details zijn niet beschikbaar voor dit account. Log in als speler van een van de twee teams om het veto te voltooien.",
+    "vetoCompleted": "Veto voltooid!",
+    "vetoCompletedSubtitle": "De kaartselectie is voltooid. De match begint binnenkort.",
+    "selectedMaps": "Geselecteerde kaarten",
+    "yourTurnToBan": "UW TEAM IS AAN DE BEURT OM EEN KAART TE BANNEN",
+    "yourTurnToPick": "UW TEAM IS AAN DE BEURT OM EEN KAART TE KIEZEN",
+    "yourTurnToChooseSide": "UW TEAM IS AAN DE BEURT OM EEN KANT TE KIEZEN",
+    "clickMapToConfirm": "Klik op een van de gemarkeerde kaarten om uw keuze te bevestigen.",
+    "waitingToBan": "Wachten op {{team}} om een kaart te bannen",
+    "waitingToPick": "Wachten op {{team}} om een kaart te kiezen",
+    "waitingToChooseSide": "Wachten op {{team}} om een kant te kiezen",
+    "pageUpdatesAutomatically": "Houd deze pagina open – deze wordt automatisch bijgewerkt wanneer het uw beurt is.",
+    "stepOf": "Stap {{current}} van {{total}}",
+    "banPhase": "Ban-fase",
+    "pickPhase": "Pick-fase",
+    "sideChoice": "Zijkeuze",
+    "chooseYourStartingSide": "Kies uw startkant",
+    "waitingForSidePick": "Wachten op {{team}} om de startkant te kiezen...",
+    "counterTerrorist": "Counter-Terrorist",
+    "terrorist": "Terrorist",
+    "vetoHistory": "Veto-geschiedenis",
+    "historyStep": "Stap {{step}}:",
+    "startingSide": "Start {{side}}",
+    "otherTeam": "het andere team",
+    "actionLabels": {
+      "ban": "BAN",
+      "pick": "PICK",
+      "side_pick": "ZIJDEKEUZE"
+    },
+    "mapBadge": "MAP {{n}}",
+    "mapCardAria": {
+      "ban": "{{map}} bannen",
+      "pick": "{{map}} kiezen",
+      "banned": "{{map}} (gebannd)",
+      "picked": "{{map}} (gekozen)"
+    },
+    "errors": {
+      "failedToLoadVetoState": "Kan veto-status niet laden",
+      "failedToProcessVetoAction": "Kan veto-actie niet verwerken",
+      "failedToSubmitVetoAction": "Kan veto-actie niet verzenden",
+      "failedToPickSide": "Kan kant niet kiezen",
+      "notYourTurn": "Het is niet jouw beurt. Wachten op het andere team.",
+      "vetoAlreadyCompleted": "Veto al voltooid",
+      "invalidMapSelection": "Ongeldige kaartselectie",
+      "invalidSideSelection": "Ongeldige zijkeuze",
+      "noMapToPickSide": "Geen kaart om kant voor te kiezen",
+      "matchNotFound": "Match niet gevonden",
+      "unauthorized": "Alleen spelers van een van de twee deelnemende teams kunnen veto-acties uitvoeren voor deze match."
+    },
+    "decider": "Decider"
+  },
+  "matchInfo": {
+    "server": {
+      "waitingTitle": "Wachten op servertoewijzing",
+      "waitingBody": "Er wordt automatisch een server toegewezen zodra er een beschikbaar is. Na elke wedstrijd gaan servers kort in cooldown (ongeveer 2 minuten) zodat demo's kunnen uploaden en de server volledig kan resetten. Deze pagina wordt automatisch bijgewerkt zodra je server klaar is.",
+      "serverName": "Server: {{name}}",
+      "status": "Status: {{status}}",
+      "connect": "Verbinden met server",
+      "connecting": "✓ Verbinden...",
+      "copyCommand": "Consoleopdracht kopiëren",
+      "copied": "✓ Gekopieerd!",
+      "statusLabels": {
+        "idle": "Beschikbaar",
+        "loading": "Laden",
+        "warmup": "Opwarmen – join nu!",
+        "knife": "Knife-round",
+        "live": "Live",
+        "paused": "Gepauzeerd",
+        "halftime": "Rust",
+        "postgame": "Wedstrijd afgelopen",
+        "queued": "Volgende wedstrijd in wachtrij",
+        "error": "Fout"
+      }
+    }
+  },
+  "serversPage": {
+    "title": "Spelservers",
+    "headerActions": {
+      "refreshChecking": "Controleren…",
+      "refresh": "Status vernieuwen",
+      "batchAdd": "Batch toevoegen",
+      "addServer": "Server toevoegen",
+      "retryUninitialized": "Niet geïnitialiseerd opnieuw proberen ({{count}})",
+      "retryUninitializedChecking": "Opnieuw proberen...",
+      "select": "Selecteren",
+      "done": "Klaar met selecteren",
+      "selectAll": "Alles selecteren",
+      "unselectAll": "Alles deselecteren",
+      "deleteSelected": "Selectie verwijderen"
+    },
+    "empty": {
+      "title": "Geen servers geregistreerd",
+      "description": "Voeg je eerste CS2-server toe om met het toernooi te beginnen",
+      "addServer": "Server toevoegen",
+      "batchAdd": "Of meerdere servers in batch toevoegen"
+    },
+    "errors": {
+      "loadServers": "Kon servers niet laden",
+      "noMatchesForServer": "Geen wedstrijden gevonden voor deze server",
+      "loadCurrentMatch": "Huidige wedstrijd voor deze server laden mislukt",
+      "bulkDelete": "Kon één of meer servers niet verwijderen"
+    },
+    "allocation": {
+      "title": "Servertoewijzing",
+      "loading": "Toewijzingsstatus laden...",
+      "empty": "Geen toewijzingsgegevens beschikbaar.",
+      "available": "Beschikbare servers:",
+      "waiting": "Wedstrijden die wachten op servers:",
+      "nextPass": "Volgende allocator-run over ~{{seconds}}s",
+      "cooldownLabel": "Afkoelperiode",
+      "cooldownDescription": "Onlangs is er een wedstrijd afgerond — in afkoelperiode zodat demo’s kunnen uploaden en de server volledig kan resetten (ongeveer 2 minuten).",
+      "cooldownEta": "Klaar over ~{{seconds}}s"
+    },
+    "statusChip": {
+      "checking": "Controleren...",
+      "disabled": "Uitgeschakeld",
+      "offline": "Offline (uit)",
+      "onlineOk": "Online (API ↔ server OK)",
+      "onlineRconOnly": "Online (alleen RCON)",
+      "rconFailed": "RCON mislukt",
+      "onlineTesting": "Online (test)",
+      "noEventsYet": "Nog geen events",
+      "notConfigured": "Niet geconfigureerd",
+      "onlineIdle": "Online (inactief — geen recente events)",
+      "onlineActive": "Online (actief)",
+      "online": "Online"
+    },
+    "ipBanned": {
+      "title": "Server heeft mogelijk ons IP geband",
+      "message": "De server is bereikbaar maar weigert herhaaldelijk RCON-authenticatie. Dit kan duiden op een IP-ban. Als het RCON-wachtwoord klopt, controleer dan de banlijst van de server en unban ons IP-adres."
+    },
+    "connectivity": {
+      "apiToServer": "Auto Tournament API → CS2-server",
+      "serverToApi": "Server → API (/api/events) (gebeurtenissen)",
+      "unreachable": "Onbereikbaar",
+      "reachable": "Bereikbaar",
+      "unknown": "Onbekend",
+      "loading": "Laden…",
+      "pluginLabel": "Auto Tournament CS2:"
+    },
+    "currentMatch": {
+      "view": "Wedstrijd bekijken",
+      "loading": "Laden...",
+      "queuedPrefix": "In wachtrij: "
+    },
+    "labels": {
+      "host": "Adres:",
+      "port": "Poort:",
+      "id": "ID-nummer:",
+      "cs2Name": "CS2-naam:",
+      "plugin": "Plugin:",
+      "cs2BuildValue": "build {{build}}"
+    },
+    "bulkDelete": {
+      "title": "Servers verwijderen",
+      "message_one": "Weet je zeker dat je {{count}} server wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "message_other": "Weet je zeker dat je {{count}} servers wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+    },
+    "autoConfig": {
+      "configuring": "Nieuwe servers configureren (MatchZy-config via RCON versturen)…",
+      "done": "Nieuwe servers geconfigureerd. Status verversen…"
+    },
+    "checkServerLogs": "Controleer de gameserverconsole/logs om te zien of de Auto Tournament-plugin config ontvangt en events verstuurt.",
+    "fleet": {
+      "title": "Status van alle servers",
+      "total_one": "{{count}} server",
+      "total_other": "{{count}} servers",
+      "online": "online",
+      "offline": "offline",
+      "notConfigured": "niet geconfigureerd",
+      "disabled": "uitgeschakeld",
+      "latestRelease": "Nieuwste Auto Tournament CS2-release: v{{version}}",
+      "olderVersion_one": "{{count}} server draait een oudere versie dan de nieuwste release.",
+      "olderVersion_other": "{{count}} servers draaien een oudere versie dan de nieuwste release.",
+      "newerVersion_one": "{{count}} server draait een nieuwere versie dan de nieuwste GitHub-release (waarschijnlijk een niet-uitgebrachte build).",
+      "newerVersion_other": "{{count}} servers draaien een nieuwere versie dan de nieuwste GitHub-release (waarschijnlijk een niet-uitgebrachte build).",
+      "downloadLatest": "Nieuwste downloaden"
+    },
+    "cs2Update": {
+      "title": "CS2-update vereist",
+      "snackbarBody_one": "{{count}} server is verouderd. Werk de serverinstallatie bij en herstart.",
+      "snackbarBody_other": "{{count}} servers zijn verouderd. Werk de serverinstallatie bij en herstart.",
+      "fleetTitle": "CS2-servers verouderd — update vereist",
+      "fleetBody_one": "{{count}} server heeft van Steam een verplichte CS2-update gemeld. Werk de serverinstallatie bij (SteamCMD/host) en herstart.",
+      "fleetBody_other": "{{count}} servers hebben van Steam een verplichte CS2-update gemeld. Werk de serverinstallatie bij (SteamCMD/host) en herstart."
+    },
+    "versionMismatch": {
+      "title": "Versieverschil gedetecteerd",
+      "chip_one": "v{{version}}: {{count}} server",
+      "chip_other": "v{{version}}: {{count}} servers",
+      "recommended": "Aanbevolen: werk alle servers bij naar v{{version}} voor consistentie"
+    },
+    "notInitialized": {
+      "title": "Server niet geïnitialiseerd",
+      "checking": "Verbinding controleren…",
+      "rconUnreachable": "RCON onbereikbaar. Controleer host en poort en of de gameserver draait. Gebruik Opnieuw proberen zodra hij bereikbaar is.",
+      "noEvents": "RCON bereikbaar, maar de Auto Tournament-plugin heeft nog geen events verstuurd. Klik op Opnieuw proberen om hem te configureren.",
+      "notChecked": "Verbinding nog niet gecontroleerd. Zie de status hieronder. Klik op Opnieuw proberen om te configureren zodra RCON bereikbaar is."
+    },
+    "chips": {
+      "versionMismatch": "Versieverschil",
+      "ipBanned": "IP geblokkeerd",
+      "cs2Build": "CS2-build {{build}}",
+      "pluginDbDown": "Plugin-DB onbereikbaar",
+      "cs2UpdateRequired": "CS2-update vereist ({{version}})"
+    },
+    "tooltips": {
+      "fixGuide": "Oplossingsgids",
+      "disabledTitle": "Uitgeschakelde server",
+      "disabledBody": "Uitgeschakelde servers worden genegeerd bij toewijzing en health checks.",
+      "noEventsTitle": "Nog geen events ontvangen van de Auto Tournament-plugin",
+      "noEventsBody": "Auto Tournament heeft de webhookconfiguratie via RCON verstuurd, maar nog geen events ontvangen. Meestal betekent dit dat de server de webhook-URL van Auto Tournament niet kan bereiken, of dat de Auto Tournament-plugin niet draait.",
+      "notConfiguredTitle": "Niet geconfigureerd",
+      "notConfiguredBody": "Auto Tournament heeft de vaste configuratie nog niet naar deze server gestuurd. Gebruik Opnieuw proberen om hem te initialiseren.",
+      "unreachableTitle": "Server onbereikbaar vanaf Auto Tournament",
+      "unreachableBody": "Auto Tournament kan de server niet via RCON bereiken. Controleer host/poort, RCON-wachtwoord, firewall en of de server draait.",
+      "webhookTitle": "Server kan Auto Tournament niet bereiken (webhook)",
+      "webhookBody": "Auto Tournament kan de server via RCON bereiken, maar de server kan de webhook van Auto Tournament niet bereiken. Controleer uitgaand verkeer, DNS en de ingestelde webhook-URL.",
+      "versionDiffTitle": "Pluginversies verschillen per server",
+      "versionDiffBody": "Sommige servers draaien een andere Auto Tournament CS2-versie. Gebruik je CSM, voer dan {{command}} uit en herstart de servers.",
+      "ipBannedTitle": "RCON-IP geblokkeerd",
+      "ipBannedBody": "De server heeft het IP van Auto Tournament tijdelijk geblokkeerd na herhaalde mislukte RCON-authenticatie. Corrigeer het RCON-wachtwoord en hef de IP-blokkade op.",
+      "pluginDbTitle": "De Auto Tournament-plugin kan zijn database niet bereiken.",
+      "pluginDbBody": "Gebruik je CSM, voer dan {{path}} uit.",
+      "cs2UpdateBody": "Auto Tournament heeft vastgesteld dat de build van deze server achterloopt op Steam. De server wordt niet gebruikt voor nieuwe toewijzingen (en het starten van toernooien) totdat hij is bijgewerkt.",
+      "retryInit": "Serverinitialisatie opnieuw proberen (vaste configuratie via RCON versturen)"
+    },
+    "lastActive": {
+      "justNow": "Zojuist actief",
+      "minutesAgo_one": "{{count}} minuut geleden actief",
+      "minutesAgo_other": "{{count}} minuten geleden actief",
+      "hoursAgo_one": "{{count}} uur geleden actief",
+      "hoursAgo_other": "{{count}} uur geleden actief",
+      "daysAgo_one": "{{count}} dag geleden actief",
+      "daysAgo_other": "{{count}} dagen geleden actief"
+    },
+    "pluginStatus": {
+      "idle": "Inactief",
+      "loading": "Laden",
+      "warmup": "Warmup",
+      "knife": "Knife-round",
+      "live": "Live",
+      "playing": "Bezig",
+      "paused": "Gepauzeerd",
+      "halftime": "Rust",
+      "postgame": "Na de wedstrijd",
+      "queued": "In wachtrij",
+      "error": "Fout"
+    },
+    "retry": {
+      "sendingConfig": "Vaste configuratie naar de server versturen…",
+      "triggered": "Serverinitialisatie gestart",
+      "failed": "Opnieuw initialiseren mislukt: {{message}}",
+      "retryingAll_one": "Initialisatie opnieuw proberen voor {{count}} server…",
+      "retryingAll_other": "Initialisatie opnieuw proberen voor {{count}} servers…",
+      "triggeredAll_one": "Opnieuw proberen gestart voor {{count}} server",
+      "triggeredAll_other": "Opnieuw proberen gestart voor {{count}} servers",
+      "failedAll": "Opnieuw proberen mislukt: {{message}}"
+    }
+  },
+  "serverModal": {
+    "titleCreate": "Server toevoegen",
+    "titleEdit": "Server bewerken",
+    "serverNameLabel": "Servernaam",
+    "serverNamePlaceholder": "Matchserver #1",
+    "hostLabel": "Host / IP-adres",
+    "hostPlaceholder": "192.168.1.100",
+    "portLabel": "Poort",
+    "portPlaceholder": "27015",
+    "rconPasswordLabel": "RCON-wachtwoord",
+    "rconPasswordPlaceholder": "your-rcon-password",
+    "rconPasswordHelper": "Wachtwoord voor RCON-toegang tot de server",
+    "enabledLabel": "Server ingeschakeld",
+    "enabledHelper": "Uitgeschakelde servers worden niet gebruikt voor wedstrijden",
+    "overridesTitle": "MatchZy-overschrijvingen (optioneel)",
+    "overridesDescription": "Deze instellingen overschrijven de globale MatchZy-standaarden alleen voor deze server. Laat leeg om de globale waarden uit Instellingen te gebruiken.",
+    "chatPrefixLabel": "Chatprefix-overschrijving",
+    "chatPrefixPlaceholder": "[{Green}Auto Tournament{Default}]",
+    "chatPrefixHelper": "Overschrijft matchzy_chat_prefix op deze server (optioneel)",
+    "adminChatPrefixLabel": "Admin-chatprefix-overschrijving",
+    "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
+    "adminChatPrefixHelper": "Overschrijft matchzy_admin_chat_prefix op deze server (optioneel)",
+    "knifeOverrideLabel": "Knife-round standaard ingeschakeld (overschrijven)",
+    "knifeOverrideHelper": "Wanneer ingesteld, overschrijft dit matchzy_knife_enabled_default voor deze server. Laat in onbepaalde staat om de globale standaard te gebruiken.",
+    "testConnectivity": "Connectiviteit testen",
+    "testingConnectivity": "Connectiviteit testen…",
+    "connectivity": {
+      "apiToServer": "Auto Tournament API → CS2-server:",
+      "serverToApi": "Server → API (/api/events) (gebeurtenissen):",
+      "reachable": "Bereikbaar",
+      "unreachable": "Onbereikbaar"
+    },
+    "errors": {
+      "nameRequired": "Servernaam is verplicht",
+      "hostRequired": "Host is verplicht",
+      "portInvalid": "Poort moet een geldig nummer zijn tussen 1 en 65535",
+      "rconRequired": "RCON-wachtwoord is verplicht",
+      "idGenerationFailed": "Kan server-ID niet genereren. Pas de servernaam aan.",
+      "duplicateId": "Servernaam veroorzaakt een dubbel ID '{{id}}'. Kies een andere naam.",
+      "duplicateHostPort": "Er bestaat al een server met host:poort '{{host}}:{{port}}' (ID: {{id}}, Naam: {{name}})",
+      "testConnectionSaveFirst": "Sla de server eerst op voordat je de verbinding test",
+      "testConnectionFailed": "Verbindingstest mislukt",
+      "saveFailed": "Server opslaan mislukt",
+      "deleteFailed": "Server verwijderen mislukt",
+      "rconReachableApiUnreachable": "We kunnen de server bereiken via RCON, maar de server kon het API-endpoint niet bereiken (testevent ontbreekt).",
+      "serverOffline": "Server lijkt offline of onbereikbaar via RCON.",
+      "rconReachableApiUnknown": "RCON works. The server has no event URL yet, so its connection back to the API can't be checked until it is saved and configured."
+    },
+    "success": {
+      "connectivityOk": "Connectiviteit in beide richtingen geverifieerd: server is online en kan de API bereiken.",
+      "serverUpdated": "Server succesvol bijgewerkt",
+      "serverCreated": "Server succesvol aangemaakt",
+      "serverDeleted": "Server succesvol verwijderd"
+    },
+    "buttons": {
+      "deleteServer": "Server verwijderen",
+      "cancel": "Annuleren",
+      "saving": "Opslaan...",
+      "saveChanges": "Wijzigingen opslaan",
+      "addServer": "Server toevoegen"
+    },
+    "confirmDelete": {
+      "title": "Server verwijderen",
+      "message": "Weet je zeker dat je \"{{name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+    }
+  }
+}

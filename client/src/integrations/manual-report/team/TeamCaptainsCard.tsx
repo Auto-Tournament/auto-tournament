@@ -17,7 +17,6 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   Alert,
   Box,
@@ -31,12 +30,12 @@ import {
   Typography,
 } from '@mui/material';
 import MilitaryTechIcon from '@mui/icons-material/MilitaryTech';
-import { useAuth } from '../../../module-sdk';
+import { useAuth, useModuleTranslation } from '../../../module-sdk';
 import type { TeamAdminPanelProps } from '../../types';
 import { isNotOurs, manualReportApi, type TeamMember } from '../api';
 
 export function TeamCaptainsCard({ teamId }: TeamAdminPanelProps) {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('manual-report');
   const { isAuthenticated: isAdmin } = useAuth();
 
   const [members, setMembers] = useState<TeamMember[] | null>(null);

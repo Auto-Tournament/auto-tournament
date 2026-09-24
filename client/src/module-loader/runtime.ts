@@ -11,6 +11,8 @@ import { loadCodeModules } from './loadCodeModules';
 import { errorText, failure, type LoadableModule } from './manifest';
 import { recordFailure, recordLoaded } from './moduleState';
 import { provideShared } from './sharedRegistry';
+import { registerModuleLocales } from './moduleLocales';
+import i18n from '../i18n';
 
 export async function loadAndRegister(modules: readonly LoadableModule[]): Promise<void> {
   const results = await loadCodeModules(modules, {
@@ -29,6 +31,11 @@ export async function loadAndRegister(modules: readonly LoadableModule[]): Promi
     }
     try {
       registerCodeModule(adaptCodeModule(result.integration));
+      // Its strings, once it holds its id, in the same synchronous step: the
+      // app renders before modules arrive, but nothing can render between
+      // these lines, and no slot re-renders into the module until
+      // `recordLoaded` below tells it the module is there.
+      registerModuleLocales(i18n, result.id, result.integration.locales);
       recordLoaded(result.id);
     } catch (error) {
       recordFailure(

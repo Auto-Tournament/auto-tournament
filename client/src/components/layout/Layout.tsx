@@ -48,6 +48,7 @@ import { useIsDevelopment } from '../../hooks/useIsDevelopment';
 import { useTranslation } from 'react-i18next';
 import { SharedNavBar } from './SharedNavBar';
 import { useShellIntegrations } from '../../hooks/useShellIntegrations';
+import { moduleNavItems, navItemLabel } from '../../utils/moduleNavLabels';
 import { ModuleNotInstalledNotice } from '../common/ModuleNotInstalledNotice';
 import { paths } from '../../paths';
 
@@ -214,13 +215,14 @@ export default function Layout() {
   // that has not said what it runs yet is not warned about the settings of a
   // game it may not be running.
   //
-  // Each item keeps the i18n keys it had: nav.<key> and layout.pageTitle.<key>.
+  // Each item is labelled from its module's own strings (`cs2:nav.servers`,
+  // `cs2:layout.pageTitle.servers`), never from core's.
   const {
     shell,
     tournament: tournamentIntegration,
     loading: tournamentGameLoading,
   } = useShellIntegrations();
-  const integrationNavItems = shell.flatMap((integration) => integration.navItems);
+  const integrationNavItems = moduleNavItems(shell);
   const showDisputes = !tournamentGameLoading && Boolean(tournamentIntegration?.adminDisputesView);
   const AdminGlobalWarning = tournamentGameLoading
     ? undefined
@@ -241,7 +243,7 @@ export default function Layout() {
       ...Object.fromEntries(
         integrationNavItems.map((item) => [
           item.path,
-          { title: t(`layout.pageTitle.${item.key}`), icon: item.icon },
+          { title: navItemLabel(t, item, 'pageTitle'), icon: item.icon },
         ])
       ),
       '/templates': { title: t('layout.pageTitle.templates'), icon: DescriptionIcon },
@@ -273,7 +275,7 @@ export default function Layout() {
     { label: t('nav.teams'), path: '/teams', icon: GroupsIcon },
     { label: t('nav.players'), path: '/players', icon: PersonIcon },
     ...integrationNavItems.map((item) => ({
-      label: t(`nav.${item.key}`),
+      label: navItemLabel(t, item, 'nav'),
       path: item.path,
       icon: item.icon,
     })),

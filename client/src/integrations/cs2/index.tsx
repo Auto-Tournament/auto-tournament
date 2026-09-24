@@ -37,9 +37,14 @@ import { Cs2ServersFreeTile } from './manage/Cs2ServersFreeTile';
 import Servers from './pages/Servers';
 import Maps from './pages/Maps';
 import ConnectSteam from './pages/ConnectSteam';
+import { cs2Locales } from './locales';
 
 export const cs2ClientIntegration: ClientGameIntegration = {
   id: 'cs2',
+
+  // Its strings, namespace 'cs2': the Servers and Maps pages, veto, the
+  // server panels and its nav labels (item 6).
+  locales: cs2Locales,
 
   // The same slug and aliases the API's cs2Integration claims, so a tournament
   // whose `game` is the catalogue id resolves here rather than falling through
@@ -133,6 +138,7 @@ export const cs2ClientIntegration: ClientGameIntegration = {
     { path: adminRoute(paths.maps), scope: 'admin', element: <Maps /> },
   ],
 
+  // Labelled from this module's own strings: `cs2:nav.servers` and so on.
   navItems: [
     { key: 'servers', path: paths.servers, icon: StorageIcon },
     { key: 'maps', path: paths.maps, icon: MapIcon },

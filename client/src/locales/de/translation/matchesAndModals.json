@@ -5,9 +5,6 @@
       "loadTitle": "Fehler beim Laden der Matches",
       "bulkDelete": "Ein oder mehrere Matches konnten nicht gelöscht werden"
     },
-    "allocation": {
-      "nextServers": "Nächste Server zugewiesen in {{seconds}}s"
-    },
     "header": {
       "createMatch": "Match erstellen"
     },
@@ -44,9 +41,6 @@
       "matchNumber": "Match #{{number}}",
       "server": "Server: {{name}}",
       "queuePosition": "Warteschlangenposition: #{{position}}",
-      "waitingForServers": "Warte auf Server...",
-      "allocatingNow": "Wird jetzt zugewiesen...",
-      "allocatesIn": "Zuweisung in {{time}}",
       "shuffle": "Shuffle",
       "shuffleManual": "Shuffle manuell",
       "manual": "Manuell",
@@ -77,21 +71,6 @@
       "completed": "Das Match ist beendet. Der Sieger steht fest und der Turnierbaum wurde aktualisiert.",
       "proTipTitle": "Profi-Tipp:",
       "proTip": "Wenn ein Match „Warte auf Spieler (X/Y)“ anzeigt, ist der Server bereit und die Spieler sollten sich verbinden. Sobald alle erwarteten Spieler verbunden und bereit sind, startet das Match automatisch."
-    },
-    "allocationWidget": {
-      "title": "Status der Serverzuweisung",
-      "available": "Verfügbar:",
-      "busy": "Belegt:",
-      "cooling": "Abkühlung:",
-      "offline": "Offline:",
-      "waitingMatches_one": "Wartend: {{count}} Match",
-      "waitingMatches_other": "Wartend: {{count}} Matches",
-      "statusLine": "Status: {{status}}",
-      "statusReady": "Bereit",
-      "statusCooling": "Abkühlung",
-      "statusBusy": "Belegt",
-      "statusOffline": "Offline",
-      "readyIn": "Bereit in: {{time}}"
     },
     "latestEvent": "Zuletzt: {{event}}",
     "matchLabel": {

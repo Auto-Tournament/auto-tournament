@@ -5,9 +5,6 @@
       "loadTitle": "Feil ved lasting av kamper",
       "bulkDelete": "Kunne ikke slette én eller flere kamper"
     },
-    "allocation": {
-      "nextServers": "Neste servere tildeles om {{seconds}}s"
-    },
     "header": {
       "createMatch": "Opprett kamp"
     },
@@ -44,9 +41,6 @@
       "matchNumber": "Kamp #{{number}}",
       "server": "Server: {{name}}",
       "queuePosition": "Plass i kø: #{{position}}",
-      "waitingForServers": "Venter på servere...",
-      "allocatingNow": "Tildeler nå...",
-      "allocatesIn": "Tildeles om {{time}}",
       "shuffle": "Shuffle",
       "shuffleManual": "Shuffle manuell",
       "manual": "Manuell",
@@ -77,21 +71,6 @@
       "completed": "Kampen er ferdig. Vinneren er avgjort og bracketen er oppdatert.",
       "proTipTitle": "Tips:",
       "proTip": "Når en kamp viser «Venter på spillere (X/Y)», er serveren klar og spillerne bør koble til. Når alle forventede spillere er koblet til og klare, starter kampen automatisk."
-    },
-    "allocationWidget": {
-      "title": "Status for servertildeling",
-      "available": "Ledige:",
-      "busy": "Opptatt:",
-      "cooling": "Nedkjøling:",
-      "offline": "Frakoblet:",
-      "waitingMatches_one": "Venter: {{count}} kamp",
-      "waitingMatches_other": "Venter: {{count}} kamper",
-      "statusLine": "Status: {{status}}",
-      "statusReady": "Klar",
-      "statusCooling": "Nedkjøling",
-      "statusBusy": "Opptatt",
-      "statusOffline": "Frakoblet",
-      "readyIn": "Klar om: {{time}}"
     },
     "latestEvent": "Siste: {{event}}",
     "matchLabel": {

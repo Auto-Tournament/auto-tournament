@@ -7,11 +7,11 @@
  */
 
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useModuleTranslation } from '../../../module-sdk';
 import { MAX_TEXT } from './statFields';
 
 export function useStatDraftLabels() {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('manual-report');
   return useMemo(
     () => ({
       unknownTeam: t('manualReport.unknownTeam'),

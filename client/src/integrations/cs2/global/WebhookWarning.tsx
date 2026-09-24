@@ -17,13 +17,12 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import { useTranslation } from 'react-i18next';
-import { useSnackbar, api } from '../../../module-sdk';
+import { useSnackbar, api, useModuleTranslation } from '../../../module-sdk';
 import type { SettingsResponse } from '../../../types/api.types';
 import type { AdminGlobalWarningProps } from '../../types';
 
 export const WebhookWarning: React.FC<AdminGlobalWarningProps> = ({ onOpenSettings }) => {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
   const { showError } = useSnackbar();
   const hasShownWebhookWarningRef = React.useRef(false);
   const [webhookConfigured, setWebhookConfigured] = React.useState<boolean | null>(null);
