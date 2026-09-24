@@ -47,6 +47,27 @@ const strictModeDependencyPatches = {
 };
 
 /**
+ * CS2 is a catalog module (DESIGN-modules §10): the release bundle carries no
+ * CS2 code. The registry's `import { cs2Integration } from './cs2'` is
+ * answered with `null` here, so nothing under integrations/cs2 is bundled;
+ * the image installs CS2, signed, from the catalog or its offline snapshot.
+ * Running from source (tsx) is unaffected: there CS2 stays compiled in.
+ */
+const withoutCs2 = {
+  name: 'without-cs2',
+  setup(build) {
+    build.onResolve({ filter: /^\.\/cs2$/ }, (args) => {
+      if (!args.importer.endsWith(path.join('integrations', 'registry.ts'))) return undefined;
+      return { path: 'cs2-not-compiled-in', namespace: 'without-cs2' };
+    });
+    build.onLoad({ filter: /.*/, namespace: 'without-cs2' }, () => ({
+      contents: 'export const cs2Integration = null;',
+      loader: 'js',
+    }));
+  },
+};
+
+/**
  * Swagger UI's static files, copied out of `node_modules` next to the bundle.
  *
  * `swagger-ui-express` serves these from `node_modules/swagger-ui-dist`, and
@@ -118,7 +139,7 @@ async function build() {
   sourcemap: !isProduction,
   treeShaking: true,
   // esbuild automatically handles __dirname and __filename for platform: 'node'
-  plugins: [strictModeDependencyPatches],
+  plugins: [strictModeDependencyPatches, ...(process.env.AT_CS2_BUILTIN === '1' ? [] : [withoutCs2])],
   // Write files ourselves so we can fail the build before producing artifacts.
   write: false,
   });

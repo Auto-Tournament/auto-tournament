@@ -47,6 +47,7 @@ import { Router } from 'express';
 import { DATA_DIR } from '../config/dataDir';
 import { db } from '../config/database';
 import { runModuleMigrations } from '../config/moduleMigrations';
+import { addCs2ForeignKeys, CS2_MODULE_ID, handOverCs2Tables } from '../config/cs2TableHandover';
 import { log } from '../utils/logger';
 import { hasIntegration, listIntegrations, registerIntegration } from '../integrations/registry';
 import type { GameIntegration, LegacyRouteMount } from '../integrations/types';
@@ -330,12 +331,27 @@ async function evaluate(folder: string, dir: string): Promise<Evaluation> {
       );
     }
 
+    // CS2 from the catalog: its 2.x tables (servers, maps, map_pools) become
+    // cs2_* first, and its first migration is adopted, exactly as boot does
+    // for a compiled-in CS2 (config/cs2TableHandover.ts). Idempotent; if the
+    // tables could not be handed over, its migrations must not run.
+    if (loaded.id === CS2_MODULE_ID) {
+      const handover = await db.withClient((client) => handOverCs2Tables(client, loaded));
+      if (handover.pending.length > 0) {
+        throw new ModuleLoadError(
+          `Its 2.x tables (${handover.pending.join(', ')}) were not renamed to cs2_*` +
+            (handover.error ? `: ${handover.error}` : '')
+        );
+      }
+    }
+
     const migrated = await runModuleMigrations(loaded);
     if (migrated.status !== 'ok') {
       throw new ModuleLoadError(
         `Its database migrations did not apply: ${migrated.reason ?? 'no reason given'}`
       );
     }
+    if (loaded.id === CS2_MODULE_ID) await db.withClient((client) => addCs2ForeignKeys(client));
 
     if (loaded.seed) {
       try {

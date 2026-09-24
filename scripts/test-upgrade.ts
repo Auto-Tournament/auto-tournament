@@ -37,12 +37,21 @@
  *      settings keys, the `cvars` of stored match configs, the `matchzy_*`
  *      columns of the servers table) read back under `at_*` with the same
  *      values.
+ *      CS2 is a catalog module now, not compiled into the image: because
+ *      the upgraded database has CS2 data, the new build installs and
+ *      enables CS2 from the image's offline snapshot on first boot (a
+ *      signed release; the test builds the snapshot with a throwaway key and
+ *      trusts it with MODULE_TRUSTED_KEYS), logs it, and every check above
+ *      runs against that module. Reboots keep it (DATA_DIR is a volume, as in
+ *      the compose files) and never install it twice.
  *   6. Repeats the boot-and-check step (minus the seeding) against a second,
  *      completely empty database, so the same script covers both paths, and
  *      checks that CS2's tables there have the same columns, indexes,
  *      constraints, sequences and keys as on the upgraded one. An empty
  *      `matchzy_tournament` sits beside it: with both names present the new
  *      build must log an error, leave both alone and use `auto_tournament`.
+ *      There CS2 is not installed on its own (no CS2 data); the test installs
+ *      it through the catalog, as an admin would, before comparing tables.
  *
  * Usage:
  *   yarn test:upgrade
@@ -54,6 +63,7 @@
  */
 
 import { execFileSync, spawnSync } from 'node:child_process';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { request as pwRequest, type APIRequestContext } from '@playwright/test';
 
 // Bump this when a newer released version becomes the "known upgradeable
@@ -80,6 +90,12 @@ const UPGRADE_CHAT_PREFIX = 'UPGRADE';
 const UPGRADE_FFW_TIME = 123;
 /** The seeded tournament's max rounds: not the default 24. */
 const UPGRADE_MAX_ROUNDS = 16;
+
+/** DATA_DIR of the new build, kept across its reboots like the compose files' ./data mount. */
+const DATA_VOLUME = `mat-upgrade-data-${RUN_ID}`;
+/** The throwaway key the image's CS2 snapshot is signed with (build-module-snapshot.sh --ephemeral). */
+let trustedKey = '';
+const TRUSTED_KEY_FILE = 'api/bundled-modules/.upgrade-test-public-key';
 
 // Skip the (slow) docker build and reuse an image already built/tagged with
 // this name — handy for iterating on the seeding/assertion logic locally.
@@ -162,8 +178,15 @@ async function waitFor(
 function buildCurrentImage() {
   if (SKIP_BUILD) {
     log(`UPGRADE_TEST_SKIP_BUILD=1: reusing existing ${NEW_IMAGE_TAG} image`);
+    trustedKey = readFileSync(TRUSTED_KEY_FILE, 'utf8').trim();
     return;
   }
+  // CS2 rides in the image only as a signed release in its offline snapshot.
+  step = 'build the offline module snapshot';
+  const snapshotLog = sh('bash', ['scripts/build-module-snapshot.sh', '--ephemeral']);
+  trustedKey = /^MODULE_TRUSTED_KEYS=(.+)$/m.exec(snapshotLog)?.[1]?.trim() ?? '';
+  if (!trustedKey) throw new Error('build-module-snapshot.sh printed no MODULE_TRUSTED_KEYS');
+  writeFileSync(TRUSTED_KEY_FILE, `${trustedKey}\n`);
   step = 'build current image';
   log(`Building current checkout as ${NEW_IMAGE_TAG} ...`);
   shStream('docker', [
@@ -224,7 +247,8 @@ function runApp(
   image: string,
   network: string,
   postgresName: string,
-  { database = DB_NAME, user = DB_USER, password = DB_PASSWORD }: AppDatabase = {}
+  { database = DB_NAME, user = DB_USER, password = DB_PASSWORD }: AppDatabase = {},
+  dataVolume = DATA_VOLUME
 ) {
   step = `start app (${image})`;
   log(`Starting ${image} against ${postgresName} (database ${database}, role ${user}) ...`);
@@ -257,6 +281,11 @@ function runApp(
     'STEAM_API_KEY=',
     '-e',
     'LOG_LEVEL=info',
+    '-e',
+    `MODULE_TRUSTED_KEYS=${trustedKey}`,
+    '-e',
+    'CATALOG_OFFLINE=true',
+    ...(image === NEW_IMAGE_TAG ? ['-v', `${dataVolume}:/app/data`] : []),
     image,
   ]);
 }
@@ -996,6 +1025,34 @@ interface Cs2HandoverReport {
  * module is ok, and running the handover again does nothing. Returns the
  * schema, so the fresh-database path can be compared with it.
  */
+/** What the new build logs when the 2.x rule installs CS2 (modules/catalogService.ts). */
+const CS2_AUTO_INSTALL_LOG = 'Installed and enabled CS2 from the offline snapshot';
+
+/**
+ * CS2 runs as a catalog module: loaded from DATA_DIR/modules, enabled, and
+ * recorded as installed from the image's offline snapshot.
+ */
+async function assertCs2Installed(ctx: APIRequestContext, label: string) {
+  const res = await ctx.get('/api/modules');
+  if (!res.ok()) throw new Error(`GET /api/modules failed: ${res.status()} ${await res.text()}`);
+  const { modules } = (await res.json()) as {
+    modules: Array<{ id: string; source: string; status: string; enabled: boolean; reason: string | null }>;
+  };
+  const cs2 = modules.find((m) => m.id === 'cs2');
+  if (!cs2 || cs2.source !== 'disk' || cs2.status !== 'ok' || !cs2.enabled) {
+    throw new Error(`${label}: CS2 is not loaded from the catalog: ${JSON.stringify(cs2)}`);
+  }
+  const catalog = await ctx.get('/api/catalog');
+  if (!catalog.ok()) throw new Error(`GET /api/catalog failed: ${catalog.status()} ${await catalog.text()}`);
+  const { items } = (await catalog.json()) as {
+    items: Array<{ kind: string; id: string; state: string; installed: { source: string } | null }>;
+  };
+  const item = items.find((i) => i.kind === 'module' && i.id === 'cs2');
+  if (item?.state !== 'installed' || item.installed?.source !== 'snapshot') {
+    throw new Error(`${label}: the catalog does not list CS2 as installed from the snapshot: ${JSON.stringify(item)}`);
+  }
+}
+
 async function assertCs2TablesHandedOver(ctx: APIRequestContext, label: string) {
   const res = await ctx.get('/api/test/cs2-tables');
   if (!res.ok()) {
@@ -1343,6 +1400,15 @@ async function runUpgradedDatabasePath() {
     const appliedFirstBoot = await assertMigrationsApplied(ctx);
     await assertMigrationsAreNoOpNow(ctx);
 
+    // The image carries no CS2 code outside its offline snapshot. This
+    // database has CS2 data, so the new build installed CS2 from there.
+    step = 'verify CS2 was installed from the offline snapshot';
+    if (!containerOutput(APP_NAME).includes(CS2_AUTO_INSTALL_LOG)) {
+      throw new Error("The new build did not install CS2 for the database's CS2 data, or did not log it.");
+    }
+    await assertCs2Installed(ctx, 'Upgrade');
+    log('Upgrade: CS2 installed and enabled from the offline snapshot, and logged.');
+
     step = 'verify data survived the upgrade';
     const afterUpgrade = await snapshot(ctx, seeded);
     assertEqual('Upgrade (old -> current build)', before, afterUpgrade);
@@ -1367,6 +1433,12 @@ async function runUpgradedDatabasePath() {
       removeApp();
       runApp(NEW_IMAGE_TAG, NETWORK, POSTGRES_NAME);
       await waitForAppHealthy();
+
+      // Installed once: from now on it is the module on disk.
+      if (containerOutput(APP_NAME).includes(CS2_AUTO_INSTALL_LOG)) {
+        throw new Error(`Boot #${boot}: CS2 was installed again.`);
+      }
+      await assertCs2Installed(ctx, `Reboot #${boot}`);
 
       const applied = await assertMigrationsApplied(ctx);
       if (JSON.stringify(applied) !== JSON.stringify(appliedFirstBoot)) {
@@ -1418,7 +1490,7 @@ async function runFreshDatabasePath() {
     // the new build must log an error, touch neither, and use the new one.
     psqlExec(freshPg, `CREATE DATABASE ${OLD_DB_NAME}`, 'postgres');
 
-    runApp(NEW_IMAGE_TAG, freshNetwork, freshPg);
+    runApp(NEW_IMAGE_TAG, freshNetwork, freshPg, {}, `${DATA_VOLUME}-fresh`);
     await waitForAppHealthy();
 
     step = 'verify both database names were left alone';
@@ -1445,6 +1517,21 @@ async function runFreshDatabasePath() {
       await assertMigrationsApplied(ctx);
       await assertMigrationsAreNoOpNow(ctx);
 
+      // No CS2 data, so nothing is installed on its own. An admin installs
+      // CS2 from the catalog's offline snapshot; so does this.
+      step = 'verify CS2 is not installed on its own on a fresh database';
+      if (containerOutput(APP_NAME).includes(CS2_AUTO_INSTALL_LOG)) {
+        throw new Error('A fresh database got CS2 installed with no CS2 data.');
+      }
+      step = 'install CS2 through the catalog';
+      const install = await ctx.post('/api/catalog/modules/cs2/install', { data: {} });
+      if (!install.ok()) {
+        throw new Error(`Installing CS2 from the catalog failed: ${install.status()} ${await install.text()}`);
+      }
+      const installed = (await install.json()) as { restartRequired: boolean };
+      if (installed.restartRequired) throw new Error('Installing CS2 on a fresh instance asked for a restart.');
+      await assertCs2Installed(ctx, 'Fresh database');
+
       step = 'verify CS2 created its tables on a fresh database';
       const freshCs2Schema = await assertCs2TablesHandedOver(ctx, 'Fresh database');
       if (!upgradedCs2Schema) throw new Error('Path 1 did not record the upgraded CS2 schema.');
@@ -1470,6 +1557,42 @@ async function runFreshDatabasePath() {
         throw new Error('Expected a fresh database to have no tournament.');
       }
 
+      // Uninstall, restart (the code unloads), purge: CS2's tables and the
+      // core keys into them go, in one transaction, and nothing else.
+      step = 'uninstall CS2 through the catalog';
+      const uninstall = await ctx.delete('/api/catalog/modules/cs2', { data: {} });
+      if (!uninstall.ok()) {
+        throw new Error(`Uninstalling CS2 failed: ${uninstall.status()} ${await uninstall.text()}`);
+      }
+      step = 'restart after uninstalling CS2';
+      removeApp();
+      runApp(NEW_IMAGE_TAG, freshNetwork, freshPg, {}, `${DATA_VOLUME}-fresh`);
+      await waitForAppHealthy();
+      await loginAdmin(ctx);
+      step = 'purge CS2';
+      const purge = await ctx.post('/api/catalog/modules/cs2/purge', { data: { confirm: 'cs2' } });
+      if (!purge.ok()) throw new Error(`Purging CS2 failed: ${purge.status()} ${await purge.text()}`);
+      const cs2TablesLeft = psqlJson<number>(
+        freshPg,
+        "SELECT COUNT(*) FROM pg_tables WHERE schemaname = 'public' AND tablename LIKE 'cs2\\_%'",
+        DB_NAME
+      );
+      const cs2LedgerLeft = psqlJson<number>(
+        freshPg,
+        "SELECT COUNT(*) FROM module_migrations WHERE module_id = 'cs2'",
+        DB_NAME
+      );
+      if (cs2TablesLeft !== 0 || cs2LedgerLeft !== 0) {
+        throw new Error(`After the purge: ${cs2TablesLeft} cs2_* table(s) and ${cs2LedgerLeft} ledger row(s) left.`);
+      }
+      const coreTables = psqlJson<number>(
+        freshPg,
+        "SELECT COUNT(*) FROM pg_tables WHERE schemaname = 'public' AND tablename IN ('matches', 'manual_match_templates', 'tournament')",
+        DB_NAME
+      );
+      if (coreTables !== 3) throw new Error('The purge touched core tables.');
+      log('Fresh database: CS2 uninstalled, restarted and purged — its tables and the core keys into them are gone, core is intact.');
+
       log('Path 2 (fresh database) passed: migrations ran, and the app boots clean and empty.');
     } finally {
       await ctx.dispose();
@@ -1488,6 +1611,8 @@ async function cleanup() {
   shQuiet('docker', ['rm', '-f', `${POSTGRES_NAME}-fresh`]);
   shQuiet('docker', ['network', 'rm', NETWORK]);
   shQuiet('docker', ['network', 'rm', `${NETWORK}-fresh`]);
+  shQuiet('docker', ['volume', 'rm', '-f', DATA_VOLUME]);
+  shQuiet('docker', ['volume', 'rm', '-f', `${DATA_VOLUME}-fresh`]);
 }
 
 async function main() {

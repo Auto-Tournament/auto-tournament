@@ -26,8 +26,14 @@ import { DEFAULT_GAME, type ClientGameIntegration, type GameId, type GameOwned }
 // nothing, but a claimed catalogue slug is resolved in registration order, so
 // the module that owns a game outright is asked before the one that runs
 // anything.
+//
+// CS2 is a catalog module (DESIGN-modules §10). The production build
+// (`vite.config.ts`, `withoutCs2`) answers the `./cs2` import with `null`, so
+// the bundle carries no CS2 and loads it at runtime like any code module. The
+// dev server keeps it compiled in, the dev alias of DESIGN-module-client-api
+// §6, unless AT_CS2_BUILTIN=0.
 const INTEGRATIONS: Record<string, ClientGameIntegration> = {
-  [cs2ClientIntegration.id]: cs2ClientIntegration,
+  ...(cs2ClientIntegration ? { [cs2ClientIntegration.id]: cs2ClientIntegration } : {}),
   [manualReportClientIntegration.id]: manualReportClientIntegration,
 };
 

@@ -126,7 +126,7 @@ test.describe('Code modules load without holding the page back', () => {
         // An admin page, with the manifest unanswered the whole time.
         await page.goto('/modules');
         await expect(page.getByTestId('modules-page')).toBeVisible();
-        await expect(page.getByTestId('module-cs2')).toBeVisible();
+        await expect(page.getByTestId('module-manual-report')).toBeVisible();
         expect(asked(), 'the manifest was asked for, and is still unanswered').toBe(true);
         // Nothing listed yet, so nothing is drawn as "loading".
         await expect(page.getByTestId('module-pending')).toHaveCount(0);

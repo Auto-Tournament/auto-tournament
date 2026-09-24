@@ -713,7 +713,19 @@ export function installCatalogModule(
   return exclusive(`module ${id}`, () => installModule(id, options));
 }
 
-async function installModule(id: string, { actor, update }: { actor: string | null; update: boolean }): Promise<OperationResult> {
+interface InstallOptions {
+  actor: string | null;
+  update: boolean;
+  /** Only the image's snapshot: nothing is fetched (the boot-time 2.x rule). */
+  offlineOnly?: boolean;
+  /** Load it now (default), or leave that to the boot scan that follows. */
+  load?: boolean;
+}
+
+async function installModule(
+  id: string,
+  { actor, update, offlineOnly = false, load = true }: InstallOptions
+): Promise<OperationResult> {
   checkModuleId(id);
   // A loaded module whose files already moved on (an update, an uninstall,
   // a switch) serves its client half from where it was until the restart.
@@ -722,7 +734,9 @@ async function installModule(id: string, { actor, update }: { actor: string | nu
   if (pending) {
     throw new CatalogError(409, `Restart Auto Tournament first: ${pending}`, 'restart-required');
   }
-  const entry = await moduleEntry(id);
+  const entry = offlineOnly
+    ? (await readSnapshotModules()).find((candidate) => candidate.id === id)
+    : await moduleEntry(id);
   if (!entry) throw new CatalogError(404, `The catalog has no module '${id}'.`, 'not-found');
 
   const live = liveDir(id);
@@ -862,6 +876,12 @@ async function installModule(id: string, { actor, update }: { actor: string | nu
         restartRequired: true,
         message: `Version ${release.version} is installed. Restart Auto Tournament to load it.`,
       };
+    }
+
+    if (!load) {
+      await recordInstalledVersion(id, release.version);
+      log.info(`[CATALOG] ${verb} ${id}@${release.version} from ${from}${by}; it loads with the boot scan`);
+      return { item: null, restartRequired: false, message: 'Installed.' };
     }
 
     const state = await loadModuleNow(id);
@@ -1132,4 +1152,81 @@ export async function purgeModuleData(
 /** The tables a purge of `id` would drop. For the test helper. */
 export function purgeableTables(id: string): Promise<string[]> {
   return namespaceTables(id);
+}
+
+// ---------------------------------------------------------------------------
+// The 2.x upgrade rule
+// ---------------------------------------------------------------------------
+
+async function countRows(sql: string, params: unknown[] = []): Promise<number> {
+  try {
+    const row = await db.queryOneAsync<{ count: string }>(sql, params);
+    return Number(row?.count ?? 0);
+  } catch {
+    // A table that is not there has no rows.
+    return 0;
+  }
+}
+
+/** What CS2 data this database holds: its servers, and tournaments and matches on its game. */
+export async function cs2DataInDatabase(): Promise<{ servers: number; tournaments: number; matches: number }> {
+  const hasTable = async (name: string) =>
+    Boolean((await db.queryOneAsync<{ found: string | null }>('SELECT to_regclass(?)::text AS found', [name]))?.found);
+  let servers = 0;
+  for (const table of ['cs2_servers', 'servers']) {
+    if (await hasTable(table)) servers += await countRows(`SELECT COUNT(*)::text AS count FROM ${table}`);
+  }
+  const tournaments = await countRows("SELECT COUNT(*)::text AS count FROM tournament WHERE LOWER(game) = 'cs2'");
+  const matches = await countRows("SELECT COUNT(*)::text AS count FROM matches WHERE LOWER(game) = 'cs2'");
+  return { servers, tournaments, matches };
+}
+
+/**
+ * The 2.x upgrade rule (DESIGN-modules §10.1): a database that already holds
+ * CS2 data — servers, or tournaments or matches on CS2 — gets CS2 installed
+ * and enabled from the image's offline snapshot on boot, so nobody's
+ * tournaments break when the platform stops shipping CS2 compiled in. It is
+ * logged either way.
+ *
+ * Never when CS2 is compiled into this process (running from source), already
+ * on disk, or was uninstalled by an admin (`module_removed:cs2`): that is a
+ * choice, and it stands. Nothing is fetched: the snapshot is what an
+ * air-gapped host has. The module is verified like any install and loaded by
+ * the boot scan that follows. Never throws: a failure is logged and the
+ * platform boots without CS2, with the Modules page to install it from.
+ */
+export async function autoInstallCs2ForExistingData(): Promise<'installed' | 'skipped' | 'failed'> {
+  const id = 'cs2';
+  try {
+    if (isBuiltinModule(id)) return 'skipped';
+    if (await exists(liveDir(id))) return 'skipped';
+    if (await db.getAppSettingAsync(`${MODULE_REMOVED_KEY_PREFIX}${id}`)) {
+      log.info('[CATALOG] CS2 was uninstalled by an admin; not reinstalling it');
+      return 'skipped';
+    }
+    const data = await cs2DataInDatabase();
+    if (data.servers + data.tournaments + data.matches === 0) return 'skipped';
+
+    const what = `${data.servers} server(s), ${data.tournaments} tournament(s), ${data.matches} match(es)`;
+    if (!(await readSnapshotModules()).some((entry) => entry.id === id)) {
+      log.warn(
+        `[CATALOG] This database has CS2 data (${what}), but this image carries no CS2 module. ` +
+          'Install CS2 from the Modules page to run those tournaments.'
+      );
+      return 'failed';
+    }
+    await exclusive('module cs2 (upgrade)', () =>
+      installModule(id, { actor: 'upgrade', update: false, offlineOnly: true, load: false })
+    );
+    log.success(
+      `[CATALOG] Installed and enabled CS2 from the offline snapshot, because this database has CS2 data (${what})`
+    );
+    return 'installed';
+  } catch (error) {
+    log.error(
+      `[CATALOG] Could not install CS2 for this database's CS2 data: ${(error as Error).message}. ` +
+        'Install it from the Modules page.'
+    );
+    return 'failed';
+  }
 }

@@ -1,0 +1,4 @@
+{
+  "description": "Counter-Strike 2 on your own servers: Auto Tournament CS2 loads each match, reads every round and records the result.",
+  "icon": "client/public/games/counter-strike-2.svg"
+}

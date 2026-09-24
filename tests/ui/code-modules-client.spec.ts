@@ -147,10 +147,12 @@ test.describe.serial('Code modules in the browser', () => {
   test('with no code module enabled, no shim and no loader chunk is requested', {
     tag: ['@ui', '@modules'],
   }, async ({ page, request }) => {
-    const loadable = (await listModules(request)).filter(
-      (module) => module.source === 'disk' && module.client !== null
+    // CS2 is a code module on every instance that runs it (CI installs it
+    // from the catalog), so the manifest is answered here as an instance with
+    // no code module enabled answers it.
+    await page.route('**/api/modules/public', (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, modules: [] }) })
     );
-    expect(loadable, 'no code module should be enabled before this test').toEqual([]);
 
     // The JavaScript index.html itself loads; anything else would be lazy.
     const html = await (await request.get('/')).text();

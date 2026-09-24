@@ -36,10 +36,12 @@ import { routeTable } from './routes/routeTable';
 import { listIntegrations } from './integrations/registry';
 import { diskModuleRoutes, scanDiskModules } from './modules/loader';
 import {
+  autoInstallCs2ForExistingData,
   finishPendingUpdates,
   restoreInterruptedSwaps,
   sweepStaging,
 } from './modules/catalogService';
+import { installHostBridge } from './modules/hostBridge';
 import { environmentTrustedKeys } from './modules/trustedKeys';
 import { recoverActiveMatches } from './services/matchRecoveryService';
 import { enrichBuiltinGames } from './services/gameEnrichmentService';
@@ -466,6 +468,12 @@ process.on('uncaughtException', (err) => {
     if (envKeys.malformed > 0) {
       log.warn(`[MODULES] MODULE_TRUSTED_KEYS: ${envKeys.malformed} entry(ies) are not base64 Ed25519 public keys and were ignored`);
     }
+    // Code modules' server halves reach core through this (hostBridge.ts).
+    installHostBridge();
+    // An install with CS2 data (a 2.x upgrade) gets CS2 from the image's
+    // offline snapshot before the scan loads it, so its tournaments keep
+    // working now that CS2 is a catalog module. Logged; never throws.
+    await autoInstallCs2ForExistingData();
     await scanDiskModules();
     await finishPendingUpdates();
 

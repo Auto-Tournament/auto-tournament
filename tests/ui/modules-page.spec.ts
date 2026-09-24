@@ -70,8 +70,11 @@ test.describe.serial('Modules page', () => {
 
       // The modules that ship with the app are listed as built in, not as
       // something to manage.
-      await expect(page.getByTestId('module-cs2')).toBeVisible();
       await expect(page.getByTestId('module-manual-report')).toBeVisible();
+      // CS2 is not built in: it is a catalog module, installed from the
+      // image's signed offline snapshot (CI installs it before the suite).
+      await expect(page.getByTestId('module-cs2')).toHaveCount(0);
+      await expect(page.getByTestId('catalog-module-cs2-state')).toContainText(/installed/i);
       // The games the image ships are in the one catalog list; CI preinstalls
       // them (PREINSTALL_PACKS=all), so they show as installed.
       await expect(page.getByTestId('catalog-pack-rocket-league')).toBeVisible({ timeout: 15000 });

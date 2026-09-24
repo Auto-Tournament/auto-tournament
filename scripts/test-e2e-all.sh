@@ -57,6 +57,14 @@ echo "  Database: ${DB_USER}@localhost:5432/${DB_NAME}"
 echo "  Base URL: ${PLAYWRIGHT_BASE_URL}"
 echo ""
 
+# CS2 is a catalog module: the image carries it only in its offline snapshot,
+# signed. Local runs sign it with a throwaway key and trust that key, as CI does.
+echo -e "${YELLOW}Building the offline module snapshot (CS2)...${NC}"
+MODULE_TRUSTED_KEYS="$(bash scripts/build-module-snapshot.sh --ephemeral | sed -n 's/^MODULE_TRUSTED_KEYS=//p')"
+export MODULE_TRUSTED_KEYS
+export PREINSTALL_PACKS="${PREINSTALL_PACKS:-all}"
+export CATALOG_OFFLINE="${CATALOG_OFFLINE:-true}"
+
 # Step 1: Start Docker Compose services
 echo -e "${YELLOW}Step 1/4: Starting Docker Compose services...${NC}"
 docker compose --env-file .env -f "${COMPOSE_FILE}" -p "${COMPOSE_PROJECT}" up -d --build
@@ -95,6 +103,12 @@ while ! curl -f -s http://localhost:3069/health > /dev/null 2>&1; do
 done
 echo ""
 echo -e "${GREEN}✅ Application is ready${NC}"
+
+# Install CS2 the way an admin does, from the catalog (as CI does).
+curl -sf -X POST http://localhost:3069/api/catalog/modules/cs2/install \
+  -H "Authorization: Bearer ${API_TOKENS#*:}" -H 'Content-Type: application/json' -d '{}' > /dev/null \
+  && echo -e "${GREEN}✅ CS2 installed from the catalog${NC}" \
+  || echo -e "${YELLOW}⚠️  CS2 was not installed from the catalog (already installed?)${NC}"
 
 # Step 2: Run Playwright tests
 echo ""

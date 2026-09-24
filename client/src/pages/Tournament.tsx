@@ -28,7 +28,7 @@ import {
   moduleKeysOf,
 } from '../components/tournament/setup/gameSettings';
 import type { TournamentSetupContext } from '../integrations/types';
-import { getIntegration } from '../integrations/registry';
+import { getIntegration, useIntegration } from '../integrations/registry';
 import { useModuleState } from '../module-loader/useModuleState';
 import { DEFAULT_ELO_TEMPLATE_ID } from '../components/tournament/setup/EloTemplateSelect';
 import TournamentChangePreviewModal from '../components/modals/TournamentChangePreviewModal';
@@ -369,12 +369,17 @@ const Tournament: React.FC = () => {
     [applyTemplate, showError, t]
   );
 
+  // A template carries the game module's settings (CS2: pool, maps, rounds),
+  // which only the module can read. Code modules load after first paint, so
+  // a template opened by link waits until the setup game's module is here —
+  // or known to be absent — rather than being read by the placeholder.
+  const setupModulePending = Boolean(useIntegration(DEFAULT_SETUP_GAME.id).modulePending);
   useEffect(() => {
     const templateId = searchParams.get('template');
-    if (templateId && !tournament) {
+    if (templateId && !tournament && !setupModulePending) {
       void loadTemplate(parseInt(templateId, 10));
     }
-  }, [searchParams, tournament, loadTemplate]);
+  }, [searchParams, tournament, loadTemplate, setupModulePending]);
 
   const handleLoadTemplate = (template: TournamentTemplate) => {
     applyTemplate(template, { withTeams: true });

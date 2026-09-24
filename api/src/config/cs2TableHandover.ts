@@ -417,3 +417,44 @@ export async function handOverCs2Tables(
   }
   return report;
 }
+
+/**
+ * Core columns that reference CS2's tables: `matches.server_id` and the
+ * standalone match templates' `map_pool_id`. The keys cannot be declared in
+ * core's CREATE TABLE, because on a fresh database CS2's tables are created
+ * after core's — at boot when CS2 is compiled in, and whenever the CS2 module
+ * is installed from the catalog when it is not. An upgraded database kept its
+ * keys through the rename (Postgres tracks the referenced table, not its
+ * name), so this only adds them where they are missing. Skipped while the
+ * referenced table does not exist (no CS2). Never throws.
+ */
+export async function addCs2ForeignKeys(client: Queryable): Promise<void> {
+  const keys = [
+    { table: 'matches', column: 'server_id', references: 'cs2_servers' },
+    { table: 'manual_match_templates', column: 'map_pool_id', references: 'cs2_map_pools' },
+  ];
+  for (const { table, column, references } of keys) {
+    try {
+      const { rows } = await client.query<{ has_target: boolean; has_key: boolean }>(
+        `SELECT to_regclass($2) IS NOT NULL AS has_target,
+                EXISTS (
+                  SELECT 1
+                    FROM pg_constraint c
+                    JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = ANY(c.conkey)
+                   WHERE c.conrelid = to_regclass($1) AND c.contype = 'f'
+                     AND c.confrelid = to_regclass($2) AND a.attname = $3
+                ) AS has_key`,
+        [table, references, column]
+      );
+      if (!rows[0]?.has_target || rows[0].has_key) continue;
+      await client.query(
+        `ALTER TABLE ${table} ADD CONSTRAINT ${table}_${column}_fkey
+           FOREIGN KEY (${column}) REFERENCES ${references}(id) ON DELETE SET NULL`
+      );
+    } catch (err) {
+      log.error(
+        `[PostgreSQL] Failed to add ${table}.${column} foreign key to ${references}: ${(err as Error).message}`
+      );
+    }
+  }
+}
