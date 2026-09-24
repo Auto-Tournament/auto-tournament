@@ -77,6 +77,8 @@ void i18n
     resources,
     fallbackLng: 'en',
     supportedLngs: ['en', 'fr', 'de', 'es', 'it', 'pt-PT', 'pl', 'nl', 'zh-CN', 'nb'],
+    // Each module adds its own namespace, named by its id, when it registers
+    // (module-loader/moduleLocales.ts); core's strings are 'translation'.
     ns: ['translation', 'bracketsViewer'],
     defaultNS,
     interpolation: {

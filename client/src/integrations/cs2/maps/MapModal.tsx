@@ -15,10 +15,9 @@ import {
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
-import { api, useSnackbar } from '../../../module-sdk';
+import { api, useSnackbar, useModuleTranslation } from '../../../module-sdk';
 import type { Map, MapResponse } from '../../../types/api.types';
 import { FadeInImage } from '../../../components/common/FadeInImage';
-import { useTranslation } from 'react-i18next';
 
 interface MapModalProps {
   open: boolean;
@@ -29,7 +28,7 @@ interface MapModalProps {
 
 export default function MapModal({ open, map, onClose, onSave }: MapModalProps) {
   const { showSuccess, showError } = useSnackbar();
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
   const [id, setId] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [imageUrl, setImageUrl] = useState('');

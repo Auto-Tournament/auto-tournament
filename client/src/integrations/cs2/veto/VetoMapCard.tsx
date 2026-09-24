@@ -1,11 +1,10 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { Card, CardActionArea, CardContent, Typography, Box, Chip } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import BlockIcon from '@mui/icons-material/Block';
 import type { MapSide, VetoActionType } from '../../../types';
 import { FadeInImage } from '../../../components/common/FadeInImage';
-import { tokens, mono, withAlpha } from '../../../module-sdk';
+import { tokens, mono, withAlpha, useModuleTranslation } from '../../../module-sdk';
 
 const { color, radius, ease, duration } = tokens;
 
@@ -46,7 +45,7 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
   currentAction,
   isDecider,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
   const [imageError] = React.useState(false);
   const isClickable = !disabled && state === 'available' && !!onClick;
   // Tiles in the live veto grid (the ones given an onClick) are real buttons,

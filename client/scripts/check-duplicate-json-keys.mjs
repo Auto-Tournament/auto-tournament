@@ -1,5 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {
+  CORE_NAMESPACE,
+  integrationsDir,
+  isPlainObject,
+  languages,
+  loadNamespace,
+  moduleNamespaces,
+} from './i18n-namespaces.mjs';
 
 function parseJsonString(src, startIdx) {
   // src[startIdx] === '"'
@@ -248,6 +256,11 @@ if (exists(localesDir)) {
   }
 }
 
+// Each module's namespace: integrations/<id>/locales/<lang>.json
+for (const ns of moduleNamespaces()) {
+  targets.push(...listJsonFiles(path.join(integrationsDir, ns, 'locales')));
+}
+
 /** @type {{ file: string, dups: {path:string, key:string}[] }[]} */
 const failures = [];
 
@@ -273,6 +286,39 @@ if (failures.length) {
       console.error(`  - ${p}`);
     }
   }
+  process.exit(1);
+}
+
+// A key both in core's namespace and in a module's: inside the module its own
+// copy wins, everywhere else core's, and the two drift apart unseen. Each key
+// has one owner (scripts/move-module-strings.mjs moves them, never copies).
+/** @param {Record<string, unknown>} obj */
+function leafPaths(obj, prefix = [], out = new Set()) {
+  for (const [k, v] of Object.entries(obj)) {
+    if (isPlainObject(v)) leafPaths(v, prefix.concat(k), out);
+    else out.add(prefix.concat(k).join('.'));
+  }
+  return out;
+}
+
+/** @type {string[]} */
+const overlaps = [];
+for (const lang of languages()) {
+  const core = loadNamespace(CORE_NAMESPACE, lang);
+  if (!core) continue;
+  const coreLeaves = leafPaths(core);
+  for (const ns of moduleNamespaces()) {
+    const moduleStrings = loadNamespace(ns, lang);
+    if (!moduleStrings) continue;
+    for (const p of leafPaths(moduleStrings)) {
+      if (coreLeaves.has(p)) overlaps.push(`${lang}: ${p} (in translation and in ${ns})`);
+    }
+  }
+}
+
+if (overlaps.length) {
+  console.error('Keys in both core and a module namespace:\n');
+  for (const o of overlaps) console.error(`  - ${o}`);
   process.exit(1);
 }
 

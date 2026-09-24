@@ -1,9 +1,8 @@
 import { Box, Button, Typography, Alert } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { useTranslation } from 'react-i18next';
 import { FadeInImage } from '../../../components/common/FadeInImage';
-import { tokens, mono, withAlpha } from '../../../module-sdk';
+import { tokens, mono, withAlpha, useModuleTranslation } from '../../../module-sdk';
 import type { MatchConnectPanelProps as MatchServerPanelProps } from '../../types';
 
 export function MatchServerPanel({
@@ -15,7 +14,7 @@ export function MatchServerPanel({
   onConnect,
   onCopy,
 }: MatchServerPanelProps) {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
 
   if (!server) {
     return (

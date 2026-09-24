@@ -310,14 +310,38 @@ export interface IntegrationRoute {
 }
 
 /**
- * A page link the integration adds to the admin navigation. `key` is also the
- * i18n key suffix each surface already used (`nav.<key>`, `layout.pageTitle.<key>`,
- * `managePage.rail.<key>`, `dashboard.site.<key>`), so labels are unchanged.
+ * The places core shows a module's page link, each with its own label:
+ * - `nav`: the admin sidebar entry
+ * - `pageTitle`: the page header while the page is open
+ * - `rail`: the manage page's rail
+ * - `siteLabel` / `siteHint`: the admin home's site grid tile and its one-liner
+ */
+export type IntegrationNavLabelSurface = 'nav' | 'pageTitle' | 'rail' | 'siteLabel' | 'siteHint';
+
+/**
+ * A page link the integration adds to the admin navigation.
+ *
+ * Its labels are the module's own strings: core renders each one from the
+ * module's namespace (its `id`, see `ClientGameIntegration.locales`), never
+ * from core's. By default the key for each surface is the one core used for
+ * its own links, under the module's namespace:
+ *
+ *   nav        `<id>:nav.<key>`
+ *   pageTitle  `<id>:layout.pageTitle.<key>`
+ *   rail       `<id>:managePage.rail.<key>`
+ *   siteLabel  `<id>:dashboard.site.<key>.label`
+ *   siteHint   `<id>:dashboard.site.<key>.hint`
+ *
+ * `labels` names a different key in the module's namespace for any of them.
+ * A key the module's strings lack renders as `key` itself (the hint as
+ * nothing), so a missing string is visible without a raw i18n path. See
+ * `utils/moduleNavLabels.ts`.
  */
 export interface IntegrationNavItem {
   key: string;
   path: string;
   icon: SvgIconComponent;
+  labels?: Partial<Record<IntegrationNavLabelSurface, string>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -561,8 +585,32 @@ export interface TournamentStatsViewProps {
 // The integration
 // ---------------------------------------------------------------------------
 
+/**
+ * A module's own strings: one i18next resource bundle per language code
+ * (`en`, `de`, `pt-PT`, …), each the same nested JSON core's locale files use.
+ */
+export type ModuleLocales = Readonly<Record<string, Record<string, unknown>>>;
+
 export interface ClientGameIntegration {
   id: GameId;
+
+  /**
+   * The module's strings, registered with i18next as the namespace `id`
+   * before any of its slots renders (item 6 of DESIGN-modules.md).
+   *
+   * - Inside the module, `useModuleTranslation(id)` from the module SDK gives
+   *   a `t` that looks in this namespace first and in core's (`translation`)
+   *   after it, so shared words like `common.cancel` stay core's.
+   * - A language the module leaves out, or a key missing from one it ships,
+   *   falls back to the module's own English (`en`) before anything else.
+   *   `en` is the one bundle a module should always ship.
+   * - Built-in modules keep theirs in `integrations/<id>/locales/<lang>.json`,
+   *   where the i18n scripts check them against their English like core's.
+   *   A code module loaded from disk puts them on its default export, bundled
+   *   with its code (`import en from './locales/en.json'`), so they arrive in
+   *   the same request and need no route of their own.
+   */
+  locales?: ModuleLocales;
 
   /**
    * Catalogue ids this integration answers for, besides its own id.

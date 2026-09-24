@@ -5,9 +5,6 @@
       "loadTitle": "Błąd podczas ładowania meczów",
       "bulkDelete": "Nie udało się usunąć jednego lub więcej meczów"
     },
-    "allocation": {
-      "nextServers": "Kolejna alokacja serwerów za {{seconds}} s"
-    },
     "header": {
       "createMatch": "Utwórz mecz"
     },
@@ -46,9 +43,6 @@
       "matchNumber": "Mecz #{{number}}",
       "server": "Serwer: {{name}}",
       "queuePosition": "Pozycja w kolejce: #{{position}}",
-      "waitingForServers": "Oczekiwanie na serwery...",
-      "allocatingNow": "Przydzielanie...",
-      "allocatesIn": "Przydział za {{time}}",
       "shuffle": "Shuffle",
       "shuffleManual": "Shuffle ręczny",
       "manual": "Ręczny",
@@ -79,21 +73,6 @@
       "completed": "Mecz się zakończył. Zwycięzca został wyłoniony, a drabinka zaktualizowana.",
       "proTipTitle": "Wskazówka:",
       "proTip": "Gdy mecz pokazuje „Oczekiwanie na graczy (X/Y)”, serwer jest gotowy i gracze powinni się połączyć. Gdy wszyscy oczekiwani gracze połączą się i zgłoszą gotowość, mecz rozpocznie się automatycznie."
-    },
-    "allocationWidget": {
-      "title": "Status przydziału serwerów",
-      "available": "Wolne:",
-      "busy": "Zajęte:",
-      "cooling": "Chłodzenie:",
-      "offline": "Offline:",
-      "waitingMatches_one": "Oczekuje: {{count}} mecz",
-      "waitingMatches_other": "Oczekuje: {{count}} meczów",
-      "statusLine": "Status: {{status}}",
-      "statusReady": "Gotowy",
-      "statusCooling": "Chłodzenie",
-      "statusBusy": "Zajęty",
-      "statusOffline": "Offline",
-      "readyIn": "Gotowy za: {{time}}"
     },
     "latestEvent": "Ostatnie: {{event}}",
     "matchLabel": {

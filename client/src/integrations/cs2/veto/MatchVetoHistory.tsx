@@ -1,12 +1,12 @@
 import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Stack, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { useTranslation } from 'react-i18next';
+import { useModuleTranslation } from '../../../module-sdk';
 import { getMapDisplayName } from '../../../constants/maps';
 import { vetoHistoryRowSx, vetoMapNameSx } from './vetoStyles';
 import type { PreMatchHistoryProps as MatchVetoHistoryProps } from '../../types';
 
 export function MatchVetoHistory({ actions, team1Name, team2Name }: MatchVetoHistoryProps) {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
 
   if (actions.length === 0) {
     return null;

@@ -1,0 +1,73 @@
+{
+  "manualReport": {
+    "title": "Resultat",
+    "unknownTeam": "det andre laget",
+    "state": {
+      "nothing": "Ingen har meldt inn resultatet ennå.",
+      "waitingOpponent": "Meldt inn. Venter på at {{team}} skal godkjenne.",
+      "needsAnswer": "{{team}} har meldt inn dette resultatet. Godkjenn det hvis det stemmer.",
+      "disputed": "Resultatet er bestridt. En administrator avgjør saken.",
+      "awaitingAdmin": "Venter på at en administrator avgjør kampen.",
+      "confirmed": "Begge lag er enige om resultatet."
+    },
+    "deadline": {
+      "autoConfirm": "Godkjennes automatisk om {{minutes}} min hvis ingen svarer.",
+      "autoConfirmSoon": "Godkjennes automatisk når som helst nå.",
+      "escalate": "Sendes til en administrator om {{minutes}} min hvis ingen svarer.",
+      "escalateSoon": "Sendes til en administrator når som helst nå."
+    },
+    "score": "{{team1}} {{score1}} – {{score2}} {{team2}}",
+    "game": "Spill {{number}}",
+    "note": "Merknad",
+    "notePlaceholder": "Noe det andre laget bør vite (valgfritt)",
+    "noteGiven": "Merknad: {{note}}",
+    "disputeReason": "Hva er galt med det?",
+    "disputeReasonGiven": "Bestridt: {{reason}}",
+    "formHint": "Poeng for {{team1}} og {{team2}}, spill for spill.",
+    "actions": {
+      "report": "Meld inn resultatet",
+      "reportAgain": "Meld inn et annet resultat",
+      "submit": "Send inn",
+      "cancel": "Avbryt",
+      "confirm": "Godkjenn",
+      "dispute": "Bestrid",
+      "disputeSubmit": "Send inn innsigelse",
+      "withdraw": "Trekk tilbake innmeldingen min"
+    },
+    "errors": {
+      "stale": "Resultatet ble endret mens det lå på skjermen din. Les det på nytt før du godkjenner.",
+      "incomplete": "Fyll inn begge poengsummene for minst ett spill.",
+      "failed": "Det gikk ikke gjennom. Prøv igjen."
+    },
+    "captains": {
+      "title": "Kapteiner",
+      "hint": "Bare en kaptein kan melde inn eller godkjenne resultatet for dette laget.",
+      "make": "Gjør til kaptein",
+      "remove": "Fjern som kaptein",
+      "isCaptain": "Kaptein",
+      "empty": "Ingen på dette laget har logget inn ennå, så det er ingen å utnevne.",
+      "unknown": "Ukjent spiller",
+      "failed": "Klarte ikke å endre det. Prøv igjen."
+    },
+    "stats": {
+      "hint": "Ekstratallene denne turneringen ber om. La feltet stå tomt hvis ingen har et tall.",
+      "required": "påkrevd",
+      "recorded": "Rapporterte tall",
+      "value": "{{subject}}: {{value}}{{suffix}}",
+      "errors": {
+        "number": "{{field}} for {{subject}} må være et tall.",
+        "integer": "{{field}} for {{subject}} må være et helt tall.",
+        "range": "{{field}} for {{subject}} er for stort til å være et ekte tall.",
+        "tooLong": "{{field}} for {{subject}} er lengre enn {{max}} tegn.",
+        "missing": "{{field}} er påkrevd, og ingenting er fylt ut for {{team}}."
+      },
+      "tournamentTitle": "Rapporterte tall",
+      "tournamentHelp": "Summert fra bekreftede rapporter. Et resultat som fortsatt venter på motstanderen, telles ikke med her.",
+      "byTeam": "Per lag",
+      "byPlayer": "Per spiller",
+      "team": "Lag",
+      "player": "Spiller",
+      "matches": "Kamper"
+    }
+  }
+}

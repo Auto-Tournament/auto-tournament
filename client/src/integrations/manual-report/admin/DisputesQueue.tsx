@@ -32,7 +32,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useModuleTranslation } from '../../../module-sdk';
 import { io } from 'socket.io-client';
 import {
   Alert,
@@ -89,7 +89,7 @@ function scoreOf(report: Pick<MatchReport, 'result'>): string {
 }
 
 export function DisputesQueue({ tournamentId }: AdminDisputesViewProps) {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('manual-report');
   const statLabels = useStatDraftLabels();
 
   const [rows, setRows] = useState<DisputeRow[] | null>(null);

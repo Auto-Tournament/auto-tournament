@@ -30,7 +30,7 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
-import { useTranslation } from 'react-i18next';
+import { useModuleTranslation } from '../../../module-sdk';
 import {
   manualReportApi,
   type CustomStatField,
@@ -47,7 +47,7 @@ function cellText(total: StatTotal | undefined, dash: string): string {
 }
 
 export function CustomStatsTables({ tournamentId }: TournamentStatsViewProps) {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('manual-report');
   const [stats, setStats] = useState<TournamentStats | null>(null);
 
   useEffect(() => {
@@ -133,7 +133,7 @@ function StatsTable({
   rows: StatsRow[];
   testId: string;
 }) {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('manual-report');
   const dash = '—';
 
   return (

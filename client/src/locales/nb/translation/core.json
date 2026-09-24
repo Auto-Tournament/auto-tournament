@@ -20,8 +20,6 @@
     "teams": "Lag",
     "players": "Spillere",
     "leaderboard": "Toppliste",
-    "servers": "Servere",
-    "maps": "Kart og kartpooler",
     "templates": "Maler",
     "eloTemplates": "ELO-beregning",
     "adminTools": "Adminverktøy",
@@ -43,8 +41,6 @@
     "modules": "Moduler"
   },
   "layout": {
-    "webhookNotConfigured": "Webhook-URL er ikke konfigurert. Kamper og servere kan ikke motta hendelser før den er satt.",
-    "openSettings": "Åpne innstillinger",
     "pageTitle": {
       "dashboard": "Kontrollpanel",
       "manage": "Administrer",
@@ -53,8 +49,6 @@
       "matches": "Kamper",
       "teams": "Lag",
       "players": "Spillere",
-      "servers": "Servere",
-      "maps": "Kart og kartpooler",
       "templates": "Maler",
       "eloTemplates": "ELO-beregning",
       "adminTools": "Adminverktøy",
@@ -65,11 +59,6 @@
       "modules": "Moduler"
     },
     "openDrawer": "Åpne navigasjonsmenyen",
-    "matchzyDbDown": {
-      "title": "MatchZy-databasen er utilgjengelig",
-      "body_one": "{{count}} server melder at pluginen ikke når databasen sin. Backuper og hendelseskøen kan bli berørt.",
-      "body_other": "{{count}} servere melder at pluginen ikke når databasen sin. Backuper og hendelseskøen kan bli berørt."
-    },
     "steamUnavailable": {
       "title": "Steam-integrasjonen er utilgjengelig",
       "body": "Innlogging og oppslag av Steam-brukernavn fungerer kanskje ikke. Sjekk serverkonfigurasjonen og nettverkstilkoblingen."

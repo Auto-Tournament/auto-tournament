@@ -16,11 +16,10 @@
 
 import * as React from 'react';
 import type { SnackbarKey } from 'notistack';
-import { useTranslation } from 'react-i18next';
-import { useSnackbar, api } from '../../../module-sdk';
+import { useSnackbar, api, useModuleTranslation } from '../../../module-sdk';
 
 export const MatchzyDbWarning: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
   const { showPersistentError, closeSnackbar } = useSnackbar();
   const [dbHealthSnackbarKey, setDbHealthSnackbarKey] = React.useState<SnackbarKey | null>(null);
 

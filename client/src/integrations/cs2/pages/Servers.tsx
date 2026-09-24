@@ -15,7 +15,6 @@ import ServerModal from '../servers/ServerModal';
 import BatchServerModal from '../servers/BatchServerModal';
 import MatchDetailsModal from '../../../components/modals/MatchDetailsModal';
 import type { Match, Server, ServersResponse, ServerStatusResponse, MatchesResponse } from '../../../types';
-import { useTranslation } from 'react-i18next';
 import type { SnackbarKey } from 'notistack';
 import {
   usePageHeader,
@@ -28,6 +27,7 @@ import {
   mono,
   withAlpha,
   StatusDot,
+  useModuleTranslation,
 } from '../../../module-sdk';
 
 export default function Servers() {
@@ -67,7 +67,7 @@ export default function Servers() {
   const [latestMatchZyVersion, setLatestMatchZyVersion] = useState<string | null>(null);
   const [latestMatchZyReleaseUrl, setLatestMatchZyReleaseUrl] = useState<string | null>(null);
   const [cs2OutdatedSnackbarKey, setCs2OutdatedSnackbarKey] = useState<SnackbarKey | null>(null);
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
 
   const docs = {
     fleetHealth: 'https://docs.autotournament.gg/reference/servers-health',

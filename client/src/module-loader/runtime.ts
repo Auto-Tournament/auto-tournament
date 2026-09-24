@@ -11,6 +11,8 @@ import { loadCodeModules } from './loadCodeModules';
 import { errorText, failure, type LoadableModule } from './manifest';
 import { recordFailure, recordLoaded } from './moduleState';
 import { provideShared } from './sharedRegistry';
+import { registerModuleLocales } from './moduleLocales';
+import i18n from '../i18n';
 
 export async function loadAndRegister(modules: readonly LoadableModule[]): Promise<void> {
   const results = await loadCodeModules(modules, {
@@ -29,6 +31,9 @@ export async function loadAndRegister(modules: readonly LoadableModule[]): Promi
     }
     try {
       registerCodeModule(adaptCodeModule(result.integration));
+      // Its strings, once it holds its id: boot is not over yet, so they are
+      // in place before its first slot renders.
+      registerModuleLocales(i18n, result.id, result.integration.locales);
       recordLoaded(result.id);
     } catch (error) {
       recordFailure(

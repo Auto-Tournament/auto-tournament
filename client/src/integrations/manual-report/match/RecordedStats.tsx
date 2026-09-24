@@ -12,7 +12,7 @@
  */
 
 import { Box, Chip, Stack, Typography } from '@mui/material';
-import { useTranslation } from 'react-i18next';
+import { useModuleTranslation } from '../../../module-sdk';
 import type { MatchReportView, MatchStatValue, ReportSide } from '../api';
 
 interface RecordedStatsProps {
@@ -21,7 +21,7 @@ interface RecordedStatsProps {
 }
 
 export function RecordedStats({ view, testId = 'manual-report-recorded-stats' }: RecordedStatsProps) {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('manual-report');
   const values = view.stats ?? [];
   if (values.length === 0) return null;
 

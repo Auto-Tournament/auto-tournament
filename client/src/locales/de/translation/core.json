@@ -17,8 +17,6 @@
     "teams": "Mannschaften",
     "players": "Spieler",
     "leaderboard": "Rangliste",
-    "servers": "Server",
-    "maps": "Karten & Kartenpools",
     "templates": "Vorlagen",
     "eloTemplates": "ELO-Berechnung",
     "adminTools": "Admin-Tools",
@@ -40,8 +38,6 @@
     "modules": "Modules"
   },
   "layout": {
-    "webhookNotConfigured": "Die Webhook-URL ist nicht konfiguriert. Matches und Server können keine Events empfangen, bis sie gesetzt ist.",
-    "openSettings": "Einstellungen öffnen",
     "pageTitle": {
       "dashboard": "Übersicht",
       "manage": "Manage",
@@ -50,8 +46,6 @@
       "matches": "Spiele",
       "teams": "Mannschaften",
       "players": "Spieler",
-      "servers": "Server",
-      "maps": "Karten & Kartenpools",
       "templates": "Vorlagen",
       "eloTemplates": "ELO-Berechnung",
       "adminTools": "Admin-Tools",
@@ -62,11 +56,6 @@
       "modules": "Modules"
     },
     "openDrawer": "Navigationsmenü öffnen",
-    "matchzyDbDown": {
-      "title": "MatchZy-DB nicht erreichbar",
-      "body_one": "{{count}} Server meldet, dass das Plugin seine Datenbank nicht erreichen kann. Backups und die Event-Warteschlange können betroffen sein.",
-      "body_other": "{{count}} Server melden, dass das Plugin seine Datenbank nicht erreichen kann. Backups und die Event-Warteschlange können betroffen sein."
-    },
     "steamUnavailable": {
       "title": "Steam-Integration nicht verfügbar",
       "body": "Anmeldungen und das Auflösen von Vanity-URLs funktionieren eventuell nicht. Prüfe die Serverkonfiguration und die Verbindung."

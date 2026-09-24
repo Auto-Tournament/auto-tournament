@@ -50,14 +50,6 @@
     },
     "site": {
       "title": "Nettsted",
-      "servers": {
-        "label": "Servere",
-        "hint": "Koble til, oppdater, helse"
-      },
-      "maps": {
-        "label": "Baner",
-        "hint": "Pooler og bilder"
-      },
       "players": {
         "label": "Spillere",
         "hint": "Alle som har logget inn"
@@ -90,18 +82,6 @@
         "label": "Moduler",
         "hint": "Spillene denne instansen kjører"
       }
-    },
-    "servers": {
-      "title": "Servere",
-      "open": "Åpne",
-      "online": "online",
-      "inMatch": "I kamp",
-      "free": "Ledig",
-      "offline": "Offline",
-      "plugin": "Plugin",
-      "pluginSame": "{{version}}, alle servere matcher",
-      "pluginMixed": "{{count}} plugin-versjoner i bruk",
-      "none": "Ingen servere tilkoblet enda."
     },
     "people": {
       "title": "Folk",
@@ -334,8 +314,6 @@
       "bracket": "Bracket",
       "teams": "Lag",
       "players": "Spillere",
-      "servers": "Servere",
-      "maps": "Baner",
       "tournament": "Turneringsoppsett",
       "settings": "Innstillinger"
     },
@@ -343,7 +321,6 @@
       "live": "LIVE",
       "inVeto": "I VETO",
       "queued": "I KØ",
-      "serversFree": "LEDIGE SERVERE",
       "round": "RUNDE"
     },
     "needsYou": {
@@ -375,16 +352,6 @@
       "reallocateConfirmBody": "Kampen blir tildelt neste ledige server.",
       "forceCancelConfirmTitle": "Tvangsavbryte denne kampen?",
       "forceCancelConfirmBody": "Dette avslutter kampen umiddelbart og markerer den som avbrutt, selv om serveren ikke er tilgjengelig."
-    },
-    "servers": {
-      "heading": "Servere",
-      "viewAll": "Alle servere",
-      "none": "Ingen servere er satt opp enda.",
-      "inMatch": "I kamp",
-      "free": "Ledig",
-      "offline": "Offline",
-      "lastHeartbeat": "Siste puls {{time}} siden",
-      "never": "aldri"
     },
     "recent": {
       "heading": "Nylig",

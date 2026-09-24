@@ -20,8 +20,6 @@
     "teams": "战队",
     "players": "选手",
     "leaderboard": "排行榜",
-    "servers": "服务器",
-    "maps": "地图与地图池",
     "templates": "模板",
     "eloTemplates": "ELO 计算",
     "adminTools": "管理工具",
@@ -43,8 +41,6 @@
     "modules": "Modules"
   },
   "layout": {
-    "webhookNotConfigured": "尚未配置 Webhook URL。配置完成之前，比赛和服务器无法接收事件。",
-    "openSettings": "打开设置",
     "pageTitle": {
       "dashboard": "控制台",
       "manage": "Manage",
@@ -53,8 +49,6 @@
       "matches": "比赛",
       "teams": "战队",
       "players": "选手",
-      "servers": "服务器",
-      "maps": "地图与地图池",
       "templates": "模板",
       "eloTemplates": "ELO 计算",
       "adminTools": "管理工具",
@@ -65,11 +59,6 @@
       "modules": "Modules"
     },
     "openDrawer": "打开导航菜单",
-    "matchzyDbDown": {
-      "title": "无法连接 MatchZy 数据库",
-      "body_one": "{{count}} 台服务器报告插件无法连接其数据库。备份和事件队列可能受到影响。",
-      "body_other": "{{count}} 台服务器报告插件无法连接其数据库。备份和事件队列可能受到影响。"
-    },
     "steamUnavailable": {
       "title": "Steam 集成不可用",
       "body": "登录和自定义链接查询可能无法使用。请检查服务器配置和网络连接。"

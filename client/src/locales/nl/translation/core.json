@@ -17,8 +17,6 @@
     "teams": "Ploegen",
     "players": "Spelers",
     "leaderboard": "Ranglijst",
-    "servers": "Spelservers",
-    "maps": "Kaarten & map-pools",
     "templates": "Sjablonen",
     "eloTemplates": "ELO-berekening",
     "adminTools": "Admin-tools",
@@ -40,8 +38,6 @@
     "modules": "Modules"
   },
   "layout": {
-    "webhookNotConfigured": "Webhook-URL is niet ingesteld. Wedstrijden en servers kunnen geen events ontvangen totdat dit is ingesteld.",
-    "openSettings": "Instellingen openen",
     "pageTitle": {
       "dashboard": "Overzicht",
       "manage": "Manage",
@@ -50,8 +46,6 @@
       "matches": "Wedstrijden",
       "teams": "Ploegen",
       "players": "Spelers",
-      "servers": "Spelservers",
-      "maps": "Kaarten & map-pools",
       "templates": "Sjablonen",
       "eloTemplates": "ELO-berekening",
       "adminTools": "Admin-tools",
@@ -62,11 +56,6 @@
       "modules": "Modules"
     },
     "openDrawer": "Navigatiemenu openen",
-    "matchzyDbDown": {
-      "title": "MatchZy-database onbereikbaar",
-      "body_one": "{{count}} server meldt dat de plugin zijn database niet kan bereiken. Back-ups en de eventwachtrij kunnen hierdoor last hebben.",
-      "body_other": "{{count}} servers melden dat de plugin zijn database niet kan bereiken. Back-ups en de eventwachtrij kunnen hierdoor last hebben."
-    },
     "steamUnavailable": {
       "title": "Steam-integratie niet beschikbaar",
       "body": "Inloggen en het opzoeken van vanity-URL's werken mogelijk niet. Controleer de serverconfiguratie en de verbinding."

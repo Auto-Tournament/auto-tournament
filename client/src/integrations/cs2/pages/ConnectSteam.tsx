@@ -1,10 +1,9 @@
 import { useEffect } from 'react';
 import { Box, Button, Container, Typography, Card, CardContent, Stack } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../contexts/AuthContext';
 import { SteamIcon } from '../../../components/icons/SteamIcon';
-import { PlayerAvatar } from '../../../module-sdk';
+import { PlayerAvatar, useModuleTranslation } from '../../../module-sdk';
 import { generateAvatarDataUrl } from '../../../generation/avatar';
 import { tokens } from '../../../module-sdk';
 
@@ -20,7 +19,7 @@ export default function ConnectSteam() {
     adminProfileAvatarUrl,
   } = useAuth();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
 
   useEffect(() => {
     document.title = t('connectSteam.title');

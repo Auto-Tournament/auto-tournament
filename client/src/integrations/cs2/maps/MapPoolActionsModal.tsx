@@ -17,7 +17,7 @@ import StarBorderIcon from '@mui/icons-material/StarBorder';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import type { MapPool, Map } from '../../../types/api.types';
-import { useTranslation } from 'react-i18next';
+import { useModuleTranslation } from '../../../module-sdk';
 
 interface MapPoolActionsModalProps {
   open: boolean;
@@ -40,7 +40,7 @@ export default function MapPoolActionsModal({
   onSetDefault,
   onToggleEnabled,
 }: MapPoolActionsModalProps) {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
 
   if (!mapPool) return null;
 

@@ -17,8 +17,6 @@
     "teams": "Squadre",
     "players": "Giocatori",
     "leaderboard": "Classifica",
-    "servers": "Server",
-    "maps": "Mappe e pool",
     "templates": "Modelli",
     "eloTemplates": "Calcolo ELO",
     "adminTools": "Strumenti admin",
@@ -40,8 +38,6 @@
     "modules": "Modules"
   },
   "layout": {
-    "webhookNotConfigured": "L’URL del webhook non è configurato. Match e server non possono ricevere eventi finché non viene impostato.",
-    "openSettings": "Apri impostazioni",
     "pageTitle": {
       "dashboard": "Cruscotto",
       "manage": "Manage",
@@ -50,8 +46,6 @@
       "matches": "Match",
       "teams": "Squadre",
       "players": "Giocatori",
-      "servers": "Server",
-      "maps": "Mappe e pool",
       "templates": "Modelli",
       "eloTemplates": "Calcolo ELO",
       "adminTools": "Strumenti admin",
@@ -62,11 +56,6 @@
       "modules": "Modules"
     },
     "openDrawer": "Apri il menu di navigazione",
-    "matchzyDbDown": {
-      "title": "Database MatchZy non raggiungibile",
-      "body_one": "{{count}} server segnala che il plugin non riesce a raggiungere il proprio database. Backup e coda eventi potrebbero risentirne.",
-      "body_other": "{{count}} server segnalano che il plugin non riesce a raggiungere il proprio database. Backup e coda eventi potrebbero risentirne."
-    },
     "steamUnavailable": {
       "title": "Integrazione Steam non disponibile",
       "body": "Gli accessi e la risoluzione degli URL personalizzati potrebbero non funzionare. Controlla la configurazione e la connettività del server."

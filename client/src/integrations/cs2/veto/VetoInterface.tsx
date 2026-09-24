@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   Box,
   Typography,
@@ -21,7 +20,7 @@ import { getVetoOrder } from '../../../constants/vetoOrders';
 import type { VetoState, MapSide } from '../../../types';
 import type { MapsResponse } from '../../../types/api.types';
 import { FadeInImage } from '../../../components/common/FadeInImage';
-import { onSocketReconnect, api, tokens, mono, withAlpha } from '../../../module-sdk';
+import { onSocketReconnect, api, tokens, mono, withAlpha, useModuleTranslation } from '../../../module-sdk';
 import { vetoHistoryRowSx, vetoMapNameSx } from './vetoStyles';
 import type { PreMatchViewProps as VetoInterfaceProps } from '../../types';
 
@@ -34,7 +33,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   currentTeamSlug,
   onComplete,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
 
   const translateVetoError = useCallback(
     (backendError: string | undefined): string | undefined => {

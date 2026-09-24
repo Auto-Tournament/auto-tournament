@@ -1,33 +1,11 @@
-import fs from 'node:fs';
-import path from 'node:path';
+/**
+ * Key parity against English, for core (`translation`) and for each module's
+ * namespace (`integrations/<id>/locales`), in every language core ships.
+ * "0 missing, 0 extra" means every namespace in every language has exactly
+ * the keys its own English has (plus plural forms English does not use).
+ */
 
-function exists(p) {
-  try {
-    fs.accessSync(p, fs.constants.R_OK);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function readJson(filePath) {
-  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-}
-
-function isPlainObject(v) {
-  return typeof v === 'object' && v !== null && !Array.isArray(v);
-}
-
-function deepMerge(target, source) {
-  for (const [k, v] of Object.entries(source)) {
-    if (isPlainObject(v) && isPlainObject(target[k])) {
-      deepMerge(target[k], v);
-    } else {
-      target[k] = v;
-    }
-  }
-  return target;
-}
+import { isPlainObject, languages, loadNamespace, namespaces } from './i18n-namespaces.mjs';
 
 function flattenLeafPaths(obj) {
   /** @type {Set<string>} */
@@ -59,72 +37,52 @@ function flattenLeafPaths(obj) {
   return out;
 }
 
-function loadLocaleMergedJson(localesDir, localeName) {
-  const dir = path.join(localesDir, localeName, 'translation');
-  if (!exists(dir)) return null;
-  const files = fs
-    .readdirSync(dir)
-    .filter((f) => f.endsWith('.json'))
-    .sort((a, b) => a.localeCompare(b));
-
-  /** @type {Record<string, unknown>} */
-  const merged = {};
-  for (const f of files) deepMerge(merged, readJson(path.join(dir, f)));
-  return merged;
-}
-
-const repoRoot = path.resolve(process.cwd(), '..');
-const localesDir = path.join(repoRoot, 'client', 'src', 'locales');
-
-if (!exists(localesDir)) {
-  console.error('ERROR: locales dir not found:', localesDir);
-  process.exit(1);
-}
-
-const en = loadLocaleMergedJson(localesDir, 'en');
-if (!en) {
+const langs = languages();
+if (!langs.includes('en')) {
   console.error('ERROR: English locale not found at src/locales/en/translation');
   process.exit(1);
 }
 
-const enPaths = flattenLeafPaths(en);
-const locales = fs
-  .readdirSync(localesDir, { withFileTypes: true })
-  .filter((d) => d.isDirectory())
-  .map((d) => d.name)
-  .filter((name) => name !== 'en')
-  .sort((a, b) => a.localeCompare(b));
-
-/** @type {{ locale: string, missing: string[], extra: string[] }[]} */
+/** @type {{ ns: string, locale: string, missing: string[], extra: string[] }[]} */
 const results = [];
 
-for (const locale of locales) {
-  const merged = loadLocaleMergedJson(localesDir, locale);
-  if (!merged) continue;
-
-  const locPaths = flattenLeafPaths(merged);
-  const missing = [...enPaths].filter((p) => !locPaths.has(p)).sort((a, b) => a.localeCompare(b));
+for (const ns of namespaces()) {
+  const en = loadNamespace(ns, 'en');
+  if (!en) {
+    console.error(`ERROR: no English strings for namespace ${ns}`);
+    process.exit(1);
+  }
+  const enPaths = flattenLeafPaths(en);
   // Plural categories English doesn't have (e.g. Polish _few/_many) are required
   // for those locales, so they are not "extra" as long as en has the _other form.
   const isLocalePluralForm = (p) => {
     const m = p.match(/^(.*)_(zero|two|few|many)$/);
     return !!m && enPaths.has(`${m[1]}_other`);
   };
-  const extra = [...locPaths]
-    .filter((p) => !enPaths.has(p) && !isLocalePluralForm(p))
-    .sort((a, b) => a.localeCompare(b));
-  results.push({ locale, missing, extra });
+
+  for (const locale of langs) {
+    if (locale === 'en') continue;
+    // A language with no file for a module's namespace is missing all of it.
+    const locPaths = flattenLeafPaths(loadNamespace(ns, locale) ?? {});
+    const missing = [...enPaths].filter((p) => !locPaths.has(p)).sort((a, b) => a.localeCompare(b));
+    const extra = [...locPaths]
+      .filter((p) => !enPaths.has(p) && !isLocalePluralForm(p))
+      .sort((a, b) => a.localeCompare(b));
+    results.push({ ns, locale, missing, extra });
+  }
 }
 
 const totalMissing = results.reduce((sum, r) => sum + r.missing.length, 0);
 const totalExtra = results.reduce((sum, r) => sum + r.extra.length, 0);
 
-console.log(`i18n missing keys vs en: ${totalMissing} missing, ${totalExtra} extra (leaf paths).`);
+console.log(
+  `i18n missing keys vs en: ${totalMissing} missing, ${totalExtra} extra (leaf paths; namespaces: ${namespaces().join(', ')}).`
+);
 
 const limit = Number(process.env.I18N_MISSING_LIMIT ?? '50');
 for (const r of results) {
   if (r.missing.length === 0 && r.extra.length === 0) continue;
-  console.log(`\n${r.locale}: missing ${r.missing.length}, extra ${r.extra.length}`);
+  console.log(`\n${r.locale} [${r.ns}]: missing ${r.missing.length}, extra ${r.extra.length}`);
   if (r.missing.length) {
     console.log('  missing (first):');
     for (const p of r.missing.slice(0, limit)) console.log(`    - ${p}`);

@@ -4,10 +4,14 @@ import { useTranslation } from 'react-i18next';
 import { useDisputesEntry } from '../../hooks/useDisputesEntry';
 import { useShellIntegrations } from '../../hooks/useShellIntegrations';
 import { paths } from '../../paths';
+import { moduleNavItems, navItemLabel } from '../../utils/moduleNavLabels';
 
 interface SiteLink {
   key: string;
   to: string;
+  /** A module's page carries its own words; a core page's come from `dashboard.site.<key>`. */
+  label?: string;
+  hint?: string;
 }
 
 /** Core pages; the game integration's pages (CS2: Servers, Maps) come first. */
@@ -37,9 +41,12 @@ export function SiteLinksGrid() {
   // — see `useShellIntegrations`.
   const { shell } = useShellIntegrations();
   const siteLinks: SiteLink[] = [
-    ...shell
-      .flatMap((integration) => integration.navItems)
-      .map((item) => ({ key: item.key, to: item.path })),
+    ...moduleNavItems(shell).map((item) => ({
+      key: item.key,
+      to: item.path,
+      label: navItemLabel(t, item, 'siteLabel'),
+      hint: navItemLabel(t, item, 'siteHint'),
+    })),
     ...(showDisputes ? [{ key: 'disputes', to: paths.disputes }] : []),
     ...CORE_SITE_LINKS,
   ];
@@ -72,10 +79,10 @@ export function SiteLinksGrid() {
             }}
           >
             <Typography variant="body2" fontWeight={600}>
-              {t(`dashboard.site.${link.key}.label`)}
+              {link.label ?? t(`dashboard.site.${link.key}.label`)}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              {t(`dashboard.site.${link.key}.hint`)}
+              {link.hint ?? t(`dashboard.site.${link.key}.hint`)}
             </Typography>
           </Paper>
         ))}

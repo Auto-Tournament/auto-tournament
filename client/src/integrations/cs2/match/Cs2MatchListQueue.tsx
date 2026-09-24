@@ -19,7 +19,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Alert, Box, Typography } from '@mui/material';
-import { useTranslation } from 'react-i18next';
+import { useModuleTranslation } from '../../../module-sdk';
 import type { MatchQueueBannerProps, MatchQueueStatusProps } from '../../types';
 import type { ServerAvailabilityResponse } from '../../../types/api.types';
 
@@ -27,7 +27,7 @@ import type { ServerAvailabilityResponse } from '../../../types/api.types';
 export const Cs2MatchListAllocationBanner: React.FC<MatchQueueBannerProps> = ({
   nextInSeconds,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
 
   if (nextInSeconds === null || nextInSeconds <= 0) return null;
 
@@ -46,7 +46,7 @@ export const Cs2MatchListAllocationBanner: React.FC<MatchQueueBannerProps> = ({
 export const Cs2MatchListAllocationCountdown: React.FC<MatchQueueBannerProps> = ({
   nextInSeconds,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
 
   if (nextInSeconds === null || nextInSeconds <= 0) return null;
 
@@ -101,7 +101,7 @@ export const Cs2MatchAllocationStatus: React.FC<MatchQueueStatusProps> = ({
   availability,
   queueIndex,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
   const fromFleet = allocationEtaFor(availability, queueIndex);
   const [eta, setEta] = useState<number | null>(fromFleet);
 

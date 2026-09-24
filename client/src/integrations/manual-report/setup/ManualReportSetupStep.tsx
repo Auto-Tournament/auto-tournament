@@ -18,7 +18,7 @@
 
 import type { ReactNode } from 'react';
 import { Box, TextField, Typography } from '@mui/material';
-import { useTranslation } from 'react-i18next';
+import { useModuleTranslation } from '../../../module-sdk';
 import { SegmentedControl } from '../../../components/tournament/setup/SegmentedControl';
 import type { TournamentGameSettingsStepProps } from '../../types';
 
@@ -83,7 +83,7 @@ export function ManualReportSetupStep({
   onFormatChange,
   disabled = false,
 }: TournamentGameSettingsStepProps) {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('manual-report');
   const value = readSettings(settings, format);
 
   const patch = (change: Partial<ManualReportSettings>) => {
