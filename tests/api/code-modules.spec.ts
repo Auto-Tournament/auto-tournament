@@ -137,7 +137,7 @@ test.describe.serial('Code modules on disk', () => {
     tag: ['@api', '@modules'],
   }, async ({ request }) => {
     const { platform, modules } = await listModules(request);
-    expect(platform).toEqual({ clientApi: '0.1.1', serverApi: '0.1.0' });
+    expect(platform).toEqual({ clientApi: '0.2.0', serverApi: '0.1.0' });
 
     for (const id of ['cs2', 'manual-report']) {
       const row = modules.find((module) => module.id === id);
@@ -167,7 +167,7 @@ test.describe.serial('Code modules on disk', () => {
       name: `Fixture ${VALID}`,
       version: '1.0.0',
       serverApi: '^0.1.0',
-      clientApi: '^0.1.0',
+      clientApi: '^0.2.0',
       enabled: false,
       status: 'disabled',
       client: null,
@@ -227,7 +227,7 @@ test.describe.serial('Code modules on disk', () => {
     expect(valid).toEqual({
       id: VALID,
       version: '1.0.0',
-      clientApi: '^0.1.0',
+      clientApi: '^0.2.0',
       client: { entry: `/api/modules/${VALID}/client/index.js` },
     });
 

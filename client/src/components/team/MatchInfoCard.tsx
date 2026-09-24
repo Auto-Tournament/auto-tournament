@@ -4,7 +4,7 @@ import { Box, Card, CardContent, Typography, Alert } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import { getMapData, getMapDisplayName } from '../../constants/maps';
 import { copyTextToClipboard } from '../../utils/clipboard';
-import type { Team, TeamMatchInfo, VetoState, MatchLiveStats, PlayersResponse } from '../../types';
+import type { Team, TeamMatchInfo, MatchLiveStats, PlayersResponse } from '../../types';
 // Note: status color is handled by higher-level components; keep imports minimal here.
 import {
   isShuffleMatch as isShuffleMatchGlobal,
@@ -25,7 +25,8 @@ interface MatchInfoCardProps {
   tournamentStatus: string;
   vetoCompleted: boolean;
   matchFormat: 'bo1' | 'bo3' | 'bo5';
-  onVetoComplete: (veto: VetoState) => void;
+  /** The pre-match phase finished, so the page reads the match again. */
+  onVetoComplete: () => void;
   getRoundLabel: (round: number) => string;
   // Optional: when provided, this player's row will be highlighted and not linked
   highlightPlayerId?: string;
@@ -160,10 +161,6 @@ export function MatchInfoCard({
     expectedPlayersTotal !== undefined
       ? totalConnected >= expectedPlayersTotal
       : totalConnected > 0;
-  const vetoActions = match.veto?.actions ?? [];
-  const vetoTeam1Name = match.veto?.team1Name || match.team1?.name || t('matchInfo.team1');
-  const vetoTeam2Name = match.veto?.team2Name || match.team2?.name || t('matchInfo.team2');
-  const showVetoHistory = vetoActions.length > 0;
   const playerStats = liveStats?.playerStats ?? null;
   const hasPlayerStats =
     !!playerStats && (playerStats.team1.length > 0 || playerStats.team2.length > 0);
@@ -584,13 +581,8 @@ export function MatchInfoCard({
 
             <MatchMapChips match={match} currentMapNumber={mapNumber} />
 
-            {showVetoHistory && PreMatchHistory && (
-              <PreMatchHistory
-                actions={vetoActions}
-                team1Name={vetoTeam1Name}
-                team2Name={vetoTeam2Name}
-              />
-            )}
+            {/* The module reads its own record, and shows nothing without one. */}
+            {PreMatchHistory && <PreMatchHistory matchSlug={match.slug} />}
           </Box>
         </CardContent>
       </Card>

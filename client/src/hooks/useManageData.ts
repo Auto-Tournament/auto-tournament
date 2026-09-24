@@ -2,17 +2,17 @@ import { useCallback, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { api } from '../utils/api';
 import { useIntegrationFor } from '../integrations/registry';
-import { useResourceAvailability } from './useResourceAvailability';
+import { useResourceAvailability, type ResourceAvailabilityAnswer } from './useResourceAvailability';
 import type { Match } from '../types/match.types';
 import type { Tournament } from '../types/tournament.types';
-import type { MatchesResponse, ServerAvailabilityResponse, TournamentResponse } from '../types/api.types';
+import type { MatchesResponse, TournamentResponse } from '../types/api.types';
 
 export interface ManageData {
   loading: boolean;
   error: string | null;
   tournament: Tournament | null;
   matches: Match[];
-  serverAvailability: ServerAvailabilityResponse | null;
+  serverAvailability: ResourceAvailabilityAnswer | null;
   refresh: () => void;
 }
 

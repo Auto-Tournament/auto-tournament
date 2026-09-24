@@ -30,13 +30,16 @@ import type { ClientGameIntegration } from '../integrations/types';
 export function useShellIntegrations(): {
   /** The tournament's module; null while loading and with no tournament. */
   tournament: ClientGameIntegration | null;
+  /** That tournament's id, for the slots that take one; null as above. */
+  tournamentId: number | null;
   /** Whose chrome the shell shows — see above. */
   shell: ClientGameIntegration[];
   loading: boolean;
 } {
-  const { integration, loading } = useTournamentIntegration();
+  const { integration, tournamentId, loading } = useTournamentIntegration();
   return {
     tournament: integration,
+    tournamentId,
     shell: loading ? [] : integration ? [integration] : listIntegrations(),
     loading,
   };

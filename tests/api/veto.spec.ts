@@ -88,6 +88,13 @@ test.describe.serial('Veto API', () => {
     expect(vetoState.pickedMaps[0].mapName).toBe('de_nuke'); // Last remaining map
     expect(vetoState.pickedMaps[0].sideTeam2).toBe('CT'); // Team B picked CT
     expect(vetoState.pickedMaps[0].sideTeam1).toBe('T'); // Team A gets opposite
+
+    // A spectator (the admin, on neither team) gets the redacted view, which
+    // carries the record once the veto is over: the match page's veto
+    // history reads it from here (client API 0.2.0).
+    const spectatorView = await getVetoState(request, match!.slug);
+    expect(spectatorView.availableMaps).toBeUndefined();
+    expect(spectatorView.actions).toHaveLength(7);
   });
 
   test('should complete CS Major BO3 veto with multiple side picks', {

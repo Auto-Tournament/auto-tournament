@@ -133,9 +133,8 @@ export default function Manage() {
             onActionDone={refresh}
           />
 
-          {ServerGrid && (
-            <ServerGrid servers={serverAvailability?.servers ?? []} matches={matches} />
-          )}
+          {/* The module asks for its own resources and what runs on them. */}
+          {ServerGrid && <ServerGrid tournamentId={tournament?.id ?? null} />}
 
           <RecentLog events={recentEvents} />
         </Box>

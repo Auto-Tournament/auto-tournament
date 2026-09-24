@@ -14,5 +14,19 @@
  *
  * 0.1.1: `links`, `openMatchDetails`, `useSocket`, `SegmentedControl`, and
  * `useAuth().playerUid`.
+ *
+ * 0.2.0 (breaking, item 8b: "ids in, the module fetches its own"):
+ * - `dashboardWidgets.adminHomeResources` takes no props (was `fleet`,
+ *   `pluginVersions`).
+ * - `dashboardWidgets.manageResources` takes `{ tournamentId }` (was
+ *   `servers`, `matches`).
+ * - `matchPanels.adminView` takes `{ tournamentId }` (was `servers`,
+ *   `gracePeriodSeconds`, `requiredServerCount`) and renders nothing when it
+ *   has nothing to show.
+ * - `preMatchHistory` takes `{ matchSlug }` (was `actions`, `team1Name`,
+ *   `team2Name`) and renders nothing when there is no record.
+ * - `preMatchView`'s `onComplete()` takes no argument (was the veto state).
+ * - The six queue slots' `availability` is `ResourceAvailability`: the
+ *   module's own answer, of which core reads only `nextAllocationInSeconds`.
  */
-export const CLIENT_API_VERSION = '0.1.1';
+export const CLIENT_API_VERSION = '0.2.0';

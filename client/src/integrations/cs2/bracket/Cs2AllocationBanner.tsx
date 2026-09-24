@@ -17,6 +17,7 @@ import React from 'react';
 import { Alert, Box, Typography } from '@mui/material';
 import { useModuleTranslation } from '../../../module-sdk';
 import type { MatchQueueBannerProps } from '../../types';
+import { asServerAvailability } from '../cs2.types';
 
 export const Cs2AllocationBanner: React.FC<MatchQueueBannerProps> = ({
   availability,
@@ -24,8 +25,9 @@ export const Cs2AllocationBanner: React.FC<MatchQueueBannerProps> = ({
 }) => {
   const { t } = useModuleTranslation('cs2');
 
-  const requiredServerCount = availability?.requiredServerCount ?? 0;
-  const availableServerCount = availability?.availableServerCount ?? 0;
+  const fleet = asServerAvailability(availability);
+  const requiredServerCount = fleet?.requiredServerCount ?? 0;
+  const availableServerCount = fleet?.availableServerCount ?? 0;
   const showWaitingForServersBanner = requiredServerCount > 0 && availableServerCount === 0;
 
   if (!showWaitingForServersBanner) {

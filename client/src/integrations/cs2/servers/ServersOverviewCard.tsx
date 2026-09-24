@@ -1,8 +1,76 @@
+import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Box, Card, CardContent, Stack, Typography } from '@mui/material';
-import { links, useModuleTranslation } from '../../../module-sdk';
-import type { ServerFleetCounts } from '../../../hooks/useAdminHomeData';
-import type { AdminHomeResourcesProps as ServersOverviewCardProps } from '../../types';
+import { Box, Card, CardContent, Skeleton, Stack, Typography } from '@mui/material';
+import { api, links, useModuleTranslation } from '../../../module-sdk';
+import {
+  SERVER_AVAILABILITY_ENDPOINT,
+  type PluginVersionSummary,
+  type ServerAvailability,
+  type ServerFleetCounts,
+  type ServersResponse,
+} from '../cs2.types';
+
+/** Online / in-match / free / offline, from the allocator's view of the fleet. */
+function countFleet(availability: ServerAvailability): ServerFleetCounts {
+  const counts: ServerFleetCounts = { online: 0, inMatch: 0, free: 0, offline: 0, total: 0 };
+  for (const server of availability.servers ?? []) {
+    counts.total += 1;
+    if (!server.online) {
+      counts.offline += 1;
+      continue;
+    }
+    counts.online += 1;
+    if (server.allocatable) counts.free += 1;
+    else counts.inMatch += 1;
+  }
+  return counts;
+}
+
+/** Which plugin versions the enabled servers report, and whether they agree. */
+function summarisePluginVersions(servers: ServersResponse['servers']): PluginVersionSummary {
+  const versions = Array.from(
+    new Set(
+      servers.filter((s) => s.enabled && s.pluginVersion).map((s) => s.pluginVersion as string)
+    )
+  );
+  return { versions, commonVersion: versions.length === 1 ? versions[0] : null };
+}
+
+/**
+ * The card's numbers, asked once when it mounts: the fleet breakdown from the
+ * allocator's availability route, the plugin versions from the server list.
+ * Either failing leaves its part out, as the admin home always did.
+ */
+function useFleetSummary(): {
+  loaded: boolean;
+  fleet: ServerFleetCounts | null;
+  pluginVersions: PluginVersionSummary | null;
+} {
+  const [loaded, setLoaded] = useState(false);
+  const [fleet, setFleet] = useState<ServerFleetCounts | null>(null);
+  const [pluginVersions, setPluginVersions] = useState<PluginVersionSummary | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void Promise.all([
+      api
+        .get<ServerAvailability>(SERVER_AVAILABILITY_ENDPOINT)
+        .then((res) => !cancelled && setFleet(countFleet(res)))
+        .catch(() => !cancelled && setFleet(null)),
+      api
+        .get<ServersResponse>('/api/servers')
+        .then((res) => !cancelled && setPluginVersions(summarisePluginVersions(res.servers ?? [])))
+        .catch(() => !cancelled && setPluginVersions(null)),
+    ]).then(() => {
+      if (!cancelled) setLoaded(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return { loaded, fleet, pluginVersions };
+}
 
 /** A thin stacked bar: in-match / free / offline, in that order (matches the Manage server grid's chip colours). */
 function FleetBar({ fleet }: { fleet: ServerFleetCounts }) {
@@ -30,9 +98,13 @@ function FleetBar({ fleet }: { fleet: ServerFleetCounts }) {
  * Right-column "Servers" summary: online/total, a stacked in-match/free/
  * offline bar, and plugin version agreement — all from the same
  * server-availability + servers endpoints Manage and Servers already use.
+ *
+ * It asks for them itself (client API 0.2.0): `AdminHomeResourcesProps` is
+ * empty, the admin home hands it nothing.
  */
-export function ServersOverviewCard({ fleet, pluginVersions }: ServersOverviewCardProps) {
+export function ServersOverviewCard() {
   const { t } = useModuleTranslation('cs2');
+  const { loaded, fleet, pluginVersions } = useFleetSummary();
 
   return (
     <Card variant="outlined" data-testid="admin-home-servers-card">
@@ -52,7 +124,13 @@ export function ServersOverviewCard({ fleet, pluginVersions }: ServersOverviewCa
           </Typography>
         </Box>
 
-        {!fleet || fleet.total === 0 ? (
+        {!loaded ? (
+          <Stack spacing={1} data-testid="admin-home-servers-card-loading">
+            <Skeleton variant="text" width="40%" height={40} />
+            <Skeleton variant="rounded" height={6} />
+            <Skeleton variant="text" />
+          </Stack>
+        ) : !fleet || fleet.total === 0 ? (
           <Typography variant="body2" color="text.secondary">
             {t('dashboard.servers.none')}
           </Typography>
