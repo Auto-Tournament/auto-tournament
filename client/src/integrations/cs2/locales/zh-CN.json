@@ -673,5 +673,18 @@
       "configIncomplete": "比赛配置不完整。请检查设置。",
       "createFailed": "创建比赛失败。请重试。"
     }
+  },
+  "saveMapPoolModal": {
+    "title": "保存地图池",
+    "nameLabel": "地图池名称",
+    "namePlaceholder": "我的自定义地图池",
+    "saveButton": "保存",
+    "errors": {
+      "nameRequired": "地图池名称为必填项",
+      "noMaps": "请至少选择一张地图",
+      "saveFailed": "保存地图池失败"
+    },
+    "info_one": "将保存一个包含 {{count}} 张地图的地图池。",
+    "info_other": "将保存一个包含 {{count}} 张地图的地图池。"
   }
 }

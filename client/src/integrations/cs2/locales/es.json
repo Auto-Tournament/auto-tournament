@@ -673,5 +673,18 @@
       "configIncomplete": "La configuración del partido está incompleta. Por favor revisa los ajustes.",
       "createFailed": "Error al crear el partido. Por favor inténtalo de nuevo."
     }
+  },
+  "saveMapPoolModal": {
+    "title": "Guardar pool de mapas",
+    "nameLabel": "Nombre del pool de mapas",
+    "namePlaceholder": "Mi pool personalizado",
+    "saveButton": "Guardar",
+    "errors": {
+      "nameRequired": "El nombre del pool de mapas es obligatorio",
+      "noMaps": "Selecciona al menos un mapa",
+      "saveFailed": "No se pudo guardar el pool de mapas"
+    },
+    "info_one": "Se guardará un pool de mapas con {{count}} mapa.",
+    "info_other": "Se guardará un pool de mapas con {{count}} mapas."
   }
 }

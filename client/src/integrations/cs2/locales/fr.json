@@ -673,5 +673,18 @@
       "configIncomplete": "La configuration du match est incomplète. Veuillez vérifier les paramètres.",
       "createFailed": "Échec de la création du match. Veuillez réessayer."
     }
+  },
+  "saveMapPoolModal": {
+    "title": "Enregistrer le pool de cartes",
+    "nameLabel": "Nom du pool de cartes",
+    "namePlaceholder": "Mon pool personnalisé",
+    "saveButton": "Enregistrer",
+    "errors": {
+      "nameRequired": "Le nom du pool de cartes est requis",
+      "noMaps": "Veuillez sélectionner au moins une carte",
+      "saveFailed": "Impossible d’enregistrer le pool de cartes"
+    },
+    "info_one": "Cela enregistre un pool de cartes avec {{count}} carte.",
+    "info_other": "Cela enregistre un pool de cartes avec {{count}} cartes."
   }
 }

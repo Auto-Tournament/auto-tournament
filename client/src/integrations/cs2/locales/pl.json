@@ -703,5 +703,20 @@
       "configIncomplete": "Konfiguracja meczu jest niekompletna. Sprawdź ustawienia.",
       "createFailed": "Nie udało się utworzyć meczu. Spróbuj ponownie."
     }
+  },
+  "saveMapPoolModal": {
+    "title": "Zapisz pulę map",
+    "nameLabel": "Nazwa puli map",
+    "namePlaceholder": "Moja niestandardowa pula",
+    "saveButton": "Zapisz",
+    "errors": {
+      "nameRequired": "Nazwa puli map jest wymagana",
+      "noMaps": "Wybierz co najmniej jedną mapę",
+      "saveFailed": "Nie udało się zapisać puli map"
+    },
+    "info_one": "Zostanie zapisana pula map z {{count}} mapą.",
+    "info_few": "Zostanie zapisana pula map z {{count}} mapami.",
+    "info_many": "Zostanie zapisana pula map z {{count}} mapami.",
+    "info_other": "Zostanie zapisana pula map z {{count}} mapami."
   }
 }

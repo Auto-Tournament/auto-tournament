@@ -53,19 +53,6 @@
       "saveFailed": "Failed to save template"
     }
   },
-  "saveMapPoolModal": {
-    "title": "Save Map Pool",
-    "nameLabel": "Map Pool Name",
-    "namePlaceholder": "My Custom Pool",
-    "saveButton": "Save",
-    "errors": {
-      "nameRequired": "Map pool name is required",
-      "noMaps": "Please select at least one map",
-      "saveFailed": "Failed to save map pool"
-    },
-    "info_one": "This saves a map pool with {{count}} map.",
-    "info_other": "This saves a map pool with {{count}} maps."
-  },
   "eloTemplatesPage": {
     "errors": {
       "load": "Failed to load ELO templates"

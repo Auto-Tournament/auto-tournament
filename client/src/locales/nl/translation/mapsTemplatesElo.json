@@ -53,19 +53,6 @@
       "saveFailed": "Sjabloon opslaan mislukt"
     }
   },
-  "saveMapPoolModal": {
-    "title": "Kaartpool opslaan",
-    "nameLabel": "Naam kaartpool",
-    "namePlaceholder": "Mijn aangepaste pool",
-    "saveButton": "Opslaan",
-    "errors": {
-      "nameRequired": "Naam van de kaartpool is verplicht",
-      "noMaps": "Selecteer minstens één kaart",
-      "saveFailed": "Kaartpool opslaan mislukt"
-    },
-    "info_one": "Dit slaat een map pool op met {{count}} map.",
-    "info_other": "Dit slaat een map pool op met {{count}} maps."
-  },
   "eloTemplatesPage": {
     "errors": {
       "load": "Kan ELO-sjablonen niet laden"

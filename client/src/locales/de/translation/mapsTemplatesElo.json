@@ -53,19 +53,6 @@
       "saveFailed": "Vorlage konnte nicht gespeichert werden"
     }
   },
-  "saveMapPoolModal": {
-    "title": "Kartenpool speichern",
-    "nameLabel": "Map-Pool-Name",
-    "namePlaceholder": "Mein benutzerdefinierter Pool",
-    "saveButton": "Speichern",
-    "errors": {
-      "nameRequired": "Map-Pool-Name ist erforderlich",
-      "noMaps": "Bitte mindestens eines auswählen",
-      "saveFailed": "Pool konnte nicht gespeichert werden"
-    },
-    "info_one": "Damit wird ein Map-Pool mit {{count}} Karte gespeichert.",
-    "info_other": "Damit wird ein Map-Pool mit {{count}} Karten gespeichert."
-  },
   "eloTemplatesPage": {
     "errors": {
       "load": "ELO-Vorlagen konnten nicht geladen werden"

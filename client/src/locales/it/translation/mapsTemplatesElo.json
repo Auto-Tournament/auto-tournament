@@ -53,19 +53,6 @@
       "saveFailed": "Impossibile salvare il modello"
     }
   },
-  "saveMapPoolModal": {
-    "title": "Salva pool mappe",
-    "nameLabel": "Nome pool mappe",
-    "namePlaceholder": "Il mio pool personalizzato",
-    "saveButton": "Salva",
-    "errors": {
-      "nameRequired": "Il nome del pool mappe è obbligatorio",
-      "noMaps": "Seleziona almeno una mappa",
-      "saveFailed": "Impossibile salvare il pool mappe"
-    },
-    "info_one": "Verrà salvato un pool mappe con {{count}} mappa.",
-    "info_other": "Verrà salvato un pool mappe con {{count}} mappe."
-  },
   "eloTemplatesPage": {
     "errors": {
       "load": "Impossibile caricare i modelli ELO"
