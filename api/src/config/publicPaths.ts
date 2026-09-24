@@ -24,6 +24,26 @@ const upToApiRoot = __filename.endsWith('.ts') ? ['..', '..'] : ['..'];
 export const PUBLIC_DIR = path.join(__dirname, ...upToApiRoot, 'public');
 
 /**
+ * Swagger UI's own CSS and JS, for `/api-docs`.
+ *
+ * `swagger-ui-express` serves these from `node_modules/swagger-ui-dist`, and
+ * the release image has no `node_modules` at all — the backend is one
+ * esbuild bundle. esbuild inlines the *code* of a dependency; it cannot
+ * inline a folder of static files, so in every released image
+ * `/api-docs/swagger-ui.css` and `/api-docs/swagger-ui-bundle.js` fell
+ * through to the SPA and came back as `index.html`. The page loaded, the
+ * stylesheet and the script were HTML, and the result was a blank page on
+ * every Docker install since the API docs existed.
+ *
+ * So the build copies the handful of files the page asks for to
+ * `api/swagger-ui`, the release stage copies that to `/app/swagger-ui`, and
+ * `index.ts` serves it with `express.static` before handing over to
+ * `swagger-ui-express`. Running from source the directory is absent and
+ * `swagger-ui-express` serves them out of `node_modules` as it always did.
+ */
+export const SWAGGER_UI_DIR = path.join(__dirname, ...upToApiRoot, 'swagger-ui');
+
+/**
  * Where uploaded map images live: under `DATA_DIR`, the directory
  * `docker/docker-compose.yml` (and `docker-compose.local.yml`) mount the
  * persistent volume on (`./data:/app/data`).

@@ -129,6 +129,12 @@ COPY --from=build /app/package.json ./
 # We copy them into /app/dist and /app/public so runtime paths stay consistent.
 COPY --from=build /app/api/dist ./dist
 COPY --from=build /app/api/public ./public
+# Swagger UI's own CSS and JS. The bundle inlines swagger-ui-express's code but
+# not swagger-ui-dist's static files, and this image has no node_modules to
+# serve them from — without these, /api-docs is a blank page. See
+# copySwaggerUiAssets in api/esbuild.config.js and SWAGGER_UI_DIR in
+# api/src/config/publicPaths.ts.
+COPY --from=build /app/api/swagger-ui ./swagger-ui
 # The generated OpenAPI spec. Without it, swagger-jsdoc has no .ts sources to
 # read in this image and /api-docs would list every endpoint with none of the
 # hand-written descriptions. See resolveOpenApiSpec in api/src/config/swagger.ts.

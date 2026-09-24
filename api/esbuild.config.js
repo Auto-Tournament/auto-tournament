@@ -46,11 +46,58 @@ const strictModeDependencyPatches = {
   },
 };
 
+/**
+ * Swagger UI's static files, copied out of `node_modules` next to the bundle.
+ *
+ * `swagger-ui-express` serves these from `node_modules/swagger-ui-dist`, and
+ * the release image has no `node_modules` — this bundle is the backend.
+ * esbuild inlines a dependency's *code*; it cannot inline a folder of static
+ * files, so without this copy `/api-docs/swagger-ui.css` and
+ * `swagger-ui-bundle.js` fall through to the SPA, come back as index.html,
+ * and the API docs render as a blank page.
+ *
+ * Only the files the page asks for: the whole package is 11 MB, most of it
+ * source maps and build logs.
+ */
+const SWAGGER_UI_FILES = [
+  'swagger-ui.css',
+  'swagger-ui-bundle.js',
+  'swagger-ui-standalone-preset.js',
+  'oauth2-redirect.html',
+  'favicon-16x16.png',
+  'favicon-32x32.png',
+];
+
+async function copySwaggerUiAssets() {
+  const target = path.join(__dirname, 'swagger-ui');
+  let source;
+  try {
+    source = path.dirname(require.resolve('swagger-ui-dist/package.json'));
+  } catch {
+    console.warn('swagger-ui-dist not installed; /api-docs assets were not copied');
+    return;
+  }
+
+  await fs.promises.mkdir(target, { recursive: true });
+  for (const file of SWAGGER_UI_FILES) {
+    const from = path.join(source, file);
+    if (!fs.existsSync(from)) {
+      // A future swagger-ui-dist that renames a file should fail the build
+      // rather than ship another blank page.
+      throw new Error(`swagger-ui-dist is missing ${file}; /api-docs would render blank`);
+    }
+    await fs.promises.copyFile(from, path.join(target, file));
+  }
+  console.log(`Copied ${SWAGGER_UI_FILES.length} Swagger UI assets to api/swagger-ui`);
+}
+
 async function build() {
   const outfile = path.join(__dirname, 'dist', 'index.js');
 
   // Ensure output directory exists (we write outputs ourselves below)
   await fs.promises.mkdir(path.dirname(outfile), { recursive: true });
+
+  await copySwaggerUiAssets();
 
   const result = await esbuild.build({
   entryPoints: ['src/index.ts'],
