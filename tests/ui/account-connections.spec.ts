@@ -61,11 +61,21 @@ test.describe('Account connections page', () => {
     await expect(gameSteam).toContainText('Verified');
     await expect(gameSteam).toContainText('Counter-Strike 2');
 
-    // The account menu links here.
+    // The account menu links here — and the page it links to works. The menu
+    // navigates client-side, so the URL is right the instant the click lands,
+    // before the page has loaded anything. Stopping at the URL ended the test
+    // while the page's own GET /api/me/connections was still inside the
+    // route handler above, and closing the page mid-`route.fetch()` failed the
+    // test: "route.fetch: Target page, context or browser has been closed".
+    // Whether that request finished first was a race, so it failed about one
+    // run in five. Waiting for the rows the response draws waits for the
+    // request itself, and checks the destination actually renders.
     await page.goto(`/player/${steamId}`);
     await page.getByTestId('nav-avatar-button').click();
     await page.getByTestId('nav-account-connections').click();
     await expect(page).toHaveURL(/\/me\/connections$/);
+    await expect(page.getByTestId('sign-in-steam')).toContainText('Primary');
+    await expect(page.getByTestId('sign-in-github')).toContainText('Not connected');
   });
 
   test('anonymous visitors are sent to login', { tag: ['@ui', '@auth'] }, async ({ page }) => {
