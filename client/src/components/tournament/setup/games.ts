@@ -15,7 +15,7 @@
  *
  * Icons are the module's own (`GameCatalogEntry.icon` -> `moduleIcon`), served
  * from `client/public/games`: square tiles in one palette, with their own
- * background. They are not the catalogue's IGDB or Wikidata artwork, which is
+ * background. They are not the catalogue's Wikidata artwork, which is
  * every shape and every colour and was unreadable dropped onto a dark card —
  * that art belongs to the player-facing "What do you play?" surfaces, where
  * someone is recognising their own game and the list covers every game rather

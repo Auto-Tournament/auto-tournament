@@ -11,7 +11,6 @@ import {
   linkBuiltin,
   type BuiltinGame,
 } from '../../api/src/services/gameCatalogService';
-import { steamAppIdFromIgdb } from '../../api/src/services/igdbService';
 import { wikidataSteamAppId } from '../../api/src/services/wikidataService';
 import { clientIconHash } from '../../api/src/services/gameIconService';
 import {
@@ -24,15 +23,15 @@ import {
 /**
  * App icons in the game pills, for every game a player can pick.
  *
- * A game from IGDB or Wikidata search is linked to the module or pack for the
- * same game — by IGDB id, then slug, then a slug alias, then the name — and
- * draws that one's app icon. A game no module or pack covers gets its Steam
- * client icon, fetched in the background and cached on the data volume. A
- * game with neither has no icon, and the pill draws a monogram: never a
- * cropped cover.
+ * A game a Wikidata search finds is linked to the module or pack for the
+ * same game — by IGDB id (a row stored while IGDB search still existed),
+ * then slug, then a slug alias, then the name — and draws that one's app
+ * icon. A game no module or pack covers gets its Steam client icon, fetched
+ * in the background and cached on the data volume. A game with neither has
+ * no icon, and the pill draws a monogram: never a cropped cover.
  *
- * Nothing here reaches the real IGDB, Wikidata or Steam: the fakes in
- * routes/test.ts answer for all three.
+ * Nothing here reaches the real Wikidata or Steam: the fakes in
+ * routes/test.ts answer for both.
  *
  * @tag api
  * @tag games
@@ -207,16 +206,7 @@ test.describe('Linking a stored game to its module or pack', () => {
 // ---------------------------------------------------------------------------
 
 test.describe('Steam app ids and client icons', () => {
-  test("a game's Steam app id from IGDB or Wikidata", { tag: ['@api', '@games'] }, () => {
-    expect(steamAppIdFromIgdb([{ category: 5, uid: 'gog-1' }, { category: 1, uid: '570' }])).toBe(570);
-    expect(steamAppIdFromIgdb([{ external_game_source: 1, uid: '730' }])).toBe(730);
-    expect(steamAppIdFromIgdb([{ external_game_source: { id: 1 }, uid: '440' }])).toBe(440);
-    expect(
-      steamAppIdFromIgdb([{ category: 13, url: 'https://store.steampowered.com/app/2807960/' }])
-    ).toBe(2807960);
-    expect(steamAppIdFromIgdb([{ category: 5, uid: '12' }])).toBeNull();
-    expect(steamAppIdFromIgdb(null)).toBeNull();
-
+  test("a game's Steam app id from Wikidata", { tag: ['@api', '@games'] }, () => {
     const claim = (value: unknown) => ({ mainsnak: { datavalue: { value } } });
     expect(wikidataSteamAppId({ claims: { P1733: [claim('252950')] } })).toBe(252950);
     expect(wikidataSteamAppId({ claims: { P1733: [claim('not-a-number')] } })).toBeNull();
@@ -275,20 +265,12 @@ interface GameSummary {
   appIconUrl: string | null;
 }
 
-const FAKE_SECRET = 'fake-igdb-secret-never-returned-4711';
 const CACHED_ICON = /^\/api\/games\/icons\/[a-f0-9]{16}\.png$/;
 
 async function post(request: APIRequestContext, url: string, data: unknown = {}) {
   const res = await request.post(url, { data });
   expect(res.ok(), `POST ${url}: ${await res.text()}`).toBe(true);
   return res.json();
-}
-
-async function setIgdb(request: APIRequestContext, on: boolean) {
-  const res = await request.put('/api/settings/igdb', {
-    data: on ? { clientId: 'fake-client', clientSecret: FAKE_SECRET } : { clientId: null },
-  });
-  expect(res.ok(), `PUT /api/settings/igdb: ${await res.text()}`).toBe(true);
 }
 
 async function search(request: APIRequestContext, q: string): Promise<GameSummary[]> {
@@ -321,38 +303,32 @@ test.describe.serial('Game icons over HTTP', () => {
 
   test.beforeEach(async ({ request }) => {
     await signInViaRequest(request);
-    await post(request, '/api/test/igdb', { fake: true });
     await post(request, '/api/test/wikidata', { fake: true });
     await post(request, '/api/test/game-icons', { fake: true });
   });
 
   test.afterAll(async ({ request }) => {
     await signInViaRequest(request);
-    await request.put('/api/settings/igdb', { data: { clientId: null } });
-    await request.post('/api/test/igdb', { data: { fake: false } });
     await request.post('/api/test/wikidata', { data: { fake: false } });
     await request.post('/api/test/game-icons', { data: { fake: false } });
   });
 
-  test('an IGDB result is drawn with its module or pack icon, linked by IGDB id', {
+  test('a Wikidata result linked to a module by slug alias draws that module\'s icon', {
     tag: ['@api', '@games'],
   }, async ({ request, playwright, baseURL }) => {
-    await setIgdb(request, true);
+    // Installed modules are built-ins too, found by alias — proof that the
+    // module's own app icon, not a catalogue picture, draws for its pill.
+    const [cs2] = await search(request, 'cs2');
+    expect(cs2).toMatchObject({ slug: 'counter-strike-2' });
+    expect(cs2.appIconUrl).toBe('/games/counter-strike-2-app-icon.webp');
 
-    // CS2's IGDB id under another slug and name: the CS2 module's icon.
-    const [linked] = await search(request, 'linkfield');
-    expect(linked).toMatchObject({ slug: 'linkfield-strike-two' });
-    expect(linked.appIconUrl).toBe('/games/counter-strike-2-app-icon.webp');
-    // The cover is still the catalogue's, for the cards that want it; the
-    // pill never draws it.
-    expect(linked.coverUrl).toContain('fakelfs');
-
-    // Dota 2's IGDB id, named only by the image's pack index.
-    const [dota] = await search(request, 'ancients arena');
+    // A game an installed pack ships (Dota 2), found by its Wikidata name.
+    const [dota] = await search(request, 'dota 2');
+    expect(dota).toMatchObject({ slug: 'dota-2' });
     expect(dota.appIconUrl).toBe('/api/packs/dota-2/app-icon');
 
     // And so in a player's own games.
-    const games = await playerPicks(playwright, baseURL, [linked.id, dota.id]);
+    const games = await playerPicks(playwright, baseURL, [cs2.id, dota.id]);
     expect(games.map((game) => game.appIconUrl)).toEqual([
       '/games/counter-strike-2-app-icon.webp',
       '/api/packs/dota-2/app-icon',
@@ -390,7 +366,6 @@ test.describe.serial('Game icons over HTTP', () => {
   test('a game no pack covers gets its Steam client icon, cached', {
     tag: ['@api', '@games'],
   }, async ({ request }) => {
-    await setIgdb(request, true);
     const before = await search(request, 'icon quest');
     expect(before.map((game) => game.slug).sort()).toEqual([
       'icon-quest',
@@ -423,10 +398,9 @@ test.describe.serial('Game icons over HTTP', () => {
     expect(rgba).toEqual([250, 99, 42, 255]);
   });
 
-  test('with no keys at all, a Wikidata game gets its Steam icon too', {
+  test('a Wikidata game gets its Steam icon too', {
     tag: ['@api', '@games'],
   }, async ({ request }) => {
-    await setIgdb(request, false);
     const [voyage] = await search(request, 'icon voyage');
     expect(voyage).toMatchObject({ slug: 'icon-voyage', appIconUrl: null });
 
@@ -436,8 +410,7 @@ test.describe.serial('Game icons over HTTP', () => {
     expect(after.appIconUrl).toMatch(CACHED_ICON);
   });
 
-  test('every popular game has an icon with no keys set', { tag: ['@api', '@games'] }, async ({ request }) => {
-    await setIgdb(request, false);
+  test('every popular game has an icon', { tag: ['@api', '@games'] }, async ({ request }) => {
     const popular = ((await (await request.get('/api/games/popular')).json()) as {
       games: GameSummary[];
     }).games;

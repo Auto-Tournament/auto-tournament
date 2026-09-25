@@ -24,7 +24,7 @@
  *
  * Nothing in the integration registry changes. The manual-reporting module
  * already declares `runsAnyCatalogGame`, so a tournament created for a pack's
- * slug resolves to it the same way a tournament for a game found through IGDB
+ * slug resolves to it the same way a tournament for a game found through
  * search does.
  *
  * ## The tile is a file next to the pack, not a string inside it
@@ -733,13 +733,13 @@ export function hasBundledAppIcon(slug: string): boolean {
   return bundledAppIconSlugs.has(slug);
 }
 
-/** Bundled slug -> the IGDB id its snapshot entry names, as of the last read. */
+/** Bundled slug -> the IGDB id its snapshot entry names, as of the last read (kept for linking historic rows). */
 let bundledIgdbIds = new Map<string, number>();
 
 /**
  * The IGDB id the image's snapshot names for a game, or null. A pack
  * installed before its file carried `igdbId` (or from a feed that does not)
- * still links to IGDB search results through this.
+ * still links a `games` row stored while IGDB search existed through this.
  */
 export function bundledIgdbId(slug: string): number | null {
   return bundledIgdbIds.get(slug) ?? null;

@@ -8,7 +8,6 @@ import {
   checkAppIconPath,
   validatePack,
 } from '../../api/src/services/gamePackService';
-import { pickIgdbMatch } from '../../api/src/services/gameEnrichmentService';
 
 /**
  * App icons: the square picture a player knows their game by, drawn in the
@@ -101,30 +100,6 @@ test.describe('App icon checks', () => {
       expect(result.ok, `${value} should be refused`).toBe(false);
       expect(!result.ok && result.error).toContain(reason);
     }
-  });
-
-  test('a stored game only takes an IGDB match that is really the same game', {
-    tag: ['@api'],
-  }, () => {
-    const igdb = (slug: string, name: string) => ({
-      igdbId: slug.length,
-      slug,
-      name,
-      coverUrl: null,
-      logoUrl: null,
-      releaseYear: null,
-      genres: [],
-    });
-    const results = [igdb('valorant-mobile', 'Valorant Mobile'), igdb('valorant', 'VALORANT')];
-    // Same slug, or the same name once case and punctuation are gone.
-    expect(pickIgdbMatch({ slug: 'valorant', name: 'Valorant' }, results)?.slug).toBe('valorant');
-    expect(
-      pickIgdbMatch({ slug: 'cs-2', name: 'Counter Strike 2' }, [
-        igdb('counter-strike-2', 'Counter-Strike 2'),
-      ])?.slug
-    ).toBe('counter-strike-2');
-    // A near miss is never attached.
-    expect(pickIgdbMatch({ slug: 'dota', name: 'Dota' }, [igdb('dota-2', 'Dota 2')])).toBeNull();
   });
 });
 

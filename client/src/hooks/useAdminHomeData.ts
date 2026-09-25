@@ -12,18 +12,12 @@ interface AuthProviderSummary {
   enabled: boolean;
 }
 
-interface IgdbStatusSummary {
-  configured: boolean;
-}
-
 export interface AdminHomeData {
   loading: boolean;
   /** Whether the site-wide Steam sign-in provider is configured (checkable via /api/auth/providers). */
   steamConfigured: boolean;
   /** Whether the optional Discord sign-in provider is configured. */
   discordConfigured: boolean;
-  /** Whether IGDB (game cover) credentials are configured. */
-  igdbConfigured: boolean;
   playersCount: number;
   adminsCount: number;
   /** Players who signed in during the last 7 days. */
@@ -36,8 +30,8 @@ export interface AdminHomeData {
 /**
  * Data backing the admin home page's "Finish setting up" card, People
  * summary and H1. Each field comes from an endpoint that already exists for
- * another page (auth providers on Login, IGDB status and the site name on
- * Settings, players on Players).
+ * another page (auth providers on Login, the site name on Settings, players
+ * on Players).
  *
  * The game's resource card (CS2: the server fleet) and its setup row (CS2:
  * "Add a server") count their own resources since client API 0.2.0; this
@@ -48,7 +42,6 @@ export function useAdminHomeData(): AdminHomeData {
   const [loading, setLoading] = useState(true);
   const [steamConfigured, setSteamConfigured] = useState(false);
   const [discordConfigured, setDiscordConfigured] = useState(false);
-  const [igdbConfigured, setIgdbConfigured] = useState(false);
   const [playersCount, setPlayersCount] = useState(0);
   const [adminsCount, setAdminsCount] = useState(0);
   const [signedInThisWeekCount, setSignedInThisWeekCount] = useState(0);
@@ -70,12 +63,6 @@ export function useAdminHomeData(): AdminHomeData {
           setSteamConfigured(false);
           setDiscordConfigured(false);
         }),
-
-      // IGDB credential status (same endpoint the Settings games tab uses).
-      api
-        .get<{ igdb?: IgdbStatusSummary }>('/api/settings/igdb')
-        .then((res) => setIgdbConfigured(!!res.igdb?.configured))
-        .catch(() => setIgdbConfigured(false)),
 
       // Players: total count + how many are admins.
       api
@@ -114,7 +101,6 @@ export function useAdminHomeData(): AdminHomeData {
     loading,
     steamConfigured,
     discordConfigured,
-    igdbConfigured,
     playersCount,
     adminsCount,
     signedInThisWeekCount,

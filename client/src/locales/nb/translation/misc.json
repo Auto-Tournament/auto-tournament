@@ -52,7 +52,6 @@
       "remove": "Fjern {{name}}",
       "supported": "Turneringer støttes",
       "limit": "Du kan velge opptil {{max}} spill",
-      "credit": "Spilldata fra IGDB",
       "creditWikidata": "Spilldata fra Wikidata"
     },
     "profile": {
@@ -75,35 +74,6 @@
       "selectedCount": "{{count}} av {{max}} valgt",
       "pickOne": "Velg minst ett spill",
       "supportedLegend": "Turneringer spilles her"
-    },
-    "igdb": {
-      "title": "Spilldata fra IGDB",
-      "description": "Spillere velger spillene de spiller fra et søk. Med IGDB-nøkler dekker søket alle spill, med omslag; uten dem bruker søket Wikidata.",
-      "consoleLink": "Åpne Twitch developer console",
-      "howToToggle": "Slik henter du nøklene",
-      "howToStep1": "Opprett en Twitch-konto og skru på tofaktorautentisering.",
-      "howToStep2": "Registrer en app i Twitch Developer Console. Redirect URL: http://localhost. Client Type: Confidential.",
-      "howToStep3": "Åpne appen, trykk Manage, og kopier Client ID.",
-      "howToStep4": "Trykk New Secret og kopier Client Secret.",
-      "howToStep5": "Lim inn begge her, trykk Lagre, og deretter Test tilkobling.",
-      "fullGuideLink": "Full guide",
-      "freeNote": "Gratis for ikke-kommersiell bruk.",
-      "clientId": "Client ID",
-      "clientSecret": "Client secret",
-      "secretSetPlaceholder": "Lagret. Skriv inn en ny for å bytte",
-      "secretHelper": "Kan bare skrives: den lagrede verdien vises aldri.",
-      "envOverride": "IGDB_CLIENT_ID og IGDB_CLIENT_SECRET er satt i miljøet og går foran dette skjemaet.",
-      "statusConfigured": "Satt opp",
-      "statusNotConfigured": "Ikke satt opp",
-      "save": "Lagre",
-      "remove": "Fjern",
-      "test": "Test tilkoblingen",
-      "testing": "Tester…",
-      "testOk": "Koblet til IGDB",
-      "testFailed": "Tilkoblingen til IGDB feilet: {{error}}",
-      "saved": "IGDB-nøklene er lagret",
-      "removed": "IGDB-nøklene er fjernet",
-      "saveFailed": "Kunne ikke lagre IGDB-nøklene"
     }
   },
   "account": {

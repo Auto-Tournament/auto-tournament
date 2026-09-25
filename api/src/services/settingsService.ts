@@ -1,12 +1,7 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { clampSimulationTimescale } from '../utils/simulationTimescale';
-import {
-  booleanRequest,
-  normalizeFlag,
-  normalizeText,
-  stringRequest,
-} from '../utils/settingFields';
+import { booleanRequest, normalizeFlag, stringRequest } from '../utils/settingFields';
 import type { SettingDefinition, SettingWriteContext } from '../integrations/types';
 
 /**
@@ -22,11 +17,7 @@ export type CoreSettingKey =
   | 'ratings_enabled'
   | 'allow_self_register'
   // The site's own name (the admin home's H1). Unset = DEFAULT_SITE_NAME.
-  | 'site_name'
-  // IGDB (game catalogue) credentials. The secret is write-only: it is never
-  // returned by any endpoint, and env (IGDB_CLIENT_ID / IGDB_CLIENT_SECRET) wins.
-  | 'igdb_client_id'
-  | 'igdb_client_secret';
+  | 'site_name';
 
 export interface AppSetting {
   key: AppSettingKey;
@@ -97,9 +88,6 @@ export const CORE_SETTINGS: ReadonlyArray<SettingDefinition & { key: CoreSetting
     normalize: normalizeFlag('Player self‑registration'),
     applyRequest: booleanRequest('allowSelfRegister'),
   },
-  // Never log the value.
-  { key: 'igdb_client_id', normalize: normalizeText('igdb_client_id updated') },
-  { key: 'igdb_client_secret', normalize: normalizeText('igdb_client_secret updated') },
 ];
 
 /**
@@ -117,14 +105,6 @@ export async function listSettingDefinitions(): Promise<SettingDefinition[]> {
 
 async function findDefinition(key: string): Promise<SettingDefinition | undefined> {
   return (await listSettingDefinitions()).find((definition) => definition.key === key);
-}
-
-export type IgdbCredentialSource = 'env' | 'settings';
-
-export interface IgdbCredentials {
-  clientId: string;
-  clientSecret: string;
-  source: IgdbCredentialSource;
 }
 
 class SettingsService {
@@ -235,57 +215,6 @@ class SettingsService {
     const value = process.env.STEAM_API_KEY;
     return value && value.trim().length > 0 ? value.trim() : null;
   }
-
-  /**
-   * IGDB credentials, env first. The env pair only counts when both halves are
-   * set; otherwise the pair saved in settings is used, if complete.
-   */
-  async getIgdbCredentials(): Promise<IgdbCredentials | null> {
-    const envId = process.env.IGDB_CLIENT_ID?.trim();
-    const envSecret = process.env.IGDB_CLIENT_SECRET?.trim();
-    if (envId && envSecret) {
-      return { clientId: envId, clientSecret: envSecret, source: 'env' };
-    }
-
-    const [id, secret] = await Promise.all([
-      this.getSetting('igdb_client_id'),
-      this.getSetting('igdb_client_secret'),
-    ]);
-    if (id?.trim() && secret?.trim()) {
-      return { clientId: id.trim(), clientSecret: secret.trim(), source: 'settings' };
-    }
-    return null;
-  }
-
-  /**
-   * What the admin Settings page may see about the IGDB credentials: the
-   * client id (not a secret, it is sent as a header on every IGDB call) and
-   * whether a secret is set. Never the secret itself.
-   */
-  async getIgdbCredentialStatus(): Promise<{
-    configured: boolean;
-    source: IgdbCredentialSource | null;
-    envOverride: boolean;
-    clientId: string | null;
-    clientSecretSet: boolean;
-  }> {
-    const envOverride = Boolean(
-      process.env.IGDB_CLIENT_ID?.trim() && process.env.IGDB_CLIENT_SECRET?.trim()
-    );
-    const [storedId, storedSecret, active] = await Promise.all([
-      this.getSetting('igdb_client_id'),
-      this.getSetting('igdb_client_secret'),
-      this.getIgdbCredentials(),
-    ]);
-    return {
-      configured: Boolean(active),
-      source: active?.source ?? null,
-      envOverride,
-      clientId: envOverride ? (active?.clientId ?? null) : storedId?.trim() || null,
-      clientSecretSet: envOverride ? true : Boolean(storedSecret?.trim()),
-    };
-  }
-
 
   async areRatingsEnabled(): Promise<boolean> {
     const value = await this.getSetting('ratings_enabled');

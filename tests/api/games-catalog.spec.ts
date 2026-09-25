@@ -7,12 +7,10 @@ import { createTournament } from '../helpers/tournaments';
 /**
  * "What do you play?": the game catalogue and a player's games.
  *
- * Neither external source is ever called for real. `POST /api/test/igdb`
- * points the IGDB client at the fake IGDB + Twitch token endpoint in
- * routes/test.ts, and `POST /api/test/wikidata` does the same for Wikidata;
- * credentials are saved through the admin settings endpoint like an operator
- * would. Both fakes are on by default (`beforeEach`) so no test accidentally
- * reaches the real IGDB or Wikidata.
+ * Search runs on Wikidata, which needs no API key, so it works out of the
+ * box; IGDB was an earlier, credentialed source and has been removed.
+ * `POST /api/test/wikidata` points the Wikidata client at the fake in
+ * routes/test.ts, so no test accidentally reaches the real Wikidata.
  *
  * @tag api
  * @tag games
@@ -30,37 +28,15 @@ interface GameSummary {
   imageUrl: string | null;
 }
 
-const FAKE_SECRET = 'fake-igdb-secret-never-returned-4711';
-
 let counter = 0;
 function uniqueSteamId(): string {
   counter += 1;
   return `7656119${String((Date.now() + counter * 7919) % 1e10).padStart(10, '0')}`;
 }
 
-async function setCredentials(
-  request: APIRequestContext,
-  data: { clientId: string | null; clientSecret?: string | null }
-) {
-  const res = await request.put('/api/settings/igdb', { data });
-  expect(res.ok(), `PUT /api/settings/igdb: ${await res.text()}`).toBe(true);
-  return res;
-}
-
-async function useFakeIgdb(request: APIRequestContext) {
-  const res = await request.post('/api/test/igdb', { data: { fake: true } });
-  expect(res.ok(), `POST /api/test/igdb: ${await res.text()}`).toBe(true);
-}
-
 async function useFakeWikidata(request: APIRequestContext) {
   const res = await request.post('/api/test/wikidata', { data: { fake: true } });
   expect(res.ok(), `POST /api/test/wikidata: ${await res.text()}`).toBe(true);
-}
-
-async function igdbCounters(request: APIRequestContext) {
-  const res = await request.get('/api/test/igdb');
-  expect(res.ok()).toBe(true);
-  return (await res.json()) as { tokenRequests: number; searchRequests: number };
 }
 
 async function wikidataCounters(request: APIRequestContext) {
@@ -72,7 +48,7 @@ async function wikidataCounters(request: APIRequestContext) {
 async function search(request: APIRequestContext, q: string) {
   const res = await request.get(`/api/games/search?q=${encodeURIComponent(q)}`);
   expect(res.ok(), `search ${q}: ${await res.text()}`).toBe(true);
-  return (await res.json()) as { games: GameSummary[]; fromIgdb: boolean; fromWikidata: boolean };
+  return (await res.json()) as { games: GameSummary[]; fromWikidata: boolean };
 }
 
 async function popularGames(request: APIRequestContext) {
@@ -103,29 +79,22 @@ test.describe.serial('Game catalogue', () => {
 
   test.beforeEach(async ({ request }) => {
     await signInViaRequest(request);
-    await useFakeIgdb(request);
     await useFakeWikidata(request);
   });
 
   test.afterAll(async ({ request }) => {
     await signInViaRequest(request);
-    await request.put('/api/settings/igdb', { data: { clientId: null } });
-    await request.post('/api/test/igdb', { data: { fake: false } });
     await request.post('/api/test/wikidata', { data: { fake: false } });
   });
 
   test(
-    'without IGDB credentials, search hits Wikidata, filters non-games, and maps year/logo',
+    'search works with no keys at all: Wikidata, filtering non-games and mapping year/logo',
     { tag: ['@api', '@games'] },
     async ({ request }) => {
-      await setCredentials(request, { clientId: null });
-
       // The video game enriches the existing built-in row rather than adding
-      // a second one; "rocket league" (not the bare "rocket") so this does
-      // not share a query-cache key with the "IGDB failure" spec below.
+      // a second one.
       const rocket = await search(request, 'rocket league');
       expect(rocket.fromWikidata).toBe(true);
-      expect(rocket.fromIgdb).toBe(false);
       const rl = rocket.games.find((g) => g.slug === 'rocket-league')!;
       expect(rl).toBeTruthy();
       expect(rl.source).toBe('wikidata');
@@ -164,8 +133,28 @@ test.describe.serial('Game catalogue', () => {
       // Installed game modules are built-ins too, found by alias.
       const cs2Alias = await search(request, 'cs2');
       expect(cs2Alias.games[0]).toMatchObject({ slug: 'counter-strike-2', supported: true });
+    }
+  );
 
-      expect((await igdbCounters(request)).searchRequests).toBe(0);
+  test(
+    'search caches the query and reuses it, from our own rows',
+    { tag: ['@api', '@games'] },
+    async ({ request }) => {
+      const first = await search(request, 'celeste');
+      expect(first.fromWikidata).toBe(false); // no fake item named Celeste
+      let counters = await wikidataCounters(request);
+      const searchesAfterFirst = counters.searchRequests;
+      expect(searchesAfterFirst).toBeGreaterThan(0);
+
+      // Same query again: served from the cache, no new request to Wikidata.
+      await search(request, 'CELESTE ');
+      counters = await wikidataCounters(request);
+      expect(counters.searchRequests).toBe(searchesAfterFirst);
+
+      // A new query reaches Wikidata again.
+      await search(request, 'chess');
+      counters = await wikidataCounters(request);
+      expect(counters.searchRequests).toBe(searchesAfterFirst + 1);
     }
   );
 
@@ -173,8 +162,6 @@ test.describe.serial('Game catalogue', () => {
     'a Wikidata failure falls back to the built-ins',
     { tag: ['@api', '@games'] },
     async ({ request }) => {
-      await setCredentials(request, { clientId: null });
-
       const result = await search(request, 'wderror');
       expect(result.fromWikidata).toBe(false);
       expect(result.games).toEqual([]);
@@ -182,97 +169,14 @@ test.describe.serial('Game catalogue', () => {
   );
 
   test(
-    'search goes to IGDB, upserts results, and caches the token and the query',
-    { tag: ['@api', '@games'] },
-    async ({ request }) => {
-      const builtinRocketLeague = (await search(request, 'rocket league')).games[0];
-      expect(builtinRocketLeague.slug).toBe('rocket-league');
-
-      await setCredentials(request, { clientId: 'fake-client', clientSecret: FAKE_SECRET });
-      await useFakeIgdb(request);
-      // Reset Wikidata's counters here (the "wikidata not called" check below
-      // covers only what happens once IGDB is configured — the lookup above,
-      // with no credentials yet, legitimately went to Wikidata).
-      await useFakeWikidata(request);
-
-      const rock = await search(request, 'rock');
-      expect(rock.fromIgdb).toBe(true);
-      const names = rock.games.map((g) => g.name);
-      expect(names).toContain('Rocket League');
-      expect(names).toContain('Rocket Knight Adventures');
-
-      // The IGDB result updated the built-in row rather than adding a second one.
-      const rl = rock.games.find((g) => g.slug === 'rocket-league')!;
-      expect(rl.id).toBe(builtinRocketLeague.id);
-      expect(rl.coverUrl).toBe('https://images.igdb.com/igdb/image/upload/t_cover_small/fakerl.jpg');
-      expect(rl.imageUrl).toBe(rl.coverUrl);
-      expect(rl.releaseYear).toBe(2015);
-      expect(rl.genres).toEqual(['Sport', 'Racing']);
-      const rocketKnight = rock.games.find((g) => g.name === 'Rocket Knight Adventures')!;
-      expect(rocketKnight.coverUrl).toBeNull();
-      expect(rocketKnight.imageUrl).toBeNull();
-      expect(rocketKnight.genres).toEqual([]);
-
-      // Installed modules come first and are marked supported.
-      const counterStrike = await search(request, 'counter');
-      expect(counterStrike.games[0]).toMatchObject({ slug: 'counter-strike-2', supported: true });
-      expect(counterStrike.games[0].coverUrl).toContain('fakecs2');
-      expect(counterStrike.games[0].genres).toEqual(['Shooter', 'Tactical']);
-
-      let counters = await igdbCounters(request);
-      expect(counters.tokenRequests).toBe(1);
-      expect(counters.searchRequests).toBe(2);
-
-      // Same query again: served from the cache, from our own rows.
-      const again = await search(request, 'ROCK ');
-      expect(again.games.map((g) => g.id)).toEqual(rock.games.map((g) => g.id));
-      expect(again.fromIgdb).toBe(true);
-      counters = await igdbCounters(request);
-      expect(counters.searchRequests).toBe(2);
-
-      // A new query reuses the cached token.
-      await search(request, 'celeste');
-      counters = await igdbCounters(request);
-      expect(counters.tokenRequests).toBe(1);
-      expect(counters.searchRequests).toBe(3);
-
-      // IGDB is configured: Wikidata is never consulted.
-      const wdCounters = await wikidataCounters(request);
-      expect(wdCounters.searchRequests).toBe(0);
-      expect(wdCounters.getEntitiesRequests).toBe(0);
-    }
-  );
-
-  test(
-    'an IGDB failure falls back to the built-ins',
-    { tag: ['@api', '@games'] },
-    async ({ request }) => {
-      await setCredentials(request, { clientId: 'fake-client', clientSecret: FAKE_SECRET });
-      await useFakeIgdb(request);
-
-      const result = await search(request, 'explode');
-      expect(result.fromIgdb).toBe(false);
-      expect(result.games).toEqual([]);
-
-      // Bad credentials: the token request fails, built-ins still answer.
-      await setCredentials(request, { clientId: 'bad-client', clientSecret: FAKE_SECRET });
-      const rl = await search(request, 'rocket');
-      expect(rl.fromIgdb).toBe(false);
-      expect(rl.games.map((g) => g.slug)).toEqual(['rocket-league']);
-    }
-  );
-
-  test(
     'search needs two characters and is rate limited per IP',
     { tag: ['@api', '@games'] },
     async ({ request }) => {
-      await setCredentials(request, { clientId: null });
-
       expect((await request.get('/api/games/search?q=r')).status()).toBe(400);
       expect((await request.get('/api/games/search')).status()).toBe(400);
       expect((await request.get('/api/games/search?q=%20r%20')).status()).toBe(400);
 
-      await useFakeIgdb(request); // resets the limiter
+      await useFakeWikidata(request); // resets the limiter
       let limited = 0;
       for (let i = 0; i < 65; i++) {
         const res = await request.get('/api/games/search?q=dota');
@@ -284,7 +188,7 @@ test.describe.serial('Game catalogue', () => {
         }
       }
       expect(limited).toBe(5);
-      await useFakeIgdb(request);
+      await useFakeWikidata(request);
     }
   );
 
@@ -292,7 +196,6 @@ test.describe.serial('Game catalogue', () => {
     "suggestions: an open tournament's game first, picked games left out",
     { tag: ['@api', '@games'] },
     async ({ request, playwright, baseURL }) => {
-      await setCredentials(request, { clientId: null });
       await request.delete('/api/tournament');
 
       const before = await request.get('/api/games/suggestions');
@@ -368,7 +271,6 @@ test.describe.serial('Game catalogue', () => {
       expect((await anon.post('/api/me/games/prompt/dismiss')).status()).toBe(401);
       await anon.dispose();
 
-      await setCredentials(request, { clientId: null });
       const catalogue = [
         ...(await search(request, 'rocket')).games,
         ...(await search(request, 'dota')).games,
@@ -436,64 +338,6 @@ test.describe.serial('Game catalogue', () => {
       const body = { showPrompt: await showPrompt(again) };
       expect(body.showPrompt).toBe(false);
       await again.dispose();
-    }
-  );
-
-  test(
-    'IGDB settings: admin only, and the secret is never returned',
-    { tag: ['@api', '@games', '@security'] },
-    async ({ request, playwright, baseURL }) => {
-      const put = await setCredentials(request, {
-        clientId: 'fake-client',
-        clientSecret: FAKE_SECRET,
-      });
-      expect(await put.text()).not.toContain(FAKE_SECRET);
-
-      const status = await request.get('/api/settings/igdb');
-      const statusText = await status.text();
-      expect(statusText).not.toContain(FAKE_SECRET);
-      expect(JSON.parse(statusText).igdb).toMatchObject({
-        configured: true,
-        source: 'settings',
-        clientId: 'fake-client',
-        clientSecretSet: true,
-      });
-
-      const all = await request.get('/api/settings');
-      expect(all.ok()).toBe(true);
-      expect(await all.text()).not.toContain(FAKE_SECRET);
-
-      // Saving only the id keeps the stored secret.
-      await setCredentials(request, { clientId: 'fake-client', clientSecret: '' });
-      expect(
-        ((await (await request.get('/api/settings/igdb')).json()) as { igdb: { clientSecretSet: boolean } })
-          .igdb.clientSecretSet
-      ).toBe(true);
-
-      await useFakeIgdb(request);
-      const ok = await request.post('/api/settings/igdb/test');
-      expect(await ok.json()).toMatchObject({ ok: true, source: 'settings' });
-
-      await setCredentials(request, { clientId: 'bad-client' });
-      const bad = (await (await request.post('/api/settings/igdb/test')).json()) as {
-        ok: boolean;
-        error: string;
-      };
-      expect(bad.ok).toBe(false);
-      expect(bad.error).not.toContain(FAKE_SECRET);
-
-      const { ctx } = await playerContext(playwright, baseURL);
-      expect([401, 403]).toContain((await ctx.get('/api/settings/igdb')).status());
-      expect([401, 403]).toContain(
-        (await ctx.put('/api/settings/igdb', { data: { clientId: 'x' } })).status()
-      );
-      await ctx.dispose();
-
-      await setCredentials(request, { clientId: null });
-      expect(
-        ((await (await request.get('/api/settings/igdb')).json()) as { igdb: { configured: boolean } })
-          .igdb.configured
-      ).toBe(false);
     }
   );
 });

@@ -93,11 +93,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
     | 'at_gg_min_score_diff'
     | 'at_ffw_enabled'
     | 'at_ffw_time'
-    | 'at_demo_recording_enabled'
-    // IGDB (game catalogue) credentials. The secret is write-only: it is never
-    // returned by any endpoint, and env (IGDB_CLIENT_ID / IGDB_CLIENT_SECRET) wins.
-    | 'igdb_client_id'
-    | 'igdb_client_secret';
+    | 'at_demo_recording_enabled';
 
 
   const ALLOWED_KEYS: AppSettingKey[] = [
@@ -139,8 +135,6 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
     'at_ffw_enabled',
     'at_ffw_time',
     'at_demo_recording_enabled',
-    'igdb_client_id',
-    'igdb_client_secret',
   ];
 
   class LegacySettingsService {
@@ -180,13 +174,6 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
 
         if (!trimmed) {
           await db.setAppSettingAsync(key, null);
-          return;
-        }
-
-        if (key === 'igdb_client_id' || key === 'igdb_client_secret') {
-          await db.setAppSettingAsync(key, trimmed);
-          // Never log the value.
-          log.success(`${key} updated`);
           return;
         }
 

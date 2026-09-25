@@ -188,7 +188,7 @@
           },
           "slug": {
             "type": "string",
-            "description": "IGDB or Wikidata slug",
+            "description": "Wikidata slug",
             "example": "counter-strike-2"
           },
           "name": {
@@ -198,7 +198,7 @@
           "coverUrl": {
             "type": "string",
             "nullable": true,
-            "description": "IGDB cover (t_cover_small) or Wikidata's logo/image; null for built-ins with no cover"
+            "description": "Wikidata's logo/image; null for built-ins with no cover"
           },
           "releaseYear": {
             "type": "integer",
@@ -222,14 +222,14 @@
               "wikidata",
               "builtin"
             ],
-            "description": "Where this row came from; used to pick the data-source credit line"
+            "description": "Where this row came from; used to pick the data-source credit line. 'igdb' only appears on a row stored before IGDB support was removed."
           },
           "genres": {
             "type": "array",
             "items": {
               "type": "string"
             },
-            "description": "Up to 3 genre names, from IGDB genres.name or Wikidata P136",
+            "description": "Up to 3 genre names, from Wikidata P136",
             "example": [
               "Shooter",
               "Tactical shooter"
@@ -239,35 +239,6 @@
             "type": "string",
             "nullable": true,
             "description": "coverUrl if present, else logoUrl; convenience for the onboarding page's cards"
-          }
-        }
-      },
-      "IgdbCredentialStatus": {
-        "type": "object",
-        "properties": {
-          "configured": {
-            "type": "boolean",
-            "description": "A complete id + secret pair is active"
-          },
-          "source": {
-            "type": "string",
-            "enum": [
-              "env",
-              "settings"
-            ],
-            "nullable": true
-          },
-          "envOverride": {
-            "type": "boolean",
-            "description": "IGDB_CLIENT_ID / IGDB_CLIENT_SECRET are set and win over saved settings"
-          },
-          "clientId": {
-            "type": "string",
-            "nullable": true
-          },
-          "clientSecretSet": {
-            "type": "boolean",
-            "description": "A secret is stored. The secret itself is never returned."
           }
         }
       },
@@ -317,7 +288,7 @@
     },
     {
       "name": "Games",
-      "description": "The game catalogue players pick from (IGDB or Wikidata-backed search, suggestions). Public."
+      "description": "The game catalogue players pick from (Wikidata-backed search, suggestions). Public."
     },
     {
       "name": "Generation",
@@ -2320,7 +2291,7 @@
           "Games"
         ],
         "summary": "Search the game catalogue",
-        "description": "Searches IGDB when credentials are configured (results are stored in\nthe local `games` table); otherwise searches Wikidata, which needs no\nAPI key and is the default so search works out of the box. Always\nincludes the built-in games for installed game modules first. When\nneither is configured to answer, or the active one fails or times\nout, only the built-in list is searched. At most 10 results. Rate\nlimited per IP.\n",
+        "description": "Searches Wikidata (results are stored in the local `games` table),\nwhich needs no API key, so search works out of the box. Always\nincludes the built-in games for installed game modules first. When\nWikidata fails or times out, only the built-in list is searched. At\nmost 10 results. Rate limited per IP.\n",
         "parameters": [
           {
             "in": "query",
@@ -2342,10 +2313,6 @@
                   "properties": {
                     "success": {
                       "type": "boolean"
-                    },
-                    "fromIgdb": {
-                      "type": "boolean",
-                      "description": "True when any result came from IGDB (show the IGDB credit)"
                     },
                     "fromWikidata": {
                       "type": "boolean",
@@ -5921,108 +5888,6 @@
         ]
       }
     },
-    "/api/settings/igdb": {
-      "get": {
-        "tags": [
-          "Settings"
-        ],
-        "summary": "IGDB credential status (admin)",
-        "description": "Whether IGDB (the game catalogue source) is configured, and from where.\nThe client secret is write-only and never returned; `clientSecretSet`\nsays whether one is stored. IGDB_CLIENT_ID / IGDB_CLIENT_SECRET in the\nenvironment win over saved settings (`envOverride`).\n",
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Credential status",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "igdb": {
-                      "$ref": "#/components/schemas/IgdbCredentialStatus"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Settings"
-        ],
-        "summary": "Save IGDB credentials (admin)",
-        "description": "Omit a field to keep it. `clientSecret` is write-only: send a new one to\nreplace it, or null to remove it. An empty `clientId` removes both.\n",
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "clientId": {
-                    "type": "string",
-                    "nullable": true
-                  },
-                  "clientSecret": {
-                    "type": "string",
-                    "nullable": true
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Saved; the new status (never the secret)"
-          },
-          "400": {
-            "description": "Invalid body"
-          }
-        }
-      }
-    },
-    "/api/settings/igdb/test": {
-      "post": {
-        "tags": [
-          "Settings"
-        ],
-        "summary": "Test the IGDB connection (admin)",
-        "description": "Requests a fresh Twitch token and runs a one-row IGDB query with the active credentials.",
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "`ok: true`, or `ok: false` with an error safe to show"
-          }
-        }
-      }
-    },
     "/api/settings/version": {
       "get": {
         "tags": [
@@ -6971,34 +6836,6 @@
         ]
       }
     },
-    "/api/test/fake-igdb/token": {
-      "post": {
-        "tags": [
-          "Test helpers"
-        ],
-        "summary": "POST /api/test/fake-igdb/token",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
-    "/api/test/fake-igdb/v4/games": {
-      "post": {
-        "tags": [
-          "Test helpers"
-        ],
-        "summary": "POST /api/test/fake-igdb/v4/games",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
     "/api/test/fake-oauth/{provider}/authorize": {
       "get": {
         "tags": [
@@ -7263,48 +7100,6 @@
           "Test helpers"
         ],
         "summary": "POST /api/test/game-icons/run",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ]
-      }
-    },
-    "/api/test/igdb": {
-      "get": {
-        "tags": [
-          "Test helpers"
-        ],
-        "summary": "GET /api/test/igdb",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ]
-      },
-      "post": {
-        "tags": [
-          "Test helpers"
-        ],
-        "summary": "POST /api/test/igdb",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {

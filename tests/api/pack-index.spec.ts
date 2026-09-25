@@ -5,7 +5,8 @@ import { signInViaRequest } from '../helpers/auth';
  * The community pack index: adding a game without writing the file yourself.
  *
  * Every request here goes to the fake index in `routes/test.ts`, pointed at
- * by `POST /api/test/pack-index`, the same way the fake IGDB works. No test
+ * by `POST /api/test/pack-index`, the same way the other test-only fakes
+ * work. No test
  * reaches the real repository.
  *
  * The claim worth pinning hardest is the one an index cannot be trusted for.

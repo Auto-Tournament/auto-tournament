@@ -4,10 +4,10 @@
  * A game pill draws the game's own square app icon. Modules and packs carry
  * theirs, and `gameCatalogService.linkBuiltin` finds them for any stored
  * game that is one of those games. Everything else a player can pick — any
- * game IGDB or Wikidata search finds — gets its **Steam client icon** here,
- * when the game is on Steam, with no key and no account:
+ * game a Wikidata search finds — gets its **Steam client icon** here, when
+ * the game is on Steam, with no key and no account:
  *
- *   Steam app id (IGDB's Steam external game, or Wikidata P1733)
+ *   Steam app id (Wikidata P1733)
  *     → `https://api.steamcmd.net/v1/info/<appid>` → `common.clienticon`
  *     → `https://shared.fastly.steamstatic.com/community_assets/images/apps/<appid>/<hash>.ico`
  *       (the older `cdn.cloudflare.steamstatic.com/steamcommunity/public/images/apps/…`
@@ -40,7 +40,6 @@ import { log } from '../utils/logger';
 import { toGameIconPng } from '../utils/iconImage';
 import { buildGameLinks, linkBuiltin } from './gameCatalogService';
 import { enrichmentDisabled } from './gameEnrichmentService';
-import { igdbSteamAppIds } from './igdbService';
 import { getWikidataSteamAppIds } from './wikidataService';
 
 /** Where fetched icons are kept: the data volume, so they survive an upgrade. */
@@ -177,10 +176,9 @@ interface IconCandidate {
 }
 
 /**
- * Candidates stored without a Steam app id get one where a source knows it:
- * IGDB for rows with an IGDB id (when IGDB is configured), Wikidata P1733 for
- * rows with a Wikidata id (always — it needs no key). A failed lookup is
- * logged; the row is simply looked at again next time.
+ * Candidates stored without a Steam app id get one from Wikidata P1733, for
+ * rows with a Wikidata id (it needs no key). A failed lookup is logged; the
+ * row is simply looked at again next time.
  */
 async function fillSteamAppIds(rows: IconCandidate[]): Promise<void> {
   const record = async (row: IconCandidate, steamAppId: number | undefined) => {
@@ -188,16 +186,6 @@ async function fillSteamAppIds(rows: IconCandidate[]): Promise<void> {
     row.steam_app_id = steamAppId;
     await db.runAsync('UPDATE games SET steam_app_id = ? WHERE id = ?', [steamAppId, row.id]);
   };
-
-  const byIgdb = rows.filter((row) => !row.steam_app_id && row.igdb_id !== null);
-  if (byIgdb.length > 0) {
-    try {
-      const found = await igdbSteamAppIds(byIgdb.map((row) => row.igdb_id as number));
-      for (const row of byIgdb) await record(row, found?.get(row.igdb_id as number));
-    } catch (err) {
-      log.warn(`[Games] IGDB Steam id lookup failed: ${(err as Error).message}`);
-    }
-  }
 
   const byWikidata = rows.filter((row) => !row.steam_app_id && row.wikidata_id !== null);
   if (byWikidata.length > 0) {
@@ -248,17 +236,6 @@ export function scheduleGameIconRefresh(): void {
     void refreshGameIcons();
   }, SCHEDULE_DELAY_MS);
   scheduled.unref?.();
-}
-
-/**
- * Forget that rows without an icon or a Steam app id were looked at, so the
- * next pass asks again — for when a source that may know more has just been
- * set up (IGDB credentials saved).
- */
-export async function forgetGameIconChecks(): Promise<void> {
-  await db.runAsync(
-    'UPDATE games SET icon_checked_at = NULL WHERE icon_url IS NULL AND steam_app_id IS NULL'
-  );
 }
 
 async function iconPass(): Promise<number> {

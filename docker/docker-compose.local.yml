@@ -64,7 +64,7 @@ services:
       # Register the test-only fake game integration (integrations/fake) for
       # E2E runs. Needs ENABLE_TEST_ENDPOINTS too; off by default.
       - MAT_TEST_INTEGRATION=${MAT_TEST_INTEGRATION:-0}
-      # Built-in game enrichment (gameEnrichmentService) calls real Wikidata/IGDB;
+      # Built-in game enrichment (gameEnrichmentService) calls real Wikidata;
       # keep it off for local "prod-like" and E2E stacks by default.
       - GAMES_ENRICH=${GAMES_ENRICH:-off}
       # A local image's CS2 snapshot is signed with a throwaway key

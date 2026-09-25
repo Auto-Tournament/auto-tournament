@@ -52,7 +52,6 @@
       "remove": "Remove {{name}}",
       "supported": "Tournaments supported",
       "limit": "You can pick up to {{max}} games",
-      "credit": "Game data from IGDB",
       "creditWikidata": "Game data from Wikidata"
     },
     "profile": {
@@ -66,35 +65,6 @@
       "save": "Save",
       "saved": "Games saved",
       "saveFailed": "Could not save your games"
-    },
-    "igdb": {
-      "title": "IGDB game data",
-      "description": "Players pick the games they play from a search. With IGDB credentials the search covers every game, with covers; without them, search uses Wikidata.",
-      "consoleLink": "Open the Twitch developer console",
-      "howToToggle": "How to get keys",
-      "howToStep1": "Create a Twitch account and turn on Two-Factor Authentication.",
-      "howToStep2": "Register an app in the Twitch Developer Console. Redirect URL: http://localhost. Client Type: Confidential.",
-      "howToStep3": "Open the app, press Manage, and copy the Client ID.",
-      "howToStep4": "Press New Secret and copy the Client Secret.",
-      "howToStep5": "Paste both here, press Save, then Test connection.",
-      "fullGuideLink": "Full guide",
-      "freeNote": "Free for non-commercial use.",
-      "clientId": "Client ID",
-      "clientSecret": "Client secret",
-      "secretSetPlaceholder": "Saved. Enter a new secret to replace it",
-      "secretHelper": "Write-only: the saved secret is never shown.",
-      "envOverride": "IGDB_CLIENT_ID and IGDB_CLIENT_SECRET are set in the environment, and take precedence over this form.",
-      "statusConfigured": "Configured",
-      "statusNotConfigured": "Not configured",
-      "save": "Save",
-      "remove": "Remove",
-      "test": "Test connection",
-      "testing": "Testing…",
-      "testOk": "Connected to IGDB",
-      "testFailed": "IGDB connection failed: {{error}}",
-      "saved": "IGDB credentials saved",
-      "removed": "IGDB credentials removed",
-      "saveFailed": "Could not save IGDB credentials"
     },
     "welcome": {
       "gridTitle": "Popular games",

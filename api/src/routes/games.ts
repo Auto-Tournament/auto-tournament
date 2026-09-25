@@ -16,7 +16,7 @@ const router = Router();
 
 /**
  * Per-IP limit on search. The client debounces (~250 ms), so a person typing
- * stays far below this; it exists to protect the instance's IGDB quota.
+ * stays far below this; it exists to protect the instance's Wikidata quota.
  */
 export const gameSearchLimiter = createRateLimiter({
   windowMs: 60_000,
@@ -31,13 +31,11 @@ export const gameSearchLimiter = createRateLimiter({
  *     tags: [Games]
  *     summary: Search the game catalogue
  *     description: |
- *       Searches IGDB when credentials are configured (results are stored in
- *       the local `games` table); otherwise searches Wikidata, which needs no
- *       API key and is the default so search works out of the box. Always
+ *       Searches Wikidata (results are stored in the local `games` table),
+ *       which needs no API key, so search works out of the box. Always
  *       includes the built-in games for installed game modules first. When
- *       neither is configured to answer, or the active one fails or times
- *       out, only the built-in list is searched. At most 10 results. Rate
- *       limited per IP.
+ *       Wikidata fails or times out, only the built-in list is searched. At
+ *       most 10 results. Rate limited per IP.
  *     parameters:
  *       - in: query
  *         name: q
@@ -54,9 +52,6 @@ export const gameSearchLimiter = createRateLimiter({
  *               type: object
  *               properties:
  *                 success: { type: boolean }
- *                 fromIgdb:
- *                   type: boolean
- *                   description: True when any result came from IGDB (show the IGDB credit)
  *                 fromWikidata:
  *                   type: boolean
  *                   description: True when any result came from Wikidata (show the Wikidata credit)

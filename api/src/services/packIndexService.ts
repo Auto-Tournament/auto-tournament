@@ -53,7 +53,7 @@ export function packIndexBase(): string {
   return base.endsWith('/') ? base : `${base}/`;
 }
 
-/** Test-only, the same shape `setIgdbEndpointOverride` has. */
+/** Test-only, the same shape the other test-only endpoint overrides have. */
 export function setPackIndexBaseOverride(base: string | null): void {
   baseOverride = base;
 }
@@ -138,7 +138,7 @@ export function resolveEntryUrl(base: string, file: string): string | null {
 }
 
 async function fetchText(url: string, limit: number): Promise<string> {
-  // `node-fetch`'s own timeout, the same one `igdbService` uses, rather than
+  // `node-fetch`'s own timeout, the same one `wikidataService` uses, rather than
   // an AbortController: this runs in the API bundle, not in a browser.
   const response = await fetch(url, {
     timeout: FETCH_TIMEOUT_MS,
