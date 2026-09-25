@@ -345,7 +345,7 @@ export default function FleetPanel() {
               <Typography variant="body2" color="text.secondary" display={{ xs: 'none', md: 'block' }}>
                 {key.maxServers
                   ? t('fleetPanel.keyUsageLimited', { n: key.enrolledServers, max: key.maxServers })
-                  : t('fleetPanel.keyUsage', { n: key.enrolledServers })}
+                  : t('fleetPanel.keyUsage', { count: key.enrolledServers })}
                 {key.namePrefix ? ` · ${t('fleetPanel.keyPrefix', { prefix: key.namePrefix })}` : ''}
                 {key.expiresAt ? ` · ${t('fleetPanel.keyExpires', { time: when(key.expiresAt, locale) })}` : ''}
               </Typography>
