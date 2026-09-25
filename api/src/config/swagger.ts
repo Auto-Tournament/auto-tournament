@@ -220,13 +220,12 @@ const options: swaggerJsdoc.Options = {
           type: 'object',
           properties: {
             id: { type: 'integer', description: 'games.id', example: 1 },
-            slug: { type: 'string', description: 'IGDB or Wikidata slug', example: 'counter-strike-2' },
+            slug: { type: 'string', description: 'Wikidata slug', example: 'counter-strike-2' },
             name: { type: 'string', example: 'Counter-Strike 2' },
             coverUrl: {
               type: 'string',
               nullable: true,
-              description:
-                "IGDB cover (t_cover_small) or Wikidata's logo/image; null for built-ins with no cover",
+              description: "Wikidata's logo/image; null for built-ins with no cover",
             },
             releaseYear: { type: 'integer', nullable: true, example: 2023 },
             supported: {
@@ -243,34 +242,19 @@ const options: swaggerJsdoc.Options = {
             source: {
               type: 'string',
               enum: ['igdb', 'wikidata', 'builtin'],
-              description: 'Where this row came from; used to pick the data-source credit line',
+              description:
+                "Where this row came from; used to pick the data-source credit line. 'igdb' only appears on a row stored before IGDB support was removed.",
             },
             genres: {
               type: 'array',
               items: { type: 'string' },
-              description: 'Up to 3 genre names, from IGDB genres.name or Wikidata P136',
+              description: 'Up to 3 genre names, from Wikidata P136',
               example: ['Shooter', 'Tactical shooter'],
             },
             imageUrl: {
               type: 'string',
               nullable: true,
               description: "coverUrl if present, else logoUrl; convenience for the onboarding page's cards",
-            },
-          },
-        },
-        IgdbCredentialStatus: {
-          type: 'object',
-          properties: {
-            configured: { type: 'boolean', description: 'A complete id + secret pair is active' },
-            source: { type: 'string', enum: ['env', 'settings'], nullable: true },
-            envOverride: {
-              type: 'boolean',
-              description: 'IGDB_CLIENT_ID / IGDB_CLIENT_SECRET are set and win over saved settings',
-            },
-            clientId: { type: 'string', nullable: true },
-            clientSecretSet: {
-              type: 'boolean',
-              description: 'A secret is stored. The secret itself is never returned.',
             },
           },
         },

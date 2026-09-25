@@ -2,7 +2,7 @@
  * Wikidata (www.wikidata.org) client for the player game catalogue.
  *
  * Wikidata needs no application registration or API key, so it is the
- * default search source when IGDB credentials are not configured (see
+ * default (and only) search source for the game catalogue (see
  * `gameCatalogService.searchGames`) — it is what makes game search work out
  * of the box. Two requests per search:
  *  - `wbsearchentities` to find candidate item ids for the query.
@@ -18,7 +18,7 @@
  * Wikidata rate-limits or blocks generic/empty ones. On top of the per-IP
  * search limiter in routes/games.ts, a small process-wide limiter caps
  * outgoing Wikidata requests at 5/second, since this endpoint is shared by
- * every instance running MAT with no IGDB keys.
+ * every instance, with no API key.
  *
  * The endpoint can be overridden (`WIKIDATA_API_BASE`), and the E2E suite
  * points it at the fake Wikidata in routes/test.ts through

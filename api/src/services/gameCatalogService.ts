@@ -1,19 +1,23 @@
 /**
  * The player game catalogue: "What do you play?".
  *
- * Games live in the `games` table. Rows come from three places:
+ * Games live in the `games` table. Rows come from two places:
  * - **built-in**: every game an installed integration supports, then a short
  *   list of popular esports titles. Names and slugs only. Seeded on demand
- *   (one idempotent insert) so they always exist, with or without IGDB.
- * - **IGDB**: search results are upserted by IGDB id / slug, so repeat queries
- *   and chips render from our own table.
- * - **Wikidata**: the same idea, keyed on Wikidata id / slug, used instead of
- *   IGDB when no IGDB credentials are configured — it needs no API key, so
+ *   (one idempotent insert) so they always exist.
+ * - **Wikidata**: search results are upserted by Wikidata id / slug, so
+ *   repeat queries and chips render from our own table. Needs no API key, so
  *   search works out of the box.
  *
- * Built-in slugs are IGDB slugs, so an IGDB (or Wikidata) result for Rocket
- * League updates the built-in Rocket League row rather than adding a second
- * one.
+ * IGDB was an earlier, credentialed source for this catalogue and has been
+ * removed; a `games` row created back then may still carry `igdb_id` and
+ * `source = 'igdb'`, which stay untouched — a stored game's `igdb_id` is
+ * still how it links to a module's or pack's own catalogue entry (see
+ * `linkBuiltin`), and dropping the column would break that link.
+ *
+ * Built-in slugs match those historic IGDB slugs, so a Wikidata result for
+ * Rocket League updates the built-in Rocket League row rather than adding a
+ * second one.
  *
  * `supported` means a game module exists for it (the integration registry),
  * i.e. this instance can run tournaments for it.
@@ -31,7 +35,6 @@ import {
 } from './gamePackService';
 import { log } from '../utils/logger';
 import { slugify } from '../utils/slug';
-import { IgdbError, searchIgdb, type IgdbGame } from './igdbService';
 import { WikidataError, searchWikidata, type WikidataGame } from './wikidataService';
 
 export const SEARCH_MIN_LENGTH = 2;
@@ -58,7 +61,7 @@ export interface GameSummary {
   integrationId: string | null;
   /** Where this row's data came from; the client uses it to pick a credit line. */
   source: 'igdb' | 'wikidata' | 'builtin';
-  /** Up to 3 genre names, from IGDB `genres.name` or Wikidata P136. */
+  /** Up to 3 genre names, from Wikidata P136 (or, on a game found before IGDB support was removed, IGDB `genres.name`). */
   genres: string[];
   /** `coverUrl` if present, else `logoUrl`; convenience for the onboarding page's cards. */
   imageUrl: string | null;
@@ -77,8 +80,6 @@ export interface GameSummary {
 
 export interface GameSearchResult {
   games: GameSummary[];
-  /** True when any result came from IGDB (the client shows the IGDB credit). */
-  fromIgdb: boolean;
   /** True when any result came from Wikidata (the client shows the Wikidata credit). */
   fromWikidata: boolean;
 }
@@ -115,13 +116,15 @@ export interface BuiltinGame {
   appIcon: string | null;
   /**
    * The game's numeric IGDB id, when the module or pack names one (or the
-   * image's snapshot does for the pack's game). What an IGDB search result
-   * is linked to it by first.
+   * image's snapshot does for the pack's game). A stored `games` row is
+   * linked to it by this id first (see `linkBuiltin`) — still meaningful for
+   * a row created while IGDB search existed, even though nothing writes a
+   * new one any more.
    */
   igdbId: number | null;
 }
 
-/** Popular esports titles offered before IGDB is configured. IGDB slugs. */
+/** Popular esports titles built in to the catalogue. Historic IGDB slugs. */
 const POPULAR_GAMES: Array<{ slug: string; name: string; aliases?: string[] }> = [
   { slug: 'rocket-league', name: 'Rocket League', aliases: ['rl'] },
   { slug: 'valorant', name: 'Valorant' },
@@ -433,82 +436,15 @@ async function rowsBySlug(slugs: string[]): Promise<Map<string, GameRow>> {
   return new Map(rows.map((r) => [r.slug, r]));
 }
 
-/**
- * Upsert IGDB results. Matched by IGDB id first (IGDB can rename a slug),
- * then by slug (a built-in row for the same game).
- */
 /** JSON for up to 3 genres, or `null` when there are none (never clobbers a row's existing genres). */
 function genresJson(genres: string[]): string | null {
   return genres.length > 0 ? JSON.stringify(genres.slice(0, 3)) : null;
 }
 
-async function upsertIgdbGames(games: IgdbGame[]): Promise<GameRow[]> {
-  const out: GameRow[] = [];
-  const now = Math.floor(Date.now() / 1000);
-
-  for (const game of games) {
-    const existing = await db.queryAsync<GameRow>(
-      `SELECT ${GAME_COLUMNS} FROM games WHERE igdb_id = ? OR slug = ? ORDER BY (igdb_id = ?) DESC NULLS LAST`,
-      [game.igdbId, game.slug, game.igdbId]
-    );
-    const genres = genresJson(game.genres);
-
-    if (existing.length === 0) {
-      const row = await db.queryOneAsync<GameRow>(
-        `INSERT INTO games (igdb_id, slug, name, cover_url, logo_url, release_year, genres, steam_app_id, source, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'igdb', ?)
-         ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, genres = COALESCE(EXCLUDED.genres, games.genres),
-           steam_app_id = COALESCE(EXCLUDED.steam_app_id, games.steam_app_id)
-         RETURNING ${GAME_COLUMNS}`,
-        [
-          game.igdbId,
-          game.slug,
-          game.name,
-          game.coverUrl,
-          game.logoUrl,
-          game.releaseYear,
-          genres,
-          game.steamAppId,
-          now,
-        ]
-      );
-      if (row) out.push(row);
-      continue;
-    }
-
-    const target = existing[0];
-    // Keep the old slug if the new one belongs to a different row.
-    const slugTaken = existing.some((r) => r.id !== target.id && r.slug === game.slug);
-    const row = await db.queryOneAsync<GameRow>(
-      `UPDATE games
-          SET igdb_id = ?, slug = ?, name = ?, cover_url = ?, logo_url = ?,
-              release_year = ?, genres = COALESCE(?, genres),
-              steam_app_id = COALESCE(?, steam_app_id), source = 'igdb', updated_at = ?
-        WHERE id = ?
-        RETURNING ${GAME_COLUMNS}`,
-      [
-        game.igdbId,
-        slugTaken ? target.slug : game.slug,
-        game.name,
-        game.coverUrl,
-        game.logoUrl,
-        game.releaseYear,
-        genres,
-        game.steamAppId,
-        now,
-        target.id,
-      ]
-    );
-    if (row) out.push(row);
-  }
-
-  return out;
-}
-
 /**
  * Upsert Wikidata results. Matched by Wikidata id first (a label can change),
- * then by slug (a built-in, or an IGDB-enriched, row for the same game) —
- * same idea as `upsertIgdbGames`.
+ * then by slug (a built-in, or previously IGDB-enriched, row for the same
+ * game).
  */
 async function upsertWikidataGames(games: WikidataGame[]): Promise<GameRow[]> {
   const out: GameRow[] = [];
@@ -581,7 +517,6 @@ interface CachedSearch {
   expiresAt: number;
   /** Game ids in result order; rows are re-read so they reflect later upserts. */
   ids: number[];
-  fromIgdb: boolean;
   fromWikidata: boolean;
 }
 
@@ -612,7 +547,6 @@ export async function searchGames(rawQuery: string): Promise<GameSearchResult> {
     if (rows.length === cached.ids.length) {
       return {
         games: rows.map((r) => toSummary(r, supported)),
-        fromIgdb: cached.fromIgdb,
         fromWikidata: cached.fromWikidata,
       };
     }
@@ -627,29 +561,19 @@ export async function searchGames(rawQuery: string): Promise<GameSearchResult> {
   const supportedBuiltins = builtins.filter((g) => g.integrationId);
   const otherBuiltins = builtins.filter((g) => !g.integrationId);
 
-  // IGDB when it is configured; otherwise Wikidata, which needs no API key
-  // and is the default so search works out of the box. Never both.
+  // Wikidata, which needs no API key, so search works out of the box.
   let externalRows: GameRow[] = [];
-  let fromIgdb = false;
   let fromWikidata = false;
   let externalAnswered = false;
   let externalFailed = false;
   try {
-    const igdbResults = await searchIgdb(query, SEARCH_MAX_RESULTS);
-    if (igdbResults) {
-      externalAnswered = true;
-      externalRows = await upsertIgdbGames(igdbResults);
-      fromIgdb = externalRows.length > 0;
-    } else {
-      const wikidataResults = await searchWikidata(query, SEARCH_MAX_RESULTS);
-      externalAnswered = true;
-      externalRows = await upsertWikidataGames(wikidataResults);
-      fromWikidata = externalRows.length > 0;
-    }
+    const wikidataResults = await searchWikidata(query, SEARCH_MAX_RESULTS);
+    externalAnswered = true;
+    externalRows = await upsertWikidataGames(wikidataResults);
+    fromWikidata = externalRows.length > 0;
   } catch (err) {
     externalFailed = true;
-    const message =
-      err instanceof IgdbError || err instanceof WikidataError ? err.message : (err as Error).message;
+    const message = err instanceof WikidataError ? err.message : (err as Error).message;
     log.warn(`[Games] External search failed, serving built-in games: ${message}`);
   }
 
@@ -671,8 +595,7 @@ export async function searchGames(rawQuery: string): Promise<GameSearchResult> {
     for (const g of otherBuiltins) push(builtinRows.get(g.slug));
   }
 
-  // Do not cache a failed external call, so it is retried. "Not configured"
-  // is cached: saving IGDB credentials clears the cache (routes/settings.ts).
+  // Do not cache a failed external call, so it is retried.
   if (!externalFailed) {
     if (searchCache.size >= SEARCH_CACHE_MAX_ENTRIES) {
       const oldest = searchCache.keys().next().value;
@@ -681,12 +604,11 @@ export async function searchGames(rawQuery: string): Promise<GameSearchResult> {
     searchCache.set(cacheKey, {
       expiresAt: Date.now() + SEARCH_CACHE_TTL_MS,
       ids: ordered.map((r) => r.id),
-      fromIgdb,
       fromWikidata,
     });
   }
 
-  return { games: ordered.map((r) => toSummary(r, supported)), fromIgdb, fromWikidata };
+  return { games: ordered.map((r) => toSummary(r, supported)), fromWikidata };
 }
 
 // ---------------------------------------------------------------------------
@@ -861,7 +783,7 @@ export async function getPlayableGames(): Promise<PlayableGame[]> {
  * this instance has no such game.
  *
  * Takes a built-in slug or alias ('rl'), an integration id ('cs2'), or the
- * slug of any `games` row IGDB or Wikidata search has added. Returns the
+ * slug of any `games` row a Wikidata search has added. Returns the
  * canonical slug to store, so a tournament row never holds an alias — the
  * registry resolves those, but two rows for one game would read as two games
  * everywhere else.

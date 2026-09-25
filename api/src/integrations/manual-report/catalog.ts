@@ -15,7 +15,7 @@
  *
  * That is not the limit of what the module runs. `runsAnyCatalogGame` still
  * makes it the fallback for every catalogue id, so a tournament for a game
- * found through IGDB search is reported manually too.
+ * found through catalogue search is reported manually too.
  */
 
 import { installedPack } from '../../services/packCache';

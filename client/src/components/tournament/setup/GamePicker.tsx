@@ -5,7 +5,7 @@
  *
  * **The art is the module's.** A tile comes from the module that runs the
  * game (`GameCatalogEntry.icon`), not from the games catalogue. Catalogue
- * logos are IGDB and Wikidata artwork: every aspect ratio, every colour, and
+ * logos are Wikidata artwork: every aspect ratio, every colour, and
  * mostly dark — squeezed into a square box on a dark card they were both
  * distorted and invisible. The module tiles are square, full-bleed and share
  * one palette, so they need no plate behind them and nothing is cropped. A

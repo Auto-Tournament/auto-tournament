@@ -58,7 +58,7 @@ const SKELETON_CARDS = 10;
  * player afterwards — the page they were heading to when they got redirected
  * here, or "/".
  *
- * The art is the games catalogue's (IGDB/Wikidata), never the module tiles:
+ * The art is the games catalogue's (Wikidata), never the module tiles:
  * the player is recognising their own game here. See `GameCard` for how each
  * kind of picture is drawn so it is neither cropped, stretched nor lost
  * against the dark card.
@@ -89,7 +89,6 @@ export default function WelcomeGames() {
     games: [],
     failed: false,
   });
-  const [fromIgdb, setFromIgdb] = useState(false);
   const [fromWikidata, setFromWikidata] = useState(false);
 
   useEffect(() => {
@@ -135,7 +134,6 @@ export default function WelcomeGames() {
       searchGames(query, controller.signal)
         .then((res) => {
           setResolved({ q: query, games: res.games, failed: false });
-          if (res.fromIgdb) setFromIgdb(true);
           if (res.fromWikidata) setFromWikidata(true);
         })
         .catch((err: unknown) => {
@@ -222,9 +220,9 @@ export default function WelcomeGames() {
     }
   };
 
-  const showIgdbCredit = fromIgdb || gridGames.some((g) => g.source === 'igdb');
-  const showWikidataCredit = !showIgdbCredit && (fromWikidata || gridGames.some((g) => g.source === 'wikidata'));
-  const showCredit = showIgdbCredit || showWikidataCredit;
+  // A game found back when IGDB search still existed (`source === 'igdb'`)
+  // is credited to Wikidata too — that is the only external source left.
+  const showCredit = fromWikidata || gridGames.some((g) => g.source === 'wikidata' || g.source === 'igdb');
 
   const noOptionsText = tooShort
     ? t('games.picker.minChars')
@@ -466,18 +464,14 @@ export default function WelcomeGames() {
         </Box>
 
         {showCredit && (
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3 }} data-testid="igdb-credit">
-            {showWikidataCredit ? (
-              <ExternalLink
-                href="https://www.wikidata.org"
-                color="inherit"
-                data-testid="wikidata-credit-link"
-              >
-                {t('games.picker.creditWikidata')}
-              </ExternalLink>
-            ) : (
-              t('games.picker.credit')
-            )}
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3 }} data-testid="wikidata-credit">
+            <ExternalLink
+              href="https://www.wikidata.org"
+              color="inherit"
+              data-testid="wikidata-credit-link"
+            >
+              {t('games.picker.creditWikidata')}
+            </ExternalLink>
           </Typography>
         )}
       </Container>

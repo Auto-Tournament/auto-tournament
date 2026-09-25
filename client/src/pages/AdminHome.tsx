@@ -39,7 +39,6 @@ export default function AdminHome() {
     loading: dataLoading,
     steamConfigured,
     discordConfigured,
-    igdbConfigured,
     playersCount,
     adminsCount,
     signedInThisWeekCount,
@@ -63,7 +62,6 @@ export default function AdminHome() {
     { key: 'steam', done: steamConfigured, labelKey: 'dashboard.setup.steam' },
     ...moduleSetupItems.map((item) => ({ ...item, key: `${item.ns}:${item.key}` })),
     { key: 'discord', done: discordConfigured, optional: true, labelKey: 'dashboard.setup.discord' },
-    { key: 'igdb', done: igdbConfigured, optional: true, labelKey: 'dashboard.setup.igdb' },
   ];
 
   const loading = tournamentsLoading || dataLoading || moduleSetupLoading;

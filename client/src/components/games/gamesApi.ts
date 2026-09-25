@@ -25,7 +25,6 @@ export interface GameSummary {
 
 export interface GameSearchResponse {
   games: GameSummary[];
-  fromIgdb: boolean;
   fromWikidata: boolean;
 }
 

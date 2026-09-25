@@ -26,7 +26,7 @@ const visuallyHidden = {
 /**
  * How a picture is drawn in the card's 3:4 well.
  *
- * - `cover`: box art (IGDB covers are 3:4). Full bleed; the well has the
+ * - `cover`: box art (Wikidata covers are 3:4). Full bleed; the well has the
  *   cover's own shape, so nothing is cropped.
  * - `photo`: an opaque picture of any other shape (Wikidata sometimes has a
  *   screenshot or a logo on its own background). Drawn whole, over a blurred
@@ -58,11 +58,10 @@ function guessArtKind(url: string): ArtKind {
 }
 
 /**
- * The API hands out small pictures that suit a list row: IGDB's smallest
+ * The API hands out small pictures that suit a list row: Wikidata's
  * cover (90x128) and Wikimedia files at 128px wide. The card is ~200px wide
  * (400 device pixels on a phone), so it asks for the same image bigger —
- * IGDB's big cover size, Wikimedia at 320px — rather than blowing up the
- * thumbnail.
+ * Wikimedia at 320px — rather than blowing up the thumbnail.
  */
 function cardArtUrl(url: string): string {
   return url
@@ -218,7 +217,7 @@ interface GameCardProps {
 
 /**
  * A selectable card on the "/welcome/games" grid: the game's catalogue art in
- * a 3:4 well, its name and year. Catalogue art (IGDB/Wikidata), not the
+ * a 3:4 well, its name and year. Catalogue art (Wikidata), not the
  * module tiles — this page is about recognising your own game, and the
  * module tiles answer a different question (see `GameCatalogEntry.icon`).
  *

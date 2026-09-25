@@ -1,6 +1,6 @@
 /**
  * Slugify a display name into the lowercase, hyphenated form used as a
- * `games.slug` (and shared by anything else that wants an IGDB/Wikidata-style
+ * `games.slug` (and shared by anything else that wants a Wikidata-style
  * slug). Diacritics are stripped rather than kept or transliterated, so
  * "Pokémon" becomes "pokemon".
  *

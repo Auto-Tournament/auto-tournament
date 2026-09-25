@@ -6,7 +6,7 @@ import { signInViaRequest } from '../helpers/auth';
  *
  * A new player who lands anywhere is redirected to the full-page
  * `/welcome/games` (the intended destination preserved as `?next=`), picks a
- * game through the search (served by the fake IGDB in routes/test.ts) and
+ * game through the search (served by the fake Wikidata in routes/test.ts) and
  * through a card in the grid, saves, and lands back where they were heading.
  * "Not now" dismisses without saving and does not redirect again.
  *
@@ -26,17 +26,12 @@ function uniqueSteamId(): string {
 test.describe('Games you play', () => {
   test.beforeEach(async ({ request }) => {
     expect(await signInViaRequest(request)).toBe(true);
-    const creds = await request.put('/api/settings/igdb', {
-      data: { clientId: 'fake-client', clientSecret: 'fake-ui-secret' },
-    });
-    expect(creds.ok(), await creds.text()).toBe(true);
-    expect((await request.post('/api/test/igdb', { data: { fake: true } })).ok()).toBe(true);
+    expect((await request.post('/api/test/wikidata', { data: { fake: true } })).ok()).toBe(true);
   });
 
   test.afterEach(async ({ request }) => {
     await signInViaRequest(request);
-    await request.put('/api/settings/igdb', { data: { clientId: null } });
-    await request.post('/api/test/igdb', { data: { fake: false } });
+    await request.post('/api/test/wikidata', { data: { fake: false } });
   });
 
   test(
@@ -57,25 +52,27 @@ test.describe('Games you play', () => {
       await expect(page.getByRole('heading', { name: 'What do you play?', level: 1 })).toBeVisible();
 
       const search = page.getByRole('combobox', { name: 'Search games' });
-      await search.fill('rock');
+      await search.fill('rocket league');
       const option = page.getByRole('option', { name: /Rocket League/ });
       await expect(option).toBeVisible();
-      await expect(page.getByRole('option', { name: /Rocket Knight Adventures/ })).toBeVisible();
       await option.click();
 
       await expect(page.getByTestId('welcome-games-chip-rocket-league')).toBeVisible();
       await expect(search).toHaveValue('');
-      await expect(page.getByTestId('igdb-credit')).toHaveText('Game data from IGDB');
+      // The credit is now an ExternalLink (arrow icon + visually-hidden
+      // "(opens in a new tab)"), so match the visible text rather than the
+      // exact node text.
+      await expect(page.getByTestId('wikidata-credit')).toContainText('Game data from Wikidata');
 
       // Keyboard: the first result is highlighted, Enter picks it.
-      await search.fill('celes');
-      await expect(page.getByRole('option', { name: /Celeste/ })).toBeVisible();
+      await search.fill('hollow knight');
+      await expect(page.getByRole('option', { name: /Hollow Knight/ })).toBeVisible();
       await search.press('Enter');
-      await expect(page.getByTestId('welcome-games-chip-celeste')).toBeVisible();
+      await expect(page.getByTestId('welcome-games-chip-hollow-knight')).toBeVisible();
 
       // Remove one again.
-      await page.getByTestId('welcome-games-chip-celeste').locator('.MuiChip-deleteIcon').click();
-      await expect(page.getByTestId('welcome-games-chip-celeste')).toHaveCount(0);
+      await page.getByTestId('welcome-games-chip-hollow-knight').locator('.MuiChip-deleteIcon').click();
+      await expect(page.getByTestId('welcome-games-chip-hollow-knight')).toHaveCount(0);
 
       // Pick straight from the grid: clicking a card toggles it selected.
       const csCard = page.getByTestId('game-card-counter-strike-2');

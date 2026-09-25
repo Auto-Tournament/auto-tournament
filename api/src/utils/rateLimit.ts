@@ -1,7 +1,7 @@
 /**
  * Small in-memory, per-IP fixed-window rate limiter.
  *
- * For public endpoints that fan out to a third party (IGDB game search), so a
+ * For public endpoints that fan out to a third party (Wikidata game search), so a
  * single client cannot burn the instance's upstream quota. In memory is enough:
  * one API process per instance, and a restart forgetting the counts is fine.
  *

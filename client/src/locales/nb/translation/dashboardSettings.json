@@ -23,8 +23,7 @@
       "title": "Fullfør oppsettet",
       "openSettings": "Åpne innstillinger",
       "steam": "Steam-innlogging",
-      "discord": "Discord-innlogging (valgfritt)",
-      "igdb": "Spillomslag via IGDB (valgfritt)"
+      "discord": "Discord-innlogging (valgfritt)"
     },
     "tournaments": {
       "title": "Turnering",

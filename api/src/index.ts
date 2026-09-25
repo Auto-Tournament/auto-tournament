@@ -46,10 +46,7 @@ import {
 import { installHostBridge } from './modules/hostBridge';
 import { environmentTrustedKeys } from './modules/trustedKeys';
 import { recoverActiveMatches } from './services/matchRecoveryService';
-import {
-  enrichBuiltinGames,
-  resolveStoredGamesAgainstIgdb,
-} from './services/gameEnrichmentService';
+import { enrichBuiltinGames } from './services/gameEnrichmentService';
 import { refreshGameIcons } from './services/gameIconService';
 import { scheduler } from './core/scheduler';
 import { steamService } from './services/steamService';
@@ -564,18 +561,14 @@ process.on('uncaughtException', (err) => {
           log.warn('Failed to seed admins from ADMIN_STEAM_IDS on startup', { error });
         }),
         // Best-effort, never blocks: gives built-in games (installed modules
-        // + the popular list) a real image/genres from Wikidata (and IGDB
-        // covers, if configured). See gameEnrichmentService for the
-        // once-per-7-days-per-game throttling and the CI/test opt-out.
+        // + the popular list) a real image/genres from Wikidata. See
+        // gameEnrichmentService for the once-per-7-days-per-game throttling
+        // and the CI/test opt-out.
         enrichBuiltinGames()
-          // Then, without holding up startup, games stored before IGDB was
-          // set up get its covers (rate-limited; see the function).
-          .then(async () => {
-            await resolveStoredGamesAgainstIgdb();
-            // Then app icons for games no module or pack draws (Steam client
-            // icons; background, rate-limited, see gameIconService).
-            await refreshGameIcons();
-          })
+          // Then, without holding up startup, app icons for games no module
+          // or pack draws (Steam client icons; background, rate-limited, see
+          // gameIconService).
+          .then(() => refreshGameIcons())
           .catch((error) => {
             log.warn('Failed to enrich built-in games on startup', { error });
           }),

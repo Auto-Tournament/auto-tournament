@@ -20,7 +20,7 @@ const { color } = tokens;
  * one CS2 game (see `useTournamentList`'s comment), so the games actually
  * *present* in the list would make this filter a no-op. This mirrors the
  * platform's catalog of common games instead, the same slugs the game picker
- * offers before IGDB search kicks in — 3.1's per-tournament game field
+ * offers before catalogue search kicks in — 3.1's per-tournament game field
  * replaces this with a filter built purely from what's on screen.
  */
 const GAME_FILTER_OPTIONS: Array<{ slug: string; name: string }> = [

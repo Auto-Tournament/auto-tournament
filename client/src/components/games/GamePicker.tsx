@@ -29,7 +29,7 @@ interface GamePickerProps {
 }
 
 /**
- * Pick the games you play: type-to-search (IGDB-backed, debounced), up to
+ * Pick the games you play: type-to-search (Wikidata-backed, debounced), up to
  * three suggestions under the input, picked games as removable chips.
  *
  * The search box is an MUI Autocomplete, so the combobox semantics come with
@@ -46,7 +46,6 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
     games: [],
     failed: false,
   });
-  const [fromIgdb, setFromIgdb] = useState(false);
   const [fromWikidata, setFromWikidata] = useState(false);
   const [suggestions, setSuggestions] = useState<GameSummary[]>([]);
 
@@ -76,7 +75,6 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
         .then((res) => {
           setResolved({ q: query, games: res.games, failed: false });
           // Sticky for this picker: the credit stays once external data is on screen.
-          if (res.fromIgdb) setFromIgdb(true);
           if (res.fromWikidata) setFromWikidata(true);
         })
         .catch((err: unknown) => {
@@ -111,11 +109,10 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
         : t('games.picker.noResults');
 
   // Picked games carry the credit of whichever external source supplied them,
-  // even once search has moved on (e.g. after a reload). IGDB takes priority
-  // over Wikidata if a session somehow saw both.
-  const showIgdbCredit = fromIgdb || value.some((g) => g.source === 'igdb');
-  const showWikidataCredit = !showIgdbCredit && (fromWikidata || value.some((g) => g.source === 'wikidata'));
-  const showCredit = showIgdbCredit || showWikidataCredit;
+  // even once search has moved on (e.g. after a reload). A game found back
+  // when IGDB search still existed (`source === 'igdb'`) is credited to
+  // Wikidata too — that is the only external source left.
+  const showCredit = fromWikidata || value.some((g) => g.source === 'wikidata' || g.source === 'igdb');
 
   return (
     <Stack spacing={2} data-testid="game-picker">
@@ -273,18 +270,14 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
       </Box>
 
       {showCredit && (
-        <Typography variant="caption" color="text.secondary" data-testid="igdb-credit">
-          {showWikidataCredit ? (
-            <ExternalLink
-              href="https://www.wikidata.org"
-              color="inherit"
-              data-testid="wikidata-credit-link"
-            >
-              {t('games.picker.creditWikidata')}
-            </ExternalLink>
-          ) : (
-            t('games.picker.credit')
-          )}
+        <Typography variant="caption" color="text.secondary" data-testid="wikidata-credit">
+          <ExternalLink
+            href="https://www.wikidata.org"
+            color="inherit"
+            data-testid="wikidata-credit-link"
+          >
+            {t('games.picker.creditWikidata')}
+          </ExternalLink>
         </Typography>
       )}
     </Stack>
