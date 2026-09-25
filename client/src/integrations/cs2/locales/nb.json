@@ -23,7 +23,7 @@
         "hint": "Koble til, oppdater, helse"
       },
       "maps": {
-        "label": "Baner",
+        "label": "Kart",
         "hint": "Pooler og bilder"
       }
     },
@@ -49,7 +49,7 @@
   "managePage": {
     "rail": {
       "servers": "Servere",
-      "maps": "Baner"
+      "maps": "Kart"
     },
     "status": {
       "serversFree": "LEDIGE SERVERE"

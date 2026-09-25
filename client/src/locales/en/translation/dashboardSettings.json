@@ -27,8 +27,8 @@
       "igdb": "Game covers via IGDB (optional)"
     },
     "tournaments": {
-      "title": "Tournaments",
-      "empty": "No tournaments yet. Create one to get started.",
+      "title": "Tournament",
+      "empty": "This site runs one tournament at a time. Create it, and it shows up here, on Browse and on its event page.",
       "status": {
         "setup": "Draft",
         "ready": "Sign-up",
@@ -36,22 +36,26 @@
         "completed": "Finished"
       },
       "state": {
-        "draftEmpty": "Not published yet",
-        "draftTeams": "Draft · {{count}} team selected",
-        "draftTeamsPlural": "Draft · {{count}} teams selected",
-        "readyTeams": "{{count}} team entered · sign-up open",
-        "readyTeamsPlural": "{{count}} teams entered · sign-up open",
-        "inProgressTeams": "{{count}} team · in progress",
-        "inProgressTeamsPlural": "{{count}} teams · in progress",
-        "completedTeams": "{{count}} team took part",
-        "completedTeamsPlural": "{{count}} teams took part",
+        "teams_one": "{{count}} team",
+        "teams_other": "{{count}} teams",
+        "entered_one": "{{count}} team entered",
+        "entered_other": "{{count}} teams entered",
+        "draftTeams_one": "Draft · {{count}} team selected",
+        "draftTeams_other": "Draft · {{count}} teams selected",
+        "draftEmpty": "Draft · no teams yet",
+        "live_one": "{{count}} match live",
+        "live_other": "{{count}} matches live",
+        "completed_one": "{{count}} team took part",
+        "completed_other": "{{count}} teams took part",
         "winner": "Winner: {{name}}"
       },
       "actions": {
         "manage": "Manage",
         "continueSetup": "Continue setup",
         "view": "View"
-      }
+      },
+      "eventPage": "Event page",
+      "emptyTitle": "No tournament yet"
     },
     "site": {
       "title": "Site",
@@ -92,8 +96,10 @@
       "title": "People",
       "open": "Open",
       "players": "Players",
-      "admins": "Admins"
-    }
+      "admins": "Admins",
+      "signedInThisWeek": "Signed in this week"
+    },
+    "loading": "Loading the admin home"
   },
   "settingsPage": {
     "title": "Settings",
@@ -158,6 +164,15 @@
     },
     "success": {
       "saveSettings": "Settings saved"
+    },
+    "site": {
+      "title": "Site",
+      "description": "What this site is called. The admin home uses it as its heading.",
+      "label": "Site name",
+      "helper": "Leave it empty to use \"Auto Tournament\".",
+      "save": "Save",
+      "saved": "Site name saved",
+      "saveFailed": "Could not save the site name"
     }
   },
   "managePage": {

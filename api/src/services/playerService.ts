@@ -37,6 +37,8 @@ export interface PlayerRecord {
    * import may fill the ID, and never leaves the service.
    */
   discord_id_edited_at?: number | null;
+  /** Epoch seconds of the last sign-in; null when never recorded. Admin-only. */
+  last_sign_in_at?: number | null;
 }
 
 export interface CreatePlayerInput {
@@ -85,6 +87,8 @@ export interface PlayerResponse {
  */
 export interface PlayerAdminResponse extends PlayerResponse {
   discordId: string | null;
+  /** Epoch seconds of the player's last sign-in; null when never recorded. */
+  lastSignInAt: number | null;
 }
 
 /** Thrown by explicit edits when `discordId` fails validation; routes map it to 400. */
@@ -96,22 +100,23 @@ export class InvalidDiscordIdError extends Error {
 }
 
 /**
- * Remove `discord_id` (and its edit stamp) from a raw row before it leaves the
- * service.
+ * Remove `discord_id` (and its edit stamp) and `last_sign_in_at` from a raw
+ * row before it leaves the service.
  *
  * `SELECT *` rows are handed to callers that return them unmapped (admin
  * `GET /api/tournament/:id/players` via `getRegisteredPlayers`), and to code
  * that may be public tomorrow. Stripping here keeps the columns opt-in. The
  * stamp goes too: "this child's Discord ID was removed by hand" is itself
- * something about the ID.
+ * something about the ID. When someone last signed in is admin-only as well.
  */
-function withoutDiscordId<T extends { discord_id?: unknown; discord_id_edited_at?: unknown }>(
-  row: T
-): Omit<T, 'discord_id' | 'discord_id_edited_at'> {
+function withoutDiscordId<
+  T extends { discord_id?: unknown; discord_id_edited_at?: unknown; last_sign_in_at?: unknown },
+>(row: T): Omit<T, 'discord_id' | 'discord_id_edited_at' | 'last_sign_in_at'> {
   const rest: Partial<T> = { ...row };
   delete rest.discord_id;
   delete rest.discord_id_edited_at;
-  return rest as Omit<T, 'discord_id' | 'discord_id_edited_at'>;
+  delete rest.last_sign_in_at;
+  return rest as Omit<T, 'discord_id' | 'discord_id_edited_at' | 'last_sign_in_at'>;
 }
 
 class PlayerService {
@@ -141,7 +146,19 @@ class PlayerService {
     return {
       ...this.toResponse(player),
       discordId: player.discord_id ? player.discord_id : null,
+      lastSignInAt: player.last_sign_in_at ?? null,
     };
+  }
+
+  /**
+   * Stamp a sign-in (Steam or SSO) on the player's row, for the admin home's
+   * "Signed in this week". A player with no row yet is left alone.
+   */
+  async recordSignIn(playerId: string): Promise<void> {
+    await db.runAsync('UPDATE players SET last_sign_in_at = ? WHERE id = ?', [
+      Math.floor(Date.now() / 1000),
+      playerId,
+    ]);
   }
 
   /**
@@ -228,7 +245,11 @@ class PlayerService {
       return null;
     }
     const visible = await this.toVisibleResponse(player);
-    return { ...visible, discordId: player.discord_id ? player.discord_id : null };
+    return {
+      ...visible,
+      discordId: player.discord_id ? player.discord_id : null,
+      lastSignInAt: player.last_sign_in_at ?? null,
+    };
   }
 
   /**
@@ -248,6 +269,7 @@ class PlayerService {
       players.map(async (p) => ({
         ...(await this.toVisibleResponse(p)),
         discordId: p.discord_id ? p.discord_id : null,
+        lastSignInAt: p.last_sign_in_at ?? null,
       }))
     );
   }

@@ -1,33 +1,19 @@
 import { pageTitle } from '../utils/pageTitle';
-import { useMemo, useState } from 'react';
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import {
-  Box,
-  Button,
-  Chip,
-  CircularProgress,
-  Container,
-  FormControl,
-  InputAdornment,
-  MenuItem,
-  Select,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Container, InputBase, MenuItem, Select } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { GameMark } from '../components/common/GameMark';
-import { PageHead, Row, RowList } from '../components/common/ui';
+import { EmptyPanel, LiveChip, PageHead, Row, RowList } from '../components/common/ui';
 import { useTournamentList, type TournamentSummary } from '../hooks/useTournamentList';
-import { MATCH_FORMATS } from '../constants/tournament';
+import { useAuth } from '../contexts/AuthContext';
+import { paths } from '../paths';
+import { formatLine, tournamentAction, tournamentWhen } from '../utils/tournamentSummary';
+import { tokens, fontMono, radii, textSize } from '../theme/tokens';
 
-/** "bo3" -> "Bo3" */
-function formatBadge(format: string): string {
-  return format.length >= 2 ? format[0].toUpperCase() + format.slice(1) : format;
-}
+const { color } = tokens;
 
 /**
  * Games offered in the filter. Today's tournament data only ever carries the
@@ -53,8 +39,60 @@ function statusBucket(tournament: TournamentSummary): StatusFilter {
   return 'registration_open';
 }
 
+/**
+ * The row grid (the draft's `.list li`): mark, name, format, when, action.
+ * Below `md` the format, when and action stack under the name.
+ */
+const ROW_COLUMNS = {
+  xs: 'auto minmax(0, 1fr)',
+  md: 'auto minmax(0, 2fr) minmax(0, 1.2fr) 10rem auto',
+} as const;
+const STACKED_CELL_SX = { gridColumn: { xs: 2, md: 'auto' } } as const;
+
+/** A pill filter with its label inline (the draft's `.field`). */
+function FilterField({ label, grow, children }: { label?: string; grow?: boolean; children: ReactNode }) {
+  return (
+    <Box
+      component="label"
+      sx={{
+        flex: grow ? '1 1 16rem' : '0 1 auto',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1,
+        minWidth: 0,
+        px: 1.75,
+        py: 0.5,
+        border: `1px solid ${color.rule}`,
+        borderRadius: radii.pill,
+        fontSize: textSize.sm,
+        color: color.muted,
+        '&:focus-within': { outline: `2px solid ${color.focus}`, outlineOffset: 2 },
+      }}
+    >
+      {label}
+      {children}
+    </Box>
+  );
+}
+
+const selectSx = {
+  fontSize: textSize.sm,
+  color: color.ink,
+  '& .MuiSelect-select': { py: 0.5, pr: '1.75rem !important', pl: 0 },
+  '& .MuiSelect-select:focus': { bgcolor: 'transparent' },
+} as const;
+
+/**
+ * Browse ("/browse"): the tournaments this site runs, with search and
+ * filters, as the draft's table-like row list.
+ *
+ * 3.0 hosts one tournament per site (multi-tournament is 3.1), so the list
+ * holds that one row or nothing: no invented rows, and an honest empty state
+ * with "Create tournament" for an admin while there is none.
+ */
 export default function Browse() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const { isAuthenticated: isAdmin } = useAuth();
   const { tournaments, loading, error } = useTournamentList();
   const [search, setSearch] = useState('');
   const [game, setGame] = useState('all');
@@ -82,11 +120,18 @@ export default function Browse() {
   }, [tournaments]);
 
   const showWhereFilter = useMemo(() => tournaments.some((tour) => !!tour.location), [tournaments]);
+  const filtersActive =
+    search.trim() !== '' || game !== 'all' || status !== 'all' || (showWhereFilter && where !== 'all');
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return tournaments.filter((tour) => {
-      if (q && !tour.name.toLowerCase().includes(q) && !(tour.location ?? '').toLowerCase().includes(q)) {
+      if (
+        q &&
+        !tour.name.toLowerCase().includes(q) &&
+        !(tour.location ?? '').toLowerCase().includes(q) &&
+        !(tour.organizer ?? '').toLowerCase().includes(q)
+      ) {
         return false;
       }
       if (game !== 'all' && tour.game !== game) return false;
@@ -100,128 +145,208 @@ export default function Browse() {
     });
   }, [tournaments, search, game, status, where, showWhereFilter]);
 
+  const clearFilters = () => {
+    setSearch('');
+    setGame('all');
+    setStatus('all');
+    setWhere('all');
+  };
+
+  // One tournament per site in 3.0: an admin can create it only while none exists.
+  const canCreate = isAdmin && !loading && !error && tournaments.length === 0;
+  const hasTournaments = !loading && !error && tournaments.length > 0;
+
   return (
     <Box minHeight="100vh" bgcolor="transparent" data-testid="browse-page">
       <TopNavBar />
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
-        <PageHead title={t('browsePage.title')} sx={{ mb: 3 }} />
-
-        <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap sx={{ mb: 3 }}>
-          <TextField
-            size="small"
-            placeholder={t('browsePage.searchPlaceholder')}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            data-testid="browse-search"
-            sx={{ flex: '1 1 16rem', minWidth: 0 }}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" />
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
-          <FormControl size="small" sx={{ minWidth: 160 }}>
-            <Select
-              value={game}
-              onChange={(e) => setGame(e.target.value)}
-              data-testid="browse-filter-game"
-              displayEmpty
-            >
-              <MenuItem value="all">{t('browsePage.filters.allGames')}</MenuItem>
-              {gameOptions.map((g) => (
-                <MenuItem key={g.slug} value={g.slug} data-testid={`browse-filter-game-${g.slug}`}>
-                  {g.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl size="small" sx={{ minWidth: 160 }}>
-            <Select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as StatusFilter)}
-              data-testid="browse-filter-status"
-              displayEmpty
-            >
-              {statusOptions.map((s) => (
-                <MenuItem key={s} value={s}>
-                  {t(`browsePage.filters.status.${s}`)}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          {showWhereFilter && (
-            <FormControl size="small" sx={{ minWidth: 140 }}>
-              <Select
-                value={where}
-                onChange={(e) => setWhere(e.target.value as WhereFilter)}
-                data-testid="browse-filter-where"
-                displayEmpty
+        <PageHead
+          title={t('browsePage.title')}
+          sx={{ mb: 3 }}
+          actions={
+            canCreate ? (
+              <Button
+                component={RouterLink}
+                to={paths.tournament}
+                variant="outlined"
+                data-testid="browse-create-tournament"
               >
-                <MenuItem value="all">{t('browsePage.filters.where.all')}</MenuItem>
-                <MenuItem value="online">{t('browsePage.filters.where.online')}</MenuItem>
-                <MenuItem value="lan">{t('browsePage.filters.where.lan')}</MenuItem>
+                {t('browsePage.createTournament')}
+              </Button>
+            ) : undefined
+          }
+        />
+
+        {hasTournaments && (
+          <Box role="search" sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center', mb: 3 }}>
+            <FilterField grow>
+              <SearchIcon sx={{ fontSize: 18 }} aria-hidden />
+              <InputBase
+                type="search"
+                placeholder={t('browsePage.searchPlaceholder')}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                data-testid="browse-search"
+                inputProps={{ 'aria-label': t('browsePage.searchLabel') }}
+                sx={{ flex: 1, minWidth: 0, fontSize: textSize.sm, color: color.ink }}
+              />
+            </FilterField>
+            <FilterField label={t('browsePage.filters.gameLabel')}>
+              <Select
+                variant="standard"
+                disableUnderline
+                value={game}
+                onChange={(e) => setGame(e.target.value)}
+                data-testid="browse-filter-game"
+                sx={selectSx}
+              >
+                <MenuItem value="all">{t('browsePage.filters.allGames')}</MenuItem>
+                {gameOptions.map((g) => (
+                  <MenuItem key={g.slug} value={g.slug} data-testid={`browse-filter-game-${g.slug}`}>
+                    {g.name}
+                  </MenuItem>
+                ))}
               </Select>
-            </FormControl>
-          )}
-        </Stack>
+            </FilterField>
+            <FilterField label={t('browsePage.filters.statusLabel')}>
+              <Select
+                variant="standard"
+                disableUnderline
+                value={status}
+                onChange={(e) => setStatus(e.target.value as StatusFilter)}
+                data-testid="browse-filter-status"
+                sx={selectSx}
+              >
+                {statusOptions.map((s) => (
+                  <MenuItem key={s} value={s}>
+                    {t(`browsePage.filters.status.${s}`)}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FilterField>
+            {showWhereFilter && (
+              <FilterField label={t('browsePage.filters.whereLabel')}>
+                <Select
+                  variant="standard"
+                  disableUnderline
+                  value={where}
+                  onChange={(e) => setWhere(e.target.value as WhereFilter)}
+                  data-testid="browse-filter-where"
+                  sx={selectSx}
+                >
+                  <MenuItem value="all">{t('browsePage.filters.where.all')}</MenuItem>
+                  <MenuItem value="online">{t('browsePage.filters.where.online')}</MenuItem>
+                  <MenuItem value="lan">{t('browsePage.filters.where.lan')}</MenuItem>
+                </Select>
+              </FilterField>
+            )}
+          </Box>
+        )}
 
         {loading ? (
           <Box display="flex" justifyContent="center" py={6}>
-            <CircularProgress />
+            <CircularProgress aria-label={t('browsePage.loading')} />
           </Box>
         ) : error ? (
-          <Typography color="error">{t('browsePage.loadError')}</Typography>
+          <Alert severity="error">{t('browsePage.loadError')}</Alert>
+        ) : tournaments.length === 0 ? (
+          <EmptyPanel
+            title={t('browsePage.emptyNone.title')}
+            description={
+              isAdmin ? t('browsePage.emptyNone.descriptionAdmin') : t('browsePage.emptyNone.description')
+            }
+            data-testid="browse-empty"
+          />
         ) : filtered.length === 0 ? (
-          <Typography variant="body2" color="text.secondary" data-testid="browse-empty">
-            {t('browsePage.empty')}
-          </Typography>
+          <EmptyPanel
+            title={t('browsePage.emptyFiltered.title')}
+            description={t('browsePage.emptyFiltered.description')}
+            data-testid="browse-empty"
+          >
+            {filtersActive && (
+              <Button variant="outlined" size="small" onClick={clearFilters} data-testid="browse-clear-filters">
+                {t('browsePage.emptyFiltered.clear')}
+              </Button>
+            )}
+          </EmptyPanel>
         ) : (
-          <RowList data-testid="browse-list">
-            {filtered.map((tournament) => (
-              <Row key={tournament.id} data-testid={`browse-tournament-${tournament.id}`}>
-                <GameMark name={tournament.game ?? tournament.name} slug={tournament.game} size={36} />
-                <Box sx={{ minWidth: 0, flex: '1 1 12rem' }}>
-                  <Typography variant="subtitle1" fontWeight={600} noWrap>
-                    {tournament.name}
-                  </Typography>
-                  {tournament.location && (
-                    <Typography variant="caption" color="text.secondary" noWrap display="block">
-                      {tournament.location}
-                    </Typography>
-                  )}
-                </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ flex: '0 0 auto' }}>
-                  {[
-                    t('browsePage.teamsCount', { count: tournament.teamCount }),
-                    t(`tournament.typeSelector.types.${tournament.type}.label`),
-                    MATCH_FORMATS.find((f) => f.value === tournament.format)?.label ??
-                      formatBadge(tournament.format),
-                  ].join(' · ')}
-                </Typography>
-                <Box sx={{ flex: '0 0 auto' }}>
-                  {tournament.isLive ? (
-                    <Chip size="small" color="success" label={t('browsePage.status.live')} />
-                  ) : tournament.status === 'completed' ? (
-                    <Chip size="small" label={t('browsePage.status.finished')} />
-                  ) : (
-                    <Chip size="small" variant="outlined" label={t('browsePage.status.registrationOpen')} />
-                  )}
-                </Box>
-                <Button
-                  component={RouterLink}
-                  to={`/tournament/${tournament.id}`}
-                  variant={tournament.isLive ? 'outlined' : 'contained'}
-                  size="small"
-                  data-testid={`browse-action-${tournament.id}`}
+          <RowList data-testid="browse-list" aria-label={t('browsePage.listLabel')}>
+            <Row
+              columns={ROW_COLUMNS}
+              aria-hidden
+              sx={{
+                display: { xs: 'none', md: 'grid' },
+                py: 1.5,
+                fontFamily: fontMono,
+                fontSize: textSize.xs,
+                fontWeight: 500,
+                lineHeight: 1,
+                color: color.muted,
+                textTransform: 'uppercase',
+              }}
+            >
+              <span />
+              <span>{t('browsePage.columns.tournament')}</span>
+              <span>{t('browsePage.columns.format')}</span>
+              <span>{t('browsePage.columns.when')}</span>
+              <span />
+            </Row>
+            {filtered.map((tournament) => {
+              const when = tournamentWhen(t, tournament, i18n.language);
+              const action = tournamentAction(tournament);
+              const byline = [tournament.organizer, tournament.location].filter(Boolean).join(' · ');
+              return (
+                <Row
+                  key={tournament.id}
+                  columns={ROW_COLUMNS}
+                  data-testid={`browse-tournament-${tournament.id}`}
                 >
-                  {tournament.isLive ? t('browsePage.watch') : t('browsePage.view')}
-                </Button>
-              </Row>
-            ))}
+                  <GameMark name={tournament.game ?? tournament.name} slug={tournament.game} size={36} />
+                  <Box sx={{ minWidth: 0 }}>
+                    <Box component="b" sx={{ display: 'block', fontWeight: 600, overflowWrap: 'anywhere' }}>
+                      {tournament.name}
+                    </Box>
+                    {byline && (
+                      <Box component="small" sx={{ display: 'block', color: color.muted, fontSize: textSize.xs }}>
+                        {byline}
+                      </Box>
+                    )}
+                  </Box>
+                  <Box
+                    component="span"
+                    data-testid={`browse-format-${tournament.id}`}
+                    sx={[STACKED_CELL_SX, { fontSize: textSize.sm, color: color.ink2 }]}
+                  >
+                    {formatLine(t, tournament)}
+                  </Box>
+                  <Box
+                    component="span"
+                    data-testid={`browse-when-${tournament.id}`}
+                    sx={[
+                      STACKED_CELL_SX,
+                      {
+                        fontSize: textSize.sm,
+                        fontVariantNumeric: 'tabular-nums',
+                        color: when.kind === 'text' && when.muted ? color.muted : color.ink,
+                      },
+                    ]}
+                  >
+                    {when.kind === 'live' ? <LiveChip label={t('browsePage.status.live')} /> : when.text}
+                  </Box>
+                  <Box sx={[STACKED_CELL_SX, { justifySelf: 'start' }]}>
+                    <Button
+                      component={RouterLink}
+                      to={action.to}
+                      variant={action.primary ? 'contained' : 'outlined'}
+                      size="small"
+                      data-testid={`browse-action-${tournament.id}`}
+                    >
+                      {t(`browsePage.actions.${action.key}`)}
+                    </Button>
+                  </Box>
+                </Row>
+              );
+            })}
           </RowList>
         )}
       </Container>

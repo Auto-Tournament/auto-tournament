@@ -428,6 +428,8 @@ router.post('/login-player', async (req: Request, res: Response): Promise<void> 
     await playerService.getOrCreatePlayer(steamId, name);
     await playerService.updatePlayer(steamId, { isAdmin: false });
     await setGamesPromptForTest(steamId, req.body);
+    // A sign-in, like the real callbacks record (admin home's "Signed in this week").
+    await playerService.recordSignIn(steamId);
 
     res.cookie('player_steam_id', signPlayerSteamId(steamId), {
       httpOnly: false,

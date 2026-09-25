@@ -179,16 +179,29 @@
       "steamLinked": "Steam linked",
       "titleAll": "Open tournaments",
       "emptyAll": "No open tournaments right now."
-    }
+    },
+    "summary": {
+      "match": "You have a match waiting.",
+      "open_one": "{{count}} tournament is open for games you play.",
+      "open_other": "{{count}} tournaments are open for games you play.",
+      "openAll_one": "{{count}} tournament is open on this site.",
+      "openAll_other": "{{count}} tournaments are open on this site.",
+      "none": "Nothing needs you right now."
+    },
+    "yourGames": "Games you play",
+    "loading": "Loading your home page",
+    "nextMatch": "Your next match"
   },
   "browsePage": {
     "title": "Browse tournaments",
-    "searchPlaceholder": "Search by name or location",
+    "searchPlaceholder": "Search by name, organizer or place",
+    "searchLabel": "Search tournaments",
+    "loading": "Loading tournaments",
     "loadError": "Could not load tournaments.",
-    "empty": "No tournaments match your filters.",
-    "teamsCount": "{{count}} teams",
-    "watch": "Watch",
-    "view": "View",
+    "listLabel": "Tournaments",
+    "createTournament": "Create tournament",
+    "teamsCount_one": "{{count}} team",
+    "teamsCount_other": "{{count}} teams",
     "filters": {
       "allGames": "All games",
       "status": {
@@ -201,12 +214,39 @@
         "all": "Online and LAN",
         "online": "Online",
         "lan": "LAN"
-      }
+      },
+      "gameLabel": "Game",
+      "statusLabel": "Status",
+      "whereLabel": "Where"
+    },
+    "columns": {
+      "tournament": "Tournament",
+      "format": "Format",
+      "when": "When"
+    },
+    "when": {
+      "starts": "Starts {{date}}",
+      "finished": "Finished",
+      "finishedOn": "Finished {{date}}",
+      "noDate": "No date yet"
+    },
+    "actions": {
+      "signUp": "Sign up",
+      "watch": "Watch",
+      "results": "Results"
     },
     "status": {
-      "live": "Live",
-      "finished": "Finished",
-      "registrationOpen": "Registration open"
+      "live": "Live"
+    },
+    "emptyNone": {
+      "title": "No tournaments yet",
+      "description": "When this site runs a tournament, it shows up here.",
+      "descriptionAdmin": "This site has no tournament yet. Create one, and it shows up here."
+    },
+    "emptyFiltered": {
+      "title": "No tournaments match your filters",
+      "description": "Try another game or status, or clear the filters.",
+      "clear": "Clear filters"
     }
   },
   "modulesPage": {

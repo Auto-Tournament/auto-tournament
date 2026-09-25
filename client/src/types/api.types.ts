@@ -155,6 +155,8 @@ export interface PlayerDetail {
   isAdmin?: boolean;
   /** Discord user ID (17–20 digits). Only returned by admin endpoints. */
   discordId?: string | null;
+  /** Epoch seconds of the last sign-in; null when never recorded. Only returned by admin endpoints. */
+  lastSignInAt?: number | null;
 }
 
 export interface PlayersResponse extends ApiResponse {

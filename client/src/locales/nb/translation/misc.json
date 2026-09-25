@@ -174,21 +174,34 @@
     },
     "openForYourGames": {
       "title": "Åpent for dine spill",
-      "browseAll": "Bla gjennom alle turneringer",
+      "browseAll": "Utforsk alle turneringer",
       "empty": "Ingen åpne turneringer for dine spill akkurat nå.",
       "steamLinked": "Steam koblet til",
       "titleAll": "Åpne turneringer",
       "emptyAll": "Ingen åpne turneringer akkurat nå."
-    }
+    },
+    "summary": {
+      "match": "Du har en kamp som venter.",
+      "open_one": "{{count}} turnering er åpen for spill du spiller.",
+      "open_other": "{{count}} turneringer er åpne for spill du spiller.",
+      "openAll_one": "{{count}} turnering er åpen på denne siden.",
+      "openAll_other": "{{count}} turneringer er åpne på denne siden.",
+      "none": "Ingenting venter på deg akkurat nå."
+    },
+    "yourGames": "Spill du spiller",
+    "loading": "Laster hjemmesiden din",
+    "nextMatch": "Din neste kamp"
   },
   "browsePage": {
-    "title": "Bla gjennom turneringer",
-    "searchPlaceholder": "Søk etter navn eller sted",
+    "title": "Utforsk turneringer",
+    "searchPlaceholder": "Søk etter navn, arrangør eller sted",
+    "searchLabel": "Søk i turneringer",
+    "loading": "Laster turneringer",
     "loadError": "Kunne ikke laste turneringer.",
-    "empty": "Ingen turneringer samsvarer med filtrene dine.",
-    "teamsCount": "{{count}} lag",
-    "watch": "Se",
-    "view": "Vis",
+    "listLabel": "Turneringer",
+    "createTournament": "Opprett turnering",
+    "teamsCount_one": "{{count}} lag",
+    "teamsCount_other": "{{count}} lag",
     "filters": {
       "allGames": "Alle spill",
       "status": {
@@ -201,12 +214,39 @@
         "all": "Nett og LAN",
         "online": "Nett",
         "lan": "LAN"
-      }
+      },
+      "gameLabel": "Spill",
+      "statusLabel": "Status",
+      "whereLabel": "Hvor"
+    },
+    "columns": {
+      "tournament": "Turnering",
+      "format": "Format",
+      "when": "Når"
+    },
+    "when": {
+      "starts": "Starter {{date}}",
+      "finished": "Ferdig",
+      "finishedOn": "Ferdig {{date}}",
+      "noDate": "Ingen dato ennå"
+    },
+    "actions": {
+      "signUp": "Meld på",
+      "watch": "Se",
+      "results": "Resultater"
     },
     "status": {
-      "live": "Live",
-      "finished": "Fullført",
-      "registrationOpen": "Registrering åpen"
+      "live": "Live"
+    },
+    "emptyNone": {
+      "title": "Ingen turneringer ennå",
+      "description": "Når denne siden arrangerer en turnering, vises den her.",
+      "descriptionAdmin": "Denne siden har ingen turnering ennå. Opprett en, så vises den her."
+    },
+    "emptyFiltered": {
+      "title": "Ingen turneringer passer filtrene",
+      "description": "Prøv et annet spill eller en annen status, eller nullstill filtrene.",
+      "clear": "Nullstill filtre"
     }
   },
   "modulesPage": {

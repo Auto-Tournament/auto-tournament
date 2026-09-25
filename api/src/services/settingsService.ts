@@ -21,6 +21,8 @@ export type CoreSettingKey =
   | 'webhook_url'
   | 'ratings_enabled'
   | 'allow_self_register'
+  // The site's own name (the admin home's H1). Unset = DEFAULT_SITE_NAME.
+  | 'site_name'
   // IGDB (game catalogue) credentials. The secret is write-only: it is never
   // returned by any endpoint, and env (IGDB_CLIENT_ID / IGDB_CLIENT_SECRET) wins.
   | 'igdb_client_id'
@@ -31,6 +33,12 @@ export interface AppSetting {
   value: string | null;
   updated_at: number;
 }
+
+/** What the site is called until an admin names it. */
+export const DEFAULT_SITE_NAME = 'Auto Tournament';
+
+/** Longest site name the store accepts. */
+export const SITE_NAME_MAX_LENGTH = 80;
 
 function normalizeUrl(url: string): string {
   const normalized = url.replace(/\/+$/, '');
@@ -52,6 +60,18 @@ function validateWebhookUrl(url: string): void {
  * the integrations' ones (see `SettingDefinition.order`).
  */
 export const CORE_SETTINGS: ReadonlyArray<SettingDefinition & { key: CoreSettingKey }> = [
+  {
+    key: 'site_name',
+    field: 'siteName',
+    order: 5,
+    normalize(trimmed) {
+      if (trimmed.length > SITE_NAME_MAX_LENGTH) {
+        throw new Error(`Site name must be at most ${SITE_NAME_MAX_LENGTH} characters`);
+      }
+      return { value: trimmed, message: `Site name updated to ${trimmed}` };
+    },
+    applyRequest: stringRequest('siteName'),
+  },
   {
     key: 'webhook_url',
     field: 'webhookUrl',
@@ -181,6 +201,12 @@ class SettingsService {
       if (error) return error;
     }
     return undefined;
+  }
+
+  /** The site's name, or `DEFAULT_SITE_NAME` while none is set. */
+  async getSiteName(): Promise<string> {
+    const value = await this.getSetting('site_name');
+    return value?.trim() || DEFAULT_SITE_NAME;
   }
 
   async getWebhookUrl(): Promise<string | null> {
