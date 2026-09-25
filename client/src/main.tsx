@@ -9,6 +9,7 @@ import i18n from './i18n';
 import { theme as baseTheme, activeThemeId, tokens } from './theme';
 import { createTheme } from '@mui/material/styles';
 import { applyFaviconTheme } from './theme/favicon';
+import { IconDefaults } from './theme/icons';
 import { bootCodeModules } from './module-loader/boot';
 
 // Log application version on startup (injected by Vite from package.json)
@@ -58,7 +59,10 @@ const Root: React.FC = () => {
       <I18nextProvider i18n={i18n}>
         <ThemeProvider theme={muiTheme}>
           <CssBaseline />
-          <App />
+          {/* Phosphor's size, weight and colour for every icon (theme/icons). */}
+          <IconDefaults>
+            <App />
+          </IconDefaults>
         </ThemeProvider>
       </I18nextProvider>
     </React.StrictMode>

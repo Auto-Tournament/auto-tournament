@@ -1,6 +1,23 @@
 import React from 'react';
 import { Box } from '@mui/material';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import {
+  ArrowSquareOutIcon,
+  BellIcon,
+  BookOpenIcon,
+  ChartLineUpIcon,
+  CodeIcon,
+  GearIcon,
+  GlobeIcon,
+  PuzzlePieceIcon,
+  ScalesIcon,
+  StackIcon,
+  SwordIcon,
+  TreeStructureIcon,
+  TrophyIcon,
+  UserIcon,
+  UsersThreeIcon,
+  WrenchIcon,
+} from '@phosphor-icons/react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useShellIntegrations } from '../../hooks/useShellIntegrations';
@@ -12,6 +29,8 @@ import { paths } from '../../paths';
 import { RAIL_COLUMN_MIN_WIDTH, railColumnSx } from '../../constants/adminLayout';
 import { BELOW_NAV_STICKY_TOP } from '../../constants/navBar';
 import { tokens, fontMono, radii, textSize } from '../../theme/tokens';
+import { ICON_SIZE } from '../../theme/icons';
+import type { IntegrationNavIcon } from '../../integrations/types';
 
 const { color } = tokens;
 
@@ -31,6 +50,11 @@ interface RailItem {
   key: string;
   label: string;
   to: string;
+  /**
+   * Shown before the label, decorative (the label says it). Core's items use
+   * Phosphor; a module's item brings its own (`IntegrationNavItem.icon`).
+   */
+  icon?: IntegrationNavIcon;
   /** Only set where a real count exists; omitted items show no badge. */
   count?: number | null;
   /** Opens outside the app (documentation). */
@@ -76,13 +100,26 @@ export const ManageRail: React.FC = () => {
           key: 'needsYou',
           label: t('managePage.rail.needsYou'),
           to: paths.manage,
+          icon: BellIcon,
           count: needsYouCount,
         },
-        { key: 'matches', label: t('managePage.rail.matches'), to: paths.matches },
-        { key: 'bracket', label: t('managePage.rail.bracket'), to: paths.bracket },
+        { key: 'matches', label: t('managePage.rail.matches'), to: paths.matches, icon: SwordIcon },
+        {
+          key: 'bracket',
+          label: t('managePage.rail.bracket'),
+          to: paths.bracket,
+          icon: TreeStructureIcon,
+        },
         // Only where a result can be argued about at all (3.0 phase D).
         ...(showDisputes
-          ? [{ key: 'disputes', label: t('managePage.rail.disputes'), to: paths.disputes }]
+          ? [
+              {
+                key: 'disputes',
+                label: t('managePage.rail.disputes'),
+                to: paths.disputes,
+                icon: ScalesIcon,
+              },
+            ]
           : []),
       ],
     },
@@ -90,7 +127,12 @@ export const ManageRail: React.FC = () => {
       key: 'tournament',
       label: t('managePage.rail.groups.tournament'),
       items: [
-        { key: 'tournament', label: t('managePage.rail.tournament'), to: paths.tournament },
+        {
+          key: 'tournament',
+          label: t('managePage.rail.tournament'),
+          to: paths.tournament,
+          icon: TrophyIcon,
+        },
         // What players see, once there is a tournament to show.
         ...(tournamentId !== null
           ? [
@@ -98,6 +140,7 @@ export const ManageRail: React.FC = () => {
                 key: 'publicPage',
                 label: t('managePage.rail.publicPage'),
                 to: paths.tournamentOverview.replace(':id', String(tournamentId)),
+                icon: GlobeIcon,
               },
             ]
           : []),
@@ -107,8 +150,8 @@ export const ManageRail: React.FC = () => {
       key: 'people',
       label: t('managePage.rail.groups.people'),
       items: [
-        { key: 'teams', label: t('managePage.rail.teams'), to: paths.teams },
-        { key: 'players', label: t('managePage.rail.players'), to: paths.players },
+        { key: 'teams', label: t('managePage.rail.teams'), to: paths.teams, icon: UsersThreeIcon },
+        { key: 'players', label: t('managePage.rail.players'), to: paths.players, icon: UserIcon },
       ],
     },
     {
@@ -118,24 +161,31 @@ export const ManageRail: React.FC = () => {
         key: item.key,
         label: navItemLabel(t, item, 'rail'),
         to: item.path,
+        icon: item.icon,
       })),
     },
     {
       key: 'configuration',
       label: t('managePage.rail.groups.configuration'),
       items: [
-        { key: 'modules', label: t('managePage.rail.modules'), to: paths.modules },
-        { key: 'templates', label: t('managePage.rail.templates'), to: paths.templates },
-        { key: 'ratings', label: t('managePage.rail.ratings'), to: paths.eloTemplates },
-        { key: 'settings', label: t('managePage.rail.settings'), to: paths.settings },
-        { key: 'adminTools', label: t('managePage.rail.adminTools'), to: paths.admin },
+        { key: 'modules', label: t('managePage.rail.modules'), to: paths.modules, icon: PuzzlePieceIcon },
+        { key: 'templates', label: t('managePage.rail.templates'), to: paths.templates, icon: StackIcon },
+        {
+          key: 'ratings',
+          label: t('managePage.rail.ratings'),
+          to: paths.eloTemplates,
+          icon: ChartLineUpIcon,
+        },
+        { key: 'settings', label: t('managePage.rail.settings'), to: paths.settings, icon: GearIcon },
+        { key: 'adminTools', label: t('managePage.rail.adminTools'), to: paths.admin, icon: WrenchIcon },
         ...(isDevelopment
-          ? [{ key: 'devTools', label: t('managePage.rail.devTools'), to: paths.dev }]
+          ? [{ key: 'devTools', label: t('managePage.rail.devTools'), to: paths.dev, icon: CodeIcon }]
           : []),
         {
           key: 'documentation',
           label: t('managePage.rail.documentation'),
           to: DOCS_URL,
+          icon: BookOpenIcon,
           external: true,
         },
       ],
@@ -169,7 +219,8 @@ export const ManageRail: React.FC = () => {
       sx={{
         // A horizontal scroller under 820px, so it never makes the page
         // scroll sideways; a sticky column beside the page above that. A
-        // plain list, as in the draft: no box around it, no icons.
+        // plain list, as in the draft: no box around it. Each item has an
+        // icon (the owner's call after the draft, which had none).
         ...railColumnSx,
         fontSize: textSize.sm,
       }}
@@ -235,6 +286,7 @@ export const ManageRail: React.FC = () => {
               </Box>
               {group.items.map((item) => {
                 const selected = !item.external && isCurrent(pathname, item.to);
+                const Icon = item.icon;
                 const linkProps = item.external
                   ? { component: 'a' as const, href: item.to, target: '_blank', rel: 'noopener noreferrer' }
                   : { component: RouterLink, to: item.to };
@@ -262,10 +314,39 @@ export const ManageRail: React.FC = () => {
                       '&:focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: 2 },
                     }}
                   >
-                    {item.label}
+                    <Box
+                      component="span"
+                      sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}
+                    >
+                      {Icon && (
+                        <Box
+                          component="span"
+                          data-testid={`manage-rail-${item.key}-icon`}
+                          data-weight={selected ? 'fill' : 'regular'}
+                          sx={{
+                            display: 'inline-flex',
+                            flex: 'none',
+                            // Sized here as well as by `size`, so a module's
+                            // icon that ignores `size` (an MUI one) fits too.
+                            '& > svg': { width: ICON_SIZE.md, height: ICON_SIZE.md },
+                          }}
+                        >
+                          <Icon
+                            size={ICON_SIZE.md}
+                            weight={selected ? 'fill' : 'regular'}
+                            aria-hidden
+                          />
+                        </Box>
+                      )}
+                      {item.label}
+                    </Box>
                     {item.external && (
                       <>
-                        <OpenInNewIcon aria-hidden sx={{ fontSize: 16, color: color.ink2 }} />
+                        <ArrowSquareOutIcon
+                          aria-hidden
+                          size={ICON_SIZE.sm}
+                          style={{ flex: 'none', color: color.ink2 }}
+                        />
                         <Box component="span" sx={visuallyHidden}>
                           {t('managePage.rail.opensInNewTab')}
                         </Box>

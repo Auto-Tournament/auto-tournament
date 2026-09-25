@@ -89,5 +89,12 @@
  * 0.2.7 (additive): `ExternalLink` (and `ExternalLinkProps`), the shared
  * component for a link that leaves the app — icon, `rel`, and the hidden
  * "opens in a new tab" text a module would otherwise have to hand-roll.
+ *
+ * 0.2.8 (additive): Phosphor (`@phosphor-icons/react`) is the platform's icon
+ * set. `IntegrationNavItem.icon` is optional and typed as a Phosphor-shaped
+ * component (`IntegrationNavIconProps`: `size`, `weight`, `aria-hidden`),
+ * which the admin rail now shows beside the item's label; an MUI icon still
+ * type-checks and renders. `ICON_SIZE` (16/20/24 px) is exported. Phosphor is
+ * not a shared package: a module bundles the icons it uses.
  */
-export const CLIENT_API_VERSION = '0.2.7';
+export const CLIENT_API_VERSION = '0.2.8';
