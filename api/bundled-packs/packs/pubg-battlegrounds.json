@@ -6,7 +6,7 @@
   "aliases": [
     "pubg"
   ],
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Squad battle royale. Placement and eliminations each match.",
   "icon": "../icons/pubg-battlegrounds.svg",
   "report": {

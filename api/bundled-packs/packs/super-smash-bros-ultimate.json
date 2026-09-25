@@ -7,7 +7,7 @@
     "smash",
     "ssbu"
   ],
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Platform fighter. Report games won in the set.",
   "icon": "../icons/super-smash-bros-ultimate.svg",
   "report": {

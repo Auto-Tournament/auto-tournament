@@ -3,7 +3,7 @@
   "slug": "splatoon-3",
   "name": "Splatoon 3",
   "engine": "manual-report",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Four-a-side team shooter, reported by the maps played.",
   "icon": "../icons/splatoon-3.svg",
   "report": {

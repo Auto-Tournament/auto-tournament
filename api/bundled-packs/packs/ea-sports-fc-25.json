@@ -7,7 +7,7 @@
     "fifa",
     "fc"
   ],
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Football. Report the scoreline.",
   "icon": "../icons/ea-sports-fc-25.svg",
   "report": {

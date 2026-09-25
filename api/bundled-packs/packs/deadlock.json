@@ -3,7 +3,7 @@
   "slug": "deadlock",
   "name": "Deadlock",
   "engine": "manual-report",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Six-a-side hero shooter MOBA.",
   "icon": "../icons/deadlock.svg",
   "report": {

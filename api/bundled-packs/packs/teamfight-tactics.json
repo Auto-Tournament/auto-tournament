@@ -6,7 +6,7 @@
   "aliases": [
     "tft"
   ],
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Eight-player auto battler. Report finishing placement each game.",
   "icon": "../icons/teamfight-tactics.svg",
   "report": {

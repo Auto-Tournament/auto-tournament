@@ -7,7 +7,7 @@
     "aoe2",
     "aoe"
   ],
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Real-time strategy. Report games won.",
   "icon": "../icons/age-of-empires-ii.svg",
   "report": {

@@ -3,7 +3,7 @@
   "slug": "marvel-rivals",
   "name": "Marvel Rivals",
   "engine": "manual-report",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Six-a-side hero shooter, reported by the maps played.",
   "icon": "../icons/marvel-rivals.svg",
   "report": {
