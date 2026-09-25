@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 310 of them, 219 behind auth —
+Every endpoint this API serves — 311 of them, 220 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -483,6 +483,7 @@ The game catalog: every pack and code module this instance has or can install, f
 | `DELETE` | `/api/catalog/packs/:slug` | admin |
 | `POST` | `/api/catalog/modules/:id/install` | admin |
 | `POST` | `/api/catalog/modules/:id/update` | admin |
+| `POST` | `/api/catalog/update-all` | admin |
 | `POST` | `/api/catalog/modules/:id/enable` | admin |
 | `POST` | `/api/catalog/modules/:id/disable` | admin |
 | `DELETE` | `/api/catalog/modules/:id` | admin |

@@ -63,6 +63,13 @@ export interface CatalogResult {
 
 export type CatalogAction = 'install' | 'update' | 'enable' | 'disable' | 'uninstall';
 
+export interface CatalogUpdateAllResult {
+  updated: Array<{ kind: CatalogKind; id: string; from: string | null; to: string | null }>;
+  skipped: Array<{ kind: CatalogKind; id: string; reason: string }>;
+  failed: Array<{ kind: CatalogKind; id: string; error: string }>;
+  restartRequired: boolean;
+}
+
 /** Whether this instance can restart itself (a supervisor brings it back), and if not, why. */
 export function fetchRestartSupport(): Promise<{ supported: boolean; reason: string | null }> {
   return api.get<{ supported: boolean; reason: string | null }>('/api/system/restart');
@@ -108,4 +115,9 @@ export function runCatalogAction(item: Pick<CatalogItem, 'kind' | 'id'>, action:
   // A pack has no update endpoint of its own: installing a newer copy is it.
   const verb = item.kind === 'pack' && action === 'update' ? 'install' : action;
   return api.post<CatalogResult>(`${base(item)}/${verb}`, {});
+}
+
+/** Update every installed pack and code module that has a compatible newer version, one after another. */
+export function runCatalogUpdateAll(): Promise<CatalogUpdateAllResult> {
+  return api.post<CatalogUpdateAllResult>('/api/catalog/update-all', {});
 }

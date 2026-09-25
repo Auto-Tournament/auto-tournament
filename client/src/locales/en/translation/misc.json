@@ -376,6 +376,14 @@
     "retry": "Retry",
     "failed": "{{name}}: {{reason}}",
     "failedFallback": "the operation failed",
+    "updateAll": {
+      "action": "Update all ({{count}})",
+      "running": "Updating…",
+      "done": "Updated {{count}} games and modules",
+      "summary": "Updated {{updated}}, skipped {{skipped}}, failed {{failed}}.",
+      "failedItem": "{{name}}: {{reason}}",
+      "failedFallback": "could not update everything"
+    },
     "feed": {
       "cache": "Showing the catalog from {{time}}: the online catalog could not be reached ({{reason}}). Games in this image still install without a network.",
       "none": "The online catalog could not be reached ({{reason}}). Showing the games inside this image; they install without a network.",

@@ -569,47 +569,50 @@ async function packItem(slug: string): Promise<CatalogItem | null> {
   return (await listCatalog()).items.find((item) => item.kind === 'pack' && item.id === slug) ?? null;
 }
 
+/** Install or update a game pack. The core of {@link installCatalogPack}, without its lock — reused by update-all. */
+async function installPackCore(slug: string, actor: string | null): Promise<OperationResult> {
+  const wanted = slug.trim().toLowerCase();
+  const feed = await currentFeed();
+  const remote = feed.packs.find((entry) => entry.slug === wanted);
+  const bundled = (await bundledPackEntries()).find((entry) => entry.slug === wanted);
+  if (!remote && !bundled) throw new CatalogError(404, `The catalog has no game '${wanted}'.`, 'not-found');
+
+  const existing = installedPack(wanted);
+  const choice = pickPackVersion(remote ? remote.version ?? '0.0.0' : null, bundled ? bundled.version : null);
+
+  let installedFrom: 'remote' | 'snapshot' | null = null;
+  let remoteError: string | null = null;
+  if (choice?.from === 'remote' && remote && feed.base) {
+    const found = await fetchPackAt(feed.base, wanted, remote.file);
+    if (found.ok) {
+      await installPack(found.pack, { source: 'index', origin: found.origin, installedBy: actor, tile: found.tile });
+      installedFrom = 'remote';
+    } else {
+      remoteError = found.error;
+    }
+  }
+  if (!installedFrom && bundled) {
+    const { definition, tile } = await readBundledPack(bundled).catch((error: Error) => {
+      throw new CatalogError(400, `The offline copy of '${wanted}' is not valid: ${error.message}`, 'invalid');
+    });
+    await installPack(definition, { source: 'bundled', installedBy: actor, tile });
+    installedFrom = 'snapshot';
+  }
+  if (!installedFrom) {
+    throw new CatalogError(remoteError?.startsWith('Could not download') ? 502 : 400, remoteError ?? 'Could not install that game.', 'download');
+  }
+  log.info(
+    `[CATALOG] ${existing ? 'Updated' : 'Installed'} game pack '${wanted}' from the ${installedFrom === 'remote' ? 'catalog feed' : 'offline snapshot'}${actor ? ` (by ${actor})` : ''}`
+  );
+  return {
+    item: await packItem(wanted),
+    restartRequired: false,
+    message: existing ? 'Updated.' : 'Installed.',
+  };
+}
+
 export function installCatalogPack(slug: string, actor: string | null): Promise<OperationResult> {
-  return exclusive(`pack ${slug}`, async () => {
-    const wanted = slug.trim().toLowerCase();
-    const feed = await currentFeed();
-    const remote = feed.packs.find((entry) => entry.slug === wanted);
-    const bundled = (await bundledPackEntries()).find((entry) => entry.slug === wanted);
-    if (!remote && !bundled) throw new CatalogError(404, `The catalog has no game '${wanted}'.`, 'not-found');
-
-    const existing = installedPack(wanted);
-    const choice = pickPackVersion(remote ? remote.version ?? '0.0.0' : null, bundled ? bundled.version : null);
-
-    let installedFrom: 'remote' | 'snapshot' | null = null;
-    let remoteError: string | null = null;
-    if (choice?.from === 'remote' && remote && feed.base) {
-      const found = await fetchPackAt(feed.base, wanted, remote.file);
-      if (found.ok) {
-        await installPack(found.pack, { source: 'index', origin: found.origin, installedBy: actor, tile: found.tile });
-        installedFrom = 'remote';
-      } else {
-        remoteError = found.error;
-      }
-    }
-    if (!installedFrom && bundled) {
-      const { definition, tile } = await readBundledPack(bundled).catch((error: Error) => {
-        throw new CatalogError(400, `The offline copy of '${wanted}' is not valid: ${error.message}`, 'invalid');
-      });
-      await installPack(definition, { source: 'bundled', installedBy: actor, tile });
-      installedFrom = 'snapshot';
-    }
-    if (!installedFrom) {
-      throw new CatalogError(remoteError?.startsWith('Could not download') ? 502 : 400, remoteError ?? 'Could not install that game.', 'download');
-    }
-    log.info(
-      `[CATALOG] ${existing ? 'Updated' : 'Installed'} game pack '${wanted}' from the ${installedFrom === 'remote' ? 'catalog feed' : 'offline snapshot'}${actor ? ` (by ${actor})` : ''}`
-    );
-    return {
-      item: await packItem(wanted),
-      restartRequired: false,
-      message: existing ? 'Updated.' : 'Installed.',
-    };
-  });
+  return exclusive(`pack ${slug}`, () => installPackCore(slug, actor));
 }
 
 export function uninstallCatalogPack(slug: string, actor: string | null): Promise<OperationResult> {
@@ -1015,6 +1018,51 @@ export async function finishPendingUpdates(): Promise<void> {
       );
     }
   }
+}
+
+export interface CatalogUpdateAllResult {
+  updated: Array<{ kind: 'pack' | 'module'; id: string; from: string | null; to: string | null }>;
+  skipped: Array<{ kind: 'pack' | 'module'; id: string; reason: string }>;
+  failed: Array<{ kind: 'pack' | 'module'; id: string; error: string }>;
+  restartRequired: boolean;
+}
+
+/** Codes {@link installPackCore} and {@link installModule} throw that mean "cannot update right now", not "the update failed". */
+const SKIP_CODES = new Set(['restart-required', 'incompatible', 'not-newer', 'downgrade']);
+
+/**
+ * Update every installed pack and code module that has a compatible newer
+ * version, one after another, through the same {@link installPackCore} /
+ * {@link installModule} that a single Update uses — so signature checks, the
+ * downgrade guard, disabled-state preservation and restart-required handling
+ * all apply exactly as they do there. One entry's failure never stops the
+ * rest. Held under the same single-operation lock as every other catalog
+ * write, so a single Update or Install cannot interleave with it.
+ */
+export function updateAllCatalog(actor: string | null): Promise<CatalogUpdateAllResult> {
+  return exclusive('update all', async () => {
+    const result: CatalogUpdateAllResult = { updated: [], skipped: [], failed: [], restartRequired: false };
+    const candidates = (await listCatalog()).items.filter((item) => item.state === 'update-available');
+    for (const candidate of candidates) {
+      const { kind, id } = candidate;
+      const from = candidate.installed?.version ?? null;
+      try {
+        const outcome =
+          kind === 'pack' ? await installPackCore(id, actor) : await installModule(id, { actor, update: true });
+        result.updated.push({ kind, id, from, to: outcome.item?.installed?.version ?? candidate.available?.version ?? null });
+        if (outcome.restartRequired) result.restartRequired = true;
+      } catch (error) {
+        if (error instanceof CatalogError && SKIP_CODES.has(error.code)) {
+          result.skipped.push({ kind, id, reason: error.message });
+        } else {
+          const message = error instanceof Error ? error.message : String(error);
+          result.failed.push({ kind, id, error: message });
+          log.error(`[CATALOG] Update-all: could not update ${kind} '${id}'`, error);
+        }
+      }
+    }
+    return result;
+  });
 }
 
 /** Switch a module on. Loads it now when this process has not loaded it. */

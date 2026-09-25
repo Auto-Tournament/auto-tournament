@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { ensureSignedIn, signInViaRequest } from '../helpers/auth';
 
 /**
@@ -32,6 +32,17 @@ const PACK = {
   // A file beside the pack, which the admin picks along with the JSON.
   icon: '../icons/modules-page-game.svg',
 };
+
+/**
+ * The catalog's "Available" section is a collapsible accordion, closed by
+ * default unless something there needs a look, so a test that touches an
+ * uninstalled game or module must open it first — but only if it isn't open
+ * already, or the click would close it.
+ */
+async function openAvailableSection(page: Page): Promise<void> {
+  const toggle = page.getByTestId('catalog-available-toggle');
+  if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.click();
+}
 
 /** The two files a host selects: the pack, and the tile it names. */
 function packFiles(pack: Record<string, unknown> = PACK) {
@@ -161,6 +172,9 @@ test.describe.serial('Modules page', () => {
       try {
         await page.goto('/modules');
         await expect(page.getByTestId('modules-page')).toBeVisible({ timeout: 15000 });
+        // Both fixtures start uninstalled, so they are in the "Available"
+        // accordion, collapsed unless something there needs a look.
+        await openAvailableSection(page);
 
         const entry = page.getByTestId('catalog-pack-index-test-game');
         await expect(entry).toBeVisible({ timeout: 15000 });
