@@ -153,6 +153,8 @@
     "mapIdHelper": "Apenas letras minúsculas, números e sublinhados (de_dust2)",
     "displayNameLabel": "Nome de apresentação",
     "displayNamePlaceholder": "Dust II",
+    "gameModeLabel": "Tipo de mapa",
+    "gameModeHelper": "Agrupa o mapa na página Mapas e decide que torneios o podem jogar.",
     "mapImageLabel": "Imagem do mapa",
     "uploadButton": "Carregar imagem",
     "fetchFromGitHub": "Obter do GitHub",
@@ -1051,5 +1053,19 @@
   "roster": {
     "steamLinked": "Steam linked",
     "steamNotLinked": "Steam not linked"
+  },
+  "mapModes": {
+    "defusal": "Desativação",
+    "hostage": "Reféns",
+    "wingman": "Wingman",
+    "armsrace": "Corrida às armas",
+    "deathmatch": "Deathmatch",
+    "other": "Outro",
+    "none": "Sem tipo"
+  },
+  "mapModeFilter": {
+    "label": "Tipo de mapa",
+    "any": "Qualquer tipo",
+    "offType": "{{maps}}: não é um mapa de {{mode}}. Remova-o ou altere o tipo de mapa."
   }
 }

@@ -229,7 +229,9 @@ function extractWorkshopId(input: string): string | null {
 /**
  * GET /api/steam/workshop-map?input=<url-or-id>
  *
- * Resolves a Steam Workshop published file ID to a title + preview image URL.
+ * Resolves a Steam Workshop published file ID to a title + preview image URL
+ * and its Workshop tags ("Classic", "Wingman", …; the CS2 module turns them
+ * into a map type).
  * Does not require a Steam Web API key (uses RemoteStorage endpoint).
  */
 router.get('/workshop-map', async (req: Request, res: Response) => {
@@ -266,6 +268,7 @@ router.get('/workshop-map', async (req: Request, res: Response) => {
           result?: number;
           title?: string;
           preview_url?: string;
+          tags?: Array<{ tag?: string }>;
         }>;
       };
     };
@@ -282,12 +285,16 @@ router.get('/workshop-map', async (req: Request, res: Response) => {
 
     const title = typeof details?.title === 'string' ? details.title : null;
     const previewUrl = typeof details?.preview_url === 'string' ? details.preview_url : null;
+    const tags = (Array.isArray(details?.tags) ? details.tags : [])
+      .map((t) => (typeof t?.tag === 'string' ? t.tag : ''))
+      .filter(Boolean);
 
     return res.json({
       success: true,
       workshopId,
       title,
       previewUrl,
+      tags,
     });
   } catch (error) {
     log.error('Error in Steam workshop-map endpoint', error);

@@ -4,6 +4,7 @@ import { MapPoolStep } from './MapPoolStep';
 import SaveMapPoolModal from '../maps/SaveMapPoolModal';
 import { cs2Patch, cs2SettingsOf, withMaps } from './cs2TournamentSettings';
 import { defaultMapPool, useCs2MapData } from './useCs2MapData';
+import { fitsMapMode } from '../maps/mapModes';
 
 /**
  * The tournament setup's "Maps and veto" step for CS2: the map pool, stored
@@ -70,6 +71,24 @@ export function Cs2TournamentMapsStep({
           )
         }
         onSaveMapPool={() => setSaveOpen(true)}
+        mapMode={cs2.mapMode}
+        onMapModeChange={(mode) => {
+          // Maps of another type leave; so does the pool, when it had any.
+          const kept = cs2.maps.filter((id) =>
+            fitsMapMode(
+              availableMaps.find((m) => m.id === id),
+              id,
+              mode
+            )
+          );
+          const next = withMaps(
+            cs2,
+            kept,
+            type,
+            kept.length === cs2.maps.length ? cs2.mapPoolId : null
+          );
+          onChange(cs2Patch({ ...next, mapMode: mode }));
+        }}
       />
       <SaveMapPoolModal
         open={saveOpen}

@@ -1,6 +1,32 @@
 import { db } from '../../../config/database';
-import { DbMapRow, CreateMapInput, UpdateMapInput, MapResponse } from '../../../types/map.types';
+import {
+  DbMapRow,
+  CreateMapInput,
+  UpdateMapInput,
+  MapResponse,
+  MapGameMode,
+} from '../../../types/map.types';
 import { log } from '../../../utils/logger';
+import {
+  forgetMapMode,
+  isMapMode,
+  modeFromMapName,
+  normalizeMapMode,
+  rememberMapModes,
+} from './mapModes';
+
+/** A request's `gameMode`: undefined when not sent, null to clear; throws on an unknown type. */
+function requestedMode(value: unknown): MapGameMode | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null || value === '') return null;
+  const mode = normalizeMapMode(value);
+  if (!mode || !isMapMode(mode)) {
+    throw new Error(
+      'gameMode must be one of defusal, hostage, wingman, armsrace, deathmatch, other'
+    );
+  }
+  return mode;
+}
 
 /**
  * Map service for business logic
@@ -13,7 +39,9 @@ export class MapService {
     const maps = await db.getAllAsync<DbMapRow>('cs2_maps', undefined, undefined);
     // Sort by display_name
     maps.sort((a, b) => a.display_name.localeCompare(b.display_name));
-    return maps.map(this.toResponse);
+    const out = maps.map(this.toResponse);
+    rememberMapModes(out, true);
+    return out;
   }
 
   /**
@@ -21,7 +49,9 @@ export class MapService {
    */
   async getMapById(id: string): Promise<MapResponse | null> {
     const map = await db.getOneAsync<DbMapRow>('cs2_maps', 'id = ?', [id]);
-    return map ? this.toResponse(map) : null;
+    const out = map ? this.toResponse(map) : null;
+    if (out) rememberMapModes([out]);
+    return out;
   }
 
   /**
@@ -36,6 +66,7 @@ export class MapService {
         return await this.updateMap(input.id, {
           displayName: input.displayName,
           imageUrl: input.imageUrl,
+          ...(input.gameMode !== undefined ? { gameMode: input.gameMode } : {}),
         });
       }
       throw new Error(`Map with ID '${input.id}' already exists`);
@@ -49,11 +80,13 @@ export class MapService {
     if (!input.displayName.trim()) {
       throw new Error('Display name is required');
     }
+    const gameMode = requestedMode(input.gameMode);
 
     await db.insertAsync('cs2_maps', {
       id: input.id,
       display_name: input.displayName.trim(),
       image_url: input.imageUrl || null,
+      game_mode: gameMode === undefined ? modeFromMapName(input.id) : gameMode,
     });
 
     log.success(`Map created: ${input.displayName} (${input.id})`);
@@ -81,6 +114,8 @@ export class MapService {
 
     if (input.displayName !== undefined) updateData.display_name = input.displayName.trim();
     if (input.imageUrl !== undefined) updateData.image_url = input.imageUrl || null;
+    const gameMode = requestedMode(input.gameMode);
+    if (gameMode !== undefined) updateData.game_mode = gameMode;
     // An admin's edit: a map sync no longer renames it or swaps its image.
     if (
       (updateData.display_name !== undefined && updateData.display_name !== existing.displayName) ||
@@ -107,6 +142,7 @@ export class MapService {
     }
 
     await db.deleteAsync('cs2_maps', 'id = ?', [id]);
+    forgetMapMode(id);
     log.success(`Map deleted: ${existing.displayName} (${id})`);
   }
 
@@ -118,6 +154,7 @@ export class MapService {
       id: map.id,
       displayName: map.display_name,
       imageUrl: map.image_url,
+      gameMode: normalizeMapMode(map.game_mode),
       systemManaged: map.system_managed === 1,
       createdAt: map.created_at,
       updatedAt: map.updated_at,

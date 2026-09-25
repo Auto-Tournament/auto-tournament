@@ -14,6 +14,10 @@
  * same order (see `TournamentSettingsValidation`). `maxRounds` and the overtime
  * fields of a regular create or update were never validated and still are
  * not.
+ *
+ * `mapMode` (a map type, maps/mapModes.ts) restricts the maps: a wingman
+ * tournament's pool or sequence may only hold wingman maps. A map whose type
+ * is not known passes.
  */
 
 import type {
@@ -23,6 +27,7 @@ import type {
   TournamentSettingsValidation,
 } from '../types';
 import { validateCustomVetoOrderSetting } from './veto/config';
+import { MAP_MODES, isMapMode, mapsOfOtherModes, type MapMode } from './maps/mapModes';
 
 /** The key of CS2's object inside `tournament.settings` and a template's `settings`. */
 export const CS2_SETTINGS_KEY = 'cs2';
@@ -50,6 +55,8 @@ export interface Cs2TournamentSettings {
   overtimeSegments?: number;
   /** The map pool the maps were picked from, when they came from one. */
   mapPoolId?: number;
+  /** Only maps of this type (wingman, hostage, …); absent: any. */
+  mapMode?: MapMode;
 }
 
 /** The map pool size a veto order is checked against when nothing else says (Active Duty). */
@@ -93,6 +100,26 @@ export function storedCs2Settings(settings: unknown): Cs2TournamentSettings | un
   return isRecord(value) ? (value as Cs2TournamentSettings) : undefined;
 }
 
+/**
+ * The map type a request asks for: `mapMode` at the top level or in
+ * `settings.cs2`. undefined: not sent; null: cleared; a string that is no
+ * type is returned as it is, for the error.
+ */
+function requestedMapMode(body: Record<string, unknown> | undefined): unknown {
+  if (body?.mapMode !== undefined) return body.mapMode;
+  return objectIn(body?.settings, CS2_SETTINGS_KEY).mapMode;
+}
+
+/** Errors for `maps` under the map type `mode` (unset, or not a type: only the latter is an error). */
+function mapModeErrors(mode: unknown, maps: unknown): string[] {
+  if (mode === undefined || mode === null || mode === '') return [];
+  if (!isMapMode(mode)) return [`mapMode must be one of ${MAP_MODES.join(', ')}`];
+  const ids = Array.isArray(maps) ? maps.filter((id): id is string => typeof id === 'string') : [];
+  return mapsOfOtherModes(ids, mode).map(
+    (m) => `Map ${m.id} is a ${m.mode} map; this tournament only plays ${mode} maps`
+  );
+}
+
 function settingsErrors(settings: unknown, mapCount: number | undefined): string[] {
   // `mapCount` is undefined when a create sends a `maps` without a length,
   // exactly as it was passed before.
@@ -130,6 +157,7 @@ function validateCreate(input: TournamentSettingsInput): TournamentSettingsValid
   }
   return done({
     requiredFields: CREATE_REQUIRED,
+    fieldErrors: mapModeErrors(requestedMapMode(input.body), maps),
     errors: settingsErrors(input.settings, mapCount),
   });
 }
@@ -168,7 +196,10 @@ function validateShuffleCreate(input: TournamentSettingsInput): TournamentSettin
       ],
     });
   }
-  return done({ requiredFields: SHUFFLE_REQUIRED });
+  return done({
+    requiredFields: SHUFFLE_REQUIRED,
+    fieldErrors: mapModeErrors(requestedMapMode(input.body), mapSequence),
+  });
 }
 
 /**
@@ -177,11 +208,17 @@ function validateShuffleCreate(input: TournamentSettingsInput): TournamentSettin
  * else 7.
  */
 function validateUpdate(input: TournamentSettingsInput): TournamentSettingsValidation {
+  const stored = storedCs2Settings(input.stored?.settings);
+  const maps = requestedMaps(input.body) ?? stored?.maps;
   let mapCount = lengthOf(requestedMaps(input.body));
   if (typeof mapCount !== 'number') {
-    mapCount = lengthOf(storedCs2Settings(input.stored?.settings)?.maps);
+    mapCount = lengthOf(stored?.maps);
   }
-  return done({ errors: settingsErrors(input.settings, mapCount ?? DEFAULT_MAP_COUNT) });
+  const mode = requestedMapMode(input.body);
+  return done({
+    fieldErrors: mapModeErrors(mode === undefined ? stored?.mapMode : mode, maps),
+    errors: settingsErrors(input.settings, mapCount ?? DEFAULT_MAP_COUNT),
+  });
 }
 
 export function validateCs2TournamentSettings(
@@ -246,6 +283,10 @@ function applyLayer(
       delete into.overtimeSegments;
     }
   }
+  if (layer.mapMode !== undefined) {
+    if (isMapMode(layer.mapMode)) into.mapMode = layer.mapMode;
+    else if (layer.mapMode === null || layer.mapMode === '') delete into.mapMode;
+  }
   if (layer.mapPoolId !== undefined) {
     const id = Number(layer.mapPoolId);
     if (layer.mapPoolId !== null && Number.isInteger(id) && id > 0) into.mapPoolId = id;
@@ -274,7 +315,11 @@ export const cs2TournamentSettings: ModuleTournamentSettings<Cs2TournamentSettin
   responseFields(value, target) {
     const maps = value?.maps ?? [];
     if (target === 'template') {
-      return { maps, mapPoolId: value?.mapPoolId };
+      return {
+        maps,
+        mapPoolId: value?.mapPoolId,
+        ...(value?.mapMode ? { mapMode: value.mapMode } : {}),
+      };
     }
     return {
       maps,
@@ -283,6 +328,7 @@ export const cs2TournamentSettings: ModuleTournamentSettings<Cs2TournamentSettin
       overtimeMode: value?.overtimeMode,
       overtimeSegments: value?.overtimeSegments,
       ...(value?.mapPoolId !== undefined ? { mapPoolId: value.mapPoolId } : {}),
+      ...(value?.mapMode ? { mapMode: value.mapMode } : {}),
     };
   },
 
