@@ -6,6 +6,7 @@ import type {
   TeamMatchInfo,
   TeamMatchHistory,
 } from '../types';
+import type { TeamTournamentInfo } from '../components/team/profile/TeamTournaments';
 
 /**
  * Data for the public team profile page (`/t/team/:teamId`).
@@ -18,11 +19,6 @@ import type {
  * this page shows: roster, current-match/tournament status, standing and
  * recent results.
  */
-
-interface TeamTournamentInfo {
-  name: string;
-  status: string;
-}
 
 interface UseTeamProfileDataResult {
   team: Team | null;

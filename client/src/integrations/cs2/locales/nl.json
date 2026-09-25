@@ -1041,5 +1041,9 @@
       "button": "Instellingen resetten"
     },
     "defaultsTitle": "Server defaults"
+  },
+  "roster": {
+    "steamLinked": "Steam linked",
+    "steamNotLinked": "Steam not linked"
   }
 }

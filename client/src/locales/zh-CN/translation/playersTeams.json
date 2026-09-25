@@ -24,31 +24,17 @@
     "backToFindPlayer": "返回查找选手",
     "profileTitle": "选手资料",
     "thisIsYou": "这是你",
-    "steamId": "Steam ID：{{id}}",
     "skillRatingTooltip": "技术评分基于 OpenSkill。约 1500 为典型初始分；越高越好。",
     "skillRatingLabel": "技术评分：{{elo}}",
-    "viewTournamentLeaderboard": "查看锦标赛排行榜",
     "admin": "管理员",
-    "nextServersAllocated": "{{seconds}} 秒后分配服务器",
-    "tournamentFinishedNoMatches": "锦标赛已结束，你暂无后续比赛。",
-    "finalRecord": "本锦标赛最终战绩：{{wins}} 胜 / {{losses}} 负。",
-    "noUpcomingMatch": "当前暂无你的比赛安排。",
-    "noUpcomingHint": "锦标赛仍在进行中，但你的比赛已全部结束。",
-    "noActiveMatch": "当前无活跃比赛",
-    "noActiveHint": "下一轮生成且你的比赛就绪后，将在此显示服务器连接信息。",
     "matchesPlayed": "比赛场次",
     "wins": "胜场",
     "losses": "负场",
     "winRate": "胜率",
-    "bestAdrIn": "{{round}} 中 {{adr}} ADR",
     "win": "胜",
     "loss": "负",
     "opponent": "对手",
-    "bestAdr": "最佳表现 (ADR)",
-    "toughestAdr": "最难一战 (ADR)",
-    "recentForm": "近期表现（最近 {{count}} 场）",
     "winsLosses": "胜 / 负",
-    "recentFormHighlights": "近期表现与亮点",
     "averageAdr": "平均 ADR",
     "discordId": {
       "title": "你的 Discord ID",
@@ -60,62 +46,53 @@
       "removed": "Discord ID 已移除",
       "saveFailed": "保存你的 Discord ID 失败"
     },
-    "teamChip": "战队：{{team}}",
-    "myTeam": "我的战队",
-    "openTeam": "打开战队：{{team}}",
-    "you": "你",
-    "noMatchHistory": "暂无比赛记录",
     "downloadDemo": "下载录像",
     "noMatchesYet": "暂无比赛",
     "pageTitle": "{{name}} – 玩家资料",
     "loadFailed": "无法加载玩家数据",
-    "performanceChart": {
-      "title": "表现走势",
-      "noData": "暂无有效的表现数据 —— 打几回合后即可查看 ADR 与 K/D 走势。",
-      "avgAdr": "ADR：平均 {{value}}",
-      "avgKd": "K/D：平均 {{value}}",
-      "matchCount_one": "{{count}} 场比赛",
-      "matchCount_other": "{{count}} 场比赛"
-    },
     "profileHeader": {
       "plays": "Plays {{games}}",
       "joined": "joined {{date}}",
-      "editProfile": "Edit profile"
+      "editProfile": "Edit profile",
+      "label": "Player",
+      "captain": "captain"
     },
     "stats": {
       "rating": "RATING",
       "matches": "MATCHES",
       "winRate": "WIN RATE",
       "adr": "ADR",
-      "kd": "K/D"
+      "kd": "K/D",
+      "label": "Stats"
     },
     "ratingChart": {
       "sectionTitle": "Rating",
       "noHistory": "Not enough matches yet to chart a trend",
-      "ariaLabel": "Rating trend, from {{from}} to {{to}}"
+      "ariaLabel": "Rating trend, from {{from}} to {{to}}",
+      "window": "last {{count}} matches"
     },
     "recentMatches": {
       "title": "Recent matches",
       "statsNote": "Kills / deaths. Stats shown depend on what the game module reports.",
-      "roundAndRating": "{{round}} · rating {{rating}}"
+      "roundAndRating": "{{round}} · rating {{rating}}",
+      "leaderboard": "Leaderboard"
     },
-    "gameSwitchLabel": "Game"
+    "gameSwitchLabel": "Game",
+    "yourMatch": "Your match"
   },
   "teamPage": {
-    "wantYourStats": "想查看自己的数据和比赛记录？",
-    "openMyPlayerPage": "打开我的选手页",
     "tournamentFinished": "锦标赛已结束",
     "finalPlacement": "最终名次：第 {{position}} 名，共 {{total}} 队",
     "noMatchNow": "当前暂无比赛安排",
-    "noMatchNowHint": "下一场比赛将显示在此。请前往你的选手页进行地图否决和服务器连接。",
     "noMatchesYet": "暂无比赛",
     "noMatchesYetHint": "锦标赛尚未开始。开始后，你的比赛将显示在此。",
     "currentMatch": "当前比赛",
     "versus": "对阵",
-    "goToPlayerPage": "否决、连接与详情 → 你的选手页",
     "pageTitle": "战队页",
     "manualMatch": "自定义比赛",
-    "viewTeamProfile": "Team page →"
+    "noMatchNowHint": "Your next match shows up here, with the veto and the server to connect to.",
+    "viewTeamProfile": "Team page",
+    "pageTitleFor": "{{name}} · Match"
   },
   "rounds": {
     "quarterfinals": "四分之一决赛",
@@ -124,63 +101,10 @@
     "roundN": "第 {{n}} 轮"
   },
   "teamMatchHistory": {
-    "title": "比赛记录",
-    "win": "胜",
-    "loss": "负",
     "vs": "对阵",
-    "unknown": "未知",
-    "matchNumberDate": "比赛 #{{number}} · {{date}}",
-    "modalTitle": "比赛详情",
-    "modalVictory": "胜利",
-    "modalDefeat": "失败",
-    "modalMatchNumber": "比赛 #{{number}}",
     "team1": "队伍 1",
     "team2": "队伍 2",
-    "finalSeriesScore": "总局比分",
-    "completed": "结束时间：{{date}}",
-    "mapsPlayed": "已玩地图",
-    "noMaps": "本场比赛无地图数据。",
-    "playerStatsAllMaps": "选手数据（全部地图）",
-    "player": "选手",
-    "damage": "伤害",
-    "fetchError": "获取比赛详情失败",
-    "loadError": "加载比赛详情失败"
-  },
-  "teamHeader": {
-    "soundSettings": "声音设置",
-    "muteNotifications": "静音通知",
-    "unmuteNotifications": "取消通知静音"
-  },
-  "teamStatsCard": {
-    "title": "战队表现",
-    "wins": "胜场",
-    "losses": "负场",
-    "winRate": "胜率",
-    "ofTotal": "共 {{total}} 队"
-  },
-  "playerRosterCard": {
-    "title": "战队阵容",
-    "unknownPlayer": "未知",
-    "rating": "评分：{{rating}}",
-    "viewPlayerStats": "查看选手数据",
-    "viewSteamProfile": "查看 Steam 个人资料"
-  },
-  "mapAccordion": {
-    "won": "胜",
-    "lost": "负",
-    "draw": "平",
-    "team1": "队伍 1",
-    "team2": "队伍 2",
-    "downloadDemo": "下载录像",
-    "downloadMapDemo": "下载 {{map}} 录像",
-    "mapInformation": "地图信息",
-    "mapNumberLabel": "地图序号：",
-    "mapN": "第 {{n}} 张地图",
-    "scoreLabel": "比分：",
-    "resultLabel": "结果：",
-    "winnerLabel": "胜者：",
-    "durationLabel": "时长：",
-    "completedLabel": "结束时间："
+    "fetchError": "获取比赛详情失败"
   },
   "leaderboardPage": {
     "emptyTitle": "暂无锦标赛排行榜",
@@ -370,49 +294,16 @@
       "download": "下载 {{map}} 录像"
     }
   },
-  "tournamentRules": {
-    "title": "关于本锦标赛",
-    "intro": "以下是本锦标赛用于判定比赛结果的核心规则。",
-    "matchFormatLabel": "比赛赛制：",
-    "regulationLabel": "常规回合：",
-    "overtimeLabel": "加时：",
-    "tiesLabel": "平局处理方式：",
-    "format": {
-      "bo1": "BO1（一局定胜负）– 赢下地图的队伍赢得比赛。",
-      "bo3": "BO3（三局两胜）– 先赢下 2 张地图的队伍赢得比赛。",
-      "bo5": "BO5（五局三胜）– 先赢下 3 张地图的队伍赢得比赛。"
-    },
-    "regulationWithRounds": "每张地图最多进行 {{rounds}} 个回合。常规时间结束时回合数较多的队伍赢得该地图。",
-    "regulationGeneric": "每张地图进行固定数量的回合。常规时间结束时回合数较多的队伍赢得该地图。",
-    "overtime": {
-      "disabled": "加时：已禁用（仅常规时间）。",
-      "enabledSegments_one": "加时：已启用，最多 {{count}} 段加时。",
-      "enabledSegments_other": "加时：已启用，最多 {{count}} 段加时。",
-      "enabled": "加时：已启用。常规时间比分相同时将进入加时，直到一方领先结束。",
-      "effectivelyDisabled": "加时：实际上已禁用（仅常规时间）。",
-      "implicitSegments_one": "加时：已启用，最多 {{count}} 段加时（隐式）。",
-      "implicitSegments_other": "加时：已启用，最多 {{count}} 段加时（隐式）。",
-      "standard": "加时：标准设置。常规时间比分相同时通常会进入加时。"
-    },
-    "tiebreak": {
-      "disabled": "如果常规时间结束时比分相同，比赛不会进入加时，而是根据该地图上队伍的总伤害判定胜者。如果总伤害也完全相同，则判为真正的平局。",
-      "enabledSegments": "如果在设定的加时段结束后比分仍然相同，则根据该地图上队伍的总伤害判定胜者。如果伤害也相同，则记为平局。",
-      "enabled": "正常情况下，最终比分较高的一方获胜。平局非常少见，只有在比分和伤害都完全相同时才会出现。",
-      "effectivelyDisabled": "如果常规时间结束时比分相同，比赛不会进入加时。根据该地图上队伍的总伤害判定胜者；如果伤害也相同，则比赛为平局。",
-      "implicitSegments": "如果在设定的加时段结束后比分仍然相同，则根据队伍总伤害判定胜者。如果伤害也相同，则结果为平局。",
-      "standard": "大多数情况下，最终比分较高的队伍获胜。只有当比分和总伤害都完全相同时，才会记为真正的平局。"
-    }
-  },
   "teamProfile": {
     "pageTitle": "{{name}} · Team",
     "notFound": "Team not found. Please check the URL.",
     "loadError": "Failed to load this team. Please try again.",
     "editTeam": "Edit team",
-    "game": "Counter-Strike 2",
     "roster": {
       "title": "Roster",
       "empty": "This team has no players yet.",
-      "rating": "Rating {{rating}}"
+      "rating": "Rating {{rating}}",
+      "captain": "Captain"
     },
     "tournaments": {
       "title": "Tournaments",
@@ -424,8 +315,18 @@
       "finalPlacement": "Final: #{{position}} of {{total}}",
       "recentResults": "Recent results",
       "win": "Win",
-      "loss": "Loss"
-    }
+      "loss": "Loss",
+      "open": "Open",
+      "openMatch": "Open match",
+      "status": {
+        "setup": "Upcoming",
+        "ready": "Sign-up",
+        "in_progress": "In progress",
+        "completed": "Finished"
+      }
+    },
+    "headerLabel": "Team",
+    "captainLine": "captain {{name}}"
   },
   "disputes": {
     "title": "Disputes",

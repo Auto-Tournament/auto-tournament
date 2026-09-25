@@ -1,20 +1,26 @@
 import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import DownloadIcon from '@mui/icons-material/Download';
-import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
-import { mono } from '../../../theme/tokens';
+import { Panel, Row, RowList } from '../../common/ui';
+import { mono, textSize, tokens } from '../../../theme/tokens';
 
 export interface RecentMatchEntry {
-  slug: string;
+  /** React key: the slug, or the history row's own key for a deleted match. */
+  key: string;
+  /**
+   * The match's slug, or null when the match is gone (its tournament was
+   * deleted and only the rating history remembers it). A row without one
+   * opens nothing and has no demo.
+   */
+  slug: string | null;
   wonMatch: boolean;
-  opponentName: string;
-  /** Human round/stage label, e.g. "Semifinals" — stands in for a tournament name. */
-  roundLabel: string;
+  /** "vs Baltic Five", or the stored "Nordlys vs Baltic Five" of a deleted match. */
+  title: string;
+  /** Where it was played: tournament and round, whichever are known. */
+  detail: string;
   kills?: number;
   deaths?: number;
   /** The player's rating after this match, when the match was rated. */
@@ -35,10 +41,10 @@ export interface RecentMatchesProps {
 }
 
 /**
- * The profile's match list: W/L tile, opponent, round and rating after the
- * match, kills/deaths, and the demo when there is one. It replaced the older
- * "Match History" table; assists, headshots and damage are in the match
- * details modal a click on the row opens.
+ * The profile's match list (the draft's `ul.row-list.panel`): W/L tile,
+ * opponent, where it was played and the rating after it, kills/deaths, and
+ * the demo when there is one. Assists, headshots and damage are in the match
+ * details a click on the row opens.
  */
 export function RecentMatches({
   matches,
@@ -47,115 +53,118 @@ export function RecentMatches({
   showStatsNote = true,
 }: RecentMatchesProps) {
   const { t } = useTranslation();
-  const theme = useTheme();
 
   if (matches.length === 0) {
     return (
-      <Card>
-        <CardContent>
-          <Typography variant="body2" color="text.secondary" data-testid="profile-recent-matches-empty">
-            {t('playerPage.noMatchesYet')}
-          </Typography>
-        </CardContent>
-      </Card>
+      <Panel sx={{ px: 3, py: 2 }}>
+        <Typography variant="body2" color="text.secondary" data-testid="profile-recent-matches-empty">
+          {t('playerPage.noMatchesYet')}
+        </Typography>
+      </Panel>
     );
   }
 
   const shown = matches.slice(0, limit);
 
   return (
-    <Card>
-      <CardContent
-        // MUI pads the last child's bottom; without the note, that is this.
-        sx={{ p: 0, '&:last-child': { pb: 0 } }}
-        data-testid="profile-recent-matches"
-      >
-        {shown.map((match) => (
-          <Box
-            key={match.slug}
-            onClick={() => onSelect(match.slug)}
-            data-testid={`profile-recent-match-${match.slug}`}
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: '2.2rem minmax(0, 1fr) auto auto',
-              gap: 1.5,
-              alignItems: 'center',
-              px: 2,
-              py: 1.25,
-              fontSize: '0.875rem',
-              cursor: 'pointer',
-              borderBottom: '1px solid',
-              borderColor: 'divider',
-              '&:last-of-type': { borderBottom: 'none' },
-              '&:hover': { bgcolor: 'action.hover' },
-            }}
-          >
-            <Box
+    <>
+      <RowList data-testid="profile-recent-matches">
+        {shown.map((match) => {
+          const slug = match.slug;
+          const openable = slug !== null;
+          const hasKd = typeof match.kills === 'number' && typeof match.deaths === 'number';
+          return (
+            <Row
+              key={match.key}
+              columns="2.2rem minmax(0, 1fr) auto auto"
+              onClick={openable ? () => onSelect(slug) : undefined}
+              data-testid={openable ? `profile-recent-match-${slug}` : 'profile-recent-match-archived'}
               sx={{
-                ...mono,
-                fontWeight: 700,
-                fontSize: '0.75rem',
-                width: '2.2rem',
-                height: '1.6rem',
-                borderRadius: '6px',
-                display: 'grid',
-                placeItems: 'center',
-                bgcolor: 'background.surface2',
-                color: match.wonMatch ? theme.palette.success.main : theme.palette.error.main,
+                py: 1.5,
+                fontSize: textSize.sm,
+                cursor: openable ? 'pointer' : 'default',
+                '&:hover': openable ? { bgcolor: 'action.hover' } : undefined,
+                // The panel's rounded corners, for the hover fill.
+                '&:first-of-type': { borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit' },
+                '&:last-of-type': {
+                  borderBottomLeftRadius: 'inherit',
+                  borderBottomRightRadius: 'inherit',
+                },
               }}
             >
-              {match.wonMatch ? t('playerPage.win') : t('playerPage.loss')}
-            </Box>
-            <Box minWidth={0}>
-              <Typography variant="body2" noWrap>
-                {t('teamMatchHistory.vs')} {match.opponentName}
+              <Box
+                sx={{
+                  ...mono,
+                  fontWeight: 700,
+                  fontSize: textSize.xs,
+                  width: '2.2rem',
+                  height: '1.6rem',
+                  borderRadius: '6px',
+                  display: 'grid',
+                  placeItems: 'center',
+                  bgcolor: tokens.color.paper3,
+                  color: match.wonMatch ? tokens.color.live : tokens.color.ban,
+                }}
+              >
+                {match.wonMatch ? t('playerPage.win') : t('playerPage.loss')}
+              </Box>
+              <Box minWidth={0}>
+                <Typography variant="body2" noWrap>
+                  {match.title}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" noWrap component="div">
+                  {typeof match.ratingAfter === 'number'
+                    ? t('playerPage.recentMatches.roundAndRating', {
+                        round: match.detail,
+                        rating: match.ratingAfter,
+                      })
+                    : match.detail}
+                </Typography>
+              </Box>
+              <Typography
+                variant="body2"
+                sx={{ ...mono, fontVariantNumeric: 'tabular-nums' }}
+                color="text.secondary"
+                whiteSpace="nowrap"
+              >
+                {!hasKd
+                  ? ''
+                  : match.kills === 0 && match.deaths === 0
+                    ? // No kills and no deaths: nothing was recorded for this player.
+                      '—'
+                    : `${match.kills} / ${match.deaths}`}
               </Typography>
-              <Typography variant="caption" color="text.secondary" noWrap component="div">
-                {typeof match.ratingAfter === 'number'
-                  ? t('playerPage.recentMatches.roundAndRating', {
-                      round: match.roundLabel,
-                      rating: match.ratingAfter,
-                    })
-                  : match.roundLabel}
-              </Typography>
-            </Box>
-            <Typography variant="body2" sx={{ ...mono }} color="text.secondary" whiteSpace="nowrap">
-              {typeof match.kills !== 'number' || typeof match.deaths !== 'number'
-                ? ''
-                : match.kills === 0 && match.deaths === 0
-                  ? // No kills and no deaths: nothing was recorded for this player.
-                    '—'
-                  : `${match.kills} / ${match.deaths}`}
-            </Typography>
-            <Box sx={{ width: 32, display: 'flex', justifyContent: 'center' }}>
-              {match.hasDemo && (
-                <Tooltip title={t('playerPage.downloadDemo')}>
-                  <IconButton
-                    size="small"
-                    component="a"
-                    href={`/api/demos/${match.slug}/download`}
-                    download
-                    aria-label={t('playerPage.downloadDemo')}
-                    data-testid={`profile-recent-match-demo-${match.slug}`}
-                    onClick={(event) => event.stopPropagation()}
-                  >
-                    <DownloadIcon fontSize="inherit" />
-                  </IconButton>
-                </Tooltip>
-              )}
-            </Box>
-          </Box>
-        ))}
-      </CardContent>
+              <Box sx={{ width: 32, display: 'flex', justifyContent: 'center' }}>
+                {match.hasDemo && slug && (
+                  <Tooltip title={t('playerPage.downloadDemo')}>
+                    <IconButton
+                      size="small"
+                      component="a"
+                      href={`/api/demos/${slug}/download`}
+                      download
+                      aria-label={t('playerPage.downloadDemo')}
+                      data-testid={`profile-recent-match-demo-${slug}`}
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <DownloadIcon fontSize="inherit" />
+                    </IconButton>
+                  </Tooltip>
+                )}
+              </Box>
+            </Row>
+          );
+        })}
+      </RowList>
       {showStatsNote && (
         <Typography
           variant="caption"
           color="text.secondary"
-          sx={{ display: 'block', px: 2, pb: 1.5, pt: shown.length ? 0 : 1.5 }}
+          component="p"
+          sx={{ mt: 1, fontSize: textSize.xs }}
         >
           {t('playerPage.recentMatches.statsNote')}
         </Typography>
       )}
-    </Card>
+    </>
   );
 }

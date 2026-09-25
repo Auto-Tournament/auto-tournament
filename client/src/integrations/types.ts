@@ -697,6 +697,20 @@ export interface TeamAdminPanelProps {
   teamId: string;
 }
 
+/**
+ * Team page roster: what this game says about one member's account for it,
+ * shown in the member's detail line after their role (client API 0.2.6).
+ *
+ * CS2 says whether the roster has a Steam account for the player ("Steam
+ * linked", or a warning when it does not): without one they cannot join the
+ * server. A game with nothing to say about a member leaves the slot empty,
+ * and the line shows only the role.
+ */
+export interface RosterMemberStatusProps {
+  /** The roster entry's player id: a Steam ID64 today, or '' / 'unknown' when the roster has none. */
+  playerId: string;
+}
+
 // ---------------------------------------------------------------------------
 // The admin area
 // ---------------------------------------------------------------------------
@@ -857,6 +871,9 @@ export interface ClientGameIntegration {
 
   /** Team page: an admin-only control this integration needs (D7: captains). */
   teamAdminPanel?: ComponentType<TeamAdminPanelProps>;
+
+  /** Team page roster: the member's account status for this game (CS2: Steam linked). */
+  rosterMemberStatus?: ComponentType<RosterMemberStatusProps>;
 
   /**
    * The admin shell, every page: a setting this module needs before its

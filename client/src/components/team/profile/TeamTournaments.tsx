@@ -1,16 +1,22 @@
-import { Box, Card, CardContent, Chip, Divider, Stack, Typography } from '@mui/material';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import { Box, Chip, Link, Typography } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { formatDate, getBracketMatchLabel } from '../../../utils/matchUtils';
-import { tokens, radii } from '../../../theme/tokens';
+import { LiveChip, Panel, Row, RowList, SectionHead } from '../../common/ui';
+import { fontDisplay, mono, textSize, tokens } from '../../../theme/tokens';
+import { paths } from '../../../paths';
 import type { TeamMatchInfo, TeamMatchHistory, TeamStanding } from '../../../types';
 
-interface TeamTournamentInfo {
+export interface TeamTournamentInfo {
+  id?: number;
   name: string;
   status: string;
+  game?: string;
+  gameName?: string;
 }
 
 interface TeamTournamentsProps {
+  teamId: string;
   hasMatch: boolean;
   match: TeamMatchInfo | null;
   tournament: TeamTournamentInfo | null;
@@ -18,14 +24,36 @@ interface TeamTournamentsProps {
   recentResults: TeamMatchHistory[];
 }
 
+/** A quiet "Open" link on the right of a row. */
+function RowLink({ to, label, testId }: { to: string; label: string; testId?: string }) {
+  return (
+    <Link
+      component={RouterLink}
+      to={to}
+      underline="none"
+      data-testid={testId}
+      sx={{
+        color: tokens.color.muted,
+        fontSize: textSize.sm,
+        whiteSpace: 'nowrap',
+        '&:hover': { color: tokens.color.ink },
+      }}
+    >
+      {label}
+    </Link>
+  );
+}
+
 /**
- * The current tournament (if any) and recent completed results.
+ * The team page's second column (the draft's "Tournaments"): the tournament
+ * the team is in — live, upcoming or its placement — and its latest results.
  *
- * This app runs a single tournament at a time, so "Tournaments" is really
- * "the current tournament's status, plus whatever match history the DB kept"
- * — there is no record of past, separate tournaments to list alongside it.
+ * This instance runs one tournament at a time and keeps no record of
+ * earlier ones beyond their matches, so the list is that tournament and the
+ * results the match history still holds.
  */
 export function TeamTournaments({
+  teamId,
   hasMatch,
   match,
   tournament,
@@ -34,125 +62,151 @@ export function TeamTournaments({
 }: TeamTournamentsProps) {
   const { t } = useTranslation();
 
-  if (!tournament && recentResults.length === 0) {
-    return null;
-  }
-
   const isLive = hasMatch && (match?.status === 'live' || match?.status === 'loaded');
-  const isUpcoming = hasMatch && (match?.status === 'pending' || match?.status === 'ready');
+  const isUpcoming = hasMatch && !isLive;
+
+  const placement = standing
+    ? tournament?.status === 'completed'
+      ? t('teamProfile.tournaments.finalPlacement', {
+          position: standing.position,
+          total: standing.totalTeams,
+        })
+      : t('teamProfile.tournaments.placement', {
+          position: standing.position,
+          total: standing.totalTeams,
+        })
+    : null;
+
+  // What the row says under the tournament's name: the game, then the match
+  // or the placement.
+  const detail = [
+    tournament?.gameName,
+    hasMatch && match?.opponent?.name
+      ? t('teamProfile.tournaments.versus', { opponent: match.opponent.name })
+      : placement,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
-    <Card data-testid="team-profile-tournaments">
-      <CardContent>
-        <Box display="flex" alignItems="center" gap={1} mb={2}>
-          <EmojiEventsIcon color="primary" />
-          <Typography variant="h6" fontWeight={600}>
-            {t('teamProfile.tournaments.title')}
-          </Typography>
-        </Box>
-
-        {tournament && (
-          <Box
+    <Box data-testid="team-profile-tournaments">
+      {tournament ? (
+        <RowList>
+          <Row
+            columns="auto minmax(0, 1fr) auto"
             data-testid="team-profile-current-tournament"
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 2,
-              p: 1.5,
-              borderRadius: radii.sm,
-              border: 1,
-              borderColor: 'divider',
-              flexWrap: 'wrap',
-            }}
           >
+            {isLive ? (
+              <LiveChip label={t('teamProfile.tournaments.live')} />
+            ) : isUpcoming ? (
+              <Chip size="small" label={t('teamProfile.tournaments.upcoming')} />
+            ) : standing ? (
+              <Box
+                component="span"
+                sx={{
+                  fontFamily: fontDisplay,
+                  fontWeight: 700,
+                  fontSize: textSize.lg,
+                  fontVariantNumeric: 'tabular-nums',
+                  minWidth: '2.5rem',
+                  color:
+                    tournament.status === 'completed' && standing.position === 1
+                      ? tokens.color.accent
+                      : tokens.color.ink,
+                }}
+              >
+                #{standing.position}
+              </Box>
+            ) : (
+              <Chip size="small" label={t(`teamProfile.tournaments.status.${tournament.status}`, {
+                defaultValue: tournament.status,
+              })} />
+            )}
             <Box minWidth={0}>
-              <Typography variant="body1" fontWeight={600} noWrap>
+              <Typography variant="body2" fontWeight={600} noWrap>
                 {tournament.name}
               </Typography>
-              {hasMatch && match?.opponent?.name && (
-                <Typography variant="body2" color="text.secondary">
-                  {t('teamProfile.tournaments.versus', { opponent: match.opponent.name })}
+              {detail && (
+                <Typography variant="caption" color="text.secondary" component="div" noWrap>
+                  {detail}
                 </Typography>
               )}
             </Box>
-            {isLive ? (
-              <Chip
-                size="small"
-                color="success"
-                label={t('teamProfile.tournaments.live')}
-                sx={{ fontWeight: 700 }}
+            {hasMatch ? (
+              <RowLink
+                to={paths.teamMatch.replace(':teamId', teamId)}
+                label={t('teamProfile.tournaments.openMatch')}
+                testId="team-profile-open-match"
               />
-            ) : isUpcoming ? (
-              <Chip size="small" variant="outlined" label={t('teamProfile.tournaments.upcoming')} />
-            ) : tournament.status === 'completed' && standing ? (
-              <Chip
-                size="small"
-                label={t('teamProfile.tournaments.finalPlacement', {
-                  position: standing.position,
-                  total: standing.totalTeams,
-                })}
-              />
-            ) : standing ? (
-              <Chip
-                size="small"
-                variant="outlined"
-                label={t('teamProfile.tournaments.placement', {
-                  position: standing.position,
-                  total: standing.totalTeams,
-                })}
+            ) : typeof tournament.id === 'number' ? (
+              <RowLink
+                to={paths.tournamentOverview.replace(':id', String(tournament.id))}
+                label={t('teamProfile.tournaments.open')}
               />
             ) : null}
-          </Box>
-        )}
+          </Row>
+        </RowList>
+      ) : (
+        <Panel sx={{ px: 3, py: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            {t('teamProfile.tournaments.empty')}
+          </Typography>
+        </Panel>
+      )}
 
-        {recentResults.length > 0 && (
-          <>
-            {tournament && <Divider sx={{ my: 2 }} />}
-            <Typography variant="subtitle2" color="text.secondary" mb={1}>
-              {t('teamProfile.tournaments.recentResults')}
-            </Typography>
-            <Stack spacing={1}>
-              {recentResults.map((result) => (
+      {recentResults.length > 0 && (
+        <Box component="section" aria-labelledby="team-recent-results" sx={{ mt: 4 }}>
+          <SectionHead
+            id="team-recent-results"
+            level={3}
+            title={t('teamProfile.tournaments.recentResults')}
+          />
+          <RowList>
+            {recentResults.map((result) => (
+              <Row
+                key={result.slug}
+                columns="2.2rem minmax(0, 1fr) auto"
+                data-testid="team-profile-result-row"
+                sx={{ py: 1.5 }}
+              >
                 <Box
-                  key={result.slug}
-                  data-testid="team-profile-result-row"
                   sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 2,
-                    p: 1.25,
-                    borderRadius: radii.sm,
-                    border: 1,
-                    borderColor: 'divider',
-                    borderLeft: 4,
-                    borderLeftColor: result.won ? tokens.color.live : tokens.color.ban,
-                    flexWrap: 'wrap',
+                    ...mono,
+                    fontWeight: 700,
+                    fontSize: textSize.xs,
+                    width: '2.2rem',
+                    height: '1.6rem',
+                    borderRadius: '6px',
+                    display: 'grid',
+                    placeItems: 'center',
+                    bgcolor: tokens.color.paper3,
+                    color: result.won ? tokens.color.live : tokens.color.ban,
                   }}
                 >
-                  <Box minWidth={0}>
-                    <Typography variant="body2" fontWeight={600} noWrap>
-                      {t('teamProfile.tournaments.versus', {
-                        opponent: result.opponent?.name || '—',
-                      })}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {getBracketMatchLabel(result) || formatDate(result.completedAt)}
-                    </Typography>
-                  </Box>
-                  <Chip
-                    size="small"
-                    label={`${result.won ? t('teamProfile.tournaments.win') : t('teamProfile.tournaments.loss')} ${result.teamScore}-${result.opponentScore}`}
-                    color={result.won ? 'success' : 'error'}
-                    variant="outlined"
-                  />
+                  {result.won ? t('teamProfile.tournaments.win') : t('teamProfile.tournaments.loss')}
                 </Box>
-              ))}
-            </Stack>
-          </>
-        )}
-      </CardContent>
-    </Card>
+                <Box minWidth={0}>
+                  <Typography variant="body2" noWrap>
+                    {t('teamProfile.tournaments.versus', {
+                      opponent: result.opponent?.name || '—',
+                    })}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" component="div" noWrap>
+                    {getBracketMatchLabel(result) || formatDate(result.completedAt)}
+                  </Typography>
+                </Box>
+                <Typography
+                  variant="body2"
+                  sx={{ ...mono, fontVariantNumeric: 'tabular-nums' }}
+                  color="text.secondary"
+                >
+                  {result.teamScore}–{result.opponentScore}
+                </Typography>
+              </Row>
+            ))}
+          </RowList>
+        </Box>
+      )}
+    </Box>
   );
 }

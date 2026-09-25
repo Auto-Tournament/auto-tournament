@@ -1,90 +1,121 @@
-import { Box, Card, CardContent, Chip, Stack, Typography } from '@mui/material';
-import GroupsIcon from '@mui/icons-material/Groups';
+import type { ComponentType } from 'react';
+import { Box, Chip, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PlayerAvatar } from '../../player/PlayerAvatar';
+import { Panel, Row, RowList } from '../../common/ui';
 import { getPlayerPageUrl } from '../../../utils/playerLinks';
 import type { Player } from '../../../types';
-import { radii } from '../../../theme/tokens';
+import type { RosterMemberStatusProps } from '../../../integrations/types';
+import { textSize, tokens } from '../../../theme/tokens';
 
 interface RosterListProps {
   players: Player[];
+  /**
+   * The game module's line about each member's account for the game (CS2:
+   * "Steam linked"). Absent for a game with nothing to say.
+   */
+  MemberStatus?: ComponentType<RosterMemberStatusProps>;
+}
+
+/** Whether the roster entry points at a player the site has a page for. */
+function hasProfile(player: Player): boolean {
+  return !!player.steamId && player.steamId !== 'unknown';
 }
 
 /**
- * Public team profile roster. Only what the roster data actually carries:
- * avatar, name and current rating. No captain marker (the app has no captain
- * concept yet) and no "Steam linked" note (every CS2 roster entry implies it,
- * and whether the player has ever signed in isn't tracked, so there is
- * nothing extra to say).
+ * Public team profile roster (the draft's `ul.row-list.panel` of members):
+ * avatar, name, a detail line with the role and the game's account status,
+ * and the rating. Captains first, then by rating.
  */
-export function RosterList({ players }: RosterListProps) {
+export function RosterList({ players, MemberStatus }: RosterListProps) {
   const { t } = useTranslation();
 
-  const sorted = [...players].sort((a, b) => (b.elo ?? 0) - (a.elo ?? 0));
+  const sorted = [...players].sort((a, b) => {
+    const captainFirst = Number(b.role === 'captain') - Number(a.role === 'captain');
+    return captainFirst || (b.elo ?? 0) - (a.elo ?? 0);
+  });
+
+  if (sorted.length === 0) {
+    return (
+      <Panel data-testid="team-profile-roster" sx={{ px: 3, py: 2 }}>
+        <Typography variant="body2" color="text.secondary">
+          {t('teamProfile.roster.empty')}
+        </Typography>
+      </Panel>
+    );
+  }
 
   return (
-    <Card data-testid="team-profile-roster">
-      <CardContent>
-        <Box display="flex" alignItems="center" gap={1} mb={2}>
-          <GroupsIcon color="primary" />
-          <Typography variant="h6" fontWeight={600}>
-            {t('teamProfile.roster.title')}
-          </Typography>
-        </Box>
-
-        {sorted.length === 0 ? (
-          <Typography variant="body2" color="text.secondary">
-            {t('teamProfile.roster.empty')}
-          </Typography>
-        ) : (
-          <Stack spacing={1}>
-            {sorted.map((player, index) => (
-              <Box
-                key={player.steamId || index}
-                data-testid="team-profile-roster-row"
-                component={player.steamId ? RouterLink : 'div'}
-                to={player.steamId ? getPlayerPageUrl(player.steamId) : undefined}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: 2,
-                  p: 1.5,
-                  borderRadius: radii.sm,
-                  textDecoration: 'none',
-                  color: 'inherit',
-                  border: 1,
-                  borderColor: 'divider',
-                  minWidth: 0,
-                  '&:hover': player.steamId
-                    ? { bgcolor: 'action.hover', borderColor: 'primary.main' }
-                    : undefined,
-                }}
-              >
-                <Box display="flex" alignItems="center" gap={1.5} minWidth={0}>
-                  <PlayerAvatar
-                    id={player.steamId || String(index)}
-                    name={player.name}
-                    avatarUrl={player.avatar}
-                    size={36}
-                  />
-                  <Typography variant="body1" fontWeight={500} noWrap>
-                    {player.name}
-                  </Typography>
-                </Box>
-                {typeof player.elo === 'number' && (
-                  <Chip
-                    size="small"
-                    label={t('teamProfile.roster.rating', { rating: player.elo })}
-                    sx={{ flexShrink: 0 }}
-                  />
+    <RowList data-testid="team-profile-roster">
+      {sorted.map((player, index) => {
+        const linkable = hasProfile(player);
+        const isCaptain = player.role === 'captain';
+        return (
+          <Row
+            key={player.steamId || index}
+            data-testid="team-profile-roster-row"
+            sx={{ p: 0 }}
+          >
+            <Box
+              component={linkable ? RouterLink : 'div'}
+              to={linkable ? getPlayerPageUrl(player.steamId) : undefined}
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: 'auto minmax(0, 1fr) auto',
+                alignItems: 'center',
+                gap: 2,
+                px: 3,
+                py: 1.5,
+                width: '100%',
+                minWidth: 0,
+                color: 'inherit',
+                textDecoration: 'none',
+                borderRadius: 'inherit',
+                '&:hover': linkable ? { bgcolor: 'action.hover' } : undefined,
+              }}
+            >
+              <PlayerAvatar
+                id={player.steamId || String(index)}
+                name={player.name}
+                avatarUrl={player.avatar}
+                size={36}
+              />
+              <Box minWidth={0}>
+                <Typography variant="body2" fontWeight={600} noWrap>
+                  {player.name}
+                </Typography>
+                {(isCaptain || MemberStatus) && (
+                  <Box
+                    component="small"
+                    data-testid="team-profile-roster-detail"
+                    sx={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      columnGap: 0.75,
+                      color: tokens.color.muted,
+                      fontSize: textSize.xs,
+                      // "Captain · Steam linked": a dot between the parts
+                      // that are there, whichever they are.
+                      '& > * + *::before': { content: '"·"', mr: 0.75 },
+                    }}
+                  >
+                    {isCaptain && <span>{t('teamProfile.roster.captain')}</span>}
+                    {MemberStatus && <MemberStatus playerId={player.steamId ?? ''} />}
+                  </Box>
                 )}
               </Box>
-            ))}
-          </Stack>
-        )}
-      </CardContent>
-    </Card>
+              {typeof player.elo === 'number' && (
+                <Chip
+                  size="small"
+                  label={t('teamProfile.roster.rating', { rating: player.elo })}
+                  sx={{ flexShrink: 0 }}
+                />
+              )}
+            </Box>
+          </Row>
+        );
+      })}
+    </RowList>
   );
 }
