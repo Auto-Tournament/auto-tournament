@@ -171,6 +171,13 @@ async function writeProvenance(id: string, value: ModuleProvenance | null): Prom
   await db.setAppSettingAsync(`${MODULE_INSTALL_KEY_PREFIX}${id}`, value ? JSON.stringify(value) : null);
 }
 
+/**
+ * What the boot-time update of a module did not do, by module id: shown on
+ * the Modules page until the next boot, or until an admin installs or
+ * updates the module.
+ */
+const moduleNotices = new Map<string, string>();
+
 async function readEnabled(id: string): Promise<boolean | null> {
   const raw = await db.getAppSettingAsync(`${MODULE_ENABLED_KEY_PREFIX}${id}`);
   return raw === null ? null : raw === 'true';
@@ -248,6 +255,8 @@ export interface CatalogItem {
   available: { version: string | null; from: 'remote' | 'snapshot' } | null;
   /** The running process differs from what is installed and switched on. */
   restartRequired: boolean;
+  /** What boot's automatic update did not do, and why (a failure, or a major version waiting for the admin). */
+  notice: string | null;
 }
 
 export interface CatalogListing {
@@ -355,6 +364,7 @@ async function moduleItem(
       : null,
     available,
     restartRequired: restartReason !== null,
+    notice: moduleNotices.get(id) ?? null,
   };
 }
 
@@ -384,6 +394,7 @@ export async function listCatalog(): Promise<CatalogListing> {
       installed: { version: null, source: 'builtin', enabled: true },
       available: null,
       restartRequired: false,
+      notice: null,
     });
   }
 
@@ -455,6 +466,7 @@ export async function listCatalog(): Promise<CatalogListing> {
       installed: installed ? { version: installed.version, source: installed.source, enabled: true } : null,
       available: best,
       restartRequired: false,
+      notice: null,
     });
   }
 
@@ -736,11 +748,13 @@ interface InstallOptions {
   offlineOnly?: boolean;
   /** Load it now (default), or leave that to the boot scan that follows. */
   load?: boolean;
+  /** Only releases in the installed version's major (the boot-time update). */
+  sameMajor?: boolean;
 }
 
 async function installModule(
   id: string,
-  { actor, update, offlineOnly = false, load = true }: InstallOptions
+  { actor, update, offlineOnly = false, load = true, sameMajor = false }: InstallOptions
 ): Promise<OperationResult> {
   checkModuleId(id);
   // A loaded module whose files already moved on (an update, an uninstall,
@@ -762,7 +776,11 @@ async function installModule(
   }
   if (!installedVersion && update) throw new CatalogError(404, `'${id}' is not installed.`, 'not-installed');
 
-  const picked = pickRelease(entry.releases);
+  const releases =
+    sameMajor && installedVersion
+      ? entry.releases.filter((candidate) => semver.major(candidate.version) === semver.major(installedVersion))
+      : entry.releases;
+  const picked = pickRelease(releases);
   if (!picked.ok) throw new CatalogError(409, picked.reason, 'incompatible');
   if (installedVersion && !semver.gt(picked.release.version, installedVersion)) {
     throw new CatalogError(
@@ -860,6 +878,7 @@ async function installModule(
       previous: previousProvenance ? { ...previousProvenance, previous: null } : null,
     });
     await db.setAppSettingAsync(`${MODULE_REMOVED_KEY_PREFIX}${id}`, null);
+    moduleNotices.delete(id);
     // An install switches the module on; an update keeps the switch as the
     // admin left it.
     const enable = update ? previousEnabled === true : true;
@@ -986,6 +1005,10 @@ export async function finishPendingUpdates(): Promise<void> {
       await writeProvenance(id, provenance?.previous ?? null);
       forgetDiskModule(id);
       const restored = await loadModuleNow(id);
+      moduleNotices.set(
+        id,
+        `Version ${provenance?.version ?? '?'} did not load (${state.reason ?? 'no reason'}), so ${restored?.version ?? 'the previous version'} was kept.`
+      );
       log.warn(
         `[CATALOG] ${id}@${provenance?.version ?? '?'} did not load after the restart (${state.reason ?? 'no reason'}); ` +
           `rolled back to ${restored?.version ?? 'the previous version'}, which is ${restored?.status ?? 'missing'}`
@@ -1245,4 +1268,80 @@ export async function autoInstallCs2ForExistingData(): Promise<'installed' | 'sk
     );
     return 'failed';
   }
+}
+
+/** Whether boot updates snapshot and catalog modules on its own (`MODULE_AUTO_UPDATE=false` turns it off). */
+export function moduleAutoUpdateEnabled(): boolean {
+  return (process.env.MODULE_AUTO_UPDATE ?? '').trim().toLowerCase() !== 'false';
+}
+
+export type AutoUpdateOutcome = 'updated' | 'current' | 'major' | 'failed' | 'skipped';
+
+/**
+ * A platform upgrade brings a newer offline snapshot, and the modules it
+ * installed should move with it: core moves features into newer module
+ * versions. At boot, before the scan loads anything, each module installed
+ * from the snapshot or the catalog (never a folder an operator put there by
+ * hand) is updated to the newest signed release in the image's snapshot that
+ * this platform can run, through the admin's Update path: signature first,
+ * atomic swap with `.previous`, the switch kept, no downgrade. The scan then
+ * loads it and runs its migrations; one that does not load is rolled back by
+ * `finishPendingUpdates`.
+ *
+ * Within the installed major version only. A new major is the admin's call
+ * (as 2.4 → 3.0 is for the platform), so it is logged, shown on the Modules
+ * page, and waits for the Update button. Nothing is fetched. Never throws: a
+ * failure keeps the installed version, logged and shown. `only` limits it to
+ * some modules (the test helper).
+ */
+export async function autoUpdateModulesFromSnapshot(only?: string[]): Promise<Record<string, AutoUpdateOutcome>> {
+  const outcomes: Record<string, AutoUpdateOutcome> = {};
+  if (!moduleAutoUpdateEnabled()) {
+    log.info('[CATALOG] MODULE_AUTO_UPDATE=false: installed modules are not updated from the offline snapshot');
+    return outcomes;
+  }
+  const snapshot = await readSnapshotModules();
+  if (snapshot.length === 0) return outcomes;
+  const dirents = await fs.promises.readdir(modulesDir(), { withFileTypes: true }).catch(() => []);
+  for (const dirent of dirents) {
+    const id = dirent.name;
+    if (!dirent.isDirectory() || id.startsWith('.') || !isValidModuleId(id)) continue;
+    if (only && !only.includes(id)) continue;
+    const entry = snapshot.find((candidate) => candidate.id === id);
+    if (!entry || isBuiltinModule(id)) continue;
+    try {
+      const installed = await diskVersion(liveDir(id));
+      // No provenance: a folder an operator put there. Theirs to update.
+      if (!installed || !(await readProvenance(id))) {
+        outcomes[id] = 'skipped';
+        continue;
+      }
+      const major = semver.major(installed);
+      const newest = pickRelease(entry.releases);
+      const majorWaiting = newest.ok && semver.major(newest.release.version) > major ? newest.release.version : null;
+      const within = pickRelease(entry.releases.filter((release) => semver.major(release.version) === major));
+      if (within.ok && semver.gt(within.release.version, installed)) {
+        await exclusive(`module ${id} (auto-update)`, () =>
+          installModule(id, { actor: 'auto-update', update: true, offlineOnly: true, load: false, sameMajor: true })
+        );
+        log.success(`[CATALOG] Auto-updated ${id} from ${installed} to ${within.release.version} from the offline snapshot`);
+        outcomes[id] = 'updated';
+      } else {
+        outcomes[id] = majorWaiting ? 'major' : 'current';
+      }
+      if (majorWaiting) {
+        moduleNotices.set(
+          id,
+          `Version ${majorWaiting} is available. A new major version is not installed automatically; update when you are ready.`
+        );
+        log.info(`[CATALOG] Update available: ${id} ${installed} → ${majorWaiting} (a new major version waits for an admin)`);
+      }
+    } catch (error) {
+      const why = (error as Error).message;
+      moduleNotices.set(id, `The automatic update from the offline snapshot failed, so the installed version was kept: ${why}`);
+      log.error(`[CATALOG] Could not auto-update ${id} from the offline snapshot; keeping the installed version: ${why}`);
+      outcomes[id] = 'failed';
+    }
+  }
+  return outcomes;
 }

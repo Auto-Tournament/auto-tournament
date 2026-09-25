@@ -374,6 +374,11 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
                   {item.reason}
                 </Typography>
               )}
+              {item.notice && (
+                <Typography variant="body2" color="warning.main" data-testid={`${id}-notice`}>
+                  {item.notice}
+                </Typography>
+              )}
             </Box>
           </Box>
           <Stack direction="row" spacing={1} sx={{ flexShrink: 0, alignSelf: { xs: 'flex-end', sm: 'center' } }}>

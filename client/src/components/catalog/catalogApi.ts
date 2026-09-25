@@ -36,6 +36,8 @@ export interface CatalogItem {
   } | null;
   available: { version: string | null; from: 'remote' | 'snapshot' } | null;
   restartRequired: boolean;
+  /** What boot's automatic update did not do: a failure, or a new major version waiting for the admin. */
+  notice?: string | null;
 }
 
 export interface CatalogListing {
@@ -56,6 +58,8 @@ export interface CatalogListing {
 export interface CatalogResult {
   item: CatalogItem | null;
   restartRequired: boolean;
+  /** What boot's automatic update did not do: a failure, or a new major version waiting for the admin. */
+  notice?: string | null;
   message: string;
 }
 

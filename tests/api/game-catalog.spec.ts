@@ -40,6 +40,7 @@ interface Item {
   } | null;
   available: { version: string | null; from: 'remote' | 'snapshot' } | null;
   restartRequired: boolean;
+  notice: string | null;
   icon: string | null;
 }
 
@@ -66,7 +67,12 @@ type Ids = Record<
   | 'migfail'
   | 'offline'
   | 'redirect'
-  | 'hop',
+  | 'hop'
+  | 'autoup'
+  | 'autooff'
+  | 'automanual'
+  | 'autobadsig'
+  | 'automajor',
   string
 >;
 
@@ -346,6 +352,53 @@ test.describe.serial('Game catalog', () => {
     // What boot does before it scans.
     expect((await request.post('/api/test/modules/restore-swaps')).ok()).toBe(true);
     expect((await item(request, 'module', id))?.installed).toMatchObject({ version: '1.0.0' });
+  });
+
+  test('boot updates snapshot-installed modules from a newer snapshot, within their major version', async ({ request }) => {
+    // What the older image left: 1.0.0 of each, not loaded. The snapshot
+    // (written by the fake catalog) has 1.1.0, a badly signed 1.1.0, or only 2.0.0.
+    const seed = async (id: string, data: { enabled?: boolean; manual?: boolean } = {}) => {
+      const response = await request.post(`/api/test/modules/${id}/seed-installed`, { data });
+      expect(response.status(), await response.text()).toBe(200);
+    };
+    await seed(ids.autoup);
+    await seed(ids.autooff, { enabled: false });
+    await seed(ids.automanual, { manual: true });
+    await seed(ids.autobadsig);
+    await seed(ids.automajor);
+
+    const all = [ids.autoup, ids.autooff, ids.automanual, ids.autobadsig, ids.automajor];
+    const response = await request.post('/api/test/modules/auto-update', { data: { ids: all } });
+    const text = await response.text();
+    expect(response.status(), text).toBe(200);
+    const { outcomes, states } = JSON.parse(text) as {
+      outcomes: Record<string, string>;
+      states: Record<string, { status: string; version: string | null } | null>;
+    };
+    expect(outcomes).toEqual({
+      [ids.autoup]: 'updated',
+      [ids.autooff]: 'updated',
+      [ids.automanual]: 'skipped',
+      [ids.autobadsig]: 'failed',
+      [ids.automajor]: 'major',
+    });
+
+    const rows = new Map((await catalog(request)).items.map((row) => [row.id, row]));
+    // Updated, and loaded by the scan that follows.
+    expect(rows.get(ids.autoup)).toMatchObject({ installed: { version: '1.1.0', source: 'snapshot', enabled: true }, notice: null });
+    expect(states[ids.autoup]).toMatchObject({ status: 'ok', version: '1.1.0' });
+    // Updated, and still off.
+    expect(rows.get(ids.autooff)).toMatchObject({ state: 'disabled', installed: { version: '1.1.0', enabled: false } });
+    expect(states[ids.autooff]).toMatchObject({ status: 'disabled' });
+    // An operator's folder is theirs: untouched.
+    expect(rows.get(ids.automanual)).toMatchObject({ installed: { version: '1.0.0', source: 'manual' }, notice: null });
+    // A bad signature: still 1.0.0, running, and the Modules page says why.
+    expect(rows.get(ids.autobadsig)).toMatchObject({ installed: { version: '1.0.0', source: 'snapshot' } });
+    expect(rows.get(ids.autobadsig)?.notice).toMatch(/automatic update .* failed.*does not trust/);
+    expect(states[ids.autobadsig]).toMatchObject({ status: 'ok', version: '1.0.0' });
+    // A new major waits for the admin, who is told.
+    expect(rows.get(ids.automajor)).toMatchObject({ state: 'update-available', installed: { version: '1.0.0' } });
+    expect(rows.get(ids.automajor)?.notice).toMatch(/2\.0\.0 is available.*not installed automatically/);
   });
 
   test('installs a pack from the feed, and removes it', async ({ request }) => {

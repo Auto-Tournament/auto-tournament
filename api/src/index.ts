@@ -37,6 +37,7 @@ import { listIntegrations } from './integrations/registry';
 import { diskModuleRoutes, scanDiskModules } from './modules/loader';
 import {
   autoInstallCs2ForExistingData,
+  autoUpdateModulesFromSnapshot,
   finishPendingUpdates,
   restoreInterruptedSwaps,
   sweepStaging,
@@ -474,6 +475,11 @@ process.on('uncaughtException', (err) => {
     // offline snapshot before the scan loads it, so its tournaments keep
     // working now that CS2 is a catalog module. Logged; never throws.
     await autoInstallCs2ForExistingData();
+    // A newer image carries newer module releases: modules installed from
+    // the snapshot or the catalog move to the snapshot's newest one within
+    // their major version, before the scan loads them. Logged; never throws.
+    // MODULE_AUTO_UPDATE=false turns it off.
+    await autoUpdateModulesFromSnapshot();
     await scanDiskModules();
     await finishPendingUpdates();
 

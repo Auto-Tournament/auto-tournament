@@ -45,8 +45,10 @@ import {
   purgeableTables,
   purgeModuleData,
   restoreInterruptedSwaps,
+  autoUpdateModulesFromSnapshot,
+  MODULE_INSTALL_KEY_PREFIX,
 } from '../modules/catalogService';
-import { forgetDiskModule, modulesDir } from '../modules/loader';
+import { forgetDiskModule, loadModuleNow, modulesDir, storeEnabled } from '../modules/loader';
 import { isValidModuleId } from '../modules/manifest';
 import { db } from '../config/database';
 
@@ -64,6 +66,11 @@ const KINDS = [
   'offline',
   'redirect',
   'hop',
+  'autoup',
+  'autooff',
+  'automanual',
+  'autobadsig',
+  'automajor',
 ] as const;
 type Kind = (typeof KINDS)[number];
 
@@ -153,6 +160,7 @@ function release(kind: Kind, id: string, version: string, fixtureFiles: FixtureF
       archive = writeModuleArchive(toEntries(withVersion(valid, '2.0.0')));
       break;
     case 'badsig':
+    case 'autobadsig':
       archive = writeModuleArchive(toEntries(valid));
       signer = untrusted!;
       break;
@@ -220,30 +228,39 @@ function feed(run: string, goodVersions: string[]) {
   };
 }
 
-/** The offline snapshot: `offline`'s release, signed, with its index. */
+/**
+ * The offline snapshot, signed, with its index: `offline`'s release, and the
+ * newer releases boot's automatic update finds for the `auto*` modules (a
+ * spec seeds their 1.0.0 as installed): 1.1.0, signed by an untrusted key for
+ * `autobadsig`, and only a new major, 2.0.0, for `automajor`.
+ */
 async function writeSnapshot(run: string, fixtureFiles: FixtureFiles): Promise<void> {
   const dir = SNAPSHOT_DIR();
   await fs.promises.rm(dir, { recursive: true, force: true });
   await fs.promises.mkdir(dir, { recursive: true });
-  const id = idFor('offline', run);
-  const { archive, signature } = release('offline', id, '1.0.0', fixtureFiles);
-  const file = `${id}-1.0.0.atmod`;
-  await fs.promises.writeFile(path.join(dir, file), archive);
-  await fs.promises.writeFile(path.join(dir, `${file}.sig`), signature);
-  await fs.promises.writeFile(
-    path.join(dir, 'index.json'),
-    JSON.stringify({
-      schema: 1,
-      modules: [
-        {
-          id,
-          name: 'Catalog fixture offline',
-          description: 'A fixture module: offline.',
-          releases: [{ version: '1.0.0', serverApi: '^0.1.0', clientApi: '^0.2.0', file }],
-        },
-      ],
-    })
-  );
+  const offered: Array<[Kind, string]> = [
+    ['offline', '1.0.0'],
+    ['autoup', '1.1.0'],
+    ['autooff', '1.1.0'],
+    ['automanual', '1.1.0'],
+    ['autobadsig', '1.1.0'],
+    ['automajor', '2.0.0'],
+  ];
+  const modules = [];
+  for (const [kind, version] of offered) {
+    const id = idFor(kind, run);
+    const { archive, signature } = release(kind, id, version, fixtureFiles);
+    const file = `${id}-${version}.atmod`;
+    await fs.promises.writeFile(path.join(dir, file), archive);
+    await fs.promises.writeFile(path.join(dir, `${file}.sig`), signature);
+    modules.push({
+      id,
+      name: `Catalog fixture ${kind}`,
+      description: `A fixture module: ${kind}.`,
+      releases: [{ version, serverApi: '^0.1.0', clientApi: '^0.2.0', file }],
+    });
+  }
+  await fs.promises.writeFile(path.join(dir, 'index.json'), JSON.stringify({ schema: 1, modules }));
 }
 
 /**
@@ -384,6 +401,45 @@ export function registerCatalogTestRoutes(
     if (!helpersEnabled(res)) return;
     await restoreInterruptedSwaps();
     res.json({ success: true });
+  });
+
+  // What an older image left on disk, not loaded: a fixture module's 1.0.0 in
+  // its folder with its switch, installed from the snapshot (or, `manual`, a
+  // folder an operator dropped in, with no install record).
+  router.post('/modules/:id/seed-installed', requireAuth, async (req: Request, res: Response): Promise<void> => {
+    if (!helpersEnabled(res) || !fixtureId(res, req.params.id)) return;
+    const { enabled, manual } = (req.body ?? {}) as { enabled?: unknown; manual?: unknown };
+    const id = req.params.id;
+    const dir = path.join(modulesDir(), id);
+    await fs.promises.rm(dir, { recursive: true, force: true });
+    for (const [file, text] of Object.entries(withVersion(fixtureFiles(id, 'valid'), '1.0.0'))) {
+      await fs.promises.mkdir(path.dirname(path.join(dir, file)), { recursive: true });
+      await fs.promises.writeFile(path.join(dir, file), text);
+    }
+    await db.setAppSettingAsync(
+      `${MODULE_INSTALL_KEY_PREFIX}${id}`,
+      manual === true
+        ? null
+        : JSON.stringify({ source: 'snapshot', version: '1.0.0', sha256: '0'.repeat(64), keyId: '0'.repeat(16), installedAt: 0, installedBy: null })
+    );
+    await storeEnabled(id, enabled !== false);
+    forgetDiskModule(id);
+    res.json({ success: true });
+  });
+
+  // Boot's automatic update for these fixture modules, then what the boot
+  // scan does next: load the enabled ones.
+  router.post('/modules/auto-update', requireAuth, async (req: Request, res: Response): Promise<void> => {
+    if (!helpersEnabled(res)) return;
+    const ids = (req.body as { ids?: unknown } | undefined)?.ids;
+    if (!Array.isArray(ids) || ids.some((id) => typeof id !== 'string' || !isValidModuleId(id) || !id.startsWith('fixture-'))) {
+      res.status(400).json({ success: false, error: "ids must be module ids starting with 'fixture-'" });
+      return;
+    }
+    const outcomes = await autoUpdateModulesFromSnapshot(ids as string[]);
+    const states: Record<string, unknown> = {};
+    for (const id of ids as string[]) states[id] = await loadModuleNow(id);
+    res.json({ success: true, outcomes, states });
   });
 
   router.get('/fake-catalog/catalog.json', async (_req: Request, res: Response): Promise<void> => {
