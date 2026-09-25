@@ -13,9 +13,7 @@ import Skeleton from '@mui/material/Skeleton';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
-import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import { MagnifyingGlassIcon, PlusIcon, TrophyIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { GameCatalog } from '../components/catalog/GameCatalog';
@@ -315,11 +313,7 @@ export default function WelcomeGames() {
                     )}
                     {game.supported && (
                       <Tooltip title={supportedLabel}>
-                        <EmojiEventsRoundedIcon
-                          role="img"
-                          aria-label={supportedLabel}
-                          sx={{ fontSize: 18, color: 'primary.main', flexShrink: 0 }}
-                        />
+                        <Box component={TrophyIcon} size={18} role="img" aria-label={supportedLabel} sx={{ color: 'primary.main', flexShrink: 0 }} />
                       </Tooltip>
                     )}
                   </Box>
@@ -343,7 +337,7 @@ export default function WelcomeGames() {
                     ...params.InputProps,
                     startAdornment: (
                       <InputAdornment position="start">
-                        <SearchRoundedIcon sx={{ color: 'text.secondary' }} />
+                        <Box component={MagnifyingGlassIcon} sx={{ color: 'text.secondary' }} />
                       </InputAdornment>
                     ),
                     endAdornment: (
@@ -375,7 +369,7 @@ export default function WelcomeGames() {
                     key={game.id}
                     variant="outlined"
                     label={game.name}
-                    icon={<AddRoundedIcon />}
+                    icon={<PlusIcon />}
                     onClick={() => addFromSearch(game)}
                     data-testid={`welcome-games-suggestion-${game.slug}`}
                   />
@@ -431,7 +425,7 @@ export default function WelcomeGames() {
               sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}
               data-testid="welcome-games-legend"
             >
-              <EmojiEventsRoundedIcon aria-hidden sx={{ fontSize: 18, color: 'primary.main' }} />
+              <Box component={TrophyIcon} size={18} aria-hidden sx={{ color: 'primary.main' }} />
               {supportedLabel}
             </Typography>
           )}

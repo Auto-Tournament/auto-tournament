@@ -9,8 +9,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { ArrowBack, ArrowForward } from '@mui/icons-material';
-import DescriptionIcon from '@mui/icons-material/Description';
+import { ArrowLeftIcon, ArrowRightIcon, FileTextIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../utils/api';
 import { estimateMatchCount, type GrandFinalMode } from '../../../utils/tournamentMatchCount';
@@ -727,7 +726,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
               <>
                 <Button
                   size="small"
-                  startIcon={<DescriptionIcon />}
+                  startIcon={<FileTextIcon />}
                   onClick={(e) => setTemplateMenu(e.currentTarget)}
                   aria-haspopup="menu"
                   aria-expanded={templateMenu ? 'true' : undefined}
@@ -832,7 +831,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
               type="button"
               onClick={() => goTo(props.activeStep - 1)}
               disabled={props.activeStep === 0 || saving}
-              startIcon={<ArrowBack />}
+              startIcon={<ArrowLeftIcon />}
               data-testid="tournament-back-button"
             >
               {t('tournament.formSteps.back')}
@@ -842,7 +841,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
                 type="submit"
                 variant="contained"
                 disabled={saving}
-                endIcon={<ArrowForward />}
+                endIcon={<ArrowRightIcon />}
                 data-testid="tournament-next-button"
               >
                 {t('tournament.setup.continueTo', {

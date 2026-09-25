@@ -12,8 +12,7 @@ import {
   Stack,
   Button,
 } from '@mui/material';
-import PersonSearchIcon from '@mui/icons-material/PersonSearch';
-import LeaderboardIcon from '@mui/icons-material/Leaderboard';
+import { RankingIcon, UserFocusIcon } from '@phosphor-icons/react';
 import { api } from '../utils/api';
 import { onSocketReconnect } from '../utils/socketResync';
 import { io, Socket } from 'socket.io-client';
@@ -759,7 +758,7 @@ export default function PlayerProfile() {
                         variant="contained"
                         component={RouterLink}
                         to="/player"
-                        startIcon={<PersonSearchIcon />}
+                        startIcon={<UserFocusIcon />}
                         data-testid="player-profile-find-players"
                       >
                         {t('notRegistered.findPlayers')}
@@ -768,7 +767,7 @@ export default function PlayerProfile() {
                         variant="outlined"
                         component={RouterLink}
                         to="/tournament/1/leaderboard"
-                        startIcon={<LeaderboardIcon />}
+                        startIcon={<RankingIcon />}
                         data-testid="player-profile-leaderboard"
                       >
                         {t('notRegistered.leaderboard')}

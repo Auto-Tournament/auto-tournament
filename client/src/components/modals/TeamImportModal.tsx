@@ -17,12 +17,12 @@ import {
 } from '@mui/material';
 import { PlayerName } from '../player/PlayerName';
 import {
-  Close as CloseIcon,
-  CheckCircle as CheckCircleIcon,
-  Info as InfoIcon,
-  ExpandMore as ExpandMoreIcon,
-  ExpandLess as ExpandLessIcon,
-} from '@mui/icons-material';
+  CaretDownIcon,
+  CaretUpIcon,
+  CheckCircleIcon,
+  InfoIcon,
+  XIcon,
+} from '@phosphor-icons/react';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { useTranslation } from 'react-i18next';
 import { NoDiscordChip } from '../player/NoDiscordChip';
@@ -222,7 +222,7 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
             {t('teamImportModal.title')}
           </Typography>
           <IconButton onClick={handleClose} size="small">
-            <CloseIcon />
+            <XIcon />
           </IconButton>
         </Box>
       </DialogTitle>
@@ -359,7 +359,7 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
                         )}
                       </Box>
                       <IconButton size="small">
-                        {expandedTeams.has(index) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                        {expandedTeams.has(index) ? <CaretUpIcon /> : <CaretDownIcon />}
                       </IconButton>
                     </Box>
 

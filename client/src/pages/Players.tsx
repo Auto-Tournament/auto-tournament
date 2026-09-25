@@ -13,12 +13,14 @@ import {
   Alert,
   Tooltip,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import PersonIcon from '@mui/icons-material/Person';
-import SearchIcon from '@mui/icons-material/Search';
-import EditIcon from '@mui/icons-material/Edit';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import VisibilityIcon from '@mui/icons-material/Visibility';
+import {
+  ArrowSquareOutIcon,
+  EyeIcon,
+  MagnifyingGlassIcon,
+  PencilSimpleIcon,
+  PlusIcon,
+  UserIcon,
+} from '@phosphor-icons/react';
 import { PageHead, Row, RowList } from '../components/common/ui';
 import { RowMenu } from '../components/common/RowMenu';
 import { tokens } from '../theme/tokens';
@@ -140,7 +142,7 @@ export default function Players() {
             <Button
               variant="contained"
               size="small"
-              startIcon={<AddIcon />}
+              startIcon={<PlusIcon />}
               onClick={() => handleOpenModal()}
               data-testid="add-player-button"
             >
@@ -286,7 +288,7 @@ export default function Players() {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon />
+                  <MagnifyingGlassIcon />
                 </InputAdornment>
               ),
             }}
@@ -298,11 +300,11 @@ export default function Players() {
           <Box>
             <EmptyState
               data-testid="players-empty-state"
-              icon={PersonIcon}
+              icon={UserIcon}
               title={t('playersPage.empty.title')}
               description={t('playersPage.empty.description')}
               actionLabel={t('playersPage.empty.createPlayer')}
-              actionIcon={AddIcon}
+              actionIcon={PlusIcon}
               onAction={() => handleOpenModal()}
             />
             <Box display="flex" justifyContent="center" mt={2}>
@@ -406,13 +408,13 @@ export default function Players() {
                       {
                         key: 'edit',
                         label: t('playersPage.edit'),
-                        icon: <EditIcon fontSize="small" />,
+                        icon: <PencilSimpleIcon size={20} />,
                         onClick: () => handleOpenModal(player),
                       },
                       {
                         key: 'open',
                         label: t('playersPage.openPlayerPageTooltip'),
-                        icon: <OpenInNewIcon fontSize="small" />,
+                        icon: <ArrowSquareOutIcon size={20} />,
                         href: getPlayerPageUrl(player.id),
                       },
                       // Admins can't be impersonated, so don't offer it.
@@ -422,7 +424,7 @@ export default function Players() {
                             {
                               key: 'viewAs',
                               label: t('impersonation.viewAs'),
-                              icon: <VisibilityIcon fontSize="small" />,
+                              icon: <EyeIcon size={20} />,
                               onClick: () => void handleImpersonate(player),
                               'data-testid': `impersonate-player-${player.id}`,
                             },

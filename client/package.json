@@ -34,7 +34,6 @@
     "@fontsource/geist": "^5.3.0",
     "@fontsource/geist-mono": "^5.3.0",
     "@fontsource/sora": "^5.3.0",
-    "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.6",
     "@mui/x-charts": "^8.21.0",
     "@phosphor-icons/react": "^2.1.10",

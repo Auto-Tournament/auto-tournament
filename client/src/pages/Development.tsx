@@ -21,14 +21,13 @@ import {
   TextField,
 } from '@mui/material';
 import {
-  Group as GroupIcon,
-  Storage as StorageIcon,
-  Delete as DeleteIcon,
-  ExpandMore as ExpandMoreIcon,
-  DeleteForever as DeleteForeverIcon,
-  Warning as WarningIcon,
-  Person as PersonIcon,
-} from '@mui/icons-material';
+  CaretDownIcon,
+  HardDrivesIcon,
+  TrashIcon,
+  UserIcon,
+  UsersIcon,
+  WarningIcon,
+} from '@phosphor-icons/react';
 import { api } from '../utils/api';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { generateTeamName } from '../generation/teamName';
@@ -430,7 +429,7 @@ const Development: React.FC = () => {
           <Card>
             <CardContent>
               <Box display="flex" alignItems="center" gap={1} mb={2}>
-                <GroupIcon color="primary" />
+                <Box component={UsersIcon} sx={{ color: 'primary.main' }} />
                 <Typography variant="h6" fontWeight={600}>
                   {t('devToolsPage.testTeams.title')}
                 </Typography>
@@ -524,7 +523,7 @@ const Development: React.FC = () => {
           <Card>
             <CardContent>
               <Box display="flex" alignItems="center" gap={1} mb={2}>
-                <PersonIcon color="primary" />
+                <Box component={UserIcon} sx={{ color: 'primary.main' }} />
                 <Typography variant="h6" fontWeight={600}>
                   {t('devToolsPage.testPlayers.title')}
                 </Typography>
@@ -620,7 +619,7 @@ const Development: React.FC = () => {
           <Card>
             <CardContent>
               <Box display="flex" alignItems="center" gap={1} mb={2}>
-                <StorageIcon color="primary" />
+                <Box component={HardDrivesIcon} sx={{ color: 'primary.main' }} />
                 <Typography variant="h6" fontWeight={600}>
                   {t('devToolsPage.testServers.title')}
                 </Typography>
@@ -716,7 +715,7 @@ const Development: React.FC = () => {
           <Card sx={{ borderColor: 'error.main', borderWidth: 2, borderStyle: 'solid' }}>
             <CardContent>
               <Box display="flex" alignItems="center" gap={1} mb={2}>
-                <WarningIcon color="error" />
+                <Box component={WarningIcon} sx={{ color: 'error.main' }} />
                 <Typography variant="h6" fontWeight={600} color="error">
                   {t('devToolsPage.dangerZone.title')}
                 </Typography>
@@ -725,9 +724,9 @@ const Development: React.FC = () => {
 
               {/* Delete Test Data */}
               <Accordion>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <AccordionSummary expandIcon={<CaretDownIcon />}>
                   <Box display="flex" alignItems="center" gap={1}>
-                    <DeleteIcon />
+                    <TrashIcon />
                     <Typography fontWeight={600}>
                       {t('devToolsPage.deleteTestData.title')}
                     </Typography>
@@ -742,7 +741,7 @@ const Development: React.FC = () => {
                     color="error"
                     onClick={handleDeleteAllTestData}
                     disabled={loading || wiping}
-                    startIcon={<DeleteIcon />}
+                    startIcon={<TrashIcon />}
                   >
                     {loading ? (
                       <CircularProgress size={24} />
@@ -755,9 +754,9 @@ const Development: React.FC = () => {
 
               {/* Wipe Specific Tables */}
               <Accordion>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <AccordionSummary expandIcon={<CaretDownIcon />}>
                   <Box display="flex" alignItems="center" gap={1}>
-                    <StorageIcon />
+                    <HardDrivesIcon />
                     <Typography fontWeight={600}>
                       {t('devToolsPage.wipeTable.title')}
                     </Typography>
@@ -1009,9 +1008,9 @@ const Development: React.FC = () => {
 
               {/* Wipe Entire Database */}
               <Accordion>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <AccordionSummary expandIcon={<CaretDownIcon />}>
                   <Box display="flex" alignItems="center" gap={1}>
-                    <DeleteForeverIcon />
+                    <TrashIcon />
                     <Typography fontWeight={600}>
                       {t('devToolsPage.wipeDatabase.title')}
                     </Typography>
@@ -1052,7 +1051,7 @@ const Development: React.FC = () => {
                     color="error"
                     onClick={() => setConfirmWipeOpen(true)}
                     disabled={loading || wiping}
-                    startIcon={<DeleteForeverIcon />}
+                    startIcon={<TrashIcon />}
                     fullWidth
                   >
                     {wiping ? (
@@ -1076,7 +1075,7 @@ const Development: React.FC = () => {
         fullWidth
       >
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <WarningIcon color="error" />
+          <Box component={WarningIcon} sx={{ color: 'error.main' }} />
           {t('devToolsPage.wipeDatabase.dialog.title')}
         </DialogTitle>
         <DialogContent>
@@ -1106,7 +1105,7 @@ const Development: React.FC = () => {
             disabled={wiping}
             variant="contained"
             color="error"
-            startIcon={<DeleteForeverIcon />}
+            startIcon={<TrashIcon />}
             autoFocus
           >
             {wiping

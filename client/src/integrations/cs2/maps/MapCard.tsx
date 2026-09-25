@@ -1,5 +1,5 @@
 import { Card, CardContent, Typography, Box } from '@mui/material';
-import MapIcon from '@mui/icons-material/Map';
+import { MapTrifoldIcon } from '@phosphor-icons/react';
 import type { Map } from '../cs2.types';
 import { FadeInImage } from '../common/FadeInImage';
 
@@ -71,7 +71,7 @@ export function MapCard({ map, onClick }: MapCardProps) {
               color: 'text.disabled',
             }}
           >
-            <MapIcon sx={{ fontSize: 48 }} />
+            <MapTrifoldIcon size={48} />
           </Box>
         )}
       </Box>

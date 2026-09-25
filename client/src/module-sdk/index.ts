@@ -12,9 +12,8 @@
  *     `@mui/material/styles`, `@emotion/react`, `@emotion/styled`,
  *     `react-router-dom`, `react-i18next`, `i18next`
  *   - stateless libraries the module bundles itself (`@phosphor-icons/react`,
- *     the platform's icon set, and `@mui/icons-material` until it is gone, …).
- *     A bundled Phosphor does not see the host's icon defaults (its
- *     `IconContext`), so a module sizes its icons from `ICON_SIZE` itself.
+ *     the platform's icon set, …). A bundled Phosphor does not see the host's
+ *     icon defaults (its `IconContext`), so a module passes `size` itself.
  *
  * **A module imports platform code only from here.** Everything else in
  * `client/src` (hooks, utils, contexts, components, types, …) is core

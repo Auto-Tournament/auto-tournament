@@ -11,7 +11,7 @@ import {
   Autocomplete,
   TextField,
 } from '@mui/material';
-import { Warning as WarningIcon } from '@mui/icons-material';
+import { WarningIcon } from '@phosphor-icons/react';
 import { useModuleTranslation } from '../../../module-sdk';
 import { SortableMapList } from './SortableMapList';
 import { validateMapCount, requiresVeto } from './mapRules';
@@ -197,7 +197,7 @@ export function MapPoolStep({
 
       {/* Map Pool Validation */}
       {shouldShowVetoError && mapValidation.message && (
-        <Alert severity="warning" icon={<WarningIcon />} sx={{ mb: 2 }}>
+        <Alert severity="warning" icon={<WarningIcon size={24} />} sx={{ mb: 2 }}>
           <Typography variant="body2">
             <strong>{mapValidation.message}</strong>
           </Typography>

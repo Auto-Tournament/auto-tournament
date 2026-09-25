@@ -1,5 +1,5 @@
 import { Box, Typography, Chip, Alert, Button, Autocomplete, TextField } from '@mui/material';
-import { Warning as WarningIcon, Add as AddIcon } from '@mui/icons-material';
+import { PlusIcon, WarningIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { Team } from '../../types';
 import { validateTeamCountForType } from '../../utils/tournamentValidation';
@@ -76,7 +76,7 @@ export function TeamSelectionStep({
                 <Button
                   color="inherit"
                   size="small"
-                  startIcon={<AddIcon />}
+                  startIcon={<PlusIcon />}
                   onClick={onBatchAddServers}
                 >
                   {t('tournament.teamSelection.batchAddServers')}
@@ -85,7 +85,7 @@ export function TeamSelectionStep({
               <Button
                 color="inherit"
                 size="small"
-                startIcon={<AddIcon />}
+                startIcon={<PlusIcon />}
                 onClick={onAddServer || (() => (window.location.href = paths.servers))}
               >
                 {t('tournament.teamSelection.addServer')}
@@ -114,7 +114,7 @@ export function TeamSelectionStep({
                 <Button
                   color="inherit"
                   size="small"
-                  startIcon={<AddIcon />}
+                  startIcon={<PlusIcon />}
                   onClick={onImportTeams}
                 >
                   {t('tournament.teamSelection.importTeams')}
@@ -123,7 +123,7 @@ export function TeamSelectionStep({
               <Button
                 color="inherit"
                 size="small"
-                startIcon={<AddIcon />}
+                startIcon={<PlusIcon />}
                 onClick={onCreateTeam || (() => (window.location.href = '/teams'))}
               >
                 {t('tournament.teamSelection.createTeam')}

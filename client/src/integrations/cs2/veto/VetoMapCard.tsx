@@ -1,7 +1,6 @@
 import React from 'react';
 import { Card, CardActionArea, CardContent, Typography, Box, Chip } from '@mui/material';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import BlockIcon from '@mui/icons-material/Block';
+import { CheckCircleIcon, ProhibitIcon } from '@phosphor-icons/react';
 import type { MapSide, VetoActionType } from '../cs2.types';
 import { FadeInImage } from '../common/FadeInImage';
 import { tokens, mono, withAlpha, useModuleTranslation } from '../../../module-sdk';
@@ -130,7 +129,7 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
             zIndex: 1,
           }}
         >
-          <BlockIcon sx={{ fontSize: 44, color: color.ban }} />
+          <Box component={ProhibitIcon} size={44} sx={{ color: color.ban }} />
         </Box>
       )}
 
@@ -144,7 +143,7 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
             zIndex: 2,
           }}
         >
-          <CheckCircleIcon sx={{ fontSize: 28, color: color.pick }} />
+          <Box component={CheckCircleIcon} size={28} sx={{ color: color.pick }} />
         </Box>
       )}
 

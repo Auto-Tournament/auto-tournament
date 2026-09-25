@@ -23,11 +23,13 @@ import {
   MenuItem,
   Grid,
 } from '@mui/material';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import PersonIcon from '@mui/icons-material/Person';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import SearchIcon from '@mui/icons-material/Search';
-import DownloadIcon from '@mui/icons-material/Download';
+import {
+  ArrowSquareOutIcon,
+  DownloadSimpleIcon,
+  MagnifyingGlassIcon,
+  TrophyIcon,
+  UserIcon,
+} from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../utils/api';
 import { getPlayerPageUrl } from '../utils/playerLinks';
@@ -721,7 +723,7 @@ export default function TournamentLeaderboard() {
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <SearchIcon fontSize="small" />
+                          <MagnifyingGlassIcon size={20} />
                         </InputAdornment>
                       ),
                     }}
@@ -729,7 +731,7 @@ export default function TournamentLeaderboard() {
                   />
                   <Button
                     variant="outlined"
-                    startIcon={<DownloadIcon />}
+                    startIcon={<DownloadSimpleIcon />}
                     onClick={handleExportClick}
                   >
                     {t('leaderboardPage.export')}
@@ -747,14 +749,14 @@ export default function TournamentLeaderboard() {
 
               {leaderboard.length === 0 ? (
                 <Box textAlign="center" py={4}>
-                  <PersonIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+                  <Box component={UserIcon} size={48} sx={{ color: 'text.secondary', mb: 2 }} />
                   <Typography variant="body1" color="text.secondary">
                     {t('leaderboardPage.noPlayersRegistered')}
                   </Typography>
                 </Box>
               ) : filteredLeaderboard.length === 0 ? (
                 <Box textAlign="center" py={4}>
-                  <SearchIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+                  <Box component={MagnifyingGlassIcon} size={48} sx={{ color: 'text.secondary', mb: 2 }} />
                   <Typography variant="body1" color="text.secondary">
                     {t('leaderboardPage.searchNoMatch', { query: searchQuery })}
                   </Typography>
@@ -807,13 +809,13 @@ export default function TournamentLeaderboard() {
                             <TableCell>
                               <Box display="flex" alignItems="center" gap={1}>
                                 {actualRank === 1 && (
-                                  <EmojiEventsIcon sx={{ color: tokens.color.medalGold, fontSize: 20 }} />
+                                  <Box component={TrophyIcon} size={20} sx={{ color: tokens.color.medalGold }} />
                                 )}
                                 {actualRank === 2 && (
-                                  <EmojiEventsIcon sx={{ color: tokens.color.medalSilver, fontSize: 20 }} />
+                                  <Box component={TrophyIcon} size={20} sx={{ color: tokens.color.medalSilver }} />
                                 )}
                                 {actualRank === 3 && (
-                                  <EmojiEventsIcon sx={{ color: tokens.color.medalBronze, fontSize: 20 }} />
+                                  <Box component={TrophyIcon} size={20} sx={{ color: tokens.color.medalBronze }} />
                                 )}
                                 <Typography
                                   variant="body1"
@@ -895,7 +897,7 @@ export default function TournamentLeaderboard() {
                                 }}
                               >
                                 View
-                                <OpenInNewIcon fontSize="small" />
+                                <ArrowSquareOutIcon size={20} />
                               </Link>
                             </TableCell>
                           </TableRow>

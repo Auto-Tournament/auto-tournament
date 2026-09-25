@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from 'react';
 import { Box } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { ArrowLeftIcon } from '@phosphor-icons/react';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { paths } from '../../../paths';
@@ -75,7 +75,7 @@ export function SetupColumn({ steps, activeStep, isDone, onSelect }: SetupColumn
           [NARROW]: { pr: 1.5, borderRight: `1px solid ${color.rule}`, borderRadius: 0 },
         }}
       >
-        <ArrowBackIcon aria-hidden sx={{ fontSize: '1rem' }} />
+        <ArrowLeftIcon size="1rem" aria-hidden />
         {t('tournament.setup.backToManage')}
       </Box>
       <SetupStepList steps={steps} activeStep={activeStep} isDone={isDone} onSelect={onSelect} />

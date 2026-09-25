@@ -2,12 +2,14 @@ import { pageTitle } from '../utils/pageTitle';
 import { useState, useEffect, useCallback } from 'react';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { Box, Button, Typography, Chip, Checkbox, CircularProgress } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import GroupsIcon from '@mui/icons-material/Groups';
-import EditIcon from '@mui/icons-material/Edit';
-import PublicIcon from '@mui/icons-material/Public';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import LinkIcon from '@mui/icons-material/Link';
+import {
+  ArrowSquareOutIcon,
+  GlobeIcon,
+  LinkIcon,
+  PencilSimpleIcon,
+  PlusIcon,
+  UsersThreeIcon,
+} from '@phosphor-icons/react';
 import { api } from '../utils/api';
 import TeamModal from '../components/modals/TeamModal';
 import { TeamImportModal } from '../components/modals/TeamImportModal';
@@ -224,7 +226,7 @@ export default function Teams() {
               data-testid="add-team-button"
               variant="contained"
               size="small"
-              startIcon={<AddIcon />}
+              startIcon={<PlusIcon />}
               onClick={() => handleOpenModal()}
             >
               {t('teamsPage.headerActions.addTeam')}
@@ -247,11 +249,11 @@ export default function Teams() {
       {visibleTeams.length === 0 ? (
         <Box>
           <EmptyState
-            icon={GroupsIcon}
+            icon={UsersThreeIcon}
             title={t('teamsPage.empty.title')}
             description={t('teamsPage.empty.description')}
             actionLabel={t('teamsPage.empty.createTeam')}
-            actionIcon={AddIcon}
+            actionIcon={PlusIcon}
             onAction={() => handleOpenModal()}
           />
           <Box display="flex" justifyContent="center" mt={2}>
@@ -337,26 +339,26 @@ export default function Teams() {
                     {
                       key: 'edit',
                       label: t('teamsPage.edit'),
-                      icon: <EditIcon fontSize="small" />,
+                      icon: <PencilSimpleIcon size={20} />,
                       onClick: () => handleOpenModal(team),
                     },
                     {
                       key: 'public',
                       label: t('teamsPage.viewPublicPage'),
-                      icon: <PublicIcon fontSize="small" />,
+                      icon: <GlobeIcon size={20} />,
                       href: getTeamProfileUrl(team.id),
                       'data-testid': `team-view-page-${teamNameSlug}`,
                     },
                     {
                       key: 'match',
                       label: t('teamLinkActions.open'),
-                      icon: <OpenInNewIcon fontSize="small" />,
+                      icon: <ArrowSquareOutIcon size={20} />,
                       href: getTeamMatchUrl(team.id),
                     },
                     {
                       key: 'copy',
                       label: t('teamLinkActions.copy'),
-                      icon: <LinkIcon fontSize="small" />,
+                      icon: <LinkIcon size={20} />,
                       onClick: () => void copyMatchLink(team.id),
                     },
                   ]}

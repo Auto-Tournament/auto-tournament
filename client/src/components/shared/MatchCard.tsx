@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Checkbox, Typography, Chip, Tooltip } from '@mui/material';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
+import { RobotIcon } from '@phosphor-icons/react';
 import {
   getBracketMatchLabel,
   getStatusColor,
@@ -324,7 +324,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         )}
         {!shuffle && manual && <Chip label={t('matchesPage.card.manual')} size="small" variant="outlined" />}
         {match.config?.simulation && (
-          <Chip icon={<SmartToyIcon />} label={t('matchesPage.card.simulation')} size="small" />
+          <Chip icon={<RobotIcon />} label={t('matchesPage.card.simulation')} size="small" />
         )}
         <Chip
           label={

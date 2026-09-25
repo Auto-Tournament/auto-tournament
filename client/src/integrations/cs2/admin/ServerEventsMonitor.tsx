@@ -15,11 +15,13 @@ import {
   IconButton,
   Tooltip,
 } from '@mui/material';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import ClearIcon from '@mui/icons-material/Clear';
-import PauseIcon from '@mui/icons-material/Pause';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import DownloadIcon from '@mui/icons-material/Download';
+import {
+  ArrowClockwiseIcon,
+  DownloadSimpleIcon,
+  PauseIcon,
+  PlayIcon,
+  XIcon,
+} from '@phosphor-icons/react';
 import { api, mono, radii, tokens, useModuleTranslation, useSocket } from '../../../module-sdk';
 import type { ServerEvent, ServerEventsResponse } from '../cs2.types';
 
@@ -310,20 +312,20 @@ export const ServerEventsMonitor: React.FC = () => {
               title={isPaused ? t('adminTools.events.resume') : t('adminTools.events.pause')}
             >
               <IconButton onClick={togglePause} color={isPaused ? 'warning' : 'default'}>
-                {isPaused ? <PlayArrowIcon /> : <PauseIcon />}
+                {isPaused ? <PlayIcon size={24} /> : <PauseIcon size={24} />}
               </IconButton>
             </Tooltip>
             <Tooltip title={t('adminTools.events.refresh')}>
               <span>
                 <IconButton onClick={loadEvents} disabled={!selectedServerId || loading}>
-                  <RefreshIcon />
+                  <ArrowClockwiseIcon size={24} />
                 </IconButton>
               </span>
             </Tooltip>
             <Tooltip title={t('adminTools.events.clear')}>
               <span>
                 <IconButton onClick={handleClear} disabled={events.length === 0}>
-                  <ClearIcon />
+                  <XIcon size={24} />
                 </IconButton>
               </span>
             </Tooltip>
@@ -558,7 +560,7 @@ const EventItem: React.FC<{
                 p: 0.5,
               }}
             >
-              <DownloadIcon fontSize="inherit" />
+              <DownloadSimpleIcon size="1em" />
             </IconButton>
           </Tooltip>
         )}

@@ -8,7 +8,7 @@ import {
   Typography,
   Box,
 } from '@mui/material';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import { WarningIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { radii } from '../../theme/tokens';
 
@@ -69,17 +69,12 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           pb: 1,
         }}
       >
-        <WarningAmberIcon
-          sx={{
-            color:
+        <Box component={WarningIcon} size={28} sx={{ color:
               confirmColor === 'error'
                 ? 'error.main'
                 : confirmColor === 'success'
                 ? 'success.main'
-                : 'warning.main',
-            fontSize: 28,
-          }}
-        />
+                : 'warning.main' }} />
         <Typography component="span" variant="h6" fontWeight={600}>
           {title}
         </Typography>

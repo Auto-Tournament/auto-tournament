@@ -16,8 +16,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Box, Button, Card, CardContent, Chip, Stack, Typography } from '@mui/material';
-import UploadFileIcon from '@mui/icons-material/UploadFile';
-import ExtensionIcon from '@mui/icons-material/Extension';
+import { FileArrowUpIcon, PuzzlePieceIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { pageTitle } from '../utils/pageTitle';
 import { useSnackbar } from '../contexts/SnackbarContext';
@@ -124,7 +123,7 @@ export default function Modules() {
   const headerActions = (
     <Button
       variant="outlined"
-      startIcon={<UploadFileIcon />}
+      startIcon={<FileArrowUpIcon />}
       disabled={busy}
       onClick={() => fileInput.current?.click()}
       data-testid="modules-import"
@@ -196,7 +195,7 @@ export default function Modules() {
                       {t(`modulesPage.module.${integration.id}.hint`, { defaultValue: '' })}
                     </Typography>
                   </Box>
-                  <Chip size="small" icon={<ExtensionIcon />} label={t('modulesPage.builtIn')} />
+                  <Chip size="small" icon={<PuzzlePieceIcon />} label={t('modulesPage.builtIn')} />
                 </CardContent>
               </Card>
             ))}

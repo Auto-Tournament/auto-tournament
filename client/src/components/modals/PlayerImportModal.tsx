@@ -16,12 +16,7 @@ import {
   IconButton,
   Collapse,
 } from '@mui/material';
-import {
-  Close as CloseIcon,
-  CheckCircle as CheckCircleIcon,
-  ExpandMore as ExpandMoreIcon,
-  ExpandLess as ExpandLessIcon,
-} from '@mui/icons-material';
+import { CaretDownIcon, CaretUpIcon, CheckCircleIcon, XIcon } from '@phosphor-icons/react';
 import { CircularProgress } from '@mui/material';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { useTranslation } from 'react-i18next';
@@ -205,7 +200,7 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h6">{t('playerImportModal.title')}</Typography>
           <IconButton size="small" onClick={handleClose}>
-            <CloseIcon />
+            <XIcon />
           </IconButton>
         </Box>
       </DialogTitle>
@@ -285,7 +280,7 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
                     onClick={() => toggleExpand(index)}
                   >
                     <Box display="flex" alignItems="center" gap={1}>
-                      {expandedPlayers.has(index) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                      {expandedPlayers.has(index) ? <CaretUpIcon /> : <CaretDownIcon />}
                       <Typography variant="body2" fontWeight={600}>
                         {player.name}
                       </Typography>

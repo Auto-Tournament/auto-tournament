@@ -21,12 +21,14 @@ import {
   Autocomplete,
   Grid,
 } from '@mui/material';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import ErrorIcon from '@mui/icons-material/Error';
-import CloseIcon from '@mui/icons-material/Close';
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  WarningCircleIcon,
+  XIcon,
+} from '@phosphor-icons/react';
 import type { Server } from '../cs2.types';
 import { api, apiErrorMessage, useSnackbar, useModuleTranslation } from '../../../module-sdk';
 
@@ -435,7 +437,7 @@ export default function BatchServerModal({
           size="small"
           aria-label="close"
         >
-          <CloseIcon fontSize="small" />
+          <XIcon size={20} />
         </IconButton>
       </DialogTitle>
       <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
@@ -516,7 +518,7 @@ export default function BatchServerModal({
                         onClick={() => setShowPassword(!showPassword)}
                         edge="end"
                       >
-                        {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                        {showPassword ? <EyeSlashIcon size={24} /> : <EyeIcon size={24} />}
                       </IconButton>
                     </InputAdornment>
                   ),
@@ -553,7 +555,7 @@ export default function BatchServerModal({
                     {t('batchServerModal.assignPorts.label')}
                   </Typography>
                   <Box display="flex" alignItems="center" gap={0.5}>
-                    <ArrowUpwardIcon fontSize="small" color="primary" />
+                    <Box component={ArrowUpIcon} size={20} sx={{ color: 'primary.main' }} />
                     <Typography variant="caption" color="text.secondary">
                       {t('batchServerModal.assignPorts.helper')}
                     </Typography>
@@ -596,16 +598,16 @@ export default function BatchServerModal({
                                 <CircularProgress size={16} />
                               ) : status === 'success' ? (
                                 <Box display="flex" alignItems="center" gap={0.5}>
-                                  <ArrowUpwardIcon color="success" fontSize="small" />
+                                  <Box component={ArrowUpIcon} size={20} sx={{ color: 'success.main' }} />
                                   {verification?.serverCanReachApi === true && (
-                                    <ArrowDownwardIcon color="success" fontSize="small" />
+                                    <Box component={ArrowDownIcon} size={20} sx={{ color: 'success.main' }} />
                                   )}
                                   {verification?.serverCanReachApi === false && (
-                                    <ArrowDownwardIcon color="error" fontSize="small" />
+                                    <Box component={ArrowDownIcon} size={20} sx={{ color: 'error.main' }} />
                                   )}
                                 </Box>
                               ) : status === 'error' ? (
-                                <ErrorIcon color="error" fontSize="small" />
+                                <Box component={WarningCircleIcon} size={20} sx={{ color: 'error.main' }} />
                               ) : null,
                           }}
                           helperText={

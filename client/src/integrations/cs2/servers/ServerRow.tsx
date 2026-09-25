@@ -23,11 +23,13 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import EditIcon from '@mui/icons-material/Edit';
-import ReplayIcon from '@mui/icons-material/Replay';
-import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
+import {
+  ArrowCounterClockwiseIcon,
+  CaretDownIcon,
+  DotsThreeIcon,
+  GameControllerIcon,
+  PencilSimpleIcon,
+} from '@phosphor-icons/react';
 import type { Server, ServerAllocationInfo } from '../cs2.types';
 import {
   ExternalLink,
@@ -452,7 +454,7 @@ export function ServerRow({
         }}
         sx={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 150ms' }}
       >
-        <ExpandMoreIcon fontSize="small" />
+        <CaretDownIcon size={20} />
       </IconButton>
       <IconButton
         size="small"
@@ -466,7 +468,7 @@ export function ServerRow({
           setMenuAnchor(event.currentTarget);
         }}
       >
-        <MoreHorizIcon fontSize="small" />
+        <DotsThreeIcon size={20} />
       </IconButton>
       <Menu
         id={menuId}
@@ -484,7 +486,7 @@ export function ServerRow({
           }}
         >
           <ListItemIcon>
-            <EditIcon fontSize="small" />
+            <PencilSimpleIcon size={20} />
           </ListItemIcon>
           <ListItemText>{t('serversPage.row.edit')}</ListItemText>
         </MenuItem>
@@ -496,7 +498,7 @@ export function ServerRow({
             onRetry(event);
           }}
         >
-          <ListItemIcon>{retrying ? <CircularProgress size={16} /> : <ReplayIcon fontSize="small" />}</ListItemIcon>
+          <ListItemIcon>{retrying ? <CircularProgress size={16} /> : <ArrowCounterClockwiseIcon size={20} />}</ListItemIcon>
           <ListItemText>{t('serversPage.row.retryInit')}</ListItemText>
         </MenuItem>
         {server.status === 'online' && server.currentMatch && (
@@ -508,7 +510,7 @@ export function ServerRow({
             }}
           >
             <ListItemIcon>
-              <SportsEsportsIcon fontSize="small" />
+              <GameControllerIcon size={20} />
             </ListItemIcon>
             <ListItemText>
               {loadingMatch ? t('serversPage.currentMatch.loading') : t('serversPage.currentMatch.view')}
@@ -572,7 +574,7 @@ export function ServerRow({
               <Button
                 size="small"
                 variant="outlined"
-                startIcon={retrying ? <CircularProgress size={16} /> : <ReplayIcon />}
+                startIcon={retrying ? <CircularProgress size={16} /> : <ArrowCounterClockwiseIcon size={24} />}
                 onClick={onRetry}
                 disabled={retryDisabled || retrying}
               >

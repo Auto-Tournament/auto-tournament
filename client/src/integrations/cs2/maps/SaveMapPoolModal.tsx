@@ -12,7 +12,7 @@ import {
   IconButton,
   Typography,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { XIcon } from '@phosphor-icons/react';
 import { api, useModuleTranslation } from '../../../module-sdk';
 import type { MapPoolResponse } from '../cs2.types';
 
@@ -98,7 +98,7 @@ export default function SaveMapPoolModal({ open, mapIds, onClose, onSave }: Save
           size="small"
           aria-label="close"
         >
-          <CloseIcon fontSize="small" />
+          <XIcon size={20} />
         </IconButton>
       </DialogTitle>
       <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>

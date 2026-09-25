@@ -5,7 +5,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import { DotsThreeIcon } from '@phosphor-icons/react';
 
 export type RowMenuItem = {
   key: string;
@@ -60,7 +60,7 @@ export function RowMenu({ items, label, ...rest }: RowMenuProps) {
         }}
         onKeyDown={stop}
       >
-        <MoreHorizIcon fontSize="small" />
+        <DotsThreeIcon size={20} />
       </IconButton>
       <Menu
         id={menuId}

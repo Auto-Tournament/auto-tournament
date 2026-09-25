@@ -1,7 +1,7 @@
 import { pageTitle } from '../utils/pageTitle';
 import React, { useEffect, useState } from 'react';
 import { Box, Card, Button, Alert, Container, Stack, Typography } from '@mui/material';
-import { OpenInNew as OpenInNewIcon } from '@mui/icons-material';
+import { ArrowSquareOutIcon } from '@phosphor-icons/react';
 import { SiDiscord, SiGithub, SiKeycloak } from 'react-icons/si';
 import { FcGoogle } from 'react-icons/fc';
 import { useAuth } from '../contexts/AuthContext';
@@ -289,7 +289,7 @@ export default function Login() {
                   }}
                 >
                   {t('login.github')}
-                  <OpenInNewIcon sx={{ fontSize: '1rem' }} aria-hidden />
+                  <ArrowSquareOutIcon size="1rem" aria-hidden />
                 </ExternalLink>
                 <ExternalLink
                   href="https://docs.autotournament.gg"
@@ -301,7 +301,7 @@ export default function Login() {
                   }}
                 >
                   {t('login.documentation')}
-                  <OpenInNewIcon sx={{ fontSize: '1rem' }} aria-hidden />
+                  <ArrowSquareOutIcon size="1rem" aria-hidden />
                 </ExternalLink>
               </Stack>
 

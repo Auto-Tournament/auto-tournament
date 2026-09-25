@@ -26,9 +26,9 @@ export const SHARED_SPECIFIERS = [
   'react/jsx-runtime',
   'react-dom',
   '@mui/material',
-  // Every @mui/icons-material icon imports createSvgIcon from here. Sharing it
-  // lets a module bundle its own icons and still draw them with the host's
-  // SvgIcon and theme.
+  // Every @mui/icons-material icon imports createSvgIcon from here. The
+  // platform draws with Phosphor now, but a module may still bundle MUI
+  // icons, and sharing this keeps them on the host's SvgIcon and theme.
   '@mui/material/utils',
   '@mui/material/styles',
   '@emotion/react',

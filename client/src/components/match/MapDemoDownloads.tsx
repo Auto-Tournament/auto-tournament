@@ -1,5 +1,5 @@
 import { Box, Button, Stack, Typography, Divider } from '@mui/material';
-import DownloadIcon from '@mui/icons-material/Download';
+import { DownloadSimpleIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import type { MatchMapResult } from '../../types';
 import { getMapDisplayName } from '../../constants/maps';
@@ -58,7 +58,7 @@ export function MapDemoDownloads({
             key={mapNumber}
             variant="outlined"
             fullWidth
-            startIcon={<DownloadIcon />}
+            startIcon={<DownloadSimpleIcon />}
             onClick={() => handleDownloadDemo(mapNumber)}
             sx={{ justifyContent: 'flex-start' }}
           >

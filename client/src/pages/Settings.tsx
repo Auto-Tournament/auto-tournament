@@ -22,7 +22,7 @@ import {
 } from '@mui/material';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { CaretDownIcon } from '@phosphor-icons/react';
 import { api } from '../utils/api';
 import type { SettingsResponse } from '../types/api.types';
 import { useIsDevelopment } from '../hooks/useIsDevelopment';
@@ -323,7 +323,7 @@ export default function Settings() {
             <TabPanel value={activeTab} index="matches">
               <Stack spacing={3}>
                 <Accordion defaultExpanded sx={ACCORDION_SX}>
-                  <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={ACCORDION_SUMMARY_SX}>
+                  <AccordionSummary expandIcon={<CaretDownIcon />} sx={ACCORDION_SUMMARY_SX}>
                     <Box>
                       <Typography variant="h6" fontWeight={600}>
                         {t('settingsPage.matchRating.ratings.title')}

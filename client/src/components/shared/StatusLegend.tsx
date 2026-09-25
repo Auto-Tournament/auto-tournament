@@ -10,13 +10,15 @@ import {
   Stack,
   Divider,
 } from '@mui/material';
-import InfoIcon from '@mui/icons-material/Info';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import ScheduleIcon from '@mui/icons-material/Schedule';
-import GroupsIcon from '@mui/icons-material/Groups';
-import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import {
+  CaretDownIcon,
+  CaretUpIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  GameControllerIcon,
+  InfoIcon,
+  UsersThreeIcon,
+} from '@phosphor-icons/react';
 import { getStatusColor, getStatusLabel } from '../../utils/matchUtils';
 import { useTranslation } from 'react-i18next';
 
@@ -36,19 +38,19 @@ export const StatusLegend: React.FC = () => {
       status: 'pending',
       label: getStatusLabel('pending'),
       explanation: t('matchesPage.statusGuide.pending'),
-      icon: <ScheduleIcon />,
+      icon: <ClockIcon />,
     },
     {
       status: 'loaded',
       label: getStatusLabel('loaded'),
       explanation: t('matchesPage.statusGuide.loaded'),
-      icon: <GroupsIcon />,
+      icon: <UsersThreeIcon />,
     },
     {
       status: 'live',
       label: getStatusLabel('live'),
       explanation: t('matchesPage.statusGuide.live'),
-      icon: <SportsEsportsIcon />,
+      icon: <GameControllerIcon />,
     },
     {
       status: 'completed',
@@ -63,13 +65,13 @@ export const StatusLegend: React.FC = () => {
       <CardContent>
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <Box display="flex" alignItems="center" gap={1}>
-            <InfoIcon color="primary" />
+            <Box component={InfoIcon} sx={{ color: 'primary.main' }} />
             <Typography variant="subtitle1" fontWeight={600}>
               {t('matchesPage.statusGuide.title')}
             </Typography>
           </Box>
           <IconButton size="small" onClick={() => setExpanded(!expanded)}>
-            {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            {expanded ? <CaretUpIcon /> : <CaretDownIcon />}
           </IconButton>
         </Box>
 

@@ -1,6 +1,5 @@
 import { Grid } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import MapIcon from '@mui/icons-material/Map';
+import { MapTrifoldIcon, PlusIcon } from '@phosphor-icons/react';
 import { EmptyState, useModuleTranslation } from '../../../module-sdk';
 import { MapCard } from './MapCard';
 import type { Map } from '../cs2.types';
@@ -19,11 +18,11 @@ export function MapsTab({ maps, onAddMap, onMapClick }: MapsTabProps) {
   if (sortedMaps.length === 0) {
     return (
       <EmptyState
-        icon={MapIcon}
+        icon={MapTrifoldIcon}
         title={t('mapsPage.empty.mapsTitle')}
         description={t('mapsPage.empty.mapsDescription')}
         actionLabel={t('mapsPage.headerActions.addMap')}
-        actionIcon={AddIcon}
+        actionIcon={PlusIcon}
         onAction={onAddMap}
       />
     );
