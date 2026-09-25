@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/ping.json",
+  "title": "ping (both directions, ephemeral)",
+  "description": "Sent every heartbeat.interval_ms by both sides; the peer replies pong with the same t. The server adds health. FLEET.md §6.2.",
+  "type": "object",
+  "required": ["t"],
+  "properties": {
+    "t": { "type": "integer", "description": "sender clock, ms since Unix epoch" },
+    "health": {
+      "type": "object",
+      "properties": {
+        "players": { "type": "integer", "minimum": 0 },
+        "tick_ms_p99": { "type": "number", "minimum": 0 },
+        "spool_msgs": { "type": "integer", "minimum": 0 },
+        "uptime_s": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

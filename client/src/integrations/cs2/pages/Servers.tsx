@@ -4,6 +4,7 @@ import { ArrowClockwiseIcon, HardDrivesIcon, PlusIcon } from '@phosphor-icons/re
 import ServerModal from '../servers/ServerModal';
 import BatchServerModal from '../servers/BatchServerModal';
 import { ServerRow } from '../servers/ServerRow';
+import FleetPanel from '../servers/FleetPanel';
 import type {
   Server,
   ServersResponse,
@@ -1010,6 +1011,9 @@ export default function Servers() {
             </RowList>
           </>
         )}
+
+      {/* Ready Up servers enroll themselves and connect over the fleet link. */}
+      <FleetPanel />
 
       <ServerModal
         open={modalOpen}

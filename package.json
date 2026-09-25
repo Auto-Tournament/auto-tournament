@@ -103,6 +103,7 @@
         "@types/semver": "^7.5.8",
         "@types/swagger-jsdoc": "^6.0.4",
         "@types/swagger-ui-express": "^4.1.8",
+        "@types/ws": "^8.5.12",
         "@typescript-eslint/eslint-plugin": "^8.46.2",
         "@typescript-eslint/parser": "^8.46.2",
         "cheerio": "^1.1.2",

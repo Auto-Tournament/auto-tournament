@@ -420,3 +420,64 @@ export interface MapSyncResponse extends Cs2ApiResponse {
   activeDutyPool?: 'created' | 'updated' | 'kept' | 'unchanged' | 'stale';
   stats?: { total: number; added: number; updated?: number; skipped: number; errors: number };
 }
+
+/** A Ready Up server on the fleet link (`GET /api/fleet/servers`). */
+export interface FleetServer {
+  id: string;
+  tenantId: string;
+  name: string;
+  status: 'pending' | 'enrolled' | 'revoked';
+  installId: string | null;
+  enrolledVia: 'code' | 'key' | null;
+  enrollmentKeyId: string | null;
+  online: boolean;
+  availability: string | null;
+  versions: {
+    core: string;
+    plugin_api: string;
+    plugins: Record<string, string>;
+    cs2_build?: number;
+    cs2_patch?: string;
+  } | null;
+  capabilities: string[];
+  host: { hostname: string; game_port: number; tv_port?: number; public_addr?: string } | null;
+  health: Record<string, unknown> | null;
+  protocol: number | null;
+  connectedAt: number | null;
+  lastSeen: number | null;
+  createdAt: number;
+  token: {
+    id: string;
+    createdAt: number;
+    lastUsedAt: number | null;
+    rotationDueAt: number;
+    rotationPending: boolean;
+  } | null;
+  rotateRequested: boolean;
+  codeExpiresAt: number | null;
+}
+
+export interface FleetServersResponse extends Cs2ApiResponse {
+  servers: FleetServer[];
+  count: number;
+}
+
+/** A fleet enrollment key (`GET /api/fleet/keys`); the secret is never listed. */
+export interface FleetKey {
+  id: string;
+  name: string;
+  namePrefix: string | null;
+  maxServers: number | null;
+  expiresAt: number | null;
+  createdAt: number;
+  lastUsedAt: number | null;
+  useCount: number;
+  enrolledServers: number;
+  locked: boolean;
+  revoked: boolean;
+}
+
+export interface FleetKeysResponse extends Cs2ApiResponse {
+  keys: FleetKey[];
+  count: number;
+}

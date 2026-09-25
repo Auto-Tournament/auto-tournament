@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/server.config.json",
+  "title": "server.config (platform → server, reliable)",
+  "description": "Placeholder for step 1: the shape from FLEET.md §7.5. The platform does not send it yet (welcome.server_config_rev is 0). Every settings field is optional here so later steps can fill them in without a schema break.",
+  "type": "object",
+  "required": ["rev", "settings"],
+  "properties": {
+    "rev": { "type": "integer", "minimum": 0 },
+    "settings": {
+      "type": "object",
+      "properties": {
+        "chat_prefix": { "type": "string", "maxLength": 64 },
+        "admin_chat_prefix": { "type": "string", "maxLength": 64 },
+        "hostname_format": { "type": "string", "maxLength": 255 },
+        "demo": {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string", "maxLength": 255 },
+            "name_format": { "type": "string", "maxLength": 255 }
+          }
+        },
+        "series_end_kick_delay": {
+          "type": "object",
+          "properties": {
+            "no_demo": { "type": "integer", "minimum": 0 },
+            "demo_no_upload": { "type": "integer", "minimum": 0 },
+            "demo_upload": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "offline_pause_minutes": { "type": "integer", "minimum": 0 },
+        "scrim_when_idle": { "type": "boolean" },
+        "scrim_knife": { "type": "boolean" },
+        "warmup": {
+          "type": "object",
+          "properties": {
+            "message_html": { "type": "string", "maxLength": 4096 },
+            "respawn": { "type": "boolean" },
+            "money": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "status_http": {
+          "type": "object",
+          "properties": {
+            "token": { "type": "string", "maxLength": 256 }
+          }
+        }
+      }
+    }
+  }
+}
