@@ -196,6 +196,7 @@
       "adminTools": "Admin tools",
       "devTools": "Dev tools",
       "documentation": "Documentation",
+      "opensInNewTab": "(opens in a new tab)",
       "groups": {
         "operate": "Operate",
         "tournament": "Tournament",
