@@ -212,7 +212,8 @@
       "reallocateConfirmTitle": "Flytte denne kampen til en annen server?",
       "reallocateConfirmBody": "Kampen blir tildelt neste ledige server.",
       "forceCancelConfirmTitle": "Tvangsavbryte denne kampen?",
-      "forceCancelConfirmBody": "Dette avslutter kampen umiddelbart og markerer den som avbrutt, selv om serveren ikke er tilgjengelig."
+      "forceCancelConfirmBody": "Dette avslutter kampen umiddelbart og markerer den som avbrutt, selv om serveren ikke er tilgjengelig.",
+      "listLabel": "Ting som trenger en avgjørelse"
     },
     "recent": {
       "heading": "Nylig",

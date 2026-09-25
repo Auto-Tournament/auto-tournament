@@ -137,7 +137,7 @@ test.describe.serial('Code modules on disk', () => {
     tag: ['@api', '@modules'],
   }, async ({ request }) => {
     const { platform, modules } = await listModules(request);
-    expect(platform).toEqual({ clientApi: '0.2.4', serverApi: '0.1.0' });
+    expect(platform).toEqual({ clientApi: '0.2.5', serverApi: '0.1.0' });
 
     const builtin = modules.find((module) => module.id === 'manual-report');
     expect(builtin).toMatchObject({

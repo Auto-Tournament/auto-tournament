@@ -13,14 +13,16 @@ import { SERVER_AVAILABILITY_ENDPOINT, type ServerAvailability } from '../cs2.ty
  * the same 5-second cadence.
  *
  * `loaded` turns true after the first answer, failed or not, so a panel can
- * tell "not asked yet" from "no servers".
+ * tell "not asked yet" from "no servers". `answers` counts them, for a panel
+ * that holds back a verdict the first answer cannot give yet.
  */
 export function useServerAvailability(intervalMs = 5000): {
   availability: ServerAvailability | null;
   loaded: boolean;
+  answers: number;
 } {
   const [availability, setAvailability] = useState<ServerAvailability | null>(null);
-  const [loaded, setLoaded] = useState(false);
+  const [answers, setAnswers] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -31,7 +33,7 @@ export function useServerAvailability(intervalMs = 5000): {
       } catch (err) {
         console.error('Failed to load server availability:', err);
       } finally {
-        if (!cancelled) setLoaded(true);
+        if (!cancelled) setAnswers((count) => count + 1);
       }
     };
     void load();
@@ -42,5 +44,5 @@ export function useServerAvailability(intervalMs = 5000): {
     };
   }, [intervalMs]);
 
-  return { availability, loaded };
+  return { availability, loaded: answers > 0, answers };
 }

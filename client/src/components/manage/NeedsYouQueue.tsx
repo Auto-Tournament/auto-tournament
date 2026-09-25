@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Box, Paper, List, ListItem, Typography, Button, Stack } from '@mui/material';
+import { Box, Typography, Button } from '@mui/material';
+import { Panel, Row, RowList } from '../common/ui';
+import { tokens } from '../../theme/tokens';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -13,11 +15,26 @@ interface NeedsYouQueueProps {
   onActionDone: () => void;
 }
 
+// The draft's `.kind` dots: red for something broken, the accent for a
+// decision, muted for information.
 const severityDotColor: Record<NeedsYouItem['severity'], string> = {
-  ban: 'error.main',
-  warn: 'warning.main',
-  info: 'text.secondary',
+  ban: tokens.color.ban,
+  warn: tokens.color.accent,
+  info: tokens.color.muted,
 };
+
+/** The draft's `.queue li`: dot, what, actions; the actions wrap under "what" on a phone. */
+const queueRowColumns = { xs: 'auto minmax(0, 1fr)', sm: 'auto minmax(0, 1fr) auto' };
+
+/** The queue's 10px dot. */
+export function KindDot({ color }: { color: string }) {
+  return (
+    <Box
+      aria-hidden
+      sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: color, flexShrink: 0 }}
+    />
+  );
+}
 
 /**
  * The "needs you" queue: matches waiting on an admin decision, plus servers
@@ -62,60 +79,48 @@ export const NeedsYouQueue: React.FC<NeedsYouQueueProps> = ({ items, onDecide, o
   return (
     <Box data-testid="manage-needs-you">
       {items.length === 0 ? (
-        <Paper variant="outlined" sx={{ p: 3, textAlign: 'center' }}>
+        <Panel sx={{ p: 3, textAlign: 'center' }}>
           <Typography variant="body1" color="text.secondary">
             {t('managePage.needsYou.empty')}
           </Typography>
-        </Paper>
+        </Panel>
       ) : (
-        <Paper variant="outlined">
-          <List disablePadding>
-            {items.map((item, index) => (
-              <ListItem
-                key={item.id}
-                divider={index < items.length - 1}
+        <RowList aria-label={t('managePage.needsYou.listLabel')}>
+          {items.map((item) => (
+            <Row key={item.id} columns={queueRowColumns}>
+              <KindDot color={severityDotColor[item.severity]} />
+              <Box sx={{ minWidth: 0 }}>
+                <Typography variant="body1" fontWeight={600}>
+                  {item.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {item.detail}
+                </Typography>
+              </Box>
+              <Box
                 sx={{
                   display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
+                  gap: 1,
                   flexWrap: 'wrap',
-                  py: 1.5,
+                  justifyContent: { xs: 'flex-start', sm: 'flex-end' },
+                  gridColumn: { xs: 2, sm: 'auto' },
                 }}
               >
-                <Box
-                  sx={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: '50%',
-                    bgcolor: severityDotColor[item.severity],
-                    flexShrink: 0,
-                  }}
-                />
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography variant="body1" fontWeight={600}>
-                    {item.title}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {item.detail}
-                  </Typography>
-                </Box>
-                <Stack direction="row" spacing={1} flexWrap="wrap">
-                  {item.actions.map((action, actionIndex) => (
-                    <Button
-                      key={actionIndex}
-                      size="small"
-                      variant={actionIndex === 0 ? 'contained' : 'outlined'}
-                      color={action.kind === 'forceCancel' ? 'error' : 'primary'}
-                      onClick={() => handleActionClick(action)}
-                    >
-                      {action.label}
-                    </Button>
-                  ))}
-                </Stack>
-              </ListItem>
-            ))}
-          </List>
-        </Paper>
+                {item.actions.map((action, actionIndex) => (
+                  <Button
+                    key={actionIndex}
+                    size="small"
+                    variant={actionIndex === 0 ? 'contained' : 'outlined'}
+                    color={action.kind === 'forceCancel' ? 'error' : 'primary'}
+                    onClick={() => handleActionClick(action)}
+                  >
+                    {action.label}
+                  </Button>
+                ))}
+              </Box>
+            </Row>
+          ))}
+        </RowList>
       )}
 
       <ConfirmDialog

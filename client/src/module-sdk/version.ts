@@ -78,5 +78,8 @@
  * development tools are on. A module built on its own cannot read the host's
  * build flags; CS2 uses it for its simulation settings, which moved from
  * core's Settings to its own tab with the rest of its server defaults.
+ *
+ * 0.2.5 (additive): `LiveChip`, the quiet mono chip with a green dot for
+ * anything running right now, and `textSize`, the drafts' type sizes.
  */
-export const CLIENT_API_VERSION = '0.2.4';
+export const CLIENT_API_VERSION = '0.2.5';

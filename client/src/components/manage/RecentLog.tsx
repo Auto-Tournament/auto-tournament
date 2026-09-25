@@ -1,6 +1,8 @@
 import React from 'react';
-import { Box, Paper, List, ListItem, Typography, Link as MuiLink } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
+import { Box, Typography } from '@mui/material';
+import { Row, RowList, SectionHead } from '../common/ui';
+import { tokens } from '../../theme/tokens';
+import { KindDot } from './NeedsYouQueue';
 import { useTranslation } from 'react-i18next';
 import type { RecentEvent } from '../../utils/manageSelectors';
 
@@ -26,38 +28,34 @@ export const RecentLog: React.FC<RecentLogProps> = ({ events }) => {
   const { t } = useTranslation();
 
   return (
-    <Box component="section" mt={4} data-testid="manage-recent">
-      <Box display="flex" justifyContent="space-between" alignItems="baseline" mb={1.5}>
-        <Typography variant="h6" fontWeight={600}>
-          {t('managePage.recent.heading')}
-        </Typography>
-        <MuiLink component={RouterLink} to="/matches" variant="body2" color="text.secondary">
-          {t('managePage.recent.viewAll')}
-        </MuiLink>
-      </Box>
+    <Box component="section" mt={6} data-testid="manage-recent" aria-labelledby="manage-recent-heading">
+      <SectionHead
+        id="manage-recent-heading"
+        title={t('managePage.recent.heading')}
+        link={{ to: '/matches', label: t('managePage.recent.viewAll') }}
+      />
 
       {events.length === 0 ? (
         <Typography variant="body2" color="text.secondary">
           {t('managePage.recent.empty')}
         </Typography>
       ) : (
-        <Paper variant="outlined">
-          <List disablePadding>
-            {events.map((event, index) => (
-              <ListItem key={event.id} divider={index < events.length - 1}>
-                <Box>
-                  <Typography variant="body2" fontWeight={600}>
-                    {event.title}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {event.detail ? `${event.detail} · ` : ''}
-                    {relativeTime(event.timestamp, t)}
-                  </Typography>
-                </Box>
-              </ListItem>
-            ))}
-          </List>
-        </Paper>
+        <RowList>
+          {events.map((event) => (
+            <Row key={event.id} columns="auto minmax(0, 1fr)">
+              <KindDot color={tokens.color.muted} />
+              <Box sx={{ minWidth: 0 }}>
+                <Typography variant="body1" fontWeight={600}>
+                  {event.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {event.detail ? `${event.detail} · ` : ''}
+                  {relativeTime(event.timestamp, t)}
+                </Typography>
+              </Box>
+            </Row>
+          ))}
+        </RowList>
       )}
 
       <Typography variant="body2" color="text.secondary" mt={1.5}>
