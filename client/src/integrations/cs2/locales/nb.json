@@ -153,6 +153,8 @@
     "mapIdHelper": "Kun små bokstaver, tall og understrek (de_dust2)",
     "displayNameLabel": "Visningsnavn",
     "displayNamePlaceholder": "Dust II",
+    "gameModeLabel": "Karttype",
+    "gameModeHelper": "Grupperer kartet på Kart-siden og bestemmer hvilke turneringer som kan spille det.",
     "mapImageLabel": "Kartbilde",
     "uploadButton": "Last opp bilde",
     "fetchFromGitHub": "Hent fra GitHub",
@@ -1051,5 +1053,19 @@
   "roster": {
     "steamLinked": "Steam koblet til",
     "steamNotLinked": "Steam ikke koblet til"
+  },
+  "mapModes": {
+    "defusal": "Desarmering",
+    "hostage": "Gisler",
+    "wingman": "Wingman",
+    "armsrace": "Våpenkappløp",
+    "deathmatch": "Deathmatch",
+    "other": "Annet",
+    "none": "Ingen type"
+  },
+  "mapModeFilter": {
+    "label": "Karttype",
+    "any": "Alle typer",
+    "offType": "{{maps}}: ikke et {{mode}}-kart. Fjern det, eller endre karttypen."
   }
 }

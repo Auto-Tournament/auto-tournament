@@ -13,6 +13,7 @@ import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { loadMapCatalog, type LoadedMapCatalog } from './mapCatalog';
 import { syncCs2Maps, type MapSyncMode, type MapSyncResult } from './mapSync';
+import { mapService } from './mapService';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -32,6 +33,8 @@ export async function runMapSync(mode: MapSyncMode): Promise<MapSyncRun> {
       throw err;
     }
   });
+  // The map types it filled in, for the tournament map-type rule (mapModes.ts).
+  await mapService.getAllMaps().catch(() => undefined);
   return { ...result, source, error };
 }
 

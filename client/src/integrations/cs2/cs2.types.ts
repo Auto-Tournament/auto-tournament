@@ -338,10 +338,15 @@ export interface VetoStateResponse extends Cs2ApiResponse {
 // Maps
 // ---------------------------------------------------------------------------
 
+/** A map's type (maps/mapModes.ts). */
+export type MapGameMode = 'defusal' | 'hostage' | 'wingman' | 'armsrace' | 'deathmatch' | 'other';
+
 export interface Map {
   id: string;
   displayName: string;
   imageUrl: string | null;
+  /** Null when not known. */
+  gameMode?: MapGameMode | null;
   createdAt: number;
   updatedAt: number;
 }

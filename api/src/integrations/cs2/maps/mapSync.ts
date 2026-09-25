@@ -27,6 +27,7 @@
  * `syncCs2Maps` reads the rows, applies the plan and logs what changed.
  */
 
+import { modeFromCatalog } from './mapModes';
 import { log } from '../../../utils/logger';
 import type { SeedClient } from '../../types';
 import type { CatalogMap, MapCatalog } from './mapCatalog';
@@ -236,9 +237,21 @@ export async function applyMapSync(
   const now = Math.floor(Date.now() / 1000);
   for (const map of plan.addMaps) {
     await client.query(
-      `INSERT INTO cs2_maps (id, display_name, image_url, system_managed, created_at, updated_at)
-       VALUES ($1, $2, $3, 1, $4, $4) ON CONFLICT (id) DO NOTHING`,
-      [map.id, map.displayName, map.imageUrl, now]
+      `INSERT INTO cs2_maps (id, display_name, image_url, game_mode, system_managed, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, 1, $5, $5) ON CONFLICT (id) DO NOTHING`,
+      [map.id, map.displayName, map.imageUrl, modeFromCatalog(map.mode, map.id), now]
+    );
+  }
+  // The catalogue's map types, for maps that have none yet (an admin's choice stays).
+  const typed = catalog.maps
+    .map((map) => ({ id: map.id, mode: modeFromCatalog(map.mode, map.id) }))
+    .filter((map) => map.mode !== null);
+  if (typed.length > 0) {
+    await client.query(
+      `UPDATE cs2_maps AS m SET game_mode = t.mode
+       FROM (SELECT unnest($1::text[]) AS id, unnest($2::text[]) AS mode) AS t
+       WHERE m.id = t.id AND m.game_mode IS NULL`,
+      [typed.map((map) => map.id), typed.map((map) => map.mode)]
     );
   }
   for (const map of plan.updateMaps) {

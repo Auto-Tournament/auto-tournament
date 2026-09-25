@@ -153,6 +153,8 @@
     "mapIdHelper": "仅允许小写字母、数字和下划线（例如：de_dust2）",
     "displayNameLabel": "显示名称",
     "displayNamePlaceholder": "Dust II",
+    "gameModeLabel": "地图类型",
+    "gameModeHelper": "在地图页面对地图分组，并决定哪些赛事可以使用它。",
     "mapImageLabel": "地图图片",
     "uploadButton": "上传图片",
     "fetchFromGitHub": "从 GitHub 获取",
@@ -1051,5 +1053,19 @@
   "roster": {
     "steamLinked": "Steam linked",
     "steamNotLinked": "Steam not linked"
+  },
+  "mapModes": {
+    "defusal": "拆弹",
+    "hostage": "人质",
+    "wingman": "搭档",
+    "armsrace": "军备竞赛",
+    "deathmatch": "死亡竞赛",
+    "other": "其他",
+    "none": "无类型"
+  },
+  "mapModeFilter": {
+    "label": "地图类型",
+    "any": "任意类型",
+    "offType": "{{maps}}：不是{{mode}}地图。请移除，或更改地图类型。"
   }
 }

@@ -11,11 +11,13 @@ import {
   Alert,
   CircularProgress,
   IconButton,
+  MenuItem,
 } from '@mui/material';
 import { CloudArrowUpIcon, TrashIcon, XIcon } from '@phosphor-icons/react';
 import { api, useSnackbar, useModuleTranslation, radii } from '../../../module-sdk';
-import type { Map, MapResponse } from '../cs2.types';
+import type { Map, MapGameMode, MapResponse } from '../cs2.types';
 import { FadeInImage } from '../common/FadeInImage';
+import { MAP_MODES, mapModeKey, modeFromMapName, modeFromWorkshopTags } from './mapModes';
 
 interface MapModalProps {
   open: boolean;
@@ -30,6 +32,9 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
   const [id, setId] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  // '' = no type. A new map's type follows its id prefix until the admin or a Workshop lookup picks one.
+  const [gameMode, setGameMode] = useState<MapGameMode | ''>('');
+  const [gameModeTouched, setGameModeTouched] = useState(false);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -50,6 +55,8 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
     if (map) {
       setId(map.id);
       setDisplayName(map.displayName);
+      setGameMode(map.gameMode ?? '');
+      setGameModeTouched(true);
       // For repo-backed maps, always prefer the WebP URL derived from the map ID.
       // For custom uploads (non-repo URLs), keep the stored imageUrl.
       const normalizedImageUrl =
@@ -68,6 +75,8 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
   const resetForm = () => {
     setId('');
     setDisplayName('');
+    setGameMode('');
+    setGameModeTouched(false);
     setImageUrl('');
     setPreviewUrl('');
     setSelectedFile(null);
@@ -85,8 +94,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
     // - User pastes a numeric Workshop ID into Map ID
     if (!open || isEditing) return;
 
-    const candidate =
-      (workshopInput || '').trim() || (/^\d{6,}$/.test(id.trim()) ? id.trim() : '');
+    const candidate = (workshopInput || '').trim() || (/^\d{6,}$/.test(id.trim()) ? id.trim() : '');
     if (!candidate) {
       setWorkshopHint('');
       setWorkshopLoading(false);
@@ -110,6 +118,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
           workshopId?: string;
           title?: string | null;
           previewUrl?: string | null;
+          tags?: string[];
           error?: string;
         }>(`/api/steam/workshop-map?input=${encodeURIComponent(candidate)}`);
 
@@ -122,6 +131,11 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
         // Auto-fill fields for create flow.
         setId(String(resp.workshopId));
         if (resp.title) setDisplayName(resp.title);
+        const workshopMode = modeFromWorkshopTags(resp.tags ?? [], resp.title ?? '');
+        if (workshopMode) {
+          setGameMode(workshopMode);
+          setGameModeTouched(true);
+        }
         if (resp.previewUrl) {
           setImageUrl(resp.previewUrl);
           setPreviewUrl(resp.previewUrl);
@@ -302,6 +316,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
         id: id.trim(),
         displayName: displayName.trim(),
         imageUrl: finalImageUrl,
+        gameMode: gameMode || null,
       };
 
       if (isEditing) {
@@ -364,9 +379,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
               fullWidth
               slotProps={{
                 input: {
-                  endAdornment: workshopLoading ? (
-                    <CircularProgress size={18} />
-                  ) : undefined,
+                  endAdornment: workshopLoading ? <CircularProgress size={18} /> : undefined,
                 },
               }}
             />
@@ -377,6 +390,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
             onChange={(e) => {
               const value = e.target.value.toLowerCase().trim();
               setId(value);
+              if (!gameModeTouched) setGameMode(modeFromMapName(value) ?? '');
             }}
             placeholder={t('mapModal.mapIdPlaceholder')}
             disabled={isEditing}
@@ -399,6 +413,26 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
               htmlInput: { 'data-testid': 'map-display-name-input' },
             }}
           />
+
+          <TextField
+            select
+            label={t('mapModal.gameModeLabel')}
+            value={gameMode}
+            onChange={(e) => {
+              setGameMode(e.target.value as MapGameMode | '');
+              setGameModeTouched(true);
+            }}
+            helperText={t('mapModal.gameModeHelper')}
+            fullWidth
+            slotProps={{ htmlInput: { 'data-testid': 'map-game-mode-select' } }}
+          >
+            <MenuItem value="">{t(mapModeKey(null))}</MenuItem>
+            {MAP_MODES.map((mode) => (
+              <MenuItem key={mode} value={mode}>
+                {t(mapModeKey(mode))}
+              </MenuItem>
+            ))}
+          </TextField>
 
           <Box>
             <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -468,7 +502,12 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
                 src={previewUrl}
                 alt={displayName || id}
                 height={256}
-                sx={{ width: '100%', border: '1px solid', borderColor: 'divider', borderRadius: radii.sm }}
+                sx={{
+                  width: '100%',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: radii.sm,
+                }}
               />
             </Box>
           )}

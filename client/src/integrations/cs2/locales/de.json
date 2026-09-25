@@ -153,6 +153,8 @@
     "mapIdHelper": "Nur Kleinbuchstaben, Zahlen und Unterstriche (de_dust2)",
     "displayNameLabel": "Anzeigename",
     "displayNamePlaceholder": "Staub II",
+    "gameModeLabel": "Kartentyp",
+    "gameModeHelper": "Gruppiert die Karte auf der Kartenseite und legt fest, welche Turniere sie spielen können.",
     "mapImageLabel": "Bild der Karte",
     "uploadButton": "Bild hochladen",
     "fetchFromGitHub": "Von GitHub abrufen",
@@ -1051,5 +1053,19 @@
   "roster": {
     "steamLinked": "Steam linked",
     "steamNotLinked": "Steam not linked"
+  },
+  "mapModes": {
+    "defusal": "Entschärfung",
+    "hostage": "Geiselrettung",
+    "wingman": "Wingman",
+    "armsrace": "Arms Race",
+    "deathmatch": "Deathmatch",
+    "other": "Andere",
+    "none": "Kein Typ"
+  },
+  "mapModeFilter": {
+    "label": "Kartentyp",
+    "any": "Jeder Typ",
+    "offType": "{{maps}}: keine {{mode}}-Karte. Entferne sie oder ändere den Kartentyp."
   }
 }

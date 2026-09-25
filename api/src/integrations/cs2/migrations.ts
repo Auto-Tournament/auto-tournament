@@ -25,6 +25,8 @@
  *
  * `003-catalog-markers` adds what the map sync (maps/mapSync.ts) needs to
  * tell the platform's own maps and pools from an admin's.
+ *
+ * `004-map-modes` adds a map's type (maps/mapModes.ts).
  */
 
 import type { ModuleMigration } from '../types';
@@ -32,6 +34,7 @@ import type { ModuleMigration } from '../types';
 export const CS2_TABLES_MIGRATION_ID = '001-tables';
 export const CS2_AT_COLUMNS_MIGRATION_ID = '002-at-columns';
 export const CS2_CATALOG_MARKERS_MIGRATION_ID = '003-catalog-markers';
+export const CS2_MAP_MODES_MIGRATION_ID = '004-map-modes';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -154,6 +157,21 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
              AND map_ids = '["de_ancient","de_anubis","de_dust2","de_inferno","de_mirage","de_nuke","de_vertigo"]');
 
     INSERT INTO cs2_known_maps (id) SELECT id FROM cs2_maps ON CONFLICT (id) DO NOTHING;
+`,
+  },
+  {
+    // A map's type (maps/mapModes.ts): defusal, hostage, wingman, armsrace,
+    // deathmatch or other; NULL when not known. Existing maps get it from
+    // their id prefix here; the next map sync fills the catalogue's own
+    // types, and a Workshop map gets it from its Steam tags when added.
+    // Every statement can run twice.
+    id: CS2_MAP_MODES_MIGRATION_ID,
+    up: `
+    ALTER TABLE cs2_maps ADD COLUMN IF NOT EXISTS game_mode TEXT;
+
+    UPDATE cs2_maps SET game_mode = 'defusal' WHERE game_mode IS NULL AND id LIKE 'de\\_%';
+    UPDATE cs2_maps SET game_mode = 'hostage' WHERE game_mode IS NULL AND id LIKE 'cs\\_%';
+    UPDATE cs2_maps SET game_mode = 'armsrace' WHERE game_mode IS NULL AND id LIKE 'ar\\_%';
 `,
   },
 ];
