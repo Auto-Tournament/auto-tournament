@@ -239,6 +239,8 @@ jobs:
             # The suite never depends on GitHub: the catalog offers what the
             # image carries (specs point it at their own fake feed).
             echo "CATALOG_OFFLINE=true"
+            # Nothing restarts the CI container: "Restart now" answers 409.
+            echo "AT_RESTART_SUPERVISED=false"
             echo "API_TOKENS=ci-admin:ci-admin-token-0123456789abcdef"
             echo "API_TOKENS_READONLY=ci-readonly:ci-readonly-token-0123456789abcdef"
             echo "STEAM_API_KEY="

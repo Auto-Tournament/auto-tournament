@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 306 of them, 215 behind auth —
+Every endpoint this API serves — 310 of them, 219 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -488,6 +488,15 @@ The game catalog: every pack and code module this instance has or can install, f
 | `DELETE` | `/api/catalog/modules/:id` | admin |
 | `POST` | `/api/catalog/modules/:id/purge` | admin |
 
+### System
+
+The platform process: whether it can restart itself, and a restart (so a module update that waits for one can finish). Admin only; writes must be same-site JSON.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/system/restart` | admin |
+| `POST` | `/api/system/restart` | admin |
+
 ### Me
 
 The signed-in player's own data, e.g. the games they play.
@@ -567,6 +576,8 @@ E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
 | `POST` | `/api/test/modules/:id/max-version` | admin |
 | `POST` | `/api/test/modules/:id/interrupt-swap` | admin |
 | `POST` | `/api/test/modules/restore-swaps` | admin |
+| `POST` | `/api/test/modules/:id/seed-installed` | admin |
+| `POST` | `/api/test/modules/auto-update` | admin |
 | `GET` | `/api/test/fake-catalog/catalog.json` | public |
 | `GET` | `/api/test/fake-catalog/releases/:file` | public |
 | `GET` | `/api/test/fake-catalog/packs/:file` | public |

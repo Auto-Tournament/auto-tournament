@@ -31,7 +31,8 @@ import { DATA_DIR } from './config/dataDir';
 import { getOpenApiSpec } from './config/swagger';
 import { log, logger, LOG_HTTP_REQUESTS, LOG_DB_VERBOSE, LOG_DB_VALUES } from './utils/logger';
 import { cleanupOldLogs } from './utils/eventLogger';
-import { initializeSocket } from './services/socketService';
+import { getIO, initializeSocket } from './services/socketService';
+import { registerShutdown } from './utils/restart';
 import { routeTable } from './routes/routeTable';
 import { listIntegrations } from './integrations/registry';
 import { diskModuleRoutes, scanDiskModules } from './modules/loader';
@@ -579,27 +580,30 @@ process.on('uncaughtException', (err) => {
       }
     };
 
-    process.on('SIGINT', () => {
-      log.warn('Received SIGINT, shutting down gracefully...');
+    let shuttingDown = false;
+    const shutDown = (why: string) => {
+      if (shuttingDown) return;
+      shuttingDown = true;
+      log.warn(`${why}, shutting down gracefully...`);
       scheduler.stopAllPolling();
       stopIntegrations();
+      // Live sockets and idle keep-alive connections would hold the close.
+      getIO().disconnectSockets(true);
       server.close(() => {
         db.close();
         log.server('Server closed');
         process.exit(0);
       });
-    });
+      server.closeIdleConnections();
+      // Never hang: a stuck connection must not keep the old process alive.
+      setTimeout(() => process.exit(0), 10_000).unref();
+    };
 
-    process.on('SIGTERM', () => {
-      log.warn('Received SIGTERM, shutting down gracefully...');
-      scheduler.stopAllPolling();
-      stopIntegrations();
-      server.close(() => {
-        db.close();
-        log.server('Server closed');
-        process.exit(0);
-      });
-    });
+    process.on('SIGINT', () => shutDown('Received SIGINT'));
+    process.on('SIGTERM', () => shutDown('Received SIGTERM'));
+    // "Restart now" on the Modules page: exit, and Docker's restart policy
+    // starts the new process (utils/restart.ts).
+    registerShutdown((reason) => shutDown(`Restart: ${reason}`));
   } catch (error) {
     const err = error as NodeJS.ErrnoException;
     if (error instanceof DatabaseRenameRefused) {

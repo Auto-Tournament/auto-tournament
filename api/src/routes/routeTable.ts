@@ -41,6 +41,7 @@ import gamesRoutes from './games';
 import gamePackRoutes from './gamePacks';
 import moduleRoutes from './modules';
 import catalogRoutes from './catalog';
+import systemRoutes from './system';
 import meRoutes from './me';
 
 export interface MountedRouter {
@@ -167,6 +168,13 @@ const coreRoutes: MountedRouter[] = [
     title: 'Catalog',
     description:
       'The game catalog: every pack and code module this instance has or can install, from the feed, its cache and the offline snapshot, with install, update, enable, disable, uninstall and purge. Code modules install only from signed releases. Admin only; writes must be same-site JSON.',
+  },
+  {
+    prefix: '/api/system',
+    router: systemRoutes,
+    title: 'System',
+    description:
+      'The platform process: whether it can restart itself, and a restart (so a module update that waits for one can finish). Admin only; writes must be same-site JSON.',
   },
   {
     prefix: '/api/me',
