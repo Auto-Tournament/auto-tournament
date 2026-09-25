@@ -31,6 +31,24 @@ test.describe.serial('Tournament setup flow', () => {
       const steps = page.getByTestId('tournament-setup-steps');
       await expect(steps).toBeVisible();
       await expect(steps.locator('li')).toHaveCount(7);
+
+      // The setup takes the page over: its steps, under a way back to
+      // Manage, sit in the rail's column, and the form gets the width.
+      await expect(page.getByTestId('manage-rail')).toHaveCount(0);
+      const column = page.getByTestId('tournament-setup-column');
+      await expect(column).toContainText(/Manage/);
+      await expect(page.getByTestId('tournament-setup-back-to-manage')).toHaveAttribute(
+        'href',
+        '/manage'
+      );
+      const form = await page.getByTestId('tournament-setup-question-game').boundingBox();
+      const summaryBox = await page.getByTestId('tournament-setup-summary').boundingBox();
+      const columnBox = await column.boundingBox();
+      expect(form!.width, 'the form is wider than the old middle column').toBeGreaterThan(500);
+      expect(columnBox!.x + columnBox!.width, 'steps left of the form').toBeLessThanOrEqual(form!.x);
+      expect(summaryBox!.x, 'summary right of the form').toBeGreaterThanOrEqual(
+        form!.x + form!.width
+      );
       const step = (id: string) => page.getByTestId(`tournament-setup-step-${id}`);
       const next = page.getByTestId('tournament-next-button');
       const summary = (key: string) => page.getByTestId(`tournament-summary-${key}`);
@@ -123,6 +141,7 @@ test.describe.serial('Tournament setup flow', () => {
 
       const axe = await new AxeBuilder({ page })
         .include('[data-testid="tournament-setup"]')
+        .include('[data-testid="tournament-setup-column"]')
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
         .analyze();
       expect(
@@ -139,10 +158,13 @@ test.describe.serial('Tournament setup flow', () => {
       await page.setViewportSize({ width: 375, height: 812 });
       await page.goto('/tournament');
       await expect(page.getByTestId('tournament-setup-steps')).toBeVisible();
+      // The way back comes first, the steps scroll sideways after it.
+      await expect(page.getByTestId('tournament-setup-back-to-manage')).toBeInViewport();
 
       for (const id of ['game', 'basics', 'format', 'maps', 'eventPage', 'review']) {
         await page.getByTestId(`tournament-setup-step-${id}`).click();
         await expect(page.getByTestId(`tournament-setup-question-${id}`)).toBeVisible();
+        await expect(page.getByTestId(`tournament-setup-step-${id}`)).toBeInViewport();
         const overflow = await page.evaluate(
           () => document.documentElement.scrollWidth - document.documentElement.clientWidth
         );

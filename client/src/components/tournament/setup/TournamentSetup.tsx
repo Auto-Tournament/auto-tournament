@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Alert,
   Box,
@@ -29,12 +30,13 @@ import {
 } from '../ShuffleTournamentConfigStep';
 import { EventPageSettingsCard, type EventPageFields } from '../EventPageSettingsCard';
 import { useTournamentFormData } from '../useTournamentFormData';
-import { SetupStepList } from './SetupStepList';
+import { SetupColumn } from './SetupColumn';
 import { SetupSummary, type ChecklistItem, type SummaryRow } from './SetupSummary';
 import { FormatCards } from './FormatCards';
 import { SegmentedControl } from './SegmentedControl';
 import { TeamCountStepper } from './TeamCountStepper';
 import { getIntegration } from '../../../integrations/registry';
+import { BELOW_NAV_STICKY_TOP } from '../../../constants/navBar';
 import { useModuleState } from '../../../module-loader/useModuleState';
 import type { TournamentSetupContext } from '../../../integrations/types';
 import { gameSettingsError, gameSettingsRoundCount, gameSettingsSummary } from './gameSettings';
@@ -42,7 +44,8 @@ import { EloTemplateSelect } from './EloTemplateSelect';
 import { ReviewStep, type ReviewTournament } from './ReviewStep';
 import { GamePicker } from './GamePicker';
 import { DEFAULT_SETUP_GAME, gameMark, useSetupGames, type SetupGame } from './games';
-import { MEDIUM, NARROW } from './layout';
+import { MEDIUM } from './layout';
+import { useShellColumn } from '../../../contexts/ShellColumnContext';
 import { setupStepsFor, stepError, teamCountChoices, type SetupStepId } from './setupSteps';
 
 export interface SetupFormValues {
@@ -129,12 +132,17 @@ interface TournamentSetupProps {
  * Create / edit a tournament: steps on the left, one question at a time in the
  * middle, and a live summary on the right. Used both before the tournament
  * exists and while it is in setup; the last step creates or starts it.
+ *
+ * The setup takes the page over (layout "C"): the steps, under a "← Manage"
+ * link, go in the admin shell's left column in place of the Manage rail, and
+ * the form gets the width the rail's page would have had.
  */
 export function TournamentSetup(props: TournamentSetupProps) {
   const { t } = useTranslation();
   // The steps come from the game's module: re-render when a code module arrives.
   useModuleState();
   const { tournament, form, handlers, canEdit, saving } = props;
+  const shellColumn = useShellColumn();
   const isShuffle = form.type === 'shuffle';
   const locked = !canEdit || saving;
 
@@ -254,6 +262,10 @@ export function TournamentSetup(props: TournamentSetupProps) {
 
   const isDone = (step: SetupStepId, index: number) =>
     index <= props.furthestStep && step !== 'review' && errorFor(step) === null;
+
+  const stepColumn = (
+    <SetupColumn steps={steps} activeStep={props.activeStep} isDone={isDone} onSelect={goTo} />
+  );
 
   // ---- Summary ---------------------------------------------------------------
   const selectedCount = form.selectedTeams.length;
@@ -748,17 +760,25 @@ export function TournamentSetup(props: TournamentSetupProps) {
         )}
       </Box>
 
+      {/* The steps: in the shell's column where the rail was, or inline
+          above the form outside the admin shell. */}
+      {shellColumn.inShell ? (
+        // In a fragment: MUI's prop-types don't count a bare portal as a node.
+        <>{shellColumn.column && createPortal(stepColumn, shellColumn.column)}</>
+      ) : (
+        <Box sx={{ mb: 3 }}>{stepColumn}</Box>
+      )}
+
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: '13rem minmax(0, 1fr) 20rem',
-          gap: 6,
+          // The form takes what the rail left; the summary about a quarter.
+          gridTemplateColumns: 'minmax(0, 1fr) minmax(17rem, 26%)',
+          gap: 4,
           alignItems: 'start',
-          [MEDIUM]: { gridTemplateColumns: '12rem minmax(0, 1fr)', gap: 4 },
-          [NARROW]: { gridTemplateColumns: 'minmax(0, 1fr)', gap: 3 },
+          [MEDIUM]: { gridTemplateColumns: 'minmax(0, 1fr)', gap: 4 },
         }}
       >
-        <SetupStepList steps={steps} activeStep={props.activeStep} isDone={isDone} onSelect={goTo} />
 
         <Box
           component="form"
@@ -836,8 +856,8 @@ export function TournamentSetup(props: TournamentSetupProps) {
         <Box
           sx={{
             position: 'sticky',
-            top: 96,
-            [MEDIUM]: { position: 'static', gridColumn: '1 / -1' },
+            top: BELOW_NAV_STICKY_TOP,
+            [MEDIUM]: { position: 'static' },
           }}
         >
           <SetupSummary

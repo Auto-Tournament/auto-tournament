@@ -432,6 +432,7 @@
         "review": "Review"
       },
       "stepsLabel": "Setup steps",
+      "backToManage": "Manage",
       "stepDone": "done",
       "newTournament": "New tournament",
       "editing": "Tournament setup",

@@ -6,13 +6,14 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { usePageHeader } from '../../contexts/PageHeaderContext';
 import { ManageRailProvider } from '../../contexts/ManageRailContext';
+import { ShellColumnProvider, useShellColumnSlot } from '../../contexts/ShellColumnContext';
 import { api } from '../../utils/api';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from './TopNavBar';
 import { ManageRail } from '../manage/ManageRail';
 import { useShellIntegrations } from '../../hooks/useShellIntegrations';
 import { ModuleNotInstalledNotice } from '../common/ModuleNotInstalledNotice';
-import { RAIL_COLUMN_MIN_WIDTH } from '../../constants/adminLayout';
+import { RAIL_COLUMN_MIN_WIDTH, railColumnSx } from '../../constants/adminLayout';
 import { paths } from '../../paths';
 
 
@@ -52,8 +53,20 @@ function rememberSteamWarningDismissed(): void {
  * `PageHead` (eyebrow, H1, actions), and sets its own `document.title`
  * through `pageTitle()`. Rail and page share the one 1200px wrap every page
  * uses, under the same floating top bar as the public pages.
+ *
+ * A page can take the rail's column for its own navigation (the tournament
+ * setup wizard, through `useShellColumn`): the shell then renders the column
+ * empty, and the page fills it.
  */
 export default function Layout() {
+  return (
+    <ShellColumnProvider>
+      <AdminShell />
+    </ShellColumnProvider>
+  );
+}
+
+function AdminShell() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -84,6 +97,8 @@ export default function Layout() {
 
   // The admin home is the landing page and links to everything itself.
   const showRail = location.pathname !== paths.root;
+  // A page that brings its own left column (the setup wizard) replaces the rail.
+  const { claimed: columnClaimed, setColumn } = useShellColumnSlot();
 
   // Steam's health stays here rather than moving behind the game integration
   // with the Auto Tournament CS2 plugin's database (3.0 phase E). The warning is about
@@ -199,7 +214,12 @@ export default function Layout() {
             [RAIL_COLUMN_MIN_WIDTH]: showRail ? { flexDirection: 'row', gap: 3 } : {},
           }}
         >
-          {showRail && <ManageRail />}
+          {showRail &&
+            (columnClaimed ? (
+              <Box ref={setColumn} data-testid="admin-shell-column" sx={railColumnSx} />
+            ) : (
+              <ManageRail />
+            ))}
           <Box sx={{ flex: 1, minWidth: 0 }}>
             {/* The tournament's game module is not installed (or may still be
                 loading): say so once, on every admin page. */}

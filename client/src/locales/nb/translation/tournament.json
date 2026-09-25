@@ -432,6 +432,7 @@
         "review": "Gjennomgang"
       },
       "stepsLabel": "Oppsettssteg",
+      "backToManage": "Administrer",
       "stepDone": "ferdig",
       "newTournament": "Ny turnering",
       "editing": "Turneringsoppsett",

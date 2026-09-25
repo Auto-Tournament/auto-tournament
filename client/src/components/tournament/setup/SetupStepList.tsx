@@ -1,10 +1,9 @@
 import { Box, ButtonBase } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import { useTranslation } from 'react-i18next';
-import { visuallyHidden } from './layout';
+import { NARROW, visuallyHidden } from './layout';
 import { tokens, mono } from '../../../theme';
 import { type SetupStepId } from './setupSteps';
-import { NARROW } from './layout';
 
 interface SetupStepListProps {
   /** The steps for the game being set up (`setupStepsFor`). */
@@ -15,8 +14,9 @@ interface SetupStepListProps {
 }
 
 /**
- * The step list on the left. An ordered list of buttons; the current one
- * carries aria-current="step". Under 760px it becomes a horizontal scroller.
+ * The step list, in the shell's left column (`SetupColumn`). An ordered list
+ * of buttons; the current one carries aria-current="step". Under 820px it
+ * becomes a horizontal scroller, as the admin rail does.
  */
 export function SetupStepList({ steps, activeStep, isDone, onSelect }: SetupStepListProps) {
   const { t } = useTranslation();
@@ -32,10 +32,9 @@ export function SetupStepList({ steps, activeStep, isDone, onSelect }: SetupStep
         p: 0,
         display: 'grid',
         gap: 0.5,
-        position: 'sticky',
-        top: 96,
+        minWidth: 0,
         [NARROW]: {
-          position: 'static',
+          flex: '1 1 auto',
           gridAutoFlow: 'column',
           gridAutoColumns: 'max-content',
           overflowX: 'auto',
