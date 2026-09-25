@@ -707,7 +707,10 @@ test.describe('Discord ID: a hand edit is never undone by an import', () => {
     expect(warnings[0]).toContain('"Ola"');
     expect(warnings[0]).toContain('kept');
     expect(warnings[0]).not.toContain(discordId);
-    expect(warnings[0]).not.toContain(discordId.slice(0, 4));
+    // The masked form ("1234…") is how the other warnings show an ID; a bare
+    // 4-digit prefix is not a leak check, it also matches digits of the team
+    // id and Steam id in the same message (both carry Date.now()).
+    expect(warnings[0]).not.toContain(`${discordId.slice(0, 4)}…`);
 
     // The bulk player import follows the same rule.
     const bulk = await request.post('/api/players/bulk-import', {
@@ -736,7 +739,7 @@ test.describe('Discord ID: a hand edit is never undone by an import', () => {
     const warnings = handEditWarnings(body);
     expect(warnings).toHaveLength(1);
     // Says it was kept, not what it is.
-    expect(warnings[0]).not.toContain(own.slice(0, 4));
+    expect(warnings[0]).not.toContain(`${own.slice(0, 4)}…`);
     expect(warnings[0]).not.toContain(imported);
 
     // Importing the value the player already has is silent.
