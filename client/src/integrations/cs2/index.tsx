@@ -3,8 +3,7 @@
  * pages render goes through one of these slots (see ../types.ts).
  */
 
-import StorageIcon from '@mui/icons-material/Storage';
-import MapIcon from '@mui/icons-material/Map';
+import { HardDrivesIcon, MapTrifoldIcon } from '@phosphor-icons/react';
 import type { ClientGameIntegration } from '../types';
 import { links } from '../../module-sdk';
 import { MatchServerPanel } from './match/MatchServerPanel';
@@ -14,6 +13,7 @@ import { ServersOverviewCard } from './servers/ServersOverviewCard';
 import { ServerGrid } from './servers/ServerGrid';
 import { VetoInterface } from './veto/VetoInterface';
 import { MatchVetoHistory } from './veto/MatchVetoHistory';
+import { Cs2RosterSteamStatus } from './roster/Cs2RosterSteamStatus';
 import { Cs2MatchSettings } from './setup/Cs2MatchSettings';
 import { Cs2TournamentMapsStep } from './setup/Cs2TournamentMapsStep';
 import { Cs2TournamentReview } from './setup/Cs2TournamentReview';
@@ -41,6 +41,8 @@ import {
 } from './manage/cs2QueueSummary';
 import Servers from './pages/Servers';
 import Maps from './pages/Maps';
+import { Cs2AdminTools } from './admin/Cs2AdminTools';
+import { Cs2SettingsSection } from './settings/Cs2SettingsSection';
 import { cs2Locales } from './locales';
 
 export const cs2ClientIntegration: ClientGameIntegration = {
@@ -73,6 +75,10 @@ export const cs2ClientIntegration: ClientGameIntegration = {
 
   preMatchView: VetoInterface,
   preMatchHistory: MatchVetoHistory,
+
+  // The team page roster: whether the roster has a Steam account for each
+  // member, which a CS2 player needs to join the server.
+  rosterMemberStatus: Cs2RosterSteamStatus,
 
   // The webhook URL a CS2 server reaches the platform on, and the Auto Tournament CS2
   // plugin's own database: both are settings only this game has, so the
@@ -147,6 +153,15 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   // The admin home's "Add a server" row; this module counts its own servers.
   adminHomeSetup: serversSetupItems,
 
+  // Admin tools: RCON on its servers and their live event feed. Settings: the
+  // webhook URL its servers call back on, and the map sync. Both were core's
+  // until the module split (client API 0.2.2).
+  adminToolsSection: Cs2AdminTools,
+  instanceSettings: {
+    labelKey: 'settings.tab',
+    section: Cs2SettingsSection,
+  },
+
   // At URLs the platform keeps. The Steam connect page these used to include
   // is core's now: Steam is the platform's sign-in, not this game's.
   routes: [
@@ -155,8 +170,9 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   ],
 
   // Labelled from this module's own strings: `cs2:nav.servers` and so on.
+  // The icons are this module's own Phosphor ones; the rail sizes them.
   navItems: [
-    { key: 'servers', path: links.servers(), icon: StorageIcon },
-    { key: 'maps', path: links.maps(), icon: MapIcon },
+    { key: 'servers', path: links.servers(), icon: HardDrivesIcon },
+    { key: 'maps', path: links.maps(), icon: MapTrifoldIcon },
   ],
 };

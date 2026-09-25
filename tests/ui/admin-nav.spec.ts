@@ -7,7 +7,8 @@ import { ensureSignedIn, signInViaRequest, signInAsPlayer } from '../helpers/aut
  * The 2.x left sidebar is gone. Admins get in from the top bar ("Manage"),
  * and the Manage rail is the admin menu, beside every admin page. These pin
  * that nothing the sidebar reached became unreachable, that the rail stays
- * put from page to page, and that players and visitors see no admin links.
+ * put from page to page (the tournament setup excepted: it takes the rail's
+ * column for its steps), and that players and visitors see no admin links.
  *
  * @tag ui
  * @tag navigation
@@ -55,6 +56,12 @@ test.describe.serial('Admin navigation', () => {
       await expect(page.locator('.MuiDrawer-root')).toHaveCount(0);
       await expect(page.getByRole('button', { name: /navigation menu/i })).toHaveCount(0);
 
+      // An admin's links: Admin, Manage, Browse. No player links.
+      await expect(page.getByTestId('nav-admin')).toHaveAttribute('aria-current', 'page');
+      await expect(page.getByTestId('nav-browse')).toBeVisible();
+      await expect(page.getByTestId('nav-home')).toHaveCount(0);
+      await expect(page.getByTestId('nav-leaderboards')).toHaveCount(0);
+
       await page.getByTestId('nav-manage').click();
       await expect(page).toHaveURL(/\/manage$/);
       const rail = page.getByTestId('manage-rail');
@@ -66,11 +73,31 @@ test.describe.serial('Admin navigation', () => {
         await expect(item, `rail item ${key}`).toBeVisible({ timeout: 15000 });
         await item.click();
         await expect(page).toHaveURL(url);
+        if (key === 'tournament') {
+          // With no tournament this opens the setup, which takes the page
+          // over: its steps sit in the rail's column, under a way back.
+          await expect(page.getByTestId('tournament-setup-column')).toBeVisible({ timeout: 15000 });
+          await expect(rail).toHaveCount(0);
+          await expect(page.locator('h1'), 'one h1 on the setup').toHaveCount(1);
+          await expect(page).toHaveTitle(/ · Auto Tournament$/);
+          await page.getByTestId('tournament-setup-back-to-manage').click();
+          await expect(page).toHaveURL(/\/manage$/);
+          await expect(rail).toBeVisible({ timeout: 15000 });
+          continue;
+        }
         // Still in the same layout, with the page it opened marked.
         await expect(rail).toBeVisible();
         await expect(page.getByTestId(`manage-rail-${key}`)).toHaveAttribute('aria-current', 'page');
+        // Every item has an icon (CS2's come from the module); the open
+        // page's is filled.
+        await expect(page.getByTestId(`manage-rail-${key}-icon`)).toHaveAttribute('data-weight', 'fill');
+        // The shell prints no title of its own: one H1, the page's, and the
+        // tab says "Page · Auto Tournament".
+        await expect(page.locator('h1'), `one h1 on ${key}`).toHaveCount(1);
+        await expect(page).toHaveTitle(/ · Auto Tournament$/);
       }
 
+      await expect(page.getByTestId('manage-rail-documentation-icon')).toBeVisible();
       // The sidebar's documentation link lives on in the rail.
       await expect(page.getByTestId('manage-rail-documentation')).toHaveAttribute(
         'href',
@@ -116,8 +143,16 @@ test.describe.serial('Admin navigation', () => {
       await page.goto('/');
       await expect(page.getByTestId('nav-home')).toBeVisible({ timeout: 15000 });
       await expect(page.getByTestId('nav-manage')).toHaveCount(0);
+      await expect(page.getByTestId('nav-admin')).toHaveCount(0);
       await expect(page.getByTestId('manage-rail')).toHaveCount(0);
       await expect(page.locator('a[href="/manage"]')).toHaveCount(0);
+      // A player's links: Home, Browse, and the current tournament's Teams
+      // and Standings tabs (never a hard-coded leaderboard).
+      await expect(page.getByTestId('nav-teams')).toHaveAttribute('href', /^\/tournament\/\d+\/teams$/);
+      await expect(page.getByTestId('nav-leaderboards')).toHaveAttribute(
+        'href',
+        /^\/tournament\/\d+\/standings$/
+      );
 
       // Typing the address sends them to their own page, still without it.
       await page.goto('/manage');

@@ -417,7 +417,9 @@
       "moveDown": "Move down",
       "save": "Save event page",
       "saveSuccess": "Event page saved.",
-      "saveError": "Failed to save event page: {{message}}"
+      "saveError": "Failed to save event page: {{message}}",
+      "organizerLabel": "Organizer",
+      "organizerPlaceholder": "e.g. Edition 35 LAN"
     },
     "setup": {
       "steps": {
@@ -430,6 +432,7 @@
         "review": "Review"
       },
       "stepsLabel": "Setup steps",
+      "backToManage": "Manage",
       "stepDone": "done",
       "newTournament": "New tournament",
       "editing": "Tournament setup",
@@ -681,7 +684,12 @@
   "overviewPage": {
     "tabs": {
       "overview": "Overview",
-      "leaderboard": "Leaderboard"
+      "label": "Tournament",
+      "bracket": "Bracket",
+      "matches": "Matches",
+      "teams": "Teams",
+      "standings": "Standings",
+      "manage": "Manage"
     },
     "status": {
       "setup": "Upcoming",
@@ -689,7 +697,6 @@
       "completed": "Completed"
     },
     "liveNow": "{{count}} live now",
-    "viewAllMatches": "View standings",
     "howItsPlayed": "How it's played",
     "facts": {
       "teams": "Teams",
@@ -714,7 +721,20 @@
     "yourTeam": {
       "title": "You're playing",
       "onRoster": "You're on {{team}}.",
-      "viewTeam": "View your team"
+      "viewTeam": "View your team",
+      "versus": "{{team}} vs {{opponent}} · {{stage}}",
+      "tbd": "TBD",
+      "goToMatch": "Go to your match",
+      "openMatch": "Open the match page",
+      "state": {
+        "live": "Live",
+        "loaded": "Join now",
+        "upNext": "Up next",
+        "finished": "Finished",
+        "eliminated": "Eliminated",
+        "waiting": "Waiting for next match",
+        "registered": "Registered"
+      }
     },
     "prizes": {
       "title": "Prizes",
@@ -729,7 +749,41 @@
     },
     "loadError": "Failed to load this tournament.",
     "notFoundTitle": "Tournament not found",
-    "notFoundDescription": "This tournament doesn't exist or hasn't been created yet."
+    "notFoundDescription": "This tournament doesn't exist or hasn't been created yet.",
+    "loading": "Loading…",
+    "about": "About",
+    "liveStripLabel": "Live now",
+    "bracketTab": {
+      "loadError": "Failed to load the bracket.",
+      "emptyTitle": "No bracket yet",
+      "emptyDescription": "The bracket appears here when the organizer starts the tournament.",
+      "shuffleTitle": "No bracket in a shuffle tournament",
+      "shuffleDescription": "Teams are drawn again every round, so there is no bracket. Matches lists every round, and Standings ranks the players."
+    },
+    "matchesTab": {
+      "loadError": "Failed to load the matches.",
+      "emptyTitle": "No matches yet",
+      "emptyDescription": "Matches appear here when the tournament starts.",
+      "live": "Live now",
+      "upcoming": "Up next",
+      "results": "Results",
+      "vs": "vs",
+      "status": {
+        "live": "Live",
+        "loaded": "Starting",
+        "final": "Final",
+        "upcoming": "Upcoming"
+      }
+    },
+    "teamsTab": {
+      "shuffleTitle": "Teams change every round",
+      "shuffleDescription": "A shuffle tournament draws new teams each round from the registered players. Standings ranks the players.",
+      "emptyTitle": "No teams yet",
+      "emptyDescription": "Teams appear here once the organizer adds them.",
+      "yours": "Your team",
+      "record": "{{wins}}–{{losses}}"
+    },
+    "allMatches": "All matches"
   },
   "roundStatusCard": {
     "roundOf": "Round {{current}} of {{total}}",

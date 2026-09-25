@@ -396,10 +396,10 @@ class DatabaseManager {
       // catalog adds them again once its tables exist (modules/loader.ts).
       await addCs2ForeignKeys(client);
 
-      // Integration default data (CS2: the map catalogue when cs2_maps is
-      // empty, then the default map pools). A rejection fails the schema
-      // initialisation; the CS2 seed rethrows the same errors the inline map
-      // insert did. Not for a module whose tables did not migrate.
+      // Integration default data (CS2: new maps from maps.json and the
+      // default map pools; it logs its own failures and does not throw). A
+      // rejection fails the schema initialisation. Not for a module whose
+      // tables did not migrate.
       for (const integration of installed) {
         if (failedModules.has(integration.id)) continue;
         await integration.seed?.(client);

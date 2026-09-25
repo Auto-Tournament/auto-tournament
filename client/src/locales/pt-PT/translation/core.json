@@ -22,7 +22,13 @@
     "goToAdminDashboard": "Ir para o painel de administração",
     "goToAdminDashboardHint": "Estás a ver o teu perfil de jogador. Abre o painel de administração para gerir equipas, torneios e servidores.",
     "siteMenu": "Site menu",
-    "accountMenu": "Account menu"
+    "accountMenu": "Account menu",
+    "admin": "Admin",
+    "teams": "Teams",
+    "leaderboards": "Leaderboards",
+    "theme": "Theme",
+    "language": "Language",
+    "signIn": "Sign in"
   },
   "layout": {
     "pageTitle": {
@@ -51,7 +57,8 @@
     "delete": "Eliminar",
     "cancel": "Cancelar",
     "remove": "Remove",
-    "close": "Close"
+    "close": "Close",
+    "opensInNewTab": "(opens in a new tab)"
   },
   "app": {
     "name": "Auto Tournament"

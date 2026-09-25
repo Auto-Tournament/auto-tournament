@@ -31,12 +31,14 @@ import { DATA_DIR } from './config/dataDir';
 import { getOpenApiSpec } from './config/swagger';
 import { log, logger, LOG_HTTP_REQUESTS, LOG_DB_VERBOSE, LOG_DB_VALUES } from './utils/logger';
 import { cleanupOldLogs } from './utils/eventLogger';
-import { initializeSocket } from './services/socketService';
+import { getIO, initializeSocket } from './services/socketService';
+import { registerShutdown } from './utils/restart';
 import { routeTable } from './routes/routeTable';
 import { listIntegrations } from './integrations/registry';
 import { diskModuleRoutes, scanDiskModules } from './modules/loader';
 import {
   autoInstallCs2ForExistingData,
+  autoUpdateModulesFromSnapshot,
   finishPendingUpdates,
   restoreInterruptedSwaps,
   sweepStaging,
@@ -45,6 +47,7 @@ import { installHostBridge } from './modules/hostBridge';
 import { environmentTrustedKeys } from './modules/trustedKeys';
 import { recoverActiveMatches } from './services/matchRecoveryService';
 import { enrichBuiltinGames } from './services/gameEnrichmentService';
+import { refreshGameIcons } from './services/gameIconService';
 import { scheduler } from './core/scheduler';
 import { steamService } from './services/steamService';
 import { seedAdminsFromEnv } from './services/adminSeedService';
@@ -474,6 +477,11 @@ process.on('uncaughtException', (err) => {
     // offline snapshot before the scan loads it, so its tournaments keep
     // working now that CS2 is a catalog module. Logged; never throws.
     await autoInstallCs2ForExistingData();
+    // A newer image carries newer module releases: modules installed from
+    // the snapshot or the catalog move to the snapshot's newest one within
+    // their major version, before the scan loads them. Logged; never throws.
+    // MODULE_AUTO_UPDATE=false turns it off.
+    await autoUpdateModulesFromSnapshot();
     await scanDiskModules();
     await finishPendingUpdates();
 
@@ -553,12 +561,17 @@ process.on('uncaughtException', (err) => {
           log.warn('Failed to seed admins from ADMIN_STEAM_IDS on startup', { error });
         }),
         // Best-effort, never blocks: gives built-in games (installed modules
-        // + the popular list) a real image/genres from Wikidata (and IGDB
-        // covers, if configured). See gameEnrichmentService for the
-        // once-per-7-days-per-game throttling and the CI/test opt-out.
-        enrichBuiltinGames().catch((error) => {
-          log.warn('Failed to enrich built-in games on startup', { error });
-        }),
+        // + the popular list) a real image/genres from Wikidata. See
+        // gameEnrichmentService for the once-per-7-days-per-game throttling
+        // and the CI/test opt-out.
+        enrichBuiltinGames()
+          // Then, without holding up startup, app icons for games no module
+          // or pack draws (Steam client icons; background, rate-limited, see
+          // gameIconService).
+          .then(() => refreshGameIcons())
+          .catch((error) => {
+            log.warn('Failed to enrich built-in games on startup', { error });
+          }),
       ]).then(() => {
         log.success('[Startup] All startup tasks completed');
       });
@@ -573,27 +586,30 @@ process.on('uncaughtException', (err) => {
       }
     };
 
-    process.on('SIGINT', () => {
-      log.warn('Received SIGINT, shutting down gracefully...');
+    let shuttingDown = false;
+    const shutDown = (why: string) => {
+      if (shuttingDown) return;
+      shuttingDown = true;
+      log.warn(`${why}, shutting down gracefully...`);
       scheduler.stopAllPolling();
       stopIntegrations();
+      // Live sockets and idle keep-alive connections would hold the close.
+      getIO().disconnectSockets(true);
       server.close(() => {
         db.close();
         log.server('Server closed');
         process.exit(0);
       });
-    });
+      server.closeIdleConnections();
+      // Never hang: a stuck connection must not keep the old process alive.
+      setTimeout(() => process.exit(0), 10_000).unref();
+    };
 
-    process.on('SIGTERM', () => {
-      log.warn('Received SIGTERM, shutting down gracefully...');
-      scheduler.stopAllPolling();
-      stopIntegrations();
-      server.close(() => {
-        db.close();
-        log.server('Server closed');
-        process.exit(0);
-      });
-    });
+    process.on('SIGINT', () => shutDown('Received SIGINT'));
+    process.on('SIGTERM', () => shutDown('Received SIGTERM'));
+    // "Restart now" on the Modules page: exit, and Docker's restart policy
+    // starts the new process (utils/restart.ts).
+    registerShutdown((reason) => shutDown(`Restart: ${reason}`));
   } catch (error) {
     const err = error as NodeJS.ErrnoException;
     if (error instanceof DatabaseRenameRefused) {

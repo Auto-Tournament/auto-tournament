@@ -1,6 +1,5 @@
 import { Box, IconButton } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
+import { MinusIcon, PlusIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { tokens } from '../../../theme';
 
@@ -45,7 +44,7 @@ export function TeamCountStepper({
         onClick={() => lower !== undefined && onChange(lower)}
         data-testid="tournament-team-count-decrease"
       >
-        <RemoveIcon fontSize="small" />
+        <MinusIcon size={20} />
       </IconButton>
       <Box
         component="output"
@@ -67,7 +66,7 @@ export function TeamCountStepper({
         onClick={() => higher !== undefined && onChange(higher)}
         data-testid="tournament-team-count-increase"
       >
-        <AddIcon fontSize="small" />
+        <PlusIcon size={20} />
       </IconButton>
     </Box>
   );

@@ -6,6 +6,7 @@ import { DEFAULT_GAME } from '../integrations/types';
 import { describeMatch, describedPlayers } from '../utils/matchIntegration';
 import { normalizeConfigPlayers } from '../utils/playerTransform';
 import { teamService } from '../services/teamService';
+import { teamMembers, type TeamMemberRole } from '../services/teamMembers';
 import { matchLiveStatsService, type MatchLiveStats } from '../services/matchLiveStatsService';
 import type { DbMatchRow } from '../types/database.types';
 import { getMapResults } from '../services/matchMapResultService';
@@ -48,7 +49,13 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
     }
 
     // Parse players JSON (preserve avatar field)
-    let parsedPlayers: Array<{ steamId: string; name: string; avatar?: string; elo?: number }> = [];
+    let parsedPlayers: Array<{
+      steamId: string;
+      name: string;
+      avatar?: string;
+      elo?: number;
+      role?: TeamMemberRole;
+    }> = [];
     if (team.players) {
       try {
         const playersObj = JSON.parse(team.players);
@@ -83,14 +90,24 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
     // response never carried, so everyone read 1500.
     const rosterIds = parsedPlayers.map((p) => p.steamId).filter((id) => id && id !== 'unknown');
     if (rosterIds.length > 0) {
-      const ratings = await db.queryAsync<{ id: string; current_elo: number }>(
-        `SELECT id, current_elo FROM players WHERE id IN (${rosterIds.map(() => '?').join(', ')})`,
+      const ratings = await db.queryAsync<{ id: string; current_elo: number; uid: string }>(
+        `SELECT id, current_elo, uid FROM players WHERE id IN (${rosterIds.map(() => '?').join(', ')})`,
         rosterIds
       );
       const eloById = new Map(ratings.map((r) => [r.id, r.current_elo]));
-      parsedPlayers = parsedPlayers.map((p) =>
-        eloById.has(p.steamId) ? { ...p, elo: eloById.get(p.steamId) } : p
+      // The member's role (captain or member) from `team_members`, which is
+      // keyed on the account, for the team page's roster.
+      const roleByUid = new Map((await teamMembers.list(teamId)).map((m) => [m.accountUid, m.role]));
+      const roleById = new Map(
+        ratings
+          .filter((r) => roleByUid.has(String(r.uid)))
+          .map((r) => [r.id, roleByUid.get(String(r.uid)) as TeamMemberRole])
       );
+      parsedPlayers = parsedPlayers.map((p) => ({
+        ...p,
+        ...(eloById.has(p.steamId) ? { elo: eloById.get(p.steamId) } : {}),
+        ...(roleById.has(p.steamId) ? { role: roleById.get(p.steamId) } : {}),
+      }));
     }
 
     // Find active match (loaded, live, or played but not yet settled).

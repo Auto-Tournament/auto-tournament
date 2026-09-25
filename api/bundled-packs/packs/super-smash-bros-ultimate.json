@@ -2,14 +2,16 @@
   "schema": 1,
   "slug": "super-smash-bros-ultimate",
   "name": "Super Smash Bros. Ultimate",
+  "igdbId": 90101,
   "engine": "manual-report",
   "aliases": [
     "smash",
     "ssbu"
   ],
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Platform fighter. Report games won in the set.",
   "icon": "../icons/super-smash-bros-ultimate.svg",
+  "appIcon": "../app-icons/super-smash-bros-ultimate.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

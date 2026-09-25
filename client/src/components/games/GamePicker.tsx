@@ -4,13 +4,13 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
-import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
+import { TrophyIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
-import { GameThumb } from './GameThumb';
+import { GameMark } from '../common/GameMark';
+import { ExternalLink } from '../common/ExternalLink';
 import {
   MAX_PLAYER_GAMES,
   SEARCH_MIN_LENGTH,
@@ -29,7 +29,7 @@ interface GamePickerProps {
 }
 
 /**
- * Pick the games you play: type-to-search (IGDB-backed, debounced), up to
+ * Pick the games you play: type-to-search (Wikidata-backed, debounced), up to
  * three suggestions under the input, picked games as removable chips.
  *
  * The search box is an MUI Autocomplete, so the combobox semantics come with
@@ -46,7 +46,6 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
     games: [],
     failed: false,
   });
-  const [fromIgdb, setFromIgdb] = useState(false);
   const [fromWikidata, setFromWikidata] = useState(false);
   const [suggestions, setSuggestions] = useState<GameSummary[]>([]);
 
@@ -76,7 +75,6 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
         .then((res) => {
           setResolved({ q: query, games: res.games, failed: false });
           // Sticky for this picker: the credit stays once external data is on screen.
-          if (res.fromIgdb) setFromIgdb(true);
           if (res.fromWikidata) setFromWikidata(true);
         })
         .catch((err: unknown) => {
@@ -111,11 +109,10 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
         : t('games.picker.noResults');
 
   // Picked games carry the credit of whichever external source supplied them,
-  // even once search has moved on (e.g. after a reload). IGDB takes priority
-  // over Wikidata if a session somehow saw both.
-  const showIgdbCredit = fromIgdb || value.some((g) => g.source === 'igdb');
-  const showWikidataCredit = !showIgdbCredit && (fromWikidata || value.some((g) => g.source === 'wikidata'));
-  const showCredit = showIgdbCredit || showWikidataCredit;
+  // even once search has moved on (e.g. after a reload). A game found back
+  // when IGDB search still existed (`source === 'igdb'`) is credited to
+  // Wikidata too — that is the only external source left.
+  const showCredit = fromWikidata || value.some((g) => g.source === 'wikidata' || g.source === 'igdb');
 
   return (
     <Stack spacing={2} data-testid="game-picker">
@@ -158,7 +155,13 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
                 data-testid={`game-option-${game.slug}`}
                 sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}
               >
-                <GameThumb name={game.name} coverUrl={game.coverUrl} size={36} />
+                <GameMark
+                  name={game.name}
+                  slug={game.slug}
+                  iconUrl={game.appIconUrl}
+                  neutral
+                  size={32}
+                />
                 <Box sx={{ minWidth: 0, flex: 1 }}>
                   <Typography variant="body2" noWrap>
                     {game.name}
@@ -169,7 +172,7 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
                       color="primary"
                       sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
                     >
-                      <EmojiEventsOutlinedIcon sx={{ fontSize: 14 }} aria-hidden />
+                      <TrophyIcon size={14} aria-hidden />
                       {t('games.picker.supported')}
                     </Typography>
                   )}
@@ -217,7 +220,15 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
                 variant="outlined"
                 size="small"
                 label={game.name}
-                avatar={<GameThumb name={game.name} coverUrl={game.coverUrl} size={20} />}
+                avatar={
+                  <GameMark
+                    name={game.name}
+                    slug={game.slug}
+                    iconUrl={game.appIconUrl}
+                    neutral
+                    size={20}
+                  />
+                }
                 onClick={() => add(game)}
                 data-testid={`game-suggestion-${game.slug}`}
               />
@@ -240,7 +251,15 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
               <Chip
                 key={game.id}
                 label={game.name}
-                avatar={<GameThumb name={game.name} coverUrl={game.coverUrl} size={20} />}
+                avatar={
+                  <GameMark
+                    name={game.name}
+                    slug={game.slug}
+                    iconUrl={game.appIconUrl}
+                    neutral
+                    size={20}
+                  />
+                }
                 onDelete={() => remove(game)}
                 title={t('games.picker.remove', { name: game.name })}
                 data-testid={`game-chip-${game.slug}`}
@@ -251,20 +270,14 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
       </Box>
 
       {showCredit && (
-        <Typography variant="caption" color="text.secondary" data-testid="igdb-credit">
-          {showWikidataCredit ? (
-            <Link
-              href="https://www.wikidata.org"
-              target="_blank"
-              rel="noopener noreferrer"
-              color="inherit"
-              data-testid="wikidata-credit-link"
-            >
-              {t('games.picker.creditWikidata')}
-            </Link>
-          ) : (
-            t('games.picker.credit')
-          )}
+        <Typography variant="caption" color="text.secondary" data-testid="wikidata-credit">
+          <ExternalLink
+            href="https://www.wikidata.org"
+            color="inherit"
+            data-testid="wikidata-credit-link"
+          >
+            {t('games.picker.creditWikidata')}
+          </ExternalLink>
         </Typography>
       )}
     </Stack>

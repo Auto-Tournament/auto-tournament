@@ -1,3 +1,4 @@
+import { pageTitle } from '../utils/pageTitle';
 import { useEffect } from 'react';
 import { Box, Button, Card, CardContent, Container, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -8,7 +9,7 @@ export default function NotFound() {
   const { t } = useTranslation();
 
   useEffect(() => {
-    document.title = t('notFound.title');
+    document.title = pageTitle(t('notFound.title'));
   }, [t]);
 
   return (

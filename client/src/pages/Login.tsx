@@ -1,6 +1,7 @@
+import { pageTitle } from '../utils/pageTitle';
 import React, { useEffect, useState } from 'react';
-import { Box, Card, Button, Alert, Container, Link, Stack, Typography } from '@mui/material';
-import { OpenInNew as OpenInNewIcon } from '@mui/icons-material';
+import { Box, Card, Button, Alert, Container, Stack, Typography } from '@mui/material';
+import { ArrowSquareOutIcon } from '@phosphor-icons/react';
 import { SiDiscord, SiGithub, SiKeycloak } from 'react-icons/si';
 import { FcGoogle } from 'react-icons/fc';
 import { useAuth } from '../contexts/AuthContext';
@@ -9,6 +10,7 @@ import { SteamIcon } from '../components/icons/SteamIcon';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { tokens } from '../theme/tokens';
 import { AtIcon } from '../components/common/AtIcon';
+import { ExternalLink } from '../components/common/ExternalLink';
 
 /** Stands for "no sign-in method is available"; rendered as `login.unavailable`. */
 const SIGN_IN_UNAVAILABLE = 'sign-in-unavailable';
@@ -41,7 +43,7 @@ export default function Login() {
     }
     hasLoadedProvidersRef.current = true;
 
-    document.title = t('login.title');
+    document.title = pageTitle(t('login.title'));
   }, [t]);
 
   useEffect(() => {
@@ -173,14 +175,12 @@ export default function Login() {
                     <Typography variant="body2">
                       {providersError === SIGN_IN_UNAVAILABLE ? t('login.unavailable') : providersError}
                     </Typography>
-                    <Link
+                    <ExternalLink
                       href="https://docs.autotournament.gg/guides/sign-in"
-                      target="_blank"
-                      rel="noopener noreferrer"
                       sx={{ fontSize: '0.8rem' }}
                     >
                       {t('login.signInGuide')}
-                    </Link>
+                    </ExternalLink>
                   </Stack>
                 </Alert>
               )}
@@ -279,10 +279,9 @@ export default function Login() {
 
             <Stack spacing={1.5} alignItems="center" sx={{ width: '100%' }}>
               <Stack direction="row" spacing={2}>
-                <Link
+                <ExternalLink
                   href="https://github.com/Auto-Tournament/auto-tournament"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  hideIcon
                   sx={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -290,12 +289,11 @@ export default function Login() {
                   }}
                 >
                   {t('login.github')}
-                  <OpenInNewIcon sx={{ fontSize: '1rem' }} />
-                </Link>
-                <Link
+                  <ArrowSquareOutIcon size="1rem" aria-hidden />
+                </ExternalLink>
+                <ExternalLink
                   href="https://docs.autotournament.gg"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  hideIcon
                   sx={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -303,8 +301,8 @@ export default function Login() {
                   }}
                 >
                   {t('login.documentation')}
-                  <OpenInNewIcon sx={{ fontSize: '1rem' }} />
-                </Link>
+                  <ArrowSquareOutIcon size="1rem" aria-hidden />
+                </ExternalLink>
               </Stack>
 
               <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>

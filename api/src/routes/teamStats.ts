@@ -5,8 +5,21 @@ import { computeTeamStanding, globalMatchNumbers, type TeamStanding } from '../u
 import { matchBracketOf } from '../core/allocationQueue';
 import { resolveTournamentId } from '../utils/tournamentRow';
 import { getSwissStandingEntries } from '../services/swissProgressionService';
+import { getIntegration, hasIntegration } from '../integrations/registry';
+import { DEFAULT_GAME } from '../integrations/types';
 
 const router = Router();
+
+/**
+ * A game's name for people: the module's own name for a module's game
+ * ('cs2' → "Counter-Strike 2"), the catalogue's for a catalogue slug, or the
+ * value itself when neither knows it.
+ */
+async function gameDisplayName(game: string): Promise<string> {
+  if (hasIntegration(game)) return getIntegration(game).displayName;
+  const row = await db.queryOneAsync<{ name: string }>('SELECT name FROM games WHERE slug = ?', [game]);
+  return row?.name ?? game;
+}
 
 /**
  * GET /team/:teamId/history
@@ -184,7 +197,8 @@ router.get('/:teamId/stats', async (req: Request, res: Response) => {
       status: string;
       type: string;
       team_ids: string;
-    }>('SELECT id, name, status, type, team_ids FROM tournament WHERE id = ?', [
+      game: string | null;
+    }>('SELECT id, name, status, type, team_ids, game FROM tournament WHERE id = ?', [
       tournamentId,
     ]);
 
@@ -236,8 +250,12 @@ router.get('/:teamId/stats', async (req: Request, res: Response) => {
       standing,
       tournament: tournament
         ? {
+            id: tournament.id,
             name: tournament.name,
             status: tournament.status,
+            // The game, for the team page's game badge and its rows.
+            game: tournament.game ?? DEFAULT_GAME,
+            gameName: await gameDisplayName(tournament.game ?? DEFAULT_GAME),
           }
         : null,
     });

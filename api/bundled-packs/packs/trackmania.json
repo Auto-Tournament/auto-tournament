@@ -2,13 +2,15 @@
   "schema": 1,
   "slug": "trackmania",
   "name": "Trackmania",
+  "igdbId": 133807,
   "engine": "manual-report",
   "aliases": [
     "tm"
   ],
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Racing. The score is whatever format the host runs — points, rounds or times.",
   "icon": "../icons/trackmania.svg",
+  "appIcon": "../app-icons/trackmania.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

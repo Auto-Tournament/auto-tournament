@@ -192,6 +192,7 @@ export const COMPONENT_SLOTS = [
   'matchPanels.adminView',
   'matchPanels.reportView',
   'teamAdminPanel',
+  'rosterMemberStatus',
   'adminGlobalWarning',
   'tournamentStart.confirmView',
   'tournamentStart.failureView',
@@ -215,6 +216,8 @@ export const COMPONENT_SLOTS = [
   'resourceDialogs.batchAdd',
   'dashboardWidgets.adminHomeResources',
   'dashboardWidgets.manageResources',
+  'adminToolsSection',
+  'instanceSettings.section',
 ] as const;
 
 export type ComponentSlot = (typeof COMPONENT_SLOTS)[number];

@@ -1,9 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { usePageHeader, useSnackbar, useModuleTranslation } from '../../../module-sdk';
-import { Box, Button, CircularProgress, Tabs, Tab } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import MapIcon from '@mui/icons-material/Map';
-import CollectionsIcon from '@mui/icons-material/Collections';
+import { PageHead, pageTitle, useSnackbar, useModuleTranslation } from '../../../module-sdk';
+import { Box, Button, CircularProgress, Stack, Tabs, Tab } from '@mui/material';
+import { ArrowsClockwiseIcon, ImagesIcon, MapTrifoldIcon, PlusIcon } from '@phosphor-icons/react';
 import { api } from '../../../module-sdk';
 import MapModal from '../maps/MapModal';
 import MapActionsModal from '../maps/MapActionsModal';
@@ -11,11 +9,11 @@ import MapPoolModal from '../maps/MapPoolModal';
 import MapPoolActionsModal from '../maps/MapPoolActionsModal';
 import { MapsTab } from '../maps/MapsTab';
 import { MapPoolsTab } from '../maps/MapPoolsTab';
+import { useMapSync } from '../maps/useMapSync';
 import type { Map, MapsResponse, MapPool, MapPoolsResponse } from '../cs2.types';
 import { ConfirmDialog } from '../../../module-sdk';
 
 export default function Maps() {
-  const { setHeaderActions } = usePageHeader();
   const { showSuccess, showError } = useSnackbar();
   const { t } = useModuleTranslation('cs2');
   const [maps, setMaps] = useState<Map[]>([]);
@@ -39,47 +37,40 @@ export default function Maps() {
 
   // Set dynamic page title
   useEffect(() => {
-    document.title = t('mapsPage.title');
+    document.title = pageTitle(t('mapsPage.title'));
   }, [t]);
 
-  // Set header actions
-  useEffect(() => {
-    setHeaderActions(
-      activeTab === 0 ? (
-        <Button
-          data-testid="add-map-button"
-          variant="contained"
-          size="small"
-          startIcon={<AddIcon />}
-          onClick={() => {
-            setEditingMap(null);
-            setModalOpen(true);
-            setActionsModalOpen(false);
-          }}
-        >
-          {t('mapsPage.headerActions.addMap')}
-        </Button>
-      ) : (
-        <Button
-          data-testid="create-map-pool-button"
-          variant="contained"
-          size="small"
-          startIcon={<AddIcon />}
-          onClick={() => {
-            setEditingMapPool(null);
-            setMapPoolModalOpen(true);
-            setPoolActionsModalOpen(false);
-          }}
-        >
-          {t('mapsPage.headerActions.createMapPool')}
-        </Button>
-      )
+  // The page head's buttons: sync with maps.json, and add to whichever tab is open.
+  const addAction =
+    activeTab === 0 ? (
+      <Button
+        data-testid="add-map-button"
+        variant="contained"
+        size="small"
+        startIcon={<PlusIcon size={24} />}
+        onClick={() => {
+          setEditingMap(null);
+          setModalOpen(true);
+          setActionsModalOpen(false);
+        }}
+      >
+        {t('mapsPage.headerActions.addMap')}
+      </Button>
+    ) : (
+      <Button
+        data-testid="create-map-pool-button"
+        variant="contained"
+        size="small"
+        startIcon={<PlusIcon size={24} />}
+        onClick={() => {
+          setEditingMapPool(null);
+          setMapPoolModalOpen(true);
+          setPoolActionsModalOpen(false);
+        }}
+      >
+        {t('mapsPage.headerActions.createMapPool')}
+      </Button>
     );
-
-    return () => {
-      setHeaderActions(null);
-    };
-  }, [activeTab, setHeaderActions, t]);
 
   const loadMaps = useCallback(async () => {
     try {
@@ -103,6 +94,27 @@ export default function Maps() {
       console.error('Failed to load map pools:', err);
     }
   }, []);
+
+  const reloadAfterSync = useCallback(async () => {
+    await Promise.all([loadMaps(), loadMapPools()]);
+  }, [loadMaps, loadMapPools]);
+  const { sync: syncMaps, syncing: syncingMaps } = useMapSync(reloadAfterSync);
+
+  const headerActions = (
+    <Stack direction="row" spacing={1}>
+      <Button
+        data-testid="sync-maps-button"
+        variant="outlined"
+        size="small"
+        startIcon={syncingMaps ? <CircularProgress size={14} /> : <ArrowsClockwiseIcon size={24} />}
+        onClick={() => void syncMaps()}
+        disabled={syncingMaps}
+      >
+        {syncingMaps ? t('mapsPage.headerActions.syncingMaps') : t('mapsPage.headerActions.syncMaps')}
+      </Button>
+      {addAction}
+    </Stack>
+  );
 
   useEffect(() => {
     loadMaps();
@@ -286,25 +298,29 @@ export default function Maps() {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
+      <Box>
+        <PageHead title={t('mapsPage.title')} />
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+          <CircularProgress />
+        </Box>
       </Box>
     );
   }
 
   return (
     <Box data-testid="maps-page" sx={{ width: '100%', height: '100%' }}>
+      <PageHead title={t('mapsPage.title')} actions={headerActions} />
       <Tabs value={activeTab} onChange={(_, newValue) => setActiveTab(newValue)} sx={{ mb: 3 }}>
         <Tab
           data-testid="maps-tab"
           label={t('mapsPage.tabs.maps')}
-          icon={<MapIcon />}
+          icon={<MapTrifoldIcon size={24} />}
           iconPosition="start"
         />
         <Tab
           data-testid="map-pools-tab"
           label={t('mapsPage.tabs.mapPools')}
-          icon={<CollectionsIcon />}
+          icon={<ImagesIcon size={24} />}
           iconPosition="start"
         />
       </Tabs>

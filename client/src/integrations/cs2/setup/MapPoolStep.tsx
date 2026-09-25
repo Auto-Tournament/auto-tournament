@@ -11,11 +11,12 @@ import {
   Autocomplete,
   TextField,
 } from '@mui/material';
-import { Warning as WarningIcon } from '@mui/icons-material';
+import { WarningIcon } from '@phosphor-icons/react';
 import { useModuleTranslation } from '../../../module-sdk';
 import { SortableMapList } from './SortableMapList';
 import { validateMapCount, requiresVeto } from './mapRules';
-import type { Map as MapType, MapPool } from '../cs2.types';
+import type { Map as MapType, MapGameMode, MapPool } from '../cs2.types';
+import { MAP_MODES, fitsMapMode, mapModeColor, mapModeKey, mapModeOf } from '../maps/mapModes';
 
 /**
  * The map pool picker, as data in and callbacks out: the tournament setup's
@@ -47,6 +48,12 @@ export interface MapPoolStepProps {
    * order is irrelevant but we still want shuffle-style validation rules.
    */
   enableOrdering?: boolean;
+  /**
+   * The tournament's map type (`settings.cs2.mapMode`): only maps and pools of
+   * that type are offered. The picker is shown when `onMapModeChange` is set.
+   */
+  mapMode?: MapGameMode;
+  onMapModeChange?: (mode: MapGameMode | undefined) => void;
 }
 
 export function MapPoolStep({
@@ -65,6 +72,8 @@ export function MapPoolStep({
   onMapRemove,
   hideShuffleExplanation = false,
   enableOrdering = true,
+  mapMode,
+  onMapModeChange,
 }: MapPoolStepProps) {
   const { t } = useModuleTranslation('cs2');
 
@@ -73,36 +82,42 @@ export function MapPoolStep({
     return map ? map.displayName : mapId;
   };
 
-  const getMapType = (mapId: string): string => {
-    if (mapId.startsWith('de_')) return t('tournament.mapPool.types.defusal');
-    if (mapId.startsWith('cs_')) return t('tournament.mapPool.types.hostage');
-    if (mapId.startsWith('ar_')) return t('tournament.mapPool.types.armsRace');
-    return t('tournament.mapPool.types.unknown');
+  const modeOfId = (mapId: string) =>
+    mapModeOf(
+      availableMaps.find((m) => m.id === mapId),
+      mapId
+    );
+  const getMapType = (mapId: string): string => t(mapModeKey(modeOfId(mapId)));
+  const getMapTypeColor = (mapId: string) => mapModeColor(modeOfId(mapId));
+  const fits = (mapId: string) =>
+    fitsMapMode(
+      availableMaps.find((m) => m.id === mapId),
+      mapId,
+      mapMode
+    );
+
+  // Sort maps by type (defusal, wingman, hostage, …), then by id; only the tournament's type.
+  const modeOrder = (mapId: string) => {
+    const mode = modeOfId(mapId);
+    return mode ? MAP_MODES.indexOf(mode) : 999;
   };
+  const sortedMaps = availableMaps
+    .filter((m) => fits(m.id))
+    .sort((a, b) => {
+      const aOrder = modeOrder(a.id);
+      const bOrder = modeOrder(b.id);
 
-  const getMapTypeColor = (mapId: string): 'default' | 'primary' | 'secondary' | 'success' => {
-    if (mapId.startsWith('de_')) return 'primary';
-    if (mapId.startsWith('cs_')) return 'secondary';
-    if (mapId.startsWith('ar_')) return 'success';
-    return 'default';
-  };
-
-  // Sort maps by prefix: de_, ar_, cs_
-  const sortedMaps = [...availableMaps].sort((a, b) => {
-    const prefixOrder: Record<string, number> = { de_: 0, ar_: 1, cs_: 2 };
-    const aPrefix = a.id.substring(0, 3);
-    const bPrefix = b.id.substring(0, 3);
-    const aOrder = prefixOrder[aPrefix] ?? 999;
-    const bOrder = prefixOrder[bPrefix] ?? 999;
-
-    if (aOrder !== bOrder) {
-      return aOrder - bOrder;
-    }
-    // If same prefix, sort alphabetically by ID
-    return a.id.localeCompare(b.id);
-  });
+      if (aOrder !== bOrder) {
+        return aOrder - bOrder;
+      }
+      // If same prefix, sort alphabetically by ID
+      return a.id.localeCompare(b.id);
+    });
 
   const allMapIds = sortedMaps.map((m) => m.id);
+  // Pools with a map of another type are not offered under a map type.
+  const offeredPools = mapPools.filter((p) => p.mapIds.every(fits));
+  const offTypeMaps = maps.filter((id) => !fits(id));
   const isShuffle = type === 'shuffle';
 
   // Use verification rules system
@@ -111,7 +126,6 @@ export function MapPoolStep({
 
   return (
     <Box>
-
       {/* Shuffle Tournament Explanation */}
       {isShuffle && !hideShuffleExplanation && (
         <Alert severity="info" sx={{ mb: 3 }} data-testid="shuffle-map-sequence-field">
@@ -132,6 +146,36 @@ export function MapPoolStep({
           </Typography>
         </Alert>
       )}
+      {onMapModeChange && (
+        <FormControl fullWidth sx={{ mb: 2 }}>
+          <InputLabel>{t('mapModeFilter.label')}</InputLabel>
+          <Select
+            data-testid="tournament-map-mode-select"
+            value={mapMode ?? ''}
+            label={t('mapModeFilter.label')}
+            onChange={(e) =>
+              onMapModeChange((e.target.value || undefined) as MapGameMode | undefined)
+            }
+            disabled={!canEdit || saving || loadingMaps}
+            displayEmpty
+          >
+            <MenuItem value="">{t('mapModeFilter.any')}</MenuItem>
+            {MAP_MODES.map((mode) => (
+              <MenuItem key={mode} value={mode}>
+                {t(mapModeKey(mode))}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      )}
+      {offTypeMaps.length > 0 && mapMode && (
+        <Alert severity="warning" sx={{ mb: 2 }} data-testid="tournament-map-mode-warning">
+          {t('mapModeFilter.offType', {
+            maps: offTypeMaps.map(getMapDisplayName).join(', '),
+            mode: t(mapModeKey(mapMode)),
+          })}
+        </Alert>
+      )}
       {/* Map Pool Selection Dropdown */}
       <FormControl fullWidth sx={{ mb: 2 }}>
         <InputLabel>{t('tournament.mapPool.chooseLabel')}</InputLabel>
@@ -144,18 +188,26 @@ export function MapPoolStep({
           displayEmpty
         >
           {/* Show default pool first (could be Active Duty or a custom default) */}
-          {mapPools
+          {offeredPools
             .filter((p) => p.isDefault && p.enabled)
             .map((pool) => (
-              <MenuItem key={pool.id} value={pool.id.toString()} data-testid="tournament-map-pool-option">
+              <MenuItem
+                key={pool.id}
+                value={pool.id.toString()}
+                data-testid="tournament-map-pool-option"
+              >
                 {pool.name}
               </MenuItem>
             ))}
           {/* Show all non-default enabled pools */}
-          {mapPools
+          {offeredPools
             .filter((p) => !p.isDefault && p.enabled)
             .map((pool) => (
-              <MenuItem key={pool.id} value={pool.id.toString()} data-testid="tournament-map-pool-option">
+              <MenuItem
+                key={pool.id}
+                value={pool.id.toString()}
+                data-testid="tournament-map-pool-option"
+              >
                 {pool.name}
               </MenuItem>
             ))}
@@ -197,7 +249,7 @@ export function MapPoolStep({
 
       {/* Map Pool Validation */}
       {shouldShowVetoError && mapValidation.message && (
-        <Alert severity="warning" icon={<WarningIcon />} sx={{ mb: 2 }}>
+        <Alert severity="warning" icon={<WarningIcon size={24} />} sx={{ mb: 2 }}>
           <Typography variant="body2">
             <strong>{mapValidation.message}</strong>
           </Typography>

@@ -198,7 +198,8 @@ export function getSchemaSQL(): string {
       discord_id TEXT, -- Discord user ID (17-20 digit string). Contact data only, admin-only, not unique (a parent may list theirs on several children)
       discord_id_edited_at INTEGER, -- Epoch of the last explicit edit (admin or the player) that set OR cleared discord_id; NULL = only ever filled by an import. Imports never touch a row where this is set. Internal, never in a response
       uid UUID NOT NULL DEFAULT gen_random_uuid(), -- Stable account id, never regenerated. Player-owned data (player_games, ...) keys on this rather than the Steam ID, so 3.1 can have accounts without Steam
-      games_prompt_dismissed_at INTEGER -- Epoch when the player skipped or answered the "What do you play?" dialog; NULL = show it while they have no games
+      games_prompt_dismissed_at INTEGER, -- Epoch when the player skipped or answered the "What do you play?" dialog; NULL = show it while they have no games
+      last_sign_in_at INTEGER -- Epoch of the player's last sign-in (Steam or SSO); NULL = never since this column exists. Admin-only, never in a public response
     );
 
     CREATE INDEX IF NOT EXISTS idx_players_name ON players(name);
@@ -206,12 +207,18 @@ export function getSchemaSQL(): string {
     CREATE INDEX IF NOT EXISTS idx_players_discord_id ON players(discord_id);
     CREATE UNIQUE INDEX IF NOT EXISTS idx_players_uid ON players(uid);
 
-    -- Game catalogue: games players can say they play. Rows come from IGDB
-    -- search results when IGDB credentials are configured, from Wikidata
-    -- search results otherwise (the keyless default so search works out of
-    -- the box), and from the built-in list (installed game modules + popular
-    -- esports). External results are upserted so repeat queries and chips
-    -- render from here.
+    -- Game catalogue: games players can say they play. Rows come from
+    -- Wikidata search results (the keyless default, needing no API key) and
+    -- from the built-in list (installed game modules + popular esports).
+    -- External results are upserted so repeat queries and chips render from
+    -- here.
+    --
+    -- IGDB was an earlier, credentialed source for this catalogue and has
+    -- been removed. igdb_id and igdb_checked_at are no longer written, but
+    -- stay on rows created back then: igdb_id is still how such a row links
+    -- to a module's or pack's own catalogue entry
+    -- (gameCatalogService.linkBuiltin), so the columns are kept rather than
+    -- dropped.
     CREATE TABLE IF NOT EXISTS games (
       id SERIAL PRIMARY KEY,
       igdb_id INTEGER UNIQUE,
@@ -222,8 +229,13 @@ export function getSchemaSQL(): string {
       logo_url TEXT,
       release_year INTEGER,
       genres TEXT, -- JSON array of up to 3 genre names, e.g. '["Shooter","Tactical"]' (matches the maps/team_ids convention: JSON text, not a native array)
-      source TEXT NOT NULL DEFAULT 'builtin', -- 'igdb' | 'wikidata' | 'builtin'
-      enriched_at INTEGER, -- epoch of the last successful built-in enrichment (image/genres/year from Wikidata or IGDB); NULL = never enriched
+      source TEXT NOT NULL DEFAULT 'builtin', -- 'igdb' (historic only) | 'wikidata' | 'builtin'
+      enriched_at INTEGER, -- epoch of the last successful built-in enrichment (image/genres/year from Wikidata); NULL = never enriched
+      igdb_checked_at INTEGER, -- historic: epoch of the last IGDB re-resolve of a row, back when that ran; NULL = never tried
+      steam_app_id INTEGER, -- the game's Steam app id, from Wikidata P1733 (or, on a historic row, IGDB's external games); NULL = not known / not on Steam
+      icon_url TEXT, -- the game's square app icon cached under DATA_DIR/game-icons (gameIconService), e.g. /api/games/icons/<hash>.png; NULL = none, the pill draws a monogram
+      icon_source TEXT, -- where icon_url came from: 'steam' (the Steam client icon)
+      icon_checked_at INTEGER, -- epoch of the last icon lookup for this row; NULL = never tried
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
 
@@ -243,6 +255,8 @@ export function getSchemaSQL(): string {
       origin TEXT, -- where an 'index' pack came from, for updates
       definition TEXT NOT NULL, -- the validated pack JSON, as stored
       icon TEXT, -- the pack's square tile (SVG markup), already sanitised
+      app_icon TEXT, -- the game's square app icon (PNG or WebP), base64; checked on import
+      app_icon_type TEXT, -- 'image/png' | 'image/webp'
       installed_by TEXT, -- admin account uid, best effort
       installed_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
@@ -455,6 +469,7 @@ export function getSchemaSQL(): string {
       match_slug TEXT,
       match_label TEXT,
       tournament_name TEXT,
+      game TEXT, -- The match's game (integration id or catalogue slug), so a deleted match still counts under it on the profile
       -- Display values (for admin/UI)
       elo_before INTEGER NOT NULL,
       elo_after INTEGER NOT NULL,

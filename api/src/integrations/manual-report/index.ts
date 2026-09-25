@@ -23,7 +23,7 @@
  *
  * What it runs: the titles in `./catalog`, plus — through
  * `runsAnyCatalogGame` — any other catalogue game, because `tournament.game`
- * holds a catalogue id from phase D onwards and a game found through IGDB
+ * holds a catalogue id from phase D onwards and a game found through
  * search must still find a module.
  *
  * The report state machine itself is `./reports` (3.0 phase D, PR D3), and the

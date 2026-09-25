@@ -29,7 +29,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import MilitaryTechIcon from '@mui/icons-material/MilitaryTech';
+import { MedalIcon } from '@phosphor-icons/react';
 import { useAuth, useModuleTranslation } from '../../../module-sdk';
 import type { TeamAdminPanelProps } from '../../types';
 import { isNotOurs, manualReportApi, type TeamMember } from '../api';
@@ -85,7 +85,7 @@ export function TeamCaptainsCard({ teamId }: TeamAdminPanelProps) {
     <Card data-testid="team-captains-card">
       <CardContent>
         <Box display="flex" alignItems="center" gap={1} mb={1}>
-          <MilitaryTechIcon color="primary" />
+          <Box component={MedalIcon} size={24} sx={{ color: 'primary.main' }} />
           <Typography variant="h6" fontWeight={600}>
             {t('manualReport.captains.title')}
           </Typography>

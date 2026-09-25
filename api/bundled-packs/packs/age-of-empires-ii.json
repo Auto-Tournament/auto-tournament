@@ -2,14 +2,16 @@
   "schema": 1,
   "slug": "age-of-empires-ii",
   "name": "Age of Empires II",
+  "igdbId": 55056,
   "engine": "manual-report",
   "aliases": [
     "aoe2",
     "aoe"
   ],
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Real-time strategy. Report games won.",
   "icon": "../icons/age-of-empires-ii.svg",
+  "appIcon": "../app-icons/age-of-empires-ii.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

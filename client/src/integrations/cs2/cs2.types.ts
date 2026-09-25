@@ -142,6 +142,8 @@ export interface ServerMatchesResponse extends Cs2ApiResponse {
  */
 export interface WebhookSettings {
   webhookConfigured?: boolean;
+  /** The URL itself, as `GET /api/settings` answers it (null when unset). */
+  webhookUrl?: string | null;
 }
 
 export interface WebhookSettingsResponse extends Cs2ApiResponse {
@@ -336,10 +338,15 @@ export interface VetoStateResponse extends Cs2ApiResponse {
 // Maps
 // ---------------------------------------------------------------------------
 
+/** A map's type (maps/mapModes.ts). */
+export type MapGameMode = 'defusal' | 'hostage' | 'wingman' | 'armsrace' | 'deathmatch' | 'other';
+
 export interface Map {
   id: string;
   displayName: string;
   imageUrl: string | null;
+  /** Null when not known. */
+  gameMode?: MapGameMode | null;
   createdAt: number;
   updatedAt: number;
 }
@@ -370,6 +377,48 @@ export interface MapPoolsResponse extends Cs2ApiResponse {
 
 export interface MapPoolResponse extends Cs2ApiResponse {
   mapPool: MapPool;
+}
+
+// ---------------------------------------------------------------------------
+// Admin tools: RCON and the server events monitor
+// ---------------------------------------------------------------------------
+
+/** One server's answer to an RCON command (`POST /api/rcon/command`). */
+export interface RconResult {
+  serverId: string;
+  serverName: string;
+  success: boolean;
+  error?: string;
+  response?: string;
+}
+
+export interface RconResultsResponse extends Cs2ApiResponse {
+  results?: RconResult[];
+}
+
+/** One event a server sent, as the events monitor shows it. */
+export interface ServerEvent {
+  timestamp: number;
+  serverId: string;
+  matchSlug: string;
+  event: {
+    event: string;
+    matchid: string;
+    [key: string]: unknown;
+  };
+}
+
+export interface ServerEventsResponse extends Cs2ApiResponse {
+  events: ServerEvent[];
+}
+
+/** `POST /api/maps/sync`. */
+export interface MapSyncResponse extends Cs2ApiResponse {
+  /** `bundled`: GitHub could not be reached, so the map list shipped with the module was used. */
+  source?: 'remote' | 'bundled';
+  /** What the sync did to the Active Duty pool (`kept`: an admin edited it, so it was left alone). */
+  activeDutyPool?: 'created' | 'updated' | 'kept' | 'unchanged' | 'stale';
+  stats?: { total: number; added: number; updated?: number; skipped: number; errors: number };
 }
 
 /** A Ready Up server on the fleet link (`GET /api/fleet/servers`). */

@@ -58,5 +58,43 @@
  * 0.2.1 (additive): the 3.0 drafts' page patterns, `PageHead`,
  * `SectionHead`, `Panel`, `RowList`, `Row` and `FactGrid` (with their
  * prop types), and `radii`, the radius tokens as CSS lengths for `sx`.
+ *
+ * 0.2.2 (added, not a break; audit chunk 9, "module ownership"): two optional
+ * slots for the instance-wide admin pages, shown for every installed module
+ * whatever game the tournament is.
+ * - `adminToolsSection` (no props): the module's section of Admin tools.
+ *   CS2: its RCON console and server events monitor, which were core's.
+ * - `instanceSettings: { labelKey, section }` (no props): the module's tab on
+ *   Settings. CS2: the webhook URL and the map sync, which were core's.
+ * - `links.settings(moduleId?)` opens Settings, on that module's tab.
+ *
+ * 0.2.3 (additive): `pageTitle(name)`, "Name · Auto Tournament" for
+ * `document.title`. The shell prints no page title any more (design audit
+ * chunk 1): a page renders its own `PageHead`, with its buttons as `actions`.
+ * `usePageHeader` is deprecated but still works: buttons a module hands it
+ * show in a plain row above the page. Drop it at the next breaking bump.
+ *
+ * 0.2.4 (added, not a break): `useIsDevelopment()`, whether the host's
+ * development tools are on. A module built on its own cannot read the host's
+ * build flags; CS2 uses it for its simulation settings, which moved from
+ * core's Settings to its own tab with the rest of its server defaults.
+ *
+ * 0.2.5 (additive): `LiveChip`, the quiet mono chip with a green dot for
+ * anything running right now, and `textSize`, the drafts' type sizes.
+ *
+ * 0.2.6 (additive): the optional `rosterMemberStatus` slot
+ * (`RosterMemberStatusProps` `{ playerId }`): the team page roster's
+ * per-member account status for the game (CS2: Steam linked).
+ *
+ * 0.2.7 (additive): `ExternalLink` (and `ExternalLinkProps`), the shared
+ * component for a link that leaves the app — icon, `rel`, and the hidden
+ * "opens in a new tab" text a module would otherwise have to hand-roll.
+ *
+ * 0.2.8 (additive): Phosphor (`@phosphor-icons/react`) is the platform's icon
+ * set. `IntegrationNavItem.icon` is optional and typed as a Phosphor-shaped
+ * component (`IntegrationNavIconProps`: `size`, `weight`, `aria-hidden`),
+ * which the admin rail now shows beside the item's label; an MUI icon still
+ * type-checks and renders. `ICON_SIZE` (16/20/24 px) is exported. Phosphor is
+ * not a shared package: a module bundles the icons it uses.
  */
-export const CLIENT_API_VERSION = '0.2.1';
+export const CLIENT_API_VERSION = '0.2.8';

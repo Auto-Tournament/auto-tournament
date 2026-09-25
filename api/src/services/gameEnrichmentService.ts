@@ -7,26 +7,22 @@
  * Wikidata is the source for all three, looked up by a known QID (verified by
  * hand against https://www.wikidata.org/wiki/Special:EntityData/<QID>.json —
  * see `BUILTIN_WIKIDATA_QIDS` below), never by a fuzzy search: a built-in's
- * identity must not drift because a search matched the wrong entity. When
- * IGDB credentials are configured, its cover is preferred over Wikidata's
- * (matched by exact, case-insensitive name — the top hit only counts when it
- * is an exact match, so a fuzzy near-miss never gets attached to a built-in).
+ * identity must not drift because a search matched the wrong entity.
  *
  * Runs once at API startup, after the server is listening, and is never on
  * the request path: `index.ts` fires it and does not await it. A row already
  * enriched within `ENRICH_INTERVAL_MS` is left alone; a failed lookup leaves
- * `enriched_at` untouched so the next start retries it. Both external clients
- * already point at the E2E fakes when a test overrides them (see
- * `setIgdbEndpointOverride` / `setWikidataEndpointOverride`), so this reuses
- * them rather than calling the network directly — but even so, it is always
- * disabled in CI (see `enrichmentDisabled`), since a fake can still be
- * mid-setup when this fires right after startup.
+ * `enriched_at` untouched so the next start retries it. The Wikidata client
+ * already points at the E2E fake when a test overrides it (see
+ * `setWikidataEndpointOverride`), so this reuses it rather than calling the
+ * network directly — but even so, it is always disabled in CI (see
+ * `enrichmentDisabled`), since a fake can still be mid-setup when this fires
+ * right after startup.
  */
 
 import { db } from '../config/database';
 import { log } from '../utils/logger';
-import { searchIgdb, type IgdbGame } from './igdbService';
-import { getWikidataBuiltinInfo } from './wikidataService';
+import { getWikidataBuiltinInfo, type WikidataBuiltinInfo } from './wikidataService';
 import { ensureBuiltinGames } from './gameCatalogService';
 
 /** Re-enrich a builtin at most this often. */
@@ -81,21 +77,9 @@ async function staleBuiltinRows(): Promise<StaleBuiltinRow[]> {
   );
 }
 
-/** The top IGDB result for `name`, only when it is an exact (case-insensitive) name match. */
-async function exactIgdbMatch(name: string): Promise<IgdbGame | null> {
-  try {
-    const results = await searchIgdb(name, 5);
-    if (!results) return null; // not configured
-    return results.find((g) => g.name.toLowerCase() === name.toLowerCase()) ?? null;
-  } catch (err) {
-    log.warn(`[Games] IGDB lookup failed while enriching "${name}": ${(err as Error).message}`);
-    return null;
-  }
-}
-
 async function enrichRow(
   row: StaleBuiltinRow,
-  wikidata: Map<string, { imageUrl: string | null; releaseYear: number | null; genres: string[] }>
+  wikidata: Map<string, WikidataBuiltinInfo>
 ): Promise<void> {
   const qid = BUILTIN_WIKIDATA_QIDS[row.slug];
   const info = qid ? wikidata.get(qid) : undefined;
@@ -106,15 +90,7 @@ async function enrichRow(
     return;
   }
 
-  const igdbMatch = await exactIgdbMatch(row.name);
-
-  const coverUrl = igdbMatch?.coverUrl ?? info.imageUrl;
-  const logoUrl = igdbMatch?.logoUrl ?? info.imageUrl;
-  const genres = igdbMatch?.genres.length ? igdbMatch.genres : info.genres;
-  // `info` only exists here because the Wikidata batch answered for this QID
-  // (see the `!info` guard above), so at least the wikidata_id association is
-  // always real, even on the rare title with neither an image nor a genre.
-  const source = igdbMatch ? 'igdb' : 'wikidata';
+  const genres = info.genres;
   const now = Math.floor(Date.now() / 1000);
 
   await db.runAsync(
@@ -124,19 +100,18 @@ async function enrichRow(
             release_year = COALESCE(release_year, ?),
             genres = COALESCE(?, genres),
             wikidata_id = COALESCE(wikidata_id, ?),
-            igdb_id = COALESCE(?, igdb_id),
-            source = ?,
+            steam_app_id = COALESCE(steam_app_id, ?),
+            source = 'wikidata',
             enriched_at = ?,
             updated_at = ?
       WHERE id = ?`,
     [
-      coverUrl,
-      logoUrl,
+      info.imageUrl,
+      info.imageUrl,
       info.releaseYear,
       genres.length > 0 ? JSON.stringify(genres.slice(0, 3)) : null,
       qid,
-      igdbMatch?.igdbId ?? null,
-      source,
+      info.steamAppId,
       now,
       now,
       row.id,
@@ -146,9 +121,8 @@ async function enrichRow(
 
 /**
  * Enrich every stale built-in (never enriched, or last enriched more than 7
- * days ago) from Wikidata (and IGDB, when configured, for the cover). Safe to
- * call from the request path or startup: it never throws — failures are
- * logged and simply retried next start.
+ * days ago) from Wikidata. Safe to call from the request path or startup: it
+ * never throws — failures are logged and simply retried next start.
  */
 export async function enrichBuiltinGames(): Promise<void> {
   if (enrichmentDisabled()) {

@@ -15,7 +15,7 @@ seq/ack, token rotation).
 | TypeScript types for them | `api/src/integrations/cs2/fleet/protocol/v1/types.ts` |
 | Enrollment + admin routes | `api/src/integrations/cs2/fleet/routes.ts` |
 | WebSocket gateway, `FleetBus` | `api/src/integrations/cs2/fleet/gateway.ts`, `bus.ts` |
-| Tables (`cs2_fleet_*`) | migration `003-fleet` in `api/src/integrations/cs2/migrations.ts` |
+| Tables (`cs2_fleet_*`) | migration `005-fleet` in `api/src/integrations/cs2/migrations.ts` |
 | Tests | `tests/api/fleet-*.spec.ts`, test client in `tests/helpers/fleet.ts` |
 
 The schemas are plain JSON files. Ready Up's and csm's CI copy the folder

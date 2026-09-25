@@ -2,13 +2,15 @@
   "schema": 1,
   "slug": "street-fighter-6",
   "name": "Street Fighter 6",
+  "igdbId": 191692,
   "engine": "manual-report",
   "aliases": [
     "sf6"
   ],
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Fighting game. Report games won in the set.",
   "icon": "../icons/street-fighter-6.svg",
+  "appIcon": "../app-icons/street-fighter-6.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

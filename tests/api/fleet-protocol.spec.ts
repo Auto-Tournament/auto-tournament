@@ -223,8 +223,9 @@ test.describe('Fleet credentials', () => {
 
   test('the fleet migration stays in the cs2_ namespace', () => {
     expect(validateModuleMigrations('cs2', CS2_MIGRATIONS, { installedModuleIds: ['cs2'] })).toBeNull();
-    const fleet = CS2_MIGRATIONS.find((m) => m.id === '003-fleet');
+    const fleet = CS2_MIGRATIONS.find((m) => m.id === '005-fleet');
     expect(fleet).toBeTruthy();
+    expect(CS2_MIGRATIONS[CS2_MIGRATIONS.length - 1]).toBe(fleet);
     for (const table of ['servers', 'tokens', 'enrollment_codes', 'enrollment_keys', 'outbox']) {
       expect(fleet!.up).toContain(`CREATE TABLE IF NOT EXISTS cs2_fleet_${table}`);
     }

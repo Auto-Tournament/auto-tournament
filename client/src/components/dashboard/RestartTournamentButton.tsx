@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button, CircularProgress, Alert, Snackbar, ButtonProps, Typography, Box } from '@mui/material';
-import { RestartAlt } from '@mui/icons-material';
+import { ArrowCounterClockwiseIcon } from '@phosphor-icons/react';
 import { useNavigate } from 'react-router-dom';
 import { useTournament } from '../../hooks/useTournament';
 import ConfirmDialog from '../modals/ConfirmDialog';
@@ -65,7 +65,7 @@ export const RestartTournamentButton: React.FC<RestartTournamentButtonProps> = (
         color="warning"
         size={size}
         fullWidth={fullWidth}
-        startIcon={restarting ? <CircularProgress size={20} color="inherit" /> : <RestartAlt />}
+        startIcon={restarting ? <CircularProgress size={20} color="inherit" /> : <ArrowCounterClockwiseIcon />}
         onClick={() => setShowConfirm(true)}
         disabled={restarting}
       >

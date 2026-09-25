@@ -20,7 +20,6 @@
 
 import type { ComponentType, ReactElement } from 'react';
 import type { TFunction } from 'i18next';
-import type { SvgIconComponent } from '@mui/icons-material';
 
 /** Integration id, the same value as the API's `game` column. */
 export type GameId = 'cs2' | (string & {});
@@ -400,9 +399,34 @@ export type IntegrationNavLabelSurface = 'nav' | 'pageTitle' | 'rail' | 'siteLab
 export interface IntegrationNavItem {
   key: string;
   path: string;
-  icon: SvgIconComponent;
+  /**
+   * The item's icon in the admin rail, beside its label (client API 0.2.8;
+   * optional since then, and none shows no icon). A Phosphor icon component
+   * (`HardDrivesIcon` from `@phosphor-icons/react`), the module's own bundled
+   * copy: core renders it with the rail's `size` and `weight` and
+   * `aria-hidden`, so it needs no host context. Any SVG icon component
+   * renders, sized by the rail.
+   */
+  icon?: IntegrationNavIcon;
   labels?: Partial<Record<IntegrationNavLabelSurface, string>>;
 }
+
+/**
+ * What core hands a nav item's icon: Phosphor's own props, typed as Phosphor
+ * types them, so a Phosphor icon is one as it is. Core passes `regular`, or
+ * `fill` for the page that is open.
+ */
+export interface IntegrationNavIconProps {
+  size?: number | string;
+  weight?: 'thin' | 'light' | 'regular' | 'bold' | 'fill' | 'duotone';
+  'aria-hidden'?: boolean | 'true' | 'false';
+}
+
+/**
+ * A nav item's icon. Not a slot: the contract check and the adapter's error
+ * boundary handle it with the rest of the nav item (`navItems`).
+ */
+export type IntegrationNavIcon = ComponentType<IntegrationNavIconProps>;
 
 // ---------------------------------------------------------------------------
 // The admin shell, and starting the tournament
@@ -697,6 +721,20 @@ export interface TeamAdminPanelProps {
   teamId: string;
 }
 
+/**
+ * Team page roster: what this game says about one member's account for it,
+ * shown in the member's detail line after their role (client API 0.2.6).
+ *
+ * CS2 says whether the roster has a Steam account for the player ("Steam
+ * linked", or a warning when it does not): without one they cannot join the
+ * server. A game with nothing to say about a member leaves the slot empty,
+ * and the line shows only the role.
+ */
+export interface RosterMemberStatusProps {
+  /** The roster entry's player id: a Steam ID64 today, or '' / 'unknown' when the roster has none. */
+  playerId: string;
+}
+
 // ---------------------------------------------------------------------------
 // The admin area
 // ---------------------------------------------------------------------------
@@ -727,6 +765,33 @@ export interface AdminDisputesViewProps {
  */
 export interface TournamentStatsViewProps {
   tournamentId: number;
+}
+
+/**
+ * The Admin tools page: this module's own section (client API 0.2.2).
+ *
+ * Admin tools is core's page for what every instance has: the application
+ * logs and match recovery. A game with controls of its own (CS2: RCON on its
+ * servers, and the live feed of their events) brings them here as a section
+ * with its own heading, and fetches what it needs. With the module not
+ * installed, the section is not there.
+ */
+export type AdminToolsSectionProps = Record<string, never>;
+
+/**
+ * The Settings page: this module's own settings, as a tab of its own (client
+ * API 0.2.2). CS2: the webhook URL its servers call back on, and the map sync.
+ *
+ * The section reads and saves its own fields. It may save through
+ * `PUT /api/settings` with only its own fields in the body: every field there
+ * is optional.
+ */
+export type InstanceSettingsSectionProps = Record<string, never>;
+
+export interface InstanceSettingsSlot {
+  /** The tab's label: a key in the module's own namespace (CS2: `settings.tab`). */
+  labelKey: string;
+  section: ComponentType<InstanceSettingsSectionProps>;
 }
 
 // ---------------------------------------------------------------------------
@@ -830,6 +895,9 @@ export interface ClientGameIntegration {
 
   /** Team page: an admin-only control this integration needs (D7: captains). */
   teamAdminPanel?: ComponentType<TeamAdminPanelProps>;
+
+  /** Team page roster: the member's account status for this game (CS2: Steam linked). */
+  rosterMemberStatus?: ComponentType<RosterMemberStatusProps>;
 
   /**
    * The admin shell, every page: a setting this module needs before its
@@ -978,6 +1046,18 @@ export interface ClientGameIntegration {
    * counts as no rows.
    */
   adminHomeSetup?: () => Promise<AdminHomeSetupItem[]>;
+
+  /**
+   * The Admin tools page: this module's section, after core's tools (0.2.2).
+   * Shown whenever the module is installed, whatever game the tournament is.
+   */
+  adminToolsSection?: ComponentType<AdminToolsSectionProps>;
+
+  /**
+   * The Settings page: this module's tab, after core's (0.2.2). Shown
+   * whenever the module is installed; `links.settings(id)` opens it.
+   */
+  instanceSettings?: InstanceSettingsSlot;
 
   /** Pages the integration owns. URLs come from `paths.ts`. */
   routes: IntegrationRoute[];

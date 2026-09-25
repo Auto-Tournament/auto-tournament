@@ -2,13 +2,15 @@
   "schema": 1,
   "slug": "pubg-battlegrounds",
   "name": "PUBG: Battlegrounds",
+  "igdbId": 27789,
   "engine": "manual-report",
   "aliases": [
     "pubg"
   ],
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Squad battle royale. Placement and eliminations each match.",
   "icon": "../icons/pubg-battlegrounds.svg",
+  "appIcon": "../app-icons/pubg-battlegrounds.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

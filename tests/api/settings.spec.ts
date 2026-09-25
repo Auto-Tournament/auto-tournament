@@ -93,11 +93,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
     | 'at_gg_min_score_diff'
     | 'at_ffw_enabled'
     | 'at_ffw_time'
-    | 'at_demo_recording_enabled'
-    // IGDB (game catalogue) credentials. The secret is write-only: it is never
-    // returned by any endpoint, and env (IGDB_CLIENT_ID / IGDB_CLIENT_SECRET) wins.
-    | 'igdb_client_id'
-    | 'igdb_client_secret';
+    | 'at_demo_recording_enabled';
 
 
   const ALLOWED_KEYS: AppSettingKey[] = [
@@ -139,8 +135,6 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
     'at_ffw_enabled',
     'at_ffw_time',
     'at_demo_recording_enabled',
-    'igdb_client_id',
-    'igdb_client_secret',
   ];
 
   class LegacySettingsService {
@@ -180,13 +174,6 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
 
         if (!trimmed) {
           await db.setAppSettingAsync(key, null);
-          return;
-        }
-
-        if (key === 'igdb_client_id' || key === 'igdb_client_secret') {
-          await db.setAppSettingAsync(key, trimmed);
-          // Never log the value.
-          log.success(`${key} updated`);
           return;
         }
 
@@ -1226,6 +1213,12 @@ async function compare(initial: Record<string, string | null>, body: Record<stri
   expect(next, JSON.stringify({ initial, body })).toEqual(legacy);
 }
 
+/**
+ * Settings added after the legacy handler, with their `PUT` field. They are
+ * not in the legacy reference; everything else must still match it.
+ */
+const ADDED_SETTINGS = [{ key: 'site_name', field: 'siteName' }];
+
 // --- tests -------------------------------------------------------------------
 
 test.describe('settings namespace', () => {
@@ -1233,7 +1226,9 @@ test.describe('settings namespace', () => {
     const legacy = makeLegacy(new Map(), [], () => undefined);
     const keys = (await listSettingDefinitions()).map((definition) => definition.key);
     expect(new Set(keys).size).toBe(keys.length);
-    expect([...keys].sort()).toEqual([...legacy.ALLOWED_KEYS].sort());
+    expect([...keys].sort()).toEqual(
+      [...legacy.ALLOWED_KEYS, ...ADDED_SETTINGS.map((added) => added.key)].sort()
+    );
 
     const cs2 = getIntegration('cs2');
     const cs2Keys = (cs2.instanceSettings ?? []).map((definition) => definition.key);
@@ -1252,11 +1247,14 @@ test.describe('settings namespace', () => {
   });
 
   test('the PUT fields are the legacy ones, applied in the legacy order', async () => {
+    const added = new Set(ADDED_SETTINGS.map((setting) => setting.field));
     const fields = (await listSettingDefinitions())
       .filter((definition) => definition.field && definition.applyRequest)
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
       .map((definition) => definition.field);
-    expect(fields).toEqual(LEGACY_FIELDS);
+    expect(fields.filter((field) => !added.has(field as string))).toEqual(LEGACY_FIELDS);
+    // The site name is applied first, before any legacy field can reject.
+    expect(fields[0]).toBe('siteName');
   });
 
   test('unknown keys are rejected as before', async () => {
@@ -1318,8 +1316,9 @@ test.describe('settings namespace', () => {
 
 // --- HTTP ----------------------------------------------------------------------
 
-/** Every field of the legacy `GET /api/settings` response. */
-const LEGACY_RESPONSE_FIELDS = [
+/** Every field of the legacy `GET /api/settings` response, plus the added settings'. */
+const RESPONSE_FIELDS = [
+  ...ADDED_SETTINGS.map((added) => added.field),
   'webhookUrl',
   'steamApiKey',
   'steamApiKeySet',
@@ -1339,11 +1338,48 @@ test.describe('settings API', () => {
     await signInViaRequest(request);
   });
 
-  test('GET returns the legacy fields', async ({ request }) => {
+  test('GET returns the legacy fields and the site name', async ({ request }) => {
     const settings = await getSettings(request);
-    expect(Object.keys(settings).sort()).toEqual([...LEGACY_RESPONSE_FIELDS].sort());
+    expect(Object.keys(settings).sort()).toEqual([...RESPONSE_FIELDS].sort());
     expect(settings.steamApiKey).toBeNull();
     expect(settings.defaultPlayerElo).toBeNull();
+  });
+
+  test('the site name defaults to "Auto Tournament", trims, validates and clears', async ({
+    request,
+  }) => {
+    const put = (siteName: unknown) => request.put('/api/settings', { data: { siteName } });
+    const before = await getSettings(request);
+    try {
+      const cleared = await put(null);
+      expect(cleared.status(), await cleared.text()).toBe(200);
+      expect((await getSettings(request)).siteName).toBe('Auto Tournament');
+
+      const saved = await put('  Edition 35 LAN  ');
+      expect(saved.status(), await saved.text()).toBe(200);
+      expect(((await saved.json()) as { settings: { siteName: string } }).settings.siteName).toBe(
+        'Edition 35 LAN'
+      );
+
+      const tooLong = await put('x'.repeat(81));
+      expect(tooLong.status()).toBe(400);
+      expect(((await tooLong.json()) as { error: string }).error).toBe(
+        'Site name must be at most 80 characters'
+      );
+
+      const badType = await put(35);
+      expect(badType.status()).toBe(400);
+      expect(await badType.json()).toEqual({
+        success: false,
+        error: 'siteName must be a string or null',
+      });
+
+      // An empty name is no name: back to the default.
+      await put('   ');
+      expect((await getSettings(request)).siteName).toBe('Auto Tournament');
+    } finally {
+      await put(before.siteName === 'Auto Tournament' ? null : before.siteName);
+    }
   });
 
   test('PUT stores integration fields, rejects bad types, and returns the settings', async ({

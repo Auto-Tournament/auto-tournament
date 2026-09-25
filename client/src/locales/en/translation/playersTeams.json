@@ -14,38 +14,27 @@
     "searchError": "Failed to search for player. Please try again.",
     "modalTitle": "Multiple Players Found",
     "modalSelectPrompt": "{{count}} players found. Select one to view their profile:",
-    "modalElo": "ELO: {{elo}}"
+    "modalElo": "ELO: {{elo}}",
+    "directoryLabel": "Players",
+    "directoryNoMatch": "Nobody here matches that. Press Enter to look it up on Steam.",
+    "directoryMore": "{{count}} more. Type to narrow the list."
   },
   "playerPage": {
     "playerNotFound": "This player doesn't exist.",
     "backToFindPlayer": "Back to Find Player",
     "profileTitle": "Player profile",
     "thisIsYou": "This is you",
-    "steamId": "Steam ID: {{id}}",
     "skillRatingTooltip": "Skill Rating is based on OpenSkill. Around 1500 is a typical starting rating; higher is better.",
     "skillRatingLabel": "Skill Rating: {{elo}}",
-    "viewTournamentLeaderboard": "View Tournament Leaderboard",
     "admin": "ADMIN",
-    "nextServersAllocated": "Next servers allocated in {{seconds}}s",
-    "tournamentFinishedNoMatches": "Tournament finished – you have no more matches.",
-    "finalRecord": "Final record: {{wins}} win(s) / {{losses}} loss(es) in this tournament.",
-    "noUpcomingMatch": "No upcoming match scheduled for you right now.",
-    "noUpcomingHint": "The tournament is still in progress, but your matches are complete.",
-    "noActiveMatch": "No active match right now",
-    "noActiveHint": "Once the next round is generated and your match is ready, it will appear here with server connect info.",
     "matchesPlayed": "Matches Played",
     "wins": "Wins",
     "losses": "Losses",
     "winRate": "Win Rate",
-    "bestAdrIn": "{{adr}} ADR in {{round}}",
     "win": "Win",
     "loss": "Loss",
     "opponent": "Opponent",
-    "bestAdr": "Best Match (ADR)",
-    "toughestAdr": "Toughest Match (ADR)",
-    "recentForm": "Recent Form (last {{count}} matches)",
     "winsLosses": "Wins / Losses",
-    "recentFormHighlights": "Recent Form & Highlights",
     "averageAdr": "Average ADR",
     "discordId": {
       "title": "Your Discord ID",
@@ -57,62 +46,53 @@
       "removed": "Discord ID removed",
       "saveFailed": "Failed to save your Discord ID"
     },
-    "teamChip": "Team: {{team}}",
-    "myTeam": "My Team",
-    "openTeam": "Open team: {{team}}",
-    "you": "You",
-    "noMatchHistory": "No match history yet",
     "downloadDemo": "Download demo",
     "noMatchesYet": "No matches yet",
     "pageTitle": "{{name}} - Player Profile",
     "loadFailed": "Failed to load player data",
-    "performanceChart": {
-      "title": "Performance Trends",
-      "noData": "No meaningful performance data yet – play a few rounds to see ADR and K/D trends.",
-      "avgAdr": "ADR: {{value}} avg",
-      "avgKd": "K/D: {{value}} avg",
-      "matchCount_one": "{{count}} match",
-      "matchCount_other": "{{count}} matches"
-    },
     "profileHeader": {
       "plays": "Plays {{games}}",
       "joined": "joined {{date}}",
-      "editProfile": "Edit profile"
+      "editProfile": "Edit profile",
+      "label": "Player",
+      "captain": "captain"
     },
     "stats": {
       "rating": "RATING",
       "matches": "MATCHES",
       "winRate": "WIN RATE",
       "adr": "ADR",
-      "kd": "K/D"
+      "kd": "K/D",
+      "label": "Stats"
     },
     "ratingChart": {
       "sectionTitle": "Rating",
       "noHistory": "Not enough matches yet to chart a trend",
-      "ariaLabel": "Rating trend, from {{from}} to {{to}}"
+      "ariaLabel": "Rating trend, from {{from}} to {{to}}",
+      "window": "last {{count}} matches"
     },
     "recentMatches": {
       "title": "Recent matches",
       "statsNote": "Kills / deaths. Stats shown depend on what the game module reports.",
-      "roundAndRating": "{{round}} · rating {{rating}}"
+      "roundAndRating": "{{round}} · rating {{rating}}",
+      "leaderboard": "Leaderboard"
     },
-    "gameSwitchLabel": "Game"
+    "gameSwitchLabel": "Game",
+    "yourMatch": "Your match"
   },
   "teamPage": {
-    "wantYourStats": "Want to see your own stats and match history?",
-    "openMyPlayerPage": "Open my player page",
     "tournamentFinished": "Tournament finished",
     "finalPlacement": "Final placement: #{{position}} of {{total}}",
     "noMatchNow": "No match scheduled right now",
-    "noMatchNowHint": "Your next match will appear here. Use your player page for veto and server connect.",
+    "noMatchNowHint": "Your next match shows up here, with the veto and the server to connect to.",
     "noMatchesYet": "No matches available right now",
     "noMatchesYetHint": "The tournament hasn't started yet. Once it begins, your matches will appear here.",
     "currentMatch": "Current match",
     "versus": "vs",
-    "goToPlayerPage": "Veto, connect & details → Your player page",
     "pageTitle": "Team Page",
     "manualMatch": "Manual match",
-    "viewTeamProfile": "Team page →"
+    "viewTeamProfile": "Team page",
+    "pageTitleFor": "{{name}} · Match"
   },
   "rounds": {
     "quarterfinals": "Quarterfinals",
@@ -121,57 +101,21 @@
     "roundN": "Round {{n}}"
   },
   "teamMatchHistory": {
-    "title": "Match History",
-    "win": "WIN",
-    "loss": "LOSS",
     "vs": "vs",
-    "unknown": "Unknown",
-    "matchNumberDate": "Match #{{number}} • {{date}}",
-    "modalTitle": "Match Details",
-    "modalVictory": "VICTORY",
-    "modalDefeat": "DEFEAT",
-    "modalMatchNumber": "Match #{{number}}",
     "team1": "Team 1",
     "team2": "Team 2",
-    "finalSeriesScore": "Final Series Score",
-    "completed": "Completed: {{date}}",
-    "mapsPlayed": "Maps Played",
-    "noMaps": "No maps available for this match.",
-    "playerStatsAllMaps": "Player Stats (All Maps)",
-    "player": "Player",
-    "damage": "Damage",
-    "fetchError": "Failed to fetch match details",
-    "loadError": "Failed to load match details"
-  },
-  "teamHeader": {
-    "soundSettings": "Sound settings",
-    "muteNotifications": "Mute notifications",
-    "unmuteNotifications": "Unmute notifications"
-  },
-  "teamStatsCard": {
-    "title": "Team Performance",
-    "wins": "Wins",
-    "losses": "Losses",
-    "winRate": "Win Rate",
-    "ofTotal": "of {{total}}"
-  },
-  "playerRosterCard": {
-    "title": "Team Roster",
-    "unknownPlayer": "Unknown",
-    "rating": "Rating: {{rating}}",
-    "viewPlayerStats": "View player stats",
-    "viewSteamProfile": "View Steam profile"
+    "fetchError": "Failed to fetch match details"
   },
   "teamProfile": {
     "pageTitle": "{{name}} · Team",
     "notFound": "Team not found. Please check the URL.",
     "loadError": "Failed to load this team. Please try again.",
     "editTeam": "Edit team",
-    "game": "Counter-Strike 2",
     "roster": {
       "title": "Roster",
       "empty": "This team has no players yet.",
-      "rating": "Rating {{rating}}"
+      "rating": "Rating {{rating}}",
+      "captain": "Captain"
     },
     "tournaments": {
       "title": "Tournaments",
@@ -183,25 +127,18 @@
       "finalPlacement": "Final: #{{position}} of {{total}}",
       "recentResults": "Recent results",
       "win": "Win",
-      "loss": "Loss"
-    }
-  },
-  "mapAccordion": {
-    "won": "Won",
-    "lost": "Lost",
-    "draw": "Draw",
-    "team1": "Team 1",
-    "team2": "Team 2",
-    "downloadDemo": "Download Demo",
-    "downloadMapDemo": "Download {{map}} Demo",
-    "mapInformation": "Map Information",
-    "mapNumberLabel": "Map Number:",
-    "mapN": "Map {{n}}",
-    "scoreLabel": "Score:",
-    "resultLabel": "Result:",
-    "winnerLabel": "Winner:",
-    "durationLabel": "Duration:",
-    "completedLabel": "Completed:"
+      "loss": "Loss",
+      "open": "Open",
+      "openMatch": "Open match",
+      "status": {
+        "setup": "Upcoming",
+        "ready": "Sign-up",
+        "in_progress": "In progress",
+        "completed": "Finished"
+      }
+    },
+    "headerLabel": "Team",
+    "captainLine": "captain {{name}}"
   },
   "leaderboardPage": {
     "emptyTitle": "No tournament leaderboard yet",
@@ -279,7 +216,11 @@
     },
     "loadError": "Failed to load teams",
     "importSuccess": "Successfully imported {{count}} team(s)",
-    "viewPublicPage": "View public team page"
+    "viewPublicPage": "View public team page",
+    "rowActions": "Actions for {{name}}",
+    "edit": "Edit",
+    "noPlayers": "No players yet",
+    "matchLinkCopied": "Team match link copied"
   },
   "playersPage": {
     "headerSelect": {
@@ -319,7 +260,9 @@
     "skillRatingTooltip": "Skill Rating is based on OpenSkill; higher is better.",
     "skillRatingLabel": "Skill Rating: {{elo}}",
     "matchesCount_one": "{{count}} match",
-    "matchesCount_other": "{{count}} matches"
+    "matchesCount_other": "{{count}} matches",
+    "rowActions": "Actions for {{name}}",
+    "edit": "Edit"
   },
   "discordId": {
     "noDiscord": "No Discord",
@@ -383,39 +326,6 @@
     "demos": {
       "title": "Map Demos",
       "download": "Download {{map}} demo"
-    }
-  },
-  "tournamentRules": {
-    "title": "About this tournament",
-    "intro": "These are the core rules used to decide matches in this tournament.",
-    "matchFormatLabel": "Match format:",
-    "regulationLabel": "Regulation rounds:",
-    "overtimeLabel": "Overtime:",
-    "tiesLabel": "How ties are resolved:",
-    "format": {
-      "bo1": "Best of 1 map – the map winner wins the match.",
-      "bo3": "Best of 3 maps – first team to win 2 maps wins the match.",
-      "bo5": "Best of 5 maps – first team to win 3 maps wins the match."
-    },
-    "regulationWithRounds": "Each map is played up to {{rounds}} rounds. The team with more rounds at the end of regulation wins the map.",
-    "regulationGeneric": "Each map is played for a fixed number of rounds. The team with more rounds at the end of regulation wins the map.",
-    "overtime": {
-      "disabled": "Overtime: disabled (regulation only).",
-      "enabledSegments_one": "Overtime: enabled with up to {{count}} overtime segment.",
-      "enabledSegments_other": "Overtime: enabled with up to {{count}} overtime segments.",
-      "enabled": "Overtime: enabled. Tied regulation scores will trigger overtime until one team finishes ahead.",
-      "effectivelyDisabled": "Overtime: effectively disabled (regulation only).",
-      "implicitSegments_one": "Overtime: enabled with up to {{count}} overtime segment (implicit).",
-      "implicitSegments_other": "Overtime: enabled with up to {{count}} overtime segments (implicit).",
-      "standard": "Overtime: standard settings. Tied regulation scores usually trigger overtime."
-    },
-    "tiebreak": {
-      "disabled": "If regulation ends with equal scores, the match does not go to overtime. Instead, the winner is decided by total team damage across the map. If total damage is also exactly equal, the result is a true draw.",
-      "enabledSegments": "If the score is still tied after the configured overtime segments, the winner is decided by total team damage across the map. If total damage is also tied, the result is recorded as a draw.",
-      "enabled": "In normal play, a higher final score decides the winner. Draws are rare and only occur if both score and damage remain exactly tied.",
-      "effectivelyDisabled": "If regulation ends with equal scores, the match does not go to overtime. The winner is decided by total team damage across the map; if damage is tied, the match is a draw.",
-      "implicitSegments": "If the score is still tied after the configured overtime segments, the winner is decided by total team damage. If damage is tied, the result is a draw.",
-      "standard": "In most cases, the team with the higher final score wins. Only when both score and total damage are exactly tied is the result recorded as a true draw."
     }
   },
   "disputes": {

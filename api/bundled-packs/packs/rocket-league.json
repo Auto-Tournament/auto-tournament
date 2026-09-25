@@ -2,13 +2,15 @@
   "schema": 1,
   "slug": "rocket-league",
   "name": "Rocket League",
+  "igdbId": 11198,
   "engine": "manual-report",
   "aliases": [
     "rl"
   ],
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Car soccer. Captains report the score; goals, assists, saves and shots per player.",
   "icon": "../icons/rocket-league.svg",
+  "appIcon": "../app-icons/rocket-league.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

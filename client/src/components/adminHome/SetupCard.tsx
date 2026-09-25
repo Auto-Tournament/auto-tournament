@@ -1,8 +1,9 @@
 import { Link as RouterLink } from 'react-router-dom';
-import { Box, Button, Card, CardContent, Stack, Typography } from '@mui/material';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+import { Box, Button } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { tokens, radii, textSize } from '../../theme/tokens';
+
+const { color } = tokens;
 
 export interface SetupItem {
   key: string;
@@ -21,10 +22,10 @@ interface SetupCardProps {
 }
 
 /**
- * "Finish setting up": shown only while at least one item (required or
- * optional) is unfinished, listing exactly the items that are actually
- * checkable today. Hidden entirely once everything — including the optional
- * ones — is done.
+ * "Finish setting up" (the draft's `.setup-card`): a notice with an accent
+ * border, a small bold label and one line of ✓ / ○ items, shown only while at
+ * least one item (required or optional) is unfinished. Hidden entirely once
+ * everything, the optional ones included, is done.
  */
 export function SetupCard({ items }: SetupCardProps) {
   const { t } = useTranslation();
@@ -33,39 +34,64 @@ export function SetupCard({ items }: SetupCardProps) {
   if (allDone) return null;
 
   return (
-    <Card variant="outlined" sx={{ borderColor: 'primary.main' }} data-testid="admin-home-setup-card">
-      <CardContent>
-        <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" gap={2}>
-          <Box>
-            <Typography variant="h5" fontWeight={700} mb={1}>
-              {t('dashboard.setup.title')}
-            </Typography>
-            <Stack direction="row" spacing={3} flexWrap="wrap" useFlexGap>
-              {items.map((item) => (
-                <Box key={item.key} display="flex" alignItems="center" gap={0.75}>
-                  {item.done ? (
-                    <CheckCircleIcon color="success" fontSize="small" />
-                  ) : (
-                    <RadioButtonUncheckedIcon color="disabled" fontSize="small" />
-                  )}
-                  <Typography variant="body2" color={item.done ? 'text.primary' : 'text.secondary'}>
-                    {t(item.labelKey, { ...item.labelValues, ns: item.ns })}
-                  </Typography>
-                </Box>
-              ))}
-            </Stack>
-          </Box>
-          <Button
-            component={RouterLink}
-            to="/settings"
-            variant="outlined"
-            size="small"
-            data-testid="admin-home-setup-open-settings"
-          >
-            {t('dashboard.setup.openSettings')}
-          </Button>
+    <Box
+      component="section"
+      aria-labelledby="admin-home-setup-title"
+      data-testid="admin-home-setup-card"
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'minmax(0, 1fr) auto' },
+        gap: 3,
+        alignItems: 'center',
+        px: { xs: 3, md: 4 },
+        py: 3,
+        border: `1px solid ${color.accent}`,
+        borderRadius: radii.lg,
+      }}
+    >
+      <Box sx={{ minWidth: 0 }}>
+        <Box component="b" id="admin-home-setup-title" sx={{ display: 'block', fontWeight: 600 }}>
+          {t('dashboard.setup.title')}
         </Box>
-      </CardContent>
-    </Card>
+        <Box
+          component="ul"
+          sx={{
+            listStyle: 'none',
+            m: 0,
+            mt: 1,
+            p: 0,
+            display: 'flex',
+            flexWrap: 'wrap',
+            columnGap: 3,
+            rowGap: 0.5,
+            fontSize: textSize.sm,
+          }}
+        >
+          {items.map((item) => (
+            <Box
+              component="li"
+              key={item.key}
+              data-done={item.done ? 'true' : 'false'}
+              sx={{ color: item.done ? color.live : color.ink2 }}
+            >
+              <Box component="span" sx={{ mr: 0.75 }}>
+                {item.done ? '✓' : '○'}
+              </Box>
+              {t(item.labelKey, { ...item.labelValues, ns: item.ns })}
+            </Box>
+          ))}
+        </Box>
+      </Box>
+      <Button
+        component={RouterLink}
+        to="/settings"
+        variant="outlined"
+        size="small"
+        sx={{ justifySelf: 'start' }}
+        data-testid="admin-home-setup-open-settings"
+      >
+        {t('dashboard.setup.openSettings')}
+      </Button>
+    </Box>
   );
 }

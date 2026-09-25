@@ -1,6 +1,7 @@
+import { pageTitle } from '../utils/pageTitle';
 import { useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Box, Button, CircularProgress, Grid, Stack, Typography } from '@mui/material';
+import { Box, Button, CircularProgress } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useTournamentList } from '../hooks/useTournamentList';
 import { useAdminHomeData } from '../hooks/useAdminHomeData';
@@ -10,18 +11,20 @@ import { TournamentsList } from '../components/adminHome/TournamentsList';
 import { SiteLinksGrid } from '../components/adminHome/SiteLinksGrid';
 import { useShellIntegrations, shellModule } from '../hooks/useShellIntegrations';
 import { PeopleOverviewCard } from '../components/adminHome/PeopleOverviewCard';
+import { PageHead } from '../components/common/ui';
+import { paths } from '../paths';
 
 declare const __APP_VERSION__: string | undefined;
 
 /**
- * Admin home ("/"): the whole site, not one tournament. Tournaments first
- * (that's the work an admin comes here to do), then site-wide setup,
- * cross-cutting links, and fleet/people summaries.
+ * Admin home ("/"): the whole site, not one tournament (the draft's
+ * `admin.html`). The site's name as the H1, a setup notice while something is
+ * missing, the tournament first (that's the work an admin comes here to do),
+ * then the site's pages, and the fleet and people summaries on the right.
  *
- * Replaces the old stats-heavy Dashboard. The Manage console (PR #268)
- * already surfaces what needs a decision right now, so this page doesn't
- * duplicate that with its own banner — the live tournament's "Manage" button
- * in the list below is the way in.
+ * The Manage console already surfaces what needs a decision right now, so
+ * this page doesn't duplicate that with its own banner: the live
+ * tournament's "Manage" button is the way in.
  */
 export default function AdminHome() {
   // The game's resource summary (CS2: the server fleet), from the module the
@@ -36,9 +39,10 @@ export default function AdminHome() {
     loading: dataLoading,
     steamConfigured,
     discordConfigured,
-    igdbConfigured,
     playersCount,
     adminsCount,
+    signedInThisWeekCount,
+    siteName,
   } = useAdminHomeData();
   // The modules' own rows (CS2: add a server), after the first of core's.
   const { items: moduleSetupItems, loading: moduleSetupLoading } = useModuleSetupItems(
@@ -46,7 +50,7 @@ export default function AdminHome() {
   );
 
   useEffect(() => {
-    document.title = t('dashboard.title');
+    document.title = pageTitle(t('dashboard.title'));
   }, [t]);
 
   // 3.0 hosts exactly one tournament row (see `useTournamentList`), so
@@ -58,68 +62,67 @@ export default function AdminHome() {
     { key: 'steam', done: steamConfigured, labelKey: 'dashboard.setup.steam' },
     ...moduleSetupItems.map((item) => ({ ...item, key: `${item.ns}:${item.key}` })),
     { key: 'discord', done: discordConfigured, optional: true, labelKey: 'dashboard.setup.discord' },
-    { key: 'igdb', done: igdbConfigured, optional: true, labelKey: 'dashboard.setup.igdb' },
   ];
 
   const loading = tournamentsLoading || dataLoading || moduleSetupLoading;
 
   return (
     <Box component="main" data-testid="dashboard-page" sx={{ flexGrow: 1, backgroundColor: 'transparent' }}>
-      <Stack spacing={4} sx={{ width: '100%', maxWidth: 1700, mx: 'auto', pb: 5 }}>
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          justifyContent="space-between"
-          alignItems={{ xs: 'flex-start', sm: 'flex-end' }}
-          spacing={2}
-        >
-          <Box>
-            <Typography variant="h4" fontWeight={700}>
-              {t('dashboard.header.brand')}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {t('dashboard.header.version', {
-                version: typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : t('dashboard.header.unknownVersion'),
-              })}
-            </Typography>
-          </Box>
-          {canCreateTournament && (
-            <Button
-              component={RouterLink}
-              to="/tournament"
-              variant="contained"
-              data-testid="admin-home-create-tournament"
-            >
-              {t('dashboard.header.createTournament')}
-            </Button>
-          )}
-        </Stack>
+      <Box sx={{ width: '100%', maxWidth: 1700, mx: 'auto', pb: 5 }}>
+        <PageHead
+          title={loading ? ' ' : siteName}
+          titleId="admin-home-title"
+          subtitle={t('dashboard.header.version', {
+            version: typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : t('dashboard.header.unknownVersion'),
+          })}
+          data-testid="admin-home-head"
+          actions={
+            canCreateTournament ? (
+              <Button
+                component={RouterLink}
+                to={paths.tournament}
+                variant="contained"
+                data-testid="admin-home-create-tournament"
+              >
+                {t('dashboard.header.createTournament')}
+              </Button>
+            ) : undefined
+          }
+        />
 
         {loading ? (
           <Box display="flex" justifyContent="center" py={6}>
-            <CircularProgress />
+            <CircularProgress aria-label={t('dashboard.loading')} />
           </Box>
         ) : (
-          <>
+          <Box sx={{ display: 'grid', gap: { xs: 4, md: 6 } }}>
             <SetupCard items={setupItems} />
 
-            <Grid container spacing={4}>
-              <Grid size={{ xs: 12, md: 8 }}>
-                <Stack spacing={4}>
-                  <TournamentsList tournaments={tournaments} loading={tournamentsLoading} />
-                  <SiteLinksGrid />
-                </Stack>
-              </Grid>
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Stack spacing={2}>
-                  {/* The module counts its own resources. */}
-                  {ServersOverviewCard && <ServersOverviewCard />}
-                  <PeopleOverviewCard playersCount={playersCount} adminsCount={adminsCount} />
-                </Stack>
-              </Grid>
-            </Grid>
-          </>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1.6fr) minmax(0, 1fr)' },
+                gap: 4,
+                alignItems: 'start',
+              }}
+            >
+              <Box sx={{ display: 'grid', gap: 4, minWidth: 0 }}>
+                <TournamentsList tournaments={tournaments} loading={tournamentsLoading} />
+                <SiteLinksGrid />
+              </Box>
+              <Box component="aside" sx={{ display: 'grid', gap: 2, minWidth: 0 }}>
+                {/* The module counts its own resources. */}
+                {ServersOverviewCard && <ServersOverviewCard />}
+                <PeopleOverviewCard
+                  playersCount={playersCount}
+                  signedInThisWeekCount={signedInThisWeekCount}
+                  adminsCount={adminsCount}
+                />
+              </Box>
+            </Box>
+          </Box>
         )}
-      </Stack>
+      </Box>
     </Box>
   );
 }

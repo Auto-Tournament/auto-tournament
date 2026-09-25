@@ -1,6 +1,6 @@
 import React from 'react';
-import { Box, Card, CardContent, Typography, Chip, Stack, Tooltip } from '@mui/material';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
+import { Box, Checkbox, Typography, Chip, Tooltip } from '@mui/material';
+import { RobotIcon } from '@phosphor-icons/react';
 import {
   getBracketMatchLabel,
   getStatusColor,
@@ -15,6 +15,7 @@ import { deriveCurrentMapScore, deriveSeriesScore } from '../../utils/matchScore
 import { TeamNameLink } from '../team/TeamNameLink';
 import { useTranslation } from 'react-i18next';
 import { tokens, fontMono } from '../../theme/tokens';
+import { Row } from '../common/ui';
 
 interface MatchCardProps {
   match: Match;
@@ -34,7 +35,16 @@ interface MatchCardProps {
    * for, so the card renders what it is handed, or nothing.
    */
   queueStatus?: React.ReactNode;
+  /** A line under the teams (the match list's latest live event). */
+  note?: React.ReactNode;
 }
+
+/**
+ * One match as a `RowList` row (audit chunk 6): which match it is on the
+ * left, the two teams with their scores in the middle, the chips on the
+ * right. The winner is marked in bold with an accent score rather than a
+ * solid orange box, which the drafts keep for the one key state.
+ */
 
 export const MatchCard: React.FC<MatchCardProps> = ({
   match,
@@ -44,23 +54,21 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   vetoCompleted,
   tournamentStarted,
   onClick,
-  selectable: _selectable,
+  selectable,
   selected,
-  onToggleSelected: _onToggleSelected,
+  onToggleSelected,
   queuePosition,
   queueStatus,
+  note,
 }) => {
   const { t } = useTranslation();
-  const getBorderColor = () => {
-    // Bracket view / generic match card server status accents:
-    // - allocated (serverId set, not yet loaded/live/completed) => yellow
-    // - loaded (warmup) => blue
-    // - live  => brand orange (as the live match in the bracket)
-    // - completed or upcoming (no server) => no colored border
-    if (match.status === 'live') return 'primary.main';
-    if (match.status === 'loaded') return 'info.main';
-    if (match.serverId && match.status !== 'completed') return 'warning.main';
-    // For completed and all other non-live states without a server, no colored border.
+  // A thin bar on the row's left edge for a match that is on a server:
+  // allocated (serverId set, not yet loaded/live/completed) amber, loaded
+  // (warmup) blue, live green; nothing for finished or upcoming ones.
+  const getEdgeColor = () => {
+    if (match.status === 'live') return tokens.color.live;
+    if (match.status === 'loaded') return tokens.color.info;
+    if (match.serverId && match.status !== 'completed') return tokens.color.warning;
     return 'transparent';
   };
 
@@ -145,9 +153,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     }
   }
 
-  const team1IsWinner = winnerSide === 'team1';
-  const team2IsWinner = winnerSide === 'team2';
-
   const isWinnerVisual = (which: 'team1' | 'team2') => {
     // Prefer series-derived winnerSide for visual state when available,
     // otherwise fall back to explicit winner.id.
@@ -156,19 +161,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     return isWinnerById(id);
   };
 
-  const getTeamBgColor = (which: 'team1' | 'team2') => {
-    // Winner row is filled brand orange, like the bracket.
-    if (isWinnerVisual(which)) return 'primary.main';
-    return 'background.surface2';
-  };
-
-  const getTeamBorderColor = (which: 'team1' | 'team2') => {
-    if (isWinnerVisual(which)) return 'primary.main';
-    return 'transparent';
-  };
-
   const getTeamTextColor = (which: 'team1' | 'team2') => {
-    if (isWinnerVisual(which)) return 'primary.contrastText';
     const team = which === 'team1' ? match.team1 : match.team2;
     if (team) return 'text.primary';
     return 'text.disabled';
@@ -205,268 +198,176 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       ? t('matchInfo.scoreboard.mapsWon')
       : `${t('matchInfo.scoreboard.mapsWon')} (${t('matchInfo.scoreboard.currentMapScore')})`;
 
+  const teamLine = (which: 'team1' | 'team2') => {
+    const team = which === 'team1' ? match.team1 : match.team2;
+    const won = isWinnerVisual(which);
+    const score = getTeamScoreDisplay(which);
+    const mapScore = mapScoreCaption(which);
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 1, minWidth: 0 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+          <TeamNameLink
+            teamId={team?.id}
+            name={getTeamName(team?.id, which)}
+            showTag={false}
+            variant="body1"
+            sx={{ color: getTeamTextColor(which), fontWeight: won ? 700 : 500 }}
+            onClick={(e) => e.stopPropagation()}
+          />
+          {won && (
+            <Typography component="span" variant="caption" sx={{ fontFamily: fontMono, color: tokens.color.accent }}>
+              {t('matchesPage.card.winner')}
+            </Typography>
+          )}
+        </Box>
+        {score !== undefined && (
+          <Tooltip title={scoreTooltip} placement="top">
+            <Typography
+              component="span"
+              sx={{
+                fontFamily: fontMono,
+                fontWeight: 700,
+                fontVariantNumeric: 'tabular-nums',
+                color: won ? tokens.color.accent : 'text.primary',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {score}
+              {mapScore !== undefined && (
+                <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 0.75, fontWeight: 500 }}>
+                  ({mapScore})
+                </Typography>
+              )}
+            </Typography>
+          </Tooltip>
+        )}
+      </Box>
+    );
+  };
+
   return (
-    <Card
-      sx={{
-        cursor: onClick ? 'pointer' : 'default',
-        transition: 'background-color 0.2s',
-        borderLeft: 4,
-        borderLeftColor: getBorderColor(),
-        border: selected ? 2 : 1,
-        borderStyle: 'solid',
-        borderColor: selected
-          ? 'primary.main'
-          : getBorderColor() === 'transparent'
-          ? 'divider'
-          : getBorderColor(),
-        '&:hover': onClick
-          ? {
-              bgcolor: 'var(--at-paper3)',
-            }
-          : {},
+    <Row
+      data-testid={`match-row-${match.slug}`}
+      data-variant={variant}
+      columns={{
+        xs: selectable ? 'auto minmax(0, 1fr) auto' : 'minmax(0, 1fr) auto',
+        md: selectable ? 'auto minmax(9rem, 12rem) minmax(0, 1fr) auto' : 'minmax(9rem, 12rem) minmax(0, 1fr) auto',
       }}
       onClick={onClick}
+      aria-selected={selectable ? Boolean(selected) : undefined}
+      sx={{
+        cursor: onClick ? 'pointer' : 'default',
+        alignItems: 'start',
+        boxShadow: `inset 3px 0 0 ${getEdgeColor()}`,
+        bgcolor: selected ? tokens.color.paper3 : 'transparent',
+        '&:hover': onClick ? { bgcolor: tokens.color.paper3 } : {},
+        '&:first-of-type': { borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit' },
+        '&:last-of-type': { borderBottomLeftRadius: 'inherit', borderBottomRightRadius: 'inherit' },
+      }}
     >
-      <CardContent>
-        {/* Header */}
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-          <Box display="flex" alignItems="center" gap={1}>
-            <Box>
-              <Typography variant="h6" fontWeight={700} sx={{ mb: 0.25 }}>
-                {getBracketMatchLabel(match) ??
-                  t('matchesPage.card.matchNumber', { number: matchNumber })}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {getBracketMatchLabel(match)
-                  ? t('matchesPage.card.matchNumber', { number: matchNumber })
-                  : roundLabel || getRoundLabel(match.round)}
-              </Typography>
-              {match.serverName && (
-                <Typography variant="caption" color="text.secondary" display="block">
-                  {t('matchesPage.card.server', { name: match.serverName })}
-                </Typography>
-              )}
-              {!match.serverId && queuePosition !== undefined && queuePosition !== null && (
-                <Typography
-                  variant="caption"
-                  color="primary.main"
-                  display="block"
-                  fontWeight={600}
-                  sx={{ 
-                    bgcolor: 'action.selected',
-                    px: 1,
-                    py: 0.25,
-                    borderRadius: 0.5,
-                    display: 'inline-block',
-                    mt: 0.5
-                  }}
-                >
-                  {t('matchesPage.card.queuePosition', { position: queuePosition })}
-                </Typography>
-              )}
-              {!match.serverId && queueStatus}
-            </Box>
-          </Box>
-          <Box display="flex" alignItems="center" gap={1}>
-            {shuffle && (
-              <Chip
-                label={manual ? t('matchesPage.card.shuffleManual') : t('matchesPage.card.shuffle')}
-                size="small"
-                variant="outlined"
-                sx={{ fontWeight: 500 }}
-              />
-            )}
-            {!shuffle && manual && (
-              <Chip
-                label={t('matchesPage.card.manual')}
-                size="small"
-                variant="outlined"
-                sx={{ fontWeight: 500 }}
-              />
-            )}
-            {match.config?.simulation && (
-              <Chip
-                icon={<SmartToyIcon />}
-                label={t('matchesPage.card.simulation')}
-                size="small"
-                color="secondary"
-                sx={{ fontWeight: 500 }}
-              />
-            )}
-            <Chip
-              label={
-                isUnpairedSwissMatch(match)
-                  ? waitingForPairingLabel()
-                  : getStatusLabel(
-                      match.status,
-                      false,
-                      // Shuffle tournaments and veto-disabled matches don't use veto – treat
-                      // as completed to avoid "VETO PENDING" labels on the list view.
-                      vetoDisabled ? true : vetoCompleted,
-                      tournamentStarted,
-                      Boolean(match.serverId),
-                      match.liveStats?.team1Score,
-                      match.liveStats?.team2Score,
-                      match.config?.maxRounds,
-                      typeof match.config?.cvars === 'object' && match.config.cvars
-                        ? typeof (match.config.cvars as Record<string, string | number>)[
+      {selectable && (
+        <Checkbox
+          size="small"
+          checked={Boolean(selected)}
+          onClick={(event) => event.stopPropagation()}
+          onChange={() => (onToggleSelected ? onToggleSelected() : onClick?.())}
+          slotProps={{ input: { 'aria-label': t('matchesPage.card.matchNumber', { number: matchNumber }) } }}
+          sx={{ m: -1 }}
+        />
+      )}
+      {/* Which match */}
+      <Box sx={{ minWidth: 0 }}>
+        <Typography variant="body1" fontWeight={700}>
+          {getBracketMatchLabel(match) ?? t('matchesPage.card.matchNumber', { number: matchNumber })}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {getBracketMatchLabel(match)
+            ? t('matchesPage.card.matchNumber', { number: matchNumber })
+            : roundLabel || getRoundLabel(match.round)}
+        </Typography>
+        {match.serverName && (
+          <Typography variant="body2" color="text.secondary">
+            {t('matchesPage.card.server', { name: match.serverName })}
+          </Typography>
+        )}
+        {!match.serverId && queuePosition !== undefined && queuePosition !== null && (
+          <Typography variant="body2" sx={{ color: tokens.color.accent, fontWeight: 600 }}>
+            {t('matchesPage.card.queuePosition', { position: queuePosition })}
+          </Typography>
+        )}
+        {!match.serverId && queueStatus}
+      </Box>
+
+      {/* The teams: under the match on a narrow screen, beside it above. */}
+      <Box
+        sx={{
+          display: 'grid',
+          gap: 0.5,
+          minWidth: 0,
+          order: { xs: 1, md: 0 },
+          gridColumn: { xs: selectable ? '2 / -1' : '1 / -1', md: 'auto' },
+        }}
+      >
+        {teamLine('team1')}
+        {teamLine('team2')}
+        {note}
+      </Box>
+
+      {/* Chips */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+        {shuffle && (
+          <Chip
+            label={manual ? t('matchesPage.card.shuffleManual') : t('matchesPage.card.shuffle')}
+            size="small"
+            variant="outlined"
+          />
+        )}
+        {!shuffle && manual && <Chip label={t('matchesPage.card.manual')} size="small" variant="outlined" />}
+        {match.config?.simulation && (
+          <Chip icon={<RobotIcon />} label={t('matchesPage.card.simulation')} size="small" />
+        )}
+        <Chip
+          label={
+            isUnpairedSwissMatch(match)
+              ? waitingForPairingLabel()
+              : getStatusLabel(
+                  match.status,
+                  false,
+                  // Shuffle tournaments and veto-disabled matches don't use veto – treat
+                  // as completed to avoid "VETO PENDING" labels on the list view.
+                  vetoDisabled ? true : vetoCompleted,
+                  tournamentStarted,
+                  Boolean(match.serverId),
+                  match.liveStats?.team1Score,
+                  match.liveStats?.team2Score,
+                  match.config?.maxRounds,
+                  typeof match.config?.cvars === 'object' && match.config.cvars
+                    ? typeof (match.config.cvars as Record<string, string | number>)[
+                        'mp_overtime_maxrounds'
+                      ] === 'number'
+                      ? Number(
+                          (match.config.cvars as Record<string, string | number>)[
                             'mp_overtime_maxrounds'
-                          ] === 'number'
-                          ? Number(
-                              (match.config.cvars as Record<string, string | number>)[
-                                'mp_overtime_maxrounds'
-                              ]
-                            )
-                          : undefined
-                        : undefined
-                    )
-              }
-              size="small"
-              color={getStatusColor(match.status)}
-              sx={{ fontWeight: 600, minWidth: variant === 'live' ? 140 : 'auto' }}
-            />
-          </Box>
-        </Box>
-
-        {/* Teams with right-aligned score */}
-        <Stack spacing={1.5}>
-          {/* Team 1 row */}
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            sx={{
-              p: 1.5,
-              borderRadius: `${tokens.radius.sm}px`,
-              bgcolor: getTeamBgColor('team1'),
-              border: 1,
-              borderColor: getTeamBorderColor('team1'),
-            }}
-          >
-            <Box display="flex" alignItems="center" gap={1} flex={1}>
-              <TeamNameLink
-                teamId={match.team1?.id}
-                name={getTeamName(match.team1?.id, 'team1')}
-                showTag={false}
-                variant="body1"
-                sx={{ color: getTeamTextColor('team1'), fontWeight: team1IsWinner ? 600 : 500 }}
-                onClick={(e) => e.stopPropagation()}
-              />
-              {team1IsWinner && (
-                <Chip
-                  label={t('matchesPage.card.winner')}
-                  size="small"
-                  variant="outlined"
-                  sx={{
-                    fontWeight: 600,
-                    color: 'primary.contrastText',
-                    borderColor: 'primary.contrastText',
-                  }}
-                />
-              )}
-            </Box>
-            {getTeamScoreDisplay('team1') !== undefined && (
-              <Tooltip
-                title={scoreTooltip}
-                placement="top"
-              >
-                <Typography
-                  variant="h6"
-                  fontWeight={700}
-                  sx={{
-                    minWidth: 24,
-                    textAlign: 'right',
-                    ml: 1,
-                    // On the green winner background we want a dark score color
-                    // for better contrast; on non-winner rows keep the default.
-                    color: team1IsWinner ? 'primary.contrastText' : 'text.primary',
-                    fontFamily: fontMono,
-                  }}
-                >
-                  {getTeamScoreDisplay('team1')}
-                  {mapScoreCaption('team1') !== undefined && (
-                    <Typography
-                      component="span"
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ ml: 0.75, fontWeight: 500 }}
-                    >
-                      ({mapScoreCaption('team1')})
-                    </Typography>
-                  )}
-                </Typography>
-              </Tooltip>
-            )}
-          </Box>
-
-          {/* Team 2 row */}
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            sx={{
-              p: 1.5,
-              borderRadius: `${tokens.radius.sm}px`,
-              bgcolor: getTeamBgColor('team2'),
-              border: 1,
-              borderColor: getTeamBorderColor('team2'),
-            }}
-          >
-            <Box display="flex" alignItems="center" gap={1} flex={1}>
-              <TeamNameLink
-                teamId={match.team2?.id}
-                name={getTeamName(match.team2?.id, 'team2')}
-                showTag={false}
-                variant="body1"
-                sx={{ color: getTeamTextColor('team2'), fontWeight: team2IsWinner ? 600 : 500 }}
-                onClick={(e) => e.stopPropagation()}
-              />
-              {team2IsWinner && (
-                <Chip
-                  label={t('matchesPage.card.winner')}
-                  size="small"
-                  variant="outlined"
-                  sx={{
-                    fontWeight: 600,
-                    color: 'primary.contrastText',
-                    borderColor: 'primary.contrastText',
-                  }}
-                />
-              )}
-            </Box>
-            {getTeamScoreDisplay('team2') !== undefined && (
-              <Tooltip
-                title={scoreTooltip}
-                placement="top"
-              >
-                <Typography
-                  variant="h6"
-                  fontWeight={700}
-                  sx={{
-                    minWidth: 24,
-                    textAlign: 'right',
-                    ml: 1,
-                    color: team2IsWinner ? 'primary.contrastText' : 'text.primary',
-                    fontFamily: fontMono,
-                  }}
-                >
-                  {getTeamScoreDisplay('team2')}
-                  {mapScoreCaption('team2') !== undefined && (
-                    <Typography
-                      component="span"
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ ml: 0.75, fontWeight: 500 }}
-                    >
-                      ({mapScoreCaption('team2')})
-                    </Typography>
-                  )}
-                </Typography>
-              </Tooltip>
-            )}
-          </Box>
-        </Stack>
-      </CardContent>
-    </Card>
+                          ]
+                        )
+                      : undefined
+                    : undefined
+                )
+          }
+          size="small"
+          {...quietStatus(getStatusColor(match.status))}
+        />
+      </Box>
+    </Row>
   );
 };
+
+/**
+ * The status chip, quiet: the brand orange marks text, not the chip's fill,
+ * so the one solid accent on the page stays the page's own action.
+ */
+function quietStatus(color: ReturnType<typeof getStatusColor>) {
+  return color === 'primary'
+    ? { color: 'default' as const, sx: { color: tokens.color.accent } }
+    : { color };
+}

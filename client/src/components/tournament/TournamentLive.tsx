@@ -14,13 +14,15 @@ import {
   Stack,
   Divider,
 } from '@mui/material';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import EditIcon from '@mui/icons-material/Edit';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
+import {
+  ArrowCounterClockwiseIcon,
+  CheckIcon,
+  EyeIcon,
+  PencilSimpleIcon,
+  TrashIcon,
+  TrophyIcon,
+  XIcon,
+} from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { io } from 'socket.io-client';
 import { onSocketReconnect } from '../../utils/socketResync';
@@ -32,6 +34,7 @@ import type { Map, MatchesResponse } from '../../types/api.types';
 import type { Tournament } from '../../types';
 import { getMapDisplayName } from '../../constants/maps';
 import { radii } from '../../theme/tokens';
+import { tournamentTabPath } from '../../paths';
 
 interface TournamentLiveProps {
   tournament: {
@@ -214,7 +217,7 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
                   onClick={handleConfirmRename}
                   disabled={saving}
                 >
-                  <CheckIcon fontSize="small" />
+                  <CheckIcon size={20} />
                 </IconButton>
                 <IconButton
                   aria-label={t('tournament.live.cancelRenameAria')}
@@ -222,7 +225,7 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
                   onClick={handleCancelRename}
                   disabled={saving}
                 >
-                  <CloseIcon fontSize="small" />
+                  <XIcon size={20} />
                 </IconButton>
               </>
             ) : (
@@ -242,7 +245,7 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
                       onClick={handleStartRename}
                       disabled={saving}
                     >
-                      <EditIcon fontSize="small" />
+                      <PencilSimpleIcon size={20} />
                     </IconButton>
                   </span>
                 </Tooltip>
@@ -415,7 +418,7 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
                 data-testid="view-bracket-button"
                 variant="contained"
                 fullWidth
-                startIcon={<VisibilityIcon />}
+                startIcon={<EyeIcon />}
                 onClick={onViewBracket}
               >
                 {t('tournament.live.viewBracket')}
@@ -431,8 +434,8 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
               <Button
                 variant="outlined"
                 fullWidth
-                startIcon={<EmojiEventsIcon />}
-                onClick={() => window.open(`/tournament/${tournamentId}/leaderboard`, '_blank')}
+                startIcon={<TrophyIcon />}
+                onClick={() => window.open(tournamentTabPath(tournamentId, 'standings'), '_blank')}
               >
                 {t('nav.leaderboard')}
               </Button>
@@ -476,7 +479,7 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
                 variant="outlined"
                 color="error"
                 size="small"
-                startIcon={<RestartAltIcon />}
+                startIcon={<ArrowCounterClockwiseIcon />}
                 onClick={onReset}
                 disabled={saving}
               >
@@ -488,7 +491,7 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
                 variant="outlined"
                 color="error"
                 size="small"
-                startIcon={<DeleteForeverIcon />}
+                startIcon={<TrashIcon />}
                 onClick={onDelete}
                 disabled={saving}
               >

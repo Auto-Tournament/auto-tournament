@@ -22,7 +22,13 @@
     "goToAdminDashboard": "Ga naar admin-dashboard",
     "goToAdminDashboardHint": "Je bekijkt je spelersprofiel. Open het admin-dashboard om teams, toernooien en servers te beheren.",
     "siteMenu": "Site menu",
-    "accountMenu": "Account menu"
+    "accountMenu": "Account menu",
+    "admin": "Admin",
+    "teams": "Teams",
+    "leaderboards": "Leaderboards",
+    "theme": "Theme",
+    "language": "Language",
+    "signIn": "Sign in"
   },
   "layout": {
     "pageTitle": {
@@ -51,7 +57,8 @@
     "delete": "Verwijderen",
     "cancel": "Annuleren",
     "remove": "Remove",
-    "close": "Close"
+    "close": "Close",
+    "opensInNewTab": "(opens in a new tab)"
   },
   "app": {
     "name": "Auto Tournament"

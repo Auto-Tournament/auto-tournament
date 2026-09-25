@@ -19,6 +19,7 @@ import { db } from '../config/database';
 import { playerConnectionService } from '../services/playerConnectionService';
 import type { NormalizedServerPlayer } from '../utils/playerTransform';
 import { teamService } from '../services/teamService';
+import { teamMembers } from '../services/teamMembers';
 import { matchLiveStatsService } from '../services/matchLiveStatsService';
 import type { DbMatchRow } from '../types/database.types';
 import { getMapResults } from '../services/matchMapResultService';
@@ -233,8 +234,9 @@ router.get('/selection', requireAuth, async (req: Request, res: Response) => {
  * GET /api/players/:playerId/team
  * Resolve the team a player belongs to (public).
  *
- * Used by the public player page to show "My Team" even when the player has no
- * current/upcoming match.
+ * Used by the public player page's team chip ("Nordlys · captain") even when
+ * the player has no current/upcoming match. `role` is the player's role in it,
+ * or null when `team_members` has no row for them.
  */
 router.get('/:playerId/team', async (req: Request, res: Response) => {
   try {
@@ -345,6 +347,12 @@ router.get('/:playerId/team', async (req: Request, res: Response) => {
       });
     }
 
+    // The player's role in it (captain or member), for the profile's team chip.
+    const account = await db.queryOneAsync<{ uid: string }>('SELECT uid FROM players WHERE id = ?', [
+      playerId,
+    ]);
+    const role = account ? await teamMembers.roleFor(matching.id, String(account.uid)) : null;
+
     return res.json({
       success: true,
       team: {
@@ -352,6 +360,7 @@ router.get('/:playerId/team', async (req: Request, res: Response) => {
         name: matching.name,
         tag: matching.tag ?? undefined,
         players: parsePlayers(matching.players),
+        role,
       },
     });
   } catch (error) {
@@ -1349,12 +1358,25 @@ router.get('/:playerId/summary', async (req: Request, res: Response) => {
       }
     }
 
+    // Rated matches whose match row is gone (the tournament was deleted):
+    // their stats rows went with it, but the rating history keeps them, with
+    // the game they were played under. They are matches this player played,
+    // so they count in `matchCount` and the profile's per-game totals.
+    const matchSlugs = new Set(matches.map((m) => m.slug));
+    const archivedRated = ratingHistory.filter(
+      (entry) => !entry.match_slug || !matchSlugs.has(entry.match_slug)
+    );
+
     // Distinct games this player has recorded matches in (newest match first),
     // read from the already-computed integration registry rather than
     // hard-coding a game name on the client.
     const gameIds: string[] = [];
     for (const m of matches) {
       const id = m.game || DEFAULT_GAME;
+      if (!gameIds.includes(id)) gameIds.push(id);
+    }
+    for (const entry of archivedRated) {
+      const id = entry.game || DEFAULT_GAME;
       if (!gameIds.includes(id)) gameIds.push(id);
     }
     const games = gameIds.map((id) => {
@@ -1369,9 +1391,11 @@ router.get('/:playerId/summary', async (req: Request, res: Response) => {
       success: true,
       player: {
         ...player,
-        // Override matchCount with the normalized distinct match count so UI
-        // doesn't show inflated numbers when history/stat rows are duplicated.
-        matchCount: matchesPlayed,
+        // Distinct matches played: the stats rows (deduplicated by match), plus
+        // the rated matches of deleted tournaments, which only the rating
+        // history still knows. Never the raw counter, which duplicate rows
+        // could inflate.
+        matchCount: matchesPlayed + archivedRated.length,
       },
       stats: {
         matchesPlayed,

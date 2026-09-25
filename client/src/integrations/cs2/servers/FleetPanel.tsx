@@ -23,13 +23,15 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import VpnKeyIcon from '@mui/icons-material/VpnKey';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import AutorenewIcon from '@mui/icons-material/Autorenew';
-import BlockIcon from '@mui/icons-material/Block';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import PinIcon from '@mui/icons-material/Pin';
+import {
+  ArrowsClockwiseIcon,
+  CopyIcon,
+  KeyIcon,
+  PasswordIcon,
+  PlusIcon,
+  ProhibitIcon,
+  TrashIcon,
+} from '@phosphor-icons/react';
 import {
   api,
   apiErrorMessage,
@@ -191,13 +193,13 @@ export default function FleetPanel() {
         title={t('fleetPanel.title')}
         action={
           <Stack direction="row" gap={1}>
-            <Button size="small" variant="outlined" startIcon={<VpnKeyIcon />} onClick={() => setKeyOpen(true)}>
+            <Button size="small" variant="outlined" startIcon={<KeyIcon />} onClick={() => setKeyOpen(true)}>
               {t('fleetPanel.createKey')}
             </Button>
             <Button
               size="small"
               variant="contained"
-              startIcon={<AddIcon />}
+              startIcon={<PlusIcon />}
               onClick={() => setAddOpen(true)}
               data-testid="fleet-add-server"
             >
@@ -271,7 +273,7 @@ export default function FleetPanel() {
                 {server.status === 'pending' && (
                   <Tooltip title={t('fleetPanel.newCode')}>
                     <IconButton size="small" onClick={() => void newCode(server)} aria-label={t('fleetPanel.newCode')}>
-                      <PinIcon fontSize="small" />
+                      <PasswordIcon size={20} />
                     </IconButton>
                   </Tooltip>
                 )}
@@ -285,7 +287,7 @@ export default function FleetPanel() {
                       }
                     >
                       <IconButton size="small" onClick={() => void rotate(server)} aria-label={t('fleetPanel.rotate')}>
-                        <AutorenewIcon fontSize="small" />
+                        <ArrowsClockwiseIcon size={20} />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title={t('fleetPanel.revoke')}>
@@ -296,7 +298,7 @@ export default function FleetPanel() {
                         aria-label={t('fleetPanel.revoke')}
                         data-testid={`fleet-revoke-${server.id}`}
                       >
-                        <BlockIcon fontSize="small" />
+                        <ProhibitIcon size={20} />
                       </IconButton>
                     </Tooltip>
                   </>
@@ -308,7 +310,7 @@ export default function FleetPanel() {
                       onClick={() => setPending({ action: 'remove', server })}
                       aria-label={t('fleetPanel.remove')}
                     >
-                      <DeleteOutlineIcon fontSize="small" />
+                      <TrashIcon size={20} />
                     </IconButton>
                   </Tooltip>
                 )}
@@ -354,7 +356,7 @@ export default function FleetPanel() {
                   onClick={() => setPending({ action: 'revokeKey', key })}
                   aria-label={t('fleetPanel.revokeKey')}
                 >
-                  <BlockIcon fontSize="small" />
+                  <ProhibitIcon size={20} />
                 </IconButton>
               </Tooltip>
             </Row>
@@ -456,7 +458,7 @@ export default function FleetPanel() {
               {secret?.value}
             </Box>
             <IconButton size="small" onClick={() => secret && void copy(secret.value)} aria-label={t('fleetPanel.copy')}>
-              <ContentCopyIcon fontSize="small" />
+              <CopyIcon size={20} />
             </IconButton>
           </Box>
           <Typography variant="caption" color="warning.main" display="block" mt={1.5}>

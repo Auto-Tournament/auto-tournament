@@ -14,37 +14,26 @@
     "searchError": "No se pudo buscar al jugador. Inténtalo de nuevo.",
     "modalTitle": "Se encontraron varios jugadores",
     "modalSelectPrompt": "Se encontraron {{count}} jugadores. Selecciona uno para ver su perfil:",
-    "modalElo": "ELO: {{elo}} pts"
+    "modalElo": "ELO: {{elo}} pts",
+    "directoryLabel": "Players",
+    "directoryNoMatch": "Nobody here matches that. Press Enter to look it up on Steam.",
+    "directoryMore": "{{count}} more. Type to narrow the list."
   },
   "playerPage": {
     "playerNotFound": "Este jugador no existe.",
     "backToFindPlayer": "Volver a Buscar jugador",
     "thisIsYou": "Eres tú",
-    "steamId": "Steam ID64: {{id}}",
     "skillRatingTooltip": "La puntuación de habilidad se basa en OpenSkill. Alrededor de 1500 es un valor inicial típico; cuanto más alto, mejor.",
     "skillRatingLabel": "Puntuación de habilidad: {{elo}}",
-    "viewTournamentLeaderboard": "Ver clasificación del torneo",
     "admin": "ADMIN",
-    "nextServersAllocated": "Siguiente asignación de servidores en {{seconds}} s",
-    "tournamentFinishedNoMatches": "Torneo finalizado: no tienes más partidos.",
-    "finalRecord": "Resultado final: {{wins}} victoria(s) / {{losses}} derrota(s) en este torneo.",
-    "noUpcomingMatch": "No tienes un próximo partido programado ahora mismo.",
-    "noUpcomingHint": "El torneo sigue en curso, pero tus partidos han terminado.",
-    "noActiveMatch": "No hay partido activo ahora mismo",
-    "noActiveHint": "Cuando se genere la siguiente ronda y tu partido esté listo, aparecerá aquí con la info de conexión al servidor.",
     "matchesPlayed": "Partidos jugados",
     "wins": "Victorias",
     "losses": "Derrotas",
     "winRate": "Porcentaje de victorias",
-    "bestAdrIn": "{{adr}} ADR en {{round}}",
     "win": "Victoria",
     "loss": "Derrota",
     "opponent": "Rival",
-    "bestAdr": "Mejor partido (ADR)",
-    "toughestAdr": "Partido más difícil (ADR)",
-    "recentForm": "Racha reciente (últimos {{count}} partidos)",
     "winsLosses": "Victorias / Derrotas",
-    "recentFormHighlights": "Racha reciente y destacados",
     "averageAdr": "ADR medio",
     "profileTitle": "Perfil del jugador",
     "discordId": {
@@ -57,62 +46,53 @@
       "removed": "ID de Discord eliminado",
       "saveFailed": "No se pudo guardar tu ID de Discord"
     },
-    "teamChip": "Equipo: {{team}}",
-    "myTeam": "Mi equipo",
-    "openTeam": "Abrir equipo: {{team}}",
-    "you": "Tú",
-    "noMatchHistory": "Aún no hay historial de partidos",
     "downloadDemo": "Descargar demo",
     "noMatchesYet": "Aún no hay partidos",
     "pageTitle": "{{name}} – perfil del jugador",
     "loadFailed": "No se pudieron cargar los datos del jugador",
-    "performanceChart": {
-      "title": "Tendencias de rendimiento",
-      "noData": "Aún no hay datos de rendimiento significativos: juega algunas rondas para ver las tendencias de ADR y K/D.",
-      "avgAdr": "ADR: {{value}} med.",
-      "avgKd": "K/D: {{value}} med.",
-      "matchCount_one": "{{count}} partido",
-      "matchCount_other": "{{count}} partidos"
-    },
     "profileHeader": {
       "plays": "Plays {{games}}",
       "joined": "joined {{date}}",
-      "editProfile": "Edit profile"
+      "editProfile": "Edit profile",
+      "label": "Player",
+      "captain": "captain"
     },
     "stats": {
       "rating": "RATING",
       "matches": "MATCHES",
       "winRate": "WIN RATE",
       "adr": "ADR",
-      "kd": "K/D"
+      "kd": "K/D",
+      "label": "Stats"
     },
     "ratingChart": {
       "sectionTitle": "Rating",
       "noHistory": "Not enough matches yet to chart a trend",
-      "ariaLabel": "Rating trend, from {{from}} to {{to}}"
+      "ariaLabel": "Rating trend, from {{from}} to {{to}}",
+      "window": "last {{count}} matches"
     },
     "recentMatches": {
       "title": "Recent matches",
       "statsNote": "Kills / deaths. Stats shown depend on what the game module reports.",
-      "roundAndRating": "{{round}} · rating {{rating}}"
+      "roundAndRating": "{{round}} · rating {{rating}}",
+      "leaderboard": "Leaderboard"
     },
-    "gameSwitchLabel": "Game"
+    "gameSwitchLabel": "Game",
+    "yourMatch": "Your match"
   },
   "teamPage": {
-    "wantYourStats": "¿Quieres ver tus propias estadísticas e historial de partidos?",
-    "openMyPlayerPage": "Abrir mi página de jugador",
     "tournamentFinished": "Torneo finalizado",
     "finalPlacement": "Posición final: #{{position}} de {{total}}",
     "noMatchNow": "No hay partido programado ahora mismo",
-    "noMatchNowHint": "Tu próximo partido aparecerá aquí. Usa tu página de jugador para veto y conexión al servidor.",
     "noMatchesYet": "No hay partidos disponibles ahora mismo",
     "noMatchesYetHint": "El torneo aún no ha empezado. Cuando comience, tus partidos aparecerán aquí.",
     "currentMatch": "Partido actual",
     "versus": "vs",
-    "goToPlayerPage": "Veto, conexión y detalles → Tu página de jugador",
     "pageTitle": "Página del equipo",
     "manualMatch": "Partido manual",
-    "viewTeamProfile": "Team page →"
+    "noMatchNowHint": "Your next match shows up here, with the veto and the server to connect to.",
+    "viewTeamProfile": "Team page",
+    "pageTitleFor": "{{name}} · Match"
   },
   "rounds": {
     "quarterfinals": "Cuartos de final",
@@ -121,63 +101,10 @@
     "roundN": "Ronda {{n}}"
   },
   "teamMatchHistory": {
-    "title": "Historial de partidos",
-    "win": "VICTORIA",
-    "loss": "DERROTA",
     "vs": "vs",
-    "unknown": "Desconocido",
-    "matchNumberDate": "Partido #{{number}} • {{date}}",
-    "modalTitle": "Detalles del partido",
-    "modalVictory": "VICTORIA",
-    "modalDefeat": "DERROTA",
-    "modalMatchNumber": "Partido #{{number}}",
     "team1": "Equipo 1",
     "team2": "Equipo 2",
-    "finalSeriesScore": "Marcador final de la serie",
-    "completed": "Finalizado: {{date}}",
-    "mapsPlayed": "Mapas jugados",
-    "noMaps": "No hay mapas disponibles para este partido.",
-    "playerStatsAllMaps": "Estadísticas de jugadores (todos los mapas)",
-    "player": "Jugador",
-    "damage": "Daño",
-    "fetchError": "No se pudieron obtener los detalles del partido",
-    "loadError": "No se pudieron cargar los detalles del partido"
-  },
-  "teamHeader": {
-    "soundSettings": "Ajustes de sonido",
-    "muteNotifications": "Silenciar notificaciones",
-    "unmuteNotifications": "Activar sonido de notificaciones"
-  },
-  "teamStatsCard": {
-    "title": "Rendimiento del equipo",
-    "wins": "Victorias",
-    "losses": "Derrotas",
-    "winRate": "Porcentaje de victorias",
-    "ofTotal": "de {{total}}"
-  },
-  "playerRosterCard": {
-    "title": "Plantilla del equipo",
-    "unknownPlayer": "Desconocido",
-    "rating": "Valoración: {{rating}}",
-    "viewPlayerStats": "Ver estadísticas del jugador",
-    "viewSteamProfile": "Ver perfil de Steam"
-  },
-  "mapAccordion": {
-    "won": "Ganado",
-    "lost": "Perdido",
-    "draw": "Empate",
-    "team1": "Equipo 1",
-    "team2": "Equipo 2",
-    "downloadDemo": "Descargar demo",
-    "downloadMapDemo": "Descargar demo de {{map}}",
-    "mapInformation": "Información del mapa",
-    "mapNumberLabel": "Número de mapa:",
-    "mapN": "Mapa {{n}}",
-    "scoreLabel": "Marcador:",
-    "resultLabel": "Resultado:",
-    "winnerLabel": "Ganador:",
-    "durationLabel": "Duración:",
-    "completedLabel": "Finalizado:"
+    "fetchError": "No se pudieron obtener los detalles del partido"
   },
   "leaderboardPage": {
     "emptyTitle": "Todavía no hay clasificación del torneo",
@@ -255,7 +182,11 @@
     },
     "loadError": "No se pudieron cargar los equipos",
     "importSuccess": "Se importaron {{count}} equipo(s) correctamente",
-    "viewPublicPage": "View public team page"
+    "viewPublicPage": "View public team page",
+    "rowActions": "Actions for {{name}}",
+    "edit": "Edit",
+    "noPlayers": "No players yet",
+    "matchLinkCopied": "Team match link copied"
   },
   "playersPage": {
     "headerSelect": {
@@ -295,7 +226,9 @@
     "skillRatingTooltip": "La puntuación de habilidad se basa en OpenSkill; más alto es mejor.",
     "skillRatingLabel": "Puntuación de habilidad: {{elo}}",
     "matchesCount_one": "{{count}} partido",
-    "matchesCount_other": "{{count}} partidos"
+    "matchesCount_other": "{{count}} partidos",
+    "rowActions": "Actions for {{name}}",
+    "edit": "Edit"
   },
   "discordId": {
     "noDiscord": "Sin Discord",
@@ -361,49 +294,16 @@
       "download": "Descargar demo de {{map}}"
     }
   },
-  "tournamentRules": {
-    "title": "Sobre este torneo",
-    "intro": "Estas son las reglas básicas con las que se deciden los partidos de este torneo.",
-    "matchFormatLabel": "Formato del partido:",
-    "regulationLabel": "Rondas reglamentarias:",
-    "overtimeLabel": "Prórroga:",
-    "tiesLabel": "Cómo se resuelven los empates:",
-    "format": {
-      "bo1": "Al mejor de 1 mapa: quien gana el mapa gana el partido.",
-      "bo3": "Al mejor de 3 mapas: el primer equipo en ganar 2 mapas gana el partido.",
-      "bo5": "Al mejor de 5 mapas: el primer equipo en ganar 3 mapas gana el partido."
-    },
-    "regulationWithRounds": "Cada mapa se juega hasta {{rounds}} rondas. El equipo con más rondas al final del tiempo reglamentario gana el mapa.",
-    "regulationGeneric": "Cada mapa se juega a un número fijo de rondas. El equipo con más rondas al final del tiempo reglamentario gana el mapa.",
-    "overtime": {
-      "disabled": "Prórroga: desactivada (solo tiempo reglamentario).",
-      "enabledSegments_one": "Prórroga: activada con un máximo de {{count}} tramo de prórroga.",
-      "enabledSegments_other": "Prórroga: activada con un máximo de {{count}} tramos de prórroga.",
-      "enabled": "Prórroga: activada. Un empate al final del tiempo reglamentario llevará a prórroga hasta que un equipo termine por delante.",
-      "effectivelyDisabled": "Prórroga: desactivada en la práctica (solo tiempo reglamentario).",
-      "implicitSegments_one": "Prórroga: activada con un máximo de {{count}} tramo de prórroga (implícito).",
-      "implicitSegments_other": "Prórroga: activada con un máximo de {{count}} tramos de prórroga (implícito).",
-      "standard": "Prórroga: configuración estándar. Un empate al final del tiempo reglamentario suele llevar a prórroga."
-    },
-    "tiebreak": {
-      "disabled": "Si el tiempo reglamentario termina en empate, el partido no va a prórroga. En su lugar, el ganador se decide por el daño total del equipo en el mapa. Si el daño total también es exactamente igual, el resultado es un empate real.",
-      "enabledSegments": "Si el marcador sigue empatado tras los tramos de prórroga configurados, el ganador se decide por el daño total del equipo en el mapa. Si el daño total también está empatado, el resultado se registra como empate.",
-      "enabled": "En condiciones normales, el marcador final más alto decide el ganador. Los empates son poco frecuentes y solo ocurren si tanto el marcador como el daño quedan exactamente igualados.",
-      "effectivelyDisabled": "Si el tiempo reglamentario termina en empate, el partido no va a prórroga. El ganador se decide por el daño total del equipo en el mapa; si el daño está empatado, el partido termina en empate.",
-      "implicitSegments": "Si el marcador sigue empatado tras los tramos de prórroga configurados, el ganador se decide por el daño total del equipo. Si el daño está empatado, el resultado es un empate.",
-      "standard": "En la mayoría de los casos gana el equipo con el marcador final más alto. Solo cuando el marcador y el daño total están exactamente igualados se registra un empate real."
-    }
-  },
   "teamProfile": {
     "pageTitle": "{{name}} · Team",
     "notFound": "Team not found. Please check the URL.",
     "loadError": "Failed to load this team. Please try again.",
     "editTeam": "Edit team",
-    "game": "Counter-Strike 2",
     "roster": {
       "title": "Roster",
       "empty": "This team has no players yet.",
-      "rating": "Rating {{rating}}"
+      "rating": "Rating {{rating}}",
+      "captain": "Captain"
     },
     "tournaments": {
       "title": "Tournaments",
@@ -415,8 +315,18 @@
       "finalPlacement": "Final: #{{position}} of {{total}}",
       "recentResults": "Recent results",
       "win": "Win",
-      "loss": "Loss"
-    }
+      "loss": "Loss",
+      "open": "Open",
+      "openMatch": "Open match",
+      "status": {
+        "setup": "Upcoming",
+        "ready": "Sign-up",
+        "in_progress": "In progress",
+        "completed": "Finished"
+      }
+    },
+    "headerLabel": "Team",
+    "captainLine": "captain {{name}}"
   },
   "disputes": {
     "title": "Disputes",

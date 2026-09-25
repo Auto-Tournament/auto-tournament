@@ -13,7 +13,7 @@ import {
   Step,
   StepLabel,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { XIcon } from '@phosphor-icons/react';
 import { useModuleTranslation } from '../../../module-sdk';
 import type { StandaloneMatchProps } from '../../types';
 import SaveMapPoolModal from '../maps/SaveMapPoolModal';
@@ -146,7 +146,7 @@ export const CreateManualMatchModal: React.FC<StandaloneMatchProps> = ({
             {t('manualMatchModal.title')}
           </Typography>
           <IconButton aria-label="close" onClick={onClose} size="small">
-            <CloseIcon fontSize="small" />
+            <XIcon size={20} />
           </IconButton>
         </DialogTitle>
         <DialogContent dividers>

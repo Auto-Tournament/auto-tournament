@@ -103,7 +103,7 @@ function shapeProblem(def: Record<string, unknown>): string | null {
   for (const group of REQUIRED_GROUPS) {
     if (!isObject(def[group])) return `${group} is not an object`;
   }
-  for (const group of ['tournamentStart', 'matchListQueue'] as const) {
+  for (const group of ['tournamentStart', 'matchListQueue', 'instanceSettings'] as const) {
     if (def[group] !== undefined && !isObject(def[group])) return `${group} is not an object`;
   }
   for (const path of COMPONENT_SLOTS) {
@@ -137,6 +137,12 @@ function shapeProblem(def: Record<string, unknown>): string | null {
     }
   }
 
+  const settings = def.instanceSettings;
+  if (isObject(settings)) {
+    if (typeof settings.labelKey !== 'string') return 'instanceSettings.labelKey is not a string';
+    if (settings.section === undefined) return 'instanceSettings.section is missing';
+  }
+
   if (!Array.isArray(def.routes)) return 'routes is not an array';
   for (const [index, route] of def.routes.entries()) {
     if (!isObject(route) || typeof route.path !== 'string') return `routes[${index}].path is not a string`;
@@ -151,7 +157,9 @@ function shapeProblem(def: Record<string, unknown>): string | null {
     if (!isObject(item) || typeof item.key !== 'string' || typeof item.path !== 'string') {
       return `navItems[${index}] needs a key and a path`;
     }
-    if (!isComponent(item.icon)) return `navItems[${index}].icon is not a component`;
+    if (item.icon !== undefined && !isComponent(item.icon)) {
+      return `navItems[${index}].icon is not a component`;
+    }
     if (item.labels !== undefined) {
       if (!isObject(item.labels)) return `navItems[${index}].labels is not an object`;
       for (const [surface, key] of Object.entries(item.labels)) {

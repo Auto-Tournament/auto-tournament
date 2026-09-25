@@ -1,4 +1,4 @@
-import express, { Router, type NextFunction, type Request, type Response } from 'express';
+import { Router, type NextFunction, type Request, type Response } from 'express';
 import type { PoolClient } from 'pg';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
@@ -18,11 +18,12 @@ import {
 } from './auth';
 import { passport, testOAuthStrategyName } from '../config/passport';
 import { PENDING_STEAM_LINK_PROVIDERS } from '../utils/signedPendingSteamLink';
-import { setIgdbEndpointOverride, clearIgdbTokenCache } from '../services/igdbService';
 import { setPackIndexBaseOverride } from '../services/packIndexService';
 import { forgetBundledPacks, seedBundledPacks } from '../services/gamePackService';
 import { setWikidataEndpointOverride, resetWikidataThrottle } from '../services/wikidataService';
 import { clearGameSearchCache } from '../services/gameCatalogService';
+import { refreshGameIcons, setGameIconEndpointOverride } from '../services/gameIconService';
+import { encodePng } from '../utils/iconImage';
 import { gameSearchLimiter } from './games';
 import {
   backfillLinkedAccounts,
@@ -428,6 +429,8 @@ router.post('/login-player', async (req: Request, res: Response): Promise<void> 
     await playerService.getOrCreatePlayer(steamId, name);
     await playerService.updatePlayer(steamId, { isAdmin: false });
     await setGamesPromptForTest(steamId, req.body);
+    // A sign-in, like the real callbacks record (admin home's "Signed in this week").
+    await playerService.recordSignIn(steamId);
 
     res.cookie('player_steam_id', signPlayerSteamId(steamId), {
       httpOnly: false,
@@ -1701,138 +1704,14 @@ router.get('/fake-oauth/:provider/userinfo', (req: Request, res: Response): void
   }
 });
 
-/*
- * Test-only fake IGDB (api.igdb.com v4) and Twitch token endpoint.
- *
- *   POST /api/test/igdb                 { fake: true | false } point the IGDB
- *                                       client at this fake (or back), and reset
- *                                       its token cache, the search cache and the
- *                                       search rate limiter
- *   GET  /api/test/igdb                 request counters
- *   POST /api/test/fake-igdb/token      Twitch client-credentials token
- *   POST /api/test/fake-igdb/v4/games   Apicalypse `search "..."` over FAKE_IGDB_GAMES
- *
- * A client id starting with `bad` is refused by the token endpoint, and a
- * search containing `explode` makes the games endpoint answer 500, so tests
- * can drive the failure paths.
- */
-
-const FAKE_IGDB_GAMES = [
-  {
-    id: 1001,
-    name: 'Rocket League',
-    slug: 'rocket-league',
-    year: 2015,
-    image: 'fakerl',
-    genres: ['Sport', 'Racing'],
-  },
-  {
-    id: 1002,
-    name: 'Rocket Knight Adventures',
-    slug: 'rocket-knight-adventures',
-    year: 1993,
-    image: null,
-    genres: [],
-  },
-  {
-    id: 1003,
-    name: 'Counter-Strike 2',
-    slug: 'counter-strike-2',
-    year: 2023,
-    image: 'fakecs2',
-    genres: ['Shooter', 'Tactical'],
-  },
-  { id: 1004, name: 'Hollow Knight', slug: 'hollow-knight', year: 2017, image: 'fakehk', genres: ['Platform'] },
-  { id: 1005, name: 'Stardew Valley', slug: 'stardew-valley', year: 2016, image: null, genres: [] },
-  { id: 1006, name: 'Celeste', slug: 'celeste', year: 2018, image: 'fakecel', genres: ['Platform'] },
-];
-
-const fakeIgdbCounters = { tokenRequests: 0, searchRequests: 0 };
-let fakeIgdbTokenSerial = 0;
-const fakeIgdbTokens = new Set<string>();
-
-function fakeIgdbEnabled(res: Response): boolean {
+/** True when the E2E test helper endpoints are enabled (404s them otherwise). */
+function testHelperEnabled(res: Response): boolean {
   if (!isE2eTestHelperEnabled()) {
     res.status(404).json({ success: false, error: 'Not found' });
     return false;
   }
   return true;
 }
-
-router.post('/igdb', requireAuth, (req: Request, res: Response): void => {
-  if (!fakeIgdbEnabled(res)) return;
-  const { fake } = (req.body ?? {}) as { fake?: unknown };
-  const self = `http://127.0.0.1:${process.env.PORT || '3000'}/api/test/fake-igdb`;
-  setIgdbEndpointOverride(
-    fake === false ? null : { apiBase: `${self}/v4`, tokenUrl: `${self}/token` }
-  );
-  clearIgdbTokenCache();
-  clearGameSearchCache();
-  gameSearchLimiter.reset();
-  fakeIgdbCounters.tokenRequests = 0;
-  fakeIgdbCounters.searchRequests = 0;
-  fakeIgdbTokens.clear();
-  res.json({ success: true, fake: fake !== false });
-});
-
-router.get('/igdb', requireAuth, (_req: Request, res: Response): void => {
-  if (!fakeIgdbEnabled(res)) return;
-  res.json({ success: true, ...fakeIgdbCounters });
-});
-
-router.post('/fake-igdb/token', (req: Request, res: Response): void => {
-  if (!fakeIgdbEnabled(res)) return;
-  fakeIgdbCounters.tokenRequests += 1;
-  const clientId = typeof req.query.client_id === 'string' ? req.query.client_id : '';
-  const secret = typeof req.query.client_secret === 'string' ? req.query.client_secret : '';
-  if (
-    !clientId ||
-    !secret ||
-    clientId.startsWith('bad') ||
-    req.query.grant_type !== 'client_credentials'
-  ) {
-    res.status(400).json({ status: 400, message: 'invalid client' });
-    return;
-  }
-  fakeIgdbTokenSerial += 1;
-  const token = `fake-igdb-token-${fakeIgdbTokenSerial}`;
-  fakeIgdbTokens.add(token);
-  res.json({ access_token: token, expires_in: 5_000_000, token_type: 'bearer' });
-});
-
-router.post(
-  '/fake-igdb/v4/games',
-  express.text({ type: '*/*' }),
-  (req: Request, res: Response): void => {
-    if (!fakeIgdbEnabled(res)) return;
-    const auth = req.headers.authorization || '';
-    const token = auth.toLowerCase().startsWith('bearer ') ? auth.slice(7).trim() : '';
-    if (!req.headers['client-id'] || !fakeIgdbTokens.has(token)) {
-      res.status(401).json({ message: 'Authorization Failure' });
-      return;
-    }
-    fakeIgdbCounters.searchRequests += 1;
-
-    const body = typeof req.body === 'string' ? req.body : '';
-    const term = /search\s+"([^"]*)"/.exec(body)?.[1]?.toLowerCase() ?? '';
-    if (term.includes('explode')) {
-      res.status(500).json({ message: 'Internal Server Error' });
-      return;
-    }
-    const limit = Number(/limit\s+(\d+)/.exec(body)?.[1] ?? 10);
-    const rows = FAKE_IGDB_GAMES.filter((g) => !term || g.name.toLowerCase().includes(term))
-      .slice(0, limit)
-      .map((g) => ({
-        id: g.id,
-        name: g.name,
-        slug: g.slug,
-        first_release_date: Math.floor(Date.UTC(g.year, 5, 1) / 1000),
-        ...(g.image ? { cover: { id: g.id * 10, image_id: g.image } } : {}),
-        genres: g.genres.map((name) => ({ name })),
-      }));
-    res.json(rows);
-  }
-);
 
 /*
  * Test-only fake Wikidata (www.wikidata.org/w/api.php).
@@ -1860,6 +1739,8 @@ interface FakeWikidataItem {
   image?: string;
   /** P136 (genre) item ids; resolved to `FAKE_WIKIDATA_GENRES` labels. */
   genreIds?: string[];
+  /** P1733 (Steam application ID). */
+  steamAppId?: string;
 }
 
 /** Genre item ids referenced by `FAKE_WIKIDATA_ITEMS.genreIds`, id -> English label. */
@@ -1906,12 +1787,51 @@ const FAKE_WIKIDATA_ITEMS: FakeWikidataItem[] = [
     instanceOf: ['Q1150710'], // a video game series: only kept when nothing else matched
     pubDates: [],
   },
-  // Popular built-ins other specs search for with no IGDB credentials
-  // configured; without a matching fake item, Wikidata would legitimately
+  // Popular built-ins other specs search for; without a matching fake item,
+  // Wikidata would legitimately
   // answer "no matches" and (like a real, comprehensive source) suppress
   // those built-ins from the results (see gameCatalogService.searchGames).
   { id: 'Q1258949', label: 'Dota 2', instanceOf: ['Q7889'], pubDates: ['+2013-07-09T00:00:00Z'] },
   { id: 'Q30819', label: 'Chess', instanceOf: ['Q7889'], pubDates: [] },
+  // App icons with no key at all: a Steam app id from Wikidata (P1733).
+  {
+    id: 'Q990001',
+    label: 'Icon Voyage',
+    instanceOf: ['Q7889'],
+    pubDates: ['+2019-03-01T00:00:00Z'],
+    steamAppId: '900001',
+  },
+  // Icon Quest family (tests/api/game-icons.spec.ts): the same `steam` ids
+  // FAKE_STEAM_APPS answers for, previously named by the fake IGDB.
+  {
+    id: 'Q900101',
+    label: 'Icon Quest',
+    instanceOf: ['Q7889'],
+    pubDates: ['+2020-01-01T00:00:00Z'],
+    steamAppId: '900001',
+  },
+  {
+    id: 'Q900102',
+    label: 'Icon Quest Legacy',
+    instanceOf: ['Q7889'],
+    pubDates: ['+2012-01-01T00:00:00Z'],
+    steamAppId: '900002',
+  },
+  {
+    id: 'Q900103',
+    label: 'Icon Quest Tiny',
+    instanceOf: ['Q7889'],
+    pubDates: ['+2013-01-01T00:00:00Z'],
+    // A 32 px icon (FAKE_STEAM_APPS['900004']) is not worth more than a monogram.
+    steamAppId: '900004',
+  },
+  {
+    id: 'Q900104',
+    label: 'Icon Quest Offline',
+    instanceOf: ['Q7889'],
+    pubDates: ['+2014-01-01T00:00:00Z'],
+    // No Steam app id: never gets a client icon.
+  },
 ];
 
 const fakeWikidataCounters = { searchRequests: 0, getEntitiesRequests: 0 };
@@ -1985,6 +1905,9 @@ router.get('/fake-wikidata', (req: Request, res: Response): void => {
             ...(item.genreIds
               ? { P136: item.genreIds.map((qid) => ({ mainsnak: { datavalue: { value: { id: qid } } } })) }
               : {}),
+            ...(item.steamAppId
+              ? { P1733: [{ mainsnak: { datavalue: { value: item.steamAppId } } }] }
+              : {}),
           },
         };
         continue;
@@ -2002,6 +1925,134 @@ router.get('/fake-wikidata', (req: Request, res: Response): void => {
 
   res.status(400).json({ error: { code: 'unknown_action', info: `unknown action: ${action}` } });
 });
+
+/*
+ * Test-only fake Steam, for game app icons (services/gameIconService).
+ *
+ *   POST /api/test/game-icons            { fake: true | false } point the icon
+ *                                        lookups at this fake (or back)
+ *   POST /api/test/game-icons/run        run icon passes now, even with
+ *                                        GAMES_ENRICH=off; answers { stored }
+ *   GET  /api/test/fake-steam/info/:appId            steamcmd.net's app info
+ *   GET  /api/test/fake-steam/icons-new/:appId/:file the newer CDN path
+ *   GET  /api/test/fake-steam/icons-old/:appId/:file the older CDN path
+ */
+
+interface FakeSteamApp {
+  /** `common.clienticon`; none means Steam lists no client icon. */
+  clientIcon?: string;
+  /** Served on the newer CDN path. */
+  onNewPath?: boolean;
+  /** Served on the older CDN path (the fallback). */
+  onOldPath?: boolean;
+  /** The icon's one frame, in pixels. */
+  size?: number;
+}
+
+const FAKE_STEAM_APPS: Record<string, FakeSteamApp> = {
+  '900001': { clientIcon: 'a1'.repeat(20), onNewPath: true, onOldPath: true, size: 256 },
+  // Only the older path has it: the lookup has to fall back.
+  '900002': { clientIcon: 'b2'.repeat(20), onOldPath: true, size: 256 },
+  // Steam lists no client icon.
+  '900003': {},
+  // Too small to be worth more than a monogram.
+  '900004': { clientIcon: 'c3'.repeat(20), onNewPath: true, onOldPath: true, size: 32 },
+};
+
+const fakeSteamCounters = { info: 0, icons: 0 };
+
+/** A one-frame `.ico` holding a PNG: an orange square with a dark diagonal. */
+function fakeSteamIco(size: number): Buffer {
+  const data = Buffer.alloc(size * size * 4);
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      const i = (y * size + x) * 4;
+      const onDiagonal = Math.abs(x - y) < size / 8;
+      data[i] = onDiagonal ? 20 : 250;
+      data[i + 1] = onDiagonal ? 20 : 99;
+      data[i + 2] = onDiagonal ? 30 : 42;
+      data[i + 3] = 255;
+    }
+  }
+  const png = encodePng({ width: size, height: size, data });
+  const header = Buffer.alloc(6);
+  header.writeUInt16LE(0, 0);
+  header.writeUInt16LE(1, 2);
+  header.writeUInt16LE(1, 4);
+  const entry = Buffer.alloc(16);
+  entry[0] = size >= 256 ? 0 : size;
+  entry[1] = size >= 256 ? 0 : size;
+  entry.writeUInt16LE(1, 4);
+  entry.writeUInt16LE(32, 6);
+  entry.writeUInt32LE(png.length, 8);
+  entry.writeUInt32LE(22, 12);
+  return Buffer.concat([header, entry, png]);
+}
+
+router.post('/game-icons', requireAuth, (req: Request, res: Response): void => {
+  if (!testHelperEnabled(res)) return;
+  const { fake } = (req.body ?? {}) as { fake?: unknown };
+  const self = `http://127.0.0.1:${process.env.PORT || '3000'}/api/test/fake-steam`;
+  setGameIconEndpointOverride(
+    fake === false
+      ? null
+      : { steamInfoBase: `${self}/info`, steamIconBases: [`${self}/icons-new`, `${self}/icons-old`] }
+  );
+  fakeSteamCounters.info = 0;
+  fakeSteamCounters.icons = 0;
+  res.json({ success: true, fake: fake !== false });
+});
+
+router.post('/game-icons/run', requireAuth, async (_req: Request, res: Response): Promise<void> => {
+  if (!testHelperEnabled(res)) return;
+  // A pass looks at a batch of rows; a fresh database holds more built-ins
+  // than one batch, so run until no row is left unlooked-at.
+  let stored = 0;
+  for (let pass = 0; pass < 10; pass += 1) {
+    stored += await refreshGameIcons({ force: true });
+    const left = await db.queryOneAsync<{ count: string }>(
+      'SELECT COUNT(*)::text AS count FROM games WHERE icon_url IS NULL AND icon_checked_at IS NULL'
+    );
+    if (Number(left?.count ?? 0) === 0) break;
+  }
+  res.json({ success: true, stored, requests: { ...fakeSteamCounters } });
+});
+
+router.get('/fake-steam/info/:appId', (req: Request, res: Response): void => {
+  if (!testHelperEnabled(res)) return;
+  fakeSteamCounters.info += 1;
+  const app = FAKE_STEAM_APPS[req.params.appId];
+  if (!app) {
+    res.status(404).json({ status: 'failed' });
+    return;
+  }
+  res.json({
+    status: 'success',
+    data: {
+      [req.params.appId]: {
+        common: { name: `Fake app ${req.params.appId}`, ...(app.clientIcon ? { clienticon: app.clientIcon } : {}) },
+      },
+    },
+  });
+});
+
+function serveFakeSteamIcon(which: 'new' | 'old') {
+  return (req: Request, res: Response): void => {
+    if (!testHelperEnabled(res)) return;
+    fakeSteamCounters.icons += 1;
+    const app = FAKE_STEAM_APPS[req.params.appId];
+    const served = which === 'new' ? app?.onNewPath : app?.onOldPath;
+    if (!app?.clientIcon || !served || req.params.file !== `${app.clientIcon}.ico`) {
+      res.status(404).send('Not Found');
+      return;
+    }
+    res.setHeader('Content-Type', 'image/x-icon');
+    res.send(fakeSteamIco(app.size ?? 256));
+  };
+}
+
+router.get('/fake-steam/icons-new/:appId/:file', serveFakeSteamIcon('new'));
+router.get('/fake-steam/icons-old/:appId/:file', serveFakeSteamIcon('old'));
 
 /**
  * Test-only helpers for the manual-reporting schema (3.0 phase D, PR D1).
@@ -2264,7 +2315,7 @@ router.post('/match-reports', requireAuth, async (req: Request, res: Response): 
 });
 
 /**
- * Test-only fake pack index, the same trick the fake IGDB uses.
+ * Test-only fake pack index, the same trick the other test-only fakes use.
  *
  *   POST /api/test/pack-index   { fake: true | false }  point the pack index
  *                                                       at the fixture below
@@ -2298,7 +2349,7 @@ const FAKE_INDEX_PACKS: Record<string, unknown> = {
  * an admin removed stays removed.
  */
 router.post('/packs/reseed', requireAuth, async (req: Request, res: Response): Promise<void> => {
-  if (!fakeIgdbEnabled(res)) return;
+  if (!testHelperEnabled(res)) return;
   // `{ forget: [slug] }` first forgets those were ever seeded, so a spec can
   // put a bundled game it removed back exactly as a fresh install has it.
   // `{ preinstall: 'all' | [slug] }` runs it as if PREINSTALL_PACKS said so,
@@ -2317,7 +2368,7 @@ router.post('/packs/reseed', requireAuth, async (req: Request, res: Response): P
 });
 
 router.post('/pack-index', requireAuth, (req: Request, res: Response): void => {
-  if (!fakeIgdbEnabled(res)) return;
+  if (!testHelperEnabled(res)) return;
   const { fake } = (req.body ?? {}) as { fake?: unknown };
   const self = `http://127.0.0.1:${process.env.PORT || '3000'}/api/test/fake-pack-index/`;
   setPackIndexBaseOverride(fake === false ? null : self);
@@ -2325,7 +2376,7 @@ router.post('/pack-index', requireAuth, (req: Request, res: Response): void => {
 });
 
 router.get('/fake-pack-index/index.json', (_req: Request, res: Response): void => {
-  if (!fakeIgdbEnabled(res)) return;
+  if (!testHelperEnabled(res)) return;
   res.json({
     schema: 1,
     packs: [
@@ -2352,7 +2403,7 @@ router.get('/fake-pack-index/index.json', (_req: Request, res: Response): void =
 });
 
 router.get('/fake-pack-index/packs/:file', (req: Request, res: Response): void => {
-  if (!fakeIgdbEnabled(res)) return;
+  if (!testHelperEnabled(res)) return;
   const slug = req.params.file.replace(/\.json$/, '');
   const pack = FAKE_INDEX_PACKS[slug];
   if (!pack) {
@@ -2363,7 +2414,7 @@ router.get('/fake-pack-index/packs/:file', (req: Request, res: Response): void =
 });
 
 router.get('/fake-pack-index/icons/:file', (req: Request, res: Response): void => {
-  if (!fakeIgdbEnabled(res)) return;
+  if (!testHelperEnabled(res)) return;
   if (req.params.file !== 'index-test-game.svg') {
     res.status(404).json({ success: false, error: 'No such icon' });
     return;
@@ -2575,7 +2626,7 @@ export default integration;
 }
 
 router.post('/modules/fixture', requireAuth, async (req: Request, res: Response): Promise<void> => {
-  if (!fakeIgdbEnabled(res)) return;
+  if (!testHelperEnabled(res)) return;
   const { id, kind } = (req.body ?? {}) as { id?: unknown; kind?: unknown };
   if (typeof id !== 'string' || !isValidModuleId(id) || !id.startsWith('fixture-')) {
     res.status(400).json({ success: false, error: "id must be a valid module id starting with 'fixture-'" });
@@ -2605,7 +2656,7 @@ router.post('/modules/fixture', requireAuth, async (req: Request, res: Response)
  * one got none of it.
  */
 router.get('/modules/:id/migrations', requireAuth, async (req: Request, res: Response): Promise<void> => {
-  if (!fakeIgdbEnabled(res)) return;
+  if (!testHelperEnabled(res)) return;
   const { id } = req.params;
   if (!isValidModuleId(id) || !id.startsWith('fixture-')) {
     res.status(400).json({ success: false, error: "id must be a valid module id starting with 'fixture-'" });
@@ -2629,7 +2680,7 @@ router.get('/modules/:id/migrations', requireAuth, async (req: Request, res: Res
 });
 
 router.post('/modules/rescan', requireAuth, async (_req: Request, res: Response): Promise<void> => {
-  if (!fakeIgdbEnabled(res)) return;
+  if (!testHelperEnabled(res)) return;
   try {
     // What boot does next for a module it loaded: start it.
     for (const integration of await scanDiskModules()) {
@@ -2643,7 +2694,7 @@ router.post('/modules/rescan', requireAuth, async (_req: Request, res: Response)
 });
 
 router.delete('/modules/fixtures', requireAuth, async (_req: Request, res: Response): Promise<void> => {
-  if (!fakeIgdbEnabled(res)) return;
+  if (!testHelperEnabled(res)) return;
   try {
     const entries = await fs.promises.readdir(modulesDir()).catch(() => [] as string[]);
     const removed: string[] = [];
@@ -2671,7 +2722,7 @@ router.delete('/modules/fixtures', requireAuth, async (_req: Request, res: Respo
 
 registerCatalogTestRoutes(
   router,
-  fakeIgdbEnabled,
+  testHelperEnabled,
   (id, kind) => moduleFixtureFiles(id, kind),
   { pack: (slug) => FAKE_INDEX_PACKS[slug], tile: FAKE_INDEX_TILE }
 );

@@ -1,19 +1,23 @@
 /**
  * The player game catalogue: "What do you play?".
  *
- * Games live in the `games` table. Rows come from three places:
+ * Games live in the `games` table. Rows come from two places:
  * - **built-in**: every game an installed integration supports, then a short
  *   list of popular esports titles. Names and slugs only. Seeded on demand
- *   (one idempotent insert) so they always exist, with or without IGDB.
- * - **IGDB**: search results are upserted by IGDB id / slug, so repeat queries
- *   and chips render from our own table.
- * - **Wikidata**: the same idea, keyed on Wikidata id / slug, used instead of
- *   IGDB when no IGDB credentials are configured — it needs no API key, so
+ *   (one idempotent insert) so they always exist.
+ * - **Wikidata**: search results are upserted by Wikidata id / slug, so
+ *   repeat queries and chips render from our own table. Needs no API key, so
  *   search works out of the box.
  *
- * Built-in slugs are IGDB slugs, so an IGDB (or Wikidata) result for Rocket
- * League updates the built-in Rocket League row rather than adding a second
- * one.
+ * IGDB was an earlier, credentialed source for this catalogue and has been
+ * removed; a `games` row created back then may still carry `igdb_id` and
+ * `source = 'igdb'`, which stay untouched — a stored game's `igdb_id` is
+ * still how it links to a module's or pack's own catalogue entry (see
+ * `linkBuiltin`), and dropping the column would break that link.
+ *
+ * Built-in slugs match those historic IGDB slugs, so a Wikidata result for
+ * Rocket League updates the built-in Rocket League row rather than adding a
+ * second one.
  *
  * `supported` means a game module exists for it (the integration registry),
  * i.e. this instance can run tournaments for it.
@@ -21,10 +25,16 @@
 
 import { db } from '../config/database';
 import { listIntegrations } from '../integrations/registry';
-import { installedPacks, packIconPath } from './gamePackService';
+import {
+  bundledIgdbId,
+  hasBundledAppIcon,
+  installedPacks,
+  packAppIconPath,
+  packAppIconUrl,
+  packIconPath,
+} from './gamePackService';
 import { log } from '../utils/logger';
 import { slugify } from '../utils/slug';
-import { IgdbError, searchIgdb, type IgdbGame } from './igdbService';
 import { WikidataError, searchWikidata, type WikidataGame } from './wikidataService';
 
 export const SEARCH_MIN_LENGTH = 2;
@@ -51,21 +61,30 @@ export interface GameSummary {
   integrationId: string | null;
   /** Where this row's data came from; the client uses it to pick a credit line. */
   source: 'igdb' | 'wikidata' | 'builtin';
-  /** Up to 3 genre names, from IGDB `genres.name` or Wikidata P136. */
+  /** Up to 3 genre names, from Wikidata P136 (or, on a game found before IGDB support was removed, IGDB `genres.name`). */
   genres: string[];
   /** `coverUrl` if present, else `logoUrl`; convenience for the onboarding page's cards. */
   imageUrl: string | null;
+  /**
+   * The game's square app icon — the picture on a player's phone or launcher
+   * — or null when there is none, and the pill draws the game's monogram.
+   *
+   * The module's or pack's own (installed, or in the image's snapshot) for
+   * any row linked to one — by IGDB id, then slug, then a slug alias, then
+   * the normalised name (`linkBuiltin`) — else the Steam client icon this
+   * instance fetched and cached for the game (`gameIconService`). Never a
+   * cover or a wide logo.
+   */
+  appIconUrl: string | null;
 }
 
 export interface GameSearchResult {
   games: GameSummary[];
-  /** True when any result came from IGDB (the client shows the IGDB credit). */
-  fromIgdb: boolean;
   /** True when any result came from Wikidata (the client shows the Wikidata credit). */
   fromWikidata: boolean;
 }
 
-interface BuiltinGame {
+export interface BuiltinGame {
   slug: string;
   name: string;
   aliases: string[];
@@ -93,9 +112,19 @@ interface BuiltinGame {
    * different question, and `GameSummary.imageUrl` still carries it.
    */
   icon: string | null;
+  /** The game's square app icon, as a URL the client loads, or null. */
+  appIcon: string | null;
+  /**
+   * The game's numeric IGDB id, when the module or pack names one (or the
+   * image's snapshot does for the pack's game). A stored `games` row is
+   * linked to it by this id first (see `linkBuiltin`) — still meaningful for
+   * a row created while IGDB search existed, even though nothing writes a
+   * new one any more.
+   */
+  igdbId: number | null;
 }
 
-/** Popular esports titles offered before IGDB is configured. IGDB slugs. */
+/** Popular esports titles built in to the catalogue. Historic IGDB slugs. */
 const POPULAR_GAMES: Array<{ slug: string; name: string; aliases?: string[] }> = [
   { slug: 'rocket-league', name: 'Rocket League', aliases: ['rl'] },
   { slug: 'valorant', name: 'Valorant' },
@@ -159,6 +188,8 @@ export function builtinGames(): BuiltinGame[] {
         viaCatchAll,
         own: true,
         icon: integration.catalog?.icon ?? null,
+        appIcon: integration.catalog?.appIcon ?? null,
+        igdbId: integration.catalog?.igdbId ?? null,
       });
     }
     for (const entry of integration.catalogEntries ?? []) {
@@ -170,6 +201,8 @@ export function builtinGames(): BuiltinGame[] {
         viaCatchAll,
         own: false,
         icon: entry.icon ?? null,
+        appIcon: entry.appIcon ?? null,
+        igdbId: entry.igdbId ?? null,
       });
     }
   }
@@ -200,6 +233,10 @@ export function builtinGames(): BuiltinGame[] {
       viaCatchAll: true,
       own: false,
       icon: pack.hasIcon ? packIconPath(pack.slug) : null,
+      // The pack's own, else the snapshot's for the same game — also for a
+      // pack installed from the catalog before its game had one.
+      appIcon: packAppIconUrl(pack),
+      igdbId: pack.definition.igdbId ?? bundledIgdbId(pack.slug),
     });
   }
 
@@ -212,18 +249,115 @@ export function builtinGames(): BuiltinGame[] {
       viaCatchAll: false,
       own: false,
       icon: null,
+      // A popular title nothing installed runs still has its picture when the
+      // image's snapshot carries one: the pill is about recognising a game,
+      // not about whether this instance can run it.
+      appIcon: hasBundledAppIcon(game.slug) ? packAppIconPath(game.slug) : null,
+      igdbId: bundledIgdbId(game.slug),
     });
   }
 
   return out;
 }
 
-function supportedSlugs(): Map<string, string> {
-  const map = new Map<string, string>();
-  for (const game of builtinGames()) {
-    if (game.integrationId) map.set(game.slug, game.integrationId);
+// ---------------------------------------------------------------------------
+// Linking a stored game to the module or pack for the same game
+// ---------------------------------------------------------------------------
+
+/**
+ * The built-in list, indexed the ways a stored `games` row is matched to it.
+ * First claim wins in every map, so a module beats a pack beats a popular
+ * title, as everywhere else in the catalogue.
+ */
+export interface GameLinks {
+  byIgdbId: Map<number, BuiltinGame>;
+  bySlug: Map<string, BuiltinGame>;
+  /** A built-in's aliases, slugified: 'cs2' finds Counter-Strike 2. */
+  byAlias: Map<string, BuiltinGame>;
+  /** A built-in's name, lower case letters and digits only. */
+  byName: Map<string, BuiltinGame>;
+}
+
+export function buildGameLinks(builtins: BuiltinGame[] = builtinGames()): GameLinks {
+  const links: GameLinks = {
+    byIgdbId: new Map(),
+    bySlug: new Map(),
+    byAlias: new Map(),
+    byName: new Map(),
+  };
+  const claim = <K>(map: Map<K, BuiltinGame>, key: K | null, game: BuiltinGame) => {
+    if (key === null || key === '' || map.has(key)) return;
+    map.set(key, game);
+  };
+  for (const game of builtins) {
+    claim(links.byIgdbId, game.igdbId, game);
+    claim(links.bySlug, game.slug, game);
+    for (const alias of game.aliases) claim(links.byAlias, slugify(alias), game);
+    claim(links.byName, searchKey(game.name), game);
   }
-  return map;
+  return links;
+}
+
+/** The fields of a stored game that link it to a built-in. */
+export interface LinkableGame {
+  igdb_id: number | null;
+  slug: string;
+  name: string;
+}
+
+/**
+ * The module or pack a stored game is, or null: by IGDB id, then its own
+ * slug, then a built-in's slug alias, then its name once case and
+ * punctuation are gone.
+ *
+ * An alias or a name is a weaker claim than an id, and plenty of games share
+ * a name ("Deadlock" is a 2016 game and Valve's hero shooter). So when both
+ * sides know their IGDB id and the ids differ, a slug alias or name match is
+ * refused: the row is a different game that happens to be called the same.
+ * The exact slug always links — that row is the built-in's own catalogue row.
+ */
+export function linkBuiltin(row: LinkableGame, links: GameLinks): BuiltinGame | null {
+  const igdbId = row.igdb_id ?? null;
+  if (igdbId !== null) {
+    const byId = links.byIgdbId.get(igdbId);
+    if (byId) return byId;
+  }
+  const own = links.bySlug.get(row.slug);
+  if (own) return own;
+  const differentGame = (game: BuiltinGame) =>
+    igdbId !== null && game.igdbId !== null && game.igdbId !== igdbId;
+  const alias = links.byAlias.get(row.slug);
+  if (alias && !differentGame(alias)) return alias;
+  const named = links.byName.get(searchKey(row.name));
+  if (named && !differentGame(named)) return named;
+  return null;
+}
+
+/**
+ * The app icon a stored game's pill draws, or null for its monogram: the
+ * linked module's or pack's, else the one this instance cached for the game.
+ */
+export function gameAppIconUrl(
+  row: LinkableGame & { icon_url?: string | null },
+  links: GameLinks
+): string | null {
+  return linkBuiltin(row, links)?.appIcon ?? row.icon_url ?? null;
+}
+
+/** What `toSummary` needs from the built-in list, read once per request. */
+interface SummaryContext {
+  /** Slug -> the integration that runs it. */
+  supported: Map<string, string>;
+  links: GameLinks;
+}
+
+function supportedSlugs(): SummaryContext {
+  const builtins = builtinGames();
+  const supported = new Map<string, string>();
+  for (const game of builtins) {
+    if (game.integrationId) supported.set(game.slug, game.integrationId);
+  }
+  return { supported, links: buildGameLinks(builtins) };
 }
 
 function matchesBuiltin(game: BuiltinGame, query: string): boolean {
@@ -243,10 +377,11 @@ interface GameRow {
   release_year: number | null;
   genres: string | null;
   source: string;
+  icon_url: string | null;
 }
 
 const GAME_COLUMNS =
-  'id, igdb_id, wikidata_id, slug, name, cover_url, logo_url, release_year, genres, source';
+  'id, igdb_id, wikidata_id, slug, name, cover_url, logo_url, release_year, genres, source, icon_url';
 
 function parseGenres(genres: string | null): string[] {
   if (!genres) return [];
@@ -258,7 +393,8 @@ function parseGenres(genres: string | null): string[] {
   }
 }
 
-function toSummary(row: GameRow, supported: Map<string, string>): GameSummary {
+function toSummary(row: GameRow, context: SummaryContext): GameSummary {
+  const { supported, links } = context;
   return {
     id: row.id,
     slug: row.slug,
@@ -270,6 +406,7 @@ function toSummary(row: GameRow, supported: Map<string, string>): GameSummary {
     source: row.source === 'igdb' || row.source === 'wikidata' ? row.source : 'builtin',
     genres: parseGenres(row.genres),
     imageUrl: row.cover_url || row.logo_url || null,
+    appIconUrl: gameAppIconUrl(row, links),
   };
 }
 
@@ -299,69 +436,15 @@ async function rowsBySlug(slugs: string[]): Promise<Map<string, GameRow>> {
   return new Map(rows.map((r) => [r.slug, r]));
 }
 
-/**
- * Upsert IGDB results. Matched by IGDB id first (IGDB can rename a slug),
- * then by slug (a built-in row for the same game).
- */
 /** JSON for up to 3 genres, or `null` when there are none (never clobbers a row's existing genres). */
 function genresJson(genres: string[]): string | null {
   return genres.length > 0 ? JSON.stringify(genres.slice(0, 3)) : null;
 }
 
-async function upsertIgdbGames(games: IgdbGame[]): Promise<GameRow[]> {
-  const out: GameRow[] = [];
-  const now = Math.floor(Date.now() / 1000);
-
-  for (const game of games) {
-    const existing = await db.queryAsync<GameRow>(
-      `SELECT ${GAME_COLUMNS} FROM games WHERE igdb_id = ? OR slug = ? ORDER BY (igdb_id = ?) DESC NULLS LAST`,
-      [game.igdbId, game.slug, game.igdbId]
-    );
-    const genres = genresJson(game.genres);
-
-    if (existing.length === 0) {
-      const row = await db.queryOneAsync<GameRow>(
-        `INSERT INTO games (igdb_id, slug, name, cover_url, logo_url, release_year, genres, source, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 'igdb', ?)
-         ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, genres = COALESCE(EXCLUDED.genres, games.genres)
-         RETURNING ${GAME_COLUMNS}`,
-        [game.igdbId, game.slug, game.name, game.coverUrl, game.logoUrl, game.releaseYear, genres, now]
-      );
-      if (row) out.push(row);
-      continue;
-    }
-
-    const target = existing[0];
-    // Keep the old slug if the new one belongs to a different row.
-    const slugTaken = existing.some((r) => r.id !== target.id && r.slug === game.slug);
-    const row = await db.queryOneAsync<GameRow>(
-      `UPDATE games
-          SET igdb_id = ?, slug = ?, name = ?, cover_url = ?, logo_url = ?,
-              release_year = ?, genres = COALESCE(?, genres), source = 'igdb', updated_at = ?
-        WHERE id = ?
-        RETURNING ${GAME_COLUMNS}`,
-      [
-        game.igdbId,
-        slugTaken ? target.slug : game.slug,
-        game.name,
-        game.coverUrl,
-        game.logoUrl,
-        game.releaseYear,
-        genres,
-        now,
-        target.id,
-      ]
-    );
-    if (row) out.push(row);
-  }
-
-  return out;
-}
-
 /**
  * Upsert Wikidata results. Matched by Wikidata id first (a label can change),
- * then by slug (a built-in, or an IGDB-enriched, row for the same game) —
- * same idea as `upsertIgdbGames`.
+ * then by slug (a built-in, or previously IGDB-enriched, row for the same
+ * game).
  */
 async function upsertWikidataGames(games: WikidataGame[]): Promise<GameRow[]> {
   const out: GameRow[] = [];
@@ -376,11 +459,22 @@ async function upsertWikidataGames(games: WikidataGame[]): Promise<GameRow[]> {
 
     if (existing.length === 0) {
       const row = await db.queryOneAsync<GameRow>(
-        `INSERT INTO games (wikidata_id, slug, name, cover_url, logo_url, release_year, genres, source, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 'wikidata', ?)
-         ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, genres = COALESCE(EXCLUDED.genres, games.genres)
+        `INSERT INTO games (wikidata_id, slug, name, cover_url, logo_url, release_year, genres, steam_app_id, source, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'wikidata', ?)
+         ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, genres = COALESCE(EXCLUDED.genres, games.genres),
+           steam_app_id = COALESCE(EXCLUDED.steam_app_id, games.steam_app_id)
          RETURNING ${GAME_COLUMNS}`,
-        [game.wikidataId, game.slug, game.name, game.coverUrl, game.logoUrl, game.releaseYear, genres, now]
+        [
+          game.wikidataId,
+          game.slug,
+          game.name,
+          game.coverUrl,
+          game.logoUrl,
+          game.releaseYear,
+          genres,
+          game.steamAppId,
+          now,
+        ]
       );
       if (row) out.push(row);
       continue;
@@ -392,7 +486,8 @@ async function upsertWikidataGames(games: WikidataGame[]): Promise<GameRow[]> {
     const row = await db.queryOneAsync<GameRow>(
       `UPDATE games
           SET wikidata_id = ?, slug = ?, name = ?, cover_url = ?, logo_url = ?,
-              release_year = ?, genres = COALESCE(?, genres), source = 'wikidata', updated_at = ?
+              release_year = ?, genres = COALESCE(?, genres),
+              steam_app_id = COALESCE(?, steam_app_id), source = 'wikidata', updated_at = ?
         WHERE id = ?
         RETURNING ${GAME_COLUMNS}`,
       [
@@ -403,6 +498,7 @@ async function upsertWikidataGames(games: WikidataGame[]): Promise<GameRow[]> {
         game.logoUrl,
         game.releaseYear,
         genres,
+        game.steamAppId,
         now,
         target.id,
       ]
@@ -421,7 +517,6 @@ interface CachedSearch {
   expiresAt: number;
   /** Game ids in result order; rows are re-read so they reflect later upserts. */
   ids: number[];
-  fromIgdb: boolean;
   fromWikidata: boolean;
 }
 
@@ -452,7 +547,6 @@ export async function searchGames(rawQuery: string): Promise<GameSearchResult> {
     if (rows.length === cached.ids.length) {
       return {
         games: rows.map((r) => toSummary(r, supported)),
-        fromIgdb: cached.fromIgdb,
         fromWikidata: cached.fromWikidata,
       };
     }
@@ -467,29 +561,19 @@ export async function searchGames(rawQuery: string): Promise<GameSearchResult> {
   const supportedBuiltins = builtins.filter((g) => g.integrationId);
   const otherBuiltins = builtins.filter((g) => !g.integrationId);
 
-  // IGDB when it is configured; otherwise Wikidata, which needs no API key
-  // and is the default so search works out of the box. Never both.
+  // Wikidata, which needs no API key, so search works out of the box.
   let externalRows: GameRow[] = [];
-  let fromIgdb = false;
   let fromWikidata = false;
   let externalAnswered = false;
   let externalFailed = false;
   try {
-    const igdbResults = await searchIgdb(query, SEARCH_MAX_RESULTS);
-    if (igdbResults) {
-      externalAnswered = true;
-      externalRows = await upsertIgdbGames(igdbResults);
-      fromIgdb = externalRows.length > 0;
-    } else {
-      const wikidataResults = await searchWikidata(query, SEARCH_MAX_RESULTS);
-      externalAnswered = true;
-      externalRows = await upsertWikidataGames(wikidataResults);
-      fromWikidata = externalRows.length > 0;
-    }
+    const wikidataResults = await searchWikidata(query, SEARCH_MAX_RESULTS);
+    externalAnswered = true;
+    externalRows = await upsertWikidataGames(wikidataResults);
+    fromWikidata = externalRows.length > 0;
   } catch (err) {
     externalFailed = true;
-    const message =
-      err instanceof IgdbError || err instanceof WikidataError ? err.message : (err as Error).message;
+    const message = err instanceof WikidataError ? err.message : (err as Error).message;
     log.warn(`[Games] External search failed, serving built-in games: ${message}`);
   }
 
@@ -511,8 +595,7 @@ export async function searchGames(rawQuery: string): Promise<GameSearchResult> {
     for (const g of otherBuiltins) push(builtinRows.get(g.slug));
   }
 
-  // Do not cache a failed external call, so it is retried. "Not configured"
-  // is cached: saving IGDB credentials clears the cache (routes/settings.ts).
+  // Do not cache a failed external call, so it is retried.
   if (!externalFailed) {
     if (searchCache.size >= SEARCH_CACHE_MAX_ENTRIES) {
       const oldest = searchCache.keys().next().value;
@@ -521,12 +604,11 @@ export async function searchGames(rawQuery: string): Promise<GameSearchResult> {
     searchCache.set(cacheKey, {
       expiresAt: Date.now() + SEARCH_CACHE_TTL_MS,
       ids: ordered.map((r) => r.id),
-      fromIgdb,
       fromWikidata,
     });
   }
 
-  return { games: ordered.map((r) => toSummary(r, supported)), fromIgdb, fromWikidata };
+  return { games: ordered.map((r) => toSummary(r, supported)), fromWikidata };
 }
 
 // ---------------------------------------------------------------------------
@@ -701,7 +783,7 @@ export async function getPlayableGames(): Promise<PlayableGame[]> {
  * this instance has no such game.
  *
  * Takes a built-in slug or alias ('rl'), an integration id ('cs2'), or the
- * slug of any `games` row IGDB or Wikidata search has added. Returns the
+ * slug of any `games` row a Wikidata search has added. Returns the
  * canonical slug to store, so a tournament row never holds an alias — the
  * registry resolves those, but two rows for one game would read as two games
  * everywhere else.

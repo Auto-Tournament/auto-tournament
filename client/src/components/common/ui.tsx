@@ -482,3 +482,35 @@ export const insetRowSx = {
   bgcolor: color.paper3,
   borderRadius: `${radius.md}px`,
 } as const;
+
+export type EmptyPanelProps = {
+  title: React.ReactNode;
+  description: React.ReactNode;
+  /** Buttons or links under the text. */
+  children?: React.ReactNode;
+  /** Heading level of the title; 2 (default) directly under a page's H1. */
+  level?: 2 | 3;
+  'data-testid'?: string;
+};
+
+/**
+ * Nothing to show yet: a quiet panel with a title, one line and maybe an
+ * action. The 3.0 empty state, in place of the 2.x big-icon card.
+ */
+export function EmptyPanel({ title, description, children, level = 2, ...rest }: EmptyPanelProps) {
+  return (
+    <Panel
+      role="status"
+      data-testid={rest['data-testid']}
+      sx={{ p: { xs: 3, md: 4 }, display: 'grid', gap: 1 }}
+    >
+      <Typography variant="h6" component={level === 2 ? 'h2' : 'h3'}>
+        {title}
+      </Typography>
+      <Typography sx={{ color: color.muted, fontSize: textSize.sm, maxWidth: '60ch' }}>
+        {description}
+      </Typography>
+      {children && <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>{children}</Box>}
+    </Panel>
+  );
+}

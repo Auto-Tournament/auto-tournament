@@ -19,6 +19,7 @@ import { isSameSiteRequest } from '../utils/accountConnections';
 import { log } from '../utils/logger';
 import {
   CatalogError,
+  catalogAppIcon,
   catalogIcon,
   disableCatalogModule,
   enableCatalogModule,
@@ -28,6 +29,7 @@ import {
   purgeCatalogModule,
   uninstallCatalogModule,
   uninstallCatalogPack,
+  updateAllCatalog,
 } from '../modules/catalogService';
 
 const router = Router();
@@ -138,6 +140,48 @@ async function sendIcon(res: Response, kind: 'pack' | 'module', id: string): Pro
 router.get('/packs/:slug/icon.svg', (req: Request, res: Response) =>
   sendIcon(res, 'pack', req.params.slug)
 );
+
+/**
+ * @openapi
+ * /api/catalog/packs/{slug}/app-icon:
+ *   get:
+ *     tags: [Catalog]
+ *     summary: The square app icon of a game pack in the catalog
+ *     description: |
+ *       From the installed pack, the offline snapshot, or the feed — fetched
+ *       by this server and served from this origin, checked by its bytes
+ *       (PNG or WebP, square, at most 25 KB) like an imported one.
+ *     security: [{ cookieAuth: [] }]
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: The icon
+ *         content:
+ *           image/webp: {}
+ *           image/png: {}
+ *       404:
+ *         description: No app icon
+ */
+router.get('/packs/:slug/app-icon', async (req: Request, res: Response) => {
+  try {
+    const icon = await catalogAppIcon(req.params.slug);
+    if (!icon) {
+      res.status(404).json({ success: false, error: 'No app icon' });
+      return;
+    }
+    res.setHeader('Content-Type', icon.type);
+    res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Cache-Control', 'private, max-age=300');
+    res.send(icon.data);
+  } catch (error) {
+    fail(res, error, 'read the app icon');
+  }
+});
 
 /**
  * @openapi
@@ -315,6 +359,40 @@ router.post('/modules/:id/update', sameSiteJson, async (req: Request, res: Respo
     });
   } catch (error) {
     fail(res, error, 'update the module');
+  }
+});
+
+/**
+ * @openapi
+ * /api/catalog/update-all:
+ *   post:
+ *     tags: [Catalog]
+ *     summary: Update every installed pack and code module that has a compatible newer version
+ *     description: |
+ *       Runs each update one after another, through the same path as
+ *       `/api/catalog/packs/{slug}/install` and
+ *       `/api/catalog/modules/{id}/update` — signature checks, the downgrade
+ *       guard, disabled-state preservation and restart-required handling all
+ *       apply exactly as they do there. An entry that cannot update
+ *       (incompatible, a newer major waiting for the admin, a restart
+ *       pending) is skipped, with why; one that fails outright (a bad
+ *       signature, a download error, and so on) is reported in `failed`.
+ *       Neither stops the rest. Same-site JSON only.
+ *     security: [{ cookieAuth: [] }]
+ *     responses:
+ *       200:
+ *         description: |
+ *           `updated`, `skipped` and `failed` list every entry that had a
+ *           compatible newer version; `restartRequired` is true when any
+ *           updated module needs a restart to load.
+ *       409:
+ *         description: Another catalog operation is running
+ */
+router.post('/update-all', sameSiteJson, async (req: Request, res: Response) => {
+  try {
+    res.json({ success: true, ...(await updateAllCatalog(requestActorId(req))) });
+  } catch (error) {
+    fail(res, error, 'update the catalog');
   }
 });
 

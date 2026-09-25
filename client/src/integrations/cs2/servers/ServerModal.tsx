@@ -15,9 +15,7 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { EyeIcon, EyeSlashIcon, XIcon } from '@phosphor-icons/react';
 import { api, apiErrorMessage, useSnackbar, ConfirmDialog, useModuleTranslation } from '../../../module-sdk';
 import type { Server } from '../cs2.types';
 
@@ -307,7 +305,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
             {isEditing ? t('serverModal.titleEdit') : t('serverModal.titleCreate')}
           </Typography>
           <IconButton onClick={onClose} size="small" aria-label="close">
-            <CloseIcon fontSize="small" />
+            <XIcon size={20} />
           </IconButton>
         </DialogTitle>
         <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
@@ -385,7 +383,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
                       onClick={() => setShowPassword(!showPassword)}
                       edge="end"
                     >
-                      {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                      {showPassword ? <EyeSlashIcon size={24} /> : <EyeIcon size={24} />}
                     </IconButton>
                   </InputAdornment>
                 ),

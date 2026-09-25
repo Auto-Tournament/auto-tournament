@@ -11,11 +11,13 @@ import {
   CircularProgress,
   Tooltip,
 } from '@mui/material';
-import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import EditIcon from '@mui/icons-material/Edit';
+import {
+  ArrowClockwiseIcon,
+  PencilSimpleIcon,
+  RobotIcon,
+  RocketLaunchIcon,
+  TrashIcon,
+} from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { TOURNAMENT_TYPES, MATCH_FORMATS } from '../../constants/tournament';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -165,7 +167,7 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
               starting ? (
                 <CircularProgress size={20} color="inherit" />
               ) : simulationEnabled ? (
-                <SmartToyIcon />
+                <RobotIcon />
               ) : (
                 <RocketLaunchIcon />
               )
@@ -208,7 +210,7 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
           {onEdit && (
             <Button
               variant="outlined"
-              startIcon={<EditIcon />}
+              startIcon={<PencilSimpleIcon />}
               onClick={onEdit}
               disabled={starting || saving}
             >
@@ -229,7 +231,7 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
                 <Box component="span">
                   <Button
                     variant="outlined"
-                    startIcon={<RefreshIcon />}
+                    startIcon={<ArrowClockwiseIcon />}
                     onClick={onRegenerate}
                     disabled={saving || !canRegenerate}
                   >
@@ -241,7 +243,7 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
             <Button
               variant="outlined"
               color="error"
-              startIcon={<DeleteForeverIcon />}
+              startIcon={<TrashIcon />}
               onClick={onDelete}
               disabled={saving}
             >

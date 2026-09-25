@@ -17,18 +17,17 @@ import {
 } from '@mui/material';
 import { PlayerName } from '../player/PlayerName';
 import {
-  Close as CloseIcon,
-  CheckCircle as CheckCircleIcon,
-  Info as InfoIcon,
-  ExpandMore as ExpandMoreIcon,
-  ExpandLess as ExpandLessIcon,
-  OpenInNew as OpenInNewIcon,
-} from '@mui/icons-material';
-import Link from '@mui/material/Link';
+  CaretDownIcon,
+  CaretUpIcon,
+  CheckCircleIcon,
+  InfoIcon,
+  XIcon,
+} from '@phosphor-icons/react';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { useTranslation } from 'react-i18next';
 import { NoDiscordChip } from '../player/NoDiscordChip';
 import { isValidDiscordId, normalizeDiscordId } from '../../utils/discordId';
+import { ExternalLink } from '../common/ExternalLink';
 
 interface Player {
   name: string;
@@ -223,7 +222,7 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
             {t('teamImportModal.title')}
           </Typography>
           <IconButton onClick={handleClose} size="small">
-            <CloseIcon />
+            <XIcon />
           </IconButton>
         </Box>
       </DialogTitle>
@@ -239,10 +238,8 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
               {t('teamImportModal.info.format')}
             </Typography>
             <Typography variant="caption" component="div" sx={{ mt: 1 }}>
-              <Link
+              <ExternalLink
                 href="https://docs.autotournament.gg/guides/teams-and-players#import-teams"
-                target="_blank"
-                rel="noopener noreferrer"
                 sx={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -252,8 +249,7 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
                 }}
               >
                 {t('teamImportModal.info.link')}
-                <OpenInNewIcon sx={{ fontSize: '0.875rem' }} />
-              </Link>
+              </ExternalLink>
             </Typography>
           </Alert>
 
@@ -363,7 +359,7 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
                         )}
                       </Box>
                       <IconButton size="small">
-                        {expandedTeams.has(index) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                        {expandedTeams.has(index) ? <CaretUpIcon /> : <CaretDownIcon />}
                       </IconButton>
                     </Box>
 

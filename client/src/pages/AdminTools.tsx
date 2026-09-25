@@ -1,479 +1,96 @@
-import React, { useState } from 'react';
-import { usePageHeader } from '../contexts/PageHeaderContext';
+import { pageTitle } from '../utils/pageTitle';
+import React from 'react';
 import {
   Typography,
   Box,
-  Card,
-  CardContent,
   Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  TextField,
-  Alert,
-  Chip,
-  CircularProgress,
-  Grid,
-  Divider,
 } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import RefreshIcon from '@mui/icons-material/Refresh';
+import { CaretDownIcon } from '@phosphor-icons/react';
 import { api } from '../utils/api';
-import { ADMIN_COMMAND_CATEGORIES, type AdminCommand } from '../constants/adminCommands';
-import { useAdminCommands } from '../hooks/useAdminCommands';
-import { ServerEventsMonitor } from '../components/admin/ServerEventsMonitor';
 import { LogViewer } from '../components/admin/LogViewer';
 import { useSnackbar } from '../contexts/SnackbarContext';
+import { useInstalledIntegrations } from '../integrations/registry';
 import { useTranslation } from 'react-i18next';
-import { radii } from '../theme/tokens';
+import { PageHead, SectionHead } from '../components/common/ui';
 
-interface Server {
-  id: string;
-  name: string;
-  host: string;
-  port: number;
-  enabled: boolean;
-}
-
+/**
+ * Admin tools: logs and maintenance, which every instance has, then each
+ * installed module's own section (`adminToolsSection`; CS2: RCON and its
+ * server events monitor). Without a module that fills the slot, the page is
+ * only core's tools.
+ */
 const AdminTools: React.FC = () => {
-  const { setHeaderActions } = usePageHeader();
-  const [servers, setServers] = useState<Server[]>([]);
-  const [selectedServerId, setSelectedServerId] = useState<string>('all');
-  const [loadingServers, setLoadingServers] = useState(true);
-  const [commandInputs, setCommandInputs] = useState<Record<string, string>>({});
-
-  const { executing, results, error, success, executeCommand } = useAdminCommands();
   const { showSuccess, showError } = useSnackbar();
   const { t } = useTranslation();
-
-  // Curate which commands are shown as "quick actions" vs tucked away in advanced tools.
-  // This keeps the page comprehensive but avoids overwhelming admins with every niche option up front.
-  const ESSENTIAL_COMMAND_IDS = new Set<string>([
-    'match-end', // css_restart
-    'force-pause',
-    'force-unpause',
-    'broadcast',
-    'start-practice',
-    'exit-practice',
-  ]);
-
-  // Commands that are effectively duplicates or legacy variants we don't need to show twice
-  // (e.g. another css_restart UI entry).
-  const HIDDEN_COMMAND_IDS = new Set<string>(['clean-servers']);
-
-  const loadServers = React.useCallback(async () => {
-    setLoadingServers(true);
-    try {
-      const response: { servers: Server[] } = await api.get('/api/servers');
-      const enabledServers = (response.servers || []).filter((s: Server) => s.enabled);
-      setServers(enabledServers);
-    } catch (err) {
-      console.error('Failed to load servers:', err);
-    } finally {
-      setLoadingServers(false);
-    }
-  }, []);
-
-  React.useEffect(() => {
-    loadServers();
-  }, [loadServers]);
+  const moduleSections = useInstalledIntegrations().flatMap((integration) =>
+    integration.adminToolsSection
+      ? [{ id: integration.id, Section: integration.adminToolsSection }]
+      : []
+  );
 
   // Set dynamic page title
   React.useEffect(() => {
-    document.title = t('layout.pageTitle.adminTools');
+    document.title = pageTitle(t('layout.pageTitle.adminTools'));
   }, [t]);
 
-  React.useEffect(() => {
-    setHeaderActions(
-      <Button
-        variant="outlined"
-        startIcon={<RefreshIcon />}
-        onClick={loadServers}
-        disabled={loadingServers}
-      >
-        {t('adminToolsPage.header.refresh')}
-      </Button>
-    );
+  const handleRecovery = async () => {
+    try {
+      const response = await api.post<{
+        success: boolean;
+        message?: string;
+      }>('/api/recovery/recover');
 
-    return () => {
-      setHeaderActions(null);
-    };
-  }, [setHeaderActions, loadingServers, loadServers, t]);
-
-  const handleExecuteCommand = async (command: AdminCommand) => {
-    // Get the command value (input from user if required)
-    const value = command.requiresInput ? commandInputs[command.id] : undefined;
-
-    // Validate input if required
-    if (command.requiresInput && !value) {
-      return;
-    }
-
-    // Determine which servers to execute on
-    const serverIds = selectedServerId === 'all' ? servers.map((s) => s.id) : [selectedServerId];
-
-    if (serverIds.length === 0) {
-      return;
-    }
-
-    await executeCommand(serverIds, command.command, value);
-
-    // Clear input after execution
-    if (command.requiresInput) {
-      setCommandInputs((prev) => ({ ...prev, [command.id]: '' }));
+      if (response.success) {
+        showSuccess(response.message || t('adminToolsPage.recovery.success'));
+      } else {
+        showError(response.message || t('adminToolsPage.recovery.error'));
+      }
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : t('adminToolsPage.recovery.failedTrigger');
+      showError(message);
     }
   };
-
-  const handleInputChange = (commandId: string, value: string) => {
-    setCommandInputs((prev) => ({ ...prev, [commandId]: value }));
-  };
-
-  React.useEffect(() => {
-    if (success) {
-      showSuccess(success);
-    }
-  }, [success, showSuccess]);
-
-  React.useEffect(() => {
-    if (error) {
-      showError(error);
-    }
-  }, [error, showError]);
-
-  // Flatten all commands so we can build "Quick Actions" and "Advanced" sections
-  const allCommands: AdminCommand[] = ADMIN_COMMAND_CATEGORIES.flatMap((category) => category.commands);
-
-  const quickCommands: AdminCommand[] = allCommands.filter(
-    (command) => ESSENTIAL_COMMAND_IDS.has(command.id) && !HIDDEN_COMMAND_IDS.has(command.id)
-  );
-
-  const advancedCategories = ADMIN_COMMAND_CATEGORIES
-    .map((category) => ({
-      ...category,
-      commands: category.commands.filter(
-        (command) =>
-          !ESSENTIAL_COMMAND_IDS.has(command.id) && !HIDDEN_COMMAND_IDS.has(command.id)
-      ),
-    }))
-    .filter((category) => category.commands.length > 0);
-
-  const renderCommandCard = (command: AdminCommand) => (
-    <Card variant="outlined">
-      <CardContent>
-        <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-          {t(`adminToolsPage.commands.${command.i18nKey}.label`)}
-        </Typography>
-        <Typography variant="caption" color="text.secondary" display="block" mb={2}>
-          {t(`adminToolsPage.commands.${command.i18nKey}.description`)}
-        </Typography>
-
-        {command.requiresInput && (
-          <TextField
-            fullWidth
-            size="small"
-            label={t(`adminToolsPage.commands.${command.i18nKey}.inputLabel`)}
-            type={command.inputType || 'text'}
-            value={commandInputs[command.id] || ''}
-            onChange={(e) => handleInputChange(command.id, e.target.value)}
-            sx={{ mb: 1 }}
-          />
-        )}
-
-        {/* Outlined in the theme's colour, red only when the command is
-            destructive. Four full-strength colours (red, yellow, green, blue)
-            on one page matched nothing else in the app. */}
-        <Button
-          fullWidth
-          variant="outlined"
-          color={command.color === 'error' ? 'error' : 'primary'}
-          size="small"
-          startIcon={executing ? <CircularProgress size={16} /> : <PlayArrowIcon />}
-          onClick={() => handleExecuteCommand(command)}
-          disabled={
-            executing ||
-            servers.length === 0 ||
-            (command.requiresInput && !commandInputs[command.id])
-          }
-        >
-          {t('adminToolsPage.command.execute')}
-        </Button>
-
-        {command.id === 'custom-rcon' && (
-          <Alert severity="warning" sx={{ mt: 1 }}>
-            <Typography variant="caption">
-              {t('adminToolsPage.customRconWarning')}
-            </Typography>
-          </Alert>
-        )}
-      </CardContent>
-    </Card>
-  );
-
-  if (loadingServers) {
-    return (
-      <Box sx={{ width: '100%', height: '100%' }}>
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-          <CircularProgress />
-        </Box>
-      </Box>
-    );
-  }
 
   return (
-    <Box sx={{ width: '100%', height: '100%' }}>
-      {/* The shell header above already shows the page title; only the description stays. */}
-      <Typography variant="body2" color="text.secondary" mb={3}>
-        {t('adminToolsPage.description')}
-      </Typography>
+    <Box sx={{ width: '100%', height: '100%' }} data-testid="admin-tools-page">
+      <PageHead title={t('layout.pageTitle.adminTools')} subtitle={t('adminToolsPage.description')} />
 
-      {/* Server Selection */}
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Grid container spacing={2} alignItems="center">
-            <Grid size={{ xs: 12, md: 8 }}>
-              <FormControl fullWidth>
-                <InputLabel>{t('adminToolsPage.serverSelect.label')}</InputLabel>
-                <Select
-                  value={selectedServerId}
-                  label={t('adminToolsPage.serverSelect.label')}
-                  onChange={(e) => setSelectedServerId(e.target.value)}
-                >
-                  <MenuItem value="all">
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <Chip
-                        label={t('adminToolsPage.serverSelect.allServersChip')}
-                        size="small"
-                        color="primary"
-                      />
-                      <Typography>
-                        {t('adminToolsPage.serverSelect.allServersDescription', {
-                          count: servers.length,
-                        })}
-                      </Typography>
-                    </Box>
-                  </MenuItem>
-                  <Divider />
-                  {servers.map((server) => (
-                    <MenuItem key={server.id} value={server.id}>
-                      {server.name} ({server.host}:{server.port})
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Button
-                fullWidth
-                variant="contained"
-                color="primary"
-                onClick={() =>
-                  executeCommand(
-                    selectedServerId === 'all' ? servers.map((s) => s.id) : [selectedServerId],
-                    'status'
-                  )
-                }
-                disabled={executing || servers.length === 0}
-                startIcon={executing ? <CircularProgress size={16} /> : <PlayArrowIcon />}
-              >
-                {t('adminToolsPage.serverSelect.sendStatus')}
-              </Button>
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
+      {/* Match recovery */}
+      <Box component="section" data-testid="admin-tools-recovery" aria-labelledby="admin-tools-recovery-heading">
+        <SectionHead id="admin-tools-recovery-heading" title={t('adminToolsPage.recovery.title')} sx={{ mb: 1 }} />
+        <Typography variant="body2" color="text.secondary" mb={2}>
+          {t('adminToolsPage.recovery.description')}
+        </Typography>
+        <Button variant="contained" color="warning" onClick={handleRecovery}>
+          {t('adminToolsPage.recovery.button')}
+        </Button>
+      </Box>
 
-      {/* Execution Results */}
-      {results.length > 0 && (
-        <Card sx={{ mb: 3 }}>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>
-              {t('adminToolsPage.results.title')}
+      {/* Logs */}
+      <Box component="section" mt={6} data-testid="admin-tools-logs" aria-labelledby="admin-tools-logs-heading">
+        <SectionHead id="admin-tools-logs-heading" title={t('adminToolsPage.monitoring.title')} />
+        <Accordion>
+          <AccordionSummary expandIcon={<CaretDownIcon />}>
+            <Typography variant="subtitle1" component="h3" fontWeight={600}>
+              {t('adminToolsPage.monitoring.appLogs')}
             </Typography>
-            <Grid container spacing={2}>
-              {results.map((result) => (
-                <Grid size={{ xs: 12 }} key={result.serverId}>
-                  <Box
-                    sx={{
-                      p: 2,
-                      borderRadius: radii.sm,
-                      border: '1px solid',
-                      borderColor: result.success ? 'success.main' : 'error.main',
-                      bgcolor: result.success ? 'success.light' : 'error.light',
-                    }}
-                  >
-                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                      <Typography variant="body2" fontWeight={600}>
-                        {result.serverName}
-                      </Typography>
-                      <Chip
-                        label={
-                          result.success
-                            ? t('adminToolsPage.results.successChip')
-                            : t('adminToolsPage.results.failedChip')
-                        }
-                        size="small"
-                        color={result.success ? 'success' : 'error'}
-                        sx={{ fontWeight: 600 }}
-                      />
-                    </Box>
-                    {result.response && (
-                      <Box
-                        sx={{
-                          mt: 1,
-                          p: 1.5,
-                          borderRadius: radii.sm,
-                          bgcolor: 'background.paper',
-                          border: '1px solid',
-                          borderColor: 'divider',
-                          fontFamily: 'monospace',
-                          fontSize: '0.75rem',
-                          whiteSpace: 'pre-wrap',
-                          wordBreak: 'break-word',
-                          maxHeight: '300px',
-                          overflowY: 'auto',
-                        }}
-                      >
-                        {result.response}
-                      </Box>
-                    )}
-                    {result.error && (
-                      <Typography variant="caption" color="error.main" display="block" mt={1}>
-                        {t('adminToolsPage.results.errorPrefix')} {result.error}
-                      </Typography>
-                    )}
-                  </Box>
-                </Grid>
-              ))}
-            </Grid>
-          </CardContent>
-        </Card>
-      )}
+          </AccordionSummary>
+          <AccordionDetails>
+            <LogViewer />
+          </AccordionDetails>
+        </Accordion>
+      </Box>
 
-      {/* Quick Actions */}
-      {quickCommands.length > 0 && (
-        <>
-          <Typography variant="h6" fontWeight={600} mb={2}>
-            {t('adminToolsPage.quickActions.title')}
-          </Typography>
-          <Grid container spacing={2} mb={3}>
-            {quickCommands.map((command) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={command.id}>
-                {renderCommandCard(command)}
-              </Grid>
-            ))}
-          </Grid>
-        </>
-      )}
-
-      {/* Advanced Command Categories */}
-      {advancedCategories.length > 0 && (
-        <>
-          <Typography variant="h6" fontWeight={600} mt={1} mb={2}>
-            {t('adminToolsPage.advanced.title')}
-          </Typography>
-          {advancedCategories.map((category) => (
-            <Accordion key={category.id}>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography variant="subtitle1" fontWeight={600}>
-                  {t(`adminToolsPage.categories.${category.i18nKey}`)}
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Grid container spacing={2}>
-                  {category.commands.map((command) => (
-                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={command.id}>
-                      {renderCommandCard(command)}
-                    </Grid>
-                  ))}
-                </Grid>
-              </AccordionDetails>
-            </Accordion>
-          ))}
-        </>
-      )}
-
-      {servers.length === 0 && (
-        <Alert severity="info">
-          {t('adminToolsPage.noServers')}
-        </Alert>
-      )}
-
-      <Divider sx={{ my: 4 }} />
-
-      {/* Match Recovery Utilities */}
-      <Typography variant="h5" fontWeight={600} mb={2}>
-        {t('adminToolsPage.recovery.title')}
-      </Typography>
-      <Typography variant="body2" color="text.secondary" mb={2}>
-        {t('adminToolsPage.recovery.description')}
-      </Typography>
-      <Button
-        variant="contained"
-        color="warning"
-        onClick={async () => {
-          try {
-            const response = await api.post<{
-              success: boolean;
-              message?: string;
-            }>('/api/recovery/recover');
-
-            if (response.success) {
-              showSuccess(
-                response.message || t('adminToolsPage.recovery.success')
-              );
-            } else {
-              showError(
-                response.message || t('adminToolsPage.recovery.error')
-              );
-            }
-          } catch (err) {
-            const message =
-              err instanceof Error
-                ? err.message
-                : t('adminToolsPage.recovery.failedTrigger');
-            showError(message);
-          }
-        }}
-      >
-        {t('adminToolsPage.recovery.button')}
-      </Button>
-
-      <Divider sx={{ my: 4 }} />
-
-      {/* Monitoring & Logs Section - Collapsed by default */}
-      <Typography variant="h5" fontWeight={600} mb={3}>
-        {t('adminToolsPage.monitoring.title')}
-      </Typography>
-
-      {/* Server Events Monitor */}
-      <Accordion>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h6">
-            {t('adminToolsPage.monitoring.serverEvents')}
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <ServerEventsMonitor />
-        </AccordionDetails>
-      </Accordion>
-
-      {/* Application Logs */}
-      <Accordion sx={{ mt: 2 }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h6">
-            {t('adminToolsPage.monitoring.appLogs')}
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <LogViewer />
-        </AccordionDetails>
-      </Accordion>
-
+      {/* Each installed module's own tools, after core's */}
+      {moduleSections.map(({ id, Section }) => (
+        <Box key={id} mt={6} data-testid={`admin-tools-module-${id}`}>
+          <Section />
+        </Box>
+      ))}
     </Box>
   );
 };

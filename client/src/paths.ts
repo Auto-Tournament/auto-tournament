@@ -19,6 +19,12 @@ export const paths = {
   teamMatch: '/team/:teamId',
   teamProfile: '/t/team/:teamId',
   tournamentOverview: '/tournament/:id',
+  // The tournament page's other tabs, nested under `tournamentOverview`.
+  tournamentBracket: '/tournament/:id/bracket',
+  tournamentMatches: '/tournament/:id/matches',
+  tournamentTeams: '/tournament/:id/teams',
+  tournamentStandings: '/tournament/:id/standings',
+  /** The old address of Standings; redirects there. */
   tournamentLeaderboard: '/tournament/:id/leaderboard',
   findPlayer: '/player',
   playerProfile: '/player/:steamId',
@@ -60,6 +66,19 @@ export function adminRoute(path: string): string {
 /** `/player/:steamId` for one player. */
 export function playerProfilePath(steamId: string): string {
   return `/player/${steamId}`;
+}
+
+/** The public tournament page's tabs, in the order they are shown. */
+export const TOURNAMENT_TABS = ['overview', 'bracket', 'matches', 'teams', 'standings'] as const;
+export type TournamentTab = (typeof TOURNAMENT_TABS)[number];
+
+/** `/tournament/:id` for Overview, `/tournament/:id/<tab>` for the other tabs. */
+export function tournamentTabPath(
+  tournamentId: number | string,
+  tab: TournamentTab = 'overview'
+): string {
+  const base = `/tournament/${tournamentId}`;
+  return tab === 'overview' ? base : `${base}/${tab}`;
 }
 
 /** `/t/team/:teamId` for one team's public profile page. */

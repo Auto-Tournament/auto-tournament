@@ -235,8 +235,9 @@ test.describe.serial('Stats pages follow the tournament game', () => {
       await expect(row).not.toContainText('/');
       await expect(page.getByText('Kills / deaths.', { exact: false })).toHaveCount(0);
 
-      // No ADR highlights beside the recent-form timeline.
-      await expect(page.getByText('Recent Form & Highlights')).toBeVisible();
+      // No ADR highlights: the 3.0 profile has no "Recent form & highlights"
+      // section at all (design-conformance chunk 3), for any game.
+      await expect(page.getByText('Recent Form & Highlights')).toHaveCount(0);
       await expect(page.getByText('Best Match (ADR)')).toHaveCount(0);
       await expect(page.getByText('Toughest Match (ADR)')).toHaveCount(0);
 

@@ -24,4 +24,10 @@ export const links = {
   servers: (): string => paths.servers,
   /** The maps and map pools page, in the admin shell. CS2 mounts it. */
   maps: (): string => paths.maps,
+  /**
+   * The Settings page; with a module id, opened on that module's tab (its
+   * `instanceSettings`). Client API 0.2.2.
+   */
+  settings: (moduleId?: string): string =>
+    moduleId ? `${paths.settings}?section=${encodeURIComponent(moduleId)}` : paths.settings,
 } as const;

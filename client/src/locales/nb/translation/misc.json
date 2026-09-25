@@ -52,7 +52,6 @@
       "remove": "Fjern {{name}}",
       "supported": "Turneringer støttes",
       "limit": "Du kan velge opptil {{max}} spill",
-      "credit": "Spilldata fra IGDB",
       "creditWikidata": "Spilldata fra Wikidata"
     },
     "profile": {
@@ -75,35 +74,6 @@
       "selectedCount": "{{count}} av {{max}} valgt",
       "pickOne": "Velg minst ett spill",
       "supportedLegend": "Turneringer spilles her"
-    },
-    "igdb": {
-      "title": "Spilldata fra IGDB",
-      "description": "Spillere velger spillene de spiller fra et søk. Med IGDB-nøkler dekker søket alle spill, med omslag; uten dem bruker søket Wikidata.",
-      "consoleLink": "Åpne Twitch developer console",
-      "howToToggle": "Slik henter du nøklene",
-      "howToStep1": "Opprett en Twitch-konto og skru på tofaktorautentisering.",
-      "howToStep2": "Registrer en app i Twitch Developer Console. Redirect URL: http://localhost. Client Type: Confidential.",
-      "howToStep3": "Åpne appen, trykk Manage, og kopier Client ID.",
-      "howToStep4": "Trykk New Secret og kopier Client Secret.",
-      "howToStep5": "Lim inn begge her, trykk Lagre, og deretter Test tilkobling.",
-      "fullGuideLink": "Full guide",
-      "freeNote": "Gratis for ikke-kommersiell bruk.",
-      "clientId": "Client ID",
-      "clientSecret": "Client secret",
-      "secretSetPlaceholder": "Lagret. Skriv inn en ny for å bytte",
-      "secretHelper": "Kan bare skrives: den lagrede verdien vises aldri.",
-      "envOverride": "IGDB_CLIENT_ID og IGDB_CLIENT_SECRET er satt i miljøet og går foran dette skjemaet.",
-      "statusConfigured": "Satt opp",
-      "statusNotConfigured": "Ikke satt opp",
-      "save": "Lagre",
-      "remove": "Fjern",
-      "test": "Test tilkoblingen",
-      "testing": "Tester…",
-      "testOk": "Koblet til IGDB",
-      "testFailed": "Tilkoblingen til IGDB feilet: {{error}}",
-      "saved": "IGDB-nøklene er lagret",
-      "removed": "IGDB-nøklene er fjernet",
-      "saveFailed": "Kunne ikke lagre IGDB-nøklene"
     }
   },
   "account": {
@@ -174,21 +144,34 @@
     },
     "openForYourGames": {
       "title": "Åpent for dine spill",
-      "browseAll": "Bla gjennom alle turneringer",
+      "browseAll": "Utforsk alle turneringer",
       "empty": "Ingen åpne turneringer for dine spill akkurat nå.",
       "steamLinked": "Steam koblet til",
       "titleAll": "Åpne turneringer",
       "emptyAll": "Ingen åpne turneringer akkurat nå."
-    }
+    },
+    "summary": {
+      "match": "Du har en kamp som venter.",
+      "open_one": "{{count}} turnering er åpen for spill du spiller.",
+      "open_other": "{{count}} turneringer er åpne for spill du spiller.",
+      "openAll_one": "{{count}} turnering er åpen på denne siden.",
+      "openAll_other": "{{count}} turneringer er åpne på denne siden.",
+      "none": "Ingenting venter på deg akkurat nå."
+    },
+    "yourGames": "Spill du spiller",
+    "loading": "Laster hjemmesiden din",
+    "nextMatch": "Din neste kamp"
   },
   "browsePage": {
-    "title": "Bla gjennom turneringer",
-    "searchPlaceholder": "Søk etter navn eller sted",
+    "title": "Utforsk turneringer",
+    "searchPlaceholder": "Søk etter navn, arrangør eller sted",
+    "searchLabel": "Søk i turneringer",
+    "loading": "Laster turneringer",
     "loadError": "Kunne ikke laste turneringer.",
-    "empty": "Ingen turneringer samsvarer med filtrene dine.",
-    "teamsCount": "{{count}} lag",
-    "watch": "Se",
-    "view": "Vis",
+    "listLabel": "Turneringer",
+    "createTournament": "Opprett turnering",
+    "teamsCount_one": "{{count}} lag",
+    "teamsCount_other": "{{count}} lag",
     "filters": {
       "allGames": "Alle spill",
       "status": {
@@ -201,12 +184,39 @@
         "all": "Nett og LAN",
         "online": "Nett",
         "lan": "LAN"
-      }
+      },
+      "gameLabel": "Spill",
+      "statusLabel": "Status",
+      "whereLabel": "Hvor"
+    },
+    "columns": {
+      "tournament": "Turnering",
+      "format": "Format",
+      "when": "Når"
+    },
+    "when": {
+      "starts": "Starter {{date}}",
+      "finished": "Ferdig",
+      "finishedOn": "Ferdig {{date}}",
+      "noDate": "Ingen dato ennå"
+    },
+    "actions": {
+      "signUp": "Meld på",
+      "watch": "Se",
+      "results": "Resultater"
     },
     "status": {
-      "live": "Live",
-      "finished": "Fullført",
-      "registrationOpen": "Registrering åpen"
+      "live": "Live"
+    },
+    "emptyNone": {
+      "title": "Ingen turneringer ennå",
+      "description": "Når denne siden arrangerer en turnering, vises den her.",
+      "descriptionAdmin": "Denne siden har ingen turnering ennå. Opprett en, så vises den her."
+    },
+    "emptyFiltered": {
+      "title": "Ingen turneringer passer filtrene",
+      "description": "Prøv et annet spill eller en annen status, eller nullstill filtrene.",
+      "clear": "Nullstill filtre"
     }
   },
   "modulesPage": {
@@ -336,6 +346,14 @@
     "retry": "Prøv igjen",
     "failed": "{{name}}: {{reason}}",
     "failedFallback": "operasjonen feilet",
+    "updateAll": {
+      "action": "Oppdater alle ({{count}})",
+      "running": "Oppdaterer …",
+      "done": "Oppdaterte {{count}} spill og moduler",
+      "summary": "Oppdaterte {{updated}}, hoppet over {{skipped}}, feilet {{failed}}.",
+      "failedItem": "{{name}}: {{reason}}",
+      "failedFallback": "kunne ikke oppdatere alt"
+    },
     "feed": {
       "cache": "Viser katalogen fra {{time}}: fikk ikke kontakt med den nettbaserte katalogen ({{reason}}). Spill i dette imaget kan fortsatt installeres uten nett.",
       "none": "Fikk ikke kontakt med den nettbaserte katalogen ({{reason}}). Viser spillene i dette imaget; de installeres uten nett.",
@@ -390,6 +408,12 @@
       "action": "Last inn på nytt"
     },
     "restart": "Start Auto Tournament på nytt for å fullføre: {{names}}.",
+    "restartNow": {
+      "action": "Start på nytt nå",
+      "restarting": "Starter på nytt…",
+      "failed": "Kunne ikke starte på nytt",
+      "timeout": "Auto Tournament har ikke kommet tilbake ennå. Sjekk containeren, og last inn siden på nytt."
+    },
     "confirmInstall": {
       "title": "Installere {{name}}?",
       "body": "Dette er en kodemodul, signert av Auto Tournament. Den kjører på denne serveren med tilgang til databasen og filene dine, og i nettleseren til alle som åpner en side den tegner.",

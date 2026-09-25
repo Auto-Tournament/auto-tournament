@@ -62,9 +62,21 @@
       "free": "Free",
       "offline": "Offline",
       "lastHeartbeat": "Last heartbeat {{time}} ago",
-      "never": "never",
       "notConfigured": "Not configured",
-      "notConfiguredHint": "Added, but it has not reported in yet"
+      "notConfiguredHint": "Added, but it has not reported in yet",
+      "noHeartbeat": "No heartbeat yet",
+      "checking": "Checking",
+      "loading": "Loading servers",
+      "ready": "Ready for the next match",
+      "resting": "Resting",
+      "readyIn": "Ready again in {{count}}s",
+      "busy": "Busy",
+      "heldBack": {
+        "demoUpload": "Uploading the last match's demo",
+        "outOfDate": "CS2 on this server needs an update",
+        "unverified": "CS2 version not checked yet",
+        "other": "Not taking matches right now"
+      }
     },
     "needsYou": {
       "stale": {
@@ -88,7 +100,9 @@
     },
     "headerActions": {
       "addMap": "Aggiungi mappa",
-      "createMapPool": "Crea pool mappe"
+      "createMapPool": "Crea pool mappe",
+      "syncMaps": "Sincronizza mappe",
+      "syncingMaps": "Sincronizzazione mappe…"
     },
     "errors": {
       "loadMaps": "Impossibile caricare le mappe",
@@ -139,6 +153,8 @@
     "mapIdHelper": "Solo lettere minuscole, numeri e underscore (de_dust2)",
     "displayNameLabel": "Nome visualizzato",
     "displayNamePlaceholder": "Dust II",
+    "gameModeLabel": "Tipo di mappa",
+    "gameModeHelper": "Raggruppa la mappa nella pagina Mappe e decide quali tornei possono giocarla.",
     "mapImageLabel": "Immagine mappa",
     "uploadButton": "Carica immagine",
     "fetchFromGitHub": "Recupera da GitHub",
@@ -402,11 +418,7 @@
       "bulkDelete": "Impossibile eliminare uno o più server"
     },
     "allocation": {
-      "title": "Allocazione server",
       "loading": "Caricamento stato allocazione...",
-      "empty": "Nessun dato di allocazione disponibile.",
-      "available": "Server disponibili:",
-      "waiting": "Match in attesa di server:",
       "nextPass": "Prossimo passaggio dell’allocatore tra ~{{seconds}}s",
       "cooldownLabel": "Raffreddamento",
       "cooldownDescription": "Match terminato di recente — in cooldown per consentire l’upload dei demo e il reset completo del server (circa 2 minuti).",
@@ -436,21 +448,12 @@
       "unreachable": "Non raggiungibile",
       "reachable": "Raggiungibile",
       "unknown": "Sconosciuto",
-      "loading": "Caricamento…",
-      "pluginLabel": "Auto Tournament CS2:"
+      "loading": "Caricamento…"
     },
     "currentMatch": {
       "view": "Vedi match",
       "loading": "Caricamento...",
       "queuedPrefix": "In coda: "
-    },
-    "labels": {
-      "host": "Host :",
-      "port": "Porta:",
-      "id": "ID :",
-      "cs2Name": "Nome CS2:",
-      "plugin": "Plugin:",
-      "cs2BuildValue": "build {{build}}"
     },
     "bulkDelete": {
       "title": "Elimina server",
@@ -466,15 +469,9 @@
       "title": "Stato della flotta server",
       "total_one": "{{count}} server",
       "total_other": "{{count}} server",
-      "online": "online",
-      "offline": "offline",
-      "notConfigured": "non configurati",
-      "disabled": "disabilitati",
       "latestRelease": "Ultima release di Auto Tournament CS2: v{{version}}",
       "olderVersion_one": "{{count}} server usa una versione precedente all’ultima release.",
       "olderVersion_other": "{{count}} server usano una versione precedente all’ultima release.",
-      "newerVersion_one": "{{count}} server usa una versione più recente dell’ultima release su GitHub (probabilmente una build non pubblicata).",
-      "newerVersion_other": "{{count}} server usano una versione più recente dell’ultima release su GitHub (probabilmente una build non pubblicata).",
       "downloadLatest": "Scarica l’ultima versione"
     },
     "cs2Update": {
@@ -501,7 +498,6 @@
     "chips": {
       "versionMismatch": "Versione diversa",
       "ipBanned": "IP bannato",
-      "cs2Build": "Build CS2 {{build}}",
       "pluginDbDown": "DB del plugin non disponibile",
       "cs2UpdateRequired": "Aggiornamento CS2 richiesto ({{version}})"
     },
@@ -523,8 +519,7 @@
       "ipBannedBody": "Il server ha bannato temporaneamente l’IP di Auto Tournament dopo ripetuti errori di autenticazione RCON. Correggi la password RCON e sbanna l’IP.",
       "pluginDbTitle": "Il plugin Auto Tournament non riesce a raggiungere il proprio database.",
       "pluginDbBody": "Se usi CSM, esegui {{path}}.",
-      "cs2UpdateBody": "Auto Tournament ha verificato che la build di questo server è indietro rispetto a Steam. È escluso dalle nuove assegnazioni (e dall’avvio del torneo) finché non viene aggiornato.",
-      "retryInit": "Riprova l’inizializzazione del server (invia la configurazione persistente via RCON)"
+      "cs2UpdateBody": "Auto Tournament ha verificato che la build di questo server è indietro rispetto a Steam. È escluso dalle nuove assegnazioni (e dall’avvio del torneo) finché non viene aggiornato."
     },
     "lastActive": {
       "justNow": "Attivo proprio ora",
@@ -557,6 +552,34 @@
       "triggeredAll_one": "Nuovo tentativo avviato per {{count}} server",
       "triggeredAll_other": "Nuovo tentativo avviato per {{count}} server",
       "failedAll": "Nuovo tentativo fallito: {{message}}"
+    },
+    "row": {
+      "details": "Details for {{name}}",
+      "actions": "Actions for {{name}}",
+      "edit": "Edit",
+      "retryInit": "Retry initialization",
+      "disabled": "Disabled: allocation skips it",
+      "waitingForPlugin": "Config sent, waiting for the plugin's first event",
+      "running": "Running {{match}}",
+      "ready": "Ready for the next match"
+    },
+    "details": {
+      "host": "Host",
+      "port": "Port",
+      "cs2Name": "CS2 name",
+      "plugin": "Plugin",
+      "cs2Build": "CS2 build",
+      "pluginStatus": "Plugin status",
+      "lastEvent": "Last event",
+      "id": "ID"
+    },
+    "strip": {
+      "online": "ONLINE",
+      "offline": "OFFLINE",
+      "notConfigured": "NOT SET UP",
+      "disabled": "DISABLED",
+      "free": "FREE",
+      "waiting": "WAITING"
     }
   },
   "serverModal": {
@@ -707,6 +730,343 @@
     },
     "info_one": "Verrà salvato un pool mappe con {{count}} mappa.",
     "info_other": "Verrà salvato un pool mappe con {{count}} mappe."
+  },
+  "adminTools": {
+    "description": "Esegui azioni comuni sui match e sui server CS2. Le azioni rapide vengono mostrate per prime, con strumenti più avanzati disponibili sotto.",
+    "refresh": "Aggiorna server",
+    "serverSelect": {
+      "label": "Server di destinazione",
+      "allServersChip": "Tutti i server",
+      "sendStatus": "Invia status",
+      "allServersDescription_one": "Esegui su {{count}} server",
+      "allServersDescription_other": "Esegui su tutti i {{count}} server"
+    },
+    "command": {
+      "execute": "Esegui"
+    },
+    "customRconWarning": "Attenzione: usare con cautela!",
+    "results": {
+      "title": "Risultati esecuzione",
+      "successChip": "✓ Successo",
+      "failedChip": "✗ Fallito",
+      "errorPrefix": "Errore:"
+    },
+    "quickActions": {
+      "title": "Azioni rapide"
+    },
+    "advanced": {
+      "title": "Strumenti avanzati"
+    },
+    "noServers": "Nessun server abilitato trovato. Aggiungi e abilita i server nella pagina Server.",
+    "toasts": {
+      "commandExecuted_one": "Comando eseguito su {{count}} server",
+      "commandExecuted_other": "Comando eseguito su {{count}} server",
+      "commandPartial": "Comando riuscito su {{succeeded}} server su {{total}} ({{failed}} falliti)",
+      "commandFailed": "Impossibile eseguire il comando"
+    },
+    "commands": {
+      "matchStart": {
+        "label": "Avvia match",
+        "description": "Avvia subito il match."
+      },
+      "matchEnd": {
+        "label": "Termina match",
+        "description": "Forza la fine del match in corso sui server selezionati e li riporta in warmup con css_restart."
+      },
+      "forcePause": {
+        "label": "Forza pausa",
+        "description": "Forza la pausa del match."
+      },
+      "forceUnpause": {
+        "label": "Forza ripresa",
+        "description": "Forza la ripresa del match."
+      },
+      "skipVeto": {
+        "label": "Salta veto",
+        "description": "Salta la fase di veto."
+      },
+      "toggleKnife": {
+        "label": "Attiva/disattiva knife round",
+        "description": "Attiva o disattiva la knife round per la scelta del lato (alias: rk)."
+      },
+      "togglePlayout": {
+        "label": "Attiva/disattiva playout",
+        "description": "Attiva o disattiva la disputa di tutti i round."
+      },
+      "toggleWhitelist": {
+        "label": "Attiva/disattiva whitelist",
+        "description": "Attiva o disattiva la whitelist delle squadre."
+      },
+      "showSettings": {
+        "label": "Mostra impostazioni",
+        "description": "Mostra le impostazioni attuali del match."
+      },
+      "reloadAdmins": {
+        "label": "Ricarica admin",
+        "description": "Ricarica l’elenco degli admin da admins.json."
+      },
+      "readyRequired": {
+        "label": "Imposta giocatori pronti richiesti",
+        "description": "Imposta quanti giocatori devono essere pronti prima dell’inizio del match.",
+        "inputLabel": "Numero di giocatori"
+      },
+      "restoreBackup": {
+        "label": "Ripristina backup del round",
+        "description": "Riporta il match a un round specifico.",
+        "inputLabel": "Numero del round"
+      },
+      "cleanServers": {
+        "label": "Pulisci server",
+        "description": "Termina qualsiasi match in corso sui server selezionati e li riporta in warmup con css_restart. Operazione distruttiva."
+      },
+      "changeMap": {
+        "label": "Cambia mappa",
+        "description": "Passa a un’altra mappa (css_map <mapname>).",
+        "inputLabel": "Nome mappa (de_dust2)"
+      },
+      "team1Name": {
+        "label": "Imposta nome squadra 1",
+        "description": "Imposta il nome della squadra 1.",
+        "inputLabel": "Nome squadra"
+      },
+      "team2Name": {
+        "label": "Imposta nome squadra 2",
+        "description": "Imposta il nome della squadra 2.",
+        "inputLabel": "Nome squadra"
+      },
+      "startPractice": {
+        "label": "Avvia modalità practice",
+        "description": "Attiva la modalità practice con i .commands."
+      },
+      "exitPractice": {
+        "label": "Esci dalla modalità practice",
+        "description": "Disattiva la modalità practice."
+      },
+      "broadcast": {
+        "label": "Messaggio broadcast",
+        "description": "Invia un messaggio admin a tutti i giocatori.",
+        "inputLabel": "Messaggio"
+      },
+      "customRcon": {
+        "label": "Esegui comando RCON personalizzato",
+        "description": "Esegui direttamente qualsiasi comando RCON.",
+        "inputLabel": "Comando RCON"
+      }
+    },
+    "categories": {
+      "matchControl": "Controllo match",
+      "matchSettings": "Impostazioni match",
+      "backupRestore": "Backup e ripristino",
+      "serverMgmt": "Gestione server",
+      "teamMgmt": "Gestione squadre",
+      "practiceMode": "Modalità practice",
+      "adminComm": "Comunicazioni admin",
+      "advanced": "RCON avanzato"
+    },
+    "events": {
+      "title": "Monitor eventi server",
+      "healthCheckFailed": "Controllo di stato dell’API eventi fallito. Verifica che l’API sia in esecuzione e che /api/events/test sia raggiungibile.",
+      "loadFailed": "Impossibile caricare gli eventi",
+      "connected": "Connesso",
+      "disconnected": "Disconnesso",
+      "paused": "In pausa",
+      "pause": "Pausa",
+      "resume": "Riprendi",
+      "refresh": "Aggiorna eventi",
+      "clear": "Pulisci console",
+      "filterLabel": "Filtra per server (facoltativo)",
+      "noServers": "Nessun server disponibile",
+      "refreshServers": "Aggiorna elenco server",
+      "noEvents": "Ancora nessun evento ricevuto da questo server.",
+      "noEventsHint": "Ancora nessun evento dopo 15 secondi. Verifica che il tuo server CS2 sia configurato per inviare i webhook Auto Tournament CS2 a /api/events/:matchSlugOrServerId con il X-Auto-Tournament-Token corretto.",
+      "waiting": "In attesa di eventi dal server...",
+      "footer_one": "{{count}} evento visualizzato (max 100)",
+      "footer_other": "{{count}} eventi visualizzati (max 100)",
+      "footerForServer_one": "{{count}} evento visualizzato per il server {{server}} (max 100)",
+      "footerForServer_other": "{{count}} eventi visualizzati per il server {{server}} (max 100)",
+      "realtime": "Gli eventi si aggiornano in tempo reale via WebSocket",
+      "downloadDemo": "Scarica demo"
+    },
+    "title": "Counter-Strike 2 servers"
+  },
+  "settings": {
+    "webhook": {
+      "title": "Webhook Auto Tournament CS2",
+      "description": "URL del webhook Auto Tournament CS2 raggiungibile dai tuoi server CS2.",
+      "label": "URL webhook",
+      "helper": "Esempio: https://il-tuo-dominio.com"
+    },
+    "mapSync": {
+      "title": "Sincronizzazione mappe",
+      "description": "Sincronizza le mappe CS2 dal repository GitHub.",
+      "buttonSyncing": "Sincronizzazione...",
+      "buttonIdle": "Sincronizza mappe CS2",
+      "newMaps": "Nuove mappe: {{count}}.",
+      "bundled": "GitHub non è raggiungibile, quindi è stato usato l'elenco mappe incluso in questa versione.",
+      "activeDuty": {
+        "created": "Pool Active Duty creato.",
+        "updated": "Pool Active Duty aggiornato.",
+        "kept": "Pool Active Duty lasciato invariato (modificato da un admin).",
+        "unchanged": "Il pool Active Duty è già aggiornato.",
+        "stale": "L'elenco mappe incluso è più vecchio di quello già applicato, quindi sono state aggiunte solo le nuove mappe."
+      },
+      "failed": "Impossibile sincronizzare le mappe"
+    },
+    "tab": "Counter-Strike 2",
+    "saved": "Settings saved",
+    "saveFailed": "Failed to save settings",
+    "loadFailed": "Failed to load settings",
+    "chatDefaults": {
+      "title": "Predefiniti Auto Tournament CS2 (chat e knife)",
+      "description": "Configura i prefissi della chat in gioco e il comportamento predefinito della knife round.",
+      "chatPrefixLabel": "Prefisso chat",
+      "chatPrefixHelper": "Predefinito: \"[{Green}Auto Tournament{Default}]\". Lascia vuoto per ripristinare il prefisso predefinito.",
+      "adminChatPrefixLabel": "Prefisso chat admin",
+      "adminChatPrefixHelper": "Predefinito: \"[{Red}ADMIN{Default}]\". Lascia vuoto per ripristinare il prefisso admin predefinito.",
+      "knifeToggleLabel": "Abilita la knife round di default per i nuovi match (quando i lati non sono preselezionati)",
+      "knifeNote": "Si applica solo quando Auto Tournament CS2 eseguirebbe normalmente una knife round; le scelte esplicite dei lati non vengono modificate."
+    },
+    "atCore": {
+      "title": "Impostazioni predefinite Auto Tournament CS2 Core",
+      "description": "Queste impostazioni vengono inviate ai server durante l’inizializzazione e prima di ogni caricamento match.",
+      "expert": {
+        "title": "Impostazioni avanzate",
+        "description": "Se configurate male, queste impostazioni possono causare comportamenti imprevisti del server. Modificale solo se sai che ti servono.",
+        "autostartMode": {
+          "label": "Modalità di avvio automatico al caricamento del plugin",
+          "helper": "0 = idle/sleep, 1 = modalità match (consigliata), 2 = modalità practice",
+          "options": {
+            "0": "0 — Inattivo / inattivo",
+            "1": "1 — Modalità match",
+            "2": "2 — Modalità practice"
+          }
+        }
+      },
+      "ready": {
+        "title": "Ready / Inizio match",
+        "minimumReadyLabel": "Numero minimo di giocatori pronti richiesto",
+        "minimumReadyHelper": "0 = tutti i giocatori connessi devono essere ready. Predefinito: 0.",
+        "allowForceReady": "Consenti agli admin di forzare il ready durante il setup (!forceready)"
+      },
+      "access": {
+        "title": "Accesso al server",
+        "kickWhenNoMatchLoaded": "Espelli/impedisci l’accesso quando nessun match è caricato (server torneo)",
+        "whitelistEnabledDefault": "Abilita whitelist di default (gli admin possono alternare con .whitelist)"
+      },
+      "adminTools": {
+        "title": "Strumenti admin",
+        "pauseAfterRestore": "Pausa dopo il ripristino round (.stop) così le squadre possono coordinarsi",
+        "stopCommandAvailable": "Abilita il comando .stop (ripristino round)",
+        "stopCommandNoDamage": "Disabilita .stop dopo danni al team avversario",
+        "usePauseForTacticalPause": "Fai sì che .pause si comporti come pausa tattica"
+      },
+      "hostname": {
+        "formatLabel": "Formato hostname del server",
+        "formatHelper": "Applicato a ogni server quando viene caricato un match. Variabili: {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}, {TEAM1_SCORE}, {TEAM2_SCORE}. Lascia vuoto per mantenere l'hostname impostato nella configurazione di ciascun server."
+      },
+      "demos": {
+        "title": "Demo",
+        "demoPathLabel": "Percorso demo (relativo a csgo/)",
+        "demoPathHelper": "Deve terminare con '/'. Predefinito: AutoTournamentCS2/",
+        "demoNameFormatLabel": "Formato nome file demo (senza .dem)",
+        "demoNameFormatHelper": "Token: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
+      },
+      "seriesEnd": {
+        "title": "Timing fine serie",
+        "kickDelayNoDemoLabel": "Ritardo extra di kick quando i demo sono disabilitati (secondi)",
+        "kickDelayDemoNoUploadLabel": "Ritardo extra di kick quando i demo sono abilitati ma non c’è URL di upload (secondi)",
+        "kickDelayDemoUploadLabel": "Ritardo extra di kick quando i demo sono abilitati e l’URL di upload è impostato (secondi)",
+        "kickDelayHelper": "Aggiunto sopra mp_match_restart_delay."
+      }
+    },
+    "atEnhanced": {
+      "title": "Funzionalità Auto Tournament CS2",
+      "description": "Configura funzionalità avanzate del match. Lascia i campi vuoti per usare i valori predefiniti di Auto Tournament CS2.",
+      "autoready": {
+        "title": "Sistema auto-ready",
+        "label": "Segna automaticamente i giocatori come ready quando entrano",
+        "description": "I giocatori diventano automaticamente ready all’ingresso. Possono comunque usare .unready."
+      },
+      "pause": {
+        "title": "Controlli pausa",
+        "bothTeamsUnpause": "Richiedi che entrambe le squadre tolgano la pausa",
+        "maxPausesLabel": "Pausa max per squadra",
+        "maxPausesHelper": "0 = pause illimitate",
+        "pauseDurationLabel": "Limite durata pausa (secondi)",
+        "pauseDurationHelper": "0 = nessun limite"
+      },
+      "sideSelection": {
+        "title": "Timer scelta lato",
+        "enabled": "Abilita timer scelta lato",
+        "timeLabel": "Tempo consentito (secondi)",
+        "timeHelper": "Tempo dopo la knife round per scegliere il lato"
+      },
+      "gg": {
+        "title": "Chiusura anticipata (.gg)",
+        "enabled": "Abilita comando .gg (forfeit)",
+        "thresholdLabel": "Soglia voto (0.0-1.0)",
+        "thresholdHelper": "0.8 = deve votare l’80% della squadra (es. 4/5 giocatori)",
+        "minScoreDiffLabel": "Differenza minima di punteggio",
+        "minScoreDiffHelper": "0 = disabilitato. Esempio: 6 = consenti .gg solo se sotto di 6+ round"
+      },
+      "ffw": {
+        "title": "Forfeit/Walkover",
+        "enabled": "Abilita forfeit automatico quando una squadra si disconnette",
+        "timeLabel": "Timer forfeit (secondi)",
+        "timeHelper": "Tempo prima di dichiarare il forfeit quando l’intera squadra lascia"
+      },
+      "demo": {
+        "title": "Registrazione demo",
+        "enabled": "Abilita registrazione automatica delle demo GOTV",
+        "description": "Se disabilitato, il server riavvia ~10s dopo la fine del match (vs 60-90s con registrazione)"
+      }
+    },
+    "developer": {
+      "title": "Opzioni sviluppatore",
+      "description": "Solo per sviluppo locale; non abilitare in produzione.",
+      "simulateToggleLabel": "Simula i match (usa match demo con bot invece di giocatori reali)",
+      "simulateNote": "Quando abilitato, le configurazioni generate includono \"simulation\": true per match demo automatizzati.",
+      "timescaleTitle": "Velocità simulazione",
+      "timescaleDescription": "Controlla quanto velocemente girano i match simulati. Valori più alti accelerano bot e round. Si applica solo quando la simulazione è abilitata.",
+      "timescaleWarning": "Velocità sopra 2.0 possono essere instabili e causare comportamenti strani dei bot, ma vanno bene per test rapidi.",
+      "debugChat": {
+        "label": "Abilita messaggi chat di debug di Auto Tournament CS2",
+        "description": "Quando abilitato, Auto Tournament CS2 stamperà messaggi di debug aggiuntivi (connessioni/disconnessioni, tracce eventi, ecc.) nella chat. Usalo solo per sviluppo e test."
+      }
+    },
+    "success": {
+      "simulationDisabled": "Modalità simulazione disabilitata",
+      "timescaleUpdated": "Velocità simulazione aggiornata a {{value}}x",
+      "simulationEnabledWithSpeed": "Modalità simulazione attivata a velocità {{speed}}x"
+    },
+    "reset": {
+      "title": "Reimpostare le impostazioni?",
+      "description": "Reimposta tutte le impostazioni di questa pagina ai valori predefiniti. I tornei e server esistenti non vengono modificati, ma nuovi match e lookup useranno i valori predefiniti. Continuare?",
+      "cancel": "Annulla",
+      "confirm": "Reimposta",
+      "success": "Impostazioni ripristinate ai valori predefiniti",
+      "error": "Impossibile ripristinare le impostazioni",
+      "button": "Reimposta impostazioni"
+    },
+    "defaultsTitle": "Server defaults"
+  },
+  "roster": {
+    "steamLinked": "Steam linked",
+    "steamNotLinked": "Steam not linked"
+  },
+  "mapModes": {
+    "defusal": "Disinnesco",
+    "hostage": "Ostaggi",
+    "wingman": "Wingman",
+    "armsrace": "Corsa agli armamenti",
+    "deathmatch": "Deathmatch",
+    "other": "Altro",
+    "none": "Nessun tipo"
+  },
+  "mapModeFilter": {
+    "label": "Tipo di mappa",
+    "any": "Qualsiasi tipo",
+    "offType": "{{maps}}: non è una mappa {{mode}}. Rimuovila o cambia il tipo di mappa."
   },
   "fleetPanel": {
     "title": "Flotta Ready Up",

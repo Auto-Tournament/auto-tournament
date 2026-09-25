@@ -10,8 +10,7 @@ import {
   Typography,
   Box,
 } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import PeopleIcon from '@mui/icons-material/People';
+import { CaretDownIcon, UsersIcon } from '@phosphor-icons/react';
 import type { Team, TeamMatchInfo } from '../../types';
 import { PlayerAvatar } from '../player/PlayerAvatar';
 
@@ -23,9 +22,9 @@ interface MatchRosterAccordionProps {
 export function MatchRosterAccordion({ team, match }: MatchRosterAccordionProps) {
   return (
     <Accordion>
-      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+      <AccordionSummary expandIcon={<CaretDownIcon />}>
         <Box display="flex" alignItems="center" gap={1}>
-          <PeopleIcon color="primary" />
+          <Box component={UsersIcon} sx={{ color: 'primary.main' }} />
           <Typography variant="h6" fontWeight={600}>
             Players
           </Typography>

@@ -1,7 +1,9 @@
-import { Card, CardContent, Typography, Box } from '@mui/material';
-import MapIcon from '@mui/icons-material/Map';
+import { Card, CardContent, Typography, Box, Chip } from '@mui/material';
+import { MapTrifoldIcon } from '@phosphor-icons/react';
 import type { Map } from '../cs2.types';
 import { FadeInImage } from '../common/FadeInImage';
+import { useModuleTranslation } from '../../../module-sdk';
+import { mapModeColor, mapModeKey, mapModeOf } from './mapModes';
 
 interface MapCardProps {
   map: Map;
@@ -9,6 +11,8 @@ interface MapCardProps {
 }
 
 export function MapCard({ map, onClick }: MapCardProps) {
+  const { t } = useModuleTranslation('cs2');
+  const mode = mapModeOf(map);
   const getPreferredImageUrl = (): string | null => {
     const baseWebpUrl = `https://raw.githubusercontent.com/Auto-Tournament/cs2-server-manager/master/map_thumbnails/${map.id}.webp`;
 
@@ -71,7 +75,7 @@ export function MapCard({ map, onClick }: MapCardProps) {
               color: 'text.disabled',
             }}
           >
-            <MapIcon sx={{ fontSize: 48 }} />
+            <MapTrifoldIcon size={48} />
           </Box>
         )}
       </Box>
@@ -88,9 +92,28 @@ export function MapCard({ map, onClick }: MapCardProps) {
           },
         }}
       >
-        <Typography variant="h6" component="div" gutterBottom>
-          {map.displayName}
-        </Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            gap: 1,
+          }}
+        >
+          <Typography variant="h6" component="div" gutterBottom>
+            {map.displayName}
+          </Typography>
+          {mode && (
+            <Chip
+              label={t(mapModeKey(mode))}
+              size="small"
+              color={mapModeColor(mode)}
+              variant="outlined"
+              data-testid={`map-card-mode-${map.id}`}
+              sx={{ flexShrink: 0, mt: 0.25 }}
+            />
+          )}
+        </Box>
         <Typography variant="body2" color="text.secondary">
           {map.id}
         </Typography>

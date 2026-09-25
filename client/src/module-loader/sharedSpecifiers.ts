@@ -26,9 +26,9 @@ export const SHARED_SPECIFIERS = [
   'react/jsx-runtime',
   'react-dom',
   '@mui/material',
-  // Every @mui/icons-material icon imports createSvgIcon from here. Sharing it
-  // lets a module bundle its own icons and still draw them with the host's
-  // SvgIcon and theme.
+  // Every @mui/icons-material icon imports createSvgIcon from here. The
+  // platform draws with Phosphor now, but a module may still bundle MUI
+  // icons, and sharing this keeps them on the host's SvgIcon and theme.
   '@mui/material/utils',
   '@mui/material/styles',
   '@emotion/react',
@@ -37,6 +37,13 @@ export const SHARED_SPECIFIERS = [
   'react-i18next',
   'i18next',
   SDK_SPECIFIER,
+  // Not `@phosphor-icons/react`, the platform's icon set: sharing a package
+  // hands out its whole namespace, and Phosphor's is ~1,500 icons in six
+  // weights (tens of MB of source), loaded on every instance with a code
+  // module, CS2's included. A module bundles the few icons it imports, as it
+  // did MUI's. The one thing it loses is the host's `IconContext` defaults,
+  // so it passes `size` (the SDK's `ICON_SIZE`); icons core renders for it
+  // (nav items) get their size and weight as props. Client API 0.2.8.
 ] as const;
 
 export type SharedSpecifier = (typeof SHARED_SPECIFIERS)[number];

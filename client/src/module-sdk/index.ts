@@ -11,7 +11,9 @@
  *     `react/jsx-runtime`, `react-dom`, `@mui/material`, `@mui/material/utils`,
  *     `@mui/material/styles`, `@emotion/react`, `@emotion/styled`,
  *     `react-router-dom`, `react-i18next`, `i18next`
- *   - stateless libraries the module bundles itself (`@mui/icons-material`, …)
+ *   - stateless libraries the module bundles itself (`@phosphor-icons/react`,
+ *     the platform's icon set, …). A bundled Phosphor does not see the host's
+ *     icon defaults (its `IconContext`), so a module passes `size` itself.
  *
  * **A module imports platform code only from here.** Everything else in
  * `client/src` (hooks, utils, contexts, components, types, …) is core
@@ -43,7 +45,18 @@ export { useSocket } from '../hooks/useSocket';
 
 // Host contexts
 export { useSnackbar } from '../contexts/SnackbarContext';
+/**
+ * @deprecated since client API 0.2.3. Render the SDK's `PageHead` with the
+ * buttons as its `actions` instead. Buttons handed to it still show, in a
+ * plain row above the page; it goes at the next breaking bump.
+ */
 export { usePageHeader } from '../contexts/PageHeaderContext';
+/**
+ * Whether the host's development tools are on (a dev server, or a build with
+ * `VITE_ENABLE_DEV_PAGE`). A module built on its own cannot read the host's
+ * build flags, so it asks here (0.2.4; CS2: its simulation settings).
+ */
+export { useIsDevelopment } from '../hooks/useIsDevelopment';
 
 /**
  * What a module may know about the viewer: whether they are an admin, and who
@@ -77,7 +90,9 @@ export type ModuleAuth = {
 export const useAuth: () => ModuleAuth = useAuthInternal;
 
 // Design tokens
-export { tokens, radii, mono, withAlpha } from '../theme/tokens';
+export { tokens, radii, mono, textSize, withAlpha } from '../theme/tokens';
+// The icon size scale, 16/20/24 px (client API 0.2.8; see theme/icons.tsx)
+export { ICON_SIZE } from '../theme/icons';
 
 // Match details: core's dialog, opened by slug (decision 7)
 export { openMatchDetails } from '../components/modals/matchDetailsOpener';
@@ -86,7 +101,11 @@ export { openMatchDetails } from '../components/modals/matchDetailsOpener';
 export { default as ConfirmDialog } from '../components/modals/ConfirmDialog';
 export { SegmentedControl } from '../components/tournament/setup/SegmentedControl';
 export { EmptyState } from '../components/shared/EmptyState';
-export { StatusDot } from '../components/common/ui';
+export { StatusDot, LiveChip } from '../components/common/ui';
+// A link that leaves the app: icon, rel and the hidden "opens in a new tab"
+// text, so a module never has to hand-roll one (client API 0.2.7).
+export { ExternalLink } from '../components/common/ExternalLink';
+export type { ExternalLinkProps } from '../components/common/ExternalLink';
 // Page patterns of the 3.0 drafts (client API 0.2.1)
 export { PageHead, SectionHead, Panel, RowList, Row, FactGrid } from '../components/common/ui';
 export type {
@@ -98,6 +117,8 @@ export type {
   FactGridProps,
 } from '../components/common/ui';
 export { PlayerAvatar } from '../components/player/PlayerAvatar';
+// "Page · Auto Tournament" for document.title (client API 0.2.3)
+export { pageTitle } from '../utils/pageTitle';
 export { ManageStatusTile } from '../components/manage/StatusStrip';
 
 // Strings

@@ -1,6 +1,5 @@
 import { Box, Paper, Typography } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
-import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+import { CheckIcon, CircleIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { visuallyHidden } from './layout';
 import { tokens } from '../../../theme';
@@ -154,9 +153,9 @@ export function SetupSummary({
               }}
             >
               {item.met ? (
-                <CheckIcon sx={{ fontSize: '1rem', mt: '2px' }} aria-hidden="true" />
+                <Box component={CheckIcon} size="1rem" aria-hidden="true" sx={{ mt: '2px' }} />
               ) : (
-                <RadioButtonUncheckedIcon sx={{ fontSize: '1rem', mt: '2px' }} aria-hidden="true" />
+                <Box component={CircleIcon} size="1rem" aria-hidden="true" sx={{ mt: '2px' }} />
               )}
               <span>
                 {item.label}

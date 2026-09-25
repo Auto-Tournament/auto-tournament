@@ -2,7 +2,7 @@
  * Wikidata (www.wikidata.org) client for the player game catalogue.
  *
  * Wikidata needs no application registration or API key, so it is the
- * default search source when IGDB credentials are not configured (see
+ * default (and only) search source for the game catalogue (see
  * `gameCatalogService.searchGames`) — it is what makes game search work out
  * of the box. Two requests per search:
  *  - `wbsearchentities` to find candidate item ids for the query.
@@ -18,7 +18,7 @@
  * Wikidata rate-limits or blocks generic/empty ones. On top of the per-IP
  * search limiter in routes/games.ts, a small process-wide limiter caps
  * outgoing Wikidata requests at 5/second, since this endpoint is shared by
- * every instance running MAT with no IGDB keys.
+ * every instance, with no API key.
  *
  * The endpoint can be overridden (`WIKIDATA_API_BASE`), and the E2E suite
  * points it at the fake Wikidata in routes/test.ts through
@@ -44,6 +44,8 @@ const PUBLICATION_DATE_PROP = 'P577';
 const LOGO_IMAGE_PROP = 'P154';
 const IMAGE_PROP = 'P18';
 const GENRE_PROP = 'P136';
+/** Steam application ID: what the game pill's app icon is fetched by, with no key. */
+const STEAM_APP_ID_PROP = 'P1733';
 /** At most this many genres are kept per game, in claim order. */
 const MAX_GENRES = 3;
 
@@ -56,6 +58,8 @@ export interface WikidataGame {
   releaseYear: number | null;
   /** Up to 3 genre names (P136), resolved to their English label. */
   genres: string[];
+  /** The game's Steam app id (P1733), or null when it has none. */
+  steamAppId: number | null;
 }
 
 export class WikidataError extends Error {
@@ -188,6 +192,20 @@ function earliestYear(times: string[]): number | null {
     .map((y) => parseInt(y, 10))
     .filter((y) => Number.isFinite(y));
   return years.length > 0 ? Math.min(...years) : null;
+}
+
+/** The first Steam application ID (P1733) on the item, as a number, or null. */
+export function wikidataSteamAppId(entity: {
+  claims?: Record<string, Array<{ mainsnak?: { datavalue?: { value?: unknown } } }>>;
+}): number | null {
+  for (const claim of entity.claims?.[STEAM_APP_ID_PROP] ?? []) {
+    const value = claim?.mainsnak?.datavalue?.value;
+    if (typeof value === 'string' && /^\d{1,10}$/.test(value)) {
+      const id = Number(value);
+      if (id > 0 && id <= 2_147_483_647) return id;
+    }
+  }
+  return null;
 }
 
 /** P154 (logo image) if present, else P18 (image), as a Commons FilePath URL. */
@@ -335,6 +353,7 @@ export async function searchWikidata(query: string, limit: number): Promise<Wiki
       logoUrl: imageUrl,
       releaseYear: earliestYear(claimTimeValues(entity, PUBLICATION_DATE_PROP)),
       genres: genresByEntity.get(entity.id) ?? [],
+      steamAppId: wikidataSteamAppId(entity),
     });
   }
 
@@ -349,6 +368,8 @@ export interface WikidataBuiltinInfo {
   imageUrl: string | null;
   releaseYear: number | null;
   genres: string[];
+  /** The game's Steam app id (P1733), or null. */
+  steamAppId: number | null;
 }
 
 /**
@@ -381,8 +402,34 @@ export async function getWikidataBuiltinInfo(ids: string[]): Promise<Map<string,
       imageUrl: commonsImageUrl(entity),
       releaseYear: earliestYear(claimTimeValues(entity, PUBLICATION_DATE_PROP)),
       genres: genresByEntity.get(entity.id) ?? [],
+      steamAppId: wikidataSteamAppId(entity),
     });
   }
 
+  return out;
+}
+
+/**
+ * The Steam app ids (P1733) of these Wikidata items, by QID: one
+ * `wbgetentities` call per 50 ids, no key. Items without one are left out.
+ * Throws `WikidataError` on a network or HTTP failure.
+ */
+export async function getWikidataSteamAppIds(ids: string[]): Promise<Map<string, number>> {
+  const out = new Map<string, number>();
+  const unique = [...new Set(ids.filter((id) => /^Q\d+$/.test(id)))];
+  for (let start = 0; start < unique.length; start += 50) {
+    const batch = unique.slice(start, start + 50);
+    const body = (await wikidataFetch({
+      action: 'wbgetentities',
+      ids: batch.join('|'),
+      props: 'claims',
+      format: 'json',
+    })) as { entities?: Record<string, WikidataEntity> };
+    for (const id of batch) {
+      const entity = body.entities?.[id];
+      const steamAppId = entity ? wikidataSteamAppId(entity) : null;
+      if (steamAppId) out.set(id, steamAppId);
+    }
+  }
   return out;
 }

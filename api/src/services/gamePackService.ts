@@ -24,7 +24,7 @@
  *
  * Nothing in the integration registry changes. The manual-reporting module
  * already declares `runsAnyCatalogGame`, so a tournament created for a pack's
- * slug resolves to it the same way a tournament for a game found through IGDB
+ * slug resolves to it the same way a tournament for a game found through
  * search does.
  *
  * ## The tile is a file next to the pack, not a string inside it
@@ -38,6 +38,15 @@
  * index alongside the pack, or picked by the admin along with the JSON. It is
  * stored in the `game_packs.icon` column either way, because the instance has
  * to serve it whether or not the place it came from is still reachable.
+ *
+ * ## The app icon is a file too
+ *
+ * `appIcon` names a second, smaller picture: the square icon players know the
+ * game by — the one on their phone, their desktop, their launcher. The tile
+ * is our art for the Modules page and the setup wizard; the app icon is the
+ * game's own, for the 20 px game pills where a player picks out *their*
+ * game at a glance. It is a raster (PNG or WebP), at most 25 KB, square,
+ * checked by its bytes rather than its name, and stored beside the tile.
  *
  * ## Trust
  *
@@ -84,6 +93,10 @@ const MAX_PACKS = 200;
 /** Tiles are a few hundred KB of flat facets; 1 MB is generous. */
 const MAX_ICON_BYTES = 1_000_000;
 const MAX_STAT_FIELDS = 40;
+/** An app icon is a 128 px square; 25 KB leaves room for a detailed one. */
+export const MAX_APP_ICON_BYTES = 25 * 1024;
+const MIN_APP_ICON_PX = 32;
+const MAX_APP_ICON_PX = 512;
 
 export const PACK_SCHEMA_VERSION = 1;
 
@@ -235,6 +248,87 @@ export function checkIconPath(value: string): string | null {
   return null;
 }
 
+/**
+ * Reject an `appIcon` that is anything but a relative path to a PNG or WebP
+ * beside the pack — the same rules as `icon`, for a raster file.
+ */
+export function checkAppIconPath(value: string): string | null {
+  if (!value.trim()) return 'appIcon must be a path to a PNG or WebP file';
+  if (/^[a-z][a-z0-9+.-]*:/i.test(value)) return 'appIcon must be a path, not a URL';
+  if (value.startsWith('/') || value.startsWith('//')) return 'appIcon must be a relative path';
+  if (!/\.(png|webp)$/i.test(value)) return 'appIcon must be a .png or .webp file';
+  if (value.length > 200) return 'appIcon path is longer than 200 characters';
+  if (value.split('/').some((segment) => segment !== '..' && segment.includes('..'))) {
+    return 'appIcon path is malformed';
+  }
+  return null;
+}
+
+export type AppIconType = 'image/png' | 'image/webp';
+
+/** A checked app icon: the bytes as they arrived, and what they are. */
+export interface AppIcon {
+  data: Buffer;
+  type: AppIconType;
+}
+
+/** Width and height from a PNG's IHDR or a WebP's VP8/VP8L/VP8X header, or null. */
+function rasterSize(bytes: Buffer): { type: AppIconType; width: number; height: number } | null {
+  const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  if (bytes.length >= 24 && bytes.subarray(0, 8).equals(png)) {
+    if (bytes.toString('latin1', 12, 16) !== 'IHDR') return null;
+    return { type: 'image/png', width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) };
+  }
+  if (
+    bytes.length >= 30 &&
+    bytes.toString('latin1', 0, 4) === 'RIFF' &&
+    bytes.toString('latin1', 8, 12) === 'WEBP'
+  ) {
+    const chunk = bytes.toString('latin1', 12, 16);
+    if (chunk === 'VP8 ') {
+      // Lossy: a key frame's start code, then 14-bit width and height.
+      if (bytes[23] !== 0x9d || bytes[24] !== 0x01 || bytes[25] !== 0x2a) return null;
+      return {
+        type: 'image/webp',
+        width: bytes.readUInt16LE(26) & 0x3fff,
+        height: bytes.readUInt16LE(28) & 0x3fff,
+      };
+    }
+    if (chunk === 'VP8L') {
+      if (bytes[20] !== 0x2f) return null;
+      const bits = bytes.readUInt32LE(21);
+      return { type: 'image/webp', width: (bits & 0x3fff) + 1, height: ((bits >>> 14) & 0x3fff) + 1 };
+    }
+    if (chunk === 'VP8X') {
+      return {
+        type: 'image/webp',
+        width: bytes.readUIntLE(24, 3) + 1,
+        height: bytes.readUIntLE(27, 3) + 1,
+      };
+    }
+  }
+  return null;
+}
+
+/**
+ * Check an app icon by its bytes: a PNG or WebP (whatever the file was
+ * called), at most 25 KB, square, 32 to 512 px. Returns the icon, or why it
+ * is not one. Like a tile, a bad one is refused, never fixed up.
+ */
+export function checkAppIcon(bytes: Buffer): AppIcon | string {
+  if (bytes.length === 0) return 'appIcon is empty';
+  if (bytes.length > MAX_APP_ICON_BYTES) {
+    return `appIcon is larger than ${Math.round(MAX_APP_ICON_BYTES / 1024)} KB`;
+  }
+  const size = rasterSize(bytes);
+  if (!size) return 'appIcon must be a PNG or WebP image';
+  if (size.width !== size.height) return 'appIcon must be square';
+  if (size.width < MIN_APP_ICON_PX || size.width > MAX_APP_ICON_PX) {
+    return `appIcon must be between ${MIN_APP_ICON_PX} and ${MAX_APP_ICON_PX} px`;
+  }
+  return { data: bytes, type: size.type };
+}
+
 // ---------------------------------------------------------------------------
 // Validation
 // ---------------------------------------------------------------------------
@@ -298,11 +392,13 @@ export function validatePack(
     'schema',
     'slug',
     'name',
+    'igdbId',
     'engine',
     'aliases',
     'version',
     'description',
     'icon',
+    'appIcon',
     'report',
     'stats',
   ]);
@@ -346,6 +442,17 @@ export function validatePack(
     }
   }
 
+  if (raw.igdbId !== undefined) {
+    if (
+      typeof raw.igdbId !== 'number' ||
+      !Number.isInteger(raw.igdbId) ||
+      raw.igdbId < 1 ||
+      raw.igdbId > 2_147_483_647
+    ) {
+      return fail('igdbId must be a positive whole number (the id on the game\'s igdb.com page)');
+    }
+  }
+
   let aliases: string[] = [];
   if (raw.aliases !== undefined) {
     if (!Array.isArray(raw.aliases) || raw.aliases.some((a) => typeof a !== 'string')) {
@@ -367,6 +474,12 @@ export function validatePack(
   if (raw.icon !== undefined) {
     if (typeof raw.icon !== 'string') return fail('icon must be a path to an SVG file');
     const problem = checkIconPath(raw.icon);
+    if (problem) return fail(problem);
+  }
+
+  if (raw.appIcon !== undefined) {
+    if (typeof raw.appIcon !== 'string') return fail('appIcon must be a path to a PNG or WebP file');
+    const problem = checkAppIconPath(raw.appIcon);
     if (problem) return fail(problem);
   }
 
@@ -407,11 +520,13 @@ export function validatePack(
       schema: PACK_SCHEMA_VERSION,
       slug,
       name,
+      ...(typeof raw.igdbId === 'number' ? { igdbId: raw.igdbId } : {}),
       engine,
       ...(aliases.length > 0 ? { aliases } : {}),
       ...(typeof raw.version === 'string' ? { version: raw.version } : {}),
       ...(typeof raw.description === 'string' ? { description: raw.description } : {}),
       ...(typeof raw.icon === 'string' ? { icon: raw.icon } : {}),
+      ...(typeof raw.appIcon === 'string' ? { appIcon: raw.appIcon } : {}),
       ...(report ? { report } : {}),
       ...(stats.fields.length > 0 ? { stats: stats.fields } : {}),
     },
@@ -431,6 +546,20 @@ export async function packIcon(slug: string): Promise<string | null> {
   return row?.icon ?? null;
 }
 
+/** A pack's stored app icon, or null when it has none. */
+export async function packAppIcon(slug: string): Promise<AppIcon | null> {
+  const row = await db.getOneAsync<{ app_icon: string | null; app_icon_type: string | null }>(
+    'game_packs',
+    'slug = ?',
+    [slug.trim().toLowerCase()]
+  );
+  if (!row?.app_icon) return null;
+  return {
+    data: Buffer.from(row.app_icon, 'base64'),
+    type: row.app_icon_type === 'image/png' ? 'image/png' : 'image/webp',
+  };
+}
+
 export async function installPack(
   definition: GamePackDefinition,
   options: {
@@ -439,6 +568,8 @@ export async function installPack(
     installedBy?: string | null;
     /** The tile's markup, already checked by `checkTileMarkup`. */
     tile?: string | null;
+    /** The app icon, already checked by `checkAppIcon`. */
+    appIcon?: AppIcon | null;
   } = {}
 ): Promise<InstalledPack> {
   const existing = installedPack(definition.slug);
@@ -453,11 +584,13 @@ export async function installPack(
   // resolving to anything.
   const stored = { ...definition };
   const icon = options.tile ?? null;
+  const appIcon = options.appIcon ?? null;
 
   await db.runAsync(
     `INSERT INTO game_packs
-       (slug, name, engine, version, source, origin, definition, icon, installed_by, installed_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       (slug, name, engine, version, source, origin, definition, icon, app_icon, app_icon_type,
+        installed_by, installed_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT (slug) DO UPDATE SET
        name = EXCLUDED.name,
        engine = EXCLUDED.engine,
@@ -466,6 +599,8 @@ export async function installPack(
        origin = EXCLUDED.origin,
        definition = EXCLUDED.definition,
        icon = EXCLUDED.icon,
+       app_icon = EXCLUDED.app_icon,
+       app_icon_type = EXCLUDED.app_icon_type,
        updated_at = EXCLUDED.updated_at`,
     [
       definition.slug,
@@ -476,6 +611,8 @@ export async function installPack(
       options.origin ?? null,
       JSON.stringify(stored),
       icon,
+      appIcon ? appIcon.data.toString('base64') : null,
+      appIcon ? appIcon.type : null,
       options.installedBy ?? null,
       existing?.installedAt ?? now,
       now,
@@ -514,6 +651,11 @@ export async function packIsInUse(slug: string): Promise<boolean> {
 /** The URL a pack's tile is served on. Same origin, so `ModuleIcon` inlines it. */
 export function packIconPath(slug: string): string {
   return `/api/packs/${encodeURIComponent(slug)}/icon.svg`;
+}
+
+/** The URL a game's app icon is served on: the installed pack's, else the snapshot's. */
+export function packAppIconPath(slug: string): string {
+  return `/api/packs/${encodeURIComponent(slug)}/app-icon`;
 }
 
 // ---------------------------------------------------------------------------
@@ -573,6 +715,55 @@ export interface BundledPackEntry {
   description: string | null;
   file: string;
   icon: string | null;
+  /** The app icon's path relative to the snapshot, or null. */
+  appIcon: string | null;
+  /** The game's numeric IGDB id, when the index names one. */
+  igdbId: number | null;
+}
+
+/**
+ * Bundled slugs whose snapshot entry names an app icon, as of the last read
+ * of the snapshot's index (boot reads it). `builtinGames()` is synchronous,
+ * so it asks this rather than the file.
+ */
+let bundledAppIconSlugs = new Set<string>();
+
+/** Whether the image's snapshot carries an app icon for this game. */
+export function hasBundledAppIcon(slug: string): boolean {
+  return bundledAppIconSlugs.has(slug);
+}
+
+/** Bundled slug -> the IGDB id its snapshot entry names, as of the last read (kept for linking historic rows). */
+let bundledIgdbIds = new Map<string, number>();
+
+/**
+ * The IGDB id the image's snapshot names for a game, or null. A pack
+ * installed before its file carried `igdbId` (or from a feed that does not)
+ * still links a `games` row stored while IGDB search existed through this.
+ */
+export function bundledIgdbId(slug: string): number | null {
+  return bundledIgdbIds.get(slug) ?? null;
+}
+
+/**
+ * The URL a pack's game pill loads its app icon from, or null when there is
+ * none to load: the pack's own icon, else the snapshot's for the same game.
+ *
+ * Any pack, whoever installed it. A pack installed from the catalog before
+ * its game had an icon (or uploaded without one) is still the same game, and
+ * the pill is about recognising the game: the owner's rule is that a game
+ * shows its app icon wherever one exists.
+ */
+export function packAppIconUrl(pack: Pick<InstalledPack, 'slug' | 'hasAppIcon'>): string | null {
+  return pack.hasAppIcon || hasBundledAppIcon(pack.slug) ? packAppIconPath(pack.slug) : null;
+}
+
+/** The app icon served for a game: the installed pack's own, else the snapshot's. */
+export async function resolvePackAppIcon(slug: string): Promise<AppIcon | null> {
+  const wanted = slug.trim().toLowerCase();
+  return (
+    (installedPack(wanted) ? await packAppIcon(wanted) : null) ?? (await bundledPackAppIcon(wanted))
+  );
 }
 
 /**
@@ -607,8 +798,17 @@ export async function bundledPackEntries(): Promise<BundledPackEntry[]> {
       description: text(row.description),
       file,
       icon: text(row.icon),
+      appIcon: text(row.appIcon),
+      igdbId:
+        typeof row.igdbId === 'number' && Number.isInteger(row.igdbId) && row.igdbId > 0
+          ? row.igdbId
+          : null,
     });
   }
+  bundledAppIconSlugs = new Set(entries.filter((entry) => entry.appIcon).map((entry) => entry.slug));
+  bundledIgdbIds = new Map(
+    entries.flatMap((entry) => (entry.igdbId ? [[entry.slug, entry.igdbId] as const] : []))
+  );
   return entries;
 }
 
@@ -626,7 +826,7 @@ function insideSnapshot(file: string): string {
  */
 export async function readBundledPack(
   entry: Pick<BundledPackEntry, 'file'>
-): Promise<{ definition: GamePackDefinition; tile: string | null }> {
+): Promise<{ definition: GamePackDefinition; tile: string | null; appIcon: AppIcon | null }> {
   const packPath = insideSnapshot(entry.file);
   const result = validatePack(JSON.parse(await fs.readFile(packPath, 'utf8')));
   if (!result.ok) throw new Error(result.error);
@@ -642,7 +842,17 @@ export async function readBundledPack(
     if (problem) throw new Error(problem);
     tile = markup;
   }
-  return { definition, tile };
+  let appIcon: AppIcon | null = null;
+  if (definition.appIcon) {
+    const iconPath = path.resolve(path.dirname(packPath), definition.appIcon);
+    if (!iconPath.startsWith(BUNDLED_PACKS_DIR + path.sep)) {
+      throw new Error('appIcon points outside the bundled packs');
+    }
+    const checked = checkAppIcon(await fs.readFile(iconPath));
+    if (typeof checked === 'string') throw new Error(checked);
+    appIcon = checked;
+  }
+  return { definition, tile, appIcon };
 }
 
 /** The tile the snapshot's index names for a game, checked, or null. */
@@ -652,6 +862,18 @@ export async function bundledPackTile(slug: string): Promise<string | null> {
   try {
     const markup = await fs.readFile(insideSnapshot(entry.icon), 'utf8');
     return checkTileMarkup(markup) ? null : markup;
+  } catch {
+    return null;
+  }
+}
+
+/** The app icon the snapshot's index names for a game, checked, or null. */
+export async function bundledPackAppIcon(slug: string): Promise<AppIcon | null> {
+  const entry = (await bundledPackEntries()).find((candidate) => candidate.slug === slug);
+  if (!entry?.appIcon) return null;
+  try {
+    const checked = checkAppIcon(await fs.readFile(insideSnapshot(entry.appIcon)));
+    return typeof checked === 'string' ? null : checked;
   } catch {
     return null;
   }
@@ -720,8 +942,9 @@ export async function seedBundledPacks(
   for (const entry of entries) {
     let definition: GamePackDefinition;
     let tile: string | null;
+    let appIcon: AppIcon | null;
     try {
-      ({ definition, tile } = await readBundledPack(entry));
+      ({ definition, tile, appIcon } = await readBundledPack(entry));
     } catch (error) {
       log.warn(`[PACKS] Skipped bundled pack '${entry.slug}': ${(error as Error).message}`);
       report.skipped.push(entry.slug);
@@ -736,7 +959,7 @@ export async function seedBundledPacks(
       seen.add(slug);
     } else if (existing) {
       if ((existing.version ?? null) !== (definition.version ?? null)) {
-        await installPack(definition, { source: 'bundled', tile });
+        await installPack(definition, { source: 'bundled', tile, appIcon });
         report.updated.push(slug);
       }
       seen.add(slug);
@@ -744,7 +967,7 @@ export async function seedBundledPacks(
       if (seen.has(slug)) {
         report.keptRemoved.push(slug);
       } else {
-        await installPack(definition, { source: 'bundled', tile });
+        await installPack(definition, { source: 'bundled', tile, appIcon });
         report.installed.push(slug);
         seen.add(slug);
       }

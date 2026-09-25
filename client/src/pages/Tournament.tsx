@@ -1,9 +1,11 @@
+import { pageTitle } from '../utils/pageTitle';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Box, CircularProgress } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { TournamentLive } from '../components/tournament/TournamentLive';
+import { PageHead } from '../components/common/ui';
 import { TournamentDialogs } from '../components/tournament/TournamentDialogs';
 import {
   EventPageSettingsCard,
@@ -65,6 +67,7 @@ const LEGACY_STEP_STORAGE_KEY = 'tournament_form_step';
 const EMPTY_EVENT_PAGE: EventPageFields = {
   description: '',
   location: '',
+  organizer: '',
   rulebookUrl: '',
   rules: [],
   prizes: [],
@@ -235,7 +238,7 @@ const Tournament: React.FC = () => {
 
   // Set dynamic page title
   useEffect(() => {
-    document.title = t('tournament.page.title');
+    document.title = pageTitle(t('tournament.page.title'));
   }, [t]);
 
   // Load ELO templates
@@ -1128,7 +1131,8 @@ const Tournament: React.FC = () => {
         />
       )}
 
-      {/* Live tournament */}
+      {/* Live tournament. (Setup has no page head: each question is its H1.) */}
+      {tournament && isLive && <PageHead title={t('layout.pageTitle.tournament')} />}
       {tournament && isLive && (
         <TournamentLive
           tournament={{

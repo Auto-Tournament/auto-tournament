@@ -11,10 +11,7 @@ import {
   Divider,
   Grid,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import { ArrowDownIcon, ArrowUpIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { EventPagePrize, EventPageScheduleItem, TournamentSettings } from '../../types';
@@ -24,11 +21,12 @@ const MAX_PRIZES = 5;
 const MAX_SCHEDULE = 20;
 const MAX_DESCRIPTION = 4000;
 const MAX_LOCATION = 120;
+const MAX_ORGANIZER = 80;
 
 /** The event page fields, as stored in the tournament settings. */
 export type EventPageFields = Pick<
   TournamentSettings,
-  'description' | 'location' | 'rulebookUrl' | 'rules' | 'prizes' | 'schedule'
+  'description' | 'location' | 'organizer' | 'rulebookUrl' | 'rules' | 'prizes' | 'schedule'
 >;
 
 interface EventPageSettingsCardProps {
@@ -56,7 +54,7 @@ function move<T>(items: T[], index: number, delta: number): T[] {
 
 /**
  * Admin "Event page" section: the organizer-written content shown on the
- * public Overview tab (description, location, rules, rulebook link, prizes,
+ * public Overview tab (description, location, organizer, rules, rulebook link, prizes,
  * schedule). Saves via the existing tournament PUT, which merges these into
  * the tournament's stored settings.
  */
@@ -72,6 +70,7 @@ export function EventPageSettingsCard({
 
   const [description, setDescription] = useState(settings?.description ?? '');
   const [location, setLocation] = useState(settings?.location ?? '');
+  const [organizer, setOrganizer] = useState(settings?.organizer ?? '');
   const [rulebookUrl, setRulebookUrl] = useState(settings?.rulebookUrl ?? '');
   const [rules, setRules] = useState<string[]>(settings?.rules ?? []);
   const [prizes, setPrizes] = useState<EventPagePrize[]>(settings?.prizes ?? []);
@@ -87,8 +86,8 @@ export function EventPageSettingsCard({
       firstRender.current = false;
       return;
     }
-    draftChangeRef.current?.({ description, location, rulebookUrl, rules, prizes, schedule });
-  }, [description, location, rulebookUrl, rules, prizes, schedule]);
+    draftChangeRef.current?.({ description, location, organizer, rulebookUrl, rules, prizes, schedule });
+  }, [description, location, organizer, rulebookUrl, rules, prizes, schedule]);
 
   const handleSave = async () => {
     if (!onSave) return;
@@ -97,6 +96,7 @@ export function EventPageSettingsCard({
       await onSave({
         description,
         location,
+        organizer,
         rulebookUrl,
         rules,
         prizes,
@@ -125,14 +125,33 @@ export function EventPageSettingsCard({
         helperText={`${description.length}/${MAX_DESCRIPTION}`}
       />
 
-      <TextField
-        label={t('tournament.eventPage.locationLabel')}
-        placeholder={t('tournament.eventPage.locationPlaceholder')}
-        value={location}
-        onChange={(e) => setLocation(e.target.value.slice(0, MAX_LOCATION))}
-        fullWidth
-        helperText={`${location.length}/${MAX_LOCATION}`}
-      />
+      {/* Short fields that belong together share a row where there is room. */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))',
+          gap: 3,
+        }}
+      >
+        <TextField
+          label={t('tournament.eventPage.locationLabel')}
+          placeholder={t('tournament.eventPage.locationPlaceholder')}
+          value={location}
+          onChange={(e) => setLocation(e.target.value.slice(0, MAX_LOCATION))}
+          fullWidth
+          helperText={`${location.length}/${MAX_LOCATION}`}
+        />
+
+        <TextField
+          label={t('tournament.eventPage.organizerLabel')}
+          placeholder={t('tournament.eventPage.organizerPlaceholder')}
+          value={organizer}
+          onChange={(e) => setOrganizer(e.target.value.slice(0, MAX_ORGANIZER))}
+          fullWidth
+          helperText={`${organizer.length}/${MAX_ORGANIZER}`}
+          inputProps={{ 'data-testid': 'event-page-organizer' }}
+        />
+      </Box>
 
       <TextField
         label={t('tournament.eventPage.rulebookUrlLabel')}
@@ -169,7 +188,7 @@ export function EventPageSettingsCard({
                 disabled={index === 0}
                 aria-label={t('tournament.eventPage.moveUp')}
               >
-                <ArrowUpwardIcon fontSize="small" />
+                <ArrowUpIcon size={20} />
               </IconButton>
               <IconButton
                 size="small"
@@ -177,7 +196,7 @@ export function EventPageSettingsCard({
                 disabled={index === rules.length - 1}
                 aria-label={t('tournament.eventPage.moveDown')}
               >
-                <ArrowDownwardIcon fontSize="small" />
+                <ArrowDownIcon size={20} />
               </IconButton>
               <IconButton
                 size="small"
@@ -185,14 +204,14 @@ export function EventPageSettingsCard({
                 onClick={() => setRules(rules.filter((_, i) => i !== index))}
                 aria-label={t('tournament.eventPage.remove')}
               >
-                <DeleteIcon fontSize="small" />
+                <TrashIcon size={20} />
               </IconButton>
             </Box>
           ))}
         </Stack>
         <Button
           size="small"
-          startIcon={<AddIcon />}
+          startIcon={<PlusIcon />}
           onClick={() => setRules([...rules, ''])}
           disabled={rules.length >= MAX_RULES}
           sx={{ mt: 1 }}
@@ -244,7 +263,7 @@ export function EventPageSettingsCard({
                   onClick={() => setPrizes(prizes.filter((_, i) => i !== index))}
                   aria-label={t('tournament.eventPage.remove')}
                 >
-                  <DeleteIcon fontSize="small" />
+                  <TrashIcon size={20} />
                 </IconButton>
               </Grid>
             </Grid>
@@ -252,7 +271,7 @@ export function EventPageSettingsCard({
         </Stack>
         <Button
           size="small"
-          startIcon={<AddIcon />}
+          startIcon={<PlusIcon />}
           onClick={() => setPrizes([...prizes, { place: '', prize: '' }])}
           disabled={prizes.length >= MAX_PRIZES}
           sx={{ mt: 1 }}
@@ -307,7 +326,7 @@ export function EventPageSettingsCard({
                   onClick={() => setSchedule(schedule.filter((_, i) => i !== index))}
                   aria-label={t('tournament.eventPage.remove')}
                 >
-                  <DeleteIcon fontSize="small" />
+                  <TrashIcon size={20} />
                 </IconButton>
               </Grid>
             </Grid>
@@ -315,7 +334,7 @@ export function EventPageSettingsCard({
         </Stack>
         <Button
           size="small"
-          startIcon={<AddIcon />}
+          startIcon={<PlusIcon />}
           onClick={() => setSchedule([...schedule, { at: new Date().toISOString(), label: '' }])}
           disabled={schedule.length >= MAX_SCHEDULE}
           sx={{ mt: 1 }}

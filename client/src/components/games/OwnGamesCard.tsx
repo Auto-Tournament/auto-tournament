@@ -10,12 +10,12 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Typography from '@mui/material/Typography';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import { PencilSimpleIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { apiErrorMessage } from '../../utils/api';
 import { GamePicker } from './GamePicker';
-import { GameThumb } from './GameThumb';
+import { GameMark } from '../common/GameMark';
 import { GAMES_UPDATED_EVENT, fetchMyGames, saveMyGames, type GameSummary } from './gamesApi';
 
 /**
@@ -78,7 +78,7 @@ export function OwnGamesCard() {
           </Typography>
           <Button
             size="small"
-            startIcon={<EditOutlinedIcon />}
+            startIcon={<PencilSimpleIcon />}
             onClick={openEditor}
             data-testid="profile-games-edit"
           >
@@ -98,7 +98,15 @@ export function OwnGamesCard() {
               <Chip
                 key={game.id}
                 label={game.name}
-                avatar={<GameThumb name={game.name} coverUrl={game.coverUrl} size={20} />}
+                avatar={
+                  <GameMark
+                    name={game.name}
+                    slug={game.slug}
+                    iconUrl={game.appIconUrl}
+                    neutral
+                    size={20}
+                  />
+                }
                 data-testid={`profile-game-${game.slug}`}
               />
             ))}

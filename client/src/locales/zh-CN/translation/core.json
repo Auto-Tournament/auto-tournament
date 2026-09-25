@@ -25,7 +25,13 @@
     "goToAdminDashboard": "前往管理控制台",
     "goToAdminDashboardHint": "您正在查看自己的选手资料。打开管理控制台以管理战队、锦标赛和服务器。",
     "siteMenu": "Site menu",
-    "accountMenu": "Account menu"
+    "accountMenu": "Account menu",
+    "admin": "Admin",
+    "teams": "Teams",
+    "leaderboards": "Leaderboards",
+    "theme": "Theme",
+    "language": "Language",
+    "signIn": "Sign in"
   },
   "layout": {
     "pageTitle": {
@@ -59,7 +65,8 @@
     "delete": "删除",
     "cancel": "取消",
     "remove": "Remove",
-    "close": "Close"
+    "close": "Close",
+    "opensInNewTab": "(opens in a new tab)"
   },
   "theme": {
     "label": "Color theme"

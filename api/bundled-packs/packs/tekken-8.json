@@ -2,10 +2,12 @@
   "schema": 1,
   "slug": "tekken-8",
   "name": "Tekken 8",
+  "igdbId": 217590,
   "engine": "manual-report",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Fighting game. Report games won in the set.",
   "icon": "../icons/tekken-8.svg",
+  "appIcon": "../app-icons/tekken-8.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

@@ -188,7 +188,7 @@
           },
           "slug": {
             "type": "string",
-            "description": "IGDB or Wikidata slug",
+            "description": "Wikidata slug",
             "example": "counter-strike-2"
           },
           "name": {
@@ -198,7 +198,7 @@
           "coverUrl": {
             "type": "string",
             "nullable": true,
-            "description": "IGDB cover (t_cover_small) or Wikidata's logo/image; null for built-ins with no cover"
+            "description": "Wikidata's logo/image; null for built-ins with no cover"
           },
           "releaseYear": {
             "type": "integer",
@@ -222,14 +222,14 @@
               "wikidata",
               "builtin"
             ],
-            "description": "Where this row came from; used to pick the data-source credit line"
+            "description": "Where this row came from; used to pick the data-source credit line. 'igdb' only appears on a row stored before IGDB support was removed."
           },
           "genres": {
             "type": "array",
             "items": {
               "type": "string"
             },
-            "description": "Up to 3 genre names, from IGDB genres.name or Wikidata P136",
+            "description": "Up to 3 genre names, from Wikidata P136",
             "example": [
               "Shooter",
               "Tactical shooter"
@@ -239,35 +239,6 @@
             "type": "string",
             "nullable": true,
             "description": "coverUrl if present, else logoUrl; convenience for the onboarding page's cards"
-          }
-        }
-      },
-      "IgdbCredentialStatus": {
-        "type": "object",
-        "properties": {
-          "configured": {
-            "type": "boolean",
-            "description": "A complete id + secret pair is active"
-          },
-          "source": {
-            "type": "string",
-            "enum": [
-              "env",
-              "settings"
-            ],
-            "nullable": true
-          },
-          "envOverride": {
-            "type": "boolean",
-            "description": "IGDB_CLIENT_ID / IGDB_CLIENT_SECRET are set and win over saved settings"
-          },
-          "clientId": {
-            "type": "string",
-            "nullable": true
-          },
-          "clientSecretSet": {
-            "type": "boolean",
-            "description": "A secret is stored. The secret itself is never returned."
           }
         }
       },
@@ -325,7 +296,7 @@
     },
     {
       "name": "Games",
-      "description": "The game catalogue players pick from (IGDB or Wikidata-backed search, suggestions). Public."
+      "description": "The game catalogue players pick from (Wikidata-backed search, suggestions). Public."
     },
     {
       "name": "Generation",
@@ -406,6 +377,10 @@
     {
       "name": "Steam",
       "description": "Steam Web API lookups (profiles, avatars, key health)."
+    },
+    {
+      "name": "System",
+      "description": "The platform process: whether it can restart itself, and a restart (so a module update that waits for one can finish). Admin only; writes must be same-site JSON."
     },
     {
       "name": "Team match view",
@@ -1208,6 +1183,45 @@
         }
       }
     },
+    "/api/catalog/packs/{slug}/app-icon": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "The square app icon of a game pack in the catalog",
+        "description": "From the installed pack, the offline snapshot, or the feed — fetched\nby this server and served from this origin, checked by its bytes\n(PNG or WebP, square, at most 25 KB) like an imported one.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The icon",
+            "content": {
+              "image/webp": {},
+              "image/png": {}
+            }
+          },
+          "404": {
+            "description": "No app icon"
+          }
+        }
+      }
+    },
     "/api/catalog/packs/{slug}/icon.svg": {
       "get": {
         "tags": [
@@ -1289,6 +1303,31 @@
           },
           "502": {
             "description": "The feed could not be reached and there is no offline copy"
+          }
+        }
+      }
+    },
+    "/api/catalog/update-all": {
+      "post": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "Update every installed pack and code module that has a compatible newer version",
+        "description": "Runs each update one after another, through the same path as\n`/api/catalog/packs/{slug}/install` and\n`/api/catalog/modules/{id}/update` — signature checks, the downgrade\nguard, disabled-state preservation and restart-required handling all\napply exactly as they do there. An entry that cannot update\n(incompatible, a newer major waiting for the admin, a restart\npending) is skipped, with why; one that fails outright (a bad\nsignature, a download error, and so on) is reported in `failed`.\nNeither stops the rest. Same-site JSON only.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "`updated`, `skipped` and `failed` list every entry that had a\ncompatible newer version; `restartRequired` is true when any\nupdated module needs a restart to load.\n"
+          },
+          "409": {
+            "description": "Another catalog operation is running"
           }
         }
       }
@@ -2427,6 +2466,37 @@
         ]
       }
     },
+    "/api/games/icons/{file}": {
+      "get": {
+        "tags": [
+          "Games"
+        ],
+        "summary": "A game's cached app icon",
+        "description": "The Steam client icon this instance fetched for a game no module or\npack ships an icon for, scaled to 128 px and stored as PNG. The file\nname is a hash of its bytes, so a URL never changes meaning and is\ncached for a year. `GameSummary.appIconUrl` points here.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "file",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{16}\\.png$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The icon",
+            "content": {
+              "image/png": {}
+            }
+          },
+          "404": {
+            "description": "No such icon"
+          }
+        }
+      }
+    },
     "/api/games/playable": {
       "get": {
         "tags": [
@@ -2517,7 +2587,7 @@
           "Games"
         ],
         "summary": "Search the game catalogue",
-        "description": "Searches IGDB when credentials are configured (results are stored in\nthe local `games` table); otherwise searches Wikidata, which needs no\nAPI key and is the default so search works out of the box. Always\nincludes the built-in games for installed game modules first. When\nneither is configured to answer, or the active one fails or times\nout, only the built-in list is searched. At most 10 results. Rate\nlimited per IP.\n",
+        "description": "Searches Wikidata (results are stored in the local `games` table),\nwhich needs no API key, so search works out of the box. Always\nincludes the built-in games for installed game modules first. When\nWikidata fails or times out, only the built-in list is searched. At\nmost 10 results. Rate limited per IP.\n",
         "parameters": [
           {
             "in": "query",
@@ -2539,10 +2609,6 @@
                   "properties": {
                     "success": {
                       "type": "boolean"
-                    },
-                    "fromIgdb": {
-                      "type": "boolean",
-                      "description": "True when any result came from IGDB (show the IGDB credit)"
                     },
                     "fromWikidata": {
                       "type": "boolean",
@@ -3760,7 +3826,7 @@
                             "properties": {
                               "entry": {
                                 "type": "string",
-                                "example": "/api/modules/example/client/index.js"
+                                "example": "/api/modules/example/client/index.js?v=1.0.0"
                               }
                             }
                           }
@@ -4050,6 +4116,37 @@
             }
           }
         ]
+      }
+    },
+    "/api/packs/{slug}/app-icon": {
+      "get": {
+        "tags": [
+          "Game packs"
+        ],
+        "summary": "A game's square app icon",
+        "description": "The icon players know the game by, for the small game pills: the\ninstalled pack's own, else the one in the image's bundled snapshot\nfor the same game (also when the installed pack has none). A PNG or\nWebP, checked by its bytes when it was imported.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The icon",
+            "content": {
+              "image/webp": {},
+              "image/png": {}
+            }
+          },
+          "404": {
+            "description": "No app icon for that game"
+          }
+        }
       }
     },
     "/api/packs/{slug}/icon.svg": {
@@ -6087,108 +6184,6 @@
         ]
       }
     },
-    "/api/settings/igdb": {
-      "get": {
-        "tags": [
-          "Settings"
-        ],
-        "summary": "IGDB credential status (admin)",
-        "description": "Whether IGDB (the game catalogue source) is configured, and from where.\nThe client secret is write-only and never returned; `clientSecretSet`\nsays whether one is stored. IGDB_CLIENT_ID / IGDB_CLIENT_SECRET in the\nenvironment win over saved settings (`envOverride`).\n",
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Credential status",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "igdb": {
-                      "$ref": "#/components/schemas/IgdbCredentialStatus"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Settings"
-        ],
-        "summary": "Save IGDB credentials (admin)",
-        "description": "Omit a field to keep it. `clientSecret` is write-only: send a new one to\nreplace it, or null to remove it. An empty `clientId` removes both.\n",
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "clientId": {
-                    "type": "string",
-                    "nullable": true
-                  },
-                  "clientSecret": {
-                    "type": "string",
-                    "nullable": true
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Saved; the new status (never the secret)"
-          },
-          "400": {
-            "description": "Invalid body"
-          }
-        }
-      }
-    },
-    "/api/settings/igdb/test": {
-      "post": {
-        "tags": [
-          "Settings"
-        ],
-        "summary": "Test the IGDB connection (admin)",
-        "description": "Requests a fresh Twitch token and runs a one-row IGDB query with the active credentials.",
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "`ok: true`, or `ok: false` with an error safe to show"
-          }
-        }
-      }
-    },
     "/api/settings/version": {
       "get": {
         "tags": [
@@ -6327,6 +6322,38 @@
             "description": "Success"
           }
         },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/system/restart": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Whether this instance can restart itself",
+        "description": "`supported` is true when a supervisor brings the process back after it\nexits (the Docker image with a restart policy, or\n`AT_RESTART_SUPERVISED=true`); otherwise `reason` says why not.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Restart the platform",
+        "description": "Answers 202, then shuts down cleanly and exits for the supervisor to\nstart it again (loading module updates that wait for a restart). 409\nwhen nothing would bring it back: restart it yourself. Same-site JSON only.\n",
         "security": [
           {
             "bearerAuth": []
@@ -7105,34 +7132,6 @@
         ]
       }
     },
-    "/api/test/fake-igdb/token": {
-      "post": {
-        "tags": [
-          "Test helpers"
-        ],
-        "summary": "POST /api/test/fake-igdb/token",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
-    "/api/test/fake-igdb/v4/games": {
-      "post": {
-        "tags": [
-          "Test helpers"
-        ],
-        "summary": "POST /api/test/fake-igdb/v4/games",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
     "/api/test/fake-oauth/{provider}/authorize": {
       "get": {
         "tags": [
@@ -7267,6 +7266,94 @@
         ]
       }
     },
+    "/api/test/fake-steam/icons-new/{appId}/{file}": {
+      "get": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "GET /api/test/fake-steam/icons-new/:appId/:file",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "appId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "file",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/test/fake-steam/icons-old/{appId}/{file}": {
+      "get": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "GET /api/test/fake-steam/icons-old/:appId/:file",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "appId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "file",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/test/fake-steam/info/{appId}": {
+      "get": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "GET /api/test/fake-steam/info/:appId",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "appId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/api/test/fake-wikidata": {
       "get": {
         "tags": [
@@ -7325,12 +7412,12 @@
         ]
       }
     },
-    "/api/test/igdb": {
-      "get": {
+    "/api/test/game-icons": {
+      "post": {
         "tags": [
           "Test helpers"
         ],
-        "summary": "GET /api/test/igdb",
+        "summary": "POST /api/test/game-icons",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
@@ -7345,12 +7432,14 @@
             "apiToken": []
           }
         ]
-      },
+      }
+    },
+    "/api/test/game-icons/run": {
       "post": {
         "tags": [
           "Test helpers"
         ],
-        "summary": "POST /api/test/igdb",
+        "summary": "POST /api/test/game-icons/run",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
@@ -7638,6 +7727,28 @@
         ]
       }
     },
+    "/api/test/modules/auto-update": {
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/modules/auto-update",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/test/modules/fixture": {
       "post": {
         "tags": [
@@ -7890,6 +8001,38 @@
           "Test helpers"
         ],
         "summary": "POST /api/test/modules/:id/purge-probe",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/test/modules/{id}/seed-installed": {
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/modules/:id/seed-installed",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
@@ -9043,6 +9186,140 @@
         "responses": {
           "200": {
             "description": "Table wiped successfully"
+          }
+        }
+      }
+    },
+    "/api/tournament/{id}/bracket": {
+      "get": {
+        "tags": [
+          "Tournament"
+        ],
+        "summary": "Get the tournament's bracket and matches (public)",
+        "description": "No session. What the public tournament page's Bracket and Matches tabs\ndraw: every match with its round, status, teams, winner and score, the\nround count, and the Swiss or round robin standings.\n\nA read-only, allow-listed copy of the admin `GET /api/tournament/bracket`.\nEach match carries only `id`, `slug`, `round`, `matchNumber`, `status`,\n`nextMatchId`, the timestamps, `team1` / `team2` / `winner` (id, name,\ntag), the score fields and `mapResults`. Never the game server\n(`serverId`), the game module's match `config` (Steam IDs, in-game\nadmins, cvars) or per-player stats. The tournament object is the one\n`GET /api/tournament/{id}/leaderboard` already returns.\n\nUnlike the admin route it does not run the completion check; it only\nreads.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Tournament ID (this instance's one tournament)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The bracket",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "tournament": {
+                      "type": "object"
+                    },
+                    "totalRounds": {
+                      "type": "integer"
+                    },
+                    "matches": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "slug": {
+                            "type": "string",
+                            "example": "r1m1"
+                          },
+                          "round": {
+                            "type": "integer"
+                          },
+                          "matchNumber": {
+                            "type": "integer"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "pending",
+                              "ready",
+                              "loaded",
+                              "live",
+                              "completed"
+                            ]
+                          },
+                          "nextMatchId": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "team1": {
+                            "type": "object",
+                            "nullable": true,
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "tag": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "team2": {
+                            "type": "object",
+                            "nullable": true
+                          },
+                          "winner": {
+                            "type": "object",
+                            "nullable": true
+                          },
+                          "team1Score": {
+                            "type": "integer"
+                          },
+                          "team2Score": {
+                            "type": "integer"
+                          },
+                          "mapResults": {
+                            "type": "array",
+                            "items": {
+                              "type": "object"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "swissStandings": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "roundRobinStandings": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not this instance's tournament"
+          },
+          "404": {
+            "description": "No tournament exists"
+          },
+          "500": {
+            "description": "Server error"
           }
         }
       }

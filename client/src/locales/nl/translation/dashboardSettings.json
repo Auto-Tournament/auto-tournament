@@ -6,28 +6,9 @@
       "integrations": "Integraties & webhooks",
       "players": "Spelers & toegang",
       "matches": "Wedstrijden & ratings",
-      "advanced": "Geavanceerd",
       "developer": "Ontwikkelaar / simulatie"
     },
     "integrations": {
-      "webhook": {
-        "title": "Auto Tournament CS2 webhook",
-        "description": "Auto Tournament CS2 webhook-URL die je CS2-servers kunnen bereiken.",
-        "label": "Webhook-URL",
-        "helper": "Voorbeeld: https://jouw-domein.nl"
-      },
-      "mapSync": {
-        "title": "Kaart-synchronisatie",
-        "description": "Synchroniseer CS2-kaarten vanuit de GitHub-repository.",
-        "buttonSyncing": "Synchroniseren...",
-        "buttonIdle": "CS2-kaarten synchroniseren",
-        "success": "Kaartsynchronisatie voltooid! {{added}} nieuwe kaart(en) toegevoegd, {{skipped}} bestond al.",
-        "partialError": "Sommige kaarten konden niet worden gesynchroniseerd: {{errors}}",
-        "failed": "Kan kaarten niet synchroniseren",
-        "rateLimit": "GitHub API-snelheidslimiet overschreden. Probeer het over een paar minuten opnieuw. U kunt de GITHUB_TOKEN-OMGEVINGSVARIABELE instellen om de snelheidslimiet te verhogen.",
-        "rateLimitShort": "GitHub API-snelheidslimiet overschreden. Probeer het over een paar minuten opnieuw.",
-        "githubError": "Kan GitHub-repository niet bereiken. Controleer uw internetverbinding en probeer het later opnieuw."
-      },
       "steam": {
         "title": "Steam-integratie",
         "apiKeyLabel": "Steam Web API-sleutel",
@@ -46,111 +27,6 @@
         "description": "Bepaal of afgeronde wedstrijden de Skill Rating van spelers bijwerken.",
         "toggleLabel": "Werk spelersratings bij op basis van afgeronde wedstrijden",
         "note": "Wanneer uitgeschakeld, blijven wedstrijden statistieken bijhouden (ADR, K/D, etc.), maar Skill Ratings veranderen niet."
-      },
-      "chatDefaults": {
-        "title": "Auto Tournament CS2 chat- & knife-standaarden",
-        "description": "Configureer chat-prefixen in-game en het standaard knife-round gedrag.",
-        "chatPrefixLabel": "Chat-prefix",
-        "chatPrefixHelper": "Standaard: \"[{Green}Auto Tournament{Default}]\". Laat leeg om terug te zetten naar de standaard.",
-        "adminChatPrefixLabel": "Admin chat-prefix",
-        "adminChatPrefixHelper": "Standaard: \"[{Red}ADMIN{Default}]\". Laat leeg om terug te zetten naar de standaard.",
-        "knifeToggleLabel": "Knife-rounds standaard inschakelen voor nieuwe wedstrijden (wanneer sides niet vooraf gekozen zijn)",
-        "knifeNote": "Geldt alleen wanneer Auto Tournament CS2 normaal een knife-round zou spelen; expliciete side-picks worden niet aangepast."
-      },
-      "atCore": {
-        "title": "Auto Tournament CS2 Core-standaarden",
-        "description": "Deze standaarden worden naar servers gestuurd tijdens initialisatie en vóór elke wedstrijd-load.",
-        "expert": {
-          "title": "Expertinstellingen",
-          "description": "Deze instellingen kunnen onverwacht servergedrag veroorzaken als ze verkeerd zijn ingesteld. Wijzig ze alleen als je weet dat je ze nodig hebt.",
-          "autostartMode": {
-            "label": "Autostart-modus bij plugin-load",
-            "helper": "0 = idle/sleep, 1 = match mode (aanbevolen), 2 = practice mode",
-            "options": {
-              "0": "0 — Inactief / slaapstand",
-              "1": "1 — Match-modus",
-              "2": "2 — Practice-modus"
-            }
-          }
-        },
-        "ready": {
-          "title": "Ready / Start wedstrijd",
-          "minimumReadyLabel": "Minimum aantal ready-spelers vereist",
-          "minimumReadyHelper": "0 = iedereen die verbonden is moet ready zijn. Standaard: 0.",
-          "allowForceReady": "Sta admins toe spelers force-ready te zetten tijdens setup (!forceready)"
-        },
-        "access": {
-          "title": "Servertoegang",
-          "kickWhenNoMatchLoaded": "Kick/voorkom joins wanneer geen wedstrijd geladen is (toernooiservers)",
-          "whitelistEnabledDefault": "Whitelist standaard inschakelen (admins kunnen togglen met .whitelist)"
-        },
-        "adminTools": {
-          "title": "Admin-tools",
-          "pauseAfterRestore": "Pauzeren na round restore (.stop) zodat teams kunnen overleggen",
-          "stopCommandAvailable": "Schakel .stop (round restore) commando in",
-          "stopCommandNoDamage": "Schakel .stop uit na schade aan het andere team",
-          "usePauseForTacticalPause": "Laat .pause zich gedragen als tactische pauze"
-        },
-        "hostname": {
-          "formatLabel": "Formaat serverhostnaam",
-          "formatHelper": "Wordt op elke server toegepast wanneer een wedstrijd wordt geladen. Tokens: {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}, {TEAM1_SCORE}, {TEAM2_SCORE}. Laat leeg om de hostnaam te behouden die elke server in zijn eigen config instelt."
-        },
-        "demos": {
-          "title": "Demo’s",
-          "demoPathLabel": "Demo-pad (relatief aan csgo/)",
-          "demoPathHelper": "Moet eindigen op '/'. Standaard: AutoTournamentCS2/",
-          "demoNameFormatLabel": "Demo-bestandsnaamformaat (zonder .dem)",
-          "demoNameFormatHelper": "Plaatsvervangers: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
-        },
-        "seriesEnd": {
-          "title": "Timing einde serie",
-          "kickDelayNoDemoLabel": "Extra kick-vertraging wanneer demo’s uit staan (seconden)",
-          "kickDelayDemoNoUploadLabel": "Extra kick-vertraging wanneer demo’s aan staan maar geen upload-URL (seconden)",
-          "kickDelayDemoUploadLabel": "Extra kick-vertraging wanneer demo’s aan staan en upload-URL is ingesteld (seconden)",
-          "kickDelayHelper": "Wordt opgeteld bij mp_match_restart_delay."
-        }
-      },
-      "atEnhanced": {
-        "title": "Auto Tournament CS2-functies",
-        "description": "Configureer geavanceerde match-functies. Laat velden leeg om de Auto Tournament CS2-standaard te gebruiken.",
-        "autoready": {
-          "title": "Auto-ready",
-          "label": "Markeer spelers automatisch als ready wanneer ze joinen",
-          "description": "Spelers zijn automatisch ready bij join. Ze kunnen nog steeds .unready gebruiken."
-        },
-        "pause": {
-          "title": "Pauzes",
-          "bothTeamsUnpause": "Vereis dat beide teams unpausen",
-          "maxPausesLabel": "Max. pauzes per team",
-          "maxPausesHelper": "0 = onbeperkt",
-          "pauseDurationLabel": "Pauzelimiet (seconden)",
-          "pauseDurationHelper": "0 = geen tijdslimiet"
-        },
-        "sideSelection": {
-          "title": "Timer side-keuze",
-          "enabled": "Timer voor side-keuze inschakelen",
-          "timeLabel": "Tijd (seconden)",
-          "timeHelper": "Tijd na knife-round om sides te kiezen"
-        },
-        "gg": {
-          "title": "Vroegtijdig beëindigen (.gg)",
-          "enabled": ".gg forfeit inschakelen",
-          "thresholdLabel": "Stem-drempel (0.0-1.0)",
-          "thresholdHelper": "0.8 = 80% van het team moet stemmen (bijv. 4/5 spelers)",
-          "minScoreDiffLabel": "Minimum scoreverschil",
-          "minScoreDiffHelper": "0 = uitgeschakeld. Voorbeeld: 6 = .gg alleen toestaan bij 6+ rounds achter"
-        },
-        "ffw": {
-          "title": "Forfeit/walkover",
-          "enabled": "Automatische forfeit inschakelen wanneer team disconnect",
-          "timeLabel": "Forfeit-timer (seconden)",
-          "timeHelper": "Tijd voordat forfeit wordt verklaard wanneer het hele team vertrekt"
-        },
-        "demo": {
-          "title": "Demo-opname",
-          "enabled": "Automatische GOTV demo-opname inschakelen",
-          "description": "Wanneer uitgeschakeld, herstart de server ~10s na match-einde (vs 60-90s met opname)"
-        }
       }
     },
     "players": {
@@ -162,13 +38,6 @@
       }
     },
     "developer": {
-      "title": "Ontwikkelaarsopties",
-      "description": "Alleen voor lokale ontwikkeling; niet inschakelen in productie.",
-      "simulateToggleLabel": "Simuleer wedstrijden (gebruik bot-gestuurde demo-wedstrijden i.p.v. echte spelers)",
-      "simulateNote": "Wanneer ingeschakeld, bevatten gegenereerde Auto Tournament CS2-configs \"simulation\": true voor geautomatiseerde demo-wedstrijden.",
-      "timescaleTitle": "Simulatie-snelheid",
-      "timescaleDescription": "Bepaalt hoe snel gesimuleerde wedstrijden lopen. Hogere waarden versnellen bots en rondes. Dit geldt alleen wanneer simulatie is ingeschakeld.",
-      "timescaleWarning": "Snelheden boven 2.0 kunnen instabiel zijn en vreemd bot-gedrag veroorzaken, maar zijn ok voor snelle lokale tests.",
       "resetApiTitle": "API & database resetten",
       "resetApiDescription": "Gevarenzone: verwijdert en hermaakt het volledige databaseschema en initialiseert daarna defaults opnieuw (kaarten, map-pools, etc.). Alleen voor lokale ontwikkeling. Onomkeerbaar.",
       "resetApiButton": "API resetten (alle data wissen)",
@@ -181,35 +50,27 @@
         "cancel": "Annuleren",
         "confirm": "Ja, API resetten & data wissen",
         "confirmLoading": "Resetten…"
-      },
-      "debugChat": {
-        "label": "Auto Tournament CS2 debug-chatberichten inschakelen",
-        "description": "Wanneer ingeschakeld, toont Auto Tournament CS2 extra debug-berichten (connects/disconnects, event-traces, etc.) in de chat. Gebruik dit alleen voor ontwikkeling en testen."
       }
     },
     "footer": {
       "version": "Versie",
-      "unknownVersion": "Onbekend",
-      "resetButton": "Instellingen resetten"
-    },
-    "resetDialog": {
-      "title": "Instellingen resetten?",
-      "description": "Reset alle instellingen op deze pagina terug naar defaults. Bestaande toernooien en servers worden niet gewijzigd, maar nieuwe wedstrijden en lookups gebruiken de default-waarden. Doorgaan?",
-      "cancel": "Annuleren",
-      "confirm": "Resetten",
-      "success": "Instellingen gereset naar standaard.",
-      "error": "Kon instellingen niet resetten"
+      "unknownVersion": "Onbekend"
     },
     "errors": {
       "loadSettings": "Instellingen laden mislukt",
       "saveSettings": "Instellingen opslaan mislukt"
     },
     "success": {
-      "saveSettings": "Instellingen opgeslagen",
-      "simulationEnabled": "Simulatiemodus ingeschakeld",
-      "simulationDisabled": "Simulatiemodus uitgeschakeld",
-      "timescaleUpdated": "Simulatiesnelheid bijgewerkt naar {{value}}x",
-      "simulationEnabledWithSpeed": "Simulatiemodus ingeschakeld op {{speed}}x snelheid"
+      "saveSettings": "Instellingen opgeslagen"
+    },
+    "site": {
+      "title": "Site",
+      "description": "What this site is called. The admin home uses it as its heading.",
+      "label": "Site name",
+      "helper": "Leave it empty to use \"Auto Tournament\".",
+      "save": "Save",
+      "saved": "Site name saved",
+      "saveFailed": "Could not save the site name"
     }
   },
   "dashboard": {
@@ -236,8 +97,7 @@
       "title": "Finish setting up",
       "openSettings": "Open settings",
       "steam": "Steam sign-in",
-      "discord": "Discord sign-in (optional)",
-      "igdb": "Game covers via IGDB (optional)"
+      "discord": "Discord sign-in (optional)"
     },
     "tournaments": {
       "title": "Tournaments",
@@ -250,21 +110,25 @@
       },
       "state": {
         "draftEmpty": "Not published yet",
-        "draftTeams": "Draft · {{count}} team selected",
-        "draftTeamsPlural": "Draft · {{count}} teams selected",
-        "readyTeams": "{{count}} team entered · sign-up open",
-        "readyTeamsPlural": "{{count}} teams entered · sign-up open",
-        "inProgressTeams": "{{count}} team · in progress",
-        "inProgressTeamsPlural": "{{count}} teams · in progress",
-        "completedTeams": "{{count}} team took part",
-        "completedTeamsPlural": "{{count}} teams took part",
-        "winner": "Winner: {{name}}"
+        "winner": "Winner: {{name}}",
+        "teams_one": "{{count}} team",
+        "teams_other": "{{count}} teams",
+        "entered_one": "{{count}} team entered",
+        "entered_other": "{{count}} teams entered",
+        "draftTeams_one": "Draft · {{count}} team selected",
+        "draftTeams_other": "Draft · {{count}} teams selected",
+        "live_one": "{{count}} match live",
+        "live_other": "{{count}} matches live",
+        "completed_one": "{{count}} team took part",
+        "completed_other": "{{count}} teams took part"
       },
       "actions": {
         "manage": "Manage",
         "continueSetup": "Continue setup",
         "view": "View"
-      }
+      },
+      "eventPage": "Event page",
+      "emptyTitle": "No tournament yet"
     },
     "site": {
       "title": "Site",
@@ -305,8 +169,10 @@
       "title": "People",
       "open": "Open",
       "players": "Players",
-      "admins": "Admins"
-    }
+      "admins": "Admins",
+      "signedInThisWeek": "Signed in this week"
+    },
+    "loading": "Loading the admin home"
   },
   "managePage": {
     "title": "Manage",
@@ -335,7 +201,8 @@
         "game": "Game"
       },
       "label": "Admin",
-      "publicPage": "Public page"
+      "publicPage": "Public page",
+      "opensInNewTab": "(opens in a new tab)"
     },
     "status": {
       "live": "LIVE",
@@ -360,7 +227,8 @@
       "reallocateConfirmTitle": "Move this match to another server?",
       "reallocateConfirmBody": "The match will be reassigned to the next available server.",
       "forceCancelConfirmTitle": "Force cancel this match?",
-      "forceCancelConfirmBody": "This ends the match immediately and marks it as cancelled, even if the server is unreachable."
+      "forceCancelConfirmBody": "This ends the match immediately and marks it as cancelled, even if the server is unreachable.",
+      "listLabel": "Things that need a decision"
     },
     "recent": {
       "heading": "Recent",

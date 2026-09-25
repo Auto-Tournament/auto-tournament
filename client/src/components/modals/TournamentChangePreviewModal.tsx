@@ -11,8 +11,7 @@ import {
   Divider,
   Alert,
 } from '@mui/material';
-import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import { ArrowsLeftRightIcon, WarningIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { radii } from '../../theme/tokens';
@@ -70,7 +69,7 @@ const TournamentChangePreviewModal: React.FC<TournamentChangePreviewModalProps> 
     <Dialog open={open} onClose={onCancel} maxWidth="sm" fullWidth>
       <DialogTitle>
         <Box display="flex" alignItems="center" gap={1.5}>
-          <CompareArrowsIcon color="primary" />
+          <Box component={ArrowsLeftRightIcon} sx={{ color: 'primary.main' }} />
           <Typography variant="h6" fontWeight={600}>
             {t('tournament.changePreview.title')}
           </Typography>
@@ -78,7 +77,7 @@ const TournamentChangePreviewModal: React.FC<TournamentChangePreviewModalProps> 
       </DialogTitle>
       <DialogContent>
         {isLive && hasStructuralChanges && (
-          <Alert severity="error" sx={{ mb: 2 }} icon={<WarningAmberIcon />}>
+          <Alert severity="error" sx={{ mb: 2 }} icon={<WarningIcon />}>
             <Typography variant="body2" fontWeight={600} gutterBottom>
               {t('tournament.changePreview.liveHeading')}
             </Typography>

@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-/* global fetch */
+/* global fetch, Buffer */
 /**
  * Refresh the game packs the image ships with, from the community repo.
  *
  * `api/bundled-packs/` is a committed snapshot of `Auto-Tournament/packs`:
- * the same `index.json`, `packs/` and `icons/`, byte for byte. A fresh
+ * the same `index.json`, `packs/`, `icons/` and `app-icons/`, byte for byte. A fresh
  * install seeds itself from it on first boot (`seedBundledPacks`), so the
  * games an instance can run on day one come from data, not from a list in the
  * source — and arrive with no network at all, which an index fetched at boot
@@ -36,6 +36,14 @@ async function read(relative) {
   return response.text();
 }
 
+/** A binary file (an app icon), as bytes. */
+async function readBytes(relative) {
+  if (source) return fs.readFile(path.join(path.resolve(source), relative));
+  const response = await fetch(new URL(relative, REMOTE));
+  if (!response.ok) throw new Error(`${relative}: ${response.status} ${response.statusText}`);
+  return Buffer.from(await response.arrayBuffer());
+}
+
 /** Refuse anything that would write outside the target, however the index spells it. */
 function inside(relative) {
   const resolved = path.resolve(TARGET, relative);
@@ -55,6 +63,7 @@ if (index.schema !== 1 || !Array.isArray(index.packs)) {
 await fs.rm(TARGET, { recursive: true, force: true });
 await fs.mkdir(path.join(TARGET, 'packs'), { recursive: true });
 await fs.mkdir(path.join(TARGET, 'icons'), { recursive: true });
+await fs.mkdir(path.join(TARGET, 'app-icons'), { recursive: true });
 await fs.writeFile(path.join(TARGET, 'index.json'), indexText);
 
 for (const entry of index.packs) {
@@ -66,6 +75,11 @@ for (const entry of index.packs) {
     // The pack names its tile relative to itself (`../icons/x.svg`).
     const icon = path.posix.normalize(path.posix.join(path.posix.dirname(entry.file), pack.icon));
     await fs.writeFile(inside(icon), await read(icon));
+  }
+  if (pack.appIcon) {
+    // The square app icon, the same way (`../app-icons/x.webp`); binary.
+    const appIcon = path.posix.normalize(path.posix.join(path.posix.dirname(entry.file), pack.appIcon));
+    await fs.writeFile(inside(appIcon), await readBytes(appIcon));
   }
   console.log(`  ${entry.slug}`);
 }

@@ -2,14 +2,16 @@
   "schema": 1,
   "slug": "ea-sports-fc-25",
   "name": "EA Sports FC",
+  "igdbId": 308698,
   "engine": "manual-report",
   "aliases": [
     "fifa",
     "fc"
   ],
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Football. Report the scoreline.",
   "icon": "../icons/ea-sports-fc-25.svg",
+  "appIcon": "../app-icons/ea-sports-fc-25.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

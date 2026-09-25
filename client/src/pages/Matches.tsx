@@ -1,7 +1,7 @@
+import { pageTitle } from '../utils/pageTitle';
 import { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, Grid, LinearProgress, Snackbar, Alert, Stack, Button, Chip } from '@mui/material';
-import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
-import AddIcon from '@mui/icons-material/Add';
+import { Box, Typography, LinearProgress, Snackbar, Alert, Stack, Button, Chip } from '@mui/material';
+import { GameControllerIcon, PlusIcon } from '@phosphor-icons/react';
 import { io } from 'socket.io-client';
 import { onSocketReconnect } from '../utils/socketResync';
 import { useNavigate } from 'react-router-dom';
@@ -18,6 +18,8 @@ import { api } from '../utils/api';
 import type { Match, MatchEvent, MatchesResponse } from '../types';
 import ConfirmDialog from '../components/modals/ConfirmDialog';
 import { useTranslation } from 'react-i18next';
+import { PageHead, RowList, SectionHead } from '../components/common/ui';
+import { tokens } from '../theme/tokens';
 
 export default function Matches() {
   // One read of the tournament for both of this page's game-dependent parts:
@@ -147,7 +149,7 @@ export default function Matches() {
 
   // Set dynamic page title
   useEffect(() => {
-    document.title = t('layout.pageTitle.matches');
+    document.title = pageTitle(t('layout.pageTitle.matches'));
   }, [t]);
 
   // Initialize Socket.io connection (mount-only)
@@ -353,9 +355,12 @@ export default function Matches() {
 
   if (loading) {
     return (
+      <>
+        <PageHead title={t('layout.pageTitle.matches')} />
       <Box>
         <LinearProgress />
       </Box>
+      </>
     );
   }
 
@@ -387,109 +392,109 @@ export default function Matches() {
 
   return (
     <Box data-testid="matches-page" sx={{ width: '100%', height: '100%' }}>
+      <PageHead
+        title={t('layout.pageTitle.matches')}
+        actions={
+          hasMatches ? (
+            <>
+              <Button
+                variant={selectionMode ? 'contained' : 'outlined'}
+                color={selectionMode ? 'secondary' : 'inherit'}
+                size="small"
+                onClick={() => {
+                  setSelectionMode((prev) => !prev);
+                  if (selectionMode) {
+                    setSelectedMatchSlugs(() => new Set());
+                  }
+                }}
+              >
+                {selectionMode
+                  ? t('matchesPage.bulkSelect.done')
+                  : t('matchesPage.bulkSelect.select')}
+              </Button>
+              {selectionMode && (
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  size="small"
+                  disabled={
+                    [...upcomingMatches, ...liveMatches, ...matchHistory].filter((m) =>
+                      isManualMatchFlag(m)
+                    ).length === 0
+                  }
+                  onClick={() => {
+                    const manualMatches = [
+                      ...upcomingMatches,
+                      ...liveMatches,
+                      ...matchHistory,
+                    ].filter((m) => isManualMatchFlag(m) && m.slug);
+                    const allVisibleSelected =
+                      manualMatches.length > 0 &&
+                      manualMatches.every((m) => m.slug && selectedMatchSlugs.has(m.slug));
+
+                    setSelectedMatchSlugs((prev) => {
+                      const next = new Set(prev);
+                      if (allVisibleSelected) {
+                        manualMatches.forEach((m) => {
+                          if (m.slug) next.delete(m.slug);
+                        });
+                      } else {
+                        manualMatches.forEach((m) => {
+                          if (m.slug) next.add(m.slug);
+                        });
+                      }
+                      return next;
+                    });
+                  }}
+                >
+                  {(() => {
+                    const manualMatches = [
+                      ...upcomingMatches,
+                      ...liveMatches,
+                      ...matchHistory,
+                    ].filter((m) => isManualMatchFlag(m) && m.slug);
+                    const allVisibleSelected =
+                      manualMatches.length > 0 &&
+                      manualMatches.every((m) => m.slug && selectedMatchSlugs.has(m.slug));
+                    return allVisibleSelected
+                      ? t('matchesPage.bulkSelect.unselectAll')
+                      : t('matchesPage.bulkSelect.selectAll');
+                  })()}
+                </Button>
+              )}
+              {selectionMode && (
+                <Button
+                  variant="outlined"
+                  color="error"
+                  size="small"
+                  disabled={selectedMatchSlugs.size === 0}
+                  onClick={() => {
+                    if (selectedMatchSlugs.size === 0) return;
+                    setBulkDeleteConfirmOpen(true);
+                  }}
+                >
+                  {t('matchesPage.bulkSelect.deleteSelected')}
+                </Button>
+              )}
+              {!selectionMode && StandaloneMatchDialog && (
+                <Button variant="contained" size="small" onClick={() => setCreateMatchOpen(true)}>
+                  {t('matchesPage.header.createMatch')}
+                </Button>
+              )}
+            </>
+          ) : null
+        }
+      />
       {QueueBanner && (
         <QueueBanner
           availability={serverAllocationStatus}
           nextInSeconds={nextAllocationInSeconds}
         />
       )}
-      {/* Manual match creation + allocation countdown */}
-      {hasMatches && (
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-          <Box display="flex" alignItems="center" gap={2}>
-            {QueueCountdown && (
-              <QueueCountdown
-                availability={serverAllocationStatus}
-                nextInSeconds={nextAllocationInSeconds}
-              />
-            )}
-          </Box>
-          <Box display="flex" alignItems="center" gap={1}>
-            <Button
-              variant={selectionMode ? 'contained' : 'outlined'}
-              color={selectionMode ? 'secondary' : 'inherit'}
-              size="small"
-              onClick={() => {
-                setSelectionMode((prev) => !prev);
-                if (selectionMode) {
-                  setSelectedMatchSlugs(() => new Set());
-                }
-              }}
-            >
-              {selectionMode
-                ? t('matchesPage.bulkSelect.done')
-                : t('matchesPage.bulkSelect.select')}
-            </Button>
-            {selectionMode && (
-              <Button
-                variant="outlined"
-                color="inherit"
-                size="small"
-                disabled={
-                  [...upcomingMatches, ...liveMatches, ...matchHistory].filter((m) =>
-                    isManualMatchFlag(m)
-                  ).length === 0
-                }
-                onClick={() => {
-                  const manualMatches = [
-                    ...upcomingMatches,
-                    ...liveMatches,
-                    ...matchHistory,
-                  ].filter((m) => isManualMatchFlag(m) && m.slug);
-                  const allVisibleSelected =
-                    manualMatches.length > 0 &&
-                    manualMatches.every((m) => m.slug && selectedMatchSlugs.has(m.slug));
-
-                  setSelectedMatchSlugs((prev) => {
-                    const next = new Set(prev);
-                    if (allVisibleSelected) {
-                      manualMatches.forEach((m) => {
-                        if (m.slug) next.delete(m.slug);
-                      });
-                    } else {
-                      manualMatches.forEach((m) => {
-                        if (m.slug) next.add(m.slug);
-                      });
-                    }
-                    return next;
-                  });
-                }}
-              >
-                {(() => {
-                  const manualMatches = [
-                    ...upcomingMatches,
-                    ...liveMatches,
-                    ...matchHistory,
-                  ].filter((m) => isManualMatchFlag(m) && m.slug);
-                  const allVisibleSelected =
-                    manualMatches.length > 0 &&
-                    manualMatches.every((m) => m.slug && selectedMatchSlugs.has(m.slug));
-                  return allVisibleSelected
-                    ? t('matchesPage.bulkSelect.unselectAll')
-                    : t('matchesPage.bulkSelect.selectAll');
-                })()}
-              </Button>
-            )}
-            {selectionMode && (
-              <Button
-                variant="outlined"
-                color="error"
-                size="small"
-                disabled={selectedMatchSlugs.size === 0}
-                onClick={() => {
-                  if (selectedMatchSlugs.size === 0) return;
-                  setBulkDeleteConfirmOpen(true);
-                }}
-              >
-                {t('matchesPage.bulkSelect.deleteSelected')}
-              </Button>
-            )}
-            {!selectionMode && StandaloneMatchDialog && (
-              <Button variant="contained" size="small" onClick={() => setCreateMatchOpen(true)}>
-                {t('matchesPage.header.createMatch')}
-              </Button>
-            )}
-          </Box>
+      {/* The allocation countdown, under the head */}
+      {hasMatches && QueueCountdown && (
+        <Box display="flex" alignItems="center" gap={2} mb={3}>
+          <QueueCountdown availability={serverAllocationStatus} nextInSeconds={nextAllocationInSeconds} />
         </Box>
       )}
 
@@ -508,11 +513,11 @@ export default function Matches() {
         <Box>
           <EmptyState
             data-testid="matches-empty-state"
-            icon={SportsEsportsIcon}
+            icon={GameControllerIcon}
             title={t('matchesPage.empty.title')}
             description={t('matchesPage.empty.description')}
             actionLabel={t('tournament.common.createTournament')}
-            actionIcon={AddIcon}
+            actionIcon={PlusIcon}
             onAction={() => navigate('/tournament')}
           />
           {StandaloneMatchDialog && (
@@ -526,83 +531,83 @@ export default function Matches() {
       )}
 
       {hasMatches && (
-        <Stack spacing={4} data-testid="matches-list">
+        <Stack spacing={6} data-testid="matches-list">
           {/* Live Matches Section */}
           {liveMatches.length > 0 && (
-            <Box>
-              <Box display="flex" alignItems="center" gap={1} mb={2}>
-                <Box
-                  sx={{
-                    width: 12,
-                    height: 12,
-                    borderRadius: '50%',
-                    bgcolor: 'error.main',
-                    animation: 'pulse 2s ease-in-out infinite',
-                    '@keyframes pulse': {
-                      '0%, 100%': { opacity: 1 },
-                      '50%': { opacity: 0.3 },
-                    },
-                  }}
-                />
-                <Typography variant="h6" fontWeight={600}>
-                  {t('matchesPage.sections.live', { count: liveMatches.length })}
-                </Typography>
-              </Box>
-              <Grid container spacing={2}>
+            <Box component="section" aria-labelledby="matches-live-heading">
+              <SectionHead
+                id="matches-live-heading"
+                title={
+                  <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+                    <Box
+                      component="span"
+                      aria-hidden
+                      sx={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: '50%',
+                        bgcolor: tokens.color.live,
+                        animation: 'pulse 1.6s ease-in-out infinite',
+                        '@keyframes pulse': { '50%': { opacity: 0.35 } },
+                        '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+                      }}
+                    />
+                    {t('matchesPage.sections.live', { count: liveMatches.length })}
+                  </Box>
+                }
+              />
+              <RowList>
                 {liveMatches.map((match) => {
                   const event = liveEvents.get(match.slug);
                   const matchNumber = getGlobalMatchNumber(match, allMatches);
                   return (
-                    <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }} key={match.id}>
-                      <Box>
-                        <MatchCard
-                          match={match}
-                          matchNumber={matchNumber}
-                          variant="live"
-                          selectable={selectionMode && isManualMatchFlag(match)}
-                          selected={selectedMatchSlugs.has(match.slug)}
-                          onClick={() => {
-                            if (selectionMode && isManualMatchFlag(match)) {
-                              toggleMatchSelected(match);
-                            } else {
-                              setSelectedMatch(match);
-                            }
-                          }}
-                        />
-                        {event && event.event && (
-                          <Box mt={1} p={1} bgcolor="action.hover" borderRadius={1}>
-                            <Typography variant="caption" color="text.secondary">
-                              {t('matchesPage.latestEvent', { event: event.event.replace(/_/g, ' ') })}
-                            </Typography>
-                          </Box>
-                        )}
-                      </Box>
-                    </Grid>
+                    <MatchCard
+                      key={match.id}
+                      match={match}
+                      matchNumber={matchNumber}
+                      variant="live"
+                      selectable={selectionMode && isManualMatchFlag(match)}
+                      selected={selectedMatchSlugs.has(match.slug)}
+                      note={
+                        event && event.event ? (
+                          <Typography variant="body2" color="text.secondary">
+                            {t('matchesPage.latestEvent', { event: event.event.replace(/_/g, ' ') })}
+                          </Typography>
+                        ) : null
+                      }
+                      onClick={() => {
+                        if (selectionMode && isManualMatchFlag(match)) {
+                          toggleMatchSelected(match);
+                        } else {
+                          setSelectedMatch(match);
+                        }
+                      }}
+                    />
                   );
                 })}
-              </Grid>
+              </RowList>
             </Box>
           )}
 
           {/* Upcoming Matches Section */}
           {upcomingMatches.length > 0 && (
-            <Box>
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                <Typography variant="h6" fontWeight={600}>
-                  {t('matchesPage.sections.upcoming', { count: upcomingMatches.length })}
-                </Typography>
-                {waitingMatches > 0 && (
-                  <Chip 
-                    label={t('matchesPage.sections.inQueue', {
-                      count: waitingMatches,
-                    })}
-                    color="primary"
-                    size="small"
-                    sx={{ fontWeight: 600 }}
-                  />
-                )}
-              </Box>
-              <Grid container spacing={2}>
+            <Box component="section" aria-labelledby="matches-upcoming-heading">
+              <SectionHead
+                id="matches-upcoming-heading"
+                title={t('matchesPage.sections.upcoming', { count: upcomingMatches.length })}
+                action={
+                  waitingMatches > 0 ? (
+                    <Chip
+                      label={t('matchesPage.sections.inQueue', {
+                        count: waitingMatches,
+                      })}
+                      size="small"
+                      sx={{ color: tokens.color.accent }}
+                    />
+                  ) : undefined
+                }
+              />
+              <RowList>
                 {upcomingMatches.map((match, queueIndex) => {
                   const matchNumber = getGlobalMatchNumber(match, allMatches);
                   const isManualMatch = isManualMatchFlag(match);
@@ -616,8 +621,8 @@ export default function Matches() {
                   const queuePosition = match.queuePosition;
                   
                   return (
-                    <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }} key={match.id}>
                       <MatchCard
+                        key={match.id}
                         match={match}
                         matchNumber={matchNumber}
                         roundLabel={manualRoundLabel}
@@ -643,44 +648,38 @@ export default function Matches() {
                           }
                         }}
                       />
-                    </Grid>
                   );
                 })}
-              </Grid>
+              </RowList>
             </Box>
           )}
 
           {/* Match History Section */}
           {matchHistory.length > 0 && (
-            <Box>
-              <Typography variant="h6" fontWeight={600} mb={2}>
-                {t('matchesPage.sections.history', { count: matchHistory.length })}
-              </Typography>
-              <Grid container spacing={2}>
-                {matchHistory.map((match) => {
-                  const matchNumber = getGlobalMatchNumber(match, allMatches);
-                  return (
-                    <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }} key={match.id}>
-                      <Box>
-                        <MatchCard
-                          match={match}
-                          matchNumber={matchNumber}
-                          variant="completed"
-                          selectable={selectionMode && isManualMatchFlag(match)}
-                          selected={selectedMatchSlugs.has(match.slug)}
-                          onClick={() => {
-                            if (selectionMode && isManualMatchFlag(match)) {
-                              toggleMatchSelected(match);
-                            } else {
-                              setSelectedMatch(match);
-                            }
-                          }}
-                        />
-                      </Box>
-                    </Grid>
-                  );
-                })}
-              </Grid>
+            <Box component="section" aria-labelledby="matches-history-heading">
+              <SectionHead
+                id="matches-history-heading"
+                title={t('matchesPage.sections.history', { count: matchHistory.length })}
+              />
+              <RowList>
+                {matchHistory.map((match) => (
+                  <MatchCard
+                    key={match.id}
+                    match={match}
+                    matchNumber={getGlobalMatchNumber(match, allMatches)}
+                    variant="completed"
+                    selectable={selectionMode && isManualMatchFlag(match)}
+                    selected={selectedMatchSlugs.has(match.slug)}
+                    onClick={() => {
+                      if (selectionMode && isManualMatchFlag(match)) {
+                        toggleMatchSelected(match);
+                      } else {
+                        setSelectedMatch(match);
+                      }
+                    }}
+                  />
+                ))}
+              </RowList>
             </Box>
           )}
         </Stack>

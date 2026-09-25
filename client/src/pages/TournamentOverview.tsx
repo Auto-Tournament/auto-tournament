@@ -1,93 +1,42 @@
-import { useEffect } from 'react';
-import { useParams, Link as RouterLink } from 'react-router-dom';
-import {
-  Box,
-  Container,
-  Stack,
-  Typography,
-  CircularProgress,
-  Link,
-  Alert,
-  Grid,
-} from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { TopNavBar } from '../components/layout/TopNavBar';
-import { usePublicTournamentOverview } from '../hooks/usePublicTournamentOverview';
-import { FactsGrid, type Fact } from '../components/tournament/overview/FactsGrid';
+import { FactGrid, SectionHead, type Fact } from '../components/common/ui';
 import { MapPool } from '../components/tournament/overview/MapPool';
 import { RulesList } from '../components/tournament/overview/RulesList';
 import { SchedulePanel } from '../components/tournament/overview/SchedulePanel';
 import { PrizesCard } from '../components/tournament/overview/PrizesCard';
-import { RequirementsCard, type Requirement } from '../components/tournament/overview/RequirementsCard';
+import {
+  RequirementsCard,
+  type Requirement,
+} from '../components/tournament/overview/RequirementsCard';
 import { LiveStrip } from '../components/tournament/overview/LiveStrip';
-import { TournamentPageHeader } from '../components/tournament/overview/TournamentPageHeader';
+import { YourePlayingPanel } from '../components/tournament/page/YourePlayingPanel';
+import { useTournamentPage } from '../components/tournament/page/tournamentPageContext';
+import { isLiveMatch } from '../components/tournament/page/matchHelpers';
+import { usePublicBracket } from '../hooks/usePublicBracket';
 import { getMapDisplayName } from '../constants/maps';
 import { useIntegrationFor } from '../integrations/registry';
 import { MATCH_FORMATS } from '../constants/tournament';
-import { radii } from '../theme/tokens';
+import { compareMatchOrder } from '../utils/matchUtils';
+import { tournamentTabPath } from '../paths';
+import { tokens, textSize } from '../theme/tokens';
 
+/**
+ * The tournament page's Overview tab: what it is, how it's played and what's
+ * at stake (the draft's `tournament.html`), a strip of the matches live right
+ * now, and "You're playing" for a player whose team is in it.
+ */
 export default function TournamentOverview() {
-  const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
-  const {
-    tournament,
-    liveMatchCount,
-    viewerTeam,
-    viewerHasSteamIdentity,
-    loading,
-    error,
-  } = usePublicTournamentOverview(id);
-  // Before the early returns below: a hook, re-rendering when a code module arrives.
+  const { tournament, viewerTeam, viewerHasSteamIdentity } = useTournamentPage();
   const gameIntegration = useIntegrationFor(tournament);
-
-  useEffect(() => {
-    document.title = tournament ? tournament.name : t('overviewPage.tabs.overview');
-  }, [tournament, t]);
-
-  if (loading) {
-    return (
-      <Box minHeight="100vh" bgcolor="transparent">
-        <TopNavBar />
-        <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
-          <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-            <CircularProgress />
-          </Box>
-        </Container>
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box minHeight="100vh" bgcolor="transparent">
-        <TopNavBar />
-        <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
-          <Alert severity="error">{t('overviewPage.loadError')}</Alert>
-        </Container>
-      </Box>
-    );
-  }
-
-  if (!tournament) {
-    return (
-      <Box minHeight="100vh" bgcolor="transparent">
-        <TopNavBar />
-        <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
-          <Typography variant="h5" fontWeight={600} gutterBottom>
-            {t('overviewPage.notFoundTitle')}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {t('overviewPage.notFoundDescription')}
-          </Typography>
-        </Container>
-      </Box>
-    );
-  }
+  // Live matches for the strip, and the viewer's own match for "You're playing".
+  const { matches } = usePublicBracket(tournament.id);
+  const liveMatches = matches.filter(isLiveMatch).sort(compareMatchOrder);
 
   const settings = tournament.settings;
   const isShuffle = tournament.type === 'shuffle';
-  const tournamentTypeKeyPrefix = `tournament.typeSelector.types.${tournament.type}`;
-  const typeLabelKey = `${tournamentTypeKeyPrefix}.label`;
+  const typeLabelKey = `tournament.typeSelector.types.${tournament.type}.label`;
   const typeLabel = t(typeLabelKey) === typeLabelKey ? tournament.type : t(typeLabelKey);
 
   // A map veto and an overtime policy are Counter-Strike 2's. A game the
@@ -163,114 +112,111 @@ export default function TournamentOverview() {
   ];
 
   return (
-    <Box minHeight="100vh" bgcolor="transparent" data-testid="public-tournament-overview">
-      <TopNavBar />
-      <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
-        <Box sx={{ mb: 2 }}>
-          <TournamentPageHeader
-            tournamentId={tournament.id}
-            name={tournament.name}
-            status={tournament.status}
-            location={settings?.location}
-            tab="overview"
+    <Box data-testid="public-tournament-overview">
+      <LiveStrip
+        matches={liveMatches}
+        linkLabel={t('overviewPage.allMatches')}
+        linkTo={tournamentTabPath(tournament.id, 'matches')}
+      />
+
+      {/* Two columns from md up: the event on the left, the side cards on the
+          right. "You're playing" is its own grid item so that on a phone it
+          comes first, above the event text, rather than after all of it. */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1.7fr) minmax(0, 1fr)' },
+          gridTemplateRows: { md: 'auto 1fr' },
+          columnGap: 6,
+          rowGap: { xs: 4, md: 3 },
+          mt: { xs: 3, md: 6 },
+          alignItems: 'start',
+        }}
+      >
+        {viewerTeam && (
+          <Box sx={{ minWidth: 0, gridColumn: { md: 2 }, gridRow: { md: 1 } }}>
+            <YourePlayingPanel tournament={tournament} team={viewerTeam} matches={matches} />
+          </Box>
+        )}
+
+        <Stack
+          spacing={6}
+          sx={{ minWidth: 0, gridColumn: { md: 1 }, gridRow: { md: '1 / span 2' } }}
+        >
+          {settings?.description && (
+            <Box
+              component="section"
+              aria-label={t('overviewPage.about')}
+              data-testid="overview-about"
+            >
+              <Typography
+                sx={{
+                  whiteSpace: 'pre-wrap',
+                  color: tokens.color.ink2,
+                  fontSize: textSize.lg,
+                  lineHeight: 1.6,
+                  maxWidth: '64ch',
+                }}
+              >
+                {settings.description}
+              </Typography>
+            </Box>
+          )}
+
+          <Box component="section" aria-labelledby="overview-how">
+            <SectionHead id="overview-how" title={t('overviewPage.howItsPlayed')} />
+            <FactGrid variant="fact" items={facts} data-testid="overview-facts" />
+          </Box>
+
+          {mapNames.length > 0 && (
+            <Box component="section" aria-labelledby="overview-maps">
+              <SectionHead id="overview-maps" title={t('overviewPage.mapPool')} />
+              <MapPool mapNames={mapNames} />
+            </Box>
+          )}
+
+          {settings?.rules && settings.rules.length > 0 && (
+            <Box component="section" aria-labelledby="overview-rules-title">
+              <SectionHead id="overview-rules-title" title={t('overviewPage.rules')} />
+              <RulesList
+                rules={settings.rules}
+                rulebookUrl={settings.rulebookUrl}
+                rulebookLinkLabel={t('overviewPage.fullRulebook')}
+              />
+            </Box>
+          )}
+
+          {settings?.schedule && settings.schedule.length > 0 && (
+            <Box component="section" aria-labelledby="overview-schedule-title">
+              <SectionHead id="overview-schedule-title" title={t('overviewPage.schedule')} />
+              <SchedulePanel schedule={settings.schedule} />
+            </Box>
+          )}
+        </Stack>
+
+        <Stack
+          component="aside"
+          spacing={3}
+          sx={{
+            minWidth: 0,
+            gridColumn: { md: 2 },
+            gridRow: { md: viewerTeam ? 2 : '1 / span 2' },
+            position: { md: 'sticky' },
+            top: { md: 96 },
+          }}
+        >
+          <PrizesCard
+            title={t('overviewPage.prizes.title')}
+            prizes={settings?.prizes ?? []}
+            note={t('overviewPage.prizes.note')}
           />
-        </Box>
 
-        <LiveStrip
-          liveCount={liveMatchCount}
-          label={t('overviewPage.liveNow', { count: liveMatchCount })}
-          linkLabel={t('overviewPage.viewAllMatches')}
-          linkTo={`/tournament/${tournament.id}/leaderboard`}
-        />
-
-        <Grid container spacing={4} sx={{ mt: 3 }}>
-          <Grid size={{ xs: 12, md: 8 }}>
-            <Stack spacing={4}>
-              {settings?.description && (
-                <Box data-testid="overview-about">
-                  <Typography
-                    variant="body1"
-                    color="text.secondary"
-                    sx={{ whiteSpace: 'pre-wrap' }}
-                  >
-                    {settings.description}
-                  </Typography>
-                </Box>
-              )}
-
-              <Box>
-                <Typography variant="h5" component="h2" gutterBottom>
-                  {t('overviewPage.howItsPlayed')}
-                </Typography>
-                <FactsGrid facts={facts} />
-              </Box>
-
-              {mapNames.length > 0 && (
-                <Box>
-                  <Typography variant="h5" component="h2" gutterBottom>
-                    {t('overviewPage.mapPool')}
-                  </Typography>
-                  <MapPool mapNames={mapNames} />
-                </Box>
-              )}
-
-              {settings?.rules && settings.rules.length > 0 && (
-                <Box>
-                  <Typography variant="h5" component="h2" gutterBottom>
-                    {t('overviewPage.rules')}
-                  </Typography>
-                  <RulesList
-                    rules={settings.rules}
-                    rulebookUrl={settings.rulebookUrl}
-                    rulebookLinkLabel={t('overviewPage.fullRulebook')}
-                  />
-                </Box>
-              )}
-
-              {settings?.schedule && settings.schedule.length > 0 && (
-                <Box>
-                  <Typography variant="h5" component="h2" gutterBottom>
-                    {t('overviewPage.schedule')}
-                  </Typography>
-                  <SchedulePanel schedule={settings.schedule} />
-                </Box>
-              )}
-            </Stack>
-          </Grid>
-
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Stack spacing={3}>
-              {viewerTeam && (
-                <Box
-                  data-testid="overview-your-team"
-                  sx={{ p: 2, border: 1, borderColor: 'divider', borderRadius: radii.lg }}
-                >
-                  <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                    {t('overviewPage.yourTeam.title')}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    {t('overviewPage.yourTeam.onRoster', { team: viewerTeam.name })}
-                  </Typography>
-                  <Link component={RouterLink} to={`/team/${viewerTeam.id}`} variant="body2">
-                    {t('overviewPage.yourTeam.viewTeam')}
-                  </Link>
-                </Box>
-              )}
-
-              <PrizesCard
-                title={t('overviewPage.prizes.title')}
-                prizes={settings?.prizes ?? []}
-                note={t('overviewPage.prizes.note')}
-              />
-
-              <RequirementsCard
-                title={t('overviewPage.requirements.title')}
-                requirements={requirements}
-              />
-            </Stack>
-          </Grid>
-        </Grid>
-      </Container>
+          <RequirementsCard
+            title={t('overviewPage.requirements.title')}
+            requirements={requirements}
+          />
+        </Stack>
+      </Box>
     </Box>
   );
 }

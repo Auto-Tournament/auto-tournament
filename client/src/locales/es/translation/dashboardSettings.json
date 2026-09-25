@@ -6,28 +6,9 @@
       "integrations": "Integraciones y webhooks",
       "players": "Jugadores y acceso",
       "matches": "Partidos y rating",
-      "advanced": "Avanzado",
       "developer": "Desarrollador / simulación"
     },
     "integrations": {
-      "webhook": {
-        "title": "Webhook de Auto Tournament CS2",
-        "description": "URL de webhook de Auto Tournament CS2 a la que puedan acceder tus servidores CS2.",
-        "label": "URL de webhook",
-        "helper": "Ejemplo: https://tu-dominio.com"
-      },
-      "mapSync": {
-        "title": "Sincronización de mapas",
-        "description": "Sincroniza mapas de CS2 desde el repositorio de GitHub.",
-        "buttonSyncing": "Sincronizando...",
-        "buttonIdle": "Sincronizar mapas de CS2",
-        "success": "¡Sincronización de mapas completada! {{added}} mapa(s) nuevo(s) añadido(s), {{skipped}} ya existían.",
-        "partialError": "Algunos mapas no se pudieron sincronizar: {{errors}}",
-        "failed": "No se pudieron sincronizar los mapas",
-        "rateLimit": "Se excedió el límite de la API de GitHub. Inténtalo de nuevo en unos minutos. Puedes configurar la variable de entorno GITHUB_TOKEN para aumentar el límite.",
-        "rateLimitShort": "Se excedió el límite de la API de GitHub. Inténtalo de nuevo en unos minutos.",
-        "githubError": "No se pudo acceder al repositorio de GitHub. Comprueba tu conexión a internet e inténtalo más tarde."
-      },
       "steam": {
         "title": "Integración de Steam",
         "apiKeyLabel": "Clave de Steam Web API",
@@ -46,111 +27,6 @@
         "description": "Controla si los partidos completados actualizan el Skill Rating de los jugadores.",
         "toggleLabel": "Actualizar el rating de los jugadores con los partidos completados",
         "note": "Cuando está deshabilitado, los partidos seguirán registrando estadísticas (ADR, K/D, etc.), pero el Skill Rating no cambiará."
-      },
-      "chatDefaults": {
-        "title": "Valores por defecto de chat y knife de Auto Tournament CS2",
-        "description": "Configura los prefijos del chat en el juego y el comportamiento predeterminado de la ronda de knife.",
-        "chatPrefixLabel": "Prefijo del chat",
-        "chatPrefixHelper": "Predeterminado: \"[{Green}Auto Tournament{Default}]\". Déjalo vacío para restaurar el prefijo por defecto.",
-        "adminChatPrefixLabel": "Prefijo del chat de admin",
-        "adminChatPrefixHelper": "Predeterminado: \"[{Red}ADMIN{Default}]\". Déjalo vacío para restaurar el prefijo de admin por defecto.",
-        "knifeToggleLabel": "Habilitar rondas de knife por defecto para nuevos partidos (cuando los lados no están preseleccionados)",
-        "knifeNote": "Se aplica solo cuando Auto Tournament CS2 normalmente ejecutaría una ronda de knife; no cambia selecciones explícitas de lado."
-      },
-      "atCore": {
-        "title": "Valores predeterminados de Auto Tournament CS2 Core",
-        "description": "Estos valores se envían a los servidores durante la inicialización y antes de cada carga de partido.",
-        "expert": {
-          "title": "Ajustes avanzados",
-          "description": "Estos ajustes pueden hacer que el servidor se comporte de forma inesperada si están mal configurados. Cámbialos solo si sabes que los necesitas.",
-          "autostartMode": {
-            "label": "Modo de autoinicio al cargar el plugin",
-            "helper": "0 = idle/sleep, 1 = modo match (recomendado), 2 = modo practice",
-            "options": {
-              "0": "0 — Inactivo / dormir",
-              "1": "1 — Modo match",
-              "2": "2 — Modo practice"
-            }
-          }
-        },
-        "ready": {
-          "title": "Ready / Inicio del partido",
-          "minimumReadyLabel": "Mínimo de jugadores listos requerido",
-          "minimumReadyHelper": "0 = todos los jugadores conectados deben estar listos. Predeterminado: 0.",
-          "allowForceReady": "Permitir a los admins forzar el ready durante la configuración (!forceready)"
-        },
-        "access": {
-          "title": "Acceso al servidor",
-          "kickWhenNoMatchLoaded": "Expulsar/impedir unirse cuando no hay un partido cargado (servidores de torneo)",
-          "whitelistEnabledDefault": "Habilitar whitelist por defecto (los admins pueden alternar con .whitelist)"
-        },
-        "adminTools": {
-          "title": "Herramientas de admin",
-          "pauseAfterRestore": "Pausar después de restaurar ronda (.stop) para que los equipos se coordinen",
-          "stopCommandAvailable": "Habilitar el comando .stop (restaurar ronda)",
-          "stopCommandNoDamage": "Deshabilitar .stop tras daño al equipo contrario",
-          "usePauseForTacticalPause": "Hacer que .pause se comporte como pausa táctica"
-        },
-        "hostname": {
-          "formatLabel": "Formato del nombre de host del servidor",
-          "formatHelper": "Se aplica a todos los servidores cuando se carga un partido. Variables: {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}, {TEAM1_SCORE}, {TEAM2_SCORE}. Déjalo vacío para mantener el nombre de host que cada servidor define en su propia configuración."
-        },
-        "demos": {
-          "title": "Demos (GOTV)",
-          "demoPathLabel": "Ruta de demos (relativa a csgo/)",
-          "demoPathHelper": "Debe terminar con '/'. Predeterminado: AutoTournamentCS2/",
-          "demoNameFormatLabel": "Formato del nombre del demo (sin .dem)",
-          "demoNameFormatHelper": "Marcadores: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
-        },
-        "seriesEnd": {
-          "title": "Tiempo al finalizar la serie",
-          "kickDelayNoDemoLabel": "Retraso extra de expulsión cuando los demos están desactivados (segundos)",
-          "kickDelayDemoNoUploadLabel": "Retraso extra de expulsión cuando los demos están activados pero no hay URL de subida (segundos)",
-          "kickDelayDemoUploadLabel": "Retraso extra de expulsión cuando los demos están activados y la URL de subida está configurada (segundos)",
-          "kickDelayHelper": "Se añade encima de mp_match_restart_delay."
-        }
-      },
-      "atEnhanced": {
-        "title": "Funciones de Auto Tournament CS2",
-        "description": "Configura funciones avanzadas de partido. Deja los ajustes vacíos para usar los valores predeterminados de Auto Tournament CS2.",
-        "autoready": {
-          "title": "Sistema de auto-ready",
-          "label": "Marcar automáticamente a los jugadores como listos al unirse",
-          "description": "Los jugadores se marcan como listos al unirse. Aun así pueden usar .unready."
-        },
-        "pause": {
-          "title": "Controles de pausa",
-          "bothTeamsUnpause": "Requerir que ambos equipos reanuden",
-          "maxPausesLabel": "Máx. pausas por equipo",
-          "maxPausesHelper": "0 = pausas ilimitadas",
-          "pauseDurationLabel": "Límite de duración de pausa (segundos)",
-          "pauseDurationHelper": "0 = sin límite de tiempo"
-        },
-        "sideSelection": {
-          "title": "Temporizador de selección de lado",
-          "enabled": "Habilitar temporizador de selección de lado",
-          "timeLabel": "Tiempo permitido (segundos)",
-          "timeHelper": "Tiempo tras la ronda de knife para elegir lado"
-        },
-        "gg": {
-          "title": "Finalización anticipada (.gg)",
-          "enabled": "Habilitar comando .gg (forfeit)",
-          "thresholdLabel": "Umbral de votos (0.0-1.0)",
-          "thresholdHelper": "0.8 = debe votar el 80% del equipo (p. ej. 4/5 jugadores)",
-          "minScoreDiffLabel": "Diferencia mínima de marcador",
-          "minScoreDiffHelper": "0 = deshabilitado. Ejemplo: 6 = permitir .gg solo perdiendo por 6+ rondas"
-        },
-        "ffw": {
-          "title": "Forfeit/Walkover",
-          "enabled": "Habilitar forfeit automático cuando el equipo se desconecta",
-          "timeLabel": "Temporizador de forfeit (segundos)",
-          "timeHelper": "Tiempo antes de declarar forfeit cuando todo el equipo se va"
-        },
-        "demo": {
-          "title": "Grabación de demos",
-          "enabled": "Habilitar grabación automática de demos GOTV",
-          "description": "Cuando está deshabilitado, el servidor reinicia ~10s tras el final del partido (vs 60-90s con grabación)"
-        }
       }
     },
     "players": {
@@ -162,13 +38,6 @@
       }
     },
     "developer": {
-      "title": "Opciones de desarrollador",
-      "description": "Solo para desarrollo local; no habilitar en producción.",
-      "simulateToggleLabel": "Simular partidos (usar demos con bots en lugar de jugadores reales)",
-      "simulateNote": "Cuando está habilitado, las configuraciones generadas incluyen \"simulation\": true para demos automatizadas.",
-      "timescaleTitle": "Velocidad de simulación",
-      "timescaleDescription": "Controla lo rápido que se ejecutan los partidos simulados. Valores más altos aceleran bots y rondas. Solo aplica cuando la simulación está habilitada.",
-      "timescaleWarning": "Velocidades por encima de 2.0 pueden ser inestables y causar comportamientos raros de bots, pero sirven para pruebas rápidas.",
       "resetApiTitle": "Restablecer API y base de datos",
       "resetApiDescription": "Zona de peligro: elimina y recrea todo el esquema de base de datos y reinicializa datos por defecto (mapas, pools, etc.). Solo para desarrollo local. Irreversible.",
       "resetApiButton": "Restablecer API (borrar todos los datos)",
@@ -181,35 +50,27 @@
         "cancel": "Cancelar",
         "confirm": "Sí, restablecer API y borrar datos",
         "confirmLoading": "Restableciendo…"
-      },
-      "debugChat": {
-        "label": "Habilitar mensajes de chat de depuración de Auto Tournament CS2",
-        "description": "Cuando está habilitado, Auto Tournament CS2 imprimirá mensajes de depuración adicionales (conexiones/desconexiones, trazas de eventos, etc.) en el chat. Úsalo solo para desarrollo y pruebas."
       }
     },
     "footer": {
       "version": "Versión",
-      "unknownVersion": "Desconocida",
-      "resetButton": "Restablecer ajustes"
-    },
-    "resetDialog": {
-      "title": "¿Restablecer ajustes?",
-      "description": "Restablece todos los ajustes de esta página a los valores por defecto. Los torneos y servidores existentes no se modifican, pero los nuevos partidos y consultas usarán los valores por defecto. ¿Continuar?",
-      "cancel": "Cancelar",
-      "confirm": "Restablecer",
-      "success": "Ajustes restablecidos a los valores por defecto",
-      "error": "No se pudieron restablecer los ajustes"
+      "unknownVersion": "Desconocida"
     },
     "errors": {
       "loadSettings": "No se pudieron cargar los ajustes",
       "saveSettings": "No se pudieron guardar los ajustes"
     },
     "success": {
-      "saveSettings": "Ajustes guardados",
-      "simulationEnabled": "Modo simulación activado",
-      "simulationDisabled": "Modo de simulación deshabilitado",
-      "timescaleUpdated": "Velocidad de simulación actualizada a {{value}}x",
-      "simulationEnabledWithSpeed": "Modo simulación activado a velocidad {{speed}}x"
+      "saveSettings": "Ajustes guardados"
+    },
+    "site": {
+      "title": "Site",
+      "description": "What this site is called. The admin home uses it as its heading.",
+      "label": "Site name",
+      "helper": "Leave it empty to use \"Auto Tournament\".",
+      "save": "Save",
+      "saved": "Site name saved",
+      "saveFailed": "Could not save the site name"
     }
   },
   "dashboard": {
@@ -236,8 +97,7 @@
       "title": "Finish setting up",
       "openSettings": "Open settings",
       "steam": "Steam sign-in",
-      "discord": "Discord sign-in (optional)",
-      "igdb": "Game covers via IGDB (optional)"
+      "discord": "Discord sign-in (optional)"
     },
     "tournaments": {
       "title": "Tournaments",
@@ -250,21 +110,25 @@
       },
       "state": {
         "draftEmpty": "Not published yet",
-        "draftTeams": "Draft · {{count}} team selected",
-        "draftTeamsPlural": "Draft · {{count}} teams selected",
-        "readyTeams": "{{count}} team entered · sign-up open",
-        "readyTeamsPlural": "{{count}} teams entered · sign-up open",
-        "inProgressTeams": "{{count}} team · in progress",
-        "inProgressTeamsPlural": "{{count}} teams · in progress",
-        "completedTeams": "{{count}} team took part",
-        "completedTeamsPlural": "{{count}} teams took part",
-        "winner": "Winner: {{name}}"
+        "winner": "Winner: {{name}}",
+        "teams_one": "{{count}} team",
+        "teams_other": "{{count}} teams",
+        "entered_one": "{{count}} team entered",
+        "entered_other": "{{count}} teams entered",
+        "draftTeams_one": "Draft · {{count}} team selected",
+        "draftTeams_other": "Draft · {{count}} teams selected",
+        "live_one": "{{count}} match live",
+        "live_other": "{{count}} matches live",
+        "completed_one": "{{count}} team took part",
+        "completed_other": "{{count}} teams took part"
       },
       "actions": {
         "manage": "Manage",
         "continueSetup": "Continue setup",
         "view": "View"
-      }
+      },
+      "eventPage": "Event page",
+      "emptyTitle": "No tournament yet"
     },
     "site": {
       "title": "Site",
@@ -305,8 +169,10 @@
       "title": "People",
       "open": "Open",
       "players": "Players",
-      "admins": "Admins"
-    }
+      "admins": "Admins",
+      "signedInThisWeek": "Signed in this week"
+    },
+    "loading": "Loading the admin home"
   },
   "managePage": {
     "title": "Manage",
@@ -335,7 +201,8 @@
         "game": "Game"
       },
       "label": "Admin",
-      "publicPage": "Public page"
+      "publicPage": "Public page",
+      "opensInNewTab": "(opens in a new tab)"
     },
     "status": {
       "live": "LIVE",
@@ -360,7 +227,8 @@
       "reallocateConfirmTitle": "Move this match to another server?",
       "reallocateConfirmBody": "The match will be reassigned to the next available server.",
       "forceCancelConfirmTitle": "Force cancel this match?",
-      "forceCancelConfirmBody": "This ends the match immediately and marks it as cancelled, even if the server is unreachable."
+      "forceCancelConfirmBody": "This ends the match immediately and marks it as cancelled, even if the server is unreachable.",
+      "listLabel": "Things that need a decision"
     },
     "recent": {
       "heading": "Recent",

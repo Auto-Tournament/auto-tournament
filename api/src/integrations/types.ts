@@ -410,7 +410,7 @@ export interface SettingWriteContext {
 
 /**
  * One `app_settings` key. The core owns a few (webhook URL, ratings,
- * self-registration, IGDB); an integration contributes the rest through
+ * self-registration); an integration contributes the rest through
  * `GameIntegration.instanceSettings`. The settings store accepts exactly the
  * union, and key names never change, so stored rows stay valid.
  */
@@ -652,8 +652,9 @@ export type ClientSlotName = 'MatchPanel' | 'SetupStep' | 'StatsPanel';
 
 /**
  * How an integration's game appears in the player-facing game catalogue
- * ("What do you play?"). `slug` is the IGDB slug, so a search result from IGDB
- * and the built-in entry for an installed module are the same `games` row.
+ * ("What do you play?"). `slug` matches the historic IGDB slug, so a
+ * Wikidata search result and the built-in entry for an installed module are
+ * the same `games` row.
  */
 export interface GameCatalogEntry {
   slug: string;
@@ -667,13 +668,20 @@ export interface GameCatalogEntry {
   /** Extra search terms, e.g. 'cs2'. */
   aliases?: string[];
   /**
+   * The game's numeric IGDB id (242408 for Counter-Strike 2), kept so a
+   * `games` row stored while IGDB search still existed is linked to this
+   * entry by it first — its pill then draws `appIcon` whatever slug IGDB
+   * gave the row.
+   */
+  igdbId?: number;
+  /**
    * The module's own square tile for this game, as a path the client serves
    * (`/games/rocket-league.svg`). It ships with the module rather than coming
    * from the games catalogue, because the setup wizard lists what this
    * instance can run: the art is ours, so every card reads the same — one
    * square, one palette, its own background, nothing cropped or recoloured.
    *
-   * The catalogue's IGDB and Wikidata logos stay where a player is
+   * The catalogue's Wikidata logo stays where a player is
    * recognising their own game ("What do you play?", a profile). That is a
    * different question — it covers every game, not only the ones a module
    * runs — and it keeps its own answer.
@@ -683,6 +691,13 @@ export interface GameCatalogEntry {
    * stretched or borrowed to fill the box.
    */
   icon?: string;
+  /**
+   * The game's own square app icon — the one on a player's desktop or
+   * launcher — as a path the client serves (`/games/counter-strike-2-app-icon.webp`).
+   * What the small game pills draw so a player spots their game at a glance.
+   * Omit it and the pill falls back to the game's monogram.
+   */
+  appIcon?: string;
 }
 
 export interface GameIntegration {

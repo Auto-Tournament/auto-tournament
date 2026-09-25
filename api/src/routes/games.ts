@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { gameIconPath, scheduleGameIconRefresh } from '../services/gameIconService';
 import {
   SEARCH_MIN_LENGTH,
   getPlayableGames,
@@ -15,7 +16,7 @@ const router = Router();
 
 /**
  * Per-IP limit on search. The client debounces (~250 ms), so a person typing
- * stays far below this; it exists to protect the instance's IGDB quota.
+ * stays far below this; it exists to protect the instance's Wikidata quota.
  */
 export const gameSearchLimiter = createRateLimiter({
   windowMs: 60_000,
@@ -30,13 +31,11 @@ export const gameSearchLimiter = createRateLimiter({
  *     tags: [Games]
  *     summary: Search the game catalogue
  *     description: |
- *       Searches IGDB when credentials are configured (results are stored in
- *       the local `games` table); otherwise searches Wikidata, which needs no
- *       API key and is the default so search works out of the box. Always
+ *       Searches Wikidata (results are stored in the local `games` table),
+ *       which needs no API key, so search works out of the box. Always
  *       includes the built-in games for installed game modules first. When
- *       neither is configured to answer, or the active one fails or times
- *       out, only the built-in list is searched. At most 10 results. Rate
- *       limited per IP.
+ *       Wikidata fails or times out, only the built-in list is searched. At
+ *       most 10 results. Rate limited per IP.
  *     parameters:
  *       - in: query
  *         name: q
@@ -53,9 +52,6 @@ export const gameSearchLimiter = createRateLimiter({
  *               type: object
  *               properties:
  *                 success: { type: boolean }
- *                 fromIgdb:
- *                   type: boolean
- *                   description: True when any result came from IGDB (show the IGDB credit)
  *                 fromWikidata:
  *                   type: boolean
  *                   description: True when any result came from Wikidata (show the Wikidata credit)
@@ -82,6 +78,8 @@ router.get('/search', gameSearchLimiter, async (req: Request, res: Response) => 
 
   try {
     const result = await searchGames(q);
+    // New rows get their app icons in the background; this answer never waits.
+    scheduleGameIconRefresh();
     return res.json({ success: true, ...result });
   } catch (error) {
     log.error('Game search failed', error);
@@ -227,6 +225,48 @@ router.get('/playable', async (_req: Request, res: Response) => {
     log.error('Failed to load playable games', error);
     return res.status(500).json({ success: false, error: 'Failed to load playable games' });
   }
+});
+
+/**
+ * @openapi
+ * /api/games/icons/{file}:
+ *   get:
+ *     tags: [Games]
+ *     summary: A game's cached app icon
+ *     description: |
+ *       The Steam client icon this instance fetched for a game no module or
+ *       pack ships an icon for, scaled to 128 px and stored as PNG. The file
+ *       name is a hash of its bytes, so a URL never changes meaning and is
+ *       cached for a year. `GameSummary.appIconUrl` points here.
+ *     parameters:
+ *       - in: path
+ *         name: file
+ *         required: true
+ *         schema: { type: string, pattern: '^[a-f0-9]{16}\.png$' }
+ *     responses:
+ *       200:
+ *         description: The icon
+ *         content:
+ *           image/png: {}
+ *       404:
+ *         description: No such icon
+ */
+router.get('/icons/:file', async (req: Request, res: Response) => {
+  const file = gameIconPath(req.params.file);
+  if (!file) {
+    res.status(404).json({ success: false, error: 'No such icon' });
+    return;
+  }
+  res.setHeader('Content-Type', 'image/png');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
+  res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  res.sendFile(file, (error) => {
+    if (error && !res.headersSent) {
+      res.removeHeader('Cache-Control');
+      res.status(404).json({ success: false, error: 'No such icon' });
+    }
+  });
 });
 
 export default router;

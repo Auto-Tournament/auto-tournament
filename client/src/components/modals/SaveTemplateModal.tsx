@@ -10,7 +10,7 @@ import {
   IconButton,
   Typography,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { XIcon } from '@phosphor-icons/react';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { TournamentSettings } from '../../types/tournament.types';
@@ -130,7 +130,7 @@ export default function SaveTemplateModal({
           {t('saveTemplateModal.title')}
         </Typography>
         <IconButton onClick={handleClose} size="small" aria-label="close">
-          <CloseIcon fontSize="small" />
+          <XIcon size={20} />
         </IconButton>
       </DialogTitle>
       <DialogContent>

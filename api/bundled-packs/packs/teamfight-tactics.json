@@ -2,13 +2,15 @@
   "schema": 1,
   "slug": "teamfight-tactics",
   "name": "Teamfight Tactics",
+  "igdbId": 120176,
   "engine": "manual-report",
   "aliases": [
     "tft"
   ],
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Eight-player auto battler. Report finishing placement each game.",
   "icon": "../icons/teamfight-tactics.svg",
+  "appIcon": "../app-icons/teamfight-tactics.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

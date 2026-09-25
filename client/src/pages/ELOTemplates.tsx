@@ -1,5 +1,6 @@
+import { pageTitle } from '../utils/pageTitle';
 import { useState, useEffect, useCallback } from 'react';
-import { usePageHeader } from '../contexts/PageHeaderContext';
+import { PageHead } from '../components/common/ui';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import {
   Box,
@@ -15,12 +16,7 @@ import {
   Tooltip,
   Divider,
 } from '@mui/material';
-import {
-  Delete as DeleteIcon,
-  Edit as EditIcon,
-  Add as AddIcon,
-  Info as InfoIcon,
-} from '@mui/icons-material';
+import { InfoIcon, PencilSimpleIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { api } from '../utils/api';
 import { EmptyState } from '../components/shared/EmptyState';
 import EloTemplateEditorModal from '../components/modals/EloTemplateEditorModal';
@@ -30,7 +26,6 @@ import type { EloCalculationTemplate } from '../types/elo.types';
 import { useTranslation } from 'react-i18next';
 
 export default function ELOTemplates() {
-  const { setHeaderActions } = usePageHeader();
   const { showSuccess, showError } = useSnackbar();
   const [templates, setTemplates] = useState<EloCalculationTemplate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,31 +56,9 @@ export default function ELOTemplates() {
   }, [showError, t]);
 
   useEffect(() => {
-  document.title = t('layout.pageTitle.eloTemplates');
+  document.title = pageTitle(t('layout.pageTitle.eloTemplates'));
   loadTemplates();
 }, [loadTemplates, t]);
-
-  useEffect(() => {
-    setHeaderActions(
-      <Box display="flex" gap={1}>
-        <Button
-          variant="contained"
-          size="small"
-          startIcon={<AddIcon />}
-          onClick={() => handleOpenEditor()}
-        >
-        {t('eloTemplatesPage.header.createTemplate')}
-        </Button>
-        <Button variant="outlined" size="small" onClick={() => setImportModalOpen(true)}>
-        {t('eloTemplatesPage.header.importJson')}
-        </Button>
-      </Box>
-    );
-
-    return () => {
-      setHeaderActions(null);
-    };
-}, [setHeaderActions, t]);
 
   const handleOpenEditor = (template?: EloCalculationTemplate) => {
     setEditingTemplate(template || null);
@@ -176,23 +149,48 @@ export default function ELOTemplates() {
     return activeWeights || t('eloTemplatesPage.weights.noAdjustmentsPure');
   };
 
+  const pageHead = (
+    <PageHead
+      title={t('layout.pageTitle.eloTemplates')}
+      actions={
+        <>
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<PlusIcon />}
+            onClick={() => handleOpenEditor()}
+          >
+            {t('eloTemplatesPage.header.createTemplate')}
+          </Button>
+          <Button variant="outlined" size="small" onClick={() => setImportModalOpen(true)}>
+            {t('eloTemplatesPage.header.importJson')}
+          </Button>
+        </>
+      }
+    />
+  );
+
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
+      <Box>
+        {pageHead}
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+          <CircularProgress />
+        </Box>
       </Box>
     );
   }
 
   return (
     <Box sx={{ width: '100%', height: '100%' }}>
+      {pageHead}
       {templates.length === 0 ? (
         <EmptyState
           icon={InfoIcon}
           title={t('eloTemplatesPage.empty.title')}
           description={t('eloTemplatesPage.empty.description')}
           actionLabel={t('eloTemplatesPage.empty.action')}
-          actionIcon={AddIcon}
+          actionIcon={PlusIcon}
           onAction={() => handleOpenEditor()}
         />
       ) : (
@@ -247,7 +245,7 @@ export default function ELOTemplates() {
                             onClick={() => handleOpenEditor(template)}
                             color="primary"
                           >
-                            <EditIcon fontSize="small" />
+                            <PencilSimpleIcon size={20} />
                           </IconButton>
                         </Tooltip>
                       )}
@@ -258,7 +256,7 @@ export default function ELOTemplates() {
                             onClick={() => handleDeleteClick(template)}
                             color="error"
                           >
-                            <DeleteIcon fontSize="small" />
+                            <TrashIcon size={20} />
                           </IconButton>
                         </Tooltip>
                       )}

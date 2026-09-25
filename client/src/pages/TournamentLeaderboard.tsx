@@ -4,12 +4,8 @@ import { io } from 'socket.io-client';
 import { onSocketReconnect } from '../utils/socketResync';
 import {
   Box,
-  Card,
-  CardContent,
   Typography,
   Alert,
-  CircularProgress,
-  Container,
   Stack,
   Chip,
   Table,
@@ -27,22 +23,24 @@ import {
   MenuItem,
   Grid,
 } from '@mui/material';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import PersonIcon from '@mui/icons-material/Person';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import SearchIcon from '@mui/icons-material/Search';
-import DownloadIcon from '@mui/icons-material/Download';
+import {
+  ArrowSquareOutIcon,
+  DownloadSimpleIcon,
+  MagnifyingGlassIcon,
+  TrophyIcon,
+  UserIcon,
+} from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../utils/api';
 import { getPlayerPageUrl } from '../utils/playerLinks';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { PlayerName } from '../components/player/PlayerName';
-import { TopNavBar } from '../components/layout/TopNavBar';
-import { TournamentPageHeader } from '../components/tournament/overview/TournamentPageHeader';
+import { TabEmpty, TabLoading } from '../components/tournament/page/TabState';
 import { TeamNameLink } from '../components/team/TeamNameLink';
 import type { Tournament } from '../types/tournament.types';
 import { useIntegrationFor } from '../integrations/registry';
 import { tokens, mono, fontMono, radii } from '../theme/tokens';
+import { Panel, SectionHead } from '../components/common/ui';
 
 /** Right-aligned (numeric) body cells use the mono face. */
 const numericCellsSx = {
@@ -105,11 +103,7 @@ export default function TournamentLeaderboard() {
   // Before the early returns below: a hook, re-rendering when a code module arrives.
   const gameIntegration = useIntegrationFor(data?.tournament);
 
-  // Always set a reasonable tab title, even before the tournament data loads (or if it doesn't exist yet).
-  useEffect(() => {
-    document.title = t('nav.leaderboard');
-  }, [t]);
-
+  // The page title is the tournament page's (`TournamentPage`), like the header.
   const loadStandings = async (showLoading = true) => {
     if (!id) return;
 
@@ -125,9 +119,6 @@ export default function TournamentLeaderboard() {
 
       if (response) {
         setData(response);
-        if (response.tournament) {
-          document.title = `${response.tournament.name}${t('leaderboardPage.titleSuffix')}`;
-        }
       }
     } catch (err: unknown) {
       // Treat 404 / "not found" as a normal empty state instead of a hard error,
@@ -277,75 +268,22 @@ export default function TournamentLeaderboard() {
   }, [data]);
 
   if (loading) {
-    return (
-      <Box minHeight="100vh" bgcolor="transparent">
-        <TopNavBar />
-        <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
-          <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-            <CircularProgress />
-          </Box>
-        </Container>
-      </Box>
-    );
+    return <TabLoading label={t('overviewPage.loading')} />;
   }
 
   if (error) {
-    return (
-      <Box minHeight="100vh" bgcolor="transparent">
-        <TopNavBar />
-        <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
-          <Alert severity="error">{error}</Alert>
-        </Container>
-      </Box>
-    );
+    return <Alert severity="error">{error}</Alert>;
   }
 
-  // If there's simply no data (for example, no tournament has been created yet),
-  // show a gentle empty state instead of crashing or displaying an error.
+  // The tournament page says "not found" itself; no data here means the
+  // standings could not be worked out yet.
   if (!data) {
     return (
-      <Box
-        minHeight="100vh"
-        bgcolor="transparent"
-        data-testid="public-leaderboard-page"
-      >
-        <TopNavBar />
-        <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
-          <Stack spacing={3}>
-            <Card>
-              <CardContent>
-                <Box
-                  display="flex"
-                  alignItems="center"
-                  gap={2}
-                  role="status"
-                  aria-live="polite"
-                  aria-labelledby="tournament-leaderboard-empty-title"
-                  aria-describedby="tournament-leaderboard-empty-description"
-                >
-                  <EmojiEventsIcon sx={{ fontSize: 40, color: 'text.disabled' }} aria-hidden="true" />
-                  <Box>
-                    <Typography
-                      id="tournament-leaderboard-empty-title"
-                      variant="h5"
-                      component="h2"
-                      fontWeight={600}
-                    >
-                      {t('leaderboardPage.emptyTitle')}
-                    </Typography>
-                    <Typography
-                      id="tournament-leaderboard-empty-description"
-                      variant="body2"
-                      color="text.secondary"
-                    >
-                      {t('leaderboardPage.emptyDescription')}
-                    </Typography>
-                  </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          </Stack>
-        </Container>
+      <Box data-testid="public-leaderboard-page">
+        <TabEmpty
+          title={t('leaderboardPage.emptyTitle')}
+          description={t('leaderboardPage.emptyDescription')}
+        />
       </Box>
     );
   }
@@ -487,42 +425,25 @@ export default function TournamentLeaderboard() {
   };
 
   return (
-    <Box
-      minHeight="100vh"
-      // Transparent so the page sits on the body's paper colour.
-      bgcolor="transparent"
-      data-testid="public-leaderboard-page"
-    >
-      <TopNavBar />
-      <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
+    // The Standings tab of the tournament page, which owns the header and tabs.
+    <Box data-testid="public-leaderboard-page">
         <Stack spacing={3}>
-          {/* The same header and tabs as the Overview page, so the two read
-              as one tournament page and there is a way back. */}
-          <TournamentPageHeader
-            tournamentId={tournament.id}
-            name={tournament.name}
-            status={tournament.status}
-            tab="leaderboard"
-            chips={
-              <>
-                <Chip label={tournamentTypeLabel} size="small" variant="outlined" />
-                {roundStatus && (
-                  <Chip
-                    label={t('leaderboardPage.roundOf', {
-                      current: roundStatus.roundNumber,
-                      total: totalRounds,
-                    })}
-                    size="small"
-                    variant="outlined"
-                  />
-                )}
-              </>
-            }
-          />
+          <Box display="flex" gap={1} flexWrap="wrap">
+            <Chip label={tournamentTypeLabel} size="small" variant="outlined" />
+            {roundStatus && (
+              <Chip
+                label={t('leaderboardPage.roundOf', {
+                  current: roundStatus.roundNumber,
+                  total: totalRounds,
+                })}
+                size="small"
+                variant="outlined"
+              />
+            )}
+          </Box>
 
           {(topPerformers || (roundStatus && isActive) || isComplete) && (
-          <Card>
-            <CardContent>
+          <Panel sx={{ p: 3 }}>
               {/* Quick-glance top performers */}
               {topPerformers && (
                 <Box mb={roundStatus && isActive ? 3 : 0}>
@@ -568,7 +489,7 @@ export default function TournamentLeaderboard() {
                               <Chip
                                 label={`${player.matchWins}${t('leaderboardPage.winsShort')} / ${player.matchLosses}${t('leaderboardPage.lossesShort')}`}
                                 size="small"
-                                color={index === 0 ? 'primary' : 'default'}
+                                sx={index === 0 ? { color: tokens.color.accent } : undefined}
                               />
                             </Box>
                           ))}
@@ -617,8 +538,7 @@ export default function TournamentLeaderboard() {
                               <Chip
                                 label={`${player.averageAdr?.toFixed(1) ?? 'N/A'} ADR`}
                                 size="small"
-                                variant={index === 0 ? 'filled' : 'outlined'}
-                                color={index === 0 ? 'secondary' : 'default'}
+                                sx={index === 0 ? { color: tokens.color.accent } : undefined}
                               />
                             </Box>
                           ))}
@@ -660,8 +580,7 @@ export default function TournamentLeaderboard() {
                   {t('leaderboardPage.tournamentCompletedAlert')}
                 </Alert>
               )}
-            </CardContent>
-          </Card>
+          </Panel>
           )}
 
           {/* The game's own statistics, when the page's CS2 columns are not
@@ -670,19 +589,13 @@ export default function TournamentLeaderboard() {
 
           {/* Team Standings (for standard tournaments) */}
           {teams && teams.length > 0 && (
-            <Card sx={{ mb: 3 }}>
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={2}>
-                  <EmojiEventsIcon color="secondary" />
-                  <Typography variant="h5" fontWeight={600}>
-                    {t('leaderboardPage.teamStandings')}
-                  </Typography>
-                  <Chip
-                    label={t('leaderboardPage.teamsCount', { count: teams.length })}
-                    size="small"
-                    variant="outlined"
-                  />
-                </Box>
+            <Box component="section" aria-labelledby="leaderboard-team-standings">
+              <SectionHead
+                id="leaderboard-team-standings"
+                title={t('leaderboardPage.teamStandings')}
+                action={<Chip label={t('leaderboardPage.teamsCount', { count: teams.length })} size="small" />}
+              />
+              <Panel sx={{ p: { xs: 1, sm: 2 } }}>
                 <TableContainer>
                   <Table size="small" sx={numericCellsSx}>
                     <TableHead>
@@ -770,24 +683,27 @@ export default function TournamentLeaderboard() {
                     </TableBody>
                   </Table>
                 </TableContainer>
-              </CardContent>
-            </Card>
+              </Panel>
+            </Box>
           )}
 
           {/* Player Leaderboard */}
-          <Card data-testid="public-leaderboard">
-            <CardContent>
+          <Box component="section" data-testid="public-leaderboard" aria-labelledby="leaderboard-players">
               <Box
                 display="flex"
                 justifyContent="space-between"
-                alignItems="center"
-                mb={3}
+                alignItems="baseline"
+                mb={2}
                 flexWrap="wrap"
                 gap={2}
               >
                 <Box display="flex" alignItems="center" gap={1}>
-                  <EmojiEventsIcon color="primary" />
-                  <Typography variant="h5" fontWeight={600}>
+                  <Typography
+                    id="leaderboard-players"
+                    variant="h5"
+                    component="h2"
+                    sx={{ letterSpacing: '-0.025em', lineHeight: 1.1 }}
+                  >
                     {t('leaderboardPage.leaderboardTitle')}
                   </Typography>
                   <Chip
@@ -796,7 +712,6 @@ export default function TournamentLeaderboard() {
                       total: leaderboard.length,
                     })}
                     size="small"
-                    variant="outlined"
                   />
                 </Box>
                 <Box display="flex" gap={1} flexWrap="wrap">
@@ -808,7 +723,7 @@ export default function TournamentLeaderboard() {
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <SearchIcon fontSize="small" />
+                          <MagnifyingGlassIcon size={20} />
                         </InputAdornment>
                       ),
                     }}
@@ -816,7 +731,7 @@ export default function TournamentLeaderboard() {
                   />
                   <Button
                     variant="outlined"
-                    startIcon={<DownloadIcon />}
+                    startIcon={<DownloadSimpleIcon />}
                     onClick={handleExportClick}
                   >
                     {t('leaderboardPage.export')}
@@ -834,20 +749,20 @@ export default function TournamentLeaderboard() {
 
               {leaderboard.length === 0 ? (
                 <Box textAlign="center" py={4}>
-                  <PersonIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+                  <Box component={UserIcon} size={48} sx={{ color: 'text.secondary', mb: 2 }} />
                   <Typography variant="body1" color="text.secondary">
                     {t('leaderboardPage.noPlayersRegistered')}
                   </Typography>
                 </Box>
               ) : filteredLeaderboard.length === 0 ? (
                 <Box textAlign="center" py={4}>
-                  <SearchIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+                  <Box component={MagnifyingGlassIcon} size={48} sx={{ color: 'text.secondary', mb: 2 }} />
                   <Typography variant="body1" color="text.secondary">
                     {t('leaderboardPage.searchNoMatch', { query: searchQuery })}
                   </Typography>
                 </Box>
               ) : (
-                <TableContainer>
+                <TableContainer component={Panel} sx={{ p: { xs: 1, sm: 2 } }}>
                   <Table sx={numericCellsSx}>
                     <TableHead>
                       <TableRow>
@@ -894,13 +809,13 @@ export default function TournamentLeaderboard() {
                             <TableCell>
                               <Box display="flex" alignItems="center" gap={1}>
                                 {actualRank === 1 && (
-                                  <EmojiEventsIcon sx={{ color: tokens.color.medalGold, fontSize: 20 }} />
+                                  <Box component={TrophyIcon} size={20} sx={{ color: tokens.color.medalGold }} />
                                 )}
                                 {actualRank === 2 && (
-                                  <EmojiEventsIcon sx={{ color: tokens.color.medalSilver, fontSize: 20 }} />
+                                  <Box component={TrophyIcon} size={20} sx={{ color: tokens.color.medalSilver }} />
                                 )}
                                 {actualRank === 3 && (
-                                  <EmojiEventsIcon sx={{ color: tokens.color.medalBronze, fontSize: 20 }} />
+                                  <Box component={TrophyIcon} size={20} sx={{ color: tokens.color.medalBronze }} />
                                 )}
                                 <Typography
                                   variant="body1"
@@ -982,7 +897,7 @@ export default function TournamentLeaderboard() {
                                 }}
                               >
                                 View
-                                <OpenInNewIcon fontSize="small" />
+                                <ArrowSquareOutIcon size={20} />
                               </Link>
                             </TableCell>
                           </TableRow>
@@ -992,13 +907,11 @@ export default function TournamentLeaderboard() {
                   </Table>
                 </TableContainer>
               )}
-            </CardContent>
-          </Card>
+          </Box>
 
-          {/* Info Card */}
-          <Card>
-            <CardContent>
-              <Typography variant="h6" fontWeight={600} gutterBottom>
+          {/* About the format */}
+          <Panel sx={{ p: 3 }}>
+              <Typography variant="h6" component="h2" fontWeight={600} gutterBottom>
                 {tournamentTypeLabel}
               </Typography>
               {tournamentTypeDescription && (
@@ -1010,10 +923,8 @@ export default function TournamentLeaderboard() {
                 Click on any player&apos;s name or the &quot;View&quot; link to see their detailed
                 profile, match history, and Skill Rating progression.
               </Typography>
-            </CardContent>
-          </Card>
+          </Panel>
         </Stack>
-      </Container>
     </Box>
   );
 }

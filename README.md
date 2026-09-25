@@ -140,7 +140,7 @@ Your logo here — [sponsor Auto Tournament](https://discord.gg/n7gHYau7aW) to b
 
 ## License
 
-PolyForm Noncommercial 1.0.0, see [LICENSE](LICENSE). Free for non-commercial use; commercial use (paid hosting, selling it, paid-entry events, business use) needs a license. See [LICENSING.md](LICENSING.md).
+PolyForm Noncommercial 1.0.0, see [LICENSE](LICENSE). Free for non-commercial use; commercial use (paid hosting, selling it, paid-entry events, business use) needs a license — see [pricing](https://autotournament.gg/pricing) and [LICENSING.md](LICENSING.md).
 
 Built on [brackets-manager.js](https://github.com/Drarig29/brackets-manager.js)
 and [brackets-viewer.js](https://github.com/Drarig29/brackets-viewer.js).

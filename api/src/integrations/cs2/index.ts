@@ -165,8 +165,10 @@ export const cs2Integration: GameIntegration = {
   displayName: 'Counter-Strike 2',
   catalog: {
     slug: 'counter-strike-2',
+    igdbId: 242408,
     aliases: ['cs2', 'cs', 'counter strike', 'csgo'],
     icon: '/games/counter-strike-2.svg',
+    appIcon: '/games/counter-strike-2-app-icon.webp',
   },
   accountProvider: 'steam',
   capabilities: {

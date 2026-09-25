@@ -2,10 +2,12 @@
   "schema": 1,
   "slug": "fortnite",
   "name": "Fortnite",
+  "igdbId": 1905,
   "engine": "manual-report",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Battle royale. Report placement and eliminations each match.",
   "icon": "../icons/fortnite.svg",
+  "appIcon": "../app-icons/fortnite.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

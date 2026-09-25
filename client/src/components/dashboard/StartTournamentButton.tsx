@@ -23,8 +23,7 @@ import {
   FormControlLabel,
   Switch,
 } from '@mui/material';
-import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
+import { RobotIcon, RocketLaunchIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { useTournament } from '../../hooks/useTournament';
 import ConfirmDialog from '../modals/ConfirmDialog';
@@ -167,7 +166,7 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
           starting ? (
             <CircularProgress size={20} color="inherit" />
           ) : simulationEnabled ? (
-            <SmartToyIcon />
+            <RobotIcon />
           ) : (
             <RocketLaunchIcon />
           )

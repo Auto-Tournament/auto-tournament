@@ -46,6 +46,7 @@ function installBundledPacksInProcess(): void {
         source: 'bundled',
         origin: null,
         hasIcon: Boolean(definition.icon),
+        hasAppIcon: Boolean(definition.appIcon),
         installedAt: 0,
         definition,
       };
@@ -144,7 +145,8 @@ test.describe('Manual-report module: what it declares', () => {
   test('the bundled packs it runs are well-formed', () => {
     expect(BUNDLED.length, 'the image should ship some games').toBeGreaterThan(0);
 
-    // Slugs are unique and IGDB-shaped, so an IGDB result enriches the row
+    // Slugs are unique and IGDB-shaped (a historic naming convention kept for
+    // linking), so a catalogue search result enriches the row
     // rather than adding a second one.
     const slugs = BUNDLED.map((e) => e.slug);
     expect(new Set(slugs).size).toBe(slugs.length);

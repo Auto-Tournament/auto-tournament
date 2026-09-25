@@ -15,6 +15,8 @@ import type {
   TournamentSetupSummary,
 } from '../../types';
 import { requiresVeto, validateMapCount } from './mapRules';
+import type { MapGameMode } from '../cs2.types';
+import { isMapMode } from '../maps/mapModes';
 
 /** The key of CS2's object in `settings`. */
 export const CS2_SETTINGS_KEY = 'cs2';
@@ -42,6 +44,8 @@ export interface Cs2TournamentSettings {
    * step fills in the default pool.
    */
   mapPoolId?: number | null;
+  /** Only maps of this type (a wingman tournament plays wingman maps); absent: any. */
+  mapMode?: MapGameMode;
 }
 
 export const CS2_DEFAULTS: Cs2TournamentSettings = {
@@ -84,6 +88,8 @@ function applyFields(into: Cs2TournamentSettings, source: Record<string, unknown
   } else if (source.mapPoolId === null) {
     into.mapPoolId = null;
   }
+  if (isMapMode(source.mapMode)) into.mapMode = source.mapMode;
+  else if (source.mapMode === null) delete into.mapMode;
 }
 
 /**
@@ -119,6 +125,8 @@ export function cs2Patch(next: Cs2TournamentSettings): Record<string, unknown> {
   };
   if (next.mapSequence) stored.mapSequence = next.mapSequence;
   if (next.mapPoolId !== undefined) stored.mapPoolId = next.mapPoolId;
+  // null clears a type set before (the API keeps a field a patch leaves out).
+  stored.mapMode = next.mapMode ?? null;
   return { [CS2_SETTINGS_KEY]: stored };
 }
 

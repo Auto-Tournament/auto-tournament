@@ -1,3 +1,4 @@
+import { pageTitle } from '../utils/pageTitle';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 import {
@@ -16,7 +17,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { InfoIcon } from '@phosphor-icons/react';
 import { SiDiscord, SiGithub, SiKeycloak } from 'react-icons/si';
 import { FcGoogle } from 'react-icons/fc';
 import { SteamIcon } from '../components/icons/SteamIcon';
@@ -205,7 +206,7 @@ export default function AccountConnections() {
   }, []);
 
   useEffect(() => {
-    document.title = t('account.title');
+    document.title = pageTitle(t('account.title'));
   }, [t]);
 
   useEffect(() => {
@@ -464,7 +465,7 @@ export default function AccountConnections() {
                     fontSize: '0.875rem',
                   }}
                 >
-                  <InfoOutlinedIcon fontSize="small" sx={{ color: color.muted, mt: '1px' }} />
+                  <Box component={InfoIcon} size={20} sx={{ color: color.muted, mt: '1px' }} />
                   <span>{t('account.gameAccounts.more')}</span>
                 </Box>
               </Section>

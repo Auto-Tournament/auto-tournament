@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 318 of them, 227 behind auth —
+Every endpoint this API serves — 325 of them, 230 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -320,6 +320,7 @@ The tournament itself — setup, bracket, rounds, standings.
 | `GET` | `/api/tournament/:id/leaderboard` | public |
 | `GET` | `/api/tournament/allocation-status` | public |
 | `GET` | `/api/tournament/game` | public |
+| `GET` | `/api/tournament/:id/bracket` | public |
 | `GET` | `/api/tournament` | admin |
 | `POST` | `/api/tournament` | admin |
 | `PUT` | `/api/tournament` | admin |
@@ -376,9 +377,6 @@ Instance-wide settings.
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/settings/version` | public |
-| `GET` | `/api/settings/igdb` | admin |
-| `PUT` | `/api/settings/igdb` | admin |
-| `POST` | `/api/settings/igdb/test` | admin |
 | `GET` | `/api/settings` | admin |
 | `PUT` | `/api/settings` | admin |
 
@@ -461,7 +459,7 @@ Shared generators, e.g. random team names.
 
 ### Games
 
-The game catalogue players pick from (IGDB or Wikidata-backed search, suggestions). Public.
+The game catalogue players pick from (Wikidata-backed search, suggestions). Public.
 
 | Method | Path | Auth |
 | --- | --- | --- |
@@ -469,6 +467,7 @@ The game catalogue players pick from (IGDB or Wikidata-backed search, suggestion
 | `GET` | `/api/games/suggestions` | public |
 | `GET` | `/api/games/popular` | public |
 | `GET` | `/api/games/playable` | public |
+| `GET` | `/api/games/icons/:file` | public |
 
 ### Game packs
 
@@ -477,6 +476,7 @@ Games an admin imported as a pack file: list, import, remove, and the pack tile.
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/packs/:slug/icon.svg` | public |
+| `GET` | `/api/packs/:slug/app-icon` | public |
 | `GET` | `/api/packs` | admin |
 | `POST` | `/api/packs` | admin |
 | `GET` | `/api/packs/index` | admin |
@@ -504,15 +504,26 @@ The game catalog: every pack and code module this instance has or can install, f
 | --- | --- | --- |
 | `GET` | `/api/catalog` | admin |
 | `GET` | `/api/catalog/packs/:slug/icon.svg` | admin |
+| `GET` | `/api/catalog/packs/:slug/app-icon` | admin |
 | `GET` | `/api/catalog/modules/:id/icon.svg` | admin |
 | `POST` | `/api/catalog/packs/:slug/install` | admin |
 | `DELETE` | `/api/catalog/packs/:slug` | admin |
 | `POST` | `/api/catalog/modules/:id/install` | admin |
 | `POST` | `/api/catalog/modules/:id/update` | admin |
+| `POST` | `/api/catalog/update-all` | admin |
 | `POST` | `/api/catalog/modules/:id/enable` | admin |
 | `POST` | `/api/catalog/modules/:id/disable` | admin |
 | `DELETE` | `/api/catalog/modules/:id` | admin |
 | `POST` | `/api/catalog/modules/:id/purge` | admin |
+
+### System
+
+The platform process: whether it can restart itself, and a restart (so a module update that waits for one can finish). Admin only; writes must be same-site JSON.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/system/restart` | admin |
+| `POST` | `/api/system/restart` | admin |
 
 ### Me
 
@@ -564,13 +575,14 @@ E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
 | `GET` | `/api/test/fake-oauth/:provider/authorize` | public |
 | `POST` | `/api/test/fake-oauth/:provider/token` | public |
 | `GET` | `/api/test/fake-oauth/:provider/userinfo` | public |
-| `POST` | `/api/test/igdb` | admin |
-| `GET` | `/api/test/igdb` | admin |
-| `POST` | `/api/test/fake-igdb/token` | public |
-| `POST` | `/api/test/fake-igdb/v4/games` | public |
 | `POST` | `/api/test/wikidata` | admin |
 | `GET` | `/api/test/wikidata` | admin |
 | `GET` | `/api/test/fake-wikidata` | public |
+| `POST` | `/api/test/game-icons` | admin |
+| `POST` | `/api/test/game-icons/run` | admin |
+| `GET` | `/api/test/fake-steam/info/:appId` | public |
+| `GET` | `/api/test/fake-steam/icons-new/:appId/:file` | public |
+| `GET` | `/api/test/fake-steam/icons-old/:appId/:file` | public |
 | `GET` | `/api/test/team-members` | admin |
 | `POST` | `/api/test/team-members/backfill` | admin |
 | `POST` | `/api/test/team-members` | admin |
@@ -593,6 +605,8 @@ E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
 | `POST` | `/api/test/modules/:id/max-version` | admin |
 | `POST` | `/api/test/modules/:id/interrupt-swap` | admin |
 | `POST` | `/api/test/modules/restore-swaps` | admin |
+| `POST` | `/api/test/modules/:id/seed-installed` | admin |
+| `POST` | `/api/test/modules/auto-update` | admin |
 | `GET` | `/api/test/fake-catalog/catalog.json` | public |
 | `GET` | `/api/test/fake-catalog/releases/:file` | public |
 | `GET` | `/api/test/fake-catalog/packs/:file` | public |

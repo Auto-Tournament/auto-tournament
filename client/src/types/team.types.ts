@@ -14,6 +14,11 @@ export interface Player {
    * admin team endpoints. Contact data only; never part of the stored roster.
    */
   discordId?: string | null;
+  /**
+   * The member's role in the team (`team_members`), on the public team
+   * endpoint's roster. Absent when the player has no account row yet.
+   */
+  role?: 'captain' | 'member';
 }
 
 export interface Team {

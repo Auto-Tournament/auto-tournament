@@ -417,7 +417,9 @@
       "moveDown": "Flytt ned",
       "save": "Lagre arrangementsside",
       "saveSuccess": "Arrangementsside lagret.",
-      "saveError": "Kunne ikke lagre arrangementsside: {{message}}"
+      "saveError": "Kunne ikke lagre arrangementsside: {{message}}",
+      "organizerLabel": "Arrangør",
+      "organizerPlaceholder": "f.eks. Edition 35 LAN"
     },
     "setup": {
       "steps": {
@@ -430,6 +432,7 @@
         "review": "Gjennomgang"
       },
       "stepsLabel": "Oppsettssteg",
+      "backToManage": "Administrer",
       "stepDone": "ferdig",
       "newTournament": "Ny turnering",
       "editing": "Turneringsoppsett",
@@ -681,7 +684,12 @@
   "overviewPage": {
     "tabs": {
       "overview": "Oversikt",
-      "leaderboard": "Poengtavle"
+      "label": "Turnering",
+      "bracket": "Turneringstre",
+      "matches": "Kamper",
+      "teams": "Lag",
+      "standings": "Tabell",
+      "manage": "Administrer"
     },
     "status": {
       "setup": "Kommende",
@@ -689,7 +697,6 @@
       "completed": "Avsluttet"
     },
     "liveNow": "{{count}} live nå",
-    "viewAllMatches": "Se stillingen",
     "howItsPlayed": "Slik spilles det",
     "facts": {
       "teams": "Lag",
@@ -714,7 +721,20 @@
     "yourTeam": {
       "title": "Du spiller",
       "onRoster": "Du er på {{team}}.",
-      "viewTeam": "Se laget ditt"
+      "viewTeam": "Se laget ditt",
+      "versus": "{{team}} mot {{opponent}} · {{stage}}",
+      "tbd": "TBD",
+      "goToMatch": "Gå til kampen din",
+      "openMatch": "Åpne kampsiden",
+      "state": {
+        "live": "Live",
+        "loaded": "Koble til nå",
+        "upNext": "Neste",
+        "finished": "Ferdig",
+        "eliminated": "Slått ut",
+        "waiting": "Venter på neste kamp",
+        "registered": "Påmeldt"
+      }
     },
     "prizes": {
       "title": "Priser",
@@ -729,7 +749,41 @@
     },
     "loadError": "Kunne ikke laste denne turneringen.",
     "notFoundTitle": "Fant ikke turneringen",
-    "notFoundDescription": "Denne turneringen finnes ikke, eller er ikke opprettet ennå."
+    "notFoundDescription": "Denne turneringen finnes ikke, eller er ikke opprettet ennå.",
+    "loading": "Laster…",
+    "about": "Om",
+    "liveStripLabel": "Live nå",
+    "bracketTab": {
+      "loadError": "Kunne ikke laste turneringstreet.",
+      "emptyTitle": "Ingen turneringstre ennå",
+      "emptyDescription": "Turneringstreet vises her når arrangøren starter turneringen.",
+      "shuffleTitle": "Ingen turneringstre i en shuffle-turnering",
+      "shuffleDescription": "Lagene trekkes på nytt hver runde, så det finnes ikke noe turneringstre. Kamper viser hver runde, og Tabell rangerer spillerne."
+    },
+    "matchesTab": {
+      "loadError": "Kunne ikke laste kampene.",
+      "emptyTitle": "Ingen kamper ennå",
+      "emptyDescription": "Kampene vises her når turneringen starter.",
+      "live": "Live nå",
+      "upcoming": "Neste",
+      "results": "Resultater",
+      "vs": "mot",
+      "status": {
+        "live": "Live",
+        "loaded": "Starter",
+        "final": "Ferdig",
+        "upcoming": "Kommende"
+      }
+    },
+    "teamsTab": {
+      "shuffleTitle": "Lagene byttes hver runde",
+      "shuffleDescription": "En shuffle-turnering trekker nye lag hver runde blant de påmeldte spillerne. Tabell rangerer spillerne.",
+      "emptyTitle": "Ingen lag ennå",
+      "emptyDescription": "Lagene vises her når arrangøren legger dem til.",
+      "yours": "Laget ditt",
+      "record": "{{wins}}–{{losses}}"
+    },
+    "allMatches": "Alle kamper"
   },
   "roundStatusCard": {
     "roundOf": "Runde {{current}} av {{total}}",

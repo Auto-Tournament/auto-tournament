@@ -2,10 +2,12 @@
   "schema": 1,
   "slug": "clash-royale",
   "name": "Clash Royale",
+  "igdbId": 15707,
   "engine": "manual-report",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "One-on-one mobile card battler. Report games won in the set.",
   "icon": "../icons/clash-royale.svg",
+  "appIcon": "../app-icons/clash-royale.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

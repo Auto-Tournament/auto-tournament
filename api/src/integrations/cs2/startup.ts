@@ -14,6 +14,8 @@ import { rconService } from './services/rconService';
 import { serverInitializationService } from './services/serverInitializationService';
 import { initPluginVersionService } from './services/pluginVersionService';
 import { healthMonitoringService } from './services/healthMonitoringService';
+import { startMapAutoSync, stopMapAutoSync } from './maps/autoSync';
+import { mapService } from './maps/mapService';
 import { startFleet, stopFleet } from './fleet/service';
 
 export async function startCs2(): Promise<void> {
@@ -34,10 +36,19 @@ export async function startCs2(): Promise<void> {
   // Start health monitoring for server tracking
   // Checks every minute to mark inactive servers as offline
   healthMonitoringService.start();
+
+  // Every map's type, for the tournament map-type rule (maps/mapModes.ts).
+  await mapService.getAllMaps().catch((error) => {
+    log.warn('Failed to read the map types on startup', { error });
+  });
+
+  // New maps and Active Duty changes from maps.json: now in the background, then daily.
+  startMapAutoSync();
 }
 
 export function stopCs2(): void {
   healthMonitoringService.stop();
+  stopMapAutoSync();
   stopFleet();
 }
 

@@ -1,3 +1,4 @@
+import { pageTitle } from '../utils/pageTitle';
 /* global AbortController */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -8,20 +9,19 @@ import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import Container from '@mui/material/Container';
 import InputAdornment from '@mui/material/InputAdornment';
-import Link from '@mui/material/Link';
 import Skeleton from '@mui/material/Skeleton';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
-import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import { MagnifyingGlassIcon, PlusIcon, TrophyIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { GameCatalog } from '../components/catalog/GameCatalog';
 import { useAuth } from '../contexts/AuthContext';
 import { GameArt, GameCard } from '../components/games/GameCard';
+import { GameMark } from '../components/common/GameMark';
 import { safeNextPath } from '../components/games/nextPath';
+import { ExternalLink } from '../components/common/ExternalLink';
 import {
   MAX_PLAYER_GAMES,
   SEARCH_MIN_LENGTH,
@@ -58,7 +58,7 @@ const SKELETON_CARDS = 10;
  * player afterwards — the page they were heading to when they got redirected
  * here, or "/".
  *
- * The art is the games catalogue's (IGDB/Wikidata), never the module tiles:
+ * The art is the games catalogue's (Wikidata), never the module tiles:
  * the player is recognising their own game here. See `GameCard` for how each
  * kind of picture is drawn so it is neither cropped, stretched nor lost
  * against the dark card.
@@ -89,7 +89,6 @@ export default function WelcomeGames() {
     games: [],
     failed: false,
   });
-  const [fromIgdb, setFromIgdb] = useState(false);
   const [fromWikidata, setFromWikidata] = useState(false);
 
   useEffect(() => {
@@ -135,7 +134,6 @@ export default function WelcomeGames() {
       searchGames(query, controller.signal)
         .then((res) => {
           setResolved({ q: query, games: res.games, failed: false });
-          if (res.fromIgdb) setFromIgdb(true);
           if (res.fromWikidata) setFromWikidata(true);
         })
         .catch((err: unknown) => {
@@ -191,6 +189,10 @@ export default function WelcomeGames() {
   const supportedLabel = t('games.welcome.supportedLegend');
   const continueLabel = isEdit ? t('games.profile.save') : t('games.welcome.continue');
   const heading = isEdit ? t('games.profile.title') : t('games.prompt.title');
+
+  useEffect(() => {
+    document.title = pageTitle(heading);
+  }, [heading]);
   const description = isEdit ? t('games.profile.description') : t('games.prompt.description');
 
   const save = async () => {
@@ -218,9 +220,9 @@ export default function WelcomeGames() {
     }
   };
 
-  const showIgdbCredit = fromIgdb || gridGames.some((g) => g.source === 'igdb');
-  const showWikidataCredit = !showIgdbCredit && (fromWikidata || gridGames.some((g) => g.source === 'wikidata'));
-  const showCredit = showIgdbCredit || showWikidataCredit;
+  // A game found back when IGDB search still existed (`source === 'igdb'`)
+  // is credited to Wikidata too — that is the only external source left.
+  const showCredit = fromWikidata || gridGames.some((g) => g.source === 'wikidata' || g.source === 'igdb');
 
   const noOptionsText = tooShort
     ? t('games.picker.minChars')
@@ -309,11 +311,7 @@ export default function WelcomeGames() {
                     )}
                     {game.supported && (
                       <Tooltip title={supportedLabel}>
-                        <EmojiEventsRoundedIcon
-                          role="img"
-                          aria-label={supportedLabel}
-                          sx={{ fontSize: 18, color: 'primary.main', flexShrink: 0 }}
-                        />
+                        <Box component={TrophyIcon} size={18} role="img" aria-label={supportedLabel} sx={{ color: 'primary.main', flexShrink: 0 }} />
                       </Tooltip>
                     )}
                   </Box>
@@ -337,7 +335,7 @@ export default function WelcomeGames() {
                     ...params.InputProps,
                     startAdornment: (
                       <InputAdornment position="start">
-                        <SearchRoundedIcon sx={{ color: 'text.secondary' }} />
+                        <Box component={MagnifyingGlassIcon} sx={{ color: 'text.secondary' }} />
                       </InputAdornment>
                     ),
                     endAdornment: (
@@ -369,7 +367,7 @@ export default function WelcomeGames() {
                     key={game.id}
                     variant="outlined"
                     label={game.name}
-                    icon={<AddRoundedIcon />}
+                    icon={<PlusIcon />}
                     onClick={() => addFromSearch(game)}
                     data-testid={`welcome-games-suggestion-${game.slug}`}
                   />
@@ -425,7 +423,7 @@ export default function WelcomeGames() {
               sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}
               data-testid="welcome-games-legend"
             >
-              <EmojiEventsRoundedIcon aria-hidden sx={{ fontSize: 18, color: 'primary.main' }} />
+              <Box component={TrophyIcon} size={18} aria-hidden sx={{ color: 'primary.main' }} />
               {supportedLabel}
             </Typography>
           )}
@@ -466,20 +464,14 @@ export default function WelcomeGames() {
         </Box>
 
         {showCredit && (
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3 }} data-testid="igdb-credit">
-            {showWikidataCredit ? (
-              <Link
-                href="https://www.wikidata.org"
-                target="_blank"
-                rel="noopener noreferrer"
-                color="inherit"
-                data-testid="wikidata-credit-link"
-              >
-                {t('games.picker.creditWikidata')}
-              </Link>
-            ) : (
-              t('games.picker.credit')
-            )}
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3 }} data-testid="wikidata-credit">
+            <ExternalLink
+              href="https://www.wikidata.org"
+              color="inherit"
+              data-testid="wikidata-credit-link"
+            >
+              {t('games.picker.creditWikidata')}
+            </ExternalLink>
           </Typography>
         )}
       </Container>
@@ -547,6 +539,15 @@ export default function WelcomeGames() {
                 <Chip
                   key={game.id}
                   label={game.name}
+                  avatar={
+                    <GameMark
+                      name={game.name}
+                      slug={game.slug}
+                      iconUrl={game.appIconUrl}
+                      neutral
+                      size={20}
+                    />
+                  }
                   onDelete={() => removeSelected(game)}
                   title={t('games.picker.remove', { name: game.name })}
                   data-testid={`welcome-games-chip-${game.slug}`}

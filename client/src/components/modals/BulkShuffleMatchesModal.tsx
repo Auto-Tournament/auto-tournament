@@ -15,11 +15,7 @@ import {
   CircularProgress,
   MenuItem,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
-import PeopleIcon from '@mui/icons-material/People';
-import MapIcon from '@mui/icons-material/Map';
+import { MapTrifoldIcon, PlusIcon, TrashIcon, UsersIcon, XIcon } from '@phosphor-icons/react';
 import { Autocomplete } from '@mui/material';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -291,13 +287,13 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
       <DialogTitle>
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <Box display="flex" alignItems="center" gap={1}>
-            <PeopleIcon color="primary" />
+            <Box component={UsersIcon} sx={{ color: 'primary.main' }} />
             <Typography variant="h6" fontWeight={600}>
               {t('bulkShuffleMatchesModal.title')}
             </Typography>
           </Box>
           <IconButton aria-label="close" size="small" onClick={onClose}>
-            <CloseIcon fontSize="small" />
+            <XIcon size={20} />
           </IconButton>
         </Box>
       </DialogTitle>
@@ -361,7 +357,7 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
                   })}
               </Typography>
               <Button
-                startIcon={<AddIcon />}
+                startIcon={<PlusIcon />}
                 onClick={handleAddRow}
                 size="small"
                 variant="outlined"
@@ -434,7 +430,7 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
                               aria-label="Remove match"
                               onClick={() => handleRemoveRow(row.id)}
                             >
-                              <DeleteIcon fontSize="small" />
+                              <TrashIcon size={20} />
                             </IconButton>
                           )}
                         </Stack>
@@ -573,7 +569,7 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
           variant="contained"
           onClick={handleSubmit}
           disabled={submitting || loadingPlayers || registeredPlayers.length === 0}
-          startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <MapIcon />}
+          startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <MapTrifoldIcon />}
         >
           {submitting
             ? t('bulkShuffleMatchesModal.createMatchesButton.creating')

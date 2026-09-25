@@ -11,7 +11,7 @@ import {
   CircularProgress,
   Chip,
 } from '@mui/material';
-import RefreshIcon from '@mui/icons-material/Refresh';
+import { ArrowClockwiseIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 import type { LogEntry, LogsResponse } from '../../types';
@@ -115,7 +115,7 @@ export const LogViewer: React.FC = () => {
               size="small"
               aria-label={t('adminToolsPage.logs.refresh')}
             >
-              <RefreshIcon />
+              <ArrowClockwiseIcon />
             </IconButton>
           </Box>
         </Box>

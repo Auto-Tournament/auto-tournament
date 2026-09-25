@@ -1,7 +1,7 @@
 /**
  * The fleet registry: Ready Up servers, their tokens, enrollment codes and
  * fleet keys, and the platform's outbound stream per server (FLEET.md §4,
- * §6.4, §19.2 items 1-2). Tables are `cs2_fleet_*` (migration `003-fleet`).
+ * §6.4, §19.2 items 1-2). Tables are `cs2_fleet_*` (migration `005-fleet`).
  *
  * Secrets never touch the database in the clear: tokens, keys and codes are
  * stored as sha256 of their secret part (./credentials). The one message that

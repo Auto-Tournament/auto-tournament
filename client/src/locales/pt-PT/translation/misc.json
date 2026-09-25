@@ -52,7 +52,6 @@
       "remove": "Remove {{name}}",
       "supported": "Tournaments supported",
       "limit": "You can pick up to {{max}} games",
-      "credit": "Game data from IGDB",
       "creditWikidata": "Game data from Wikidata"
     },
     "profile": {
@@ -66,35 +65,6 @@
       "save": "Save",
       "saved": "Games saved",
       "saveFailed": "Could not save your games"
-    },
-    "igdb": {
-      "title": "IGDB game data",
-      "description": "Players pick the games they play from a search. With IGDB credentials the search covers every game, with covers; without them, search uses Wikidata.",
-      "consoleLink": "Open the Twitch developer console",
-      "howToToggle": "How to get keys",
-      "howToStep1": "Create a Twitch account and turn on Two-Factor Authentication.",
-      "howToStep2": "Register an app in the Twitch Developer Console. Redirect URL: http://localhost. Client Type: Confidential.",
-      "howToStep3": "Open the app, press Manage, and copy the Client ID.",
-      "howToStep4": "Press New Secret and copy the Client Secret.",
-      "howToStep5": "Paste both here, press Save, then Test connection.",
-      "fullGuideLink": "Full guide",
-      "freeNote": "Free for non-commercial use.",
-      "clientId": "Client ID",
-      "clientSecret": "Client secret",
-      "secretSetPlaceholder": "Saved. Enter a new secret to replace it",
-      "secretHelper": "Write-only: the saved secret is never shown.",
-      "envOverride": "IGDB_CLIENT_ID and IGDB_CLIENT_SECRET are set in the environment, and take precedence over this form.",
-      "statusConfigured": "Configured",
-      "statusNotConfigured": "Not configured",
-      "save": "Save",
-      "remove": "Remove",
-      "test": "Test connection",
-      "testing": "Testing…",
-      "testOk": "Connected to IGDB",
-      "testFailed": "IGDB connection failed: {{error}}",
-      "saved": "IGDB credentials saved",
-      "removed": "IGDB credentials removed",
-      "saveFailed": "Could not save IGDB credentials"
     },
     "welcome": {
       "gridTitle": "Popular games",
@@ -179,16 +149,23 @@
       "steamLinked": "Steam linked",
       "titleAll": "Open tournaments",
       "emptyAll": "No open tournaments right now."
-    }
+    },
+    "summary": {
+      "match": "You have a match waiting.",
+      "open_one": "{{count}} tournament is open for games you play.",
+      "open_other": "{{count}} tournaments are open for games you play.",
+      "openAll_one": "{{count}} tournament is open on this site.",
+      "openAll_other": "{{count}} tournaments are open on this site.",
+      "none": "Nothing needs you right now."
+    },
+    "yourGames": "Games you play",
+    "loading": "Loading your home page",
+    "nextMatch": "Your next match"
   },
   "browsePage": {
     "title": "Browse tournaments",
     "searchPlaceholder": "Search by name or location",
     "loadError": "Could not load tournaments.",
-    "empty": "No tournaments match your filters.",
-    "teamsCount": "{{count}} teams",
-    "watch": "Watch",
-    "view": "View",
     "filters": {
       "allGames": "All games",
       "status": {
@@ -201,12 +178,45 @@
         "all": "Online and LAN",
         "online": "Online",
         "lan": "LAN"
-      }
+      },
+      "gameLabel": "Game",
+      "statusLabel": "Status",
+      "whereLabel": "Where"
     },
     "status": {
-      "live": "Live",
+      "live": "Live"
+    },
+    "searchLabel": "Search tournaments",
+    "loading": "Loading tournaments",
+    "listLabel": "Tournaments",
+    "createTournament": "Create tournament",
+    "teamsCount_one": "{{count}} team",
+    "teamsCount_other": "{{count}} teams",
+    "columns": {
+      "tournament": "Tournament",
+      "format": "Format",
+      "when": "When"
+    },
+    "when": {
+      "starts": "Starts {{date}}",
       "finished": "Finished",
-      "registrationOpen": "Registration open"
+      "finishedOn": "Finished {{date}}",
+      "noDate": "No date yet"
+    },
+    "actions": {
+      "signUp": "Sign up",
+      "watch": "Watch",
+      "results": "Results"
+    },
+    "emptyNone": {
+      "title": "No tournaments yet",
+      "description": "When this site runs a tournament, it shows up here.",
+      "descriptionAdmin": "This site has no tournament yet. Create one, and it shows up here."
+    },
+    "emptyFiltered": {
+      "title": "No tournaments match your filters",
+      "description": "Try another game or status, or clear the filters.",
+      "clear": "Clear filters"
     }
   },
   "modulesPage": {
@@ -390,6 +400,12 @@
       "action": "Reload"
     },
     "restart": "Restart Auto Tournament to finish: {{names}}.",
+    "restartNow": {
+      "action": "Restart now",
+      "restarting": "Restarting…",
+      "failed": "Could not restart",
+      "timeout": "Auto Tournament has not come back yet. Check the container, then reload the page."
+    },
     "confirmInstall": {
       "title": "Install {{name}}?",
       "body": "This is a code module, signed by Auto Tournament. It runs inside this server with access to your database and files, and in the browser of everyone who opens a page it draws.",
@@ -407,6 +423,14 @@
       "title": "Games on this instance",
       "hint": "You run this instance, so you choose the games it offers. Players pick from these."
     },
-    "signedBy": "Signed by {{label}} (key {{keyId}})"
+    "signedBy": "Signed by {{label}} (key {{keyId}})",
+    "updateAll": {
+      "action": "Update all ({{count}})",
+      "running": "Updating…",
+      "done": "Updated {{count}} games and modules",
+      "summary": "Updated {{updated}}, skipped {{skipped}}, failed {{failed}}.",
+      "failedItem": "{{name}}: {{reason}}",
+      "failedFallback": "could not update everything"
+    }
   }
 }

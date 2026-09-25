@@ -18,6 +18,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Alert,
   Box,
   Button,
@@ -36,8 +39,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import CodeIcon from '@mui/icons-material/Code';
-import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import { CaretDownIcon, CodeIcon, MagnifyingGlassIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -47,11 +49,32 @@ import { apiErrorMessage } from '../../utils/api';
 import {
   fetchCatalog,
   runCatalogAction,
+  runCatalogUpdateAll,
   type CatalogAction,
   type CatalogItem,
   type CatalogListing,
   type CatalogState,
+  type CatalogUpdateAllResult,
 } from './catalogApi';
+import { RestartNowButton } from './RestartNowButton';
+
+/** A section's open/closed state, kept per browser. Never throws: private windows and blocked storage just fall back to the default. */
+function readSectionOpen(id: string): boolean | null {
+  try {
+    const raw = window.localStorage.getItem(`at.catalog.section.${id}`);
+    return raw === null ? null : raw === '1';
+  } catch {
+    return null;
+  }
+}
+
+function writeSectionOpen(id: string, open: boolean): void {
+  try {
+    window.localStorage.setItem(`at.catalog.section.${id}`, open ? '1' : '0');
+  } catch {
+    // Private window, or storage blocked: the preference just does not stick.
+  }
+}
 
 const STATE_COLOR: Record<CatalogState, 'default' | 'success' | 'info' | 'warning' | 'error'> = {
   available: 'default',
@@ -152,6 +175,13 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
   const [reloadFor, setReloadFor] = useState<string[]>([]);
   const [confirming, setConfirming] = useState<{ item: CatalogItem; action: 'install' | 'uninstall' } | null>(null);
   const [query, setQuery] = useState('');
+  const [updatingAll, setUpdatingAll] = useState(false);
+  const [updateAllSummary, setUpdateAllSummary] = useState<CatalogUpdateAllResult | null>(null);
+  const [openSections, setOpenSections] = useState<Record<'installed' | 'available', boolean>>({
+    installed: true,
+    available: false,
+  });
+  const sectionDefaultsApplied = useRef(false);
 
   // Held in a ref so a parent passing an inline function does not reload the list on every render.
   const onListingRef = useRef(onListing);
@@ -196,20 +226,73 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
     );
   }, [showBuiltins]);
 
+  // Unfiltered by the search box, so the sections' attention state and the
+  // Update-all count do not flicker away while the admin is typing.
+  const itemsAll = useMemo(
+    () =>
+      (listing?.items ?? []).filter((item) => {
+        if (item.state === 'builtin') return builtinGames.has(item.id);
+        // Hand-placed code that no catalog offers is the operator's, and listed
+        // with the other on-disk modules instead.
+        return !(item.kind === 'module' && item.installed?.source === 'manual' && !item.available);
+      }),
+    [listing, builtinGames]
+  );
+
   const items = useMemo(() => {
-    const all = (listing?.items ?? []).filter((item) => {
-      if (item.state === 'builtin') return builtinGames.has(item.id);
-      // Hand-placed code that no catalog offers is the operator's, and listed
-      // with the other on-disk modules instead.
-      return !(item.kind === 'module' && item.installed?.source === 'manual' && !item.available);
-    });
     const wanted = query.trim().toLowerCase();
-    return wanted ? all.filter((item) => item.name.toLowerCase().includes(wanted)) : all;
-  }, [listing, builtinGames, query]);
+    return wanted ? itemsAll.filter((item) => item.name.toLowerCase().includes(wanted)) : itemsAll;
+  }, [itemsAll, query]);
 
   const installed = items.filter(isInstalled);
   const available = items.filter((item) => !isInstalled(item));
   const restartPending = (listing?.items ?? []).filter((item) => item.restartRequired);
+  const updatable = itemsAll.filter((item) => item.state === 'update-available');
+  const installedNeedsAttention = itemsAll.some(
+    (item) =>
+      isInstalled(item) &&
+      (item.state === 'update-available' || item.state === 'broken' || item.restartRequired || Boolean(failures[key(item)]))
+  );
+  const availableNeedsAttention = itemsAll.some((item) => !isInstalled(item) && item.state === 'broken');
+
+  // Installed opens by default; Available opens only when something there
+  // needs a look. A stored choice from an earlier visit always wins.
+  useEffect(() => {
+    if (!listing || sectionDefaultsApplied.current) return;
+    sectionDefaultsApplied.current = true;
+    setOpenSections({
+      installed: readSectionOpen('installed') ?? true,
+      available: readSectionOpen('available') ?? availableNeedsAttention,
+    });
+    // Only the first listing decides the defaults; later ones must not
+    // fight a toggle the admin already made.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listing]);
+
+  const toggleSection = (id: 'installed' | 'available', open: boolean) => {
+    setOpenSections((prev) => ({ ...prev, [id]: open }));
+    writeSectionOpen(id, open);
+  };
+
+  const runUpdateAll = async () => {
+    setUpdatingAll(true);
+    try {
+      const result = await runCatalogUpdateAll();
+      setUpdateAllSummary(result);
+      if (result.updated.length > 0) showSuccess(t('catalog.updateAll.done', { count: result.updated.length }));
+      await load();
+      onChanged?.();
+    } catch (error) {
+      showError(apiErrorMessage(error, t('catalog.updateAll.failedFallback')));
+    } finally {
+      setUpdatingAll(false);
+    }
+  };
+
+  const nameForEntry = (entry: { kind: CatalogItem['kind']; id: string }) => {
+    const found = listing?.items.find((row) => row.kind === entry.kind && row.id === entry.id);
+    return found ? displayName(found) : entry.id;
+  };
 
   const displayName = (item: CatalogItem) =>
     item.state === 'builtin'
@@ -297,7 +380,13 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
 
   const row = (item: CatalogItem) => {
     const id = `catalog-${item.kind}-${item.id}`;
-    const working = busy?.id === key(item) ? busy.action : null;
+    // "Update all" works through every row with an update, as if each Update were pressed.
+    const working: CatalogAction | null =
+      busy?.id === key(item)
+        ? busy.action
+        : updatingAll && item.state === 'update-available' && !item.restartRequired
+          ? 'update'
+          : null;
     const failure = failures[key(item)];
     const icon = item.state === 'builtin' ? builtinGames.get(item.id) ?? null : item.icon;
     const version = item.installed?.version ?? item.available?.version ?? null;
@@ -374,6 +463,11 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
                   {item.reason}
                 </Typography>
               )}
+              {item.notice && (
+                <Typography variant="body2" color="warning.main" data-testid={`${id}-notice`}>
+                  {item.notice}
+                </Typography>
+              )}
             </Box>
           </Box>
           <Stack direction="row" spacing={1} sx={{ flexShrink: 0, alignSelf: { xs: 'flex-end', sm: 'center' } }}>
@@ -383,9 +477,12 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
                 size="small"
                 variant={primary ? 'contained' : 'text'}
                 color={danger ? 'error' : 'primary'}
-                disabled={busy !== null}
+                // One action at a time: while anything runs (one row, or Update all) nothing else can start.
+                disabled={busy !== null || updatingAll}
                 onClick={() => request(item, action)}
+                startIcon={working === action ? <CircularProgress size={14} color="inherit" /> : undefined}
                 data-testid={`${id}-${action}`}
+                aria-busy={working === action || undefined}
               >
                 {actionLabel(item, action)}
               </Button>
@@ -421,8 +518,30 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
         </Alert>
       )}
       {restartPending.length > 0 && (
-        <Alert severity="warning" data-testid="catalog-restart">
+        <Alert severity="warning" data-testid="catalog-restart" action={<RestartNowButton />}>
           {t('catalog.restart', { names: restartPending.map(displayName).join(', ') })}
+        </Alert>
+      )}
+      {updateAllSummary && (
+        <Alert
+          severity={updateAllSummary.failed.length > 0 ? 'warning' : 'success'}
+          onClose={() => setUpdateAllSummary(null)}
+          data-testid="catalog-update-all-summary"
+        >
+          {t('catalog.updateAll.summary', {
+            updated: updateAllSummary.updated.length,
+            skipped: updateAllSummary.skipped.length,
+            failed: updateAllSummary.failed.length,
+          })}
+          {updateAllSummary.failed.length > 0 && (
+            <Box component="ul" sx={{ m: 0, mt: 0.5, pl: 2.5 }}>
+              {updateAllSummary.failed.map((entry) => (
+                <li key={`${entry.kind}:${entry.id}`}>
+                  {t('catalog.updateAll.failedItem', { name: nameForEntry(entry), reason: entry.error })}
+                </li>
+              ))}
+            </Box>
+          )}
         </Alert>
       )}
       {reloadFor.length > 0 && (
@@ -449,7 +568,7 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchRoundedIcon fontSize="small" />
+                <MagnifyingGlassIcon size={20} />
               </InputAdornment>
             ),
           }}
@@ -457,31 +576,71 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
         />
       )}
 
-      <Box component="section" data-testid="catalog-installed">
-        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-          {t('catalog.installedTitle', { count: installed.length })}
-        </Typography>
-        {installed.length === 0 ? (
-          <Alert severity="info" data-testid="catalog-none-installed">
-            {query ? t('catalog.empty') : t('catalog.noneInstalled')}
-          </Alert>
-        ) : (
-          <Stack spacing={1.5}>{installed.map(row)}</Stack>
-        )}
-      </Box>
+      <Accordion
+        expanded={openSections.installed}
+        onChange={(_, expanded) => toggleSection('installed', expanded)}
+        data-testid="catalog-installed"
+      >
+        <AccordionSummary expandIcon={<CaretDownIcon />} data-testid="catalog-installed-toggle">
+          <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap sx={{ flex: 1, pr: 1 }}>
+            <Typography variant="subtitle2" color={installedNeedsAttention ? 'warning.main' : 'text.secondary'}>
+              {t('catalog.installedTitle', { count: installed.length })}
+            </Typography>
+            <Box sx={{ flex: 1 }} />
+            {updatable.length > 0 && (
+              <Button
+                size="small"
+                variant="outlined"
+                disabled={updatingAll || busy !== null}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  void runUpdateAll();
+                }}
+                data-testid="catalog-update-all"
+              >
+                {updatingAll ? (
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <CircularProgress size={14} color="inherit" />
+                    <span>{t('catalog.updateAll.running')}</span>
+                  </Stack>
+                ) : (
+                  t('catalog.updateAll.action', { count: updatable.length })
+                )}
+              </Button>
+            )}
+          </Stack>
+        </AccordionSummary>
+        <AccordionDetails>
+          {installed.length === 0 ? (
+            <Alert severity="info" data-testid="catalog-none-installed">
+              {query ? t('catalog.empty') : t('catalog.noneInstalled')}
+            </Alert>
+          ) : (
+            <Stack spacing={1.5}>{installed.map(row)}</Stack>
+          )}
+        </AccordionDetails>
+      </Accordion>
 
-      <Box component="section" data-testid="catalog-available">
-        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-          {t('catalog.availableTitle', { count: available.length })}
-        </Typography>
-        {available.length === 0 ? (
-          <Typography variant="body2" color="text.secondary">
-            {query ? t('catalog.empty') : t('catalog.allInstalled')}
+      <Accordion
+        expanded={openSections.available}
+        onChange={(_, expanded) => toggleSection('available', expanded)}
+        data-testid="catalog-available"
+      >
+        <AccordionSummary expandIcon={<CaretDownIcon />} data-testid="catalog-available-toggle">
+          <Typography variant="subtitle2" color={availableNeedsAttention ? 'warning.main' : 'text.secondary'}>
+            {t('catalog.availableTitle', { count: available.length })}
           </Typography>
-        ) : (
-          <Stack spacing={1.5}>{available.map(row)}</Stack>
-        )}
-      </Box>
+        </AccordionSummary>
+        <AccordionDetails>
+          {available.length === 0 ? (
+            <Typography variant="body2" color="text.secondary">
+              {query ? t('catalog.empty') : t('catalog.allInstalled')}
+            </Typography>
+          ) : (
+            <Stack spacing={1.5}>{available.map(row)}</Stack>
+          )}
+        </AccordionDetails>
+      </Accordion>
 
       <Dialog
         open={confirming?.action === 'install'}

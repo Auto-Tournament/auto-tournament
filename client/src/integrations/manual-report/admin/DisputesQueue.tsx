@@ -49,7 +49,7 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material';
-import GavelIcon from '@mui/icons-material/Gavel';
+import { GavelIcon } from '@phosphor-icons/react';
 import type { AdminDisputesViewProps } from '../../types';
 import {
   manualReportApi,
@@ -257,7 +257,7 @@ export function DisputesQueue({ tournamentId }: AdminDisputesViewProps) {
     return (
       <Card data-testid="disputes-empty">
         <CardContent sx={{ textAlign: 'center', py: 6 }}>
-          <GavelIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+          <Box component={GavelIcon} size={64} sx={{ color: 'text.secondary', mb: 2 }} />
           <Typography variant="h6" gutterBottom>
             {t('disputes.empty.title')}
           </Typography>

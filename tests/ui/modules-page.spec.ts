@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { ensureSignedIn, signInViaRequest } from '../helpers/auth';
 
 /**
@@ -32,6 +32,17 @@ const PACK = {
   // A file beside the pack, which the admin picks along with the JSON.
   icon: '../icons/modules-page-game.svg',
 };
+
+/**
+ * The catalog's "Available" section is a collapsible accordion, closed by
+ * default unless something there needs a look, so a test that touches an
+ * uninstalled game or module must open it first — but only if it isn't open
+ * already, or the click would close it.
+ */
+async function openAvailableSection(page: Page): Promise<void> {
+  const toggle = page.getByTestId('catalog-available-toggle');
+  if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.click();
+}
 
 /** The two files a host selects: the pack, and the tile it names. */
 function packFiles(pack: Record<string, unknown> = PACK) {
@@ -161,6 +172,9 @@ test.describe.serial('Modules page', () => {
       try {
         await page.goto('/modules');
         await expect(page.getByTestId('modules-page')).toBeVisible({ timeout: 15000 });
+        // Both fixtures start uninstalled, so they are in the "Available"
+        // accordion, collapsed unless something there needs a look.
+        await openAvailableSection(page);
 
         const entry = page.getByTestId('catalog-pack-index-test-game');
         await expect(entry).toBeVisible({ timeout: 15000 });
@@ -198,6 +212,58 @@ test.describe.serial('Modules page', () => {
       await expect(section).toBeVisible({ timeout: 15000 });
       await expect(section.getByTestId('game-catalog')).toBeVisible({ timeout: 15000 });
       await expect(section.getByTestId('catalog-pack-rocket-league')).toBeVisible();
+    }
+  );
+
+  test(
+    'Update all turns every Update button into a loader and locks the rows until it is done',
+    { tag: ['@ui', '@packs'] },
+    async ({ page }) => {
+      // A listing with two updates, and an update-all the test holds open.
+      const item = (id: string) => ({
+        kind: 'pack',
+        id,
+        name: `Update All ${id}`,
+        description: null,
+        icon: null,
+        engine: 'manual-report',
+        state: 'update-available',
+        reason: null,
+        installed: { version: '1.0.0', source: 'catalog', enabled: true },
+        available: { version: '2.0.0', from: 'remote' },
+        restartRequired: false,
+      });
+      await page.route('**/api/catalog', (route) =>
+        route.fulfill({
+          json: {
+            feed: { from: 'remote', stale: false, error: null },
+            platform: { serverApi: '1.0.0', clientApi: '1.0.0' },
+            items: [item('ua-one'), item('ua-two')],
+          },
+        })
+      );
+      let release: () => void = () => {};
+      const held = new Promise<void>((resolve) => (release = resolve));
+      await page.route('**/api/catalog/update-all', async (route) => {
+        await held;
+        await route.fulfill({ json: { updated: [], skipped: [], failed: [], restartRequired: false } });
+      });
+
+      await page.goto('/modules');
+      await page.getByTestId('catalog-update-all').click();
+
+      for (const id of ['ua-one', 'ua-two']) {
+        const update = page.getByTestId(`catalog-pack-${id}-update`);
+        await expect(update).toBeDisabled();
+        await expect(update).toHaveAttribute('aria-busy', 'true');
+        await expect(page.getByTestId(`catalog-pack-${id}-uninstall`)).toBeDisabled();
+        await expect(page.getByTestId(`catalog-pack-${id}-state`)).toContainText(/install|updat/i);
+      }
+      await expect(page.getByTestId('catalog-update-all')).toBeDisabled();
+
+      release();
+      await expect(page.getByTestId('catalog-pack-ua-one-update')).toBeEnabled({ timeout: 15000 });
+      await expect(page.getByTestId('catalog-pack-ua-one-update')).not.toHaveAttribute('aria-busy', 'true');
     }
   );
 });

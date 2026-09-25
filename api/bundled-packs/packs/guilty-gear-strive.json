@@ -2,13 +2,15 @@
   "schema": 1,
   "slug": "guilty-gear-strive",
   "name": "Guilty Gear -Strive-",
+  "igdbId": 125764,
   "engine": "manual-report",
   "aliases": [
     "ggst"
   ],
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Fighting game. Report games won in the set.",
   "icon": "../icons/guilty-gear-strive.svg",
+  "appIcon": "../app-icons/guilty-gear-strive.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

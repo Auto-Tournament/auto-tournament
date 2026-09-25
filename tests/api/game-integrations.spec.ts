@@ -55,7 +55,7 @@ test.describe('Game integration registry', () => {
     // manual-report module runs any catalogue game (`runsAnyCatalogGame`), so
     // a row for a game no dedicated module claims resolves to it rather than
     // throwing. That is the whole point of the flag: a tournament created for
-    // a game someone found through IGDB search must still find a module.
+    // a game someone found through catalogue search must still find a module.
     const fallback = integrationForMatch({ game: 'no-such-game' });
     expect(fallback.id).toBe('manual-report');
     expect(fallback.runsAnyCatalogGame).toBe(true);

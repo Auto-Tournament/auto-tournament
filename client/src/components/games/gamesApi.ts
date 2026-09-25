@@ -16,11 +16,15 @@ export interface GameSummary {
   genres: string[];
   /** `coverUrl` if present, else `logoUrl`; what the onboarding page's cards render. */
   imageUrl: string | null;
+  /**
+   * The game's square app icon (the one on a player's phone or launcher), from
+   * its module or pack; null when neither ships one. What game pills draw.
+   */
+  appIconUrl: string | null;
 }
 
 export interface GameSearchResponse {
   games: GameSummary[];
-  fromIgdb: boolean;
   fromWikidata: boolean;
 }
 

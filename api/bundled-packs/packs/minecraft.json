@@ -2,13 +2,15 @@
   "schema": 1,
   "slug": "minecraft",
   "name": "Minecraft",
+  "igdbId": 135400,
   "engine": "manual-report",
   "aliases": [
     "mc"
   ],
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Whatever the host builds on it. The captains report who won.",
   "icon": "../icons/minecraft.svg",
+  "appIcon": "../app-icons/minecraft.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

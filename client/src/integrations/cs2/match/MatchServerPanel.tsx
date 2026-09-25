@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Button, Typography, Alert } from '@mui/material';
-import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { CopyIcon, GameControllerIcon } from '@phosphor-icons/react';
 import { FadeInImage } from '../common/FadeInImage';
 import {
   api,
@@ -295,7 +294,7 @@ export function MatchServerPanel({ matchSlug, viewerCanJoin, matchStatus }: Matc
           size="large"
           fullWidth
           color={connected ? 'success' : 'primary'}
-          startIcon={<SportsEsportsIcon />}
+          startIcon={<GameControllerIcon size={24} />}
           onClick={onConnect}
           disabled={!server.host || !server.port} // Disable if server details missing
           sx={{ py: 1.5 }}
@@ -307,7 +306,7 @@ export function MatchServerPanel({ matchSlug, viewerCanJoin, matchStatus }: Matc
           variant="outlined"
           size="small"
           fullWidth
-          startIcon={copied ? null : <ContentCopyIcon />}
+          startIcon={copied ? null : <CopyIcon size={24} />}
           onClick={onCopy}
           disabled={!server.host || !server.port} // Disable if server details missing
         >

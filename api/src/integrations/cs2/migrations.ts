@@ -22,13 +22,22 @@
  * its comments name the plugin's 2.x name: its SQL is checksummed and never
  * changes. `002-at-columns` renames those columns to `at_*`, on a fresh and an
  * upgraded database alike.
+ *
+ * `003-catalog-markers` adds what the map sync (maps/mapSync.ts) needs to
+ * tell the platform's own maps and pools from an admin's.
+ *
+ * `004-map-modes` adds a map's type (maps/mapModes.ts).
+ *
+ * `005-fleet` adds the Ready Up fleet registry (fleet/registry.ts).
  */
 
 import type { ModuleMigration } from '../types';
 
 export const CS2_TABLES_MIGRATION_ID = '001-tables';
 export const CS2_AT_COLUMNS_MIGRATION_ID = '002-at-columns';
-export const CS2_FLEET_MIGRATION_ID = '003-fleet';
+export const CS2_CATALOG_MARKERS_MIGRATION_ID = '003-catalog-markers';
+export const CS2_MAP_MODES_MIGRATION_ID = '004-map-modes';
+export const CS2_FLEET_MIGRATION_ID = '005-fleet';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -106,6 +115,66 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
     ALTER TABLE cs2_servers RENAME COLUMN matchzy_db_error TO at_db_error;
     ALTER TABLE cs2_servers RENAME COLUMN matchzy_db_last_ok_at TO at_db_last_ok_at;
     ALTER TABLE cs2_servers RENAME COLUMN matchzy_db_last_seen_at TO at_db_last_seen_at;
+`,
+  },
+  {
+    // maps.json is the source of the map list and the Active Duty pool
+    // (maps/mapSync.ts). The sync may only change what the platform seeded
+    // and nobody has edited since: `system_managed = 1`. Maps and pools an
+    // admin creates get 0, and an edit through the API sets 0.
+    // `cs2_known_maps` is every map id a sync has offered, so a seeded map an
+    // admin deleted is not added back at the next start. `cs2_map_catalog`
+    // is the one maps.json last applied (its `generatedAt`), so an older copy
+    // (the bundled one, offline) never rolls names or Active Duty back.
+    //
+    // On an existing database: a map counts as seeded when its image is still
+    // the cs2-server-manager thumbnail and it was never updated; the one-mode
+    // pools do (the old seed rewrote them at every start); Active Duty does
+    // when it still holds the old hard-coded list (LEGACY_ACTIVE_DUTY).
+    // Every statement can run twice.
+    id: CS2_CATALOG_MARKERS_MIGRATION_ID,
+    up: `
+    ALTER TABLE cs2_maps ADD COLUMN IF NOT EXISTS system_managed INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE cs2_map_pools ADD COLUMN IF NOT EXISTS system_managed INTEGER NOT NULL DEFAULT 0;
+
+    CREATE TABLE IF NOT EXISTS cs2_known_maps (
+      id TEXT PRIMARY KEY,
+      first_seen_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
+    CREATE TABLE IF NOT EXISTS cs2_map_catalog (
+      slot TEXT PRIMARY KEY, -- one row, 'applied'
+      generated_at TEXT,
+      patch_version TEXT,
+      source TEXT,
+      synced_at INTEGER
+    );
+
+    UPDATE cs2_maps SET system_managed = 1
+      WHERE image_url LIKE 'https://raw.githubusercontent.com/%/cs2-server-manager/%/map_thumbnails/%'
+        AND updated_at = created_at;
+
+    UPDATE cs2_map_pools SET system_managed = 1
+      WHERE name IN ('Defusal only', 'Hostage only', 'Arms Race only')
+         OR (name = 'Active Duty'
+             AND map_ids = '["de_ancient","de_anubis","de_dust2","de_inferno","de_mirage","de_nuke","de_vertigo"]');
+
+    INSERT INTO cs2_known_maps (id) SELECT id FROM cs2_maps ON CONFLICT (id) DO NOTHING;
+`,
+  },
+  {
+    // A map's type (maps/mapModes.ts): defusal, hostage, wingman, armsrace,
+    // deathmatch or other; NULL when not known. Existing maps get it from
+    // their id prefix here; the next map sync fills the catalogue's own
+    // types, and a Workshop map gets it from its Steam tags when added.
+    // Every statement can run twice.
+    id: CS2_MAP_MODES_MIGRATION_ID,
+    up: `
+    ALTER TABLE cs2_maps ADD COLUMN IF NOT EXISTS game_mode TEXT;
+
+    UPDATE cs2_maps SET game_mode = 'defusal' WHERE game_mode IS NULL AND id LIKE 'de\\_%';
+    UPDATE cs2_maps SET game_mode = 'hostage' WHERE game_mode IS NULL AND id LIKE 'cs\\_%';
+    UPDATE cs2_maps SET game_mode = 'armsrace' WHERE game_mode IS NULL AND id LIKE 'ar\\_%';
 `,
   },
   {

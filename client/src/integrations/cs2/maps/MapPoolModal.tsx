@@ -14,7 +14,7 @@ import {
   Chip,
   IconButton,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { XIcon } from '@phosphor-icons/react';
 import { api, useModuleTranslation } from '../../../module-sdk';
 import type { MapPool, MapPoolResponse, MapsResponse, Map } from '../cs2.types';
 
@@ -160,7 +160,7 @@ export default function MapPoolModal({ open, mapPool, onClose, onSave }: MapPool
           {isEditing ? t('mapPoolModal.titleEdit') : t('mapPoolModal.titleCreate')}
         </Typography>
         <IconButton onClick={onClose} size="small" aria-label={t('mapPoolModal.close')}>
-          <CloseIcon fontSize="small" />
+          <XIcon size={20} />
         </IconButton>
       </DialogTitle>
       <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>

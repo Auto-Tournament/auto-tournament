@@ -28,6 +28,20 @@ test.describe.serial('Maps UI', () => {
   });
 
   test(
+    'the page header syncs maps with maps.json and says what happened to Active Duty',
+    { tag: ['@ui', '@maps'] },
+    async ({ page }) => {
+      await page.goto('/maps');
+      const syncResponse = page.waitForResponse(
+        (resp) => resp.url().includes('/api/maps/sync') && resp.request().method() === 'POST'
+      );
+      await page.getByTestId('sync-maps-button').click();
+      expect((await syncResponse).ok()).toBe(true);
+      await expect(page.getByText(/New maps: \d+\. .*Active Duty/)).toBeVisible();
+    }
+  );
+
+  test(
     'should normalise a typed map id to lowercase',
     { tag: ['@ui', '@maps', '@validation'] },
     async ({ page, request }) => {
@@ -141,6 +155,27 @@ test.describe.serial('Maps UI', () => {
           { message: 'renamed display name to persist', timeout: 15000 }
         )
         .toBe(renamed);
+    }
+  );
+
+  test(
+    'groups maps by type, with a type pill on each card',
+    { tag: ['@ui', '@maps'] },
+    async ({ page, request }) => {
+      const mapId = `wingman_map_${Date.now()}`;
+      const created = await request.post('/api/maps', {
+        headers: getAuthHeader(),
+        data: { id: mapId, displayName: 'Wingman Test', gameMode: 'wingman' },
+      });
+      expect(created.ok(), 'seed map should be created').toBe(true);
+      expect((await created.json()).map.gameMode).toBe('wingman');
+
+      await page.goto('/maps');
+      const section = page.getByTestId('maps-section-wingman');
+      await expect(section.getByTestId(`map-card-${mapId}`)).toBeVisible();
+      await expect(page.getByTestId(`map-card-mode-${mapId}`)).toHaveText('Wingman');
+      // A de_ map with no type given is a defusal map.
+      await expect(page.getByTestId('maps-section-defusal')).toBeVisible();
     }
   );
 });

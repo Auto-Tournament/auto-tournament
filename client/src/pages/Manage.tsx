@@ -1,7 +1,8 @@
+import { pageTitle } from '../utils/pageTitle';
 import { useEffect, useMemo, useState } from 'react';
-import { Box, Typography, Button, TextField, Dialog, DialogTitle, DialogContent, DialogActions, LinearProgress } from '@mui/material';
+import { Box, Button, TextField, Dialog, DialogTitle, DialogContent, DialogActions, LinearProgress, Link } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { usePageHeader } from '../contexts/PageHeaderContext';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { useManageData } from '../hooks/useManageData';
 import { api } from '../utils/api';
@@ -20,7 +21,40 @@ import { useShellIntegrations, shellModule } from '../hooks/useShellIntegrations
 import { RecentLog } from '../components/manage/RecentLog';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { useModuleTranslation } from '../module-sdk';
+import { PageHead } from '../components/common/ui';
+import { GameMark } from '../components/common/GameMark';
+import { DEFAULT_SETUP_GAME, useSetupGames } from '../components/tournament/setup/games';
+import { paths } from '../paths';
 import type { Match } from '../types/match.types';
+import type { Tournament } from '../types/tournament.types';
+
+/**
+ * The head's eyebrow (the draft's `.game` line): the game's mark and name,
+ * then the tournament, linking to its public page.
+ */
+function ManageEyebrow({ tournament }: { tournament: Tournament }) {
+  const { games } = useSetupGames();
+  const wanted = tournament.game || DEFAULT_SETUP_GAME.id;
+  const game = games.find((entry) => entry.id === wanted) ??
+    (wanted === DEFAULT_SETUP_GAME.id ? DEFAULT_SETUP_GAME : null);
+  const gameName = game?.name ?? wanted;
+  return (
+    <>
+      <GameMark name={gameName} slug={wanted} iconUrl={game?.icon} size={24} />
+      <span>{gameName}</span>
+      <span aria-hidden>·</span>
+      <Link
+        component={RouterLink}
+        to={paths.tournamentOverview.replace(':id', String(tournament.id))}
+        color="inherit"
+        underline="always"
+        data-testid="manage-event-link"
+      >
+        {tournament.name}
+      </Link>
+    </>
+  );
+}
 
 export default function Manage() {
   // The game's resource grid (CS2: servers and what runs on them), from the
@@ -29,15 +63,20 @@ export default function Manage() {
   const { shell } = useShellIntegrations();
   const ServerGrid = shellModule(shell, (i) => i.dashboardWidgets.manageResources)
     ?.dashboardWidgets.manageResources;
+  // The module whose resources the strip counts: the tournament's, or before
+  // there is one, the first the shell shows that has a tile (CS2's servers,
+  // which an admin sets up before the tournament that needs them).
+  const resourceModule = shellModule(shell, (i) => i.manageStatusTile) ?? null;
   const { t } = useTranslation();
-  const { setHeaderActions } = usePageHeader();
   const { showSuccess, showError } = useSnackbar();
-  const { loading, tournament, matches, availability, refresh } = useManageData();
+  const { loading, tournament, matches, availability, refresh } = useManageData(resourceModule);
   // The status strip's own tile, from the module the availability above came
   // from (CS2: servers free). A module with no resources has no tile, and the
   // strip is one tile shorter rather than showing a zero.
   const tournamentIntegration = useIntegrationFor(tournament);
-  const ResourceStatusTile = tournament ? tournamentIntegration.manageStatusTile : undefined;
+  const ResourceStatusTile = tournament
+    ? tournamentIntegration.manageStatusTile
+    : resourceModule?.manageStatusTile;
   // The module reads its own answer for the counts and rows the console shows
   // itself (CS2: matches waiting for a server, servers down while holding one).
   const { t: moduleT } = useModuleTranslation(tournamentIntegration.id);
@@ -52,7 +91,7 @@ export default function Manage() {
   const [announcing, setAnnouncing] = useState(false);
 
   useEffect(() => {
-    document.title = t('managePage.title');
+    document.title = pageTitle(t('managePage.title'));
   }, [t]);
 
   const statusCounts = useMemo(
@@ -90,20 +129,6 @@ export default function Manage() {
     }
   };
 
-  useEffect(() => {
-    setHeaderActions(
-      <Button
-        variant="outlined"
-        onClick={() => setAnnounceOpen(true)}
-        disabled={!summary || summary.resourceCount === 0}
-      >
-        {t('managePage.announce.button')}
-      </Button>
-    );
-    return () => setHeaderActions(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setHeaderActions, t, summary?.resourceCount]);
-
   if (loading) {
     return (
       <Box>
@@ -114,14 +139,20 @@ export default function Manage() {
 
   return (
     <Box data-testid="manage-page" sx={{ width: '100%' }}>
-      <Box mb={2}>
-        <Typography variant="body2" color="text.secondary">
-          {tournament?.name ?? t('managePage.noTournament')}
-        </Typography>
-        <Typography variant="h4" fontWeight={700}>
-          {t('managePage.needsYouHeading')}
-        </Typography>
-      </Box>
+      <PageHead
+        eyebrow={tournament ? <ManageEyebrow tournament={tournament} /> : t('managePage.noTournament')}
+        title={t('managePage.needsYouHeading')}
+        actions={
+          <Button
+            variant="outlined"
+            onClick={() => setAnnounceOpen(true)}
+            disabled={!summary || summary.resourceCount === 0}
+            data-testid="manage-announce"
+          >
+            {t('managePage.announce.button')}
+          </Button>
+        }
+      />
 
       {/* The rail beside this is the admin shell's (`Layout`), on every
           admin page; this page hands it the "Needs you" count. */}

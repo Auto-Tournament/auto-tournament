@@ -2,13 +2,15 @@
   "schema": 1,
   "slug": "dota-2",
   "name": "Dota 2",
+  "igdbId": 2963,
   "engine": "manual-report",
   "aliases": [
     "dota"
   ],
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Five-a-side MOBA. One map per game.",
   "icon": "../icons/dota-2.svg",
+  "appIcon": "../app-icons/dota-2.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

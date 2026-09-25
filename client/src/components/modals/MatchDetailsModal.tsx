@@ -20,13 +20,15 @@ import {
   Chip,
   Button,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import GroupsIcon from '@mui/icons-material/Groups';
-import MapIcon from '@mui/icons-material/Map';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import CodeIcon from '@mui/icons-material/Code';
+import {
+  CalendarBlankIcon,
+  CaretDownIcon,
+  CodeIcon,
+  MapTrifoldIcon,
+  TrophyIcon,
+  UsersThreeIcon,
+  XIcon,
+} from '@phosphor-icons/react';
 import { Link as RouterLink } from 'react-router-dom';
 import {
   formatDate,
@@ -514,7 +516,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
               </Typography>
             </Box>
             <IconButton onClick={onClose} edge="end">
-              <CloseIcon />
+              <XIcon />
             </IconButton>
           </Box>
         </DialogTitle>
@@ -698,7 +700,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                   </Typography>
                   {winnerSide === 'team1' && (
                     <Box mt={1}>
-                      <EmojiEventsIcon sx={{ color: 'success.main', fontSize: 28 }} />
+                      <Box component={TrophyIcon} size={28} sx={{ color: 'success.main' }} />
                     </Box>
                   )}
                 </Box>
@@ -825,7 +827,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                   </Typography>
                   {winnerSide === 'team2' && (
                     <Box mt={1}>
-                      <EmojiEventsIcon sx={{ color: 'success.main', fontSize: 28 }} />
+                      <Box component={TrophyIcon} size={28} sx={{ color: 'success.main' }} />
                     </Box>
                   )}
                 </Box>
@@ -874,9 +876,9 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                 <>
                   <Divider />
                   <Accordion sx={{ mt: 2 }} defaultExpanded>
-                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <AccordionSummary expandIcon={<CaretDownIcon />}>
                       <Box display="flex" alignItems="center" gap={1}>
-                        <GroupsIcon color="primary" />
+                        <Box component={UsersThreeIcon} sx={{ color: 'primary.main' }} />
                         <Typography variant="subtitle1" fontWeight={600}>
                           {t('matchDetailsModal.roster.title')}
                         </Typography>
@@ -910,7 +912,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                 <Divider />
                 <Box>
                   <Box display="flex" alignItems="center" gap={1} mb={2}>
-                    <GroupsIcon color="primary" />
+                    <Box component={UsersThreeIcon} sx={{ color: 'primary.main' }} />
                     <Typography variant="subtitle1" fontWeight={600}>
                       {t('matchDetailsModal.playerLeaderboards')}
                     </Typography>
@@ -1096,7 +1098,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                 <Divider />
                 <Box>
                   <Box display="flex" alignItems="center" gap={1} mb={2}>
-                    <MapIcon color="primary" />
+                    <Box component={MapTrifoldIcon} sx={{ color: 'primary.main' }} />
                     <Typography variant="subtitle1" fontWeight={600}>
                       {t('matchDetailsModal.currentMap')}
                     </Typography>
@@ -1149,9 +1151,9 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
 
             {playsOnMaps && (
             <Accordion defaultExpanded>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <AccordionSummary expandIcon={<CaretDownIcon />}>
                 <Box display="flex" alignItems="center" gap={1}>
-                  <MapIcon color="primary" />
+                  <Box component={MapTrifoldIcon} sx={{ color: 'primary.main' }} />
                   <Typography variant="subtitle1" fontWeight={600}>
                     {t('matchDetailsModal.maps')}
                   </Typography>
@@ -1190,9 +1192,9 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
             )}
 
             <Accordion defaultExpanded sx={{ mt: 2 }}>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <AccordionSummary expandIcon={<CaretDownIcon />}>
                 <Box display="flex" alignItems="center" gap={1}>
-                  <CalendarTodayIcon color="primary" />
+                  <Box component={CalendarBlankIcon} sx={{ color: 'primary.main' }} />
                   <Typography variant="subtitle1" fontWeight={600}>
                     {t('matchDetailsModal.matchInformation')}
                   </Typography>
@@ -1221,7 +1223,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
 
             {match.serverId && (match.status === 'live' || match.status === 'loaded') && (
               <Accordion sx={{ mt: 2 }}>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <AccordionSummary expandIcon={<CaretDownIcon />}>
                   <Typography variant="subtitle1" fontWeight={600}>
                     {t('matchDetailsModal.adminControls')}
                   </Typography>
@@ -1351,7 +1353,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
               {t('matchDetailsModal.config.title')}
             </Typography>
             <IconButton onClick={() => setConfigModalOpen(false)} edge="end">
-              <CloseIcon />
+              <XIcon />
             </IconButton>
           </Box>
         </DialogTitle>

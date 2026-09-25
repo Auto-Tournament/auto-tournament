@@ -50,6 +50,35 @@ test.describe.serial('Admin home', () => {
       await expect(page.getByTestId('admin-home-site-grid')).toBeVisible();
       await expect(page.getByTestId('admin-home-site-link-servers')).toHaveAttribute('href', '/servers');
       await expect(page.getByTestId('admin-home-site-link-settings')).toHaveAttribute('href', '/settings');
+
+      // The row links to the public event page, and People counts sign-ins.
+      await expect(page.getByTestId('admin-home-tournament-event-page')).toHaveAttribute(
+        'href',
+        `/tournament/${setup.tournament.id}`
+      );
+      await expect(page.getByTestId('admin-home-people-signedInThisWeek')).toBeVisible();
+    }
+  );
+
+  test(
+    'the H1 is the site name from Settings, "Auto Tournament" until one is set',
+    { tag: ['@ui', '@admin-home'] },
+    async ({ page, request }) => {
+      const read = await request.get('/api/settings');
+      const before = ((await read.json()) as { settings: { siteName: string } }).settings.siteName;
+      try {
+        await request.put('/api/settings', { data: { siteName: null } });
+        await page.goto('/');
+        await expect(page.locator('#admin-home-title')).toHaveText('Auto Tournament', { timeout: 15000 });
+
+        await request.put('/api/settings', { data: { siteName: 'Edition 35 LAN' } });
+        await page.goto('/');
+        await expect(page.locator('#admin-home-title')).toHaveText('Edition 35 LAN', { timeout: 15000 });
+      } finally {
+        await request.put('/api/settings', {
+          data: { siteName: before === 'Auto Tournament' ? null : before },
+        });
+      }
     }
   );
 });

@@ -242,6 +242,7 @@ test.describe('Missing module placeholder (client registry)', () => {
     expect(placeholder.navItems).toEqual([]);
     for (const slot of [
       'teamAdminPanel',
+      'rosterMemberStatus',
       'adminGlobalWarning',
       'tournamentStart',
       'matchQueueBanner',

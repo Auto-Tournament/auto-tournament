@@ -1,5 +1,7 @@
 import React from 'react';
-import { Card, CardContent, Box, Typography, Chip, Tooltip } from '@mui/material';
+import { Box, Typography, Chip, Tooltip } from '@mui/material';
+import { Row } from '../common/ui';
+import { tokens } from '../../theme/tokens';
 import {
   getBracketMatchLabel,
   getStatusColor,
@@ -173,35 +175,30 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
       : t('matchInfo.scoreboard.currentMapScore');
   })();
 
-  const getBorderColor = () => {
-    // Bracket list view server status accents:
-    // - allocated (serverId set, not yet loaded/live/completed) => yellow
-    // - loaded (warmup) => blue
-    // - live  => brand orange (as the live match in the bracket)
-    // - completed or upcoming (no server) => no colored border
-    if (match.status === 'live') return 'primary.main';
-    if (match.status === 'loaded') return 'info.main';
-    if (match.serverId && match.status !== 'completed') return 'warning.main';
+  // A thin bar on the row's left edge for a match that is on a server:
+  // allocated (serverId set, not yet loaded/live/completed) amber, loaded
+  // (warmup) blue, live green; nothing for finished or upcoming ones.
+  const getEdgeColor = () => {
+    if (match.status === 'live') return tokens.color.live;
+    if (match.status === 'loaded') return tokens.color.info;
+    if (match.serverId && match.status !== 'completed') return tokens.color.warning;
     return 'transparent';
   };
 
+
   return (
-    <Card
+    // One row of a `RowList` (the drafts' `.row-list`), not a card of its own.
+    <Row
+      data-testid={`match-list-row-${match.slug}`}
+      onClick={onClick}
       sx={{
         cursor: onClick ? 'pointer' : 'default',
-        transition: 'transform 0.15s, box-shadow 0.15s',
-        borderLeftWidth: 4,
-        borderLeftStyle: 'solid',
-        borderLeftColor: getBorderColor(),
-        '&:hover': onClick
-          ? {
-              bgcolor: 'var(--at-paper3)',
-            }
-          : {},
+        boxShadow: `inset 3px 0 0 ${getEdgeColor()}`,
+        '&:hover': onClick ? { bgcolor: tokens.color.paper3 } : {},
+        '&:first-of-type': { borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit' },
+        '&:last-of-type': { borderBottomLeftRadius: 'inherit', borderBottomRightRadius: 'inherit' },
       }}
-      onClick={onClick}
     >
-      <CardContent>
         <Box
           position="relative"
           display="flex"
@@ -260,7 +257,7 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
                   variant="body2"
                   noWrap
                   sx={{
-                    color: winnerSide === 'team1' ? 'primary.main' : 'text.secondary',
+                    color: winnerSide === 'team1' ? 'text.primary' : 'text.secondary',
                     fontWeight: winnerSide === 'team1' ? 600 : 500,
                   }}
                   onClick={(e) => e.stopPropagation()}
@@ -295,7 +292,7 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
                   variant="body2"
                   noWrap
                   sx={{
-                    color: winnerSide === 'team2' ? 'primary.main' : 'text.secondary',
+                    color: winnerSide === 'team2' ? 'text.primary' : 'text.secondary',
                     fontWeight: winnerSide === 'team2' ? 600 : 500,
                   }}
                   onClick={(e) => e.stopPropagation()}
@@ -335,12 +332,12 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
                     )
               }
               size="small"
-              color={getStatusColor(match.status)}
-              sx={{ fontWeight: 600 }}
+              {...(getStatusColor(match.status) === 'primary'
+                ? { sx: { color: tokens.color.accent } }
+                : { color: getStatusColor(match.status) })}
             />
           </Box>
         </Box>
-      </CardContent>
-    </Card>
+    </Row>
   );
 };

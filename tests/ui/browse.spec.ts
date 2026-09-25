@@ -45,6 +45,16 @@ test.describe.serial('Browse', () => {
       await expect(row).toBeVisible();
       await expect(row).toContainText(setup.tournament.name);
 
+      // Format and when columns, and the action that follows the state: the
+      // tournament is running, so it is Watch, to its event page.
+      const id = setup.tournament.id;
+      await expect(page.getByTestId(`browse-format-${id}`)).toContainText('2 teams');
+      await expect(page.getByTestId(`browse-when-${id}`)).toContainText(/live/i);
+      await expect(page.getByTestId(`browse-action-${id}`)).toHaveText(/watch/i);
+      await expect(page.getByTestId(`browse-action-${id}`)).toHaveAttribute('href', `/tournament/${id}`);
+      // One tournament per site in 3.0: no "Create tournament" while it exists.
+      await expect(page.getByTestId('browse-create-tournament')).toHaveCount(0);
+
       // This instance's tournament is CS2; picking a different game hides it.
       await page.getByTestId('browse-filter-game').click();
       await page.getByRole('option', { name: 'Rocket League' }).click();

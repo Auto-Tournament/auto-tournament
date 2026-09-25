@@ -2,10 +2,12 @@
   "schema": 1,
   "slug": "halo-infinite",
   "name": "Halo Infinite",
+  "igdbId": 103281,
   "engine": "manual-report",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Four-a-side arena shooter, reported by the maps played.",
   "icon": "../icons/halo-infinite.svg",
+  "appIcon": "../app-icons/halo-infinite.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60
