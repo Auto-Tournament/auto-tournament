@@ -14,7 +14,6 @@ import { ExternalLink } from '../common/ExternalLink';
 import {
   MAX_PLAYER_GAMES,
   SEARCH_MIN_LENGTH,
-  fetchSuggestions,
   searchGames,
   type GameSummary,
 } from './gamesApi';
@@ -29,8 +28,8 @@ interface GamePickerProps {
 }
 
 /**
- * Pick the games you play: type-to-search (Wikidata-backed, debounced), up to
- * three suggestions under the input, picked games as removable chips.
+ * Pick the games you play: type-to-search (Wikidata-backed, debounced), picked
+ * games as removable chips.
  *
  * The search box is an MUI Autocomplete, so the combobox semantics come with
  * it: arrow keys move through results, Enter picks, Escape closes the list.
@@ -47,7 +46,6 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
     failed: false,
   });
   const [fromWikidata, setFromWikidata] = useState(false);
-  const [suggestions, setSuggestions] = useState<GameSummary[]>([]);
 
   const pickedIds = useMemo(() => new Set(value.map((g) => g.id)), [value]);
   const atLimit = value.length >= MAX_PLAYER_GAMES;
@@ -55,16 +53,6 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
   const tooShort = query.length < SEARCH_MIN_LENGTH;
   const loading = !tooShort && resolved.q !== query;
   const failed = !tooShort && resolved.q === query && resolved.failed;
-
-  useEffect(() => {
-    let cancelled = false;
-    void fetchSuggestions().then((games) => {
-      if (!cancelled) setSuggestions(games);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   useEffect(() => {
     if (query.length < SEARCH_MIN_LENGTH) return;
@@ -91,7 +79,6 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
 
   // While the next answer is on its way, keep showing the previous one.
   const options = tooShort ? [] : resolved.games.filter((g) => !pickedIds.has(g.id));
-  const visibleSuggestions = suggestions.filter((g) => !pickedIds.has(g.id)).slice(0, 3);
 
   const add = (game: GameSummary) => {
     if (pickedIds.has(game.id) || atLimit) return;
@@ -206,35 +193,6 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
           )}
         />
 
-        {visibleSuggestions.length > 0 && !atLimit && (
-          <Box
-            sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, mt: 1.5 }}
-            data-testid="game-suggestions"
-          >
-            <Typography variant="body2" color="text.secondary">
-              {t('games.picker.suggestionsLabel')}
-            </Typography>
-            {visibleSuggestions.map((game) => (
-              <Chip
-                key={game.id}
-                variant="outlined"
-                size="small"
-                label={game.name}
-                avatar={
-                  <GameMark
-                    name={game.name}
-                    slug={game.slug}
-                    iconUrl={game.appIconUrl}
-                    neutral
-                    size={20}
-                  />
-                }
-                onClick={() => add(game)}
-                data-testid={`game-suggestion-${game.slug}`}
-              />
-            ))}
-          </Box>
-        )}
       </Box>
 
       <Box>

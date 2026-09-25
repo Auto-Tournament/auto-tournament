@@ -3,12 +3,9 @@ import { gameIconPath, scheduleGameIconRefresh } from '../services/gameIconServi
 import {
   SEARCH_MIN_LENGTH,
   getPlayableGames,
-  getPlayerAccountBySteamId,
   getPopularGames,
-  getSuggestions,
   searchGames,
 } from '../services/gameCatalogService';
-import { resolveViewerIdentity } from '../utils/viewerIdentity';
 import { createRateLimiter } from '../utils/rateLimit';
 import { log } from '../utils/logger';
 
@@ -89,55 +86,16 @@ router.get('/search', gameSearchLimiter, async (req: Request, res: Response) => 
 
 /**
  * @openapi
- * /api/games/suggestions:
- *   get:
- *     tags: [Games]
- *     summary: Up to three games to suggest
- *     description: |
- *       Games with a tournament open or running on this instance first, then
- *       popular built-in games. Games the signed-in viewer already picked are
- *       left out. Works anonymously (nothing is excluded then).
- *     responses:
- *       200:
- *         description: Suggested games
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success: { type: boolean }
- *                 games:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/GameSummary'
- */
-router.get('/suggestions', async (req: Request, res: Response) => {
-  try {
-    const identity = await resolveViewerIdentity(req);
-    const account = identity.effectiveSteamId
-      ? await getPlayerAccountBySteamId(identity.effectiveSteamId)
-      : null;
-    const games = await getSuggestions(account?.uid ?? null);
-    return res.json({ success: true, games });
-  } catch (error) {
-    log.error('Game suggestions failed', error);
-    return res.status(500).json({ success: false, error: 'Failed to load game suggestions' });
-  }
-});
-
-/**
- * @openapi
  * /api/games/popular:
  *   get:
  *     tags: [Games]
  *     summary: Every built-in game, for the "/welcome/games" onboarding grid
  *     description: |
  *       Installed game modules, then popular esports titles — the full
- *       built-in catalogue, in the same order `suggestions` uses. Unlike
- *       `suggestions`, this is never filtered by what the viewer already
- *       picked (or capped at three): the onboarding page's card grid needs
- *       every built-in on screen so a game already picked still shows up,
- *       selected. Works anonymously.
+ *       built-in catalogue, games with a tournament open or running here
+ *       first. Never filtered by what the viewer already picked: the
+ *       onboarding page's card grid needs every built-in on screen so a game
+ *       already picked still shows up, selected. Works anonymously.
  *     responses:
  *       200:
  *         description: The built-in games

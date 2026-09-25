@@ -46,7 +46,6 @@
       "noResults": "No games found",
       "loading": "Searching…",
       "searchFailed": "Search is unavailable right now",
-      "suggestionsLabel": "Popular here:",
       "yourGames": "Your games",
       "none": "No games picked yet",
       "remove": "Remove {{name}}",

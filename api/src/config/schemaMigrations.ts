@@ -20,6 +20,7 @@
 import type { PoolClient } from 'pg';
 import { log } from '../utils/logger';
 import { foldCs2TournamentColumns } from './cs2SettingsFold';
+import { BUILTIN_WIKIDATA_QIDS, FORGET_WIKIDATA_SET } from '../services/builtinGameIdentity';
 
 /** What a migration body gets: a client inside the migration's transaction. */
 type Queryable = Pick<PoolClient, 'query'>;
@@ -237,6 +238,34 @@ export async function renamePluginNames(client: Queryable): Promise<PluginNamesR
   };
 }
 
+/**
+ * Built-in game rows that hold a different Wikidata item than their pin
+ * (`builtinGameIdentity`): a game search before built-ins were pinned let a
+ * same-named game take a built-in's row by its slug — Valve's Deadlock showed
+ * a 2016 "Deadlock" cover. Such a row forgets that game (cover, year,
+ * genres, Steam icon, Wikidata id) and is a freshly seeded built-in again,
+ * which enrichment fills from the pinned item on the next start.
+ *
+ * Idempotent: a row that holds its pin, or none, is not touched. Works with
+ * or without enrichment enabled; without it the card shows the built-in's
+ * own art rather than another game's. Returns the rows reset.
+ */
+export async function resetMismatchedBuiltinGames(
+  client: Queryable,
+  pins: Readonly<Record<string, string>> = BUILTIN_WIKIDATA_QIDS
+): Promise<number> {
+  const entries = Object.entries(pins);
+  if (entries.length === 0) return 0;
+  const result = await client.query(
+    `UPDATE games g
+        SET ${FORGET_WIKIDATA_SET}, updated_at = EXTRACT(EPOCH FROM NOW())::INTEGER
+       FROM unnest($1::text[], $2::text[]) AS pin(slug, qid)
+      WHERE g.slug = pin.slug AND g.wikidata_id IS NOT NULL AND g.wikidata_id <> pin.qid`,
+    [entries.map(([slug]) => slug), entries.map(([, qid]) => qid)]
+  );
+  return result.rowCount ?? 0;
+}
+
 /** In the order they run. Append only. */
 export const SCHEMA_MIGRATIONS: readonly SchemaMigration[] = [
   {
@@ -292,6 +321,20 @@ export const SCHEMA_MIGRATIONS: readonly SchemaMigration[] = [
           (skipped > 0 ? `, ${skipped} row(s) of another game held only defaults` : '') +
           `; dropped ${dropped.join(', ')}`
       );
+    },
+  },
+  {
+    id: '2026-09-25-builtin-game-identity',
+    description:
+      'Reset built-in game rows a search filled with a same-named game (e.g. a 2016 "Deadlock" on Valve\'s)',
+    async up(client) {
+      const reset = await resetMismatchedBuiltinGames(client);
+      if (reset > 0) {
+        log.success(
+          `[PostgreSQL] Reset ${reset} built-in game(s) that showed a same-named game; ` +
+            'they are enriched again from their pinned Wikidata item'
+        );
+      }
     },
   },
 ];

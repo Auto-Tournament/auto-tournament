@@ -8,6 +8,7 @@ import { signInViaRequest } from '../helpers/auth';
  * `/welcome/games` (the intended destination preserved as `?next=`), picks a
  * game through the search (served by the fake Wikidata in routes/test.ts) and
  * through a card in the grid, saves, and lands back where they were heading.
+ * There are no "Popular here" shortcuts: the page only asks what they play.
  * "Not now" dismisses without saving and does not redirect again.
  *
  * Other UI specs never see this: the test sign-in helpers mark the prompt as
@@ -50,6 +51,7 @@ test.describe('Games you play', () => {
       // profile — the intended destination is preserved as ?next=.
       await page.waitForURL(new RegExp(`/welcome/games\\?next=${encodeURIComponent(`/player/${steamId}`)}`));
       await expect(page.getByRole('heading', { name: 'What do you play?', level: 1 })).toBeVisible();
+      await expect(page.getByTestId('welcome-games-suggestions')).toHaveCount(0);
 
       const search = page.getByRole('combobox', { name: 'Search games' });
       await search.fill('rocket league');
@@ -57,7 +59,14 @@ test.describe('Games you play', () => {
       await expect(option).toBeVisible();
       await option.click();
 
-      await expect(page.getByTestId('welcome-games-chip-rocket-league')).toBeVisible();
+      // The bar at the bottom shows each pick as its icon only: the name is
+      // the chip's accessible name and its tooltip, not text on it.
+      const rlChip = page.getByTestId('welcome-games-chip-rocket-league');
+      await expect(rlChip).toBeVisible();
+      await expect(rlChip).toHaveAttribute('aria-label', 'Rocket League');
+      await expect(rlChip).not.toContainText('Rocket League');
+      await rlChip.hover();
+      await expect(page.getByRole('tooltip', { name: 'Rocket League' })).toBeVisible();
       await expect(search).toHaveValue('');
       // The credit is now an ExternalLink (arrow icon + visually-hidden
       // "(opens in a new tab)"), so match the visible text rather than the

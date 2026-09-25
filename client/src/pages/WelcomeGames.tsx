@@ -13,7 +13,7 @@ import Skeleton from '@mui/material/Skeleton';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import { MagnifyingGlassIcon, PlusIcon, TrophyIcon } from '@phosphor-icons/react';
+import { MagnifyingGlassIcon, TrophyIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { GameCatalog } from '../components/catalog/GameCatalog';
@@ -28,7 +28,6 @@ import {
   dismissGamesPrompt,
   fetchMyGames,
   fetchPopularGames,
-  fetchSuggestions,
   saveMyGames,
   searchGames,
   type GameSummary,
@@ -77,7 +76,6 @@ export default function WelcomeGames() {
 
   const [selected, setSelected] = useState<GameSummary[]>([]);
   const [popular, setPopular] = useState<GameSummary[]>([]);
-  const [suggestions, setSuggestions] = useState<GameSummary[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [busy, setBusy] = useState<'save' | 'skip' | null>(null);
 
@@ -98,16 +96,6 @@ export default function WelcomeGames() {
       if (mine) setSelected(mine.games);
       setPopular(games);
       setLoaded(true);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    void fetchSuggestions().then((games) => {
-      if (!cancelled) setSuggestions(games);
     });
     return () => {
       cancelled = true;
@@ -148,7 +136,6 @@ export default function WelcomeGames() {
   }, [query]);
 
   const searchOptions = tooShort ? [] : resolved.games.filter((g) => !pickedIds.has(g.id));
-  const visibleSuggestions = suggestions.filter((g) => !pickedIds.has(g.id)).slice(0, 3);
 
   // The grid is the full built-in catalogue, always on screen (so an already
   // selected game shows selected instead of disappearing) plus anything a
@@ -354,26 +341,6 @@ export default function WelcomeGames() {
               )}
             />
 
-            {visibleSuggestions.length > 0 && !atLimit && (
-              <Box
-                sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, mt: 1.5, pl: 0.5 }}
-                data-testid="welcome-games-suggestions"
-              >
-                <Typography variant="body2" color="text.secondary">
-                  {t('games.picker.suggestionsLabel')}
-                </Typography>
-                {visibleSuggestions.map((game) => (
-                  <Chip
-                    key={game.id}
-                    variant="outlined"
-                    label={game.name}
-                    icon={<PlusIcon />}
-                    onClick={() => addFromSearch(game)}
-                    data-testid={`welcome-games-suggestion-${game.slug}`}
-                  />
-                ))}
-              </Box>
-            )}
           </Box>
         </Box>
 
@@ -535,24 +502,31 @@ export default function WelcomeGames() {
                 {t('games.welcome.pickOne')}
               </Typography>
             ) : (
+              // Icon only, to fit more picks in one row: the name is the
+              // tooltip and the chip's accessible name, and a game with no
+              // app icon still shows its monogram. Delete/Backspace on a
+              // focused chip, or its cross, removes it.
               selected.map((game) => (
-                <Chip
-                  key={game.id}
-                  label={game.name}
-                  avatar={
-                    <GameMark
-                      name={game.name}
-                      slug={game.slug}
-                      iconUrl={game.appIconUrl}
-                      neutral
-                      size={20}
-                    />
-                  }
-                  onDelete={() => removeSelected(game)}
-                  title={t('games.picker.remove', { name: game.name })}
-                  data-testid={`welcome-games-chip-${game.slug}`}
-                  sx={{ flexShrink: 0 }}
-                />
+                <Tooltip key={game.id} title={game.name}>
+                  <Chip
+                    aria-label={game.name}
+                    label={
+                      <GameMark
+                        name={game.name}
+                        slug={game.slug}
+                        iconUrl={game.appIconUrl}
+                        neutral
+                        size={24}
+                      />
+                    }
+                    onDelete={() => removeSelected(game)}
+                    data-testid={`welcome-games-chip-${game.slug}`}
+                    sx={{
+                      flexShrink: 0,
+                      '& .MuiChip-label': { display: 'flex', alignItems: 'center', pl: 0.5, pr: 0.25 },
+                    }}
+                  />
+                </Tooltip>
               ))
             )}
           </Box>

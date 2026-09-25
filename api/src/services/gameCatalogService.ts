@@ -35,12 +35,12 @@ import {
 } from './gamePackService';
 import { log } from '../utils/logger';
 import { slugify } from '../utils/slug';
+import { FORGET_WIKIDATA_SET, builtinSlugForWikidataId, pinnedWikidataId } from './builtinGameIdentity';
 import { WikidataError, searchWikidata, type WikidataGame } from './wikidataService';
 
 export const SEARCH_MIN_LENGTH = 2;
 export const SEARCH_MAX_RESULTS = 10;
 export const MAX_PLAYER_GAMES = 30;
-const SUGGESTION_COUNT = 3;
 const SEARCH_CACHE_TTL_MS = 10 * 60 * 1000;
 const SEARCH_CACHE_MAX_ENTRIES = 500;
 
@@ -91,14 +91,6 @@ export interface BuiltinGame {
   /** Integration id when an installed module runs this game. */
   integrationId: string | null;
   /**
-   * The only module that runs it is one that runs anything (manual-report,
-   * `runsAnyCatalogGame`), rather than a module written for this game. The
-   * game is supported either way; the suggestions strip treats it as an
-   * ordinary popular title, because "a module exists for it" says nothing
-   * about this game when the module says it about every game.
-   */
-  viaCatchAll: boolean;
-  /**
    * The module's own catalogue entry (CS2's row for Counter-Strike 2) rather
    * than an extra title it ships. Such a game is stored on a tournament under
    * the integration's id, which is what the `game` column has always held for
@@ -125,7 +117,7 @@ export interface BuiltinGame {
 }
 
 /** Popular esports titles built in to the catalogue. Historic IGDB slugs. */
-const POPULAR_GAMES: Array<{ slug: string; name: string; aliases?: string[] }> = [
+export const POPULAR_GAMES: ReadonlyArray<{ slug: string; name: string; aliases?: string[] }> = [
   { slug: 'rocket-league', name: 'Rocket League', aliases: ['rl'] },
   { slug: 'valorant', name: 'Valorant' },
   { slug: 'league-of-legends', name: 'League of Legends', aliases: ['lol'] },
@@ -178,14 +170,12 @@ export function builtinGames(): BuiltinGame[] {
   };
 
   for (const integration of listIntegrations()) {
-    const viaCatchAll = integration.runsAnyCatalogGame === true;
     if (integration.catalog !== null) {
       add({
         slug: integration.catalog?.slug || slugify(integration.displayName),
         name: integration.displayName,
         aliases: [integration.id, ...(integration.catalog?.aliases ?? [])],
         integrationId: integration.id,
-        viaCatchAll,
         own: true,
         icon: integration.catalog?.icon ?? null,
         appIcon: integration.catalog?.appIcon ?? null,
@@ -198,7 +188,6 @@ export function builtinGames(): BuiltinGame[] {
         name: entry.name || integration.displayName,
         aliases: entry.aliases ?? [],
         integrationId: integration.id,
-        viaCatchAll,
         own: false,
         icon: entry.icon ?? null,
         appIcon: entry.appIcon ?? null,
@@ -214,7 +203,7 @@ export function builtinGames(): BuiltinGame[] {
   //
   // In popularity order where the game is a popular title, then by name.
   // `installedPacks()` sorts by name, which is right for the Modules page and
-  // wrong here: this order is the suggestions strip's, and "What do you play?"
+  // wrong here: this is the onboarding grid's order, and "What do you play?"
   // should open on Rocket League, not on Age of Empires II.
   const popularRank = new Map(POPULAR_GAMES.map((game, rank) => [game.slug, rank]));
   const packs = [...installedPacks()].sort(
@@ -228,9 +217,6 @@ export function builtinGames(): BuiltinGame[] {
       name: pack.name,
       aliases: pack.definition.aliases ?? [],
       integrationId: pack.engine,
-      // A pack runs on a module that runs anything, which is exactly what
-      // `viaCatchAll` says: supported, but not a module written for it.
-      viaCatchAll: true,
       own: false,
       icon: pack.hasIcon ? packIconPath(pack.slug) : null,
       // The pack's own, else the snapshot's for the same game — also for a
@@ -246,7 +232,6 @@ export function builtinGames(): BuiltinGame[] {
       name: game.name,
       aliases: game.aliases ?? [],
       integrationId: null,
-      viaCatchAll: false,
       own: false,
       icon: null,
       // A popular title nothing installed runs still has its picture when the
@@ -303,6 +288,8 @@ export interface LinkableGame {
   igdb_id: number | null;
   slug: string;
   name: string;
+  /** The row's Wikidata item, when known: checked against a built-in's pin. */
+  wikidata_id?: string | null;
 }
 
 /**
@@ -312,9 +299,11 @@ export interface LinkableGame {
  *
  * An alias or a name is a weaker claim than an id, and plenty of games share
  * a name ("Deadlock" is a 2016 game and Valve's hero shooter). So when both
- * sides know their IGDB id and the ids differ, a slug alias or name match is
- * refused: the row is a different game that happens to be called the same.
- * The exact slug always links — that row is the built-in's own catalogue row.
+ * sides know their IGDB id, or the row its Wikidata item and the built-in is
+ * pinned to one (`builtinGameIdentity`), and the ids differ, a slug alias or
+ * name match is refused: the row is a different game that happens to be
+ * called the same. The exact slug always links — that row is the built-in's
+ * own catalogue row.
  */
 export function linkBuiltin(row: LinkableGame, links: GameLinks): BuiltinGame | null {
   const igdbId = row.igdb_id ?? null;
@@ -324,8 +313,12 @@ export function linkBuiltin(row: LinkableGame, links: GameLinks): BuiltinGame | 
   }
   const own = links.bySlug.get(row.slug);
   if (own) return own;
-  const differentGame = (game: BuiltinGame) =>
-    igdbId !== null && game.igdbId !== null && game.igdbId !== igdbId;
+  const wikidataId = row.wikidata_id ?? null;
+  const differentGame = (game: BuiltinGame) => {
+    if (igdbId !== null && game.igdbId !== null && game.igdbId !== igdbId) return true;
+    const pin = pinnedWikidataId(game.slug);
+    return wikidataId !== null && pin !== null && pin !== wikidataId;
+  };
   const alias = links.byAlias.get(row.slug);
   if (alias && !differentGame(alias)) return alias;
   const named = links.byName.get(searchKey(row.name));
@@ -442,22 +435,69 @@ function genresJson(genres: string[]): string | null {
 }
 
 /**
+ * A slug for a Wikidata result that must not take `slug`, because that slug
+ * is a built-in pinned to another item: the same name plus its year, else
+ * plus its QID, else plus a counter — the first one no other game's row has.
+ */
+async function freeSlugFor(game: WikidataGame): Promise<string> {
+  const candidates = [
+    game.releaseYear ? `${game.slug}-${game.releaseYear}` : null,
+    `${game.slug}-${game.wikidataId.toLowerCase()}`,
+  ].filter((c): c is string => c !== null);
+  for (let n = 2; n < 50; n++) candidates.push(`${game.slug}-${game.wikidataId.toLowerCase()}-${n}`);
+  const rows = await rowsBySlug(candidates);
+  // A candidate this very item already holds is its own slug, not a clash.
+  const free = (c: string) => (rows.get(c)?.wikidata_id ?? game.wikidataId) === game.wikidataId;
+  return candidates.find((c) => free(c) && !pinnedWikidataId(c)) ?? `${game.slug}-${Date.now()}`;
+}
+
+/**
  * Upsert Wikidata results. Matched by Wikidata id first (a label can change),
  * then by slug (a built-in, or previously IGDB-enriched, row for the same
  * game).
+ *
+ * A built-in's identity is pinned (`builtinGameIdentity`), so a same-named
+ * game never lands on its row: a result whose slug is a built-in's but whose
+ * item is not that built-in's pin gets a slug of its own ("deadlock-2016"),
+ * and a result that *is* a built-in's pinned item updates that built-in's row
+ * whatever its label slugifies to, keeping the built-in's slug and name.
  */
 async function upsertWikidataGames(games: WikidataGame[]): Promise<GameRow[]> {
   const out: GameRow[] = [];
   const now = Math.floor(Date.now() / 1000);
 
-  for (const game of games) {
-    const existing = await db.queryAsync<GameRow>(
-      `SELECT ${GAME_COLUMNS} FROM games WHERE wikidata_id = ? OR slug = ? ORDER BY (wikidata_id = ?) DESC NULLS LAST`,
-      [game.wikidataId, game.slug, game.wikidataId]
+  for (const found of games) {
+    let game = found;
+    const pinnedSlug = builtinSlugForWikidataId(game.wikidataId);
+    const slugPin = pinnedWikidataId(game.slug);
+    if (slugPin && slugPin !== game.wikidataId) {
+      game = { ...game, slug: await freeSlugFor(game) };
+    }
+    const matchSlug = pinnedSlug ?? game.slug;
+
+    const matches = await db.queryAsync<GameRow>(
+      `SELECT ${GAME_COLUMNS} FROM games WHERE wikidata_id = ? OR slug = ?
+        ORDER BY (slug = ?) DESC, (wikidata_id = ?) DESC NULLS LAST`,
+      [game.wikidataId, matchSlug, pinnedSlug ?? '', game.wikidataId]
     );
+    // A built-in pinned to another item that still holds this one (filled by
+    // a search before built-ins were pinned) is not this game: it forgets the
+    // other game, and enrichment fills it from its own item.
+    const existing: GameRow[] = [];
+    for (const r of matches) {
+      const pin = pinnedWikidataId(r.slug);
+      if (pin && pin !== game.wikidataId) {
+        await db.runAsync(`UPDATE games SET ${FORGET_WIKIDATA_SET}, updated_at = ? WHERE id = ?`, [now, r.id]);
+        continue;
+      }
+      existing.push(r);
+    }
     const genres = genresJson(game.genres);
 
     if (existing.length === 0) {
+      // A built-in's pinned item is stored under the built-in's slug, even
+      // before its row exists (a pack not installed yet), so it links later.
+      if (pinnedSlug) game = { ...game, slug: pinnedSlug };
       const row = await db.queryOneAsync<GameRow>(
         `INSERT INTO games (wikidata_id, slug, name, cover_url, logo_url, release_year, genres, steam_app_id, source, updated_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'wikidata', ?)
@@ -481,6 +521,13 @@ async function upsertWikidataGames(games: WikidataGame[]): Promise<GameRow[]> {
     }
 
     const target = existing[0];
+    // A pinned built-in keeps its own slug and name: it is the catalogue's
+    // row for that game, and other code finds it by that slug.
+    const keepIdentity = pinnedWikidataId(target.slug) === game.wikidataId;
+    // Another row holding this item (a duplicate stored before built-ins
+    // were pinned) is left alone here; enrichment merges it into the
+    // built-in. Its id must not be written twice meanwhile.
+    const idHeldElsewhere = existing.some((r) => r.id !== target.id && r.wikidata_id === game.wikidataId);
     // Keep the old slug if the new one belongs to a different row.
     const slugTaken = existing.some((r) => r.id !== target.id && r.slug === game.slug);
     const row = await db.queryOneAsync<GameRow>(
@@ -491,9 +538,9 @@ async function upsertWikidataGames(games: WikidataGame[]): Promise<GameRow[]> {
         WHERE id = ?
         RETURNING ${GAME_COLUMNS}`,
       [
-        game.wikidataId,
-        slugTaken ? target.slug : game.slug,
-        game.name,
+        idHeldElsewhere ? target.wikidata_id : game.wikidataId,
+        keepIdentity || slugTaken ? target.slug : game.slug,
+        keepIdentity ? target.name : game.name,
         game.coverUrl,
         game.logoUrl,
         game.releaseYear,
@@ -612,7 +659,7 @@ export async function searchGames(rawQuery: string): Promise<GameSearchResult> {
 }
 
 // ---------------------------------------------------------------------------
-// Suggestions
+// The onboarding grid
 // ---------------------------------------------------------------------------
 
 /**
@@ -636,38 +683,12 @@ function isActiveIn(active: ReadonlySet<string>, game: BuiltinGame): boolean {
 }
 
 /**
- * Built-in slugs with a tournament open or running on this instance first,
- * then the ordinary popular list. A game with a module of its own and no
- * active tournament is left out entirely — deliberate for the 3-item
- * "suggestions" strip: a genuinely popular title beats a supported-but-idle
- * one there.
- *
- * "A module of its own" is the point: a game only supported because a
- * catch-all module runs anything (`viaCatchAll`) is an ordinary popular title
- * here, otherwise installing manual-report would empty the strip, since
- * every built-in would then be supported.
- *
- * The onboarding grid needs every card instead, so it uses
- * `allBuiltinSlugsOrdered` below rather than this.
- */
-async function suggestionOrderedSlugs(): Promise<string[]> {
-  const builtins = builtinGames();
-  const active = await activeGameRefs();
-
-  return [
-    ...builtins.filter((g) => isActiveIn(active, g)),
-    ...builtins.filter((g) => !isActiveIn(active, g) && (!g.integrationId || g.viaCatchAll)),
-  ].map((g) => g.slug);
-}
-
-/**
  * Every built-in slug — installed modules, imported packs and the popular
- * list — with a
- * tournament open or running on this instance first, then everything else in
- * `builtinGames()`'s own order (installed modules, then the popular list).
- * Unlike `suggestionOrderedSlugs`, a supported game is never dropped just for
- * having no tournament active right now: the onboarding grid must always
- * offer every game this instance can run.
+ * list — with a tournament open or running on this instance first, then
+ * everything else in `builtinGames()`'s own order (installed modules, then
+ * the popular list). A supported game is never dropped just for having no
+ * tournament active right now: the onboarding grid must always offer every
+ * game this instance can run.
  */
 async function allBuiltinSlugsOrdered(): Promise<string[]> {
   const builtins = builtinGames();
@@ -678,44 +699,11 @@ async function allBuiltinSlugsOrdered(): Promise<string[]> {
 }
 
 /**
- * Up to three games to offer under the search box: games with a tournament
- * open or running on this instance first, then the popular built-ins, never
- * one the viewer already picked.
- */
-export async function getSuggestions(playerUid: string | null): Promise<GameSummary[]> {
-  await ensureBuiltinGames();
-  const supported = supportedSlugs();
-  const orderedSlugs = await suggestionOrderedSlugs();
-
-  const picked = new Set<number>(
-    playerUid
-      ? (
-          await db.queryAsync<{ game_id: number }>(
-            'SELECT game_id FROM player_games WHERE player_uid = ?',
-            [playerUid]
-          )
-        ).map((r) => r.game_id)
-      : []
-  );
-
-  const rows = await rowsBySlug(orderedSlugs);
-  const out: GameSummary[] = [];
-  for (const slug of orderedSlugs) {
-    const row = rows.get(slug);
-    if (!row || picked.has(row.id)) continue;
-    out.push(toSummary(row, supported));
-    if (out.length >= SUGGESTION_COUNT) break;
-  }
-  return out;
-}
-
-/**
  * Every built-in game (installed modules + popular esports titles), never
- * filtered by what the viewer already picked (unlike `getSuggestions`) and
- * never dropped for having no active tournament (unlike `getSuggestions`) —
- * the "/welcome/games" onboarding grid needs every card on screen, including
- * ones the viewer (in "edit" mode) already has, so it can show them selected
- * rather than hide them.
+ * filtered by what the viewer already picked and never dropped for having no
+ * active tournament — the "/welcome/games" onboarding grid needs every card
+ * on screen, including ones the viewer (in "edit" mode) already has, so it
+ * can show them selected rather than hide them.
  */
 export async function getPopularGames(): Promise<GameSummary[]> {
   await ensureBuiltinGames();

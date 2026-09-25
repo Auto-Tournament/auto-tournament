@@ -137,6 +137,26 @@ test.describe.serial('Game catalogue', () => {
   );
 
   test(
+    "a same-named game never takes a built-in's row: Deadlock is Valve's",
+    { tag: ['@api', '@games'] },
+    async ({ request }) => {
+      // The fake answers with a 2016 "Deadlock" first, then Valve's (the
+      // built-in's pinned item, Q126042383). Whichever comes first, the
+      // `deadlock` row is Valve's game and the other gets a slug of its own.
+      for (const q of ['deadlock', 'deadloc']) {
+        const { games } = await search(request, q);
+        const valve = games.find((g) => g.slug === 'deadlock');
+        expect(valve, `${q}: ${JSON.stringify(games)}`).toBeTruthy();
+        expect(valve).toMatchObject({ name: 'Deadlock', releaseYear: 2024 });
+        expect(valve!.coverUrl).toContain('Deadlock%20Valve%20key%20art.jpg');
+        const other = games.find((g) => g.slug === 'deadlock-2016');
+        expect(other).toMatchObject({ name: 'Deadlock', releaseYear: 2016 });
+        expect(games.filter((g) => g.name === 'Deadlock')).toHaveLength(2);
+      }
+    }
+  );
+
+  test(
     'search caches the query and reuses it, from our own rows',
     { tag: ['@api', '@games'] },
     async ({ request }) => {
@@ -193,25 +213,19 @@ test.describe.serial('Game catalogue', () => {
   );
 
   test(
-    "suggestions: an open tournament's game first, picked games left out",
+    'popular: every built-in, an open tournament\'s game first, never filtered by picks',
     { tag: ['@api', '@games'] },
     async ({ request, playwright, baseURL }) => {
       await request.delete('/api/tournament');
 
-      const before = await request.get('/api/games/suggestions');
-      expect(before.ok()).toBe(true);
-      const beforeGames = ((await before.json()) as { games: GameSummary[] }).games;
-      expect(beforeGames).toHaveLength(3);
-      expect(beforeGames.map((g) => g.slug)).not.toContain('counter-strike-2');
-      expect(beforeGames[0].slug).toBe('rocket-league');
-
-      // Unlike `suggestions`, `/api/games/popular` (the onboarding grid) never
-      // drops a supported game just because no tournament is active for it
-      // right now — this is the one place with no open/running tournament in
-      // this whole spec, so it is the regression case for that.
+      // `/api/games/popular` (the onboarding grid) never drops a supported
+      // game just because no tournament is active for it right now.
       const popular = await popularGames(request);
       expect(popular.map((g) => g.slug)).toContain('counter-strike-2');
       expect(popular.find((g) => g.slug === 'counter-strike-2')).toMatchObject({ supported: true });
+      expect(popular.map((g) => g.slug).indexOf('rocket-league')).toBeLessThan(
+        popular.map((g) => g.slug).indexOf('valorant')
+      );
 
       // "league-of-legends" is never searched anywhere in this suite, so it is
       // still exactly what `ensureBuiltinGames` seeded: proof that built-in
@@ -221,10 +235,10 @@ test.describe.serial('Game catalogue', () => {
       const lol = popular.find((g) => g.slug === 'league-of-legends')!;
       expect(lol).toMatchObject({ source: 'builtin', coverUrl: null, imageUrl: null, genres: [] });
 
-      const teams = await createTestTeams(request, 'games-suggest');
+      const teams = await createTestTeams(request, 'games-popular');
       expect(teams).toBeTruthy();
       const tournament = await createTournament(request, {
-        name: 'Games suggestions',
+        name: 'Games popular',
         type: 'single_elimination',
         format: 'bo1',
         maps: ['de_dust2'],
@@ -233,27 +247,14 @@ test.describe.serial('Game catalogue', () => {
       expect(tournament).toBeTruthy();
 
       try {
-        const withTournament = (await (await request.get('/api/games/suggestions')).json()) as {
-          games: GameSummary[];
-        };
-        expect(withTournament.games.map((g) => g.slug)).toEqual([
-          'counter-strike-2',
-          'rocket-league',
-          'valorant',
-        ]);
+        const withTournament = await popularGames(request);
+        expect(withTournament[0].slug).toBe('counter-strike-2');
 
-        // A player who already plays CS2 and Rocket League gets the next ones.
+        // A game a player already picked still shows (selected, in the UI).
         const { ctx } = await playerContext(playwright, baseURL);
-        const ids = withTournament.games.slice(0, 2).map((g) => g.id);
-        expect((await ctx.put('/api/me/games', { data: ids })).ok()).toBe(true);
-        const forPlayer = (await (await ctx.get('/api/games/suggestions')).json()) as {
-          games: GameSummary[];
-        };
-        expect(forPlayer.games.map((g) => g.slug)).toEqual([
-          'valorant',
-          'league-of-legends',
-          'dota-2',
-        ]);
+        expect((await ctx.put('/api/me/games', { data: [withTournament[0].id] })).ok()).toBe(true);
+        const forPlayer = (await (await ctx.get('/api/games/popular')).json()) as { games: GameSummary[] };
+        expect(forPlayer.games.map((g) => g.slug)).toEqual(withTournament.map((g) => g.slug));
         await ctx.dispose();
       } finally {
         await request.delete('/api/tournament');

@@ -1752,7 +1752,7 @@ const FAKE_WIKIDATA_GENRES: Record<string, string> = {
 
 const FAKE_WIKIDATA_ITEMS: FakeWikidataItem[] = [
   {
-    id: 'Q10510',
+    id: 'Q20031743',
     label: 'Rocket League',
     instanceOf: ['Q7889'],
     pubDates: ['+2015-07-07T00:00:00Z'],
@@ -1760,7 +1760,7 @@ const FAKE_WIKIDATA_ITEMS: FakeWikidataItem[] = [
     genreIds: ['Q3'],
   },
   {
-    id: 'Q2005',
+    id: 'Q111165107',
     label: 'Counter-Strike 2',
     instanceOf: ['Q7889'],
     pubDates: ['+2023-09-27T00:00:00Z'],
@@ -1791,8 +1791,26 @@ const FAKE_WIKIDATA_ITEMS: FakeWikidataItem[] = [
   // Wikidata would legitimately
   // answer "no matches" and (like a real, comprehensive source) suppress
   // those built-ins from the results (see gameCatalogService.searchGames).
-  { id: 'Q1258949', label: 'Dota 2', instanceOf: ['Q7889'], pubDates: ['+2013-07-09T00:00:00Z'] },
-  { id: 'Q30819', label: 'Chess', instanceOf: ['Q7889'], pubDates: [] },
+  // Built-ins carry their real, pinned QIDs (builtinGameIdentity): a result
+  // with another id is a same-named game and never lands on the built-in.
+  { id: 'Q771541', label: 'Dota 2', instanceOf: ['Q7889'], pubDates: ['+2013-07-09T00:00:00Z'] },
+  { id: 'Q718', label: 'Chess', instanceOf: ['Q7889'], pubDates: [] },
+  // Two games called Deadlock: a same-named older one first (as Wikidata
+  // ranks it), then Valve's, the built-in's pinned item.
+  {
+    id: 'Q990016',
+    label: 'Deadlock',
+    instanceOf: ['Q7889'],
+    pubDates: ['+2016-04-01T00:00:00Z'],
+    image: 'Deadlock 2016 cover.jpg',
+  },
+  {
+    id: 'Q126042383',
+    label: 'Deadlock',
+    instanceOf: ['Q7889'],
+    pubDates: ['+2024-08-23T00:00:00Z'],
+    image: 'Deadlock Valve key art.jpg',
+  },
   // App icons with no key at all: a Steam app id from Wikidata (P1733).
   {
     id: 'Q990001',

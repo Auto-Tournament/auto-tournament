@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 316 of them, 219 behind auth —
+Every endpoint this API serves — 315 of them, 219 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -432,12 +432,11 @@ Shared generators, e.g. random team names.
 
 ### Games
 
-The game catalogue players pick from (Wikidata-backed search, suggestions). Public.
+The game catalogue players pick from (Wikidata-backed search, the built-in games). Public.
 
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/games/search` | public |
-| `GET` | `/api/games/suggestions` | public |
 | `GET` | `/api/games/popular` | public |
 | `GET` | `/api/games/playable` | public |
 | `GET` | `/api/games/icons/:file` | public |
