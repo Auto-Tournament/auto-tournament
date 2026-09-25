@@ -376,6 +376,14 @@
     "retry": "Prøv igjen",
     "failed": "{{name}}: {{reason}}",
     "failedFallback": "operasjonen feilet",
+    "updateAll": {
+      "action": "Oppdater alle ({{count}})",
+      "running": "Oppdaterer …",
+      "done": "Oppdaterte {{count}} spill og moduler",
+      "summary": "Oppdaterte {{updated}}, hoppet over {{skipped}}, feilet {{failed}}.",
+      "failedItem": "{{name}}: {{reason}}",
+      "failedFallback": "kunne ikke oppdatere alt"
+    },
     "feed": {
       "cache": "Viser katalogen fra {{time}}: fikk ikke kontakt med den nettbaserte katalogen ({{reason}}). Spill i dette imaget kan fortsatt installeres uten nett.",
       "none": "Fikk ikke kontakt med den nettbaserte katalogen ({{reason}}). Viser spillene i dette imaget; de installeres uten nett.",

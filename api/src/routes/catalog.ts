@@ -28,6 +28,7 @@ import {
   purgeCatalogModule,
   uninstallCatalogModule,
   uninstallCatalogPack,
+  updateAllCatalog,
 } from '../modules/catalogService';
 
 const router = Router();
@@ -315,6 +316,40 @@ router.post('/modules/:id/update', sameSiteJson, async (req: Request, res: Respo
     });
   } catch (error) {
     fail(res, error, 'update the module');
+  }
+});
+
+/**
+ * @openapi
+ * /api/catalog/update-all:
+ *   post:
+ *     tags: [Catalog]
+ *     summary: Update every installed pack and code module that has a compatible newer version
+ *     description: |
+ *       Runs each update one after another, through the same path as
+ *       `/api/catalog/packs/{slug}/install` and
+ *       `/api/catalog/modules/{id}/update` — signature checks, the downgrade
+ *       guard, disabled-state preservation and restart-required handling all
+ *       apply exactly as they do there. An entry that cannot update
+ *       (incompatible, a newer major waiting for the admin, a restart
+ *       pending) is skipped, with why; one that fails outright (a bad
+ *       signature, a download error, and so on) is reported in `failed`.
+ *       Neither stops the rest. Same-site JSON only.
+ *     security: [{ cookieAuth: [] }]
+ *     responses:
+ *       200:
+ *         description: |
+ *           `updated`, `skipped` and `failed` list every entry that had a
+ *           compatible newer version; `restartRequired` is true when any
+ *           updated module needs a restart to load.
+ *       409:
+ *         description: Another catalog operation is running
+ */
+router.post('/update-all', sameSiteJson, async (req: Request, res: Response) => {
+  try {
+    res.json({ success: true, ...(await updateAllCatalog(requestActorId(req))) });
+  } catch (error) {
+    fail(res, error, 'update the catalog');
   }
 });
 

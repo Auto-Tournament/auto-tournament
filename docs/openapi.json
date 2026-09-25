@@ -1289,6 +1289,31 @@
         }
       }
     },
+    "/api/catalog/update-all": {
+      "post": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "Update every installed pack and code module that has a compatible newer version",
+        "description": "Runs each update one after another, through the same path as\n`/api/catalog/packs/{slug}/install` and\n`/api/catalog/modules/{id}/update` — signature checks, the downgrade\nguard, disabled-state preservation and restart-required handling all\napply exactly as they do there. An entry that cannot update\n(incompatible, a newer major waiting for the admin, a restart\npending) is skipped, with why; one that fails outright (a bad\nsignature, a download error, and so on) is reported in `failed`.\nNeither stops the rest. Same-site JSON only.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "`updated`, `skipped` and `failed` list every entry that had a\ncompatible newer version; `restartRequired` is true when any\nupdated module needs a restart to load.\n"
+          },
+          "409": {
+            "description": "Another catalog operation is running"
+          }
+        }
+      }
+    },
     "/api/cs2-plugin/latest-version": {
       "get": {
         "tags": [
