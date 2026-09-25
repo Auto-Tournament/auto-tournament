@@ -119,7 +119,7 @@ test.describe('CS2 map catalogue (maps.json)', () => {
     const { port } = server.address() as AddressInfo;
     await new Promise<void>((resolve) => server.close(() => resolve()));
 
-    const loaded = await loadMapCatalog({ url: `http://127.0.0.1:${port}/maps.json`, timeoutMs: 1000 });
+    const loaded = await loadMapCatalog({ url: `http://127.0.0.1:${port}/maps.json`, timeoutMs: 1000, offline: false });
     expect(loaded.source).toBe('bundled');
     expect(loaded.error).toBeTruthy();
     expect(loaded.catalog).toEqual(bundledMapCatalog());
@@ -140,7 +140,8 @@ test.describe('CS2 map catalogue (maps.json)', () => {
     await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
     try {
       const { port } = server.address() as AddressInfo;
-      const loaded = await loadMapCatalog({ url: `http://127.0.0.1:${port}/maps.json`, timeoutMs: 2000 });
+      // CI runs with CATALOG_OFFLINE set; this test is about the fetch itself.
+      const loaded = await loadMapCatalog({ url: `http://127.0.0.1:${port}/maps.json`, timeoutMs: 2000, offline: false });
       expect(loaded.source).toBe('remote');
       expect(requests).toBe(2);
       expect(loaded.catalog).toEqual(catalog);

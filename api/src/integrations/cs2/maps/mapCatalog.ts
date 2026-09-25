@@ -141,13 +141,15 @@ export interface LoadMapCatalogOptions {
   /** Where maps.json is (tests point this at a local server or a closed port). */
   url?: string;
   timeoutMs?: number;
+  /** Never fetch. Defaults to `CATALOG_OFFLINE`. */
+  offline?: boolean;
 }
 
 /** maps.json from GitHub, or the bundled copy when it cannot be had. Never throws. */
 export async function loadMapCatalog(options: LoadMapCatalogOptions = {}): Promise<LoadedMapCatalog> {
   const url = options.url ?? MAPS_JSON_URL;
   let error: string;
-  if (offline()) {
+  if (options.offline ?? offline()) {
     error = 'CATALOG_OFFLINE is set';
   } else {
     const timeoutMs = options.timeoutMs ?? ATTEMPT_TIMEOUT_MS;
