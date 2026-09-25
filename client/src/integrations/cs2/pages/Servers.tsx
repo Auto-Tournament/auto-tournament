@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Button, Typography, Chip, CircularProgress } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import StorageIcon from '@mui/icons-material/Storage';
-import RefreshIcon from '@mui/icons-material/Refresh';
+import { ArrowClockwiseIcon, HardDrivesIcon, PlusIcon } from '@phosphor-icons/react';
 import ServerModal from '../servers/ServerModal';
 import BatchServerModal from '../servers/BatchServerModal';
 import { ServerRow } from '../servers/ServerRow';
@@ -465,7 +463,7 @@ export default function Servers() {
             <Button
               variant="outlined"
               size="small"
-              startIcon={refreshing ? <CircularProgress size={20} /> : <RefreshIcon />}
+              startIcon={refreshing ? <CircularProgress size={20} /> : <ArrowClockwiseIcon size={24} />}
               onClick={() => {
                 void loadServers({ useCached: false });
                 void loadAllocationStatus();
@@ -485,7 +483,7 @@ export default function Servers() {
                   retryingAll ? (
                     <CircularProgress size={20} />
                   ) : (
-                    <RefreshIcon />
+                    <ArrowClockwiseIcon size={24} />
                   )
                 }
                 onClick={() => void handleRetryAllUninitialized()}
@@ -501,7 +499,7 @@ export default function Servers() {
             <Button
               variant="outlined"
               size="small"
-              startIcon={<AddIcon />}
+              startIcon={<PlusIcon size={24} />}
               onClick={() => setBatchModalOpen(true)}
             >
               {t('serversPage.headerActions.batchAdd')}
@@ -571,7 +569,7 @@ export default function Servers() {
             data-testid="add-server-button"
             variant="contained"
             size="small"
-            startIcon={<AddIcon />}
+            startIcon={<PlusIcon size={24} />}
             onClick={() => handleOpenModal()}
           >
             {t('serversPage.headerActions.addServer')}
@@ -889,11 +887,11 @@ export default function Servers() {
       {servers.length === 0 ? (
           <Box>
             <EmptyState
-              icon={StorageIcon}
+              icon={HardDrivesIcon}
               title={t('serversPage.empty.title')}
               description={t('serversPage.empty.description')}
               actionLabel={t('serversPage.empty.addServer')}
-              actionIcon={AddIcon}
+              actionIcon={PlusIcon}
               onAction={() => handleOpenModal()}
             />
             <Box display="flex" justifyContent="center" mt={2}>

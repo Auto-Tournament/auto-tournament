@@ -2,8 +2,7 @@ import { useState, type ReactNode, type SyntheticEvent } from 'react';
 import Box from '@mui/material/Box';
 import ButtonBase from '@mui/material/ButtonBase';
 import Typography from '@mui/material/Typography';
-import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
-import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
+import { CheckIcon, TrophyIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { gameMonogram } from './GameThumb';
 import { fontDisplay, mono, tokens, withAlpha } from '../../theme/tokens';
@@ -270,12 +269,12 @@ export function GameCard({ game, selected, locked = false, onToggle }: GameCardP
         <GameArt game={game} />
         {game.supported && (
           <Badge placement="start">
-            <EmojiEventsRoundedIcon />
+            <TrophyIcon />
           </Badge>
         )}
         {selected && (
           <Badge placement="end" filled>
-            <CheckRoundedIcon />
+            <CheckIcon />
           </Badge>
         )}
       </Box>

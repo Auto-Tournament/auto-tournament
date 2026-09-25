@@ -1,13 +1,13 @@
 import React from 'react';
-import { Card, Typography, Button } from '@mui/material';
-import { SvgIconComponent } from '@mui/icons-material';
+import { Box, Card, Typography, Button } from '@mui/material';
+import type { IconComponent } from '../../theme/icons';
 
 interface EmptyStateProps {
-  icon: SvgIconComponent;
+  icon: IconComponent;
   title: string;
   description: string;
   actionLabel?: string;
-  actionIcon?: SvgIconComponent;
+  actionIcon?: IconComponent;
   onAction?: () => void;
 }
 
@@ -34,7 +34,13 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 
   return (
     <Card data-testid={getTestId()} sx={{ textAlign: 'center', py: 8 }}>
-      <Icon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
+      {/* Sized in CSS as well as by `size`, so an icon that ignores `size` fits. */}
+      <Box
+        component={Icon}
+        size={80}
+        aria-hidden
+        sx={{ width: 80, height: 80, color: 'text.secondary', mb: 2 }}
+      />
       <Typography variant="h6" color="text.secondary" gutterBottom>
         {title}
       </Typography>

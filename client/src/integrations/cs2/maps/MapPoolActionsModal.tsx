@@ -10,12 +10,14 @@ import {
   IconButton,
   Chip,
 } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import CloseIcon from '@mui/icons-material/Close';
-import StarBorderIcon from '@mui/icons-material/StarBorder';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CancelIcon from '@mui/icons-material/Cancel';
+import {
+  CheckCircleIcon,
+  PencilSimpleIcon,
+  StarIcon,
+  TrashIcon,
+  XCircleIcon,
+  XIcon,
+} from '@phosphor-icons/react';
 import type { MapPool, Map } from '../cs2.types';
 import { useModuleTranslation } from '../../../module-sdk';
 
@@ -66,7 +68,7 @@ export default function MapPoolActionsModal({
             )}
           </Box>
           <IconButton size="small" onClick={onClose}>
-            <CloseIcon />
+            <XIcon size={24} />
           </IconButton>
         </Box>
       </DialogTitle>
@@ -115,7 +117,7 @@ export default function MapPoolActionsModal({
       </DialogContent>
       <Divider />
       <DialogActions sx={{ px: 3, py: 2 }}>
-        <Button onClick={onEdit} variant="contained" startIcon={<EditIcon />}>
+        <Button onClick={onEdit} variant="contained" startIcon={<PencilSimpleIcon size={24} />}>
           {t('mapPoolActionsModal.actions.edit')}
         </Button>
         {onToggleEnabled && (
@@ -123,7 +125,7 @@ export default function MapPoolActionsModal({
             onClick={onToggleEnabled}
             variant="outlined"
             color={mapPool.enabled ? 'warning' : 'success'}
-            startIcon={mapPool.enabled ? <CancelIcon /> : <CheckCircleIcon />}
+            startIcon={mapPool.enabled ? <XCircleIcon size={24} /> : <CheckCircleIcon size={24} />}
           >
             {mapPool.enabled
               ? t('mapPoolActionsModal.actions.disable')
@@ -131,12 +133,12 @@ export default function MapPoolActionsModal({
           </Button>
         )}
         {!mapPool.isDefault && onSetDefault && (
-          <Button onClick={onSetDefault} variant="outlined" startIcon={<StarBorderIcon />}>
+          <Button onClick={onSetDefault} variant="outlined" startIcon={<StarIcon size={24} />}>
             {t('mapPoolActionsModal.actions.setDefault')}
           </Button>
         )}
         {!mapPool.isDefault && (
-          <Button onClick={onDelete} variant="outlined" color="error" startIcon={<DeleteIcon />}>
+          <Button onClick={onDelete} variant="outlined" color="error" startIcon={<TrashIcon size={24} />}>
             {t('common.delete')}
           </Button>
         )}

@@ -8,8 +8,7 @@ import Collapse from '@mui/material/Collapse';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import { CaretDownIcon, CaretUpIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -136,7 +135,7 @@ export function IgdbCredentialsCard() {
       <Button
         size="small"
         onClick={() => setHowToOpen((open) => !open)}
-        endIcon={howToOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+        endIcon={howToOpen ? <CaretUpIcon /> : <CaretDownIcon />}
         sx={{ mb: 1, textTransform: 'none' }}
         data-testid="settings-igdb-howto-toggle"
       >

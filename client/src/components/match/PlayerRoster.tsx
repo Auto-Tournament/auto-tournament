@@ -1,9 +1,11 @@
 import React from 'react';
 import { Box, Typography, Grid, Paper, Chip, Stack, IconButton, Tooltip } from '@mui/material';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CircleIcon from '@mui/icons-material/Circle';
-import PersonOffIcon from '@mui/icons-material/PersonOff';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import {
+  ArrowSquareOutIcon,
+  CheckCircleIcon,
+  CircleIcon,
+  UserMinusIcon,
+} from '@phosphor-icons/react';
 import type { ConnectedPlayer } from '../../hooks/usePlayerConnections';
 import { normalizeConfigPlayers, type NormalizedPlayer } from '../../utils/playerUtils';
 import { getPlayerPageUrl } from '../../utils/playerLinks';
@@ -87,11 +89,11 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
               >
                 {/* Status Icon */}
                 {status.isReady ? (
-                  <CheckCircleIcon sx={{ color: 'success.light', fontSize: 20 }} />
+                  <Box component={CheckCircleIcon} size={20} sx={{ color: 'success.light' }} />
                 ) : status.isConnected ? (
-                  <CircleIcon sx={{ color: 'warning.main', fontSize: 20 }} />
+                  <Box component={CircleIcon} weight="fill" size={20} sx={{ color: 'warning.main' }} />
                 ) : (
-                  <PersonOffIcon sx={{ color: 'action.disabled', fontSize: 20 }} />
+                  <Box component={UserMinusIcon} size={20} sx={{ color: 'action.disabled' }} />
                 )}
 
                 {/* Avatar */}
@@ -134,7 +136,7 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
                           : 'text.secondary',
                     }}
                   >
-                    <OpenInNewIcon fontSize="small" />
+                    <ArrowSquareOutIcon size={20} />
                   </IconButton>
                 </Tooltip>
 

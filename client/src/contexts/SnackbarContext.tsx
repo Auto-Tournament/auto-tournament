@@ -7,7 +7,7 @@ import {
   SnackbarKey,
 } from 'notistack';
 import { Alert, GlobalStyles, IconButton, Slide, TransitionProps } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { XIcon } from '@phosphor-icons/react';
 import { tokens, withAlpha, radii } from '../theme/tokens';
 
 type ShowSnackbarOptions = {
@@ -87,7 +87,7 @@ function SnackbarCloseButton({ id }: { id: SnackbarKey }) {
       data-testid="snackbar-close-button"
       onClick={() => closeSnackbar(id)}
     >
-      <CloseIcon fontSize="small" />
+      <XIcon size={20} />
     </IconButton>
   );
 }

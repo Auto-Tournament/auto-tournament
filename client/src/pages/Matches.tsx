@@ -1,8 +1,7 @@
 import { pageTitle } from '../utils/pageTitle';
 import { useState, useEffect, useCallback } from 'react';
 import { Box, Typography, LinearProgress, Snackbar, Alert, Stack, Button, Chip } from '@mui/material';
-import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
-import AddIcon from '@mui/icons-material/Add';
+import { GameControllerIcon, PlusIcon } from '@phosphor-icons/react';
 import { io } from 'socket.io-client';
 import { onSocketReconnect } from '../utils/socketResync';
 import { useNavigate } from 'react-router-dom';
@@ -514,11 +513,11 @@ export default function Matches() {
         <Box>
           <EmptyState
             data-testid="matches-empty-state"
-            icon={SportsEsportsIcon}
+            icon={GameControllerIcon}
             title={t('matchesPage.empty.title')}
             description={t('matchesPage.empty.description')}
             actionLabel={t('tournament.common.createTournament')}
-            actionIcon={AddIcon}
+            actionIcon={PlusIcon}
             onAction={() => navigate('/tournament')}
           />
           {StandaloneMatchDialog && (

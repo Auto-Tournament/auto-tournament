@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, Chip, LinearProgress, Paper, Stack, Tooltip } from '@mui/material';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
-import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
-import CloudOffIcon from '@mui/icons-material/CloudOff';
+import {
+  CheckCircleIcon,
+  CloudSlashIcon,
+  GameControllerIcon,
+  HourglassIcon,
+} from '@phosphor-icons/react';
 import { getBracketMatchLabel, useModuleTranslation } from '../../../module-sdk';
 import type { MatchAllocationPanelProps } from '../../types';
 import type { ServerAllocationInfo } from '../cs2.types';
@@ -92,10 +94,10 @@ const ServerAllocationPanel: React.FC<ServerAllocationPanelProps> = ({
   const offlineServers = servers.filter((s) => !s.online);
 
   const getServerIcon = (server: ServerAllocationInfo) => {
-    if (!server.online) return <CloudOffIcon fontSize="small" />;
-    if (server.allocatable) return <CheckCircleIcon fontSize="small" />;
-    if (server.inGraceWindow) return <HourglassEmptyIcon fontSize="small" />;
-    return <SportsEsportsIcon fontSize="small" />;
+    if (!server.online) return <CloudSlashIcon size={20} />;
+    if (server.allocatable) return <CheckCircleIcon size={20} />;
+    if (server.inGraceWindow) return <HourglassIcon size={20} />;
+    return <GameControllerIcon size={20} />;
   };
 
   const getServerColor = (server: ServerAllocationInfo) => {

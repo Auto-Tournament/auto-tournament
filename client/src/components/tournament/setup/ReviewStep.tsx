@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Alert, Box, Button, Typography } from '@mui/material';
-import SaveIcon from '@mui/icons-material/Save';
+import { FloppyDiskIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { TournamentReview } from '../TournamentReview';
 import { TournamentFormActions } from '../TournamentFormActions';
@@ -160,7 +160,7 @@ export function ReviewStep(props: ReviewStepProps) {
       <Box>
         <Button
           variant="outlined"
-          startIcon={<SaveIcon />}
+          startIcon={<FloppyDiskIcon />}
           onClick={props.onSaveTemplate}
           disabled={props.saving}
         >

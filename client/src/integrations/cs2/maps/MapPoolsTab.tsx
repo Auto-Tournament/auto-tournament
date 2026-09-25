@@ -1,6 +1,5 @@
 import { Grid } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import CollectionsIcon from '@mui/icons-material/Collections';
+import { ImagesIcon, PlusIcon } from '@phosphor-icons/react';
 import { EmptyState, useModuleTranslation } from '../../../module-sdk';
 import { MapPoolCard } from './MapPoolCard';
 import type { MapPool, Map as MapType } from '../cs2.types';
@@ -22,11 +21,11 @@ export function MapPoolsTab({
   if (mapPools.length === 0) {
     return (
       <EmptyState
-        icon={CollectionsIcon}
+        icon={ImagesIcon}
         title={t('mapsPage.empty.poolsTitle')}
         description={t('mapsPage.empty.poolsDescription')}
         actionLabel={t('mapsPage.headerActions.createMapPool')}
-        actionIcon={AddIcon}
+        actionIcon={PlusIcon}
         onAction={onCreatePool}
       />
     );

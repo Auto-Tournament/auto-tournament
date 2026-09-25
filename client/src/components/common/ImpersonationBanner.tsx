@@ -3,7 +3,7 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
-import VisibilityIcon from '@mui/icons-material/Visibility';
+import { EyeIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -76,7 +76,7 @@ export function ImpersonationBanner() {
       <Alert
         severity="warning"
         variant="filled"
-        icon={<VisibilityIcon fontSize="inherit" />}
+        icon={<EyeIcon size="1em" />}
         sx={{ borderRadius: 0, alignItems: 'center' }}
         action={
           <Button

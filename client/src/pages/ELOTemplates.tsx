@@ -16,12 +16,7 @@ import {
   Tooltip,
   Divider,
 } from '@mui/material';
-import {
-  Delete as DeleteIcon,
-  Edit as EditIcon,
-  Add as AddIcon,
-  Info as InfoIcon,
-} from '@mui/icons-material';
+import { InfoIcon, PencilSimpleIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { api } from '../utils/api';
 import { EmptyState } from '../components/shared/EmptyState';
 import EloTemplateEditorModal from '../components/modals/EloTemplateEditorModal';
@@ -162,7 +157,7 @@ export default function ELOTemplates() {
           <Button
             variant="contained"
             size="small"
-            startIcon={<AddIcon />}
+            startIcon={<PlusIcon />}
             onClick={() => handleOpenEditor()}
           >
             {t('eloTemplatesPage.header.createTemplate')}
@@ -195,7 +190,7 @@ export default function ELOTemplates() {
           title={t('eloTemplatesPage.empty.title')}
           description={t('eloTemplatesPage.empty.description')}
           actionLabel={t('eloTemplatesPage.empty.action')}
-          actionIcon={AddIcon}
+          actionIcon={PlusIcon}
           onAction={() => handleOpenEditor()}
         />
       ) : (
@@ -250,7 +245,7 @@ export default function ELOTemplates() {
                             onClick={() => handleOpenEditor(template)}
                             color="primary"
                           >
-                            <EditIcon fontSize="small" />
+                            <PencilSimpleIcon size={20} />
                           </IconButton>
                         </Tooltip>
                       )}
@@ -261,7 +256,7 @@ export default function ELOTemplates() {
                             onClick={() => handleDeleteClick(template)}
                             color="error"
                           >
-                            <DeleteIcon fontSize="small" />
+                            <TrashIcon size={20} />
                           </IconButton>
                         </Tooltip>
                       )}

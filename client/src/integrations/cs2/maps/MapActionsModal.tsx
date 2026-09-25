@@ -9,9 +9,7 @@ import {
   Divider,
   IconButton,
 } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import CloseIcon from '@mui/icons-material/Close';
+import { PencilSimpleIcon, TrashIcon, XIcon } from '@phosphor-icons/react';
 import type { Map } from '../cs2.types';
 import { FadeInImage } from '../common/FadeInImage';
 import { useModuleTranslation, radii } from '../../../module-sdk';
@@ -44,7 +42,7 @@ export default function MapActionsModal({
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h6">{map.displayName}</Typography>
           <IconButton size="small" onClick={onClose}>
-            <CloseIcon />
+            <XIcon size={24} />
           </IconButton>
         </Box>
       </DialogTitle>
@@ -86,11 +84,11 @@ export default function MapActionsModal({
           data-testid="map-edit-button"
           onClick={onEdit}
           variant="contained"
-          startIcon={<EditIcon />}
+          startIcon={<PencilSimpleIcon size={24} />}
         >
           {t('mapActionsModal.edit')}
         </Button>
-        <Button onClick={onDelete} variant="outlined" color="error" startIcon={<DeleteIcon />}>
+        <Button onClick={onDelete} variant="outlined" color="error" startIcon={<TrashIcon size={24} />}>
           {t('common.delete')}
         </Button>
       </DialogActions>

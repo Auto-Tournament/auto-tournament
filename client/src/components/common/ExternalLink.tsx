@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import Link, { type LinkProps } from '@mui/material/Link';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { ArrowSquareOutIcon } from '@phosphor-icons/react';
+import { Box } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
 /** Read by a screen reader, not shown. */
@@ -34,7 +35,7 @@ export function ExternalLink({ href, children, hideIcon, sx, ...rest }: External
     <Link href={href} target="_blank" rel="noopener noreferrer" sx={sx} {...rest}>
       {children}
       {!hideIcon && (
-        <OpenInNewIcon aria-hidden sx={{ fontSize: '0.9em', ml: 0.5, verticalAlign: 'middle' }} />
+        <Box component={ArrowSquareOutIcon} size="0.9em" aria-hidden sx={{ ml: 0.5, verticalAlign: 'middle' }} />
       )}
       <span style={visuallyHidden}> {t('common.opensInNewTab')}</span>
     </Link>

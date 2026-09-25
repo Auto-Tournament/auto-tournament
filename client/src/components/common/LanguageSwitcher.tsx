@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, ListItemText, Menu, MenuItem } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
+import { CheckIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import * as Flags from 'country-flag-icons/react/3x2';
 import { tokens } from '../../theme/tokens';
@@ -113,7 +113,7 @@ export const LanguageMenu: React.FC<LanguageMenuProps> = ({ anchorEl, onClose })
           <FlagIcon code={flagCode} />
           <ListItemText primary={label} />
           {code === current.code ? (
-            <CheckIcon fontSize="small" sx={{ ml: 1, color: 'primary.main' }} />
+            <Box component={CheckIcon} size={20} sx={{ ml: 1, color: 'primary.main' }} />
           ) : null}
         </MenuItem>
       ))}

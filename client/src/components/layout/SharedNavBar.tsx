@@ -10,10 +10,7 @@ import {
   Menu,
   MenuItem,
 } from '@mui/material';
-import ExploreOutlinedIcon from '@mui/icons-material/ExploreOutlined';
-import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
-import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import { CaretRightIcon, CompassIcon, GameControllerIcon, UserIcon } from '@phosphor-icons/react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
@@ -350,7 +347,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
           sx={{ color: 'text.secondary' }}
           data-testid="nav-site-menu-button"
         >
-          <ExploreOutlinedIcon />
+          <CompassIcon />
         </IconButton>
         <Menu
           id="site-nav-menu"
@@ -384,7 +381,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
             variant="contained"
             color="primary"
             size="small"
-            startIcon={<SportsEsportsIcon />}
+            startIcon={<GameControllerIcon />}
             sx={{ display: { xs: 'none', sm: 'inline-flex' }, px: 2, whiteSpace: 'nowrap' }}
           >
             {ctaLabel}
@@ -428,7 +425,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
           ) : (
             // Signed out: the menu still holds the theme and language.
             <Avatar sx={{ width: 32, height: 32, bgcolor: 'background.paper', color: 'text.secondary', border: 1, borderColor: 'divider' }}>
-              <PersonOutlineIcon fontSize="small" />
+              <UserIcon size={20} />
             </Avatar>
           )}
         </IconButton>
@@ -472,7 +469,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
               <ThemeSwatch id={activeTheme.id} />
             </ListItemIcon>
             <ListItemText primary={t('nav.theme')} secondary={activeTheme.name} />
-            <ChevronRightIcon fontSize="small" sx={{ color: 'text.secondary', ml: 1 }} />
+            <Box component={CaretRightIcon} size={20} sx={{ color: 'text.secondary', ml: 1 }} />
           </MenuItem>
           <MenuItem
             onClick={() => openSubMenu(setLanguageMenuAnchor)}
@@ -483,7 +480,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
               <FlagIcon code={currentLanguage.flagCode} />
             </ListItemIcon>
             <ListItemText primary={t('nav.language')} secondary={currentLanguage.label} />
-            <ChevronRightIcon fontSize="small" sx={{ color: 'text.secondary', ml: 1 }} />
+            <Box component={CaretRightIcon} size={20} sx={{ color: 'text.secondary', ml: 1 }} />
           </MenuItem>
           <Divider />
           {signedIn ? (

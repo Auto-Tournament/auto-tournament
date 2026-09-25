@@ -17,9 +17,7 @@ import {
   Chip,
   IconButton,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import SearchIcon from '@mui/icons-material/Search';
-import PersonIcon from '@mui/icons-material/Person';
+import { MagnifyingGlassIcon, UserIcon, XIcon } from '@phosphor-icons/react';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { PlayerDetail } from '../../types/api.types';
@@ -177,7 +175,7 @@ export default function PlayerSelectionModal({
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Box display="flex" alignItems="center" gap={1}>
-            <PersonIcon color="primary" />
+            <Box component={UserIcon} sx={{ color: 'primary.main' }} />
             <Typography variant="h6">
               {title || t('playerSelectionModal.title')}
             </Typography>
@@ -192,7 +190,7 @@ export default function PlayerSelectionModal({
             )}
           </Box>
           <IconButton size="small" onClick={handleCancel}>
-            <CloseIcon />
+            <XIcon />
           </IconButton>
         </Box>
       </DialogTitle>
@@ -206,7 +204,7 @@ export default function PlayerSelectionModal({
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon />
+                  <MagnifyingGlassIcon />
                 </InputAdornment>
               ),
             }}
@@ -280,7 +278,7 @@ export default function PlayerSelectionModal({
           </Box>
         ) : filteredPlayers.length === 0 ? (
           <Box textAlign="center" py={4}>
-            <PersonIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+            <Box component={UserIcon} size={48} sx={{ color: 'text.secondary', mb: 2 }} />
             <Typography variant="body1" color="text.secondary">
               {searchQuery
                 ? t('playerSelectionModal.empty.noSearchResults')

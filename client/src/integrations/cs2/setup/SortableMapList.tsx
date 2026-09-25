@@ -22,10 +22,7 @@ import {
   Chip,
   IconButton,
 } from '@mui/material';
-import {
-  DragHandle as DragHandleIcon,
-  Close as CloseIcon,
-} from '@mui/icons-material';
+import { DotsSixVerticalIcon, XIcon } from '@phosphor-icons/react';
 /** What the list reads of a map: a CS2 map row has more, and still fits. */
 interface SortableMap {
   id: string;
@@ -97,7 +94,7 @@ function SortableMapItem({ mapId, index, displayName, onRemove, disabled }: Sort
           },
         }}
       >
-        <DragHandleIcon />
+        <DotsSixVerticalIcon size={24} />
       </Box>
       <Box
         sx={{
@@ -133,7 +130,7 @@ function SortableMapItem({ mapId, index, displayName, onRemove, disabled }: Sort
             },
           }}
         >
-          <CloseIcon fontSize="small" />
+          <XIcon size={20} />
         </IconButton>
       )}
     </Paper>

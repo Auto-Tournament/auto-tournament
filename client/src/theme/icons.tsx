@@ -12,7 +12,7 @@
  */
 
 import React from 'react';
-import { IconContext, type IconProps } from '@phosphor-icons/react';
+import { IconContext, type IconProps, type IconWeight } from '@phosphor-icons/react';
 
 /** The icon sizes, in px: small (inline with body text), medium (menus, the rail), large (the default). */
 export const ICON_SIZE = { sm: 16, md: 20, lg: 24 } as const;
@@ -32,6 +32,16 @@ export const ICON_DEFAULTS: IconProps = {
   color: 'currentColor',
   mirrored: false,
 };
+
+/**
+ * An icon handed to a component as a prop (`EmptyState`'s `icon`): the props
+ * it is drawn with, typed as Phosphor types them. An MUI icon still fits.
+ */
+export type IconComponent = React.ComponentType<{
+  size?: number | string;
+  weight?: IconWeight;
+  'aria-hidden'?: boolean | 'true' | 'false';
+}>;
 
 /** Sets {@link ICON_DEFAULTS} for everything below it: the app root. */
 export const IconDefaults: React.FC<{ children: React.ReactNode }> = ({ children }) => (

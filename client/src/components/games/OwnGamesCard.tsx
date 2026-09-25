@@ -10,7 +10,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Typography from '@mui/material/Typography';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import { PencilSimpleIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { apiErrorMessage } from '../../utils/api';
@@ -78,7 +78,7 @@ export function OwnGamesCard() {
           </Typography>
           <Button
             size="small"
-            startIcon={<EditOutlinedIcon />}
+            startIcon={<PencilSimpleIcon />}
             onClick={openEditor}
             data-testid="profile-games-edit"
           >

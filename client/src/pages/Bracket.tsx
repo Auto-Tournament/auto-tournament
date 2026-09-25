@@ -13,13 +13,15 @@ import {
   Chip,
   Tooltip,
 } from '@mui/material';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import AddIcon from '@mui/icons-material/Add';
-import ViewListIcon from '@mui/icons-material/ViewList';
-import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
-import FullscreenIcon from '@mui/icons-material/Fullscreen';
-import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
+import {
+  ArrowClockwiseIcon,
+  CornersInIcon,
+  CornersOutIcon,
+  ListBulletsIcon,
+  PlusIcon,
+  TreeStructureIcon,
+  TrophyIcon,
+} from '@phosphor-icons/react';
 import { useNavigate } from 'react-router-dom';
 import { tournamentTabPath } from '../paths';
 import BracketsViewerVisualization from '../components/visualizations/BracketsViewerVisualization';
@@ -244,11 +246,11 @@ export default function Bracket() {
       <Box>
         {pageHead}
         <EmptyState
-          icon={AccountTreeOutlinedIcon}
+          icon={TreeStructureIcon}
           title={t('bracket.empty.noBracketTitle')}
           description={t('bracket.empty.noBracketDescription')}
           actionLabel={t('tournament.common.createTournament')}
-          actionIcon={AddIcon}
+          actionIcon={PlusIcon}
           onAction={() => navigate('/tournament')}
         />
       </Box>
@@ -261,7 +263,7 @@ export default function Bracket() {
       <Box sx={{ width: '100%', height: '100%' }}>
         {pageHead}
         <Panel data-testid="bracket-empty-state" sx={{ textAlign: 'center', py: 8, px: 3 }}>
-          <EmojiEventsIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
+          <Box component={TrophyIcon} size={80} sx={{ color: 'text.secondary', mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
             {t('bracket.shuffleEmpty.title')}
           </Typography>
@@ -292,7 +294,7 @@ export default function Bracket() {
       <Box sx={{ width: '100%', height: '100%' }}>
         {pageHead}
         <Panel data-testid="bracket-empty-state" sx={{ textAlign: 'center', py: 8, px: 3 }}>
-          <EmojiEventsIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
+          <Box component={TrophyIcon} size={80} sx={{ color: 'text.secondary', mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
             {t('bracket.notGenerated.title')}
           </Typography>
@@ -439,19 +441,19 @@ export default function Bracket() {
               >
                 <span>
                   <ToggleButton value="visual" disabled={tournament.type === 'shuffle'}>
-                    <AccountTreeOutlinedIcon sx={{ mr: 1 }} fontSize="small" />
+                    <Box component={TreeStructureIcon} size={20} sx={{ mr: 1 }} />
                     {t('bracket.view.visual')}
                   </ToggleButton>
                 </span>
               </Tooltip>
               <ToggleButton value="list">
-                <ViewListIcon sx={{ mr: 1 }} fontSize="small" />
+                <Box component={ListBulletsIcon} size={20} sx={{ mr: 1 }} />
                 {t('bracket.view.list')}
               </ToggleButton>
             </ToggleButtonGroup>
             <Button
               variant="outlined"
-              startIcon={<RefreshIcon />}
+              startIcon={<ArrowClockwiseIcon />}
               onClick={loadBracket}
               size="small"
             >
@@ -462,7 +464,7 @@ export default function Bracket() {
               color="primary"
               title={isFullscreen ? t('bracket.view.exitFullscreen') : t('bracket.view.enterFullscreen')}
             >
-              {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+              {isFullscreen ? <CornersInIcon /> : <CornersOutIcon />}
             </IconButton>
               </Box>
             }
@@ -507,7 +509,7 @@ export default function Bracket() {
           }}
           title={t('bracket.view.exitFullscreen')}
         >
-          <FullscreenExitIcon />
+          <CornersInIcon />
         </IconButton>
       )}
 

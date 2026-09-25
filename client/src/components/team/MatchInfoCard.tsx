@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Card, CardContent, Typography, Alert } from '@mui/material';
-import PeopleIcon from '@mui/icons-material/People';
+import { UsersIcon } from '@phosphor-icons/react';
 import type { Team, TeamMatchInfo, MatchLiveStats, PlayersResponse } from '../../types';
 // Note: status color is handled by higher-level components; keep imports minimal here.
 import {
@@ -407,7 +407,7 @@ export function MatchInfoCard({
             {match.status !== 'live' && (
               <Alert
                 severity={playersReady ? 'success' : 'info'}
-                icon={<PeopleIcon fontSize="small" />}
+                icon={<UsersIcon size={20} />}
               >
                 {playersReady
                   ? t('matchInfo.allPlayersConnected')

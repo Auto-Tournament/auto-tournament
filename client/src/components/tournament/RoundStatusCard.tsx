@@ -8,9 +8,7 @@ import {
   Chip,
   Stack,
 } from '@mui/material';
-import MapIcon from '@mui/icons-material/Map';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ScheduleIcon from '@mui/icons-material/Schedule';
+import { CheckCircleIcon, ClockIcon, MapTrifoldIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { radii } from '../../theme/tokens';
 
@@ -64,9 +62,9 @@ export function RoundStatusCard({
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
           <Box display="flex" alignItems="center" gap={1}>
             {roundStatus.isComplete ? (
-              <CheckCircleIcon color="success" />
+              <Box component={CheckCircleIcon} sx={{ color: 'success.main' }} />
             ) : (
-              <ScheduleIcon color={isActive ? 'primary' : 'action'} />
+              <Box component={ClockIcon} sx={{ color: isActive ? 'primary.main' : 'action.active' }} />
             )}
             <Typography variant="h6" fontWeight={600}>
               {t('roundStatusCard.roundOf', { current: roundStatus.roundNumber, total: totalRounds })}
@@ -83,7 +81,7 @@ export function RoundStatusCard({
         <Stack spacing={2}>
           {/* Map Info */}
           <Box display="flex" alignItems="center" gap={1}>
-            <MapIcon fontSize="small" color="action" />
+            <Box component={MapTrifoldIcon} size={20} sx={{ color: 'action.active' }} />
             <Typography variant="body2" color="text.secondary">
               {roundStatus.map}
             </Typography>
