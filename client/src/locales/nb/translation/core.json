@@ -65,7 +65,8 @@
     "delete": "Slett",
     "cancel": "Avbryt",
     "remove": "Fjern",
-    "close": "Lukk"
+    "close": "Lukk",
+    "opensInNewTab": "(åpnes i en ny fane)"
   },
   "theme": {
     "label": "Fargetema"

@@ -9,7 +9,6 @@ import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import Container from '@mui/material/Container';
 import InputAdornment from '@mui/material/InputAdornment';
-import Link from '@mui/material/Link';
 import Skeleton from '@mui/material/Skeleton';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
@@ -23,6 +22,7 @@ import { GameCatalog } from '../components/catalog/GameCatalog';
 import { useAuth } from '../contexts/AuthContext';
 import { GameArt, GameCard } from '../components/games/GameCard';
 import { safeNextPath } from '../components/games/nextPath';
+import { ExternalLink } from '../components/common/ExternalLink';
 import {
   MAX_PLAYER_GAMES,
   SEARCH_MIN_LENGTH,
@@ -473,15 +473,13 @@ export default function WelcomeGames() {
         {showCredit && (
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3 }} data-testid="igdb-credit">
             {showWikidataCredit ? (
-              <Link
+              <ExternalLink
                 href="https://www.wikidata.org"
-                target="_blank"
-                rel="noopener noreferrer"
                 color="inherit"
                 data-testid="wikidata-credit-link"
               >
                 {t('games.picker.creditWikidata')}
-              </Link>
+              </ExternalLink>
             ) : (
               t('games.picker.credit')
             )}

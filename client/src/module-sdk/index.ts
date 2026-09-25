@@ -98,6 +98,10 @@ export { default as ConfirmDialog } from '../components/modals/ConfirmDialog';
 export { SegmentedControl } from '../components/tournament/setup/SegmentedControl';
 export { EmptyState } from '../components/shared/EmptyState';
 export { StatusDot, LiveChip } from '../components/common/ui';
+// A link that leaves the app: icon, rel and the hidden "opens in a new tab"
+// text, so a module never has to hand-roll one (client API 0.2.7).
+export { ExternalLink } from '../components/common/ExternalLink';
+export type { ExternalLinkProps } from '../components/common/ExternalLink';
 // Page patterns of the 3.0 drafts (client API 0.2.1)
 export { PageHead, SectionHead, Panel, RowList, Row, FactGrid } from '../components/common/ui';
 export type {

@@ -5,16 +5,15 @@ import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import Collapse from '@mui/material/Collapse';
-import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { useTranslation } from 'react-i18next';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
+import { ExternalLink } from '../common/ExternalLink';
 
 interface IgdbStatus {
   configured: boolean;
@@ -153,26 +152,20 @@ export function IgdbCredentialsCard() {
             <li>{t('games.igdb.howToStep5')}</li>
           </Typography>
           <Stack direction="row" spacing={2} flexWrap="wrap" mt={1}>
-            <Link
+            <ExternalLink
               href={TWITCH_CONSOLE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
               variant="body2"
               sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
             >
               {t('games.igdb.consoleLink')}
-              <OpenInNewIcon sx={{ fontSize: 16 }} aria-hidden />
-            </Link>
-            <Link
+            </ExternalLink>
+            <ExternalLink
               href={GAME_SEARCH_GUIDE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
               variant="body2"
               sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
             >
               {t('games.igdb.fullGuideLink')}
-              <OpenInNewIcon sx={{ fontSize: 16 }} aria-hidden />
-            </Link>
+            </ExternalLink>
           </Stack>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
             {t('games.igdb.freeNote')}
