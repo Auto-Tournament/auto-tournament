@@ -1,4 +1,5 @@
 import auth from './auth.json';
+import compat from './compat.json';
 import core from './core.json';
 import dashboardSettings from './dashboardSettings.json';
 import devTools from './devTools.json';
@@ -20,6 +21,7 @@ const deTranslation = {
   ...devTools,
   ...misc,
   ...tournament,
+  ...compat,
 } as const;
 
 export default deTranslation;

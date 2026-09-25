@@ -7,6 +7,100 @@ import {
   toOpenApiPath,
   type Guard,
 } from '../utils/routeIntrospection';
+import {
+  COMPAT_CHECK_KINDS,
+  COMPAT_CHECK_STATUSES,
+  COMPAT_COMPONENT_STATUSES,
+  COMPAT_LIMITS,
+  COMPAT_OVERALL,
+  COMPAT_RUN_STATES,
+  COMPAT_STAGES,
+  COMPAT_TRIGGERS,
+} from '../utils/compatPayload';
+
+/**
+ * The Ready Up `compat.json` (schema 1), from the same enums the validator
+ * uses (utils/compatPayload.ts), so the two cannot drift.
+ */
+function compatDocumentSchema(): Record<string, unknown> {
+  const dateTime = { type: 'string', format: 'date-time' };
+  return {
+    type: 'object',
+    additionalProperties: false,
+    required: ['schema', 'cs2', 'readyup', 'run', 'overall', 'components', 'checked_at'],
+    properties: {
+      schema: { type: 'integer', enum: [1] },
+      cs2: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['buildid', 'patch'],
+        properties: {
+          buildid: { type: 'string', pattern: '^[0-9]{1,20}$', example: '25537370' },
+          patch: { type: 'string', example: '1.41.8.5' },
+        },
+      },
+      readyup: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['version', 'commit'],
+        properties: {
+          version: { type: 'string', maxLength: COMPAT_LIMITS.versionLength },
+          commit: { type: 'string', pattern: '^[0-9a-fA-F]{7,64}$' },
+        },
+      },
+      run: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['id', 'url', 'trigger', 'stage', 'state', 'started_at', 'finished_at'],
+        properties: {
+          id: { type: 'string', pattern: '^[A-Za-z0-9._:-]{1,128}$' },
+          url: { type: 'string', format: 'uri', description: 'http(s) only' },
+          trigger: { type: 'string', enum: [...COMPAT_TRIGGERS] },
+          stage: { type: 'string', enum: [...COMPAT_STAGES] },
+          state: { type: 'string', enum: [...COMPAT_RUN_STATES] },
+          started_at: dateTime,
+          finished_at: { ...dateTime, nullable: true },
+        },
+      },
+      overall: { type: 'string', enum: [...COMPAT_OVERALL] },
+      components: {
+        type: 'array',
+        maxItems: COMPAT_LIMITS.components,
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['id', 'name', 'status', 'checks'],
+          properties: {
+            id: { type: 'string', pattern: '^[a-z0-9][a-z0-9_-]{0,31}$', example: 'core' },
+            name: { type: 'string', maxLength: COMPAT_LIMITS.nameLength, example: 'Core' },
+            status: { type: 'string', enum: [...COMPAT_COMPONENT_STATUSES] },
+            checks: {
+              type: 'array',
+              maxItems: COMPAT_LIMITS.checksPerComponent,
+              items: {
+                type: 'object',
+                additionalProperties: false,
+                required: ['kind', 'status', 'passed', 'total', 'failures'],
+                properties: {
+                  kind: { type: 'string', enum: [...COMPAT_CHECK_KINDS] },
+                  status: { type: 'string', enum: [...COMPAT_CHECK_STATUSES] },
+                  passed: { type: 'integer', minimum: 0 },
+                  total: { type: 'integer', minimum: 0 },
+                  failures: {
+                    type: 'array',
+                    maxItems: COMPAT_LIMITS.failuresPerCheck,
+                    items: { type: 'string', maxLength: COMPAT_LIMITS.failureLength },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      checked_at: dateTime,
+    },
+  };
+}
 
 /** Absolute path to `api/src`, so the jsdoc globs do not depend on cwd. */
 const API_SRC = path.resolve(__dirname, '..');
@@ -84,8 +178,17 @@ const options: swaggerJsdoc.Options = {
           description:
             'Server-to-API authentication (webhooks, reports, demo uploads, match config fetch). Send `X-Auto-Tournament-Token: <token>`.',
         },
+        compatIngestToken: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'opaque',
+          description:
+            'The Ready Up CI\'s credential for POST /api/compat/events: `Authorization: Bearer <token>`, ' +
+            'where the token is COMPAT_INGEST_TOKEN. Grants nothing else.',
+        },
       },
       schemas: {
+        CompatDocument: compatDocumentSchema(),
         Server: {
           type: 'object',
           properties: {
@@ -308,6 +411,7 @@ const SECURITY_BY_GUARD: Record<Guard, Array<Record<string, string[]>>> = {
   admin: [{ bearerAuth: [] }, { apiToken: [] }],
   'server token': [{ atServerToken: [] }],
   'server token or admin': [{ atServerToken: [] }, { bearerAuth: [] }, { apiToken: [] }],
+  'compat ingest token': [{ compatIngestToken: [] }],
 };
 
 interface OperationObject {

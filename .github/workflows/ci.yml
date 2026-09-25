@@ -243,6 +243,8 @@ jobs:
             echo "AT_RESTART_SUPERVISED=false"
             echo "API_TOKENS=ci-admin:ci-admin-token-0123456789abcdef"
             echo "API_TOKENS_READONLY=ci-readonly:ci-readonly-token-0123456789abcdef"
+            # Ready Up compatibility (tests/api/compat.spec.ts, tests/ui/compat-page.spec.ts).
+            echo "COMPAT_INGEST_TOKEN=ci-compat-token-0123456789abcdef"
             echo "STEAM_API_KEY="
             echo "LOG_LEVEL=info"
           } >> .env

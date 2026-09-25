@@ -19,7 +19,7 @@
 import { routeTable } from '../routes/routeTable';
 
 /** What a caller has to present. */
-export type Guard = 'admin' | 'server token' | 'server token or admin';
+export type Guard = 'admin' | 'server token' | 'server token or admin' | 'compat ingest token';
 
 /** Middleware function names we recognise, and what they mean for a caller. */
 const GUARD_BY_MIDDLEWARE: Record<string, Guard> = {
@@ -27,6 +27,7 @@ const GUARD_BY_MIDDLEWARE: Record<string, Guard> = {
   validateServerToken: 'server token',
   validateEventToken: 'server token',
   requireMatchConfigAccess: 'server token or admin',
+  requireCompatIngestToken: 'compat ingest token',
 };
 
 export interface Endpoint {

@@ -8,9 +8,13 @@ import type {
   MatchEventData,
   ServerEvent,
   VetoUpdateEvent,
+  CompatUpdateEvent,
 } from '../types/socket.types';
 
 let io: SocketIOServer | null = null;
+
+/** Room of the sockets on the public compatibility page (`compat:subscribe`). */
+export const COMPAT_ROOM = 'compat';
 
 export function initializeSocket(httpServer: HTTPServer): SocketIOServer {
   io = new SocketIOServer(httpServer, {
@@ -22,6 +26,17 @@ export function initializeSocket(httpServer: HTTPServer): SocketIOServer {
 
   io.on('connection', (socket) => {
     log.debug(`Socket client connected: ${socket.id}`);
+
+    // The public Ready Up compatibility page. Anyone may listen (the data is
+    // public), but only sockets that ask get `compat:update`, so every other
+    // page's connection is not sent it. Rooms do not survive a reconnect: the
+    // client asks again on every `connect`.
+    socket.on('compat:subscribe', () => {
+      void socket.join(COMPAT_ROOM);
+    });
+    socket.on('compat:unsubscribe', () => {
+      void socket.leave(COMPAT_ROOM);
+    });
 
     socket.on('disconnect', () => {
       log.debug(`Socket client disconnected: ${socket.id}`);
@@ -140,5 +155,16 @@ export function emitVetoUpdate(matchSlug: string, vetoState: VetoUpdateEvent['ve
     io.emit('veto:update', { matchSlug, veto: vetoState });
     io.emit(`veto:update:${matchSlug}`, vetoState);
     log.debug('Emitted veto update', { matchSlug });
+  }
+}
+
+/**
+ * Emit a Ready Up compatibility change to the sockets on the public
+ * compatibility page (room `compat`, joined with `compat:subscribe`).
+ */
+export function emitCompatUpdate(payload: CompatUpdateEvent): void {
+  if (io) {
+    io.to(COMPAT_ROOM).emit('compat:update', payload);
+    log.debug('Emitted compat update', { runId: payload.run.run.id });
   }
 }

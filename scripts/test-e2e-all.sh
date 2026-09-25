@@ -49,6 +49,7 @@ export ENABLE_TEST_ENDPOINTS="${ENABLE_TEST_ENDPOINTS:-true}"
 export MAT_TEST_INTEGRATION="${MAT_TEST_INTEGRATION:-1}"
 export API_TOKENS="${API_TOKENS:-ci-admin:ci-admin-token-0123456789abcdef}"
 export API_TOKENS_READONLY="${API_TOKENS_READONLY:-ci-readonly:ci-readonly-token-0123456789abcdef}"
+export COMPAT_INGEST_TOKEN="${COMPAT_INGEST_TOKEN:-ci-compat-token-0123456789abcdef}"
 export PLAYWRIGHT_BASE_URL="http://localhost:3069"
 
 echo -e "${BLUE}Configuration:${NC}"

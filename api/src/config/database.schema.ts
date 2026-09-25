@@ -553,6 +553,43 @@ export function getSchemaSQL(): string {
     CREATE INDEX IF NOT EXISTS idx_shuffle_tournament_players_tournament ON shuffle_tournament_players(tournament_id);
     CREATE INDEX IF NOT EXISTS idx_shuffle_tournament_players_player ON shuffle_tournament_players(player_id);
 
+    -- Ready Up compatibility runs (services/compatService.ts): one row per
+    -- run of the Ready Up CI, upserted by its run id as the run moves through
+    -- its stages. Core's, not CS2's: the public page must work on an instance
+    -- whether or not the CS2 module is installed. Only the newest 200 are kept.
+    CREATE TABLE IF NOT EXISTS compat_runs (
+      id SERIAL PRIMARY KEY,
+      run_id TEXT NOT NULL UNIQUE, -- run.id from the document
+      cs2_buildid TEXT NOT NULL,
+      cs2_patch TEXT NOT NULL,
+      readyup_version TEXT NOT NULL,
+      readyup_commit TEXT NOT NULL,
+      run_url TEXT NOT NULL,
+      run_trigger TEXT NOT NULL, -- build_change | surface_change | nightly | release | manual
+      stage TEXT NOT NULL, -- static | selftest | live
+      state TEXT NOT NULL, -- queued | checking | pass | warn | fail | no_verdict
+      overall TEXT NOT NULL, -- pass | warn | fail | checking | no_verdict
+      started_at TEXT NOT NULL, -- ISO 8601, UTC (sorts as text)
+      finished_at TEXT,
+      checked_at TEXT NOT NULL,
+      source TEXT NOT NULL DEFAULT 'push', -- push (POST /api/compat/events) | pull (COMPAT_FEED_URL)
+      received_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_compat_runs_started ON compat_runs(started_at DESC, id DESC);
+
+    -- One row per component of a run, in the document's order.
+    CREATE TABLE IF NOT EXISTS compat_components (
+      run_pk INTEGER NOT NULL REFERENCES compat_runs(id) ON DELETE CASCADE,
+      position INTEGER NOT NULL,
+      component_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      status TEXT NOT NULL, -- pass | warn | fail | pending | checking
+      checks TEXT NOT NULL DEFAULT '[]', -- JSON array of { kind, status, passed, total, failures }
+      PRIMARY KEY (run_pk, component_id)
+    );
+
     -- Session table for connect-pg-simple (express-session PostgreSQL store)
     -- This table is required for session persistence across API restarts
     CREATE TABLE IF NOT EXISTS session (

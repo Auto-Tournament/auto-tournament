@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 312 of them, 218 behind auth —
+Every endpoint this API serves — 316 of them, 219 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -509,6 +509,17 @@ The signed-in player's own data, e.g. the games they play.
 | `POST` | `/api/me/games/prompt/dismiss` | public |
 | `GET` | `/api/me/connections` | public |
 | `POST` | `/api/me/connections/:provider/remove` | public |
+
+### Compatibility
+
+Ready Up compatibility with the latest CS2 build: the runs its CI reports (token-guarded push), and public reads for the /compatibility page and a shields.io badge. 404 unless COMPAT_INGEST_TOKEN or COMPAT_FEED_URL is set.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `POST` | `/api/compat/events` | compat ingest token |
+| `GET` | `/api/compat/latest` | public |
+| `GET` | `/api/compat/runs` | public |
+| `GET` | `/api/compat/badge.json` | public |
 
 ### Test helpers
 
