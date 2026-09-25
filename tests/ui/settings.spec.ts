@@ -34,8 +34,9 @@ test.describe.serial('Settings UI', () => {
       await page.getByTestId('settings-tab-module-cs2').click({ timeout: 15000 });
       await expect(page.getByTestId('settings-webhook-url-input')).toBeVisible({ timeout: 15000 });
 
-      // Save control is present
-      await expect(page.getByTestId('settings-save-button')).toBeVisible({ timeout: 15000 });
+      // CS2's server defaults and their reset are on the same tab (0.2.4).
+      await expect(page.getByTestId('cs2-server-defaults')).toBeVisible();
+      await expect(page.getByTestId('cs2-settings-reset-button')).toBeVisible();
 
       // The Steam API key is env-only; a field here would mean a secret is being
       // round-tripped through the browser.
@@ -88,6 +89,46 @@ test.describe.serial('Settings UI', () => {
           { message: 'webhook URL to be cleared', timeout: 15000 }
         )
         .toBe('');
+    }
+  );
+
+  test('a CS2 server default saves on its own, and the CS2 reset clears it',
+    {
+      tag: ['@ui', '@settings', '@configuration'],
+    },
+    async ({ page }) => {
+      const readSettings = async () =>
+        (await (await page.request.get('/api/settings')).json()).settings as Record<string, unknown>;
+
+      // A field the tab does not touch, to prove its saves are partial.
+      const before = await readSettings();
+
+      await page.goto('/settings?section=cs2');
+      await page.getByTestId('cs2-settings-demos-summary').click({ timeout: 30000 });
+      const hostname = page.getByTestId('at-hostname-format-input');
+      await expect(hostname).toBeVisible({ timeout: 15000 });
+
+      const value = `{TEAM1} v {TEAM2} ${Date.now()}`;
+      await hostname.fill(value);
+      await hostname.blur();
+
+      await expect
+        .poll(async () => (await readSettings()).atHostnameFormat, {
+          message: 'hostname format to be saved',
+          timeout: 15000,
+        })
+        .toBe(value);
+      expect((await readSettings()).ratingsEnabled).toBe(before.ratingsEnabled);
+
+      await page.getByTestId('cs2-settings-reset-button').click();
+      await page.getByTestId('cs2-settings-reset-confirm').click();
+      await expect
+        .poll(async () => (await readSettings()).atHostnameFormat, {
+          message: 'hostname format to be reset',
+          timeout: 15000,
+        })
+        .not.toBe(value);
+      await expect(hostname).toHaveValue('{TEAM1} vs {TEAM2}');
     }
   );
 });
