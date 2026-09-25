@@ -100,7 +100,9 @@
     },
     "headerActions": {
       "addMap": "Adicionar mapa",
-      "createMapPool": "Criar pool de mapas"
+      "createMapPool": "Criar pool de mapas",
+      "syncMaps": "Sincronizar mapas",
+      "syncingMaps": "A sincronizar mapas…"
     },
     "errors": {
       "loadMaps": "Não foi possível carregar os mapas",
@@ -897,12 +899,16 @@
       "description": "Sincroniza mapas de CS2 a partir do repositório GitHub.",
       "buttonSyncing": "A sincronizar...",
       "buttonIdle": "Sincronizar mapas de CS2",
-      "success": "Sincronização concluída! {{added}} mapa(s) novo(s) adicionado(s), {{skipped}} já existiam.",
-      "partialError": "Alguns mapas falharam a sincronização: {{errors}}",
-      "failed": "Falha ao sincronizar mapas",
-      "rateLimit": "Foi excedido o limite da API do GitHub. Tenta novamente dentro de alguns minutos. Podes definir a variável de ambiente GITHUB_TOKEN para aumentar o limite.",
-      "rateLimitShort": "Foi excedido o limite da API do GitHub. Tenta novamente dentro de alguns minutos.",
-      "githubError": "Não foi possível aceder ao repositório GitHub. Verifica a tua ligação à internet e tenta novamente mais tarde."
+      "newMaps": "Mapas novos: {{count}}.",
+      "bundled": "Não foi possível contactar o GitHub, por isso foi usada a lista de mapas incluída nesta versão.",
+      "activeDuty": {
+        "created": "Grupo Active Duty criado.",
+        "updated": "Grupo Active Duty atualizado.",
+        "kept": "Grupo Active Duty mantido (editado por um administrador).",
+        "unchanged": "O grupo Active Duty já está atualizado.",
+        "stale": "A lista de mapas incluída é mais antiga do que a já aplicada, por isso só foram adicionados mapas novos."
+      },
+      "failed": "Falha ao sincronizar mapas"
     },
     "tab": "Counter-Strike 2",
     "saved": "Settings saved",

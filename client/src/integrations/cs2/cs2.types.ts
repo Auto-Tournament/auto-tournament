@@ -409,7 +409,9 @@ export interface ServerEventsResponse extends Cs2ApiResponse {
 
 /** `POST /api/maps/sync`. */
 export interface MapSyncResponse extends Cs2ApiResponse {
-  stats?: { total: number; added: number; skipped: number; errors: number };
-  errors?: string[];
-  errorType?: 'rate_limit' | 'github_error' | 'unknown';
+  /** `bundled`: GitHub could not be reached, so the map list shipped with the module was used. */
+  source?: 'remote' | 'bundled';
+  /** What the sync did to the Active Duty pool (`kept`: an admin edited it, so it was left alone). */
+  activeDutyPool?: 'created' | 'updated' | 'kept' | 'unchanged' | 'stale';
+  stats?: { total: number; added: number; updated?: number; skipped: number; errors: number };
 }

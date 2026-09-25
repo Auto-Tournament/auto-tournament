@@ -1,6 +1,7 @@
 /**
  * CS2's tab on the Settings page (slot `instanceSettings`, client API 0.2.2):
- * the webhook URL its servers call back on, the map sync, and the defaults
+ * the webhook URL its servers call back on, the map sync (also in the Maps
+ * page header, ../maps/useMapSync), and the defaults
  * sent to every server with a match (`Cs2ServerDefaults`).
  *
  * Both were the first thing on core's Settings page until the module split
@@ -24,7 +25,8 @@ import {
 import SyncIcon from '@mui/icons-material/Sync';
 import { api, useModuleTranslation, useSnackbar } from '../../../module-sdk';
 import type { InstanceSettingsSectionProps } from '../../types';
-import type { MapSyncResponse, WebhookSettings, WebhookSettingsResponse } from '../cs2.types';
+import type { WebhookSettings, WebhookSettingsResponse } from '../cs2.types';
+import { useMapSync } from '../maps/useMapSync';
 import { Cs2ServerDefaults } from './Cs2ServerDefaults';
 
 export const Cs2SettingsSection: React.FC<InstanceSettingsSectionProps> = () => {
@@ -34,7 +36,7 @@ export const Cs2SettingsSection: React.FC<InstanceSettingsSectionProps> = () => 
   const [initialSettings, setInitialSettings] = useState<Record<string, unknown> | undefined>();
   const [webhookUrl, setWebhookUrl] = useState('');
   const [savedWebhookUrl, setSavedWebhookUrl] = useState('');
-  const [syncingMaps, setSyncingMaps] = useState(false);
+  const { sync: handleSyncMaps, syncing: syncingMaps } = useMapSync();
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saving = useRef(false);
 
@@ -98,44 +100,6 @@ export const Cs2SettingsSection: React.FC<InstanceSettingsSectionProps> = () => 
       if (saveTimeout.current) clearTimeout(saveTimeout.current);
     };
   }, [loading, webhookUrl, savedWebhookUrl, save]);
-
-  const syncErrorMessage = (errorType?: string, status?: number, fallback?: string): string => {
-    if (errorType === 'rate_limit' || status === 429) return t('settings.mapSync.rateLimit');
-    if (errorType === 'github_error' || status === 503) return t('settings.mapSync.githubError');
-    return fallback || t('settings.mapSync.failed');
-  };
-
-  const handleSyncMaps = async () => {
-    setSyncingMaps(true);
-    try {
-      const response = await api.post<MapSyncResponse>('/api/maps/sync');
-      if (response.success) {
-        showSuccess(
-          t('settings.mapSync.success', {
-            added: response.stats?.added || 0,
-            skipped: response.stats?.skipped || 0,
-          })
-        );
-        if (response.errors && response.errors.length > 0) {
-          showError(t('settings.mapSync.partialError', { errors: response.errors.join(', ') }));
-        }
-      } else {
-        showError(syncErrorMessage(response.errorType, undefined, response.error));
-      }
-    } catch (err: unknown) {
-      // Network errors, 429 and 503 from the route.
-      const { response } = err as {
-        response?: { data?: { error?: string; errorType?: string }; status?: number };
-      };
-      const message = err instanceof Error ? err.message : undefined;
-      const errorType =
-        response?.data?.errorType ??
-        (message && /rate limit/i.test(message) ? 'rate_limit' : undefined);
-      showError(syncErrorMessage(errorType, response?.status, response?.data?.error ?? message));
-    } finally {
-      setSyncingMaps(false);
-    }
-  };
 
   if (loading) {
     return <LinearProgress />;

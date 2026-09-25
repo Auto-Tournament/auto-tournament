@@ -102,7 +102,9 @@
     },
     "headerActions": {
       "addMap": "Dodaj mapę",
-      "createMapPool": "Utwórz pulę map"
+      "createMapPool": "Utwórz pulę map",
+      "syncMaps": "Synchronizuj mapy",
+      "syncingMaps": "Synchronizowanie map…"
     },
     "errors": {
       "loadMaps": "Nie udało się wczytać map",
@@ -935,12 +937,16 @@
       "description": "Synchronizuj mapy CS2 z repozytorium GitHub.",
       "buttonSyncing": "Synchronizowanie...",
       "buttonIdle": "Synchronizuj mapy CS2",
-      "success": "Synchronizacja map zakończona! Dodano {{added}} nowych map, {{skipped}} już istniały.",
-      "partialError": "Niektórych map nie udało się zsynchronizować: {{errors}}",
-      "failed": "Nie udało się zsynchronizować map",
-      "rateLimit": "Przekroczono limit zapytań GitHub API. Spróbuj ponownie za kilka minut. Możesz ustawić zmienną środowiskową GITHUB_TOKEN, aby zwiększyć limit.",
-      "rateLimitShort": "Przekroczono limit zapytań GitHub API. Spróbuj ponownie za kilka minut.",
-      "githubError": "Nie udało się połączyć z repozytorium GitHub. Sprawdź połączenie z internetem i spróbuj ponownie później."
+      "newMaps": "Nowe mapy: {{count}}.",
+      "bundled": "Nie udało się połączyć z GitHubem, więc użyto listy map dołączonej do tej wersji.",
+      "activeDuty": {
+        "created": "Utworzono pulę Active Duty.",
+        "updated": "Zaktualizowano pulę Active Duty.",
+        "kept": "Pula Active Duty pozostawiona bez zmian (edytowana przez admina).",
+        "unchanged": "Pula Active Duty jest już aktualna.",
+        "stale": "Dołączona lista map jest starsza niż już zastosowana, więc dodano tylko nowe mapy."
+      },
+      "failed": "Nie udało się zsynchronizować map"
     },
     "tab": "Counter-Strike 2",
     "saved": "Settings saved",

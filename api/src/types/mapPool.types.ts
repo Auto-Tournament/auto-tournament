@@ -8,6 +8,8 @@ export interface DbMapPoolRow {
   map_ids: string; // JSON array of map IDs
   is_default: number; // 0 or 1
   enabled: number; // 0 or 1
+  /** 1: a default pool the platform created and nobody has edited since, so a map sync may update it. */
+  system_managed?: number;
   created_at: number;
   updated_at: number;
 }
@@ -40,6 +42,8 @@ export interface MapPoolResponse {
   mapIds: string[];
   isDefault: boolean;
   enabled: boolean;
+  /** A default pool nobody has edited: a map sync keeps its maps current (Active Duty follows maps.json). */
+  systemManaged: boolean;
   createdAt: number;
   updatedAt: number;
 }

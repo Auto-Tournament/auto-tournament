@@ -995,6 +995,62 @@ function assertCoreColumnsAdded(label: string, postgresName: string) {
 
 type Cs2Rows = ReturnType<typeof cs2Rows>;
 
+/** The maps.json copy the CS2 module ships (the app runs with CATALOG_OFFLINE, so it applies this one). */
+const BUNDLED_MAPS = JSON.parse(
+  readFileSync(`${__dirname}/../api/src/integrations/cs2/maps/bundled-maps.json`, 'utf8')
+) as { maps: Array<{ id: string }>; activeDuty: string[] };
+
+/** The pools the platform seeds, which the map sync keeps current while nobody has edited them. */
+const SYSTEM_POOL_NAMES = ['Active Duty', 'Defusal only', 'Hostage only', 'Arms Race only'];
+
+type MapRow = { id: string; created_at: number };
+type PoolRow = { id: number; name: string; map_ids: string; is_default: number; enabled: number; created_at: number };
+
+/**
+ * The first boot of 3.0 runs the CS2 map sync (maps/mapSync.ts) against the
+ * bundled maps.json, and that is meant to change some rows: new maps are
+ * added, seeded maps take the file's names and images, and the seeded pools
+ * that still hold what the old seed put there follow the file (Active Duty
+ * loses ancient and anubis, gains train and overpass). What must not change:
+ * no map or pool is deleted, the admin's pool is untouched, and every other
+ * CS2 row is identical.
+ */
+function assertCs2RowsSurvivedUpgrade(label: string, before: Cs2Rows, after: Cs2Rows) {
+  const { maps: mapsBefore, mapPools: poolsBefore, ...restBefore } = before;
+  const { maps: mapsAfter, mapPools: poolsAfter, ...restAfter } = after;
+  const differ = (what: string, a: unknown, b: unknown) => {
+    throw new Error(
+      `${label}: CS2 ${what} differ.\n--- before ---\n${JSON.stringify(a, null, 2)}\n--- after ---\n${JSON.stringify(b, null, 2)}`
+    );
+  };
+  if (JSON.stringify(restBefore) !== JSON.stringify(restAfter)) differ('rows', restBefore, restAfter);
+
+  const afterMaps = new Map((mapsAfter as MapRow[]).map((m) => [m.id, m]));
+  for (const map of mapsBefore as MapRow[]) {
+    if (afterMaps.get(map.id)?.created_at !== map.created_at) differ(`map ${map.id}`, map, afterMaps.get(map.id));
+  }
+  const bundledIds = new Set(BUNDLED_MAPS.maps.map((m) => m.id));
+  const oldIds = new Set((mapsBefore as MapRow[]).map((m) => m.id));
+  const unexpected = [...afterMaps.keys()].filter((id) => !oldIds.has(id) && !bundledIds.has(id));
+  if (unexpected.length > 0) throw new Error(`${label}: maps appeared that maps.json does not list: ${unexpected.join(', ')}`);
+
+  const afterPools = new Map((poolsAfter as PoolRow[]).map((p) => [p.id, p]));
+  for (const pool of poolsBefore as PoolRow[]) {
+    const now = afterPools.get(pool.id);
+    const keep = (p?: PoolRow) =>
+      p && { id: p.id, name: p.name, is_default: p.is_default, enabled: p.enabled, created_at: p.created_at };
+    if (JSON.stringify(keep(pool)) !== JSON.stringify(keep(now))) differ(`pool ${pool.name}`, pool, now);
+    if (!SYSTEM_POOL_NAMES.includes(pool.name) && pool.map_ids !== now?.map_ids) differ(`pool ${pool.name}`, pool, now);
+  }
+  const activeDuty = (poolsAfter as PoolRow[]).find((p) => p.name === 'Active Duty');
+  const expected = JSON.stringify([...BUNDLED_MAPS.activeDuty].sort());
+  if (activeDuty?.map_ids !== expected) {
+    throw new Error(`${label}: the unedited Active Duty pool should follow maps.json (${expected}): ${activeDuty?.map_ids}`);
+  }
+  assertCs2Seeded(label, before);
+  log(`${label}: the map sync added ${afterMaps.size - oldIds.size} map(s) and moved Active Duty to maps.json; nothing was deleted.`);
+}
+
 function assertCs2RowsSurvived(label: string, before: Cs2Rows, after: Cs2Rows) {
   const a = JSON.stringify(before);
   const b = JSON.stringify(after);
@@ -1003,6 +1059,16 @@ function assertCs2RowsSurvived(label: string, before: Cs2Rows, after: Cs2Rows) {
       `${label}: CS2 rows differ.\n--- before ---\n${JSON.stringify(before, null, 2)}\n--- after ---\n${JSON.stringify(after, null, 2)}`
     );
   }
+  assertCs2Seeded(label, before);
+  log(
+    `${label}: ${before.servers.length} server(s), ${before.maps.length} map(s), ` +
+      `${before.mapPools.length} map pool(s), the rows pointing at them, and the tournament's ` +
+      `and ${before.templates.length} template(s)' CS2 fields (now settings.cs2) survived unchanged.`
+  );
+}
+
+/** The old database held what seedCs2Rows and the old seed put there. */
+function assertCs2Seeded(label: string, before: Cs2Rows) {
   if (before.servers.length === 0 || before.maps.length === 0 || before.mapPools.length === 0) {
     throw new Error(`${label}: expected the old database to have servers, maps and map pools.`);
   }
@@ -1015,11 +1081,6 @@ function assertCs2RowsSurvived(label: string, before: Cs2Rows, after: Cs2Rows) {
   if (before.templates.length < 2) {
     throw new Error(`${label}: expected the two seeded templates: ${JSON.stringify(before.templates)}`);
   }
-  log(
-    `${label}: ${before.servers.length} server(s), ${before.maps.length} map(s), ` +
-      `${before.mapPools.length} map pool(s), the rows pointing at them, and the tournament's ` +
-      `and ${before.templates.length} template(s)' CS2 fields (now settings.cs2) survived unchanged.`
-  );
 }
 
 interface Cs2TablesView {
@@ -1438,7 +1499,7 @@ async function runUpgradedDatabasePath() {
     step = 'verify CS2 took over its tables';
     upgradedCs2Schema = await assertCs2TablesHandedOver(ctx, 'Upgrade');
     const cs2AfterUpgrade = cs2Rows(POSTGRES_NAME, CS2_LAYOUT);
-    assertCs2RowsSurvived('Upgrade (old -> current build)', cs2Before, cs2AfterUpgrade);
+    assertCs2RowsSurvivedUpgrade('Upgrade (old -> current build)', cs2Before, cs2AfterUpgrade);
     if (!appliedFirstBoot.includes('2026-09-24-cs2-tournament-settings')) {
       throw new Error('The fold of the CS2 tournament columns did not run on the upgrade.');
     }

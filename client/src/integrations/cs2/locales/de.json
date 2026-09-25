@@ -100,7 +100,9 @@
     },
     "headerActions": {
       "addMap": "Karte hinzufügen",
-      "createMapPool": "Kartenpool erstellen"
+      "createMapPool": "Kartenpool erstellen",
+      "syncMaps": "Karten synchronisieren",
+      "syncingMaps": "Karten werden synchronisiert…"
     },
     "errors": {
       "loadMaps": "Karten konnten nicht geladen werden",
@@ -897,12 +899,16 @@
       "description": "CS2-Maps aus dem GitHub-Repository synchronisieren.",
       "buttonSyncing": "Synchronisiere...",
       "buttonIdle": "CS2-Maps synchronisieren",
-      "success": "Map-Sync abgeschlossen! {{added}} neue Map(s) hinzugefügt, {{skipped}} existierten bereits.",
-      "partialError": "Einige Maps konnten nicht synchronisiert werden: {{errors}}",
-      "failed": "Map-Sync fehlgeschlagen",
-      "rateLimit": "GitHub API Rate Limit erreicht. Bitte versuche es in ein paar Minuten erneut. Du kannst die Umgebungsvariable GITHUB_TOKEN setzen, um das Rate Limit zu erhöhen.",
-      "rateLimitShort": "GitHub API Rate Limit erreicht. Bitte versuche es in ein paar Minuten erneut.",
-      "githubError": "GitHub-Repository konnte nicht erreicht werden. Bitte prüfe deine Internetverbindung und versuche es später erneut."
+      "newMaps": "Neue Karten: {{count}}.",
+      "bundled": "GitHub war nicht erreichbar, daher wurde die mit dieser Version ausgelieferte Kartenliste verwendet.",
+      "activeDuty": {
+        "created": "Active-Duty-Pool erstellt.",
+        "updated": "Active-Duty-Pool aktualisiert.",
+        "kept": "Active-Duty-Pool unverändert gelassen (von einem Admin bearbeitet).",
+        "unchanged": "Active-Duty-Pool ist bereits aktuell.",
+        "stale": "Die mitgelieferte Kartenliste ist älter als die bereits angewendete, daher wurden nur neue Karten hinzugefügt."
+      },
+      "failed": "Map-Sync fehlgeschlagen"
     },
     "tab": "Counter-Strike 2",
     "saved": "Settings saved",

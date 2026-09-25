@@ -81,6 +81,13 @@ export class MapService {
 
     if (input.displayName !== undefined) updateData.display_name = input.displayName.trim();
     if (input.imageUrl !== undefined) updateData.image_url = input.imageUrl || null;
+    // An admin's edit: a map sync no longer renames it or swaps its image.
+    if (
+      (updateData.display_name !== undefined && updateData.display_name !== existing.displayName) ||
+      (updateData.image_url !== undefined && updateData.image_url !== existing.imageUrl)
+    ) {
+      updateData.system_managed = 0;
+    }
 
     await db.updateAsync('cs2_maps', updateData, 'id = ?', [id]);
 
@@ -111,6 +118,7 @@ export class MapService {
       id: map.id,
       displayName: map.display_name,
       imageUrl: map.image_url,
+      systemManaged: map.system_managed === 1,
       createdAt: map.created_at,
       updatedAt: map.updated_at,
     };
