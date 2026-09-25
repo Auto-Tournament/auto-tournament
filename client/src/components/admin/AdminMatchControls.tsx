@@ -17,19 +17,21 @@ import {
   AccordionDetails,
   Tooltip,
 } from '@mui/material';
-import PauseIcon from '@mui/icons-material/Pause';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-import RestoreIcon from '@mui/icons-material/Restore';
-import SkipNextIcon from '@mui/icons-material/SkipNext';
-import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import TimerIcon from '@mui/icons-material/Timer';
-import StopIcon from '@mui/icons-material/Stop';
-import MessageIcon from '@mui/icons-material/Message';
-import FastForwardIcon from '@mui/icons-material/FastForward';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import CloseIcon from '@mui/icons-material/Close';
-import CancelIcon from '@mui/icons-material/Cancel';
+import {
+  ArrowCounterClockwiseIcon,
+  ArrowsLeftRightIcon,
+  CaretDownIcon,
+  ChatTextIcon,
+  ClockCounterClockwiseIcon,
+  FastForwardIcon,
+  PauseIcon,
+  PlayIcon,
+  SkipForwardIcon,
+  StopIcon,
+  TimerIcon,
+  XCircleIcon,
+  XIcon,
+} from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 
@@ -243,22 +245,22 @@ const AdminMatchControls: React.FC<AdminMatchControlsProps> = ({
 
   const confirmActions: ConfirmAction[] = [
     { action: 'pause', icon: <PauseIcon />, color: 'warning' },
-    { action: 'unpause', icon: <PlayArrowIcon />, color: 'primary' },
-    { action: 'swap', icon: <SwapHorizIcon />, color: 'warning' },
-    { action: 'restartRound', icon: <RestartAltIcon />, color: 'warning' },
-    { action: 'skipVeto', icon: <SkipNextIcon />, color: 'primary' },
+    { action: 'unpause', icon: <PlayIcon />, color: 'primary' },
+    { action: 'swap', icon: <ArrowsLeftRightIcon />, color: 'warning' },
+    { action: 'restartRound', icon: <ArrowCounterClockwiseIcon />, color: 'warning' },
+    { action: 'skipVeto', icon: <SkipForwardIcon />, color: 'primary' },
     { action: 'endWarmup', icon: <FastForwardIcon />, color: 'primary' },
     { action: 'endMatch', icon: <StopIcon />, color: 'error', buttonColor: 'error' },
     {
       action: 'restartMatch',
-      icon: <RestartAltIcon />,
+      icon: <ArrowCounterClockwiseIcon />,
       color: 'error',
       buttonColor: 'warning',
       requiresMatch: true,
     },
     {
       action: 'reallocateServer',
-      icon: <SwapHorizIcon />,
+      icon: <ArrowsLeftRightIcon />,
       color: 'warning',
       buttonColor: 'warning',
       variant: 'contained',
@@ -268,7 +270,7 @@ const AdminMatchControls: React.FC<AdminMatchControlsProps> = ({
     },
     {
       action: 'forceCancel',
-      icon: <CancelIcon />,
+      icon: <XCircleIcon />,
       color: 'error',
       buttonColor: 'error',
       variant: 'contained',
@@ -284,9 +286,9 @@ const AdminMatchControls: React.FC<AdminMatchControlsProps> = ({
   };
 
   const inputActions: InputAction[] = [
-    { action: 'restoreBackup', icon: <RestoreIcon />, inputType: 'number', defaultValue: 1 },
+    { action: 'restoreBackup', icon: <ClockCounterClockwiseIcon />, inputType: 'number', defaultValue: 1 },
     { action: 'addTime', icon: <TimerIcon />, inputType: 'number', defaultValue: 60 },
-    { action: 'broadcast', icon: <MessageIcon />, inputType: 'text', defaultValue: '' },
+    { action: 'broadcast', icon: <ChatTextIcon />, inputType: 'text', defaultValue: '' },
   ];
 
   return (
@@ -298,7 +300,7 @@ const AdminMatchControls: React.FC<AdminMatchControlsProps> = ({
       <Stack spacing={3}>
         {/* Match Control */}
         <Accordion defaultExpanded>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <AccordionSummary expandIcon={<CaretDownIcon />}>
             <Typography variant="subtitle1" fontWeight={600}>
               {t('adminMatchControls.sections.matchControl')}
             </Typography>
@@ -343,7 +345,7 @@ const AdminMatchControls: React.FC<AdminMatchControlsProps> = ({
 
         {/* Advanced Actions */}
         <Accordion>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <AccordionSummary expandIcon={<CaretDownIcon />}>
             <Typography variant="subtitle1" fontWeight={600}>
               {t('adminMatchControls.sections.advanced')}
             </Typography>
@@ -400,7 +402,7 @@ const AdminMatchControls: React.FC<AdminMatchControlsProps> = ({
               aria-label={t('adminMatchControls.close')}
               onClick={() => setConfirmDialog({ ...confirmDialog, open: false })}
             >
-              <CloseIcon />
+              <XIcon />
             </IconButton>
           </Box>
         </DialogTitle>
@@ -432,7 +434,7 @@ const AdminMatchControls: React.FC<AdminMatchControlsProps> = ({
               aria-label={t('adminMatchControls.close')}
               onClick={() => setInputDialog({ ...inputDialog, open: false })}
             >
-              <CloseIcon />
+              <XIcon />
             </IconButton>
           </Box>
         </DialogTitle>

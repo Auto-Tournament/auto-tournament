@@ -13,7 +13,7 @@ import {
   Typography,
   Stack,
 } from '@mui/material';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import { UserPlusIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 import { normalizeConfigPlayers } from '../../utils/playerUtils';
@@ -270,7 +270,7 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
           <Button
             variant="contained"
             color="primary"
-            startIcon={adding ? <CircularProgress size={20} /> : <PersonAddIcon />}
+            startIcon={adding ? <CircularProgress size={20} /> : <UserPlusIcon />}
             onClick={handleAddPlayer}
             disabled={!selectedPlayer || adding}
             fullWidth

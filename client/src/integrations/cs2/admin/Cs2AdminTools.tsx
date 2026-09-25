@@ -29,9 +29,7 @@ import {
   Divider,
   Stack,
 } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import RefreshIcon from '@mui/icons-material/Refresh';
+import { ArrowClockwiseIcon, CaretDownIcon, PlayIcon } from '@phosphor-icons/react';
 import { api, radii, useModuleTranslation, useSnackbar } from '../../../module-sdk';
 import type { AdminToolsSectionProps } from '../../types';
 import { ADMIN_COMMAND_CATEGORIES, type AdminCommand } from './rconCommands';
@@ -153,7 +151,7 @@ export const Cs2AdminTools: React.FC<AdminToolsSectionProps> = () => {
           variant="outlined"
           color={command.color === 'error' ? 'error' : 'primary'}
           size="small"
-          startIcon={executing ? <CircularProgress size={16} /> : <PlayArrowIcon />}
+          startIcon={executing ? <CircularProgress size={16} /> : <PlayIcon size={24} />}
           onClick={() => handleExecuteCommand(command)}
           disabled={
             executing ||
@@ -193,7 +191,7 @@ export const Cs2AdminTools: React.FC<AdminToolsSectionProps> = () => {
         </Box>
         <Button
           variant="outlined"
-          startIcon={<RefreshIcon />}
+          startIcon={<ArrowClockwiseIcon size={24} />}
           onClick={() => void loadServers()}
           disabled={loadingServers}
         >
@@ -249,7 +247,7 @@ export const Cs2AdminTools: React.FC<AdminToolsSectionProps> = () => {
                     color="primary"
                     onClick={() => void executeCommand(targetServerIds, 'status')}
                     disabled={executing || servers.length === 0}
-                    startIcon={executing ? <CircularProgress size={16} /> : <PlayArrowIcon />}
+                    startIcon={executing ? <CircularProgress size={16} /> : <PlayIcon size={24} />}
                   >
                     {t('adminTools.serverSelect.sendStatus')}
                   </Button>
@@ -354,7 +352,7 @@ export const Cs2AdminTools: React.FC<AdminToolsSectionProps> = () => {
               </Typography>
               {ADVANCED_CATEGORIES.map((category) => (
                 <Accordion key={category.id}>
-                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <AccordionSummary expandIcon={<CaretDownIcon size={24} />}>
                     <Typography variant="subtitle1" fontWeight={600}>
                       {t(`adminTools.categories.${category.i18nKey}`)}
                     </Typography>
@@ -383,7 +381,7 @@ export const Cs2AdminTools: React.FC<AdminToolsSectionProps> = () => {
 
       {/* Server events monitor, collapsed by default */}
       <Accordion sx={{ mt: 3 }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+        <AccordionSummary expandIcon={<CaretDownIcon size={24} />}>
           <Typography variant="h6">{t('adminTools.events.title')}</Typography>
         </AccordionSummary>
         <AccordionDetails>

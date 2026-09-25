@@ -198,6 +198,10 @@ export const theme = createTheme({
           '&:hover': { borderColor: color.rule, backgroundColor: color.paper3 },
         },
         textPrimary: { color: color.accent2 },
+        // MUI sizes a button's icon by font-size (18/20/22px); a Phosphor
+        // icon's width and height are attributes, so follow it in CSS.
+        startIcon: { '& > svg': { width: '1em', height: '1em' } },
+        endIcon: { '& > svg': { width: '1em', height: '1em' } },
         sizeSmall: { padding: '0.3rem 0.85rem', fontSize: '0.8125rem' },
         sizeLarge: { padding: '0.75rem 1.4rem' },
       },
@@ -419,6 +423,8 @@ export const theme = createTheme({
         clickable: { '&:hover': { filter: 'brightness(1.12)' } },
         deleteIcon: { color: 'inherit', opacity: 0.7, '&:hover': { color: 'inherit', opacity: 1 } },
         icon: { color: 'inherit' },
+        // A small chip sizes its icon by font-size (18px), as for buttons.
+        iconSmall: { width: '1em', height: '1em' },
       },
       variants: [
         { props: { variant: 'filled', color: 'default' }, style: { backgroundColor: color.paper3, color: color.ink2 } },

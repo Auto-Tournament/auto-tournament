@@ -50,7 +50,7 @@ test.describe('Module SDK boundary lint', () => {
           "import { useTheme } from '@mui/material/styles';",
           "import { useNavigate } from 'react-router-dom';",
           "import { useTranslation } from 'react-i18next';",
-          "import CloseIcon from '@mui/icons-material/Close';",
+          "import { XIcon } from '@phosphor-icons/react';",
           "import { DndContext } from '@dnd-kit/core';",
           "import { api, useSnackbar } from '../../../module-sdk';",
           "import { tokens } from '../../../module-sdk/index';",

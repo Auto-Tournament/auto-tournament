@@ -18,7 +18,7 @@ import {
   IconButton,
   CircularProgress,
 } from '@mui/material';
-import { Close as CloseIcon, Info as InfoIcon } from '@mui/icons-material';
+import { InfoIcon, XIcon } from '@phosphor-icons/react';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import type {
@@ -169,7 +169,7 @@ export default function EloTemplateEditorModal({
               : t('eloTemplatesPage.editor.titleCreate')}
           </Typography>
           <IconButton onClick={onClose} size="small">
-            <CloseIcon />
+            <XIcon />
           </IconButton>
         </Box>
       </DialogTitle>

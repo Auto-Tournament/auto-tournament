@@ -13,8 +13,7 @@ import {
   FormControlLabel,
   Switch,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { TrashIcon, XIcon } from '@phosphor-icons/react';
 import { api } from '../../utils/api';
 import { isInvalidDiscordIdInput, normalizeDiscordId } from '../../utils/discordId';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -241,7 +240,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
               {isEditing ? t('playerModal.titleEdit') : t('playerModal.titleCreate')}
             </Typography>
             <IconButton size="small" onClick={onClose}>
-              <CloseIcon />
+              <XIcon />
             </IconButton>
           </Box>
         </DialogTitle>
@@ -361,7 +360,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
           {isEditing && (
             <Button
               color="error"
-              startIcon={<DeleteIcon />}
+              startIcon={<TrashIcon />}
               onClick={handleDeleteClick}
               disabled={saving}
             >

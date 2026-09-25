@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import DownloadIcon from '@mui/icons-material/Download';
+import { DownloadSimpleIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { Panel, Row, RowList } from '../../common/ui';
 import { mono, textSize, tokens } from '../../../theme/tokens';
@@ -146,7 +146,7 @@ export function RecentMatches({
                       data-testid={`profile-recent-match-demo-${slug}`}
                       onClick={(event) => event.stopPropagation()}
                     >
-                      <DownloadIcon fontSize="inherit" />
+                      <DownloadSimpleIcon size="1em" />
                     </IconButton>
                   </Tooltip>
                 )}

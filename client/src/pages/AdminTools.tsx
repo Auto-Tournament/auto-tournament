@@ -8,7 +8,7 @@ import {
   AccordionSummary,
   AccordionDetails,
 } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { CaretDownIcon } from '@phosphor-icons/react';
 import { api } from '../utils/api';
 import { LogViewer } from '../components/admin/LogViewer';
 import { useSnackbar } from '../contexts/SnackbarContext';
@@ -74,7 +74,7 @@ const AdminTools: React.FC = () => {
       <Box component="section" mt={6} data-testid="admin-tools-logs" aria-labelledby="admin-tools-logs-heading">
         <SectionHead id="admin-tools-logs-heading" title={t('adminToolsPage.monitoring.title')} />
         <Accordion>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <AccordionSummary expandIcon={<CaretDownIcon />}>
             <Typography variant="subtitle1" component="h3" fontWeight={600}>
               {t('adminToolsPage.monitoring.appLogs')}
             </Typography>

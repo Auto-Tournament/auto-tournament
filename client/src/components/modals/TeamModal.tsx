@@ -18,12 +18,14 @@ import {
   Tooltip,
   CircularProgress,
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import SearchIcon from '@mui/icons-material/Search';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import CloseIcon from '@mui/icons-material/Close';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import {
+  ArrowsLeftRightIcon,
+  MagnifyingGlassIcon,
+  PlusIcon,
+  TrashIcon,
+  UserPlusIcon,
+  XIcon,
+} from '@phosphor-icons/react';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import ConfirmDialog from './ConfirmDialog';
@@ -585,7 +587,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
             {isEditing ? t('teamModal.titleEdit') : t('teamModal.titleCreate')}
           </Typography>
           <IconButton onClick={onClose} size="small" aria-label="close">
-            <CloseIcon fontSize="small" />
+            <XIcon size={20} />
           </IconButton>
         </DialogTitle>
         <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
@@ -630,7 +632,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
               <Button
                 variant="outlined"
                 size="small"
-                startIcon={<PersonAddIcon />}
+                startIcon={<UserPlusIcon />}
                 onClick={() => setPlayerSelectionModalOpen(true)}
                 data-testid="select-players-button"
               >
@@ -660,7 +662,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                           aria-label={t('teamModal.replacePlayerAria', { name: player.name })}
                         >
                           <Tooltip title={t('teamModal.replacePlayerTooltip')}>
-                            <SwapHorizIcon fontSize="small" />
+                            <ArrowsLeftRightIcon size={20} />
                           </Tooltip>
                         </IconButton>
                         <IconButton
@@ -669,7 +671,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                           color="error"
                           size="small"
                         >
-                          <DeleteIcon fontSize="small" />
+                          <TrashIcon size={20} />
                         </IconButton>
                       </Box>
                     }
@@ -778,7 +780,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                   disabled={resolving || !newPlayerSteamId.trim()}
                   size="small"
                 >
-                  {resolving ? t('teamModal.resolving') : <SearchIcon fontSize="small" />}
+                  {resolving ? t('teamModal.resolving') : <MagnifyingGlassIcon size={20} />}
                 </Button>
               </Box>
               <Box display="flex" gap={1} alignItems="center">
@@ -837,7 +839,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                   disabled={resolving}
                   size="small"
                 >
-                  <AddIcon fontSize="small" />
+                  <PlusIcon size={20} />
                 </IconButton>
               </Box>
             </Box>

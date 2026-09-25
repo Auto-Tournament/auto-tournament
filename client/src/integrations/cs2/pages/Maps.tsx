@@ -1,9 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { PageHead, pageTitle, useSnackbar, useModuleTranslation } from '../../../module-sdk';
 import { Box, Button, CircularProgress, Tabs, Tab } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import MapIcon from '@mui/icons-material/Map';
-import CollectionsIcon from '@mui/icons-material/Collections';
+import { ImagesIcon, MapTrifoldIcon, PlusIcon } from '@phosphor-icons/react';
 import { api } from '../../../module-sdk';
 import MapModal from '../maps/MapModal';
 import MapActionsModal from '../maps/MapActionsModal';
@@ -48,7 +46,7 @@ export default function Maps() {
         data-testid="add-map-button"
         variant="contained"
         size="small"
-        startIcon={<AddIcon />}
+        startIcon={<PlusIcon size={24} />}
         onClick={() => {
           setEditingMap(null);
           setModalOpen(true);
@@ -62,7 +60,7 @@ export default function Maps() {
         data-testid="create-map-pool-button"
         variant="contained"
         size="small"
-        startIcon={<AddIcon />}
+        startIcon={<PlusIcon size={24} />}
         onClick={() => {
           setEditingMapPool(null);
           setMapPoolModalOpen(true);
@@ -294,13 +292,13 @@ export default function Maps() {
         <Tab
           data-testid="maps-tab"
           label={t('mapsPage.tabs.maps')}
-          icon={<MapIcon />}
+          icon={<MapTrifoldIcon size={24} />}
           iconPosition="start"
         />
         <Tab
           data-testid="map-pools-tab"
           label={t('mapsPage.tabs.mapPools')}
-          icon={<CollectionsIcon />}
+          icon={<ImagesIcon size={24} />}
           iconPosition="start"
         />
       </Tabs>

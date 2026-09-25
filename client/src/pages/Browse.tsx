@@ -2,7 +2,7 @@ import { pageTitle } from '../utils/pageTitle';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Alert, Box, Button, CircularProgress, Container, InputBase, MenuItem, Select } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
+import { MagnifyingGlassIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { GameMark } from '../components/common/GameMark';
@@ -180,7 +180,7 @@ export default function Browse() {
         {hasTournaments && (
           <Box role="search" sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center', mb: 3 }}>
             <FilterField grow>
-              <SearchIcon sx={{ fontSize: 18 }} aria-hidden />
+              <MagnifyingGlassIcon size={18} aria-hidden />
               <InputBase
                 type="search"
                 placeholder={t('browsePage.searchPlaceholder')}

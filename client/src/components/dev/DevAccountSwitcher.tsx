@@ -1,7 +1,6 @@
 import React from 'react';
-import { IconButton, Menu, MenuItem, ListItemText, Divider, Tooltip } from '@mui/material';
-import SwitchAccountIcon from '@mui/icons-material/SwitchAccount';
-import CheckIcon from '@mui/icons-material/Check';
+import { Box, IconButton, Menu, MenuItem, ListItemText, Divider, Tooltip } from '@mui/material';
+import { CheckIcon, UserSwitchIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -137,7 +136,7 @@ export const DevAccountSwitcher: React.FC = () => {
           data-testid="dev-account-switcher-button"
           sx={{ p: 0.75 }}
         >
-          <SwitchAccountIcon fontSize="small" />
+          <UserSwitchIcon size={20} />
         </IconButton>
       </Tooltip>
       <Menu
@@ -154,7 +153,7 @@ export const DevAccountSwitcher: React.FC = () => {
         >
           <ListItemText primary={t('devAccountSwitcher.adminTest')} />
           {playerSteamId === ADMIN_TEST_STEAM_ID ? (
-            <CheckIcon fontSize="small" sx={{ ml: 1, color: 'primary.main' }} />
+            <Box component={CheckIcon} size={20} sx={{ ml: 1, color: 'primary.main' }} />
           ) : null}
         </MenuItem>
         {FIXED_PLAYERS.map((player) => (
@@ -166,7 +165,7 @@ export const DevAccountSwitcher: React.FC = () => {
           >
             <ListItemText primary={t(player.nameKey)} />
             {playerSteamId === player.steamId ? (
-              <CheckIcon fontSize="small" sx={{ ml: 1, color: 'primary.main' }} />
+              <Box component={CheckIcon} size={20} sx={{ ml: 1, color: 'primary.main' }} />
             ) : null}
           </MenuItem>
         ))}

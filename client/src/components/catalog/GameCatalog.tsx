@@ -39,9 +39,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import CodeIcon from '@mui/icons-material/Code';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import { CaretDownIcon, CodeIcon, MagnifyingGlassIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -561,7 +559,7 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchRoundedIcon fontSize="small" />
+                <MagnifyingGlassIcon size={20} />
               </InputAdornment>
             ),
           }}
@@ -574,7 +572,7 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
         onChange={(_, expanded) => toggleSection('installed', expanded)}
         data-testid="catalog-installed"
       >
-        <AccordionSummary expandIcon={<ExpandMoreIcon />} data-testid="catalog-installed-toggle">
+        <AccordionSummary expandIcon={<CaretDownIcon />} data-testid="catalog-installed-toggle">
           <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap sx={{ flex: 1, pr: 1 }}>
             <Typography variant="subtitle2" color={installedNeedsAttention ? 'warning.main' : 'text.secondary'}>
               {t('catalog.installedTitle', { count: installed.length })}
@@ -619,7 +617,7 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
         onChange={(_, expanded) => toggleSection('available', expanded)}
         data-testid="catalog-available"
       >
-        <AccordionSummary expandIcon={<ExpandMoreIcon />} data-testid="catalog-available-toggle">
+        <AccordionSummary expandIcon={<CaretDownIcon />} data-testid="catalog-available-toggle">
           <Typography variant="subtitle2" color={availableNeedsAttention ? 'warning.main' : 'text.secondary'}>
             {t('catalog.availableTitle', { count: available.length })}
           </Typography>

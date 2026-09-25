@@ -13,8 +13,7 @@ import {
   Typography,
   IconButton,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import PersonIcon from '@mui/icons-material/Person';
+import { UserIcon, XIcon } from '@phosphor-icons/react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PlayerAvatar } from '../player/PlayerAvatar';
@@ -44,11 +43,11 @@ export default function PlayerSearchResultsModal({
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Box display="flex" alignItems="center" gap={1}>
-            <PersonIcon color="primary" />
+            <Box component={UserIcon} sx={{ color: 'primary.main' }} />
             <Typography variant="h6">{t('findPlayer.modalTitle')}</Typography>
           </Box>
           <IconButton size="small" onClick={onClose}>
-            <CloseIcon />
+            <XIcon />
           </IconButton>
         </Box>
       </DialogTitle>

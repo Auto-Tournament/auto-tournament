@@ -16,12 +16,12 @@ import {
   Collapse,
 } from '@mui/material';
 import {
-  Close as CloseIcon,
-  CheckCircle as CheckCircleIcon,
-  Info as InfoIcon,
-  ExpandMore as ExpandMoreIcon,
-  ExpandLess as ExpandLessIcon,
-} from '@mui/icons-material';
+  CaretDownIcon,
+  CaretUpIcon,
+  CheckCircleIcon,
+  InfoIcon,
+  XIcon,
+} from '@phosphor-icons/react';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { EloTemplateWeights } from '../../types/elo.types';
 import { useTranslation } from 'react-i18next';
@@ -189,7 +189,7 @@ export const EloTemplateImportModal: React.FC<EloTemplateImportModalProps> = ({
             {t('eloTemplatesPage.importModal.title')}
           </Typography>
           <IconButton onClick={handleClose} size="small">
-            <CloseIcon />
+            <XIcon />
           </IconButton>
         </Box>
       </DialogTitle>
@@ -269,7 +269,7 @@ export const EloTemplateImportModal: React.FC<EloTemplateImportModalProps> = ({
                         />
                       </Box>
                       <IconButton size="small">
-                        {expandedItems.has(index) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                        {expandedItems.has(index) ? <CaretUpIcon /> : <CaretDownIcon />}
                       </IconButton>
                     </Box>
                     <Collapse in={expandedItems.has(index)}>

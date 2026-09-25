@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Box, Typography, Card, CardContent, Divider, Alert } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import GroupsIcon from '@mui/icons-material/Groups';
-import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
-import DnsIcon from '@mui/icons-material/Dns';
+import { GameControllerIcon, HardDrivesIcon, UsersThreeIcon } from '@phosphor-icons/react';
 import { api } from '../../utils/api';
 
 interface ShuffleTournamentStatsProps {
@@ -62,7 +60,7 @@ export function ShuffleTournamentStats({ playerCount, teamSize }: ShuffleTournam
         <Box sx={{ width: '100%' }}>
           <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
             <Box display="flex" alignItems="center" gap={1}>
-              <GroupsIcon color="action" fontSize="small" />
+              <Box component={UsersThreeIcon} size={20} sx={{ color: 'action.active' }} />
               <Typography variant="body2" color="text.secondary">
                 Teams per Round
               </Typography>
@@ -76,7 +74,7 @@ export function ShuffleTournamentStats({ playerCount, teamSize }: ShuffleTournam
 
           <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
             <Box display="flex" alignItems="center" gap={1}>
-              <SportsEsportsIcon color="action" fontSize="small" />
+              <Box component={GameControllerIcon} size={20} sx={{ color: 'action.active' }} />
               <Typography variant="body2" color="text.secondary">
                 Matches per Round
               </Typography>
@@ -90,7 +88,7 @@ export function ShuffleTournamentStats({ playerCount, teamSize }: ShuffleTournam
 
           <Box display="flex" alignItems="center" justifyContent="space-between">
             <Box display="flex" alignItems="center" gap={1}>
-              <DnsIcon color="action" fontSize="small" />
+              <Box component={HardDrivesIcon} size={20} sx={{ color: 'action.active' }} />
               <Typography variant="body2" color="text.secondary">
                 Servers Needed
               </Typography>

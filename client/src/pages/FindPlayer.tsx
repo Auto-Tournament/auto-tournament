@@ -11,7 +11,7 @@ import {
   InputAdornment,
   Chip,
 } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
+import { MagnifyingGlassIcon } from '@phosphor-icons/react';
 import { PageHead, Row, RowList } from '../components/common/ui';
 import { tokens } from '../theme/tokens';
 import { useTranslation } from 'react-i18next';
@@ -176,7 +176,7 @@ export default function FindPlayer() {
               input: {
                 startAdornment: (
                   <InputAdornment position="start">
-                    {playersLoading || loading ? <CircularProgress size={20} /> : <SearchIcon />}
+                    {playersLoading || loading ? <CircularProgress size={20} /> : <MagnifyingGlassIcon />}
                   </InputAdornment>
                 ),
               },

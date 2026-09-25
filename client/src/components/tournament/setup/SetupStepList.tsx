@@ -1,5 +1,5 @@
 import { Box, ButtonBase } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
+import { CheckIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { NARROW, visuallyHidden } from './layout';
 import { tokens, mono } from '../../../theme';
@@ -93,7 +93,7 @@ export function SetupStepList({ steps, activeStep, isDone, onSelect }: SetupStep
                   color: current ? 'primary.contrastText' : done ? 'success.main' : 'text.disabled',
                 }}
               >
-                {done ? <CheckIcon sx={{ fontSize: '0.9rem' }} /> : index + 1}
+                {done ? <CheckIcon size="0.9rem" /> : index + 1}
               </Box>
               <span>
                 {t(`tournament.setup.steps.${step}`)}

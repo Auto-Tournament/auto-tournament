@@ -1,5 +1,5 @@
 import { Box, Card, CardContent, Link as MuiLink, Stack, Typography } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
+import { CheckIcon } from '@phosphor-icons/react';
 
 export interface Requirement {
   label: string;
@@ -45,7 +45,7 @@ export function RequirementsCard({
                   color: req.state === 'ok' ? 'success.contrastText' : 'text.secondary',
                 }}
               >
-                {req.state === 'ok' && <CheckIcon sx={{ fontSize: 14 }} />}
+                {req.state === 'ok' && <CheckIcon size={14} />}
               </Box>
               <Typography variant="body2" color="text.secondary">
                 {req.label}

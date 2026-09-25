@@ -31,7 +31,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { CaretDownIcon } from '@phosphor-icons/react';
 import {
   api,
   radii,
@@ -297,7 +297,7 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
       </Typography>
 
                 <Accordion sx={ACCORDION_SX}>
-                  <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={ACCORDION_SUMMARY_SX}>
+                  <AccordionSummary expandIcon={<CaretDownIcon size={24} />} sx={ACCORDION_SUMMARY_SX}>
                     <Box>
                       <Typography variant="h6" fontWeight={600}>
                         {t('settings.chatDefaults.title')}
@@ -347,7 +347,7 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
 
                 <Accordion sx={ACCORDION_SX}>
                   <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
+                    expandIcon={<CaretDownIcon size={24} />}
                     sx={ACCORDION_SUMMARY_SX}
                     data-testid="cs2-settings-demos-summary"
                   >
@@ -481,7 +481,7 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
                 </Alert>
 
                 <Accordion defaultExpanded sx={ACCORDION_SX}>
-                  <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={ACCORDION_SUMMARY_SX}>
+                  <AccordionSummary expandIcon={<CaretDownIcon size={24} />} sx={ACCORDION_SUMMARY_SX}>
                     <Box>
                       <Typography variant="h6" fontWeight={600}>
                         {t('settings.atCore.title')}
@@ -686,7 +686,7 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
                 </Accordion>
 
                 <Accordion sx={ACCORDION_SX}>
-                  <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={ACCORDION_SUMMARY_SX}>
+                  <AccordionSummary expandIcon={<CaretDownIcon size={24} />} sx={ACCORDION_SUMMARY_SX}>
                     <Box>
                       <Typography variant="h6" fontWeight={600}>
                         {t('settings.atEnhanced.title')}

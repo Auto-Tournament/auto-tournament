@@ -1,5 +1,5 @@
 import { Alert, AlertTitle, Box } from '@mui/material';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import { TrophyIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import type { Tournament } from '../../types';
 import { TeamNameLink } from '../team/TeamNameLink';
@@ -24,7 +24,7 @@ export function ChampionBanner({ tournament }: ChampionBannerProps) {
     <Alert
       data-testid="tournament-champion"
       severity="success"
-      icon={<EmojiEventsIcon fontSize="inherit" />}
+      icon={<TrophyIcon size="1em" />}
       sx={{ mb: 3, alignItems: 'center' }}
     >
       <AlertTitle sx={{ mb: 0 }}>{t('tournament.champion.title')}</AlertTitle>

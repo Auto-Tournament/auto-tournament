@@ -1,5 +1,5 @@
 import { Box, Button, Tooltip, CircularProgress } from '@mui/material';
-import { DeleteForever as DeleteForeverIcon, Save as SaveIcon } from '@mui/icons-material';
+import { FloppyDiskIcon, TrashIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 
@@ -101,7 +101,7 @@ export function TournamentFormActions({
           <Tooltip title={t('tournament.formActions.saveTemplateTooltip')} enterDelay={500}>
             <Button
               variant="outlined"
-              startIcon={<SaveIcon />}
+              startIcon={<FloppyDiskIcon />}
               onClick={handleSaveTemplate}
               disabled={saving}
               sx={{
@@ -127,7 +127,7 @@ export function TournamentFormActions({
             <Button
               variant="outlined"
               color="error"
-              startIcon={<DeleteForeverIcon />}
+              startIcon={<TrashIcon />}
               onClick={onDelete}
               disabled={saving}
               sx={{ ml: { sm: 'auto' } }}

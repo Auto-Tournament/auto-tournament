@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Menu, MenuItem, ListItemText } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
+import { CheckIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { THEME_IDS, THEME_NAMES, THEME_COLORS, activeThemeId, setTheme, type ThemeId } from '../../theme';
 import { tokens } from '../../theme/tokens';
@@ -78,7 +78,7 @@ export const ThemeMenu: React.FC<ThemeMenuProps> = ({ anchorEl, onClose }) => {
         >
           <ThemeSwatch id={id} />
           <ListItemText primary={THEME_NAMES[id]} />
-          {id === activeThemeId ? <CheckIcon fontSize="small" sx={{ ml: 1, color: 'primary.main' }} /> : null}
+          {id === activeThemeId ? <Box component={CheckIcon} size={20} sx={{ ml: 1, color: 'primary.main' }} /> : null}
         </MenuItem>
       ))}
     </Menu>

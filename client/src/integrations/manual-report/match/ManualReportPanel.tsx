@@ -52,7 +52,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import FactCheckIcon from '@mui/icons-material/FactCheck';
+import { ListChecksIcon } from '@phosphor-icons/react';
 import type { MatchReportPanelProps } from '../../types';
 import {
   isNotOurs,
@@ -318,7 +318,7 @@ export function ManualReportPanel({ matchSlug, matchStatus }: MatchReportPanelPr
     <Card data-testid="manual-report-panel">
       <CardContent>
         <Box display="flex" alignItems="center" gap={1} mb={2}>
-          <FactCheckIcon color="primary" />
+          <Box component={ListChecksIcon} size={24} sx={{ color: 'primary.main' }} />
           <Typography variant="h6" fontWeight={600}>
             {t('manualReport.title')}
           </Typography>

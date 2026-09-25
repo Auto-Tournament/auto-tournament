@@ -30,7 +30,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import CodeIcon from '@mui/icons-material/Code';
+import { CodeIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { useSnackbar } from '../../contexts/SnackbarContext';

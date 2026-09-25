@@ -27,12 +27,12 @@ import {
   Divider,
 } from '@mui/material';
 import {
-  Delete as DeleteIcon,
-  Edit as EditIcon,
-  Add as AddIcon,
-  ContentCopy as CopyIcon,
-  Description as DescriptionIcon,
-} from '@mui/icons-material';
+  CopyIcon,
+  FileTextIcon,
+  PencilSimpleIcon,
+  PlusIcon,
+  TrashIcon,
+} from '@phosphor-icons/react';
 import { api } from '../utils/api';
 import type { TournamentTemplate } from '../types/tournament.types';
 import type { TournamentResponse } from '../types';
@@ -287,7 +287,7 @@ export default function Templates() {
     <PageHead
       title={t('layout.pageTitle.templates')}
       actions={
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate('/tournament')}>
+        <Button variant="contained" startIcon={<PlusIcon />} onClick={() => navigate('/tournament')}>
           {t('templatesPage.header.createFromTournament')}
         </Button>
       }
@@ -312,11 +312,11 @@ export default function Templates() {
         // The same empty state as Teams, Players, Maps and Ratings: icon,
         // title, what to do, and the button that does it.
         <EmptyState
-          icon={DescriptionIcon}
+          icon={FileTextIcon}
           title={t('templatesPage.emptyTitle')}
           description={t('templatesPage.emptyDescription')}
           actionLabel={t('templatesPage.header.createFromTournament')}
-          actionIcon={AddIcon}
+          actionIcon={PlusIcon}
           onAction={() => navigate('/tournament')}
         />
       ) : (
@@ -342,7 +342,7 @@ export default function Templates() {
                         onClick={() => handleEdit(template)}
                         sx={{ mr: 0.5 }}
                       >
-                        <EditIcon fontSize="small" />
+                        <PencilSimpleIcon size={20} />
                       </IconButton>
                       <IconButton
                         size="small"
@@ -352,7 +352,7 @@ export default function Templates() {
                           setDeleteDialogOpen(true);
                         }}
                       >
-                        <DeleteIcon fontSize="small" />
+                        <TrashIcon size={20} />
                       </IconButton>
                     </Box>
                   </Box>

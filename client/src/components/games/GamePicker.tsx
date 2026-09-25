@@ -7,7 +7,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
+import { TrophyIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { GameMark } from '../common/GameMark';
 import { ExternalLink } from '../common/ExternalLink';
@@ -175,7 +175,7 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
                       color="primary"
                       sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
                     >
-                      <EmojiEventsOutlinedIcon sx={{ fontSize: 14 }} aria-hidden />
+                      <TrophyIcon size={14} aria-hidden />
                       {t('games.picker.supported')}
                     </Typography>
                   )}

@@ -21,7 +21,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import SyncIcon from '@mui/icons-material/Sync';
+import { ArrowsClockwiseIcon } from '@phosphor-icons/react';
 import { api, useModuleTranslation, useSnackbar } from '../../../module-sdk';
 import type { InstanceSettingsSectionProps } from '../../types';
 import type { MapSyncResponse, WebhookSettings, WebhookSettingsResponse } from '../cs2.types';
@@ -182,7 +182,7 @@ export const Cs2SettingsSection: React.FC<InstanceSettingsSectionProps> = () => 
         </Typography>
         <Button
           variant="outlined"
-          startIcon={syncingMaps ? <CircularProgress size={16} /> : <SyncIcon />}
+          startIcon={syncingMaps ? <CircularProgress size={16} /> : <ArrowsClockwiseIcon size={24} />}
           onClick={handleSyncMaps}
           disabled={syncingMaps}
           data-testid="cs2-settings-map-sync"

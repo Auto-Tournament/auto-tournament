@@ -12,9 +12,7 @@ import {
   CircularProgress,
   IconButton,
 } from '@mui/material';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import DeleteIcon from '@mui/icons-material/Delete';
-import CloseIcon from '@mui/icons-material/Close';
+import { CloudArrowUpIcon, TrashIcon, XIcon } from '@phosphor-icons/react';
 import { api, useSnackbar, useModuleTranslation, radii } from '../../../module-sdk';
 import type { Map, MapResponse } from '../cs2.types';
 import { FadeInImage } from '../common/FadeInImage';
@@ -349,7 +347,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
           {isEditing ? t('mapModal.titleEdit') : t('mapModal.titleCreate')}
         </Typography>
         <IconButton onClick={onClose} size="small" aria-label="close">
-          <CloseIcon fontSize="small" />
+          <XIcon size={20} />
         </IconButton>
       </DialogTitle>
       <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
@@ -419,7 +417,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
                 <Button
                   variant="outlined"
                   component="span"
-                  startIcon={<CloudUploadIcon />}
+                  startIcon={<CloudArrowUpIcon size={24} />}
                   fullWidth
                   disabled={saving || !id}
                 >
@@ -459,7 +457,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
                   variant="outlined"
                   color="error"
                   size="small"
-                  startIcon={<DeleteIcon />}
+                  startIcon={<TrashIcon size={24} />}
                   onClick={handleRemoveImage}
                   disabled={saving}
                 >

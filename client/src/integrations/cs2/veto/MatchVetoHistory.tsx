@@ -1,5 +1,5 @@
 import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Stack, Typography } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { CaretDownIcon } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { api, useModuleTranslation } from '../../../module-sdk';
 import { getMapDisplayName } from '../maps/mapData';
@@ -65,7 +65,7 @@ export function MatchVetoHistory({ matchSlug }: MatchVetoHistoryProps) {
 
   return (
     <Accordion>
-      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+      <AccordionSummary expandIcon={<CaretDownIcon size={24} />}>
         <Typography variant="subtitle1" fontWeight={600}>
           {t('vetoInterface.vetoHistory')}
         </Typography>
