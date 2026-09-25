@@ -14,6 +14,7 @@ import { rconService } from './services/rconService';
 import { serverInitializationService } from './services/serverInitializationService';
 import { initPluginVersionService } from './services/pluginVersionService';
 import { healthMonitoringService } from './services/healthMonitoringService';
+import { startMapAutoSync, stopMapAutoSync } from './maps/autoSync';
 
 export async function startCs2(): Promise<void> {
   await bootstrapServerWebhooks().catch((error) => {
@@ -26,10 +27,14 @@ export async function startCs2(): Promise<void> {
   // Start health monitoring for server tracking
   // Checks every minute to mark inactive servers as offline
   healthMonitoringService.start();
+
+  // New maps and Active Duty changes from maps.json: now in the background, then daily.
+  startMapAutoSync();
 }
 
 export function stopCs2(): void {
   healthMonitoringService.stop();
+  stopMapAutoSync();
 }
 
 async function bootstrapServerWebhooks(): Promise<void> {

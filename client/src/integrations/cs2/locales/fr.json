@@ -100,7 +100,9 @@
     },
     "headerActions": {
       "addMap": "Ajouter une carte",
-      "createMapPool": "Créer un pool de cartes"
+      "createMapPool": "Créer un pool de cartes",
+      "syncMaps": "Synchroniser les cartes",
+      "syncingMaps": "Synchronisation des cartes…"
     },
     "errors": {
       "loadMaps": "Impossible de charger les cartes",
@@ -897,12 +899,16 @@
       "description": "Synchroniser les cartes CS2 depuis le dépôt GitHub.",
       "buttonSyncing": "Synchronisation...",
       "buttonIdle": "Synchroniser les cartes CS2",
-      "success": "Synchronisation des cartes terminée ! {{added}} nouvelle(s) carte(s) ajoutée(s), {{skipped}} existaient déjà.",
-      "partialError": "Certaines cartes n’ont pas pu être synchronisées : {{errors}}",
-      "failed": "Échec de la synchronisation des cartes",
-      "rateLimit": "Limite de requêtes de l’API GitHub atteinte. Réessayez dans quelques minutes. Vous pouvez définir la variable d’environnement GITHUB_TOKEN pour augmenter la limite.",
-      "rateLimitShort": "Limite de requêtes de l’API GitHub atteinte. Réessayez dans quelques minutes.",
-      "githubError": "Impossible d’accéder au dépôt GitHub. Vérifiez votre connexion internet et réessayez plus tard."
+      "newMaps": "Nouvelles cartes : {{count}}.",
+      "bundled": "GitHub est injoignable : la liste de cartes fournie avec cette version a été utilisée.",
+      "activeDuty": {
+        "created": "Pool Active Duty créé.",
+        "updated": "Pool Active Duty mis à jour.",
+        "kept": "Pool Active Duty laissé tel quel (modifié par un admin).",
+        "unchanged": "Le pool Active Duty est déjà à jour.",
+        "stale": "La liste de cartes fournie est plus ancienne que celle déjà appliquée : seules les nouvelles cartes ont été ajoutées."
+      },
+      "failed": "Échec de la synchronisation des cartes"
     },
     "tab": "Counter-Strike 2",
     "saved": "Settings saved",

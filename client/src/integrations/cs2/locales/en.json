@@ -100,7 +100,9 @@
     },
     "headerActions": {
       "addMap": "Add Map",
-      "createMapPool": "Create Map Pool"
+      "createMapPool": "Create Map Pool",
+      "syncMaps": "Sync maps",
+      "syncingMaps": "Syncing maps…"
     },
     "errors": {
       "loadMaps": "Failed to load maps",
@@ -898,15 +900,19 @@
     },
     "mapSync": {
       "title": "Map Synchronization",
-      "description": "Sync CS2 maps from the GitHub repository.",
+      "description": "Sync CS2 maps and the Active Duty pool from the map list in the cs2-server-manager repository.",
       "buttonSyncing": "Syncing Maps...",
       "buttonIdle": "Sync CS2 Maps",
-      "success": "Map sync completed! {{added}} new map(s) added, {{skipped}} already existed.",
-      "partialError": "Some maps failed to sync: {{errors}}",
-      "failed": "Failed to sync maps",
-      "rateLimit": "GitHub API rate limit exceeded. Please try again in a few minutes. You can set GITHUB_TOKEN environment variable to increase the rate limit.",
-      "rateLimitShort": "GitHub API rate limit exceeded. Please try again in a few minutes.",
-      "githubError": "Unable to reach GitHub repository. Please check your internet connection and try again later."
+      "newMaps": "New maps: {{count}}.",
+      "bundled": "GitHub could not be reached, so the map list bundled with this version was used.",
+      "activeDuty": {
+        "created": "Active Duty pool created.",
+        "updated": "Active Duty pool updated.",
+        "kept": "Active Duty pool left alone (edited by an admin).",
+        "unchanged": "Active Duty pool already up to date.",
+        "stale": "The bundled map list is older than the one already applied, so only new maps were added."
+      },
+      "failed": "Failed to sync maps"
     },
     "defaultsTitle": "Server defaults",
     "chatDefaults": {

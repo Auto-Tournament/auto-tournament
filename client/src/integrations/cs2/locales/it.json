@@ -100,7 +100,9 @@
     },
     "headerActions": {
       "addMap": "Aggiungi mappa",
-      "createMapPool": "Crea pool mappe"
+      "createMapPool": "Crea pool mappe",
+      "syncMaps": "Sincronizza mappe",
+      "syncingMaps": "Sincronizzazione mappe…"
     },
     "errors": {
       "loadMaps": "Impossibile caricare le mappe",
@@ -897,12 +899,16 @@
       "description": "Sincronizza le mappe CS2 dal repository GitHub.",
       "buttonSyncing": "Sincronizzazione...",
       "buttonIdle": "Sincronizza mappe CS2",
-      "success": "Sincronizzazione mappe completata! {{added}} nuova/e mappa/e aggiunta/e, {{skipped}} esistevano già.",
-      "partialError": "Alcune mappe non sono state sincronizzate: {{errors}}",
-      "failed": "Impossibile sincronizzare le mappe",
-      "rateLimit": "Limite di richieste dell’API GitHub superato. Riprova tra qualche minuto. Puoi impostare la variabile d’ambiente GITHUB_TOKEN per aumentare il rate limit.",
-      "rateLimitShort": "Limite di richieste dell’API GitHub superato. Riprova tra qualche minuto.",
-      "githubError": "Impossibile raggiungere il repository GitHub. Controlla la connessione internet e riprova più tardi."
+      "newMaps": "Nuove mappe: {{count}}.",
+      "bundled": "GitHub non è raggiungibile, quindi è stato usato l'elenco mappe incluso in questa versione.",
+      "activeDuty": {
+        "created": "Pool Active Duty creato.",
+        "updated": "Pool Active Duty aggiornato.",
+        "kept": "Pool Active Duty lasciato invariato (modificato da un admin).",
+        "unchanged": "Il pool Active Duty è già aggiornato.",
+        "stale": "L'elenco mappe incluso è più vecchio di quello già applicato, quindi sono state aggiunte solo le nuove mappe."
+      },
+      "failed": "Impossibile sincronizzare le mappe"
     },
     "tab": "Counter-Strike 2",
     "saved": "Settings saved",

@@ -100,7 +100,9 @@
     },
     "headerActions": {
       "addMap": "Legg til kart",
-      "createMapPool": "Opprett kartpool"
+      "createMapPool": "Opprett kartpool",
+      "syncMaps": "Synk kart",
+      "syncingMaps": "Synkroniserer kart…"
     },
     "errors": {
       "loadMaps": "Klarte ikke å laste kart",
@@ -898,15 +900,19 @@
     },
     "mapSync": {
       "title": "Kartsynkronisering",
-      "description": "Synk CS2-kart fra GitHub-repositoriet.",
+      "description": "Synk CS2-kart og Active Duty-poolen fra kartlisten i cs2-server-manager-repositoriet.",
       "buttonSyncing": "Synkroniserer kart...",
       "buttonIdle": "Synkroniser CS2-kart",
-      "success": "Kartsynk fullført! {{added}} nye kart lagt til, {{skipped}} fantes allerede.",
-      "partialError": "Noen kart kunne ikke synkroniseres: {{errors}}",
-      "failed": "Klarte ikke å synkronisere kart",
-      "rateLimit": "GitHub API rate limit er nådd. Prøv igjen om noen minutter. Du kan sette miljøvariabelen GITHUB_TOKEN for å øke rate limit.",
-      "rateLimitShort": "GitHub API rate limit er nådd. Prøv igjen om noen minutter.",
-      "githubError": "Klarte ikke å nå GitHub-repositoriet. Sjekk nettverket ditt og prøv igjen senere."
+      "newMaps": "Nye kart: {{count}}.",
+      "bundled": "Fikk ikke kontakt med GitHub, så kartlisten som følger med denne versjonen ble brukt.",
+      "activeDuty": {
+        "created": "Active Duty-poolen er opprettet.",
+        "updated": "Active Duty-poolen er oppdatert.",
+        "kept": "Active Duty-poolen er ikke rørt (redigert av en admin).",
+        "unchanged": "Active Duty-poolen er allerede oppdatert.",
+        "stale": "Den medfølgende kartlisten er eldre enn den som allerede er brukt, så bare nye kart ble lagt til."
+      },
+      "failed": "Klarte ikke å synkronisere kart"
     },
     "defaultsTitle": "Serverstandarder",
     "chatDefaults": {

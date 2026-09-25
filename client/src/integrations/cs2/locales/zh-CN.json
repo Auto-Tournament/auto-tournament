@@ -100,7 +100,9 @@
     },
     "headerActions": {
       "addMap": "新增地图",
-      "createMapPool": "创建地图池"
+      "createMapPool": "创建地图池",
+      "syncMaps": "同步地图",
+      "syncingMaps": "正在同步地图…"
     },
     "errors": {
       "loadMaps": "加载地图失败",
@@ -897,12 +899,16 @@
       "description": "从 GitHub 仓库同步 CS2 地图。",
       "buttonSyncing": "正在同步地图…",
       "buttonIdle": "同步 CS2 地图",
-      "success": "地图同步完成！新增 {{added}} 张地图，{{skipped}} 张已存在。",
-      "partialError": "部分地图同步失败：{{errors}}",
-      "failed": "同步地图失败",
-      "rateLimit": "GitHub API 访问频率受限。请几分钟后重试。你可以设置 GITHUB_TOKEN 环境变量以提高限额。",
-      "rateLimitShort": "GitHub API 访问频率受限。请几分钟后重试。",
-      "githubError": "无法访问 GitHub 仓库。请检查你的网络连接并稍后重试。"
+      "newMaps": "新增地图：{{count}} 张。",
+      "bundled": "无法连接 GitHub，已使用此版本自带的地图列表。",
+      "activeDuty": {
+        "created": "已创建 Active Duty 地图池。",
+        "updated": "已更新 Active Duty 地图池。",
+        "kept": "Active Duty 地图池未改动（已被管理员编辑）。",
+        "unchanged": "Active Duty 地图池已是最新。",
+        "stale": "自带的地图列表比已应用的旧，因此只添加了新地图。"
+      },
+      "failed": "同步地图失败"
     },
     "tab": "Counter-Strike 2",
     "saved": "Settings saved",

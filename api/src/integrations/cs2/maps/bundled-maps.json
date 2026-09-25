@@ -1,0 +1,324 @@
+{
+  "generatedAt": "2026-09-25T09:00:59Z",
+  "patchVersion": "1.41.8.3",
+  "buildId": "25515054",
+  "maps": [
+    {
+      "id": "ar_baggage",
+      "name": "Baggage",
+      "mode": "armsrace",
+      "images": {
+        "full": "ar_baggage.webp",
+        "thumb": "ar_baggage_thumb.webp"
+      },
+      "variants": [
+        "ar_baggage_1_thumb.webp",
+        "ar_baggage_2_thumb.webp",
+        "ar_baggage_3_thumb.webp",
+        "ar_baggage_4_thumb.webp"
+      ]
+    },
+    {
+      "id": "ar_pool_day",
+      "name": "Pool Day",
+      "mode": "armsrace",
+      "images": {
+        "full": "ar_pool_day.webp",
+        "thumb": "ar_pool_day_thumb.webp"
+      },
+      "variants": []
+    },
+    {
+      "id": "ar_shoots",
+      "name": "Shoots",
+      "mode": "armsrace",
+      "images": {
+        "full": "ar_shoots.webp",
+        "thumb": "ar_shoots_thumb.webp"
+      },
+      "variants": [
+        "ar_shoots_1_thumb.webp",
+        "ar_shoots_2_thumb.webp",
+        "ar_shoots_4_thumb.webp"
+      ]
+    },
+    {
+      "id": "ar_shoots_night",
+      "name": "Shoots (Night)",
+      "mode": "armsrace",
+      "images": {
+        "full": "ar_shoots_night.webp",
+        "thumb": "ar_shoots_night_thumb.webp"
+      },
+      "variants": [
+        "ar_shoots_night_1_thumb.webp",
+        "ar_shoots_night_2_thumb.webp",
+        "ar_shoots_night_3_thumb.webp",
+        "ar_shoots_night_4_thumb.webp"
+      ]
+    },
+    {
+      "id": "cs_italy",
+      "name": "Italy",
+      "mode": "hostage",
+      "images": {
+        "full": "cs_italy.webp",
+        "thumb": "cs_italy_thumb.webp"
+      },
+      "variants": [
+        "cs_italy_0_thumb.webp",
+        "cs_italy_1_thumb.webp",
+        "cs_italy_2_thumb.webp",
+        "cs_italy_3_thumb.webp"
+      ]
+    },
+    {
+      "id": "cs_office",
+      "name": "Office",
+      "mode": "hostage",
+      "images": {
+        "full": "cs_office.webp",
+        "thumb": "cs_office_thumb.webp"
+      },
+      "variants": [
+        "cs_office_1_thumb.webp",
+        "cs_office_2_thumb.webp",
+        "cs_office_3_thumb.webp",
+        "cs_office_4_thumb.webp"
+      ]
+    },
+    {
+      "id": "cs_shelter",
+      "name": "Shelter",
+      "mode": "hostage",
+      "images": {
+        "full": "cs_shelter.webp",
+        "thumb": "cs_shelter_thumb.webp"
+      },
+      "variants": []
+    },
+    {
+      "id": "de_ancient",
+      "name": "Ancient",
+      "mode": "defusal",
+      "images": {
+        "full": "de_ancient.webp",
+        "thumb": "de_ancient_thumb.webp"
+      },
+      "variants": [
+        "de_ancient_2_thumb.webp",
+        "de_ancient_3_thumb.webp",
+        "de_ancient_4_thumb.webp"
+      ]
+    },
+    {
+      "id": "de_ancient_night",
+      "name": "Ancient (Night)",
+      "mode": "defusal",
+      "images": {
+        "full": "de_ancient_night.webp",
+        "thumb": "de_ancient_night_thumb.webp"
+      },
+      "variants": [
+        "de_ancient_night_1_thumb.webp",
+        "de_ancient_night_2_thumb.webp",
+        "de_ancient_night_3_thumb.webp",
+        "de_ancient_night_4_thumb.webp"
+      ]
+    },
+    {
+      "id": "de_anubis",
+      "name": "Anubis",
+      "mode": "defusal",
+      "images": {
+        "full": "de_anubis.webp",
+        "thumb": "de_anubis_thumb.webp"
+      },
+      "variants": [
+        "de_anubis_1_thumb.webp",
+        "de_anubis_2_thumb.webp",
+        "de_anubis_3_thumb.webp",
+        "de_anubis_4_thumb.webp",
+        "de_anubis_5_thumb.webp"
+      ]
+    },
+    {
+      "id": "de_boulder",
+      "name": "Boulder",
+      "mode": "defusal",
+      "images": {
+        "full": "de_boulder.webp",
+        "thumb": "de_boulder_thumb.webp"
+      },
+      "variants": []
+    },
+    {
+      "id": "de_cache",
+      "name": "Cache",
+      "mode": "defusal",
+      "images": {
+        "full": "de_cache.webp",
+        "thumb": "de_cache_thumb.webp"
+      },
+      "variants": [
+        "de_cache_1_thumb.webp",
+        "de_cache_2_thumb.webp",
+        "de_cache_3_thumb.webp",
+        "de_cache_4_thumb.webp"
+      ]
+    },
+    {
+      "id": "de_debris",
+      "name": "Debris",
+      "mode": "defusal",
+      "images": {
+        "full": "de_debris.webp",
+        "thumb": "de_debris_thumb.webp"
+      },
+      "variants": []
+    },
+    {
+      "id": "de_dust2",
+      "name": "Dust II",
+      "mode": "defusal",
+      "images": {
+        "full": "de_dust2.webp",
+        "thumb": "de_dust2_thumb.webp"
+      },
+      "variants": [
+        "de_dust2_1_thumb.webp",
+        "de_dust2_2_thumb.webp"
+      ]
+    },
+    {
+      "id": "de_eldorado",
+      "name": "Eldorado",
+      "mode": "defusal",
+      "images": {
+        "full": "de_eldorado.webp",
+        "thumb": "de_eldorado_thumb.webp"
+      },
+      "variants": []
+    },
+    {
+      "id": "de_fachwerk",
+      "name": "Fachwerk",
+      "mode": "defusal",
+      "images": {
+        "full": "de_fachwerk.webp",
+        "thumb": "de_fachwerk_thumb.webp"
+      },
+      "variants": []
+    },
+    {
+      "id": "de_inferno",
+      "name": "Inferno",
+      "mode": "defusal",
+      "images": {
+        "full": "de_inferno.webp",
+        "thumb": "de_inferno_thumb.webp"
+      },
+      "variants": [
+        "de_inferno_1_thumb.webp",
+        "de_inferno_2_thumb.webp",
+        "de_inferno_3_thumb.webp",
+        "de_inferno_4_thumb.webp"
+      ]
+    },
+    {
+      "id": "de_mirage",
+      "name": "Mirage",
+      "mode": "defusal",
+      "images": {
+        "full": "de_mirage.webp",
+        "thumb": "de_mirage_thumb.webp"
+      },
+      "variants": [
+        "de_mirage_1_thumb.webp",
+        "de_mirage_2_thumb.webp",
+        "de_mirage_3_thumb.webp",
+        "de_mirage_4_thumb.webp"
+      ]
+    },
+    {
+      "id": "de_nuke",
+      "name": "Nuke",
+      "mode": "defusal",
+      "images": {
+        "full": "de_nuke.webp",
+        "thumb": "de_nuke_thumb.webp"
+      },
+      "variants": [
+        "de_nuke_1_thumb.webp",
+        "de_nuke_2_thumb.webp",
+        "de_nuke_3_thumb.webp",
+        "de_nuke_4_thumb.webp"
+      ]
+    },
+    {
+      "id": "de_overpass",
+      "name": "Overpass",
+      "mode": "defusal",
+      "images": {
+        "full": "de_overpass.webp",
+        "thumb": "de_overpass_thumb.webp"
+      },
+      "variants": [
+        "de_overpass_1_thumb.webp",
+        "de_overpass_2_thumb.webp",
+        "de_overpass_3_thumb.webp",
+        "de_overpass_4_thumb.webp",
+        "de_overpass_5_thumb.webp"
+      ]
+    },
+    {
+      "id": "de_poseidon",
+      "name": "Poseidon",
+      "mode": "defusal",
+      "images": {
+        "full": "de_poseidon.webp",
+        "thumb": "de_poseidon_thumb.webp"
+      },
+      "variants": []
+    },
+    {
+      "id": "de_train",
+      "name": "Train",
+      "mode": "defusal",
+      "images": {
+        "full": "de_train.webp",
+        "thumb": "de_train_thumb.webp"
+      },
+      "variants": [
+        "de_train_1_thumb.webp",
+        "de_train_2_thumb.webp",
+        "de_train_3_thumb.webp",
+        "de_train_4_thumb.webp"
+      ]
+    },
+    {
+      "id": "de_vertigo",
+      "name": "Vertigo",
+      "mode": "defusal",
+      "images": {
+        "full": "de_vertigo.webp",
+        "thumb": "de_vertigo_thumb.webp"
+      },
+      "variants": [
+        "de_vertigo_1_thumb.webp",
+        "de_vertigo_2_thumb.webp",
+        "de_vertigo_3_thumb.webp",
+        "de_vertigo_4_thumb.webp"
+      ]
+    }
+  ],
+  "activeDuty": [
+    "de_inferno",
+    "de_train",
+    "de_mirage",
+    "de_nuke",
+    "de_dust2",
+    "de_overpass",
+    "de_vertigo"
+  ]
+}

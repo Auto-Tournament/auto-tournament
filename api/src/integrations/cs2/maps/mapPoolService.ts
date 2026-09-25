@@ -126,6 +126,15 @@ export class MapPoolService {
     if (input.name !== undefined) updateData.name = input.name.trim();
     if (input.mapIds !== undefined) updateData.map_ids = JSON.stringify(input.mapIds);
     if (input.enabled !== undefined) updateData.enabled = input.enabled ? 1 : 0;
+    // An admin changed its name or maps: a map sync leaves it alone from now on
+    // (turning it on or off, or making it the default, does not count).
+    if (
+      (updateData.name !== undefined && updateData.name !== existing.name) ||
+      (input.mapIds !== undefined &&
+        JSON.stringify([...input.mapIds].sort()) !== JSON.stringify([...existing.mapIds].sort()))
+    ) {
+      updateData.system_managed = 0;
+    }
 
     await db.updateAsync('cs2_map_pools', updateData, 'id = $1', [id]);
 
@@ -209,6 +218,7 @@ export class MapPoolService {
       mapIds,
       isDefault: pool.is_default === 1,
       enabled: pool.enabled === 1,
+      systemManaged: pool.system_managed === 1,
       createdAt: pool.created_at,
       updatedAt: pool.updated_at,
     };

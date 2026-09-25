@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { PageHead, pageTitle, useSnackbar, useModuleTranslation } from '../../../module-sdk';
-import { Box, Button, CircularProgress, Tabs, Tab } from '@mui/material';
+import { Box, Button, CircularProgress, Stack, Tabs, Tab } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import SyncIcon from '@mui/icons-material/Sync';
 import MapIcon from '@mui/icons-material/Map';
 import CollectionsIcon from '@mui/icons-material/Collections';
 import { api } from '../../../module-sdk';
@@ -11,6 +12,7 @@ import MapPoolModal from '../maps/MapPoolModal';
 import MapPoolActionsModal from '../maps/MapPoolActionsModal';
 import { MapsTab } from '../maps/MapsTab';
 import { MapPoolsTab } from '../maps/MapPoolsTab';
+import { useMapSync } from '../maps/useMapSync';
 import type { Map, MapsResponse, MapPool, MapPoolsResponse } from '../cs2.types';
 import { ConfirmDialog } from '../../../module-sdk';
 
@@ -41,8 +43,8 @@ export default function Maps() {
     document.title = pageTitle(t('mapsPage.title'));
   }, [t]);
 
-  // The page head's button: add to whichever tab is open.
-  const headerActions =
+  // The page head's buttons: sync with maps.json, and add to whichever tab is open.
+  const addAction =
     activeTab === 0 ? (
       <Button
         data-testid="add-map-button"
@@ -95,6 +97,27 @@ export default function Maps() {
       console.error('Failed to load map pools:', err);
     }
   }, []);
+
+  const reloadAfterSync = useCallback(async () => {
+    await Promise.all([loadMaps(), loadMapPools()]);
+  }, [loadMaps, loadMapPools]);
+  const { sync: syncMaps, syncing: syncingMaps } = useMapSync(reloadAfterSync);
+
+  const headerActions = (
+    <Stack direction="row" spacing={1}>
+      <Button
+        data-testid="sync-maps-button"
+        variant="outlined"
+        size="small"
+        startIcon={syncingMaps ? <CircularProgress size={14} /> : <SyncIcon />}
+        onClick={() => void syncMaps()}
+        disabled={syncingMaps}
+      >
+        {syncingMaps ? t('mapsPage.headerActions.syncingMaps') : t('mapsPage.headerActions.syncMaps')}
+      </Button>
+      {addAction}
+    </Stack>
+  );
 
   useEffect(() => {
     loadMaps();

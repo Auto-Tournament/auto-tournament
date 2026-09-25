@@ -100,7 +100,9 @@
     },
     "headerActions": {
       "addMap": "Kaart toevoegen",
-      "createMapPool": "Kaartpool maken"
+      "createMapPool": "Kaartpool maken",
+      "syncMaps": "Kaarten synchroniseren",
+      "syncingMaps": "Kaarten synchroniseren…"
     },
     "errors": {
       "loadMaps": "Kan kaarten niet laden",
@@ -897,12 +899,16 @@
       "description": "Synchroniseer CS2-kaarten vanuit de GitHub-repository.",
       "buttonSyncing": "Synchroniseren...",
       "buttonIdle": "CS2-kaarten synchroniseren",
-      "success": "Kaartsynchronisatie voltooid! {{added}} nieuwe kaart(en) toegevoegd, {{skipped}} bestond al.",
-      "partialError": "Sommige kaarten konden niet worden gesynchroniseerd: {{errors}}",
-      "failed": "Kan kaarten niet synchroniseren",
-      "rateLimit": "GitHub API-snelheidslimiet overschreden. Probeer het over een paar minuten opnieuw. U kunt de GITHUB_TOKEN-OMGEVINGSVARIABELE instellen om de snelheidslimiet te verhogen.",
-      "rateLimitShort": "GitHub API-snelheidslimiet overschreden. Probeer het over een paar minuten opnieuw.",
-      "githubError": "Kan GitHub-repository niet bereiken. Controleer uw internetverbinding en probeer het later opnieuw."
+      "newMaps": "Nieuwe kaarten: {{count}}.",
+      "bundled": "GitHub was niet bereikbaar, dus de kaartlijst die bij deze versie hoort is gebruikt.",
+      "activeDuty": {
+        "created": "Active Duty-pool aangemaakt.",
+        "updated": "Active Duty-pool bijgewerkt.",
+        "kept": "Active Duty-pool ongemoeid gelaten (bewerkt door een admin).",
+        "unchanged": "Active Duty-pool is al up-to-date.",
+        "stale": "De meegeleverde kaartlijst is ouder dan de al toegepaste, dus alleen nieuwe kaarten zijn toegevoegd."
+      },
+      "failed": "Kan kaarten niet synchroniseren"
     },
     "tab": "Counter-Strike 2",
     "saved": "Settings saved",

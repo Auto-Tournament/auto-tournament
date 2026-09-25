@@ -3,7 +3,7 @@ import { mapService } from './mapService';
 import { CreateMapInput, UpdateMapInput } from '../../../types/map.types';
 import { requireAuth } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
-import { fetchCS2MapsFromWiki } from './fetchCS2Maps';
+import { runMapSync } from './autoSync';
 import { MAP_IMAGES_DIR } from '../../../config/publicPaths';
 import path from 'path';
 import fs from 'fs';
@@ -268,96 +268,48 @@ router.post('/:id/upload-image', async (req: Request, res: Response) => {
 
 /**
  * POST /api/maps/sync
- * Sync maps from GitHub repository (only adds new maps, doesn't duplicate existing ones)
+ * Sync maps with maps.json (./mapSync): add every missing map, keep the
+ * platform's own maps and default pools current, never touch what an admin
+ * made or edited. Uses the map list bundled with the module when GitHub
+ * cannot be reached (`source: 'bundled'`). The same sync also runs by itself
+ * after the module starts and daily (./autoSync), without re-adding maps an
+ * admin deleted.
  */
 router.post('/sync', async (_req: Request, res: Response) => {
   try {
-    log.info('Starting map sync from GitHub repository...');
-
-    // Fetch maps from GitHub
-    const fetchedMaps = await fetchCS2MapsFromWiki();
-
-    if (fetchedMaps.length === 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'No maps found in GitHub repository',
-      });
-    }
-
-    // Get all existing maps to check for duplicates
-    const existingMaps = await mapService.getAllMaps();
-    const existingMapIds = new Set(existingMaps.map((m) => m.id));
-
-    // Add only new maps (that don't already exist)
-    let addedCount = 0;
-    const errors: string[] = [];
-
-    for (const mapData of fetchedMaps) {
-      if (existingMapIds.has(mapData.id)) {
-        // Map already exists, skip it
-        continue;
-      }
-
-      try {
-        await mapService.createMap(
-          {
-            id: mapData.id,
-            displayName: mapData.displayName,
-            imageUrl: mapData.imageUrl,
-          },
-          false // Don't upsert - we already checked it doesn't exist
-        );
-        addedCount++;
-        log.info(`Added new map: ${mapData.displayName} (${mapData.id})`);
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        errors.push(`${mapData.id}: ${errorMessage}`);
-        log.warn(`Failed to add map ${mapData.id}`, { error });
-      }
-    }
-
-    const skippedCount = fetchedMaps.length - addedCount - errors.length;
-
-    log.success(`Map sync completed: ${addedCount} added, ${skippedCount} skipped, ${errors.length} errors`);
-
+    const { plan, catalog, source, error } = await runMapSync('admin');
+    const added = plan.addMaps.length;
+    const updated = plan.updateMaps.length;
     return res.json({
       success: true,
-      message: `Sync completed: ${addedCount} new map(s) added, ${skippedCount} already existed`,
+      message: `Sync completed: ${added} new map(s) added, ${updated} updated, Active Duty pool ${plan.activeDuty}`,
+      source,
+      sourceError: error,
+      patchVersion: catalog.patchVersion,
+      activeDuty: catalog.activeDuty,
+      activeDutyPool: plan.activeDuty,
       stats: {
-        total: fetchedMaps.length,
-        added: addedCount,
-        skipped: skippedCount,
-        errors: errors.length,
+        total: catalog.maps.length,
+        added,
+        updated,
+        skipped: plan.skipped,
+        errors: 0,
       },
-      errors: errors.length > 0 ? errors : undefined,
+      pools: {
+        created: plan.insertPools.map((pool) => pool.name),
+        updated: plan.updatePools.map(({ name, added: poolAdded, removed }) => ({
+          name,
+          added: poolAdded,
+          removed,
+        })),
+        keptAsEdited: plan.keptPools.map((pool) => pool.name),
+      },
     });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to sync maps';
-    log.error('Error syncing maps from GitHub', error);
-    
-    // Check if it's a rate limit error
-    const isRateLimit = errorMessage.toLowerCase().includes('rate limit') || 
-                       errorMessage.toLowerCase().includes('rate limit exceeded');
-    
-    // Check if it's a GitHub API error
-    const isGitHubError = errorMessage.toLowerCase().includes('github');
-    
-    let userMessage = errorMessage;
-    let statusCode = 500;
-    
-    if (isRateLimit) {
-      statusCode = 429; // Too Many Requests
-      userMessage = 'GitHub API rate limit exceeded. Please try again in a few minutes, or set GITHUB_TOKEN environment variable to increase the limit.';
-    } else if (isGitHubError) {
-      statusCode = 503; // Service Unavailable
-      userMessage = `Unable to reach GitHub repository. ${errorMessage}. Please try again later.`;
-    }
-    
-    return res.status(statusCode).json({
+    log.error('Error syncing CS2 maps', error);
+    return res.status(500).json({
       success: false,
-      error: userMessage,
-      errorType: isRateLimit ? 'rate_limit' : isGitHubError ? 'github_error' : 'unknown',
-      originalError: errorMessage,
+      error: error instanceof Error ? error.message : 'Failed to sync maps',
     });
   }
 });

@@ -28,6 +28,20 @@ test.describe.serial('Maps UI', () => {
   });
 
   test(
+    'the page header syncs maps with maps.json and says what happened to Active Duty',
+    { tag: ['@ui', '@maps'] },
+    async ({ page }) => {
+      await page.goto('/maps');
+      const syncResponse = page.waitForResponse(
+        (resp) => resp.url().includes('/api/maps/sync') && resp.request().method() === 'POST'
+      );
+      await page.getByTestId('sync-maps-button').click();
+      expect((await syncResponse).ok()).toBe(true);
+      await expect(page.getByText(/New maps: \d+\. .*Active Duty/)).toBeVisible();
+    }
+  );
+
+  test(
     'should normalise a typed map id to lowercase',
     { tag: ['@ui', '@maps', '@validation'] },
     async ({ page, request }) => {
