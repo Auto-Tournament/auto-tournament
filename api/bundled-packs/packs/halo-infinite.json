@@ -3,7 +3,7 @@
   "slug": "halo-infinite",
   "name": "Halo Infinite",
   "engine": "manual-report",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Four-a-side arena shooter, reported by the maps played.",
   "icon": "../icons/halo-infinite.svg",
   "report": {

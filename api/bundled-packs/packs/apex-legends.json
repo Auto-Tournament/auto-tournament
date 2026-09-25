@@ -3,7 +3,7 @@
   "slug": "apex-legends",
   "name": "Apex Legends",
   "engine": "manual-report",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Three-a-side battle royale. Placement and kills each match.",
   "icon": "../icons/apex-legends.svg",
   "report": {

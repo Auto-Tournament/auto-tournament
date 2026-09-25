@@ -6,7 +6,7 @@
   "aliases": [
     "sf6"
   ],
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Fighting game. Report games won in the set.",
   "icon": "../icons/street-fighter-6.svg",
   "report": {

@@ -3,7 +3,7 @@
   "slug": "osu",
   "name": "osu!",
   "engine": "manual-report",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Rhythm game. Report maps won.",
   "icon": "../icons/osu.svg",
   "report": {

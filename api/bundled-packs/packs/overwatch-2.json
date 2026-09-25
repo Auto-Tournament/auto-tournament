@@ -7,7 +7,7 @@
     "ow",
     "ow2"
   ],
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Five-a-side hero shooter, reported by maps won.",
   "icon": "../icons/overwatch-2.svg",
   "report": {

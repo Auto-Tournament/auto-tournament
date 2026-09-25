@@ -6,7 +6,7 @@
   "aliases": [
     "mlbb"
   ],
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Five-a-side mobile MOBA. One map per game.",
   "icon": "../icons/mobile-legends-bang-bang.svg",
   "report": {

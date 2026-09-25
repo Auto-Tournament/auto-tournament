@@ -8,7 +8,7 @@
     "r6s",
     "siege"
   ],
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Five-a-side tactical shooter, reported by rounds won.",
   "icon": "../icons/rainbow-six-siege.svg",
   "report": {

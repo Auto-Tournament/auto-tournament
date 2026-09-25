@@ -6,7 +6,7 @@
   "aliases": [
     "tf2"
   ],
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Six-a-side class shooter, reported by rounds won.",
   "icon": "../icons/team-fortress-2.svg",
   "report": {

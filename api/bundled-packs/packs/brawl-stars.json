@@ -3,7 +3,7 @@
   "slug": "brawl-stars",
   "name": "Brawl Stars",
   "engine": "manual-report",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Three-a-side mobile brawler, reported by the events played.",
   "icon": "../icons/brawl-stars.svg",
   "report": {

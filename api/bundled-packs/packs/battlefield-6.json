@@ -6,7 +6,7 @@
   "aliases": [
     "bf6"
   ],
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Squad shooter, reported by the result of each map.",
   "icon": "../icons/battlefield-6.svg",
   "report": {

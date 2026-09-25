@@ -6,7 +6,7 @@
   "aliases": [
     "lol"
   ],
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Five-a-side MOBA. One map per game.",
   "icon": "../icons/league-of-legends.svg",
   "report": {

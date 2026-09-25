@@ -6,7 +6,7 @@
   "aliases": [
     "tm"
   ],
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Racing. The score is whatever format the host runs — points, rounds or times.",
   "icon": "../icons/trackmania.svg",
   "report": {

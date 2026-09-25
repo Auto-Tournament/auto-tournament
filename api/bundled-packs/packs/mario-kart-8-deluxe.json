@@ -7,7 +7,7 @@
     "mk8dx",
     "mario-kart"
   ],
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Kart racing. Report finishing position and points each race.",
   "icon": "../icons/mario-kart-8-deluxe.svg",
   "report": {
