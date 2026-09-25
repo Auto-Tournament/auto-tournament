@@ -1,0 +1,81 @@
+{
+  "compatPage": {
+    "title": "Compatibilità di Ready Up",
+    "subtitle": "Se i plugin di Ready Up funzionano con l’ultimo aggiornamento di Counter-Strike 2, verificato automaticamente a ogni nuova build di CS2.",
+    "live": "Dal vivo",
+    "offline": "Riconnessione…",
+    "loading": "Caricamento della compatibilità",
+    "loadError": "Impossibile caricare la compatibilità. Riprova tra un momento.",
+    "disabledTitle": "Non disponibile qui",
+    "disabledDescription": "Questo sito non pubblica la compatibilità di Ready Up.",
+    "emptyTitle": "Ancora nessun risultato",
+    "emptyDescription": "Non è ancora arrivata nessuna verifica di compatibilità. Questa pagina si aggiorna da sola non appena ne arriva una.",
+    "checkedAgo": "Verificato {{time}}",
+    "viewRun": "Vedi esecuzione",
+    "factsLabel": "Cosa è stato verificato",
+    "facts": {
+      "patch": "Patch di CS2",
+      "buildid": "ID build",
+      "readyup": "Ready Up",
+      "stage": "Fase"
+    },
+    "overall": {
+      "pass": "Compatibile",
+      "warn": "Compatibile, con avvisi",
+      "fail": "Non compatibile",
+      "checking": "Verifica in corso…",
+      "no_verdict": "Nessun verdetto"
+    },
+    "overallHint": {
+      "pass": "Tutti i componenti hanno superato le verifiche su questa build.",
+      "warn": "Ready Up funziona su questa build, ma alcune verifiche vanno controllate meglio.",
+      "fail": "Almeno un componente non funziona su questa build. Aspetta prima di aggiornare i server.",
+      "checking": "È in corso una verifica di questa build.",
+      "no_verdict": "L’ultima verifica non ha raggiunto un verdetto."
+    },
+    "status": {
+      "pass": "Superato",
+      "warn": "Avviso",
+      "fail": "Fallito",
+      "pending": "In attesa",
+      "checking": "Verifica in corso…"
+    },
+    "stage": {
+      "static": "Analisi statica",
+      "selftest": "Autotest",
+      "live": "Server live"
+    },
+    "state": {
+      "queued": "In coda",
+      "checking": "In verifica",
+      "pass": "Superato",
+      "warn": "Avvisi",
+      "fail": "Fallito",
+      "no_verdict": "Nessun verdetto"
+    },
+    "trigger": {
+      "build_change": "Nuova build di CS2",
+      "surface_change": "Dati di gioco cambiati",
+      "nightly": "Notturna",
+      "release": "Versione di Ready Up",
+      "manual": "Manuale"
+    },
+    "kind": {
+      "signature": "Firme",
+      "rtti": "RTTI",
+      "vtable": "Tabelle virtuali",
+      "hook_site": "Punti di aggancio",
+      "layout": "Layout di memoria",
+      "schema": "Schema",
+      "event": "Eventi di gioco",
+      "selftest": "Autotest",
+      "livetest": "Test dal vivo"
+    },
+    "componentsTitle": "Componenti",
+    "checksSummary": "{{passed}} verifiche superate su {{total}}",
+    "noChecks": "Ancora nessuna verifica",
+    "failures": "Errori",
+    "historyTitle": "Esecuzioni recenti",
+    "historyItem": "CS2 {{patch}} · build {{buildid}}"
+  }
+}

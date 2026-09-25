@@ -39,9 +39,241 @@
         "in": "header",
         "name": "X-Auto-Tournament-Token",
         "description": "Server-to-API authentication (webhooks, reports, demo uploads, match config fetch). Send `X-Auto-Tournament-Token: <token>`."
+      },
+      "compatIngestToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "opaque",
+        "description": "The Ready Up CI's credential for POST /api/compat/events: `Authorization: Bearer <token>`, where the token is COMPAT_INGEST_TOKEN. Grants nothing else."
       }
     },
     "schemas": {
+      "CompatDocument": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schema",
+          "cs2",
+          "readyup",
+          "run",
+          "overall",
+          "components",
+          "checked_at"
+        ],
+        "properties": {
+          "schema": {
+            "type": "integer",
+            "enum": [
+              1
+            ]
+          },
+          "cs2": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "buildid",
+              "patch"
+            ],
+            "properties": {
+              "buildid": {
+                "type": "string",
+                "pattern": "^[0-9]{1,20}$",
+                "example": "25537370"
+              },
+              "patch": {
+                "type": "string",
+                "example": "1.41.8.5"
+              }
+            }
+          },
+          "readyup": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "version",
+              "commit"
+            ],
+            "properties": {
+              "version": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "commit": {
+                "type": "string",
+                "pattern": "^[0-9a-fA-F]{7,64}$"
+              }
+            }
+          },
+          "run": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "url",
+              "trigger",
+              "stage",
+              "state",
+              "started_at",
+              "finished_at"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._:-]{1,128}$"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "description": "http(s) only"
+              },
+              "trigger": {
+                "type": "string",
+                "enum": [
+                  "build_change",
+                  "surface_change",
+                  "nightly",
+                  "release",
+                  "manual"
+                ]
+              },
+              "stage": {
+                "type": "string",
+                "enum": [
+                  "static",
+                  "selftest",
+                  "live"
+                ]
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "queued",
+                  "checking",
+                  "pass",
+                  "warn",
+                  "fail",
+                  "no_verdict"
+                ]
+              },
+              "started_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "finished_at": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              }
+            }
+          },
+          "overall": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "warn",
+              "fail",
+              "checking",
+              "no_verdict"
+            ]
+          },
+          "components": {
+            "type": "array",
+            "maxItems": 32,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "name",
+                "status",
+                "checks"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9][a-z0-9_-]{0,31}$",
+                  "example": "core"
+                },
+                "name": {
+                  "type": "string",
+                  "maxLength": 64,
+                  "example": "Core"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "pass",
+                    "warn",
+                    "fail",
+                    "pending",
+                    "checking"
+                  ]
+                },
+                "checks": {
+                  "type": "array",
+                  "maxItems": 32,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "kind",
+                      "status",
+                      "passed",
+                      "total",
+                      "failures"
+                    ],
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "signature",
+                          "rtti",
+                          "vtable",
+                          "hook_site",
+                          "layout",
+                          "schema",
+                          "event",
+                          "selftest",
+                          "livetest"
+                        ]
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "pass",
+                          "warn",
+                          "fail",
+                          "pending"
+                        ]
+                      },
+                      "passed": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "total": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "failures": {
+                        "type": "array",
+                        "maxItems": 200,
+                        "items": {
+                          "type": "string",
+                          "maxLength": 500
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "checked_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
       "Server": {
         "type": "object",
         "properties": {
@@ -269,6 +501,10 @@
     {
       "name": "Catalog",
       "description": "The game catalog: every pack and code module this instance has or can install, from the feed, its cache and the offline snapshot, with install, update, enable, disable, uninstall and purge. Code modules install only from signed releases. Admin only; writes must be same-site JSON."
+    },
+    {
+      "name": "Compatibility",
+      "description": "Ready Up compatibility with the latest CS2 build: the runs its CI reports (token-guarded push), and public reads for the /compatibility page and a shields.io badge. 404 unless COMPAT_INGEST_TOKEN or COMPAT_FEED_URL is set."
     },
     {
       "name": "Demos",
@@ -1320,6 +1556,191 @@
           },
           "409": {
             "description": "Another catalog operation is running"
+          }
+        }
+      }
+    },
+    "/api/compat/badge.json": {
+      "get": {
+        "tags": [
+          "Compatibility"
+        ],
+        "summary": "shields.io badge for the newest run",
+        "description": "A shields.io endpoint badge\n(`https://img.shields.io/endpoint?url=<this URL>`): \"Ready Up\" and the\nnewest run's verdict with its CS2 patch, coloured green, yellow, red,\nblue (checking) or grey. Public; rate limited per IP. 404 unless the\ninstance has compatibility enabled.\n",
+        "responses": {
+          "200": {
+            "description": "Endpoint badge",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "schemaVersion": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "label": {
+                      "type": "string",
+                      "example": "Ready Up"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "compatible · CS2 1.41.8.5"
+                    },
+                    "color": {
+                      "type": "string",
+                      "example": "brightgreen"
+                    },
+                    "cacheSeconds": {
+                      "type": "integer",
+                      "example": 300
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Compatibility is not enabled on this instance"
+          }
+        }
+      }
+    },
+    "/api/compat/events": {
+      "post": {
+        "tags": [
+          "Compatibility"
+        ],
+        "summary": "Report a Ready Up compatibility run",
+        "description": "Called by the Ready Up CI with one `compat.json` (schema 1) per run\nupdate. Upserted by `run.id`; a copy with an older `checked_at` than\nthe stored one is ignored (`stale`), and an identical one changes\nnothing (`unchanged`). Every stored change is sent to the public page\nas the Socket.IO event `compat:update`. The body is validated\nstrictly (unknown fields are refused) and limited to 256 KB.\n404 unless COMPAT_INGEST_TOKEN is set.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompatDocument"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stored, unchanged or stale",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "stored",
+                        "unchanged",
+                        "stale"
+                      ]
+                    },
+                    "created": {
+                      "type": "boolean"
+                    },
+                    "runId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not a valid schema-1 document; `details` lists each bad field"
+          },
+          "401": {
+            "description": "Missing or wrong token"
+          },
+          "404": {
+            "description": "COMPAT_INGEST_TOKEN is not set"
+          },
+          "413": {
+            "description": "Body larger than 256 KB"
+          },
+          "429": {
+            "description": "Too many requests from this address"
+          }
+        },
+        "security": [
+          {
+            "compatIngestToken": []
+          }
+        ]
+      }
+    },
+    "/api/compat/latest": {
+      "get": {
+        "tags": [
+          "Compatibility"
+        ],
+        "summary": "The newest Ready Up compatibility run",
+        "description": "The newest run (by `run.started_at`) with every component's checks,\nplus `source`, `received_at` and `updated_at`. `latest` is null until\nthe first run arrives. Public; rate limited per IP. 404 unless the\ninstance has compatibility enabled.\n",
+        "responses": {
+          "200": {
+            "description": "The newest run, or null",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "latest": {
+                      "nullable": true,
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/CompatDocument"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Compatibility is not enabled on this instance"
+          }
+        }
+      }
+    },
+    "/api/compat/runs": {
+      "get": {
+        "tags": [
+          "Compatibility"
+        ],
+        "summary": "Recent Ready Up compatibility runs",
+        "description": "Newest first, each with its components' statuses but not their\nchecks. The instance keeps the newest 200. Public; rate limited per\nIP. 404 unless the instance has compatibility enabled.\n",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Runs, newest first"
+          },
+          "400": {
+            "description": "limit is not an integer from 1 to 200"
+          },
+          "404": {
+            "description": "Compatibility is not enabled on this instance"
           }
         }
       }

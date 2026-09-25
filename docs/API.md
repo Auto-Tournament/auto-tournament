@@ -259,9 +259,43 @@ client to the same origin and listen:
 | `bracket:update` | Bracket regenerated or advanced |
 | `tournament:update` | Tournament status changed |
 | `server:status`, `server:event:<serverId>` | Server came up, went down, updated |
+| `compat:update` | A Ready Up compatibility run changed. Only sent to sockets that emitted `compat:subscribe` (see below) |
 
 For a bot that keeps a live scoreboard message in a channel, `match:update:<slug>`
 is what you want — edit the message on each event rather than polling.
+
+### Ready Up compatibility
+
+An instance can publish whether the Ready Up plugin suite works on the latest
+CS2 build, as a public page at `/compatibility`. It is off unless one of the two
+variables below is set, and then everything under `/api/compat` answers 404.
+
+The Ready Up CI reports each run as a `compat.json` (schema 1), in one of two ways:
+
+- **Push:** `POST /api/compat/events` with `Authorization: Bearer <COMPAT_INGEST_TOKEN>`
+  and the document as the JSON body. The token is compared in constant time, the
+  body is capped at 256 KB, and the document is validated strictly: unknown fields,
+  unknown enum values, non-http(s) `run.url` and `passed > total` are rejected with
+  `400` and a `details` list naming each bad field. A run is upserted by `run.id`;
+  an identical copy answers `unchanged`, and a copy whose `checked_at` is older than
+  the stored one answers `stale` and changes nothing.
+- **Pull:** with `COMPAT_FEED_URL` set, the instance fetches that file every 5
+  minutes (10 s timeout, same size cap and validation, `If-None-Match` when the
+  server sends an ETag). A failed fetch logs once and keeps the last good run.
+
+Public reads (no auth, rate limited per IP):
+
+| Endpoint | What it returns |
+| --- | --- |
+| `GET /api/compat/latest` | `{ latest }`: the newest run (by `run.started_at`) with every check, plus `source`, `received_at`, `updated_at`; `null` before the first run |
+| `GET /api/compat/runs?limit=20` | `{ runs }`: newest first (1-200), each component's status without its checks. The newest 200 runs are kept |
+| `GET /api/compat/badge.json` | A [shields.io endpoint badge](https://shields.io/badges/endpoint-badge): `https://img.shields.io/endpoint?url=<instance>/api/compat/badge.json` |
+
+Live updates: connect a Socket.IO client, emit `compat:subscribe` (again after
+every reconnect), and listen for `compat:update`, whose payload is
+`{ latest, run }` — the newest run now, and the run that changed.
+
+The full request schema is `CompatDocument` in `docs/openapi.json`.
 
 ---
 
@@ -350,5 +384,7 @@ server.
 | `ALLOW_UNAUTHENTICATED_EVENTS` | Migration shim: accept game events with no token. Off by default; see `example.env` |
 | `ADMIN_STEAM_IDS` | Steam IDs always granted admin, for human sign-in |
 | `SESSION_SECRET` | Signs admin session cookies |
+| `COMPAT_INGEST_TOKEN` | Ready Up compatibility: the CI's token for `POST /api/compat/events` (at least 16 characters). Grants nothing else |
+| `COMPAT_FEED_URL` | Ready Up compatibility: a `compat.json` to poll every 5 minutes as a fallback to the push |
 
 See `example.env` for the full annotated list.

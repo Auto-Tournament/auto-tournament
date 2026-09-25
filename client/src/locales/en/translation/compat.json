@@ -1,0 +1,81 @@
+{
+  "compatPage": {
+    "title": "Ready Up compatibility",
+    "subtitle": "Whether the Ready Up plugins work with the latest Counter-Strike 2 update, checked automatically on every new CS2 build.",
+    "live": "Live",
+    "offline": "Reconnecting…",
+    "loading": "Loading compatibility",
+    "loadError": "Could not load compatibility. Try again in a moment.",
+    "disabledTitle": "Not available here",
+    "disabledDescription": "This site does not publish Ready Up compatibility.",
+    "emptyTitle": "No results yet",
+    "emptyDescription": "No compatibility check has reported in yet. This page updates by itself as soon as one does.",
+    "checkedAgo": "Checked {{time}}",
+    "viewRun": "View run",
+    "factsLabel": "What was checked",
+    "facts": {
+      "patch": "CS2 patch",
+      "buildid": "Build ID",
+      "readyup": "Ready Up",
+      "stage": "Stage"
+    },
+    "overall": {
+      "pass": "Compatible",
+      "warn": "Compatible, with warnings",
+      "fail": "Not compatible",
+      "checking": "Checking…",
+      "no_verdict": "No verdict"
+    },
+    "overallHint": {
+      "pass": "Every component passed its checks on this build.",
+      "warn": "Ready Up works on this build, but some checks need a closer look.",
+      "fail": "At least one component does not work on this build. Hold off on updating servers.",
+      "checking": "A check of this build is running right now.",
+      "no_verdict": "The last check could not reach a verdict."
+    },
+    "status": {
+      "pass": "Pass",
+      "warn": "Warning",
+      "fail": "Fail",
+      "pending": "Pending",
+      "checking": "Checking…"
+    },
+    "stage": {
+      "static": "Static analysis",
+      "selftest": "Self-test",
+      "live": "Live server"
+    },
+    "state": {
+      "queued": "Queued",
+      "checking": "Checking",
+      "pass": "Passed",
+      "warn": "Warnings",
+      "fail": "Failed",
+      "no_verdict": "No verdict"
+    },
+    "trigger": {
+      "build_change": "New CS2 build",
+      "surface_change": "Game data changed",
+      "nightly": "Nightly",
+      "release": "Ready Up release",
+      "manual": "Manual"
+    },
+    "kind": {
+      "signature": "Signatures",
+      "rtti": "RTTI",
+      "vtable": "Virtual tables",
+      "hook_site": "Hook sites",
+      "layout": "Memory layout",
+      "schema": "Schema",
+      "event": "Game events",
+      "selftest": "Self-test",
+      "livetest": "Live test"
+    },
+    "componentsTitle": "Components",
+    "checksSummary": "{{passed}} of {{total}} checks passed",
+    "noChecks": "No checks reported yet",
+    "failures": "Failures",
+    "historyTitle": "Recent runs",
+    "historyItem": "CS2 {{patch}} · build {{buildid}}"
+  }
+}

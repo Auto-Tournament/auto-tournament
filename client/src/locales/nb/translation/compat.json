@@ -1,0 +1,81 @@
+{
+  "compatPage": {
+    "title": "Ready Up-kompatibilitet",
+    "subtitle": "Om Ready Up-programtilleggene fungerer med den nyeste Counter-Strike 2-oppdateringen, sjekket automatisk for hver ny CS2-build.",
+    "live": "Direkte",
+    "offline": "Kobler til på nytt…",
+    "loading": "Laster kompatibilitet",
+    "loadError": "Kunne ikke laste kompatibiliteten. Prøv igjen om litt.",
+    "disabledTitle": "Ikke tilgjengelig her",
+    "disabledDescription": "Dette nettstedet publiserer ikke Ready Up-kompatibilitet.",
+    "emptyTitle": "Ingen resultater ennå",
+    "emptyDescription": "Ingen kompatibilitetssjekk er rapportert ennå. Siden oppdaterer seg selv så snart det kommer en.",
+    "checkedAgo": "Sjekket {{time}}",
+    "viewRun": "Vis kjøring",
+    "factsLabel": "Hva som ble sjekket",
+    "facts": {
+      "patch": "CS2-patch",
+      "buildid": "Build-ID",
+      "readyup": "Ready Up",
+      "stage": "Fase"
+    },
+    "overall": {
+      "pass": "Kompatibel",
+      "warn": "Kompatibel, med advarsler",
+      "fail": "Ikke kompatibel",
+      "checking": "Sjekker…",
+      "no_verdict": "Ingen konklusjon"
+    },
+    "overallHint": {
+      "pass": "Alle komponentene besto sjekkene sine på denne builden.",
+      "warn": "Ready Up fungerer på denne builden, men noen sjekker bør ses nærmere på.",
+      "fail": "Minst én komponent fungerer ikke på denne builden. Vent med å oppdatere serverne.",
+      "checking": "Denne builden sjekkes akkurat nå.",
+      "no_verdict": "Den siste sjekken kom ikke fram til en konklusjon."
+    },
+    "status": {
+      "pass": "Bestått",
+      "warn": "Advarsel",
+      "fail": "Feilet",
+      "pending": "Venter",
+      "checking": "Sjekker…"
+    },
+    "stage": {
+      "static": "Statisk analyse",
+      "selftest": "Selvtest",
+      "live": "Live-server"
+    },
+    "state": {
+      "queued": "I kø",
+      "checking": "Sjekker",
+      "pass": "Bestått",
+      "warn": "Advarsler",
+      "fail": "Feilet",
+      "no_verdict": "Ingen konklusjon"
+    },
+    "trigger": {
+      "build_change": "Ny CS2-build",
+      "surface_change": "Spilldata endret",
+      "nightly": "Nattlig",
+      "release": "Ready Up-utgivelse",
+      "manual": "Manuell"
+    },
+    "kind": {
+      "signature": "Signaturer",
+      "rtti": "RTTI",
+      "vtable": "Virtuelle tabeller",
+      "hook_site": "Krokpunkter",
+      "layout": "Minneoppsett",
+      "schema": "Skjema",
+      "event": "Spillhendelser",
+      "selftest": "Selvtest",
+      "livetest": "Live-test"
+    },
+    "componentsTitle": "Komponenter",
+    "checksSummary": "{{passed}} av {{total}} sjekker bestått",
+    "noChecks": "Ingen sjekker rapportert ennå",
+    "failures": "Feil",
+    "historyTitle": "Siste kjøringer",
+    "historyItem": "CS2 {{patch}} · build {{buildid}}"
+  }
+}

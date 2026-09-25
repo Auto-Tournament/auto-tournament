@@ -1,0 +1,81 @@
+{
+  "compatPage": {
+    "title": "Ready Up 兼容性",
+    "subtitle": "Ready Up 插件是否兼容最新的 Counter-Strike 2 更新——每个新的 CS2 版本都会自动检查。",
+    "live": "实时",
+    "offline": "正在重新连接…",
+    "loading": "正在加载兼容性",
+    "loadError": "无法加载兼容性信息，请稍后再试。",
+    "disabledTitle": "此处不可用",
+    "disabledDescription": "本站点不发布 Ready Up 兼容性信息。",
+    "emptyTitle": "暂无结果",
+    "emptyDescription": "还没有收到任何兼容性检查结果。一旦收到，本页面会自动更新。",
+    "checkedAgo": "检查于{{time}}",
+    "viewRun": "查看运行",
+    "factsLabel": "检查内容",
+    "facts": {
+      "patch": "CS2 补丁",
+      "buildid": "构建 ID",
+      "readyup": "Ready Up",
+      "stage": "阶段"
+    },
+    "overall": {
+      "pass": "兼容",
+      "warn": "兼容，但有警告",
+      "fail": "不兼容",
+      "checking": "检查中…",
+      "no_verdict": "无结论"
+    },
+    "overallHint": {
+      "pass": "所有组件在此版本上均通过了检查。",
+      "warn": "Ready Up 可在此版本上运行，但部分检查需要进一步查看。",
+      "fail": "至少有一个组件无法在此版本上运行。请暂缓更新服务器。",
+      "checking": "正在检查此版本。",
+      "no_verdict": "上一次检查未能得出结论。"
+    },
+    "status": {
+      "pass": "通过",
+      "warn": "警告",
+      "fail": "失败",
+      "pending": "等待中",
+      "checking": "检查中…"
+    },
+    "stage": {
+      "static": "静态分析",
+      "selftest": "自检",
+      "live": "实时服务器"
+    },
+    "state": {
+      "queued": "排队中",
+      "checking": "检查中",
+      "pass": "通过",
+      "warn": "有警告",
+      "fail": "失败",
+      "no_verdict": "无结论"
+    },
+    "trigger": {
+      "build_change": "新的 CS2 版本",
+      "surface_change": "游戏数据变更",
+      "nightly": "每晚",
+      "release": "Ready Up 发布",
+      "manual": "手动"
+    },
+    "kind": {
+      "signature": "特征码",
+      "rtti": "RTTI",
+      "vtable": "虚函数表",
+      "hook_site": "挂钩点",
+      "layout": "内存布局",
+      "schema": "Schema",
+      "event": "游戏事件",
+      "selftest": "自检",
+      "livetest": "实时测试"
+    },
+    "componentsTitle": "组件",
+    "checksSummary": "{{total}} 项检查中通过 {{passed}} 项",
+    "noChecks": "尚未报告任何检查",
+    "failures": "失败项",
+    "historyTitle": "最近运行",
+    "historyItem": "CS2 {{patch}} · 构建 {{buildid}}"
+  }
+}
