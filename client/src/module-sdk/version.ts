@@ -85,5 +85,9 @@
  * 0.2.6 (additive): the optional `rosterMemberStatus` slot
  * (`RosterMemberStatusProps` `{ playerId }`): the team page roster's
  * per-member account status for the game (CS2: Steam linked).
+ *
+ * 0.2.7 (additive): `ExternalLink` (and `ExternalLinkProps`), the shared
+ * component for a link that leaves the app — icon, `rel`, and the hidden
+ * "opens in a new tab" text a module would otherwise have to hand-roll.
  */
-export const CLIENT_API_VERSION = '0.2.6';
+export const CLIENT_API_VERSION = '0.2.7';

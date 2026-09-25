@@ -4,13 +4,13 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
-import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import { useTranslation } from 'react-i18next';
 import { GameThumb } from './GameThumb';
+import { ExternalLink } from '../common/ExternalLink';
 import {
   MAX_PLAYER_GAMES,
   SEARCH_MIN_LENGTH,
@@ -253,15 +253,13 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
       {showCredit && (
         <Typography variant="caption" color="text.secondary" data-testid="igdb-credit">
           {showWikidataCredit ? (
-            <Link
+            <ExternalLink
               href="https://www.wikidata.org"
-              target="_blank"
-              rel="noopener noreferrer"
               color="inherit"
               data-testid="wikidata-credit-link"
             >
               {t('games.picker.creditWikidata')}
-            </Link>
+            </ExternalLink>
           ) : (
             t('games.picker.credit')
           )}

@@ -17,6 +17,7 @@ import {
   api,
   EmptyState,
   ConfirmDialog,
+  ExternalLink,
   useSnackbar,
   openMatchDetails,
   tokens,
@@ -951,14 +952,12 @@ export default function Servers() {
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       {t('serversPage.fleet.olderVersion', { count: olderPluginCount })}{' '}
-                      <a
+                      <ExternalLink
                         href={latestPluginReleaseUrl ?? 'https://github.com/Auto-Tournament/cs2-plugin/releases'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: 'inherit', textDecoration: 'underline' }}
+                        sx={{ color: 'inherit', textDecoration: 'underline' }}
                       >
                         {t('serversPage.fleet.downloadLatest')}
-                      </a>
+                      </ExternalLink>
                     </Typography>
                   </Box>
                 )}

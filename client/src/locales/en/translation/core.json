@@ -65,7 +65,8 @@
     "delete": "Delete",
     "cancel": "Cancel",
     "remove": "Remove",
-    "close": "Close"
+    "close": "Close",
+    "opensInNewTab": "(opens in a new tab)"
   },
   "theme": {
     "label": "Color theme"

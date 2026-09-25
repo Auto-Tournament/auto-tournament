@@ -21,12 +21,11 @@ import {
   CheckCircle as CheckCircleIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
-  OpenInNew as OpenInNewIcon,
 } from '@mui/icons-material';
-import Link from '@mui/material/Link';
 import { CircularProgress } from '@mui/material';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { useTranslation } from 'react-i18next';
+import { ExternalLink } from '../common/ExternalLink';
 
 interface ImportPlayer {
   steamId: string;
@@ -216,10 +215,8 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
             {t('playerImportModal.info.description')}
           </Typography>
           <Typography variant="caption" component="div">
-            <Link
+            <ExternalLink
               href="https://docs.autotournament.gg/guides/teams-and-players#import-players"
-              target="_blank"
-              rel="noopener noreferrer"
               sx={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -229,8 +226,7 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
               }}
             >
               {t('playerImportModal.info.link')}
-              <OpenInNewIcon sx={{ fontSize: '0.875rem' }} />
-            </Link>
+            </ExternalLink>
           </Typography>
         </Alert>
 

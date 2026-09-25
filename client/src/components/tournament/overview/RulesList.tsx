@@ -1,5 +1,6 @@
-import { Box, Link as MuiLink, Stack, Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import { fontMono } from '../../../theme/tokens';
+import { ExternalLink } from '../../common/ExternalLink';
 
 interface RulesListProps {
   rules: string[];
@@ -33,9 +34,7 @@ export function RulesList({ rules, rulebookUrl, rulebookLinkLabel }: RulesListPr
       </Stack>
       {rulebookUrl && (
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5 }}>
-          <MuiLink href={rulebookUrl} target="_blank" rel="noopener noreferrer">
-            {rulebookLinkLabel}
-          </MuiLink>
+          <ExternalLink href={rulebookUrl}>{rulebookLinkLabel}</ExternalLink>
         </Typography>
       )}
     </Box>

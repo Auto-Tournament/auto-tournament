@@ -57,7 +57,8 @@
     "delete": "Eliminar",
     "cancel": "Cancelar",
     "remove": "Remove",
-    "close": "Close"
+    "close": "Close",
+    "opensInNewTab": "(opens in a new tab)"
   },
   "app": {
     "name": "Auto Tournament"

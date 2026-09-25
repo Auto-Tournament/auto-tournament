@@ -16,7 +16,6 @@ import {
   CircularProgress,
   Collapse,
   IconButton,
-  Link,
   Menu,
   MenuItem,
   ListItemIcon,
@@ -31,6 +30,7 @@ import ReplayIcon from '@mui/icons-material/Replay';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import type { Server, ServerAllocationInfo } from '../cs2.types';
 import {
+  ExternalLink,
   FactGrid,
   Row,
   StatusDot,
@@ -75,15 +75,9 @@ function Tip({ title, body, href, t }: { title: string; body: string; href?: str
       </Typography>
       <Typography variant="body2">{body}</Typography>
       {href && (
-        <Link
-          href={href}
-          target="_blank"
-          rel="noreferrer"
-          underline="hover"
-          sx={{ display: 'inline-block', mt: 0.5 }}
-        >
+        <ExternalLink href={href} underline="hover" sx={{ display: 'inline-block', mt: 0.5 }}>
           {t('serversPage.tooltips.fixGuide')}
-        </Link>
+        </ExternalLink>
       )}
     </Box>
   );
