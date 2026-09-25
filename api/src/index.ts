@@ -60,6 +60,9 @@ import session from 'express-session';
 import connectPgSimple from 'connect-pg-simple';
 import { isIP } from 'net';
 import { DATABASE_NAME, DatabaseRenameRefused } from './config/databaseRename';
+import { COMPAT_MAX_BYTES } from './utils/compatPayload';
+import { reportCompatConfig } from './services/compatService';
+import { startCompatFeed, stopCompatFeed } from './services/compatFeedService';
 
 const app = express();
 const httpServer = createServer(app);
@@ -74,6 +77,20 @@ app.set('trust proxy', 1);
 
 // Middleware
 app.use(cors());
+// The Ready Up CI's compatibility reports get a small limit of their own,
+// parsed first so the 50MB parser below skips them (body-parser parses a
+// request once). A larger body is refused with 413 before it is read.
+app.use('/api/compat/events', express.json({ limit: COMPAT_MAX_BYTES }));
+app.use('/api/compat/events', (err: unknown, _req: Request, res: Response, next: NextFunction) => {
+  const type = (err as { type?: string } | null)?.type;
+  if (type === 'entity.too.large') {
+    return res.status(413).json({ success: false, error: 'payload_too_large', limitBytes: COMPAT_MAX_BYTES });
+  }
+  if (type === 'entity.parse.failed') {
+    return res.status(400).json({ success: false, error: 'invalid_json' });
+  }
+  return next(err);
+});
 // Increase body size limit to 50MB for image uploads (base64 encoded images can be large)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -541,6 +558,10 @@ process.on('uncaughtException', (err) => {
 
       reportServiceTokens();
       reportEventAuth();
+      reportCompatConfig();
+      // Ready Up compatibility, pulled from COMPAT_FEED_URL every 5 minutes
+      // (a no-op without it). Never throws; failures keep the last good run.
+      startCompatFeed();
 
       // Recover matches and start the game integrations (CS2: bootstrap server
       // webhooks, fetch the Auto Tournament CS2 version, start health monitoring) now the
@@ -592,6 +613,7 @@ process.on('uncaughtException', (err) => {
       shuttingDown = true;
       log.warn(`${why}, shutting down gracefully...`);
       scheduler.stopAllPolling();
+      stopCompatFeed();
       stopIntegrations();
       // Live sockets and idle keep-alive connections would hold the close.
       getIO().disconnectSockets(true);

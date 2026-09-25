@@ -92,3 +92,5 @@ export interface VetoUpdateEvent {
   } | null;
 }
 
+
+export type { CompatUpdateEvent } from './compat.types';

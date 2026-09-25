@@ -1,0 +1,81 @@
+{
+  "compatPage": {
+    "title": "Zgodność Ready Up",
+    "subtitle": "Czy wtyczki Ready Up działają z najnowszą aktualizacją Counter-Strike 2 – sprawdzane automatycznie przy każdym nowym buildzie CS2.",
+    "live": "Na żywo",
+    "offline": "Ponowne łączenie…",
+    "loading": "Wczytywanie zgodności",
+    "loadError": "Nie udało się wczytać zgodności. Spróbuj ponownie za chwilę.",
+    "disabledTitle": "Niedostępne tutaj",
+    "disabledDescription": "Ta strona nie publikuje zgodności Ready Up.",
+    "emptyTitle": "Brak wyników",
+    "emptyDescription": "Nie zgłoszono jeszcze żadnego sprawdzenia zgodności. Strona odświeży się sama, gdy tylko się pojawi.",
+    "checkedAgo": "Sprawdzono {{time}}",
+    "viewRun": "Zobacz przebieg",
+    "factsLabel": "Co zostało sprawdzone",
+    "facts": {
+      "patch": "Patch CS2",
+      "buildid": "ID buildu",
+      "readyup": "Ready Up",
+      "stage": "Etap"
+    },
+    "overall": {
+      "pass": "Zgodne",
+      "warn": "Zgodne, z ostrzeżeniami",
+      "fail": "Niezgodne",
+      "checking": "Sprawdzanie…",
+      "no_verdict": "Brak werdyktu"
+    },
+    "overallHint": {
+      "pass": "Wszystkie komponenty przeszły swoje testy na tym buildzie.",
+      "warn": "Ready Up działa na tym buildzie, ale niektóre testy wymagają uwagi.",
+      "fail": "Co najmniej jeden komponent nie działa na tym buildzie. Wstrzymaj się z aktualizacją serwerów.",
+      "checking": "Ten build jest właśnie sprawdzany.",
+      "no_verdict": "Ostatnie sprawdzenie nie zakończyło się werdyktem."
+    },
+    "status": {
+      "pass": "Zaliczony",
+      "warn": "Ostrzeżenie",
+      "fail": "Niezaliczony",
+      "pending": "Oczekuje",
+      "checking": "Sprawdzanie…"
+    },
+    "stage": {
+      "static": "Analiza statyczna",
+      "selftest": "Autotest",
+      "live": "Serwer na żywo"
+    },
+    "state": {
+      "queued": "W kolejce",
+      "checking": "Sprawdzanie",
+      "pass": "Zaliczony",
+      "warn": "Ostrzeżenia",
+      "fail": "Niezaliczony",
+      "no_verdict": "Brak werdyktu"
+    },
+    "trigger": {
+      "build_change": "Nowy build CS2",
+      "surface_change": "Zmiana danych gry",
+      "nightly": "Nocny",
+      "release": "Wydanie Ready Up",
+      "manual": "Ręczny"
+    },
+    "kind": {
+      "signature": "Sygnatury",
+      "rtti": "RTTI",
+      "vtable": "Tablice wirtualne",
+      "hook_site": "Punkty zaczepienia",
+      "layout": "Układ pamięci",
+      "schema": "Schemat",
+      "event": "Zdarzenia gry",
+      "selftest": "Autotest",
+      "livetest": "Test na żywo"
+    },
+    "componentsTitle": "Komponenty",
+    "checksSummary": "Zaliczono {{passed}} z {{total}} testów",
+    "noChecks": "Brak zgłoszonych testów",
+    "failures": "Błędy",
+    "historyTitle": "Ostatnie przebiegi",
+    "historyItem": "CS2 {{patch}} · build {{buildid}}"
+  }
+}

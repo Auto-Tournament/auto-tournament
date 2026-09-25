@@ -43,6 +43,7 @@ import moduleRoutes from './modules';
 import catalogRoutes from './catalog';
 import systemRoutes from './system';
 import meRoutes from './me';
+import compatRoutes from './compat';
 
 export interface MountedRouter {
   /** Path prefix the router is mounted under. */
@@ -181,6 +182,13 @@ const coreRoutes: MountedRouter[] = [
     router: meRoutes,
     title: 'Me',
     description: "The signed-in player's own data, e.g. the games they play.",
+  },
+  {
+    prefix: '/api/compat',
+    router: compatRoutes,
+    title: 'Compatibility',
+    description:
+      'Ready Up compatibility with the latest CS2 build: the runs its CI reports (token-guarded push), and public reads for the /compatibility page and a shields.io badge. 404 unless COMPAT_INGEST_TOKEN or COMPAT_FEED_URL is set.',
   },
   {
     prefix: '/api/test',

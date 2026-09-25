@@ -1,0 +1,81 @@
+{
+  "compatPage": {
+    "title": "Ready-Up-Kompatibilität",
+    "subtitle": "Ob die Ready-Up-Plugins mit dem neuesten Counter-Strike-2-Update funktionieren – automatisch geprüft bei jedem neuen CS2-Build.",
+    "live": "Live",
+    "offline": "Verbinde neu…",
+    "loading": "Kompatibilität wird geladen",
+    "loadError": "Die Kompatibilität konnte nicht geladen werden. Versuche es gleich noch einmal.",
+    "disabledTitle": "Hier nicht verfügbar",
+    "disabledDescription": "Diese Seite veröffentlicht keine Ready-Up-Kompatibilität.",
+    "emptyTitle": "Noch keine Ergebnisse",
+    "emptyDescription": "Es wurde noch keine Kompatibilitätsprüfung gemeldet. Diese Seite aktualisiert sich von selbst, sobald eine eintrifft.",
+    "checkedAgo": "Geprüft {{time}}",
+    "viewRun": "Lauf ansehen",
+    "factsLabel": "Was geprüft wurde",
+    "facts": {
+      "patch": "CS2-Patch",
+      "buildid": "Build-ID",
+      "readyup": "Ready Up",
+      "stage": "Phase"
+    },
+    "overall": {
+      "pass": "Kompatibel",
+      "warn": "Kompatibel, mit Warnungen",
+      "fail": "Nicht kompatibel",
+      "checking": "Wird geprüft…",
+      "no_verdict": "Kein Ergebnis"
+    },
+    "overallHint": {
+      "pass": "Alle Komponenten haben ihre Prüfungen auf diesem Build bestanden.",
+      "warn": "Ready Up funktioniert auf diesem Build, aber einige Prüfungen sollten genauer angesehen werden.",
+      "fail": "Mindestens eine Komponente funktioniert auf diesem Build nicht. Aktualisiere die Server vorerst nicht.",
+      "checking": "Dieser Build wird gerade geprüft.",
+      "no_verdict": "Die letzte Prüfung kam zu keinem Ergebnis."
+    },
+    "status": {
+      "pass": "Bestanden",
+      "warn": "Warnung",
+      "fail": "Fehlgeschlagen",
+      "pending": "Ausstehend",
+      "checking": "Wird geprüft…"
+    },
+    "stage": {
+      "static": "Statische Analyse",
+      "selftest": "Selbsttest",
+      "live": "Live-Server"
+    },
+    "state": {
+      "queued": "In der Warteschlange",
+      "checking": "Wird geprüft",
+      "pass": "Bestanden",
+      "warn": "Warnungen",
+      "fail": "Fehlgeschlagen",
+      "no_verdict": "Kein Ergebnis"
+    },
+    "trigger": {
+      "build_change": "Neuer CS2-Build",
+      "surface_change": "Spieldaten geändert",
+      "nightly": "Nächtlich",
+      "release": "Ready-Up-Release",
+      "manual": "Manuell"
+    },
+    "kind": {
+      "signature": "Signaturen",
+      "rtti": "RTTI",
+      "vtable": "Virtuelle Tabellen",
+      "hook_site": "Hook-Stellen",
+      "layout": "Speicherlayout",
+      "schema": "Schema",
+      "event": "Spielereignisse",
+      "selftest": "Selbsttest",
+      "livetest": "Live-Test"
+    },
+    "componentsTitle": "Komponenten",
+    "checksSummary": "{{passed}} von {{total}} Prüfungen bestanden",
+    "noChecks": "Noch keine Prüfungen gemeldet",
+    "failures": "Fehler",
+    "historyTitle": "Letzte Läufe",
+    "historyItem": "CS2 {{patch}} · Build {{buildid}}"
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "compatPage": {
+    "title": "Ready Up-compatibiliteit",
+    "subtitle": "Of de Ready Up-plug-ins werken met de nieuwste Counter-Strike 2-update, automatisch gecontroleerd bij elke nieuwe CS2-build.",
+    "live": "Live",
+    "offline": "Opnieuw verbinden…",
+    "loading": "Compatibiliteit laden",
+    "loadError": "Kan de compatibiliteit niet laden. Probeer het zo opnieuw.",
+    "disabledTitle": "Hier niet beschikbaar",
+    "disabledDescription": "Deze site publiceert geen Ready Up-compatibiliteit.",
+    "emptyTitle": "Nog geen resultaten",
+    "emptyDescription": "Er is nog geen compatibiliteitscontrole binnengekomen. Deze pagina werkt zichzelf bij zodra er een is.",
+    "checkedAgo": "Gecontroleerd {{time}}",
+    "viewRun": "Run bekijken",
+    "factsLabel": "Wat er is gecontroleerd",
+    "facts": {
+      "patch": "CS2-patch",
+      "buildid": "Build-ID",
+      "readyup": "Ready Up",
+      "stage": "Fase"
+    },
+    "overall": {
+      "pass": "Compatibel",
+      "warn": "Compatibel, met waarschuwingen",
+      "fail": "Niet compatibel",
+      "checking": "Bezig met controleren…",
+      "no_verdict": "Geen oordeel"
+    },
+    "overallHint": {
+      "pass": "Alle onderdelen zijn door hun controles gekomen op deze build.",
+      "warn": "Ready Up werkt op deze build, maar sommige controles verdienen een nadere blik.",
+      "fail": "Minstens één onderdeel werkt niet op deze build. Wacht nog met het bijwerken van servers.",
+      "checking": "Deze build wordt nu gecontroleerd.",
+      "no_verdict": "De laatste controle kwam niet tot een oordeel."
+    },
+    "status": {
+      "pass": "Geslaagd",
+      "warn": "Waarschuwing",
+      "fail": "Mislukt",
+      "pending": "In afwachting",
+      "checking": "Bezig met controleren…"
+    },
+    "stage": {
+      "static": "Statische analyse",
+      "selftest": "Zelftest",
+      "live": "Live server"
+    },
+    "state": {
+      "queued": "In de wachtrij",
+      "checking": "Bezig",
+      "pass": "Geslaagd",
+      "warn": "Waarschuwingen",
+      "fail": "Mislukt",
+      "no_verdict": "Geen oordeel"
+    },
+    "trigger": {
+      "build_change": "Nieuwe CS2-build",
+      "surface_change": "Speldata gewijzigd",
+      "nightly": "Nachtelijk",
+      "release": "Ready Up-release",
+      "manual": "Handmatig"
+    },
+    "kind": {
+      "signature": "Signaturen",
+      "rtti": "RTTI",
+      "vtable": "Virtuele tabellen",
+      "hook_site": "Hookpunten",
+      "layout": "Geheugenindeling",
+      "schema": "Schema",
+      "event": "Spelgebeurtenissen",
+      "selftest": "Zelftest",
+      "livetest": "Livetest"
+    },
+    "componentsTitle": "Onderdelen",
+    "checksSummary": "{{passed}} van {{total}} controles geslaagd",
+    "noChecks": "Nog geen controles gemeld",
+    "failures": "Fouten",
+    "historyTitle": "Recente runs",
+    "historyItem": "CS2 {{patch}} · build {{buildid}}"
+  }
+}

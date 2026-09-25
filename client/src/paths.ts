@@ -32,6 +32,8 @@ export const paths = {
   me: '/me',
   meConnections: '/me/connections',
   welcomeGames: '/welcome/games',
+  /** Ready Up compatibility with the latest CS2 build. Public, no sign-in. */
+  compatibility: '/compatibility',
 
   // Admin shell
   manage: '/manage',

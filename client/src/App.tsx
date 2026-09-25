@@ -31,6 +31,7 @@ import TournamentMatchesTab from './pages/TournamentMatchesTab';
 import TournamentTeamsTab from './pages/TournamentTeamsTab';
 import Home from './pages/Home';
 import Browse from './pages/Browse';
+import Compatibility from './pages/Compatibility';
 import AccountConnections from './pages/AccountConnections';
 import ConnectSteam from './pages/ConnectSteam';
 import Templates from './pages/Templates';
@@ -352,6 +353,10 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+      {/* Ready Up compatibility: public, anonymous visitors included, and
+          outside the admin shell so a signed-in admin sees the same page. */}
+      <Route path={paths.compatibility} element={<Compatibility />} />
 
       {/* The signed-in player's own account */}
       <Route path={paths.me} element={<Navigate to={paths.meConnections} replace />} />

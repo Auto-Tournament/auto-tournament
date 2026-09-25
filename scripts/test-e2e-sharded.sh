@@ -19,6 +19,7 @@ PG_PORT=5433
 SERVER_TOKEN="${SERVER_TOKEN:-server123}"
 API_TOKENS="${API_TOKENS:-ci-admin:ci-admin-token-0123456789abcdef}"
 API_TOKENS_READONLY="${API_TOKENS_READONLY:-ci-readonly:ci-readonly-token-0123456789abcdef}"
+COMPAT_INGEST_TOKEN="${COMPAT_INGEST_TOKEN:-ci-compat-token-0123456789abcdef}"
 DB_USER="${DB_USER:-postgres}"
 DB_PASSWORD="${DB_PASSWORD:-postgres}"
 DB_NAME_BASE="${DB_NAME:-auto_tournament}"
@@ -144,6 +145,7 @@ start_api_container() {
     -e SERVER_TOKEN="${SERVER_TOKEN}" \
     -e API_TOKENS="${API_TOKENS}" \
     -e API_TOKENS_READONLY="${API_TOKENS_READONLY}" \
+    -e COMPAT_INGEST_TOKEN="${COMPAT_INGEST_TOKEN}" \
     -e LOG_LEVEL=debug \
     -e DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${PG_CONTAINER}:5432/${db_name}" \
     -e DB_HOST="${PG_CONTAINER}" \
