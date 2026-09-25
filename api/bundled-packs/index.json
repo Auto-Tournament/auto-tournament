@@ -4,20 +4,22 @@
     {
       "slug": "age-of-empires-ii",
       "name": "Age of Empires II",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Real-time strategy. Report games won.",
       "file": "packs/age-of-empires-ii.json",
-      "icon": "icons/age-of-empires-ii.svg"
+      "icon": "icons/age-of-empires-ii.svg",
+      "appIcon": "app-icons/age-of-empires-ii.webp"
     },
     {
       "slug": "apex-legends",
       "name": "Apex Legends",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Three-a-side battle royale. Placement and kills each match.",
       "file": "packs/apex-legends.json",
-      "icon": "icons/apex-legends.svg"
+      "icon": "icons/apex-legends.svg",
+      "appIcon": "app-icons/apex-legends.webp"
     },
     {
       "slug": "battlefield-6",
@@ -31,20 +33,22 @@
     {
       "slug": "brawl-stars",
       "name": "Brawl Stars",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Three-a-side mobile brawler, reported by the events played.",
       "file": "packs/brawl-stars.json",
-      "icon": "icons/brawl-stars.svg"
+      "icon": "icons/brawl-stars.svg",
+      "appIcon": "app-icons/brawl-stars.webp"
     },
     {
       "slug": "call-of-duty",
       "name": "Call of Duty",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Search and Destroy, Hardpoint and Control, reported by the teams that played them.",
       "file": "packs/call-of-duty.json",
-      "icon": "icons/call-of-duty.svg"
+      "icon": "icons/call-of-duty.svg",
+      "appIcon": "app-icons/call-of-duty.webp"
     },
     {
       "slug": "chess",
@@ -58,74 +62,82 @@
     {
       "slug": "clash-royale",
       "name": "Clash Royale",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "One-on-one mobile card battler. Report games won in the set.",
       "file": "packs/clash-royale.json",
-      "icon": "icons/clash-royale.svg"
+      "icon": "icons/clash-royale.svg",
+      "appIcon": "app-icons/clash-royale.webp"
     },
     {
       "slug": "deadlock",
       "name": "Deadlock",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Six-a-side hero shooter MOBA.",
       "file": "packs/deadlock.json",
-      "icon": "icons/deadlock.svg"
+      "icon": "icons/deadlock.svg",
+      "appIcon": "app-icons/deadlock.webp"
     },
     {
       "slug": "dota-2",
       "name": "Dota 2",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Five-a-side MOBA. One map per game.",
       "file": "packs/dota-2.json",
-      "icon": "icons/dota-2.svg"
+      "icon": "icons/dota-2.svg",
+      "appIcon": "app-icons/dota-2.webp"
     },
     {
       "slug": "ea-sports-fc-25",
       "name": "EA Sports FC",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Football. Report the scoreline.",
       "file": "packs/ea-sports-fc-25.json",
-      "icon": "icons/ea-sports-fc-25.svg"
+      "icon": "icons/ea-sports-fc-25.svg",
+      "appIcon": "app-icons/ea-sports-fc-25.webp"
     },
     {
       "slug": "fortnite",
       "name": "Fortnite",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Battle royale. Report placement and eliminations each match.",
       "file": "packs/fortnite.json",
-      "icon": "icons/fortnite.svg"
+      "icon": "icons/fortnite.svg",
+      "appIcon": "app-icons/fortnite.webp"
     },
     {
       "slug": "guilty-gear-strive",
       "name": "Guilty Gear -Strive-",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Fighting game. Report games won in the set.",
       "file": "packs/guilty-gear-strive.json",
-      "icon": "icons/guilty-gear-strive.svg"
+      "icon": "icons/guilty-gear-strive.svg",
+      "appIcon": "app-icons/guilty-gear-strive.webp"
     },
     {
       "slug": "halo-infinite",
       "name": "Halo Infinite",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Four-a-side arena shooter, reported by the maps played.",
       "file": "packs/halo-infinite.json",
-      "icon": "icons/halo-infinite.svg"
+      "icon": "icons/halo-infinite.svg",
+      "appIcon": "app-icons/halo-infinite.webp"
     },
     {
       "slug": "hearthstone",
       "name": "Hearthstone",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "One-on-one digital card game. Report games won in the set.",
       "file": "packs/hearthstone.json",
-      "icon": "icons/hearthstone.svg"
+      "icon": "icons/hearthstone.svg",
+      "appIcon": "app-icons/hearthstone.webp"
     },
     {
       "slug": "league-of-legends",
@@ -139,101 +151,112 @@
     {
       "slug": "mario-kart-8-deluxe",
       "name": "Mario Kart 8 Deluxe",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Kart racing. Report finishing position and points each race.",
       "file": "packs/mario-kart-8-deluxe.json",
-      "icon": "icons/mario-kart-8-deluxe.svg"
+      "icon": "icons/mario-kart-8-deluxe.svg",
+      "appIcon": "app-icons/mario-kart-8-deluxe.webp"
     },
     {
       "slug": "marvel-rivals",
       "name": "Marvel Rivals",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Six-a-side hero shooter, reported by the maps played.",
       "file": "packs/marvel-rivals.json",
-      "icon": "icons/marvel-rivals.svg"
+      "icon": "icons/marvel-rivals.svg",
+      "appIcon": "app-icons/marvel-rivals.webp"
     },
     {
       "slug": "minecraft",
       "name": "Minecraft",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Whatever the host builds on it. The captains report who won.",
       "file": "packs/minecraft.json",
-      "icon": "icons/minecraft.svg"
+      "icon": "icons/minecraft.svg",
+      "appIcon": "app-icons/minecraft.webp"
     },
     {
       "slug": "mobile-legends-bang-bang",
       "name": "Mobile Legends: Bang Bang",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Five-a-side mobile MOBA. One map per game.",
       "file": "packs/mobile-legends-bang-bang.json",
-      "icon": "icons/mobile-legends-bang-bang.svg"
+      "icon": "icons/mobile-legends-bang-bang.svg",
+      "appIcon": "app-icons/mobile-legends-bang-bang.webp"
     },
     {
       "slug": "mortal-kombat-1",
       "name": "Mortal Kombat 1",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Fighting game. Report games won in the set.",
       "file": "packs/mortal-kombat-1.json",
-      "icon": "icons/mortal-kombat-1.svg"
+      "icon": "icons/mortal-kombat-1.svg",
+      "appIcon": "app-icons/mortal-kombat-1.webp"
     },
     {
       "slug": "osu",
       "name": "osu!",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Rhythm game. Report maps won.",
       "file": "packs/osu.json",
-      "icon": "icons/osu.svg"
+      "icon": "icons/osu.svg",
+      "appIcon": "app-icons/osu.webp"
     },
     {
       "slug": "overwatch-2",
       "name": "Overwatch 2",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Five-a-side hero shooter, reported by maps won.",
       "file": "packs/overwatch-2.json",
-      "icon": "icons/overwatch-2.svg"
+      "icon": "icons/overwatch-2.svg",
+      "appIcon": "app-icons/overwatch-2.webp"
     },
     {
       "slug": "pubg-battlegrounds",
       "name": "PUBG: Battlegrounds",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Squad battle royale. Placement and eliminations each match.",
       "file": "packs/pubg-battlegrounds.json",
-      "icon": "icons/pubg-battlegrounds.svg"
+      "icon": "icons/pubg-battlegrounds.svg",
+      "appIcon": "app-icons/pubg-battlegrounds.webp"
     },
     {
       "slug": "rainbow-six-siege",
       "name": "Rainbow Six Siege",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Five-a-side tactical shooter, reported by rounds won.",
       "file": "packs/rainbow-six-siege.json",
-      "icon": "icons/rainbow-six-siege.svg"
+      "icon": "icons/rainbow-six-siege.svg",
+      "appIcon": "app-icons/rainbow-six-siege.webp"
     },
     {
       "slug": "rocket-league",
       "name": "Rocket League",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Car soccer. Captains report the score; goals, assists, saves and shots per player.",
       "file": "packs/rocket-league.json",
-      "icon": "icons/rocket-league.svg"
+      "icon": "icons/rocket-league.svg",
+      "appIcon": "app-icons/rocket-league.webp"
     },
     {
       "slug": "splatoon-3",
       "name": "Splatoon 3",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Four-a-side team shooter, reported by the maps played.",
       "file": "packs/splatoon-3.json",
-      "icon": "icons/splatoon-3.svg"
+      "icon": "icons/splatoon-3.svg",
+      "appIcon": "app-icons/splatoon-3.webp"
     },
     {
       "slug": "starcraft-ii",
@@ -247,65 +270,72 @@
     {
       "slug": "street-fighter-6",
       "name": "Street Fighter 6",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Fighting game. Report games won in the set.",
       "file": "packs/street-fighter-6.json",
-      "icon": "icons/street-fighter-6.svg"
+      "icon": "icons/street-fighter-6.svg",
+      "appIcon": "app-icons/street-fighter-6.webp"
     },
     {
       "slug": "super-smash-bros-ultimate",
       "name": "Super Smash Bros. Ultimate",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Platform fighter. Report games won in the set.",
       "file": "packs/super-smash-bros-ultimate.json",
-      "icon": "icons/super-smash-bros-ultimate.svg"
+      "icon": "icons/super-smash-bros-ultimate.svg",
+      "appIcon": "app-icons/super-smash-bros-ultimate.webp"
     },
     {
       "slug": "team-fortress-2",
       "name": "Team Fortress 2",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Six-a-side class shooter, reported by rounds won.",
       "file": "packs/team-fortress-2.json",
-      "icon": "icons/team-fortress-2.svg"
+      "icon": "icons/team-fortress-2.svg",
+      "appIcon": "app-icons/team-fortress-2.webp"
     },
     {
       "slug": "teamfight-tactics",
       "name": "Teamfight Tactics",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Eight-player auto battler. Report finishing placement each game.",
       "file": "packs/teamfight-tactics.json",
-      "icon": "icons/teamfight-tactics.svg"
+      "icon": "icons/teamfight-tactics.svg",
+      "appIcon": "app-icons/teamfight-tactics.webp"
     },
     {
       "slug": "tekken-8",
       "name": "Tekken 8",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Fighting game. Report games won in the set.",
       "file": "packs/tekken-8.json",
-      "icon": "icons/tekken-8.svg"
+      "icon": "icons/tekken-8.svg",
+      "appIcon": "app-icons/tekken-8.webp"
     },
     {
       "slug": "trackmania",
       "name": "Trackmania",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Racing. The score is whatever format the host runs — points, rounds or times.",
       "file": "packs/trackmania.json",
-      "icon": "icons/trackmania.svg"
+      "icon": "icons/trackmania.svg",
+      "appIcon": "app-icons/trackmania.webp"
     },
     {
       "slug": "valorant",
       "name": "Valorant",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Five-a-side tactical shooter, reported by rounds won.",
       "file": "packs/valorant.json",
-      "icon": "icons/valorant.svg"
+      "icon": "icons/valorant.svg",
+      "appIcon": "app-icons/valorant.webp"
     }
   ]
 }

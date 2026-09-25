@@ -3,9 +3,10 @@
   "slug": "valorant",
   "name": "Valorant",
   "engine": "manual-report",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Five-a-side tactical shooter, reported by rounds won.",
   "icon": "../icons/valorant.svg",
+  "appIcon": "../app-icons/valorant.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

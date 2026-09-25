@@ -145,6 +145,8 @@ export interface CatalogPackEntry {
   description: string | null;
   file: string;
   icon: string | null;
+  /** The game's square app icon, relative to the feed; null when it names none. */
+  appIcon: string | null;
 }
 
 export interface RemoteFeed {
@@ -252,6 +254,7 @@ function parsePacks(raw: unknown): CatalogPackEntry[] {
       description: text(p.description),
       file,
       icon: text(p.icon, 200),
+      appIcon: text(p.appIcon, 200),
     });
   }
   return packs;

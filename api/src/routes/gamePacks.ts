@@ -13,14 +13,18 @@ import { Router, Request, Response } from 'express';
 import { requireAuth, requestActorId } from '../middleware/auth';
 import { log } from '../utils/logger';
 import {
+  bundledPackAppIcon,
+  checkAppIcon,
   checkTileMarkup,
   installPack,
   installedPack,
   installedPacks,
+  packAppIcon,
   packIcon,
   packIsInUse,
   removePack,
   validatePack,
+  type AppIcon,
 } from '../services/gamePackService';
 import { fetchIndexedPack, fetchIndexedTile, readPackIndex } from '../services/packIndexService';
 
@@ -73,6 +77,55 @@ router.get('/:slug/icon.svg', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * @openapi
+ * /api/packs/{slug}/app-icon:
+ *   get:
+ *     tags: [Game packs]
+ *     summary: A game's square app icon
+ *     description: |
+ *       The icon players know the game by, for the small game pills: the
+ *       installed pack's, or — for a game this instance offers but has not
+ *       installed — the one in the image's bundled snapshot. A PNG or WebP,
+ *       checked by its bytes when it was imported.
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: The icon
+ *         content:
+ *           image/webp: {}
+ *           image/png: {}
+ *       404:
+ *         description: No app icon for that game
+ */
+router.get('/:slug/app-icon', async (req: Request, res: Response) => {
+  try {
+    const slug = req.params.slug.trim().toLowerCase();
+    // An admin's own pack answers for its game even without an icon: the
+    // snapshot's picture is for the snapshot's pack.
+    const installed = installedPack(slug);
+    const icon =
+      (installed ? await packAppIcon(slug) : null) ??
+      (!installed || installed.source === 'bundled' ? await bundledPackAppIcon(slug) : null);
+    if (!icon) {
+      res.status(404).json({ success: false, error: 'No app icon for that game' });
+      return;
+    }
+    res.setHeader('Content-Type', icon.type);
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.send(icon.data);
+  } catch (error) {
+    log.error('[PACKS] Failed to serve an app icon', error);
+    res.status(500).json({ success: false, error: 'Failed to read the app icon' });
+  }
+});
+
 // Everything below is admin-only.
 router.use(requireAuth);
 
@@ -97,6 +150,7 @@ router.get('/', (_req: Request, res: Response) => {
       version: pack.version,
       source: pack.source,
       hasIcon: pack.hasIcon,
+      hasAppIcon: pack.hasAppIcon,
       installedAt: pack.installedAt,
       description: pack.definition.description ?? null,
       statFieldCount: pack.definition.stats?.length ?? 0,
@@ -125,8 +179,9 @@ router.post('/', async (req: Request, res: Response) => {
   // Two shapes, because a pack's tile is a file beside it rather than a
   // string inside it. The page sends `{ pack, icon }` with the markup of the
   // SVG the admin picked alongside the JSON; `curl -d @pack.json` sends the
-  // pack on its own, and gets the game with its text mark.
-  const body = (req.body ?? {}) as { pack?: unknown; icon?: unknown };
+  // pack on its own, and gets the game with its text mark. `appIcon`, when
+  // sent, is the app icon's bytes as base64.
+  const body = (req.body ?? {}) as { pack?: unknown; icon?: unknown; appIcon?: unknown };
   const hasEnvelope = body.pack !== undefined;
   const result = validatePack(hasEnvelope ? body.pack : req.body);
   if (!result.ok) {
@@ -148,12 +203,27 @@ router.post('/', async (req: Request, res: Response) => {
     tile = body.icon;
   }
 
+  let appIcon: AppIcon | null = null;
+  if (hasEnvelope && body.appIcon !== undefined && body.appIcon !== null) {
+    if (typeof body.appIcon !== 'string') {
+      res.status(400).json({ success: false, error: 'appIcon must be base64 image data' });
+      return;
+    }
+    const checked = checkAppIcon(Buffer.from(body.appIcon, 'base64'));
+    if (typeof checked === 'string') {
+      res.status(400).json({ success: false, error: checked });
+      return;
+    }
+    appIcon = checked;
+  }
+
   try {
     const existing = installedPack(result.pack.slug);
     const pack = await installPack(result.pack, {
       source: 'uploaded',
       installedBy: requestActorId(req),
       tile,
+      appIcon,
     });
     res.json({
       success: true,
@@ -261,6 +331,7 @@ router.post('/index/:slug', async (req: Request, res: Response) => {
       origin: found.origin,
       installedBy: requestActorId(req),
       tile: found.tile,
+      appIcon: found.appIcon,
     });
     res.json({
       success: true,

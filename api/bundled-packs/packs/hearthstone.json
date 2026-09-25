@@ -3,9 +3,10 @@
   "slug": "hearthstone",
   "name": "Hearthstone",
   "engine": "manual-report",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "One-on-one digital card game. Report games won in the set.",
   "icon": "../icons/hearthstone.svg",
+  "appIcon": "../app-icons/hearthstone.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

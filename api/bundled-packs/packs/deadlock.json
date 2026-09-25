@@ -3,9 +3,10 @@
   "slug": "deadlock",
   "name": "Deadlock",
   "engine": "manual-report",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Six-a-side hero shooter MOBA.",
   "icon": "../icons/deadlock.svg",
+  "appIcon": "../app-icons/deadlock.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

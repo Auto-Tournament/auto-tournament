@@ -1204,6 +1204,45 @@
         }
       }
     },
+    "/api/catalog/packs/{slug}/app-icon": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "The square app icon of a game pack in the catalog",
+        "description": "From the installed pack, the offline snapshot, or the feed — fetched\nby this server and served from this origin, checked by its bytes\n(PNG or WebP, square, at most 25 KB) like an imported one.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The icon",
+            "content": {
+              "image/webp": {},
+              "image/png": {}
+            }
+          },
+          "404": {
+            "description": "No app icon"
+          }
+        }
+      }
+    },
     "/api/catalog/packs/{slug}/icon.svg": {
       "get": {
         "tags": [
@@ -3783,6 +3822,37 @@
             }
           }
         ]
+      }
+    },
+    "/api/packs/{slug}/app-icon": {
+      "get": {
+        "tags": [
+          "Game packs"
+        ],
+        "summary": "A game's square app icon",
+        "description": "The icon players know the game by, for the small game pills: the\ninstalled pack's, or — for a game this instance offers but has not\ninstalled — the one in the image's bundled snapshot. A PNG or WebP,\nchecked by its bytes when it was imported.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The icon",
+            "content": {
+              "image/webp": {},
+              "image/png": {}
+            }
+          },
+          "404": {
+            "description": "No app icon for that game"
+          }
+        }
       }
     },
     "/api/packs/{slug}/icon.svg": {

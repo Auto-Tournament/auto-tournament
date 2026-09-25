@@ -29,9 +29,12 @@ import fetch from 'node-fetch';
 import { DATA_DIR } from '../config/dataDir';
 import { log } from '../utils/logger';
 import {
+  MAX_APP_ICON_BYTES,
+  checkAppIcon,
   checkTileMarkup,
   installedPack,
   validatePack,
+  type AppIcon,
   type GamePackDefinition,
 } from './gamePackService';
 
@@ -147,6 +150,16 @@ async function fetchText(url: string, limit: number): Promise<string> {
   return text;
 }
 
+/** A binary file (an app icon), refused once it passes `limit` bytes. */
+export async function fetchBytes(url: string, limit: number): Promise<Buffer> {
+  // `size` makes node-fetch stop reading past the limit rather than after it.
+  const response = await fetch(url, { timeout: FETCH_TIMEOUT_MS, size: limit + 1 });
+  if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+  const bytes = await response.buffer();
+  if (bytes.length > limit) throw new Error('the file is too large');
+  return bytes;
+}
+
 function parseIndex(text: string): RawEntry[] {
   const parsed = JSON.parse(text) as { schema?: unknown; packs?: unknown };
   if (parsed.schema !== 1) throw new Error('the index is written for a newer Auto Tournament');
@@ -237,7 +250,7 @@ export async function readPackIndex(): Promise<PackIndexResult> {
 export async function fetchIndexedPack(
   slug: string
 ): Promise<
-  | { ok: true; pack: GamePackDefinition; origin: string; tile: string | null }
+  | { ok: true; pack: GamePackDefinition; origin: string; tile: string | null; appIcon: AppIcon | null }
   | { ok: false; error: string }
 > {
   const wanted = slug.trim().toLowerCase();
@@ -257,7 +270,7 @@ export async function fetchPackAt(
   slug: string,
   file: string
 ): Promise<
-  | { ok: true; pack: GamePackDefinition; origin: string; tile: string | null }
+  | { ok: true; pack: GamePackDefinition; origin: string; tile: string | null; appIcon: AppIcon | null }
   | { ok: false; error: string }
 > {
   const wanted = slug.trim().toLowerCase();
@@ -313,7 +326,27 @@ export async function fetchPackAt(
     }
   }
 
-  return { ok: true, pack: result.pack, origin: url, tile };
+  // The app icon the same way: beside the pack, inside the base, checked by
+  // its bytes.
+  let appIcon: AppIcon | null = null;
+  if (result.pack.appIcon) {
+    const appIconUrl = resolveInsideIndex(base, url, result.pack.appIcon);
+    if (!appIconUrl) return { ok: false, error: "That pack's appIcon points outside the index" };
+    try {
+      const checked = checkAppIcon(await fetchBytes(appIconUrl, MAX_APP_ICON_BYTES));
+      if (typeof checked === 'string') return { ok: false, error: checked };
+      appIcon = checked;
+    } catch (error) {
+      return {
+        ok: false,
+        error: `Could not download that pack's appIcon: ${
+          error instanceof Error ? error.message : 'unknown error'
+        }`,
+      };
+    }
+  }
+
+  return { ok: true, pack: result.pack, origin: url, tile, appIcon };
 }
 
 /**

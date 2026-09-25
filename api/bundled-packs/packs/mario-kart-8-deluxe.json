@@ -7,9 +7,10 @@
     "mk8dx",
     "mario-kart"
   ],
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Kart racing. Report finishing position and points each race.",
   "icon": "../icons/mario-kart-8-deluxe.svg",
+  "appIcon": "../app-icons/mario-kart-8-deluxe.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

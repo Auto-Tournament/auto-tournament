@@ -7,9 +7,10 @@
     "ow",
     "ow2"
   ],
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Five-a-side hero shooter, reported by maps won.",
   "icon": "../icons/overwatch-2.svg",
+  "appIcon": "../app-icons/overwatch-2.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

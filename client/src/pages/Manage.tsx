@@ -40,7 +40,7 @@ function ManageEyebrow({ tournament }: { tournament: Tournament }) {
   const gameName = game?.name ?? wanted;
   return (
     <>
-      <GameMark name={gameName} slug={wanted} coverUrl={game?.icon} size={24} />
+      <GameMark name={gameName} slug={wanted} iconUrl={game?.icon} size={24} />
       <span>{gameName}</span>
       <span aria-hidden>·</span>
       <Link

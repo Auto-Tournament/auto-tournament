@@ -6,9 +6,10 @@
   "aliases": [
     "pubg"
   ],
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Squad battle royale. Placement and eliminations each match.",
   "icon": "../icons/pubg-battlegrounds.svg",
+  "appIcon": "../app-icons/pubg-battlegrounds.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

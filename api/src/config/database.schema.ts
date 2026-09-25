@@ -225,6 +225,7 @@ export function getSchemaSQL(): string {
       genres TEXT, -- JSON array of up to 3 genre names, e.g. '["Shooter","Tactical"]' (matches the maps/team_ids convention: JSON text, not a native array)
       source TEXT NOT NULL DEFAULT 'builtin', -- 'igdb' | 'wikidata' | 'builtin'
       enriched_at INTEGER, -- epoch of the last successful built-in enrichment (image/genres/year from Wikidata or IGDB); NULL = never enriched
+      igdb_checked_at INTEGER, -- epoch of the last IGDB re-resolve of a Wikidata/built-in row (gameEnrichmentService); NULL = never tried
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
 
@@ -244,6 +245,8 @@ export function getSchemaSQL(): string {
       origin TEXT, -- where an 'index' pack came from, for updates
       definition TEXT NOT NULL, -- the validated pack JSON, as stored
       icon TEXT, -- the pack's square tile (SVG markup), already sanitised
+      app_icon TEXT, -- the game's square app icon (PNG or WebP), base64; checked on import
+      app_icon_type TEXT, -- 'image/png' | 'image/webp'
       installed_by TEXT, -- admin account uid, best effort
       installed_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER

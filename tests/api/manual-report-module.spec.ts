@@ -46,6 +46,7 @@ function installBundledPacksInProcess(): void {
         source: 'bundled',
         origin: null,
         hasIcon: Boolean(definition.icon),
+        hasAppIcon: Boolean(definition.appIcon),
         installedAt: 0,
         definition,
       };

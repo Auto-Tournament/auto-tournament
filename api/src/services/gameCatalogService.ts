@@ -21,7 +21,12 @@
 
 import { db } from '../config/database';
 import { listIntegrations } from '../integrations/registry';
-import { installedPacks, packIconPath } from './gamePackService';
+import {
+  hasBundledAppIcon,
+  installedPacks,
+  packAppIconPath,
+  packIconPath,
+} from './gamePackService';
 import { log } from '../utils/logger';
 import { slugify } from '../utils/slug';
 import { IgdbError, searchIgdb, type IgdbGame } from './igdbService';
@@ -55,6 +60,13 @@ export interface GameSummary {
   genres: string[];
   /** `coverUrl` if present, else `logoUrl`; convenience for the onboarding page's cards. */
   imageUrl: string | null;
+  /**
+   * The game's square app icon — the picture on a player's phone or launcher
+   * — from its module or its pack (installed, or in the image's snapshot).
+   * Null for a game neither ships one for, such as one found through search.
+   * What the small game pills draw; never the wide logo.
+   */
+  appIconUrl: string | null;
 }
 
 export interface GameSearchResult {
@@ -93,6 +105,8 @@ interface BuiltinGame {
    * different question, and `GameSummary.imageUrl` still carries it.
    */
   icon: string | null;
+  /** The game's square app icon, as a URL the client loads, or null. */
+  appIcon: string | null;
 }
 
 /** Popular esports titles offered before IGDB is configured. IGDB slugs. */
@@ -159,6 +173,7 @@ export function builtinGames(): BuiltinGame[] {
         viaCatchAll,
         own: true,
         icon: integration.catalog?.icon ?? null,
+        appIcon: integration.catalog?.appIcon ?? null,
       });
     }
     for (const entry of integration.catalogEntries ?? []) {
@@ -170,6 +185,7 @@ export function builtinGames(): BuiltinGame[] {
         viaCatchAll,
         own: false,
         icon: entry.icon ?? null,
+        appIcon: entry.appIcon ?? null,
       });
     }
   }
@@ -200,6 +216,12 @@ export function builtinGames(): BuiltinGame[] {
       viaCatchAll: true,
       own: false,
       icon: pack.hasIcon ? packIconPath(pack.slug) : null,
+      // An admin's own pack keeps its own answer, even "none"; a bundled one
+      // is the snapshot's, which the route falls back to.
+      appIcon:
+        pack.hasAppIcon || (pack.source === 'bundled' && hasBundledAppIcon(pack.slug))
+          ? packAppIconPath(pack.slug)
+          : null,
     });
   }
 
@@ -212,18 +234,32 @@ export function builtinGames(): BuiltinGame[] {
       viaCatchAll: false,
       own: false,
       icon: null,
+      // A popular title nothing installed runs still has its picture when the
+      // image's snapshot carries one: the pill is about recognising a game,
+      // not about whether this instance can run it.
+      appIcon: hasBundledAppIcon(game.slug) ? packAppIconPath(game.slug) : null,
     });
   }
 
   return out;
 }
 
-function supportedSlugs(): Map<string, string> {
-  const map = new Map<string, string>();
+/** What `toSummary` needs from the built-in list, read once per request. */
+interface SummaryContext {
+  /** Slug -> the integration that runs it. */
+  supported: Map<string, string>;
+  /** Slug -> its app icon URL. */
+  appIcons: Map<string, string>;
+}
+
+function supportedSlugs(): SummaryContext {
+  const supported = new Map<string, string>();
+  const appIcons = new Map<string, string>();
   for (const game of builtinGames()) {
-    if (game.integrationId) map.set(game.slug, game.integrationId);
+    if (game.integrationId) supported.set(game.slug, game.integrationId);
+    if (game.appIcon) appIcons.set(game.slug, game.appIcon);
   }
-  return map;
+  return { supported, appIcons };
 }
 
 function matchesBuiltin(game: BuiltinGame, query: string): boolean {
@@ -258,7 +294,8 @@ function parseGenres(genres: string | null): string[] {
   }
 }
 
-function toSummary(row: GameRow, supported: Map<string, string>): GameSummary {
+function toSummary(row: GameRow, context: SummaryContext): GameSummary {
+  const { supported, appIcons } = context;
   return {
     id: row.id,
     slug: row.slug,
@@ -270,6 +307,7 @@ function toSummary(row: GameRow, supported: Map<string, string>): GameSummary {
     source: row.source === 'igdb' || row.source === 'wikidata' ? row.source : 'builtin',
     genres: parseGenres(row.genres),
     imageUrl: row.cover_url || row.logo_url || null,
+    appIconUrl: appIcons.get(row.slug) ?? null,
   };
 }
 

@@ -9,7 +9,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import { useTranslation } from 'react-i18next';
-import { GameThumb } from './GameThumb';
+import { GameMark } from '../common/GameMark';
 import { ExternalLink } from '../common/ExternalLink';
 import {
   MAX_PLAYER_GAMES,
@@ -158,7 +158,13 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
                 data-testid={`game-option-${game.slug}`}
                 sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}
               >
-                <GameThumb name={game.name} coverUrl={game.coverUrl} size={36} />
+                <GameMark
+                  name={game.name}
+                  slug={game.slug}
+                  iconUrl={game.appIconUrl}
+                  coverUrl={game.coverUrl}
+                  size={32}
+                />
                 <Box sx={{ minWidth: 0, flex: 1 }}>
                   <Typography variant="body2" noWrap>
                     {game.name}
@@ -217,7 +223,15 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
                 variant="outlined"
                 size="small"
                 label={game.name}
-                avatar={<GameThumb name={game.name} coverUrl={game.coverUrl} size={20} />}
+                avatar={
+                  <GameMark
+                    name={game.name}
+                    slug={game.slug}
+                    iconUrl={game.appIconUrl}
+                    coverUrl={game.coverUrl}
+                    size={20}
+                  />
+                }
                 onClick={() => add(game)}
                 data-testid={`game-suggestion-${game.slug}`}
               />
@@ -240,7 +254,15 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
               <Chip
                 key={game.id}
                 label={game.name}
-                avatar={<GameThumb name={game.name} coverUrl={game.coverUrl} size={20} />}
+                avatar={
+                  <GameMark
+                    name={game.name}
+                    slug={game.slug}
+                    iconUrl={game.appIconUrl}
+                    coverUrl={game.coverUrl}
+                    size={20}
+                  />
+                }
                 onDelete={() => remove(game)}
                 title={t('games.picker.remove', { name: game.name })}
                 data-testid={`game-chip-${game.slug}`}

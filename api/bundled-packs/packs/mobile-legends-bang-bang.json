@@ -6,9 +6,10 @@
   "aliases": [
     "mlbb"
   ],
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Five-a-side mobile MOBA. One map per game.",
   "icon": "../icons/mobile-legends-bang-bang.svg",
+  "appIcon": "../app-icons/mobile-legends-bang-bang.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

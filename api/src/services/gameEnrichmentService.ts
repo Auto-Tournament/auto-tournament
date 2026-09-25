@@ -144,6 +144,139 @@ async function enrichRow(
   );
 }
 
+// ---------------------------------------------------------------------------
+// Re-resolving Wikidata rows against IGDB
+// ---------------------------------------------------------------------------
+
+/** Try a row against IGDB again at most this often when it found nothing. */
+const IGDB_RECHECK_MS = 30 * 24 * 60 * 60 * 1000;
+/** Rows per pass; the rest wait for the next start or the next credentials save. */
+const IGDB_RESOLVE_BATCH = 60;
+/** IGDB allows 4 requests a second; stay well under it. */
+const IGDB_RESOLVE_GAP_MS = 350;
+
+interface UnresolvedRow {
+  id: number;
+  slug: string;
+  name: string;
+}
+
+/** Lowercase letters and digits only — the same key search matches built-ins by. */
+function matchKey(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+/**
+ * The IGDB game a stored row is, or null. Search's own rule: the same slug, or
+ * the same name once case and punctuation are dropped ("Counter-Strike 2" and
+ * "Counter Strike 2"). A near miss is never attached — a wrong cover on
+ * somebody's saved game is worse than none.
+ */
+export function pickIgdbMatch(row: { slug: string; name: string }, results: IgdbGame[]): IgdbGame | null {
+  return (
+    results.find((game) => game.slug === row.slug) ??
+    results.find((game) => matchKey(game.name) === matchKey(row.name)) ??
+    null
+  );
+}
+
+let resolving: Promise<number> | null = null;
+
+/**
+ * Give games stored before IGDB was configured their IGDB identity and cover.
+ *
+ * A game picked while search ran on Wikidata (the keyless default) is stored
+ * with Wikidata's picture, which is the game's wide wordmark — right on a
+ * wide card, unreadable in a 20 px pill. Once an admin adds IGDB credentials
+ * those rows would keep that picture for good: search only upserts what it
+ * returns, and the built-in enrichment only looks at rows it has never seen.
+ * This walks them — the ones players have picked first — and attaches the
+ * IGDB match, if there is an exact one, keeping the row's id and slug so no
+ * saved game or tournament moves.
+ *
+ * Background only, rate-limited, never throws. Returns how many rows gained
+ * an IGDB match. One pass at a time; a second call joins the running one.
+ */
+export function resolveStoredGamesAgainstIgdb(): Promise<number> {
+  if (resolving) return resolving;
+  resolving = (async () => {
+    try {
+      return await resolvePass();
+    } catch (err) {
+      log.warn(`[Games] IGDB re-resolve failed, will retry: ${(err as Error).message}`);
+      return 0;
+    } finally {
+      resolving = null;
+    }
+  })();
+  return resolving;
+}
+
+async function resolvePass(): Promise<number> {
+  if (enrichmentDisabled()) return 0;
+  const cutoff = Math.floor((Date.now() - IGDB_RECHECK_MS) / 1000);
+  const rows = await db.queryAsync<UnresolvedRow>(
+    `SELECT g.id, g.slug, g.name FROM games g
+      WHERE g.igdb_id IS NULL AND g.source IN ('wikidata', 'builtin')
+        AND (g.igdb_checked_at IS NULL OR g.igdb_checked_at < ?)
+      ORDER BY EXISTS (SELECT 1 FROM player_games pg WHERE pg.game_id = g.id) DESC, g.id
+      LIMIT ?`,
+    [cutoff, IGDB_RESOLVE_BATCH]
+  );
+  if (rows.length === 0) return 0;
+
+  let matched = 0;
+  for (const [index, row] of rows.entries()) {
+    if (index > 0) await new Promise((resolve) => setTimeout(resolve, IGDB_RESOLVE_GAP_MS));
+    let results: IgdbGame[] | null;
+    try {
+      results = await searchIgdb(row.name, 5);
+    } catch (err) {
+      // IGDB is down or refusing: stop the pass, leave the rest unchecked.
+      log.warn(`[Games] IGDB re-resolve stopped at "${row.name}": ${(err as Error).message}`);
+      break;
+    }
+    if (!results) return matched; // not configured (or just removed)
+
+    const now = Math.floor(Date.now() / 1000);
+    const match = pickIgdbMatch(row, results);
+    if (!match) {
+      await db.runAsync('UPDATE games SET igdb_checked_at = ? WHERE id = ?', [now, row.id]);
+      continue;
+    }
+    // Another row may already hold this IGDB id (search stored the IGDB
+    // spelling of the same game). The id is unique, so this row takes the
+    // cover and stays itself; the two are merged by nobody, but both draw.
+    const taken = await db.queryOneAsync<{ id: number }>(
+      'SELECT id FROM games WHERE igdb_id = ? AND id <> ?',
+      [match.igdbId, row.id]
+    );
+    await db.runAsync(
+      `UPDATE games
+          SET igdb_id = COALESCE(?, igdb_id),
+              cover_url = COALESCE(?, cover_url),
+              release_year = COALESCE(release_year, ?),
+              genres = COALESCE(genres, ?),
+              source = 'igdb',
+              igdb_checked_at = ?,
+              updated_at = ?
+        WHERE id = ?`,
+      [
+        taken ? null : match.igdbId,
+        match.coverUrl,
+        match.releaseYear,
+        match.genres.length > 0 ? JSON.stringify(match.genres.slice(0, 3)) : null,
+        now,
+        now,
+        row.id,
+      ]
+    );
+    matched += 1;
+  }
+  if (matched > 0) log.info(`[Games] Matched ${matched} stored game(s) to IGDB`);
+  return matched;
+}
+
 /**
  * Enrich every stale built-in (never enriched, or last enriched more than 7
  * days ago) from Wikidata (and IGDB, when configured, for the cover). Safe to

@@ -3,9 +3,10 @@
   "slug": "apex-legends",
   "name": "Apex Legends",
   "engine": "manual-report",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Three-a-side battle royale. Placement and kills each match.",
   "icon": "../icons/apex-legends.svg",
+  "appIcon": "../app-icons/apex-legends.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

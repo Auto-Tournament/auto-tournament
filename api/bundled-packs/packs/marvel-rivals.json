@@ -3,9 +3,10 @@
   "slug": "marvel-rivals",
   "name": "Marvel Rivals",
   "engine": "manual-report",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Six-a-side hero shooter, reported by the maps played.",
   "icon": "../icons/marvel-rivals.svg",
+  "appIcon": "../app-icons/marvel-rivals.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60
