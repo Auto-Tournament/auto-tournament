@@ -554,8 +554,12 @@ export function relocateLoadedModule(id: string, dir: string): void {
 // Listing and switching
 // ---------------------------------------------------------------------------
 
-function clientEntryUrl(id: string, entry: string): string {
-  return `/api/modules/${id}/client/${entry.slice('client/'.length)}`;
+/**
+ * The version rides in the query so a browser or CDN that caches the file
+ * anyway fetches the new build after an update.
+ */
+function clientEntryUrl(id: string, entry: string, version: string): string {
+  return `/api/modules/${id}/client/${entry.slice('client/'.length)}?v=${encodeURIComponent(version)}`;
 }
 
 function diskListing(record: DiskModule, enabled: boolean): ModuleListing {
@@ -575,7 +579,7 @@ function diskListing(record: DiskModule, enabled: boolean): ModuleListing {
     reason,
     client:
       status === 'ok' && enabled && manifest?.client
-        ? { entry: clientEntryUrl(manifest.id, manifest.client) }
+        ? { entry: clientEntryUrl(manifest.id, manifest.client, manifest.version) }
         : null,
   };
 }
@@ -632,7 +636,7 @@ export async function listPublicModules(): Promise<PublicModuleListing[]> {
       id: manifest.id,
       version: manifest.version,
       clientApi: manifest.clientApi,
-      client: { entry: clientEntryUrl(manifest.id, manifest.client) },
+      client: { entry: clientEntryUrl(manifest.id, manifest.client, manifest.version) },
     });
   }
   return listed;

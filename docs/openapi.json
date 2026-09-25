@@ -3532,7 +3532,7 @@
                             "properties": {
                               "entry": {
                                 "type": "string",
-                                "example": "/api/modules/example/client/index.js"
+                                "example": "/api/modules/example/client/index.js?v=1.0.0"
                               }
                             }
                           }

@@ -162,7 +162,7 @@ test.describe.serial('Code modules on disk', () => {
       source: 'disk',
       enabled: true,
       status: 'ok',
-      client: { entry: '/api/modules/cs2/client/index.js' },
+      client: { entry: expect.stringMatching(/^\/api\/modules\/cs2\/client\/index\.js\?v=.+/) },
     });
     const catalog = await request.get('/api/catalog');
     const items = ((await catalog.json()) as { items: Array<{ kind: string; id: string; installed: { source: string } | null }> }).items;
@@ -203,7 +203,7 @@ test.describe.serial('Code modules on disk', () => {
       enabled: true,
       status: 'ok',
       reason: null,
-      client: { entry: `/api/modules/${VALID}/client/index.js` },
+      client: { entry: `/api/modules/${VALID}/client/index.js?v=1.0.0` },
     });
   });
 
@@ -241,7 +241,7 @@ test.describe.serial('Code modules on disk', () => {
       id: VALID,
       version: '1.0.0',
       clientApi: '^0.2.0',
-      client: { entry: `/api/modules/${VALID}/client/index.js` },
+      client: { entry: `/api/modules/${VALID}/client/index.js?v=1.0.0` },
     });
 
     // Built-in modules are compiled into the app: never listed. CS2 is a
