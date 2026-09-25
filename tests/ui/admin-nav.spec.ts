@@ -7,7 +7,8 @@ import { ensureSignedIn, signInViaRequest, signInAsPlayer } from '../helpers/aut
  * The 2.x left sidebar is gone. Admins get in from the top bar ("Manage"),
  * and the Manage rail is the admin menu, beside every admin page. These pin
  * that nothing the sidebar reached became unreachable, that the rail stays
- * put from page to page, and that players and visitors see no admin links.
+ * put from page to page (the tournament setup excepted: it takes the rail's
+ * column for its steps), and that players and visitors see no admin links.
  *
  * @tag ui
  * @tag navigation
@@ -72,6 +73,18 @@ test.describe.serial('Admin navigation', () => {
         await expect(item, `rail item ${key}`).toBeVisible({ timeout: 15000 });
         await item.click();
         await expect(page).toHaveURL(url);
+        if (key === 'tournament') {
+          // With no tournament this opens the setup, which takes the page
+          // over: its steps sit in the rail's column, under a way back.
+          await expect(page.getByTestId('tournament-setup-column')).toBeVisible({ timeout: 15000 });
+          await expect(rail).toHaveCount(0);
+          await expect(page.locator('h1'), 'one h1 on the setup').toHaveCount(1);
+          await expect(page).toHaveTitle(/ · Auto Tournament$/);
+          await page.getByTestId('tournament-setup-back-to-manage').click();
+          await expect(page).toHaveURL(/\/manage$/);
+          await expect(rail).toBeVisible({ timeout: 15000 });
+          continue;
+        }
         // Still in the same layout, with the page it opened marked.
         await expect(rail).toBeVisible();
         await expect(page.getByTestId(`manage-rail-${key}`)).toHaveAttribute('aria-current', 'page');

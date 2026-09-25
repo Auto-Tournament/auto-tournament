@@ -622,7 +622,8 @@
           "auto_confirm": "Take the report",
           "escalate": "Ask an admin"
         }
-      }
+      },
+      "backToManage": "Manage"
     },
     "startButton": {
       "start": "Start Tournament",

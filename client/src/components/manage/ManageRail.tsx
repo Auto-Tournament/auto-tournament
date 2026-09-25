@@ -8,7 +8,7 @@ import { useIsDevelopment } from '../../hooks/useIsDevelopment';
 import { useManageRailCounts } from '../../contexts/ManageRailContext';
 import { moduleNavItems, navItemLabel } from '../../utils/moduleNavLabels';
 import { paths } from '../../paths';
-import { RAIL_COLUMN_MIN_WIDTH } from '../../constants/adminLayout';
+import { RAIL_COLUMN_MIN_WIDTH, railColumnSx } from '../../constants/adminLayout';
 import { BELOW_NAV_STICKY_TOP } from '../../constants/navBar';
 import { tokens, fontMono, radii, textSize } from '../../theme/tokens';
 
@@ -169,19 +169,8 @@ export const ManageRail: React.FC = () => {
         // A horizontal scroller under 820px, so it never makes the page
         // scroll sideways; a sticky column beside the page above that. A
         // plain list, as in the draft: no box around it, no icons.
-        position: 'static',
-        width: '100%',
-        minWidth: 0,
-        flex: '0 0 auto',
-        displayPrint: 'none',
+        ...railColumnSx,
         fontSize: textSize.sm,
-        [RAIL_COLUMN_MIN_WIDTH]: {
-          position: 'sticky',
-          top: BELOW_NAV_STICKY_TOP,
-          alignSelf: 'flex-start',
-          width: 220,
-          flex: '0 0 220px',
-        },
       }}
     >
       <Box

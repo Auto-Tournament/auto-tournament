@@ -128,24 +128,33 @@ export function EventPageSettingsCard({
         helperText={`${description.length}/${MAX_DESCRIPTION}`}
       />
 
-      <TextField
-        label={t('tournament.eventPage.locationLabel')}
-        placeholder={t('tournament.eventPage.locationPlaceholder')}
-        value={location}
-        onChange={(e) => setLocation(e.target.value.slice(0, MAX_LOCATION))}
-        fullWidth
-        helperText={`${location.length}/${MAX_LOCATION}`}
-      />
+      {/* Short fields that belong together share a row where there is room. */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))',
+          gap: 3,
+        }}
+      >
+        <TextField
+          label={t('tournament.eventPage.locationLabel')}
+          placeholder={t('tournament.eventPage.locationPlaceholder')}
+          value={location}
+          onChange={(e) => setLocation(e.target.value.slice(0, MAX_LOCATION))}
+          fullWidth
+          helperText={`${location.length}/${MAX_LOCATION}`}
+        />
 
-      <TextField
-        label={t('tournament.eventPage.organizerLabel')}
-        placeholder={t('tournament.eventPage.organizerPlaceholder')}
-        value={organizer}
-        onChange={(e) => setOrganizer(e.target.value.slice(0, MAX_ORGANIZER))}
-        fullWidth
-        helperText={`${organizer.length}/${MAX_ORGANIZER}`}
-        inputProps={{ 'data-testid': 'event-page-organizer' }}
-      />
+        <TextField
+          label={t('tournament.eventPage.organizerLabel')}
+          placeholder={t('tournament.eventPage.organizerPlaceholder')}
+          value={organizer}
+          onChange={(e) => setOrganizer(e.target.value.slice(0, MAX_ORGANIZER))}
+          fullWidth
+          helperText={`${organizer.length}/${MAX_ORGANIZER}`}
+          inputProps={{ 'data-testid': 'event-page-organizer' }}
+        />
+      </Box>
 
       <TextField
         label={t('tournament.eventPage.rulebookUrlLabel')}
