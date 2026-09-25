@@ -392,6 +392,7 @@ export function validatePack(
     'schema',
     'slug',
     'name',
+    'igdbId',
     'engine',
     'aliases',
     'version',
@@ -438,6 +439,17 @@ export function validatePack(
     ];
     if (claimed.includes(slug)) {
       return fail(`'${slug}' is already shipped by the ${installed.id} module`);
+    }
+  }
+
+  if (raw.igdbId !== undefined) {
+    if (
+      typeof raw.igdbId !== 'number' ||
+      !Number.isInteger(raw.igdbId) ||
+      raw.igdbId < 1 ||
+      raw.igdbId > 2_147_483_647
+    ) {
+      return fail('igdbId must be a positive whole number (the id on the game\'s igdb.com page)');
     }
   }
 
@@ -508,6 +520,7 @@ export function validatePack(
       schema: PACK_SCHEMA_VERSION,
       slug,
       name,
+      ...(typeof raw.igdbId === 'number' ? { igdbId: raw.igdbId } : {}),
       engine,
       ...(aliases.length > 0 ? { aliases } : {}),
       ...(typeof raw.version === 'string' ? { version: raw.version } : {}),
@@ -704,6 +717,8 @@ export interface BundledPackEntry {
   icon: string | null;
   /** The app icon's path relative to the snapshot, or null. */
   appIcon: string | null;
+  /** The game's numeric IGDB id, when the index names one. */
+  igdbId: number | null;
 }
 
 /**
@@ -716,6 +731,39 @@ let bundledAppIconSlugs = new Set<string>();
 /** Whether the image's snapshot carries an app icon for this game. */
 export function hasBundledAppIcon(slug: string): boolean {
   return bundledAppIconSlugs.has(slug);
+}
+
+/** Bundled slug -> the IGDB id its snapshot entry names, as of the last read. */
+let bundledIgdbIds = new Map<string, number>();
+
+/**
+ * The IGDB id the image's snapshot names for a game, or null. A pack
+ * installed before its file carried `igdbId` (or from a feed that does not)
+ * still links to IGDB search results through this.
+ */
+export function bundledIgdbId(slug: string): number | null {
+  return bundledIgdbIds.get(slug) ?? null;
+}
+
+/**
+ * The URL a pack's game pill loads its app icon from, or null when there is
+ * none to load: the pack's own icon, else the snapshot's for the same game.
+ *
+ * Any pack, whoever installed it. A pack installed from the catalog before
+ * its game had an icon (or uploaded without one) is still the same game, and
+ * the pill is about recognising the game: the owner's rule is that a game
+ * shows its app icon wherever one exists.
+ */
+export function packAppIconUrl(pack: Pick<InstalledPack, 'slug' | 'hasAppIcon'>): string | null {
+  return pack.hasAppIcon || hasBundledAppIcon(pack.slug) ? packAppIconPath(pack.slug) : null;
+}
+
+/** The app icon served for a game: the installed pack's own, else the snapshot's. */
+export async function resolvePackAppIcon(slug: string): Promise<AppIcon | null> {
+  const wanted = slug.trim().toLowerCase();
+  return (
+    (installedPack(wanted) ? await packAppIcon(wanted) : null) ?? (await bundledPackAppIcon(wanted))
+  );
 }
 
 /**
@@ -751,9 +799,16 @@ export async function bundledPackEntries(): Promise<BundledPackEntry[]> {
       file,
       icon: text(row.icon),
       appIcon: text(row.appIcon),
+      igdbId:
+        typeof row.igdbId === 'number' && Number.isInteger(row.igdbId) && row.igdbId > 0
+          ? row.igdbId
+          : null,
     });
   }
   bundledAppIconSlugs = new Set(entries.filter((entry) => entry.appIcon).map((entry) => entry.slug));
+  bundledIgdbIds = new Map(
+    entries.flatMap((entry) => (entry.igdbId ? [[entry.slug, entry.igdbId] as const] : []))
+  );
   return entries;
 }
 

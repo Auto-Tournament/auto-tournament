@@ -2,6 +2,7 @@
   "schema": 1,
   "slug": "mortal-kombat-1",
   "name": "Mortal Kombat 1",
+  "igdbId": 272491,
   "engine": "manual-report",
   "aliases": [
     "mk1"

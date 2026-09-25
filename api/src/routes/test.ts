@@ -23,6 +23,8 @@ import { setPackIndexBaseOverride } from '../services/packIndexService';
 import { forgetBundledPacks, seedBundledPacks } from '../services/gamePackService';
 import { setWikidataEndpointOverride, resetWikidataThrottle } from '../services/wikidataService';
 import { clearGameSearchCache } from '../services/gameCatalogService';
+import { refreshGameIcons, setGameIconEndpointOverride } from '../services/gameIconService';
+import { encodePng } from '../utils/iconImage';
 import { gameSearchLimiter } from './games';
 import {
   backfillLinkedAccounts,
@@ -1712,7 +1714,8 @@ router.get('/fake-oauth/:provider/userinfo', (req: Request, res: Response): void
  *                                       search rate limiter
  *   GET  /api/test/igdb                 request counters
  *   POST /api/test/fake-igdb/token      Twitch client-credentials token
- *   POST /api/test/fake-igdb/v4/games   Apicalypse `search "..."` over FAKE_IGDB_GAMES
+ *   POST /api/test/fake-igdb/v4/games   Apicalypse `search "..."` (or `where id = (...)`)
+ *                                       over FAKE_IGDB_GAMES
  *
  * A client id starting with `bad` is refused by the token endpoint, and a
  * search containing `explode` makes the games endpoint answer 500, so tests
@@ -1747,6 +1750,17 @@ const FAKE_IGDB_GAMES = [
   { id: 1004, name: 'Hollow Knight', slug: 'hollow-knight', year: 2017, image: 'fakehk', genres: ['Platform'] },
   { id: 1005, name: 'Stardew Valley', slug: 'stardew-valley', year: 2016, image: null, genres: [] },
   { id: 1006, name: 'Celeste', slug: 'celeste', year: 2018, image: 'fakecel', genres: ['Platform'] },
+  // App icons (tests/api/game-icons.spec.ts). `steam` is the Steam app id the
+  // fake lists among the game's external games; the apps are FAKE_STEAM_APPS.
+  { id: 1101, name: 'Icon Quest', slug: 'icon-quest', year: 2020, image: 'fakeiq', genres: [], steam: 900001 },
+  { id: 1102, name: 'Icon Quest Legacy', slug: 'icon-quest-legacy', year: 2012, image: null, genres: [], steam: 900002 },
+  { id: 1103, name: 'Icon Quest Tiny', slug: 'icon-quest-tiny', year: 2013, image: 'fakeiqt', genres: [], steam: 900004 },
+  { id: 1104, name: 'Icon Quest Offline', slug: 'icon-quest-offline', year: 2014, image: 'fakeiqo', genres: [] },
+  // Counter-Strike 2's real IGDB id under another slug and name: linked to
+  // the CS2 module by the id alone.
+  { id: 242408, name: 'Linkfield Strike Two', slug: 'linkfield-strike-two', year: 2023, image: 'fakelfs', genres: [] },
+  // Dota 2's real IGDB id, which only the bundled pack index names.
+  { id: 2963, name: 'Ancients Arena', slug: 'ancients-arena', year: 2013, image: 'fakeaa', genres: [] },
 ];
 
 const fakeIgdbCounters = { tokenRequests: 0, searchRequests: 0 };
@@ -1821,8 +1835,10 @@ router.post(
       res.status(500).json({ message: 'Internal Server Error' });
       return;
     }
+    const byId = /where\s+id\s*=\s*\(([\d,\s]+)\)/.exec(body)?.[1];
+    const ids = byId ? new Set(byId.split(',').map((id) => Number(id.trim()))) : null;
     const limit = Number(/limit\s+(\d+)/.exec(body)?.[1] ?? 10);
-    const rows = FAKE_IGDB_GAMES.filter((g) => !term || g.name.toLowerCase().includes(term))
+    const rows = FAKE_IGDB_GAMES.filter((g) => (ids ? ids.has(g.id) : !term || g.name.toLowerCase().includes(term)))
       .slice(0, limit)
       .map((g) => ({
         id: g.id,
@@ -1831,6 +1847,13 @@ router.post(
         first_release_date: Math.floor(Date.UTC(g.year, 5, 1) / 1000),
         ...(g.image ? { cover: { id: g.id * 10, image_id: g.image } } : {}),
         genres: g.genres.map((name) => ({ name })),
+        // A GOG listing first, so the Steam one has to be picked out.
+        external_games: [
+          { id: g.id * 100, category: 5, external_game_source: 5, uid: `gog-${g.id}` },
+          ...('steam' in g && g.steam
+            ? [{ id: g.id * 100 + 1, category: 1, external_game_source: 1, uid: String(g.steam) }]
+            : []),
+        ],
       }));
     res.json(rows);
   }
@@ -1862,6 +1885,8 @@ interface FakeWikidataItem {
   image?: string;
   /** P136 (genre) item ids; resolved to `FAKE_WIKIDATA_GENRES` labels. */
   genreIds?: string[];
+  /** P1733 (Steam application ID). */
+  steamAppId?: string;
 }
 
 /** Genre item ids referenced by `FAKE_WIKIDATA_ITEMS.genreIds`, id -> English label. */
@@ -1914,6 +1939,14 @@ const FAKE_WIKIDATA_ITEMS: FakeWikidataItem[] = [
   // those built-ins from the results (see gameCatalogService.searchGames).
   { id: 'Q1258949', label: 'Dota 2', instanceOf: ['Q7889'], pubDates: ['+2013-07-09T00:00:00Z'] },
   { id: 'Q30819', label: 'Chess', instanceOf: ['Q7889'], pubDates: [] },
+  // App icons with no key at all: a Steam app id from Wikidata (P1733).
+  {
+    id: 'Q990001',
+    label: 'Icon Voyage',
+    instanceOf: ['Q7889'],
+    pubDates: ['+2019-03-01T00:00:00Z'],
+    steamAppId: '900001',
+  },
 ];
 
 const fakeWikidataCounters = { searchRequests: 0, getEntitiesRequests: 0 };
@@ -1987,6 +2020,9 @@ router.get('/fake-wikidata', (req: Request, res: Response): void => {
             ...(item.genreIds
               ? { P136: item.genreIds.map((qid) => ({ mainsnak: { datavalue: { value: { id: qid } } } })) }
               : {}),
+            ...(item.steamAppId
+              ? { P1733: [{ mainsnak: { datavalue: { value: item.steamAppId } } }] }
+              : {}),
           },
         };
         continue;
@@ -2004,6 +2040,134 @@ router.get('/fake-wikidata', (req: Request, res: Response): void => {
 
   res.status(400).json({ error: { code: 'unknown_action', info: `unknown action: ${action}` } });
 });
+
+/*
+ * Test-only fake Steam, for game app icons (services/gameIconService).
+ *
+ *   POST /api/test/game-icons            { fake: true | false } point the icon
+ *                                        lookups at this fake (or back)
+ *   POST /api/test/game-icons/run        run icon passes now, even with
+ *                                        GAMES_ENRICH=off; answers { stored }
+ *   GET  /api/test/fake-steam/info/:appId            steamcmd.net's app info
+ *   GET  /api/test/fake-steam/icons-new/:appId/:file the newer CDN path
+ *   GET  /api/test/fake-steam/icons-old/:appId/:file the older CDN path
+ */
+
+interface FakeSteamApp {
+  /** `common.clienticon`; none means Steam lists no client icon. */
+  clientIcon?: string;
+  /** Served on the newer CDN path. */
+  onNewPath?: boolean;
+  /** Served on the older CDN path (the fallback). */
+  onOldPath?: boolean;
+  /** The icon's one frame, in pixels. */
+  size?: number;
+}
+
+const FAKE_STEAM_APPS: Record<string, FakeSteamApp> = {
+  '900001': { clientIcon: 'a1'.repeat(20), onNewPath: true, onOldPath: true, size: 256 },
+  // Only the older path has it: the lookup has to fall back.
+  '900002': { clientIcon: 'b2'.repeat(20), onOldPath: true, size: 256 },
+  // Steam lists no client icon.
+  '900003': {},
+  // Too small to be worth more than a monogram.
+  '900004': { clientIcon: 'c3'.repeat(20), onNewPath: true, onOldPath: true, size: 32 },
+};
+
+const fakeSteamCounters = { info: 0, icons: 0 };
+
+/** A one-frame `.ico` holding a PNG: an orange square with a dark diagonal. */
+function fakeSteamIco(size: number): Buffer {
+  const data = Buffer.alloc(size * size * 4);
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      const i = (y * size + x) * 4;
+      const onDiagonal = Math.abs(x - y) < size / 8;
+      data[i] = onDiagonal ? 20 : 250;
+      data[i + 1] = onDiagonal ? 20 : 99;
+      data[i + 2] = onDiagonal ? 30 : 42;
+      data[i + 3] = 255;
+    }
+  }
+  const png = encodePng({ width: size, height: size, data });
+  const header = Buffer.alloc(6);
+  header.writeUInt16LE(0, 0);
+  header.writeUInt16LE(1, 2);
+  header.writeUInt16LE(1, 4);
+  const entry = Buffer.alloc(16);
+  entry[0] = size >= 256 ? 0 : size;
+  entry[1] = size >= 256 ? 0 : size;
+  entry.writeUInt16LE(1, 4);
+  entry.writeUInt16LE(32, 6);
+  entry.writeUInt32LE(png.length, 8);
+  entry.writeUInt32LE(22, 12);
+  return Buffer.concat([header, entry, png]);
+}
+
+router.post('/game-icons', requireAuth, (req: Request, res: Response): void => {
+  if (!fakeIgdbEnabled(res)) return;
+  const { fake } = (req.body ?? {}) as { fake?: unknown };
+  const self = `http://127.0.0.1:${process.env.PORT || '3000'}/api/test/fake-steam`;
+  setGameIconEndpointOverride(
+    fake === false
+      ? null
+      : { steamInfoBase: `${self}/info`, steamIconBases: [`${self}/icons-new`, `${self}/icons-old`] }
+  );
+  fakeSteamCounters.info = 0;
+  fakeSteamCounters.icons = 0;
+  res.json({ success: true, fake: fake !== false });
+});
+
+router.post('/game-icons/run', requireAuth, async (_req: Request, res: Response): Promise<void> => {
+  if (!fakeIgdbEnabled(res)) return;
+  // A pass looks at a batch of rows; a fresh database holds more built-ins
+  // than one batch, so run until no row is left unlooked-at.
+  let stored = 0;
+  for (let pass = 0; pass < 10; pass += 1) {
+    stored += await refreshGameIcons({ force: true });
+    const left = await db.queryOneAsync<{ count: string }>(
+      'SELECT COUNT(*)::text AS count FROM games WHERE icon_url IS NULL AND icon_checked_at IS NULL'
+    );
+    if (Number(left?.count ?? 0) === 0) break;
+  }
+  res.json({ success: true, stored, requests: { ...fakeSteamCounters } });
+});
+
+router.get('/fake-steam/info/:appId', (req: Request, res: Response): void => {
+  if (!fakeIgdbEnabled(res)) return;
+  fakeSteamCounters.info += 1;
+  const app = FAKE_STEAM_APPS[req.params.appId];
+  if (!app) {
+    res.status(404).json({ status: 'failed' });
+    return;
+  }
+  res.json({
+    status: 'success',
+    data: {
+      [req.params.appId]: {
+        common: { name: `Fake app ${req.params.appId}`, ...(app.clientIcon ? { clienticon: app.clientIcon } : {}) },
+      },
+    },
+  });
+});
+
+function serveFakeSteamIcon(which: 'new' | 'old') {
+  return (req: Request, res: Response): void => {
+    if (!fakeIgdbEnabled(res)) return;
+    fakeSteamCounters.icons += 1;
+    const app = FAKE_STEAM_APPS[req.params.appId];
+    const served = which === 'new' ? app?.onNewPath : app?.onOldPath;
+    if (!app?.clientIcon || !served || req.params.file !== `${app.clientIcon}.ico`) {
+      res.status(404).send('Not Found');
+      return;
+    }
+    res.setHeader('Content-Type', 'image/x-icon');
+    res.send(fakeSteamIco(app.size ?? 256));
+  };
+}
+
+router.get('/fake-steam/icons-new/:appId/:file', serveFakeSteamIcon('new'));
+router.get('/fake-steam/icons-old/:appId/:file', serveFakeSteamIcon('old'));
 
 /**
  * Test-only helpers for the manual-reporting schema (3.0 phase D, PR D1).

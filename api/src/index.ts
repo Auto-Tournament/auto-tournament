@@ -50,6 +50,7 @@ import {
   enrichBuiltinGames,
   resolveStoredGamesAgainstIgdb,
 } from './services/gameEnrichmentService';
+import { refreshGameIcons } from './services/gameIconService';
 import { scheduler } from './core/scheduler';
 import { steamService } from './services/steamService';
 import { seedAdminsFromEnv } from './services/adminSeedService';
@@ -569,8 +570,11 @@ process.on('uncaughtException', (err) => {
         enrichBuiltinGames()
           // Then, without holding up startup, games stored before IGDB was
           // set up get its covers (rate-limited; see the function).
-          .then(() => {
-            void resolveStoredGamesAgainstIgdb();
+          .then(async () => {
+            await resolveStoredGamesAgainstIgdb();
+            // Then app icons for games no module or pack draws (Steam client
+            // icons; background, rate-limited, see gameIconService).
+            await refreshGameIcons();
           })
           .catch((error) => {
             log.warn('Failed to enrich built-in games on startup', { error });

@@ -2,6 +2,7 @@
   "schema": 1,
   "slug": "street-fighter-6",
   "name": "Street Fighter 6",
+  "igdbId": 191692,
   "engine": "manual-report",
   "aliases": [
     "sf6"

@@ -667,6 +667,12 @@ export interface GameCatalogEntry {
   /** Extra search terms, e.g. 'cs2'. */
   aliases?: string[];
   /**
+   * The game's numeric IGDB id (242408 for Counter-Strike 2). A game a
+   * player picked from IGDB search is linked to this entry by it first, so
+   * its pill draws `appIcon` whatever slug IGDB gave the row.
+   */
+  igdbId?: number;
+  /**
    * The module's own square tile for this game, as a path the client serves
    * (`/games/rocket-league.svg`). It ships with the module rather than coming
    * from the games catalogue, because the setup wizard lists what this

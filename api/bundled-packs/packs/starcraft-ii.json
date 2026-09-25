@@ -2,13 +2,15 @@
   "schema": 1,
   "slug": "starcraft-ii",
   "name": "StarCraft II",
+  "igdbId": 239,
   "engine": "manual-report",
   "aliases": [
     "sc2"
   ],
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "One-on-one real-time strategy. Report games won in the set.",
   "icon": "../icons/starcraft-ii.svg",
+  "appIcon": "../app-icons/starcraft-ii.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

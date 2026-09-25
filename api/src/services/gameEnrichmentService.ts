@@ -26,7 +26,7 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { searchIgdb, type IgdbGame } from './igdbService';
-import { getWikidataBuiltinInfo } from './wikidataService';
+import { getWikidataBuiltinInfo, type WikidataBuiltinInfo } from './wikidataService';
 import { ensureBuiltinGames } from './gameCatalogService';
 
 /** Re-enrich a builtin at most this often. */
@@ -95,7 +95,7 @@ async function exactIgdbMatch(name: string): Promise<IgdbGame | null> {
 
 async function enrichRow(
   row: StaleBuiltinRow,
-  wikidata: Map<string, { imageUrl: string | null; releaseYear: number | null; genres: string[] }>
+  wikidata: Map<string, WikidataBuiltinInfo>
 ): Promise<void> {
   const qid = BUILTIN_WIKIDATA_QIDS[row.slug];
   const info = qid ? wikidata.get(qid) : undefined;
@@ -125,6 +125,7 @@ async function enrichRow(
             genres = COALESCE(?, genres),
             wikidata_id = COALESCE(wikidata_id, ?),
             igdb_id = COALESCE(?, igdb_id),
+            steam_app_id = COALESCE(steam_app_id, ?),
             source = ?,
             enriched_at = ?,
             updated_at = ?
@@ -136,6 +137,7 @@ async function enrichRow(
       genres.length > 0 ? JSON.stringify(genres.slice(0, 3)) : null,
       qid,
       igdbMatch?.igdbId ?? null,
+      igdbMatch?.steamAppId ?? info.steamAppId,
       source,
       now,
       now,
@@ -257,6 +259,7 @@ async function resolvePass(): Promise<number> {
               cover_url = COALESCE(?, cover_url),
               release_year = COALESCE(release_year, ?),
               genres = COALESCE(genres, ?),
+              steam_app_id = COALESCE(steam_app_id, ?),
               source = 'igdb',
               igdb_checked_at = ?,
               updated_at = ?
@@ -266,6 +269,7 @@ async function resolvePass(): Promise<number> {
         match.coverUrl,
         match.releaseYear,
         match.genres.length > 0 ? JSON.stringify(match.genres.slice(0, 3)) : null,
+        match.steamAppId,
         now,
         now,
         row.id,

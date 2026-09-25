@@ -2,6 +2,7 @@
   "schema": 1,
   "slug": "trackmania",
   "name": "Trackmania",
+  "igdbId": 133807,
   "engine": "manual-report",
   "aliases": [
     "tm"

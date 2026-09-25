@@ -2,6 +2,7 @@
   "schema": 1,
   "slug": "brawl-stars",
   "name": "Brawl Stars",
+  "igdbId": 55945,
   "engine": "manual-report",
   "version": "1.0.2",
   "description": "Three-a-side mobile brawler, reported by the events played.",

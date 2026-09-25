@@ -226,6 +226,10 @@ export function getSchemaSQL(): string {
       source TEXT NOT NULL DEFAULT 'builtin', -- 'igdb' | 'wikidata' | 'builtin'
       enriched_at INTEGER, -- epoch of the last successful built-in enrichment (image/genres/year from Wikidata or IGDB); NULL = never enriched
       igdb_checked_at INTEGER, -- epoch of the last IGDB re-resolve of a Wikidata/built-in row (gameEnrichmentService); NULL = never tried
+      steam_app_id INTEGER, -- the game's Steam app id, from IGDB's external games or Wikidata P1733; NULL = not known / not on Steam
+      icon_url TEXT, -- the game's square app icon cached under DATA_DIR/game-icons (gameIconService), e.g. /api/games/icons/<hash>.png; NULL = none, the pill draws a monogram
+      icon_source TEXT, -- where icon_url came from: 'steam' (the Steam client icon)
+      icon_checked_at INTEGER, -- epoch of the last icon lookup for this row; NULL = never tried
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
 

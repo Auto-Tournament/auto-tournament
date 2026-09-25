@@ -181,7 +181,7 @@ test.describe.serial('App icons over HTTP', () => {
     expect((await request.get('/api/packs/app-icon-test-game/app-icon')).status()).toBe(404);
   });
 
-  test('built-in games carry their app icon; a game with none carries null', {
+  test('built-in games carry their app icon', {
     tag: ['@api', '@packs'],
   }, async ({ request }) => {
     const popular = await request.get('/api/games/popular');
@@ -191,8 +191,8 @@ test.describe.serial('App icons over HTTP', () => {
 
     expect(bySlug.get('counter-strike-2')).toBe('/games/counter-strike-2-app-icon.webp');
     expect(bySlug.get('rocket-league')).toBe('/api/packs/rocket-league/app-icon');
-    // No square icon exists for it from a source we can use.
-    expect(bySlug.get('league-of-legends')).toBeNull();
+    // Not on Steam or the App Store: a curated icon in the pack.
+    expect(bySlug.get('league-of-legends')).toBe('/api/packs/league-of-legends/app-icon');
 
     const icon = await request.get('/api/packs/rocket-league/app-icon');
     expect(icon.status()).toBe(200);

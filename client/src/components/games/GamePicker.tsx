@@ -162,7 +162,7 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
                   name={game.name}
                   slug={game.slug}
                   iconUrl={game.appIconUrl}
-                  coverUrl={game.coverUrl}
+                  neutral
                   size={32}
                 />
                 <Box sx={{ minWidth: 0, flex: 1 }}>
@@ -228,7 +228,7 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
                     name={game.name}
                     slug={game.slug}
                     iconUrl={game.appIconUrl}
-                    coverUrl={game.coverUrl}
+                    neutral
                     size={20}
                   />
                 }
@@ -259,7 +259,7 @@ export function GamePicker({ value, onChange, autoFocus }: GamePickerProps) {
                     name={game.name}
                     slug={game.slug}
                     iconUrl={game.appIconUrl}
-                    coverUrl={game.coverUrl}
+                    neutral
                     size={20}
                   />
                 }

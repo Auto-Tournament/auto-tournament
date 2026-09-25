@@ -2,6 +2,7 @@
   "schema": 1,
   "slug": "mobile-legends-bang-bang",
   "name": "Mobile Legends: Bang Bang",
+  "igdbId": 79392,
   "engine": "manual-report",
   "aliases": [
     "mlbb"

@@ -2,6 +2,7 @@
   "schema": 1,
   "slug": "valorant",
   "name": "Valorant",
+  "igdbId": 126459,
   "engine": "manual-report",
   "version": "1.0.2",
   "description": "Five-a-side tactical shooter, reported by rounds won.",

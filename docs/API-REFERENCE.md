@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 313 of them, 221 behind auth —
+Every endpoint this API serves — 319 of them, 223 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -443,6 +443,7 @@ The game catalogue players pick from (IGDB or Wikidata-backed search, suggestion
 | `GET` | `/api/games/suggestions` | public |
 | `GET` | `/api/games/popular` | public |
 | `GET` | `/api/games/playable` | public |
+| `GET` | `/api/games/icons/:file` | public |
 
 ### Game packs
 
@@ -557,6 +558,11 @@ E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
 | `POST` | `/api/test/wikidata` | admin |
 | `GET` | `/api/test/wikidata` | admin |
 | `GET` | `/api/test/fake-wikidata` | public |
+| `POST` | `/api/test/game-icons` | admin |
+| `POST` | `/api/test/game-icons/run` | admin |
+| `GET` | `/api/test/fake-steam/info/:appId` | public |
+| `GET` | `/api/test/fake-steam/icons-new/:appId/:file` | public |
+| `GET` | `/api/test/fake-steam/icons-old/:appId/:file` | public |
 | `GET` | `/api/test/team-members` | admin |
 | `POST` | `/api/test/team-members/backfill` | admin |
 | `POST` | `/api/test/team-members` | admin |

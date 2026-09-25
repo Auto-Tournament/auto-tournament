@@ -2,6 +2,7 @@
   "schema": 1,
   "slug": "halo-infinite",
   "name": "Halo Infinite",
+  "igdbId": 103281,
   "engine": "manual-report",
   "version": "1.0.2",
   "description": "Four-a-side arena shooter, reported by the maps played.",

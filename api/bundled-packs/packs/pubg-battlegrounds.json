@@ -2,6 +2,7 @@
   "schema": 1,
   "slug": "pubg-battlegrounds",
   "name": "PUBG: Battlegrounds",
+  "igdbId": 27789,
   "engine": "manual-report",
   "aliases": [
     "pubg"

@@ -2,6 +2,7 @@
   "schema": 1,
   "slug": "minecraft",
   "name": "Minecraft",
+  "igdbId": 135400,
   "engine": "manual-report",
   "aliases": [
     "mc"

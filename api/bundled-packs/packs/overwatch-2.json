@@ -2,6 +2,7 @@
   "schema": 1,
   "slug": "overwatch-2",
   "name": "Overwatch 2",
+  "igdbId": 125174,
   "engine": "manual-report",
   "aliases": [
     "ow",

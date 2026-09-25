@@ -2,13 +2,15 @@
   "schema": 1,
   "slug": "league-of-legends",
   "name": "League of Legends",
+  "igdbId": 115,
   "engine": "manual-report",
   "aliases": [
     "lol"
   ],
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Five-a-side MOBA. One map per game.",
   "icon": "../icons/league-of-legends.svg",
+  "appIcon": "../app-icons/league-of-legends.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

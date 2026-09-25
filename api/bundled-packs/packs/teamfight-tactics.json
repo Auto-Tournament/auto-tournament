@@ -2,6 +2,7 @@
   "schema": 1,
   "slug": "teamfight-tactics",
   "name": "Teamfight Tactics",
+  "igdbId": 120176,
   "engine": "manual-report",
   "aliases": [
     "tft"
