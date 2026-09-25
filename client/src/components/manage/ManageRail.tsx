@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box } from '@mui/material';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useShellIntegrations } from '../../hooks/useShellIntegrations';
@@ -273,6 +274,14 @@ export const ManageRail: React.FC = () => {
                     }}
                   >
                     {item.label}
+                    {item.external && (
+                      <>
+                        <OpenInNewIcon aria-hidden sx={{ fontSize: 16, color: color.ink2 }} />
+                        <Box component="span" sx={visuallyHidden}>
+                          {t('managePage.rail.opensInNewTab')}
+                        </Box>
+                      </>
+                    )}
                     {typeof item.count === 'number' && item.count > 0 && (
                       <Box
                         component="span"

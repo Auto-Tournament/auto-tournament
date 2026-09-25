@@ -202,7 +202,8 @@
         "game": "Game"
       },
       "label": "Admin",
-      "publicPage": "Public page"
+      "publicPage": "Public page",
+      "opensInNewTab": "(opens in a new tab)"
     },
     "status": {
       "live": "LIVE",

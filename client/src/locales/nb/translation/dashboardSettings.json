@@ -196,6 +196,7 @@
       "adminTools": "Adminverktøy",
       "devTools": "Dev-verktøy",
       "documentation": "Dokumentasjon",
+      "opensInNewTab": "(åpnes i en ny fane)",
       "groups": {
         "operate": "Drift",
         "tournament": "Turnering",
