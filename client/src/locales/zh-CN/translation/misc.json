@@ -430,6 +430,12 @@
       "action": "Reload"
     },
     "restart": "Restart Auto Tournament to finish: {{names}}.",
+    "restartNow": {
+      "action": "Restart now",
+      "restarting": "Restarting…",
+      "failed": "Could not restart",
+      "timeout": "Auto Tournament has not come back yet. Check the container, then reload the page."
+    },
     "confirmInstall": {
       "title": "Install {{name}}?",
       "body": "This is a code module, signed by Auto Tournament. It runs inside this server with access to your database and files, and in the browser of everyone who opens a page it draws.",

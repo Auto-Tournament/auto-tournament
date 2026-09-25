@@ -430,6 +430,12 @@
       "action": "Last inn på nytt"
     },
     "restart": "Start Auto Tournament på nytt for å fullføre: {{names}}.",
+    "restartNow": {
+      "action": "Start på nytt nå",
+      "restarting": "Starter på nytt…",
+      "failed": "Kunne ikke starte på nytt",
+      "timeout": "Auto Tournament har ikke kommet tilbake ennå. Sjekk containeren, og last inn siden på nytt."
+    },
     "confirmInstall": {
       "title": "Installere {{name}}?",
       "body": "Dette er en kodemodul, signert av Auto Tournament. Den kjører på denne serveren med tilgang til databasen og filene dine, og i nettleseren til alle som åpner en side den tegner.",

@@ -36,6 +36,8 @@ export interface CatalogItem {
   } | null;
   available: { version: string | null; from: 'remote' | 'snapshot' } | null;
   restartRequired: boolean;
+  /** What boot's automatic update did not do: a failure, or a new major version waiting for the admin. */
+  notice?: string | null;
 }
 
 export interface CatalogListing {
@@ -60,6 +62,32 @@ export interface CatalogResult {
 }
 
 export type CatalogAction = 'install' | 'update' | 'enable' | 'disable' | 'uninstall';
+
+/** Whether this instance can restart itself (a supervisor brings it back), and if not, why. */
+export function fetchRestartSupport(): Promise<{ supported: boolean; reason: string | null }> {
+  return api.get<{ supported: boolean; reason: string | null }>('/api/system/restart');
+}
+
+/** Ask the server to restart. Answers 202 before it goes down. */
+export function requestRestart(): Promise<unknown> {
+  return api.post('/api/system/restart', {});
+}
+
+/**
+ * Poll `/health` until a new process answers: its uptime is shorter than
+ * the time since the restart was asked for. False after `timeoutMs`.
+ */
+export async function waitForServer(since: number, timeoutMs = 180_000): Promise<boolean> {
+  while (Date.now() - since < timeoutMs) {
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const uptime = await fetch('/health', { cache: 'no-store' }).then(
+      async (response) => (response.ok ? ((await response.json()) as { uptime?: number }).uptime : undefined),
+      () => undefined
+    );
+    if (typeof uptime === 'number' && uptime < (Date.now() - since) / 1000) return true;
+  }
+  return false;
+}
 
 export function fetchCatalog(): Promise<CatalogListing> {
   return api.get<CatalogListing>('/api/catalog');

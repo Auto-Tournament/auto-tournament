@@ -52,6 +52,7 @@ import {
   type CatalogListing,
   type CatalogState,
 } from './catalogApi';
+import { RestartNowButton } from './RestartNowButton';
 
 const STATE_COLOR: Record<CatalogState, 'default' | 'success' | 'info' | 'warning' | 'error'> = {
   available: 'default',
@@ -374,6 +375,11 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
                   {item.reason}
                 </Typography>
               )}
+              {item.notice && (
+                <Typography variant="body2" color="warning.main" data-testid={`${id}-notice`}>
+                  {item.notice}
+                </Typography>
+              )}
             </Box>
           </Box>
           <Stack direction="row" spacing={1} sx={{ flexShrink: 0, alignSelf: { xs: 'flex-end', sm: 'center' } }}>
@@ -421,7 +427,7 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
         </Alert>
       )}
       {restartPending.length > 0 && (
-        <Alert severity="warning" data-testid="catalog-restart">
+        <Alert severity="warning" data-testid="catalog-restart" action={<RestartNowButton />}>
           {t('catalog.restart', { names: restartPending.map(displayName).join(', ') })}
         </Alert>
       )}

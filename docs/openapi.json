@@ -400,6 +400,10 @@
       "description": "Steam Web API lookups (profiles, avatars, key health)."
     },
     {
+      "name": "System",
+      "description": "The platform process: whether it can restart itself, and a restart (so a module update that waits for one can finish). Admin only; writes must be same-site JSON."
+    },
+    {
       "name": "Team match view",
       "description": "A team's current match, oriented to that team. Public."
     },
@@ -6041,6 +6045,38 @@
         ]
       }
     },
+    "/api/system/restart": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Whether this instance can restart itself",
+        "description": "`supported` is true when a supervisor brings the process back after it\nexits (the Docker image with a restart policy, or\n`AT_RESTART_SUPERVISED=true`); otherwise `reason` says why not.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Restart the platform",
+        "description": "Answers 202, then shuts down cleanly and exits for the supervisor to\nstart it again (loading module updates that wait for a restart). 409\nwhen nothing would bring it back: restart it yourself. Same-site JSON only.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/team/{teamId}/history": {
       "get": {
         "tags": [
@@ -7298,6 +7334,28 @@
         ]
       }
     },
+    "/api/test/modules/auto-update": {
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/modules/auto-update",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/test/modules/fixture": {
       "post": {
         "tags": [
@@ -7550,6 +7608,38 @@
           "Test helpers"
         ],
         "summary": "POST /api/test/modules/:id/purge-probe",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/test/modules/{id}/seed-installed": {
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/modules/:id/seed-installed",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
