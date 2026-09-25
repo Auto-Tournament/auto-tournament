@@ -232,7 +232,15 @@ export default function Home() {
                     size="small"
                     variant="outlined"
                     label={game.name}
-                    avatar={<GameMark name={game.name} slug={game.slug} coverUrl={game.coverUrl} size={20} />}
+                    avatar={
+                      <GameMark
+                        name={game.name}
+                        slug={game.slug}
+                        iconUrl={game.appIconUrl}
+                        coverUrl={game.coverUrl}
+                        size={20}
+                      />
+                    }
                     data-testid={`home-game-chip-${game.slug}`}
                   />
                 ))}

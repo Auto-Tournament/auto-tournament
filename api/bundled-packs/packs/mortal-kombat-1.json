@@ -6,9 +6,10 @@
   "aliases": [
     "mk1"
   ],
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Fighting game. Report games won in the set.",
   "icon": "../icons/mortal-kombat-1.svg",
+  "appIcon": "../app-icons/mortal-kombat-1.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

@@ -7,9 +7,10 @@
     "fifa",
     "fc"
   ],
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Football. Report the scoreline.",
   "icon": "../icons/ea-sports-fc-25.svg",
+  "appIcon": "../app-icons/ea-sports-fc-25.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

@@ -683,6 +683,13 @@ export interface GameCatalogEntry {
    * stretched or borrowed to fill the box.
    */
   icon?: string;
+  /**
+   * The game's own square app icon — the one on a player's desktop or
+   * launcher — as a path the client serves (`/games/counter-strike-2-app-icon.webp`).
+   * What the small game pills draw so a player spots their game at a glance.
+   * Omit it and the pill falls back to the IGDB cover, then the initials.
+   */
+  appIcon?: string;
 }
 
 export interface GameIntegration {

@@ -46,7 +46,10 @@ import {
 import { installHostBridge } from './modules/hostBridge';
 import { environmentTrustedKeys } from './modules/trustedKeys';
 import { recoverActiveMatches } from './services/matchRecoveryService';
-import { enrichBuiltinGames } from './services/gameEnrichmentService';
+import {
+  enrichBuiltinGames,
+  resolveStoredGamesAgainstIgdb,
+} from './services/gameEnrichmentService';
 import { scheduler } from './core/scheduler';
 import { steamService } from './services/steamService';
 import { seedAdminsFromEnv } from './services/adminSeedService';
@@ -563,9 +566,15 @@ process.on('uncaughtException', (err) => {
         // + the popular list) a real image/genres from Wikidata (and IGDB
         // covers, if configured). See gameEnrichmentService for the
         // once-per-7-days-per-game throttling and the CI/test opt-out.
-        enrichBuiltinGames().catch((error) => {
-          log.warn('Failed to enrich built-in games on startup', { error });
-        }),
+        enrichBuiltinGames()
+          // Then, without holding up startup, games stored before IGDB was
+          // set up get its covers (rate-limited; see the function).
+          .then(() => {
+            void resolveStoredGamesAgainstIgdb();
+          })
+          .catch((error) => {
+            log.warn('Failed to enrich built-in games on startup', { error });
+          }),
       ]).then(() => {
         log.success('[Startup] All startup tasks completed');
       });

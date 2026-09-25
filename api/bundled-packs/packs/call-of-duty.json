@@ -6,9 +6,10 @@
   "aliases": [
     "cod"
   ],
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Search and Destroy, Hardpoint and Control, reported by the teams that played them.",
   "icon": "../icons/call-of-duty.svg",
+  "appIcon": "../app-icons/call-of-duty.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

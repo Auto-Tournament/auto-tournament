@@ -3,9 +3,10 @@
   "slug": "brawl-stars",
   "name": "Brawl Stars",
   "engine": "manual-report",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Three-a-side mobile brawler, reported by the events played.",
   "icon": "../icons/brawl-stars.svg",
+  "appIcon": "../app-icons/brawl-stars.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

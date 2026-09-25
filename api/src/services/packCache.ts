@@ -40,6 +40,13 @@ export interface GamePackDefinition {
    * `../icons/<slug>.svg`. Never the markup itself, and never a URL.
    */
   icon?: string;
+  /**
+   * Where the game's square app icon lives, relative to the pack file —
+   * normally `../app-icons/<slug>.webp`. The picture players know the game
+   * by (the one on their phone or launcher), for the small game pills. A
+   * PNG or WebP, never a URL.
+   */
+  appIcon?: string;
   report?: {
     confirmation?: 'opponent' | 'admin';
     confirmTimeoutMin?: number;
@@ -62,6 +69,7 @@ export interface InstalledPack {
   source: PackSource;
   origin: string | null;
   hasIcon: boolean;
+  hasAppIcon: boolean;
   installedAt: number;
   definition: GamePackDefinition;
 }
@@ -75,6 +83,7 @@ interface PackRow {
   origin: string | null;
   definition: string;
   icon: string | null;
+  app_icon: string | null;
   installed_at: number;
 }
 
@@ -97,6 +106,7 @@ function toPack(row: PackRow): InstalledPack | null {
       source: row.source === 'bundled' || row.source === 'index' ? row.source : 'uploaded',
       origin: row.origin,
       hasIcon: Boolean(row.icon),
+      hasAppIcon: Boolean(row.app_icon),
       installedAt: row.installed_at,
       definition: JSON.parse(row.definition) as GamePackDefinition,
     };

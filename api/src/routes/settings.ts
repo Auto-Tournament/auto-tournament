@@ -8,6 +8,7 @@ import { integrationForMatch, listIntegrations } from '../integrations/registry'
 import packageJson from '../../package.json';
 import { clearIgdbTokenCache, testIgdbConnection } from '../services/igdbService';
 import { clearGameSearchCache } from '../services/gameCatalogService';
+import { resolveStoredGamesAgainstIgdb } from '../services/gameEnrichmentService';
 
 const router = Router();
 
@@ -173,6 +174,9 @@ router.put('/igdb', async (req: Request, res: Response) => {
 
     clearIgdbTokenCache();
     clearGameSearchCache();
+    // Games stored while search ran on Wikidata get their IGDB cover now,
+    // in the background, rather than at the next restart.
+    void resolveStoredGamesAgainstIgdb();
     return res.json({ success: true, igdb: await settingsService.getIgdbCredentialStatus() });
   } catch (error) {
     log.error('Error saving IGDB settings', error);

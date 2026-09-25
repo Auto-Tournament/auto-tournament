@@ -31,18 +31,23 @@ import { coreObjectNames, moduleNamespace } from '../config/moduleMigrations';
 import { log } from '../utils/logger';
 import { listIntegrations } from '../integrations/registry';
 import {
+  MAX_APP_ICON_BYTES,
+  bundledPackAppIcon,
   bundledPackEntries,
   bundledPackTile,
+  checkAppIcon,
   checkTileMarkup,
   installPack,
   installedPack,
   installedPacks,
+  packAppIcon,
   packIcon,
   packIsInUse,
   readBundledPack,
   removePack,
+  type AppIcon,
 } from '../services/gamePackService';
-import { fetchPackAt } from '../services/packIndexService';
+import { fetchBytes, fetchPackAt } from '../services/packIndexService';
 import { ArchiveError, extractEntries, readModuleArchive } from './archive';
 import {
   downloadRelease,
@@ -554,6 +559,35 @@ async function fetchFeedTile(base: string, relative: string): Promise<string | n
   return markup;
 }
 
+/**
+ * A catalog pack's square app icon: the installed pack's, the offline
+ * snapshot's, or the feed's — checked by its bytes like an imported one.
+ */
+export async function catalogAppIcon(slug: string): Promise<AppIcon | null> {
+  const wanted = slug.trim().toLowerCase();
+  if (installedPack(wanted)) return packAppIcon(wanted);
+  const bundled = await bundledPackAppIcon(wanted);
+  if (bundled) return bundled;
+  const feed = await currentFeed();
+  const entry = feed.packs.find((candidate) => candidate.slug === wanted);
+  if (!entry?.appIcon || !feed.base) return null;
+  const url = feedAssetUrl(feed.base, entry.appIcon);
+  if (!url) return null;
+  const cached = appIconCache.get(url);
+  if (cached && Date.now() - cached.at < 10 * 60 * 1000) return cached.icon;
+  let icon: AppIcon | null = null;
+  try {
+    const checked = checkAppIcon(await fetchBytes(url, MAX_APP_ICON_BYTES));
+    icon = typeof checked === 'string' ? null : checked;
+  } catch {
+    icon = null;
+  }
+  appIconCache.set(url, { icon, at: Date.now() });
+  return icon;
+}
+
+const appIconCache = new Map<string, { icon: AppIcon | null; at: number }>();
+
 // ---------------------------------------------------------------------------
 // Packs
 // ---------------------------------------------------------------------------
@@ -585,17 +619,23 @@ async function installPackCore(slug: string, actor: string | null): Promise<Oper
   if (choice?.from === 'remote' && remote && feed.base) {
     const found = await fetchPackAt(feed.base, wanted, remote.file);
     if (found.ok) {
-      await installPack(found.pack, { source: 'index', origin: found.origin, installedBy: actor, tile: found.tile });
+      await installPack(found.pack, {
+        source: 'index',
+        origin: found.origin,
+        installedBy: actor,
+        tile: found.tile,
+        appIcon: found.appIcon,
+      });
       installedFrom = 'remote';
     } else {
       remoteError = found.error;
     }
   }
   if (!installedFrom && bundled) {
-    const { definition, tile } = await readBundledPack(bundled).catch((error: Error) => {
+    const { definition, tile, appIcon } = await readBundledPack(bundled).catch((error: Error) => {
       throw new CatalogError(400, `The offline copy of '${wanted}' is not valid: ${error.message}`, 'invalid');
     });
-    await installPack(definition, { source: 'bundled', installedBy: actor, tile });
+    await installPack(definition, { source: 'bundled', installedBy: actor, tile, appIcon });
     installedFrom = 'snapshot';
   }
   if (!installedFrom) {

@@ -8,9 +8,10 @@
     "r6s",
     "siege"
   ],
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Five-a-side tactical shooter, reported by rounds won.",
   "icon": "../icons/rainbow-six-siege.svg",
+  "appIcon": "../app-icons/rainbow-six-siege.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

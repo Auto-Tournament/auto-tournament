@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { apiErrorMessage } from '../../utils/api';
 import { GamePicker } from './GamePicker';
-import { GameThumb } from './GameThumb';
+import { GameMark } from '../common/GameMark';
 import { GAMES_UPDATED_EVENT, fetchMyGames, saveMyGames, type GameSummary } from './gamesApi';
 
 /**
@@ -98,7 +98,15 @@ export function OwnGamesCard() {
               <Chip
                 key={game.id}
                 label={game.name}
-                avatar={<GameThumb name={game.name} coverUrl={game.coverUrl} size={20} />}
+                avatar={
+                  <GameMark
+                    name={game.name}
+                    slug={game.slug}
+                    iconUrl={game.appIconUrl}
+                    coverUrl={game.coverUrl}
+                    size={20}
+                  />
+                }
                 data-testid={`profile-game-${game.slug}`}
               />
             ))}

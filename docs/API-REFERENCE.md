@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 311 of them, 220 behind auth —
+Every endpoint this API serves — 313 of them, 221 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -451,6 +451,7 @@ Games an admin imported as a pack file: list, import, remove, and the pack tile.
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/packs/:slug/icon.svg` | public |
+| `GET` | `/api/packs/:slug/app-icon` | public |
 | `GET` | `/api/packs` | admin |
 | `POST` | `/api/packs` | admin |
 | `GET` | `/api/packs/index` | admin |
@@ -478,6 +479,7 @@ The game catalog: every pack and code module this instance has or can install, f
 | --- | --- | --- |
 | `GET` | `/api/catalog` | admin |
 | `GET` | `/api/catalog/packs/:slug/icon.svg` | admin |
+| `GET` | `/api/catalog/packs/:slug/app-icon` | admin |
 | `GET` | `/api/catalog/modules/:id/icon.svg` | admin |
 | `POST` | `/api/catalog/packs/:slug/install` | admin |
 | `DELETE` | `/api/catalog/packs/:slug` | admin |

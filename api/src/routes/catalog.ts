@@ -19,6 +19,7 @@ import { isSameSiteRequest } from '../utils/accountConnections';
 import { log } from '../utils/logger';
 import {
   CatalogError,
+  catalogAppIcon,
   catalogIcon,
   disableCatalogModule,
   enableCatalogModule,
@@ -139,6 +140,48 @@ async function sendIcon(res: Response, kind: 'pack' | 'module', id: string): Pro
 router.get('/packs/:slug/icon.svg', (req: Request, res: Response) =>
   sendIcon(res, 'pack', req.params.slug)
 );
+
+/**
+ * @openapi
+ * /api/catalog/packs/{slug}/app-icon:
+ *   get:
+ *     tags: [Catalog]
+ *     summary: The square app icon of a game pack in the catalog
+ *     description: |
+ *       From the installed pack, the offline snapshot, or the feed — fetched
+ *       by this server and served from this origin, checked by its bytes
+ *       (PNG or WebP, square, at most 25 KB) like an imported one.
+ *     security: [{ cookieAuth: [] }]
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: The icon
+ *         content:
+ *           image/webp: {}
+ *           image/png: {}
+ *       404:
+ *         description: No app icon
+ */
+router.get('/packs/:slug/app-icon', async (req: Request, res: Response) => {
+  try {
+    const icon = await catalogAppIcon(req.params.slug);
+    if (!icon) {
+      res.status(404).json({ success: false, error: 'No app icon' });
+      return;
+    }
+    res.setHeader('Content-Type', icon.type);
+    res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Cache-Control', 'private, max-age=300');
+    res.send(icon.data);
+  } catch (error) {
+    fail(res, error, 'read the app icon');
+  }
+});
 
 /**
  * @openapi

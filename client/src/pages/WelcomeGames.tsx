@@ -21,6 +21,7 @@ import { TopNavBar } from '../components/layout/TopNavBar';
 import { GameCatalog } from '../components/catalog/GameCatalog';
 import { useAuth } from '../contexts/AuthContext';
 import { GameArt, GameCard } from '../components/games/GameCard';
+import { GameMark } from '../components/common/GameMark';
 import { safeNextPath } from '../components/games/nextPath';
 import { ExternalLink } from '../components/common/ExternalLink';
 import {
@@ -550,6 +551,15 @@ export default function WelcomeGames() {
                 <Chip
                   key={game.id}
                   label={game.name}
+                  avatar={
+                    <GameMark
+                      name={game.name}
+                      slug={game.slug}
+                      iconUrl={game.appIconUrl}
+                      coverUrl={game.coverUrl}
+                      size={20}
+                    />
+                  }
                   onDelete={() => removeSelected(game)}
                   title={t('games.picker.remove', { name: game.name })}
                   data-testid={`welcome-games-chip-${game.slug}`}
