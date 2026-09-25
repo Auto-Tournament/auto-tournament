@@ -408,11 +408,7 @@
       "batchAdd": "Eller opprett flere servere samtidig"
     },
     "allocation": {
-      "title": "Serverallokering",
       "loading": "Laster allokeringsstatus...",
-      "empty": "Ingen allokeringsdata tilgjengelig.",
-      "available": "Tilgjengelige servere:",
-      "waiting": "Kamper som venter på server:",
       "nextPass": "Neste allokering om ~{{seconds}}s",
       "cooldownLabel": "Nedkjøling",
       "cooldownDescription": "Nylig ferdig kamp – i nedkjøling slik at demoer kan lastes opp og serveren kan resettes (ca. 2 minutter).",
@@ -442,21 +438,12 @@
       "unreachable": "Ikke tilgjengelig",
       "reachable": "Tilgjengelig",
       "unknown": "Ukjent",
-      "loading": "Laster…",
-      "pluginLabel": "Auto Tournament CS2"
+      "loading": "Laster…"
     },
     "currentMatch": {
       "view": "Vis kamp",
       "loading": "Laster...",
       "queuedPrefix": "I kø: "
-    },
-    "labels": {
-      "host": "Vert:",
-      "port": "Portnr.:",
-      "id": "ID-nummer:",
-      "cs2Name": "CS2-navn:",
-      "plugin": "Plugin:",
-      "cs2BuildValue": "build {{build}}"
     },
     "errors": {
       "loadServers": "Klarte ikke å laste servere",
@@ -478,15 +465,9 @@
       "title": "Serverstatus",
       "total_one": "{{count}} server",
       "total_other": "{{count}} servere",
-      "online": "online",
-      "offline": "frakoblet",
-      "notConfigured": "ikke konfigurert",
-      "disabled": "deaktivert",
       "latestRelease": "Nyeste Auto Tournament CS2-versjon: v{{version}}",
       "olderVersion_one": "{{count}} server kjører en eldre versjon enn den nyeste.",
       "olderVersion_other": "{{count}} servere kjører en eldre versjon enn den nyeste.",
-      "newerVersion_one": "{{count}} server kjører en nyere versjon enn den nyeste på GitHub (trolig en uutgitt build).",
-      "newerVersion_other": "{{count}} servere kjører en nyere versjon enn den nyeste på GitHub (trolig en uutgitt build).",
       "downloadLatest": "Last ned nyeste"
     },
     "cs2Update": {
@@ -513,7 +494,6 @@
     "chips": {
       "versionMismatch": "Ulik versjon",
       "ipBanned": "IP blokkert",
-      "cs2Build": "CS2-build {{build}}",
       "pluginDbDown": "Plugin-DB nede",
       "cs2UpdateRequired": "CS2 må oppdateres ({{version}})"
     },
@@ -535,8 +515,7 @@
       "ipBannedBody": "Serveren har midlertidig blokkert Auto Tournaments IP etter gjentatte mislykkede RCON-innlogginger. Rett RCON-passordet og opphev blokkeringen av IP-en.",
       "pluginDbTitle": "Auto Tournament-pluginet når ikke databasen sin.",
       "pluginDbBody": "Bruker du CSM, kjør {{path}}.",
-      "cs2UpdateBody": "Auto Tournament har bekreftet at serverens build er eldre enn den på Steam. Serveren får ikke nye kamper (og turneringen kan ikke startes) før den er oppdatert.",
-      "retryInit": "Prøv å initialisere serveren på nytt (sender fast konfigurasjon via RCON)"
+      "cs2UpdateBody": "Auto Tournament har bekreftet at serverens build er eldre enn den på Steam. Serveren får ikke nye kamper (og turneringen kan ikke startes) før den er oppdatert."
     },
     "lastActive": {
       "justNow": "Aktiv akkurat nå",
@@ -569,6 +548,34 @@
       "triggeredAll_one": "Nytt forsøk startet for {{count}} server",
       "triggeredAll_other": "Nytt forsøk startet for {{count}} servere",
       "failedAll": "Nytt forsøk mislyktes: {{message}}"
+    },
+    "row": {
+      "details": "Detaljer for {{name}}",
+      "actions": "Handlinger for {{name}}",
+      "edit": "Rediger",
+      "retryInit": "Prøv oppsett på nytt",
+      "disabled": "Deaktivert: tildeling hopper over den",
+      "waitingForPlugin": "Oppsett sendt, venter på første hendelse fra pluginen",
+      "running": "Kjører {{match}}",
+      "ready": "Klar for neste kamp"
+    },
+    "details": {
+      "host": "Vert",
+      "port": "Port",
+      "cs2Name": "CS2-navn",
+      "plugin": "Plugin",
+      "cs2Build": "CS2-bygg",
+      "pluginStatus": "Pluginstatus",
+      "lastEvent": "Siste hendelse",
+      "id": "ID"
+    },
+    "strip": {
+      "online": "ONLINE",
+      "offline": "FRAKOBLET",
+      "notConfigured": "IKKE SATT OPP",
+      "disabled": "DEAKTIVERT",
+      "free": "LEDIGE",
+      "waiting": "VENTER"
     }
   },
   "serverModal": {

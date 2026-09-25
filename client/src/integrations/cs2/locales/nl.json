@@ -414,11 +414,7 @@
       "bulkDelete": "Kon één of meer servers niet verwijderen"
     },
     "allocation": {
-      "title": "Servertoewijzing",
       "loading": "Toewijzingsstatus laden...",
-      "empty": "Geen toewijzingsgegevens beschikbaar.",
-      "available": "Beschikbare servers:",
-      "waiting": "Wedstrijden die wachten op servers:",
       "nextPass": "Volgende allocator-run over ~{{seconds}}s",
       "cooldownLabel": "Afkoelperiode",
       "cooldownDescription": "Onlangs is er een wedstrijd afgerond — in afkoelperiode zodat demo’s kunnen uploaden en de server volledig kan resetten (ongeveer 2 minuten).",
@@ -448,21 +444,12 @@
       "unreachable": "Onbereikbaar",
       "reachable": "Bereikbaar",
       "unknown": "Onbekend",
-      "loading": "Laden…",
-      "pluginLabel": "Auto Tournament CS2:"
+      "loading": "Laden…"
     },
     "currentMatch": {
       "view": "Wedstrijd bekijken",
       "loading": "Laden...",
       "queuedPrefix": "In wachtrij: "
-    },
-    "labels": {
-      "host": "Adres:",
-      "port": "Poort:",
-      "id": "ID-nummer:",
-      "cs2Name": "CS2-naam:",
-      "plugin": "Plugin:",
-      "cs2BuildValue": "build {{build}}"
     },
     "bulkDelete": {
       "title": "Servers verwijderen",
@@ -478,15 +465,9 @@
       "title": "Status van alle servers",
       "total_one": "{{count}} server",
       "total_other": "{{count}} servers",
-      "online": "online",
-      "offline": "offline",
-      "notConfigured": "niet geconfigureerd",
-      "disabled": "uitgeschakeld",
       "latestRelease": "Nieuwste Auto Tournament CS2-release: v{{version}}",
       "olderVersion_one": "{{count}} server draait een oudere versie dan de nieuwste release.",
       "olderVersion_other": "{{count}} servers draaien een oudere versie dan de nieuwste release.",
-      "newerVersion_one": "{{count}} server draait een nieuwere versie dan de nieuwste GitHub-release (waarschijnlijk een niet-uitgebrachte build).",
-      "newerVersion_other": "{{count}} servers draaien een nieuwere versie dan de nieuwste GitHub-release (waarschijnlijk een niet-uitgebrachte build).",
       "downloadLatest": "Nieuwste downloaden"
     },
     "cs2Update": {
@@ -513,7 +494,6 @@
     "chips": {
       "versionMismatch": "Versieverschil",
       "ipBanned": "IP geblokkeerd",
-      "cs2Build": "CS2-build {{build}}",
       "pluginDbDown": "Plugin-DB onbereikbaar",
       "cs2UpdateRequired": "CS2-update vereist ({{version}})"
     },
@@ -535,8 +515,7 @@
       "ipBannedBody": "De server heeft het IP van Auto Tournament tijdelijk geblokkeerd na herhaalde mislukte RCON-authenticatie. Corrigeer het RCON-wachtwoord en hef de IP-blokkade op.",
       "pluginDbTitle": "De Auto Tournament-plugin kan zijn database niet bereiken.",
       "pluginDbBody": "Gebruik je CSM, voer dan {{path}} uit.",
-      "cs2UpdateBody": "Auto Tournament heeft vastgesteld dat de build van deze server achterloopt op Steam. De server wordt niet gebruikt voor nieuwe toewijzingen (en het starten van toernooien) totdat hij is bijgewerkt.",
-      "retryInit": "Serverinitialisatie opnieuw proberen (vaste configuratie via RCON versturen)"
+      "cs2UpdateBody": "Auto Tournament heeft vastgesteld dat de build van deze server achterloopt op Steam. De server wordt niet gebruikt voor nieuwe toewijzingen (en het starten van toernooien) totdat hij is bijgewerkt."
     },
     "lastActive": {
       "justNow": "Zojuist actief",
@@ -569,6 +548,34 @@
       "triggeredAll_one": "Opnieuw proberen gestart voor {{count}} server",
       "triggeredAll_other": "Opnieuw proberen gestart voor {{count}} servers",
       "failedAll": "Opnieuw proberen mislukt: {{message}}"
+    },
+    "row": {
+      "details": "Details for {{name}}",
+      "actions": "Actions for {{name}}",
+      "edit": "Edit",
+      "retryInit": "Retry initialization",
+      "disabled": "Disabled: allocation skips it",
+      "waitingForPlugin": "Config sent, waiting for the plugin's first event",
+      "running": "Running {{match}}",
+      "ready": "Ready for the next match"
+    },
+    "details": {
+      "host": "Host",
+      "port": "Port",
+      "cs2Name": "CS2 name",
+      "plugin": "Plugin",
+      "cs2Build": "CS2 build",
+      "pluginStatus": "Plugin status",
+      "lastEvent": "Last event",
+      "id": "ID"
+    },
+    "strip": {
+      "online": "ONLINE",
+      "offline": "OFFLINE",
+      "notConfigured": "NOT SET UP",
+      "disabled": "DISABLED",
+      "free": "FREE",
+      "waiting": "WAITING"
     }
   },
   "serverModal": {

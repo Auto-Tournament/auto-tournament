@@ -1,27 +1,27 @@
 import { pageTitle } from '../utils/pageTitle';
-import { useState, useEffect, useCallback, type ReactNode } from 'react';
-import { PageHead } from '../components/common/ui';
+import { useState, useEffect, useCallback } from 'react';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import {
   Box,
   Button,
-  Card,
-  CardContent,
   Typography,
-  Grid,
   Chip,
+  Checkbox,
   CircularProgress,
   TextField,
   InputAdornment,
   Alert,
-  IconButton,
   Tooltip,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import PersonIcon from '@mui/icons-material/Person';
 import SearchIcon from '@mui/icons-material/Search';
+import EditIcon from '@mui/icons-material/Edit';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import { PageHead, Row, RowList } from '../components/common/ui';
+import { RowMenu } from '../components/common/RowMenu';
+import { tokens } from '../theme/tokens';
 import { api } from '../utils/api';
 import PlayerModal from '../components/modals/PlayerModal';
 import { PlayerImportModal } from '../components/modals/PlayerImportModal';
@@ -70,15 +70,14 @@ export default function Players() {
     setModalOpen(true);
   };
 
-  // The page head's buttons
-  let headerActions: ReactNode = null;
-  if (players.length > 0) {
-    const allVisibleSelected =
-      filteredPlayers.length > 0 &&
-      filteredPlayers.every((player) => selectedPlayerIds.has(player.id));
+  const allVisibleSelected =
+    filteredPlayers.length > 0 && filteredPlayers.every((player) => selectedPlayerIds.has(player.id));
 
-    headerActions = (
-      <Box display="flex" gap={2} flexWrap="wrap">
+  // The page's own actions, beside its title (the drafts' `.head`), once
+  // there is someone to act on; the empty state offers them itself.
+  const headActions =
+    players.length === 0 ? null : (
+      <>
         <Button
           variant={selectionMode ? 'contained' : 'outlined'}
           color={selectionMode ? 'secondary' : 'inherit'}
@@ -149,9 +148,8 @@ export default function Players() {
             </Button>
           </>
         )}
-      </Box>
+      </>
     );
-  }
 
   const loadPlayers = useCallback(async () => {
     try {
@@ -262,18 +260,19 @@ export default function Players() {
 
   if (loading) {
     return (
-      <Box>
+      <>
         <PageHead title={t('layout.pageTitle.players')} />
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-          <CircularProgress />
-        </Box>
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress />
       </Box>
+      </>
     );
   }
 
   return (
     <Box data-testid="players-page" sx={{ width: '100%', height: '100%' }}>
-      <PageHead title={t('layout.pageTitle.players')} actions={headerActions} />
+      <PageHead title={t('layout.pageTitle.players')} actions={headActions} />
+
       {players.length > 0 && (
         <Box mb={3}>
           <TextField
@@ -317,22 +316,21 @@ export default function Players() {
             {t('playersPage.searchNoResults', { query: searchQuery })}
           </Alert>
         ) : (
-          <Grid container spacing={2} data-testid="players-list">
-            {filteredPlayers.map((player) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }} key={player.id}>
-                <Card
+          // One row per player (the drafts' `.row-list.panel`): avatar and
+          // name, a quiet rating chip, and the rest behind the row's menu.
+          // A click on the row edits the player, or picks it while selecting.
+          <RowList data-testid="players-list" aria-label={t('layout.pageTitle.players')}>
+            {filteredPlayers.map((player) => {
+              const selected = selectedPlayerIds.has(player.id);
+              return (
+                <Row
+                  key={player.id}
                   data-testid={`player-card-${player.id}`}
-                  sx={{
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
-                    border: selectedPlayerIds.has(player.id) ? 2 : 1,
-                    borderStyle: 'solid',
-                    borderColor: selectedPlayerIds.has(player.id)
-                      ? 'primary.main'
-                      : 'divider',
-                    '&:hover': {
-                      bgcolor: 'var(--at-paper3)',
-                    },
+                  columns={{
+                    xs: selectionMode ? 'auto auto minmax(0, 1fr) auto' : 'auto minmax(0, 1fr) auto',
+                    sm: selectionMode
+                      ? 'auto auto minmax(0, 1fr) auto auto'
+                      : 'auto minmax(0, 1fr) auto auto',
                   }}
                   onClick={() => {
                     if (selectionMode) {
@@ -341,88 +339,100 @@ export default function Players() {
                       handleOpenModal(player);
                     }
                   }}
+                  sx={{
+                    cursor: 'pointer',
+                    py: 1.5,
+                    bgcolor: selected ? tokens.color.paper3 : 'transparent',
+                    '&:hover': { bgcolor: tokens.color.paper3 },
+                    '&:first-of-type': { borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit' },
+                    '&:last-of-type': { borderBottomLeftRadius: 'inherit', borderBottomRightRadius: 'inherit' },
+                  }}
                 >
-                  <CardContent>
-                    <Box display="flex" alignItems="center" gap={2} mb={2}>
-                      <PlayerAvatar
-                        id={player.id}
-                        name={player.name}
-                        avatarUrl={player.avatar}
-                        size={48}
-                        isAdmin={player.isAdmin}
+                  {selectionMode && (
+                    <Checkbox
+                      size="small"
+                      checked={selected}
+                      onClick={(event) => event.stopPropagation()}
+                      onChange={() => togglePlayerSelected(player.id)}
+                      slotProps={{ input: { 'aria-label': player.name } }}
+                      sx={{ m: -1 }}
+                    />
+                  )}
+                  <PlayerAvatar
+                    id={player.id}
+                    name={player.name}
+                    avatarUrl={player.avatar}
+                    size={36}
+                    isAdmin={player.isAdmin}
+                  />
+                  <Box sx={{ minWidth: 0 }}>
+                    <PlayerName
+                      name={player.name}
+                      isAdmin={player.isAdmin}
+                      variant="body1"
+                      noWrap
+                      sx={{ fontWeight: 600 }}
+                    />
+                    <Typography variant="body2" color="text.secondary" noWrap>
+                      {t('playersPage.matchesCount', { count: player.matchCount })}
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      gap: 1,
+                      flexWrap: 'wrap',
+                      alignItems: 'center',
+                      justifyContent: { xs: 'flex-start', sm: 'flex-end' },
+                      // Under the name on a phone, beside it above that.
+                      order: { xs: 1, sm: 0 },
+                      gridColumn: { xs: selectionMode ? '3 / -1' : '2 / -1', sm: 'auto' },
+                    }}
+                  >
+                    <Tooltip title={t('playersPage.skillRatingTooltip')}>
+                      <Chip
+                        label={t('playersPage.skillRatingLabel', { elo: player.currentElo })}
+                        size="small"
                       />
-                      <Box>
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <PlayerName
-                            name={player.name}
-                            isAdmin={player.isAdmin}
-                            variant="h6"
-                            sx={{ fontWeight: 600 }}
-                          />
-                          <Tooltip title={t('playersPage.openPlayerPageTooltip')}>
-                            <IconButton
-                              size="small"
-                              component="a"
-                              href={getPlayerPageUrl(player.id)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(event) => event.stopPropagation()}
-                              sx={{ ml: -0.5 }}
-                            >
-                              <OpenInNewIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                          {/* Admins can't be impersonated, so don't offer it. */}
-                          {!player.isAdmin && (
-                            <Tooltip title={t('impersonation.viewAs')}>
-                              <IconButton
-                                size="small"
-                                data-testid={`impersonate-player-${player.id}`}
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  void handleImpersonate(player);
-                                }}
-                              >
-                                <VisibilityIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          )}
-                        </Box>
-                        <Typography variant="caption" color="text.secondary" display="block">
-                          {player.id}
-                        </Typography>
-                      </Box>
-                    </Box>
-
-                    <Box display="flex" alignItems="center" gap={1} mb={1}>
-                      <Tooltip title={t('playersPage.skillRatingTooltip')}>
-                        <Chip
-                          label={t('playersPage.skillRatingLabel', {
-                            elo: player.currentElo,
-                          })}
-                          size="small"
-                          color="primary"
-                          sx={{ fontWeight: 600 }}
-                        />
-                      </Tooltip>
-                      {player.matchCount > 0 && (
-                        <Chip
-                          label={t('playersPage.matchesCount', {
-                            count: player.matchCount,
-                          })}
-                          size="small"
-                          variant="outlined"
-                        />
-                      )}
-                      {!player.discordId && (
-                        <NoDiscordChip testId={`player-card-no-discord-${player.id}`} />
-                      )}
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
+                    </Tooltip>
+                    {!player.discordId && (
+                      <NoDiscordChip testId={`player-card-no-discord-${player.id}`} />
+                    )}
+                  </Box>
+                  <RowMenu
+                    label={t('playersPage.rowActions', { name: player.name })}
+                    data-testid={`player-actions-${player.id}`}
+                    items={[
+                      {
+                        key: 'edit',
+                        label: t('playersPage.edit'),
+                        icon: <EditIcon fontSize="small" />,
+                        onClick: () => handleOpenModal(player),
+                      },
+                      {
+                        key: 'open',
+                        label: t('playersPage.openPlayerPageTooltip'),
+                        icon: <OpenInNewIcon fontSize="small" />,
+                        href: getPlayerPageUrl(player.id),
+                      },
+                      // Admins can't be impersonated, so don't offer it.
+                      ...(player.isAdmin
+                        ? []
+                        : [
+                            {
+                              key: 'viewAs',
+                              label: t('impersonation.viewAs'),
+                              icon: <VisibilityIcon fontSize="small" />,
+                              onClick: () => void handleImpersonate(player),
+                              'data-testid': `impersonate-player-${player.id}`,
+                            },
+                          ]),
+                    ]}
+                  />
+                </Row>
+              );
+            })}
+          </RowList>
         )}
 
       <PlayerModal
@@ -455,13 +465,13 @@ export default function Players() {
             const ids = Array.from(selectedPlayerIds);
             const count = ids.length;
             await api.post('/api/players/bulk-delete', { ids });
-            showSuccess(`Deleted ${count} player${count === 1 ? '' : 's'}`);
+            showSuccess(t('playersPage.bulkDelete.success', { count }));
             setSelectedPlayerIds(() => new Set());
             setSelectionMode(false);
             await loadPlayers();
           } catch (err) {
             console.error('Failed to delete players:', err);
-            showError('Failed to delete one or more players');
+            showError(t('playersPage.bulkDelete.error'));
           } finally {
             setBulkDeleteConfirmOpen(false);
           }

@@ -414,11 +414,7 @@
       "bulkDelete": "Impossible de supprimer un ou plusieurs serveurs"
     },
     "allocation": {
-      "title": "Allocation des serveurs",
       "loading": "Chargement de l’état d’allocation…",
-      "empty": "Aucune donnée d’allocation disponible.",
-      "available": "Serveurs disponibles :",
-      "waiting": "Matchs en attente de serveur :",
       "nextPass": "Prochain passage de l’allocateur dans ~{{seconds}} s",
       "cooldownLabel": "Refroidissement",
       "cooldownDescription": "Match terminé récemment — en refroidissement pour permettre l’upload des démos et la réinitialisation complète du serveur (environ 2 minutes).",
@@ -448,21 +444,12 @@
       "unreachable": "Injoignable",
       "reachable": "Joignable",
       "unknown": "Inconnu",
-      "loading": "Chargement…",
-      "pluginLabel": "Auto Tournament CS2 :"
+      "loading": "Chargement…"
     },
     "currentMatch": {
       "view": "Voir le match",
       "loading": "Chargement…",
       "queuedPrefix": "En file d’attente : "
-    },
-    "labels": {
-      "host": "Hôte :",
-      "port": "Port :",
-      "id": "ID :",
-      "cs2Name": "Nom CS2 :",
-      "plugin": "Plugin :",
-      "cs2BuildValue": "build {{build}}"
     },
     "bulkDelete": {
       "title": "Supprimer des serveurs",
@@ -478,15 +465,9 @@
       "title": "État du parc de serveurs",
       "total_one": "{{count}} serveur",
       "total_other": "{{count}} serveurs",
-      "online": "en ligne",
-      "offline": "hors ligne",
-      "notConfigured": "non configuré",
-      "disabled": "désactivé",
       "latestRelease": "Dernière version de Auto Tournament CS2 : v{{version}}",
       "olderVersion_one": "{{count}} serveur utilise une version plus ancienne que la dernière release.",
       "olderVersion_other": "{{count}} serveurs utilisent une version plus ancienne que la dernière release.",
-      "newerVersion_one": "{{count}} serveur utilise une version plus récente que la dernière release GitHub (probablement un build non publié).",
-      "newerVersion_other": "{{count}} serveurs utilisent une version plus récente que la dernière release GitHub (probablement un build non publié).",
       "downloadLatest": "Télécharger la dernière version"
     },
     "cs2Update": {
@@ -513,7 +494,6 @@
     "chips": {
       "versionMismatch": "Version différente",
       "ipBanned": "IP bannie",
-      "cs2Build": "Build CS2 {{build}}",
       "pluginDbDown": "BDD du plugin hors service",
       "cs2UpdateRequired": "Mise à jour CS2 requise ({{version}})"
     },
@@ -535,8 +515,7 @@
       "ipBannedBody": "Le serveur a temporairement banni l’IP de Auto Tournament après plusieurs échecs d’authentification RCON. Corrigez le mot de passe RCON et débannissez l’IP.",
       "pluginDbTitle": "Le plugin Auto Tournament ne peut pas joindre sa base de données.",
       "pluginDbBody": "Si vous utilisez CSM, exécutez {{path}}.",
-      "cs2UpdateBody": "Auto Tournament a vérifié que le build de ce serveur est en retard sur Steam. Il est exclu des nouvelles attributions (et du lancement du tournoi) jusqu’à sa mise à jour.",
-      "retryInit": "Réessayer l’initialisation du serveur (envoyer la configuration persistante via RCON)"
+      "cs2UpdateBody": "Auto Tournament a vérifié que le build de ce serveur est en retard sur Steam. Il est exclu des nouvelles attributions (et du lancement du tournoi) jusqu’à sa mise à jour."
     },
     "lastActive": {
       "justNow": "Actif à l’instant",
@@ -569,6 +548,34 @@
       "triggeredAll_one": "Nouvelle tentative lancée pour {{count}} serveur",
       "triggeredAll_other": "Nouvelle tentative lancée pour {{count}} serveurs",
       "failedAll": "Échec de la nouvelle tentative : {{message}}"
+    },
+    "row": {
+      "details": "Details for {{name}}",
+      "actions": "Actions for {{name}}",
+      "edit": "Edit",
+      "retryInit": "Retry initialization",
+      "disabled": "Disabled: allocation skips it",
+      "waitingForPlugin": "Config sent, waiting for the plugin's first event",
+      "running": "Running {{match}}",
+      "ready": "Ready for the next match"
+    },
+    "details": {
+      "host": "Host",
+      "port": "Port",
+      "cs2Name": "CS2 name",
+      "plugin": "Plugin",
+      "cs2Build": "CS2 build",
+      "pluginStatus": "Plugin status",
+      "lastEvent": "Last event",
+      "id": "ID"
+    },
+    "strip": {
+      "online": "ONLINE",
+      "offline": "OFFLINE",
+      "notConfigured": "NOT SET UP",
+      "disabled": "DISABLED",
+      "free": "FREE",
+      "waiting": "WAITING"
     }
   },
   "serverModal": {

@@ -14,7 +14,10 @@
     "searchError": "Impossibile cercare il giocatore. Riprova.",
     "modalTitle": "Trovati più giocatori",
     "modalSelectPrompt": "{{count}} giocatori trovati. Selezionane uno per vedere il profilo:",
-    "modalElo": "ELO: {{elo}} punti"
+    "modalElo": "ELO: {{elo}} punti",
+    "directoryLabel": "Players",
+    "directoryNoMatch": "Nobody here matches that. Press Enter to look it up on Steam.",
+    "directoryMore": "{{count}} more. Type to narrow the list."
   },
   "playerPage": {
     "playerNotFound": "Questo giocatore non esiste.",
@@ -255,7 +258,11 @@
     },
     "loadError": "Impossibile caricare le squadre",
     "importSuccess": "Importate {{count}} squadra(e) con successo",
-    "viewPublicPage": "View public team page"
+    "viewPublicPage": "View public team page",
+    "rowActions": "Actions for {{name}}",
+    "edit": "Edit",
+    "noPlayers": "No players yet",
+    "matchLinkCopied": "Team match link copied"
   },
   "playersPage": {
     "headerSelect": {
@@ -295,7 +302,9 @@
     "skillRatingTooltip": "La Skill Rating si basa su OpenSkill; più alto è meglio.",
     "skillRatingLabel": "Valutazione abilità: {{elo}}",
     "matchesCount_one": "{{count}} match",
-    "matchesCount_other": "{{count}} match"
+    "matchesCount_other": "{{count}} match",
+    "rowActions": "Actions for {{name}}",
+    "edit": "Edit"
   },
   "discordId": {
     "noDiscord": "Nessun Discord",

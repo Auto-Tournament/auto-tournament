@@ -14,7 +14,10 @@
     "searchError": "Klarte ikke å søke etter spiller. Prøv igjen.",
     "modalTitle": "Flere spillere funnet",
     "modalSelectPrompt": "{{count}} spillere funnet. Velg én for å se profilen:",
-    "modalElo": "ELO-rating: {{elo}}"
+    "modalElo": "ELO-rating: {{elo}}",
+    "directoryLabel": "Spillere",
+    "directoryNoMatch": "Ingen her passer. Trykk Enter for å slå det opp på Steam.",
+    "directoryMore": "{{count}} til. Skriv for å snevre inn listen."
   },
   "playerPage": {
     "playerNotFound": "Denne spilleren finnes ikke.",
@@ -279,7 +282,11 @@
     },
     "loadError": "Klarte ikke å laste lag",
     "importSuccess": "Importerte {{count}} lag",
-    "viewPublicPage": "Se offentlig lagside"
+    "viewPublicPage": "Se offentlig lagside",
+    "rowActions": "Handlinger for {{name}}",
+    "edit": "Rediger",
+    "noPlayers": "Ingen spillere ennå",
+    "matchLinkCopied": "Lenken til lagets kampside er kopiert"
   },
   "playersPage": {
     "headerSelect": {
@@ -319,7 +326,9 @@
     "skillRatingTooltip": "Skill Rating er basert på OpenSkill; høyere er bedre.",
     "skillRatingLabel": "Ferdighetsrating: {{elo}}",
     "matchesCount_one": "{{count}} kamp",
-    "matchesCount_other": "{{count}} kamper"
+    "matchesCount_other": "{{count}} kamper",
+    "rowActions": "Handlinger for {{name}}",
+    "edit": "Rediger"
   },
   "discordId": {
     "noDiscord": "Ingen Discord",

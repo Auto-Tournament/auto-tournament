@@ -1,18 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Button, Card, CardContent, Typography, Grid, Chip, CircularProgress, IconButton, Tooltip, Link } from '@mui/material';
+import { Box, Button, Typography, Chip, CircularProgress } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import StorageIcon from '@mui/icons-material/Storage';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CancelIcon from '@mui/icons-material/Cancel';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import BlockIcon from '@mui/icons-material/Block';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import UpdateIcon from '@mui/icons-material/Update';
-import DnsIcon from '@mui/icons-material/Dns';
-import ReplayIcon from '@mui/icons-material/Replay';
 import ServerModal from '../servers/ServerModal';
 import BatchServerModal from '../servers/BatchServerModal';
+import { ServerRow } from '../servers/ServerRow';
 import type {
   Server,
   ServersResponse,
@@ -21,19 +14,20 @@ import type {
 } from '../cs2.types';
 import type { SnackbarKey } from 'notistack';
 import {
-  PageHead,
-  pageTitle,
   api,
   EmptyState,
   ConfirmDialog,
   useSnackbar,
   openMatchDetails,
   tokens,
-  mono,
   withAlpha,
-  StatusDot,
   useModuleTranslation,
   radii,
+  PageHead,
+  pageTitle,
+  FactGrid,
+  RowList,
+  type Fact,
 } from '../../../module-sdk';
 
 export default function Servers() {
@@ -72,15 +66,6 @@ export default function Servers() {
   const [latestPluginReleaseUrl, setLatestPluginReleaseUrl] = useState<string | null>(null);
   const [cs2OutdatedSnackbarKey, setCs2OutdatedSnackbarKey] = useState<SnackbarKey | null>(null);
   const { t } = useModuleTranslation('cs2');
-
-  const docs = {
-    fleetHealth: 'https://docs.autotournament.gg/reference/servers-health',
-    pluginDbDown: 'https://docs.autotournament.gg/reference/servers-health#plugin-db-down',
-    cs2Outdated: 'https://docs.autotournament.gg/reference/servers-health#cs2-update-required',
-    offline: 'https://docs.autotournament.gg/reference/servers-health#server-offline-or-unreachable',
-    ipBanned: 'https://docs.autotournament.gg/reference/servers-health#ip-banned-rcon',
-    versionMismatch: 'https://docs.autotournament.gg/reference/servers-health#plugin-version-mismatch',
-  } as const;
 
   const compareDottedVersions = React.useCallback((a: string, b: string): number | null => {
     const normalize = (v: string) => {
@@ -466,14 +451,14 @@ export default function Servers() {
     t,
   ]);
 
-  // The page head's buttons
-  let headerActions: React.ReactNode = null;
-  if (servers.length > 0) {
-    const allSelected =
-      servers.length > 0 && servers.every((server) => selectedServerIds.has(server.id));
+  const allSelected =
+    servers.length > 0 && servers.every((server) => selectedServerIds.has(server.id));
 
-    headerActions = (
-      <Box display="flex" gap={2} flexWrap="wrap">
+  // The page's own actions, beside its title (the drafts' `.head`), once
+  // there is a server; the empty state offers them itself.
+  const headActions =
+    servers.length === 0 ? null : (
+      <>
         {!selectionMode && (
           <>
             <Button
@@ -591,9 +576,8 @@ export default function Servers() {
             {t('serversPage.headerActions.addServer')}
           </Button>
         )}
-      </Box>
+      </>
     );
-  }
 
   useEffect(() => {
     // Initial page load uses cached status to avoid hammering servers when the
@@ -849,9 +833,58 @@ export default function Servers() {
     return { outOfDate, byVersion, versions };
   }, [servers]);
 
+  // The fleet at a glance (the drafts' joined stat grid): what is up, what
+  // is not, and what the allocator can hand out right now.
+  const fleetFacts: Fact[] = [
+    { key: 'online', label: t('serversPage.strip.online'), value: serverStats.online },
+    { key: 'offline', label: t('serversPage.strip.offline'), value: serverStats.offline },
+    ...(serverStats.notConfigured > 0
+      ? [{ key: 'notConfigured', label: t('serversPage.strip.notConfigured'), value: serverStats.notConfigured }]
+      : []),
+    ...(serverStats.disabled > 0
+      ? [{ key: 'disabled', label: t('serversPage.strip.disabled'), value: serverStats.disabled }]
+      : []),
+    {
+      key: 'free',
+      label: t('serversPage.strip.free'),
+      value: allocationStatus
+        ? `${allocationStatus.availableServerCount} / ${allocationStatus.servers.length}`
+        : '—',
+    },
+    {
+      key: 'waiting',
+      label: t('serversPage.strip.waiting'),
+      value: allocationStatus ? allocationStatus.requiredServerCount : '—',
+    },
+  ];
+
+  // Servers behind the latest plugin release. A build newer than the latest
+  // release is an unreleased one and needs nothing from the admin, so it is
+  // not flagged.
+  const olderPluginCount = (() => {
+    if (!latestPluginVersion) return 0;
+    return servers.filter((server) => {
+      if (!server.pluginVersion) return false;
+      const comparison = compareDottedVersions(server.pluginVersion, latestPluginVersion);
+      return typeof comparison === 'number' && comparison < 0;
+    }).length;
+  })();
+
+  /** A tinted notice box above the list, for what needs the admin across servers. */
+  const noticeSx = (color: string) => ({
+    bgcolor: withAlpha(color, 0.1),
+    border: `1px solid ${withAlpha(color, 0.45)}`,
+    borderRadius: radii.md,
+    p: 2,
+  });
+
   return (
     <Box data-testid="servers-page" sx={{ width: '100%', height: '100%' }}>
-      <PageHead title={t('serversPage.title')} actions={headerActions} />
+      <PageHead
+        title={t('serversPage.title')}
+        subtitle={t('serversPage.fleet.total', { count: serverStats.total })}
+        actions={headActions}
+      />
       {servers.length === 0 ? (
           <Box>
             <EmptyState
@@ -870,953 +903,114 @@ export default function Servers() {
           </Box>
         ) : (
           <>
-            {/* Server Statistics Summary */}
-            <Box mb={2}>
-              <Card variant="outlined">
-                <CardContent>
-                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                    <Typography variant="subtitle2" fontWeight={600}>
-                      {t('serversPage.fleet.title')}
+            <FactGrid
+              items={fleetFacts}
+              aria-label={t('serversPage.fleet.title')}
+              data-testid="servers-fleet-strip"
+              sx={{ mb: allocationStatus?.nextAllocationInSeconds != null ? 1 : 3 }}
+            />
+            {allocationStatus?.nextAllocationInSeconds != null && (
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                {t('serversPage.allocation.nextPass', {
+                  seconds: allocationStatus.nextAllocationInSeconds,
+                })}
+              </Typography>
+            )}
+            {!allocationStatus && allocationLoading && (
+              <Typography variant="body2" color="text.secondary" sx={{ mt: -2, mb: 3 }}>
+                {t('serversPage.allocation.loading')}
+              </Typography>
+            )}
+
+            {(cs2UpdateInfo.outOfDate.length > 0 || olderPluginCount > 0 || versionInfo.hasMultipleVersions) && (
+              <Box sx={{ display: 'grid', gap: 1.5, mb: 3 }}>
+                {cs2UpdateInfo.outOfDate.length > 0 && (
+                  <Box sx={noticeSx(tokens.color.ban)} data-testid="servers-cs2-update-notice">
+                    <Typography variant="body2" fontWeight={700}>
+                      {t('serversPage.cs2Update.fleetTitle')}
                     </Typography>
-                    <Typography variant="h6" fontWeight={600}>
-                      {t('serversPage.fleet.total', { count: serverStats.total })}
-                    </Typography>
-                  </Box>
-                  <Box display="flex" gap={2} flexWrap="wrap" mb={versionInfo.hasMultipleVersions ? 2 : 0}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <CheckCircleIcon sx={{ color: 'success.main', fontSize: 20 }} />
-                      <Typography variant="body2" color="success.main">
-                        <strong>{serverStats.online}</strong> {t('serversPage.fleet.online')}
-                      </Typography>
-                    </Box>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <CancelIcon sx={{ color: 'error.main', fontSize: 20 }} />
-                      <Typography variant="body2" color="error.main">
-                        <strong>{serverStats.offline}</strong> {t('serversPage.fleet.offline')}
-                      </Typography>
-                    </Box>
-                    {serverStats.notConfigured > 0 && (
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <BlockIcon sx={{ color: 'text.disabled', fontSize: 20 }} />
-                        <Typography variant="body2" color="text.disabled">
-                          <strong>{serverStats.notConfigured}</strong>{' '}
-                          {t('serversPage.fleet.notConfigured')}
-                        </Typography>
-                      </Box>
-                    )}
-                    {serverStats.disabled > 0 && (
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <BlockIcon sx={{ color: 'text.disabled', fontSize: 20 }} />
-                        <Typography variant="body2" color="text.disabled">
-                          <strong>{serverStats.disabled}</strong> {t('serversPage.fleet.disabled')}
-                        </Typography>
-                      </Box>
-                    )}
-                  </Box>
-                  {(() => {
-                    if (!latestPluginVersion) return null;
-                    const serversWithVersion = servers.filter((s) => s.pluginVersion);
-                    const comparisons = serversWithVersion
-                      .map((s) => {
-                        const v = s.pluginVersion;
-                        if (!v) return null;
-                        return compareDottedVersions(v, latestPluginVersion);
-                      })
-                      .filter((x): x is number => typeof x === 'number');
-
-                    const olderCount = comparisons.filter((c) => c < 0).length;
-                    const newerCount = comparisons.filter((c) => c > 0).length;
-                    if (olderCount === 0 && newerCount === 0) return null;
-
-                    const boxColor = olderCount > 0 ? 'warning' : 'info';
-                    const releaseHref =
-                      latestPluginReleaseUrl ??
-                      'https://github.com/Auto-Tournament/cs2-plugin/releases';
-
-                    return (
-                      <Box
-                        sx={{
-                          bgcolor: withAlpha(boxColor === 'warning' ? tokens.color.warning : tokens.color.info, 0.1),
-                          border: 1,
-                          borderColor: withAlpha(boxColor === 'warning' ? tokens.color.warning : tokens.color.info, 0.4),
-                          borderRadius: `${tokens.radius.md}px`,
-                          p: 1.5,
-                          mt: 1,
-                          color: 'text.primary',
-                        }}
-                      >
-                        <Typography
-                          variant="caption"
-                          fontWeight={600}
-                          sx={{ color: 'inherit' }}
-                          display="block"
-                          mb={0.5}
-                        >
-                          {t('serversPage.fleet.latestRelease', { version: latestPluginVersion })}
-                        </Typography>
-                        {olderCount > 0 && (
-                          <Typography variant="caption" sx={{ color: 'inherit' }} display="block">
-                            {t('serversPage.fleet.olderVersion', { count: olderCount })}{' '}
-                            <a href={releaseHref} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>
-                              {t('serversPage.fleet.downloadLatest')}
-                            </a>
-                          </Typography>
-                        )}
-                        {newerCount > 0 && (
-                          <Typography
-                            variant="caption"
-                            sx={{ color: 'inherit', opacity: 0.9 }}
-                            display="block"
-                          >
-                            {t('serversPage.fleet.newerVersion', { count: newerCount })}
-                          </Typography>
-                        )}
-                      </Box>
-                    );
-                  })()}
-                  {cs2UpdateInfo.outOfDate.length > 0 && (
-                    <Box
-                      sx={{
-                        bgcolor: withAlpha(tokens.color.ban, 0.1),
-                        border: 1,
-                        borderColor: withAlpha(tokens.color.ban, 0.45),
-                        borderRadius: `${tokens.radius.md}px`,
-                        p: 2,
-                        mt: 1.5,
-                        color: 'text.primary',
-                      }}
-                    >
-                      <Typography
-                        variant="subtitle2"
-                        fontWeight={800}
-                        sx={{ color: 'inherit' }}
-                        display="block"
-                        mb={0.5}
-                      >
-                        🚨 {t('serversPage.cs2Update.fleetTitle')}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'inherit' }} display="block">
-                        {t('serversPage.cs2Update.fleetBody', { count: cs2UpdateInfo.outOfDate.length })}
-                      </Typography>
-                      <Box mt={1} display="flex" gap={1} flexWrap="wrap">
-                        {cs2UpdateInfo.versions.map((v) => (
-                          <Chip
-                            key={v}
-                            label={`required_version=${v} (${cs2UpdateInfo.byVersion.get(v)?.length ?? 0})`}
-                            color="error"
-                            variant="outlined"
-                            sx={{ fontWeight: 700 }}
-                          />
-                        ))}
-                      </Box>
-                    </Box>
-                  )}
-                  {versionInfo.hasMultipleVersions && (
-                    <Box 
-                      sx={{ 
-                        bgcolor: (theme) => `${theme.palette.warning.main}14`, // 8% amber wash
-                        border: 1, 
-                        borderColor: 'warning.main',
-                        borderRadius: radii.sm, 
-                        p: 1.5,
-                        mt: 1
-                      }}
-                    >
-                      <Typography variant="caption" fontWeight={600} color="warning.dark" display="block" mb={0.5}>
-                        ⚠️ {t('serversPage.versionMismatch.title')}
-                      </Typography>
-                      <Box display="flex" gap={1} flexWrap="wrap">
-                        {Array.from(versionInfo.versionCounts.entries()).map(([version, count]) => (
-                          <Chip
-                            key={version}
-                            label={t('serversPage.versionMismatch.chip', { version, count })}
-                            size="small"
-                            color={version === versionInfo.mostCommonVersion ? 'success' : 'warning'}
-                            variant="outlined"
-                            sx={{ fontWeight: 500 }}
-                          />
-                        ))}
-                      </Box>
-                      <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-                        {t('serversPage.versionMismatch.recommended', {
-                          version: versionInfo.mostCommonVersion,
-                        })}
-                      </Typography>
-                    </Box>
-                  )}
-                </CardContent>
-              </Card>
-            </Box>
-
-            {/* Match Allocation Status */}
-            <Box mb={2}>
-              <Card variant="outlined">
-                <CardContent>
-                  <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                    {t('serversPage.allocation.title')}
-                  </Typography>
-                  {!allocationStatus ? (
                     <Typography variant="body2" color="text.secondary">
-                      {allocationLoading
-                        ? t('serversPage.allocation.loading')
-                        : t('serversPage.allocation.empty')}
+                      {t('serversPage.cs2Update.fleetBody', { count: cs2UpdateInfo.outOfDate.length })}
                     </Typography>
-                  ) : (
-                    <>
-                      <Typography variant="body2" color="text.secondary">
-                        <strong>{t('serversPage.allocation.available')}</strong>{' '}
-                        {allocationStatus.availableServerCount} / {allocationStatus.servers.length}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        <strong>{t('serversPage.allocation.waiting')}</strong>{' '}
-                        {allocationStatus.requiredServerCount}
-                      </Typography>
-                      {allocationStatus.nextAllocationInSeconds !== null && (
-                        <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-                          {t('serversPage.allocation.nextPass', {
-                            seconds: allocationStatus.nextAllocationInSeconds,
-                          })}
-                        </Typography>
-                      )}
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            </Box>
-
-            <Grid container spacing={2}>
-              {sortedServers.map((server) => {
-                const allocSnapshot = allocationStatus?.servers.find((s) => s.id === server.id);
-                const inGraceWindow = !!allocSnapshot?.inGraceWindow;
-                const secondsUntilReady = allocSnapshot?.secondsUntilReady ?? null;
-                
-                // Config sent via RCON but Auto Tournament CS2 hasn't sent events yet (lastSeen still null)
-                const configSentWaitingForPlugin =
-                  server.enabled && !server.lastSeen && !!server.persistentConfigSent;
-                // Not initialized: we haven't sent config, or we don't know (no persistentConfigSent)
-                const needsInitialization =
-                  server.enabled && !server.lastSeen && !server.persistentConfigSent;
-                const isChecking = statusCheckingIds.has(server.id);
-
-                return (
-                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }} key={server.id}>
-                <Card
-                  data-testid={`server-card-${server.name.replace(/\s+/g, '-').toLowerCase()}`}
-                  sx={() => {
-                    const selected = selectedServerIds.has(server.id);
-                    const ring = `0 0 0 2px ${tokens.color.accent}`;
-                    return {
-                      cursor: 'pointer',
-                      borderColor: needsInitialization
-                        ? 'error.main'
-                        : configSentWaitingForPlugin
-                        ? 'info.main'
-                        : 'divider',
-                      boxShadow: selected ? ring : undefined,
-                      ...(selected && {
-                        bgcolor: 'action.selected',
-                      }),
-                      '&:hover': {
-                        bgcolor: selected ? 'action.selected' : 'var(--at-paper3)',
-                        ...(selected && {
-                          bgcolor: 'action.selected',
-                        }),
-                      },
-                    };
-                  }}
-                  onClick={() => {
-                    if (selectionMode) {
-                      toggleServerSelected(server.id);
-                    } else {
-                      handleOpenModal(server);
-                    }
-                  }}
-                >
-                  <CardContent>
-                    {typeof server.cs2RequiredVersion === 'number' && server.enabled && (
-                      <Box
-                        sx={{
-                          bgcolor: withAlpha(tokens.color.ban, 0.1),
-                          border: 1,
-                          borderColor: withAlpha(tokens.color.ban, 0.45),
-                          borderRadius: `${tokens.radius.md}px`,
-                          p: 1.5,
-                          mb: 2,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
-                          color: 'text.primary',
-                          '& svg': { color: tokens.color.ban },
-                        }}
-                      >
-                        <UpdateIcon
-                          sx={{ color: 'inherit', fontSize: 20 }}
-                          aria-label={t('serversPage.cs2Update.title')}
-                        />
-                        <Box flex={1}>
-                          <Typography variant="body2" fontWeight={800} sx={{ color: 'inherit' }}>
-                            {t('serversPage.cs2Update.title')}
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            display="block"
-                            mt={0.25}
-                            sx={{ color: 'inherit', opacity: 0.9 }}
-                          >
-                            required_version={server.cs2RequiredVersion}
-                            {server.cs2UpdatePhase ? ` • phase=${server.cs2UpdatePhase}` : ''}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    )}
-                    {needsInitialization && (
-                      <Box
-                        sx={{
-                          bgcolor: withAlpha(tokens.color.ban, 0.1),
-                          border: 1,
-                          borderColor: withAlpha(tokens.color.ban, 0.45),
-                          borderRadius: `${tokens.radius.md}px`,
-                          p: 1.5,
-                          mb: 2,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
-                          color: 'text.primary',
-                          '& svg': { color: tokens.color.ban },
-                        }}
-                      >
-                        <BlockIcon
-                          sx={{ color: 'inherit', fontSize: 20 }}
-                          aria-label={t('serversPage.notInitialized.title')}
-                        />
-                        <Box flex={1}>
-                          <Typography variant="body2" fontWeight={600} sx={{ color: 'inherit' }}>
-                            {t('serversPage.notInitialized.title')}
-                          </Typography>
-                          <Typography variant="caption" display="block" mt={0.25} sx={{ color: 'inherit', opacity: 0.9 }}>
-                            {isChecking
-                              ? t('serversPage.notInitialized.checking')
-                              : server.reachableFromApi === false
-                              ? t('serversPage.notInitialized.rconUnreachable')
-                              : server.reachableFromApi === true
-                              ? t('serversPage.notInitialized.noEvents')
-                              : t('serversPage.notInitialized.notChecked')}
-                          </Typography>
-                          {!isChecking && server.reachableFromApi === true && (
-                            <Typography variant="caption" display="block" mt={0.5} sx={{ color: 'inherit', opacity: 0.85 }}>
-                              {t('serversPage.checkServerLogs')}
-                            </Typography>
-                          )}
-                        </Box>
-                      </Box>
-                    )}
-                    <Box display="flex" justifyContent="space-between" alignItems="start" mb={2}>
-                      <Box flex={1} minWidth={0}>
-                        <Box display="flex" alignItems="center" gap={1.25} mb={0.75}>
-                          <StatusDot
-                            state={
-                              isChecking || configSentWaitingForPlugin
-                                ? 'loading'
-                                : !server.enabled || server.status === 'disabled'
-                                ? 'free'
-                                : needsInitialization ||
-                                  (server.status !== 'online' && server.reachableFromApi === false)
-                                ? 'error'
-                                : server.currentMatch
-                                ? 'live'
-                                : 'free'
-                            }
-                          />
-                          <Typography
-                            variant="h6"
-                            sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-                          >
-                            {server.name}
-                          </Typography>
-                        </Box>
-                        <Box display="flex" gap={0.5} flexWrap="wrap">
-                          {(() => {
-                            const reachableFromApi = server.reachableFromApi;
-                            const serverCanReachApi = server.serverCanReachApi;
-                            const now = Math.floor(Date.now() / 1000);
-                            const isHeartbeatActive = server.lastSeen && (now - server.lastSeen < 300); // 5 minutes
-                            const isHeartbeatStale = !!server.lastSeen && !isHeartbeatActive;
-
-                            let label: string;
-                            let color: 'default' | 'success' | 'error' | 'warning' | 'info' =
-                              'default';
-
-                            if (isChecking) {
-                              label = t('serversPage.statusChip.checking');
-                              color = 'default';
-                            } else if (!server.enabled || server.status === 'disabled') {
-                              label = t('serversPage.statusChip.disabled');
-                              color = 'default';
-                            } else if (!server.lastSeen) {
-                              label = server.persistentConfigSent
-                                ? t('serversPage.statusChip.noEventsYet')
-                                : t('serversPage.statusChip.notConfigured');
-                              color = server.persistentConfigSent ? 'info' : 'error';
-                            } else if (isHeartbeatStale && reachableFromApi === true) {
-                              label = t('serversPage.statusChip.onlineIdle');
-                              color = 'info';
-                            } else if (server.status !== 'online' && reachableFromApi === false) {
-                              // Reserve "Offline" for true reachability failure (or when backend marks it offline).
-                              label = t('serversPage.statusChip.offline');
-                              color = 'error';
-                            } else if (reachableFromApi && serverCanReachApi) {
-                              label = isHeartbeatActive
-                                ? t('serversPage.statusChip.onlineActive')
-                                : t('serversPage.statusChip.onlineOk');
-                              color = 'success';
-                            } else if (reachableFromApi && serverCanReachApi === false) {
-                              label = t('serversPage.statusChip.onlineRconOnly');
-                              color = 'warning';
-                            } else if (reachableFromApi === false) {
-                              label = t('serversPage.statusChip.rconFailed');
-                              color = 'error';
-                            } else {
-                              label = t('serversPage.statusChip.online');
-                              color = 'success';
-                            }
-
-                            const icon = isChecking ? (
-                              <CircularProgress size={16} sx={{ color: 'text.secondary' }} />
-                            ) : color === 'success' ? (
-                              <CheckCircleIcon />
-                            ) : color === 'warning' ? (
-                              <RefreshIcon />
-                            ) : server.status === 'disabled' || !server.enabled ? (
-                              <BlockIcon />
-                            ) : (
-                              <CancelIcon />
-                            );
-
-                            let tooltip: React.ReactNode | null = null;
-                            let tooltipHref: string | null = null;
-
-                            if (!server.enabled || server.status === 'disabled') {
-                              tooltip = (
-                                <Box>
-                                  <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                    {t('serversPage.tooltips.disabledTitle')}
-                                  </Typography>
-                                  <Typography variant="body2">
-                                    {t('serversPage.tooltips.disabledBody')}
-                                  </Typography>
-                                </Box>
-                              );
-                            } else if (!server.lastSeen) {
-                              if (server.persistentConfigSent) {
-                                tooltipHref = docs.offline;
-                                tooltip = (
-                                  <Box>
-                                    <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                      {t('serversPage.tooltips.noEventsTitle')}
-                                    </Typography>
-                                    <Typography variant="body2">
-                                      {t('serversPage.tooltips.noEventsBody')}
-                                    </Typography>
-                                    <Link
-                                      href={tooltipHref}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      underline="hover"
-                                      sx={{ display: 'inline-block', mt: 0.5 }}
-                                    >
-                                      {t('serversPage.tooltips.fixGuide')}
-                                    </Link>
-                                  </Box>
-                                );
-                              } else {
-                                tooltip = (
-                                  <Box>
-                                    <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                      {t('serversPage.tooltips.notConfiguredTitle')}
-                                    </Typography>
-                                    <Typography variant="body2">
-                                      {t('serversPage.tooltips.notConfiguredBody')}
-                                    </Typography>
-                                  </Box>
-                                );
-                              }
-                            } else if (label === t('serversPage.statusChip.offline') || label === t('serversPage.statusChip.rconFailed')) {
-                              tooltipHref = docs.offline;
-                              tooltip = (
-                                <Box>
-                                  <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                    {t('serversPage.tooltips.unreachableTitle')}
-                                  </Typography>
-                                  <Typography variant="body2">
-                                    {t('serversPage.tooltips.unreachableBody')}
-                                  </Typography>
-                                  <Link
-                                    href={tooltipHref}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    underline="hover"
-                                    sx={{ display: 'inline-block', mt: 0.5 }}
-                                  >
-                                    {t('serversPage.tooltips.fixGuide')}
-                                  </Link>
-                                </Box>
-                              );
-                            } else if (reachableFromApi && serverCanReachApi === false) {
-                              tooltipHref = docs.offline;
-                              tooltip = (
-                                <Box>
-                                  <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                    {t('serversPage.tooltips.webhookTitle')}
-                                  </Typography>
-                                  <Typography variant="body2">
-                                    {t('serversPage.tooltips.webhookBody')}
-                                  </Typography>
-                                  <Link
-                                    href={tooltipHref}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    underline="hover"
-                                    sx={{ display: 'inline-block', mt: 0.5 }}
-                                  >
-                                    {t('serversPage.tooltips.fixGuide')}
-                                  </Link>
-                                </Box>
-                              );
-                            }
-
-                            const chip = (
-                              <Chip
-                                icon={icon}
-                                label={label}
-                                size="small"
-                                color={color}
-                                sx={{ fontWeight: 600 }}
-                              />
-                            );
-
-                            if (!tooltip) {
-                              return chip;
-                            }
-
-                            return (
-                              <Tooltip arrow title={tooltip}>
-                                {chip}
-                              </Tooltip>
-                            );
-                          })()}
-                          {server.pluginVersion && (
-                            <>
-                              <Chip
-                                label={`v${server.pluginVersion}`}
-                                size="small"
-                                variant="outlined"
-                                color={
-                                  versionInfo.mostCommonVersion &&
-                                  server.pluginVersion !== versionInfo.mostCommonVersion
-                                    ? 'warning'
-                                    : 'primary'
-                                }
-                                sx={{ fontWeight: 500 }}
-                              />
-                              {versionInfo.hasMultipleVersions &&
-                                versionInfo.mostCommonVersion &&
-                                server.pluginVersion !== versionInfo.mostCommonVersion && (
-                                  <Tooltip
-                                    arrow
-                                    title={
-                                      <Box>
-                                        <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                          {t('serversPage.tooltips.versionDiffTitle')}
-                                        </Typography>
-                                        <Typography variant="body2">
-                                          {t('serversPage.tooltips.versionDiffBody', {
-                                            command: 'sudo csm update-plugins',
-                                          })}
-                                        </Typography>
-                                        <Link
-                                          href={docs.versionMismatch}
-                                          target="_blank"
-                                          rel="noreferrer"
-                                          underline="hover"
-                                          sx={{ display: 'inline-block', mt: 0.5 }}
-                                        >
-                                          {t('serversPage.tooltips.fixGuide')}
-                                        </Link>
-                                      </Box>
-                                    }
-                                  >
-                                    <Chip
-                                      label={t('serversPage.chips.versionMismatch')}
-                                      size="small"
-                                      color="warning"
-                                      sx={{ fontWeight: 500 }}
-                                    />
-                                  </Tooltip>
-                                )}
-                            </>
-                          )}
-                          {server.ipBanned && server.enabled && (
-                            <Tooltip
-                              arrow
-                              title={
-                                <Box>
-                                  <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                    {t('serversPage.tooltips.ipBannedTitle')}
-                                  </Typography>
-                                  <Typography variant="body2">
-                                    {t('serversPage.tooltips.ipBannedBody')}
-                                  </Typography>
-                                  <Link
-                                    href={docs.ipBanned}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    underline="hover"
-                                    sx={{ display: 'inline-block', mt: 0.5 }}
-                                  >
-                                    {t('serversPage.tooltips.fixGuide')}
-                                  </Link>
-                                </Box>
-                              }
-                            >
-                              <Chip
-                                label={t('serversPage.chips.ipBanned')}
-                                size="small"
-                                color="error"
-                                variant="outlined"
-                                sx={{ fontWeight: 700 }}
-                              />
-                            </Tooltip>
-                          )}
-                          {typeof server.cs2BuildId === 'number' && server.enabled && (
-                            <Chip
-                              label={t('serversPage.chips.cs2Build', { build: server.cs2BuildId })}
-                              size="small"
-                              variant="outlined"
-                              color="secondary"
-                              sx={{ fontWeight: 600 }}
-                            />
-                          )}
-                          {server.enabled && server.atDbOk === false && (
-                            <Tooltip
-                              arrow
-                              title={
-                                <Box>
-                                  <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                    {t('serversPage.tooltips.pluginDbTitle')}
-                                  </Typography>
-                                  <Typography variant="body2">
-                                    {t('serversPage.tooltips.pluginDbBody', {
-                                      path: 'sudo csm → Tools → Auto Tournament CS2 DB: verify/repair',
-                                    })}
-                                  </Typography>
-                                  <Link
-                                    href={docs.pluginDbDown}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    underline="hover"
-                                    sx={{ display: 'inline-block', mt: 0.5 }}
-                                  >
-                                    {t('serversPage.tooltips.fixGuide')}
-                                  </Link>
-                                </Box>
-                              }
-                            >
-                              <Chip
-                                label={t('serversPage.chips.pluginDbDown')}
-                                size="small"
-                                color="error"
-                                sx={{ fontWeight: 800 }}
-                              />
-                            </Tooltip>
-                          )}
-                          {typeof server.cs2RequiredVersion === 'number' && server.enabled && (
-                            <Tooltip
-                              arrow
-                              title={
-                                <Box>
-                                  <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                    {t('serversPage.cs2Update.title')}
-                                  </Typography>
-                                  <Typography variant="body2">
-                                    {t('serversPage.tooltips.cs2UpdateBody')}
-                                  </Typography>
-                                  <Link
-                                    href={docs.cs2Outdated}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    underline="hover"
-                                    sx={{ display: 'inline-block', mt: 0.5 }}
-                                  >
-                                    {t('serversPage.tooltips.fixGuide')}
-                                  </Link>
-                                </Box>
-                              }
-                            >
-                              <Chip
-                                label={t('serversPage.chips.cs2UpdateRequired', {
-                                  version: server.cs2RequiredVersion,
-                                })}
-                                size="small"
-                                color="error"
-                                sx={{ fontWeight: 700 }}
-                              />
-                            </Tooltip>
-                          )}
-                        </Box>
-                      </Box>
-                        <Tooltip title={t('serversPage.tooltips.retryInit')}>
-                        <IconButton
-                          size="small"
-                          onClick={(e) => handleRetryInitialization(server.id, e)}
-                          disabled={isChecking || retryingServerId === server.id || retryingAll}
-                          sx={{
-                            ml: 1,
-                            '&:hover': {
-                              backgroundColor: 'action.hover',
-                            },
-                          }}
-                        >
-                          {retryingServerId === server.id ? (
-                            <CircularProgress size={20} />
-                          ) : (
-                            <ReplayIcon fontSize="small" />
-                          )}
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-
-                    <Box display="flex" flexDirection="column" gap={0.5} mb={2}>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        data-testid="server-host"
-                      >
-                        <strong>{t('serversPage.labels.host')}</strong> {server.host}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        <strong>{t('serversPage.labels.port')}</strong> {server.port}
-                      </Typography>
-                      {server.hostname && (
-                        <Box display="flex" alignItems="center" gap={0.5}>
-                          <DnsIcon sx={{ fontSize: 16, color: 'text.disabled' }} />
-                          <Typography variant="body2" color="text.secondary">
-                            <strong>{t('serversPage.labels.cs2Name')}</strong> {server.hostname}
-                          </Typography>
-                        </Box>
-                      )}
-                      {server.pluginVersion && (
-                        <Box display="flex" alignItems="center" gap={0.5}>
-                          <UpdateIcon sx={{ fontSize: 16, color: 'text.disabled' }} />
-                          <Typography variant="body2" color="text.secondary">
-                            <strong>{t('serversPage.labels.plugin')}</strong> Auto Tournament CS2 v{server.pluginVersion}
-                          </Typography>
-                        </Box>
-                      )}
-                      {typeof server.cs2BuildId === 'number' && (
-                        <Box display="flex" alignItems="center" gap={0.5}>
-                          <UpdateIcon sx={{ fontSize: 16, color: 'text.disabled' }} />
-                          <Typography variant="body2" color="text.secondary">
-                            <strong>CS2:</strong>{' '}
-                            {t('serversPage.labels.cs2BuildValue', { build: server.cs2BuildId })}
-                          </Typography>
-                        </Box>
-                      )}
-                      {server.lastSeen && (
-                        <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-                          {(() => {
-                            const now = Math.floor(Date.now() / 1000);
-                            const secondsAgo = now - server.lastSeen;
-                            const minutesAgo = Math.floor(secondsAgo / 60);
-                            const hoursAgo = Math.floor(minutesAgo / 60);
-                            const daysAgo = Math.floor(hoursAgo / 24);
-                            
-                            let timeStr;
-                            if (secondsAgo < 60) {
-                              timeStr = t('serversPage.lastActive.justNow');
-                            } else if (minutesAgo < 60) {
-                              timeStr = t('serversPage.lastActive.minutesAgo', { count: minutesAgo });
-                            } else if (hoursAgo < 24) {
-                              timeStr = t('serversPage.lastActive.hoursAgo', { count: hoursAgo });
-                            } else {
-                              timeStr = t('serversPage.lastActive.daysAgo', { count: daysAgo });
-                            }
-                            
-                            const isActive = secondsAgo < 300; // 5 minutes
-                            return (
-                              <Box
-                                component="span"
-                                sx={{
-                                  ...mono,
-                                  color: isActive ? tokens.color.live : tokens.color.muted,
-                                  fontWeight: isActive ? 600 : 400,
-                                }}
-                              >
-                                {timeStr}
-                              </Box>
-                            );
-                          })()}
-                        </Typography>
-                      )}
-                    </Box>
-                    {(server.reachableFromApi !== undefined || isChecking) && server.enabled && (
-                      <Box display="flex" flexDirection="column" gap={0.5} mb={1}>
-                        <Box display="flex" alignItems="center" gap={0.5}>
-                          {isChecking ? (
-                            <CircularProgress size={14} sx={{ color: 'text.disabled' }} />
-                          ) : (
-                            <ArrowUpwardIcon
-                              fontSize="small"
-                              sx={{
-                                color:
-                                  server.reachableFromApi === false
-                                    ? 'error.main'
-                                    : server.reachableFromApi
-                                    ? 'success.main'
-                                    : 'text.disabled',
-                              }}
-                            />
-                          )}
-                          <Typography variant="caption" color="text.secondary">
-                            {t('serversPage.connectivity.apiToServer')}{' '}
-                            <strong>
-                              {isChecking
-                                ? t('serversPage.connectivity.loading')
-                                : server.reachableFromApi === false
-                                ? t('serversPage.connectivity.unreachable')
-                                : server.reachableFromApi
-                                ? t('serversPage.connectivity.reachable')
-                                : t('serversPage.connectivity.unknown')}
-                            </strong>
-                          </Typography>
-                        </Box>
-                        <Box display="flex" alignItems="center" gap={0.5}>
-                          {isChecking ? (
-                            <CircularProgress size={14} sx={{ color: 'text.disabled' }} />
-                          ) : (
-                            <ArrowDownwardIcon
-                              fontSize="small"
-                              sx={{
-                                color:
-                                  server.serverCanReachApi === false
-                                    ? 'error.main'
-                                    : server.serverCanReachApi
-                                    ? 'success.main'
-                                    : 'text.disabled',
-                              }}
-                            />
-                          )}
-                          <Typography variant="caption" color="text.secondary">
-                            {t('serversPage.connectivity.serverToApi')}{' '}
-                            <strong>
-                              {isChecking
-                                ? t('serversPage.connectivity.loading')
-                                : server.serverCanReachApi === false
-                                ? t('serversPage.connectivity.unreachable')
-                                : server.serverCanReachApi
-                                ? t('serversPage.connectivity.reachable')
-                                : t('serversPage.connectivity.unknown')}
-                            </strong>
-                          </Typography>
-                        </Box>
-                        {!isChecking && server.pluginStatus && server.status === 'online' && (
-                          <Box display="flex" alignItems="center" gap={0.5}>
-                            <Typography variant="caption" color="text.secondary">
-                              <strong>{t('serversPage.connectivity.pluginLabel')}</strong>{' '}
-                              <Chip
-                                label={t(`serversPage.pluginStatus.${server.pluginStatus}`, {
-                                  defaultValue: server.pluginStatus,
-                                }).toUpperCase()}
-                                size="small"
-                                color={
-                                  server.pluginStatus === 'idle'
-                                    ? 'success'
-                                    : server.pluginStatus === 'live'
-                                    ? 'error'
-                                    : server.pluginStatus === 'queued'
-                                    ? 'info'
-                                    : server.pluginStatus === 'warmup' ||
-                                      server.pluginStatus === 'loading'
-                                    ? 'info'
-                                    : server.pluginStatus === 'postgame'
-                                    ? 'default'
-                                    : 'warning'
-                                }
-                                variant="outlined"
-                                sx={{ fontWeight: 600, ml: 0.5 }}
-                              />
-                            </Typography>
-                          </Box>
-                        )}
-                        {inGraceWindow && typeof secondsUntilReady === 'number' && secondsUntilReady > 0 && (
-                          <Box display="flex" alignItems="center" gap={0.5}>
-                            <Typography variant="caption" color="text.secondary">
-                              <strong>{t('serversPage.allocation.cooldownLabel')}:</strong>{' '}
-                              {t('serversPage.allocation.cooldownEta', {
-                                seconds: secondsUntilReady,
-                              })}
-                            </Typography>
-                          </Box>
-                        )}
-                      </Box>
-                    )}
-                    {server.status === 'online' && (server.currentMatch || (server as Server & { queuedMatch?: string | null }).queuedMatch) && (
-                      <Box display="flex" flexDirection="column" gap={0.5} mt={1}>
-                        {server.currentMatch && (
-                          <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Box mt={1} display="flex" gap={1} flexWrap="wrap">
+                      {cs2UpdateInfo.versions.map((v) => (
                         <Chip
-                          label={server.currentMatch}
+                          key={v}
                           size="small"
-                          color="primary"
-                          variant="outlined"
-                              sx={{
-                                fontWeight: 600,
-                                maxWidth: '60%',
-                                textOverflow: 'ellipsis',
-                                overflow: 'hidden',
-                              }}
+                          label={`required_version=${v} (${cs2UpdateInfo.byVersion.get(v)?.length ?? 0})`}
+                          sx={{ color: tokens.color.ban }}
                         />
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          onClick={(event) => handleViewCurrentMatch(server, event)}
-                          disabled={loadingMatchServerId === server.id}
-                        >
-                          {loadingMatchServerId === server.id
-                            ? t('serversPage.currentMatch.loading')
-                            : t('serversPage.currentMatch.view')}
-                        </Button>
-                          </Box>
-                        )}
-                        {(server as Server & { queuedMatch?: string | null }).queuedMatch && (
-                          <Box display="flex" justifyContent="space-between" alignItems="center">
-                            <Chip
-                              label={`${t('serversPage.currentMatch.queuedPrefix')}${
-                                (server as Server & { queuedMatch?: string | null }).queuedMatch
-                              }`}
-                              size="small"
-                              color="info"
-                              variant="outlined"
-                              sx={{
-                                fontWeight: 600,
-                                maxWidth: '100%',
-                                textOverflow: 'ellipsis',
-                                overflow: 'hidden',
-                              }}
-                            />
-                          </Box>
-                        )}
-                      </Box>
-                    )}
-
-                    <Typography variant="caption" color="text.secondary" display="block" mt={2}>
-                      {t('serversPage.labels.id')} {server.id}
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+                {olderPluginCount > 0 && latestPluginVersion && (
+                  <Box sx={noticeSx(tokens.color.warning)}>
+                    <Typography variant="body2" fontWeight={700}>
+                      {t('serversPage.fleet.latestRelease', { version: latestPluginVersion })}
                     </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-                );
-              })}
-            </Grid>
+                    <Typography variant="body2" color="text.secondary">
+                      {t('serversPage.fleet.olderVersion', { count: olderPluginCount })}{' '}
+                      <a
+                        href={latestPluginReleaseUrl ?? 'https://github.com/Auto-Tournament/cs2-plugin/releases'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: 'inherit', textDecoration: 'underline' }}
+                      >
+                        {t('serversPage.fleet.downloadLatest')}
+                      </a>
+                    </Typography>
+                  </Box>
+                )}
+                {versionInfo.hasMultipleVersions && (
+                  <Box sx={noticeSx(tokens.color.warning)}>
+                    <Typography variant="body2" fontWeight={700}>
+                      {t('serversPage.versionMismatch.title')}
+                    </Typography>
+                    <Box display="flex" gap={1} flexWrap="wrap" my={0.5}>
+                      {Array.from(versionInfo.versionCounts.entries()).map(([version, count]) => (
+                        <Chip
+                          key={version}
+                          label={t('serversPage.versionMismatch.chip', { version, count })}
+                          size="small"
+                          sx={{
+                            color:
+                              version === versionInfo.mostCommonVersion ? tokens.color.live : tokens.color.warning,
+                          }}
+                        />
+                      ))}
+                    </Box>
+                    <Typography variant="body2" color="text.secondary">
+                      {t('serversPage.versionMismatch.recommended', {
+                        version: versionInfo.mostCommonVersion,
+                      })}
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            )}
+
+            <RowList data-testid="servers-list" aria-label={t('serversPage.title')}>
+              {sortedServers.map((server) => (
+                <ServerRow
+                  key={server.id}
+                  server={server}
+                  allocation={allocationStatus?.servers.find((s) => s.id === server.id)}
+                  isChecking={statusCheckingIds.has(server.id)}
+                  selectionMode={selectionMode}
+                  selected={selectedServerIds.has(server.id)}
+                  retrying={retryingServerId === server.id}
+                  retryDisabled={statusCheckingIds.has(server.id) || retryingAll}
+                  loadingMatch={loadingMatchServerId === server.id}
+                  mostCommonVersion={versionInfo.mostCommonVersion}
+                  hasMultipleVersions={versionInfo.hasMultipleVersions}
+                  onToggleSelected={() => toggleServerSelected(server.id)}
+                  onEdit={() => handleOpenModal(server)}
+                  onRetry={(event) => void handleRetryInitialization(server.id, event)}
+                  onViewMatch={(event) => void handleViewCurrentMatch(server, event)}
+                />
+              ))}
+            </RowList>
           </>
         )}
 

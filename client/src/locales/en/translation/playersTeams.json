@@ -14,7 +14,10 @@
     "searchError": "Failed to search for player. Please try again.",
     "modalTitle": "Multiple Players Found",
     "modalSelectPrompt": "{{count}} players found. Select one to view their profile:",
-    "modalElo": "ELO: {{elo}}"
+    "modalElo": "ELO: {{elo}}",
+    "directoryLabel": "Players",
+    "directoryNoMatch": "Nobody here matches that. Press Enter to look it up on Steam.",
+    "directoryMore": "{{count}} more. Type to narrow the list."
   },
   "playerPage": {
     "playerNotFound": "This player doesn't exist.",
@@ -279,7 +282,11 @@
     },
     "loadError": "Failed to load teams",
     "importSuccess": "Successfully imported {{count}} team(s)",
-    "viewPublicPage": "View public team page"
+    "viewPublicPage": "View public team page",
+    "rowActions": "Actions for {{name}}",
+    "edit": "Edit",
+    "noPlayers": "No players yet",
+    "matchLinkCopied": "Team match link copied"
   },
   "playersPage": {
     "headerSelect": {
@@ -319,7 +326,9 @@
     "skillRatingTooltip": "Skill Rating is based on OpenSkill; higher is better.",
     "skillRatingLabel": "Skill Rating: {{elo}}",
     "matchesCount_one": "{{count}} match",
-    "matchesCount_other": "{{count}} matches"
+    "matchesCount_other": "{{count}} matches",
+    "rowActions": "Actions for {{name}}",
+    "edit": "Edit"
   },
   "discordId": {
     "noDiscord": "No Discord",

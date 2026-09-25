@@ -408,11 +408,7 @@
       "batchAdd": "或批量新增多个服务器"
     },
     "allocation": {
-      "title": "服务器分配",
       "loading": "正在加载分配状态…",
-      "empty": "暂无分配数据。",
-      "available": "可用服务器：",
-      "waiting": "等待服务器的比赛：",
       "nextPass": "下一次分配轮约在 ~{{seconds}} 秒后",
       "cooldownLabel": "冷却",
       "cooldownDescription": "最近完成了一场比赛——进入冷却，以便上传 Demo 并让服务器完全重置（约 2 分钟）。",
@@ -442,21 +438,12 @@
       "unreachable": "不可达",
       "reachable": "可达",
       "unknown": "未知",
-      "loading": "加载中…",
-      "pluginLabel": "Auto Tournament CS2："
+      "loading": "加载中…"
     },
     "currentMatch": {
       "view": "查看比赛",
       "loading": "正在加载…",
       "queuedPrefix": "已排队："
-    },
-    "labels": {
-      "host": "主机：",
-      "port": "端口：",
-      "id": "ID：",
-      "cs2Name": "CS2 名称：",
-      "plugin": "插件：",
-      "cs2BuildValue": "构建 {{build}}"
     },
     "errors": {
       "loadServers": "加载服务器失败",
@@ -478,15 +465,9 @@
       "title": "服务器集群状态",
       "total_one": "{{count}} 台服务器",
       "total_other": "{{count}} 台服务器",
-      "online": "在线",
-      "offline": "离线",
-      "notConfigured": "未配置",
-      "disabled": "已禁用",
       "latestRelease": "Auto Tournament CS2 最新版本：v{{version}}",
       "olderVersion_one": "{{count}} 台服务器运行的版本低于最新版本。",
       "olderVersion_other": "{{count}} 台服务器运行的版本低于最新版本。",
-      "newerVersion_one": "{{count}} 台服务器运行的版本高于 GitHub 最新发布版本（可能是未发布的构建）。",
-      "newerVersion_other": "{{count}} 台服务器运行的版本高于 GitHub 最新发布版本（可能是未发布的构建）。",
       "downloadLatest": "下载最新版本"
     },
     "cs2Update": {
@@ -513,7 +494,6 @@
     "chips": {
       "versionMismatch": "版本不一致",
       "ipBanned": "IP 已被封禁",
-      "cs2Build": "CS2 构建 {{build}}",
       "pluginDbDown": "插件数据库不可用",
       "cs2UpdateRequired": "需要更新 CS2（{{version}}）"
     },
@@ -535,8 +515,7 @@
       "ipBannedBody": "由于 RCON 认证多次失败，服务器已暂时封禁 Auto Tournament 的 IP。请修正 RCON 密码并解封该 IP。",
       "pluginDbTitle": "Auto Tournament 插件无法连接其数据库。",
       "pluginDbBody": "如果使用 CSM，请运行 {{path}}。",
-      "cs2UpdateBody": "Auto Tournament 已确认此服务器的构建版本落后于 Steam。更新前，该服务器不会被分配新比赛（也无法用于开始锦标赛）。",
-      "retryInit": "重试服务器初始化（通过 RCON 发送持久配置）"
+      "cs2UpdateBody": "Auto Tournament 已确认此服务器的构建版本落后于 Steam。更新前，该服务器不会被分配新比赛（也无法用于开始锦标赛）。"
     },
     "lastActive": {
       "justNow": "刚刚活跃",
@@ -569,6 +548,34 @@
       "triggeredAll_one": "已为 {{count}} 台服务器触发重试",
       "triggeredAll_other": "已为 {{count}} 台服务器触发重试",
       "failedAll": "重试失败：{{message}}"
+    },
+    "row": {
+      "details": "Details for {{name}}",
+      "actions": "Actions for {{name}}",
+      "edit": "Edit",
+      "retryInit": "Retry initialization",
+      "disabled": "Disabled: allocation skips it",
+      "waitingForPlugin": "Config sent, waiting for the plugin's first event",
+      "running": "Running {{match}}",
+      "ready": "Ready for the next match"
+    },
+    "details": {
+      "host": "Host",
+      "port": "Port",
+      "cs2Name": "CS2 name",
+      "plugin": "Plugin",
+      "cs2Build": "CS2 build",
+      "pluginStatus": "Plugin status",
+      "lastEvent": "Last event",
+      "id": "ID"
+    },
+    "strip": {
+      "online": "ONLINE",
+      "offline": "OFFLINE",
+      "notConfigured": "NOT SET UP",
+      "disabled": "DISABLED",
+      "free": "FREE",
+      "waiting": "WAITING"
     }
   },
   "serverModal": {

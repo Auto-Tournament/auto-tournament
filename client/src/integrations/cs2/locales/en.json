@@ -408,11 +408,7 @@
       "batchAdd": "Or Batch Add Multiple Servers"
     },
     "allocation": {
-      "title": "Server allocation",
       "loading": "Loading allocation status...",
-      "empty": "No allocation data available.",
-      "available": "Available servers:",
-      "waiting": "Matches waiting for servers:",
       "nextPass": "Next allocator pass in ~{{seconds}}s",
       "cooldownLabel": "Cooldown",
       "cooldownDescription": "Recently finished a match – in cooldown so demos can upload and the server can fully reset (about 2 minutes).",
@@ -442,21 +438,12 @@
       "unreachable": "Unreachable",
       "reachable": "Reachable",
       "unknown": "Unknown",
-      "loading": "Loading…",
-      "pluginLabel": "Auto Tournament CS2:"
+      "loading": "Loading…"
     },
     "currentMatch": {
       "view": "View Match",
       "loading": "Loading...",
       "queuedPrefix": "Queued: "
-    },
-    "labels": {
-      "host": "Host:",
-      "port": "Port:",
-      "id": "ID:",
-      "cs2Name": "CS2 name:",
-      "plugin": "Plugin:",
-      "cs2BuildValue": "build {{build}}"
     },
     "errors": {
       "loadServers": "Failed to load servers",
@@ -478,15 +465,9 @@
       "title": "Server fleet status",
       "total_one": "{{count}} server",
       "total_other": "{{count}} servers",
-      "online": "online",
-      "offline": "offline",
-      "notConfigured": "not configured",
-      "disabled": "disabled",
       "latestRelease": "Latest Auto Tournament CS2 release: v{{version}}",
       "olderVersion_one": "{{count}} server is running an older version than the latest release.",
       "olderVersion_other": "{{count}} servers are running an older version than the latest release.",
-      "newerVersion_one": "{{count}} server is running a newer version than the latest GitHub release (probably an unreleased build).",
-      "newerVersion_other": "{{count}} servers are running a newer version than the latest GitHub release (probably an unreleased build).",
       "downloadLatest": "Download latest"
     },
     "cs2Update": {
@@ -513,7 +494,6 @@
     "chips": {
       "versionMismatch": "Version mismatch",
       "ipBanned": "IP banned",
-      "cs2Build": "CS2 build {{build}}",
       "pluginDbDown": "Plugin DB down",
       "cs2UpdateRequired": "CS2 update required ({{version}})"
     },
@@ -535,8 +515,7 @@
       "ipBannedBody": "The server has temporarily banned Auto Tournament's IP after repeated RCON auth failures. Fix the RCON password and unban the IP.",
       "pluginDbTitle": "The Auto Tournament plugin can't reach its database.",
       "pluginDbBody": "If you use CSM, run {{path}}.",
-      "cs2UpdateBody": "Auto Tournament verified that this server's build is behind Steam. It is blocked from new allocations (and tournament start) until it's updated.",
-      "retryInit": "Retry server initialization (send persistent config via RCON)"
+      "cs2UpdateBody": "Auto Tournament verified that this server's build is behind Steam. It is blocked from new allocations (and tournament start) until it's updated."
     },
     "lastActive": {
       "justNow": "Active just now",
@@ -569,6 +548,34 @@
       "triggeredAll_one": "Retry triggered for {{count}} server",
       "triggeredAll_other": "Retry triggered for {{count}} servers",
       "failedAll": "Retry failed: {{message}}"
+    },
+    "row": {
+      "details": "Details for {{name}}",
+      "actions": "Actions for {{name}}",
+      "edit": "Edit",
+      "retryInit": "Retry initialization",
+      "disabled": "Disabled: allocation skips it",
+      "waitingForPlugin": "Config sent, waiting for the plugin's first event",
+      "running": "Running {{match}}",
+      "ready": "Ready for the next match"
+    },
+    "details": {
+      "host": "Host",
+      "port": "Port",
+      "cs2Name": "CS2 name",
+      "plugin": "Plugin",
+      "cs2Build": "CS2 build",
+      "pluginStatus": "Plugin status",
+      "lastEvent": "Last event",
+      "id": "ID"
+    },
+    "strip": {
+      "online": "ONLINE",
+      "offline": "OFFLINE",
+      "notConfigured": "NOT SET UP",
+      "disabled": "DISABLED",
+      "free": "FREE",
+      "waiting": "WAITING"
     }
   },
   "serverModal": {
