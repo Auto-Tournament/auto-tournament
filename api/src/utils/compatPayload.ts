@@ -265,9 +265,13 @@ export function validateCompatDocument(input: unknown): CompatValidation {
   const buildid = cs2Raw
     ? c.string(cs2Raw.buildid, 'cs2.buildid', { max: 20, pattern: BUILDID, label: 'must be a numeric Steam build id' })
     : null;
-  const patch = cs2Raw
-    ? c.string(cs2Raw.patch, 'cs2.patch', { max: 32, pattern: PATCH, label: 'must be a dotted version like 1.41.8.5' })
-    : null;
+  // Empty while a run is queued: Ready Up's CI only learns the patch version from steam.inf once
+  // it has fetched the binaries (the build id comes first, from the public branch info).
+  const patch = !cs2Raw
+    ? null
+    : cs2Raw.patch === ''
+      ? ''
+      : c.string(cs2Raw.patch, 'cs2.patch', { max: 32, pattern: PATCH, label: 'must be a dotted version like 1.41.8.5' });
 
   const readyupRaw = c.object(raw.readyup, 'readyup', ['version', 'commit']);
   const version = readyupRaw
@@ -365,5 +369,6 @@ export function compatBadge(doc: CompatDocument | null): ShieldsEndpointBadge {
   const base = { schemaVersion: 1 as const, label: 'Ready Up', cacheSeconds: 300 };
   if (!doc) return { ...base, message: 'unknown', color: 'lightgrey' };
   const { message, color } = BADGE_WORDING[doc.overall];
-  return { ...base, message: `${message} · CS2 ${doc.cs2.patch}`, color };
+  const cs2 = doc.cs2.patch ? `CS2 ${doc.cs2.patch}` : `CS2 build ${doc.cs2.buildid}`;
+  return { ...base, message: `${message} · ${cs2}`, color };
 }

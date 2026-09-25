@@ -77,7 +77,7 @@ function OverallPanel({ latest, now }: { latest: CompatSnapshot; now: number }) 
           {
             key: 'patch',
             label: t('compatPage.facts.patch'),
-            value: <Box sx={mono}>{latest.cs2.patch}</Box>,
+            value: <Box sx={mono}>{latest.cs2.patch || '—'}</Box>,
             'data-testid': 'compat-patch',
           },
           {
@@ -333,7 +333,7 @@ export default function Compatibility() {
                     <CompatDot tone={compatTone(run.overall)} size={8} />
                     <Box sx={{ minWidth: 0 }}>
                       <Box sx={{ fontWeight: 500 }}>
-                        {t('compatPage.historyItem', { patch: run.cs2.patch, buildid: run.cs2.buildid })}
+                        {t('compatPage.historyItem', { patch: run.cs2.patch || '—', buildid: run.cs2.buildid })}
                       </Box>
                       <Box sx={{ color: compatToneColor[compatTone(run.overall)] }}>
                         {t(`compatPage.overall.${run.overall}`)}

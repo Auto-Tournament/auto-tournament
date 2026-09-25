@@ -38,6 +38,17 @@ test.describe('compat document validation', { tag: ['@api', '@compat'] }, () => 
     expect(checked.value.components.map((c) => c.id)).toEqual(['core', 'match']);
   });
 
+  test('a queued run may have no patch yet (Ready Up reads it from steam.inf later)', () => {
+    const queued = validateCompatDocument(
+      compatDoc({ cs2: { buildid: '25537999', patch: '' }, run: { state: 'queued', finished_at: null }, overall: 'checking' })
+    );
+    expect(queued.ok).toBe(true);
+    if (!queued.ok) return;
+    expect(queued.value.cs2.patch).toBe('');
+    expect(compatBadge(queued.value).message).toContain('CS2 build 25537999');
+    expect(validateCompatDocument(compatDoc({ cs2: { buildid: '1', patch: 'x.y' } })).ok).toBe(false);
+  });
+
   test('refuses what the contract does not allow, naming each field', () => {
     const cases: Array<[string, (d: Record<string, any>) => void, string]> = [
       ['schema 2', (d) => (d.schema = 2), 'schema'],
