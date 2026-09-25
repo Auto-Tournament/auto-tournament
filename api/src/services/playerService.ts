@@ -92,6 +92,20 @@ export interface PlayerAdminResponse extends PlayerResponse {
 }
 
 /** Thrown by explicit edits when `discordId` fails validation; routes map it to 400. */
+/** `createPlayer` for a Steam ID that already has a player (the route answers 409). */
+export class PlayerExistsError extends Error {
+  constructor(
+    public readonly playerId: string,
+    public readonly existingName: string
+  ) {
+    super(
+      `A player with Steam ID ${playerId} already exists${existingName ? ` (${existingName})` : ''}. ` +
+        'Edit that player instead.'
+    );
+    this.name = 'PlayerExistsError';
+  }
+}
+
 export class InvalidDiscordIdError extends Error {
   constructor(message: string) {
     super(message);
@@ -482,10 +496,30 @@ class PlayerService {
       playerData.discord_id_edited_at = now;
     }
 
-    await db.insertAsync('players', {
-      id: input.id,
-      ...playerData,
-    });
+    // One player per Steam ID. Say so plainly instead of the database's
+    // "duplicate key value violates unique constraint players_pkey"; the player
+    // may exist without being in the list the admin looked at (created by a
+    // Steam sign-in or a team import).
+    const existing = await db.queryOneAsync<Pick<PlayerRecord, 'id' | 'name'>>(
+      'SELECT id, name FROM players WHERE id = ?',
+      [input.id]
+    );
+    if (existing) {
+      throw new PlayerExistsError(input.id, existing.name);
+    }
+
+    try {
+      await db.insertAsync('players', {
+        id: input.id,
+        ...playerData,
+      });
+    } catch (error) {
+      // Created by someone else between the check and the insert.
+      if ((error as { code?: string }).code === '23505') {
+        throw new PlayerExistsError(input.id, '');
+      }
+      throw error;
+    }
     await playerIdentity.mirrorPlayerCreated(input.id);
 
     const player = await this.getPlayerById(input.id);

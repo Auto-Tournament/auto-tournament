@@ -7,6 +7,7 @@ import { Router, Request, Response } from 'express';
 import {
   playerService,
   InvalidDiscordIdError,
+  PlayerExistsError,
   type CreatePlayerInput,
   type UpdatePlayerInput,
 } from '../services/playerService';
@@ -1658,6 +1659,14 @@ router.post('/', async (req: Request, res: Response) => {
   } catch (error) {
     if (error instanceof InvalidDiscordIdError) {
       return res.status(400).json({ success: false, error: error.message });
+    }
+    if (error instanceof PlayerExistsError) {
+      return res.status(409).json({
+        success: false,
+        error: error.message,
+        code: 'player_exists',
+        playerId: error.playerId,
+      });
     }
     const message = error instanceof Error ? error.message : 'Unknown error';
     const statusCode = message.includes('already exists') ? 409 : 400;
