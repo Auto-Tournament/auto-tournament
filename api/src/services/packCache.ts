@@ -31,6 +31,12 @@ export interface GamePackDefinition {
   schema: number;
   slug: string;
   name: string;
+  /**
+   * The game's numeric IGDB id. A game a player picked from IGDB search is
+   * linked to this pack by it first, so the pill draws the pack's app icon
+   * even where IGDB's slug is not the pack's (`trackmania--2`).
+   */
+  igdbId?: number;
   engine: string;
   aliases?: string[];
   version?: string;

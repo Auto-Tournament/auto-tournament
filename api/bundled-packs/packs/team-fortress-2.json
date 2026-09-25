@@ -2,6 +2,7 @@
   "schema": 1,
   "slug": "team-fortress-2",
   "name": "Team Fortress 2",
+  "igdbId": 891,
   "engine": "manual-report",
   "aliases": [
     "tf2"

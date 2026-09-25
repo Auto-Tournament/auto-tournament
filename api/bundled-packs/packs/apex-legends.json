@@ -2,6 +2,7 @@
   "schema": 1,
   "slug": "apex-legends",
   "name": "Apex Legends",
+  "igdbId": 114795,
   "engine": "manual-report",
   "version": "1.0.2",
   "description": "Three-a-side battle royale. Placement and kills each match.",

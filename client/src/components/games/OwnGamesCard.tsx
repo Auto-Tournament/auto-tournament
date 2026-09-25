@@ -103,7 +103,7 @@ export function OwnGamesCard() {
                     name={game.name}
                     slug={game.slug}
                     iconUrl={game.appIconUrl}
-                    coverUrl={game.coverUrl}
+                    neutral
                     size={20}
                   />
                 }

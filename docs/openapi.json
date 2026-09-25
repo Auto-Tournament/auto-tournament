@@ -2199,6 +2199,37 @@
         ]
       }
     },
+    "/api/games/icons/{file}": {
+      "get": {
+        "tags": [
+          "Games"
+        ],
+        "summary": "A game's cached app icon",
+        "description": "The Steam client icon this instance fetched for a game no module or\npack ships an icon for, scaled to 128 px and stored as PNG. The file\nname is a hash of its bytes, so a URL never changes meaning and is\ncached for a year. `GameSummary.appIconUrl` points here.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "file",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{16}\\.png$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The icon",
+            "content": {
+              "image/png": {}
+            }
+          },
+          "404": {
+            "description": "No such icon"
+          }
+        }
+      }
+    },
     "/api/games/playable": {
       "get": {
         "tags": [
@@ -3830,7 +3861,7 @@
           "Game packs"
         ],
         "summary": "A game's square app icon",
-        "description": "The icon players know the game by, for the small game pills: the\ninstalled pack's, or — for a game this instance offers but has not\ninstalled — the one in the image's bundled snapshot. A PNG or WebP,\nchecked by its bytes when it was imported.\n",
+        "description": "The icon players know the game by, for the small game pills: the\ninstalled pack's own, else the one in the image's bundled snapshot\nfor the same game (also when the installed pack has none). A PNG or\nWebP, checked by its bytes when it was imported.\n",
         "parameters": [
           {
             "in": "path",
@@ -7102,6 +7133,94 @@
         ]
       }
     },
+    "/api/test/fake-steam/icons-new/{appId}/{file}": {
+      "get": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "GET /api/test/fake-steam/icons-new/:appId/:file",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "appId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "file",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/test/fake-steam/icons-old/{appId}/{file}": {
+      "get": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "GET /api/test/fake-steam/icons-old/:appId/:file",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "appId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "file",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/test/fake-steam/info/{appId}": {
+      "get": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "GET /api/test/fake-steam/info/:appId",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "appId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/api/test/fake-wikidata": {
       "get": {
         "tags": [
@@ -7114,6 +7233,50 @@
             "description": "Success"
           }
         }
+      }
+    },
+    "/api/test/game-icons": {
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/game-icons",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/test/game-icons/run": {
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/game-icons/run",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/test/igdb": {

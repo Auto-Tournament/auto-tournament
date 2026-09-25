@@ -38,6 +38,8 @@ export interface IgdbGame {
   releaseYear: number | null;
   /** Up to 3 genre names (IGDB `genres.name`). */
   genres: string[];
+  /** The game's Steam app id, from IGDB's external games, or null when it is not on Steam. */
+  steamAppId: number | null;
 }
 
 export class IgdbError extends Error {
@@ -186,6 +188,13 @@ function apicalypseString(value: string): string {
   return value.replace(/["\\;]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
+interface RawExternalGame {
+  category?: unknown;
+  external_game_source?: unknown;
+  uid?: unknown;
+  url?: unknown;
+}
+
 interface RawIgdbGame {
   id?: unknown;
   name?: unknown;
@@ -193,6 +202,39 @@ interface RawIgdbGame {
   first_release_date?: unknown;
   cover?: { image_id?: unknown } | null;
   genres?: Array<{ name?: unknown }> | null;
+  external_games?: RawExternalGame[] | null;
+}
+
+/** IGDB's id for Steam, both as the old `category` enum and as an `external_game_source`. */
+const IGDB_STEAM_SOURCE = 1;
+
+/** The fields every games query asks for to learn a game's Steam app id. */
+const EXTERNAL_GAME_FIELDS =
+  'external_games.category,external_games.external_game_source,external_games.uid,external_games.url';
+
+/**
+ * The Steam app id among a game's IGDB external games, or null. IGDB marks
+ * Steam as source 1 (`external_game_source`, or the older `category`); the
+ * store URL is the fallback, since it names the app either way.
+ */
+export function steamAppIdFromIgdb(externalGames: unknown): number | null {
+  if (!Array.isArray(externalGames)) return null;
+  for (const raw of externalGames as RawExternalGame[]) {
+    if (!raw || typeof raw !== 'object') continue;
+    const source =
+      typeof raw.external_game_source === 'object' && raw.external_game_source !== null
+        ? (raw.external_game_source as { id?: unknown }).id
+        : raw.external_game_source;
+    const isSteam = source === IGDB_STEAM_SOURCE || raw.category === IGDB_STEAM_SOURCE;
+    const fromUrl =
+      typeof raw.url === 'string'
+        ? /store\.steampowered\.com\/app\/(\d{1,10})/.exec(raw.url)?.[1]
+        : undefined;
+    const uid = isSteam && typeof raw.uid === 'string' && /^\d{1,10}$/.test(raw.uid) ? raw.uid : fromUrl;
+    const id = uid ? Number(uid) : NaN;
+    if (Number.isInteger(id) && id > 0 && id <= 2_147_483_647) return id;
+  }
+  return null;
 }
 
 function toIgdbGame(raw: RawIgdbGame): IgdbGame | null {
@@ -218,6 +260,7 @@ function toIgdbGame(raw: RawIgdbGame): IgdbGame | null {
     logoUrl: imageId ? igdbImageUrl(imageId, 't_logo_med') : null,
     releaseYear: released,
     genres,
+    steamAppId: steamAppIdFromIgdb(raw.external_games),
   };
 }
 
@@ -236,7 +279,7 @@ export async function searchIgdb(query: string, limit: number): Promise<IgdbGame
   // bundles and mods are not. version_parent = null drops editions.
   const body =
     `search "${term}"; ` +
-    'fields name,slug,first_release_date,cover.image_id,genres.name; ' +
+    `fields name,slug,first_release_date,cover.image_id,genres.name,${EXTERNAL_GAME_FIELDS}; ` +
     'where version_parent = null; ' +
     `limit ${Math.max(1, Math.min(limit, 50))};`;
 
@@ -244,6 +287,29 @@ export async function searchIgdb(query: string, limit: number): Promise<IgdbGame
   return (Array.isArray(rows) ? rows : [])
     .map(toIgdbGame)
     .filter((g): g is IgdbGame => g !== null);
+}
+
+/**
+ * The Steam app ids IGDB knows for these games, by IGDB id — for rows stored
+ * before search asked for them. Returns null when IGDB is not configured, and
+ * throws `IgdbError` when it fails. At most 50 ids per call.
+ */
+export async function igdbSteamAppIds(igdbIds: number[]): Promise<Map<number, number> | null> {
+  const creds = await settingsService.getIgdbCredentials();
+  if (!creds) return null;
+  const ids = [...new Set(igdbIds.filter((id) => Number.isInteger(id) && id > 0))].slice(0, 50);
+  const out = new Map<number, number>();
+  if (ids.length === 0) return out;
+  const rows = await igdbQuery<RawIgdbGame[]>(
+    creds,
+    'games',
+    `fields ${EXTERNAL_GAME_FIELDS}; where id = (${ids.join(',')}); limit ${ids.length};`
+  );
+  for (const row of Array.isArray(rows) ? rows : []) {
+    const steamAppId = steamAppIdFromIgdb(row.external_games);
+    if (typeof row.id === 'number' && steamAppId) out.set(row.id, steamAppId);
+  }
+  return out;
 }
 
 /**

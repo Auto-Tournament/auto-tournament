@@ -22,9 +22,11 @@
 import { db } from '../config/database';
 import { listIntegrations } from '../integrations/registry';
 import {
+  bundledIgdbId,
   hasBundledAppIcon,
   installedPacks,
   packAppIconPath,
+  packAppIconUrl,
   packIconPath,
 } from './gamePackService';
 import { log } from '../utils/logger';
@@ -62,9 +64,13 @@ export interface GameSummary {
   imageUrl: string | null;
   /**
    * The game's square app icon — the picture on a player's phone or launcher
-   * — from its module or its pack (installed, or in the image's snapshot).
-   * Null for a game neither ships one for, such as one found through search.
-   * What the small game pills draw; never the wide logo.
+   * — or null when there is none, and the pill draws the game's monogram.
+   *
+   * The module's or pack's own (installed, or in the image's snapshot) for
+   * any row linked to one — by IGDB id, then slug, then a slug alias, then
+   * the normalised name (`linkBuiltin`) — else the Steam client icon this
+   * instance fetched and cached for the game (`gameIconService`). Never a
+   * cover or a wide logo.
    */
   appIconUrl: string | null;
 }
@@ -77,7 +83,7 @@ export interface GameSearchResult {
   fromWikidata: boolean;
 }
 
-interface BuiltinGame {
+export interface BuiltinGame {
   slug: string;
   name: string;
   aliases: string[];
@@ -107,6 +113,12 @@ interface BuiltinGame {
   icon: string | null;
   /** The game's square app icon, as a URL the client loads, or null. */
   appIcon: string | null;
+  /**
+   * The game's numeric IGDB id, when the module or pack names one (or the
+   * image's snapshot does for the pack's game). What an IGDB search result
+   * is linked to it by first.
+   */
+  igdbId: number | null;
 }
 
 /** Popular esports titles offered before IGDB is configured. IGDB slugs. */
@@ -174,6 +186,7 @@ export function builtinGames(): BuiltinGame[] {
         own: true,
         icon: integration.catalog?.icon ?? null,
         appIcon: integration.catalog?.appIcon ?? null,
+        igdbId: integration.catalog?.igdbId ?? null,
       });
     }
     for (const entry of integration.catalogEntries ?? []) {
@@ -186,6 +199,7 @@ export function builtinGames(): BuiltinGame[] {
         own: false,
         icon: entry.icon ?? null,
         appIcon: entry.appIcon ?? null,
+        igdbId: entry.igdbId ?? null,
       });
     }
   }
@@ -216,12 +230,10 @@ export function builtinGames(): BuiltinGame[] {
       viaCatchAll: true,
       own: false,
       icon: pack.hasIcon ? packIconPath(pack.slug) : null,
-      // An admin's own pack keeps its own answer, even "none"; a bundled one
-      // is the snapshot's, which the route falls back to.
-      appIcon:
-        pack.hasAppIcon || (pack.source === 'bundled' && hasBundledAppIcon(pack.slug))
-          ? packAppIconPath(pack.slug)
-          : null,
+      // The pack's own, else the snapshot's for the same game — also for a
+      // pack installed from the catalog before its game had one.
+      appIcon: packAppIconUrl(pack),
+      igdbId: pack.definition.igdbId ?? bundledIgdbId(pack.slug),
     });
   }
 
@@ -238,28 +250,111 @@ export function builtinGames(): BuiltinGame[] {
       // image's snapshot carries one: the pill is about recognising a game,
       // not about whether this instance can run it.
       appIcon: hasBundledAppIcon(game.slug) ? packAppIconPath(game.slug) : null,
+      igdbId: bundledIgdbId(game.slug),
     });
   }
 
   return out;
 }
 
+// ---------------------------------------------------------------------------
+// Linking a stored game to the module or pack for the same game
+// ---------------------------------------------------------------------------
+
+/**
+ * The built-in list, indexed the ways a stored `games` row is matched to it.
+ * First claim wins in every map, so a module beats a pack beats a popular
+ * title, as everywhere else in the catalogue.
+ */
+export interface GameLinks {
+  byIgdbId: Map<number, BuiltinGame>;
+  bySlug: Map<string, BuiltinGame>;
+  /** A built-in's aliases, slugified: 'cs2' finds Counter-Strike 2. */
+  byAlias: Map<string, BuiltinGame>;
+  /** A built-in's name, lower case letters and digits only. */
+  byName: Map<string, BuiltinGame>;
+}
+
+export function buildGameLinks(builtins: BuiltinGame[] = builtinGames()): GameLinks {
+  const links: GameLinks = {
+    byIgdbId: new Map(),
+    bySlug: new Map(),
+    byAlias: new Map(),
+    byName: new Map(),
+  };
+  const claim = <K>(map: Map<K, BuiltinGame>, key: K | null, game: BuiltinGame) => {
+    if (key === null || key === '' || map.has(key)) return;
+    map.set(key, game);
+  };
+  for (const game of builtins) {
+    claim(links.byIgdbId, game.igdbId, game);
+    claim(links.bySlug, game.slug, game);
+    for (const alias of game.aliases) claim(links.byAlias, slugify(alias), game);
+    claim(links.byName, searchKey(game.name), game);
+  }
+  return links;
+}
+
+/** The fields of a stored game that link it to a built-in. */
+export interface LinkableGame {
+  igdb_id: number | null;
+  slug: string;
+  name: string;
+}
+
+/**
+ * The module or pack a stored game is, or null: by IGDB id, then its own
+ * slug, then a built-in's slug alias, then its name once case and
+ * punctuation are gone.
+ *
+ * An alias or a name is a weaker claim than an id, and plenty of games share
+ * a name ("Deadlock" is a 2016 game and Valve's hero shooter). So when both
+ * sides know their IGDB id and the ids differ, a slug alias or name match is
+ * refused: the row is a different game that happens to be called the same.
+ * The exact slug always links — that row is the built-in's own catalogue row.
+ */
+export function linkBuiltin(row: LinkableGame, links: GameLinks): BuiltinGame | null {
+  const igdbId = row.igdb_id ?? null;
+  if (igdbId !== null) {
+    const byId = links.byIgdbId.get(igdbId);
+    if (byId) return byId;
+  }
+  const own = links.bySlug.get(row.slug);
+  if (own) return own;
+  const differentGame = (game: BuiltinGame) =>
+    igdbId !== null && game.igdbId !== null && game.igdbId !== igdbId;
+  const alias = links.byAlias.get(row.slug);
+  if (alias && !differentGame(alias)) return alias;
+  const named = links.byName.get(searchKey(row.name));
+  if (named && !differentGame(named)) return named;
+  return null;
+}
+
+/**
+ * The app icon a stored game's pill draws, or null for its monogram: the
+ * linked module's or pack's, else the one this instance cached for the game.
+ */
+export function gameAppIconUrl(
+  row: LinkableGame & { icon_url?: string | null },
+  links: GameLinks
+): string | null {
+  return linkBuiltin(row, links)?.appIcon ?? row.icon_url ?? null;
+}
+
 /** What `toSummary` needs from the built-in list, read once per request. */
 interface SummaryContext {
   /** Slug -> the integration that runs it. */
   supported: Map<string, string>;
-  /** Slug -> its app icon URL. */
-  appIcons: Map<string, string>;
+  links: GameLinks;
 }
 
 function supportedSlugs(): SummaryContext {
+  const builtins = builtinGames();
   const supported = new Map<string, string>();
-  const appIcons = new Map<string, string>();
-  for (const game of builtinGames()) {
+  for (const game of builtins) {
     if (game.integrationId) supported.set(game.slug, game.integrationId);
-    if (game.appIcon) appIcons.set(game.slug, game.appIcon);
   }
-  return { supported, appIcons };
+  return { supported, links: buildGameLinks(builtins) };
 }
 
 function matchesBuiltin(game: BuiltinGame, query: string): boolean {
@@ -279,10 +374,11 @@ interface GameRow {
   release_year: number | null;
   genres: string | null;
   source: string;
+  icon_url: string | null;
 }
 
 const GAME_COLUMNS =
-  'id, igdb_id, wikidata_id, slug, name, cover_url, logo_url, release_year, genres, source';
+  'id, igdb_id, wikidata_id, slug, name, cover_url, logo_url, release_year, genres, source, icon_url';
 
 function parseGenres(genres: string | null): string[] {
   if (!genres) return [];
@@ -295,7 +391,7 @@ function parseGenres(genres: string | null): string[] {
 }
 
 function toSummary(row: GameRow, context: SummaryContext): GameSummary {
-  const { supported, appIcons } = context;
+  const { supported, links } = context;
   return {
     id: row.id,
     slug: row.slug,
@@ -307,7 +403,7 @@ function toSummary(row: GameRow, context: SummaryContext): GameSummary {
     source: row.source === 'igdb' || row.source === 'wikidata' ? row.source : 'builtin',
     genres: parseGenres(row.genres),
     imageUrl: row.cover_url || row.logo_url || null,
-    appIconUrl: appIcons.get(row.slug) ?? null,
+    appIconUrl: gameAppIconUrl(row, links),
   };
 }
 
@@ -359,11 +455,22 @@ async function upsertIgdbGames(games: IgdbGame[]): Promise<GameRow[]> {
 
     if (existing.length === 0) {
       const row = await db.queryOneAsync<GameRow>(
-        `INSERT INTO games (igdb_id, slug, name, cover_url, logo_url, release_year, genres, source, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 'igdb', ?)
-         ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, genres = COALESCE(EXCLUDED.genres, games.genres)
+        `INSERT INTO games (igdb_id, slug, name, cover_url, logo_url, release_year, genres, steam_app_id, source, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'igdb', ?)
+         ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, genres = COALESCE(EXCLUDED.genres, games.genres),
+           steam_app_id = COALESCE(EXCLUDED.steam_app_id, games.steam_app_id)
          RETURNING ${GAME_COLUMNS}`,
-        [game.igdbId, game.slug, game.name, game.coverUrl, game.logoUrl, game.releaseYear, genres, now]
+        [
+          game.igdbId,
+          game.slug,
+          game.name,
+          game.coverUrl,
+          game.logoUrl,
+          game.releaseYear,
+          genres,
+          game.steamAppId,
+          now,
+        ]
       );
       if (row) out.push(row);
       continue;
@@ -375,7 +482,8 @@ async function upsertIgdbGames(games: IgdbGame[]): Promise<GameRow[]> {
     const row = await db.queryOneAsync<GameRow>(
       `UPDATE games
           SET igdb_id = ?, slug = ?, name = ?, cover_url = ?, logo_url = ?,
-              release_year = ?, genres = COALESCE(?, genres), source = 'igdb', updated_at = ?
+              release_year = ?, genres = COALESCE(?, genres),
+              steam_app_id = COALESCE(?, steam_app_id), source = 'igdb', updated_at = ?
         WHERE id = ?
         RETURNING ${GAME_COLUMNS}`,
       [
@@ -386,6 +494,7 @@ async function upsertIgdbGames(games: IgdbGame[]): Promise<GameRow[]> {
         game.logoUrl,
         game.releaseYear,
         genres,
+        game.steamAppId,
         now,
         target.id,
       ]
@@ -414,11 +523,22 @@ async function upsertWikidataGames(games: WikidataGame[]): Promise<GameRow[]> {
 
     if (existing.length === 0) {
       const row = await db.queryOneAsync<GameRow>(
-        `INSERT INTO games (wikidata_id, slug, name, cover_url, logo_url, release_year, genres, source, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 'wikidata', ?)
-         ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, genres = COALESCE(EXCLUDED.genres, games.genres)
+        `INSERT INTO games (wikidata_id, slug, name, cover_url, logo_url, release_year, genres, steam_app_id, source, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'wikidata', ?)
+         ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, genres = COALESCE(EXCLUDED.genres, games.genres),
+           steam_app_id = COALESCE(EXCLUDED.steam_app_id, games.steam_app_id)
          RETURNING ${GAME_COLUMNS}`,
-        [game.wikidataId, game.slug, game.name, game.coverUrl, game.logoUrl, game.releaseYear, genres, now]
+        [
+          game.wikidataId,
+          game.slug,
+          game.name,
+          game.coverUrl,
+          game.logoUrl,
+          game.releaseYear,
+          genres,
+          game.steamAppId,
+          now,
+        ]
       );
       if (row) out.push(row);
       continue;
@@ -430,7 +550,8 @@ async function upsertWikidataGames(games: WikidataGame[]): Promise<GameRow[]> {
     const row = await db.queryOneAsync<GameRow>(
       `UPDATE games
           SET wikidata_id = ?, slug = ?, name = ?, cover_url = ?, logo_url = ?,
-              release_year = ?, genres = COALESCE(?, genres), source = 'wikidata', updated_at = ?
+              release_year = ?, genres = COALESCE(?, genres),
+              steam_app_id = COALESCE(?, steam_app_id), source = 'wikidata', updated_at = ?
         WHERE id = ?
         RETURNING ${GAME_COLUMNS}`,
       [
@@ -441,6 +562,7 @@ async function upsertWikidataGames(games: WikidataGame[]): Promise<GameRow[]> {
         game.logoUrl,
         game.releaseYear,
         genres,
+        game.steamAppId,
         now,
         target.id,
       ]

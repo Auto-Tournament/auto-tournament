@@ -2,6 +2,7 @@
   "schema": 1,
   "slug": "deadlock",
   "name": "Deadlock",
+  "igdbId": 301298,
   "engine": "manual-report",
   "version": "1.0.2",
   "description": "Six-a-side hero shooter MOBA.",

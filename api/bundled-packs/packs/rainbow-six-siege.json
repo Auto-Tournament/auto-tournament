@@ -2,6 +2,7 @@
   "schema": 1,
   "slug": "rainbow-six-siege",
   "name": "Rainbow Six Siege",
+  "igdbId": 7360,
   "engine": "manual-report",
   "aliases": [
     "r6",

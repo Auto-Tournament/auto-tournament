@@ -2,13 +2,15 @@
   "schema": 1,
   "slug": "battlefield-6",
   "name": "Battlefield 6",
+  "igdbId": 317407,
   "engine": "manual-report",
   "aliases": [
     "bf6"
   ],
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Squad shooter, reported by the result of each map.",
   "icon": "../icons/battlefield-6.svg",
+  "appIcon": "../app-icons/battlefield-6.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

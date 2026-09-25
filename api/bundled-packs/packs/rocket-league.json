@@ -2,6 +2,7 @@
   "schema": 1,
   "slug": "rocket-league",
   "name": "Rocket League",
+  "igdbId": 11198,
   "engine": "manual-report",
   "aliases": [
     "rl"

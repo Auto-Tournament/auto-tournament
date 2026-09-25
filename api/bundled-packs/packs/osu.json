@@ -2,6 +2,7 @@
   "schema": 1,
   "slug": "osu",
   "name": "osu!",
+  "igdbId": 3012,
   "engine": "manual-report",
   "version": "1.0.2",
   "description": "Rhythm game. Report maps won.",

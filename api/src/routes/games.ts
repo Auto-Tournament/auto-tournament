@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { gameIconPath, scheduleGameIconRefresh } from '../services/gameIconService';
 import {
   SEARCH_MIN_LENGTH,
   getPlayableGames,
@@ -82,6 +83,8 @@ router.get('/search', gameSearchLimiter, async (req: Request, res: Response) => 
 
   try {
     const result = await searchGames(q);
+    // New rows get their app icons in the background; this answer never waits.
+    scheduleGameIconRefresh();
     return res.json({ success: true, ...result });
   } catch (error) {
     log.error('Game search failed', error);
@@ -227,6 +230,48 @@ router.get('/playable', async (_req: Request, res: Response) => {
     log.error('Failed to load playable games', error);
     return res.status(500).json({ success: false, error: 'Failed to load playable games' });
   }
+});
+
+/**
+ * @openapi
+ * /api/games/icons/{file}:
+ *   get:
+ *     tags: [Games]
+ *     summary: A game's cached app icon
+ *     description: |
+ *       The Steam client icon this instance fetched for a game no module or
+ *       pack ships an icon for, scaled to 128 px and stored as PNG. The file
+ *       name is a hash of its bytes, so a URL never changes meaning and is
+ *       cached for a year. `GameSummary.appIconUrl` points here.
+ *     parameters:
+ *       - in: path
+ *         name: file
+ *         required: true
+ *         schema: { type: string, pattern: '^[a-f0-9]{16}\.png$' }
+ *     responses:
+ *       200:
+ *         description: The icon
+ *         content:
+ *           image/png: {}
+ *       404:
+ *         description: No such icon
+ */
+router.get('/icons/:file', async (req: Request, res: Response) => {
+  const file = gameIconPath(req.params.file);
+  if (!file) {
+    res.status(404).json({ success: false, error: 'No such icon' });
+    return;
+  }
+  res.setHeader('Content-Type', 'image/png');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
+  res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  res.sendFile(file, (error) => {
+    if (error && !res.headersSent) {
+      res.removeHeader('Cache-Control');
+      res.status(404).json({ success: false, error: 'No such icon' });
+    }
+  });
 });
 
 export default router;

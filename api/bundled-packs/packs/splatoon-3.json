@@ -2,6 +2,7 @@
   "schema": 1,
   "slug": "splatoon-3",
   "name": "Splatoon 3",
+  "igdbId": 143613,
   "engine": "manual-report",
   "version": "1.0.2",
   "description": "Four-a-side team shooter, reported by the maps played.",

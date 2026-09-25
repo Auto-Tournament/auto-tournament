@@ -2,6 +2,7 @@
   "schema": 1,
   "slug": "age-of-empires-ii",
   "name": "Age of Empires II",
+  "igdbId": 55056,
   "engine": "manual-report",
   "aliases": [
     "aoe2",

@@ -2,6 +2,7 @@
   "schema": 1,
   "slug": "dota-2",
   "name": "Dota 2",
+  "igdbId": 2963,
   "engine": "manual-report",
   "aliases": [
     "dota"

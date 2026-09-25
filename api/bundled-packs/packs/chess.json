@@ -3,9 +3,10 @@
   "slug": "chess",
   "name": "Chess",
   "engine": "manual-report",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "One board, two players. A win is 1, a draw is a half each.",
   "icon": "../icons/chess.svg",
+  "appIcon": "../app-icons/chess.webp",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

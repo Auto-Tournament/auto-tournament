@@ -32,7 +32,6 @@ import { log } from '../utils/logger';
 import { listIntegrations } from '../integrations/registry';
 import {
   MAX_APP_ICON_BYTES,
-  bundledPackAppIcon,
   bundledPackEntries,
   bundledPackTile,
   checkAppIcon,
@@ -40,11 +39,11 @@ import {
   installPack,
   installedPack,
   installedPacks,
-  packAppIcon,
   packIcon,
   packIsInUse,
   readBundledPack,
   removePack,
+  resolvePackAppIcon,
   type AppIcon,
 } from '../services/gamePackService';
 import { fetchBytes, fetchPackAt } from '../services/packIndexService';
@@ -565,9 +564,10 @@ async function fetchFeedTile(base: string, relative: string): Promise<string | n
  */
 export async function catalogAppIcon(slug: string): Promise<AppIcon | null> {
   const wanted = slug.trim().toLowerCase();
-  if (installedPack(wanted)) return packAppIcon(wanted);
-  const bundled = await bundledPackAppIcon(wanted);
-  if (bundled) return bundled;
+  // The installed pack's own, else the snapshot's for the same game, else
+  // the feed's: an installed pack without one still shows its game's icon.
+  const local = await resolvePackAppIcon(wanted);
+  if (local) return local;
   const feed = await currentFeed();
   const entry = feed.packs.find((candidate) => candidate.slug === wanted);
   if (!entry?.appIcon || !feed.base) return null;

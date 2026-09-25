@@ -17,18 +17,10 @@ function tintFor(key: string): string {
   return gameTintPalette[index];
 }
 
-/**
- * Whether a cover URL is an IGDB cover. Only those are box art that crops to
- * a square; a Wikidata "cover" is the game's wide wordmark, and a sliver of a
- * wordmark ("ROC LEA") is exactly what a game mark must never show.
- */
-export function isIgdbCover(url: string | null | undefined): url is string {
-  if (!url) return false;
-  try {
-    return new URL(url, window.location.origin).hostname === 'images.igdb.com';
-  } catch {
-    return false;
-  }
+/** The first letter or digit of a name, upper case: "osu!" -> "O", "7 Days" -> "7". */
+export function gameInitial(name: string): string {
+  const match = /[\p{L}\p{N}]/u.exec(name);
+  return match ? match[0].toUpperCase() : '?';
 }
 
 export interface GameMarkProps {
@@ -42,45 +34,43 @@ export interface GameMarkProps {
    */
   iconUrl?: string | null;
   /**
-   * The catalogue cover (`GameSummary.coverUrl`). Used only when it is an
-   * IGDB cover — cropped to a square from the top — never a wide logo.
+   * The game pill's fallback: the game's first letter on a neutral tile,
+   * rather than its initials on a per-game tint. What a game with no app
+   * icon shows wherever players pick or list their games.
    */
-  coverUrl?: string | null;
+  neutral?: boolean;
   size?: number;
 }
 
 /**
  * A small square mark for a game, for the game pills and rows: the game's
- * app icon, else its IGDB cover cropped square, else its initials on a tint
- * picked per game from the theme palette (never inline hex). Decorative: the
- * game's name is always rendered next to it.
+ * app icon when it has one, else a monogram — never a cover or a logo, which
+ * cropped to a square is a sliver of box art nobody recognises. Decorative:
+ * the game's name is always rendered next to it.
+ *
+ * The monogram is the game's first letter on a neutral tile (`neutral`, the
+ * game pills), or its initials on a tint picked per game from the theme
+ * palette (never inline hex).
  */
-export function GameMark({ name, slug, iconUrl, coverUrl, size = 28 }: GameMarkProps) {
+export function GameMark({ name, slug, iconUrl, neutral = false, size = 28 }: GameMarkProps) {
   // The URL that failed, not a flag: a mark reused for another game (a list
   // re-sorted) must try that game's picture again.
   const [failed, setFailed] = useState<string | null>(null);
 
-  const candidates = [
-    iconUrl ? { src: iconUrl, position: 'center' } : null,
-    isIgdbCover(coverUrl) ? { src: coverUrl, position: 'top' } : null,
-  ].filter((c): c is { src: string; position: string } => c !== null && c.src !== failed);
-  const picture = candidates[0];
-
-  if (picture) {
+  if (iconUrl && iconUrl !== failed) {
     return (
       <Box
         component="img"
-        src={picture.src}
+        src={iconUrl}
         alt=""
         aria-hidden
         loading="lazy"
-        onError={() => setFailed(picture.src)}
-        data-game-mark={picture.src === iconUrl ? 'icon' : 'cover'}
+        onError={() => setFailed(iconUrl)}
+        data-game-mark="icon"
         sx={{
           width: size,
           height: size,
           objectFit: 'cover',
-          objectPosition: picture.position,
           borderRadius: radii.sm,
           flexShrink: 0,
           bgcolor: 'background.surface2',
@@ -89,7 +79,7 @@ export function GameMark({ name, slug, iconUrl, coverUrl, size = 28 }: GameMarkP
     );
   }
 
-  const tint = tintFor(slug || name);
+  const tint = neutral ? null : tintFor(slug || name);
 
   return (
     <Box
@@ -103,17 +93,23 @@ export function GameMark({ name, slug, iconUrl, coverUrl, size = 28 }: GameMarkP
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        bgcolor: withAlpha(tint, 0.16),
-        color: tint,
+        ...(tint
+          ? { bgcolor: withAlpha(tint, 0.16), color: tint }
+          : {
+              bgcolor: 'background.surface2',
+              color: 'text.secondary',
+              border: 1,
+              borderColor: 'divider',
+            }),
         fontFamily: fontDisplay,
         fontWeight: 700,
-        fontSize: Math.max(8, Math.round(size * 0.32)),
+        fontSize: Math.max(8, Math.round(size * (tint ? 0.32 : 0.5))),
         letterSpacing: '-0.02em',
         lineHeight: 1,
         overflow: 'hidden',
       }}
     >
-      {gameMonogram(name)}
+      {tint ? gameMonogram(name) : gameInitial(name)}
     </Box>
   );
 }

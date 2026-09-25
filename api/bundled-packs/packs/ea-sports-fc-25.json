@@ -2,6 +2,7 @@
   "schema": 1,
   "slug": "ea-sports-fc-25",
   "name": "EA Sports FC",
+  "igdbId": 308698,
   "engine": "manual-report",
   "aliases": [
     "fifa",

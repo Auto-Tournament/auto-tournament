@@ -18,6 +18,7 @@ import {
   setPlayerGames,
   type PlayerAccount,
 } from '../services/gameCatalogService';
+import { scheduleGameIconRefresh } from '../services/gameIconService';
 import { resolveViewerIdentity } from '../utils/viewerIdentity';
 import { log } from '../utils/logger';
 import { getAuthProvidersConfig } from '../config/authProviders';
@@ -154,6 +155,8 @@ router.put('/games', async (req: Request, res: Response) => {
     }
 
     await setPlayerGames(account.uid, ids);
+    // Picked games are first in line for their app icons; never waited on.
+    scheduleGameIconRefresh();
     return res.json(
       await gamesResponse({ ...account, gamesPromptDismissedAt: account.gamesPromptDismissedAt ?? 0 })
     );

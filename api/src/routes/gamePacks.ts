@@ -13,16 +13,15 @@ import { Router, Request, Response } from 'express';
 import { requireAuth, requestActorId } from '../middleware/auth';
 import { log } from '../utils/logger';
 import {
-  bundledPackAppIcon,
   checkAppIcon,
   checkTileMarkup,
   installPack,
   installedPack,
   installedPacks,
-  packAppIcon,
   packIcon,
   packIsInUse,
   removePack,
+  resolvePackAppIcon,
   validatePack,
   type AppIcon,
 } from '../services/gamePackService';
@@ -85,9 +84,9 @@ router.get('/:slug/icon.svg', async (req: Request, res: Response) => {
  *     summary: A game's square app icon
  *     description: |
  *       The icon players know the game by, for the small game pills: the
- *       installed pack's, or — for a game this instance offers but has not
- *       installed — the one in the image's bundled snapshot. A PNG or WebP,
- *       checked by its bytes when it was imported.
+ *       installed pack's own, else the one in the image's bundled snapshot
+ *       for the same game (also when the installed pack has none). A PNG or
+ *       WebP, checked by its bytes when it was imported.
  *     parameters:
  *       - in: path
  *         name: slug
@@ -104,13 +103,10 @@ router.get('/:slug/icon.svg', async (req: Request, res: Response) => {
  */
 router.get('/:slug/app-icon', async (req: Request, res: Response) => {
   try {
-    const slug = req.params.slug.trim().toLowerCase();
-    // An admin's own pack answers for its game even without an icon: the
-    // snapshot's picture is for the snapshot's pack.
-    const installed = installedPack(slug);
-    const icon =
-      (installed ? await packAppIcon(slug) : null) ??
-      (!installed || installed.source === 'bundled' ? await bundledPackAppIcon(slug) : null);
+    // The installed pack's own, else the snapshot's for the same game —
+    // whoever installed the pack: a game shows its app icon wherever one
+    // exists (`packAppIconUrl`).
+    const icon = await resolvePackAppIcon(req.params.slug);
     if (!icon) {
       res.status(404).json({ success: false, error: 'No app icon for that game' });
       return;

@@ -4,6 +4,7 @@
     {
       "slug": "age-of-empires-ii",
       "name": "Age of Empires II",
+      "igdbId": 55056,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Real-time strategy. Report games won.",
@@ -14,6 +15,7 @@
     {
       "slug": "apex-legends",
       "name": "Apex Legends",
+      "igdbId": 114795,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Three-a-side battle royale. Placement and kills each match.",
@@ -24,15 +26,18 @@
     {
       "slug": "battlefield-6",
       "name": "Battlefield 6",
-      "version": "1.0.1",
+      "igdbId": 317407,
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Squad shooter, reported by the result of each map.",
       "file": "packs/battlefield-6.json",
-      "icon": "icons/battlefield-6.svg"
+      "icon": "icons/battlefield-6.svg",
+      "appIcon": "app-icons/battlefield-6.webp"
     },
     {
       "slug": "brawl-stars",
       "name": "Brawl Stars",
+      "igdbId": 55945,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Three-a-side mobile brawler, reported by the events played.",
@@ -53,15 +58,17 @@
     {
       "slug": "chess",
       "name": "Chess",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "One board, two players. A win is 1, a draw is a half each.",
       "file": "packs/chess.json",
-      "icon": "icons/chess.svg"
+      "icon": "icons/chess.svg",
+      "appIcon": "app-icons/chess.webp"
     },
     {
       "slug": "clash-royale",
       "name": "Clash Royale",
+      "igdbId": 15707,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "One-on-one mobile card battler. Report games won in the set.",
@@ -72,6 +79,7 @@
     {
       "slug": "deadlock",
       "name": "Deadlock",
+      "igdbId": 301298,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Six-a-side hero shooter MOBA.",
@@ -82,6 +90,7 @@
     {
       "slug": "dota-2",
       "name": "Dota 2",
+      "igdbId": 2963,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Five-a-side MOBA. One map per game.",
@@ -92,6 +101,7 @@
     {
       "slug": "ea-sports-fc-25",
       "name": "EA Sports FC",
+      "igdbId": 308698,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Football. Report the scoreline.",
@@ -102,6 +112,7 @@
     {
       "slug": "fortnite",
       "name": "Fortnite",
+      "igdbId": 1905,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Battle royale. Report placement and eliminations each match.",
@@ -112,6 +123,7 @@
     {
       "slug": "guilty-gear-strive",
       "name": "Guilty Gear -Strive-",
+      "igdbId": 125764,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Fighting game. Report games won in the set.",
@@ -122,6 +134,7 @@
     {
       "slug": "halo-infinite",
       "name": "Halo Infinite",
+      "igdbId": 103281,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Four-a-side arena shooter, reported by the maps played.",
@@ -132,6 +145,7 @@
     {
       "slug": "hearthstone",
       "name": "Hearthstone",
+      "igdbId": 1279,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "One-on-one digital card game. Report games won in the set.",
@@ -142,15 +156,18 @@
     {
       "slug": "league-of-legends",
       "name": "League of Legends",
-      "version": "1.0.1",
+      "igdbId": 115,
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "Five-a-side MOBA. One map per game.",
       "file": "packs/league-of-legends.json",
-      "icon": "icons/league-of-legends.svg"
+      "icon": "icons/league-of-legends.svg",
+      "appIcon": "app-icons/league-of-legends.webp"
     },
     {
       "slug": "mario-kart-8-deluxe",
       "name": "Mario Kart 8 Deluxe",
+      "igdbId": 26764,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Kart racing. Report finishing position and points each race.",
@@ -161,6 +178,7 @@
     {
       "slug": "marvel-rivals",
       "name": "Marvel Rivals",
+      "igdbId": 294041,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Six-a-side hero shooter, reported by the maps played.",
@@ -171,6 +189,7 @@
     {
       "slug": "minecraft",
       "name": "Minecraft",
+      "igdbId": 135400,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Whatever the host builds on it. The captains report who won.",
@@ -181,6 +200,7 @@
     {
       "slug": "mobile-legends-bang-bang",
       "name": "Mobile Legends: Bang Bang",
+      "igdbId": 79392,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Five-a-side mobile MOBA. One map per game.",
@@ -191,6 +211,7 @@
     {
       "slug": "mortal-kombat-1",
       "name": "Mortal Kombat 1",
+      "igdbId": 272491,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Fighting game. Report games won in the set.",
@@ -201,6 +222,7 @@
     {
       "slug": "osu",
       "name": "osu!",
+      "igdbId": 3012,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Rhythm game. Report maps won.",
@@ -211,6 +233,7 @@
     {
       "slug": "overwatch-2",
       "name": "Overwatch 2",
+      "igdbId": 125174,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Five-a-side hero shooter, reported by maps won.",
@@ -221,6 +244,7 @@
     {
       "slug": "pubg-battlegrounds",
       "name": "PUBG: Battlegrounds",
+      "igdbId": 27789,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Squad battle royale. Placement and eliminations each match.",
@@ -231,6 +255,7 @@
     {
       "slug": "rainbow-six-siege",
       "name": "Rainbow Six Siege",
+      "igdbId": 7360,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Five-a-side tactical shooter, reported by rounds won.",
@@ -241,6 +266,7 @@
     {
       "slug": "rocket-league",
       "name": "Rocket League",
+      "igdbId": 11198,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Car soccer. Captains report the score; goals, assists, saves and shots per player.",
@@ -251,6 +277,7 @@
     {
       "slug": "splatoon-3",
       "name": "Splatoon 3",
+      "igdbId": 143613,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Four-a-side team shooter, reported by the maps played.",
@@ -261,15 +288,18 @@
     {
       "slug": "starcraft-ii",
       "name": "StarCraft II",
-      "version": "1.0.1",
+      "igdbId": 239,
+      "version": "1.0.2",
       "engine": "manual-report",
       "description": "One-on-one real-time strategy. Report games won in the set.",
       "file": "packs/starcraft-ii.json",
-      "icon": "icons/starcraft-ii.svg"
+      "icon": "icons/starcraft-ii.svg",
+      "appIcon": "app-icons/starcraft-ii.webp"
     },
     {
       "slug": "street-fighter-6",
       "name": "Street Fighter 6",
+      "igdbId": 191692,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Fighting game. Report games won in the set.",
@@ -280,6 +310,7 @@
     {
       "slug": "super-smash-bros-ultimate",
       "name": "Super Smash Bros. Ultimate",
+      "igdbId": 90101,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Platform fighter. Report games won in the set.",
@@ -290,6 +321,7 @@
     {
       "slug": "team-fortress-2",
       "name": "Team Fortress 2",
+      "igdbId": 891,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Six-a-side class shooter, reported by rounds won.",
@@ -300,6 +332,7 @@
     {
       "slug": "teamfight-tactics",
       "name": "Teamfight Tactics",
+      "igdbId": 120176,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Eight-player auto battler. Report finishing placement each game.",
@@ -310,6 +343,7 @@
     {
       "slug": "tekken-8",
       "name": "Tekken 8",
+      "igdbId": 217590,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Fighting game. Report games won in the set.",
@@ -320,6 +354,7 @@
     {
       "slug": "trackmania",
       "name": "Trackmania",
+      "igdbId": 133807,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Racing. The score is whatever format the host runs — points, rounds or times.",
@@ -330,6 +365,7 @@
     {
       "slug": "valorant",
       "name": "Valorant",
+      "igdbId": 126459,
       "version": "1.0.2",
       "engine": "manual-report",
       "description": "Five-a-side tactical shooter, reported by rounds won.",
