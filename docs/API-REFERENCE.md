@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 328 of them, 231 behind auth —
+Every endpoint this API serves — 332 of them, 235 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -546,6 +546,17 @@ Ready Up compatibility with the latest CS2 build: the runs its CI reports (token
 | `GET` | `/api/compat/latest` | public |
 | `GET` | `/api/compat/runs` | public |
 | `GET` | `/api/compat/badge.json` | public |
+
+### Admin calls
+
+Players calling for an admin from a game server (CS2: `.admin [message]` in Ready Up, sent as the admin_called event): list open and recently resolved calls, resolve one or all. Admin only. Live updates go to signed-in admins as the Socket.IO events admin:call and admin:call:resolved.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/admin-calls` | admin |
+| `POST` | `/api/admin-calls/resolve-all` | admin |
+| `GET` | `/api/admin-calls/:id` | admin |
+| `POST` | `/api/admin-calls/:id/resolve` | admin |
 
 ### Test helpers
 

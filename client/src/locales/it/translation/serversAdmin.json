@@ -146,5 +146,30 @@
       "forceCancel": "Match annullato",
       "default": "Comando eseguito"
     }
+  },
+  "adminCalls": {
+    "header": "Chiamate admin ({{count}})",
+    "title": "{{player}} sta chiamando un admin",
+    "justNow": "adesso",
+    "minutesAgo": "{{count}} min fa",
+    "hoursAgo": "{{count}} h fa",
+    "spectator": "Spettatore",
+    "team1": "Squadra 1",
+    "team2": "Squadra 2",
+    "noMessage": "Nessun messaggio",
+    "unknownPlayer": "Giocatore sconosciuto",
+    "unknownServer": "Server sconosciuto",
+    "matchMap": "{{match}}, mappa {{map}}",
+    "openMatch": "Apri partita",
+    "openServers": "Server",
+    "resolve": "Segna come risolta",
+    "resolveAll": "Risolvi tutte",
+    "resolveFailed": "Impossibile segnare la chiamata come risolta. Riprova.",
+    "matchUnavailable": "Impossibile aprire quella partita.",
+    "enableSound": "Attiva audio",
+    "mute": "Silenzia",
+    "unmute": "Riattiva audio",
+    "minimize": "Riduci",
+    "show": "Mostra"
   }
 }

@@ -146,5 +146,30 @@
       "forceCancel": "Kampen er avbrutt",
       "default": "Kommandoen er kjørt"
     }
+  },
+  "adminCalls": {
+    "header": "Adminanrop ({{count}})",
+    "title": "{{player}} tilkaller en admin",
+    "justNow": "akkurat nå",
+    "minutesAgo": "for {{count}} min siden",
+    "hoursAgo": "for {{count}} t siden",
+    "spectator": "Tilskuer",
+    "team1": "Lag 1",
+    "team2": "Lag 2",
+    "noMessage": "Ingen melding",
+    "unknownPlayer": "Ukjent spiller",
+    "unknownServer": "Ukjent server",
+    "matchMap": "{{match}}, kart {{map}}",
+    "openMatch": "Åpne kamp",
+    "openServers": "Servere",
+    "resolve": "Merk som løst",
+    "resolveAll": "Løs alle",
+    "resolveFailed": "Kunne ikke merke anropet som løst. Prøv igjen.",
+    "matchUnavailable": "Kampen kunne ikke åpnes.",
+    "enableSound": "Slå på lyd",
+    "mute": "Demp",
+    "unmute": "Slå på lyd",
+    "minimize": "Minimer",
+    "show": "Vis"
   }
 }

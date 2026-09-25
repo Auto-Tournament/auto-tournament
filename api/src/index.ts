@@ -31,7 +31,7 @@ import { DATA_DIR } from './config/dataDir';
 import { getOpenApiSpec } from './config/swagger';
 import { log, logger, LOG_HTTP_REQUESTS, LOG_DB_VERBOSE, LOG_DB_VALUES } from './utils/logger';
 import { cleanupOldLogs } from './utils/eventLogger';
-import { getIO, initializeSocket } from './services/socketService';
+import { getIO, initializeSocket, type HandshakeMiddleware } from './services/socketService';
 import { registerShutdown } from './utils/restart';
 import { routeTable } from './routes/routeTable';
 import { listIntegrations } from './integrations/registry';
@@ -143,24 +143,25 @@ if (sessionCookieDomain) {
   sessionCookie.domain = sessionCookieDomain;
 }
 
-app.use(
-  session({
-    // Persist sessions in PostgreSQL so admin logins survive API restarts.
-    // Note: Session table is created by our database schema, so we don't need
-    // connect-pg-simple to create it (which would require table.sql file).
-    store: new PgSession({
-      conString: sessionDbConnectionString,
-      tableName: 'session',
-      createTableIfMissing: false, // Table is created by our schema
-    }),
-    secret: sessionSecret,
-    resave: false,
-    saveUninitialized: false,
-    cookie: sessionCookie,
-  })
-);
-app.use(passport.initialize());
-app.use(passport.session());
+const sessionMiddleware = session({
+  // Persist sessions in PostgreSQL so admin logins survive API restarts.
+  // Note: Session table is created by our database schema, so we don't need
+  // connect-pg-simple to create it (which would require table.sql file).
+  store: new PgSession({
+    conString: sessionDbConnectionString,
+    tableName: 'session',
+    createTableIfMissing: false, // Table is created by our schema
+  }),
+  secret: sessionSecret,
+  resave: false,
+  saveUninitialized: false,
+  cookie: sessionCookie,
+});
+const passportInitialize = passport.initialize();
+const passportSession = passport.session();
+app.use(sessionMiddleware);
+app.use(passportInitialize);
+app.use(passportSession);
 
 /** Paths the client polls on a timer; see the request logger below. */
 const POLLED_ENDPOINTS = new Set(['/api/auth/me']);
@@ -431,7 +432,15 @@ app.use((_req: Request, res: Response) => {
 
 // Start server
 // Initialize Socket.io
-initializeSocket(httpServer);
+// The socket handshake gets the same session and Passport user as a request,
+// so `admin:subscribe` can check admin rights like `requireAuth` does.
+initializeSocket(httpServer, {
+  handshakeMiddleware: [
+    sessionMiddleware as unknown as HandshakeMiddleware,
+    passportInitialize as unknown as HandshakeMiddleware,
+    passportSession as unknown as HandshakeMiddleware,
+  ],
+});
 
 // Cleanup old event logs (keep last 30 days)
 cleanupOldLogs(30);

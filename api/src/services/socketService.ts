@@ -1,6 +1,9 @@
-import { Server as SocketIOServer } from 'socket.io';
-import type { Server as HTTPServer } from 'http';
+import { Server as SocketIOServer, type Socket } from 'socket.io';
+import type { Server as HTTPServer, IncomingMessage, ServerResponse } from 'http';
+import type { Request } from 'express';
 import { log } from '../utils/logger';
+import { checkAdminAccess } from '../middleware/auth';
+import type { AdminCall, AdminCallResolvedEvent } from '../types/adminCall.types';
 import type {
   TournamentUpdateEvent,
   BracketUpdateEvent,
@@ -16,13 +19,79 @@ let io: SocketIOServer | null = null;
 /** Room of the sockets on the public compatibility page (`compat:subscribe`). */
 export const COMPAT_ROOM = 'compat';
 
-export function initializeSocket(httpServer: HTTPServer): SocketIOServer {
+/**
+ * Room of the sockets whose handshake proved admin rights (`admin:subscribe`).
+ * Admin-only events (`admin:call`, `admin:call:resolved`) go only here: a
+ * player's message to the admins is not for every viewer of the bracket.
+ */
+export const ADMIN_ROOM = 'admins';
+
+/** Express-style middleware (session, Passport) run on the Socket.IO handshake. */
+export type HandshakeMiddleware = (
+  req: IncomingMessage,
+  res: ServerResponse,
+  next: (err?: unknown) => void
+) => void;
+
+export interface SocketOptions {
+  /**
+   * Run on each handshake request, in order, so `socket.request` carries the
+   * session and Passport user that `admin:subscribe` checks (index.ts passes
+   * the app's own session and Passport middleware).
+   */
+  handshakeMiddleware?: HandshakeMiddleware[];
+}
+
+/**
+ * The handshake request, shaped enough like an Express request for
+ * `checkAdminAccess`: it reads headers through `req.get`.
+ */
+function handshakeAsRequest(socket: Socket): Request {
+  const req = socket.request as IncomingMessage & Partial<Request>;
+  if (typeof req.get !== 'function') {
+    const get = (name: string): string | undefined => {
+      const value = req.headers[name.toLowerCase()];
+      return Array.isArray(value) ? value[0] : value;
+    };
+    Object.defineProperty(req, 'get', { value: get, configurable: true });
+  }
+  return req as Request;
+}
+
+async function joinAdminRoom(socket: Socket, ack?: unknown): Promise<void> {
+  const reply = typeof ack === 'function' ? (ack as (body: unknown) => void) : () => undefined;
+  try {
+    const access = await checkAdminAccess(handshakeAsRequest(socket));
+    if (!access.ok) {
+      log.debug('Socket refused the admin room', { socketId: socket.id, reason: access.logReason });
+      reply({ ok: false, error: access.error });
+      return;
+    }
+    await socket.join(ADMIN_ROOM);
+    reply({ ok: true });
+  } catch (error) {
+    log.error('Socket admin check failed', error as Error);
+    reply({ ok: false, error: 'Failed to verify admin permissions' });
+  }
+}
+
+export function initializeSocket(httpServer: HTTPServer, options: SocketOptions = {}): SocketIOServer {
   io = new SocketIOServer(httpServer, {
     cors: {
       origin: process.env.CORS_ORIGIN || '*',
       methods: ['GET', 'POST'],
     },
   });
+
+  // Session and Passport on the handshake only (not on every polling
+  // request of the same connection), as Socket.IO's docs recommend.
+  for (const middleware of options.handshakeMiddleware ?? []) {
+    io.engine.use((req: IncomingMessage & { _query?: { sid?: string } }, res: ServerResponse, next: (err?: unknown) => void) => {
+      const isHandshake = req._query?.sid === undefined;
+      if (isHandshake) middleware(req, res, next);
+      else next();
+    });
+  }
 
   io.on('connection', (socket) => {
     log.debug(`Socket client connected: ${socket.id}`);
@@ -36,6 +105,17 @@ export function initializeSocket(httpServer: HTTPServer): SocketIOServer {
     });
     socket.on('compat:unsubscribe', () => {
       void socket.leave(COMPAT_ROOM);
+    });
+
+    // Admin-only events (admin calls). The socket joins only if the
+    // handshake's session, signed cookie or API token is an admin's — the
+    // same check as `requireAuth`. The optional ack says whether it did.
+    // Rooms do not survive a reconnect: the client asks again on `connect`.
+    socket.on('admin:subscribe', (ack?: unknown) => {
+      void joinAdminRoom(socket, ack);
+    });
+    socket.on('admin:unsubscribe', () => {
+      void socket.leave(ADMIN_ROOM);
     });
 
     socket.on('disconnect', () => {
@@ -166,5 +246,21 @@ export function emitCompatUpdate(payload: CompatUpdateEvent): void {
   if (io) {
     io.to(COMPAT_ROOM).emit('compat:update', payload);
     log.debug('Emitted compat update', { runId: payload.run.run.id });
+  }
+}
+
+/** A new admin call, to the signed-in admins (room `admins`). */
+export function emitAdminCall(call: AdminCall): void {
+  if (io) {
+    io.to(ADMIN_ROOM).emit('admin:call', call);
+    log.debug('Emitted admin call', { id: call.id });
+  }
+}
+
+/** Admin calls resolved, to the signed-in admins (room `admins`). */
+export function emitAdminCallResolved(payload: AdminCallResolvedEvent): void {
+  if (io) {
+    io.to(ADMIN_ROOM).emit('admin:call:resolved', payload);
+    log.debug('Emitted admin call resolved', { ids: payload.ids });
   }
 }

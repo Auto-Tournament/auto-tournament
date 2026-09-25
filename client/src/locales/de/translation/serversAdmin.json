@@ -146,5 +146,30 @@
       "forceCancel": "Match abgebrochen",
       "default": "Befehl ausgeführt"
     }
+  },
+  "adminCalls": {
+    "header": "Admin-Rufe ({{count}})",
+    "title": "{{player}} ruft einen Admin",
+    "justNow": "gerade eben",
+    "minutesAgo": "vor {{count}} Min.",
+    "hoursAgo": "vor {{count}} Std.",
+    "spectator": "Zuschauer",
+    "team1": "Team 1",
+    "team2": "Team 2",
+    "noMessage": "Keine Nachricht",
+    "unknownPlayer": "Unbekannter Spieler",
+    "unknownServer": "Unbekannter Server",
+    "matchMap": "{{match}}, Map {{map}}",
+    "openMatch": "Match öffnen",
+    "openServers": "Server",
+    "resolve": "Als erledigt markieren",
+    "resolveAll": "Alle erledigen",
+    "resolveFailed": "Der Ruf konnte nicht als erledigt markiert werden. Bitte erneut versuchen.",
+    "matchUnavailable": "Dieses Match konnte nicht geöffnet werden.",
+    "enableSound": "Ton aktivieren",
+    "mute": "Stumm",
+    "unmute": "Ton an",
+    "minimize": "Minimieren",
+    "show": "Anzeigen"
   }
 }

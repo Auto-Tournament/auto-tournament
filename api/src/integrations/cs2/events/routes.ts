@@ -23,7 +23,9 @@
 import { Router, Request, Response } from 'express';
 import { requireAuth } from '../../../middleware/auth';
 import { validateEventToken, validateServerToken } from '../../../middleware/serverAuth';
-import { PluginEvent } from './plugin-events.types';
+import type { PluginEvent, AdminCalledEvent } from './plugin-events.types';
+import { adminCallFromEvent } from './adminCalled';
+import { recordAdminCall } from '../../../services/adminCallService';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { logWebhookEvent } from '../../../utils/eventLogger';
@@ -325,6 +327,35 @@ async function handleEventRequest(
     // Update server heartbeat for ALL events (shows server is alive)
     if (serverId && serverId !== 'unknown') {
       await serverTrackingService.updateHeartbeat(serverId);
+    }
+
+    // A player typed `.admin [message]` (Ready Up). It goes to the core's
+    // admin calls, not the match pipeline: it changes nothing about the
+    // match, and it is recorded even from a server the match is not assigned
+    // to — a player asking for help is never the event to drop. Stored once
+    // per call_id, so the plugin's retries are harmless.
+    if (event.event === 'admin_called') {
+      const input = await adminCallFromEvent(event as AdminCalledEvent, {
+        match: resolvedMatch ?? null,
+        serverCandidates: [
+          urlServerId,
+          payloadServerId,
+          resolvedMatch?.server_id,
+          matchSlugOrServerIdFromUrl,
+        ],
+      });
+      const { call, created } = await recordAdminCall(input);
+
+      logWebhookEvent(serverId, actualMatchSlug, event);
+      if (serverId && serverId !== 'unknown') {
+        emitServerEvent(serverId, { timestamp: Date.now(), matchSlug: actualMatchSlug, event });
+      }
+      return res.status(200).json({
+        success: true,
+        message: created ? 'Admin call received' : 'Admin call already received',
+        adminCallId: call.id,
+        duplicate: !created,
+      });
     }
 
     // Demo recording/upload and series lifecycle decide when this server may

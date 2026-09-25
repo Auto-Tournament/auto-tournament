@@ -337,6 +337,29 @@ export interface ServerHealthEvent {
 }
 
 /**
+ * A player typed `.admin [message]` (Ready Up). Match-scoped like the other
+ * events, but it never enters the match pipeline: routes.ts hands it to the
+ * core's admin calls (services/adminCallService.ts). `call_id` is unique per
+ * call, so a retried delivery is stored once.
+ */
+export interface AdminCalledEvent extends PluginBaseEvent {
+  event: 'admin_called';
+  map_number?: number | null;
+  call_id: string;
+  player?: {
+    steamid64?: string | null;
+    name?: string | null;
+    team?: 'team1' | 'team2' | 'spectator' | null;
+    side?: 'ct' | 't' | null;
+  } | null;
+  /** 200 characters at most; may be empty. */
+  message?: string | null;
+  /** ISO 8601, UTC. */
+  called_at?: string | null;
+  server_id?: string;
+}
+
+/**
  * Connectivity probe. Auto Tournament CS2 sends this to verify the server can reach our
  * /api/events endpoint; both spellings are in the wild.
  */
@@ -383,7 +406,8 @@ export type PluginEvent =
   | ServerConfiguredEvent
   | Cs2UpdateRequiredEvent
   | ServerHealthEvent
-  | ServerTestEvent;
+  | ServerTestEvent
+  | AdminCalledEvent;
 
 // Event storage in database
 export interface MatchEvent {

@@ -146,5 +146,30 @@
       "forceCancel": "比赛已取消",
       "default": "命令已执行"
     }
+  },
+  "adminCalls": {
+    "header": "管理员呼叫（{{count}}）",
+    "title": "{{player}} 正在呼叫管理员",
+    "justNow": "刚刚",
+    "minutesAgo": "{{count}} 分钟前",
+    "hoursAgo": "{{count}} 小时前",
+    "spectator": "观众",
+    "team1": "队伍 1",
+    "team2": "队伍 2",
+    "noMessage": "无留言",
+    "unknownPlayer": "未知玩家",
+    "unknownServer": "未知服务器",
+    "matchMap": "{{match}}，第 {{map}} 张地图",
+    "openMatch": "打开比赛",
+    "openServers": "服务器",
+    "resolve": "标记为已处理",
+    "resolveAll": "全部处理",
+    "resolveFailed": "无法将该呼叫标记为已处理，请重试。",
+    "matchUnavailable": "无法打开该比赛。",
+    "enableSound": "开启声音",
+    "mute": "静音",
+    "unmute": "取消静音",
+    "minimize": "最小化",
+    "show": "显示"
   }
 }
