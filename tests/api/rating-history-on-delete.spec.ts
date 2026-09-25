@@ -18,6 +18,7 @@ interface HistoryRow {
   match_slug: string | null;
   match_label: string | null;
   tournament_name: string | null;
+  game: string | null;
   elo_after: number;
   created_at: number;
 }
@@ -84,6 +85,9 @@ test.describe.serial('Rating history across tournament delete and reset', () => 
     const { steamId, row, team1, team2 } = await playRatedMatch(request, name);
     const eloAfterMatch = await currentElo(request, steamId);
     expect(eloAfterMatch).toBe(row.elo_after);
+    // The row carries the match's game, so it can still be counted under it
+    // once the match is gone.
+    expect(row.game).toBe('cs2');
 
     const del = await request.delete('/api/tournament', { headers: getAuthHeader() });
     expect(del.ok()).toBe(true);
@@ -100,8 +104,29 @@ test.describe.serial('Rating history across tournament delete and reset', () => 
     // The player page reads the orphaned row without a match behind it.
     const summary = await request.get(`/api/players/${steamId}/summary`);
     expect(summary.ok()).toBe(true);
-    const summaryRows = (await summary.json()).ratingHistory as HistoryRow[];
-    expect(summaryRows.some((h) => h.tournament_name === name && h.match_slug === null)).toBe(true);
+    const summaryBody = (await summary.json()) as {
+      ratingHistory: HistoryRow[];
+      matches: Array<{ slug: string }>;
+      player: { matchCount: number };
+      games: Array<{ id: string }>;
+    };
+    const orphan = summaryBody.ratingHistory.find(
+      (h) => h.tournament_name === name && h.match_slug === null
+    );
+    expect(orphan, 'the orphaned row is in the summary').toBeTruthy();
+    expect(orphan!.game, 'and keeps its game').toBe('cs2');
+
+    // The match still counts as played: its stats row went with the match,
+    // but the profile's "matches" must not drop to 0 for a player whose
+    // tournament was deleted (the design-conformance audit's "MATCHES 0").
+    // Read from one response, so other suites' matches cannot race it.
+    const listed = new Set(summaryBody.matches.map((m) => m.slug));
+    const archived = summaryBody.ratingHistory.filter(
+      (h) => !h.match_slug || !listed.has(h.match_slug)
+    ).length;
+    expect(archived).toBeGreaterThan(0);
+    expect(summaryBody.player.matchCount).toBe(summaryBody.matches.length + archived);
+    expect(summaryBody.games.map((g) => g.id)).toContain('cs2');
   });
 
   test('reset rolls ratings back and removes that run\'s history', {

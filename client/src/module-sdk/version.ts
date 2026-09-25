@@ -81,5 +81,9 @@
  *
  * 0.2.5 (additive): `LiveChip`, the quiet mono chip with a green dot for
  * anything running right now, and `textSize`, the drafts' type sizes.
+ *
+ * 0.2.6 (additive): the optional `rosterMemberStatus` slot
+ * (`RosterMemberStatusProps` `{ playerId }`): the team page roster's
+ * per-member account status for the game (CS2: Steam linked).
  */
-export const CLIENT_API_VERSION = '0.2.5';
+export const CLIENT_API_VERSION = '0.2.6';

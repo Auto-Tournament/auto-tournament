@@ -115,12 +115,33 @@ test.describe('Redesigned player profile', () => {
       await page.goto(`/player/${steamId}`, { waitUntil: 'domcontentloaded' });
       await expect(page.getByTestId('public-player-page')).toBeVisible({ timeout: 15000 });
 
-      // Stats grid: MATCHES and WIN RATE tiles, with the real numbers this
-      // player's one recorded, won match produces.
+      // Stats grid: MATCHES and WIN RATE tiles. They count the player's play
+      // across the site: this match, plus the rated matches of tournaments
+      // other suites deleted (the fixture players are shared), which only the
+      // rating history still holds. So the numbers are checked against the
+      // summary the page reads, not against "1".
+      const summary = (await (await request.get(`/api/players/${steamId}/summary`)).json()) as {
+        player: { matchCount: number };
+        matches: Array<{ slug: string; won_match: boolean }>;
+        ratingHistory: Array<{ match_slug: string | null; match_result: string }>;
+      };
+      const listed = new Set(summary.matches.map((m) => m.slug));
+      const archived = summary.ratingHistory.filter(
+        (h) => !h.match_slug || !listed.has(h.match_slug)
+      );
+      const played = summary.matches.length + archived.length;
+      const won =
+        summary.matches.filter((m) => m.won_match).length +
+        archived.filter((h) => h.match_result === 'win').length;
+      expect(played).toBe(summary.player.matchCount);
       const statsGrid = page.getByTestId('profile-stats-grid');
       await expect(statsGrid).toBeVisible();
-      await expect(page.getByTestId('profile-stat-matches')).toContainText('1');
-      await expect(page.getByTestId('profile-stat-win-rate')).toContainText('100%');
+      await expect(page.getByTestId('profile-stat-matches').locator('dd')).toHaveText(
+        String(played)
+      );
+      await expect(page.getByTestId('profile-stat-win-rate').locator('dd')).toHaveText(
+        `${Math.round((won / played) * 100)}%`
+      );
 
       // Recent matches: the just-finished match shows up, W tile and kills/deaths.
       const recentMatches = page.getByTestId('profile-recent-matches');
@@ -143,9 +164,28 @@ test.describe('Redesigned player profile', () => {
 
       // Profile header team chip links to that team's public profile page
       // (/t/team/:teamId), not the in-match/server team page (/team/:teamId).
+      // It names the team, never "My team" / "Team:".
       const teamChip = page.getByTestId('public-player-team');
       await expect(teamChip).toBeVisible();
       await expect(teamChip).toHaveAttribute('href', `/t/team/${team1.id}`);
+      await expect(teamChip).toContainText(team1.name);
+      await expect(teamChip).not.toContainText(/my team|team:/i);
+
+      // The stats are one joined grid: a `dl`, each number a `dd`, not a heading.
+      await expect(statsGrid).toHaveJSProperty('tagName', 'DL');
+
+      // The 3.0 profile is header, stats, Rating and Recent matches. The 2.x
+      // sections below them are gone (design-conformance chunk 3): the
+      // server-allocation countdown, the big "no active match" card, the
+      // "My team" roster with raw Steam IDs, the recent-form highlights and
+      // the second "no match history" list. The page's H1 is the name.
+      await expect(page.getByTestId('public-player-my-team')).toHaveCount(0);
+      await expect(page.getByText(/Next servers allocated/i)).toHaveCount(0);
+      await expect(page.getByText('No active match right now')).toHaveCount(0);
+      await expect(page.getByText('Recent Form & Highlights')).toHaveCount(0);
+      await expect(page.getByText('No match history yet')).toHaveCount(0);
+      await expect(page.getByText(`Steam ID: ${steamId}`)).toHaveCount(0);
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText(team1.players[0].name);
     }
   );
 });

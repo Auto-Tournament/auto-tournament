@@ -14,6 +14,7 @@ import { ServersOverviewCard } from './servers/ServersOverviewCard';
 import { ServerGrid } from './servers/ServerGrid';
 import { VetoInterface } from './veto/VetoInterface';
 import { MatchVetoHistory } from './veto/MatchVetoHistory';
+import { Cs2RosterSteamStatus } from './roster/Cs2RosterSteamStatus';
 import { Cs2MatchSettings } from './setup/Cs2MatchSettings';
 import { Cs2TournamentMapsStep } from './setup/Cs2TournamentMapsStep';
 import { Cs2TournamentReview } from './setup/Cs2TournamentReview';
@@ -75,6 +76,10 @@ export const cs2ClientIntegration: ClientGameIntegration = {
 
   preMatchView: VetoInterface,
   preMatchHistory: MatchVetoHistory,
+
+  // The team page roster: whether the roster has a Steam account for each
+  // member, which a CS2 player needs to join the server.
+  rosterMemberStatus: Cs2RosterSteamStatus,
 
   // The webhook URL a CS2 server reaches the platform on, and the Auto Tournament CS2
   // plugin's own database: both are settings only this game has, so the

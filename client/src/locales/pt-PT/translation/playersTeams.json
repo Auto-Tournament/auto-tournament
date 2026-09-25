@@ -23,31 +23,17 @@
     "playerNotFound": "Este jogador não existe.",
     "backToFindPlayer": "Voltar a Procurar jogador",
     "thisIsYou": "És tu",
-    "steamId": "Steam ID64: {{id}}",
     "skillRatingTooltip": "A classificação de habilidade baseia-se em OpenSkill. Cerca de 1500 é um valor inicial típico; mais alto é melhor.",
     "skillRatingLabel": "Classificação: {{elo}}",
-    "viewTournamentLeaderboard": "Ver classificação do torneio",
     "admin": "ADMIN",
-    "nextServersAllocated": "Próxima atribuição de servidores em {{seconds}}s",
-    "tournamentFinishedNoMatches": "Torneio terminado – não tens mais jogos.",
-    "finalRecord": "Resultado final: {{wins}} vitória(s) / {{losses}} derrota(s) neste torneio.",
-    "noUpcomingMatch": "Sem próximo jogo marcado neste momento.",
-    "noUpcomingHint": "O torneio ainda está a decorrer, mas os teus jogos estão concluídos.",
-    "noActiveMatch": "Sem jogo ativo neste momento",
-    "noActiveHint": "Quando a próxima ronda for gerada e o teu jogo estiver pronto, aparecerá aqui com a info de ligação ao servidor.",
     "matchesPlayed": "Jogos jogados",
     "wins": "Vitórias",
     "losses": "Derrotas",
     "winRate": "Taxa de vitórias",
-    "bestAdrIn": "{{adr}} ADR em {{round}}",
     "win": "Vitória",
     "loss": "Derrota",
     "opponent": "Adversário",
-    "bestAdr": "Melhor jogo (ADR)",
-    "toughestAdr": "Jogo mais difícil (ADR)",
-    "recentForm": "Forma recente (últimos {{count}} jogos)",
     "winsLosses": "Vitórias / Derrotas",
-    "recentFormHighlights": "Forma recente e destaques",
     "averageAdr": "ADR médio",
     "profileTitle": "Perfil do jogador",
     "discordId": {
@@ -60,62 +46,53 @@
       "removed": "ID do Discord removido",
       "saveFailed": "Não foi possível guardar o teu ID do Discord"
     },
-    "teamChip": "Equipa: {{team}}",
-    "myTeam": "A minha equipa",
-    "openTeam": "Abrir equipa: {{team}}",
-    "you": "Tu",
-    "noMatchHistory": "Ainda sem histórico de jogos",
     "downloadDemo": "Transferir demo",
     "noMatchesYet": "Ainda sem jogos",
     "pageTitle": "{{name}} – perfil do jogador",
     "loadFailed": "Não foi possível carregar os dados do jogador",
-    "performanceChart": {
-      "title": "Tendências de desempenho",
-      "noData": "Ainda não há dados de desempenho significativos – joga algumas rondas para ver as tendências de ADR e K/D.",
-      "avgAdr": "ADR: {{value}} méd.",
-      "avgKd": "K/D: {{value}} méd.",
-      "matchCount_one": "{{count}} jogo",
-      "matchCount_other": "{{count}} jogos"
-    },
     "profileHeader": {
       "plays": "Plays {{games}}",
       "joined": "joined {{date}}",
-      "editProfile": "Edit profile"
+      "editProfile": "Edit profile",
+      "label": "Player",
+      "captain": "captain"
     },
     "stats": {
       "rating": "RATING",
       "matches": "MATCHES",
       "winRate": "WIN RATE",
       "adr": "ADR",
-      "kd": "K/D"
+      "kd": "K/D",
+      "label": "Stats"
     },
     "ratingChart": {
       "sectionTitle": "Rating",
       "noHistory": "Not enough matches yet to chart a trend",
-      "ariaLabel": "Rating trend, from {{from}} to {{to}}"
+      "ariaLabel": "Rating trend, from {{from}} to {{to}}",
+      "window": "last {{count}} matches"
     },
     "recentMatches": {
       "title": "Recent matches",
       "statsNote": "Kills / deaths. Stats shown depend on what the game module reports.",
-      "roundAndRating": "{{round}} · rating {{rating}}"
+      "roundAndRating": "{{round}} · rating {{rating}}",
+      "leaderboard": "Leaderboard"
     },
-    "gameSwitchLabel": "Game"
+    "gameSwitchLabel": "Game",
+    "yourMatch": "Your match"
   },
   "teamPage": {
-    "wantYourStats": "Queres ver as tuas estatísticas e histórico de jogos?",
-    "openMyPlayerPage": "Abrir a minha página de jogador",
     "tournamentFinished": "Torneio terminado",
     "finalPlacement": "Classificação final: #{{position}} de {{total}}",
     "noMatchNow": "Sem jogo marcado neste momento",
-    "noMatchNowHint": "O teu próximo jogo aparecerá aqui. Usa a tua página de jogador para veto e ligação ao servidor.",
     "noMatchesYet": "Sem jogos disponíveis neste momento",
     "noMatchesYetHint": "O torneio ainda não começou. Quando começar, os teus jogos aparecerão aqui.",
     "currentMatch": "Jogo atual",
     "versus": "vs",
-    "goToPlayerPage": "Veto, ligação e detalhes → A tua página de jogador",
     "pageTitle": "Página da equipa",
     "manualMatch": "Jogo manual",
-    "viewTeamProfile": "Team page →"
+    "noMatchNowHint": "Your next match shows up here, with the veto and the server to connect to.",
+    "viewTeamProfile": "Team page",
+    "pageTitleFor": "{{name}} · Match"
   },
   "rounds": {
     "quarterfinals": "Quartos de final",
@@ -124,63 +101,10 @@
     "roundN": "Ronda {{n}}"
   },
   "teamMatchHistory": {
-    "title": "Histórico de jogos",
-    "win": "VITÓRIA",
-    "loss": "DERROTA",
     "vs": "vs",
-    "unknown": "Desconhecido",
-    "matchNumberDate": "Jogo #{{number}} • {{date}}",
-    "modalTitle": "Detalhes do jogo",
-    "modalVictory": "VITÓRIA",
-    "modalDefeat": "DERROTA",
-    "modalMatchNumber": "Jogo #{{number}}",
     "team1": "Equipa 1",
     "team2": "Equipa 2",
-    "finalSeriesScore": "Resultado final da série",
-    "completed": "Concluído: {{date}}",
-    "mapsPlayed": "Mapas jogados",
-    "noMaps": "Sem mapas disponíveis para este jogo.",
-    "playerStatsAllMaps": "Estatísticas de jogadores (todos os mapas)",
-    "player": "Jogador",
-    "damage": "Dano",
-    "fetchError": "Falha ao obter detalhes do jogo",
-    "loadError": "Falha ao carregar detalhes do jogo"
-  },
-  "teamHeader": {
-    "soundSettings": "Definições de som",
-    "muteNotifications": "Silenciar notificações",
-    "unmuteNotifications": "Ativar som das notificações"
-  },
-  "teamStatsCard": {
-    "title": "Desempenho da equipa",
-    "wins": "Vitórias",
-    "losses": "Derrotas",
-    "winRate": "Taxa de vitórias",
-    "ofTotal": "de {{total}}"
-  },
-  "playerRosterCard": {
-    "title": "Plantel da equipa",
-    "unknownPlayer": "Desconhecido",
-    "rating": "Classificação: {{rating}}",
-    "viewPlayerStats": "Ver estatísticas do jogador",
-    "viewSteamProfile": "Ver perfil Steam"
-  },
-  "mapAccordion": {
-    "won": "Ganho",
-    "lost": "Perdido",
-    "draw": "Empate",
-    "team1": "Equipa 1",
-    "team2": "Equipa 2",
-    "downloadDemo": "Transferir demo",
-    "downloadMapDemo": "Transferir demo de {{map}}",
-    "mapInformation": "Informação do mapa",
-    "mapNumberLabel": "Número do mapa:",
-    "mapN": "Mapa {{n}}",
-    "scoreLabel": "Resultado:",
-    "resultLabel": "Desfecho:",
-    "winnerLabel": "Vencedor:",
-    "durationLabel": "Duração:",
-    "completedLabel": "Concluído:"
+    "fetchError": "Falha ao obter detalhes do jogo"
   },
   "leaderboardPage": {
     "emptyTitle": "Ainda não há classificação do torneio",
@@ -370,49 +294,16 @@
       "download": "Transferir demo de {{map}}"
     }
   },
-  "tournamentRules": {
-    "title": "Sobre este torneio",
-    "intro": "Estas são as regras base usadas para decidir os jogos deste torneio.",
-    "matchFormatLabel": "Formato do jogo:",
-    "regulationLabel": "Rondas regulamentares:",
-    "overtimeLabel": "Prolongamento:",
-    "tiesLabel": "Como são resolvidos os empates:",
-    "format": {
-      "bo1": "Melhor de 1 mapa – quem ganha o mapa ganha o jogo.",
-      "bo3": "Melhor de 3 mapas – a primeira equipa a ganhar 2 mapas ganha o jogo.",
-      "bo5": "Melhor de 5 mapas – a primeira equipa a ganhar 3 mapas ganha o jogo."
-    },
-    "regulationWithRounds": "Cada mapa é jogado até {{rounds}} rondas. A equipa com mais rondas no fim do tempo regulamentar ganha o mapa.",
-    "regulationGeneric": "Cada mapa é jogado num número fixo de rondas. A equipa com mais rondas no fim do tempo regulamentar ganha o mapa.",
-    "overtime": {
-      "disabled": "Prolongamento: desativado (apenas tempo regulamentar).",
-      "enabledSegments_one": "Prolongamento: ativado com até {{count}} segmento de prolongamento.",
-      "enabledSegments_other": "Prolongamento: ativado com até {{count}} segmentos de prolongamento.",
-      "enabled": "Prolongamento: ativado. Um empate no fim do tempo regulamentar leva a prolongamento até uma equipa terminar em vantagem.",
-      "effectivelyDisabled": "Prolongamento: na prática desativado (apenas tempo regulamentar).",
-      "implicitSegments_one": "Prolongamento: ativado com até {{count}} segmento de prolongamento (implícito).",
-      "implicitSegments_other": "Prolongamento: ativado com até {{count}} segmentos de prolongamento (implícito).",
-      "standard": "Prolongamento: definições padrão. Um empate no fim do tempo regulamentar normalmente leva a prolongamento."
-    },
-    "tiebreak": {
-      "disabled": "Se o tempo regulamentar terminar empatado, o jogo não vai a prolongamento. Em vez disso, o vencedor é decidido pelo dano total da equipa no mapa. Se o dano total também for exatamente igual, o resultado é um empate verdadeiro.",
-      "enabledSegments": "Se o resultado continuar empatado após os segmentos de prolongamento configurados, o vencedor é decidido pelo dano total da equipa no mapa. Se o dano também estiver empatado, o resultado é registado como empate.",
-      "enabled": "Em jogo normal, o resultado final mais alto decide o vencedor. Os empates são raros e só acontecem se o resultado e o dano ficarem exatamente iguais.",
-      "effectivelyDisabled": "Se o tempo regulamentar terminar empatado, o jogo não vai a prolongamento. O vencedor é decidido pelo dano total da equipa no mapa; se o dano estiver empatado, o jogo termina empatado.",
-      "implicitSegments": "Se o resultado continuar empatado após os segmentos de prolongamento configurados, o vencedor é decidido pelo dano total da equipa. Se o dano estiver empatado, o resultado é um empate.",
-      "standard": "Na maioria dos casos, ganha a equipa com o resultado final mais alto. Só quando o resultado e o dano total estão exatamente iguais é que o resultado é registado como um empate verdadeiro."
-    }
-  },
   "teamProfile": {
     "pageTitle": "{{name}} · Team",
     "notFound": "Team not found. Please check the URL.",
     "loadError": "Failed to load this team. Please try again.",
     "editTeam": "Edit team",
-    "game": "Counter-Strike 2",
     "roster": {
       "title": "Roster",
       "empty": "This team has no players yet.",
-      "rating": "Rating {{rating}}"
+      "rating": "Rating {{rating}}",
+      "captain": "Captain"
     },
     "tournaments": {
       "title": "Tournaments",
@@ -424,8 +315,18 @@
       "finalPlacement": "Final: #{{position}} of {{total}}",
       "recentResults": "Recent results",
       "win": "Win",
-      "loss": "Loss"
-    }
+      "loss": "Loss",
+      "open": "Open",
+      "openMatch": "Open match",
+      "status": {
+        "setup": "Upcoming",
+        "ready": "Sign-up",
+        "in_progress": "In progress",
+        "completed": "Finished"
+      }
+    },
+    "headerLabel": "Team",
+    "captainLine": "captain {{name}}"
   },
   "disputes": {
     "title": "Disputes",

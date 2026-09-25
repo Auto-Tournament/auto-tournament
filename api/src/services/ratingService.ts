@@ -310,6 +310,7 @@ export async function updatePlayerRatings(
         match_slug: matchSlug,
         match_label: match?.match_label ?? matchSlug,
         tournament_name: tournament?.name ?? null,
+        game: match?.game ?? null,
         elo_before: oldElo,
         elo_after: finalElo,
         elo_change: finalElo - oldElo,
@@ -388,6 +389,12 @@ export async function getRatingHistory(
     match_slug: string | null;
     match_label: string | null;
     tournament_name: string | null;
+    /**
+     * The match's game. Kept on the row, so it survives the match; for rows
+     * written before the column existed it is read from the match while that
+     * is still there, and is null after.
+     */
+    game: string | null;
     elo_before: number;
     elo_after: number;
     elo_change: number;
@@ -413,16 +420,20 @@ export async function getRatingHistory(
   }
 
   return await db.queryAsync(
-    `SELECT match_slug, match_label, tournament_name, elo_before, elo_after, elo_change,
-            mu_before, mu_after, sigma_before, sigma_after, base_elo_after, stat_adjustment,
-            template_id, match_result, created_at
+    `SELECT latest.match_slug, latest.match_label, latest.tournament_name,
+            COALESCE(latest.game, m.game) AS game,
+            latest.elo_before, latest.elo_after, latest.elo_change,
+            latest.mu_before, latest.mu_after, latest.sigma_before, latest.sigma_after,
+            latest.base_elo_after, latest.stat_adjustment,
+            latest.template_id, latest.match_result, latest.created_at
        FROM (
          SELECT DISTINCT ON (COALESCE(match_slug, 'deleted:' || id)) *
            FROM player_rating_history
           WHERE player_id = ? ${tournamentFilter}
           ORDER BY COALESCE(match_slug, 'deleted:' || id), created_at DESC, id DESC
        ) latest
-      ORDER BY created_at DESC, id DESC`,
+       LEFT JOIN matches m ON m.slug = latest.match_slug
+      ORDER BY latest.created_at DESC, latest.id DESC`,
     params
   );
 }

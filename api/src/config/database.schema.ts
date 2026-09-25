@@ -456,6 +456,7 @@ export function getSchemaSQL(): string {
       match_slug TEXT,
       match_label TEXT,
       tournament_name TEXT,
+      game TEXT, -- The match's game (integration id or catalogue slug), so a deleted match still counts under it on the profile
       -- Display values (for admin/UI)
       elo_before INTEGER NOT NULL,
       elo_after INTEGER NOT NULL,

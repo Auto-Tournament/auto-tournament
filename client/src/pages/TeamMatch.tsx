@@ -1,37 +1,41 @@
-import { pageTitle } from '../utils/pageTitle';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import {
   Box,
-  Card,
-  CardContent,
-  Typography,
   Alert,
   CircularProgress,
   Container,
   Stack,
   Button,
+  Chip,
+  Typography,
 } from '@mui/material';
-import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
-import { TeamHeader } from '../components/team/TeamHeader';
-import { CurrentMatchDisplayCard } from '../components/team/CurrentMatchDisplayCard';
-import { TeamStatsCard } from '../components/team/TeamStatsCard';
-import { TeamMatchHistoryCard } from '../components/team/TeamMatchHistory';
-import { PlayerRosterCard } from '../components/team/PlayerRosterCard';
+import { MatchInfoCard } from '../components/team/MatchInfoCard';
 import { useTeamMatchData } from '../hooks/useTeamMatchData';
 import { useTournamentStatus } from '../hooks/useTournamentStatus';
-import { TournamentRulesAccordion } from '../components/tournament/TournamentRulesAccordion';
-import { useAuth } from '../contexts/AuthContext';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { useTranslation } from 'react-i18next';
 import { useRoundLabel } from '../hooks/useRoundLabel';
 import { getTeamProfileUrl } from '../utils/teamLinks';
+import { pageTitle } from '../utils/pageTitle';
 import { useIntegrationFor } from '../integrations/registry';
+import { LiveChip, PageHead, Panel } from '../components/common/ui';
+import { fontDisplay, textSize, tokens } from '../theme/tokens';
 import {
   ModuleNotInstalledNotice,
   ModulePendingNotice,
 } from '../components/common/ModuleNotInstalledNotice';
 
+/**
+ * The team's match page (`/team/:teamId`): the match it plays now or next,
+ * and how to play it — the pre-match phase (CS2: the map veto), the server
+ * and connect, and reporting the result where the game cannot. Home's "Open
+ * match" and the tournament's "Your team" land here.
+ *
+ * The next match is the drafts' next-match card: status, "Team vs Opponent",
+ * and where it is played. The roster, stats and history are the team
+ * profile's (`/t/team/:teamId`), which the header links to.
+ */
 export default function TeamMatch() {
   const { teamId } = useParams<{ teamId: string }>();
   const { t } = useTranslation();
@@ -40,15 +44,15 @@ export default function TeamMatch() {
     match,
     hasMatch,
     matchHistory,
-    stats,
     standing,
     loading,
     error,
     tournamentStatus,
+    loadTeamMatch,
   } = useTeamMatchData(teamId);
   const { tournament } = useTournamentStatus();
   const tournamentName = tournament?.name ?? null;
-  const { playerSteamId } = useAuth();
+  const getRoundLabel = useRoundLabel();
 
   const matchFormat = (match?.matchFormat as 'bo1' | 'bo3' | 'bo5') || 'bo1';
 
@@ -58,6 +62,9 @@ export default function TeamMatch() {
   const integration = useIntegrationFor(match ?? tournament);
   const ReportPanel = integration.matchPanels.reportView;
   const TeamAdminPanel = integration.teamAdminPanel;
+  // The match card below is the module's pre-match phase and connect panel;
+  // a game with neither (manual reporting) has only the report panel.
+  const playsThroughModule = Boolean(integration.preMatchView || integration.matchPanels.teamView);
 
   /**
    * The match the report panel is about: the current one, the last one this
@@ -81,28 +88,22 @@ export default function TeamMatch() {
   const reportSlug = match?.slug ?? lastSeenSlug ?? matchHistory[0]?.slug ?? null;
 
   useEffect(() => {
-    if (team?.name) {
-      document.title = pageTitle(team.name);
-    } else {
-      document.title = pageTitle(t('teamPage.pageTitle'));
-    }
+    document.title = pageTitle(
+      team?.name ? t('teamPage.pageTitleFor', { name: team.name }) : t('teamPage.pageTitle')
+    );
   }, [team, t]);
 
-  const getRoundLabel = useRoundLabel();
-
-  const rulesFormat = matchFormat;
-  const rulesMaxRounds = match?.config?.maxRounds ?? tournament?.maxRounds;
-  const rulesOvertimeMode = match?.config?.overtimeMode ?? tournament?.overtimeMode;
-  const rulesOvertimeSegments = match?.config?.overtimeSegments ?? tournament?.overtimeSegments;
+  // The pre-match phase is over: read the match again once the API has
+  // settled what it decided.
+  const handleVetoComplete = useCallback(() => {
+    window.setTimeout(() => {
+      void loadTeamMatch(true);
+    }, 1000);
+  }, [loadTeamMatch]);
 
   if (loading) {
     return (
-      <Box
-        minHeight="100vh"
-        display="flex"
-        flexDirection="column"
-        bgcolor="transparent"
-      >
+      <Box minHeight="100vh" display="flex" flexDirection="column" bgcolor="transparent">
         <TopNavBar />
         <Box flex={1} display="flex" alignItems="center" justifyContent="center">
           <CircularProgress />
@@ -124,185 +125,164 @@ export default function TeamMatch() {
     );
   }
 
-  const tournamentIsActive = tournamentStatus === 'in_progress';
-  const tournamentIsCompleted = tournamentStatus === 'completed';
-  const teamHasPlayed = !!(stats && stats.totalMatches > 0);
-
-  if (!hasMatch) {
-    return (
-      <Box minHeight="100vh" bgcolor="transparent">
-        <TopNavBar />
-        <Container maxWidth="lg">
-          <Stack spacing={3} py={6}>
-            <TeamHeader team={team} hideSoundControls />
-            {teamId && (
-              <Box display="flex" justifyContent="flex-end">
-                <Button
-                  size="small"
-                  variant="text"
-                  component={RouterLink}
-                  to={getTeamProfileUrl(teamId)}
-                  data-testid="team-match-view-profile-link"
-                >
-                  {t('teamPage.viewTeamProfile')}
-                </Button>
-              </Box>
-            )}
-
-            {playerSteamId && (
-              <Card>
-                <CardContent
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
-                >
-                  <Typography variant="body2" color="text.secondary">
-                    {t('teamPage.wantYourStats')}
-                  </Typography>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    component={RouterLink}
-                    to={`/player/${playerSteamId}`}
-                  >
-                    {t('teamPage.openMyPlayerPage')}
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-
-            <TournamentRulesAccordion
-              format={rulesFormat}
-              maxRounds={rulesMaxRounds}
-              overtimeMode={rulesOvertimeMode}
-              overtimeSegments={rulesOvertimeSegments}
-            />
-
-            <Card>
-              <CardContent sx={{ textAlign: 'center', py: 6 }}>
-                <SportsEsportsIcon
-                  sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }}
-                />
-                {tournamentIsCompleted ? (
-                  <>
-                    <Typography variant="h6" color="text.primary" mt={1} gutterBottom>
-                      {t('teamPage.tournamentFinished')}
-                    </Typography>
-                    {teamHasPlayed && standing && (
-                      <Typography variant="body1" color="text.secondary" mt={1}>
-                        {t('teamPage.finalPlacement', {
-                          position: standing.position,
-                          total: standing.totalTeams,
-                        })}
-                      </Typography>
-                    )}
-                  </>
-                ) : tournamentIsActive ? (
-                  <>
-                    <Typography variant="body1" color="text.secondary" mt={2}>
-                      {t('teamPage.noMatchNow')}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" mt={1}>
-                      {t('teamPage.noMatchNowHint')}
-                    </Typography>
-                  </>
-                ) : (
-                  <>
-                    <Typography variant="body1" color="text.secondary" mt={2}>
-                      {t('teamPage.noMatchesYet')}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" mt={1}>
-                      {t('teamPage.noMatchesYetHint')}
-                    </Typography>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Its slots are empty while its module may still be loading: say so. */}
-            <ModulePendingNotice integration={integration} />
-
-            {reportSlug && ReportPanel && (
-              <ReportPanel matchSlug={reportSlug} matchStatus={match?.status} />
-            )}
-
-            <PlayerRosterCard team={team} />
-            {TeamAdminPanel && teamId && <TeamAdminPanel teamId={teamId} />}
-            <TeamStatsCard stats={stats} standing={standing} />
-            <TeamMatchHistoryCard matchHistory={matchHistory} teamId={teamId} />
-          </Stack>
-        </Container>
-      </Box>
-    );
-  }
+  const showMatch = hasMatch && !!match;
+  const isLive = showMatch && (match.status === 'live' || match.status === 'loaded');
+  const statusLabel = showMatch
+    ? t(`home.matchStatus.${match.status}`, { defaultValue: match.status })
+    : '';
+  const roundLabel = showMatch
+    ? match.round === 0
+      ? t('teamPage.manualMatch')
+      : getRoundLabel(match.round)
+    : null;
 
   return (
-    <Box minHeight="100vh" bgcolor="transparent">
+    <Box minHeight="100vh" bgcolor="transparent" data-testid="team-match-page">
       <TopNavBar />
       <Container maxWidth="lg">
-        <Box py={6}>
-          <Stack spacing={3}>
-            {tournamentName && (
-              <Typography
-                component="h1"
-                variant="h3"
-                fontWeight={800}
-                textAlign="center"
-                color="text.primary"
-              >
-                {tournamentName}
-              </Typography>
-            )}
-
-            <TeamHeader team={team} hideSoundControls />
-            {teamId && (
-              <Box display="flex" justifyContent="flex-end">
+        <Box sx={{ py: { xs: 4, md: 6 } }}>
+          <PageHead
+            eyebrow={tournamentName ?? undefined}
+            title={
+              <>
+                {team?.tag && (
+                  <Box
+                    component="span"
+                    sx={{ color: tokens.color.accent, fontSize: '0.6em', mr: 1.5 }}
+                  >
+                    [{team.tag}]
+                  </Box>
+                )}
+                {team?.name ?? t('teamPage.pageTitle')}
+              </>
+            }
+            actions={
+              teamId ? (
                 <Button
                   size="small"
-                  variant="text"
+                  variant="outlined"
                   component={RouterLink}
                   to={getTeamProfileUrl(teamId)}
                   data-testid="team-match-view-profile-link"
                 >
                   {t('teamPage.viewTeamProfile')}
                 </Button>
-              </Box>
+              ) : undefined
+            }
+          />
+
+          <Stack spacing={3}>
+            {showMatch ? (
+              <>
+                {/* The next match (the drafts' next-match card). */}
+                <Panel
+                  component="section"
+                  aria-label={t('teamPage.currentMatch')}
+                  data-testid="team-match-next"
+                  sx={{
+                    borderColor: tokens.color.accent,
+                    px: { xs: 2.5, md: 4 },
+                    py: 3,
+                  }}
+                >
+                  {isLive ? (
+                    <LiveChip label={statusLabel} />
+                  ) : (
+                    <Chip size="small" label={statusLabel} />
+                  )}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'baseline',
+                      flexWrap: 'wrap',
+                      columnGap: 1.5,
+                      mt: 1,
+                    }}
+                  >
+                    <Typography
+                      component="strong"
+                      sx={{
+                        fontFamily: fontDisplay,
+                        fontWeight: 700,
+                        fontSize: textSize['2xl'],
+                        letterSpacing: '-0.03em',
+                        overflowWrap: 'anywhere',
+                      }}
+                    >
+                      {team?.name}
+                    </Typography>
+                    <Typography component="span" sx={{ color: tokens.color.muted }}>
+                      {t('teamPage.versus')}
+                    </Typography>
+                    <Typography
+                      component="strong"
+                      sx={{
+                        fontFamily: fontDisplay,
+                        fontWeight: 700,
+                        fontSize: textSize['2xl'],
+                        letterSpacing: '-0.03em',
+                        overflowWrap: 'anywhere',
+                      }}
+                    >
+                      {match.opponent?.name ?? t('home.tbd')}
+                    </Typography>
+                  </Box>
+                  <Typography sx={{ color: tokens.color.ink2, fontSize: textSize.sm, mt: 0.5 }}>
+                    {[tournamentName, roundLabel, matchFormat.toUpperCase()]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </Typography>
+                </Panel>
+
+                <ModuleNotInstalledNotice integration={integration} />
+
+                {/* Veto, server and connect: the game module's, by slug. */}
+                {playsThroughModule && (
+                  <MatchInfoCard
+                    match={match}
+                    team={team}
+                    tournamentStatus={tournamentStatus}
+                    vetoCompleted={match.veto?.status === 'completed'}
+                    matchFormat={matchFormat}
+                    onVetoComplete={handleVetoComplete}
+                    getRoundLabel={getRoundLabel}
+                  />
+                )}
+              </>
+            ) : (
+              <>
+                <Panel data-testid="team-match-none" sx={{ px: 3, py: 3 }}>
+                  <Typography fontWeight={600}>
+                    {tournamentStatus === 'completed'
+                      ? t('teamPage.tournamentFinished')
+                      : tournamentStatus === 'in_progress'
+                        ? t('teamPage.noMatchNow')
+                        : t('teamPage.noMatchesYet')}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                    {tournamentStatus === 'completed'
+                      ? standing
+                        ? t('teamPage.finalPlacement', {
+                            position: standing.position,
+                            total: standing.totalTeams,
+                          })
+                        : null
+                      : tournamentStatus === 'in_progress'
+                        ? t('teamPage.noMatchNowHint')
+                        : t('teamPage.noMatchesYetHint')}
+                  </Typography>
+                </Panel>
+
+                {/* Its slots are empty while its module may still be loading: say so. */}
+                <ModulePendingNotice integration={integration} />
+              </>
             )}
-
-            <TournamentRulesAccordion
-              format={rulesFormat}
-              maxRounds={rulesMaxRounds}
-              overtimeMode={rulesOvertimeMode}
-              overtimeSegments={rulesOvertimeSegments}
-            />
-
-            {match && (
-              <CurrentMatchDisplayCard
-                match={match}
-                team={team}
-                getRoundLabel={getRoundLabel}
-                playerSteamId={playerSteamId}
-                labels={{
-                  title: t('teamPage.currentMatch'),
-                  versus: t('teamPage.versus'),
-                  goToPlayerPage: t('teamPage.goToPlayerPage'),
-                  manualMatch: t('teamPage.manualMatch'),
-                }}
-              />
-            )}
-
-            <ModuleNotInstalledNotice integration={integration} />
 
             {reportSlug && ReportPanel && (
               <ReportPanel matchSlug={reportSlug} matchStatus={match?.status} />
             )}
 
-            <PlayerRosterCard team={team} />
             {TeamAdminPanel && teamId && <TeamAdminPanel teamId={teamId} />}
-            <TeamStatsCard stats={stats} standing={standing} />
-            <TeamMatchHistoryCard matchHistory={matchHistory} teamId={teamId} />
           </Stack>
         </Box>
       </Container>

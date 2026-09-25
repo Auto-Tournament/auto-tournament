@@ -1041,5 +1041,9 @@
       "error": "Klarte ikke å tilbakestille innstillinger",
       "button": "Tilbakestill serverstandarder"
     }
+  },
+  "roster": {
+    "steamLinked": "Steam koblet til",
+    "steamNotLinked": "Steam ikke koblet til"
   }
 }

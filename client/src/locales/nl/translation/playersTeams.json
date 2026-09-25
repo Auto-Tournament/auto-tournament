@@ -23,31 +23,17 @@
     "playerNotFound": "Deze speler bestaat niet.",
     "backToFindPlayer": "Terug naar Speler zoeken",
     "thisIsYou": "Dit ben jij",
-    "steamId": "Steam-ID: {{id}}",
     "skillRatingTooltip": "Skill Rating is gebaseerd op OpenSkill. Rond 1500 is een typische startwaarde; hoger is beter.",
     "skillRatingLabel": "Vaardigheidsrating: {{elo}}",
-    "viewTournamentLeaderboard": "Toernooiranglijst bekijken",
     "admin": "ADMIN",
-    "nextServersAllocated": "Volgende servertoewijzing over {{seconds}}s",
-    "tournamentFinishedNoMatches": "Toernooi afgerond – je hebt geen wedstrijden meer.",
-    "finalRecord": "Eindresultaat: {{wins}} winst(en) / {{losses}} verlies(sen) in dit toernooi.",
-    "noUpcomingMatch": "Geen aankomende wedstrijd gepland.",
-    "noUpcomingHint": "Het toernooi is nog bezig, maar jouw wedstrijden zijn klaar.",
-    "noActiveMatch": "Geen actieve wedstrijd",
-    "noActiveHint": "Zodra de volgende ronde is gegenereerd en je wedstrijd klaar is, verschijnt deze hier met server connect-info.",
     "matchesPlayed": "Wedstrijden gespeeld",
     "wins": "Overwinningen",
     "losses": "Nederlagen",
     "winRate": "Winstpercentage",
-    "bestAdrIn": "{{adr}} ADR in ronde {{round}}",
     "win": "Winst",
     "loss": "Verlies",
     "opponent": "Tegenstander",
-    "bestAdr": "Beste wedstrijd (ADR)",
-    "toughestAdr": "Moeilijkste wedstrijd (ADR)",
-    "recentForm": "Recente vorm (laatste {{count}} wedstrijden)",
     "winsLosses": "Winst / Verlies",
-    "recentFormHighlights": "Vorm & highlights",
     "averageAdr": "Gem. ADR",
     "profileTitle": "Spelerprofiel",
     "discordId": {
@@ -60,62 +46,53 @@
       "removed": "Discord-ID verwijderd",
       "saveFailed": "Je Discord-ID kon niet worden opgeslagen"
     },
-    "teamChip": "Ploeg: {{team}}",
-    "myTeam": "Mijn ploeg",
-    "openTeam": "Ploeg openen: {{team}}",
-    "you": "Jij",
-    "noMatchHistory": "Nog geen wedstrijdgeschiedenis",
     "downloadDemo": "Demo downloaden",
     "noMatchesYet": "Nog geen wedstrijden",
     "pageTitle": "{{name}} – spelersprofiel",
     "loadFailed": "Kan spelersgegevens niet laden",
-    "performanceChart": {
-      "title": "Prestatietrends",
-      "noData": "Nog geen bruikbare prestatiegegevens – speel een paar rondes om ADR- en K/D-trends te zien.",
-      "avgAdr": "ADR: {{value}} gem.",
-      "avgKd": "K/D: {{value}} gem.",
-      "matchCount_one": "{{count}} wedstrijd",
-      "matchCount_other": "{{count}} wedstrijden"
-    },
     "profileHeader": {
       "plays": "Plays {{games}}",
       "joined": "joined {{date}}",
-      "editProfile": "Edit profile"
+      "editProfile": "Edit profile",
+      "label": "Player",
+      "captain": "captain"
     },
     "stats": {
       "rating": "RATING",
       "matches": "MATCHES",
       "winRate": "WIN RATE",
       "adr": "ADR",
-      "kd": "K/D"
+      "kd": "K/D",
+      "label": "Stats"
     },
     "ratingChart": {
       "sectionTitle": "Rating",
       "noHistory": "Not enough matches yet to chart a trend",
-      "ariaLabel": "Rating trend, from {{from}} to {{to}}"
+      "ariaLabel": "Rating trend, from {{from}} to {{to}}",
+      "window": "last {{count}} matches"
     },
     "recentMatches": {
       "title": "Recent matches",
       "statsNote": "Kills / deaths. Stats shown depend on what the game module reports.",
-      "roundAndRating": "{{round}} · rating {{rating}}"
+      "roundAndRating": "{{round}} · rating {{rating}}",
+      "leaderboard": "Leaderboard"
     },
-    "gameSwitchLabel": "Game"
+    "gameSwitchLabel": "Game",
+    "yourMatch": "Your match"
   },
   "teamPage": {
-    "wantYourStats": "Wil je je eigen stats en wedstrijdgeschiedenis zien?",
-    "openMyPlayerPage": "Mijn spelerspagina openen",
     "tournamentFinished": "Toernooi afgerond",
     "finalPlacement": "Eindplaats: #{{position}} van {{total}}",
     "noMatchNow": "Geen wedstrijd gepland op dit moment",
-    "noMatchNowHint": "Je volgende wedstrijd verschijnt hier. Gebruik je spelerspagina voor veto en server connect.",
     "noMatchesYet": "Geen wedstrijden beschikbaar op dit moment",
     "noMatchesYetHint": "Het toernooi is nog niet gestart. Zodra het begint, verschijnen je wedstrijden hier.",
     "currentMatch": "Huidige wedstrijd",
     "versus": "vs",
-    "goToPlayerPage": "Veto, connect & details → Jouw spelerspagina",
     "pageTitle": "Teampagina",
     "manualMatch": "Handmatige wedstrijd",
-    "viewTeamProfile": "Team page →"
+    "noMatchNowHint": "Your next match shows up here, with the veto and the server to connect to.",
+    "viewTeamProfile": "Team page",
+    "pageTitleFor": "{{name}} · Match"
   },
   "rounds": {
     "quarterfinals": "Kwartfinales",
@@ -124,63 +101,10 @@
     "roundN": "Ronde {{n}}"
   },
   "teamMatchHistory": {
-    "title": "Wedstrijdgeschiedenis",
-    "win": "WIN",
-    "loss": "LOSS",
     "vs": "vs",
-    "unknown": "Onbekend",
-    "matchNumberDate": "Wedstrijd #{{number}} • {{date}}",
-    "modalTitle": "Wedstrijddetails",
-    "modalVictory": "WIN",
-    "modalDefeat": "LOSS",
-    "modalMatchNumber": "Wedstrijd #{{number}}",
     "team1": "Ploeg 1",
     "team2": "Ploeg 2",
-    "finalSeriesScore": "Eindscore van de serie",
-    "completed": "Afgerond: {{date}}",
-    "mapsPlayed": "Gespeelde maps",
-    "noMaps": "Geen maps beschikbaar voor deze wedstrijd.",
-    "playerStatsAllMaps": "Spelerstats (alle maps)",
-    "player": "Speler",
-    "damage": "Schade",
-    "fetchError": "Kon wedstrijddetails niet ophalen",
-    "loadError": "Kon wedstrijddetails niet laden"
-  },
-  "teamHeader": {
-    "soundSettings": "Geluidsinstellingen",
-    "muteNotifications": "Meldingen dempen",
-    "unmuteNotifications": "Meldingsgeluid aanzetten"
-  },
-  "teamStatsCard": {
-    "title": "Ploegprestaties",
-    "wins": "Overwinningen",
-    "losses": "Nederlagen",
-    "winRate": "Winstpercentage",
-    "ofTotal": "van {{total}}"
-  },
-  "playerRosterCard": {
-    "title": "Ploegselectie",
-    "unknownPlayer": "Onbekend",
-    "rating": "Beoordeling: {{rating}}",
-    "viewPlayerStats": "Spelerstats bekijken",
-    "viewSteamProfile": "Steam-profiel bekijken"
-  },
-  "mapAccordion": {
-    "won": "Gewonnen",
-    "lost": "Verloren",
-    "draw": "Gelijkspel",
-    "team1": "Ploeg 1",
-    "team2": "Ploeg 2",
-    "downloadDemo": "Demo downloaden",
-    "downloadMapDemo": "Demo van {{map}} downloaden",
-    "mapInformation": "Map-informatie",
-    "mapNumberLabel": "Mapnummer:",
-    "mapN": "Map {{n}}",
-    "scoreLabel": "Stand:",
-    "resultLabel": "Resultaat:",
-    "winnerLabel": "Winnaar:",
-    "durationLabel": "Duur:",
-    "completedLabel": "Afgerond:"
+    "fetchError": "Kon wedstrijddetails niet ophalen"
   },
   "leaderboardPage": {
     "emptyTitle": "Nog geen toernooiranglijst",
@@ -370,49 +294,16 @@
       "download": "Demo van {{map}} downloaden"
     }
   },
-  "tournamentRules": {
-    "title": "Over dit toernooi",
-    "intro": "Dit zijn de basisregels waarmee wedstrijden in dit toernooi worden beslist.",
-    "matchFormatLabel": "Wedstrijdformaat:",
-    "regulationLabel": "Reguliere rondes:",
-    "overtimeLabel": "Overtime:",
-    "tiesLabel": "Hoe gelijke standen worden beslist:",
-    "format": {
-      "bo1": "Best of 1 – wie de map wint, wint de wedstrijd.",
-      "bo3": "Best of 3 – de eerste ploeg die 2 maps wint, wint de wedstrijd.",
-      "bo5": "Best of 5 – de eerste ploeg die 3 maps wint, wint de wedstrijd."
-    },
-    "regulationWithRounds": "Elke map wordt gespeeld tot maximaal {{rounds}} rondes. De ploeg met de meeste rondes aan het einde van de reguliere speeltijd wint de map.",
-    "regulationGeneric": "Elke map wordt gespeeld over een vast aantal rondes. De ploeg met de meeste rondes aan het einde van de reguliere speeltijd wint de map.",
-    "overtime": {
-      "disabled": "Overtime: uitgeschakeld (alleen reguliere speeltijd).",
-      "enabledSegments_one": "Overtime: ingeschakeld met maximaal {{count}} overtime-segment.",
-      "enabledSegments_other": "Overtime: ingeschakeld met maximaal {{count}} overtime-segmenten.",
-      "enabled": "Overtime: ingeschakeld. Bij een gelijke stand na de reguliere speeltijd volgt overtime tot één ploeg voor staat.",
-      "effectivelyDisabled": "Overtime: in de praktijk uitgeschakeld (alleen reguliere speeltijd).",
-      "implicitSegments_one": "Overtime: ingeschakeld met maximaal {{count}} overtime-segment (impliciet).",
-      "implicitSegments_other": "Overtime: ingeschakeld met maximaal {{count}} overtime-segmenten (impliciet).",
-      "standard": "Overtime: standaardinstellingen. Een gelijke stand na de reguliere speeltijd leidt meestal tot overtime."
-    },
-    "tiebreak": {
-      "disabled": "Als de reguliere speeltijd eindigt in een gelijke stand, gaat de wedstrijd niet naar overtime. In plaats daarvan beslist de totale ploegschade op de map over de winnaar. Is ook de totale schade precies gelijk, dan is het resultaat een echt gelijkspel.",
-      "enabledSegments": "Als de stand na de ingestelde overtime-segmenten nog steeds gelijk is, beslist de totale ploegschade op de map over de winnaar. Is ook de schade gelijk, dan wordt het resultaat als gelijkspel geregistreerd.",
-      "enabled": "Normaal gesproken beslist de hoogste eindstand over de winnaar. Gelijkspel is zeldzaam en komt alleen voor als zowel de stand als de schade precies gelijk blijven.",
-      "effectivelyDisabled": "Als de reguliere speeltijd eindigt in een gelijke stand, gaat de wedstrijd niet naar overtime. De totale ploegschade op de map beslist over de winnaar; is de schade gelijk, dan eindigt de wedstrijd in een gelijkspel.",
-      "implicitSegments": "Als de stand na de ingestelde overtime-segmenten nog steeds gelijk is, beslist de totale ploegschade over de winnaar. Is de schade gelijk, dan is het resultaat een gelijkspel.",
-      "standard": "In de meeste gevallen wint de ploeg met de hoogste eindstand. Alleen als zowel de stand als de totale schade precies gelijk zijn, wordt het resultaat als echt gelijkspel geregistreerd."
-    }
-  },
   "teamProfile": {
     "pageTitle": "{{name}} · Team",
     "notFound": "Team not found. Please check the URL.",
     "loadError": "Failed to load this team. Please try again.",
     "editTeam": "Edit team",
-    "game": "Counter-Strike 2",
     "roster": {
       "title": "Roster",
       "empty": "This team has no players yet.",
-      "rating": "Rating {{rating}}"
+      "rating": "Rating {{rating}}",
+      "captain": "Captain"
     },
     "tournaments": {
       "title": "Tournaments",
@@ -424,8 +315,18 @@
       "finalPlacement": "Final: #{{position}} of {{total}}",
       "recentResults": "Recent results",
       "win": "Win",
-      "loss": "Loss"
-    }
+      "loss": "Loss",
+      "open": "Open",
+      "openMatch": "Open match",
+      "status": {
+        "setup": "Upcoming",
+        "ready": "Sign-up",
+        "in_progress": "In progress",
+        "completed": "Finished"
+      }
+    },
+    "headerLabel": "Team",
+    "captainLine": "captain {{name}}"
   },
   "disputes": {
     "title": "Disputes",
