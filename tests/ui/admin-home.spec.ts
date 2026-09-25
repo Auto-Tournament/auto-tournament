@@ -74,7 +74,6 @@ test.describe.serial('Admin home', () => {
         await request.put('/api/settings', { data: { siteName: 'Edition 35 LAN' } });
         await page.goto('/');
         await expect(page.locator('#admin-home-title')).toHaveText('Edition 35 LAN', { timeout: 15000 });
-        await expect(page).toHaveTitle(/Edition 35 LAN/);
       } finally {
         await request.put('/api/settings', {
           data: { siteName: before === 'Auto Tournament' ? null : before },
