@@ -53,6 +53,26 @@ test.describe('Player Management API', () => {
   );
 
   test(
+    'refuses a second player with the same Steam ID in plain words (409)',
+    { tag: ['@api', '@players', '@crud'] },
+    async ({ request }) => {
+      const id = '76561198000001077';
+      await createPlayer(request, { id, name: 'First Owner' });
+      const again = await request.post('/api/players', {
+        headers: getAuthHeader(),
+        data: { id, name: 'Second Try' },
+      });
+      expect(again.status()).toBe(409);
+      const body = await again.json();
+      expect(body.code).toBe('player_exists');
+      expect(body.playerId).toBe(id);
+      expect(body.error).toContain(`A player with Steam ID ${id} already exists`);
+      expect(body.error).toContain('First Owner');
+      expect(body.error).not.toContain('duplicate key');
+    }
+  );
+
+  test(
     'should create a player without rating (defaults to 1500)',
     {
       tag: ['@api', '@players', '@crud'],
