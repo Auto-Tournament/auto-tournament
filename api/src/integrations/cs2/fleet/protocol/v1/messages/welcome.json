@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/welcome.json",
+  "title": "welcome (platform → server, ephemeral)",
+  "description": "The platform's answer to hello. After it, both sides replay what the other has not acked (FLEET.md §6.4). `ref` in the envelope is the hello's id.",
+  "type": "object",
+  "required": ["session_id", "protocol", "heartbeat", "resume", "server_config_rev", "admins_rev", "assignment"],
+  "properties": {
+    "session_id": { "$ref": "../defs.json#/$defs/ulid" },
+    "protocol": { "type": "integer", "minimum": 1 },
+    "heartbeat": {
+      "type": "object",
+      "required": ["interval_ms", "timeout_ms"],
+      "properties": {
+        "interval_ms": { "type": "integer", "minimum": 1000 },
+        "timeout_ms": { "type": "integer", "minimum": 1000 }
+      }
+    },
+    "resume": {
+      "type": "object",
+      "required": ["result", "platform_last_rx_seq"],
+      "properties": {
+        "result": { "enum": ["resumed", "reset"] },
+        "platform_last_rx_seq": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "server_config_rev": { "type": "integer", "minimum": 0 },
+    "admins_rev": { "type": "integer", "minimum": 0 },
+    "assignment": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["match_id", "epoch"],
+          "properties": {
+            "match_id": { "type": "string", "minLength": 1 },
+            "epoch": { "type": "integer", "minimum": 1 }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -135,7 +135,8 @@ test.describe('CS2 map types', () => {
     expect(validateModuleMigrations('cs2', CS2_MIGRATIONS)).toBeNull();
     const migration = CS2_MIGRATIONS.find((m) => m.id === CS2_MAP_MODES_MIGRATION_ID);
     expect(migration).toBeDefined();
-    expect(CS2_MIGRATIONS[CS2_MIGRATIONS.length - 1]).toBe(migration);
+    // Migrations are append-only: 004 stays the fourth, whatever comes after it.
+    expect(CS2_MIGRATIONS[3]).toBe(migration);
     expect(migration!.up).toContain(
       'ALTER TABLE cs2_maps ADD COLUMN IF NOT EXISTS game_mode TEXT;'
     );

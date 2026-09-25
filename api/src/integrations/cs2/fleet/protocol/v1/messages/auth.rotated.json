@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/auth.rotated.json",
+  "title": "auth.rotated (server → platform, reliable)",
+  "description": "The server has written the token from auth.rotate (`ref` in the envelope is that message's id). FLEET.md §8.3.",
+  "type": "object",
+  "properties": {}
+}

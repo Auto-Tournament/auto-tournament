@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/envelope.json",
+  "title": "Fleet envelope (server channel, protocol v1)",
+  "description": "Every WebSocket message on /api/fleet/ws is one UTF-8 JSON text frame (max 1 MiB) of this shape. The payload is validated separately, against messages/<type>.json. FLEET.md §5.",
+  "type": "object",
+  "required": ["v", "type", "id", "ts", "payload"],
+  "properties": {
+    "v": { "const": 1 },
+    "type": {
+      "type": "string",
+      "pattern": "^[a-z]+(\\.[a-z_]+)*$",
+      "description": "Message type. Single-word types (hello, welcome, ping, pong, ack, error) have no dot."
+    },
+    "id": { "$ref": "defs.json#/$defs/ulid", "description": "ULID, unique per message" },
+    "seq": { "type": "integer", "minimum": 1, "description": "present on reliable messages only" },
+    "ack": { "type": "integer", "minimum": 0, "description": "highest contiguous peer seq received" },
+    "ts": { "type": "integer", "description": "sender clock, ms since Unix epoch" },
+    "ref": { "type": ["string", "null"], "description": "id of the message this answers" },
+    "epoch": { "type": "integer", "minimum": 1, "description": "assignment epoch, required on match-scoped messages" },
+    "payload": { "type": "object" }
+  },
+  "additionalProperties": false
+}

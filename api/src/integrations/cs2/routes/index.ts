@@ -24,6 +24,7 @@ import mapRoutes from '../maps/routes';
 import mapPoolRoutes from '../maps/poolRoutes';
 import matchConnectRoutes from './matchConnect';
 import testHelperRoutes from './testHelpers';
+import { fleetAdminRouter, fleetEnrollRouter } from '../fleet/routes';
 
 export const cs2LegacyRoutes: LegacyRouteMount[] = [
   {
@@ -101,6 +102,21 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     router: matchConnectRoutes,
     title: 'Match connect',
     description: 'How a player joins a CS2 match: its server, status and current map.',
+  },
+  {
+    // Ready Up fleet (FLEET.md). Enrollment is public (a code or fleet key is
+    // the credential) and must come before the admin router's requireAuth.
+    prefix: '/api/fleet',
+    router: fleetEnrollRouter,
+    title: 'Fleet enrollment',
+    description: 'A Ready Up server trades a one-time code or fleet key for its server token.',
+  },
+  {
+    prefix: '/api/fleet',
+    router: fleetAdminRouter,
+    title: 'Fleet',
+    description:
+      'Ready Up servers on the fleet link: registry, one-time codes, fleet keys, revoke and rotate. The server WebSocket is /api/fleet/ws.',
   },
   {
     prefix: '/api/test',
