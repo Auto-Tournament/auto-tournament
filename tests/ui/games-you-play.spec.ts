@@ -59,7 +59,10 @@ test.describe('Games you play', () => {
 
       await expect(page.getByTestId('welcome-games-chip-rocket-league')).toBeVisible();
       await expect(search).toHaveValue('');
-      await expect(page.getByTestId('wikidata-credit')).toHaveText('Game data from Wikidata');
+      // The credit is now an ExternalLink (arrow icon + visually-hidden
+      // "(opens in a new tab)"), so match the visible text rather than the
+      // exact node text.
+      await expect(page.getByTestId('wikidata-credit')).toContainText('Game data from Wikidata');
 
       // Keyboard: the first result is highlighted, Enter picks it.
       await search.fill('hollow knight');
