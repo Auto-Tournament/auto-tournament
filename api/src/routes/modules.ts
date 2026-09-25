@@ -67,7 +67,7 @@ const router = Router();
  *                       client:
  *                         type: object
  *                         properties:
- *                           entry: { type: string, example: /api/modules/example/client/index.js }
+ *                           entry: { type: string, example: '/api/modules/example/client/index.js?v=1.0.0' }
  */
 router.get('/public', async (_req: Request, res: Response) => {
   try {

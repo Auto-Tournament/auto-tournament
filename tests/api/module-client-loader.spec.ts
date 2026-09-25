@@ -282,6 +282,7 @@ test.describe('Module list', () => {
   test("code is only loaded from the module's own route under /api/modules", () => {
     expect(entryProblem('fixture', '/api/modules/fixture/client/index.js')).toBeNull();
     expect(entryProblem('fixture', '/api/modules/fixture/1.0.0/client/index.js')).toBeNull();
+    expect(entryProblem('fixture', '/api/modules/fixture/client/index.js?v=1.0.0-beta.1')).toBeNull();
     for (const entry of [
       // The SPA falls back on these with 200 and index.html.
       '/modules/fixture/client/index.js',
