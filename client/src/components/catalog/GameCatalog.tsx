@@ -380,7 +380,13 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
 
   const row = (item: CatalogItem) => {
     const id = `catalog-${item.kind}-${item.id}`;
-    const working = busy?.id === key(item) ? busy.action : null;
+    // "Update all" works through every row with an update, as if each Update were pressed.
+    const working: CatalogAction | null =
+      busy?.id === key(item)
+        ? busy.action
+        : updatingAll && item.state === 'update-available' && !item.restartRequired
+          ? 'update'
+          : null;
     const failure = failures[key(item)];
     const icon = item.state === 'builtin' ? builtinGames.get(item.id) ?? null : item.icon;
     const version = item.installed?.version ?? item.available?.version ?? null;
@@ -471,9 +477,12 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
                 size="small"
                 variant={primary ? 'contained' : 'text'}
                 color={danger ? 'error' : 'primary'}
-                disabled={busy !== null}
+                // One action at a time: while anything runs (one row, or Update all) nothing else can start.
+                disabled={busy !== null || updatingAll}
                 onClick={() => request(item, action)}
+                startIcon={working === action ? <CircularProgress size={14} color="inherit" /> : undefined}
                 data-testid={`${id}-${action}`}
+                aria-busy={working === action || undefined}
               >
                 {actionLabel(item, action)}
               </Button>

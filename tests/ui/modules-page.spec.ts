@@ -214,4 +214,56 @@ test.describe.serial('Modules page', () => {
       await expect(section.getByTestId('catalog-pack-rocket-league')).toBeVisible();
     }
   );
+
+  test(
+    'Update all turns every Update button into a loader and locks the rows until it is done',
+    { tag: ['@ui', '@packs'] },
+    async ({ page }) => {
+      // A listing with two updates, and an update-all the test holds open.
+      const item = (id: string) => ({
+        kind: 'pack',
+        id,
+        name: `Update All ${id}`,
+        description: null,
+        icon: null,
+        engine: 'manual-report',
+        state: 'update-available',
+        reason: null,
+        installed: { version: '1.0.0', source: 'catalog', enabled: true },
+        available: { version: '2.0.0', from: 'remote' },
+        restartRequired: false,
+      });
+      await page.route('**/api/catalog', (route) =>
+        route.fulfill({
+          json: {
+            feed: { from: 'remote', stale: false, error: null },
+            platform: { serverApi: '1.0.0', clientApi: '1.0.0' },
+            items: [item('ua-one'), item('ua-two')],
+          },
+        })
+      );
+      let release: () => void = () => {};
+      const held = new Promise<void>((resolve) => (release = resolve));
+      await page.route('**/api/catalog/update-all', async (route) => {
+        await held;
+        await route.fulfill({ json: { updated: [], skipped: [], failed: [], restartRequired: false } });
+      });
+
+      await page.goto('/modules');
+      await page.getByTestId('catalog-update-all').click();
+
+      for (const id of ['ua-one', 'ua-two']) {
+        const update = page.getByTestId(`catalog-pack-${id}-update`);
+        await expect(update).toBeDisabled();
+        await expect(update).toHaveAttribute('aria-busy', 'true');
+        await expect(page.getByTestId(`catalog-pack-${id}-uninstall`)).toBeDisabled();
+        await expect(page.getByTestId(`catalog-pack-${id}-state`)).toContainText(/install|updat/i);
+      }
+      await expect(page.getByTestId('catalog-update-all')).toBeDisabled();
+
+      release();
+      await expect(page.getByTestId('catalog-pack-ua-one-update')).toBeEnabled({ timeout: 15000 });
+      await expect(page.getByTestId('catalog-pack-ua-one-update')).not.toHaveAttribute('aria-busy', 'true');
+    }
+  );
 });
