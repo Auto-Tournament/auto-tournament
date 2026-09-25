@@ -138,11 +138,12 @@ function deps(overrides: Partial<LoadDeps> = {}): LoadDeps {
 // ---------------------------------------------------------------------------
 
 test.describe('Client API range', () => {
-  test('the platform publishes 0.2.7, which a module built for ^0.2.0 loads on and one built for ^0.1.0 does not', () => {
+  test('the platform publishes 0.2.8, which a module built for ^0.2.0 loads on and one built for ^0.1.0 does not', () => {
     // 0.2.0 reshaped slots to take ids (item 8b): a break, so the minor moved; 0.2.1 only added SDK exports.
     // 0.2.2 added two optional slots, 0.2.3 to 0.2.5 SDK exports, 0.2.6 one optional slot
-    // (`rosterMemberStatus`), 0.2.7 the `ExternalLink` SDK export: patches, which ^0.2.0 still matches.
-    expect(CLIENT_API_VERSION).toBe('0.2.7');
+    // (`rosterMemberStatus`), 0.2.7 the `ExternalLink` SDK export, 0.2.8 the optional Phosphor nav item
+    // icon and `ICON_SIZE`: patches, which ^0.2.0 still matches.
+    expect(CLIENT_API_VERSION).toBe('0.2.8');
     expect(checkClientApi('^0.2.0', CLIENT_API_VERSION)).toBeNull();
     expect(checkClientApi('^0.1.0', CLIENT_API_VERSION)?.code).toBe('outOfRange');
     // Re-exported from the SDK barrel, where a module reads it.
@@ -423,6 +424,24 @@ test.describe('Module export validation', () => {
     expect(result.ok).toBe(true);
   });
 
+  test('a nav item may leave out its icon (client API 0.2.8), and a forwardRef one counts', () => {
+    // Phosphor's icons are forwardRef components.
+    const phosphorLike = { $$typeof: Symbol.for('react.forward_ref'), render: Component };
+    const result = validateModuleExport(
+      {
+        default: moduleDef({
+          navItems: [
+            { key: 'bare', path: 'bare' },
+            { key: 'drawn', path: 'drawn', icon: phosphorLike },
+          ],
+        }),
+      },
+      'fixture',
+      []
+    );
+    expect(result.ok).toBe(true);
+  });
+
   const refusals: Array<[string, unknown, string, string]> = [
     ['no default export', {}, 'badExport', 'default export is not an object'],
     ['a default that is a function', { default: Component }, 'badExport', 'default export is not an object'],
@@ -469,8 +488,8 @@ test.describe('Module export validation', () => {
       "routes[0].scope is not 'admin' or 'admin-standalone'",
     ],
     [
-      'a nav item without an icon',
-      { default: moduleDef({ navItems: [{ key: 'x', path: 'x' }] }) },
+      'a nav item whose icon is not a component',
+      { default: moduleDef({ navItems: [{ key: 'x', path: 'x', icon: 'HardDrives' }] }) },
       'badExport',
       'navItems[0].icon is not a component',
     ],
@@ -578,7 +597,7 @@ test.describe('Loading code modules', () => {
       failure: {
         stage: 'contract',
         code: 'outOfRange',
-        message: 'built for client API ^0.3.0; this platform provides 0.2.7',
+        message: 'built for client API ^0.3.0; this platform provides 0.2.8',
       },
     });
   });

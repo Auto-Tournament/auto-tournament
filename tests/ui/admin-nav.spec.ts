@@ -88,12 +88,16 @@ test.describe.serial('Admin navigation', () => {
         // Still in the same layout, with the page it opened marked.
         await expect(rail).toBeVisible();
         await expect(page.getByTestId(`manage-rail-${key}`)).toHaveAttribute('aria-current', 'page');
+        // Every item has an icon (CS2's come from the module); the open
+        // page's is filled.
+        await expect(page.getByTestId(`manage-rail-${key}-icon`)).toHaveAttribute('data-weight', 'fill');
         // The shell prints no title of its own: one H1, the page's, and the
         // tab says "Page · Auto Tournament".
         await expect(page.locator('h1'), `one h1 on ${key}`).toHaveCount(1);
         await expect(page).toHaveTitle(/ · Auto Tournament$/);
       }
 
+      await expect(page.getByTestId('manage-rail-documentation-icon')).toBeVisible();
       // The sidebar's documentation link lives on in the rail.
       await expect(page.getByTestId('manage-rail-documentation')).toHaveAttribute(
         'href',

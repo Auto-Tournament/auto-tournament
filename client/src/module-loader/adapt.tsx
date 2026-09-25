@@ -162,9 +162,10 @@ export function adaptCodeModule(integration: ClientGameIntegration): ClientGameI
         </ModuleSlotBoundary>
       ),
     })),
-    navItems: adapted.navItems.map((item) => ({
-      ...item,
-      icon: withBoundary(id, `nav ${item.key}`, item.icon as unknown as AnyComponent) as never,
-    })),
+    navItems: adapted.navItems.map((item) =>
+      item.icon
+        ? { ...item, icon: withBoundary(id, `nav ${item.key}`, item.icon as unknown as AnyComponent) as never }
+        : item
+    ),
   };
 }

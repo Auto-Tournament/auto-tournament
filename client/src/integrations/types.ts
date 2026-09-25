@@ -20,7 +20,6 @@
 
 import type { ComponentType, ReactElement } from 'react';
 import type { TFunction } from 'i18next';
-import type { SvgIconComponent } from '@mui/icons-material';
 
 /** Integration id, the same value as the API's `game` column. */
 export type GameId = 'cs2' | (string & {});
@@ -400,9 +399,34 @@ export type IntegrationNavLabelSurface = 'nav' | 'pageTitle' | 'rail' | 'siteLab
 export interface IntegrationNavItem {
   key: string;
   path: string;
-  icon: SvgIconComponent;
+  /**
+   * The item's icon in the admin rail, beside its label (client API 0.2.8;
+   * optional since then, and none shows no icon). A Phosphor icon component
+   * (`HardDrivesIcon` from `@phosphor-icons/react`), the module's own bundled
+   * copy: core renders it with the rail's `size` and `weight` and
+   * `aria-hidden`, so it needs no host context. Any SVG icon component
+   * renders, sized by the rail.
+   */
+  icon?: IntegrationNavIcon;
   labels?: Partial<Record<IntegrationNavLabelSurface, string>>;
 }
+
+/**
+ * What core hands a nav item's icon: Phosphor's own props, typed as Phosphor
+ * types them, so a Phosphor icon is one as it is. Core passes `regular`, or
+ * `fill` for the page that is open.
+ */
+export interface IntegrationNavIconProps {
+  size?: number | string;
+  weight?: 'thin' | 'light' | 'regular' | 'bold' | 'fill' | 'duotone';
+  'aria-hidden'?: boolean | 'true' | 'false';
+}
+
+/**
+ * A nav item's icon. Not a slot: the contract check and the adapter's error
+ * boundary handle it with the rest of the nav item (`navItems`).
+ */
+export type IntegrationNavIcon = ComponentType<IntegrationNavIconProps>;
 
 // ---------------------------------------------------------------------------
 // The admin shell, and starting the tournament

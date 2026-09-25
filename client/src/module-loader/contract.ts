@@ -157,7 +157,9 @@ function shapeProblem(def: Record<string, unknown>): string | null {
     if (!isObject(item) || typeof item.key !== 'string' || typeof item.path !== 'string') {
       return `navItems[${index}] needs a key and a path`;
     }
-    if (!isComponent(item.icon)) return `navItems[${index}].icon is not a component`;
+    if (item.icon !== undefined && !isComponent(item.icon)) {
+      return `navItems[${index}].icon is not a component`;
+    }
     if (item.labels !== undefined) {
       if (!isObject(item.labels)) return `navItems[${index}].labels is not an object`;
       for (const [surface, key] of Object.entries(item.labels)) {

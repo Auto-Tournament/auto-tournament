@@ -11,7 +11,10 @@
  *     `react/jsx-runtime`, `react-dom`, `@mui/material`, `@mui/material/utils`,
  *     `@mui/material/styles`, `@emotion/react`, `@emotion/styled`,
  *     `react-router-dom`, `react-i18next`, `i18next`
- *   - stateless libraries the module bundles itself (`@mui/icons-material`, …)
+ *   - stateless libraries the module bundles itself (`@phosphor-icons/react`,
+ *     the platform's icon set, and `@mui/icons-material` until it is gone, …).
+ *     A bundled Phosphor does not see the host's icon defaults (its
+ *     `IconContext`), so a module sizes its icons from `ICON_SIZE` itself.
  *
  * **A module imports platform code only from here.** Everything else in
  * `client/src` (hooks, utils, contexts, components, types, …) is core
@@ -89,6 +92,8 @@ export const useAuth: () => ModuleAuth = useAuthInternal;
 
 // Design tokens
 export { tokens, radii, mono, textSize, withAlpha } from '../theme/tokens';
+// The icon size scale, 16/20/24 px (client API 0.2.8; see theme/icons.tsx)
+export { ICON_SIZE } from '../theme/icons';
 
 // Match details: core's dialog, opened by slug (decision 7)
 export { openMatchDetails } from '../components/modals/matchDetailsOpener';

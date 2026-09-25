@@ -3,8 +3,7 @@
  * pages render goes through one of these slots (see ../types.ts).
  */
 
-import StorageIcon from '@mui/icons-material/Storage';
-import MapIcon from '@mui/icons-material/Map';
+import { HardDrivesIcon, MapTrifoldIcon } from '@phosphor-icons/react';
 import type { ClientGameIntegration } from '../types';
 import { links } from '../../module-sdk';
 import { MatchServerPanel } from './match/MatchServerPanel';
@@ -171,8 +170,9 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   ],
 
   // Labelled from this module's own strings: `cs2:nav.servers` and so on.
+  // The icons are this module's own Phosphor ones; the rail sizes them.
   navItems: [
-    { key: 'servers', path: links.servers(), icon: StorageIcon },
-    { key: 'maps', path: links.maps(), icon: MapIcon },
+    { key: 'servers', path: links.servers(), icon: HardDrivesIcon },
+    { key: 'maps', path: links.maps(), icon: MapTrifoldIcon },
   ],
 };
