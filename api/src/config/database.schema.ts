@@ -590,6 +590,36 @@ export function getSchemaSQL(): string {
       PRIMARY KEY (run_pk, component_id)
     );
 
+    -- Players calling for an admin from a game server (services/adminCallService.ts).
+    -- Core's, not a game's: any game module can feed it (CS2's Ready Up sends
+    -- the admin_called event through /api/events). One row per call, keyed by
+    -- the game server's own call_id so a retried delivery is stored once.
+    -- match_slug has no foreign key on purpose: the call is history and must
+    -- outlive a tournament reset.
+    CREATE TABLE IF NOT EXISTS admin_calls (
+      id SERIAL PRIMARY KEY,
+      call_id TEXT NOT NULL UNIQUE, -- The game server's id for the call (idempotency key)
+      game TEXT NOT NULL DEFAULT 'cs2', -- Game integration that sent it
+      server_id TEXT, -- Game server that sent it; NULL = not known
+      server_name TEXT, -- Its name when the call arrived
+      match_id INTEGER, -- matches.id when the call names a known match
+      match_slug TEXT, -- matches.slug when the call names a known match
+      map_number INTEGER,
+      player_steamid TEXT,
+      player_name TEXT,
+      player_team TEXT, -- 'team1' | 'team2' | 'spectator'; NULL = not known
+      player_side TEXT, -- The game's side, e.g. CS2 'ct' | 't'; NULL = not known
+      message TEXT NOT NULL DEFAULT '', -- What the player typed; may be empty
+      called_at INTEGER NOT NULL, -- Epoch seconds, as the game server reported it
+      received_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      resolved_at INTEGER, -- NULL while open
+      resolved_by TEXT, -- The admin's Steam ID, or token:<label> for an API token
+      resolution_note TEXT
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_admin_calls_open ON admin_calls(received_at) WHERE resolved_at IS NULL;
+    CREATE INDEX IF NOT EXISTS idx_admin_calls_resolved ON admin_calls(resolved_at);
+
     -- Session table for connect-pg-simple (express-session PostgreSQL store)
     -- This table is required for session persistence across API restarts
     CREATE TABLE IF NOT EXISTS session (

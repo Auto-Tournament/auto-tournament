@@ -44,6 +44,7 @@ import catalogRoutes from './catalog';
 import systemRoutes from './system';
 import meRoutes from './me';
 import compatRoutes from './compat';
+import adminCallRoutes from './adminCalls';
 
 export interface MountedRouter {
   /** Path prefix the router is mounted under. */
@@ -189,6 +190,13 @@ const coreRoutes: MountedRouter[] = [
     title: 'Compatibility',
     description:
       'Ready Up compatibility with the latest CS2 build: the runs its CI reports (token-guarded push), and public reads for the /compatibility page and a shields.io badge. 404 unless COMPAT_INGEST_TOKEN or COMPAT_FEED_URL is set.',
+  },
+  {
+    prefix: '/api/admin-calls',
+    router: adminCallRoutes,
+    title: 'Admin calls',
+    description:
+      'Players calling for an admin from a game server (CS2: `.admin [message]` in Ready Up, sent as the admin_called event): list open and recently resolved calls, resolve one or all. Admin only. Live updates go to signed-in admins as the Socket.IO events admin:call and admin:call:resolved.',
   },
   {
     prefix: '/api/test',

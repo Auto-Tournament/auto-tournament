@@ -148,5 +148,30 @@
       "forceCancel": "Mecz anulowany",
       "default": "Komenda wykonana"
     }
+  },
+  "adminCalls": {
+    "header": "Wezwania admina ({{count}})",
+    "title": "{{player}} wzywa admina",
+    "justNow": "przed chwilą",
+    "minutesAgo": "{{count}} min temu",
+    "hoursAgo": "{{count}} godz. temu",
+    "spectator": "Widz",
+    "team1": "Drużyna 1",
+    "team2": "Drużyna 2",
+    "noMessage": "Brak wiadomości",
+    "unknownPlayer": "Nieznany gracz",
+    "unknownServer": "Nieznany serwer",
+    "matchMap": "{{match}}, mapa {{map}}",
+    "openMatch": "Otwórz mecz",
+    "openServers": "Serwery",
+    "resolve": "Oznacz jako rozwiązane",
+    "resolveAll": "Rozwiąż wszystkie",
+    "resolveFailed": "Nie udało się oznaczyć wezwania jako rozwiązanego. Spróbuj ponownie.",
+    "matchUnavailable": "Nie udało się otworzyć tego meczu.",
+    "enableSound": "Włącz dźwięk",
+    "mute": "Wycisz",
+    "unmute": "Wyłącz wyciszenie",
+    "minimize": "Zminimalizuj",
+    "show": "Pokaż"
   }
 }

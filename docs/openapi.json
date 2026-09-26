@@ -491,6 +491,10 @@
   },
   "tags": [
     {
+      "name": "Admin calls",
+      "description": "Players calling for an admin from a game server (CS2: `.admin [message]` in Ready Up, sent as the admin_called event): list open and recently resolved calls, resolve one or all. Admin only. Live updates go to signed-in admins as the Socket.IO events admin:call and admin:call:resolved."
+    },
+    {
       "name": "Auth",
       "description": "Sign-in flows, admin identity, impersonation."
     },
@@ -668,6 +672,162 @@
             "description": "API information"
           }
         }
+      }
+    },
+    "/api/admin-calls": {
+      "get": {
+        "tags": [
+          "Admin calls"
+        ],
+        "summary": "Open admin calls and recently resolved ones",
+        "description": "`open` is every call no admin has resolved yet, oldest first.\n`resolved` is the calls resolved within `resolvedWithin` seconds\n(default 86400, at most 30 days, 0 for none), newest first, at most\n100. New calls and resolutions are also sent to signed-in admins as\nthe Socket.IO events `admin:call` and `admin:call:resolved` (after\n`admin:subscribe`).\n",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "resolvedWithin",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "description": "How many seconds back to list resolved calls"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The calls"
+          },
+          "400": {
+            "description": "resolvedWithin is not a whole number"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/admin-calls/resolve-all": {
+      "post": {
+        "tags": [
+          "Admin calls"
+        ],
+        "summary": "Resolve every open admin call",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "note": {
+                    "type": "string",
+                    "description": "Optional resolution note (500 characters at most)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The ids resolved (empty when nothing was open)"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/admin-calls/{id}": {
+      "get": {
+        "tags": [
+          "Admin calls"
+        ],
+        "summary": "One admin call",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The call"
+          },
+          "404": {
+            "description": "No such call"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/admin-calls/{id}/resolve": {
+      "post": {
+        "tags": [
+          "Admin calls"
+        ],
+        "summary": "Mark an admin call resolved",
+        "description": "Idempotent: resolving a call that is already resolved keeps the first\nresolution and answers 200 with `alreadyResolved: true`.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "note": {
+                    "type": "string",
+                    "description": "Optional resolution note (500 characters at most)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The resolved call"
+          },
+          "404": {
+            "description": "No such call"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/auth/admin-status": {

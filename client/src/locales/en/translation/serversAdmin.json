@@ -146,5 +146,30 @@
       "forceCancel": "Match cancelled",
       "default": "Command executed"
     }
+  },
+  "adminCalls": {
+    "header": "Admin calls ({{count}})",
+    "title": "{{player}} is calling an admin",
+    "justNow": "just now",
+    "minutesAgo": "{{count}} min ago",
+    "hoursAgo": "{{count}} h ago",
+    "spectator": "Spectator",
+    "team1": "Team 1",
+    "team2": "Team 2",
+    "noMessage": "No message",
+    "unknownPlayer": "Unknown player",
+    "unknownServer": "Unknown server",
+    "matchMap": "{{match}}, map {{map}}",
+    "openMatch": "Open match",
+    "openServers": "Servers",
+    "resolve": "Mark resolved",
+    "resolveAll": "Resolve all",
+    "resolveFailed": "Could not mark the call resolved. Try again.",
+    "matchUnavailable": "That match could not be opened.",
+    "enableSound": "Enable sound",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "minimize": "Minimize",
+    "show": "Show"
   }
 }

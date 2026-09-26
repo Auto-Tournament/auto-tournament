@@ -146,5 +146,30 @@
       "forceCancel": "Wedstrijd geannuleerd",
       "default": "Commando uitgevoerd"
     }
+  },
+  "adminCalls": {
+    "header": "Adminoproepen ({{count}})",
+    "title": "{{player}} roept een admin",
+    "justNow": "zojuist",
+    "minutesAgo": "{{count}} min geleden",
+    "hoursAgo": "{{count}} u geleden",
+    "spectator": "Toeschouwer",
+    "team1": "Team 1",
+    "team2": "Team 2",
+    "noMessage": "Geen bericht",
+    "unknownPlayer": "Onbekende speler",
+    "unknownServer": "Onbekende server",
+    "matchMap": "{{match}}, map {{map}}",
+    "openMatch": "Wedstrijd openen",
+    "openServers": "Servers",
+    "resolve": "Markeren als opgelost",
+    "resolveAll": "Alles oplossen",
+    "resolveFailed": "De oproep kon niet als opgelost worden gemarkeerd. Probeer het opnieuw.",
+    "matchUnavailable": "Die wedstrijd kon niet worden geopend.",
+    "enableSound": "Geluid inschakelen",
+    "mute": "Dempen",
+    "unmute": "Dempen opheffen",
+    "minimize": "Minimaliseren",
+    "show": "Tonen"
   }
 }

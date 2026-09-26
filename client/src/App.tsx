@@ -37,6 +37,7 @@ import ConnectSteam from './pages/ConnectSteam';
 import Templates from './pages/Templates';
 import ELOTemplates from './pages/ELOTemplates';
 import Layout from './components/layout/Layout';
+import { AdminCallsHost } from './components/admin/AdminCallsHost';
 import NotFound from './pages/NotFound';
 import { theme } from './theme';
 import { GamesOnboardingRedirect } from './components/games/GamesOnboardingRedirect';
@@ -444,6 +445,9 @@ export default function App() {
                   SDK's openMatchDetails(slug). Core's, so it needs no module
                   to have arrived. Core pages keep their own. */}
               <MatchDetailsHost />
+              {/* Players calling for an admin from a game server: on every
+                  page a signed-in admin opens, until someone resolves them. */}
+              <AdminCallsHost />
             </PageHeaderProvider>
           </SnackbarProvider>
         </AuthProvider>
