@@ -19,7 +19,9 @@ import * as coreMatchLifecycle from '../core/matchLifecycle';
 import * as coreScheduler from '../core/scheduler';
 import * as middlewareAuth from '../middleware/auth';
 import * as middlewareServerAuth from '../middleware/serverAuth';
+import * as adminCallService from '../services/adminCallService';
 import * as matchConfigFetchTracker from '../services/matchConfigFetchTracker';
+import * as adminCallTypes from '../types/adminCall.types';
 import * as matchLiveStatsService from '../services/matchLiveStatsService';
 import * as matchMapResultService from '../services/matchMapResultService';
 import * as matchTerminationService from '../services/matchTerminationService';
@@ -50,6 +52,7 @@ const MODULES: Record<string, object> = {
   'core/scheduler': coreScheduler,
   'middleware/auth': middlewareAuth,
   'middleware/serverAuth': middlewareServerAuth,
+  'services/adminCallService': adminCallService,
   'services/matchConfigFetchTracker': matchConfigFetchTracker,
   'services/matchLiveStatsService': matchLiveStatsService,
   'services/matchMapResultService': matchMapResultService,
@@ -57,6 +60,7 @@ const MODULES: Record<string, object> = {
   'services/playerConnectionService': playerConnectionService,
   'services/settingsService': settingsService,
   'services/socketService': socketService,
+  'types/adminCall.types': adminCallTypes,
   'utils/cs2Version': cs2Version,
   'utils/eventLogger': eventLogger,
   'utils/logger': logger,
