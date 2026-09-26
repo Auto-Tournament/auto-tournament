@@ -150,17 +150,19 @@ export function useAdminCalls(): UseAdminCallsReturn {
     };
   }, [socket, load, ring, forget]);
 
-  // Any click or key press lets the browser play sound from then on.
+  // Any click or key press lets the browser play sound from then on. Not on
+  // pointerdown: swapping "Enable sound" for "Mute" under a pressed mouse
+  // would hand the click to "Mute".
   useEffect(() => {
     if (!soundBlocked) return;
     const unlock = () => {
       if (hasUserActivation()) setSoundBlocked(false);
     };
-    window.addEventListener('pointerdown', unlock);
-    window.addEventListener('keydown', unlock);
+    window.addEventListener('click', unlock);
+    window.addEventListener('keyup', unlock);
     return () => {
-      window.removeEventListener('pointerdown', unlock);
-      window.removeEventListener('keydown', unlock);
+      window.removeEventListener('click', unlock);
+      window.removeEventListener('keyup', unlock);
     };
   }, [soundBlocked]);
 

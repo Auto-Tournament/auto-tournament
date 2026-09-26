@@ -51,18 +51,25 @@ test.describe.serial('Admin call toast', () => {
   test.beforeEach(async ({ page, request }) => {
     await setupTestContext(page, request);
     // Playwright's Chromium lets any page play sound. A real browser refuses
-    // until the person has interacted with the page; behave like one.
+    // until the person has interacted with the page; behave like one, with
+    // an activation flag of our own that every page load starts without.
     await page.addInitScript(() => {
-      const w = window as typeof window & {
-        navigator: { userActivation?: { hasBeenActive: boolean } };
+      let active = false;
+      const activate = () => {
+        active = true;
       };
-      const proto = w.HTMLMediaElement.prototype;
+      window.addEventListener('pointerdown', activate, true);
+      window.addEventListener('keydown', activate, true);
+      Object.defineProperty(window.navigator, 'userActivation', {
+        configurable: true,
+        get: () => ({ hasBeenActive: active, isActive: active }),
+      });
+      const proto = window.HTMLMediaElement.prototype;
       const play = proto.play;
-      proto.play = function (this: InstanceType<typeof w.HTMLMediaElement>) {
-        const activation = w.navigator.userActivation;
-        if (activation && !activation.hasBeenActive) {
+      proto.play = function (this: InstanceType<typeof window.HTMLMediaElement>) {
+        if (!active) {
           return Promise.reject(
-            new w.DOMException('play() needs a user gesture', 'NotAllowedError')
+            new window.DOMException('play() needs a user gesture', 'NotAllowedError')
           );
         }
         return play.call(this);
