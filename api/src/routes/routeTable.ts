@@ -147,7 +147,7 @@ const coreRoutes: MountedRouter[] = [
     router: gamesRoutes,
     title: 'Games',
     description:
-      'The game catalogue players pick from (Wikidata-backed search, suggestions). Public.',
+      'The game catalogue players pick from (Wikidata-backed search, the built-in games). Public.',
   },
   {
     prefix: '/api/packs',

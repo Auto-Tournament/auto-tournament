@@ -532,7 +532,7 @@
     },
     {
       "name": "Games",
-      "description": "The game catalogue players pick from (Wikidata-backed search, suggestions). Public."
+      "description": "The game catalogue players pick from (Wikidata-backed search, the built-in games). Public."
     },
     {
       "name": "Generation",
@@ -2976,7 +2976,7 @@
           "Games"
         ],
         "summary": "Every built-in game, for the \"/welcome/games\" onboarding grid",
-        "description": "Installed game modules, then popular esports titles — the full\nbuilt-in catalogue, in the same order `suggestions` uses. Unlike\n`suggestions`, this is never filtered by what the viewer already\npicked (or capped at three): the onboarding page's card grid needs\nevery built-in on screen so a game already picked still shows up,\nselected. Works anonymously.\n",
+        "description": "Installed game modules, then popular esports titles — the full\nbuilt-in catalogue, games with a tournament open or running here\nfirst. Never filtered by what the viewer already picked: the\nonboarding page's card grid needs every built-in on screen so a game\nalready picked still shows up, selected. Works anonymously.\n",
         "responses": {
           "200": {
             "description": "The built-in games",
@@ -3051,38 +3051,6 @@
           },
           "429": {
             "description": "Too many searches from this address"
-          }
-        }
-      }
-    },
-    "/api/games/suggestions": {
-      "get": {
-        "tags": [
-          "Games"
-        ],
-        "summary": "Up to three games to suggest",
-        "description": "Games with a tournament open or running on this instance first, then\npopular built-in games. Games the signed-in viewer already picked are\nleft out. Works anonymously (nothing is excluded then).\n",
-        "responses": {
-          "200": {
-            "description": "Suggested games",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "games": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/GameSummary"
-                      }
-                    }
-                  }
-                }
-              }
-            }
           }
         }
       }

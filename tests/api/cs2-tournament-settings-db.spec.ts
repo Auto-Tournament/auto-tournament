@@ -76,7 +76,10 @@ test.describe('CS2 tournament settings: definitions', () => {
 
   test('the fold is a core migration, appended after the ones that shipped', () => {
     const ids = SCHEMA_MIGRATIONS.map((m) => m.id);
-    expect(ids.indexOf('2026-09-24-cs2-tournament-settings')).toBe(ids.length - 1);
+    const fold = ids.indexOf('2026-09-24-cs2-tournament-settings');
+    // After every migration that shipped before it; later ones may follow it.
+    expect(fold).toBeGreaterThan(ids.indexOf('2026-09-24-plugin-names'));
+    expect(ids.slice(fold + 1).every((id) => id > '2026-09-24-cs2-tournament-settings')).toBe(true);
   });
 
   test("CS2's fromRequest keeps each column's old rule", () => {

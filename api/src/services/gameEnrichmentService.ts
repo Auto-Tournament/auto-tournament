@@ -4,14 +4,16 @@
  * release year and genres, instead of the bare name/slug `ensureBuiltinGames`
  * seeds them with.
  *
- * Wikidata is the source for all three, looked up by a known QID (verified by
- * hand against https://www.wikidata.org/wiki/Special:EntityData/<QID>.json —
- * see `BUILTIN_WIKIDATA_QIDS` below), never by a fuzzy search: a built-in's
- * identity must not drift because a search matched the wrong entity.
+ * Wikidata is the source for all three, looked up by a pinned QID
+ * (`builtinGameIdentity`), never by a fuzzy search: a built-in's identity
+ * must not drift because a search matched the wrong entity.
  *
  * Runs once at API startup, after the server is listening, and is never on
  * the request path: `index.ts` fires it and does not await it. A row already
- * enriched within `ENRICH_INTERVAL_MS` is left alone; a failed lookup leaves
+ * enriched within `ENRICH_INTERVAL_MS` is left alone — unless its stored
+ * `wikidata_id` is not its pinned QID (a same-named game a search filled it
+ * with before searches were kept off built-ins), which is re-enriched right
+ * away and has every Wikidata field replaced. A failed lookup leaves
  * `enriched_at` untouched so the next start retries it. The Wikidata client
  * already points at the E2E fake when a test overrides it (see
  * `setWikidataEndpointOverride`), so this reuses it rather than calling the
@@ -23,39 +25,19 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { getWikidataBuiltinInfo, type WikidataBuiltinInfo } from './wikidataService';
-import { ensureBuiltinGames } from './gameCatalogService';
+import { builtinGames, ensureBuiltinGames } from './gameCatalogService';
+import { BUILTIN_WIKIDATA_QIDS } from './builtinGameIdentity';
 
 /** Re-enrich a builtin at most this often. */
 const ENRICH_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
 
-/**
- * Built-in slug -> verified Wikidata QID. Verified by fetching
- * `https://www.wikidata.org/wiki/Special:EntityData/<QID>.json` and checking
- * the English label and that P31 (instance of) includes Q7889 (video game) —
- * except `chess`, a board game (P31 does not include Q7889 there on purpose).
- */
-export const BUILTIN_WIKIDATA_QIDS: Record<string, string> = {
-  'counter-strike-2': 'Q111165107',
-  'rocket-league': 'Q20031743',
-  valorant: 'Q86919275',
-  'league-of-legends': 'Q223341',
-  'dota-2': 'Q771541',
-  trackmania: 'Q91573142',
-  chess: 'Q718',
-  'overwatch-2': 'Q73163646',
-  'ea-sports-fc-25': 'Q127162066',
-  'super-smash-bros-ultimate': 'Q54093632',
-  'street-fighter-6': 'Q110999026',
-  'tekken-8': 'Q105486599',
-  osu: 'Q307441',
-  'team-fortress-2': 'Q382108',
-  'age-of-empires-ii': 'Q34852',
-};
+/** Built-in slug -> pinned Wikidata QID; see `builtinGameIdentity`. */
+export { BUILTIN_WIKIDATA_QIDS };
 
 interface StaleBuiltinRow {
   id: number;
   slug: string;
-  name: string;
+  wikidata_id: string | null;
 }
 
 /** NODE_ENV=test, or the explicit `GAMES_ENRICH=off` escape hatch (set in CI). */
@@ -65,21 +47,53 @@ export function enrichmentDisabled(): boolean {
   return flag === 'off' || flag === 'false' || flag === '0';
 }
 
+/**
+ * Pinned built-in rows that need a lookup: never enriched, enriched more
+ * than `ENRICH_INTERVAL_MS` ago, or holding a different Wikidata item than
+ * their pin. Whatever the row's `source` — a search result that matched a
+ * built-in's slug turned it into 'wikidata', and it is still the built-in.
+ */
 async function staleBuiltinRows(): Promise<StaleBuiltinRow[]> {
-  const slugs = Object.keys(BUILTIN_WIKIDATA_QIDS);
-  if (slugs.length === 0) return [];
+  const pins = Object.entries(BUILTIN_WIKIDATA_QIDS);
+  if (pins.length === 0) return [];
   const cutoff = Math.floor((Date.now() - ENRICH_INTERVAL_MS) / 1000);
   return db.queryAsync<StaleBuiltinRow>(
-    `SELECT id, slug, name FROM games
-      WHERE source = 'builtin' AND slug = ANY(?::text[])
-        AND (enriched_at IS NULL OR enriched_at < ?)`,
-    [slugs, cutoff]
+    `SELECT g.id, g.slug, g.wikidata_id
+       FROM games g
+       JOIN unnest(?::text[], ?::text[]) AS pin(slug, qid) ON pin.slug = g.slug
+      WHERE g.enriched_at IS NULL OR g.enriched_at < ?
+         OR g.wikidata_id IS DISTINCT FROM pin.qid`,
+    [pins.map(([slug]) => slug), pins.map(([, qid]) => qid), cutoff]
   );
+}
+
+/**
+ * Another row that holds this built-in's item (`wikidata_id` is unique): a
+ * search result stored under a slug of its own before searches were kept off
+ * built-ins, e.g. Valve's Deadlock as `deadlock-2` while `deadlock` held a
+ * same-named game. It is the same game, so its players move to the built-in
+ * row and the duplicate goes.
+ */
+async function mergeDuplicateOf(rowId: number, qid: string): Promise<void> {
+  const duplicates = await db.queryAsync<{ id: number }>(
+    'SELECT id FROM games WHERE wikidata_id = ? AND id <> ?',
+    [qid, rowId]
+  );
+  for (const dup of duplicates) {
+    await db.runAsync(
+      `INSERT INTO player_games (player_uid, game_id, created_at)
+       SELECT player_uid, ?, created_at FROM player_games WHERE game_id = ?
+       ON CONFLICT DO NOTHING`,
+      [rowId, dup.id]
+    );
+    await db.runAsync('DELETE FROM games WHERE id = ?', [dup.id]);
+  }
 }
 
 async function enrichRow(
   row: StaleBuiltinRow,
-  wikidata: Map<string, WikidataBuiltinInfo>
+  wikidata: Map<string, WikidataBuiltinInfo>,
+  names: Map<string, string>
 ): Promise<void> {
   const qid = BUILTIN_WIKIDATA_QIDS[row.slug];
   const info = qid ? wikidata.get(qid) : undefined;
@@ -93,13 +107,43 @@ async function enrichRow(
   const genres = info.genres;
   const now = Math.floor(Date.now() / 1000);
 
+  if (row.wikidata_id !== qid) {
+    // Never enriched, or holding another game. Either way every Wikidata
+    // field is this item's now, the name is the built-in's again, and the
+    // cached Steam icon (which was the other game's) is looked up afresh.
+    await mergeDuplicateOf(row.id, qid);
+    await db.runAsync(
+      `UPDATE games
+          SET name = COALESCE(?, name),
+              cover_url = ?, logo_url = ?, release_year = ?, genres = ?,
+              wikidata_id = ?, steam_app_id = ?,
+              icon_url = CASE WHEN wikidata_id IS NULL THEN icon_url END,
+              icon_source = CASE WHEN wikidata_id IS NULL THEN icon_source END,
+              icon_checked_at = CASE WHEN wikidata_id IS NULL THEN icon_checked_at END,
+              source = 'wikidata', enriched_at = ?, updated_at = ?
+        WHERE id = ?`,
+      [
+        names.get(row.slug) ?? null,
+        info.imageUrl,
+        info.imageUrl,
+        info.releaseYear,
+        genres.length > 0 ? JSON.stringify(genres.slice(0, 3)) : null,
+        qid,
+        info.steamAppId,
+        now,
+        now,
+        row.id,
+      ]
+    );
+    return;
+  }
+
   await db.runAsync(
     `UPDATE games
         SET cover_url = COALESCE(?, cover_url),
             logo_url = COALESCE(?, logo_url),
             release_year = COALESCE(release_year, ?),
             genres = COALESCE(?, genres),
-            wikidata_id = COALESCE(wikidata_id, ?),
             steam_app_id = COALESCE(steam_app_id, ?),
             source = 'wikidata',
             enriched_at = ?,
@@ -110,7 +154,6 @@ async function enrichRow(
       info.imageUrl,
       info.releaseYear,
       genres.length > 0 ? JSON.stringify(genres.slice(0, 3)) : null,
-      qid,
       info.steamAppId,
       now,
       now,
@@ -142,10 +185,11 @@ export async function enrichBuiltinGames(): Promise<void> {
     // getWikidataBuiltinInfo); if that itself fails (network/HTTP), nothing
     // is marked enriched and every row is retried next start.
     const wikidata = await getWikidataBuiltinInfo(qids);
+    const names = new Map(builtinGames().map((g) => [g.slug, g.name]));
 
     for (const row of stale) {
       try {
-        await enrichRow(row, wikidata);
+        await enrichRow(row, wikidata, names);
       } catch (err) {
         log.warn(`[Games] Failed to enrich built-in game "${row.slug}": ${(err as Error).message}`);
       }

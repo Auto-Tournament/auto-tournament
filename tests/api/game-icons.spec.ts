@@ -98,7 +98,6 @@ function builtin(overrides: Partial<BuiltinGame> & { slug: string; name: string 
   return {
     aliases: [],
     integrationId: 'manual-report',
-    viaCatchAll: true,
     own: false,
     icon: null,
     appIcon: `/api/packs/${overrides.slug}/app-icon`,
@@ -122,7 +121,7 @@ const BUILTINS: BuiltinGame[] = [
 
 test.describe('Linking a stored game to its module or pack', () => {
   const links = buildGameLinks(BUILTINS);
-  const link = (row: { igdb_id: number | null; slug: string; name: string }) =>
+  const link = (row: { igdb_id: number | null; slug: string; name: string; wikidata_id?: string | null }) =>
     linkBuiltin(row, links)?.slug ?? null;
 
   test('by IGDB id first, whatever the slug and name', { tag: ['@api', '@games'] }, () => {
@@ -144,6 +143,12 @@ test.describe('Linking a stored game to its module or pack', () => {
   }, () => {
     // "DeadLock (2021)" is not Valve's Deadlock.
     expect(link({ igdb_id: 157000, slug: 'deadlock--1', name: 'DeadLock' })).toBeNull();
+    // Nor is a same-named game a Wikidata search stored: the built-in is
+    // pinned to Valve's item (Q126042383), and this row is another one.
+    expect(link({ igdb_id: null, slug: 'deadlock-2016', name: 'Deadlock', wikidata_id: 'Q990016' })).toBeNull();
+    expect(
+      link({ igdb_id: null, slug: 'deadlock-valve', name: 'Deadlock', wikidata_id: 'Q126042383' })
+    ).toBe('deadlock');
     expect(link({ igdb_id: 555, slug: 'cs2', name: 'Cs2' })).toBeNull();
     expect(link({ igdb_id: null, slug: 'hollow-knight', name: 'Hollow Knight' })).toBeNull();
   });
