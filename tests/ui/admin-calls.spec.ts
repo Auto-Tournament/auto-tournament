@@ -50,6 +50,24 @@ function toastFor(page: Page, callId: string) {
 test.describe.serial('Admin call toast', () => {
   test.beforeEach(async ({ page, request }) => {
     await setupTestContext(page, request);
+    // Playwright's Chromium lets any page play sound. A real browser refuses
+    // until the person has interacted with the page; behave like one.
+    await page.addInitScript(() => {
+      const w = window as typeof window & {
+        navigator: { userActivation?: { hasBeenActive: boolean } };
+      };
+      const proto = w.HTMLMediaElement.prototype;
+      const play = proto.play;
+      proto.play = function (this: InstanceType<typeof w.HTMLMediaElement>) {
+        const activation = w.navigator.userActivation;
+        if (activation && !activation.hasBeenActive) {
+          return Promise.reject(
+            new w.DOMException('play() needs a user gesture', 'NotAllowedError')
+          );
+        }
+        return play.call(this);
+      };
+    });
     // Start from no open calls, so the stack only holds this test's.
     await request.post('/api/admin-calls/resolve-all', { data: {} });
     await page.goto('/', { waitUntil: 'domcontentloaded' });
@@ -139,14 +157,18 @@ test.describe.serial('Admin call toast', () => {
       await expect(mute).toBeVisible();
       await mute.click();
       await expect(mute).toHaveAttribute('aria-pressed', 'true');
-      expect(await page.evaluate(() => localStorage.getItem('mat.adminCalls.soundMuted'))).toBe('true');
+      expect(await page.evaluate(() => localStorage.getItem('mat.adminCalls.soundMuted'))).toBe(
+        'true'
+      );
 
       await page.reload({ waitUntil: 'domcontentloaded' });
       await expect(page.getByTestId('admin-calls-mute')).toHaveAttribute('aria-pressed', 'true', {
         timeout: 15_000,
       });
       await page.getByTestId('admin-calls-mute').click();
-      expect(await page.evaluate(() => localStorage.getItem('mat.adminCalls.soundMuted'))).toBe('false');
+      expect(await page.evaluate(() => localStorage.getItem('mat.adminCalls.soundMuted'))).toBe(
+        'false'
+      );
     }
   );
 });

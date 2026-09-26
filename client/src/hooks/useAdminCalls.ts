@@ -24,8 +24,9 @@ interface UseAdminCallsReturn {
 }
 
 function hasUserActivation(): boolean {
-  const activation = (navigator as typeof navigator & { userActivation?: { hasBeenActive: boolean } })
-    .userActivation;
+  const activation = (
+    navigator as typeof navigator & { userActivation?: { hasBeenActive: boolean } }
+  ).userActivation;
   // Browsers without the API: assume sound may play, and find out on the first call.
   return activation ? activation.hasBeenActive : true;
 }
@@ -48,6 +49,13 @@ export function useAdminCalls(): UseAdminCallsReturn {
   const [muted, setMutedState] = useState<boolean>(() => isAdminCallSoundMuted());
   const [soundBlocked, setSoundBlocked] = useState<boolean>(() => !hasUserActivation());
   const knownIds = useRef<Set<number>>(new Set());
+  // What the socket changed while a load was in flight: the load's answer can
+  // be older than a live call or resolve, and must not undo it.
+  const pendingLoads = useRef<Set<{ added: Map<number, AdminCall>; resolved: Set<number> }>>(
+    new Set()
+  );
+  const loadSeq = useRef(0);
+  const appliedSeq = useRef(0);
   const mutedRef = useRef(muted);
   useEffect(() => {
     mutedRef.current = muted;
@@ -60,14 +68,29 @@ export function useAdminCalls(): UseAdminCallsReturn {
   }, []);
 
   const load = useCallback(async () => {
+    const seq = ++loadSeq.current;
+    const live = { added: new Map<number, AdminCall>(), resolved: new Set<number>() };
+    pendingLoads.current.add(live);
     try {
       const res = await api.get<{ success: boolean; open: AdminCall[] }>(
         '/api/admin-calls?resolvedWithin=0'
       );
-      if (res.success && Array.isArray(res.open)) replaceCalls(res.open);
+      // A newer load already answered: this one is older news.
+      if (seq < appliedSeq.current) return;
+      if (res.success && Array.isArray(res.open)) {
+        appliedSeq.current = seq;
+        const open = res.open.filter((c) => !live.resolved.has(c.id));
+        const ids = new Set(open.map((c) => c.id));
+        live.added.forEach((call, id) => {
+          if (!ids.has(id)) open.push(call);
+        });
+        replaceCalls(open);
+      }
     } catch (error) {
       // Not signed in as an admin any more, or the API is away: keep what is shown.
       console.warn('Could not load admin calls:', error);
+    } finally {
+      pendingLoads.current.delete(live);
     }
   }, [replaceCalls]);
 
@@ -79,9 +102,20 @@ export function useAdminCalls(): UseAdminCallsReturn {
     });
   }, []);
 
+  /** Resolved calls leave, and a load in flight must not bring them back. */
+  const forget = useCallback((ids: Set<number>) => {
+    ids.forEach((id) => {
+      knownIds.current.delete(id);
+      pendingLoads.current.forEach((live) => {
+        live.added.delete(id);
+        live.resolved.add(id);
+      });
+    });
+    setCalls((prev) => prev.filter((c) => !ids.has(c.id)));
+  }, []);
+
   useEffect(() => {
     // The state is set after the fetch resolves, not synchronously.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
   }, [load]);
 
@@ -95,14 +129,14 @@ export function useAdminCalls(): UseAdminCallsReturn {
       if (!call || typeof call.id !== 'number' || call.resolvedAt) return;
       if (knownIds.current.has(call.id)) return;
       knownIds.current.add(call.id);
+      pendingLoads.current.forEach((live) => live.added.set(call.id, call));
       setCalls((prev) => [...prev.filter((c) => c.id !== call.id), call].sort(byCalledAt));
       ring();
     };
     const handleResolved = (payload: AdminCallResolvedEvent) => {
       const ids = new Set(payload?.ids ?? []);
       if (ids.size === 0) return;
-      ids.forEach((id) => knownIds.current.delete(id));
-      setCalls((prev) => prev.filter((c) => !ids.has(c.id)));
+      forget(ids);
     };
 
     socket.on('connect', subscribe);
@@ -114,7 +148,7 @@ export function useAdminCalls(): UseAdminCallsReturn {
       socket.off('admin:call', handleCall);
       socket.off('admin:call:resolved', handleResolved);
     };
-  }, [socket, load, ring]);
+  }, [socket, load, ring, forget]);
 
   // Any click or key press lets the browser play sound from then on.
   useEffect(() => {
@@ -130,11 +164,7 @@ export function useAdminCalls(): UseAdminCallsReturn {
     };
   }, [soundBlocked]);
 
-  const removeLocally = useCallback((ids: number[]) => {
-    const gone = new Set(ids);
-    ids.forEach((id) => knownIds.current.delete(id));
-    setCalls((prev) => prev.filter((c) => !gone.has(c.id)));
-  }, []);
+  const removeLocally = useCallback((ids: number[]) => forget(new Set(ids)), [forget]);
 
   const resolve = useCallback(
     async (id: number) => {
