@@ -32,7 +32,7 @@ import { inventory, inventoryServer } from '../helpers/fleetHost';
  * - well-formed examples of every §18.2 message pass, obvious mistakes fail;
  * - `rhs_` host tokens have the server-token format but never parse as one;
  * - the inventory ↔ Ready Up join (§18.3) and which servers a command touches;
- * - the 008 migration stays in CS2's namespace.
+ * - the 009 migration stays in CS2's namespace.
  *
  * @tag api
  */
@@ -175,9 +175,9 @@ test.describe('Fleet host protocol v1', () => {
     expect(newServersOf(null, undefined, ['server-1'])).toEqual(['server-1']);
   });
 
-  test('the 008 migration stays in the cs2 namespace and can run twice', () => {
+  test('the 009 migration stays in the cs2 namespace and can run twice', () => {
     expect(validateModuleMigrations('cs2', CS2_MIGRATIONS, { installedModuleIds: ['cs2'] })).toBeNull();
-    const m = CS2_MIGRATIONS.find((x) => x.id === '008-fleet-hosts');
+    const m = CS2_MIGRATIONS.find((x) => x.id === '009-fleet-hosts');
     expect(m).toBeTruthy();
     for (const table of ['hosts', 'host_tokens', 'host_enrollment_codes', 'host_outbox', 'host_commands', 'host_events']) {
       expect(m!.up).toContain(`CREATE TABLE IF NOT EXISTS cs2_fleet_${table}`);

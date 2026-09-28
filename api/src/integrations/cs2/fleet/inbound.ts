@@ -55,11 +55,14 @@ export interface InboundContext {
   serverId: string;
   /** The server's outbound stream id (hello.stream.id). */
   streamId: string;
-  /** Send an ephemeral message on this session (`state.request`). False when the socket is gone. */
+  /**
+   * Send an ephemeral message on this session (`state.request`, `demo.ack`).
+   * `ref`: the id of the message it answers. False when the socket is gone.
+   */
   sendEphemeral(
     type: string,
     payload: Record<string, unknown>,
-    extra?: { epoch?: number }
+    extra?: { epoch?: number; ref?: string }
   ): boolean;
 }
 

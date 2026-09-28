@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/demo.end.json",
+  "title": "demo.end (server → platform, ephemeral)",
+  "description": "Proposed by Ready Up (FLEET.md §12.2). The recording stopped (after the GOTV flush) and the file is final. Sent on the same lowest-priority lane as demo.chunk, so it arrives after every chunk sent before it; sent again every 10 s until demo.ack complete. The platform: if stored < size → answer demo.ack {offset: stored} (the server sends the rest); else truncate its copy to size, hash it, and if the sha256 matches move it into place (demos/<match_id>/map<N>/<file>) and answer demo.ack {offset: size, complete: true} — also for a repeated demo.end of a demo it already stored. On a mismatch discard the copy and answer demo.ack {offset: 0, error: {code: \"checksum\"}}: the server starts over with demo.begin {restart: true} (at most 3 times, then it keeps the demo locally). Only after complete: true may the server delete its local file.",
+  "type": "object",
+  "required": ["demo_id", "size", "sha256"],
+  "properties": {
+    "demo_id": { "$ref": "../defs.json#/$defs/ulid" },
+    "size": { "type": "integer", "minimum": 0, "description": "Final file size in bytes." },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "sha256 of the whole final file, lowercase hex." }
+  },
+  "additionalProperties": false
+}

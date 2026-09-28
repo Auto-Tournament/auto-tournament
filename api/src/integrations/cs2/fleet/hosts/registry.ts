@@ -2,7 +2,7 @@
  * The host registry (FLEET.md §18, D17): csm host agents, their `rhs_` tokens,
  * one-time host codes, the platform's outbound stream per host, the commands
  * sent to hosts with their progress and `host.result`, and `host.health`
- * reports. Tables are `cs2_fleet_host*` (migration `008-fleet-hosts`).
+ * reports. Tables are `cs2_fleet_host*` (migration `009-fleet-hosts`).
  *
  * Mirrors ../registry.ts (servers) on purpose: same token format rules,
  * rotation, revocation and stream bookkeeping, with a separate identity so a

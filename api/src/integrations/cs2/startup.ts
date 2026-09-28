@@ -19,6 +19,7 @@ import { mapService } from './maps/mapService';
 import { startFleet, stopFleet } from './fleet/service';
 import { startRoundBackups, stopRoundBackups } from './fleet/backups';
 import { startRestoreAudit, stopRestoreAudit } from './fleet/restore';
+import { startDemoStreams, stopDemoStreams } from './fleet/demoStream';
 import { startFleetHosts, stopFleetHosts } from './fleet/hosts/service';
 
 export async function startCs2(): Promise<void> {
@@ -26,6 +27,8 @@ export async function startCs2(): Promise<void> {
   // listening before the gateway takes its first message.
   startRoundBackups();
   startRestoreAudit();
+  // Demos Ready Up servers stream over the fleet link (demo.*).
+  startDemoStreams();
 
   // The Ready Up fleet gateway (/api/fleet/ws) first: it only attaches to the
   // HTTP server, and servers reconnecting after a restart should not wait on
@@ -64,6 +67,7 @@ export function stopCs2(): void {
   stopFleet();
   stopRoundBackups();
   stopRestoreAudit();
+  stopDemoStreams();
   stopFleetHosts();
 }
 

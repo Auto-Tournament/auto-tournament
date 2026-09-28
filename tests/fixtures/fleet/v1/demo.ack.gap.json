@@ -1,0 +1,11 @@
+{
+  "v": 1,
+  "type": "demo.ack",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9P36",
+  "ts": 1790340013500,
+  "payload": {
+    "demo_id": "01J8ZQ4T8W6N3X0F2R5K7M9D01",
+    "offset": 131072,
+    "error": { "code": "gap", "message": "chunk at 393216, stored 131072" }
+  }
+}
