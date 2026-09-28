@@ -1130,5 +1130,128 @@
       "revokeKeyTitle": "¿Revocar la clave de flota?",
       "revokeKeyMessage": "«{{name}}» ya no puede registrar servidores. Los servidores ya registrados siguen funcionando."
     }
+  },
+  "machinesPanel": {
+    "copied": "Copied",
+    "copyFailed": "Could not copy",
+    "errors": {
+      "add": "Could not add the machine",
+      "command": "The command failed"
+    },
+    "sent": "Sent to {{name}}",
+    "queued": "{{name}} is offline; it runs when csm reconnects",
+    "rotateSent": "New token sent",
+    "rotateQueued": "The machine gets a new token when it next connects",
+    "process": {
+      "running": "Running",
+      "stopped": "Stopped"
+    },
+    "restarts": "{{count}} restarts in 24 h",
+    "readyUp": "Ready Up {{version}}",
+    "noReadyUp": "No Ready Up",
+    "matchInProgress": "Match in progress",
+    "linked": "on the fleet link",
+    "linkedOffline": "fleet link offline",
+    "start": "Start",
+    "restart": "Restart",
+    "stop": "Stop",
+    "forced": "Forced",
+    "queuedShort": "Queued",
+    "waiting": "Waiting for csm…",
+    "refusedMatch": "csm refused: a match is in progress",
+    "title": "Machines",
+    "add": "Add machine",
+    "description": "Machines run CS2 Server Manager (csm). Link one with a single command, then create, start, stop and update its servers from here.",
+    "empty": "No machines yet.",
+    "codeExpires": "Code valid until {{time}}",
+    "lastSeen": "Last seen {{time}}",
+    "resources": "{{cpus}} CPU · load {{load}} · {{free}}/{{total}} GB RAM free",
+    "disk": "{{mount}}: {{free}} GB free",
+    "cs2Build": "CS2 {{build}}",
+    "cs2UpdateAvailable": "CS2 update available",
+    "newCode": "New code",
+    "rotate": "Rotate token",
+    "revoke": "Revoke machine",
+    "remove": "Remove",
+    "createServer": "Create server",
+    "createN": "Create several…",
+    "updateGame": "Update CS2",
+    "updateReadyUp": "Update Ready Up…",
+    "updatesHold": "Automatic updates",
+    "hold": {
+      "auto": "Automatic (wait for idle)",
+      "on": "Held",
+      "off": "Not held"
+    },
+    "noServers": "No servers on this machine yet.",
+    "enrolledElsewhere": "Enrolled from this machine: {{names}}",
+    "activity": "Recent actions",
+    "addHelp": "You get one command to run on the machine. It needs CS2 Server Manager (csm) installed.",
+    "name": "Name (optional)",
+    "getCommand": "Get the command",
+    "linkTitle": "Run this on {{name}}",
+    "linkHelp": "Run it as root on the machine. The code works once and until {{time}}.",
+    "copy": "Copy",
+    "linkConnected": "Connected. The machine is ready.",
+    "linkWaiting": "Waiting for the machine to connect…",
+    "done": "Done",
+    "createHelp": "New servers get Ready Up and connect to this platform on their own.",
+    "count": "How many",
+    "create": "Create",
+    "version": "Version",
+    "versionHelp": "\"latest\" or a release, e.g. 0.5.0",
+    "bundle": "Bundle",
+    "bundleDefault": "Default",
+    "bundleSkins": "With skins",
+    "update": "Update",
+    "forceTitle": "A match is in progress",
+    "forceHelp": "This interrupts the match on {{servers}}. Say why; it is recorded.",
+    "forceReason": "Reason",
+    "forceConfirm": "Interrupt the match",
+    "confirm": {
+      "removeTitle": "Remove this machine?",
+      "revokeTitle": "Revoke this machine?",
+      "removeMessage": "{{name}} is forgotten. csm can link it again with a new code.",
+      "revokeMessage": "{{name}} is disconnected and its token stops working. Its servers keep running and stay on the fleet link."
+    },
+    "hostStatus": {
+      "online": "Online",
+      "offline": "Offline",
+      "pending": "Waiting for csm",
+      "revoked": "Revoked"
+    },
+    "status": {
+      "pending": "In progress",
+      "ok": "Done",
+      "rejected": "Refused",
+      "failed": "Failed"
+    },
+    "health": {
+      "ok": "Ready Up healthy",
+      "failing": "Ready Up failing",
+      "no_response": "Ready Up not answering",
+      "not_running": "Not running"
+    },
+    "healthEvent": {
+      "crashed": "crashed",
+      "exited": "exited",
+      "hung": "not responding",
+      "recovered": "recovered",
+      "restarted": "restarted"
+    },
+    "commands": {
+      "host_servers_list": "Refresh inventory",
+      "server_start": "Start",
+      "server_stop": "Stop",
+      "server_restart": "Restart",
+      "server_create": "Create server",
+      "server_remove": "Remove server",
+      "server_set_launch_args": "Launch options",
+      "host_update_game": "Update CS2",
+      "host_update_plugins": "Update Ready Up",
+      "host_updates_hold": "Automatic updates",
+      "logs_tail": "Logs",
+      "logs_stop": "Stop logs"
+    }
   }
 }
