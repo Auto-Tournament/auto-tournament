@@ -547,6 +547,10 @@
       "description": "Health check endpoints"
     },
     {
+      "name": "License",
+      "description": "The Auto Tournament license key: save, remove and read its status, checked offline. Admin only, except the public badge. Nothing is ever blocked: a missing or problematic key is a notice for admins."
+    },
+    {
       "name": "Logs",
       "description": "Server-side event logs."
     },
@@ -3249,6 +3253,146 @@
             "description": "Fleet snapshot"
           }
         }
+      }
+    },
+    "/api/license": {
+      "get": {
+        "tags": [
+          "License"
+        ],
+        "summary": "The license status",
+        "description": "Checked offline against the embedded public keys. `status` is `none`\n(no key: free for non-commercial use), `ok`, `warning` (a genuine key\nwith something to point out: another product's key, the event window,\nupdates that ended before this release line, more game servers than\nthe pack) or `invalid` (not a genuine key). Nothing is ever blocked.\nThe key itself is never returned; `license.id` identifies it, and\n`verifyUrl` is its public check page.\n",
+        "responses": {
+          "200": {
+            "description": "The status"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "License"
+        ],
+        "summary": "Save the license key",
+        "description": "Body `{ \"key\": \"ATL1.…\" }`. Replaces any saved key. Refused (400) only\nwhen it isn't an `ATL1.` key at all; a key that fails the signature\ncheck is saved and reported as `invalid`. Same-site JSON only.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "key"
+                ],
+                "properties": {
+                  "key": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved; the new status"
+          },
+          "400": {
+            "description": "Not a license key"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "License"
+        ],
+        "summary": "Remove the license key",
+        "description": "Same-site only. The status afterwards is `none`.",
+        "responses": {
+          "200": {
+            "description": "Removed; the new status"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/license/badge": {
+      "get": {
+        "tags": [
+          "License"
+        ],
+        "summary": "The public \"Licensed\" line",
+        "description": "`badge` is `{ verifyUrl }` when an admin turned the public badge on\nand the saved key is a genuine platform license; otherwise null.\nPublic. Never says anything about an instance without a license:\nfree non-commercial use needs none.\n",
+        "responses": {
+          "200": {
+            "description": "The badge, or null"
+          }
+        }
+      }
+    },
+    "/api/license/public-badge": {
+      "put": {
+        "tags": [
+          "License"
+        ],
+        "summary": "Turn the public \"Licensed\" line on or off",
+        "description": "Body `{ \"enabled\": true }`. Off by default. When on, public event\npages show \"Licensed\", linking to the license's check page, but only\nwhile the saved key is a genuine platform license. Same-site JSON only.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "enabled"
+                ],
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved; the new status"
+          },
+          "400": {
+            "description": "enabled is not a boolean"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/logs": {

@@ -910,6 +910,12 @@ export interface GameIntegration {
   /** Resource snapshot for the allocation status views. */
   poolStatus?(scope: CapacityScope): Promise<ResourcePoolStatus>;
   /**
+   * How many game servers are set up (CS2: enabled rows in `cs2_servers`),
+   * without contacting any of them. The license status compares the sum over
+   * the integrations with the license's `max_servers`; a warning only.
+   */
+  configuredResourceCount?(): Promise<number>;
+  /**
    * How long a freed resource rests before the next match (CS2: the server
    * grace period). The core waits this long between shuffle rounds; 0 when
    * omitted.

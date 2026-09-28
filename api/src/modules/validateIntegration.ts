@@ -38,6 +38,7 @@ const OPTIONAL_METHODS = [
   'cancel',
   'release',
   'poolStatus',
+  'configuredResourceCount',
   'turnoverSeconds',
   'reattach',
   'resourceStatus',

@@ -112,6 +112,24 @@ async function copySwaggerUiAssets() {
   console.log(`Copied ${SWAGGER_UI_FILES.length} Swagger UI assets to api/swagger-ui`);
 }
 
+/**
+ * License line date inputs (src/services/license/lineDate.ts): the build day,
+ * and the release day of this version's x.y.0, which the release workflow
+ * reads from the vX.Y.0 tag and passes as AT_LINE_RELEASE_DATE (empty for an
+ * x.y.0 release itself and for every other build).
+ */
+function licenseLineDefines() {
+  const DATE = /^\d{4}-\d{2}-\d{2}$/;
+  const lineReleaseDate = (process.env.AT_LINE_RELEASE_DATE || '').trim();
+  if (lineReleaseDate && !DATE.test(lineReleaseDate)) {
+    throw new Error(`AT_LINE_RELEASE_DATE must be YYYY-MM-DD, got "${lineReleaseDate}"`);
+  }
+  return {
+    __AT_BUILD_DATE__: JSON.stringify(new Date().toISOString().slice(0, 10)),
+    __AT_LINE_RELEASE_DATE__: JSON.stringify(lineReleaseDate),
+  };
+}
+
 async function build() {
   const outfile = path.join(__dirname, 'dist', 'index.js');
 
@@ -138,6 +156,7 @@ async function build() {
   minify: isProduction,
   sourcemap: !isProduction,
   treeShaking: true,
+  define: licenseLineDefines(),
   // esbuild automatically handles __dirname and __filename for platform: 'node'
   plugins: [strictModeDependencyPatches, ...(process.env.AT_CS2_BUILTIN === '1' ? [] : [withoutCs2])],
   // Write files ourselves so we can fail the build before producing artifacts.

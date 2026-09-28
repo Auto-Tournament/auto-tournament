@@ -107,7 +107,8 @@
       "integrations": "Integrations",
       "players": "Players & Access",
       "matches": "Ratings",
-      "developer": "Developer"
+      "developer": "Developer",
+      "license": "License"
     },
     "integrations": {
       "steam": {
@@ -247,6 +248,54 @@
       "send": "Send",
       "success": "Announcement sent",
       "failed": "Failed to send the announcement"
+    }
+  },
+  "license": {
+    "title": "License",
+    "description": "Paste your Auto Tournament license key for commercial use. It is checked on this server, offline. A license never locks or limits anything: if something is off, it shows here as a notice.",
+    "loading": "Loading the license status",
+    "loadFailed": "Could not read the license status.",
+    "none": "No commercial license key. Free for non-commercial use.",
+    "pricing": "Pricing",
+    "open": "Settings",
+    "id": "License ID {{id}}",
+    "verify": "Check this license",
+    "invalid": "This key could not be verified.",
+    "invalidShort": "The saved key could not be verified.",
+    "warningsShort_one": "1 license notice in Settings.",
+    "warningsShort_other": "{{count}} license notices in Settings.",
+    "warningsNote": "Nothing is blocked or limited. This is only a notice.",
+    "label": "License key",
+    "replaceLabel": "Replace the license key",
+    "helper": "Starts with ATL1. After saving, only the license ID is shown.",
+    "save": "Save key",
+    "saved": "License key saved",
+    "saveFailed": "Could not save the license key",
+    "remove": "Remove key",
+    "removed": "License key removed",
+    "removeFailed": "Could not remove the license key",
+    "summary": {
+      "licensedTo": "Licensed to {{licensee}}",
+      "licensed": "Licensed",
+      "product": {
+        "platform": "Platform {{pack}}",
+        "servers": "Servers {{pack}}"
+      },
+      "servers_one": "{{count}} server",
+      "servers_other": "{{count}} servers",
+      "updatesUntil": "updates until {{date}}",
+      "updatesForLife": "updates for life",
+      "eventWindow": "event {{from}} to {{to}}"
+    },
+    "badge": {
+      "label": "Show \"Licensed\" on public event pages",
+      "note": "Off by default. Links to the license's public check page, and only shows while the saved key is valid.",
+      "on": "Public license line turned on",
+      "off": "Public license line turned off",
+      "failed": "Could not change the public license line"
+    },
+    "public": {
+      "licensed": "Licensed"
     }
   }
 }

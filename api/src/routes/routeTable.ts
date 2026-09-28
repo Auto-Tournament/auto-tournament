@@ -45,6 +45,7 @@ import systemRoutes from './system';
 import meRoutes from './me';
 import compatRoutes from './compat';
 import adminCallRoutes from './adminCalls';
+import licenseRoutes from './license';
 
 export interface MountedRouter {
   /** Path prefix the router is mounted under. */
@@ -197,6 +198,13 @@ const coreRoutes: MountedRouter[] = [
     title: 'Admin calls',
     description:
       'Players calling for an admin from a game server (CS2: `.admin [message]` in Ready Up, sent as the admin_called event): list open and recently resolved calls, resolve one or all. Admin only. Live updates go to signed-in admins as the Socket.IO events admin:call and admin:call:resolved.',
+  },
+  {
+    prefix: '/api/license',
+    router: licenseRoutes,
+    title: 'License',
+    description:
+      'The Auto Tournament license key: save, remove and read its status, checked offline. Admin only, except the public badge. Nothing is ever blocked: a missing or problematic key is a notice for admins.',
   },
   {
     prefix: '/api/test',

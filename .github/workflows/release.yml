@@ -87,6 +87,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
       sha: ${{ steps.version.outputs.sha }}
+      line_release_date: ${{ steps.line.outputs.line_release_date }}
     steps:
       # release.sh always releases origin/main, so images built from any other
       # ref would never match what gets tagged.
@@ -118,6 +119,25 @@ jobs:
           echo "Releasing ${version} (${RELEASE_CHANNEL}) from ${GITHUB_SHA}"
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "sha=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+
+      # The license line date (api/src/services/license/lineDate.ts) of a
+      # patch release is the day its x.y.0 came out: the vX.Y.0 tag's date.
+      # Empty when that tag doesn't exist yet (an x.y.0 release, its betas);
+      # the build then uses its own build day.
+      - name: Line release date
+        id: line
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          line_tag="v$(printf '%s' "$VERSION" | sed -E 's/^([0-9]+)\.([0-9]+)\..*$/\1.\2.0/')"
+          line_release_date=""
+          if [ "$line_tag" != "v$VERSION" ] && git rev-parse -q --verify "refs/tags/$line_tag" > /dev/null; then
+            line_release_date=$(TZ=UTC git for-each-ref --format='%(creatordate:format-local:%Y-%m-%d)' "refs/tags/$line_tag")
+          fi
+          echo "Line ${line_tag}: ${line_release_date:-not released yet, the build day is used}"
+          echo "line_release_date=${line_release_date}" >> "$GITHUB_OUTPUT"
 
   # CS2 rides in the image only as a signed release in its offline snapshot
   # (DESIGN-modules §10). Built without secrets, signed in a job that installs
@@ -327,6 +347,8 @@ jobs:
           context: .
           file: docker/Dockerfile
           platforms: ${{ matrix.platform }}
+          build-args: |
+            AT_LINE_RELEASE_DATE=${{ needs.prepare.outputs.line_release_date }}
           outputs: type=image,name=ghcr.io/auto-tournament/auto-tournament,push-by-digest=true,name-canonical=true,push=true
           cache-from: type=gha,scope=release-${{ matrix.arch }}
           cache-to: type=gha,scope=release-${{ matrix.arch }},mode=max

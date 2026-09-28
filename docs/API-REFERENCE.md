@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 332 of them, 235 behind auth —
+Every endpoint this API serves — 337 of them, 239 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -557,6 +557,18 @@ Players calling for an admin from a game server (CS2: `.admin [message]` in Read
 | `POST` | `/api/admin-calls/resolve-all` | admin |
 | `GET` | `/api/admin-calls/:id` | admin |
 | `POST` | `/api/admin-calls/:id/resolve` | admin |
+
+### License
+
+The Auto Tournament license key: save, remove and read its status, checked offline. Admin only, except the public badge. Nothing is ever blocked: a missing or problematic key is a notice for admins.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/license/badge` | public |
+| `GET` | `/api/license` | admin |
+| `PUT` | `/api/license` | admin |
+| `DELETE` | `/api/license` | admin |
+| `PUT` | `/api/license/public-badge` | admin |
 
 ### Test helpers
 
