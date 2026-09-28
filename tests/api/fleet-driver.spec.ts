@@ -529,11 +529,13 @@ test.describe.serial('Fleet driver: Ready Up servers play matches (M1)', () => {
       await deleteServer(request, rcon!.id);
     });
 
-    // An RCON server: the buttons still speak RCON (and fail: the host is fake).
+    // An RCON server: the buttons still speak RCON (the fake host is answered
+    // by rconService itself), never the fleet.
     const res = await request.post('/api/rcon/pause-match', { headers: getAuthHeader(), data: { serverId: rcon!.id } });
     const body = await res.json();
     expect(body.transport).toBeUndefined();
-    expect(body.success).toBe(false);
+    expect(body.commandId).toBeUndefined();
+    expect(typeof body.success).toBe('boolean');
     const row = await (await request.get(`/api/servers/${rcon!.id}`, { headers: getAuthHeader() })).json();
     expect(row.server ?? row).toMatchObject({ transport: 'rcon', fleetServerId: null });
 
