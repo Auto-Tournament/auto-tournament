@@ -12,6 +12,7 @@
  * logged, never returned after saving (the admin sees the license id).
  */
 
+import { createHash } from 'crypto';
 import { log } from '../../utils/logger';
 import { settingsService } from '../settingsService';
 import { isTruthySetting } from '../../utils/settingFields';
@@ -144,6 +145,31 @@ async function countServers(): Promise<number | null> {
   return counted ? total : null;
 }
 
+/**
+ * What CS2 Server Manager (csm) gets on each `GET /api/servers/update-hold`
+ * poll, so it can write the key into Ready Up's `readyup_license_key`
+ * (`csm license set` / `csm license clear`) on every server it manages.
+ *
+ * `revision` changes exactly when the stored key changes (saved, replaced or
+ * cleared), so csm only rewrites configs when there is something new. It is a
+ * short hash of the key, not a timestamp, so it survives restarts and never
+ * needs its own storage. `none` means no key is saved.
+ */
+export interface ServerLicenseHandoff {
+  key: string | null;
+  revision: string;
+}
+
+export const NO_LICENSE_REVISION = 'none';
+
+/** The hand-off for a stored key (or none). Pure. */
+export function serverHandoffFor(key: string | null): ServerLicenseHandoff {
+  const trimmed = key?.trim() || null;
+  if (!trimmed) return { key: null, revision: NO_LICENSE_REVISION };
+  const digest = createHash('sha256').update(trimmed, 'utf8').digest('hex').slice(0, 16);
+  return { key: trimmed, revision: `sha256:${digest}` };
+}
+
 /** Why a pasted key is refused before it is stored, or null to store it. */
 export function keyInputProblem(input: unknown): string | null {
   if (typeof input !== 'string' || !input.trim()) return 'Paste a license key';
@@ -158,6 +184,15 @@ export function keyInputProblem(input: unknown): string | null {
 class LicenseService {
   async getKey(): Promise<string | null> {
     return (await settingsService.getSetting('license_key'))?.trim() || null;
+  }
+
+  /**
+   * The key for game hosts (see `ServerLicenseHandoff`). Only the
+   * server-token route calls this; the key is passed through as stored and
+   * Ready Up checks it itself.
+   */
+  async getServerHandoff(): Promise<ServerLicenseHandoff> {
+    return serverHandoffFor(await this.getKey());
   }
 
   async isPublicBadgeEnabled(): Promise<boolean> {
