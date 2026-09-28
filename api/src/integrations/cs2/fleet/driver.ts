@@ -51,6 +51,7 @@ import {
   type FleetCommandRecord,
 } from './reliable';
 import { liveStateStore } from './state';
+import { DEMO_STREAM_CAPABILITY } from './limits';
 import { fleetBus, onFleetServerReady, setFleetAssignmentResolver } from './service';
 import type {
   AssignConfig,
@@ -315,6 +316,20 @@ async function servedMatchConfig(match: DbMatchRow): Promise<MatchConfig> {
   return (await currentMatchConfig(match)) as unknown as MatchConfig;
 }
 
+/** The server announced `demo.stream.v1` in its hello (./limits.ts). */
+async function streamsDemos(fleetServerId: string): Promise<boolean> {
+  const row = await db.queryOneAsync<{ capabilities: string | null }>(
+    'SELECT capabilities FROM cs2_fleet_servers WHERE id = ?',
+    [fleetServerId]
+  );
+  try {
+    const caps = row?.capabilities ? (JSON.parse(row.capabilities) as unknown) : [];
+    return Array.isArray(caps) && caps.includes(DEMO_STREAM_CAPABILITY);
+  } catch {
+    return false;
+  }
+}
+
 async function assignDefaults(): Promise<{ allowForceReady?: boolean; pauseAfterRestore?: boolean }> {
   try {
     const { cs2Settings } = await import('../settingsReaders');
@@ -349,7 +364,10 @@ export async function assignMatch(matchSlug: string, cs2ServerId: string): Promi
   const password = generateMatchPassword();
   try {
     served = await servedMatchConfig(match);
-    config = buildAssignConfig(served, password, await assignDefaults());
+    config = buildAssignConfig(served, password, {
+      ...(await assignDefaults()),
+      demoUpload: await streamsDemos(fleetServerId),
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     log.warn(`[FLEET] ${matchSlug}: cannot build match.assign: ${message}`);
@@ -409,9 +427,14 @@ export async function assignMatch(matchSlug: string, cs2ServerId: string): Promi
     emitMatchUpdate(updated);
     emitBracketUpdate({ action: 'match_loaded', matchSlug });
   }
-  // No demo upload over the link yet (rules.demo.upload is false), so
-  // turnover does not wait for one.
-  serverTurnoverTracker.matchLoaded(cs2ServerId, match.id, false, tvDelayFromCvars(served.cvars));
+  // With rules.demo.upload the server streams each map's demo; turnover
+  // holds the server until the receiver (./demoStream.ts) has it.
+  serverTurnoverTracker.matchLoaded(
+    cs2ServerId,
+    match.id,
+    config.rules?.demo?.upload === true,
+    tvDelayFromCvars(served.cvars)
+  );
   return { success: true, epoch, commandId: sent.id };
 }
 

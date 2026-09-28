@@ -30,11 +30,13 @@ admin actions): what exists, and the calls to use.
 | `driver.ts` | **the fleet driver**: assign / unassign / update / cmd, link hooks (see below) |
 | `backups.ts` | **the round backup store** (`roundBackupStore`): `event.backup` in (checked, parts joined, newest per round), retention |
 | `restore.ts` | **"restore to round N"**: `cmd restore_round` with the backup inline (or `css_restore` over RCON), audited; `inlineBackupFor` |
+| `demoStream.ts` | **the demo stream receiver**: `demo.begin` / `demo.chunk` / `demo.end` in, `demo.ack` out; stored and linked like an uploaded demo |
+| `limits.ts` | per-server byte budgets and the demo stream knobs (env) |
 
 Tables (migration `006-fleet-match` in `../migrations.ts`):
 `cs2_servers.transport` (`'rcon'` default | `'fleet'`) + `cs2_servers.fleet_server_id`
 (→ `cs2_fleet_servers.id`, unique), `cs2_match_live_state`, `cs2_fleet_events`,
-`cs2_fleet_commands`. Migration `008-fleet-driver`: `cs2_fleet_assignments`
+`cs2_fleet_commands`. Migration `009-fleet-driver`: `cs2_fleet_assignments`
 (epoch, server, connect password, acked config per match) and `cs2_fleet_audit`
 (root `exec`). `transport = 'fleet'` is set by linking a server
 (`POST /api/fleet/servers/:id/link`, the Servers page's "Use for matches").
@@ -185,11 +187,44 @@ per match + fleet map number + round, the file base64 in `data`),
   `POST /api/game/cs2/matches/:slug/round-backups/restore { mapNumber?, round }`.
   Client: `matchPanels.adminMatchView` (CS2 `RoundBackupsPanel`).
 
-## Extension point: more server message types (demo streaming, …)
+## Demo streaming (`demoStream.ts`)
 
-New server → platform types (e.g. the demo stream of FLEET.md §12.2:
-`demo.begin`, `demo.chunk {demo_id, offset, bytes, final}`, answered by the
-platform's `demo.ack {demo_id, offset}`) plug in without touching the gateway:
+Ready Up streams the GOTV demo while it records (FLEET.md §12.2, §12.4;
+schemas `protocol/v1/messages/demo.*.json`, examples in
+`tests/fixtures/fleet/v1/demo.*.json`). The receiver is registered with
+`registerInboundHandler` (all three types on the low-priority chain) by
+`startDemoStreams()` in `../startup.ts`.
+
+- **Where**: bytes go to `DATA_DIR/demos/.incoming/<demo_id>.part` at the
+  chunk offsets (synced before the ack); a verified demo moves to
+  `DATA_DIR/demos/<match>/map<N>/<file>` (N 1-based) and
+  `utils/demoFiles.ts linkStoredDemo` points `matches.demo_file_path` and
+  `match_map_results.demo_file_path` at it: the download, info and status
+  routes (`routes/demos.ts`) and the match page see it like an HTTP upload.
+- **Table** (migration `008-fleet-demo-streams`): `cs2_fleet_demo_streams`,
+  one row per demo_id: server, match, map (platform, 0-based), epoch, part /
+  final path, `received_offset` (contiguous bytes = the ack's offset), size,
+  sha256, `state` (`receiving` / `complete` / `rejected`), timestamps.
+- **Answers**: `offset` = bytes stored contiguously from 0; a chunk past it
+  → `gap`; below it overwrites; `demo.end` with size + sha256 matching →
+  `complete: true` (again for a repeat); mismatch → copy discarded,
+  `checksum` (Ready Up restarts with `restart: true`). `unknown_demo`,
+  `not_assigned` (the server never held the match: `cs2_match_live_state` or
+  a `match.assign` in `cs2_fleet_commands`), `stale_epoch` (it held another
+  epoch), `too_large` (`FLEET_DEMO_MAX_BYTES`, 2 GiB), `storage` (disk / DB).
+- **Turnover**: a stored (or refused) demo reports `demo_upload_ended` for
+  its map to `serverTurnoverTracker` (as the plugin's upload event does);
+  `onFleetDemo(fn)` announces `stored` / `refused` to the driver.
+- **Rate**: acks are paced to `FLEET_DEMO_BYTES_PER_MINUTE` (64 MiB) per
+  server; a server whose hello lists `demo.stream.v1` gets a socket budget of
+  `FLEET_BYTES_PER_MINUTE` (8 MiB) + that + 4 MiB slack (`limits.ts`).
+- **Cleanup**: unfinished streams idle for `FLEET_DEMO_STREAM_EXPIRE_DAYS`
+  (7) are deleted with their part files, hourly.
+
+## Extension point: more server message types
+
+New server → platform types plug in without touching the gateway (the demo
+stream above is built this way):
 
 ```ts
 import { registerInboundHandler } from './inbound';
@@ -217,8 +252,8 @@ registerInboundHandler('demo.chunk', {
 - **Framing / limits**: frames are JSON text only (binary frames close the
   session with 4400), at most 1 MiB (`MAX_FRAME_BYTES`): binary data goes
   base64 in the payload (≤ ~700 KiB raw per frame). Every frame counts against
-  the per-server `RATE` in `gateway.ts` (50 msg/s, burst 200, **8 MiB/min**):
-  demo streaming needs that byte budget raised or a separate budget per type.
+  the per-server `RATE` in `gateway.ts` (50 msg/s, burst 200) and the
+  socket's byte budget (`limits.ts`: 8 MiB/min, more for `demo.stream.v1`).
 - **Outbound**: the platform's reliable stream (outbox) is one ordered
   stream; bulk platform → server data should be ephemeral with its own acks,
   not `sendReliable`.

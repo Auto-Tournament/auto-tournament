@@ -38,6 +38,11 @@ import type {
 export interface AssignDefaults {
   allowForceReady?: boolean;
   pauseAfterRestore?: boolean;
+  /**
+   * The server streams its demos over the link (`demo.stream.v1`, received by
+   * ./demoStream.ts): `rules.demo.upload` follows `record`. Otherwise false.
+   */
+  demoUpload?: boolean;
 }
 
 export class AssignConfigError extends Error {
@@ -191,10 +196,10 @@ export function rulesFromMatchConfig(config: MatchConfig, defaults: AssignDefaul
   }
   if (Object.keys(forfeit).length) rules.forfeit = forfeit;
 
-  // Demos: recorded unless the match turns it off. Not uploaded yet: the
-  // platform's demo receiver (FLEET.md §12.2, demo.begin / chunk / ack) is
-  // its own step; until then the file stays on the server.
-  rules.demo = { record: flag(cvars.at_demo_recording_enabled) !== false, upload: false };
+  // Demos: recorded unless the match turns it off; uploaded (streamed over
+  // the link, FLEET.md §12.2) when the server can.
+  const record = flag(cvars.at_demo_recording_enabled) !== false;
+  rules.demo = { record, upload: record && defaults.demoUpload === true };
 
   if (config.wingman === true) rules.wingman = true;
   if (config.simulation === true) {

@@ -130,6 +130,11 @@ test.describe('Fleet match.assign config', () => {
     expect(off.knife).toEqual({ side_pick_seconds: 300 });
     expect(off.wingman).toBe(true);
     expect(off.simulation).toEqual({ timescale: 4 });
+    // A server that streams demos (demo.stream.v1) uploads what it records.
+    expect(rulesFromMatchConfig(tournamentConfig(), { demoUpload: true }).demo).toEqual({ record: true, upload: true });
+    expect(
+      rulesFromMatchConfig(tournamentConfig({ cvars: { at_demo_recording_enabled: 0 } }), { demoUpload: true }).demo
+    ).toEqual({ record: false, upload: false });
     expect(rulesFromMatchConfig(tournamentConfig({ overtimeSegments: 2 })).overtime).toEqual({
       enabled: true,
       max_overtimes: 2,
