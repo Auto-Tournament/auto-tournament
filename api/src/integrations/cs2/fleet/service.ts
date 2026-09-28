@@ -7,7 +7,8 @@
 import type { Server as HttpServer } from 'http';
 import { log } from '../../../utils/logger';
 import { getIO } from '../../../services/socketService';
-import { FleetGateway } from './gateway';
+import { FleetGateway, type AssignmentResolver } from './gateway';
+import type { HelloPayload } from './protocol/v1';
 import { InProcessFleetBus, type FleetBus } from './bus';
 import * as registry from './registry';
 import { FLEET_CLOSE } from './protocol/v1';
@@ -27,6 +28,18 @@ gateway.onServerReady(async (serverId) => {
 
 export function fleetBus(): FleetBus {
   return bus;
+}
+
+/** Run `listener` after every server's welcome (the fleet driver's zombie check). */
+export function onFleetServerReady(
+  listener: (serverId: string, hello: HelloPayload) => Promise<void> | void
+): void {
+  gateway.onServerReady(listener);
+}
+
+/** Who fills `welcome.assignment` (the fleet driver). */
+export function setFleetAssignmentResolver(resolver: AssignmentResolver | null): void {
+  gateway.setAssignmentResolver(resolver);
 }
 
 /**

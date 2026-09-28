@@ -9,7 +9,7 @@ import { serverService } from './services/serverService';
 
 export async function cs2FleetHealth(): Promise<Record<string, unknown>> {
   const now = Math.floor(Date.now() / 1000);
-  const servers = await serverService.getAllServers(true);
+  const servers = await serverService.getRconServers(true);
 
   // NOTE: getAllServers already filters to enabled servers, and ServerResponse
   // exposes `enabled` as a boolean. Comparing it to 1 is always false, which

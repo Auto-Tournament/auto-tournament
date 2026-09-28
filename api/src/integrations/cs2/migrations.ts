@@ -34,6 +34,10 @@
  * fleet link (Ready Up's step 3): a server's transport, the live match state
  * (fleet/state.ts), the inbound event log and the answers to the platform's
  * own commands (fleet/inbound.ts, fleet/reliable.ts).
+ *
+ * `007-fleet-driver` adds what the fleet driver (fleet/driver.ts) keeps per
+ * assignment: the match's connect password and the config last sent (the
+ * base for `match.update`), and the audit log of admin `exec` commands.
  */
 
 import type { ModuleMigration } from '../types';
@@ -44,6 +48,7 @@ export const CS2_CATALOG_MARKERS_MIGRATION_ID = '003-catalog-markers';
 export const CS2_MAP_MODES_MIGRATION_ID = '004-map-modes';
 export const CS2_FLEET_MIGRATION_ID = '005-fleet';
 export const CS2_FLEET_MATCH_MIGRATION_ID = '006-fleet-match';
+export const CS2_FLEET_DRIVER_MIGRATION_ID = '007-fleet-driver';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -362,6 +367,50 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
 
     CREATE INDEX IF NOT EXISTS cs2_fleet_commands_match_idx ON cs2_fleet_commands(match_slug, created_at);
     CREATE INDEX IF NOT EXISTS cs2_fleet_commands_server_idx ON cs2_fleet_commands(server_id, status);
+`,
+  },
+  {
+    // The fleet driver (fleet/driver.ts). Every statement can run twice.
+    //
+    // - cs2_fleet_assignments: one row per match on a fleet server: the
+    //   epoch and server it was last assigned to, the sv_password generated
+    //   for it (FLEET.md D9: shown to the roster and admins only), and the
+    //   match.assign config the server acked (JSON), which `match.update`
+    //   diffs against. `ended_at` is set when the platform unassigned it.
+    // - cs2_fleet_audit: root-only `cmd exec` (FLEET.md §7.4, D10). The row is
+    //   written before the command is sent and its id goes out as
+    //   `audit_id`; the answer is stored on it.
+    id: CS2_FLEET_DRIVER_MIGRATION_ID,
+    up: `
+    CREATE TABLE IF NOT EXISTS cs2_fleet_assignments (
+      match_slug TEXT PRIMARY KEY, -- matches.slug = the fleet match_id
+      epoch INTEGER NOT NULL,
+      server_id TEXT REFERENCES cs2_fleet_servers(id) ON DELETE SET NULL, -- fleet server
+      cs2_server_id TEXT, -- the linked cs2_servers row (matches.server_id)
+      password TEXT NOT NULL, -- sv_password for this assignment
+      config TEXT, -- match.assign config JSON the server acked (password removed)
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      ended_at INTEGER
+    );
+
+    CREATE INDEX IF NOT EXISTS cs2_fleet_assignments_server_idx ON cs2_fleet_assignments(server_id);
+
+    CREATE TABLE IF NOT EXISTS cs2_fleet_audit (
+      id TEXT PRIMARY KEY, -- ULID; cmd.audit_id
+      actor TEXT, -- requestActorId: Steam ID or token:<label>
+      server_id TEXT, -- fleet server
+      match_slug TEXT,
+      command TEXT NOT NULL, -- the exec line as sent
+      message_id TEXT, -- the cmd envelope id (cs2_fleet_commands)
+      status TEXT NOT NULL DEFAULT 'pending', -- pending | ok | rejected | failed | expired | timeout
+      error_code TEXT,
+      output TEXT, -- cmd.result.output (console lines, <= 8 KiB)
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      answered_at INTEGER
+    );
+
+    CREATE INDEX IF NOT EXISTS cs2_fleet_audit_server_idx ON cs2_fleet_audit(server_id, created_at);
 `,
   },
 ];
