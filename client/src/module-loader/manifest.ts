@@ -191,6 +191,7 @@ export const COMPONENT_SLOTS = [
   'matchPanels.teamView',
   'matchPanels.adminView',
   'matchPanels.reportView',
+  'matchPanels.adminMatchView',
   'teamAdminPanel',
   'rosterMemberStatus',
   'adminGlobalWarning',

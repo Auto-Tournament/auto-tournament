@@ -89,6 +89,21 @@ export interface MatchAllocationPanelProps {
 }
 
 /**
+ * Match details, admin section: the module's own controls for one running
+ * match (client API 0.2.9; CS2: round backups and "restore to round N").
+ *
+ * The panel reads what it needs by match slug. Core reports what it says
+ * through its own banner: `onSuccess` / `onError` with a finished message.
+ */
+export interface MatchAdminPanelProps {
+  matchSlug: string;
+  /** Re-read when the match itself moves (loaded → live …). */
+  matchStatus?: string;
+  onSuccess?: (message: string) => void;
+  onError?: (message: string) => void;
+}
+
+/**
  * Team match page: how this match's result reaches MAT when the game cannot
  * send one itself (3.0 phase D, PR D7).
  *
@@ -891,6 +906,12 @@ export interface ClientGameIntegration {
     adminView?: ComponentType<MatchAllocationPanelProps>;
     /** Team match page: reporting the result, when the game cannot send one. */
     reportView?: ComponentType<MatchReportPanelProps>;
+    /**
+     * Match details, admin section (client API 0.2.9): the module's controls
+     * for a running match. CS2: round backups and restore; a module with it
+     * owns "restore to round N", so core's RCON restore button is hidden.
+     */
+    adminMatchView?: ComponentType<MatchAdminPanelProps>;
   };
 
   /** Team page: an admin-only control this integration needs (D7: captains). */
