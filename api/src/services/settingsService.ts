@@ -22,7 +22,12 @@ export type CoreSettingKey =
   // /api/license only; never returned by /api/settings or logged.
   | 'license_key'
   // Show "Licensed" on public event pages. Off by default.
-  | 'license_public_badge';
+  | 'license_public_badge'
+  // The admin's acceptance of the license terms, JSON (services/license/consent).
+  // Set through /api/license/consent or AT_ACCEPT_LICENSE only.
+  | 'license_consent'
+  // Earlier acceptances, newest first (JSON array), for the record.
+  | 'license_consent_history';
 
 export interface AppSetting {
   key: AppSettingKey;
@@ -103,6 +108,18 @@ export const CORE_SETTINGS: ReadonlyArray<SettingDefinition & { key: CoreSetting
   {
     key: 'license_public_badge',
     normalize: normalizeFlag('Public license badge'),
+  },
+  {
+    key: 'license_consent',
+    normalize(trimmed) {
+      return { value: trimmed, message: 'License terms acceptance saved' };
+    },
+  },
+  {
+    key: 'license_consent_history',
+    normalize(trimmed) {
+      return { value: trimmed, message: 'License terms history saved' };
+    },
   },
 ];
 

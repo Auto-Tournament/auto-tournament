@@ -296,6 +296,50 @@
     },
     "public": {
       "licensed": "Con licenza"
+    },
+    "consent": {
+      "title": "Prima di iniziare: la licenza",
+      "subtitle": "Auto Tournament è gratuito per uso non commerciale. L'uso commerciale richiede una licenza. Leggi la versione breve, dicci come lo usi e scrivi I AGREE.",
+      "intro": "Il codice di Auto Tournament è disponibile con la {{name}}. In breve:",
+      "points": {
+        "free": "Gratuito per uso personale, progetti amatoriali, studio ed eventi in cui nessuno ci guadagna.",
+        "orgs": "Gratuito per enti benefici, scuole, università, ricerca pubblica ed enti pubblici, anche se fanno pagare l'ingresso.",
+        "commercial": "L'uso commerciale richiede una licenza: hosting a pagamento, vendita del software o di un servizio basato su di esso, eventi con profitto, uso in un'azienda ed essere pagati per installarlo per altri.",
+        "servers": "Ogni server di gioco conta per la licenza.",
+        "nothingLocked": "Senza chiave non viene bloccato né limitato nulla. Puoi aggiungere una chiave ora o più tardi.",
+        "forks": "Puoi modificare il codice e condividerlo. Includi la licenza; valgono le stesse regole."
+      },
+      "readLicense": "Leggi la licenza completa",
+      "readRules": "Licenze e uso commerciale",
+      "summaryNote": "Questo è un riassunto. Se non coincide con la licenza, vale la licenza.",
+      "useQuestion": "Come viene usata questa istanza?",
+      "use": {
+        "noncommercial": "Personale / non commerciale",
+        "noncommercialHint": "Gratis. Nessuno ci guadagna.",
+        "commercial": "Commerciale",
+        "commercialHint": "Ti serve una licenza. Incolla la chiave ora o più tardi."
+      },
+      "keyLabel": "Chiave di licenza (facoltativa)",
+      "keyHelper": "Inizia con ATL1. Puoi aggiungerla anche più tardi in Impostazioni > Licenza.",
+      "confirmLabel": "Scrivi {{phrase}} per accettare i termini della licenza",
+      "confirmHelper": "Scrivendo {{phrase}} accetti i termini della licenza per questa istanza.",
+      "accept": "Accetta e continua",
+      "cancel": "Annulla",
+      "failed": "Impossibile salvare la risposta",
+      "accepted": "Termini della licenza accettati",
+      "termsChanged": "I termini della licenza sono cambiati dall'ultima accettazione. Leggili e accettali di nuovo.",
+      "onlyAdmins": "Lo vedono solo gli admin, una volta per istanza. Giocatori, pagine pubbliche e partite in corso non sono toccati.",
+      "declared": {
+        "noncommercial": "Uso non commerciale",
+        "commercial": "Uso commerciale",
+        "none": "Termini della licenza non ancora accettati"
+      },
+      "acceptedLine": "Termini accettati il {{date}} da {{who}} (versione {{version}})",
+      "byEnv": "l'impostazione AT_ACCEPT_LICENSE",
+      "change": "Modifica",
+      "changeTitle": "Modifica come viene usata questa istanza",
+      "changeNote": "Scegli di nuovo e scrivi I AGREE. La modifica viene salvata con la data e il tuo account.",
+      "commercialNoKey": "Questa istanza ha un uso commerciale, quindi ti serve una licenza. Incolla la chiave qui sotto. Nel frattempo non viene bloccato nulla."
     }
   }
 }

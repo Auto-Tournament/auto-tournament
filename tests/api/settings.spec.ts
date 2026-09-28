@@ -1223,6 +1223,9 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   { key: 'site_name', field: 'siteName' },
   { key: 'license_key', field: null },
   { key: 'license_public_badge', field: null },
+  // The license terms acceptance: /api/license/consent or AT_ACCEPT_LICENSE only.
+  { key: 'license_consent', field: null },
+  { key: 'license_consent_history', field: null },
 ];
 
 // --- tests -------------------------------------------------------------------

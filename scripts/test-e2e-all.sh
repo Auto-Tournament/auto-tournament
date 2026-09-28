@@ -47,6 +47,8 @@ export DB_PASSWORD="${DB_PASSWORD:-postgres}"
 export DB_NAME="${DB_NAME:-auto_tournament}"
 export ENABLE_TEST_ENDPOINTS="${ENABLE_TEST_ENDPOINTS:-true}"
 export MAT_TEST_INTEGRATION="${MAT_TEST_INTEGRATION:-1}"
+# The admin UI waits for the license terms; the suite accepts them up front.
+export AT_ACCEPT_LICENSE="${AT_ACCEPT_LICENSE:-noncommercial}"
 export API_TOKENS="${API_TOKENS:-ci-admin:ci-admin-token-0123456789abcdef}"
 export API_TOKENS_READONLY="${API_TOKENS_READONLY:-ci-readonly:ci-readonly-token-0123456789abcdef}"
 export COMPAT_INGEST_TOKEN="${COMPAT_INGEST_TOKEN:-ci-compat-token-0123456789abcdef}"
