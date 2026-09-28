@@ -56,8 +56,12 @@ test.describe('Ready Up version status', () => {
     expect(calls).toBe(1);
 
     const released = async (url: string) => {
-      expect(url).toContain('/repos/Auto-Tournament/ready-up/releases/latest');
-      return { ok: true, status: 200, json: async () => ({ tag_name: 'v1.2.0', html_url: RELEASE.releaseUrl }) };
+      expect(url).toContain('/repos/Auto-Tournament/ready-up/releases?per_page=20');
+      return {
+        ok: true,
+        status: 200,
+        json: async () => [{ tag_name: 'v1.2.0', html_url: RELEASE.releaseUrl, prerelease: false, draft: false }],
+      };
     };
     expect(await getLatestReadyUpRelease({ forceRefresh: true, fetchImpl: released })).toEqual(RELEASE);
 
@@ -66,6 +70,115 @@ test.describe('Ready Up version status', () => {
       throw new Error('network');
     };
     expect(await getLatestReadyUpRelease({ fetchImpl: boom })).toBeNull();
+    resetReadyUpReleaseCache();
+  });
+});
+
+const rel = (tag: string, prerelease = false, draft = false) => ({
+  tag_name: tag,
+  html_url: `https://github.com/Auto-Tournament/ready-up/releases/tag/${tag}`,
+  prerelease,
+  draft,
+});
+const listOf = (...items: ReturnType<typeof rel>[]) => async () => ({
+  ok: true,
+  status: 200,
+  json: async () => items,
+});
+
+test.describe('Ready Up version parsing and channels', () => {
+  test.beforeEach(() => resetReadyUpReleaseCache());
+
+  test('parses hello strings with a git sha and ignores it', { tag: ['@api'] }, () => {
+    expect(compareVersions('0.1.0 (4e42de0)', '0.1.0')).toBe(0);
+    expect(compareVersions('0.1.0 (aaaaaaa)', '0.1.0 (bbbbbbb)')).toBe(0);
+    expect(compareVersions('v0.1.0+build.5', '0.1.0')).toBe(0);
+    expect(compareVersions('0.1.0-beta.1 (4e42de0)', '0.1.0-beta.1')).toBe(0);
+    expect(compareVersions('0.1.0 (4e42de0)', '0.2.0')).toBe(-1);
+  });
+
+  test('semver precedence: beta < rc < stable, numeric identifiers numeric', { tag: ['@api'] }, () => {
+    expect(compareVersions('1.0.0-beta.2', '1.0.0-rc.1')).toBe(-1);
+    expect(compareVersions('1.0.0-rc.1', '1.0.0')).toBe(-1);
+    expect(compareVersions('1.0.0-beta.2', '1.0.0-beta.10')).toBe(-1);
+    expect(compareVersions('1.0.0-beta.11', '1.0.0-beta.2')).toBe(1);
+    expect(compareVersions('1.0.0', '0.9.9-rc.1')).toBe(1);
+  });
+
+  test('malformed versions are unknown', { tag: ['@api'] }, () => {
+    for (const bad of ['', 'dev-build', 'abc (123)', '1.2', '(4e42de0)']) {
+      expect(compareVersions(bad, '1.0.0')).toBeNull();
+      expect(readyUpUpdateStatus(bad, RELEASE).state).toBe('unknown');
+    }
+  });
+
+  test('a running beta is outdated against a newer beta', { tag: ['@api'] }, async () => {
+    const latest = await getLatestReadyUpRelease({
+      runningVersion: '0.1.0-beta.1 (4e42de0)',
+      fetchImpl: listOf(rel('v0.1.0-beta.2', true), rel('v0.1.0-beta.1', true)),
+    });
+    expect(latest?.version).toBe('0.1.0-beta.2');
+    expect(readyUpUpdateStatus('0.1.0-beta.1 (4e42de0)', latest).state).toBe('outdated');
+    expect(readyUpUpdateStatus('0.1.0-beta.2 (abc1234)', latest).state).toBe('current');
+  });
+
+  test('a running beta sees a newer stable and skips drafts', { tag: ['@api'] }, async () => {
+    const latest = await getLatestReadyUpRelease({
+      runningVersion: '0.1.0-rc.1',
+      fetchImpl: listOf(rel('v0.1.0', false, true), rel('v0.1.0-rc.2', true), rel('v0.0.9')),
+    });
+    expect(latest?.version).toBe('0.1.0-rc.2');
+    const withStable = await getLatestReadyUpRelease({
+      runningVersion: '0.1.0-rc.1',
+      forceRefresh: true,
+      fetchImpl: listOf(rel('v0.1.0-rc.2', true), rel('v0.1.0')),
+    });
+    expect(withStable?.version).toBe('0.1.0');
+  });
+
+  test('a stable server never compares against pre-releases', { tag: ['@api'] }, async () => {
+    const onlyBetas = await getLatestReadyUpRelease({
+      runningVersion: '0.1.0 (4e42de0)',
+      fetchImpl: listOf(rel('v0.2.0-beta.1', true), rel('v0.1.0-beta.9', true)),
+    });
+    expect(onlyBetas).toBeNull();
+    expect(readyUpUpdateStatus('0.1.0 (4e42de0)', onlyBetas).state).toBe('unknown');
+
+    const mixed = await getLatestReadyUpRelease({
+      runningVersion: '0.1.0',
+      forceRefresh: true,
+      fetchImpl: listOf(rel('v0.3.0-beta.1', true), rel('v0.2.0'), rel('v0.1.0')),
+    });
+    expect(mixed?.version).toBe('0.2.0');
+    expect(readyUpUpdateStatus('0.1.0', mixed).state).toBe('outdated');
+  });
+
+  test('empty list and 404 mean no release; errors are not cached; channels cache separately', { tag: ['@api'] }, async () => {
+    expect(await getLatestReadyUpRelease({ fetchImpl: listOf() })).toBeNull();
+    expect(await getLatestReadyUpRelease({ fetchImpl: async () => ({ ok: false, status: 404, json: async () => ({}) }), forceRefresh: true })).toBeNull();
+
+    resetReadyUpReleaseCache();
+    let calls = 0;
+    const failing = async () => {
+      calls++;
+      return { ok: false, status: 500, json: async () => ({}) };
+    };
+    await getLatestReadyUpRelease({ fetchImpl: failing });
+    await getLatestReadyUpRelease({ fetchImpl: failing });
+    expect(calls).toBe(2);
+
+    let okCalls = 0;
+    const counting = async () => {
+      okCalls++;
+      return { ok: true, status: 200, json: async () => [rel('v1.0.0-beta.1', true), rel('v0.9.0')] };
+    };
+    const stable = await getLatestReadyUpRelease({ fetchImpl: counting });
+    const stableAgain = await getLatestReadyUpRelease({ runningVersion: '0.9.0', fetchImpl: counting });
+    const pre = await getLatestReadyUpRelease({ runningVersion: '1.0.0-beta.0', fetchImpl: counting });
+    expect(stable?.version).toBe('0.9.0');
+    expect(stableAgain?.version).toBe('0.9.0');
+    expect(pre?.version).toBe('1.0.0-beta.1');
+    expect(okCalls).toBe(2);
     resetReadyUpReleaseCache();
   });
 });

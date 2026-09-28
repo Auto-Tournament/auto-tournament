@@ -99,7 +99,11 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
   // run of games otherwise. The module that owns the match says which, and a
   // match with no maps has no map list to be "to be determined via veto"
   // (3.0 phase D, PR D10).
-  const gameCapabilities = useIntegrationFor(match).capabilities;
+  const matchIntegration = useIntegrationFor(match);
+  const gameCapabilities = matchIntegration.capabilities;
+  // The module's own admin controls for a running match (CS2: round backups
+  // and restore). A module with it owns "restore to round N".
+  const AdminMatchPanel = matchIntegration.matchPanels.adminMatchView;
   const playsOnMaps = gameCapabilities.veto;
   // Kills, damage and demos are what the game measured and recorded. A game
   // that does neither has no leaderboard of them and no demo to download —
@@ -1233,6 +1237,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                     serverId={match.serverId}
                     matchSlug={match.slug}
                     matchStatus={match.status}
+                    hideRestoreBackup={!!AdminMatchPanel}
                     onSuccess={(message) => {
                       setSuccess(message);
                       setTimeout(() => setSuccess(''), 3000);
@@ -1241,6 +1246,22 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                       setError(message);
                     }}
                   />
+                  {AdminMatchPanel && (
+                    <>
+                      <Divider sx={{ my: 2 }} />
+                      <AdminMatchPanel
+                        matchSlug={match.slug}
+                        matchStatus={match.status}
+                        onSuccess={(message) => {
+                          setSuccess(message);
+                          setTimeout(() => setSuccess(''), 3000);
+                        }}
+                        onError={(message) => {
+                          setError(message);
+                        }}
+                      />
+                    </>
+                  )}
                   <Divider sx={{ my: 2 }} />
                   <AddBackupPlayer
                     matchSlug={match.slug}

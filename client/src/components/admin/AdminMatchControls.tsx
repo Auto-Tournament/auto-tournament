@@ -39,6 +39,12 @@ interface AdminMatchControlsProps {
   serverId?: string;
   matchSlug?: string;
   matchStatus?: 'pending' | 'ready' | 'loaded' | 'live' | 'completed' | 'cancelled';
+  /**
+   * The game module shows its own "restore to round N" (CS2: the round
+   * backups panel, which covers both the fleet link and RCON): leave out the
+   * RCON-only round input here, so there is one place to restore from.
+   */
+  hideRestoreBackup?: boolean;
   onSuccess?: (message: string) => void;
   onError?: (message: string) => void;
 }
@@ -64,6 +70,7 @@ const AdminMatchControls: React.FC<AdminMatchControlsProps> = ({
   serverId,
   matchSlug,
   matchStatus,
+  hideRestoreBackup = false,
   onSuccess,
   onError,
 }) => {
@@ -285,11 +292,14 @@ const AdminMatchControls: React.FC<AdminMatchControlsProps> = ({
     defaultValue: string | number;
   };
 
-  const inputActions: InputAction[] = [
+  const allInputActions: InputAction[] = [
     { action: 'restoreBackup', icon: <ClockCounterClockwiseIcon />, inputType: 'number', defaultValue: 1 },
     { action: 'addTime', icon: <TimerIcon />, inputType: 'number', defaultValue: 60 },
     { action: 'broadcast', icon: <ChatTextIcon />, inputType: 'text', defaultValue: '' },
   ];
+  const inputActions = allInputActions.filter(
+    (item) => !(hideRestoreBackup && item.action === 'restoreBackup')
+  );
 
   return (
     <Box>

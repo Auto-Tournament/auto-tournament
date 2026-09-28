@@ -28,11 +28,13 @@ admin actions): what exists, and the calls to use.
 | `link.ts` | which `cs2_servers` row a fleet server plays matches as (`transport = 'fleet'`) |
 | `assignConfig.ts` | the served match config → `match.assign.config` (typed `rules`, engine `cvars`), roster diff (pure) |
 | `driver.ts` | **the fleet driver**: assign / unassign / update / cmd, link hooks (see below) |
+| `backups.ts` | **the round backup store** (`roundBackupStore`): `event.backup` in (checked, parts joined, newest per round), retention |
+| `restore.ts` | **"restore to round N"**: `cmd restore_round` with the backup inline (or `css_restore` over RCON), audited; `inlineBackupFor` |
 
 Tables (migration `006-fleet-match` in `../migrations.ts`):
 `cs2_servers.transport` (`'rcon'` default | `'fleet'`) + `cs2_servers.fleet_server_id`
 (→ `cs2_fleet_servers.id`, unique), `cs2_match_live_state`, `cs2_fleet_events`,
-`cs2_fleet_commands`. Migration `007-fleet-driver`: `cs2_fleet_assignments`
+`cs2_fleet_commands`. Migration `008-fleet-driver`: `cs2_fleet_assignments`
 (epoch, server, connect password, acked config per match) and `cs2_fleet_audit`
 (root `exec`). `transport = 'fleet'` is set by linking a server
 (`POST /api/fleet/servers/:id/link`, the Servers page's "Use for matches").
@@ -153,6 +155,35 @@ Hooks on `fleetInbound` (each returns its unsubscribe):
 | `onAvailability({ serverId, availability, reason })` | `server.availability` (also stored on `cs2_fleet_servers.availability`) |
 | `onSnapshot({ serverId, payload, outcome })` | every `state.snapshot` (`outcome.kind`: `replaced` / `idle` / `stale_epoch`) |
 | `onStattrak({ serverId, payload })` | `skins.stattrak` |
+
+## Round backups and restore (`backups.ts`, `restore.ts`)
+
+Tables (migration `007-round-backups`): `cs2_match_round_backups` (one row
+per match + fleet map number + round, the file base64 in `data`),
+`cs2_match_round_backup_parts` (parts until a split file is complete),
+`cs2_match_round_restores` (the audit log).
+
+- `startRoundBackups()` (from `../startup.ts`) listens on
+  `fleetInbound.onEvent`: `event.backup` is checked (base64, `size`,
+  `sha256`) and stored; the same file again changes nothing, another file
+  for the round replaces it; a stale-epoch server's backups are ignored.
+  `event.rounds_voided` marks the later rounds `supersededAt`. Retention:
+  `FLEET_BACKUP_RETENTION_DAYS` (default 14, 0 = forever) after the match
+  ended; hourly.
+- `roundBackupStore.list(slug)` / `.get(slug, map, round)`;
+  `inlineBackupFor(slug, map, round)` is the `InlineBackup` for a failover
+  `match.assign.resume.backup` (null when the file is too large for one
+  frame: send `backup_ref` to the server that has it).
+- `restoreRoundBackup(defaultRestoreDeps(), { matchSlug, mapNumber, round, actor })`
+  writes the audit row (its id is `cmd.audit_id`), sends `cmd restore_round`
+  with the backup inline to the server of the match's current epoch
+  (expires after 2 min), and waits for the `cmd.result`; a late answer
+  settles the row (`startRestoreAudit`). A match with no live assignment
+  but a `matches.server_id` restores over RCON (`css_restore <round>`).
+- Routes (`../routes/roundBackups.ts`, admin):
+  `GET /api/game/cs2/matches/:slug/round-backups`,
+  `POST /api/game/cs2/matches/:slug/round-backups/restore { mapNumber?, round }`.
+  Client: `matchPanels.adminMatchView` (CS2 `RoundBackupsPanel`).
 
 ## Extension point: more server message types (demo streaming, …)
 

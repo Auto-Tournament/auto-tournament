@@ -18,8 +18,15 @@ import { startMapAutoSync, stopMapAutoSync } from './maps/autoSync';
 import { mapService } from './maps/mapService';
 import { startFleet, stopFleet } from './fleet/service';
 import { startFleetDriver } from './fleet/driver';
+import { startRoundBackups, stopRoundBackups } from './fleet/backups';
+import { startRestoreAudit, stopRestoreAudit } from './fleet/restore';
 
 export async function startCs2(): Promise<void> {
+  // Round backups from Ready Up servers (event.backup) and the restore audit:
+  // listening before the gateway takes its first message.
+  startRoundBackups();
+  startRestoreAudit();
+
   // The Ready Up fleet gateway (/api/fleet/ws) first: it only attaches to the
   // HTTP server, and servers reconnecting after a restart should not wait on
   // the RCON bootstrap below. The driver's hooks go in before it accepts a
@@ -53,6 +60,8 @@ export function stopCs2(): void {
   healthMonitoringService.stop();
   stopMapAutoSync();
   stopFleet();
+  stopRoundBackups();
+  stopRestoreAudit();
 }
 
 async function bootstrapServerWebhooks(): Promise<void> {

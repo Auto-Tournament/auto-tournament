@@ -35,7 +35,11 @@
  * (fleet/state.ts), the inbound event log and the answers to the platform's
  * own commands (fleet/inbound.ts, fleet/reliable.ts).
  *
- * `007-fleet-driver` adds what the fleet driver (fleet/driver.ts) keeps per
+ * `007-round-backups` adds the round backup store (fleet/backups.ts): the
+ * backups Ready Up sends inline (`event.backup`) and the audit log of round
+ * restores (fleet/restore.ts).
+ *
+ * `008-fleet-driver` adds what the fleet driver (fleet/driver.ts) keeps per
  * assignment: the match's connect password and the config last sent (the
  * base for `match.update`), and the audit log of admin `exec` commands.
  */
@@ -48,7 +52,8 @@ export const CS2_CATALOG_MARKERS_MIGRATION_ID = '003-catalog-markers';
 export const CS2_MAP_MODES_MIGRATION_ID = '004-map-modes';
 export const CS2_FLEET_MIGRATION_ID = '005-fleet';
 export const CS2_FLEET_MATCH_MIGRATION_ID = '006-fleet-match';
-export const CS2_FLEET_DRIVER_MIGRATION_ID = '007-fleet-driver';
+export const CS2_ROUND_BACKUPS_MIGRATION_ID = '007-round-backups';
+export const CS2_FLEET_DRIVER_MIGRATION_ID = '008-fleet-driver';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -367,6 +372,80 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
 
     CREATE INDEX IF NOT EXISTS cs2_fleet_commands_match_idx ON cs2_fleet_commands(match_slug, created_at);
     CREATE INDEX IF NOT EXISTS cs2_fleet_commands_server_idx ON cs2_fleet_commands(server_id, status);
+`,
+  },
+  {
+    // Round backups (FLEET.md §12.1, §12.3; Ready Up's
+    // docs/fleet-step3-platform-notes.md §7). Every statement can run twice.
+    //
+    // - cs2_match_round_backups: one CS2 round backup file per (match, map,
+    //   round), the newest one Ready Up sent (a round replayed after a restore
+    //   comes again with other content and replaces it). `data` is the whole
+    //   file, base64, as it goes back out in `cmd restore_round` / a resume.
+    //   Backups are 10-60 KB (at most 4 MiB by the schema), so they live in
+    //   the database rather than on DATA_DIR: a failover never depends on the
+    //   API's disk. `map_number` is the fleet's (1-based). `superseded_at` is
+    //   set when a restore voided the rounds after it.
+    // - cs2_match_round_backup_parts: parts of a file sent in several frames
+    //   (`part` / `parts`), until the last one arrives and the file is checked.
+    // - cs2_match_round_restores: the audit log of "restore to round N": who,
+    //   which backup, over which transport, the fleet command and its answer.
+    id: CS2_ROUND_BACKUPS_MIGRATION_ID,
+    up: `
+    CREATE TABLE IF NOT EXISTS cs2_match_round_backups (
+      id BIGSERIAL PRIMARY KEY,
+      match_slug TEXT NOT NULL, -- matches.slug = the fleet match_id
+      map_number INTEGER NOT NULL, -- fleet map number, 1-based
+      round INTEGER NOT NULL, -- the round the backup starts (1-based)
+      epoch INTEGER, -- the assignment that sent it
+      server_id TEXT, -- cs2_fleet_servers.id that sent it (no key: the history outlives the server)
+      file TEXT NOT NULL, -- CS2's file name on that server
+      size INTEGER NOT NULL, -- bytes of the file
+      sha256 TEXT NOT NULL, -- of the file, hex
+      score_team1 INTEGER NOT NULL DEFAULT 0, -- map score at the start of the round
+      score_team2 INTEGER NOT NULL DEFAULT 0,
+      data TEXT NOT NULL, -- the file, base64
+      superseded_at INTEGER, -- a restore voided this round (it is from the abandoned timeline)
+      stored_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS cs2_match_round_backups_key_idx ON cs2_match_round_backups(match_slug, map_number, round);
+    CREATE INDEX IF NOT EXISTS cs2_match_round_backups_stored_idx ON cs2_match_round_backups(stored_at);
+
+    CREATE TABLE IF NOT EXISTS cs2_match_round_backup_parts (
+      match_slug TEXT NOT NULL,
+      map_number INTEGER NOT NULL,
+      round INTEGER NOT NULL,
+      sha256 TEXT NOT NULL, -- of the whole file: parts of another version never mix
+      part INTEGER NOT NULL, -- 1-based
+      parts INTEGER NOT NULL,
+      data TEXT NOT NULL, -- this part, base64
+      received_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      PRIMARY KEY (match_slug, map_number, round, sha256, part)
+    );
+
+    CREATE TABLE IF NOT EXISTS cs2_match_round_restores (
+      id TEXT PRIMARY KEY, -- ULID; sent as cmd.audit_id
+      match_slug TEXT NOT NULL,
+      map_number INTEGER NOT NULL, -- fleet map number, 1-based
+      round INTEGER NOT NULL,
+      transport TEXT NOT NULL, -- 'fleet' | 'rcon'
+      server_id TEXT, -- fleet server id or cs2_servers.id
+      epoch INTEGER,
+      backup_id BIGINT, -- cs2_match_round_backups.id (fleet)
+      backup_sha256 TEXT,
+      inline INTEGER NOT NULL DEFAULT 0, -- 1 = the backup went inline in the command
+      command_id TEXT, -- cs2_fleet_commands.message_id (fleet)
+      actor TEXT, -- requestActorId: Steam ID or token:<label>
+      status TEXT NOT NULL DEFAULT 'pending', -- pending | ok | rejected | failed | expired
+      error_code TEXT,
+      error_message TEXT,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      answered_at INTEGER
+    );
+
+    CREATE INDEX IF NOT EXISTS cs2_match_round_restores_match_idx ON cs2_match_round_restores(match_slug, created_at);
 `,
   },
   {
