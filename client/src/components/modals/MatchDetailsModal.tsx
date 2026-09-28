@@ -47,6 +47,7 @@ import { getPlayerPageUrl } from '../../utils/playerLinks';
 import AdminMatchControls from '../admin/AdminMatchControls';
 import { PlayerRoster } from '../match/PlayerRoster';
 import { AddBackupPlayer } from '../admin/AddBackupPlayer';
+import { FleetRosterEditor } from '../admin/FleetRosterEditor';
 import { getMapData, getMapDisplayName } from '../../constants/maps';
 import { getPhaseDisplay } from '../../types/matchPhase.types';
 import type { Match, PlayersResponse } from '../../types';
@@ -1242,20 +1243,30 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                     }}
                   />
                   <Divider sx={{ my: 2 }} />
-                  <AddBackupPlayer
+                  {/* A Ready Up fleet match edits its roster with match.update; RCON keeps the add-player form. */}
+                  <FleetRosterEditor
                     matchSlug={match.slug}
-                    serverId={match.serverId}
-                    team1Name={match.team1?.name || t('matchDetailsModal.team1')}
-                    team2Name={match.team2?.name || t('matchDetailsModal.team2')}
-                    existingTeam1Players={match.config?.team1?.players || []}
-                    existingTeam2Players={match.config?.team2?.players || []}
                     onSuccess={(message) => {
                       setSuccess(message);
                       setTimeout(() => setSuccess(''), 3000);
                     }}
-                    onError={(message) => {
-                      setError(message);
-                    }}
+                    fallback={
+                      <AddBackupPlayer
+                        matchSlug={match.slug}
+                        serverId={match.serverId}
+                        team1Name={match.team1?.name || t('matchDetailsModal.team1')}
+                        team2Name={match.team2?.name || t('matchDetailsModal.team2')}
+                        existingTeam1Players={match.config?.team1?.players || []}
+                        existingTeam2Players={match.config?.team2?.players || []}
+                        onSuccess={(message) => {
+                          setSuccess(message);
+                          setTimeout(() => setSuccess(''), 3000);
+                        }}
+                        onError={(message) => {
+                          setError(message);
+                        }}
+                      />
+                    }
                   />
                 </AccordionDetails>
               </Accordion>

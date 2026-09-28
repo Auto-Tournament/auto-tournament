@@ -17,11 +17,14 @@ import { healthMonitoringService } from './services/healthMonitoringService';
 import { startMapAutoSync, stopMapAutoSync } from './maps/autoSync';
 import { mapService } from './maps/mapService';
 import { startFleet, stopFleet } from './fleet/service';
+import { startFleetPush, stopFleetPush } from './fleet/push';
 
 export async function startCs2(): Promise<void> {
   // The Ready Up fleet gateway (/api/fleet/ws) first: it only attaches to the
   // HTTP server, and servers reconnecting after a restart should not wait on
-  // the RCON bootstrap below.
+  // the RCON bootstrap below. The server-level pushes (admins.set,
+  // server.config, …) hook into the welcome before the first server connects.
+  startFleetPush();
   await startFleet().catch((error) => {
     log.warn('Failed to start the fleet gateway', { error });
   });
@@ -50,6 +53,7 @@ export function stopCs2(): void {
   healthMonitoringService.stop();
   stopMapAutoSync();
   stopFleet();
+  stopFleetPush();
 }
 
 async function bootstrapServerWebhooks(): Promise<void> {

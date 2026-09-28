@@ -7,6 +7,7 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { eloToOpenSkill } from './ratingService';
 import { playerIdentity } from './playerIdentity';
+import { notifyAdminListMaybeChanged } from './adminListEvents';
 import {
   abbreviateId,
   describePlayer,
@@ -14,6 +15,11 @@ import {
   parseDiscordIdEdit,
   type ImportedDiscordId,
 } from '../utils/discordId';
+
+function isAdminRow(row: unknown): boolean {
+  const flag = (row as { is_admin?: number | boolean } | null)?.is_admin;
+  return flag === 1 || flag === true;
+}
 
 export interface PlayerRecord {
   id: string; // Steam ID
@@ -521,6 +527,7 @@ class PlayerService {
       throw error;
     }
     await playerIdentity.mirrorPlayerCreated(input.id);
+    if (playerData.is_admin === 1) notifyAdminListMaybeChanged();
 
     const player = await this.getPlayerById(input.id);
     if (!player) {
@@ -581,6 +588,10 @@ class PlayerService {
     }
 
     await db.updateAsync('players', updates, 'id = ?', [playerId]);
+    // The in-game admin list (CS2 fleet admins.set) carries admins' names too.
+    if (input.isAdmin !== undefined || (input.name !== undefined && isAdminRow(existing))) {
+      notifyAdminListMaybeChanged();
+    }
 
     return await this.getPlayerById(playerId);
   }
@@ -590,6 +601,7 @@ class PlayerService {
    */
   async deletePlayer(playerId: string): Promise<boolean> {
     const result = await db.deleteAsync('players', 'id = ?', [playerId]);
+    if (result.changes > 0) notifyAdminListMaybeChanged();
     return result.changes > 0;
   }
 

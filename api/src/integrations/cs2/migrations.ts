@@ -34,6 +34,11 @@
  * fleet link (Ready Up's step 3): a server's transport, the live match state
  * (fleet/state.ts), the inbound event log and the answers to the platform's
  * own commands (fleet/inbound.ts, fleet/reliable.ts).
+ *
+ * `007-fleet-server-prefs` adds what the platform pushes to Ready Up servers
+ * outside a match (fleet/push/): the fleet-wide lists with their revs
+ * (admins.set, server.config) and each server's settings overrides,
+ * whitelist / practice / plugins choices and what was last pushed.
  */
 
 import type { ModuleMigration } from '../types';
@@ -44,6 +49,7 @@ export const CS2_CATALOG_MARKERS_MIGRATION_ID = '003-catalog-markers';
 export const CS2_MAP_MODES_MIGRATION_ID = '004-map-modes';
 export const CS2_FLEET_MIGRATION_ID = '005-fleet';
 export const CS2_FLEET_MATCH_MIGRATION_ID = '006-fleet-match';
+export const CS2_FLEET_SERVER_PREFS_MIGRATION_ID = '007-fleet-server-prefs';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -362,6 +368,42 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
 
     CREATE INDEX IF NOT EXISTS cs2_fleet_commands_match_idx ON cs2_fleet_commands(match_slug, created_at);
     CREATE INDEX IF NOT EXISTS cs2_fleet_commands_server_idx ON cs2_fleet_commands(server_id, status);
+`,
+  },
+  {
+    // Server-level pushes (FLEET.md §7.5, cmd settings.set / whitelist.set /
+    // practice.set / plugins.set of §7.4). Every statement can run twice.
+    //
+    // - cs2_fleet_lists: one row per fleet-wide list the platform versions.
+    //   'admins': the admins.set rev, the hash of the list it was built from
+    //   and `data` = the extra in-game admins (JSON). 'server_config': the
+    //   server.config rev (bumped on any settings change) and `data` = the
+    //   fleet default settings (JSON).
+    // - cs2_fleet_server_prefs: per server, its settings override (JSON, on
+    //   top of the fleet default), the whitelist / practice / plugins choices
+    //   last sent, and `pushed` (JSON): what went out when (rev, seq, command
+    //   id) so the UI can show acked / answered.
+    id: CS2_FLEET_SERVER_PREFS_MIGRATION_ID,
+    up: `
+    CREATE TABLE IF NOT EXISTS cs2_fleet_lists (
+      name TEXT PRIMARY KEY, -- 'admins' | 'server_config'
+      rev INTEGER NOT NULL DEFAULT 0,
+      hash TEXT, -- sha256 of what the rev was built from
+      data TEXT, -- JSON; see above
+      updated_by TEXT,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
+    CREATE TABLE IF NOT EXISTS cs2_fleet_server_prefs (
+      server_id TEXT PRIMARY KEY REFERENCES cs2_fleet_servers(id) ON DELETE CASCADE,
+      settings TEXT, -- JSON override of the fleet default settings
+      whitelist TEXT, -- JSON {enabled, steamids}
+      practice INTEGER, -- 1 on, 0 off, NULL never set
+      plugins TEXT, -- JSON {enable, disable}
+      pushed TEXT, -- JSON {admins, server_config, settings, whitelist, practice, plugins}
+      updated_by TEXT,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
 `,
   },
 ];

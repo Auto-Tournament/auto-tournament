@@ -7,10 +7,10 @@
 import type { Server as HttpServer } from 'http';
 import { log } from '../../../utils/logger';
 import { getIO } from '../../../services/socketService';
-import { FleetGateway } from './gateway';
+import { FleetGateway, type WelcomeRevs } from './gateway';
 import { InProcessFleetBus, type FleetBus } from './bus';
 import * as registry from './registry';
-import { FLEET_CLOSE } from './protocol/v1';
+import { FLEET_CLOSE, type HelloPayload } from './protocol/v1';
 
 const ROTATION_CHECK_MS = 60 * 60 * 1000;
 
@@ -27,6 +27,20 @@ gateway.onServerReady(async (serverId) => {
 
 export function fleetBus(): FleetBus {
   return bus;
+}
+
+/**
+ * Run `listener` after every server's welcome (and its outbox replay), with
+ * the server's hello. For pushes that follow the server's state: admins.set
+ * when its `admins_rev` is behind, server.config (./push).
+ */
+export function onFleetServerReady(listener: (serverId: string, hello: HelloPayload) => Promise<void> | void): void {
+  gateway.onServerReady(listener);
+}
+
+/** welcome's `server_config_rev` / `admins_rev` (./push). */
+export function setFleetWelcomeRevs(provider: ((serverId: string) => Promise<WelcomeRevs>) | null): void {
+  gateway.setWelcomeRevs(provider);
 }
 
 /**

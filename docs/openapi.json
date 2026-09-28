@@ -531,6 +531,10 @@
       "description": "A Ready Up server trades a one-time code or fleet key for its server token."
     },
     {
+      "name": "Fleet pushes",
+      "description": "What the platform pushes to Ready Up servers: the admin list (admins.set), server settings (server.config, settings.set), whitelist / practice / plugins, and roster edits of a running match (match.update)."
+    },
+    {
       "name": "Game packs",
       "description": "Games an admin imported as a pack file: list, import, remove, and the pack tile. Admin only, except the tile."
     },
@@ -2378,6 +2382,72 @@
         ]
       }
     },
+    "/api/fleet/admins": {
+      "get": {
+        "tags": [
+          "Fleet pushes"
+        ],
+        "summary": "GET /api/fleet/admins",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/fleet/admins/extras": {
+      "put": {
+        "tags": [
+          "Fleet pushes"
+        ],
+        "summary": "PUT /api/fleet/admins/extras",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/fleet/admins/push": {
+      "post": {
+        "tags": [
+          "Fleet pushes"
+        ],
+        "summary": "POST /api/fleet/admins/push",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/fleet/enroll": {
       "post": {
         "tags": [
@@ -2449,6 +2519,70 @@
         "parameters": [
           {
             "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/fleet/matches/{slug}/roster": {
+      "get": {
+        "tags": [
+          "Fleet pushes"
+        ],
+        "summary": "GET /api/fleet/matches/:slug/roster",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/fleet/matches/{slug}/update": {
+      "post": {
+        "tags": [
+          "Fleet pushes"
+        ],
+        "summary": "POST /api/fleet/matches/:slug/update",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
             "in": "path",
             "required": true,
             "schema": {
@@ -2602,6 +2736,102 @@
         ]
       }
     },
+    "/api/fleet/servers/{id}/plugins": {
+      "post": {
+        "tags": [
+          "Fleet pushes"
+        ],
+        "summary": "POST /api/fleet/servers/:id/plugins",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/fleet/servers/{id}/practice": {
+      "put": {
+        "tags": [
+          "Fleet pushes"
+        ],
+        "summary": "PUT /api/fleet/servers/:id/practice",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/fleet/servers/{id}/push": {
+      "get": {
+        "tags": [
+          "Fleet pushes"
+        ],
+        "summary": "GET /api/fleet/servers/:id/push",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/fleet/servers/{id}/revoke": {
       "post": {
         "tags": [
@@ -2656,6 +2886,144 @@
             }
           }
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/fleet/servers/{id}/settings": {
+      "put": {
+        "tags": [
+          "Fleet pushes"
+        ],
+        "summary": "PUT /api/fleet/servers/:id/settings",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/fleet/servers/{id}/settings/push": {
+      "post": {
+        "tags": [
+          "Fleet pushes"
+        ],
+        "summary": "POST /api/fleet/servers/:id/settings/push",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/fleet/servers/{id}/whitelist": {
+      "put": {
+        "tags": [
+          "Fleet pushes"
+        ],
+        "summary": "PUT /api/fleet/servers/:id/whitelist",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/fleet/settings": {
+      "get": {
+        "tags": [
+          "Fleet pushes"
+        ],
+        "summary": "GET /api/fleet/settings",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Fleet pushes"
+        ],
+        "summary": "PUT /api/fleet/settings",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
         "security": [
           {
             "bearerAuth": []

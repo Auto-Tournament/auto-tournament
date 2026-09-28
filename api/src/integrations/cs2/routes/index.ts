@@ -25,6 +25,7 @@ import mapPoolRoutes from '../maps/poolRoutes';
 import matchConnectRoutes from './matchConnect';
 import testHelperRoutes from './testHelpers';
 import { fleetAdminRouter, fleetEnrollRouter } from '../fleet/routes';
+import { fleetPushRouter } from '../fleet/push/routes';
 
 export const cs2LegacyRoutes: LegacyRouteMount[] = [
   {
@@ -117,6 +118,13 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     title: 'Fleet',
     description:
       'Ready Up servers on the fleet link: registry, one-time codes, fleet keys, revoke and rotate. The server WebSocket is /api/fleet/ws.',
+  },
+  {
+    prefix: '/api/fleet',
+    router: fleetPushRouter,
+    title: 'Fleet pushes',
+    description:
+      'What the platform pushes to Ready Up servers: the admin list (admins.set), server settings (server.config, settings.set), whitelist / practice / plugins, and roster edits of a running match (match.update).',
   },
   {
     prefix: '/api/test',
