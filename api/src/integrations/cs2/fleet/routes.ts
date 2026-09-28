@@ -152,12 +152,19 @@ function optionalPositiveInt(value: unknown): number | null | undefined {
 
 fleetAdminRouter.get('/servers', async (_req: Request, res: Response) => {
   try {
-    const latest = await getLatestReadyUpRelease();
-    const servers = withLiveState(await registry.listFleetServers()).map((s) => ({
-      ...s,
-      // 'unknown' (never a warning) while Ready Up has no release to compare against.
-      readyUpUpdate: readyUpUpdateStatus(s.versions?.core, latest),
-    }));
+    const live = withLiveState(await registry.listFleetServers());
+    // Pre-release servers compare against the newest release incl. betas,
+    // stable ones against stable releases only (both lookups are cached).
+    const servers = await Promise.all(
+      live.map(async (s) => {
+        const latest = await getLatestReadyUpRelease({ runningVersion: s.versions?.core });
+        return {
+          ...s,
+          // 'unknown' (never a warning) while there is no release to compare against.
+          readyUpUpdate: readyUpUpdateStatus(s.versions?.core, latest),
+        };
+      })
+    );
     return res.json({ success: true, count: servers.length, servers });
   } catch (error) {
     log.error(`[FLEET] listing servers failed: ${(error as Error).message}`);
