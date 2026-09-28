@@ -120,6 +120,44 @@ Hooks on `fleetInbound` (each returns its unsubscribe):
 | `onSnapshot({ serverId, payload, outcome })` | every `state.snapshot` (`outcome.kind`: `replaced` / `idle` / `stale_epoch`) |
 | `onStattrak({ serverId, payload })` | `skins.stattrak` |
 
+## Extension point: more server message types (demo streaming, …)
+
+New server → platform types (e.g. the demo stream of FLEET.md §12.2:
+`demo.begin`, `demo.chunk {demo_id, offset, bytes, final}`, answered by the
+platform's `demo.ack {demo_id, offset}`) plug in without touching the gateway:
+
+```ts
+import { registerInboundHandler } from './inbound';
+
+registerInboundHandler('demo.chunk', {
+  priority: 'low', // ephemeral + low: own per-session chain, never delays event.* / state.patch
+  validate: (p) => (isChunk(p) ? null : 'bad chunk'), // only needed when protocol/v1 has no schema for it
+  async handle(ctx, env) {
+    const offset = await storeChunk(ctx.serverId, env.payload);
+    ctx.sendEphemeral('demo.ack', { demo_id: env.payload.demo_id, offset });
+  },
+});
+```
+
+- **Reliable** (with `seq`) extension messages run in stream order on the
+  session's main queue and are acked after the handler; `persist: true`
+  stores them in `cs2_fleet_events` first (keep it off for bulk data).
+- **Ephemeral** ones run on the main queue, or with `priority: 'low'` on a
+  separate per-session chain (bulk data with its own application-level acks
+  and resume-from-offset, as demo chunks).
+- **Schemas**: add `messages/<type>.json` + a `FLEET_MESSAGE_SCHEMAS` /
+  `FLEET_MESSAGES` entry (D18). The gateway validates known types itself, and
+  it **refuses to send** a type it has no schema for (`frame()` self-check),
+  so `demo.ack` needs its schema before `sendEphemeral('demo.ack', …)` works.
+- **Framing / limits**: frames are JSON text only (binary frames close the
+  session with 4400), at most 1 MiB (`MAX_FRAME_BYTES`): binary data goes
+  base64 in the payload (≤ ~700 KiB raw per frame). Every frame counts against
+  the per-server `RATE` in `gateway.ts` (50 msg/s, burst 200, **8 MiB/min**):
+  demo streaming needs that byte budget raised or a separate budget per type.
+- **Outbound**: the platform's reliable stream (outbox) is one ordered
+  stream; bulk platform → server data should be ephemeral with its own acks,
+  not `sendReliable`.
+
 ## How events reach the core
 
 ```

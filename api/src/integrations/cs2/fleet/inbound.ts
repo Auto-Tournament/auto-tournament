@@ -76,6 +76,52 @@ export function isStoredInboundType(type: string): boolean {
 }
 
 // ---------------------------------------------------------------------------
+// Extension point: handlers for further server -> platform types
+// ---------------------------------------------------------------------------
+
+/**
+ * A handler for a server message type this module does not own (e.g. the
+ * demo stream: `demo.begin` / `demo.chunk`, FLEET.md §12.2). Registered at
+ * startup with `registerInboundHandler`; the gateway routes the type to it.
+ *
+ * - Reliable (with `seq`): run in stream order on the session's main queue,
+ *   then acked. `persist: true` also stores it in `cs2_fleet_events` first
+ *   (persist-before-ack); leave it off for large payloads.
+ * - Ephemeral (no `seq`): `priority: 'low'` runs it on a separate
+ *   per-session chain, so a burst of large frames (demo chunks) never delays
+ *   events and state patches; application-level acks (`demo.ack`) are the
+ *   handler's own business (`ctx.sendEphemeral`). `'normal'` runs it in order
+ *   on the main queue.
+ * - Validation: a type with a schema in protocol/v1 is validated by the
+ *   gateway first; for a type without one, `validate` must do it (return an
+ *   error message to reject with `error {invalid_payload}`).
+ *
+ * Frames are JSON text only (max 1 MiB, `MAX_FRAME_BYTES`); binary payloads
+ * go base64 in the JSON. The per-server byte budget in gateway.ts (`RATE`)
+ * applies to every frame.
+ */
+export interface InboundHandler {
+  handle(ctx: InboundContext, env: Envelope): Promise<void>;
+  persist?: boolean;
+  priority?: 'normal' | 'low';
+  validate?(payload: unknown): string | null;
+}
+
+const handlers = new Map<string, InboundHandler>();
+
+export function registerInboundHandler(type: string, handler: InboundHandler): () => void {
+  if (isStoredInboundType(type)) throw new Error(`fleet: ${type} is handled by fleet/inbound.ts`);
+  handlers.set(type, handler);
+  return () => {
+    if (handlers.get(type) === handler) handlers.delete(type);
+  };
+}
+
+export function inboundHandlerFor(type: string): InboundHandler | undefined {
+  return handlers.get(type);
+}
+
+// ---------------------------------------------------------------------------
 // Hooks
 // ---------------------------------------------------------------------------
 

@@ -47,7 +47,9 @@ import {
 import * as registry from './registry';
 import {
   handleSnapshot,
+  inboundHandlerFor,
   isStoredInboundType,
+  type InboundHandler,
   persistInbound,
   processInbound,
   replayUnprocessed,
@@ -106,6 +108,8 @@ class FleetSession {
   /** Highest platform seq written to this socket. */
   private lastSentSeq = 0;
   private sendChain: Promise<void> = Promise.resolve();
+  /** Low-priority extension handlers (./inbound registerInboundHandler), off the main queue. */
+  private lowChain: Promise<void> = Promise.resolve();
   private acksOwed = 0;
   private ackTimer: NodeJS.Timeout | null = null;
   private pingTimer: NodeJS.Timeout | null = null;
@@ -247,6 +251,27 @@ class FleetSession {
       this.close(FLEET_CLOSE.PROTOCOL_ERROR, `seq gap: expected ${this.rxSeq + 1}, got ${seq}`);
       return;
     }
+    const handler = inboundHandlerFor(msg.type);
+    if (handler) {
+      // A registered extension type (./inbound registerInboundHandler).
+      const problem = this.checkExtension(msg, handler);
+      const ctx = this.inboundContext();
+      if (problem) {
+        this.sendError(msg, 'invalid_payload', problem);
+      } else if (handler.persist) {
+        const { rowId } = await persistInbound(ctx, msg);
+        this.rxSeq = seq;
+        this.owe();
+        if (rowId !== null) await this.runHandler(handler, ctx, msg);
+        return;
+      } else {
+        await this.runHandler(handler, ctx, msg);
+      }
+      this.rxSeq = seq;
+      await registry.setRxState(this.serverId as string, this.rxStreamId as string, seq);
+      this.owe();
+      return;
+    }
     const known = isKnownMessageType(msg.type) && FLEET_MESSAGES[msg.type].direction !== 'platform_to_server';
     if (!known) {
       this.sendError(msg, 'unknown_type', `unknown message type ${msg.type}`);
@@ -309,9 +334,44 @@ class FleetSession {
       case 'hello':
         this.close(FLEET_CLOSE.PROTOCOL_ERROR, 'hello sent twice');
         return;
-      default:
+      default: {
+        const handler = inboundHandlerFor(msg.type);
         // Unknown ephemeral types are ignored (FLEET.md §5).
+        if (!handler) return;
+        const problem = this.checkExtension(msg, handler);
+        if (problem) {
+          this.sendError(msg, 'invalid_payload', problem);
+          return;
+        }
+        const ctx = this.inboundContext();
+        if (handler.priority === 'low') {
+          // Off the main queue: bulk frames (demo chunks) never hold up
+          // events and state patches.
+          this.lowChain = this.lowChain.then(() => (this.closed ? undefined : this.runHandler(handler, ctx, msg)));
+          return;
+        }
+        await this.runHandler(handler, ctx, msg);
         return;
+      }
+    }
+  }
+
+  /** Schema check for an extension type: its protocol/v1 schema when there is one, else the handler's. */
+  private checkExtension(msg: Envelope, handler: InboundHandler): string | null {
+    if (isKnownMessageType(msg.type)) {
+      const check = validatePayload(msg.type, msg.payload);
+      return check.ok ? null : check.errors.join('; ');
+    }
+    return handler.validate ? handler.validate(msg.payload) : null;
+  }
+
+  private async runHandler(handler: InboundHandler, ctx: InboundContext, msg: Envelope): Promise<void> {
+    try {
+      await handler.handle(ctx, msg);
+    } catch (error) {
+      log.error(
+        `[FLEET] ${this.serverId}: ${msg.type} handler failed: ${redactFleetSecrets((error as Error).message)}`
+      );
     }
   }
 
