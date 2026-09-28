@@ -296,6 +296,50 @@
     },
     "public": {
       "licensed": "Lizenziert"
+    },
+    "consent": {
+      "title": "Bevor es losgeht: die Lizenz",
+      "subtitle": "Auto Tournament ist für nicht-kommerzielle Nutzung kostenlos. Für kommerzielle Nutzung brauchst du eine Lizenz. Lies die Kurzfassung, sag uns, wie du es nutzt, und tippe I AGREE.",
+      "intro": "Der Quellcode von Auto Tournament ist unter der {{name}} verfügbar. Kurz gesagt:",
+      "points": {
+        "free": "Kostenlos für private Nutzung, Hobbyprojekte, Lernen und Events, bei denen niemand damit Geld verdient.",
+        "orgs": "Kostenlos für gemeinnützige Organisationen, Schulen, Hochschulen, öffentliche Forschung und Behörden, auch wenn sie Eintritt verlangen.",
+        "commercial": "Für kommerzielle Nutzung brauchst du eine Lizenz. Dazu gehören bezahltes Hosting, der Verkauf der Software oder eines darauf aufbauenden Dienstes, Events mit Gewinn, die Nutzung in einem Unternehmen und bezahlte Einrichtung für andere.",
+        "servers": "Jeder Spielserver zählt für die Lizenz.",
+        "nothingLocked": "Ohne Schlüssel wird nichts gesperrt oder begrenzt. Du kannst einen Schlüssel jetzt oder später hinzufügen.",
+        "forks": "Du darfst den Code ändern und teilen. Gib die Lizenz mit; es gelten dieselben Regeln."
+      },
+      "readLicense": "Die vollständige Lizenz lesen",
+      "readRules": "Lizenz und kommerzielle Nutzung",
+      "summaryNote": "Dies ist eine Zusammenfassung. Weicht sie von der Lizenz ab, gilt die Lizenz.",
+      "useQuestion": "Wie wird diese Instanz genutzt?",
+      "use": {
+        "noncommercial": "Privat / nicht-kommerziell",
+        "noncommercialHint": "Kostenlos. Niemand verdient damit Geld.",
+        "commercial": "Kommerziell",
+        "commercialHint": "Du brauchst eine Lizenz. Füge deinen Schlüssel jetzt oder später ein."
+      },
+      "keyLabel": "Lizenzschlüssel (optional)",
+      "keyHelper": "Beginnt mit ATL1. Du kannst ihn auch später unter Einstellungen > Lizenz hinzufügen.",
+      "confirmLabel": "Tippe {{phrase}}, um die Lizenzbedingungen anzunehmen",
+      "confirmHelper": "Mit {{phrase}} nimmst du die Lizenzbedingungen für diese Instanz an.",
+      "accept": "Annehmen und weiter",
+      "cancel": "Abbrechen",
+      "failed": "Deine Antwort konnte nicht gespeichert werden",
+      "accepted": "Lizenzbedingungen angenommen",
+      "termsChanged": "Die Lizenzbedingungen haben sich seit der letzten Annahme geändert. Bitte lies sie und nimm sie erneut an.",
+      "onlyAdmins": "Nur Admins sehen das, einmal pro Instanz. Spieler, öffentliche Seiten und laufende Matches sind nicht betroffen.",
+      "declared": {
+        "noncommercial": "Nicht-kommerzielle Nutzung",
+        "commercial": "Kommerzielle Nutzung",
+        "none": "Lizenzbedingungen noch nicht angenommen"
+      },
+      "acceptedLine": "Bedingungen angenommen am {{date}} von {{who}} (Version {{version}})",
+      "byEnv": "der Einstellung AT_ACCEPT_LICENSE",
+      "change": "Ändern",
+      "changeTitle": "Nutzung dieser Instanz ändern",
+      "changeNote": "Wähle erneut und tippe I AGREE. Die Änderung wird mit Datum und deinem Konto gespeichert.",
+      "commercialNoKey": "Diese Instanz wird kommerziell genutzt, also brauchst du eine Lizenz. Füge deinen Schlüssel unten ein. Solange er fehlt, wird nichts gesperrt."
     }
   }
 }

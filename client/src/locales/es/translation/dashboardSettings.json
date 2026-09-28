@@ -296,6 +296,50 @@
     },
     "public": {
       "licensed": "Con licencia"
+    },
+    "consent": {
+      "title": "Antes de empezar: la licencia",
+      "subtitle": "Auto Tournament es gratis para uso no comercial. El uso comercial necesita una licencia. Lee la versión corta, dinos cómo lo usas y escribe I AGREE.",
+      "intro": "El código de Auto Tournament está disponible bajo la {{name}}. En resumen:",
+      "points": {
+        "free": "Gratis para uso personal, proyectos de hobby, aprendizaje y eventos en los que nadie gana dinero con ello.",
+        "orgs": "Gratis para organizaciones benéficas, escuelas, universidades, investigación pública y organismos públicos, aunque cobren entrada.",
+        "commercial": "El uso comercial necesita una licencia. Eso incluye el hosting de pago, vender el software o un servicio basado en él, eventos con beneficios, el uso dentro de una empresa y cobrar por instalarlo para otros.",
+        "servers": "Cada servidor de juego cuenta para la licencia.",
+        "nothingLocked": "Sin clave no se bloquea ni se limita nada. Puedes añadir una clave ahora o más tarde.",
+        "forks": "Puedes cambiar el código y compartirlo. Incluye la licencia; se aplican las mismas reglas."
+      },
+      "readLicense": "Leer la licencia completa",
+      "readRules": "Licencias y uso comercial",
+      "summaryNote": "Esto es un resumen. Si no coincide con la licencia, manda la licencia.",
+      "useQuestion": "¿Cómo se usa esta instancia?",
+      "use": {
+        "noncommercial": "Personal / no comercial",
+        "noncommercialHint": "Gratis. Nadie gana dinero con ello.",
+        "commercial": "Comercial",
+        "commercialHint": "Necesitas una licencia. Pega tu clave ahora o más tarde."
+      },
+      "keyLabel": "Clave de licencia (opcional)",
+      "keyHelper": "Empieza por ATL1. También puedes añadirla más tarde en Ajustes > Licencia.",
+      "confirmLabel": "Escribe {{phrase}} para aceptar los términos de la licencia",
+      "confirmHelper": "Al escribir {{phrase}} aceptas los términos de la licencia para esta instancia.",
+      "accept": "Aceptar y continuar",
+      "cancel": "Cancelar",
+      "failed": "No se pudo guardar tu respuesta",
+      "accepted": "Términos de la licencia aceptados",
+      "termsChanged": "Los términos de la licencia han cambiado desde la última aceptación. Léelos y acéptalos de nuevo.",
+      "onlyAdmins": "Solo lo ven los administradores, una vez por instancia. No afecta a jugadores, páginas públicas ni partidas en curso.",
+      "declared": {
+        "noncommercial": "Uso no comercial",
+        "commercial": "Uso comercial",
+        "none": "Términos de la licencia aún no aceptados"
+      },
+      "acceptedLine": "Términos aceptados el {{date}} por {{who}} (versión {{version}})",
+      "byEnv": "el ajuste AT_ACCEPT_LICENSE",
+      "change": "Cambiar",
+      "changeTitle": "Cambiar cómo se usa esta instancia",
+      "changeNote": "Elige de nuevo y escribe I AGREE. El cambio se guarda con la fecha y tu cuenta.",
+      "commercialNoKey": "Esta instancia tiene uso comercial, así que necesitas una licencia. Pega tu clave abajo. No se bloquea nada mientras falte."
     }
   }
 }

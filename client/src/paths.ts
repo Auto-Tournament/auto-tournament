@@ -32,6 +32,8 @@ export const paths = {
   me: '/me',
   meConnections: '/me/connections',
   welcomeGames: '/welcome/games',
+  /** Accept the license terms: admin only, required once before the admin UI. */
+  licenseConsent: '/welcome/license',
   /** Ready Up compatibility with the latest CS2 build. Public, no sign-in. */
   compatibility: '/compatibility',
 

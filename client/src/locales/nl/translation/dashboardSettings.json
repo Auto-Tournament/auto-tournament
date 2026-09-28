@@ -296,6 +296,50 @@
     },
     "public": {
       "licensed": "Gelicentieerd"
+    },
+    "consent": {
+      "title": "Voordat je begint: de licentie",
+      "subtitle": "Auto Tournament is gratis voor niet-commercieel gebruik. Voor commercieel gebruik heb je een licentie nodig. Lees de korte versie, vertel ons hoe je het gebruikt en typ I AGREE.",
+      "intro": "De broncode van Auto Tournament is beschikbaar onder de {{name}}. Kort gezegd:",
+      "points": {
+        "free": "Gratis voor persoonlijk gebruik, hobbyprojecten, leren en evenementen waar niemand er geld aan verdient.",
+        "orgs": "Gratis voor goede doelen, scholen, universiteiten, publiek onderzoek en overheidsinstanties, ook als ze entree vragen.",
+        "commercial": "Voor commercieel gebruik heb je een licentie nodig. Denk aan betaalde hosting, de software of een dienst erop verkopen, evenementen met winst, gebruik binnen een bedrijf en betaald worden om het voor iemand op te zetten.",
+        "servers": "Elke gameserver telt mee voor de licentie.",
+        "nothingLocked": "Zonder sleutel wordt niets geblokkeerd of beperkt. Je kunt nu of later een sleutel toevoegen.",
+        "forks": "Je mag de code aanpassen en delen. Geef de licentie mee; dezelfde regels gelden."
+      },
+      "readLicense": "Lees de volledige licentie",
+      "readRules": "Licenties en commercieel gebruik",
+      "summaryNote": "Dit is een samenvatting. Als die en de licentie verschillen, geldt de licentie.",
+      "useQuestion": "Hoe wordt deze instantie gebruikt?",
+      "use": {
+        "noncommercial": "Persoonlijk / niet-commercieel",
+        "noncommercialHint": "Gratis. Niemand verdient er geld aan.",
+        "commercial": "Commercieel",
+        "commercialHint": "Je hebt een licentie nodig. Plak je sleutel nu of later."
+      },
+      "keyLabel": "Licentiesleutel (optioneel)",
+      "keyHelper": "Begint met ATL1. Je kunt hem ook later toevoegen via Instellingen > Licentie.",
+      "confirmLabel": "Typ {{phrase}} om de licentievoorwaarden te accepteren",
+      "confirmHelper": "Door {{phrase}} te typen accepteer je de licentievoorwaarden voor deze instantie.",
+      "accept": "Accepteren en doorgaan",
+      "cancel": "Annuleren",
+      "failed": "Je antwoord kon niet worden opgeslagen",
+      "accepted": "Licentievoorwaarden geaccepteerd",
+      "termsChanged": "De licentievoorwaarden zijn gewijzigd sinds ze voor het laatst zijn geaccepteerd. Lees ze en accepteer ze opnieuw.",
+      "onlyAdmins": "Alleen beheerders zien dit, één keer per instantie. Spelers, openbare pagina's en lopende wedstrijden merken er niets van.",
+      "declared": {
+        "noncommercial": "Niet-commercieel gebruik",
+        "commercial": "Commercieel gebruik",
+        "none": "Licentievoorwaarden nog niet geaccepteerd"
+      },
+      "acceptedLine": "Voorwaarden geaccepteerd op {{date}} door {{who}} (versie {{version}})",
+      "byEnv": "de instelling AT_ACCEPT_LICENSE",
+      "change": "Wijzigen",
+      "changeTitle": "Wijzigen hoe deze instantie wordt gebruikt",
+      "changeNote": "Kies opnieuw en typ I AGREE. De wijziging wordt opgeslagen met de datum en je account.",
+      "commercialNoKey": "Deze instantie wordt commercieel gebruikt, dus je hebt een licentie nodig. Plak je sleutel hieronder. Zolang die ontbreekt, wordt niets geblokkeerd."
     }
   }
 }
