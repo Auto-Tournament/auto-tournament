@@ -251,51 +251,55 @@
     }
   },
   "license": {
-    "title": "License",
-    "description": "Paste your Auto Tournament license key for commercial use. It is checked on this server, offline. A license never locks or limits anything: if something is off, it shows here as a notice.",
-    "loading": "Loading the license status",
-    "loadFailed": "Could not read the license status.",
+    "title": "Licencja",
+    "description": "Wklej swój klucz licencji Auto Tournament do użytku komercyjnego. Jest sprawdzany na tym serwerze, offline. Licencja nigdy niczego nie blokuje ani nie ogranicza: jeśli coś jest nie tak, zobaczysz tu tylko informację.",
+    "loading": "Wczytywanie statusu licencji",
+    "loadFailed": "Nie udało się odczytać statusu licencji.",
     "none": "Brak komercyjnego klucza licencji. Bezpłatnie do użytku niekomercyjnego; użytek komercyjny wymaga licencji.",
-    "pricing": "Pricing",
-    "open": "Settings",
-    "id": "License ID {{id}}",
-    "verify": "Check this license",
-    "invalid": "This key could not be verified.",
-    "invalidShort": "The saved key could not be verified.",
-    "warningsShort_one": "1 license notice in Settings.",
-    "warningsShort_other": "{{count}} license notices in Settings.",
-    "warningsNote": "Nothing is blocked or limited. This is only a notice.",
-    "label": "License key",
-    "replaceLabel": "Replace the license key",
-    "helper": "Starts with ATL1. After saving, only the license ID is shown.",
-    "save": "Save key",
-    "saved": "License key saved",
-    "saveFailed": "Could not save the license key",
-    "remove": "Remove key",
-    "removed": "License key removed",
-    "removeFailed": "Could not remove the license key",
+    "pricing": "Cennik",
+    "open": "Ustawienia",
+    "id": "ID licencji {{id}}",
+    "verify": "Sprawdź tę licencję",
+    "invalid": "Nie udało się zweryfikować tego klucza.",
+    "invalidShort": "Nie udało się zweryfikować zapisanego klucza.",
+    "warningsShort_one": "1 informacja o licencji w Ustawieniach.",
+    "warningsShort_few": "{{count}} informacje o licencji w Ustawieniach.",
+    "warningsShort_many": "{{count}} informacji o licencji w Ustawieniach.",
+    "warningsShort_other": "{{count}} informacji o licencji w Ustawieniach.",
+    "warningsNote": "Nic nie jest blokowane ani ograniczane. To tylko informacja.",
+    "label": "Klucz licencji",
+    "replaceLabel": "Zastąp klucz licencji",
+    "helper": "Zaczyna się od ATL1. Po zapisaniu widoczny jest tylko identyfikator licencji.",
+    "save": "Zapisz klucz",
+    "saved": "Klucz licencji zapisany",
+    "saveFailed": "Nie udało się zapisać klucza licencji",
+    "remove": "Usuń klucz",
+    "removed": "Klucz licencji usunięty",
+    "removeFailed": "Nie udało się usunąć klucza licencji",
     "summary": {
-      "licensedTo": "Licensed to {{licensee}}",
-      "licensed": "Licensed",
+      "licensedTo": "Licencja dla: {{licensee}}",
+      "licensed": "Licencjonowane",
       "product": {
-        "platform": "Platform {{pack}}",
-        "servers": "Servers {{pack}}"
+        "platform": "Platforma {{pack}}",
+        "servers": "Serwery {{pack}}"
       },
-      "servers_one": "{{count}} server",
-      "servers_other": "{{count}} servers",
-      "updatesUntil": "updates until {{date}}",
-      "updatesForLife": "updates for life",
-      "eventWindow": "event {{from}} to {{to}}"
+      "servers_one": "{{count}} serwer",
+      "servers_few": "{{count}} serwery",
+      "servers_many": "{{count}} serwerów",
+      "servers_other": "{{count}} serwera",
+      "updatesUntil": "aktualizacje do {{date}}",
+      "updatesForLife": "aktualizacje dożywotnio",
+      "eventWindow": "wydarzenie od {{from}} do {{to}}"
     },
     "badge": {
-      "label": "Show \"Licensed\" on public event pages",
-      "note": "Off by default. Links to the license's public check page, and only shows while the saved key is valid.",
-      "on": "Public license line turned on",
-      "off": "Public license line turned off",
-      "failed": "Could not change the public license line"
+      "label": "Pokazuj „Licencjonowane” na publicznych stronach wydarzeń",
+      "note": "Domyślnie wyłączone. Prowadzi do publicznej strony sprawdzania licencji i pojawia się tylko, gdy zapisany klucz jest ważny.",
+      "on": "Publiczna informacja o licencji włączona",
+      "off": "Publiczna informacja o licencji wyłączona",
+      "failed": "Nie udało się zmienić publicznej informacji o licencji"
     },
     "public": {
-      "licensed": "Licensed"
+      "licensed": "Licencjonowane"
     }
   }
 }
