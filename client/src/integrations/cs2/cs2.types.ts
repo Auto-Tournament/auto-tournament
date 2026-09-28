@@ -465,6 +465,8 @@ export interface FleetServer {
   } | null;
   rotateRequested: boolean;
   codeExpiresAt: number | null;
+  /** The server row it plays matches as (`POST /api/fleet/servers/:id/link`); null = not in the match pool. */
+  linkedServerId?: string | null;
 }
 
 export interface FleetServersResponse extends Cs2ApiResponse {

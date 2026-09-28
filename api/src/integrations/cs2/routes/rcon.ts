@@ -11,6 +11,16 @@ import {
   findActiveMatchForServer,
   settleEndedMatch,
 } from '../../../services/matchTerminationService';
+import {
+  answerUnsupportedOnFleet,
+  answerWithFleetCommand,
+  fleetCommandFor,
+  fleetExec,
+  fleetResponseBody,
+  isFleetServer,
+  issuedBy,
+} from './fleetCommands';
+import { addPlayer, currentPosition, runFleetCommand } from '../fleet/driver';
 
 const router = Router();
 
@@ -151,6 +161,7 @@ router.post('/practice-mode', async (req: Request, res: Response) => {
       });
     }
 
+    if (await answerWithFleetCommand(req, res, serverId, 'practice.set', { on: true })) return res;
     const result = await rconService.sendCommand(serverId, 'css_prac');
     const statusCode = result.success ? 200 : 400;
 
@@ -179,6 +190,7 @@ router.post('/start-match', async (req: Request, res: Response) => {
       });
     }
 
+    if (await answerWithFleetCommand(req, res, serverId, 'start')) return res;
     const result = await rconService.sendCommand(serverId, 'css_start');
     const statusCode = result.success ? 200 : 400;
 
@@ -215,6 +227,7 @@ router.post('/change-map', async (req: Request, res: Response) => {
       });
     }
 
+    if (await answerWithFleetCommand(req, res, serverId, 'change_map', { name: mapName })) return res;
     const result = await rconService.sendCommand(serverId, `css_map ${mapName}`);
     const statusCode = result.success ? 200 : 400;
 
@@ -243,6 +256,7 @@ router.post('/pause-match', async (req: Request, res: Response) => {
       });
     }
 
+    if (await answerWithFleetCommand(req, res, serverId, 'pause', { type: 'technical' })) return res;
     const result = await rconService.sendCommand(serverId, 'css_pause');
     const statusCode = result.success ? 200 : 400;
 
@@ -271,6 +285,7 @@ router.post('/unpause-match', async (req: Request, res: Response) => {
       });
     }
 
+    if (await answerWithFleetCommand(req, res, serverId, 'unpause')) return res;
     const result = await rconService.sendCommand(serverId, 'css_unpause');
     const statusCode = result.success ? 200 : 400;
 
@@ -299,6 +314,7 @@ router.post('/force-pause', async (req: Request, res: Response) => {
       });
     }
 
+    if (await answerWithFleetCommand(req, res, serverId, 'pause', { type: 'admin' })) return res;
     const result = await rconService.sendCommand(serverId, 'css_forcepause');
     const statusCode = result.success ? 200 : 400;
 
@@ -327,6 +343,7 @@ router.post('/force-unpause', async (req: Request, res: Response) => {
       });
     }
 
+    if (await answerWithFleetCommand(req, res, serverId, 'unpause')) return res;
     const result = await rconService.sendCommand(serverId, 'css_forceunpause');
     const statusCode = result.success ? 200 : 400;
 
@@ -357,6 +374,8 @@ router.post('/restart-match', async (req: Request, res: Response) => {
 
     // Note: This endpoint is for CS2 round restart, not match restart
     // For match restart, use css_restart instead
+    // (Ready Up: restart_map, back to warmup on the same map.)
+    if (await answerWithFleetCommand(req, res, serverId, 'restart_map')) return res;
     const result = await rconService.sendCommand(serverId, 'mp_restartgame 1');
     const statusCode = result.success ? 200 : 400;
 
@@ -385,6 +404,7 @@ router.post('/end-warmup', async (req: Request, res: Response) => {
       });
     }
 
+    if (await answerWithFleetCommand(req, res, serverId, 'start')) return res;
     const result = await rconService.sendCommand(serverId, 'mp_warmup_end');
     const statusCode = result.success ? 200 : 400;
 
@@ -413,6 +433,13 @@ router.post('/reload-admins', async (req: Request, res: Response) => {
       });
     }
 
+    if (await isFleetServer(serverId)) {
+      return res.json({
+        success: true,
+        transport: 'fleet',
+        response: 'Ready Up servers get their admins from the platform; nothing to reload',
+      });
+    }
     const result = await rconService.sendCommand(serverId, 'reload_admins');
     const statusCode = result.success ? 200 : 400;
 
@@ -444,6 +471,9 @@ router.post('/say', async (req: Request, res: Response) => {
     // Sanitize message (remove special characters that could be exploited)
     const sanitizedMessage = message.replace(/[";\\]/g, '').substring(0, 200);
 
+    if (await answerWithFleetCommand(req, res, serverId, 'say', { text: sanitizedMessage.slice(0, 190) })) {
+      return res;
+    }
     const result = await rconService.sendCommand(serverId, `say ${sanitizedMessage}`);
     const statusCode = result.success ? 200 : 400;
 
@@ -475,21 +505,29 @@ router.post('/broadcast', async (req: Request, res: Response) => {
     // Sanitize message (remove special characters that could be exploited)
     const sanitizedMessage = message.replace(/[";\\]/g, '').substring(0, 200);
 
+    // A Ready Up server gets `say {as_admin}` over the fleet link.
+    const sendTo = async (serverId: string) => {
+      if (await isFleetServer(serverId)) {
+        const outcome = await runFleetCommand(
+          serverId,
+          'say',
+          { text: sanitizedMessage.slice(0, 190), as_admin: true },
+          issuedBy(req)
+        );
+        return { ...fleetResponseBody(outcome), serverId };
+      }
+      return rconService.sendCommand(serverId, `css_asay ${sanitizedMessage}`);
+    };
+
     let results;
     if (serverIds && Array.isArray(serverIds) && serverIds.length > 0) {
       // Send to specific servers
-      results = await Promise.all(
-        serverIds.map((serverId: string) =>
-          rconService.sendCommand(serverId, `css_asay ${sanitizedMessage}`)
-        )
-      );
+      results = await Promise.all(serverIds.map((serverId: string) => sendTo(serverId)));
     } else {
       // Broadcast to all enabled servers
       const { serverService } = await import('../services/serverService');
       const servers = await serverService.getAllServers(true);
-      results = await Promise.all(
-        servers.map((server) => rconService.sendCommand(server.id, `css_asay ${sanitizedMessage}`))
-      );
+      results = await Promise.all(servers.map((server) => sendTo(server.id)));
     }
 
     const successful = results.filter((r) => r.success).length;
@@ -529,6 +567,7 @@ router.post('/swap-teams', async (req: Request, res: Response) => {
       });
     }
 
+    if (await answerWithFleetCommand(req, res, serverId, 'swap_teams')) return res;
     const result = await rconService.sendCommand(serverId, 'css_switch');
     const statusCode = result.success ? 200 : 400;
 
@@ -557,6 +596,21 @@ router.post('/restore-backup', async (req: Request, res: Response) => {
       });
     }
 
+    if (await isFleetServer(serverId)) {
+      // Ready Up: restore_round on the current map; `round` is the round the
+      // backup starts (1-based), and the server uses its own backup file.
+      const position = await currentPosition(serverId);
+      if (!position) {
+        return res.status(409).json({ success: false, transport: 'fleet', error: 'No match is assigned to this server' });
+      }
+      const outcome = await runFleetCommand(
+        serverId,
+        'restore_round',
+        { map_number: position.mapNumber, round: Math.max(1, Math.floor(Number(round)) || 1) },
+        issuedBy(req)
+      );
+      return res.status(outcome.httpStatus).json(fleetResponseBody(outcome));
+    }
     const result = await rconService.sendCommand(serverId, `css_restore ${round}`);
     const statusCode = result.success ? 200 : 400;
 
@@ -585,6 +639,7 @@ router.post('/skip-veto', async (req: Request, res: Response) => {
       });
     }
 
+    if (await answerUnsupportedOnFleet(res, serverId, 'Skipping the in-game veto')) return res;
     const result = await rconService.sendCommand(serverId, 'css_skipveto');
     const statusCode = result.success ? 200 : 400;
 
@@ -613,6 +668,20 @@ router.post('/restart-round', async (req: Request, res: Response) => {
       });
     }
 
+    if (await isFleetServer(serverId)) {
+      // Ready Up: restore the backup the current round started from.
+      const position = await currentPosition(serverId);
+      if (!position?.round) {
+        return res.status(409).json({ success: false, transport: 'fleet', error: 'No round is being played' });
+      }
+      const outcome = await runFleetCommand(
+        serverId,
+        'restart_round',
+        { map_number: position.mapNumber, round: position.round },
+        issuedBy(req)
+      );
+      return res.status(outcome.httpStatus).json(fleetResponseBody(outcome));
+    }
     const result = await rconService.sendCommand(serverId, 'mp_restartgame 1');
     const statusCode = result.success ? 200 : 400;
 
@@ -641,6 +710,7 @@ router.post('/add-time', async (req: Request, res: Response) => {
       });
     }
 
+    if (await answerUnsupportedOnFleet(res, serverId, 'Adding round time')) return res;
     const result = await rconService.sendCommand(serverId, `mp_roundtime_defuse ${seconds / 60}`);
     const statusCode = result.success ? 200 : 400;
 
@@ -671,7 +741,13 @@ router.post('/end-match', async (req: Request, res: Response) => {
 
     // css_restart *restarts* the match; css_endmatch ends it and tells players
     // an admin did so. Both reset the server, but only one matches the button.
-    const result = await rconService.sendCommand(serverId, 'css_endmatch');
+    // (Ready Up: cmd end_match; the match is settled the same way below.)
+    const fleet = await isFleetServer(serverId);
+    const result = fleet
+      ? fleetResponseBody(
+          await runFleetCommand(serverId, 'end_match', { reason: 'admin' }, issuedBy(req))
+        )
+      : await rconService.sendCommand(serverId, 'css_endmatch');
     const statusCode = result.success ? 200 : 400;
 
     // Ending the match on the server is only half of it. Auto Tournament CS2 emits no event
@@ -747,6 +823,19 @@ router.post('/:serverId/add-player', async (req: Request, res: Response) => {
     // The name is interpolated into a quoted RCON argument, so a quote in it
     // would end the argument early and corrupt the command.
     const safeName = (nickname || steamId).replace(/"/g, '').trim() || steamId;
+
+    // Ready Up: a match.update add_player on the match the server plays.
+    if (await isFleetServer(serverId)) {
+      const outcome = await addPlayer(serverId, {
+        steamid64: steamId,
+        name: safeName,
+        team: team === 'spec' ? 'spectator' : (team as 'team1' | 'team2'),
+      });
+      if (outcome.ok) {
+        return res.json({ success: true, transport: 'fleet', message: `${safeName} added to ${team}` });
+      }
+      return res.status(outcome.status).json({ success: false, transport: 'fleet', error: outcome.error });
+    }
 
     const result = await rconService.sendCommand(
       serverId,
@@ -848,6 +937,25 @@ router.post('/command', async (req: Request, res: Response) => {
     // Execute command on all specified servers
     const results = await Promise.all(
       serverIds.map(async (serverId: string) => {
+        if (await isFleetServer(serverId)) {
+          // Ready Up: a raw command is `exec` (root only, audited); the
+          // named ones are their fleet commands.
+          if (command === 'custom') {
+            const exec = await fleetExec(req, serverId, String(value ?? ''));
+            return { serverId, ...exec.body };
+          }
+          const mapped = fleetCommandFor({ command, message, round, value, map });
+          if (!mapped) {
+            return {
+              serverId,
+              success: false,
+              transport: 'fleet' as const,
+              error: `${command} is not available on Ready Up servers`,
+            };
+          }
+          const outcome = await runFleetCommand(serverId, mapped.name, mapped.args, issuedBy(req));
+          return { serverId, ...fleetResponseBody(outcome) };
+        }
         const result = await rconService.sendCommand(serverId, fullCommand);
         return {
           serverId,

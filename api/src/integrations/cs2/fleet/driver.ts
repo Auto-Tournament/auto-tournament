@@ -178,7 +178,9 @@ async function saveAssignment(input: {
 }
 
 async function storeAckedConfig(matchSlug: string, epoch: number, config: AssignConfig): Promise<void> {
-  const { password: _password, ...rest } = config;
+  // The password lives in its own column; the stored config never has it.
+  const rest: Partial<AssignConfig> = { ...config };
+  delete rest.password;
   await db.runAsync(
     'UPDATE cs2_fleet_assignments SET config = ?, updated_at = ? WHERE match_slug = ? AND epoch = ?',
     [JSON.stringify(rest), nowS(), matchSlug, epoch]

@@ -12,6 +12,10 @@
  *   POST   /api/fleet/servers/:id/code       a fresh code for a pending server
  *   POST   /api/fleet/servers/:id/revoke     revoke its tokens, close its socket (4403)
  *   POST   /api/fleet/servers/:id/rotate     rotate its token now (or on its next connect)
+ *   POST   /api/fleet/servers/:id/link       take matches: link it to a cs2_servers row (./link.ts)
+ *   DELETE /api/fleet/servers/:id/link       stop taking matches
+ *   GET    /api/fleet/matches/:slug          a match on the fleet: assignment, live state, commands
+ *   POST   /api/fleet/matches/:slug/sync     send roster / team name changes (match.update)
  *   GET    /api/fleet/keys                   fleet enrollment keys
  *   POST   /api/fleet/keys                   a new key (shown once)
  *   DELETE /api/fleet/keys/:id               revoke a key
@@ -29,6 +33,10 @@ import * as registry from './registry';
 import { getLatestReadyUpRelease } from '../services/pluginVersionService';
 import { readyUpUpdateStatus } from '../services/readyUpVersion';
 import { fleetBus, revokeServer, rotateServerToken } from './service';
+import { cs2ServerIdOf, linkFleetServer, listFleetLinks, unlinkFleetServer } from './link';
+import { getAssignment, syncMatch } from './driver';
+import { listCommands } from './reliable';
+import { liveStateStore } from './state';
 
 // ---------------------------------------------------------------------------
 // Enrollment (public)
@@ -137,6 +145,12 @@ function withLiveState(servers: registry.FleetServerView[]): registry.FleetServe
   return servers.map((s) => ({ ...s, online: bus.isConnected(s.id) }));
 }
 
+/** `linkedServerId`: the cs2_servers row it plays matches as (null = not in the match pool). */
+async function withLinks<T extends { id: string }>(servers: T[]): Promise<Array<T & { linkedServerId: string | null }>> {
+  const links = await listFleetLinks();
+  return servers.map((s) => ({ ...s, linkedServerId: links.get(s.id) ?? null }));
+}
+
 function trimmedString(value: unknown, max: number): string | null | undefined {
   if (value === undefined || value === null) return undefined;
   if (typeof value !== 'string') return null;
@@ -153,7 +167,7 @@ function optionalPositiveInt(value: unknown): number | null | undefined {
 fleetAdminRouter.get('/servers', async (_req: Request, res: Response) => {
   try {
     const latest = await getLatestReadyUpRelease();
-    const servers = withLiveState(await registry.listFleetServers()).map((s) => ({
+    const servers = (await withLinks(withLiveState(await registry.listFleetServers()))).map((s) => ({
       ...s,
       // 'unknown' (never a warning) while Ready Up has no release to compare against.
       readyUpUpdate: readyUpUpdateStatus(s.versions?.core, latest),
@@ -224,6 +238,71 @@ fleetAdminRouter.post('/servers/:id/rotate', async (req: Request, res: Response)
     return res.status(500).json({ success: false, error: 'Rotation failed' });
   }
 });
+
+/**
+ * Take matches: link the server to a cs2_servers row (`serverId`, an
+ * existing server moved to Ready Up) or to a new one named after it. The
+ * allocator then hands it matches whenever it is online and `available`.
+ */
+fleetAdminRouter.post('/servers/:id/link', handler('link the server', async (req: Request, res: Response) => {
+  const serverId = trimmedString(req.body?.serverId, 100);
+  if (serverId === null) return res.status(400).json({ success: false, error: 'serverId must be 1-100 characters' });
+  const name = trimmedString(req.body?.name, 100);
+  if (name === null) return res.status(400).json({ success: false, error: 'name must be 1-100 characters' });
+  const outcome = await linkFleetServer(req.params.id, {
+    ...(serverId ? { serverId } : {}),
+    ...(name ? { name } : {}),
+  });
+  if (!outcome.ok) return res.status(outcome.status).json({ success: false, error: outcome.error });
+  log.info(
+    `[FLEET] ${req.params.id} linked to server ${outcome.link.cs2ServerId}${outcome.created ? ' (new)' : ''} by ${requestActorId(req) ?? 'unknown'}`
+  );
+  return res.status(outcome.created ? 201 : 200).json({ success: true, ...outcome.link, created: outcome.created });
+}));
+
+fleetAdminRouter.delete('/servers/:id/link', handler('unlink the server', async (req: Request, res: Response) => {
+  const cs2ServerId = await unlinkFleetServer(req.params.id);
+  if (!cs2ServerId) return res.status(404).json({ success: false, error: 'Fleet server is not linked' });
+  log.info(`[FLEET] ${req.params.id} unlinked from server ${cs2ServerId} by ${requestActorId(req) ?? 'unknown'}`);
+  return res.json({ success: true, cs2ServerId });
+}));
+
+/**
+ * A match on the fleet: its assignment (epoch, server; never the password),
+ * the live state record, and the platform's commands with their answers.
+ */
+fleetAdminRouter.get('/matches/:slug', handler('read the fleet match', async (req: Request, res: Response) => {
+  const slug = String(req.params.slug);
+  const [assignment, record, commands] = await Promise.all([
+    getAssignment(slug),
+    liveStateStore.getLiveState(slug),
+    listCommands(slug),
+  ]);
+  if (!assignment && !record) return res.status(404).json({ success: false, error: 'Match was never on a fleet server' });
+  const linked = assignment?.serverId ? await cs2ServerIdOf(assignment.serverId) : null;
+  return res.json({
+    success: true,
+    assignment: assignment
+      ? {
+          matchSlug: assignment.matchSlug,
+          epoch: assignment.epoch,
+          fleetServerId: assignment.serverId,
+          serverId: assignment.cs2ServerId ?? linked,
+          endedAt: assignment.endedAt,
+          config: assignment.config,
+        }
+      : null,
+    liveState: record,
+    commands,
+  });
+}));
+
+/** Roster / team name changes since the assignment → `match.update` (config_rev CAS). */
+fleetAdminRouter.post('/matches/:slug/sync', handler('sync the fleet match', async (req: Request, res: Response) => {
+  const outcome = await syncMatch(String(req.params.slug));
+  if (!outcome.ok) return res.status(outcome.status).json({ success: false, error: outcome.error });
+  return res.json({ success: true, ops: outcome.ops, configRev: outcome.configRev });
+}));
 
 fleetAdminRouter.get('/keys', handler('list fleet keys', async (_req: Request, res: Response) => {
   const keys = await registry.listFleetKeys();
