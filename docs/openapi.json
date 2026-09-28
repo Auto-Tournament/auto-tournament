@@ -6497,6 +6497,22 @@
                     "checkedAt": {
                       "type": "integer",
                       "description": "Unix seconds when the answer was computed."
+                    },
+                    "license": {
+                      "type": "object",
+                      "nullable": true,
+                      "description": "The license key saved in Settings → License, for csm to write into Ready Up's readyup_license_key on every server it manages. Null when the platform could not read it this poll (csm then changes nothing).\n",
+                      "properties": {
+                        "key": {
+                          "type": "string",
+                          "nullable": true,
+                          "description": "The ATL1 key, or null when none is saved."
+                        },
+                        "revision": {
+                          "type": "string",
+                          "description": "Changes exactly when the key is saved, replaced or cleared (\"none\" without a key). csm applies the key only when this differs from what it last applied.\n"
+                        }
+                      }
                     }
                   }
                 }

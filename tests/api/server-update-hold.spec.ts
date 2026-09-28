@@ -1,5 +1,9 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
-import { decideUpdateHold } from '../../api/src/integrations/cs2/services/updateHoldService';
+import {
+  decideUpdateHold,
+  licenseHandoffFor,
+  NO_LICENSE_REVISION,
+} from '../../api/src/integrations/cs2/services/updateHoldService';
 import { signInViaRequest, getAuthHeader } from '../helpers/auth';
 import { setupTournament } from '../helpers/tournamentSetup';
 
@@ -28,7 +32,12 @@ interface HoldBody {
   tournamentStatus?: string | null;
   activeMatches?: Array<{ slug: string; serverId: string | null; status: string }>;
   checkedAt?: number;
+  license?: { key: string | null; revision: string } | null;
 }
+
+const json = { 'Content-Type': 'application/json' };
+/** Well-formed, signed by no one: stored as-is (see license-api.spec.ts). */
+const UNSIGNED_KEY = `ATL1.${Buffer.from(JSON.stringify({ v: 1, kid: 'tWl_YS3_AzLgqdkm', id: 'lic_csm_handoff' })).toString('base64url')}.${'A'.repeat(86)}`;
 
 async function getHold(
   request: APIRequestContext,
@@ -135,5 +144,71 @@ test.describe('update hold endpoint', () => {
     await expect
       .poll(async () => (await getHold(request)).body.hold, { timeout: 15_000 })
       .toBe(false);
+  });
+});
+
+test.describe('license hand-off to csm (pure)', () => {
+  test('no key is revision "none"; a key gets a stable hash revision', () => {
+    expect(licenseHandoffFor(null)).toEqual({ key: null, revision: NO_LICENSE_REVISION });
+    expect(licenseHandoffFor('   ')).toEqual({ key: null, revision: NO_LICENSE_REVISION });
+
+    const a = licenseHandoffFor(UNSIGNED_KEY);
+    expect(a.key).toBe(UNSIGNED_KEY);
+    expect(a.revision).toMatch(/^sha256:[0-9a-f]{16}$/);
+    expect(licenseHandoffFor(`  ${UNSIGNED_KEY}
+`)).toEqual(a);
+    expect(licenseHandoffFor(`${UNSIGNED_KEY}B`).revision).not.toBe(a.revision);
+    // The revision must not leak the key.
+    expect(a.revision).not.toContain('ATL1');
+  });
+});
+
+test.describe.serial('license hand-off on the update-hold poll', () => {
+  test.beforeEach(async ({ request }) => {
+    expect(await signInViaRequest(request)).toBe(true);
+    await request.delete('/api/license');
+  });
+
+  test.afterAll(async ({ request }) => {
+    await signInViaRequest(request);
+    await request.delete('/api/license');
+  });
+
+  test('a saved key reaches csm with its revision', async ({ request }) => {
+    const saved = await request.put('/api/license', { data: { key: UNSIGNED_KEY }, headers: json });
+    expect(saved.status()).toBe(200);
+
+    const { status, body } = await getHold(request);
+    expect(status).toBe(200);
+    expect(body.license).toEqual(licenseHandoffFor(UNSIGNED_KEY));
+  });
+
+  test('a cleared key reaches csm as null with revision "none"', async ({ request }) => {
+    await request.put('/api/license', { data: { key: UNSIGNED_KEY }, headers: json });
+    const before = (await getHold(request)).body.license?.revision;
+
+    await request.delete('/api/license');
+    const { status, body } = await getHold(request);
+    expect(status).toBe(200);
+    expect(body.license).toEqual({ key: null, revision: NO_LICENSE_REVISION });
+    expect(body.license?.revision).not.toBe(before);
+  });
+
+  test('the key only goes to the server token', async ({ request, playwright, baseURL }) => {
+    await request.put('/api/license', { data: { key: UNSIGNED_KEY }, headers: json });
+    const stranger = await playwright.request.newContext({ baseURL });
+    try {
+      for (const headers of [{}, { 'X-Auto-Tournament-Token': `${TOKEN}-wrong` }]) {
+        const response = await stranger.get(PATH, { headers });
+        expect(response.status()).toBe(401);
+        expect(await response.text()).not.toContain('ATL1.');
+      }
+    } finally {
+      await stranger.dispose();
+    }
+    // An admin session is not the server token either.
+    const admin = await request.get(PATH, { headers: getAuthHeader() });
+    expect(admin.status()).toBe(401);
+    expect(await admin.text()).not.toContain('ATL1.');
   });
 });
