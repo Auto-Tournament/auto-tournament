@@ -221,7 +221,7 @@ export function verifyLicense(token: unknown, options: VerifyOptions = {}): Lice
   if (typeof options.serverCount === 'number' && options.serverCount > license.max_servers) {
     warnings.push({
       code: 'too_many_servers',
-      message: `${options.serverCount} servers are set up, above this license's ${license.max_servers}.`,
+      message: `${options.serverCount} servers are set up, but this license covers ${license.max_servers}. Every server counts, including spare, practice and test servers, so you need a license that covers all of them.`,
     });
   }
   if (options.product === 'platform' && license.product === 'servers') {
