@@ -2048,11 +2048,6 @@
               "type": "string"
             }
           }
-        ],
-        "security": [
-          {
-            "atServerToken": []
-          }
         ]
       }
     },

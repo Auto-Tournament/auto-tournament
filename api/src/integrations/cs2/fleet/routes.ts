@@ -26,6 +26,8 @@ import { log } from '../../../utils/logger';
 import { validateEnrollRequest, FLEET_CLOSE, type EnrollRequest, type EnrollResponse } from './protocol/v1';
 import { FLEET_WS_PATH } from './gateway';
 import * as registry from './registry';
+import { getLatestReadyUpRelease } from '../services/pluginVersionService';
+import { readyUpUpdateStatus } from '../services/readyUpVersion';
 import { fleetBus, revokeServer, rotateServerToken } from './service';
 
 // ---------------------------------------------------------------------------
@@ -150,7 +152,12 @@ function optionalPositiveInt(value: unknown): number | null | undefined {
 
 fleetAdminRouter.get('/servers', async (_req: Request, res: Response) => {
   try {
-    const servers = withLiveState(await registry.listFleetServers());
+    const latest = await getLatestReadyUpRelease();
+    const servers = withLiveState(await registry.listFleetServers()).map((s) => ({
+      ...s,
+      // 'unknown' (never a warning) while Ready Up has no release to compare against.
+      readyUpUpdate: readyUpUpdateStatus(s.versions?.core, latest),
+    }));
     return res.json({ success: true, count: servers.length, servers });
   } catch (error) {
     log.error(`[FLEET] listing servers failed: ${(error as Error).message}`);

@@ -1,6 +1,10 @@
 import express, { Router, Request, Response, NextFunction } from 'express';
 import { requireAuth } from '../../../middleware/auth';
-import { validateServerToken } from '../../../middleware/serverAuth';
+import {
+  validateServerOrFleetToken,
+  demoMapNumber,
+  FLEET_UPLOAD_SERVER_ID,
+} from '../fleet/uploadAuth';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { settingsService } from '../../../services/settingsService';
@@ -39,7 +43,7 @@ if (!fs.existsSync(DEMOS_DIR)) {
  */
 router.post(
   '/:matchSlug/upload',
-  validateServerToken,
+  validateServerOrFleetToken,
   // CRITICAL: Use express.raw() to handle binary data correctly
   // This follows Auto Tournament CS2 API specification exactly
   express.raw({ type: 'application/octet-stream', limit: '500mb' }),
@@ -210,7 +214,10 @@ router.post(
       await db.updateAsync('matches', { demo_file_path: relativePath }, 'slug = ?', [matchSlug]);
 
       // Also store demo path per map if map number is provided
-      const mapNumber = parseInt(atMapNumber, 10);
+      // Ready Up (authenticated with a fleet token) sends a 1-based map number;
+      // MAT stores 0-based, so it is converted here.
+      const fleetServerId: string | undefined = res.locals[FLEET_UPLOAD_SERVER_ID];
+      const mapNumber = demoMapNumber(atMapNumber, !!fleetServerId);
       if (!isNaN(mapNumber)) {
         try {
           // Update the map result with demo file path
@@ -274,7 +281,7 @@ router.post(
         success: true,
         message: 'Demo uploaded successfully',
         matchId: atMatchId,
-        mapNumber: parseInt(atMapNumber, 10),
+        mapNumber: demoMapNumber(atMapNumber, !!res.locals[FLEET_UPLOAD_SERVER_ID]),
         filename,
         fileSize: fileSize,
         savedPath: relativePath,
