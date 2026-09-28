@@ -20,6 +20,7 @@ import * as coreScheduler from '../core/scheduler';
 import * as middlewareAuth from '../middleware/auth';
 import * as middlewareServerAuth from '../middleware/serverAuth';
 import * as adminCallService from '../services/adminCallService';
+import * as adminListEvents from '../services/adminListEvents';
 import * as matchConfigFetchTracker from '../services/matchConfigFetchTracker';
 import * as adminCallTypes from '../types/adminCall.types';
 import * as matchLiveStatsService from '../services/matchLiveStatsService';
@@ -53,6 +54,7 @@ const MODULES: Record<string, object> = {
   'middleware/auth': middlewareAuth,
   'middleware/serverAuth': middlewareServerAuth,
   'services/adminCallService': adminCallService,
+  'services/adminListEvents': adminListEvents,
   'services/matchConfigFetchTracker': matchConfigFetchTracker,
   'services/matchLiveStatsService': matchLiveStatsService,
   'services/matchMapResultService': matchMapResultService,
