@@ -111,8 +111,9 @@ test.describe.serial('Fleet round backups: event.backup -> stored -> restore_rou
     await acked(client, 1);
     await expect.poll(async () => (await listBackups(request, slug)).backups.length).toBe(1);
 
-    // A replay of the same seq (lost ack): acked, not stored twice.
-    client.send(event);
+    // A replay of the same seq after a lost ack (a new envelope id: the
+    // gateway drops an id it has seen on this session): acked, not stored twice.
+    client.send({ ...event, id: ulid(), ts: Date.now() });
     await acked(client, 1);
     const listed = await listBackups(request, slug);
     expect(listed).toMatchObject({ transport: 'fleet', serverId: server.server_id, epoch });
