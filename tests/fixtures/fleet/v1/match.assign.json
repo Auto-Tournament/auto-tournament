@@ -1,0 +1,120 @@
+{
+  "v": 1,
+  "type": "match.assign",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9P01",
+  "ts": 1790340012345,
+  "seq": 78,
+  "epoch": 1,
+  "payload": {
+    "match_id": "ko-r1-m3",
+    "epoch": 1,
+    "config_rev": 1,
+    "config": {
+      "num_maps": 3,
+      "maps": [
+        {
+          "number": 1,
+          "name": "de_mirage",
+          "sides": "knife"
+        },
+        {
+          "number": 2,
+          "name": "de_inferno",
+          "sides": "team1_ct"
+        },
+        {
+          "number": 3,
+          "name": "de_nuke",
+          "workshop_id": "3070284539",
+          "sides": "knife"
+        }
+      ],
+      "team1": {
+        "id": "t_alpha",
+        "name": "Alpha",
+        "tag": "ALP",
+        "captain": "76561198000000001",
+        "players": [
+          {
+            "steamid64": "76561198000000001",
+            "name": "alpha1"
+          },
+          {
+            "steamid64": "76561198000000002",
+            "name": "alpha2"
+          },
+          {
+            "steamid64": "76561198000000006",
+            "name": "alpha-sub",
+            "role": "sub"
+          },
+          {
+            "steamid64": "76561198000000007",
+            "name": "coach",
+            "role": "coach"
+          }
+        ]
+      },
+      "team2": {
+        "id": "t_bravo",
+        "name": "Bravo",
+        "players": [
+          {
+            "steamid64": "76561198000000011",
+            "name": "bravo1"
+          },
+          {
+            "steamid64": "76561198000000012",
+            "name": "bravo2"
+          }
+        ]
+      },
+      "spectators": [
+        "76561198000000099"
+      ],
+      "admins": [
+        "76561198000000077"
+      ],
+      "password": "k3y-7Hq2",
+      "rules": {
+        "max_rounds": 24,
+        "overtime": {
+          "enabled": true,
+          "rounds_per_half": 3,
+          "max_overtimes": -1
+        },
+        "tiebreak": {
+          "damage": false,
+          "sudden_death_on_tie": true
+        },
+        "ready": {
+          "min_per_team": 0,
+          "allow_force_ready": true,
+          "autoready": false
+        },
+        "knife": {
+          "side_pick_seconds": 60
+        },
+        "pause": {
+          "tactical_per_team": 4,
+          "tactical_seconds": 30,
+          "technical_per_team": 10,
+          "unpause": "both_teams",
+          "pause_after_restore": true
+        },
+        "whitelist": true,
+        "playout": false,
+        "clinch_series": true,
+        "demo": {
+          "record": true,
+          "upload": true
+        },
+        "wingman": false
+      },
+      "cvars": {
+        "mp_freezetime": 15,
+        "tv_delay": 90
+      }
+    }
+  }
+}

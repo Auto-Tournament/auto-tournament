@@ -1,0 +1,99 @@
+{
+  "v": 1,
+  "type": "state.snapshot",
+  "id": "01M3BAZ4GB8GTVRZ3ZN99Q33RD",
+  "ack": 1,
+  "ts": 1790308225547,
+  "ref": null,
+  "epoch": 2,
+  "payload": {
+    "reason": "assign",
+    "state": {
+      "match_id": "lt-1790308176",
+      "epoch": 2,
+      "server_id": "srv_livetest",
+      "config_rev": 1,
+      "live_rev": 0,
+      "phase": "loading",
+      "series": {
+        "num_maps": 1,
+        "current_map": 1,
+        "score": {
+          "team1": 0,
+          "team2": 0
+        },
+        "maps": {
+          "1": {
+            "name": "de_dust2",
+            "sides": "knife",
+            "status": "pending",
+            "score": {
+              "team1": 0,
+              "team2": 0
+            }
+          }
+        }
+      },
+      "teams": {
+        "team1": {
+          "id": "lt_a",
+          "name": "LiveTestA",
+          "score": 0,
+          "score_ct": 0,
+          "score_t": 0,
+          "players": {}
+        },
+        "team2": {
+          "id": "lt_b",
+          "name": "LiveTestB",
+          "score": 0,
+          "score_ct": 0,
+          "score_t": 0,
+          "players": {}
+        }
+      },
+      "spectators": {},
+      "ready": {
+        "required_per_team": 0
+      },
+      "knife": {
+        "status": "none"
+      },
+      "pause": {
+        "active": false,
+        "unpause": {
+          "team1": false,
+          "team2": false
+        },
+        "used": {
+          "team1": {
+            "tactical": 0,
+            "technical": 0
+          },
+          "team2": {
+            "tactical": 0,
+            "technical": 0
+          }
+        }
+      },
+      "round": {
+        "number": 0
+      },
+      "backups": {},
+      "rules": {
+        "max_rounds": 4,
+        "overtime": {
+          "enabled": false,
+          "rounds_per_half": 3
+        },
+        "knife": {
+          "side_pick_seconds": 5
+        },
+        "clinch_series": true
+      }
+    },
+    "availability": "busy",
+    "config_rev": 1,
+    "admins_rev": 0
+  }
+}

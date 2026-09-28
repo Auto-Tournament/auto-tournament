@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/event.series_end.json",
+  "title": "event.series_end (server → platform, reliable)",
+  "description": "Match event (FLEET.md §8.1), source: match_end.h MatchFlowEvent SeriesEnd, or cmd end_match (forced); critical. Envelope epoch = the assignment's. `rev` / `patch` continue the MatchState stream (see match.defs.json#/$defs/rev); `data` holds the facts.",
+  "type": "object",
+  "required": [
+    "match_id",
+    "map_number",
+    "rev",
+    "patch",
+    "data"
+  ],
+  "properties": {
+    "match_id": {
+      "$ref": "../match.defs.json#/$defs/matchId"
+    },
+    "map_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "round": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "rev": {
+      "$ref": "../match.defs.json#/$defs/rev"
+    },
+    "patch": {
+      "$ref": "../match.defs.json#/$defs/patch"
+    },
+    "data": {
+      "type": "object",
+      "required": [
+        "type",
+        "winner",
+        "team1_series_score",
+        "team2_series_score"
+      ],
+      "properties": {
+        "type": {
+          "const": "series_end"
+        },
+        "matchid": {
+          "type": "string",
+          "maxLength": 24
+        },
+        "slug": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "scrim": {
+          "const": false
+        },
+        "winner": {
+          "enum": [
+            "team1",
+            "team2",
+            "none"
+          ]
+        },
+        "team1_name": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "team2_name": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "team1_series_score": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "team2_series_score": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "seconds_until_reset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "forced": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 256
+        }
+      }
+    }
+  }
+}

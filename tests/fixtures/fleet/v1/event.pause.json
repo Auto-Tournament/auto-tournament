@@ -1,0 +1,29 @@
+{
+  "v": 1,
+  "type": "event.pause",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9P10",
+  "ts": 1790340012345,
+  "seq": 1903,
+  "epoch": 1,
+  "payload": {
+    "match_id": "ko-r1-m3",
+    "map_number": 1,
+    "round": 9,
+    "rev": 43,
+    "patch": {
+      "live_rev": 43,
+      "phase": "paused",
+      "pause": {
+        "active": true,
+        "type": "offline",
+        "by": "platform-link",
+        "started_at": 1790340012000
+      }
+    },
+    "data": {
+      "action": "paused",
+      "type": "offline",
+      "by": "platform-link"
+    }
+  }
+}

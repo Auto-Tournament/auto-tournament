@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/match.unassign.json",
+  "title": "match.unassign (platform → server, reliable)",
+  "description": "End the assignment (§7.2): stops the match, clears sv_password, kicks players (at once with kick_message, else after the series-end kick delay), becomes available. Epoch-fenced: a lower epoch is rejected stale_epoch; a replay of an unassign already done is acked ok.",
+  "type": "object",
+  "required": [
+    "match_id",
+    "epoch",
+    "reason"
+  ],
+  "properties": {
+    "match_id": {
+      "$ref": "../match.defs.json#/$defs/matchId"
+    },
+    "epoch": {
+      "$ref": "../match.defs.json#/$defs/epoch"
+    },
+    "reason": {
+      "enum": [
+        "ended",
+        "cancelled",
+        "superseded",
+        "moved",
+        "admin"
+      ]
+    },
+    "kick_message": {
+      "type": "string",
+      "maxLength": 190
+    }
+  }
+}

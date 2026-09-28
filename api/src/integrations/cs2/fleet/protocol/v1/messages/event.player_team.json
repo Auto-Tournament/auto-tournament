@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/event.player_team.json",
+  "title": "event.player_team (server → platform, reliable)",
+  "description": "Match event (FLEET.md §8.1), source: core events. Envelope epoch = the assignment's. `rev` / `patch` continue the MatchState stream (see match.defs.json#/$defs/rev); `data` holds the facts.",
+  "type": "object",
+  "required": [
+    "match_id",
+    "map_number",
+    "rev",
+    "patch",
+    "data"
+  ],
+  "properties": {
+    "match_id": {
+      "$ref": "../match.defs.json#/$defs/matchId"
+    },
+    "map_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "round": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "rev": {
+      "$ref": "../match.defs.json#/$defs/rev"
+    },
+    "patch": {
+      "$ref": "../match.defs.json#/$defs/patch"
+    },
+    "data": {
+      "type": "object",
+      "required": [
+        "steamid64",
+        "team",
+        "side"
+      ],
+      "properties": {
+        "steamid64": {
+          "$ref": "../defs.json#/$defs/u64s"
+        },
+        "team": {
+          "enum": [
+            "team1",
+            "team2",
+            "spectator",
+            "none"
+          ]
+        },
+        "side": {
+          "enum": [
+            "ct",
+            "t",
+            "spectator",
+            "none"
+          ]
+        }
+      }
+    }
+  }
+}

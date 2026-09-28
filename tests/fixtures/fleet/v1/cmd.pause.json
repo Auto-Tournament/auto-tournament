@@ -1,0 +1,22 @@
+{
+  "v": 1,
+  "type": "cmd",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9P04",
+  "ts": 1790340012345,
+  "seq": 81,
+  "epoch": 1,
+  "payload": {
+    "match_id": "ko-r1-m3",
+    "epoch": 1,
+    "name": "pause",
+    "args": {
+      "type": "technical"
+    },
+    "issued_by": {
+      "user_id": "u_42",
+      "name": "Admin",
+      "root": false
+    },
+    "expires_at": 1790340072345
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/match.assign.json",
+  "title": "match.assign (platform → server, reliable)",
+  "description": "Assign a match (FLEET.md §7.1). Envelope `epoch` = payload `epoch`. Answered by exactly one cmd.result (`ref` = this id): ok, or rejected with invalid_config / busy / stale_epoch; with `resume` also checksum (inline backup or backup_ref sha256), no_backup (no such local file) and unsupported (multi-part backup). A replay of the active match_id + epoch is acked ok without effect. A resume of the match this server has loaded (running, or recovered after a crash) reloads it; it is not busy.",
+  "type": "object",
+  "required": [
+    "match_id",
+    "epoch",
+    "config"
+  ],
+  "properties": {
+    "match_id": {
+      "$ref": "../match.defs.json#/$defs/matchId"
+    },
+    "epoch": {
+      "$ref": "../match.defs.json#/$defs/epoch"
+    },
+    "config_rev": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "the platform's config_rev for this config (default 1); match.update CAS base"
+    },
+    "config": {
+      "$ref": "../match.defs.json#/$defs/assignConfig"
+    },
+    "resume": {
+      "$ref": "../match.defs.json#/$defs/resume"
+    }
+  }
+}

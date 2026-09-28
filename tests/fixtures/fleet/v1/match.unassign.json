@@ -1,0 +1,13 @@
+{
+  "v": 1,
+  "type": "match.unassign",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9P03",
+  "ts": 1790340012345,
+  "seq": 80,
+  "epoch": 1,
+  "payload": {
+    "match_id": "ko-r1-m3",
+    "epoch": 1,
+    "reason": "ended"
+  }
+}

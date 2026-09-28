@@ -1,0 +1,38 @@
+{
+  "v": 1,
+  "type": "state.patch",
+  "id": "01M3BAZ9GH635BD5ZW9SM0MJ08",
+  "seq": 4,
+  "ack": 1,
+  "ts": 1790308230673,
+  "ref": null,
+  "epoch": 2,
+  "payload": {
+    "match_id": "lt-1790308176",
+    "rev": 2,
+    "patch": {
+      "live_rev": 2,
+      "series": {
+        "maps": {
+          "1": {
+            "score": {
+              "team1": 1
+            }
+          }
+        }
+      },
+      "teams": {
+        "team1": {
+          "score": 1
+        }
+      },
+      "ready": {
+        "ready": 0,
+        "total": 0
+      },
+      "round": {
+        "number": 1
+      }
+    }
+  }
+}

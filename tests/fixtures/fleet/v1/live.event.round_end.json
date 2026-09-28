@@ -1,0 +1,207 @@
+{
+  "v": 1,
+  "type": "event.round_end",
+  "id": "01M3BB2MC9Z9K8RDY7G1NQFJ6B",
+  "seq": 24,
+  "ack": 8,
+  "ts": 1790308340105,
+  "ref": null,
+  "epoch": 2,
+  "payload": {
+    "match_id": "lt-1790308176",
+    "map_number": 1,
+    "round": 1,
+    "rev": 15,
+    "patch": {
+      "live_rev": 15,
+      "series": {
+        "maps": {
+          "1": {
+            "score": {
+              "team1": 1
+            }
+          }
+        }
+      },
+      "teams": {
+        "team1": {
+          "score": 1,
+          "score_ct": 1
+        }
+      }
+    },
+    "data": {
+      "round": {
+        "round_number": 1,
+        "winner_side": 3,
+        "winner_team": 1,
+        "reason": 12,
+        "team1_score": 1,
+        "team2_score": 0,
+        "team1_was_ct": true,
+        "players": [
+          {
+            "id": "12731676150871359538",
+            "team": 1,
+            "side": 3,
+            "kills": 0,
+            "assists": 0,
+            "flash_assists": 0,
+            "damage": 0,
+            "utility_damage": 0,
+            "headshot_kills": 0,
+            "died": false,
+            "survived": true,
+            "traded": false,
+            "kast": true,
+            "entry_kill": false,
+            "entry_death": false,
+            "mvp": false,
+            "clutch_vs": 0,
+            "clutch_won": false
+          },
+          {
+            "id": "12731676150871359539",
+            "team": 1,
+            "side": 3,
+            "kills": 0,
+            "assists": 0,
+            "flash_assists": 0,
+            "damage": 0,
+            "utility_damage": 0,
+            "headshot_kills": 0,
+            "died": false,
+            "survived": true,
+            "traded": false,
+            "kast": true,
+            "entry_kill": false,
+            "entry_death": false,
+            "mvp": false,
+            "clutch_vs": 0,
+            "clutch_won": false
+          },
+          {
+            "id": "12731676150871359540",
+            "team": 1,
+            "side": 3,
+            "kills": 0,
+            "assists": 0,
+            "flash_assists": 0,
+            "damage": 0,
+            "utility_damage": 0,
+            "headshot_kills": 0,
+            "died": false,
+            "survived": true,
+            "traded": false,
+            "kast": true,
+            "entry_kill": false,
+            "entry_death": false,
+            "mvp": false,
+            "clutch_vs": 0,
+            "clutch_won": false
+          },
+          {
+            "id": "12731676150871359541",
+            "team": 1,
+            "side": 3,
+            "kills": 0,
+            "assists": 0,
+            "flash_assists": 0,
+            "damage": 0,
+            "utility_damage": 0,
+            "headshot_kills": 0,
+            "died": false,
+            "survived": true,
+            "traded": false,
+            "kast": true,
+            "entry_kill": false,
+            "entry_death": false,
+            "mvp": false,
+            "clutch_vs": 0,
+            "clutch_won": false
+          },
+          {
+            "id": "12731676150871359534",
+            "team": 2,
+            "side": 2,
+            "kills": 0,
+            "assists": 0,
+            "flash_assists": 0,
+            "damage": 0,
+            "utility_damage": 0,
+            "headshot_kills": 0,
+            "died": false,
+            "survived": true,
+            "traded": false,
+            "kast": true,
+            "entry_kill": false,
+            "entry_death": false,
+            "mvp": false,
+            "clutch_vs": 0,
+            "clutch_won": false
+          },
+          {
+            "id": "12731676150871359535",
+            "team": 2,
+            "side": 2,
+            "kills": 0,
+            "assists": 0,
+            "flash_assists": 0,
+            "damage": 0,
+            "utility_damage": 0,
+            "headshot_kills": 0,
+            "died": false,
+            "survived": true,
+            "traded": false,
+            "kast": true,
+            "entry_kill": false,
+            "entry_death": false,
+            "mvp": false,
+            "clutch_vs": 0,
+            "clutch_won": false
+          },
+          {
+            "id": "12731676150871359536",
+            "team": 2,
+            "side": 2,
+            "kills": 0,
+            "assists": 0,
+            "flash_assists": 0,
+            "damage": 0,
+            "utility_damage": 0,
+            "headshot_kills": 0,
+            "died": false,
+            "survived": true,
+            "traded": false,
+            "kast": true,
+            "entry_kill": false,
+            "entry_death": false,
+            "mvp": false,
+            "clutch_vs": 0,
+            "clutch_won": false
+          },
+          {
+            "id": "12731676150871359537",
+            "team": 2,
+            "side": 2,
+            "kills": 0,
+            "assists": 0,
+            "flash_assists": 0,
+            "damage": 0,
+            "utility_damage": 0,
+            "headshot_kills": 0,
+            "died": false,
+            "survived": true,
+            "traded": false,
+            "kast": true,
+            "entry_kill": false,
+            "entry_death": false,
+            "mvp": false,
+            "clutch_vs": 0,
+            "clutch_won": false
+          }
+        ]
+      }
+    }
+  }
+}

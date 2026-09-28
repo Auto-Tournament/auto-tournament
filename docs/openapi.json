@@ -8094,12 +8094,152 @@
         ]
       }
     },
+    "/api/test/fleet/assign": {
+      "post": {
+        "tags": [
+          "Test helpers (CS2)"
+        ],
+        "summary": "POST /api/test/fleet/assign",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/test/fleet/commands/{id}": {
+      "get": {
+        "tags": [
+          "Test helpers (CS2)"
+        ],
+        "summary": "GET /api/test/fleet/commands/:id",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/test/fleet/events/{serverId}": {
+      "get": {
+        "tags": [
+          "Test helpers (CS2)"
+        ],
+        "summary": "GET /api/test/fleet/events/:serverId",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "serverId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/test/fleet/live-state/{slug}": {
+      "get": {
+        "tags": [
+          "Test helpers (CS2)"
+        ],
+        "summary": "GET /api/test/fleet/live-state/:slug",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/test/fleet/reset-enroll-rate-limit": {
       "post": {
         "tags": [
           "Test helpers (CS2)"
         ],
         "summary": "POST /api/test/fleet/reset-enroll-rate-limit",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/test/fleet/send": {
+      "post": {
+        "tags": [
+          "Test helpers (CS2)"
+        ],
+        "summary": "POST /api/test/fleet/send",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {

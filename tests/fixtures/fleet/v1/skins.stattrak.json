@@ -1,0 +1,12 @@
+{
+  "v": 1,
+  "type": "skins.stattrak",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9P13",
+  "ts": 1790340019000,
+  "seq": 120,
+  "payload": {
+    "increments": [
+      { "steamid64": "76561198000000001", "defindex": 9, "kills": 2 }
+    ]
+  }
+}

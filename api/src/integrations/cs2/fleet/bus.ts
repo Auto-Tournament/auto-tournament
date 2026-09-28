@@ -22,6 +22,11 @@ export interface FleetOutboundMessage {
   ref?: string | null;
   /** Unix seconds after which a replay is pointless (FLEET.md §6.4 `expires_at`). */
   expiresAt?: number | null;
+  /**
+   * The envelope id (ULID). Minted when left out; `sendReliable` (./reliable)
+   * sets it so the command row exists before the answer can arrive.
+   */
+  id?: string;
 }
 
 export interface FleetSendResult {
@@ -49,10 +54,18 @@ export class InProcessFleetBus implements FleetBus {
     const reliable = message.reliable ?? !EPHEMERAL.has(message.type);
     const session = this.gateway.session(serverId);
     if (!reliable) {
-      const delivered = session ? session.sendEphemeral(message.type, message.payload, message.ref ?? undefined) : false;
+      const delivered = session
+        ? session.sendEphemeral(
+            message.type,
+            message.payload,
+            message.ref ?? undefined,
+            message.epoch !== undefined ? { epoch: message.epoch } : undefined
+          )
+        : false;
       return { delivered };
     }
     const envelope = await registry.appendOutbox(serverId, {
+      ...(message.id ? { id: message.id } : {}),
       type: message.type,
       payload: message.payload,
       ...(message.epoch !== undefined ? { epoch: message.epoch } : {}),

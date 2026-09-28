@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/admins.set.json",
+  "title": "admins.set (platform → server, reliable)",
+  "description": "Proposed by Ready Up (D5, D13, FLEET.md §7.6). The whole fleet-wide admin list; replaces the previous one. The server ignores a rev lower than the one it has (a replay) and caches the list on disk (readyup-match fleet-admins.json) for offline boots. In fleet mode only this list (plus per-match admins) counts and `ru admins add|remove` are refused. Send it after every welcome and whenever the list changes. No reply beyond the ack.",
+  "type": "object",
+  "required": ["rev", "admins"],
+  "properties": {
+    "rev": { "type": "integer", "minimum": 0 },
+    "admins": {
+      "type": "array",
+      "maxItems": 1000,
+      "items": {
+        "type": "object",
+        "required": ["steamid64", "name"],
+        "properties": {
+          "steamid64": { "$ref": "../defs.json#/$defs/u64s" },
+          "name": { "type": "string", "maxLength": 128 }
+        }
+      }
+    }
+  }
+}

@@ -732,6 +732,222 @@ function extractNestedNumber(
 }
 
 // ---------------------------------------------------------------------------
+// Neutral events from another source (the Ready Up fleet link)
+// ---------------------------------------------------------------------------
+
+export interface ApplyNormalizedOptions {
+  /** A player's name for `presence.changed` (the neutral event has none). */
+  playerName?: (steamId: string) => string | undefined;
+}
+
+/** Live-page status for a phase; undefined = leave it (a pause is still "live"). */
+function liveStatusForPhase(phase: string): MatchLiveStats['status'] | undefined {
+  switch (phase) {
+    case 'loading':
+    case 'warmup':
+    case 'restoring':
+      return 'warmup';
+    case 'knife':
+    case 'side_pick':
+      return 'knife';
+    case 'live':
+    case 'overtime':
+      return 'live';
+    case 'halftime':
+      return 'halftime';
+    case 'map_end':
+    case 'series_end':
+      return 'postgame';
+    default:
+      return undefined;
+  }
+}
+
+/** A `player.stats` line's metrics (normalize.ts keys) as the live-stats line. */
+function liveLineFromMetrics(line: ReportedStatLineLike): PlayerStatLine {
+  const m = line.metrics;
+  const roundsPlayed = m.rounds_played ?? 0;
+  return {
+    steamId: line.account.externalId,
+    name: line.name,
+    kills: m.kills ?? 0,
+    deaths: m.deaths ?? 0,
+    assists: m.assists ?? 0,
+    flashAssists: m.flash_assists ?? 0,
+    headshotKills: m.headshots ?? 0,
+    // ADR is what the metric carries; the live line keeps total damage.
+    damage: Math.round((m.adr ?? 0) * roundsPlayed),
+    utilityDamage: m.utility_damage ?? 0,
+    kast: m.kast ?? 0,
+    mvps: m.mvps ?? 0,
+    score: m.score ?? 0,
+    roundsPlayed,
+  };
+}
+
+type ReportedStatLineLike = Extract<NormalizedEvent, { type: 'player.stats' }>['lines'][number];
+
+/**
+ * Apply neutral events that did not come through the plugin webhook (the
+ * Ready Up fleet link: `fleet/ingest.ts`). The same CS2 side effects
+ * `handleMatchEvent` applies for the equivalent plugin events (match status,
+ * current map, live score and per-player stats, who is connected, the stale
+ * map and finished match guards), then `matchLifecycle.ingest` for results,
+ * so a fleet match is finished by the same code as a plugin one.
+ *
+ * Map numbers are the platform's (0-based). Returns the events that reached
+ * the core; an event for an unknown match, a stale map or a finished match
+ * is dropped here (a `series.ended` for an unknown match still goes on, so
+ * the core can log it).
+ */
+export async function applyNormalizedEvents(
+  events: NormalizedEvent[],
+  options: ApplyNormalizedOptions = {}
+): Promise<NormalizedEvent[]> {
+  const accepted: NormalizedEvent[] = [];
+  const bySlug = new Map<string, DbMatchRow | null>();
+  const matchFor = async (slug: string): Promise<DbMatchRow | null> => {
+    if (!bySlug.has(slug)) {
+      bySlug.set(
+        slug,
+        (await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [slug])) ?? null
+      );
+    }
+    return bySlug.get(slug) ?? null;
+  };
+
+  for (const event of events) {
+    let match = await matchFor(event.slug);
+    if (!match) {
+      if (event.type === 'series.ended') accepted.push(event);
+      else log.debug(`[FLEET] ${event.type} for unknown match ${event.slug}; dropped`);
+      continue;
+    }
+
+    switch (event.type) {
+      case 'series.started':
+        log.success(`Series started (fleet): ${match.slug}`, { format: `BO${event.seriesLength}` });
+        accepted.push(event);
+        break;
+
+      case 'map.started': {
+        if (!shouldAcceptPlayEvent(match, 'map.started', match.slug)) break;
+        if (await isStaleMapEvent(match, event.mapNumber, 'map.started')) break;
+        log.success(`Going live (fleet): map ${event.mapNumber} ${event.mapName ?? ''}`.trim(), {
+          matchSlug: match.slug,
+        });
+        await updateMatchStatus(match, 'live');
+        playerConnectionService.markAllReady(match.slug);
+        updateLiveStats(match, {
+          status: 'live',
+          mapNumber: event.mapNumber,
+          ...(event.mapName ? { mapName: event.mapName } : {}),
+          team1Score: 0,
+          team2Score: 0,
+          roundNumber: 0,
+        });
+        await db.updateAsync(
+          'matches',
+          { current_map: event.mapName ?? match.current_map, map_number: event.mapNumber },
+          'id = ?',
+          [match.id]
+        );
+        match = { ...match, status: 'live', map_number: event.mapNumber, current_map: event.mapName ?? match.current_map };
+        bySlug.set(match.slug, match);
+        accepted.push(event);
+        break;
+      }
+
+      case 'score.updated': {
+        if (await isStaleMapEvent(match, event.mapNumber, 'score.updated')) break;
+        const status = event.phase ? liveStatusForPhase(event.phase) : undefined;
+        const stats = matchLiveStatsService.update(match.slug, {
+          mapNumber: event.mapNumber,
+          team1Score: event.team1,
+          team2Score: event.team2,
+          ...(status ? { status } : {}),
+        });
+        if (match.map_number !== event.mapNumber) {
+          await db.updateAsync('matches', { map_number: event.mapNumber }, 'id = ?', [match.id]);
+          match = { ...match, map_number: event.mapNumber };
+          bySlug.set(match.slug, match);
+        }
+        emitMatchUpdate({ slug: match.slug, liveStats: stats, status: match.status });
+        accepted.push(event);
+        break;
+      }
+
+      case 'phase.changed': {
+        const status = liveStatusForPhase(event.phase);
+        if (status) updateLiveStats(match, { status });
+        accepted.push(event);
+        break;
+      }
+
+      case 'presence.changed': {
+        const steamId = event.account.externalId;
+        if (event.state === 'connected') {
+          const team = determinePlayerTeam(match, steamId, event.team);
+          if (team) {
+            playerConnectionService.playerConnected(
+              match.slug,
+              steamId,
+              options.playerName?.(steamId) ?? 'Unknown',
+              team
+            );
+          }
+        } else if (event.state === 'disconnected') {
+          playerConnectionService.playerDisconnected(match.slug, steamId);
+        } else {
+          playerConnectionService.playerReady(match.slug, steamId, event.state === 'ready');
+        }
+        accepted.push(event);
+        break;
+      }
+
+      case 'player.stats': {
+        if (event.scope === 'map' && event.mapNumber !== undefined) {
+          if (await isStaleMapEvent(match, event.mapNumber, 'player.stats')) break;
+          const snapshot: MatchPlayerStatsSnapshot = {
+            team1: event.lines.filter((l) => l.team === 'team1').map(liveLineFromMetrics),
+            team2: event.lines.filter((l) => l.team === 'team2').map(liveLineFromMetrics),
+          };
+          updateLiveStats(match, { mapNumber: event.mapNumber, playerStats: snapshot });
+        }
+        accepted.push(event);
+        break;
+      }
+
+      case 'map.result': {
+        if (await isStaleMapEvent(match, event.mapNumber, 'map.result')) break;
+        updateLiveStats(match, {
+          status: 'postgame',
+          mapNumber: event.mapNumber,
+          team1Score: event.team1Score,
+          team2Score: event.team2Score,
+          ...(event.seriesScore
+            ? { team1SeriesScore: event.seriesScore.team1, team2SeriesScore: event.seriesScore.team2 }
+            : {}),
+          ...(event.mapName ? { mapName: event.mapName } : {}),
+        });
+        accepted.push(event);
+        break;
+      }
+
+      case 'series.ended':
+        accepted.push(event);
+        break;
+    }
+  }
+
+  if (accepted.length) {
+    log.debug('[FLEET] Normalized', { normalized: accepted.map((n) => `${n.type} ${n.eventId}`) });
+    await matchLifecycle.ingest(accepted);
+  }
+  return accepted;
+}
+
+// ---------------------------------------------------------------------------
 // Series results: what the core asks the integration for
 // ---------------------------------------------------------------------------
 

@@ -16,7 +16,8 @@ seq/ack, token rotation).
 | Enrollment + admin routes | `api/src/integrations/cs2/fleet/routes.ts` |
 | WebSocket gateway, `FleetBus` | `api/src/integrations/cs2/fleet/gateway.ts`, `bus.ts` |
 | Tables (`cs2_fleet_*`) | migration `005-fleet` in `api/src/integrations/cs2/migrations.ts` |
-| Tests | `tests/api/fleet-*.spec.ts`, test client in `tests/helpers/fleet.ts` |
+| Match control (step 3): state store, event log, normalizer, `sendReliable` | `api/src/integrations/cs2/fleet/` — see its [README](../api/src/integrations/cs2/fleet/README.md); tables in migration `006-fleet-match` |
+| Tests | `tests/api/fleet-*.spec.ts`, test client in `tests/helpers/fleet.ts`, Ready Up's example frames in `tests/fixtures/fleet/v1/` |
 
 The schemas are plain JSON files. Ready Up's and csm's CI copy the folder
 (`protocol/v1/**/*.json`) and validate the messages their serializers
@@ -26,7 +27,8 @@ schemas reference `../defs.json`, so load `defs.json` first.
 | File | Validates |
 |---|---|
 | `envelope.json` | every frame |
-| `messages/<type>.json` | the `payload` of that type: `hello`, `welcome`, `ping`, `pong`, `ack`, `error`, `auth.rotate`, `auth.rotated`, `server.config` (placeholder) |
+| `messages/<type>.json` | the `payload` of that type: `hello`, `welcome`, `ping`, `pong`, `ack`, `error`, `auth.rotate`, `auth.rotated`, `server.config` (placeholder); step 3 / D13 (adopted from Ready Up): `match.assign`, `match.update`, `match.unassign`, `cmd`, `cmd.result`, `state.request`, `state.snapshot`, `state.patch`, `server.availability`, `event.*` (23), `admins.set`, `skins.loadout`, `skins.invalidate`, `skins.stattrak` |
+| `match.defs.json` | shared `$defs` of the step-3 messages: MatchState, rules, assign config, InlineBackup, RoundSummary, MapStats (load it after `defs.json`) |
 | `http/enroll.request.json`, `http/enroll.response.json` | `POST /api/fleet/enroll` |
 
 ## Run the platform

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/event.backup.json",
+  "title": "event.backup (server → platform, reliable)",
+  "description": "Match event (FLEET.md §8.1), source: CS2 round backup file (§12.3); critical. Envelope epoch = the assignment's. `rev` / `patch` continue the MatchState stream (see match.defs.json#/$defs/rev); `data` holds the facts.",
+  "type": "object",
+  "required": [
+    "match_id",
+    "map_number",
+    "rev",
+    "patch",
+    "data"
+  ],
+  "properties": {
+    "match_id": {
+      "$ref": "../match.defs.json#/$defs/matchId"
+    },
+    "map_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "round": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "rev": {
+      "$ref": "../match.defs.json#/$defs/rev"
+    },
+    "patch": {
+      "$ref": "../match.defs.json#/$defs/patch"
+    },
+    "data": {
+      "$ref": "../match.defs.json#/$defs/inlineBackup"
+    }
+  }
+}

@@ -29,6 +29,11 @@
  * `004-map-modes` adds a map's type (maps/mapModes.ts).
  *
  * `005-fleet` adds the Ready Up fleet registry (fleet/registry.ts).
+ *
+ * `006-fleet-match` adds what the platform needs to drive a match over the
+ * fleet link (Ready Up's step 3): a server's transport, the live match state
+ * (fleet/state.ts), the inbound event log and the answers to the platform's
+ * own commands (fleet/inbound.ts, fleet/reliable.ts).
  */
 
 import type { ModuleMigration } from '../types';
@@ -38,6 +43,7 @@ export const CS2_AT_COLUMNS_MIGRATION_ID = '002-at-columns';
 export const CS2_CATALOG_MARKERS_MIGRATION_ID = '003-catalog-markers';
 export const CS2_MAP_MODES_MIGRATION_ID = '004-map-modes';
 export const CS2_FLEET_MIGRATION_ID = '005-fleet';
+export const CS2_FLEET_MATCH_MIGRATION_ID = '006-fleet-match';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -276,6 +282,86 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       expires_at INTEGER,
       PRIMARY KEY (server_id, seq)
     );
+`,
+  },
+  {
+    // Driving a match over the fleet link (Ready Up's
+    // docs/fleet-step3-platform-notes.md §2-§3). Every statement can run twice.
+    //
+    // - cs2_servers.transport: how the platform talks to the server, 'rcon'
+    //   (the plugin + RCON path, every server so far) or 'fleet' (a Ready Up
+    //   server on the fleet link, cs2_servers.fleet_server_id). One fleet
+    //   server backs at most one cs2_servers row.
+    // - cs2_match_live_state: the MatchState per match (fleet/state.ts), with
+    //   the assignment epoch (fencing), the server's live_rev and the
+    //   platform's config_rev. `state` / `map_stats` / `map_rounds` are JSON.
+    // - cs2_fleet_events: every reliable server message, written before it is
+    //   acked (persist-before-ack), unique per (server, stream id, seq) so a
+    //   replay after a lost ack is not stored twice. `processed_at` stays NULL
+    //   until the message was applied, so a crash in between is replayed.
+    // - cs2_fleet_commands: the platform's match.* / cmd messages and their
+    //   one cmd.result (envelope `ref` = the message id). The outbox row goes
+    //   at the ack; this one keeps the answer.
+    id: CS2_FLEET_MATCH_MIGRATION_ID,
+    up: `
+    ALTER TABLE cs2_servers ADD COLUMN IF NOT EXISTS transport TEXT NOT NULL DEFAULT 'rcon';
+    ALTER TABLE cs2_servers ADD COLUMN IF NOT EXISTS fleet_server_id TEXT REFERENCES cs2_fleet_servers(id) ON DELETE SET NULL;
+    CREATE UNIQUE INDEX IF NOT EXISTS cs2_servers_fleet_server_idx ON cs2_servers(fleet_server_id) WHERE fleet_server_id IS NOT NULL;
+
+    CREATE TABLE IF NOT EXISTS cs2_match_live_state (
+      match_slug TEXT PRIMARY KEY, -- matches.slug = the fleet match_id
+      epoch INTEGER NOT NULL DEFAULT 0, -- highest assignment epoch of the match (fencing, FLEET.md §11.4)
+      server_id TEXT REFERENCES cs2_fleet_servers(id) ON DELETE SET NULL, -- the server holding that epoch
+      live_rev INTEGER NOT NULL DEFAULT 0, -- server-owned; rev of the last applied patch
+      config_rev INTEGER NOT NULL DEFAULT 0, -- platform-owned; the match.update CAS base
+      state TEXT, -- MatchState JSON; NULL until the first snapshot
+      map_stats TEXT, -- MapStats JSON from the last snapshot that had one
+      map_rounds TEXT, -- JSON {"<map>": RoundSummary[]} from event.round_end, pruned by rounds_voided
+      needs_snapshot INTEGER NOT NULL DEFAULT 0, -- 1 while a rev gap waits for a state.snapshot
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
+    CREATE INDEX IF NOT EXISTS cs2_match_live_state_server_idx ON cs2_match_live_state(server_id);
+
+    CREATE TABLE IF NOT EXISTS cs2_fleet_events (
+      id BIGSERIAL PRIMARY KEY,
+      server_id TEXT NOT NULL REFERENCES cs2_fleet_servers(id) ON DELETE CASCADE,
+      stream_id TEXT NOT NULL, -- hello.stream.id
+      seq INTEGER NOT NULL,
+      message_id TEXT NOT NULL, -- envelope id (ULID)
+      type TEXT NOT NULL,
+      match_slug TEXT, -- payload.match_id, when there is one
+      epoch INTEGER, -- envelope epoch
+      rev INTEGER, -- payload.rev (state.patch, event.*)
+      ref TEXT, -- envelope ref (cmd.result: the platform message it answers)
+      message TEXT NOT NULL, -- the envelope as JSON
+      received_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      processed_at INTEGER, -- NULL until applied (state store, normalizer, command answers)
+      error TEXT -- why applying it failed, if it did
+    );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS cs2_fleet_events_stream_seq_idx ON cs2_fleet_events(server_id, stream_id, seq);
+    CREATE INDEX IF NOT EXISTS cs2_fleet_events_match_idx ON cs2_fleet_events(match_slug, id);
+    CREATE INDEX IF NOT EXISTS cs2_fleet_events_pending_idx ON cs2_fleet_events(server_id, id) WHERE processed_at IS NULL;
+
+    CREATE TABLE IF NOT EXISTS cs2_fleet_commands (
+      message_id TEXT PRIMARY KEY, -- envelope id; cmd.result.ref
+      server_id TEXT NOT NULL REFERENCES cs2_fleet_servers(id) ON DELETE CASCADE,
+      seq INTEGER, -- outbox seq, once appended
+      type TEXT NOT NULL, -- match.assign | match.update | match.unassign | cmd
+      match_slug TEXT,
+      epoch INTEGER,
+      name TEXT, -- cmd name
+      status TEXT NOT NULL DEFAULT 'pending', -- pending | ok | rejected | failed | expired
+      error_code TEXT,
+      result TEXT, -- cmd.result payload JSON
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      answered_at INTEGER
+    );
+
+    CREATE INDEX IF NOT EXISTS cs2_fleet_commands_match_idx ON cs2_fleet_commands(match_slug, created_at);
+    CREATE INDEX IF NOT EXISTS cs2_fleet_commands_server_idx ON cs2_fleet_commands(server_id, status);
 `,
   },
 ];

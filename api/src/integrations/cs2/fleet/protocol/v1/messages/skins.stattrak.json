@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/skins.stattrak.json",
+  "title": "skins.stattrak (server → platform, reliable, critical)",
+  "description": "Proposed by Ready Up (D6, D13, FLEET.md §8.3). StatTrak kills since the last one, batched (at most one every 10 s). defindex is the painted weapon's defindex (skins.loadout paints[].defindex). The platform adds `kills` to its counter and sends the new count in the next skins.loadout.",
+  "type": "object",
+  "required": ["increments"],
+  "properties": {
+    "increments": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1024,
+      "items": {
+        "type": "object",
+        "required": ["steamid64", "defindex", "kills"],
+        "properties": {
+          "steamid64": { "$ref": "../defs.json#/$defs/u64s" },
+          "defindex": { "type": "integer", "minimum": 1 },
+          "kills": { "type": "integer", "minimum": 1 }
+        }
+      }
+    }
+  }
+}

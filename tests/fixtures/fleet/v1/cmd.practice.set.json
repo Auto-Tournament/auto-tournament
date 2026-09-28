@@ -1,0 +1,20 @@
+{
+  "v": 1,
+  "type": "cmd",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9P12",
+  "ts": 1790340012345,
+  "seq": 91,
+  "payload": {
+    "name": "practice.set",
+    "args": {
+      "on": true
+    },
+    "issued_by": {
+      "user_id": "u_1",
+      "name": "Admin",
+      "root": false
+    },
+    "expires_at": 0,
+    "audit_id": "aud_01J8ZS"
+  }
+}

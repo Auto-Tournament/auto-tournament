@@ -11,6 +11,8 @@ import { log } from '../../../utils/logger';
 import { primeServerStatusForTests, ServerStatus } from '../services/serverStatusService';
 import { db } from '../../../config/database';
 import { resetEnrollRateLimit } from '../fleet/routes';
+import { liveStateStore } from '../fleet/state';
+import { FleetSendError, getCommand, sendReliable, type ReliableType } from '../fleet/reliable';
 
 const router = Router();
 
@@ -97,6 +99,97 @@ router.post('/fleet/age-token', requireAuth, async (req: Request, res: Response)
     [Math.floor(days * 86400), serverId]
   );
   res.json({ success: true, tokens: result.changes });
+});
+
+/**
+ * Test-only fleet match helpers (step 3: fleet/state.ts, fleet/reliable.ts,
+ * fleet/inbound.ts), until the fleet driver has real routes:
+ *
+ * POST /api/test/fleet/assign { matchSlug, serverId, configRev? }   new epoch (beginAssignment)
+ * POST /api/test/fleet/send { serverId, type, payload, epoch? }     sendReliable
+ * GET  /api/test/fleet/live-state/:slug                             the stored LiveMatchRecord
+ * GET  /api/test/fleet/events/:serverId                             cs2_fleet_events rows (no message bodies)
+ * GET  /api/test/fleet/commands/:id                                 a command and its cmd.result
+ */
+function fleetTestGuard(res: Response): boolean {
+  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+    res.status(403).json({ success: false, error: 'Disabled in production' });
+    return false;
+  }
+  return true;
+}
+
+router.post('/fleet/assign', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (!fleetTestGuard(res)) return;
+  const { matchSlug, serverId, configRev } = (req.body || {}) as {
+    matchSlug?: string;
+    serverId?: string;
+    configRev?: number;
+  };
+  if (!matchSlug || !serverId) {
+    res.status(400).json({ success: false, error: 'matchSlug and serverId are required' });
+    return;
+  }
+  const record = await liveStateStore.beginAssignment(matchSlug, serverId, configRev ?? 1);
+  res.json({ success: true, epoch: record.epoch, record });
+});
+
+router.post('/fleet/send', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (!fleetTestGuard(res)) return;
+  const { serverId, type, payload, epoch } = (req.body || {}) as {
+    serverId?: string;
+    type?: ReliableType;
+    payload?: Record<string, unknown>;
+    epoch?: number;
+  };
+  if (!serverId || !type || !payload) {
+    res.status(400).json({ success: false, error: 'serverId, type and payload are required' });
+    return;
+  }
+  try {
+    const sent = await sendReliable(serverId, {
+      type,
+      payload: payload as never,
+      ...(epoch !== undefined ? { epoch } : {}),
+    });
+    res.json({ success: true, ...sent });
+  } catch (error) {
+    if (error instanceof FleetSendError) {
+      res.status(400).json({ success: false, error: error.message });
+      return;
+    }
+    throw error;
+  }
+});
+
+router.get('/fleet/live-state/:slug', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (!fleetTestGuard(res)) return;
+  const record = await liveStateStore.getLiveState(String(req.params.slug));
+  if (!record) {
+    res.status(404).json({ success: false, error: 'No live state' });
+    return;
+  }
+  res.json({ success: true, record });
+});
+
+router.get('/fleet/events/:serverId', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (!fleetTestGuard(res)) return;
+  const rows = await db.queryAsync(
+    `SELECT id, stream_id, seq, message_id, type, match_slug, epoch, rev, ref, processed_at, error
+       FROM cs2_fleet_events WHERE server_id = ? ORDER BY id ASC`,
+    [String(req.params.serverId)]
+  );
+  res.json({ success: true, events: rows });
+});
+
+router.get('/fleet/commands/:id', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (!fleetTestGuard(res)) return;
+  const command = await getCommand(String(req.params.id));
+  if (!command) {
+    res.status(404).json({ success: false, error: 'No such command' });
+    return;
+  }
+  res.json({ success: true, command });
 });
 
 export default router;

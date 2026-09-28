@@ -7,6 +7,7 @@
 
 import Ajv2020, { type ErrorObject, type ValidateFunction } from 'ajv/dist/2020';
 import defs from './defs.json';
+import matchDefs from './match.defs.json';
 import envelope from './envelope.json';
 import hello from './messages/hello.json';
 import welcome from './messages/welcome.json';
@@ -17,6 +18,42 @@ import error from './messages/error.json';
 import serverConfig from './messages/server.config.json';
 import authRotate from './messages/auth.rotate.json';
 import authRotated from './messages/auth.rotated.json';
+import matchAssign from './messages/match.assign.json';
+import matchUpdate from './messages/match.update.json';
+import matchUnassign from './messages/match.unassign.json';
+import cmd from './messages/cmd.json';
+import cmdResult from './messages/cmd.result.json';
+import stateRequest from './messages/state.request.json';
+import stateSnapshot from './messages/state.snapshot.json';
+import statePatch from './messages/state.patch.json';
+import serverAvailability from './messages/server.availability.json';
+import adminsSet from './messages/admins.set.json';
+import skinsLoadout from './messages/skins.loadout.json';
+import skinsInvalidate from './messages/skins.invalidate.json';
+import skinsStattrak from './messages/skins.stattrak.json';
+import eventPlayerConnect from './messages/event.player_connect.json';
+import eventPlayerDisconnect from './messages/event.player_disconnect.json';
+import eventPlayerTeam from './messages/event.player_team.json';
+import eventPlayerReady from './messages/event.player_ready.json';
+import eventPlayerUnready from './messages/event.player_unready.json';
+import eventPhase from './messages/event.phase.json';
+import eventKnifeResult from './messages/event.knife_result.json';
+import eventSidePicked from './messages/event.side_picked.json';
+import eventRoundStart from './messages/event.round_start.json';
+import eventRoundEnd from './messages/event.round_end.json';
+import eventBackup from './messages/event.backup.json';
+import eventPause from './messages/event.pause.json';
+import eventHalftime from './messages/event.halftime.json';
+import eventOvertime from './messages/event.overtime.json';
+import eventRoundsVoided from './messages/event.rounds_voided.json';
+import eventMapResult from './messages/event.map_result.json';
+import eventSeriesEnd from './messages/event.series_end.json';
+import eventDemo from './messages/event.demo.json';
+import eventMatchRestored from './messages/event.match_restored.json';
+import eventForfeit from './messages/event.forfeit.json';
+import eventGg from './messages/event.gg.json';
+import eventAdminCalled from './messages/event.admin_called.json';
+import eventError from './messages/event.error.json';
 import enrollRequest from './http/enroll.request.json';
 import enrollResponse from './http/enroll.response.json';
 import type { Envelope, FleetMessageType } from './types';
@@ -34,10 +71,49 @@ export const FLEET_MESSAGE_SCHEMAS: Record<FleetMessageType, Record<string, unkn
   'server.config': serverConfig,
   'auth.rotate': authRotate,
   'auth.rotated': authRotated,
+  // Step 3 (match control) and D13 (admins / skins): proposed by Ready Up,
+  // adopted here (ready-up docs/fleet-step3-platform-notes.md §1, §10).
+  'match.assign': matchAssign,
+  'match.update': matchUpdate,
+  'match.unassign': matchUnassign,
+  'cmd': cmd,
+  'cmd.result': cmdResult,
+  'state.request': stateRequest,
+  'state.snapshot': stateSnapshot,
+  'state.patch': statePatch,
+  'server.availability': serverAvailability,
+  'admins.set': adminsSet,
+  'skins.loadout': skinsLoadout,
+  'skins.invalidate': skinsInvalidate,
+  'skins.stattrak': skinsStattrak,
+  'event.player_connect': eventPlayerConnect,
+  'event.player_disconnect': eventPlayerDisconnect,
+  'event.player_team': eventPlayerTeam,
+  'event.player_ready': eventPlayerReady,
+  'event.player_unready': eventPlayerUnready,
+  'event.phase': eventPhase,
+  'event.knife_result': eventKnifeResult,
+  'event.side_picked': eventSidePicked,
+  'event.round_start': eventRoundStart,
+  'event.round_end': eventRoundEnd,
+  'event.backup': eventBackup,
+  'event.pause': eventPause,
+  'event.halftime': eventHalftime,
+  'event.overtime': eventOvertime,
+  'event.rounds_voided': eventRoundsVoided,
+  'event.map_result': eventMapResult,
+  'event.series_end': eventSeriesEnd,
+  'event.demo': eventDemo,
+  'event.match_restored': eventMatchRestored,
+  'event.forfeit': eventForfeit,
+  'event.gg': eventGg,
+  'event.admin_called': eventAdminCalled,
+  'event.error': eventError,
 };
 
 export const FLEET_SCHEMAS = {
   defs,
+  matchDefs,
   envelope,
   messages: FLEET_MESSAGE_SCHEMAS,
   http: { enrollRequest, enrollResponse },
@@ -64,8 +140,10 @@ let compiled: {
 
 function validators() {
   if (compiled) return compiled;
-  const ajv = new Ajv2020({ allErrors: true, strict: true, strictRequired: false });
+  // allowUnionTypes: match.defs.json's `cvars` values are `["string", "number", "boolean"]`.
+  const ajv = new Ajv2020({ allErrors: true, strict: true, strictRequired: false, allowUnionTypes: true });
   ajv.addSchema(defs);
+  ajv.addSchema(matchDefs);
   const messages = new Map<string, ValidateFunction>();
   for (const [type, schema] of Object.entries(FLEET_MESSAGE_SCHEMAS)) {
     messages.set(type, ajv.compile(schema));
