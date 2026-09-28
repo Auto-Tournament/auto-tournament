@@ -342,12 +342,20 @@ async function setAvailability(serverId: string, availability: Availability): Pr
   ]);
 }
 
+/** Rows being applied right now (this process). */
+const inFlight = new Set<number>();
+
 /** Apply one stored message. Failures are logged and recorded on the row, never thrown. */
 export async function processInbound(
   ctx: InboundContext,
   env: Envelope,
   rowId: number | null
 ): Promise<void> {
+  if (rowId !== null) {
+    // Another session of the same server may already be applying it.
+    if (inFlight.has(rowId)) return;
+    inFlight.add(rowId);
+  }
   try {
     if (isFleetEventType(env.type)) {
       await applyEvent(ctx, env);
@@ -389,6 +397,8 @@ export async function processInbound(
         ])
         .catch(() => undefined);
     }
+  } finally {
+    if (rowId !== null) inFlight.delete(rowId);
   }
 }
 
