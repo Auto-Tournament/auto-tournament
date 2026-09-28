@@ -304,7 +304,9 @@ export interface FleetKeyView {
 export async function listFleetKeys(): Promise<FleetKeyView[]> {
   const rows = await db.queryAsync<FleetKeyRow & { enrolled: string }>(
     `SELECT k.*, (SELECT COUNT(*) FROM cs2_fleet_servers s WHERE s.enrollment_key_id = k.id) AS enrolled
-       FROM cs2_fleet_enrollment_keys k WHERE k.tenant_id = ? ORDER BY k.created_at ASC, k.id ASC`,
+       FROM cs2_fleet_enrollment_keys k
+      -- Keys minted for one machine's server.create (fleet/hosts) are shown with that machine.
+      WHERE k.tenant_id = ? AND k.host_id IS NULL ORDER BY k.created_at ASC, k.id ASC`,
     [FLEET_TENANT]
   );
   return rows.map((k) => ({

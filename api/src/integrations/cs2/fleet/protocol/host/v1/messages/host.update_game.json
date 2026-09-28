@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/host.update_game.json",
+  "title": "host.update_game (platform → host)",
+  "description": "SteamCMD + sync (csm update-game; with servers: csm update-server per server). Disruptive: if any target says update_safe=false the whole command is rejected match_in_progress (listing them) unless force; the platform can resend with the safe subset. Long job: host.progress. Reliable; answered by exactly one host.result (ref = this message's id). Rejected with `expired` when expires_at is past, and with `stale` when the envelope ts is more than 5 min off the host's clock (a command replayed long after it was sent is not run).",
+  "type": "object",
+  "properties": {
+    "servers": {
+      "$ref": "../defs.json#/$defs/serverList"
+    },
+    "force": {
+      "$ref": "../defs.json#/$defs/force"
+    },
+    "expires_at": {
+      "$ref": "../defs.json#/$defs/expiresAt"
+    }
+  }
+}

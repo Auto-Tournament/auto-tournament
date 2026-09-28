@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/server.set_launch_args.json",
+  "title": "server.set_launch_args (platform → host)",
+  "description": "Not supported by this csm version: always rejected unsupported (csm builds the launch line itself). Reliable; answered by exactly one host.result (ref = this message's id). Rejected with `expired` when expires_at is past, and with `stale` when the envelope ts is more than 5 min off the host's clock (a command replayed long after it was sent is not run).",
+  "type": "object",
+  "required": [
+    "server",
+    "args"
+  ],
+  "properties": {
+    "server": {
+      "$ref": "../defs.json#/$defs/serverName"
+    },
+    "args": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 256
+      },
+      "maxItems": 64
+    },
+    "force": {
+      "$ref": "../defs.json#/$defs/force"
+    },
+    "expires_at": {
+      "$ref": "../defs.json#/$defs/expiresAt"
+    }
+  }
+}

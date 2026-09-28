@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/server.stop.json",
+  "title": "server.stop (platform → host)",
+  "description": "Disruptive: refused with match_in_progress when Ready Up says update_safe=false, unless force. csm sends `quit` to the console, waits grace_s, then kills the tmux session. Reliable; answered by exactly one host.result (ref = this message's id). Rejected with `expired` when expires_at is past, and with `stale` when the envelope ts is more than 5 min off the host's clock (a command replayed long after it was sent is not run).",
+  "type": "object",
+  "required": [
+    "server"
+  ],
+  "properties": {
+    "server": {
+      "$ref": "../defs.json#/$defs/serverName"
+    },
+    "grace_s": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 300,
+      "default": 10
+    },
+    "force": {
+      "$ref": "../defs.json#/$defs/force"
+    },
+    "expires_at": {
+      "$ref": "../defs.json#/$defs/expiresAt"
+    }
+  }
+}

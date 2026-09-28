@@ -4,7 +4,8 @@
  *
  * - server token      `rus_<id>_<secret>`   (the WS upgrade and, later, uploads)
  * - fleet key         `rfk_<id>_<secret>`   (reusable enrollment, csm/containers)
- * - enrollment code   `RUE-XXXX-XXXX-XXXX-XXXX` (one server, single use, 15 min)
+ * - enrollment code   `RUE-XXXX-XXXX-XXXX-XXXX` (one server or host, single use, 15 min)
+ * - host token        `rhs_<id>_<secret>`   (csm, the host channel `/api/fleet/host`, FLEET.md §18.1)
  *
  * `<id>` is 12 lowercase Crockford base32 chars (60 bits) so lookup is an
  * index hit; `<secret>` is 256 random bits, base64url (43 chars). Only
@@ -20,6 +21,7 @@ import crypto from 'crypto';
 export const SERVER_TOKEN_PREFIX = 'rus';
 export const FLEET_KEY_PREFIX = 'rfk';
 export const ENROLLMENT_CODE_PREFIX = 'RUE';
+export const HOST_TOKEN_PREFIX = 'rhs';
 
 const CROCKFORD = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
 const ID_LENGTH = 12;
@@ -75,6 +77,11 @@ export function issueServerToken(id?: string): IssuedSecret {
   return issue(SERVER_TOKEN_PREFIX, id);
 }
 
+/** A new csm host token (FLEET.md §18.1). `id` re-mints the secret of an existing token id. */
+export function issueHostToken(id?: string): IssuedSecret {
+  return issue(HOST_TOKEN_PREFIX, id);
+}
+
 export function issueFleetKey(): IssuedSecret {
   return issue(FLEET_KEY_PREFIX);
 }
@@ -107,6 +114,10 @@ export function parseSecret(prefix: string, value: unknown): ParsedSecret | null
 
 export function parseServerToken(value: unknown): ParsedSecret | null {
   return parseSecret(SERVER_TOKEN_PREFIX, value);
+}
+
+export function parseHostToken(value: unknown): ParsedSecret | null {
+  return parseSecret(HOST_TOKEN_PREFIX, value);
 }
 
 export function parseFleetKey(value: unknown): ParsedSecret | null {

@@ -5,6 +5,7 @@ import ServerModal from '../servers/ServerModal';
 import BatchServerModal from '../servers/BatchServerModal';
 import { ServerRow } from '../servers/ServerRow';
 import FleetPanel from '../servers/FleetPanel';
+import MachinesPanel from '../servers/MachinesPanel';
 import type {
   Server,
   ServersResponse,
@@ -1011,6 +1012,9 @@ export default function Servers() {
             </RowList>
           </>
         )}
+
+      {/* Machines running csm as host agent (FLEET.md §18): create and control their servers. */}
+      <MachinesPanel />
 
       {/* Ready Up servers enroll themselves and connect over the fleet link. */}
       <FleetPanel />

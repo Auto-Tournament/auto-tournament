@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/logs.chunk.json",
+  "title": "logs.chunk (host → platform, ephemeral)",
+  "description": "Lines of a logs.tail stream (at most 200 lines / 256 KiB per chunk, 2 KiB per line). eof: the stream ended.",
+  "type": "object",
+  "required": [
+    "stream_id",
+    "lines"
+  ],
+  "properties": {
+    "stream_id": {
+      "$ref": "../defs.json#/$defs/ulid"
+    },
+    "server": {
+      "$ref": "../defs.json#/$defs/serverName"
+    },
+    "lines": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "string",
+        "maxLength": 2048
+      }
+    },
+    "eof": {
+      "type": "boolean"
+    }
+  }
+}

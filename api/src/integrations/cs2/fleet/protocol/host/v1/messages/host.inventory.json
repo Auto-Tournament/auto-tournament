@@ -1,0 +1,226 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/host.inventory.json",
+  "title": "host.inventory (host → platform, ephemeral)",
+  "description": "Sent after welcome, when something changes (at most every 5 s; load, free RAM, CPU and RSS do not count as changes), every 60 s, and in answer to host.servers.list (ref = its id). The platform joins servers to Ready Up records on readyup.install_id (FLEET.md §18.3).",
+  "type": "object",
+  "required": [
+    "host_id",
+    "hostname",
+    "csm_version",
+    "os",
+    "resources",
+    "cs2",
+    "servers"
+  ],
+  "properties": {
+    "host_id": {
+      "type": "string"
+    },
+    "hostname": {
+      "type": "string",
+      "maxLength": 255
+    },
+    "csm_version": {
+      "type": "string",
+      "maxLength": 64
+    },
+    "os": {
+      "type": "string",
+      "maxLength": 128
+    },
+    "resources": {
+      "type": "object",
+      "required": [
+        "cpus",
+        "load1",
+        "ram_mb",
+        "ram_free_mb",
+        "disk"
+      ],
+      "properties": {
+        "cpus": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "load1": {
+          "type": "number",
+          "minimum": 0
+        },
+        "ram_mb": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ram_free_mb": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "disk": {
+          "type": "array",
+          "maxItems": 16,
+          "items": {
+            "type": "object",
+            "required": [
+              "mount",
+              "total_gb",
+              "free_gb"
+            ],
+            "properties": {
+              "mount": {
+                "type": "string"
+              },
+              "total_gb": {
+                "type": "number",
+                "minimum": 0
+              },
+              "free_gb": {
+                "type": "number",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    "cs2": {
+      "type": "object",
+      "required": [
+        "master_build",
+        "update_available",
+        "updates_hold"
+      ],
+      "properties": {
+        "master_build": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "ServerVersion from the master install's game/csgo/steam.inf (the unit Ready Up reports as cs2_build); 0 when unknown"
+        },
+        "update_available": {
+          "type": "boolean",
+          "description": "a server's log shows the CS2 update marker the auto-update monitor acts on"
+        },
+        "updates_hold": {
+          "enum": [
+            "on",
+            "off",
+            "auto"
+          ]
+        }
+      }
+    },
+    "servers": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "dir",
+          "game_port",
+          "status_port",
+          "process",
+          "readyup",
+          "cs2_build",
+          "launch_args"
+        ],
+        "properties": {
+          "name": {
+            "$ref": "../defs.json#/$defs/serverName"
+          },
+          "dir": {
+            "type": "string"
+          },
+          "game_port": {
+            "$ref": "../defs.json#/$defs/port"
+          },
+          "tv_port": {
+            "$ref": "../defs.json#/$defs/port"
+          },
+          "status_port": {
+            "$ref": "../defs.json#/$defs/port"
+          },
+          "process": {
+            "type": "object",
+            "required": [
+              "running",
+              "restarts_24h"
+            ],
+            "properties": {
+              "running": {
+                "type": "boolean"
+              },
+              "pid": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "started_at": {
+                "type": "integer",
+                "description": "unix seconds, from Ready Up's status.json"
+              },
+              "restarts_24h": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "starts seen by this agent run in the last 24 h (not persisted)"
+              },
+              "cpu_pct": {
+                "type": "number",
+                "minimum": 0
+              },
+              "rss_mb": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          },
+          "readyup": {
+            "type": "object",
+            "required": [
+              "installed",
+              "health"
+            ],
+            "properties": {
+              "installed": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Ready Up core version from /status; \"unknown\" when installed but not answering; null = not installed"
+              },
+              "install_id": {
+                "type": "string"
+              },
+              "server_id": {
+                "type": "string"
+              },
+              "health": {
+                "enum": [
+                  "ok",
+                  "failing",
+                  "no_response",
+                  "not_running"
+                ]
+              },
+              "phase": {
+                "type": "string"
+              },
+              "update_safe": {
+                "type": "boolean"
+              }
+            }
+          },
+          "cs2_build": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "launch_args": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "csm builds the launch line; always [] in this version"
+          }
+        }
+      }
+    }
+  }
+}
