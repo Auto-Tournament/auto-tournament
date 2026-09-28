@@ -99,7 +99,9 @@ The CS2 pool (`../allocation.ts`) goes through `driverFor(serverId)`
 
 Allocation: a linked server is free when its socket is up, it reports
 `available`, the database has no loaded/live match on it, and turnover holds
-nothing (`event.series_end`, `event.demo` feed `serverTurnoverTracker`).
+nothing (`event.series_end`, `event.demo` feed `serverTurnoverTracker`). A
+server that announced `demo.stream.v1` is assigned with `rules.demo.upload`
+and held until `demoStream.ts` has each recorded map's demo.
 
 Hooks (`startFleetDriver`, from `../startup.ts` before the gateway):
 `welcome.assignment` = the open assignment whose epoch the server holds
