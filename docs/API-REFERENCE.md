@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 342 of them, 243 behind auth —
+Every endpoint this API serves — 352 of them, 253 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -207,7 +207,7 @@ How a player joins a CS2 match: its server, status and current map.
 
 ### Fleet enrollment
 
-A Ready Up server trades a one-time code or fleet key for its server token.
+A Ready Up server trades a one-time code or fleet key for its server token; csm (kind "host") gets its host token the same way.
 
 | Method | Path | Auth |
 | --- | --- | --- |
@@ -229,6 +229,23 @@ Ready Up servers on the fleet link: registry, one-time codes, fleet keys, revoke
 | `GET` | `/api/fleet/keys` | admin |
 | `POST` | `/api/fleet/keys` | admin |
 | `DELETE` | `/api/fleet/keys/:id` | admin |
+
+### Fleet machines
+
+Machines running csm as host agent: add (one-time code), inventory, health, create/start/stop/restart servers, update CS2 and Ready Up, revoke and rotate. The host WebSocket is /api/fleet/host.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/fleet/hosts` | admin |
+| `POST` | `/api/fleet/hosts` | admin |
+| `GET` | `/api/fleet/hosts/:id` | admin |
+| `PATCH` | `/api/fleet/hosts/:id` | admin |
+| `DELETE` | `/api/fleet/hosts/:id` | admin |
+| `POST` | `/api/fleet/hosts/:id/code` | admin |
+| `POST` | `/api/fleet/hosts/:id/revoke` | admin |
+| `POST` | `/api/fleet/hosts/:id/rotate` | admin |
+| `POST` | `/api/fleet/hosts/:id/commands` | admin |
+| `GET` | `/api/fleet/hosts/:id/commands/:commandId` | admin |
 
 ### Test helpers (CS2)
 

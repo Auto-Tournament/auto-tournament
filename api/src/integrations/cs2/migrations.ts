@@ -35,7 +35,7 @@
  * (fleet/state.ts), the inbound event log and the answers to the platform's
  * own commands (fleet/inbound.ts, fleet/reliable.ts).
  *
- * `007-fleet-hosts` adds the host channel (FLEET.md §18): csm host agents,
+ * `008-fleet-hosts` adds the host channel (FLEET.md §18): csm host agents,
  * their tokens, codes, outbound stream, commands and health events
  * (fleet/hosts/registry.ts), and ties per-machine fleet keys to their host.
  */
@@ -48,7 +48,7 @@ export const CS2_CATALOG_MARKERS_MIGRATION_ID = '003-catalog-markers';
 export const CS2_MAP_MODES_MIGRATION_ID = '004-map-modes';
 export const CS2_FLEET_MIGRATION_ID = '005-fleet';
 export const CS2_FLEET_MATCH_MIGRATION_ID = '006-fleet-match';
-export const CS2_FLEET_HOSTS_MIGRATION_ID = '007-fleet-hosts';
+export const CS2_FLEET_HOSTS_MIGRATION_ID = '008-fleet-hosts';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -474,6 +474,7 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       issued_by TEXT,
       forced_by TEXT, -- audit: set when the admin confirmed a disruptive action during a match
       force_reason TEXT,
+      meta TEXT, -- JSON the platform keeps with the command (server.create: servers before it, the follow-up)
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       answered_at INTEGER
     );

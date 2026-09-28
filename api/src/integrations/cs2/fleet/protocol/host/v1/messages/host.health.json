@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://auto-tournament.dev/fleet/host/v1/messages/host.health.json",
-  "title": "host.health (host → platform)",
-  "description": "`hung` = the process runs but /health has not answered for 30 s. csm does not restart on its own during a match; the platform decides. Reliable (recommended) or ephemeral.",
+  "title": "host.health (host → platform, reliable)",
+  "description": "exited: the server process stopped without the agent stopping it (csm runs CS2 in tmux and cannot see an exit code, so crashed is not sent by this version). hung: running, Ready Up installed, /health not OK for 30 s. recovered: back after hung or exited. restarted: after server.restart. Changes the agent causes itself (its own jobs, and 30 s after them) are not reported.",
   "type": "object",
   "required": [
     "server",
@@ -26,7 +26,7 @@
     },
     "detail": {
       "type": "string",
-      "maxLength": 2000
+      "maxLength": 512
     }
   }
 }

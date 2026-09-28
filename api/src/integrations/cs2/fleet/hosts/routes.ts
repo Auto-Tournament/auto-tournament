@@ -1,9 +1,8 @@
 /**
  * The host channel's HTTP routes (FLEET.md §18), mounted at `/api/fleet`.
  *
- * Public, for csm:
- *   POST /api/fleet/host/enroll             one-time host code or fleet key → host token (rhs_…)
- *   (also POST /api/fleet/enroll with `kind: "host"`, as FLEET.md §18.1 writes it)
+ * Public, for csm (through ../routes.ts, FLEET.md §18.1):
+ *   POST /api/fleet/enroll with `kind: "host"`   one-time machine code or fleet key → host token (rhs_…)
  *
  * Admin (`requireAuth`), for Servers → Machines:
  *   GET    /api/fleet/hosts                 machines with inventory, joined Ready Up servers, recent commands
@@ -21,10 +20,9 @@
  * the HTTP server's `upgrade` event.
  */
 
-import { Router, type NextFunction, type Request, type Response } from 'express';
+import { Router, type Request, type Response } from 'express';
 import { requireAuth, requestActorId } from '../../../../middleware/auth';
 import { log } from '../../../../utils/logger';
-import { enrollRateLimit } from '../routes';
 import { isHostCommandType, validateHostEnrollRequest, type HostEnrollRequest, type HostEnrollResponse } from '../protocol/host/v1';
 import { FLEET_HOST_WS_PATH } from './gateway';
 import * as registry from './registry';
@@ -57,6 +55,8 @@ function hostWsUrl(req: Request): string {
 // ---------------------------------------------------------------------------
 
 /**
+ * `POST /api/fleet/enroll` with `kind: "host"` (../routes.ts sends it here,
+ * after the enrollment rate limit).
  * Body: protocol/host/v1/http/enroll.request.json. 201: enroll.response.json.
  * 400 invalid body, 401 invalid code/key, 403 revoked/expired/locked key or
  * revoked machine, 429 rate limited.
@@ -94,16 +94,6 @@ export async function enrollHostHandler(req: Request, res: Response): Promise<un
     return res.status(500).json({ success: false, code: 'internal', error: 'Enrollment failed' });
   }
 }
-
-export const fleetHostEnrollRouter = Router();
-
-// Looked up per request: ../routes imports this file too.
-const rateLimit = (req: Request, res: Response, next: NextFunction) => enrollRateLimit(req, res, next);
-
-/** POST /api/fleet/host/enroll */
-fleetHostEnrollRouter.post('/host/enroll', rateLimit, (req: Request, res: Response) => {
-  void enrollHostHandler(req, res);
-});
 
 // ---------------------------------------------------------------------------
 // Admin

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://auto-tournament.dev/fleet/host/v1/messages/auth.rotate.json",
   "title": "auth.rotate (platform → host, reliable)",
-  "description": "A new host token. csm writes it to its credentials file (temp + rename), uses it for the next connect and replies auth.rotated. The old token works until old_valid_until (24 h). FLEET.md §4.3, §18.1.",
+  "description": "A new host token (FLEET.md §4.3). csm writes it to credentials.json (temp + rename, 0600), uses it for the next connect and replies auth.rotated (reliable, ref = this message). No host.result.",
   "type": "object",
   "required": [
     "token",
@@ -10,12 +10,10 @@
   ],
   "properties": {
     "token": {
-      "type": "string",
-      "pattern": "^rhs_[0-9a-z]{12}_[A-Za-z0-9_-]{43}$"
+      "$ref": "../defs.json#/$defs/hostToken"
     },
     "old_valid_until": {
-      "type": "integer",
-      "description": "ms since Unix epoch"
+      "type": "integer"
     }
   }
 }

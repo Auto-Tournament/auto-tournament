@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://auto-tournament.dev/fleet/host/v1/messages/host.progress.json",
   "title": "host.progress (host → platform, ephemeral)",
-  "description": "Progress of a long command (update-game, create). `ref` = the command id (the envelope ref is accepted too).",
+  "description": "Progress of a long job (server.create, host.update_game, host.update_plugins, server.remove). `ref` in the payload is the command's id. pct is absent when unknown.",
   "type": "object",
   "required": [
     "ref",
@@ -14,11 +14,10 @@
     },
     "step": {
       "type": "string",
-      "minLength": 1,
-      "maxLength": 200
+      "maxLength": 256
     },
     "pct": {
-      "type": "number",
+      "type": "integer",
       "minimum": 0,
       "maximum": 100
     }

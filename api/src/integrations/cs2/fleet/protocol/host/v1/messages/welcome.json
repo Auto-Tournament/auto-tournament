@@ -2,22 +2,26 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://auto-tournament.dev/fleet/host/v1/messages/welcome.json",
   "title": "welcome (platform → host, ephemeral)",
-  "description": "The platform's answer to hello (envelope ref = the hello's id). Then both sides replay what the other has not acked. FLEET.md §6.4.",
+  "description": "The platform's answer to hello (`ref` = the hello's id). Same as the server channel's welcome minus the match fields (server_config_rev, admins_rev, assignment), which the host ignores if sent. After it both sides replay what the other has not acked (FLEET.md §6.4).",
   "type": "object",
   "required": [
     "session_id",
     "protocol",
     "heartbeat",
-    "resume",
-    "host_id"
+    "resume"
   ],
   "properties": {
     "session_id": {
-      "$ref": "../defs.json#/$defs/ulid"
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
     },
     "protocol": {
       "type": "integer",
       "minimum": 1
+    },
+    "host_id": {
+      "type": "string"
     },
     "heartbeat": {
       "type": "object",
@@ -54,16 +58,6 @@
           "minimum": 0
         }
       }
-    },
-    "host_id": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 64
-    },
-    "name": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 120
     }
   }
 }

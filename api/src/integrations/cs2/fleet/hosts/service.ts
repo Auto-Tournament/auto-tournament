@@ -19,9 +19,19 @@ import {
   type HostCommandType,
   type HostCommands,
   type HostForce,
-  type HostInventoryServer,
 } from '../protocol/host/v1';
 import { HostGateway, hostEvents } from './gateway';
+import {
+  commandTargets,
+  indexFleetServers,
+  newServersOf,
+  joinInventory,
+  toServerRef,
+  type FleetServerIndex,
+  type FleetServerJoinRow,
+  type HostFleetServerRef,
+  type HostServerView,
+} from './join';
 import * as registry from './registry';
 
 const ROTATION_CHECK_MS = 60 * 60 * 1000;
@@ -34,7 +44,8 @@ gateway.onHostReady(async (hostId) => {
   if (due.includes(hostId)) await rotateHostToken(hostId);
 });
 
-export { hostEvents };
+export { hostEvents, commandTargets, joinInventory };
+export type { HostFleetServerRef, HostServerView };
 
 export function isHostOnline(hostId: string): boolean {
   return gateway.session(hostId) !== null;
@@ -62,18 +73,6 @@ export interface SentHostCommand {
   delivered: boolean;
 }
 
-/** The servers a command touches: its `server`, its `servers`, or every server on the host. */
-export function commandTargets(
-  type: HostCommandType,
-  payload: Record<string, unknown>,
-  inventory: HostInventoryServer[]
-): string[] {
-  if (typeof payload.server === 'string') return [payload.server];
-  if (Array.isArray(payload.servers)) return payload.servers.filter((s): s is string => typeof s === 'string');
-  if (type === 'host.update_game' || type === 'host.update_plugins') return inventory.map((s) => s.name);
-  return [];
-}
-
 /**
  * Send a command to a machine (FLEET.md §18.2): schema check, the audit row
  * (`cs2_fleet_host_commands`, with `forced_by` for a forced disruptive
@@ -87,7 +86,7 @@ export async function sendHostCommand<T extends HostCommandType>(
   hostId: string,
   type: T,
   payload: HostCommands[T],
-  opts: { issuedBy: string | null; force?: { reason: string } | null } = { issuedBy: null }
+  opts: { issuedBy: string | null; force?: { reason: string } | null; meta?: Record<string, unknown> } = { issuedBy: null }
 ): Promise<SentHostCommand> {
   const host = await registry.getHost(hostId);
   if (!host || host.tenant_id !== FLEET_TENANT) throw new HostCommandError('Machine not found', 404, 'not_found');
@@ -95,8 +94,8 @@ export async function sendHostCommand<T extends HostCommandType>(
 
   const body: Record<string, unknown> = { ...(payload as Record<string, unknown>) };
   delete body.force;
-  // The fleet key and URL are the platform's to add, at send time (./gateway.ts).
-  if (type === 'server.create') delete body.fleet;
+  // The fleet key is the platform's to add, at send time (./gateway.ts).
+  if (type === 'server.create') delete body.enroll_key;
 
   let force: HostForce | null = null;
   if (HOST_DISRUPTIVE_TYPES.has(type)) {
@@ -120,6 +119,14 @@ export async function sendHostCommand<T extends HostCommandType>(
   const check = validateHostPayload(type, body);
   if (!check.ok) throw new HostCommandError(`Invalid ${type}: ${check.errors.join('; ')}`, 400, 'invalid_payload');
 
+  // server.create: remember which servers exist now, to find the new ones
+  // for the Ready Up install that follows (csm decision 10).
+  let meta: Record<string, unknown> | null = opts.meta ?? null;
+  if (type === 'server.create') {
+    const inventory = (await registry.getHostView(hostId))?.inventory;
+    meta = { ...(meta ?? {}), serversBefore: inventory?.servers.map((s) => s.name) ?? [] };
+  }
+
   const id = ulid();
   await registry.recordHostCommand({
     id,
@@ -130,6 +137,7 @@ export async function sendHostCommand<T extends HostCommandType>(
     issuedBy: opts.issuedBy,
     forcedBy: force?.by ?? null,
     forceReason: force?.reason ?? null,
+    meta,
   });
   if (force) {
     log.warn(`[FLEET-HOST] ${hostId}: ${type} forced by ${force.by} during a match (${force.reason})`);
@@ -141,6 +149,43 @@ export async function sendHostCommand<T extends HostCommandType>(
   if (!command) throw new Error('fleet: host command vanished');
   return { command, delivered };
 }
+
+/** Who the platform's own follow-up commands are issued by. */
+export const PLATFORM_ACTOR = 'platform';
+
+/** The Ready Up bundle new servers get (csm decision 12: default = install.sh essentials). */
+export const NEW_SERVER_READYUP = { version: 'latest', bundle: 'default' } as const;
+
+/**
+ * csm creates servers as copies of its master install, which has no Ready Up
+ * (csm decision 10), so an enrolling `server.create` that succeeded is
+ * followed by `host.update_plugins` for the new servers. They then start,
+ * self-enroll with the command's key and appear under the machine.
+ */
+async function followUpCreate(hostId: string, record: registry.HostCommandRecord): Promise<void> {
+  if (record.type !== 'server.create' || record.status !== 'ok' || record.payload.enroll !== true) return;
+  if (record.meta?.followUp) return;
+  const inventory = (await registry.getHostView(hostId))?.inventory;
+  const servers = newServersOf(record.output, record.meta?.serversBefore, inventory?.servers.map((s) => s.name) ?? []);
+  if (servers.length === 0) {
+    log.warn(`[FLEET-HOST] ${hostId}: server.create ${record.id} succeeded but named no new server; Ready Up not installed`);
+    return;
+  }
+  const sent = await sendHostCommand(
+    hostId,
+    'host.update_plugins',
+    { servers, readyup: { ...NEW_SERVER_READYUP } },
+    { issuedBy: PLATFORM_ACTOR, meta: { followUpOf: record.id } }
+  );
+  await registry.mergeHostCommandMeta(record.id, { followUp: sent.command.id, newServers: servers });
+  log.info(`[FLEET-HOST] ${hostId}: installing Ready Up on ${servers.join(', ')} (after server.create ${record.id})`);
+}
+
+hostEvents.on('result', (hostId: string, record: registry.HostCommandRecord) => {
+  void followUpCreate(hostId, record).catch((error) => {
+    log.warn(`[FLEET-HOST] ${hostId}: Ready Up install after server.create failed: ${(error as Error).message}`);
+  });
+});
 
 /** The answer to command `id`: resolves once it is not pending, or null after `timeoutMs`. */
 export async function awaitHostResult(id: string, timeoutMs = 15_000): Promise<registry.HostCommandRecord | null> {
@@ -171,76 +216,12 @@ export async function awaitHostResult(id: string, timeoutMs = 15_000): Promise<r
 // Inventory ↔ Ready Up (FLEET.md §18.3)
 // ---------------------------------------------------------------------------
 
-export interface HostFleetServerRef {
-  id: string;
-  name: string;
-  status: string;
-  online: boolean;
-  availability: string | null;
-  readyUpVersion: string | null;
-}
-
-export interface HostServerView extends HostInventoryServer {
-  /** The Ready Up server record this process is, joined on install_id (or server_id). */
-  fleetServer: HostFleetServerRef | null;
-  /** update_safe false, or its Ready Up server is busy with a match. */
-  matchInProgress: boolean;
-}
-
-interface FleetServerJoinRow {
-  id: string;
-  name: string;
-  status: string;
-  install_id: string | null;
-  availability: string | null;
-  versions: string | null;
-}
-
-async function fleetServerIndex(): Promise<{ byInstall: Map<string, FleetServerJoinRow>; byId: Map<string, FleetServerJoinRow> }> {
+async function fleetServerIndex(): Promise<FleetServerIndex> {
   const rows = await db.queryAsync<FleetServerJoinRow>(
     'SELECT id, name, status, install_id, availability, versions FROM cs2_fleet_servers WHERE tenant_id = ?',
     [FLEET_TENANT]
   );
-  return {
-    byInstall: new Map(rows.filter((r) => r.install_id).map((r) => [r.install_id as string, r])),
-    byId: new Map(rows.map((r) => [r.id, r])),
-  };
-}
-
-export function joinInventory(
-  servers: HostInventoryServer[],
-  index: { byInstall: Map<string, FleetServerJoinRow>; byId: Map<string, FleetServerJoinRow> },
-  isOnline: (serverId: string) => boolean
-): HostServerView[] {
-  return servers.map((s) => {
-    const row =
-      (s.readyup.install_id ? index.byInstall.get(s.readyup.install_id) : undefined) ??
-      (s.readyup.server_id ? index.byId.get(s.readyup.server_id) : undefined) ??
-      null;
-    let readyUpVersion: string | null = null;
-    if (row?.versions) {
-      try {
-        readyUpVersion = (JSON.parse(row.versions) as { core?: string }).core ?? null;
-      } catch {
-        readyUpVersion = null;
-      }
-    }
-    const fleetServer: HostFleetServerRef | null = row
-      ? {
-          id: row.id,
-          name: row.name,
-          status: row.status,
-          online: isOnline(row.id),
-          availability: row.availability,
-          readyUpVersion,
-        }
-      : null;
-    return {
-      ...s,
-      fleetServer,
-      matchInProgress: s.readyup.update_safe === false || fleetServer?.availability === 'busy',
-    };
-  });
+  return indexFleetServers(rows);
 }
 
 /** One machine's servers: csm's process view next to Ready Up's. */
@@ -277,14 +258,7 @@ export async function listHostViews(opts: { commands?: number; health?: number }
       .filter((k) => k.host_id === host.id && !listed.has(k.id))
       .map((k) => index.byId.get(k.id))
       .filter((r): r is FleetServerJoinRow => !!r)
-      .map((r) => ({
-        id: r.id,
-        name: r.name,
-        status: r.status,
-        online: bus.isConnected(r.id),
-        availability: r.availability,
-        readyUpVersion: null,
-      }));
+      .map((r) => toServerRef(r, bus.isConnected(r.id)));
     out.push({
       ...host,
       online: gateway.session(host.id) !== null,

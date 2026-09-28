@@ -2,7 +2,7 @@
  * The host registry (FLEET.md §18, D17): csm host agents, their `rhs_` tokens,
  * one-time host codes, the platform's outbound stream per host, the commands
  * sent to hosts with their progress and `host.result`, and `host.health`
- * reports. Tables are `cs2_fleet_host*` (migration `007-fleet-hosts`).
+ * reports. Tables are `cs2_fleet_host*` (migration `008-fleet-hosts`).
  *
  * Mirrors ../registry.ts (servers) on purpose: same token format rules,
  * rotation, revocation and stream bookkeeping, with a separate identity so a
@@ -794,6 +794,8 @@ export interface HostCommandRecord {
   issuedBy: string | null;
   forcedBy: string | null;
   forceReason: string | null;
+  /** What the platform keeps with the command (server.create: the servers before it, its follow-up). */
+  meta: Record<string, unknown> | null;
   createdAt: number;
   answeredAt: number | null;
 }
@@ -815,6 +817,7 @@ interface HostCommandRow {
   issued_by: string | null;
   forced_by: string | null;
   force_reason: string | null;
+  meta: string | null;
   created_at: number;
   answered_at: number | null;
 }
@@ -839,6 +842,7 @@ function commandFromRow(row: HostCommandRow): HostCommandRecord {
     issuedBy: row.issued_by,
     forcedBy: row.forced_by,
     forceReason: row.force_reason,
+    meta: parseJson<Record<string, unknown>>(row.meta),
     createdAt: Number(row.created_at),
     answeredAt: row.answered_at === null ? null : Number(row.answered_at),
   };
@@ -853,10 +857,11 @@ export async function recordHostCommand(input: {
   issuedBy: string | null;
   forcedBy: string | null;
   forceReason: string | null;
+  meta?: Record<string, unknown> | null;
 }): Promise<void> {
   await db.runAsync(
-    `INSERT INTO cs2_fleet_host_commands (message_id, host_id, type, server, payload, status, issued_by, forced_by, force_reason, created_at)
-     VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)`,
+    `INSERT INTO cs2_fleet_host_commands (message_id, host_id, type, server, payload, status, issued_by, forced_by, force_reason, meta, created_at)
+     VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?)`,
     [
       input.id,
       input.hostId,
@@ -866,9 +871,20 @@ export async function recordHostCommand(input: {
       input.issuedBy,
       input.forcedBy,
       input.forceReason,
+      input.meta ? JSON.stringify(input.meta) : null,
       nowS(),
     ]
   );
+}
+
+/** Merge `patch` into a command's meta. */
+export async function mergeHostCommandMeta(id: string, patch: Record<string, unknown>): Promise<void> {
+  const current = await getHostCommand(id);
+  if (!current) return;
+  await db.runAsync('UPDATE cs2_fleet_host_commands SET meta = ? WHERE message_id = ?', [
+    JSON.stringify({ ...(current.meta ?? {}), ...patch }),
+    id,
+  ]);
 }
 
 export async function getHostCommand(id: string): Promise<HostCommandRecord | null> {

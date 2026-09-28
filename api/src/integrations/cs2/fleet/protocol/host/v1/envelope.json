@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://auto-tournament.dev/fleet/host/v1/envelope.json",
-  "title": "Fleet envelope (host channel, protocol v1)",
-  "description": "Every WebSocket message on /api/fleet/host is one UTF-8 JSON text frame (max 1 MiB) of this shape: the same envelope as the server channel (FLEET.md §5, §18). The payload is validated separately, against messages/<type>.json.",
+  "title": "Fleet envelope (hosts channel, protocol v1)",
+  "description": "Identical to the server channel's envelope (FLEET.md §5). Every WebSocket message on /api/fleet/host is one UTF-8 JSON text frame (max 1 MiB). The payload is validated separately, against messages/<type>.json.",
   "type": "object",
   "required": [
     "v",
@@ -30,7 +30,7 @@
     "ack": {
       "type": "integer",
       "minimum": 0,
-      "description": "highest contiguous peer seq durably processed"
+      "description": "highest contiguous peer seq received"
     },
     "ts": {
       "type": "integer",
@@ -41,12 +41,12 @@
         "string",
         "null"
       ],
-      "description": "id of the message this answers (host.result: the command id)"
+      "description": "id of the message this answers"
     },
     "epoch": {
       "type": "integer",
       "minimum": 1,
-      "description": "unused on the host channel"
+      "description": "not used on the hosts channel"
     },
     "payload": {
       "type": "object"

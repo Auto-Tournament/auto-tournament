@@ -1292,6 +1292,22 @@
       "host_updates_hold": "Automatic updates",
       "logs_tail": "Logs",
       "logs_stop": "Stop logs"
+    },
+    "updateIdleOnly": "Only the idle servers ({{count}})",
+    "errorCodes": {
+      "bad_args": "csm did not accept the request",
+      "unknown_server": "No such server on this machine",
+      "busy": "The machine is busy with another job",
+      "expired": "Expired before the machine got it",
+      "stale": "Sent too long ago; not run",
+      "unsupported": "csm does not support this",
+      "no_enroll_key": "No fleet key for the new server",
+      "no_release": "No Ready Up release found",
+      "license_not_accepted": "Ready Up license not accepted on this machine (csm agent config readyup_accept_license)",
+      "install_failed": "Ready Up install failed",
+      "not_found": "Not found",
+      "limit": "Too many log streams",
+      "failed": "Failed"
     }
   }
 }

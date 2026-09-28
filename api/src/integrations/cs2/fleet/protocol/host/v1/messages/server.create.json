@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://auto-tournament.dev/fleet/host/v1/messages/server.create.json",
-  "title": "server.create (platform → host, reliable)",
-  "description": "Provision new server-N folder(s). With enroll: true, csm writes fleet_url and fleet_enroll_key (from `fleet`) into each new server so Ready Up self-enrolls (FLEET.md §4.1 B, §18.4). `fleet` is a platform addition to §18.2: a code-enrolled csm has no fleet key of its own. The key is minted per command and limited to `count` servers. Answered by exactly one host.result (envelope ref = this message's id). FLEET.md §18.2.",
+  "title": "server.create (platform → host)",
+  "description": "Provisions the next server-N (csm's add-server flow: copy of the master install, configs, next ports +10) and starts it. With enroll: true csm writes game/csgo/cfg/ReadyUp/fleet.cfg (url + enroll_key, mode 0600) before the start so Ready Up self-enrolls (FLEET.md §4.1 B); the key is enroll_key when given, else the fleet key the host was linked with (rejected no_enroll_key when there is neither). Long job: host.progress while it runs. The host.result output names the new servers. Reliable; answered by exactly one host.result (ref = this message's id). Rejected with `expired` when expires_at is past, and with `stale` when the envelope ts is more than 5 min off the host's clock (a command replayed long after it was sent is not run).",
   "type": "object",
   "required": [
     "enroll"
@@ -11,36 +11,27 @@
     "count": {
       "type": "integer",
       "minimum": 1,
-      "maximum": 32
+      "maximum": 16,
+      "default": 1
     },
     "name_prefix": {
       "type": "string",
-      "minLength": 1,
-      "maxLength": 40
+      "maxLength": 64,
+      "description": "csm always names servers server-N: anything but \"server-\" is rejected unsupported"
     },
     "game_port": {
-      "$ref": "../defs.json#/$defs/port"
+      "$ref": "../defs.json#/$defs/port",
+      "description": "csm spaces servers 10 ports apart: anything but the next port (with count 1) is rejected unsupported"
     },
     "enroll": {
       "type": "boolean"
     },
-    "fleet": {
-      "type": "object",
-      "required": [
-        "url",
-        "key"
-      ],
-      "properties": {
-        "url": {
-          "type": "string",
-          "pattern": "^https?://",
-          "maxLength": 512
-        },
-        "key": {
-          "type": "string",
-          "pattern": "^rfk_[0-9a-z]{12}_[A-Za-z0-9_-]{43}$"
-        }
-      }
+    "enroll_key": {
+      "$ref": "../defs.json#/$defs/fleetKey",
+      "description": "csm addition: the fleet key to hand to the new servers"
+    },
+    "expires_at": {
+      "$ref": "../defs.json#/$defs/expiresAt"
     }
   }
 }

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://auto-tournament.dev/fleet/host/v1/messages/host.result.json",
   "title": "host.result (host → platform, reliable)",
-  "description": "The one answer to a platform command (envelope ref = the command's id). `rejected` = not run (match_in_progress, busy, invalid, unknown_server); `failed` = ran and failed.",
+  "description": "Exactly one per reliable platform command (ref = its id; auth.rotate is answered by auth.rotated instead). Error codes: bad_args (payload fails validation), unknown_server, match_in_progress (update_safe=false and no force), busy (another job holds the host or the server), expired, stale, unsupported, no_enroll_key, no_release (no Ready Up release / bundle to install), license_not_accepted (install.sh needs a license choice: csm agent config readyup_accept_license), install_failed, not_found (log stream or file), limit (too many followed logs), failed (anything else). output: the job's log (tail, at most 16 KiB, redacted).",
   "type": "object",
   "required": [
     "status"
@@ -28,7 +28,7 @@
         },
         "message": {
           "type": "string",
-          "maxLength": 2000
+          "maxLength": 2048
         }
       }
     },
@@ -36,5 +36,24 @@
       "type": "string",
       "maxLength": 65536
     }
+  },
+  "if": {
+    "properties": {
+      "status": {
+        "const": "ok"
+      }
+    }
+  },
+  "then": {
+    "not": {
+      "required": [
+        "error"
+      ]
+    }
+  },
+  "else": {
+    "required": [
+      "error"
+    ]
   }
 }

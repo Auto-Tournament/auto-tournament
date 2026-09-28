@@ -2,12 +2,13 @@
  * The fleet **host channel** protocol v1 (FLEET.md §18, D17): csm (CS2 Server
  * Manager) as each machine's host agent, on `/api/fleet/host`.
  *
- * The `*.json` files next to this are the contract (D18): csm's CI copies
- * them and validates what it sends. Same envelope and transport rules as the
+ * The `*.json` files next to this are the contract (D18). They were first
+ * written by csm (Auto-Tournament/cs2-server-manager `protocol/host-v1/`,
+ * PR #66) from the same §18 and are adopted here unchanged, so csm's CI can
+ * copy them back from this folder. Same envelope and transport rules as the
  * server channel (§5, §6); only the identity (`rhs_` host tokens, `host_id`,
- * `machine_id`) and the messages differ. Ready Up has no host schemas, so
- * they are defined here, per §18.2; additions are marked in the schema
- * descriptions (`server.create.fleet`).
+ * `machine_id`) and the messages differ. csm's additions to §18.2 are marked
+ * in the schema descriptions (`server.create.enroll_key`, `expires_at`).
  */
 
 import Ajv2020, { type ErrorObject, type ValidateFunction } from 'ajv/dist/2020';
@@ -53,15 +54,15 @@ export interface HostForce {
 
 export interface HostHelloPayload {
   host_id: string;
+  /** First 32 hex chars of sha256("auto-tournament-host:" + /etc/machine-id). */
   machine_id: string;
   tenant_id: 'default';
   protocol: { min: number; max: number };
-  csm_version: string;
+  versions: { csm: string; os?: string };
+  capabilities: string[];
   hostname: string;
-  os?: string;
   boot_id: string;
   stream: { id: string; last_tx_seq: number; last_rx_seq: number };
-  capabilities?: string[];
 }
 
 export interface HostWelcomePayload {
@@ -69,8 +70,7 @@ export interface HostWelcomePayload {
   protocol: number;
   heartbeat: { interval_ms: number; timeout_ms: number };
   resume: { result: 'resumed' | 'reset'; platform_last_rx_seq: number };
-  host_id: string;
-  name?: string;
+  host_id?: string;
 }
 
 export type ReadyUpHealth = 'ok' | 'failing' | 'no_response' | 'not_running';
@@ -141,36 +141,44 @@ export interface HostProgressPayload {
   pct?: number;
 }
 
-/** Platform → host commands and their payloads (FLEET.md §18.2). */
+/** Every command may carry `expires_at` (unix ms): later, csm answers `rejected / expired` without running it. */
+interface Expiring {
+  expires_at?: number;
+}
+
+/** Platform → host commands and their payloads (FLEET.md §18.2, plus csm's additions). */
 export interface HostCommands {
-  'host.servers.list': Record<string, never>;
-  'server.start': { server: string; launch_mode?: 'default' | 'alternate' | 'binary' };
-  'server.stop': { server: string; grace_s?: number; force?: HostForce };
-  'server.restart': { server: string; reason: string; force?: HostForce };
-  'server.create': {
+  'host.servers.list': Expiring;
+  'server.start': Expiring & { server: string; launch_mode?: 'default' | 'alternate' | 'binary' };
+  'server.stop': Expiring & { server: string; grace_s?: number; force?: HostForce };
+  'server.restart': Expiring & { server: string; reason: string; force?: HostForce };
+  'server.create': Expiring & {
     count?: number;
+    /** csm only accepts "server-". */
     name_prefix?: string;
+    /** csm only accepts the next +10 port. */
     game_port?: number;
     enroll: boolean;
-    fleet?: { url: string; key: string };
+    /** csm addition: the fleet key the new servers enroll with (minted per command at send time). */
+    enroll_key?: string;
   };
-  'server.remove': { server: string; keep_files?: boolean; force?: HostForce };
-  'server.set_launch_args': { server: string; args: string[]; force?: HostForce };
-  'host.update_game': { servers?: string[]; force?: HostForce };
-  'host.update_plugins': {
+  'server.remove': Expiring & { server: string; keep_files?: boolean; force?: HostForce };
+  'server.set_launch_args': Expiring & { server: string; args: string[]; force?: HostForce };
+  'host.update_game': Expiring & { servers?: string[]; force?: HostForce };
+  'host.update_plugins': Expiring & {
     servers?: string[];
     readyup: { version: string; bundle: 'default' | 'skins' };
     force?: HostForce;
   };
-  'host.updates_hold': { mode: UpdatesHoldMode };
-  'logs.tail': {
+  'host.updates_hold': Expiring & { mode: UpdatesHoldMode };
+  'logs.tail': Expiring & {
     server?: string;
     source: 'console' | 'readyup' | 'csm' | 'monitor';
     lines?: number;
     follow?: boolean;
     max_s?: number;
   };
-  'logs.stop': { stream_id: string };
+  'logs.stop': Expiring & { stream_id: string };
 }
 
 export type HostCommandType = keyof HostCommands;
@@ -261,25 +269,27 @@ export const HOST_SCHEMAS = {
   http: { enrollRequest, enrollResponse },
 } as const;
 
+/** `POST /api/fleet/enroll` with `kind: "host"` (FLEET.md §18.1). */
 export interface HostEnrollRequest {
-  kind?: 'host';
+  kind: 'host';
   code?: string;
   key?: string;
   machine_id: string;
   tenant_id?: 'default';
   hostname: string;
-  os?: string;
-  csm_version?: string;
+  os: string;
+  csm_version: string;
 }
 
 export interface HostEnrollResponse {
   success: true;
   host_id: string;
-  tenant_id: 'default';
+  tenant_id?: 'default';
   name?: string;
   token: string;
-  ws_url: string;
-  reenrolled: boolean;
+  /** csm defaults to the enroll URL's origin + /api/fleet/host. */
+  ws_url?: string;
+  reenrolled?: boolean;
 }
 
 // --- validation ------------------------------------------------------------------

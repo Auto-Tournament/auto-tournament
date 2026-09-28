@@ -16,11 +16,11 @@
  * - `host.inventory`, `host.progress` (ephemeral, `seq` accepted): stored.
  * - `logs.chunk`: accepted and dropped for now (no log viewer yet).
  *
- * Platform → host commands go through ./commands.ts (`sendHostCommand`),
+ * Platform → host commands go through ./service.ts (`sendHostCommand`),
  * which writes the outbox; this file writes it to the socket. Two payloads
  * get a secret minted at that moment, so none is ever stored: `auth.rotate`
- * (the new host token) and `server.create` with `enroll: true` (a fleet key
- * limited to that command's server count, and the platform URL).
+ * (the new host token) and `server.create` with `enroll: true` (its
+ * `enroll_key`: a fleet key limited to that command's server count).
  */
 
 import { EventEmitter } from 'events';
@@ -87,19 +87,6 @@ function bearer(req: IncomingMessage): string | null {
   return m ? m[1] : null;
 }
 
-function firstHeader(value: string | string[] | undefined): string | undefined {
-  const v = Array.isArray(value) ? value[0] : value;
-  return v?.split(',')[0]?.trim() || undefined;
-}
-
-/** The platform's base URL as this host reached it (for `server.create.fleet.url`). */
-function platformUrl(req: IncomingMessage): string {
-  const encrypted = (req.socket as { encrypted?: boolean }).encrypted === true;
-  const proto = firstHeader(req.headers['x-forwarded-proto']) ?? (encrypted ? 'https' : 'http');
-  const host = firstHeader(req.headers['x-forwarded-host']) ?? req.headers.host ?? 'localhost';
-  return `${proto === 'https' || proto === 'wss' ? 'https' : 'http'}://${host}`;
-}
-
 type Auth = Awaited<ReturnType<typeof registry.verifyHostToken>>;
 
 class HostSession {
@@ -132,8 +119,7 @@ class HostSession {
     private readonly gateway: HostGateway,
     readonly ws: WebSocket,
     auth: Promise<Auth>,
-    private readonly timings: HostGatewayTimings,
-    readonly platformUrl: string
+    private readonly timings: HostGatewayTimings
   ) {
     this.helloTimer = setTimeout(() => this.close(FLEET_CLOSE.PROTOCOL_ERROR, 'hello timeout'), timings.helloTimeoutMs);
     this.bumpDeadTimer();
@@ -420,8 +406,8 @@ class HostSession {
     this.gateway.register(this);
     await registry.markHostConnected(hostId, this.sessionId, {
       hostname: hello.hostname,
-      os: hello.os,
-      csm_version: hello.csm_version,
+      os: hello.versions.os,
+      csm_version: hello.versions.csm,
       capabilities: hello.capabilities,
       protocol,
       boot_id: hello.boot_id,
@@ -434,18 +420,16 @@ class HostSession {
     if (this.helloTimer) clearTimeout(this.helloTimer);
     this.helloTimer = null;
 
-    const host = await registry.getHost(hostId);
     const welcome: HostWelcomePayload = {
       session_id: this.sessionId,
       protocol,
       heartbeat: { interval_ms: this.timings.heartbeatIntervalMs, timeout_ms: this.timings.heartbeatTimeoutMs },
       resume: { result, platform_last_rx_seq: this.rxSeq },
       host_id: hostId,
-      ...(host?.name ? { name: host.name.slice(0, 120) } : {}),
     };
     this.ready = true;
     this.sendEphemeral('welcome', welcome as unknown as Record<string, unknown>, msg.id);
-    log.info(`[FLEET-HOST] ${hostId} online (session ${this.sessionId}, csm ${hello.csm_version}, resume ${result})`);
+    log.info(`[FLEET-HOST] ${hostId} online (session ${this.sessionId}, csm ${hello.versions.csm}, resume ${result})`);
 
     this.lastSentSeq = hello.stream.last_rx_seq;
     await this.flushOutbox();
@@ -513,14 +497,14 @@ class HostSession {
       }
       out = { ...env, payload: { token, old_valid_until: p.old_valid_until } };
     } else if (env.type === 'server.create' && (env.payload as { enroll?: boolean }).enroll === true) {
-      const p = env.payload as { count?: number; name_prefix?: string };
+      const p = env.payload as { count?: number };
       const key = await registry.mintCreateKey({
         hostId: this.hostId as string,
         commandId: env.id,
         count: p.count ?? 1,
-        namePrefix: p.name_prefix ?? null,
+        namePrefix: null,
       });
-      out = { ...env, payload: { ...env.payload, fleet: { url: this.platformUrl, key } } };
+      out = { ...env, payload: { ...env.payload, enroll_key: key } };
     }
     const text = this.frame(out);
     if (text === null) return false;
@@ -622,9 +606,8 @@ export class HostGateway {
     const auth: Promise<Auth> = token
       ? registry.verifyHostToken(token)
       : Promise.resolve({ ok: false as const, reason: 'bad' as const });
-    const url = platformUrl(req);
     this.wss.handleUpgrade(req, socket, head, (ws) => {
-      this.connections.add(new HostSession(this, ws, auth, this.timings, url));
+      this.connections.add(new HostSession(this, ws, auth, this.timings));
     });
   };
 

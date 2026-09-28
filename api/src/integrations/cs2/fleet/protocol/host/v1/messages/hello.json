@@ -2,14 +2,15 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://auto-tournament.dev/fleet/host/v1/messages/hello.json",
   "title": "hello (host → platform, ephemeral)",
-  "description": "First message after the upgrade. The platform answers welcome or closes (4400 protocol error, 4403 identity mismatch, 4426 unsupported protocol). FLEET.md §6.1, §18.",
+  "description": "First message after the upgrade (FLEET.md §6.1, §18). The platform answers welcome or closes (4400 protocol error, 4403 host_id does not match the token, 4426 unsupported protocol). stream: the host's outbound stream of reliable messages (host.result, host.health, auth.rotated), kept in memory: a new id per agent start, so a restarted agent always resets; last_rx_seq is persisted, so commands already handled are not replayed.",
   "type": "object",
   "required": [
     "host_id",
     "machine_id",
     "tenant_id",
     "protocol",
-    "csm_version",
+    "versions",
+    "capabilities",
     "hostname",
     "boot_id",
     "stream"
@@ -21,9 +22,7 @@
       "maxLength": 64
     },
     "machine_id": {
-      "type": "string",
-      "minLength": 8,
-      "maxLength": 128
+      "$ref": "../defs.json#/$defs/machineId"
     },
     "tenant_id": {
       "$ref": "../defs.json#/$defs/tenantId"
@@ -45,38 +44,62 @@
         }
       }
     },
-    "csm_version": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 64
+    "versions": {
+      "type": "object",
+      "required": [
+        "csm"
+      ],
+      "properties": {
+        "csm": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "os": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 64
+      },
+      "maxItems": 128,
+      "uniqueItems": true,
+      "description": "host.v1, servers.start_stop, servers.create, servers.remove_last, update.game, update.plugins, updates.hold, logs.tail, logs.follow, health.v1"
     },
     "hostname": {
       "type": "string",
       "minLength": 1,
       "maxLength": 255
     },
-    "os": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 255
-    },
     "boot_id": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 64
+      "$ref": "../defs.json#/$defs/ulid"
     },
     "stream": {
-      "$ref": "../defs.json#/$defs/stream"
-    },
-    "capabilities": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 64
-      },
-      "maxItems": 128,
-      "uniqueItems": true
+      "type": "object",
+      "required": [
+        "id",
+        "last_tx_seq",
+        "last_rx_seq"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "last_tx_seq": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "last_rx_seq": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
     }
   }
 }

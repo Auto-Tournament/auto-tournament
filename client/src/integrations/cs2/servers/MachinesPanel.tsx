@@ -93,6 +93,14 @@ function matchInProgressServers(err: unknown): string[] | null {
   }
 }
 
+/** The servers an update would touch that have no match in progress. */
+function idleTargets(prompt: ForcePrompt): string[] {
+  const asked = Array.isArray(prompt.payload.servers) ? (prompt.payload.servers as string[]) : null;
+  return prompt.host.servers
+    .map((s) => s.name)
+    .filter((name) => (asked ? asked.includes(name) : true) && !prompt.servers.includes(name));
+}
+
 function gb(mb: number): string {
   return (mb / 1024).toFixed(1);
 }
@@ -261,6 +269,18 @@ export default function MachinesPanel() {
         <Typography variant="caption" color="text.secondary" sx={mono} noWrap display="block">
           {s.name} · :{s.game_port}
         </Typography>
+        {/* Narrow screens: the status columns are hidden, so the essentials go here. */}
+        <Typography
+          variant="caption"
+          color={s.matchInProgress ? 'warning.main' : 'text.secondary'}
+          noWrap
+          display={{ xs: 'block', md: 'none' }}
+        >
+          {s.process.running
+            ? t('machinesPanel.process.running', { defaultValue: 'Running' })
+            : t('machinesPanel.process.stopped', { defaultValue: 'Stopped' })}
+          {s.matchInProgress ? ` · ${t('machinesPanel.matchInProgress', { defaultValue: 'Match in progress' })}` : ''}
+        </Typography>
       </Box>
       <Box minWidth={0} display={{ xs: 'none', md: 'block' }}>
         <Chip
@@ -377,7 +397,9 @@ export default function MachinesPanel() {
         <Typography variant="caption" color="error.main" display="block">
           {c.errorCode === 'match_in_progress'
             ? t('machinesPanel.refusedMatch', { defaultValue: 'csm refused: a match is in progress' })
-            : `${c.errorCode ?? ''} ${c.errorMessage ?? ''}`.trim()}
+            : c.errorCode
+              ? `${t(`machinesPanel.errorCodes.${c.errorCode}`, { defaultValue: c.errorCode })}${c.errorMessage ? ` (${c.errorMessage})` : ''}`
+              : (c.errorMessage ?? '')}
         </Typography>
       )}
     </Box>
@@ -768,6 +790,25 @@ export default function MachinesPanel() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setForce(null)}>{t('common.cancel')}</Button>
+          {/* Updates: csm refuses the whole list when one server is busy, so offer the idle ones. */}
+          {force &&
+            (force.type === 'host.update_game' || force.type === 'host.update_plugins') &&
+            idleTargets(force).length > 0 && (
+              <Button
+                disabled={busy}
+                onClick={() => {
+                  const target = force;
+                  setForce(null);
+                  void send(target.host, target.type, { ...target.payload, servers: idleTargets(target) });
+                }}
+                data-testid="machines-update-idle"
+              >
+                {t('machinesPanel.updateIdleOnly', {
+                  defaultValue: 'Only the idle servers ({{count}})',
+                  count: idleTargets(force).length,
+                })}
+              </Button>
+            )}
           <Button
             variant="contained"
             color="error"

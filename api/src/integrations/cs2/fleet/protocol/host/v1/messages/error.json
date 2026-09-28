@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://auto-tournament.dev/fleet/host/v1/messages/error.json",
   "title": "error (both directions, ephemeral)",
-  "description": "A protocol-level error about one message (envelope ref = its id). Codes: unknown_type, invalid_payload.",
+  "description": "A protocol-level error about one message (`ref` = its id). The host sends unknown_type (reliable message of an unknown type; it is still acked), invalid_payload (auth.rotate without a host token) and rotate_failed (the new token could not be saved; the old one keeps working until old_valid_until).",
   "type": "object",
   "required": [
     "code"

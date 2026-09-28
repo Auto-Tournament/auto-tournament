@@ -25,6 +25,7 @@ admin actions): what exists, and the calls to use.
 | `mergePatch.ts` | RFC 7386 merge patch, diff for the drift check |
 | `normalize.ts` | fleet `event.*` → `NormalizedEvent[]` (pure) |
 | `ingest.ts` | normalize → `events/matchEvents.applyNormalizedEvents` → `matchLifecycle.ingest` |
+| `protocol/host/v1/`, `hosts/` | the host channel for csm (FLEET.md §18), see the last section |
 
 Tables (migration `006-fleet-match` in `../migrations.ts`):
 `cs2_servers.transport` (`'rcon'` default | `'fleet'`) + `cs2_servers.fleet_server_id`
@@ -190,3 +191,43 @@ MatchState `series.maps` keys); the platform's are 0-based. Use
 `toPlatformMapNumber` / `toFleetMapNumber` (normalize.ts) at every boundary.
 Dev-bot ids (`0xB0B0…`, `isDevBotId`) are dropped from stat lines unless the
 match's `rules.simulation` is set.
+
+## Host channel (csm): `hosts/`
+
+CS2 Server Manager (csm) runs on each machine as its host agent and keeps one
+WebSocket to `/api/fleet/host` (FLEET.md §18, D17). It does what happens to
+the **process** (inventory, start/stop/restart, create, update CS2 and Ready
+Up, logs); Ready Up's own link stays for the match.
+
+| File | What |
+|---|---|
+| `protocol/host/v1/` | host JSON Schemas, adopted unchanged from csm's `protocol/host-v1/` (csm PR #66); csm copies them back from here |
+| `hosts/gateway.ts` | the socket: same transport as `gateway.ts`; `hostEvents` (`online`, `offline`, `inventory`, `health`, `result`, `progress`) |
+| `hosts/registry.ts` | machines, `rhs_` tokens, one-time machine codes, the outbox, commands, health (`cs2_fleet_host*`, migration `008-fleet-hosts`) |
+| `hosts/service.ts` | **`sendHostCommand(hostId, type, payload, { issuedBy, force })`**, `awaitHostResult`, the inventory join, rotation, revoke |
+| `hosts/join.ts` | pure: inventory ↔ Ready Up join (§18.3), command targets, new servers after a create |
+| `hosts/routes.ts` | `/api/fleet/hosts*` (admin) and the `kind: "host"` branch of `POST /api/fleet/enroll` |
+
+- **Enroll**: Servers → Machines → Add machine gives one command,
+  `csm link <url> <code>`. csm posts `{kind: "host", code | key, machine_id,
+  hostname, os, csm_version}` to `/api/fleet/enroll` and gets `rhs_…`. The
+  same `machine_id` gets its record back. A fleet key (`rfk_`) enrolls a
+  machine too, except the keys minted for a `server.create`.
+- **Commands** (`POST /api/fleet/hosts/:id/commands {type, payload, force?}`)
+  are recorded in `cs2_fleet_host_commands` (the audit row, `forced_by` /
+  `force_reason` for a forced one), appended to the host's outbox and
+  replayed until acked. Each gets one `host.result` (envelope `ref`);
+  `host.progress` updates it on the way.
+- **Match in progress**: a disruptive command (`server.stop/restart/remove/
+  set_launch_args`, `host.update_game/update_plugins`) for a server whose
+  inventory says `update_safe: false`, or whose Ready Up server is `busy`, is
+  refused with 409 `match_in_progress` unless `force: {reason}` is given;
+  csm refuses it too.
+- **server.create**: the platform mints a fleet key per command (at most
+  `count` servers, 24 h, revoked with the machine) and puts it in `enroll_key`
+  when the message is written to the socket (never stored). csm's new servers
+  have no Ready Up, so a successful create is followed by `host.update_plugins`
+  (`latest`, `default`) for the new servers; they then self-enroll and join
+  the machine by `install_id`.
+- **Inventory join** (§18.3): each `server-N` joins its Ready Up server on
+  `readyup.install_id`, else `readyup.server_id`.

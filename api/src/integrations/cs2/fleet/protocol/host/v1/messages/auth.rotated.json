@@ -2,7 +2,6 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://auto-tournament.dev/fleet/host/v1/messages/auth.rotated.json",
   "title": "auth.rotated (host → platform, reliable)",
-  "description": "csm has written the token from auth.rotate.",
   "type": "object",
   "properties": {}
 }

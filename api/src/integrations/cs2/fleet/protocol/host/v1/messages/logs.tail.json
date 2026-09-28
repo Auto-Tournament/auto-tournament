@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://auto-tournament.dev/fleet/host/v1/messages/logs.tail.json",
-  "title": "logs.tail (platform → host, reliable)",
-  "description": "Start streaming a log as logs.chunk messages. Answered by exactly one host.result (envelope ref = this message's id). FLEET.md §18.2.",
+  "title": "logs.tail (platform → host)",
+  "description": "Sends the last `lines` lines as logs.chunk frames (stream_id = this message's id), after host.result ok. With follow, new lines follow until max_s, logs.stop or the connection ends; the last chunk has eof: true. At most 4 followed streams (rejected limit). Sources: console (the server's csm log file), readyup (Ready Up's newest log), csm (csm's action log), monitor (the auto-update monitor log); console and readyup need server. Lines are redacted (tokens, keys, codes). Reliable; answered by exactly one host.result (ref = this message's id). Rejected with `expired` when expires_at is past, and with `stale` when the envelope ts is more than 5 min off the host's clock (a command replayed long after it was sent is not run).",
   "type": "object",
   "required": [
     "source"
@@ -21,8 +21,9 @@
     },
     "lines": {
       "type": "integer",
-      "minimum": 1,
-      "maximum": 5000
+      "minimum": 0,
+      "maximum": 2000,
+      "default": 200
     },
     "follow": {
       "type": "boolean"
@@ -30,7 +31,11 @@
     "max_s": {
       "type": "integer",
       "minimum": 1,
-      "maximum": 3600
+      "maximum": 3600,
+      "default": 300
+    },
+    "expires_at": {
+      "$ref": "../defs.json#/$defs/expiresAt"
     }
   }
 }

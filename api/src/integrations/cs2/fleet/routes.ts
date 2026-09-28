@@ -41,7 +41,7 @@ const ENROLL_WINDOW_MS = 60_000;
 const ENROLL_MAX = 10;
 const enrollHits = new Map<string, { count: number; resetAt: number }>();
 
-export function enrollRateLimit(req: Request, res: Response, next: NextFunction): void {
+function enrollRateLimit(req: Request, res: Response, next: NextFunction): void {
   const now = Date.now();
   const key = req.ip || req.socket.remoteAddress || 'unknown';
   let entry = enrollHits.get(key);

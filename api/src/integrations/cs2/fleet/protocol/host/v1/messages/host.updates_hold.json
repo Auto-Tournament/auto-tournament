@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://auto-tournament.dev/fleet/host/v1/messages/host.updates_hold.json",
-  "title": "host.updates_hold (platform → host, reliable)",
-  "description": "csm's updates hold (csm updates hold on|off|auto). Answered by exactly one host.result (envelope ref = this message's id). FLEET.md §18.2.",
+  "title": "host.updates_hold (platform → host)",
+  "description": "Sets csm's update hold (csm updates hold on|off|auto); the auto-update monitor reads it. Reliable; answered by exactly one host.result (ref = this message's id). Rejected with `expired` when expires_at is past, and with `stale` when the envelope ts is more than 5 min off the host's clock (a command replayed long after it was sent is not run).",
   "type": "object",
   "required": [
     "mode"
@@ -14,6 +14,9 @@
         "off",
         "auto"
       ]
+    },
+    "expires_at": {
+      "$ref": "../defs.json#/$defs/expiresAt"
     }
   }
 }
