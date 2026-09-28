@@ -251,51 +251,51 @@
     }
   },
   "license": {
-    "title": "License",
-    "description": "Paste your Auto Tournament license key for commercial use. It is checked on this server, offline. A license never locks or limits anything: if something is off, it shows here as a notice.",
-    "loading": "Loading the license status",
-    "loadFailed": "Could not read the license status.",
+    "title": "Licença",
+    "description": "Cola a tua chave de licença do Auto Tournament para uso comercial. É verificada neste servidor, offline. Uma licença nunca bloqueia nem limita nada: se algo não estiver certo, aparece aqui apenas um aviso.",
+    "loading": "A carregar o estado da licença",
+    "loadFailed": "Não foi possível ler o estado da licença.",
     "none": "Sem chave de licença comercial. Grátis para uso não comercial; o uso comercial precisa de uma licença.",
-    "pricing": "Pricing",
-    "open": "Settings",
-    "id": "License ID {{id}}",
-    "verify": "Check this license",
-    "invalid": "This key could not be verified.",
-    "invalidShort": "The saved key could not be verified.",
-    "warningsShort_one": "1 license notice in Settings.",
-    "warningsShort_other": "{{count}} license notices in Settings.",
-    "warningsNote": "Nothing is blocked or limited. This is only a notice.",
-    "label": "License key",
-    "replaceLabel": "Replace the license key",
-    "helper": "Starts with ATL1. After saving, only the license ID is shown.",
-    "save": "Save key",
-    "saved": "License key saved",
-    "saveFailed": "Could not save the license key",
-    "remove": "Remove key",
-    "removed": "License key removed",
-    "removeFailed": "Could not remove the license key",
+    "pricing": "Preços",
+    "open": "Definições",
+    "id": "ID da licença {{id}}",
+    "verify": "Verificar esta licença",
+    "invalid": "Não foi possível verificar esta chave.",
+    "invalidShort": "Não foi possível verificar a chave guardada.",
+    "warningsShort_one": "1 aviso de licença nas Definições.",
+    "warningsShort_other": "{{count}} avisos de licença nas Definições.",
+    "warningsNote": "Nada é bloqueado ou limitado. É apenas um aviso.",
+    "label": "Chave de licença",
+    "replaceLabel": "Substituir a chave de licença",
+    "helper": "Começa por ATL1. Depois de guardar, só é mostrado o ID da licença.",
+    "save": "Guardar chave",
+    "saved": "Chave de licença guardada",
+    "saveFailed": "Não foi possível guardar a chave de licença",
+    "remove": "Remover chave",
+    "removed": "Chave de licença removida",
+    "removeFailed": "Não foi possível remover a chave de licença",
     "summary": {
-      "licensedTo": "Licensed to {{licensee}}",
-      "licensed": "Licensed",
+      "licensedTo": "Licenciado a {{licensee}}",
+      "licensed": "Licenciado",
       "product": {
-        "platform": "Platform {{pack}}",
-        "servers": "Servers {{pack}}"
+        "platform": "Plataforma {{pack}}",
+        "servers": "Servidores {{pack}}"
       },
-      "servers_one": "{{count}} server",
-      "servers_other": "{{count}} servers",
-      "updatesUntil": "updates until {{date}}",
-      "updatesForLife": "updates for life",
-      "eventWindow": "event {{from}} to {{to}}"
+      "servers_one": "{{count}} servidor",
+      "servers_other": "{{count}} servidores",
+      "updatesUntil": "atualizações até {{date}}",
+      "updatesForLife": "atualizações para toda a vida",
+      "eventWindow": "evento de {{from}} a {{to}}"
     },
     "badge": {
-      "label": "Show \"Licensed\" on public event pages",
-      "note": "Off by default. Links to the license's public check page, and only shows while the saved key is valid.",
-      "on": "Public license line turned on",
-      "off": "Public license line turned off",
-      "failed": "Could not change the public license line"
+      "label": "Mostrar «Licenciado» nas páginas públicas de eventos",
+      "note": "Desativado por predefinição. Liga à página pública de verificação da licença e só aparece enquanto a chave guardada for válida.",
+      "on": "Linha pública de licença ativada",
+      "off": "Linha pública de licença desativada",
+      "failed": "Não foi possível alterar a linha pública de licença"
     },
     "public": {
-      "licensed": "Licensed"
+      "licensed": "Licenciado"
     }
   }
 }
