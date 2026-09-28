@@ -47,6 +47,10 @@ import { teamMembers } from '../services/teamMembers';
 import { forgetModuleEnabled, listModules, modulesDir, scanDiskModules } from '../modules/loader';
 import { isValidModuleId } from '../modules/manifest';
 import { registerCatalogTestRoutes } from './testCatalog';
+import {
+  licenseConsentService,
+  parseConsentRecord,
+} from '../services/license/consent';
 import fs from 'fs';
 import path from 'path';
 
@@ -2744,5 +2748,56 @@ registerCatalogTestRoutes(
   (id, kind) => moduleFixtureFiles(id, kind),
   { pack: (slug) => FAKE_INDEX_PACKS[slug], tile: FAKE_INDEX_TILE }
 );
+
+/**
+ * @openapi
+ * /api/test/license-consent:
+ *   post:
+ *     tags:
+ *       - Testing
+ *     summary: Reset or seed the license terms acceptance (test only)
+ *     description: |
+ *       `{ "action": "clear" }` forgets the acceptance and ignores
+ *       AT_ACCEPT_LICENSE until `{ "action": "restore" }`, so a suite whose
+ *       server pre-accepts can see the consent step. `{ "action": "set",
+ *       "record": {…} }` stores a record as-is (an older terms version) and
+ *       also ignores AT_ACCEPT_LICENSE. `{ "action": "env" }` uses
+ *       AT_ACCEPT_LICENSE again without touching the record.
+ *     responses:
+ *       200:
+ *         description: Done
+ */
+router.post('/license-consent', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+    res.status(404).json({ success: false, error: 'Not found' });
+    return;
+  }
+  const { action, record } = (req.body ?? {}) as { action?: unknown; record?: unknown };
+  try {
+    if (action === 'clear') {
+      licenseConsentService.setEnvSuspendedForTest(true);
+      await licenseConsentService.clearForTest();
+    } else if (action === 'restore') {
+      licenseConsentService.setEnvSuspendedForTest(false);
+      await licenseConsentService.getStatus();
+    } else if (action === 'env') {
+      licenseConsentService.setEnvSuspendedForTest(false);
+    } else if (action === 'set') {
+      const parsed = parseConsentRecord(JSON.stringify(record ?? null));
+      if (!parsed) {
+        res.status(400).json({ success: false, error: 'record is not a consent record' });
+        return;
+      }
+      licenseConsentService.setEnvSuspendedForTest(true);
+      await licenseConsentService.setRecordForTest(parsed);
+    } else {
+      res.status(400).json({ success: false, error: 'action must be clear, restore, env or set' });
+      return;
+    }
+    res.json({ success: true, envAccept: process.env.AT_ACCEPT_LICENSE?.trim() || null });
+  } catch (error) {
+    res.status(500).json({ success: false, error: (error as Error).message });
+  }
+});
 
 export default router;

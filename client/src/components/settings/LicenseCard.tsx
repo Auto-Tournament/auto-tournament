@@ -17,10 +17,12 @@ import {
   useLicenseStatus,
   type LicenseStatusResponse,
 } from '../../hooks/useLicenseStatus';
+import { LicenseConsentSection } from '../license/LicenseConsentSection';
 
 /**
- * Settings → License: paste the Auto Tournament license key, see what it
- * covers, remove it, and the public "Licensed" toggle (/api/license).
+ * Settings → License: the accepted terms and declared use (change it here),
+ * paste the Auto Tournament license key, see what it covers, remove it, and
+ * the public "Licensed" toggle (/api/license).
  *
  * Nothing is ever locked or limited by it: no key is a quiet note (free for
  * non-commercial use), and a problem with a key is a notice here. The key is
@@ -29,7 +31,7 @@ import {
 export function LicenseCard() {
   const { t } = useTranslation();
   const { showSuccess, showError } = useSnackbar();
-  const { status, setStatus, loaded } = useLicenseStatus();
+  const { status, setStatus, loaded, reload } = useLicenseStatus();
   const [key, setKey] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -89,6 +91,9 @@ export function LicenseCard() {
       </Typography>
 
       <Stack spacing={2}>
+        {/* The use declared when the terms were accepted, and "Change" */}
+        <LicenseConsentSection hasKey={hasKey} onChanged={() => void reload()} />
+
         {!hasKey && (
           <Typography variant="body2" color="text.secondary" data-testid="settings-license-none">
             {t('license.none')}{' '}

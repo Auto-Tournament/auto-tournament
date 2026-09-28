@@ -26,6 +26,7 @@ import { createServer } from 'http';
 import swaggerUi from 'swagger-ui-express';
 import { db } from './config/database';
 import { seedBundledPacks } from './services/gamePackService';
+import { applyLicenseEnvironment } from './services/license/consent';
 import { PUBLIC_DIR, MAP_IMAGES_DIR, SWAGGER_UI_DIR } from './config/publicPaths';
 import { DATA_DIR } from './config/dataDir';
 import { getOpenApiSpec } from './config/swagger';
@@ -517,6 +518,11 @@ process.on('uncaughtException', (err) => {
     // cache the catalogue reads. The catalogue call is synchronous, so the
     // packs cannot come from a query at that point. See seedBundledPacks.
     await seedBundledPacks();
+
+    // AT_ACCEPT_LICENSE / LICENSE_KEY: a non-interactive install accepts the
+    // license terms and saves its key here. Logged; never throws, never
+    // blocks the boot (services/license/consent.ts).
+    await applyLicenseEnvironment();
 
     // Now start the server after database is ready
     // Bind to all interfaces (IPv4 & IPv6) so both 127.0.0.1 and ::1 work with dev proxies.

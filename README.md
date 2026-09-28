@@ -72,7 +72,11 @@ cp example.env .env   # set SESSION_SECRET, SERVER_TOKEN and STEAM_API_KEY
 docker compose --env-file .env -f docker/docker-compose.yml up -d
 ```
 
-Then open http://localhost:3069.
+Then open http://localhost:3069. The first time an admin signs in, they
+accept the license terms once: pick personal / non-commercial or commercial
+use and type `I AGREE`. For an install nobody clicks through (automation,
+CI), set `AT_ACCEPT_LICENSE=noncommercial` or `AT_ACCEPT_LICENSE=commercial`
+in `.env` instead, and optionally `LICENSE_KEY`. See `example.env`.
 
 To add servers, either:
 

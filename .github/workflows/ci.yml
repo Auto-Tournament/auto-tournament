@@ -233,6 +233,9 @@ jobs:
             echo "SERVER_TOKEN=server123"
             echo "ENABLE_TEST_ENDPOINTS=true"
             echo "MAT_TEST_INTEGRATION=1"
+            # The license terms are accepted up front, so the admin UI opens
+            # (tests/ui/license-consent.spec.ts covers the consent step).
+            echo "AT_ACCEPT_LICENSE=noncommercial"
             echo "GAMES_ENRICH=off"
             # A stock install has no games; the suite needs the image's packs.
             echo "PREINSTALL_PACKS=all"

@@ -296,6 +296,50 @@
     },
     "public": {
       "licensed": "Licensed"
+    },
+    "consent": {
+      "title": "Before you start: the license",
+      "subtitle": "Auto Tournament is free for non-commercial use. Commercial use needs a license. Read the short version, tell us how you use it, and type I AGREE.",
+      "intro": "Auto Tournament is source-available under the {{name}}. In short:",
+      "points": {
+        "free": "Free for personal use, hobby projects, learning, and events where nobody earns money from it.",
+        "orgs": "Free for charities, schools, universities, public research and government bodies, even when they charge entry.",
+        "commercial": "Commercial use needs a license. That includes paid hosting, selling it or a service built on it, events that make a profit, use inside a business, and being paid to set it up for someone.",
+        "servers": "Every game server counts toward the license.",
+        "nothingLocked": "Nothing is locked or limited without a key. You can add a key now or later.",
+        "forks": "You can change the code and share it. Keep the license with it; the same rules apply."
+      },
+      "readLicense": "Read the full license",
+      "readRules": "Licensing and commercial use",
+      "summaryNote": "This is a summary. If it and the license disagree, the license wins.",
+      "useQuestion": "How is this instance used?",
+      "use": {
+        "noncommercial": "Personal / non-commercial",
+        "noncommercialHint": "Free. Nobody earns money from it.",
+        "commercial": "Commercial",
+        "commercialHint": "You need a license. Paste your key now or later."
+      },
+      "keyLabel": "License key (optional)",
+      "keyHelper": "Starts with ATL1. You can also add it later in Settings > License.",
+      "confirmLabel": "Type {{phrase}} to accept the license terms",
+      "confirmHelper": "By typing {{phrase}} you accept the license terms for this instance.",
+      "accept": "Accept and continue",
+      "cancel": "Cancel",
+      "failed": "Could not save your answer",
+      "accepted": "License terms accepted",
+      "termsChanged": "The license terms changed since they were last accepted. Please read them and accept again.",
+      "onlyAdmins": "Only admins see this, once per instance. Players, public pages and running matches are not affected.",
+      "declared": {
+        "noncommercial": "Non-commercial use",
+        "commercial": "Commercial use",
+        "none": "License terms not accepted yet"
+      },
+      "acceptedLine": "Terms accepted {{date}} by {{who}} (terms version {{version}})",
+      "byEnv": "the AT_ACCEPT_LICENSE setting",
+      "change": "Change",
+      "changeTitle": "Change how this instance is used",
+      "changeNote": "Choose again and type I AGREE. The change is saved with the date and your account.",
+      "commercialNoKey": "This instance is used commercially, so you need a license. Paste your key below. Nothing is locked while it is missing."
     }
   }
 }

@@ -296,6 +296,50 @@
     },
     "public": {
       "licensed": "Lisensiert"
+    },
+    "consent": {
+      "title": "Før du starter: lisensen",
+      "subtitle": "Auto Tournament er gratis for ikke-kommersiell bruk. Kommersiell bruk krever en lisens. Les kortversjonen, fortell oss hvordan du bruker det, og skriv I AGREE.",
+      "intro": "Kildekoden til Auto Tournament er tilgjengelig under {{name}}. Kort fortalt:",
+      "points": {
+        "free": "Gratis for personlig bruk, hobbyprosjekter, læring og arrangementer der ingen tjener penger på det.",
+        "orgs": "Gratis for veldedige organisasjoner, skoler, universiteter, offentlig forskning og offentlige etater, også når de tar inngangspenger.",
+        "commercial": "Kommersiell bruk krever en lisens. Det gjelder betalt hosting, salg av programmet eller en tjeneste bygget på det, arrangementer som går med overskudd, bruk i en bedrift, og å få betalt for å sette det opp for andre.",
+        "servers": "Hver spillserver teller med i lisensen.",
+        "nothingLocked": "Ingenting låses eller begrenses uten nøkkel. Du kan legge inn en nøkkel nå eller senere.",
+        "forks": "Du kan endre koden og dele den. Ta med lisensen; de samme reglene gjelder."
+      },
+      "readLicense": "Les hele lisensen",
+      "readRules": "Lisens og kommersiell bruk",
+      "summaryNote": "Dette er et sammendrag. Hvis det og lisensen sier noe ulikt, gjelder lisensen.",
+      "useQuestion": "Hvordan brukes denne instansen?",
+      "use": {
+        "noncommercial": "Personlig / ikke-kommersiell",
+        "noncommercialHint": "Gratis. Ingen tjener penger på det.",
+        "commercial": "Kommersiell",
+        "commercialHint": "Du trenger en lisens. Lim inn nøkkelen nå eller senere."
+      },
+      "keyLabel": "Lisensnøkkel (valgfritt)",
+      "keyHelper": "Starter med ATL1. Du kan også legge den inn senere under Innstillinger > Lisens.",
+      "confirmLabel": "Skriv {{phrase}} for å godta lisensvilkårene",
+      "confirmHelper": "Ved å skrive {{phrase}} godtar du lisensvilkårene for denne instansen.",
+      "accept": "Godta og fortsett",
+      "cancel": "Avbryt",
+      "failed": "Kunne ikke lagre svaret ditt",
+      "accepted": "Lisensvilkårene er godtatt",
+      "termsChanged": "Lisensvilkårene er endret siden de sist ble godtatt. Les dem og godta på nytt.",
+      "onlyAdmins": "Bare administratorer ser dette, én gang per instans. Spillere, offentlige sider og kamper som pågår påvirkes ikke.",
+      "declared": {
+        "noncommercial": "Ikke-kommersiell bruk",
+        "commercial": "Kommersiell bruk",
+        "none": "Lisensvilkårene er ikke godtatt ennå"
+      },
+      "acceptedLine": "Vilkårene ble godtatt {{date}} av {{who}} (vilkårsversjon {{version}})",
+      "byEnv": "innstillingen AT_ACCEPT_LICENSE",
+      "change": "Endre",
+      "changeTitle": "Endre hvordan denne instansen brukes",
+      "changeNote": "Velg på nytt og skriv I AGREE. Endringen lagres med dato og kontoen din.",
+      "commercialNoKey": "Denne instansen brukes kommersielt, så du trenger en lisens. Lim inn nøkkelen nedenfor. Ingenting låses mens den mangler."
     }
   }
 }
