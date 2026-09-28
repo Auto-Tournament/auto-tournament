@@ -707,14 +707,14 @@ export default function MachinesPanel() {
             label={t('machinesPanel.count', { defaultValue: 'How many' })}
             value={createFor?.count ?? ''}
             onChange={(e) => createFor && setCreateFor({ ...createFor, count: e.target.value })}
-            inputProps={{ min: 1, max: 32 }}
+            inputProps={{ min: 1, max: 16 }}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setCreateFor(null)}>{t('common.cancel')}</Button>
           <Button
             variant="contained"
-            disabled={!createFor || !(Number(createFor.count) >= 1 && Number(createFor.count) <= 32)}
+            disabled={!createFor || !(Number(createFor.count) >= 1 && Number(createFor.count) <= 16)}
             onClick={() => {
               if (!createFor) return;
               const target = createFor;
