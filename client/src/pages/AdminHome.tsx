@@ -11,6 +11,7 @@ import { TournamentsList } from '../components/adminHome/TournamentsList';
 import { SiteLinksGrid } from '../components/adminHome/SiteLinksGrid';
 import { useShellIntegrations, shellModule } from '../hooks/useShellIntegrations';
 import { PeopleOverviewCard } from '../components/adminHome/PeopleOverviewCard';
+import { LicenseOverviewCard } from '../components/adminHome/LicenseOverviewCard';
 import { PageHead } from '../components/common/ui';
 import { paths } from '../paths';
 
@@ -118,6 +119,7 @@ export default function AdminHome() {
                   signedInThisWeekCount={signedInThisWeekCount}
                   adminsCount={adminsCount}
                 />
+                <LicenseOverviewCard />
               </Box>
             </Box>
           </Box>

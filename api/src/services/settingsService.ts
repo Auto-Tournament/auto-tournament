@@ -17,7 +17,12 @@ export type CoreSettingKey =
   | 'ratings_enabled'
   | 'allow_self_register'
   // The site's own name (the admin home's H1). Unset = DEFAULT_SITE_NAME.
-  | 'site_name';
+  | 'site_name'
+  // The Auto Tournament license key (services/license). Set through
+  // /api/license only; never returned by /api/settings or logged.
+  | 'license_key'
+  // Show "Licensed" on public event pages. Off by default.
+  | 'license_public_badge';
 
 export interface AppSetting {
   key: AppSettingKey;
@@ -87,6 +92,17 @@ export const CORE_SETTINGS: ReadonlyArray<SettingDefinition & { key: CoreSetting
     order: 90,
     normalize: normalizeFlag('Player self‑registration'),
     applyRequest: booleanRequest('allowSelfRegister'),
+  },
+  // No `field`: /api/license sets these, PUT /api/settings never does.
+  {
+    key: 'license_key',
+    normalize(trimmed) {
+      return { value: trimmed, message: 'License key saved' };
+    },
+  },
+  {
+    key: 'license_public_badge',
+    normalize: normalizeFlag('Public license badge'),
   },
 ];
 

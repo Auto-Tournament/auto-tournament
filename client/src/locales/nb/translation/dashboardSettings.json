@@ -107,7 +107,8 @@
       "integrations": "Integrasjoner",
       "players": "Spillere og tilgang",
       "matches": "Rating",
-      "developer": "Utvikler"
+      "developer": "Utvikler",
+      "license": "Lisens"
     },
     "integrations": {
       "steam": {
@@ -247,6 +248,54 @@
       "send": "Send",
       "success": "Kunngjøring sendt",
       "failed": "Kunne ikke sende kunngjøringen"
+    }
+  },
+  "license": {
+    "title": "Lisens",
+    "description": "Lim inn Auto Tournament-lisensnøkkelen for kommersiell bruk. Den sjekkes på denne serveren, uten nett. En lisens låser eller begrenser aldri noe: er noe galt, vises det her som en merknad.",
+    "loading": "Laster lisensstatus",
+    "loadFailed": "Kunne ikke lese lisensstatusen.",
+    "none": "Ingen kommersiell lisensnøkkel. Gratis for ikke-kommersiell bruk.",
+    "pricing": "Priser",
+    "open": "Innstillinger",
+    "id": "Lisens-ID {{id}}",
+    "verify": "Sjekk denne lisensen",
+    "invalid": "Denne nøkkelen kunne ikke bekreftes.",
+    "invalidShort": "Den lagrede nøkkelen kunne ikke bekreftes.",
+    "warningsShort_one": "1 lisensmerknad i Innstillinger.",
+    "warningsShort_other": "{{count}} lisensmerknader i Innstillinger.",
+    "warningsNote": "Ingenting blokkeres eller begrenses. Dette er bare en merknad.",
+    "label": "Lisensnøkkel",
+    "replaceLabel": "Bytt lisensnøkkel",
+    "helper": "Starter med ATL1. Etter lagring vises bare lisens-ID-en.",
+    "save": "Lagre nøkkel",
+    "saved": "Lisensnøkkel lagret",
+    "saveFailed": "Kunne ikke lagre lisensnøkkelen",
+    "remove": "Fjern nøkkel",
+    "removed": "Lisensnøkkel fjernet",
+    "removeFailed": "Kunne ikke fjerne lisensnøkkelen",
+    "summary": {
+      "licensedTo": "Lisensiert til {{licensee}}",
+      "licensed": "Lisensiert",
+      "product": {
+        "platform": "Platform {{pack}}",
+        "servers": "Servers {{pack}}"
+      },
+      "servers_one": "{{count}} server",
+      "servers_other": "{{count}} servere",
+      "updatesUntil": "oppdateringer til {{date}}",
+      "updatesForLife": "oppdateringer for alltid",
+      "eventWindow": "arrangement {{from}} til {{to}}"
+    },
+    "badge": {
+      "label": "Vis «Lisensiert» på offentlige arrangementssider",
+      "note": "Av som standard. Lenker til lisensens offentlige sjekkside, og vises bare mens den lagrede nøkkelen er gyldig.",
+      "on": "Offentlig lisenslinje slått på",
+      "off": "Offentlig lisenslinje slått av",
+      "failed": "Kunne ikke endre den offentlige lisenslinjen"
+    },
+    "public": {
+      "licensed": "Lisensiert"
     }
   }
 }

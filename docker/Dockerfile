@@ -70,6 +70,12 @@ RUN mkdir -p public
 ARG VITE_ENABLE_DEV_PAGE
 ENV VITE_ENABLE_DEV_PAGE=${VITE_ENABLE_DEV_PAGE}
 
+# Release day of this version's x.y.0 (YYYY-MM-DD), for the license line date
+# (api/src/services/license/lineDate.ts). Set by the release workflow for
+# patch releases; empty otherwise, and the build day is used. An ARG is in the
+# environment of the RUN below, where api/esbuild.config.js reads it.
+ARG AT_LINE_RELEASE_DATE=
+
 # Build backend and frontend (needs devDeps like TypeScript, Vite, esbuild, etc.)
 RUN echo "Building backend (TypeScript compilation)..." && \
     yarn build:server && \

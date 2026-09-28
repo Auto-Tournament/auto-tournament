@@ -4,6 +4,7 @@ import { Alert, Box, CircularProgress, Container, Typography } from '@mui/materi
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { TournamentPageHeader } from '../components/tournament/overview/TournamentPageHeader';
+import { LicensedBadge } from '../components/tournament/page/LicensedBadge';
 import type { TournamentPageContext } from '../components/tournament/page/tournamentPageContext';
 import { usePublicTournamentOverview } from '../hooks/usePublicTournamentOverview';
 import { useAuth } from '../contexts/AuthContext';
@@ -127,6 +128,8 @@ export default function TournamentPage() {
         <Box component="main" aria-labelledby="tournament-title" sx={{ mt: 3 }}>
           <Outlet context={context} />
         </Box>
+        {/* Off unless an admin turns it on, and only for a valid license key. */}
+        <LicensedBadge />
       </Container>
     </Box>
   );

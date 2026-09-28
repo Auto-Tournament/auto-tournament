@@ -1214,10 +1214,16 @@ async function compare(initial: Record<string, string | null>, body: Record<stri
 }
 
 /**
- * Settings added after the legacy handler, with their `PUT` field. They are
- * not in the legacy reference; everything else must still match it.
+ * Settings added after the legacy handler, with their `PUT` field (null: not
+ * settable through `PUT /api/settings`; the license ones go through
+ * /api/license). They are not in the legacy reference; everything else must
+ * still match it.
  */
-const ADDED_SETTINGS = [{ key: 'site_name', field: 'siteName' }];
+const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
+  { key: 'site_name', field: 'siteName' },
+  { key: 'license_key', field: null },
+  { key: 'license_public_badge', field: null },
+];
 
 // --- tests -------------------------------------------------------------------
 
@@ -1318,7 +1324,7 @@ test.describe('settings namespace', () => {
 
 /** Every field of the legacy `GET /api/settings` response, plus the added settings'. */
 const RESPONSE_FIELDS = [
-  ...ADDED_SETTINGS.map((added) => added.field),
+  ...ADDED_SETTINGS.flatMap((added) => (added.field ? [added.field] : [])),
   'webhookUrl',
   'steamApiKey',
   'steamApiKeySet',

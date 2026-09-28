@@ -418,6 +418,12 @@ export const cs2Integration: GameIntegration = {
     return cs2ServerPool.getPoolStatus();
   },
 
+  /** Enabled servers, from the database only (no RCON). */
+  async configuredResourceCount() {
+    const { serverService } = await import('./services/serverService');
+    return (await serverService.getAllServers(true)).length;
+  },
+
   /** The server grace period (shorter in simulation mode). */
   async turnoverSeconds() {
     const { cs2ServerPool } = await import('./allocation');

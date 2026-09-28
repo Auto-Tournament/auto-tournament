@@ -28,6 +28,7 @@ import { useIsDevelopment } from '../hooks/useIsDevelopment';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { SiteNameCard } from '../components/settings/SiteNameCard';
+import { LicenseCard } from '../components/settings/LicenseCard';
 import { useInstalledIntegrations } from '../integrations/registry';
 
 declare const __APP_VERSION__: string | undefined;
@@ -138,6 +139,11 @@ export default function Settings() {
   const [tab, setTab] = useState<string>('integrations');
   useEffect(() => {
     if (!requestedSection) return;
+    // `?section=license`: the admin home's License card links here.
+    if (requestedSection === 'license') {
+      setTab('license');
+      return;
+    }
     const key = moduleTabKey(requestedSection);
     if (moduleTabKeys.split(' ').includes(key)) setTab(key);
   }, [requestedSection, moduleTabKeys]);
@@ -145,6 +151,7 @@ export default function Settings() {
     'integrations',
     'players',
     'matches',
+    'license',
     ...moduleTabKeys.split(' ').filter(Boolean),
     ...(isDev ? ['developer'] : []),
   ];
@@ -258,6 +265,12 @@ export default function Settings() {
                 />
                 <Tab label={t('settingsPage.tabs.players')} value="players" {...a11yProps('players')} />
                 <Tab label={t('settingsPage.tabs.matches')} value="matches" {...a11yProps('matches')} />
+                <Tab
+                  label={t('settingsPage.tabs.license')}
+                  value="license"
+                  data-testid="settings-tab-license"
+                  {...a11yProps('license')}
+                />
                 {moduleSettings.map(({ id, labelKey }) => (
                   <Tab
                     key={id}
@@ -347,6 +360,11 @@ export default function Settings() {
                   </AccordionDetails>
                 </Accordion>
               </Stack>
+            </TabPanel>
+
+            {/* The Auto Tournament license key: status only, never a lockout */}
+            <TabPanel value={activeTab} index="license">
+              <LicenseCard />
             </TabPanel>
 
             {/* Each installed module's own settings (CS2: webhook URL, map sync, server defaults) */}
