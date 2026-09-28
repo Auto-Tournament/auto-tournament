@@ -1131,6 +1131,7 @@
       "revokeKeyMessage": "«{{name}}» non può più registrare server. I server già registrati continuano a funzionare."
     }
   },
+<<<<<<< HEAD
   "machinesPanel": {
     "copied": "Copied",
     "copyFailed": "Could not copy",
@@ -1268,6 +1269,55 @@
       "not_found": "Not found",
       "limit": "Too many log streams",
       "failed": "Failed"
+=======
+  "roundBackups": {
+    "title": "Round backups",
+    "refresh": "Refresh",
+    "loading": "Loading…",
+    "loadFailed": "Could not load the round backups",
+    "map": "Map {{number}}",
+    "mapNamed": "Map {{number}}: {{name}}",
+    "mapPicker": "Map",
+    "noServer": "No server is running this match, so there is nothing to restore on.",
+    "rconHint": "This server keeps its own round backups (RCON). Enter the round to go back to.",
+    "round": "Round",
+    "roundN": "Round {{round}}",
+    "none": "No backups for {{map}} yet. The server sends one at the start of every round.",
+    "latest": "Latest",
+    "superseded": "Replaced",
+    "supersededHint": "A restore went back before this round; it is from the replaced timeline.",
+    "pick": "Pick a round to restore",
+    "restoreTo": "Restore to round {{round}}",
+    "confirm": "Restore",
+    "confirmBody": "Restore {{map}} to the start of round {{round}} ({{team1}}–{{team2}})? Rounds played after it are voided and the match pauses.",
+    "confirmBodyRcon": "Restore the match to round {{round}} from the server’s own backup? Rounds played after it are voided.",
+    "restored": "Restored to the start of round {{round}}. The match is paused until it is unpaused.",
+    "sentNoAnswer": "Restore to round {{round}} sent; the server has not answered yet.",
+    "failed": "Restore failed: {{reason}}",
+    "unknownError": "unknown error",
+    "recent": "Recent restores",
+    "recentRow": "{{map}}, round {{round}}",
+    "status": {
+      "pending": "Waiting",
+      "ok": "Done",
+      "rejected": "Refused",
+      "failed": "Failed",
+      "expired": "Expired"
+    },
+    "errors": {
+      "no_backup": "there is no backup of that round",
+      "not_assigned": "no server is running this match",
+      "too_large": "the backup is too large to send to another server",
+      "send_failed": "it could not be sent to the server",
+      "bad_args": "the map or round is not valid",
+      "bad_phase": "the match cannot be restored right now",
+      "checksum": "the server found the backup damaged",
+      "stale_epoch": "the match has moved to another server",
+      "unsupported": "the server cannot load this backup",
+      "rcon": "the RCON command failed",
+      "engine": "the game server could not load the backup",
+      "io": "the server could not write the backup file"
+>>>>>>> origin/main
     }
   }
 }
