@@ -1,12 +1,12 @@
 import { Router, Request, Response } from 'express';
 import { validateServerToken } from '../../../middleware/serverAuth';
-import { getUpdateHoldStatus } from '../services/updateHoldService';
+import {
+  getUpdateHoldStatus,
+  getLicenseHandoff,
+  type ServerLicenseHandoff,
+} from '../services/updateHoldService';
 import { resolveTournamentId } from '../../../utils/tournamentRow';
 import { log } from '../../../utils/logger';
-import {
-  licenseService,
-  type ServerLicenseHandoff,
-} from '../../../services/license/licenseService';
 
 /**
  * The update hold CS2 Server Manager (csm) polls.
@@ -125,7 +125,7 @@ router.get('/update-hold', validateServerToken, async (req: Request, res: Respon
 /** The license for csm, or null when it can't be read — never a failed hold. */
 async function licenseHandoff(): Promise<ServerLicenseHandoff | null> {
   try {
-    return await licenseService.getServerHandoff();
+    return await getLicenseHandoff();
   } catch (error) {
     log.warn('[UPDATE HOLD] Could not read the license key for csm; sending none this poll', {
       error: error instanceof Error ? error.message : String(error),

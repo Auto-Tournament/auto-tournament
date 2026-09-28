@@ -20,7 +20,9 @@
  * public address and MAT to match it — a new failure mode for no gain.
  */
 
+import { createHash } from 'crypto';
 import { db } from '../../../config/database';
+import { settingsService } from '../../../services/settingsService';
 import { ACTIVE_MATCH_STATUSES } from '../../../utils/serverAttribution';
 
 /** A match MAT considers to be running on a server right now. */
@@ -153,4 +155,39 @@ export async function getUpdateHoldStatus(tournamentId: number): Promise<UpdateH
     activeMatches,
     checkedAt: Math.floor(Date.now() / 1000),
   };
+}
+
+/**
+ * The license key csm gets on each poll, so it can write it into Ready Up's
+ * `readyup_license_key` (`csm license set` / `csm license clear`) on every
+ * server it manages.
+ *
+ * `revision` changes exactly when the stored key changes (saved, replaced or
+ * cleared), so csm only rewrites configs when there is something new. It is a
+ * short hash of the key, not a timestamp, so it survives restarts and needs no
+ * storage of its own. `none` means no key is saved.
+ */
+export interface ServerLicenseHandoff {
+  key: string | null;
+  revision: string;
+}
+
+export const NO_LICENSE_REVISION = 'none';
+
+/** The hand-off for a stored key (or none). Pure. */
+export function licenseHandoffFor(key: string | null | undefined): ServerLicenseHandoff {
+  const trimmed = key?.trim() || null;
+  if (!trimmed) return { key: null, revision: NO_LICENSE_REVISION };
+  const digest = createHash('sha256').update(trimmed, 'utf8').digest('hex').slice(0, 16);
+  return { key: trimmed, revision: `sha256:${digest}` };
+}
+
+/**
+ * The stored key (`license_key`, written only through /api/license) as csm
+ * gets it. Passed through as stored: Ready Up checks it itself. Read through
+ * settingsService rather than the license service so this module needs no
+ * new host module.
+ */
+export async function getLicenseHandoff(): Promise<ServerLicenseHandoff> {
+  return licenseHandoffFor(await settingsService.getSetting('license_key'));
 }

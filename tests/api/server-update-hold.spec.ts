@@ -1,11 +1,11 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
-import { decideUpdateHold } from '../../api/src/integrations/cs2/services/updateHoldService';
+import {
+  decideUpdateHold,
+  licenseHandoffFor,
+  NO_LICENSE_REVISION,
+} from '../../api/src/integrations/cs2/services/updateHoldService';
 import { signInViaRequest, getAuthHeader } from '../helpers/auth';
 import { setupTournament } from '../helpers/tournamentSetup';
-import {
-  serverHandoffFor,
-  NO_LICENSE_REVISION,
-} from '../../api/src/services/license/licenseService';
 
 /**
  * `GET /api/servers/update-hold` — the answer CS2 Server Manager polls before
@@ -149,15 +149,15 @@ test.describe('update hold endpoint', () => {
 
 test.describe('license hand-off to csm (pure)', () => {
   test('no key is revision "none"; a key gets a stable hash revision', () => {
-    expect(serverHandoffFor(null)).toEqual({ key: null, revision: NO_LICENSE_REVISION });
-    expect(serverHandoffFor('   ')).toEqual({ key: null, revision: NO_LICENSE_REVISION });
+    expect(licenseHandoffFor(null)).toEqual({ key: null, revision: NO_LICENSE_REVISION });
+    expect(licenseHandoffFor('   ')).toEqual({ key: null, revision: NO_LICENSE_REVISION });
 
-    const a = serverHandoffFor(UNSIGNED_KEY);
+    const a = licenseHandoffFor(UNSIGNED_KEY);
     expect(a.key).toBe(UNSIGNED_KEY);
     expect(a.revision).toMatch(/^sha256:[0-9a-f]{16}$/);
-    expect(serverHandoffFor(`  ${UNSIGNED_KEY}
+    expect(licenseHandoffFor(`  ${UNSIGNED_KEY}
 `)).toEqual(a);
-    expect(serverHandoffFor(`${UNSIGNED_KEY}B`).revision).not.toBe(a.revision);
+    expect(licenseHandoffFor(`${UNSIGNED_KEY}B`).revision).not.toBe(a.revision);
     // The revision must not leak the key.
     expect(a.revision).not.toContain('ATL1');
   });
@@ -180,7 +180,7 @@ test.describe.serial('license hand-off on the update-hold poll', () => {
 
     const { status, body } = await getHold(request);
     expect(status).toBe(200);
-    expect(body.license).toEqual(serverHandoffFor(UNSIGNED_KEY));
+    expect(body.license).toEqual(licenseHandoffFor(UNSIGNED_KEY));
   });
 
   test('a cleared key reaches csm as null with revision "none"', async ({ request }) => {
