@@ -12,6 +12,13 @@ body {
 
 #root {
   min-height: 100vh;
+  /*
+   * A block formatting context, so the top nav's margin-top stays inside
+   * #root. Without it the margin collapses through #root and <body>, pushing
+   * the body 12px down: a strip of the bare <html> background shows above the
+   * page (and the page scrolls 12px too far).
+   */
+  display: flow-root;
 }
 
 /*
