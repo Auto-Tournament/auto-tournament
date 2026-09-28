@@ -552,6 +552,62 @@ export interface SkinsStattrakPayload {
   increments: { steamid64: U64s; defindex: number; kills: number }[];
 }
 
+// --- Demo streaming (FLEET.md §12.2, §12.4) -------------------------------
+
+/** Server -> platform (ephemeral): a demo that streams while it records; asks where to resume. */
+export interface DemoBeginPayload {
+  demo_id: Ulid;
+  match_id: string;
+  /** 1-based. */
+  map_number: number;
+  /** Basename of the .dem on the server. */
+  file: string;
+  /** Recording start, unix ms. */
+  started_at: number;
+  /** Every chunk starts at a multiple of this and is this long, except the last one. */
+  chunk_size: number;
+  /** true while the file may still grow. */
+  recording: boolean;
+  /** true: drop every byte stored for this demo and answer offset 0. */
+  restart?: boolean;
+}
+
+/** Server -> platform (ephemeral, lowest priority): bytes [offset, offset + size). */
+export interface DemoChunkPayload {
+  demo_id: Ulid;
+  offset: number;
+  size: number;
+  /** Standard base64 with padding. */
+  data: string;
+}
+
+/** Server -> platform (ephemeral, lowest priority): the file is final. */
+export interface DemoEndPayload {
+  demo_id: Ulid;
+  size: number;
+  /** Lowercase hex. */
+  sha256: string;
+}
+
+export type DemoAckErrorCode =
+  | 'gap'
+  | 'unknown_demo'
+  | 'checksum'
+  | 'storage'
+  | 'not_assigned'
+  | 'stale_epoch'
+  | 'too_large';
+
+/** Platform -> server (ephemeral): the answer to demo.begin / demo.chunk / demo.end. */
+export interface DemoAckPayload {
+  demo_id: Ulid;
+  /** Bytes stored contiguously from 0. */
+  offset: number;
+  /** Only after a demo.end whose size and sha256 matched the stored copy. */
+  complete?: boolean;
+  error?: { code: DemoAckErrorCode; message?: string };
+}
+
 /** Every `event.*` payload: a merge patch with its rev, plus the event's `data`. */
 export interface FleetEventPayload<D = Record<string, unknown>> {
   match_id: string;
@@ -757,6 +813,10 @@ export interface FleetMessages {
   'event.gg': FleetEventPayload<FleetEventData['gg']>;
   'event.admin_called': FleetEventPayload<FleetEventData['admin_called']>;
   'event.error': FleetEventPayload<FleetEventData['error']>;
+  'demo.begin': DemoBeginPayload;
+  'demo.chunk': DemoChunkPayload;
+  'demo.end': DemoEndPayload;
+  'demo.ack': DemoAckPayload;
 }
 
 export type FleetMessageType = keyof FleetMessages;
@@ -812,6 +872,10 @@ export const FLEET_MESSAGES: Record<FleetMessageType, { direction: Direction; re
   'event.gg': S2P_RELIABLE,
   'event.admin_called': S2P_RELIABLE,
   'event.error': S2P_RELIABLE,
+  'demo.begin': { direction: 'server_to_platform', reliable: false },
+  'demo.chunk': { direction: 'server_to_platform', reliable: false },
+  'demo.end': { direction: 'server_to_platform', reliable: false },
+  'demo.ack': { direction: 'platform_to_server', reliable: false },
 };
 
 // --- HTTP ------------------------------------------------------------------

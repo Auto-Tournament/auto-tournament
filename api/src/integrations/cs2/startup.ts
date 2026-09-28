@@ -17,8 +17,13 @@ import { healthMonitoringService } from './services/healthMonitoringService';
 import { startMapAutoSync, stopMapAutoSync } from './maps/autoSync';
 import { mapService } from './maps/mapService';
 import { startFleet, stopFleet } from './fleet/service';
+import { startDemoStreams, stopDemoStreams } from './fleet/demoStream';
 
 export async function startCs2(): Promise<void> {
+  // Demos Ready Up servers stream over the fleet link (demo.*): the handlers
+  // are registered before the gateway takes its first message.
+  startDemoStreams();
+
   // The Ready Up fleet gateway (/api/fleet/ws) first: it only attaches to the
   // HTTP server, and servers reconnecting after a restart should not wait on
   // the RCON bootstrap below.
@@ -50,6 +55,7 @@ export function stopCs2(): void {
   healthMonitoringService.stop();
   stopMapAutoSync();
   stopFleet();
+  stopDemoStreams();
 }
 
 async function bootstrapServerWebhooks(): Promise<void> {
