@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 342 of them, 243 behind auth —
+Every endpoint this API serves — 344 of them, 245 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -204,6 +204,15 @@ How a player joins a CS2 match: its server, status and current map.
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/game/cs2/matches/:slug/connect` | public |
+
+### Round backups
+
+A CS2 match's round backups (Ready Up servers send them inline) and "restore to round N" over the fleet link or RCON, audited.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/game/cs2/matches/:slug/round-backups` | admin |
+| `POST` | `/api/game/cs2/matches/:slug/round-backups/restore` | admin |
 
 ### Fleet enrollment
 

@@ -17,11 +17,16 @@ import { healthMonitoringService } from './services/healthMonitoringService';
 import { startMapAutoSync, stopMapAutoSync } from './maps/autoSync';
 import { mapService } from './maps/mapService';
 import { startFleet, stopFleet } from './fleet/service';
+import { startRoundBackups, stopRoundBackups } from './fleet/backups';
+import { startRestoreAudit, stopRestoreAudit } from './fleet/restore';
 import { startDemoStreams, stopDemoStreams } from './fleet/demoStream';
 
 export async function startCs2(): Promise<void> {
-  // Demos Ready Up servers stream over the fleet link (demo.*): the handlers
-  // are registered before the gateway takes its first message.
+  // Round backups from Ready Up servers (event.backup) and the restore audit:
+  // listening before the gateway takes its first message.
+  startRoundBackups();
+  startRestoreAudit();
+  // Demos Ready Up servers stream over the fleet link (demo.*).
   startDemoStreams();
 
   // The Ready Up fleet gateway (/api/fleet/ws) first: it only attaches to the
@@ -55,6 +60,8 @@ export function stopCs2(): void {
   healthMonitoringService.stop();
   stopMapAutoSync();
   stopFleet();
+  stopRoundBackups();
+  stopRestoreAudit();
   stopDemoStreams();
 }
 

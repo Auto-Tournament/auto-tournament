@@ -7,6 +7,8 @@
  * the status is `unknown` and the UI must not warn.
  */
 
+import semver, { type SemVer } from 'semver';
+
 export type ReadyUpUpdateState = 'unknown' | 'current' | 'outdated';
 
 export interface ReadyUpUpdateStatus {
@@ -23,25 +25,30 @@ export interface ReadyUpRelease {
   releaseUrl: string;
 }
 
-function parseVersion(v: string): number[] | null {
-  const cleaned = v.trim().replace(/^v/i, '').split(/[-+]/)[0];
-  const parts = cleaned.split('.').map((p) => (p === '' ? NaN : Number(p)));
-  if (parts.length === 0 || parts.some((n) => !Number.isFinite(n))) return null;
-  return parts;
+/**
+ * Parse a Ready Up version string into a semver. Accepts `1.2.3`, `v1.2.3`,
+ * pre-releases (`1.2.3-beta.1`), and trailing build info: `+build` metadata or
+ * whitespace + `(sha)` as Ready Up's hello reports (`0.1.0 (4e42de0)`).
+ * Returns null when it is not a semver.
+ */
+export function parseVersion(v: string): SemVer | null {
+  if (typeof v !== 'string') return null;
+  const head = v.trim().split(/\s+/)[0] ?? '';
+  return semver.parse(head.replace(/^v/i, ''));
 }
 
-/** -1 / 0 / 1, or null when either side is not a dotted number version. */
+/** -1 / 0 / 1 by semver precedence, or null when either side is not a semver. */
 export function compareVersions(a: string, b: string): number | null {
   const pa = parseVersion(a);
   const pb = parseVersion(b);
   if (!pa || !pb) return null;
-  const len = Math.max(pa.length, pb.length);
-  for (let i = 0; i < len; i++) {
-    const na = pa[i] ?? 0;
-    const nb = pb[i] ?? 0;
-    if (na !== nb) return na < nb ? -1 : 1;
-  }
-  return 0;
+  return pa.compare(pb);
+}
+
+/** True when the version parses and is a semver pre-release. */
+export function isPrereleaseVersion(v: string | null | undefined): boolean {
+  const p = v ? parseVersion(v) : null;
+  return !!p && p.prerelease.length > 0;
 }
 
 /**

@@ -96,5 +96,10 @@
  * which the admin rail now shows beside the item's label; an MUI icon still
  * type-checks and renders. `ICON_SIZE` (16/20/24 px) is exported. Phosphor is
  * not a shared package: a module bundles the icons it uses.
+ *
+ * 0.2.9 (additive): the optional `matchPanels.adminMatchView` slot
+ * (`MatchAdminPanelProps` `{ matchSlug, matchStatus?, onSuccess?, onError? }`):
+ * the module's own controls in the match details' admin section (CS2: round
+ * backups and "restore to round N").
  */
-export const CLIENT_API_VERSION = '0.2.8';
+export const CLIENT_API_VERSION = '0.2.9';
