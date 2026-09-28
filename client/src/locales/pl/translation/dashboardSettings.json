@@ -255,7 +255,7 @@
     "description": "Paste your Auto Tournament license key for commercial use. It is checked on this server, offline. A license never locks or limits anything: if something is off, it shows here as a notice.",
     "loading": "Loading the license status",
     "loadFailed": "Could not read the license status.",
-    "none": "No commercial license key. Free for non-commercial use.",
+    "none": "Brak komercyjnego klucza licencji. Bezpłatnie do użytku niekomercyjnego; użytek komercyjny wymaga licencji.",
     "pricing": "Pricing",
     "open": "Settings",
     "id": "License ID {{id}}",
