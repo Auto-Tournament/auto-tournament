@@ -2,7 +2,7 @@
 
 Auto Tournament is licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE). The source is public and free to use, change and share for non-commercial purposes. It is not "open source" in the OSI sense.
 
-The rule is simple: **if you earn money from it, you pay full price.** If nobody earns money from it, it's free.
+The rule is simple: **if you earn money from it, you need a license.** If nobody earns money from it, it's free.
 
 ## Free, no permission needed
 
