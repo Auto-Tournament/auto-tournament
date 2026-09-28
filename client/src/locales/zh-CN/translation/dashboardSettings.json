@@ -251,51 +251,51 @@
     }
   },
   "license": {
-    "title": "License",
-    "description": "Paste your Auto Tournament license key for commercial use. It is checked on this server, offline. A license never locks or limits anything: if something is off, it shows here as a notice.",
-    "loading": "Loading the license status",
-    "loadFailed": "Could not read the license status.",
-    "none": "No commercial license key. Free for non-commercial use.",
-    "pricing": "Pricing",
-    "open": "Settings",
-    "id": "License ID {{id}}",
-    "verify": "Check this license",
-    "invalid": "This key could not be verified.",
-    "invalidShort": "The saved key could not be verified.",
-    "warningsShort_one": "1 license notice in Settings.",
-    "warningsShort_other": "{{count}} license notices in Settings.",
-    "warningsNote": "Nothing is blocked or limited. This is only a notice.",
-    "label": "License key",
-    "replaceLabel": "Replace the license key",
-    "helper": "Starts with ATL1. After saving, only the license ID is shown.",
-    "save": "Save key",
-    "saved": "License key saved",
-    "saveFailed": "Could not save the license key",
-    "remove": "Remove key",
-    "removed": "License key removed",
-    "removeFailed": "Could not remove the license key",
+    "title": "许可证",
+    "description": "粘贴你的 Auto Tournament 许可证密钥，用于商业用途。密钥在此服务器上离线校验。许可证不会锁定或限制任何功能：如有异常，这里只会显示提示。",
+    "loading": "正在加载许可证状态",
+    "loadFailed": "无法读取许可证状态。",
+    "none": "没有商业许可证密钥。非商业用途免费；商业用途需要许可证。",
+    "pricing": "价格",
+    "open": "设置",
+    "id": "许可证 ID {{id}}",
+    "verify": "检查此许可证",
+    "invalid": "无法验证此密钥。",
+    "invalidShort": "无法验证已保存的密钥。",
+    "warningsShort_one": "设置中有 1 条许可证提示。",
+    "warningsShort_other": "设置中有 {{count}} 条许可证提示。",
+    "warningsNote": "不会阻止或限制任何功能，这只是一个提示。",
+    "label": "许可证密钥",
+    "replaceLabel": "替换许可证密钥",
+    "helper": "以 ATL1 开头。保存后只显示许可证 ID。",
+    "save": "保存密钥",
+    "saved": "许可证密钥已保存",
+    "saveFailed": "无法保存许可证密钥",
+    "remove": "移除密钥",
+    "removed": "许可证密钥已移除",
+    "removeFailed": "无法移除许可证密钥",
     "summary": {
-      "licensedTo": "Licensed to {{licensee}}",
-      "licensed": "Licensed",
+      "licensedTo": "授权给 {{licensee}}",
+      "licensed": "已授权",
       "product": {
-        "platform": "Platform {{pack}}",
-        "servers": "Servers {{pack}}"
+        "platform": "平台 {{pack}}",
+        "servers": "服务器 {{pack}}"
       },
-      "servers_one": "{{count}} server",
-      "servers_other": "{{count}} servers",
-      "updatesUntil": "updates until {{date}}",
-      "updatesForLife": "updates for life",
-      "eventWindow": "event {{from}} to {{to}}"
+      "servers_one": "{{count}} 台服务器",
+      "servers_other": "{{count}} 台服务器",
+      "updatesUntil": "更新至 {{date}}",
+      "updatesForLife": "终身更新",
+      "eventWindow": "赛事 {{from}} 至 {{to}}"
     },
     "badge": {
-      "label": "Show \"Licensed\" on public event pages",
-      "note": "Off by default. Links to the license's public check page, and only shows while the saved key is valid.",
-      "on": "Public license line turned on",
-      "off": "Public license line turned off",
-      "failed": "Could not change the public license line"
+      "label": "在公开赛事页面显示“已授权”",
+      "note": "默认关闭。链接到该许可证的公开查询页面，且仅在已保存的密钥有效时显示。",
+      "on": "公开许可证提示已开启",
+      "off": "公开许可证提示已关闭",
+      "failed": "无法更改公开许可证提示"
     },
     "public": {
-      "licensed": "Licensed"
+      "licensed": "已授权"
     }
   }
 }

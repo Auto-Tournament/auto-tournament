@@ -9,7 +9,10 @@
  *
  * The key is stored in `app_settings` (`license_key`), set only through
  * /api/license. It is not a secret, but it is treated as sensitive: never
- * logged, never returned after saving (the admin sees the license id).
+ * logged, never returned after saving (the admin sees the license id). The
+ * one reader outside this service is the game hosts' update-hold poll
+ * (integrations/cs2/services/updateHoldService.ts), which hands it to CS2
+ * Server Manager for Ready Up, behind the server token.
  */
 
 import { log } from '../../utils/logger';

@@ -257,6 +257,22 @@ export default function FleetPanel() {
                     <Typography variant="body2" sx={mono} noWrap>
                       {t('fleetPanel.readyUpVersion', { version: server.versions.core })}
                     </Typography>
+                    {server.readyUpUpdate?.state === 'outdated' ? (
+                      <Typography variant="caption" color="warning.main" display="block">
+                        {t('fleetPanel.updateAvailable', {
+                          version: server.readyUpUpdate.latest,
+                          defaultValue: 'Update available: {{version}}',
+                        })}
+                      </Typography>
+                    ) : server.readyUpUpdate?.state === 'current' ? (
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        {t('fleetPanel.upToDate', { defaultValue: 'Up to date' })}
+                      </Typography>
+                    ) : (
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        {t('fleetPanel.noUpdateCheck', { defaultValue: 'No update check yet' })}
+                      </Typography>
+                    )}
                     {server.versions.cs2_build !== undefined && (
                       <Typography variant="caption" color="text.secondary" sx={mono} display="block">
                         {t('fleetPanel.cs2Build', { build: server.versions.cs2_build })}

@@ -439,6 +439,16 @@ export interface FleetServer {
     cs2_build?: number;
     cs2_patch?: string;
   } | null;
+  /**
+   * Ready Up update status (from `GET /api/fleet/servers`). `unknown` while
+   * Ready Up has no release to compare against; only `outdated` is a warning.
+   */
+  readyUpUpdate?: {
+    state: 'unknown' | 'current' | 'outdated';
+    running: string | null;
+    latest: string | null;
+    releaseUrl: string | null;
+  };
   capabilities: string[];
   host: { hostname: string; game_port: number; tv_port?: number; public_addr?: string } | null;
   health: Record<string, unknown> | null;

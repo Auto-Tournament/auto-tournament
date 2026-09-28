@@ -1,6 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { validateServerToken } from '../../../middleware/serverAuth';
-import { getUpdateHoldStatus } from '../services/updateHoldService';
+import {
+  getUpdateHoldStatus,
+  getLicenseHandoff,
+  type ServerLicenseHandoff,
+} from '../services/updateHoldService';
 import { resolveTournamentId } from '../../../utils/tournamentRow';
 import { log } from '../../../utils/logger';
 
@@ -20,6 +24,13 @@ import { log } from '../../../utils/logger';
  * ingest, demo upload and `GET /api/servers/:id/bootstrap`. No new secret.
  * The endpoint is read-only and returns no roster, score or address, so
  * widening that token's reach here costs nothing.
+ *
+ * **License hand-off.** The same poll carries the instance's license key
+ * (`license`), so csm can apply it to Ready Up with its own `csm license set`
+ * / `csm license clear`. Riding the existing poll keeps it on the same token
+ * and needs no push (see above). A failure to read the key never fails the
+ * hold: `license` is then null, which tells csm "no answer, change nothing".
+ * The key is never logged here.
  */
 const router = Router();
 
@@ -72,6 +83,25 @@ const router = Router();
  *                 checkedAt:
  *                   type: integer
  *                   description: Unix seconds when the answer was computed.
+ *                 license:
+ *                   type: object
+ *                   nullable: true
+ *                   description: >
+ *                     The license key saved in Settings → License, for csm to
+ *                     write into Ready Up's readyup_license_key on every
+ *                     server it manages. Null when the platform could not
+ *                     read it this poll (csm then changes nothing).
+ *                   properties:
+ *                     key:
+ *                       type: string
+ *                       nullable: true
+ *                       description: The ATL1 key, or null when none is saved.
+ *                     revision:
+ *                       type: string
+ *                       description: >
+ *                         Changes exactly when the key is saved, replaced or
+ *                         cleared ("none" without a key). csm applies the key
+ *                         only when this differs from what it last applied.
  *       401:
  *         description: Missing or invalid server token
  *       500:
@@ -80,7 +110,7 @@ const router = Router();
 router.get('/update-hold', validateServerToken, async (req: Request, res: Response) => {
   try {
     const status = await getUpdateHoldStatus(resolveTournamentId(req));
-    return res.json({ success: true, ...status });
+    return res.json({ success: true, ...status, license: await licenseHandoff() });
   } catch (error) {
     // csm treats any non-200 as "hold", so a failure here pauses updates
     // rather than letting a host restart a server MAT cannot vouch for.
@@ -91,5 +121,17 @@ router.get('/update-hold', validateServerToken, async (req: Request, res: Respon
     });
   }
 });
+
+/** The license for csm, or null when it can't be read — never a failed hold. */
+async function licenseHandoff(): Promise<ServerLicenseHandoff | null> {
+  try {
+    return await getLicenseHandoff();
+  } catch (error) {
+    log.warn('[UPDATE HOLD] Could not read the license key for csm; sending none this poll', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  }
+}
 
 export default router;

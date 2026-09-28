@@ -251,51 +251,51 @@
     }
   },
   "license": {
-    "title": "License",
-    "description": "Paste your Auto Tournament license key for commercial use. It is checked on this server, offline. A license never locks or limits anything: if something is off, it shows here as a notice.",
-    "loading": "Loading the license status",
-    "loadFailed": "Could not read the license status.",
-    "none": "No commercial license key. Free for non-commercial use.",
-    "pricing": "Pricing",
-    "open": "Settings",
-    "id": "License ID {{id}}",
-    "verify": "Check this license",
-    "invalid": "This key could not be verified.",
-    "invalidShort": "The saved key could not be verified.",
-    "warningsShort_one": "1 license notice in Settings.",
-    "warningsShort_other": "{{count}} license notices in Settings.",
-    "warningsNote": "Nothing is blocked or limited. This is only a notice.",
-    "label": "License key",
-    "replaceLabel": "Replace the license key",
-    "helper": "Starts with ATL1. After saving, only the license ID is shown.",
-    "save": "Save key",
-    "saved": "License key saved",
-    "saveFailed": "Could not save the license key",
-    "remove": "Remove key",
-    "removed": "License key removed",
-    "removeFailed": "Could not remove the license key",
+    "title": "Licence",
+    "description": "Collez votre clé de licence Auto Tournament pour un usage commercial. Elle est vérifiée sur ce serveur, hors ligne. Une licence ne bloque ni ne limite jamais rien : en cas de problème, un simple avis s’affiche ici.",
+    "loading": "Chargement de l’état de la licence",
+    "loadFailed": "Impossible de lire l’état de la licence.",
+    "none": "Aucune clé de licence commerciale. Gratuit pour un usage non commercial ; un usage commercial nécessite une licence.",
+    "pricing": "Tarifs",
+    "open": "Paramètres",
+    "id": "ID de licence {{id}}",
+    "verify": "Vérifier cette licence",
+    "invalid": "Cette clé n’a pas pu être vérifiée.",
+    "invalidShort": "La clé enregistrée n’a pas pu être vérifiée.",
+    "warningsShort_one": "1 avis de licence dans les paramètres.",
+    "warningsShort_other": "{{count}} avis de licence dans les paramètres.",
+    "warningsNote": "Rien n’est bloqué ni limité. Ce n’est qu’un avis.",
+    "label": "Clé de licence",
+    "replaceLabel": "Remplacer la clé de licence",
+    "helper": "Commence par ATL1. Après l’enregistrement, seul l’ID de la licence est affiché.",
+    "save": "Enregistrer la clé",
+    "saved": "Clé de licence enregistrée",
+    "saveFailed": "Impossible d’enregistrer la clé de licence",
+    "remove": "Supprimer la clé",
+    "removed": "Clé de licence supprimée",
+    "removeFailed": "Impossible de supprimer la clé de licence",
     "summary": {
-      "licensedTo": "Licensed to {{licensee}}",
-      "licensed": "Licensed",
+      "licensedTo": "Sous licence pour {{licensee}}",
+      "licensed": "Sous licence",
       "product": {
-        "platform": "Platform {{pack}}",
-        "servers": "Servers {{pack}}"
+        "platform": "Plateforme {{pack}}",
+        "servers": "Serveurs {{pack}}"
       },
-      "servers_one": "{{count}} server",
-      "servers_other": "{{count}} servers",
-      "updatesUntil": "updates until {{date}}",
-      "updatesForLife": "updates for life",
-      "eventWindow": "event {{from}} to {{to}}"
+      "servers_one": "{{count}} serveur",
+      "servers_other": "{{count}} serveurs",
+      "updatesUntil": "mises à jour jusqu’au {{date}}",
+      "updatesForLife": "mises à jour à vie",
+      "eventWindow": "événement du {{from}} au {{to}}"
     },
     "badge": {
-      "label": "Show \"Licensed\" on public event pages",
-      "note": "Off by default. Links to the license's public check page, and only shows while the saved key is valid.",
-      "on": "Public license line turned on",
-      "off": "Public license line turned off",
-      "failed": "Could not change the public license line"
+      "label": "Afficher « Sous licence » sur les pages publiques d’événement",
+      "note": "Désactivé par défaut. Renvoie vers la page publique de vérification de la licence et ne s’affiche que tant que la clé enregistrée est valide.",
+      "on": "Ligne de licence publique activée",
+      "off": "Ligne de licence publique désactivée",
+      "failed": "Impossible de modifier la ligne de licence publique"
     },
     "public": {
-      "licensed": "Licensed"
+      "licensed": "Sous licence"
     }
   }
 }

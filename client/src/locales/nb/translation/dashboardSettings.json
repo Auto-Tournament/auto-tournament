@@ -255,7 +255,7 @@
     "description": "Lim inn Auto Tournament-lisensnøkkelen for kommersiell bruk. Den sjekkes på denne serveren, uten nett. En lisens låser eller begrenser aldri noe: er noe galt, vises det her som en merknad.",
     "loading": "Laster lisensstatus",
     "loadFailed": "Kunne ikke lese lisensstatusen.",
-    "none": "Ingen kommersiell lisensnøkkel. Gratis for ikke-kommersiell bruk.",
+    "none": "Ingen kommersiell lisensnøkkel. Gratis for ikke-kommersiell bruk; kommersiell bruk krever en lisens.",
     "pricing": "Priser",
     "open": "Innstillinger",
     "id": "Lisens-ID {{id}}",
