@@ -23,6 +23,7 @@ import vetoRoutes from '../veto/routes';
 import mapRoutes from '../maps/routes';
 import mapPoolRoutes from '../maps/poolRoutes';
 import matchConnectRoutes from './matchConnect';
+import roundBackupRoutes from './roundBackups';
 import testHelperRoutes from './testHelpers';
 import { fleetAdminRouter, fleetEnrollRouter } from '../fleet/routes';
 
@@ -102,6 +103,15 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     router: matchConnectRoutes,
     title: 'Match connect',
     description: 'How a player joins a CS2 match: its server, status and current map.',
+  },
+  {
+    // Admin only, per route (requireAuth on each): the router shares its
+    // prefix with the public match connect route above.
+    prefix: '/api/game/cs2',
+    router: roundBackupRoutes,
+    title: 'Round backups',
+    description:
+      "A CS2 match's round backups (Ready Up servers send them inline) and \"restore to round N\" over the fleet link or RCON, audited.",
   },
   {
     // Ready Up fleet (FLEET.md). Enrollment is public (a code or fleet key is
