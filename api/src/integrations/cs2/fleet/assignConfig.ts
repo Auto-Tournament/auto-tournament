@@ -30,6 +30,7 @@ import type {
   AssignTeam,
   MapSides,
   MatchRules,
+  MatchUpdateOp,
   PlayerRole,
 } from './protocol/v1';
 
@@ -261,4 +262,45 @@ export function buildAssignConfig(
   const cvars = engineCvars(config.cvars);
   if (cvars) out.cvars = cvars;
   return out;
+}
+
+function rosterOf(config: Pick<AssignConfig, 'team1' | 'team2' | 'spectators'>): Map<string, { team: 'team1' | 'team2' | 'spectator'; player: AssignPlayer }> {
+  const out = new Map<string, { team: 'team1' | 'team2' | 'spectator'; player: AssignPlayer }>();
+  for (const team of ['team1', 'team2'] as const) {
+    for (const player of config[team].players) out.set(player.steamid64, { team, player });
+  }
+  for (const id of config.spectators ?? []) {
+    if (!out.has(id)) out.set(id, { team: 'spectator', player: { steamid64: id, name: id } });
+  }
+  return out;
+}
+
+/** The ops that turn `from` into `to`: team names, players in and out (a moved player is removed, then added). */
+export function diffAssignConfig(
+  from: Pick<AssignConfig, 'team1' | 'team2' | 'spectators'>,
+  to: Pick<AssignConfig, 'team1' | 'team2' | 'spectators'>
+): MatchUpdateOp[] {
+  const ops: MatchUpdateOp[] = [];
+  for (const team of ['team1', 'team2'] as const) {
+    if (from[team].name !== to[team].name) ops.push({ op: 'rename_team', team, name: to[team].name });
+  }
+  const before = rosterOf(from);
+  const after = rosterOf(to);
+  for (const [id, was] of before) {
+    const now = after.get(id);
+    if (!now || now.team !== was.team) ops.push({ op: 'remove_player', steamid64: id });
+  }
+  for (const [id, now] of after) {
+    const was = before.get(id);
+    if (!was || was.team !== now.team) {
+      ops.push({
+        op: 'add_player',
+        team: now.team,
+        steamid64: id,
+        name: now.player.name,
+        ...(now.player.role ? { role: now.player.role } : {}),
+      });
+    }
+  }
+  return ops;
 }

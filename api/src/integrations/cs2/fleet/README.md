@@ -25,12 +25,17 @@ admin actions): what exists, and the calls to use.
 | `mergePatch.ts` | RFC 7386 merge patch, diff for the drift check |
 | `normalize.ts` | fleet `event.*` → `NormalizedEvent[]` (pure) |
 | `ingest.ts` | normalize → `events/matchEvents.applyNormalizedEvents` → `matchLifecycle.ingest` |
+| `link.ts` | which `cs2_servers` row a fleet server plays matches as (`transport = 'fleet'`) |
+| `assignConfig.ts` | the served match config → `match.assign.config` (typed `rules`, engine `cvars`), roster diff (pure) |
+| `driver.ts` | **the fleet driver**: assign / unassign / update / cmd, link hooks (see below) |
 
 Tables (migration `006-fleet-match` in `../migrations.ts`):
 `cs2_servers.transport` (`'rcon'` default | `'fleet'`) + `cs2_servers.fleet_server_id`
 (→ `cs2_fleet_servers.id`, unique), `cs2_match_live_state`, `cs2_fleet_events`,
-`cs2_fleet_commands`. Nothing sets `transport = 'fleet'` yet: that is the
-driver's (allocation) job.
+`cs2_fleet_commands`. Migration `007-fleet-driver`: `cs2_fleet_assignments`
+(epoch, server, connect password, acked config per match) and `cs2_fleet_audit`
+(root `exec`). `transport = 'fleet'` is set by linking a server
+(`POST /api/fleet/servers/:id/link`, the Servers page's "Use for matches").
 
 ## Sending: `sendReliable(serverId, { type, payload, epoch? })`
 
@@ -69,9 +74,38 @@ if (answer?.status === 'rejected') { /* answer.errorCode: busy | invalid_config 
 - `requestSnapshot(serverId, epoch?)` sends an ephemeral `state.request`
   (only when online). The gateway already does this on its own for a rev gap.
 
-Not done here (driver): building `config` from `matchConfig.ts` (maps,
-sides, `password`, `rules`, `cvars`), which server to pick, retries on
-`busy`, `match.unassign {superseded}` after a stale hello, admins.set revs.
+## The driver (`driver.ts`, `../driver.ts`)
+
+The CS2 pool (`../allocation.ts`) goes through `driverFor(serverId)`
+(`../driver.ts`): `rconDriver` is the Auto Tournament CS2 path as it was,
+`fleetDriver` this one. A `ServerDriver` has `loadMatch`, `cancelQueuedLoad`,
+`checkIdle`, `endMatch`, `resetServer`, `stopForReload`, `releaseForMove`,
+`seriesDone`.
+
+| Platform action | Fleet |
+|---|---|
+| allocate / load | `assignMatch`: config from the served match config (`assignConfig.ts`), new epoch (`beginAssignment`), new password, `match.assign`, wait for `cmd.result` (15 s, `FLEET_ASSIGN_TIMEOUT_MS`). `busy` / `draining` / no answer → the pool tries the next server; no answer is also unassigned so it cannot start later |
+| series over (core `release`) | `match.unassign {ended}` (kick after Ready Up's series-end delay) |
+| force-cancel | `match.unassign {cancelled}` + kick message |
+| tournament restart / reset / delete | `match.unassign {admin}` for every open assignment |
+| restart in place | `match.unassign {admin}`, then a new assign (new epoch) |
+| move | `match.unassign {moved}` + "Match moved…" kick |
+| roster / names | `syncMatch` / `addPlayer` → `match.update` (CAS on config_rev, one retry on `conflict`) |
+| admin buttons (`/api/rcon/*`) | `runFleetCommand` → `cmd`, the route answers with the `cmd.result`; raw commands → `exec`, root only (`ADMIN_STEAM_IDS` or an admin API token), audit row first |
+
+Allocation: a linked server is free when its socket is up, it reports
+`available`, the database has no loaded/live match on it, and turnover holds
+nothing (`event.series_end`, `event.demo` feed `serverTurnoverTracker`).
+
+Hooks (`startFleetDriver`, from `../startup.ts` before the gateway):
+`welcome.assignment` = the open assignment whose epoch the server holds
+(reconnect mid-match resumes); a `hello.state` or events with an epoch below
+the match's → `match.unassign {superseded}` (once per server/match/epoch);
+`event.admin_called` → the core's admin calls; `server.availability
+available` → an allocation pass.
+
+The connect password (`connectPasswordFor`) is in
+`/api/game/cs2/matches/:slug/connect` for the roster and admins only.
 
 ## The live state store: `liveStateStore` (`state.ts`)
 
