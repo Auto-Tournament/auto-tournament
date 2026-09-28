@@ -20,6 +20,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-postgres}
       - DB_NAME=SHARD_DB_NAME
       - VITE_ENABLE_DEV_PAGE=true
+      - AT_ACCEPT_LICENSE=noncommercial
     volumes:
       - ./data:/app/data
     healthcheck:

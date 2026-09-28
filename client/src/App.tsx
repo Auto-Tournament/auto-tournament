@@ -42,6 +42,8 @@ import NotFound from './pages/NotFound';
 import { theme } from './theme';
 import { GamesOnboardingRedirect } from './components/games/GamesOnboardingRedirect';
 import WelcomeGames from './pages/WelcomeGames';
+import LicenseConsent from './pages/LicenseConsent';
+import { LicenseConsentGate } from './components/license/LicenseConsentGate';
 import { ImpersonationBanner } from './components/common/ImpersonationBanner';
 import { listRouteIntegrations } from './integrations/registry';
 import { useModuleState } from './module-loader/useModuleState';
@@ -203,7 +205,12 @@ function RootRoute() {
     if (needsSteamLink && location.pathname !== paths.connectSteam) {
       return <Navigate to={paths.connectSteam} replace />;
     }
-    return <Layout />;
+    // The admin shell opens once the license terms are accepted.
+    return (
+      <LicenseConsentGate>
+        <Layout />
+      </LicenseConsentGate>
+    );
   }
 
   if (playerSteamId) {
@@ -278,6 +285,18 @@ function AppRoutes() {
         }
       />
 
+      {/* Accepting the license terms: required once before the admin UI
+          (LicenseConsentGate sends admins here). Admin only; players and
+          public pages never see it. */}
+      <Route
+        path={paths.licenseConsent}
+        element={
+          <ProtectedRoute>
+            <LicenseConsent />
+          </ProtectedRoute>
+        }
+      />
+
       {/* Admin-only pages outside the shell, owned by a game integration */}
       {integrationRoutes
         .filter((route) => route.scope === 'admin-standalone')
@@ -285,7 +304,11 @@ function AppRoutes() {
           <Route
             key={route.path}
             path={route.path}
-            element={<ProtectedRoute>{route.element}</ProtectedRoute>}
+            element={
+              <ProtectedRoute>
+                <LicenseConsentGate>{route.element}</LicenseConsentGate>
+              </ProtectedRoute>
+            }
           />
         ))}
 

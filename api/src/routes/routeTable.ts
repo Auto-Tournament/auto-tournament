@@ -204,7 +204,7 @@ const coreRoutes: MountedRouter[] = [
     router: licenseRoutes,
     title: 'License',
     description:
-      'The Auto Tournament license key: save, remove and read its status, checked offline. Admin only, except the public badge. Nothing is ever blocked: a missing or problematic key is a notice for admins.',
+      'The Auto Tournament license key: save, remove and read its status, checked offline; and the one-time acceptance of the license terms (non-commercial or commercial use) that the admin UI waits for. Admin only, except the public badge. Nothing else is ever blocked: a missing or problematic key is a notice for admins.',
   },
   {
     prefix: '/api/test',

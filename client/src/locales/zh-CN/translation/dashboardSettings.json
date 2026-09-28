@@ -296,6 +296,50 @@
     },
     "public": {
       "licensed": "已授权"
+    },
+    "consent": {
+      "title": "开始之前：许可证",
+      "subtitle": "Auto Tournament 可免费用于非商业用途。商业用途需要许可证。请阅读简要说明，告诉我们你的用途，然后输入 I AGREE。",
+      "intro": "Auto Tournament 的源代码以 {{name}} 公开。简而言之：",
+      "points": {
+        "free": "个人使用、业余项目、学习，以及没有人从中赚钱的活动，均可免费使用。",
+        "orgs": "慈善机构、中小学、大学、公共研究机构和政府机构可免费使用，即使收取入场费。",
+        "commercial": "商业用途需要许可证，包括付费托管、出售本软件或基于它的服务、盈利的活动、在企业内部使用，以及收费为他人部署。",
+        "servers": "每台游戏服务器都计入许可证。",
+        "nothingLocked": "没有密钥也不会锁定或限制任何功能。你可以现在或以后添加密钥。",
+        "forks": "你可以修改和分享代码。请附上许可证，规则相同。"
+      },
+      "readLicense": "阅读完整许可证",
+      "readRules": "许可与商业用途",
+      "summaryNote": "以上为摘要。如与许可证不一致，以许可证为准。",
+      "useQuestion": "此实例的用途是？",
+      "use": {
+        "noncommercial": "个人 / 非商业",
+        "noncommercialHint": "免费。没有人从中赚钱。",
+        "commercial": "商业",
+        "commercialHint": "你需要许可证。现在或以后粘贴密钥均可。"
+      },
+      "keyLabel": "许可证密钥（可选）",
+      "keyHelper": "以 ATL1. 开头。你也可以稍后在 设置 > 许可证 中添加。",
+      "confirmLabel": "输入 {{phrase}} 以接受许可条款",
+      "confirmHelper": "输入 {{phrase}} 即表示你为此实例接受许可条款。",
+      "accept": "接受并继续",
+      "cancel": "取消",
+      "failed": "无法保存你的回答",
+      "accepted": "已接受许可条款",
+      "termsChanged": "许可条款自上次接受后已更改。请阅读并重新接受。",
+      "onlyAdmins": "只有管理员会看到此页面，每个实例一次。玩家、公开页面和进行中的比赛不受影响。",
+      "declared": {
+        "noncommercial": "非商业用途",
+        "commercial": "商业用途",
+        "none": "尚未接受许可条款"
+      },
+      "acceptedLine": "{{who}} 于 {{date}} 接受了条款（条款版本 {{version}}）",
+      "byEnv": "AT_ACCEPT_LICENSE 设置",
+      "change": "更改",
+      "changeTitle": "更改此实例的用途",
+      "changeNote": "重新选择并输入 I AGREE。更改会连同日期和你的账号一起保存。",
+      "commercialNoKey": "此实例用于商业用途，因此你需要许可证。请在下方粘贴密钥。缺少密钥时不会锁定任何功能。"
     }
   }
 }

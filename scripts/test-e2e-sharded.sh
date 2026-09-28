@@ -154,6 +154,7 @@ start_api_container() {
     -e DB_PASSWORD="${DB_PASSWORD}" \
     -e DB_NAME="${db_name}" \
     -e VITE_ENABLE_DEV_PAGE=true \
+    -e AT_ACCEPT_LICENSE=noncommercial \
     -v "$(pwd)/docker/data:/app/data" \
     "${IMAGE_TAG}" >/dev/null
 

@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 342 of them, 243 behind auth —
+Every endpoint this API serves — 345 of them, 246 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -565,7 +565,7 @@ Players calling for an admin from a game server (CS2: `.admin [message]` in Read
 
 ### License
 
-The Auto Tournament license key: save, remove and read its status, checked offline. Admin only, except the public badge. Nothing is ever blocked: a missing or problematic key is a notice for admins.
+The Auto Tournament license key: save, remove and read its status, checked offline; and the one-time acceptance of the license terms (non-commercial or commercial use) that the admin UI waits for. Admin only, except the public badge. Nothing else is ever blocked: a missing or problematic key is a notice for admins.
 
 | Method | Path | Auth |
 | --- | --- | --- |
@@ -574,6 +574,8 @@ The Auto Tournament license key: save, remove and read its status, checked offli
 | `PUT` | `/api/license` | admin |
 | `DELETE` | `/api/license` | admin |
 | `PUT` | `/api/license/public-badge` | admin |
+| `GET` | `/api/license/consent` | admin |
+| `POST` | `/api/license/consent` | admin |
 
 ### Test helpers
 
@@ -649,6 +651,7 @@ E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
 | `GET` | `/api/test/fake-catalog/releases/:file` | public |
 | `GET` | `/api/test/fake-catalog/packs/:file` | public |
 | `GET` | `/api/test/fake-catalog/icons/:file` | public |
+| `POST` | `/api/test/license-consent` | admin |
 
 ### Auth
 

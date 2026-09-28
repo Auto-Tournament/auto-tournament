@@ -64,6 +64,9 @@ services:
       # Register the test-only fake game integration (integrations/fake) for
       # E2E runs. Needs ENABLE_TEST_ENDPOINTS too; off by default.
       - MAT_TEST_INTEGRATION=${MAT_TEST_INTEGRATION:-0}
+      # Accept the license terms up front (the E2E scripts set it). Unset, the
+      # first admin accepts them in the browser.
+      - AT_ACCEPT_LICENSE=${AT_ACCEPT_LICENSE:-}
       # Built-in game enrichment (gameEnrichmentService) calls real Wikidata;
       # keep it off for local "prod-like" and E2E stacks by default.
       - GAMES_ENRICH=${GAMES_ENRICH:-off}
