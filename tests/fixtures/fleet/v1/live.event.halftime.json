@@ -1,0 +1,36 @@
+{
+  "v": 1,
+  "type": "event.halftime",
+  "id": "01M3BB503E0YM2ZV9ZB840Z60K",
+  "seq": 53,
+  "ack": 17,
+  "ts": 1790308417646,
+  "ref": null,
+  "epoch": 2,
+  "payload": {
+    "match_id": "lt-1790308176",
+    "map_number": 1,
+    "round": 3,
+    "rev": 35,
+    "patch": {
+      "live_rev": 35,
+      "teams": {
+        "team1": {
+          "side": "t"
+        },
+        "team2": {
+          "side": "ct"
+        }
+      },
+      "round": {
+        "number": 3
+      }
+    },
+    "data": {
+      "score": {
+        "team1": 2,
+        "team2": 0
+      }
+    }
+  }
+}

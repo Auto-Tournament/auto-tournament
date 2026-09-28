@@ -1,0 +1,14 @@
+{
+  "v": 1,
+  "type": "admins.set",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9P10",
+  "ts": 1790340012345,
+  "seq": 81,
+  "payload": {
+    "rev": 7,
+    "admins": [
+      { "steamid64": "76561198000000001", "name": "alice" },
+      { "steamid64": "76561198000000002", "name": "bob" }
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "v": 1,
+  "type": "cmd.result",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9P08",
+  "ts": 1790340012345,
+  "seq": 1901,
+  "epoch": 1,
+  "ref": "01J8ZQ4T8W6N3X0F2R5K7M9P02",
+  "payload": {
+    "status": "rejected",
+    "error": {
+      "code": "conflict",
+      "message": "base_config_rev 1 != server config_rev 2"
+    },
+    "rev": 2
+  }
+}

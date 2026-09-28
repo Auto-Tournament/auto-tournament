@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/event.phase.json",
+  "title": "event.phase (server → platform, reliable)",
+  "description": "Match event (FLEET.md §8.1), source: MatchState diff. Envelope epoch = the assignment's. `rev` / `patch` continue the MatchState stream (see match.defs.json#/$defs/rev); `data` holds the facts.",
+  "type": "object",
+  "required": [
+    "match_id",
+    "map_number",
+    "rev",
+    "patch",
+    "data"
+  ],
+  "properties": {
+    "match_id": {
+      "$ref": "../match.defs.json#/$defs/matchId"
+    },
+    "map_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "round": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "rev": {
+      "$ref": "../match.defs.json#/$defs/rev"
+    },
+    "patch": {
+      "$ref": "../match.defs.json#/$defs/patch"
+    },
+    "data": {
+      "type": "object",
+      "required": [
+        "from",
+        "to",
+        "reason"
+      ],
+      "properties": {
+        "from": {
+          "$ref": "../match.defs.json#/$defs/phase"
+        },
+        "to": {
+          "$ref": "../match.defs.json#/$defs/phase"
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 64,
+          "description": "flow | assign | offline | cmd:<name>"
+        }
+      }
+    }
+  }
+}

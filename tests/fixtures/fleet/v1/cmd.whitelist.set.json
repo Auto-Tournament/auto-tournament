@@ -1,0 +1,24 @@
+{
+  "v": 1,
+  "type": "cmd",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9P11",
+  "ts": 1790340012345,
+  "seq": 90,
+  "payload": {
+    "name": "whitelist.set",
+    "args": {
+      "enabled": true,
+      "steamids": [
+        "76561198000000001",
+        "76561198000000002"
+      ]
+    },
+    "issued_by": {
+      "user_id": "u_1",
+      "name": "Admin",
+      "root": false
+    },
+    "expires_at": 0,
+    "audit_id": "aud_01J8ZR"
+  }
+}

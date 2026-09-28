@@ -1,0 +1,502 @@
+{
+  "v": 1,
+  "type": "state.snapshot",
+  "id": "01M3BB155HAJNTNQWHCZEYW0WW",
+  "ack": 8,
+  "ts": 1790308291761,
+  "ref": null,
+  "epoch": 2,
+  "payload": {
+    "reason": "periodic",
+    "state": {
+      "match_id": "lt-1790308176",
+      "epoch": 2,
+      "server_id": "srv_livetest",
+      "config_rev": 2,
+      "live_rev": 14,
+      "phase": "live",
+      "series": {
+        "num_maps": 1,
+        "current_map": 1,
+        "score": {
+          "team1": 0,
+          "team2": 0
+        },
+        "maps": {
+          "1": {
+            "name": "de_dust2",
+            "sides": "knife",
+            "status": "live",
+            "score": {
+              "team1": 0,
+              "team2": 0
+            },
+            "demo": {
+              "file": "2026-09-24_22-51-19_3339434858441406_de_dust2_LT_Alpha_vs_LiveTestB.dem",
+              "state": "recording"
+            }
+          }
+        }
+      },
+      "teams": {
+        "team1": {
+          "id": "lt_a",
+          "name": "LT Alpha",
+          "score": 0,
+          "score_ct": 0,
+          "score_t": 0,
+          "players": {},
+          "side": "ct"
+        },
+        "team2": {
+          "id": "lt_b",
+          "name": "LiveTestB",
+          "score": 0,
+          "score_ct": 0,
+          "score_t": 0,
+          "players": {},
+          "side": "t"
+        }
+      },
+      "spectators": {},
+      "ready": {
+        "required_per_team": 0,
+        "ready": 0,
+        "total": 0
+      },
+      "knife": {
+        "status": "none"
+      },
+      "pause": {
+        "active": false,
+        "unpause": {
+          "team1": false,
+          "team2": false
+        },
+        "used": {
+          "team1": {
+            "tactical": 0,
+            "technical": 0
+          },
+          "team2": {
+            "tactical": 0,
+            "technical": 0
+          }
+        }
+      },
+      "round": {
+        "number": 1
+      },
+      "backups": {
+        "latest_round": 2
+      },
+      "rules": {
+        "max_rounds": 4,
+        "overtime": {
+          "enabled": false,
+          "rounds_per_half": 3
+        },
+        "knife": {
+          "side_pick_seconds": 5
+        },
+        "clinch_series": true
+      }
+    },
+    "availability": "busy",
+    "config_rev": 2,
+    "admins_rev": 0,
+    "map_stats": {
+      "live": true,
+      "team1_is_ct": true,
+      "team1": {
+        "score": 0,
+        "score_ct": 0,
+        "score_t": 0
+      },
+      "team2": {
+        "score": 0,
+        "score_ct": 0,
+        "score_t": 0
+      },
+      "players": [
+        {
+          "id": "12731676150871359538",
+          "name": "Rezan",
+          "team": 1,
+          "last_side": 3,
+          "bot": true,
+          "stats": {
+            "kills": 0,
+            "deaths": 0,
+            "assists": 0,
+            "flash_assists": 0,
+            "team_kills": 0,
+            "suicides": 0,
+            "headshot_kills": 0,
+            "knife_kills": 0,
+            "damage": 0,
+            "utility_damage": 0,
+            "enemies_flashed": 0,
+            "friendlies_flashed": 0,
+            "bomb_plants": 0,
+            "bomb_defuses": 0,
+            "entry_kills_t": 0,
+            "entry_kills_ct": 0,
+            "entry_deaths_t": 0,
+            "entry_deaths_ct": 0,
+            "trade_kills": 0,
+            "traded_deaths": 0,
+            "kast_rounds": 0,
+            "rounds_played": 0,
+            "mvp": 0,
+            "score": 0,
+            "multi_kills": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "clutches_won": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "id": "12731676150871359539",
+          "name": "Skullhead",
+          "team": 1,
+          "last_side": 3,
+          "bot": true,
+          "stats": {
+            "kills": 0,
+            "deaths": 0,
+            "assists": 0,
+            "flash_assists": 0,
+            "team_kills": 0,
+            "suicides": 0,
+            "headshot_kills": 0,
+            "knife_kills": 0,
+            "damage": 0,
+            "utility_damage": 0,
+            "enemies_flashed": 0,
+            "friendlies_flashed": 0,
+            "bomb_plants": 0,
+            "bomb_defuses": 0,
+            "entry_kills_t": 0,
+            "entry_kills_ct": 0,
+            "entry_deaths_t": 0,
+            "entry_deaths_ct": 0,
+            "trade_kills": 0,
+            "traded_deaths": 0,
+            "kast_rounds": 0,
+            "rounds_played": 0,
+            "mvp": 0,
+            "score": 0,
+            "multi_kills": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "clutches_won": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "id": "12731676150871359540",
+          "name": "Mangos",
+          "team": 1,
+          "last_side": 3,
+          "bot": true,
+          "stats": {
+            "kills": 0,
+            "deaths": 0,
+            "assists": 0,
+            "flash_assists": 0,
+            "team_kills": 0,
+            "suicides": 0,
+            "headshot_kills": 0,
+            "knife_kills": 0,
+            "damage": 0,
+            "utility_damage": 0,
+            "enemies_flashed": 0,
+            "friendlies_flashed": 0,
+            "bomb_plants": 0,
+            "bomb_defuses": 0,
+            "entry_kills_t": 0,
+            "entry_kills_ct": 0,
+            "entry_deaths_t": 0,
+            "entry_deaths_ct": 0,
+            "trade_kills": 0,
+            "traded_deaths": 0,
+            "kast_rounds": 0,
+            "rounds_played": 0,
+            "mvp": 0,
+            "score": 0,
+            "multi_kills": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "clutches_won": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "id": "12731676150871359541",
+          "name": "Specialist",
+          "team": 1,
+          "last_side": 3,
+          "bot": true,
+          "stats": {
+            "kills": 0,
+            "deaths": 0,
+            "assists": 0,
+            "flash_assists": 0,
+            "team_kills": 0,
+            "suicides": 0,
+            "headshot_kills": 0,
+            "knife_kills": 0,
+            "damage": 0,
+            "utility_damage": 0,
+            "enemies_flashed": 0,
+            "friendlies_flashed": 0,
+            "bomb_plants": 0,
+            "bomb_defuses": 0,
+            "entry_kills_t": 0,
+            "entry_kills_ct": 0,
+            "entry_deaths_t": 0,
+            "entry_deaths_ct": 0,
+            "trade_kills": 0,
+            "traded_deaths": 0,
+            "kast_rounds": 0,
+            "rounds_played": 0,
+            "mvp": 0,
+            "score": 0,
+            "multi_kills": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "clutches_won": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "id": "12731676150871359534",
+          "name": "Kev",
+          "team": 2,
+          "last_side": 2,
+          "bot": true,
+          "stats": {
+            "kills": 0,
+            "deaths": 0,
+            "assists": 0,
+            "flash_assists": 0,
+            "team_kills": 0,
+            "suicides": 0,
+            "headshot_kills": 0,
+            "knife_kills": 0,
+            "damage": 0,
+            "utility_damage": 0,
+            "enemies_flashed": 0,
+            "friendlies_flashed": 0,
+            "bomb_plants": 0,
+            "bomb_defuses": 0,
+            "entry_kills_t": 0,
+            "entry_kills_ct": 0,
+            "entry_deaths_t": 0,
+            "entry_deaths_ct": 0,
+            "trade_kills": 0,
+            "traded_deaths": 0,
+            "kast_rounds": 0,
+            "rounds_played": 0,
+            "mvp": 0,
+            "score": 0,
+            "multi_kills": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "clutches_won": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "id": "12731676150871359535",
+          "name": "Blackwolf",
+          "team": 2,
+          "last_side": 2,
+          "bot": true,
+          "stats": {
+            "kills": 0,
+            "deaths": 0,
+            "assists": 0,
+            "flash_assists": 0,
+            "team_kills": 0,
+            "suicides": 0,
+            "headshot_kills": 0,
+            "knife_kills": 0,
+            "damage": 0,
+            "utility_damage": 0,
+            "enemies_flashed": 0,
+            "friendlies_flashed": 0,
+            "bomb_plants": 0,
+            "bomb_defuses": 0,
+            "entry_kills_t": 0,
+            "entry_kills_ct": 0,
+            "entry_deaths_t": 0,
+            "entry_deaths_ct": 0,
+            "trade_kills": 0,
+            "traded_deaths": 0,
+            "kast_rounds": 0,
+            "rounds_played": 0,
+            "mvp": 0,
+            "score": 0,
+            "multi_kills": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "clutches_won": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "id": "12731676150871359536",
+          "name": "Squad",
+          "team": 2,
+          "last_side": 2,
+          "bot": true,
+          "stats": {
+            "kills": 0,
+            "deaths": 0,
+            "assists": 0,
+            "flash_assists": 0,
+            "team_kills": 0,
+            "suicides": 0,
+            "headshot_kills": 0,
+            "knife_kills": 0,
+            "damage": 0,
+            "utility_damage": 0,
+            "enemies_flashed": 0,
+            "friendlies_flashed": 0,
+            "bomb_plants": 0,
+            "bomb_defuses": 0,
+            "entry_kills_t": 0,
+            "entry_kills_ct": 0,
+            "entry_deaths_t": 0,
+            "entry_deaths_ct": 0,
+            "trade_kills": 0,
+            "traded_deaths": 0,
+            "kast_rounds": 0,
+            "rounds_played": 0,
+            "mvp": 0,
+            "score": 0,
+            "multi_kills": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "clutches_won": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "id": "12731676150871359537",
+          "name": "Romanov",
+          "team": 2,
+          "last_side": 2,
+          "bot": true,
+          "stats": {
+            "kills": 0,
+            "deaths": 0,
+            "assists": 0,
+            "flash_assists": 0,
+            "team_kills": 0,
+            "suicides": 0,
+            "headshot_kills": 0,
+            "knife_kills": 0,
+            "damage": 0,
+            "utility_damage": 0,
+            "enemies_flashed": 0,
+            "friendlies_flashed": 0,
+            "bomb_plants": 0,
+            "bomb_defuses": 0,
+            "entry_kills_t": 0,
+            "entry_kills_ct": 0,
+            "entry_deaths_t": 0,
+            "entry_deaths_ct": 0,
+            "trade_kills": 0,
+            "traded_deaths": 0,
+            "kast_rounds": 0,
+            "rounds_played": 0,
+            "mvp": 0,
+            "score": 0,
+            "multi_kills": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "clutches_won": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "rounds": []
+    }
+  }
+}

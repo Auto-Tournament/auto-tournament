@@ -1,0 +1,43 @@
+{
+  "v": 1,
+  "type": "match.update",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9P02",
+  "ts": 1790340012345,
+  "seq": 79,
+  "epoch": 1,
+  "payload": {
+    "match_id": "ko-r1-m3",
+    "epoch": 1,
+    "base_config_rev": 1,
+    "config_rev": 2,
+    "ops": [
+      {
+        "op": "add_player",
+        "team": "team2",
+        "steamid64": "76561198000000013",
+        "name": "bravo3"
+      },
+      {
+        "op": "remove_player",
+        "steamid64": "76561198000000012"
+      },
+      {
+        "op": "rename_team",
+        "team": "team2",
+        "name": "Bravo Esports"
+      },
+      {
+        "op": "set_password",
+        "password": "n3w-pw"
+      },
+      {
+        "op": "set_rules",
+        "rules": {
+          "knife": {
+            "side_pick_seconds": 45
+          }
+        }
+      }
+    ]
+  }
+}

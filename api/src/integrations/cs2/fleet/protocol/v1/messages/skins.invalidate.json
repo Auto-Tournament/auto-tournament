@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/skins.invalidate.json",
+  "title": "skins.invalidate (platform → server, reliable)",
+  "description": "Proposed by Ready Up (D6, D13, FLEET.md §7.6). Forget a player's loadout: stock items from the next weapon / spawn until the next skins.loadout.",
+  "type": "object",
+  "required": ["steamid64"],
+  "properties": {
+    "steamid64": { "$ref": "../defs.json#/$defs/u64s" }
+  }
+}

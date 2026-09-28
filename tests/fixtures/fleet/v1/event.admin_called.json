@@ -1,0 +1,28 @@
+{
+  "v": 1,
+  "type": "event.admin_called",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9P2A",
+  "ts": 1790340012345,
+  "seq": 1904,
+  "epoch": 1,
+  "payload": {
+    "match_id": "ko-r1-m3",
+    "map_number": 1,
+    "round": 9,
+    "rev": 44,
+    "patch": {
+      "live_rev": 44
+    },
+    "data": {
+      "call_id": "3f2b8c1e-9a4d-4e6f-8b21-7c5d0e9f1a2b",
+      "player": {
+        "steamid64": "76561198000000001",
+        "name": "alice",
+        "team": "team1",
+        "side": "ct"
+      },
+      "message": "smoke bugged on B site",
+      "called_at": "2026-09-25T12:40:12.345Z"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "v": 1,
+  "type": "event.knife_result",
+  "id": "01M3BB0M0JXPBXM466BHDRQ65N",
+  "seq": 16,
+  "ack": 8,
+  "ts": 1790308274194,
+  "ref": null,
+  "epoch": 2,
+  "payload": {
+    "match_id": "lt-1790308176",
+    "map_number": 1,
+    "rev": 7,
+    "patch": {
+      "live_rev": 7,
+      "phase": "side_pick",
+      "knife": {
+        "status": "picking",
+        "winner": "team2"
+      }
+    },
+    "data": {
+      "winner": "team2",
+      "reason": "coin"
+    }
+  }
+}

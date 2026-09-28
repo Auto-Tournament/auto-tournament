@@ -1,0 +1,26 @@
+{
+  "v": 1,
+  "type": "skins.loadout",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9P11",
+  "ts": 1790340012400,
+  "seq": 82,
+  "payload": {
+    "steamid64": "76561198000000001",
+    "rev": 3,
+    "items": {
+      "paints": [
+        { "team": 2, "defindex": 7, "paint": 282, "wear": 0.15, "seed": 661 },
+        { "team": 0, "defindex": 9, "paint": 279, "wear": 0.12, "seed": 0, "stattrak": 1337 },
+        { "team": 3, "defindex": 16, "paint": 309, "wear": 0.03, "seed": 0, "nametag": "Ready Up test" },
+        { "team": 0, "defindex": 507, "paint": 38, "wear": 0.01, "seed": 412 },
+        { "team": 0, "defindex": 5030, "paint": 10037, "wear": 0.2, "seed": 0 }
+      ],
+      "knife": [{ "team": 0, "defindex": 507 }],
+      "gloves": [{ "team": 0, "defindex": 5030 }],
+      "agents": [
+        { "team": 3, "model": "agents/models/ctm_fbi/ctm_fbi_variantb.vmdl" },
+        { "team": 2, "model": "agents/models/tm_leet/tm_leet_variantf.vmdl" }
+      ]
+    }
+  }
+}

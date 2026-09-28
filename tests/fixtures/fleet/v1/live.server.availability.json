@@ -1,0 +1,13 @@
+{
+  "v": 1,
+  "type": "server.availability",
+  "id": "01M3BAZ4FY7SGTCD0XHZCS193T",
+  "seq": 2,
+  "ack": 1,
+  "ts": 1790308225534,
+  "ref": null,
+  "payload": {
+    "availability": "busy",
+    "reason": "assigned"
+  }
+}

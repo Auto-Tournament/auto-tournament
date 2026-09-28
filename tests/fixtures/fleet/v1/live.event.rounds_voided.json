@@ -1,0 +1,33 @@
+{
+  "v": 1,
+  "type": "event.rounds_voided",
+  "id": "01M3BB2RWM5W6XJW348V4NHM9W",
+  "seq": 36,
+  "ack": 13,
+  "ts": 1790308344724,
+  "ref": null,
+  "epoch": 2,
+  "payload": {
+    "match_id": "lt-1790308176",
+    "map_number": 1,
+    "round": 2,
+    "rev": 22,
+    "patch": {
+      "live_rev": 22,
+      "phase": "paused",
+      "pause": {
+        "active": true,
+        "started_at": 1790308344714,
+        "type": "admin",
+        "by": "platform:u_lt"
+      },
+      "round": {
+        "number": 1
+      }
+    },
+    "data": {
+      "from_round": 2,
+      "reason": "restore"
+    }
+  }
+}

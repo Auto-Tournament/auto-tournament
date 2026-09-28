@@ -2,12 +2,16 @@ import fs from 'fs';
 import path from 'path';
 import { test, expect } from '@playwright/test';
 import {
+  FLEET_EVENT_NAMES,
+  FLEET_MESSAGES,
   FLEET_MESSAGE_SCHEMAS,
+  isKnownMessageType,
   validateEnrollRequest,
   validateEnrollResponse,
   validateEnvelope,
   validateMessage,
   validatePayload,
+  type Envelope,
 } from '../../api/src/integrations/cs2/fleet/protocol/v1';
 import {
   enrollmentCodeHash,
@@ -39,6 +43,7 @@ import { envelope, helloPayload } from '../helpers/fleet';
  */
 
 const PROTOCOL_DIR = path.resolve(__dirname, '../../api/src/integrations/cs2/fleet/protocol/v1');
+const EXAMPLES_DIR = path.resolve(__dirname, '../fixtures/fleet/v1');
 
 test.describe('Fleet protocol schemas', () => {
   test('every schema file is JSON with a unique $id under the v1 base', () => {
@@ -140,6 +145,75 @@ test.describe('Fleet protocol schemas', () => {
     expect(validatePayload('no.such_type', {}).ok).toBe(false);
   });
 
+  test("step 3 / D13: every Ready Up example frame validates (envelope + payload)", () => {
+    // tests/fixtures/fleet/v1 is Ready Up's plugins/fleet/protocol/examples/v1;
+    // `live.*.json` are frames it really sent in its live test.
+    const files = fs.readdirSync(EXAMPLES_DIR).filter((f) => f.endsWith('.json'));
+    expect(files.length).toBeGreaterThanOrEqual(40);
+    const seen = new Set<string>();
+    for (const file of files) {
+      const msg = JSON.parse(fs.readFileSync(path.join(EXAMPLES_DIR, file), 'utf8')) as Envelope;
+      expect(validateMessage(msg), `${file}: ${msg.type}`).toEqual({ ok: true, errors: [] });
+      seen.add(msg.type);
+    }
+    for (const type of [
+      'match.assign',
+      'match.update',
+      'match.unassign',
+      'cmd',
+      'cmd.result',
+      'state.request',
+      'state.snapshot',
+      'state.patch',
+      'server.availability',
+      'admins.set',
+      'skins.loadout',
+      'skins.invalidate',
+      'skins.stattrak',
+      'event.round_end',
+      'event.map_result',
+      'event.series_end',
+    ]) {
+      expect(seen.has(type), type).toBe(true);
+    }
+  });
+
+  test('step 3: the new types are registered with their direction', () => {
+    for (const name of FLEET_EVENT_NAMES) {
+      const type = `event.${name}`;
+      expect(isKnownMessageType(type), type).toBe(true);
+      expect(FLEET_MESSAGES[type as keyof typeof FLEET_MESSAGES]).toEqual({ direction: 'server_to_platform', reliable: true });
+    }
+    // Every event.*.json schema is a known event name, and the other way round.
+    const eventFiles = fs
+      .readdirSync(path.join(PROTOCOL_DIR, 'messages'))
+      .filter((f) => f.startsWith('event.'))
+      .map((f) => f.replace(/^event\.|\.json$/g, ''))
+      .sort();
+    expect(eventFiles).toEqual([...FLEET_EVENT_NAMES].sort());
+    for (const type of ['match.assign', 'match.update', 'match.unassign', 'cmd', 'admins.set', 'skins.loadout']) {
+      expect(FLEET_MESSAGES[type as keyof typeof FLEET_MESSAGES]).toEqual({ direction: 'platform_to_server', reliable: true });
+    }
+    expect(FLEET_MESSAGES['state.snapshot']).toEqual({ direction: 'server_to_platform', reliable: false });
+    expect(FLEET_MESSAGES['state.request']).toEqual({ direction: 'platform_to_server', reliable: false });
+  });
+
+  test('step 3: broken frames do not validate', () => {
+    const load = (file: string) => JSON.parse(fs.readFileSync(path.join(EXAMPLES_DIR, file), 'utf8')) as Envelope;
+    const patch = load('live.state.patch.json');
+    expect(validateMessage({ ...patch, payload: { ...patch.payload, rev: 0 } }).ok).toBe(false);
+    expect(validateMessage({ ...patch, payload: { ...patch.payload, match_id: 'bad slug!' } }).ok).toBe(false);
+    const result = load('live.cmd.result.json');
+    expect(validateMessage({ ...result, payload: { status: 'maybe' } }).ok).toBe(false);
+    const assign = load('match.assign.json');
+    const config = (assign.payload as { config: Record<string, unknown> }).config;
+    expect(validateMessage({ ...assign, payload: { ...assign.payload, epoch: 0 } }).ok).toBe(false);
+    expect(validateMessage({ ...assign, payload: { ...assign.payload, config: { ...config, password: 'has space' } } }).ok).toBe(false);
+    const snapshot = load('live.state.snapshot.json');
+    expect(validateMessage({ ...snapshot, payload: { ...snapshot.payload, state: null } }).ok).toBe(true);
+    expect(validateMessage({ ...snapshot, payload: { ...snapshot.payload, reason: 'whenever' } }).ok).toBe(false);
+  });
+
   test('enroll request / response', () => {
     const key = issueFleetKey().value;
     const base = { install_id: 'install-12345678', host: { hostname: 'h', game_port: 27015 } };
@@ -225,10 +299,28 @@ test.describe('Fleet credentials', () => {
     expect(validateModuleMigrations('cs2', CS2_MIGRATIONS, { installedModuleIds: ['cs2'] })).toBeNull();
     const fleet = CS2_MIGRATIONS.find((m) => m.id === '005-fleet');
     expect(fleet).toBeTruthy();
-    expect(CS2_MIGRATIONS[CS2_MIGRATIONS.length - 1]).toBe(fleet);
+    expect(CS2_MIGRATIONS.indexOf(fleet!)).toBe(4);
     for (const table of ['servers', 'tokens', 'enrollment_codes', 'enrollment_keys', 'outbox']) {
       expect(fleet!.up).toContain(`CREATE TABLE IF NOT EXISTS cs2_fleet_${table}`);
     }
     expect(fleet!.up).toContain("tenant_id TEXT NOT NULL DEFAULT 'default'");
+  });
+
+  test('006-fleet-match: transport, live state, event log, commands; idempotent SQL', () => {
+    const m = CS2_MIGRATIONS.find((x) => x.id === '006-fleet-match');
+    expect(m).toBeTruthy();
+    expect(CS2_MIGRATIONS.indexOf(m!)).toBe(5);
+    for (const table of ['cs2_match_live_state', 'cs2_fleet_events', 'cs2_fleet_commands']) {
+      expect(m!.up).toContain(`CREATE TABLE IF NOT EXISTS ${table}`);
+    }
+    expect(m!.up).toContain('ADD COLUMN IF NOT EXISTS transport');
+    expect(m!.up).toContain('ADD COLUMN IF NOT EXISTS fleet_server_id');
+    // persist-before-ack dedupe: one row per (server, stream, seq).
+    expect(m!.up).toMatch(/UNIQUE INDEX IF NOT EXISTS \w+ ON cs2_fleet_events\(server_id, stream_id, seq\)/);
+    // Every statement can run twice.
+    for (const line of m!.up.split('\n').map((l) => l.trim())) {
+      if (/^CREATE (UNIQUE )?(TABLE|INDEX)/.test(line)) expect(line, line).toContain('IF NOT EXISTS');
+      if (/^ALTER TABLE/.test(line)) expect(line, line).toContain('IF NOT EXISTS');
+    }
   });
 });

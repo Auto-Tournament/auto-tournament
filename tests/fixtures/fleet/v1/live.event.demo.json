@@ -1,0 +1,44 @@
+{
+  "v": 1,
+  "type": "event.demo",
+  "id": "01M3BB0RTCCQ1S8SGHHTV66VXQ",
+  "seq": 20,
+  "ack": 8,
+  "ts": 1790308279116,
+  "ref": null,
+  "epoch": 2,
+  "payload": {
+    "match_id": "lt-1790308176",
+    "map_number": 1,
+    "round": 1,
+    "rev": 11,
+    "patch": {
+      "live_rev": 11,
+      "series": {
+        "maps": {
+          "1": {
+            "status": "live",
+            "demo": {
+              "file": "2026-09-24_22-51-19_3339434858441406_de_dust2_LT_Alpha_vs_LiveTestB.dem",
+              "state": "recording"
+            }
+          }
+        }
+      },
+      "round": {
+        "number": 1
+      }
+    },
+    "data": {
+      "type": "recording_started",
+      "matchid": 3339434858441406,
+      "map_number": 1,
+      "file_name": "2026-09-24_22-51-19_3339434858441406_de_dust2_LT_Alpha_vs_LiveTestB.dem",
+      "path": "ReadyUp/2026-09-24_22-51-19_3339434858441406_de_dust2_LT_Alpha_vs_LiveTestB.dem",
+      "size_mb": 0,
+      "http_status": 0,
+      "error": "",
+      "attempts": 0
+    }
+  }
+}

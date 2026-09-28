@@ -1,0 +1,34 @@
+{
+  "v": 1,
+  "type": "event.series_end",
+  "id": "01M3BB5DNJ9E4G1HSTXXCB2P5G",
+  "seq": 58,
+  "ack": 19,
+  "ts": 1790308431538,
+  "ref": null,
+  "epoch": 2,
+  "payload": {
+    "match_id": "lt-1790308176",
+    "map_number": 1,
+    "round": 3,
+    "rev": 38,
+    "patch": {
+      "live_rev": 38,
+      "phase": "series_end",
+      "pause": {
+        "type": null,
+        "by": null,
+        "active": false
+      }
+    },
+    "data": {
+      "type": "series_end",
+      "winner": "none",
+      "reason": "livetest",
+      "forced": true,
+      "team1_series_score": 0,
+      "team2_series_score": 0,
+      "seconds_until_reset": 0
+    }
+  }
+}

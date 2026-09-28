@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/cmd.json",
+  "title": "cmd (platform → server, reliable)",
+  "description": "Admin command (§7.4); exactly one cmd.result each (`ref` = this id). Match commands (pause, unpause, force_ready, start, restore_round, restart_map, end_match, change_map, swap_teams) need match_id + epoch (envelope or payload) of the active assignment. `restart_round` is an alias of restore_round and `end` of end_match. args: pause {type: admin|technical}; force_ready {team?}; restore_round {map_number, round, backup?: InlineBackup (single part)}; end_match {reason, winner?: team1|team2}; change_map {map_number} | {name, workshop_id?}; kick {steamid64, message?}; say {text (≤190 bytes), as_admin?}; plugins.set {enable?: [name], disable?: [name]} (not match / fleet; remembered across restarts); whitelist.set {enabled, steamids?: [SteamID64 string]} (needs whitelist.so); practice.set {on} (needs practice.so; refused while a match is loaded); settings.set {settings?: {<setting>: boolean|number|string}}: server settings of the match plugin, all or none, output = every setting after the change; exec {command}: root only (issued_by.root), one line ≤ 512 bytes, no fleet commands; output = console log lines seen within 0.5 s (≤ 8 KiB). The platform writes the audit row before sending and passes its id in audit_id; the server logs it and echoes it in cmd.result.",
+  "type": "object",
+  "required": [
+    "name",
+    "args",
+    "issued_by",
+    "expires_at"
+  ],
+  "properties": {
+    "match_id": {
+      "$ref": "../match.defs.json#/$defs/matchId"
+    },
+    "epoch": {
+      "$ref": "../match.defs.json#/$defs/epoch"
+    },
+    "name": {
+      "enum": [
+        "pause",
+        "unpause",
+        "force_ready",
+        "start",
+        "restore_round",
+        "restart_map",
+        "end_match",
+        "change_map",
+        "swap_teams",
+        "kick",
+        "say",
+        "snapshot_now",
+        "exec",
+        "restart_round",
+        "end",
+        "plugins.set",
+        "whitelist.set",
+        "practice.set",
+        "settings.set"
+      ]
+    },
+    "args": {
+      "type": "object"
+    },
+    "issued_by": {
+      "type": "object",
+      "required": [
+        "user_id",
+        "name",
+        "root"
+      ],
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "root": {
+          "type": "boolean"
+        }
+      }
+    },
+    "expires_at": {
+      "type": "integer",
+      "description": "unix ms; 0 = never. Past: cmd.result expired, not run"
+    },
+    "audit_id": {
+      "type": "string",
+      "maxLength": 64
+    }
+  }
+}

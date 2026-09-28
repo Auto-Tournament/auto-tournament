@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/match.update.json",
+  "title": "match.update (platform → server, reliable)",
+  "description": "Roster / rule changes mid-match (§7.3). Compare-and-set: applied only when base_config_rev equals the server's config_rev, else cmd.result rejected `conflict` with `rev` = the server's config_rev (plus a state.snapshot). All ops apply or none. On ok, cmd.result.rev = the new config_rev.",
+  "type": "object",
+  "required": [
+    "match_id",
+    "epoch",
+    "base_config_rev",
+    "config_rev",
+    "ops"
+  ],
+  "properties": {
+    "match_id": {
+      "$ref": "../match.defs.json#/$defs/matchId"
+    },
+    "epoch": {
+      "$ref": "../match.defs.json#/$defs/epoch"
+    },
+    "base_config_rev": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "config_rev": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "ops": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "op",
+              "team",
+              "steamid64",
+              "name"
+            ],
+            "properties": {
+              "op": {
+                "const": "add_player"
+              },
+              "team": {
+                "enum": [
+                  "team1",
+                  "team2",
+                  "spectator"
+                ]
+              },
+              "steamid64": {
+                "$ref": "../defs.json#/$defs/u64s"
+              },
+              "name": {
+                "type": "string",
+                "maxLength": 128
+              },
+              "role": {
+                "$ref": "../match.defs.json#/$defs/role"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "op",
+              "steamid64"
+            ],
+            "properties": {
+              "op": {
+                "const": "remove_player"
+              },
+              "steamid64": {
+                "$ref": "../defs.json#/$defs/u64s"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "op",
+              "team",
+              "name"
+            ],
+            "properties": {
+              "op": {
+                "const": "rename_team"
+              },
+              "team": {
+                "$ref": "../match.defs.json#/$defs/teamKey"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "op",
+              "password"
+            ],
+            "properties": {
+              "op": {
+                "const": "set_password"
+              },
+              "password": {
+                "$ref": "../match.defs.json#/$defs/password"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "op",
+              "rules"
+            ],
+            "properties": {
+              "op": {
+                "const": "set_rules"
+              },
+              "rules": {
+                "$ref": "../match.defs.json#/$defs/rules"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

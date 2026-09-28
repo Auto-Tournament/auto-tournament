@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/skins.loadout.json",
+  "title": "skins.loadout (platform → server, reliable)",
+  "description": "Proposed by Ready Up (D6, D13, FLEET.md §7.6). One player's whole loadout; replaces the previous one for that player. Only for servers that advertise the `skins.v1` capability (the skins plugin is loaded) and only when the deployment has skins enabled. Send it on event.player_connect and when the player changes it. A lower rev than the one the server has is ignored. team: 2 = T, 3 = CT, 0 = both (a team-specific entry wins). Same data as the player's rows in the standalone loadouts.json (plugins/skins/docs/json-contract.md), with the knife as a defindex.",
+  "type": "object",
+  "required": ["steamid64", "rev", "items"],
+  "properties": {
+    "steamid64": { "$ref": "../defs.json#/$defs/u64s" },
+    "rev": { "type": "integer", "minimum": 0 },
+    "items": {
+      "type": "object",
+      "required": ["paints"],
+      "properties": {
+        "paints": {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "type": "object",
+            "required": ["team", "defindex", "paint", "wear", "seed"],
+            "properties": {
+              "team": { "enum": [0, 2, 3] },
+              "defindex": { "type": "integer", "minimum": 1 },
+              "paint": { "type": "integer", "minimum": 0 },
+              "wear": { "type": "number", "minimum": 0, "maximum": 1 },
+              "seed": { "type": "integer", "minimum": 0, "maximum": 1000 },
+              "nametag": { "type": "string", "maxLength": 160 },
+              "stattrak": { "type": "integer", "minimum": 0, "description": "present = StatTrak on; the current kill count" }
+            }
+          }
+        },
+        "knife": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "required": ["team", "defindex"],
+            "properties": {
+              "team": { "enum": [0, 2, 3] },
+              "defindex": { "type": "integer", "minimum": 1 }
+            }
+          }
+        },
+        "gloves": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "required": ["team", "defindex"],
+            "properties": {
+              "team": { "enum": [0, 2, 3] },
+              "defindex": { "type": "integer", "minimum": 1 }
+            }
+          }
+        },
+        "agents": {
+          "type": "array",
+          "maxItems": 2,
+          "items": {
+            "type": "object",
+            "required": ["team", "model"],
+            "properties": {
+              "team": { "enum": [2, 3] },
+              "model": { "type": "string", "maxLength": 255 }
+            }
+          }
+        },
+        "music": { "type": "integer", "minimum": 0, "description": "reserved; not applied yet" }
+      }
+    }
+  }
+}

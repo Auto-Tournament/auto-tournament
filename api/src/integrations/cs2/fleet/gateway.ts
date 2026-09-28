@@ -11,6 +11,12 @@
  *   acked (piggybacked, or a standalone `ack` within 1 s / 32 messages).
  *   The platform's own reliable messages go through the outbox in the
  *   database and are replayed after a reconnect until acked (§6.4).
+ * - Step 3 (match state and control, ./inbound): `cmd.result`,
+ *   `state.patch`, `event.*`, `server.availability` and `skins.stattrak` are
+ *   written to `cs2_fleet_events` with the stream position in one
+ *   transaction before they are acked, then applied (state store, normalizer
+ *   + ingest, command answers). An ephemeral `state.snapshot` goes to the
+ *   state store; a rev gap sends `state.request`.
  * - Heartbeat: ping every 10 s, link dead after 30 s without a frame.
  * - Presence: `online`, `last_seen`, versions and health in
  *   `cs2_fleet_servers`.
@@ -35,9 +41,18 @@ import {
   type Envelope,
   type HelloPayload,
   type PingPayload,
+  type StateSnapshotPayload,
   type WelcomePayload,
 } from './protocol/v1';
 import * as registry from './registry';
+import {
+  handleSnapshot,
+  isStoredInboundType,
+  persistInbound,
+  processInbound,
+  replayUnprocessed,
+  type InboundContext,
+} from './inbound';
 
 export const FLEET_WS_PATH = '/api/fleet/ws';
 export const MAX_FRAME_BYTES = 1024 * 1024;
@@ -242,6 +257,15 @@ class FleetSession {
       } else if (msg.type === 'auth.rotated') {
         await registry.confirmRotation(this.serverId as string);
         log.info(`[FLEET] ${this.serverId}: rotated its token`);
+      } else if (isStoredInboundType(msg.type)) {
+        // Step 3 (match state and events): stored with the stream position in
+        // one transaction, acked, then applied (./inbound).
+        const ctx = this.inboundContext();
+        const { rowId } = await persistInbound(ctx, msg);
+        this.rxSeq = seq;
+        this.owe();
+        if (rowId !== null) await processInbound(ctx, msg, rowId);
+        return;
       }
     }
     // Processed (or rejected for good): durable, then acked.
@@ -266,6 +290,15 @@ class FleetSession {
       case 'pong':
       case 'ack':
         return;
+      case 'state.snapshot': {
+        const check = validatePayload('state.snapshot', msg.payload);
+        if (!check.ok) {
+          this.sendError(msg, 'invalid_payload', check.errors.join('; '));
+          return;
+        }
+        await handleSnapshot(this.inboundContext(), msg.payload as unknown as StateSnapshotPayload);
+        return;
+      }
       case 'error': {
         const p = msg.payload as { code?: unknown; message?: unknown };
         log.warn(
@@ -366,6 +399,9 @@ class FleetSession {
     // Replay what the server has not processed of ours.
     this.lastSentSeq = hello.stream.last_rx_seq;
     await this.flushOutbox();
+    // Apply what a platform restart left stored but unapplied, before the
+    // server's own replay (queued behind this) is processed.
+    await replayUnprocessed({ serverId, sendEphemeral: (t, p, extra) => this.sendEphemeral(t, p, undefined, extra) });
     this.pingTimer = setInterval(() => this.sendEphemeral('ping', { t: Date.now() }), this.timings.heartbeatIntervalMs);
     await this.gateway.onReady(serverId);
   }
@@ -391,8 +427,16 @@ class FleetSession {
     this.ackTimer = null;
   }
 
-  sendEphemeral(type: string, payload: Record<string, unknown>, ref?: string): boolean {
-    const text = this.frame({ v: 1, type, id: ulid(), ts: Date.now(), ...(ref ? { ref } : {}), payload });
+  sendEphemeral(type: string, payload: Record<string, unknown>, ref?: string, extra: { epoch?: number } = {}): boolean {
+    const text = this.frame({
+      v: 1,
+      type,
+      id: ulid(),
+      ts: Date.now(),
+      ...(ref ? { ref } : {}),
+      ...(extra.epoch !== undefined ? { epoch: extra.epoch } : {}),
+      payload,
+    });
     if (text === null) return false;
     this.write(text);
     return true;
@@ -438,6 +482,15 @@ class FleetSession {
     if (text === null) return false;
     this.write(text);
     return true;
+  }
+
+  /** How ./inbound sees this session. */
+  private inboundContext(): InboundContext {
+    return {
+      serverId: this.serverId as string,
+      streamId: this.rxStreamId as string,
+      sendEphemeral: (type, payload, extra) => this.sendEphemeral(type, payload, undefined, extra),
+    };
   }
 
   private sendError(about: Envelope, code: string, message: string): void {

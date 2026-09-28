@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/state.patch.json",
+  "title": "state.patch (server → platform, reliable)",
+  "description": "A MatchState change that is not an event (ready counts, connections, scores between events...). Shares the live_rev sequence with event.*: apply when rev == stored_rev + 1.",
+  "type": "object",
+  "required": [
+    "match_id",
+    "rev",
+    "patch"
+  ],
+  "properties": {
+    "match_id": {
+      "$ref": "../match.defs.json#/$defs/matchId"
+    },
+    "rev": {
+      "$ref": "../match.defs.json#/$defs/rev"
+    },
+    "patch": {
+      "$ref": "../match.defs.json#/$defs/patch"
+    }
+  }
+}

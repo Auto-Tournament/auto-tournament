@@ -1,0 +1,24 @@
+{
+  "v": 1,
+  "type": "state.patch",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9P09",
+  "ts": 1790340012345,
+  "seq": 1902,
+  "epoch": 1,
+  "payload": {
+    "match_id": "ko-r1-m3",
+    "rev": 42,
+    "patch": {
+      "live_rev": 42,
+      "teams": {
+        "team1": {
+          "players": {
+            "76561198000000001": {
+              "connected": true
+            }
+          }
+        }
+      }
+    }
+  }
+}

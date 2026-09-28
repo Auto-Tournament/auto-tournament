@@ -51,6 +51,24 @@
       "description": "MatchState (FLEET.md §9); null or absent when idle. Not interpreted in step 1."
     },
     "availability": { "$ref": "../defs.json#/$defs/availability" },
+    "admins_rev": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Proposed by Ready Up (D13): rev of the admins.set list this server has cached (fleet-admins.json); absent = none. The platform sends admins.set after welcome only when its rev differs."
+    },
+    "plugins_disabled": {
+      "type": "array",
+      "maxItems": 64,
+      "description": "Proposed by Ready Up: plugins the core did not load because their needs.json is not met on this CS2 build (docs/CS2-COMPAT.md, Plugin needs); absent = none. Informational: the platform can show it and avoid assigning a match that needs a missing plugin.",
+      "items": {
+        "type": "object",
+        "required": ["name", "reason"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 32 },
+          "reason": { "type": "string", "minLength": 1, "maxLength": 512 }
+        }
+      }
+    },
     "selftest": {
       "type": "object",
       "required": ["pass", "passed", "total", "failures"],

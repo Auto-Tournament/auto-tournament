@@ -1,0 +1,31 @@
+{
+  "v": 1,
+  "type": "event.series_end",
+  "id": "01M3BA074HM9CFMCR0PMB51HD2",
+  "seq": 60,
+  "ack": 17,
+  "ts": 1790307212433,
+  "ref": null,
+  "epoch": 2,
+  "payload": {
+    "match_id": "lt-1790306893",
+    "map_number": 1,
+    "round": 4,
+    "rev": 43,
+    "patch": {
+      "live_rev": 43
+    },
+    "data": {
+      "type": "series_end",
+      "matchid": "1167300434147050",
+      "slug": "lt-1790306893",
+      "scrim": false,
+      "winner": "none",
+      "team1_name": "LT Alpha",
+      "team2_name": "LiveTestB",
+      "team1_series_score": 0,
+      "team2_series_score": 0,
+      "seconds_until_reset": 44
+    }
+  }
+}

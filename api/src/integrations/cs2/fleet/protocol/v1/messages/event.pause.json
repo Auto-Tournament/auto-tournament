@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/event.pause.json",
+  "title": "event.pause (server → platform, reliable)",
+  "description": "Match event (FLEET.md §8.1), source: pause state (MatchState diff). Envelope epoch = the assignment's. `rev` / `patch` continue the MatchState stream (see match.defs.json#/$defs/rev); `data` holds the facts.",
+  "type": "object",
+  "required": [
+    "match_id",
+    "map_number",
+    "rev",
+    "patch",
+    "data"
+  ],
+  "properties": {
+    "match_id": {
+      "$ref": "../match.defs.json#/$defs/matchId"
+    },
+    "map_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "round": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "rev": {
+      "$ref": "../match.defs.json#/$defs/rev"
+    },
+    "patch": {
+      "$ref": "../match.defs.json#/$defs/patch"
+    },
+    "data": {
+      "type": "object",
+      "required": [
+        "action",
+        "type",
+        "by"
+      ],
+      "properties": {
+        "action": {
+          "enum": [
+            "paused",
+            "unpause_requested",
+            "unpaused"
+          ]
+        },
+        "type": {
+          "enum": [
+            "tactical",
+            "technical",
+            "admin",
+            "offline",
+            "halftime",
+            "auto_5v5"
+          ]
+        },
+        "by": {
+          "type": "string",
+          "maxLength": 96
+        },
+        "team": {
+          "$ref": "../match.defs.json#/$defs/teamKey"
+        },
+        "duration_s": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

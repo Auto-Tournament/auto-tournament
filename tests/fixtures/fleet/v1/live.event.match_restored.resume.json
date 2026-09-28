@@ -1,0 +1,27 @@
+{
+  "v": 1,
+  "type": "event.match_restored",
+  "id": "01M3BZ1WKB50T3BN8ET1EQ215D",
+  "seq": 70,
+  "ack": 26,
+  "ts": 1790329287275,
+  "ref": null,
+  "epoch": 3,
+  "payload": {
+    "match_id": "lt-1790329038",
+    "map_number": 2,
+    "round": 2,
+    "rev": 3,
+    "patch": {
+      "live_rev": 3
+    },
+    "data": {
+      "map_number": 2,
+      "round": 2,
+      "backup_sha256": "d9758863b2c3a43053973ca02a12f20a66c875a78b184cd865a9f8704ca1a2f9",
+      "file": "readyup_resume_708611671018052_map2_round01.txt",
+      "resume": true,
+      "from_epoch": 2
+    }
+  }
+}

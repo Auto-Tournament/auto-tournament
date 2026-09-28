@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/state.request.json",
+  "title": "state.request (platform → server, ephemeral)",
+  "description": "Ask for a state.snapshot (reason `request`, `ref` = this id), e.g. after a live_rev gap.",
+  "type": "object",
+  "properties": {}
+}

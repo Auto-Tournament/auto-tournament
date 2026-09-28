@@ -1,0 +1,25 @@
+{
+  "v": 1,
+  "type": "event.phase",
+  "id": "01M3BAZAGR50AY86C0444RSBPR",
+  "seq": 6,
+  "ack": 1,
+  "ts": 1790308231704,
+  "ref": null,
+  "epoch": 2,
+  "payload": {
+    "match_id": "lt-1790308176",
+    "map_number": 1,
+    "round": 1,
+    "rev": 4,
+    "patch": {
+      "live_rev": 4,
+      "phase": "knife"
+    },
+    "data": {
+      "from": "loading",
+      "to": "knife",
+      "reason": "flow"
+    }
+  }
+}

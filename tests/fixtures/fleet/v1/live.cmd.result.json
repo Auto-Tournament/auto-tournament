@@ -1,0 +1,13 @@
+{
+  "v": 1,
+  "type": "cmd.result",
+  "id": "01M3BAZ4FD2AP1493NF3FBT6MR",
+  "seq": 1,
+  "ack": 0,
+  "ts": 1790308225517,
+  "ref": "01M3BAZ4F0GET7MGPXTB79ZXKQ",
+  "epoch": 2,
+  "payload": {
+    "status": "ok"
+  }
+}

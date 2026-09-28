@@ -1,0 +1,45 @@
+{
+  "v": 1,
+  "type": "hello",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9P11",
+  "ts": 1790340000000,
+  "payload": {
+    "server_id": "srv-example",
+    "install_id": "inst-0123456789",
+    "tenant_id": "default",
+    "protocol": {
+      "min": 1,
+      "max": 1
+    },
+    "versions": {
+      "core": "0.1.0",
+      "plugin_api": "1.6",
+      "plugins": {
+        "fleet": "0.1.0"
+      },
+      "cs2_build": 25537370,
+      "cs2_patch": "1.41.8.5"
+    },
+    "capabilities": [
+      "match.v1"
+    ],
+    "host": {
+      "hostname": "cs2-example",
+      "game_port": 27015
+    },
+    "boot_id": "01J8ZQ4T8W6N3X0F2R5K7M9P10",
+    "stream": {
+      "id": "01J8ZQ4T8W6N3X0F2R5K7M9P0Z",
+      "last_tx_seq": 0,
+      "last_rx_seq": 0
+    },
+    "state": null,
+    "availability": "available",
+    "plugins_disabled": [
+      {
+        "name": "skins",
+        "reason": "missing CBaseModelEntity_SetModel after CS2 build 25537370"
+      }
+    ]
+  }
+}

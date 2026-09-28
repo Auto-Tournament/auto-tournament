@@ -766,7 +766,7 @@ export async function ensureTxSeqAtLeast(serverId: string, seq: number): Promise
  */
 export async function appendOutbox(
   serverId: string,
-  message: Omit<Envelope, 'seq' | 'ack' | 'v' | 'id' | 'ts'> & { expiresAt?: number | null }
+  message: Omit<Envelope, 'seq' | 'ack' | 'v' | 'id' | 'ts'> & { expiresAt?: number | null; id?: string }
 ): Promise<Envelope> {
   return tx(async (c) => {
     const r = await c.query<{ tx_seq: number }>(
@@ -778,7 +778,7 @@ export async function appendOutbox(
     const envelope: Envelope = {
       v: 1,
       type: message.type,
-      id: ulid(),
+      id: message.id ?? ulid(),
       seq: Number(seq),
       ts: Date.now(),
       ...(message.ref !== undefined ? { ref: message.ref } : {}),

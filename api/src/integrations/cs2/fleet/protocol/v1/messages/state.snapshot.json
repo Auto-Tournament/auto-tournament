@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/state.snapshot.json",
+  "title": "state.snapshot (server → platform, ephemeral)",
+  "description": "The whole MatchState (§8.2): after connect (`hello`), on assign (`assign`), on state.request / cmd snapshot_now / match.update conflict (`request`), after a reset resume (`reset`), every 60 s while a match runs (`periodic`) and after a failover resume restored its backup (`restored`). Envelope epoch = state.epoch. state = null when idle. Ephemeral: never replayed.",
+  "type": "object",
+  "required": [
+    "reason",
+    "state",
+    "availability",
+    "config_rev",
+    "admins_rev"
+  ],
+  "properties": {
+    "reason": {
+      "enum": [
+        "hello",
+        "request",
+        "reset",
+        "periodic",
+        "assign",
+        "restored"
+      ]
+    },
+    "state": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "../match.defs.json#/$defs/matchState"
+        }
+      ]
+    },
+    "availability": {
+      "$ref": "../defs.json#/$defs/availability"
+    },
+    "config_rev": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "admins_rev": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "rev of the admins.set list the server has cached (0 = none)"
+    },
+    "map_stats": {
+      "$ref": "../match.defs.json#/$defs/mapStats"
+    }
+  }
+}

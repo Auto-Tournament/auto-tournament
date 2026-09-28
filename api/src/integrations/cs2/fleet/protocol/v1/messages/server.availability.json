@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/server.availability.json",
+  "title": "server.availability (server → platform, reliable)",
+  "description": "Availability changed: `busy` on assign, `available` after unassign or when the finished match was unloaded (ServerReset, reason `series_end`).",
+  "type": "object",
+  "required": [
+    "availability",
+    "reason"
+  ],
+  "properties": {
+    "availability": {
+      "$ref": "../defs.json#/$defs/availability"
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 64
+    }
+  }
+}

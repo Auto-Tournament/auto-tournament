@@ -1,0 +1,27 @@
+{
+  "v": 1,
+  "type": "cmd",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9P10",
+  "ts": 1790340012345,
+  "seq": 90,
+  "payload": {
+    "name": "plugins.set",
+    "args": {
+      "enable": [
+        "practice",
+        "skins",
+        "whitelist"
+      ],
+      "disable": [
+        "midas"
+      ]
+    },
+    "issued_by": {
+      "user_id": "u_1",
+      "name": "Admin",
+      "root": false
+    },
+    "expires_at": 0,
+    "audit_id": "aud_01J8ZR"
+  }
+}

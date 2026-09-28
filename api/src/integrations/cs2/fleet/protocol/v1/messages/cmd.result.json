@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/cmd.result.json",
+  "title": "cmd.result (server → platform, reliable (critical))",
+  "description": "The answer to match.assign / match.update / match.unassign / cmd; envelope `ref` = that message's id, `epoch` = its epoch. Error codes: invalid_config, invalid_update, busy, stale_epoch, not_assigned, conflict, bad_phase, bad_args, bad_request, already_paused, not_paused, no_backup, checksum, not_connected, gotv_off, forbidden, invalid_command, unknown_command, unsupported, engine, io, offline.",
+  "type": "object",
+  "required": [
+    "status"
+  ],
+  "properties": {
+    "status": {
+      "enum": [
+        "ok",
+        "rejected",
+        "failed",
+        "expired"
+      ]
+    },
+    "error": {
+      "type": "object",
+      "required": [
+        "code"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "maxLength": 64
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 2048
+        }
+      }
+    },
+    "rev": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "config_rev after match.update (or the server's on conflict)"
+    },
+    "output": {
+      "type": "string",
+      "maxLength": 8192
+    },
+    "audit_id": {
+      "type": "string",
+      "maxLength": 64
+    }
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/event.admin_called.json",
+  "title": "event.admin_called (server → platform, reliable)",
+  "description": "Match event (FLEET.md §8.1), source: `.admin [message]` from any player (docs/ADMINS.md). Envelope epoch = the assignment's. `rev` / `patch` continue the MatchState stream (see match.defs.json#/$defs/rev); `data` holds the facts, the same fields as the `admin_called` webhook event. The platform resolves the call; there is no answer on the link.",
+  "type": "object",
+  "required": [
+    "match_id",
+    "map_number",
+    "rev",
+    "patch",
+    "data"
+  ],
+  "properties": {
+    "match_id": {
+      "$ref": "../match.defs.json#/$defs/matchId"
+    },
+    "map_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "round": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "rev": {
+      "$ref": "../match.defs.json#/$defs/rev"
+    },
+    "patch": {
+      "$ref": "../match.defs.json#/$defs/patch"
+    },
+    "data": {
+      "type": "object",
+      "required": [
+        "call_id",
+        "player",
+        "message",
+        "called_at"
+      ],
+      "properties": {
+        "call_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "unique per call (a version-4 UUID)"
+        },
+        "player": {
+          "type": "object",
+          "required": [
+            "steamid64",
+            "name",
+            "team",
+            "side"
+          ],
+          "properties": {
+            "steamid64": {
+              "$ref": "../defs.json#/$defs/u64s"
+            },
+            "name": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "team": {
+              "enum": [
+                "team1",
+                "team2",
+                "spectator",
+                null
+              ]
+            },
+            "side": {
+              "enum": [
+                "ct",
+                "t",
+                null
+              ]
+            }
+          }
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 800,
+          "description": "the player's text: trimmed, at most 200 characters (UTF-8; up to 800 bytes), may be empty"
+        },
+        "called_at": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$",
+          "description": "ISO 8601 UTC"
+        }
+      }
+    }
+  }
+}

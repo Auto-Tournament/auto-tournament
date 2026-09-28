@@ -1,0 +1,24 @@
+{
+  "v": 1,
+  "type": "event.pause",
+  "id": "01M3BB2MMJKN0C0H9B5R4PXYX2",
+  "seq": 27,
+  "ack": 9,
+  "ts": 1790308340370,
+  "ref": null,
+  "epoch": 2,
+  "payload": {
+    "match_id": "lt-1790308176",
+    "map_number": 1,
+    "round": 1,
+    "rev": 17,
+    "patch": {
+      "live_rev": 17
+    },
+    "data": {
+      "action": "paused",
+      "type": "admin",
+      "by": "platform:u_lt"
+    }
+  }
+}
