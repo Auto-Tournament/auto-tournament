@@ -1,0 +1,17 @@
+{
+  "v": 1,
+  "type": "server.selftest",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9P21",
+  "seq": 7,
+  "ack": 3,
+  "ts": 1790340060000,
+  "ref": null,
+  "payload": {
+    "pass": false,
+    "passed": 57,
+    "total": 58,
+    "failures": [
+      "fn:CCSPlayer_ItemServices_GiveNamedItem"
+    ]
+  }
+}

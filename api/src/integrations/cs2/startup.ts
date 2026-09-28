@@ -21,6 +21,7 @@ import { startRoundBackups, stopRoundBackups } from './fleet/backups';
 import { startRestoreAudit, stopRestoreAudit } from './fleet/restore';
 import { startDemoStreams, stopDemoStreams } from './fleet/demoStream';
 import { startFleetHosts, stopFleetHosts } from './fleet/hosts/service';
+import { startServerNotices, stopServerNotices } from './fleet/serverNotices';
 
 export async function startCs2(): Promise<void> {
   // Round backups from Ready Up servers (event.backup) and the restore audit:
@@ -29,6 +30,8 @@ export async function startCs2(): Promise<void> {
   startRestoreAudit();
   // Demos Ready Up servers stream over the fleet link (demo.*).
   startDemoStreams();
+  // server.cs2_update_required / server.selftest from Ready Up servers.
+  startServerNotices();
 
   // The Ready Up fleet gateway (/api/fleet/ws) first: it only attaches to the
   // HTTP server, and servers reconnecting after a restart should not wait on
@@ -69,6 +72,7 @@ export function stopCs2(): void {
   stopRestoreAudit();
   stopDemoStreams();
   stopFleetHosts();
+  stopServerNotices();
 }
 
 async function bootstrapServerWebhooks(): Promise<void> {

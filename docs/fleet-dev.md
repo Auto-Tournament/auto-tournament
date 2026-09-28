@@ -27,7 +27,7 @@ schemas reference `../defs.json`, so load `defs.json` first.
 | File | Validates |
 |---|---|
 | `envelope.json` | every frame |
-| `messages/<type>.json` | the `payload` of that type: `hello`, `welcome`, `ping`, `pong`, `ack`, `error`, `auth.rotate`, `auth.rotated`, `server.config` (placeholder); step 3 / D13 (adopted from Ready Up): `match.assign`, `match.update`, `match.unassign`, `cmd`, `cmd.result`, `state.request`, `state.snapshot`, `state.patch`, `server.availability`, `event.*` (23), `admins.set`, `skins.loadout`, `skins.invalidate`, `skins.stattrak` |
+| `messages/<type>.json` | the `payload` of that type: `hello`, `welcome`, `ping`, `pong`, `ack`, `error`, `auth.rotate`, `auth.rotated`, `server.config` (placeholder); step 3 / D13 (adopted from Ready Up): `match.assign`, `match.update`, `match.unassign`, `cmd`, `cmd.result`, `state.request`, `state.snapshot`, `state.patch`, `server.availability`, `event.*` (23), `admins.set`, `skins.loadout`, `skins.invalidate`, `skins.stattrak`; server notices and drain (Ready Up): `server.cs2_update_required`, `server.selftest`, `server.drain`, `server.undrain` (no sender yet) |
 | `match.defs.json` | shared `$defs` of the step-3 messages: MatchState, rules, assign config, InlineBackup, RoundSummary, MapStats (load it after `defs.json`) |
 | `http/enroll.request.json`, `http/enroll.response.json` | `POST /api/fleet/enroll` |
 
