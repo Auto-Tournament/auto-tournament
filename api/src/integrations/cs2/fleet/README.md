@@ -36,7 +36,7 @@ admin actions): what exists, and the calls to use.
 Tables (migration `006-fleet-match` in `../migrations.ts`):
 `cs2_servers.transport` (`'rcon'` default | `'fleet'`) + `cs2_servers.fleet_server_id`
 (→ `cs2_fleet_servers.id`, unique), `cs2_match_live_state`, `cs2_fleet_events`,
-`cs2_fleet_commands`. Migration `009-fleet-driver`: `cs2_fleet_assignments`
+`cs2_fleet_commands`. Migration `010-fleet-driver`: `cs2_fleet_assignments`
 (epoch, server, connect password, acked config per match) and `cs2_fleet_audit`
 (root `exec`). `transport = 'fleet'` is set by linking a server
 (`POST /api/fleet/servers/:id/link`, the Servers page's "Use for matches").

@@ -42,7 +42,7 @@
  * `008-fleet-demo-streams` adds the demos Ready Up streams over the fleet link
  * while it records (fleet/demoStream.ts, FLEET.md §12.2).
  *
- * `009-fleet-driver` adds what the fleet driver (fleet/driver.ts) keeps per
+ * `010-fleet-driver` adds what the fleet driver (fleet/driver.ts) keeps per
  * assignment: the match's connect password and the config last sent (the
  * base for `match.update`), and the audit log of admin `exec` commands.
  */
@@ -57,7 +57,7 @@ export const CS2_FLEET_MIGRATION_ID = '005-fleet';
 export const CS2_FLEET_MATCH_MIGRATION_ID = '006-fleet-match';
 export const CS2_ROUND_BACKUPS_MIGRATION_ID = '007-round-backups';
 export const CS2_FLEET_DEMO_STREAMS_MIGRATION_ID = '008-fleet-demo-streams';
-export const CS2_FLEET_DRIVER_MIGRATION_ID = '009-fleet-driver';
+export const CS2_FLEET_DRIVER_MIGRATION_ID = '010-fleet-driver';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
