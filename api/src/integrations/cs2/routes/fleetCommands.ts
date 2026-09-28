@@ -10,7 +10,6 @@
 
 import type { Request, Response } from 'express';
 import { requestActorId, type AuthedRequest } from '../../../middleware/auth';
-import { parseAdminSteamIds } from '../../../utils/adminSteamIds';
 import { transportOf } from '../driver';
 import {
   execOnFleetServer,
@@ -30,7 +29,9 @@ export function isRootRequest(req: Request): boolean {
   const token = (req as AuthedRequest).serviceToken;
   if (token) return token.scope === 'admin';
   const actor = requestActorId(req);
-  return !!actor && parseAdminSteamIds(process.env.ADMIN_STEAM_IDS).valid.includes(actor);
+  // ADMIN_STEAM_IDS: Steam64 IDs separated by commas, semicolons or spaces.
+  const operators = (process.env.ADMIN_STEAM_IDS ?? '').split(/[\s,;]+/).filter((id) => /^\d{17}$/.test(id));
+  return !!actor && operators.includes(actor);
 }
 
 export function issuedBy(req: Request): IssuedBy & { actor: string | null } {
