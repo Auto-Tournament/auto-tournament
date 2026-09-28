@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/logs.chunk.json",
+  "title": "logs.chunk (host → platform, ephemeral)",
+  "description": "Lines of a logs.tail stream.",
+  "type": "object",
+  "required": [
+    "stream_id",
+    "lines"
+  ],
+  "properties": {
+    "stream_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "server": {
+      "$ref": "../defs.json#/$defs/serverName"
+    },
+    "lines": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 4096
+      },
+      "maxItems": 1000
+    },
+    "eof": {
+      "type": "boolean"
+    }
+  }
+}

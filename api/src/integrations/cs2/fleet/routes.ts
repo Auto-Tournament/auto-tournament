@@ -2,7 +2,8 @@
  * The fleet's HTTP routes, mounted at `/api/fleet` (../routes/index.ts).
  *
  * Public, for Ready Up servers:
- *   POST /api/fleet/enroll                   one-time code or fleet key → server token (FLEET.md §4.1)
+ *   POST /api/fleet/enroll                   one-time code or fleet key → server token (FLEET.md §4.1);
+ *                                            with `kind: "host"`, a csm host token (./hosts/routes.ts)
  *
  * Admin (`requireAuth`), for the Servers page:
  *   GET    /api/fleet/servers                the registry, with online state and versions
@@ -29,6 +30,7 @@ import * as registry from './registry';
 import { getLatestReadyUpRelease } from '../services/pluginVersionService';
 import { readyUpUpdateStatus } from '../services/readyUpVersion';
 import { fleetBus, revokeServer, rotateServerToken } from './service';
+import { enrollHostHandler } from './hosts/routes';
 
 // ---------------------------------------------------------------------------
 // Enrollment (public)
@@ -39,7 +41,7 @@ const ENROLL_WINDOW_MS = 60_000;
 const ENROLL_MAX = 10;
 const enrollHits = new Map<string, { count: number; resetAt: number }>();
 
-function enrollRateLimit(req: Request, res: Response, next: NextFunction): void {
+export function enrollRateLimit(req: Request, res: Response, next: NextFunction): void {
   const now = Date.now();
   const key = req.ip || req.socket.remoteAddress || 'unknown';
   let entry = enrollHits.get(key);
@@ -79,6 +81,8 @@ export const fleetEnrollRouter = Router();
  * revoked server, 409 key limit reached, 429 rate limited.
  */
 fleetEnrollRouter.post('/enroll', enrollRateLimit, async (req: Request, res: Response) => {
+  // csm enrolls a machine through the same URL with `kind: "host"` (FLEET.md §18.1).
+  if (req.body?.kind === 'host') return enrollHostHandler(req, res);
   const check = validateEnrollRequest(req.body);
   if (!check.ok) {
     return res.status(400).json({ success: false, code: 'invalid_request', error: 'Invalid enrollment request', details: check.errors });

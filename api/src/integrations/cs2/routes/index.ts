@@ -25,6 +25,7 @@ import mapPoolRoutes from '../maps/poolRoutes';
 import matchConnectRoutes from './matchConnect';
 import testHelperRoutes from './testHelpers';
 import { fleetAdminRouter, fleetEnrollRouter } from '../fleet/routes';
+import { fleetHostAdminRouter, fleetHostEnrollRouter } from '../fleet/hosts/routes';
 
 export const cs2LegacyRoutes: LegacyRouteMount[] = [
   {
@@ -112,11 +113,26 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     description: 'A Ready Up server trades a one-time code or fleet key for its server token.',
   },
   {
+    // csm host agents (FLEET.md §18). Public like server enrollment, and
+    // before the admin routers' requireAuth for the same reason.
+    prefix: '/api/fleet',
+    router: fleetHostEnrollRouter,
+    title: 'Fleet host enrollment',
+    description: 'CS2 Server Manager (csm) trades a one-time machine code or fleet key for its host token.',
+  },
+  {
     prefix: '/api/fleet',
     router: fleetAdminRouter,
     title: 'Fleet',
     description:
       'Ready Up servers on the fleet link: registry, one-time codes, fleet keys, revoke and rotate. The server WebSocket is /api/fleet/ws.',
+  },
+  {
+    prefix: '/api/fleet',
+    router: fleetHostAdminRouter,
+    title: 'Fleet machines',
+    description:
+      'Machines running csm as host agent: add (one-time code), inventory, health, create/start/stop/restart servers, update CS2 and Ready Up, revoke and rotate. The host WebSocket is /api/fleet/host.',
   },
   {
     prefix: '/api/test',

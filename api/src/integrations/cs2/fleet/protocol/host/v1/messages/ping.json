@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/ping.json",
+  "title": "ping (both directions, ephemeral)",
+  "description": "Sent every heartbeat.interval_ms by both sides; the peer replies pong with the same t. FLEET.md §6.2.",
+  "type": "object",
+  "required": [
+    "t"
+  ],
+  "properties": {
+    "t": {
+      "type": "integer"
+    }
+  }
+}

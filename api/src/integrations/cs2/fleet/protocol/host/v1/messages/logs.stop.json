@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/logs.stop.json",
+  "title": "logs.stop (platform → host, reliable)",
+  "description": "Stop a log stream. Answered by exactly one host.result (envelope ref = this message's id). FLEET.md §18.2.",
+  "type": "object",
+  "required": [
+    "stream_id"
+  ],
+  "properties": {
+    "stream_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    }
+  }
+}

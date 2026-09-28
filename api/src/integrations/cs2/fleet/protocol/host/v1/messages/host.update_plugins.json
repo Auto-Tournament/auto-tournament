@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/host.update_plugins.json",
+  "title": "host.update_plugins (platform → host, reliable)",
+  "description": "Install a Ready Up bundle. Disruptive: csm only restarts update_safe servers unless forced. Answered by exactly one host.result (envelope ref = this message's id). FLEET.md §18.2.",
+  "type": "object",
+  "required": [
+    "readyup"
+  ],
+  "properties": {
+    "servers": {
+      "$ref": "../defs.json#/$defs/serverList"
+    },
+    "readyup": {
+      "type": "object",
+      "required": [
+        "version",
+        "bundle"
+      ],
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._+-]{1,64}$",
+          "description": "a Ready Up release, or \"latest\""
+        },
+        "bundle": {
+          "enum": [
+            "default",
+            "skins"
+          ]
+        }
+      }
+    },
+    "force": {
+      "$ref": "../defs.json#/$defs/force"
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/host.result.json",
+  "title": "host.result (host → platform, reliable)",
+  "description": "The one answer to a platform command (envelope ref = the command's id). `rejected` = not run (match_in_progress, busy, invalid, unknown_server); `failed` = ran and failed.",
+  "type": "object",
+  "required": [
+    "status"
+  ],
+  "properties": {
+    "status": {
+      "enum": [
+        "ok",
+        "rejected",
+        "failed"
+      ]
+    },
+    "error": {
+      "type": "object",
+      "required": [
+        "code"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "maxLength": 64
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      }
+    },
+    "output": {
+      "type": "string",
+      "maxLength": 65536
+    }
+  }
+}

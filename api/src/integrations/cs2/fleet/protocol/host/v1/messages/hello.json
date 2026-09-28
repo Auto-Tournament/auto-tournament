@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/hello.json",
+  "title": "hello (host → platform, ephemeral)",
+  "description": "First message after the upgrade. The platform answers welcome or closes (4400 protocol error, 4403 identity mismatch, 4426 unsupported protocol). FLEET.md §6.1, §18.",
+  "type": "object",
+  "required": [
+    "host_id",
+    "machine_id",
+    "tenant_id",
+    "protocol",
+    "csm_version",
+    "hostname",
+    "boot_id",
+    "stream"
+  ],
+  "properties": {
+    "host_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "machine_id": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128
+    },
+    "tenant_id": {
+      "$ref": "../defs.json#/$defs/tenantId"
+    },
+    "protocol": {
+      "type": "object",
+      "required": [
+        "min",
+        "max"
+      ],
+      "properties": {
+        "min": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "csm_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "hostname": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "os": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "boot_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "stream": {
+      "$ref": "../defs.json#/$defs/stream"
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "maxItems": 128,
+      "uniqueItems": true
+    }
+  }
+}

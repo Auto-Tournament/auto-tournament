@@ -1,0 +1,239 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/host.inventory.json",
+  "title": "host.inventory (host → platform)",
+  "description": "Sent on hello, on change and every 60 s. Replaces the stored inventory. readyup.install_id / server_id join each entry to its Ready Up server record (FLEET.md §18.3). Ephemeral or reliable: the platform accepts both.",
+  "type": "object",
+  "required": [
+    "host_id",
+    "hostname",
+    "csm_version",
+    "os",
+    "resources",
+    "cs2",
+    "servers"
+  ],
+  "properties": {
+    "host_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "hostname": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "csm_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "os": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 255
+    },
+    "resources": {
+      "type": "object",
+      "required": [
+        "cpus",
+        "load1",
+        "ram_mb",
+        "ram_free_mb",
+        "disk"
+      ],
+      "properties": {
+        "cpus": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "load1": {
+          "type": "number",
+          "minimum": 0
+        },
+        "ram_mb": {
+          "type": "number",
+          "minimum": 0
+        },
+        "ram_free_mb": {
+          "type": "number",
+          "minimum": 0
+        },
+        "disk": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "type": "object",
+            "required": [
+              "mount",
+              "total_gb",
+              "free_gb"
+            ],
+            "properties": {
+              "mount": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "total_gb": {
+                "type": "number",
+                "minimum": 0
+              },
+              "free_gb": {
+                "type": "number",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    "cs2": {
+      "type": "object",
+      "required": [
+        "master_build",
+        "update_available",
+        "updates_hold"
+      ],
+      "properties": {
+        "master_build": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "update_available": {
+          "type": "boolean"
+        },
+        "updates_hold": {
+          "enum": [
+            "on",
+            "off",
+            "auto"
+          ]
+        }
+      }
+    },
+    "servers": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "dir",
+          "game_port",
+          "status_port",
+          "process",
+          "readyup",
+          "cs2_build",
+          "launch_args"
+        ],
+        "properties": {
+          "name": {
+            "$ref": "../defs.json#/$defs/serverName"
+          },
+          "dir": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "game_port": {
+            "$ref": "../defs.json#/$defs/port"
+          },
+          "tv_port": {
+            "$ref": "../defs.json#/$defs/port"
+          },
+          "status_port": {
+            "$ref": "../defs.json#/$defs/port"
+          },
+          "process": {
+            "type": "object",
+            "required": [
+              "running",
+              "restarts_24h"
+            ],
+            "properties": {
+              "running": {
+                "type": "boolean"
+              },
+              "pid": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "started_at": {
+                "type": "integer",
+                "description": "ms since Unix epoch"
+              },
+              "restarts_24h": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "cpu_pct": {
+                "type": "number",
+                "minimum": 0
+              },
+              "rss_mb": {
+                "type": "number",
+                "minimum": 0
+              }
+            }
+          },
+          "readyup": {
+            "type": "object",
+            "required": [
+              "installed",
+              "health"
+            ],
+            "properties": {
+              "installed": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 64
+              },
+              "install_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "server_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "health": {
+                "enum": [
+                  "ok",
+                  "failing",
+                  "no_response",
+                  "not_running"
+                ]
+              },
+              "phase": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "update_safe": {
+                "type": "boolean"
+              }
+            }
+          },
+          "cs2_build": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "launch_args": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "maxItems": 128
+          }
+        }
+      }
+    }
+  }
+}

@@ -17,6 +17,7 @@ import { healthMonitoringService } from './services/healthMonitoringService';
 import { startMapAutoSync, stopMapAutoSync } from './maps/autoSync';
 import { mapService } from './maps/mapService';
 import { startFleet, stopFleet } from './fleet/service';
+import { startFleetHosts, stopFleetHosts } from './fleet/hosts/service';
 
 export async function startCs2(): Promise<void> {
   // The Ready Up fleet gateway (/api/fleet/ws) first: it only attaches to the
@@ -24,6 +25,10 @@ export async function startCs2(): Promise<void> {
   // the RCON bootstrap below.
   await startFleet().catch((error) => {
     log.warn('Failed to start the fleet gateway', { error });
+  });
+  // csm host agents (/api/fleet/host, FLEET.md §18).
+  await startFleetHosts().catch((error) => {
+    log.warn('Failed to start the fleet host gateway', { error });
   });
 
   await bootstrapServerWebhooks().catch((error) => {
@@ -50,6 +55,7 @@ export function stopCs2(): void {
   healthMonitoringService.stop();
   stopMapAutoSync();
   stopFleet();
+  stopFleetHosts();
 }
 
 async function bootstrapServerWebhooks(): Promise<void> {

@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/ack.json",
+  "title": "ack (both directions, ephemeral)",
+  "description": "A standalone ack: the envelope's `ack` carries the highest contiguous peer seq durably processed. FLEET.md §5.",
+  "type": "object",
+  "properties": {}
+}

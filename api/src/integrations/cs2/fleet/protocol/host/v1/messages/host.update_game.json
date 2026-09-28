@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/host.update_game.json",
+  "title": "host.update_game (platform → host, reliable)",
+  "description": "SteamCMD update + sync (csm update-game). Disruptive: csm only restarts update_safe servers unless forced. Answered by exactly one host.result (envelope ref = this message's id). FLEET.md §18.2.",
+  "type": "object",
+  "required": [],
+  "properties": {
+    "servers": {
+      "$ref": "../defs.json#/$defs/serverList"
+    },
+    "force": {
+      "$ref": "../defs.json#/$defs/force"
+    }
+  }
+}

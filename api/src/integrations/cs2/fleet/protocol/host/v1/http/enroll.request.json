@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/http/enroll.request.json",
+  "title": "POST /api/fleet/host/enroll (or POST /api/fleet/enroll with kind \"host\") request body",
+  "description": "csm trades a one-time host code (RUE-XXXX-XXXX-XXXX-XXXX, from Machines → Add machine) or a fleet enrollment key (rfk_<id>_<secret>) for its host token. The same machine_id gets its existing record back. FLEET.md §18.1.",
+  "type": "object",
+  "required": [
+    "machine_id",
+    "hostname"
+  ],
+  "oneOf": [
+    {
+      "required": [
+        "code"
+      ]
+    },
+    {
+      "required": [
+        "key"
+      ]
+    }
+  ],
+  "properties": {
+    "kind": {
+      "const": "host"
+    },
+    "code": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "key": {
+      "type": "string",
+      "pattern": "^rfk_[0-9a-z]{12}_[A-Za-z0-9_-]{43}$"
+    },
+    "machine_id": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "description": "/etc/machine-id"
+    },
+    "tenant_id": {
+      "$ref": "../defs.json#/$defs/tenantId"
+    },
+    "hostname": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "os": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "csm_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    }
+  }
+}

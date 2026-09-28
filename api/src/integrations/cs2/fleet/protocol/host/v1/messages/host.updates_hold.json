@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/host.updates_hold.json",
+  "title": "host.updates_hold (platform → host, reliable)",
+  "description": "csm's updates hold (csm updates hold on|off|auto). Answered by exactly one host.result (envelope ref = this message's id). FLEET.md §18.2.",
+  "type": "object",
+  "required": [
+    "mode"
+  ],
+  "properties": {
+    "mode": {
+      "enum": [
+        "on",
+        "off",
+        "auto"
+      ]
+    }
+  }
+}

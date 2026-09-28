@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/server.start.json",
+  "title": "server.start (platform → host, reliable)",
+  "description": "Start a server. Answered by exactly one host.result (envelope ref = this message's id). FLEET.md §18.2.",
+  "type": "object",
+  "required": [
+    "server"
+  ],
+  "properties": {
+    "server": {
+      "$ref": "../defs.json#/$defs/serverName"
+    },
+    "launch_mode": {
+      "enum": [
+        "default",
+        "alternate",
+        "binary"
+      ]
+    }
+  }
+}

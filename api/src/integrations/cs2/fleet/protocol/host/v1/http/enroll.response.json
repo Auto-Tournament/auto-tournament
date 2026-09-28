@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/http/enroll.response.json",
+  "title": "Host enrollment 201 response body",
+  "description": "csm writes host_id and token to its data dir (fleet/credentials.json, 0600, root only) and opens ws_url with `Authorization: Bearer <token>`. `reenrolled` is true when the machine_id already had a record (its older tokens are revoked).",
+  "type": "object",
+  "required": [
+    "success",
+    "host_id",
+    "tenant_id",
+    "token",
+    "ws_url",
+    "reenrolled"
+  ],
+  "properties": {
+    "success": {
+      "const": true
+    },
+    "host_id": {
+      "type": "string"
+    },
+    "tenant_id": {
+      "$ref": "../defs.json#/$defs/tenantId"
+    },
+    "name": {
+      "type": "string"
+    },
+    "token": {
+      "type": "string",
+      "pattern": "^rhs_[0-9a-z]{12}_[A-Za-z0-9_-]{43}$"
+    },
+    "ws_url": {
+      "type": "string",
+      "pattern": "^wss?://"
+    },
+    "reenrolled": {
+      "type": "boolean"
+    }
+  }
+}

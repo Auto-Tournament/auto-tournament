@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/error.json",
+  "title": "error (both directions, ephemeral)",
+  "description": "A protocol-level error about one message (envelope ref = its id). Codes: unknown_type, invalid_payload.",
+  "type": "object",
+  "required": [
+    "code"
+  ],
+  "properties": {
+    "code": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "maxLength": 64
+    },
+    "message": {
+      "type": "string",
+      "maxLength": 2048
+    },
+    "type": {
+      "type": "string",
+      "maxLength": 128
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/host.servers.list.json",
+  "title": "host.servers.list (platform → host, reliable)",
+  "description": "Ask for a fresh host.inventory (sent before the host.result). Answered by exactly one host.result (envelope ref = this message's id). FLEET.md §18.2.",
+  "type": "object",
+  "required": [],
+  "properties": {}
+}

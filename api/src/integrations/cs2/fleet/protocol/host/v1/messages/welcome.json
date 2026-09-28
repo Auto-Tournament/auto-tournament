@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/welcome.json",
+  "title": "welcome (platform → host, ephemeral)",
+  "description": "The platform's answer to hello (envelope ref = the hello's id). Then both sides replay what the other has not acked. FLEET.md §6.4.",
+  "type": "object",
+  "required": [
+    "session_id",
+    "protocol",
+    "heartbeat",
+    "resume",
+    "host_id"
+  ],
+  "properties": {
+    "session_id": {
+      "$ref": "../defs.json#/$defs/ulid"
+    },
+    "protocol": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "heartbeat": {
+      "type": "object",
+      "required": [
+        "interval_ms",
+        "timeout_ms"
+      ],
+      "properties": {
+        "interval_ms": {
+          "type": "integer",
+          "minimum": 1000
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "minimum": 1000
+        }
+      }
+    },
+    "resume": {
+      "type": "object",
+      "required": [
+        "result",
+        "platform_last_rx_seq"
+      ],
+      "properties": {
+        "result": {
+          "enum": [
+            "resumed",
+            "reset"
+          ]
+        },
+        "platform_last_rx_seq": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "host_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    }
+  }
+}

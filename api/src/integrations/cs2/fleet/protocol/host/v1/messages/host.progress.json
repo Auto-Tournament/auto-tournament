@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/host.progress.json",
+  "title": "host.progress (host → platform, ephemeral)",
+  "description": "Progress of a long command (update-game, create). `ref` = the command id (the envelope ref is accepted too).",
+  "type": "object",
+  "required": [
+    "ref",
+    "step"
+  ],
+  "properties": {
+    "ref": {
+      "$ref": "../defs.json#/$defs/ulid"
+    },
+    "step": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "pct": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    }
+  }
+}

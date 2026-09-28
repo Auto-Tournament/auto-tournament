@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/defs.json",
+  "title": "Shared definitions (host channel, protocol v1)",
+  "$defs": {
+    "ulid": {
+      "type": "string",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+    },
+    "tenantId": {
+      "const": "default",
+      "description": "Reserved (D4). Always \"default\"."
+    },
+    "port": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 65535
+    },
+    "serverName": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,64}$",
+      "description": "A csm server directory name, e.g. \"server-2\"."
+    },
+    "serverList": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/serverName"
+      },
+      "maxItems": 256,
+      "uniqueItems": true,
+      "description": "Servers the command applies to; absent = every server on the host."
+    },
+    "force": {
+      "type": "object",
+      "required": [
+        "by",
+        "reason"
+      ],
+      "properties": {
+        "by": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        }
+      },
+      "description": "Present only when an admin confirmed a disruptive action on a server whose /status says update_safe: false. The platform wrote an audit row first; csm logs it too. Without it csm answers host.result {status:\"rejected\", error:{code:\"match_in_progress\"}}. FLEET.md §18.2."
+    },
+    "stream": {
+      "type": "object",
+      "required": [
+        "id",
+        "last_tx_seq",
+        "last_rx_seq"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "last_tx_seq": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "last_rx_seq": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/server.set_launch_args.json",
+  "title": "server.set_launch_args (platform → host, reliable)",
+  "description": "Replace a server's launch args (+map, -maxplayers, tickrate; ru/fleet args stay csm-managed). Disruptive when it restarts the server. Answered by exactly one host.result (envelope ref = this message's id). FLEET.md §18.2.",
+  "type": "object",
+  "required": [
+    "server",
+    "args"
+  ],
+  "properties": {
+    "server": {
+      "$ref": "../defs.json#/$defs/serverName"
+    },
+    "args": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 256
+      },
+      "maxItems": 64
+    },
+    "force": {
+      "$ref": "../defs.json#/$defs/force"
+    }
+  }
+}

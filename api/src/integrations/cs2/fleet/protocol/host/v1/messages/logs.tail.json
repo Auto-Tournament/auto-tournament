@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/logs.tail.json",
+  "title": "logs.tail (platform → host, reliable)",
+  "description": "Start streaming a log as logs.chunk messages. Answered by exactly one host.result (envelope ref = this message's id). FLEET.md §18.2.",
+  "type": "object",
+  "required": [
+    "source"
+  ],
+  "properties": {
+    "server": {
+      "$ref": "../defs.json#/$defs/serverName"
+    },
+    "source": {
+      "enum": [
+        "console",
+        "readyup",
+        "csm",
+        "monitor"
+      ]
+    },
+    "lines": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5000
+    },
+    "follow": {
+      "type": "boolean"
+    },
+    "max_s": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3600
+    }
+  }
+}
