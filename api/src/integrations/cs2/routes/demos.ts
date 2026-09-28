@@ -8,25 +8,17 @@ import {
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { settingsService } from '../../../services/settingsService';
-import { emitMatchUpdate } from '../../../services/socketService';
-import { getMapResults } from '../../../services/matchMapResultService';
 import path from 'path';
 import fs from 'fs';
 import type { DbMatchRow } from '../../../types/database.types';
 import { demoMatchIdFromHeader } from '../../../utils/serverAttribution';
-import { DATA_DIR } from '../../../config/dataDir';
+import { DEMOS_DIR, ensureDemosDir, linkStoredDemo } from '../utils/demoFiles';
 
 const router = Router();
 
-// Directory for storing demos (same as database) - under DATA_DIR, so it
-// survives container recreates (see config/dataDir.ts).
-const DEMOS_DIR = path.join(DATA_DIR, 'demos');
-
-// Ensure demos directory exists
-if (!fs.existsSync(DEMOS_DIR)) {
-  fs.mkdirSync(DEMOS_DIR, { recursive: true });
-  log.server(`Created demos directory: ${DEMOS_DIR}`);
-}
+// Demos live under DATA_DIR/demos (utils/demoFiles.ts), shared with the fleet
+// demo stream (fleet/demoStream.ts).
+ensureDemosDir();
 
 /**
  * POST /api/demos/:matchSlug/upload
@@ -210,36 +202,12 @@ router.post(
       // Update match with demo file path (store relative path)
       const relativePath = path.join(matchSlug, filename);
 
-      // Store demo path in match record (for backward compatibility)
-      await db.updateAsync('matches', { demo_file_path: relativePath }, 'slug = ?', [matchSlug]);
-
-      // Also store demo path per map if map number is provided
+      // Point the match and the map result at it, and tell the frontend.
       // Ready Up (authenticated with a fleet token) sends a 1-based map number;
       // MAT stores 0-based, so it is converted here.
       const fleetServerId: string | undefined = res.locals[FLEET_UPLOAD_SERVER_ID];
       const mapNumber = demoMapNumber(atMapNumber, !!fleetServerId);
-      if (!isNaN(mapNumber)) {
-        try {
-          // Update the map result with demo file path
-          await db.runAsync(
-            `UPDATE match_map_results 
-             SET demo_file_path = ? 
-             WHERE match_slug = ? AND map_number = ?`,
-            [relativePath, matchSlug, mapNumber]
-          );
-          log.debug('[Demo Upload] Stored demo path for map', {
-            matchSlug,
-            mapNumber,
-            demoPath: relativePath,
-          });
-        } catch (error) {
-          log.warn('[Demo Upload] Failed to store demo path for map', {
-            matchSlug,
-            mapNumber,
-            error: error instanceof Error ? error.message : String(error),
-          });
-        }
-      }
+      await linkStoredDemo(matchSlug, relativePath, mapNumber);
 
       log.success('[Demo Upload] Demo uploaded successfully', {
         matchSlug,
@@ -252,29 +220,6 @@ router.post(
         fileSizeBytes: fileSize,
         filepath,
       });
-
-      // Emit match update to notify frontend that demo was uploaded
-      try {
-        const updatedMatch = await db.queryOneAsync<DbMatchRow>(
-          'SELECT * FROM matches WHERE slug = ?',
-          [matchSlug]
-        );
-        if (updatedMatch) {
-          const mapResults = await getMapResults(matchSlug);
-          emitMatchUpdate({
-            slug: matchSlug,
-            id: updatedMatch.id,
-            status: updatedMatch.status,
-            mapResults,
-          });
-          log.debug('[Demo Upload] Emitted match update', { matchSlug });
-        }
-      } catch (updateError) {
-        log.warn('[Demo Upload] Failed to emit match update', {
-          matchSlug,
-          error: updateError instanceof Error ? updateError.message : String(updateError),
-        });
-      }
 
       // Return success response (per Auto Tournament CS2 API spec - 200-299 status codes are success)
       return res.status(200).json({

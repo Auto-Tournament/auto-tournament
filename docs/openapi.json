@@ -552,7 +552,7 @@
     },
     {
       "name": "License",
-      "description": "The Auto Tournament license key: save, remove and read its status, checked offline. Admin only, except the public badge. Nothing is ever blocked: a missing or problematic key is a notice for admins."
+      "description": "The Auto Tournament license key: save, remove and read its status, checked offline; and the one-time acceptance of the license terms (non-commercial or commercial use) that the admin UI waits for. Admin only, except the public badge. Nothing else is ever blocked: a missing or problematic key is a notice for admins."
     },
     {
       "name": "Logs",
@@ -605,6 +605,10 @@
     {
       "name": "Recovery",
       "description": "Reconcile matches after an API restart or a server going away."
+    },
+    {
+      "name": "Round backups",
+      "description": "A CS2 match's round backups (Ready Up servers send them inline) and \"restore to round N\" over the fleet link or RCON, audited."
     },
     {
       "name": "Server bootstrap",
@@ -3058,6 +3062,70 @@
         ]
       }
     },
+    "/api/game/cs2/matches/{slug}/round-backups": {
+      "get": {
+        "tags": [
+          "Round backups"
+        ],
+        "summary": "GET /api/game/cs2/matches/:slug/round-backups",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/matches/{slug}/round-backups/restore": {
+      "post": {
+        "tags": [
+          "Round backups"
+        ],
+        "summary": "POST /api/game/cs2/matches/:slug/round-backups/restore",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/game/manual/disputes": {
       "get": {
         "tags": [
@@ -3713,6 +3781,90 @@
             "description": "The badge, or null"
           }
         }
+      }
+    },
+    "/api/license/consent": {
+      "get": {
+        "tags": [
+          "License"
+        ],
+        "summary": "Whether the license terms are accepted",
+        "description": "The admin UI opens only after an admin has accepted the license terms\n(PolyForm Noncommercial 1.0.0) and said whether this instance is used\nnon-commercially (free) or commercially (needs a license). Until\nthen the client sends admin pages to the consent step. The API,\npublic pages, players and running matches are never blocked.\n\n`accepted` is true when an acceptance of the current terms version\nis on record. `reason` is `none` (never accepted) or `version` (the\nterms changed since the last acceptance). `consent` is the latest\nacceptance: `use` (`noncommercial` or `commercial`), `acceptedAt`,\n`acceptedBy` (the admin's Steam ID, or `env:AT_ACCEPT_LICENSE`),\n`source` (`admin` or `env`), `termsVersion` and `termsHash` (SHA-256\nof the LICENSE file this build ships). `history` lists earlier\nacceptances, newest first.\n\nWhen the environment sets `AT_ACCEPT_LICENSE=noncommercial|commercial`,\nthe terms are accepted on the environment's behalf (recorded with\n`source: env`); `envAccept` says what it is set to.\n",
+        "responses": {
+          "200": {
+            "description": "The consent status"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "License"
+        ],
+        "summary": "Accept the license terms",
+        "description": "Body `{ \"use\": \"noncommercial\" | \"commercial\", \"confirm\": \"I AGREE\" }`,\noptionally with `\"key\": \"ATL1.…\"` to save a license key at the same\ntime, and `\"termsVersion\"` (the version the admin read; 409 when the\nterms have changed since). `confirm` is matched in any case. Accepting\nagain (to change the use) replaces the record; earlier ones stay in\n`history`. Signed-in admins only: an API token cannot accept terms\n(403); set `AT_ACCEPT_LICENSE` for a non-interactive install instead.\nSame-site JSON only.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "use",
+                  "confirm"
+                ],
+                "properties": {
+                  "use": {
+                    "type": "string",
+                    "enum": [
+                      "noncommercial",
+                      "commercial"
+                    ]
+                  },
+                  "confirm": {
+                    "type": "string",
+                    "example": "I AGREE"
+                  },
+                  "key": {
+                    "type": "string"
+                  },
+                  "termsVersion": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Accepted; the new consent status (and the license status when a key was saved)"
+          },
+          "400": {
+            "description": "use is missing, confirm is not I AGREE, or key is not a license key"
+          },
+          "403": {
+            "description": "An API token, not a signed-in admin"
+          },
+          "409": {
+            "description": "The terms changed since the version the admin read"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/license/public-badge": {
@@ -8656,6 +8808,28 @@
         "responses": {
           "200": {
             "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/test/license-consent": {
+      "post": {
+        "tags": [
+          "Testing"
+        ],
+        "summary": "Reset or seed the license terms acceptance (test only)",
+        "description": "`{ \"action\": \"clear\" }` forgets the acceptance and ignores\nAT_ACCEPT_LICENSE until `{ \"action\": \"restore\" }`, so a suite whose\nserver pre-accepts can see the consent step. `{ \"action\": \"set\",\n\"record\": {…} }` stores a record as-is (an older terms version) and\nalso ignores AT_ACCEPT_LICENSE. `{ \"action\": \"env\" }` uses\nAT_ACCEPT_LICENSE again without touching the record.\n",
+        "responses": {
+          "200": {
+            "description": "Done"
           }
         },
         "security": [

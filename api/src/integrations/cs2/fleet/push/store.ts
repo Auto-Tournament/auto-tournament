@@ -1,5 +1,5 @@
 /**
- * Storage for the server-level pushes (migration `007-fleet-server-prefs`):
+ * Storage for the server-level pushes (migration `011-fleet-server-prefs`):
  *
  * - `cs2_fleet_lists`: the fleet-wide lists the platform versions, one row
  *   each (`admins`, `server_config`) with its rev, the hash of what that rev

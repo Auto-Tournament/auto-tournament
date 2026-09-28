@@ -296,6 +296,50 @@
     },
     "public": {
       "licensed": "Sous licence"
+    },
+    "consent": {
+      "title": "Avant de commencer : la licence",
+      "subtitle": "Auto Tournament est gratuit pour un usage non commercial. Un usage commercial nécessite une licence. Lis la version courte, dis-nous comment tu l'utilises et tape I AGREE.",
+      "intro": "Le code source d'Auto Tournament est disponible sous la {{name}}. En bref :",
+      "points": {
+        "free": "Gratuit pour un usage personnel, les projets perso, l'apprentissage et les événements où personne n'en tire d'argent.",
+        "orgs": "Gratuit pour les associations caritatives, écoles, universités, la recherche publique et les administrations, même si elles font payer l'entrée.",
+        "commercial": "Un usage commercial nécessite une licence : hébergement payant, vente du logiciel ou d'un service basé dessus, événements qui dégagent un bénéfice, usage dans une entreprise, ou être payé pour l'installer pour quelqu'un.",
+        "servers": "Chaque serveur de jeu compte pour la licence.",
+        "nothingLocked": "Rien n'est bloqué ni limité sans clé. Tu peux ajouter une clé maintenant ou plus tard.",
+        "forks": "Tu peux modifier le code et le partager. Garde la licence avec ; les mêmes règles s'appliquent."
+      },
+      "readLicense": "Lire la licence complète",
+      "readRules": "Licences et usage commercial",
+      "summaryNote": "Ceci est un résumé. En cas de désaccord, c'est la licence qui fait foi.",
+      "useQuestion": "Comment cette instance est-elle utilisée ?",
+      "use": {
+        "noncommercial": "Personnel / non commercial",
+        "noncommercialHint": "Gratuit. Personne n'en tire d'argent.",
+        "commercial": "Commercial",
+        "commercialHint": "Il te faut une licence. Colle ta clé maintenant ou plus tard."
+      },
+      "keyLabel": "Clé de licence (facultatif)",
+      "keyHelper": "Commence par ATL1. Tu peux aussi l'ajouter plus tard dans Paramètres > Licence.",
+      "confirmLabel": "Tape {{phrase}} pour accepter les conditions de la licence",
+      "confirmHelper": "En tapant {{phrase}}, tu acceptes les conditions de la licence pour cette instance.",
+      "accept": "Accepter et continuer",
+      "cancel": "Annuler",
+      "failed": "Impossible d'enregistrer ta réponse",
+      "accepted": "Conditions de la licence acceptées",
+      "termsChanged": "Les conditions de la licence ont changé depuis la dernière acceptation. Lis-les et accepte-les à nouveau.",
+      "onlyAdmins": "Seuls les admins voient ceci, une fois par instance. Les joueurs, les pages publiques et les matchs en cours ne sont pas concernés.",
+      "declared": {
+        "noncommercial": "Usage non commercial",
+        "commercial": "Usage commercial",
+        "none": "Conditions de la licence pas encore acceptées"
+      },
+      "acceptedLine": "Conditions acceptées le {{date}} par {{who}} (version {{version}})",
+      "byEnv": "le réglage AT_ACCEPT_LICENSE",
+      "change": "Modifier",
+      "changeTitle": "Modifier l'usage de cette instance",
+      "changeNote": "Choisis à nouveau et tape I AGREE. Le changement est enregistré avec la date et ton compte.",
+      "commercialNoKey": "Cette instance a un usage commercial, il te faut donc une licence. Colle ta clé ci-dessous. Rien n'est bloqué en attendant."
     }
   }
 }

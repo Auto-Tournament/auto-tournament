@@ -55,6 +55,7 @@ import {
   replayUnprocessed,
   type InboundContext,
 } from './inbound';
+import { fleetLimits, socketBytesPerMinute } from './limits';
 
 export const FLEET_WS_PATH = '/api/fleet/ws';
 export const MAX_FRAME_BYTES = 1024 * 1024;
@@ -64,8 +65,12 @@ const HELLO_TIMEOUT_MS = 10_000;
 /** Ack a reliable message within this long, or after this many (FLEET.md §5). */
 const ACK_DELAY_MS = 1_000;
 const ACK_EVERY = 32;
-/** Per-server limits (FLEET.md §15). */
-const RATE = { perSecond: 50, burst: 200, bytesPerMinute: 8 * 1024 * 1024 };
+/**
+ * Per-server limits (FLEET.md §15). The byte budget per minute is
+ * `FLEET_BYTES_PER_MINUTE` (8 MiB), raised after hello for a server that
+ * streams demos (./limits.ts `socketBytesPerMinute`).
+ */
+const RATE = { perSecond: 50, burst: 200 };
 /** last_seen is written at most this often from pings and other frames. */
 const SEEN_WRITE_MS = 10_000;
 const ID_WINDOW = 10_000;
@@ -126,6 +131,7 @@ class FleetSession {
   private tokensAt = Date.now();
   private bytesWindowStart = Date.now();
   private bytesInWindow = 0;
+  private bytesPerMinute = fleetLimits().bytesPerMinute;
   private seenIds = new Set<string>();
   private seenOrder: string[] = [];
 
@@ -196,7 +202,7 @@ class FleetSession {
       this.bytesInWindow = 0;
     }
     this.bytesInWindow += bytes;
-    if (this.bytesInWindow > RATE.bytesPerMinute) return this.bytesWindowStart + 60_000 - now;
+    if (this.bytesInWindow > this.bytesPerMinute) return this.bytesWindowStart + 60_000 - now;
     if (this.tokens < 1) return Math.ceil(((1 - this.tokens) / RATE.perSecond) * 1000);
     this.tokens -= 1;
     return null;
@@ -419,6 +425,7 @@ class FleetSession {
       this.rxBaseUnknown = true;
     }
     this.rxStreamId = hello.stream.id;
+    this.bytesPerMinute = socketBytesPerMinute(hello.capabilities);
     if (result === 'reset') await registry.setRxState(serverId, hello.stream.id, 0);
     if (hello.stream.last_rx_seq > 0) {
       await registry.ensureTxSeqAtLeast(serverId, hello.stream.last_rx_seq);
@@ -557,7 +564,7 @@ class FleetSession {
     return {
       serverId: this.serverId as string,
       streamId: this.rxStreamId as string,
-      sendEphemeral: (type, payload, extra) => this.sendEphemeral(type, payload, undefined, extra),
+      sendEphemeral: (type, payload, extra) => this.sendEphemeral(type, payload, extra?.ref, extra),
     };
   }
 

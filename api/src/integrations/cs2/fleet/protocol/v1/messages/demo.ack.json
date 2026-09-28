@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/demo.ack.json",
+  "title": "demo.ack (platform → server, ephemeral)",
+  "description": "Proposed by Ready Up (FLEET.md §12.2). The platform's answer to demo.begin, demo.chunk and demo.end. offset = the bytes of this demo the platform has stored contiguously from 0 (after this message was applied); it only goes down after a restart request or a checksum failure. complete: true only after a demo.end whose size and sha256 matched the stored copy; the server may then delete its file. Errors: gap (a chunk started after `offset`: the server continues from offset), unknown_demo (the platform has no record of demo_id: the server sends demo.begin again), checksum (the stored copy did not match demo.end and was discarded: the server restarts from 0), storage (temporary platform failure: the server retries demo.begin with backoff), not_assigned / stale_epoch (this server never held that match / epoch) and too_large (over max_demo_size): the server stops streaming this demo and keeps its file.",
+  "type": "object",
+  "required": ["demo_id", "offset"],
+  "properties": {
+    "demo_id": { "$ref": "../defs.json#/$defs/ulid" },
+    "offset": { "type": "integer", "minimum": 0 },
+    "complete": { "type": "boolean" },
+    "error": {
+      "type": "object",
+      "required": ["code"],
+      "properties": {
+        "code": { "enum": ["gap", "unknown_demo", "checksum", "storage", "not_assigned", "stale_epoch", "too_large"] },
+        "message": { "type": "string", "maxLength": 512 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/demo.chunk.json",
+  "title": "demo.chunk (server → platform, ephemeral, lowest priority)",
+  "description": "Proposed by Ready Up (FLEET.md §12.2). Bytes [offset, offset + size) of the demo file. Sent on the link's lowest-priority lane: only when no other message is waiting, one at a time. Rules for the platform, with `stored` = the bytes it has contiguously from 0: offset > stored → do not write, answer demo.ack {offset: stored, error: {code: \"gap\"}}; otherwise write the bytes at offset (offset < stored overwrites: the server re-sends chunks whose bytes changed after they were sent, e.g. the demo header CS2 rewrites when the recording stops), stored = max(stored, offset + size), and answer demo.ack {offset: stored}. Several chunks may be in flight (the server keeps at most demo_window_kb, default 1 MiB, unacknowledged); the platform may answer chunks that arrive together with one demo.ack, but must answer within 5 s. An unknown demo_id → demo.ack {offset: 0, error: {code: \"unknown_demo\"}}. A chunk that would make the file larger than the platform's max_demo_size → error too_large. Nothing is spooled: after a reconnect the server sends demo.begin again and resumes from the platform's offset.",
+  "type": "object",
+  "required": ["demo_id", "offset", "size", "data"],
+  "properties": {
+    "demo_id": { "$ref": "../defs.json#/$defs/ulid" },
+    "offset": { "type": "integer", "minimum": 0, "description": "A multiple of demo.begin chunk_size." },
+    "size": { "type": "integer", "minimum": 1, "maximum": 524288, "description": "Bytes in data (decoded); chunk_size except for the last chunk of the file." },
+    "data": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 699052,
+      "description": "The bytes, standard base64 with padding (RFC 4648 §4)."
+    }
+  },
+  "additionalProperties": false
+}

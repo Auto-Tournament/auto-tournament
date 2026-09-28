@@ -1,0 +1,16 @@
+{
+  "v": 1,
+  "type": "demo.begin",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9P31",
+  "ts": 1790340012345,
+  "epoch": 3,
+  "payload": {
+    "demo_id": "01J8ZQ4T8W6N3X0F2R5K7M9D01",
+    "match_id": "ko-r1-m3",
+    "map_number": 2,
+    "file": "2026-09-29_18-02-11_ko-r1-m3_de_mirage_Alpha_vs_Bravo.dem",
+    "started_at": 1790340011000,
+    "chunk_size": 131072,
+    "recording": true
+  }
+}

@@ -54,6 +54,10 @@ import eventForfeit from './messages/event.forfeit.json';
 import eventGg from './messages/event.gg.json';
 import eventAdminCalled from './messages/event.admin_called.json';
 import eventError from './messages/event.error.json';
+import demoBegin from './messages/demo.begin.json';
+import demoChunk from './messages/demo.chunk.json';
+import demoEnd from './messages/demo.end.json';
+import demoAck from './messages/demo.ack.json';
 import enrollRequest from './http/enroll.request.json';
 import enrollResponse from './http/enroll.response.json';
 import type { Envelope, FleetMessageType } from './types';
@@ -109,6 +113,11 @@ export const FLEET_MESSAGE_SCHEMAS: Record<FleetMessageType, Record<string, unkn
   'event.gg': eventGg,
   'event.admin_called': eventAdminCalled,
   'event.error': eventError,
+  // Demo streaming (FLEET.md §12.2): proposed by Ready Up, received by ../../demoStream.ts.
+  'demo.begin': demoBegin,
+  'demo.chunk': demoChunk,
+  'demo.end': demoEnd,
+  'demo.ack': demoAck,
 };
 
 export const FLEET_SCHEMAS = {
