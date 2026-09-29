@@ -116,8 +116,61 @@ function mapKey(matchId: string, mapNumber: unknown): string {
   return `${matchId}:${Number.isFinite(n) ? n : 0}`;
 }
 
+/**
+ * Called when a server's turnover hold may have ended: its last outstanding
+ * demo upload reported back, or the tracker's give-up time for it passed.
+ * The allocator re-checks then instead of waiting for an event that never
+ * comes (a manual match queued behind the upload sat in `ready` forever).
+ */
+export type TurnoverReleaseListener = (serverId: string) => void;
+
 export class ServerTurnoverTracker {
   private readonly servers = new Map<string, ServerTurnoverState>();
+  private readonly releaseListeners = new Set<TurnoverReleaseListener>();
+  /** One give-up timer per server (the latest pending upload's give-up time). */
+  private readonly giveUpTimers = new Map<string, { at: number; timer: ReturnType<typeof setTimeout> }>();
+
+  /** Subscribe to turnover releases. Returns the unsubscribe function. */
+  onRelease(listener: TurnoverReleaseListener): () => void {
+    this.releaseListeners.add(listener);
+    return () => this.releaseListeners.delete(listener);
+  }
+
+  private notifyRelease(serverId: string): void {
+    for (const listener of this.releaseListeners) {
+      try {
+        listener(serverId);
+      } catch (error) {
+        log.warn(`[TURNOVER] release listener failed for server ${serverId}: ${(error as Error).message}`);
+      }
+    }
+  }
+
+  /**
+   * A lost upload event gives the server back only when someone evaluates it
+   * after the give-up time; with nobody asking (no other trigger), wake the
+   * listeners just after it.
+   */
+  private scheduleGiveUpCheck(serverId: string, giveUpAt: number, now: number): void {
+    if (this.releaseListeners.size === 0) return;
+    const existing = this.giveUpTimers.get(serverId);
+    if (existing && existing.at >= giveUpAt) return;
+    if (existing) clearTimeout(existing.timer);
+    const delayMs = Math.max(0, (giveUpAt - now + 1) * 1000);
+    const timer = setTimeout(() => {
+      this.giveUpTimers.delete(serverId);
+      this.notifyRelease(serverId);
+    }, delayMs);
+    timer.unref?.();
+    this.giveUpTimers.set(serverId, { at: giveUpAt, timer });
+  }
+
+  private clearGiveUpCheck(serverId: string): void {
+    const existing = this.giveUpTimers.get(serverId);
+    if (!existing) return;
+    clearTimeout(existing.timer);
+    this.giveUpTimers.delete(serverId);
+  }
 
   private state(serverId: string): ServerTurnoverState {
     let s = this.servers.get(serverId);
@@ -183,10 +236,9 @@ export class ServerTurnoverTracker {
         const expectsUpload =
           s.recording.has(key) || (s.matchId === matchId && s.demoUploadConfigured);
         if (expectsUpload && !s.finishedUploads.has(key) && !s.pendingUploads.has(key)) {
-          s.pendingUploads.set(key, {
-            endedAt: now,
-            giveUpAt: now + demoUploadGiveUpSeconds(s.tvDelaySeconds),
-          });
+          const giveUpAt = now + demoUploadGiveUpSeconds(s.tvDelaySeconds);
+          s.pendingUploads.set(key, { endedAt: now, giveUpAt });
+          this.scheduleGiveUpCheck(serverId, giveUpAt, now);
         }
         return;
       }
@@ -202,8 +254,13 @@ export class ServerTurnoverTracker {
       case 'demo_upload_fail':
       case 'demo_upload_ended': {
         const key = mapKey(matchId, event.map_number);
-        s.pendingUploads.delete(key);
+        const wasPending = s.pendingUploads.delete(key);
         s.finishedUploads.add(key);
+        // The last outstanding upload is done: the server may take the next match now.
+        if (wasPending && s.pendingUploads.size === 0) {
+          this.clearGiveUpCheck(serverId);
+          this.notifyRelease(serverId);
+        }
         return;
       }
       default:

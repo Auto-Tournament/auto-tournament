@@ -26,6 +26,8 @@ import {
   validateRosterOps,
 } from '../../api/src/integrations/cs2/fleet/push/matchUpdate';
 import type { ServerPrefs } from '../../api/src/integrations/cs2/fleet/push/store';
+import { buildAssignConfig } from '../../api/src/integrations/cs2/fleet/assignConfig';
+import type { MatchConfig } from '../../api/src/types/match.types';
 import { validatePayload, type MatchState } from '../../api/src/integrations/cs2/fleet/protocol/v1';
 
 /**
@@ -412,8 +414,69 @@ test.describe('fleet pushes: match.update', () => {
     expect(fromConfig.source).toBe('config');
     expect(fromConfig.team1).toEqual({
       name: 'R',
-      players: [{ steamid64: B, name: 'Bea', role: null, connected: null }],
+      players: [{ steamid64: B, name: 'Bea', role: 'player', connected: null }],
     });
     expect(fromConfig.team2.players).toEqual([]);
+  });
+
+  test('a sub added by match.update stays a sub: stored config, roster view, the next assign', () => {
+    // M1 play-test: the role was dropped, and the sub came back as a player.
+    const config = {
+      matchid: 7,
+      team1: { name: 'Red', players: { [A]: 'Ann' } },
+      team2: { name: 'Blue', players: { [B]: 'Bea' } },
+    };
+    const withSub = applyOpsToMatchConfig(config, [
+      { op: 'add_player', team: 'team1', steamid64: C, name: 'Cid', role: 'sub' },
+      { op: 'add_player', team: 'team2', steamid64: '76561198000000004', name: 'Coach', role: 'coach' },
+    ]);
+    expect(withSub.team1).toEqual({
+      name: 'Red',
+      players: { [A]: 'Ann', [C]: 'Cid' },
+      substitutes: { [C]: 'Cid' },
+    });
+    // A coach is a coach, not a player.
+    expect(withSub.team2).toEqual({
+      name: 'Blue',
+      players: { [B]: 'Bea' },
+      coaches: { '76561198000000004': 'Coach' },
+    });
+    const view = rosterView(null, withSub);
+    expect(view.team1.players).toEqual([
+      { steamid64: A, name: 'Ann', role: 'player', connected: null },
+      { steamid64: C, name: 'Cid', role: 'sub', connected: null },
+    ]);
+    expect(view.team2.players).toContainEqual({
+      steamid64: '76561198000000004',
+      name: 'Coach',
+      role: 'coach',
+      connected: null,
+    });
+    // What a failover re-assign builds from the stored config.
+    const assign = buildAssignConfig(
+      {
+        ...withSub,
+        skip_veto: true,
+        num_maps: 1,
+        players_per_team: 1,
+        maplist: ['de_mirage'],
+        map_sides: ['knife'],
+      } as unknown as MatchConfig,
+      'pw'
+    );
+    expect(assign.team1.players).toContainEqual({ steamid64: C, name: 'Cid', role: 'sub' });
+    expect(assign.team2.players).toContainEqual({ steamid64: '76561198000000004', name: 'Coach', role: 'coach' });
+
+    // Made a player again, then removed: nothing left behind.
+    const promoted = applyOpsToMatchConfig(withSub, [
+      { op: 'add_player', team: 'team1', steamid64: C, name: 'Cid', role: 'player' },
+    ]);
+    expect(promoted.team1).toEqual({ name: 'Red', players: { [A]: 'Ann', [C]: 'Cid' } });
+    const removed = applyOpsToMatchConfig(withSub, [
+      { op: 'remove_player', steamid64: C },
+      { op: 'remove_player', steamid64: '76561198000000004' },
+    ]);
+    expect(removed.team1).toEqual({ name: 'Red', players: { [A]: 'Ann' } });
+    expect(removed.team2).toEqual({ name: 'Blue', players: { [B]: 'Bea' }, coaches: {} });
   });
 });

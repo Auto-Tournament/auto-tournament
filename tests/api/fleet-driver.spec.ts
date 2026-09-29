@@ -267,6 +267,20 @@ test.describe.serial('Fleet driver: Ready Up servers play matches (M1)', () => {
     const server = await (await request.get(`/api/servers/${cs2ServerId}`, { headers: getAuthHeader() })).json();
     expect(server.server ?? server).toMatchObject({ transport: 'fleet', fleetServerId: fake.serverId });
 
+    // bob has a player record; the other rostered ids are test accounts with
+    // none (M1 play-test: their stats rows failed the player FOREIGN KEY, and
+    // the error cost bob his row too).
+    const bobCreated = await request.post('/api/players', {
+      headers: getAuthHeader(),
+      data: { id: STEAM(2), name: 'bob' },
+    });
+    expect([200, 201, 409], await bobCreated.text()).toContain(bobCreated.status());
+    if (bobCreated.status() !== 409) {
+      cleanup.push(async () => {
+        await request.delete(`/api/players/${STEAM(2)}`, { headers: getAuthHeader() });
+      });
+    }
+
     // Allocation: the match goes to the Ready Up server.
     const slug = `fleet-drv-${Date.now()}`;
     await createMatch(request, slug);
@@ -405,6 +419,16 @@ test.describe.serial('Fleet driver: Ready Up servers play matches (M1)', () => {
       },
     });
     await expect.poll(async () => (await matchRow(request, slug))?.status, { timeout: 20_000 }).toBe('completed');
+    // Stats: bob's row is written; the accounts without a player record are skipped.
+    await expect
+      .poll(async () => {
+        const res = await request.get(`/api/players/${STEAM(2)}/summary`);
+        if (!res.ok()) return null;
+        const body = await res.json();
+        const rows = (body.matches ?? body.data?.matches ?? []) as Array<{ match_slug?: string; slug?: string }>;
+        return rows.some((m) => (m.match_slug ?? m.slug) === slug);
+      }, { timeout: 20_000 })
+      .toBe(true);
     const unassign = await fake.next('match.unassign');
     expect(unassign.payload).toMatchObject({ match_id: slug, epoch, reason: 'ended' });
     fake.answer(unassign);
@@ -488,6 +512,41 @@ test.describe.serial('Fleet driver: Ready Up servers play matches (M1)', () => {
     await expect.poll(async () => (await matchRow(request, slug))?.status, { timeout: 20_000 }).toBe('loaded');
     expect((await matchRow(request, slug))?.serverId).toBe(first.other.serverId);
     await request.post(`/api/matches/${slug}/force-cancel`, { headers: getAuthHeader() });
+  });
+
+  test('a manual match with no free server waits, and takes the server once it is available', async ({ request }) => {
+    // M1 play-test: the manual match tried allocation once at creation; the
+    // only server was still in turnover, and the match stayed `ready` forever.
+    test.setTimeout(120_000);
+    const fake = await FakeReadyUp.enroll(request);
+    cleanup.push(() => fake.close());
+    await fake.hello();
+    fake.availability('busy', 'series_end');
+    const cs2ServerId = await link(request, fake.serverId);
+    cleanup.push(() => unlink(request, fake.serverId));
+    await expect
+      .poll(async () => {
+        const res = await request.get('/api/tournament/server-availability', { headers: getAuthHeader() });
+        const body = (await res.json()) as { servers?: Array<{ id: string; allocatable: boolean }> };
+        return body.servers?.find((s) => s.id === cs2ServerId)?.allocatable ?? null;
+      })
+      .toBe(false);
+
+    const slug = `fleet-wait-${Date.now()}`;
+    await createMatch(request, slug);
+    cleanup.push(async () => {
+      await request.post(`/api/matches/${slug}/force-cancel`, { headers: getAuthHeader() });
+    });
+    // Nothing free: it waits in `ready`, nothing sent.
+    await new Promise((resolve) => setTimeout(resolve, 2_000));
+    expect((await matchRow(request, slug))?.status).toBe('ready');
+    expect(fake.client.received.some(assignFor(slug))).toBe(false);
+
+    // Turnover done: the server says available, and the waiting match goes to it.
+    fake.availability('available', 'series_end');
+    await acceptAssign(fake, slug);
+    await expect.poll(async () => (await matchRow(request, slug))?.status, { timeout: 20_000 }).toBe('loaded');
+    expect((await matchRow(request, slug))?.serverId).toBe(cs2ServerId);
   });
 
   test('reconnect mid-match resumes; an old epoch is superseded (hello and events)', async ({ request }) => {
