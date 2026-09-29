@@ -268,7 +268,8 @@
     "warningsNote": "Rien n’est bloqué ni limité. Ce n’est qu’un avis.",
     "label": "Clé de licence",
     "replaceLabel": "Remplacer la clé de licence",
-    "helper": "Commence par ATL1. Après l’enregistrement, seul l’ID de la licence est affiché.",
+    "helper": "Commence par ATL1. Copie-la depuis <consoleLink>tes licences dans la console Auto Tournament</consoleLink>. Après l’enregistrement, seul l’ID de la licence est affiché.",
+    "checkInNote": "Sans clé de licence, rien n'est envoyé à Auto Tournament. Avec une clé, ce serveur se signale une fois par jour avec l'ID de la clé et son nombre de serveurs.",
     "save": "Enregistrer la clé",
     "saved": "Clé de licence enregistrée",
     "saveFailed": "Impossible d’enregistrer la clé de licence",
@@ -300,7 +301,7 @@
     },
     "consent": {
       "title": "Avant de commencer : la licence",
-      "subtitle": "Auto Tournament est gratuit pour un usage non commercial. Un usage commercial nécessite une licence. Lis la version courte, dis-nous comment tu l'utilises et tape I AGREE.",
+      "subtitle": "Auto Tournament est gratuit pour un usage non commercial. Un usage commercial nécessite une licence. Lis la version courte, choisis comment cette instance est utilisée et tape I AGREE.",
       "intro": "Le code source d'Auto Tournament est disponible sous la {{name}}. En bref :",
       "points": {
         "free": "Gratuit pour un usage personnel, les projets perso, l'apprentissage et les événements où personne n'en tire d'argent.",
@@ -312,16 +313,17 @@
       },
       "readLicense": "Lire la licence complète",
       "readRules": "Licences et usage commercial",
-      "summaryNote": "Ceci est un résumé. En cas de désaccord, c'est la licence qui fait foi.",
+      "summaryNote": "Ceci est un résumé court, et le texte de ta version peut être obsolète. La licence en vigueur et les règles de licence sont sur autotournament.gg. Si elles diffèrent de ce résumé, elles prévalent.",
       "useQuestion": "Comment cette instance est-elle utilisée ?",
+      "privacyNote": "Ta réponse est enregistrée uniquement sur ce serveur. Sans clé de licence, rien n'est envoyé à Auto Tournament. Avec une clé, ce serveur se signale une fois par jour avec l'ID de la clé et son nombre de serveurs.",
       "use": {
-        "noncommercial": "Personnel / non commercial",
+        "noncommercial": "Non commercial",
         "noncommercialHint": "Gratuit. Personne n'en tire d'argent.",
         "commercial": "Commercial",
         "commercialHint": "Il te faut une licence. Colle ta clé maintenant ou plus tard."
       },
       "keyLabel": "Clé de licence (facultatif)",
-      "keyHelper": "Commence par ATL1. Tu peux aussi l'ajouter plus tard dans Paramètres > Licence.",
+      "keyHelper": "Commence par ATL1. Copie-la depuis <consoleLink>tes licences dans la console Auto Tournament</consoleLink> ou ajoute-la plus tard dans Paramètres > Licence.",
       "confirmLabel": "Tape {{phrase}} pour accepter les conditions de la licence",
       "confirmHelper": "En tapant {{phrase}}, tu acceptes les conditions de la licence pour cette instance.",
       "accept": "Accepter et continuer",
@@ -340,7 +342,7 @@
       "change": "Modifier",
       "changeTitle": "Modifier l'usage de cette instance",
       "changeNote": "Choisis à nouveau et tape I AGREE. Le changement est enregistré avec la date et ton compte.",
-      "commercialNoKey": "Cette instance a un usage commercial, il te faut donc une licence. Colle ta clé ci-dessous. Rien n'est bloqué en attendant."
+      "commercialNoKey": "Cette instance a un usage commercial, il te faut donc une licence. Copie ta clé depuis <consoleLink>tes licences dans la console Auto Tournament</consoleLink> et colle-la ci-dessous. Rien n'est bloqué en attendant."
     }
   }
 }

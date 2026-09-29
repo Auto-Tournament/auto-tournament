@@ -268,7 +268,8 @@
     "warningsNote": "Ingenting blokkeres eller begrenses. Dette er bare en merknad.",
     "label": "Lisensnøkkel",
     "replaceLabel": "Bytt lisensnøkkel",
-    "helper": "Starter med ATL1. Etter lagring vises bare lisens-ID-en.",
+    "helper": "Starter med ATL1. Kopier den fra <consoleLink>lisensene dine i Auto Tournament-konsollen</consoleLink>. Etter lagring vises bare lisens-ID-en.",
+    "checkInNote": "Uten lisensnøkkel sendes ingenting til Auto Tournament. Med nøkkel melder denne serveren seg én gang i døgnet med nøkkelens ID og antall servere.",
     "save": "Lagre nøkkel",
     "saved": "Lisensnøkkel lagret",
     "saveFailed": "Kunne ikke lagre lisensnøkkelen",
@@ -300,7 +301,7 @@
     },
     "consent": {
       "title": "Før du starter: lisensen",
-      "subtitle": "Auto Tournament er gratis for ikke-kommersiell bruk. Kommersiell bruk krever en lisens. Les kortversjonen, fortell oss hvordan du bruker det, og skriv I AGREE.",
+      "subtitle": "Auto Tournament er gratis for ikke-kommersiell bruk. Kommersiell bruk krever en lisens. Les kortversjonen, velg hvordan denne instansen brukes, og skriv I AGREE.",
       "intro": "Kildekoden til Auto Tournament er tilgjengelig under {{name}}. Kort fortalt:",
       "points": {
         "free": "Gratis for personlig bruk, hobbyprosjekter, læring og arrangementer der ingen tjener penger på det.",
@@ -312,16 +313,17 @@
       },
       "readLicense": "Les hele lisensen",
       "readRules": "Lisens og kommersiell bruk",
-      "summaryNote": "Dette er et sammendrag. Hvis det og lisensen sier noe ulikt, gjelder lisensen.",
+      "summaryNote": "Dette er et kort sammendrag, og teksten i din versjon kan være utdatert. Gjeldende lisens og lisensreglene finner du på autotournament.gg. Hvis de avviker fra dette sammendraget, gjelder de.",
       "useQuestion": "Hvordan brukes denne instansen?",
+      "privacyNote": "Svaret ditt lagres bare på denne serveren. Uten lisensnøkkel sendes ingenting til Auto Tournament. Med nøkkel melder denne serveren seg én gang i døgnet med nøkkelens ID og antall servere.",
       "use": {
-        "noncommercial": "Personlig / ikke-kommersiell",
+        "noncommercial": "Ikke-kommersiell",
         "noncommercialHint": "Gratis. Ingen tjener penger på det.",
         "commercial": "Kommersiell",
         "commercialHint": "Du trenger en lisens. Lim inn nøkkelen nå eller senere."
       },
       "keyLabel": "Lisensnøkkel (valgfritt)",
-      "keyHelper": "Starter med ATL1. Du kan også legge den inn senere under Innstillinger > Lisens.",
+      "keyHelper": "Starter med ATL1. Kopier den fra <consoleLink>lisensene dine i Auto Tournament-konsollen</consoleLink>, eller legg den inn senere under Innstillinger > Lisens.",
       "confirmLabel": "Skriv {{phrase}} for å godta lisensvilkårene",
       "confirmHelper": "Ved å skrive {{phrase}} godtar du lisensvilkårene for denne instansen.",
       "accept": "Godta og fortsett",
@@ -340,7 +342,7 @@
       "change": "Endre",
       "changeTitle": "Endre hvordan denne instansen brukes",
       "changeNote": "Velg på nytt og skriv I AGREE. Endringen lagres med dato og kontoen din.",
-      "commercialNoKey": "Denne instansen brukes kommersielt, så du trenger en lisens. Lim inn nøkkelen nedenfor. Ingenting låses mens den mangler."
+      "commercialNoKey": "Denne instansen brukes kommersielt, så du trenger en lisens. Kopier nøkkelen fra <consoleLink>lisensene dine i Auto Tournament-konsollen</consoleLink> og lim den inn nedenfor. Ingenting låses mens den mangler."
     }
   }
 }

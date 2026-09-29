@@ -8,7 +8,8 @@ import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
+import { consoleLinkComponents } from '../license/licenseLinks';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { ExternalLink } from '../common/ExternalLink';
@@ -159,7 +160,7 @@ export function LicenseCard() {
             minRows={2}
             maxRows={6}
             autoComplete="off"
-            helperText={t('license.helper')}
+            helperText={<Trans t={t} i18nKey="license.helper" components={consoleLinkComponents} />}
             sx={{ flex: 1 }}
             slotProps={{
               htmlInput: { spellCheck: false, 'data-testid': 'settings-license-input' },
@@ -186,6 +187,9 @@ export function LicenseCard() {
             )}
           </Stack>
         </Stack>
+        <Typography variant="caption" color="text.secondary" display="block" data-testid="settings-license-checkin">
+          {t('license.checkInNote')}
+        </Typography>
 
         <Box>
           <FormControlLabel

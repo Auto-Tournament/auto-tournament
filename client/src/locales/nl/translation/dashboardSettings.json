@@ -268,7 +268,8 @@
     "warningsNote": "Er wordt niets geblokkeerd of beperkt. Dit is alleen een melding.",
     "label": "Licentiesleutel",
     "replaceLabel": "De licentiesleutel vervangen",
-    "helper": "Begint met ATL1. Na het opslaan wordt alleen de licentie-ID getoond.",
+    "helper": "Begint met ATL1. Kopieer hem uit <consoleLink>je licenties in de Auto Tournament-console</consoleLink>. Na het opslaan wordt alleen de licentie-ID getoond.",
+    "checkInNote": "Zonder licentiesleutel wordt er niets naar Auto Tournament gestuurd. Met een sleutel meldt deze server zich één keer per dag met de sleutel-ID en het aantal servers.",
     "save": "Sleutel opslaan",
     "saved": "Licentiesleutel opgeslagen",
     "saveFailed": "De licentiesleutel kon niet worden opgeslagen",
@@ -300,7 +301,7 @@
     },
     "consent": {
       "title": "Voordat je begint: de licentie",
-      "subtitle": "Auto Tournament is gratis voor niet-commercieel gebruik. Voor commercieel gebruik heb je een licentie nodig. Lees de korte versie, vertel ons hoe je het gebruikt en typ I AGREE.",
+      "subtitle": "Auto Tournament is gratis voor niet-commercieel gebruik. Voor commercieel gebruik heb je een licentie nodig. Lees de korte versie, kies hoe deze instantie wordt gebruikt en typ I AGREE.",
       "intro": "De broncode van Auto Tournament is beschikbaar onder de {{name}}. Kort gezegd:",
       "points": {
         "free": "Gratis voor persoonlijk gebruik, hobbyprojecten, leren en evenementen waar niemand er geld aan verdient.",
@@ -312,16 +313,17 @@
       },
       "readLicense": "Lees de volledige licentie",
       "readRules": "Licenties en commercieel gebruik",
-      "summaryNote": "Dit is een samenvatting. Als die en de licentie verschillen, geldt de licentie.",
+      "summaryNote": "Dit is een korte samenvatting en de tekst in jouw versie kan verouderd zijn. De actuele licentie en licentieregels staan op autotournament.gg. Als ze afwijken van deze samenvatting, gaan zij voor.",
       "useQuestion": "Hoe wordt deze instantie gebruikt?",
+      "privacyNote": "Je antwoord wordt alleen op deze server opgeslagen. Zonder licentiesleutel wordt er niets naar Auto Tournament gestuurd. Met een sleutel meldt deze server zich één keer per dag met de sleutel-ID en het aantal servers.",
       "use": {
-        "noncommercial": "Persoonlijk / niet-commercieel",
+        "noncommercial": "Niet-commercieel",
         "noncommercialHint": "Gratis. Niemand verdient er geld aan.",
         "commercial": "Commercieel",
         "commercialHint": "Je hebt een licentie nodig. Plak je sleutel nu of later."
       },
       "keyLabel": "Licentiesleutel (optioneel)",
-      "keyHelper": "Begint met ATL1. Je kunt hem ook later toevoegen via Instellingen > Licentie.",
+      "keyHelper": "Begint met ATL1. Kopieer hem uit <consoleLink>je licenties in de Auto Tournament-console</consoleLink> of voeg hem later toe via Instellingen > Licentie.",
       "confirmLabel": "Typ {{phrase}} om de licentievoorwaarden te accepteren",
       "confirmHelper": "Door {{phrase}} te typen accepteer je de licentievoorwaarden voor deze instantie.",
       "accept": "Accepteren en doorgaan",
@@ -340,7 +342,7 @@
       "change": "Wijzigen",
       "changeTitle": "Wijzigen hoe deze instantie wordt gebruikt",
       "changeNote": "Kies opnieuw en typ I AGREE. De wijziging wordt opgeslagen met de datum en je account.",
-      "commercialNoKey": "Deze instantie wordt commercieel gebruikt, dus je hebt een licentie nodig. Plak je sleutel hieronder. Zolang die ontbreekt, wordt niets geblokkeerd."
+      "commercialNoKey": "Deze instantie wordt commercieel gebruikt, dus je hebt een licentie nodig. Kopieer je sleutel uit <consoleLink>je licenties in de Auto Tournament-console</consoleLink> en plak hem hieronder. Zolang die ontbreekt, wordt niets geblokkeerd."
     }
   }
 }

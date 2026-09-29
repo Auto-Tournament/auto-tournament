@@ -270,7 +270,8 @@
     "warningsNote": "Nic nie jest blokowane ani ograniczane. To tylko informacja.",
     "label": "Klucz licencji",
     "replaceLabel": "Zastąp klucz licencji",
-    "helper": "Zaczyna się od ATL1. Po zapisaniu widoczny jest tylko identyfikator licencji.",
+    "helper": "Zaczyna się od ATL1. Skopiuj go z <consoleLink>swoich licencji w konsoli Auto Tournament</consoleLink>. Po zapisaniu widoczny jest tylko identyfikator licencji.",
+    "checkInNote": "Bez klucza licencji nic nie jest wysyłane do Auto Tournament. Z kluczem ten serwer raz dziennie zgłasza się z identyfikatorem klucza i liczbą serwerów.",
     "save": "Zapisz klucz",
     "saved": "Klucz licencji zapisany",
     "saveFailed": "Nie udało się zapisać klucza licencji",
@@ -304,7 +305,7 @@
     },
     "consent": {
       "title": "Zanim zaczniesz: licencja",
-      "subtitle": "Auto Tournament jest darmowy do użytku niekomercyjnego. Użytek komercyjny wymaga licencji. Przeczytaj skrót, powiedz nam, jak z niego korzystasz, i wpisz I AGREE.",
+      "subtitle": "Auto Tournament jest darmowy do użytku niekomercyjnego. Użytek komercyjny wymaga licencji. Przeczytaj skrót, wybierz, jak ta instancja jest używana, i wpisz I AGREE.",
       "intro": "Kod Auto Tournament jest dostępny na licencji {{name}}. W skrócie:",
       "points": {
         "free": "Darmowy do użytku osobistego, projektów hobbystycznych, nauki i wydarzeń, na których nikt nie zarabia.",
@@ -316,16 +317,17 @@
       },
       "readLicense": "Przeczytaj pełną licencję",
       "readRules": "Licencje i użytek komercyjny",
-      "summaryNote": "To jest skrót. Jeśli różni się od licencji, obowiązuje licencja.",
+      "summaryNote": "To jest krótkie podsumowanie, a tekst w Twojej wersji może być nieaktualny. Aktualna licencja i zasady licencjonowania są na autotournament.gg. Jeśli różnią się od tego podsumowania, to one obowiązują.",
       "useQuestion": "Jak używana jest ta instancja?",
+      "privacyNote": "Twoja odpowiedź jest zapisywana tylko na tym serwerze. Bez klucza licencji nic nie jest wysyłane do Auto Tournament. Z kluczem ten serwer raz dziennie zgłasza się z identyfikatorem klucza i liczbą serwerów.",
       "use": {
-        "noncommercial": "Osobisty / niekomercyjny",
+        "noncommercial": "Niekomercyjny",
         "noncommercialHint": "Za darmo. Nikt na tym nie zarabia.",
         "commercial": "Komercyjny",
         "commercialHint": "Potrzebujesz licencji. Wklej klucz teraz lub później."
       },
       "keyLabel": "Klucz licencyjny (opcjonalnie)",
-      "keyHelper": "Zaczyna się od ATL1. Możesz go też dodać później w Ustawienia > Licencja.",
+      "keyHelper": "Zaczyna się od ATL1. Skopiuj go z <consoleLink>swoich licencji w konsoli Auto Tournament</consoleLink> lub dodaj później w Ustawienia > Licencja.",
       "confirmLabel": "Wpisz {{phrase}}, aby zaakceptować warunki licencji",
       "confirmHelper": "Wpisując {{phrase}}, akceptujesz warunki licencji dla tej instancji.",
       "accept": "Akceptuj i kontynuuj",
@@ -344,7 +346,7 @@
       "change": "Zmień",
       "changeTitle": "Zmień sposób użycia tej instancji",
       "changeNote": "Wybierz ponownie i wpisz I AGREE. Zmiana zostanie zapisana z datą i Twoim kontem.",
-      "commercialNoKey": "Ta instancja jest używana komercyjnie, więc potrzebujesz licencji. Wklej klucz poniżej. Dopóki go brakuje, nic nie jest blokowane."
+      "commercialNoKey": "Ta instancja jest używana komercyjnie, więc potrzebujesz licencji. Skopiuj klucz z <consoleLink>swoich licencji w konsoli Auto Tournament</consoleLink> i wklej go poniżej. Dopóki go brakuje, nic nie jest blokowane."
     }
   }
 }

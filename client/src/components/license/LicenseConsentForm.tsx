@@ -4,13 +4,15 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import FormHelperText from '@mui/material/FormHelperText';
 import FormLabel from '@mui/material/FormLabel';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
+import { consoleLinkComponents } from './licenseLinks';
 import { ExternalLink } from '../common/ExternalLink';
 import { apiErrorMessage } from '../../utils/api';
 import {
@@ -97,7 +99,8 @@ export function LicenseConsentForm({ status, onAccepted, onCancel }: Props) {
             <ExternalLink href={terms.pricingUrl}>{t('license.pricing')}</ExternalLink>
           </Typography>
           <Typography variant="caption" color="text.secondary" display="block" mt={1}>
-            {t('license.consent.summaryNote')}
+            {t('license.consent.summaryNote')}{' '}
+            <ExternalLink href={terms.commercialTermsUrl}>autotournament.gg</ExternalLink>
           </Typography>
         </Box>
 
@@ -137,6 +140,9 @@ export function LicenseConsentForm({ status, onAccepted, onCancel }: Props) {
               }
             />
           </RadioGroup>
+          <FormHelperText data-testid="license-consent-privacy">
+            {t('license.consent.privacyNote')}
+          </FormHelperText>
         </FormControl>
 
         {use === 'commercial' && (
@@ -151,7 +157,9 @@ export function LicenseConsentForm({ status, onAccepted, onCancel }: Props) {
             minRows={2}
             maxRows={6}
             autoComplete="off"
-            helperText={t('license.consent.keyHelper')}
+            helperText={
+              <Trans t={t} i18nKey="license.consent.keyHelper" components={consoleLinkComponents} />
+            }
             slotProps={{ htmlInput: { spellCheck: false, 'data-testid': 'license-consent-key' } }}
           />
         )}
