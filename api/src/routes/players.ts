@@ -604,7 +604,8 @@ router.get('/me/discord-id', async (req: Request, res: Response) => {
       return res.status(404).json({ success: false, error: 'No player record for this Steam account' });
     }
 
-    return res.json({ success: true, steamId, discordId });
+    const linked = await playerService.hasLinkedDiscord(steamId);
+    return res.json({ success: true, steamId, discordId, linked });
   } catch (error) {
     log.error('Error reading own Discord ID', { error });
     return res.status(500).json({ success: false, error: 'Failed to load Discord ID' });

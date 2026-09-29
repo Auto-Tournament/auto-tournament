@@ -249,7 +249,7 @@ class PlayerService {
    * Get player by Steam ID
    */
   async getPlayerById(playerId: string): Promise<PlayerResponse | null> {
-    const player = await db.queryOneAsync<PlayerRecord>('SELECT * FROM players WHERE id = ?', [playerId]);
+    const player = await db.queryOneAsync<PlayerRecord>(`SELECT p.*, COALESCE((SELECT a.provider_user_id FROM auth_identities a WHERE a.steam_id = p.id AND a.provider = 'discord' ORDER BY a.created_at, a.id LIMIT 1), p.discord_id) AS discord_id FROM players p WHERE p.id = ?`, [playerId]);
     if (!player) {
       return null;
     }
@@ -260,7 +260,7 @@ class PlayerService {
    * Get player by Steam ID with admin-only fields (Discord ID). Admin routes only.
    */
   async getPlayerByIdForAdmin(playerId: string): Promise<PlayerAdminResponse | null> {
-    const player = await db.queryOneAsync<PlayerRecord>('SELECT * FROM players WHERE id = ?', [playerId]);
+    const player = await db.queryOneAsync<PlayerRecord>(`SELECT p.*, COALESCE((SELECT a.provider_user_id FROM auth_identities a WHERE a.steam_id = p.id AND a.provider = 'discord' ORDER BY a.created_at, a.id LIMIT 1), p.discord_id) AS discord_id FROM players p WHERE p.id = ?`, [playerId]);
     if (!player) {
       return null;
     }
@@ -300,11 +300,21 @@ class PlayerService {
    */
   async getDiscordId(playerId: string): Promise<string | null | undefined> {
     const row = await db.queryOneAsync<{ discord_id: string | null }>(
-      'SELECT discord_id FROM players WHERE id = ?',
+      // A Discord account linked as a sign-in method wins over a typed-in ID.
+      `SELECT COALESCE((SELECT a.provider_user_id FROM auth_identities a WHERE a.steam_id = p.id AND a.provider = 'discord' ORDER BY a.created_at, a.id LIMIT 1), p.discord_id) AS discord_id FROM players p WHERE p.id = ?`,
       [playerId]
     );
     if (!row) return undefined;
     return row.discord_id ? row.discord_id : null;
+  }
+
+  /** Whether the player has linked their Discord account as a sign-in method. */
+  async hasLinkedDiscord(playerId: string): Promise<boolean> {
+    const row = await db.queryOneAsync<{ n: number | string }>(
+      "SELECT COUNT(*) AS n FROM auth_identities WHERE steam_id = ? AND provider = 'discord'",
+      [playerId]
+    );
+    return Number(row?.n ?? 0) > 0;
   }
 
   /**
@@ -318,7 +328,7 @@ class PlayerService {
 
     const placeholders = unique.map(() => '?').join(',');
     const rows = await db.queryAsync<{ id: string; discord_id: string | null }>(
-      `SELECT id, discord_id FROM players WHERE id IN (${placeholders})`,
+      `SELECT p.id, COALESCE((SELECT a.provider_user_id FROM auth_identities a WHERE a.steam_id = p.id AND a.provider = 'discord' ORDER BY a.created_at, a.id LIMIT 1), p.discord_id) AS discord_id FROM players p WHERE p.id IN (${placeholders})`,
       unique
     );
     for (const row of rows) {
@@ -722,7 +732,7 @@ class PlayerService {
 
     const placeholders = steamIds.map(() => '?').join(',');
     const players = await db.queryAsync<PlayerRecord>(
-      `SELECT * FROM players WHERE id IN (${placeholders})`,
+      `SELECT p.*, COALESCE((SELECT a.provider_user_id FROM auth_identities a WHERE a.steam_id = p.id AND a.provider = 'discord' ORDER BY a.created_at, a.id LIMIT 1), p.discord_id) AS discord_id FROM players p WHERE p.id IN (${placeholders})`,
       steamIds
     );
 
