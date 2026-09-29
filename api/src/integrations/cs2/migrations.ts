@@ -90,6 +90,7 @@ export const CS2_FLEET_CONNECT_ADDRESS_MIGRATION_ID = '012-fleet-connect-address
 export const CS2_FLEET_FAILOVER_MIGRATION_ID = '013-fleet-failover';
 export const CS2_FLEET_AUTOSCALE_MIGRATION_ID = '014-fleet-autoscale';
 export const CS2_FLEET_PLUGINS_STATE_MIGRATION_ID = '015-fleet-plugins-state';
+export const CS2_SERVER_TOURNAMENT_USE_MIGRATION_ID = '016-server-tournament-use';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -833,6 +834,14 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
     up: `
     -- hello.plugins_state: the plugins a Ready Up server has (installed) and keeps off (disabled)
     ALTER TABLE cs2_fleet_servers ADD COLUMN IF NOT EXISTS plugins_state TEXT;
+`,
+  },
+  {
+    // 0 = a practice/community server: allocation, auto-scaling and failover
+    // never hand it tournament matches. It still counts toward the license.
+    id: CS2_SERVER_TOURNAMENT_USE_MIGRATION_ID,
+    up: `
+    ALTER TABLE cs2_servers ADD COLUMN IF NOT EXISTS tournament_use INTEGER NOT NULL DEFAULT 1;
 `,
   },
 ];

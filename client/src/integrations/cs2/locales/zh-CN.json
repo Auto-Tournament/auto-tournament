@@ -600,6 +600,8 @@
     "rconPasswordHelper": "用于 RCON 访问服务器的密码",
     "enabledLabel": "服务器启用",
     "enabledHelper": "被禁用的服务器不会用于比赛",
+    "tournamentUseLabel": "Use for tournament matches",
+    "tournamentUseHelper": "Off: a practice or community server. Tournament matches, auto-scaling and failover never use it. It still counts toward your license.",
     "overridesTitle": "Auto Tournament CS2 覆盖配置（可选）",
     "overridesDescription": "这些设置仅覆盖此服务器的全局 Auto Tournament CS2 默认值。留空则使用“设置”中的全局值。",
     "chatPrefixLabel": "聊天前缀覆盖",

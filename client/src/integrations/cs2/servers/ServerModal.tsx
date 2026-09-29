@@ -53,6 +53,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
   const [port, setPort] = useState('27015');
   const [password, setPassword] = useState('');
   const [enabled, setEnabled] = useState(true);
+  const [tournamentUse, setTournamentUse] = useState(true);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [checking, setChecking] = useState(false);
@@ -69,6 +70,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
       setPort(server.port.toString());
       setPassword(server.password);
       setEnabled(server.enabled);
+      setTournamentUse(server.tournamentUse !== false);
     } else {
       resetForm();
     }
@@ -161,6 +163,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
         port: portNum,
         password: password.trim(),
         enabled,
+        tournamentUse,
         atConfig: null,
       };
 
@@ -172,6 +175,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
           port: payload.port,
           password: payload.password,
           enabled: payload.enabled,
+          tournamentUse: payload.tournamentUse,
           atConfig: payload.atConfig,
         });
         console.log('Server updated successfully');
@@ -399,6 +403,27 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     {t('serverModal.enabledHelper')}
+                  </Typography>
+                </Box>
+              }
+            />
+
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={tournamentUse}
+                  onChange={(e) => setTournamentUse(e.target.checked)}
+                  inputProps={{ 'aria-label': t('serverModal.tournamentUseLabel') }}
+                  data-testid="server-tournament-use"
+                />
+              }
+              label={
+                <Box>
+                  <Typography variant="body2" fontWeight={500}>
+                    {t('serverModal.tournamentUseLabel')}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {t('serverModal.tournamentUseHelper')}
                   </Typography>
                 </Box>
               }
