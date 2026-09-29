@@ -16,6 +16,8 @@ import { isInvalidDiscordIdInput, normalizeDiscordId } from '../../utils/discord
 interface OwnDiscordIdResponse {
   steamId: string;
   discordId: string | null;
+  /** Discord is linked as a sign-in method: its ID is used, nothing to type in. */
+  linked?: boolean;
 }
 
 interface OwnDiscordIdCardProps {
@@ -49,7 +51,7 @@ export const OwnDiscordIdCard: React.FC<OwnDiscordIdCardProps> = ({ steamId }) =
         });
         if (!response.ok) return;
         const data = (await response.json()) as OwnDiscordIdResponse;
-        if (cancelled || data.steamId !== steamId) return;
+        if (cancelled || data.steamId !== steamId || data.linked) return;
         setSavedValue(data.discordId ?? null);
         setValue(data.discordId ?? '');
         setAvailable(true);
