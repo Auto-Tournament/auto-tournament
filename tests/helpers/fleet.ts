@@ -103,6 +103,8 @@ export class FleetTestClient {
   readonly ws: WebSocket;
   readonly received: Envelope[] = [];
   closed: { code: number; reason: string } | null = null;
+  /** The ws library's last error: for a 1002/1007 it names the bad frame. */
+  lastError: string | null = null;
   private waiters: Array<() => void> = [];
 
   private constructor(ws: WebSocket) {
@@ -115,7 +117,10 @@ export class FleetTestClient {
       this.closed = { code, reason: reason.toString() };
       this.wake();
     });
-    ws.on('error', () => this.wake());
+    ws.on('error', (error) => {
+      this.lastError = error.message;
+      this.wake();
+    });
   }
 
   private wake(): void {
@@ -155,7 +160,10 @@ export class FleetTestClient {
     for (;;) {
       const i = this.received.findIndex(pred);
       if (i >= 0) return this.received.splice(i, 1)[0];
-      if (this.closed) throw new Error(`socket closed (${this.closed.code} ${this.closed.reason}) while waiting`);
+      if (this.closed) {
+        const detail = this.lastError ? `; ${this.lastError}` : '';
+        throw new Error(`socket closed (${this.closed.code} ${this.closed.reason}${detail}) while waiting`);
+      }
       const left = deadline - Date.now();
       if (left <= 0) throw new Error(`timed out; received: ${JSON.stringify(this.received.map((m) => m.type))}`);
       await new Promise<void>((resolve) => {
@@ -184,6 +192,10 @@ export class FleetTestClient {
           resolve();
         });
       });
+    }
+    // A websocket-level close (1002, 1006, ...) is not the gateway's: say why.
+    if (this.closed.code < 4000 && this.lastError) {
+      return { code: this.closed.code, reason: `${this.closed.reason} [ws: ${this.lastError}]` };
     }
     return this.closed;
   }
