@@ -121,6 +121,10 @@ test.describe.serial('enrollment ws_url behind a TLS proxy', () => {
     request,
   }) => {
     const pending = await createPendingHost(request, 'ws-url-plain-host');
+    // Plain http: the link command carries csm's explicit --insecure opt-in.
+    expect(pending.command).toMatch(
+      new RegExp(`^csm link http://\\S+ ${pending.code} --insecure$`)
+    );
     const res = await request.post('/api/fleet/enroll', {
       data: {
         kind: 'host',

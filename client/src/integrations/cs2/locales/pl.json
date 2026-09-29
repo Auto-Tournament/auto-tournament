@@ -1158,6 +1158,7 @@
     "copied": "Skopiowano",
     "copyFailed": "Nie udało się skopiować do schowka",
     "shownOnce": "Pokazywane tylko raz. Platforma przechowuje wyłącznie skrót.",
+    "insecureNote": "Ta strona działa na nieszyfrowanym http://, więc polecenie zawiera --insecure, a token jest przesyłany bez szyfrowania. Jeśli możesz, udostępnij platformę przez https://.",
     "rotateSent": "Wysłano nowy token do serwera",
     "rotateQueued": "Token zostanie odnowiony przy następnym połączeniu serwera",
     "errors": {
@@ -1301,6 +1302,7 @@
     "copy": "Copy",
     "linkConnected": "Connected. The machine is ready.",
     "linkWaiting": "Waiting for the machine to connect…",
+    "insecureNote": "Ta strona działa na nieszyfrowanym http://, więc polecenie zawiera --insecure, a token jest przesyłany bez szyfrowania. Jeśli możesz, udostępnij platformę przez https://.",
     "done": "Done",
     "createHelp": "New servers get Ready Up and connect to this platform on their own.",
     "count": "How many",

@@ -1118,6 +1118,7 @@
     "copied": "Copied",
     "copyFailed": "Could not copy to the clipboard",
     "shownOnce": "This is shown only once. The platform keeps only a hash of it.",
+    "insecureNote": "This site is on plain http://, so the command has --insecure and the token travels unencrypted. Serve the platform over https:// if you can.",
     "rotateSent": "New token sent to the server",
     "rotateQueued": "The token rotates the next time the server connects",
     "errors": {
@@ -1261,6 +1262,7 @@
     "copy": "Copy",
     "linkConnected": "Connected. The machine is ready.",
     "linkWaiting": "Waiting for the machine to connect…",
+    "insecureNote": "This site is on plain http://, so the command has --insecure and the token travels unencrypted. Serve the platform over https:// if you can.",
     "done": "Done",
     "createHelp": "New servers get Ready Up and connect to this platform on their own.",
     "count": "How many",

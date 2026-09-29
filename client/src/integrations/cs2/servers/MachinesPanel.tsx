@@ -59,6 +59,7 @@ import type {
 } from '../cs2.types';
 import type { PluginSetValue } from './fleetPush.types';
 import PluginSetPicker, { usePluginCatalog } from './PluginSetPicker';
+import { insecureFlag, platformIsPlainHttp } from './insecureLink';
 
 const POLL_MS = 5_000;
 const POLL_FAST_MS = 2_000;
@@ -161,7 +162,7 @@ export default function MachinesPanel() {
     }
   };
 
-  const linkCommand = (code: string) => `csm link ${window.location.origin} ${code}`;
+  const linkCommand = (code: string) => `csm link ${window.location.origin} ${code}${insecureFlag()}`;
 
   const addMachine = async () => {
     setBusy(true);
@@ -686,6 +687,14 @@ export default function MachinesPanel() {
               <CopyIcon size={20} />
             </IconButton>
           </Box>
+          {platformIsPlainHttp() && (
+            <Typography variant="caption" color="warning.main" display="block" mt={1.5} data-testid="machines-insecure-note">
+              {t('machinesPanel.insecureNote', {
+                defaultValue:
+                  'This site is on plain http://, so the command has --insecure and the token travels unencrypted. Serve the platform over https:// if you can.',
+              })}
+            </Typography>
+          )}
           <Stack direction="row" gap={1} alignItems="center" mt={2} data-testid="machines-link-status">
             <StatusDot state={linkConnected ? 'live' : 'loading'} />
             <Typography variant="body2" color={linkConnected ? 'success.main' : 'text.secondary'}>

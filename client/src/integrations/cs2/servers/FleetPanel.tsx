@@ -53,6 +53,7 @@ import {
   useSnackbar,
 } from '../../../module-sdk';
 import type { FleetKey, FleetKeysResponse, FleetServer, FleetServersResponse } from '../cs2.types';
+import { insecureFlag, platformIsPlainHttp } from './insecureLink';
 
 const POLL_MS = 10_000;
 
@@ -668,7 +669,12 @@ export default function FleetPanel() {
           </Typography>
           {secret?.kind === 'code' && (
             <Typography variant="caption" color="text.secondary" component="pre" sx={{ ...mono, mt: 1.5, whiteSpace: 'pre-wrap' }}>
-              {`ru fleet enroll ${window.location.origin} ${secret.value}`}
+              {`ru fleet enroll ${window.location.origin} ${secret.value}${insecureFlag()}`}
+            </Typography>
+          )}
+          {secret?.kind === 'code' && platformIsPlainHttp() && (
+            <Typography variant="caption" color="warning.main" display="block" mt={1} data-testid="fleet-insecure-note">
+              {t('fleetPanel.insecureNote')}
             </Typography>
           )}
         </DialogContent>
