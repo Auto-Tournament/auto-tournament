@@ -29,6 +29,7 @@ import testHelperRoutes from './testHelpers';
 import { fleetAdminRouter, fleetEnrollRouter } from '../fleet/routes';
 import { fleetHostAdminRouter } from '../fleet/hosts/routes';
 import { fleetPushRouter } from '../fleet/push/routes';
+import { fleetAutoscaleRouter } from '../fleet/autoscale/routes';
 
 export const cs2LegacyRoutes: LegacyRouteMount[] = [
   {
@@ -159,6 +160,13 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     router: failoverSettingsRouter,
     title: 'Fleet failover settings',
     description: 'Auto-failover (off by default): move a match off a dead Ready Up server without waiting for an admin.',
+  },
+  {
+    prefix: '/api/fleet',
+    router: fleetAutoscaleRouter,
+    title: 'Fleet autoscaling',
+    description:
+      'Automatic server scaling on csm machines: start stopped Ready Up servers ahead of the bracket, stop idle ones after a cool-down, create one when the pool is short. Settings, what the scaler sees, its activity, and a pass on request.',
   },
   {
     prefix: '/api/test',

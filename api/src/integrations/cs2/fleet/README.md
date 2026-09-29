@@ -37,6 +37,7 @@ admin actions): what exists, and the calls to use.
 | `protocol/host/v1/`, `hosts/` | the host channel for csm (FLEET.md §18), see the last section |
 | `push/` | server-level pushes: `admins.set`, `server.config` + `cmd settings.set`, whitelist / practice / plugins, `match.update` roster edits (below) |
 | `failover.ts`, `failoverPlan.ts`, `failoverSettings.ts` | **failover** (FLEET.md §11): a server that dies or hangs mid-match, the match resumed from its last round backup, in place or on another server (below) |
+| `autoscale/` | automatic scaling of Ready Up servers on csm machines: start ahead of the bracket, stop after a cool-down, create when short (last section) |
 
 Tables (migration `006-fleet-match` in `../migrations.ts`):
 `cs2_servers.transport` (`'rcon'` default | `'fleet'`) + `cs2_servers.fleet_server_id`
@@ -410,3 +411,54 @@ Up, logs); Ready Up's own link stays for the match.
   the machine by `install_id`.
 - **Inventory join** (§18.3): each `server-N` joins its Ready Up server on
   `readyup.install_id`, else `readyup.server_id`.
+
+## Automatic scaling: `autoscale/`
+
+Servers are thin and never deleted between matches: warm (running) or cold
+(stopped). The scaler (`autoscale/scaler.ts`, a pass every
+`FLEET_AUTOSCALE_INTERVAL_MS`, 15 s; 0 = no timer) keeps as many warm as the
+bracket needs, through csm's `server.start` / `server.stop` / `server.create`
+(`hosts/service.ts sendHostCommand`, `issued_by = 'autoscale'`).
+
+| File | What |
+|---|---|
+| `autoscale/plan.ts` | pure: settings, `estimateSecondsLeft` (soonest a series can end), `computeDemand`, `planScaling` |
+| `autoscale/settings.ts` | the `'autoscale'` row of `cs2_fleet_lists`; the failover reserve from the `'failover'` row |
+| `autoscale/scaler.ts` | inputs (matches, live state, inventories, links, pending host commands), actions, the activity log, linking created servers |
+| `autoscale/routes.ts` | `GET /api/fleet/autoscale`, `PUT /api/fleet/autoscale/settings`, `POST /api/fleet/autoscale/run` |
+
+- **Managed**: an inventory `server-N` joined to a Ready Up server that is
+  linked to an enabled `cs2_servers` row. Nothing else is touched.
+- **Need** = matches on a Ready Up server + matches waiting for one (both
+  teams known and free; standalone matches always) + matches that will be
+  waiting within the lead time (their feeders, or their teams' current
+  matches, can end by then per `estimateSecondsLeft` on the live state),
+  for tournaments in progress; plus the failover reserve (failover's
+  setting and `effectiveReserve`, over the managed pool) while anything needs
+  a server.
+  RCON matches are not the fleet's.
+- **Warm** = running with Ready Up connected, booting (< 3 min), or a start
+  in flight.
+- **Short**: start cold servers (most free RAM first); still short, one
+  `server.create {count: 1, enroll: true}` on an online machine with
+  `servers.create`, fewer than the max servers, 3 GB RAM and 5 GB disk free.
+  One create at a time: until its server is linked and in the inventory
+  (15 min at most). Its Ready Up (installed by the create's follow-up)
+  enrolls with the create's key and is linked by the next pass (once; an
+  admin's unlink sticks).
+- **Surplus**: stop the servers idle longest, once idle for the cool-down;
+  never one that is busy (match loaded / live / being loaded, open
+  assignment, turnover, `update_safe: false`), updating (pending
+  `host.update_*` / restart), an open failover's target, or the spare
+  failover would pick. csm refuses a stop during a match too.
+- **Rate limit** (`limitActions`): per pass at most 8 starts and 2 stops,
+  per machine at most 6 scaler commands a minute; the rest waits for the
+  next pass (noted in the activity).
+- **Audit**: every command is a `cs2_fleet_host_commands` row with
+  `issued_by = 'autoscale'` and `meta.reason`; never forced.
+- **License**: never blocks. Every created server is linked (an enabled
+  row) and counts; the license page warns past the pack's server count.
+- **Activity**: `cs2_fleet_autoscale_events` (migration `014-fleet-autoscale`,
+  newest 500): start / stop / create / link, and a note when the pool is
+  short and nothing more can be done. Settings default: on, 2 min lead,
+  10 min cool-down, 4 servers per machine.

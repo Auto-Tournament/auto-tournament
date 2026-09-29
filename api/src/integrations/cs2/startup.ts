@@ -25,6 +25,7 @@ import { startFleetHosts, stopFleetHosts } from './fleet/hosts/service';
 import { startServerNotices, stopServerNotices } from './fleet/serverNotices';
 import { startFleetPush, stopFleetPush } from './fleet/push';
 import { startFleetFailover, stopFleetFailover } from './fleet/failover';
+import { startAutoscaler, stopAutoscaler } from './fleet/autoscale/scaler';
 
 export async function startCs2(): Promise<void> {
   // Round backups from Ready Up servers (event.backup) and the restore audit:
@@ -52,6 +53,8 @@ export async function startCs2(): Promise<void> {
   });
   // Failover proposals for Ready Up servers that die mid-match (FLEET.md §11).
   startFleetFailover();
+  // Automatic scaling of Ready Up servers on those machines (fleet/autoscale/).
+  startAutoscaler();
 
   await bootstrapServerWebhooks().catch((error) => {
     log.warn('Failed to auto-configure server webhooks on startup', { error });
@@ -84,6 +87,7 @@ export function stopCs2(): void {
   stopFleetFailover();
   stopServerNotices();
   stopFleetPush();
+  stopAutoscaler();
 }
 
 async function bootstrapServerWebhooks(): Promise<void> {

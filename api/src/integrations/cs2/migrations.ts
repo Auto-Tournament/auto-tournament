@@ -62,6 +62,10 @@
  * `013-fleet-failover` adds failover proposals (fleet/failover.ts, FLEET.md
  * §11): a Ready Up server that died or hung mid-match, the spare server and
  * round backup proposed, and what the admin (or auto-failover) decided.
+ *
+ * `014-fleet-autoscale` adds the automatic scaler's activity log
+ * (fleet/autoscale/): each start, stop, create and link it did, and why. Its
+ * settings are the 'autoscale' row of `cs2_fleet_lists`.
  */
 
 import type { ModuleMigration } from '../types';
@@ -79,6 +83,7 @@ export const CS2_FLEET_DRIVER_MIGRATION_ID = '010-fleet-driver';
 export const CS2_FLEET_SERVER_PREFS_MIGRATION_ID = '011-fleet-server-prefs';
 export const CS2_FLEET_CONNECT_ADDRESS_MIGRATION_ID = '012-fleet-connect-address';
 export const CS2_FLEET_FAILOVER_MIGRATION_ID = '013-fleet-failover';
+export const CS2_FLEET_AUTOSCALE_MIGRATION_ID = '014-fleet-autoscale';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -786,6 +791,35 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
 
     CREATE INDEX IF NOT EXISTS cs2_fleet_failovers_match_idx ON cs2_fleet_failovers(match_slug, created_at);
     CREATE UNIQUE INDEX IF NOT EXISTS cs2_fleet_failovers_open_idx ON cs2_fleet_failovers(match_slug) WHERE status IN ('open', 'moving');
+`,
+  },
+  {
+    // Automatic server scaling (fleet/autoscale/). Every statement can run
+    // twice.
+    //
+    // - cs2_fleet_autoscale_events: what the scaler did and why (the Servers
+    //   page's activity list): start / stop / create / link, or a note when
+    //   it could not do what was needed. The scaler keeps the newest rows.
+    //   The settings are the 'autoscale' row of cs2_fleet_lists (`data` =
+    //   {"enabled", "leadTimeSeconds", "cooldownSeconds", "maxServersPerHost"}).
+    id: CS2_FLEET_AUTOSCALE_MIGRATION_ID,
+    up: `
+    CREATE TABLE IF NOT EXISTS cs2_fleet_autoscale_events (
+      id SERIAL PRIMARY KEY,
+      at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      action TEXT NOT NULL, -- start | stop | create | link | note
+      host_id TEXT, -- cs2_fleet_hosts.id (no key: a removed machine keeps its history)
+      host_name TEXT,
+      server TEXT, -- csm's server-N
+      fleet_server_id TEXT,
+      server_name TEXT,
+      reason TEXT NOT NULL,
+      command_id TEXT, -- cs2_fleet_host_commands.message_id
+      outcome TEXT NOT NULL DEFAULT 'sent', -- sent | linked | refused | failed | note
+      error TEXT
+    );
+
+    CREATE INDEX IF NOT EXISTS cs2_fleet_autoscale_events_at_idx ON cs2_fleet_autoscale_events(at);
 `,
   },
 ];
