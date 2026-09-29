@@ -343,6 +343,38 @@
       "changeTitle": "更改此实例的用途",
       "changeNote": "重新选择并输入 I AGREE。更改会连同日期和你的账号一起保存。",
       "commercialNoKey": "此实例用于商业用途，因此你需要许可证。请从 <consoleLink>Auto Tournament 控制台中的你的许可证</consoleLink>复制密钥，并粘贴到下方。缺少密钥时不会锁定任何功能。"
+    },
+    "checkin": {
+      "last": "上次许可证联络：{{time}}",
+      "never": "尚未进行许可证联络。保存密钥后不久会进行第一次。",
+      "whatIsSent": "发送的内容",
+      "intro": "每天一次，且仅在保存了密钥时，此服务器会发送：",
+      "keyId": "许可证密钥，用于核对其 ID 和签名",
+      "instanceId": "此安装的随机 ID（只生成一次）",
+      "serverCount": "游戏服务器数量",
+      "version": "平台版本",
+      "activity": "自上次联络以来的计数：已完成的比赛、有活动的赛事，以及最多的队伍数",
+      "declared": "你对赛事日期问题的回答（如果回答过）",
+      "notSent": "不含任何名称、地址、玩家或比赛详情。",
+      "privacy": "隐私政策",
+      "noticeTitle": "来自 Auto Tournament 的提示",
+      "answered": "你对此许可证的回答：{{answer}}（{{time}}）"
+    },
+    "eventPrompt": {
+      "title": "在筹划新的活动吗？",
+      "body": "你的赛事许可证适用于 {{dates}}。请告诉我们你是在测试、有新的赛事，还是日期有变——测试期间无需任何操作。",
+      "datesRange": "{{from}} 至 {{to}}",
+      "testing": "测试或准备中",
+      "newEvent": "新的赛事",
+      "datesMoved": "我们的赛事日期变了",
+      "dontAsk": "不再询问",
+      "close": "关闭",
+      "thanks": "谢谢，已记录。",
+      "failed": "无法保存你的回答"
+    },
+    "warning": {
+      "periodEnded": "此赛事许可证的适用日期截至 {{date}}。测试和准备无需任何操作；新的赛事需要单独的赛事许可证。",
+      "periodNotStarted": "此赛事许可证从 {{date}} 起适用。在此之前进行准备和测试完全没问题。"
     }
   }
 }

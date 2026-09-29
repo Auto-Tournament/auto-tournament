@@ -347,6 +347,38 @@
       "changeTitle": "Zmień sposób użycia tej instancji",
       "changeNote": "Wybierz ponownie i wpisz I AGREE. Zmiana zostanie zapisana z datą i Twoim kontem.",
       "commercialNoKey": "Ta instancja jest używana komercyjnie, więc potrzebujesz licencji. Skopiuj klucz z <consoleLink>swoich licencji w konsoli Auto Tournament</consoleLink> i wklej go poniżej. Dopóki go brakuje, nic nie jest blokowane."
+    },
+    "checkin": {
+      "last": "Ostatnie zgłoszenie licencji: {{time}}",
+      "never": "Jeszcze nie było zgłoszenia licencji. Pierwsze nastąpi wkrótce po zapisaniu klucza.",
+      "whatIsSent": "Co jest wysyłane",
+      "intro": "Raz dziennie i tylko wtedy, gdy zapisany jest klucz, ten serwer wysyła:",
+      "keyId": "Klucz licencji, aby można było sprawdzić jego identyfikator i podpis",
+      "instanceId": "Losowy identyfikator tej instalacji, utworzony raz",
+      "serverCount": "Liczbę serwerów gry",
+      "version": "Wersję platformy",
+      "activity": "Liczby od ostatniego zgłoszenia: zakończone mecze, turnieje z aktywnością i największą liczbę drużyn",
+      "declared": "Twoją odpowiedź na pytanie o daty wydarzenia, jeśli jej udzielono",
+      "notSent": "Żadnych nazw, adresów, graczy ani szczegółów meczów.",
+      "privacy": "Polityka prywatności",
+      "noticeTitle": "Informacja od Auto Tournament",
+      "answered": "Twoja odpowiedź dla tej licencji: {{answer}} ({{time}})"
+    },
+    "eventPrompt": {
+      "title": "Planujesz coś nowego?",
+      "body": "Twoja licencja na wydarzenie obejmuje {{dates}}. Daj nam znać, czy testujesz, masz nowe wydarzenie, czy zmieniły się daty — podczas testów nie musisz nic robić.",
+      "datesRange": "od {{from}} do {{to}}",
+      "testing": "Testy lub konfiguracja",
+      "newEvent": "Nowe wydarzenie",
+      "datesMoved": "Zmieniły się daty naszego wydarzenia",
+      "dontAsk": "Nie pytaj ponownie",
+      "close": "Zamknij",
+      "thanks": "Dzięki, zapisane.",
+      "failed": "Nie udało się zapisać odpowiedzi"
+    },
+    "warning": {
+      "periodEnded": "Ta licencja na wydarzenie obejmowała daty do {{date}}. Testy i konfiguracja nie wymagają niczego; nowe wydarzenie ma własną licencję na wydarzenie.",
+      "periodNotStarted": "Ta licencja na wydarzenie obejmuje daty od {{date}}. Konfiguracja i testy przed tym terminem są w porządku."
     }
   }
 }

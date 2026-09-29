@@ -1226,6 +1226,13 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   // The license terms acceptance: /api/license/consent or AT_ACCEPT_LICENSE only.
   { key: 'license_consent', field: null },
   { key: 'license_consent_history', field: null },
+  // The daily license check-in's state (services/license/checkin.ts): written by it only.
+  { key: 'license_instance_id', field: null },
+  { key: 'license_checkin_last_at', field: null },
+  { key: 'license_checkin_result', field: null },
+  { key: 'license_checkin_counted_since', field: null },
+  { key: 'license_event_declaration', field: null },
+  { key: 'license_event_prompt', field: null },
   // Integrator webhooks to private / loopback targets (services/webhooks/ssrf).
   { key: 'webhooks_allow_private_targets', field: 'webhooksAllowPrivateTargets' },
 ];

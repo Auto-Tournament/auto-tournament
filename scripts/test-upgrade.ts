@@ -278,6 +278,8 @@ function runApp(
     '-e',
     'GAMES_ENRICH=off',
     '-e',
+    'LICENSE_CHECKIN_URL=off',
+    '-e',
     'STEAM_API_KEY=',
     '-e',
     'LOG_LEVEL=info',

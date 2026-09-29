@@ -65,6 +65,7 @@ import { TRUST_PROXY_HOPS } from './config/trustProxy';
 import { COMPAT_MAX_BYTES } from './utils/compatPayload';
 import { reportCompatConfig } from './services/compatService';
 import { startCompatFeed, stopCompatFeed } from './services/compatFeedService';
+import { startLicenseCheckin, stopLicenseCheckin } from './services/license/checkinService';
 import { startWebhooks, stopWebhooks } from './services/webhooks';
 
 const app = express();
@@ -582,6 +583,9 @@ process.on('uncaughtException', (err) => {
       // Integrator webhooks: the persisted delivery queue and the match
       // watcher (services/webhooks). Idle while no endpoint is switched on.
       startWebhooks();
+      // The daily license check-in: only with a license key saved, in the
+      // background, never blocking anything (services/license/checkin.ts).
+      startLicenseCheckin();
 
       // Recover matches and start the game integrations (CS2: bootstrap server
       // webhooks, fetch the Auto Tournament CS2 version, start health monitoring) now the
@@ -635,6 +639,7 @@ process.on('uncaughtException', (err) => {
       scheduler.stopAllPolling();
       stopCompatFeed();
       stopWebhooks();
+      stopLicenseCheckin();
       stopIntegrations();
       // Live sockets and idle keep-alive connections would hold the close.
       getIO().disconnectSockets(true);

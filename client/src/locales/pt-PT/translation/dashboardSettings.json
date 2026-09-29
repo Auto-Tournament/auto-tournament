@@ -343,6 +343,38 @@
       "changeTitle": "Alterar como esta instância é usada",
       "changeNote": "Escolhe de novo e escreve I AGREE. A alteração é guardada com a data e a tua conta.",
       "commercialNoKey": "Esta instância tem uso comercial, por isso precisas de uma licença. Copia a tua chave das <consoleLink>tuas licenças na consola do Auto Tournament</consoleLink> e cola-a abaixo. Nada é bloqueado enquanto falta."
+    },
+    "checkin": {
+      "last": "Última comunicação da licença: {{time}}",
+      "never": "Ainda não houve nenhuma comunicação da licença. A primeira acontece pouco depois de guardar uma chave.",
+      "whatIsSent": "O que é enviado",
+      "intro": "Uma vez por dia, e só enquanto houver uma chave guardada, este servidor envia:",
+      "keyId": "A chave de licença, para que o ID e a assinatura possam ser verificados",
+      "instanceId": "Um ID aleatório desta instalação, criado uma única vez",
+      "serverCount": "O número de servidores de jogo",
+      "version": "A versão da plataforma",
+      "activity": "Contagens desde a última comunicação: jogos terminados, torneios com atividade e o maior número de equipas",
+      "declared": "A tua resposta à pergunta sobre as datas do evento, se a deste",
+      "notSent": "Sem nomes, endereços, jogadores ou detalhes de jogos.",
+      "privacy": "Política de privacidade",
+      "noticeTitle": "Uma nota da Auto Tournament",
+      "answered": "A tua resposta para esta licença: {{answer}} ({{time}})"
+    },
+    "eventPrompt": {
+      "title": "Estás a planear algo novo?",
+      "body": "A tua licença de evento cobre {{dates}}. Diz-nos se estás a fazer testes, tens um evento novo ou se as datas mudaram — enquanto estiveres a testar, não é preciso fazer nada.",
+      "datesRange": "de {{from}} a {{to}}",
+      "testing": "Testes ou configuração",
+      "newEvent": "Um evento novo",
+      "datesMoved": "As datas do nosso evento mudaram",
+      "dontAsk": "Não voltar a perguntar",
+      "close": "Fechar",
+      "thanks": "Obrigado, registado.",
+      "failed": "Não foi possível guardar a tua resposta"
+    },
+    "warning": {
+      "periodEnded": "Esta licença de evento cobria as datas até {{date}}. Testes e configuração não exigem nada; um evento novo tem a sua própria licença de evento.",
+      "periodNotStarted": "Esta licença de evento cobre as datas a partir de {{date}}. Configurar e testar antes disso não tem problema."
     }
   }
 }

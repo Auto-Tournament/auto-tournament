@@ -12,6 +12,7 @@ import { SiteLinksGrid } from '../components/adminHome/SiteLinksGrid';
 import { useShellIntegrations, shellModule } from '../hooks/useShellIntegrations';
 import { PeopleOverviewCard } from '../components/adminHome/PeopleOverviewCard';
 import { LicenseOverviewCard } from '../components/adminHome/LicenseOverviewCard';
+import { EventLicensePrompt } from '../components/adminHome/EventLicensePrompt';
 import { PageHead } from '../components/common/ui';
 import { paths } from '../paths';
 
@@ -97,6 +98,8 @@ export default function AdminHome() {
           </Box>
         ) : (
           <Box sx={{ display: 'grid', gap: { xs: 4, md: 6 } }}>
+            {/* Event licenses only: a quiet, dismissible question, never blocking. */}
+            <EventLicensePrompt />
             <SetupCard items={setupItems} />
 
             <Box

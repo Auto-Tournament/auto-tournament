@@ -25,6 +25,55 @@ export interface LicenseStatus {
   version: string;
   lineDate: string;
   publicBadge: boolean;
+  /** The daily check-in; null without a key (then nothing is sent). */
+  checkin: {
+    lastAt: string | null;
+    /** Plain text from autotournament.gg, shown as a calm note. */
+    notice: string | null;
+    sent: string[];
+    privacyUrl: string;
+  } | null;
+  /** An event license only: the quiet "what's this?" question on the admin home. */
+  eventPrompt: {
+    shouldAsk: boolean;
+    validFrom: string;
+    validTo: string;
+    declared: EventDeclared;
+    declaredAt: string | null;
+  } | null;
+}
+
+export type EventDeclared = 'none' | 'testing' | 'new_event' | 'dates_moved';
+export type EventPromptAction = Exclude<EventDeclared, 'none'> | 'dismissed' | 'dont_ask';
+
+/** The label key of an answer to the event-license question. */
+export const EVENT_ANSWER_LABEL: Record<Exclude<EventDeclared, 'none'>, string> = {
+  testing: 'license.eventPrompt.testing',
+  new_event: 'license.eventPrompt.newEvent',
+  dates_moved: 'license.eventPrompt.datesMoved',
+};
+
+/** "2026-10-03 to 2026-10-05", or the one day. */
+export function eventDates(from: string, to: string, t: TFunction): string {
+  return from === to ? from : t('license.eventPrompt.datesRange', { from, to });
+}
+
+/**
+ * A warning in the admin's language where the UI knows it (the event dates),
+ * else the API's English text.
+ */
+export function licenseWarningText(
+  warning: { code: string; message: string },
+  license: LicenseStatus['license'],
+  t: TFunction
+): string {
+  if (warning.code === 'period_ended' && license?.validTo) {
+    return t('license.warning.periodEnded', { date: license.validTo });
+  }
+  if (warning.code === 'period_not_started' && license?.validFrom) {
+    return t('license.warning.periodNotStarted', { date: license.validFrom });
+  }
+  return warning.message;
 }
 
 export interface LicenseStatusResponse {

@@ -19,6 +19,7 @@ import {
   licenseConsentService,
   parseLicenseUse,
 } from '../services/license/consent';
+import { DECLARATION_ANSWERS, type EventPromptAction } from '../services/license/checkin';
 
 const router = Router();
 
@@ -86,6 +87,16 @@ router.use(requireAuth);
  *       the pack) or `invalid` (not a genuine key). Nothing is ever blocked.
  *       The key itself is never returned; `license.id` identifies it, and
  *       `verifyUrl` is its public check page.
+ *
+ *       With a key saved, `checkin` describes the daily license check-in:
+ *       `lastAt` (ISO time of the last one that went through, or null),
+ *       `notice` (plain text from autotournament.gg to show admins, or null),
+ *       `sent` (the field names of what is sent) and `privacyUrl`. Without a
+ *       key it is null, and nothing is sent. `eventPrompt` is set for an
+ *       event license only: `shouldAsk` is true when there was real activity
+ *       outside `validFrom`..`validTo` and the question was not asked in the
+ *       last 30 days (see `POST /api/license/event-prompt`); `declared` is
+ *       the last answer for this license (`none` when never answered).
  *     responses:
  *       200:
  *         description: The status
@@ -182,6 +193,58 @@ router.put('/public-badge', async (req: Request, res: Response) => {
     return res.json({ success: true, license: await licenseService.setPublicBadge(enabled) });
   } catch (error) {
     return failed(res, 'Failed to save the public badge setting', error);
+  }
+});
+
+const EVENT_PROMPT_ACTIONS: readonly EventPromptAction[] = [...DECLARATION_ANSWERS, 'dismissed', 'dont_ask'];
+
+/**
+ * @openapi
+ * /api/license/event-prompt:
+ *   post:
+ *     tags: [License]
+ *     summary: Answer the event-license question
+ *     description: |
+ *       For an event license with activity outside its dates, the admin
+ *       dashboard asks, at most once per 30 days, what it is. Body
+ *       `{ "action": "testing" | "new_event" | "dates_moved" | "dismissed" | "dont_ask" }`.
+ *       An answer is recorded (who and when) and sent as `declared` with the
+ *       next check-in; `dismissed` closes the question for 30 days, and
+ *       `dont_ask` stops it for this license. Nothing else changes.
+ *       Same-site JSON only.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [action]
+ *             properties:
+ *               action: { type: string, enum: [testing, new_event, dates_moved, dismissed, dont_ask] }
+ *     responses:
+ *       200:
+ *         description: Recorded; the new status
+ *       400:
+ *         description: Not one of the actions
+ *       409:
+ *         description: The saved key is not a genuine event license
+ */
+router.post('/event-prompt', async (req: Request, res: Response) => {
+  if (refuseWrite(req, res)) return;
+  const action = (req.body as { action?: unknown } | undefined)?.action;
+  if (typeof action !== 'string' || !(EVENT_PROMPT_ACTIONS as readonly string[]).includes(action)) {
+    return res.status(400).json({ success: false, error: `action must be one of ${EVENT_PROMPT_ACTIONS.join(', ')}` });
+  }
+  try {
+    const status = await licenseService.getStatus();
+    const license = status.license;
+    if (status.status === 'invalid' || !license || license.kind !== 'event') {
+      return res.status(409).json({ success: false, error: 'The saved key is not an event license' });
+    }
+    await licenseService.answerEventPrompt(action as EventPromptAction, license.id, requestActorId(req) ?? 'unknown');
+    return res.json({ success: true, license: await licenseService.getStatus() });
+  } catch (error) {
+    return failed(res, 'Failed to save the answer', error);
   }
 });
 

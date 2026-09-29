@@ -343,6 +343,38 @@
       "changeTitle": "Modifica come viene usata questa istanza",
       "changeNote": "Scegli di nuovo e scrivi I AGREE. La modifica viene salvata con la data e il tuo account.",
       "commercialNoKey": "Questa istanza ha un uso commerciale, quindi ti serve una licenza. Copia la chiave dalle <consoleLink>tue licenze nella console di Auto Tournament</consoleLink> e incollala qui sotto. Nel frattempo non viene bloccato nulla."
+    },
+    "checkin": {
+      "last": "Ultimo check-in della licenza: {{time}}",
+      "never": "Ancora nessun check-in della licenza. Il primo avviene poco dopo aver salvato una chiave.",
+      "whatIsSent": "Cosa viene inviato",
+      "intro": "Una volta al giorno, e solo finché è salvata una chiave, questo server invia:",
+      "keyId": "La chiave di licenza, per poterne verificare ID e firma",
+      "instanceId": "Un ID casuale di questa installazione, creato una sola volta",
+      "serverCount": "Il numero di server di gioco",
+      "version": "La versione della piattaforma",
+      "activity": "Conteggi dall’ultimo check-in: partite concluse, tornei con attività e il numero massimo di squadre",
+      "declared": "La tua risposta alla domanda sulle date dell’evento, se l’hai data",
+      "notSent": "Nessun nome, indirizzo, giocatore o dettaglio delle partite.",
+      "privacy": "Informativa sulla privacy",
+      "noticeTitle": "Una nota da Auto Tournament",
+      "answered": "La tua risposta per questa licenza: {{answer}} ({{time}})"
+    },
+    "eventPrompt": {
+      "title": "Stai preparando qualcosa di nuovo?",
+      "body": "La tua licenza evento copre {{dates}}. Facci sapere se stai facendo prove, hai un nuovo evento o se le date sono cambiate — finché fai prove non serve fare nulla.",
+      "datesRange": "dal {{from}} al {{to}}",
+      "testing": "Prove o configurazione",
+      "newEvent": "Un nuovo evento",
+      "datesMoved": "Le date del nostro evento sono cambiate",
+      "dontAsk": "Non chiedere più",
+      "close": "Chiudi",
+      "thanks": "Grazie, annotato.",
+      "failed": "Impossibile salvare la tua risposta"
+    },
+    "warning": {
+      "periodEnded": "Questa licenza evento copriva le date fino al {{date}}. Prove e configurazione non richiedono nulla; un nuovo evento ha la sua licenza evento.",
+      "periodNotStarted": "Questa licenza evento copre le date dal {{date}}. Configurare e fare prove prima va benissimo."
     }
   }
 }

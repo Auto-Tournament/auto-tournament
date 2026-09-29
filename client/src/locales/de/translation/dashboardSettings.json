@@ -343,6 +343,38 @@
       "changeTitle": "Nutzung dieser Instanz ändern",
       "changeNote": "Wähle erneut und tippe I AGREE. Die Änderung wird mit Datum und deinem Konto gespeichert.",
       "commercialNoKey": "Diese Instanz wird kommerziell genutzt, also brauchst du eine Lizenz. Kopiere deinen Schlüssel aus <consoleLink>deinen Lizenzen in der Auto-Tournament-Konsole</consoleLink> und füge ihn unten ein. Solange er fehlt, wird nichts gesperrt."
+    },
+    "checkin": {
+      "last": "Letzte Lizenzmeldung: {{time}}",
+      "never": "Noch keine Lizenzmeldung. Die erste folgt kurz nach dem Speichern eines Schlüssels.",
+      "whatIsSent": "Was gesendet wird",
+      "intro": "Einmal täglich, und nur solange ein Schlüssel gespeichert ist, sendet dieser Server:",
+      "keyId": "Den Lizenzschlüssel, damit ID und Signatur geprüft werden können",
+      "instanceId": "Eine zufällige ID dieser Installation, einmal erzeugt",
+      "serverCount": "Die Anzahl der Spielserver",
+      "version": "Die Plattformversion",
+      "activity": "Zahlen seit der letzten Meldung: beendete Matches, Turniere mit Aktivität und die größte Teamanzahl",
+      "declared": "Deine Antwort auf die Frage zu den Event-Daten, falls du eine gegeben hast",
+      "notSent": "Keine Namen, Adressen, Spieler oder Matchdetails.",
+      "privacy": "Datenschutzerklärung",
+      "noticeTitle": "Ein Hinweis von Auto Tournament",
+      "answered": "Deine Antwort für diese Lizenz: {{answer}} ({{time}})"
+    },
+    "eventPrompt": {
+      "title": "Planst du etwas Neues?",
+      "body": "Deine Event-Lizenz gilt für {{dates}}. Sag uns, ob du testest, ein neues Event hast oder sich deine Termine verschoben haben – solange du testest, ist nichts zu tun.",
+      "datesRange": "{{from}} bis {{to}}",
+      "testing": "Testen oder Einrichten",
+      "newEvent": "Ein neues Event",
+      "datesMoved": "Unsere Event-Termine haben sich verschoben",
+      "dontAsk": "Nicht mehr fragen",
+      "close": "Schließen",
+      "thanks": "Danke, notiert.",
+      "failed": "Deine Antwort konnte nicht gespeichert werden"
+    },
+    "warning": {
+      "periodEnded": "Diese Event-Lizenz galt bis {{date}}. Testen und Einrichten erfordern nichts; ein neues Event bekommt eine eigene Event-Lizenz.",
+      "periodNotStarted": "Diese Event-Lizenz gilt ab {{date}}. Einrichten und Testen vorher ist in Ordnung."
     }
   }
 }

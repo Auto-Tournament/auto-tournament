@@ -237,6 +237,9 @@ jobs:
             # (tests/ui/license-consent.spec.ts covers the consent step).
             echo "AT_ACCEPT_LICENSE=noncommercial"
             echo "GAMES_ENRICH=off"
+            # The suite saves test license keys: never check in with
+            # autotournament.gg from CI (services/license/checkin.ts).
+            echo "LICENSE_CHECKIN_URL=off"
             # A stock install has no games; the suite needs the image's packs.
             echo "PREINSTALL_PACKS=all"
             # The suite never depends on GitHub: the catalog offers what the
