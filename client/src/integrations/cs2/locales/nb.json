@@ -600,6 +600,8 @@
     "rconPasswordHelper": "Passord for RCON-tilgang til serveren",
     "enabledLabel": "Server aktivert",
     "enabledHelper": "Deaktiverte servere brukes ikke til kamper",
+    "tournamentUseLabel": "Use for tournament matches",
+    "tournamentUseHelper": "Off: a practice or community server. Tournament matches, auto-scaling and failover never use it. It still counts toward your license.",
     "overridesTitle": "Auto Tournament CS2-overstyringer (valgfritt)",
     "overridesDescription": "Disse innstillingene overstyrer globale Auto Tournament CS2-standarder kun for denne serveren. La stå tomt for å bruke globale verdier fra Innstillinger.",
     "chatPrefixLabel": "Overstyr chat-prefiks",

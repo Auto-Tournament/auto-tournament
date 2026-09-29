@@ -29,6 +29,8 @@ export interface Server {
   port: number;
   password: string;
   enabled: boolean;
+  /** False: a practice/community server that tournament matches never go to. */
+  tournamentUse?: boolean;
   createdAt: number;
   updatedAt: number;
   rconPassword?: string;

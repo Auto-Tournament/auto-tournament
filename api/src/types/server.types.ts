@@ -9,6 +9,8 @@ export interface Server {
   port: number;
   password: string;
   enabled: number; // PostgreSQL stores boolean as 0/1 in INTEGER column
+  /** 0 = practice/community server: never given tournament matches. */
+  tournament_use?: number | null;
   at_config?: string | null; // JSON blob with per-server Auto Tournament CS2 ConVar overrides
   persistent_config_sent?: number | null; // Unix timestamp when persistent config was last sent
   plugin_version?: string | null; // Auto Tournament CS2 version (e.g., "1.3.6")
@@ -58,6 +60,7 @@ export interface CreateServerInput {
   port: number;
   password: string;
   enabled?: boolean; // Optional, defaults to true
+  tournamentUse?: boolean; // Optional, defaults to true
   atConfig?: AtServerConfigInput;
 }
 
@@ -67,6 +70,7 @@ export interface UpdateServerInput {
   port?: number;
   password?: string;
   enabled?: boolean;
+  tournamentUse?: boolean;
   atConfig?: AtServerConfigInput | null;
 }
 
@@ -82,6 +86,8 @@ export interface ServerResponse {
   port: number;
   password: string;
   enabled: boolean;
+  /** False: a practice/community server that tournament matches never go to. */
+  tournamentUse: boolean;
   atConfig: AtServerConfig | null;
   created_at: number;
   updated_at: number;

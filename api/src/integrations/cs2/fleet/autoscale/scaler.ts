@@ -338,7 +338,7 @@ export async function gatherInputs(settings: StoredAutoscaleSettings): Promise<G
   ]);
 
   const linkRows = await db.queryAsync<{ id: string; fleet_server_id: string }>(
-    `SELECT id, fleet_server_id FROM cs2_servers WHERE transport = 'fleet' AND enabled = 1 AND fleet_server_id IS NOT NULL`
+    `SELECT id, fleet_server_id FROM cs2_servers WHERE transport = 'fleet' AND enabled = 1 AND COALESCE(tournament_use, 1) = 1 AND fleet_server_id IS NOT NULL`
   );
   const links = new Map(linkRows.map((r) => [r.fleet_server_id, r.id]));
   const busyRows = await db.queryAsync<{ server_id: string }>(

@@ -426,7 +426,8 @@ export class Cs2ServerPool {
    * out unless `includeFleetReserve` (failover itself asks with it).
    */
   async getAvailableServers(options: { includeFleetReserve?: boolean } = {}): Promise<ServerResponse[]> {
-    const enabledServers = await serverService.getAllServers(true); // Get only enabled servers
+    // Only enabled servers that take tournament matches (not practice/community ones).
+    const enabledServers = (await serverService.getAllServers(true)).filter((s) => s.tournamentUse !== false);
 
     // Filter out unconfigured servers (never sent server_configured event)
     // These servers cannot be used for matches until they've been initialized

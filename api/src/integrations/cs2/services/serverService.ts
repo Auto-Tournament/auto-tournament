@@ -99,6 +99,7 @@ export class ServerService {
       port: input.port,
       password: input.password,
       enabled: input.enabled !== undefined ? (input.enabled ? 1 : 0) : 1,
+      tournament_use: input.tournamentUse === false ? 0 : 1,
       at_config: atConfig,
     });
 
@@ -154,6 +155,7 @@ export class ServerService {
     }
     if (input.password !== undefined) updateData.password = input.password;
     if (input.enabled !== undefined) updateData.enabled = input.enabled ? 1 : 0;
+    if (input.tournamentUse !== undefined) updateData.tournament_use = input.tournamentUse ? 1 : 0;
 
     if (input.atConfig !== undefined) {
       const hasKeys =
@@ -279,6 +281,7 @@ export class ServerService {
       port: server.port,
       password: server.password,
       enabled: server.enabled === 1,
+      tournamentUse: server.tournament_use !== 0,
       atConfig,
       created_at: server.created_at,
       updated_at: server.updated_at,

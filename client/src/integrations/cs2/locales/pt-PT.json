@@ -600,6 +600,8 @@
     "rconPasswordHelper": "Palavra-passe para acesso RCON ao servidor",
     "enabledLabel": "Servidor ativado",
     "enabledHelper": "Servidores desativados não serão usados em jogos",
+    "tournamentUseLabel": "Use for tournament matches",
+    "tournamentUseHelper": "Off: a practice or community server. Tournament matches, auto-scaling and failover never use it. It still counts toward your license.",
     "overridesTitle": "Substituições Auto Tournament CS2 (opcional)",
     "overridesDescription": "Estas definições substituem as predefinições globais do Auto Tournament CS2 apenas para este servidor. Deixe em branco para usar os valores globais das Definições.",
     "chatPrefixLabel": "Substituição do prefixo do chat",
