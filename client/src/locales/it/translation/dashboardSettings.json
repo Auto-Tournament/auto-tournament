@@ -7,7 +7,8 @@
       "players": "Giocatori e accesso",
       "matches": "Match e rating",
       "developer": "Sviluppatore / simulazione",
-      "license": "License"
+      "license": "License",
+      "webhooks": "Webhook"
     },
     "integrations": {
       "steam": {

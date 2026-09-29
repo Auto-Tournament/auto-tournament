@@ -108,7 +108,8 @@
       "players": "Spillere og tilgang",
       "matches": "Rating",
       "developer": "Utvikler",
-      "license": "Lisens"
+      "license": "Lisens",
+      "webhooks": "Webhooks"
     },
     "integrations": {
       "steam": {

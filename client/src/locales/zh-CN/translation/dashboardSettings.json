@@ -108,7 +108,8 @@
       "players": "选手与访问控制",
       "matches": "比赛与评分",
       "developer": "开发者 / 模拟",
-      "license": "License"
+      "license": "License",
+      "webhooks": "Webhook"
     },
     "integrations": {
       "steam": {
