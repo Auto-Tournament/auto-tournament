@@ -17,6 +17,7 @@ import { healthMonitoringService } from './services/healthMonitoringService';
 import { startMapAutoSync, stopMapAutoSync } from './maps/autoSync';
 import { mapService } from './maps/mapService';
 import { startFleet, stopFleet } from './fleet/service';
+import { startFleetDriver } from './fleet/driver';
 import { startRoundBackups, stopRoundBackups } from './fleet/backups';
 import { startRestoreAudit, stopRestoreAudit } from './fleet/restore';
 import { startDemoStreams, stopDemoStreams } from './fleet/demoStream';
@@ -35,7 +36,9 @@ export async function startCs2(): Promise<void> {
 
   // The Ready Up fleet gateway (/api/fleet/ws) first: it only attaches to the
   // HTTP server, and servers reconnecting after a restart should not wait on
-  // the RCON bootstrap below.
+  // the RCON bootstrap below. The driver's hooks go in before it accepts a
+  // hello (welcome.assignment, zombie unassigns, turnover, admin calls).
+  startFleetDriver();
   await startFleet().catch((error) => {
     log.warn('Failed to start the fleet gateway', { error });
   });
@@ -130,7 +133,7 @@ async function bootstrapServerWebhooks(): Promise<void> {
     }
   }
 
-  const enabledServers = await serverService.getAllServers(true);
+  const enabledServers = await serverService.getRconServers(true);
   if (enabledServers.length === 0) {
     log.info('No enabled servers found for webhook bootstrap.');
     return;

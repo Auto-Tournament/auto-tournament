@@ -181,7 +181,7 @@ export class RconService {
    * Broadcast a command to all enabled servers
    */
   async broadcastCommand(command: string): Promise<RconCommandResponse[]> {
-    const servers = await serverService.getAllServers(true); // Get only enabled servers
+    const servers = await serverService.getRconServers(true); // Get only enabled servers
 
     if (servers.length === 0) {
       return [

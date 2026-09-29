@@ -74,7 +74,7 @@ class Cs2FleetMonitoringService {
     this.inProgress = true;
     try {
       const now = params?.now ?? Math.floor(Date.now() / 1000);
-      const servers = params?.servers ?? (await serverService.getAllServers(true));
+      const servers = params?.servers ?? (await serverService.getRconServers(true));
 
       // `getAllServers` hands back ServerResponse, where `enabled` is a boolean
       // and the CS2 fields are camelCase. Comparing to 1 and reading snake_case

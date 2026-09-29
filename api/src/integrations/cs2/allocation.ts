@@ -12,6 +12,12 @@
  * idle through the Auto Tournament CS2 convars, has no loaded/live match in our database,
  * is past its turnover (grace period, demo upload; see utils/serverTurnover),
  * runs a verified CS2 build, and has recently proven it can reach our webhook.
+ *
+ * Ready Up servers on the fleet link (`transport = 'fleet'`, fleet/link.ts)
+ * are in the same pool: free when their socket is up, they report
+ * `available`, have no loaded/live match in our database and are past their
+ * turnover. Everything done to a server goes through its driver (./driver.ts),
+ * so RCON servers keep exactly the path they had.
  */
 
 import { db } from '../../config/database';
@@ -31,8 +37,9 @@ import {
 } from './services/serverStatusService';
 import { getLastServerTestEvent } from './services/serverConnectivityService';
 import { serverAllocationTracker } from './services/serverAllocationTracker';
-import { cancelQueuedLoad, loadMatchOnServer } from './services/matchLoadingService';
 import { serverTurnoverTracker } from './utils/serverTurnover';
+import { driverFor } from './driver';
+import { fleetServerIsIdle } from './fleet/driver';
 
 /** One attempt to put a match on a server, as the allocator reports it. */
 export interface ServerAllocationResult {
@@ -151,8 +158,11 @@ export class Cs2ServerPool {
     const enabledServers = await serverService.getAllServers(true);
 
     // Filter out unconfigured servers from allocation status
-    // These servers haven't sent any events yet and cannot be used
-    const configuredServers = enabledServers.filter((server) => server.lastSeen !== null);
+    // These servers haven't sent any events yet and cannot be used.
+    // (Fleet servers report over their socket, not the webhook.)
+    const configuredServers = enabledServers.filter(
+      (server) => server.transport === 'fleet' || server.lastSeen !== null
+    );
 
     // For the high‑level allocation *status* view we intentionally include all
     // configured servers, even if the in‑memory allocation tracker currently
@@ -165,6 +175,17 @@ export class Cs2ServerPool {
     const statusChecks = await Promise.all(
       configuredServers.map(async (server) => {
         try {
+          if (server.transport === 'fleet') {
+            const fleet = await fleetServerIsIdle(server.id);
+            return {
+              server,
+              status: fleet.status,
+              matchSlug: null as string | null,
+              updatedAt: fleet.idleSince,
+              online: fleet.online,
+              fleetIdle: fleet.idle,
+            };
+          }
           // Use the short-lived status cache for availability checks so we don't
           // block the entire API on fresh RCON calls every time the UI polls.
           const serverStatus = await serverStatusService.getServerStatus(server.id, true);
@@ -242,6 +263,7 @@ export class Cs2ServerPool {
 
     for (const check of statusChecks) {
       const { server, status, matchSlug, updatedAt, online } = check;
+      const isFleet = server.transport === 'fleet';
 
       if (!online) {
         offlineCount += 1;
@@ -255,7 +277,9 @@ export class Cs2ServerPool {
       // - AND database must not show a loaded/live match
       // This prevents servers from showing as "Available" when they have
       // a match in warmup but the plugin hasn't updated the ConVar yet.
-      const pluginSaysIdle = isAllocatableStatus(status, matchSlug);
+      const pluginSaysIdle = isFleet
+        ? (check as { fleetIdle?: boolean }).fleetIdle === true
+        : isAllocatableStatus(status, matchSlug);
       const dbSaysBusy = dbBusy !== null;
 
       // A freshly loaded match legitimately looks idle for a moment: Auto Tournament CS2 has
@@ -300,10 +324,12 @@ export class Cs2ServerPool {
 
       // If the server has reported a CS2 update is required, it must not be
       // allocated to new matches.
-      const isOutOfDate = typeof server.cs2RequiredVersion === 'number';
+      const isOutOfDate = !isFleet && typeof server.cs2RequiredVersion === 'number';
       // Safer default: require that MAT has verified CS2 version at least once.
+      // (Ready Up reports its CS2 build in hello; there is no RCON check.)
       const isCs2Verified =
-        typeof server.cs2BuildId === 'number' && typeof server.cs2UpdateCheckedAt === 'number';
+        isFleet ||
+        (typeof server.cs2BuildId === 'number' && typeof server.cs2UpdateCheckedAt === 'number');
 
       const turnover = isIdle ? serverTurnoverTracker.evaluate(server.id, updatedAt ?? null, now) : null;
 
@@ -312,6 +338,10 @@ export class Cs2ServerPool {
         // out, however long it has been idle.
         demoUploadPending = true;
         secondsUntilReady = turnover.demoUploadGiveUpInSeconds;
+      } else if (isIdle && isFleet) {
+        // Ready Up says `available` only once the previous match is unloaded
+        // and its players are gone: no grace window on top.
+        allocatable = true;
       } else if (isIdle) {
         if (updatedAt && !turnover?.releaseEarly) {
           const age = now - updatedAt;
@@ -397,6 +427,8 @@ export class Cs2ServerPool {
     // These servers cannot be used for matches until they've been initialized
     // and have sent their first event (which sets lastSeen timestamp)
     const configuredServers = enabledServers.filter((server) => {
+      // Ready Up servers (fleet link) are checked on their own below.
+      if (server.transport === 'fleet') return false;
       if (!server.lastSeen) {
         log.debug(
           `[ALLOCATION] Skipping unconfigured server ${server.id} (${server.name}) - no events received yet`
@@ -411,6 +443,7 @@ export class Cs2ServerPool {
     // authoritative view: if the plugin reports the server as idle, we allow
     // allocation even if our DB still has legacy loaded/live matches attached.
     const candidateServers = configuredServers;
+    const fleetServers = enabledServers.filter((server) => server.transport === 'fleet');
 
     // Check each server's Auto Tournament CS2 tournament status
     const statusChecks = await Promise.all(
@@ -623,11 +656,48 @@ export class Cs2ServerPool {
       log.debug(`Server ${server.id} (${server.name}) is available for allocation (idle)`);
     }
 
+    availableServers.push(...(await this.availableFleetServers(fleetServers, dbBusyServers, now)));
+
     log.debug(
       `Found ${availableServers.length} available servers out of ${enabledServers.length} enabled (${onlineServers.length} online)`
     );
 
     return availableServers;
+  }
+
+  /**
+   * The Ready Up servers of the pool that can take a match now: connected and
+   * `available` (fleet/driver.ts), not being handed a match, not busy in our
+   * own records, and past their turnover (a demo upload still running holds
+   * the server). No webhook check: events come over the same socket.
+   */
+  private async availableFleetServers(
+    servers: ServerResponse[],
+    dbBusyServers: Set<string>,
+    now: number
+  ): Promise<ServerResponse[]> {
+    const available: ServerResponse[] = [];
+    for (const server of servers) {
+      if (this.allocatingServers.has(server.id) || serverAllocationTracker.isBusy(server.id)) continue;
+      if (dbBusyServers.has(server.id)) {
+        log.debug(`Fleet server ${server.id} (${server.name}) not available: database shows loaded/live match`);
+        continue;
+      }
+      const fleet = await fleetServerIsIdle(server.id);
+      if (!fleet.idle) {
+        log.debug(
+          `Fleet server ${server.id} (${server.name}) not available (online=${fleet.online}, status=${fleet.status})`
+        );
+        continue;
+      }
+      if (serverTurnoverTracker.evaluate(server.id, fleet.idleSince, now).demoUploadPending) {
+        log.debug(`Fleet server ${server.id} (${server.name}) is available but its previous demo is still uploading`);
+        continue;
+      }
+      available.push(server);
+      serverAllocationTracker.markIdle(server.id);
+    }
+    return available;
   }
 
   /**
@@ -649,9 +719,10 @@ export class Cs2ServerPool {
     try {
       // Final live status check right before allocation so we don't rely on
       // the older snapshot returned from getAvailableServers.
-      const statusInfo = await serverStatusService.getServerStatus(server.id);
+      const driver = await driverFor(server.id);
+      const statusInfo = await driver.checkIdle(server.id);
 
-      if (!statusInfo.online || !isAllocatableStatus(statusInfo.status, statusInfo.matchSlug)) {
+      if (!statusInfo.idle) {
         log.debug(
           `[ALLOCATION] Refusing to allocate match ${matchSlug} to server ${server.id} (${server.name}) because it is not idle (status=${statusInfo.status}, matchSlug=${statusInfo.matchSlug})`
         );
@@ -702,7 +773,7 @@ export class Cs2ServerPool {
       await this.emitServerAssigned(matchSlug, server.id);
 
       // Load match on server and let Auto Tournament CS2 validate the config
-      const loadResult = await loadMatchOnServer(matchSlug, server.id, { baseUrl });
+      const loadResult = await driver.loadMatch(matchSlug, server.id, { baseUrl });
 
       if (loadResult.success) {
         log.matchAllocated(matchSlug, server.id, server.name);
@@ -724,8 +795,10 @@ export class Cs2ServerPool {
       }
       // The match may go to another server next; do not let this one load it later.
       if (loadResult.mayHaveQueued) {
-        await cancelQueuedLoad(server.id, matchSlug);
+        await driver.cancelQueuedLoad(server.id, matchSlug);
       }
+      // A Ready Up server that refused (busy, draining): free for the next pass.
+      if (loadResult.retryElsewhere) serverAllocationTracker.markIdle(server.id);
 
       const errorMessage = loadResult.error || 'Failed to load match';
       log.error(
@@ -835,11 +908,28 @@ export class Cs2ServerPool {
    * checked that the match is ready and that it is its turn in the queue.
    */
   async allocate(matchSlug: string, baseUrl: string): Promise<ServerAllocationResult> {
+    // Ready Up servers that refused the match in this call (busy, draining, no answer).
+    const refused = new Set<string>();
+    for (;;) {
+      const { retryElsewhere, ...result } = await this.allocateOnce(matchSlug, baseUrl, refused);
+      if (!retryElsewhere || !result.serverId || refused.size >= 16) return result;
+      log.warn(
+        `[ALLOCATION] ${result.serverId} refused match ${matchSlug} (${result.error}); trying another server`
+      );
+      refused.add(result.serverId);
+    }
+  }
+
+  private async allocateOnce(
+    matchSlug: string,
+    baseUrl: string,
+    skip: ReadonlySet<string>
+  ): Promise<ServerAllocationResult & { retryElsewhere?: boolean }> {
     let allocatedServerId: string | null = null;
     try {
       // Get first available server, respecting the in‑memory "allocating" guard
       // so concurrent allocations never pick the same server.
-      const availableServers = await this.getAvailableServers();
+      const availableServers = (await this.getAvailableServers()).filter((s) => !skip.has(s.id));
       if (availableServers.length === 0) {
         return { matchSlug, success: false, error: 'No available servers' };
       }
@@ -901,7 +991,8 @@ export class Cs2ServerPool {
       await this.emitServerAssigned(matchSlug, server.id);
 
       // Load match on server
-      const loadResult = await loadMatchOnServer(matchSlug, server.id, { baseUrl });
+      const driver = await driverFor(server.id);
+      const loadResult = await driver.loadMatch(matchSlug, server.id, { baseUrl });
 
       if (loadResult.success) {
         log.matchAllocated(matchSlug, server.id, server.name);
@@ -912,13 +1003,15 @@ export class Cs2ServerPool {
       await db.updateAsync('matches', { server_id: null }, 'slug = ?', [matchSlug]);
       // The match may go to another server next; do not let this one load it later.
       if (loadResult.mayHaveQueued) {
-        await cancelQueuedLoad(server.id, matchSlug);
+        await driver.cancelQueuedLoad(server.id, matchSlug);
       }
+      if (loadResult.retryElsewhere) serverAllocationTracker.markIdle(server.id);
       return {
         matchSlug,
         success: false,
         serverId: server.id,
         error: loadResult.error || 'Failed to load match',
+        ...(loadResult.retryElsewhere ? { retryElsewhere: true } : {}),
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -988,12 +1081,14 @@ export class Cs2ServerPool {
       }
 
       const serverId = match.server_id;
+      const driver = await driverFor(serverId);
 
-      // Step 1: End the current match
+      // Step 1: End the current match (RCON: css_restart and a few seconds
+      // for the server to clean up; Ready Up: match.unassign)
       log.info(`Ending match ${matchSlug} on server ${serverId}`);
-      const endResult = await rconService.sendCommand(serverId, 'css_restart');
+      const endResult = await driver.stopForReload(serverId, matchSlug);
 
-      if (!endResult.success) {
+      if (!endResult.ok) {
         return {
           success: false,
           message: `Failed to end match: ${endResult.error}`,
@@ -1009,9 +1104,6 @@ export class Cs2ServerPool {
         log.success(`[RESTART] Match ${matchSlug} ended successfully`);
       }
 
-      // Step 2: Wait a few seconds for server to clean up
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-
       // Step 3: Reset match status to 'ready'
       await db.updateAsync('matches', { status: 'ready', loaded_at: null }, 'slug = ?', [
         matchSlug,
@@ -1019,7 +1111,7 @@ export class Cs2ServerPool {
 
       // Step 4: Reload the match on the same server
       log.info(`Reloading match ${matchSlug} on server ${serverId}`);
-      const loadResult = await loadMatchOnServer(matchSlug, serverId, { baseUrl });
+      const loadResult = await driver.loadMatch(matchSlug, serverId, { baseUrl });
 
       if (loadResult.success) {
         log.success(`[RESTART] Match ${matchSlug} restarted successfully`);
@@ -1098,7 +1190,7 @@ export class Cs2ServerPool {
     }
 
     // Use centralized match loading service
-    const result = await loadMatchOnServer(slug, serverIdToUse as string, {
+    const result = await (await driverFor(serverIdToUse as string)).loadMatch(slug, serverIdToUse as string, {
       skipWebhook: options.skipWebhook,
       baseUrl: options.baseUrl,
     });
@@ -1165,19 +1257,11 @@ export class Cs2ServerPool {
     // match queued on the old server, then restart it so it returns to a clean
     // state. In that order, a restart that makes an old plugin fetch its queued
     // config is refused by the config route instead of starting a second copy.
-    await cancelQueuedLoad(oldServerId, matchSlug);
-    try {
-      await rconService.sendCommand(oldServerId, 'css_restart');
-    } catch (err) {
-      log.warn(`Failed to restart old server during reallocation (continuing)`, {
-        matchSlug,
-        serverId: oldServerId,
-        error: err instanceof Error ? err.message : String(err),
-      });
-    }
+    // (A Ready Up server gets match.unassign {moved} instead.)
+    await (await driverFor(oldServerId)).releaseForMove(oldServerId, matchSlug);
 
     // Load on the new server.
-    const load = await loadMatchOnServer(matchSlug, fallback.id, { baseUrl });
+    const load = await (await driverFor(fallback.id)).loadMatch(matchSlug, fallback.id, { baseUrl });
 
     if (!load.success) {
       // Roll back the tracker reservation; keep match assigned to the new server
@@ -1211,11 +1295,7 @@ export class Cs2ServerPool {
    * restart the server, so there is no `unconfirmed`-reply case to handle.
    */
   async endMatchOnServer(serverId: string, matchSlug: string): Promise<void> {
-    const result = await rconService.sendCommand(serverId, 'css_endmatch');
-
-    if (!result.success) {
-      throw new Error(result.error ?? 'css_endmatch failed');
-    }
+    await (await driverFor(serverId)).endMatch(serverId, matchSlug);
 
     log.info(`Successfully sent end match command to server ${serverId} for match ${matchSlug}`);
   }
@@ -1227,11 +1307,7 @@ export class Cs2ServerPool {
    * before answering) counts as ended.
    */
   async restartServerToEndMatch(serverId: string): Promise<void> {
-    const result = await rconService.sendCommand(serverId, 'css_restart');
-
-    if (!result.success) {
-      throw new Error(result.error ?? 'css_restart failed');
-    }
+    const result = await (await driverFor(serverId)).resetServer(serverId);
 
     if (result.unconfirmed) {
       log.warn(
@@ -1245,6 +1321,20 @@ export class Cs2ServerPool {
   /** The series is over: the server is free for the allocator again. */
   markIdle(serverId: string): void {
     serverAllocationTracker.markIdle(serverId);
+  }
+
+  /**
+   * The series is over and stored: tell the server (Ready Up: match.unassign
+   * {ended}; the RCON plugin resets itself). Never throws.
+   */
+  async seriesDone(serverId: string, matchSlug: string): Promise<void> {
+    try {
+      await (await driverFor(serverId)).seriesDone(serverId, matchSlug);
+    } catch (error) {
+      log.warn(`[RELEASE] Could not tell server ${serverId} that ${matchSlug} is over`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
 }
 

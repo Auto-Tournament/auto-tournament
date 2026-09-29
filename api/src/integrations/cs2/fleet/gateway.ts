@@ -75,6 +75,12 @@ const RATE = { perSecond: 50, burst: 200 };
 const SEEN_WRITE_MS = 10_000;
 const ID_WINDOW = 10_000;
 
+/** `welcome.assignment` for a server that says hello (FLEET.md §6.1): the match it holds, or null. */
+export type AssignmentResolver = (
+  serverId: string,
+  hello: HelloPayload
+) => Promise<WelcomePayload['assignment']>;
+
 /** Test hook: shorter timers. Only read when the gateway is created. */
 export interface GatewayTimings {
   heartbeatIntervalMs: number;
@@ -448,6 +454,14 @@ class FleetSession {
     if (this.helloTimer) clearTimeout(this.helloTimer);
     this.helloTimer = null;
 
+    // The match this server holds on the platform's side (FLEET.md §6.1,
+    // §11): a server that reconnects mid-match resumes it. The driver decides
+    // (./driver.ts); none registered = no assignment.
+    const assignment = await this.gateway.resolveAssignment(serverId, hello);
+    if (this.closed) {
+      await registry.markDisconnected(serverId, this.sessionId);
+      return;
+    }
     const welcome: WelcomePayload = {
       session_id: this.sessionId,
       protocol,
@@ -455,7 +469,7 @@ class FleetSession {
       resume: { result, platform_last_rx_seq: this.rxSeq },
       server_config_rev: 0,
       admins_rev: 0,
-      assignment: null,
+      assignment,
     };
     this.ready = true;
     this.sendEphemeral('welcome', welcome as unknown as Record<string, unknown>, msg.id);
@@ -470,7 +484,7 @@ class FleetSession {
     // server's own replay (queued behind this) is processed.
     await replayUnprocessed({ serverId, sendEphemeral: (t, p, extra) => this.sendEphemeral(t, p, undefined, extra) });
     this.pingTimer = setInterval(() => this.sendEphemeral('ping', { t: Date.now() }), this.timings.heartbeatIntervalMs);
-    await this.gateway.onReady(serverId);
+    await this.gateway.onReady(serverId, hello);
   }
 
   // --- outbound --------------------------------------------------------------
@@ -630,7 +644,8 @@ export class FleetGateway {
   private readonly sessions = new Map<string, FleetSession>();
   private readonly connections = new Set<FleetSession>();
   private server: HttpServer | null = null;
-  private readyListeners: Array<(serverId: string) => Promise<void> | void> = [];
+  private readyListeners: Array<(serverId: string, hello: HelloPayload) => Promise<void> | void> = [];
+  private assignmentResolver: AssignmentResolver | null = null;
   private readonly timings: GatewayTimings;
 
   constructor(timings: Partial<GatewayTimings> = {}) {
@@ -683,15 +698,32 @@ export class FleetGateway {
     for (const session of this.connections) session.close(code, reason);
   }
 
-  onServerReady(listener: (serverId: string) => Promise<void> | void): void {
+  /** After a server's welcome (and the outbox replay): `hello` is what it said it holds. */
+  onServerReady(listener: (serverId: string, hello: HelloPayload) => Promise<void> | void): void {
     this.readyListeners.push(listener);
   }
 
+  /** Who fills `welcome.assignment` (the fleet driver). One resolver; a second call replaces it. */
+  setAssignmentResolver(resolver: AssignmentResolver | null): void {
+    this.assignmentResolver = resolver;
+  }
+
   /** @internal */
-  async onReady(serverId: string): Promise<void> {
+  async resolveAssignment(serverId: string, hello: HelloPayload): Promise<WelcomePayload['assignment']> {
+    if (!this.assignmentResolver) return null;
+    try {
+      return await this.assignmentResolver(serverId, hello);
+    } catch (error) {
+      log.warn(`[FLEET] ${serverId}: resolving its assignment failed: ${(error as Error).message}`);
+      return null;
+    }
+  }
+
+  /** @internal */
+  async onReady(serverId: string, hello: HelloPayload): Promise<void> {
     for (const listener of this.readyListeners) {
       try {
-        await listener(serverId);
+        await listener(serverId, hello);
       } catch (error) {
         log.warn(`[FLEET] ${serverId}: after-welcome task failed: ${(error as Error).message}`);
       }
