@@ -30,6 +30,7 @@ import { log } from '../../../utils/logger';
  * / `csm license clear`. Riding the existing poll keeps it on the same token
  * and needs no push (see above). A failure to read the key never fails the
  * hold: `license` is then null, which tells csm "no answer, change nothing".
+ * `license.use` is the admin's recorded consent (omitted until accepted).
  * The key is never logged here.
  */
 const router = Router();
@@ -102,6 +103,13 @@ const router = Router();
  *                         Changes exactly when the key is saved, replaced or
  *                         cleared ("none" without a key). csm applies the key
  *                         only when this differs from what it last applied.
+ *                     use:
+ *                       type: string
+ *                       enum: [noncommercial, commercial]
+ *                       description: >
+ *                         How the admin accepted the license terms, so csm can
+ *                         give Ready Up its license consent without a prompt.
+ *                         Omitted until the current terms are accepted.
  *       401:
  *         description: Missing or invalid server token
  *       500:

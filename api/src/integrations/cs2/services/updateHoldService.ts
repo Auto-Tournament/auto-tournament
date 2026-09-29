@@ -20,6 +20,7 @@
  * public address and MAT to match it — a new failure mode for no gain.
  */
 
+import { licenseConsentService, type LicenseUse } from '../../../services/license/consent';
 import { createHash } from 'crypto';
 import { db } from '../../../config/database';
 import { settingsService } from '../../../services/settingsService';
@@ -170,6 +171,12 @@ export async function getUpdateHoldStatus(tournamentId: number): Promise<UpdateH
 export interface ServerLicenseHandoff {
   key: string | null;
   revision: string;
+  /**
+   * How the admin said this instance is used (the consent from the license
+   * terms step), so csm can give Ready Up its license consent with no prompt.
+   * Left out until the current terms are accepted.
+   */
+  use?: LicenseUse;
 }
 
 export const NO_LICENSE_REVISION = 'none';
@@ -189,5 +196,12 @@ export function licenseHandoffFor(key: string | null | undefined): ServerLicense
  * new host module.
  */
 export async function getLicenseHandoff(): Promise<ServerLicenseHandoff> {
-  return licenseHandoffFor(await settingsService.getSetting('license_key'));
+  const handoff = licenseHandoffFor(await settingsService.getSetting('license_key'));
+  try {
+    const status = await licenseConsentService.getStatus();
+    if (status.accepted && status.consent) handoff.use = status.consent.use;
+  } catch {
+    // Consent unreadable: send the key without `use` (csm changes nothing).
+  }
+  return handoff;
 }
