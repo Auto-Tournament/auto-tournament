@@ -3,7 +3,7 @@
  *
  * Without `state`, passport-oauth2 falls back to its NullStore, which accepts
  * any `?code=` at the callback. That allows login CSRF: an attacker starts a
- * Discord/GitHub/Keycloak login in their own browser, keeps the `code`, and
+ * Discord/GitHub/OpenID Connect login in their own browser, keeps the `code`, and
  * gets a victim to open our callback with it. The victim's browser then
  * completes a login as the *attacker's* provider account (and, via the
  * player_steam_id fast path, links that account to the victim's Steam ID).

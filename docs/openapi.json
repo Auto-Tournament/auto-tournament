@@ -1184,48 +1184,6 @@
         ]
       }
     },
-    "/api/auth/keycloak": {
-      "get": {
-        "tags": [
-          "Auth"
-        ],
-        "summary": "GET /api/auth/keycloak",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
-    "/api/auth/keycloak/callback": {
-      "get": {
-        "tags": [
-          "Auth"
-        ],
-        "summary": "GET /api/auth/keycloak/callback",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
-    "/api/auth/keycloak/link": {
-      "post": {
-        "tags": [
-          "Auth"
-        ],
-        "summary": "POST /api/auth/keycloak/link",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
     "/api/auth/local/login": {
       "post": {
         "tags": [
@@ -1437,6 +1395,48 @@
         }
       }
     },
+    "/api/auth/oidc": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "GET /api/auth/oidc",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/auth/oidc/callback": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "GET /api/auth/oidc/callback",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/auth/oidc/link": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "POST /api/auth/oidc/link",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/auth/providers": {
       "get": {
         "tags": [
@@ -1577,9 +1577,11 @@
               "type": "string",
               "enum": [
                 "discord",
-                "keycloak",
                 "github",
-                "google"
+                "google",
+                "twitch",
+                "epic",
+                "oidc"
               ]
             }
           }
@@ -6221,10 +6223,11 @@
               "type": "string",
               "enum": [
                 "discord",
-                "keycloak",
                 "github",
                 "google",
                 "twitch",
+                "epic",
+                "oidc",
                 "local"
               ]
             }
@@ -11258,6 +11261,20 @@
             }
           }
         ]
+      }
+    },
+    "/api/test/oidc/.well-known/openid-configuration": {
+      "get": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "GET /api/test/oidc/.well-known/openid-configuration",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
       }
     },
     "/api/test/pack-index": {

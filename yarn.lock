@@ -3846,11 +3846,6 @@ lodash.mergewith@^4.6.2:
   resolved "https://registry.npmjs.org/lodash.mergewith/-/lodash.mergewith-4.6.2.tgz"
   integrity sha512-GK3g5RPZWTRSeLSpgP8Xhra+pnjBC56q9FZYe1d5RN3TJ35dbkGy3YqBSMbyCrlbi+CM9Z3Jk5yTL7RCsqboyQ==
 
-lodash@^4.17.20:
-  version "4.17.21"
-  resolved "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"
-  integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
-
 long@5.3.2:
   version "5.3.2"
   resolved "https://registry.npmjs.org/long/-/long-5.3.2.tgz"
@@ -4244,14 +4239,6 @@ passport-google-oauth20@^2.0.0:
   integrity sha512-KSk6IJ15RoxuGq7D1UKK/8qKhNfzbLeLrG3gkLZ7p4A6DBCcv7xpyQwuXtWdpyR0+E0mwkpjY1VfPOhxQrKzdQ==
   dependencies:
     passport-oauth2 "1.x.x"
-
-passport-keycloak-oauth2-oidc@^1.0.5:
-  version "1.0.5"
-  resolved "https://registry.npmjs.org/passport-keycloak-oauth2-oidc/-/passport-keycloak-oauth2-oidc-1.0.5.tgz"
-  integrity sha512-uvZGTFu7MozqOIocDdSlEImEQTaPd8g5Lwbt83SbFqOVvCS3PelKjMQOYoJ7ERL7ELOY6puV0BY+Pw8ExM4EYw==
-  dependencies:
-    lodash "^4.17.20"
-    passport-oauth2 "^1.5.0"
 
 passport-oauth2@1.x.x, passport-oauth2@^1.5.0:
   version "1.8.0"

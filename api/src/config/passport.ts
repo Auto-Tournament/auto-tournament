@@ -1,7 +1,6 @@
 import passport from 'passport';
 import { Strategy as SteamStrategy } from 'passport-steam';
 import { Strategy as DiscordStrategy } from 'passport-discord';
-import { Strategy as KeycloakStrategy } from 'passport-keycloak-oauth2-oidc';
 import { Strategy as GitHubStrategy } from 'passport-github2';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { log } from '../utils/logger';
@@ -10,6 +9,7 @@ import { effectiveProviderSettings } from './signInProviders';
 import { adminEmailsConfigured } from '../utils/adminEmails';
 import { createTwitchStrategy, type TwitchStrategyOptions } from './twitchStrategy';
 import { createEpicStrategy } from './epicStrategy';
+import { createOidcStrategy } from './oidcStrategy';
 
 interface SteamProfile {
   id: string;
@@ -27,12 +27,6 @@ export interface DiscordProfile {
   email?: string | null;
   /** Discord has verified `email`. */
   verified?: boolean;
-}
-
-interface KeycloakProfile {
-  id: string;
-  displayName?: string;
-  username?: string;
 }
 
 export interface GitHubProfile {
@@ -77,12 +71,11 @@ interface OAuthStrategyOptions {
 
 export function configurePassportAuth(): void {
   configureSettingsManagedStrategies();
-  configureKeycloakStrategy();
   configureTestOAuthStrategies();
 }
 
 /** The strategies Settings -> Sign-in manages; `reloadPassportAuth` redoes them. */
-const SETTINGS_MANAGED_STRATEGIES = ['steam', 'discord', 'github', 'google', 'twitch', 'epic'] as const;
+const SETTINGS_MANAGED_STRATEGIES = ['steam', 'discord', 'github', 'google', 'twitch', 'epic', 'oidc'] as const;
 
 function configureSettingsManagedStrategies(): void {
   configureSteamStrategy();
@@ -91,6 +84,7 @@ function configureSettingsManagedStrategies(): void {
   configureOAuthStrategy('google', createGoogleStrategy);
   configureOAuthStrategy('twitch', createTwitchLoginStrategy);
   configureOAuthStrategy('epic', createEpicLoginStrategy);
+  configureOidcStrategy();
 }
 
 /**
@@ -235,116 +229,30 @@ function configureDiscordStrategy(): void {
   );
 }
 
-function configureKeycloakStrategy(): void {
-  const issuerUrl = process.env.KEYCLOAK_ISSUER_URL;
-  const clientID = process.env.KEYCLOAK_CLIENT_ID;
-  const rawClientSecret = process.env.KEYCLOAK_CLIENT_SECRET;
-  const callbackPath = process.env.KEYCLOAK_CALLBACK_PATH || '/api/auth/keycloak/callback';
-
-  if (!issuerUrl || !clientID) {
-    return;
-  }
-
-  // Treat absence of KEYCLOAK_CLIENT_SECRET as a "public" client (no secret).
-  // When a secret is provided, assume a confidential client.
-  const clientSecret =
-    rawClientSecret && rawClientSecret.trim().length > 0 ? rawClientSecret.trim() : undefined;
-
-  const baseUrl = getBackendBaseUrl();
-  const callbackURL = `${baseUrl}${callbackPath}`;
-
-  // passport-keycloak-oauth2-oidc expects authServerURL and realm; derive them from issuer URL when possible.
-  // Example issuer: https://sso.example.com/realms/auto-tournament
-  let authServerURL = issuerUrl;
-  let realm = 'master';
-
-  try {
-    const url = new URL(issuerUrl);
-    const parts = url.pathname.split('/').filter(Boolean);
-    const realmsIndex = parts.indexOf('realms');
-    if (realmsIndex >= 0 && parts[realmsIndex + 1]) {
-      realm = parts[realmsIndex + 1];
-      url.pathname = parts.slice(0, realmsIndex).join('/') || '/';
-      authServerURL = url.toString().replace(/\/+$/, '');
-    }
-  } catch {
-    // Fallback to raw issuer URL
-    authServerURL = issuerUrl.replace(/\/+$/, '');
-  }
-
-  const strategyOptions: {
-    clientID: string;
-    authServerURL: string;
-    realm: string;
-    callbackURL: string;
-    clientSecret?: string;
-    publicClient?: boolean;
-    store: SignedCookieStateStore;
-  } = {
-    clientID,
-    authServerURL,
-    realm,
-    callbackURL,
-    // passport-keycloak-oauth2-oidc passes options straight to passport-oauth2,
-    // so the same signed-cookie state store applies. See utils/oauthStateCookie.
-    store: new SignedCookieStateStore({ provider: 'keycloak', callbackURL }),
-  };
-
-  if (clientSecret) {
-    // Confidential client – use client secret, mark as non-public.
-    strategyOptions.clientSecret = clientSecret;
-    strategyOptions.publicClient = false;
-  } else {
-    // Public client – no secret.
-    strategyOptions.publicClient = true;
-  }
-
-  const keycloakStrategy = new KeycloakStrategy(
-    strategyOptions,
-    (
-      _accessToken: string,
-      _refreshToken: string,
-      profile: KeycloakProfile,
-      done: (err: unknown, user?: unknown) => void
-    ) => {
-      const safeProfile = {
-        id: profile.id,
-        displayName: profile.displayName,
-        username: profile.username,
-      };
-      log.info('KeycloakStrategy callback: received profile from Keycloak', {
-        profile: safeProfile,
-      });
-
-      done(null, {
-        provider: 'keycloak',
-        keycloakId: profile.id,
-        displayName: profile.displayName || profile.username || profile.id,
-      });
+/**
+ * OpenID Connect (any OIDC server) when it is enabled and has an issuer, a
+ * client id and a secret in Settings -> Sign-in. The endpoints come from the
+ * issuer's discovery document on the first sign-in (config/oidcStrategy.ts).
+ */
+function configureOidcStrategy(): void {
+  const settings = effectiveProviderSettings('oidc');
+  if (!settings.active || !settings.issuerUrl || !settings.clientId || !settings.secret) return;
+  const callbackURL = `${getBackendBaseUrl()}/api/auth/oidc/callback`;
+  const strategy = createOidcStrategy(
+    {
+      issuerUrl: settings.issuerUrl,
+      clientID: settings.clientId,
+      clientSecret: settings.secret,
+      callbackURL,
+      // CSRF protection for the OAuth round trip; see utils/oauthStateCookie.
+      store: new SignedCookieStateStore({ provider: 'oidc', callbackURL }),
+    },
+    (user, done) => {
+      log.info('OidcStrategy callback: received profile', { profile: { id: user.oidcId } });
+      done(null, user);
     }
   );
-
-  // Optionally force Keycloak to immediately redirect to a specific external IdP
-  // (e.g. Vipps) by appending `kc_idp_hint` to the authorization URL.
-  // Set KEYCLOAK_IDP_HINT to the IdP alias configured in Keycloak.
-  const idpHint = process.env.KEYCLOAK_IDP_HINT;
-  if (idpHint && idpHint.trim().length > 0) {
-    try {
-      const hint = encodeURIComponent(idpHint.trim());
-      const anyStrategy = keycloakStrategy as unknown as {
-        _oauth2?: { _authorizeUrl?: string };
-      };
-      if (anyStrategy._oauth2 && typeof anyStrategy._oauth2._authorizeUrl === 'string') {
-        const original = anyStrategy._oauth2._authorizeUrl;
-        const separator = original.includes('?') ? '&' : '?';
-        anyStrategy._oauth2._authorizeUrl = `${original}${separator}kc_idp_hint=${hint}`;
-      }
-    } catch {
-      // If internals change, fail softly and continue without idp hint.
-    }
-  }
-
-  passport.use(keycloakStrategy);
+  passport.use('oidc', strategy);
 }
 
 /**

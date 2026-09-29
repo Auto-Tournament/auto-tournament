@@ -41,6 +41,8 @@ interface ProviderRow {
   enabled: number;
   client_id: string | null;
   client_secret_enc: string | null;
+  issuer_url: string | null;
+  label: string | null;
   updated_at: number;
 }
 
@@ -68,6 +70,8 @@ class AuthProviderSettingsService {
         secret,
         secretUnreadable,
         updatedAt: Number(row.updated_at),
+        issuerUrl: row.issuer_url ?? null,
+        label: row.label ?? null,
       });
     }
     setStoredProviderSettings(next);
@@ -102,9 +106,9 @@ class AuthProviderSettingsService {
       const patch: ProviderPatch =
         item.field === 'enabled'
           ? { enabled: item.value as boolean }
-          : item.field === 'clientId'
-            ? { clientId: item.value as string }
-            : { clientSecret: item.value as string };
+          : item.field === 'secret'
+            ? { clientSecret: item.value as string }
+            : { [item.field]: item.value as string };
       // An enabled flag imported alone must not switch a provider on or off
       // behind a saved row: the plan only offers it when there is no row.
       await this.update(item.provider, patch, 'environment');
@@ -142,6 +146,9 @@ class AuthProviderSettingsService {
       active: effective.active,
       callbackUrl: `${backendBaseUrl}/api/auth/${def.id}/callback`,
       docsUrl: def.docsUrl,
+      hasIssuer: !!def.hasIssuer,
+      issuerUrl: effective.issuerUrl,
+      buttonName: effective.label,
     };
   }
 
@@ -165,18 +172,23 @@ class AuthProviderSettingsService {
           ? null
           : encryptSecret(patch.clientSecret)
         : (current?.client_secret_enc ?? null);
+    const issuerUrl = patch.issuerUrl !== undefined ? patch.issuerUrl : (current?.issuer_url ?? null);
+    const label = patch.label !== undefined ? patch.label : (current?.label ?? null);
     const now = Math.floor(Date.now() / 1000);
 
     await db.queryAsync(
-      `INSERT INTO auth_provider_settings (provider, enabled, client_id, client_secret_enc, updated_at, updated_by)
-       VALUES (?, ?, ?, ?, ?, ?)
+      `INSERT INTO auth_provider_settings
+         (provider, enabled, client_id, client_secret_enc, issuer_url, label, updated_at, updated_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT (provider) DO UPDATE SET
          enabled = EXCLUDED.enabled,
          client_id = EXCLUDED.client_id,
          client_secret_enc = EXCLUDED.client_secret_enc,
+         issuer_url = EXCLUDED.issuer_url,
+         label = EXCLUDED.label,
          updated_at = EXCLUDED.updated_at,
          updated_by = EXCLUDED.updated_by`,
-      [id, enabled ? 1 : 0, clientId, secretEnc, now, actor]
+      [id, enabled ? 1 : 0, clientId, secretEnc, issuerUrl, label, now, actor]
     );
     await this.load();
 
@@ -186,6 +198,8 @@ class AuthProviderSettingsService {
       actor,
       enabled: patch.enabled,
       clientIdChanged: patch.clientId !== undefined,
+      issuerChanged: patch.issuerUrl !== undefined,
+      labelChanged: patch.label !== undefined,
       secret: patch.clientSecret === undefined ? 'unchanged' : patch.clientSecret === null ? 'cleared' : 'replaced',
     });
   }

@@ -53,7 +53,7 @@ test.describe('Signed pending Steam link cookie', () => {
   });
 
   test('the payload names the providers we write', { tag: ['@api', '@auth'] }, () => {
-    for (const provider of ['discord', 'keycloak', 'github', 'google'] as const) {
+    for (const provider of ['discord', 'github', 'google', 'oidc'] as const) {
       const value = signPendingSteamLink(
         { provider, providerUserId: 'abc' },
         { secret: SECRET, now: NOW }

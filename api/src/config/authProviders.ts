@@ -3,24 +3,12 @@ import type {
   DiscordAuthProviderConfig,
   GitHubAuthProviderConfig,
   GoogleAuthProviderConfig,
-  KeycloakAuthProviderConfig,
+  OidcAuthProviderConfig,
   SteamAuthProviderConfig,
   TwitchAuthProviderConfig,
   EpicAuthProviderConfig,
 } from '../types/auth.types';
-import { effectiveProviderSettings } from './signInProviders';
-
-/** True when the env var is set to 1/true/yes (case-insensitive). */
-function isEnvFlagOn(name: string): boolean {
-  const value = process.env[name]?.trim().toLowerCase();
-  return value === '1' || value === 'true' || value === 'yes';
-}
-
-/** Trimmed env var, or undefined when unset or blank. */
-function envValue(name: string): string | undefined {
-  const value = process.env[name]?.trim();
-  return value && value.length > 0 ? value : undefined;
-}
+import { OIDC_DEFAULT_LABEL, effectiveProviderSettings } from './signInProviders';
 
 /**
  * A plain OAuth2 provider (Discord, GitHub, Google, Twitch) is listed when it
@@ -30,7 +18,7 @@ function envValue(name: string): string | undefined {
  * strategy under the same rule (config/passport.ts), so a listed button
  * always works.
  */
-function isOAuthProviderConfigured(provider: 'discord' | 'github' | 'google' | 'twitch' | 'epic'): boolean {
+function isOAuthProviderConfigured(provider: 'discord' | 'github' | 'google' | 'twitch' | 'epic' | 'oidc'): boolean {
   return effectiveProviderSettings(provider).active;
 }
 
@@ -64,24 +52,6 @@ export function getAuthProvidersConfig(): AuthProviderConfig[] {
     enabled: steamEnvEnabled && effectiveProviderSettings('steam').configured,
   };
   providers.push(steamProvider);
-
-  // Keycloak – OIDC provider for admin/SSO style logins.
-  const keycloakIssuerUrl = envValue('KEYCLOAK_ISSUER_URL');
-  if (isEnvFlagOn('AUTH_KEYCLOAK_ENABLED') && keycloakIssuerUrl) {
-    const keycloakProvider: KeycloakAuthProviderConfig = {
-      id: 'keycloak',
-      kind: 'oidc',
-      label: envValue('AUTH_KEYCLOAK_LABEL') ?? 'Keycloak',
-      loginUrl: '/api/auth/keycloak',
-      enabled: true,
-      issuerUrl: keycloakIssuerUrl,
-      buttonLabel: envValue('AUTH_KEYCLOAK_BUTTON_LABEL'),
-      buttonBgColor: envValue('AUTH_KEYCLOAK_BUTTON_BG_COLOR'),
-      buttonTextColor: envValue('AUTH_KEYCLOAK_BUTTON_TEXT_COLOR'),
-      buttonHoverBgColor: envValue('AUTH_KEYCLOAK_BUTTON_HOVER_BG_COLOR'),
-    };
-    providers.push(keycloakProvider);
-  }
 
   // Discord, GitHub, Google – plain OAuth2 providers.
   if (isOAuthProviderConfigured('discord')) {
@@ -137,6 +107,20 @@ export function getAuthProvidersConfig(): AuthProviderConfig[] {
       enabled: true,
     };
     providers.push(epicProvider);
+  }
+
+  // OpenID Connect: any OIDC server, under the name the admin gave it.
+  if (isOAuthProviderConfigured('oidc')) {
+    const oidc = effectiveProviderSettings('oidc');
+    const oidcProvider: OidcAuthProviderConfig = {
+      id: 'oidc',
+      kind: 'oidc',
+      label: oidc.label || OIDC_DEFAULT_LABEL,
+      loginUrl: '/api/auth/oidc',
+      enabled: true,
+      issuerUrl: oidc.issuerUrl as string,
+    };
+    providers.push(oidcProvider);
   }
 
   return providers;

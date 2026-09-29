@@ -8,7 +8,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { ProviderLogo, hasProviderLogo } from '../components/auth/ProviderLogo';
 import { TopNavBar } from '../components/layout/TopNavBar';
-import { tokens } from '../theme/tokens';
 import { AtIcon } from '../components/common/AtIcon';
 import { ExternalLink } from '../components/common/ExternalLink';
 
@@ -26,10 +25,6 @@ export default function Login() {
       label: string;
       loginUrl: string;
       enabled: boolean;
-      buttonLabel?: string;
-      buttonBgColor?: string;
-      buttonTextColor?: string;
-      buttonHoverBgColor?: string;
     }>
   >([]);
   const [loadingProviders, setLoadingProviders] = useState(false);
@@ -77,10 +72,6 @@ export default function Login() {
             label: string;
             loginUrl: string;
             enabled: boolean;
-            buttonLabel?: string;
-            buttonBgColor?: string;
-            buttonTextColor?: string;
-            buttonHoverBgColor?: string;
           }>;
           error?: string;
         } = await response.json();
@@ -217,8 +208,6 @@ export default function Login() {
                 {providers.map((provider, index) => {
                   // The first provider gets the theme's accent; the rest are outlined.
                   const isPreferred = index === 0;
-                  // Keycloak keeps its admin-set colours when it isn't the preferred one.
-                  const customKeycloak = !isPreferred && provider.id === 'keycloak' && !!provider.buttonBgColor;
                   const isPending = pendingProvider === provider.id;
 
                   return (
@@ -226,7 +215,7 @@ export default function Login() {
                       key={provider.id}
                       fullWidth
                       size="large"
-                      variant={isPreferred || customKeycloak ? 'contained' : 'outlined'}
+                      variant={isPreferred ? 'contained' : 'outlined'}
                       color={isPreferred ? 'primary' : 'inherit'}
                       onClick={() => handleProviderClick(provider.id, provider.loginUrl)}
                       disabled={loadingProviders || (pendingProvider !== null && !isPending)}
@@ -239,12 +228,7 @@ export default function Login() {
                         px: 2,
                         // The pending button keeps its look; it just stops taking clicks.
                         ...(isPending && { pointerEvents: 'none' }),
-                        ...(!isPreferred && !customKeycloak && { borderColor: 'divider' }),
-                        ...(customKeycloak && {
-                          bgcolor: provider.buttonBgColor,
-                          color: provider.buttonTextColor || tokens.brand.onBrand,
-                          '&:hover': { bgcolor: provider.buttonHoverBgColor || tokens.brand.keycloakHover },
-                        }),
+                        ...(!isPreferred && { borderColor: 'divider' }),
                       }}
                     >
                       {/* Fixed logo slot, so every label sits in the same place. */}
@@ -259,7 +243,7 @@ export default function Login() {
                         )}
                       </Box>
                       <Box component="span" sx={{ flex: 1, textAlign: 'center', pr: '20px', whiteSpace: 'nowrap' }}>
-                        {provider.buttonLabel || t('login.signInWith', { provider: provider.label })}
+                        {t('login.signInWith', { provider: provider.label })}
                       </Box>
                     </Button>
                   );

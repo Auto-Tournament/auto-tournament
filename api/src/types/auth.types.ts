@@ -1,4 +1,4 @@
-export type AuthProviderId = 'steam' | 'keycloak' | 'discord' | 'github' | 'google' | 'twitch' | 'epic';
+export type AuthProviderId = 'steam' | 'discord' | 'github' | 'google' | 'twitch' | 'epic' | 'oidc';
 
 export type AuthProviderKind = 'steam-openid' | 'oidc' | 'oauth2';
 
@@ -23,14 +23,6 @@ export interface BaseAuthProviderConfig {
    * Whether this provider is currently enabled based on configuration.
    */
   enabled: boolean;
-  /**
-   * Optional UI customization for the login button associated with this provider.
-   * These are intentionally non-functional (visual only) and safe to expose to the frontend.
-   */
-  buttonLabel?: string;
-  buttonBgColor?: string;
-  buttonTextColor?: string;
-  buttonHoverBgColor?: string;
 }
 
 export interface SteamAuthProviderConfig extends BaseAuthProviderConfig {
@@ -38,12 +30,12 @@ export interface SteamAuthProviderConfig extends BaseAuthProviderConfig {
   kind: 'steam-openid';
 }
 
-export interface KeycloakAuthProviderConfig extends BaseAuthProviderConfig {
-  id: 'keycloak';
+export interface OidcAuthProviderConfig extends BaseAuthProviderConfig {
+  id: 'oidc';
   kind: 'oidc';
   /**
-   * Public issuer URL of the Keycloak realm (e.g. https://sso.example.com/realms/my-realm).
-   * This is intentionally public metadata; client IDs/secrets remain server-side only.
+   * The OpenID Connect issuer (e.g. https://sso.example.com/realms/my-realm).
+   * Public metadata; the client id and secret stay on the server.
    */
   issuerUrl: string;
 }
@@ -75,7 +67,7 @@ export interface EpicAuthProviderConfig extends BaseAuthProviderConfig {
 
 export type AuthProviderConfig =
   | SteamAuthProviderConfig
-  | KeycloakAuthProviderConfig
+  | OidcAuthProviderConfig
   | DiscordAuthProviderConfig
   | GitHubAuthProviderConfig
   | GoogleAuthProviderConfig

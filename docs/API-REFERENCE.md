@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 443 of them, 321 behind auth —
+Every endpoint this API serves — 444 of them, 321 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -811,6 +811,7 @@ E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
 | `POST` | `/api/test/clear-admins` | public |
 | `POST` | `/api/test/login-throttle/reset` | public |
 | `POST` | `/api/test/env-import` | public |
+| `GET` | `/api/test/oidc/.well-known/openid-configuration` | public |
 
 ### Setup
 
@@ -844,9 +845,9 @@ Sign-in flows, admin identity, impersonation.
 | `GET` | `/api/auth/steam` | public |
 | `GET` | `/api/auth/steam/callback` | public |
 | `POST` | `/api/auth/logout` | public |
-| `GET` | `/api/auth/keycloak` | public |
-| `POST` | `/api/auth/keycloak/link` | public |
-| `GET` | `/api/auth/keycloak/callback` | public |
+| `GET` | `/api/auth/oidc` | public |
+| `POST` | `/api/auth/oidc/link` | public |
+| `GET` | `/api/auth/oidc/callback` | public |
 | `GET` | `/api/auth/discord` | public |
 | `POST` | `/api/auth/discord/link` | public |
 | `GET` | `/api/auth/discord/callback` | public |

@@ -53,7 +53,6 @@ export const tokens = {
   brand: {
     steam: '#171a21',
     steamHover: '#1b2838',
-    keycloakHover: '#274c82',
     onBrand: '#ffffff',
   },
   radius: { sm: 8, md: 14, lg: 22, pill: 999 },
