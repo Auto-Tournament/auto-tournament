@@ -410,6 +410,8 @@
       "deleteSelected": "Selectie verwijderen"
     },
     "empty": {
+      "createServers": "Link a machine or create servers",
+      "addExisting": "Add an existing server (RCON)",
       "title": "Geen servers geregistreerd",
       "description": "Voeg je eerste CS2-server toe om met het toernooi te beginnen",
       "addServer": "Server toevoegen",

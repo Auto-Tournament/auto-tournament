@@ -895,12 +895,15 @@ export default function Servers() {
               icon={HardDrivesIcon}
               title={t('serversPage.empty.title')}
               description={t('serversPage.empty.description')}
-              actionLabel={t('serversPage.empty.addServer')}
+              actionLabel={t('serversPage.empty.createServers')}
               actionIcon={PlusIcon}
-              onAction={() => handleOpenModal()}
+              onAction={() => document.getElementById('machines')?.scrollIntoView({ behavior: 'smooth' })}
             />
-            <Box display="flex" justifyContent="center" mt={2}>
-              <Button variant="outlined" onClick={() => setBatchModalOpen(true)}>
+            <Box display="flex" justifyContent="center" gap={1} mt={2} flexWrap="wrap">
+              <Button size="small" onClick={() => handleOpenModal()} data-testid="servers-add-existing">
+                {t('serversPage.empty.addExisting')}
+              </Button>
+              <Button size="small" onClick={() => setBatchModalOpen(true)}>
                 {t('serversPage.empty.batchAdd')}
               </Button>
             </Box>
