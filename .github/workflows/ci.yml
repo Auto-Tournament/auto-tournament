@@ -246,6 +246,8 @@ jobs:
             echo "AT_RESTART_SUPERVISED=false"
             echo "API_TOKENS=ci-admin:ci-admin-token-0123456789abcdef"
             echo "API_TOKENS_READONLY=ci-readonly:ci-readonly-token-0123456789abcdef"
+            # The teams API for integrators (tests/api/integration-teams.spec.ts).
+            echo "API_TOKENS_INTEGRATOR=ci-ntlan:ci-integrator-token-0123456789abcdef,ci-other:ci-integrator2-token-0123456789abcdef"
             # Ready Up compatibility (tests/api/compat.spec.ts, tests/ui/compat-page.spec.ts).
             echo "COMPAT_INGEST_TOKEN=ci-compat-token-0123456789abcdef"
             # No autoscaler timer: it would send csm commands to other specs'

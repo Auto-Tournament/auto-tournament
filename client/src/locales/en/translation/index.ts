@@ -9,6 +9,7 @@ import misc from './misc.json';
 import playersTeams from './playersTeams.json';
 import serversAdmin from './serversAdmin.json';
 import tournament from './tournament.json';
+import webhooks from './webhooks.json';
 
 const enTranslation = {
   ...core,
@@ -22,6 +23,7 @@ const enTranslation = {
   ...misc,
   ...tournament,
   ...compat,
+  ...webhooks,
 } as const;
 
 export default enTranslation;

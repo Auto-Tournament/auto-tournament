@@ -172,6 +172,13 @@ export interface MatchDescriptionPlayer {
   avatar?: string;
 }
 
+/** Where players join a match (`GameIntegration.connectInfo`). */
+export interface MatchConnectInfo {
+  host: string;
+  port: number;
+  password: string | null;
+}
+
 /**
  * Outcome of putting a match on a resource. `queued` means nothing is wrong,
  * the match just has to wait (no free resource yet). A `failed` attempt names
@@ -1008,6 +1015,14 @@ export interface GameIntegration {
    * `status` and `timestamp` (CS2: `cs2Fleet` and `servers`).
    */
   healthContributions?(): Promise<Record<string, unknown>>;
+  /**
+   * How players join a match right now: the address of the resource it is
+   * loaded on and its join password (CS2: the server's host and port, and a
+   * Ready Up server's per-assignment sv_password; null for RCON servers).
+   * Null when the match is not joinable. Only the integrator webhooks read it
+   * (services/webhooks), and only signed deliveries carry it.
+   */
+  connectInfo?(match: DbMatchRow): Promise<MatchConnectInfo | null>;
 
   // --- live state ----------------------------------------------------------
 

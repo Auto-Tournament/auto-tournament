@@ -46,6 +46,8 @@ import meRoutes from './me';
 import compatRoutes from './compat';
 import adminCallRoutes from './adminCalls';
 import licenseRoutes from './license';
+import webhookRoutes from './webhooks';
+import integrationTeamRoutes from './integrationTeams';
 
 export interface MountedRouter {
   /** Path prefix the router is mounted under. */
@@ -205,6 +207,20 @@ const coreRoutes: MountedRouter[] = [
     title: 'License',
     description:
       'The Auto Tournament license key: save, remove and read its status, checked offline; and the one-time acceptance of the license terms (non-commercial or commercial use) that the admin UI waits for. Admin only, except the public badge. Nothing else is ever blocked: a missing or problematic key is a notice for admins.',
+  },
+  {
+    prefix: '/api/webhooks',
+    router: webhookRoutes,
+    title: 'Webhooks',
+    description:
+      'Integrator webhooks: register endpoints for match events (ready to connect, live, map and score, finished, cancelled, reset), rotate the signing secret, send a test event, read the delivery log (connect details redacted) and resend. Admin only. See docs/WEBHOOKS.md.',
+  },
+  {
+    prefix: '/api/integrations/teams',
+    router: integrationTeamRoutes,
+    title: 'Integrations: teams',
+    description:
+      "Teams API for integrators: idempotent upsert of teams by the integrator's own externalId (single and batch), and reads by externalId. Integrator token (API_TOKENS_INTEGRATOR), admin token or admin session. See docs/WEBHOOKS.md.",
   },
   {
     prefix: '/api/test',

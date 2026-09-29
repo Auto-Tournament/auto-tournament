@@ -148,7 +148,8 @@ const options: swaggerJsdoc.Options = {
           description:
             'Service token for machine clients (bots, scripts, CI). Send ' +
             '`Authorization: Bearer <token>`, where the token is one configured ' +
-            'in API_TOKENS (full admin) or API_TOKENS_READONLY (GET only). ' +
+            'in API_TOKENS (full admin), API_TOKENS_READONLY (GET only) or ' +
+            'API_TOKENS_INTEGRATOR (the /api/integrations routes only). ' +
             'Human admins authenticate with a session cookie instead.',
         },
         // Backward compatible alias: many route docs use BearerAuth.
@@ -159,7 +160,8 @@ const options: swaggerJsdoc.Options = {
           description:
             'Service token for machine clients (bots, scripts, CI). Send ' +
             '`Authorization: Bearer <token>`, where the token is one configured ' +
-            'in API_TOKENS (full admin) or API_TOKENS_READONLY (GET only). ' +
+            'in API_TOKENS (full admin), API_TOKENS_READONLY (GET only) or ' +
+            'API_TOKENS_INTEGRATOR (the /api/integrations routes only). ' +
             'Human admins authenticate with a session cookie instead.',
         },
         // Same service token, for clients whose HTTP layer reserves the
@@ -412,6 +414,7 @@ const SECURITY_BY_GUARD: Record<Guard, Array<Record<string, string[]>>> = {
   'server token': [{ atServerToken: [] }],
   'server token or admin': [{ atServerToken: [] }, { bearerAuth: [] }, { apiToken: [] }],
   'compat ingest token': [{ compatIngestToken: [] }],
+  'integrator token or admin': [{ bearerAuth: [] }, { apiToken: [] }],
 };
 
 interface OperationObject {

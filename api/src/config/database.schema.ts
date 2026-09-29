@@ -620,6 +620,86 @@ export function getSchemaSQL(): string {
     CREATE INDEX IF NOT EXISTS idx_admin_calls_open ON admin_calls(received_at) WHERE resolved_at IS NULL;
     CREATE INDEX IF NOT EXISTS idx_admin_calls_resolved ON admin_calls(resolved_at);
 
+    -- Integrator webhooks (services/webhooks): endpoints an admin registered,
+    -- one row per delivery of an event to an endpoint (the persisted retry
+    -- queue and the delivery log), each attempt, and the last state the
+    -- platform announced per match (so a restart neither repeats nor misses
+    -- an event). Core's: the events are game-neutral.
+    CREATE TABLE IF NOT EXISTS webhook_endpoints (
+      id TEXT PRIMARY KEY, -- whk_...
+      url TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      event_types TEXT NOT NULL DEFAULT '["*"]', -- JSON array of event type ids; "*" = all
+      active BOOLEAN NOT NULL DEFAULT TRUE,
+      source TEXT, -- Teams API source (token label) whose externalId the payloads carry as external_id
+      secret TEXT NOT NULL, -- whsec_...; needed in clear to sign, never returned after create/rotate
+      previous_secret TEXT, -- The secret before the last rotation, still signed with until previous_secret_expires_at
+      previous_secret_expires_at BIGINT, -- Epoch ms
+      disabled_reason TEXT, -- Set when the platform disabled it (persistent failure); cleared on re-enable
+      disabled_at BIGINT, -- Epoch ms
+      last_success_at BIGINT, -- Epoch ms of the last 2xx
+      last_failure_at BIGINT,
+      created_at BIGINT NOT NULL,
+      updated_at BIGINT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS webhook_deliveries (
+      id TEXT PRIMARY KEY, -- dlv_...; the X-AT-Delivery header
+      endpoint_id TEXT NOT NULL REFERENCES webhook_endpoints(id) ON DELETE CASCADE,
+      event_id TEXT NOT NULL, -- evt_...; the payload's id, the same on a resend
+      event_type TEXT NOT NULL,
+      match_slug TEXT, -- No foreign key: the log outlives a deleted match
+      body TEXT NOT NULL, -- Exactly what is sent. Holds connect details: never returned unredacted
+      test BOOLEAN NOT NULL DEFAULT FALSE,
+      resend_of TEXT, -- The delivery this one re-sends
+      status TEXT NOT NULL DEFAULT 'pending', -- pending | delivering | succeeded | failed | cancelled
+      attempts INTEGER NOT NULL DEFAULT 0,
+      next_attempt_at BIGINT, -- Epoch ms; NULL once it is final
+      locked_until BIGINT, -- Epoch ms; a 'delivering' row past it is picked up again
+      last_status_code INTEGER,
+      last_error TEXT,
+      last_response TEXT, -- First 2 KB of the receiver's answer, secrets scrubbed
+      last_duration_ms INTEGER,
+      created_at BIGINT NOT NULL,
+      completed_at BIGINT
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_due ON webhook_deliveries(next_attempt_at) WHERE status = 'pending';
+    CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_endpoint ON webhook_deliveries(endpoint_id, created_at DESC);
+
+    CREATE TABLE IF NOT EXISTS webhook_delivery_attempts (
+      id SERIAL PRIMARY KEY,
+      delivery_id TEXT NOT NULL REFERENCES webhook_deliveries(id) ON DELETE CASCADE,
+      attempt INTEGER NOT NULL,
+      attempted_at BIGINT NOT NULL,
+      status_code INTEGER, -- NULL when no response (timeout, refused, blocked)
+      error TEXT,
+      duration_ms INTEGER
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_webhook_delivery_attempts_delivery ON webhook_delivery_attempts(delivery_id);
+
+    CREATE TABLE IF NOT EXISTS webhook_match_state (
+      match_slug TEXT PRIMARY KEY, -- No foreign key: a deleted match still owes its match.cancelled
+      state TEXT NOT NULL, -- JSON (services/webhooks/reconciler.ts)
+      updated_at BIGINT NOT NULL
+    );
+
+    -- The integrator's own id for a team (teams API, routes/integrationTeams.ts),
+    -- one per source. The source is the API token's label, so two integrators
+    -- can use the same external id without meeting.
+    CREATE TABLE IF NOT EXISTS team_external_ids (
+      source TEXT NOT NULL,
+      external_id TEXT NOT NULL,
+      team_id TEXT NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+      created_at BIGINT NOT NULL,
+      updated_at BIGINT NOT NULL,
+      PRIMARY KEY (source, external_id),
+      UNIQUE (source, team_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_team_external_ids_team ON team_external_ids(team_id);
+
     -- Session table for connect-pg-simple (express-session PostgreSQL store)
     -- This table is required for session persistence across API restarts
     CREATE TABLE IF NOT EXISTS session (

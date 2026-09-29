@@ -549,6 +549,32 @@ export const cs2Integration: GameIntegration = {
     return cs2FleetHealth();
   },
 
+  /**
+   * Where players connect, for the integrator webhooks: the server row's
+   * host and port (for a Ready Up server, the connect address the fleet link
+   * keeps on the row, fleet/address.ts) and the assignment's sv_password.
+   * The same facts `GET /api/game/cs2/matches/:slug/connect` gives a
+   * rostered player.
+   */
+  async connectInfo(match) {
+    if (!match.server_id) return null;
+    const { db } = await import('../../config/database');
+    const server = await db.queryOneAsync<{ host: string | null; port: number | null; transport: string | null }>(
+      'SELECT host, port, transport FROM cs2_servers WHERE id = ?',
+      [match.server_id]
+    );
+    if (!server?.host || !server.port) return null;
+    if (server.transport === 'fleet') {
+      const { connectPasswordFor } = await import('./fleet/driver');
+      const password = await connectPasswordFor(match.slug);
+      // No open assignment: the server is not holding this match (yet).
+      if (!password) return null;
+      return { host: server.host, port: Number(server.port), password };
+    }
+    // RCON servers have no per-match join password (the RCON password is never a join password).
+    return { host: server.host, port: Number(server.port), password: null };
+  },
+
   async refreshPresence(slug, opts) {
     const { refreshConnectionsFromServer } = await import('./events/connectionSnapshotService');
     await refreshConnectionsFromServer(slug, opts);

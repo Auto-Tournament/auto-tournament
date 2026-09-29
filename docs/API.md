@@ -16,6 +16,7 @@ can drift from the code:
 | [openapi.json](openapi.json) | The same, machine-readable — generate a client from it |
 | `/api-docs` on a running instance | Swagger UI over that spec, with a Try-it button |
 | [examples/discord-bot](../examples/discord-bot/README.md) | A working bot, under 800 lines, to copy and extend |
+| [WEBHOOKS.md](WEBHOOKS.md) | Integrator webhooks (signed match events) and the teams API for event websites |
 
 ## Generating a client
 
@@ -70,13 +71,14 @@ Generate a secret:
 openssl rand -hex 32
 ```
 
-Put it in one of two variables in your `.env`, depending on how much the
+Put it in one of three variables in your `.env`, depending on how much the
 integration needs to do:
 
 | Variable | Scope | Use it for |
 | --- | --- | --- |
 | `API_TOKENS` | Full admin — every route an admin can reach | Creating matches, starting tournaments, RCON |
 | `API_TOKENS_READONLY` | `GET`, `HEAD`, `OPTIONS` only | Scoreboards, brackets, match state |
+| `API_TOKENS_INTEGRATOR` | `/api/integrations/*` only; refused everywhere else | An event website pushing its teams ([WEBHOOKS.md](WEBHOOKS.md)). The label is the integrator's *source* |
 
 ```bash
 API_TOKENS=discord-bot:8f3c...secret
@@ -131,7 +133,7 @@ curl -H "Authorization: Bearer $TOKEN" https://mat.example.com/api/auth/admin/me
 | Status | Meaning |
 | --- | --- |
 | `401` | The token is not one of the configured ones — or none are configured at all |
-| `403` | The token is fine, but it is read-only and you tried to write |
+| `403` | The token is fine, but it is read-only and you tried to write, or it is an integrator token outside `/api/integrations` |
 | `200`/`2xx` | Through |
 
 A token that is presented but wrong is rejected outright; it never falls back to
@@ -185,6 +187,10 @@ current rounds rather than only the final result.
 | `DELETE /teams/:id`, `POST /teams/bulk-delete` | token (admin) | |
 | `GET /players`, `POST /players`, `POST /players/bulk-import` | token (admin) | |
 | `GET /players/by-discord-id/:discordId` | token (read) | Every player with that Discord ID, as a list; `[]` if none |
+
+An event website that keeps its own teams should use the teams API instead:
+`PUT /integrations/teams/:externalId` upserts a team by the website's own id,
+idempotently. See [WEBHOOKS.md](WEBHOOKS.md#teams-api).
 
 Teams carry a `discordRoleId` field. It is stored and returned but MAT does
 nothing with it — it is there for exactly this: a bot mapping a MAT team to a

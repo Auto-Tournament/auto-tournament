@@ -53,6 +53,7 @@ const OPTIONAL_METHODS = [
   'start',
   'stop',
   'healthContributions',
+  'connectInfo',
   'refreshPresence',
   'syncMatchState',
 ] as const;

@@ -65,6 +65,7 @@ import { TRUST_PROXY_HOPS } from './config/trustProxy';
 import { COMPAT_MAX_BYTES } from './utils/compatPayload';
 import { reportCompatConfig } from './services/compatService';
 import { startCompatFeed, stopCompatFeed } from './services/compatFeedService';
+import { startWebhooks, stopWebhooks } from './services/webhooks';
 
 const app = express();
 const httpServer = createServer(app);
@@ -578,6 +579,9 @@ process.on('uncaughtException', (err) => {
       // Ready Up compatibility, pulled from COMPAT_FEED_URL every 5 minutes
       // (a no-op without it). Never throws; failures keep the last good run.
       startCompatFeed();
+      // Integrator webhooks: the persisted delivery queue and the match
+      // watcher (services/webhooks). Idle while no endpoint is switched on.
+      startWebhooks();
 
       // Recover matches and start the game integrations (CS2: bootstrap server
       // webhooks, fetch the Auto Tournament CS2 version, start health monitoring) now the
@@ -630,6 +634,7 @@ process.on('uncaughtException', (err) => {
       log.warn(`${why}, shutting down gracefully...`);
       scheduler.stopAllPolling();
       stopCompatFeed();
+      stopWebhooks();
       stopIntegrations();
       // Live sockets and idle keep-alive connections would hold the close.
       getIO().disconnectSockets(true);
@@ -749,8 +754,8 @@ function reportServiceTokens(): void {
 
   if (tokens.length === 0) {
     log.info(
-      '[Startup] No API tokens configured. Set API_TOKENS (full admin) or ' +
-        'API_TOKENS_READONLY (GET only) to let bots and scripts call the admin ' +
+      '[Startup] No API tokens configured. Set API_TOKENS (full admin), ' +
+        'API_TOKENS_READONLY (GET only) or API_TOKENS_INTEGRATOR (integrations API only) to let bots and scripts call the admin ' +
         'API without a browser session. See docs/API.md.'
     );
     return;
