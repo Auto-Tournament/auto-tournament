@@ -343,6 +343,38 @@
       "changeTitle": "Modifier l'usage de cette instance",
       "changeNote": "Choisis à nouveau et tape I AGREE. Le changement est enregistré avec la date et ton compte.",
       "commercialNoKey": "Cette instance a un usage commercial, il te faut donc une licence. Copie ta clé depuis <consoleLink>tes licences dans la console Auto Tournament</consoleLink> et colle-la ci-dessous. Rien n'est bloqué en attendant."
+    },
+    "checkin": {
+      "last": "Dernier signalement de licence : {{time}}",
+      "never": "Aucun signalement de licence pour l’instant. Le premier a lieu peu après l’enregistrement d’une clé.",
+      "whatIsSent": "Ce qui est envoyé",
+      "intro": "Une fois par jour, et seulement tant qu’une clé est enregistrée, ce serveur envoie :",
+      "keyId": "La clé de licence, pour que son ID et sa signature puissent être vérifiés",
+      "instanceId": "Un identifiant aléatoire de cette installation, créé une seule fois",
+      "serverCount": "Le nombre de serveurs de jeu",
+      "version": "La version de la plateforme",
+      "activity": "Des totaux depuis le dernier signalement : matchs terminés, tournois actifs et le plus grand nombre d’équipes",
+      "declared": "Ta réponse à la question sur les dates de l’événement, si tu en as donné une",
+      "notSent": "Aucun nom, aucune adresse, aucun joueur ni détail de match.",
+      "privacy": "Politique de confidentialité",
+      "noticeTitle": "Un mot d’Auto Tournament",
+      "answered": "Ta réponse pour cette licence : {{answer}} ({{time}})"
+    },
+    "eventPrompt": {
+      "title": "Tu prépares quelque chose de nouveau ?",
+      "body": "Ta licence d’événement couvre {{dates}}. Dis-nous si tu fais des tests, organises un nouvel événement ou si tes dates ont changé — rien à faire tant que tu testes.",
+      "datesRange": "du {{from}} au {{to}}",
+      "testing": "Tests ou mise en place",
+      "newEvent": "Un nouvel événement",
+      "datesMoved": "Les dates de notre événement ont changé",
+      "dontAsk": "Ne plus demander",
+      "close": "Fermer",
+      "thanks": "Merci, c’est noté.",
+      "failed": "Impossible d’enregistrer ta réponse"
+    },
+    "warning": {
+      "periodEnded": "Cette licence d’événement couvrait les dates jusqu’au {{date}}. Les tests et la mise en place ne demandent rien ; un nouvel événement a sa propre licence d’événement.",
+      "periodNotStarted": "Cette licence d’événement couvre les dates à partir du {{date}}. Préparer et tester avant, c’est très bien."
     }
   }
 }

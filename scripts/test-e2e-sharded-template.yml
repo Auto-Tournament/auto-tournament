@@ -21,6 +21,8 @@ services:
       - DB_NAME=SHARD_DB_NAME
       - VITE_ENABLE_DEV_PAGE=true
       - AT_ACCEPT_LICENSE=noncommercial
+      # Test license keys never check in with autotournament.gg.
+      - LICENSE_CHECKIN_URL=off
     volumes:
       - ./data:/app/data
     healthcheck:

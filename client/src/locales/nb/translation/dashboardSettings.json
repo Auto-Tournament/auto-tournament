@@ -343,6 +343,38 @@
       "changeTitle": "Endre hvordan denne instansen brukes",
       "changeNote": "Velg på nytt og skriv I AGREE. Endringen lagres med dato og kontoen din.",
       "commercialNoKey": "Denne instansen brukes kommersielt, så du trenger en lisens. Kopier nøkkelen fra <consoleLink>lisensene dine i Auto Tournament-konsollen</consoleLink> og lim den inn nedenfor. Ingenting låses mens den mangler."
+    },
+    "checkin": {
+      "last": "Siste lisensinnsjekk: {{time}}",
+      "never": "Ingen lisensinnsjekk ennå. Den første kjører kort tid etter at en nøkkel er lagret.",
+      "whatIsSent": "Hva som sendes",
+      "intro": "Én gang i døgnet, og bare mens en nøkkel er lagret, sender denne serveren:",
+      "keyId": "Lisensnøkkelen, slik at ID-en og signaturen kan sjekkes",
+      "instanceId": "En tilfeldig ID for denne installasjonen, laget én gang",
+      "serverCount": "Antall spillservere",
+      "version": "Plattformversjonen",
+      "activity": "Tall siden forrige innsjekk: ferdigspilte kamper, turneringer med aktivitet og høyeste antall lag",
+      "declared": "Svaret ditt på spørsmålet om arrangementsdatoene, hvis du har gitt et",
+      "notSent": "Ingen navn, adresser, spillere eller kampdetaljer.",
+      "privacy": "Personvernerklæring",
+      "noticeTitle": "En melding fra Auto Tournament",
+      "answered": "Svaret ditt for denne lisensen: {{answer}} ({{time}})"
+    },
+    "eventPrompt": {
+      "title": "Planlegger du noe nytt?",
+      "body": "Arrangementslisensen din gjelder {{dates}}. Si fra om du tester, har et nytt arrangement eller om datoene er flyttet – du trenger ikke gjøre noe mens du tester.",
+      "datesRange": "{{from}} til {{to}}",
+      "testing": "Tester eller setter opp",
+      "newEvent": "Et nytt arrangement",
+      "datesMoved": "Arrangementsdatoene våre er flyttet",
+      "dontAsk": "Ikke spør igjen",
+      "close": "Lukk",
+      "thanks": "Takk, notert.",
+      "failed": "Kunne ikke lagre svaret ditt"
+    },
+    "warning": {
+      "periodEnded": "Denne arrangementslisensen gjaldt til og med {{date}}. Testing og oppsett krever ingenting; et nytt arrangement får sin egen arrangementslisens.",
+      "periodNotStarted": "Denne arrangementslisensen gjelder fra {{date}}. Det er helt greit å sette opp og teste før det."
     }
   }
 }

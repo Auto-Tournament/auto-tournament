@@ -14,8 +14,11 @@ import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { ExternalLink } from '../common/ExternalLink';
 import {
+  EVENT_ANSWER_LABEL,
   licenseSummary,
+  licenseWarningText,
   useLicenseStatus,
+  type LicenseStatus,
   type LicenseStatusResponse,
 } from '../../hooks/useLicenseStatus';
 import { LicenseConsentSection } from '../license/LicenseConsentSection';
@@ -130,7 +133,7 @@ export function LicenseCard() {
           <Alert severity="warning" data-testid="settings-license-warnings">
             <Box component="ul" sx={{ m: 0, pl: 2 }}>
               {warnings.map((w) => (
-                <li key={w.code}>{w.message}</li>
+                <li key={w.code}>{licenseWarningText(w, license, t)}</li>
               ))}
             </Box>
             <Typography variant="caption" display="block" mt={1}>
@@ -190,6 +193,7 @@ export function LicenseCard() {
         <Typography variant="caption" color="text.secondary" display="block" data-testid="settings-license-checkin">
           {t('license.checkInNote')}
         </Typography>
+        {status.checkin && <CheckinDetails status={status} />}
 
         <Box>
           <FormControlLabel
@@ -215,5 +219,60 @@ export function LicenseCard() {
         </Box>
       </Stack>
     </Box>
+  );
+}
+
+const SENT_ROWS = ['keyId', 'instanceId', 'serverCount', 'version', 'activity', 'declared'] as const;
+
+/**
+ * With a key: when the last check-in went through, the notice it brought
+ * back (calm, never a block), the event-license answer, and "What is sent".
+ */
+function CheckinDetails({ status }: { status: LicenseStatus }) {
+  const { t, i18n } = useTranslation();
+  const checkin = status.checkin;
+  if (!checkin) return null;
+  const when = (iso: string) => {
+    const date = new Date(iso);
+    return Number.isNaN(date.getTime()) ? iso : date.toLocaleString(i18n.language);
+  };
+  const prompt = status.eventPrompt;
+  return (
+    <Stack spacing={1} data-testid="settings-license-checkin-details">
+      <Typography variant="body2" color="text.secondary" data-testid="settings-license-checkin-last">
+        {checkin.lastAt ? t('license.checkin.last', { time: when(checkin.lastAt) }) : t('license.checkin.never')}
+      </Typography>
+      {checkin.notice && (
+        <Alert severity="info" data-testid="settings-license-checkin-notice">
+          <Typography variant="body2" fontWeight={600}>
+            {t('license.checkin.noticeTitle')}
+          </Typography>
+          {checkin.notice}
+        </Alert>
+      )}
+      {prompt && prompt.declared !== 'none' && (
+        <Typography variant="body2" color="text.secondary" data-testid="settings-license-event-answer">
+          {t('license.checkin.answered', {
+            answer: t(EVENT_ANSWER_LABEL[prompt.declared]),
+            time: prompt.declaredAt ? when(prompt.declaredAt) : '',
+          })}
+        </Typography>
+      )}
+      <Box component="details" sx={{ typography: 'body2', color: 'text.secondary' }} data-testid="settings-license-checkin-sent">
+        <Box component="summary" sx={{ cursor: 'pointer', color: 'text.primary', width: 'fit-content' }}>
+          {t('license.checkin.whatIsSent')}
+        </Box>
+        <Box sx={{ mt: 1 }}>
+          {t('license.checkin.intro')}
+          <Box component="ul" sx={{ my: 0.5, pl: 3 }}>
+            {SENT_ROWS.map((row) => (
+              <li key={row}>{t(`license.checkin.${row}`)}</li>
+            ))}
+          </Box>
+          {t('license.checkin.notSent')}{' '}
+          <ExternalLink href={checkin.privacyUrl}>{t('license.checkin.privacy')}</ExternalLink>
+        </Box>
+      </Box>
+    </Stack>
   );
 }

@@ -4534,7 +4534,7 @@
           "License"
         ],
         "summary": "The license status",
-        "description": "Checked offline against the embedded public keys. `status` is `none`\n(no key: free for non-commercial use), `ok`, `warning` (a genuine key\nwith something to point out: another product's key, the event window,\nupdates that ended before this release line, more game servers than\nthe pack) or `invalid` (not a genuine key). Nothing is ever blocked.\nThe key itself is never returned; `license.id` identifies it, and\n`verifyUrl` is its public check page.\n",
+        "description": "Checked offline against the embedded public keys. `status` is `none`\n(no key: free for non-commercial use), `ok`, `warning` (a genuine key\nwith something to point out: another product's key, the event window,\nupdates that ended before this release line, more game servers than\nthe pack) or `invalid` (not a genuine key). Nothing is ever blocked.\nThe key itself is never returned; `license.id` identifies it, and\n`verifyUrl` is its public check page.\n\nWith a key saved, `checkin` describes the daily license check-in:\n`lastAt` (ISO time of the last one that went through, or null),\n`notice` (plain text from autotournament.gg to show admins, or null),\n`sent` (the field names of what is sent) and `privacyUrl`. Without a\nkey it is null, and nothing is sent. `eventPrompt` is set for an\nevent license only: `shouldAsk` is true when there was real activity\noutside `validFrom`..`validTo` and the question was not asked in the\nlast 30 days (see `POST /api/license/event-prompt`); `declared` is\nthe last answer for this license (`none` when never answered).\n",
         "responses": {
           "200": {
             "description": "The status"
@@ -4697,6 +4697,59 @@
           },
           "409": {
             "description": "The terms changed since the version the admin read"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/license/event-prompt": {
+      "post": {
+        "tags": [
+          "License"
+        ],
+        "summary": "Answer the event-license question",
+        "description": "For an event license with activity outside its dates, the admin\ndashboard asks, at most once per 30 days, what it is. Body\n`{ \"action\": \"testing\" | \"new_event\" | \"dates_moved\" | \"dismissed\" | \"dont_ask\" }`.\nAn answer is recorded (who and when) and sent as `declared` with the\nnext check-in; `dismissed` closes the question for 30 days, and\n`dont_ask` stops it for this license. Nothing else changes.\nSame-site JSON only.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "action"
+                ],
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "testing",
+                      "new_event",
+                      "dates_moved",
+                      "dismissed",
+                      "dont_ask"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Recorded; the new status"
+          },
+          "400": {
+            "description": "Not one of the actions"
+          },
+          "409": {
+            "description": "The saved key is not a genuine event license"
           }
         },
         "security": [

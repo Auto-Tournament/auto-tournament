@@ -343,6 +343,38 @@
       "changeTitle": "Wijzigen hoe deze instantie wordt gebruikt",
       "changeNote": "Kies opnieuw en typ I AGREE. De wijziging wordt opgeslagen met de datum en je account.",
       "commercialNoKey": "Deze instantie wordt commercieel gebruikt, dus je hebt een licentie nodig. Kopieer je sleutel uit <consoleLink>je licenties in de Auto Tournament-console</consoleLink> en plak hem hieronder. Zolang die ontbreekt, wordt niets geblokkeerd."
+    },
+    "checkin": {
+      "last": "Laatste licentiemelding: {{time}}",
+      "never": "Nog geen licentiemelding. De eerste volgt kort nadat een sleutel is opgeslagen.",
+      "whatIsSent": "Wat er wordt verstuurd",
+      "intro": "Eén keer per dag, en alleen zolang er een sleutel is opgeslagen, stuurt deze server:",
+      "keyId": "De licentiesleutel, zodat de ID en handtekening gecontroleerd kunnen worden",
+      "instanceId": "Een willekeurige ID voor deze installatie, één keer aangemaakt",
+      "serverCount": "Het aantal gameservers",
+      "version": "De platformversie",
+      "activity": "Aantallen sinds de vorige melding: gespeelde wedstrijden, toernooien met activiteit en het grootste aantal teams",
+      "declared": "Je antwoord op de vraag over de evenementdata, als je er een gaf",
+      "notSent": "Geen namen, adressen, spelers of wedstrijddetails.",
+      "privacy": "Privacybeleid",
+      "noticeTitle": "Een bericht van Auto Tournament",
+      "answered": "Je antwoord voor deze licentie: {{answer}} ({{time}})"
+    },
+    "eventPrompt": {
+      "title": "Iets nieuws gepland?",
+      "body": "Je evenementlicentie geldt voor {{dates}}. Laat ons weten of je aan het testen bent, een nieuw evenement hebt of dat je data zijn verschoven — zolang je test hoef je niets te doen.",
+      "datesRange": "{{from}} tot {{to}}",
+      "testing": "Testen of opzetten",
+      "newEvent": "Een nieuw evenement",
+      "datesMoved": "De data van ons evenement zijn verschoven",
+      "dontAsk": "Niet meer vragen",
+      "close": "Sluiten",
+      "thanks": "Bedankt, genoteerd.",
+      "failed": "Je antwoord kon niet worden opgeslagen"
+    },
+    "warning": {
+      "periodEnded": "Deze evenementlicentie gold tot en met {{date}}. Testen en opzetten vragen niets; een nieuw evenement krijgt een eigen evenementlicentie.",
+      "periodNotStarted": "Deze evenementlicentie geldt vanaf {{date}}. Opzetten en testen vóór die tijd is prima."
     }
   }
 }

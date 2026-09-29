@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 407 of them, 307 behind auth —
+Every endpoint this API serves — 408 of them, 308 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -656,6 +656,7 @@ The Auto Tournament license key: save, remove and read its status, checked offli
 | `PUT` | `/api/license` | admin |
 | `DELETE` | `/api/license` | admin |
 | `PUT` | `/api/license/public-badge` | admin |
+| `POST` | `/api/license/event-prompt` | admin |
 | `GET` | `/api/license/consent` | admin |
 | `POST` | `/api/license/consent` | admin |
 

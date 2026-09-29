@@ -343,6 +343,38 @@
       "changeTitle": "Change how this instance is used",
       "changeNote": "Choose again and type I AGREE. The change is saved with the date and your account.",
       "commercialNoKey": "This instance is used commercially, so you need a license. Copy your key from <consoleLink>your licenses in the Auto Tournament console</consoleLink> and paste it below. Nothing is locked while it is missing."
+    },
+    "checkin": {
+      "last": "Last license check-in: {{time}}",
+      "never": "No license check-in yet. The first one runs shortly after a key is saved.",
+      "whatIsSent": "What is sent",
+      "intro": "Once a day, and only while a key is saved, this server sends:",
+      "keyId": "The license key, so its id and signature can be checked",
+      "instanceId": "A random id for this installation, made once",
+      "serverCount": "The number of game servers",
+      "version": "The platform version",
+      "activity": "Counts since the last check-in: finished matches, tournaments with activity, and the largest team count",
+      "declared": "Your answer to the event dates question, if you gave one",
+      "notSent": "No names, addresses, players or match details.",
+      "privacy": "Privacy policy",
+      "noticeTitle": "A note from Auto Tournament",
+      "answered": "Your answer for this license: {{answer}} ({{time}})"
+    },
+    "eventPrompt": {
+      "title": "Planning something new?",
+      "body": "Your event license covers {{dates}}. Let us know if you're testing, have a new event, or your dates moved — no action needed while you're testing.",
+      "datesRange": "{{from}} to {{to}}",
+      "testing": "Testing or setting up",
+      "newEvent": "A new event",
+      "datesMoved": "Our event dates moved",
+      "dontAsk": "Don't ask again",
+      "close": "Close",
+      "thanks": "Thanks, noted.",
+      "failed": "Could not save your answer"
+    },
+    "warning": {
+      "periodEnded": "This event license covered dates up to {{date}}. Testing and setting up need no action; a new event gets its own event license.",
+      "periodNotStarted": "This event license covers dates from {{date}}. Setting up and testing before then is fine."
     }
   }
 }

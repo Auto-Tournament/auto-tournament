@@ -210,12 +210,15 @@ export function verifyLicense(token: unknown, options: VerifyOptions = {}): Lice
     });
   }
   if (license.valid_to !== undefined && today > license.valid_to) {
-    warnings.push({ code: 'period_ended', message: `The event license window ended on ${license.valid_to}.` });
+    warnings.push({
+      code: 'period_ended',
+      message: `This event license covered dates up to ${license.valid_to}. Testing and setting up need no action; a new event gets its own event license.`,
+    });
   }
   if (license.valid_from !== undefined && today < license.valid_from) {
     warnings.push({
       code: 'period_not_started',
-      message: `The event license window starts on ${license.valid_from}.`,
+      message: `This event license covers dates from ${license.valid_from}. Setting up and testing before then is fine.`,
     });
   }
   if (typeof options.serverCount === 'number' && options.serverCount > license.max_servers) {

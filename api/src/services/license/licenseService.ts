@@ -15,11 +15,12 @@
  * Server Manager for Ready Up, behind the server token.
  */
 
-import { log } from '../../utils/logger';
 import { settingsService } from '../settingsService';
 import { isTruthySetting } from '../../utils/settingFields';
 import packageJson from '../../../package.json';
 import { buildLineDate } from './lineDate';
+import { countServers } from './serverCount';
+import type { CheckinStatus, EventPromptAction, EventPromptStatus } from './checkin';
 import type { LicensePublicKey } from './publicKeys';
 import {
   decodeLicense,
@@ -62,6 +63,18 @@ export interface LicenseStatus {
   lineDate: string;
   /** The admin toggle for the public "Licensed" line. */
   publicBadge: boolean;
+  /**
+   * The daily check-in (./checkin.ts): when it last went through, the
+   * server's notice (a calm note, never a block) and what is sent. Null
+   * without a key: then nothing is sent at all.
+   */
+  checkin: CheckinStatus | null;
+  /**
+   * An event license only: whether to ask the admin, quietly, what the
+   * activity outside the license's dates is (testing, a new event, moved
+   * dates). Null for every other license.
+   */
+  eventPrompt: EventPromptStatus | null;
 }
 
 export interface StatusInputs {
@@ -103,6 +116,8 @@ export function statusFor(key: string | null, inputs: StatusInputs): LicenseStat
     version: inputs.version,
     lineDate: inputs.lineDate,
     publicBadge: inputs.publicBadge,
+    checkin: null,
+    eventPrompt: null,
   };
   if (!key) {
     return { status: 'none', license: null, warnings: [], verifyUrl: null, ...base };
@@ -122,29 +137,6 @@ export function statusFor(key: string | null, inputs: StatusInputs): LicenseStat
     verifyUrl: license ? verifyUrlFor(license.id) : null,
     ...base,
   };
-}
-
-/**
- * Game servers set up across the installed integrations (CS2: enabled
- * servers). Null when none can count them or counting failed.
- */
-async function countServers(): Promise<number | null> {
-  const { listIntegrations } = await import('../../integrations/registry');
-  let total = 0;
-  let counted = false;
-  for (const integration of listIntegrations()) {
-    if (!integration.configuredResourceCount) continue;
-    try {
-      total += await integration.configuredResourceCount();
-      counted = true;
-    } catch (error) {
-      log.warn(`[LICENSE] Could not count ${integration.id} servers`, {
-        error: error instanceof Error ? error.message : String(error),
-      });
-      return null;
-    }
-  }
-  return counted ? total : null;
 }
 
 /** Why a pasted key is refused before it is stored, or null to store it. */
@@ -174,12 +166,37 @@ class LicenseService {
       countServers(),
       this.isPublicBadgeEnabled(),
     ]);
-    return statusFor(key, {
+    const status = statusFor(key, {
       serverCount,
       publicBadge,
       version: packageJson.version,
       lineDate: buildLineDate(packageJson.version),
     });
+    if (!key) return status;
+    // Lazy: the check-in service reads the database, and tests import this file's pure half.
+    const { licenseCheckin, readEventActivity } = await import('./checkinService');
+    const [checkin, eventPrompt] = await Promise.all([
+      licenseCheckin.status(true),
+      status.status === 'invalid' ? null : licenseCheckin.eventPrompt(status.license, readEventActivity),
+    ]);
+    return { ...status, checkin, eventPrompt };
+  }
+
+  /**
+   * The admin's answer to the event-license question (or closing it). An
+   * answer goes out with the next check-in, which is started now.
+   */
+  async answerEventPrompt(action: EventPromptAction, licenseId: string, actor: string): Promise<void> {
+    const { licenseCheckin } = await import('./checkinService');
+    await licenseCheckin.answerEventPrompt(action, licenseId, actor);
+    if (action !== 'dismissed' && action !== 'dont_ask') void licenseCheckin.run();
+  }
+
+  private async keyChanged(before: string | null): Promise<void> {
+    const after = await this.getKey();
+    if (after === before) return;
+    const { licenseKeyChanged } = await import('./checkinService');
+    licenseKeyChanged(after !== null);
   }
 
   /**
@@ -189,12 +206,16 @@ class LicenseService {
    * works once the platform is updated.
    */
   async setKey(input: string): Promise<LicenseStatus> {
+    const before = await this.getKey();
     await settingsService.setSetting('license_key', input.trim());
+    await this.keyChanged(before);
     return this.getStatus();
   }
 
   async clearKey(): Promise<LicenseStatus> {
+    const before = await this.getKey();
     await settingsService.setSetting('license_key', null);
+    await this.keyChanged(before);
     return this.getStatus();
   }
 

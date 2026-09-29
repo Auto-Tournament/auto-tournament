@@ -28,6 +28,16 @@ export type CoreSettingKey =
   | 'license_consent'
   // Earlier acceptances, newest first (JSON array), for the record.
   | 'license_consent_history'
+  // The daily license check-in (services/license/checkin.ts): this
+  // instance's random id, the last check-in's time and answer, where the
+  // counts start next time, and the event-license question's answer and
+  // state (JSON). Written by the check-in service only.
+  | 'license_instance_id'
+  | 'license_checkin_last_at'
+  | 'license_checkin_result'
+  | 'license_checkin_counted_since'
+  | 'license_event_declaration'
+  | 'license_event_prompt'
   // Integrator webhooks may target private / loopback addresses (LAN events).
   // Off by default: services/webhooks/ssrf.ts.
   | 'webhooks_allow_private_targets';
@@ -131,6 +141,21 @@ export const CORE_SETTINGS: ReadonlyArray<SettingDefinition & { key: CoreSetting
       return { value: trimmed, message: 'License terms history saved' };
     },
   },
+  ...(
+    [
+      'license_instance_id',
+      'license_checkin_last_at',
+      'license_checkin_result',
+      'license_checkin_counted_since',
+      'license_event_declaration',
+      'license_event_prompt',
+    ] as const
+  ).map((key) => ({
+    key,
+    normalize(trimmed: string) {
+      return { value: trimmed, message: `License check-in state saved (${key})` };
+    },
+  })),
 ];
 
 /**
