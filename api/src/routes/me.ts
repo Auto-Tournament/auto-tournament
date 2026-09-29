@@ -31,6 +31,16 @@ import {
   isLinkableProvider,
   isSameSiteRequest,
 } from '../utils/accountConnections';
+import { db } from '../config/database';
+import { localAdminService } from '../services/localAdminService';
+import { adminAccessSettings } from '../services/adminAccessSettings';
+import {
+  SteamLinkError,
+  connectSteamToLocalAccount,
+  isLocalPlayerId,
+} from '../services/localAccountSteamLink';
+import { isLocalReauthFresh } from '../utils/localReauth';
+import { clearPendingSteamMerge, readPendingSteamMerge, switchSessionAccount } from './auth';
 
 const router = Router();
 
@@ -206,37 +216,71 @@ const PROVIDER_LABELS: Record<string, string> = {
   github: 'GitHub',
   google: 'Google',
   twitch: 'Twitch',
+  local: 'Admin login (username + password)',
 };
 
-/** Providers this site can sign in with right now, with their labels. */
-function enabledSignInProviders(): Map<string, string> {
+/** Providers this site can sign in with right now, with their labels ('local' = the admin login). */
+async function enabledSignInProviders(): Promise<Map<string, string>> {
   const out = new Map<string, string>();
   for (const p of getAuthProvidersConfig()) {
     if (p.enabled) out.set(p.id, p.label);
   }
+  if (await adminAccessSettings.isLocalAdminLoginEnabled()) out.set('local', PROVIDER_LABELS.local);
   return out;
 }
 
-async function connectionsResponse(account: PlayerAccount, isImpersonating: boolean) {
-  const [player, identities] = await Promise.all([
+interface SignInMethodRow {
+  provider: string;
+  label: string;
+  linked: boolean;
+  primary: boolean;
+  linkedAt: number | null;
+  signInEnabled: boolean;
+  canConnect: boolean;
+  removable: boolean;
+  /** The local admin login's username. */
+  username?: string;
+}
+
+async function connectionsResponse(req: Request, account: PlayerAccount, isImpersonating: boolean) {
+  const [player, identities, localLogin] = await Promise.all([
     playerService.getPlayerById(account.steamId),
     authIdentityService.listIdentitiesForSteamId(account.steamId),
+    localAdminService.findByPlayerId(account.steamId),
   ]);
-  const enabled = enabledSignInProviders();
+  const enabled = await enabledSignInProviders();
+  const enabledIds = [...enabled.keys()];
+  // A local admin account created on /setup has no Steam identity until it connects one.
+  const hasSteam = !isLocalPlayerId(account.steamId);
   const linkedProviders = identities.map((i) => i.provider);
+  if (localLogin) linkedProviders.push('local');
+  const removable = (provider: string) =>
+    checkRemoveSignInMethod({ provider, linkedProviders, enabledProviders: enabledIds, hasSteam }).ok;
 
-  const signInMethods = [
-    {
-      provider: 'steam',
-      label: PROVIDER_LABELS.steam,
+  const signInMethods: SignInMethodRow[] = [];
+  if (localLogin) {
+    signInMethods.push({
+      provider: 'local',
+      label: PROVIDER_LABELS.local,
       linked: true,
-      primary: true,
-      linkedAt: null as number | null,
-      signInEnabled: enabled.has('steam'),
+      primary: false,
+      linkedAt: null,
+      signInEnabled: enabled.has('local'),
       canConnect: false,
-      removable: false,
-    },
-  ];
+      removable: removable('local'),
+      username: localLogin.username,
+    });
+  }
+  signInMethods.push({
+    provider: 'steam',
+    label: PROVIDER_LABELS.steam,
+    linked: hasSteam,
+    primary: hasSteam,
+    linkedAt: null,
+    signInEnabled: enabled.has('steam'),
+    canConnect: !hasSteam && enabled.has('steam'),
+    removable: false,
+  });
   // Every provider this site offers, plus any linked one it no longer offers.
   const shown = LINKABLE_PROVIDERS.filter(
     (p) => enabled.has(p) || linkedProviders.includes(p)
@@ -251,13 +295,7 @@ async function connectionsResponse(account: PlayerAccount, isImpersonating: bool
       linkedAt: identity?.linkedAt ?? null,
       signInEnabled: enabled.has(provider),
       canConnect: !identity && enabled.has(provider),
-      removable:
-        !!identity &&
-        checkRemoveSignInMethod({
-          provider,
-          linkedProviders,
-          enabledProviders: [...enabled.keys()],
-        }).ok,
+      removable: !!identity && removable(provider),
     });
   }
 
@@ -270,15 +308,37 @@ async function connectionsResponse(account: PlayerAccount, isImpersonating: bool
     games.push({ id: integration.id, name: integration.displayName });
     gamesByProvider.set(integration.accountProvider, games);
   }
-  const gameAccounts = [...gamesByProvider.entries()].map(([provider, games]) => ({
-    provider,
-    label: PROVIDER_LABELS[provider] ?? provider,
+  const gameAccounts = [...gamesByProvider.entries()].map(([provider, games]) => {
     // Steam is the account's own identity, proven by the Steam sign-in.
-    linked: provider === 'steam',
-    verified: provider === 'steam',
-    externalId: provider === 'steam' ? account.steamId : null,
-    games,
-  }));
+    const steam = provider === 'steam' && hasSteam;
+    return {
+      provider,
+      label: PROVIDER_LABELS[provider] ?? provider,
+      linked: steam,
+      verified: steam,
+      externalId: steam ? account.steamId : null,
+      games,
+    };
+  });
+
+  // Back from Steam with a Steam ID that already has a player: ask before merging.
+  let pendingMerge: { steamId: string; name: string; avatar: string | null; matches: number } | null = null;
+  const pending = !isImpersonating ? readPendingSteamMerge(req, account.steamId) : null;
+  if (pending) {
+    const steamPlayer = await playerService.getPlayerById(pending.steamId);
+    if (steamPlayer) {
+      const count = await db.queryOneAsync<{ n: string | number }>(
+        'SELECT COUNT(DISTINCT match_slug) AS n FROM player_match_stats WHERE player_id = ?',
+        [pending.steamId]
+      );
+      pendingMerge = {
+        steamId: pending.steamId,
+        name: steamPlayer.name,
+        avatar: steamPlayer.avatar ?? null,
+        matches: Number(count?.n ?? 0),
+      };
+    }
+  }
 
   return {
     success: true,
@@ -291,6 +351,15 @@ async function connectionsResponse(account: PlayerAccount, isImpersonating: bool
     isImpersonating,
     signInMethods,
     gameAccounts,
+    /** The account's local admin login, or null. `reauthFresh`: the password was confirmed in the last 10 minutes. */
+    localLogin: localLogin
+      ? {
+          username: localLogin.username,
+          totpEnabled: !!localLogin.totp_secret_enc,
+          reauthFresh: isLocalReauthFresh(req, account.steamId),
+        }
+      : null,
+    pendingMerge,
   };
 }
 
@@ -302,9 +371,13 @@ async function connectionsResponse(account: PlayerAccount, isImpersonating: bool
  *     summary: The signed-in player's sign-in methods and game accounts
  *     description: >
  *       Sign-in methods list Steam (the account's primary identity, never
- *       removable) and every provider this site offers or the account has
- *       linked. Game accounts are derived from the installed game modules.
- *       Answers for the real signed-in account, also while impersonating.
+ *       removable), the local admin login when the account has one, and every
+ *       provider this site offers or the account has linked. A local admin
+ *       account created on /setup has no Steam identity until it connects
+ *       one (`canConnect` on the Steam row). `pendingMerge` is set after
+ *       Steam answered with a Steam ID that already has a player. Game
+ *       accounts are derived from the installed game modules. Answers for
+ *       the real signed-in account, also while impersonating.
  *     responses:
  *       200:
  *         description: Account, sign-in methods and game accounts
@@ -318,12 +391,34 @@ router.get('/connections', async (req: Request, res: Response) => {
     const account = await resolveAccount(req, res, { write: false, what: 'account' });
     if (!account) return;
     const identity = await resolveViewerIdentity(req);
-    return res.json(await connectionsResponse(account, identity.isImpersonating));
+    return res.json(await connectionsResponse(req, account, identity.isImpersonating));
   } catch (error) {
     log.error('Error reading own connections', error);
     return res.status(500).json({ success: false, error: 'Failed to load your connections' });
   }
 });
+
+/** Same-site JSON only (the CSRF rule of the account routes). Sends the refusal. */
+function sameSiteJson(req: Request, res: Response, what: string): boolean {
+  if (!isSameSiteRequest(req)) {
+    log.warn(`Refused cross-site ${what}`, { provider: req.params.provider });
+    res.status(403).json({ success: false, error: 'Request refused' });
+    return false;
+  }
+  if (!req.is('application/json')) {
+    res.status(415).json({ success: false, error: 'Send this request as JSON' });
+    return false;
+  }
+  return true;
+}
+
+function reauthRequired(res: Response): Response {
+  return res.status(403).json({
+    success: false,
+    reauthRequired: true,
+    error: 'Confirm your admin password first',
+  });
+}
 
 /**
  * @openapi
@@ -334,14 +429,17 @@ router.get('/connections', async (req: Request, res: Response) => {
  *     description: >
  *       Steam cannot be removed (it is the account's primary identity), and
  *       neither can the last method this site would let the player sign in
- *       with. Requires a JSON request from this site (Origin checked).
+ *       with. `local` removes the account's admin login (username +
+ *       password), and needs the password re-confirmed in the last 10
+ *       minutes (`reauthRequired`). Requires a JSON request from this site
+ *       (Origin checked).
  *     parameters:
  *       - in: path
  *         name: provider
  *         required: true
  *         schema:
  *           type: string
- *           enum: [discord, keycloak, github, google]
+ *           enum: [discord, keycloak, github, google, twitch, local]
  *     responses:
  *       200:
  *         description: Removed; the updated connections
@@ -350,7 +448,7 @@ router.get('/connections', async (req: Request, res: Response) => {
  *       401:
  *         description: Not signed in
  *       403:
- *         description: Impersonating, or a cross-site request
+ *         description: Impersonating, a cross-site request, or `reauthRequired`
  *       404:
  *         description: Not linked to this account
  *       409:
@@ -360,31 +458,33 @@ router.get('/connections', async (req: Request, res: Response) => {
  */
 router.post('/connections/:provider/remove', async (req: Request, res: Response) => {
   try {
-    if (!isSameSiteRequest(req)) {
-      log.warn('Refused cross-site sign-in method removal', { provider: req.params.provider });
-      return res.status(403).json({ success: false, error: 'Request refused' });
-    }
-    if (!req.is('application/json')) {
-      return res.status(415).json({ success: false, error: 'Send this request as JSON' });
-    }
+    if (!sameSiteJson(req, res, 'sign-in method removal')) return;
     const account = await resolveAccount(req, res, { write: true, what: 'account' });
     if (!account) return;
 
     const { provider } = req.params;
+    const hasSteam = !isLocalPlayerId(account.steamId);
     if (provider === 'steam') {
-      return res
-        .status(400)
-        .json({ success: false, error: 'Steam is your primary sign-in and cannot be removed' });
+      return res.status(400).json({
+        success: false,
+        error: hasSteam ? 'Steam is your primary sign-in and cannot be removed' : 'Not linked to your account',
+      });
     }
-    if (!isLinkableProvider(provider)) {
+    if (!isLinkableProvider(provider) && provider !== 'local') {
       return res.status(400).json({ success: false, error: 'Unknown sign-in method' });
     }
 
-    const identities = await authIdentityService.listIdentitiesForSteamId(account.steamId);
+    const [identities, localLogin] = await Promise.all([
+      authIdentityService.listIdentitiesForSteamId(account.steamId),
+      localAdminService.findByPlayerId(account.steamId),
+    ]);
+    const linkedProviders = identities.map((i) => i.provider);
+    if (localLogin) linkedProviders.push('local');
     const check = checkRemoveSignInMethod({
       provider,
-      linkedProviders: identities.map((i) => i.provider),
-      enabledProviders: [...enabledSignInProviders().keys()],
+      linkedProviders,
+      enabledProviders: [...(await enabledSignInProviders()).keys()],
+      hasSteam,
     });
     if (!check.ok) {
       if (check.reason === 'not_linked') {
@@ -396,13 +496,101 @@ router.post('/connections/:provider/remove', async (req: Request, res: Response)
       });
     }
 
-    await authIdentityService.unlinkProviderFromSteamId(provider, account.steamId);
-    log.info('Removed sign-in method from account', { provider, steamId: account.steamId });
-    return res.json(await connectionsResponse(account, false));
+    if (provider === 'local') {
+      if (!isLocalReauthFresh(req, account.steamId)) return reauthRequired(res);
+      await db.queryAsync('DELETE FROM local_admins WHERE player_id = ?', [account.steamId]);
+      log.warn('[AUDIT] Local admin login removed from account', {
+        username: localLogin?.username,
+        playerId: account.steamId,
+      });
+    } else {
+      await authIdentityService.unlinkProviderFromSteamId(provider, account.steamId);
+      log.info('Removed sign-in method from account', { provider, steamId: account.steamId });
+    }
+    return res.json(await connectionsResponse(req, account, false));
   } catch (error) {
     log.error('Error removing sign-in method', error);
     return res.status(500).json({ success: false, error: 'Failed to remove sign-in method' });
   }
+});
+
+/**
+ * @openapi
+ * /api/me/connections/steam/merge:
+ *   post:
+ *     tags: [Me]
+ *     summary: Merge the Steam player waiting for confirmation into this local admin account
+ *     description: >
+ *       After connecting Steam answered with a Steam ID that already has a
+ *       player (`pendingMerge` on GET /api/me/connections). The Steam player
+ *       is kept (its id, matches and stats stay as they are) and becomes an
+ *       admin; the local login and the sign-in methods of this account move
+ *       onto it, and the local-* account is retired. This browser is then
+ *       signed in as the Steam player. Same-site JSON; needs the password
+ *       re-confirmed in the last 10 minutes. Audit-logged.
+ *     responses:
+ *       200:
+ *         description: Merged; `steamId` is the account's id now
+ *       403:
+ *         description: Impersonating, a cross-site request, or `reauthRequired`
+ *       404:
+ *         description: No merge waiting (expired after 10 minutes)
+ *       409:
+ *         description: The Steam player has its own admin login, or changed in between
+ */
+router.post('/connections/steam/merge', async (req: Request, res: Response) => {
+  try {
+    if (!sameSiteJson(req, res, 'Steam merge')) return;
+    const account = await resolveAccount(req, res, { write: true, what: 'account' });
+    if (!account) return;
+    const pending = readPendingSteamMerge(req, account.steamId);
+    if (!pending) return res.status(404).json({ success: false, error: 'Nothing to merge. Connect Steam again.' });
+    if (!isLocalReauthFresh(req, account.steamId)) return reauthRequired(res);
+
+    try {
+      const result = await connectSteamToLocalAccount(account.steamId, pending.steamId, 'merge');
+      clearPendingSteamMerge(req);
+      log.warn('[AUDIT] Merged local admin account into existing Steam player; that player is now an admin', {
+        from: account.steamId,
+        steamId: pending.steamId,
+        moved: result.moved,
+      });
+    } catch (error) {
+      if (error instanceof SteamLinkError) {
+        clearPendingSteamMerge(req);
+        log.warn('[AUDIT] Steam merge refused', { from: account.steamId, steamId: pending.steamId, reason: error.reason });
+        return res.status(409).json({
+          success: false,
+          error:
+            error.reason === 'taken'
+              ? 'That Steam account is already connected to another account'
+              : 'The accounts changed in the meantime. Connect Steam again.',
+        });
+      }
+      throw error;
+    }
+    await switchSessionAccount(req, res, pending.steamId);
+    return res.json({ success: true, steamId: pending.steamId });
+  } catch (error) {
+    log.error('Error merging Steam player into local admin account', error);
+    return res.status(500).json({ success: false, error: 'Failed to merge the accounts' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/me/connections/steam/merge/cancel:
+ *   post:
+ *     tags: [Me]
+ *     summary: Drop the Steam merge waiting for confirmation
+ *     responses:
+ *       200:
+ *         description: Dropped (or nothing was waiting)
+ */
+router.post('/connections/steam/merge/cancel', async (req: Request, res: Response) => {
+  if (!sameSiteJson(req, res, 'Steam merge cancel')) return;
+  clearPendingSteamMerge(req);
+  return res.json({ success: true });
 });
 
 export default router;

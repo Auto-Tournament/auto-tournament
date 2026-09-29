@@ -111,7 +111,27 @@
       "removeFailed": "Could not remove this sign-in method",
       "linked": "{{provider}} connected",
       "taken": "That {{provider}} account is already connected to another account on this site.",
-      "linkFailed": "Could not connect {{provider}}. Please try again."
+      "linkFailed": "Could not connect {{provider}}. Please try again.",
+      "localLabel": "Admin login (username + password)",
+      "localDetail": "Username {{username}}"
+    },
+    "reauth": {
+      "title": "Confirm your admin password",
+      "body": "Enter the password for {{username}} before you change how you sign in.",
+      "password": "Password",
+      "totp": "Authenticator code",
+      "confirm": "Confirm",
+      "failed": "Wrong password or code",
+      "totpNeeded": "Enter the code from your authenticator app too."
+    },
+    "merge": {
+      "title": "Merge the accounts?",
+      "body": "This Steam account already has a player on this site. Merge it into your admin account?",
+      "explain": "The player keeps its matches and stats and becomes an admin. Your admin login and connected sign-in methods move to it.",
+      "matches_one": "{{count}} match played",
+      "matches_other": "{{count}} matches played",
+      "confirm": "Merge accounts",
+      "failed": "Could not merge the accounts"
     }
   },
   "home": {

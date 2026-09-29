@@ -33,6 +33,14 @@ import {
 import { isSameSiteRequest } from '../utils/accountConnections';
 import { isAdminEmail } from '../utils/adminEmails';
 import { grantAdminForAdminEmailMatch, grantAdminForVerifiedEmail } from '../services/adminSeedService';
+import { localAdminService } from '../services/localAdminService';
+import {
+  SteamLinkError,
+  STEAM_ID_RE,
+  connectSteamToLocalAccount,
+  isLocalPlayerId,
+} from '../services/localAccountSteamLink';
+import { isLocalReauthFresh, markLocalReauth } from '../utils/localReauth';
 
 const router = Router();
 
@@ -395,6 +403,21 @@ router.get('/steam/callback', (req: Request, res: Response, _next) => {
       error:
         'Steam sign-in is not set up. An admin can set it up on Settings -> Sign-in (or set STEAM_API_KEY).',
     });
+  }
+
+  // Connecting Steam to a local admin account (POST /api/auth/steam/link):
+  // verify the assertion without signing in as the Steam user.
+  if (readSteamLinkIntent(req)) {
+    return passport.authenticate('steam', { session: false }, (err: unknown, user: unknown) => {
+      const verified = user as { steamId?: string } | false | null | undefined;
+      const steamId = verified ? verified.steamId : undefined;
+      if (err || !steamId) {
+        clearSteamLinkIntent(req);
+        log.warn('Steam account link refused', { reason: 'passport_failure', error: (err as Error)?.message });
+        return linkResultRedirect(req, res, 'steam', 'failed');
+      }
+      void completeSteamLink(req, res, steamId);
+    })(req, res, _next);
   }
 
   return passport.authenticate('steam', {
@@ -768,8 +791,8 @@ export function ssoCallbackHandler(expectedProvider: AuthProvider) {
 function linkResultRedirect(
   req: Request,
   res: Response,
-  provider: AuthProvider,
-  outcome: 'ok' | 'taken' | 'failed'
+  provider: AuthProvider | 'steam',
+  outcome: 'ok' | 'taken' | 'failed' | 'reauth' | 'merge'
 ) {
   const query = new URLSearchParams({ link: outcome, provider });
   return res.redirect(302, `${getFrontendBaseUrl(req)}/me/connections?${query}`);
@@ -833,6 +856,15 @@ export function startAccountLink(
       const player = await playerService.getPlayerById(identity.realSteamId);
       if (!player) {
         return res.status(404).json({ success: false, error: 'No player record for this account' });
+      }
+
+      // An account with a local admin login re-confirms its password first.
+      if (
+        (await localAdminService.findByPlayerId(identity.realSteamId)) &&
+        !isLocalReauthFresh(req, identity.realSteamId)
+      ) {
+        log.info('Account link start: password re-confirmation needed', { provider });
+        return linkResultRedirect(req, res, provider, 'reauth');
       }
 
       const intent: OAuthLinkIntent = { purpose: 'link', steamId: identity.realSteamId };
@@ -986,6 +1018,230 @@ registerSsoRoutes('discord');
 registerSsoRoutes('github');
 registerSsoRoutes('google');
 registerSsoRoutes('twitch');
+
+/*
+ * Connecting Steam to a local admin account (services/localAccountSteamLink).
+ *
+ *   POST /api/auth/steam/link  (form post from /me/connections)
+ *     -> checks (same-site, signed in, not impersonating, a local-* account,
+ *        password re-confirmed in the last 10 minutes), remembers the intent
+ *        on the server-side session, redirects to Steam
+ *   GET  /api/auth/steam/callback
+ *     -> with an intent on the session: Passport verifies the assertion with
+ *        `session: false` (the session is not switched to the Steam user),
+ *        then completeSteamLink:
+ *          - no player has the Steam ID: attach (the account becomes that
+ *            Steam player; redirect ?link=ok)
+ *          - a player has it: remember a pending merge on the session and
+ *            redirect ?link=merge; /me/connections asks, and
+ *            POST /api/me/connections/steam/merge does it
+ *          - that player has its own local login: ?link=taken
+ */
+
+const STEAM_LINK_TTL_MS = 10 * 60 * 1000;
+
+interface SteamLinkIntent {
+  playerId: string;
+  at: number;
+}
+
+export interface PendingSteamMerge {
+  playerId: string;
+  steamId: string;
+  at: number;
+}
+
+type SteamLinkSession = {
+  session?: { steamLinkIntent?: SteamLinkIntent; pendingSteamMerge?: PendingSteamMerge };
+};
+
+function readSteamLinkIntent(req: Request): SteamLinkIntent | null {
+  const intent = (req as Request & SteamLinkSession).session?.steamLinkIntent;
+  if (!intent || typeof intent.at !== 'number') return null;
+  return Date.now() - intent.at <= STEAM_LINK_TTL_MS ? intent : null;
+}
+
+function clearSteamLinkIntent(req: Request): void {
+  const session = (req as Request & SteamLinkSession).session;
+  if (session) delete session.steamLinkIntent;
+}
+
+/** The pending "merge this Steam player into your account?" for `playerId`, if still fresh. */
+export function readPendingSteamMerge(req: Request, playerId: string): PendingSteamMerge | null {
+  const pending = (req as Request & SteamLinkSession).session?.pendingSteamMerge;
+  if (!pending || pending.playerId !== playerId || typeof pending.at !== 'number') return null;
+  return Date.now() - pending.at <= STEAM_LINK_TTL_MS ? pending : null;
+}
+
+export function clearPendingSteamMerge(req: Request): void {
+  const session = (req as Request & SteamLinkSession).session;
+  if (session) delete session.pendingSteamMerge;
+}
+
+/**
+ * The signed-in account now lives under `playerId` (after attaching or
+ * merging Steam): sign this browser in as it, keeping the sign-in provider,
+ * and keep the password re-confirmation that allowed the change.
+ */
+export function switchSessionAccount(req: Request, res: Response, playerId: string): Promise<void> {
+  const anyReq = req as Request & {
+    user?: { provider?: string; displayName?: string };
+    login?: (user: unknown, cb: (err: unknown) => void) => void;
+  };
+  const provider = anyReq.user?.provider ?? 'local';
+  const displayName = anyReq.user?.displayName;
+  return new Promise((resolve, reject) => {
+    if (!anyReq.login) return reject(new Error('Passport is not initialised'));
+    anyReq.login({ provider, steamId: playerId, displayName }, (err) => {
+      if (err) return reject(err);
+      setPlayerSteamCookie(req, res, playerId);
+      markLocalReauth(req, playerId);
+      resolve();
+    });
+  });
+}
+
+/**
+ * Checks for starting a Steam link. Sends the refusal and returns false, or
+ * remembers the intent and returns true. Exported for the test-only twin.
+ */
+export async function beginSteamLink(req: Request, res: Response): Promise<boolean> {
+  if (!isSameSiteRequest(req)) {
+    log.warn('Steam account link start refused: cross-site request');
+    res.status(403).json({ success: false, error: 'Request refused' });
+    return false;
+  }
+  const identity = await resolveViewerIdentity(req);
+  if (!identity.realSteamId) {
+    res.status(401).json({ success: false, error: 'Sign in to connect an account' });
+    return false;
+  }
+  if (identity.isImpersonating) {
+    res.status(403).json({
+      success: false,
+      error: 'You are impersonating a player. Stop impersonating to manage your own account.',
+    });
+    return false;
+  }
+  if (!isLocalPlayerId(identity.realSteamId) || !(await playerService.getPlayerById(identity.realSteamId))) {
+    // Every other account already is a Steam account.
+    res.status(400).json({ success: false, error: 'This account already signs in with Steam' });
+    return false;
+  }
+  if (!isLocalReauthFresh(req, identity.realSteamId)) {
+    linkResultRedirect(req, res, 'steam', 'reauth');
+    return false;
+  }
+  const session = (req as Request & SteamLinkSession).session;
+  if (!session) {
+    linkResultRedirect(req, res, 'steam', 'failed');
+    return false;
+  }
+  session.steamLinkIntent = { playerId: identity.realSteamId, at: Date.now() };
+  delete session.pendingSteamMerge;
+  log.info('Steam account link started', { playerId: identity.realSteamId });
+  return true;
+}
+
+/**
+ * Steam proved `steamId`: attach it to the local account in the session's
+ * intent, or queue a merge for confirmation. Always answers with a redirect
+ * to /me/connections. Exported for the test-only twin.
+ */
+export async function completeSteamLink(req: Request, res: Response, steamId: string): Promise<void> {
+  const intent = readSteamLinkIntent(req);
+  clearSteamLinkIntent(req);
+  const refuse = (reason: string, outcome: 'taken' | 'failed' = 'failed'): void => {
+    log.warn('Steam account link refused', { reason, steamId, playerId: intent?.playerId ?? null });
+    linkResultRedirect(req, res, 'steam', outcome);
+  };
+  try {
+    if (!intent) return refuse('no_link_intent');
+    if (!STEAM_ID_RE.test(steamId)) return refuse('bad_steam_id');
+    const identity = await resolveViewerIdentity(req);
+    if (identity.realSteamId !== intent.playerId) return refuse('account_mismatch');
+    if (identity.isImpersonating) return refuse('impersonating');
+
+    const existing = await playerService.getPlayerById(steamId);
+    if (existing) {
+      if (await localAdminService.findByPlayerId(steamId)) {
+        return refuse('steam_player_has_local_login', 'taken');
+      }
+      const session = (req as Request & SteamLinkSession).session;
+      if (!session) return refuse('no_session');
+      session.pendingSteamMerge = { playerId: intent.playerId, steamId, at: Date.now() };
+      log.info('[AUDIT] Steam account link: existing player, waiting for merge confirmation', {
+        playerId: intent.playerId,
+        steamId,
+      });
+      linkResultRedirect(req, res, 'steam', 'merge');
+      return;
+    }
+
+    let profile: { name?: string; avatarUrl?: string } = {};
+    try {
+      if (await steamService.isAvailable()) {
+        const info = await steamService.getPlayerInfo(steamId);
+        if (info) profile = { name: info.name, avatarUrl: info.avatarUrl };
+      }
+    } catch {
+      // The local account's name and avatar are kept instead.
+    }
+    const result = await connectSteamToLocalAccount(intent.playerId, steamId, 'attach', profile);
+    log.warn('[AUDIT] Steam connected to a local admin account; it now signs in as the Steam player', {
+      from: intent.playerId,
+      steamId,
+      moved: result.moved,
+    });
+    await switchSessionAccount(req, res, steamId);
+    linkResultRedirect(req, res, 'steam', 'ok');
+  } catch (error) {
+    if (error instanceof SteamLinkError) {
+      return refuse(error.reason, error.reason === 'taken' ? 'taken' : 'failed');
+    }
+    log.error('Steam account link failed', error as Error);
+    return refuse('error');
+  }
+}
+
+/**
+ * @openapi
+ * /api/auth/steam/link:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Start connecting Steam to the signed-in local admin account
+ *     description: >
+ *       A same-site form post from /me/connections, for accounts created on
+ *       /setup (no Steam identity yet). Needs the local password re-confirmed
+ *       in the last 10 minutes (POST /api/auth/local/reauth), else redirects
+ *       to /me/connections?link=reauth. Redirects to Steam; the callback
+ *       attaches the Steam ID (?link=ok), or, when a player with that Steam
+ *       ID exists, asks to merge (?link=merge, then
+ *       POST /api/me/connections/steam/merge).
+ *     responses:
+ *       302:
+ *         description: Redirect to Steam, or back to /me/connections
+ *       400:
+ *         description: The account already signs in with Steam
+ *       401:
+ *         description: Not signed in
+ *       403:
+ *         description: Impersonating, or a cross-site request
+ *       503:
+ *         description: Steam sign-in is not set up
+ */
+router.post('/steam/link', async (req: Request, res: Response, next: NextFunction) => {
+  if (!isSteamAuthConfigured()) {
+    return res.status(503).json({ success: false, error: 'Steam sign-in is not set up' });
+  }
+  try {
+    if (!(await beginSteamLink(req, res))) return;
+    return passport.authenticate('steam', { session: false })(req, res, next);
+  } catch (error) {
+    log.error('Steam account link start failed', error as Error);
+    return linkResultRedirect(req, res, 'steam', 'failed');
+  }
+});
 
 /**
  * Public discovery endpoint: returns the list of configured auth providers.

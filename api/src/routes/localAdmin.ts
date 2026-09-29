@@ -24,6 +24,8 @@ import { adminAccessSettings } from '../services/adminAccessSettings';
 import { settingsService } from '../services/settingsService';
 import { requireAuth } from '../middleware/auth';
 import { setPlayerSteamCookie } from './auth';
+import { markLocalReauth } from '../utils/localReauth';
+import { resolveViewerIdentity } from '../utils/viewerIdentity';
 
 export const setupRouter = Router();
 export const localAuthRouter = Router();
@@ -65,6 +67,8 @@ function signIn(req: Request, res: Response, playerId: string, username: string)
     anyReq.login({ provider: 'local', steamId: playerId, displayName: username }, (err) => {
       if (err) return reject(err);
       setPlayerSteamCookie(req, res, playerId);
+      // Entering the password is a fresh proof (utils/localReauth).
+      markLocalReauth(req, playerId);
       resolve();
     });
   });
@@ -361,4 +365,74 @@ localAuthRouter.post('/totp/confirm', guardWrite, requireAuth, async (req: Reque
   }
   loginThrottle.recordSuccess(target);
   return res.json({ success: true });
+});
+
+/**
+ * @openapi
+ * /api/auth/local/reauth:
+ *   post:
+ *     tags: [Authentication]
+ *     summary: Confirm the local admin password again (step-up)
+ *     description: |
+ *       Same-site JSON. For a signed-in account that has a local admin login
+ *       (signed in with it or with a connected provider). Enter the password,
+ *       plus `totp` when TOTP is on. For 10 minutes the account can then
+ *       connect sign-in methods, merge a Steam player or remove its password
+ *       login. Throttled like sign-in.
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               password: { type: string }
+ *               totp: { type: string }
+ *     responses:
+ *       200:
+ *         description: Confirmed for 10 minutes
+ *       401:
+ *         description: Wrong password or code; or `totpRequired`
+ *       403:
+ *         description: Impersonating
+ *       404:
+ *         description: Not signed in, or the account has no local login
+ *       429:
+ *         description: Too many attempts
+ */
+localAuthRouter.post('/reauth', guardWrite, async (req: Request, res: Response) => {
+  const identity = await resolveViewerIdentity(req);
+  if (!identity.realSteamId) return res.status(404).json({ success: false, error: 'Not found' });
+  if (identity.isImpersonating) {
+    return res.status(403).json({ success: false, error: 'Stop impersonating to manage your own account.' });
+  }
+  const row = await localAdminService.findByPlayerId(identity.realSteamId);
+  if (!row) return res.status(404).json({ success: false, error: 'This account has no admin login' });
+
+  const body = (req.body ?? {}) as { password?: unknown; totp?: unknown };
+  const ip = clientIp(req);
+  const target = `user:${row.username}`;
+  const wait = loginThrottle.retryAfterMs(ip, target);
+  if (wait > 0) return tooMany(res, wait);
+  try {
+    const result = await localAdminService.verifyLogin(row.username, body.password, body.totp);
+    if (!result.ok || result.playerId !== identity.realSteamId) {
+      if (!result.ok && result.reason === 'totp_required') {
+        return res.status(401).json({ success: false, totpRequired: true, error: 'Enter the code from your authenticator app' });
+      }
+      loginThrottle.recordFailure(ip, target);
+      log.warn('[AUDIT] Local admin re-confirmation failed', { username: row.username, ip });
+      return res.status(401).json({
+        success: false,
+        error: BAD_LOGIN,
+        totpRequired: (!result.ok && result.reason === 'totp_invalid') || undefined,
+      });
+    }
+    loginThrottle.recordSuccess(target);
+    markLocalReauth(req, identity.realSteamId);
+    log.info('[AUDIT] Local admin re-confirmed their password', { username: row.username, ip });
+    return res.json({ success: true });
+  } catch (error) {
+    log.error('[AUTH] Local admin re-confirmation failed', error as Error);
+    return res.status(500).json({ success: false, error: 'Could not check your password' });
+  }
 });

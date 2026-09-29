@@ -10,6 +10,8 @@ import { playerService } from '../services/playerService';
 import { signPlayerSteamId } from '../utils/signedPlayerCookie';
 import { authIdentityService, type AuthProvider } from '../services/authIdentityService';
 import {
+  beginSteamLink,
+  completeSteamLink,
   completePendingSteamLink,
   requireStrategy,
   setPendingSteamLinkCookie,
@@ -1679,6 +1681,32 @@ router.get('/oauth/:provider/callback', (req: Request, res: Response, next: Next
   const name = testOAuthStrategyName(provider);
   // The strategy's state cookie is namespaced by the strategy name.
   requireStrategy(name, provider)(req, res, () => ssoCallbackRoute(name, name, provider)(req, res, next));
+});
+
+/*
+ * Test-only twin of connecting Steam to a local admin account (routes/auth.ts).
+ * Steam OpenID cannot be faked like the OAuth providers, so these run the
+ * same start checks and the same completion code with a Steam ID the test
+ * names, in place of the Steam round trip.
+ *
+ *   POST /api/test/steam-link/start                  as POST /api/auth/steam/link, answers JSON instead of redirecting to Steam
+ *   POST /api/test/steam-link/callback { steamId }   as the Steam callback once Steam proved `steamId`
+ */
+router.post('/steam-link/start', async (req: Request, res: Response): Promise<void> => {
+  if (!isE2eTestHelperEnabled()) {
+    res.status(404).json({ success: false, error: 'Not found' });
+    return;
+  }
+  if (await beginSteamLink(req, res)) res.json({ success: true });
+});
+
+router.post('/steam-link/callback', async (req: Request, res: Response): Promise<void> => {
+  if (!isE2eTestHelperEnabled()) {
+    res.status(404).json({ success: false, error: 'Not found' });
+    return;
+  }
+  const steamId = (req.body as { steamId?: unknown })?.steamId;
+  await completeSteamLink(req, res, typeof steamId === 'string' ? steamId : '');
 });
 
 router.get('/fake-oauth/:provider/authorize', (req: Request, res: Response): void => {

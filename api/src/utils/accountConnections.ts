@@ -31,20 +31,25 @@ export type RemoveRefusal =
  */
 export function checkRemoveSignInMethod(input: {
   provider: string;
-  /** Providers with an identity linked to this account (non-Steam). */
+  /**
+   * Providers with an identity linked to this account (non-Steam). 'local'
+   * when the account has a local admin login (username + password).
+   */
   linkedProviders: readonly string[];
-  /** Providers this site can sign in with right now, e.g. ['steam', 'github']. */
+  /** Providers this site can sign in with right now, e.g. ['steam', 'github', 'local']. */
   enabledProviders: readonly string[];
+  /** False for a local admin account that has not connected Steam (default true). */
+  hasSteam?: boolean;
 }): { ok: true } | { ok: false; reason: RemoveRefusal } {
-  const { provider, linkedProviders, enabledProviders } = input;
-  if (provider === 'steam') return { ok: false, reason: 'primary' };
+  const { provider, linkedProviders, enabledProviders, hasSteam = true } = input;
+  if (provider === 'steam') return hasSteam ? { ok: false, reason: 'primary' } : { ok: false, reason: 'not_linked' };
   if (!linkedProviders.includes(provider)) return { ok: false, reason: 'not_linked' };
 
   const enabled = new Set(enabledProviders);
   if (!enabled.has(provider)) return { ok: true };
 
   const remaining =
-    (enabled.has('steam') ? 1 : 0) +
+    (hasSteam && enabled.has('steam') ? 1 : 0) +
     new Set(linkedProviders.filter((p) => p !== provider && enabled.has(p))).size;
   return remaining > 0 ? { ok: true } : { ok: false, reason: 'last_method' };
 }
