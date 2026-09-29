@@ -364,6 +364,15 @@ test.describe.serial('Fleet driver: Ready Up servers play matches (M1)', () => {
         return list.find((c) => c.callId === callId) ?? null;
       })
       .toMatchObject({ matchSlug: slug, serverId: cs2ServerId });
+    // Resolve it: an open call is a toast over every admin page of later UI specs.
+    const open = (await (await request.get('/api/admin-calls', { headers: getAuthHeader() })).json()).open as Array<{
+      id: number;
+      callId: string;
+    }>;
+    const call = open.find((c) => c.callId === callId);
+    expect(call).toBeTruthy();
+    const resolved = await request.post(`/api/admin-calls/${call!.id}/resolve`, { headers: getAuthHeader() });
+    expect(resolved.ok(), await resolved.text()).toBe(true);
 
     // Map result + series end: completed, and the platform unassigns (ended).
     const mapResult = example('live.event.map_result.json');
