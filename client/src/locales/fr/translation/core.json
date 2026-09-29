@@ -22,6 +22,7 @@
     "goToAdminDashboard": "Ouvrir le tableau de bord admin",
     "goToAdminDashboardHint": "Vous consultez votre profil joueur. Ouvrez le tableau de bord admin pour gérer les équipes, tournois et serveurs.",
     "siteMenu": "Site menu",
+    "menu": "Menu",
     "accountMenu": "Account menu",
     "admin": "Admin",
     "teams": "Teams",

@@ -10,7 +10,7 @@ import {
   Menu,
   MenuItem,
 } from '@mui/material';
-import { CaretRightIcon, CompassIcon, GameControllerIcon, UserIcon } from '@phosphor-icons/react';
+import { CaretDownIcon, CaretRightIcon, GameControllerIcon, UserIcon } from '@phosphor-icons/react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
@@ -336,19 +336,20 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
         ))}
       </Box>
       <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
-        <IconButton
+        {/* A word, not a lone icon: says where you are and that it opens the site links. */}
+        <Button
           color="inherit"
           size="small"
-          aria-label={t('nav.siteMenu')}
           aria-haspopup="menu"
           aria-controls={siteMenuAnchor ? 'site-nav-menu' : undefined}
           aria-expanded={siteMenuAnchor ? 'true' : undefined}
           onClick={(event) => setSiteMenuAnchor(event.currentTarget)}
-          sx={{ color: 'text.secondary' }}
+          endIcon={<CaretDownIcon size={14} aria-hidden />}
+          sx={[navLinkSx, { minHeight: 36 }]}
           data-testid="nav-site-menu-button"
         >
-          <CompassIcon />
-        </IconButton>
+          {siteLinks.find((link) => link.current)?.label ?? t('nav.menu')}
+        </Button>
         <Menu
           id="site-nav-menu"
           anchorEl={siteMenuAnchor}

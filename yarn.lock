@@ -5070,6 +5070,11 @@ side-channel@^1.1.0:
     side-channel-map "^1.0.1"
     side-channel-weakmap "^1.0.2"
 
+simple-icons@^16.33.0:
+  version "16.33.0"
+  resolved "https://registry.yarnpkg.com/simple-icons/-/simple-icons-16.33.0.tgz#8e61de17609aa5d72a5592142d08a7dbcefa1d37"
+  integrity sha512-z14u6A8ngAg9mgERRsNO8YkjIMefehIpBk7A8Dz3Gd91945qFP19MLPSHgV4z8P5u/MRYd5e07OTzaDoB4d6qA==
+
 socket.io-adapter@~2.5.2:
   version "2.5.5"
   resolved "https://registry.npmjs.org/socket.io-adapter/-/socket.io-adapter-2.5.5.tgz"
