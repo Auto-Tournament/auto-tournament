@@ -1189,7 +1189,9 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                   </Box>
                 ) : (
                   <Typography variant="body2" color="text.secondary" fontStyle="italic">
-                    {t('matchDetailsModal.mapsViaVeto')}
+                    {gameCapabilities.veto
+                      ? t('matchDetailsModal.mapsViaVeto')
+                      : t('matchDetailsModal.mapsNotPicked')}
                   </Typography>
                 )}
               </AccordionDetails>

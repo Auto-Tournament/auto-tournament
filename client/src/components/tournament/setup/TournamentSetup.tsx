@@ -608,6 +608,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
         return (
           <>
             {ContentStep && <ContentStep {...settingsStepProps} />}
+            {integration.capabilities.veto && (
             <Field label={t('tournament.setup.maps.vetoTitle')}>
               <Typography
                 variant="body2"
@@ -623,6 +624,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
                       : t('tournament.setup.maps.vetoNone')}
               </Typography>
             </Field>
+            )}
           </>
         );
       }

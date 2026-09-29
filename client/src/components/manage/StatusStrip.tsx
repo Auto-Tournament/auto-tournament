@@ -14,6 +14,8 @@ interface StatusStripProps {
    * strip is one tile shorter — which is the truth, where "0 / 0" was not.
    */
   resourceTile?: React.ReactNode;
+  /** The game has a map veto (capabilities.veto); default true. */
+  showVeto?: boolean;
 }
 
 /**
@@ -66,12 +68,14 @@ export const ManageStatusTile: React.FC<{ label: string; value: React.ReactNode 
  * ROUND is always there, "—" before the first one, so the strip keeps its
  * shape from the empty console to the final.
  */
-export const StatusStrip: React.FC<StatusStripProps> = ({ counts, resourceTile }) => {
+export const StatusStrip: React.FC<StatusStripProps> = ({ counts, resourceTile, showVeto = true }) => {
   const { t } = useTranslation();
 
+  // IN VETO only for a game that has one: elsewhere it would be a zero
+  // that can never change.
   const tiles: { label: string; value: React.ReactNode }[] = [
     { label: t('managePage.status.live'), value: counts.live },
-    { label: t('managePage.status.inVeto'), value: counts.inVeto },
+    ...(showVeto ? [{ label: t('managePage.status.inVeto'), value: counts.inVeto }] : []),
     { label: t('managePage.status.queued'), value: counts.queued },
   ];
 

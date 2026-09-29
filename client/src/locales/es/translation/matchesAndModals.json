@@ -137,6 +137,7 @@
     "noPlayerData": "No player data available",
     "currentMap": "Current Map",
     "maps": "Maps",
+    "mapsNotPicked": "The maps are not picked yet.",
     "mapsViaVeto": "To be determined via veto",
     "matchInformation": "Match Information",
     "created": "Created:",
