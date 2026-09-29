@@ -1140,6 +1140,7 @@ const Tournament: React.FC = () => {
             type: tournament.type,
             format: tournament.format,
             status: tournament.status,
+            game: tournament.game,
             teams: tournament.teams || [],
             maps: tournament.maps || [],
             mapSequence: tournament.mapSequence,
