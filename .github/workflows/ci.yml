@@ -17,7 +17,9 @@ env:
   # Tag given to the image the build job produces and every shard loads.
   # docker/docker-compose.ci.yml points the app service at it.
   MAT_IMAGE: auto-tournament:ci
-  SHARD_TOTAL: 4
+  # Public repo: runners are free, so more shards only cost setup time
+  # (~90s each) and halve the Playwright wall clock (~4 min -> ~2 min at 8).
+  SHARD_TOTAL: 8
 
 jobs:
   static:
@@ -195,7 +197,7 @@ jobs:
           retention-days: 1
 
   e2e:
-    name: E2E shard ${{ matrix.shard }}/4
+    name: E2E shard ${{ matrix.shard }}/8
     # Not `needs: build`: shards start alongside the image build and do their
     # own setup (deps, browser, Postgres) meanwhile, then wait for the image
     # artifact. Takes the setup time off the wall clock.
@@ -210,7 +212,7 @@ jobs:
       # Let every shard finish so the merged report shows every failure.
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
     # Each shard is its own runner with its own app + Postgres stack, so specs
     # that reset the database cannot collide across shards. Within a shard the
     # suite still runs with workers: 1 (tests/playwright.config.ts).
