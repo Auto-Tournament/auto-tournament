@@ -40,6 +40,8 @@ import { serverAllocationTracker } from './services/serverAllocationTracker';
 import { serverTurnoverTracker } from './utils/serverTurnover';
 import { driverFor } from './driver';
 import { fleetServerIsIdle } from './fleet/driver';
+import { reserveCount } from './fleet/failoverSettings';
+import { pickReserved } from './fleet/failoverPlan';
 
 /** One attempt to put a match on a server, as the allocator reports it. */
 export interface ServerAllocationResult {
@@ -419,8 +421,11 @@ export class Cs2ServerPool {
    * - Only allocate when status is effectively idle (idle / postgame)
    * - Wait a short grace period after status becomes idle/postgame
    * - Check `at_tournament_match` and `at_tournament_updated` convars
+   *
+   * Ready Up servers: the failover reserve (fleet/failoverSettings.ts) is left
+   * out unless `includeFleetReserve` (failover itself asks with it).
    */
-  async getAvailableServers(): Promise<ServerResponse[]> {
+  async getAvailableServers(options: { includeFleetReserve?: boolean } = {}): Promise<ServerResponse[]> {
     const enabledServers = await serverService.getAllServers(true); // Get only enabled servers
 
     // Filter out unconfigured servers (never sent server_configured event)
@@ -656,7 +661,9 @@ export class Cs2ServerPool {
       log.debug(`Server ${server.id} (${server.name}) is available for allocation (idle)`);
     }
 
-    availableServers.push(...(await this.availableFleetServers(fleetServers, dbBusyServers, now)));
+    availableServers.push(
+      ...(await this.availableFleetServers(fleetServers, dbBusyServers, now, options.includeFleetReserve === true))
+    );
 
     log.debug(
       `Found ${availableServers.length} available servers out of ${enabledServers.length} enabled (${onlineServers.length} online)`
@@ -669,12 +676,15 @@ export class Cs2ServerPool {
    * The Ready Up servers of the pool that can take a match now: connected and
    * `available` (fleet/driver.ts), not being handed a match, not busy in our
    * own records, and past their turnover (a demo upload still running holds
-   * the server). No webhook check: events come over the same socket.
+   * the server). No webhook check: events come over the same socket. The
+   * failover reserve (idle servers kept for FLEET.md §11) is held back unless
+   * `includeReserve`.
    */
   private async availableFleetServers(
     servers: ServerResponse[],
     dbBusyServers: Set<string>,
-    now: number
+    now: number,
+    includeReserve = false
   ): Promise<ServerResponse[]> {
     const available: ServerResponse[] = [];
     for (const server of servers) {
@@ -697,7 +707,11 @@ export class Cs2ServerPool {
       available.push(server);
       serverAllocationTracker.markIdle(server.id);
     }
-    return available;
+    if (includeReserve || available.length === 0) return available;
+    const { effective } = await reserveCount();
+    const held = pickReserved(available, effective);
+    if (held.size > 0) log.debug(`Fleet servers held in reserve for failover: ${[...held].join(', ')}`);
+    return available.filter((server) => !held.has(server.id));
   }
 
   /**

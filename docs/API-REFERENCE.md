@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 375 of them, 276 behind auth —
+Every endpoint this API serves — 382 of them, 283 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -214,6 +214,17 @@ A CS2 match's round backups (Ready Up servers send them inline) and "restore to 
 | `GET` | `/api/game/cs2/matches/:slug/round-backups` | admin |
 | `POST` | `/api/game/cs2/matches/:slug/round-backups/restore` | admin |
 
+### Fleet failover
+
+A Ready Up server that died or hung mid-match: the failover proposal (spare server, round backup to resume from), "move match" and dismiss (FLEET.md §11).
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/game/cs2/matches/:slug/failover` | admin |
+| `POST` | `/api/game/cs2/matches/:slug/failover/:id/accept` | admin |
+| `POST` | `/api/game/cs2/matches/:slug/failover/move` | admin |
+| `POST` | `/api/game/cs2/matches/:slug/failover/:id/dismiss` | admin |
+
 ### Fleet enrollment
 
 A Ready Up server trades a one-time code or fleet key for its server token; csm (kind "host") gets its host token the same way.
@@ -281,6 +292,15 @@ What the platform pushes to Ready Up servers: the admin list (admins.set), serve
 | `GET` | `/api/fleet/matches/:slug/roster` | admin |
 | `POST` | `/api/fleet/matches/:slug/update` | admin |
 
+### Fleet failover settings
+
+Auto-failover (off by default): move a match off a dead Ready Up server without waiting for an admin.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/fleet/failover/settings` | admin |
+| `PUT` | `/api/fleet/failover/settings` | admin |
+
 ### Test helpers (CS2)
 
 E2E helpers that stand in for a CS2 server. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
@@ -294,6 +314,7 @@ E2E helpers that stand in for a CS2 server. Disabled in production unless ENABLE
 | `POST` | `/api/test/fleet/send` | admin |
 | `GET` | `/api/test/fleet/live-state/:slug` | admin |
 | `GET` | `/api/test/fleet/events/:serverId` | admin |
+| `POST` | `/api/test/fleet/failover/scan` | admin |
 | `GET` | `/api/test/fleet/commands/:id` | admin |
 
 ### Manual reporting — captains

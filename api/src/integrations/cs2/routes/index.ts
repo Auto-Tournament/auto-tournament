@@ -24,6 +24,7 @@ import mapRoutes from '../maps/routes';
 import mapPoolRoutes from '../maps/poolRoutes';
 import matchConnectRoutes from './matchConnect';
 import roundBackupRoutes from './roundBackups';
+import { failoverMatchRouter, failoverSettingsRouter } from './failover';
 import testHelperRoutes from './testHelpers';
 import { fleetAdminRouter, fleetEnrollRouter } from '../fleet/routes';
 import { fleetHostAdminRouter } from '../fleet/hosts/routes';
@@ -116,6 +117,14 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
       "A CS2 match's round backups (Ready Up servers send them inline) and \"restore to round N\" over the fleet link or RCON, audited.",
   },
   {
+    // Admin only, per route, like the round backups above.
+    prefix: '/api/game/cs2',
+    router: failoverMatchRouter,
+    title: 'Fleet failover',
+    description:
+      'A Ready Up server that died or hung mid-match: the failover proposal (spare server, round backup to resume from), "move match" and dismiss (FLEET.md §11).',
+  },
+  {
     // Ready Up fleet (FLEET.md). Enrollment is public (a code or fleet key is
     // the credential) and must come before the admin router's requireAuth.
     prefix: '/api/fleet',
@@ -144,6 +153,12 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     title: 'Fleet pushes',
     description:
       'What the platform pushes to Ready Up servers: the admin list (admins.set), server settings (server.config, settings.set), whitelist / practice / plugins, and roster edits of a running match (match.update).',
+  },
+  {
+    prefix: '/api/fleet',
+    router: failoverSettingsRouter,
+    title: 'Fleet failover settings',
+    description: 'Auto-failover (off by default): move a match off a dead Ready Up server without waiting for an admin.',
   },
   {
     prefix: '/api/test',

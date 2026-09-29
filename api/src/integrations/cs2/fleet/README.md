@@ -36,6 +36,7 @@ admin actions): what exists, and the calls to use.
 | `limits.ts` | per-server byte budgets and the demo stream knobs (env) |
 | `protocol/host/v1/`, `hosts/` | the host channel for csm (FLEET.md §18), see the last section |
 | `push/` | server-level pushes: `admins.set`, `server.config` + `cmd settings.set`, whitelist / practice / plugins, `match.update` roster edits (below) |
+| `failover.ts`, `failoverPlan.ts`, `failoverSettings.ts` | **failover** (FLEET.md §11): a server that dies or hangs mid-match, the match resumed from its last round backup, in place or on another server (below) |
 
 Tables (migration `006-fleet-match` in `../migrations.ts`):
 `cs2_servers.transport` (`'rcon'` default | `'fleet'`) + `cs2_servers.fleet_server_id`
@@ -169,6 +170,52 @@ Hooks on `fleetInbound` (each returns its unsubscribe):
 | `onAvailability({ serverId, availability, reason })` | `server.availability` (also stored on `cs2_fleet_servers.availability`) |
 | `onSnapshot({ serverId, payload, outcome })` | every `state.snapshot` (`outcome.kind`: `replaced` / `idle` / `stale_epoch`) |
 | `onStattrak({ serverId, payload })` | `skins.stattrak` |
+
+## Failover (`failover.ts`, `failoverPlan.ts`, `failoverSettings.ts`)
+
+FLEET.md §11. Automatic by default; an admin can turn it off (then each
+recovery waits for "Move match" on the match page). Table (migration
+`013-fleet-failover`): `cs2_fleet_failovers`, one row per failover, which is
+also its record; settings are the `failover` row of `cs2_fleet_lists`.
+
+- **Detection** (`scanForFailovers`, every `FLEET_FAILOVER_CHECK_MS` = 10 s,
+  and after hellos and `host.health`): a match with an acked, open
+  assignment that is `loaded` / `live` whose server's link has been down for
+  90 s live / 30 s before live (`FLEET_FAILOVER_LIVE_SECONDS`,
+  `FLEET_FAILOVER_PRELIVE_SECONDS`; the gateway already closes a socket after
+  30 s without a frame), or that csm reports `exited` / `crashed` / `hung`.
+  Nothing between maps or after the series. The link's clock starts no
+  earlier than the platform's own start.
+- **Recovery order**: the server back within the grace period with the match
+  = nothing to do; back *without* it (crashed, restarted) = a `restarted`
+  failover: `match.assign` + `resume` to the same server (same address);
+  else a free fleet server (`pickTarget`: same CS2 build and capabilities
+  first; the reserve included); none free = the failover stays open, every
+  pass tries again, and the match page shows it.
+- **The move** (`acceptFailover`): old epoch fenced first (`fenceEpoch`:
+  `match.unassign {superseded}` with the "Match moved" kick into its outbox,
+  so a dead server gets it when it comes back; the driver's hello check then
+  sends nothing more), `matches.server_id` = the new server, `assignMatch(slug,
+  server, { resume })`: new epoch and password, `resume` = the latest round
+  backup of the current map that no restore voided (`pickBackup`) inline, or
+  `backup_ref` when it is too large for one frame; no backup yet = round 0
+  (the map restarts from warmup, a decided knife kept via `sides`), plus the
+  series score and earlier maps from the last state (`buildResume`). A live
+  match stays `live`. `emitMatchUpdate` + `bracket:update` tell the match
+  page; the connect route returns the new address, password and `moved`.
+  A refused or unanswered assign puts the failover back to `open` and the
+  match back on the old row; auto-failover then skips that server for it.
+  `cs2_fleet_audit` gets a line per move.
+- **Reserve** (`failoverSettings.ts`): idle fleet servers normal allocation
+  leaves alone (`getAvailableServers()` without `includeFleetReserve`):
+  the admin's number, else 1 once two linked servers are online; never the
+  whole pool. Reserve servers count toward the license like any server.
+- Routes (`../routes/failover.ts`): `GET /api/game/cs2/matches/:slug/failover`,
+  `POST …/failover/:id/accept`, `…/:id/dismiss`, `…/failover/move` (move a
+  fleet match now: another pick, or back), `GET|PUT /api/fleet/failover/settings`.
+  Client: `match/FailoverPanel.tsx` (match admin), `servers/FailoverSettingsPanel.tsx`.
+- Not built here: asking csm to restart the server first, or to create one
+  when none is free.
 
 ## Round backups and restore (`backups.ts`, `restore.ts`)
 

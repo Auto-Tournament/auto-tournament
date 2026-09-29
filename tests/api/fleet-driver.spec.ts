@@ -442,6 +442,13 @@ test.describe.serial('Fleet driver: Ready Up servers play matches (M1)', () => {
 
   test('a busy Ready Up server is skipped for the next one', async ({ request }) => {
     test.setTimeout(120_000);
+    // Both servers take matches: no failover reserve (with two online, one is
+    // kept free by default; fleet-failover.spec.ts covers that).
+    const reserve = await request.put('/api/fleet/failover/settings', { headers: getAuthHeader(), data: { reserve: 0 } });
+    expect(reserve.ok(), await reserve.text()).toBe(true);
+    cleanup.push(async () => {
+      await request.put('/api/fleet/failover/settings', { headers: getAuthHeader(), data: { reserve: null } });
+    });
     const a = await FakeReadyUp.enroll(request);
     const b = await FakeReadyUp.enroll(request);
     cleanup.push(() => a.close(), () => b.close());
