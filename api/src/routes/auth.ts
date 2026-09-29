@@ -147,6 +147,34 @@ function clearIdentityCookies(req: Request, res: Response): void {
   clearImpersonationCookie(req, res);
 }
 
+/**
+ * Which sign-in's picture a player shows: Steam first, then Discord, then
+ * Google, then the other providers; the generated placeholder last. Higher
+ * wins; an admin-set picture (unknown host) is never replaced.
+ */
+function avatarRank(url: string | null | undefined): number {
+  if (!url || url.startsWith('/api/players/')) return 0;
+  if (/steamstatic|steamcdn|akamaihd/.test(url)) return 4;
+  if (/cdn\.discordapp\.com/.test(url)) return 3;
+  if (/googleusercontent\.com/.test(url)) return 2;
+  if (/githubusercontent\.com|jtvnw\.net|twitch/.test(url)) return 1;
+  return 5; // set by hand: keep it
+}
+
+/** Use a provider's picture when it outranks the player's current one. */
+async function applyProviderAvatar(steamId: string, avatarUrl: unknown): Promise<void> {
+  if (typeof avatarUrl !== 'string' || !avatarUrl) return;
+  try {
+    const player = await playerService.getPlayerById(steamId);
+    if (!player) return;
+    if (avatarRank(avatarUrl) > avatarRank(player.avatar)) {
+      await playerService.updatePlayer(steamId, { avatar: avatarUrl });
+    }
+  } catch (error) {
+    log.warn('Could not update the player picture from a sign-in', { error: (error as Error).message });
+  }
+}
+
 /** Truncate a provider user id for logs; enough to correlate, not to identify. */
 function redactProviderUserId(id: string | undefined | null): string | null {
   if (!id) return null;
@@ -498,8 +526,8 @@ router.get('/steam/callback', (req: Request, res: Response, _next) => {
             updates.name = displayName;
           }
           const currentAvatar = existingPlayer.avatar ?? '';
-          const avatarFromSteam =
-            currentAvatar.startsWith('/api/players/') || /steamstatic|steamcdn|akamaihd/.test(currentAvatar);
+          // Steam's picture wins over the placeholder and other sign-ins' pictures.
+          const avatarFromSteam = avatarRank(currentAvatar) < 5;
           if (avatarUrl && avatarFromSteam && currentAvatar !== avatarUrl) {
             updates.avatar = avatarUrl;
           }
@@ -712,6 +740,7 @@ export function ssoCallbackHandler(expectedProvider: AuthProvider) {
         }
         user.steamId = cookieSteamId;
         await grantAdminForVerifiedEmail(cookieSteamId, provider, verifiedEmail);
+        await applyProviderAvatar(cookieSteamId, user.avatarUrl);
         setPlayerSteamCookie(req, res, cookieSteamId);
 
         log.success(`${label} login auto-linked via existing Steam cookie`, {
@@ -732,6 +761,7 @@ export function ssoCallbackHandler(expectedProvider: AuthProvider) {
       if (steamId) {
         user.steamId = steamId;
         await grantAdminForVerifiedEmail(steamId, provider, verifiedEmail);
+        await applyProviderAvatar(steamId, user.avatarUrl);
         setPlayerSteamCookie(req, res, steamId);
 
         log.success(`${label} login resolved via existing Steam link`, { provider, steamId });
@@ -938,6 +968,7 @@ function accountLinkCallback(strategyName: string, provider: AuthProvider) {
             });
           }
 
+          await applyProviderAvatar(intent.steamId, (passportUser as { avatarUrl?: unknown }).avatarUrl);
           log.success(`${label} linked to account`, {
             provider,
             providerUserId: redactProviderUserId(providerUserId),
