@@ -410,6 +410,16 @@ test.describe('Autoscale: plan', () => {
     expect(stuck.actions).toEqual([expect.objectContaining({ kind: 'start', server: 'server-2' })]);
   });
 
+  test('a server busy with a match of its own (local match, scrim) is not counted as warm', () => {
+    const p = plan({
+      demand: demand(0, 1),
+      reserveConfigured: 1,
+      servers: [warmIdle(1, 60), warmBusy(2, { occupied: true }), server(3)],
+    });
+    expect(p).toMatchObject({ desired: 2, warm: 1 });
+    expect(p.actions).toEqual([expect.objectContaining({ kind: 'start', server: 'server-3' })]);
+  });
+
   test('stop after the cool-down: surplus idle servers, longest idle first', () => {
     const p = plan({
       demand: demand(0),

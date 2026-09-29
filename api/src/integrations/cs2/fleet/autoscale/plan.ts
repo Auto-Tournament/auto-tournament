@@ -342,6 +342,12 @@ export interface ScalerServer {
   idle: boolean;
   /** A match is loaded, live, being loaded or turning over on it. */
   busy: boolean;
+  /**
+   * Busy with something the platform did not put there (Ready Up runs a
+   * local match, scrim or practice): it cannot take a match, so it is not
+   * one of the warm servers the scaler counts (unset: false).
+   */
+  occupied?: boolean;
   /** An update (CS2, Ready Up) or restart is in progress. */
   updating: boolean;
   /** An open failover points at it. */
@@ -435,7 +441,8 @@ export function planScaling(input: PlanInput): ScalePlan {
   const { now, settings, demand } = input;
   const reserve = scalerReserve(input.reserveConfigured, input.servers.length);
   const desired = demand.total > 0 ? demand.total + reserve : 0;
-  const warmServers = input.servers.filter((s) => isWarm(s, now));
+  // A server busy with something of its own serves none of the demand.
+  const warmServers = input.servers.filter((s) => isWarm(s, now) && !s.occupied);
   const warm = warmServers.length;
   const plan: ScalePlan = { desired, warm, reserve, actions: [], note: null };
   if (!settings.enabled) return { ...plan, note: 'Automatic scaling is off' };
