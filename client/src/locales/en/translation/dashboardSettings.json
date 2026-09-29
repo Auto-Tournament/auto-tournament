@@ -192,9 +192,9 @@
     "players": {
       "registration": {
         "title": "Player registration",
-        "description": "Control whether new Steam logins automatically create player records. When disabled, only players created or imported by admins will appear in private tournaments and shuffle pools.",
-        "toggleLabel": "Allow anyone to register via Steam login",
-        "recommendation": "Recommended: keep this off for invite‑only or private tournaments so random Steam logins do not pollute the player list."
+        "description": "Control whether signing in creates a player record for someone new, whichever sign-in method they use (Steam, Discord, Google and the others you enabled). When disabled, only players created or imported by admins appear in private tournaments and shuffle pools.",
+        "toggleLabel": "Allow anyone to register by signing in",
+        "recommendation": "Recommended: keep this off for invite‑only or private tournaments so random sign-ins do not fill up the player list."
       }
     },
     "developer": {
