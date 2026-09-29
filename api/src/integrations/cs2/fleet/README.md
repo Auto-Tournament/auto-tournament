@@ -34,6 +34,7 @@ admin actions): what exists, and the calls to use.
 | `serverNotices.ts` | `server.cs2_update_required` (logged, kept in `cs2_fleet_events`) and `server.selftest` (stored on `cs2_fleet_servers.selftest`) in |
 | `limits.ts` | per-server byte budgets and the demo stream knobs (env) |
 | `protocol/host/v1/`, `hosts/` | the host channel for csm (FLEET.md §18), see the last section |
+| `push/` | server-level pushes: `admins.set`, `server.config` + `cmd settings.set`, whitelist / practice / plugins, `match.update` roster edits (below) |
 
 Tables (migration `006-fleet-match` in `../migrations.ts`):
 `cs2_servers.transport` (`'rcon'` default | `'fleet'`) + `cs2_servers.fleet_server_id`
@@ -261,6 +262,27 @@ registerInboundHandler('demo.chunk', {
 - **Outbound**: the platform's reliable stream (outbox) is one ordered
   stream; bulk platform → server data should be ephemeral with its own acks,
   not `sendReliable`.
+
+## Server-level pushes: `push/`
+
+What the platform sends a server outside the match flow (FLEET.md §7.3-§7.5).
+Tables (migration `011-fleet-server-prefs`): `cs2_fleet_lists` (one row per
+fleet-wide list: `admins`, `server_config`, with its rev and data) and
+`cs2_fleet_server_prefs` (per server: settings override, whitelist /
+practice / plugins, and `pushed`: what went out when).
+
+| What | When it is sent |
+|---|---|
+| `admins.set {rev, admins}` (`push/admins.ts`) | website admins (`players.is_admin`, Steam64 only) + extra in-game admins; rev bumped when the list's hash changes. To every enrolled server on a change (player service signal `services/adminListEvents`, a 60 s re-check, the Servers page); after a hello whose `admins_rev` is not ours, unless that rev is still in the server's outbox; a hello with a higher rev raises ours above it |
+| `server.config {rev, settings}` + `cmd settings.set` (`push/settings.ts`) | fleet default + per-server override (nested merge). On save (default: every enrolled server; override: that server); after a hello when the server's last push is not the current rev |
+| `cmd whitelist.set / practice.set / plugins.set` (`push/controls.ts`) | from the Servers page only; the route waits 5 s for the `cmd.result` |
+| `match.update` (`push/matchUpdate.ts`) | from the match admin page: add / remove / substitute / rename, CAS on the live record's `configRev`; `ok` also updates `matches.config`, a `conflict` moves the base (the admin retries) |
+
+welcome's `admins_rev` / `server_config_rev` are the current revs
+(`setFleetWelcomeRevs`); `onFleetServerReady(fn)` (service.ts) gets each
+server's hello after welcome. Routes: `push/routes.ts` (`/api/fleet/admins`,
+`/settings`, `/servers/:id/push|settings|whitelist|practice|plugins`,
+`/matches/:slug/roster|update`).
 
 ## How events reach the core
 

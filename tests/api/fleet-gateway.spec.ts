@@ -74,8 +74,9 @@ test.describe.serial('Fleet gateway', () => {
       protocol: 1,
       heartbeat: { interval_ms: 10000, timeout_ms: 30000 },
       resume: { result: 'reset', platform_last_rx_seq: 0 },
-      server_config_rev: 0,
-      admins_rev: 0,
+      // The platform's current list revs (fleet/push): whatever other specs left.
+      server_config_rev: expect.any(Number),
+      admins_rev: expect.any(Number),
       assignment: null,
     });
 

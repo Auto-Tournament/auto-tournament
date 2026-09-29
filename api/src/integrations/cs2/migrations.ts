@@ -49,6 +49,11 @@
  * `010-fleet-driver` adds what the fleet driver (fleet/driver.ts) keeps per
  * assignment: the match's connect password and the config last sent (the
  * base for `match.update`), and the audit log of admin `exec` commands.
+ *
+ * `011-fleet-server-prefs` adds what the platform pushes to Ready Up servers
+ * outside a match (fleet/push/): the fleet-wide lists with their revs
+ * (admins.set, server.config) and each server's settings overrides,
+ * whitelist / practice / plugins choices and what was last pushed.
  */
 
 import type { ModuleMigration } from '../types';
@@ -63,6 +68,7 @@ export const CS2_ROUND_BACKUPS_MIGRATION_ID = '007-round-backups';
 export const CS2_FLEET_DEMO_STREAMS_MIGRATION_ID = '008-fleet-demo-streams';
 export const CS2_FLEET_HOSTS_MIGRATION_ID = '009-fleet-hosts';
 export const CS2_FLEET_DRIVER_MIGRATION_ID = '010-fleet-driver';
+export const CS2_FLEET_SERVER_PREFS_MIGRATION_ID = '011-fleet-server-prefs';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -672,6 +678,42 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
     );
 
     CREATE INDEX IF NOT EXISTS cs2_fleet_audit_server_idx ON cs2_fleet_audit(server_id, created_at);
+`,
+  },
+  {
+    // Server-level pushes (FLEET.md §7.5, cmd settings.set / whitelist.set /
+    // practice.set / plugins.set of §7.4). Every statement can run twice.
+    //
+    // - cs2_fleet_lists: one row per fleet-wide list the platform versions.
+    //   'admins': the admins.set rev, the hash of the list it was built from
+    //   and `data` = the extra in-game admins (JSON). 'server_config': the
+    //   server.config rev (bumped on any settings change) and `data` = the
+    //   fleet default settings (JSON).
+    // - cs2_fleet_server_prefs: per server, its settings override (JSON, on
+    //   top of the fleet default), the whitelist / practice / plugins choices
+    //   last sent, and `pushed` (JSON): what went out when (rev, seq, command
+    //   id) so the UI can show acked / answered.
+    id: CS2_FLEET_SERVER_PREFS_MIGRATION_ID,
+    up: `
+    CREATE TABLE IF NOT EXISTS cs2_fleet_lists (
+      name TEXT PRIMARY KEY, -- 'admins' | 'server_config'
+      rev INTEGER NOT NULL DEFAULT 0,
+      hash TEXT, -- sha256 of what the rev was built from
+      data TEXT, -- JSON; see above
+      updated_by TEXT,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
+    CREATE TABLE IF NOT EXISTS cs2_fleet_server_prefs (
+      server_id TEXT PRIMARY KEY REFERENCES cs2_fleet_servers(id) ON DELETE CASCADE,
+      settings TEXT, -- JSON override of the fleet default settings
+      whitelist TEXT, -- JSON {enabled, steamids}
+      practice INTEGER, -- 1 on, 0 off, NULL never set
+      plugins TEXT, -- JSON {enable, disable}
+      pushed TEXT, -- JSON {admins, server_config, settings, whitelist, practice, plugins}
+      updated_by TEXT,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
 `,
   },
 ];

@@ -7,7 +7,7 @@
 import type { Server as HttpServer } from 'http';
 import { log } from '../../../utils/logger';
 import { getIO } from '../../../services/socketService';
-import { FleetGateway, type AssignmentResolver } from './gateway';
+import { FleetGateway, type AssignmentResolver, type WelcomeRevs } from './gateway';
 import type { HelloPayload } from './protocol/v1';
 import { InProcessFleetBus, type FleetBus } from './bus';
 import * as registry from './registry';
@@ -30,7 +30,11 @@ export function fleetBus(): FleetBus {
   return bus;
 }
 
-/** Run `listener` after every server's welcome (the fleet driver's zombie check). */
+/**
+ * Run `listener` after every server's welcome (and its outbox replay), with its
+ * hello: the fleet driver's zombie check, the pushes that follow the server's
+ * state (./push: admins.set when its `admins_rev` is behind, server.config).
+ */
 export function onFleetServerReady(
   listener: (serverId: string, hello: HelloPayload) => Promise<void> | void
 ): void {
@@ -40,6 +44,11 @@ export function onFleetServerReady(
 /** Who fills `welcome.assignment` (the fleet driver). */
 export function setFleetAssignmentResolver(resolver: AssignmentResolver | null): void {
   gateway.setAssignmentResolver(resolver);
+}
+
+/** welcome's `server_config_rev` / `admins_rev` (./push). */
+export function setFleetWelcomeRevs(provider: ((serverId: string) => Promise<WelcomeRevs>) | null): void {
+  gateway.setWelcomeRevs(provider);
 }
 
 /**

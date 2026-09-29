@@ -23,6 +23,7 @@ import { startRestoreAudit, stopRestoreAudit } from './fleet/restore';
 import { startDemoStreams, stopDemoStreams } from './fleet/demoStream';
 import { startFleetHosts, stopFleetHosts } from './fleet/hosts/service';
 import { startServerNotices, stopServerNotices } from './fleet/serverNotices';
+import { startFleetPush, stopFleetPush } from './fleet/push';
 
 export async function startCs2(): Promise<void> {
   // Round backups from Ready Up servers (event.backup) and the restore audit:
@@ -37,8 +38,10 @@ export async function startCs2(): Promise<void> {
   // The Ready Up fleet gateway (/api/fleet/ws) first: it only attaches to the
   // HTTP server, and servers reconnecting after a restart should not wait on
   // the RCON bootstrap below. The driver's hooks go in before it accepts a
-  // hello (welcome.assignment, zombie unassigns, turnover, admin calls).
+  // hello (welcome.assignment, zombie unassigns, turnover, admin calls), and
+  // so do the server-level pushes (admins.set, server.config, …).
   startFleetDriver();
+  startFleetPush();
   await startFleet().catch((error) => {
     log.warn('Failed to start the fleet gateway', { error });
   });
@@ -76,6 +79,7 @@ export function stopCs2(): void {
   stopDemoStreams();
   stopFleetHosts();
   stopServerNotices();
+  stopFleetPush();
 }
 
 async function bootstrapServerWebhooks(): Promise<void> {

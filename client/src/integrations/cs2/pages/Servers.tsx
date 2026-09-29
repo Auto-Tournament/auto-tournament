@@ -6,6 +6,7 @@ import BatchServerModal from '../servers/BatchServerModal';
 import { ServerRow } from '../servers/ServerRow';
 import FleetPanel from '../servers/FleetPanel';
 import MachinesPanel from '../servers/MachinesPanel';
+import FleetPushPanel from '../servers/FleetPushPanel';
 import type {
   Server,
   ServersResponse,
@@ -1018,6 +1019,8 @@ export default function Servers() {
 
       {/* Ready Up servers enroll themselves and connect over the fleet link. */}
       <FleetPanel />
+      {/* What the platform pushes to them: admins, settings, whitelist, practice, plugins. */}
+      <FleetPushPanel />
 
       <ServerModal
         open={modalOpen}

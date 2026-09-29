@@ -75,6 +75,12 @@ const RATE = { perSecond: 50, burst: 200 };
 const SEEN_WRITE_MS = 10_000;
 const ID_WINDOW = 10_000;
 
+/** welcome's view of the server-level lists (FLEET.md §6.1, §7.5). */
+export interface WelcomeRevs {
+  server_config_rev: number;
+  admins_rev: number;
+}
+
 /** `welcome.assignment` for a server that says hello (FLEET.md §6.1): the match it holds, or null. */
 export type AssignmentResolver = (
   serverId: string,
@@ -462,13 +468,18 @@ class FleetSession {
       await registry.markDisconnected(serverId, this.sessionId);
       return;
     }
+    const revs = await this.gateway.welcomeRevs(serverId);
+    if (this.closed) {
+      await registry.markDisconnected(serverId, this.sessionId);
+      return;
+    }
     const welcome: WelcomePayload = {
       session_id: this.sessionId,
       protocol,
       heartbeat: { interval_ms: this.timings.heartbeatIntervalMs, timeout_ms: this.timings.heartbeatTimeoutMs },
       resume: { result, platform_last_rx_seq: this.rxSeq },
-      server_config_rev: 0,
-      admins_rev: 0,
+      server_config_rev: revs.server_config_rev,
+      admins_rev: revs.admins_rev,
       assignment,
     };
     this.ready = true;
@@ -645,6 +656,7 @@ export class FleetGateway {
   private readonly connections = new Set<FleetSession>();
   private server: HttpServer | null = null;
   private readyListeners: Array<(serverId: string, hello: HelloPayload) => Promise<void> | void> = [];
+  private welcomeRevsProvider: ((serverId: string) => Promise<WelcomeRevs>) | null = null;
   private assignmentResolver: AssignmentResolver | null = null;
   private readonly timings: GatewayTimings;
 
@@ -701,6 +713,22 @@ export class FleetGateway {
   /** After a server's welcome (and the outbox replay): `hello` is what it said it holds. */
   onServerReady(listener: (serverId: string, hello: HelloPayload) => Promise<void> | void): void {
     this.readyListeners.push(listener);
+  }
+
+  /** Where welcome's `server_config_rev` / `admins_rev` come from (./push); 0 / 0 without one. */
+  setWelcomeRevs(provider: ((serverId: string) => Promise<WelcomeRevs>) | null): void {
+    this.welcomeRevsProvider = provider;
+  }
+
+  /** @internal */
+  async welcomeRevs(serverId: string): Promise<WelcomeRevs> {
+    if (!this.welcomeRevsProvider) return { server_config_rev: 0, admins_rev: 0 };
+    try {
+      return await this.welcomeRevsProvider(serverId);
+    } catch (error) {
+      log.warn(`[FLEET] ${serverId}: reading the welcome revs failed: ${(error as Error).message}`);
+      return { server_config_rev: 0, admins_rev: 0 };
+    }
   }
 
   /** Who fills `welcome.assignment` (the fleet driver). One resolver; a second call replaces it. */

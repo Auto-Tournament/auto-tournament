@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 361 of them, 262 behind auth —
+Every endpoint this API serves — 374 of them, 275 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -259,6 +259,26 @@ Machines running csm as host agent: add (one-time code), inventory, health, crea
 | `POST` | `/api/fleet/hosts/:id/rotate` | admin |
 | `POST` | `/api/fleet/hosts/:id/commands` | admin |
 | `GET` | `/api/fleet/hosts/:id/commands/:commandId` | admin |
+
+### Fleet pushes
+
+What the platform pushes to Ready Up servers: the admin list (admins.set), server settings (server.config, settings.set), whitelist / practice / plugins, and roster edits of a running match (match.update).
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/fleet/admins` | admin |
+| `PUT` | `/api/fleet/admins/extras` | admin |
+| `POST` | `/api/fleet/admins/push` | admin |
+| `GET` | `/api/fleet/settings` | admin |
+| `PUT` | `/api/fleet/settings` | admin |
+| `GET` | `/api/fleet/servers/:id/push` | admin |
+| `PUT` | `/api/fleet/servers/:id/settings` | admin |
+| `POST` | `/api/fleet/servers/:id/settings/push` | admin |
+| `PUT` | `/api/fleet/servers/:id/whitelist` | admin |
+| `PUT` | `/api/fleet/servers/:id/practice` | admin |
+| `POST` | `/api/fleet/servers/:id/plugins` | admin |
+| `GET` | `/api/fleet/matches/:slug/roster` | admin |
+| `POST` | `/api/fleet/matches/:slug/update` | admin |
 
 ### Test helpers (CS2)
 

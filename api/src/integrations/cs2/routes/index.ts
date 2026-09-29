@@ -27,6 +27,7 @@ import roundBackupRoutes from './roundBackups';
 import testHelperRoutes from './testHelpers';
 import { fleetAdminRouter, fleetEnrollRouter } from '../fleet/routes';
 import { fleetHostAdminRouter } from '../fleet/hosts/routes';
+import { fleetPushRouter } from '../fleet/push/routes';
 
 export const cs2LegacyRoutes: LegacyRouteMount[] = [
   {
@@ -136,6 +137,13 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     title: 'Fleet machines',
     description:
       'Machines running csm as host agent: add (one-time code), inventory, health, create/start/stop/restart servers, update CS2 and Ready Up, revoke and rotate. The host WebSocket is /api/fleet/host.',
+  },
+  {
+    prefix: '/api/fleet',
+    router: fleetPushRouter,
+    title: 'Fleet pushes',
+    description:
+      'What the platform pushes to Ready Up servers: the admin list (admins.set), server settings (server.config, settings.set), whitelist / practice / plugins, and roster edits of a running match (match.update).',
   },
   {
     prefix: '/api/test',
