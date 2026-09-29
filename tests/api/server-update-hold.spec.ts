@@ -180,7 +180,8 @@ test.describe.serial('license hand-off on the update-hold poll', () => {
 
     const { status, body } = await getHold(request);
     expect(status).toBe(200);
-    expect(body.license).toEqual(licenseHandoffFor(UNSIGNED_KEY));
+    // `use` rides along when the instance has accepted the terms.
+    expect(body.license).toMatchObject(licenseHandoffFor(UNSIGNED_KEY));
   });
 
   test('a cleared key reaches csm as null with revision "none"', async ({ request }) => {
@@ -190,7 +191,7 @@ test.describe.serial('license hand-off on the update-hold poll', () => {
     await request.delete('/api/license');
     const { status, body } = await getHold(request);
     expect(status).toBe(200);
-    expect(body.license).toEqual({ key: null, revision: NO_LICENSE_REVISION });
+    expect(body.license).toMatchObject({ key: null, revision: NO_LICENSE_REVISION });
     expect(body.license?.revision).not.toBe(before);
   });
 
