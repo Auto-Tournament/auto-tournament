@@ -208,6 +208,7 @@ async function matchRow(request: APIRequestContext, slug: string): Promise<{ sta
   return { status: match?.status, serverId: match?.serverId ?? match?.server_id };
 }
 
+/** Answer `ok` to the match.assign for `slug` (another match's is refused) and return it. */
 async function acceptAssign(fake: FakeReadyUp, slug: string): Promise<Envelope> {
   for (let i = 0; i < 10; i++) {
     const assign = await fake.next('match.assign', 30_000);
@@ -255,21 +256,25 @@ async function liveWithBackup(
   };
 }
 
-/** Detection passes until one makes a failover (auto-failover moves it inside that pass). */
-async function scanUntilProposed(request: APIRequestContext): Promise<Array<{ id: string; matchSlug: string }>> {
-  let proposed: Array<{ id: string; matchSlug: string }> = [];
+/**
+ * Detection passes until one makes a failover for `slug` (auto-failover moves
+ * it inside that pass, so answer the assign concurrently).
+ */
+async function scanUntilProposed(request: APIRequestContext, slug: string): Promise<{ id: string; matchSlug: string }> {
+  let found: { id: string; matchSlug: string } | undefined;
   await expect
     .poll(
       async () => {
         const res = await request.post('/api/test/fleet/failover/scan', { headers: getAuthHeader(), data: {} });
-        expect(res.ok(), await res.text()).toBe(true);
-        proposed = (await res.json()).proposed;
-        return proposed.length;
+        if (!res.ok()) return false;
+        const proposed = (await res.json()).proposed as Array<{ id: string; matchSlug: string }>;
+        found = proposed.find((p) => p.matchSlug === slug);
+        return !!found;
       },
       { timeout: 30_000 }
     )
-    .toBeGreaterThan(0);
-  return proposed;
+    .toBe(true);
+  return found as { id: string; matchSlug: string };
 }
 
 async function failoverView(request: APIRequestContext, slug: string) {
@@ -330,12 +335,8 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
 
     // A's process dies.
     a.kill();
-    const assigned = b.next('match.assign', 40_000).then((m) => {
-      b.answer(m, 'ok');
-      return m;
-    });
-    const proposed = await scanUntilProposed(request);
-    expect(proposed.map((p) => p.matchSlug)).toContain(slug);
+    const assigned = acceptAssign(b, slug);
+    await scanUntilProposed(request, slug);
     const assign = await assigned;
 
     // B: a new epoch, a new password, and the match resumed from A's backup.
@@ -413,9 +414,9 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
 
     // Crashed and restarted within the grace period: it holds nothing now.
     a.kill();
+    const assigned = acceptAssign(a, slug);
     await a.reconnect({ state: null, availability: 'available' });
-    const assign = await a.next('match.assign', 30_000);
-    a.answer(assign, 'ok');
+    const assign = await assigned;
     const payload = assign.payload as { match_id: string; resume: { from_epoch: number; round: number; backup?: InlineBackup } };
     expect(payload.match_id).toBe(slug);
     expect(assign.epoch).toBe(epoch + 1);
@@ -445,7 +446,7 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     const { epoch } = await liveWithBackup(request, a, slug);
 
     a.kill();
-    await scanUntilProposed(request);
+    await scanUntilProposed(request, slug);
     const waiting = await failoverView(request, slug);
     expect(waiting.proposal).toMatchObject({ status: 'open', reason: 'offline', fromEpoch: epoch, targetCs2ServerId: null });
     expect(waiting.candidates).toEqual([]);
@@ -456,10 +457,7 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     await b.hello();
     const cs2B = await link(request, b.serverId);
     cleanup.push(() => unlink(request, b.serverId));
-    const assigned = b.next('match.assign', 40_000).then((m) => {
-      b.answer(m, 'ok');
-      return m;
-    });
+    const assigned = acceptAssign(b, slug);
     const scanning = request.post('/api/test/fleet/failover/scan', { headers: getAuthHeader(), data: {} });
     const assign = await assigned;
     expect((assign.payload as { match_id: string }).match_id).toBe(slug);
@@ -492,7 +490,7 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     cleanup.push(() => unlink(request, b.serverId));
 
     a.kill();
-    const [proposal] = await scanUntilProposed(request);
+    const proposal = await scanUntilProposed(request, slug);
     const view = await failoverView(request, slug);
     expect(view.autoFailover).toBe(false);
     expect(view.proposal).toMatchObject({ id: proposal.id, status: 'open', targetCs2ServerId: cs2B, round: backup.round });
@@ -511,10 +509,9 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
       headers: getAuthHeader(),
       data: { targetServerId: cs2B, round: backup.round },
     });
-    const assign = await b.next('match.assign', 30_000);
+    const assign = await acceptAssign(b, slug);
     expect(assign.epoch).toBe(epoch + 1);
     expect((assign.payload as { resume: { round: number } }).resume.round).toBe(backup.round);
-    b.answer(assign, 'ok');
     const res = await accepting;
     expect(res.status(), await res.text()).toBe(200);
     expect((await res.json()).proposal).toMatchObject({ status: 'moved', auto: false, newCs2ServerId: cs2B });
