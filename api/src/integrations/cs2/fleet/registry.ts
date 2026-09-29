@@ -50,6 +50,8 @@ export interface FleetServerRow {
   versions: string | null;
   capabilities: string | null;
   host: string | null;
+  /** Client address of the last hello / enrollment (./address.ts peerAddressOf); migration 012. */
+  peer_addr?: string | null;
   health: string | null;
   selftest: string | null;
   protocol: number | null;
@@ -142,6 +144,8 @@ export interface FleetServerView {
   versions: Versions | null;
   capabilities: string[];
   host: HostInfo | null;
+  /** Client address of the last hello / enrollment, after trusted proxies. */
+  peerAddr: string | null;
   health: Record<string, unknown> | null;
   selftest: Record<string, unknown> | null;
   protocol: number | null;
@@ -203,6 +207,7 @@ function toView(s: FleetServerRow, tokens: FleetTokenRow[], codeExpiresAt: numbe
     versions: parseJson<Versions>(s.versions),
     capabilities: parseJson<string[]>(s.capabilities) ?? [],
     host: parseJson<HostInfo>(s.host),
+    peerAddr: s.peer_addr ?? null,
     health: parseJson<Record<string, unknown>>(s.health),
     selftest: parseJson<Record<string, unknown>>(s.selftest),
     protocol: s.protocol,
@@ -692,13 +697,16 @@ export async function markConnected(
     selftest?: unknown;
     protocol: number;
     boot_id: string;
+    /** The socket's client address (./address.ts peerAddressOf); null keeps the stored one. */
+    peer_addr?: string | null;
   }
 ): Promise<void> {
   const now = nowS();
   await db.runAsync(
     `UPDATE cs2_fleet_servers
         SET online = 1, session_id = ?, connected_at = ?, last_seen = ?, availability = ?, versions = ?,
-            capabilities = ?, host = ?, selftest = ?, protocol = ?, boot_id = ?, updated_at = ?
+            capabilities = ?, host = ?, selftest = ?, protocol = ?, boot_id = ?, updated_at = ?,
+            peer_addr = COALESCE(?, peer_addr)
       WHERE id = ?`,
     [
       sessionId,
@@ -712,9 +720,16 @@ export async function markConnected(
       hello.protocol,
       hello.boot_id,
       now,
+      hello.peer_addr ?? null,
       serverId,
     ]
   );
+}
+
+/** Record where an enrollment came from (the connect address before the first hello). */
+export async function setPeerAddr(serverId: string, peerAddr: string | null): Promise<void> {
+  if (!peerAddr) return;
+  await db.runAsync('UPDATE cs2_fleet_servers SET peer_addr = ? WHERE id = ?', [peerAddr, serverId]);
 }
 
 export async function markSeen(serverId: string, health?: unknown): Promise<void> {

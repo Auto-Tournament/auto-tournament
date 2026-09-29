@@ -61,6 +61,7 @@ import session from 'express-session';
 import connectPgSimple from 'connect-pg-simple';
 import { isIP } from 'net';
 import { DATABASE_NAME, DatabaseRenameRefused } from './config/databaseRename';
+import { TRUST_PROXY_HOPS } from './config/trustProxy';
 import { COMPAT_MAX_BYTES } from './utils/compatPayload';
 import { reportCompatConfig } from './services/compatService';
 import { startCompatFeed, stopCompatFeed } from './services/compatFeedService';
@@ -74,7 +75,7 @@ configurePassportAuth();
 
 // Trust first proxy when behind Cloudflare Tunnel, nginx, Caddy, etc.
 // Required so X-Forwarded-Proto / Host are respected for cookies and redirects.
-app.set('trust proxy', 1);
+app.set('trust proxy', TRUST_PROXY_HOPS);
 
 // Middleware
 app.use(cors());

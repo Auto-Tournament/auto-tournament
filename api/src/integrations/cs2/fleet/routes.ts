@@ -34,7 +34,16 @@ import * as registry from './registry';
 import { getLatestReadyUpRelease } from '../services/pluginVersionService';
 import { readyUpUpdateStatus } from '../services/readyUpVersion';
 import { fleetBus, revokeServer, rotateServerToken } from './service';
-import { cs2ServerIdOf, linkFleetServer, listFleetLinks, unlinkFleetServer } from './link';
+import {
+  checkAddressOverride,
+  cs2ServerIdOf,
+  detectedAddress,
+  linkFleetServer,
+  listLinkAddresses,
+  setLinkAddress,
+  unlinkFleetServer,
+} from './link';
+import { formatConnectAddress, unmapV4, type ConnectSource } from './address';
 import { getAssignment, syncMatch } from './driver';
 import { listCommands } from './reliable';
 import { liveStateStore } from './state';
@@ -102,6 +111,8 @@ fleetEnrollRouter.post('/enroll', enrollRateLimit, async (req: Request, res: Res
       log.warn(`[FLEET] enrollment refused (${outcome.code}) for install ${body.install_id} from ${req.ip}`);
       return res.status(outcome.status).json({ success: false, code: outcome.code, error: outcome.error });
     }
+    // Where it enrolled from: the connect address until its first hello (./address.ts).
+    await registry.setPeerAddr(outcome.server.id, req.ip ? unmapV4(req.ip) : null);
     // A re-enrolled server's old tokens were revoked; drop a session still using one.
     if (outcome.reenrolled) fleetBus().disconnect(outcome.server.id, FLEET_CLOSE.REVOKED, 're-enrolled');
     log.info(
@@ -149,10 +160,44 @@ function withLiveState(servers: registry.FleetServerView[]): registry.FleetServe
   return servers.map((s) => ({ ...s, online: bus.isConnected(s.id) }));
 }
 
-/** `linkedServerId`: the cs2_servers row it plays matches as (null = not in the match pool). */
-async function withLinks<T extends { id: string }>(servers: T[]): Promise<Array<T & { linkedServerId: string | null }>> {
-  const links = await listFleetLinks();
-  return servers.map((s) => ({ ...s, linkedServerId: links.get(s.id) ?? null }));
+interface ConnectView {
+  host: string;
+  port: number;
+  /** `host:port` as players type it after `connect`. */
+  address: string;
+  /** override: an admin set it; public_addr / peer: detected (./address.ts); null: nothing yet. */
+  source: ConnectSource | null;
+}
+
+/**
+ * `linkedServerId`: the cs2_servers row it plays matches as (null = not in
+ * the match pool). `connect`: where players connect: the linked row's address,
+ * or for an unlinked server the one a link would store now.
+ */
+async function withLinks<T extends { id: string; host: { public_addr?: string; game_port: number } | null; peerAddr: string | null }>(
+  servers: T[]
+): Promise<Array<T & { linkedServerId: string | null; connect: ConnectView | null }>> {
+  const links = await listLinkAddresses();
+  return servers.map((s) => {
+    const link = links.get(s.id);
+    const detected = detectedAddress({ host: s.host ? JSON.stringify(s.host) : null, peer_addr: s.peerAddr });
+    let connect: ConnectView | null = null;
+    if (link && link.host && link.host !== '0.0.0.0') {
+      connect = {
+        host: link.host,
+        port: link.port,
+        address: formatConnectAddress(link.host, link.port),
+        source: link.override
+          ? 'override'
+          : detected && detected.host === link.host && detected.port === link.port
+            ? detected.source
+            : null,
+      };
+    } else if (!link && detected) {
+      connect = { ...detected, address: formatConnectAddress(detected.host, detected.port) };
+    }
+    return { ...s, linkedServerId: link?.cs2ServerId ?? null, connect };
+  });
 }
 
 function trimmedString(value: unknown, max: number): string | null | undefined {
@@ -260,15 +305,41 @@ fleetAdminRouter.post('/servers/:id/link', handler('link the server', async (req
   if (serverId === null) return res.status(400).json({ success: false, error: 'serverId must be 1-100 characters' });
   const name = trimmedString(req.body?.name, 100);
   if (name === null) return res.status(400).json({ success: false, error: 'name must be 1-100 characters' });
+  const address = checkAddressOverride({ host: req.body?.host, port: req.body?.port });
+  if (!address.ok) return res.status(400).json({ success: false, error: address.error });
   const outcome = await linkFleetServer(req.params.id, {
     ...(serverId ? { serverId } : {}),
     ...(name ? { name } : {}),
+    ...(address.override ? { address: address.override } : {}),
   });
   if (!outcome.ok) return res.status(outcome.status).json({ success: false, error: outcome.error });
   log.info(
     `[FLEET] ${req.params.id} linked to server ${outcome.link.cs2ServerId}${outcome.created ? ' (new)' : ''} by ${requestActorId(req) ?? 'unknown'}`
   );
   return res.status(outcome.created ? 201 : 200).json({ success: true, ...outcome.link, created: outcome.created });
+}));
+
+/**
+ * The connect address of a linked server. Body `{host, port?}` sets an admin
+ * override (hellos no longer change it); `{host: null}` (or empty) goes back to
+ * the detected address (public_addr, else the link's peer address).
+ */
+fleetAdminRouter.put('/servers/:id/address', handler('set the connect address', async (req: Request, res: Response) => {
+  const address = checkAddressOverride({ host: req.body?.host, port: req.body?.port });
+  if (!address.ok) return res.status(400).json({ success: false, error: address.error });
+  const stored = await setLinkAddress(req.params.id, address.override);
+  if (!stored) return res.status(404).json({ success: false, error: 'Fleet server is not linked' });
+  log.info(
+    `[FLEET] ${req.params.id}: connect address ${address.override ? `set to ${stored.host}:${stored.port}` : 'back to automatic'} by ${requestActorId(req) ?? 'unknown'}`
+  );
+  return res.json({
+    success: true,
+    cs2ServerId: stored.cs2ServerId,
+    host: stored.host,
+    port: stored.port,
+    address: formatConnectAddress(stored.host, stored.port),
+    override: stored.override,
+  });
 }));
 
 fleetAdminRouter.delete('/servers/:id/link', handler('unlink the server', async (req: Request, res: Response) => {

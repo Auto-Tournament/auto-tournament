@@ -19,6 +19,8 @@ export interface Server {
   transport?: string | null;
   /** 'fleet' servers: the cs2_fleet_servers row behind it. */
   fleet_server_id?: string | null;
+  /** 'fleet' servers: 1 = an admin set host / port; hellos do not change them (fleet/link.ts). */
+  host_override?: number | null;
   /** If set, the server has reported a CS2 update is required (Steam required_version). */
   cs2_required_version?: number | null;
   /** Best-effort: phase of the update signal ('available'|'shutdown'). */
@@ -124,6 +126,8 @@ export interface ServerResponse {
   transport?: ServerTransport;
   /** 'fleet' servers: the Ready Up fleet server (`/api/fleet/servers`) behind this row. */
   fleetServerId?: string | null;
+  /** 'fleet' servers: host / port were set by an admin, not from the server's hello. */
+  hostOverride?: boolean;
 }
 
 export type ServerTransport = 'rcon' | 'fleet';
