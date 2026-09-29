@@ -56,8 +56,9 @@ test.describe.serial('Admin navigation', () => {
       await expect(page.locator('.MuiDrawer-root')).toHaveCount(0);
       await expect(page.getByRole('button', { name: /navigation menu/i })).toHaveCount(0);
 
-      // An admin's links: Admin, Manage, Browse. No player links.
-      await expect(page.getByTestId('nav-admin')).toHaveAttribute('aria-current', 'page');
+      // An admin's links: Manage, Browse (the logo is the way home). No player links.
+      await expect(page.getByTestId('nav-admin')).toHaveCount(0);
+      await expect(page.getByTestId('nav-manage')).toBeVisible();
       await expect(page.getByTestId('nav-browse')).toBeVisible();
       await expect(page.getByTestId('nav-home')).toHaveCount(0);
       await expect(page.getByTestId('nav-leaderboards')).toHaveCount(0);

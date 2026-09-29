@@ -262,7 +262,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
   const standingsPath = tournamentTabPath(CURRENT_TOURNAMENT_ID, 'standings');
   const siteLinks: SiteLink[] = showAdminLinks
     ? [
-        { to: paths.root, label: t('nav.admin'), testId: 'nav-admin', current: pathname === paths.root },
+        // The logo already leads to the admin home, so no separate Admin link.
         { to: paths.manage, label: t('nav.manage'), testId: 'nav-manage', current: adminArea },
         browseLink,
       ]
