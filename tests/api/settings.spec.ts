@@ -1235,6 +1235,8 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   { key: 'license_event_prompt', field: null },
   // Integrator webhooks to private / loopback targets (services/webhooks/ssrf).
   { key: 'webhooks_allow_private_targets', field: 'webhooksAllowPrivateTargets' },
+  // Experimental feature toggles: /api/experimental only.
+  { key: 'experimental_matchmaking', field: null },
 ];
 
 // --- tests -------------------------------------------------------------------

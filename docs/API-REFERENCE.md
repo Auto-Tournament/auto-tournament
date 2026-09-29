@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 408 of them, 308 behind auth —
+Every endpoint this API serves — 411 of them, 311 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -688,6 +688,23 @@ Teams API for integrators: idempotent upsert of teams by the integrator's own ex
 | `POST` | `/api/integrations/teams/batch` | integrator token or admin |
 | `GET` | `/api/integrations/teams/:externalId` | integrator token or admin |
 | `PUT` | `/api/integrations/teams/:externalId` | integrator token or admin |
+
+### Experimental features
+
+Work in progress that ships dark: list the experimental features and turn one on or off. Off by default; an environment variable (e.g. EXPERIMENTAL_MATCHMAKING=1) overrides the admin toggle. Admin only; writes must be same-site JSON.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/experimental` | admin |
+| `PUT` | `/api/experimental/:id` | admin |
+
+### Matchmaking
+
+Experimental (docs/design/matchmaking.md). 404 unless the matchmaking feature is on; admin only while it is being built.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/matchmaking/status` | admin |
 
 ### Test helpers
 

@@ -109,7 +109,8 @@
       "matches": "Ratings",
       "developer": "Developer",
       "license": "License",
-      "webhooks": "Webhooks"
+      "webhooks": "Webhooks",
+      "experimental": "Experimental"
     },
     "integrations": {
       "steam": {
@@ -174,6 +175,20 @@
       "save": "Save",
       "saved": "Site name saved",
       "saveFailed": "Could not save the site name"
+    },
+    "experimental": {
+      "title": "Experimental",
+      "description": "Features that are still being built. They are off by default and may change or break. Only admins see them.",
+      "saved": "Saved",
+      "saveFailed": "Could not save the feature",
+      "loadFailed": "Could not load experimental features",
+      "envOverride": "Set by the {{env}} environment variable. Change it there.",
+      "features": {
+        "matchmaking": {
+          "label": "Matchmaking",
+          "description": "Find match, queue and accept, then play on a free server. CS2 only. Admin only while it is being built."
+        }
+      }
     }
   },
   "managePage": {

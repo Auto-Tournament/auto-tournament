@@ -109,7 +109,8 @@
       "matches": "Rating",
       "developer": "Utvikler",
       "license": "Lisens",
-      "webhooks": "Webhooks"
+      "webhooks": "Webhooks",
+      "experimental": "Eksperimentelt"
     },
     "integrations": {
       "steam": {
@@ -174,6 +175,20 @@
       "save": "Lagre",
       "saved": "Navnet er lagret",
       "saveFailed": "Kunne ikke lagre navnet"
+    },
+    "experimental": {
+      "title": "Eksperimentelt",
+      "description": "Funksjoner som fortsatt bygges. De er av som standard og kan endre seg eller slutte å virke. Bare admins ser dem.",
+      "saved": "Lagret",
+      "saveFailed": "Kunne ikke lagre funksjonen",
+      "loadFailed": "Kunne ikke hente eksperimentelle funksjoner",
+      "envOverride": "Styrt av miljøvariabelen {{env}}. Endre den der.",
+      "features": {
+        "matchmaking": {
+          "label": "Matchmaking",
+          "description": "Finn kamp, stå i kø og godta, og spill på en ledig server. Bare CS2. Bare for admins mens det bygges."
+        }
+      }
     }
   },
   "managePage": {

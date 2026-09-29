@@ -523,6 +523,10 @@
       "description": "Auto Tournament CS2 webhooks in, and the recorded event log out."
     },
     {
+      "name": "Experimental features",
+      "description": "Work in progress that ships dark: list the experimental features and turn one on or off. Off by default; an environment variable (e.g. EXPERIMENTAL_MATCHMAKING=1) overrides the admin toggle. Admin only; writes must be same-site JSON."
+    },
+    {
       "name": "Fleet",
       "description": "Ready Up servers on the fleet link: registry, one-time codes, fleet keys, revoke and rotate. The server WebSocket is /api/fleet/ws."
     },
@@ -605,6 +609,10 @@
     {
       "name": "Matches",
       "description": "Create, load, restart and cancel matches; read match state."
+    },
+    {
+      "name": "Matchmaking",
+      "description": "Experimental (docs/design/matchmaking.md). 404 unless the matchmaking feature is on; admin only while it is being built."
     },
     {
       "name": "Me",
@@ -2400,6 +2408,66 @@
             }
           }
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/experimental": {
+      "get": {
+        "tags": [
+          "Experimental"
+        ],
+        "summary": "List experimental features",
+        "description": "Every experimental feature with `enabled` and where that came from\n(`source`: `env`, `setting` or `default`). When `source` is `env`,\nthe environment variable named in `env` decides and the admin toggle\nhas no effect. Admin only.\n",
+        "responses": {
+          "200": {
+            "description": "The features"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/experimental/{id}": {
+      "put": {
+        "tags": [
+          "Experimental"
+        ],
+        "summary": "Turn an experimental feature on or off",
+        "description": "Body `{ \"enabled\": boolean }`. Stored as a setting; an environment\noverride still wins. Admin only; same-site JSON.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The feature's new state"
+          },
+          "400": {
+            "description": "`enabled` is not a boolean"
+          },
+          "404": {
+            "description": "No such feature"
+          }
+        },
         "security": [
           {
             "bearerAuth": []
@@ -5697,6 +5765,31 @@
             }
           }
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/matchmaking/status": {
+      "get": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "Matchmaking status (experimental)",
+        "description": "404 unless the experimental `matchmaking` feature is on. Admin only\nwhile matchmaking is being built. No queue exists yet.\n",
+        "responses": {
+          "200": {
+            "description": "Matchmaking is on"
+          },
+          "404": {
+            "description": "Matchmaking is off"
+          }
+        },
         "security": [
           {
             "bearerAuth": []
