@@ -38,6 +38,7 @@ import eloTemplatesRoutes from './eloTemplates';
 import generationRoutes from './generation';
 import testRoutes from './test';
 import authRoutes from './auth';
+import { setupRouter, localAuthRouter } from './localAdmin';
 import gamesRoutes from './games';
 import gamePackRoutes from './gamePacks';
 import moduleRoutes from './modules';
@@ -251,6 +252,18 @@ const coreRoutes: MountedRouter[] = [
     title: 'Test helpers',
     description:
       'E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.',
+  },
+  {
+    prefix: '/api/setup',
+    router: setupRouter,
+    title: 'Setup',
+    description: 'First-admin setup and reset-admin recovery with a one-time code. 404 once an admin exists.',
+  },
+  {
+    prefix: '/api/auth/local',
+    router: localAuthRouter,
+    title: 'Local admin login',
+    description: 'Username + password (+ TOTP) sign-in for local admin accounts, and TOTP enrolment.',
   },
   {
     prefix: '/api/auth',

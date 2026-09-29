@@ -5,9 +5,10 @@
  * only the Web API key, kept as its "secret"). They are stored in
  * `auth_provider_settings`, the secret encrypted with `utils/secretBox`.
  *
- * Environment variables win, field by field: `AUTH_<P>_ENABLED`,
- * `<P>_CLIENT_ID`, `<P>_CLIENT_SECRET` (Steam: `AUTH_STEAM_ENABLED`,
- * `STEAM_API_KEY`). A field set by the environment is read-only in the UI.
+ * The database is the source of truth. Environment variables
+ * (`AUTH_<P>_ENABLED`, `<P>_CLIENT_ID`, `<P>_CLIENT_SECRET`; Steam:
+ * `AUTH_STEAM_ENABLED`, `STEAM_API_KEY`) are imported once at boot into a
+ * field that has no saved value (`importFromEnvironment`), then ignored.
  *
  * The rows are cached in memory so the synchronous readers (the Passport
  * setup, `/api/auth/providers`) can use them; `load()` fills the cache at
@@ -16,10 +17,12 @@
  * whether one is set.
  */
 import { db } from '../config/database';
+import { markEnvImported, envImportedNames } from './envImport';
 import { log } from '../utils/logger';
 import { decryptSecret, encryptSecret, secretsKeySource, type SecretsKeySource } from '../utils/secretBox';
 import {
   SIGN_IN_PROVIDERS,
+  planProviderEnvImport,
   effectiveProviderSettings,
   getStoredProviderSettings,
   isSignInProviderId,
@@ -41,6 +44,7 @@ interface ProviderRow {
   updated_at: number;
 }
 
+/** The provider cannot be changed (Epic Games: not available yet). */
 export class EnvManagedFieldError extends Error {}
 
 class AuthProviderSettingsService {
@@ -69,9 +73,44 @@ class AuthProviderSettingsService {
     setStoredProviderSettings(next);
   }
 
-  /** The settings `id` runs with right now (environment first, then the saved row). */
-  getEffective(id: SignInProviderId, env: NodeJS.ProcessEnv = process.env): EffectiveProviderSettings {
-    return effectiveProviderSettings(id, env);
+  /** The settings `id` runs with right now (the saved row, else the default). */
+  getEffective(id: SignInProviderId): EffectiveProviderSettings {
+    return effectiveProviderSettings(id);
+  }
+
+  /**
+   * Boot: copy provider environment variables into fields that have no saved
+   * value, once. Each variable is remembered (app_settings `env_imported`),
+   * so it is never imported again, even after the admin clears the field.
+   * Logs what was imported, never a value. Call after `load()`.
+   */
+  async importFromEnvironment(env: NodeJS.ProcessEnv = process.env): Promise<void> {
+    const stored = new Map<SignInProviderId, StoredProviderSettings>();
+    for (const def of SIGN_IN_PROVIDERS) {
+      const row = getStoredProviderSettings(def.id);
+      if (row) stored.set(def.id, row);
+    }
+    const plan = planProviderEnvImport(env, stored, await envImportedNames());
+    if (plan.length === 0) return;
+    for (const item of plan) {
+      if (item.value === null) {
+        log.info(
+          `[SETUP] ${item.envName} is set, but Settings -> Sign-in already has a value; the saved one is used. You can remove it from .env`
+        );
+        continue;
+      }
+      const patch: ProviderPatch =
+        item.field === 'enabled'
+          ? { enabled: item.value as boolean }
+          : item.field === 'clientId'
+            ? { clientId: item.value as string }
+            : { clientSecret: item.value as string };
+      // An enabled flag imported alone must not switch a provider on or off
+      // behind a saved row: the plan only offers it when there is no row.
+      await this.update(item.provider, patch, 'environment');
+      log.info(`[SETUP] imported ${item.envName} from environment; you can remove it from .env`);
+    }
+    await markEnvImported(plan.map((p) => p.envName));
   }
 
   /** Whether any provider is offered on the login page. */
@@ -98,13 +137,7 @@ class AuthProviderSettingsService {
       hasClientId: def.env.clientId !== null,
       clientId: effective.clientId,
       secretSet: !!effective.secret,
-      secretUnreadable: effective.source.secret !== 'env' && !!stored?.secretUnreadable,
-      envManaged: {
-        enabled: effective.source.enabled === 'env',
-        clientId: effective.source.clientId === 'env',
-        secret: effective.source.secret === 'env',
-      },
-      envNames: def.env,
+      secretUnreadable: !!stored?.secretUnreadable,
       configured: effective.configured,
       active: effective.active,
       callbackUrl: `${backendBaseUrl}/api/auth/${def.id}/callback`,
@@ -113,24 +146,12 @@ class AuthProviderSettingsService {
   }
 
   /**
-   * Save a patch for `id`. A field the environment sets cannot be changed
-   * here (EnvManagedFieldError). Logs what changed, never a value of the
+   * Save a patch for `id`. Logs what changed, never a value of the
    * secret. The caller re-registers the strategies.
    */
   async update(id: SignInProviderId, patch: ProviderPatch, actor: string | null): Promise<void> {
     const def = signInProviderDefinition(id);
     if (def.comingSoon) throw new EnvManagedFieldError(`${def.label} sign-in is not available yet`);
-    const effective = this.getEffective(id);
-    if (patch.enabled !== undefined && effective.source.enabled === 'env') {
-      throw new EnvManagedFieldError(`Enabled is set by ${def.env.enabled}`);
-    }
-    if (patch.clientId !== undefined && effective.source.clientId === 'env') {
-      throw new EnvManagedFieldError(`The client id is set by ${def.env.clientId}`);
-    }
-    if (patch.clientSecret !== undefined && effective.source.secret === 'env') {
-      throw new EnvManagedFieldError(`The secret is set by ${def.env.secret}`);
-    }
-
     const current = await db.queryOneAsync<ProviderRow>(
       'SELECT * FROM auth_provider_settings WHERE provider = ?',
       [id]

@@ -4,8 +4,8 @@
  *
  * Admin only (requireAuth). Writes are same-site JSON only, like the license
  * and catalog writes. A client secret is write-only: GET says whether one is
- * set, never what it is. A field an environment variable sets is read-only
- * here. Saving re-registers the Passport strategies, so the change applies
+ * set, never what it is. Environment variables are only imported once at
+ * boot (services/authProviderSettingsService). Saving re-registers the Passport strategies, so the change applies
  * without a restart.
  */
 import { Router, Request, Response } from 'express';
@@ -23,6 +23,7 @@ import {
   EnvManagedFieldError,
 } from '../services/authProviderSettingsService';
 import { steamService } from '../services/steamService';
+import { adminAccessSettings, AdminAccessError, parseAdminAccessPatch } from '../services/adminAccessSettings';
 import { testSignInProvider } from '../services/signInProviderTest';
 
 const router = Router();
@@ -58,8 +59,8 @@ function listResponse() {
  *     summary: List the sign-in providers and how each is set up
  *     description: |
  *       Admin only. Per provider: enabled, client id, whether a secret is set
- *       (never the secret), which fields an environment variable sets
- *       (read-only), the callback URL to register with the provider, and
+ *       (never the secret), the callback URL to register with the provider,
+ *       and
  *       where to create the credentials. `secretsKeySource` names the
  *       variable the saved secrets are encrypted with (SECRETS_KEY, else
  *       SESSION_SECRET).
@@ -75,6 +76,62 @@ router.get('/', (_req: Request, res: Response) => {
 
 /**
  * @openapi
+ * /api/sign-in-providers/admin-access:
+ *   get:
+ *     tags: [Sign-in providers]
+ *     summary: Admin access settings
+ *     description: |
+ *       Admin only. Whether local admin login (username + password) is on and
+ *       whether it may be turned off, the admin Steam IDs (made admin at boot
+ *       and on save) and the admin emails (admin at sign-in with a
+ *       provider-verified address).
+ *     responses:
+ *       200:
+ *         description: The settings
+ *   put:
+ *     tags: [Sign-in providers]
+ *     summary: Change the admin access settings
+ *     description: |
+ *       Admin only; same-site JSON. Every field is optional. Local admin
+ *       login can only be turned off while another admin can sign in with a
+ *       provider that is on (409 otherwise).
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               localAdminLoginEnabled: { type: boolean }
+ *               adminSteamIds: { type: string }
+ *               adminEmails: { type: string }
+ *     responses:
+ *       200:
+ *         description: Saved; the settings as GET returns them
+ *       400:
+ *         description: Invalid field
+ *       409:
+ *         description: Turning local admin login off would lock every admin out
+ */
+router.get('/admin-access', async (_req: Request, res: Response) => {
+  return res.json({ success: true, ...(await adminAccessSettings.view()) });
+});
+
+router.put('/admin-access', async (req: Request, res: Response) => {
+  if (refuseWrite(req, res)) return;
+  const parsed = parseAdminAccessPatch(req.body);
+  if (!parsed.ok) return res.status(400).json({ success: false, error: parsed.error });
+  try {
+    await adminAccessSettings.update(parsed.patch, requestActorId(req));
+    return res.json({ success: true, ...(await adminAccessSettings.view()) });
+  } catch (error) {
+    if (error instanceof AdminAccessError) return res.status(error.status).json({ success: false, error: error.message });
+    log.error('[SIGN-IN] Failed to save admin access settings', error as Error);
+    return res.status(500).json({ success: false, error: 'Failed to save admin access settings' });
+  }
+});
+
+/**
+ * @openapi
  * /api/sign-in-providers/{provider}:
  *   put:
  *     tags: [Sign-in providers]
@@ -82,7 +139,7 @@ router.get('/', (_req: Request, res: Response) => {
  *     description: |
  *       Admin only; same-site JSON. Every field is optional. `clientSecret`
  *       replaces the saved secret (null clears it) and is stored encrypted.
- *       A field set by an environment variable cannot be changed (409). The
+ *       The
  *       sign-in strategies are re-registered at once; no restart.
  *     parameters:
  *       - in: path
@@ -108,7 +165,7 @@ router.get('/', (_req: Request, res: Response) => {
  *       404:
  *         description: Unknown provider
  *       409:
- *         description: The field is set by an environment variable, or the provider is not available yet
+ *         description: The provider is not available yet
  */
 router.put('/:provider', async (req: Request, res: Response) => {
   if (refuseWrite(req, res)) return;

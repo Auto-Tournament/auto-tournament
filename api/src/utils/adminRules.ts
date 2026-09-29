@@ -6,27 +6,19 @@
  *  - an admin ticks "Admin" on the Players page (routes/players.ts);
  *  - ADMIN_STEAM_IDS, applied at every boot (services/adminSeedService.ts);
  *  - ADMIN_EMAILS, at sign-in with a provider-verified address (utils/adminEmails.ts);
- *  - a fresh install: the first account to sign in (below).
+ *  - a fresh install or recovery: the setup code the server logs, which
+ *    creates a local admin account (services/localAdminService.ts).
  */
 
 /**
- * Fresh install: the first account to sign in becomes admin, but only while
- * no admin exists and this account is the only one. An upgraded instance that
- * has players and no admin is never handed to whoever signs in next; it uses
- * ADMIN_STEAM_IDS or ADMIN_EMAILS instead.
+ * "Allow local admin login" may be turned off only while another way in
+ * exists: at least one admin who can sign in with a provider that is on the
+ * login page right now (a Steam admin with Steam on, or an admin with a linked
+ * Discord/Google/GitHub/Twitch sign-in whose provider is on). Otherwise
+ * turning it off would lock every admin out.
  */
-export function shouldPromoteFirstAdmin(input: {
-  adminExists: boolean;
-  totalPlayers: number;
-  firstPlayerId: string | null;
-  accountId: string;
-}): boolean {
-  return (
-    !input.adminExists &&
-    input.totalPlayers === 1 &&
-    input.firstPlayerId !== null &&
-    input.firstPlayerId === input.accountId
-  );
+export function canDisableLocalAdminLogin(input: { adminsWithActiveProviderLogin: number }): boolean {
+  return input.adminsWithActiveProviderLogin > 0;
 }
 
 /**

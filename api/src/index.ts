@@ -51,12 +51,13 @@ import { enrichBuiltinGames } from './services/gameEnrichmentService';
 import { refreshGameIcons } from './services/gameIconService';
 import { scheduler } from './core/scheduler';
 import { steamService } from './services/steamService';
-import { seedAdminsFromEnv } from './services/adminSeedService';
 import { getServiceTokens } from './utils/serviceTokens';
 import { allowUnauthenticatedEvents } from './middleware/serverAuth';
 import packageJson from '../package.json';
 import { redactDiscordIdsInPath } from './utils/discordId';
-import { configurePassportAuth, passport, reloadPassportAuth } from './config/passport';
+import { configurePassportAuth, getBackendBaseUrl, passport, reloadPassportAuth } from './config/passport';
+import { adminAccessSettings } from './services/adminAccessSettings';
+import { localAdminService } from './services/localAdminService';
 import { authProviderSettingsService } from './services/authProviderSettingsService';
 import session from 'express-session';
 import connectPgSimple from 'connect-pg-simple';
@@ -485,10 +486,22 @@ process.on('uncaughtException', (err) => {
     // the saved settings can be read.
     try {
       await authProviderSettingsService.load();
+      // Provider env vars are copied into empty fields once; from then on
+      // the database (Settings -> Sign-in) is the source of truth.
+      await authProviderSettingsService.importFromEnvironment();
       reloadPassportAuth();
     } catch (error) {
-      log.warn('[SIGN-IN] Could not load the saved sign-in settings; using the environment only', { error });
+      log.warn('[SIGN-IN] Could not load the saved sign-in settings', { error });
     }
+
+    // Admin Steam IDs / emails (imported once from ADMIN_STEAM_IDS /
+    // ADMIN_EMAILS), applied before deciding whether this install still
+    // needs its first admin. Never throws.
+    await adminAccessSettings.importFromEnvironmentAndSeed();
+    // No admin yet: log a one-time setup code for /setup. Never throws.
+    await localAdminService.announceSetupCodeIfNeeded(
+      process.env.FRONTEND_BASE_URL?.trim() || getBackendBaseUrl()
+    );
 
     // Code modules an operator put in DATA_DIR/modules: each enabled,
     // compatible one is loaded and registered next to the built-ins. After the
@@ -612,9 +625,6 @@ process.on('uncaughtException', (err) => {
         }),
         reportSteamApiKeyStatus().catch((error) => {
           log.warn('Failed to check the Steam Web API key on startup', { error });
-        }),
-        seedAdminsFromEnv().catch((error) => {
-          log.warn('Failed to seed admins from ADMIN_STEAM_IDS on startup', { error });
         }),
         // Best-effort, never blocks: gives built-in games (installed modules
         // + the popular list) a real image/genres from Wikidata. See

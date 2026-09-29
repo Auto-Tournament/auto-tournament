@@ -1,6 +1,8 @@
 import { pageTitle } from '../utils/pageTitle';
 import React, { useEffect, useState } from 'react';
-import { Box, Card, Button, Alert, Container, Stack, Typography } from '@mui/material';
+import { Box, Card, Button, Alert, Container, Link, Stack, Typography } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
+import { paths } from '../paths';
 import { ArrowSquareOutIcon } from '@phosphor-icons/react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
@@ -31,6 +33,17 @@ export default function Login() {
   const [loadingProviders, setLoadingProviders] = useState(false);
   const [providersError, setProvidersError] = useState<string | null>(null);
   const hasLoadedProvidersRef = React.useRef(false);
+  // Local admin login (small link) and first-admin setup (/api/auth/local/status).
+  const [localLogin, setLocalLogin] = useState<{ enabled: boolean; setup: boolean } | null>(null);
+
+  useEffect(() => {
+    void fetch('/api/auth/local/status', { credentials: 'same-origin' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { enabled?: boolean; setup?: boolean } | null) => {
+        if (data) setLocalLogin({ enabled: data.enabled === true, setup: data.setup === true });
+      })
+      .catch(() => undefined);
+  }, []);
   // __APP_VERSION__ is injected by Vite at build time (see client/vite.config.ts)
   const appVersion = __APP_VERSION__;
 
@@ -167,7 +180,18 @@ export default function Login() {
 
             {/* Provider-based sign in (Steam, Keycloak, Discord, etc.) */}
             <Stack spacing={2.5} sx={{ width: '100%' }}>
-              {providersError && (
+              {localLogin?.setup && (
+                <Alert severity="info" data-testid="login-setup-notice">
+                  <Stack spacing={0.5}>
+                    <Typography variant="body2">{t('login.setupNotice')}</Typography>
+                    <Link component={RouterLink} to={paths.setup} variant="body2" data-testid="login-setup-link">
+                      {t('login.setupLink')}
+                    </Link>
+                  </Stack>
+                </Alert>
+              )}
+
+              {providersError && !localLogin?.setup && (
                 <Alert severity="error">
                   <Stack spacing={0.5}>
                     <Typography variant="body2">
@@ -264,6 +288,17 @@ export default function Login() {
             </Stack>
 
             <Stack spacing={1.5} alignItems="center" sx={{ width: '100%' }}>
+              {localLogin?.enabled && !localLogin.setup && (
+                <Link
+                  component={RouterLink}
+                  to={paths.adminLogin}
+                  variant="caption"
+                  color="text.secondary"
+                  data-testid="login-admin-link"
+                >
+                  {t('login.adminLogin')}
+                </Link>
+              )}
               <Stack direction="row" spacing={2}>
                 <ExternalLink
                   href="https://github.com/Auto-Tournament/auto-tournament"

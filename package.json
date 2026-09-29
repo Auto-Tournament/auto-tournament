@@ -41,6 +41,7 @@
         "typecheck": "tsc -p api/tsconfig.json --noEmit && tsc -p client/tsconfig.json --noEmit",
         "typecheck:ratchet": "node scripts/typecheck-ratchet.mjs",
         "typecheck:baseline": "node scripts/typecheck-ratchet.mjs --update",
+    "reset-admin": "tsx api/src/cli/resetAdmin.ts",
     "docs:api": "tsx scripts/generate-api-reference.ts",
     "docs:api:check": "tsx scripts/generate-api-reference.ts --check",
         "db": "docker ps --format '{{.Names}}' | grep -q '^auto-tournament-postgres$' && echo '✅ PostgreSQL container is already running' || (docker ps -a --format '{{.Names}}' | grep -q '^auto-tournament-postgres$' && (docker start auto-tournament-postgres && echo '✅ Started existing PostgreSQL container') || (docker run -d --name auto-tournament-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=auto_tournament -p 5432:5432 postgres:16-alpine && echo '✅ Created and started PostgreSQL container'))",

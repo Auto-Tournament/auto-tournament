@@ -36,6 +36,15 @@ test.describe.serial('Login providers error', () => {
         });
       });
 
+      // An admin exists (otherwise the page points at /setup instead).
+      await page.route('**/api/auth/local/status', (route) =>
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ success: true, enabled: true, setup: false }),
+        })
+      );
+
       await page.goto('/login', { waitUntil: 'domcontentloaded' });
       await expect(page.getByText(message)).toBeVisible({ timeout: 15000 });
     }

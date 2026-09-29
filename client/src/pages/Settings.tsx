@@ -327,7 +327,7 @@ export default function Settings() {
 
             {/* Sign-in providers: Steam, Discord, Google, GitHub, Twitch */}
             <TabPanel value={activeTab} index="signin">
-              <SignInProvidersCard />
+              <SignInProvidersCard welcome={searchParams.get('welcome') === 'setup'} />
             </TabPanel>
 
             {/* Players & access control */}

@@ -176,6 +176,15 @@ LABEL org.opencontainers.image.title="Auto Tournament" \
 # api/src/config/publicPaths.ts.
 RUN mkdir -p /app/data/map-images
 
+# Recovery: `docker exec auto-tournament reset-admin` prints a one-time code
+# (1 hour) for /setup that resets a local admin's password or creates one.
+# See api/src/cli/resetAdmin.ts.
+RUN printf '%s\n' \
+  '#!/bin/sh' \
+  'cd /app && LOG_LEVEL="${RESET_ADMIN_LOG_LEVEL:-error}" exec node dist/reset-admin.js "$@"' \
+  > /usr/local/bin/reset-admin && \
+  chmod +x /usr/local/bin/reset-admin
+
 # Expose Caddy port (single entry point)
 EXPOSE 3069
 

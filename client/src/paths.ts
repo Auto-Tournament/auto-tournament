@@ -13,6 +13,10 @@
 export const paths = {
   root: '/',
   login: '/login',
+  /** Local admin sign-in (username + password). */
+  adminLogin: '/login/admin',
+  /** First-admin setup and reset-admin recovery. */
+  setup: '/setup',
   connectSteam: '/connect-steam',
 
   // Viewer and player-facing pages

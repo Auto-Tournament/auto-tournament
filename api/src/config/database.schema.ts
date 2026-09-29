@@ -713,6 +713,33 @@ export function getSchemaSQL(): string {
       updated_by TEXT
     );
 
+    -- Local admin accounts (username + password, optional TOTP): the first
+    -- admin on a fresh install and the recovery path (services/localAdminService.ts).
+    -- player_id is the players row it signs in as ('local-<username>').
+    CREATE TABLE IF NOT EXISTS local_admins (
+      id SERIAL PRIMARY KEY,
+      username TEXT NOT NULL UNIQUE, -- lower case
+      player_id TEXT NOT NULL UNIQUE REFERENCES players(id) ON DELETE CASCADE,
+      password_hash TEXT NOT NULL, -- scrypt$N$r$p$salt$hash (utils/localAdminCrypto.ts)
+      totp_secret_enc TEXT, -- secretBox-encrypted base32 secret; NULL = no TOTP
+      totp_pending_enc TEXT, -- enrolment started, not confirmed yet
+      totp_last_step BIGINT, -- last accepted TOTP time step (no replay)
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      last_login_at INTEGER
+    );
+
+    -- One-time setup codes: only the SHA-256 of the code is stored.
+    -- purpose 'setup' = fresh install (24 h), 'reset' = reset-admin CLI (1 h).
+    CREATE TABLE IF NOT EXISTS setup_codes (
+      id SERIAL PRIMARY KEY,
+      code_hash TEXT NOT NULL,
+      purpose TEXT NOT NULL,
+      expires_at INTEGER NOT NULL,
+      used_at INTEGER,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
     -- Session table for connect-pg-simple (express-session PostgreSQL store)
     -- This table is required for session persistence across API restarts
     CREATE TABLE IF NOT EXISTS session (

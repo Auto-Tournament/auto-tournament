@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 419 of them, 316 behind auth —
+Every endpoint this API serves — 434 of them, 321 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -476,6 +476,8 @@ Steam, Discord, Google, GitHub and Twitch sign-in, set up from Settings -> Sign-
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/sign-in-providers` | admin |
+| `GET` | `/api/sign-in-providers/admin-access` | admin |
+| `PUT` | `/api/sign-in-providers/admin-access` | admin |
 | `PUT` | `/api/sign-in-providers/:provider` | admin |
 | `POST` | `/api/sign-in-providers/:provider/test` | admin |
 
@@ -800,6 +802,33 @@ E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
 | `POST` | `/api/test/webhooks/timing` | admin |
 | `POST` | `/api/test/webhooks/reconcile` | admin |
 | `POST` | `/api/test/license-consent` | admin |
+| `POST` | `/api/test/setup-code` | public |
+| `POST` | `/api/test/setup-code/expire` | public |
+| `POST` | `/api/test/clear-admins` | public |
+| `POST` | `/api/test/login-throttle/reset` | public |
+| `POST` | `/api/test/env-import` | public |
+
+### Setup
+
+First-admin setup and reset-admin recovery with a one-time code. 404 once an admin exists.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/setup/status` | public |
+| `POST` | `/api/setup/check` | public |
+| `POST` | `/api/setup/complete` | public |
+
+### Local admin login
+
+Username + password (+ TOTP) sign-in for local admin accounts, and TOTP enrolment.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/auth/local/status` | public |
+| `POST` | `/api/auth/local/login` | public |
+| `GET` | `/api/auth/local/me` | admin |
+| `POST` | `/api/auth/local/totp/start` | admin |
+| `POST` | `/api/auth/local/totp/confirm` | admin |
 
 ### Auth
 

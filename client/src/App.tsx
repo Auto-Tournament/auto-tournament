@@ -6,6 +6,8 @@ import { PageHeaderProvider } from './contexts/PageHeaderContext';
 import { SnackbarProvider, useSnackbar } from './contexts/SnackbarContext';
 import { AtIcon } from './components/common/AtIcon';
 import Login from './pages/Login';
+import Setup from './pages/Setup';
+import AdminLogin from './pages/AdminLogin';
 import AdminHome from './pages/AdminHome';
 import Manage from './pages/Manage';
 import Teams from './pages/Teams';
@@ -273,6 +275,16 @@ function AppRoutes() {
           )
         }
       />
+
+      {/* Local admin sign-in; an admin already signed in goes to the dashboard. */}
+      <Route
+        path={paths.adminLogin}
+        element={isAuthenticated ? <Navigate to={paths.root} replace /> : <AdminLogin />}
+      />
+
+      {/* First-admin setup / reset-admin recovery. Always reachable: the API
+          says whether it is open. */}
+      <Route path={paths.setup} element={<Setup />} />
 
       {/* Linking Steam to an admin who signed in with another provider. Steam
           is the platform's sign-in, so this page is core's for every game. */}

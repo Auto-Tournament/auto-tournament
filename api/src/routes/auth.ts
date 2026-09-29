@@ -96,7 +96,7 @@ function clearImpersonationCookie(req: Request, res: Response): void {
   });
 }
 
-function setPlayerSteamCookie(req: Request, res: Response, steamId: string): void {
+export function setPlayerSteamCookie(req: Request, res: Response, steamId: string): void {
   // Every sign-in path (Steam, SSO resolved to Steam) ends here, so this is
   // where a sign-in is stamped. Best-effort: it never fails the login.
   void playerService.recordSignIn(steamId).catch((error: unknown) => {
@@ -490,8 +490,8 @@ router.get('/steam/callback', (req: Request, res: Response, _next) => {
           }
         }
 
-        // If this is the very first admin, promote this Steam user to admin.
-        await playerService.ensureFirstAdmin(steamId);
+        // No "first account becomes admin" here any more: the first admin is
+        // created on /setup with the code the server logs (routes/localAdmin.ts).
       } catch (playerError) {
         log.warn('Failed to ensure player record during Steam login', playerError as Error);
       }
@@ -1149,8 +1149,6 @@ router.post('/self-register', async (req: Request, res: Response) => {
     }
 
     await playerService.getOrCreatePlayer(steamId, displayName, avatarUrl);
-    // Maintain the "first admin bootstrap" behaviour when safe.
-    await playerService.ensureFirstAdmin(steamId);
 
     const createdPlayer = await playerService.getPlayerById(steamId);
     return res.json({
@@ -1316,7 +1314,7 @@ router.get('/admin/me', async (req: Request, res: Response) => {
     } else if (provider === 'discord') {
       profileName = (user as { username?: string }).username ?? null;
       profileAvatarUrl = (user as { avatarUrl?: string }).avatarUrl ?? null;
-    } else if (provider === 'github' || provider === 'google' || provider === 'twitch') {
+    } else if (provider === 'github' || provider === 'google' || provider === 'twitch' || provider === 'local') {
       profileName =
         (user as { displayName?: string }).displayName ||
         (user as { username?: string }).username ||
