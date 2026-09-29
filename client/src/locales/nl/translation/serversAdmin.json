@@ -2,7 +2,7 @@
   "adminToolsPage": {
     "recovery": {
       "title": "Wedstrijdherstel",
-      "description": "Als de API of servers tijdens een toernooi zijn herstart en de wedstrijdstatus niet meer klopt (bijv. wedstrijden hangen in warmup of live scores ontbreken), kun je handmatig een herstelrun starten. Dit vraagt alle servers om hun huidige wedstrijdrapport, synchroniseert scores/fases opnieuw en configureert webhooks en demo-uploads waar mogelijk.",
+      "description": "Als de API of de servers tijdens een toernooi opnieuw zijn gestart en de wedstrijdstatus niet klopt (bijv. wedstrijden die vastzitten voordat ze live gaan of live-scores die ontbreken), kun je handmatig een herstel starten. Alle servers worden dan om hun huidige wedstrijdrapport gevraagd, scores en fases worden opnieuw gesynchroniseerd en webhooks en demo-uploads worden waar mogelijk opnieuw ingesteld.",
       "button": "Wedstrijdherstel nu uitvoeren",
       "success": "Wedstrijdherstel voltooid.",
       "error": "Wedstrijdherstel mislukt.",

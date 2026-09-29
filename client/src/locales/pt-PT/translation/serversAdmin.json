@@ -2,7 +2,7 @@
   "adminToolsPage": {
     "recovery": {
       "title": "Recuperação de jogos",
-      "description": "Se a API ou os servidores forem reiniciados durante um torneio e o estado dos jogos parecer dessincronizado (por exemplo, jogos presos no warmup ou sem scores ao vivo), pode acionar manualmente uma recuperação. Isto irá pedir a todos os servidores o relatório do jogo atual, re-sincronizar scores/fases e reconfigurar webhooks e uploads de demos, quando possível.",
+      "description": "Se a API ou os servidores foram reiniciados durante um torneio e o estado dos jogos parece dessincronizado (por exemplo, jogos presos antes de começarem ou sem resultados em direto), podes iniciar uma recuperação manual. Todos os servidores serão questionados sobre o relatório de jogo atual, os resultados e fases serão ressincronizados e os webhooks e o envio de demos serão reconfigurados sempre que possível.",
       "button": "Executar recuperação de jogos agora",
       "success": "Recuperação de jogos concluída.",
       "error": "A recuperação de jogos falhou.",

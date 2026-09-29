@@ -158,7 +158,7 @@
       "actionEndMatch": "Run at_endmatch on all servers with loaded/live matches",
       "actionReset": "Reset matches to 'ready' status",
       "actionReallocate": "Reallocate matches to available servers",
-      "actionReload": "Reload match configs via RCON",
+      "actionReload": "Wedstrijdconfiguraties opnieuw laden op de gameservers",
       "hint": "Use this if matches are stuck or need a fresh start.",
       "confirm": "Restart Tournament"
     },

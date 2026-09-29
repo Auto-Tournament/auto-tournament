@@ -2,7 +2,7 @@
   "adminToolsPage": {
     "recovery": {
       "title": "Odzyskiwanie meczów",
-      "description": "Jeśli API lub serwery zostały zrestartowane w trakcie turnieju i stan meczów wygląda na niespójny (np. mecze utknęły w warmup albo brakuje wyników na żywo), możesz ręcznie uruchomić próbę odzyskiwania. System poprosi wszystkie serwery o raport bieżącego meczu, zsynchronizuje wyniki/fazy i w miarę możliwości ponownie skonfiguruje webhooki oraz upload dem.",
+      "description": "Jeśli API lub serwery zostały zrestartowane w trakcie turnieju, a stan meczów wygląda na niezsynchronizowany (np. mecze zawieszone przed startem lub brak wyników na żywo), możesz ręcznie uruchomić odzyskiwanie. Wszystkie serwery zostaną poproszone o aktualny raport meczu, wyniki i fazy zostaną zsynchronizowane, a webhooki i przesyłanie dem zostaną w miarę możliwości skonfigurowane ponownie.",
       "button": "Uruchom odzyskiwanie meczów teraz",
       "success": "Odzyskiwanie meczów zakończone.",
       "error": "Odzyskiwanie meczów nie powiodło się.",

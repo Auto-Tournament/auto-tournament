@@ -425,6 +425,6 @@
     "add": "Legg spiller til i kampen",
     "underlyingCommand": "Kommando som kjøres:",
     "important": "Viktig:",
-    "reconnectHint": "Spilleren må koble til serveren på nytt etter å ha blitt lagt til. Kanskje må CS2 startes på nytt hvis spilleren allerede er tilkoblet."
+    "reconnectHint": "Spilleren må koble til serveren på nytt etter å ha blitt lagt til. Er spilleren allerede tilkoblet, må hen kanskje koble til på nytt."
   }
 }

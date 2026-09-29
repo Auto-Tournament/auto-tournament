@@ -129,8 +129,8 @@
       "overtimeDisabledNoDraws": "Verlängerung: deaktiviert (kein Unentschieden – Schaden entscheidet)",
       "overtimeSegments_one": "Verlängerungsabschnitte: {{count}} Abschnitt",
       "overtimeSegments_other": "Verlängerungsabschnitte: {{count}} Abschnitte",
-      "overtimeSegmentsDefault": "Verlängerungsabschnitte: Auto Tournament CS2-Standard",
-      "overtimeSegmentsDefaultUnlimited": "Verlängerungsabschnitte: Auto Tournament CS2-Standard (normalerweise unbegrenzt)"
+      "overtimeSegmentsDefault": "Verlängerungsabschnitte: Standard des Spielservers",
+      "overtimeSegmentsDefaultUnlimited": "Verlängerungsabschnitte: Standard des Spielservers (meist unbegrenzt)"
     },
     "toasts": {
       "loadTemplateFailed": "Vorlage konnte nicht geladen werden",
@@ -308,10 +308,10 @@
         "disabledNoDraws": "Deaktiviert – kein Unentschieden (Schaden entscheidet)"
       },
       "modeHelper": "Bei normaler Verlängerung werden zusätzliche Abschnitte gespielt, bis ein Team vorne liegt. „Unentschieden erlaubt“ beendet eine ausgeglichene Karte remis, „kein Unentschieden“ entscheidet sie über den Gesamtschaden des Teams.",
-      "tooltip": "Steuert das Verhalten der Verlängerung und wie Gleichstände bei maximaler Rundenzahl behandelt werden. Diese Einstellungen werden als overtimeMode/overtimeSegments an Auto Tournament CS2 weitergegeben und haben dieselbe Bedeutung wie bei Shuffle-Turnieren und manuellen Matches.",
+      "tooltip": "Steuert die Verlängerung und wie Unentschieden bei maximaler Rundenzahl behandelt werden. Die Einstellungen gehen als overtimeMode/overtimeSegments an die Spielserver und gelten genauso für Shuffle-Turniere und manuelle Matches.",
       "shuffleTooltip": "Steuert das Verhalten der Verlängerung in Shuffle-Matches und wie Gleichstände bei maximaler Rundenzahl entschieden werden. Ist die Verlängerung deaktiviert, können ausgeglichene Matches je nach gewählter Option unentschieden bleiben oder über den Gesamtschaden des Teams entschieden werden.",
       "segmentsLabel": "Verlängerungsabschnitte (optional)",
-      "segmentsHelper": "Optional: Anzahl der Verlängerungsabschnitte begrenzen. Leer lassen für den Auto Tournament CS2-Standard.",
+      "segmentsHelper": "Optional: Anzahl der Verlängerungsabschnitte begrenzen. Leer lassen für den Standard des Spielservers.",
       "segmentsHelperValue_one": "Verlängerung auf {{count}} Abschnitt begrenzen. Steht es danach weiter gleich, entscheidet der Gesamtschaden des Teams.",
       "segmentsHelperValue_other": "Verlängerung auf {{count}} Abschnitte begrenzen. Steht es danach weiter gleich, entscheidet der Gesamtschaden des Teams."
     },
@@ -351,7 +351,7 @@
       "teamSizeTooltip": "Anzahl der Spieler pro Team. Übliche Optionen: 4v4, 5v5, 6v6. Mindestens 2, höchstens 10 Spieler pro Team.",
       "teamSizeHelper": "Anzahl der Spieler pro Team (Standard: 5 für 5v5, Bereich: 2–10)",
       "maxRoundsLabel": "Maximale Runden",
-      "maxRoundsTooltip": "Maximale Rundenzahl pro Match. Der Wert wird direkt als mp_maxrounds an Auto Tournament CS2 übergeben. Beispiel: 6 = MR6, 24 = MR24.",
+      "maxRoundsTooltip": "Maximale Rundenzahl pro Match. Der Wert wird als mp_maxrounds an die CS2-Server übergeben. Beispiel: 6 = MR6, 24 = MR24.",
       "maxRoundsHelper": "Das Match geht über bis zu {{maxRounds}} Runden; Sieger ist, wer zuerst {{winRounds}} Runden gewinnt",
       "maxRoundsHelperEmpty": "Maximale Rundenzahl pro Match (Standard: 24, max.: 30)",
       "eloTemplateLabel": "ELO-Berechnungsvorlage",
@@ -481,7 +481,7 @@
           "manual-report": "Teams report the result"
         },
         "integrationDescriptions": {
-          "cs2": "Matches run on your own CS2 servers with the Auto Tournament CS2 plugin.",
+          "cs2": "Matches laufen auf deinen eigenen CS2-Servern mit Ready Up.",
           "manual-report": "No servers. Teams play the match themselves and a captain reports the result."
         }
       },
@@ -524,7 +524,7 @@
         "moreTeams": "More teams",
         "shuffleTitle": "Shuffle settings",
         "cs2Title": "Counter-Strike 2 settings",
-        "cs2Help": "Passed to Auto Tournament CS2 by the Counter-Strike 2 game module.",
+        "cs2Help": "Wird vom Counter-Strike-2-Spielmodul an deine CS2-Server übergeben.",
         "overtime": {
           "enabled": "Overtime",
           "disabledDraws": "Off, draws allowed",

@@ -2,7 +2,7 @@
   "adminToolsPage": {
     "recovery": {
       "title": "Match-Wiederherstellung",
-      "description": "Wenn API oder Server während eines Turniers neu gestartet wurden und der Match-Status nicht synchron wirkt (z. B. Matches hängen im Warmup oder Live-Scores fehlen), kannst du manuell eine Wiederherstellung starten. Dabei werden alle Server nach ihrem aktuellen Match-Report gefragt, Scores/Phasen neu synchronisiert und Webhooks sowie Demo-Uploads, wo möglich, neu konfiguriert.",
+      "description": "Wurden die API oder die Server während eines Turniers neu gestartet und wirkt der Match-Status nicht synchron (z. B. Matches, die vor dem Start hängen, oder fehlende Live-Ergebnisse), kannst du manuell eine Wiederherstellung auslösen. Dabei werden alle Server nach ihrem aktuellen Match-Bericht gefragt, Ergebnisse und Phasen neu synchronisiert und Webhooks sowie Demo-Uploads wo möglich neu eingerichtet.",
       "button": "Match-Wiederherstellung jetzt starten",
       "success": "Match-Wiederherstellung abgeschlossen.",
       "error": "Match-Wiederherstellung fehlgeschlagen.",

@@ -254,10 +254,10 @@
   },
   "matchInfo": {
     "waitingForTournamentTitle": "Oczekiwanie na start turnieju",
-    "waitingForTournamentBody": "Twój mecz jest gotowy, ale turniej jeszcze się nie rozpoczął. Veto map będzie dostępne, gdy administrator turnieju go uruchomi.",
+    "waitingForTournamentBody": "Twój mecz jest gotowy, ale turniej jeszcze się nie rozpoczął. Otworzy się, gdy administrator turnieju go uruchomi.",
     "tournamentStatusSetup": "Status turnieju: faza konfiguracji",
     "waitingForOpponentTitle": "Oczekiwanie na przeciwnika",
-    "waitingForOpponentBody": "Awansowaliście do następnej rundy. Kolejny przeciwnik nie jest jeszcze znany, więc veto map otworzy się, gdy obie drużyny będą ustalone.",
+    "waitingForOpponentBody": "Awansowaliście do następnej rundy. Kolejny przeciwnik nie jest jeszcze znany, więc mecz otworzy się, gdy obie drużyny będą znane.",
     "mapSelectionTitle": "Wybór map",
     "tournamentStartedTitle": "Turniej wystartował!",
     "tournamentStartedBody": "Dokończ veto map, aby rozpocząć mecz.",

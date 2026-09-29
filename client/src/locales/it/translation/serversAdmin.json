@@ -2,7 +2,7 @@
   "adminToolsPage": {
     "recovery": {
       "title": "Recupero match",
-      "description": "Se l’API o i server sono stati riavviati durante un torneo e lo stato dei match sembra desincronizzato (es. match bloccati in warmup o punteggi live mancanti), puoi avviare manualmente un passaggio di recupero. Questo chiederà a tutti i server il report del match corrente, risincronizzerà punteggi/fasi e riconfigurerà webhooks e upload demo dove possibile.",
+      "description": "Se l’API o i server sono stati riavviati durante un torneo e lo stato delle partite sembra non sincronizzato (ad es. partite bloccate prima dell’inizio o senza punteggi in diretta), puoi avviare manualmente un recupero. Verrà chiesto a tutti i server il loro rapporto di partita attuale, punteggi e fasi verranno risincronizzati e webhook e caricamento delle demo verranno riconfigurati dove possibile.",
       "button": "Esegui recupero match ora",
       "success": "Recupero match completato.",
       "error": "Recupero match fallito.",
