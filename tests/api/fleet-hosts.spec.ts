@@ -98,7 +98,7 @@ test.describe.serial('Fleet hosts (csm)', () => {
 
     // The old token was replaced.
     const old = await FleetTestClient.connect(first.body.token, {}, hostWsUrl());
-    expect((await old.waitClosed()).code).toBe(4403);
+    expect(await old.waitClosed()).toMatchObject({ code: 4403 });
   });
 
   test('a fleet key enrolls a machine; a host token is not a server token', async ({ request }) => {
@@ -108,7 +108,7 @@ test.describe.serial('Fleet hosts (csm)', () => {
     expect(res.body.token.startsWith('rhs_')).toBe(true);
     // Wrong channel: the server gateway rejects a host token.
     const wrong = await FleetTestClient.connect(res.body.token);
-    expect((await wrong.waitClosed()).code).toBe(4401);
+    expect(await wrong.waitClosed()).toMatchObject({ code: 4401 });
   });
 
   test('hello → welcome; online with inventory; offline after close', async ({ request }) => {
@@ -314,7 +314,7 @@ test.describe.serial('Fleet hosts (csm)', () => {
     expect((await getHost(request, m.hostId)).status).toBe('revoked');
 
     const after = await FleetTestClient.connect(newToken, {}, hostWsUrl());
-    expect((await after.waitClosed()).code).toBe(4403);
+    expect(await after.waitClosed()).toMatchObject({ code: 4403 });
     // A revoked machine takes no commands.
     expect((await command(request, m.hostId, { type: 'host.servers.list', payload: {} })).status).toBe(409);
     // And it can be removed.

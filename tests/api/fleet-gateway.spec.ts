@@ -58,11 +58,11 @@ test.describe.serial('Fleet gateway', () => {
 
   test('no token or a bad token closes with 4401', async () => {
     const none = await FleetTestClient.connect(null);
-    expect((await none.waitClosed()).code).toBe(4401);
+    expect(await none.waitClosed()).toMatchObject({ code: 4401 });
     const bad = await FleetTestClient.connect('rus_000000000000_' + 'A'.repeat(43));
-    expect((await bad.waitClosed()).code).toBe(4401);
+    expect(await bad.waitClosed()).toMatchObject({ code: 4401 });
     const junk = await FleetTestClient.connect('not-a-token');
-    expect((await junk.waitClosed()).code).toBe(4401);
+    expect(await junk.waitClosed()).toMatchObject({ code: 4401 });
   });
 
   test('hello → welcome; online with versions; offline after close', async ({ request }) => {
@@ -128,21 +128,21 @@ test.describe.serial('Fleet gateway', () => {
 
     const wrongId = await FleetTestClient.connect(server.token);
     wrongId.send(envelope('hello', helloPayload('fs_someone_else', server.installId)));
-    expect((await wrongId.waitClosed()).code).toBe(4403);
+    expect(await wrongId.waitClosed()).toMatchObject({ code: 4403 });
 
     const wrongInstall = await FleetTestClient.connect(server.token);
     wrongInstall.send(envelope('hello', helloPayload(server.server_id, newInstallId())));
-    expect((await wrongInstall.waitClosed()).code).toBe(4403);
+    expect(await wrongInstall.waitClosed()).toMatchObject({ code: 4403 });
 
     const future = await FleetTestClient.connect(server.token);
     future.send(
       envelope('hello', helloPayload(server.server_id, server.installId, { protocol: { min: 2, max: 3 } }))
     );
-    expect((await future.waitClosed()).code).toBe(4426);
+    expect(await future.waitClosed()).toMatchObject({ code: 4426 });
 
     const early = await FleetTestClient.connect(server.token);
     early.send(envelope('ping', { t: 1 }));
-    expect((await early.waitClosed()).code).toBe(4400);
+    expect(await early.waitClosed()).toMatchObject({ code: 4400 });
 
     const garbage = await FleetTestClient.connect(server.token);
     garbage.sendRaw('{"v":1,"type":"hello"}');
@@ -152,7 +152,7 @@ test.describe.serial('Fleet gateway', () => {
 
     const badHello = await FleetTestClient.connect(server.token);
     badHello.send(envelope('hello', { server_id: server.server_id }));
-    expect((await badHello.waitClosed()).code).toBe(4400);
+    expect(await badHello.waitClosed()).toMatchObject({ code: 4400 });
   });
 
   test('reliable messages: unknown type, duplicates, acks, gaps', async ({ request }) => {
@@ -256,9 +256,9 @@ test.describe.serial('Fleet gateway', () => {
     const client = await FleetTestClient.connect(server.token);
     await client.handshake(server.server_id, server.installId);
     expect((await request.post(`/api/fleet/servers/${server.server_id}/revoke`)).ok()).toBe(true);
-    expect((await client.waitClosed()).code).toBe(4403);
+    expect(await client.waitClosed()).toMatchObject({ code: 4403 });
     const retry = await FleetTestClient.connect(server.token);
-    expect((await retry.waitClosed()).code).toBe(4403);
+    expect(await retry.waitClosed()).toMatchObject({ code: 4403 });
   });
 
   test('token rotation: auth.rotate after welcome; both tokens work until the new one is confirmed', async ({ request }) => {
@@ -325,7 +325,7 @@ test.describe.serial('Fleet gateway', () => {
 
     // Only the latest secret is valid.
     const stale = await FleetTestClient.connect(rotate1.payload.token as string);
-    expect((await stale.waitClosed()).code).toBe(4401);
+    expect(await stale.waitClosed()).toMatchObject({ code: 4401 });
     const fresh = await FleetTestClient.connect(rotate2.payload.token as string);
     await fresh.handshake(server.server_id, server.installId, {
       stream: { id: 's', last_tx_seq: 0, last_rx_seq: rotate2.seq as number },
