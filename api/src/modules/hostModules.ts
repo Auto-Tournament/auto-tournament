@@ -18,6 +18,7 @@ export const HOST_MODULES: readonly string[] = [
   'config/dataDir',
   'config/database',
   'config/publicPaths',
+  'config/trustProxy',
   'core/allocationQueue',
   'core/matchLifecycle',
   'core/scheduler',

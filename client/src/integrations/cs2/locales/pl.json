@@ -1169,6 +1169,20 @@
       "removeMessage": "„{{name}}” zostanie usunięty z floty. Może zarejestrować się ponownie później.",
       "revokeKeyTitle": "Unieważnić klucz floty?",
       "revokeKeyMessage": "„{{name}}” nie może już rejestrować serwerów. Zarejestrowane serwery nadal działają."
+    },
+    "connectAddress": "Adres połączenia",
+    "addressHelp": "Gracze łączą się z tym adresem. Zostaw puste, aby użyć adresu zgłaszanego przez serwer lub tego, z którego się łączy.",
+    "addressCurrent": "Teraz",
+    "addressNone": "Nie wykryto jeszcze adresu: serwer się nie połączył.",
+    "addressHost": "Host lub IP",
+    "addressPort": "Port",
+    "addressAutomatic": "Użyj wykrytego adresu",
+    "addressSaved": "Zapisano adres połączenia",
+    "connectSource": {
+      "override": "ustawiony przez admina",
+      "publicAddr": "zgłoszony przez serwer",
+      "peer": "adres, z którego łączy się serwer",
+      "unknown": "jeszcze niepotwierdzony przez serwer"
     }
   },
   "roundBackups": {

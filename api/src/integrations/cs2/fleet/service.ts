@@ -11,6 +11,7 @@ import { FleetGateway, type AssignmentResolver, type WelcomeRevs } from './gatew
 import type { HelloPayload } from './protocol/v1';
 import { InProcessFleetBus, type FleetBus } from './bus';
 import * as registry from './registry';
+import { syncLinkedAddress } from './link';
 import { FLEET_CLOSE } from './protocol/v1';
 
 const ROTATION_CHECK_MS = 60 * 60 * 1000;
@@ -24,6 +25,12 @@ let rotationTimer: NodeJS.Timeout | null = null;
 gateway.onServerReady(async (serverId) => {
   const due = await registry.serversDueForRotation();
   if (due.includes(serverId)) await rotateServerToken(serverId);
+});
+
+// A linked server's connect address follows its hello (public_addr, else the
+// socket's peer address) unless an admin set it (./link.ts).
+gateway.onServerReady(async (serverId) => {
+  await syncLinkedAddress(serverId);
 });
 
 export function fleetBus(): FleetBus {

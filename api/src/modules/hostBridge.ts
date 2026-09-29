@@ -14,6 +14,7 @@
 import * as configDataDir from '../config/dataDir';
 import * as configDatabase from '../config/database';
 import * as configPublicPaths from '../config/publicPaths';
+import * as configTrustProxy from '../config/trustProxy';
 import * as coreAllocationQueue from '../core/allocationQueue';
 import * as coreMatchLifecycle from '../core/matchLifecycle';
 import * as coreScheduler from '../core/scheduler';
@@ -48,6 +49,7 @@ const MODULES: Record<string, object> = {
   'config/dataDir': configDataDir,
   'config/database': configDatabase,
   'config/publicPaths': configPublicPaths,
+  'config/trustProxy': configTrustProxy,
   'core/allocationQueue': coreAllocationQueue,
   'core/matchLifecycle': coreMatchLifecycle,
   'core/scheduler': coreScheduler,

@@ -7,7 +7,10 @@
  * them with their online state and versions, and lets an admin create codes
  * and keys (each shown once), rotate a token, revoke a server, and revoke keys.
  * "Use for matches" links an enrolled server to a server row so the
- * allocator hands it matches (`POST /api/fleet/servers/:id/link`).
+ * allocator hands it matches (`POST /api/fleet/servers/:id/link`), optionally
+ * with a connect address set by hand; otherwise players connect to the address
+ * the server reports (`public_addr`) or the one its link comes from
+ * (`PUT /api/fleet/servers/:id/address` changes it later).
  */
 
 import { useCallback, useEffect, useState } from 'react';
@@ -28,6 +31,7 @@ import {
 import {
   ArrowsClockwiseIcon,
   CopyIcon,
+  GlobeIcon,
   KeyIcon,
   LinkBreakIcon,
   LinkIcon,
@@ -53,6 +57,8 @@ import type { FleetKey, FleetKeysResponse, FleetServer, FleetServersResponse } f
 const POLL_MS = 10_000;
 
 type Secret = { kind: 'code' | 'key'; value: string; expiresAt: number | null; name: string };
+/** The link / connect-address dialog: `link` links the server, `edit` changes a linked server's address. */
+type AddressDialog = { mode: 'link' | 'edit'; server: FleetServer; host: string; port: string };
 type Pending =
   | { action: 'revoke'; server: FleetServer }
   | { action: 'remove'; server: FleetServer }
@@ -82,6 +88,7 @@ export default function FleetPanel() {
   const [busy, setBusy] = useState(false);
   const [serverName, setServerName] = useState('');
   const [keyForm, setKeyForm] = useState({ name: '', namePrefix: '', maxServers: '', expiresInDays: '' });
+  const [addressDialog, setAddressDialog] = useState<AddressDialog | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -173,17 +180,64 @@ export default function FleetPanel() {
   };
 
   const toggleLink = async (server: FleetServer) => {
+    if (!server.linkedServerId) {
+      setAddressDialog({ mode: 'link', server, host: '', port: '' });
+      return;
+    }
     try {
-      if (server.linkedServerId) {
-        await api.delete(`/api/fleet/servers/${server.id}/link`);
-        showSnackbar(t('fleetPanel.unlinked', { defaultValue: 'No longer used for matches' }), 'success');
-      } else {
-        await api.post(`/api/fleet/servers/${server.id}/link`, {});
-        showSnackbar(t('fleetPanel.linked', { defaultValue: 'Used for matches' }), 'success');
-      }
+      await api.delete(`/api/fleet/servers/${server.id}/link`);
+      showSnackbar(t('fleetPanel.unlinked', { defaultValue: 'No longer used for matches' }), 'success');
       await load();
     } catch (err) {
       showError(apiErrorMessage(err, t('fleetPanel.errors.action')));
+    }
+  };
+
+  const editAddress = (server: FleetServer) => {
+    const own = server.connect?.source === 'override';
+    setAddressDialog({
+      mode: 'edit',
+      server,
+      host: own ? (server.connect?.host ?? '') : '',
+      port: own ? String(server.connect?.port ?? '') : '',
+    });
+  };
+
+  /** Link, or save the address; `automatic` clears the override. */
+  const saveAddress = async (automatic = false) => {
+    if (!addressDialog) return;
+    const { mode, server } = addressDialog;
+    const host = automatic ? '' : addressDialog.host.trim();
+    const port = automatic ? '' : addressDialog.port.trim();
+    const body = host ? { host, ...(port ? { port: Number(port) } : {}) } : { host: null };
+    setBusy(true);
+    try {
+      if (mode === 'link') {
+        await api.post(`/api/fleet/servers/${server.id}/link`, host ? body : {});
+        showSnackbar(t('fleetPanel.linked', { defaultValue: 'Used for matches' }), 'success');
+      } else {
+        await api.put(`/api/fleet/servers/${server.id}/address`, body);
+        showSnackbar(t('fleetPanel.addressSaved', { defaultValue: 'Connect address saved' }), 'success');
+      }
+      setAddressDialog(null);
+      await load();
+    } catch (err) {
+      showError(apiErrorMessage(err, t('fleetPanel.errors.action')));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const sourceLabel = (connect: FleetServer['connect']): string => {
+    switch (connect?.source) {
+      case 'override':
+        return t('fleetPanel.connectSource.override', { defaultValue: 'set by an admin' });
+      case 'public_addr':
+        return t('fleetPanel.connectSource.publicAddr', { defaultValue: 'reported by the server' });
+      case 'peer':
+        return t('fleetPanel.connectSource.peer', { defaultValue: 'address the server connects from' });
+      default:
+        return t('fleetPanel.connectSource.unknown', { defaultValue: 'not confirmed by the server yet' });
     }
   };
 
@@ -248,9 +302,25 @@ export default function FleetPanel() {
                 <Typography fontWeight={600} noWrap>
                   {server.name}
                 </Typography>
-                <Typography variant="caption" color="text.secondary" sx={mono} noWrap display="block">
-                  {server.host ? `${server.host.hostname}:${server.host.game_port}` : server.id}
-                </Typography>
+                {server.connect ? (
+                  <Tooltip title={sourceLabel(server.connect)}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={mono}
+                      noWrap
+                      display="block"
+                      data-testid={`fleet-connect-${server.id}`}
+                    >
+                      {`connect ${server.connect.address}`}
+                      {server.connect.source === 'override' ? ' *' : ''}
+                    </Typography>
+                  </Tooltip>
+                ) : (
+                  <Typography variant="caption" color="text.secondary" sx={mono} noWrap display="block">
+                    {server.host ? `${server.host.hostname}:${server.host.game_port}` : server.id}
+                  </Typography>
+                )}
               </Box>
               <Box minWidth={0} display={{ xs: 'none', md: 'block' }}>
                 <Chip
@@ -335,6 +405,18 @@ export default function FleetPanel() {
                         {server.linkedServerId ? <LinkIcon size={20} /> : <LinkBreakIcon size={20} />}
                       </IconButton>
                     </Tooltip>
+                    {server.linkedServerId && (
+                      <Tooltip title={t('fleetPanel.connectAddress', { defaultValue: 'Connect address' })}>
+                        <IconButton
+                          size="small"
+                          onClick={() => editAddress(server)}
+                          aria-label={t('fleetPanel.connectAddress', { defaultValue: 'Connect address' })}
+                          data-testid={`fleet-address-${server.id}`}
+                        >
+                          <GlobeIcon size={20} />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                     <Tooltip
                       title={
                         server.token
@@ -441,6 +523,70 @@ export default function FleetPanel() {
           <Button onClick={() => setAddOpen(false)}>{t('common.cancel')}</Button>
           <Button variant="contained" onClick={() => void createServer()} disabled={busy} data-testid="fleet-create-code">
             {t('fleetPanel.createCode')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Use for matches / connect address */}
+      <Dialog open={addressDialog !== null} onClose={() => setAddressDialog(null)} maxWidth="xs" fullWidth>
+        <DialogTitle>
+          {addressDialog?.mode === 'link'
+            ? t('fleetPanel.link', { defaultValue: 'Use for matches' })
+            : t('fleetPanel.connectAddress', { defaultValue: 'Connect address' })}
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" mb={2}>
+            {t('fleetPanel.addressHelp', {
+              defaultValue:
+                'Players connect to this address. Leave it empty to use the address the server reports, or the one it connects from.',
+            })}
+          </Typography>
+          {addressDialog && (
+            <Typography variant="body2" sx={mono} mb={2} data-testid="fleet-address-detected">
+              {addressDialog.server.connect
+                ? `${t('fleetPanel.addressCurrent', { defaultValue: 'Now' })}: connect ${addressDialog.server.connect.address} (${sourceLabel(addressDialog.server.connect)})`
+                : t('fleetPanel.addressNone', { defaultValue: 'No address detected yet: the server has not connected.' })}
+            </Typography>
+          )}
+          <Stack direction="row" gap={1}>
+            <TextField
+              autoFocus
+              fullWidth
+              size="small"
+              label={t('fleetPanel.addressHost', { defaultValue: 'Host or IP' })}
+              placeholder={addressDialog?.server.connect?.host ?? ''}
+              value={addressDialog?.host ?? ''}
+              onChange={(e) => addressDialog && setAddressDialog({ ...addressDialog, host: e.target.value })}
+              inputProps={{ maxLength: 253, 'data-testid': 'fleet-address-host' }}
+            />
+            <TextField
+              size="small"
+              type="number"
+              label={t('fleetPanel.addressPort', { defaultValue: 'Port' })}
+              placeholder={String(addressDialog?.server.connect?.port ?? addressDialog?.server.host?.game_port ?? '')}
+              value={addressDialog?.port ?? ''}
+              onChange={(e) => addressDialog && setAddressDialog({ ...addressDialog, port: e.target.value })}
+              inputProps={{ min: 1, max: 65535, 'data-testid': 'fleet-address-port' }}
+              sx={{ width: 120 }}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddressDialog(null)}>{t('common.cancel')}</Button>
+          {addressDialog?.mode === 'edit' && addressDialog.server.connect?.source === 'override' && (
+            <Button onClick={() => void saveAddress(true)} disabled={busy}>
+              {t('fleetPanel.addressAutomatic', { defaultValue: 'Use detected address' })}
+            </Button>
+          )}
+          <Button
+            variant="contained"
+            onClick={() => void saveAddress()}
+            disabled={busy || (addressDialog?.mode === 'edit' && !addressDialog.host.trim())}
+            data-testid="fleet-address-save"
+          >
+            {addressDialog?.mode === 'link'
+              ? t('fleetPanel.link', { defaultValue: 'Use for matches' })
+              : t('common.save', { defaultValue: 'Save' })}
           </Button>
         </DialogActions>
       </Dialog>

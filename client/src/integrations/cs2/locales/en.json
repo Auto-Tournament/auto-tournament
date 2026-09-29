@@ -1129,6 +1129,20 @@
       "removeMessage": "“{{name}}” is removed from the fleet. It can enroll again later.",
       "revokeKeyTitle": "Revoke fleet key?",
       "revokeKeyMessage": "“{{name}}” can no longer enroll servers. Servers it already enrolled keep working."
+    },
+    "connectAddress": "Connect address",
+    "addressHelp": "Players connect to this address. Leave it empty to use the address the server reports, or the one it connects from.",
+    "addressCurrent": "Now",
+    "addressNone": "No address detected yet: the server has not connected.",
+    "addressHost": "Host or IP",
+    "addressPort": "Port",
+    "addressAutomatic": "Use detected address",
+    "addressSaved": "Connect address saved",
+    "connectSource": {
+      "override": "set by an admin",
+      "publicAddr": "reported by the server",
+      "peer": "address the server connects from",
+      "unknown": "not confirmed by the server yet"
     }
   },
   "roundBackups": {

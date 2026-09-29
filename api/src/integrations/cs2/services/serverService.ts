@@ -143,6 +143,15 @@ export class ServerService {
     if (input.name !== undefined) updateData.name = input.name;
     if (input.host !== undefined) updateData.host = input.host;
     if (input.port !== undefined) updateData.port = input.port;
+    // A Ready Up server's address follows its hello (fleet/link.ts) until an
+    // admin edits it here.
+    if (
+      existing.transport === 'fleet' &&
+      ((input.host !== undefined && input.host !== existing.host) ||
+        (input.port !== undefined && input.port !== existing.port))
+    ) {
+      updateData.host_override = 1;
+    }
     if (input.password !== undefined) updateData.password = input.password;
     if (input.enabled !== undefined) updateData.enabled = input.enabled ? 1 : 0;
 
@@ -297,6 +306,7 @@ export class ServerService {
       serverCanReachApiAt: server.server_can_reach_api_at ?? null,
       transport: server.transport === 'fleet' ? 'fleet' : 'rcon',
       fleetServerId: server.fleet_server_id ?? null,
+      hostOverride: server.host_override === 1,
     };
   }
 }

@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 374 of them, 275 behind auth —
+Every endpoint this API serves — 375 of them, 276 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -236,6 +236,7 @@ Ready Up servers on the fleet link: registry, one-time codes, fleet keys, revoke
 | `POST` | `/api/fleet/servers/:id/revoke` | admin |
 | `POST` | `/api/fleet/servers/:id/rotate` | admin |
 | `POST` | `/api/fleet/servers/:id/link` | admin |
+| `PUT` | `/api/fleet/servers/:id/address` | admin |
 | `DELETE` | `/api/fleet/servers/:id/link` | admin |
 | `GET` | `/api/fleet/matches/:slug` | admin |
 | `POST` | `/api/fleet/matches/:slug/sync` | admin |

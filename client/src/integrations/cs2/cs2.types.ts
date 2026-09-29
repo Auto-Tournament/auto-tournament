@@ -467,6 +467,22 @@ export interface FleetServer {
   codeExpiresAt: number | null;
   /** The server row it plays matches as (`POST /api/fleet/servers/:id/link`); null = not in the match pool. */
   linkedServerId?: string | null;
+  /** Client address of its last hello / enrollment. */
+  peerAddr?: string | null;
+  /**
+   * Where players connect: the linked row's address, or for an unlinked
+   * server the one linking would store now. null = nothing known yet.
+   */
+  connect?: FleetConnect | null;
+}
+
+export interface FleetConnect {
+  host: string;
+  port: number;
+  /** `host:port` as typed after `connect`. */
+  address: string;
+  /** override: set by an admin; public_addr: the server's own report; peer: the link's client address. */
+  source: 'override' | 'public_addr' | 'peer' | null;
 }
 
 export interface FleetServersResponse extends Cs2ApiResponse {

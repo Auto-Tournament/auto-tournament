@@ -54,6 +54,10 @@
  * outside a match (fleet/push/): the fleet-wide lists with their revs
  * (admins.set, server.config) and each server's settings overrides,
  * whitelist / practice / plugins choices and what was last pushed.
+ *
+ * `012-fleet-connect-address` adds where players connect to a Ready Up server
+ * (fleet/address.ts): the fleet link's peer address and whether an admin set
+ * the linked row's host / port by hand.
  */
 
 import type { ModuleMigration } from '../types';
@@ -69,6 +73,7 @@ export const CS2_FLEET_DEMO_STREAMS_MIGRATION_ID = '008-fleet-demo-streams';
 export const CS2_FLEET_HOSTS_MIGRATION_ID = '009-fleet-hosts';
 export const CS2_FLEET_DRIVER_MIGRATION_ID = '010-fleet-driver';
 export const CS2_FLEET_SERVER_PREFS_MIGRATION_ID = '011-fleet-server-prefs';
+export const CS2_FLEET_CONNECT_ADDRESS_MIGRATION_ID = '012-fleet-connect-address';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -714,6 +719,21 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       updated_by TEXT,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
+`,
+  },
+  {
+    // The connect address of Ready Up servers (fleet/address.ts, FLEET.md
+    // §6.1). Every statement can run twice.
+    //
+    // - cs2_fleet_servers.peer_addr: the client address of its last hello
+    //   (or enrollment), after the trusted proxy hops.
+    // - cs2_servers.host_override: 1 when an admin set host / port by hand
+    //   (the link route, the address route, the server editor, or linking an
+    //   existing RCON row); a later hello then leaves them alone.
+    id: CS2_FLEET_CONNECT_ADDRESS_MIGRATION_ID,
+    up: `
+    ALTER TABLE cs2_fleet_servers ADD COLUMN IF NOT EXISTS peer_addr TEXT;
+    ALTER TABLE cs2_servers ADD COLUMN IF NOT EXISTS host_override INTEGER NOT NULL DEFAULT 0;
 `,
   },
 ];

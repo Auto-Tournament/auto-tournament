@@ -29,6 +29,7 @@ import type { IncomingMessage, Server as HttpServer } from 'http';
 import type { Duplex } from 'stream';
 import { WebSocketServer, WebSocket, type RawData } from 'ws';
 import { log } from '../../../utils/logger';
+import { peerAddressOf } from './address';
 import { redactFleetSecrets, ulid } from './credentials';
 import {
   FLEET_CLOSE,
@@ -145,7 +146,9 @@ class FleetSession {
     private readonly gateway: FleetGateway,
     readonly ws: WebSocket,
     auth: Promise<Auth>,
-    private readonly timings: GatewayTimings
+    private readonly timings: GatewayTimings,
+    /** The upgrade's client address after trusted proxies (./address.ts); stored on hello. */
+    private readonly peerAddr: string | null = null
   ) {
     this.helloTimer = setTimeout(() => this.close(FLEET_CLOSE.PROTOCOL_ERROR, 'hello timeout'), timings.helloTimeoutMs);
     this.bumpDeadTimer();
@@ -450,6 +453,7 @@ class FleetSession {
       selftest: hello.selftest,
       protocol,
       boot_id: hello.boot_id,
+      peer_addr: this.peerAddr,
     });
     if (this.closed) {
       // The socket went while we were writing; do not leave it marked online.
@@ -684,8 +688,9 @@ export class FleetGateway {
     const auth: Promise<Auth> = token
       ? registry.verifyServerToken(token)
       : Promise.resolve({ ok: false as const, reason: 'bad' as const });
+    const peer = peerAddressOf(req);
     this.wss.handleUpgrade(req, socket, head, (ws) => {
-      const session = new FleetSession(this, ws, auth, this.timings);
+      const session = new FleetSession(this, ws, auth, this.timings, peer);
       this.connections.add(session);
     });
   };
