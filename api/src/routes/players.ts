@@ -1425,7 +1425,7 @@ router.get('/:playerId/summary', async (req: Request, res: Response) => {
 
 /**
  * GET /api/players/:playerId/avatar.svg
- * Deterministic DiceBear avatar for a player, seeded from player ID.
+ * Deterministic placeholder avatar for a player, seeded from player ID.
  * Public endpoint so the frontend can embed SVGs directly.
  */
 router.get('/:playerId/avatar.svg', async (req: Request, res: Response) => {

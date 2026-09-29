@@ -125,8 +125,6 @@
         "typescript": "^5.3.3"
     },
     "dependencies": {
-        "@dicebear/collection": "^9.2.4",
-        "@dicebear/core": "^9.2.4",
         "@faker-js/faker": "^10.1.0",
         "unique-names-generator": "^4.7.1"
     }
