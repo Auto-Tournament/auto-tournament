@@ -1118,6 +1118,7 @@
     "copied": "Copiado",
     "copyFailed": "Não foi possível copiar para a área de transferência",
     "shownOnce": "Só é mostrado uma vez. A plataforma guarda apenas um hash.",
+    "insecureNote": "Este site usa http:// sem encriptação, por isso o comando inclui --insecure e o token viaja sem encriptação. Se puder, sirva a plataforma por https://.",
     "rotateSent": "Novo token enviado ao servidor",
     "rotateQueued": "O token será renovado na próxima ligação do servidor",
     "errors": {
@@ -1261,6 +1262,7 @@
     "copy": "Copy",
     "linkConnected": "Connected. The machine is ready.",
     "linkWaiting": "Waiting for the machine to connect…",
+    "insecureNote": "Este site usa http:// sem encriptação, por isso o comando inclui --insecure e o token viaja sem encriptação. Se puder, sirva a plataforma por https://.",
     "done": "Done",
     "createHelp": "New servers get Ready Up and connect to this platform on their own.",
     "count": "How many",

@@ -38,9 +38,14 @@ import {
   sendHostCommand,
 } from './service';
 
-/** The one command an admin runs on a new machine (Machines → Add machine). */
+/**
+ * The one command an admin runs on a new machine (Machines → Add machine). A
+ * platform on plain http:// needs csm's explicit `--insecure` opt-in (the
+ * token then travels unencrypted).
+ */
 export function linkCommand(platformUrl: string, code: string): string {
-  return `csm link ${platformUrl} ${code}`;
+  const insecure = /^http:\/\//i.test(platformUrl) ? ' --insecure' : '';
+  return `csm link ${platformUrl} ${code}${insecure}`;
 }
 
 /** FRONTEND_BASE_URL, else the request's (proxy-aware) origin: utils/publicOrigin.ts. */

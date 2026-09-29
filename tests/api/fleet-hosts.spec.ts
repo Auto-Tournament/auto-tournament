@@ -68,7 +68,7 @@ test.describe.serial('Fleet hosts (csm)', () => {
   test('add machine: one command, a single-use code, and a host token', async ({ request }) => {
     const pending = await createPendingHost(request, 'rack-1');
     expect(pending.code).toMatch(/^RUE-[0-9A-Z]{4}(-[0-9A-Z]{4}){3}$/);
-    expect(pending.command).toMatch(new RegExp(`^csm link https?://\\S+ ${pending.code}$`));
+    expect(pending.command).toMatch(new RegExp(`^(csm link https://\\S+ ${pending.code}|csm link http://\\S+ ${pending.code} --insecure)$`));
     expect(pending.expiresAt).toBeGreaterThan(Date.now() / 1000);
 
     const listed = (await (await request.get('/api/fleet/hosts')).json()).hosts.find((h: { id: string }) => h.id === pending.hostId);
