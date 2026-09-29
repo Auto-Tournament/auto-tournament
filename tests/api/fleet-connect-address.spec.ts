@@ -116,7 +116,7 @@ async function cs2Row(request: APIRequestContext, id: string): Promise<{ host: s
 test.describe.serial('connect address: link and hello', () => {
   const cleanup: Array<() => Promise<void> | void> = [];
 
-  test.beforeAll(async ({ request }) => {
+  test.beforeEach(async ({ request }) => {
     expect(await signInViaRequest(request)).toBe(true);
     await resetEnrollRateLimit(request);
     if (!key) key = await createFleetKey(request, { name: 'fleet-connect-address-tests' });
