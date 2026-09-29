@@ -125,6 +125,12 @@ export const generateMatchConfig = async (
           typeof (player as { steamId: string; name: string }).name === 'string'
         ) {
           const typedPlayer = player as { steamId: string; name: string };
+          // CS2 needs a Steam account: a player without one (an acc_… account id)
+          // cannot join the server, so leave them out of the roster.
+          if (!/^\d{17}$/.test(typedPlayer.steamId)) {
+            console.warn(`CS2 roster: ${typedPlayer.name} has no Steam ID and is left out`);
+            return;
+          }
           result[typedPlayer.steamId] = typedPlayer.name;
         }
       });
