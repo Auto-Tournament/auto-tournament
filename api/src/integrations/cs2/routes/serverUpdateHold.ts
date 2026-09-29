@@ -109,7 +109,7 @@ const router = Router();
  *                       description: >
  *                         How the admin accepted the license terms, so csm can
  *                         give Ready Up its license consent without a prompt.
- *                         Omitted until the current terms are accepted.
+ *                         Omitted until an admin has accepted.
  *       401:
  *         description: Missing or invalid server token
  *       500:

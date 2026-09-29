@@ -4,7 +4,6 @@ import {
   licenseHandoffFor,
   NO_LICENSE_REVISION,
 } from '../../api/src/integrations/cs2/services/updateHoldService';
-import { LICENSE_TERMS_VERSION } from '../../api/src/services/license/consent';
 import { signInViaRequest, getAuthHeader } from '../helpers/auth';
 import { setupTournament } from '../helpers/tournamentSetup';
 
@@ -214,15 +213,11 @@ test.describe.serial('license hand-off on the update-hold poll', () => {
       expect(body.license).not.toHaveProperty('use');
 
       for (const use of ['noncommercial', 'commercial']) {
-        expect((await seed({ action: 'set', record: record(use, LICENSE_TERMS_VERSION) })).status()).toBe(200);
+        expect((await seed({ action: 'set', record: record(use, 1) })).status()).toBe(200);
         ({ status, body } = await getHold(request));
         expect(status).toBe(200);
         expect(body.license?.use).toBe(use);
       }
-
-      // An acceptance of older terms no longer counts.
-      await seed({ action: 'set', record: record('commercial', LICENSE_TERMS_VERSION - 1) });
-      expect((await getHold(request)).body.license).not.toHaveProperty('use');
     } finally {
       await seed({ action: 'restore' });
     }

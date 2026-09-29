@@ -20,7 +20,6 @@
  * public address and MAT to match it — a new failure mode for no gain.
  */
 
-import { licenseConsentService, type LicenseUse } from '../../../services/license/consent';
 import { createHash } from 'crypto';
 import { db } from '../../../config/database';
 import { settingsService } from '../../../services/settingsService';
@@ -174,9 +173,9 @@ export interface ServerLicenseHandoff {
   /**
    * How the admin said this instance is used (the consent from the license
    * terms step), so csm can give Ready Up its license consent with no prompt.
-   * Left out until the current terms are accepted.
+   * Left out until an admin has accepted.
    */
-  use?: LicenseUse;
+  use?: 'noncommercial' | 'commercial';
 }
 
 export const NO_LICENSE_REVISION = 'none';
@@ -190,6 +189,22 @@ export function licenseHandoffFor(key: string | null | undefined): ServerLicense
 }
 
 /**
+ * The `use` of the stored consent (`license_consent`, JSON), or undefined
+ * when there is none or it can't be read. Read through settingsService for the
+ * same reason as the key: a code module can only import listed host modules,
+ * and the consent service is not one.
+ */
+async function consentUse(): Promise<'noncommercial' | 'commercial' | undefined> {
+  try {
+    const raw = await settingsService.getSetting('license_consent');
+    const use = raw ? (JSON.parse(raw) as { use?: unknown }).use : undefined;
+    return use === 'noncommercial' || use === 'commercial' ? use : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * The stored key (`license_key`, written only through /api/license) as csm
  * gets it. Passed through as stored: Ready Up checks it itself. Read through
  * settingsService rather than the license service so this module needs no
@@ -197,11 +212,7 @@ export function licenseHandoffFor(key: string | null | undefined): ServerLicense
  */
 export async function getLicenseHandoff(): Promise<ServerLicenseHandoff> {
   const handoff = licenseHandoffFor(await settingsService.getSetting('license_key'));
-  try {
-    const status = await licenseConsentService.getStatus();
-    if (status.accepted && status.consent) handoff.use = status.consent.use;
-  } catch {
-    // Consent unreadable: send the key without `use` (csm changes nothing).
-  }
+  const use = await consentUse();
+  if (use) handoff.use = use;
   return handoff;
 }

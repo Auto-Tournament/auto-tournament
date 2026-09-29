@@ -7497,7 +7497,7 @@
                             "noncommercial",
                             "commercial"
                           ],
-                          "description": "How the admin accepted the license terms, so csm can give Ready Up its license consent without a prompt. Omitted until the current terms are accepted.\n"
+                          "description": "How the admin accepted the license terms, so csm can give Ready Up its license consent without a prompt. Omitted until an admin has accepted.\n"
                         }
                       }
                     }
