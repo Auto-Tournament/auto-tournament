@@ -11,11 +11,7 @@
 
 # API reference
 
-<<<<<<< HEAD
-Every endpoint this API serves — 382 of them, 283 behind auth —
-=======
-Every endpoint this API serves — 378 of them, 279 behind auth —
->>>>>>> e470d766 (feat(fleet): automatic server scaling on csm machines)
+Every endpoint this API serves — 385 of them, 286 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -296,7 +292,6 @@ What the platform pushes to Ready Up servers: the admin list (admins.set), serve
 | `GET` | `/api/fleet/matches/:slug/roster` | admin |
 | `POST` | `/api/fleet/matches/:slug/update` | admin |
 
-<<<<<<< HEAD
 ### Fleet failover settings
 
 Auto-failover (off by default): move a match off a dead Ready Up server without waiting for an admin.
@@ -305,7 +300,7 @@ Auto-failover (off by default): move a match off a dead Ready Up server without 
 | --- | --- | --- |
 | `GET` | `/api/fleet/failover/settings` | admin |
 | `PUT` | `/api/fleet/failover/settings` | admin |
-=======
+
 ### Fleet autoscaling
 
 Automatic server scaling on csm machines: start stopped Ready Up servers ahead of the bracket, stop idle ones after a cool-down, create one when the pool is short. Settings, what the scaler sees, its activity, and a pass on request.
@@ -315,7 +310,6 @@ Automatic server scaling on csm machines: start stopped Ready Up servers ahead o
 | `GET` | `/api/fleet/autoscale` | admin |
 | `PUT` | `/api/fleet/autoscale/settings` | admin |
 | `POST` | `/api/fleet/autoscale/run` | admin |
->>>>>>> e470d766 (feat(fleet): automatic server scaling on csm machines)
 
 ### Test helpers (CS2)
 

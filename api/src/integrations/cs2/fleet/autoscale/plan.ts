@@ -11,6 +11,7 @@
  */
 
 import { compareQueueOrder, withoutBusyTeams } from '../../../../core/allocationQueue';
+import { effectiveReserve, pickReserved } from '../failoverPlan';
 
 // ---------------------------------------------------------------------------
 // Settings
@@ -89,22 +90,61 @@ export function validateAutoscalePatch(
 /**
  * The failover reserve the scaler keeps warm on top of the matches: the
  * admin's number (failover settings), else 1 once the pool has two servers.
- * Never the whole pool. Same rule as failover's `effectiveReserve`, over the
+ * Never the whole pool. Failover's own rule (`effectiveReserve`), over the
  * whole managed pool (warm and cold) so the scaler can reach it.
  */
 export function scalerReserve(configured: number | null, poolSize: number): number {
-  const wanted = configured ?? (poolSize >= 2 ? 1 : 0);
-  return Math.max(0, Math.min(Math.floor(wanted), poolSize - 1));
+  return effectiveReserve(configured, poolSize);
 }
 
-/** Which idle servers failover holds (the last `count` by name, as failover picks them). */
-export function reservedIdle<T extends { id: string; name: string }>(
-  idle: readonly T[],
-  count: number
-): Set<string> {
-  if (count <= 0) return new Set();
-  const sorted = [...idle].sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id));
-  return new Set(sorted.slice(Math.max(0, sorted.length - count)).map((s) => s.id));
+/** Which idle servers failover holds (the last `count` by name): failover's `pickReserved`. */
+export const reservedIdle = pickReserved;
+
+// ---------------------------------------------------------------------------
+// Rate limit
+// ---------------------------------------------------------------------------
+
+/** At most this many scaler commands per machine in RATE_WINDOW_SECONDS… */
+export const MAX_COMMANDS_PER_HOST = 6;
+export const RATE_WINDOW_SECONDS = 60;
+/** …and per pass, at most this many starts and stops in all. */
+export const MAX_STARTS_PER_PASS = 8;
+export const MAX_STOPS_PER_PASS = 2;
+
+/**
+ * The actions a pass may send: per pass at most MAX_STARTS_PER_PASS starts
+ * and MAX_STOPS_PER_PASS stops, and per machine at most
+ * MAX_COMMANDS_PER_HOST commands (these and `recent`, unix s of the scaler's
+ * earlier ones) within RATE_WINDOW_SECONDS. The rest waits for a later pass.
+ */
+export function limitActions<T extends { kind: string; hostId: string }>(
+  actions: readonly T[],
+  recent: ReadonlyMap<string, readonly number[]>,
+  now: number
+): { allowed: T[]; deferred: T[] } {
+  const perHost = new Map<string, number>();
+  for (const [hostId, times] of recent) {
+    perHost.set(hostId, times.filter((t) => now - t < RATE_WINDOW_SECONDS).length);
+  }
+  const allowed: T[] = [];
+  const deferred: T[] = [];
+  let starts = 0;
+  let stops = 0;
+  for (const a of actions) {
+    const used = perHost.get(a.hostId) ?? 0;
+    const overPass =
+      (a.kind === 'start' && starts >= MAX_STARTS_PER_PASS) ||
+      (a.kind === 'stop' && stops >= MAX_STOPS_PER_PASS);
+    if (used >= MAX_COMMANDS_PER_HOST || overPass) {
+      deferred.push(a);
+      continue;
+    }
+    perHost.set(a.hostId, used + 1);
+    if (a.kind === 'start') starts += 1;
+    if (a.kind === 'stop') stops += 1;
+    allowed.push(a);
+  }
+  return { allowed, deferred };
 }
 
 // ---------------------------------------------------------------------------

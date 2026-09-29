@@ -14,12 +14,17 @@
  *
  * Licensing never blocks it: every Ready Up server it creates is linked (an
  * enabled server row) and so counts toward the license; going over the
- * license's server count only adds a warning to the create's reason.
+ * license's server count is a warning on the license page, nothing more.
+ *
+ * Safeguards: the on/off setting; a rate limit per machine and per pass
+ * (./plan.ts `limitActions`); never a stop for a busy, assigned, updating,
+ * failover or spare server, and never a forced one; every command audited
+ * (`cs2_fleet_host_commands`, issued_by 'autoscale', meta.reason) and logged
+ * here with its reason.
  */
 
 import { db } from '../../../../config/database';
 import { log } from '../../../../utils/logger';
-import { licenseService } from '../../../../services/license/licenseService';
 import { serverAllocationTracker } from '../../services/serverAllocationTracker';
 import { serverTurnoverTracker } from '../../utils/serverTurnover';
 import { FLEET_TENANT } from '../registry';
@@ -33,7 +38,9 @@ import {
   computeDemand,
   estimateSecondsLeft,
   isWarm,
+  limitActions,
   planScaling,
+  RATE_WINDOW_SECONDS,
   type Demand,
   type DemandMatch,
   type PlanInput,
@@ -70,6 +77,8 @@ const idleSince = new Map<string, number>();
 const recentStarts = new Map<string, number>();
 const recentStops = new Map<string, number>();
 let lastNote: string | null = null;
+/** Unix s of the scaler's commands per machine, for the rate limit. */
+const sentAt = new Map<string, number[]>();
 
 // ---------------------------------------------------------------------------
 // Activity
@@ -265,16 +274,19 @@ interface PendingCommandRow {
   payload: string;
 }
 
+/** Servers an open or moving failover (../failover.ts) points at. */
 async function failoverTargets(): Promise<Set<string>> {
-  // cs2_fleet_failovers comes with failover (migration 013); absent before it.
-  const exists = await db.queryOneAsync<{ t: string | null }>(
-    `SELECT to_regclass('cs2_fleet_failovers')::text AS t`
+  const rows = await db.queryAsync<{
+    target_cs2_server_id: string | null;
+    new_cs2_server_id: string | null;
+  }>(
+    `SELECT target_cs2_server_id, new_cs2_server_id FROM cs2_fleet_failovers WHERE status IN ('open', 'moving')`
   );
-  if (!exists?.t) return new Set();
-  const rows = await db.queryAsync<{ target_cs2_server_id: string | null }>(
-    `SELECT target_cs2_server_id FROM cs2_fleet_failovers WHERE status IN ('open', 'moving')`
+  return new Set(
+    rows
+      .flatMap((r) => [r.target_cs2_server_id, r.new_cs2_server_id])
+      .filter((v): v is string => !!v)
   );
-  return new Set(rows.map((r) => r.target_cs2_server_id).filter((v): v is string => !!v));
 }
 
 /**
@@ -493,35 +505,22 @@ export interface PassResult {
   outcomes: ActionOutcome[];
 }
 
-async function licenseNote(): Promise<string> {
-  try {
-    const status = await licenseService.getStatus();
-    const max = status.license?.maxServers;
-    const count = status.serverCount;
-    if (max && count !== null && count + 1 > max) {
-      return ` (license: this makes ${count + 1} servers of ${max}; a warning only)`;
-    }
-  } catch {
-    /* never in the way */
-  }
-  return '';
-}
-
 async function execute(
   action: ScalerAction,
   hostName: string | null,
   now: number
 ): Promise<ActionOutcome> {
-  let reason = action.reason;
+  const reason = action.reason;
+  // The host command's audit row carries the reason too.
+  const meta = { autoscale: true, reason: reason.slice(0, 500) };
   try {
     let commandId: string;
     if (action.kind === 'create') {
-      reason += await licenseNote();
       const sent = await sendHostCommand(
         action.hostId,
         'server.create',
         { count: 1, enroll: true },
-        { issuedBy: AUTOSCALE_ACTOR }
+        { issuedBy: AUTOSCALE_ACTOR, meta }
       );
       commandId = sent.command.id;
     } else {
@@ -529,9 +528,7 @@ async function execute(
         action.hostId,
         action.kind === 'start' ? 'server.start' : 'server.stop',
         { server: action.server },
-        {
-          issuedBy: AUTOSCALE_ACTOR,
-        }
+        { issuedBy: AUTOSCALE_ACTOR, meta }
       );
       commandId = sent.command.id;
       (action.kind === 'start' ? recentStarts : recentStops).set(action.fleetServerId, now);
@@ -586,11 +583,24 @@ export function runScalerPass(): Promise<PassResult | null> {
       const linked = settings.enabled ? await linkCreatedServers() : 0;
       const { input, hostNames } = await gatherInputs(settings);
       const plan = planScaling(input);
+      for (const [hostId, times] of sentAt) {
+        const kept = times.filter((t) => input.now - t < RATE_WINDOW_SECONDS);
+        if (kept.length > 0) sentAt.set(hostId, kept);
+        else sentAt.delete(hostId);
+      }
+      const { allowed, deferred } = limitActions(plan.actions, sentAt, input.now);
       const outcomes: ActionOutcome[] = [];
-      for (const action of plan.actions) {
+      for (const action of allowed) {
+        sentAt.set(action.hostId, [...(sentAt.get(action.hostId) ?? []), input.now]);
         outcomes.push(await execute(action, hostNames.get(action.hostId) ?? null, input.now));
       }
-      const note = settings.enabled ? plan.note : null;
+      const limited =
+        deferred.length > 0
+          ? `${deferred.length} more action(s) wait for the rate limit (next pass)`
+          : null;
+      const note = settings.enabled
+        ? [plan.note, limited].filter(Boolean).join('; ') || null
+        : null;
       if (note && note !== lastNote) {
         await recordEvent({
           action: 'note',

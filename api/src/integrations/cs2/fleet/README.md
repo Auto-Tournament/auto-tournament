@@ -434,7 +434,8 @@ bracket needs, through csm's `server.start` / `server.stop` / `server.create`
   waiting within the lead time (their feeders, or their teams' current
   matches, can end by then per `estimateSecondsLeft` on the live state),
   for tournaments in progress; plus the failover reserve (failover's
-  setting, else 1 once the pool has 2 servers) while anything needs a server.
+  setting and `effectiveReserve`, over the managed pool) while anything needs
+  a server.
   RCON matches are not the fleet's.
 - **Warm** = running with Ready Up connected, booting (< 3 min), or a start
   in flight.
@@ -450,9 +451,13 @@ bracket needs, through csm's `server.start` / `server.stop` / `server.create`
   assignment, turnover, `update_safe: false`), updating (pending
   `host.update_*` / restart), an open failover's target, or the spare
   failover would pick. csm refuses a stop during a match too.
+- **Rate limit** (`limitActions`): per pass at most 8 starts and 2 stops,
+  per machine at most 6 scaler commands a minute; the rest waits for the
+  next pass (noted in the activity).
+- **Audit**: every command is a `cs2_fleet_host_commands` row with
+  `issued_by = 'autoscale'` and `meta.reason`; never forced.
 - **License**: never blocks. Every created server is linked (an enabled
-  row) and counts; a create past the license's server count gets a warning
-  in its reason.
+  row) and counts; the license page warns past the pack's server count.
 - **Activity**: `cs2_fleet_autoscale_events` (migration `014-fleet-autoscale`,
   newest 500): start / stop / create / link, and a note when the pool is
   short and nothing more can be done. Settings default: on, 2 min lead,

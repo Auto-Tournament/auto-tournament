@@ -243,7 +243,12 @@ test.describe.serial('Fleet autoscale (csm)', () => {
     const record = (
       await (await request.get(`/api/fleet/hosts/${m.hostId}/commands/${start.id}`)).json()
     ).command;
-    expect(record).toMatchObject({ type: 'server.start', issuedBy: 'autoscale' });
+    // Audited with its reason, never forced.
+    expect(record).toMatchObject({ type: 'server.start', issuedBy: 'autoscale', forcedBy: null });
+    expect(record.meta).toMatchObject({
+      autoscale: true,
+      reason: expect.stringMatching(/waiting for a server/),
+    });
 
     // Why, on the Servers page.
     const after = await status(request);

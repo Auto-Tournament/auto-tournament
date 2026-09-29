@@ -1,11 +1,12 @@
 /**
  * The scaler's settings: the 'autoscale' row of `cs2_fleet_lists` (`data` =
  * AutoscaleSettings JSON; no row = the defaults, scaling on). And the
- * failover reserve, read from the failover settings row.
+ * failover reserve, from the failover settings.
  */
 
 import { db } from '../../../../config/database';
 import { log } from '../../../../utils/logger';
+import { getFailoverSettings } from '../failoverSettings';
 import { normalizeAutoscaleSettings, type AutoscaleSettings } from './plan';
 
 export interface StoredAutoscaleSettings extends AutoscaleSettings {
@@ -61,15 +62,7 @@ export async function setAutoscaleSettings(
   return getAutoscaleSettings();
 }
 
-/**
- * The failover reserve an admin set (the 'failover' row of cs2_fleet_lists,
- * `data.reserve`), or null for automatic. Read here rather than through the
- * failover module so the scaler does not depend on it being there.
- */
+/** The failover reserve an admin set (../failoverSettings.ts), or null for automatic. */
 export async function configuredReserve(): Promise<number | null> {
-  const row = await db.queryOneAsync<{ data: string | null }>(
-    `SELECT data FROM cs2_fleet_lists WHERE name = 'failover'`
-  );
-  const reserve = (parse(row?.data) as { reserve?: unknown } | null)?.reserve;
-  return typeof reserve === 'number' && Number.isInteger(reserve) && reserve >= 0 ? reserve : null;
+  return (await getFailoverSettings()).reserve;
 }

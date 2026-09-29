@@ -9,6 +9,11 @@ import {
   normalizeAutoscaleSettings,
   planScaling,
   scalerReserve,
+  limitActions,
+  MAX_COMMANDS_PER_HOST,
+  MAX_STARTS_PER_PASS,
+  MAX_STOPS_PER_PASS,
+  RATE_WINDOW_SECONDS,
   validateAutoscalePatch,
   type AutoscaleSettings,
   type Demand,
@@ -510,5 +515,35 @@ test.describe('Autoscale: plan', () => {
       servers: [server(1)],
     });
     expect(p).toMatchObject({ desired: 3, actions: [], note: 'Automatic scaling is off' });
+  });
+});
+
+test.describe('Autoscale: rate limit', () => {
+  const act = (kind: string, hostId = 'h1') => ({ kind, hostId });
+
+  test('per pass: at most 8 starts and 2 stops', () => {
+    const starts = Array.from({ length: 10 }, (_, i) => act('start', `h${i}`));
+    const stops = Array.from({ length: 3 }, (_, i) => act('stop', `s${i}`));
+    const { allowed, deferred } = limitActions(
+      [...starts, ...stops, act('create', 'c')],
+      new Map(),
+      NOW
+    );
+    expect(allowed.filter((a) => a.kind === 'start')).toHaveLength(MAX_STARTS_PER_PASS);
+    expect(allowed.filter((a) => a.kind === 'stop')).toHaveLength(MAX_STOPS_PER_PASS);
+    expect(allowed.filter((a) => a.kind === 'create')).toHaveLength(1);
+    expect(deferred).toHaveLength(10 - MAX_STARTS_PER_PASS + 3 - MAX_STOPS_PER_PASS);
+  });
+
+  test('per machine: at most 6 commands a minute, counting earlier passes', () => {
+    const many = Array.from({ length: 8 }, () => act('start'));
+    expect(limitActions(many, new Map(), NOW).allowed).toHaveLength(MAX_COMMANDS_PER_HOST);
+    const recent = new Map([
+      ['h1', [NOW - 10, NOW - 20, NOW - 30, NOW - 40, NOW - RATE_WINDOW_SECONDS]],
+    ]);
+    // Four in the window (the one a minute old has left it): two more.
+    expect(limitActions(many, recent, NOW).allowed).toHaveLength(2);
+    // Another machine is not held back.
+    expect(limitActions([act('start', 'h2')], recent, NOW).allowed).toHaveLength(1);
   });
 });
