@@ -32,6 +32,10 @@ export interface AdminSignInProvider {
   active: boolean;
   callbackUrl: string;
   docsUrl: string;
+  /** OpenID Connect: the admin sets the issuer URL and the button's name. */
+  hasIssuer: boolean;
+  issuerUrl: string | null;
+  buttonName: string | null;
 }
 
 interface ListResponse {
@@ -111,6 +115,8 @@ function ProviderSection({
   const { t } = useTranslation();
   const { showSuccess, showError } = useSnackbar();
   const [clientId, setClientId] = useState(provider.clientId ?? '');
+  const [issuerUrl, setIssuerUrl] = useState(provider.issuerUrl ?? '');
+  const [buttonName, setButtonName] = useState(provider.buttonName ?? '');
   const [replacing, setReplacing] = useState(!provider.secretSet);
   const [secret, setSecret] = useState('');
   const [busy, setBusy] = useState(false);
@@ -119,9 +125,11 @@ function ProviderSection({
   // A save returns fresh values: show them, and fold the secret back to "set".
   useEffect(() => {
     setClientId(provider.clientId ?? '');
+    setIssuerUrl(provider.issuerUrl ?? '');
+    setButtonName(provider.buttonName ?? '');
     setReplacing(!provider.secretSet);
     setSecret('');
-  }, [provider.clientId, provider.secretSet]);
+  }, [provider.clientId, provider.issuerUrl, provider.buttonName, provider.secretSet]);
 
   const idPrefix = `sign-in-${provider.id}`;
   const secretLabel = provider.hasClientId
@@ -150,6 +158,12 @@ function ProviderSection({
       body.clientId = clientId.trim() || null;
     }
     if (replacing && secret.trim()) body.clientSecret = secret.trim();
+    if (provider.hasIssuer && issuerUrl.trim() !== (provider.issuerUrl ?? '')) {
+      body.issuerUrl = issuerUrl.trim() || null;
+    }
+    if (provider.hasIssuer && buttonName.trim() !== (provider.buttonName ?? '')) {
+      body.label = buttonName.trim() || null;
+    }
     if (Object.keys(body).length === 0) return;
     void save(body);
   };
@@ -242,6 +256,36 @@ function ProviderSection({
               label={t('settingsPage.signIn.enabled')}
             />
           </Box>
+
+          {provider.hasIssuer && (
+            <TextField
+              label={t('settingsPage.signIn.issuerUrl')}
+              value={issuerUrl}
+              onChange={(e) => setIssuerUrl(e.target.value)}
+              disabled={busy}
+              size="small"
+              fullWidth
+              autoComplete="off"
+              placeholder="https://sso.example.com/realms/community"
+              helperText={t('settingsPage.signIn.issuerUrlHelp')}
+              inputProps={{ 'data-testid': `${idPrefix}-issuer-url`, spellCheck: false, inputMode: 'url' }}
+            />
+          )}
+
+          {provider.hasIssuer && (
+            <TextField
+              label={t('settingsPage.signIn.buttonName')}
+              value={buttonName}
+              onChange={(e) => setButtonName(e.target.value)}
+              disabled={busy}
+              size="small"
+              fullWidth
+              autoComplete="off"
+              placeholder={provider.label}
+              helperText={t('settingsPage.signIn.buttonNameHelp')}
+              inputProps={{ 'data-testid': `${idPrefix}-button-name`, maxLength: 40 }}
+            />
+          )}
 
           {provider.hasClientId && (
             <TextField

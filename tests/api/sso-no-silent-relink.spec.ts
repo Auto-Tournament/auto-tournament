@@ -2,7 +2,7 @@ import { test, expect, request as playwrightRequest, type APIResponse } from '@p
 import { signInAsPlayerViaRequest, signInViaRequest } from '../helpers/auth';
 
 /**
- * A provider login (GitHub, Google, Discord, Keycloak) in a browser that is
+ * A provider login (GitHub, Google, Discord, OpenID Connect) in a browser that is
  * already signed in with Steam links the provider identity to that account.
  * It used to do so even when the identity already belonged to a different
  * Steam account, silently moving that account's sign-in method. The rule:

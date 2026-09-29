@@ -274,7 +274,7 @@ export function getSchemaSQL(): string {
 
     CREATE INDEX IF NOT EXISTS idx_player_games_game ON player_games(game_id);
 
-    -- Auth identities table: links external auth providers (Discord, Keycloak, GitHub, etc.)
+    -- Auth identities table: links external auth providers (Discord, GitHub, OpenID Connect, etc.)
     -- to a Steam player ID so that once a user has linked Steam, future logins via
     -- the same provider automatically resolve their Steam identity.
     CREATE TABLE IF NOT EXISTS auth_identities (
@@ -714,6 +714,9 @@ export function getSchemaSQL(): string {
       enabled INTEGER NOT NULL DEFAULT 0,
       client_id TEXT,
       client_secret_enc TEXT,
+      -- OpenID Connect: the issuer and the login button's name.
+      issuer_url TEXT,
+      label TEXT,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_by TEXT
     );

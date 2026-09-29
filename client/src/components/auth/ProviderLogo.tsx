@@ -1,4 +1,4 @@
-import { siDiscord, siEpicgames, siGithub, siKeycloak, siSteam, siTwitch } from 'simple-icons';
+import { siDiscord, siEpicgames, siGithub, siOpenid, siSteam, siTwitch } from 'simple-icons';
 
 /**
  * Sign-in providers' official marks. Single-colour marks come from Simple
@@ -11,7 +11,7 @@ const MONO_LOGOS: Record<string, string> = {
   github: siGithub.path,
   twitch: siTwitch.path,
   epic: siEpicgames.path,
-  keycloak: siKeycloak.path,
+  oidc: siOpenid.path,
 };
 
 export function hasProviderLogo(id: string): boolean {

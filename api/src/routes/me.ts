@@ -212,10 +212,11 @@ router.post('/games/prompt/dismiss', async (req: Request, res: Response) => {
 const PROVIDER_LABELS: Record<string, string> = {
   steam: 'Steam',
   discord: 'Discord',
-  keycloak: 'Keycloak',
   github: 'GitHub',
   google: 'Google',
   twitch: 'Twitch',
+  epic: 'Epic Games',
+  oidc: 'OpenID Connect',
   local: 'Admin login (username + password)',
 };
 
@@ -450,7 +451,7 @@ function reauthRequired(res: Response): Response {
  *         required: true
  *         schema:
  *           type: string
- *           enum: [discord, keycloak, github, google, twitch, local]
+ *           enum: [discord, github, google, twitch, epic, oidc, local]
  *     responses:
  *       200:
  *         description: Removed; the updated connections

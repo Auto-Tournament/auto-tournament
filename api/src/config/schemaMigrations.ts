@@ -45,7 +45,7 @@ export interface LinkedAccountsBackfillResult {
  *
  * `players.discord_id` is not copied: it is contact data an admin typed in,
  * unverified and not unique. Other sign-in providers (GitHub, Google,
- * Keycloak) are login methods, not game accounts, and stay out too.
+ * OpenID Connect) are login methods, not game accounts, and stay out too.
  *
  * Only missing rows are inserted (`ON CONFLICT DO NOTHING`), so existing rows
  * keep their ids and running it again changes nothing. Returns how many rows

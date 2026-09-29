@@ -5,15 +5,17 @@
  *  - Steam: a Web API call with the key (steamService's key check).
  *  - Discord, Twitch: a client-credentials token request; only a valid client
  *    id and secret get a token.
- *  - Google, GitHub: an authorization-code exchange with a code that cannot be
- *    valid. The provider checks the client first, so "bad code" means the id
- *    and secret are good and "bad client" means they are not.
+ *  - Google, GitHub, OpenID Connect: an authorization-code exchange with a
+ *    code that cannot be valid. The provider checks the client first, so
+ *    "bad code" means the id and secret are good and "bad client" means they
+ *    are not. OpenID Connect finds its token endpoint by discovery first.
  *
  * Tokens that come back are thrown away. Nothing here logs a secret or the
  * provider's response body; the caller gets a result code only.
  */
 import { effectiveProviderSettings, type SignInProviderId } from '../config/signInProviders';
 import { steamService } from './steamService';
+import { discoverOidc } from '../config/oidcStrategy';
 
 export type ProviderTestResult =
   | 'ok'
@@ -120,6 +122,24 @@ export async function testSignInProvider(id: SignInProviderId, callbackUrl: stri
       const code = await errorCode(response);
       if (code === 'bad_verification_code') return { result: 'ok' };
       if (code === 'incorrect_client_credentials') {
+        return { result: 'invalid_credentials', status: response.status };
+      }
+      return { result: 'unexpected', status: response.status };
+    }
+
+    if (id === 'oidc') {
+      const doc = await discoverOidc(settings.issuerUrl!);
+      // client_secret_post, as the sign-in itself (passport-oauth2) sends it.
+      const response = await post(doc.token_endpoint, {
+        client_id: clientId,
+        client_secret: secret,
+        code: INVALID_CODE,
+        grant_type: 'authorization_code',
+        redirect_uri: callbackUrl,
+      });
+      const code = await errorCode(response);
+      if (code === 'invalid_grant') return { result: 'ok' };
+      if (code === 'invalid_client' || code === 'unauthorized_client' || response.status === 401) {
         return { result: 'invalid_credentials', status: response.status };
       }
       return { result: 'unexpected', status: response.status };

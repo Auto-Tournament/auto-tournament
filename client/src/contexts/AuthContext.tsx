@@ -61,7 +61,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   /**
    * Whether the current admin session still needs to be linked with a Steam ID
-   * (e.g. logged in via Keycloak/Discord/GitHub without a Steam account).
+   * (e.g. signed in with Discord, GitHub or OpenID Connect without a Steam account).
    * Admins who logged in directly with Steam will never see this as true.
    */
   needsSteamLink: boolean;
@@ -77,7 +77,7 @@ interface AuthContextType {
   isLoading: boolean;
   /**
    * The auth provider backing the current admin session (e.g. 'steam',
-   * 'discord', 'github', 'keycloak'), if any.
+   * 'discord', 'github', 'oidc'), if any.
    */
   adminProvider: string | null;
   /**

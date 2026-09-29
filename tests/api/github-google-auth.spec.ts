@@ -105,7 +105,7 @@ test.describe('GitHub and Google provider listing', () => {
     'AUTH_DISCORD_ENABLED',
     'DISCORD_CLIENT_ID',
     'DISCORD_CLIENT_SECRET',
-    'AUTH_KEYCLOAK_ENABLED',
+    'AUTH_OIDC_ENABLED',
   ];
   let saved: Record<string, string | undefined> = {};
 

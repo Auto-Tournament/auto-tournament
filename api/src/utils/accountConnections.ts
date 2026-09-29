@@ -7,7 +7,7 @@
  */
 
 /** Sign-in providers that can be linked to an account next to its Steam ID. */
-export const LINKABLE_PROVIDERS = ['discord', 'keycloak', 'github', 'google', 'twitch'] as const;
+export const LINKABLE_PROVIDERS = ['discord', 'github', 'google', 'twitch', 'epic', 'oidc'] as const;
 export type LinkableProvider = (typeof LINKABLE_PROVIDERS)[number];
 
 export function isLinkableProvider(value: unknown): value is LinkableProvider {

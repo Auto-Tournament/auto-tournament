@@ -489,7 +489,7 @@ const STEAM_ID_RE = /^\d{17}$/;
  * Test-only helper: issue a pending Steam link cookie with the real writer.
  *
  * POST /api/test/pending-steam-link
- * Body: { provider?: 'discord' | 'keycloak' | 'github', providerUserId }
+ * Body: { provider?: 'discord' | 'github' | 'oidc', providerUserId }
  *
  * Calls `setPendingSteamLinkCookie`, the same function the SSO callbacks call
  * when an identity has no Steam link yet, so tests get a genuine cookie without
@@ -2894,6 +2894,26 @@ router.post('/env-import', async (req: Request, res: Response) => {
   reloadPassportAuth();
   await adminAccessSettings.importFromEnvironmentAndSeed(env);
   res.json({ success: true, imported: [...(await envImportedNames())] });
+});
+
+
+/**
+ * A fake OpenID Connect issuer's discovery document, so the OIDC specs can
+ * point Settings -> Sign-in at the app itself (issuer
+ * `http://<host>/api/test/oidc`). The endpoints are on sso.invalid: the specs
+ * only follow the redirect's Location, never the provider.
+ */
+router.get('/oidc/.well-known/openid-configuration', (req: Request, res: Response) => {
+  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+    res.status(404).end();
+    return;
+  }
+  res.json({
+    issuer: `http://${req.headers.host}/api/test/oidc`,
+    authorization_endpoint: 'https://sso.invalid/protocol/openid-connect/auth',
+    token_endpoint: 'https://sso.invalid/protocol/openid-connect/token',
+    userinfo_endpoint: 'https://sso.invalid/protocol/openid-connect/userinfo',
+  });
 });
 
 export default router;

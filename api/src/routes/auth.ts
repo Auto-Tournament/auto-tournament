@@ -571,7 +571,7 @@ router.get('/steam/callback', (req: Request, res: Response, _next) => {
       }
 
       // If this Steam login was initiated from a non‑Steam provider (Discord,
-      // Keycloak, GitHub, Google), persist that association so future logins via that
+      // GitHub, Google, ...), persist that association so future logins via that
       // provider automatically resolve the Steam ID without asking to link
       // again.
       // Only the session copy or a correctly signed, unexpired cookie is acted on.
@@ -653,20 +653,20 @@ router.post('/logout', (req: Request, res: Response) => {
  */
 const SSO_USER_ID_FIELD: Record<AuthProvider, string> = {
   discord: 'discordId',
-  keycloak: 'keycloakId',
   github: 'githubId',
   google: 'googleId',
   twitch: 'twitchId',
   epic: 'epicId',
+  oidc: 'oidcId',
 };
 
 const SSO_PROVIDER_LABEL: Record<AuthProvider, string> = {
   discord: 'Discord',
-  keycloak: 'Keycloak',
   github: 'GitHub',
   google: 'Google',
   twitch: 'Twitch',
   epic: 'Epic Games',
+  oidc: 'OpenID Connect',
 };
 
 /**
@@ -900,7 +900,7 @@ function linkResultRedirect(
  *         required: true
  *         schema:
  *           type: string
- *           enum: [discord, keycloak, github, google]
+ *           enum: [discord, github, google, twitch, epic, oidc]
  *     responses:
  *       302:
  *         description: Redirect to the provider
@@ -1096,10 +1096,8 @@ function registerSsoRoutes(provider: AuthProvider, startOptions: Record<string, 
   );
 }
 
-// Keycloak (OIDC): request the standard scopes so the UserInfo endpoint
-// returns a usable profile. Discord, GitHub and Google set their scopes on the
-// strategy.
-registerSsoRoutes('keycloak', { scope: ['openid', 'profile', 'email'] });
+// OpenID Connect: the strategy asks for openid, profile and email itself.
+registerSsoRoutes('oidc');
 registerSsoRoutes('discord');
 registerSsoRoutes('github');
 registerSsoRoutes('google');
@@ -1334,7 +1332,7 @@ router.post('/steam/link', async (req: Request, res: Response, next: NextFunctio
  * Public discovery endpoint: returns the list of configured auth providers.
  *
  * This is safe to expose to the frontend and is intended to drive dynamic
- * "Sign in with X" buttons (Steam, Keycloak, Discord, etc.).
+ * "Sign in with X" buttons (Steam, Discord, OpenID Connect, etc.).
  */
 router.get('/providers', async (_req: Request, res: Response) => {
   const genericUnavailable = 'Sign-in is temporarily unavailable. Please contact an administrator.';
@@ -1657,18 +1655,12 @@ router.get('/admin/me', async (req: Request, res: Response) => {
     } else if (provider === 'discord') {
       profileName = (user as { username?: string }).username ?? null;
       profileAvatarUrl = (user as { avatarUrl?: string }).avatarUrl ?? null;
-    } else if (provider === 'github' || provider === 'google' || provider === 'twitch' || provider === 'epic' || provider === 'local') {
+    } else if (provider === 'github' || provider === 'google' || provider === 'twitch' || provider === 'epic' || provider === 'oidc' || provider === 'local') {
       profileName =
         (user as { displayName?: string }).displayName ||
         (user as { username?: string }).username ||
         null;
       profileAvatarUrl = (user as { avatarUrl?: string }).avatarUrl ?? null;
-    } else if (provider === 'keycloak') {
-      profileName =
-        (user as { displayName?: string }).displayName ||
-        (user as { username?: string }).username ||
-        null;
-      profileAvatarUrl = null;
     }
 
     if (steamId) {

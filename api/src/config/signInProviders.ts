@@ -6,14 +6,16 @@
  * database is the source of truth. No database access here, so the tests can import
  * it directly. The store is services/authProviderSettingsService.ts.
  */
-export const SIGN_IN_PROVIDER_IDS = ['steam', 'discord', 'google', 'github', 'twitch', 'epic'] as const;
+export const SIGN_IN_PROVIDER_IDS = ['steam', 'discord', 'google', 'github', 'twitch', 'epic', 'oidc'] as const;
 export type SignInProviderId = (typeof SIGN_IN_PROVIDER_IDS)[number];
 
 export interface SignInProviderDefinition {
   id: SignInProviderId;
   label: string;
   /** Env var names, imported once at boot. Steam has no client id. */
-  env: { enabled: string; clientId: string | null; secret: string };
+  env: { enabled: string; clientId: string | null; secret: string; issuerUrl?: string; label?: string };
+  /** OpenID Connect: the admin sets the issuer and the button's name too. */
+  hasIssuer?: boolean;
   /** Enabled when neither the environment nor a saved row says otherwise. */
   defaultEnabled: boolean;
   /** Where the admin creates the app / key. */
@@ -66,7 +68,27 @@ export const SIGN_IN_PROVIDERS: readonly SignInProviderDefinition[] = [
     defaultEnabled: false,
     docsUrl: 'https://dev.epicgames.com/portal',
   },
+  {
+    // Any OpenID Connect server: Keycloak, Authentik, Authelia, Zitadel,
+    // Microsoft Entra ID, Okta, ... Endpoints come from the issuer's discovery
+    // document (config/oidcStrategy.ts).
+    id: 'oidc',
+    label: 'OpenID Connect',
+    env: {
+      enabled: 'AUTH_OIDC_ENABLED',
+      clientId: 'OIDC_CLIENT_ID',
+      secret: 'OIDC_CLIENT_SECRET',
+      issuerUrl: 'OIDC_ISSUER_URL',
+      label: 'OIDC_LABEL',
+    },
+    hasIssuer: true,
+    defaultEnabled: false,
+    docsUrl: 'https://openid.net/developers/certified-openid-connect-implementations/',
+  },
 ];
+
+/** The login button's name for OpenID Connect when the admin set none. */
+export const OIDC_DEFAULT_LABEL = 'OpenID Connect';
 
 export function isSignInProviderId(value: unknown): value is SignInProviderId {
   return typeof value === 'string' && (SIGN_IN_PROVIDER_IDS as readonly string[]).includes(value);
@@ -84,6 +106,9 @@ export interface StoredProviderSettings {
   /** A secret is stored but could not be decrypted (the key changed). */
   secretUnreadable?: boolean;
   updatedAt?: number;
+  /** OpenID Connect: the issuer URL and the button's name. */
+  issuerUrl?: string | null;
+  label?: string | null;
 }
 
 export type FieldSource = 'db' | 'default' | null;
@@ -93,6 +118,9 @@ export interface EffectiveProviderSettings {
   enabled: boolean;
   clientId: string | null;
   secret: string | null;
+  /** OpenID Connect only; null elsewhere. */
+  issuerUrl: string | null;
+  label: string | null;
   source: { enabled: FieldSource; clientId: FieldSource; secret: FieldSource };
   /** Has every credential it needs. */
   configured: boolean;
@@ -120,12 +148,16 @@ export function resolveProviderSettings(
   const enabled = stored?.enabled ?? def.defaultEnabled;
   const clientId = def.env.clientId ? (stored?.clientId ?? null) : null;
   const secret = stored?.secret ?? null;
-  const configured = !!secret && (def.env.clientId === null || !!clientId);
+  const issuerUrl = def.hasIssuer ? (stored?.issuerUrl ?? null) : null;
+  const label = def.hasIssuer ? (stored?.label ?? null) : null;
+  const configured = !!secret && (def.env.clientId === null || !!clientId) && (!def.hasIssuer || !!issuerUrl);
   return {
     id: def.id,
     enabled,
     clientId,
     secret,
+    issuerUrl,
+    label,
     source: { enabled: stored ? 'db' : 'default', clientId: clientId ? 'db' : null, secret: secret ? 'db' : null },
     configured,
     active: enabled && configured && !def.comingSoon,
@@ -135,7 +167,7 @@ export function resolveProviderSettings(
 /** One environment variable to copy into a provider's saved row. */
 export interface ProviderEnvImport {
   provider: SignInProviderId;
-  field: 'enabled' | 'clientId' | 'secret';
+  field: 'enabled' | 'clientId' | 'secret' | 'issuerUrl' | 'label';
   envName: string;
   /** What to save; null when the database already has a value (the variable is then only marked as seen). */
   value: boolean | string | null;
@@ -173,6 +205,13 @@ export function planProviderEnvImport(
     if (secret && !alreadySeen.has(def.env.secret)) {
       out.push({ provider: def.id, field: 'secret', envName: def.env.secret, value: hasSecret ? null : secret });
     }
+    for (const field of ['issuerUrl', 'label'] as const) {
+      const name = def.env[field];
+      const value = name ? envValue(env, name) : undefined;
+      if (name && value && !alreadySeen.has(name)) {
+        out.push({ provider: def.id, field, envName: name, value: row?.[field] ? null : value });
+      }
+    }
   }
   return out;
 }
@@ -193,6 +232,10 @@ export interface AdminProviderView {
   active: boolean;
   callbackUrl: string;
   docsUrl: string;
+  /** OpenID Connect: the admin sets the issuer URL and the button's name. */
+  hasIssuer: boolean;
+  issuerUrl: string | null;
+  buttonName: string | null;
 }
 
 export interface ProviderPatch {
@@ -200,6 +243,10 @@ export interface ProviderPatch {
   clientId?: string | null;
   /** A new secret; null clears the saved one. Absent keeps it. */
   clientSecret?: string | null;
+  /** OpenID Connect: the issuer URL; null clears it. */
+  issuerUrl?: string | null;
+  /** OpenID Connect: the login button's name; null for the default. */
+  label?: string | null;
 }
 
 /** Longest client id / secret accepted. Real ones are far shorter. */
@@ -219,7 +266,7 @@ export function parseProviderPatch(
     return { ok: false, error: 'Send a JSON object' };
   }
   const input = body as Record<string, unknown>;
-  const allowed = new Set(['enabled', 'clientId', 'clientSecret']);
+  const allowed = new Set(['enabled', 'clientId', 'clientSecret', 'issuerUrl', 'label']);
   const unknown = Object.keys(input).filter((k) => !allowed.has(k));
   if (unknown.length > 0) return { ok: false, error: `Unknown field: ${unknown[0]}` };
 
@@ -251,7 +298,51 @@ export function parseProviderPatch(
       patch.clientSecret = value;
     }
   }
+  if (input.issuerUrl !== undefined) {
+    if (!def.hasIssuer) return { ok: false, error: `${def.label} has no issuer URL` };
+    if (input.issuerUrl === null || input.issuerUrl === '') patch.issuerUrl = null;
+    else if (typeof input.issuerUrl !== 'string') return { ok: false, error: 'issuerUrl must be a string' };
+    else {
+      const issuer = normalizeIssuerUrl(input.issuerUrl);
+      if (!issuer) {
+        return { ok: false, error: 'The issuer URL must be an http(s) URL with no query, fragment or credentials' };
+      }
+      patch.issuerUrl = issuer;
+    }
+  }
+  if (input.label !== undefined) {
+    if (!def.hasIssuer) return { ok: false, error: `${def.label} has a fixed name` };
+    if (input.label === null || input.label === '') patch.label = null;
+    else if (typeof input.label !== 'string') return { ok: false, error: 'label must be a string' };
+    else {
+      const label = input.label.trim();
+      if (!label || label.length > MAX_LABEL || [...label].some((c) => c.charCodeAt(0) < 0x20)) {
+        return { ok: false, error: `The button name must be 1 to ${MAX_LABEL} characters` };
+      }
+      patch.label = label;
+    }
+  }
   return { ok: true, patch };
+}
+
+const MAX_LABEL = 40;
+
+/**
+ * An OpenID Connect issuer as saved: http(s), no credentials, query or
+ * fragment, no trailing slash (the issuer is compared to the discovery
+ * document's exactly). Null when it is not one.
+ */
+export function normalizeIssuerUrl(raw: string): string | null {
+  let url: URL;
+  try {
+    url = new URL(raw.trim());
+  } catch {
+    return null;
+  }
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') return null;
+  if (url.username || url.password || url.search || url.hash) return null;
+  const text = url.toString().replace(/\/+$/, '');
+  return text.length <= 512 ? text : null;
 }
 
 /*
