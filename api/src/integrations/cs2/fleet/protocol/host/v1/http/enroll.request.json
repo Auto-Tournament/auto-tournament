@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/http/enroll.request.json",
+  "title": "POST /api/fleet/enroll request body, host enrollment",
+  "description": "FLEET.md §18.1. Same endpoint as server enrollment; `kind: \"host\"` selects the host path. Exactly one of `code` (one-time code from Settings → Hosts → Add host) or `key` (fleet enrollment key). Enrolling again with the same machine_id returns the existing host record.",
+  "type": "object",
+  "required": [
+    "kind",
+    "machine_id",
+    "hostname",
+    "os",
+    "csm_version"
+  ],
+  "oneOf": [
+    {
+      "required": [
+        "code"
+      ]
+    },
+    {
+      "required": [
+        "key"
+      ]
+    }
+  ],
+  "properties": {
+    "kind": {
+      "const": "host"
+    },
+    "code": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "key": {
+      "$ref": "../defs.json#/$defs/fleetKey"
+    },
+    "machine_id": {
+      "$ref": "../defs.json#/$defs/machineId"
+    },
+    "hostname": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "os": {
+      "type": "string",
+      "maxLength": 128
+    },
+    "csm_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "tenant_id": {
+      "$ref": "../defs.json#/$defs/tenantId"
+    }
+  }
+}

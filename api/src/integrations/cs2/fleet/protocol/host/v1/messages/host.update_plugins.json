@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/host.update_plugins.json",
+  "title": "host.update_plugins (platform → host)",
+  "description": "Installs a Ready Up bundle with Ready Up's install.sh: bundle default → essentials, skins → full. Source: the bundle configured on the host (csm agent config readyup_bundle: a zip or https URL, {version}/{bundle} substituted), else the GitHub release `version` (or the latest). No such release: host.result failed / no_release; nothing is installed. Running targets are stopped, installed and started again. Disruptive (gated like host.update_game). Long job: host.progress. Reliable; answered by exactly one host.result (ref = this message's id). Rejected with `expired` when expires_at is past, and with `stale` when the envelope ts is more than 5 min off the host's clock (a command replayed long after it was sent is not run).",
+  "type": "object",
+  "required": [
+    "readyup"
+  ],
+  "properties": {
+    "servers": {
+      "$ref": "../defs.json#/$defs/serverList"
+    },
+    "readyup": {
+      "type": "object",
+      "required": [
+        "version",
+        "bundle"
+      ],
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^(latest|v?[0-9]+\\.[0-9]+\\.[0-9]+([-+.][0-9A-Za-z.-]{1,32})?)$"
+        },
+        "bundle": {
+          "enum": [
+            "default",
+            "skins"
+          ]
+        }
+      }
+    },
+    "force": {
+      "$ref": "../defs.json#/$defs/force"
+    },
+    "expires_at": {
+      "$ref": "../defs.json#/$defs/expiresAt"
+    }
+  }
+}

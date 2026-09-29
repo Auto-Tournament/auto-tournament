@@ -42,6 +42,10 @@
  * `008-fleet-demo-streams` adds the demos Ready Up streams over the fleet link
  * while it records (fleet/demoStream.ts, FLEET.md §12.2).
  *
+ * `009-fleet-hosts` adds the host channel (FLEET.md §18): csm host agents,
+ * their tokens, codes, outbound stream, commands and health events
+ * (fleet/hosts/registry.ts), and ties per-machine fleet keys to their host.
+ *
  * `010-fleet-driver` adds what the fleet driver (fleet/driver.ts) keeps per
  * assignment: the match's connect password and the config last sent (the
  * base for `match.update`), and the audit log of admin `exec` commands.
@@ -57,6 +61,7 @@ export const CS2_FLEET_MIGRATION_ID = '005-fleet';
 export const CS2_FLEET_MATCH_MIGRATION_ID = '006-fleet-match';
 export const CS2_ROUND_BACKUPS_MIGRATION_ID = '007-round-backups';
 export const CS2_FLEET_DEMO_STREAMS_MIGRATION_ID = '008-fleet-demo-streams';
+export const CS2_FLEET_HOSTS_MIGRATION_ID = '009-fleet-hosts';
 export const CS2_FLEET_DRIVER_MIGRATION_ID = '010-fleet-driver';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
@@ -492,6 +497,137 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
 
     CREATE INDEX IF NOT EXISTS cs2_fleet_demo_streams_match_idx ON cs2_fleet_demo_streams(match_slug, map_number);
     CREATE INDEX IF NOT EXISTS cs2_fleet_demo_streams_state_idx ON cs2_fleet_demo_streams(state, updated_at);
+`,
+  },
+  {
+    // The host channel (FLEET.md §18, D17): csm on each machine as a host
+    // agent. Mirrors the server tables of 005 with a separate identity:
+    // - cs2_fleet_hosts: one row per machine (machine_id = /etc/machine-id),
+    //   pending until csm enrolls with the one-time code; the last
+    //   host.inventory as JSON; presence and the stream state for resume.
+    // - cs2_fleet_host_tokens: rhs_<id>_<secret>, only sha256(secret) stored.
+    // - cs2_fleet_host_enrollment_codes: one-time codes for "Add machine".
+    // - cs2_fleet_host_outbox: the platform's reliable stream per host.
+    // - cs2_fleet_host_commands: every command sent to a host, its progress
+    //   and its one host.result; `forced_by` / `force_reason` are the audit
+    //   row for a disruptive action during a match (§18.2).
+    // - cs2_fleet_host_events: host.health reports, unique per stream + seq.
+    // - cs2_fleet_enrollment_keys.host_id / command_id: keys the platform
+    //   minted for a server.create on that host (FLEET.md §4.1 B).
+    // Every statement can run twice.
+    id: CS2_FLEET_HOSTS_MIGRATION_ID,
+    up: `
+    CREATE TABLE IF NOT EXISTS cs2_fleet_hosts (
+      id TEXT PRIMARY KEY,
+      tenant_id TEXT NOT NULL DEFAULT 'default',
+      machine_id TEXT, -- /etc/machine-id; NULL while pending
+      name TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending', -- 'pending' | 'enrolled' | 'revoked'
+      enrolled_via TEXT, -- 'code' | 'key'
+      enrollment_key_id TEXT,
+      hostname TEXT,
+      os TEXT,
+      csm_version TEXT,
+      capabilities TEXT, -- JSON array, from hello
+      inventory TEXT, -- JSON, the last host.inventory
+      inventory_at INTEGER,
+      protocol INTEGER,
+      boot_id TEXT,
+      session_id TEXT,
+      online INTEGER NOT NULL DEFAULT 0,
+      connected_at INTEGER,
+      last_seen INTEGER,
+      rx_stream_id TEXT,
+      rx_seq INTEGER NOT NULL DEFAULT 0,
+      tx_seq INTEGER NOT NULL DEFAULT 0,
+      tx_acked INTEGER NOT NULL DEFAULT 0,
+      rotate_requested_at INTEGER,
+      created_by TEXT,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS cs2_fleet_hosts_machine_idx ON cs2_fleet_hosts(tenant_id, machine_id);
+
+    CREATE TABLE IF NOT EXISTS cs2_fleet_host_tokens (
+      id TEXT PRIMARY KEY,
+      tenant_id TEXT NOT NULL DEFAULT 'default',
+      host_id TEXT NOT NULL REFERENCES cs2_fleet_hosts(id) ON DELETE CASCADE,
+      secret_hash TEXT NOT NULL,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      last_used_at INTEGER,
+      rotated_from TEXT,
+      expires_at INTEGER,
+      activated_at INTEGER,
+      revoked_at INTEGER
+    );
+
+    CREATE INDEX IF NOT EXISTS cs2_fleet_host_tokens_host_idx ON cs2_fleet_host_tokens(host_id);
+
+    CREATE TABLE IF NOT EXISTS cs2_fleet_host_enrollment_codes (
+      id TEXT PRIMARY KEY,
+      tenant_id TEXT NOT NULL DEFAULT 'default',
+      code_hash TEXT NOT NULL UNIQUE,
+      host_id TEXT NOT NULL REFERENCES cs2_fleet_hosts(id) ON DELETE CASCADE,
+      created_by TEXT,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      expires_at INTEGER NOT NULL,
+      used_at INTEGER
+    );
+
+    CREATE INDEX IF NOT EXISTS cs2_fleet_host_enrollment_codes_host_idx ON cs2_fleet_host_enrollment_codes(host_id);
+
+    CREATE TABLE IF NOT EXISTS cs2_fleet_host_outbox (
+      host_id TEXT NOT NULL REFERENCES cs2_fleet_hosts(id) ON DELETE CASCADE,
+      seq INTEGER NOT NULL,
+      type TEXT NOT NULL,
+      message TEXT NOT NULL, -- the envelope as JSON (secrets are minted at send time, never stored)
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      expires_at INTEGER,
+      PRIMARY KEY (host_id, seq)
+    );
+
+    CREATE TABLE IF NOT EXISTS cs2_fleet_host_commands (
+      message_id TEXT PRIMARY KEY, -- envelope id; host.result ref
+      host_id TEXT NOT NULL REFERENCES cs2_fleet_hosts(id) ON DELETE CASCADE,
+      seq INTEGER,
+      type TEXT NOT NULL,
+      server TEXT, -- the server-N it targets, when one
+      payload TEXT NOT NULL, -- JSON, without secrets
+      status TEXT NOT NULL DEFAULT 'pending', -- pending | ok | rejected | failed
+      error_code TEXT,
+      error_message TEXT,
+      output TEXT,
+      progress_step TEXT,
+      progress_pct REAL,
+      progress_at INTEGER,
+      issued_by TEXT,
+      forced_by TEXT, -- audit: set when the admin confirmed a disruptive action during a match
+      force_reason TEXT,
+      meta TEXT, -- JSON the platform keeps with the command (server.create: servers before it, the follow-up)
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      answered_at INTEGER
+    );
+
+    CREATE INDEX IF NOT EXISTS cs2_fleet_host_commands_host_idx ON cs2_fleet_host_commands(host_id, created_at);
+
+    CREATE TABLE IF NOT EXISTS cs2_fleet_host_events (
+      id BIGSERIAL PRIMARY KEY,
+      host_id TEXT NOT NULL REFERENCES cs2_fleet_hosts(id) ON DELETE CASCADE,
+      stream_id TEXT,
+      seq INTEGER, -- NULL when csm sent it ephemeral
+      server TEXT NOT NULL,
+      event TEXT NOT NULL, -- crashed | exited | hung | recovered | restarted
+      exit_code INTEGER,
+      detail TEXT,
+      received_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS cs2_fleet_host_events_stream_seq_idx ON cs2_fleet_host_events(host_id, stream_id, seq) WHERE seq IS NOT NULL;
+    CREATE INDEX IF NOT EXISTS cs2_fleet_host_events_host_idx ON cs2_fleet_host_events(host_id, id);
+
+    ALTER TABLE cs2_fleet_enrollment_keys ADD COLUMN IF NOT EXISTS host_id TEXT REFERENCES cs2_fleet_hosts(id) ON DELETE SET NULL;
+    ALTER TABLE cs2_fleet_enrollment_keys ADD COLUMN IF NOT EXISTS command_id TEXT;
 `,
   },
   {

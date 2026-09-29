@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/host.progress.json",
+  "title": "host.progress (host → platform, ephemeral)",
+  "description": "Progress of a long job (server.create, host.update_game, host.update_plugins, server.remove). `ref` in the payload is the command's id. pct is absent when unknown.",
+  "type": "object",
+  "required": [
+    "ref",
+    "step"
+  ],
+  "properties": {
+    "ref": {
+      "$ref": "../defs.json#/$defs/ulid"
+    },
+    "step": {
+      "type": "string",
+      "maxLength": 256
+    },
+    "pct": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    }
+  }
+}

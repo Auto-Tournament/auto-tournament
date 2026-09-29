@@ -21,6 +21,7 @@ import { startFleetDriver } from './fleet/driver';
 import { startRoundBackups, stopRoundBackups } from './fleet/backups';
 import { startRestoreAudit, stopRestoreAudit } from './fleet/restore';
 import { startDemoStreams, stopDemoStreams } from './fleet/demoStream';
+import { startFleetHosts, stopFleetHosts } from './fleet/hosts/service';
 
 export async function startCs2(): Promise<void> {
   // Round backups from Ready Up servers (event.backup) and the restore audit:
@@ -37,6 +38,10 @@ export async function startCs2(): Promise<void> {
   startFleetDriver();
   await startFleet().catch((error) => {
     log.warn('Failed to start the fleet gateway', { error });
+  });
+  // csm host agents (/api/fleet/host, FLEET.md §18).
+  await startFleetHosts().catch((error) => {
+    log.warn('Failed to start the fleet host gateway', { error });
   });
 
   await bootstrapServerWebhooks().catch((error) => {
@@ -66,6 +71,7 @@ export function stopCs2(): void {
   stopRoundBackups();
   stopRestoreAudit();
   stopDemoStreams();
+  stopFleetHosts();
 }
 
 async function bootstrapServerWebhooks(): Promise<void> {

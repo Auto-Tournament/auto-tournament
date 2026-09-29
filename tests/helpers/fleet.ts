@@ -124,8 +124,12 @@ export class FleetTestClient {
     for (const w of waiters) w();
   }
 
-  static async connect(token: string | null, headers: Record<string, string> = {}): Promise<FleetTestClient> {
-    const ws = new WebSocket(wsUrl(), {
+  static async connect(
+    token: string | null,
+    headers: Record<string, string> = {},
+    url: string = wsUrl()
+  ): Promise<FleetTestClient> {
+    const ws = new WebSocket(url, {
       headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...headers },
     });
     const client = new FleetTestClient(ws);

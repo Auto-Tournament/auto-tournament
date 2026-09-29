@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/server.remove.json",
+  "title": "server.remove (platform → host)",
+  "description": "Disruptive. csm keeps server-N contiguous, so only the highest-numbered server can be removed (others: rejected unsupported), and always with its files (keep_files: true is rejected unsupported). Reliable; answered by exactly one host.result (ref = this message's id). Rejected with `expired` when expires_at is past, and with `stale` when the envelope ts is more than 5 min off the host's clock (a command replayed long after it was sent is not run).",
+  "type": "object",
+  "required": [
+    "server"
+  ],
+  "properties": {
+    "server": {
+      "$ref": "../defs.json#/$defs/serverName"
+    },
+    "keep_files": {
+      "type": "boolean"
+    },
+    "force": {
+      "$ref": "../defs.json#/$defs/force"
+    },
+    "expires_at": {
+      "$ref": "../defs.json#/$defs/expiresAt"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/auth.rotated.json",
+  "title": "auth.rotated (host → platform, reliable)",
+  "type": "object",
+  "properties": {}
+}

@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/ack.json",
+  "title": "ack (both directions, ephemeral)",
+  "description": "Standalone ack; the envelope's `ack` carries the value. Sent at most 1 s or 32 messages after receipt.",
+  "type": "object",
+  "properties": {}
+}
