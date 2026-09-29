@@ -158,6 +158,7 @@ export default function Manage() {
           admin page; this page hands it the "Needs you" count. */}
       <StatusStrip
         counts={statusCounts}
+        showVeto={tournamentIntegration.capabilities.veto}
         resourceTile={
           ResourceStatusTile ? (
             <ResourceStatusTile availability={availability} />

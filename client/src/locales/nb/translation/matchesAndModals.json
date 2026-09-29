@@ -241,6 +241,7 @@
     "noPlayerData": "Ingen spillerdata ennå",
     "currentMap": "Nåværende kart",
     "maps": "Kart",
+    "mapsNotPicked": "Kartene er ikke valgt ennå.",
     "mapsViaVeto": "Avgjøres i kartvalget",
     "matchInformation": "Kampinformasjon",
     "created": "Opprettet:",
