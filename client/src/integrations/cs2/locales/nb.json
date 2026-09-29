@@ -410,6 +410,8 @@
       "addServer": "Legg til server"
     },
     "empty": {
+      "createServers": "Link a machine or create servers",
+      "addExisting": "Add an existing server (RCON)",
       "title": "Ingen servere registrert",
       "description": "Legg til din første CS2-server for å komme i gang",
       "addServer": "Legg til server",

@@ -410,6 +410,8 @@
       "addServer": "Añadir servidor"
     },
     "empty": {
+      "createServers": "Link a machine or create servers",
+      "addExisting": "Add an existing server (RCON)",
       "title": "No hay servidores registrados",
       "description": "Añade tu primer servidor de CS2 para empezar con el torneo",
       "addServer": "Añadir servidor",
