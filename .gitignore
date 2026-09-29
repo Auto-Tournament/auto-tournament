@@ -87,3 +87,4 @@ blob-report-merged.zip
 *.db
 *.sqlite
 *.zip
+ci-prebuilt/

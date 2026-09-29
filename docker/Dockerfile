@@ -1,3 +1,7 @@
+# Where the release stage gets the built app from: `build` (compiled here) or
+# `prebuilt` (compiled on the CI runner; see the build job in ci.yml).
+ARG APP_BUILD=build
+
 # Base image with Node.js and Yarn (via corepack)
 # Using Alpine for smallest possible image size
 FROM node:20-alpine AS base
@@ -85,6 +89,17 @@ RUN echo "Building backend (TypeScript compilation)..." && \
     echo "✅ Frontend build complete"
 
 # -------------------------------------------------------------------
+# prebuilt: the same files, compiled on the CI runner with its cached
+# node_modules, so CI skips the in-image yarn install (6+ minutes whenever
+# yarn.lock changes). Laid out like /app in the build stage.
+# -------------------------------------------------------------------
+FROM scratch AS prebuilt
+COPY ci-prebuilt/ /app/
+
+# The stage the release copies from.
+FROM ${APP_BUILD} AS app-build
+
+# -------------------------------------------------------------------
 # release: lean production image with Node.js and Caddy
 # NO node_modules needed - backend is bundled!
 # Using Alpine for smallest possible image size
@@ -125,7 +140,7 @@ RUN apk add --no-cache ca-certificates wget && \
 ENV NODE_ENV=production
 
 # Copy package.json (needed for version info at runtime)
-COPY --from=build /app/package.json ./
+COPY --from=app-build /app/package.json ./
 
 # ⬇️ NO node_modules needed! Backend is bundled with esbuild
 # The bundled dist/index.js contains all dependencies
@@ -133,25 +148,25 @@ COPY --from=build /app/package.json ./
 # Copy built application (bundled backend + frontend)
 # Backend is built into /app/api/dist and frontend into /app/api/public
 # We copy them into /app/dist and /app/public so runtime paths stay consistent.
-COPY --from=build /app/api/dist ./dist
-COPY --from=build /app/api/public ./public
+COPY --from=app-build /app/api/dist ./dist
+COPY --from=app-build /app/api/public ./public
 # Swagger UI's own CSS and JS. The bundle inlines swagger-ui-express's code but
 # not swagger-ui-dist's static files, and this image has no node_modules to
 # serve them from — without these, /api-docs is a blank page. See
 # copySwaggerUiAssets in api/esbuild.config.js and SWAGGER_UI_DIR in
 # api/src/config/publicPaths.ts.
-COPY --from=build /app/api/swagger-ui ./swagger-ui
+COPY --from=app-build /app/api/swagger-ui ./swagger-ui
 # The offline game catalog (DESIGN-modules §10): a committed snapshot of the
 # Auto-Tournament/packs repository, and signed code-module releases. Offered
 # as "available" in the catalog, installable with no network; none of it is
 # installed on its own. See seedBundledPacks in
 # api/src/services/gamePackService.ts and api/src/modules/catalogFeed.ts.
-COPY --from=build /app/api/bundled-packs ./bundled-packs
-COPY --from=build /app/api/bundled-modules ./bundled-modules
+COPY --from=app-build /app/api/bundled-packs ./bundled-packs
+COPY --from=app-build /app/api/bundled-modules ./bundled-modules
 # The generated OpenAPI spec. Without it, swagger-jsdoc has no .ts sources to
 # read in this image and /api-docs would list every endpoint with none of the
 # hand-written descriptions. See resolveOpenApiSpec in api/src/config/swagger.ts.
-COPY --from=build /app/docs/openapi.json ./docs/openapi.json
+COPY --from=app-build /app/docs/openapi.json ./docs/openapi.json
 
 # Copy Caddy configuration
 COPY docker/Caddyfile /app/Caddyfile

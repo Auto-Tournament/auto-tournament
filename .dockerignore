@@ -132,3 +132,6 @@ coverage
 dist
 Dockerfile*
 docker-compose*
+
+# CI builds the app on the runner and ships only the output (docker/Dockerfile, prebuilt).
+!ci-prebuilt/
