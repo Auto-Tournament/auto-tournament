@@ -144,7 +144,7 @@ type Leaderboard =
 One caveat: the spec's paths, methods and auth requirements are complete and
 correct for every endpoint, but response *bodies* are only described where
 somebody wrote them by hand — about a third. The rest say so and point at the
-handler. See [docs/API.md](../../docs/API.md).
+handler. See [the API guide](https://docs.autotournament.gg/reference/api).
 
 ## Writing, not just reading
 

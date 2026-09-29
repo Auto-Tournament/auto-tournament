@@ -118,7 +118,8 @@ Running tournaments:
 
 Building on Auto Tournament:
 
-- [Using the API from a bot or script](docs/API.md)
+- [Using the API from a bot or script](https://docs.autotournament.gg/reference/api)
+- [Webhooks and the teams API](https://docs.autotournament.gg/reference/webhooks)
 - [API reference](docs/API-REFERENCE.md) and [OpenAPI spec](docs/openapi.json), both generated from the code
 - [Example Discord bot](examples/discord-bot/README.md)
 - [Architecture](https://docs.autotournament.gg/developer/architecture)

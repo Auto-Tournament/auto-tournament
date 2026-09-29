@@ -1,7 +1,8 @@
 /**
  * Generate docs/API-REFERENCE.md and docs/openapi.json from the actual routers.
  *
- * Hand-written endpoint lists rot. `docs/API.md` covers the endpoints a bot
+ * Hand-written endpoint lists rot. The docs site's API guide
+ * (https://docs.autotournament.gg/reference/api) covers the endpoints a bot
  * would want and stops there; the `@openapi` annotations cover about a third of
  * the surface. Neither tells you what is actually mounted, and neither
  * complains when a route is added.
@@ -104,8 +105,8 @@ Every endpoint this API serves — ${total} of them, ${guarded} behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
-endpoints worth using, see [API.md](API.md). To generate a client, use
-[openapi.json](openapi.json) — same walk, machine-readable.
+endpoints worth using, see [the API guide](https://docs.autotournament.gg/reference/api).
+To generate a client, use [openapi.json](openapi.json) — same walk, machine-readable.
 
 ## Reading the Auth column
 
