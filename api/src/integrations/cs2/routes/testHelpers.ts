@@ -13,6 +13,7 @@ import { db } from '../../../config/database';
 import { resetEnrollRateLimit } from '../fleet/routes';
 import { liveStateStore } from '../fleet/state';
 import { FleetSendError, getCommand, sendReliable, type ReliableType } from '../fleet/reliable';
+import { scanForFailovers } from '../fleet/failover';
 
 const router = Router();
 
@@ -110,6 +111,8 @@ router.post('/fleet/age-token', requireAuth, async (req: Request, res: Response)
  * GET  /api/test/fleet/live-state/:slug                             the stored LiveMatchRecord
  * GET  /api/test/fleet/events/:serverId                             cs2_fleet_events rows (no message bodies)
  * GET  /api/test/fleet/commands/:id                                 a command and its cmd.result
+ * POST /api/test/fleet/failover/scan { liveSeconds?, preLiveSeconds? }   one failover detection pass
+ *   with its own grace (default 0 / 0: a server that is down now counts as down)
  */
 function fleetTestGuard(res: Response): boolean {
   if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
@@ -180,6 +183,18 @@ router.get('/fleet/events/:serverId', requireAuth, async (req: Request, res: Res
     [String(req.params.serverId)]
   );
   res.json({ success: true, events: rows });
+});
+
+router.post('/fleet/failover/scan', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (!fleetTestGuard(res)) return;
+  const { liveSeconds, preLiveSeconds } = (req.body || {}) as { liveSeconds?: number; preLiveSeconds?: number };
+  const result = await scanForFailovers({
+    grace: {
+      liveSeconds: typeof liveSeconds === 'number' ? liveSeconds : 0,
+      preLiveSeconds: typeof preLiveSeconds === 'number' ? preLiveSeconds : 0,
+    },
+  });
+  res.json({ success: true, ...result });
 });
 
 router.get('/fleet/commands/:id', requireAuth, async (req: Request, res: Response): Promise<void> => {

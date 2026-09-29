@@ -58,6 +58,10 @@
  * `012-fleet-connect-address` adds where players connect to a Ready Up server
  * (fleet/address.ts): the fleet link's peer address and whether an admin set
  * the linked row's host / port by hand.
+ *
+ * `013-fleet-failover` adds failover proposals (fleet/failover.ts, FLEET.md
+ * §11): a Ready Up server that died or hung mid-match, the spare server and
+ * round backup proposed, and what the admin (or auto-failover) decided.
  */
 
 import type { ModuleMigration } from '../types';
@@ -74,6 +78,7 @@ export const CS2_FLEET_HOSTS_MIGRATION_ID = '009-fleet-hosts';
 export const CS2_FLEET_DRIVER_MIGRATION_ID = '010-fleet-driver';
 export const CS2_FLEET_SERVER_PREFS_MIGRATION_ID = '011-fleet-server-prefs';
 export const CS2_FLEET_CONNECT_ADDRESS_MIGRATION_ID = '012-fleet-connect-address';
+export const CS2_FLEET_FAILOVER_MIGRATION_ID = '013-fleet-failover';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -734,6 +739,53 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
     up: `
     ALTER TABLE cs2_fleet_servers ADD COLUMN IF NOT EXISTS peer_addr TEXT;
     ALTER TABLE cs2_servers ADD COLUMN IF NOT EXISTS host_override INTEGER NOT NULL DEFAULT 0;
+`,
+  },
+  {
+    // Fleet failover (fleet/failover.ts, FLEET.md §11). Every statement can
+    // run twice.
+    //
+    // - cs2_fleet_failovers: one row per failover, and its audit record:
+    //   which server of which epoch went down and why, the server and round
+    //   backup the match moved (or resumed in place) with, who decided, and
+    //   what became of it (moved with the new epoch, dismissed, withdrawn when
+    //   the server came back). At most one open (or moving) row per match. The settings (auto-failover,
+    //   reserve) are the 'failover' row of cs2_fleet_lists
+    //   (`data` = {"auto": boolean, "reserve": number | null}).
+    id: CS2_FLEET_FAILOVER_MIGRATION_ID,
+    up: `
+    CREATE TABLE IF NOT EXISTS cs2_fleet_failovers (
+      id TEXT PRIMARY KEY, -- ULID
+      match_slug TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'open', -- open | moving | moved | dismissed | withdrawn
+      reason TEXT NOT NULL, -- offline | hung | exited
+      detail TEXT,
+      phase TEXT, -- the match phase when it went down
+      from_server_id TEXT, -- fleet server that went down
+      from_cs2_server_id TEXT,
+      from_epoch INTEGER NOT NULL,
+      down_since INTEGER, -- unix s
+      target_cs2_server_id TEXT, -- the proposed spare (linked cs2_servers row)
+      map_number INTEGER NOT NULL, -- fleet map number (1-based)
+      round INTEGER NOT NULL DEFAULT 0, -- backup round; 0 = the map restarts from warmup
+      backup_id BIGINT,
+      backup_sha256 TEXT,
+      score TEXT, -- JSON map score at the start of the round
+      state TEXT, -- JSON {state, mapStats}: the platform's last MatchState of the failed epoch
+      auto INTEGER NOT NULL DEFAULT 0, -- 1 = accepted by auto-failover
+      new_epoch INTEGER,
+      new_cs2_server_id TEXT,
+      command_id TEXT, -- the match.assign envelope id
+      inline INTEGER NOT NULL DEFAULT 0, -- 1 = backup sent inline, 0 = backup_ref or none
+      decided_by TEXT,
+      decided_at INTEGER,
+      last_error TEXT,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
+    CREATE INDEX IF NOT EXISTS cs2_fleet_failovers_match_idx ON cs2_fleet_failovers(match_slug, created_at);
+    CREATE UNIQUE INDEX IF NOT EXISTS cs2_fleet_failovers_open_idx ON cs2_fleet_failovers(match_slug) WHERE status IN ('open', 'moving');
 `,
   },
 ];

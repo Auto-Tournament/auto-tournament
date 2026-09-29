@@ -24,6 +24,7 @@ import { startDemoStreams, stopDemoStreams } from './fleet/demoStream';
 import { startFleetHosts, stopFleetHosts } from './fleet/hosts/service';
 import { startServerNotices, stopServerNotices } from './fleet/serverNotices';
 import { startFleetPush, stopFleetPush } from './fleet/push';
+import { startFleetFailover, stopFleetFailover } from './fleet/failover';
 
 export async function startCs2(): Promise<void> {
   // Round backups from Ready Up servers (event.backup) and the restore audit:
@@ -49,6 +50,8 @@ export async function startCs2(): Promise<void> {
   await startFleetHosts().catch((error) => {
     log.warn('Failed to start the fleet host gateway', { error });
   });
+  // Failover proposals for Ready Up servers that die mid-match (FLEET.md §11).
+  startFleetFailover();
 
   await bootstrapServerWebhooks().catch((error) => {
     log.warn('Failed to auto-configure server webhooks on startup', { error });
@@ -78,6 +81,7 @@ export function stopCs2(): void {
   stopRestoreAudit();
   stopDemoStreams();
   stopFleetHosts();
+  stopFleetFailover();
   stopServerNotices();
   stopFleetPush();
 }

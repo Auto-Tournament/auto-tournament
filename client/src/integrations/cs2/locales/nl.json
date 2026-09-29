@@ -387,7 +387,11 @@
         "postgame": "Wedstrijd afgelopen",
         "queued": "Volgende wedstrijd in wachtrij",
         "error": "Fout"
-      }
+      },
+      "movedTitle": "The match moved to a new server",
+      "movedBody": "The old server went down. Connect to the server below (it has a new password): the match continues from the last round backup.",
+      "resumedTitle": "The server restarted",
+      "resumedBody": "Connect again: the match continues from the last round backup."
     }
   },
   "serversPage": {
@@ -1332,5 +1336,58 @@
       "limit": "Too many log streams",
       "failed": "Failed"
     }
+  },
+  "failover": {
+    "title": "Failover",
+    "autoOn": "Automatic",
+    "autoOff": "Automatic failover off",
+    "unknownServer": "unknown server",
+    "fromWarmup": "Restart the map from warmup",
+    "roundScore": "Round {{round}} ({{team1}}–{{team2}})",
+    "roundN": "Round {{round}}",
+    "failed": "Could not move the match",
+    "moved": "The match is moving. Players see the new server on the match page.",
+    "dismissed": "Left as it is.",
+    "server": "Server",
+    "resumeFrom": "Resume from",
+    "moving": "Moving the match to {{server}}…",
+    "down": "{{server}}: {{reason}}",
+    "inPlace": "It resumes the match on the same server, from {{round}}.",
+    "proposal": "Move to {{server}}, from {{round}}.",
+    "noServer": "No Ready Up server is free. The match moves as soon as one is (or when this one comes back).",
+    "lastError": "Last try: {{error}}",
+    "move": "Move match",
+    "dismiss": "Leave it",
+    "manualHint": "Move this match to another Ready Up server, from a round backup. Players see the new server on the match page.",
+    "noneFree": "No other Ready Up server is free right now.",
+    "history": "History",
+    "historyMoved": "{{from}} → {{to}}, {{round}} ({{reason}})",
+    "historyOther": "{{from}}: {{reason}}",
+    "byAuto": "automatic",
+    "byAdmin": "by {{who}}",
+    "reasons": {
+      "offline": "the server lost its connection",
+      "hung": "the server hung",
+      "exited": "the server process stopped",
+      "restarted": "the server restarted without the match",
+      "manual": "moved by an admin"
+    },
+    "status": {
+      "open": "Waiting",
+      "moving": "Moving",
+      "moved": "Moved",
+      "dismissed": "Left",
+      "withdrawn": "Server came back"
+    }
+  },
+  "failoverSettings": {
+    "title": "Failover",
+    "saveFailed": "Could not save the failover settings",
+    "auto": "Automatic failover",
+    "autoHelp": "When a Ready Up server goes down during a match, the match resumes from the last round backup: on the same server if it comes back in time, else on a free one. Off: the match page asks an admin first.",
+    "reserve": "Spare servers",
+    "reserveAuto": "Automatic (1 once 2 servers are online)",
+    "reserveStatus": "{{effective}} of {{pool}} online server(s) kept free for failover",
+    "reserveHelp": "Spare servers stay idle: matches are not put on them, so one is ready when a server goes down. At least one server always takes matches. Spare servers count toward your license like any other server."
   }
 }

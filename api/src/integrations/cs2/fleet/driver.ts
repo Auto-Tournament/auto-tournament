@@ -61,6 +61,7 @@ import type {
   HelloPayload,
   MatchPhase,
   MatchUpdateOp,
+  ResumeBlock,
   UnassignReason,
   WelcomePayload,
 } from './protocol/v1';
@@ -346,11 +347,23 @@ function refusal(command: FleetCommandRecord): string {
   return `Ready Up refused the match (${code}${message ? `: ${message}` : ''})`;
 }
 
+export interface AssignOptions {
+  /**
+   * Failover (FLEET.md §11.3, ./failover.ts): continue the match from a round
+   * backup. A match that was live stays live, and its live stats are kept.
+   */
+  resume?: ResumeBlock;
+}
+
 /**
  * Put a match on the fleet server behind `cs2ServerId`. On success the match
- * is `loaded`, the same as an RCON load.
+ * is `loaded`, the same as an RCON load (a resumed live match stays `live`).
  */
-export async function assignMatch(matchSlug: string, cs2ServerId: string): Promise<FleetLoadResult> {
+export async function assignMatch(
+  matchSlug: string,
+  cs2ServerId: string,
+  options: AssignOptions = {}
+): Promise<FleetLoadResult> {
   const fleetServerId = await fleetServerIdOf(cs2ServerId);
   if (!fleetServerId) return { success: false, error: `Server ${cs2ServerId} is not a Ready Up fleet server` };
   if (!fleetBus().isConnected(fleetServerId)) {
@@ -382,7 +395,13 @@ export async function assignMatch(matchSlug: string, cs2ServerId: string): Promi
   try {
     sent = await sendReliable(fleetServerId, {
       type: 'match.assign',
-      payload: { match_id: matchSlug, epoch, config_rev: 1, config },
+      payload: {
+        match_id: matchSlug,
+        epoch,
+        config_rev: 1,
+        config,
+        ...(options.resume ? { resume: options.resume } : {}),
+      },
     });
   } catch (error) {
     await markEnded(matchSlug, epoch);
@@ -390,7 +409,9 @@ export async function assignMatch(matchSlug: string, cs2ServerId: string): Promi
     log.error(`[FLEET] ${matchSlug}: match.assign not sent: ${message}`);
     return { success: false, error: message };
   }
-  log.info(`[FLEET] ${matchSlug}: match.assign epoch ${epoch} sent to ${fleetServerId} (${cs2ServerId})`);
+  log.info(
+    `[FLEET] ${matchSlug}: match.assign epoch ${epoch} sent to ${fleetServerId} (${cs2ServerId})${options.resume ? ` resuming map ${options.resume.map_number} round ${options.resume.round ?? 0}` : ''}`
+  );
 
   const answer = await awaitCommandResult(sent.id, ASSIGN_TIMEOUT_MS);
   if (!answer || answer.status === 'pending') {
@@ -419,8 +440,9 @@ export async function assignMatch(matchSlug: string, cs2ServerId: string): Promi
   }
 
   await storeAckedConfig(matchSlug, epoch, config);
-  matchLiveStatsService.reset(matchSlug);
-  await db.updateAsync('matches', { status: 'loaded', loaded_at: nowS() }, 'slug = ?', [matchSlug]);
+  if (!options.resume) matchLiveStatsService.reset(matchSlug);
+  const status = options.resume && match.status === 'live' ? 'live' : 'loaded';
+  await db.updateAsync('matches', { status, loaded_at: nowS() }, 'slug = ?', [matchSlug]);
   log.matchLoaded(matchSlug, cs2ServerId, true);
   const updated = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
   if (updated) {
@@ -770,6 +792,23 @@ async function supersede(fleetServerId: string, matchSlug: string, epoch: number
   });
 }
 
+/**
+ * Failover (FLEET.md §11.4): retire `epoch` on the server that held it before
+ * the match moves on. `match.unassign {superseded}` (`moved` for an admin's
+ * move off a live server) goes to its outbox, so a dead server gets it when it
+ * comes back, with the "match moved" kick; the assignment is ended, and its
+ * later hello at that epoch does not send a second one.
+ */
+export async function fenceEpoch(
+  fleetServerId: string,
+  matchSlug: string,
+  epoch: number,
+  reason: 'superseded' | 'moved' = 'superseded'
+): Promise<string> {
+  supersededSent.add(`${fleetServerId}:${matchSlug}:${epoch}`);
+  return unassignEpoch(fleetServerId, matchSlug, epoch, reason, MOVED_KICK_MESSAGE);
+}
+
 /** `welcome.assignment`: the match this server holds on the platform's side, still being played. */
 export async function resolveWelcomeAssignment(
   fleetServerId: string,
@@ -803,7 +842,7 @@ async function checkHello(fleetServerId: string, hello: HelloPayload): Promise<v
     if (assignment) {
       log.warn(
         `[FLEET] ${fleetServerId} came back without ${assignment.match_id} (epoch ${assignment.epoch}) loaded; ` +
-          'it needs a failover or a restart of the match'
+          'failover resumes it there (failover.ts)'
       );
     }
   }

@@ -7,7 +7,7 @@ import { HardDrivesIcon, MapTrifoldIcon } from '@phosphor-icons/react';
 import type { ClientGameIntegration } from '../types';
 import { links } from '../../module-sdk';
 import { MatchServerPanel } from './match/MatchServerPanel';
-import { RoundBackupsPanel } from './match/RoundBackupsPanel';
+import { Cs2MatchAdminView } from './match/Cs2MatchAdminView';
 import { ServerAllocationWidget } from './servers/ServerAllocationWidget';
 import { AddServerDialog, BatchAddServersDialog } from './servers/ResourceDialogs';
 import { ServersOverviewCard } from './servers/ServersOverviewCard';
@@ -72,8 +72,9 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   matchPanels: {
     teamView: MatchServerPanel,
     adminView: ServerAllocationWidget,
-    // Round backups and "restore to round N", over the fleet link or RCON.
-    adminMatchView: RoundBackupsPanel,
+    // Failover (Ready Up servers), then round backups and "restore to round
+    // N" over the fleet link or RCON.
+    adminMatchView: Cs2MatchAdminView,
   },
 
   preMatchView: VetoInterface,

@@ -206,6 +206,8 @@ export interface MatchServer {
     description: string;
     color: 'success' | 'warning' | 'error' | 'info' | 'default';
   } | null;
+  /** Ready Up: a failover moved the match here in the last half hour (players reconnect). */
+  moved?: { at: number; reason: string; inPlace: boolean } | null;
 }
 
 /** `GET /api/game/cs2/matches/:slug/connect`: how the viewer joins one match. */

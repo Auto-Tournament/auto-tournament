@@ -27,6 +27,7 @@ import type { DbMatchRow } from '../../../types/database.types';
 import { resolveViewerTeamForMatch } from '../veto/routes';
 import { checkAdminAccess } from '../../../middleware/auth';
 import { connectPasswordFor, fleetServerStatus } from '../fleet/driver';
+import { recentMove } from '../fleet/failover';
 
 const router = Router();
 
@@ -117,8 +118,14 @@ router.get('/matches/:slug/connect', async (req: Request, res: Response) => {
 
     let status: { status: string; description: unknown } | null = null;
     let password: string | null = null;
+    // A failover moved the match in the last half hour: players reconnect.
+    let moved: { at: number; reason: string; inPlace: boolean } | null = null;
     if (canSeeServer && match.server_id) {
       if (onFleet) {
+        const move = await recentMove(match.slug).catch(() => null);
+        if (move && move.newCs2ServerId === match.server_id) {
+          moved = { at: move.updatedAt, reason: move.reason, inPlace: move.reason === 'restarted' };
+        }
         const fleet = await fleetServerStatus(match.server_id);
         status =
           fleet.online && fleet.status
@@ -154,6 +161,7 @@ router.get('/matches/:slug/connect', async (req: Request, res: Response) => {
               password,
               status: status?.status ?? null,
               statusDescription: status?.description ?? null,
+              moved,
             }
           : null,
     });

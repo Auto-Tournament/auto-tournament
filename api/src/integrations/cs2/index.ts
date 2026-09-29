@@ -420,10 +420,22 @@ export const cs2Integration: GameIntegration = {
     return cs2ServerPool.getPoolStatus();
   },
 
-  /** Enabled servers, from the database only (no RCON). */
+  /**
+   * Servers for the license count, from the database only (no RCON): the
+   * enabled server rows (the failover reserve among them: a spare is a
+   * server), plus enrolled Ready Up servers that are not on an enabled row
+   * yet. Only counted, never a reason to hold a match or a failover back.
+   */
   async configuredResourceCount() {
     const { serverService } = await import('./services/serverService');
-    return (await serverService.getAllServers(true)).length;
+    const enabled = (await serverService.getAllServers(true)).length;
+    const { db } = await import('../../config/database');
+    const unlinked = await db.queryOneAsync<{ n: number | string }>(
+      `SELECT COUNT(*) AS n FROM cs2_fleet_servers f
+        WHERE f.status = 'enrolled'
+          AND NOT EXISTS (SELECT 1 FROM cs2_servers s WHERE s.fleet_server_id = f.id AND s.enabled = 1)`
+    );
+    return enabled + Number(unlinked?.n ?? 0);
   },
 
   /** The server grace period (shorter in simulation mode). */

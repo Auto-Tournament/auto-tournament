@@ -274,6 +274,25 @@ export function MatchServerPanel({ matchSlug, viewerCanJoin, matchStatus }: Matc
       )}
 
       <Box display="flex" flexDirection="column" gap={2}>
+        {server.moved && (
+          <Alert severity="warning" data-testid="match-server-moved">
+            <Typography variant="body2" fontWeight={600} gutterBottom>
+              {server.moved.inPlace
+                ? t('matchInfo.server.resumedTitle', { defaultValue: 'The server restarted' })
+                : t('matchInfo.server.movedTitle', { defaultValue: 'The match moved to a new server' })}
+            </Typography>
+            <Typography variant="body2">
+              {server.moved.inPlace
+                ? t('matchInfo.server.resumedBody', {
+                    defaultValue: 'Connect again: the match continues from the last round backup.',
+                  })
+                : t('matchInfo.server.movedBody', {
+                    defaultValue:
+                      'The old server went down. Connect to the server below (it has a new password): the match continues from the last round backup.',
+                  })}
+            </Typography>
+          </Alert>
+        )}
         {/* Server info */}
         <Box>
           <Typography variant="body2" color="text.secondary" gutterBottom>
