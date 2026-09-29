@@ -47,3 +47,22 @@ export function truncateResponseBody(text: string, max = 2048): string {
   const clean = text.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '');
   return clean.length > max ? `${clean.slice(0, max)}…` : clean;
 }
+
+/** Connect details in a receiver's echo of our body are scrubbed before storing it. */
+export function scrubSecrets(text: string, body: string): string {
+  let out = text;
+  try {
+    const parsed = JSON.parse(body) as { data?: { match?: { connect?: Record<string, unknown> | null } } };
+    const connect = parsed.data?.match?.connect;
+    if (connect) {
+      // Longest first: the steam:// link and console line contain the host and password.
+      const values = Object.values(connect)
+        .filter((v): v is string => typeof v === 'string' && v.length >= 4)
+        .sort((a, b) => b.length - a.length);
+      for (const value of values) out = out.split(value).join(REDACTED);
+    }
+  } catch {
+    // Not JSON: nothing of ours to find in it.
+  }
+  return out;
+}

@@ -213,6 +213,14 @@ test.describe.serial('Webhook events from match lifecycles', () => {
       team1: { series_score: 1, score: 13, players: [] },
       team2: { series_score: 0, score: 5, players: [] },
     });
+    await sendEvent(request, slug, {
+      event: 'series_end',
+      matchid: matchId,
+      team1_series_score: 1,
+      team2_series_score: 0,
+      winner: { side: '3', team: 'team1' },
+      time_until_restore: 10,
+    });
     await expect.poll(async () => (await matchRow(request, slug)).status, { timeout: 20_000 }).toBe('completed');
     await reconcile(request, slug);
 

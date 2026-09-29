@@ -9,7 +9,7 @@ import {
   generateWebhookSecret,
 } from '../../api/src/services/webhooks/signing';
 import { MAX_ATTEMPTS, RETRY_DELAYS_MS, nextRetryDelayMs, parseRetryAfter } from '../../api/src/services/webhooks/retry';
-import { redactDeliveryBody, REDACTED } from '../../api/src/services/webhooks/redact';
+import { redactDeliveryBody, REDACTED, scrubSecrets } from '../../api/src/services/webhooks/redact';
 import {
   checkWebhookUrlSyntax,
   classifyAddress,
@@ -107,6 +107,15 @@ test.describe('delivery log redaction', () => {
     });
     expect(shown.data.match.team1?.players).toHaveLength(5);
     expect(shown.id).toBe(env.id);
+  });
+
+  test("a receiver's echo of the body is scrubbed before it is stored", () => {
+    const body = JSON.stringify(sampleEnvelope('match.ready'));
+    const scrubbed = scrubSecrets(`you sent: ${body}`, body);
+    expect(scrubbed).not.toContain('k3Lp9QzT2w');
+    expect(scrubbed).not.toContain('203.0.113.10');
+    expect(scrubbed).not.toContain('steam://connect');
+    expect(scrubSecrets('plain text', 'not json')).toBe('plain text');
   });
 });
 

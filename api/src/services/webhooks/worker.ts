@@ -20,7 +20,7 @@ import { settingsService } from '../settingsService';
 import { getIO, ADMIN_ROOM } from '../socketService';
 import { attemptDelivery, type AttemptResult } from './deliver';
 import { isSuccessStatus, MAX_ATTEMPTS, nextRetryDelayMs, parseRetryAfter } from './retry';
-import { truncateResponseBody, REDACTED } from './redact';
+import { scrubSecrets, truncateResponseBody } from './redact';
 import {
   DELIVERY_HEADER,
   EVENT_HEADER,
@@ -133,23 +133,6 @@ async function tick(): Promise<void> {
   schedule(next === null ? IDLE_POLL_MS : next - Date.now());
 }
 
-/** Connect details in a receiver's echo of our body are scrubbed before storing it. */
-function scrubSecrets(text: string, body: string): string {
-  let out = text;
-  try {
-    const parsed = JSON.parse(body) as { data?: { match?: { connect?: Record<string, unknown> | null } } };
-    const connect = parsed.data?.match?.connect;
-    if (connect) {
-      for (const value of Object.values(connect)) {
-        if (typeof value === 'string' && value.length >= 4) out = out.split(value).join(REDACTED);
-      }
-    }
-  } catch {
-    // Not JSON: nothing of ours to find in it.
-  }
-  return out;
-}
-
 function headersFor(endpoint: WebhookEndpointWithSecrets, delivery: Delivery): Record<string, string> {
   const t = Math.floor(Date.now() / 1000);
   const secrets = [endpoint.secret, ...(endpoint.previousSecret ? [endpoint.previousSecret] : [])];
@@ -252,5 +235,3 @@ async function deliverOne(delivery: Delivery): Promise<void> {
   }
 }
 
-/** Exported for the tests of the attempt bookkeeping. */
-export const __test = { scrubSecrets, MAX_ATTEMPTS };
