@@ -13,10 +13,18 @@
  * command's id is remembered so its answer can be shown.
  */
 
+import { log } from '../../../../utils/logger';
 import { sendReliable } from '../reliable';
-import type { CmdPayload } from '../protocol/v1';
+import type { CmdPayload, HelloPayload } from '../protocol/v1';
 import { isSteam64 } from './admins';
-import { recordPush, writePref } from './store';
+import {
+  createdPluginSet,
+  pluginSetCommand,
+  pluginsStateDiffers,
+  pluginsStateOf,
+  type StoredPlugins,
+} from './pluginSets';
+import { readPrefs, recordPush, writePref } from './store';
 
 export const MAX_WHITELIST = 1000;
 export const MAX_PLUGINS_PER_LIST = 16;
@@ -124,11 +132,20 @@ export async function setPractice(
 
 export async function setPlugins(
   serverId: string,
-  value: { enable: string[]; disable: string[] },
+  value: StoredPlugins,
   issuedBy: IssuedBy,
   updatedBy: string | null
 ): Promise<{ id: string; seq: number; delivered: boolean }> {
   await writePref(serverId, 'plugins', value, updatedBy);
+  return sendPluginsSet(serverId, value, issuedBy);
+}
+
+/** Send a server its plugins.set lists (what is stored is not changed). */
+async function sendPluginsSet(
+  serverId: string,
+  value: StoredPlugins,
+  issuedBy: IssuedBy
+): Promise<{ id: string; seq: number; delivered: boolean }> {
   const args: Record<string, unknown> = {};
   if (value.enable.length > 0) args.enable = value.enable;
   if (value.disable.length > 0) args.disable = value.disable;
@@ -140,4 +157,41 @@ export async function setPlugins(
   });
   await recordPush(serverId, 'plugins', { id: sent.id, seq: sent.seq });
   return sent;
+}
+
+const PLATFORM_ISSUER: IssuedBy = { user_id: 'platform', name: 'Auto Tournament', root: false };
+
+/**
+ * After a server's welcome (./index.ts):
+ *
+ * - a server csm created that was never given plugins gets the set its
+ *   `server.create` carried (the create's own set, or the fleet default at
+ *   the time; ./pluginSets.ts);
+ * - a server that was given plugins and whose hello `plugins_state` differs
+ *   gets them again, unless that push has not reached it yet (its seq is
+ *   past the hello's `last_rx_seq`: the outbox replay delivers it).
+ */
+export async function pluginsOnHello(
+  serverId: string,
+  hello: Pick<HelloPayload, 'plugins_state' | 'stream'>
+): Promise<'initial' | 'resync' | null> {
+  const prefs = await readPrefs(serverId);
+  if (!prefs.plugins) {
+    if (prefs.pushed.plugins) return null;
+    const created = await createdPluginSet(serverId);
+    if (!created.set) return null;
+    await setPlugins(serverId, pluginSetCommand(created.set), PLATFORM_ISSUER, 'platform');
+    log.info(
+      `[FLEET] ${serverId}: plugin set ${created.set.preset} (${created.set.plugins.join(', ')}) sent after its first hello`
+    );
+    return 'initial';
+  }
+  const state = pluginsStateOf(hello);
+  if (!state) return null;
+  const last = prefs.pushed.plugins;
+  if (last?.seq !== undefined && last.seq > hello.stream.last_rx_seq) return null;
+  if (!pluginsStateDiffers(prefs.plugins, state)) return null;
+  await sendPluginsSet(serverId, prefs.plugins, PLATFORM_ISSUER);
+  log.info(`[FLEET] ${serverId}: its plugins differ from its plugin set; plugins.set sent again`);
+  return 'resync';
 }

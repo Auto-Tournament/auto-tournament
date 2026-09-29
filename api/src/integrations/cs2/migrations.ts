@@ -66,6 +66,11 @@
  * `014-fleet-autoscale` adds the automatic scaler's activity log
  * (fleet/autoscale/): each start, stop, create and link it did, and why. Its
  * settings are the 'autoscale' row of `cs2_fleet_lists`.
+ *
+ * `015-fleet-plugins-state` keeps what a Ready Up server said about its
+ * plugins in its last hello (`plugins_state`: installed, disabled), for the
+ * plugin picker's "not installed" warning (fleet/push/pluginSets.ts). The
+ * fleet default plugin set is the 'plugins_default' row of `cs2_fleet_lists`.
  */
 
 import type { ModuleMigration } from '../types';
@@ -84,6 +89,7 @@ export const CS2_FLEET_SERVER_PREFS_MIGRATION_ID = '011-fleet-server-prefs';
 export const CS2_FLEET_CONNECT_ADDRESS_MIGRATION_ID = '012-fleet-connect-address';
 export const CS2_FLEET_FAILOVER_MIGRATION_ID = '013-fleet-failover';
 export const CS2_FLEET_AUTOSCALE_MIGRATION_ID = '014-fleet-autoscale';
+export const CS2_FLEET_PLUGINS_STATE_MIGRATION_ID = '015-fleet-plugins-state';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -820,6 +826,13 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
     );
 
     CREATE INDEX IF NOT EXISTS cs2_fleet_autoscale_events_at_idx ON cs2_fleet_autoscale_events(at);
+`,
+  },
+  {
+    id: CS2_FLEET_PLUGINS_STATE_MIGRATION_ID,
+    up: `
+    -- hello.plugins_state: the plugins a Ready Up server has (installed) and keeps off (disabled)
+    ALTER TABLE cs2_fleet_servers ADD COLUMN IF NOT EXISTS plugins_state TEXT;
 `,
   },
 ];

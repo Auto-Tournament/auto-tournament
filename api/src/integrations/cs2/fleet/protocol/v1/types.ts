@@ -82,6 +82,8 @@ export interface HelloPayload {
   admins_rev?: number;
   /** Plugins the core did not load on this CS2 build (informational). */
   plugins_disabled?: { name: string; reason: string }[];
+  /** The plugins on the server: installed .so files, and what plugins.json keeps off (plugins.set). */
+  plugins_state?: { installed: string[]; disabled: string[] };
 }
 
 export type AuthRotatedPayload = Record<string, never>;

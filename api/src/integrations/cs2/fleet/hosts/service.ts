@@ -33,6 +33,14 @@ import {
   type HostServerView,
 } from './join';
 import * as registry from './registry';
+import { bundleFor, pluginSetForCreate, validatePluginSet, type PluginSet } from '../push/pluginSets';
+
+/** The plugin set a server.create was stored with (meta.plugins), if any. */
+function pluginSetOfMeta(meta: Record<string, unknown> | null): PluginSet | null {
+  if (!meta?.plugins) return null;
+  const check = validatePluginSet(meta.plugins);
+  return check.ok ? check.value : null;
+}
 
 const ROTATION_CHECK_MS = 60 * 60 * 1000;
 
@@ -120,11 +128,18 @@ export async function sendHostCommand<T extends HostCommandType>(
   if (!check.ok) throw new HostCommandError(`Invalid ${type}: ${check.errors.join('; ')}`, 400, 'invalid_payload');
 
   // server.create: remember which servers exist now, to find the new ones
-  // for the Ready Up install that follows (csm decision 10).
+  // for the Ready Up install that follows (csm decision 10), and the plugin
+  // set they get once they enroll: the create's own, else the fleet default
+  // (../push/pluginSets.ts).
   let meta: Record<string, unknown> | null = opts.meta ?? null;
   if (type === 'server.create') {
     const inventory = (await registry.getHostView(hostId))?.inventory;
+    const own = meta?.plugins ? validatePluginSet(meta.plugins) : null;
+    if (own && !own.ok) throw new HostCommandError(`Invalid plugins: ${own.error}`, 400, 'invalid_plugins');
+    const plugins = await pluginSetForCreate(own?.ok ? own.value : null);
     meta = { ...(meta ?? {}), serversBefore: inventory?.servers.map((s) => s.name) ?? [] };
+    if (plugins) meta.plugins = plugins;
+    else delete meta.plugins;
   }
 
   const id = ulid();
@@ -153,7 +168,11 @@ export async function sendHostCommand<T extends HostCommandType>(
 /** Who the platform's own follow-up commands are issued by. */
 export const PLATFORM_ACTOR = 'platform';
 
-/** The Ready Up bundle new servers get (csm decision 12: default = install.sh essentials). */
+/**
+ * The Ready Up bundle new servers get (csm decision 12: default = install.sh
+ * essentials). A create whose plugin set needs more gets `skins` (full):
+ * ../push/pluginSets.ts bundleFor.
+ */
 export const NEW_SERVER_READYUP = { version: 'latest', bundle: 'default' } as const;
 
 /**
@@ -174,7 +193,7 @@ async function followUpCreate(hostId: string, record: registry.HostCommandRecord
   const sent = await sendHostCommand(
     hostId,
     'host.update_plugins',
-    { servers, readyup: { ...NEW_SERVER_READYUP } },
+    { servers, readyup: { ...NEW_SERVER_READYUP, bundle: bundleFor(pluginSetOfMeta(record.meta)) } },
     { issuedBy: PLATFORM_ACTOR, meta: { followUpOf: record.id } }
   );
   await registry.mergeHostCommandMeta(record.id, { followUp: sent.command.id, newServers: servers });

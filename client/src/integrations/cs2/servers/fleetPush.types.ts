@@ -68,7 +68,11 @@ export interface FleetServerPushResponse {
   effective: FleetSettingsValue;
   whitelist: { enabled: boolean; steamids: string[] } | null;
   practice: boolean | null;
-  plugins: { enable: string[]; disable: string[] } | null;
+  plugins: { enable: string[]; disable: string[]; preset?: PluginPreset } | null;
+  /** The set the stored plugins.set stands for. */
+  pluginSet: PluginSetValue | null;
+  /** What the server reported in its last hello (null: not reported). */
+  pluginsState: PluginsState | null;
   pushed: {
     admins: FleetPushStatus | null;
     serverConfig: FleetPushStatus | null;
@@ -89,4 +93,32 @@ export interface FleetCommandAnswer {
     message: string | null;
     output: string | null;
   };
+}
+
+/** Ready Up plugin sets (`/api/fleet/plugins`, fleet/push/pluginSets.ts). */
+export type PluginPresetName = 'tournament' | 'practice' | 'fun';
+export type PluginPreset = PluginPresetName | 'custom';
+
+export interface PluginSetValue {
+  preset: PluginPreset;
+  /** Every plugin that is on, required ones included. */
+  plugins: string[];
+}
+
+export interface PluginCatalogResponse {
+  success: boolean;
+  catalog: string[];
+  required: string[];
+  /** What csm's default bundle installs; anything else needs the full bundle. */
+  essentialsBundle: string[];
+  presets: Record<PluginPresetName, string[]>;
+  default: PluginSetValue | null;
+  updatedBy: string | null;
+  updatedAt: number | null;
+}
+
+/** hello.plugins_state: what the server has installed and keeps off. */
+export interface PluginsState {
+  installed: string[];
+  disabled: string[];
 }

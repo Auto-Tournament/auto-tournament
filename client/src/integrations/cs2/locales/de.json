@@ -1391,5 +1391,51 @@
     "reserveAuto": "Automatic (1 once 2 servers are online)",
     "reserveStatus": "{{effective}} of {{pool}} online server(s) kept free for failover",
     "reserveHelp": "Spare servers stay idle: matches are not put on them, so one is ready when a server goes down. At least one server always takes matches. Spare servers count toward your license like any other server."
+  },
+  "pluginSets": {
+    "presetLabel": "Plugin-Vorlage",
+    "preset": {
+      "tournament": "Turnier",
+      "practice": "Training",
+      "fun": "Spaß",
+      "custom": "Eigene Auswahl",
+      "default": "Flotten-Standard",
+      "none": "Keine"
+    },
+    "plugin": {
+      "fleet": "Flotten-Verbindung",
+      "match": "Match",
+      "essentials": "Essentials",
+      "practice": "Training",
+      "whitelist": "Whitelist",
+      "skins": "Skins",
+      "midas": "Midas",
+      "deathmatch": "Deathmatch",
+      "addons": "Addons"
+    },
+    "pluginHelp": {
+      "essentials": "Admins, Kartenwechsel, Neuladen und Neustart",
+      "practice": "Trainingsmodus für Granaten und Positionen",
+      "whitelist": "Nur gelistete Spieler können beitreten",
+      "skins": "Waffen-Skins, Messer und Handschuhe der Spieler",
+      "midas": "Goldene Waffenmodelle",
+      "deathmatch": "Deathmatch-Modi",
+      "addons": "Workshop-Addons"
+    },
+    "required": "Immer an",
+    "usesDefault": "Nutzt den Flotten-Standard: {{plugins}}.",
+    "keepsBundle": "Kein Standard gesetzt: Der Server behält die Plugins, die sein Ready-Up-Paket lädt.",
+    "notInstalled": "Auf diesem Server nicht installiert: {{plugins}}. Sie bleiben aus, bis Ready Up mit dem Paket „Mit Skins“ aktualisiert wird.",
+    "fullBundleNote": "Einige dieser Plugins brauchen das volle Ready-Up-Paket; die neuen Server bekommen es.",
+    "serverHelp": "Schaltet Ready-Up-Plugins auf diesem Server ein oder aus (plugins.set). Der Server behält die Auswahl nach einem Neustart und bekommt sie erneut, wenn er sich mit anderen Plugins verbindet.",
+    "defaultButton": "Standard-Plugins",
+    "defaultTitle": "Standard-Plugins für neue Server",
+    "defaultHelp": "Server, die auf einer Maschine, durch automatische Skalierung oder für ein Failover erstellt werden, bekommen diese Plugins bei der ersten Verbindung, außer sie wurden mit eigener Auswahl erstellt. Bestehende Server behalten ihre.",
+    "createLabel": "Ready-Up-Plugins",
+    "save": "Speichern",
+    "saved": "Standard-Plugins gespeichert",
+    "errors": {
+      "save": "Die Standard-Plugins konnten nicht gespeichert werden"
+    }
   }
 }

@@ -57,6 +57,8 @@ import type {
   FleetHostServer,
   FleetHostsResponse,
 } from '../cs2.types';
+import type { PluginSetValue } from './fleetPush.types';
+import PluginSetPicker, { usePluginCatalog } from './PluginSetPicker';
 
 const POLL_MS = 5_000;
 const POLL_FAST_MS = 2_000;
@@ -114,7 +116,14 @@ export default function MachinesPanel() {
   const [addOpen, setAddOpen] = useState(false);
   const [addName, setAddName] = useState('');
   const [link, setLink] = useState<LinkInfo | null>(null);
-  const [createFor, setCreateFor] = useState<{ host: FleetHost; count: string } | null>(null);
+  // Create server / Create several: how many, and their plugin set (null = the fleet default).
+  const [createFor, setCreateFor] = useState<{
+    host: FleetHost;
+    count: string;
+    several: boolean;
+    plugins: PluginSetValue | null;
+  } | null>(null);
+  const { catalog: pluginCatalog } = usePluginCatalog(createFor !== null);
   const [readyUpFor, setReadyUpFor] = useState<{ host: FleetHost; version: string; bundle: 'default' | 'skins' } | null>(null);
   const [force, setForce] = useState<(ForcePrompt & { reason: string }) | null>(null);
   const [pending, setPending] = useState<Pending | null>(null);
@@ -185,13 +194,15 @@ export default function MachinesPanel() {
     host: FleetHost,
     type: FleetHostCommandType,
     payload: Record<string, unknown> = {},
-    forceReason?: string
+    forceReason?: string,
+    extra: Record<string, unknown> = {}
   ): Promise<boolean> => {
     try {
       const res = await api.post<{ delivered: boolean; command: FleetHostCommand }>(`/api/fleet/hosts/${host.id}/commands`, {
         type,
         payload,
         ...(forceReason ? { force: { reason: forceReason } } : {}),
+        ...extra,
       });
       showSnackbar(
         res.delivered
@@ -544,12 +555,12 @@ export default function MachinesPanel() {
                     variant="outlined"
                     startIcon={<PlusIcon />}
                     disabled={!host.online}
-                    onClick={() => void send(host, 'server.create', { count: 1, enroll: true })}
+                    onClick={() => setCreateFor({ host, count: '1', several: false, plugins: null })}
                     data-testid={`machine-create-${host.id}`}
                   >
                     {t('machinesPanel.createServer', { defaultValue: 'Create server' })}
                   </Button>
-                  <Button size="small" variant="outlined" disabled={!host.online} onClick={() => setCreateFor({ host, count: '2' })}>
+                  <Button size="small" variant="outlined" disabled={!host.online} onClick={() => setCreateFor({ host, count: '2', several: true, plugins: null })}>
                     {t('machinesPanel.createN', { defaultValue: 'Create several…' })}
                   </Button>
                   <Button
@@ -691,25 +702,47 @@ export default function MachinesPanel() {
         </DialogActions>
       </Dialog>
 
-      {/* Create N servers */}
-      <Dialog open={createFor !== null} onClose={() => setCreateFor(null)} maxWidth="xs" fullWidth>
-        <DialogTitle>{t('machinesPanel.createN', { defaultValue: 'Create several…' })}</DialogTitle>
+      {/* Create server / Create several */}
+      <Dialog open={createFor !== null} onClose={() => setCreateFor(null)} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          {createFor?.several
+            ? t('machinesPanel.createN', { defaultValue: 'Create several…' })
+            : t('machinesPanel.createServer', { defaultValue: 'Create server' })}
+        </DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" mb={2}>
             {t('machinesPanel.createHelp', {
               defaultValue: 'New servers get Ready Up and connect to this platform on their own.',
             })}
           </Typography>
-          <TextField
-            autoFocus
-            fullWidth
-            size="small"
-            type="number"
-            label={t('machinesPanel.count', { defaultValue: 'How many' })}
-            value={createFor?.count ?? ''}
-            onChange={(e) => createFor && setCreateFor({ ...createFor, count: e.target.value })}
-            inputProps={{ min: 1, max: 16 }}
-          />
+          {createFor?.several && (
+            <TextField
+              autoFocus
+              fullWidth
+              size="small"
+              type="number"
+              label={t('machinesPanel.count', { defaultValue: 'How many' })}
+              value={createFor?.count ?? ''}
+              onChange={(e) => createFor && setCreateFor({ ...createFor, count: e.target.value })}
+              inputProps={{ min: 1, max: 16 }}
+              sx={{ mb: 2 }}
+            />
+          )}
+          <Typography variant="subtitle2" mb={1}>
+            {t('pluginSets.createLabel', { defaultValue: 'Ready Up plugins' })}
+          </Typography>
+          {pluginCatalog ? (
+            <PluginSetPicker
+              catalog={pluginCatalog}
+              value={createFor?.plugins ?? null}
+              onChange={(plugins) => createFor && setCreateFor({ ...createFor, plugins })}
+              nullLabel={t('pluginSets.preset.default', { defaultValue: 'Fleet default' })}
+              showBundleNote
+              testId="create-plugins"
+            />
+          ) : (
+            <LinearProgress />
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setCreateFor(null)}>{t('common.cancel')}</Button>
@@ -720,7 +753,13 @@ export default function MachinesPanel() {
               if (!createFor) return;
               const target = createFor;
               setCreateFor(null);
-              void send(target.host, 'server.create', { count: Number(target.count), enroll: true });
+              void send(
+                target.host,
+                'server.create',
+                { count: Number(target.count), enroll: true },
+                undefined,
+                target.plugins ? { plugins: { preset: target.plugins.preset, plugins: target.plugins.plugins } } : {}
+              );
             }}
           >
             {t('machinesPanel.create', { defaultValue: 'Create' })}

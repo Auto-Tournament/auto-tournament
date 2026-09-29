@@ -3170,6 +3170,50 @@
         ]
       }
     },
+    "/api/fleet/plugins": {
+      "get": {
+        "tags": [
+          "Fleet pushes"
+        ],
+        "summary": "GET /api/fleet/plugins",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/fleet/plugins/default": {
+      "put": {
+        "tags": [
+          "Fleet pushes"
+        ],
+        "summary": "PUT /api/fleet/plugins/default",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/fleet/servers": {
       "get": {
         "tags": [

@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 411 of them, 311 behind auth —
+Every endpoint this API serves — 413 of them, 313 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -289,6 +289,8 @@ What the platform pushes to Ready Up servers: the admin list (admins.set), serve
 | `PUT` | `/api/fleet/servers/:id/whitelist` | admin |
 | `PUT` | `/api/fleet/servers/:id/practice` | admin |
 | `POST` | `/api/fleet/servers/:id/plugins` | admin |
+| `GET` | `/api/fleet/plugins` | admin |
+| `PUT` | `/api/fleet/plugins/default` | admin |
 | `GET` | `/api/fleet/matches/:slug/roster` | admin |
 | `POST` | `/api/fleet/matches/:slug/update` | admin |
 

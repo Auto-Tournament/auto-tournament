@@ -348,6 +348,15 @@ test.describe.serial('Fleet autoscale (csm)', () => {
     request,
   }) => {
     test.setTimeout(90_000);
+    // The server it creates gets the fleet default plugin set (fleet/push/pluginSets.ts).
+    const saved = await request.put('/api/fleet/plugins/default', {
+      headers: getAuthHeader(),
+      data: { plugins: { preset: 'fun' } },
+    });
+    expect(saved.ok(), await saved.text()).toBe(true);
+    cleanup.push(() =>
+      request.put('/api/fleet/plugins/default', { headers: getAuthHeader(), data: { plugins: null } })
+    );
     const m = await machine(request, 'scale-create');
     cleanup.push(() => m.csm.close());
     m.csm.sendEphemeral('host.inventory', inventory(m.hostId, []));
@@ -385,7 +394,8 @@ test.describe.serial('Fleet autoscale (csm)', () => {
     );
     await m.csm.acked(result.seq as number);
     const install = await m.csm.nextCommand('host.update_plugins');
-    expect(install.payload).toMatchObject({ servers: ['server-1'] });
+    // Fun needs plugins the essentials bundle does not have: the full one.
+    expect(install.payload).toMatchObject({ servers: ['server-1'], readyup: { bundle: 'skins' } });
     const installed = m.csm.sendReliable(
       'host.result',
       { status: 'ok', output: 'Ready Up on server-1' },
@@ -460,5 +470,19 @@ test.describe.serial('Fleet autoscale (csm)', () => {
     const settled = await run(request);
     expect(settled.actions).toEqual([]);
     await noCommand(m.csm, 'server.create');
+
+    // Its Ready Up says hello: the fleet default plugin set follows.
+    const link = await connect(
+      { serverId: ru.body.server_id, token: ru.body.token, installId },
+      'available'
+    );
+    cleanup.push(() => link.close());
+    const set = await link.client.next(
+      (msg) => msg.type === 'cmd' && (msg.payload as { name: string }).name === 'plugins.set'
+    );
+    expect((set.payload as { args: unknown }).args).toEqual({
+      enable: ['match', 'essentials', 'skins', 'midas', 'deathmatch'],
+      disable: ['practice', 'whitelist', 'addons'],
+    });
   });
 });

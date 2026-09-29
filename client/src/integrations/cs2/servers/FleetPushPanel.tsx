@@ -8,7 +8,8 @@
  * - Settings (`server.config` + `settings.set`): a fleet default and a
  *   per-server override.
  * - Per server: whitelist, practice mode and plugins (`cmd`), each with the
- *   server's last answer.
+ *   server's last answer. Plugins are picked as a set (PluginSetPicker), and
+ *   the fleet default set goes to servers csm creates.
  */
 
 import { useCallback, useEffect, useState } from 'react';
@@ -47,6 +48,7 @@ import {
 } from '../../../module-sdk';
 import type { FleetServer, FleetServersResponse } from '../cs2.types';
 import FleetSettingsDialog from './FleetSettingsDialog';
+import PluginSetPicker, { presetValue, usePluginCatalog } from './PluginSetPicker';
 import type {
   FleetAdminsResponse,
   FleetCommandAnswer,
@@ -54,6 +56,9 @@ import type {
   FleetServerPushResponse,
   FleetSettingsResponse,
   FleetSettingsValue,
+  PluginCatalogResponse,
+  PluginSetValue,
+  PluginsState,
 } from './fleetPush.types';
 
 const POLL_MS = 10_000;
@@ -64,6 +69,7 @@ type Dialogs =
   | { kind: 'whitelist'; server: FleetServer }
   | { kind: 'plugins'; server: FleetServer }
   | { kind: 'extras' }
+  | { kind: 'defaultPlugins' }
   | null;
 
 /** "steamid64 name" per line → entries; bad lines are reported. */
@@ -81,6 +87,30 @@ export function parseAdminLines(text: string): {
     else admins.push({ steamid64: m[1], name: (m[2] ?? '').trim() });
   }
   return { admins, bad };
+}
+
+/**
+ * The set a server's Plugins dialog starts from: the set it was given, else
+ * what its hello says is on, else the fleet default, else Tournament.
+ */
+export function initialPluginSet(
+  catalog: PluginCatalogResponse,
+  given: PluginSetValue | null | undefined,
+  state: PluginsState | null | undefined
+): PluginSetValue {
+  if (given) return given;
+  if (state) {
+    const on = catalog.catalog.filter(
+      (p) =>
+        catalog.required.includes(p) || (state.installed.includes(p) && !state.disabled.includes(p))
+    );
+    const preset = (['tournament', 'practice', 'fun'] as const).find(
+      (x) =>
+        catalog.presets[x].length === on.length && catalog.presets[x].every((p) => on.includes(p))
+    );
+    return { preset: preset ?? 'custom', plugins: on };
+  }
+  return catalog.default ?? presetValue(catalog, 'tournament');
 }
 
 function StatusChip({ status, label }: { status: FleetPushStatus | null; label: string }) {
@@ -124,7 +154,8 @@ export default function FleetPushPanel() {
   const [busy, setBusy] = useState(false);
   const [text, setText] = useState('');
   const [whitelistEnabled, setWhitelistEnabled] = useState(true);
-  const [pluginsForm, setPluginsForm] = useState({ enable: '', disable: '' });
+  const [pluginSet, setPluginSet] = useState<PluginSetValue | null>(null);
+  const { catalog, reload: reloadCatalog } = usePluginCatalog();
 
   const load = useCallback(async () => {
     try {
@@ -254,16 +285,25 @@ export default function FleetPushPanel() {
     run(
       t('fleetPush.errors.plugins', { defaultValue: 'Changing the plugins failed' }),
       async () => {
-        const list = (s: string) =>
-          s
-            .split(/[\s,;]+/)
-            .map((x) => x.trim())
-            .filter(Boolean);
+        if (!pluginSet) return;
         const res = await api.post<FleetCommandAnswer>(`/api/fleet/servers/${server.id}/plugins`, {
-          enable: list(pluginsForm.enable),
-          disable: list(pluginsForm.disable),
+          preset: pluginSet.preset,
+          plugins: pluginSet.plugins,
         });
         answered(res, t('fleetPush.pluginsSet', { defaultValue: 'Plugins updated' }));
+        setDialog(null);
+      }
+    );
+
+  const saveDefaultPlugins = () =>
+    run(
+      t('pluginSets.errors.save', { defaultValue: 'Saving the default plugins failed' }),
+      async () => {
+        await api.put('/api/fleet/plugins/default', {
+          plugins: pluginSet ? { preset: pluginSet.preset, plugins: pluginSet.plugins } : null,
+        });
+        await reloadCatalog();
+        showSnackbar(t('pluginSets.saved', { defaultValue: 'Default plugins saved' }), 'success');
         setDialog(null);
       }
     );
@@ -313,12 +353,15 @@ export default function FleetPushPanel() {
   };
 
   const openPlugins = (server: FleetServer) => {
-    const pl = pushState[server.id]?.plugins;
-    setPluginsForm({
-      enable: (pl?.enable ?? []).join(', '),
-      disable: (pl?.disable ?? []).join(', '),
-    });
+    if (!catalog) return;
+    const st = pushState[server.id];
+    setPluginSet(initialPluginSet(catalog, st?.pluginSet, st?.pluginsState));
     setDialog({ kind: 'plugins', server });
+  };
+
+  const openDefaultPlugins = () => {
+    setPluginSet(catalog?.default ?? null);
+    setDialog({ kind: 'defaultPlugins' });
   };
 
   const openExtras = () => {
@@ -335,15 +378,27 @@ export default function FleetPushPanel() {
       <SectionHead
         title={t('fleetPush.title', { defaultValue: 'Fleet settings' })}
         action={
-          <Button
-            size="small"
-            variant="outlined"
-            startIcon={<GearIcon />}
-            onClick={() => setDialog({ kind: 'defaults' })}
-            data-testid="fleet-defaults-edit"
-          >
-            {t('fleetPush.editDefaults', { defaultValue: 'Fleet default settings' })}
-          </Button>
+          <Stack direction="row" gap={1} flexWrap="wrap">
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<PuzzlePieceIcon />}
+              onClick={openDefaultPlugins}
+              disabled={!catalog}
+              data-testid="fleet-default-plugins-edit"
+            >
+              {t('pluginSets.defaultButton', { defaultValue: 'Default plugins' })}
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<GearIcon />}
+              onClick={() => setDialog({ kind: 'defaults' })}
+              data-testid="fleet-defaults-edit"
+            >
+              {t('fleetPush.editDefaults', { defaultValue: 'Fleet default settings' })}
+            </Button>
+          </Stack>
         }
       />
 
@@ -429,6 +484,9 @@ export default function FleetPushPanel() {
                     {adminsCopy?.rev !== null && adminsCopy?.rev !== undefined
                       ? ` · admins rev ${adminsCopy.rev}`
                       : ''}
+                    {st?.pluginSet
+                      ? ` · ${t(`pluginSets.preset.${st.pluginSet.preset}`, { defaultValue: st.pluginSet.preset })}`
+                      : ''}
                   </Typography>
                 </Box>
                 <Box minWidth={0} gridColumn={{ xs: '1 / -1', md: 'auto' }}>
@@ -498,6 +556,7 @@ export default function FleetPushPanel() {
                     size="small"
                     startIcon={<PuzzlePieceIcon />}
                     onClick={() => openPlugins(server)}
+                    disabled={!catalog}
                   >
                     {t('fleetPush.plugins', { defaultValue: 'Plugins' })}
                   </Button>
@@ -612,7 +671,7 @@ export default function FleetPushPanel() {
       <Dialog
         open={dialog?.kind === 'plugins'}
         onClose={() => setDialog(null)}
-        maxWidth="xs"
+        maxWidth="sm"
         fullWidth
       >
         <DialogTitle>
@@ -625,25 +684,25 @@ export default function FleetPushPanel() {
         </DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" mb={2}>
-            {t('fleetPush.pluginsHelp', {
+            {t('pluginSets.serverHelp', {
               defaultValue:
-                'Loads or unloads Ready Up plugins on this server, remembered across restarts (plugins.set). Names separated by commas, e.g. practice, skins. match and fleet cannot be disabled.',
+                'Turns Ready Up plugins on or off on this server (plugins.set). The server keeps the choice after a restart, and gets it again if it reconnects with other plugins on.',
             })}
           </Typography>
-          <Stack gap={2}>
-            <TextField
-              size="small"
-              label={t('fleetPush.pluginsEnable', { defaultValue: 'Enable' })}
-              value={pluginsForm.enable}
-              onChange={(e) => setPluginsForm({ ...pluginsForm, enable: e.target.value })}
+          {catalog && pluginSet && (
+            <PluginSetPicker
+              catalog={catalog}
+              value={pluginSet}
+              onChange={setPluginSet}
+              installed={
+                dialog?.kind === 'plugins'
+                  ? (pushState[dialog.server.id]?.pluginsState?.installed ?? null)
+                  : null
+              }
+              disabled={busy}
+              testId="server-plugins"
             />
-            <TextField
-              size="small"
-              label={t('fleetPush.pluginsDisable', { defaultValue: 'Disable' })}
-              value={pluginsForm.disable}
-              onChange={(e) => setPluginsForm({ ...pluginsForm, disable: e.target.value })}
-            />
-          </Stack>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDialog(null)}>{t('common.cancel')}</Button>
@@ -653,6 +712,47 @@ export default function FleetPushPanel() {
             onClick={() => dialog?.kind === 'plugins' && void savePlugins(dialog.server)}
           >
             {t('fleetPush.send', { defaultValue: 'Send' })}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Default plugins for new servers */}
+      <Dialog
+        open={dialog?.kind === 'defaultPlugins'}
+        onClose={() => setDialog(null)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          {t('pluginSets.defaultTitle', { defaultValue: 'Default plugins for new servers' })}
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" mb={2}>
+            {t('pluginSets.defaultHelp', {
+              defaultValue:
+                'Servers created on a machine, by automatic scaling or for a failover get these plugins when they first connect, unless they were created with their own choice. Servers that already exist keep theirs.',
+            })}
+          </Typography>
+          {catalog && (
+            <PluginSetPicker
+              catalog={{ ...catalog, default: null }}
+              value={pluginSet}
+              onChange={setPluginSet}
+              nullLabel={t('pluginSets.preset.none', { defaultValue: 'None' })}
+              disabled={busy}
+              testId="default-plugins"
+            />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialog(null)}>{t('common.cancel')}</Button>
+          <Button
+            variant="contained"
+            disabled={busy || !catalog}
+            onClick={() => void saveDefaultPlugins()}
+            data-testid="default-plugins-save"
+          >
+            {t('pluginSets.save', { defaultValue: 'Save' })}
           </Button>
         </DialogActions>
       </Dialog>

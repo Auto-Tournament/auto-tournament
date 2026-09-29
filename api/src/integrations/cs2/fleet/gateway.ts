@@ -451,6 +451,7 @@ class FleetSession {
       capabilities: hello.capabilities,
       host: hello.host,
       selftest: hello.selftest,
+      plugins_state: hello.plugins_state,
       protocol,
       boot_id: hello.boot_id,
       peer_addr: this.peerAddr,

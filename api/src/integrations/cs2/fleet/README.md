@@ -330,13 +330,14 @@ practice / plugins, and `pushed`: what went out when).
 |---|---|
 | `admins.set {rev, admins}` (`push/admins.ts`) | website admins (`players.is_admin`, Steam64 only) + extra in-game admins; rev bumped when the list's hash changes. To every enrolled server on a change (player service signal `services/adminListEvents`, a 60 s re-check, the Servers page); after a hello whose `admins_rev` is not ours, unless that rev is still in the server's outbox; a hello with a higher rev raises ours above it |
 | `server.config {rev, settings}` + `cmd settings.set` (`push/settings.ts`) | fleet default + per-server override (nested merge). On save (default: every enrolled server; override: that server); after a hello when the server's last push is not the current rev |
-| `cmd whitelist.set / practice.set / plugins.set` (`push/controls.ts`) | from the Servers page only; the route waits 5 s for the `cmd.result` |
+| `cmd whitelist.set / practice.set` (`push/controls.ts`) | from the Servers page only; the route waits 5 s for the `cmd.result` |
+| `cmd plugins.set` (`push/controls.ts`, `push/pluginSets.ts`) | a plugin set (preset Tournament / Practice / Fun, or custom; `fleet` and `match` always on) from the Servers page; after the first hello of a server csm created, the set its `server.create` carried (`meta.plugins`: the create's own, else the fleet default `plugins_default` row of `cs2_fleet_lists`); after a hello whose `plugins_state` differs from the stored set, unless that push is still in the outbox. A create whose set needs more than csm's essentials bundle installs the full one (`bundle: skins`) |
 | `match.update` (`push/matchUpdate.ts`) | from the match admin page: add / remove / substitute / rename, CAS on the live record's `configRev`; `ok` also updates `matches.config`, a `conflict` moves the base (the admin retries) |
 
 welcome's `admins_rev` / `server_config_rev` are the current revs
 (`setFleetWelcomeRevs`); `onFleetServerReady(fn)` (service.ts) gets each
 server's hello after welcome. Routes: `push/routes.ts` (`/api/fleet/admins`,
-`/settings`, `/servers/:id/push|settings|whitelist|practice|plugins`,
+`/settings`, `/plugins`, `/plugins/default`, `/servers/:id/push|settings|whitelist|practice|plugins`,
 `/matches/:slug/roster|update`).
 
 ## How events reach the core
