@@ -246,10 +246,10 @@
   },
   "matchInfo": {
     "waitingForTournamentTitle": "Wachten tot het toernooi begint",
-    "waitingForTournamentBody": "Je wedstrijd staat klaar, maar het toernooi is nog niet gestart. De map-veto wordt beschikbaar zodra de toernooibeheerder het toernooi start.",
+    "waitingForTournamentBody": "Je wedstrijd staat klaar, maar het toernooi is nog niet begonnen. Hij gaat open zodra de toernooibeheerder het toernooi start.",
     "tournamentStatusSetup": "Toernooistatus: voorbereidingsfase",
     "waitingForOpponentTitle": "Wachten op tegenstander",
-    "waitingForOpponentBody": "Je bent door naar de volgende ronde. Je volgende tegenstander is nog niet bekend, dus de map-veto opent zodra beide ploegen bekend zijn.",
+    "waitingForOpponentBody": "Je bent door naar de volgende ronde. Je volgende tegenstander is nog niet bekend, dus je wedstrijd gaat open zodra beide teams bekend zijn.",
     "mapSelectionTitle": "Mapselectie",
     "tournamentStartedTitle": "Het toernooi is begonnen!",
     "tournamentStartedBody": "Rond de map-veto af om je wedstrijd te starten.",

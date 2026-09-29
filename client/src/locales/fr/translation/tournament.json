@@ -129,8 +129,8 @@
       "overtimeDisabledNoDraws": "Prolongation : désactivée (pas de match nul – les dégâts départagent)",
       "overtimeSegments_one": "Périodes de prolongation : {{count}} période",
       "overtimeSegments_other": "Périodes de prolongation : {{count}} périodes",
-      "overtimeSegmentsDefault": "Périodes de prolongation : valeur par défaut de Auto Tournament CS2",
-      "overtimeSegmentsDefaultUnlimited": "Périodes de prolongation : valeur par défaut de Auto Tournament CS2 (généralement illimitée)"
+      "overtimeSegmentsDefault": "Segments de prolongation : valeur par défaut du serveur de jeu",
+      "overtimeSegmentsDefaultUnlimited": "Segments de prolongation : valeur par défaut du serveur de jeu (généralement illimité)"
     },
     "toasts": {
       "loadTemplateFailed": "Échec du chargement du modèle",
@@ -308,10 +308,10 @@
         "disabledNoDraws": "Désactivée – pas de match nul (départage aux dégâts)"
       },
       "modeHelper": "La prolongation standard ajoute des périodes jusqu’à ce qu’une équipe prenne l’avantage. « Matchs nuls autorisés » laisse une carte à égalité se terminer par un nul, tandis que « pas de match nul » la départage aux dégâts totaux de l’équipe.",
-      "tooltip": "Contrôle le comportement de la prolongation et la gestion des égalités au nombre de tours maximum. Ces réglages sont transmis à Auto Tournament CS2 sous la forme overtimeMode/overtimeSegments et ont la même signification que pour les tournois shuffle et les matchs manuels.",
+      "tooltip": "Règle les prolongations et la gestion des égalités au nombre maximal de manches. Ces réglages sont transmis aux serveurs de jeu en tant que overtimeMode/overtimeSegments et fonctionnent de la même façon pour les tournois shuffle et les matchs manuels.",
       "shuffleTooltip": "Contrôle le comportement de la prolongation pour les matchs shuffle et la façon dont les égalités sont départagées au nombre de tours maximum. Lorsque la prolongation est désactivée, les matchs à égalité peuvent rester nuls ou être départagés aux dégâts totaux de l’équipe, selon l’option choisie.",
       "segmentsLabel": "Périodes de prolongation (facultatif)",
-      "segmentsHelper": "Facultatif : limiter le nombre de périodes de prolongation. Laissez vide pour la valeur par défaut de Auto Tournament CS2.",
+      "segmentsHelper": "Facultatif : limiter le nombre de segments de prolongation. Laissez vide pour la valeur par défaut du serveur de jeu.",
       "segmentsHelperValue_one": "Limiter la prolongation à {{count}} période. En cas d’égalité après la prolongation, les dégâts totaux de l’équipe départagent.",
       "segmentsHelperValue_other": "Limiter la prolongation à {{count}} périodes. En cas d’égalité après la prolongation, les dégâts totaux de l’équipe départagent."
     },
@@ -351,7 +351,7 @@
       "teamSizeTooltip": "Nombre de joueurs par équipe. Options courantes : 4v4, 5v5, 6v6. Minimum 2 joueurs, maximum 10 par équipe.",
       "teamSizeHelper": "Nombre de joueurs par équipe (par défaut : 5 pour du 5v5, plage : 2 à 10)",
       "maxRoundsLabel": "Tours maximum",
-      "maxRoundsTooltip": "Nombre maximum de tours par match. Cette valeur est transmise telle quelle à Auto Tournament CS2 via mp_maxrounds. Exemple : 6 = MR6, 24 = MR24.",
+      "maxRoundsTooltip": "Nombre maximal de manches par match. Cette valeur est transmise aux serveurs CS2 en tant que mp_maxrounds. Exemple : 6 = MR6, 24 = MR24.",
       "maxRoundsHelper": "Le match se joue en {{maxRounds}} tours maximum ; le premier à {{winRounds}} tours l’emporte",
       "maxRoundsHelperEmpty": "Nombre maximum de tours par match (par défaut : 24, max : 30)",
       "eloTemplateLabel": "Modèle de calcul ELO",
@@ -481,7 +481,7 @@
           "manual-report": "Teams report the result"
         },
         "integrationDescriptions": {
-          "cs2": "Matches run on your own CS2 servers with the Auto Tournament CS2 plugin.",
+          "cs2": "Les matchs se jouent sur vos propres serveurs CS2 avec Ready Up.",
           "manual-report": "No servers. Teams play the match themselves and a captain reports the result."
         }
       },
@@ -524,7 +524,7 @@
         "moreTeams": "More teams",
         "shuffleTitle": "Shuffle settings",
         "cs2Title": "Counter-Strike 2 settings",
-        "cs2Help": "Passed to Auto Tournament CS2 by the Counter-Strike 2 game module.",
+        "cs2Help": "Transmis à vos serveurs CS2 par le module de jeu Counter-Strike 2.",
         "overtime": {
           "enabled": "Overtime",
           "disabledDraws": "Off, draws allowed",

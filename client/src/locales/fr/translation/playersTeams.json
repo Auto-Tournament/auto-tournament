@@ -246,10 +246,10 @@
   },
   "matchInfo": {
     "waitingForTournamentTitle": "En attente du début du tournoi",
-    "waitingForTournamentBody": "Votre match est prêt, mais le tournoi n’a pas encore commencé. Le veto des cartes sera disponible dès que l’administrateur lancera le tournoi.",
+    "waitingForTournamentBody": "Votre match est prêt, mais le tournoi n’a pas encore commencé. Il s’ouvrira dès que l’administrateur du tournoi le lancera.",
     "tournamentStatusSetup": "Statut du tournoi : phase de configuration",
     "waitingForOpponentTitle": "En attente d’un adversaire",
-    "waitingForOpponentBody": "Vous êtes qualifiés pour le tour suivant. Votre prochain adversaire n’est pas encore connu : le veto des cartes s’ouvrira quand les deux équipes seront déterminées.",
+    "waitingForOpponentBody": "Vous passez au tour suivant. Votre prochain adversaire n’est pas encore connu : votre match s’ouvrira dès que les deux équipes seront connues.",
     "mapSelectionTitle": "Sélection des cartes",
     "tournamentStartedTitle": "Le tournoi a commencé !",
     "tournamentStartedBody": "Terminez le veto des cartes pour lancer votre match.",

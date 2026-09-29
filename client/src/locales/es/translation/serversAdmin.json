@@ -2,7 +2,7 @@
   "adminToolsPage": {
     "recovery": {
       "title": "Recuperación de partidos",
-      "description": "Si la API o los servidores se reiniciaron durante un torneo y el estado de los partidos parece desincronizado (p. ej., partidos atascados en warmup o sin marcadores en directo), puedes ejecutar una recuperación manual. Se solicitará a todos los servidores el informe del partido actual, se resincronizarán marcadores/fases y se reconfigurarán webhooks y subidas de demos cuando sea posible.",
+      "description": "Si la API o los servidores se reiniciaron durante un torneo y el estado de las partidas parece desincronizado (p. ej., partidas atascadas antes de empezar o sin marcadores en directo), puedes lanzar una recuperación manual. Se pedirá a todos los servidores su informe de partida actual, se resincronizarán marcadores y fases y se volverán a configurar los webhooks y la subida de demos cuando sea posible.",
       "button": "Ejecutar recuperación ahora",
       "success": "Recuperación completada.",
       "error": "La recuperación falló.",

@@ -131,8 +131,8 @@
       "overtimeDisabledNoDraws": "Dogrywka: wyłączona (bez remisów – rozstrzygają obrażenia)",
       "overtimeSegments_one": "Segmenty dogrywki: {{count}} segment",
       "overtimeSegments_other": "Segmenty dogrywki: {{count}} segmentów",
-      "overtimeSegmentsDefault": "Segmenty dogrywki: domyślne ustawienie Auto Tournament CS2",
-      "overtimeSegmentsDefaultUnlimited": "Segmenty dogrywki: domyślne ustawienie Auto Tournament CS2 (zwykle bez limitu)"
+      "overtimeSegmentsDefault": "Segmenty dogrywki: domyślne ustawienie serwera gry",
+      "overtimeSegmentsDefaultUnlimited": "Segmenty dogrywki: domyślne ustawienie serwera gry (zwykle bez limitu)"
     },
     "toasts": {
       "loadTemplateFailed": "Nie udało się wczytać szablonu",
@@ -310,10 +310,10 @@
         "disabledNoDraws": "Wyłączona – bez remisów (rozstrzygają obrażenia)"
       },
       "modeHelper": "Standardowa dogrywka dodaje kolejne segmenty, aż jedna drużyna wyjdzie na prowadzenie. „Remisy dozwolone” kończą wyrównaną mapę remisem, a „bez remisów” rozstrzyga ją sumą obrażeń drużyny.",
-      "tooltip": "Określa działanie dogrywki i sposób rozstrzygania remisów przy maksymalnej liczbie rund. Ustawienia trafiają do Auto Tournament CS2 jako overtimeMode/overtimeSegments i mają to samo znaczenie co w turniejach shuffle i meczach ręcznych.",
+      "tooltip": "Steruje dogrywką i rozstrzyganiem remisów przy maksymalnej liczbie rund. Ustawienia są przekazywane do serwerów gry jako overtimeMode/overtimeSegments i działają tak samo w turniejach shuffle i meczach ręcznych.",
       "shuffleTooltip": "Określa działanie dogrywki w meczach shuffle i sposób rozstrzygania remisów przy maksymalnej liczbie rund. Gdy dogrywka jest wyłączona, wyrównane mecze mogą kończyć się remisem albo być rozstrzygane sumą obrażeń drużyny — zależnie od wybranej opcji.",
       "segmentsLabel": "Segmenty dogrywki (opcjonalnie)",
-      "segmentsHelper": "Opcjonalnie: ogranicz liczbę segmentów dogrywki. Zostaw puste, aby użyć domyślnego ustawienia Auto Tournament CS2.",
+      "segmentsHelper": "Opcjonalnie: ogranicz liczbę segmentów dogrywki. Pozostaw puste, aby użyć domyślnego ustawienia serwera gry.",
       "segmentsHelperValue_one": "Ogranicz dogrywkę do {{count}} segmentu. Jeśli po dogrywce nadal jest remis, rozstrzyga suma obrażeń drużyny.",
       "segmentsHelperValue_other": "Ogranicz dogrywkę do {{count}} segmentów. Jeśli po dogrywce nadal jest remis, rozstrzyga suma obrażeń drużyny."
     },
@@ -353,7 +353,7 @@
       "teamSizeTooltip": "Liczba graczy w drużynie. Typowe opcje: 4v4, 5v5, 6v6. Minimum 2, maksimum 10 graczy w drużynie.",
       "teamSizeHelper": "Liczba graczy w drużynie (domyślnie: 5 dla 5v5, zakres: 2–10)",
       "maxRoundsLabel": "Maksymalna liczba rund",
-      "maxRoundsTooltip": "Maksymalna liczba rund w meczu. Wartość trafia bezpośrednio do Auto Tournament CS2 jako mp_maxrounds. Przykład: 6 = MR6, 24 = MR24.",
+      "maxRoundsTooltip": "Maksymalna liczba rund na mecz. Wartość jest przekazywana do serwerów CS2 jako mp_maxrounds. Przykład: 6 = MR6, 24 = MR24.",
       "maxRoundsHelper": "Mecz trwa maksymalnie {{maxRounds}} rund; wygrywa pierwsza drużyna z {{winRounds}} rundami",
       "maxRoundsHelperEmpty": "Maksymalna liczba rund w meczu (domyślnie: 24, maks.: 30)",
       "eloTemplateLabel": "Szablon obliczania ELO",
@@ -483,7 +483,7 @@
           "manual-report": "Teams report the result"
         },
         "integrationDescriptions": {
-          "cs2": "Matches run on your own CS2 servers with the Auto Tournament CS2 plugin.",
+          "cs2": "Mecze odbywają się na Twoich własnych serwerach CS2 z Ready Up.",
           "manual-report": "No servers. Teams play the match themselves and a captain reports the result."
         }
       },
@@ -526,7 +526,7 @@
         "moreTeams": "More teams",
         "shuffleTitle": "Shuffle settings",
         "cs2Title": "Counter-Strike 2 settings",
-        "cs2Help": "Passed to Auto Tournament CS2 by the Counter-Strike 2 game module.",
+        "cs2Help": "Przekazywane do Twoich serwerów CS2 przez moduł gry Counter-Strike 2.",
         "overtime": {
           "enabled": "Overtime",
           "disabledDraws": "Off, draws allowed",

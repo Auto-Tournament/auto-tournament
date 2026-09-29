@@ -9,7 +9,7 @@
       "actionEndMatch": "Kjør at_endmatch på alle servere med lastede eller pågående kamper",
       "actionReset": "Sett kampene tilbake til «klar»",
       "actionReallocate": "Fordel kampene på ledige servere på nytt",
-      "actionReload": "Last inn kampoppsettet på nytt via RCON",
+      "actionReload": "Last inn kampoppsettet på nytt på spillserverne",
       "hint": "Bruk dette hvis kamper har låst seg eller trenger en ny start.",
       "confirm": "Start turneringen på nytt"
     },

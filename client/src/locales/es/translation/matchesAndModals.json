@@ -426,6 +426,6 @@
     "add": "Add Player to Match",
     "underlyingCommand": "Underlying command:",
     "important": "Important:",
-    "reconnectHint": "The player must reconnect to the server after being added. They may need to restart CS2 if they're already connected."
+    "reconnectHint": "El jugador debe volver a conectarse al servidor después de ser añadido. Si ya está conectado, puede que tenga que volver a entrar."
   }
 }

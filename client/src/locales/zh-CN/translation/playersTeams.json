@@ -246,10 +246,10 @@
   },
   "matchInfo": {
     "waitingForTournamentTitle": "等待锦标赛开始",
-    "waitingForTournamentBody": "你的比赛已就绪，但锦标赛尚未开始。管理员开始锦标赛后，即可进行地图否决。",
+    "waitingForTournamentBody": "你的比赛已准备就绪，但锦标赛尚未开始。锦标赛管理员开始锦标赛后比赛即会开放。",
     "tournamentStatusSetup": "锦标赛状态：准备阶段",
     "waitingForOpponentTitle": "等待对手",
-    "waitingForOpponentBody": "你已晋级下一轮。下一个对手尚未确定，双方队伍确定后将开放地图否决。",
+    "waitingForOpponentBody": "你已晋级下一轮。下一位对手尚未确定，双方队伍确定后你的比赛才会开放。",
     "mapSelectionTitle": "地图选择",
     "tournamentStartedTitle": "锦标赛已开始！",
     "tournamentStartedBody": "完成地图否决流程即可开始比赛。",

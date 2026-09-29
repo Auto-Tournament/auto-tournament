@@ -2,7 +2,7 @@
   "adminToolsPage": {
     "recovery": {
       "title": "Récupération de match",
-      "description": "Si l’API ou les serveurs ont redémarré pendant un tournoi et que l’état des matchs semble désynchronisé (ex. match bloqué en warmup, score live manquant), vous pouvez déclencher une récupération manuelle. Cela demandera à tous les serveurs leur rapport de match actuel, resynchronisera scores/phases, et reconfigurera webhooks et uploads de démos si possible.",
+      "description": "Si l’API ou les serveurs ont redémarré pendant un tournoi et que l’état des matchs semble désynchronisé (par ex. des matchs bloqués avant le début ou sans scores en direct), vous pouvez lancer une récupération manuelle. Tous les serveurs sont alors interrogés sur leur rapport de match actuel, les scores et phases sont resynchronisés, et les webhooks et l’envoi des démos sont reconfigurés quand c’est possible.",
       "button": "Lancer la récupération maintenant",
       "success": "Récupération de match terminée.",
       "error": "Échec de la récupération de match.",
