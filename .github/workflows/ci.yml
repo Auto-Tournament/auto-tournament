@@ -156,10 +156,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # No `cache: yarn`: node_modules itself is cached below.
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-          cache: yarn
 
       - name: Cache node_modules
         id: nm-cache
@@ -179,20 +179,25 @@ jobs:
       # in its offline snapshot, as a signed release. CI signs it with a
       # throwaway key made for this run; the shards trust that key's public
       # half (MODULE_TRUSTED_KEYS). The release signs with the real key.
-      - name: Build the offline module snapshot (CS2)
-        run: |
-          bash scripts/build-module-snapshot.sh --ephemeral | tee "$RUNNER_TEMP/snapshot.log"
-          sed -n 's/^MODULE_TRUSTED_KEYS=//p' "$RUNNER_TEMP/snapshot.log" > "$RUNNER_TEMP/trusted-key.txt"
-          test -s "$RUNNER_TEMP/trusted-key.txt"
-          ls -la api/bundled-modules
-
-      # What the Dockerfile's build stage makes, laid out as its /app.
-      - name: Build the app
+      #
+      # The app: what the Dockerfile's build stage makes, laid out as its /app.
+      # The snapshot, server and client builds are independent: run together.
+      - name: Build the module snapshot and the app
         env:
           VITE_ENABLE_DEV_PAGE: 'true'
         run: |
-          yarn build:server
-          yarn build:client
+          bash scripts/build-module-snapshot.sh --ephemeral > "$RUNNER_TEMP/snapshot.log" 2>&1 & snapshot=$!
+          yarn build:server > "$RUNNER_TEMP/server.log" 2>&1 & server=$!
+          yarn build:client > "$RUNNER_TEMP/client.log" 2>&1 & client=$!
+          status=0
+          for job in "snapshot:$snapshot" "server:$server" "client:$client"; do
+            if ! wait "${job#*:}"; then echo "::error::${job%%:*} build failed"; status=1; fi
+            echo "::group::${job%%:*} log"; cat "$RUNNER_TEMP/${job%%:*}.log"; echo "::endgroup::"
+          done
+          [ "$status" -eq 0 ]
+          sed -n 's/^MODULE_TRUSTED_KEYS=//p' "$RUNNER_TEMP/snapshot.log" > "$RUNNER_TEMP/trusted-key.txt"
+          test -s "$RUNNER_TEMP/trusted-key.txt"
+          ls -la api/bundled-modules
           out=ci-prebuilt
           mkdir -p "$out/api" "$out/docs"
           cp package.json "$out/"

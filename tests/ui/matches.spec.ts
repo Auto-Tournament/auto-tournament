@@ -37,7 +37,16 @@ test.describe.serial('Matches UI', () => {
     'should show the empty state with no tournament, and the list once matches exist',
     { tag: ['@ui', '@matches'] },
     async ({ page, request }) => {
+      // No matches at all: the tournament's, and manual ones (round 0) other
+      // specs on this shard may have left behind, which survive a tournament delete.
       await request.delete('/api/tournament', { headers: getAuthHeader() });
+      const list = await request.get('/api/matches', { headers: getAuthHeader() });
+      expect(list.ok()).toBeTruthy();
+      const { matches } = (await list.json()) as { matches: Array<{ slug: string; round: number }> };
+      for (const match of matches.filter((m) => m.round === 0)) {
+        const res = await request.delete(`/api/matches/${match.slug}`, { headers: getAuthHeader() });
+        expect(res.ok(), `delete manual match ${match.slug}`).toBeTruthy();
+      }
 
       await page.goto('/matches');
       await expect(page.getByTestId('matches-empty-state')).toBeVisible();
