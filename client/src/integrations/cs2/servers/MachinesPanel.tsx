@@ -387,6 +387,7 @@ export default function MachinesPanel() {
           <LinearProgress
             variant={c.progress.pct !== null ? 'determinate' : 'indeterminate'}
             value={c.progress.pct ?? 0}
+            aria-label={t('machinesPanel.progress', { defaultValue: 'Command progress' })}
           />
           <Typography variant="caption" color="text.secondary">
             {c.progress.step ?? (c.seq === null ? t('machinesPanel.queuedShort', { defaultValue: 'Queued' }) : t('machinesPanel.waiting', { defaultValue: 'Waiting for csm…' }))}
