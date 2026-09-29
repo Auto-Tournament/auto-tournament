@@ -171,9 +171,13 @@ function AdminShell() {
 
     void checkSteamHealth();
     const interval = window.setInterval(checkSteamHealth, 5 * 60_000);
+    // Saving Settings → Sign-in rechecks at once, so a fixed key clears the warning.
+    const onSignInChanged = () => void checkSteamHealth();
+    window.addEventListener('at:sign-in-settings-changed', onSignInChanged);
     return () => {
       cancelled = true;
       window.clearInterval(interval);
+      window.removeEventListener('at:sign-in-settings-changed', onSignInChanged);
     };
   }, [steamHealthSnackbarKey, showPersistentError, closeSnackbar, t]);
 

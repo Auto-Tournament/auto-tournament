@@ -136,6 +136,8 @@ function ProviderSection({
     setTestResult(null);
     try {
       const res = await api.put<ListResponse>(`/api/sign-in-providers/${provider.id}`, body);
+      // The admin shell rechecks Steam right away instead of in five minutes.
+      window.dispatchEvent(new Event('at:sign-in-settings-changed'));
       onSaved(res);
       showSuccess(t('settingsPage.signIn.saved', { provider: provider.label }));
     } catch (err) {
