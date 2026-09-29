@@ -76,7 +76,12 @@ function decodeIntent(segment: string): OAuthLinkIntent | null {
     const value: unknown = JSON.parse(Buffer.from(segment, 'base64url').toString('utf8'));
     if (!value || typeof value !== 'object') return null;
     const { purpose, steamId } = value as Record<string, unknown>;
-    if (purpose !== 'link' || typeof steamId !== 'string' || !/^\d{17}$/.test(steamId)) {
+    // A Steam ID, or a local admin account (`local-<username>`, see localAdminCrypto).
+    if (
+      purpose !== 'link' ||
+      typeof steamId !== 'string' ||
+      !/^(\d{17}|local-[a-z0-9][a-z0-9._-]{2,31})$/.test(steamId)
+    ) {
       return null;
     }
     return { purpose, steamId };
@@ -112,7 +117,9 @@ export function oauthStateCookieName(provider: string): string {
 
 function defaultSecret(): string {
   const s = process.env.SESSION_SECRET;
-  return typeof s === 'string' && s.trim().length > 0 ? s.trim() : 'auto-tournament-dev-session-secret';
+  return typeof s === 'string' && s.trim().length > 0
+    ? s.trim()
+    : 'auto-tournament-dev-session-secret';
 }
 
 function sign(
@@ -339,7 +346,13 @@ export class SignedCookieStateStore {
     const name = oauthStateCookieName(this.provider);
     const cookieValue = readCookie(req.headers.cookie, name);
     const now = Date.now();
-    const result = checkOAuthState(this.provider, cookieValue, providedState, this.getSecret(), now);
+    const result = checkOAuthState(
+      this.provider,
+      cookieValue,
+      providedState,
+      this.getSecret(),
+      now
+    );
 
     // Single use: always drop the cookie once a callback has consumed it.
     if (cookieValue && req.res) {

@@ -1,4 +1,9 @@
-import { test, expect, request as playwrightRequest, type APIRequestContext } from '@playwright/test';
+import {
+  test,
+  expect,
+  request as playwrightRequest,
+  type APIRequestContext,
+} from '@playwright/test';
 import { checkRemoveSignInMethod } from '../../api/src/utils/accountConnections';
 import { LOCAL_REAUTH_WINDOW_MS, isReauthRecordFresh } from '../../api/src/utils/localReauth';
 import { signInAsPlayerViaRequest, signInViaRequest } from '../helpers/auth';
@@ -47,7 +52,9 @@ async function createLocalAdmin(username: string): Promise<APIRequestContext> {
     expect(res.ok(), await res.text()).toBe(true);
     const { code } = (await res.json()) as { code: string };
     const ctx = await newContext();
-    const done = await ctx.post('/api/setup/complete', { data: { code, username, password: PASSWORD } });
+    const done = await ctx.post('/api/setup/complete', {
+      data: { code, username, password: PASSWORD },
+    });
     expect(done.status(), await done.text()).toBe(200);
     return ctx;
   } finally {
@@ -55,25 +62,28 @@ async function createLocalAdmin(username: string): Promise<APIRequestContext> {
   }
 }
 
-async function adminMe(ctx: APIRequestContext): Promise<{ authenticated: boolean; steamId?: string }> {
+async function adminMe(
+  ctx: APIRequestContext
+): Promise<{ authenticated: boolean; steamId?: string }> {
   return (await ctx.get('/api/auth/admin/me')).json();
 }
 
 /** Link the fake GitHub provider to the account signed in in `ctx`; returns the outcome flag. */
 async function linkGithub(ctx: APIRequestContext, providerUserId: string): Promise<string | null> {
   const start = await ctx.post('/api/test/oauth/github/link', { maxRedirects: 0 });
-  test.skip(start.status() === 404, 'fake GitHub provider is not available (ENABLE_TEST_ENDPOINTS off?)');
+  test.skip(
+    start.status() === 404,
+    'fake GitHub provider is not available (ENABLE_TEST_ENDPOINTS off?)'
+  );
   expect(start.status(), await start.text()).toBe(302);
   const location = new URL(start.headers()['location'] ?? '', BASE_URL);
   if (location.pathname === '/me/connections') return location.searchParams.get('link');
   const state = location.searchParams.get('state') ?? '';
-  console.log('COOKIES', JSON.stringify((await ctx.storageState()).cookies.map((c) => [c.name, c.path, c.domain, c.secure])), start.headers()['set-cookie']);
   const res = await ctx.get(
     `/api/test/oauth/github/callback?${new URLSearchParams({ code: codeFor(providerUserId), state })}`,
     { maxRedirects: 0 }
   );
   expect(res.status()).toBe(302);
-  console.log('DEBUG', start.headers()['location'], res.headers()['location']);
   return new URL(res.headers()['location'] ?? '', BASE_URL).searchParams.get('link');
 }
 
@@ -99,7 +109,10 @@ async function startSteamLink(ctx: APIRequestContext, headers?: Record<string, s
 
 /** Complete the Steam step; returns the outcome flag of the redirect to /me/connections. */
 async function steamCallback(ctx: APIRequestContext, steamId: string): Promise<string | null> {
-  const res = await ctx.post('/api/test/steam-link/callback', { data: { steamId }, maxRedirects: 0 });
+  const res = await ctx.post('/api/test/steam-link/callback', {
+    data: { steamId },
+    maxRedirects: 0,
+  });
   expect(res.status()).toBe(302);
   const url = new URL(res.headers()['location'] ?? '', BASE_URL);
   expect(url.pathname).toBe('/me/connections');
@@ -117,7 +130,9 @@ async function linkedSteamIds(providerUserId: string): Promise<string[]> {
   const admin = await newContext();
   try {
     expect(await signInViaRequest(admin)).toBe(true);
-    const res = await admin.get(`/api/test/auth-identities?provider=github&providerUserId=${providerUserId}`);
+    const res = await admin.get(
+      `/api/test/auth-identities?provider=github&providerUserId=${providerUserId}`
+    );
     expect(res.ok(), await res.text()).toBe(true);
     return ((await res.json()) as { steamIds: string[] }).steamIds;
   } finally {
@@ -127,7 +142,13 @@ async function linkedSteamIds(providerUserId: string): Promise<string[]> {
 
 interface Connections {
   account: { uid: string; steamId: string };
-  signInMethods: Array<{ provider: string; linked: boolean; primary: boolean; canConnect: boolean; username?: string }>;
+  signInMethods: Array<{
+    provider: string;
+    linked: boolean;
+    primary: boolean;
+    canConnect: boolean;
+    username?: string;
+  }>;
   gameAccounts: Array<{ provider: string; linked: boolean }>;
   localLogin: { username: string; totpEnabled: boolean; reauthFresh: boolean } | null;
   pendingMerge: { steamId: string; name: string } | null;
@@ -143,20 +164,49 @@ test.describe('local admin connections (pure)', () => {
   test('the password login counts as a method; no Steam until connected', TAGS, () => {
     const enabled = ['steam', 'local', 'github'];
     // Only the password login: it cannot go.
-    expect(checkRemoveSignInMethod({ provider: 'local', linkedProviders: ['local'], enabledProviders: enabled, hasSteam: false }))
-      .toEqual({ ok: false, reason: 'last_method' });
+    expect(
+      checkRemoveSignInMethod({
+        provider: 'local',
+        linkedProviders: ['local'],
+        enabledProviders: enabled,
+        hasSteam: false,
+      })
+    ).toEqual({ ok: false, reason: 'last_method' });
     // With GitHub connected it can.
-    expect(checkRemoveSignInMethod({ provider: 'local', linkedProviders: ['github', 'local'], enabledProviders: enabled, hasSteam: false }))
-      .toEqual({ ok: true });
+    expect(
+      checkRemoveSignInMethod({
+        provider: 'local',
+        linkedProviders: ['github', 'local'],
+        enabledProviders: enabled,
+        hasSteam: false,
+      })
+    ).toEqual({ ok: true });
     // GitHub is not the last method while the password login works.
-    expect(checkRemoveSignInMethod({ provider: 'github', linkedProviders: ['github', 'local'], enabledProviders: enabled, hasSteam: false }))
-      .toEqual({ ok: true });
+    expect(
+      checkRemoveSignInMethod({
+        provider: 'github',
+        linkedProviders: ['github', 'local'],
+        enabledProviders: enabled,
+        hasSteam: false,
+      })
+    ).toEqual({ ok: true });
     // Steam is not linked to a local account, so there is nothing to remove.
-    expect(checkRemoveSignInMethod({ provider: 'steam', linkedProviders: ['local'], enabledProviders: enabled, hasSteam: false }))
-      .toEqual({ ok: false, reason: 'not_linked' });
+    expect(
+      checkRemoveSignInMethod({
+        provider: 'steam',
+        linkedProviders: ['local'],
+        enabledProviders: enabled,
+        hasSteam: false,
+      })
+    ).toEqual({ ok: false, reason: 'not_linked' });
     // After connecting Steam, the password login can go (Steam remains).
-    expect(checkRemoveSignInMethod({ provider: 'local', linkedProviders: ['local'], enabledProviders: enabled }))
-      .toEqual({ ok: true });
+    expect(
+      checkRemoveSignInMethod({
+        provider: 'local',
+        linkedProviders: ['local'],
+        enabledProviders: enabled,
+      })
+    ).toEqual({ ok: true });
   });
 
   test('a password re-confirmation lasts 10 minutes, for that account only', TAGS, () => {
@@ -212,18 +262,27 @@ test.describe.serial('local admin connects sign-in methods', () => {
 
     const viaGithub = await signInWithGithub(providerUserId);
     try {
-      expect(await adminMe(viaGithub)).toMatchObject({ authenticated: true, steamId: `local-${username}` });
+      expect(await adminMe(viaGithub)).toMatchObject({
+        authenticated: true,
+        steamId: `local-${username}`,
+      });
 
       // A GitHub session has not entered the password: connecting more needs it first.
       expect((await connections(viaGithub)).localLogin?.reauthFresh).toBe(false);
       expect(await linkGithub(viaGithub, githubId())).toBe('reauth');
       const steamStart = await startSteamLink(viaGithub);
       expect(steamStart.status()).toBe(302);
-      expect(new URL(steamStart.headers()['location'] ?? '').searchParams.get('link')).toBe('reauth');
+      expect(new URL(steamStart.headers()['location'] ?? '').searchParams.get('link')).toBe(
+        'reauth'
+      );
 
-      const wrong = await viaGithub.post('/api/auth/local/reauth', { data: { password: 'not the password' } });
+      const wrong = await viaGithub.post('/api/auth/local/reauth', {
+        data: { password: 'not the password' },
+      });
       expect(wrong.status()).toBe(401);
-      const right = await viaGithub.post('/api/auth/local/reauth', { data: { password: PASSWORD } });
+      const right = await viaGithub.post('/api/auth/local/reauth', {
+        data: { password: PASSWORD },
+      });
       expect(right.status()).toBe(200);
       expect((await connections(viaGithub)).localLogin?.reauthFresh).toBe(true);
       expect((await startSteamLink(viaGithub)).status()).toBe(200);
@@ -246,7 +305,10 @@ test.describe.serial('local admin connects sign-in methods', () => {
       expect(await adminMe(ctx)).toMatchObject({ authenticated: true, steamId });
       const body = await connections(ctx);
       expect(body.account.steamId).toBe(steamId);
-      expect(body.signInMethods.find((m) => m.provider === 'steam')).toMatchObject({ linked: true, primary: true });
+      expect(body.signInMethods.find((m) => m.provider === 'steam')).toMatchObject({
+        linked: true,
+        primary: true,
+      });
       expect(body.localLogin?.username).toBe(username);
       // The sign-in methods moved with the account; the local-* row is gone.
       expect(await linkedSteamIds(providerUserId)).toEqual([steamId]);
@@ -264,67 +326,75 @@ test.describe.serial('local admin connects sign-in methods', () => {
     await viaGithub.dispose();
   });
 
-  test('connecting Steam that already has a player: confirm, then merge keeps that player', TAGS, async () => {
-    const username = newUsername();
-    const steamId = randomSteamId();
+  test(
+    'connecting Steam that already has a player: confirm, then merge keeps that player',
+    TAGS,
+    async () => {
+      const username = newUsername();
+      const steamId = randomSteamId();
 
-    // A player who has played here before, not an admin.
-    const player = await newContext();
-    expect(await signInAsPlayerViaRequest(player, steamId, 'Returning Player')).toBe(true);
-    const before = await connections(player);
-    expect((await adminMe(player)).authenticated).toBe(false);
+      // A player who has played here before, not an admin.
+      const player = await newContext();
+      expect(await signInAsPlayerViaRequest(player, steamId, 'Returning Player')).toBe(true);
+      const before = await connections(player);
+      expect((await adminMe(player)).authenticated).toBe(false);
 
-    const ctx = await createLocalAdmin(username);
-    try {
-      expect((await startSteamLink(ctx)).status()).toBe(200);
-      expect(await steamCallback(ctx, steamId)).toBe('merge');
-      // Nothing merged yet: the account is still the local one, and it is asked.
-      const pending = await connections(ctx);
-      expect(pending.account.steamId).toBe(`local-${username}`);
-      expect(pending.pendingMerge).toMatchObject({ steamId, name: 'Returning Player' });
+      const ctx = await createLocalAdmin(username);
+      try {
+        expect((await startSteamLink(ctx)).status()).toBe(200);
+        expect(await steamCallback(ctx, steamId)).toBe('merge');
+        // Nothing merged yet: the account is still the local one, and it is asked.
+        const pending = await connections(ctx);
+        expect(pending.account.steamId).toBe(`local-${username}`);
+        expect(pending.pendingMerge).toMatchObject({ steamId, name: 'Returning Player' });
 
-      // Needs a same-site JSON request.
-      const crossSite = await ctx.post('/api/me/connections/steam/merge', {
-        data: {},
-        headers: { Origin: 'https://evil.example' },
-      });
-      expect(crossSite.status()).toBe(403);
+        // Needs a same-site JSON request.
+        const crossSite = await ctx.post('/api/me/connections/steam/merge', {
+          data: {},
+          headers: { Origin: 'https://evil.example' },
+        });
+        expect(crossSite.status()).toBe(403);
 
-      const merge = await ctx.post('/api/me/connections/steam/merge', { data: {} });
-      expect(merge.status(), await merge.text()).toBe(200);
-      expect(await adminMe(ctx)).toMatchObject({ authenticated: true, steamId });
-      expect((await connections(ctx)).pendingMerge).toBeNull();
-    } finally {
-      await ctx.dispose();
+        const merge = await ctx.post('/api/me/connections/steam/merge', { data: {} });
+        expect(merge.status(), await merge.text()).toBe(200);
+        expect(await adminMe(ctx)).toMatchObject({ authenticated: true, steamId });
+        expect((await connections(ctx)).pendingMerge).toBeNull();
+      } finally {
+        await ctx.dispose();
+      }
+
+      // The Steam player kept its account (same uid, same name) and is an admin now.
+      const after = await connections(player);
+      expect(after.account.uid).toBe(before.account.uid);
+      expect(
+        (await (await player.get(`/api/players/${steamId}/summary`)).json()).player?.name
+      ).toBe('Returning Player');
+      expect(await adminMe(player)).toMatchObject({ authenticated: true, steamId });
+      await player.dispose();
+
+      const again = await localLogin(username);
+      expect(await adminMe(again)).toMatchObject({ authenticated: true, steamId });
+      await again.dispose();
+
+      // That Steam player has an admin login of its own now: another local admin cannot take it.
+      const other = await createLocalAdmin(newUsername());
+      try {
+        expect((await startSteamLink(other)).status()).toBe(200);
+        expect(await steamCallback(other, steamId)).toBe('taken');
+        expect((await connections(other)).pendingMerge).toBeNull();
+      } finally {
+        await other.dispose();
+      }
     }
-
-    // The Steam player kept its account (same uid, same name) and is an admin now.
-    const after = await connections(player);
-    expect(after.account.uid).toBe(before.account.uid);
-    expect((await (await player.get(`/api/players/${steamId}/summary`)).json()).player?.name).toBe('Returning Player');
-    expect(await adminMe(player)).toMatchObject({ authenticated: true, steamId });
-    await player.dispose();
-
-    const again = await localLogin(username);
-    expect(await adminMe(again)).toMatchObject({ authenticated: true, steamId });
-    await again.dispose();
-
-    // That Steam player has an admin login of its own now: another local admin cannot take it.
-    const other = await createLocalAdmin(newUsername());
-    try {
-      expect((await startSteamLink(other)).status()).toBe(200);
-      expect(await steamCallback(other, steamId)).toBe('taken');
-      expect((await connections(other)).pendingMerge).toBeNull();
-    } finally {
-      await other.dispose();
-    }
-  });
+  );
 
   test('refusals', TAGS, async () => {
     // Anonymous, and a Steam account (it already is one).
     const anon = await newContext();
     expect((await startSteamLink(anon)).status()).toBe(401);
-    expect((await anon.post('/api/auth/local/reauth', { data: { password: PASSWORD } })).status()).toBe(404);
+    expect(
+      (await anon.post('/api/auth/local/reauth', { data: { password: PASSWORD } })).status()
+    ).toBe(404);
     await anon.dispose();
     const steamPlayer = await newContext();
     expect(await signInAsPlayerViaRequest(steamPlayer, randomSteamId())).toBe(true);
