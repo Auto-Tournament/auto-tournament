@@ -4,6 +4,7 @@
  *
  *   node tests/ci-shard.mjs <shard> <total>          # space-separated file list
  *   node tests/ci-shard.mjs --summary <total>        # every shard's files + weight
+ *   node tests/ci-shard.mjs --count <max>            # shards the selection needs (CI_SPECS)
  *
  * Why not `playwright test --shard=i/n`: Playwright splits by test count in
  * file order, and this suite is fast API specs first, slow UI specs last. With
@@ -44,7 +45,11 @@ function listSpecs(dir) {
 
 function partition(total) {
   const weights = JSON.parse(readFileSync(join(testsDir, 'ci-shard-weights.json'), 'utf8'));
-  const files = listSpecs(testsDir).map((file) => ({
+  // CI_SPECS: the affected specs (tests/ci-affected.mjs); unset runs them all.
+  const only = process.env.CI_SPECS?.trim() ? new Set(process.env.CI_SPECS.trim().split(/\s+/)) : null;
+  const files = listSpecs(testsDir)
+    .filter((file) => !only || only.has(file))
+    .map((file) => ({
     file,
     weight: weights[file] ?? DEFAULT_WEIGHT,
   }));
@@ -63,7 +68,13 @@ function partition(total) {
 }
 
 const args = process.argv.slice(2);
-if (args[0] === '--summary') {
+if (args[0] === '--count') {
+  // How many shards the selected specs need: ~SECONDS_PER_SHARD of tests each, 1 to max.
+  const SECONDS_PER_SHARD = 40;
+  const max = Number(args[1]);
+  const total = partition(1)[0].weight;
+  console.log(Math.max(1, Math.min(max, Math.ceil(total / SECONDS_PER_SHARD))));
+} else if (args[0] === '--summary') {
   const total = Number(args[1]);
   partition(total).forEach((s, i) => {
     console.log(`shard ${i + 1}/${total}: ~${Math.round(s.weight)}s, ${s.files.length} files`);

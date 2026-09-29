@@ -17,9 +17,11 @@ env:
   # Tag given to the image the build job produces and every shard loads.
   # docker/docker-compose.ci.yml points the app service at it.
   MAT_IMAGE: auto-tournament:ci
-  # Public repo: runners are free, so more shards only cost setup time
-  # (~90s each) and halve the Playwright wall clock (~4 min -> ~2 min at 8).
-  SHARD_TOTAL: 8
+  # Public repo: runners are free, so more shards only cost setup time (~40s
+  # each after the image arrives). 16 is the ceiling: the org's Free plan runs
+  # 20 jobs at once, and build, lint and change detection run alongside the
+  # shards. A pull request uses as many as its affected specs need (~40s each).
+  SHARD_MAX: 16
 
 jobs:
   static:
@@ -78,10 +80,12 @@ jobs:
           yarn install --immutable
           yarn typecheck
 
-  # Decides whether the E2E suite can be affected at all. Pull requests that only
-  # touch docs, markdown, the Discord bot example or issue templates skip the
-  # image build and every shard; the `E2E tests` job below still reports green
-  # so a required check is satisfied. Pushes to main always run the suite.
+  # Decides which E2E specs a change can affect (tests/ci-affected.mjs), like
+  # a monorepo tool running only affected tasks: specs whose imports or API
+  # routes reach a changed file, every UI spec for a client change, the whole
+  # suite for shared files or anything the graph can't place. Docs-only pull
+  # requests run none; the `E2E tests` job still reports green. Pushes to main
+  # always run the whole suite, so a miss is caught on merge.
   changes:
     name: Detect E2E-relevant changes
     runs-on: ubuntu-latest
@@ -90,9 +94,18 @@ jobs:
       contents: read
       pull-requests: read
     outputs:
-      e2e: ${{ steps.filter.outputs.e2e }}
+      e2e: ${{ steps.pick.outputs.e2e }}
+      specs: ${{ steps.pick.outputs.specs }}
+      shards: ${{ steps.pick.outputs.shards }}
+      total: ${{ steps.pick.outputs.total }}
     steps:
-      - id: filter
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - id: pick
         env:
           GH_TOKEN: ${{ github.token }}
           EVENT_NAME: ${{ github.event_name }}
@@ -100,50 +113,39 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
+          specs=""
           if [ "$EVENT_NAME" != "pull_request" ]; then
-            echo "Not a pull request: running E2E."
-            echo "e2e=true" >> "$GITHUB_OUTPUT"
-            exit 0
+            echo "Not a pull request: running the whole suite."
+            run=true
+          elif ! files="$(gh api --paginate "repos/${REPO}/pulls/${PR_NUMBER}/files" --jq '.[].filename')" || [ -z "$files" ]; then
+            # Listing failed (API hiccup, oversized diff): run everything rather than skip.
+            echo "Could not list changed files: running the whole suite."
+            run=true
+          else
+            # shellcheck disable=SC2086
+            result="$(node tests/ci-affected.mjs $files)"
+            echo "$result" | node -e 'const r=JSON.parse(require("fs").readFileSync(0,"utf8"));console.log(r.reason);for(const s of r.specs)console.log("  "+s)'
+            all="$(echo "$result" | node -e 'console.log(JSON.parse(require("fs").readFileSync(0,"utf8")).all)')"
+            specs="$(echo "$result" | node -e 'console.log(JSON.parse(require("fs").readFileSync(0,"utf8")).specs.join(" "))')"
+            if [ "$all" = "true" ]; then run=true; specs=""
+            elif [ -n "$specs" ]; then run=true
+            else run=false; fi
           fi
+          total=1
+          if [ "$run" = true ]; then total="$(CI_SPECS="$specs" node tests/ci-shard.mjs --count "$SHARD_MAX")"; fi
+          shards="$(node -e "console.log(JSON.stringify(Array.from({length:$total},(_, i)=>i+1)))")"
+          echo "e2e=$run shards=$total"
+          {
+            echo "e2e=$run"
+            echo "specs=$specs"
+            echo "shards=$shards"
+            echo "total=$total"
+          } >> "$GITHUB_OUTPUT"
 
-          # Any failure to list the files (API hiccup, oversized diff) falls back
-          # to running the suite rather than silently skipping it.
-          if ! files="$(gh api --paginate "repos/${REPO}/pulls/${PR_NUMBER}/files" --jq '.[].filename')"; then
-            echo "Could not list changed files: running E2E."
-            echo "e2e=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          if [ -z "$files" ]; then
-            echo "No changed files listed: running E2E."
-            echo "e2e=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          run=false
-          while IFS= read -r f; do
-            [ -z "$f" ] && continue
-            case "$f" in
-              # Copied into the image and served at /api-docs; tested.
-              docs/openapi.json) run=true ;;
-              docs/*|examples/*|.github/ISSUE_TEMPLATE/*|LICENSE|*.md) ;;
-              *) run=true ;;
-            esac
-            if [ "$run" = true ]; then
-              echo "E2E-relevant change: $f"
-              break
-            fi
-          done <<< "$files"
-
-          if [ "$run" = false ]; then
-            echo "Only docs/markdown/examples changed: skipping E2E."
-          fi
-          echo "e2e=$run" >> "$GITHUB_OUTPUT"
-
-  # Builds the app image once, with a layer cache shared across runs, and hands
-  # it to the shards as a tarball. Uncached, `compose up --build` in every shard
-  # took ~3 min; with the cache the dependency layers are restored rather than
-  # re-installed.
+  # Builds the app image once and hands it to the shards as a tarball. The app
+  # is compiled here, with node_modules from the Actions cache, and the image
+  # only packs the output (docker/Dockerfile, APP_BUILD=prebuilt): no yarn
+  # install inside Docker, which took 6+ minutes whenever yarn.lock changed.
   build:
     name: Build E2E image
     needs: changes
@@ -154,35 +156,64 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # No `cache: yarn`: node_modules itself is cached below.
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-          cache: yarn
+
+      - name: Cache node_modules
+        id: nm-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            api/node_modules
+            client/node_modules
+          key: nm-${{ runner.os }}-node${{ hashFiles('.nvmrc') }}-${{ hashFiles('yarn.lock') }}
 
       - name: Install dependencies
+        if: steps.nm-cache.outputs.cache-hit != 'true'
         run: yarn install --frozen-lockfile
 
       # CS2 is a catalog module (DESIGN-modules §10): the image carries it only
       # in its offline snapshot, as a signed release. CI signs it with a
       # throwaway key made for this run; the shards trust that key's public
       # half (MODULE_TRUSTED_KEYS). The release signs with the real key.
-      - name: Build the offline module snapshot (CS2)
+      #
+      # The app: what the Dockerfile's build stage makes, laid out as its /app.
+      # The snapshot, server and client builds are independent: run together.
+      - name: Build the module snapshot and the app
+        env:
+          VITE_ENABLE_DEV_PAGE: 'true'
         run: |
-          bash scripts/build-module-snapshot.sh --ephemeral | tee "$RUNNER_TEMP/snapshot.log"
+          bash scripts/build-module-snapshot.sh --ephemeral > "$RUNNER_TEMP/snapshot.log" 2>&1 & snapshot=$!
+          yarn build:server > "$RUNNER_TEMP/server.log" 2>&1 & server=$!
+          yarn build:client > "$RUNNER_TEMP/client.log" 2>&1 & client=$!
+          status=0
+          for job in "snapshot:$snapshot" "server:$server" "client:$client"; do
+            if ! wait "${job#*:}"; then echo "::error::${job%%:*} build failed"; status=1; fi
+            echo "::group::${job%%:*} log"; cat "$RUNNER_TEMP/${job%%:*}.log"; echo "::endgroup::"
+          done
+          [ "$status" -eq 0 ]
           sed -n 's/^MODULE_TRUSTED_KEYS=//p' "$RUNNER_TEMP/snapshot.log" > "$RUNNER_TEMP/trusted-key.txt"
           test -s "$RUNNER_TEMP/trusted-key.txt"
           ls -la api/bundled-modules
+          out=ci-prebuilt
+          mkdir -p "$out/api" "$out/docs"
+          cp package.json "$out/"
+          cp -r api/dist api/public api/swagger-ui api/bundled-packs api/bundled-modules "$out/api/"
+          cp docs/openapi.json "$out/docs/"
 
       - uses: docker/setup-buildx-action@v3
 
-      # Same build as docker/docker-compose.local.yml (incl. the dev-page arg).
+      # The release stage of docker/Dockerfile around the files built above.
       - name: Build image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: docker/Dockerfile
           build-args: |
-            VITE_ENABLE_DEV_PAGE=true
+            APP_BUILD=prebuilt
           tags: ${{ env.MAT_IMAGE }}
           outputs: type=docker,dest=${{ runner.temp }}/mat-image.tar
           cache-from: type=gha,scope=e2e-image
@@ -200,7 +231,7 @@ jobs:
           retention-days: 1
 
   e2e:
-    name: E2E shard ${{ matrix.shard }}/8
+    name: E2E shard ${{ matrix.shard }}/${{ needs.changes.outputs.total }}
     # Not `needs: build`: shards start alongside the image build and do their
     # own setup (deps, browser, Postgres) meanwhile, then wait for the image
     # artifact. Takes the setup time off the wall clock.
@@ -216,12 +247,15 @@ jobs:
       # Let every shard finish so the merged report shows every failure.
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5, 6, 7, 8]
+        shard: ${{ fromJSON(needs.changes.outputs.shards) }}
     # Each shard is its own runner with its own app + Postgres stack, so specs
     # that reset the database cannot collide across shards. Within a shard the
     # suite still runs with workers: 1 (tests/playwright.config.ts).
     env:
       COMPOSE: docker compose --env-file .env -f docker/docker-compose.local.yml -f docker/docker-compose.ci.yml
+      SHARD_TOTAL: ${{ needs.changes.outputs.total }}
+      # The affected specs (empty: all of them). tests/ci-shard.mjs reads it.
+      CI_SPECS: ${{ needs.changes.outputs.specs }}
     steps:
       - uses: actions/checkout@v4
 
