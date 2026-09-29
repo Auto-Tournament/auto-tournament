@@ -10,7 +10,7 @@ import { Box, Chip, FormControlLabel, MenuItem, Stack, Switch, TextField, Typogr
 import { api, apiErrorMessage, Panel, SectionHead, useModuleTranslation, useSnackbar } from '../../../module-sdk';
 
 interface FailoverSettingsResponse {
-  settings: { auto: boolean; reserve: number | null };
+  settings: { auto: boolean; csm: boolean; reserve: number | null };
   reserve: {
     configured: number | null;
     effective: number;
@@ -43,7 +43,7 @@ export default function FailoverSettingsPanel() {
     return () => clearInterval(timer);
   }, [load]);
 
-  const save = async (patch: { auto?: boolean; reserve?: number | null }) => {
+  const save = async (patch: { auto?: boolean; reserve?: number | null; csm?: boolean }) => {
     setBusy(true);
     try {
       setData(await api.put<FailoverSettingsResponse>('/api/fleet/failover/settings', patch));
@@ -81,6 +81,26 @@ export default function FailoverSettingsPanel() {
               {t('failoverSettings.autoHelp', {
                 defaultValue:
                   'When a Ready Up server goes down during a match, the match resumes from the last round backup: on the same server if it comes back in time, else on a free one. Off: the match page asks an admin first.',
+              })}
+            </Typography>
+          </Box>
+
+          <Box>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={data.settings.csm}
+                  onChange={(e) => void save({ csm: e.target.checked })}
+                  disabled={busy || !data.settings.auto}
+                  data-testid="failover-csm-switch"
+                />
+              }
+              label={t('failoverSettings.csm', { defaultValue: 'Restart and create servers through csm' })}
+            />
+            <Typography variant="body2" color="text.secondary">
+              {t('failoverSettings.csmHelp', {
+                defaultValue:
+                  'Before moving a match, csm restarts the server that went down and the match waits up to 90 s for it. When no server is free, csm creates one on a machine with room.',
               })}
             </Typography>
           </Box>

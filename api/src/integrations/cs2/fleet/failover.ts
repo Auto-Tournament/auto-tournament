@@ -9,9 +9,14 @@
  *      still has the match), or it resumes the match in place when it lost
  *      it (a `restarted` failover: `match.assign` + `resume` to the same
  *      server, same connect address).
- *   b. Past the grace period: move to a free fleet server (the failover
- *      reserve included). None free: the failover stays open (the match page
- *      shows it) and every pass tries again; the server coming back takes (a).
+ *   b. Past the grace period, with auto-failover on and the machine's csm
+ *      online: csm restarts the server first and the move waits up to 90 s
+ *      for it to come back, which then takes (a) (./failoverRecovery.ts).
+ *   c. Move to a free fleet server (the failover reserve included). None
+ *      free: csm creates one on a machine with room, it joins the pool once
+ *      it enrolls, and the next pass moves the match there. Meanwhile the
+ *      failover stays open (the match page shows it) and every pass tries
+ *      again; the server coming back takes (a).
  *
  * - Detection (`scanForFailovers`, every `FLEET_FAILOVER_CHECK_MS`, 10 s, and
  *   after link and host events): for each match with an acked, open fleet
@@ -52,6 +57,7 @@ import { liveStateStore } from './state';
 import { cs2ServerIdOf } from './link';
 import { hostEvents, hostServers } from './hosts/service';
 import { getFailoverSettings } from './failoverSettings';
+import { createWhenNoneFree, linkCreatedServers, restartBeforeMove } from './failoverRecovery';
 import {
   buildResume,
   detectFailure,
@@ -418,7 +424,10 @@ async function runScan(options: ScanOptions): Promise<ScanResult> {
   // Auto-failover moves every open failover that has somewhere to go (the
   // ones just made, and the ones still waiting for a free server). Off: keep
   // the proposed server current for the admin.
-  const auto = (await getFailoverSettings()).auto;
+  const { auto, csm } = await getFailoverSettings();
+  const viaCsm = auto && csm;
+  // Servers csm created for a failover join the pool once they enroll.
+  if (viaCsm) await linkCreatedServers();
   const waiting = await db.queryAsync<ProposalRow>(
     `SELECT * FROM cs2_fleet_failovers WHERE status = 'open' AND reason <> 'manual' ORDER BY created_at`
   );
@@ -426,7 +435,10 @@ async function runScan(options: ScanOptions): Promise<ScanResult> {
   for (const row of waiting) {
     const p = fromRow(row);
     if (auto) {
-      await autoAccept(p);
+      // Restart the dead server through csm first (./failoverRecovery.ts).
+      if (viaCsm && (await restartBeforeMove(p, now)) === 'wait') continue;
+      const outcome = await autoAccept(p);
+      if (viaCsm && !outcome.ok && outcome.code === 'no_target') await createWhenNoneFree(p, now);
       free = null;
       continue;
     }

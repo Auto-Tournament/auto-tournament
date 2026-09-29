@@ -1385,6 +1385,8 @@
     "saveFailed": "Could not save the failover settings",
     "auto": "Automatic failover",
     "autoHelp": "When a Ready Up server goes down during a match, the match resumes from the last round backup: on the same server if it comes back in time, else on a free one. Off: the match page asks an admin first.",
+    "csm": "Restart and create servers through csm",
+    "csmHelp": "Before moving a match, csm restarts the server that went down and the match waits up to 90 s for it. When no server is free, csm creates one on a machine with room.",
     "reserve": "Spare servers",
     "reserveAuto": "Automatic (1 once 2 servers are online)",
     "reserveStatus": "{{effective}} of {{pool}} online server(s) kept free for failover",
