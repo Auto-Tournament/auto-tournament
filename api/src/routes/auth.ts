@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto';
 import { URLSearchParams } from 'url';
 import { Router, Request, Response, NextFunction } from 'express';
 import { log } from '../utils/logger';
@@ -736,6 +737,32 @@ export function ssoCallbackHandler(expectedProvider: AuthProvider) {
 
         log.success(`${label} login resolved via existing Steam link`, { provider, steamId });
         return res.redirect(302, `${baseUrl}/`);
+      }
+
+      // No existing link: a new account of its own (Steam is optional), when
+      // registration is open or this is the very first admin. Otherwise fall
+      // back to "sign in with Steam to finish" as before.
+      const selfRegistrationAllowed = await settingsService.isSelfRegistrationAllowed();
+      const hasAnyAdmin = await playerService.hasAnyAdmin();
+      if (selfRegistrationAllowed || !hasAnyAdmin) {
+        const accountId = `acc_${randomBytes(12).toString('hex')}`;
+        const displayName =
+          (typeof user.displayName === 'string' && user.displayName) ||
+          (typeof user.username === 'string' && user.username) ||
+          `${label} player`;
+        await playerService.getOrCreatePlayer(
+          accountId,
+          displayName,
+          typeof user.avatarUrl === 'string' ? user.avatarUrl : undefined
+        );
+        const outcome = await authIdentityService.linkIdentityUnlessOwnedElsewhere(provider, providerUserId, accountId);
+        if (outcome === 'linked') {
+          user.steamId = accountId;
+          await grantAdminForVerifiedEmail(accountId, provider, verifiedEmail);
+          setPlayerSteamCookie(req, res, accountId);
+          log.success(`${label} sign-in created an account without Steam`, { provider, accountId });
+          return res.redirect(302, `${baseUrl}/`);
+        }
       }
 
       // No existing link: remember this identity so the Steam callback can persist it.

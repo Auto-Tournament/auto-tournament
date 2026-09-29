@@ -114,11 +114,6 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
   };
 
   const handleSave = async () => {
-    if (!steamId.trim()) {
-      showWarning(t('playerModal.errors.steamRequired'));
-      return;
-    }
-
     if (!name.trim()) {
       showWarning(t('playerModal.errors.nameRequired'));
       return;
@@ -165,7 +160,8 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
       const originalDiscordId = isEditing ? normalizeDiscordId(player.discordId) ?? null : null;
       const discordIdChanged = normalizedDiscordId !== originalDiscordId;
       const payload = {
-        id: steamId.trim(),
+        // Steam is optional: leave it empty and the server makes an account id.
+        ...(steamId.trim() ? { id: steamId.trim() } : {}),
         name: name.trim(),
         avatar: avatar.trim() || undefined,
         elo: elo !== '' ? Number(elo) : undefined,
@@ -252,7 +248,6 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
               onChange={(e) => setSteamId(e.target.value)}
               disabled={isEditing || resolving}
               fullWidth
-              required
               error={!!error}
               slotProps={{
                 htmlInput: { 'data-testid': 'player-steam-id-input' },
