@@ -201,6 +201,18 @@ function ProviderSection({
         </Typography>
         <Chip size="small" label={status.label} color={status.color} data-testid={`${idPrefix}-status`} />
         <Box sx={{ flexGrow: 1 }} />
+        {/* The URL to paste into the provider's console, one click away. Steam needs none. */}
+        {provider.id !== 'steam' && (
+          <Button
+            size="small"
+            startIcon={<CopyIcon size={16} aria-hidden />}
+            onClick={() => void copyCallback()}
+            title={provider.callbackUrl}
+            data-testid={`${idPrefix}-copy-callback`}
+          >
+            {t('settingsPage.signIn.copyCallback')}
+          </Button>
+        )}
         <ExternalLink
           href={`https://docs.autotournament.gg/guides/sign-in/${provider.id}`}
           sx={{ fontSize: '0.85rem' }}

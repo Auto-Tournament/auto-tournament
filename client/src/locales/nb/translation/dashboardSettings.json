@@ -133,6 +133,7 @@
       "callbackUrl": "Tilbakekallings-URL",
       "callbackHelp": "Registrer akkurat denne URL-en som omdirigerings-URL i leverandørens utviklerkonsoll.",
       "copy": "Kopier",
+      "copyCallback": "Kopier tilbakekallings-URL",
       "copied": "Kopiert",
       "copyError": "Kunne ikke kopiere",
       "guide": "Oppsettsguide",

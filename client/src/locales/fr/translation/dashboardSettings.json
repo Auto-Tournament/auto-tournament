@@ -33,6 +33,7 @@
       "callbackUrl": "Callback URL",
       "callbackHelp": "Register this exact URL as the redirect URL in the provider's developer console.",
       "copy": "Copy",
+      "copyCallback": "Copy callback URL",
       "copied": "Copied",
       "copyError": "Could not copy",
       "guide": "Setup guide",
