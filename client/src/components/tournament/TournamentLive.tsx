@@ -47,6 +47,8 @@ interface TournamentLiveProps {
     mapSequence?: string[];
     teamSize?: number;
     maxRounds?: number;
+    /** The game module id (e.g. cs2); unset on older tournaments. */
+    game?: string;
     overtimeMode?: 'enabled' | 'disabled';
     overtimeSegments?: number;
     eloTemplateId?: string;
