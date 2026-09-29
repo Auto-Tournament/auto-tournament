@@ -17,10 +17,11 @@ env:
   # Tag given to the image the build job produces and every shard loads.
   # docker/docker-compose.ci.yml points the app service at it.
   MAT_IMAGE: auto-tournament:ci
-  # Public repo: runners are free, so more shards only cost setup time
-  # (~90s each) and halve the Playwright wall clock (~4 min -> ~2 min at 8).
-  # A pull request uses as many as its affected specs need (~40s each).
-  SHARD_MAX: 8
+  # Public repo: runners are free, so more shards only cost setup time (~40s
+  # each after the image arrives). 16 is the ceiling: the org's Free plan runs
+  # 20 jobs at once, and build, lint and change detection run alongside the
+  # shards. A pull request uses as many as its affected specs need (~40s each).
+  SHARD_MAX: 16
 
 jobs:
   static:
