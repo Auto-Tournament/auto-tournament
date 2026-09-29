@@ -319,9 +319,11 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
       };
       showSuccess(t(done[action], { name }));
       // A code module the server loaded just now reaches this browser on the
-      // next page load: its client half is fetched at boot.
+      // next page load (its client half is fetched at boot), so reload now to
+      // show its pages and settings. The banner stays as a fallback.
       if (item.kind === 'module' && !result.restartRequired && (action === 'install' || action === 'enable')) {
         setReloadFor((prev) => (prev.includes(name) ? prev : [...prev, name]));
+        window.setTimeout(() => window.location.reload(), 1200);
       } else if (action === 'disable' || action === 'uninstall') {
         setReloadFor((prev) => prev.filter((other) => other !== name));
       }

@@ -1258,7 +1258,7 @@
     "name": "Name (optional)",
     "getCommand": "Get the command",
     "linkTitle": "Run this on {{name}}",
-    "linkHelp": "Run it as root on the machine. The code works once and until {{time}}.",
+    "linkHelp": "Run it on the machine as the user that runs csm (not root). The code works once and until {{time}}.",
     "copy": "Copy",
     "linkConnected": "Connected. The machine is ready.",
     "linkWaiting": "Waiting for the machine to connect…",

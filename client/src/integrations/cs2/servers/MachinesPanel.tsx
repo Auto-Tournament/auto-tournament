@@ -675,7 +675,7 @@ export default function MachinesPanel() {
         <DialogContent>
           <Typography variant="body2" mb={2}>
             {t('machinesPanel.linkHelp', {
-              defaultValue: 'Run it as root on the machine. The code works once and until {{time}}.',
+              defaultValue: 'Run it on the machine as the user that runs csm (not root). The code works once and until {{time}}.',
               time: when(link?.expiresAt, locale),
             })}
           </Typography>
