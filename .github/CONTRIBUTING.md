@@ -33,6 +33,10 @@ yarn dev              # API and client together
 - Update the docs if behaviour changes.
 - Write commit messages that say what changed and why.
 
+## Releases
+
+Releases are cut with the **Release** workflow or `scripts/release.sh`. Release notes go in the GitHub release; the [docs changelog](https://docs.autotournament.gg/reference/changelog/platform) is generated from them, and [CHANGELOG.md](../CHANGELOG.md) only links there.
+
 ## Translations
 
 [TRANSLATING.md](../TRANSLATING.md) has the steps. The longer version is
