@@ -1,7 +1,9 @@
 /**
  * The sign-in providers Settings -> Sign-in manages, and the pure rules for
- * them: which settings win (environment over saved row over default) and
- * what a `PUT` may contain. No database access here, so the tests can import
+ * them: the saved row over the default, what a `PUT` may contain, and which
+ * environment variables are imported once into the saved rows
+ * (`planProviderEnvImport`). The environment is not read at run time: the
+ * database is the source of truth. No database access here, so the tests can import
  * it directly. The store is services/authProviderSettingsService.ts.
  */
 export const SIGN_IN_PROVIDER_IDS = ['steam', 'discord', 'google', 'github', 'twitch', 'epic'] as const;
@@ -10,7 +12,7 @@ export type SignInProviderId = (typeof SIGN_IN_PROVIDER_IDS)[number];
 export interface SignInProviderDefinition {
   id: SignInProviderId;
   label: string;
-  /** Env var names. Steam has no client id. */
+  /** Env var names, imported once at boot. Steam has no client id. */
   env: { enabled: string; clientId: string | null; secret: string };
   /** Enabled when neither the environment nor a saved row says otherwise. */
   defaultEnabled: boolean;
@@ -85,7 +87,7 @@ export interface StoredProviderSettings {
   updatedAt?: number;
 }
 
-export type FieldSource = 'env' | 'db' | 'default' | null;
+export type FieldSource = 'db' | 'default' | null;
 
 export interface EffectiveProviderSettings {
   id: SignInProviderId;
@@ -111,37 +113,69 @@ function envFlag(env: NodeJS.ProcessEnv, name: string): boolean | undefined {
   return value === '1' || value === 'true' || value === 'yes';
 }
 
-/**
- * The settings a provider runs with: the environment wins over the saved row,
- * field by field; the row wins over the default. Pure, for the tests.
- */
+/** The settings a provider runs with: the saved row, else the default. Pure, for the tests. */
 export function resolveProviderSettings(
   def: SignInProviderDefinition,
-  env: NodeJS.ProcessEnv,
   stored: StoredProviderSettings | null
 ): EffectiveProviderSettings {
-  const flag = envFlag(env, def.env.enabled);
-  const enabled = flag ?? stored?.enabled ?? def.defaultEnabled;
-  const enabledSource: FieldSource = flag !== undefined ? 'env' : stored ? 'db' : 'default';
-
-  const envClientId = envValue(env, def.env.clientId);
-  const clientId = def.env.clientId ? (envClientId ?? stored?.clientId ?? null) : null;
-  const clientIdSource: FieldSource = envClientId ? 'env' : clientId ? 'db' : null;
-
-  const envSecret = envValue(env, def.env.secret);
-  const secret = envSecret ?? stored?.secret ?? null;
-  const secretSource: FieldSource = envSecret ? 'env' : secret ? 'db' : null;
-
+  const enabled = stored?.enabled ?? def.defaultEnabled;
+  const clientId = def.env.clientId ? (stored?.clientId ?? null) : null;
+  const secret = stored?.secret ?? null;
   const configured = !!secret && (def.env.clientId === null || !!clientId);
   return {
     id: def.id,
     enabled,
     clientId,
     secret,
-    source: { enabled: enabledSource, clientId: clientIdSource, secret: secretSource },
+    source: { enabled: stored ? 'db' : 'default', clientId: clientId ? 'db' : null, secret: secret ? 'db' : null },
     configured,
     active: enabled && configured && !def.comingSoon,
   };
+}
+
+/** One environment variable to copy into a provider's saved row. */
+export interface ProviderEnvImport {
+  provider: SignInProviderId;
+  field: 'enabled' | 'clientId' | 'secret';
+  envName: string;
+  /** What to save; null when the database already has a value (the variable is then only marked as seen). */
+  value: boolean | string | null;
+}
+
+/**
+ * Which provider environment variables to import into the database, once.
+ * A variable is imported when it is set, has not been seen before
+ * (`alreadySeen`) and the saved row has no value for that field; a variable
+ * whose field is already saved is only marked as seen (value null), so the
+ * database keeps winning. Pure, for the tests.
+ */
+export function planProviderEnvImport(
+  env: NodeJS.ProcessEnv,
+  stored: ReadonlyMap<SignInProviderId, StoredProviderSettings>,
+  alreadySeen: ReadonlySet<string>
+): ProviderEnvImport[] {
+  const out: ProviderEnvImport[] = [];
+  for (const def of SIGN_IN_PROVIDERS) {
+    if (def.comingSoon) continue;
+    const row = stored.get(def.id) ?? null;
+    const flag = envFlag(env, def.env.enabled);
+    if (flag !== undefined && !alreadySeen.has(def.env.enabled)) {
+      out.push({ provider: def.id, field: 'enabled', envName: def.env.enabled, value: row ? null : flag });
+    }
+    const clientId = envValue(env, def.env.clientId);
+    if (def.env.clientId && clientId && !alreadySeen.has(def.env.clientId)) {
+      out.push({ provider: def.id, field: 'clientId', envName: def.env.clientId, value: row?.clientId ? null : clientId });
+    }
+    const secret = envValue(env, def.env.secret);
+    // A saved secret that no longer decrypts still counts as a value: the
+    // admin enters it again in the UI rather than the environment silently
+    // replacing it.
+    const hasSecret = !!row && (!!row.secret || !!row.secretUnreadable);
+    if (secret && !alreadySeen.has(def.env.secret)) {
+      out.push({ provider: def.id, field: 'secret', envName: def.env.secret, value: hasSecret ? null : secret });
+    }
+  }
+  return out;
 }
 
 /** What Settings -> Sign-in shows. Never carries a secret. */
@@ -156,9 +190,6 @@ export interface AdminProviderView {
   secretSet: boolean;
   /** A saved secret no longer decrypts (SECRETS_KEY / SESSION_SECRET changed). */
   secretUnreadable: boolean;
-  /** Fields the environment sets; read-only in the UI. */
-  envManaged: { enabled: boolean; clientId: boolean; secret: boolean };
-  envNames: { enabled: string; clientId: string | null; secret: string };
   configured: boolean;
   active: boolean;
   callbackUrl: string;
@@ -239,10 +270,7 @@ export function getStoredProviderSettings(id: SignInProviderId): StoredProviderS
   return storedRows.get(id) ?? null;
 }
 
-/** The settings `id` runs with right now: environment, then the saved row, then the default. */
-export function effectiveProviderSettings(
-  id: SignInProviderId,
-  env: NodeJS.ProcessEnv = process.env
-): EffectiveProviderSettings {
-  return resolveProviderSettings(signInProviderDefinition(id), env, storedRows.get(id) ?? null);
+/** The settings `id` runs with right now: the saved row, then the default. */
+export function effectiveProviderSettings(id: SignInProviderId): EffectiveProviderSettings {
+  return resolveProviderSettings(signInProviderDefinition(id), storedRows.get(id) ?? null);
 }

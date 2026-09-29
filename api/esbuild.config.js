@@ -196,6 +196,23 @@ async function build() {
       await fs.promises.writeFile(f.path, f.contents);
     })
   );
+
+  // `reset-admin` (src/cli/resetAdmin.ts): the image's recovery command,
+  // run as `docker exec auto-tournament reset-admin` (docker/Dockerfile).
+  await esbuild.build({
+    entryPoints: ['src/cli/resetAdmin.ts'],
+    bundle: true,
+    platform: 'node',
+    target: 'node20',
+    format: 'cjs',
+    outfile: path.join(__dirname, 'dist', 'reset-admin.js'),
+    external: [...nodeBuiltins, ...nodeBuiltins.map((m) => m.replace('node:', '')), 'pg-native', 'better-sqlite3'],
+    minify: isProduction,
+    sourcemap: false,
+    treeShaking: true,
+    define: licenseLineDefines(),
+    plugins: [strictModeDependencyPatches, ...(process.env.AT_CS2_BUILTIN === '1' ? [] : [withoutCs2])],
+  });
 }
 
 build().catch((err) => {

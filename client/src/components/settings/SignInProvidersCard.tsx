@@ -19,6 +19,7 @@ import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { ExternalLink } from '../common/ExternalLink';
 import { ProviderLogo } from '../auth/ProviderLogo';
+import { AdminAccessSection } from './AdminAccessSection';
 
 /** One provider as GET /api/sign-in-providers returns it. Never carries a secret. */
 export interface AdminSignInProvider {
@@ -30,8 +31,6 @@ export interface AdminSignInProvider {
   clientId: string | null;
   secretSet: boolean;
   secretUnreadable: boolean;
-  envManaged: { enabled: boolean; clientId: boolean; secret: boolean };
-  envNames: { enabled: string; clientId: string | null; secret: string };
   configured: boolean;
   active: boolean;
   callbackUrl: string;
@@ -52,7 +51,7 @@ type TestResult = 'ok' | 'invalid_credentials' | 'unreachable' | 'not_configured
  * Test button and a link to the provider's developer console
  * (/api/sign-in-providers). Saving applies at once; no restart.
  */
-export function SignInProvidersCard() {
+export function SignInProvidersCard({ welcome = false }: { welcome?: boolean }) {
   const { t } = useTranslation();
   const [data, setData] = useState<ListResponse | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -76,6 +75,14 @@ export function SignInProvidersCard() {
 
   return (
     <Stack spacing={3} data-testid="sign-in-providers">
+      {welcome && (
+        <Alert severity="info" data-testid="sign-in-welcome">
+          <Typography variant="subtitle2" component="p" fontWeight={600}>
+            {t('settingsPage.signIn.welcomeTitle')}
+          </Typography>
+          <Typography variant="body2">{t('settingsPage.signIn.welcomeBody')}</Typography>
+        </Alert>
+      )}
       <Box>
         <Typography variant="h6" fontWeight={600} gutterBottom>
           {t('settingsPage.signIn.title')}
@@ -92,6 +99,7 @@ export function SignInProvidersCard() {
       {data.providers.map((provider) => (
         <ProviderSection key={provider.id} provider={provider} onSaved={setData} />
       ))}
+      <AdminAccessSection />
     </Stack>
   );
 }
@@ -139,10 +147,10 @@ function ProviderSection({
 
   const saveCredentials = () => {
     const body: Record<string, unknown> = {};
-    if (provider.hasClientId && !provider.envManaged.clientId && clientId.trim() !== (provider.clientId ?? '')) {
+    if (provider.hasClientId && clientId.trim() !== (provider.clientId ?? '')) {
       body.clientId = clientId.trim() || null;
     }
-    if (!provider.envManaged.secret && replacing && secret.trim()) body.clientSecret = secret.trim();
+    if (replacing && secret.trim()) body.clientSecret = secret.trim();
     if (Object.keys(body).length === 0) return;
     void save(body);
   };
@@ -176,9 +184,6 @@ function ProviderSection({
         ? { label: t('settingsPage.signIn.status.missing'), color: 'warning' as const }
         : { label: t('settingsPage.signIn.status.off'), color: 'default' as const };
 
-  const envHint = (name: string | null) =>
-    name ? t('settingsPage.signIn.envManaged', { name }) : undefined;
-
   return (
     <Paper
       variant="outlined"
@@ -210,20 +215,14 @@ function ProviderSection({
               control={
                 <Switch
                   checked={provider.enabled}
-                  disabled={busy || provider.envManaged.enabled}
+                  disabled={busy}
                   onChange={(e) => void save({ enabled: e.target.checked })}
                   size="small"
-                  inputProps={{ 'aria-describedby': `${idPrefix}-enabled-env` }}
                   data-testid={`${idPrefix}-enabled`}
                 />
               }
               label={t('settingsPage.signIn.enabled')}
             />
-            {provider.envManaged.enabled && (
-              <Typography id={`${idPrefix}-enabled-env`} variant="caption" color="text.secondary" display="block">
-                {envHint(provider.envNames.enabled)}
-              </Typography>
-            )}
           </Box>
 
           {provider.hasClientId && (
@@ -231,8 +230,7 @@ function ProviderSection({
               label={t('settingsPage.signIn.clientId')}
               value={clientId}
               onChange={(e) => setClientId(e.target.value)}
-              disabled={busy || provider.envManaged.clientId}
-              helperText={provider.envManaged.clientId ? envHint(provider.envNames.clientId) : undefined}
+              disabled={busy}
               size="small"
               fullWidth
               autoComplete="off"
@@ -240,16 +238,7 @@ function ProviderSection({
             />
           )}
 
-          {provider.envManaged.secret ? (
-            <TextField
-              label={secretLabel}
-              value="••••••••"
-              disabled
-              size="small"
-              fullWidth
-              helperText={envHint(provider.envNames.secret)}
-            />
-          ) : replacing ? (
+          {replacing ? (
             <TextField
               label={secretLabel}
               type="password"
@@ -308,7 +297,7 @@ function ProviderSection({
             <Button variant="contained" size="small" onClick={saveCredentials} disabled={busy} data-testid={`${idPrefix}-save`}>
               {t('settingsPage.signIn.save')}
             </Button>
-            {replacing && provider.secretSet && !provider.envManaged.secret && (
+            {replacing && provider.secretSet && (
               <Button
                 size="small"
                 onClick={() => {

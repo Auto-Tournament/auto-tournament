@@ -130,7 +130,6 @@
       "replace": "Replace",
       "cancel": "Cancel",
       "save": "Save",
-      "envManaged": "Set by environment variable {{name}}",
       "callbackUrl": "Callback URL",
       "callbackHelp": "Register this exact URL as the redirect URL in the provider's developer console.",
       "copy": "Copy",
@@ -152,6 +151,21 @@
         "not_configured": "Enter the credentials first.",
         "not_supported": "This provider cannot be tested.",
         "unexpected": "The provider gave an answer the test does not understand."
+      },
+      "welcomeTitle": "Set up how players sign in",
+      "welcomeBody": "You are signed in as the admin. Turn on at least one provider below (Steam, Discord, Google, GitHub or Twitch) so players can sign in.",
+      "adminAccess": {
+        "title": "Admin access",
+        "localLogin": "Allow local admin login",
+        "localLoginHelp": "The small \"Admin login\" link on the sign-in page, for username + password accounts. If you lose access, run reset-admin on the server.",
+        "localLoginLocked": "Stays on until another admin can sign in with a provider that is turned on.",
+        "steamIds": "Admin Steam IDs",
+        "steamIdsHelp": "Steam64 IDs, separated by commas. Made admin when saved and at every start. Removing one does not take admin away.",
+        "emails": "Admin emails",
+        "emailsHelp": "Addresses that get admin when their owner signs in with a provider that verified them (Google, Discord, GitHub).",
+        "unsaved": "Not saved yet.",
+        "saved": "Admin access saved",
+        "loadError": "Could not load the admin access settings"
       }
     },
     "integrations": {

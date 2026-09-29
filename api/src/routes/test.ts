@@ -16,7 +16,7 @@ import {
   ssoCallbackRoute,
   startAccountLink,
 } from './auth';
-import { passport, testOAuthStrategyName } from '../config/passport';
+import { passport, reloadPassportAuth, testOAuthStrategyName } from '../config/passport';
 import { PENDING_STEAM_LINK_PROVIDERS } from '../utils/signedPendingSteamLink';
 import { setPackIndexBaseOverride } from '../services/packIndexService';
 import { forgetBundledPacks, seedBundledPacks } from '../services/gamePackService';
@@ -52,6 +52,11 @@ import {
   licenseConsentService,
   parseConsentRecord,
 } from '../services/license/consent';
+import { localAdminService } from '../services/localAdminService';
+import { adminAccessSettings } from '../services/adminAccessSettings';
+import { authProviderSettingsService } from '../services/authProviderSettingsService';
+import { envImportedNames } from '../services/envImport';
+import { setupThrottle, loginThrottle } from './localAdmin';
 import fs from 'fs';
 import path from 'path';
 
@@ -2801,6 +2806,66 @@ router.post('/license-consent', requireAuth, async (req: Request, res: Response)
   } catch (error) {
     res.status(500).json({ success: false, error: (error as Error).message });
   }
+});
+
+/**
+ * Test-only helpers for first-admin setup and local admin login
+ * (tests/api/local-admin.spec.ts). The real code is only ever logged at boot
+ * or printed by reset-admin; these hand it to the test instead.
+ *
+ *   POST /api/test/setup-code { purpose: 'setup' | 'reset' }  -> { code }
+ *   POST /api/test/setup-code/expire                          every unused code expires
+ *   POST /api/test/clear-admins                               nobody is admin (a fresh install)
+ *   POST /api/test/login-throttle/reset                       forget failed attempts
+ *   POST /api/test/env-import { env, forget?: string[] }      run the boot-time env import with `env`
+ */
+function refuseInProduction(res: Response): boolean {
+  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+    res.status(403).json({ success: false, error: 'Test helpers are disabled in production' });
+    return true;
+  }
+  return false;
+}
+
+router.post('/setup-code', async (req: Request, res: Response) => {
+  if (refuseInProduction(res)) return;
+  const purpose = (req.body as { purpose?: unknown })?.purpose === 'reset' ? 'reset' : 'setup';
+  const { code } = await localAdminService.createCode(purpose);
+  res.json({ success: true, code });
+});
+
+router.post('/setup-code/expire', async (_req: Request, res: Response) => {
+  if (refuseInProduction(res)) return;
+  await db.queryAsync('UPDATE setup_codes SET expires_at = 0 WHERE used_at IS NULL', []);
+  res.json({ success: true });
+});
+
+router.post('/clear-admins', async (_req: Request, res: Response) => {
+  if (refuseInProduction(res)) return;
+  await db.queryAsync('UPDATE players SET is_admin = 0 WHERE is_admin = 1', []);
+  res.json({ success: true });
+});
+
+router.post('/login-throttle/reset', (_req: Request, res: Response) => {
+  if (refuseInProduction(res)) return;
+  setupThrottle.reset();
+  loginThrottle.reset();
+  res.json({ success: true });
+});
+
+router.post('/env-import', async (req: Request, res: Response) => {
+  if (refuseInProduction(res)) return;
+  const body = (req.body ?? {}) as { env?: Record<string, string>; forget?: string[] };
+  if (Array.isArray(body.forget) && body.forget.length > 0) {
+    const seen = await envImportedNames();
+    for (const name of body.forget) seen.delete(name);
+    await db.setAppSettingAsync('env_imported', JSON.stringify([...seen]));
+  }
+  const env = (body.env ?? {}) as NodeJS.ProcessEnv;
+  await authProviderSettingsService.importFromEnvironment(env);
+  reloadPassportAuth();
+  await adminAccessSettings.importFromEnvironmentAndSeed(env);
+  res.json({ success: true, imported: [...(await envImportedNames())] });
 });
 
 export default router;

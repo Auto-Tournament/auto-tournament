@@ -130,7 +130,6 @@
       "replace": "Bytt",
       "cancel": "Avbryt",
       "save": "Lagre",
-      "envManaged": "Satt av miljøvariabelen {{name}}",
       "callbackUrl": "Tilbakekallings-URL",
       "callbackHelp": "Registrer akkurat denne URL-en som omdirigerings-URL i leverandørens utviklerkonsoll.",
       "copy": "Kopier",
@@ -152,6 +151,21 @@
         "not_configured": "Skriv inn legitimasjonen først.",
         "not_supported": "Denne leverandøren kan ikke testes.",
         "unexpected": "Leverandøren svarte noe testen ikke forstår."
+      },
+      "welcomeTitle": "Sett opp hvordan spillerne logger inn",
+      "welcomeBody": "Du er logget inn som admin. Slå på minst én tjeneste under (Steam, Discord, Google, GitHub eller Twitch) så spillerne kan logge inn.",
+      "adminAccess": {
+        "title": "Admintilgang",
+        "localLogin": "Tillat lokal admininnlogging",
+        "localLoginHelp": "Den lille «Admininnlogging»-lenken på innloggingssiden, for kontoer med brukernavn og passord. Mister du tilgangen, kjør reset-admin på serveren.",
+        "localLoginLocked": "Må være på til en annen admin kan logge inn med en tjeneste som er slått på.",
+        "steamIds": "Admin-Steam-ID-er",
+        "steamIdsHelp": "Steam64-ID-er, skilt med komma. Blir admin når du lagrer og ved hver oppstart. Å fjerne en tar ikke bort admin.",
+        "emails": "Admin-e-poster",
+        "emailsHelp": "Adresser som blir admin når eieren logger inn med en tjeneste som har bekreftet adressen (Google, Discord, GitHub).",
+        "unsaved": "Ikke lagret ennå.",
+        "saved": "Admintilgang lagret",
+        "loadError": "Kunne ikke laste admintilgang"
       }
     },
     "integrations": {

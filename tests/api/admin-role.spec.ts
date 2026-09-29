@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { bulkRemovesEveryAdmin, removesLastAdmin, shouldPromoteFirstAdmin } from '../../api/src/utils/adminRules';
+import { bulkRemovesEveryAdmin, canDisableLocalAdminLogin, removesLastAdmin } from '../../api/src/utils/adminRules';
 import { isAdminEmail, parseAdminEmails } from '../../api/src/utils/adminEmails';
 import {
   discordVerifiedEmail,
@@ -21,15 +21,10 @@ import { signInViaRequest } from '../helpers/auth';
 
 const TAGS = { tag: ['@api', '@auth', '@security'] };
 
-test.describe('fresh install: first account becomes admin', () => {
-  test('only the only account, and only while there is no admin', TAGS, () => {
-    const base = { adminExists: false, totalPlayers: 1, firstPlayerId: 'a', accountId: 'a' };
-    expect(shouldPromoteFirstAdmin(base)).toBe(true);
-    expect(shouldPromoteFirstAdmin({ ...base, adminExists: true })).toBe(false);
-    // An upgraded instance with players and no admin is not handed to whoever signs in.
-    expect(shouldPromoteFirstAdmin({ ...base, totalPlayers: 2 })).toBe(false);
-    expect(shouldPromoteFirstAdmin({ ...base, accountId: 'b' })).toBe(false);
-    expect(shouldPromoteFirstAdmin({ ...base, totalPlayers: 0, firstPlayerId: null })).toBe(false);
+test.describe('local admin login switch', () => {
+  test('can only be turned off while another admin can sign in with a provider', TAGS, () => {
+    expect(canDisableLocalAdminLogin({ adminsWithActiveProviderLogin: 0 })).toBe(false);
+    expect(canDisableLocalAdminLogin({ adminsWithActiveProviderLogin: 1 })).toBe(true);
   });
 });
 
@@ -49,14 +44,15 @@ test.describe('last admin guard', () => {
 
 test.describe('ADMIN_EMAILS', () => {
   const env = { ADMIN_EMAILS: 'Owner@Example.com, ops@example.org;not-an-email' };
+  const list = env.ADMIN_EMAILS;
 
   test('parses a list, case-insensitively, and drops junk', TAGS, () => {
     expect([...parseAdminEmails(env.ADMIN_EMAILS)]).toEqual(['owner@example.com', 'ops@example.org']);
-    expect(isAdminEmail('owner@example.com', env)).toBe(true);
-    expect(isAdminEmail('OPS@example.org', env)).toBe(true);
-    expect(isAdminEmail('someone@example.com', env)).toBe(false);
-    expect(isAdminEmail(undefined, env)).toBe(false);
-    expect(isAdminEmail('owner@example.com', {})).toBe(false);
+    expect(isAdminEmail('owner@example.com', list)).toBe(true);
+    expect(isAdminEmail('OPS@example.org', list)).toBe(true);
+    expect(isAdminEmail('someone@example.com', list)).toBe(false);
+    expect(isAdminEmail(undefined, list)).toBe(false);
+    expect(isAdminEmail('owner@example.com', '')).toBe(false);
   });
 
   test('only a provider-verified address is offered', TAGS, () => {

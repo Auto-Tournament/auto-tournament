@@ -21,7 +21,7 @@ import { abbreviateId } from './discordId';
  * (the last one is harmless, but "this ID was removed by hand" is still about
  * the ID, and a false positive in a debug log costs nothing).
  */
-const REDACTED_KEY = /(password|secret|token|key|discord)/;
+const REDACTED_KEY = /(password|secret|token|key|discord|totp|code_hash)/;
 
 /** JSON for a log line, with sensitive keys masked and long strings cut. */
 export function safeLogJson(value: unknown): string {
@@ -38,6 +38,7 @@ export function safeLogJson(value: unknown): string {
 }
 
 const MENTIONS_DISCORD_ID = /discord_id/i;
+const MENTIONS_CREDENTIAL = /(password_hash|code_hash|totp_)/i;
 const ID_SHAPED = /^\d{17,20}$/;
 
 /**
@@ -54,7 +55,10 @@ const ID_SHAPED = /^\d{17,20}$/;
  * they have to stay readable in the rest of the debug log to be of any use.
  */
 export function redactParamsForLog(sql: string, params: unknown[] | undefined): unknown[] | undefined {
-  if (!params || params.length === 0 || !MENTIONS_DISCORD_ID.test(sql)) return params;
+  if (!params || params.length === 0) return params;
+  // Local admin accounts and setup codes: every string parameter is masked.
+  if (MENTIONS_CREDENTIAL.test(sql)) return params.map((param) => (typeof param === 'string' ? '***' : param));
+  if (!MENTIONS_DISCORD_ID.test(sql)) return params;
   return params.map((param) =>
     typeof param === 'string' && ID_SHAPED.test(param) ? abbreviateId(param) : param
   );

@@ -50,7 +50,11 @@ test.describe.serial('Authentication', () => {
         await expect(page.getByTestId(testId)).toBeVisible();
       }
 
-      if (enabled.length === 0) {
+      const local = (await (await page.request.get('/api/auth/local/status')).json()) as { setup?: boolean };
+      if (local.setup) {
+        // No admin yet: the page points at /setup instead.
+        await expect(page.getByTestId('login-setup-notice')).toBeVisible();
+      } else if (enabled.length === 0) {
         // No provider configured: the page must say so rather than look broken.
         await expect(page.getByText(/sign-in is temporarily unavailable/i)).toBeVisible();
       }

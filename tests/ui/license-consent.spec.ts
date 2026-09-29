@@ -57,6 +57,10 @@ test.describe.serial('License consent UI', () => {
   });
 
   test('Settings > License: change to commercial, accepting again', { tag: ['@ui', '@settings'] }, async ({ page }) => {
+    // No saved key (an earlier spec in the same shard may have left one), so
+    // commercial use shows the "needs a key" note below.
+    const cleared = await page.request.delete('/api/license');
+    expect([200, 204, 404]).toContain(cleared.status());
     // Accept once through the page, then change it from Settings.
     await page.goto('/settings?section=license');
     await expect(page).toHaveURL(/\/welcome\/license/);

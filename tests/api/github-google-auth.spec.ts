@@ -1,5 +1,10 @@
 import { test, expect, request as playwrightRequest, type APIResponse } from '@playwright/test';
 import { getAuthProvidersConfig } from '../../api/src/config/authProviders';
+import {
+  setStoredProviderSettings,
+  type SignInProviderId,
+  type StoredProviderSettings,
+} from '../../api/src/config/signInProviders';
 import { signInAsPlayerViaRequest, signInViaRequest } from '../helpers/auth';
 
 /**
@@ -110,6 +115,7 @@ test.describe('GitHub and Google provider listing', () => {
   });
 
   test.afterEach(() => {
+    setStoredProviderSettings(new Map());
     for (const k of KEYS) {
       if (saved[k] === undefined) delete process.env[k];
       else process.env[k] = saved[k];
@@ -117,12 +123,12 @@ test.describe('GitHub and Google provider listing', () => {
   });
 
   test('each enabled provider is listed with its login URL and no secret', TAGS, () => {
-    process.env.AUTH_GITHUB_ENABLED = 'true';
-    process.env.GITHUB_CLIENT_ID = 'gh-client-id';
-    process.env.GITHUB_CLIENT_SECRET = 'gh-super-secret';
-    process.env.AUTH_GOOGLE_ENABLED = 'yes';
-    process.env.GOOGLE_CLIENT_ID = 'g-client-id.apps.googleusercontent.com';
-    process.env.GOOGLE_CLIENT_SECRET = 'g-super-secret';
+    setStoredProviderSettings(
+      new Map<SignInProviderId, StoredProviderSettings>([
+        ['github', { enabled: true, clientId: 'gh-client-id', secret: 'gh-super-secret' }],
+        ['google', { enabled: true, clientId: 'g-client-id.apps.googleusercontent.com', secret: 'g-super-secret' }],
+      ])
+    );
 
     const list = getAuthProvidersConfig();
     expect(list.find((p) => p.id === 'github')).toEqual({
@@ -146,17 +152,16 @@ test.describe('GitHub and Google provider listing', () => {
   });
 
   test('a provider is not listed unless enabled and fully configured', TAGS, () => {
-    // Credentials but no enable flag.
-    process.env.GITHUB_CLIENT_ID = 'gh-client-id';
-    process.env.GITHUB_CLIENT_SECRET = 'gh-secret';
-    // Enabled, but the secret is missing: the strategy would not be registered,
-    // so a button would only lead to an error.
-    process.env.AUTH_GOOGLE_ENABLED = 'true';
-    process.env.GOOGLE_CLIENT_ID = 'g-client-id';
-    // Explicitly off.
-    process.env.AUTH_DISCORD_ENABLED = 'false';
-    process.env.DISCORD_CLIENT_ID = '123456789012345678';
-    process.env.DISCORD_CLIENT_SECRET = 'd-secret';
+    setStoredProviderSettings(
+      new Map<SignInProviderId, StoredProviderSettings>([
+        // Credentials but not enabled.
+        ['github', { enabled: false, clientId: 'gh-client-id', secret: 'gh-secret' }],
+        // Enabled, but the secret is missing: the strategy would not be
+        // registered, so a button would only lead to an error.
+        ['google', { enabled: true, clientId: 'g-client-id', secret: null }],
+        ['discord', { enabled: false, clientId: '123456789012345678', secret: 'd-secret' }],
+      ])
+    );
 
     const ids = getAuthProvidersConfig().map((p) => p.id);
     expect(ids).not.toContain('github');

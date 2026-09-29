@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { decryptSecret, encryptSecret, secretsKeySource } from '../../api/src/utils/secretBox';
 import {
   parseProviderPatch,
+  planProviderEnvImport,
   resolveProviderSettings,
   setStoredProviderSettings,
   signInProviderDefinition,
@@ -15,7 +16,7 @@ import { signInViaRequest } from '../helpers/auth';
 /**
  * Settings -> Sign-in (api/src/routes/signInProviders.ts).
  *
- *  - Pure: the encryption round trip, environment-over-database precedence,
+ *  - Pure: the encryption round trip, the one-time environment import,
  *    PUT validation, the login page's provider list and the admin home's
  *    "Finish setting up" rule.
  *  - API: the secret is never in a GET response, writes are admin-only and
@@ -62,38 +63,66 @@ test.describe('secret box (AES-256-GCM)', () => {
   });
 });
 
-test.describe('environment over database', () => {
+test.describe('database is the source of truth', () => {
   const discord = signInProviderDefinition('discord');
   const row: StoredProviderSettings = { enabled: true, clientId: 'db-id', secret: 'db-secret' };
 
-  test('the saved row is used when the environment says nothing', TAGS, () => {
-    const s = resolveProviderSettings(discord, {}, row);
-    expect(s).toMatchObject({ enabled: true, clientId: 'db-id', secret: 'db-secret', active: true });
-    expect(s.source).toEqual({ enabled: 'db', clientId: 'db', secret: 'db' });
-  });
-
-  test('each environment variable wins over its field', TAGS, () => {
-    const s = resolveProviderSettings(
-      discord,
-      { AUTH_DISCORD_ENABLED: 'false', DISCORD_CLIENT_ID: 'env-id', DISCORD_CLIENT_SECRET: 'env-secret' },
-      row
-    );
-    expect(s).toMatchObject({ enabled: false, clientId: 'env-id', secret: 'env-secret', active: false });
-    expect(s.source).toEqual({ enabled: 'env', clientId: 'env', secret: 'env' });
-
-    const partial = resolveProviderSettings(discord, { DISCORD_CLIENT_SECRET: 'env-secret' }, row);
-    expect(partial).toMatchObject({ clientId: 'db-id', secret: 'env-secret' });
-    expect(partial.source).toEqual({ enabled: 'db', clientId: 'db', secret: 'env' });
+  test('the saved row is used; the environment is not read at run time', TAGS, () => {
+    const saved = { ...process.env };
+    process.env.AUTH_DISCORD_ENABLED = 'false';
+    process.env.DISCORD_CLIENT_ID = 'env-id';
+    try {
+      const s = resolveProviderSettings(discord, row);
+      expect(s).toMatchObject({ enabled: true, clientId: 'db-id', secret: 'db-secret', active: true });
+      expect(s.source).toEqual({ enabled: 'db', clientId: 'db', secret: 'db' });
+    } finally {
+      process.env = saved;
+    }
   });
 
   test('Steam is on by default and needs only its key; Epic is never active', TAGS, () => {
     const steam = signInProviderDefinition('steam');
-    expect(resolveProviderSettings(steam, {}, null)).toMatchObject({ enabled: true, configured: false, active: false });
-    expect(resolveProviderSettings(steam, { STEAM_API_KEY: 'k' }, null)).toMatchObject({ active: true });
-    expect(resolveProviderSettings(steam, { STEAM_API_KEY: 'k', AUTH_STEAM_ENABLED: 'false' }, null).active).toBe(false);
+    expect(resolveProviderSettings(steam, null)).toMatchObject({ enabled: true, configured: false, active: false });
+    expect(resolveProviderSettings(steam, { enabled: true, clientId: null, secret: 'k' })).toMatchObject({ active: true });
+    expect(resolveProviderSettings(steam, { enabled: false, clientId: null, secret: 'k' }).active).toBe(false);
 
     const epic = signInProviderDefinition('epic');
-    expect(resolveProviderSettings(epic, {}, { enabled: true, clientId: 'x', secret: 'y' }).active).toBe(false);
+    expect(resolveProviderSettings(epic, { enabled: true, clientId: 'x', secret: 'y' }).active).toBe(false);
+  });
+});
+
+test.describe('environment import (once)', () => {
+  const env = { AUTH_DISCORD_ENABLED: 'true', DISCORD_CLIENT_ID: 'env-id', DISCORD_CLIENT_SECRET: 'env-secret', STEAM_API_KEY: 'k' };
+
+  test('fills empty fields from the environment', TAGS, () => {
+    const plan = planProviderEnvImport(env, new Map(), new Set());
+    expect(plan).toEqual(
+      expect.arrayContaining([
+        { provider: 'discord', field: 'enabled', envName: 'AUTH_DISCORD_ENABLED', value: true },
+        { provider: 'discord', field: 'clientId', envName: 'DISCORD_CLIENT_ID', value: 'env-id' },
+        { provider: 'discord', field: 'secret', envName: 'DISCORD_CLIENT_SECRET', value: 'env-secret' },
+        { provider: 'steam', field: 'secret', envName: 'STEAM_API_KEY', value: 'k' },
+      ])
+    );
+    expect(plan).toHaveLength(4);
+  });
+
+  test('a saved value wins: the variable is only marked as seen', TAGS, () => {
+    const stored = new Map<SignInProviderId, StoredProviderSettings>([
+      ['discord', { enabled: false, clientId: 'db-id', secret: 'db-secret' }],
+    ]);
+    const plan = planProviderEnvImport(env, stored, new Set());
+    expect(plan.filter((p) => p.provider === 'discord').every((p) => p.value === null)).toBe(true);
+    // A saved secret that no longer decrypts is not replaced from the environment either.
+    const unreadable = new Map<SignInProviderId, StoredProviderSettings>([
+      ['steam', { enabled: true, clientId: null, secret: null, secretUnreadable: true }],
+    ]);
+    expect(planProviderEnvImport({ STEAM_API_KEY: 'k' }, unreadable, new Set())[0].value).toBeNull();
+  });
+
+  test('a variable seen before is never imported again', TAGS, () => {
+    const seen = new Set(['AUTH_DISCORD_ENABLED', 'DISCORD_CLIENT_ID', 'DISCORD_CLIENT_SECRET', 'STEAM_API_KEY']);
+    expect(planProviderEnvImport(env, new Map(), seen)).toEqual([]);
   });
 });
 
@@ -137,10 +166,10 @@ test.describe('login page list', () => {
     expect(getAuthProvidersConfig().map((p) => p.id)).not.toContain('twitch');
   });
 
-  test('AUTH_<P>_ENABLED=false hides a provider the database enabled', TAGS, () => {
+  test('AUTH_<P>_ENABLED at run time no longer hides a provider the database enabled', TAGS, () => {
     process.env.AUTH_TWITCH_ENABLED = 'false';
     store([['twitch', { enabled: true, clientId: 'tw-id', secret: 'tw-secret' }]]);
-    expect(getAuthProvidersConfig().map((p) => p.id)).not.toContain('twitch');
+    expect(getAuthProvidersConfig().map((p) => p.id)).toContain('twitch');
   });
 });
 

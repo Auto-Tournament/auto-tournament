@@ -68,11 +68,25 @@ and RCON access.
 ```bash
 git clone https://github.com/Auto-Tournament/auto-tournament.git
 cd auto-tournament
-cp example.env .env   # set SESSION_SECRET, SERVER_TOKEN and STEAM_API_KEY
+cp example.env .env   # set SESSION_SECRET, SERVER_TOKEN and FRONTEND_BASE_URL
 docker compose --env-file .env -f docker/docker-compose.yml up -d
 ```
 
-Then open http://localhost:3069. The first time an admin signs in, they
+The log prints a one-time setup code (`docker logs auto-tournament`):
+
+```
+[SETUP] Open http://localhost:3069/setup and enter this code: XXXX-XXXX-…
+```
+
+Open `/setup`, enter the code and create the admin account (username and
+password, optionally two-step verification). You land on Settings -> Sign-in
+to set up how players sign in (Steam, Discord, Google, GitHub, Twitch); no
+provider keys go in `.env`. Admins sign in again through the small "Admin
+login" link on the sign-in page. Locked out? `docker exec auto-tournament
+reset-admin` prints a code (valid 1 hour) that resets a local admin's password
+or creates one.
+
+The first time an admin signs in, they
 accept the license terms once: pick non-commercial or commercial
 use and type `I AGREE`. For an install nobody clicks through (automation,
 CI), set `AT_ACCEPT_LICENSE=noncommercial` or `AT_ACCEPT_LICENSE=commercial`

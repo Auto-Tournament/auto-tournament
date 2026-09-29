@@ -579,6 +579,10 @@
       "description": "The Auto Tournament license key: save, remove and read its status, checked offline; and the one-time acceptance of the license terms (non-commercial or commercial use) that the admin UI waits for. Admin only, except the public badge. Nothing else is ever blocked: a missing or problematic key is a notice for admins."
     },
     {
+      "name": "Local admin login",
+      "description": "Username + password (+ TOTP) sign-in for local admin accounts, and TOTP enrolment."
+    },
+    {
       "name": "Logs",
       "description": "Server-side event logs."
     },
@@ -653,6 +657,10 @@
     {
       "name": "Settings",
       "description": "Instance-wide settings."
+    },
+    {
+      "name": "Setup",
+      "description": "First-admin setup and reset-admin recovery with a one-time code. 404 once an admin exists."
     },
     {
       "name": "Sign-in providers",
@@ -1174,6 +1182,146 @@
             "description": "Success"
           }
         }
+      }
+    },
+    "/api/auth/local/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Sign in as a local admin",
+        "description": "Same-site JSON. Username and password, plus `totp` when the account\nhas TOTP (answered `totpRequired: true` after a correct password).\nFailures answer one generic message; repeated failures lock the\nusername with a growing delay and limit the IP (429).\n",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "totp": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signed in"
+          },
+          "401": {
+            "description": "Wrong username, password or code; or `totpRequired`"
+          },
+          "403": {
+            "description": "Local admin login is turned off"
+          },
+          "429": {
+            "description": "Too many attempts"
+          }
+        }
+      }
+    },
+    "/api/auth/local/me": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "The signed-in local admin's username and whether TOTP is on",
+        "responses": {
+          "200": {
+            "description": "The account"
+          },
+          "404": {
+            "description": "Not signed in with a local admin account"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/auth/local/status": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Whether local admin login is on, and whether setup is open",
+        "responses": {
+          "200": {
+            "description": "`enabled`: the login page shows the Admin login link. `setup`: no admin exists yet and /setup is open."
+          }
+        }
+      }
+    },
+    "/api/auth/local/totp/confirm": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Turn TOTP on with a code from the authenticator app",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "TOTP is on; sign-in now asks for a code"
+          },
+          "400": {
+            "description": "Wrong code"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/auth/local/totp/start": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Start TOTP enrolment for the signed-in local admin",
+        "description": "Same-site JSON. Returns a new secret and its otpauth:// URI for an\nauthenticator app. Not active until confirmed.\n",
+        "responses": {
+          "200": {
+            "description": "`secret` and `uri`"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/auth/logout": {
@@ -8508,13 +8656,110 @@
         }
       }
     },
+    "/api/setup/check": {
+      "post": {
+        "tags": [
+          "Setup"
+        ],
+        "summary": "Check a setup code without using it",
+        "description": "Same-site JSON. Rate limited per IP and overall; failures answer one generic message.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The code is valid"
+          },
+          "400": {
+            "description": "Not valid or expired"
+          },
+          "404": {
+            "description": "Setup is closed"
+          },
+          "429": {
+            "description": "Too many attempts"
+          }
+        }
+      }
+    },
+    "/api/setup/complete": {
+      "post": {
+        "tags": [
+          "Setup"
+        ],
+        "summary": "Use the setup code and create (or reset) a local admin",
+        "description": "Same-site JSON. Uses the code (once), creates the local admin\n`username` with `password` (or, with a reset-admin code, sets a new\npassword on an existing one and removes its TOTP), and signs in.\nUsername: 3-32 of a-z 0-9 . _ -. Password: 12-256 characters, not\ncontaining the username, not trivially simple.\n",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signed in as the admin"
+          },
+          "400": {
+            "description": "Bad username or password (`problem`), or the code is not valid"
+          },
+          "404": {
+            "description": "Setup is closed"
+          },
+          "429": {
+            "description": "Too many attempts"
+          }
+        }
+      }
+    },
+    "/api/setup/status": {
+      "get": {
+        "tags": [
+          "Setup"
+        ],
+        "summary": "Whether first-admin setup (or a reset) is open",
+        "description": "`mode` is `setup` while no admin exists, `reset` while a reset-admin\ncode is waiting. 404 otherwise.\n",
+        "responses": {
+          "200": {
+            "description": "Setup is open"
+          },
+          "404": {
+            "description": "Setup is closed"
+          }
+        }
+      }
+    },
     "/api/sign-in-providers": {
       "get": {
         "tags": [
           "Sign-in providers"
         ],
         "summary": "List the sign-in providers and how each is set up",
-        "description": "Admin only. Per provider: enabled, client id, whether a secret is set\n(never the secret), which fields an environment variable sets\n(read-only), the callback URL to register with the provider, and\nwhere to create the credentials. `secretsKeySource` names the\nvariable the saved secrets are encrypted with (SECRETS_KEY, else\nSESSION_SECRET).\n",
+        "description": "Admin only. Per provider: enabled, client id, whether a secret is set\n(never the secret), the callback URL to register with the provider,\nand\nwhere to create the credentials. `secretsKeySource` names the\nvariable the saved secrets are encrypted with (SECRETS_KEY, else\nSESSION_SECRET).\n",
         "responses": {
           "200": {
             "description": "The providers"
@@ -8533,13 +8778,81 @@
         ]
       }
     },
+    "/api/sign-in-providers/admin-access": {
+      "get": {
+        "tags": [
+          "Sign-in providers"
+        ],
+        "summary": "Admin access settings",
+        "description": "Admin only. Whether local admin login (username + password) is on and\nwhether it may be turned off, the admin Steam IDs (made admin at boot\nand on save) and the admin emails (admin at sign-in with a\nprovider-verified address).\n",
+        "responses": {
+          "200": {
+            "description": "The settings"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Sign-in providers"
+        ],
+        "summary": "Change the admin access settings",
+        "description": "Admin only; same-site JSON. Every field is optional. Local admin\nlogin can only be turned off while another admin can sign in with a\nprovider that is on (409 otherwise).\n",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "localAdminLoginEnabled": {
+                    "type": "boolean"
+                  },
+                  "adminSteamIds": {
+                    "type": "string"
+                  },
+                  "adminEmails": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved; the settings as GET returns them"
+          },
+          "400": {
+            "description": "Invalid field"
+          },
+          "409": {
+            "description": "Turning local admin login off would lock every admin out"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/sign-in-providers/{provider}": {
       "put": {
         "tags": [
           "Sign-in providers"
         ],
         "summary": "Change a sign-in provider's settings",
-        "description": "Admin only; same-site JSON. Every field is optional. `clientSecret`\nreplaces the saved secret (null clears it) and is stored encrypted.\nA field set by an environment variable cannot be changed (409). The\nsign-in strategies are re-registered at once; no restart.\n",
+        "description": "Admin only; same-site JSON. Every field is optional. `clientSecret`\nreplaces the saved secret (null clears it) and is stored encrypted.\nThe\nsign-in strategies are re-registered at once; no restart.\n",
         "parameters": [
           {
             "in": "path",
@@ -8591,7 +8904,7 @@
             "description": "Unknown provider"
           },
           "409": {
-            "description": "The field is set by an environment variable, or the provider is not available yet"
+            "description": "The provider is not available yet"
           }
         },
         "security": [
@@ -9333,6 +9646,20 @@
         ]
       }
     },
+    "/api/test/clear-admins": {
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/clear-admins",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/test/complete-steam-link": {
       "post": {
         "tags": [
@@ -9485,6 +9812,20 @@
             "apiToken": []
           }
         ]
+      }
+    },
+    "/api/test/env-import": {
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/env-import",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
       }
     },
     "/api/test/fake-catalog/catalog.json": {
@@ -10145,6 +10486,20 @@
           "Test helpers"
         ],
         "summary": "POST /api/test/login-player",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/test/login-throttle/reset": {
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/login-throttle/reset",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
@@ -11012,6 +11367,34 @@
             "apiToken": []
           }
         ]
+      }
+    },
+    "/api/test/setup-code": {
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/setup-code",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/test/setup-code/expire": {
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/setup-code/expire",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
       }
     },
     "/api/test/team-members": {

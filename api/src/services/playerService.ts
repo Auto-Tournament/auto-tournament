@@ -8,7 +8,6 @@ import { log } from '../utils/logger';
 import { eloToOpenSkill } from './ratingService';
 import { playerIdentity } from './playerIdentity';
 import { notifyAdminListMaybeChanged } from './adminListEvents';
-import { shouldPromoteFirstAdmin } from '../utils/adminRules';
 import {
   abbreviateId,
   describePlayer,
@@ -728,44 +727,6 @@ class PlayerService {
     );
 
     return players.map(withoutDiscordId);
-  }
-
-  /**
-   * Ensure that there is at least one admin player.
-   *
-   * Safety rules:
-   * - Only the *first ever* player record may be auto‑promoted to admin.
-   * - If any admin already exists, this is a no‑op.
-   * - If more than one player exists in the table, we will NEVER auto‑promote
-   *   anyone, even if no admin is currently set.
-   */
-  async ensureFirstAdmin(steamId: string): Promise<void> {
-    const existingAdmin = await db.queryOneAsync<{ id: string }>(
-      'SELECT id FROM players WHERE is_admin = 1 LIMIT 1',
-      []
-    );
-    const countRow = await db.queryOneAsync<{ count: number | string }>(
-      'SELECT COUNT(1) as count FROM players',
-      []
-    );
-    const firstPlayer = await db.queryOneAsync<{ id: string }>(
-      'SELECT id FROM players ORDER BY created_at ASC LIMIT 1',
-      []
-    );
-    const decision = {
-      adminExists: !!existingAdmin,
-      totalPlayers: Number(countRow?.count ?? 0),
-      firstPlayerId: firstPlayer?.id ?? null,
-      accountId: steamId,
-    };
-
-    if (!shouldPromoteFirstAdmin(decision)) {
-      log.debug('[ensureFirstAdmin] Not promoting', { steamId, ...decision });
-      return;
-    }
-
-    await this.updatePlayer(steamId, { isAdmin: true });
-    log.info('[ensureFirstAdmin] Fresh install: promoted the first account to admin', { steamId });
   }
 
   /** How many admins there are. */
