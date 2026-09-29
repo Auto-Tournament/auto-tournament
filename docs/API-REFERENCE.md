@@ -15,8 +15,8 @@ Every endpoint this API serves — 411 of them, 311 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
-endpoints worth using, see [API.md](API.md). To generate a client, use
-[openapi.json](openapi.json) — same walk, machine-readable.
+endpoints worth using, see [the API guide](https://docs.autotournament.gg/reference/api).
+To generate a client, use [openapi.json](openapi.json) — same walk, machine-readable.
 
 ## Reading the Auth column
 
