@@ -7490,6 +7490,14 @@
                         "revision": {
                           "type": "string",
                           "description": "Changes exactly when the key is saved, replaced or cleared (\"none\" without a key). csm applies the key only when this differs from what it last applied.\n"
+                        },
+                        "use": {
+                          "type": "string",
+                          "enum": [
+                            "noncommercial",
+                            "commercial"
+                          ],
+                          "description": "How the admin accepted the license terms, so csm can give Ready Up its license consent without a prompt. Omitted until an admin has accepted.\n"
                         }
                       }
                     }

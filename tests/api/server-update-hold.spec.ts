@@ -32,7 +32,7 @@ interface HoldBody {
   tournamentStatus?: string | null;
   activeMatches?: Array<{ slug: string; serverId: string | null; status: string }>;
   checkedAt?: number;
-  license?: { key: string | null; revision: string } | null;
+  license?: { key: string | null; revision: string; use?: string } | null;
 }
 
 const json = { 'Content-Type': 'application/json' };
@@ -180,7 +180,8 @@ test.describe.serial('license hand-off on the update-hold poll', () => {
 
     const { status, body } = await getHold(request);
     expect(status).toBe(200);
-    expect(body.license).toEqual(licenseHandoffFor(UNSIGNED_KEY));
+    // `use` rides along when the instance has accepted the terms.
+    expect(body.license).toMatchObject(licenseHandoffFor(UNSIGNED_KEY));
   });
 
   test('a cleared key reaches csm as null with revision "none"', async ({ request }) => {
@@ -190,8 +191,37 @@ test.describe.serial('license hand-off on the update-hold poll', () => {
     await request.delete('/api/license');
     const { status, body } = await getHold(request);
     expect(status).toBe(200);
-    expect(body.license).toEqual({ key: null, revision: NO_LICENSE_REVISION });
+    expect(body.license).toMatchObject({ key: null, revision: NO_LICENSE_REVISION });
     expect(body.license?.revision).not.toBe(before);
+  });
+
+  test('the accepted license use reaches csm, and is omitted before acceptance', async ({ request }) => {
+    const seed = (data: Record<string, unknown>) =>
+      request.post('/api/test/license-consent', { data, headers: json });
+    const record = (use: string, termsVersion: number) => ({
+      use,
+      acceptedAt: new Date().toISOString(),
+      acceptedBy: 'e2e',
+      source: 'admin',
+      termsVersion,
+      termsHash: null,
+    });
+    try {
+      expect((await seed({ action: 'clear' })).status()).toBe(200);
+      let { status, body } = await getHold(request);
+      expect(status).toBe(200);
+      expect(body.license).toBeTruthy();
+      expect(body.license).not.toHaveProperty('use');
+
+      for (const use of ['noncommercial', 'commercial']) {
+        expect((await seed({ action: 'set', record: record(use, 1) })).status()).toBe(200);
+        ({ status, body } = await getHold(request));
+        expect(status).toBe(200);
+        expect(body.license?.use).toBe(use);
+      }
+    } finally {
+      await seed({ action: 'restore' });
+    }
   });
 
   test('the key only goes to the server token', async ({ request, playwright, baseURL }) => {

@@ -170,6 +170,12 @@ export async function getUpdateHoldStatus(tournamentId: number): Promise<UpdateH
 export interface ServerLicenseHandoff {
   key: string | null;
   revision: string;
+  /**
+   * How the admin said this instance is used (the consent from the license
+   * terms step), so csm can give Ready Up its license consent with no prompt.
+   * Left out until an admin has accepted.
+   */
+  use?: 'noncommercial' | 'commercial';
 }
 
 export const NO_LICENSE_REVISION = 'none';
@@ -183,11 +189,30 @@ export function licenseHandoffFor(key: string | null | undefined): ServerLicense
 }
 
 /**
+ * The `use` of the stored consent (`license_consent`, JSON), or undefined
+ * when there is none or it can't be read. Read through settingsService for the
+ * same reason as the key: a code module can only import listed host modules,
+ * and the consent service is not one.
+ */
+async function consentUse(): Promise<'noncommercial' | 'commercial' | undefined> {
+  try {
+    const raw = await settingsService.getSetting('license_consent');
+    const use = raw ? (JSON.parse(raw) as { use?: unknown }).use : undefined;
+    return use === 'noncommercial' || use === 'commercial' ? use : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * The stored key (`license_key`, written only through /api/license) as csm
  * gets it. Passed through as stored: Ready Up checks it itself. Read through
  * settingsService rather than the license service so this module needs no
  * new host module.
  */
 export async function getLicenseHandoff(): Promise<ServerLicenseHandoff> {
-  return licenseHandoffFor(await settingsService.getSetting('license_key'));
+  const handoff = licenseHandoffFor(await settingsService.getSetting('license_key'));
+  const use = await consentUse();
+  if (use) handoff.use = use;
+  return handoff;
 }
