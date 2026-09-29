@@ -268,7 +268,8 @@
     "warningsNote": "Nothing is blocked or limited. This is only a notice.",
     "label": "License key",
     "replaceLabel": "Replace the license key",
-    "helper": "Starts with ATL1. After saving, only the license ID is shown.",
+    "helper": "Starts with ATL1. Copy it from <consoleLink>your licenses in the Auto Tournament console</consoleLink>. After saving, only the license ID is shown.",
+    "checkInNote": "Without a license key, nothing is sent to Auto Tournament. With a key, this server checks in once a day with the key's id and its server count.",
     "save": "Save key",
     "saved": "License key saved",
     "saveFailed": "Could not save the license key",
@@ -300,7 +301,7 @@
     },
     "consent": {
       "title": "Before you start: the license",
-      "subtitle": "Auto Tournament is free for non-commercial use. Commercial use needs a license. Read the short version, tell us how you use it, and type I AGREE.",
+      "subtitle": "Auto Tournament is free for non-commercial use. Commercial use needs a license. Read the short version, choose how this instance is used, and type I AGREE.",
       "intro": "Auto Tournament is source-available under the {{name}}. In short:",
       "points": {
         "free": "Free for personal use, hobby projects, learning, and events where nobody earns money from it.",
@@ -312,16 +313,17 @@
       },
       "readLicense": "Read the full license",
       "readRules": "Licensing and commercial use",
-      "summaryNote": "This is a summary. If it and the license disagree, the license wins.",
+      "summaryNote": "This is a short summary, and the text in your version may be out of date. The current license and licensing rules are on autotournament.gg — if they differ from this summary, they win.",
       "useQuestion": "How is this instance used?",
+      "privacyNote": "Your answer is saved on this server only. Without a license key, nothing is sent to Auto Tournament. With a key, this server checks in once a day with the key's id and its server count.",
       "use": {
-        "noncommercial": "Personal / non-commercial",
+        "noncommercial": "Non-commercial",
         "noncommercialHint": "Free. Nobody earns money from it.",
         "commercial": "Commercial",
         "commercialHint": "You need a license. Paste your key now or later."
       },
       "keyLabel": "License key (optional)",
-      "keyHelper": "Starts with ATL1. You can also add it later in Settings > License.",
+      "keyHelper": "Starts with ATL1. Copy it from <consoleLink>your licenses in the Auto Tournament console</consoleLink>, or add it later in Settings > License.",
       "confirmLabel": "Type {{phrase}} to accept the license terms",
       "confirmHelper": "By typing {{phrase}} you accept the license terms for this instance.",
       "accept": "Accept and continue",
@@ -340,7 +342,7 @@
       "change": "Change",
       "changeTitle": "Change how this instance is used",
       "changeNote": "Choose again and type I AGREE. The change is saved with the date and your account.",
-      "commercialNoKey": "This instance is used commercially, so you need a license. Paste your key below. Nothing is locked while it is missing."
+      "commercialNoKey": "This instance is used commercially, so you need a license. Copy your key from <consoleLink>your licenses in the Auto Tournament console</consoleLink> and paste it below. Nothing is locked while it is missing."
     }
   }
 }

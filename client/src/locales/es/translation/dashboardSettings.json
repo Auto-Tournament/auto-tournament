@@ -268,7 +268,8 @@
     "warningsNote": "No se bloquea ni se limita nada. Es solo un aviso.",
     "label": "Clave de licencia",
     "replaceLabel": "Reemplazar la clave de licencia",
-    "helper": "Empieza por ATL1. Después de guardar, solo se muestra el ID de la licencia.",
+    "helper": "Empieza por ATL1. Cópiala desde <consoleLink>tus licencias en la consola de Auto Tournament</consoleLink>. Después de guardar, solo se muestra el ID de la licencia.",
+    "checkInNote": "Sin clave de licencia, no se envía nada a Auto Tournament. Con clave, este servidor se comunica una vez al día con el ID de la clave y su número de servidores.",
     "save": "Guardar clave",
     "saved": "Clave de licencia guardada",
     "saveFailed": "No se pudo guardar la clave de licencia",
@@ -300,7 +301,7 @@
     },
     "consent": {
       "title": "Antes de empezar: la licencia",
-      "subtitle": "Auto Tournament es gratis para uso no comercial. El uso comercial necesita una licencia. Lee la versión corta, dinos cómo lo usas y escribe I AGREE.",
+      "subtitle": "Auto Tournament es gratis para uso no comercial. El uso comercial necesita una licencia. Lee la versión corta, elige cómo se usa esta instancia y escribe I AGREE.",
       "intro": "El código de Auto Tournament está disponible bajo la {{name}}. En resumen:",
       "points": {
         "free": "Gratis para uso personal, proyectos de hobby, aprendizaje y eventos en los que nadie gana dinero con ello.",
@@ -312,16 +313,17 @@
       },
       "readLicense": "Leer la licencia completa",
       "readRules": "Licencias y uso comercial",
-      "summaryNote": "Esto es un resumen. Si no coincide con la licencia, manda la licencia.",
+      "summaryNote": "Este es un resumen corto y el texto de tu versión puede estar desactualizado. La licencia vigente y las reglas de licencia están en autotournament.gg. Si difieren de este resumen, prevalecen ellas.",
       "useQuestion": "¿Cómo se usa esta instancia?",
+      "privacyNote": "Tu respuesta se guarda solo en este servidor. Sin clave de licencia, no se envía nada a Auto Tournament. Con clave, este servidor se comunica una vez al día con el ID de la clave y su número de servidores.",
       "use": {
-        "noncommercial": "Personal / no comercial",
+        "noncommercial": "No comercial",
         "noncommercialHint": "Gratis. Nadie gana dinero con ello.",
         "commercial": "Comercial",
         "commercialHint": "Necesitas una licencia. Pega tu clave ahora o más tarde."
       },
       "keyLabel": "Clave de licencia (opcional)",
-      "keyHelper": "Empieza por ATL1. También puedes añadirla más tarde en Ajustes > Licencia.",
+      "keyHelper": "Empieza por ATL1. Cópiala desde <consoleLink>tus licencias en la consola de Auto Tournament</consoleLink> o añádela más tarde en Ajustes > Licencia.",
       "confirmLabel": "Escribe {{phrase}} para aceptar los términos de la licencia",
       "confirmHelper": "Al escribir {{phrase}} aceptas los términos de la licencia para esta instancia.",
       "accept": "Aceptar y continuar",
@@ -340,7 +342,7 @@
       "change": "Cambiar",
       "changeTitle": "Cambiar cómo se usa esta instancia",
       "changeNote": "Elige de nuevo y escribe I AGREE. El cambio se guarda con la fecha y tu cuenta.",
-      "commercialNoKey": "Esta instancia tiene uso comercial, así que necesitas una licencia. Pega tu clave abajo. No se bloquea nada mientras falte."
+      "commercialNoKey": "Esta instancia tiene uso comercial, así que necesitas una licencia. Copia tu clave desde <consoleLink>tus licencias en la consola de Auto Tournament</consoleLink> y pégala abajo. No se bloquea nada mientras falte."
     }
   }
 }

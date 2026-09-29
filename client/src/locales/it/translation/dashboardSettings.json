@@ -268,7 +268,8 @@
     "warningsNote": "Nulla viene bloccato o limitato. È solo un avviso.",
     "label": "Chiave di licenza",
     "replaceLabel": "Sostituisci la chiave di licenza",
-    "helper": "Inizia con ATL1. Dopo il salvataggio viene mostrato solo l’ID della licenza.",
+    "helper": "Inizia con ATL1. Copiala dalle <consoleLink>tue licenze nella console di Auto Tournament</consoleLink>. Dopo il salvataggio viene mostrato solo l’ID della licenza.",
+    "checkInNote": "Senza chiave di licenza non viene inviato nulla ad Auto Tournament. Con una chiave, questo server si annuncia una volta al giorno con l'ID della chiave e il numero di server.",
     "save": "Salva chiave",
     "saved": "Chiave di licenza salvata",
     "saveFailed": "Impossibile salvare la chiave di licenza",
@@ -300,7 +301,7 @@
     },
     "consent": {
       "title": "Prima di iniziare: la licenza",
-      "subtitle": "Auto Tournament è gratuito per uso non commerciale. L'uso commerciale richiede una licenza. Leggi la versione breve, dicci come lo usi e scrivi I AGREE.",
+      "subtitle": "Auto Tournament è gratuito per uso non commerciale. L'uso commerciale richiede una licenza. Leggi la versione breve, scegli come viene usata questa istanza e scrivi I AGREE.",
       "intro": "Il codice di Auto Tournament è disponibile con la {{name}}. In breve:",
       "points": {
         "free": "Gratuito per uso personale, progetti amatoriali, studio ed eventi in cui nessuno ci guadagna.",
@@ -312,16 +313,17 @@
       },
       "readLicense": "Leggi la licenza completa",
       "readRules": "Licenze e uso commerciale",
-      "summaryNote": "Questo è un riassunto. Se non coincide con la licenza, vale la licenza.",
+      "summaryNote": "Questo è un riassunto breve e il testo della tua versione potrebbe essere obsoleto. La licenza attuale e le regole di licenza sono su autotournament.gg. Se differiscono da questo riassunto, prevalgono.",
       "useQuestion": "Come viene usata questa istanza?",
+      "privacyNote": "La tua risposta viene salvata solo su questo server. Senza chiave di licenza non viene inviato nulla ad Auto Tournament. Con una chiave, questo server si annuncia una volta al giorno con l'ID della chiave e il numero di server.",
       "use": {
-        "noncommercial": "Personale / non commerciale",
+        "noncommercial": "Non commerciale",
         "noncommercialHint": "Gratis. Nessuno ci guadagna.",
         "commercial": "Commerciale",
         "commercialHint": "Ti serve una licenza. Incolla la chiave ora o più tardi."
       },
       "keyLabel": "Chiave di licenza (facoltativa)",
-      "keyHelper": "Inizia con ATL1. Puoi aggiungerla anche più tardi in Impostazioni > Licenza.",
+      "keyHelper": "Inizia con ATL1. Copiala dalle <consoleLink>tue licenze nella console di Auto Tournament</consoleLink> oppure aggiungila più tardi in Impostazioni > Licenza.",
       "confirmLabel": "Scrivi {{phrase}} per accettare i termini della licenza",
       "confirmHelper": "Scrivendo {{phrase}} accetti i termini della licenza per questa istanza.",
       "accept": "Accetta e continua",
@@ -340,7 +342,7 @@
       "change": "Modifica",
       "changeTitle": "Modifica come viene usata questa istanza",
       "changeNote": "Scegli di nuovo e scrivi I AGREE. La modifica viene salvata con la data e il tuo account.",
-      "commercialNoKey": "Questa istanza ha un uso commerciale, quindi ti serve una licenza. Incolla la chiave qui sotto. Nel frattempo non viene bloccato nulla."
+      "commercialNoKey": "Questa istanza ha un uso commerciale, quindi ti serve una licenza. Copia la chiave dalle <consoleLink>tue licenze nella console di Auto Tournament</consoleLink> e incollala qui sotto. Nel frattempo non viene bloccato nulla."
     }
   }
 }

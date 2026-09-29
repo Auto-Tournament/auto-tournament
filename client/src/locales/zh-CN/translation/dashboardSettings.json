@@ -268,7 +268,8 @@
     "warningsNote": "不会阻止或限制任何功能，这只是一个提示。",
     "label": "许可证密钥",
     "replaceLabel": "替换许可证密钥",
-    "helper": "以 ATL1 开头。保存后只显示许可证 ID。",
+    "helper": "以 ATL1 开头。请从 <consoleLink>Auto Tournament 控制台中的你的许可证</consoleLink>复制。保存后只显示许可证 ID。",
+    "checkInNote": "没有许可证密钥时，不会向 Auto Tournament 发送任何内容。有密钥时，此服务器每天联络一次，发送密钥 ID 和服务器数量。",
     "save": "保存密钥",
     "saved": "许可证密钥已保存",
     "saveFailed": "无法保存许可证密钥",
@@ -300,7 +301,7 @@
     },
     "consent": {
       "title": "开始之前：许可证",
-      "subtitle": "Auto Tournament 可免费用于非商业用途。商业用途需要许可证。请阅读简要说明，告诉我们你的用途，然后输入 I AGREE。",
+      "subtitle": "Auto Tournament 可免费用于非商业用途。商业用途需要许可证。请阅读简要说明，选择此实例的用途，然后输入 I AGREE。",
       "intro": "Auto Tournament 的源代码以 {{name}} 公开。简而言之：",
       "points": {
         "free": "个人使用、业余项目、学习，以及没有人从中赚钱的活动，均可免费使用。",
@@ -312,16 +313,17 @@
       },
       "readLicense": "阅读完整许可证",
       "readRules": "许可与商业用途",
-      "summaryNote": "以上为摘要。如与许可证不一致，以许可证为准。",
+      "summaryNote": "这只是简要说明，你所用版本中的文字可能已过时。最新的许可证和授权规则见 autotournament.gg，如与本摘要不一致，以其为准。",
       "useQuestion": "此实例的用途是？",
+      "privacyNote": "你的回答仅保存在此服务器上。没有许可证密钥时，不会向 Auto Tournament 发送任何内容。有密钥时，此服务器每天联络一次，发送密钥 ID 和服务器数量。",
       "use": {
-        "noncommercial": "个人 / 非商业",
+        "noncommercial": "非商业",
         "noncommercialHint": "免费。没有人从中赚钱。",
         "commercial": "商业",
         "commercialHint": "你需要许可证。现在或以后粘贴密钥均可。"
       },
       "keyLabel": "许可证密钥（可选）",
-      "keyHelper": "以 ATL1. 开头。你也可以稍后在 设置 > 许可证 中添加。",
+      "keyHelper": "以 ATL1 开头。请从 <consoleLink>Auto Tournament 控制台中的你的许可证</consoleLink>复制，或稍后在 设置 > 许可证 中添加。",
       "confirmLabel": "输入 {{phrase}} 以接受许可条款",
       "confirmHelper": "输入 {{phrase}} 即表示你为此实例接受许可条款。",
       "accept": "接受并继续",
@@ -340,7 +342,7 @@
       "change": "更改",
       "changeTitle": "更改此实例的用途",
       "changeNote": "重新选择并输入 I AGREE。更改会连同日期和你的账号一起保存。",
-      "commercialNoKey": "此实例用于商业用途，因此你需要许可证。请在下方粘贴密钥。缺少密钥时不会锁定任何功能。"
+      "commercialNoKey": "此实例用于商业用途，因此你需要许可证。请从 <consoleLink>Auto Tournament 控制台中的你的许可证</consoleLink>复制密钥，并粘贴到下方。缺少密钥时不会锁定任何功能。"
     }
   }
 }

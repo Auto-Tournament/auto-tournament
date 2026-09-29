@@ -268,7 +268,8 @@
     "warningsNote": "Nichts wird blockiert oder eingeschränkt. Das ist nur ein Hinweis.",
     "label": "Lizenzschlüssel",
     "replaceLabel": "Lizenzschlüssel ersetzen",
-    "helper": "Beginnt mit ATL1. Nach dem Speichern wird nur die Lizenz-ID angezeigt.",
+    "helper": "Beginnt mit ATL1. Kopiere ihn aus <consoleLink>deinen Lizenzen in der Auto-Tournament-Konsole</consoleLink>. Nach dem Speichern wird nur die Lizenz-ID angezeigt.",
+    "checkInNote": "Ohne Lizenzschlüssel wird nichts an Auto Tournament gesendet. Mit Schlüssel meldet sich dieser Server einmal täglich mit der Schlüssel-ID und seiner Serveranzahl.",
     "save": "Schlüssel speichern",
     "saved": "Lizenzschlüssel gespeichert",
     "saveFailed": "Der Lizenzschlüssel konnte nicht gespeichert werden",
@@ -300,7 +301,7 @@
     },
     "consent": {
       "title": "Bevor es losgeht: die Lizenz",
-      "subtitle": "Auto Tournament ist für nicht-kommerzielle Nutzung kostenlos. Für kommerzielle Nutzung brauchst du eine Lizenz. Lies die Kurzfassung, sag uns, wie du es nutzt, und tippe I AGREE.",
+      "subtitle": "Auto Tournament ist für nicht-kommerzielle Nutzung kostenlos. Für kommerzielle Nutzung brauchst du eine Lizenz. Lies die Kurzfassung, wähle, wie diese Instanz genutzt wird, und tippe I AGREE.",
       "intro": "Der Quellcode von Auto Tournament ist unter der {{name}} verfügbar. Kurz gesagt:",
       "points": {
         "free": "Kostenlos für private Nutzung, Hobbyprojekte, Lernen und Events, bei denen niemand damit Geld verdient.",
@@ -312,16 +313,17 @@
       },
       "readLicense": "Die vollständige Lizenz lesen",
       "readRules": "Lizenz und kommerzielle Nutzung",
-      "summaryNote": "Dies ist eine Zusammenfassung. Weicht sie von der Lizenz ab, gilt die Lizenz.",
+      "summaryNote": "Das ist eine Kurzfassung, und der Text in deiner Version kann veraltet sein. Die aktuelle Lizenz und die Lizenzregeln findest du auf autotournament.gg. Wenn sie von dieser Zusammenfassung abweichen, gelten sie.",
       "useQuestion": "Wie wird diese Instanz genutzt?",
+      "privacyNote": "Deine Antwort wird nur auf diesem Server gespeichert. Ohne Lizenzschlüssel wird nichts an Auto Tournament gesendet. Mit Schlüssel meldet sich dieser Server einmal täglich mit der Schlüssel-ID und seiner Serveranzahl.",
       "use": {
-        "noncommercial": "Privat / nicht-kommerziell",
+        "noncommercial": "Nicht-kommerziell",
         "noncommercialHint": "Kostenlos. Niemand verdient damit Geld.",
         "commercial": "Kommerziell",
         "commercialHint": "Du brauchst eine Lizenz. Füge deinen Schlüssel jetzt oder später ein."
       },
       "keyLabel": "Lizenzschlüssel (optional)",
-      "keyHelper": "Beginnt mit ATL1. Du kannst ihn auch später unter Einstellungen > Lizenz hinzufügen.",
+      "keyHelper": "Beginnt mit ATL1. Kopiere ihn aus <consoleLink>deinen Lizenzen in der Auto-Tournament-Konsole</consoleLink> oder füge ihn später unter Einstellungen > Lizenz hinzu.",
       "confirmLabel": "Tippe {{phrase}}, um die Lizenzbedingungen anzunehmen",
       "confirmHelper": "Mit {{phrase}} nimmst du die Lizenzbedingungen für diese Instanz an.",
       "accept": "Annehmen und weiter",
@@ -340,7 +342,7 @@
       "change": "Ändern",
       "changeTitle": "Nutzung dieser Instanz ändern",
       "changeNote": "Wähle erneut und tippe I AGREE. Die Änderung wird mit Datum und deinem Konto gespeichert.",
-      "commercialNoKey": "Diese Instanz wird kommerziell genutzt, also brauchst du eine Lizenz. Füge deinen Schlüssel unten ein. Solange er fehlt, wird nichts gesperrt."
+      "commercialNoKey": "Diese Instanz wird kommerziell genutzt, also brauchst du eine Lizenz. Kopiere deinen Schlüssel aus <consoleLink>deinen Lizenzen in der Auto-Tournament-Konsole</consoleLink> und füge ihn unten ein. Solange er fehlt, wird nichts gesperrt."
     }
   }
 }

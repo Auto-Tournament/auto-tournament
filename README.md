@@ -73,7 +73,7 @@ docker compose --env-file .env -f docker/docker-compose.yml up -d
 ```
 
 Then open http://localhost:3069. The first time an admin signs in, they
-accept the license terms once: pick personal / non-commercial or commercial
+accept the license terms once: pick non-commercial or commercial
 use and type `I AGREE`. For an install nobody clicks through (automation,
 CI), set `AT_ACCEPT_LICENSE=noncommercial` or `AT_ACCEPT_LICENSE=commercial`
 in `.env` instead, and optionally `LICENSE_KEY`. See `example.env`.

@@ -7,7 +7,8 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
+import { consoleLinkComponents } from './licenseLinks';
 import { useLicenseConsent } from '../../hooks/useLicenseConsent';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { LicenseConsentForm } from './LicenseConsentForm';
@@ -72,7 +73,7 @@ export function LicenseConsentSection({ hasKey, onChanged }: Props) {
 
       {consent?.use === 'commercial' && !hasKey && (
         <Alert severity="info" sx={{ mt: 1.5 }} data-testid="settings-license-consent-needs-key">
-          {t('license.consent.commercialNoKey')}
+          <Trans t={t} i18nKey="license.consent.commercialNoKey" components={consoleLinkComponents} />
         </Alert>
       )}
 
