@@ -28,11 +28,11 @@ test.describe.serial('Server UI', () => {
       await page.waitForLoadState('networkidle');
 
       // Step 1: Create server via UI
-      // With no servers yet the page shows an empty state whose CTA is the only
-      // way in; once servers exist the header action appears instead.
+      // With no servers yet the empty state offers "Add an existing server (RCON)"
+      // (its main action points at Machines); once servers exist the header action appears.
       const addButton = page
         .getByTestId('add-server-button')
-        .or(page.getByTestId('empty-state-action'))
+        .or(page.getByTestId('servers-add-existing'))
         .first();
       await expect(addButton).toBeVisible({ timeout: 10000 });
       await addButton.click();

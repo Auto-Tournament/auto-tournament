@@ -410,10 +410,12 @@
       "addServer": "Add Server"
     },
     "empty": {
-      "title": "No servers registered",
-      "description": "Add your first CS2 server to get started with the tournament",
+      "title": "No servers yet",
+      "description": "Link a machine that runs CS2 Server Manager below. The platform then creates and starts servers by itself when a tournament needs them.",
+      "createServers": "Link a machine or create servers",
+      "addExisting": "Add an existing server (RCON)",
       "addServer": "Add Server",
-      "batchAdd": "Or Batch Add Multiple Servers"
+      "batchAdd": "Add several existing servers"
     },
     "allocation": {
       "loading": "Loading allocation status...",

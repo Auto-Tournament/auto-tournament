@@ -61,6 +61,16 @@ import type { PluginSetValue } from './fleetPush.types';
 import PluginSetPicker, { usePluginCatalog } from './PluginSetPicker';
 import { insecureFlag, platformIsPlainHttp } from './insecureLink';
 
+/** `GET /api/license` → how many servers the saved license covers (null: no license). */
+async function fetchLicenseMaxServers(): Promise<number | null> {
+  try {
+    const res = await api.get<{ license?: { maxServers?: number } | null }>('/api/license');
+    return typeof res?.license?.maxServers === 'number' ? res.license.maxServers : null;
+  } catch {
+    return null;
+  }
+}
+
 const POLL_MS = 5_000;
 const POLL_FAST_MS = 2_000;
 
@@ -418,8 +428,13 @@ export default function MachinesPanel() {
     </Box>
   );
 
+  const [licenseMax, setLicenseMax] = useState<number | null>(null);
+  useEffect(() => {
+    void fetchLicenseMaxServers().then(setLicenseMax);
+  }, []);
+
   return (
-    <Box data-testid="machines-panel" mt={4}>
+    <Box data-testid="machines-panel" mt={4} id="machines">
       <SectionHead
         title={t('machinesPanel.title', { defaultValue: 'Machines' })}
         action={
@@ -432,8 +447,20 @@ export default function MachinesPanel() {
         {t('machinesPanel.description', {
           defaultValue:
             'Machines run CS2 Server Manager (csm). Link one with a single command, then create, start, stop and update its servers from here.',
+        })}{' '}
+        {t('machinesPanel.autoNote', {
+          defaultValue:
+            'You do not have to create servers yourself: the platform starts and creates them automatically when a tournament needs them (see Automatic scaling).',
         })}
       </Typography>
+      {licenseMax !== null && (
+        <Typography variant="body2" color="text.secondary" mb={2} data-testid="machines-license-note">
+          {t('machinesPanel.licenseNote', {
+            defaultValue: 'Your license covers up to {{count}} servers. Every server counts, spares included.',
+            count: licenseMax,
+          })}
+        </Typography>
+      )}
 
       {loaded && hosts.length === 0 && (
         <Typography variant="body2" color="text.secondary" data-testid="machines-empty">
