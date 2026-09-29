@@ -371,8 +371,8 @@
       "licensed": "Licensed"
     },
     "consent": {
-      "title": "Before you start: the license",
-      "subtitle": "Auto Tournament is free for non-commercial use. Commercial use needs a license. Read the short version, choose how this instance is used, and type I AGREE.",
+      "title": "One last thing: the license",
+      "subtitle": "Sorry, one more step and then you're done. Auto Tournament is free if nobody earns money from it; if someone does, you need a license. Skim the short version, pick how you use it, and type I AGREE.",
       "intro": "Auto Tournament is source-available under the {{name}}. In short:",
       "points": {
         "free": "Free for personal use, hobby projects, learning, and events where nobody earns money from it.",

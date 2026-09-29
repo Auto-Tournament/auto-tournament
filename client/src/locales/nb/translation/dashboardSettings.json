@@ -371,8 +371,8 @@
       "licensed": "Lisensiert"
     },
     "consent": {
-      "title": "Før du starter: lisensen",
-      "subtitle": "Auto Tournament er gratis for ikke-kommersiell bruk. Kommersiell bruk krever en lisens. Les kortversjonen, velg hvordan denne instansen brukes, og skriv I AGREE.",
+      "title": "En siste ting: lisensen",
+      "subtitle": "Beklager, ett steg til, så er du ferdig. Auto Tournament er gratis hvis ingen tjener penger på det; tjener noen penger, trenger du en lisens. Les kortversjonen, velg hvordan du bruker det, og skriv I AGREE.",
       "intro": "Kildekoden til Auto Tournament er tilgjengelig under {{name}}. Kort fortalt:",
       "points": {
         "free": "Gratis for personlig bruk, hobbyprosjekter, læring og arrangementer der ingen tjener penger på det.",
