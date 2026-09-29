@@ -69,6 +69,26 @@
         }
       }
     },
+    "plugins_state": {
+      "type": "object",
+      "required": ["installed", "disabled"],
+      "additionalProperties": false,
+      "description": "Proposed by Ready Up: the plugins on this server. installed = the .so files in csgo/readyup/plugins; disabled = plugins.json, what `ru plugin disable` and cmd plugins.set keep off across restarts (a disabled name need not be installed). Absent on older Ready Up. The platform re-sends its plugin choice when this differs and warns about a chosen plugin that is not installed.",
+      "properties": {
+        "installed": {
+          "type": "array",
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z0-9_-]{1,32}$" }
+        },
+        "disabled": {
+          "type": "array",
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z0-9_-]{1,32}$" }
+        }
+      }
+    },
     "selftest": {
       "type": "object",
       "required": ["pass", "passed", "total", "failures"],

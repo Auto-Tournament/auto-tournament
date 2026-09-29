@@ -1391,5 +1391,51 @@
     "reserveAuto": "Automatic (1 once 2 servers are online)",
     "reserveStatus": "{{effective}} of {{pool}} online server(s) kept free for failover",
     "reserveHelp": "Spare servers stay idle: matches are not put on them, so one is ready when a server goes down. At least one server always takes matches. Spare servers count toward your license like any other server."
+  },
+  "pluginSets": {
+    "presetLabel": "Plugin-voorinstelling",
+    "preset": {
+      "tournament": "Toernooi",
+      "practice": "Oefenen",
+      "fun": "Fun",
+      "custom": "Aangepast",
+      "default": "Vlootstandaard",
+      "none": "Geen"
+    },
+    "plugin": {
+      "fleet": "Vlootverbinding",
+      "match": "Match",
+      "essentials": "Essentials",
+      "practice": "Oefenen",
+      "whitelist": "Whitelist",
+      "skins": "Skins",
+      "midas": "Midas",
+      "deathmatch": "Deathmatch",
+      "addons": "Addons"
+    },
+    "pluginHelp": {
+      "essentials": "Admins, map wisselen, herladen en herstarten",
+      "practice": "Oefenmodus voor granaten en posities",
+      "whitelist": "Alleen spelers op de lijst kunnen meedoen",
+      "skins": "Wapenskins, messen en handschoenen van spelers",
+      "midas": "Gouden wapenmodellen",
+      "deathmatch": "Deathmatch-modi",
+      "addons": "Workshop-addons"
+    },
+    "required": "Altijd aan",
+    "usesDefault": "Gebruikt de vlootstandaard: {{plugins}}.",
+    "keepsBundle": "Geen standaard: de server houdt de plugins die zijn Ready Up-bundel laadt.",
+    "notInstalled": "Niet geïnstalleerd op deze server: {{plugins}}. Ze blijven uit tot Ready Up is bijgewerkt met de bundel \"Met skins\".",
+    "fullBundleNote": "Sommige van deze plugins hebben de volledige Ready Up-bundel nodig; de nieuwe servers krijgen die.",
+    "serverHelp": "Zet Ready Up-plugins aan of uit op deze server (plugins.set). De server onthoudt de keuze na een herstart en krijgt hem opnieuw als hij verbindt met andere plugins aan.",
+    "defaultButton": "Standaardplugins",
+    "defaultTitle": "Standaardplugins voor nieuwe servers",
+    "defaultHelp": "Servers die op een machine, door automatisch schalen of voor een failover worden gemaakt, krijgen deze plugins bij hun eerste verbinding, tenzij ze met een eigen keuze zijn gemaakt. Bestaande servers houden de hunne.",
+    "createLabel": "Ready Up-plugins",
+    "save": "Opslaan",
+    "saved": "Standaardplugins opgeslagen",
+    "errors": {
+      "save": "Opslaan van de standaardplugins is mislukt"
+    }
   }
 }

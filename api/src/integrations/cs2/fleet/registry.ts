@@ -52,6 +52,8 @@ export interface FleetServerRow {
   host: string | null;
   /** Client address of the last hello / enrollment (./address.ts peerAddressOf); migration 012. */
   peer_addr?: string | null;
+  /** hello.plugins_state JSON (installed, disabled); migration 015. */
+  plugins_state?: string | null;
   health: string | null;
   selftest: string | null;
   protocol: number | null;
@@ -146,6 +148,8 @@ export interface FleetServerView {
   host: HostInfo | null;
   /** Client address of the last hello / enrollment, after trusted proxies. */
   peerAddr: string | null;
+  /** The plugins it reported in its last hello (null: not reported, older Ready Up). */
+  pluginsState: { installed: string[]; disabled: string[] } | null;
   health: Record<string, unknown> | null;
   selftest: Record<string, unknown> | null;
   protocol: number | null;
@@ -208,6 +212,7 @@ function toView(s: FleetServerRow, tokens: FleetTokenRow[], codeExpiresAt: numbe
     capabilities: parseJson<string[]>(s.capabilities) ?? [],
     host: parseJson<HostInfo>(s.host),
     peerAddr: s.peer_addr ?? null,
+    pluginsState: parseJson<{ installed: string[]; disabled: string[] }>(s.plugins_state ?? null),
     health: parseJson<Record<string, unknown>>(s.health),
     selftest: parseJson<Record<string, unknown>>(s.selftest),
     protocol: s.protocol,
@@ -695,6 +700,8 @@ export async function markConnected(
     capabilities: string[];
     host: HostInfo;
     selftest?: unknown;
+    /** hello.plugins_state; absent = not reported (stored as NULL). */
+    plugins_state?: { installed: string[]; disabled: string[] };
     protocol: number;
     boot_id: string;
     /** The socket's client address (./address.ts peerAddressOf); null keeps the stored one. */
@@ -705,7 +712,7 @@ export async function markConnected(
   await db.runAsync(
     `UPDATE cs2_fleet_servers
         SET online = 1, session_id = ?, connected_at = ?, last_seen = ?, availability = ?, versions = ?,
-            capabilities = ?, host = ?, selftest = ?, protocol = ?, boot_id = ?, updated_at = ?,
+            capabilities = ?, host = ?, selftest = ?, plugins_state = ?, protocol = ?, boot_id = ?, updated_at = ?,
             peer_addr = COALESCE(?, peer_addr)
       WHERE id = ?`,
     [
@@ -717,6 +724,7 @@ export async function markConnected(
       JSON.stringify(hello.capabilities),
       JSON.stringify(hello.host),
       hello.selftest === undefined ? null : JSON.stringify(hello.selftest),
+      hello.plugins_state === undefined ? null : JSON.stringify(hello.plugins_state),
       hello.protocol,
       hello.boot_id,
       now,

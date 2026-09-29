@@ -1391,5 +1391,51 @@
     "reserveAuto": "Automatic (1 once 2 servers are online)",
     "reserveStatus": "{{effective}} of {{pool}} online server(s) kept free for failover",
     "reserveHelp": "Spare servers stay idle: matches are not put on them, so one is ready when a server goes down. At least one server always takes matches. Spare servers count toward your license like any other server."
+  },
+  "pluginSets": {
+    "presetLabel": "Préréglage de plugins",
+    "preset": {
+      "tournament": "Tournoi",
+      "practice": "Entraînement",
+      "fun": "Fun",
+      "custom": "Personnalisé",
+      "default": "Défaut de la flotte",
+      "none": "Aucun"
+    },
+    "plugin": {
+      "fleet": "Liaison flotte",
+      "match": "Match",
+      "essentials": "Essentiels",
+      "practice": "Entraînement",
+      "whitelist": "Liste blanche",
+      "skins": "Skins",
+      "midas": "Midas",
+      "deathmatch": "Deathmatch",
+      "addons": "Addons"
+    },
+    "pluginHelp": {
+      "essentials": "Admins, changement de carte, rechargement et redémarrage",
+      "practice": "Mode entraînement pour les grenades et les positions",
+      "whitelist": "Seuls les joueurs de la liste peuvent rejoindre",
+      "skins": "Skins d’armes, couteaux et gants des joueurs",
+      "midas": "Modèles d’armes dorés",
+      "deathmatch": "Modes deathmatch",
+      "addons": "Addons du Workshop"
+    },
+    "required": "Toujours actif",
+    "usesDefault": "Utilise le défaut de la flotte : {{plugins}}.",
+    "keepsBundle": "Aucun défaut : le serveur garde les plugins que charge son paquet Ready Up.",
+    "notInstalled": "Non installés sur ce serveur : {{plugins}}. Ils restent désactivés jusqu’à la mise à jour de Ready Up avec le paquet « Avec skins ».",
+    "fullBundleNote": "Certains de ces plugins nécessitent le paquet Ready Up complet ; les nouveaux serveurs le reçoivent.",
+    "serverHelp": "Active ou désactive les plugins Ready Up sur ce serveur (plugins.set). Le serveur garde ce choix après un redémarrage et le reçoit de nouveau s’il se reconnecte avec d’autres plugins actifs.",
+    "defaultButton": "Plugins par défaut",
+    "defaultTitle": "Plugins par défaut des nouveaux serveurs",
+    "defaultHelp": "Les serveurs créés sur une machine, par la mise à l’échelle automatique ou pour un basculement reçoivent ces plugins à leur première connexion, sauf s’ils ont été créés avec leur propre choix. Les serveurs existants gardent les leurs.",
+    "createLabel": "Plugins Ready Up",
+    "save": "Enregistrer",
+    "saved": "Plugins par défaut enregistrés",
+    "errors": {
+      "save": "L'enregistrement des plugins par défaut a échoué"
+    }
   }
 }

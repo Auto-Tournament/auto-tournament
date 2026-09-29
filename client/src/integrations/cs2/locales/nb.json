@@ -1391,5 +1391,51 @@
     "reserveAuto": "Automatic (1 once 2 servers are online)",
     "reserveStatus": "{{effective}} of {{pool}} online server(s) kept free for failover",
     "reserveHelp": "Spare servers stay idle: matches are not put on them, so one is ready when a server goes down. At least one server always takes matches. Spare servers count toward your license like any other server."
+  },
+  "pluginSets": {
+    "presetLabel": "Utvidelsesoppsett",
+    "preset": {
+      "tournament": "Turnering",
+      "practice": "Trening",
+      "fun": "Moro",
+      "custom": "Egendefinert",
+      "default": "Standard for flåten",
+      "none": "Ingen"
+    },
+    "plugin": {
+      "fleet": "Flåtekobling",
+      "match": "Kamp",
+      "essentials": "Grunnleggende",
+      "practice": "Trening",
+      "whitelist": "Hviteliste",
+      "skins": "Skins",
+      "midas": "Midas",
+      "deathmatch": "Deathmatch",
+      "addons": "Addons"
+    },
+    "pluginHelp": {
+      "essentials": "Administratorer, kartbytte, omlasting og omstart",
+      "practice": "Treningsmodus for granater og posisjoner",
+      "whitelist": "Bare spillere på listen kan koble til",
+      "skins": "Spillernes våpenskins, kniver og hansker",
+      "midas": "Våpenmodeller i gull",
+      "deathmatch": "Deathmatch-moduser",
+      "addons": "Workshop-tillegg"
+    },
+    "required": "Alltid på",
+    "usesDefault": "Bruker standarden for flåten: {{plugins}}.",
+    "keepsBundle": "Ingen standard valgt: serveren beholder utvidelsene Ready Up-pakken laster.",
+    "notInstalled": "Ikke installert på denne serveren: {{plugins}}. De er av til Ready Up oppdateres med pakken «Med skins».",
+    "fullBundleNote": "Noen av disse utvidelsene trenger den fulle Ready Up-pakken; de nye serverne får den.",
+    "serverHelp": "Slår Ready Up-utvidelser av eller på på denne serveren (plugins.set). Serveren husker valget etter en omstart, og får det igjen hvis den kobler til med andre utvidelser på.",
+    "defaultButton": "Standardutvidelser",
+    "defaultTitle": "Standardutvidelser for nye servere",
+    "defaultHelp": "Servere som lages på en maskin, av automatisk skalering eller ved failover, får disse utvidelsene første gang de kobler til, med mindre de ble laget med sitt eget valg. Servere som finnes fra før beholder sine.",
+    "createLabel": "Ready Up-utvidelser",
+    "save": "Lagre",
+    "saved": "Standardutvidelser lagret",
+    "errors": {
+      "save": "Kunne ikke lagre standardutvidelsene"
+    }
   }
 }

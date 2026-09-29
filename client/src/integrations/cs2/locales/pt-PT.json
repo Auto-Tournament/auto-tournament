@@ -1391,5 +1391,51 @@
     "reserveAuto": "Automatic (1 once 2 servers are online)",
     "reserveStatus": "{{effective}} of {{pool}} online server(s) kept free for failover",
     "reserveHelp": "Spare servers stay idle: matches are not put on them, so one is ready when a server goes down. At least one server always takes matches. Spare servers count toward your license like any other server."
+  },
+  "pluginSets": {
+    "presetLabel": "Predefinição de plugins",
+    "preset": {
+      "tournament": "Torneio",
+      "practice": "Treino",
+      "fun": "Diversão",
+      "custom": "Personalizado",
+      "default": "Predefinição da frota",
+      "none": "Nenhum"
+    },
+    "plugin": {
+      "fleet": "Ligação à frota",
+      "match": "Partida",
+      "essentials": "Essenciais",
+      "practice": "Treino",
+      "whitelist": "Lista branca",
+      "skins": "Skins",
+      "midas": "Midas",
+      "deathmatch": "Deathmatch",
+      "addons": "Extras"
+    },
+    "pluginHelp": {
+      "essentials": "Administradores, mudança de mapa, recarregar e reiniciar",
+      "practice": "Modo de treino para granadas e posições",
+      "whitelist": "Só os jogadores da lista podem entrar",
+      "skins": "Skins de armas, facas e luvas dos jogadores",
+      "midas": "Modelos de armas dourados",
+      "deathmatch": "Modos deathmatch",
+      "addons": "Extras do Workshop"
+    },
+    "required": "Sempre ativo",
+    "usesDefault": "Usa a predefinição da frota: {{plugins}}.",
+    "keepsBundle": "Sem predefinição: o servidor mantém os plugins que o seu pacote Ready Up carrega.",
+    "notInstalled": "Não instalados neste servidor: {{plugins}}. Ficam desativados até o Ready Up ser atualizado com o pacote «Com skins».",
+    "fullBundleNote": "Alguns destes plugins precisam do pacote Ready Up completo; os novos servidores recebem-no.",
+    "serverHelp": "Ativa ou desativa plugins do Ready Up neste servidor (plugins.set). O servidor mantém a escolha depois de reiniciar e volta a recebê-la se voltar a ligar-se com outros plugins ativos.",
+    "defaultButton": "Plugins predefinidos",
+    "defaultTitle": "Plugins predefinidos para novos servidores",
+    "defaultHelp": "Os servidores criados numa máquina, pelo dimensionamento automático ou para um failover recebem estes plugins na primeira ligação, exceto se tiverem sido criados com escolha própria. Os servidores existentes mantêm os seus.",
+    "createLabel": "Plugins do Ready Up",
+    "save": "Guardar",
+    "saved": "Plugins predefinidos guardados",
+    "errors": {
+      "save": "Não foi possível guardar os plugins predefinidos"
+    }
   }
 }

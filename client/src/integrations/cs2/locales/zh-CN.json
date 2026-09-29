@@ -1391,5 +1391,51 @@
     "reserveAuto": "Automatic (1 once 2 servers are online)",
     "reserveStatus": "{{effective}} of {{pool}} online server(s) kept free for failover",
     "reserveHelp": "Spare servers stay idle: matches are not put on them, so one is ready when a server goes down. At least one server always takes matches. Spare servers count toward your license like any other server."
+  },
+  "pluginSets": {
+    "presetLabel": "插件预设",
+    "preset": {
+      "tournament": "比赛",
+      "practice": "训练",
+      "fun": "娱乐",
+      "custom": "自定义",
+      "default": "集群默认",
+      "none": "无"
+    },
+    "plugin": {
+      "fleet": "集群连接",
+      "match": "比赛",
+      "essentials": "基础功能",
+      "practice": "训练",
+      "whitelist": "白名单",
+      "skins": "皮肤",
+      "midas": "Midas",
+      "deathmatch": "死亡竞赛",
+      "addons": "附加内容"
+    },
+    "pluginHelp": {
+      "essentials": "管理员、换图、重载和重启",
+      "practice": "投掷物和站位训练模式",
+      "whitelist": "只有名单上的玩家可以加入",
+      "skins": "玩家的武器皮肤、刀具和手套",
+      "midas": "金色武器模型",
+      "deathmatch": "死亡竞赛模式",
+      "addons": "创意工坊附加内容"
+    },
+    "required": "始终开启",
+    "usesDefault": "使用集群默认：{{plugins}}。",
+    "keepsBundle": "未设置默认：服务器保留其 Ready Up 包加载的插件。",
+    "notInstalled": "此服务器未安装：{{plugins}}。在用\"含皮肤\"包更新 Ready Up 之前，它们保持关闭。",
+    "fullBundleNote": "其中一些插件需要完整的 Ready Up 包；新服务器会安装它。",
+    "serverHelp": "在此服务器上开启或关闭 Ready Up 插件（plugins.set）。服务器重启后仍保留该选择；如果重新连接时开启的插件不同，会再次收到该选择。",
+    "defaultButton": "默认插件",
+    "defaultTitle": "新服务器的默认插件",
+    "defaultHelp": "在机器上创建、由自动扩缩容或故障转移创建的服务器在首次连接时获得这些插件，除非创建时指定了自己的选择。现有服务器保留各自的插件。",
+    "createLabel": "Ready Up 插件",
+    "save": "保存",
+    "saved": "默认插件已保存",
+    "errors": {
+      "save": "保存默认插件失败"
+    }
   }
 }

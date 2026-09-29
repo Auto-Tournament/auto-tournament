@@ -461,4 +461,59 @@ test.describe.serial('Fleet autoscale (csm)', () => {
     expect(settled.actions).toEqual([]);
     await noCommand(m.csm, 'server.create');
   });
+
+  test('a server the scaler creates gets the fleet default plugin set after its first hello', async ({
+    request,
+  }) => {
+    test.setTimeout(90_000);
+    const saved = await request.put('/api/fleet/plugins/default', {
+      headers: getAuthHeader(),
+      data: { plugins: { preset: 'fun' } },
+    });
+    expect(saved.ok(), await saved.text()).toBe(true);
+    cleanup.push(() =>
+      request.put('/api/fleet/plugins/default', { headers: getAuthHeader(), data: { plugins: null } })
+    );
+    const m = await machine(request, 'scale-plugins');
+    cleanup.push(() => m.csm.close());
+    m.csm.sendEphemeral('host.inventory', inventory(m.hostId, []));
+    await expect
+      .poll(
+        async () =>
+          (await (await request.get(`/api/fleet/hosts/${m.hostId}`)).json()).host.inventory?.servers
+      )
+      .toEqual([]);
+    const slug = `scale-plugins-${Date.now()}`;
+    await createMatch(request, slug);
+    cleanup.push(() => request.delete(`/api/matches/${slug}`, { headers: getAuthHeader() }));
+
+    await run(request);
+    const create = await m.csm.nextCommand('server.create');
+    const enrollKey = (create.payload as { enroll_key: string }).enroll_key;
+    const result = m.csm.sendReliable(
+      'host.result',
+      { status: 'ok', output: 'created server-1' },
+      { ref: create.id }
+    );
+    await m.csm.acked(result.seq as number);
+    // Fun needs plugins the essentials bundle does not have: csm installs the full one.
+    const install = await m.csm.nextCommand('host.update_plugins');
+    expect(install.payload).toMatchObject({ servers: ['server-1'], readyup: { bundle: 'skins' } });
+
+    const installId = newInstallId();
+    const ru = await enroll(request, { key: enrollKey }, installId, { name: 'scale-plugins' });
+    expect(ru.status, JSON.stringify(ru.body)).toBe(201);
+    const link = await connect(
+      { serverId: ru.body.server_id, token: ru.body.token, installId },
+      'available'
+    );
+    cleanup.push(() => link.close());
+    const set = await link.client.next(
+      (msg) => msg.type === 'cmd' && (msg.payload as { name: string }).name === 'plugins.set'
+    );
+    expect((set.payload as { args: unknown }).args).toEqual({
+      enable: ['match', 'essentials', 'skins', 'midas', 'deathmatch'],
+      disable: ['practice', 'whitelist', 'addons'],
+    });
+  });
 });

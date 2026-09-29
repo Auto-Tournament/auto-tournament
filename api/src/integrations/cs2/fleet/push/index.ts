@@ -5,7 +5,9 @@
  *
  * - after every welcome: `admins.set` when the hello's `admins_rev` is not
  *   ours, `server.config` + `settings.set` when the server's last push is not
- *   the current settings rev;
+ *   the current settings rev; `plugins.set` for a new server csm created
+ *   (the plugin set of its create) or one whose hello `plugins_state` differs
+ *   from the set it was given (./pluginSets.ts);
  * - welcome's `admins_rev` / `server_config_rev` are the current revs;
  * - the admin list is re-read when the player service says it may have
  *   changed, and once a minute (a change made straight in the database);
@@ -18,6 +20,7 @@ import { onAdminListMaybeChanged } from '../../../../services/adminListEvents';
 import { fleetInbound } from '../inbound';
 import { onFleetServerReady, setFleetWelcomeRevs } from '../service';
 import { adminsOnHello, syncAdmins } from './admins';
+import { pluginsOnHello } from './controls';
 import { applyAnsweredUpdate } from './matchUpdate';
 import { settingsOnHello } from './settings';
 import { readList } from './store';
@@ -64,6 +67,11 @@ export function startFleetPush(): void {
         await settingsOnHello(serverId);
       } catch (error) {
         log.warn(`[FLEET] ${serverId}: settings after hello failed: ${(error as Error).message}`);
+      }
+      try {
+        await pluginsOnHello(serverId, hello);
+      } catch (error) {
+        log.warn(`[FLEET] ${serverId}: plugins after hello failed: ${(error as Error).message}`);
       }
     });
   }

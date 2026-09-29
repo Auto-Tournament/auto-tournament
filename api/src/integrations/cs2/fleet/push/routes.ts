@@ -13,7 +13,11 @@
  *   POST /api/fleet/servers/:id/settings/push    send its effective settings again
  *   PUT  /api/fleet/servers/:id/whitelist        {enabled, steamids?} → cmd whitelist.set
  *   PUT  /api/fleet/servers/:id/practice         {on} → cmd practice.set
- *   POST /api/fleet/servers/:id/plugins          {enable?, disable?} → cmd plugins.set
+ *   POST /api/fleet/servers/:id/plugins          {enable?, disable?} or a plugin set {preset, plugins?}
+ *                                                → cmd plugins.set
+ *   GET  /api/fleet/plugins                      the plugin catalog, presets and the fleet default set
+ *   PUT  /api/fleet/plugins/default              {plugins: {preset, plugins?} | null}: the set new
+ *                                                servers csm creates get (./pluginSets.ts)
  *   GET  /api/fleet/matches/:slug/roster         a fleet match's roster, config_rev and recent updates
  *   POST /api/fleet/matches/:slug/update         {ops, baseConfigRev?} → match.update (CAS on config_rev)
  *
@@ -37,6 +41,20 @@ import {
   validateWhitelist,
 } from './controls';
 import { getMatchRoster, sendMatchUpdate, validateRosterOps } from './matchUpdate';
+import {
+  ESSENTIALS_BUNDLE_PLUGINS,
+  PLUGIN_CATALOG,
+  PLUGIN_PRESETS,
+  REQUIRED_PLUGINS,
+  getDefaultPluginSet,
+  pluginSetCommand,
+  pluginSetFromStored,
+  presetSet,
+  setDefaultPluginSet,
+  validatePluginSet,
+  type PluginsState,
+  type StoredPlugins,
+} from './pluginSets';
 import {
   MATCH_SETTINGS,
   effectiveSettings,
@@ -266,6 +284,8 @@ fleetPushRouter.get(
       whitelist: prefs.whitelist,
       practice: prefs.practice,
       plugins: prefs.plugins,
+      pluginSet: pluginSetFromStored(prefs.plugins),
+      pluginsState: pluginsState(server),
       pushed: { admins, serverConfig, settings, whitelist, practice, plugins },
     });
   })
@@ -351,11 +371,82 @@ fleetPushRouter.post(
   handler('change the plugins', async (req, res) => {
     const server = await enrolledServer(req, res);
     if (!server) return;
-    const check = validatePlugins(req.body);
-    if (!check.ok) return res.status(400).json({ success: false, error: check.error });
-    const sent = await setPlugins(server.id, check.value, await issuedBy(req), requestActorId(req));
+    const body = (req.body ?? {}) as Record<string, unknown>;
+    let value: StoredPlugins;
+    if (body.preset !== undefined || body.plugins !== undefined) {
+      // A plugin set (the picker): its plugins on, the rest of the catalog off.
+      const set = validatePluginSet(body);
+      if (!set.ok) return res.status(400).json({ success: false, error: set.error });
+      value = pluginSetCommand(set.value);
+    } else {
+      const check = validatePlugins(body);
+      if (!check.ok) return res.status(400).json({ success: false, error: check.error });
+      value = check.value;
+    }
+    const sent = await setPlugins(server.id, value, await issuedBy(req), requestActorId(req));
     const answer = await awaitCommandResult(sent.id, CONTROL_WAIT_MS);
     return res.json({ success: true, command: commandView(answer, sent.id, sent.delivered) });
+  })
+);
+
+// --- plugin sets ----------------------------------------------------------------------
+
+function pluginsState(server: registry.FleetServerRow): PluginsState | null {
+  if (!server.plugins_state) return null;
+  try {
+    const s = JSON.parse(server.plugins_state) as PluginsState;
+    return Array.isArray(s?.installed) && Array.isArray(s?.disabled) ? s : null;
+  } catch {
+    return null;
+  }
+}
+
+function pluginCatalog() {
+  return {
+    catalog: PLUGIN_CATALOG,
+    required: REQUIRED_PLUGINS,
+    essentialsBundle: ESSENTIALS_BUNDLE_PLUGINS,
+    presets: Object.fromEntries(
+      (Object.keys(PLUGIN_PRESETS) as Array<keyof typeof PLUGIN_PRESETS>).map((k) => [
+        k,
+        presetSet(k).plugins,
+      ])
+    ),
+  };
+}
+
+fleetPushRouter.get(
+  '/plugins',
+  handler('read the plugin sets', async (_req, res) => {
+    const def = await getDefaultPluginSet();
+    return res.json({
+      success: true,
+      ...pluginCatalog(),
+      default: def.set,
+      updatedBy: def.updatedBy,
+      updatedAt: def.updatedAt,
+    });
+  })
+);
+
+fleetPushRouter.put(
+  '/plugins/default',
+  handler('save the default plugin set', async (req, res) => {
+    const raw = (req.body as { plugins?: unknown })?.plugins;
+    let set = null;
+    if (raw !== null && raw !== undefined) {
+      const check = validatePluginSet(raw);
+      if (!check.ok) return res.status(400).json({ success: false, error: check.error });
+      set = check.value;
+    }
+    const saved = await setDefaultPluginSet(set, requestActorId(req));
+    return res.json({
+      success: true,
+      ...pluginCatalog(),
+      default: saved.set,
+      updatedBy: saved.updatedBy,
+      updatedAt: saved.updatedAt,
+    });
   })
 );
 

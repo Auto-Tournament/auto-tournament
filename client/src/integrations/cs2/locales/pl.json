@@ -1431,5 +1431,51 @@
     "reserveAuto": "Automatic (1 once 2 servers are online)",
     "reserveStatus": "{{effective}} of {{pool}} online server(s) kept free for failover",
     "reserveHelp": "Spare servers stay idle: matches are not put on them, so one is ready when a server goes down. At least one server always takes matches. Spare servers count toward your license like any other server."
+  },
+  "pluginSets": {
+    "presetLabel": "Zestaw wtyczek",
+    "preset": {
+      "tournament": "Turniej",
+      "practice": "Trening",
+      "fun": "Zabawa",
+      "custom": "Własny",
+      "default": "Domyślny floty",
+      "none": "Brak"
+    },
+    "plugin": {
+      "fleet": "Łącze floty",
+      "match": "Mecz",
+      "essentials": "Podstawy",
+      "practice": "Trening",
+      "whitelist": "Biała lista",
+      "skins": "Skins",
+      "midas": "Midas",
+      "deathmatch": "Deathmatch",
+      "addons": "Dodatki"
+    },
+    "pluginHelp": {
+      "essentials": "Admini, zmiana mapy, przeładowanie i restart",
+      "practice": "Tryb treningowy do granatów i pozycji",
+      "whitelist": "Dołączyć mogą tylko gracze z listy",
+      "skins": "Skórki broni, noże i rękawice graczy",
+      "midas": "Złote modele broni",
+      "deathmatch": "Tryby deathmatch",
+      "addons": "Dodatki z Warsztatu"
+    },
+    "required": "Zawsze włączone",
+    "usesDefault": "Używa domyślnego zestawu floty: {{plugins}}.",
+    "keepsBundle": "Brak domyślnego: serwer zachowuje wtyczki ładowane przez swój pakiet Ready Up.",
+    "notInstalled": "Nie zainstalowane na tym serwerze: {{plugins}}. Pozostaną wyłączone do aktualizacji Ready Up pakietem „Ze skórkami”.",
+    "fullBundleNote": "Niektóre z tych wtyczek wymagają pełnego pakietu Ready Up; nowe serwery go dostaną.",
+    "serverHelp": "Włącza lub wyłącza wtyczki Ready Up na tym serwerze (plugins.set). Serwer pamięta wybór po restarcie i dostaje go ponownie, jeśli połączy się z innymi włączonymi wtyczkami.",
+    "defaultButton": "Domyślne wtyczki",
+    "defaultTitle": "Domyślne wtyczki dla nowych serwerów",
+    "defaultHelp": "Serwery utworzone na maszynie, przez automatyczne skalowanie lub na potrzeby failoveru dostają te wtyczki przy pierwszym połączeniu, chyba że utworzono je z własnym wyborem. Istniejące serwery zachowują swoje.",
+    "createLabel": "Wtyczki Ready Up",
+    "save": "Zapisz",
+    "saved": "Domyślne wtyczki zapisane",
+    "errors": {
+      "save": "Nie udało się zapisać domyślnych wtyczek"
+    }
   }
 }

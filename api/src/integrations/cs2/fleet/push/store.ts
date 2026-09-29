@@ -12,6 +12,7 @@
  */
 
 import { db } from '../../../../config/database';
+import type { StoredPlugins } from './pluginSets';
 
 export type ListName = 'admins' | 'server_config';
 
@@ -44,7 +45,8 @@ export interface ServerPrefs {
   settings: unknown;
   whitelist: { enabled: boolean; steamids: string[] } | null;
   practice: boolean | null;
-  plugins: { enable: string[]; disable: string[] } | null;
+  /** The last plugins.set lists, and the preset they came from (./pluginSets.ts). */
+  plugins: StoredPlugins | null;
   pushed: Partial<Record<PushKind, PushRecord>>;
   updatedBy: string | null;
   updatedAt: number | null;

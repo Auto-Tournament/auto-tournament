@@ -24,6 +24,7 @@ import { Router, type Request, type Response } from 'express';
 import { requireAuth, requestActorId } from '../../../../middleware/auth';
 import { log } from '../../../../utils/logger';
 import { isHostCommandType, validateHostEnrollRequest, type HostEnrollRequest, type HostEnrollResponse } from '../protocol/host/v1';
+import { validatePluginSet } from '../push/pluginSets';
 import { FLEET_HOST_WS_PATH } from './gateway';
 import * as registry from './registry';
 import {
@@ -186,7 +187,8 @@ fleetHostAdminRouter.post('/hosts/:id/rotate', handler('rotate the token', async
 }));
 
 /**
- * Body: `{ type, payload?, force?: { reason } }`. 202 with the command record
+ * Body: `{ type, payload?, force?: { reason }, plugins?: { preset, plugins? } }`
+ * (`plugins` only with server.create: the new servers' Ready Up plugin set). 202 with the command record
  * (`delivered` false = queued until csm reconnects). 409 `match_in_progress`
  * (with `servers`) for a disruptive command on a server with a live match
  * and no `force`; 400 for an invalid payload.
@@ -204,9 +206,19 @@ fleetHostAdminRouter.post('/hosts/:id/commands', handler('send the command', asy
     if (!reason) return res.status(400).json({ success: false, code: 'invalid_force', error: 'force.reason must be 1-500 characters' });
     force = { reason };
   }
-  // server.create enrolls its servers unless told otherwise.
+  // server.create enrolls its servers unless told otherwise, and can carry
+  // the plugin set they get once they enroll (else the fleet default).
   const body = type === 'server.create' && payload.enroll === undefined ? { ...payload, enroll: true } : payload;
-  const sent = await sendHostCommand(req.params.id, type, body, { issuedBy: requestActorId(req), force });
+  let meta: Record<string, unknown> | undefined;
+  if (req.body?.plugins !== undefined && req.body?.plugins !== null) {
+    if (type !== 'server.create') {
+      return res.status(400).json({ success: false, code: 'invalid_plugins', error: 'plugins only go with server.create' });
+    }
+    const check = validatePluginSet(req.body.plugins);
+    if (!check.ok) return res.status(400).json({ success: false, code: 'invalid_plugins', error: check.error });
+    meta = { plugins: check.value };
+  }
+  const sent = await sendHostCommand(req.params.id, type, body, { issuedBy: requestActorId(req), force, meta });
   return res.status(202).json({ success: true, delivered: sent.delivered, command: sent.command });
 }));
 

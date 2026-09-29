@@ -1391,5 +1391,51 @@
     "reserveAuto": "Automatic (1 once 2 servers are online)",
     "reserveStatus": "{{effective}} of {{pool}} online server(s) kept free for failover",
     "reserveHelp": "Spare servers stay idle: matches are not put on them, so one is ready when a server goes down. At least one server always takes matches. Spare servers count toward your license like any other server."
+  },
+  "pluginSets": {
+    "presetLabel": "Plugin preset",
+    "preset": {
+      "tournament": "Tournament",
+      "practice": "Practice",
+      "fun": "Fun",
+      "custom": "Custom",
+      "default": "Fleet default",
+      "none": "None"
+    },
+    "plugin": {
+      "fleet": "Fleet link",
+      "match": "Match",
+      "essentials": "Essentials",
+      "practice": "Practice",
+      "whitelist": "Whitelist",
+      "skins": "Skins",
+      "midas": "Midas",
+      "deathmatch": "Deathmatch",
+      "addons": "Addons"
+    },
+    "pluginHelp": {
+      "essentials": "Admins, map change, reload and restart",
+      "practice": "Practice mode for grenades and positions",
+      "whitelist": "Only listed players can join",
+      "skins": "Players' weapon skins, knives and gloves",
+      "midas": "Gold weapon models",
+      "deathmatch": "Deathmatch modes",
+      "addons": "Workshop addons"
+    },
+    "required": "Always on",
+    "usesDefault": "Uses the fleet default: {{plugins}}.",
+    "keepsBundle": "No default set: the server keeps the plugins its Ready Up bundle loads.",
+    "notInstalled": "Not installed on this server: {{plugins}}. They stay off until Ready Up is updated with the \"With skins\" bundle.",
+    "fullBundleNote": "Some of these plugins need the full Ready Up bundle; the new servers get it.",
+    "serverHelp": "Turns Ready Up plugins on or off on this server (plugins.set). The server keeps the choice after a restart, and gets it again if it reconnects with other plugins on.",
+    "defaultButton": "Default plugins",
+    "defaultTitle": "Default plugins for new servers",
+    "defaultHelp": "Servers created on a machine, by automatic scaling or for a failover get these plugins when they first connect, unless they were created with their own choice. Servers that already exist keep theirs.",
+    "createLabel": "Ready Up plugins",
+    "save": "Save",
+    "saved": "Default plugins saved",
+    "errors": {
+      "save": "Saving the default plugins failed"
+    }
   }
 }
