@@ -201,6 +201,13 @@ function ProviderSection({
         </Typography>
         <Chip size="small" label={status.label} color={status.color} data-testid={`${idPrefix}-status`} />
         <Box sx={{ flexGrow: 1 }} />
+        <ExternalLink
+          href={`https://docs.autotournament.gg/guides/sign-in/${provider.id}`}
+          sx={{ fontSize: '0.85rem' }}
+          data-testid={`${idPrefix}-guide`}
+        >
+          {t('settingsPage.signIn.guide')}
+        </ExternalLink>
         <ExternalLink href={provider.docsUrl} sx={{ fontSize: '0.85rem' }}>
           {t('settingsPage.signIn.howTo')}
         </ExternalLink>
