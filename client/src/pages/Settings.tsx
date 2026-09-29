@@ -31,6 +31,7 @@ import { SiteNameCard } from '../components/settings/SiteNameCard';
 import { LicenseCard } from '../components/settings/LicenseCard';
 import { WebhooksCard } from '../components/settings/WebhooksCard';
 import { ExperimentalCard } from '../components/settings/ExperimentalCard';
+import { SignInProvidersCard } from '../components/settings/SignInProvidersCard';
 import { useInstalledIntegrations } from '../integrations/registry';
 
 declare const __APP_VERSION__: string | undefined;
@@ -141,8 +142,9 @@ export default function Settings() {
   const [tab, setTab] = useState<string>('integrations');
   useEffect(() => {
     if (!requestedSection) return;
-    // `?section=license`: the admin home's License card links here.
-    if (requestedSection === 'license' || requestedSection === 'webhooks') {
+    // `?section=license`: the admin home's License card links here;
+    // `?section=signin`: its "Finish setting up" sign-in row.
+    if (requestedSection === 'license' || requestedSection === 'webhooks' || requestedSection === 'signin') {
       setTab(requestedSection);
       return;
     }
@@ -151,6 +153,7 @@ export default function Settings() {
   }, [requestedSection, moduleTabKeys]);
   const tabKeys = [
     'integrations',
+    'signin',
     'players',
     'matches',
     'license',
@@ -267,6 +270,12 @@ export default function Settings() {
                   value="integrations"
                   {...a11yProps('integrations')}
                 />
+                <Tab
+                  label={t('settingsPage.tabs.signIn')}
+                  value="signin"
+                  data-testid="settings-tab-signin"
+                  {...a11yProps('signin')}
+                />
                 <Tab label={t('settingsPage.tabs.players')} value="players" {...a11yProps('players')} />
                 <Tab label={t('settingsPage.tabs.matches')} value="matches" {...a11yProps('matches')} />
                 <Tab
@@ -314,6 +323,11 @@ export default function Settings() {
               <Stack spacing={3}>
                 <SiteNameCard />
               </Stack>
+            </TabPanel>
+
+            {/* Sign-in providers: Steam, Discord, Google, GitHub, Twitch */}
+            <TabPanel value={activeTab} index="signin">
+              <SignInProvidersCard />
             </TabPanel>
 
             {/* Players & access control */}

@@ -6,6 +6,9 @@ import { Strategy as GitHubStrategy } from 'passport-github2';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { log } from '../utils/logger';
 import { SignedCookieStateStore } from '../utils/oauthStateCookie';
+import { effectiveProviderSettings } from './signInProviders';
+import { adminEmailsConfigured } from '../utils/adminEmails';
+import { createTwitchStrategy, type TwitchStrategyOptions } from './twitchStrategy';
 
 interface SteamProfile {
   id: string;
@@ -15,10 +18,14 @@ interface SteamProfile {
   };
 }
 
-interface DiscordProfile {
+export interface DiscordProfile {
   id: string;
   username?: string;
   avatar?: string | null;
+  /** Present with the `email` scope. */
+  email?: string | null;
+  /** Discord has verified `email`. */
+  verified?: boolean;
 }
 
 interface KeycloakProfile {
@@ -32,6 +39,8 @@ export interface GitHubProfile {
   username?: string;
   displayName?: string;
   photos?: Array<{ value: string }>;
+  /** With the `user:email` scope and `allRawEmails`: every address, flagged. */
+  emails?: Array<{ value: string; primary?: boolean; verified?: boolean }>;
 }
 
 /** Profile as passport-google-oauth20 parses it from Google's OIDC userinfo. */
@@ -66,15 +75,39 @@ interface OAuthStrategyOptions {
 }
 
 export function configurePassportAuth(): void {
-  configureSteamStrategy();
-  configureDiscordStrategy();
+  configureSettingsManagedStrategies();
   configureKeycloakStrategy();
-  configureOAuthStrategy('github', createGitHubStrategy);
-  configureOAuthStrategy('google', createGoogleStrategy);
   configureTestOAuthStrategies();
 }
 
-function getBackendBaseUrl(): string {
+/** The strategies Settings -> Sign-in manages; `reloadPassportAuth` redoes them. */
+const SETTINGS_MANAGED_STRATEGIES = ['steam', 'discord', 'github', 'google', 'twitch'] as const;
+
+function configureSettingsManagedStrategies(): void {
+  configureSteamStrategy();
+  configureDiscordStrategy();
+  configureOAuthStrategy('github', createGitHubStrategy);
+  configureOAuthStrategy('google', createGoogleStrategy);
+  configureOAuthStrategy('twitch', createTwitchLoginStrategy);
+}
+
+/**
+ * Re-register the Settings-managed strategies from the current settings
+ * (environment, then saved rows), without a restart. Passport looks a
+ * strategy up by name on every request, so the next sign-in uses the new
+ * credentials.
+ */
+export function reloadPassportAuth(): void {
+  for (const name of SETTINGS_MANAGED_STRATEGIES) {
+    passport.unuse(name);
+  }
+  configureSettingsManagedStrategies();
+  log.info('[SIGN-IN] Sign-in strategies reloaded', {
+    active: SETTINGS_MANAGED_STRATEGIES.filter((name) => isStrategyConfigured(name)),
+  });
+}
+
+export function getBackendBaseUrl(): string {
   // Prefer explicit backend URL, then FRONTEND_BASE_URL (with /api), then localhost.
   const explicit = process.env.BACKEND_BASE_URL;
   if (explicit && explicit.trim().length > 0) {
@@ -92,9 +125,10 @@ function getBackendBaseUrl(): string {
 }
 
 function configureSteamStrategy(): void {
-  const steamApiKey = process.env.STEAM_API_KEY;
+  const steam = effectiveProviderSettings('steam');
+  const steamApiKey = steam.secret;
 
-  if (!steamApiKey) {
+  if (!steam.active || !steamApiKey) {
     // If Steam is not configured, leave the strategy unregistered.
     // The auth providers config will also treat Steam as disabled in this case.
     // This avoids exposing a broken "Sign in with Steam" button.
@@ -144,10 +178,11 @@ function configureSteamStrategy(): void {
 }
 
 function configureDiscordStrategy(): void {
-  const clientID = process.env.DISCORD_CLIENT_ID;
-  const clientSecret = process.env.DISCORD_CLIENT_SECRET;
+  const discord = effectiveProviderSettings('discord');
+  const clientID = discord.clientId;
+  const clientSecret = discord.secret;
 
-  if (!clientID || !clientSecret) {
+  if (!discord.active || !clientID || !clientSecret) {
     return;
   }
 
@@ -191,6 +226,7 @@ function configureDiscordStrategy(): void {
           username: profile.username,
           avatar: profile.avatar,
           avatarUrl,
+          verifiedEmail: discordVerifiedEmail(profile),
         });
       }
     )
@@ -310,24 +346,45 @@ function configureKeycloakStrategy(): void {
 }
 
 /**
- * Register a plain OAuth2 provider (GitHub, Google) when both its client ID
- * and secret are set: <PROVIDER>_CLIENT_ID / <PROVIDER>_CLIENT_SECRET, with
+ * Register a plain OAuth2 provider (GitHub, Google, Twitch) when it is enabled
+ * and has a client id and secret (environment or Settings -> Sign-in), with
  * the callback at <base>/api/auth/<provider>/callback.
  */
 function configureOAuthStrategy(
-  provider: 'github' | 'google',
+  provider: 'github' | 'google' | 'twitch',
   create: (options: OAuthStrategyOptions) => unknown
 ): void {
-  const prefix = provider.toUpperCase();
-  const clientID = process.env[`${prefix}_CLIENT_ID`]?.trim();
-  const clientSecret = process.env[`${prefix}_CLIENT_SECRET`]?.trim();
+  const settings = effectiveProviderSettings(provider);
+  const clientID = settings.clientId;
+  const clientSecret = settings.secret;
 
-  if (!clientID || !clientSecret) {
+  if (!settings.active || !clientID || !clientSecret) {
     return;
   }
 
   const callbackURL = `${getBackendBaseUrl()}/api/auth/${provider}/callback`;
   passport.use(provider, create({ clientID, clientSecret, callbackURL, stateProvider: provider }));
+}
+
+/*
+ * Verified email addresses, for the ADMIN_EMAILS bootstrap only
+ * (utils/adminEmails). Each returns an address only when the provider says it
+ * verified it. Accounts are never linked or merged by email.
+ */
+
+/** Discord's address when Discord marks it verified. */
+export function discordVerifiedEmail(profile: DiscordProfile): string | undefined {
+  return profile.verified === true && profile.email ? profile.email : undefined;
+}
+
+/** GitHub's primary address when it is verified (needs `user:email` and `allRawEmails`). */
+export function githubVerifiedEmail(profile: GitHubProfile): string | undefined {
+  return profile.emails?.find((e) => e.primary === true && e.verified === true)?.value || undefined;
+}
+
+/** Google's address when `email_verified` is true. */
+export function googleVerifiedEmail(profile: GoogleProfile): string | undefined {
+  return profile.emails?.find((e) => e.verified === true)?.value || undefined;
 }
 
 /** The Passport user for a GitHub login. No tokens: nothing uses them. */
@@ -338,6 +395,7 @@ export function githubProfileToUser(profile: GitHubProfile) {
     username: profile.username,
     displayName: profile.displayName || profile.username || String(profile.id),
     avatarUrl: profile.photos?.[0]?.value,
+    verifiedEmail: githubVerifiedEmail(profile),
   };
 }
 
@@ -348,6 +406,7 @@ export function googleProfileToUser(profile: GoogleProfile) {
     googleId: String(profile.id),
     displayName: profile.displayName || profile.emails?.[0]?.value || String(profile.id),
     avatarUrl: profile.photos?.[0]?.value,
+    verifiedEmail: googleVerifiedEmail(profile),
   };
 }
 
@@ -358,9 +417,11 @@ function createGitHubStrategy(options: OAuthStrategyOptions) {
       clientSecret: options.clientSecret,
       callbackURL: options.callbackURL,
       ...options.endpoints,
-      // Public profile only. The login keys on the numeric user id, so no
-      // email scope is needed.
-      scope: ['read:user'],
+      // Public profile only: the login keys on the numeric user id. The
+      // email scope is asked for only when ADMIN_EMAILS is set, so a primary
+      // verified address can grant admin (utils/adminEmails).
+      scope: adminEmailsConfigured() ? ['read:user', 'user:email'] : ['read:user'],
+      allRawEmails: true,
       // CSRF protection for the OAuth round trip; see utils/oauthStateCookie.
       store: new SignedCookieStateStore({
         provider: options.stateProvider,
@@ -400,6 +461,25 @@ function createGoogleStrategy(options: OAuthStrategyOptions) {
       done(null, user);
     }
   );
+}
+
+function createTwitchLoginStrategy(options: OAuthStrategyOptions) {
+  const twitchOptions: TwitchStrategyOptions = {
+    clientID: options.clientID,
+    clientSecret: options.clientSecret,
+    callbackURL: options.callbackURL,
+    // CSRF protection for the OAuth round trip; see utils/oauthStateCookie.
+    store: new SignedCookieStateStore({
+      provider: options.stateProvider,
+      callbackURL: options.callbackURL,
+    }),
+  };
+  return createTwitchStrategy(twitchOptions, (user, done) => {
+    log.info('TwitchStrategy callback: received profile from Twitch', {
+      profile: { id: user.twitchId, hasAvatar: !!user.avatarUrl },
+    });
+    done(null, user);
+  });
 }
 
 /** Passport strategy name for the test-only fake provider of `provider`. */

@@ -37,6 +37,7 @@
     "passport-github2": "^0.1.12",
     "passport-google-oauth20": "^2.0.0",
     "passport-keycloak-oauth2-oidc": "^1.0.5",
+    "passport-oauth2": "^1.5.0",
     "passport-steam": "^1.0.18",
     "pg": "^8.16.3",
     "pino": "^10.1.0",

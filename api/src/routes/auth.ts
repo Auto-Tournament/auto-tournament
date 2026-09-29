@@ -31,6 +31,8 @@ import {
   type OAuthLinkIntent,
 } from '../utils/oauthStateCookie';
 import { isSameSiteRequest } from '../utils/accountConnections';
+import { isAdminEmail } from '../utils/adminEmails';
+import { grantAdminForAdminEmailMatch, grantAdminForVerifiedEmail } from '../services/adminSeedService';
 
 const router = Router();
 
@@ -145,7 +147,7 @@ function redactProviderUserId(id: string | undefined | null): string | null {
 
 type PendingSteamLinkSessionRequest = Request & {
   session?: {
-    pendingSteamLink?: { provider: AuthProvider; providerUserId: string };
+    pendingSteamLink?: { provider: AuthProvider; providerUserId: string; adminEmail?: true };
   };
 };
 
@@ -171,9 +173,13 @@ const PENDING_STEAM_LINK_COOKIE_OPTIONS = {
 export function setPendingSteamLinkCookie(
   res: Response,
   provider: AuthProvider,
-  providerUserId: string
+  providerUserId: string,
+  adminEmail = false
 ): void {
-  res.cookie(PENDING_STEAM_LINK_COOKIE_NAME, signPendingSteamLink({ provider, providerUserId }), {
+  const link = adminEmail
+    ? { provider, providerUserId, adminEmail: true as const }
+    : { provider, providerUserId };
+  res.cookie(PENDING_STEAM_LINK_COOKIE_NAME, signPendingSteamLink(link), {
     ...PENDING_STEAM_LINK_COOKIE_OPTIONS,
     maxAge: PENDING_STEAM_LINK_TTL_MS,
   });
@@ -181,7 +187,7 @@ export function setPendingSteamLinkCookie(
 
 export type PendingSteamLinkRead = {
   /** What the Steam callback would link, or null for a plain Steam login. */
-  link: { provider: AuthProvider; providerUserId: string } | null;
+  link: { provider: AuthProvider; providerUserId: string; adminEmail?: true } | null;
   source: 'session' | 'cookie' | null;
   /**
    * Why a cookie that WAS present was not trusted, or null when there was no
@@ -310,6 +316,10 @@ export async function completePendingSteamLink(
       steamId,
       linkSource: read.source,
     });
+    // The provider verified an ADMIN_EMAILS address at its callback.
+    if (read.link.adminEmail) {
+      await grantAdminForAdminEmailMatch(steamId, read.link.provider);
+    }
     return { ...read, linked: true };
   } catch (linkError) {
     log.warn('Failed to persist external auth → Steam link', linkError as Error);
@@ -345,9 +355,9 @@ function sendAdminLoginBridgePage(req: Request, res: Response): void {
   res.redirect(302, redirectUrl);
 }
 
+/** Steam sign-in is on and has a Web API key (environment or Settings -> Sign-in). */
 function isSteamAuthConfigured(): boolean {
-  const apiKey = process.env.STEAM_API_KEY;
-  return !!apiKey && apiKey.trim().length > 0;
+  return isStrategyConfigured('steam');
 }
 
 /**
@@ -357,11 +367,11 @@ function isSteamAuthConfigured(): boolean {
  */
 router.get('/steam', (req: Request, res: Response, next) => {
   if (!isSteamAuthConfigured()) {
-    log.warn('Steam auth requested but STEAM_API_KEY is not configured');
+    log.warn('Steam auth requested but Steam sign-in is not set up');
     return res.status(503).json({
       success: false,
       error:
-        'Steam authentication is not configured on the server. Please set STEAM_API_KEY and restart the API.',
+        'Steam sign-in is not set up. An admin can set it up on Settings -> Sign-in (or set STEAM_API_KEY).',
     });
   }
 
@@ -379,11 +389,11 @@ router.get('/steam', (req: Request, res: Response, next) => {
  */
 router.get('/steam/callback', (req: Request, res: Response, _next) => {
   if (!isSteamAuthConfigured()) {
-    log.warn('Steam callback hit but STEAM_API_KEY is not configured');
+    log.warn('Steam callback hit but Steam sign-in is not set up');
     return res.status(503).json({
       success: false,
       error:
-        'Steam authentication is not configured on the server. Please set STEAM_API_KEY and restart the API.',
+        'Steam sign-in is not set up. An admin can set it up on Settings -> Sign-in (or set STEAM_API_KEY).',
     });
   }
 
@@ -572,6 +582,7 @@ const SSO_USER_ID_FIELD: Record<AuthProvider, string> = {
   keycloak: 'keycloakId',
   github: 'githubId',
   google: 'googleId',
+  twitch: 'twitchId',
 };
 
 const SSO_PROVIDER_LABEL: Record<AuthProvider, string> = {
@@ -579,6 +590,7 @@ const SSO_PROVIDER_LABEL: Record<AuthProvider, string> = {
   keycloak: 'Keycloak',
   github: 'GitHub',
   google: 'Google',
+  twitch: 'Twitch',
 };
 
 /**
@@ -627,7 +639,7 @@ export function ssoCallbackHandler(expectedProvider: AuthProvider) {
     const anyReq = req as Request & {
       user?: Record<string, unknown> & { provider?: string; steamId?: string };
       session?: {
-        pendingSteamLink?: { provider: AuthProvider; providerUserId: string };
+        pendingSteamLink?: { provider: AuthProvider; providerUserId: string; adminEmail?: true };
       };
     };
 
@@ -646,6 +658,10 @@ export function ssoCallbackHandler(expectedProvider: AuthProvider) {
       log.warn(`${label} callback missing provider or user id on user`);
       return sendAdminLoginBridgePage(req, res);
     }
+
+    // ADMIN_EMAILS: only an address the provider verified counts (the
+    // strategies set verifiedEmail only then). Never used to pick an account.
+    const verifiedEmail = typeof user.verifiedEmail === 'string' ? user.verifiedEmail : undefined;
 
     try {
       const baseUrl = getFrontendBaseUrl(req);
@@ -672,6 +688,7 @@ export function ssoCallbackHandler(expectedProvider: AuthProvider) {
           return linkResultRedirect(req, res, provider, 'taken');
         }
         user.steamId = cookieSteamId;
+        await grantAdminForVerifiedEmail(cookieSteamId, provider, verifiedEmail);
         setPlayerSteamCookie(req, res, cookieSteamId);
 
         log.success(`${label} login auto-linked via existing Steam cookie`, {
@@ -691,6 +708,7 @@ export function ssoCallbackHandler(expectedProvider: AuthProvider) {
 
       if (steamId) {
         user.steamId = steamId;
+        await grantAdminForVerifiedEmail(steamId, provider, verifiedEmail);
         setPlayerSteamCookie(req, res, steamId);
 
         log.success(`${label} login resolved via existing Steam link`, { provider, steamId });
@@ -698,8 +716,11 @@ export function ssoCallbackHandler(expectedProvider: AuthProvider) {
       }
 
       // No existing link: remember this identity so the Steam callback can persist it.
+      const adminEmail = isAdminEmail(verifiedEmail);
       if (anyReq.session) {
-        anyReq.session.pendingSteamLink = { provider, providerUserId };
+        anyReq.session.pendingSteamLink = adminEmail
+          ? { provider, providerUserId, adminEmail: true }
+          : { provider, providerUserId };
         log.info(`${label} callback: stored pendingSteamLink on session`, {
           provider,
           providerUserId: redactProviderUserId(providerUserId),
@@ -710,7 +731,7 @@ export function ssoCallbackHandler(expectedProvider: AuthProvider) {
       // changes between this callback and the Steam callback, we can still
       // recover the pending identity and persist the link. The cookie is signed
       // and expires, so the Steam callback only acts on one we wrote.
-      setPendingSteamLinkCookie(res, provider, providerUserId);
+      setPendingSteamLinkCookie(res, provider, providerUserId, adminEmail);
 
       log.success(`${label} Passport login completed; Steam link required`);
       return sendAdminLoginBridgePage(req, res);
@@ -890,6 +911,12 @@ function accountLinkCallback(strategyName: string, provider: AuthProvider) {
             providerUserId: redactProviderUserId(providerUserId),
             steamId: intent.steamId,
           });
+          const linkedEmail = passportUser.verifiedEmail;
+          await grantAdminForVerifiedEmail(
+            intent.steamId,
+            provider,
+            typeof linkedEmail === 'string' ? linkedEmail : undefined
+          );
           return linkResultRedirect(req, res, provider, 'ok');
         } catch (error) {
           log.error(`${label} account link failed`, error as Error);
@@ -958,6 +985,7 @@ registerSsoRoutes('keycloak', { scope: ['openid', 'profile', 'email'] });
 registerSsoRoutes('discord');
 registerSsoRoutes('github');
 registerSsoRoutes('google');
+registerSsoRoutes('twitch');
 
 /**
  * Public discovery endpoint: returns the list of configured auth providers.
@@ -1288,7 +1316,7 @@ router.get('/admin/me', async (req: Request, res: Response) => {
     } else if (provider === 'discord') {
       profileName = (user as { username?: string }).username ?? null;
       profileAvatarUrl = (user as { avatarUrl?: string }).avatarUrl ?? null;
-    } else if (provider === 'github' || provider === 'google') {
+    } else if (provider === 'github' || provider === 'google' || provider === 'twitch') {
       profileName =
         (user as { displayName?: string }).displayName ||
         (user as { username?: string }).username ||

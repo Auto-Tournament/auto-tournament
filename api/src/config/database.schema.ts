@@ -700,6 +700,19 @@ export function getSchemaSQL(): string {
 
     CREATE INDEX IF NOT EXISTS idx_team_external_ids_team ON team_external_ids(team_id);
 
+    -- Sign-in providers set up from Settings -> Sign-in
+    -- (services/authProviderSettingsService.ts). The secret is AES-256-GCM
+    -- encrypted (utils/secretBox.ts) and never leaves the server. Environment
+    -- variables win over a row, field by field.
+    CREATE TABLE IF NOT EXISTS auth_provider_settings (
+      provider TEXT PRIMARY KEY,
+      enabled INTEGER NOT NULL DEFAULT 0,
+      client_id TEXT,
+      client_secret_enc TEXT,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      updated_by TEXT
+    );
+
     -- Session table for connect-pg-simple (express-session PostgreSQL store)
     -- This table is required for session persistence across API restarts
     CREATE TABLE IF NOT EXISTS session (

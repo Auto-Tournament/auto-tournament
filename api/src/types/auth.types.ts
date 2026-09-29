@@ -1,4 +1,4 @@
-export type AuthProviderId = 'steam' | 'keycloak' | 'discord' | 'github' | 'google';
+export type AuthProviderId = 'steam' | 'keycloak' | 'discord' | 'github' | 'google' | 'twitch';
 
 export type AuthProviderKind = 'steam-openid' | 'oidc' | 'oauth2';
 
@@ -63,11 +63,17 @@ export interface GoogleAuthProviderConfig extends BaseAuthProviderConfig {
   kind: 'oauth2';
 }
 
+export interface TwitchAuthProviderConfig extends BaseAuthProviderConfig {
+  id: 'twitch';
+  kind: 'oauth2';
+}
+
 export type AuthProviderConfig =
   | SteamAuthProviderConfig
   | KeycloakAuthProviderConfig
   | DiscordAuthProviderConfig
   | GitHubAuthProviderConfig
-  | GoogleAuthProviderConfig;
+  | GoogleAuthProviderConfig
+  | TwitchAuthProviderConfig;
 
 

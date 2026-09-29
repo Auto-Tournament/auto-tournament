@@ -4,12 +4,55 @@
     "intro": "Configura integrações, predefinições no jogo e opções de desenvolvimento.",
     "tabs": {
       "integrations": "Integrações e webhooks",
+      "signIn": "Sign-in",
       "players": "Jogadores e acesso",
       "matches": "Jogos e rating",
       "developer": "Programador / simulação",
       "license": "License",
       "webhooks": "Webhooks",
       "experimental": "Experimental"
+    },
+    "signIn": {
+      "title": "Sign-in providers",
+      "intro": "Choose how people sign in. Accounts are Steam accounts: someone who signs in with another provider links Steam once, then can use either. Changes apply at once; no restart.",
+      "keySource": "Saved secrets are encrypted with {{name}}.",
+      "keySourceDefault": "Saved secrets are encrypted with a built-in development key. Set SECRETS_KEY or SESSION_SECRET before you go live.",
+      "loadError": "Could not load the sign-in providers",
+      "saveError": "Could not save",
+      "testError": "Could not run the test",
+      "saved": "{{provider}} sign-in saved",
+      "enabled": "Enabled",
+      "clientId": "Client ID",
+      "clientSecret": "Client secret",
+      "steamKey": "Steam Web API key",
+      "secretSet": "set",
+      "secretUnreadable": "The saved secret can no longer be decrypted (the encryption key changed). Enter it again.",
+      "replace": "Replace",
+      "cancel": "Cancel",
+      "save": "Save",
+      "envManaged": "Set by environment variable {{name}}",
+      "callbackUrl": "Callback URL",
+      "callbackHelp": "Register this exact URL as the redirect URL in the provider's developer console.",
+      "copy": "Copy",
+      "copied": "Copied",
+      "copyError": "Could not copy",
+      "howTo": "How to get these",
+      "test": "Test",
+      "comingSoon": "Coming soon",
+      "comingSoonNote": "{{provider}} sign-in is not available yet.",
+      "status": {
+        "active": "On the login page",
+        "missing": "Enabled, missing credentials",
+        "off": "Off"
+      },
+      "testResult": {
+        "ok": "The provider accepted these credentials.",
+        "invalid_credentials": "The provider rejected these credentials. Check the client ID and secret (or the key).",
+        "unreachable": "Could not reach the provider. Check the network and try again.",
+        "not_configured": "Enter the credentials first.",
+        "not_supported": "This provider cannot be tested.",
+        "unexpected": "The provider gave an answer the test does not understand."
+      }
     },
     "integrations": {
       "steam": {
@@ -113,8 +156,7 @@
     "setup": {
       "title": "Finish setting up",
       "openSettings": "Open settings",
-      "steam": "Steam sign-in",
-      "discord": "Discord sign-in (optional)"
+      "signIn": "Sign-in provider"
     },
     "tournaments": {
       "title": "Tournaments",

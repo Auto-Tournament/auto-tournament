@@ -2,11 +2,9 @@ import { pageTitle } from '../utils/pageTitle';
 import React, { useEffect, useState } from 'react';
 import { Box, Card, Button, Alert, Container, Stack, Typography } from '@mui/material';
 import { ArrowSquareOutIcon } from '@phosphor-icons/react';
-import { SiDiscord, SiGithub, SiKeycloak } from 'react-icons/si';
-import { FcGoogle } from 'react-icons/fc';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
-import { SteamIcon } from '../components/icons/SteamIcon';
+import { ProviderLogo, hasProviderLogo } from '../components/auth/ProviderLogo';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { tokens } from '../theme/tokens';
 import { AtIcon } from '../components/common/AtIcon';
@@ -188,10 +186,7 @@ export default function Login() {
               <Stack spacing={1.5}>
                 {providers.map((provider, index) => {
                   const isSteam = provider.id === 'steam';
-                  const isDiscord = provider.id === 'discord';
-                  const isGitHub = provider.id === 'github';
                   const isKeycloak = provider.id === 'keycloak';
-                  const isGoogle = provider.id === 'google';
 
                   // Preferred = first enabled provider in the order the API
                   // returns them (Steam today). It always gets the theme's
@@ -199,17 +194,8 @@ export default function Login() {
                   // neutral outlined button.
                   const isPreferred = index === 0;
 
-                  const icon = isSteam
-                    ? <SteamIcon />
-                    : isDiscord
-                      ? <SiDiscord />
-                      : isGitHub
-                        ? <SiGithub />
-                        : isGoogle
-                          ? <FcGoogle />
-                          : isKeycloak
-                            ? <SiKeycloak />
-                            : undefined;
+                  // Phosphor's logo where it has one; otherwise a text-only button.
+                  const icon = hasProviderLogo(provider.id) ? <ProviderLogo id={provider.id} /> : undefined;
 
                   const { variant, color, sx } = (() => {
                     if (isPreferred) {

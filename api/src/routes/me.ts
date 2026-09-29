@@ -205,6 +205,7 @@ const PROVIDER_LABELS: Record<string, string> = {
   keycloak: 'Keycloak',
   github: 'GitHub',
   google: 'Google',
+  twitch: 'Twitch',
 };
 
 /** Providers this site can sign in with right now, with their labels. */

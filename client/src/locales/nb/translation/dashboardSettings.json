@@ -22,8 +22,7 @@
     "setup": {
       "title": "Fullfør oppsettet",
       "openSettings": "Åpne innstillinger",
-      "steam": "Steam-innlogging",
-      "discord": "Discord-innlogging (valgfritt)"
+      "signIn": "Innloggingsleverandør"
     },
     "tournaments": {
       "title": "Turnering",
@@ -105,12 +104,55 @@
     "intro": "Innstillinger for hele nettstedet, uansett spill. Hver installerte spillmodul har sin egen fane.",
     "tabs": {
       "integrations": "Integrasjoner",
+      "signIn": "Innlogging",
       "players": "Spillere og tilgang",
       "matches": "Rating",
       "developer": "Utvikler",
       "license": "Lisens",
       "webhooks": "Webhooks",
       "experimental": "Eksperimentelt"
+    },
+    "signIn": {
+      "title": "Innloggingsleverandører",
+      "intro": "Velg hvordan folk logger inn. Kontoer er Steam-kontoer: den som logger inn med en annen leverandør, kobler til Steam én gang og kan så bruke begge. Endringer gjelder med en gang, uten omstart.",
+      "keySource": "Lagrede hemmeligheter krypteres med {{name}}.",
+      "keySourceDefault": "Lagrede hemmeligheter krypteres med en innebygd utviklingsnøkkel. Sett SECRETS_KEY eller SESSION_SECRET før dere går live.",
+      "loadError": "Kunne ikke laste innloggingsleverandørene",
+      "saveError": "Kunne ikke lagre",
+      "testError": "Kunne ikke kjøre testen",
+      "saved": "Innlogging med {{provider}} lagret",
+      "enabled": "På",
+      "clientId": "Klient-ID",
+      "clientSecret": "Klienthemmelighet",
+      "steamKey": "Steam Web API-nøkkel",
+      "secretSet": "satt",
+      "secretUnreadable": "Den lagrede hemmeligheten kan ikke lenger dekrypteres (krypteringsnøkkelen er endret). Skriv den inn på nytt.",
+      "replace": "Bytt",
+      "cancel": "Avbryt",
+      "save": "Lagre",
+      "envManaged": "Satt av miljøvariabelen {{name}}",
+      "callbackUrl": "Tilbakekallings-URL",
+      "callbackHelp": "Registrer akkurat denne URL-en som omdirigerings-URL i leverandørens utviklerkonsoll.",
+      "copy": "Kopier",
+      "copied": "Kopiert",
+      "copyError": "Kunne ikke kopiere",
+      "howTo": "Slik får du disse",
+      "test": "Test",
+      "comingSoon": "Kommer snart",
+      "comingSoonNote": "Innlogging med {{provider}} er ikke tilgjengelig ennå.",
+      "status": {
+        "active": "På innloggingssiden",
+        "missing": "På, mangler legitimasjon",
+        "off": "Av"
+      },
+      "testResult": {
+        "ok": "Leverandøren godtok legitimasjonen.",
+        "invalid_credentials": "Leverandøren avviste legitimasjonen. Sjekk klient-ID og hemmelighet (eller nøkkelen).",
+        "unreachable": "Fikk ikke kontakt med leverandøren. Sjekk nettverket og prøv igjen.",
+        "not_configured": "Skriv inn legitimasjonen først.",
+        "not_supported": "Denne leverandøren kan ikke testes.",
+        "unexpected": "Leverandøren svarte noe testen ikke forstår."
+      }
     },
     "integrations": {
       "steam": {

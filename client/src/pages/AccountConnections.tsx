@@ -18,9 +18,7 @@ import {
   Typography,
 } from '@mui/material';
 import { InfoIcon } from '@phosphor-icons/react';
-import { SiDiscord, SiGithub, SiKeycloak } from 'react-icons/si';
-import { FcGoogle } from 'react-icons/fc';
-import { SteamIcon } from '../components/icons/SteamIcon';
+import { ProviderLogo, hasProviderLogo } from '../components/auth/ProviderLogo';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
@@ -45,17 +43,7 @@ const { color, radius } = tokens;
  * buttons — so Steam reads as Steam, not as a letter "S". A provider without
  * one gets a short text mark, or the label's first letter.
  */
-const PROVIDER_ICON: Record<string, React.ComponentType> = {
-  steam: SteamIcon,
-  discord: SiDiscord,
-  github: SiGithub,
-  google: FcGoogle,
-  keycloak: SiKeycloak,
-};
-const PROVIDER_MARK: Record<string, string> = { github: 'GH' };
-
 function ProviderTile({ provider, label }: { provider: string; label: string }) {
-  const Icon = PROVIDER_ICON[provider];
   return (
     <Box
       aria-hidden
@@ -74,7 +62,7 @@ function ProviderTile({ provider, label }: { provider: string; label: string }) 
         '& svg': { fontSize: 22, width: 22, height: 22 },
       }}
     >
-      {Icon ? <Icon /> : (PROVIDER_MARK[provider] ?? label.slice(0, 1).toUpperCase())}
+      {hasProviderLogo(provider) ? <ProviderLogo id={provider} size={22} /> : label.slice(0, 1).toUpperCase()}
     </Box>
   );
 }

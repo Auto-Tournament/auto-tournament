@@ -1,4 +1,5 @@
 import { db } from '../config/database';
+import { effectiveProviderSettings } from '../config/signInProviders';
 import { log } from '../utils/logger';
 import { clampSimulationTimescale } from '../utils/simulationTimescale';
 import { booleanRequest, normalizeFlag, stringRequest } from '../utils/settingFields';
@@ -281,14 +282,13 @@ class SettingsService {
     return webhookUrl;
   }
 
+  /** The Steam Web API key: STEAM_API_KEY, else the one saved on Settings -> Sign-in. */
   async isSteamApiConfigured(): Promise<boolean> {
-    const value = process.env.STEAM_API_KEY;
-    return Boolean(value && value.trim().length > 0);
+    return (await this.getSteamApiKey()) !== null;
   }
 
   async getSteamApiKey(): Promise<string | null> {
-    const value = process.env.STEAM_API_KEY;
-    return value && value.trim().length > 0 ? value.trim() : null;
+    return effectiveProviderSettings('steam').secret;
   }
 
   async areRatingsEnabled(): Promise<boolean> {
