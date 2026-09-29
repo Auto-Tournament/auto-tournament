@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/server.cs2_update_required.json",
+  "title": "server.cs2_update_required (server → platform, reliable)",
+  "description": "Steam says this CS2 build is behind (ISteamApps/UpToDateCheck, appid 730); `required_build` is its required_version (the PatchVersion without dots, e.g. 14035). Sent once per required version. Proposed here, FLEET.md §8.1, §14.3.",
+  "type": "object",
+  "required": [
+    "required_build"
+  ],
+  "properties": {
+    "required_build": {
+      "type": "integer",
+      "minimum": 1
+    }
+  }
+}

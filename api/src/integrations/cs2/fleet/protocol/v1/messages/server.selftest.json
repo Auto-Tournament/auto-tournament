@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/server.selftest.json",
+  "title": "server.selftest (server → platform, reliable)",
+  "description": "The core's selftest outcome changed (pass/fail, the counts or the failing checks): the automatic selftest 15 s after the first map, `ru selftest`, or the status endpoint's `/selftest?run=1`. Same object as hello.selftest, which carries the latest outcome on every connect. A re-run with the same outcome is not sent. Proposed here, FLEET.md §6.1, §8.1.",
+  "type": "object",
+  "required": ["pass", "passed", "total", "failures"],
+  "properties": {
+    "pass": { "type": "boolean" },
+    "passed": { "type": "integer", "minimum": 0 },
+    "total": { "type": "integer", "minimum": 0 },
+    "failures": { "type": "array", "items": { "type": "string", "maxLength": 512 }, "maxItems": 256 }
+  }
+}

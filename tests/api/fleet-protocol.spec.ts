@@ -79,6 +79,11 @@ test.describe('Fleet protocol schemas', () => {
     // pattern draft required a dot.
     expect(validateEnvelope(envelope('hello', {})).ok).toBe(true);
     expect(validateEnvelope(envelope('event.round_end', {})).ok).toBe(true);
+    // Digits after the first segment (Ready Up's server.cs2_update_required
+    // failed this and looped its spool on every reconnect).
+    expect(validateEnvelope(envelope('server.cs2_update_required', {})).ok).toBe(true);
+    expect(validateEnvelope({ ...ok, type: 'server.' }).ok).toBe(false);
+    expect(validateEnvelope({ ...ok, type: 'Server.cs2' }).ok).toBe(false);
 
     expect(validateEnvelope({ ...ok, v: 2 }).ok).toBe(false);
     expect(validateEnvelope({ ...ok, id: 'not-a-ulid' }).ok).toBe(false);
@@ -196,6 +201,37 @@ test.describe('Fleet protocol schemas', () => {
     }
     expect(FLEET_MESSAGES['state.snapshot']).toEqual({ direction: 'server_to_platform', reliable: false });
     expect(FLEET_MESSAGES['state.request']).toEqual({ direction: 'platform_to_server', reliable: false });
+  });
+
+  test('server notices and drain: schemas, directions, examples', () => {
+    const update = envelope('server.cs2_update_required', { required_build: 14035 }, { seq: 4 });
+    expect(validateMessage(update)).toEqual({ ok: true, errors: [] });
+    expect(validateMessage({ ...update, payload: {} }).ok).toBe(false);
+    expect(validateMessage({ ...update, payload: { required_build: 0 } }).ok).toBe(false);
+    expect(validateMessage({ ...update, payload: { required_build: '14035' } }).ok).toBe(false);
+
+    const selftest = { pass: false, passed: 57, total: 58, failures: ['fn:CCSPlayer_ItemServices_GiveNamedItem'] };
+    expect(validateMessage(envelope('server.selftest', selftest, { seq: 5 }))).toEqual({ ok: true, errors: [] });
+    expect(validatePayload('server.selftest', { pass: true, failures: [] }).ok).toBe(false);
+    expect(validatePayload('hello', { ...helloPayload('fs_x', 'install-0001'), selftest }).ok).toBe(true);
+
+    expect(validatePayload('server.drain', { reason: 'maintenance' }).ok).toBe(true);
+    expect(validatePayload('server.drain', {}).ok).toBe(true);
+    expect(validatePayload('server.undrain', {}).ok).toBe(true);
+
+    for (const type of ['server.cs2_update_required', 'server.selftest']) {
+      expect(FLEET_MESSAGES[type as keyof typeof FLEET_MESSAGES], type).toEqual({ direction: 'server_to_platform', reliable: true });
+    }
+    for (const type of ['server.drain', 'server.undrain']) {
+      expect(FLEET_MESSAGES[type as keyof typeof FLEET_MESSAGES], type).toEqual({ direction: 'platform_to_server', reliable: true });
+    }
+    // Every messages/*.json has a registered type, and the other way round.
+    const files = fs
+      .readdirSync(path.join(PROTOCOL_DIR, 'messages'))
+      .map((f) => f.replace(/\.json$/, ''))
+      .sort();
+    expect(Object.keys(FLEET_MESSAGE_SCHEMAS).sort()).toEqual(files);
+    expect(Object.keys(FLEET_MESSAGES).sort()).toEqual(files);
   });
 
   test('step 3: broken frames do not validate', () => {

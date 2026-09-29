@@ -27,6 +27,10 @@ import stateRequest from './messages/state.request.json';
 import stateSnapshot from './messages/state.snapshot.json';
 import statePatch from './messages/state.patch.json';
 import serverAvailability from './messages/server.availability.json';
+import serverCs2UpdateRequired from './messages/server.cs2_update_required.json';
+import serverSelftest from './messages/server.selftest.json';
+import serverDrain from './messages/server.drain.json';
+import serverUndrain from './messages/server.undrain.json';
 import adminsSet from './messages/admins.set.json';
 import skinsLoadout from './messages/skins.loadout.json';
 import skinsInvalidate from './messages/skins.invalidate.json';
@@ -86,6 +90,11 @@ export const FLEET_MESSAGE_SCHEMAS: Record<FleetMessageType, Record<string, unkn
   'state.snapshot': stateSnapshot,
   'state.patch': statePatch,
   'server.availability': serverAvailability,
+  // Server-level notices and drain (FLEET.md §8.1, §14.3): proposed by Ready Up.
+  'server.cs2_update_required': serverCs2UpdateRequired,
+  'server.selftest': serverSelftest,
+  'server.drain': serverDrain,
+  'server.undrain': serverUndrain,
   'admins.set': adminsSet,
   'skins.loadout': skinsLoadout,
   'skins.invalidate': skinsInvalidate,
