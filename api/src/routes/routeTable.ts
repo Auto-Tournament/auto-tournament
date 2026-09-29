@@ -48,6 +48,8 @@ import adminCallRoutes from './adminCalls';
 import licenseRoutes from './license';
 import webhookRoutes from './webhooks';
 import integrationTeamRoutes from './integrationTeams';
+import experimentalRoutes from './experimental';
+import matchmakingRoutes from './matchmaking';
 
 export interface MountedRouter {
   /** Path prefix the router is mounted under. */
@@ -221,6 +223,20 @@ const coreRoutes: MountedRouter[] = [
     title: 'Integrations: teams',
     description:
       "Teams API for integrators: idempotent upsert of teams by the integrator's own externalId (single and batch), and reads by externalId. Integrator token (API_TOKENS_INTEGRATOR), admin token or admin session. See docs/WEBHOOKS.md.",
+  },
+  {
+    prefix: '/api/experimental',
+    router: experimentalRoutes,
+    title: 'Experimental features',
+    description:
+      'Work in progress that ships dark: list the experimental features and turn one on or off. Off by default; an environment variable (e.g. EXPERIMENTAL_MATCHMAKING=1) overrides the admin toggle. Admin only; writes must be same-site JSON.',
+  },
+  {
+    prefix: '/api/matchmaking',
+    router: matchmakingRoutes,
+    title: 'Matchmaking',
+    description:
+      'Experimental (docs/design/matchmaking.md). 404 unless the matchmaking feature is on; admin only while it is being built.',
   },
   {
     prefix: '/api/test',

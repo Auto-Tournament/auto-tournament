@@ -30,6 +30,7 @@ import { useSearchParams } from 'react-router-dom';
 import { SiteNameCard } from '../components/settings/SiteNameCard';
 import { LicenseCard } from '../components/settings/LicenseCard';
 import { WebhooksCard } from '../components/settings/WebhooksCard';
+import { ExperimentalCard } from '../components/settings/ExperimentalCard';
 import { useInstalledIntegrations } from '../integrations/registry';
 
 declare const __APP_VERSION__: string | undefined;
@@ -154,6 +155,7 @@ export default function Settings() {
     'matches',
     'license',
     'webhooks',
+    'experimental',
     ...moduleTabKeys.split(' ').filter(Boolean),
     ...(isDev ? ['developer'] : []),
   ];
@@ -279,6 +281,12 @@ export default function Settings() {
                   data-testid="settings-tab-webhooks"
                   {...a11yProps('webhooks')}
                 />
+                <Tab
+                  label={t('settingsPage.tabs.experimental')}
+                  value="experimental"
+                  data-testid="settings-tab-experimental"
+                  {...a11yProps('experimental')}
+                />
                 {moduleSettings.map(({ id, labelKey }) => (
                   <Tab
                     key={id}
@@ -297,6 +305,10 @@ export default function Settings() {
                 )}
               </Tabs>
             </Box>
+
+            <TabPanel value={activeTab} index="experimental">
+              <ExperimentalCard />
+            </TabPanel>
 
             <TabPanel value={activeTab} index="integrations">
               <Stack spacing={3}>

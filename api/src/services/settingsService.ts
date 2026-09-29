@@ -40,7 +40,10 @@ export type CoreSettingKey =
   | 'license_event_prompt'
   // Integrator webhooks may target private / loopback addresses (LAN events).
   // Off by default: services/webhooks/ssrf.ts.
-  | 'webhooks_allow_private_targets';
+  | 'webhooks_allow_private_targets'
+  // Experimental features (services/experimentalFeatures), off by default.
+  // Set through /api/experimental only.
+  | 'experimental_matchmaking';
 
 export interface AppSetting {
   key: AppSettingKey;
@@ -134,6 +137,10 @@ export const CORE_SETTINGS: ReadonlyArray<SettingDefinition & { key: CoreSetting
     normalize(trimmed) {
       return { value: trimmed, message: 'License terms acceptance saved' };
     },
+  },
+  {
+    key: 'experimental_matchmaking',
+    normalize: normalizeFlag('Experimental feature: matchmaking'),
   },
   {
     key: 'license_consent_history',
