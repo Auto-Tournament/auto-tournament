@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto';
 /**
  * Players API Routes
  * Handles player CRUD operations and bulk import
@@ -1642,12 +1643,14 @@ router.post('/', async (req: Request, res: Response) => {
   try {
     const input: CreatePlayerInput = req.body;
 
-    if (!input.id || !input.name) {
+    if (!input.name) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required fields: id (Steam ID), name',
+        error: 'Missing required field: name',
       });
     }
+    // Steam is optional: a player without a Steam ID gets an account id of its own.
+    if (!input.id) input.id = `acc_${randomBytes(12).toString('hex')}`;
 
     // An explicit edit: an invalid discordId refuses the whole create (400).
     const created = await playerService.createPlayer(input);
@@ -1697,12 +1700,13 @@ router.post('/bulk-import', async (req: Request, res: Response) => {
 
     // Validate each player has required fields
     for (const player of players) {
-      if (!player.id || !player.name) {
+      if (!player.name) {
         return res.status(400).json({
           success: false,
-          error: 'Each player must have id (Steam ID) and name',
+          error: 'Each player must have a name',
         });
       }
+      if (!player.id) player.id = `acc_${randomBytes(12).toString('hex')}`;
     }
 
     const result = await playerService.bulkImportPlayers(players);

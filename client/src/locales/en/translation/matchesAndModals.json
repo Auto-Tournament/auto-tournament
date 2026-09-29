@@ -256,9 +256,9 @@
   "playerModal": {
     "titleCreate": "Create Player",
     "titleEdit": "Edit Player",
-    "steamLabel": "Steam ID or Profile URL",
+    "steamLabel": "Steam ID or profile URL (optional)",
     "steamHelperEditing": "Steam ID cannot be changed",
-    "steamHelperNew": "Enter Steam ID64, vanity URL, or profile URL. Click \"Resolve\" to auto-fill name and avatar.",
+    "steamHelperNew": "Optional: only needed for Steam games like CS2. Enter a Steam ID64, vanity URL or profile URL; \"Resolve\" fills in name and avatar.",
     "resolveSteam": "Resolve Steam ID",
     "resolving": "Resolving...",
     "playerNameLabel": "Player Name",
