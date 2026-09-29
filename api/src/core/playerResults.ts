@@ -159,16 +159,45 @@ async function persistPlayerMatchStats(options: {
     });
   };
 
-  for (const player of team1Players) {
-    await insertRow(player.steamId, lineFor(player.steamId, 'team1'));
+  // player_match_stats rows belong to player records (FOREIGN KEY player_id).
+  // A manual match can roster ad-hoc accounts that have none (test data, a
+  // walk-in): their rows are skipped, with one warning for the match, instead
+  // of an insert error that also cost every player after them their row.
+  const known = await knownPlayerIds([...team1Players, ...team2Players].map((p) => p.steamId));
+  const skipped: string[] = [];
+  let written = 0;
+  for (const [players, team] of [
+    [team1Players, 'team1'],
+    [team2Players, 'team2'],
+  ] as const) {
+    for (const player of players) {
+      if (!known.has(player.steamId)) {
+        skipped.push(player.steamId);
+        continue;
+      }
+      await insertRow(player.steamId, lineFor(player.steamId, team));
+      written++;
+    }
   }
-  for (const player of team2Players) {
-    await insertRow(player.steamId, lineFor(player.steamId, 'team2'));
+  if (skipped.length > 0) {
+    log.warn(
+      `Player stats for ${matchSlug}: skipped ${skipped.length} rostered account(s) with no player record`,
+      { matchSlug, skipped: skipped.slice(0, 10) }
+    );
   }
 
-  log.debug(`Tracked player stats for ${team1Players.length + team2Players.length} players`, {
-    matchSlug,
-  });
+  log.debug(`Tracked player stats for ${written} players`, { matchSlug });
+}
+
+/** The ids among `ids` that have a player record. */
+async function knownPlayerIds(ids: string[]): Promise<Set<string>> {
+  const unique = [...new Set(ids.filter((id) => typeof id === 'string' && id !== ''))];
+  if (unique.length === 0) return new Set();
+  const rows = await db.queryAsync<{ id: string }>(
+    `SELECT id FROM players WHERE id IN (${unique.map(() => '?').join(',')})`,
+    unique
+  );
+  return new Set(rows.map((row) => row.id));
 }
 
 /**

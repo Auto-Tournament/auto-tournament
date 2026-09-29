@@ -26,6 +26,26 @@ import { startServerNotices, stopServerNotices } from './fleet/serverNotices';
 import { startFleetPush, stopFleetPush } from './fleet/push';
 import { startFleetFailover, stopFleetFailover } from './fleet/failover';
 import { startAutoscaler, stopAutoscaler } from './fleet/autoscale/scaler';
+import { serverTurnoverTracker } from './utils/serverTurnover';
+
+let stopTurnoverRetry: (() => void) | null = null;
+
+/**
+ * A server whose turnover hold ends (its last demo upload reported back, or
+ * the tracker gave up on it) gets the waiting matches right away: nothing
+ * else fires then, since the server already reported itself available.
+ */
+function startTurnoverRetry(): void {
+  if (stopTurnoverRetry) return;
+  stopTurnoverRetry = serverTurnoverTracker.onRelease((serverId) => {
+    log.debug(`[TURNOVER] Server ${serverId} released; retrying allocation`);
+    setImmediate(() => {
+      void import('../../core/scheduler')
+        .then(({ scheduler }) => scheduler.tryImmediateAllocation())
+        .catch((error) => log.debug('[TURNOVER] allocation after release failed', { error: (error as Error).message }));
+    });
+  });
+}
 
 export async function startCs2(): Promise<void> {
   // Round backups from Ready Up servers (event.backup) and the restore audit:
@@ -43,6 +63,7 @@ export async function startCs2(): Promise<void> {
   // hello (welcome.assignment, zombie unassigns, turnover, admin calls), and
   // so do the server-level pushes (admins.set, server.config, …).
   startFleetDriver();
+  startTurnoverRetry();
   startFleetPush();
   await startFleet().catch((error) => {
     log.warn('Failed to start the fleet gateway', { error });
@@ -80,6 +101,8 @@ export function stopCs2(): void {
   healthMonitoringService.stop();
   stopMapAutoSync();
   stopFleet();
+  stopTurnoverRetry?.();
+  stopTurnoverRetry = null;
   stopRoundBackups();
   stopRestoreAudit();
   stopDemoStreams();

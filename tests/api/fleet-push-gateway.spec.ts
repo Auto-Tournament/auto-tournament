@@ -334,6 +334,72 @@ test.describe.serial('Fleet pushes: admins, settings, switches, match.update', (
     client.close();
   });
 
+  test('match.update: a substitute keeps its role in the stored config, and the answer says it was saved', async ({
+    request,
+  }) => {
+    // M1 play-test: the route answered configSaved:false (the cmd.result hook
+    // had saved it first), and the sub was stored as a plain player.
+    const server = await enrollNew(request);
+    const slug = `fleet-sub-${Date.now()}`;
+    const A = '76561198000000021';
+    const B = '76561198000000022';
+    const SUB = '76561198000000023';
+    const created = await request.post('/api/matches', {
+      headers: getAuthHeader(),
+      data: {
+        slug,
+        // A server id skips the auto-allocation: the test assigns it below.
+        serverId: 'fleet-push-test-no-allocation',
+        config: {
+          vetoDisabled: true,
+          maplist: ['de_mirage'],
+          num_maps: 1,
+          players_per_team: 1,
+          map_sides: ['team1_ct'],
+          team1: { name: 'Red', players: [{ steamid: A, name: 'Ann' }] },
+          team2: { name: 'Blue', players: [{ steamid: B, name: 'Bea' }] },
+        },
+      },
+    });
+    expect(created.status(), await created.text()).toBe(201);
+    try {
+      const assign = await request.post('/api/test/fleet/assign', {
+        headers: getAuthHeader(),
+        data: { matchSlug: slug, serverId: server.server_id },
+      });
+      expect(assign.ok(), await assign.text()).toBe(true);
+      const { client } = await connect(server, { streamId: `sub-${++serverSeq}` });
+
+      const addReq = request.post(`/api/fleet/matches/${slug}/update`, {
+        data: {
+          baseConfigRev: 1,
+          ops: [{ op: 'add_player', team: 'team1', steamid64: SUB, name: 'Sid', role: 'sub' }],
+        },
+      });
+      const upd = await client.nextOfType('match.update');
+      expect(upd.payload).toMatchObject({
+        ops: [{ op: 'add_player', team: 'team1', steamid64: SUB, name: 'Sid', role: 'sub' }],
+      });
+      client.send(answer(upd, { status: 'ok', rev: 2 }, 1));
+      const addRes = await addReq;
+      expect(addRes.status(), await addRes.text()).toBe(200);
+      expect(await addRes.json()).toMatchObject({ status: 'ok', configRev: 2, configSaved: true });
+
+      // No snapshot yet: the roster view is the stored config, the sub a sub.
+      const roster = await (await request.get(`/api/fleet/matches/${slug}/roster`)).json();
+      expect(roster.roster.source).toBe('config');
+      expect(roster.roster.team1.players).toEqual(
+        expect.arrayContaining([
+          { steamid64: A, name: 'Ann', role: 'player', connected: null },
+          { steamid64: SUB, name: 'Sid', role: 'sub', connected: null },
+        ])
+      );
+      client.close();
+    } finally {
+      await request.delete(`/api/matches/${slug}`, { headers: getAuthHeader() });
+    }
+  });
+
   test('match.update: add a player, a stale base refused, a conflict moves the base', async ({
     request,
   }) => {

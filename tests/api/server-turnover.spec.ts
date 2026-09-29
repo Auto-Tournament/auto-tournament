@@ -231,6 +231,49 @@ test.describe('Server turnover rules', () => {
     expect(tracker.evaluate('s1', T - 600, T + 60).releaseEarly).toBe(false);
   });
 
+  test('the last upload reporting back releases the server to its listeners (a waiting manual match retries)', () => {
+    const tracker = new ServerTurnoverTracker();
+    const released: string[] = [];
+    const off = tracker.onRelease((id) => released.push(id));
+    tracker.matchLoaded('s1', 7, true);
+    tracker.recordEvent('s1', { event: 'map_result', matchid: 7, map_number: 0 }, T);
+    tracker.recordEvent('s1', { event: 'map_result', matchid: 7, map_number: 1 }, T + 60);
+    tracker.recordEvent('s1', { event: 'series_end', matchid: 7 }, T + 62);
+    tracker.recordEvent('s1', { event: 'demo_upload_ended', matchid: 7, map_number: 1 }, T + 190);
+    expect(released).toEqual([]); // map 0 still uploading
+    tracker.recordEvent('s1', { event: 'demo_upload_ended', matchid: 7, map_number: 0 }, T + 201);
+    expect(released).toEqual(['s1']);
+    // A repeated report changes nothing.
+    tracker.recordEvent('s1', { event: 'demo_upload_ended', matchid: 7, map_number: 0 }, T + 202);
+    expect(released).toEqual(['s1']);
+    off();
+  });
+
+  test('an upload that never reports back wakes the listeners at its give-up time', () => {
+    const realSetTimeout = globalThis.setTimeout;
+    const scheduled: Array<{ fn: () => void; ms: number }> = [];
+    globalThis.setTimeout = ((fn: () => void, ms: number) => {
+      scheduled.push({ fn, ms });
+      return { unref() {} } as unknown as ReturnType<typeof setTimeout>;
+    }) as unknown as typeof setTimeout;
+    try {
+      const tracker = new ServerTurnoverTracker();
+      const released: string[] = [];
+      tracker.onRelease((id) => released.push(id));
+      tracker.matchLoaded('s1', 9, true, 0);
+      const now = Math.floor(Date.now() / 1000);
+      tracker.recordEvent('s1', { event: 'map_result', matchid: 9, map_number: 0 }, now);
+      expect(scheduled).toHaveLength(1);
+      expect(scheduled[0].ms).toBe((demoUploadGiveUpSeconds(0) + 1) * 1000);
+      scheduled[0].fn();
+      expect(released).toEqual(['s1']);
+      // By then the allocator's evaluate gives the server up.
+      expect(tracker.evaluate('s1', now, now + demoUploadGiveUpSeconds(0)).demoUploadPending).toBe(false);
+    } finally {
+      globalThis.setTimeout = realSetTimeout;
+    }
+  });
+
   test('simulation sends short series-end kick delays; real matches keep the admin values', () => {
     const admin = {
       seriesEndKickDelayNoDemo: 5,

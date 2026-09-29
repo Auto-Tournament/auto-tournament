@@ -10,6 +10,12 @@ export interface MatchTeam {
   logo?: string | null; // URL to team logo
   players: MatchPlayer;
   coaches?: MatchPlayer | null;
+  /**
+   * Roster players who are substitutes (Ready Up role `sub`), also listed in
+   * `players` so everything that whitelists or shows the roster keeps them.
+   * Ready Up does not count them toward the players who must ready up.
+   */
+  substitutes?: MatchPlayer | null;
   series_score?: number;
   matchtext?: string | null; // Override team name for single maps
 }

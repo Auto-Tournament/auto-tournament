@@ -235,4 +235,38 @@ test.describe('Fleet match.assign config', () => {
     };
     expect(validatePayload('match.update', update)).toEqual({ ok: true, errors: [] });
   });
+
+  test('substitutes keep role sub; a player made a sub (or back) is removed, then added with the role', () => {
+    const base = tournamentConfig();
+    const withSub = tournamentConfig({
+      team1: {
+        ...base.team1,
+        players: { ...base.team1.players, [STEAM(4)]: 'dave' },
+        substitutes: { [STEAM(4)]: 'dave' },
+      },
+    });
+    const config = buildAssignConfig(withSub, 'pw');
+    expect(config.team1.players).toContainEqual({ steamid64: STEAM(4), name: 'dave', role: 'sub' });
+    expect(config.team1.players).toContainEqual({ steamid64: STEAM(1), name: 'alice', role: 'player' });
+    // Listed only as a substitute: still on the roster, as a sub.
+    const subOnly = buildAssignConfig(
+      tournamentConfig({ team2: { ...base.team2, substitutes: { [STEAM(5)]: 'erin' } } }),
+      'pw'
+    );
+    expect(subOnly.team2.players).toContainEqual({ steamid64: STEAM(5), name: 'erin', role: 'sub' });
+
+    const asPlayer = buildAssignConfig(
+      tournamentConfig({ team1: { ...base.team1, players: { ...base.team1.players, [STEAM(4)]: 'dave' } } }),
+      'pw'
+    );
+    expect(diffAssignConfig(asPlayer, config)).toEqual([
+      { op: 'remove_player', steamid64: STEAM(4) },
+      { op: 'add_player', team: 'team1', steamid64: STEAM(4), name: 'dave', role: 'sub' },
+    ]);
+    expect(diffAssignConfig(config, asPlayer)).toEqual([
+      { op: 'remove_player', steamid64: STEAM(4) },
+      { op: 'add_player', team: 'team1', steamid64: STEAM(4), name: 'dave', role: 'player' },
+    ]);
+    expect(diffAssignConfig(config, config)).toEqual([]);
+  });
 });

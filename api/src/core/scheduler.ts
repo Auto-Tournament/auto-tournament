@@ -1419,12 +1419,18 @@ export class Scheduler {
       // call chain. 3.1 walks every tournament with ready matches here.
       const tournamentId = resolveTournamentId();
       const readyMatches = await this.getReadyMatches(tournamentId);
-      if (readyMatches.length === 0) {
+      const standaloneSlugs = await this.getReadyStandaloneMatchSlugs();
+      if (readyMatches.length === 0 && standaloneSlugs.length === 0) {
         return;
       }
 
       const availableCount = await this.getAvailableServerCount(tournamentId);
       if (availableCount === 0) {
+        return;
+      }
+
+      if (readyMatches.length === 0) {
+        await this.allocateStandaloneMatches(standaloneSlugs, webhookUrl);
         return;
       }
 
@@ -1453,8 +1459,54 @@ export class Scheduler {
           this.startPollingForServer(result.matchSlug, webhookUrl);
         }
       }
+
+      // Bracket matches first (they have a queue); manual matches take what is left.
+      if (standaloneSlugs.length > 0) {
+        await this.allocateStandaloneMatches(standaloneSlugs, webhookUrl);
+      }
     } catch (error) {
       log.error('Error in tryImmediateAllocation', error);
+    }
+  }
+
+  /**
+   * Standalone (manual) matches waiting for a server: `ready`, no server, no
+   * tournament. They are in no tournament's allocation queue, so the
+   * tournament triggers above never saw them and a manual match that missed
+   * its one allocation at creation (the only server still in turnover) stayed
+   * `ready` forever. Oldest first.
+   */
+  async getReadyStandaloneMatchSlugs(): Promise<string[]> {
+    const rows = await db.queryAsync<{ slug: string }>(
+      `SELECT slug FROM matches
+       WHERE tournament_id IS NULL
+       AND status = 'ready'
+       AND (server_id IS NULL OR server_id = '')
+       ORDER BY id`
+    );
+    return rows.map((row) => row.slug);
+  }
+
+  /**
+   * Try each standalone match once, oldest first. A match that is only
+   * waiting for a server keeps polling (startPollingForServer), so it is
+   * picked up even when no further trigger arrives; the first one that finds
+   * no server ends the pass (the rest would not find one either).
+   */
+  private async allocateStandaloneMatches(slugs: string[], baseUrl: string): Promise<void> {
+    for (const slug of slugs) {
+      const result = await this.allocateSingleMatch(slug, baseUrl);
+      if (result.success) {
+        log.success(`[ALLOCATION] Allocated server ${result.serverId} to manual match ${slug}`);
+        this.stopPollingForServer(slug);
+        continue;
+      }
+      if (isQueuedAllocationResult(result.error)) {
+        this.startPollingForServer(slug, baseUrl);
+        if (result.error === 'No available servers') break;
+      } else {
+        log.debug(`[ALLOCATION] Manual match ${slug} not allocated: ${result.error}`);
+      }
     }
   }
 }

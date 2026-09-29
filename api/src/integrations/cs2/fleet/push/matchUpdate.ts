@@ -91,6 +91,8 @@ export function validateRosterOps(
 interface StoredTeam {
   name?: string;
   players?: Record<string, string> | Array<{ steamid?: string; steamId?: string; name?: string }>;
+  coaches?: Record<string, string> | null;
+  substitutes?: Record<string, string> | null;
   [k: string]: unknown;
 }
 interface StoredConfig {
@@ -116,6 +118,8 @@ function playerMap(players: StoredTeam['players']): Record<string, string> {
 /**
  * The stored match config after `ops` (pure): the MatchConfig shape, players
  * as `{steamid: name}`. A player added to one side is removed from the others.
+ * The role is kept (MatchTeam): a `sub` is in `players` and `substitutes`, a
+ * `coach` in `coaches` only, like the configs the driver assigns from.
  */
 export function applyOpsToMatchConfig<T extends StoredConfig>(
   config: T,
@@ -128,17 +132,37 @@ export function applyOpsToMatchConfig<T extends StoredConfig>(
   team1.players = playerMap(team1.players);
   team2.players = playerMap(team2.players);
   spectators.players = { ...(spectators.players ?? {}) };
-  const sides = [team1.players, team2.players, spectators.players] as Record<string, string>[];
-  for (const op of ops) {
-    if (op.op === 'remove_player' || op.op === 'add_player') {
-      for (const side of sides) delete side[op.steamid64];
+  const teams = [team1, team2];
+  const drop = (id: string) => {
+    for (const team of teams) {
+      delete (team.players as Record<string, string>)[id];
+      if (team.coaches) delete team.coaches[id];
+      if (team.substitutes) delete team.substitutes[id];
     }
+    delete spectators.players![id];
+  };
+  for (const op of ops) {
+    if (op.op === 'remove_player' || op.op === 'add_player') drop(op.steamid64);
     if (op.op === 'add_player') {
-      const target = op.team === 'team1' ? sides[0] : op.team === 'team2' ? sides[1] : sides[2];
-      target[op.steamid64] = op.name;
+      if (op.team === 'spectator') {
+        spectators.players[op.steamid64] = op.name;
+        continue;
+      }
+      const team = op.team === 'team1' ? team1 : team2;
+      if (op.role === 'coach') {
+        team.coaches = { ...(team.coaches ?? {}), [op.steamid64]: op.name };
+      } else {
+        (team.players as Record<string, string>)[op.steamid64] = op.name;
+        if (op.role === 'sub') {
+          team.substitutes = { ...(team.substitutes ?? {}), [op.steamid64]: op.name };
+        }
+      }
     } else if (op.op === 'rename_team') {
       (op.team === 'team1' ? team1 : team2).name = op.name;
     }
+  }
+  for (const team of teams) {
+    if (team.substitutes && Object.keys(team.substitutes).length === 0) delete team.substitutes;
   }
   return next;
 }
@@ -182,23 +206,26 @@ export function rosterView(state: MatchState | null, config: StoredConfig | null
       source: 'live',
     };
   }
-  const fromMap = (m: Record<string, string>) =>
+  const fromMap = (m: Record<string, string>, roleOf: (id: string) => PlayerRole | null) =>
     Object.entries(m).map(([id, name]) => ({
       steamid64: id,
       name: name || id,
-      role: null,
+      role: roleOf(id),
       connected: null,
     }));
+  const teamFromConfig = (team: StoredTeam | undefined, fallback: string) => {
+    const subs = team?.substitutes ?? {};
+    const players = fromMap(playerMap(team?.players), (id) => (id in subs ? 'sub' : 'player'));
+    const listed = new Set(players.map((p) => p.steamid64));
+    const coaches = fromMap(team?.coaches ?? {}, () => 'coach').filter(
+      (c) => !listed.has(c.steamid64)
+    );
+    return { name: team?.name ?? fallback, players: [...players, ...coaches] };
+  };
   return {
-    team1: {
-      name: config?.team1?.name ?? 'Team 1',
-      players: fromMap(playerMap(config?.team1?.players)),
-    },
-    team2: {
-      name: config?.team2?.name ?? 'Team 2',
-      players: fromMap(playerMap(config?.team2?.players)),
-    },
-    spectators: fromMap(config?.spectators?.players ?? {}),
+    team1: teamFromConfig(config?.team1, 'Team 1'),
+    team2: teamFromConfig(config?.team2, 'Team 2'),
+    spectators: fromMap(config?.spectators?.players ?? {}, () => null),
     source: 'config',
   };
 }
@@ -276,16 +303,22 @@ async function saveStoredConfig(slug: string, ops: RosterOp[]): Promise<boolean>
 /**
  * Updates sent and not yet answered: whoever sees the `ok` first (the request
  * waiting on it, or the `cmd.result` hook for an answer that came after the
- * request gave up) writes the stored config, once.
+ * request gave up) writes the stored config, once. The other one gets the
+ * same outcome: the hook usually runs first, and the request used to answer
+ * `configSaved: false` for a config the hook had just saved.
  */
-const unanswered = new Map<string, { slug: string; epoch: number; ops: RosterOp[] }>();
+interface UnansweredUpdate {
+  slug: string;
+  epoch: number;
+  ops: RosterOp[];
+  /** A request is still waiting on this answer (it reads `saved` and forgets the entry). */
+  waiting: boolean;
+  /** The save, once somebody started it. */
+  saved?: Promise<boolean>;
+}
+const unanswered = new Map<string, UnansweredUpdate>();
 
-/** Write the stored config for an answered update, if nobody did yet. */
-export async function applyAnsweredUpdate(commandId: string, status: string): Promise<boolean> {
-  const pending = unanswered.get(commandId);
-  if (!pending) return false;
-  unanswered.delete(commandId);
-  if (status !== 'ok') return false;
+async function saveAnsweredUpdate(pending: UnansweredUpdate): Promise<boolean> {
   try {
     await saveAckedAssignConfig(pending.slug, pending.epoch, pending.ops);
     return await saveStoredConfig(pending.slug, pending.ops);
@@ -295,6 +328,28 @@ export async function applyAnsweredUpdate(commandId: string, status: string): Pr
     );
     return false;
   }
+}
+
+/**
+ * Write the stored config for an answered update, if nobody did yet. Returns
+ * whether the stored config holds the update: true for whichever caller comes
+ * second too, when the first one saved it.
+ */
+export function applyAnsweredUpdate(commandId: string, status: string): Promise<boolean> {
+  const pending = unanswered.get(commandId);
+  if (!pending) return Promise.resolve(false);
+  pending.saved ??= status === 'ok' ? saveAnsweredUpdate(pending) : Promise.resolve(false);
+  // Nobody else will ask: forget it. A waiting request forgets it itself.
+  if (!pending.waiting) unanswered.delete(commandId);
+  return pending.saved;
+}
+
+/** The request stopped waiting (answered or timed out): the hook alone handles what is left. */
+function stopWaiting(commandId: string): void {
+  const pending = unanswered.get(commandId);
+  if (!pending) return;
+  pending.waiting = false;
+  if (pending.saved) unanswered.delete(commandId);
 }
 
 /** A fleet match: the live record names a server holding a current epoch. */
@@ -379,13 +434,25 @@ export function sendMatchUpdate(
       ops,
     };
     const sent = await sendReliable(record.serverId, { type: 'match.update', payload });
-    unanswered.set(sent.id, { slug, epoch: record.epoch, ops });
-    const answer = await awaitCommandResult(sent.id, opts.timeoutMs ?? 10_000);
-    if (!answer) return { kind: 'pending', commandId: sent.id, delivered: sent.delivered } as const;
+    unanswered.set(sent.id, { slug, epoch: record.epoch, ops, waiting: true });
+    let answer: FleetCommandRecord | null;
+    try {
+      answer = await awaitCommandResult(sent.id, opts.timeoutMs ?? 10_000);
+    } catch (error) {
+      stopWaiting(sent.id);
+      throw error;
+    }
+    if (!answer) {
+      stopWaiting(sent.id);
+      return { kind: 'pending', commandId: sent.id, delivered: sent.delivered } as const;
+    }
     const rev = typeof answer.result?.rev === 'number' ? answer.result.rev : base;
     // The inbound path stores the rev too; this makes it visible before we answer.
     if (typeof answer.result?.rev === 'number') await liveStateStore.setConfigRev(slug, rev);
-    const configSaved = await applyAnsweredUpdate(sent.id, answer.status);
+    // The cmd.result hook has usually saved it already; this is that save's outcome.
+    const configSaved = await applyAnsweredUpdate(sent.id, answer.status).finally(() =>
+      stopWaiting(sent.id)
+    );
     if (answer.status === 'ok') {
       log.info(
         `[FLEET] ${slug}: match.update ok, config_rev ${base} -> ${rev} (${ops.length} op(s))`

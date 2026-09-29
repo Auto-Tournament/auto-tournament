@@ -110,7 +110,14 @@ function players(map: MatchPlayer | null | undefined, role: PlayerRole): AssignP
 }
 
 function team(value: MatchTeam | undefined, fallbackName: string): AssignTeam {
-  const roster = [...players(value?.players, 'player')];
+  // Substitutes are in `players` too (MatchTeam.substitutes): they keep role `sub`.
+  const subs = new Set(players(value?.substitutes ?? undefined, 'sub').map((p) => p.steamid64));
+  const roster = players(value?.players, 'player').map((p) =>
+    subs.has(p.steamid64) ? { ...p, role: 'sub' as PlayerRole } : p
+  );
+  for (const sub of players(value?.substitutes ?? undefined, 'sub')) {
+    if (!roster.some((p) => p.steamid64 === sub.steamid64)) roster.push(sub);
+  }
   const seen = new Set(roster.map((p) => p.steamid64));
   for (const coach of players(value?.coaches ?? undefined, 'coach')) {
     if (!seen.has(coach.steamid64)) roster.push(coach);
@@ -280,6 +287,10 @@ function rosterOf(config: Pick<AssignConfig, 'team1' | 'team2' | 'spectators'>):
   return out;
 }
 
+function roleOf(player: AssignPlayer): PlayerRole {
+  return player.role ?? 'player';
+}
+
 /** The ops that turn `from` into `to`: team names, players in and out (a moved player is removed, then added). */
 export function diffAssignConfig(
   from: Pick<AssignConfig, 'team1' | 'team2' | 'spectators'>,
@@ -297,7 +308,11 @@ export function diffAssignConfig(
   }
   for (const [id, now] of after) {
     const was = before.get(id);
-    if (!was || was.team !== now.team) {
+    // A role change (player <-> sub) is a remove and an add, like a move.
+    if (was && was.team === now.team && roleOf(was.player) !== roleOf(now.player)) {
+      ops.push({ op: 'remove_player', steamid64: id });
+    }
+    if (!was || was.team !== now.team || roleOf(was.player) !== roleOf(now.player)) {
       ops.push({
         op: 'add_player',
         team: now.team,

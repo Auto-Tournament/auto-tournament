@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { matchService } from '../services/matchService';
-import { scheduler } from '../core/scheduler';
+import { isQueuedAllocationResult, scheduler } from '../core/scheduler';
 import { CreateMatchInput, MatchConfig, MatchListItem } from '../types/match.types';
 import { TournamentResponse } from '../types/tournament.types';
 import { requestActorId, requireAuth } from '../middleware/auth';
@@ -993,9 +993,20 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
             webhookBaseUrl
           );
           if (!allocation.success) {
-            log.warn(
-              `Auto-allocation failed for manual match ${match.slug}: ${allocation.error}`
-            );
+            if (isQueuedAllocationResult(allocation.error)) {
+              // No server free yet (the only one may still be uploading the
+              // last demo): keep trying until one is, instead of leaving the
+              // match in `ready`. Turnover and availability triggers also
+              // retry it (scheduler.tryImmediateAllocation).
+              log.info(
+                `Manual match ${match.slug} is waiting for a server (${allocation.error}); retrying until one is free`
+              );
+              scheduler.startPollingForServer(match.slug, webhookBaseUrl);
+            } else {
+              log.warn(
+                `Auto-allocation failed for manual match ${match.slug}: ${allocation.error}`
+              );
+            }
           }
         } catch (allocError) {
           log.warn(
