@@ -64,7 +64,7 @@ class HealthMonitoringService {
     this.inProgress = true;
     try {
       const now = Math.floor(Date.now() / 1000);
-      const servers = await serverService.getAllServers(true);
+      const servers = await serverService.getRconServers(true);
 
       serverTrackingService.pruneReachabilityFailures(new Set(servers.map((s) => s.id)));
 

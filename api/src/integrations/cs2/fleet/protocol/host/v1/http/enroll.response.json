@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/http/enroll.response.json",
+  "title": "POST /api/fleet/enroll 201 response body, host enrollment",
+  "description": "csm writes host_id and token to <csm root>/fleet/credentials.json (mode 0600) and opens the WebSocket at ws_url (default: the enroll URL's origin + /api/fleet/host, wss) with `Authorization: Bearer <token>`. Errors: 400 invalid body, 401 invalid code/key, 403 revoked/expired/locked, 409 key limit reached, 429 rate limited; body {success:false, code, error}.",
+  "type": "object",
+  "required": [
+    "success",
+    "host_id",
+    "token"
+  ],
+  "properties": {
+    "success": {
+      "const": true
+    },
+    "host_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "tenant_id": {
+      "$ref": "../defs.json#/$defs/tenantId"
+    },
+    "name": {
+      "type": "string"
+    },
+    "token": {
+      "$ref": "../defs.json#/$defs/hostToken"
+    },
+    "ws_url": {
+      "type": "string",
+      "pattern": "^wss?://"
+    },
+    "reenrolled": {
+      "type": "boolean"
+    }
+  }
+}

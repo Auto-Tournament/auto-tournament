@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/server.undrain.json",
+  "title": "server.undrain (platform → server, reliable)",
+  "description": "Take matches again after a server.drain. Proposed here, FLEET.md §14.3.",
+  "type": "object"
+}

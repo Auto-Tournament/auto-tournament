@@ -25,17 +25,24 @@ admin actions): what exists, and the calls to use.
 | `mergePatch.ts` | RFC 7386 merge patch, diff for the drift check |
 | `normalize.ts` | fleet `event.*` → `NormalizedEvent[]` (pure) |
 | `ingest.ts` | normalize → `events/matchEvents.applyNormalizedEvents` → `matchLifecycle.ingest` |
+| `link.ts` | which `cs2_servers` row a fleet server plays matches as (`transport = 'fleet'`) |
+| `assignConfig.ts` | the served match config → `match.assign.config` (typed `rules`, engine `cvars`), roster diff (pure) |
+| `driver.ts` | **the fleet driver**: assign / unassign / update / cmd, link hooks (see below) |
 | `backups.ts` | **the round backup store** (`roundBackupStore`): `event.backup` in (checked, parts joined, newest per round), retention |
 | `restore.ts` | **"restore to round N"**: `cmd restore_round` with the backup inline (or `css_restore` over RCON), audited; `inlineBackupFor` |
 | `demoStream.ts` | **the demo stream receiver**: `demo.begin` / `demo.chunk` / `demo.end` in, `demo.ack` out; stored and linked like an uploaded demo |
+| `serverNotices.ts` | `server.cs2_update_required` (logged, kept in `cs2_fleet_events`) and `server.selftest` (stored on `cs2_fleet_servers.selftest`) in |
 | `limits.ts` | per-server byte budgets and the demo stream knobs (env) |
+| `protocol/host/v1/`, `hosts/` | the host channel for csm (FLEET.md §18), see the last section |
 | `push/` | server-level pushes: `admins.set`, `server.config` + `cmd settings.set`, whitelist / practice / plugins, `match.update` roster edits (below) |
 
 Tables (migration `006-fleet-match` in `../migrations.ts`):
 `cs2_servers.transport` (`'rcon'` default | `'fleet'`) + `cs2_servers.fleet_server_id`
 (→ `cs2_fleet_servers.id`, unique), `cs2_match_live_state`, `cs2_fleet_events`,
-`cs2_fleet_commands`. Nothing sets `transport = 'fleet'` yet: that is the
-driver's (allocation) job.
+`cs2_fleet_commands`. Migration `010-fleet-driver`: `cs2_fleet_assignments`
+(epoch, server, connect password, acked config per match) and `cs2_fleet_audit`
+(root `exec`). `transport = 'fleet'` is set by linking a server
+(`POST /api/fleet/servers/:id/link`, the Servers page's "Use for matches").
 
 ## Sending: `sendReliable(serverId, { type, payload, epoch? })`
 
@@ -74,9 +81,40 @@ if (answer?.status === 'rejected') { /* answer.errorCode: busy | invalid_config 
 - `requestSnapshot(serverId, epoch?)` sends an ephemeral `state.request`
   (only when online). The gateway already does this on its own for a rev gap.
 
-Not done here (driver): building `config` from `matchConfig.ts` (maps,
-sides, `password`, `rules`, `cvars`), which server to pick, retries on
-`busy`, `match.unassign {superseded}` after a stale hello (admins.set revs: `push/`).
+## The driver (`driver.ts`, `../driver.ts`)
+
+The CS2 pool (`../allocation.ts`) goes through `driverFor(serverId)`
+(`../driver.ts`): `rconDriver` is the Auto Tournament CS2 path as it was,
+`fleetDriver` this one. A `ServerDriver` has `loadMatch`, `cancelQueuedLoad`,
+`checkIdle`, `endMatch`, `resetServer`, `stopForReload`, `releaseForMove`,
+`seriesDone`.
+
+| Platform action | Fleet |
+|---|---|
+| allocate / load | `assignMatch`: config from the served match config (`assignConfig.ts`), new epoch (`beginAssignment`), new password, `match.assign`, wait for `cmd.result` (15 s, `FLEET_ASSIGN_TIMEOUT_MS`). `busy` / `draining` / no answer → the pool tries the next server; no answer is also unassigned so it cannot start later |
+| series over (core `release`) | `match.unassign {ended}` (kick after Ready Up's series-end delay) |
+| force-cancel | `match.unassign {cancelled}` + kick message |
+| tournament restart / reset / delete | `match.unassign {admin}` for every open assignment |
+| restart in place | `match.unassign {admin}`, then a new assign (new epoch) |
+| move | `match.unassign {moved}` + "Match moved…" kick |
+| roster / names | `syncMatch` / `addPlayer` → `match.update` (CAS on config_rev, one retry on `conflict`) |
+| admin buttons (`/api/rcon/*`) | `runFleetCommand` → `cmd`, the route answers with the `cmd.result`; raw commands → `exec`, root only (`ADMIN_STEAM_IDS` or an admin API token), audit row first |
+
+Allocation: a linked server is free when its socket is up, it reports
+`available`, the database has no loaded/live match on it, and turnover holds
+nothing (`event.series_end`, `event.demo` feed `serverTurnoverTracker`). A
+server that announced `demo.stream.v1` is assigned with `rules.demo.upload`
+and held until `demoStream.ts` has each recorded map's demo.
+
+Hooks (`startFleetDriver`, from `../startup.ts` before the gateway):
+`welcome.assignment` = the open assignment whose epoch the server holds
+(reconnect mid-match resumes); a `hello.state` or events with an epoch below
+the match's → `match.unassign {superseded}` (once per server/match/epoch);
+`event.admin_called` → the core's admin calls; `server.availability
+available` → an allocation pass.
+
+The connect password (`connectPasswordFor`) is in
+`/api/game/cs2/matches/:slug/connect` for the roster and admins only.
 
 ## The live state store: `liveStateStore` (`state.ts`)
 
@@ -278,3 +316,43 @@ MatchState `series.maps` keys); the platform's are 0-based. Use
 `toPlatformMapNumber` / `toFleetMapNumber` (normalize.ts) at every boundary.
 Dev-bot ids (`0xB0B0…`, `isDevBotId`) are dropped from stat lines unless the
 match's `rules.simulation` is set.
+
+## Host channel (csm): `hosts/`
+
+CS2 Server Manager (csm) runs on each machine as its host agent and keeps one
+WebSocket to `/api/fleet/host` (FLEET.md §18, D17). It does what happens to
+the **process** (inventory, start/stop/restart, create, update CS2 and Ready
+Up, logs); Ready Up's own link stays for the match.
+
+| File | What |
+|---|---|
+| `protocol/host/v1/` | host JSON Schemas, adopted unchanged from csm's `protocol/host-v1/` (csm PR #66); csm copies them back from here |
+| `hosts/gateway.ts` | the socket: same transport as `gateway.ts`; `hostEvents` (`online`, `offline`, `inventory`, `health`, `result`, `progress`) |
+| `hosts/registry.ts` | machines, `rhs_` tokens, one-time machine codes, the outbox, commands, health (`cs2_fleet_host*`, migration `009-fleet-hosts`) |
+| `hosts/service.ts` | **`sendHostCommand(hostId, type, payload, { issuedBy, force })`**, `awaitHostResult`, the inventory join, rotation, revoke |
+| `hosts/join.ts` | pure: inventory ↔ Ready Up join (§18.3), command targets, new servers after a create |
+| `hosts/routes.ts` | `/api/fleet/hosts*` (admin) and the `kind: "host"` branch of `POST /api/fleet/enroll` |
+
+- **Enroll**: Servers → Machines → Add machine gives one command,
+  `csm link <url> <code>`. csm posts `{kind: "host", code | key, machine_id,
+  hostname, os, csm_version}` to `/api/fleet/enroll` and gets `rhs_…`. The
+  same `machine_id` gets its record back. A fleet key (`rfk_`) enrolls a
+  machine too, except the keys minted for a `server.create`.
+- **Commands** (`POST /api/fleet/hosts/:id/commands {type, payload, force?}`)
+  are recorded in `cs2_fleet_host_commands` (the audit row, `forced_by` /
+  `force_reason` for a forced one), appended to the host's outbox and
+  replayed until acked. Each gets one `host.result` (envelope `ref`);
+  `host.progress` updates it on the way.
+- **Match in progress**: a disruptive command (`server.stop/restart/remove/
+  set_launch_args`, `host.update_game/update_plugins`) for a server whose
+  inventory says `update_safe: false`, or whose Ready Up server is `busy`, is
+  refused with 409 `match_in_progress` unless `force: {reason}` is given;
+  csm refuses it too.
+- **server.create**: the platform mints a fleet key per command (at most
+  `count` servers, 24 h, revoked with the machine) and puts it in `enroll_key`
+  when the message is written to the socket (never stored). csm's new servers
+  have no Ready Up, so a successful create is followed by `host.update_plugins`
+  (`latest`, `default`) for the new servers; they then self-enroll and join
+  the machine by `install_id`.
+- **Inventory join** (§18.3): each `server-N` joins its Ready Up server on
+  `readyup.install_id`, else `readyup.server_id`.

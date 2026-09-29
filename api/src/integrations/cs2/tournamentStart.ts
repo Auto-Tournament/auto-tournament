@@ -38,7 +38,7 @@ export async function bootstrapServerWebhooksForTournamentStart(): Promise<void>
     return;
   }
 
-  const enabledServers = await serverService.getAllServers(true);
+  const enabledServers = await serverService.getRconServers(true);
   if (enabledServers.length === 0) {
     return;
   }
@@ -75,7 +75,7 @@ export async function preflightServersUpToDateForTournamentStart(): Promise<
       }>;
     }
 > {
-  const enabledServers = await serverService.getAllServers(true);
+  const enabledServers = await serverService.getRconServers(true);
   if (enabledServers.length === 0) {
     return { ok: true };
   }

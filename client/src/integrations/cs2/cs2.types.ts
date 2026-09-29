@@ -465,6 +465,8 @@ export interface FleetServer {
   } | null;
   rotateRequested: boolean;
   codeExpiresAt: number | null;
+  /** The server row it plays matches as (`POST /api/fleet/servers/:id/link`); null = not in the match pool. */
+  linkedServerId?: string | null;
 }
 
 export interface FleetServersResponse extends Cs2ApiResponse {
@@ -489,5 +491,109 @@ export interface FleetKey {
 
 export interface FleetKeysResponse extends Cs2ApiResponse {
   keys: FleetKey[];
+  count: number;
+}
+
+/** One `server-N` on a machine, from csm's `host.inventory` joined to its Ready Up server (FLEET.md §18.3). */
+export interface FleetHostServer {
+  name: string;
+  dir: string;
+  game_port: number;
+  tv_port?: number;
+  status_port: number;
+  process: { running: boolean; pid?: number; started_at?: number; restarts_24h: number; cpu_pct?: number; rss_mb?: number };
+  readyup: {
+    installed: string | null;
+    install_id?: string;
+    server_id?: string;
+    health: 'ok' | 'failing' | 'no_response' | 'not_running';
+    phase?: string;
+    update_safe?: boolean;
+  };
+  cs2_build: number;
+  launch_args: string[];
+  fleetServer: FleetHostServerRef | null;
+  matchInProgress: boolean;
+}
+
+export interface FleetHostServerRef {
+  id: string;
+  name: string;
+  status: string;
+  online: boolean;
+  availability: string | null;
+  readyUpVersion: string | null;
+}
+
+export type FleetHostCommandType =
+  | 'host.servers.list'
+  | 'server.start'
+  | 'server.stop'
+  | 'server.restart'
+  | 'server.create'
+  | 'server.remove'
+  | 'server.set_launch_args'
+  | 'host.update_game'
+  | 'host.update_plugins'
+  | 'host.updates_hold'
+  | 'logs.tail'
+  | 'logs.stop';
+
+/** A command sent to a machine, its progress and its `host.result`. */
+export interface FleetHostCommand {
+  id: string;
+  hostId: string;
+  seq: number | null;
+  type: FleetHostCommandType;
+  server: string | null;
+  payload: Record<string, unknown>;
+  status: 'pending' | 'ok' | 'rejected' | 'failed';
+  errorCode: string | null;
+  errorMessage: string | null;
+  output: string | null;
+  progress: { step: string | null; pct: number | null; at: number | null };
+  issuedBy: string | null;
+  forcedBy: string | null;
+  forceReason: string | null;
+  createdAt: number;
+  answeredAt: number | null;
+}
+
+/** A machine running csm as host agent (`GET /api/fleet/hosts`). */
+export interface FleetHost {
+  id: string;
+  name: string;
+  status: 'pending' | 'enrolled' | 'revoked';
+  machineId: string | null;
+  enrolledVia: 'code' | 'key' | null;
+  hostname: string | null;
+  os: string | null;
+  csmVersion: string | null;
+  online: boolean;
+  connectedAt: number | null;
+  lastSeen: number | null;
+  createdAt: number;
+  inventory: {
+    resources: {
+      cpus: number;
+      load1: number;
+      ram_mb: number;
+      ram_free_mb: number;
+      disk: Array<{ mount: string; total_gb: number; free_gb: number }>;
+    };
+    cs2: { master_build: number; update_available: boolean; updates_hold: 'on' | 'off' | 'auto' };
+  } | null;
+  inventoryAt: number | null;
+  token: { id: string; createdAt: number; lastUsedAt: number | null; rotationDueAt: number; rotationPending: boolean } | null;
+  rotateRequested: boolean;
+  codeExpiresAt: number | null;
+  servers: FleetHostServer[];
+  enrolledServers: FleetHostServerRef[];
+  commands: FleetHostCommand[];
+  health: Array<{ id: number; server: string; event: string; exitCode: number | null; detail: string | null; receivedAt: number }>;
+}
+
+export interface FleetHostsResponse extends Cs2ApiResponse {
+  hosts: FleetHost[];
   count: number;
 }

@@ -15,6 +15,10 @@ export interface Server {
   hostname?: string | null; // CS2 server hostname (from hostname convar)
   last_seen?: number | null; // Unix timestamp of last event received (heartbeat)
   status?: string | null; // 'online', 'offline', 'unknown'
+  /** How the platform drives it: 'rcon' (Auto Tournament CS2 over RCON) or 'fleet' (Ready Up over the fleet link). */
+  transport?: string | null;
+  /** 'fleet' servers: the cs2_fleet_servers row behind it. */
+  fleet_server_id?: string | null;
   /** If set, the server has reported a CS2 update is required (Steam required_version). */
   cs2_required_version?: number | null;
   /** Best-effort: phase of the update signal ('available'|'shutdown'). */
@@ -112,7 +116,17 @@ export interface ServerResponse {
   atDbLastSeenAt?: number | null;
   /** Unix timestamp when server last successfully sent any event to /api/events. */
   serverCanReachApiAt?: number | null;
+  /**
+   * How the platform drives the server: 'rcon' (Auto Tournament CS2 over
+   * RCON, every server before the fleet link) or 'fleet' (a Ready Up server on
+   * the fleet link, see integrations/cs2/driver.ts).
+   */
+  transport?: ServerTransport;
+  /** 'fleet' servers: the Ready Up fleet server (`/api/fleet/servers`) behind this row. */
+  fleetServerId?: string | null;
 }
+
+export type ServerTransport = 'rcon' | 'fleet';
 
 /**
  * Per-server Auto Tournament CS2 configuration (backend representation)

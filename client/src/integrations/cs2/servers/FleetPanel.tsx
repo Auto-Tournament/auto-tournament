@@ -6,6 +6,8 @@
  * (csm, containers), then hold a WebSocket to `/api/fleet/ws`. This lists
  * them with their online state and versions, and lets an admin create codes
  * and keys (each shown once), rotate a token, revoke a server, and revoke keys.
+ * "Use for matches" links an enrolled server to a server row so the
+ * allocator hands it matches (`POST /api/fleet/servers/:id/link`).
  */
 
 import { useCallback, useEffect, useState } from 'react';
@@ -27,6 +29,8 @@ import {
   ArrowsClockwiseIcon,
   CopyIcon,
   KeyIcon,
+  LinkBreakIcon,
+  LinkIcon,
   PasswordIcon,
   PlusIcon,
   ProhibitIcon,
@@ -168,6 +172,21 @@ export default function FleetPanel() {
     }
   };
 
+  const toggleLink = async (server: FleetServer) => {
+    try {
+      if (server.linkedServerId) {
+        await api.delete(`/api/fleet/servers/${server.id}/link`);
+        showSnackbar(t('fleetPanel.unlinked', { defaultValue: 'No longer used for matches' }), 'success');
+      } else {
+        await api.post(`/api/fleet/servers/${server.id}/link`, {});
+        showSnackbar(t('fleetPanel.linked', { defaultValue: 'Used for matches' }), 'success');
+      }
+      await load();
+    } catch (err) {
+      showError(apiErrorMessage(err, t('fleetPanel.errors.action')));
+    }
+  };
+
   const confirmPending = async () => {
     if (!pending) return;
     setBusy(true);
@@ -295,6 +314,27 @@ export default function FleetPanel() {
                 )}
                 {server.status === 'enrolled' && (
                   <>
+                    <Tooltip
+                      title={
+                        server.linkedServerId
+                          ? t('fleetPanel.unlink', { defaultValue: 'Stop using for matches' })
+                          : t('fleetPanel.link', { defaultValue: 'Use for matches' })
+                      }
+                    >
+                      <IconButton
+                        size="small"
+                        color={server.linkedServerId ? 'primary' : 'default'}
+                        onClick={() => void toggleLink(server)}
+                        aria-label={
+                          server.linkedServerId
+                            ? t('fleetPanel.unlink', { defaultValue: 'Stop using for matches' })
+                            : t('fleetPanel.link', { defaultValue: 'Use for matches' })
+                        }
+                        data-testid={`fleet-link-${server.id}`}
+                      >
+                        {server.linkedServerId ? <LinkIcon size={20} /> : <LinkBreakIcon size={20} />}
+                      </IconButton>
+                    </Tooltip>
                     <Tooltip
                       title={
                         server.token

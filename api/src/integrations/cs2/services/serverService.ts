@@ -23,6 +23,16 @@ export class ServerService {
   }
 
   /**
+   * Servers driven over RCON (Auto Tournament CS2): every server except the
+   * Ready Up ones on the fleet link. For the RCON-only jobs (bootstrap, health
+   * and CS2 version checks, broadcast), which have nothing to say to a fleet
+   * server.
+   */
+  async getRconServers(onlyEnabled = false): Promise<ServerResponse[]> {
+    return (await this.getAllServers(onlyEnabled)).filter((s) => s.transport !== 'fleet');
+  }
+
+  /**
    * Get server by ID
    */
   async getServerById(id: string): Promise<ServerResponse | null> {
@@ -285,6 +295,8 @@ export class ServerService {
       atDbLastOkAt: server.at_db_last_ok_at ?? null,
       atDbLastSeenAt: server.at_db_last_seen_at ?? null,
       serverCanReachApiAt: server.server_can_reach_api_at ?? null,
+      transport: server.transport === 'fleet' ? 'fleet' : 'rcon',
+      fleetServerId: server.fleet_server_id ?? null,
     };
   }
 }

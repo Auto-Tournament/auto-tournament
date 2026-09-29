@@ -26,6 +26,7 @@ import matchConnectRoutes from './matchConnect';
 import roundBackupRoutes from './roundBackups';
 import testHelperRoutes from './testHelpers';
 import { fleetAdminRouter, fleetEnrollRouter } from '../fleet/routes';
+import { fleetHostAdminRouter } from '../fleet/hosts/routes';
 import { fleetPushRouter } from '../fleet/push/routes';
 
 export const cs2LegacyRoutes: LegacyRouteMount[] = [
@@ -120,7 +121,8 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     prefix: '/api/fleet',
     router: fleetEnrollRouter,
     title: 'Fleet enrollment',
-    description: 'A Ready Up server trades a one-time code or fleet key for its server token.',
+    description:
+      'A Ready Up server trades a one-time code or fleet key for its server token; csm (kind "host") gets its host token the same way.',
   },
   {
     prefix: '/api/fleet',
@@ -128,6 +130,13 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     title: 'Fleet',
     description:
       'Ready Up servers on the fleet link: registry, one-time codes, fleet keys, revoke and rotate. The server WebSocket is /api/fleet/ws.',
+  },
+  {
+    prefix: '/api/fleet',
+    router: fleetHostAdminRouter,
+    title: 'Fleet machines',
+    description:
+      'Machines running csm as host agent: add (one-time code), inventory, health, create/start/stop/restart servers, update CS2 and Ready Up, revoke and rotate. The host WebSocket is /api/fleet/host.',
   },
   {
     prefix: '/api/fleet',

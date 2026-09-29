@@ -20,6 +20,7 @@ import {
   validateWhitelist,
 } from '../../api/src/integrations/cs2/fleet/push/controls';
 import {
+  applyOpsToAssignConfig,
   applyOpsToMatchConfig,
   rosterView,
   validateRosterOps,
@@ -355,6 +356,37 @@ test.describe('fleet pushes: match.update', () => {
     expect(next.matchid).toBe(7);
     // The input is not changed.
     expect(config.team1.players).toEqual({ [A]: 'Ann', [B]: 'Bea' });
+  });
+
+  test("the driver's acked assign config follows too (roles kept, spectators as ids)", () => {
+    const acked = {
+      num_maps: 1,
+      maps: [{ number: 1, name: 'de_dust2', sides: 'knife' as const }],
+      team1: {
+        id: 't1',
+        name: 'Red',
+        players: [{ steamid64: A, name: 'Ann', role: 'player' as const }],
+      },
+      team2: {
+        id: 't2',
+        name: 'Blue',
+        players: [{ steamid64: B, name: 'Bea', role: 'coach' as const }],
+      },
+      spectators: [C],
+    };
+    const next = applyOpsToAssignConfig(acked, [
+      { op: 'remove_player', steamid64: A },
+      { op: 'add_player', team: 'team1', steamid64: C, name: 'Cid', role: 'sub' },
+      { op: 'add_player', team: 'spectator', steamid64: A, name: 'Ann' },
+      { op: 'rename_team', team: 'team2', name: 'Navy' },
+    ]);
+    expect(next.team1.players).toEqual([{ steamid64: C, name: 'Cid', role: 'sub' }]);
+    expect(next.team2).toMatchObject({
+      name: 'Navy',
+      players: [{ steamid64: B, name: 'Bea', role: 'coach' }],
+    });
+    expect(next.spectators).toEqual([A]);
+    expect(acked.team1.players).toHaveLength(1);
   });
 
   test('roster view: the live state wins; the stored config without a snapshot', () => {

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/server.drain.json",
+  "title": "server.drain (platform → server, reliable)",
+  "description": "Finish the current match, take nothing new: match.assign is refused (`busy`) and the availability reads `draining` until server.undrain. Proposed here, FLEET.md §14.3.",
+  "type": "object",
+  "properties": {
+    "reason": {
+      "type": "string",
+      "maxLength": 512
+    }
+  }
+}

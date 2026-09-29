@@ -407,6 +407,8 @@ export const cs2Integration: GameIntegration = {
     if (!ctx.resourceId) return;
     const { cs2ServerPool } = await import('./allocation');
     const { scheduler } = await import('../../core/scheduler');
+    // A Ready Up server gets match.unassign {ended}; the RCON plugin resets itself.
+    await cs2ServerPool.seriesDone(ctx.resourceId, ctx.slug);
     cs2ServerPool.markIdle(ctx.resourceId);
     setImmediate(() => {
       void scheduler.tryImmediateAllocation();
@@ -433,6 +435,9 @@ export const cs2Integration: GameIntegration = {
   /** Verify the server's persistent webhook and demo upload config (recovery). */
   async reattach(ctx) {
     if (!ctx.resourceId) return;
+    // A Ready Up server keeps its own link; there is no RCON config to verify.
+    const { transportOf } = await import('./driver');
+    if ((await transportOf(ctx.resourceId)) === 'fleet') return;
     const { serverInitializationService } = await import('./services/serverInitializationService');
     // NOTE: kept as recovery has always called it: `false` lands in the baseUrl
     // parameter.
@@ -442,6 +447,16 @@ export const cs2Integration: GameIntegration = {
   /** The Auto Tournament CS2 status convar, read through the short status cache. */
   async resourceStatus(resourceId) {
     const { serverStatusService } = await import('./services/serverStatusService');
+    const { transportOf } = await import('./driver');
+    if ((await transportOf(resourceId)) === 'fleet') {
+      const { fleetServerStatus } = await import('./fleet/driver');
+      const fleet = await fleetServerStatus(resourceId);
+      if (!fleet.online || !fleet.status) return null;
+      return {
+        status: fleet.status,
+        description: serverStatusService.getStatusDescription(fleet.status),
+      };
+    }
     const statusInfo = await serverStatusService.getServerStatus(resourceId);
     if (!statusInfo.online || !statusInfo.status) return null;
     return {

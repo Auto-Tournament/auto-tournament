@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/defs.json",
+  "title": "Shared definitions (hosts channel, protocol v1)",
+  "$defs": {
+    "ulid": {
+      "type": "string",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+    },
+    "tenantId": {
+      "const": "default",
+      "description": "Reserved (D4). Always \"default\"."
+    },
+    "port": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 65535
+    },
+    "serverName": {
+      "type": "string",
+      "pattern": "^server-[1-9][0-9]{0,3}$",
+      "description": "a csm server folder, server-N"
+    },
+    "hostToken": {
+      "type": "string",
+      "pattern": "^rhs_[0-9a-z]{12}_[A-Za-z0-9_-]{43}$"
+    },
+    "fleetKey": {
+      "type": "string",
+      "pattern": "^rfk_[0-9a-z]{12}_[A-Za-z0-9_-]{43}$"
+    },
+    "machineId": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{32}$",
+      "description": "first 32 hex chars of sha256(\"auto-tournament-host:\" + /etc/machine-id); the raw machine id is never sent"
+    },
+    "force": {
+      "type": "object",
+      "required": [
+        "by",
+        "reason"
+      ],
+      "description": "Present on a disruptive command the platform wants run although Ready Up says update_safe=false. Only sent for root admins after the platform wrote an audit row; csm logs it (FLEET.md §18.2).",
+      "properties": {
+        "by": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "platform user id"
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 512
+        }
+      }
+    },
+    "expiresAt": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "optional, ms since Unix epoch: a command that reaches the host later is answered host.result rejected/expired and not run"
+    },
+    "serverList": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/serverName"
+      },
+      "maxItems": 64,
+      "description": "absent or empty = every server on the host"
+    }
+  }
+}

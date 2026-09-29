@@ -636,6 +636,10 @@ async function processSeriesEnd(
       // rosters from the stored match config.
       await trackPlayerStatsForManualMatch(match, matchSlug, team1Score, team2Score);
 
+      // The series is over here too: free the resource (CS2: a Ready Up
+      // server is unassigned; the RCON plugin resets itself either way).
+      await releaseMatch(match);
+
       // Now that stats have been recorded, emit a match update so that any
       // listening UIs (including the public player page) can immediately
       // reload and see a fully populated match history row.

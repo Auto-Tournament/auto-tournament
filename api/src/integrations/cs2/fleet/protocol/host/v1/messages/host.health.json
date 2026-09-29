@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/host.health.json",
+  "title": "host.health (host → platform, reliable)",
+  "description": "exited: the server process stopped without the agent stopping it (csm runs CS2 in tmux and cannot see an exit code, so crashed is not sent by this version). hung: running, Ready Up installed, /health not OK for 30 s. recovered: back after hung or exited. restarted: after server.restart. Changes the agent causes itself (its own jobs, and 30 s after them) are not reported.",
+  "type": "object",
+  "required": [
+    "server",
+    "event"
+  ],
+  "properties": {
+    "server": {
+      "$ref": "../defs.json#/$defs/serverName"
+    },
+    "event": {
+      "enum": [
+        "crashed",
+        "exited",
+        "hung",
+        "recovered",
+        "restarted"
+      ]
+    },
+    "exit_code": {
+      "type": "integer"
+    },
+    "detail": {
+      "type": "string",
+      "maxLength": 512
+    }
+  }
+}

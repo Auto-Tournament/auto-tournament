@@ -209,6 +209,7 @@ const ServerAllocationPanel: React.FC<ServerAllocationPanelProps> = ({
                   <LinearProgress
                     variant="determinate"
                     value={progress}
+                    aria-label={t('serverAllocation.readyIn', { defaultValue: 'Time until the server is ready' })}
                     sx={{
                       position: 'absolute',
                       bottom: 0,

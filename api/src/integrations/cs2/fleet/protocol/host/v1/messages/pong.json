@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/pong.json",
+  "title": "pong (both directions, ephemeral)",
+  "type": "object",
+  "required": [
+    "t"
+  ],
+  "properties": {
+    "t": {
+      "type": "integer"
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/server.create.json",
+  "title": "server.create (platform → host)",
+  "description": "Provisions the next server-N (csm's add-server flow: copy of the master install, configs, next ports +10) and starts it. With enroll: true csm writes game/csgo/cfg/ReadyUp/fleet.cfg (url + enroll_key, mode 0600) before the start so Ready Up self-enrolls (FLEET.md §4.1 B); the key is enroll_key when given, else the fleet key the host was linked with (rejected no_enroll_key when there is neither). Long job: host.progress while it runs. The host.result output names the new servers. Reliable; answered by exactly one host.result (ref = this message's id). Rejected with `expired` when expires_at is past, and with `stale` when the envelope ts is more than 5 min off the host's clock (a command replayed long after it was sent is not run).",
+  "type": "object",
+  "required": [
+    "enroll"
+  ],
+  "properties": {
+    "count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 16,
+      "default": 1
+    },
+    "name_prefix": {
+      "type": "string",
+      "maxLength": 64,
+      "description": "csm always names servers server-N: anything but \"server-\" is rejected unsupported"
+    },
+    "game_port": {
+      "$ref": "../defs.json#/$defs/port",
+      "description": "csm spaces servers 10 ports apart: anything but the next port (with count 1) is rejected unsupported"
+    },
+    "enroll": {
+      "type": "boolean"
+    },
+    "enroll_key": {
+      "$ref": "../defs.json#/$defs/fleetKey",
+      "description": "csm addition: the fleet key to hand to the new servers"
+    },
+    "expires_at": {
+      "$ref": "../defs.json#/$defs/expiresAt"
+    }
+  }
+}

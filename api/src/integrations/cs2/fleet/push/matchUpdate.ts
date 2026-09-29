@@ -21,7 +21,13 @@ import { log } from '../../../../utils/logger';
 import { awaitCommandResult, sendReliable, type FleetCommandRecord } from '../reliable';
 import { listCommands } from '../commands';
 import { liveStateStore, type LiveMatchRecord } from '../state';
-import type { MatchState, MatchUpdateOp, MatchUpdatePayload, PlayerRole } from '../protocol/v1';
+import type {
+  AssignConfig,
+  MatchState,
+  MatchUpdateOp,
+  MatchUpdatePayload,
+  PlayerRole,
+} from '../protocol/v1';
 import { isSteam64 } from './admins';
 import { fleetBus } from '../service';
 
@@ -210,6 +216,55 @@ async function storedConfig(slug: string): Promise<StoredConfig | null> {
   }
 }
 
+type AckedConfig = Omit<AssignConfig, 'password'>;
+
+/**
+ * The fleet driver's acked assign config (`cs2_fleet_assignments.config`,
+ * the base its `syncMatch` diffs against) after `ops` (pure). Players keep
+ * their role; a player added to one side leaves the others.
+ */
+export function applyOpsToAssignConfig(
+  config: AckedConfig,
+  ops: ReadonlyArray<RosterOp>
+): AckedConfig {
+  const next = JSON.parse(JSON.stringify(config)) as AckedConfig;
+  const drop = (id: string) => {
+    next.team1.players = next.team1.players.filter((p) => p.steamid64 !== id);
+    next.team2.players = next.team2.players.filter((p) => p.steamid64 !== id);
+    if (next.spectators) next.spectators = next.spectators.filter((s) => s !== id);
+  };
+  for (const op of ops) {
+    if (op.op === 'remove_player') drop(op.steamid64);
+    else if (op.op === 'add_player') {
+      drop(op.steamid64);
+      if (op.team === 'spectator') next.spectators = [...(next.spectators ?? []), op.steamid64];
+      else
+        next[op.team].players.push({
+          steamid64: op.steamid64,
+          name: op.name,
+          role: op.role ?? 'player',
+        });
+    } else if (op.op === 'rename_team') {
+      next[op.team].name = op.name;
+    }
+  }
+  return next;
+}
+
+/** Keep the driver's acked config in step, so its next `syncMatch` diffs from what the server has. */
+async function saveAckedAssignConfig(slug: string, epoch: number, ops: RosterOp[]): Promise<void> {
+  const row = await db.queryOneAsync<{ config: string | null }>(
+    'SELECT config FROM cs2_fleet_assignments WHERE match_slug = ? AND epoch = ?',
+    [slug, epoch]
+  );
+  if (!row?.config) return;
+  const next = applyOpsToAssignConfig(JSON.parse(row.config) as AckedConfig, ops);
+  await db.runAsync(
+    'UPDATE cs2_fleet_assignments SET config = ?, updated_at = ? WHERE match_slug = ? AND epoch = ?',
+    [JSON.stringify(next), Math.floor(Date.now() / 1000), slug, epoch]
+  );
+}
+
 async function saveStoredConfig(slug: string, ops: RosterOp[]): Promise<boolean> {
   const config = await storedConfig(slug);
   if (!config) return false;
@@ -223,7 +278,7 @@ async function saveStoredConfig(slug: string, ops: RosterOp[]): Promise<boolean>
  * waiting on it, or the `cmd.result` hook for an answer that came after the
  * request gave up) writes the stored config, once.
  */
-const unanswered = new Map<string, { slug: string; ops: RosterOp[] }>();
+const unanswered = new Map<string, { slug: string; epoch: number; ops: RosterOp[] }>();
 
 /** Write the stored config for an answered update, if nobody did yet. */
 export async function applyAnsweredUpdate(commandId: string, status: string): Promise<boolean> {
@@ -232,6 +287,7 @@ export async function applyAnsweredUpdate(commandId: string, status: string): Pr
   unanswered.delete(commandId);
   if (status !== 'ok') return false;
   try {
+    await saveAckedAssignConfig(pending.slug, pending.epoch, pending.ops);
     return await saveStoredConfig(pending.slug, pending.ops);
   } catch (error) {
     log.warn(
@@ -323,7 +379,7 @@ export function sendMatchUpdate(
       ops,
     };
     const sent = await sendReliable(record.serverId, { type: 'match.update', payload });
-    unanswered.set(sent.id, { slug, ops });
+    unanswered.set(sent.id, { slug, epoch: record.epoch, ops });
     const answer = await awaitCommandResult(sent.id, opts.timeoutMs ?? 10_000);
     if (!answer) return { kind: 'pending', commandId: sent.id, delivered: sent.delivered } as const;
     const rev = typeof answer.result?.rev === 'number' ? answer.result.rev : base;

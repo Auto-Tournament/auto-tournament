@@ -208,6 +208,36 @@ test.describe.serial('Fleet gateway', () => {
     reset.close();
   });
 
+  test('server.cs2_update_required and server.selftest are acked; the selftest is stored', async ({ request }) => {
+    const server = await enrollNew(request);
+    const client = await FleetTestClient.connect(server.token);
+    await client.handshake(server.server_id, server.installId, {
+      stream: { id: 'stream-notices', last_tx_seq: 0, last_rx_seq: 0 },
+    });
+
+    // The type has a digit: it once failed the envelope pattern (4400) and
+    // Ready Up replayed it from its spool on every reconnect.
+    client.send(envelope('server.cs2_update_required', { required_build: 14035 }, { seq: 1 }));
+    await client.next((m) => m.type === 'ack' && m.ack === 1, 3000);
+
+    const selftest = { pass: false, passed: 57, total: 58, failures: ['fn:CCSPlayer_ItemServices_GiveNamedItem'] };
+    client.send(envelope('server.selftest', selftest, { seq: 2 }));
+    await client.next((m) => m.type === 'ack' && m.ack === 2, 3000);
+
+    expect(client.received.some((m) => m.type === 'error')).toBe(false);
+    expect(client.closed).toBeNull();
+    await expect.poll(async () => (await fleetServer(request, server.server_id)).selftest).toEqual(selftest);
+
+    // A bad payload is refused (invalid_payload) but still acked, so the spool drains.
+    const bad = envelope('server.cs2_update_required', { required_build: 'soon' }, { seq: 3 });
+    client.send(bad);
+    const error = await client.nextOfType('error');
+    expect(error.ref).toBe(bad.id);
+    expect(error.payload).toMatchObject({ code: 'invalid_payload' });
+    await client.next((m) => m.type === 'ack' && m.ack === 3, 3000);
+    client.close();
+  });
+
   test('a second session replaces the first with 4409', async ({ request }) => {
     const server = await enrollNew(request);
     const first = await FleetTestClient.connect(server.token);

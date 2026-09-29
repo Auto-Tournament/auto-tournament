@@ -140,14 +140,23 @@ function reliable(
 
 /**
  * The platform acked `seq`: a standalone ack, or one piggybacked on a
- * heartbeat. Other frames (state.request, match.*) are left in the queue for
- * the test to read.
+ * heartbeat, or on any other frame (a `match.unassign` the fleet driver sends
+ * a fenced server carries it too). Other frames (state.request, match.*) are
+ * left in the queue for the test to read.
  */
 async function acked(client: FleetTestClient, seq: number): Promise<void> {
-  await client.next(
-    (m) => ['ack', 'ping', 'pong'].includes(m.type) && typeof m.ack === 'number' && m.ack >= seq,
-    5000
-  );
+  const carries = (m: Envelope) => typeof m.ack === 'number' && m.ack >= seq;
+  const control = (m: Envelope) => ['ack', 'ping', 'pong'].includes(m.type);
+  for (const deadline = Date.now() + 5000; Date.now() < deadline; ) {
+    const i = client.received.findIndex((m) => carries(m) && control(m));
+    if (i >= 0) {
+      client.received.splice(i, 1);
+      return;
+    }
+    if (client.received.some(carries)) return;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  throw new Error(`seq ${seq} not acked; received: ${JSON.stringify(client.received.map((m) => m.type))}`);
 }
 
 test.describe.serial('Fleet gateway: match state and events (step 3)', () => {
@@ -230,6 +239,9 @@ test.describe.serial('Fleet gateway: match state and events (step 3)', () => {
     expect(rows.map((r) => r.seq)).toEqual([1, 2, 3]);
     const fenced = await liveState(request, slug);
     expect(fenced).toMatchObject({ epoch: epoch2, liveRev: 0, state: null });
+    // ...and the fleet driver tells it to stop (FLEET.md §11.4).
+    const zombie = await client.nextOfType('match.unassign');
+    expect(zombie.payload).toMatchObject({ match_id: slug, epoch, reason: 'superseded' });
     client.close();
   });
 
