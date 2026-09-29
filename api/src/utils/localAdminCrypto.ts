@@ -99,35 +99,17 @@ export function normalizeUsername(input: unknown): string | null {
   return USERNAME_RE.test(u) ? u : null;
 }
 
-export const PASSWORD_MIN = 12;
 export const PASSWORD_MAX = 256;
 
-// A few passwords long enough to pass the length rule that are still guessed first.
-const COMMON = new Set([
-  'password1234',
-  'passwordpassword',
-  '123456789012',
-  'qwertyuiopas',
-  'administrator',
-  'adminadminadmin',
-  'autotournament',
-  'letmeinletmein',
-  'changemechangeme',
-]);
-
-export type PasswordProblem = 'too_short' | 'too_long' | 'contains_username' | 'too_simple';
+export type PasswordProblem = 'too_short' | 'too_long';
 
 /**
- * NIST 800-63B style: length, not composition. At least 12 characters, at
- * most 256, not the username, not one repeated character, not a known
- * common password.
+ * Admins choose their own password strength: it only has to be non-empty.
+ * The upper bound stops a huge input from tying up the password hash.
  */
-export function passwordProblem(username: string, password: unknown): PasswordProblem | null {
-  if (typeof password !== 'string' || password.length < PASSWORD_MIN) return 'too_short';
+export function passwordProblem(_username: string, password: unknown): PasswordProblem | null {
+  if (typeof password !== 'string' || password.length === 0) return 'too_short';
   if (password.length > PASSWORD_MAX) return 'too_long';
-  const lower = password.toLowerCase();
-  if (username && lower.includes(username.toLowerCase())) return 'contains_username';
-  if (new Set(password).size < 4 || COMMON.has(lower)) return 'too_simple';
   return null;
 }
 

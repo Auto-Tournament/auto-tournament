@@ -61,11 +61,10 @@ test.describe('setup codes and passwords (pure)', () => {
     expect(normalizeUsername(' Admin.One ')).toBe('admin.one');
     expect(normalizeUsername('ab')).toBeNull();
     expect(normalizeUsername('has space')).toBeNull();
-    expect(passwordProblem('admin', 'short')).toBe('too_short');
+    expect(passwordProblem('admin', '')).toBe('too_short');
+    expect(passwordProblem('admin', 'a')).toBeNull();
+    expect(passwordProblem('admin', 'admin123')).toBeNull();
     expect(passwordProblem('admin', 'x'.repeat(257))).toBe('too_long');
-    expect(passwordProblem('admin', 'my-admin-password')).toBe('contains_username');
-    expect(passwordProblem('bob', 'aaaaaaaaaaaaaa')).toBe('too_simple');
-    expect(passwordProblem('bob', 'password1234')).toBe('too_simple');
     expect(passwordProblem('bob', PASSWORD)).toBeNull();
   });
 });
@@ -172,7 +171,7 @@ test.describe.serial('setup, local login, TOTP and reset-admin', () => {
     expect((await anon.post('/api/setup/check', { data: { code: 'AAAA-AAAA-AAAA-AAAA-AAAA-AAAA-AAAA' } })).status()).toBe(400);
     expect((await anon.post('/api/setup/check', { data: { code } })).status()).toBe(200);
     // Password rules are checked before the code is used.
-    const weak = await anon.post('/api/setup/complete', { data: { code, username: USER, password: 'short' } });
+    const weak = await anon.post('/api/setup/complete', { data: { code, username: USER, password: '' } });
     expect(weak.status()).toBe(400);
     expect((await weak.json()).problem).toBe('too_short');
 
