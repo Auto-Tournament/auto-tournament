@@ -248,6 +248,9 @@ jobs:
             echo "API_TOKENS_READONLY=ci-readonly:ci-readonly-token-0123456789abcdef"
             # Ready Up compatibility (tests/api/compat.spec.ts, tests/ui/compat-page.spec.ts).
             echo "COMPAT_INGEST_TOKEN=ci-compat-token-0123456789abcdef"
+            # No autoscaler timer: it would send csm commands to other specs'
+            # fake machines. tests/api/fleet-autoscale.spec.ts runs passes itself.
+            echo "FLEET_AUTOSCALE_INTERVAL_MS=0"
             echo "STEAM_API_KEY="
             echo "LOG_LEVEL=info"
           } >> .env

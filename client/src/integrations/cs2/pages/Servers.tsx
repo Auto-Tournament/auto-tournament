@@ -6,6 +6,7 @@ import BatchServerModal from '../servers/BatchServerModal';
 import { ServerRow } from '../servers/ServerRow';
 import FleetPanel from '../servers/FleetPanel';
 import MachinesPanel from '../servers/MachinesPanel';
+import AutoScalePanel from '../servers/AutoScalePanel';
 import FleetPushPanel from '../servers/FleetPushPanel';
 import FailoverSettingsPanel from '../servers/FailoverSettingsPanel';
 import type {
@@ -1017,6 +1018,8 @@ export default function Servers() {
 
       {/* Machines running csm as host agent (FLEET.md §18): create and control their servers. */}
       <MachinesPanel />
+      {/* Automatic scaling on those machines: start, stop, create, and why. */}
+      <AutoScalePanel />
 
       {/* Ready Up servers enroll themselves and connect over the fleet link. */}
       <FleetPanel />

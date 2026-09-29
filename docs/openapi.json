@@ -527,6 +527,10 @@
       "description": "Ready Up servers on the fleet link: registry, one-time codes, fleet keys, revoke and rotate. The server WebSocket is /api/fleet/ws."
     },
     {
+      "name": "Fleet autoscaling",
+      "description": "Automatic server scaling on csm machines: start stopped Ready Up servers ahead of the bracket, stop idle ones after a cool-down, create one when the pool is short. Settings, what the scaler sees, its activity, and a pass on request."
+    },
+    {
       "name": "Fleet enrollment",
       "description": "A Ready Up server trades a one-time code or fleet key for its server token; csm (kind \"host\") gets its host token the same way."
     },
@@ -2448,6 +2452,72 @@
           "Fleet pushes"
         ],
         "summary": "POST /api/fleet/admins/push",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/fleet/autoscale": {
+      "get": {
+        "tags": [
+          "Fleet autoscaling"
+        ],
+        "summary": "GET /api/fleet/autoscale",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/fleet/autoscale/run": {
+      "post": {
+        "tags": [
+          "Fleet autoscaling"
+        ],
+        "summary": "POST /api/fleet/autoscale/run",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/fleet/autoscale/settings": {
+      "put": {
+        "tags": [
+          "Fleet autoscaling"
+        ],
+        "summary": "PUT /api/fleet/autoscale/settings",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {

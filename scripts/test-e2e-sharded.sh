@@ -146,6 +146,7 @@ start_api_container() {
     -e API_TOKENS="${API_TOKENS}" \
     -e API_TOKENS_READONLY="${API_TOKENS_READONLY}" \
     -e COMPAT_INGEST_TOKEN="${COMPAT_INGEST_TOKEN}" \
+    -e FLEET_AUTOSCALE_INTERVAL_MS=0 \
     -e LOG_LEVEL=debug \
     -e DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${PG_CONTAINER}:5432/${db_name}" \
     -e DB_HOST="${PG_CONTAINER}" \
