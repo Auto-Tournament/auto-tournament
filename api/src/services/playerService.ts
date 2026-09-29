@@ -151,7 +151,7 @@ class PlayerService {
       id: player.id,
       name: player.name,
       // Prefer a stored/custom avatar (e.g. from Steam or admin override),
-      // otherwise fall back to a deterministic DiceBear SVG endpoint.
+      // otherwise fall back to a deterministic placeholder SVG endpoint.
       avatar: customAvatar ?? dynamicAvatar,
       currentElo: player.current_elo,
       startingElo: player.starting_elo,

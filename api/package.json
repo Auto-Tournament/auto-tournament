@@ -16,8 +16,6 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@dicebear/collection": "^9.2.4",
-    "@dicebear/core": "^9.2.4",
     "@faker-js/faker": "^10.1.0",
     "ajv": "^8.17.1",
     "brackets-manager": "^1.7.1",
