@@ -414,9 +414,9 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
 
     // Crashed and restarted within the grace period: it holds nothing now.
     a.kill();
-    const assigned = acceptAssign(a, slug);
     await a.reconnect({ state: null, availability: 'available' });
-    const assign = await assigned;
+    // (The new socket queues what arrives, so the assign is not missed.)
+    const assign = await acceptAssign(a, slug);
     const payload = assign.payload as { match_id: string; resume: { from_epoch: number; round: number; backup?: InlineBackup } };
     expect(payload.match_id).toBe(slug);
     expect(assign.epoch).toBe(epoch + 1);
