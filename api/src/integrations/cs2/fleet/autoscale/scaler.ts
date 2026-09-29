@@ -399,12 +399,14 @@ export async function gatherInputs(settings: StoredAutoscaleSettings): Promise<G
       if (!pending && startedRecently && !running) pending = 'start';
       if (!pending && stoppedRecently && running) pending = 'stop';
       const linkUp = bus.isConnected(fid);
-      const busy =
+      const ours =
         busyCs2.has(cs2Id) ||
         assigned.has(fid) ||
         serverAllocationTracker.isBusy(cs2Id) ||
-        v.matchInProgress ||
         serverTurnoverTracker.evaluate(cs2Id, null, now).demoUploadPending;
+      const busy = ours || v.matchInProgress;
+      // csm reports a match in progress that none of ours is behind (a local match or scrim).
+      const occupied = running && v.matchInProgress && !ours;
       const idle =
         running && linkUp && v.fleetServer?.availability === 'available' && !busy && !updating;
       if (idle) {
@@ -423,6 +425,7 @@ export async function gatherInputs(settings: StoredAutoscaleSettings): Promise<G
         startedAt: v.process.started_at ?? recentStarts.get(fid) ?? null,
         idle,
         busy,
+        occupied,
         updating,
         failoverTarget: targets.has(cs2Id),
         pending,
