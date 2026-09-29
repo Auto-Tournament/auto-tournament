@@ -25,6 +25,7 @@ jobs:
   static:
     name: Lint & typecheck
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
 
@@ -84,6 +85,7 @@ jobs:
   changes:
     name: Detect E2E-relevant changes
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
       pull-requests: read
@@ -147,7 +149,8 @@ jobs:
     needs: changes
     if: needs.changes.outputs.e2e == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # ~2 min cached, ~6.5 min on a cache miss.
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -204,7 +207,8 @@ jobs:
     needs: changes
     if: needs.changes.outputs.e2e == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    # Includes waiting for the image build; the tests themselves get 5 min below.
+    timeout-minutes: 15
     permissions:
       contents: read
       actions: read
@@ -376,6 +380,7 @@ jobs:
       # UI-heavy last shard ~3x slower than the first. Files are never split, so
       # serial describes and in-file state stay on one shard.
       - name: Run Playwright
+        timeout-minutes: 5
         env:
           SKIP_WEBSERVER: '1'
           PLAYWRIGHT_BASE_URL: http://localhost:3069
@@ -411,6 +416,7 @@ jobs:
     needs: [changes, e2e]
     if: ${{ !cancelled() && needs.changes.outputs.e2e == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
 
@@ -456,6 +462,7 @@ jobs:
     needs: [changes, build, e2e]
     if: always()
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Check E2E outcome
         env:
