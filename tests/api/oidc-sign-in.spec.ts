@@ -140,11 +140,14 @@ test.describe('OpenID Connect: strategy', () => {
       error: (err: Error) => void;
     };
 
+    // Like Passport: a per-request copy carries redirect and error, the
+    // strategy itself has neither.
     const outcome = () =>
       new Promise<{ redirect?: string; error?: string }>((resolve) => {
-        strategy.redirect = (url) => resolve({ redirect: url });
-        strategy.error = (err) => resolve({ error: err.message });
-        strategy.authenticate(fakeReq(), {});
+        const perRequest = Object.create(strategy) as typeof strategy;
+        perRequest.redirect = (url) => resolve({ redirect: url });
+        perRequest.error = (err) => resolve({ error: err.message });
+        perRequest.authenticate(fakeReq(), {});
       });
 
     expect((await outcome()).error).toMatch(/discovery failed: down/);

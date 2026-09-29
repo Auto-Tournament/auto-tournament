@@ -144,10 +144,12 @@ export function createOidcStrategy(
     return discovered;
   };
 
-  const authenticate = strategy.authenticate.bind(strategy);
+  // Not bound: Passport calls authenticate on a per-request copy
+  // (Object.create(strategy)) that carries that request's redirect/error.
+  const authenticate = strategy.authenticate as (this: unknown, req: unknown, options: unknown) => void;
   strategy.authenticate = function (this: { error(err: Error): void }, req: unknown, authOptions: unknown) {
     ready().then(
-      () => authenticate(req, authOptions),
+      () => authenticate.call(this, req, authOptions),
       (error: unknown) => this.error(new Error(`OpenID Connect discovery failed: ${(error as Error).message}`))
     );
   };
