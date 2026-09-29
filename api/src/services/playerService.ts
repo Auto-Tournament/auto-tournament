@@ -223,7 +223,11 @@ class PlayerService {
   private async getAllPlayersMapped<R extends PlayerResponse>(
     map: (player: PlayerRecord) => R
   ): Promise<R[]> {
-    const players = await db.getAllAsync<PlayerRecord>('players', undefined, undefined);
+    // A Discord account linked as a sign-in method wins over a typed-in ID.
+    const players = await db.queryAsync<PlayerRecord>(
+      `SELECT p.*, COALESCE((SELECT a.provider_user_id FROM auth_identities a WHERE a.steam_id = p.id AND a.provider = 'discord' ORDER BY a.created_at, a.id LIMIT 1), p.discord_id) AS discord_id FROM players p`,
+      []
+    );
 
     // Pre-compute distinct match counts for all players to avoid one query per
     // row when rendering the admin Players table.
@@ -282,8 +286,12 @@ class PlayerService {
    */
   async getPlayersByDiscordId(discordId: string): Promise<PlayerAdminResponse[]> {
     const players = await db.queryAsync<PlayerRecord>(
-      'SELECT * FROM players WHERE discord_id = ? ORDER BY name',
-      [discordId]
+      `SELECT p.*, COALESCE(a.provider_user_id, p.discord_id) AS discord_id
+         FROM players p
+         LEFT JOIN auth_identities a ON a.steam_id = p.id AND a.provider = 'discord'
+        WHERE p.discord_id = ? OR a.provider_user_id = ?
+        ORDER BY p.name`,
+      [discordId, discordId]
     );
     return Promise.all(
       players.map(async (p) => ({
