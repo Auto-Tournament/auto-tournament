@@ -542,6 +542,18 @@ export default function AccountConnections() {
                       testId={`game-account-${acct.provider}`}
                       tile={<ProviderTile provider={acct.provider} label={acct.label} />}
                       title={acct.label}
+                      end={
+                        acct.canConnect && !readOnly ? (
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() => connect(acct.provider)}
+                            data-testid={`game-account-connect-${acct.provider}`}
+                          >
+                            {t('account.signIn.connect')}
+                          </Button>
+                        ) : undefined
+                      }
                       badge={
                         acct.verified ? (
                           <Chip
@@ -552,9 +564,17 @@ export default function AccountConnections() {
                         ) : undefined
                       }
                     >
-                      {acct.externalId && (
+                      {acct.account ? (
+                        <ConnectedAccount account={acct.account} idLabel={t('account.signIn.accountId')} />
+                      ) : acct.externalId ? (
                         <Typography sx={{ ...muted, overflowWrap: 'anywhere' }}>
                           {t('account.gameAccounts.id', { id: acct.externalId })}
+                        </Typography>
+                      ) : (
+                        <Typography sx={muted}>
+                          {acct.signInEnabled
+                            ? t('account.gameAccounts.notConnected', { provider: acct.label })
+                            : t('account.gameAccounts.notOffered', { provider: acct.label })}
                         </Typography>
                       )}
                       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 0.75 }}>

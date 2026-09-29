@@ -183,6 +183,32 @@ test.describe('Linking a stored game to its module or pack', () => {
     }
   });
 
+  test('a pack may name the account its players need, as a sign-in provider', { tag: ['@api', '@packs'] }, () => {
+    const pack = (account: unknown) => ({
+      schema: 1,
+      slug: 'account-test-game',
+      name: 'Account Test Game',
+      engine: 'manual-report',
+      account,
+    });
+    const ok = validatePack(pack(' Epic '));
+    expect(ok.ok && ok.pack.account).toBe('epic');
+    for (const bad of ['riot', '', 7, null]) {
+      const result = validatePack(pack(bad));
+      expect(result.ok, `${JSON.stringify(bad)} should be refused`).toBe(false);
+      expect(!result.ok && result.error).toContain('account');
+    }
+    // The bundled packs that name one pass their own validation.
+    for (const slug of ['rocket-league', 'fortnite', 'dota-2']) {
+      const file = JSON.parse(
+        fs.readFileSync(path.join(__dirname, `../../api/bundled-packs/packs/${slug}.json`), 'utf8')
+      );
+      const result = validatePack(file);
+      expect(result.ok, slug).toBe(true);
+      expect(result.ok && result.pack.account).toBe(slug === 'dota-2' ? 'steam' : 'epic');
+    }
+  });
+
   test('every bundled pack names a real IGDB id, or none on purpose', { tag: ['@api', '@packs'] }, () => {
     const index = JSON.parse(
       fs.readFileSync(path.join(__dirname, '../../api/bundled-packs/index.json'), 'utf8')

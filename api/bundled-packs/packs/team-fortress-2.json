@@ -7,10 +7,11 @@
   "aliases": [
     "tf2"
   ],
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Six-a-side class shooter, reported by rounds won.",
   "icon": "../icons/team-fortress-2.svg",
   "appIcon": "../app-icons/team-fortress-2.webp",
+  "account": "steam",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

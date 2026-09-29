@@ -7,10 +7,11 @@
   "aliases": [
     "rl"
   ],
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Car soccer. Captains report the score; goals, assists, saves and shots per player.",
   "icon": "../icons/rocket-league.svg",
   "appIcon": "../app-icons/rocket-league.webp",
+  "account": "epic",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60

@@ -8,6 +8,7 @@
  * impersonation should not quietly edit the other player's profile.
  */
 
+import { installedPacks } from '../services/packCache';
 import { Router, Request, Response } from 'express';
 import {
   MAX_PLAYER_GAMES,
@@ -311,24 +312,54 @@ async function connectionsResponse(req: Request, account: PlayerAccount, isImper
     });
   }
 
-  // Game accounts follow the installed game modules: each names the provider
-  // whose account identifies its players.
+  // Game accounts follow the installed games: a module (CS2) or a pack
+  // (Rocket League) names the provider whose account identifies its players.
   const gamesByProvider = new Map<string, Array<{ id: string; name: string }>>();
+  const addGame = (provider: string, game: { id: string; name: string }) => {
+    const games = gamesByProvider.get(provider) ?? [];
+    if (!games.some((g) => g.id === game.id)) games.push(game);
+    gamesByProvider.set(provider, games);
+  };
   for (const integration of listIntegrations()) {
-    if (!integration.accountProvider) continue;
-    const games = gamesByProvider.get(integration.accountProvider) ?? [];
-    games.push({ id: integration.id, name: integration.displayName });
-    gamesByProvider.set(integration.accountProvider, games);
+    if (integration.accountProvider) {
+      addGame(integration.accountProvider, { id: integration.id, name: integration.displayName });
+    }
+  }
+  for (const pack of installedPacks()) {
+    if (pack.definition.account) addGame(pack.definition.account, { id: pack.slug, name: pack.name });
   }
   const gameAccounts = [...gamesByProvider.entries()].map(([provider, games]) => {
-    // Steam is the account's own identity, proven by the Steam sign-in.
-    const steam = provider === 'steam' && hasSteam;
+    // Steam is the account's own identity, proven by the Steam sign-in; any
+    // other is a sign-in method linked to this account (signing in proved it).
+    if (provider === 'steam') {
+      return {
+        provider,
+        label: PROVIDER_LABELS[provider] ?? provider,
+        linked: hasSteam,
+        verified: hasSteam,
+        externalId: hasSteam ? account.steamId : null,
+        canConnect: !hasSteam && enabled.has('steam'),
+        signInEnabled: enabled.has('steam'),
+        games,
+      };
+    }
+    const identity = identities.find((i) => i.provider === provider);
     return {
       provider,
-      label: PROVIDER_LABELS[provider] ?? provider,
-      linked: steam,
-      verified: steam,
-      externalId: steam ? account.steamId : null,
+      label: enabled.get(provider) ?? PROVIDER_LABELS[provider] ?? provider,
+      linked: !!identity,
+      verified: !!identity,
+      externalId: identity?.providerUserId ?? null,
+      canConnect: !identity && enabled.has(provider),
+      signInEnabled: enabled.has(provider),
+      ...(identity && {
+        account: {
+          id: identity.providerUserId,
+          name: identity.displayName,
+          avatarUrl: identity.avatarUrl,
+          email: identity.email,
+        },
+      }),
       games,
     };
   });

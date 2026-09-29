@@ -90,7 +90,9 @@
       "description": "Hvert spill trenger sin egen konto, så kampene vet hvem du er.",
       "verified": "Bekreftet",
       "id": "Steam-ID {{id}}",
-      "more": "Flere spillkontoer dukker opp her etter hvert som spill legges til på denne siden."
+      "more": "Flere spillkontoer dukker opp her etter hvert som spill legges til på denne siden.",
+      "notConnected": "Koble til {{provider}}-kontoen din for å spille disse spillene.",
+      "notOffered": "Innlogging med {{provider}} er ikke slått på her ennå. Be en admin slå det på under Innstillinger → Innlogging."
     },
     "signIn": {
       "title": "Innloggingsmetoder",
