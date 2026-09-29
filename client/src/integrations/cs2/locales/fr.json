@@ -1129,6 +1129,20 @@
       "removeMessage": "« {{name}} » est retiré de la flotte. Il pourra se réinscrire plus tard.",
       "revokeKeyTitle": "Révoquer la clé de flotte ?",
       "revokeKeyMessage": "« {{name}} » ne peut plus inscrire de serveurs. Les serveurs déjà inscrits continuent de fonctionner."
+    },
+    "connectAddress": "Adresse de connexion",
+    "addressHelp": "Les joueurs se connectent à cette adresse. Laissez vide pour utiliser l’adresse annoncée par le serveur, ou celle depuis laquelle il se connecte.",
+    "addressCurrent": "Actuelle",
+    "addressNone": "Aucune adresse détectée : le serveur ne s’est pas encore connecté.",
+    "addressHost": "Hôte ou IP",
+    "addressPort": "Port",
+    "addressAutomatic": "Utiliser l’adresse détectée",
+    "addressSaved": "Adresse de connexion enregistrée",
+    "connectSource": {
+      "override": "définie par un admin",
+      "publicAddr": "annoncée par le serveur",
+      "peer": "adresse depuis laquelle le serveur se connecte",
+      "unknown": "pas encore confirmée par le serveur"
     }
   },
   "roundBackups": {

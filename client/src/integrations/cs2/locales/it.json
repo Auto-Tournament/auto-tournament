@@ -1129,6 +1129,20 @@
       "removeMessage": "«{{name}}» viene rimosso dalla flotta. Potrà registrarsi di nuovo in seguito.",
       "revokeKeyTitle": "Revocare la chiave di flotta?",
       "revokeKeyMessage": "«{{name}}» non può più registrare server. I server già registrati continuano a funzionare."
+    },
+    "connectAddress": "Indirizzo di connessione",
+    "addressHelp": "I giocatori si connettono a questo indirizzo. Lascia vuoto per usare l’indirizzo comunicato dal server o quello da cui si connette.",
+    "addressCurrent": "Ora",
+    "addressNone": "Nessun indirizzo rilevato: il server non si è ancora connesso.",
+    "addressHost": "Host o IP",
+    "addressPort": "Porta",
+    "addressAutomatic": "Usa l’indirizzo rilevato",
+    "addressSaved": "Indirizzo di connessione salvato",
+    "connectSource": {
+      "override": "impostato da un admin",
+      "publicAddr": "comunicato dal server",
+      "peer": "indirizzo da cui si connette il server",
+      "unknown": "non ancora confermato dal server"
     }
   },
   "roundBackups": {

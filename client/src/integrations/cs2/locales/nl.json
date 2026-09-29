@@ -1129,6 +1129,20 @@
       "removeMessage": "‘{{name}}’ wordt uit de vloot verwijderd. Hij kan zich later opnieuw aanmelden.",
       "revokeKeyTitle": "Vlootsleutel intrekken?",
       "revokeKeyMessage": "‘{{name}}’ kan geen servers meer aanmelden. Al aangemelde servers blijven werken."
+    },
+    "connectAddress": "Verbindingsadres",
+    "addressHelp": "Spelers verbinden met dit adres. Laat het leeg om het adres te gebruiken dat de server meldt, of het adres waarvandaan hij verbindt.",
+    "addressCurrent": "Nu",
+    "addressNone": "Nog geen adres gevonden: de server heeft nog geen verbinding gemaakt.",
+    "addressHost": "Host of IP",
+    "addressPort": "Poort",
+    "addressAutomatic": "Gevonden adres gebruiken",
+    "addressSaved": "Verbindingsadres opgeslagen",
+    "connectSource": {
+      "override": "ingesteld door een admin",
+      "publicAddr": "gemeld door de server",
+      "peer": "adres waarvandaan de server verbindt",
+      "unknown": "nog niet bevestigd door de server"
     }
   },
   "roundBackups": {

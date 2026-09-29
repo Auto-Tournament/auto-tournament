@@ -1129,6 +1129,20 @@
       "removeMessage": "„{{name}}“ wird aus der Flotte entfernt. Er kann sich später erneut anmelden.",
       "revokeKeyTitle": "Flottenschlüssel widerrufen?",
       "revokeKeyMessage": "„{{name}}“ kann keine Server mehr anmelden. Bereits angemeldete Server funktionieren weiter."
+    },
+    "connectAddress": "Verbindungsadresse",
+    "addressHelp": "Spieler verbinden sich mit dieser Adresse. Leer lassen, um die Adresse zu verwenden, die der Server meldet, oder die, von der er sich verbindet.",
+    "addressCurrent": "Jetzt",
+    "addressNone": "Noch keine Adresse erkannt: Der Server hat sich noch nicht verbunden.",
+    "addressHost": "Host oder IP",
+    "addressPort": "Port",
+    "addressAutomatic": "Erkannte Adresse verwenden",
+    "addressSaved": "Verbindungsadresse gespeichert",
+    "connectSource": {
+      "override": "von einem Admin gesetzt",
+      "publicAddr": "vom Server gemeldet",
+      "peer": "Adresse, von der sich der Server verbindet",
+      "unknown": "vom Server noch nicht bestätigt"
     }
   },
   "roundBackups": {

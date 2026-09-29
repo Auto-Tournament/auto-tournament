@@ -1129,6 +1129,20 @@
       "removeMessage": "“{{name}}”将从服务器组中移除。之后可以重新注册。",
       "revokeKeyTitle": "吊销服务器组密钥？",
       "revokeKeyMessage": "“{{name}}”将无法再注册服务器。已注册的服务器继续工作。"
+    },
+    "connectAddress": "连接地址",
+    "addressHelp": "玩家连接到此地址。留空则使用服务器报告的地址，或其连接来源地址。",
+    "addressCurrent": "当前",
+    "addressNone": "尚未检测到地址：服务器还未连接。",
+    "addressHost": "主机或 IP",
+    "addressPort": "端口",
+    "addressAutomatic": "使用检测到的地址",
+    "addressSaved": "连接地址已保存",
+    "connectSource": {
+      "override": "由管理员设置",
+      "publicAddr": "由服务器报告",
+      "peer": "服务器的连接来源地址",
+      "unknown": "服务器尚未确认"
     }
   },
   "roundBackups": {

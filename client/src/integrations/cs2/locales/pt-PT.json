@@ -1129,6 +1129,20 @@
       "removeMessage": "«{{name}}» é removido da frota. Pode registar-se de novo mais tarde.",
       "revokeKeyTitle": "Revogar a chave de frota?",
       "revokeKeyMessage": "«{{name}}» deixa de poder registar servidores. Os servidores já registados continuam a funcionar."
+    },
+    "connectAddress": "Endereço de ligação",
+    "addressHelp": "Os jogadores ligam-se a este endereço. Deixe vazio para usar o endereço indicado pelo servidor, ou aquele a partir do qual se liga.",
+    "addressCurrent": "Agora",
+    "addressNone": "Ainda não foi detetado nenhum endereço: o servidor não se ligou.",
+    "addressHost": "Anfitrião ou IP",
+    "addressPort": "Porta",
+    "addressAutomatic": "Usar o endereço detetado",
+    "addressSaved": "Endereço de ligação guardado",
+    "connectSource": {
+      "override": "definido por um admin",
+      "publicAddr": "indicado pelo servidor",
+      "peer": "endereço a partir do qual o servidor se liga",
+      "unknown": "ainda não confirmado pelo servidor"
     }
   },
   "roundBackups": {

@@ -1129,6 +1129,20 @@
       "removeMessage": "«{{name}}» fjernes fra flåten. Den kan melde seg inn igjen senere.",
       "revokeKeyTitle": "Tilbakekalle flåtenøkkelen?",
       "revokeKeyMessage": "«{{name}}» kan ikke lenger melde inn servere. Servere den allerede har meldt inn fortsetter å virke."
+    },
+    "connectAddress": "Tilkoblingsadresse",
+    "addressHelp": "Spillerne kobler til denne adressen. La feltet stå tomt for å bruke adressen serveren oppgir, eller den den kobler til fra.",
+    "addressCurrent": "Nå",
+    "addressNone": "Ingen adresse funnet ennå: serveren har ikke koblet til.",
+    "addressHost": "Vert eller IP",
+    "addressPort": "Port",
+    "addressAutomatic": "Bruk oppdaget adresse",
+    "addressSaved": "Tilkoblingsadresse lagret",
+    "connectSource": {
+      "override": "satt av en admin",
+      "publicAddr": "oppgitt av serveren",
+      "peer": "adressen serveren kobler til fra",
+      "unknown": "ikke bekreftet av serveren ennå"
     }
   },
   "roundBackups": {
