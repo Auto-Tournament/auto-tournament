@@ -125,10 +125,12 @@ function AdminShell() {
 
         const configured = response.configured;
         const valid = response.valid;
-        const isUnhealthy =
-          configured === false || valid === false || response.success === false;
-        // Steam off on purpose is not a fault, and a warning the admin closed
-        // stays closed for this browser session.
+        // Not set up yet is not a fault: a fresh install has no Steam key, and the
+        // onboarding checklist points to Settings → Sign-in. Only warn when Steam
+        // is set up but the key or the connection fails.
+        const isUnhealthy = configured !== false && (valid === false || response.success === false);
+        // Steam off on purpose is not a fault either, and a warning the admin
+        // closed stays closed for this browser session.
         const shouldWarn =
           isUnhealthy && response.signInEnabled !== false && !steamWarningDismissed();
 
