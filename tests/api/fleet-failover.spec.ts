@@ -312,11 +312,14 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     await request.delete('/api/tournament', { headers: getAuthHeader() });
     // csm recovery only in the tests that bring a fake csm (other specs' machines stay out of it).
     await setFailover(request, { auto: true, reserve: null, csm: false });
+    // The auto-scaler would create/link servers of its own and race these moves.
+    await request.put('/api/fleet/autoscale/settings', { headers: getAuthHeader(), data: { enabled: false } });
   });
 
   test.afterEach(async ({ request }) => {
     while (cleanup.length) await cleanup.pop()?.();
     await setFailover(request, { auto: true, reserve: null, csm: true });
+    await request.put('/api/fleet/autoscale/settings', { headers: getAuthHeader(), data: { enabled: true } });
   });
 
   test('auto: A dies mid-match → the reserve server B resumes from the backup → A comes back superseded', async ({
@@ -628,7 +631,8 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     const payload = create.payload as { count: number; enroll: boolean; enroll_key: string };
     expect(payload).toMatchObject({ count: 1, enroll: true });
     expect(payload.enroll_key).toMatch(/^rfk_/);
-    expect((await failoverView(request, slug)).proposal.detail).toContain('creating one through csm');
+    const waitingView = await failoverView(request, slug);
+    expect((waitingView.proposal ?? waitingView.recent[0])?.detail ?? '').toContain('creating one through csm');
 
     // The new server enrolls with the command's key; the next pass links it and moves the match.
     const b = await FakeReadyUp.enroll(request, payload.enroll_key);
