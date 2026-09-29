@@ -21,6 +21,7 @@
 import { log } from '../utils/logger';
 import { playerService } from './playerService';
 import { parseAdminSteamIds } from '../utils/adminSteamIds';
+import { isAdminEmail } from '../utils/adminEmails';
 
 /**
  * Ensure every Steam ID in `ADMIN_STEAM_IDS` exists as a player and is an admin.
@@ -79,5 +80,39 @@ export async function seedAdminsFromEnv(): Promise<void> {
     log.info(
       `[Startup] ADMIN_STEAM_IDS: ${alreadyAdmin.length} player(s) already admin: ${alreadyAdmin.join(', ')}`
     );
+  }
+}
+
+/**
+ * ADMIN_EMAILS at sign-in: grant admin to the account `steamId` when the
+ * provider verified `verifiedEmail` and it is on the list. Creates the player
+ * row when it is missing, like ADMIN_STEAM_IDS. Additive only. Returns
+ * whether admin was granted just now. Never throws: a failure here must not
+ * fail the sign-in. The address itself is not logged.
+ */
+export async function grantAdminForVerifiedEmail(
+  steamId: string,
+  provider: string,
+  verifiedEmail: string | undefined | null
+): Promise<boolean> {
+  if (!isAdminEmail(verifiedEmail)) return false;
+  return grantAdminForAdminEmailMatch(steamId, provider);
+}
+
+/**
+ * The grant itself, for a match already established at the provider callback
+ * (the signed pending-link flag carries it to the Steam callback).
+ */
+export async function grantAdminForAdminEmailMatch(steamId: string, provider: string): Promise<boolean> {
+  try {
+    const existing = await playerService.getPlayerById(steamId);
+    if (existing?.isAdmin) return false;
+    if (!existing) await playerService.getOrCreatePlayer(steamId, steamId);
+    await playerService.updatePlayer(steamId, { isAdmin: true });
+    log.success('[ADMIN] Granted admin from ADMIN_EMAILS (provider-verified address)', { steamId, provider });
+    return true;
+  } catch (error) {
+    log.error('[ADMIN] Failed to grant admin from ADMIN_EMAILS', error as Error);
+    return false;
   }
 }

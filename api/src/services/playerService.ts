@@ -8,6 +8,7 @@ import { log } from '../utils/logger';
 import { eloToOpenSkill } from './ratingService';
 import { playerIdentity } from './playerIdentity';
 import { notifyAdminListMaybeChanged } from './adminListEvents';
+import { shouldPromoteFirstAdmin } from '../utils/adminRules';
 import {
   abbreviateId,
   describePlayer,
@@ -743,51 +744,37 @@ class PlayerService {
       'SELECT id FROM players WHERE is_admin = 1 LIMIT 1',
       []
     );
-
-    if (existingAdmin) {
-      log.debug('[ensureFirstAdmin] An admin already exists, skipping', {
-        steamId,
-        existingAdminId: existingAdmin.id,
-      });
-      return;
-    }
-
     const countRow = await db.queryOneAsync<{ count: number | string }>(
       'SELECT COUNT(1) as count FROM players',
       []
     );
-    const totalPlayers = Number(countRow?.count ?? 0);
-
-    if (totalPlayers === 0) {
-      log.info('[ensureFirstAdmin] No players in DB yet; cannot promote. Create player first.', {
-        steamId,
-      });
-      return;
-    }
-
-    if (totalPlayers > 1) {
-      log.info(
-        '[ensureFirstAdmin] Skipping auto‑admin promotion: multiple players exist',
-        { steamId, totalPlayers }
-      );
-      return;
-    }
-
     const firstPlayer = await db.queryOneAsync<{ id: string }>(
       'SELECT id FROM players ORDER BY created_at ASC LIMIT 1',
       []
     );
+    const decision = {
+      adminExists: !!existingAdmin,
+      totalPlayers: Number(countRow?.count ?? 0),
+      firstPlayerId: firstPlayer?.id ?? null,
+      accountId: steamId,
+    };
 
-    if (!firstPlayer || firstPlayer.id !== steamId) {
-      log.info('[ensureFirstAdmin] Skipping: first player does not match current Steam ID', {
-        steamId,
-        firstPlayerId: firstPlayer?.id ?? null,
-      });
+    if (!shouldPromoteFirstAdmin(decision)) {
+      log.debug('[ensureFirstAdmin] Not promoting', { steamId, ...decision });
       return;
     }
 
     await this.updatePlayer(steamId, { isAdmin: true });
-    log.info('[ensureFirstAdmin] Promoted first Steam user to admin', { steamId });
+    log.info('[ensureFirstAdmin] Fresh install: promoted the first account to admin', { steamId });
+  }
+
+  /** How many admins there are. */
+  async countAdmins(): Promise<number> {
+    const row = await db.queryOneAsync<{ count: number | string }>(
+      'SELECT COUNT(1) as count FROM players WHERE is_admin = 1',
+      []
+    );
+    return Number(row?.count ?? 0);
   }
 
   /**

@@ -45,12 +45,17 @@ export const PENDING_STEAM_LINK_TTL_MS = 1000 * 60 * 10;
  * module free of DB imports; auth.ts passes one to the other, so a mismatch is
  * a type error there).
  */
-export const PENDING_STEAM_LINK_PROVIDERS = ['discord', 'keycloak', 'github', 'google'] as const;
+export const PENDING_STEAM_LINK_PROVIDERS = ['discord', 'keycloak', 'github', 'google', 'twitch'] as const;
 export type PendingSteamLinkProvider = (typeof PENDING_STEAM_LINK_PROVIDERS)[number];
 
 export interface PendingSteamLink {
   provider: PendingSteamLinkProvider;
   providerUserId: string;
+  /**
+   * The provider verified an address on ADMIN_EMAILS: grant admin once Steam
+   * proves the account (utils/adminEmails). Only a flag; never the address.
+   */
+  adminEmail?: true;
 }
 
 export type PendingSteamLinkRejection =
@@ -108,7 +113,12 @@ export function signPendingSteamLink(
   const now = options.now ?? Date.now();
   const exp = options.expiresAt ?? now + PENDING_STEAM_LINK_TTL_MS;
   const payload = Buffer.from(
-    JSON.stringify({ provider: link.provider, providerUserId: link.providerUserId, exp }),
+    JSON.stringify({
+      provider: link.provider,
+      providerUserId: link.providerUserId,
+      exp,
+      ...(link.adminEmail ? { ae: 1 } : {}),
+    }),
     'utf8'
   ).toString('base64url');
   const sig = hmac(options.secret ?? getSecret(), payload).toString('base64url');
@@ -156,7 +166,7 @@ export function verifyPendingSteamLink(
   if (typeof decoded !== 'object' || decoded === null || Array.isArray(decoded)) {
     return { ok: false, reason: 'invalid-payload' };
   }
-  const { provider, providerUserId, exp } = decoded as Record<string, unknown>;
+  const { provider, providerUserId, exp, ae } = decoded as Record<string, unknown>;
   if (
     !isKnownProvider(provider) ||
     typeof providerUserId !== 'string' ||
@@ -170,5 +180,7 @@ export function verifyPendingSteamLink(
   const now = options.now ?? Date.now();
   if (now >= exp) return { ok: false, reason: 'expired' };
 
-  return { ok: true, link: { provider, providerUserId }, expiresAt: exp };
+  const link: PendingSteamLink = { provider, providerUserId };
+  if (ae === 1) link.adminEmail = true;
+  return { ok: true, link, expiresAt: exp };
 }

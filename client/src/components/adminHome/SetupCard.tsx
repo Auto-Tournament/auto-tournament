@@ -2,6 +2,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { tokens, radii, textSize } from '../../theme/tokens';
+import { setupCardTarget } from '../../utils/signInSetup';
 
 const { color } = tokens;
 
@@ -15,6 +16,8 @@ export interface SetupItem {
   labelValues?: Record<string, unknown>;
   /** The namespace `labelKey` is in, for a module's row; core's otherwise. */
   ns?: string;
+  /** Where to set it up; "Open settings" goes to the first unfinished item's. */
+  to?: string;
 }
 
 interface SetupCardProps {
@@ -84,7 +87,7 @@ export function SetupCard({ items }: SetupCardProps) {
       </Box>
       <Button
         component={RouterLink}
-        to="/settings"
+        to={setupCardTarget(items)}
         variant="outlined"
         size="small"
         sx={{ justifySelf: 'start' }}

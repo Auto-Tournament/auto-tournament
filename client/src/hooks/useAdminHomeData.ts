@@ -1,23 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../utils/api';
 import type { PlayersResponse } from '../types/api.types';
+import { isSignInSetUp, type ProviderSummary } from '../utils/signInSetup';
 
 /** What the site is called until an admin names it (the API's default too). */
 export const DEFAULT_SITE_NAME = 'Auto Tournament';
 
 const WEEK_SECONDS = 7 * 24 * 60 * 60;
 
-interface AuthProviderSummary {
-  id: string;
-  enabled: boolean;
-}
-
 export interface AdminHomeData {
   loading: boolean;
-  /** Whether the site-wide Steam sign-in provider is configured (checkable via /api/auth/providers). */
-  steamConfigured: boolean;
-  /** Whether the optional Discord sign-in provider is configured. */
-  discordConfigured: boolean;
+  /** Whether any sign-in provider is enabled and configured (/api/auth/providers). */
+  signInConfigured: boolean;
   playersCount: number;
   adminsCount: number;
   /** Players who signed in during the last 7 days. */
@@ -40,8 +34,7 @@ export interface AdminHomeData {
  */
 export function useAdminHomeData(): AdminHomeData {
   const [loading, setLoading] = useState(true);
-  const [steamConfigured, setSteamConfigured] = useState(false);
-  const [discordConfigured, setDiscordConfigured] = useState(false);
+  const [signInConfigured, setSignInConfigured] = useState(false);
   const [playersCount, setPlayersCount] = useState(0);
   const [adminsCount, setAdminsCount] = useState(0);
   const [signedInThisWeekCount, setSignedInThisWeekCount] = useState(0);
@@ -51,18 +44,11 @@ export function useAdminHomeData(): AdminHomeData {
     setLoading(true);
 
     await Promise.all([
-      // Auth providers: public endpoint, drives the Steam/Discord checklist rows.
+      // Auth providers: public endpoint, drives the sign-in checklist row.
       api
-        .get<{ providers?: AuthProviderSummary[] }>('/api/auth/providers')
-        .then((res) => {
-          const providers = res.providers ?? [];
-          setSteamConfigured(!!providers.find((p) => p.id === 'steam')?.enabled);
-          setDiscordConfigured(!!providers.find((p) => p.id === 'discord')?.enabled);
-        })
-        .catch(() => {
-          setSteamConfigured(false);
-          setDiscordConfigured(false);
-        }),
+        .get<{ providers?: ProviderSummary[] }>('/api/auth/providers')
+        .then((res) => setSignInConfigured(isSignInSetUp(res.providers ?? [])))
+        .catch(() => setSignInConfigured(false)),
 
       // Players: total count + how many are admins.
       api
@@ -99,8 +85,7 @@ export function useAdminHomeData(): AdminHomeData {
 
   return {
     loading,
-    steamConfigured,
-    discordConfigured,
+    signInConfigured,
     playersCount,
     adminsCount,
     signedInThisWeekCount,

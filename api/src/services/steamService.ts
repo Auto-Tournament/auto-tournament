@@ -22,6 +22,11 @@ class SteamService {
   /**
    * Check if Steam API is available
    */
+  /** Forget the cached key check, after the key changed. */
+  resetHealthCache(): void {
+    this.steamWebApiHealthCache = null;
+  }
+
   async isAvailable(): Promise<boolean> {
     return await settingsService.isSteamApiConfigured();
   }

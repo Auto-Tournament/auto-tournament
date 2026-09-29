@@ -14,7 +14,8 @@ import {
 import { abbreviateId, isValidDiscordId, parseDiscordIdEdit } from '../utils/discordId';
 import { getRatingHistory } from '../services/ratingService';
 import { steamService } from '../services/steamService';
-import { requireAuth } from '../middleware/auth';
+import { requireAuth, requestActorId } from '../middleware/auth';
+import { bulkRemovesEveryAdmin, removesLastAdmin } from '../utils/adminRules';
 import { log } from '../utils/logger';
 import { db } from '../config/database';
 import { playerConnectionService } from '../services/playerConnectionService';
@@ -1740,6 +1741,15 @@ router.post('/bulk-delete', async (req: Request, res: Response) => {
       });
     }
 
+    // Never delete every admin at once: nobody could get back in.
+    const unique = [...new Set(ids.map(String))];
+    const adminIdsToRemove = (
+      await Promise.all(unique.map((id) => playerService.getPlayerById(id)))
+    ).filter((p) => p?.isAdmin).length;
+    if (bulkRemovesEveryAdmin({ adminIdsToRemove, adminCount: await playerService.countAdmins() })) {
+      return res.status(409).json({ success: false, error: LAST_ADMIN_ERROR });
+    }
+
     let deletedCount = 0;
     let missingCount = 0;
 
@@ -1769,14 +1779,33 @@ router.post('/bulk-delete', async (req: Request, res: Response) => {
   }
 });
 
+/** Why a change that would leave the site without an admin is refused. */
+const LAST_ADMIN_ERROR =
+  'This is the only admin. Make someone else an admin first, so the site is not left without one.';
+
 /**
  * PUT /api/players/:playerId
- * Update a player (admin only)
+ * Update a player (admin only). `isAdmin` grants or removes admin; removing
+ * it from the only admin is refused (409). Admin changes are logged with the
+ * acting admin.
  */
 router.put('/:playerId', async (req: Request, res: Response) => {
   try {
     const { playerId } = req.params;
     const input: UpdatePlayerInput = req.body;
+
+    if (input.isAdmin !== undefined && typeof input.isAdmin !== 'boolean') {
+      return res.status(400).json({ success: false, error: 'isAdmin must be true or false' });
+    }
+    const before = await playerService.getPlayerById(playerId);
+    const adminChange =
+      before && input.isAdmin !== undefined && before.isAdmin !== input.isAdmin ? input.isAdmin : undefined;
+    if (
+      adminChange === false &&
+      removesLastAdmin({ targetIsAdmin: true, adminCount: await playerService.countAdmins() })
+    ) {
+      return res.status(409).json({ success: false, error: LAST_ADMIN_ERROR });
+    }
 
     // An explicit edit: a string overwrites, null/"" clears, an absent key
     // leaves it alone, and an invalid value refuses the whole update (400).
@@ -1790,6 +1819,14 @@ router.put('/:playerId', async (req: Request, res: Response) => {
     }
 
     const player = (await playerService.getPlayerByIdForAdmin(playerId)) ?? updated;
+
+    if (adminChange !== undefined) {
+      // Audit: who granted or removed admin, from whom.
+      log.info(`[ADMIN] ${adminChange ? 'Granted' : 'Removed'} admin`, {
+        playerId,
+        actor: requestActorId(req),
+      });
+    }
 
     return res.json({
       success: true,
@@ -1816,6 +1853,13 @@ router.put('/:playerId', async (req: Request, res: Response) => {
 router.delete('/:playerId', async (req: Request, res: Response) => {
   try {
     const { playerId } = req.params;
+    const target = await playerService.getPlayerById(playerId);
+    if (
+      target?.isAdmin &&
+      removesLastAdmin({ targetIsAdmin: true, adminCount: await playerService.countAdmins() })
+    ) {
+      return res.status(409).json({ success: false, error: LAST_ADMIN_ERROR });
+    }
     const deleted = await playerService.deletePlayer(playerId);
 
     if (!deleted) {

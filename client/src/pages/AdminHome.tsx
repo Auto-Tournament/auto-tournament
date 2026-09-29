@@ -15,6 +15,7 @@ import { LicenseOverviewCard } from '../components/adminHome/LicenseOverviewCard
 import { EventLicensePrompt } from '../components/adminHome/EventLicensePrompt';
 import { PageHead } from '../components/common/ui';
 import { paths } from '../paths';
+import { SIGN_IN_SETTINGS_PATH } from '../utils/signInSetup';
 
 declare const __APP_VERSION__: string | undefined;
 
@@ -39,8 +40,7 @@ export default function AdminHome() {
   const { tournaments, loading: tournamentsLoading } = useTournamentList();
   const {
     loading: dataLoading,
-    steamConfigured,
-    discordConfigured,
+    signInConfigured,
     playersCount,
     adminsCount,
     signedInThisWeekCount,
@@ -61,9 +61,8 @@ export default function AdminHome() {
   const canCreateTournament = !tournamentsLoading && tournaments.length === 0;
 
   const setupItems: SetupItem[] = [
-    { key: 'steam', done: steamConfigured, labelKey: 'dashboard.setup.steam' },
+    { key: 'signin', done: signInConfigured, labelKey: 'dashboard.setup.signIn', to: SIGN_IN_SETTINGS_PATH },
     ...moduleSetupItems.map((item) => ({ ...item, key: `${item.ns}:${item.key}` })),
-    { key: 'discord', done: discordConfigured, optional: true, labelKey: 'dashboard.setup.discord' },
   ];
 
   const loading = tournamentsLoading || dataLoading || moduleSetupLoading;

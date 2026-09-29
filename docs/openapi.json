@@ -655,6 +655,10 @@
       "description": "Instance-wide settings."
     },
     {
+      "name": "Sign-in providers",
+      "description": "Steam, Discord, Google, GitHub and Twitch sign-in, set up from Settings -> Sign-in. Admin only; secrets are write-only."
+    },
+    {
       "name": "Steam",
       "description": "Steam Web API lookups (profiles, avatars, key health)."
     },
@@ -1248,6 +1252,48 @@
           "Auth"
         ],
         "summary": "GET /api/auth/steam/callback",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/auth/twitch": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "GET /api/auth/twitch",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/auth/twitch/callback": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "GET /api/auth/twitch/callback",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/auth/twitch/link": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "POST /api/auth/twitch/link",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
@@ -8460,6 +8506,137 @@
             "description": "Success"
           }
         }
+      }
+    },
+    "/api/sign-in-providers": {
+      "get": {
+        "tags": [
+          "Sign-in providers"
+        ],
+        "summary": "List the sign-in providers and how each is set up",
+        "description": "Admin only. Per provider: enabled, client id, whether a secret is set\n(never the secret), which fields an environment variable sets\n(read-only), the callback URL to register with the provider, and\nwhere to create the credentials. `secretsKeySource` names the\nvariable the saved secrets are encrypted with (SECRETS_KEY, else\nSESSION_SECRET).\n",
+        "responses": {
+          "200": {
+            "description": "The providers"
+          },
+          "401": {
+            "description": "Not signed in as an admin"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/sign-in-providers/{provider}": {
+      "put": {
+        "tags": [
+          "Sign-in providers"
+        ],
+        "summary": "Change a sign-in provider's settings",
+        "description": "Admin only; same-site JSON. Every field is optional. `clientSecret`\nreplaces the saved secret (null clears it) and is stored encrypted.\nA field set by an environment variable cannot be changed (409). The\nsign-in strategies are re-registered at once; no restart.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "steam",
+                "discord",
+                "google",
+                "github",
+                "twitch",
+                "epic"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "clientId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "clientSecret": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved; the providers as GET returns them"
+          },
+          "400": {
+            "description": "Invalid field"
+          },
+          "404": {
+            "description": "Unknown provider"
+          },
+          "409": {
+            "description": "The field is set by an environment variable, or the provider is not available yet"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/sign-in-providers/{provider}/test": {
+      "post": {
+        "tags": [
+          "Sign-in providers"
+        ],
+        "summary": "Check a provider's credentials with the provider",
+        "description": "Admin only; same-site JSON. Steam: a Web API call with the key.\nDiscord, Twitch: a client-credentials token request. Google, GitHub:\na code exchange with a code that cannot be valid, which tells a good\nclient from a bad one. `result` is ok, invalid_credentials,\nunreachable, not_configured, not_supported or unexpected.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The outcome"
+          },
+          "404": {
+            "description": "Unknown provider"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/steam/player/{steamId}": {

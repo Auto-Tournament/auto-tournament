@@ -5,7 +5,9 @@ import type {
   GoogleAuthProviderConfig,
   KeycloakAuthProviderConfig,
   SteamAuthProviderConfig,
+  TwitchAuthProviderConfig,
 } from '../types/auth.types';
+import { effectiveProviderSettings } from './signInProviders';
 
 /** True when the env var is set to 1/true/yes (case-insensitive). */
 function isEnvFlagOn(name: string): boolean {
@@ -20,19 +22,15 @@ function envValue(name: string): string | undefined {
 }
 
 /**
- * A plain OAuth2 provider (Discord, GitHub, Google) is listed when
- * AUTH_<PROVIDER>_ENABLED is on and both <PROVIDER>_CLIENT_ID and
- * <PROVIDER>_CLIENT_SECRET are set. Passport only registers the strategy when
- * both are set (config/passport.ts), so listing it without the secret would
- * show a button that cannot work.
+ * A plain OAuth2 provider (Discord, GitHub, Google, Twitch) is listed when it
+ * is enabled and has both a client id and a secret, from the environment
+ * (AUTH_<PROVIDER>_ENABLED, <PROVIDER>_CLIENT_ID, <PROVIDER>_CLIENT_SECRET) or
+ * from Settings -> Sign-in; the environment wins. Passport registers the
+ * strategy under the same rule (config/passport.ts), so a listed button
+ * always works.
  */
-function isOAuthProviderConfigured(provider: 'discord' | 'github' | 'google'): boolean {
-  const prefix = provider.toUpperCase();
-  return (
-    isEnvFlagOn(`AUTH_${prefix}_ENABLED`) &&
-    !!envValue(`${prefix}_CLIENT_ID`) &&
-    !!envValue(`${prefix}_CLIENT_SECRET`)
-  );
+function isOAuthProviderConfigured(provider: 'discord' | 'github' | 'google' | 'twitch'): boolean {
+  return effectiveProviderSettings(provider).active;
 }
 
 /**
@@ -41,11 +39,12 @@ function isOAuthProviderConfigured(provider: 'discord' | 'github' | 'google'): b
  * be warned that Steam is unreachable.
  */
 export function isSteamSignInWanted(): boolean {
-  return !process.env.AUTH_STEAM_ENABLED || isEnvFlagOn('AUTH_STEAM_ENABLED');
+  return effectiveProviderSettings('steam').enabled;
 }
 
 /**
- * Build the list of configured auth providers based on environment variables.
+ * Build the list of configured auth providers: environment variables first,
+ * then what an admin saved on Settings -> Sign-in.
  *
  * This only exposes **public metadata** (labels, login URLs, issuer URLs).
  * Client secrets stay on the server.
@@ -61,7 +60,7 @@ export function getAuthProvidersConfig(): AuthProviderConfig[] {
     kind: 'steam-openid',
     label: 'Steam',
     loginUrl: '/api/auth/steam',
-    enabled: steamEnvEnabled && !!envValue('STEAM_API_KEY'),
+    enabled: steamEnvEnabled && effectiveProviderSettings('steam').configured,
   };
   providers.push(steamProvider);
 
@@ -115,6 +114,17 @@ export function getAuthProvidersConfig(): AuthProviderConfig[] {
       enabled: true,
     };
     providers.push(googleProvider);
+  }
+
+  if (isOAuthProviderConfigured('twitch')) {
+    const twitchProvider: TwitchAuthProviderConfig = {
+      id: 'twitch',
+      kind: 'oauth2',
+      label: 'Twitch',
+      loginUrl: '/api/auth/twitch',
+      enabled: true,
+    };
+    providers.push(twitchProvider);
   }
 
   return providers;

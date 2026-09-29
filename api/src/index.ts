@@ -56,7 +56,8 @@ import { getServiceTokens } from './utils/serviceTokens';
 import { allowUnauthenticatedEvents } from './middleware/serverAuth';
 import packageJson from '../package.json';
 import { redactDiscordIdsInPath } from './utils/discordId';
-import { configurePassportAuth, passport } from './config/passport';
+import { configurePassportAuth, passport, reloadPassportAuth } from './config/passport';
+import { authProviderSettingsService } from './services/authProviderSettingsService';
 import session from 'express-session';
 import connectPgSimple from 'connect-pg-simple';
 import { isIP } from 'net';
@@ -479,6 +480,16 @@ process.on('uncaughtException', (err) => {
     await db.init();
     log.success('Database initialized successfully');
 
+    // Sign-in providers saved on Settings -> Sign-in. The strategies were
+    // registered from the environment alone at import; redo them now that
+    // the saved settings can be read.
+    try {
+      await authProviderSettingsService.load();
+      reloadPassportAuth();
+    } catch (error) {
+      log.warn('[SIGN-IN] Could not load the saved sign-in settings; using the environment only', { error });
+    }
+
     // Code modules an operator put in DATA_DIR/modules: each enabled,
     // compatible one is loaded and registered next to the built-ins. After the
     // database, which holds which ones are enabled; before the packs and the
@@ -716,9 +727,9 @@ async function reportSteamApiKeyStatus(): Promise<void> {
   switch (health.errorType) {
     case 'not_configured':
       log.warn(
-        '[Startup] STEAM_API_KEY is not set. Steam features (avatars, name lookups, ' +
-          'Steam sign-in checks) are disabled. Get a key at ' +
-          'https://steamcommunity.com/dev/apikey and set STEAM_API_KEY.'
+        '[Startup] No Steam Web API key. Steam features (avatars, name lookups, ' +
+          'Steam sign-in) are disabled. Get a key at https://steamcommunity.com/dev/apikey ' +
+          'and enter it on Settings -> Sign-in, or set STEAM_API_KEY.'
       );
       break;
     case 'invalid_key':

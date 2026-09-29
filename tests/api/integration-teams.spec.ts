@@ -135,7 +135,13 @@ test.describe.serial('Teams API for integrators', () => {
     expect((await request.get('/api/integrations/teams', { headers: bearer('not-a-real-token-0123456789') })).status()).toBe(401);
   });
 
-  test('a team that is playing keeps its roster; its name can change', async ({ request }) => {
+  test('a team that is playing keeps its roster; its name can change', async ({ request, baseURL }) => {
+    // Creating a CS2 match needs a webhook URL. Set it here rather than
+    // relying on an earlier spec in the same shard to have done so.
+    const settings = await request.put('/api/settings', {
+      data: { webhookUrl: baseURL ?? 'http://localhost:3069' },
+    });
+    expect(settings.ok(), await settings.text()).toBe(true);
     const a = await put(request, ext(30), { name: 'CI Live A', players: players(30, 31) });
     const b = await put(request, ext(31), { name: 'CI Live B', players: players(32, 33) });
     const slug = `ci-teams-live-${run}`;

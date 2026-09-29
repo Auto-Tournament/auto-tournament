@@ -29,6 +29,7 @@ import logsRoutes from './logs';
 import teamMatchRoutes from './teamMatch';
 import teamStatsRoutes from './teamStats';
 import settingsRoutes from './settings';
+import signInProvidersRoutes from './signInProviders';
 import templatesRoutes from './templates';
 import manualMatchTemplatesRoutes from './manualMatchTemplates';
 import recoveryRoutes from './recovery';
@@ -111,6 +112,12 @@ const coreRoutes: MountedRouter[] = [
     router: settingsRoutes,
     title: 'Settings',
     description: 'Instance-wide settings.',
+  },
+  {
+    prefix: '/api/sign-in-providers',
+    router: signInProvidersRoutes,
+    title: 'Sign-in providers',
+    description: 'Steam, Discord, Google, GitHub and Twitch sign-in, set up from Settings -> Sign-in. Admin only; secrets are write-only.',
   },
   {
     prefix: '/api/templates',

@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 413 of them, 313 behind auth —
+Every endpoint this API serves — 419 of them, 316 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -469,6 +469,16 @@ Instance-wide settings.
 | `GET` | `/api/settings` | admin |
 | `PUT` | `/api/settings` | admin |
 
+### Sign-in providers
+
+Steam, Discord, Google, GitHub and Twitch sign-in, set up from Settings -> Sign-in. Admin only; secrets are write-only.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/sign-in-providers` | admin |
+| `PUT` | `/api/sign-in-providers/:provider` | admin |
+| `POST` | `/api/sign-in-providers/:provider/test` | admin |
+
 ### Tournament templates
 
 Saved tournament configurations.
@@ -812,6 +822,9 @@ Sign-in flows, admin identity, impersonation.
 | `GET` | `/api/auth/google` | public |
 | `POST` | `/api/auth/google/link` | public |
 | `GET` | `/api/auth/google/callback` | public |
+| `GET` | `/api/auth/twitch` | public |
+| `POST` | `/api/auth/twitch/link` | public |
+| `GET` | `/api/auth/twitch/callback` | public |
 | `GET` | `/api/auth/providers` | public |
 | `GET` | `/api/auth/me` | public |
 | `POST` | `/api/auth/self-register` | public |
