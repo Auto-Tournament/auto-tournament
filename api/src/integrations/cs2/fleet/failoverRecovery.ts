@@ -27,7 +27,7 @@ import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { ulid } from './credentials';
 import { linkFleetServer } from './link';
-import { listHosts } from './hosts/registry';
+import { getHostCommand, listHosts } from './hosts/registry';
 import { hostServers, sendHostCommand, HostCommandError } from './hosts/service';
 
 const envNum = (name: string, fallback: number): number => {
@@ -57,7 +57,7 @@ export interface RecoveryFailover {
 }
 
 /** Restart requested per failover: when, and for which csm server. */
-const restarts = new Map<string, { at: number; hostId: string; server: string; commandId: string }>();
+const restarts = new Map<string, { at: number; hostId: string; server: string; commandId: string; failed?: boolean }>();
 /** Create requested per failover. */
 const creates = new Map<string, { at: number; hostId: string; commandId: string }>();
 
@@ -101,13 +101,28 @@ async function lastRestartAt(hostId: string, server: string): Promise<number | n
 /**
  * Before auto-failover moves a match: restart the dead server through csm
  * first. 'wait' holds the move (a restart is in flight); 'go' lets it happen.
+ * csm answering the restart with failed / rejected (the server cannot start:
+ * port taken, files gone, …) ends the wait at once: it is not coming back.
  */
 export async function restartBeforeMove(f: RecoveryFailover, now = nowS()): Promise<'wait' | 'go'> {
   if (!csmRecoveryEnabled() || !f.fromServerId) return 'go';
   if (f.reason === 'restarted' || f.reason === 'manual') return 'go';
 
   const sent = restarts.get(f.id);
-  if (sent) return now - sent.at < restartWaitS() ? 'wait' : 'go';
+  if (sent) {
+    if (now - sent.at >= restartWaitS()) return 'go';
+    const answer = await getHostCommand(sent.commandId);
+    if (answer && (answer.status === 'failed' || answer.status === 'rejected')) {
+      if (!sent.failed) {
+        sent.failed = true;
+        const why = answer.errorMessage ?? answer.errorCode ?? answer.status;
+        await note(f.id, `csm could not restart ${sent.server} (${why.slice(0, 300)}); moving the match.`);
+        log.warn(`[FAILOVER] ${f.matchSlug}: csm restart of ${sent.server} ${answer.status} (${why}); moving instead`);
+      }
+      return 'go';
+    }
+    return 'wait';
+  }
 
   const where = await locate(f.fromServerId);
   if (!where) return 'go';
