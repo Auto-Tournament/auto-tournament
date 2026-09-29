@@ -1,18 +1,22 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Alert, Box, Button, Stack, TextField, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import QRCode from 'qrcode';
 import { postJson } from '../../utils/postJson';
 
 /**
- * Turn on TOTP for the signed-in local admin: shows the secret (and an
- * otpauth:// link for phones), then asks for a code to confirm.
+ * Turn on TOTP for the signed-in local admin: shows a scannable QR code and
+ * the raw secret/otpauth:// link (for authenticator apps and password
+ * managers like Bitwarden and 1Password), then asks for a code to confirm.
  */
 export function TotpEnrolment({ onDone, onSkip }: { onDone: () => void; onSkip?: () => void }) {
   const { t } = useTranslation();
   const [secret, setSecret] = useState<{ secret: string; uri: string } | null>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [copied, setCopied] = useState<'key' | 'link' | null>(null);
 
   // Once per mount: a second start would replace the pending secret shown here.
   const started = useRef(false);
@@ -24,6 +28,31 @@ export function TotpEnrolment({ onDone, onSkip }: { onDone: () => void; onSkip?:
       else setError(data.error || t('localAdmin.totp.startError'));
     });
   }, [t]);
+
+  useEffect(() => {
+    if (!secret) return;
+    let cancelled = false;
+    QRCode.toDataURL(secret.uri, { margin: 2, width: 360 })
+      .then((url) => {
+        if (!cancelled) setQrDataUrl(url);
+      })
+      .catch(() => {
+        if (!cancelled) setQrDataUrl(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [secret]);
+
+  const copy = async (text: string, which: 'key' | 'link') => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(which);
+      setTimeout(() => setCopied((current) => (current === which ? null : current)), 2000);
+    } catch {
+      // Clipboard access can be denied by the browser; there's nothing more we can do.
+    }
+  };
 
   const confirm = async (e: FormEvent) => {
     e.preventDefault();
@@ -39,6 +68,18 @@ export function TotpEnrolment({ onDone, onSkip }: { onDone: () => void; onSkip?:
       <Typography variant="body2">{t('localAdmin.totp.intro')}</Typography>
       {secret && (
         <Box>
+          {qrDataUrl && (
+            <Box sx={{ bgcolor: '#fff', display: 'inline-block', p: 1, borderRadius: 1, mb: 1.5 }}>
+              <img
+                src={qrDataUrl}
+                alt={t('localAdmin.totp.qrAlt')}
+                data-testid="totp-qr"
+                width={180}
+                height={180}
+                style={{ display: 'block' }}
+              />
+            </Box>
+          )}
           <Typography variant="caption" color="text.secondary">
             {t('localAdmin.totp.secretLabel')}
           </Typography>
@@ -48,9 +89,17 @@ export function TotpEnrolment({ onDone, onSkip }: { onDone: () => void; onSkip?:
           >
             {secret.secret.match(/.{1,4}/g)?.join(' ')}
           </Typography>
-          <Typography variant="body2" mt={1}>
-            <a href={secret.uri}>{t('localAdmin.totp.openInApp')}</a>
-          </Typography>
+          <Stack direction="row" spacing={1} mt={1}>
+            <Button size="small" variant="outlined" onClick={() => copy(secret.secret, 'key')} data-testid="totp-copy-key">
+              {copied === 'key' ? t('localAdmin.totp.copied') : t('localAdmin.totp.copyKey')}
+            </Button>
+            <Button size="small" variant="outlined" onClick={() => copy(secret.uri, 'link')} data-testid="totp-copy-link">
+              {copied === 'link' ? t('localAdmin.totp.copied') : t('localAdmin.totp.copyLink')}
+            </Button>
+          </Stack>
+          <Box aria-live="polite" sx={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>
+            {copied && t('localAdmin.totp.copied')}
+          </Box>
         </Box>
       )}
       <TextField
