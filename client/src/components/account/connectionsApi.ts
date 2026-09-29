@@ -26,6 +26,12 @@ export interface GameAccount {
   linked: boolean;
   verified: boolean;
   externalId: string | null;
+  /** Not linked, and this site offers that sign-in: Connect links it. */
+  canConnect: boolean;
+  /** This site offers sign-in with the provider at all. */
+  signInEnabled: boolean;
+  /** A linked non-Steam account as its provider describes it. */
+  account?: SignInMethod['account'];
   games: Array<{ id: string; name: string }>;
 }
 

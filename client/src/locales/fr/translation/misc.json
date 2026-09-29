@@ -90,7 +90,9 @@
       "description": "Each game needs its own account so matches know who you are.",
       "verified": "Verified",
       "id": "Steam ID {{id}}",
-      "more": "More game accounts appear here as games are added to this site."
+      "more": "More game accounts appear here as games are added to this site.",
+      "notConnected": "Connect your {{provider}} account to play these games.",
+      "notOffered": "{{provider}} sign-in is not turned on here yet. Ask an admin to turn it on in Settings → Sign-in."
     },
     "signIn": {
       "title": "Sign-in methods",

@@ -410,6 +410,30 @@ test.describe('Account connections: removing a sign-in method', () => {
       await ctx.dispose();
     }
   });
+
+  test('packs name their account too: Rocket League is an Epic Games account', TAGS, async () => {
+    const ctx = await newContext();
+    try {
+      expect(await signInAsPlayerViaRequest(ctx, randomSteamId())).toBe(true);
+      const body = (await (await ctx.get('/api/me/connections')).json()) as {
+        gameAccounts: Array<{
+          provider: string;
+          linked: boolean;
+          canConnect: boolean;
+          signInEnabled: boolean;
+          games: Array<{ id: string }>;
+        }>;
+      };
+      const epic = body.gameAccounts.find((a) => a.provider === 'epic');
+      // CI installs every bundled pack; Epic sign-in is not set up there.
+      expect(epic?.games.map((g) => g.id)).toEqual(expect.arrayContaining(['rocket-league', 'fortnite']));
+      expect(epic).toMatchObject({ linked: false, canConnect: false, signInEnabled: false });
+      const steam = body.gameAccounts.find((a) => a.provider === 'steam');
+      expect(steam?.games.map((g) => g.id)).toEqual(expect.arrayContaining(['cs2', 'dota-2']));
+    } finally {
+      await ctx.dispose();
+    }
+  });
 });
 
 test.describe('Account connections: rules (unit)', () => {

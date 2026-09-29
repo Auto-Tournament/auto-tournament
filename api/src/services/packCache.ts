@@ -59,6 +59,12 @@ export interface GamePackDefinition {
     confirmTimeoutMin?: number;
   };
   stats?: PackStatField[];
+  /**
+   * The account players need for this game, by sign-in provider id
+   * ('epic' for Rocket League, 'steam' for Dota 2). Drives "Game accounts" on
+   * /me/connections. Omit when the game is on several platforms.
+   */
+  account?: string;
 }
 
 export type PackSource = 'bundled' | 'index' | 'uploaded';

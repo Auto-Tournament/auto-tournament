@@ -59,6 +59,7 @@
  * a pack quietly rewritten on the way in is a pack nobody can reason about.
  */
 
+import { SIGN_IN_PROVIDER_IDS, isSignInProviderId } from '../config/signInProviders';
 import fs from 'fs/promises';
 import path from 'path';
 import { db } from '../config/database';
@@ -401,6 +402,7 @@ export function validatePack(
     'appIcon',
     'report',
     'stats',
+    'account',
   ]);
   const unknown = Object.keys(raw).filter((key) => !known.has(key));
   if (unknown.length > 0) return fail(`unknown field(s): ${unknown.join(', ')}`);
@@ -514,6 +516,14 @@ export function validatePack(
   const stats = validateStats(raw.stats);
   if (typeof stats === 'string') return fail(stats);
 
+  let account: string | undefined;
+  if (raw.account !== undefined) {
+    account = typeof raw.account === 'string' ? raw.account.trim().toLowerCase() : '';
+    if (!isSignInProviderId(account)) {
+      return fail(`account must be a sign-in provider: ${SIGN_IN_PROVIDER_IDS.join(', ')}`);
+    }
+  }
+
   return {
     ok: true,
     pack: {
@@ -529,6 +539,7 @@ export function validatePack(
       ...(typeof raw.appIcon === 'string' ? { appIcon: raw.appIcon } : {}),
       ...(report ? { report } : {}),
       ...(stats.fields.length > 0 ? { stats: stats.fields } : {}),
+      ...(account ? { account } : {}),
     },
   };
 }

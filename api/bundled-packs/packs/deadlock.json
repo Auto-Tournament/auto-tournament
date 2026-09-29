@@ -4,10 +4,11 @@
   "name": "Deadlock",
   "igdbId": 301298,
   "engine": "manual-report",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Six-a-side hero shooter MOBA.",
   "icon": "../icons/deadlock.svg",
   "appIcon": "../app-icons/deadlock.webp",
+  "account": "steam",
   "report": {
     "confirmation": "opponent",
     "confirmTimeoutMin": 60
