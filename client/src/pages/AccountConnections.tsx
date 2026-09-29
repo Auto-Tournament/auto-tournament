@@ -14,6 +14,7 @@ import {
   DialogContentText,
   DialogTitle,
   Stack,
+  TextField,
   Tooltip,
   Typography,
 } from '@mui/material';
@@ -25,7 +26,11 @@ import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { GamePicker } from '../components/games/GamePicker';
 import { GAMES_UPDATED_EVENT, fetchMyGames, saveMyGames, type GameSummary } from '../components/games/gamesApi';
 import {
+  apiErrorFlag,
+  cancelSteamMerge,
   fetchConnections,
+  mergeSteamPlayer,
+  reconfirmPassword,
   removeSignInMethod,
   startLink,
   type ConnectionsResponse,
@@ -162,6 +167,12 @@ function Section({
 
 const muted = { color: color.muted, fontSize: '0.875rem' } as const;
 
+/** What to do once the admin password has been confirmed again. */
+type ReauthNext =
+  | { kind: 'link'; provider: string }
+  | { kind: 'merge' }
+  | { kind: 'remove'; method: SignInMethod };
+
 export default function AccountConnections() {
   const { t, i18n } = useTranslation();
   const { showSuccess, showError } = useSnackbar();
@@ -173,6 +184,11 @@ export default function AccountConnections() {
   const [savingGames, setSavingGames] = useState(false);
   const [removing, setRemoving] = useState<SignInMethod | null>(null);
   const [busy, setBusy] = useState(false);
+  const [reauthNext, setReauthNext] = useState<ReauthNext | null>(null);
+  const [password, setPassword] = useState('');
+  const [totp, setTotp] = useState('');
+  const [reauthError, setReauthError] = useState<string | null>(null);
+  const [mergeDismissed, setMergeDismissed] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -205,7 +221,7 @@ export default function AccountConnections() {
     return () => window.removeEventListener(GAMES_UPDATED_EVENT, onUpdated);
   }, [load, loadGames]);
 
-  // Back from a link flow: /me/connections?link=ok|taken|failed&provider=github
+  // Back from a link flow: /me/connections?link=ok|taken|failed|reauth|merge&provider=github
   useEffect(() => {
     const outcome = searchParams.get('link');
     if (!outcome || (!data && !loadFailed)) return;
@@ -213,7 +229,9 @@ export default function AccountConnections() {
     const label = data?.signInMethods.find((m) => m.provider === provider)?.label ?? provider;
     if (outcome === 'ok') showSuccess(t('account.signIn.linked', { provider: label }));
     else if (outcome === 'taken') showError(t('account.signIn.taken', { provider: label }));
-    else showError(t('account.signIn.linkFailed', { provider: label }));
+    else if (outcome === 'reauth') openReauth({ kind: 'link', provider });
+    // 'merge': the merge dialog opens from `pendingMerge`.
+    else if (outcome !== 'merge') showError(t('account.signIn.linkFailed', { provider: label }));
     const next = new URLSearchParams(searchParams);
     next.delete('link');
     next.delete('provider');
@@ -228,15 +246,92 @@ export default function AccountConnections() {
       year: 'numeric',
     });
 
-  const confirmRemove = async () => {
-    if (!removing) return;
+  const labelOf = (method: SignInMethod) =>
+    method.provider === 'local' ? t('account.signIn.localLabel') : method.label;
+
+  function openReauth(next: ReauthNext) {
+    setPassword('');
+    setTotp('');
+    setReauthError(null);
+    setReauthNext(next);
+  }
+
+  /** Connect a provider; an account with an admin login confirms its password first. */
+  const connect = (provider: string) => {
+    if (data?.localLogin && !data.localLogin.reauthFresh) openReauth({ kind: 'link', provider });
+    else startLink(provider);
+  };
+
+  const doRemove = async (method: SignInMethod) => {
     setBusy(true);
     try {
-      setData(await removeSignInMethod(removing.provider));
-      showSuccess(t('account.signIn.removed', { provider: removing.label }));
+      setData(await removeSignInMethod(method.provider));
+      showSuccess(t('account.signIn.removed', { provider: labelOf(method) }));
       setRemoving(null);
     } catch (err) {
-      showError(apiErrorMessage(err, t('account.signIn.removeFailed')));
+      if (apiErrorFlag(err, 'reauthRequired')) {
+        setRemoving(null);
+        openReauth({ kind: 'remove', method });
+      } else {
+        showError(apiErrorMessage(err, t('account.signIn.removeFailed')));
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const confirmRemove = async () => {
+    if (removing) await doRemove(removing);
+  };
+
+  const doMerge = async () => {
+    setBusy(true);
+    try {
+      await mergeSteamPlayer();
+      // The account is the Steam player now: reload so every part of the app sees it.
+      window.location.assign('/me/connections?link=ok&provider=steam');
+    } catch (err) {
+      if (apiErrorFlag(err, 'reauthRequired')) {
+        openReauth({ kind: 'merge' });
+      } else {
+        showError(apiErrorMessage(err, t('account.merge.failed')));
+        setMergeDismissed(true);
+        void load();
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const cancelMerge = async () => {
+    setMergeDismissed(true);
+    try {
+      await cancelSteamMerge();
+    } catch {
+      // It expires on its own after 10 minutes.
+    }
+    void load();
+  };
+
+  const submitReauth = async () => {
+    const next = reauthNext;
+    setBusy(true);
+    setReauthError(null);
+    try {
+      await reconfirmPassword(password, totp.trim() || undefined);
+      setReauthNext(null);
+      setPassword('');
+      setTotp('');
+      setData((d) => (d && d.localLogin ? { ...d, localLogin: { ...d.localLogin, reauthFresh: true } } : d));
+      if (next?.kind === 'link') startLink(next.provider);
+      else if (next?.kind === 'merge') void doMerge();
+      else if (next?.kind === 'remove') void doRemove(next.method);
+    } catch (err) {
+      setReauthError(
+        apiErrorFlag(err, 'totpRequired') && !totp.trim()
+          ? t('account.reauth.totpNeeded')
+          : apiErrorMessage(err, t('account.reauth.failed'))
+      );
     } finally {
       setBusy(false);
     }
@@ -462,7 +557,10 @@ export default function AccountConnections() {
                 <ListPanel label={t('account.signIn.title')}>
                   {data.signInMethods.map((method) => {
                     let detail: string;
-                    if (method.primary) {
+                    if (method.provider === 'local') {
+                      detail = t('account.signIn.localDetail', { username: method.username ?? '' });
+                      if (!method.signInEnabled) detail += ` · ${t('account.signIn.turnedOff')}`;
+                    } else if (method.primary) {
                       detail =
                         steamGames.length > 0
                           ? t('account.signIn.primaryDetail', {
@@ -505,7 +603,7 @@ export default function AccountConnections() {
                         <Button
                           size="small"
                           variant="outlined"
-                          onClick={() => startLink(method.provider)}
+                          onClick={() => connect(method.provider)}
                           data-testid={`sign-in-connect-${method.provider}`}
                         >
                           {t('account.signIn.connect')}
@@ -517,8 +615,8 @@ export default function AccountConnections() {
                       <Row
                         key={method.provider}
                         testId={`sign-in-${method.provider}`}
-                        tile={<ProviderTile provider={method.provider} label={method.label} />}
-                        title={method.label}
+                        tile={<ProviderTile provider={method.provider} label={labelOf(method)} />}
+                        title={labelOf(method)}
                         end={end}
                       >
                         <Typography sx={muted}>{detail}</Typography>
@@ -540,11 +638,11 @@ export default function AccountConnections() {
         aria-labelledby="remove-sign-in-title"
       >
         <DialogTitle id="remove-sign-in-title">
-          {t('account.signIn.removeTitle', { provider: removing?.label ?? '' })}
+          {t('account.signIn.removeTitle', { provider: removing ? labelOf(removing) : '' })}
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            {t('account.signIn.removeBody', { provider: removing?.label ?? '' })}
+            {t('account.signIn.removeBody', { provider: removing ? labelOf(removing) : '' })}
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5 }}>
@@ -559,6 +657,109 @@ export default function AccountConnections() {
             data-testid="sign-in-remove-confirm"
           >
             {t('account.signIn.remove')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={reauthNext !== null}
+        onClose={() => !busy && setReauthNext(null)}
+        aria-labelledby="reauth-title"
+      >
+        <Box
+          component="form"
+          onSubmit={(e: React.FormEvent) => {
+            e.preventDefault();
+            void submitReauth();
+          }}
+        >
+          <DialogTitle id="reauth-title">{t('account.reauth.title')}</DialogTitle>
+          <DialogContent>
+            <DialogContentText sx={{ mb: 2 }}>
+              {t('account.reauth.body', { username: data?.localLogin?.username ?? '' })}
+            </DialogContentText>
+            <TextField
+              autoFocus
+              fullWidth
+              type="password"
+              autoComplete="current-password"
+              label={t('account.reauth.password')}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              inputProps={{ 'data-testid': 'reauth-password' }}
+              sx={{ mb: 2 }}
+            />
+            {data?.localLogin?.totpEnabled && (
+              <TextField
+                fullWidth
+                autoComplete="one-time-code"
+                label={t('account.reauth.totp')}
+                value={totp}
+                onChange={(e) => setTotp(e.target.value)}
+                inputProps={{ 'data-testid': 'reauth-totp', inputMode: 'numeric' }}
+              />
+            )}
+            {reauthError && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                {reauthError}
+              </Alert>
+            )}
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2.5 }}>
+            <Button onClick={() => setReauthNext(null)} disabled={busy}>
+              {t('games.profile.cancel')}
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={busy || password.length === 0}
+              data-testid="reauth-confirm"
+            >
+              {t('account.reauth.confirm')}
+            </Button>
+          </DialogActions>
+        </Box>
+      </Dialog>
+
+      <Dialog
+        open={!!data?.pendingMerge && !mergeDismissed && reauthNext === null}
+        onClose={() => !busy && void cancelMerge()}
+        aria-labelledby="merge-title"
+      >
+        <DialogTitle id="merge-title">{t('account.merge.title')}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{t('account.merge.body')}</DialogContentText>
+          {data?.pendingMerge && (
+            <Stack direction="row" spacing={2} alignItems="center" sx={{ my: 2 }}>
+              <PlayerAvatar
+                id={data.pendingMerge.steamId}
+                name={data.pendingMerge.name}
+                avatarUrl={data.pendingMerge.avatar ?? undefined}
+                size={40}
+              />
+              <Box sx={{ minWidth: 0 }}>
+                <Typography fontWeight={600} sx={{ overflowWrap: 'anywhere' }}>
+                  {data.pendingMerge.name}
+                </Typography>
+                <Typography sx={muted}>
+                  {t('account.merge.matches', { count: data.pendingMerge.matches })}
+                </Typography>
+              </Box>
+            </Stack>
+          )}
+          <DialogContentText>{t('account.merge.explain')}</DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
+          <Button onClick={() => void cancelMerge()} disabled={busy}>
+            {t('games.profile.cancel')}
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => void doMerge()}
+            disabled={busy}
+            data-testid="steam-merge-confirm"
+          >
+            {t('account.merge.confirm')}
           </Button>
         </DialogActions>
       </Dialog>

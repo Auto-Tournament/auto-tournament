@@ -111,7 +111,27 @@
       "removeFailed": "Kunne ikke fjerne denne innloggingsmetoden",
       "linked": "{{provider}} tilkoblet",
       "taken": "Den {{provider}}-kontoen er allerede koblet til en annen konto på denne siden.",
-      "linkFailed": "Kunne ikke koble til {{provider}}. Prøv igjen."
+      "linkFailed": "Kunne ikke koble til {{provider}}. Prøv igjen.",
+      "localLabel": "Admininnlogging (brukernavn + passord)",
+      "localDetail": "Brukernavn {{username}}"
+    },
+    "reauth": {
+      "title": "Bekreft admin-passordet ditt",
+      "body": "Skriv inn passordet for {{username}} før du endrer hvordan du logger inn.",
+      "password": "Passord",
+      "totp": "Kode fra autentiseringsappen",
+      "confirm": "Bekreft",
+      "failed": "Feil passord eller kode",
+      "totpNeeded": "Skriv inn koden fra autentiseringsappen også."
+    },
+    "merge": {
+      "title": "Slå sammen kontoene?",
+      "body": "Denne Steam-kontoen har allerede en spiller på denne siden. Vil du slå den sammen med admin-kontoen din?",
+      "explain": "Spilleren beholder kampene og statistikken sin og blir admin. Admininnloggingen din og tilkoblede innloggingsmetoder flyttes over til den.",
+      "matches_one": "{{count}} kamp spilt",
+      "matches_other": "{{count}} kamper spilt",
+      "confirm": "Slå sammen kontoene",
+      "failed": "Kunne ikke slå sammen kontoene"
     }
   },
   "home": {

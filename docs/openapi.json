@@ -1251,6 +1251,49 @@
         ]
       }
     },
+    "/api/auth/local/reauth": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Confirm the local admin password again (step-up)",
+        "description": "Same-site JSON. For a signed-in account that has a local admin login\n(signed in with it or with a connected provider). Enter the password,\nplus `totp` when TOTP is on. For 10 minutes the account can then\nconnect sign-in methods, merge a Steam player or remove its password\nlogin. Throttled like sign-in.\n",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string"
+                  },
+                  "totp": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Confirmed for 10 minutes"
+          },
+          "401": {
+            "description": "Wrong password or code; or `totpRequired`"
+          },
+          "403": {
+            "description": "Impersonating"
+          },
+          "404": {
+            "description": "Not signed in, or the account has no local login"
+          },
+          "429": {
+            "description": "Too many attempts"
+          }
+        }
+      }
+    },
     "/api/auth/local/status": {
       "get": {
         "tags": [
@@ -1404,6 +1447,32 @@
         "responses": {
           "200": {
             "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/auth/steam/link": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Start connecting Steam to the signed-in local admin account",
+        "description": "A same-site form post from /me/connections, for accounts created on /setup (no Steam identity yet). Needs the local password re-confirmed in the last 10 minutes (POST /api/auth/local/reauth), else redirects to /me/connections?link=reauth. Redirects to Steam; the callback attaches the Steam ID (?link=ok), or, when a player with that Steam ID exists, asks to merge (?link=merge, then POST /api/me/connections/steam/merge).\n",
+        "responses": {
+          "302": {
+            "description": "Redirect to Steam, or back to /me/connections"
+          },
+          "400": {
+            "description": "The account already signs in with Steam"
+          },
+          "401": {
+            "description": "Not signed in"
+          },
+          "403": {
+            "description": "Impersonating, or a cross-site request"
+          },
+          "503": {
+            "description": "Steam sign-in is not set up"
           }
         }
       }
@@ -6044,7 +6113,7 @@
           "Me"
         ],
         "summary": "The signed-in player's sign-in methods and game accounts",
-        "description": "Sign-in methods list Steam (the account's primary identity, never removable) and every provider this site offers or the account has linked. Game accounts are derived from the installed game modules. Answers for the real signed-in account, also while impersonating.\n",
+        "description": "Sign-in methods list Steam (the account's primary identity, never removable), the local admin login when the account has one, and every provider this site offers or the account has linked. A local admin account created on /setup has no Steam identity until it connects one (`canConnect` on the Steam row). `pendingMerge` is set after Steam answered with a Steam ID that already has a player. Game accounts are derived from the installed game modules. Answers for the real signed-in account, also while impersonating.\n",
         "responses": {
           "200": {
             "description": "Account, sign-in methods and game accounts"
@@ -6058,13 +6127,49 @@
         }
       }
     },
+    "/api/me/connections/steam/merge": {
+      "post": {
+        "tags": [
+          "Me"
+        ],
+        "summary": "Merge the Steam player waiting for confirmation into this local admin account",
+        "description": "After connecting Steam answered with a Steam ID that already has a player (`pendingMerge` on GET /api/me/connections). The Steam player is kept (its id, matches and stats stay as they are) and becomes an admin; the local login and the sign-in methods of this account move onto it, and the local-* account is retired. This browser is then signed in as the Steam player. Same-site JSON; needs the password re-confirmed in the last 10 minutes. Audit-logged.\n",
+        "responses": {
+          "200": {
+            "description": "Merged; `steamId` is the account's id now"
+          },
+          "403": {
+            "description": "Impersonating, a cross-site request, or `reauthRequired`"
+          },
+          "404": {
+            "description": "No merge waiting (expired after 10 minutes)"
+          },
+          "409": {
+            "description": "The Steam player has its own admin login, or changed in between"
+          }
+        }
+      }
+    },
+    "/api/me/connections/steam/merge/cancel": {
+      "post": {
+        "tags": [
+          "Me"
+        ],
+        "summary": "Drop the Steam merge waiting for confirmation",
+        "responses": {
+          "200": {
+            "description": "Dropped (or nothing was waiting)"
+          }
+        }
+      }
+    },
     "/api/me/connections/{provider}/remove": {
       "post": {
         "tags": [
           "Me"
         ],
         "summary": "Remove a sign-in method from the signed-in player's account",
-        "description": "Steam cannot be removed (it is the account's primary identity), and neither can the last method this site would let the player sign in with. Requires a JSON request from this site (Origin checked).\n",
+        "description": "Steam cannot be removed (it is the account's primary identity), and neither can the last method this site would let the player sign in with. `local` removes the account's admin login (username + password), and needs the password re-confirmed in the last 10 minutes (`reauthRequired`). Requires a JSON request from this site (Origin checked).\n",
         "parameters": [
           {
             "in": "path",
@@ -6076,7 +6181,9 @@
                 "discord",
                 "keycloak",
                 "github",
-                "google"
+                "google",
+                "twitch",
+                "local"
               ]
             }
           }
@@ -6092,7 +6199,7 @@
             "description": "Not signed in"
           },
           "403": {
-            "description": "Impersonating, or a cross-site request"
+            "description": "Impersonating, a cross-site request, or `reauthRequired`"
           },
           "404": {
             "description": "Not linked to this account"
@@ -11389,6 +11496,34 @@
           "Test helpers"
         ],
         "summary": "POST /api/test/setup-code/expire",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/test/steam-link/callback": {
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/steam-link/callback",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/test/steam-link/start": {
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/steam-link/start",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
