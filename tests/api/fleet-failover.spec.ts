@@ -540,6 +540,62 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     expect((await failoverView(request, slug)).recent[0]).toMatchObject({ reason: 'restarted', newCs2ServerId: cs2A });
   });
 
+  test('csm cannot restart the dead server: the match moves at once, without the restart wait', async ({ request }) => {
+    test.setTimeout(180_000);
+    await setFailover(request, { csm: true });
+    const a = await FakeReadyUp.enroll(request);
+    cleanup.push(() => a.close());
+    await a.hello();
+    const cs2A = await link(request, a.serverId);
+    cleanup.push(() => unlink(request, a.serverId));
+
+    const m = await linkMachine(request, 'failover-restart-fails');
+    const csm = await FakeCsm.connect(m.token, m.hostId, m.machineId);
+    cleanup.push(() => csm.close());
+    await csm.handshake();
+    csm.sendEphemeral(
+      'host.inventory',
+      inventory(m.hostId, [inventoryServer('server-1', { readyup: { installed: '0.5.0', install_id: a.installId, health: 'ok', phase: 'live', update_safe: false } })])
+    );
+    await expect
+      .poll(async () => {
+        const host = (await (await request.get(`/api/fleet/hosts/${m.hostId}`, { headers: getAuthHeader() })).json()).host;
+        return host.servers?.[0]?.fleetServer?.id ?? null;
+      })
+      .toBe(a.serverId);
+
+    const slug = `fleet-fo-csm-fail-${Date.now()}`;
+    cleanup.push(async () => {
+      await request.post(`/api/matches/${slug}/force-cancel`, { headers: getAuthHeader() });
+    });
+    const { epoch, backup } = await liveWithBackup(request, a, slug);
+    const b = await FakeReadyUp.enroll(request);
+    cleanup.push(() => b.close());
+    await b.hello();
+    const cs2B = await link(request, b.serverId);
+    cleanup.push(() => unlink(request, b.serverId));
+
+    a.kill();
+    await scanUntilProposed(request, slug);
+    const restart = await csm.nextCommand('server.restart', 15_000);
+    expect((await matchRow(request, slug))?.serverId).toBe(cs2A);
+
+    // The server cannot start again (csm: game port taken): no 90 s wait, the next pass moves the match.
+    const answer = csm.sendReliable(
+      'host.result',
+      { status: 'failed', error: { code: 'failed', message: 'restart server-1: game port 27015 is already in use' } },
+      { ref: restart.id }
+    );
+    await csm.acked(answer.seq as number);
+    const assigned = acceptAssign(b, slug);
+    const scanning = request.post('/api/test/fleet/failover/scan', { headers: getAuthHeader(), data: {} });
+    const assign = await assigned;
+    await scanning;
+    expect(assign.epoch).toBe(epoch + 1);
+    expect((assign.payload as { resume: { round: number } }).resume).toMatchObject({ round: backup.round });
+    await expect.poll(async () => (await matchRow(request, slug))?.serverId, { timeout: 15_000 }).toBe(cs2B);
+  });
+
   test('no free server and csm has room: csm creates one, it joins the pool and takes the match', async ({ request }) => {
     test.setTimeout(180_000);
     await setFailover(request, { csm: true });
