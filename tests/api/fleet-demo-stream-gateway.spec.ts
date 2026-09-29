@@ -234,6 +234,72 @@ test.describe.serial('Fleet demo stream (gateway)', () => {
     client.close();
   });
 
+  test('a map in two parts (failover): the part that started last stays linked when an earlier one finishes later', async ({
+    request,
+  }) => {
+    const setup = await setupTournament(request, { teamCount: 2, serverCount: 1, format: 'bo1' });
+    expect(setup).toBeTruthy();
+    const matches = await (await request.get('/api/matches', { headers: getAuthHeader() })).json();
+    const slug = matches.matches?.[0]?.slug as string;
+    expect(slug).toBeTruthy();
+
+    const server = await enrollNew(request);
+    const epoch = await assign(request, slug, server.server_id);
+    const client = await FleetTestClient.connect(server.token);
+    await client.handshake(server.server_id, server.installId, { capabilities: CAPABILITIES });
+    client.send(assignSnapshot(slug, epoch));
+    client.send(reliable('live.event.phase.json', { slug, epoch, seq: 1, rev: 1, data: { from: 'warmup', to: 'live', reason: 'flow' } }));
+    await acked(client, 1);
+    const mapResult = example('live.event.map_result.json');
+    client.send(
+      reliable('live.event.map_result.json', {
+        slug,
+        epoch,
+        seq: 2,
+        rev: 2,
+        data: {
+          ...(mapResult.payload.data as Record<string, unknown>),
+          winner: 'team1',
+          team1_score: 13,
+          team2_score: 5,
+          team1_series_score: 1,
+          team2_series_score: 0,
+          series_over: false,
+        },
+      })
+    );
+    await acked(client, 2);
+
+    const streamWhole = async (name: string, startedAt: number, file: Buffer) => {
+      const demoId = ulid();
+      const begin = { demo_id: demoId, match_id: slug, map_number: 1, file: name, started_at: startedAt, chunk_size: CHUNK, recording: false };
+      expect((await send(client, 'demo.begin', begin, epoch)).payload).toEqual({ demo_id: demoId, offset: 0 });
+      for (let off = 0; off < file.length; off += CHUNK) await send(client, 'demo.chunk', chunk(demoId, file, off));
+      const done = await send(client, 'demo.end', { demo_id: demoId, size: file.length, sha256: sha(file) });
+      expect(done.payload).toEqual({ demo_id: demoId, offset: file.length, complete: true });
+    };
+    const tag = slug.replace(/[^A-Za-z0-9_-]/g, '_');
+    const lastPart = demoFile(3 * CHUNK + 17);
+    const lastName = `2026-09-29_18-40-00_${tag}_de_dust2_A_vs_B.dem`;
+    const firstPart = demoFile(2 * CHUNK + 5);
+    firstPart.write('first part', 16, 'latin1');
+    const firstName = `2026-09-29_18-30-00_${tag}_de_dust2_A_vs_B.dem`;
+
+    // The part from the server the match moved to ends with the map; the part from the server
+    // that went down arrives later, when that server is back.
+    await streamWhole(lastName, Date.now() - 60_000, lastPart);
+    await streamWhole(firstName, Date.now() - 600_000, firstPart);
+
+    const body = await (await request.get(`/api/matches/${slug}`, { headers: getAuthHeader() })).json();
+    const match = body.match ?? body;
+    const map0 = (match.mapResults as Array<{ mapNumber: number; demoFilePath: string | null }>).find((m) => m.mapNumber === 0);
+    expect(map0?.demoFilePath).toContain(lastName);
+    const download = await request.get(`/api/demos/${slug}/download/0`, { headers: getAuthHeader() });
+    expect(download.status()).toBe(200);
+    expect(sha(Buffer.from(await download.body()))).toBe(sha(lastPart));
+    client.close();
+  });
+
   test('a demo for a match the server never held is refused (not_assigned)', async ({ request }) => {
     const server = await enrollNew(request);
     const client = await FleetTestClient.connect(server.token);
