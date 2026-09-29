@@ -247,14 +247,17 @@ test.describe('Player Management API', () => {
       });
       expect(response1.status()).toBe(400);
 
-      // Missing ID
+      // No Steam ID: allowed (Steam is optional); the server makes an account id.
       const response2 = await request.post('/api/players', {
         headers: getAuthHeader(),
         data: {
-          name: 'Test Player',
+          name: 'Player Without Steam',
         },
       });
-      expect(response2.status()).toBe(400);
+      expect(response2.status()).toBe(201);
+      const created = (await response2.json()).player;
+      expect(created.id).toMatch(/^acc_[0-9a-f]{24}$/);
+      await request.delete(`/api/players/${created.id}`, { headers: getAuthHeader() });
     }
   );
 });
