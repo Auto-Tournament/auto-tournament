@@ -240,6 +240,8 @@ interface SignInMethodRow {
   removable: boolean;
   /** The local admin login's username. */
   username?: string;
+  /** The connected account as its provider describes it. Shown to the owner only. */
+  account?: { id: string; name: string | null; avatarUrl: string | null; email: string | null };
 }
 
 async function connectionsResponse(req: Request, account: PlayerAccount, isImpersonating: boolean) {
@@ -280,6 +282,7 @@ async function connectionsResponse(req: Request, account: PlayerAccount, isImper
     signInEnabled: enabled.has('steam'),
     canConnect: !hasSteam && enabled.has('steam'),
     removable: false,
+    ...(hasSteam && { account: { id: account.steamId, name: null, avatarUrl: null, email: null } }),
   });
   // Every provider this site offers, plus any linked one it no longer offers.
   const shown = LINKABLE_PROVIDERS.filter(
@@ -296,6 +299,14 @@ async function connectionsResponse(req: Request, account: PlayerAccount, isImper
       signInEnabled: enabled.has(provider),
       canConnect: !identity && enabled.has(provider),
       removable: !!identity && removable(provider),
+      ...(identity && {
+        account: {
+          id: identity.providerUserId,
+          name: identity.displayName,
+          avatarUrl: identity.avatarUrl,
+          email: identity.email,
+        },
+      }),
     });
   }
 

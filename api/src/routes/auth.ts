@@ -163,6 +163,28 @@ function avatarRank(url: string | null | undefined): number {
 }
 
 /** Use a provider's picture when it outranks the player's current one. */
+/**
+ * Store the provider's name, picture and verified email on the identity, for
+ * its owner's /me/connections. Best effort: never fails a sign-in.
+ */
+async function rememberIdentityProfile(
+  provider: AuthProvider,
+  providerUserId: string,
+  user: Record<string, unknown>
+): Promise<void> {
+  const text = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim().slice(0, 256) : null);
+  const avatar = text(user.avatarUrl);
+  try {
+    await authIdentityService.saveProfile(provider, providerUserId, {
+      displayName: text(user.displayName) ?? text(user.username),
+      avatarUrl: avatar && /^https:\/\//.test(avatar) ? avatar : null,
+      email: text(user.verifiedEmail),
+    });
+  } catch (error) {
+    log.warn('Could not save the sign-in profile', { provider, error: (error as Error).message });
+  }
+}
+
 async function applyProviderAvatar(steamId: string, avatarUrl: unknown): Promise<void> {
   if (typeof avatarUrl !== 'string' || !avatarUrl) return;
   try {
@@ -742,6 +764,7 @@ export function ssoCallbackHandler(expectedProvider: AuthProvider) {
           return linkResultRedirect(req, res, provider, 'taken');
         }
         user.steamId = cookieSteamId;
+        await rememberIdentityProfile(provider, providerUserId, user);
         await grantAdminForVerifiedEmail(cookieSteamId, provider, verifiedEmail);
         await applyProviderAvatar(cookieSteamId, user.avatarUrl);
         setPlayerSteamCookie(req, res, cookieSteamId);
@@ -763,6 +786,7 @@ export function ssoCallbackHandler(expectedProvider: AuthProvider) {
 
       if (steamId) {
         user.steamId = steamId;
+        await rememberIdentityProfile(provider, providerUserId, user);
         await grantAdminForVerifiedEmail(steamId, provider, verifiedEmail);
         await applyProviderAvatar(steamId, user.avatarUrl);
         setPlayerSteamCookie(req, res, steamId);
@@ -790,6 +814,7 @@ export function ssoCallbackHandler(expectedProvider: AuthProvider) {
         const outcome = await authIdentityService.linkIdentityUnlessOwnedElsewhere(provider, providerUserId, accountId);
         if (outcome === 'linked') {
           user.steamId = accountId;
+          await rememberIdentityProfile(provider, providerUserId, user);
           await grantAdminForVerifiedEmail(accountId, provider, verifiedEmail);
           setPlayerSteamCookie(req, res, accountId);
           log.success(`${label} sign-in created an account without Steam`, { provider, accountId });
@@ -997,6 +1022,7 @@ function accountLinkCallback(strategyName: string, provider: AuthProvider) {
             });
           }
 
+          await rememberIdentityProfile(provider, providerUserId, passportUser);
           await applyProviderAvatar(intent.steamId, (passportUser as { avatarUrl?: unknown }).avatarUrl);
           log.success(`${label} linked to account`, {
             provider,

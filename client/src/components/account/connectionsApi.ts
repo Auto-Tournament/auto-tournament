@@ -15,6 +15,8 @@ export interface SignInMethod {
   removable: boolean;
   /** `local` (the admin login): its username. */
   username?: string;
+  /** The connected account as its provider describes it (name etc. from the last sign-in). */
+  account?: { id: string; name: string | null; avatarUrl: string | null; email: string | null };
 }
 
 /** One row of "Game accounts", derived from the installed game modules. */
