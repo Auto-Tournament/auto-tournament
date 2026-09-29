@@ -77,7 +77,7 @@ export interface HelloPayload {
   /** MatchState (§9); null or absent when idle. */
   state?: Record<string, unknown> | null;
   availability: Availability;
-  selftest?: { pass: boolean; passed: number; total: number; failures: string[] };
+  selftest?: SelftestSummary;
   /** Rev of the admins.set list the server has cached (D13); absent = none. */
   admins_rev?: number;
   /** Plugins the core did not load on this CS2 build (informational). */
@@ -548,6 +548,31 @@ export interface ServerAvailabilityPayload {
   reason: string;
 }
 
+/** The core's selftest outcome (hello.selftest, server.selftest). */
+export interface SelftestSummary {
+  pass: boolean;
+  passed: number;
+  total: number;
+  failures: string[];
+}
+
+/** Server -> platform (reliable): Steam says this CS2 build is behind; sent once per required version. */
+export interface ServerCs2UpdateRequiredPayload {
+  /** Steam's required_version (the PatchVersion without dots, e.g. 14035). */
+  required_build: number;
+}
+
+/** Server -> platform (reliable): the selftest outcome changed. */
+export type ServerSelftestPayload = SelftestSummary;
+
+/** Platform -> server (reliable): finish the current match, take nothing new. */
+export interface ServerDrainPayload {
+  reason?: string;
+}
+
+/** Platform -> server (reliable): take matches again after a drain. */
+export type ServerUndrainPayload = Record<string, never>;
+
 export interface SkinsStattrakPayload {
   increments: { steamid64: U64s; defindex: number; kills: number }[];
 }
@@ -786,6 +811,10 @@ export interface FleetMessages {
   'state.snapshot': StateSnapshotPayload;
   'state.patch': StatePatchPayload;
   'server.availability': ServerAvailabilityPayload;
+  'server.cs2_update_required': ServerCs2UpdateRequiredPayload;
+  'server.selftest': ServerSelftestPayload;
+  'server.drain': ServerDrainPayload;
+  'server.undrain': ServerUndrainPayload;
   'admins.set': AdminsSetPayload;
   'skins.loadout': SkinsLoadoutPayload;
   'skins.invalidate': SkinsInvalidatePayload;
@@ -848,6 +877,10 @@ export const FLEET_MESSAGES: Record<FleetMessageType, { direction: Direction; re
   'state.snapshot': { direction: 'server_to_platform', reliable: false },
   'state.patch': S2P_RELIABLE,
   'server.availability': S2P_RELIABLE,
+  'server.cs2_update_required': S2P_RELIABLE,
+  'server.selftest': S2P_RELIABLE,
+  'server.drain': P2S_RELIABLE,
+  'server.undrain': P2S_RELIABLE,
   'skins.stattrak': S2P_RELIABLE,
   'event.player_connect': S2P_RELIABLE,
   'event.player_disconnect': S2P_RELIABLE,

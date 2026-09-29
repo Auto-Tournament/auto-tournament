@@ -1,0 +1,35 @@
+{
+  "v": 1,
+  "type": "server.config",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9P20",
+  "ts": 1790340012345,
+  "seq": 2,
+  "payload": {
+    "rev": 3,
+    "settings": {
+      "chat_prefix": "<Green>[Auto Tournament]<Default>",
+      "admin_chat_prefix": "<DarkRed>[Admin]<Default>",
+      "hostname_format": "{TEAM1} vs {TEAM2} | map {MAPNUMBER}",
+      "demo": {
+        "path": "ReadyUp/",
+        "name_format": "{TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}"
+      },
+      "series_end_kick_delay": {
+        "no_demo": 5,
+        "demo_no_upload": 10,
+        "demo_upload": 60
+      },
+      "offline_pause_minutes": 3,
+      "scrim_when_idle": true,
+      "scrim_knife": true,
+      "warmup": {
+        "message_html": "<b>Welcome</b><br>Type <b>.r</b> to ready up.",
+        "respawn": true,
+        "money": 16000
+      },
+      "status_http": {
+        "token": "example_status_token_0123456789"
+      }
+    }
+  }
+}

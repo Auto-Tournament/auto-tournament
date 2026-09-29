@@ -31,6 +31,7 @@ admin actions): what exists, and the calls to use.
 | `backups.ts` | **the round backup store** (`roundBackupStore`): `event.backup` in (checked, parts joined, newest per round), retention |
 | `restore.ts` | **"restore to round N"**: `cmd restore_round` with the backup inline (or `css_restore` over RCON), audited; `inlineBackupFor` |
 | `demoStream.ts` | **the demo stream receiver**: `demo.begin` / `demo.chunk` / `demo.end` in, `demo.ack` out; stored and linked like an uploaded demo |
+| `serverNotices.ts` | `server.cs2_update_required` (logged, kept in `cs2_fleet_events`) and `server.selftest` (stored on `cs2_fleet_servers.selftest`) in |
 | `limits.ts` | per-server byte budgets and the demo stream knobs (env) |
 | `protocol/host/v1/`, `hosts/` | the host channel for csm (FLEET.md §18), see the last section |
 
