@@ -41,6 +41,7 @@ export const HOST_MODULES: readonly string[] = [
   'utils/matchStatusHelpers',
   'utils/playerTransform',
   'utils/pluginServerReplies',
+  'utils/publicOrigin',
   'utils/serverAttribution',
   'utils/settingFields',
   'utils/simulationTimescale',

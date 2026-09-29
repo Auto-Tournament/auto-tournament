@@ -1,5 +1,6 @@
 import { Request } from 'express';
 import { settingsService } from '../services/settingsService';
+import { publicOrigin } from './publicOrigin';
 
 /**
  * Get the base URL for webhook configuration
@@ -24,11 +25,10 @@ export async function getWebhookBaseUrl(_req: Request): Promise<string> {
 }
 
 /**
- * Get base URL from request (for match configs, etc.)
+ * Get base URL from request (for match configs, etc.): FRONTEND_BASE_URL when
+ * set, else the request's proxy-aware origin (utils/publicOrigin.ts).
  */
 export function getBaseUrl(req: Request): string {
-  const protocol = req.protocol;
-  const host = req.get('host');
-  return `${protocol}://${host}`;
+  return publicOrigin(req);
 }
 

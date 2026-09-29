@@ -23,6 +23,7 @@
 import { Router, type Request, type Response } from 'express';
 import { requireAuth, requestActorId } from '../../../../middleware/auth';
 import { log } from '../../../../utils/logger';
+import { publicOrigin, publicWsOrigin } from '../../../../utils/publicOrigin';
 import { isHostCommandType, validateHostEnrollRequest, type HostEnrollRequest, type HostEnrollResponse } from '../protocol/host/v1';
 import { validatePluginSet } from '../push/pluginSets';
 import { FLEET_HOST_WS_PATH } from './gateway';
@@ -42,13 +43,13 @@ export function linkCommand(platformUrl: string, code: string): string {
   return `csm link ${platformUrl} ${code}`;
 }
 
+/** FRONTEND_BASE_URL, else the request's (proxy-aware) origin: utils/publicOrigin.ts. */
 function platformUrl(req: Request): string {
-  return `${req.protocol}://${req.get('host')}`;
+  return publicOrigin(req);
 }
 
 function hostWsUrl(req: Request): string {
-  const proto = req.protocol === 'https' ? 'wss' : 'ws';
-  return `${proto}://${req.get('host')}${FLEET_HOST_WS_PATH}`;
+  return `${publicWsOrigin(req)}${FLEET_HOST_WS_PATH}`;
 }
 
 // ---------------------------------------------------------------------------

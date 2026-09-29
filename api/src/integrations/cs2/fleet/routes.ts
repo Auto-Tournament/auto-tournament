@@ -28,6 +28,7 @@
 import { Router, type NextFunction, type Request, type Response } from 'express';
 import { requireAuth, requestActorId } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
+import { publicWsOrigin } from '../../../utils/publicOrigin';
 import { validateEnrollRequest, FLEET_CLOSE, type EnrollRequest, type EnrollResponse } from './protocol/v1';
 import { FLEET_WS_PATH } from './gateway';
 import * as registry from './registry';
@@ -83,10 +84,13 @@ export function resetEnrollRateLimit(): void {
   enrollHits.clear();
 }
 
-/** Where the server should connect: the same host it enrolled through. */
+/**
+ * Where the server should connect: FRONTEND_BASE_URL when set, else the host
+ * it enrolled through, with wss when that was https (including behind a TLS
+ * proxy that sends X-Forwarded-Proto): utils/publicOrigin.ts.
+ */
 function wsUrl(req: Request): string {
-  const proto = req.protocol === 'https' ? 'wss' : 'ws';
-  return `${proto}://${req.get('host')}${FLEET_WS_PATH}`;
+  return `${publicWsOrigin(req)}${FLEET_WS_PATH}`;
 }
 
 export const fleetEnrollRouter = Router();

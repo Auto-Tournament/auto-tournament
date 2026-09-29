@@ -26,6 +26,20 @@
 
 # ========================================
 
+# Behind another reverse proxy (TLS terminator, Cloudflare Tunnel, NPM, ...),
+# Caddy only passes that proxy's X-Forwarded-Proto/-Host/-For through to the
+# API when the proxy is trusted; otherwise it overwrites X-Forwarded-Proto with
+# "http", the API thinks the site is plain http and hands out ws:// fleet URLs
+# to machines that enrolled over https. Private ranges (Docker networks, LAN)
+# are trusted by default; set TRUSTED_PROXIES to override, e.g.
+# TRUSTED_PROXIES="private_ranges 203.0.113.0/24". Setting FRONTEND_BASE_URL
+# to the public https URL also fixes the fleet URLs, whatever the proxy sends.
+{
+	servers {
+		trusted_proxies static {$TRUSTED_PROXIES:private_ranges}
+	}
+}
+
 :3069 {
 	# API and WebSocket proxying (must come before file_server)
 	reverse_proxy /api/* localhost:3000
