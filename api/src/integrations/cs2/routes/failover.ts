@@ -19,7 +19,7 @@
  *        after a failover, or back to the old one), from a round backup.
  *
  *   GET  /api/fleet/failover/settings
- *   PUT  /api/fleet/failover/settings { auto?, reserve? }
+ *   PUT  /api/fleet/failover/settings { auto?, reserve?, csm? }
  *        Auto-failover (on by default) and the reserve: idle Ready Up servers
  *        normal allocation leaves for failover (null = automatic: 1 once two
  *        servers are online). Reserve servers count toward the license like
@@ -212,9 +212,12 @@ failoverSettingsRouter.get('/failover/settings', requireAuth, async (_req: Reque
 });
 
 failoverSettingsRouter.put('/failover/settings', requireAuth, async (req: Request, res: Response) => {
-  const body = (req.body ?? {}) as { auto?: unknown; reserve?: unknown };
+  const body = (req.body ?? {}) as { auto?: unknown; reserve?: unknown; csm?: unknown };
   if (body.auto !== undefined && typeof body.auto !== 'boolean') {
     return res.status(400).json({ success: false, code: 'bad_args', error: 'auto must be a boolean' });
+  }
+  if (body.csm !== undefined && typeof body.csm !== 'boolean') {
+    return res.status(400).json({ success: false, code: 'bad_args', error: 'csm must be a boolean' });
   }
   if (
     body.reserve !== undefined &&
@@ -229,6 +232,7 @@ failoverSettingsRouter.put('/failover/settings', requireAuth, async (req: Reques
     await setFailoverSettings(
       {
         ...(body.auto !== undefined ? { auto: body.auto as boolean } : {}),
+        ...(body.csm !== undefined ? { csm: body.csm as boolean } : {}),
         ...(body.reserve !== undefined ? { reserve: body.reserve as number | null } : {}),
       },
       requestActorId(req)

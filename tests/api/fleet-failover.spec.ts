@@ -10,6 +10,7 @@ import {
   newInstallId,
   resetEnrollRateLimit,
 } from '../helpers/fleet';
+import { FakeCsm, createPendingHost, enrollHost, inventory, inventoryServer, newMachineId } from '../helpers/fleetHost';
 import { ulid } from '../../api/src/integrations/cs2/fleet/credentials';
 import {
   validateMessage,
@@ -31,6 +32,9 @@ import {
  * - the same server comes back without the match: it resumes there;
  * - no free server: the failover waits (the match page shows it) and a
  *   server that comes online takes the match;
+ * - with csm on the dead server's machine: csm restarts it first and the
+ *   match resumes there; with no free server, csm creates one, it joins the
+ *   pool and takes the match (fleet/failoverRecovery.ts);
  * - auto-failover off: the admin moves the match from the match page.
  *
  * @tag api
@@ -56,9 +60,9 @@ class FakeReadyUp {
     public client: FleetTestClient
   ) {}
 
-  static async enroll(request: APIRequestContext): Promise<FakeReadyUp> {
+  static async enroll(request: APIRequestContext, keyValue = key.value): Promise<FakeReadyUp> {
     const installId = newInstallId();
-    const res = await enroll(request, { key: key.value }, installId);
+    const res = await enroll(request, { key: keyValue }, installId);
     expect(res.status, JSON.stringify(res.body)).toBe(201);
     const client = await FleetTestClient.connect(res.body.token);
     return new FakeReadyUp(res.body.server_id, installId, res.body.token, client);
@@ -161,6 +165,15 @@ async function link(request: APIRequestContext, fleetServerId: string): Promise<
   const res = await request.post(`/api/fleet/servers/${fleetServerId}/link`, { headers: getAuthHeader(), data: {} });
   expect([200, 201], await res.text()).toContain(res.status());
   return (await res.json()).cs2ServerId as string;
+}
+
+/** A machine with a fake csm linked through a one-time code. */
+async function linkMachine(request: APIRequestContext, name: string) {
+  const pending = await createPendingHost(request, name);
+  const machineId = newMachineId();
+  const res = await enrollHost(request, { code: pending.code }, machineId);
+  expect(res.status, JSON.stringify(res.body)).toBe(201);
+  return { hostId: res.body.host_id as string, token: res.body.token as string, machineId };
 }
 
 async function unlink(request: APIRequestContext, fleetServerId: string): Promise<void> {
@@ -283,7 +296,7 @@ async function failoverView(request: APIRequestContext, slug: string) {
   return res.json();
 }
 
-async function setFailover(request: APIRequestContext, data: { auto?: boolean; reserve?: number | null }) {
+async function setFailover(request: APIRequestContext, data: { auto?: boolean; reserve?: number | null; csm?: boolean }) {
   const res = await request.put('/api/fleet/failover/settings', { headers: getAuthHeader(), data });
   expect(res.ok(), await res.text()).toBe(true);
   return res.json();
@@ -297,12 +310,13 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     await resetEnrollRateLimit(request);
     if (!key) key = await createFleetKey(request, { name: 'fleet-failover-tests' });
     await request.delete('/api/tournament', { headers: getAuthHeader() });
-    await setFailover(request, { auto: true, reserve: null });
+    // csm recovery only in the tests that bring a fake csm (other specs' machines stay out of it).
+    await setFailover(request, { auto: true, reserve: null, csm: false });
   });
 
   test.afterEach(async ({ request }) => {
     while (cleanup.length) await cleanup.pop()?.();
-    await setFailover(request, { auto: true, reserve: null });
+    await setFailover(request, { auto: true, reserve: null, csm: true });
   });
 
   test('auto: A dies mid-match → the reserve server B resumes from the backup → A comes back superseded', async ({
@@ -465,6 +479,115 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     await scanning;
     await expect.poll(async () => (await matchRow(request, slug))?.serverId, { timeout: 15_000 }).toBe(cs2B);
     expect((await failoverView(request, slug)).recent[0]).toMatchObject({ status: 'moved', newCs2ServerId: cs2B });
+  });
+
+  test('csm online: the dead server is restarted through csm first, then the match resumes there', async ({ request }) => {
+    test.setTimeout(180_000);
+    await setFailover(request, { csm: true });
+    const a = await FakeReadyUp.enroll(request);
+    cleanup.push(() => a.close());
+    await a.hello();
+    const cs2A = await link(request, a.serverId);
+    cleanup.push(() => unlink(request, a.serverId));
+
+    // A's machine runs csm; its inventory lists A as server-1.
+    const m = await linkMachine(request, 'failover-restart');
+    const csm = await FakeCsm.connect(m.token, m.hostId, m.machineId);
+    cleanup.push(() => csm.close());
+    await csm.handshake();
+    csm.sendEphemeral(
+      'host.inventory',
+      inventory(m.hostId, [inventoryServer('server-1', { readyup: { installed: '0.5.0', install_id: a.installId, health: 'ok', phase: 'live', update_safe: false } })])
+    );
+    await expect
+      .poll(async () => {
+        const host = (await (await request.get(`/api/fleet/hosts/${m.hostId}`, { headers: getAuthHeader() })).json()).host;
+        return host.servers?.[0]?.fleetServer?.id ?? null;
+      })
+      .toBe(a.serverId);
+
+    const slug = `fleet-fo-csm-${Date.now()}`;
+    cleanup.push(async () => {
+      await request.post(`/api/matches/${slug}/force-cancel`, { headers: getAuthHeader() });
+    });
+    const { epoch, backup } = await liveWithBackup(request, a, slug);
+
+    // A dies: csm is asked to restart it (forced, audited) and the move waits.
+    a.kill();
+    await scanUntilProposed(request, slug);
+    const restart = await csm.nextCommand('server.restart', 15_000);
+    expect(restart.payload).toMatchObject({ server: 'server-1', reason: 'auto-failover' });
+    expect((restart.payload as { force?: { by: string; reason: string } }).force).toMatchObject({
+      by: 'platform:auto-failover',
+      reason: expect.stringContaining(slug),
+    });
+    const waiting = await failoverView(request, slug);
+    expect(waiting.proposal).toMatchObject({ status: 'open', reason: 'offline' });
+    expect(waiting.proposal.detail).toContain('Restarting server-1');
+
+    // Another pass inside the wait does not move the match.
+    await request.post('/api/test/fleet/failover/scan', { headers: getAuthHeader(), data: {} });
+    expect((await matchRow(request, slug))?.serverId).toBe(cs2A);
+
+    // csm restarted it; Ready Up comes back without the match and resumes it in place.
+    await a.reconnect({ state: null, availability: 'available' });
+    const assign = await acceptAssign(a, slug);
+    expect(assign.epoch).toBe(epoch + 1);
+    expect((assign.payload as { resume: { round: number } }).resume).toMatchObject({ round: backup.round });
+    await expect
+      .poll(async () => (await failoverView(request, slug)).recent[0]?.status, { timeout: 20_000 })
+      .toBe('moved');
+    expect((await failoverView(request, slug)).recent[0]).toMatchObject({ reason: 'restarted', newCs2ServerId: cs2A });
+  });
+
+  test('no free server and csm has room: csm creates one, it joins the pool and takes the match', async ({ request }) => {
+    test.setTimeout(180_000);
+    await setFailover(request, { csm: true });
+    const a = await FakeReadyUp.enroll(request);
+    cleanup.push(() => a.close());
+    await a.hello();
+    await link(request, a.serverId);
+    cleanup.push(() => unlink(request, a.serverId));
+
+    // A machine with lots of free RAM (picked first) that does not run A.
+    const m = await linkMachine(request, 'failover-create');
+    const csm = await FakeCsm.connect(m.token, m.hostId, m.machineId);
+    cleanup.push(() => csm.close());
+    await csm.handshake();
+    const inv = inventory(m.hostId, [inventoryServer('server-1')]);
+    csm.sendEphemeral('host.inventory', { ...inv, resources: { ...inv.resources, ram_free_mb: 60000 } });
+    await expect
+      .poll(async () => (await (await request.get(`/api/fleet/hosts/${m.hostId}`, { headers: getAuthHeader() })).json()).host.online)
+      .toBe(true);
+
+    const slug = `fleet-fo-create-${Date.now()}`;
+    cleanup.push(async () => {
+      await request.post(`/api/matches/${slug}/force-cancel`, { headers: getAuthHeader() });
+    });
+    const { epoch } = await liveWithBackup(request, a, slug);
+
+    a.kill();
+    await scanUntilProposed(request, slug);
+    const create = await csm.nextCommand('server.create', 15_000);
+    const payload = create.payload as { count: number; enroll: boolean; enroll_key: string };
+    expect(payload).toMatchObject({ count: 1, enroll: true });
+    expect(payload.enroll_key).toMatch(/^rfk_/);
+    expect((await failoverView(request, slug)).proposal.detail).toContain('creating one through csm');
+
+    // The new server enrolls with the command's key; the next pass links it and moves the match.
+    const b = await FakeReadyUp.enroll(request, payload.enroll_key);
+    cleanup.push(() => b.close());
+    cleanup.push(() => unlink(request, b.serverId));
+    await b.hello();
+    const assigned = acceptAssign(b, slug);
+    const scanning = request.post('/api/test/fleet/failover/scan', { headers: getAuthHeader(), data: {} });
+    const assign = await assigned;
+    await scanning;
+    expect((assign.payload as { match_id: string }).match_id).toBe(slug);
+    expect(assign.epoch).toBe(epoch + 1);
+    await expect
+      .poll(async () => (await failoverView(request, slug)).recent[0]?.status, { timeout: 20_000 })
+      .toBe('moved');
   });
 
   test('auto-failover off: the failover waits for the admin, who moves the match from the match page', async ({

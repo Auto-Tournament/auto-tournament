@@ -2,8 +2,10 @@
  * The failover settings (FLEET.md §11): auto-failover (on unless an admin
  * turns it off) and the reserve, the idle fleet servers normal allocation
  * leaves for failover. Stored as the 'failover' row of `cs2_fleet_lists`
- * (`data` = {"auto": boolean, "reserve": number | null}); `reserve` null =
- * automatic (1 once two Ready Up servers are online, else 0).
+ * (`data` = {"auto": boolean, "csm": boolean, "reserve": number | null});
+ * `csm` (default on) lets auto-failover restart and create servers through
+ * csm; `reserve` null = automatic (1 once two Ready Up servers are online,
+ * else 0).
  *
  * Reserve servers are servers like any other for the license count (every
  * enabled server row counts): the setting only changes what allocation hands
@@ -19,6 +21,8 @@ export const MAX_RESERVE = 16;
 
 export interface FailoverSettings {
   auto: boolean;
+  /** Auto-failover may restart the dead server and create servers through csm (./failoverRecovery.ts). */
+  csm: boolean;
   /** null = automatic. */
   reserve: number | null;
   updatedBy: string | null;
@@ -31,9 +35,9 @@ export async function getFailoverSettings(): Promise<FailoverSettings> {
   const row = await db.queryOneAsync<{ data: string | null; updated_by: string | null; updated_at: number | null }>(
     `SELECT data, updated_by, updated_at FROM cs2_fleet_lists WHERE name = 'failover'`
   );
-  let data: { auto?: unknown; reserve?: unknown } | null = null;
+  let data: { auto?: unknown; reserve?: unknown; csm?: unknown } | null = null;
   try {
-    data = row?.data ? (JSON.parse(row.data) as { auto?: unknown; reserve?: unknown }) : null;
+    data = row?.data ? (JSON.parse(row.data) as { auto?: unknown; reserve?: unknown; csm?: unknown }) : null;
   } catch {
     data = null;
   }
@@ -41,6 +45,7 @@ export async function getFailoverSettings(): Promise<FailoverSettings> {
     typeof data?.reserve === 'number' && Number.isInteger(data.reserve) && data.reserve >= 0 ? data.reserve : null;
   return {
     auto: data?.auto !== false,
+    csm: data?.csm !== false,
     reserve,
     updatedBy: row?.updated_by ?? null,
     updatedAt: row?.updated_at === null || row?.updated_at === undefined ? null : Number(row.updated_at),
@@ -48,12 +53,13 @@ export async function getFailoverSettings(): Promise<FailoverSettings> {
 }
 
 export async function setFailoverSettings(
-  patch: { auto?: boolean; reserve?: number | null },
+  patch: { auto?: boolean; reserve?: number | null; csm?: boolean },
   actor: string | null
 ): Promise<FailoverSettings> {
   const current = await getFailoverSettings();
   const next = {
     auto: patch.auto ?? current.auto,
+    csm: patch.csm ?? current.csm,
     reserve: patch.reserve === undefined ? current.reserve : patch.reserve,
   };
   await db.runAsync(
@@ -63,7 +69,7 @@ export async function setFailoverSettings(
     [JSON.stringify(next), actor, nowS()]
   );
   log.info(
-    `[FAILOVER] settings: auto-failover ${next.auto ? 'on' : 'off'}, reserve ${next.reserve ?? 'automatic'} (by ${actor ?? 'unknown'})`
+    `[FAILOVER] settings: auto-failover ${next.auto ? 'on' : 'off'}, csm recovery ${next.csm ? 'on' : 'off'}, reserve ${next.reserve ?? 'automatic'} (by ${actor ?? 'unknown'})`
   );
   return getFailoverSettings();
 }
