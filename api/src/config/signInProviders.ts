@@ -65,7 +65,6 @@ export const SIGN_IN_PROVIDERS: readonly SignInProviderDefinition[] = [
     env: { enabled: 'AUTH_EPIC_ENABLED', clientId: 'EPIC_CLIENT_ID', secret: 'EPIC_CLIENT_SECRET' },
     defaultEnabled: false,
     docsUrl: 'https://dev.epicgames.com/portal',
-    comingSoon: true,
   },
 ];
 

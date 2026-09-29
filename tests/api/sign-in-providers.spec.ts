@@ -80,14 +80,15 @@ test.describe('database is the source of truth', () => {
     }
   });
 
-  test('Steam is on by default and needs only its key; Epic is never active', TAGS, () => {
+  test('Steam is on by default and needs only its key; Epic is active with a client id and secret', TAGS, () => {
     const steam = signInProviderDefinition('steam');
     expect(resolveProviderSettings(steam, null)).toMatchObject({ enabled: true, configured: false, active: false });
     expect(resolveProviderSettings(steam, { enabled: true, clientId: null, secret: 'k' })).toMatchObject({ active: true });
     expect(resolveProviderSettings(steam, { enabled: false, clientId: null, secret: 'k' }).active).toBe(false);
 
     const epic = signInProviderDefinition('epic');
-    expect(resolveProviderSettings(epic, { enabled: true, clientId: 'x', secret: 'y' }).active).toBe(false);
+    expect(resolveProviderSettings(epic, { enabled: true, clientId: 'x', secret: 'y' }).active).toBe(true);
+    expect(resolveProviderSettings(epic, null).active).toBe(false);
   });
 });
 
@@ -265,8 +266,9 @@ test.describe.serial('Sign-in providers API', () => {
     expect(
       (await request.put('/api/sign-in-providers/myspace', { data: { enabled: true }, headers: json })).status()
     ).toBe(404);
+    // Epic is a real provider now: enabling it without credentials is allowed (it stays inactive).
     expect(
-      (await request.put('/api/sign-in-providers/epic', { data: { enabled: true }, headers: json })).status()
-    ).toBe(409);
+      (await request.put('/api/sign-in-providers/epic', { data: { enabled: false }, headers: json })).status()
+    ).toBe(200);
   });
 });

@@ -6,6 +6,7 @@ import type {
   KeycloakAuthProviderConfig,
   SteamAuthProviderConfig,
   TwitchAuthProviderConfig,
+  EpicAuthProviderConfig,
 } from '../types/auth.types';
 import { effectiveProviderSettings } from './signInProviders';
 
@@ -29,7 +30,7 @@ function envValue(name: string): string | undefined {
  * strategy under the same rule (config/passport.ts), so a listed button
  * always works.
  */
-function isOAuthProviderConfigured(provider: 'discord' | 'github' | 'google' | 'twitch'): boolean {
+function isOAuthProviderConfigured(provider: 'discord' | 'github' | 'google' | 'twitch' | 'epic'): boolean {
   return effectiveProviderSettings(provider).active;
 }
 
@@ -125,6 +126,17 @@ export function getAuthProvidersConfig(): AuthProviderConfig[] {
       enabled: true,
     };
     providers.push(twitchProvider);
+  }
+
+  if (isOAuthProviderConfigured('epic')) {
+    const epicProvider: EpicAuthProviderConfig = {
+      id: 'epic',
+      kind: 'oauth2',
+      label: 'Epic Games',
+      loginUrl: '/api/auth/epic',
+      enabled: true,
+    };
+    providers.push(epicProvider);
   }
 
   return providers;
