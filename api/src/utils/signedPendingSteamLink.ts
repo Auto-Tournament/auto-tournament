@@ -45,7 +45,7 @@ export const PENDING_STEAM_LINK_TTL_MS = 1000 * 60 * 10;
  * module free of DB imports; auth.ts passes one to the other, so a mismatch is
  * a type error there).
  */
-export const PENDING_STEAM_LINK_PROVIDERS = ['discord', 'keycloak', 'github', 'google', 'twitch'] as const;
+export const PENDING_STEAM_LINK_PROVIDERS = ['discord', 'keycloak', 'github', 'google', 'twitch', 'epic'] as const;
 export type PendingSteamLinkProvider = (typeof PENDING_STEAM_LINK_PROVIDERS)[number];
 
 export interface PendingSteamLink {

@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 440 of them, 321 behind auth —
+Every endpoint this API serves — 443 of them, 321 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -859,6 +859,9 @@ Sign-in flows, admin identity, impersonation.
 | `GET` | `/api/auth/twitch` | public |
 | `POST` | `/api/auth/twitch/link` | public |
 | `GET` | `/api/auth/twitch/callback` | public |
+| `GET` | `/api/auth/epic` | public |
+| `POST` | `/api/auth/epic/link` | public |
+| `GET` | `/api/auth/epic/callback` | public |
 | `POST` | `/api/auth/steam/link` | public |
 | `GET` | `/api/auth/providers` | public |
 | `GET` | `/api/auth/me` | public |

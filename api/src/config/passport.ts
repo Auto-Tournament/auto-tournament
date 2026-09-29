@@ -9,6 +9,7 @@ import { SignedCookieStateStore } from '../utils/oauthStateCookie';
 import { effectiveProviderSettings } from './signInProviders';
 import { adminEmailsConfigured } from '../utils/adminEmails';
 import { createTwitchStrategy, type TwitchStrategyOptions } from './twitchStrategy';
+import { createEpicStrategy } from './epicStrategy';
 
 interface SteamProfile {
   id: string;
@@ -81,7 +82,7 @@ export function configurePassportAuth(): void {
 }
 
 /** The strategies Settings -> Sign-in manages; `reloadPassportAuth` redoes them. */
-const SETTINGS_MANAGED_STRATEGIES = ['steam', 'discord', 'github', 'google', 'twitch'] as const;
+const SETTINGS_MANAGED_STRATEGIES = ['steam', 'discord', 'github', 'google', 'twitch', 'epic'] as const;
 
 function configureSettingsManagedStrategies(): void {
   configureSteamStrategy();
@@ -89,6 +90,7 @@ function configureSettingsManagedStrategies(): void {
   configureOAuthStrategy('github', createGitHubStrategy);
   configureOAuthStrategy('google', createGoogleStrategy);
   configureOAuthStrategy('twitch', createTwitchLoginStrategy);
+  configureOAuthStrategy('epic', createEpicLoginStrategy);
 }
 
 /**
@@ -351,7 +353,7 @@ function configureKeycloakStrategy(): void {
  * the callback at <base>/api/auth/<provider>/callback.
  */
 function configureOAuthStrategy(
-  provider: 'github' | 'google' | 'twitch',
+  provider: 'github' | 'google' | 'twitch' | 'epic',
   create: (options: OAuthStrategyOptions) => unknown
 ): void {
   const settings = effectiveProviderSettings(provider);
@@ -480,6 +482,25 @@ function createTwitchLoginStrategy(options: OAuthStrategyOptions) {
     });
     done(null, user);
   });
+}
+
+function createEpicLoginStrategy(options: OAuthStrategyOptions) {
+  return createEpicStrategy(
+    {
+      clientID: options.clientID,
+      clientSecret: options.clientSecret,
+      callbackURL: options.callbackURL,
+      // CSRF protection for the OAuth round trip; see utils/oauthStateCookie.
+      store: new SignedCookieStateStore({
+        provider: options.stateProvider,
+        callbackURL: options.callbackURL,
+      }),
+    },
+    (user, done) => {
+      log.info('EpicStrategy callback: received profile from Epic', { profile: { id: user.epicId } });
+      done(null, user);
+    }
+  );
 }
 
 /** Passport strategy name for the test-only fake provider of `provider`. */

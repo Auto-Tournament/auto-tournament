@@ -635,6 +635,7 @@ const SSO_USER_ID_FIELD: Record<AuthProvider, string> = {
   github: 'githubId',
   google: 'googleId',
   twitch: 'twitchId',
+  epic: 'epicId',
 };
 
 const SSO_PROVIDER_LABEL: Record<AuthProvider, string> = {
@@ -643,6 +644,7 @@ const SSO_PROVIDER_LABEL: Record<AuthProvider, string> = {
   github: 'GitHub',
   google: 'Google',
   twitch: 'Twitch',
+  epic: 'Epic Games',
 };
 
 /**
@@ -1076,6 +1078,7 @@ registerSsoRoutes('discord');
 registerSsoRoutes('github');
 registerSsoRoutes('google');
 registerSsoRoutes('twitch');
+registerSsoRoutes('epic');
 
 /*
  * Connecting Steam to a local admin account (services/localAccountSteamLink).
@@ -1628,7 +1631,7 @@ router.get('/admin/me', async (req: Request, res: Response) => {
     } else if (provider === 'discord') {
       profileName = (user as { username?: string }).username ?? null;
       profileAvatarUrl = (user as { avatarUrl?: string }).avatarUrl ?? null;
-    } else if (provider === 'github' || provider === 'google' || provider === 'twitch' || provider === 'local') {
+    } else if (provider === 'github' || provider === 'google' || provider === 'twitch' || provider === 'epic' || provider === 'local') {
       profileName =
         (user as { displayName?: string }).displayName ||
         (user as { username?: string }).username ||

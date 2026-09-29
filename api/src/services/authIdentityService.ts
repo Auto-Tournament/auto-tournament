@@ -2,7 +2,7 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { playerIdentity } from './playerIdentity';
 
-export type AuthProvider = 'discord' | 'keycloak' | 'github' | 'google' | 'twitch';
+export type AuthProvider = 'discord' | 'keycloak' | 'github' | 'google' | 'twitch' | 'epic';
 
 interface AuthIdentityRow {
   id: number;
