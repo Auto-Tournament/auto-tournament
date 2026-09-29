@@ -4,14 +4,11 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
 import LinearProgress from '@mui/material/LinearProgress';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { CopyIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
@@ -285,33 +282,17 @@ function ProviderSection({
           )}
 
           {provider.id !== 'steam' && (
-            <TextField
-              label={t('settingsPage.signIn.callbackUrl')}
-              value={provider.callbackUrl}
-              size="small"
-              fullWidth
-              helperText={t('settingsPage.signIn.callbackHelp')}
-              slotProps={{
-                input: {
-                  readOnly: true,
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <Tooltip title={t('settingsPage.signIn.copy')}>
-                        <IconButton
-                          aria-label={t('settingsPage.signIn.copy')}
-                          onClick={() => void copyCallback()}
-                          edge="end"
-                          size="small"
-                        >
-                          <CopyIcon />
-                        </IconButton>
-                      </Tooltip>
-                    </InputAdornment>
-                  ),
-                },
-                htmlInput: { 'data-testid': `${idPrefix}-callback` },
-              }}
-            />
+            // Set automatically: nothing to fill in here, only to paste at the provider.
+            <Typography variant="body2" color="text.secondary">
+              {t('settingsPage.signIn.callbackHint', { provider: provider.label })}{' '}
+              <Box
+                component="code"
+                data-testid={`${idPrefix}-callback`}
+                sx={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'text.primary', wordBreak: 'break-all' }}
+              >
+                {provider.callbackUrl}
+              </Box>
+            </Typography>
           )}
 
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
