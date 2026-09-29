@@ -99,6 +99,7 @@
       "primaryDetail": "Your account's identity · also your game account for {{games}}",
       "primaryDetailNoGames": "Your account's identity",
       "connected": "Connected",
+      "accountId": "ID",
       "linkedOn": "Connected {{date}}",
       "turnedOff": "sign-in with it is turned off on this site",
       "notConnected": "Not connected",

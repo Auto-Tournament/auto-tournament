@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 import {
   Alert,
+  Avatar,
   Box,
   Button,
   Chip,
@@ -166,6 +167,36 @@ function Section({
 }
 
 const muted = { color: color.muted, fontSize: '0.875rem' } as const;
+
+/**
+ * The connected account as its provider describes it: picture, name, email
+ * and the provider's account id, so you can tell which account is linked.
+ * Name, picture and email fill in at the next sign-in with that provider.
+ */
+function ConnectedAccount({
+  account,
+  idLabel,
+}: {
+  account: NonNullable<SignInMethod['account']>;
+  idLabel: string;
+}) {
+  const secondary = [account.email, `${idLabel} ${account.id}`].filter(Boolean).join(' · ');
+  return (
+    <Stack direction="row" spacing={1.25} alignItems="center" sx={{ minWidth: 0, mt: 0.5 }}>
+      {account.avatarUrl && (
+        <Avatar src={account.avatarUrl} alt="" sx={{ width: 28, height: 28, flex: 'none' }} imgProps={{ referrerPolicy: 'no-referrer' }} />
+      )}
+      <Box sx={{ minWidth: 0 }}>
+        {account.name && (
+          <Typography sx={{ fontSize: '0.875rem', fontWeight: 600, overflowWrap: 'anywhere' }}>{account.name}</Typography>
+        )}
+        <Typography sx={{ ...muted, fontSize: '0.8rem', overflowWrap: 'anywhere', fontVariantNumeric: 'tabular-nums' }}>
+          {secondary}
+        </Typography>
+      </Box>
+    </Stack>
+  );
+}
 
 /** What to do once the admin password has been confirmed again. */
 type ReauthNext =
@@ -619,6 +650,9 @@ export default function AccountConnections() {
                         title={labelOf(method)}
                         end={end}
                       >
+                        {method.linked && method.account && (
+                          <ConnectedAccount account={method.account} idLabel={t('account.signIn.accountId')} />
+                        )}
                         <Typography sx={muted}>{detail}</Typography>
                       </Row>
                     );

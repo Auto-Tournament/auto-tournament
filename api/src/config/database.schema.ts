@@ -283,6 +283,11 @@ export function getSchemaSQL(): string {
       provider_user_id TEXT NOT NULL,
       steam_id TEXT NOT NULL,
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      -- What the provider said about the account at the last sign-in or link,
+      -- shown to its owner on /me/connections only. email: verified ones only.
+      display_name TEXT,
+      avatar_url TEXT,
+      email TEXT,
       UNIQUE (provider, provider_user_id),
       FOREIGN KEY (steam_id) REFERENCES players(id) ON DELETE CASCADE
     );

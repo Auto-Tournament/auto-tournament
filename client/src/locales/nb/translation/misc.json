@@ -99,6 +99,7 @@
       "primaryDetail": "Kontoens identitet · også spillkontoen din for {{games}}",
       "primaryDetailNoGames": "Kontoens identitet",
       "connected": "Tilkoblet",
+      "accountId": "ID",
       "linkedOn": "Tilkoblet {{date}}",
       "turnedOff": "innlogging med den er slått av på denne siden",
       "notConnected": "Ikke tilkoblet",

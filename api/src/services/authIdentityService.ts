@@ -10,13 +10,28 @@ interface AuthIdentityRow {
   provider_user_id: string;
   steam_id: string;
   created_at: number;
+  display_name: string | null;
+  avatar_url: string | null;
+  email: string | null;
+}
+
+/** What the provider says about the account; shown to its owner only. */
+export interface IdentityProfile {
+  displayName?: string | null;
+  avatarUrl?: string | null;
+  email?: string | null;
 }
 
 /** One sign-in identity linked to an account, as the connections page shows it. */
 export interface LinkedIdentity {
   provider: string;
+  /** The provider's account id (a Discord user id, a Google `sub`, ...). */
+  providerUserId: string;
   /** Unix seconds. */
   linkedAt: number;
+  displayName: string | null;
+  avatarUrl: string | null;
+  email: string | null;
 }
 
 /**
@@ -34,7 +49,26 @@ class AuthIdentityService {
       'SELECT * FROM auth_identities WHERE steam_id = ? ORDER BY created_at, id',
       [steamId]
     );
-    return rows.map((r) => ({ provider: r.provider, linkedAt: Number(r.created_at) }));
+    return rows.map((r) => ({
+      provider: r.provider,
+      providerUserId: r.provider_user_id,
+      linkedAt: Number(r.created_at),
+      displayName: r.display_name ?? null,
+      avatarUrl: r.avatar_url ?? null,
+      email: r.email ?? null,
+    }));
+  }
+
+  /**
+   * Remember what the provider said about this identity at sign-in or link.
+   * Overwrites: the provider is the source of truth for its own account.
+   */
+  async saveProfile(provider: AuthProvider, providerUserId: string, profile: IdentityProfile): Promise<void> {
+    await db.runAsync(
+      `UPDATE auth_identities SET display_name = ?, avatar_url = ?, email = ?
+       WHERE provider = ? AND provider_user_id = ?`,
+      [profile.displayName ?? null, profile.avatarUrl ?? null, profile.email ?? null, provider, providerUserId]
+    );
   }
 
   /**
