@@ -29,6 +29,7 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { SiteNameCard } from '../components/settings/SiteNameCard';
 import { LicenseCard } from '../components/settings/LicenseCard';
+import { WebhooksCard } from '../components/settings/WebhooksCard';
 import { useInstalledIntegrations } from '../integrations/registry';
 
 declare const __APP_VERSION__: string | undefined;
@@ -140,8 +141,8 @@ export default function Settings() {
   useEffect(() => {
     if (!requestedSection) return;
     // `?section=license`: the admin home's License card links here.
-    if (requestedSection === 'license') {
-      setTab('license');
+    if (requestedSection === 'license' || requestedSection === 'webhooks') {
+      setTab(requestedSection);
       return;
     }
     const key = moduleTabKey(requestedSection);
@@ -152,6 +153,7 @@ export default function Settings() {
     'players',
     'matches',
     'license',
+    'webhooks',
     ...moduleTabKeys.split(' ').filter(Boolean),
     ...(isDev ? ['developer'] : []),
   ];
@@ -271,6 +273,12 @@ export default function Settings() {
                   data-testid="settings-tab-license"
                   {...a11yProps('license')}
                 />
+                <Tab
+                  label={t('settingsPage.tabs.webhooks')}
+                  value="webhooks"
+                  data-testid="settings-tab-webhooks"
+                  {...a11yProps('webhooks')}
+                />
                 {moduleSettings.map(({ id, labelKey }) => (
                   <Tab
                     key={id}
@@ -365,6 +373,11 @@ export default function Settings() {
             {/* The Auto Tournament license key: status only, never a lockout */}
             <TabPanel value={activeTab} index="license">
               <LicenseCard />
+            </TabPanel>
+
+            {/* Integrator webhooks (docs/WEBHOOKS.md) */}
+            <TabPanel value={activeTab} index="webhooks">
+              <WebhooksCard />
             </TabPanel>
 
             {/* Each installed module's own settings (CS2: webhook URL, map sync, server defaults) */}

@@ -55,6 +55,7 @@ const mapSettingsResponse = async () => {
   const ratingsEnabled = await settingsService.areRatingsEnabled();
   const allowSelfRegister = await settingsService.isSelfRegistrationAllowed();
   const siteName = await settingsService.getSiteName();
+  const webhooksAllowPrivateTargets = await settingsService.areWebhookPrivateTargetsAllowed();
 
   const integrationFields: Record<string, unknown> = {};
   for (const integration of listIntegrations()) {
@@ -70,6 +71,7 @@ const mapSettingsResponse = async () => {
     defaultPlayerElo,
     ratingsEnabled,
     allowSelfRegister,
+    webhooksAllowPrivateTargets,
     ...integrationFields,
   };
 };

@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 385 of them, 286 behind auth —
+Every endpoint this API serves — 407 of them, 307 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -659,6 +659,35 @@ The Auto Tournament license key: save, remove and read its status, checked offli
 | `GET` | `/api/license/consent` | admin |
 | `POST` | `/api/license/consent` | admin |
 
+### Webhooks
+
+Integrator webhooks: register endpoints for match events (ready to connect, live, map and score, finished, cancelled, reset), rotate the signing secret, send a test event, read the delivery log (connect details redacted) and resend. Admin only. See docs/WEBHOOKS.md.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/webhooks` | admin |
+| `GET` | `/api/webhooks/event-types` | admin |
+| `POST` | `/api/webhooks` | admin |
+| `GET` | `/api/webhooks/deliveries/:deliveryId` | admin |
+| `POST` | `/api/webhooks/deliveries/:deliveryId/resend` | admin |
+| `GET` | `/api/webhooks/:id` | admin |
+| `PATCH` | `/api/webhooks/:id` | admin |
+| `DELETE` | `/api/webhooks/:id` | admin |
+| `POST` | `/api/webhooks/:id/rotate-secret` | admin |
+| `POST` | `/api/webhooks/:id/test` | admin |
+| `GET` | `/api/webhooks/:id/deliveries` | admin |
+
+### Integrations: teams
+
+Teams API for integrators: idempotent upsert of teams by the integrator's own externalId (single and batch), and reads by externalId. Integrator token (API_TOKENS_INTEGRATOR), admin token or admin session. See docs/WEBHOOKS.md.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/integrations/teams` | integrator token or admin |
+| `POST` | `/api/integrations/teams/batch` | integrator token or admin |
+| `GET` | `/api/integrations/teams/:externalId` | integrator token or admin |
+| `PUT` | `/api/integrations/teams/:externalId` | integrator token or admin |
+
 ### Test helpers
 
 E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
@@ -733,6 +762,13 @@ E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
 | `GET` | `/api/test/fake-catalog/releases/:file` | public |
 | `GET` | `/api/test/fake-catalog/packs/:file` | public |
 | `GET` | `/api/test/fake-catalog/icons/:file` | public |
+| `POST` | `/api/test/webhook-sink/:bin` | public |
+| `GET` | `/api/test/webhook-sink/:bin/url` | admin |
+| `POST` | `/api/test/webhook-sink/:bin/behaviour` | admin |
+| `GET` | `/api/test/webhook-sink/:bin` | admin |
+| `DELETE` | `/api/test/webhook-sink/:bin` | admin |
+| `POST` | `/api/test/webhooks/timing` | admin |
+| `POST` | `/api/test/webhooks/reconcile` | admin |
 | `POST` | `/api/test/license-consent` | admin |
 
 ### Auth

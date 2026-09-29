@@ -1,3 +1,4 @@
+import { matchChanged } from '../core/matchChangeBus';
 import { log } from '../utils/logger';
 
 export type LiveStatus = 'warmup' | 'knife' | 'live' | 'halftime' | 'postgame';
@@ -159,6 +160,7 @@ class MatchLiveStatsService {
     }
 
     this.stats.set(matchSlug, next);
+    matchChanged({ slug: matchSlug });
     return next;
   }
 

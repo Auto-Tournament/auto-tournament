@@ -3,6 +3,7 @@ import type { Server as HTTPServer, IncomingMessage, ServerResponse } from 'http
 import type { Request } from 'express';
 import { log } from '../utils/logger';
 import { checkAdminAccess } from '../middleware/auth';
+import { matchChanged } from '../core/matchChangeBus';
 import type { AdminCall, AdminCallResolvedEvent } from '../types/adminCall.types';
 import type {
   TournamentUpdateEvent,
@@ -183,6 +184,9 @@ export function emitBracketUpdate(bracket: BracketUpdateEvent): void {
  * Emit match update
  */
 export function emitMatchUpdate(match: MatchUpdateEvent): void {
+  // Integrator webhooks re-read the match (core/matchChangeBus), socket or not.
+  const ref = match as { slug?: string; id?: number; deleted?: boolean };
+  matchChanged({ slug: ref.slug ?? null, id: ref.id ?? null, deleted: ref.deleted === true });
   if (io) {
     io.emit('match:update', match);
 

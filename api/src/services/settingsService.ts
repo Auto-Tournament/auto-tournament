@@ -27,7 +27,10 @@ export type CoreSettingKey =
   // Set through /api/license/consent or AT_ACCEPT_LICENSE only.
   | 'license_consent'
   // Earlier acceptances, newest first (JSON array), for the record.
-  | 'license_consent_history';
+  | 'license_consent_history'
+  // Integrator webhooks may target private / loopback addresses (LAN events).
+  // Off by default: services/webhooks/ssrf.ts.
+  | 'webhooks_allow_private_targets';
 
 export interface AppSetting {
   key: AppSettingKey;
@@ -97,6 +100,13 @@ export const CORE_SETTINGS: ReadonlyArray<SettingDefinition & { key: CoreSetting
     order: 90,
     normalize: normalizeFlag('Player self‑registration'),
     applyRequest: booleanRequest('allowSelfRegister'),
+  },
+  {
+    key: 'webhooks_allow_private_targets',
+    field: 'webhooksAllowPrivateTargets',
+    order: 95,
+    normalize: normalizeFlag('Webhooks to private and local addresses'),
+    applyRequest: booleanRequest('webhooksAllowPrivateTargets'),
   },
   // No `field`: /api/license sets these, PUT /api/settings never does.
   {
@@ -266,6 +276,18 @@ class SettingsService {
    * players will populate the players list, preventing random Steam logins
    * from appearing in private tournaments.
    */
+  /**
+   * Whether integrator webhooks may be sent to private (RFC 1918, CGNAT,
+   * ULA) and loopback addresses. Off by default; a LAN event whose website
+   * runs on the LAN turns it on. Link-local and reserved ranges stay blocked.
+   */
+  async areWebhookPrivateTargetsAllowed(): Promise<boolean> {
+    const value = await this.getSetting('webhooks_allow_private_targets');
+    if (!value) return false;
+    const normalized = value.toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'yes';
+  }
+
   async isSelfRegistrationAllowed(): Promise<boolean> {
     const value = await this.getSetting('allow_self_register');
     if (!value) {

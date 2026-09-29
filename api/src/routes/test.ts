@@ -47,6 +47,7 @@ import { teamMembers } from '../services/teamMembers';
 import { forgetModuleEnabled, listModules, modulesDir, scanDiskModules } from '../modules/loader';
 import { isValidModuleId } from '../modules/manifest';
 import { registerCatalogTestRoutes } from './testCatalog';
+import { registerWebhookTestRoutes } from './testWebhooks';
 import {
   licenseConsentService,
   parseConsentRecord,
@@ -2748,6 +2749,8 @@ registerCatalogTestRoutes(
   (id, kind) => moduleFixtureFiles(id, kind),
   { pack: (slug) => FAKE_INDEX_PACKS[slug], tile: FAKE_INDEX_TILE }
 );
+
+registerWebhookTestRoutes(router, testHelperEnabled);
 
 /**
  * @openapi

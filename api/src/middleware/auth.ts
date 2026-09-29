@@ -69,7 +69,10 @@ export type ServiceTokenAuthResult =
  * through to session auth. A token that *was* presented but does not match is
  * an outcome, not a fall-through: see `requireAuth`.
  */
-export function authenticateServiceToken(req: Request): ServiceTokenAuthResult | null {
+export function authenticateServiceToken(
+  req: Request,
+  opts: { allowIntegrator?: boolean } = {}
+): ServiceTokenAuthResult | null {
   const presented = extractPresentedToken(req.headers);
   if (!presented) return null;
 
@@ -81,6 +84,14 @@ export function authenticateServiceToken(req: Request): ServiceTokenAuthResult |
   const token = findServiceToken(presented, tokens);
   if (!token) {
     return { ok: false, status: 401, reason: 'Invalid API token' };
+  }
+
+  if (token.scope === 'integrator' && !opts.allowIntegrator) {
+    return {
+      ok: false,
+      status: 403,
+      reason: `API token "${token.label}" is an integrator token: it can only call the integrations API (/api/integrations)`,
+    };
   }
 
   if (token.scope === 'readonly' && !isReadOnlyMethod(req.method)) {
@@ -224,6 +235,45 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     return next();
   }
 
+  if (access.status === 500) {
+    log.error(access.logReason, access.cause as Error);
+  } else {
+    log.authFailed(req.path, access.logReason);
+  }
+  res.status(access.status).json({ success: false, error: access.error });
+}
+
+/** Who is calling the integrations API (`requireIntegratorAuth`). */
+export interface IntegratorIdentity {
+  /** The API token's label; null for an admin's browser session. */
+  tokenLabel: string | null;
+  scope: ServiceTokenScope | 'session';
+}
+
+export type IntegratorRequest = Request & { integrator?: IntegratorIdentity };
+
+/**
+ * The integrations API (`/api/integrations`): an integrator token
+ * (`API_TOKENS_INTEGRATOR`), an admin token, a read-only token for reads, or
+ * an admin's session. Everything else gets the same answers as `requireAuth`.
+ */
+export async function requireIntegratorAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
+  const tokenAuth = authenticateServiceToken(req, { allowIntegrator: true });
+  if (tokenAuth) {
+    if (tokenAuth.ok) {
+      (req as AuthedRequest).serviceToken = tokenAuth.identity;
+      (req as IntegratorRequest).integrator = { tokenLabel: tokenAuth.identity.label, scope: tokenAuth.identity.scope };
+      return next();
+    }
+    log.authFailed(req.path, tokenAuth.reason);
+    res.status(tokenAuth.status).json({ success: false, error: tokenAuth.reason });
+    return;
+  }
+  const access = await checkAdminAccess(req);
+  if (access.ok) {
+    (req as IntegratorRequest).integrator = { tokenLabel: null, scope: 'session' };
+    return next();
+  }
   if (access.status === 500) {
     log.error(access.logReason, access.cause as Error);
   } else {

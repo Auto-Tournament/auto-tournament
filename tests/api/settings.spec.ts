@@ -1226,6 +1226,8 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   // The license terms acceptance: /api/license/consent or AT_ACCEPT_LICENSE only.
   { key: 'license_consent', field: null },
   { key: 'license_consent_history', field: null },
+  // Integrator webhooks to private / loopback targets (services/webhooks/ssrf).
+  { key: 'webhooks_allow_private_targets', field: 'webhooksAllowPrivateTargets' },
 ];
 
 // --- tests -------------------------------------------------------------------
