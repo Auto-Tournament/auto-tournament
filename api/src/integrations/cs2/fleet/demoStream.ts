@@ -796,10 +796,35 @@ async function reportUploadEnded(row: DemoStreamRow): Promise<void> {
   );
 }
 
+/**
+ * A map played on more than one server (a failover moved it) has a demo part
+ * per server. The part that finishes uploading last is not always the last
+ * part: a server that went down uploads its part when it is back, after the
+ * map ended elsewhere. The map and the match keep pointing at the part that
+ * started last (it has the end of the map); an earlier part is stored and
+ * kept, not linked over it. Returns that later part's path, or null.
+ */
+async function laterStoredPart(row: DemoStreamRow): Promise<string | null> {
+  if (row.startedAt === null) return null;
+  const later = await db.queryOneAsync<{ path: string }>(
+    `SELECT path FROM cs2_fleet_demo_streams
+      WHERE match_slug = ? AND map_number = ? AND demo_id <> ? AND state = 'complete'
+        AND path IS NOT NULL AND started_at > ?
+      ORDER BY started_at DESC LIMIT 1`,
+    [row.matchSlug, row.mapNumber, row.demoId, row.startedAt]
+  );
+  return later?.path ?? null;
+}
+
 export const platformDemoHooks: DemoStreamPlatform = {
   checkAssignment: checkFleetAssignment,
   async stored(row) {
-    if (row.path) {
+    const later = row.path ? await laterStoredPart(row) : null;
+    if (row.path && later) {
+      log.info(
+        `[FLEET] demo ${row.demoId}: an earlier part of ${row.matchSlug} map ${toFleetMapNumber(row.mapNumber)} (before a failover), kept as ${row.path}; the map keeps ${later}`
+      );
+    } else if (row.path) {
       const mapLinked = await linkStoredDemo(row.matchSlug, row.path, row.mapNumber, '[FLEET demo]');
       if (!mapLinked) {
         log.warn(
