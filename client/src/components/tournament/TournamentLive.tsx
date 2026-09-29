@@ -135,6 +135,8 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
   const isRunning = !isCompleted && hasStartedMatch;
   const teamSize = tournament.teamSize || 5;
   const maxRounds = tournament.maxRounds || 24;
+  // Rounds and overtime are CS2 rules; other games have none to show.
+  const hasRoundRules = !tournament.game || tournament.game === 'cs2';
   const overtimeMode = tournament.overtimeMode ?? 'enabled';
   const overtimeSegments = tournament.overtimeSegments;
 
@@ -335,7 +337,7 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
               </Box>
             </Grid>
           )}
-          {!isShuffle && (
+          {!isShuffle && hasRoundRules && (
             <Grid size={{ xs: 12, sm: 6 }}>
               <Typography variant="subtitle2" color="text.secondary">
                 {t('tournament.labels.matchRules')}
@@ -365,11 +367,13 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
                 <Typography variant="body2">
                   {t('tournament.matchRules.teamSizeValue', { size: teamSize })}
                 </Typography>
-                <Typography variant="body2">
-                  {t('tournament.live.maxRoundsPerMapValue', { rounds: maxRounds })}
-                </Typography>
-                <Typography variant="body2">{renderOvertimeLine()}</Typography>
-                {overtimeMode === 'enabled' && typeof overtimeSegments === 'number' && (
+                {hasRoundRules && (
+                  <Typography variant="body2">
+                    {t('tournament.live.maxRoundsPerMapValue', { rounds: maxRounds })}
+                  </Typography>
+                )}
+                {hasRoundRules && <Typography variant="body2">{renderOvertimeLine()}</Typography>}
+                {hasRoundRules && overtimeMode === 'enabled' && typeof overtimeSegments === 'number' && (
                   <Typography variant="body2">
                     {overtimeSegments > 0
                       ? t('tournament.matchRules.overtimeSegments', { count: overtimeSegments })
