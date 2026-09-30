@@ -22,9 +22,9 @@ ensureDemosDir();
 
 /**
  * POST /api/demos/:matchSlug/upload
- * Upload demo file from Auto Tournament CS2 server
+ * Upload demo file from MatchZy Enhanced server
  * Protected by server token validation
- * Follows Auto Tournament CS2 API specification for demo uploads
+ * Follows MatchZy Enhanced API specification for demo uploads
  * 
  * Headers expected:
  * - Auto-Tournament-FileName (required)
@@ -37,7 +37,7 @@ router.post(
   '/:matchSlug/upload',
   validateServerOrFleetToken,
   // CRITICAL: Use express.raw() to handle binary data correctly
-  // This follows Auto Tournament CS2 API specification exactly
+  // This follows MatchZy Enhanced API specification exactly
   express.raw({ type: 'application/octet-stream', limit: '500mb' }),
   async (req: Request, res: Response) => {
     const { matchSlug: urlMatchSlug } = req.params;
@@ -46,7 +46,7 @@ router.post(
     let matchSlug = urlMatchSlug;
 
     try {
-      // Read Auto Tournament CS2 headers (with Get5 fallbacks for compatibility)
+      // Read MatchZy Enhanced headers (with Get5 fallbacks for compatibility)
       // Headers are normalized to lowercase by Express
       // Headers can be string | string[], so we take the first value if it's an array
       const getHeaderValue = (value: string | string[] | undefined): string | undefined => {
@@ -69,7 +69,7 @@ router.post(
         getHeaderValue(req.headers['auto-tournament-roundnumber']) ||
         getHeaderValue(req.headers['get5-roundnumber']);
 
-      // Validate required headers (per Auto Tournament CS2 API spec)
+      // Validate required headers (per MatchZy Enhanced API spec)
       if (!atFilename || !atMatchId || atMapNumber === undefined) {
         const missingHeaders: string[] = [];
         if (!atFilename) missingHeaders.push('Auto-Tournament-FileName (or Get5-FileName)');
@@ -127,7 +127,7 @@ router.post(
 
       // Which match is this demo from? The URL slug is only the server's current
       // upload setting, which MAT overwrites when it loads the next match - and
-      // the previous match's last demo uploads after that (Auto Tournament CS2 waits for
+      // the previous match's last demo uploads after that (MatchZy Enhanced waits for
       // tv_delay first). That is how r1m1's de_train demo landed on r2m1. The
       // Auto-Tournament-MatchId header is stamped when the demo was recorded, so when it
       // is one of MAT's numeric ids it decides. An id that no longer exists
@@ -173,13 +173,13 @@ router.post(
       }
       matchSlug = match.slug;
 
-      // Create match-specific folder (following Auto Tournament CS2 pattern)
+      // Create match-specific folder (following MatchZy Enhanced pattern)
       const matchFolder = path.join(DEMOS_DIR, matchSlug);
       if (!fs.existsSync(matchFolder)) {
         fs.mkdirSync(matchFolder, { recursive: true });
       }
 
-      // Use Auto Tournament CS2's filename (sanitize to prevent path traversal)
+      // Use MatchZy Enhanced's filename (sanitize to prevent path traversal)
       const sanitizeFilename = (filename: string): string => {
         // Remove any path separators and resolve to just the filename
         return path.basename(filename);
@@ -221,7 +221,7 @@ router.post(
         filepath,
       });
 
-      // Return success response (per Auto Tournament CS2 API spec - 200-299 status codes are success)
+      // Return success response (per MatchZy Enhanced API spec - 200-299 status codes are success)
       return res.status(200).json({
         success: true,
         message: 'Demo uploaded successfully',
@@ -428,7 +428,7 @@ router.get('/:matchSlug/status', requireAuth, async (req: Request, res: Response
       demoFileSize: demoExists ? demoFileSize : 0,
       demoFileSizeFormatted: demoExists ? `${(demoFileSize / 1024 / 1024).toFixed(2)} MB` : null,
       note: expectedUploadUrl
-        ? 'Auto Tournament CS2 should upload demos to the expected URL after match/map completion'
+        ? 'MatchZy Enhanced should upload demos to the expected URL after match/map completion'
         : 'Webhook URL not configured - demo uploads will not work',
     });
     return;

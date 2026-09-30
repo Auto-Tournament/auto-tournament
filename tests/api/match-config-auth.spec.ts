@@ -3,7 +3,7 @@ import { signInViaRequest, getAuthHeader, DEFAULT_PLAYER_STEAM_ID } from '../hel
 import { setupTournament } from '../helpers/tournamentSetup';
 
 /**
- * The match config Auto Tournament CS2 downloads is not public.
+ * The match config MatchZy Enhanced downloads is not public.
  *
  * GET /api/matches/:slug.json carries both rosters with their Steam IDs and the
  * match setup, and slugs are guessable (r1m1). It used to answer anyone. Now a

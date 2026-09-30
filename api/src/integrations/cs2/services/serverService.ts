@@ -23,7 +23,7 @@ export class ServerService {
   }
 
   /**
-   * Servers driven over RCON (Auto Tournament CS2): every server except the
+   * Servers driven over RCON (MatchZy Enhanced): every server except the
    * Ready Up ones on the fleet link. For the RCON-only jobs (bootstrap, health
    * and CS2 version checks, broadcast), which have nothing to say to a fleet
    * server.

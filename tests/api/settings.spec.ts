@@ -65,7 +65,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
     | 'at_debug_chat'
     | 'ratings_enabled'
     | 'allow_self_register'
-    // Auto Tournament CS2 core defaults (persisted convars)
+    // MatchZy Enhanced core defaults (persisted convars)
     | 'at_autostart_mode'
     | 'at_minimum_ready_required'
     | 'at_allow_force_ready'
@@ -81,7 +81,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
     | 'at_series_end_kick_delay_no_demo'
     | 'at_series_end_kick_delay_demo_no_upload'
     | 'at_series_end_kick_delay_demo_upload'
-    // Auto Tournament CS2 v1.3.0 settings
+    // MatchZy Enhanced v1.3.0 settings
     | 'at_autoready_enabled'
     | 'at_both_teams_unpause_required'
     | 'at_max_pauses_per_team'
@@ -106,7 +106,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
     'at_debug_chat',
     'ratings_enabled',
     'allow_self_register',
-    // Auto Tournament CS2 core defaults (persisted convars)
+    // MatchZy Enhanced core defaults (persisted convars)
     'at_autostart_mode',
     'at_minimum_ready_required',
     'at_allow_force_ready',
@@ -122,7 +122,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
     'at_series_end_kick_delay_no_demo',
     'at_series_end_kick_delay_demo_no_upload',
     'at_series_end_kick_delay_demo_upload',
-    // Auto Tournament CS2 v1.3.0 settings
+    // MatchZy Enhanced v1.3.0 settings
     'at_autoready_enabled',
     'at_both_teams_unpause_required',
     'at_max_pauses_per_team',
@@ -155,7 +155,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
         const trimmed = value.trim();
 
         // An empty hostname format is a real choice, not an absent one: it is how
-        // Auto Tournament CS2 is told to leave the server's own `hostname` alone. Every other
+        // MatchZy Enhanced is told to leave the server's own `hostname` alone. Every other
         // setting folds "" to NULL and falls back to its default, which would make
         // "don't touch my hostname" indistinguishable from "never configured".
         if (key === 'at_hostname_format') {
@@ -208,7 +208,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
         if (key === 'at_chat_prefix' || key === 'at_admin_chat_prefix') {
           await db.setAppSettingAsync(key, trimmed);
           log.success(
-            `Auto Tournament CS2 ${key === 'at_chat_prefix' ? 'chat prefix' : 'admin chat prefix'} updated`
+            `MatchZy Enhanced ${key === 'at_chat_prefix' ? 'chat prefix' : 'admin chat prefix'} updated`
           );
           return;
         }
@@ -222,7 +222,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
             normalized === 'on' ||
             normalized === 'enabled';
           await db.setAppSettingAsync(key, isEnabled ? '1' : '0');
-          log.success(`Auto Tournament CS2 knife round default ${isEnabled ? 'enabled' : 'disabled'}`);
+          log.success(`MatchZy Enhanced knife round default ${isEnabled ? 'enabled' : 'disabled'}`);
           return;
         }
 
@@ -248,7 +248,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
             normalized === 'on' ||
             normalized === 'enabled';
           await db.setAppSettingAsync(key, isEnabled ? '1' : '0');
-          log.success(`Auto Tournament CS2 debug chat ${isEnabled ? 'enabled' : 'disabled'}`);
+          log.success(`MatchZy Enhanced debug chat ${isEnabled ? 'enabled' : 'disabled'}`);
           return;
         }
 
@@ -265,7 +265,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
           return;
         }
 
-        // Auto Tournament CS2 core boolean settings (0/1)
+        // MatchZy Enhanced core boolean settings (0/1)
         if (
           key === 'at_allow_force_ready' ||
           key === 'at_kick_when_no_match_loaded' ||
@@ -287,7 +287,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
           return;
         }
 
-        // Auto Tournament CS2 core integer settings
+        // MatchZy Enhanced core integer settings
         if (
           key === 'at_autostart_mode' ||
           key === 'at_minimum_ready_required' ||
@@ -318,9 +318,9 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
           return;
         }
 
-        // Auto Tournament CS2 core string settings
+        // MatchZy Enhanced core string settings
         if (key === 'at_demo_path') {
-          // Auto Tournament CS2 expects a path relative to csgo/ and it must end with "/".
+          // MatchZy Enhanced expects a path relative to csgo/ and it must end with "/".
           const normalized = trimmed.endsWith('/') ? trimmed : `${trimmed}/`;
           await db.setAppSettingAsync(key, normalized);
           log.success('at_demo_path updated');
@@ -333,7 +333,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
           return;
         }
 
-        // Auto Tournament CS2 v1.3.0 boolean settings (0/1)
+        // MatchZy Enhanced v1.3.0 boolean settings (0/1)
         if (
           key === 'at_autoready_enabled' ||
           key === 'at_both_teams_unpause_required' ||
@@ -354,7 +354,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
           return;
         }
 
-        // Auto Tournament CS2 integer settings
+        // MatchZy Enhanced integer settings
         if (
           key === 'at_max_pauses_per_team' ||
           key === 'at_pause_duration' ||
@@ -389,7 +389,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
           return;
         }
 
-        // Auto Tournament CS2 float settings
+        // MatchZy Enhanced float settings
         if (key === 'at_gg_threshold') {
           const parsed = Number(trimmed);
           if (!Number.isFinite(parsed) || parsed < 0 || parsed > 1) {
@@ -466,7 +466,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
       ratingsEnabled,
       atDebugChatEnabled,
       allowSelfRegister,
-      // Auto Tournament CS2 core defaults
+      // MatchZy Enhanced core defaults
       atAutostartMode,
       atMinimumReadyRequired,
       atAllowForceReady,
@@ -482,7 +482,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
       atSeriesEndKickDelayNoDemo,
       atSeriesEndKickDelayDemoNoUpload,
       atSeriesEndKickDelayDemoUpload,
-      // Auto Tournament CS2 v1.3.0 settings
+      // MatchZy Enhanced v1.3.0 settings
       atAutoreadyEnabled,
       atBothTeamsUnpauseRequired,
       atMaxPausesPerTeam,
@@ -505,7 +505,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
       ratingsEnabled?: unknown;
       atDebugChatEnabled?: unknown;
       allowSelfRegister?: unknown;
-      // Auto Tournament CS2 core defaults
+      // MatchZy Enhanced core defaults
       atAutostartMode?: unknown;
       atMinimumReadyRequired?: unknown;
       atAllowForceReady?: unknown;
@@ -521,7 +521,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
       atSeriesEndKickDelayNoDemo?: unknown;
       atSeriesEndKickDelayDemoNoUpload?: unknown;
       atSeriesEndKickDelayDemoUpload?: unknown;
-      // Auto Tournament CS2 v1.3.0 settings
+      // MatchZy Enhanced v1.3.0 settings
       atAutoreadyEnabled?: unknown;
       atBothTeamsUnpauseRequired?: unknown;
       atMaxPausesPerTeam?: unknown;
@@ -758,7 +758,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
         return;
       };
 
-      // Auto Tournament CS2 core defaults (booleans)
+      // MatchZy Enhanced core defaults (booleans)
       if (atAllowForceReady !== undefined) {
         const resp = await putBoolOrNull('at_allow_force_ready', atAllowForceReady, 'atAllowForceReady');
         if (resp) return resp;
@@ -788,9 +788,9 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
         if (resp) return resp;
       }
 
-      // Auto Tournament CS2 core defaults (strings)
+      // MatchZy Enhanced core defaults (strings)
       // Note: an empty string is preserved here rather than clearing the setting.
-      // "" is how Auto Tournament CS2 is told to leave the server's own hostname alone.
+      // "" is how MatchZy Enhanced is told to leave the server's own hostname alone.
       if (atHostnameFormat !== undefined) {
         const resp = await putStringOrNull('at_hostname_format', atHostnameFormat, 'atHostnameFormat');
         if (resp) return resp;
@@ -804,7 +804,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
         if (resp) return resp;
       }
 
-      // Auto Tournament CS2 core defaults (numbers)
+      // MatchZy Enhanced core defaults (numbers)
       if (atSeriesEndKickDelayNoDemo !== undefined) {
         const resp = await putNumberOrNull('at_series_end_kick_delay_no_demo', atSeriesEndKickDelayNoDemo, 'atSeriesEndKickDelayNoDemo');
         if (resp) return resp;
@@ -818,7 +818,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
         if (resp) return resp;
       }
 
-      // Auto Tournament CS2 v1.3.0 settings
+      // MatchZy Enhanced v1.3.0 settings
       if (atAutoreadyEnabled !== undefined) {
         if (
           typeof atAutoreadyEnabled !== 'number' &&
@@ -1180,7 +1180,7 @@ const SAMPLE_VALUES: unknown[] = [
   'enabled',
   'off',
   '0.3',
-  'Auto Tournament CS2',
+  'MatchZy Enhanced',
   'demos/',
   '  "quoted" {TEAM1}  ',
   'https://example.com/',

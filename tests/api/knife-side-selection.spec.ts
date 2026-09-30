@@ -7,7 +7,7 @@ import type { Team } from '../helpers/teams';
 /**
  * Knife round → side selection → live.
  *
- * Auto Tournament CS2 emits `knife_round_started`, then `knife_round_ended` carrying the
+ * MatchZy Enhanced emits `knife_round_started`, then `knife_round_ended` carrying the
  * winner, then `going_live` once the winner has chosen a side. It emits nothing
  * for the choice itself, so the gap between the last two events is the whole
  * selection window — `at_side_selection_time`, 60 seconds by default.

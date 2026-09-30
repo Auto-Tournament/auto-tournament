@@ -159,7 +159,7 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
 `,
   },
   {
-    // 3.0: the plugin is Auto Tournament CS2, and its columns say so.
+    // 3.0: the plugin is MatchZy Enhanced, and its columns say so.
     id: CS2_AT_COLUMNS_MIGRATION_ID,
     up: `
     ALTER TABLE cs2_servers RENAME COLUMN matchzy_config TO at_config;

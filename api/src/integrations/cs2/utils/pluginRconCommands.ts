@@ -1,11 +1,11 @@
 /**
- * Helper functions to generate Auto Tournament CS2 RCON configuration commands
+ * Helper functions to generate MatchZy Enhanced RCON configuration commands
  */
 
 import { buildServerEventsUrl } from '../../../utils/serverAttribution';
 
 /**
- * Get RCON commands to configure Auto Tournament CS2 webhook
+ * Get RCON commands to configure MatchZy Enhanced webhook
  * Uses match slug in URL path for better event tracking
  */
 export function getPluginWebhookCommands(
@@ -78,7 +78,7 @@ export function getPluginReportUploadCommands(
 }
 
 /**
- * Get RCON commands to configure Auto Tournament CS2 demo upload
+ * Get RCON commands to configure MatchZy Enhanced demo upload
  * Returns array of commands to set URL and authentication headers
  * (Similar to webhook configuration)
  * 
@@ -116,12 +116,12 @@ export function getPluginDemoUploadCommand(baseUrl: string, matchSlug: string): 
 export const MATCH_CONFIG_AUTH_HEADER = 'X-Auto-Tournament-Token';
 
 /**
- * The RCON command that tells Auto Tournament CS2 to load a match.
+ * The RCON command that tells MatchZy Enhanced to load a match.
  *
- * `at_loadmatch_url "<url>" "<header name>" "<header value>"` — Auto Tournament CS2
+ * `at_loadmatch_url "<url>" "<header name>" "<header value>"` — MatchZy Enhanced
  * adds the header to its config fetch, and keeps it for a load it queues
  * behind a series in postgame. It has taken the two extra arguments since
- * Auto Tournament CS2 0.6.0, so every Auto Tournament CS2 build does. The config endpoint
+ * MatchZy Enhanced 0.6.0, so every MatchZy Enhanced build does. The config endpoint
  * refuses a fetch without the header (see `requireMatchConfigAccess`).
  *
  * Without a token the bare command is sent; the fetch is then refused, which
@@ -143,7 +143,7 @@ export function redactLoadMatchCommand(command: string): string {
 }
 
 /**
- * Get RCON commands for core Auto Tournament CS2 settings that we want to control from the app:
+ * Get RCON commands for core MatchZy Enhanced settings that we want to control from the app:
  * - Chat prefixes
  * - Knife round enabled-by-default toggle
  * - Debug chat toggle
@@ -176,7 +176,7 @@ export function getPluginCoreSettingsCommands(options: {
 }
 
 /**
- * Get RCON commands for per-server Auto Tournament CS2 configuration overrides.
+ * Get RCON commands for per-server MatchZy Enhanced configuration overrides.
  * All fields are optional; null/undefined means "do not touch this ConVar".
  * Note: Chat prefixes and knife round defaults are not per-server settings;
  * they are configured at the global/tournament/match level.
@@ -193,12 +193,12 @@ export function getPluginServerConfigCommands(config: {
   resetCvarsOnSeriesEnd?: boolean | null;
   usePauseCommandForTacticalPause?: boolean | null;
   /**
-   * Auto Tournament CS2 autostart mode:
+   * MatchZy Enhanced autostart mode:
    * 0 = idle/sleep, 1 = match mode, 2 = practice mode
    */
   autostartMode?: 0 | 1 | 2 | null;
   /**
-   * Hostname Auto Tournament CS2 applies on match load. `''` is a meaningful value: it tells
+   * Hostname MatchZy Enhanced applies on match load. `''` is a meaningful value: it tells
    * the plugin to leave the server's own `hostname` alone.
    */
   hostnameFormat?: string | null;
@@ -309,7 +309,7 @@ export function getPluginServerConfigCommands(config: {
 }
 
 /**
- * Get RCON commands to disable Auto Tournament CS2 webhook
+ * Get RCON commands to disable MatchZy Enhanced webhook
  */
 export function getDisableWebhookCommands(): string[] {
   return [

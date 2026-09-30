@@ -14,10 +14,10 @@ import {
 } from '../../api/src/utils/serverAttribution';
 
 /**
- * Reading what Auto Tournament CS2 says back, and deciding which server/match a request
+ * Reading what MatchZy Enhanced says back, and deciding which server/match a request
  * belongs to.
  *
- * Seen on real servers (Auto Tournament CS2 1.4.24, MR4 BO3 simulation): the final
+ * Seen on real servers (MatchZy Enhanced 1.4.24, MR4 BO3 simulation): the final
  * became ready while its server was in postgame. The plugin queued the load,
  * MAT waited 10s for a config fetch that only comes after the reset, gave the
  * match to a second server, and the first server played it too. Events from
@@ -29,7 +29,7 @@ import {
  * @tag api
  * @tag regression
  */
-test.describe('Auto Tournament CS2 replies and server attribution', () => {
+test.describe('MatchZy Enhanced replies and server attribution', () => {
   test('a queued load is recognised, not treated as a refusal', () => {
     const observed =
       '[MAT] [LoadMatchDataCommand] Current match 13 is finishing. Queued next match from URL: ' +
@@ -88,7 +88,7 @@ test.describe('Auto Tournament CS2 replies and server attribution', () => {
   });
 
   test('an autostarted warmup with no match loaded is allocatable; warmup with a match is not', () => {
-    // Seen after restarting servers with at_autostart_mode 1 (Auto Tournament CS2
+    // Seen after restarting servers with at_autostart_mode 1 (MatchZy Enhanced
     // 1.4.28): `[UpdateTournamentStatus] Status: warmup, Match: , Timestamp: 1789547159`.
     // All three servers read as busy and the start dialog found no free server.
     const matchVar = parseConVarReply('at_tournament_match = ', 'at_tournament_match') || null;

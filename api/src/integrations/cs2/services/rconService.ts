@@ -590,23 +590,23 @@ export class RconService {
       this.sendCommand(serverId, `at_${command}`),
 
     /**
-     * Load a match config (Auto Tournament CS2)
+     * Load a match config (MatchZy Enhanced)
      */
     loadMatch: (serverId: string, configUrl: string) =>
       this.sendCommand(serverId, getPluginLoadMatchCommand(configUrl, process.env.SERVER_TOKEN)),
 
     /**
-     * End current match (Auto Tournament CS2)
+     * End current match (MatchZy Enhanced)
      */
     endMatch: (serverId: string) => this.sendCommand(serverId, 'css_restart'),
 
     /**
-     * Pause match (Auto Tournament CS2)
+     * Pause match (MatchZy Enhanced)
      */
     pauseMatch: (serverId: string) => this.sendCommand(serverId, 'css_pause'),
 
     /**
-     * Unpause match (Auto Tournament CS2)
+     * Unpause match (MatchZy Enhanced)
      */
     unpauseMatch: (serverId: string) => this.sendCommand(serverId, 'css_unpause'),
   };

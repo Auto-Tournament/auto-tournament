@@ -5,7 +5,7 @@ import { getAuthHeader, signInViaRequest } from '../helpers/auth';
 /**
  * Plugin `postgame` between maps must not end a series.
  *
- * Reproduced on real CS2 servers (Auto Tournament CS2 1.4.24): in a single
+ * Reproduced on real CS2 servers (MatchZy Enhanced 1.4.24): in a single
  * elimination BO3, every Round 1 match went `completed` the moment map 1
  * ended. Winner stayed null, the final never got its teams, and MAT then
  * dropped the rest of the series the server kept playing:
@@ -58,7 +58,7 @@ async function matchBySlug(request: APIRequestContext, slug: string): Promise<Li
   return found!;
 }
 
-/** The report Auto Tournament CS2 POSTs when a map has just ended. */
+/** The report MatchZy Enhanced POSTs when a map has just ended. */
 async function postgameReport(
   request: APIRequestContext,
   slug: string,

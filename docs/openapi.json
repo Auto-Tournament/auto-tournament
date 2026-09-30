@@ -499,10 +499,6 @@
       "description": "Sign-in flows, admin identity, impersonation."
     },
     {
-      "name": "Auto Tournament CS2",
-      "description": "Auto Tournament CS2 plugin version information."
-    },
-    {
       "name": "Catalog",
       "description": "The game catalog: every pack and code module this instance has or can install, from the feed, its cache and the offline snapshot, with install, update, enable, disable, uninstall and purge. Code modules install only from signed releases. Admin only; writes must be same-site JSON."
     },
@@ -520,7 +516,7 @@
     },
     {
       "name": "Events",
-      "description": "Auto Tournament CS2 webhooks in, and the recorded event log out."
+      "description": "MatchZy Enhanced webhooks in, and the recorded event log out."
     },
     {
       "name": "Experimental features",
@@ -617,6 +613,10 @@
     {
       "name": "Matchmaking",
       "description": "Experimental (docs/design/matchmaking.md). 404 unless the matchmaking feature is on; admin only while it is being built."
+    },
+    {
+      "name": "MatchZy Enhanced",
+      "description": "MatchZy Enhanced version information."
     },
     {
       "name": "Me",
@@ -2267,7 +2267,7 @@
     "/api/cs2-plugin/latest-version": {
       "get": {
         "tags": [
-          "Auto Tournament CS2"
+          "MatchZy Enhanced"
         ],
         "summary": "GET /api/cs2-plugin/latest-version",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
@@ -5879,8 +5879,8 @@
         "tags": [
           "Matches"
         ],
-        "summary": "Match config for Auto Tournament CS2",
-        "description": "The Auto Tournament CS2 match config the game server downloads when MAT sends\n`at_loadmatch_url \"<url>\" \"X-Auto-Tournament-Token\" \"<SERVER_TOKEN>\"`.\nAssembled fresh from the database on every request.\n\nRequires `X-Auto-Tournament-Token: <SERVER_TOKEN>` (game servers) or admin\nauth: a session, or a service token (read-only scope is enough). A\nrequest presenting a wrong `X-Auto-Tournament-Token` is refused even with an\nadmin session.\n\n`server_id` and `match_id` are added by MAT to the URL it sends; when\npresent, the fetch is refused with 409 if the match has since moved to\nanother server or the slug now belongs to a different match.\n",
+        "summary": "Match config for MatchZy Enhanced",
+        "description": "The MatchZy Enhanced match config the game server downloads when MAT sends\n`at_loadmatch_url \"<url>\" \"X-Auto-Tournament-Token\" \"<SERVER_TOKEN>\"`.\nAssembled fresh from the database on every request.\n\nRequires `X-Auto-Tournament-Token: <SERVER_TOKEN>` (game servers) or admin\nauth: a session, or a service token (read-only scope is enough). A\nrequest presenting a wrong `X-Auto-Tournament-Token` is refused even with an\nadmin session.\n\n`server_id` and `match_id` are added by MAT to the URL it sends; when\npresent, the fetch is refused with 409 if the match has since moved to\nanother server or the slug now belongs to a different match.\n",
         "security": [
           {
             "atServerToken": []
@@ -5920,7 +5920,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Auto Tournament CS2 match config (JSON)"
+            "description": "MatchZy Enhanced match config (JSON)"
           },
           "401": {
             "description": "Missing or wrong X-Auto-Tournament-Token and no admin auth"

@@ -15,7 +15,7 @@ const router = Router();
 /**
  * GET /api/servers/:id/bootstrap
  *
- * Server-only endpoint. Used by Auto Tournament CS2 to fetch a single initialization payload
+ * Server-only endpoint. Used by MatchZy Enhanced to fetch a single initialization payload
  * instead of requiring many individual RCON commands with delays.
  */
 router.get('/:id/bootstrap', validateServerToken, async (req: Request, res: Response) => {

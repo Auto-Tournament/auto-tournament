@@ -1,5 +1,5 @@
 /**
- * Parsing for the text Auto Tournament CS2 / CounterStrikeSharp send back over RCON.
+ * Parsing for the text MatchZy Enhanced / CounterStrikeSharp send back over RCON.
  *
  * Kept free of I/O so the classification can be checked without a CS2 server.
  */
@@ -56,15 +56,15 @@ export type LoadMatchReply =
  * Classify the RCON reply to `at_loadmatch_url`.
  *
  * The queued reply matters most: while the previous series is in postgame,
- * Auto Tournament CS2 stores the URL and fetches it only after its reset — minutes
+ * MatchZy Enhanced stores the URL and fetches it only after its reset — minutes
  * later. MAT waited 10s for the fetch, called the load failed, and gave the
  * match to another server; the first server then loaded it too, and both
  * servers played the same match.
  *
- * Wordings seen in Auto Tournament CS2 1.4.24:
+ * Wordings seen in MatchZy Enhanced 1.4.24:
  *   "[LoadMatchDataCommand] Current match 13 is finishing. Queued next match from URL: … to load after reset."
  *   "[at match load] Current match 13 is postgame. Queued next match from URL: …"
- * Later versions (cs2-plugin#16) end the reply with a machine-readable
+ * Later versions (matchzy-enhanced#16) end the reply with a machine-readable
  * `queued_match=<config name>`, e.g. `queued_match=r2m1`.
  */
 export function classifyLoadMatchReply(response: string | null | undefined): LoadMatchReply {
@@ -96,7 +96,7 @@ export type ClearQueuedReply =
   | 'unsupported';
 
 /**
- * Classify the reply to `at_clear_queued_match` (cs2-plugin#16+):
+ * Classify the reply to `at_clear_queued_match` (matchzy-enhanced#16+):
  * `cleared_queued_match=<id>`, or `cleared_queued_match=none` when nothing was
  * queued. `css_restart` / `css_endmatch` include the same token.
  */
@@ -109,7 +109,7 @@ export function classifyClearQueuedReply(response: string | null | undefined): C
 /**
  * Can MAT send a new match to a server reporting this status?
  *
- * Idle, obviously. 'error' too: Auto Tournament CS2 sets it when a load or queued load
+ * Idle, obviously. 'error' too: MatchZy Enhanced sets it when a load or queued load
  * fails and leaves it there until the next load, usually with no match set up.
  * Blocking on it would strand the server. If a match is in fact still set up,
  * the plugin refuses the load and MAT reports that.

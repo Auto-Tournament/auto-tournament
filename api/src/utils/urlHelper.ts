@@ -6,14 +6,14 @@ import { publicOrigin } from './publicOrigin';
  * Get the base URL for webhook configuration
  *
  * Requires webhook URL to be configured in Settings.
- * This is the URL where Auto Tournament CS2 servers will send webhook events.
+ * This is the URL where MatchZy Enhanced servers will send webhook events.
  *
  * Examples:
  * - Development: http://localhost:3000
  * - Production: https://yourdomain.com
  *
  * Only for routes that are CS2 by construction (`POST /api/matches` takes a
- * raw Auto Tournament CS2 config). Anything that serves whatever game a tournament or
+ * raw MatchZy Enhanced config). Anything that serves whatever game a tournament or
  * match belongs to asks the integration instead, through
  * `scheduler.resolveBaseUrl` / `resolveBaseUrlForMatch`, so that a game with
  * no servers does not need a webhook URL.

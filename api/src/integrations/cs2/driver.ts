@@ -2,7 +2,7 @@
  * How the platform drives a CS2 server: the `ServerDriver` for its
  * `cs2_servers.transport`.
  *
- * - `rcon`: Auto Tournament CS2 over RCON (services/matchLoadingService.ts,
+ * - `rcon`: MatchZy Enhanced over RCON (services/matchLoadingService.ts,
  *   utils/pluginRconCommands.ts). Every server before the fleet link; the
  *   calls below are the ones the pool (./allocation.ts) made directly, with
  *   the same commands and results.
@@ -59,7 +59,7 @@ export interface ServerDriver {
 }
 
 // ---------------------------------------------------------------------------
-// RCON (Auto Tournament CS2)
+// RCON (MatchZy Enhanced)
 // ---------------------------------------------------------------------------
 
 export const rconDriver: ServerDriver = {

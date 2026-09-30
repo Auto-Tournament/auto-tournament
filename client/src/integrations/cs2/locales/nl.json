@@ -11,7 +11,7 @@
       "maps": "Kaarten & map-pools"
     },
     "atDbDown": {
-      "title": "Auto Tournament CS2-database onbereikbaar",
+      "title": "MatchZy Enhanced-database onbereikbaar",
       "body_one": "{{count}} server meldt dat de plugin zijn database niet kan bereiken. Back-ups en de eventwachtrij kunnen hierdoor last hebben.",
       "body_other": "{{count}} servers melden dat de plugin zijn database niet kan bereiken. Back-ups en de eventwachtrij kunnen hierdoor last hebben."
     }
@@ -467,7 +467,7 @@
       "message_other": "Weet je zeker dat je {{count}} servers wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
     },
     "autoConfig": {
-      "configuring": "Nieuwe servers configureren (Auto Tournament CS2-config via RCON versturen)…",
+      "configuring": "Nieuwe servers configureren (MatchZy Enhanced-config via RCON versturen)…",
       "done": "Nieuwe servers geconfigureerd. Status verversen…"
     },
     "checkServerLogs": "Controleer de gameserverconsole/logs om te zien of de Auto Tournament-plugin config ontvangt en events verstuurt.",
@@ -475,7 +475,7 @@
       "title": "Status van alle servers",
       "total_one": "{{count}} server",
       "total_other": "{{count}} servers",
-      "latestRelease": "Nieuwste Auto Tournament CS2-release: v{{version}}",
+      "latestRelease": "Nieuwste MatchZy Enhanced-release: v{{version}}",
       "olderVersion_one": "{{count}} server draait een oudere versie dan de nieuwste release.",
       "olderVersion_other": "{{count}} servers draaien een oudere versie dan de nieuwste release.",
       "downloadLatest": "Nieuwste downloaden"
@@ -520,7 +520,7 @@
       "webhookTitle": "Server kan Auto Tournament niet bereiken (webhook)",
       "webhookBody": "Auto Tournament kan de server via RCON bereiken, maar de server kan de webhook van Auto Tournament niet bereiken. Controleer uitgaand verkeer, DNS en de ingestelde webhook-URL.",
       "versionDiffTitle": "Pluginversies verschillen per server",
-      "versionDiffBody": "Sommige servers draaien een andere Auto Tournament CS2-versie. Gebruik je CSM, voer dan {{command}} uit en herstart de servers.",
+      "versionDiffBody": "Sommige servers draaien een andere MatchZy Enhanced-versie. Gebruik je CSM, voer dan {{command}} uit en herstart de servers.",
       "ipBannedTitle": "RCON-IP geblokkeerd",
       "ipBannedBody": "De server heeft het IP van Auto Tournament tijdelijk geblokkeerd na herhaalde mislukte RCON-authenticatie. Corrigeer het RCON-wachtwoord en hef de IP-blokkade op.",
       "pluginDbTitle": "De Auto Tournament-plugin kan zijn database niet bereiken.",
@@ -604,8 +604,8 @@
     "enabledHelper": "Uitgeschakelde servers worden niet gebruikt voor wedstrijden",
     "tournamentUseLabel": "Use for tournament matches",
     "tournamentUseHelper": "Off: a practice or community server. Tournament matches, auto-scaling and failover never use it. It still counts toward your license.",
-    "overridesTitle": "Auto Tournament CS2-overschrijvingen (optioneel)",
-    "overridesDescription": "Deze instellingen overschrijven de globale Auto Tournament CS2-standaarden alleen voor deze server. Laat leeg om de globale waarden uit Instellingen te gebruiken.",
+    "overridesTitle": "MatchZy Enhanced-overschrijvingen (optioneel)",
+    "overridesDescription": "Deze instellingen overschrijven de globale MatchZy Enhanced-standaarden alleen voor deze server. Laat leeg om de globale waarden uit Instellingen te gebruiken.",
     "chatPrefixLabel": "Chatprefix-overschrijving",
     "chatPrefixPlaceholder": "[{Green}Auto Tournament{Default}]",
     "chatPrefixHelper": "Overschrijft at_chat_prefix op deze server (optioneel)",
@@ -886,7 +886,7 @@
       "noServers": "Geen servers beschikbaar",
       "refreshServers": "Serverlijst vernieuwen",
       "noEvents": "Nog geen events van deze server ontvangen.",
-      "noEventsHint": "Na 15 seconden nog steeds geen events. Controleer of je CS2-server is ingesteld om Auto Tournament CS2-webhooks naar /api/events/:matchSlugOrServerId te sturen met de juiste X-Auto-Tournament-Token.",
+      "noEventsHint": "Na 15 seconden nog steeds geen events. Controleer of je CS2-server is ingesteld om MatchZy Enhanced-webhooks naar /api/events/:matchSlugOrServerId te sturen met de juiste X-Auto-Tournament-Token.",
       "waiting": "Wachten op events van de server…",
       "footer_one": "{{count}} event getoond (max. 100)",
       "footer_other": "{{count}} events getoond (max. 100)",
@@ -899,8 +899,8 @@
   },
   "settings": {
     "webhook": {
-      "title": "Auto Tournament CS2 webhook",
-      "description": "Auto Tournament CS2 webhook-URL die je CS2-servers kunnen bereiken.",
+      "title": "MatchZy Enhanced webhook",
+      "description": "MatchZy Enhanced webhook-URL die je CS2-servers kunnen bereiken.",
       "label": "Webhook-URL",
       "helper": "Voorbeeld: https://jouw-domein.nl"
     },
@@ -925,17 +925,17 @@
     "saveFailed": "Failed to save settings",
     "loadFailed": "Failed to load settings",
     "chatDefaults": {
-      "title": "Auto Tournament CS2 chat- & knife-standaarden",
+      "title": "MatchZy Enhanced chat- & knife-standaarden",
       "description": "Configureer chat-prefixen in-game en het standaard knife-round gedrag.",
       "chatPrefixLabel": "Chat-prefix",
       "chatPrefixHelper": "Standaard: \"[{Green}Auto Tournament{Default}]\". Laat leeg om terug te zetten naar de standaard.",
       "adminChatPrefixLabel": "Admin chat-prefix",
       "adminChatPrefixHelper": "Standaard: \"[{Red}ADMIN{Default}]\". Laat leeg om terug te zetten naar de standaard.",
       "knifeToggleLabel": "Knife-rounds standaard inschakelen voor nieuwe wedstrijden (wanneer sides niet vooraf gekozen zijn)",
-      "knifeNote": "Geldt alleen wanneer Auto Tournament CS2 normaal een knife-round zou spelen; expliciete side-picks worden niet aangepast."
+      "knifeNote": "Geldt alleen wanneer MatchZy Enhanced normaal een knife-round zou spelen; expliciete side-picks worden niet aangepast."
     },
     "atCore": {
-      "title": "Auto Tournament CS2 Core-standaarden",
+      "title": "MatchZy Enhanced Core-standaarden",
       "description": "Deze standaarden worden naar servers gestuurd tijdens initialisatie en vóór elke wedstrijd-load.",
       "expert": {
         "title": "Expertinstellingen",
@@ -988,8 +988,8 @@
       }
     },
     "atEnhanced": {
-      "title": "Auto Tournament CS2-functies",
-      "description": "Configureer geavanceerde match-functies. Laat velden leeg om de Auto Tournament CS2-standaard te gebruiken.",
+      "title": "MatchZy Enhanced-functies",
+      "description": "Configureer geavanceerde match-functies. Laat velden leeg om de MatchZy Enhanced-standaard te gebruiken.",
       "autoready": {
         "title": "Auto-ready",
         "label": "Markeer spelers automatisch als ready wanneer ze joinen",
@@ -1033,13 +1033,13 @@
       "title": "Ontwikkelaarsopties",
       "description": "Alleen voor lokale ontwikkeling; niet inschakelen in productie.",
       "simulateToggleLabel": "Simuleer wedstrijden (gebruik bot-gestuurde demo-wedstrijden i.p.v. echte spelers)",
-      "simulateNote": "Wanneer ingeschakeld, bevatten gegenereerde Auto Tournament CS2-configs \"simulation\": true voor geautomatiseerde demo-wedstrijden.",
+      "simulateNote": "Wanneer ingeschakeld, bevatten gegenereerde MatchZy Enhanced-configs \"simulation\": true voor geautomatiseerde demo-wedstrijden.",
       "timescaleTitle": "Simulatie-snelheid",
       "timescaleDescription": "Bepaalt hoe snel gesimuleerde wedstrijden lopen. Hogere waarden versnellen bots en rondes. Dit geldt alleen wanneer simulatie is ingeschakeld.",
       "timescaleWarning": "Snelheden boven 2.0 kunnen instabiel zijn en vreemd bot-gedrag veroorzaken, maar zijn ok voor snelle lokale tests.",
       "debugChat": {
-        "label": "Auto Tournament CS2 debug-chatberichten inschakelen",
-        "description": "Wanneer ingeschakeld, toont Auto Tournament CS2 extra debug-berichten (connects/disconnects, event-traces, etc.) in de chat. Gebruik dit alleen voor ontwikkeling en testen."
+        "label": "MatchZy Enhanced debug-chatberichten inschakelen",
+        "description": "Wanneer ingeschakeld, toont MatchZy Enhanced extra debug-berichten (connects/disconnects, event-traces, etc.) in de chat. Gebruik dit alleen voor ontwikkeling en testen."
       }
     },
     "success": {

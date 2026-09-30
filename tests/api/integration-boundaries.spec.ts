@@ -99,7 +99,7 @@ test.describe('Integration boundary lint', () => {
     expect(source).not.toMatch(/LEGACY_CORE_IMPORTS|isLegacyCoreImport/);
   });
 
-  test('api/src/core must not import rconService or the Auto Tournament CS2 event types by any path', async () => {
+  test('api/src/core must not import rconService or the MatchZy Enhanced event types by any path', async () => {
     expect(
       await lint(
         'api/src/core/scheduler.ts',

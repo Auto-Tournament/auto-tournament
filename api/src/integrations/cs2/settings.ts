@@ -33,7 +33,7 @@ export type Cs2SettingKey =
   | 'at_admin_chat_prefix'
   | 'at_knife_enabled_default'
   | 'at_debug_chat'
-  // Auto Tournament CS2 core defaults (persisted convars)
+  // MatchZy Enhanced core defaults (persisted convars)
   | 'at_autostart_mode'
   | 'at_minimum_ready_required'
   | 'at_allow_force_ready'
@@ -49,7 +49,7 @@ export type Cs2SettingKey =
   | 'at_series_end_kick_delay_no_demo'
   | 'at_series_end_kick_delay_demo_no_upload'
   | 'at_series_end_kick_delay_demo_upload'
-  // Auto Tournament CS2 v1.3.0 settings
+  // MatchZy Enhanced v1.3.0 settings
   | 'at_autoready_enabled'
   | 'at_both_teams_unpause_required'
   | 'at_max_pauses_per_team'
@@ -71,7 +71,7 @@ function integerSchema(minimum: number, maximum: number): JSONSchema {
   return { type: 'string', pattern: '^-?\\d+$', 'x-minimum': minimum, 'x-maximum': maximum };
 }
 
-/** An Auto Tournament CS2 on/off convar edited as a boolean. */
+/** A MatchZy Enhanced on/off convar edited as a boolean. */
 function flag(key: Cs2SettingKey, field: string, order: number): Cs2Setting {
   return {
     key,
@@ -83,7 +83,7 @@ function flag(key: Cs2SettingKey, field: string, order: number): Cs2Setting {
   };
 }
 
-/** A Auto Tournament CS2 on/off setting, edited as 0 / 1 / a boolean. */
+/** A MatchZy Enhanced on/off setting, edited as 0 / 1 / a boolean. */
 function binary(key: Cs2SettingKey, field: string, order: number): Cs2Setting {
   return { ...flag(key, field, order), applyRequest: binaryRequest(field) };
 }
@@ -190,7 +190,7 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
     field: 'atChatPrefix',
     order: 40,
     schema: { type: 'string' },
-    normalize: normalizeText('Auto Tournament CS2 chat prefix updated'),
+    normalize: normalizeText('MatchZy Enhanced chat prefix updated'),
     applyRequest: stringRequest('atChatPrefix'),
   },
   {
@@ -198,17 +198,17 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
     field: 'atAdminChatPrefix',
     order: 50,
     schema: { type: 'string' },
-    normalize: normalizeText('Auto Tournament CS2 admin chat prefix updated'),
+    normalize: normalizeText('MatchZy Enhanced admin chat prefix updated'),
     applyRequest: stringRequest('atAdminChatPrefix'),
   },
   {
     ...flag('at_knife_enabled_default', 'atKnifeEnabledDefault', 60),
-    normalize: normalizeFlag('Auto Tournament CS2 knife round default'),
+    normalize: normalizeFlag('MatchZy Enhanced knife round default'),
   },
   // order 70: the core's ratingsEnabled
   {
     ...flag('at_debug_chat', 'atDebugChatEnabled', 80),
-    normalize: normalizeFlag('Auto Tournament CS2 debug chat'),
+    normalize: normalizeFlag('MatchZy Enhanced debug chat'),
   },
   // order 90: the core's allowSelfRegister
   integer('at_minimum_ready_required', 'atMinimumReadyRequired', 100, {
@@ -223,7 +223,7 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
     { min: 0, max: 2, message: 'at_autostart_mode must be 0, 1, or 2' },
     'a number (0-2)'
   ),
-  // Auto Tournament CS2 core defaults (booleans)
+  // MatchZy Enhanced core defaults (booleans)
   flag('at_allow_force_ready', 'atAllowForceReady', 120),
   flag('at_kick_when_no_match_loaded', 'atKickWhenNoMatchLoaded', 130),
   flag('at_whitelist_enabled_default', 'atWhitelistEnabledDefault', 140),
@@ -235,14 +235,14 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
     'atUsePauseCommandForTacticalPause',
     180
   ),
-  // Auto Tournament CS2 core defaults (strings)
+  // MatchZy Enhanced core defaults (strings)
   {
     key: 'at_hostname_format',
     field: 'atHostnameFormat',
     order: 190,
     schema: { type: 'string' },
     // An empty hostname format is a real choice, not an absent one: it is how
-    // Auto Tournament CS2 is told to leave the server's own `hostname` alone. Every other
+    // MatchZy Enhanced is told to leave the server's own `hostname` alone. Every other
     // setting folds "" to NULL and falls back to its default, which would make
     // "don't touch my hostname" indistinguishable from "never configured".
     keepEmpty: true,
@@ -267,7 +267,7 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
     order: 200,
     schema: { type: 'string' },
     normalize(trimmed) {
-      // Auto Tournament CS2 expects a path relative to csgo/ and it must end with "/".
+      // MatchZy Enhanced expects a path relative to csgo/ and it must end with "/".
       const normalized = trimmed.endsWith('/') ? trimmed : `${trimmed}/`;
       return { value: normalized, message: 'at_demo_path updated' };
     },
@@ -281,7 +281,7 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
     normalize: normalizeText('at_demo_name_format updated'),
     applyRequest: stringRequest('atDemoNameFormat'),
   },
-  // Auto Tournament CS2 core defaults (numbers)
+  // MatchZy Enhanced core defaults (numbers)
   kickDelay('at_series_end_kick_delay_no_demo', 'atSeriesEndKickDelayNoDemo', 220),
   kickDelay(
     'at_series_end_kick_delay_demo_no_upload',
@@ -289,7 +289,7 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
     230
   ),
   kickDelay('at_series_end_kick_delay_demo_upload', 'atSeriesEndKickDelayDemoUpload', 240),
-  // Auto Tournament CS2 v1.3.0 settings
+  // MatchZy Enhanced v1.3.0 settings
   binary('at_autoready_enabled', 'atAutoreadyEnabled', 250),
   binary('at_both_teams_unpause_required', 'atBothTeamsUnpauseRequired', 260),
   integer('at_max_pauses_per_team', 'atMaxPausesPerTeam', 270, {

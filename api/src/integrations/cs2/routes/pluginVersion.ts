@@ -5,7 +5,7 @@ const router = Router();
 
 /**
  * GET /api/cs2-plugin/latest-version
- * Get the latest Auto Tournament CS2 version from GitHub (cached)
+ * Get the latest MatchZy Enhanced version from GitHub (cached)
  */
 router.get('/latest-version', async (_req: Request, res: Response) => {
   try {
@@ -34,7 +34,7 @@ router.get('/latest-version', async (_req: Request, res: Response) => {
   } catch {
     return res.status(500).json({
       success: false,
-      error: 'Failed to fetch Auto Tournament CS2 version',
+      error: 'Failed to fetch MatchZy Enhanced version',
     });
   }
 });

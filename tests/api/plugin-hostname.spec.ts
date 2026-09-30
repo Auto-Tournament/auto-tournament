@@ -5,7 +5,7 @@ import { createTestServer, deleteServer } from '../helpers/servers';
 /**
  * Server hostname format.
  *
- * Auto Tournament CS2 overwrites a server's `hostname` on every match load, using
+ * MatchZy Enhanced overwrites a server's `hostname` on every match load, using
  * `at_hostname_format`. MAT never sent that cvar, so the plugin default
  * ("{TEAM1} vs {TEAM2}") always won and the hostname an operator had set in
  * their own server.cfg was silently replaced with no way to stop it.
@@ -49,7 +49,7 @@ async function readHostnameFormat(request: APIRequestContext): Promise<string | 
   return body.settings.atHostnameFormat;
 }
 
-test.describe.serial('Auto Tournament CS2 hostname format', () => {
+test.describe.serial('MatchZy Enhanced hostname format', () => {
   let serverId: string;
 
   test.beforeEach(async ({ page, request }) => {
@@ -100,7 +100,7 @@ test.describe.serial('Auto Tournament CS2 hostname format', () => {
       await setHostnameFormat(request, '');
 
       // The interesting assertion: "" must not come back as the default. If it
-      // did, an operator could never stop Auto Tournament CS2 renaming their server.
+      // did, an operator could never stop MatchZy Enhanced renaming their server.
       expect(await readHostnameFormat(request)).toBe('');
       expect(await bootstrapCommands(request, serverId)).toContain(
         'at_hostname_format ""'

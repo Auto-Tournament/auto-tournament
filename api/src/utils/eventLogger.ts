@@ -1,5 +1,5 @@
 /**
- * Event Logger - Persistent file logging for all Auto Tournament CS2 webhook events
+ * Event Logger - Persistent file logging for all MatchZy Enhanced webhook events
  * Logs are stored in data/logs/events/ for debugging and recovery
  */
 

@@ -10,10 +10,10 @@ import {
 } from '../helpers/golden';
 
 /**
- * Golden Auto Tournament CS2 match configs, one file per format.
+ * Golden MatchZy Enhanced match configs, one file per format.
  *
  * Characterization test: it records the JSON that GET /api/matches/:slug.json
- * serves today (the URL the Auto Tournament CS2 plugin loads a match from) and fails when
+ * serves today (the URL MatchZy Enhanced loads a match from) and fails when
  * any of it changes. It is the safety net for moving config building out of
  * the bracket generators and behind the CS2 game module; the served config
  * must stay identical through that refactor.
@@ -130,7 +130,7 @@ async function snapshotTournament(request: APIRequestContext, name: string): Pro
   expectGolden(`match-config-${name}`, normalizeForGolden(snapshot, { replace: COMMON_REPLACE }));
 }
 
-test.describe.serial('Golden Auto Tournament CS2 match configs', () => {
+test.describe.serial('Golden MatchZy Enhanced match configs', () => {
   test.beforeAll(async ({ playwright }) => {
     const request = await playwright.request.newContext({
       baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069',

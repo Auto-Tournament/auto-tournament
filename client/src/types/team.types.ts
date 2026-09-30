@@ -104,11 +104,11 @@ export interface TeamMatchInfo {
     // Series / map configuration
     num_maps?: number;
     maplist?: string[];
-    // Overtime / regulation configuration (mirrors Auto Tournament CS2 match JSON)
+    // Overtime / regulation configuration (mirrors MatchZy Enhanced match JSON)
     maxRounds?: number;
     overtimeMode?: 'enabled' | 'disabled';
     overtimeSegments?: number;
-    /** Auto Tournament CS2 convars carried through from the generated match JSON. */
+    /** MatchZy Enhanced convars carried through from the generated match JSON. */
     cvars?: {
       [key: string]: string | number;
     };

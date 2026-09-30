@@ -114,7 +114,7 @@
     },
     "signIn": {
       "title": "Innloggingsleverandører",
-      "intro": "Velg hvordan folk logger inn. Kontoer er Steam-kontoer: den som logger inn med en annen leverandør, kobler til Steam én gang og kan så bruke begge. Endringer gjelder med en gang, uten omstart.",
+      "intro": "Velg hvordan folk logger inn. Hvilken som helst av disse kan være kontoen deres, og de kan koble til flere på tilkoblingssiden. Endringer gjelder med en gang, uten omstart.",
       "keySource": "Lagrede hemmeligheter krypteres med {{name}}.",
       "keySourceDefault": "Lagrede hemmeligheter krypteres med en innebygd utviklingsnøkkel. Sett SECRETS_KEY eller SESSION_SECRET før dere går live.",
       "loadError": "Kunne ikke laste innloggingsleverandørene",
@@ -162,7 +162,7 @@
       "adminAccess": {
         "title": "Admintilgang",
         "localLogin": "Tillat lokal admininnlogging",
-        "localLoginHelp": "Den lille «Admininnlogging»-lenken på innloggingssiden, for kontoer med brukernavn og passord. Mister du tilgangen, kjør reset-admin på serveren.",
+        "localLoginHelp": "Innlogging med brukernavn og passord på /login/admin. Mister du tilgangen, kjør reset-admin på serveren.",
         "localLoginLocked": "Må være på til en annen admin kan logge inn med en tjeneste som er slått på.",
         "steamIds": "Admin-Steam-ID-er",
         "steamIdsHelp": "Steam64-ID-er, skilt med komma. Blir admin når du lagrer og ved hver oppstart. Å fjerne en tar ikke bort admin.",

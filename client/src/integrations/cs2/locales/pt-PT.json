@@ -11,7 +11,7 @@
       "maps": "Mapas e pools"
     },
     "atDbDown": {
-      "title": "Base de dados do Auto Tournament CS2 inacessível",
+      "title": "Base de dados do MatchZy Enhanced inacessível",
       "body_one": "{{count}} servidor indica que o plugin não consegue aceder à base de dados. As cópias de segurança e a fila de eventos podem ser afetadas.",
       "body_other": "{{count}} servidores indicam que o plugin não consegue aceder à base de dados. As cópias de segurança e a fila de eventos podem ser afetadas."
     }
@@ -467,7 +467,7 @@
       "message_other": "Tem a certeza de que pretende eliminar {{count}} servidores? Esta ação não pode ser anulada."
     },
     "autoConfig": {
-      "configuring": "A configurar novos servidores (a enviar configuração Auto Tournament CS2 via RCON)…",
+      "configuring": "A configurar novos servidores (a enviar configuração MatchZy Enhanced via RCON)…",
       "done": "Novos servidores configurados. A atualizar estado…"
     },
     "checkServerLogs": "Verifique a consola/logs do servidor de jogo para ver se o plugin Auto Tournament recebe configuração e envia eventos.",
@@ -475,7 +475,7 @@
       "title": "Estado dos servidores",
       "total_one": "{{count}} servidor",
       "total_other": "{{count}} servidores",
-      "latestRelease": "Última versão do Auto Tournament CS2: v{{version}}",
+      "latestRelease": "Última versão do MatchZy Enhanced: v{{version}}",
       "olderVersion_one": "{{count}} servidor está a usar uma versão mais antiga do que a última versão.",
       "olderVersion_other": "{{count}} servidores estão a usar uma versão mais antiga do que a última versão.",
       "downloadLatest": "Transferir a mais recente"
@@ -520,7 +520,7 @@
       "webhookTitle": "O servidor não consegue aceder ao Auto Tournament (webhook)",
       "webhookBody": "O Auto Tournament consegue aceder ao servidor por RCON, mas o servidor não consegue aceder ao webhook do Auto Tournament. Verifique o tráfego de saída, o DNS e o URL do webhook configurado.",
       "versionDiffTitle": "Versões do plugin diferentes entre servidores",
-      "versionDiffBody": "Alguns servidores estão a usar uma versão diferente do Auto Tournament CS2. Se usar o CSM, execute {{command}} e reinicie os servidores.",
+      "versionDiffBody": "Alguns servidores estão a usar uma versão diferente do MatchZy Enhanced. Se usar o CSM, execute {{command}} e reinicie os servidores.",
       "ipBannedTitle": "IP banido no RCON",
       "ipBannedBody": "O servidor baniu temporariamente o IP do Auto Tournament após várias falhas de autenticação RCON. Corrija a palavra-passe RCON e remova o banimento do IP.",
       "pluginDbTitle": "O plugin Auto Tournament não consegue aceder à base de dados.",
@@ -604,8 +604,8 @@
     "enabledHelper": "Servidores desativados não serão usados em jogos",
     "tournamentUseLabel": "Use for tournament matches",
     "tournamentUseHelper": "Off: a practice or community server. Tournament matches, auto-scaling and failover never use it. It still counts toward your license.",
-    "overridesTitle": "Substituições Auto Tournament CS2 (opcional)",
-    "overridesDescription": "Estas definições substituem as predefinições globais do Auto Tournament CS2 apenas para este servidor. Deixe em branco para usar os valores globais das Definições.",
+    "overridesTitle": "Substituições MatchZy Enhanced (opcional)",
+    "overridesDescription": "Estas definições substituem as predefinições globais do MatchZy Enhanced apenas para este servidor. Deixe em branco para usar os valores globais das Definições.",
     "chatPrefixLabel": "Substituição do prefixo do chat",
     "chatPrefixPlaceholder": "[{Green}Auto Tournament{Default}]",
     "chatPrefixHelper": "Substitui at_chat_prefix neste servidor (opcional)",
@@ -886,7 +886,7 @@
       "noServers": "Nenhum servidor disponível",
       "refreshServers": "Atualizar lista de servidores",
       "noEvents": "Ainda não foram recebidos eventos deste servidor.",
-      "noEventsHint": "Continua sem eventos após 15 segundos. Verifique se o seu servidor CS2 está configurado para enviar webhooks do Auto Tournament CS2 para /api/events/:matchSlugOrServerId com o X-Auto-Tournament-Token correto.",
+      "noEventsHint": "Continua sem eventos após 15 segundos. Verifique se o seu servidor CS2 está configurado para enviar webhooks do MatchZy Enhanced para /api/events/:matchSlugOrServerId com o X-Auto-Tournament-Token correto.",
       "waiting": "À espera de eventos do servidor…",
       "footer_one": "A mostrar {{count}} evento (máx. 100)",
       "footer_other": "A mostrar {{count}} eventos (máx. 100)",
@@ -899,8 +899,8 @@
   },
   "settings": {
     "webhook": {
-      "title": "Webhook do Auto Tournament CS2",
-      "description": "URL de webhook do Auto Tournament CS2 que os teus servidores CS2 conseguem alcançar.",
+      "title": "Webhook do MatchZy Enhanced",
+      "description": "URL de webhook do MatchZy Enhanced que os teus servidores CS2 conseguem alcançar.",
       "label": "URL de webhook",
       "helper": "Exemplo: https://o-teu-dominio.com"
     },
@@ -925,17 +925,17 @@
     "saveFailed": "Failed to save settings",
     "loadFailed": "Failed to load settings",
     "chatDefaults": {
-      "title": "Predefinições do Auto Tournament CS2 (chat e knife)",
+      "title": "Predefinições do MatchZy Enhanced (chat e knife)",
       "description": "Configura os prefíxos do chat no jogo e o comportamento padrão da ronda de knife.",
       "chatPrefixLabel": "Prefíxo do chat",
       "chatPrefixHelper": "Predefinição: \"[{Green}Auto Tournament{Default}]\". Deixa vazio para repor o prefíxo padrão.",
       "adminChatPrefixLabel": "Prefíxo de chat admin",
       "adminChatPrefixHelper": "Predefinição: \"[{Red}ADMIN{Default}]\". Deixa vazio para repor o prefíxo de admin padrão.",
       "knifeToggleLabel": "Ativar rondas de knife por defeito para novos jogos (quando os lados não estão pré-selecionados)",
-      "knifeNote": "Aplica-se apenas quando o Auto Tournament CS2 normalmente executaria uma ronda de knife; escolhas explícitas de lado não são alteradas."
+      "knifeNote": "Aplica-se apenas quando o MatchZy Enhanced normalmente executaria uma ronda de knife; escolhas explícitas de lado não são alteradas."
     },
     "atCore": {
-      "title": "Predefinições do Auto Tournament CS2 Core",
+      "title": "Predefinições do MatchZy Enhanced Core",
       "description": "Estas predefinições são enviadas para os servidores durante a inicialização e antes de cada carregamento de jogo.",
       "expert": {
         "title": "Definições avançadas",
@@ -988,8 +988,8 @@
       }
     },
     "atEnhanced": {
-      "title": "Funcionalidades Auto Tournament CS2",
-      "description": "Configura funcionalidades avançadas de jogo. Deixa os campos vazios para usar as predefinições do Auto Tournament CS2.",
+      "title": "Funcionalidades MatchZy Enhanced",
+      "description": "Configura funcionalidades avançadas de jogo. Deixa os campos vazios para usar as predefinições do MatchZy Enhanced.",
       "autoready": {
         "title": "Auto-ready",
         "label": "Marcar automaticamente jogadores como prontos ao entrar",
@@ -1038,8 +1038,8 @@
       "timescaleDescription": "Controla quão rápido os jogos simulados correm. Valores mais altos aceleram bots e rondas. Só se aplica quando a simulação está ativa.",
       "timescaleWarning": "Velocidades acima de 2.0 podem ser instáveis e causar comportamento estranho dos bots, mas são úteis para testes rápidos.",
       "debugChat": {
-        "label": "Ativar mensagens de chat de debug do Auto Tournament CS2",
-        "description": "Quando ativado, o Auto Tournament CS2 vai imprimir mensagens de debug adicionais (conexões/desconexões, traces de eventos, etc.) no chat. Usa apenas para desenvolvimento e testes."
+        "label": "Ativar mensagens de chat de debug do MatchZy Enhanced",
+        "description": "Quando ativado, o MatchZy Enhanced vai imprimir mensagens de debug adicionais (conexões/desconexões, traces de eventos, etc.) no chat. Usa apenas para desenvolvimento e testes."
       }
     },
     "success": {

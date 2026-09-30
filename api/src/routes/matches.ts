@@ -332,9 +332,9 @@ async function getMatchDetailsBySlug(slug: string): Promise<MatchListItem | null
  *   get:
  *     tags:
  *       - Matches
- *     summary: Match config for Auto Tournament CS2
+ *     summary: Match config for MatchZy Enhanced
  *     description: |
- *       The Auto Tournament CS2 match config the game server downloads when MAT sends
+ *       The MatchZy Enhanced match config the game server downloads when MAT sends
  *       `at_loadmatch_url "<url>" "X-Auto-Tournament-Token" "<SERVER_TOKEN>"`.
  *       Assembled fresh from the database on every request.
  *
@@ -367,7 +367,7 @@ async function getMatchDetailsBySlug(slug: string): Promise<MatchListItem | null
  *           type: integer
  *     responses:
  *       200:
- *         description: Auto Tournament CS2 match config (JSON)
+ *         description: MatchZy Enhanced match config (JSON)
  *       401:
  *         description: Missing or wrong X-Auto-Tournament-Token and no admin auth
  *       404:
@@ -377,7 +377,7 @@ async function getMatchDetailsBySlug(slug: string): Promise<MatchListItem | null
  */
 /**
  * GET /api/matches/:slug.json
- * Endpoint Auto Tournament CS2 fetches the match configuration from.
+ * Endpoint MatchZy Enhanced fetches the match configuration from.
  * Returns a FRESH, on-demand config assembled from DB (reads veto_state)
  * Requires `X-Auto-Tournament-Token: <SERVER_TOKEN>` (sent by the plugin, see
  * getPluginLoadMatchCommand) or an admin session / service token.
@@ -397,10 +397,10 @@ router.get('/:slug.json', requireMatchConfigAccess, async (req: Request, res: Re
       });
     }
 
-    // A fetch carrying server_id / match_id is Auto Tournament CS2 acting on a load MAT sent
+    // A fetch carrying server_id / match_id is MatchZy Enhanced acting on a load MAT sent
     // earlier - possibly minutes earlier, if the plugin queued it behind a
     // series in postgame. If the match has moved to another server since, or
-    // the slug now belongs to a new match (tournament reset), refuse: Auto Tournament CS2
+    // the slug now belongs to a new match (tournament reset), refuse: MatchZy Enhanced
     // has no command to cancel a queued load, so this is where it is stopped.
     // Fetches without the parameters (older loads, manual tooling) are served.
     const verdict = checkConfigFetch(
@@ -424,7 +424,7 @@ router.get('/:slug.json', requireMatchConfigAccess, async (req: Request, res: Re
     }
 
     // The game server fetching this config is the only reliable proof that
-    // Auto Tournament CS2 accepted the load command - see matchConfigFetchTracker. An admin
+    // MatchZy Enhanced accepted the load command - see matchConfigFetchTracker. An admin
     // viewing the config proves nothing, so only a server's fetch counts.
     if (res.locals[MATCH_CONFIG_FETCHED_BY_SERVER] === true) {
       matchConfigFetchTracker.record(slug);
@@ -471,7 +471,7 @@ router.get('/:slug.json', requireMatchConfigAccess, async (req: Request, res: Re
       tournament
     );
 
-    // Return the raw game config (Auto Tournament CS2 JSON for CS2)
+    // Return the raw game config (MatchZy Enhanced JSON for CS2)
     return res.json(fresh);
   } catch (error) {
     console.error('Error fetching match config:', error);

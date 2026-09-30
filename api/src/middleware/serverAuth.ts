@@ -100,7 +100,7 @@ export function validateServerToken(req: Request, res: Response, next: NextFunct
  * whoever reads the log is most likely staring at a match that has stopped
  * updating.
  *
- * On the retry behaviour: Auto Tournament CS2 queues events locally and retries 4xx
+ * On the retry behaviour: MatchZy Enhanced queues events locally and retries 4xx
  * responses with backoff (30s, 1m, 2m … up to 20 attempts). A server rejected
  * here is therefore not losing events — it holds them, and they flush once the
  * token is configured. That is what makes enforcing this survivable mid-match.
@@ -161,7 +161,7 @@ export function validateEventToken(req: Request, res: Response, next: NextFuncti
 }
 
 /**
- * Guard for `GET /api/matches/:slug.json`, the match config Auto Tournament CS2 downloads.
+ * Guard for `GET /api/matches/:slug.json`, the match config MatchZy Enhanced downloads.
  *
  * The config carries both rosters with their Steam IDs and the server's match
  * setup, and match slugs are guessable (`r1m1`), so it is not public. Two
@@ -169,7 +169,7 @@ export function validateEventToken(req: Request, res: Response, next: NextFuncti
  *
  * - **A game server**, presenting `X-Auto-Tournament-Token: <SERVER_TOKEN>`. MAT sends
  *   the header name and value as extra arguments on the load command
- *   (`getPluginLoadMatchCommand`), and Auto Tournament CS2 adds them to its fetch. There
+ *   (`getPluginLoadMatchCommand`), and MatchZy Enhanced adds them to its fetch. There
  *   is no per-server secret: this is the same fleet-wide token the event
  *   webhook and report upload use.
  * - **An admin**, by session or service token (read-only scope is enough) —
@@ -182,7 +182,7 @@ export function validateEventToken(req: Request, res: Response, next: NextFuncti
  */
 /**
  * `res.locals` key set when a config fetch was authenticated as a game server
- * rather than an admin. Only such a fetch proves Auto Tournament CS2 accepted a load.
+ * rather than an admin. Only such a fetch proves MatchZy Enhanced accepted a load.
  */
 export const MATCH_CONFIG_FETCHED_BY_SERVER = 'matchConfigFetchedByServer';
 

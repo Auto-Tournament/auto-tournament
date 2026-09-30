@@ -84,7 +84,7 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   // member, which a CS2 player needs to join the server.
   rosterMemberStatus: Cs2RosterSteamStatus,
 
-  // The webhook URL a CS2 server reaches the platform on, and the Auto Tournament CS2
+  // The webhook URL a CS2 server reaches the platform on, and the MatchZy Enhanced
   // plugin's own database: both are settings only this game has, so the
   // shell's warnings about them are this module's (3.0 phase E).
   adminGlobalWarning: Cs2AdminWarnings,

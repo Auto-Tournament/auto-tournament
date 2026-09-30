@@ -2,8 +2,8 @@
  * Records when a game server actually fetched a match's config JSON.
  *
  * Loading a match is a two-step handshake: MAT sends `at_loadmatch_url`
- * over RCON, and Auto Tournament CS2 then fetches that URL. RCON only tells us the command
- * was delivered - it says nothing about whether the plugin accepted it. Auto Tournament CS2
+ * over RCON, and MatchZy Enhanced then fetches that URL. RCON only tells us the command
+ * was delivered - it says nothing about whether the plugin accepted it. MatchZy Enhanced
  * refuses for several reasons ("a match is already setup", GOTV disabled, a
  * malformed config), and those refusals do not share a common wording, so
  * pattern-matching the RCON reply will always miss cases.

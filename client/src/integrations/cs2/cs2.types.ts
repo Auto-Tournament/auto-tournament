@@ -39,11 +39,11 @@ export interface Server {
   currentMatch?: string | null;
   reachableFromApi?: boolean;
   serverCanReachApi?: boolean;
-  // Server tracking fields (from Auto Tournament CS2 server_configured event)
-  pluginVersion?: string | null; // Auto Tournament CS2 version (e.g., "1.3.6")
+  // Server tracking fields (from MatchZy Enhanced server_configured event)
+  pluginVersion?: string | null; // MatchZy Enhanced version (e.g., "1.3.6")
   hostname?: string | null; // CS2 server hostname (from hostname convar)
   lastSeen?: number | null; // Unix timestamp of last event received (heartbeat)
-  /** Unix timestamp when we last sent persistent config via RCON. Set before Auto Tournament CS2 sends events. */
+  /** Unix timestamp when we last sent persistent config via RCON. Set before MatchZy Enhanced sends events. */
   persistentConfigSent?: number | null;
   /** If set, the server has reported a CS2 update is required (Steam required_version). */
   cs2RequiredVersion?: number | null;
@@ -59,7 +59,7 @@ export interface Server {
   cs2VersionString?: string | null;
   /** Unix timestamp when version/build was last fetched via RCON. */
   cs2VersionFetchedAt?: number | null;
-  /** Best-effort: Auto Tournament CS2 plugin DB reachable. */
+  /** Best-effort: MatchZy Enhanced DB reachable. */
   atDbOk?: boolean | null;
   /** Best-effort: 'sqlite' | 'mysql'. */
   atDbType?: string | null;
@@ -71,7 +71,7 @@ export interface Server {
   atDbLastSeenAt?: number | null;
   /** Unix timestamp when server last successfully sent any event to /api/events. */
   serverCanReachApiAt?: number | null;
-  // Optional real-time status values reported by the Auto Tournament CS2 plugin and
+  // Optional real-time status values reported by MatchZy Enhanced and
   // allocator. These are populated by /api/servers/:id/status and are used
   // purely for UI display on the Servers page.
   pluginStatus?: string | null;
@@ -91,7 +91,7 @@ export interface Server {
     playoutEnabledDefault?: boolean | null;
     resetCvarsOnSeriesEnd?: boolean | null;
     usePauseCommandForTacticalPause?: boolean | null;
-    /** Auto Tournament CS2: 0=idle, 1=match, 2=practice */
+    /** MatchZy Enhanced: 0=idle, 1=match, 2=practice */
     autostartMode?: 0 | 1 | 2 | null;
     demoPath?: string | null;
     hostnameFormat?: string | null;

@@ -14,7 +14,7 @@
  * (`awaitCommandResult`); the command expires after `COMMAND_TTL_MS`, so a
  * server that is offline does not restore minutes later.
  *
- * RCON (the Auto Tournament CS2 plugin): `css_restore <round>` on the match's
+ * RCON (MatchZy Enhanced): `css_restore <round>` on the match's
  * server, the same as `POST /api/rcon/restore-backup`; the plugin keeps its
  * own backups, so there is no list.
  *

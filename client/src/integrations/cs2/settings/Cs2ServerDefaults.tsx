@@ -1,6 +1,6 @@
 /**
  * CS2's server defaults on its Settings tab: what the platform sends every
- * Auto Tournament CS2 server with a match (chat prefixes, knife round, demos,
+ * MatchZy Enhanced server with a match (chat prefixes, knife round, demos,
  * ready-up, pauses, side selection, GG and forfeit), and in development the
  * plugin's debug chat and match simulation.
  *

@@ -1,5 +1,5 @@
 /**
- * Which game server a request from Auto Tournament CS2 came from.
+ * Which game server a request from MatchZy Enhanced came from.
  *
  * Every server posts events to the same `/api/events` URL and match events carry
  * only `matchid`, so MAT could not tell two servers apart. When one match ended
@@ -76,7 +76,7 @@ export type ConfigFetchVerdict = { ok: true } | { ok: false; reason: string };
  * A fetch that names a server or match id is the plugin acting on a load MAT
  * sent earlier. If the match has since moved to another server, or the slug now
  * belongs to a different match (tournament reset), serving the config would
- * start a second copy of a match — refuse it. Auto Tournament CS2 then fails the load and
+ * start a second copy of a match — refuse it. MatchZy Enhanced then fails the load and
  * stays idle.
  */
 export function checkConfigFetch(
@@ -130,7 +130,7 @@ export function isActiveMatchStatus(status: string | null | undefined): boolean 
  *
  * The plugin reports phase `idle` whenever no match is set up, and keeps
  * posting reports in that state (warmup_start after a reset or restart).
- * Auto Tournament CS2 up to 1.4.28 also kept the last match id in
+ * MatchZy Enhanced up to 1.4.28 also kept the last match id in
  * `at_tournament_match`, so such a report can still name the previous match.
  */
 export function isIdleServerReport(

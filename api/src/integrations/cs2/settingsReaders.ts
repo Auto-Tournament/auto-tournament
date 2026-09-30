@@ -1,5 +1,5 @@
 /**
- * Typed readers for the CS2 instance settings (./settings), with the Auto Tournament CS2
+ * Typed readers for the CS2 instance settings (./settings), with the MatchZy Enhanced
  * defaults applied. Moved unchanged from the core settings service; the
  * values still come from the core settings store.
  *
@@ -43,7 +43,7 @@ class Cs2Settings {
   async isKnifeRoundEnabledByDefault(): Promise<boolean> {
     const value = await this.getSetting('at_knife_enabled_default');
     if (!value) {
-      // Defer to Auto Tournament CS2 plugin defaults when not explicitly configured
+      // Defer to MatchZy Enhanced defaults when not explicitly configured
       return true;
     }
 
@@ -53,7 +53,7 @@ class Cs2Settings {
 
   async getAtMinimumReadyRequired(): Promise<number> {
     const value = await this.getSetting('at_minimum_ready_required');
-    if (!value) return 0; // Auto Tournament CS2 default (0 = everyone connected must ready)
+    if (!value) return 0; // MatchZy Enhanced default (0 = everyone connected must ready)
     const parsed = Number(value);
     if (!Number.isInteger(parsed) || parsed < 0) return 0;
     return parsed;
@@ -61,7 +61,7 @@ class Cs2Settings {
 
   async getAtAutostartMode(): Promise<0 | 1 | 2> {
     const value = await this.getSetting('at_autostart_mode');
-    if (!value) return 1; // Auto Tournament CS2 default
+    if (!value) return 1; // MatchZy Enhanced default
     const parsed = Number(value);
     if (!Number.isInteger(parsed) || parsed < 0 || parsed > 2) return 1;
     return parsed as 0 | 1 | 2;
@@ -69,64 +69,64 @@ class Cs2Settings {
 
   async isAtAllowForceReadyEnabled(): Promise<boolean> {
     const value = await this.getSetting('at_allow_force_ready');
-    if (!value) return true; // Auto Tournament CS2 default
+    if (!value) return true; // MatchZy Enhanced default
     const normalized = value.toLowerCase();
     return normalized === '1' || normalized === 'true' || normalized === 'yes';
   }
 
   async isAtKickWhenNoMatchLoadedEnabled(): Promise<boolean> {
     const value = await this.getSetting('at_kick_when_no_match_loaded');
-    if (!value) return false; // Auto Tournament CS2 default
+    if (!value) return false; // MatchZy Enhanced default
     const normalized = value.toLowerCase();
     return normalized === '1' || normalized === 'true' || normalized === 'yes';
   }
 
   async isAtWhitelistEnabledDefault(): Promise<boolean> {
     const value = await this.getSetting('at_whitelist_enabled_default');
-    if (!value) return false; // Auto Tournament CS2 default
+    if (!value) return false; // MatchZy Enhanced default
     const normalized = value.toLowerCase();
     return normalized === '1' || normalized === 'true' || normalized === 'yes';
   }
 
   async isAtPauseAfterRestoreEnabled(): Promise<boolean> {
     const value = await this.getSetting('at_pause_after_restore');
-    if (!value) return true; // Auto Tournament CS2 default
+    if (!value) return true; // MatchZy Enhanced default
     const normalized = value.toLowerCase();
     return normalized === '1' || normalized === 'true' || normalized === 'yes';
   }
 
   async isAtStopCommandAvailable(): Promise<boolean> {
     const value = await this.getSetting('at_stop_command_available');
-    if (!value) return false; // Auto Tournament CS2 default
+    if (!value) return false; // MatchZy Enhanced default
     const normalized = value.toLowerCase();
     return normalized === '1' || normalized === 'true' || normalized === 'yes';
   }
 
   async isAtStopCommandNoDamage(): Promise<boolean> {
     const value = await this.getSetting('at_stop_command_no_damage');
-    if (!value) return false; // Auto Tournament CS2 default
+    if (!value) return false; // MatchZy Enhanced default
     const normalized = value.toLowerCase();
     return normalized === '1' || normalized === 'true' || normalized === 'yes';
   }
 
   async isAtUsePauseCommandForTacticalPause(): Promise<boolean> {
     const value = await this.getSetting('at_use_pause_command_for_tactical_pause');
-    if (!value) return false; // Auto Tournament CS2 default
+    if (!value) return false; // MatchZy Enhanced default
     const normalized = value.toLowerCase();
     return normalized === '1' || normalized === 'true' || normalized === 'yes';
   }
 
   /**
-   * Hostname format Auto Tournament CS2 applies when a match loads.
+   * Hostname format MatchZy Enhanced applies when a match loads.
    *
    * Returns `''` when the operator has explicitly cleared it, which tells the
    * plugin to leave the server's own `hostname` (from server.cfg) untouched.
-   * A missing row means "never configured", which keeps Auto Tournament CS2's own default.
+   * A missing row means "never configured", which keeps MatchZy Enhanced's own default.
    * The two are deliberately distinct — see `setSetting`.
    */
   async getAtHostnameFormat(): Promise<string> {
     const value = await this.getSetting('at_hostname_format');
-    if (value === null) return '{TEAM1} vs {TEAM2}'; // Auto Tournament CS2 default
+    if (value === null) return '{TEAM1} vs {TEAM2}'; // MatchZy Enhanced default
     return value.trim();
   }
 
@@ -140,14 +140,14 @@ class Cs2Settings {
 
   async getAtDemoNameFormat(): Promise<string> {
     const value = await this.getSetting('at_demo_name_format');
-    if (!value) return '{TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}'; // Auto Tournament CS2 default
+    if (!value) return '{TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}'; // MatchZy Enhanced default
     const trimmed = value.trim();
     return trimmed !== '' ? trimmed : '{TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}';
   }
 
   async getAtSeriesEndKickDelayNoDemo(): Promise<number> {
     const value = await this.getSetting('at_series_end_kick_delay_no_demo');
-    if (!value) return 5; // Auto Tournament CS2 default
+    if (!value) return 5; // MatchZy Enhanced default
     const parsed = Number(value);
     if (!Number.isInteger(parsed) || parsed < 0) return 5;
     return parsed;
@@ -155,7 +155,7 @@ class Cs2Settings {
 
   async getAtSeriesEndKickDelayDemoNoUpload(): Promise<number> {
     const value = await this.getSetting('at_series_end_kick_delay_demo_no_upload');
-    if (!value) return 10; // Auto Tournament CS2 default
+    if (!value) return 10; // MatchZy Enhanced default
     const parsed = Number(value);
     if (!Number.isInteger(parsed) || parsed < 0) return 10;
     return parsed;
@@ -163,7 +163,7 @@ class Cs2Settings {
 
   async getAtSeriesEndKickDelayDemoUpload(): Promise<number> {
     const value = await this.getSetting('at_series_end_kick_delay_demo_upload');
-    if (!value) return 60; // Auto Tournament CS2 default
+    if (!value) return 60; // MatchZy Enhanced default
     const parsed = Number(value);
     if (!Number.isInteger(parsed) || parsed < 0) return 60;
     return parsed;
@@ -240,7 +240,7 @@ class Cs2Settings {
   }
 
   /**
-   * Get Auto Tournament CS2 v1.3.0 global configuration overrides.
+   * Get MatchZy Enhanced v1.3.0 global configuration overrides.
    * Returns null for any setting that is not explicitly configured (use tournament defaults).
    */
   async getAtEnhancedSettings(): Promise<{
@@ -309,7 +309,7 @@ export async function readCs2InstanceSettings(): Promise<Record<string, unknown>
   const atDebugChatEnabled = await cs2Settings.isAtDebugChatEnabled();
   const atCore = await cs2Settings.getAtCoreDefaults();
 
-  // Auto Tournament CS2 v1.3.0 settings
+  // MatchZy Enhanced v1.3.0 settings
   const atEnhanced = await cs2Settings.getAtEnhancedSettings();
 
   return {
@@ -319,7 +319,7 @@ export async function readCs2InstanceSettings(): Promise<Record<string, unknown>
     atAdminChatPrefix,
     atKnifeEnabledDefault,
     atDebugChatEnabled,
-    // Auto Tournament CS2 core defaults
+    // MatchZy Enhanced core defaults
     atAutostartMode: atCore.autostartMode,
     atMinimumReadyRequired: atCore.minimumReadyRequired,
     atAllowForceReady: atCore.allowForceReady,
@@ -335,7 +335,7 @@ export async function readCs2InstanceSettings(): Promise<Record<string, unknown>
     atSeriesEndKickDelayNoDemo: atCore.seriesEndKickDelayNoDemo,
     atSeriesEndKickDelayDemoNoUpload: atCore.seriesEndKickDelayDemoNoUpload,
     atSeriesEndKickDelayDemoUpload: atCore.seriesEndKickDelayDemoUpload,
-    // Auto Tournament CS2 v1.3.0 settings (null = use tournament defaults)
+    // MatchZy Enhanced v1.3.0 settings (null = use tournament defaults)
     atAutoreadyEnabled: atEnhanced.at_autoready_enabled,
     atBothTeamsUnpauseRequired: atEnhanced.at_both_teams_unpause_required,
     atMaxPausesPerTeam: atEnhanced.at_max_pauses_per_team,

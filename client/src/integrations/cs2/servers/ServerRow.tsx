@@ -276,7 +276,7 @@ export function ServerRow({
     { key: 'port', label: t('serversPage.details.port'), value: <Box component="span" sx={mono}>{server.port}</Box> },
     ...(server.hostname ? [{ key: 'name', label: t('serversPage.details.cs2Name'), value: server.hostname }] : []),
     ...(server.pluginVersion
-      ? [{ key: 'plugin', label: t('serversPage.details.plugin'), value: `Auto Tournament CS2 v${server.pluginVersion}` }]
+      ? [{ key: 'plugin', label: t('serversPage.details.plugin'), value: `MatchZy Enhanced v${server.pluginVersion}` }]
       : []),
     ...(typeof server.cs2BuildId === 'number'
       ? [{ key: 'build', label: t('serversPage.details.cs2Build'), value: String(server.cs2BuildId) }]
@@ -328,7 +328,7 @@ export function ServerRow({
           <Tip
             t={t}
             title={t('serversPage.tooltips.pluginDbTitle')}
-            body={t('serversPage.tooltips.pluginDbBody', { path: 'sudo csm → Tools → Auto Tournament CS2 DB: verify/repair' })}
+            body={t('serversPage.tooltips.pluginDbBody', { path: 'sudo csm → Tools → MatchZy Enhanced DB: verify/repair' })}
             href={serverDocs.pluginDbDown}
           />
         }

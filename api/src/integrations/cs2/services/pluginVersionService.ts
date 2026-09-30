@@ -15,7 +15,7 @@ let lastFetchTime = 0;
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 /**
- * Fetch the latest Auto Tournament CS2 release from GitHub
+ * Fetch the latest MatchZy Enhanced release from GitHub
  * Uses caching to avoid rate limits (60 req/hour for unauthenticated)
  */
 export async function getLatestPluginVersion(options?: {
@@ -32,9 +32,9 @@ export async function getLatestPluginVersion(options?: {
   }
 
   try {
-    log.debug('[PLUGIN-VERSION] Fetching latest Auto Tournament CS2 version from GitHub...');
+    log.debug('[PLUGIN-VERSION] Fetching latest MatchZy Enhanced version from GitHub...');
     const response = await fetch(
-      'https://api.github.com/repos/Auto-Tournament/cs2-plugin/releases/latest',
+      'https://api.github.com/repos/Auto-Tournament/matchzy-enhanced/releases/latest',
       {
         headers: {
           Accept: 'application/vnd.github.v3+json',
@@ -44,7 +44,7 @@ export async function getLatestPluginVersion(options?: {
     );
 
     if (!response.ok) {
-      log.warn('[PLUGIN-VERSION] Failed to fetch Auto Tournament CS2 version from GitHub', {
+      log.warn('[PLUGIN-VERSION] Failed to fetch MatchZy Enhanced version from GitHub', {
         status: response.status,
         statusText: response.statusText,
       });
@@ -58,7 +58,7 @@ export async function getLatestPluginVersion(options?: {
     cachedReleaseUrl = release.html_url;
     lastFetchTime = now;
 
-    log.info('[PLUGIN-VERSION] Fetched latest Auto Tournament CS2 version', {
+    log.info('[PLUGIN-VERSION] Fetched latest MatchZy Enhanced version', {
       version,
       published: release.published_at,
     });
@@ -68,7 +68,7 @@ export async function getLatestPluginVersion(options?: {
       releaseUrl: cachedReleaseUrl,
     };
   } catch (error) {
-    log.warn('[PLUGIN-VERSION] Exception fetching Auto Tournament CS2 version from GitHub', { error });
+    log.warn('[PLUGIN-VERSION] Exception fetching MatchZy Enhanced version from GitHub', { error });
     return null;
   }
 }

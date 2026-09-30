@@ -11,7 +11,7 @@
       "maps": "Cartes & pools"
     },
     "atDbDown": {
-      "title": "Base de données Auto Tournament CS2 injoignable",
+      "title": "Base de données MatchZy Enhanced injoignable",
       "body_one": "{{count}} serveur signale que le plugin ne peut pas joindre sa base de données. Les sauvegardes et la file d’événements peuvent être affectées.",
       "body_other": "{{count}} serveurs signalent que le plugin ne peut pas joindre sa base de données. Les sauvegardes et la file d’événements peuvent être affectées."
     }
@@ -467,7 +467,7 @@
       "message_other": "Voulez-vous vraiment supprimer {{count}} serveurs ? Cette action est irréversible."
     },
     "autoConfig": {
-      "configuring": "Configuration des nouveaux serveurs (envoi de la config Auto Tournament CS2 via RCON)…",
+      "configuring": "Configuration des nouveaux serveurs (envoi de la config MatchZy Enhanced via RCON)…",
       "done": "Nouveaux serveurs configurés. Actualisation du statut…"
     },
     "checkServerLogs": "Consultez la console / les logs du serveur de jeu pour vérifier que le plugin Auto Tournament reçoit la config et envoie des événements.",
@@ -475,7 +475,7 @@
       "title": "État du parc de serveurs",
       "total_one": "{{count}} serveur",
       "total_other": "{{count}} serveurs",
-      "latestRelease": "Dernière version de Auto Tournament CS2 : v{{version}}",
+      "latestRelease": "Dernière version de MatchZy Enhanced : v{{version}}",
       "olderVersion_one": "{{count}} serveur utilise une version plus ancienne que la dernière release.",
       "olderVersion_other": "{{count}} serveurs utilisent une version plus ancienne que la dernière release.",
       "downloadLatest": "Télécharger la dernière version"
@@ -520,7 +520,7 @@
       "webhookTitle": "Le serveur ne peut pas joindre Auto Tournament (webhook)",
       "webhookBody": "Auto Tournament peut joindre le serveur via RCON, mais le serveur ne peut pas joindre le webhook de Auto Tournament. Vérifiez le trafic sortant, le DNS et l’URL du webhook configurée.",
       "versionDiffTitle": "Les versions du plugin diffèrent selon les serveurs",
-      "versionDiffBody": "Certains serveurs utilisent une autre version de Auto Tournament CS2. Si vous utilisez CSM, exécutez {{command}} puis redémarrez les serveurs.",
+      "versionDiffBody": "Certains serveurs utilisent une autre version de MatchZy Enhanced. Si vous utilisez CSM, exécutez {{command}} puis redémarrez les serveurs.",
       "ipBannedTitle": "IP bannie par RCON",
       "ipBannedBody": "Le serveur a temporairement banni l’IP de Auto Tournament après plusieurs échecs d’authentification RCON. Corrigez le mot de passe RCON et débannissez l’IP.",
       "pluginDbTitle": "Le plugin Auto Tournament ne peut pas joindre sa base de données.",
@@ -604,8 +604,8 @@
     "enabledHelper": "Les serveurs désactivés ne seront pas utilisés pour les matchs",
     "tournamentUseLabel": "Use for tournament matches",
     "tournamentUseHelper": "Off: a practice or community server. Tournament matches, auto-scaling and failover never use it. It still counts toward your license.",
-    "overridesTitle": "Surcharges Auto Tournament CS2 (optionnel)",
-    "overridesDescription": "Ces paramètres surchargent les valeurs globales Auto Tournament CS2 uniquement pour ce serveur. Laissez vide pour utiliser les valeurs globales dans Paramètres.",
+    "overridesTitle": "Surcharges MatchZy Enhanced (optionnel)",
+    "overridesDescription": "Ces paramètres surchargent les valeurs globales MatchZy Enhanced uniquement pour ce serveur. Laissez vide pour utiliser les valeurs globales dans Paramètres.",
     "chatPrefixLabel": "Surcharge du préfixe de chat",
     "chatPrefixPlaceholder": "[{Green}Auto Tournament{Default}]",
     "chatPrefixHelper": "Surcharge at_chat_prefix sur ce serveur (optionnel)",
@@ -886,7 +886,7 @@
       "noServers": "Aucun serveur disponible",
       "refreshServers": "Actualiser la liste des serveurs",
       "noEvents": "Aucun événement reçu de ce serveur pour l’instant.",
-      "noEventsHint": "Toujours aucun événement après 15 secondes. Vérifiez que votre serveur CS2 est configuré pour envoyer les webhooks Auto Tournament CS2 vers /api/events/:matchSlugOrServerId avec le bon X-Auto-Tournament-Token.",
+      "noEventsHint": "Toujours aucun événement après 15 secondes. Vérifiez que votre serveur CS2 est configuré pour envoyer les webhooks MatchZy Enhanced vers /api/events/:matchSlugOrServerId avec le bon X-Auto-Tournament-Token.",
       "waiting": "En attente d’événements du serveur…",
       "footer_one": "{{count}} événement affiché (max 100)",
       "footer_other": "{{count}} événements affichés (max 100)",
@@ -899,8 +899,8 @@
   },
   "settings": {
     "webhook": {
-      "title": "Webhook Auto Tournament CS2",
-      "description": "URL de webhook Auto Tournament CS2 accessible par vos serveurs CS2.",
+      "title": "Webhook MatchZy Enhanced",
+      "description": "URL de webhook MatchZy Enhanced accessible par vos serveurs CS2.",
       "label": "URL de webhook",
       "helper": "Exemple : https://votre-domaine.com"
     },
@@ -925,17 +925,17 @@
     "saveFailed": "Failed to save settings",
     "loadFailed": "Failed to load settings",
     "chatDefaults": {
-      "title": "Paramètres par défaut Auto Tournament CS2 (chat & knife)",
+      "title": "Paramètres par défaut MatchZy Enhanced (chat & knife)",
       "description": "Configurez les préfixes du chat en jeu et le comportement par défaut des manches knife.",
       "chatPrefixLabel": "Préfixe du chat",
       "chatPrefixHelper": "Par défaut : \"[{Green}Auto Tournament{Default}]\". Laissez vide pour rétablir la valeur par défaut.",
       "adminChatPrefixLabel": "Préfixe chat admin",
       "adminChatPrefixHelper": "Par défaut : \"[{Red}ADMIN{Default}]\". Laissez vide pour rétablir la valeur par défaut.",
       "knifeToggleLabel": "Activer les manches knife par défaut pour les nouveaux matchs (quand les camps ne sont pas pré-sélectionnés)",
-      "knifeNote": "S’applique uniquement quand Auto Tournament CS2 lancerait normalement une manche knife ; les choix de camps explicites ne sont pas modifiés."
+      "knifeNote": "S’applique uniquement quand MatchZy Enhanced lancerait normalement une manche knife ; les choix de camps explicites ne sont pas modifiés."
     },
     "atCore": {
-      "title": "Valeurs par défaut Auto Tournament CS2 (core)",
+      "title": "Valeurs par défaut MatchZy Enhanced (core)",
       "description": "Ces valeurs par défaut sont envoyées aux serveurs lors de l’initialisation et avant chaque chargement de match.",
       "expert": {
         "title": "Paramètres experts",
@@ -988,8 +988,8 @@
       }
     },
     "atEnhanced": {
-      "title": "Fonctionnalités Auto Tournament CS2",
-      "description": "Configurez des fonctionnalités de match avancées. Laissez vide pour utiliser les valeurs par défaut de Auto Tournament CS2.",
+      "title": "Fonctionnalités MatchZy Enhanced",
+      "description": "Configurez des fonctionnalités de match avancées. Laissez vide pour utiliser les valeurs par défaut de MatchZy Enhanced.",
       "autoready": {
         "title": "Système auto-ready",
         "label": "Marquer automatiquement les joueurs comme prêts à la connexion",
@@ -1033,13 +1033,13 @@
       "title": "Options développeur",
       "description": "Outils de développement local uniquement ; ne pas activer en production.",
       "simulateToggleLabel": "Simuler les matchs (utiliser des matchs démo pilotés par des bots au lieu de vrais joueurs)",
-      "simulateNote": "Quand activé, les configs Auto Tournament CS2 générées incluent \"simulation\": true pour des matchs démo automatisés.",
+      "simulateNote": "Quand activé, les configs MatchZy Enhanced générées incluent \"simulation\": true pour des matchs démo automatisés.",
       "timescaleTitle": "Vitesse de simulation",
       "timescaleDescription": "Contrôle la vitesse d’exécution des matchs simulés. Des valeurs plus élevées accélèrent les bots et le déroulement des rounds. Cela ne s’applique que lorsque la simulation est activée.",
       "timescaleWarning": "Des vitesses au-dessus de 2.0 peuvent être instables et provoquer un comportement étrange des bots, mais conviennent pour des tests rapides.",
       "debugChat": {
-        "label": "Activer les messages de debug Auto Tournament CS2 dans le chat",
-        "description": "Quand activé, Auto Tournament CS2 affiche des messages de debug supplémentaires (connexions/déconnexions, traces d’événements, etc.) dans le chat. À utiliser uniquement pour le développement et les tests."
+        "label": "Activer les messages de debug MatchZy Enhanced dans le chat",
+        "description": "Quand activé, MatchZy Enhanced affiche des messages de debug supplémentaires (connexions/déconnexions, traces d’événements, etc.) dans le chat. À utiliser uniquement pour le développement et les tests."
       }
     },
     "success": {

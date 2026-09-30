@@ -5,7 +5,7 @@ import { normalize } from '../../api/src/integrations/cs2/events/normalize';
 import type { NormalizedEvent } from '../../api/src/integrations/types';
 
 /**
- * The CS2 adapter's Auto Tournament CS2 -> NormalizedEvent mapping (pure, no API).
+ * The CS2 adapter's MatchZy Enhanced -> NormalizedEvent mapping (pure, no API).
  *
  * Feeds the captured Bo3 (tests/fixtures/plugin-bo3-sequence.json, the same
  * sequence event-replay-golden.spec.ts replays against the API) through

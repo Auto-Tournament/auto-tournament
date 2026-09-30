@@ -17,7 +17,7 @@
  *    another integration and not the registry (the registry imports every
  *    integration, so that would be a cycle and a back door to the others).
  *
- * 3. `api/src/core/**` must not import `rconService` or the Auto Tournament CS2 event
+ * 3. `api/src/core/**` must not import `rconService` or the MatchZy Enhanced event
  *    types (`types/plugin-events`) by any path, relative or not.
  *
  * `registry.ts` and `types.ts` themselves are not restricted. There are no

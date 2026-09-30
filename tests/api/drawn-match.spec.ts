@@ -8,7 +8,7 @@ import type { Team } from '../helpers/teams';
 /**
  * A drawn deciding map with overtime disabled must finish the series.
  *
- * With overtime off, Auto Tournament CS2 can let regulation end level and then simply
+ * With overtime off, MatchZy Enhanced can let regulation end level and then simply
  * restore the server after a delay, without ever emitting `series_end`. MAT
  * used to sit on that: the match stayed `live`, and the server reset wiped the
  * live stats out from under it — reported as "the match just stays on status

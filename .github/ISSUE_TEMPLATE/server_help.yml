@@ -1,5 +1,5 @@
 name: 🖥️ CS2 Server Setup Help
-description: Get help setting up or troubleshooting CS2 servers with Auto Tournament CS2
+description: Get help setting up or troubleshooting CS2 servers with MatchZy Enhanced
 title: "[SERVER HELP] "
 labels: ["question", "server-setup", "help wanted"]
 body:
@@ -11,7 +11,7 @@ body:
         **Quick Resources:**
         - [Server Setup Guide](https://docs.autotournament.gg/getting-started/connect-server)
         - [CS2 Server Manager Tool](https://docs.autotournament.gg/cs2/server-manager/install)
-        - [Auto Tournament CS2 releases](https://github.com/Auto-Tournament/cs2-plugin/releases)
+        - [MatchZy Enhanced releases](https://github.com/Auto-Tournament/matchzy-enhanced/releases)
 
   - type: dropdown
     id: server-issue-type
@@ -22,7 +22,7 @@ body:
         - "Initial server setup (never done this before)"
         - "Server won't connect to platform"
         - "Webhook/RCON configuration"
-        - "Auto Tournament CS2 plugin not working"
+        - "MatchZy Enhanced not working"
         - "Match won't load on server"
         - "Server shows offline in platform"
         - "Performance issues (lag, crashes)"
@@ -37,7 +37,7 @@ body:
       label: 🎯 Describe Your Issue
       description: What's not working or what do you need help with?
       placeholder: |
-        Example: "I've installed CounterStrikeSharp and Auto Tournament CS2 v2.0.0 on my Ubuntu server. The server shows up in the platform but status is 'offline'. Matches won't load onto it."
+        Example: "I've installed CounterStrikeSharp and MatchZy Enhanced v2.0.0 on my Ubuntu server. The server shows up in the platform but status is 'offline'. Matches won't load onto it."
     validations:
       required: true
 
@@ -51,7 +51,7 @@ body:
         - Verified RCON password is correct
         - Checked server is online (players can connect)
         - Restarted CS2 server
-        - Checked Auto Tournament CS2 plugin loads (saw in console)
+        - Checked MatchZy Enhanced loads (saw in console)
         - Webhook URL is set (at_remote_log_url in cfg/AutoTournamentCS2/config.cfg)
     validations:
       required: true
@@ -83,8 +83,8 @@ body:
   - type: input
     id: plugin-version
     attributes:
-      label: Auto Tournament CS2 plugin version
-      description: What version of the CS2 plugin (Auto Tournament CS2) is installed?
+      label: MatchZy Enhanced version
+      description: What version of the CS2 plugin (MatchZy Enhanced) is installed?
       placeholder: "e.g., v2.0.0 (check addons/counterstrikesharp/plugins/AutoTournamentCS2/AutoTournamentCS2.dll properties)"
     validations:
       required: true
@@ -105,13 +105,13 @@ body:
       description: |
         **Required** - Paste recent server console output, especially:
         - Server startup
-        - Auto Tournament CS2 plugin loading
+        - MatchZy Enhanced loading
         - Any errors or warnings
         - When you try to load a match
       placeholder: |
         Example:
         ```
-        [CounterStrikeSharp] Loading plugin: Auto Tournament CS2 v2.0.0
+        [CounterStrikeSharp] Loading plugin: MatchZy Enhanced v2.0.0
         [Auto Tournament] Initializing...
         [Auto Tournament] Webhook URL: http://192.168.1.100:3069/api/webhook/events
         [Auto Tournament] Plugin loaded successfully

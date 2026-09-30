@@ -3,7 +3,7 @@
  * one slot the shell renders on every admin page (3.0 phase E).
  *
  * Two warnings, each already its own component: the webhook URL a CS2 server
- * reaches the platform on, and the Auto Tournament CS2 plugin's database. The slot takes
+ * reaches the platform on, and MatchZy Enhanced's database. The slot takes
  * one component, and grouping them here is what keeps the shell from learning
  * what either of them is.
  */

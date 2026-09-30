@@ -3,11 +3,11 @@ import { log } from '../../../utils/logger';
 import { cs2Settings } from '../settingsReaders';
 
 /**
- * Auto Tournament CS2 v1.3.0 Configuration Service
+ * MatchZy Enhanced v1.3.0 Configuration Service
  *
- * Generates Auto Tournament CS2 cvars for match configs.
+ * Generates MatchZy Enhanced cvars for match configs.
  *
- * Important: We intentionally include a baseline set of Auto Tournament CS2 cvars
+ * Important: We intentionally include a baseline set of MatchZy Enhanced cvars
  * even when the MAT Settings page does not define any overrides. This ensures
  * all matches and servers follow the same configuration (useful when servers
  * have stale persistent config or are running with drift).
@@ -40,7 +40,7 @@ export interface AtEnhancedCvars {
 }
 
 /**
- * Baseline defaults aligned with Auto Tournament CS2 plugin defaults.
+ * Baseline defaults aligned with MatchZy Enhanced defaults.
  * These match the defaults documented in the plugin's shipped config.
  */
 const DEFAULT_AT_ENHANCED_CVARS: AtEnhancedCvars = {
@@ -70,7 +70,7 @@ const DEFAULT_AT_ENHANCED_CVARS: AtEnhancedCvars = {
 };
 
 /**
- * Generate Auto Tournament CS2 cvars for a tournament
+ * Generate MatchZy Enhanced cvars for a tournament
  * Loads global settings from SettingsService and uses them as overrides.
  */
 export async function generateAtEnhancedCvars(
@@ -126,7 +126,7 @@ export async function generateAtEnhancedCvars(
     ...overrides, // Explicit overrides take precedence
   };
   
-  log.debug('Generated Auto Tournament CS2 cvars', {
+  log.debug('Generated MatchZy Enhanced cvars', {
     tournamentType,
     globalOverrides: Object.keys(globalOverrides).length > 0 ? globalOverrides : undefined,
     config,
@@ -143,7 +143,7 @@ export function getDefaultAtEnhancedCvars(): AtEnhancedCvars {
 }
 
 /**
- * Validate Auto Tournament CS2 cvars
+ * Validate MatchZy Enhanced cvars
  */
 export function validateAtEnhancedCvars(
   cvars: Partial<AtEnhancedCvars>

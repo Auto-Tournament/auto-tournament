@@ -442,7 +442,7 @@ const EventItem: React.FC<{
 
   const payload = event.event as Record<string, unknown>;
 
-  // Many Auto Tournament CS2 events include map_number; surface it when present
+  // Many MatchZy Enhanced events include map_number; surface it when present
   const rawMapNumber = payload['map_number'];
   const mapNumber = typeof rawMapNumber === 'number' ? (rawMapNumber as number) : undefined;
 

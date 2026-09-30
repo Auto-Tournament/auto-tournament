@@ -8,7 +8,7 @@ import type { Team } from '../helpers/teams';
 /**
  * Player stats are matched by steamid, not by the team block they arrive in.
  *
- * Auto Tournament CS2 has shipped `round_end` payloads that list team 2's players inside
+ * MatchZy Enhanced has shipped `round_end` payloads that list team 2's players inside
  * the `team1` block. MAT looked each roster player up in its own side's
  * dictionary, so every player missed and their match history showed 0 kills,
  * 0 damage and 0.0 ADR after a finished match (QA, MAT 2.4.6). Matching on

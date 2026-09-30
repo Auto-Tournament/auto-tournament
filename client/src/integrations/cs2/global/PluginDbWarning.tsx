@@ -1,8 +1,8 @@
 /**
- * The admin shell's "Auto Tournament CS2 DB unreachable" warning, which belongs to CS2
+ * The admin shell's "MatchZy Enhanced DB unreachable" warning, which belongs to CS2
  * (3.0 phase E).
  *
- * `atDbOk` is the Auto Tournament CS2 plugin's own report, from a CS2 game server,
+ * `atDbOk` is MatchZy Enhanced's own report, from a CS2 game server,
  * about the database it writes backups and its event queue to. It is named
  * after the plugin in the copy, and there is no such thing on an instance
  * whose results are typed in by a captain — the shell used to poll `/api/servers`

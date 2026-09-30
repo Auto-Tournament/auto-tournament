@@ -89,7 +89,7 @@ export function moduleTournamentFields(
  *
  * Several routes and services used to build this by hand. One of them (the
  * simulated veto) left out maxRounds, overtime and team size, so the config it
- * stored after an automated veto used Auto Tournament CS2 defaults (24 rounds) instead of
+ * stored after an automated veto used MatchZy Enhanced defaults (24 rounds) instead of
  * the tournament's rules. Every caller goes through here now, so a new column
  * only has to be added once. The game's own fields come from its object in
  * `settings` (`moduleTournamentFields`).

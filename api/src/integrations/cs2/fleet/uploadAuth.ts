@@ -3,7 +3,7 @@
  * credential a CS2 server can hold:
  *
  * - the old per-deployment `SERVER_TOKEN` in `X-Auto-Tournament-Token`
- *   (cs2-plugin / RCON servers) - handled by `validateServerToken`, unchanged;
+ *   (MatchZy Enhanced / RCON servers) - handled by `validateServerToken`, unchanged;
  * - a fleet server token `rus_<id>_<secret>` (Ready Up servers), verified with
  *   `registry.verifyServerToken`, the same check the fleet gateway runs on the
  *   WebSocket upgrade (hash compare, revoked/expired, server still enrolled).
@@ -79,7 +79,7 @@ export const validateServerOrFleetToken = createServerOrFleetTokenGuard();
 /**
  * The 0-based map number MAT stores.
  *
- * MAT (and the old cs2-plugin) number maps from 0. Ready Up numbers them from
+ * MAT (and MatchZy Enhanced) number maps from 0. Ready Up numbers them from
  * 1, so an upload authenticated with a fleet token is shifted down by one.
  * Returns NaN for a non-numeric header (callers skip the per-map update then).
  */

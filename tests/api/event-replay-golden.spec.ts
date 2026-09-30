@@ -10,7 +10,7 @@ import { executeVetoActions, getCSMajorBO3Actions } from '../helpers/veto';
 import { expectGolden, getOk, normalizeForGolden, resetDatabaseForGolden } from '../helpers/golden';
 
 /**
- * Golden replay of a full Auto Tournament CS2 BO3 event sequence.
+ * Golden replay of a full MatchZy Enhanced BO3 event sequence.
  *
  * Characterization test: it plays tests/fixtures/plugin-bo3-sequence.json (a
  * captured Bo3 - series_start, going_live/round_end/halftime/side_swap/
@@ -21,7 +21,7 @@ import { expectGolden, getOk, normalizeForGolden, resetDatabaseForGolden } from 
  * refactor.
  *
  * Two goldens:
- * - `event-replay-config.json` — the config Auto Tournament CS2 would load, served right
+ * - `event-replay-config.json` — the config MatchZy Enhanced would load, served right
  *   after veto (before any event is posted). This is the same served-config
  *   shape as golden-match-config.spec.ts, but for a match that then actually
  *   gets played out.
@@ -118,7 +118,7 @@ async function fetchServedConfig(request: APIRequestContext, match: MatchListRow
   return { ...config, matchid: '<matchid>' as unknown as number };
 }
 
-test.describe.serial('Golden Auto Tournament CS2 BO3 event replay', () => {
+test.describe.serial('Golden MatchZy Enhanced BO3 event replay', () => {
   const fixture = loadFixture();
   let team1: Team;
   let team2: Team;

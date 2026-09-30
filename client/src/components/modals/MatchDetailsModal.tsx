@@ -254,7 +254,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
     setError('');
 
     try {
-      // Fetch raw Auto Tournament CS2 config JSON from the backend
+      // Fetch raw MatchZy Enhanced config JSON from the backend
       const response = await api.get<unknown>(`/api/matches/${match.slug}.json`);
       setConfigJson(JSON.stringify(response, null, 2));
     } catch (err) {

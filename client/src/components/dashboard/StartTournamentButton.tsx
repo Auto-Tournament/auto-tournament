@@ -224,7 +224,7 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
                         When enabled, matches will auto-veto and load with simulation=true so the
-                        Auto Tournament CS2 plugin can run full matches with bots instead of players.
+                        MatchZy Enhanced can run full matches with bots instead of players.
                       </Typography>
                     </Box>
                   }

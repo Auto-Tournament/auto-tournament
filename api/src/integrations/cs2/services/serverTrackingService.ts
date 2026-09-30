@@ -1,8 +1,8 @@
 /**
  * Server Tracking Service
- * Handles automatic server registration and health monitoring from Auto Tournament CS2
+ * Handles automatic server registration and health monitoring from MatchZy Enhanced
  * 
- * Auto Tournament CS2 servers send a 'server_configured' event when they connect to the API.
+ * MatchZy Enhanced servers send a 'server_configured' event when they connect to the API.
  * We track:
  * - Server registration and configuration
  * - Heartbeat (last_seen timestamp on every event)
@@ -20,7 +20,7 @@ import type {
 } from '../events/plugin-events.types';
 
 // Re-exported so existing importers keep working now that these live with the
-// other Auto Tournament CS2 event types.
+// other MatchZy Enhanced event types.
 export type { ServerConfiguredEvent, Cs2UpdateRequiredEvent, ServerHealthEvent };
 
 class ServerTrackingService {
@@ -95,7 +95,7 @@ class ServerTrackingService {
   }
 
   /**
-   * Handle server_configured event from Auto Tournament CS2
+   * Handle server_configured event from MatchZy Enhanced
    * Registers or updates server information
    */
   async handleServerConfigured(event: ServerConfiguredEvent): Promise<void> {

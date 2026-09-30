@@ -1,5 +1,5 @@
 /**
- * Auto Tournament CS2 event -> NormalizedEvent[].
+ * MatchZy Enhanced event -> NormalizedEvent[].
  *
  * Pure: no database, no clock, no I/O. The same payload always gives the same
  * events with the same `eventId`s, which is what makes ingest idempotent when
@@ -10,7 +10,7 @@
  * `player_connect` again, so ingest should apply them last-write-wins and use
  * the id only to drop retries.
  *
- * Payloads are read the way the event handler reads them today: Auto Tournament CS2 sends
+ * Payloads are read the way the event handler reads them today: MatchZy Enhanced sends
  * scores and players nested per team (`team1: { score, series_score,
  * players }`) and the winner as `{ side, team }`, and the flat Get5-style
  * fields (`team1_score`, `winner: 'team1'`) are accepted as a fallback.
@@ -50,7 +50,7 @@ function side(value: unknown): TeamSide | undefined {
   return value === 'team1' || value === 'team2' ? value : undefined;
 }
 
-/** `winner: { team }` (Auto Tournament CS2) or `winner: 'team1'` (Get5 / synthesized). */
+/** `winner: { team }` (MatchZy Enhanced) or `winner: 'team1'` (Get5 / synthesized). */
 function winnerTeam(evt: Payload): string | undefined {
   const raw = evt.winner;
   if (typeof raw === 'string') return raw;
@@ -58,7 +58,7 @@ function winnerTeam(evt: Payload): string | undefined {
   return typeof team === 'string' ? team : undefined;
 }
 
-/** `team1.<key>` first (what Auto Tournament CS2 sends), then the flat `team1_<key>`. */
+/** `team1.<key>` first (what MatchZy Enhanced sends), then the flat `team1_<key>`. */
 function teamNumber(evt: Payload, team: TeamSide, key: 'score' | 'series_score'): number | undefined {
   return num(obj(evt[team])?.[key]) ?? num(evt[`${team}_${key}`]);
 }
@@ -98,7 +98,7 @@ function pick(stats: Payload, keys: string[]): number {
 }
 
 /**
- * Auto Tournament CS2's per-player stats as `statsSchema` metrics. ADR is derived the way
+ * MatchZy Enhanced's per-player stats as `statsSchema` metrics. ADR is derived the way
  * `persistPlayerMatchStats` stores it (damage / rounds, two decimals).
  */
 function metricsFrom(stats: Payload): Record<string, number> {
@@ -171,7 +171,7 @@ const PRESENCE_STATE = {
 const PHASE_ONLY: Record<string, string> = {
   warmup_ended: 'live',
   knife_round_started: 'knife',
-  // The knife winner picks a side next and Auto Tournament CS2 sends nothing for that
+  // The knife winner picks a side next and MatchZy Enhanced sends nothing for that
   // choice, so the match stays in the knife phase until going_live.
   knife_round_ended: 'knife',
   match_paused: 'paused',
@@ -180,7 +180,7 @@ const PHASE_ONLY: Record<string, string> = {
 };
 
 /**
- * Map one Auto Tournament CS2 event to the neutral events the core consumes. Unknown and
+ * Map one MatchZy Enhanced event to the neutral events the core consumes. Unknown and
  * CS2-only events give `[]`; so does anything that is not an object with an
  * `event` name.
  */

@@ -355,7 +355,7 @@ class SettingsService {
   }
 
   /**
-   * Returns true when simulation mode should be enabled for generated Auto Tournament CS2 configs.
+   * Returns true when simulation mode should be enabled for generated MatchZy Enhanced configs.
    *
    * This is intended as a **development-only** helper; in production environments
    * it always returns false unless explicitly overridden via environment.
