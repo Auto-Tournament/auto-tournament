@@ -23,7 +23,8 @@ import { useTranslation } from 'react-i18next';
 import { ExternalLink } from '../common/ExternalLink';
 
 interface ImportPlayer {
-  steamId: string;
+  /** Optional: without one the player gets an account of their own (CS2 needs it). */
+  steamId?: string;
   name: string;
   initialELO?: number;
   avatarUrl?: string;
@@ -76,11 +77,11 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
     // signature, so reading fields off it is a type error. Go through a
     // record and let the guards below do the actual narrowing.
     const { steamId, name, initialELO } = player as Record<string, unknown>;
-    if (!steamId || typeof steamId !== 'string') {
-      return `Player ${index + 1}: Missing or invalid steamId`;
+    if (steamId !== undefined && (typeof steamId !== 'string' || !steamId.trim())) {
+      return `Player ${index + 1}: steamId must be a Steam ID or left out`;
     }
     if (!name || typeof name !== 'string') {
-      return `Player ${index + 1} (${steamId}): Missing or invalid name`;
+      return `Player ${index + 1}${steamId ? ` (${steamId})` : ''}: Missing or invalid name`;
     }
     if (initialELO !== undefined && (typeof initialELO !== 'number' || initialELO < 0)) {
       return `Player "${name}": initialELO must be a positive number or omitted`;
@@ -114,7 +115,7 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
           headers.forEach((header, i) => {
             const value = values[i] || '';
             if (header === 'steamid' || header === 'steam_id') {
-              player.steamId = value;
+              player.steamId = value || undefined;
             } else if (header === 'name') {
               player.name = value;
             } else if (header === 'initialelo' || header === 'initial_elo' || header === 'elo') {
@@ -284,7 +285,7 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
                       <Typography variant="body2" fontWeight={600}>
                         {player.name}
                       </Typography>
-                      <Chip label={player.steamId} size="small" variant="outlined" />
+                      {player.steamId && <Chip label={player.steamId} size="small" variant="outlined" />}
                       {player.initialELO !== undefined && (
                         <Chip label={`ELO: ${player.initialELO}`} size="small" />
                       )}
@@ -292,9 +293,11 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
                   </Box>
                   <Collapse in={expandedPlayers.has(index)}>
                     <Box sx={{ pl: 4, pt: 1 }}>
-                      <Typography variant="caption" color="text.secondary" display="block">
-                        {t('playerImportModal.preview.steamId', { steamId: player.steamId })}
-                      </Typography>
+                      {player.steamId && (
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          {t('playerImportModal.preview.steamId', { steamId: player.steamId })}
+                        </Typography>
+                      )}
                       <Typography variant="caption" color="text.secondary" display="block">
                         {t('playerImportModal.preview.name', { name: player.name })}
                       </Typography>
