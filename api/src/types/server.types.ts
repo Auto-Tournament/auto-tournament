@@ -11,13 +11,13 @@ export interface Server {
   enabled: number; // PostgreSQL stores boolean as 0/1 in INTEGER column
   /** 0 = practice/community server: never given tournament matches. */
   tournament_use?: number | null;
-  at_config?: string | null; // JSON blob with per-server Auto Tournament CS2 ConVar overrides
+  at_config?: string | null; // JSON blob with per-server MatchZy Enhanced ConVar overrides
   persistent_config_sent?: number | null; // Unix timestamp when persistent config was last sent
-  plugin_version?: string | null; // Auto Tournament CS2 version (e.g., "1.3.6")
+  plugin_version?: string | null; // MatchZy Enhanced version (e.g., "1.3.6")
   hostname?: string | null; // CS2 server hostname (from hostname convar)
   last_seen?: number | null; // Unix timestamp of last event received (heartbeat)
   status?: string | null; // 'online', 'offline', 'unknown'
-  /** How the platform drives it: 'rcon' (Auto Tournament CS2 over RCON) or 'fleet' (Ready Up over the fleet link). */
+  /** How the platform drives it: 'rcon' (MatchZy Enhanced over RCON) or 'fleet' (Ready Up over the fleet link). */
   transport?: string | null;
   /** 'fleet' servers: the cs2_fleet_servers row behind it. */
   fleet_server_id?: string | null;
@@ -37,7 +37,7 @@ export interface Server {
   cs2_version_string?: string | null;
   /** Unix timestamp when version/build was last fetched via RCON. */
   cs2_version_fetched_at?: number | null;
-  /** Best-effort: Auto Tournament CS2 plugin DB reachable (1/0). */
+  /** Best-effort: MatchZy Enhanced DB reachable (1/0). */
   at_db_ok?: number | null;
   /** Best-effort: 'sqlite' | 'mysql'. */
   at_db_type?: string | null;
@@ -91,12 +91,12 @@ export interface ServerResponse {
   atConfig: AtServerConfig | null;
   created_at: number;
   updated_at: number;
-  // Server tracking fields (from Auto Tournament CS2 server_configured event)
-  pluginVersion?: string | null; // Auto Tournament CS2 version (e.g., "1.3.6")
+  // Server tracking fields (from MatchZy Enhanced server_configured event)
+  pluginVersion?: string | null; // MatchZy Enhanced version (e.g., "1.3.6")
   hostname?: string | null; // CS2 server hostname (from hostname convar)
   lastSeen?: number | null; // Unix timestamp of last event received (heartbeat)
   status?: string | null; // 'online', 'offline', 'unknown'
-  /** Unix timestamp when we last sent persistent config via RCON. Set before Auto Tournament CS2 sends events. */
+  /** Unix timestamp when we last sent persistent config via RCON. Set before MatchZy Enhanced sends events. */
   persistentConfigSent?: number | null;
   /** If set, the server has reported a CS2 update is required (Steam required_version). */
   cs2RequiredVersion?: number | null;
@@ -112,7 +112,7 @@ export interface ServerResponse {
   cs2VersionString?: string | null;
   /** Unix timestamp when version/build was last fetched via RCON. */
   cs2VersionFetchedAt?: number | null;
-  /** Best-effort: Auto Tournament CS2 plugin DB reachable. */
+  /** Best-effort: MatchZy Enhanced DB reachable. */
   atDbOk?: boolean | null;
   /** Best-effort: 'sqlite' | 'mysql'. */
   atDbType?: string | null;
@@ -125,7 +125,7 @@ export interface ServerResponse {
   /** Unix timestamp when server last successfully sent any event to /api/events. */
   serverCanReachApiAt?: number | null;
   /**
-   * How the platform drives the server: 'rcon' (Auto Tournament CS2 over
+   * How the platform drives the server: 'rcon' (MatchZy Enhanced over
    * RCON, every server before the fleet link) or 'fleet' (a Ready Up server on
    * the fleet link, see integrations/cs2/driver.ts).
    */
@@ -139,7 +139,7 @@ export interface ServerResponse {
 export type ServerTransport = 'rcon' | 'fleet';
 
 /**
- * Per-server Auto Tournament CS2 configuration (backend representation)
+ * Per-server MatchZy Enhanced configuration (backend representation)
  * This is intentionally a small, opinionated subset of all possible ConVars.
  * Note: Chat prefixes and knife round defaults are configured at the global/tournament/match level,
  * not per-server. Only server-specific operational settings are included here.
@@ -156,7 +156,7 @@ export interface AtServerConfig {
   resetCvarsOnSeriesEnd?: boolean | null;
   usePauseCommandForTacticalPause?: boolean | null;
   /**
-   * Auto Tournament CS2 autostart mode:
+   * MatchZy Enhanced autostart mode:
    * 0 = idle/sleep, 1 = match mode, 2 = practice mode
    */
   autostartMode?: 0 | 1 | 2 | null;

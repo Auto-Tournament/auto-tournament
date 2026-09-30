@@ -40,8 +40,8 @@ Using it for a business, paid events or hosting? That needs a commercial licence
 > more games and tournament formats as modules, with CS2 as the built-in game.
 
 Auto Tournament (currently 2.4.13) talks to CS2 servers running
-[Auto Tournament CS2](https://github.com/Auto-Tournament/cs2-plugin), the CS2 plugin. It is used
-for organised tournaments and for a quick 5v5 or 2v2 with friends. Auto Tournament CS2 is forked from
+[MatchZy Enhanced](https://github.com/Auto-Tournament/matchzy-enhanced), the CS2 plugin. It is used
+for organised tournaments and for a quick 5v5 or 2v2 with friends. MatchZy Enhanced is forked from
 [MatchZy](https://github.com/shobhit-pathak/MatchZy) by shobhit-pathak.
 
 ## What it does
@@ -62,7 +62,7 @@ Screenshots are in the docs: https://docs.autotournament.gg
 ## Quick start
 
 You need Docker with Docker Compose, and CS2 servers with
-[Auto Tournament CS2 v2.0.0+](https://github.com/Auto-Tournament/cs2-plugin/releases)
+[MatchZy Enhanced v2.0.0+](https://github.com/Auto-Tournament/matchzy-enhanced/releases)
 and RCON access.
 
 ```bash
@@ -98,7 +98,7 @@ To add servers, either:
   ([docs](https://docs.autotournament.gg/cs2/server-manager)), which sets up servers with
   the CS2 plugin already installed, or
 - install [CounterStrikeSharp](https://docs.cssharp.dev/) and
-  [Auto Tournament CS2](https://docs.autotournament.gg/cs2/plugin/install) yourself, then add the
+  [MatchZy Enhanced](https://docs.autotournament.gg/cs2/plugin/install) yourself, then add the
   server in Auto Tournament under Settings → Servers.
 
 To run a tournament: Dashboard → New Tournament, pick a format, add teams and
@@ -141,7 +141,7 @@ Building on Auto Tournament:
 
 ## Related projects
 
-- [Auto Tournament CS2](https://github.com/Auto-Tournament/cs2-plugin)
+- [MatchZy Enhanced](https://github.com/Auto-Tournament/matchzy-enhanced)
   ([docs](https://docs.autotournament.gg/cs2/plugin)): the CS2 server plugin Auto Tournament drives.
 - [CS2 Server Manager](https://github.com/Auto-Tournament/cs2-server-manager)
   ([docs](https://docs.autotournament.gg/cs2/server-manager)): sets up and updates the CS2

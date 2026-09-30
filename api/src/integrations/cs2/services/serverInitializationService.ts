@@ -1,8 +1,8 @@
 /**
  * Server Initialization Service
- * Handles sending persistent Auto Tournament CS2 configuration to servers on first connection
+ * Handles sending persistent MatchZy Enhanced configuration to servers on first connection
  * 
- * With the updated Auto Tournament CS2 plugin, certain configuration values are now persisted
+ * With the updated MatchZy Enhanced, certain configuration values are now persisted
  * to the server's database and survive restarts. This means we only need to send
  * them once (or when they change), not on every match load.
  * 
@@ -20,7 +20,7 @@ import { db } from '../../../config/database';
 import { rconService } from './rconService';
 import { log } from '../../../utils/logger';
 import { getPluginBootstrapCommands } from '../utils/pluginRconCommands';
-// NOTE: Remaining Auto Tournament CS2 configuration is fetched by the server itself
+// NOTE: Remaining MatchZy Enhanced configuration is fetched by the server itself
 // via /api/servers/:id/bootstrap to avoid RCON command churn.
 
 export interface ServerInitializationResult {

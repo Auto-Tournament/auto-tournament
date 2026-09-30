@@ -152,7 +152,7 @@ export const ManualMatchMapsRulesStep: React.FC<ManualMatchMapsRulesStepProps> =
               sx={{ maxWidth: 220, flex: 1, minWidth: 160 }}
               helperText={
                 maxRounds > 0
-                  ? `Passed to the Auto Tournament CS2 plugin as mp_maxrounds. Example: ${maxRounds} = MR${maxRounds}.`
+                  ? `Passed to MatchZy Enhanced as mp_maxrounds. Example: ${maxRounds} = MR${maxRounds}.`
                   : 'Maximum number of rounds per map (default: 24, max: 30).'
               }
             />
@@ -210,7 +210,7 @@ export const ManualMatchMapsRulesStep: React.FC<ManualMatchMapsRulesStepProps> =
                   sx={{ mt: 1 }}
                   helperText={
                     overtimeMaxRounds && overtimeMaxRounds > 0
-                      ? `Passed to the Auto Tournament CS2 plugin as mp_overtime_maxrounds. Example: ${overtimeMaxRounds} = MR${overtimeMaxRounds} in overtime.`
+                      ? `Passed to MatchZy Enhanced as mp_overtime_maxrounds. Example: ${overtimeMaxRounds} = MR${overtimeMaxRounds} in overtime.`
                     : 'Leave empty to use the server default overtime length (usually MR3 / 6 rounds). Your CS2 plugin config can still break ties by total damage when OT is disabled or capped.'
                   }
                 />

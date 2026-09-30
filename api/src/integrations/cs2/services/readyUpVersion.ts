@@ -2,7 +2,7 @@
  * Ready Up plugin version status (pure; no network).
  *
  * Ready Up servers report their version in the fleet `hello`
- * (`versions.core`). Unlike the old cs2-plugin, Ready Up may have no GitHub
+ * (`versions.core`). Unlike MatchZy Enhanced, Ready Up may have no GitHub
  * release at all; while none exists there is nothing to compare against, so
  * the status is `unknown` and the UI must not warn.
  */

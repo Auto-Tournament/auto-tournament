@@ -93,7 +93,7 @@ if (answer?.status === 'rejected') { /* answer.errorCode: busy | invalid_config 
 ## The driver (`driver.ts`, `../driver.ts`)
 
 The CS2 pool (`../allocation.ts`) goes through `driverFor(serverId)`
-(`../driver.ts`): `rconDriver` is the Auto Tournament CS2 path as it was,
+(`../driver.ts`): `rconDriver` is the MatchZy Enhanced path as it was,
 `fleetDriver` this one. A `ServerDriver` has `loadMatch`, `cancelQueuedLoad`,
 `checkIdle`, `endMatch`, `resetServer`, `stopForReload`, `releaseForMove`,
 `seriesDone`.

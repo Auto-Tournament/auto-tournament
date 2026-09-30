@@ -318,7 +318,7 @@ app.get('/', (_req: Request, res: Response) => {
         note: 'Match management - webhooks auto-configured on load',
         list: 'GET /api/matches (auth required)',
         get: 'GET /api/matches/:slug (auth required)',
-        getConfig: 'GET /api/matches/:slug.json (X-Auto-Tournament-Token or admin auth required - for Auto Tournament CS2)',
+        getConfig: 'GET /api/matches/:slug.json (X-Auto-Tournament-Token or admin auth required - for MatchZy Enhanced)',
         create: 'POST /api/matches (auth required)',
         load: 'POST /api/matches/:slug/load (auth required, webhooks auto-configured)',
         loadNoWebhook: 'POST /api/matches/:slug/load?skipWebhook=true (skip webhook setup)',
@@ -326,7 +326,7 @@ app.get('/', (_req: Request, res: Response) => {
         delete: 'DELETE /api/matches/:slug (auth required)',
       },
       events: {
-        note: 'Auto Tournament CS2 event webhooks - receive game events',
+        note: 'MatchZy Enhanced event webhooks - receive game events',
         webhook: 'POST /api/events (X-Auto-Tournament-Token required)',
         getEvents: 'GET /api/events/:matchSlug (auth required)',
       },
@@ -612,7 +612,7 @@ process.on('uncaughtException', (err) => {
       startLicenseCheckin();
 
       // Recover matches and start the game integrations (CS2: bootstrap server
-      // webhooks, fetch the Auto Tournament CS2 version, start health monitoring) now the
+      // webhooks, fetch the MatchZy Enhanced version, start health monitoring) now the
       // database is ready.
       Promise.all([
         ...listIntegrations().map((integration) =>

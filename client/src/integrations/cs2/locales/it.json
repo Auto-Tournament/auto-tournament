@@ -11,7 +11,7 @@
       "maps": "Mappe e pool"
     },
     "atDbDown": {
-      "title": "Database Auto Tournament CS2 non raggiungibile",
+      "title": "Database MatchZy Enhanced non raggiungibile",
       "body_one": "{{count}} server segnala che il plugin non riesce a raggiungere il proprio database. Backup e coda eventi potrebbero risentirne.",
       "body_other": "{{count}} server segnalano che il plugin non riesce a raggiungere il proprio database. Backup e coda eventi potrebbero risentirne."
     }
@@ -467,7 +467,7 @@
       "message_other": "Vuoi davvero eliminare {{count}} server? Questa azione non può essere annullata."
     },
     "autoConfig": {
-      "configuring": "Configurazione nuovi server (invio config Auto Tournament CS2 via RCON)…",
+      "configuring": "Configurazione nuovi server (invio config MatchZy Enhanced via RCON)…",
       "done": "Nuovi server configurati. Aggiornamento stato…"
     },
     "checkServerLogs": "Controlla la console/log del server di gioco per verificare che il plugin Auto Tournament riceva la configurazione e invii eventi.",
@@ -475,7 +475,7 @@
       "title": "Stato della flotta server",
       "total_one": "{{count}} server",
       "total_other": "{{count}} server",
-      "latestRelease": "Ultima release di Auto Tournament CS2: v{{version}}",
+      "latestRelease": "Ultima release di MatchZy Enhanced: v{{version}}",
       "olderVersion_one": "{{count}} server usa una versione precedente all’ultima release.",
       "olderVersion_other": "{{count}} server usano una versione precedente all’ultima release.",
       "downloadLatest": "Scarica l’ultima versione"
@@ -520,7 +520,7 @@
       "webhookTitle": "Il server non raggiunge Auto Tournament (webhook)",
       "webhookBody": "Auto Tournament raggiunge il server via RCON, ma il server non raggiunge il webhook di Auto Tournament. Controlla il traffico in uscita, il DNS e l’URL del webhook configurato.",
       "versionDiffTitle": "Le versioni del plugin differiscono tra i server",
-      "versionDiffBody": "Alcuni server usano una versione diversa di Auto Tournament CS2. Se usi CSM, esegui {{command}} e riavvia i server.",
+      "versionDiffBody": "Alcuni server usano una versione diversa di MatchZy Enhanced. Se usi CSM, esegui {{command}} e riavvia i server.",
       "ipBannedTitle": "IP bannato da RCON",
       "ipBannedBody": "Il server ha bannato temporaneamente l’IP di Auto Tournament dopo ripetuti errori di autenticazione RCON. Correggi la password RCON e sbanna l’IP.",
       "pluginDbTitle": "Il plugin Auto Tournament non riesce a raggiungere il proprio database.",
@@ -604,8 +604,8 @@
     "enabledHelper": "I server disabilitati non verranno usati per i match",
     "tournamentUseLabel": "Use for tournament matches",
     "tournamentUseHelper": "Off: a practice or community server. Tournament matches, auto-scaling and failover never use it. It still counts toward your license.",
-    "overridesTitle": "Override Auto Tournament CS2 (opzionale)",
-    "overridesDescription": "Queste impostazioni sovrascrivono i predefiniti globali di Auto Tournament CS2 solo per questo server. Lascia vuoto per usare i valori globali dalle Impostazioni.",
+    "overridesTitle": "Override MatchZy Enhanced (opzionale)",
+    "overridesDescription": "Queste impostazioni sovrascrivono i predefiniti globali di MatchZy Enhanced solo per questo server. Lascia vuoto per usare i valori globali dalle Impostazioni.",
     "chatPrefixLabel": "Override prefisso chat",
     "chatPrefixPlaceholder": "[{Green}Auto Tournament{Default}]",
     "chatPrefixHelper": "Sovrascrive at_chat_prefix su questo server (opzionale)",
@@ -886,7 +886,7 @@
       "noServers": "Nessun server disponibile",
       "refreshServers": "Aggiorna elenco server",
       "noEvents": "Ancora nessun evento ricevuto da questo server.",
-      "noEventsHint": "Ancora nessun evento dopo 15 secondi. Verifica che il tuo server CS2 sia configurato per inviare i webhook Auto Tournament CS2 a /api/events/:matchSlugOrServerId con il X-Auto-Tournament-Token corretto.",
+      "noEventsHint": "Ancora nessun evento dopo 15 secondi. Verifica che il tuo server CS2 sia configurato per inviare i webhook MatchZy Enhanced a /api/events/:matchSlugOrServerId con il X-Auto-Tournament-Token corretto.",
       "waiting": "In attesa di eventi dal server...",
       "footer_one": "{{count}} evento visualizzato (max 100)",
       "footer_other": "{{count}} eventi visualizzati (max 100)",
@@ -899,8 +899,8 @@
   },
   "settings": {
     "webhook": {
-      "title": "Webhook Auto Tournament CS2",
-      "description": "URL del webhook Auto Tournament CS2 raggiungibile dai tuoi server CS2.",
+      "title": "Webhook MatchZy Enhanced",
+      "description": "URL del webhook MatchZy Enhanced raggiungibile dai tuoi server CS2.",
       "label": "URL webhook",
       "helper": "Esempio: https://il-tuo-dominio.com"
     },
@@ -925,17 +925,17 @@
     "saveFailed": "Failed to save settings",
     "loadFailed": "Failed to load settings",
     "chatDefaults": {
-      "title": "Predefiniti Auto Tournament CS2 (chat e knife)",
+      "title": "Predefiniti MatchZy Enhanced (chat e knife)",
       "description": "Configura i prefissi della chat in gioco e il comportamento predefinito della knife round.",
       "chatPrefixLabel": "Prefisso chat",
       "chatPrefixHelper": "Predefinito: \"[{Green}Auto Tournament{Default}]\". Lascia vuoto per ripristinare il prefisso predefinito.",
       "adminChatPrefixLabel": "Prefisso chat admin",
       "adminChatPrefixHelper": "Predefinito: \"[{Red}ADMIN{Default}]\". Lascia vuoto per ripristinare il prefisso admin predefinito.",
       "knifeToggleLabel": "Abilita la knife round di default per i nuovi match (quando i lati non sono preselezionati)",
-      "knifeNote": "Si applica solo quando Auto Tournament CS2 eseguirebbe normalmente una knife round; le scelte esplicite dei lati non vengono modificate."
+      "knifeNote": "Si applica solo quando MatchZy Enhanced eseguirebbe normalmente una knife round; le scelte esplicite dei lati non vengono modificate."
     },
     "atCore": {
-      "title": "Impostazioni predefinite Auto Tournament CS2 Core",
+      "title": "Impostazioni predefinite MatchZy Enhanced Core",
       "description": "Queste impostazioni vengono inviate ai server durante l’inizializzazione e prima di ogni caricamento match.",
       "expert": {
         "title": "Impostazioni avanzate",
@@ -988,8 +988,8 @@
       }
     },
     "atEnhanced": {
-      "title": "Funzionalità Auto Tournament CS2",
-      "description": "Configura funzionalità avanzate del match. Lascia i campi vuoti per usare i valori predefiniti di Auto Tournament CS2.",
+      "title": "Funzionalità MatchZy Enhanced",
+      "description": "Configura funzionalità avanzate del match. Lascia i campi vuoti per usare i valori predefiniti di MatchZy Enhanced.",
       "autoready": {
         "title": "Sistema auto-ready",
         "label": "Segna automaticamente i giocatori come ready quando entrano",
@@ -1038,8 +1038,8 @@
       "timescaleDescription": "Controlla quanto velocemente girano i match simulati. Valori più alti accelerano bot e round. Si applica solo quando la simulazione è abilitata.",
       "timescaleWarning": "Velocità sopra 2.0 possono essere instabili e causare comportamenti strani dei bot, ma vanno bene per test rapidi.",
       "debugChat": {
-        "label": "Abilita messaggi chat di debug di Auto Tournament CS2",
-        "description": "Quando abilitato, Auto Tournament CS2 stamperà messaggi di debug aggiuntivi (connessioni/disconnessioni, tracce eventi, ecc.) nella chat. Usalo solo per sviluppo e test."
+        "label": "Abilita messaggi chat di debug di MatchZy Enhanced",
+        "description": "Quando abilitato, MatchZy Enhanced stamperà messaggi di debug aggiuntivi (connessioni/disconnessioni, tracce eventi, ecc.) nella chat. Usalo solo per sviluppo e test."
       }
     },
     "success": {

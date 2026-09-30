@@ -10,7 +10,7 @@ import type { Team } from '../helpers/teams';
  * A player with a few recorded matches should see the new stats grid
  * (MATCHES, WIN RATE, …) and the recent-matches list, built from real match
  * data recorded through the same `round_end` / `series_end` event path
- * Auto Tournament CS2 servers use — not fabricated numbers.
+ * MatchZy Enhanced servers use — not fabricated numbers.
  *
  * @tag ui
  * @tag public

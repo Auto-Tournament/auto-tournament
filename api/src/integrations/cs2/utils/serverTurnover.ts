@@ -7,7 +7,7 @@
  * that (120 s, 30 s simulated) measured from the idle timestamp, because it had
  * no way of knowing whether the upload had finished.
  *
- * It does know: Auto Tournament CS2 reports `demo_upload_ended` / `demo_upload_fail` per
+ * It does know: MatchZy Enhanced reports `demo_upload_ended` / `demo_upload_fail` per
  * map. This module tracks those per server so the allocator can
  *  - release a server as soon as it is idle after series_end with no demo
  *    upload outstanding, instead of sitting out the whole grace window, and
@@ -23,7 +23,7 @@ import { log } from '../../../utils/logger';
 /** Minimum time a server must have been idle before an early release (plugin ResetMatch runs 2 s after idle). */
 export const TURNOVER_MIN_IDLE_SECONDS = 5;
 
-/** The plugin stops recording tv_delay + this many seconds after a map ends (Auto Tournament CS2 HandleMatchEnd). */
+/** The plugin stops recording tv_delay + this many seconds after a map ends (MatchZy Enhanced HandleMatchEnd). */
 export const GOTV_FLUSH_EXTRA_SECONDS = 15;
 
 /** Time allowed for the HTTP demo upload itself once recording has stopped. */
@@ -210,7 +210,7 @@ export class ServerTurnoverTracker {
   }
 
   /**
-   * Feed an Auto Tournament CS2 webhook event sent by `serverId`. Only the events that
+   * Feed a MatchZy Enhanced webhook event sent by `serverId`. Only the events that
    * matter for turnover are looked at.
    */
   recordEvent(serverId: string, event: Record<string, unknown>, now: number): void {

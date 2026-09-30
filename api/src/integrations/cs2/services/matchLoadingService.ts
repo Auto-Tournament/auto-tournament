@@ -25,7 +25,7 @@ import { serverStatusService, ServerStatus } from './serverStatusService';
 import { buildMatchConfigUrl, buildServerEventsUrl } from '../../../utils/serverAttribution';
 
 /**
- * How long to wait for Auto Tournament CS2 to fetch the match config after the load command.
+ * How long to wait for MatchZy Enhanced to fetch the match config after the load command.
  * Observed locally at well under a second; the headroom is for a busy server.
  */
 const CONFIG_FETCH_TIMEOUT_MS = 10_000;
@@ -112,11 +112,11 @@ export async function loadMatchOnServer(
 
     // Never expose tokens in logs or API responses.
     const redactSensitiveCommand = (command: string): string => {
-      // Auto Tournament CS2 demo upload token / header value
+      // MatchZy Enhanced demo upload token / header value
       if (command.startsWith('at_demo_upload_header_value ')) {
         return 'at_demo_upload_header_value "REDACTED"';
       }
-      // Auto Tournament CS2 webhook token / header value (defense-in-depth; currently not set here)
+      // MatchZy Enhanced webhook token / header value (defense-in-depth; currently not set here)
       if (command.startsWith('at_remote_log_header_value ')) {
         return 'at_remote_log_header_value "REDACTED"';
       }
@@ -148,8 +148,8 @@ export async function loadMatchOnServer(
       log.success(`[MATCH LOADING] Server ${serverId} initialized with persistent configuration`);
     }
 
-    // STEP 1.5: Apply Auto Tournament CS2 global defaults from Settings.
-    // Even though these are persisted by Auto Tournament CS2, we re-apply them on
+    // STEP 1.5: Apply MatchZy Enhanced global defaults from Settings.
+    // Even though these are persisted by MatchZy Enhanced, we re-apply them on
     // each match load so updates take effect without requiring a server init reset.
     try {
       const atCore = await cs2Settings.getAtCoreDefaults();
@@ -181,7 +181,7 @@ export async function loadMatchOnServer(
       }
     } catch (coreError) {
       log.warn(
-        `[MATCH LOADING] Failed to apply Auto Tournament CS2 global defaults for ${matchSlug} on ${serverId}`,
+        `[MATCH LOADING] Failed to apply MatchZy Enhanced global defaults for ${matchSlug} on ${serverId}`,
         coreError as Error
       );
     }
@@ -289,7 +289,7 @@ export async function loadMatchOnServer(
     // Load match on server
     // Server initialization has already ensured webhook, auth, and core config are set and persisted
     log.success(`✅ Server ${serverId} ready. Loading match ${matchSlug}`);
-    // The header args make Auto Tournament CS2 authenticate its config fetch; the config
+    // The header args make MatchZy Enhanced authenticate its config fetch; the config
     // endpoint refuses it otherwise (requireMatchConfigAccess).
     const loadCommand = getPluginLoadMatchCommand(configUrl, process.env.SERVER_TOKEN);
     const safeLoadCommand = redactLoadMatchCommand(loadCommand);
@@ -304,7 +304,7 @@ export async function loadMatchOnServer(
 
     const reply = classifyLoadMatchReply(loadResult.response);
     const gotvInactive = reply === 'gotv_inactive';
-    // Auto Tournament CS2 has several refusals and they share no common wording. These are
+    // MatchZy Enhanced has several refusals and they share no common wording. These are
     // the ones we know; the config-fetch check below is what catches the rest.
     const alreadySetUp = reply === 'already_setup';
     const pluginReportedFailure = reply === 'failed';
@@ -319,10 +319,10 @@ export async function loadMatchOnServer(
 
     if (pluginReportedFailure || gotvInactive || alreadySetUp) {
       const errorMessage = gotvInactive
-        ? 'Auto Tournament CS2 refused to load because GOTV is disabled. Enable GOTV (tv_enable 1) and retry.'
+        ? 'MatchZy Enhanced refused to load because GOTV is disabled. Enable GOTV (tv_enable 1) and retry.'
         : alreadySetUp
-        ? 'Auto Tournament CS2 refused the match because the server still has a previous match set up. End or cancel that match on the server, then load this one again.'
-        : 'Auto Tournament CS2 plugin reported that it failed to load the match. Check the server console for the detailed error.';
+        ? 'MatchZy Enhanced refused the match because the server still has a previous match set up. End or cancel that match on the server, then load this one again.'
+        : 'MatchZy Enhanced reported that it failed to load the match. Check the server console for the detailed error.';
 
       handlePluginFailure(errorMessage);
 
@@ -335,7 +335,7 @@ export async function loadMatchOnServer(
       };
     }
 
-    // The previous series on this server is in postgame. Auto Tournament CS2 stored the URL
+    // The previous series on this server is in postgame. MatchZy Enhanced stored the URL
     // and fetches it after its reset, which can be minutes away (demo upload +
     // kick delay), so waiting for the fetch here would always "fail". Treating
     // that as a failure is what put one match on two servers: MAT re-allocated
@@ -373,7 +373,7 @@ export async function loadMatchOnServer(
       };
     }
 
-    // RCON accepting the command only means it was delivered. Auto Tournament CS2 still has
+    // RCON accepting the command only means it was delivered. MatchZy Enhanced still has
     // to fetch the config, and when it refuses it does so without telling RCON
     // anything we can rely on - which is how a match could be marked "loaded"
     // while the server sat on the previous map.
@@ -396,7 +396,7 @@ export async function loadMatchOnServer(
 
         if (!fetched) {
           const errorMessage =
-            'Auto Tournament CS2 never fetched the match config, so the match did not load. ' +
+            'MatchZy Enhanced never fetched the match config, so the match did not load. ' +
             'The server is still running whatever it had before. Check the server console for the reason it refused.';
           handlePluginFailure(errorMessage);
 
@@ -481,8 +481,8 @@ export type CancelQueuedLoadOutcome = 'cleared' | 'none' | 'restarted' | 'skippe
 /**
  * Make sure a server will not later load a match MAT has moved elsewhere.
  *
- * Auto Tournament CS2 queues a load sent during postgame and runs it after the
- * series resets. Newer plugins (cs2-plugin#16) drop it with
+ * MatchZy Enhanced queues a load sent during postgame and runs it after the
+ * series resets. Newer plugins (matchzy-enhanced#16) drop it with
  * `at_clear_queued_match`. 1.4.24 has no such command; there the queue is
  * only consumed by a reset, so `css_restart` is sent — but only when the plugin
  * reports `queued`, since restarting a server in any other state could end a

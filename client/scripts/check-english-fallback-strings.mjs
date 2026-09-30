@@ -18,7 +18,7 @@ function isProbablyOkToMatchEnglish(s) {
   // Keys that are often identical across languages or are proper nouns/tech terms.
   const exactOk = new Set([
     'ELO',
-    'Auto Tournament CS2',
+    'MatchZy Enhanced',
     'CS2',
     'CS',
     // Proper nouns / providers

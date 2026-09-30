@@ -8,7 +8,7 @@ import type { Team } from '../helpers/teams';
  * Plugin phase → match status.
  *
  * `mapPhaseToLiveStatus` defaults to 'warmup', so every phase name it does not
- * know silently reads as WARMUP. Auto Tournament CS2 reports `knife_decision`
+ * know silently reads as WARMUP. MatchZy Enhanced reports `knife_decision`
  * while the knife winner picks a side, and MAT had no case for it — so the UI
  * dropped back to WARMUP mid-knife, which is the reported bug. `paused` and
  * `round_restore` had the same hole: both happen inside a live match.

@@ -231,7 +231,7 @@ test.describe.serial('Series results through applySeriesResult', () => {
     'a series finished by an admin leaves the same state as one finished by the game',
     { tag: ['@api', '@regression'] },
     async ({ request }) => {
-      // By the game: two maps, then Auto Tournament CS2's series_end.
+      // By the game: two maps, then MatchZy Enhanced's series_end.
       await startTournament(request);
       let [slug] = await semiFinals(request);
       await playTwoMapsForTeam1(request, slug);

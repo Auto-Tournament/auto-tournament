@@ -2,7 +2,7 @@
  * CS2 startup work and background jobs, run through `cs2Integration.start()`
  * and `stop()`.
  *
- * Moved from `index.ts` unchanged: configure the Auto Tournament CS2 webhook on every
+ * Moved from `index.ts` unchanged: configure the MatchZy Enhanced webhook on every
  * enabled server that needs it, then fetch the latest plugin version and start
  * the server health monitor (which also runs the CS2 fleet/update checks).
  */
@@ -81,7 +81,7 @@ export async function startCs2(): Promise<void> {
     log.warn('Failed to auto-configure server webhooks on startup', { error });
   });
 
-  // Fetch latest Auto Tournament CS2 version (fire-and-forget, cached for 1 hour)
+  // Fetch latest MatchZy Enhanced version (fire-and-forget, cached for 1 hour)
   initPluginVersionService();
 
   // Start health monitoring for server tracking
@@ -196,7 +196,7 @@ async function bootstrapServerWebhooks(): Promise<void> {
             force: needsRetry,
           });
           log.success(
-            `[STARTUP] ${serverInfo.id}: ${needsInit ? 'Configured' : 'Retry sent'} – waiting for Auto Tournament CS2 events`
+            `[STARTUP] ${serverInfo.id}: ${needsInit ? 'Configured' : 'Retry sent'} – waiting for MatchZy Enhanced events`
           );
         } else {
           // Server is already configured and has sent events - just log status

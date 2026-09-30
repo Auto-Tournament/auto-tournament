@@ -1,10 +1,10 @@
 /**
- * Auto Tournament CS2 event types.
+ * MatchZy Enhanced event types.
  *
- * Auto Tournament CS2 is forked from MatchZy by shobhit-pathak, and its events
+ * MatchZy Enhanced is forked from MatchZy by shobhit-pathak, and its events
  * keep the upstream schema: https://shobhit-pathak.github.io/MatchZy/events.html
  *
- * Note: Auto Tournament CS2 implements a subset of Get5 events compatible with CS2
+ * Note: MatchZy Enhanced implements a subset of Get5 events compatible with CS2
  */
 
 export interface PluginBaseEvent {
@@ -280,7 +280,7 @@ export interface BackupLoadedEvent extends PluginBaseEvent {
   filename?: string;
 }
 
-// Stats Update (Note: This may be limited in Auto Tournament CS2 compared to Get5)
+// Stats Update (Note: This may be limited in MatchZy Enhanced compared to Get5)
 export interface PlayerStatsUpdateEvent extends PluginBaseEvent {
   event: 'player_stats_update';
   player: {
@@ -299,7 +299,7 @@ export interface PlayerStatsUpdateEvent extends PluginBaseEvent {
   };
 }
 
-// Server-level events from Auto Tournament CS2.
+// Server-level events from MatchZy Enhanced.
 //
 // These carry matchid -1 (or none at all) and describe the server rather than a
 // match. They were declared in serverTrackingService and left out of the union
@@ -360,7 +360,7 @@ export interface AdminCalledEvent extends PluginBaseEvent {
 }
 
 /**
- * Connectivity probe. Auto Tournament CS2 sends this to verify the server can reach our
+ * Connectivity probe. MatchZy Enhanced sends this to verify the server can reach our
  * /api/events endpoint; both spellings are in the wild.
  */
 export interface ServerTestEvent {

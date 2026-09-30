@@ -4,9 +4,9 @@ import { setupTournament } from '../helpers/tournamentSetup';
 import { findMatchByTeams } from '../helpers/matches';
 
 /**
- * Auto Tournament CS2 cvar tests
+ * MatchZy Enhanced cvar tests
  *
- * Every generated match config carries the Auto Tournament CS2 cvar block that the
+ * Every generated match config carries the MatchZy Enhanced cvar block that the
  * game servers read. These tests pin down two things:
  *
  *  1. the baseline cvar set and its default values, and
@@ -38,7 +38,7 @@ const DEFAULT_CVARS = {
   at_demo_recording_enabled: 1,
 };
 
-/** Reset the global Auto Tournament CS2 settings back to "unset" (null = use defaults). */
+/** Reset the global MatchZy Enhanced settings back to "unset" (null = use defaults). */
 const CLEARED_SETTINGS = {
   atAutoreadyEnabled: null,
   atBothTeamsUnpauseRequired: null,
@@ -54,7 +54,7 @@ const CLEARED_SETTINGS = {
   atDemoRecordingEnabled: null,
 };
 
-test.describe.serial('Auto Tournament CS2 cvars', () => {
+test.describe.serial('MatchZy Enhanced cvars', () => {
   test.beforeEach(async ({ page, request }) => {
     await setupTestContext(page, request);
     // Start from defaults so one test's overrides cannot leak into the next.
@@ -94,7 +94,7 @@ test.describe.serial('Auto Tournament CS2 cvars', () => {
   );
 
   test(
-    'should apply global Auto Tournament CS2 settings as overrides in generated configs',
+    'should apply global MatchZy Enhanced settings as overrides in generated configs',
     { tag: ['@api', '@cs2-plugin', '@cvars', '@settings'] },
     async ({ request }) => {
       // Deliberately different from every default above.
@@ -139,7 +139,7 @@ test.describe.serial('Auto Tournament CS2 cvars', () => {
   );
 
   test(
-    'should reject invalid Auto Tournament CS2 setting values',
+    'should reject invalid MatchZy Enhanced setting values',
     { tag: ['@api', '@cs2-plugin', '@settings', '@validation'] },
     async ({ request }) => {
       const response = await request.put('/api/settings', {

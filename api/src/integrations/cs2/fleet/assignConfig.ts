@@ -1,5 +1,5 @@
 /**
- * The Auto Tournament CS2 match config (`matchConfig.ts`, what the plugin
+ * The MatchZy Enhanced match config (`matchConfig.ts`, what the plugin
  * downloads) as a Ready Up `match.assign.config` (FLEET.md §7.1, Ready Up's
  * docs/fleet-step3-platform-notes.md §4, schema
  * `protocol/v1/match.defs.json#/$defs/assignConfig`).
@@ -34,7 +34,7 @@ import type {
   PlayerRole,
 } from './protocol/v1';
 
-/** The admin's server defaults that have a `rules` field (Settings → Auto Tournament CS2). */
+/** The admin's server defaults that have a `rules` field (Settings → MatchZy Enhanced). */
 export interface AssignDefaults {
   allowForceReady?: boolean;
   pauseAfterRestore?: boolean;

@@ -106,7 +106,7 @@ export interface MatchContext {
   team2: ParticipantRef | null;
   round: number;
   bracket?: string | null;
-  /** Parsed `matches.config`: an integration-owned blob (for CS2, the Auto Tournament CS2 config). */
+  /** Parsed `matches.config`: an integration-owned blob (for CS2, the MatchZy Enhanced config). */
   integrationConfig: unknown;
   /** The resource the match is assigned to (CS2: `matches.server_id`), when it has one. */
   resourceId?: string | null;
@@ -497,7 +497,7 @@ export interface PlayerStatLine extends ReportedStatLine {
 
 /**
  * What an integration turns its own events into. The core never sees
- * game-specific fields (no Auto Tournament CS2 payloads past the adapter).
+ * game-specific fields (no MatchZy Enhanced payloads past the adapter).
  *
  * `eventId` makes ingest idempotent: the core ignores an event it has already
  * applied for that slug.
@@ -867,7 +867,7 @@ export interface GameIntegration {
   /**
    * The URL the integration's resources reach this platform on. It is the
    * `baseUrl` the core hands to `allocate`, `load` and `restart` (CS2: the
-   * webhook URL from Settings, which Auto Tournament CS2 posts its events to).
+   * webhook URL from Settings, which MatchZy Enhanced posts its events to).
    *
    * Rejects when the integration needs one and it is not configured; that
    * rejection blocks a tournament start. An integration with no resources to
@@ -991,7 +991,7 @@ export interface GameIntegration {
   /** Module routes, mounted at `/api/game/<id>`. */
   routes?: Router;
   /**
-   * Built-in routes that must keep their existing URL (Auto Tournament CS2 and existing
+   * Built-in routes that must keep their existing URL (MatchZy Enhanced and existing
    * API clients are configured with them), mounted at `prefix`, in the order
    * returned. `routes/routeTable.ts` reads them from the registry, so the
    * server and the API reference generator both see them.

@@ -255,7 +255,7 @@ router.post('/match-state', requireAuth, async (req: Request, res: Response): Pr
 });
 
 /**
- * Test-only helper: apply an Auto Tournament CS2 match report as if it arrived from a server.
+ * Test-only helper: apply a MatchZy Enhanced match report as if it arrived from a server.
  *
  * POST /api/test/match-report  { slug, report }
  *

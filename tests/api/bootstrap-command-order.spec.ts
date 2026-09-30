@@ -17,7 +17,7 @@ import {
  *
  * @tag api
  */
-test.describe('Auto Tournament CS2 bootstrap commands', () => {
+test.describe('MatchZy Enhanced bootstrap commands', () => {
   const commands = getPluginBootstrapCommands('http://mat.example:3069', 's_1', 'new-token');
   const indexOf = (prefix: string) => commands.findIndex((cmd) => cmd.startsWith(prefix));
 
@@ -46,13 +46,13 @@ test.describe('Auto Tournament CS2 bootstrap commands', () => {
 });
 
 /**
- * The load command authenticates the config fetch: Auto Tournament CS2 takes a header name
+ * The load command authenticates the config fetch: MatchZy Enhanced takes a header name
  * and value after the URL and adds them to its request. The config endpoint
  * refuses a fetch without it.
  *
  * @tag api
  */
-test.describe('Auto Tournament CS2 load command', () => {
+test.describe('MatchZy Enhanced load command', () => {
   const url = 'http://mat.example:3069/api/matches/r1m1.json?server_id=s_1&match_id=7';
 
   test('passes the server token as a header on the same line', () => {

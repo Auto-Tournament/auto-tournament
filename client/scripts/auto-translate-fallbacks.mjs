@@ -52,7 +52,7 @@ function isProbablyOkToMatchEnglish(s) {
   // Keep aligned with check-english-fallback-strings.mjs
   const exactOk = new Set([
     'ELO',
-    'Auto Tournament CS2',
+    'MatchZy Enhanced',
     'CS2',
     'CS',
     'Steam',
@@ -145,7 +145,7 @@ async function fetchWithTimeout(url, { timeoutMs = 20000 } = {}) {
  * Replace placeholders with stable tokens to protect them from translation.
  * Supports:
  * - i18next vars: {{...}}
- * - Auto Tournament CS2 tokens: {TIME}, {MATCH_ID}, etc
+ * - MatchZy Enhanced tokens: {TIME}, {MATCH_ID}, etc
  * - Keep anything inside [] like [ADMIN], [Auto Tournament]
  * @param {string} s
  */

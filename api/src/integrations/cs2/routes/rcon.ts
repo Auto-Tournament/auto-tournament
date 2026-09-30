@@ -143,7 +143,7 @@ router.post('/test-connection', async (req: Request, res: Response) => {
 });
 
 /**
- * Predefined Auto Tournament CS2 commands - Safe and controlled
+ * Predefined MatchZy Enhanced commands - Safe and controlled
  */
 
 /**
@@ -750,7 +750,7 @@ router.post('/end-match', async (req: Request, res: Response) => {
       : await rconService.sendCommand(serverId, 'css_endmatch');
     const statusCode = result.success ? 200 : 400;
 
-    // Ending the match on the server is only half of it. Auto Tournament CS2 emits no event
+    // Ending the match on the server is only half of it. MatchZy Enhanced emits no event
     // when a match is force-ended, so unless MAT settles its own record here the
     // row stays 'live' and the Matches tab keeps showing LIVE — which is exactly
     // what was reported. Force Cancel already did this; End Match never did.
@@ -783,7 +783,7 @@ router.post('/end-match', async (req: Request, res: Response) => {
  * The admin tools have always called this; it simply did not exist, so every
  * attempt 404'd and the UI reported "failed to add player to match".
  *
- * Auto Tournament CS2 answers over RCON in prose and reports refusals — no match set up,
+ * MatchZy Enhanced answers over RCON in prose and reports refusals — no match set up,
  * halftime, already on a team, bad Steam ID — through the *reply text* while
  * the RCON call itself succeeds. Returning `result.success` alone would tell
  * the admin the player was added when nothing happened, so the reply is
@@ -848,7 +848,7 @@ router.post('/:serverId/add-player', async (req: Request, res: Response) => {
 
     const reply = (result.response || '').trim();
 
-    // Auto Tournament CS2 says "... added to <team> successfully!" on the happy path.
+    // MatchZy Enhanced says "... added to <team> successfully!" on the happy path.
     if (/successfully/i.test(reply)) {
       return res.json({ ...result, success: true, message: reply });
     }

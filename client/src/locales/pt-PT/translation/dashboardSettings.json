@@ -14,7 +14,7 @@
     },
     "signIn": {
       "title": "Sign-in providers",
-      "intro": "Choose how people sign in. Accounts are Steam accounts: someone who signs in with another provider links Steam once, then can use either. Changes apply at once; no restart.",
+      "intro": "Escolhe como as pessoas iniciam sessão. Qualquer um destes pode ser a conta delas; ligam mais na página de ligações. As alterações aplicam-se de imediato, sem reiniciar.",
       "keySource": "Saved secrets are encrypted with {{name}}.",
       "keySourceDefault": "Saved secrets are encrypted with a built-in development key. Set SECRETS_KEY or SESSION_SECRET before you go live.",
       "loadError": "Could not load the sign-in providers",
@@ -62,7 +62,7 @@
       "adminAccess": {
         "title": "Admin access",
         "localLogin": "Allow local admin login",
-        "localLoginHelp": "The small \"Admin login\" link on the sign-in page, for username + password accounts. If you lose access, run reset-admin on the server.",
+        "localLoginHelp": "Início de sessão com nome de utilizador e palavra-passe em /login/admin. Se perderes o acesso, executa reset-admin no servidor.",
         "localLoginLocked": "Stays on until another admin can sign in with a provider that is turned on.",
         "steamIds": "Admin Steam IDs",
         "steamIdsHelp": "Steam64 IDs, separated by commas. Made admin when saved and at every start. Removing one does not take admin away.",

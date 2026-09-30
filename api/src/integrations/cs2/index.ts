@@ -1,14 +1,14 @@
 /**
- * CS2 (Auto Tournament CS2) game integration.
+ * CS2 (MatchZy Enhanced) game integration.
  *
- * Owns the Auto Tournament CS2 match config: `buildMatchConfig` (./matchConfig) builds the
+ * Owns the MatchZy Enhanced match config: `buildMatchConfig` (./matchConfig) builds the
  * `matches.config` blob for tournament and standalone matches, and
  * `describeMatch` is the only reader of it the core uses. It also owns the
  * game servers: RCON, the server fleet and its status, bootstrap, health and
  * CS2 update monitoring, and demos (`services/`, `utils/`, `routes/`), mounted
  * through `legacyRoutes` and started through `start()`. Event ingest is the
- * `events/` adapter: the Auto Tournament CS2 webhooks (`/api/events`), the match report
- * and connection snapshot, and `normalize()`, which maps Auto Tournament CS2 events to
+ * `events/` adapter: the MatchZy Enhanced webhooks (`/api/events`), the match report
+ * and connection snapshot, and `normalize()`, which maps MatchZy Enhanced events to
  * `NormalizedEvent`s. The adapter applies the CS2-only side effects (live
  * score, connections, stale-event guards) and hands the rest to the core's
  * `matchLifecycle.ingest`; the core calls back into `release`,
@@ -381,14 +381,14 @@ export const cs2Integration: GameIntegration = {
     };
   },
 
-  /** Persistent Auto Tournament CS2 webhook config on every enabled server, so allocation's connectivity checks pass. */
+  /** Persistent MatchZy Enhanced webhook config on every enabled server, so allocation's connectivity checks pass. */
   async prepareStart(_scope) {
     const { bootstrapServerWebhooksForTournamentStart } = await import('./tournamentStart');
     await bootstrapServerWebhooksForTournamentStart();
   },
 
   /**
-   * The webhook URL from Settings: where Auto Tournament CS2 on the server posts its
+   * The webhook URL from Settings: where MatchZy Enhanced on the server posts its
    * events, and the base of the match config and demo upload URLs it is
    * given. Rejects when it is not configured, which blocks the start.
    */
@@ -456,7 +456,7 @@ export const cs2Integration: GameIntegration = {
     await serverInitializationService.initializeServer(ctx.resourceId, false);
   },
 
-  /** The Auto Tournament CS2 status convar, read through the short status cache. */
+  /** The MatchZy Enhanced status convar, read through the short status cache. */
   async resourceStatus(resourceId) {
     const { serverStatusService } = await import('./services/serverStatusService');
     const { transportOf } = await import('./driver');
@@ -477,7 +477,7 @@ export const cs2Integration: GameIntegration = {
     };
   },
 
-  /** Auto Tournament CS2's series stats as stat lines, team1's block first (./stats maps the fields). */
+  /** MatchZy Enhanced's series stats as stat lines, team1's block first (./stats maps the fields). */
   async seriesPlayerStats(slug) {
     const { seriesPlayerStats } = await import('./events/matchEvents');
     const bySide = await seriesPlayerStats(slug);
@@ -514,7 +514,7 @@ export const cs2Integration: GameIntegration = {
     return { team1: steamIds(cfg.team1?.players), team2: steamIds(cfg.team2?.players) };
   },
 
-  /** A stored Auto Tournament CS2 event through the same handling as the events route, minus its checks. */
+  /** A stored MatchZy Enhanced event through the same handling as the events route, minus its checks. */
   async replayEvent(event) {
     const { applyMatchEvent } = await import('./events/matchEvents');
     await applyMatchEvent(event as import('./events/plugin-events.types').PluginEvent);
@@ -532,7 +532,7 @@ export const cs2Integration: GameIntegration = {
     return cs2LegacyRoutes;
   },
 
-  /** Server webhook bootstrap, then the Auto Tournament CS2 version fetch and the health monitor. */
+  /** Server webhook bootstrap, then the MatchZy Enhanced version fetch and the health monitor. */
   async start() {
     const { startCs2 } = await import('./startup');
     await startCs2();
@@ -580,7 +580,7 @@ export const cs2Integration: GameIntegration = {
     await refreshConnectionsFromServer(slug, opts);
   },
 
-  /** The Auto Tournament CS2 match report: fetched over RCON from the server, or passed in. */
+  /** The MatchZy Enhanced match report: fetched over RCON from the server, or passed in. */
   async syncMatchState(slug, source) {
     const { fetchMatchReport, applyMatchReport } = await import(
       './events/connectionSnapshotService'

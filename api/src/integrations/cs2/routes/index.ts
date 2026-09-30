@@ -2,7 +2,7 @@
  * The CS2 routers and the URLs they keep.
  *
  * These are the built-in endpoints that lived in `routes/` before the module
- * split. Auto Tournament CS2 servers, the client and existing API users are configured
+ * split. MatchZy Enhanced servers, the client and existing API users are configured
  * with these exact paths, so they are mounted at their old prefixes (through
  * `GameIntegration.legacyRoutes`) rather than under `/api/game/cs2`.
  *
@@ -73,14 +73,14 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
   {
     prefix: '/api/cs2-plugin',
     router: pluginVersionRoutes,
-    title: 'Auto Tournament CS2',
-    description: 'Auto Tournament CS2 plugin version information.',
+    title: 'MatchZy Enhanced',
+    description: 'MatchZy Enhanced version information.',
   },
   {
     prefix: '/api/events',
     router: eventRoutes,
     title: 'Events',
-    description: 'Auto Tournament CS2 webhooks in, and the recorded event log out.',
+    description: 'MatchZy Enhanced webhooks in, and the recorded event log out.',
   },
   {
     prefix: '/api/veto',

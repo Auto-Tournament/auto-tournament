@@ -201,7 +201,7 @@ export default function Servers() {
       setServers(serversWithStatus);
 
       // Check status for all enabled servers (including unconfigured) so we can show
-      // "API can reach server" / "server can reach API" even when Auto Tournament CS2 hasn't sent events yet.
+      // "API can reach server" / "server can reach API" even when MatchZy Enhanced hasn't sent events yet.
       const enabledServersToCheck = serverList.filter((s) => s.enabled);
 
       if (enabledServersToCheck.length === 0) {
@@ -589,7 +589,7 @@ export default function Servers() {
     void loadServers({ useCached: false });
     void loadAllocationStatus();
     
-    // Fetch latest Auto Tournament CS2 version from GitHub
+    // Fetch latest MatchZy Enhanced version from GitHub
     api
       .get<{ success: boolean; version?: string; releaseUrl?: string }>('/api/cs2-plugin/latest-version')
       .then((response) => {
@@ -959,7 +959,7 @@ export default function Servers() {
                     <Typography variant="body2" color="text.secondary">
                       {t('serversPage.fleet.olderVersion', { count: olderPluginCount })}{' '}
                       <ExternalLink
-                        href={latestPluginReleaseUrl ?? 'https://github.com/Auto-Tournament/cs2-plugin/releases'}
+                        href={latestPluginReleaseUrl ?? 'https://github.com/Auto-Tournament/matchzy-enhanced/releases'}
                         sx={{ color: 'inherit', textDecoration: 'underline' }}
                       >
                         {t('serversPage.fleet.downloadLatest')}

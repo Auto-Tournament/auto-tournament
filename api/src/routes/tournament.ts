@@ -1129,7 +1129,7 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
     }
 
     // Get base URL for webhook configuration
-    // Proactively configure Auto Tournament CS2 webhooks for all enabled servers using the
+    // Proactively configure MatchZy Enhanced webhooks for all enabled servers using the
     // latest settings so that allocator connectivity checks (css_te events)
     // succeed without requiring a manual visit to the Servers page.
     try {
@@ -1687,7 +1687,7 @@ router.post('/shuffle', async (req: Request, res: Response) => {
  *
  * Behaviour:
  * - Matches are created with the shuffle tournament's id and round = 0 so they are
- *   treated as "manual" by the Auto Tournament CS2 config endpoint but still counted for
+ *   treated as "manual" by the MatchZy Enhanced config endpoint but still counted for
  *   the shuffle tournament’s stats and server allocation.
  * - Each match gets two temporary team rows with players derived from the
  *   registered player list.
@@ -1858,7 +1858,7 @@ router.post('/:id/manual-matches', async (req: Request, res: Response) => {
       }
 
       // For manual shuffle matches we want players_per_team to reflect the actual
-      // lineup size so Auto Tournament CS2’s ready logic matches reality (3v3, 4v4, etc.).
+      // lineup size so MatchZy Enhanced’s ready logic matches reality (3v3, 4v4, etc.).
       const playersPerTeam = Math.max(team1Players.length, team2Players.length, 1);
 
       const cvars: Record<string, string | number> = {
@@ -1914,7 +1914,7 @@ router.post('/:id/manual-matches', async (req: Request, res: Response) => {
         team2Players.map((p) => p.id)
       );
 
-      // Build Auto Tournament CS2‑style player dictionaries for config.
+      // Build MatchZy Enhanced‑style player dictionaries for config.
       const toMatchPlayers = (teamPlayers: typeof team1Players) =>
         teamPlayers.reduce<Record<string, string>>((acc, p) => {
           acc[p.id] = p.name;
@@ -1929,9 +1929,9 @@ router.post('/:id/manual-matches', async (req: Request, res: Response) => {
 
       const slug = (matchDef.slug || '').trim() || generateSlug(index);
 
-      // TODO: this builds an Auto Tournament CS2 config in core; route it through the CS2
+      // TODO: this builds a MatchZy Enhanced config in core; route it through the CS2
       // integration's standalone buildMatchConfig in a follow-up.
-      // Construct a minimal manual‑match config. The Auto Tournament CS2 config endpoint for
+      // Construct a minimal manual‑match config. The MatchZy Enhanced config endpoint for
       // manual matches will normalize this further (matchid, spectators, etc.).
       const config: MatchConfig = {
         matchid: 0,

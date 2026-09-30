@@ -67,7 +67,7 @@ function getRandomElement<T>(items: T[]): T {
  *  - Randomly bans/picks maps following the tournament's veto order.
  *  - Randomly picks sides when required.
  *  - Emits Socket.IO veto updates so any open UIs stay in sync.
- *  - On completion, recomputes Auto Tournament CS2 config and triggers normal allocation logic.
+ *  - On completion, recomputes MatchZy Enhanced config and triggers normal allocation logic.
  */
 export async function autoCompleteVetoForMatch(
   matchSlug: string,

@@ -85,8 +85,8 @@ body:
   - type: input
     id: plugin-version
     attributes:
-      label: Auto Tournament CS2 plugin version
-      description: What version of the CS2 plugin (Auto Tournament CS2) is on your CS2 servers?
+      label: MatchZy Enhanced version
+      description: What version of the CS2 plugin (MatchZy Enhanced) is on your CS2 servers?
       placeholder: "e.g., v2.0.0"
     validations:
       required: false

@@ -14,10 +14,10 @@ import {
 /**
  * Authentication middleware for admin routes.
  *
- * Admin rights are always determined by the **Steam ID**:
- *  - We look up players.is_admin for the linked Steam ID.
- *  - SSO providers (Discord/GitHub/Google/OpenID Connect) must also be linked to a Steam ID
- *    via the "Link Steam" flow to gain admin access.
+ * Admin rights belong to the **account** (a `players` row), whatever signed
+ * it in: players.is_admin for the account id. The id is a Steam ID for a
+ * Steam account and `acc_…` for one made by another provider; the variables
+ * and the cookie still say "steamId" for historical reasons.
  *
  * We accept **two** ways to prove admin access:
  *  1. **Passport session** (connect.sid) — used when it works (e.g. same-origin, no tunnel).
@@ -124,7 +124,7 @@ export function requestActorId(req: Request): string | null {
  * The outcome of checking a request for admin rights, without answering it.
  *
  * `requireAuth` turns a refusal into its response. Routes that accept an admin
- * *or* another credential (the match config Auto Tournament CS2 downloads, see
+ * *or* another credential (the match config MatchZy Enhanced downloads, see
  * `requireMatchConfigAccess`) call this directly so they can answer a refusal
  * their own way.
  */

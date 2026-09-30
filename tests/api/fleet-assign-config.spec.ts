@@ -12,7 +12,7 @@ import type { MatchConfig } from '../../api/src/types/match.types';
 
 /**
  * The fleet driver's `match.assign.config` (fleet/assignConfig.ts): the
- * Auto Tournament CS2 match config as Ready Up's typed config (FLEET.md §7.1,
+ * MatchZy Enhanced match config as Ready Up's typed config (FLEET.md §7.1,
  * match.defs.json). Pure: no API, no database.
  *
  * @tag api

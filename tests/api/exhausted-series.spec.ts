@@ -87,7 +87,7 @@ async function startBo3(request: APIRequestContext, teams: Team[]) {
   expect(started.ok(), `tournament start failed: ${await started.text()}`).toBe(true);
 }
 
-/** A map_result shaped like Auto Tournament CS2's: nested team scores and a winner object. */
+/** A map_result shaped like MatchZy Enhanced's: nested team scores and a winner object. */
 async function sendMapResult(
   request: APIRequestContext,
   slug: string,

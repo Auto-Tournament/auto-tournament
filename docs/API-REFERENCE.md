@@ -134,9 +134,9 @@ Demo upload from the game server, and download.
 | `GET` | `/api/demos/:matchSlug/status` | admin |
 | `GET` | `/api/demos/:matchSlug/info` | admin |
 
-### Auto Tournament CS2
+### MatchZy Enhanced
 
-Auto Tournament CS2 plugin version information.
+MatchZy Enhanced version information.
 
 | Method | Path | Auth |
 | --- | --- | --- |
@@ -144,7 +144,7 @@ Auto Tournament CS2 plugin version information.
 
 ### Events
 
-Auto Tournament CS2 webhooks in, and the recorded event log out.
+MatchZy Enhanced webhooks in, and the recorded event log out.
 
 | Method | Path | Auth |
 | --- | --- | --- |
