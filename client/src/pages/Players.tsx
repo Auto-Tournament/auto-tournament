@@ -226,7 +226,7 @@ export default function Players() {
 
   const handleImportPlayers = async (
     importedPlayers: Array<{
-      steamId: string;
+      steamId?: string;
       name: string;
       initialELO?: number;
       avatarUrl?: string;
@@ -235,7 +235,8 @@ export default function Players() {
   ) => {
     try {
       const playersToImport = importedPlayers.map((p) => ({
-        id: p.steamId,
+        // No Steam ID: the API gives the player an account id of its own.
+        id: p.steamId || undefined,
         name: p.name,
         elo: p.initialELO,
         avatar: p.avatarUrl,
