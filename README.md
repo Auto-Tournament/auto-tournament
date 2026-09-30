@@ -1,11 +1,5 @@
 <div align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo/at-wordmark-dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="docs/assets/logo/at-wordmark-light.svg">
-    <img src="docs/assets/logo/at-wordmark-light.svg" alt="Auto Tournament" height="56">
-  </picture>
-
-  # Auto Tournament
+  <img src="docs/assets/logo/at-banner.png" alt="Auto Tournament" width="100%">
 
   A web app for running CS2 tournaments. You create the bracket, and Auto Tournament loads
   each match onto your servers, runs the map veto in the browser and records the
