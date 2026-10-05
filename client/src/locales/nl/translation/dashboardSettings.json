@@ -163,7 +163,9 @@
           "windowSave": "Save",
           "reservedTitle": "Servers kept free for matchmaking",
           "reservedDescription": "Tournament matches go first, but leave this many free servers for matchmaking while players are searching. 0 = none.",
-          "reservedLabel": "Servers"
+          "reservedLabel": "Servers",
+          "modesTitle": "Modes",
+          "modesDescription": "What players can search. 1v1 is an aim duel, and lets you test matchmaking with two accounts."
         }
       }
     }

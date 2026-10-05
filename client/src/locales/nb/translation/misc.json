@@ -467,7 +467,8 @@
       "leaderStarts": "Lederen i gruppen starter søket.",
       "cooldown": "Du takket nei til eller gikk glipp av en kamp. Du kan søke igjen om {{minutes}} min.",
       "rating_one": "Rating {{elo}} · {{count}} kamp · {{wins}} vunnet",
-      "rating_other": "Rating {{elo}} · {{count}} kamper · {{wins}} vunnet"
+      "rating_other": "Rating {{elo}} · {{count}} kamper · {{wins}} vunnet",
+      "mode": "Modus"
     },
     "queue": {
       "searching": "Søker {{mode}}",

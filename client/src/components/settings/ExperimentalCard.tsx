@@ -6,6 +6,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
 import { useTranslation } from 'react-i18next';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -42,12 +43,21 @@ export function ExperimentalCard() {
   // The search window as typed (strings, so a field can be emptied while typing).
   const [win, setWin] = useState<Record<keyof SearchWindow, string> | null>(null);
   const [reserved, setReserved] = useState('0');
+  const [mmModes, setMmModes] = useState<string[]>([]);
+  const [allModes, setAllModes] = useState<string[]>([]);
   const mmEnabled = features?.find((f) => f.id === 'matchmaking')?.enabled ?? false;
 
   useEffect(() => {
     if (!mmEnabled) return;
     api
-      .get<{ openToPlayers?: boolean; leaderboardPublic?: boolean; searchWindow?: SearchWindow; reservedServers?: number }>(
+      .get<{
+        openToPlayers?: boolean;
+        leaderboardPublic?: boolean;
+        searchWindow?: SearchWindow;
+        reservedServers?: number;
+        modes?: string[];
+        allModes?: string[];
+      }>(
         '/api/matchmaking/status'
       )
       .then((res) => {
@@ -55,6 +65,8 @@ export function ExperimentalCard() {
         setMmBoard(res.leaderboardPublic === true);
         if (res.searchWindow) setWin(windowStrings(res.searchWindow));
         setReserved(String(res.reservedServers ?? 0));
+        setMmModes(res.modes ?? []);
+        setAllModes(res.allModes ?? []);
       })
       .catch(() => setMmOpen(null));
   }, [mmEnabled]);
@@ -64,6 +76,7 @@ export function ExperimentalCard() {
     leaderboardPublic?: boolean;
     searchWindow?: SearchWindow;
     reservedServers?: number;
+    modes?: string[];
   }) => {
     setSaving('matchmaking-open');
     try {
@@ -72,6 +85,7 @@ export function ExperimentalCard() {
         leaderboardPublic: boolean;
         searchWindow: SearchWindow;
         reservedServers: number;
+        modes: string[];
       }>(
         '/api/matchmaking/admin/settings',
         patch
@@ -80,6 +94,7 @@ export function ExperimentalCard() {
       setMmBoard(res.leaderboardPublic);
       setWin(windowStrings(res.searchWindow));
       setReserved(String(res.reservedServers));
+      setMmModes(res.modes);
       showSuccess(t('settingsPage.experimental.saved'));
     } catch (err) {
       showError(apiErrorMessage(err, t('settingsPage.experimental.saveFailed')));
@@ -214,6 +229,33 @@ export function ExperimentalCard() {
                       >
                         {t('settingsPage.experimental.features.matchmaking.windowSave')}
                       </Button>
+                    </Stack>
+                    <Typography variant="subtitle2" mt={2}>
+                      {t('settingsPage.experimental.features.matchmaking.modesTitle')}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      {t('settingsPage.experimental.features.matchmaking.modesDescription')}
+                    </Typography>
+                    <Stack direction="row" spacing={2}>
+                      {allModes.map((m) => (
+                        <FormControlLabel
+                          key={m}
+                          label={m}
+                          control={
+                            <Checkbox
+                              size="small"
+                              checked={mmModes.includes(m)}
+                              disabled={saving === 'matchmaking-open' || (mmModes.length === 1 && mmModes.includes(m))}
+                              onChange={(e) =>
+                                void saveMm({
+                                  modes: e.target.checked ? [...mmModes, m] : mmModes.filter((x) => x !== m),
+                                })
+                              }
+                              inputProps={{ 'data-testid': `settings-mm-mode-${m}` } as React.InputHTMLAttributes<HTMLInputElement>}
+                            />
+                          }
+                        />
+                      ))}
                     </Stack>
                     <Typography variant="subtitle2" mt={2}>
                       {t('settingsPage.experimental.features.matchmaking.reservedTitle')}

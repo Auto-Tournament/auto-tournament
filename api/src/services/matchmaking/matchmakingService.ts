@@ -33,6 +33,7 @@ import {
   inviteCode,
   isMode,
   MODES,
+  parseEnabledModes,
   OFFENCE_WINDOW_SECONDS,
   partyRating,
   parseReservedServers,
@@ -102,14 +103,19 @@ export interface MatchmakingMe {
     team: number;
   } | null;
   cooldownUntil: number | null;
-  /** The caller's 5v5 matchmaking rating, once they have played (display Elo). */
+  /** The caller's matchmaking rating in their party's mode (5v5 by default), once they have played (display Elo). */
   rating: { elo: number; games: number; wins: number } | null;
+  /** The modes players can search on this site. */
+  modes: string[];
 }
 
 const LOOP_MS = 2000;
 
 /** Setting: the admin's search window (JSON, `rules.parseSearchWindow`). */
 export const MM_SEARCH_WINDOW = 'mm_search_window';
+
+/** Setting: the modes players can search (JSON array, `rules.parseEnabledModes`). */
+export const MM_MODES = 'mm_modes';
 
 /** Setting: servers tournament matches leave free while matchmaking has players waiting. */
 export const MM_RESERVED_SERVERS = 'mm_reserved_servers';
@@ -274,6 +280,9 @@ export class MatchmakingService {
   startSearch(playerId: string, mode: unknown = '5v5'): Promise<EntryRow> {
     return this.locked(async () => {
       if (!isMode(mode)) throw new MatchmakingError(400, 'invalid_mode', 'Unknown mode');
+      if (!(await this.enabledModes()).includes(mode)) {
+        throw new MatchmakingError(409, 'mode_off', `${mode} is not available on this site`);
+      }
       const party = (await this.partyOf(playerId)) ?? (await this.newParty(playerId, mode));
       if (party.leader_player_id !== playerId) {
         throw new MatchmakingError(403, 'not_leader', 'Only the party leader can start the search');
@@ -322,6 +331,11 @@ export class MatchmakingService {
       await db.runAsync('DELETE FROM mm_queue_entries WHERE party_id = ?', [party.id]);
       await this.touchParty(party.id);
     });
+  }
+
+  /** The modes players can search now. */
+  async enabledModes(): Promise<MatchmakingMode[]> {
+    return parseEnabledModes(await db.getAppSettingAsync(MM_MODES));
   }
 
   // --- the loop --------------------------------------------------------
@@ -785,7 +799,8 @@ export class MatchmakingService {
       queue: entry ? { mode: entry.mode, queuedAt: Number(entry.queued_at), status: entry.status } : null,
       lobby,
       cooldownUntil: await this.cooldownUntil(playerId),
-      rating: await this.ratingSummary(playerId, '5v5'),
+      rating: await this.ratingSummary(playerId, entry?.mode ?? party?.mode ?? '5v5'),
+      modes: await this.enabledModes(),
     };
   }
 

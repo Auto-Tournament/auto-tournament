@@ -13,7 +13,7 @@ import { resolveViewerIdentity } from '../utils/viewerIdentity';
 import { isSameSiteRequest } from '../utils/accountConnections';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
-import { matchmakingService, MatchmakingError, MM_RESERVED_SERVERS, MM_SEARCH_WINDOW } from '../services/matchmaking/matchmakingService';
+import { matchmakingService, MatchmakingError, MM_MODES, MM_RESERVED_SERVERS, MM_SEARCH_WINDOW } from '../services/matchmaking/matchmakingService';
 import { MODES, parseReservedServers, parseSearchWindow, validateSearchWindow } from '../services/matchmaking/rules';
 import { progressionService, ProgressionError } from '../services/matchmaking/progressionService';
 
@@ -113,7 +113,8 @@ router.get(
     return res.json({
       success: true,
       enabled: true,
-      modes: MODES,
+      modes: await matchmakingService.enabledModes(),
+      allModes: MODES,
       openToPlayers: open,
       leaderboardPublic: board,
       searchWindow: searchWindowView(await db.getAppSettingAsync(MM_SEARCH_WINDOW)),
@@ -578,6 +579,13 @@ router.put(
   handle('save the settings', async (req, res) => {
     const open = req.body?.openToPlayers;
     const board = req.body?.leaderboardPublic;
+    const modesInput = req.body?.modes;
+    if (
+      modesInput !== undefined &&
+      !(Array.isArray(modesInput) && modesInput.length > 0 && modesInput.every((m) => MODES.includes(m)))
+    ) {
+      return res.status(400).json({ success: false, error: `modes must be a non-empty list of ${MODES.join(', ')}` });
+    }
     const reservedInput = req.body?.reservedServers;
     if (reservedInput !== undefined && !(Number.isInteger(reservedInput) && reservedInput >= 0 && reservedInput <= 50)) {
       return res.status(400).json({ success: false, error: 'reservedServers must be a whole number from 0 to 50' });
@@ -596,7 +604,8 @@ router.put(
     if (board !== undefined && typeof board !== 'boolean') {
       return res.status(400).json({ success: false, error: 'leaderboardPublic must be a boolean' });
     }
-    if (open === undefined && board === undefined && window === undefined && reservedInput === undefined) {
+    if (modesInput !== undefined) await db.setAppSettingAsync(MM_MODES, JSON.stringify([...new Set(modesInput)]));
+    if (open === undefined && board === undefined && window === undefined && reservedInput === undefined && modesInput === undefined) {
       return res.status(400).json({
         success: false,
         error: 'Send openToPlayers, leaderboardPublic, searchWindow and/or reservedServers',
@@ -613,6 +622,7 @@ router.put(
       leaderboardPublic: (await db.getAppSettingAsync(MM_LEADERBOARD_PUBLIC)) === '1',
       searchWindow: searchWindowView(await db.getAppSettingAsync(MM_SEARCH_WINDOW)),
       reservedServers: parseReservedServers(await db.getAppSettingAsync(MM_RESERVED_SERVERS)),
+      modes: await matchmakingService.enabledModes(),
     });
   })
 );

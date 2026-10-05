@@ -263,7 +263,9 @@
           "windowSave": "Lagre",
           "reservedTitle": "Servere holdt ledige for matchmaking",
           "reservedDescription": "Turneringskamper går først, men lar så mange ledige servere stå til matchmaking mens spillere søker. 0 = ingen.",
-          "reservedLabel": "Servere"
+          "reservedLabel": "Servere",
+          "modesTitle": "Moduser",
+          "modesDescription": "Hva spillere kan søke etter. 1v1 er en siktduell, og lar deg teste matchmaking med to kontoer."
         }
       }
     }
