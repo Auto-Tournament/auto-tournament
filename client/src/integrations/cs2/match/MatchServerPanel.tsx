@@ -18,7 +18,7 @@ import { getMapData, getMapDisplayName } from '../maps/mapData';
 import { copyTextToClipboard } from './clipboard';
 
 const MAP_IMAGE_BASE =
-  'https://raw.githubusercontent.com/Auto-Tournament/cs2-server-manager/master/map_thumbnails';
+  'https://cdn.jsdelivr.net/gh/Auto-Tournament/cs2-server-manager@master/map_thumbnails';
 
 /** The map's name and pictures, from the built-in list or built from its slug. */
 function mapDataFor(slug: string | null): CS2MapData | null {
