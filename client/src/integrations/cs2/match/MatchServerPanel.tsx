@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Button, Typography, Alert } from '@mui/material';
+import { motion, useReducedMotion } from 'motion/react';
 import { CopyIcon, GameControllerIcon } from '@phosphor-icons/react';
-import { FadeInImage } from '../common/FadeInImage';
 import {
   api,
   onSocketReconnect,
   tokens,
   mono,
-  withAlpha,
   useModuleTranslation,
   useSnackbar,
   useSocket,
@@ -156,10 +155,11 @@ export function MatchServerPanel({ matchSlug, viewerCanJoin, matchStatus }: Matc
   const [copied, setCopied] = useState(false);
   const [connected, setConnected] = useState(false);
   const [copyFallbackCommand, setCopyFallbackCommand] = useState<string | null>(null);
+  const reduceMotion = useReducedMotion();
 
   const server = connect ? effectiveServer(connect) : null;
   const currentMapData = useMemo(() => mapDataFor(connect?.currentMap ?? null), [connect?.currentMap]);
-  const currentMapNumber = connect?.mapNumber ?? null;
+
 
   const onConnect = () => {
     if (!server) return;
@@ -221,53 +221,6 @@ export function MatchServerPanel({ matchSlug, viewerCanJoin, matchStatus }: Matc
 
   return (
     <Box display="flex" flexDirection="column" gap={2}>
-      {currentMapData && (
-        <FadeInImage
-          src={currentMapData.image}
-          alt={currentMapData.displayName}
-          height={180}
-          sx={{
-            borderRadius: radii.md,
-          }}
-        >
-          <Box
-            sx={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: `linear-gradient(to bottom, ${withAlpha(tokens.color.paper, 0.3)}, ${withAlpha(tokens.color.paper, 0.7)})`,
-            }}
-          >
-            <Typography
-              variant="h3"
-              sx={{
-                fontWeight: 700,
-                color: 'text.primary',
-                textShadow: `0 2px 12px ${tokens.color.shadow}`,
-              }}
-            >
-              {currentMapData.displayName}
-            </Typography>
-            {typeof currentMapNumber === 'number' && (
-              <Typography
-                variant="caption"
-                sx={{
-                  mt: 0.5,
-                  color: 'text.secondary',
-                  fontSize: '0.7rem',
-                  ...mono,
-                  textShadow: `0 1px 6px ${tokens.color.shadow}`,
-                }}
-              >
-                {t('matchInfo.mapN', { n: currentMapNumber + 1 })}
-              </Typography>
-            )}
-          </Box>
-        </FadeInImage>
-      )}
 
       <Box display="flex" flexDirection="column" gap={2}>
         {server.moved && (
@@ -289,44 +242,54 @@ export function MatchServerPanel({ matchSlug, viewerCanJoin, matchStatus }: Matc
             </Typography>
           </Alert>
         )}
-        {/* Server info */}
-        <Box>
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            {t('matchInfo.server.serverName', { name: server.name })}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" fontFamily="monospace">
-            {server.host}:{server.port}
-          </Typography>
-          {server.status && (
-            <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-              {t('matchInfo.server.status', { status: statusLabel })}
-            </Typography>
-          )}
+        {/* Connect first (design draft "Match A"): one big Join, the console line beside Copy. */}
+        <Box
+          component={motion.div}
+          whileHover={reduceMotion ? undefined : { scale: 1.015 }}
+          whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+          transition={{ type: 'spring', stiffness: 600, damping: 30 }}
+        >
+          <Button
+            variant="contained"
+            size="large"
+            fullWidth
+            color={connected ? 'success' : 'primary'}
+            startIcon={<GameControllerIcon size={26} />}
+            onClick={onConnect}
+            disabled={!server.host || !server.port} // Disable if server details missing
+            data-testid="match-join-button"
+            sx={{ minHeight: 64, borderRadius: radii.pill, fontSize: '1.15rem', fontWeight: 600 }}
+          >
+            {connected ? t('matchInfo.server.connecting') : t('matchInfo.server.connect')}
+          </Button>
         </Box>
 
-        <Button
-          variant="contained"
-          size="large"
-          fullWidth
-          color={connected ? 'success' : 'primary'}
-          startIcon={<GameControllerIcon size={24} />}
-          onClick={onConnect}
-          disabled={!server.host || !server.port} // Disable if server details missing
-          sx={{ py: 1.5 }}
-        >
-          {connected ? t('matchInfo.server.connecting') : t('matchInfo.server.connect')}
-        </Button>
+        <Box display="flex" gap={1} alignItems="center" justifyContent="center" flexWrap="wrap">
+          <Typography
+            variant="body2"
+            sx={{ ...mono, color: 'text.secondary', px: 1.5, py: 1, borderRadius: radii.md, bgcolor: tokens.color.paper3 }}
+          >
+            connect {server.host}:{server.port}
+            {server.password ? `; password ${server.password}` : ''}
+          </Typography>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={copied ? null : <CopyIcon size={20} />}
+            onClick={onCopy}
+            disabled={!server.host || !server.port} // Disable if server details missing
+            sx={{ borderRadius: radii.pill }}
+          >
+            {copied ? t('matchInfo.server.copied') : t('matchInfo.server.copyCommand')}
+          </Button>
+        </Box>
 
-        <Button
-          variant="outlined"
-          size="small"
-          fullWidth
-          startIcon={copied ? null : <CopyIcon size={24} />}
-          onClick={onCopy}
-          disabled={!server.host || !server.port} // Disable if server details missing
-        >
-          {copied ? t('matchInfo.server.copied') : t('matchInfo.server.copyCommand')}
-        </Button>
+        <Typography variant="caption" color="text.secondary" textAlign="center">
+          {server.name}
+          {currentMapData ? ` · ${currentMapData.displayName}` : ''}
+          {server.status ? ` · ${statusLabel}` : ''}
+          {server.password ? '' : ` · ${t('matchInfo.server.noPassword', { defaultValue: "No password: you're on the list." })}`}
+        </Typography>
 
         {copyFallbackCommand && (
           <Typography variant="caption" color="text.secondary" sx={{ mt: 1, fontFamily: 'monospace' }}>

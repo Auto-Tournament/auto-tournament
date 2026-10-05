@@ -404,6 +404,16 @@ export function MatchInfoCard({
               </Typography>
             )}
 
+            {/* Connect first (design draft "Match A"): join, then where the series stands, then the numbers. */}
+            {/* How to join: the module reads the server and the map by slug. */}
+            {ConnectPanel && (
+              <ConnectPanel
+                matchSlug={match.slug}
+                viewerCanJoin={viewerIsTeamMember}
+                matchStatus={match.status}
+              />
+            )}
+
             {match.status !== 'live' && (
               <Alert
                 severity={playersReady ? 'success' : 'info'}
@@ -418,14 +428,7 @@ export function MatchInfoCard({
               </Alert>
             )}
 
-            {/* How to join: the module reads the server and the map by slug. */}
-            {ConnectPanel && (
-              <ConnectPanel
-                matchSlug={match.slug}
-                viewerCanJoin={viewerIsTeamMember}
-                matchStatus={match.status}
-              />
-            )}
+            <MatchMapChips match={match} currentMapNumber={mapNumber} />
 
             {hasPlayerStats && playerStats && (
               <MatchPlayerPerformance
@@ -436,8 +439,6 @@ export function MatchInfoCard({
                 highlightPlayerId={highlightPlayerId}
               />
             )}
-
-            <MatchMapChips match={match} currentMapNumber={mapNumber} />
 
             {/* The module reads its own record, and shows nothing without one. */}
             {PreMatchHistory && <PreMatchHistory matchSlug={match.slug} />}
