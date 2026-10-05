@@ -6193,6 +6193,28 @@
         ]
       }
     },
+    "/api/matchmaking/admin/queue": {
+      "get": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "The live queue (experimental)",
+        "description": "Admin. Parties searching (and how long), open lobbies, and penalties from the last 24 hours.",
+        "responses": {
+          "200": {
+            "description": "The queue"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/matchmaking/admin/settings": {
       "put": {
         "tags": [

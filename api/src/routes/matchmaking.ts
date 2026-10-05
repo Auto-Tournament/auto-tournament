@@ -581,6 +581,25 @@ router.put(
 
 /**
  * @openapi
+ * /api/matchmaking/admin/queue:
+ *   get:
+ *     tags: [Matchmaking]
+ *     summary: The live queue (experimental)
+ *     description: Admin. Parties searching (and how long), open lobbies, and penalties from the last 24 hours.
+ *     responses:
+ *       200:
+ *         description: The queue
+ */
+router.get(
+  '/admin/queue',
+  requireAuth,
+  handle('read the queue', async (_req, res) => {
+    return res.json({ success: true, ...(await matchmakingService.adminQueue()) });
+  })
+);
+
+/**
+ * @openapi
  * /api/matchmaking/admin/players/{id}/cooldown:
  *   delete:
  *     tags: [Matchmaking]

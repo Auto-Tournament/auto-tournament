@@ -572,6 +572,21 @@
       "level": "Nivå",
       "games": "Kamper",
       "winRate": "Vunnet"
+    },
+    "admin": {
+      "title": "Kø (administratorer)",
+      "summary": "{{players}} søker, {{lobbies}} åpne kamper",
+      "waited": "{{minutes}} min",
+      "cooldowns": "Karantener",
+      "until": "{{minutes}} min igjen",
+      "clear": "Fjern",
+      "cleared": "Karantenen er fjernet",
+      "clearFailed": "Kunne ikke fjerne karantenen",
+      "kind": {
+        "decline": "takket nei",
+        "no_show": "gikk glipp av en kamp",
+        "abandon": "forlot en kamp"
+      }
     }
   }
 }
