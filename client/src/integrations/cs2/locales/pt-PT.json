@@ -336,6 +336,12 @@
     "counterTerrorist": "Counter-Terrorista",
     "terrorist": "Terrorista",
     "vetoHistory": "Histórico do veto",
+    "pickSummary": {
+      "map": "Map {{number}}",
+      "pickedBy": "picked by {{team}}",
+      "decider": "decider",
+      "starts": "{{team}} starts {{side}}"
+    },
     "historyStep": "Passo {{step}}:",
     "startingSide": "Início {{side}}",
     "otherTeam": "a outra equipa",
