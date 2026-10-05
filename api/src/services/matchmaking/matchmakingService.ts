@@ -22,6 +22,7 @@ import { rating as osRating, rate as osRate } from 'openskill';
 import { DEFAULT_SIGMA, openSkillToDisplayElo } from '../../utils/ratingMath';
 import { progressionService } from './progressionService';
 import { playerConnectionService } from '../playerConnectionService';
+import { emitMatchmakingChanged } from '../socketService';
 import {
   ABANDON_WINDOW_SECONDS,
   abandonCooldownSeconds,
@@ -124,9 +125,26 @@ export class MatchmakingService {
 
   constructor(private readonly clock: () => number = () => Math.floor(Date.now() / 1000)) {}
 
+  /** Players whose state the running change touched; told (`mm:changed`) when it ends. */
+  private touched = new Set<string>();
+
+  private touch(...playerIds: string[]): void {
+    for (const id of playerIds) this.touched.add(id);
+  }
+
   /** Run `fn` after every change before it: the loop and the API never interleave. */
   private locked<T>(fn: () => Promise<T>): Promise<T> {
-    const run = this.chain.then(fn, fn);
+    const wrapped = async () => {
+      try {
+        return await fn();
+      } finally {
+        if (this.touched.size > 0) {
+          emitMatchmakingChanged(this.touched);
+          this.touched = new Set();
+        }
+      }
+    };
+    const run = this.chain.then(wrapped, wrapped);
     this.chain = run.catch(() => undefined);
     return run;
   }
@@ -148,6 +166,11 @@ export class MatchmakingService {
       [partyId]
     );
     return rows.map((r) => r.player_id);
+  }
+
+  /** Mark everyone in a party as changed. */
+  private async touchParty(partyId: string): Promise<void> {
+    this.touch(...(await this.members(partyId)));
   }
 
   private async entryOf(partyId: string): Promise<EntryRow | undefined> {
@@ -201,6 +224,7 @@ export class MatchmakingService {
         playerId,
         this.clock(),
       ]);
+      await this.touchParty(party.id);
       return party;
     });
   }
@@ -218,6 +242,7 @@ export class MatchmakingService {
     if (entry?.status === 'found') {
       throw new MatchmakingError(409, 'in_lobby', 'Answer the match first (accept or decline)');
     }
+    await this.touchParty(party.id);
     if (party.leader_player_id === playerId) {
       await db.runAsync('DELETE FROM mm_parties WHERE id = ?', [party.id]);
     } else {
@@ -270,6 +295,7 @@ export class MatchmakingService {
         'INSERT INTO mm_queue_entries (id, party_id, mode, queued_at, status) VALUES (?, ?, ?, ?, ?)',
         [entry.id, party.id, mode, entry.queued_at, 'searching']
       );
+      await this.touchParty(party.id);
       return entry;
     });
   }
@@ -286,6 +312,7 @@ export class MatchmakingService {
         throw new MatchmakingError(409, 'in_lobby', 'Answer the match first (accept or decline)');
       }
       await db.runAsync('DELETE FROM mm_queue_entries WHERE party_id = ?', [party.id]);
+      await this.touchParty(party.id);
     });
   }
 
@@ -364,6 +391,7 @@ export class MatchmakingService {
         ]);
       }
     }
+    this.touch(...group.flatMap((p) => p.players));
     log.info(`[MATCHMAKING] lobby ${lobbyId} (${mode}): ${group.length} parties, waiting for accepts`);
     return lobbyId;
   }
@@ -391,6 +419,7 @@ export class MatchmakingService {
         'UPDATE mm_lobby_players SET accepted_at = ? WHERE lobby_id = ? AND player_id = ? AND accepted_at IS NULL',
         [this.clock(), lobbyId, playerId]
       );
+      this.touch(...players.map((p) => p.player_id));
       const others = players.filter((p) => p.player_id !== playerId);
       if (others.every((p) => p.accepted_at !== null)) {
         log.info(`[MATCHMAKING] lobby ${lobbyId}: everyone accepted`);
@@ -545,6 +574,7 @@ export class MatchmakingService {
   }
 
   private async penalizeAbandon(playerId: string, lobbyId: string): Promise<void> {
+    this.touch(playerId);
     const now = this.clock();
     const row = await db.queryOneAsync<{ n: number | string }>(
       "SELECT COUNT(*) AS n FROM mm_penalties WHERE player_id = ? AND kind = 'abandon' AND created_at > ? AND cleared_by IS NULL",
@@ -646,6 +676,7 @@ export class MatchmakingService {
       await write(team1, after1, winner === 'team1');
       await write(team2, after2, winner === 'team2');
       await db.runAsync("UPDATE mm_lobbies SET status = 'finished' WHERE id = ?", [lobby.id]);
+      this.touch(...players.map((p) => p.player_id));
       await progressionService.awardMatchXp(matchSlug, winner, abandoned);
       log.info(`[MATCHMAKING] ${matchSlug} rated (${winner === 'none' ? 'draw' : `${winner} won`})`);
       return true;
@@ -669,12 +700,15 @@ export class MatchmakingService {
   }
 
   private async cancel(lobbyId: string, reason: string): Promise<void> {
+    const affected = await db.queryAsync<{ player_id: string }>('SELECT player_id FROM mm_lobby_players WHERE lobby_id = ?', [lobbyId]);
+    this.touch(...affected.map((p) => p.player_id));
     await db.runAsync("UPDATE mm_lobbies SET status = 'cancelled', cancel_reason = ? WHERE id = ?", [reason, lobbyId]);
     await db.runAsync("UPDATE mm_queue_entries SET status = 'searching', lobby_id = NULL WHERE lobby_id = ?", [lobbyId]);
     log.info(`[MATCHMAKING] lobby ${lobbyId} cancelled (${reason})`);
   }
 
   private async penalize(playerId: string, kind: 'decline' | 'no_show', lobbyId: string): Promise<void> {
+    this.touch(playerId);
     const now = this.clock();
     const row = await db.queryOneAsync<{ n: number | string }>(
       'SELECT COUNT(*) AS n FROM mm_penalties WHERE player_id = ? AND created_at > ? AND cleared_by IS NULL',
@@ -690,6 +724,7 @@ export class MatchmakingService {
   /** Admin: lift a player's cooldowns. */
   clearCooldown(playerId: string, admin: string): Promise<number> {
     return this.locked(async () => {
+      this.touch(playerId);
       const res = await db.runAsync(
         'UPDATE mm_penalties SET cleared_by = ? WHERE player_id = ? AND cleared_by IS NULL',
         [admin, playerId]
