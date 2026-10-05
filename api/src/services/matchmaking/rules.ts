@@ -42,6 +42,70 @@ export interface QueuedParty {
   players: string[];
   /** Epoch seconds; kept when a party is put back at the front. */
   queuedAt: number;
+  /** Each player's matchmaking mu, same order as `players` (phase 2). Omitted: no ratings. */
+  mus?: number[];
+  /** The party's rating for matching (`partyRating`). */
+  rating?: number;
+  /** How far from `rating` this party accepts others, in mu (`searchWindow`). */
+  window?: number;
+}
+
+// --- ratings (phase 2) -------------------------------------------------
+//
+// Matching uses OpenSkill mu (the design's "for finding fair games, it uses
+// mu"). One display Elo point is 1/200 mu (utils/ratingMath ELO_SCALE).
+
+/** Display Elo to mu. */
+export const ELO_PER_MU = 200;
+
+export interface SearchWindowSettings {
+  /** Display Elo at the start of the search. */
+  start: number;
+  /** Display Elo added every `everySeconds`. */
+  step: number;
+  everySeconds: number;
+  /** Display Elo cap while waiting less than `uncappedAfterSeconds`. */
+  cap: number;
+  /** After this long in the queue, any rating is accepted. */
+  uncappedAfterSeconds: number;
+}
+
+export const DEFAULT_SEARCH_WINDOW: SearchWindowSettings = {
+  start: 100,
+  step: 50,
+  everySeconds: 30,
+  cap: 400,
+  uncappedAfterSeconds: 5 * 60,
+};
+
+/** The search window in mu after `waitedSeconds` in the queue (Infinity = any rating). */
+export function searchWindow(waitedSeconds: number, s: SearchWindowSettings = DEFAULT_SEARCH_WINDOW): number {
+  const waited = Math.max(0, waitedSeconds);
+  if (waited >= s.uncappedAfterSeconds) return Number.POSITIVE_INFINITY;
+  const elo = Math.min(s.cap, s.start + Math.floor(waited / s.everySeconds) * s.step);
+  return elo / ELO_PER_MU;
+}
+
+/** Display Elo a party pays per extra member (decided 2026-09-29: "a small premium"). */
+export const PARTY_PREMIUM_ELO = 20;
+
+/**
+ * A party's rating: leans towards its best player so a strong player can't
+ * carry a weak friend into low games (`0.7 × average + 0.3 × max`), plus a
+ * small premium per extra member for playing together.
+ */
+export function partyRating(mus: number[]): number {
+  if (mus.length === 0) return 0;
+  const avg = mus.reduce((a, b) => a + b, 0) / mus.length;
+  const max = Math.max(...mus);
+  return 0.7 * avg + 0.3 * max + ((mus.length - 1) * PARTY_PREMIUM_ELO) / ELO_PER_MU;
+}
+
+/** Two parties may meet when each is inside the other's window. */
+function compatible(a: QueuedParty, b: QueuedParty): boolean {
+  if (a.rating === undefined || b.rating === undefined) return true;
+  const gap = Math.abs(a.rating - b.rating);
+  return gap <= (a.window ?? Number.POSITIVE_INFINITY) && gap <= (b.window ?? Number.POSITIVE_INFINITY);
 }
 
 /**
@@ -57,7 +121,7 @@ export function findGroup(queue: QueuedParty[], teamSize: number): QueuedParty[]
     .sort((a, b) => a.queuedAt - b.queuedAt || a.entryId.localeCompare(b.entryId));
 
   for (let anchor = 0; anchor < ordered.length; anchor++) {
-    const picked = pickExact(ordered.slice(anchor + 1), need - ordered[anchor].players.length);
+    const picked = pickExact(ordered.slice(anchor + 1), need - ordered[anchor].players.length, [ordered[anchor]]);
     if (picked) {
       const group = [ordered[anchor], ...picked];
       if (splitTeams(group, teamSize)) return group;
@@ -66,23 +130,28 @@ export function findGroup(queue: QueuedParty[], teamSize: number): QueuedParty[]
   return null;
 }
 
-/** Oldest-first subset of `candidates` with exactly `need` players (backtracking; queues are small). */
-function pickExact(candidates: QueuedParty[], need: number): QueuedParty[] | null {
+/**
+ * Oldest-first subset of `candidates` with exactly `need` players, each
+ * compatible with every party already `chosen` (backtracking; queues are small).
+ */
+function pickExact(candidates: QueuedParty[], need: number, chosen: QueuedParty[]): QueuedParty[] | null {
   if (need === 0) return [];
   for (let i = 0; i < candidates.length; i++) {
     const size = candidates[i].players.length;
-    if (size > need) continue;
-    const rest = pickExact(candidates.slice(i + 1), need - size);
+    if (size > need || !chosen.every((c) => compatible(c, candidates[i]))) continue;
+    const rest = pickExact(candidates.slice(i + 1), need - size, [...chosen, candidates[i]]);
     if (rest) return [candidates[i], ...rest];
   }
   return null;
 }
 
 /**
- * Split a group into two teams of `teamSize`, parties kept whole. Phase 1 has
- * no ratings: the split is random among the valid ones (`random` is
- * injectable for tests). Returns null when parties can't be split evenly
- * (for example a 4-stack and a 3-stack in 5v5 with only three solos).
+ * Split a group into two teams of `teamSize`, parties kept whole. With
+ * ratings (`mus` on every party) it is the fairest split: the smallest gap in
+ * total mu, then in the strongest player per team, ties broken at random.
+ * Without, random among the valid ones (`random` is injectable for tests).
+ * Returns null when parties can't be split evenly (for example a 4-stack and
+ * a 3-stack in 5v5 with only three solos).
  */
 export function splitTeams(
   group: QueuedParty[],
@@ -103,7 +172,24 @@ export function splitTeams(
   }
   if (splits.length === 0) return null;
 
-  const mask = splits[Math.min(splits.length - 1, Math.floor(random() * splits.length))];
+  let candidates = splits;
+  if (group.every((p) => p.mus && p.mus.length === p.players.length)) {
+    const score = (mask: number): [number, number] => {
+      const side = (inTeam1: boolean) => group.filter((_, i) => !!(mask & (1 << i)) === inTeam1).flatMap((p) => p.mus!);
+      const a = side(true);
+      const b = side(false);
+      const sum = (xs: number[]) => xs.reduce((x, y) => x + y, 0);
+      return [Math.abs(sum(a) - sum(b)), Math.abs(Math.max(...a) - Math.max(...b))];
+    };
+    const scored = splits.map((mask) => ({ mask, s: score(mask) }));
+    const EPS = 1e-9;
+    const bestTotal = Math.min(...scored.map((x) => x.s[0]));
+    const byTotal = scored.filter((x) => x.s[0] <= bestTotal + EPS);
+    const bestTop = Math.min(...byTotal.map((x) => x.s[1]));
+    candidates = byTotal.filter((x) => x.s[1] <= bestTop + EPS).map((x) => x.mask);
+  }
+
+  const mask = candidates[Math.min(candidates.length - 1, Math.floor(random() * candidates.length))];
   const team1 = group.filter((_, i) => mask & (1 << i));
   const team2 = group.filter((_, i) => !(mask & (1 << i)));
   return random() < 0.5 ? [team1, team2] : [team2, team1];

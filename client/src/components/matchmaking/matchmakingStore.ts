@@ -24,6 +24,8 @@ export interface MatchmakingMe {
     team: number;
   } | null;
   cooldownUntil: number | null;
+  /** 5v5 matchmaking rating (display Elo), once the player has played. */
+  rating: { elo: number; games: number; wins: number } | null;
 }
 
 interface State {

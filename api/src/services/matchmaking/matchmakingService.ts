@@ -18,6 +18,8 @@ import { hasIntegration, getIntegration } from '../../integrations/registry';
 import { matchService } from '../matchService';
 import { resolveTournamentId } from '../../utils/tournamentRow';
 import { configuredPublicOrigin } from '../../utils/publicOrigin';
+import { rating as osRating, rate as osRate } from 'openskill';
+import { DEFAULT_SIGMA, openSkillToDisplayElo } from '../../utils/ratingMath';
 import {
   ACCEPT_SECONDS,
   cooldownSeconds,
@@ -26,6 +28,8 @@ import {
   isMode,
   MODES,
   OFFENCE_WINDOW_SECONDS,
+  partyRating,
+  searchWindow,
   splitTeams,
   TEAM_SIZE,
   type MatchmakingMode,
@@ -90,9 +94,22 @@ export interface MatchmakingMe {
     team: number;
   } | null;
   cooldownUntil: number | null;
+  /** The caller's 5v5 matchmaking rating, once they have played (display Elo). */
+  rating: { elo: number; games: number; wins: number } | null;
 }
 
 const LOOP_MS = 2000;
+
+/** A first matchmaking game starts this uncertain at least, so it settles fast. */
+const SEED_SIGMA = 6.5;
+
+interface RatingRow {
+  player_id: string;
+  mu: number;
+  sigma: number;
+  games: number;
+  wins: number;
+}
 
 export class MatchmakingService {
   private chain: Promise<unknown> = Promise.resolve();
@@ -294,8 +311,21 @@ export class MatchmakingService {
       [mode]
     );
     const parties: QueuedParty[] = [];
+    const now = this.clock();
     for (const e of entries) {
-      parties.push({ entryId: e.id, partyId: e.party_id, players: await this.members(e.party_id), queuedAt: Number(e.queued_at) });
+      const players = await this.members(e.party_id);
+      const ratings = await this.ratingsFor(players, mode);
+      const mus = players.map((p) => ratings.get(p)!.mu);
+      const queuedAt = Number(e.queued_at);
+      parties.push({
+        entryId: e.id,
+        partyId: e.party_id,
+        players,
+        queuedAt,
+        mus,
+        rating: partyRating(mus),
+        window: searchWindow(now - queuedAt),
+      });
     }
     return parties;
   }
@@ -450,6 +480,87 @@ export class MatchmakingService {
     });
   }
 
+  // --- ratings (phase 2) -----------------------------------------------
+
+  /**
+   * Each player's matchmaking rating for `mode`. A player without one gets a
+   * seed (not stored until their first rated match): their tournament rating's
+   * mu, with a sigma of at least SEED_SIGMA.
+   */
+  private async ratingsFor(players: string[], mode: string): Promise<Map<string, { mu: number; sigma: number; games: number; wins: number }>> {
+    const out = new Map<string, { mu: number; sigma: number; games: number; wins: number }>();
+    if (players.length === 0) return out;
+    const marks = players.map(() => '?').join(', ');
+    const stored = await db.queryAsync<RatingRow>(
+      `SELECT player_id, mu, sigma, games, wins FROM mm_ratings WHERE game = 'cs2' AND mode = ? AND player_id IN (${marks})`,
+      [mode, ...players]
+    );
+    for (const r of stored) out.set(r.player_id, { mu: Number(r.mu), sigma: Number(r.sigma), games: Number(r.games), wins: Number(r.wins) });
+    const missing = players.filter((p) => !out.has(p));
+    if (missing.length > 0) {
+      const base = await db.queryAsync<{ id: string; openskill_mu: number | null; openskill_sigma: number | null }>(
+        `SELECT id, openskill_mu, openskill_sigma FROM players WHERE id IN (${missing.map(() => '?').join(', ')})`,
+        missing
+      );
+      const byId = new Map(base.map((b) => [b.id, b]));
+      for (const p of missing) {
+        const b = byId.get(p);
+        const mu = b?.openskill_mu != null ? Number(b.openskill_mu) : 25;
+        const sigma = Math.max(SEED_SIGMA, b?.openskill_sigma != null ? Number(b.openskill_sigma) : DEFAULT_SIGMA);
+        out.set(p, { mu, sigma, games: 0, wins: 0 });
+      }
+    }
+    return out;
+  }
+
+  /**
+   * A matchmaking match ended (core/matchLifecycle, manual-match branch):
+   * rate both teams with OpenSkill (a draw is a draw), and close the lobby.
+   * A result that arrives twice is rated once.
+   */
+  applyMatchResult(matchSlug: string, winner: 'team1' | 'team2' | 'none'): Promise<boolean> {
+    return this.locked(async () => {
+      const lobby = await db.queryOneAsync<LobbyRow>('SELECT * FROM mm_lobbies WHERE match_slug = ?', [matchSlug]);
+      if (!lobby) return false;
+      const already = await db.queryOneAsync<{ id: number }>('SELECT id FROM mm_rating_history WHERE match_slug = ? LIMIT 1', [
+        matchSlug,
+      ]);
+      if (already) return false;
+      const players = await db.queryAsync<LobbyPlayerRow>('SELECT * FROM mm_lobby_players WHERE lobby_id = ?', [lobby.id]);
+      const team1 = players.filter((p) => p.team === 1).map((p) => p.player_id).sort();
+      const team2 = players.filter((p) => p.team === 2).map((p) => p.player_id).sort();
+      const before = await this.ratingsFor([...team1, ...team2], lobby.mode);
+      const ranks = winner === 'team1' ? [1, 2] : winner === 'team2' ? [2, 1] : [1, 1];
+      const [after1, after2] = osRate(
+        [team1.map((p) => osRating(before.get(p)!)), team2.map((p) => osRating(before.get(p)!))],
+        { rank: ranks }
+      );
+      const now = this.clock();
+      const write = async (ids: string[], after: Array<{ mu: number; sigma: number }>, won: boolean) => {
+        for (const [i, id] of ids.entries()) {
+          const b = before.get(id)!;
+          await db.runAsync(
+            `INSERT INTO mm_ratings (player_id, game, mode, mu, sigma, games, wins, updated_at)
+             VALUES (?, 'cs2', ?, ?, ?, ?, ?, ?)
+             ON CONFLICT (player_id, game, mode) DO UPDATE SET mu = EXCLUDED.mu, sigma = EXCLUDED.sigma,
+               games = EXCLUDED.games, wins = EXCLUDED.wins, updated_at = EXCLUDED.updated_at`,
+            [id, lobby.mode, after[i].mu, after[i].sigma, b.games + 1, b.wins + (won ? 1 : 0), now]
+          );
+          await db.runAsync(
+            `INSERT INTO mm_rating_history (player_id, game, mode, match_slug, mu_before, sigma_before, mu_after, sigma_after, created_at)
+             VALUES (?, 'cs2', ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (player_id, match_slug) DO NOTHING`,
+            [id, lobby.mode, matchSlug, b.mu, b.sigma, after[i].mu, after[i].sigma, now]
+          );
+        }
+      };
+      await write(team1, after1, winner === 'team1');
+      await write(team2, after2, winner === 'team2');
+      await db.runAsync("UPDATE mm_lobbies SET status = 'finished' WHERE id = ?", [lobby.id]);
+      log.info(`[MATCHMAKING] ${matchSlug} rated (${winner === 'none' ? 'draw' : `${winner} won`})`);
+      return true;
+    });
+  }
+
   /** Time ran out: who did not answer gets a no-show; parties that all accepted go back to the front. */
   private async resolveTimeout(lobby: LobbyRow): Promise<void> {
     const players = await db.queryAsync<LobbyPlayerRow>('SELECT * FROM mm_lobby_players WHERE lobby_id = ?', [
@@ -539,6 +650,20 @@ export class MatchmakingService {
       queue: entry ? { mode: entry.mode, queuedAt: Number(entry.queued_at), status: entry.status } : null,
       lobby,
       cooldownUntil: await this.cooldownUntil(playerId),
+      rating: await this.ratingSummary(playerId, '5v5'),
+    };
+  }
+
+  private async ratingSummary(playerId: string, mode: string): Promise<MatchmakingMe['rating']> {
+    const row = await db.queryOneAsync<RatingRow>(
+      "SELECT player_id, mu, sigma, games, wins FROM mm_ratings WHERE player_id = ? AND game = 'cs2' AND mode = ?",
+      [playerId, mode]
+    );
+    if (!row) return null;
+    return {
+      elo: openSkillToDisplayElo(osRating({ mu: Number(row.mu), sigma: Number(row.sigma) })),
+      games: Number(row.games),
+      wins: Number(row.wins),
     };
   }
 

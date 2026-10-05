@@ -785,7 +785,7 @@ export function getSchemaSQL(): string {
       id TEXT PRIMARY KEY,
       game TEXT NOT NULL DEFAULT 'cs2',
       mode TEXT NOT NULL,
-      status TEXT NOT NULL, -- 'accepting' | 'ready' | 'cancelled'
+      status TEXT NOT NULL, -- 'accepting' | 'ready' | 'finished' | 'cancelled'
       accept_deadline INTEGER NOT NULL,
       cancel_reason TEXT, -- 'declined' | 'timeout' | 'restart'
       map TEXT,
@@ -816,6 +816,36 @@ export function getSchemaSQL(): string {
     );
 
     CREATE INDEX IF NOT EXISTS idx_mm_penalties_player ON mm_penalties(player_id, created_at);
+
+    -- Matchmaking rating per game and mode, apart from the tournament rating
+    -- (seeded from it with a high sigma on a player's first matchmaking game).
+    CREATE TABLE IF NOT EXISTS mm_ratings (
+      player_id TEXT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+      game TEXT NOT NULL DEFAULT 'cs2',
+      mode TEXT NOT NULL,
+      mu DOUBLE PRECISION NOT NULL,
+      sigma DOUBLE PRECISION NOT NULL,
+      games INTEGER NOT NULL DEFAULT 0,
+      wins INTEGER NOT NULL DEFAULT 0,
+      updated_at INTEGER NOT NULL,
+      PRIMARY KEY (player_id, game, mode)
+    );
+
+    -- One row per player per rated matchmaking match. UNIQUE keeps a result
+    -- that arrives twice from being rated twice.
+    CREATE TABLE IF NOT EXISTS mm_rating_history (
+      id SERIAL PRIMARY KEY,
+      player_id TEXT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+      game TEXT NOT NULL DEFAULT 'cs2',
+      mode TEXT NOT NULL,
+      match_slug TEXT NOT NULL,
+      mu_before DOUBLE PRECISION NOT NULL,
+      sigma_before DOUBLE PRECISION NOT NULL,
+      mu_after DOUBLE PRECISION NOT NULL,
+      sigma_after DOUBLE PRECISION NOT NULL,
+      created_at INTEGER NOT NULL,
+      UNIQUE (player_id, match_slug)
+    );
 
     -- Session table for connect-pg-simple (express-session PostgreSQL store)
     -- This table is required for session persistence across API restarts
