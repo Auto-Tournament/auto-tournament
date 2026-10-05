@@ -8,6 +8,7 @@ import {
   splitTeams,
   type QueuedParty,
 } from '../../api/src/services/matchmaking/rules';
+import { levelFor, parseCommend, xpForMatch } from '../../api/src/services/matchmaking/progression';
 import { signInAsPlayerViaRequest, signInViaRequest } from '../helpers/auth';
 
 /**
@@ -91,6 +92,31 @@ test.describe('matchmaking rules (pure)', () => {
     const [t1, t2] = splitTeams(group, 5)!;
     const total = (t: QueuedParty[]) => t.reduce((n, p) => n + p.mus![0], 0);
     expect(Math.abs(total(t1) - total(t2))).toBe(1);
+  });
+
+  test('XP: 100 played, +50 win / +25 draw, up to +50 performance, +100 first win of the day', TAGS, () => {
+    const sum = (parts: Array<{ amount: number }>) => parts.reduce((n, p) => n + p.amount, 0);
+    expect(sum(xpForMatch({ result: 'loss', performanceRank: null, rankedPlayers: 0, firstWinToday: true }))).toBe(100);
+    expect(sum(xpForMatch({ result: 'draw', performanceRank: 9, rankedPlayers: 10, firstWinToday: true }))).toBe(125);
+    expect(sum(xpForMatch({ result: 'win', performanceRank: 0, rankedPlayers: 10, firstWinToday: true }))).toBe(300);
+    expect(sum(xpForMatch({ result: 'win', performanceRank: 0, rankedPlayers: 10, firstWinToday: false }))).toBe(200);
+  });
+
+  test('levels: 400 + 50 × (n − 1) XP per level', TAGS, () => {
+    expect(levelFor(0)).toEqual({ level: 1, intoLevel: 0, forNext: 400 });
+    expect(levelFor(399).level).toBe(1);
+    expect(levelFor(400)).toEqual({ level: 2, intoLevel: 0, forNext: 450 });
+    expect(levelFor(1900).level).toBe(5);
+    expect(levelFor(5400).level).toBe(10);
+  });
+
+  test('commends: thumbs up with an optional tag, thumbs down needs a reason', TAGS, () => {
+    expect(parseCommend({ value: 1 })).toEqual({ ok: true, value: 1, tag: null });
+    expect(parseCommend({ value: 1, tag: 'leader' })).toEqual({ ok: true, value: 1, tag: 'leader' });
+    expect(parseCommend({ value: 1, tag: 'toxic' }).ok).toBe(false);
+    expect(parseCommend({ value: -1 }).ok).toBe(false);
+    expect(parseCommend({ value: -1, tag: 'afk' })).toEqual({ ok: true, value: -1, tag: 'afk' });
+    expect(parseCommend({ value: 2 }).ok).toBe(false);
   });
 
   test('invite codes: 10 characters, no lookalikes', TAGS, () => {
@@ -240,6 +266,36 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
     expect((await admin.post('/api/test/series-result', { data: end })).ok()).toBe(true);
     expect((await me(ctxOf(winnerId))).rating!.games).toBe(1);
     expect((await me(leader.ctx)).lobby).toBeNull();
+
+    // XP: the winner played, won and got the first win of the day; no stats,
+    // so no performance part. The loser got 100.
+    const result = async (ctx: APIRequestContext) => {
+      const res = await ctx.get(`/api/matchmaking/matches/${view.matchSlug}/result`);
+      expect(res.ok(), await res.text()).toBe(true);
+      return (await res.json()).result as {
+        xp: Array<{ reason: string; amount: number }>;
+        progress: { level: number; totalXp: number };
+        rating: { before: number; after: number } | null;
+      };
+    };
+    const winnerResult = await result(ctxOf(winnerId));
+    expect(winnerResult.xp.map((x) => x.reason).sort()).toEqual(['completed', 'first_win', 'win']);
+    expect(winnerResult.progress.totalXp).toBe(250);
+    expect(winnerResult.rating!.after).toBeGreaterThan(winnerResult.rating!.before);
+    expect((await result(ctxOf(loserId))).progress.totalXp).toBe(100);
+    expect((await outsider.ctx.get(`/api/matchmaking/matches/${view.matchSlug}/result`)).status()).toBe(404);
+
+    // Commends: up, down with a reason, never yourself or an outsider.
+    const commend = (from: APIRequestContext, to: string, data: unknown) =>
+      from.put(`/api/matchmaking/matches/${view.matchSlug}/commends/${to}`, { data });
+    expect((await commend(ctxOf(loserId), winnerId, { value: 1, tag: 'team_player' })).ok()).toBe(true);
+    expect((await commend(leader.ctx, winnerId === leader.id ? loserId : winnerId, { value: -1, tag: 'afk' })).ok()).toBe(true);
+    expect((await commend(ctxOf(loserId), winnerId, { value: -1 })).status()).toBe(400);
+    expect((await commend(ctxOf(loserId), loserId, { value: 1 })).status()).toBe(400);
+    expect((await commend(outsider.ctx, winnerId, { value: 1 })).status()).toBe(404);
+    const progress = await (await admin.get(`/api/matchmaking/players/${winnerId}/progress`)).json();
+    expect(progress.progress.thumbsUp).toBeGreaterThanOrEqual(1);
+    expect(progress.progress.topTags).toContainEqual({ tag: 'team_player', count: 1 });
     expect((await outsider.ctx.get(`/api/matchmaking/lobbies/${lobbyId}`)).status()).toBe(404);
   });
 

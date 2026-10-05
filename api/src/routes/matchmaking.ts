@@ -15,6 +15,7 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { matchmakingService, MatchmakingError } from '../services/matchmaking/matchmakingService';
 import { MODES } from '../services/matchmaking/rules';
+import { progressionService, ProgressionError } from '../services/matchmaking/progressionService';
 
 const router = Router();
 
@@ -67,6 +68,9 @@ function handle(what: string, fn: (req: Request, res: Response) => Promise<unkno
     } catch (error) {
       if (error instanceof MatchmakingError) {
         return res.status(error.status).json({ success: false, code: error.code, error: error.message });
+      }
+      if (error instanceof ProgressionError) {
+        return res.status(error.status).json({ success: false, error: error.message });
       }
       log.error(`[MATCHMAKING] ${what} failed`, error as Error);
       return res.status(500).json({ success: false, error: `Could not ${what}` });
@@ -344,6 +348,124 @@ router.get(
   requirePlayer,
   handle('read the match', async (req, res) => {
     return res.json({ success: true, lobby: await matchmakingService.lobbyView(me(req), req.params.id) });
+  })
+);
+
+/**
+ * @openapi
+ * /api/matchmaking/matches/{slug}/result:
+ *   get:
+ *     tags: [Matchmaking]
+ *     summary: The post-match screen (experimental)
+ *     description: Only a player of that match. Map scores, the scoreboard, the caller's rating change, XP breakdown and level, and the commends they gave.
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: The result
+ *       404:
+ *         description: No such match for the caller
+ */
+router.get(
+  '/matches/:slug/result',
+  requirePlayer,
+  handle('read the result', async (req, res) => {
+    return res.json({ success: true, result: await progressionService.result(me(req), req.params.slug) });
+  })
+);
+
+/**
+ * @openapi
+ * /api/matchmaking/matches/{slug}/commends/{playerId}:
+ *   put:
+ *     tags: [Matchmaking]
+ *     summary: Thumbs up or down for a player of the same match (experimental)
+ *     description: |
+ *       Same-site JSON, within 24 hours of the match ending. Body `{ value: 1, tag? }`
+ *       (tag: friendly, team_player, leader, good_comms) or `{ value: -1, tag }`
+ *       (tag: toxic, griefing, afk, other). Sending again changes it.
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema: { type: string }
+ *       - in: path
+ *         name: playerId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Saved
+ *       400:
+ *         description: Bad value or tag, or yourself
+ *       404:
+ *         description: Not both in that match
+ *       409:
+ *         description: The match has not ended, or the 24 hours are over
+ */
+router.put(
+  '/matches/:slug/commends/:playerId',
+  requirePlayer,
+  sameSiteJson,
+  handle('save the commend', async (req, res) => {
+    const saved = await progressionService.commend(me(req), req.params.slug, req.params.playerId, req.body);
+    return res.json({ success: true, ...saved });
+  })
+);
+
+/**
+ * @openapi
+ * /api/matchmaking/players/{id}/progress:
+ *   get:
+ *     tags: [Matchmaking]
+ *     summary: A player's level, XP and commends (experimental)
+ *     description: 404 while matchmaking is off. Level, XP into the level, thumbs up and down totals and the most given tags; never who gave them.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: The progress
+ */
+router.get(
+  '/players/:id/progress',
+  handle('read the progress', async (req, res) => {
+    return res.json({ success: true, progress: await progressionService.progress(req.params.id) });
+  })
+);
+
+/**
+ * @openapi
+ * /api/matchmaking/admin/players/{id}/xp:
+ *   post:
+ *     tags: [Matchmaking]
+ *     summary: Add or remove XP by hand (experimental)
+ *     description: Admin, same-site JSON. Body `{ amount, note }`; the total never goes below 0.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Saved
+ *       400:
+ *         description: amount is not a whole number other than 0
+ */
+router.post(
+  '/admin/players/:id/xp',
+  requireAuth,
+  sameSiteJson,
+  handle('adjust the XP', async (req, res) => {
+    const note = typeof req.body?.note === 'string' ? req.body.note : '';
+    await progressionService.adjustXp(req.params.id, Number(req.body?.amount), note);
+    log.info(`[AUDIT] ${req.body?.amount} XP for ${req.params.id} by ${requestActorId(req) ?? 'unknown'}: ${note}`);
+    return res.json({ success: true, progress: await progressionService.progress(req.params.id) });
   })
 );
 

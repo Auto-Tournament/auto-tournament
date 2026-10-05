@@ -20,6 +20,7 @@ import { resolveTournamentId } from '../../utils/tournamentRow';
 import { configuredPublicOrigin } from '../../utils/publicOrigin';
 import { rating as osRating, rate as osRate } from 'openskill';
 import { DEFAULT_SIGMA, openSkillToDisplayElo } from '../../utils/ratingMath';
+import { progressionService } from './progressionService';
 import {
   ACCEPT_SECONDS,
   cooldownSeconds,
@@ -556,6 +557,7 @@ export class MatchmakingService {
       await write(team1, after1, winner === 'team1');
       await write(team2, after2, winner === 'team2');
       await db.runAsync("UPDATE mm_lobbies SET status = 'finished' WHERE id = ?", [lobby.id]);
+      await progressionService.awardMatchXp(matchSlug, winner);
       log.info(`[MATCHMAKING] ${matchSlug} rated (${winner === 'none' ? 'draw' : `${winner} won`})`);
       return true;
     });

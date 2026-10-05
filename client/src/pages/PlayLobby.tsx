@@ -11,6 +11,7 @@ import { TopNavBar } from '../components/layout/TopNavBar';
 import { PageHead, Panel, SectionHead } from '../components/common/ui';
 import { pageTitle } from '../utils/pageTitle';
 import { useIntegration } from '../integrations/registry';
+import { MatchResult } from '../components/matchmaking/MatchResult';
 import { paths, playerProfilePath } from '../paths';
 
 interface LobbyView {
@@ -73,7 +74,12 @@ export default function PlayLobby() {
                 .filter(Boolean)
                 .join(' · ')}
             />
-            {lobby.matchSlug && ConnectPanel && (
+            {lobby.matchSlug && lobby.matchStatus === 'completed' && (
+              <Box sx={{ mb: 2 }}>
+                <MatchResult matchSlug={lobby.matchSlug} />
+              </Box>
+            )}
+            {lobby.matchSlug && lobby.matchStatus !== 'completed' && ConnectPanel && (
               <Panel sx={{ p: 3, mb: 2 }} data-testid="mm-connect">
                 <ConnectPanel matchSlug={lobby.matchSlug} viewerCanJoin matchStatus={lobby.matchStatus ?? undefined} />
               </Panel>
