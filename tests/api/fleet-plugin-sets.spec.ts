@@ -247,6 +247,59 @@ test.describe.serial('Fleet plugin sets', () => {
     }
   });
 
+  test('a practice server updated to Ready Up with fleet.cmds.v1: match off and practice.set {on, always} on its hello', async ({
+    request,
+  }) => {
+    test.setTimeout(60_000);
+    const m = await machine(request, 'plugins-practice-upgrade');
+    try {
+      const created = await createServer(request, m, { preset: 'practice' });
+      const ru = await readyUpServer(request, created.enrollKey);
+      // Older Ready Up: match stays on, practice {on}.
+      const old = await hello(ru);
+      const set = await old.next(isPluginsSet);
+      old.send(answer(set, 1));
+      const first = await old.next(
+        (msg) => msg.type === 'cmd' && (msg.payload as { name: string }).name === 'practice.set'
+      );
+      expect((first.payload as { args: unknown }).args).toEqual({ on: true });
+      old.send(answer(first, 2));
+      await expect
+        .poll(
+          async () =>
+            (await (await request.get(`/api/fleet/servers/${ru.serverId}/push`)).json()).pushed
+              .practice?.status
+        )
+        .toBe('ok');
+      old.close();
+      await old.waitClosed();
+
+      // Updated: it runs the platform commands now and still has match on.
+      const updated = await hello(ru, {
+        lastTx: 2,
+        lastRx: first.seq as number,
+        capabilities: ['match.v1', 'fleet.cmds.v1'],
+        pluginsState: {
+          installed: ['essentials', 'fleet', 'match', 'practice'],
+          disabled: ['whitelist', 'skins', 'midas', 'deathmatch', 'addons'],
+        },
+      });
+      const again = await updated.next(isPluginsSet);
+      expect((again.payload as { args: { disable: string[] } }).args.disable).toContain('match');
+      updated.send(answer(again, 3));
+      const practice = await updated.next(
+        (msg) =>
+          msg.type === 'cmd' &&
+          (msg.payload as { name: string }).name === 'practice.set' &&
+          msg.id !== first.id
+      );
+      expect((practice.payload as { args: unknown }).args).toEqual({ on: true, always: true });
+      updated.close();
+    } finally {
+      m.csm.close();
+    }
+  });
+
   test('create with a preset: full bundle, plugins.set after the first hello, re-sent only when the server differs', async ({
     request,
   }) => {

@@ -21,6 +21,7 @@ import type { CmdPayload, HelloPayload } from '../protocol/v1';
 import { isSteam64 } from './admins';
 import {
   createdPluginSet,
+  FLEET_CMDS_CAPABILITY,
   pluginSetCommand,
   pluginsSetFor,
   pluginsStateDiffers,
@@ -211,7 +212,8 @@ const PLATFORM_ISSUER: IssuedBy = { user_id: 'platform', name: 'Auto Tournament'
  */
 export async function pluginsOnHello(
   serverId: string,
-  hello: Pick<HelloPayload, 'plugins_state' | 'stream'>
+  hello: Pick<HelloPayload, 'plugins_state' | 'stream'> &
+    Partial<Pick<HelloPayload, 'capabilities'>>
 ): Promise<'initial' | 'resync' | null> {
   const prefs = await readPrefs(serverId);
   if (!prefs.plugins) {
@@ -228,9 +230,22 @@ export async function pluginsOnHello(
   if (!state) return null;
   const last = prefs.pushed.plugins;
   if (last?.seq !== undefined && last.seq > hello.stream.last_rx_seq) return null;
-  const fleetCmds = await runsFleetCmds(serverId);
+  // This hello's capabilities: the stored ones may still be the previous Ready Up's.
+  const fleetCmds = Array.isArray(hello.capabilities)
+    ? hello.capabilities.includes(FLEET_CMDS_CAPABILITY)
+    : await runsFleetCmds(serverId);
   if (!pluginsStateDiffers(pluginsSetFor(prefs.plugins, fleetCmds), state)) return null;
   await sendPluginsSet(serverId, prefs.plugins, PLATFORM_ISSUER, fleetCmds);
   log.info(`[FLEET] ${serverId}: its plugins differ from its plugin set; plugins.set sent again`);
+  // A practice server that now runs without match (e.g. after a Ready Up
+  // update to fleet.cmds.v1) needs practice on and always=1 again.
+  if (fleetCmds && prefs.plugins.preset === 'practice') {
+    await sendCmd(serverId, {
+      name: 'practice.set',
+      args: { on: true, always: true },
+      issued_by: PLATFORM_ISSUER,
+      expires_at: Date.now() + PRACTICE_TTL_MS,
+    });
+  }
   return 'resync';
 }
