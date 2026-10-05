@@ -829,6 +829,73 @@ export class MatchmakingService {
     };
   }
 
+  /** Admin: who is searching, open lobbies, and penalties of the last 24 h. */
+  async adminQueue(): Promise<{
+    searching: Array<{ partyId: string; mode: string; waited: number; players: Array<{ id: string; name: string }> }>;
+    lobbies: Array<{ id: string; mode: string; status: string; matchSlug: string | null; map: string | null; accepted: number; total: number; createdAt: number }>;
+    penalties: Array<{ id: number; playerId: string; name: string; kind: string; cooldownUntil: number; createdAt: number; cleared: boolean }>;
+  }> {
+    const now = this.clock();
+    const nameOf = async (ids: string[]) => {
+      if (ids.length === 0) return new Map<string, string>();
+      const rows = await db.queryAsync<{ id: string; name: string | null }>(
+        `SELECT id, name FROM players WHERE id IN (${ids.map(() => '?').join(', ')})`,
+        ids
+      );
+      return new Map(rows.map((r) => [r.id, r.name || r.id]));
+    };
+    const entries = await db.queryAsync<EntryRow>("SELECT * FROM mm_queue_entries WHERE status = 'searching' ORDER BY queued_at");
+    const searching = [];
+    for (const e of entries) {
+      const ids = await this.members(e.party_id);
+      const names = await nameOf(ids);
+      searching.push({
+        partyId: e.party_id,
+        mode: e.mode,
+        waited: now - Number(e.queued_at),
+        players: ids.map((id) => ({ id, name: names.get(id) ?? id })),
+      });
+    }
+    const lobbyRows = await db.queryAsync<LobbyRow & { match_slug: string | null; map: string | null; created_at: number }>(
+      "SELECT * FROM mm_lobbies WHERE status IN ('accepting', 'ready') ORDER BY created_at DESC LIMIT 50"
+    );
+    const lobbies = [];
+    for (const l of lobbyRows) {
+      const c = await db.queryOneAsync<{ total: number | string; accepted: number | string }>(
+        'SELECT COUNT(*) AS total, COUNT(accepted_at) AS accepted FROM mm_lobby_players WHERE lobby_id = ?',
+        [l.id]
+      );
+      lobbies.push({
+        id: l.id,
+        mode: l.mode,
+        status: l.status,
+        matchSlug: l.match_slug,
+        map: l.map,
+        accepted: Number(c?.accepted ?? 0),
+        total: Number(c?.total ?? 0),
+        createdAt: Number(l.created_at),
+      });
+    }
+    const pen = await db.queryAsync<{ id: number; player_id: string; kind: string; cooldown_until: number; created_at: number; cleared_by: string | null }>(
+      'SELECT id, player_id, kind, cooldown_until, created_at, cleared_by FROM mm_penalties WHERE created_at > ? ORDER BY created_at DESC LIMIT 100',
+      [now - 86400]
+    );
+    const penNames = await nameOf([...new Set(pen.map((p) => p.player_id))]);
+    return {
+      searching,
+      lobbies,
+      penalties: pen.map((p) => ({
+        id: Number(p.id),
+        playerId: p.player_id,
+        name: penNames.get(p.player_id) ?? p.player_id,
+        kind: p.kind,
+        cooldownUntil: Number(p.cooldown_until),
+        createdAt: Number(p.created_at),
+        cleared: p.cleared_by !== null,
+      })),
+    };
+  }
+
   // --- lifecycle -------------------------------------------------------
 
   /** Boot: lobbies left accepting by a restart are cancelled without penalty; then the loop starts. */

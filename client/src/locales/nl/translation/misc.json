@@ -572,6 +572,21 @@
       "level": "Level",
       "games": "Matches",
       "winRate": "Won"
+    },
+    "admin": {
+      "title": "Queue (admins)",
+      "summary": "{{players}} searching, {{lobbies}} open matches",
+      "waited": "{{minutes}} min",
+      "cooldowns": "Cooldowns",
+      "until": "{{minutes}} min left",
+      "clear": "Clear",
+      "cleared": "Cooldown cleared",
+      "clearFailed": "Could not clear the cooldown",
+      "kind": {
+        "decline": "declined",
+        "no_show": "missed a match",
+        "abandon": "left a match"
+      }
     }
   }
 }

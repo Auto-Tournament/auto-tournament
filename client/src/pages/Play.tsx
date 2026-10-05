@@ -13,12 +13,13 @@ import { useSnackbar } from '../contexts/SnackbarContext';
 import { useAuth } from '../contexts/AuthContext';
 import { pageTitle } from '../utils/pageTitle';
 import { matchmakingAction, secondsUntil, useMatchmaking } from '../components/matchmaking/matchmakingStore';
+import { AdminQueuePanel } from '../components/matchmaking/AdminQueuePanel';
 import { paths } from '../paths';
 
 export default function Play() {
   const { t } = useTranslation();
   const { available, me, skew } = useMatchmaking();
-  const { playerSteamId } = useAuth();
+  const { playerSteamId, isAuthenticated: isAdmin } = useAuth();
   const { showError, showSnackbar } = useSnackbar();
   const [params, setParams] = useSearchParams();
   const [busy, setBusy] = useState(false);
@@ -207,6 +208,8 @@ export default function Play() {
                 </Stack>
               )}
             </Panel>
+
+            {isAdmin && <AdminQueuePanel />}
           </Stack>
         )}
       </Container>

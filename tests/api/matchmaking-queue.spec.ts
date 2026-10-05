@@ -365,6 +365,13 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
     // The match is gone: answering it now is refused.
     expect((await players[2].ctx.post(`/api/matchmaking/lobbies/${lobby.id}/accept`, { data: {} })).status()).toBe(409);
 
+    // The admin queue shows the nine back in line and the decliner's cooldown.
+    const queue = await (await admin.get('/api/matchmaking/admin/queue')).json();
+    const searchingIds = queue.searching.flatMap((p: { players: Array<{ id: string }> }) => p.players.map((x) => x.id));
+    expect(players.slice(1).every((p) => searchingIds.includes(p.id))).toBe(true);
+    expect(queue.penalties).toContainEqual(expect.objectContaining({ playerId: players[0].id, kind: 'decline', cleared: false }));
+    expect([401, 403]).toContain((await players[1].ctx.get('/api/matchmaking/admin/queue')).status());
+
     // An admin clears the cooldown.
     const cleared = await admin.delete(`/api/matchmaking/admin/players/${players[0].id}/cooldown`, { data: {} });
     expect(cleared.ok(), await cleared.text()).toBe(true);
