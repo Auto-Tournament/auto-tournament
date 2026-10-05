@@ -23,6 +23,7 @@ import vetoRoutes from '../veto/routes';
 import mapRoutes from '../maps/routes';
 import mapPoolRoutes from '../maps/poolRoutes';
 import matchConnectRoutes from './matchConnect';
+import playerProfileRoutes from './playerProfile';
 import roundBackupRoutes from './roundBackups';
 import { failoverMatchRouter, failoverSettingsRouter } from './failover';
 import testHelperRoutes from './testHelpers';
@@ -107,6 +108,13 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     router: matchConnectRoutes,
     title: 'Match connect',
     description: 'How a player joins a CS2 match: its server, status and current map.',
+  },
+  {
+    // Public, like the match connect route above.
+    prefix: '/api/game/cs2',
+    router: playerProfileRoutes,
+    title: 'Player profile',
+    description: "A player's CS2 totals, everyone's totals to compare with, and their results per map.",
   },
   {
     // Admin only, per route (requireAuth on each): the router shares its

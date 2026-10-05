@@ -1494,5 +1494,26 @@
   },
   "fleetPush": {
     "summary": "Administratorer, innstillinger og programtillegg sendt til Ready Up-servere"
+  },
+  "profile": {
+    "title": "Prestasjon",
+    "kd": "K/D",
+    "kills": "Kills {{count}}",
+    "deaths": "Dødsfall {{count}}",
+    "headshots": "Hodeskudd",
+    "adr": "ADR",
+    "average": "Snitt {{value}}",
+    "impact": "Innvirkning",
+    "mvps": "MVP-er",
+    "flashAssists": "flash-assists / kamp",
+    "utilityDamage": "utility-skade / runde",
+    "maps": "Kartstyrke",
+    "mapsAria": "Kartstyrke: andel runder vunnet på hvert kart",
+    "mapsFew": "Diagrammet vises når du har spilt tre kart.",
+    "best": "Best · {{map}}",
+    "weakest": "Svakest · {{map}}",
+    "mapSummary": "{{pct}} % vunnet · {{played}} spilt",
+    "mapRecord": "{{won}}/{{played}} vunnet · runder {{rounds}}",
+    "mapsNote": "Ut fra andelen runder vunnet på hvert kart. Få runder teller mindre."
   }
 }
