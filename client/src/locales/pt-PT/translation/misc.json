@@ -586,7 +586,10 @@
         "decline": "declined",
         "no_show": "missed a match",
         "abandon": "left a match"
-      }
+      },
+      "review": "Players to look at (thumbs down)",
+      "voters_one": "{{count}} voter",
+      "voters_other": "{{count}} voters"
     }
   }
 }

@@ -586,7 +586,10 @@
         "decline": "takket nei",
         "no_show": "gikk glipp av en kamp",
         "abandon": "forlot en kamp"
-      }
+      },
+      "review": "Spillere å se på (tommel ned)",
+      "voters_one": "{{count}} stemme",
+      "voters_other": "{{count}} stemmer"
     }
   }
 }
