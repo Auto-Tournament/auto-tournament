@@ -60,8 +60,13 @@ export const progressionService = {
    * after the rating update). The unique (player, match, reason) index keeps a
    * second call from paying twice.
    */
-  async awardMatchXp(matchSlug: string, winner: 'team1' | 'team2' | 'none'): Promise<void> {
-    const players = await lobbyPlayersOfMatch(matchSlug);
+  async awardMatchXp(
+    matchSlug: string,
+    winner: 'team1' | 'team2' | 'none',
+    abandoned: ReadonlySet<string> = new Set()
+  ): Promise<void> {
+    // No XP for a player who abandoned the match.
+    const players = (await lobbyPlayersOfMatch(matchSlug)).filter((p) => !abandoned.has(p.player_id));
     if (players.length === 0) return;
     const stats = await db.queryAsync<{ player_id: string; score: number | null; adr: number | null }>(
       'SELECT player_id, score, adr FROM player_match_stats WHERE match_slug = ?',

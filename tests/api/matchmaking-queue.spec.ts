@@ -1,5 +1,7 @@
 import { test, expect, request as playwrightRequest, type APIRequestContext } from '@playwright/test';
 import {
+  abandonCooldownSeconds,
+  isAbandon,
   cooldownSeconds,
   findGroup,
   inviteCode,
@@ -117,6 +119,22 @@ test.describe('matchmaking rules (pure)', () => {
     expect(parseCommend({ value: -1 }).ok).toBe(false);
     expect(parseCommend({ value: -1, tag: 'afk' })).toEqual({ ok: true, value: -1, tag: 'afk' });
     expect(parseCommend({ value: 2 }).ok).toBe(false);
+  });
+
+  test('abandons: 1 h, doubling within 7 days, at most 7 days', TAGS, () => {
+    expect([0, 1, 2, 3].map(abandonCooldownSeconds)).toEqual([3600, 7200, 14400, 28800]);
+    expect(abandonCooldownSeconds(20)).toBe(7 * 24 * 3600);
+  });
+
+  test('abandon: missing 5 minutes after the server is ready, never on time the watcher did not see', TAGS, () => {
+    const base = { serverReadyAt: 1000, watchingSince: 1000 };
+    expect(isAbandon({ ...base, now: 1299, lastSeen: null })).toBe(false);
+    expect(isAbandon({ ...base, now: 1300, lastSeen: null })).toBe(true);
+    expect(isAbandon({ ...base, now: 2000, lastSeen: 1800 })).toBe(false);
+    expect(isAbandon({ ...base, now: 2100, lastSeen: 1800 })).toBe(true);
+    // A restart at 1900: nobody is judged before 2200.
+    expect(isAbandon({ serverReadyAt: 1000, watchingSince: 1900, now: 2100, lastSeen: null })).toBe(false);
+    expect(isAbandon({ serverReadyAt: 1000, watchingSince: 1900, now: 2200, lastSeen: null })).toBe(true);
   });
 
   test('invite codes: 10 characters, no lookalikes', TAGS, () => {
