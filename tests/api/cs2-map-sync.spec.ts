@@ -109,7 +109,7 @@ test.describe('CS2 map catalogue (maps.json)', () => {
     const ids = bundled.maps.map((m) => m.id);
     for (const id of bundled.activeDuty) expect(ids).toContain(id);
     expect(ids.every(isPlayableMapId)).toBe(true);
-    for (const map of bundled.maps) expect(map.imageUrl).toMatch(/^https:\/\/raw\.githubusercontent\.com\/.+\.webp$/);
+    for (const map of bundled.maps) expect(map.imageUrl).toMatch(/^https:\/\/cdn\.jsdelivr\.net\/gh\/.+\.webp$/);
   });
 
   test('offline, the bundled copy is used', { tag: ['@api', '@maps'] }, async () => {

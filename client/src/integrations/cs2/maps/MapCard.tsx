@@ -14,7 +14,7 @@ export function MapCard({ map, onClick }: MapCardProps) {
   const { t } = useModuleTranslation('cs2');
   const mode = mapModeOf(map);
   const getPreferredImageUrl = (): string | null => {
-    const baseWebpUrl = `https://raw.githubusercontent.com/Auto-Tournament/cs2-server-manager/master/map_thumbnails/${map.id}.webp`;
+    const baseWebpUrl = `https://cdn.jsdelivr.net/gh/Auto-Tournament/cs2-server-manager@master/map_thumbnails/${map.id}.webp`;
 
     // If there's no stored URL or it's a repo URL, always use the standardized WebP path.
     if (!map.imageUrl || map.imageUrl.includes('cs2-server-manager')) {

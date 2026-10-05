@@ -20,9 +20,13 @@ import fetch from 'node-fetch';
 import { log } from '../../../utils/logger';
 import bundledMapsJson from './bundled-maps.json';
 
+// Images through jsDelivr, a CDN in front of the repository; the catalogue
+// itself from GitHub, which has a new maps.json minutes after a push where
+// jsDelivr's copy of a branch can be up to a day old.
 export const MAP_THUMBNAILS_BASE =
-  'https://raw.githubusercontent.com/Auto-Tournament/cs2-server-manager/master/map_thumbnails';
-export const MAPS_JSON_URL = `${MAP_THUMBNAILS_BASE}/maps.json`;
+  'https://cdn.jsdelivr.net/gh/Auto-Tournament/cs2-server-manager@master/map_thumbnails';
+export const MAPS_JSON_URL =
+  'https://raw.githubusercontent.com/Auto-Tournament/cs2-server-manager/master/map_thumbnails/maps.json';
 
 /** One attempt may take this long before it is dropped (and retried once). */
 const ATTEMPT_TIMEOUT_MS = 5000;

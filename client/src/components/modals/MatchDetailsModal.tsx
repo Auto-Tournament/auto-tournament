@@ -1121,7 +1121,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                       <FadeInImage
                         src={
                           getMapData(activeMapKey)?.image ||
-                          `https://raw.githubusercontent.com/Auto-Tournament/cs2-server-manager/master/map_thumbnails/${activeMapKey}.webp`
+                          `https://cdn.jsdelivr.net/gh/Auto-Tournament/cs2-server-manager@master/map_thumbnails/${activeMapKey}.webp`
                         }
                         alt={currentMapLabel || activeMapKey}
                         sx={{

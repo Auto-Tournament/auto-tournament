@@ -8,7 +8,7 @@ import type { CS2MapData } from '../types/veto.types';
 // Full-size webp images are used for large hero/background displays.
 // Thumbnails (with `_thumb` suffix) are used for smaller cards/lists.
 const MAP_IMAGE_BASE =
-  'https://raw.githubusercontent.com/Auto-Tournament/cs2-server-manager/master/map_thumbnails';
+  'https://cdn.jsdelivr.net/gh/Auto-Tournament/cs2-server-manager@master/map_thumbnails';
 
 const getFullImageUrl = (mapName: string): string =>
   `${MAP_IMAGE_BASE}/${mapName}.webp`;
