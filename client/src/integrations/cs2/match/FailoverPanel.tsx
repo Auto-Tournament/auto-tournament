@@ -13,6 +13,7 @@ import { ArrowsLeftRightIcon, ShieldWarningIcon } from '@phosphor-icons/react';
 import {
   api,
   apiErrorMessage,
+  ConfirmDialog,
   mono,
   useModuleTranslation,
   useSnackbar,
@@ -90,6 +91,8 @@ export function FailoverPanel({ matchSlug, matchStatus }: MatchAdminPanelProps) 
   const [target, setTarget] = useState<string>('');
   const [round, setRound] = useState<string>('');
   const [busy, setBusy] = useState(false);
+  // The admin's own move (not a failover proposal): asked once more first.
+  const [confirmMove, setConfirmMove] = useState(false);
 
   const base = `/api/game/cs2/matches/${encodeURIComponent(matchSlug)}/failover`;
 
@@ -326,7 +329,7 @@ export function FailoverPanel({ matchSlug, matchStatus }: MatchAdminPanelProps) 
                 variant="outlined"
                 color="warning"
                 startIcon={<ArrowsLeftRightIcon />}
-                onClick={move}
+                onClick={() => setConfirmMove(true)}
                 disabled={busy || !effectiveTarget}
                 data-testid="failover-manual-move"
               >
@@ -381,6 +384,24 @@ export function FailoverPanel({ matchSlug, matchStatus }: MatchAdminPanelProps) 
           </Stack>
         </Box>
       )}
+      <ConfirmDialog
+        open={confirmMove}
+        title={t('failover.confirmMoveTitle', { defaultValue: 'Move this match?' })}
+        message={t('failover.confirmMove', {
+          defaultValue:
+            'It continues on {{server}} from {{round}}. The current server drops the match and rounds after that point are played again.',
+          server: data?.candidates.find((c) => c.id === effectiveTarget)?.name ?? effectiveTarget,
+          round: roundLabel(effectiveRound),
+        })}
+        confirmLabel={t('failover.move', { defaultValue: 'Move match' })}
+        confirmColor="warning"
+        loading={busy}
+        onConfirm={() => {
+          setConfirmMove(false);
+          move();
+        }}
+        onCancel={() => setConfirmMove(false)}
+      />
     </Stack>
   );
 }

@@ -1402,7 +1402,9 @@
       "moved": "Moved",
       "dismissed": "Left",
       "withdrawn": "Server came back"
-    }
+    },
+    "confirmMoveTitle": "Move this match?",
+    "confirmMove": "It continues on {{server}} from {{round}}. The current server drops the match and rounds after that point are played again."
   },
   "failoverSettings": {
     "title": "Failover",

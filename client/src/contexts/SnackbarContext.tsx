@@ -208,24 +208,12 @@ export function SnackbarProvider({ children }: { children: ReactNode }) {
   return (
     <>
       {/*
-        Keep toasts underneath MUI's modal layer (zIndex 1300).
-
-        Toasts are anchored bottom-right and the stack grows upward, so with two
-        or three showing it reaches the action row of a tall dialog — measured at
-        y 620-664 for the map modal's Update button, against a toast stack
-        spanning y 497-706. Which button gets covered just depends on the corner:
-        Save sits bottom-right, Delete bottom-left (`mr: 'auto'`), so moving the
-        anchor only moves the problem.
-
-        A modal dialog is by definition the focused interaction, so it should own
-        its own clicks; a toast raised behind one is still there when it closes.
-        With no dialog open — the common case — nothing changes.
-
-        This has to be a global rule rather than the provider's `style` prop:
-        notistack applies `style` to each snackbar item, not to the container,
-        so setting zIndex there silently does nothing and the container keeps
-        MUI's snackbar layer (1400) — above the dialog. `div.` makes the
-        selector specific enough to win without `!important`.
+        Toasts sit above MUI's modal layer (1300): most feedback comes from an
+        action inside a dialog (restore, pause, move match), and a toast behind
+        the dialog is never seen. They used to sit below it so a stack of toasts
+        could not cover a dialog's action row (bottom-right, where Save is); the
+        rule below lets every click except the toast's own close button pass
+        through, so a covered button still works.
       */}
       <GlobalStyles
         styles={{
@@ -250,10 +238,9 @@ export function SnackbarProvider({ children }: { children: ReactNode }) {
             {
               pointerEvents: 'auto !important',
             },
-          // Below MUI's modal layer (1300) as well, so a dialog is never
-          // visually obscured by a toast either.
+          // Above MUI's modal layer (1300), so feedback from a dialog shows.
           'div.notistack-SnackbarContainer': {
-            zIndex: 1200,
+            zIndex: 1400,
           },
         }}
       />
