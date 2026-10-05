@@ -199,6 +199,8 @@ export interface MatchServer {
   id: string;
   name: string;
   host: string;
+  /** IPv4 of `host` for the steam://connect link (CS2 ignores a hostname there). */
+  ip?: string | null;
   port: number;
   password?: string | null;
   /** The plugin's own status (idle, warmup, live, …), when the server answered. */

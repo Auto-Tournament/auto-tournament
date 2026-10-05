@@ -18,6 +18,8 @@
  */
 
 import { Router, Request, Response } from 'express';
+import { lookup } from 'node:dns/promises';
+import { isIP } from 'node:net';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { describeMatch } from '../../../utils/matchIntegration';
@@ -74,6 +76,24 @@ function pickedMaps(vetoState: string | null | undefined): string[] {
       : [];
   } catch {
     return [];
+  }
+}
+
+/**
+ * The IPv4 address of a connect host, for the `steam://connect/` link: Steam
+ * passes a hostname on but CS2 ignores it (live test: the button opened Steam
+ * and nothing happened; the same link with the IP joined). Null when it does
+ * not resolve quickly; the client then falls back to the host.
+ */
+async function connectIp(host: string | null | undefined): Promise<string | null> {
+  if (!host) return null;
+  if (isIP(host)) return host;
+  try {
+    const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 1500));
+    const found = await Promise.race([lookup(host, { family: 4 }), timeout]);
+    return found ? found.address : null;
+  } catch {
+    return null;
   }
 }
 
@@ -155,6 +175,7 @@ router.get('/matches/:slug/connect', async (req: Request, res: Response) => {
               id: match.server_id,
               name: match.server_name,
               host: match.server_host,
+              ip: await connectIp(match.server_host),
               port: match.server_port,
               // RCON servers have no join password; the RCON password is never
               // sent. Ready Up servers: this assignment's sv_password.
