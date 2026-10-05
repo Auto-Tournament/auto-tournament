@@ -35,6 +35,7 @@ import {
   MODES,
   OFFENCE_WINDOW_SECONDS,
   partyRating,
+  parseReservedServers,
   parseSearchWindow,
   searchWindow,
   splitTeams,
@@ -109,6 +110,9 @@ const LOOP_MS = 2000;
 
 /** Setting: the admin's search window (JSON, `rules.parseSearchWindow`). */
 export const MM_SEARCH_WINDOW = 'mm_search_window';
+
+/** Setting: servers tournament matches leave free while matchmaking has players waiting. */
+export const MM_RESERVED_SERVERS = 'mm_reserved_servers';
 
 /** A first matchmaking game starts this uncertain at least, so it settles fast. */
 const SEED_SIGMA = 6.5;
@@ -899,6 +903,22 @@ export class MatchmakingService {
         cleared: p.cleared_by !== null,
       })),
     };
+  }
+
+  /**
+   * How many free servers a tournament match must leave for matchmaking right
+   * now: the admin's number while the feature is on and someone is searching,
+   * answering or waiting for a server; else 0.
+   */
+  async serversReservedForMatchmaking(): Promise<number> {
+    const reserved = parseReservedServers(await db.getAppSettingAsync(MM_RESERVED_SERVERS));
+    if (reserved === 0 || !(await isExperimentalFeatureEnabled('matchmaking'))) return 0;
+    const waiting = await db.queryOneAsync<{ n: number | string }>(
+      `SELECT (SELECT COUNT(*) FROM mm_queue_entries)
+            + (SELECT COUNT(*) FROM mm_lobbies l JOIN matches m ON m.slug = l.match_slug
+                WHERE l.status = 'ready' AND m.status = 'ready' AND (m.server_id IS NULL OR m.server_id = '')) AS n`
+    );
+    return Number(waiting?.n ?? 0) > 0 ? reserved : 0;
   }
 
   // --- lifecycle -------------------------------------------------------
