@@ -233,6 +233,31 @@ test.describe.serial('connect address: link and hello', () => {
     expect(await cs2Row(request, id)).toMatchObject({ host: 'play.example.com', port: 27055, hostOverride: true });
     expect((await listed(request, id)).connect).toMatchObject({ address: 'play.example.com:27055', source: 'override' });
   });
+  test('the server status route answers a linked Ready Up server from the fleet link, not RCON', async ({
+    request,
+  }) => {
+    const installId = newInstallId();
+    const res = await enroll(request, { key: key.value }, installId, { host: { hostname: 'cs2', game_port: 27056 } });
+    expect(res.status, JSON.stringify(res.body)).toBe(201);
+    const { server_id: id, token } = res.body;
+    cleanup.push(async () => {
+      await request.delete(`/api/fleet/servers/${id}/link`, { headers: getAuthHeader() });
+    });
+    const client = await connected(installId, id, token, { hostname: 'cs2', game_port: 27056 });
+    const link = await request.post(`/api/fleet/servers/${id}/link`, { headers: getAuthHeader(), data: {} });
+    expect([200, 201], await link.text()).toContain(link.status());
+
+    const status = async () =>
+      (await (await request.get(`/api/servers/${id}/status`, { headers: getAuthHeader() })).json()) as {
+        status: string;
+        isAvailable: boolean;
+        currentMatch: string | null;
+      };
+    expect(await status()).toMatchObject({ status: 'online', isAvailable: true, currentMatch: null });
+    client.close();
+    await expect.poll(async () => (await status()).status).toBe('offline');
+  });
+
   test('rename: the fleet server and the row it plays matches as get the new name', async ({ request }) => {
     const installId = newInstallId();
     const res = await enroll(request, { key: key.value }, installId, { host: { hostname: 'cs2', game_port: 27055 } });

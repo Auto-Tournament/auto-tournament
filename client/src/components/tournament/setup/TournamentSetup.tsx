@@ -503,7 +503,12 @@ export function TournamentSetup(props: TournamentSetupProps) {
                       onChange={handlers.onGrandFinalModeChange}
                       disabled={locked}
                       testId="tournament-grand-final-selector"
-                      options={(['simple', 'double', 'none'] as const).map((value) => ({
+                      // Bracket reset is not implemented yet (it plays as one grand
+                      // final), so it is only shown for a tournament that has it.
+                      options={(form.grandFinalMode === 'double'
+                        ? (['simple', 'double', 'none'] as const)
+                        : (['simple', 'none'] as const)
+                      ).map((value) => ({
                         value,
                         label: t(`tournament.setup.format.grandFinalOptions.${value}`),
                         testId: `tournament-grand-final-option-${value}`,

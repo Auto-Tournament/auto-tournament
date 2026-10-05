@@ -72,6 +72,32 @@ router.get('/:id/status', async (req: Request, res: Response) => {
       });
     }
 
+    // A Ready Up server on the fleet link has no RCON: its state is what the
+    // link reports. (An RCON check here reported every fleet server offline
+    // and logged a warning for each, every time the Servers page polled.)
+    if (server.transport === 'fleet') {
+      const { fleetServerStatus } = await import('../fleet/driver');
+      const fleet = await fleetServerStatus(id);
+      return res.json({
+        success: true,
+        status: fleet.online ? 'online' : 'offline',
+        serverId: id,
+        isAvailable: fleet.online && fleet.availability === 'available' && !fleet.matchSlug,
+        currentMatch: fleet.matchSlug,
+        queuedMatch: null,
+        reachableFromApi: fleet.online,
+        serverCanReachApi: fleet.online,
+        pluginStatus: fleet.status,
+        allocationState: null,
+        allocationMatchSlug: null,
+        ipBanned: false,
+        cs2BuildId: server.cs2BuildId ?? null,
+        cs2RequiredVersion: effectiveCs2RequiredVersion,
+        cs2UpdatePhase: effectiveCs2UpdatePhase,
+        cs2UpdateCheckedAt: effectiveCs2UpdateCheckedAt,
+      });
+    }
+
     // Prefer detailed status from MatchZy Enhanced ConVars (includes current match slug)
     // For lightweight UI checks we allow using a short-lived cache buffer to avoid
     // flapping between online/offline. Manual checks (e.g. "Test Connection") call
