@@ -6158,6 +6158,41 @@
         ]
       }
     },
+    "/api/matchmaking/admin/players/{id}/xp": {
+      "post": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "Add or remove XP by hand (experimental)",
+        "description": "Admin, same-site JSON. Body `{ amount, note }`; the total never goes below 0.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Saved"
+          },
+          "400": {
+            "description": "amount is not a whole number other than 0"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/matchmaking/admin/settings": {
       "put": {
         "tags": [
@@ -6284,6 +6319,74 @@
         }
       }
     },
+    "/api/matchmaking/matches/{slug}/commends/{playerId}": {
+      "put": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "Thumbs up or down for a player of the same match (experimental)",
+        "description": "Same-site JSON, within 24 hours of the match ending. Body `{ value: 1, tag? }`\n(tag: friendly, team_player, leader, good_comms) or `{ value: -1, tag }`\n(tag: toxic, griefing, afk, other). Sending again changes it.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "playerId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Saved"
+          },
+          "400": {
+            "description": "Bad value or tag, or yourself"
+          },
+          "404": {
+            "description": "Not both in that match"
+          },
+          "409": {
+            "description": "The match has not ended, or the 24 hours are over"
+          }
+        }
+      }
+    },
+    "/api/matchmaking/matches/{slug}/result": {
+      "get": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "The post-match screen (experimental)",
+        "description": "Only a player of that match. Map scores, the scoreboard, the caller's rating change, XP breakdown and level, and the commends they gave.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The result"
+          },
+          "404": {
+            "description": "No such match for the caller"
+          }
+        }
+      }
+    },
     "/api/matchmaking/me": {
       "get": {
         "tags": [
@@ -6383,6 +6486,30 @@
           },
           "409": {
             "description": "In a match being accepted"
+          }
+        }
+      }
+    },
+    "/api/matchmaking/players/{id}/progress": {
+      "get": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "A player's level, XP and commends (experimental)",
+        "description": "404 while matchmaking is off. Level, XP into the level, thumbs up and down totals and the most given tags; never who gave them.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The progress"
           }
         }
       }

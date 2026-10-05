@@ -24,6 +24,7 @@ import { TopNavBar } from '../components/layout/TopNavBar';
 import { OwnDiscordIdCard } from '../components/player/OwnDiscordIdCard';
 import { OwnGamesCard } from '../components/games/OwnGamesCard';
 import { ProfileHeader } from '../components/player/profile/ProfileHeader';
+import { PlayerProgress } from '../components/matchmaking/PlayerProgress';
 import { GameSwitch } from '../components/player/profile/GameSwitch';
 import { FactGrid, Panel, SectionHead, type Fact } from '../components/common/ui';
 import { useGameCapabilities } from '../hooks/useGameCapabilities';
@@ -1024,6 +1025,9 @@ export default function PlayerProfile() {
             team={headerTeam}
             isOwnProfile={isOwnProfile}
           />
+
+          {/* Matchmaking level and commends; nothing while matchmaking is off. */}
+          <PlayerProgress playerId={player.id} />
 
           {/* The player's own match (veto, connect), first: it is what the
               nav bar's match button brings them here for. */}
