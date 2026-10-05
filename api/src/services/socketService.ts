@@ -2,6 +2,7 @@ import { Server as SocketIOServer, type Socket } from 'socket.io';
 import type { Server as HTTPServer, IncomingMessage, ServerResponse } from 'http';
 import type { Request } from 'express';
 import { log } from '../utils/logger';
+import { getRealViewerSteamId } from '../utils/viewerIdentity';
 import { checkAdminAccess } from '../middleware/auth';
 import { matchChanged } from '../core/matchChangeBus';
 import type { AdminCall, AdminCallResolvedEvent } from '../types/adminCall.types';
@@ -117,6 +118,16 @@ export function initializeSocket(httpServer: HTTPServer, options: SocketOptions 
     });
     socket.on('admin:unsubscribe', () => {
       void socket.leave(ADMIN_ROOM);
+    });
+
+    // A signed-in player's own events (matchmaking): room `player:<id>`, for
+    // the account the handshake's session or signed cookie names. Nothing for
+    // an anonymous socket. The client asks again on every `connect`.
+    socket.on('player:subscribe', (ack?: unknown) => {
+      const reply = typeof ack === 'function' ? (ack as (body: unknown) => void) : () => undefined;
+      const playerId = getRealViewerSteamId(handshakeAsRequest(socket));
+      if (!playerId) return reply({ ok: false });
+      void Promise.resolve(socket.join(playerRoom(playerId))).then(() => reply({ ok: true }));
     });
 
     socket.on('disconnect', () => {
@@ -251,6 +262,18 @@ export function emitCompatUpdate(payload: CompatUpdateEvent): void {
     io.to(COMPAT_ROOM).emit('compat:update', payload);
     log.debug('Emitted compat update', { runId: payload.run.run.id });
   }
+}
+
+const playerRoom = (playerId: string) => `player:${playerId}`;
+
+/**
+ * Tell players their matchmaking state changed (`mm:changed`, no payload: the
+ * client reads GET /api/matchmaking/me again). Rooms `player:<id>`.
+ */
+export function emitMatchmakingChanged(playerIds: Iterable<string>): void {
+  if (!io) return;
+  const rooms = [...new Set(playerIds)].map(playerRoom);
+  if (rooms.length > 0) io.to(rooms).emit('mm:changed');
 }
 
 /** A new admin call, to the signed-in admins (room `admins`). */

@@ -1,4 +1,5 @@
 import { test, expect, request as playwrightRequest, type APIRequestContext } from '@playwright/test';
+import { io, type Socket } from 'socket.io-client';
 import {
   abandonCooldownSeconds,
   isAbandon,
@@ -370,5 +371,36 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
     expect((await me(players[0].ctx)).cooldownUntil).toBeNull();
 
     for (const p of players) await p.ctx.delete('/api/matchmaking/queue', { data: {} });
+  });
+  test('live: a player\'s socket hears mm:changed for their own changes only', TAGS, async () => {
+    const a = await player();
+    const b = await player();
+    contexts.push(a.ctx, b.ctx);
+    const connect = async (ctx: APIRequestContext): Promise<Socket> => {
+      const cookie = (await ctx.storageState()).cookies.map((c) => `${c.name}=${c.value}`).join('; ');
+      const socket = io(BASE_URL, { transports: ['polling'], extraHeaders: { cookie }, forceNew: true });
+      await new Promise<void>((resolve, reject) => {
+        socket.once('connect', () => resolve());
+        socket.once('connect_error', reject);
+      });
+      const joined = await new Promise<{ ok: boolean }>((resolve) => socket.emit('player:subscribe', resolve));
+      expect(joined.ok).toBe(true);
+      return socket;
+    };
+    const sa = await connect(a.ctx);
+    const sb = await connect(b.ctx);
+    let bHeard = 0;
+    sb.on('mm:changed', () => (bHeard += 1));
+    try {
+      const heard = new Promise<void>((resolve) => sa.once('mm:changed', () => resolve()));
+      expect((await a.ctx.post('/api/matchmaking/queue', { data: { mode: '5v5' } })).ok()).toBe(true);
+      await heard;
+      await a.ctx.delete('/api/matchmaking/queue', { data: {} });
+      await new Promise((r) => setTimeout(r, 300));
+      expect(bHeard).toBe(0);
+    } finally {
+      sa.close();
+      sb.close();
+    }
   });
 });

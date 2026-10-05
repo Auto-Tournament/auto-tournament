@@ -1,12 +1,16 @@
 /**
  * The signed-in player's matchmaking state (GET /api/matchmaking/me), shared
  * by every component that shows it: the Play page, the queue bar, the accept
- * dialog and the nav link. One poll for the whole app, every 2 s while
- * matchmaking is in use, every 20 s while idle, and every minute while it is
- * not available to this player (feature off, not open to players, signed
- * out), so turning it on shows up without a reload.
+ * dialog and the nav link.
+ *
+ * Live: one socket for the whole app joins the player's room
+ * (`player:subscribe`), and every `mm:changed` reads /me again at once. A
+ * poll stays as the fallback: every 5 s while searching or answering, every
+ * 30 s while idle, and every minute while matchmaking is not available to
+ * this player, so turning it on shows up without a reload.
  */
 import { useEffect, useSyncExternalStore } from 'react';
+import { io, type Socket } from 'socket.io-client';
 import { apiErrorMessage } from '../../utils/api';
 
 export interface MatchmakingMe {
@@ -40,6 +44,24 @@ let state: State = { available: null, me: null, skew: 0 };
 const listeners = new Set<() => void>();
 let timer: ReturnType<typeof setTimeout> | null = null;
 let users = 0;
+let socket: Socket | null = null;
+
+function openSocket() {
+  if (socket) return;
+  socket = io({ autoConnect: true });
+  // Rooms don't survive a reconnect: ask again on every connect, and read
+  // the state in case something changed while disconnected.
+  socket.on('connect', () => {
+    socket?.emit('player:subscribe');
+    void refreshMatchmaking();
+  });
+  socket.on('mm:changed', () => void refreshMatchmaking());
+}
+
+function closeSocket() {
+  socket?.close();
+  socket = null;
+}
 
 function emit(next: State) {
   state = next;
@@ -49,7 +71,7 @@ function emit(next: State) {
 function nextDelay(): number {
   if (!state.available) return 60_000;
   const me = state.me;
-  return me?.queue || me?.lobby?.status === 'accepting' ? 2_000 : 20_000;
+  return me?.queue || me?.lobby?.status === 'accepting' ? 5_000 : 30_000;
 }
 
 /** Fetch now; reschedule the next poll. */
@@ -63,8 +85,12 @@ export async function refreshMatchmaking(): Promise<void> {
       const date = Date.parse(res.headers.get('date') ?? '');
       const skew = Number.isFinite(date) ? Math.round((date - Date.now()) / 1000) : 0;
       emit({ available: true, me: body, skew });
+      // Live updates only for a viewer matchmaking is available to: the nav
+      // uses this store on every page, for everyone.
+      if (users > 0) openSocket();
     } else {
       emit({ available: false, me: null, skew: 0 });
+      closeSocket();
     }
   } catch {
     // Network blip: keep what we had.
@@ -84,9 +110,10 @@ export function useMatchmaking(): State {
     if (users === 1) void refreshMatchmaking();
     return () => {
       users -= 1;
-      if (users === 0 && timer) {
-        clearTimeout(timer);
+      if (users === 0) {
+        if (timer) clearTimeout(timer);
         timer = null;
+        closeSocket();
       }
     };
   }, []);
