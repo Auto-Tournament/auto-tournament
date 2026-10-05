@@ -48,7 +48,8 @@ const router = Router();
  *       Valve update. The hold is on while any match is loaded or live, and
  *       while the tournament is in progress — MAT's allocator may give any
  *       enabled server the next match at any moment, so the answer is
- *       fleet-wide. Requires the game server token (`X-Auto-Tournament-Token`).
+ *       fleet-wide. Requires the game server token (`X-Auto-Tournament-Token`),
+ *       or a linked csm host's own token (`Authorization: Bearer rhs_…`).
  *     security:
  *       - atServerToken: []
  *     responses:

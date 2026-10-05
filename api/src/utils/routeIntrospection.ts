@@ -31,6 +31,7 @@ const GUARD_BY_MIDDLEWARE: Record<string, Guard> = {
   requireAuth: 'admin',
   validateServerToken: 'server token',
   validateEventToken: 'server token',
+  serverOrHostToken: 'server token',
   requireMatchConfigAccess: 'server token or admin',
   requireCompatIngestToken: 'compat ingest token',
   requireIntegratorAuth: 'integrator token or admin',
