@@ -13,6 +13,7 @@ import {
   LinearProgress,
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { ArrowsLeftRightIcon, CheckCircleIcon, ProhibitIcon } from '@phosphor-icons/react';
 import { VetoMapCard } from './VetoMapCard';
 import { getMapData, getMapDisplayName } from '../maps/mapData';
@@ -154,6 +155,9 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   }, [socket, matchSlug, storeMapInfo]);
 
   // Memoize mapsToShow - must be called before any early returns (Rules of Hooks)
+  // Motion (punchy, short): a decided map leaves the grid, the rest close up. Off with reduced motion.
+  const reduceMotion = useReducedMotion();
+
   const mapsToShow = useMemo(() => {
     if (!vetoState) return [];
 
@@ -522,17 +526,31 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           >
             {isMyTurn ? (
               <>
+                {/* One plain question (design draft "Veto B"): only the maps still in play below. */}
                 <Typography
-                  variant="h5"
+                  key={`q-${vetoState.currentStep}`}
+                  component={motion.h2}
+                  variant="h4"
+                  initial={reduceMotion ? false : { opacity: 0, y: 8, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 520, damping: 30 }}
                   className="veto-turn-title"
-                  sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 1.25,
+                    fontWeight: 600,
+                    fontSize: { xs: '1.6rem', md: '2.2rem' },
+                    lineHeight: 1.15,
+                    letterSpacing: '-0.01em',
+                  }}
                 >
-                  <ActionIcon size={26} weight="bold" aria-hidden />
+                  <ActionIcon size={30} weight="bold" aria-hidden />
                   {currentAction === 'ban'
-                    ? t('vetoInterface.yourTurnToBan')
+                    ? t('vetoInterface.question.ban')
                     : currentAction === 'pick'
-                    ? t('vetoInterface.yourTurnToPick')
-                    : t('vetoInterface.yourTurnToChooseSide')}
+                    ? t('vetoInterface.question.pick')
+                    : t('vetoInterface.question.side')}
                 </Typography>
                 {currentAction !== 'side_pick' && (
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
@@ -739,7 +757,15 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
               : undefined
           }
         >
-          {mapsToShow.map((map) => {
+          <AnimatePresence mode="popLayout" initial={false}>
+          {mapsToShow
+            // Decided maps leave the grid; they are listed in one line below it.
+            .filter(
+              (map) =>
+                !vetoState.bannedMaps.includes(map.name) &&
+                !vetoState.pickedMaps.find((p) => p.mapName === map.name)
+            )
+            .map((map) => {
             const mapState = vetoState.bannedMaps.includes(map.name)
               ? 'banned'
               : vetoState.pickedMaps.find((p) => p.mapName === map.name)
@@ -757,7 +783,26 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
               : undefined;
 
             return (
-              <Grid size={{ xs: 12, sm: 6, md: 3 }} key={map.name}>
+              <Grid
+                size={{ xs: 12, sm: 6, md: 4 }}
+                key={map.name}
+                component={motion.div}
+                layout={!reduceMotion}
+                initial={false}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={
+                  reduceMotion
+                    ? { opacity: 0, transition: { duration: 0.12 } }
+                    : {
+                        opacity: 0,
+                        scale: 0.82,
+                        rotate: currentAction === 'ban' ? -2 : 0,
+                        filter: `drop-shadow(0 0 18px ${withAlpha(actionColor, 0.7)})`,
+                        transition: { duration: 0.32, ease: [0.55, 0, 1, 0.45] },
+                      }
+                }
+                transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+              >
                 <VetoMapCard
                   mapName={map.name}
                   displayName={map.displayName}
@@ -774,7 +819,36 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
               </Grid>
             );
           })}
+          </AnimatePresence>
         </Grid>
+      )}
+
+      {/* What is decided so far, in one quiet line: the picks with who chose them, and the bans. */}
+      {(vetoState.pickedMaps.length > 0 || vetoState.bannedMaps.length > 0) && (
+        <Box
+          data-testid="veto-decided-summary"
+          sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 2.5, justifyContent: 'center', color: 'text.secondary', fontSize: '0.9rem' }}
+        >
+          {vetoState.pickedMaps.map((pick) => (
+            <span key={`pick-${pick.mapNumber}`}>
+              <Box component="span" sx={{ color: color.pick, fontWeight: 600 }}>
+                {t('vetoInterface.decided.map', { number: pick.mapNumber })}
+              </Box>{' '}
+              {allMaps.get(pick.mapName)?.displayName || getMapDisplayName(pick.mapName)}
+              {pick.pickedBy === 'team1' || pick.pickedBy === 'team2'
+                ? ` · ${t('vetoInterface.decided.pickedBy', { team: pick.pickedBy === 'team1' ? team1Name : team2Name })}`
+                : ''}
+            </span>
+          ))}
+          {vetoState.bannedMaps.length > 0 && (
+            <span>
+              <Box component="span" sx={{ color: color.ban, fontWeight: 600 }}>
+                {t('vetoInterface.decided.out')}
+              </Box>{' '}
+              {vetoState.bannedMaps.map((m) => allMaps.get(m)?.displayName || getMapDisplayName(m)).join(', ')}
+            </span>
+          )}
+        </Box>
       )}
 
       {/* Veto History */}

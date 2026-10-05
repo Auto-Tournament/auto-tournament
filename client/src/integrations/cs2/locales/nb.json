@@ -370,7 +370,17 @@
       "matchNotFound": "Kampen ble ikke funnet",
       "unauthorized": "Bare spillere på ett av de to deltakende lagene kan utføre veto-handlinger for denne kampen."
     },
-    "decider": "Avgjørende kart"
+    "decider": "Avgjørende kart",
+    "question": {
+      "ban": "Hvilket kart vil dere fjerne?",
+      "pick": "Hvilket kart vil dere spille?",
+      "side": "Hvilken side vil dere starte på?"
+    },
+    "decided": {
+      "map": "Kart {{number}}",
+      "pickedBy": "valgt av {{team}}",
+      "out": "Ute:"
+    }
   },
   "matchInfo": {
     "server": {

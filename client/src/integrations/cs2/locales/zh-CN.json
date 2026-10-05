@@ -370,7 +370,17 @@
       "matchNotFound": "未找到比赛",
       "unauthorized": "只有参与队伍中的队员才能对此比赛执行禁选操作。"
     },
-    "decider": "Decider"
+    "decider": "Decider",
+    "question": {
+      "ban": "Which map do you want to ban?",
+      "pick": "Which map do you want to play?",
+      "side": "Which side do you want to start on?"
+    },
+    "decided": {
+      "map": "Map {{number}}",
+      "pickedBy": "picked by {{team}}",
+      "out": "Out:"
+    }
   },
   "matchInfo": {
     "server": {

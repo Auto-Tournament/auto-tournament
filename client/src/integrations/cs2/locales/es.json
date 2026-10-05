@@ -370,7 +370,17 @@
       "matchNotFound": "Partido no encontrado",
       "unauthorized": "Solo los jugadores de uno de los dos equipos participantes pueden realizar acciones de veto para este partido."
     },
-    "decider": "Decider"
+    "decider": "Decider",
+    "question": {
+      "ban": "Which map do you want to ban?",
+      "pick": "Which map do you want to play?",
+      "side": "Which side do you want to start on?"
+    },
+    "decided": {
+      "map": "Map {{number}}",
+      "pickedBy": "picked by {{team}}",
+      "out": "Out:"
+    }
   },
   "matchInfo": {
     "server": {
