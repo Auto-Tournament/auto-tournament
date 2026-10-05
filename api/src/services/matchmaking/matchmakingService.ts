@@ -21,7 +21,11 @@ import { configuredPublicOrigin } from '../../utils/publicOrigin';
 import { rating as osRating, rate as osRate } from 'openskill';
 import { DEFAULT_SIGMA, openSkillToDisplayElo } from '../../utils/ratingMath';
 import { progressionService } from './progressionService';
+import { playerConnectionService } from '../playerConnectionService';
 import {
+  ABANDON_WINDOW_SECONDS,
+  abandonCooldownSeconds,
+  isAbandon,
   ACCEPT_SECONDS,
   cooldownSeconds,
   findGroup,
@@ -114,6 +118,8 @@ interface RatingRow {
 
 export class MatchmakingService {
   private chain: Promise<unknown> = Promise.resolve();
+  /** Presence of each live matchmaking match: since when it is watched, and who was last seen when. */
+  private presence = new Map<string, { since: number; lastSeen: Map<string, number> }>();
   private timer: NodeJS.Timeout | null = null;
 
   constructor(private readonly clock: () => number = () => Math.floor(Date.now() / 1000)) {}
@@ -293,6 +299,8 @@ export class MatchmakingService {
         [this.clock()]
       );
       for (const lobby of expired) await this.resolveTimeout(lobby);
+
+      await this.watchPresence();
 
       const created: string[] = [];
       for (const mode of MODES) {
@@ -481,6 +489,73 @@ export class MatchmakingService {
     });
   }
 
+  // --- abandons --------------------------------------------------------
+
+  /**
+   * Who is missing from a loaded or live matchmaking match. A player who has
+   * not been connected for 5 minutes since the server was ready (or since this
+   * process started watching) gets an abandon: a cooldown, no XP, and a full
+   * loss. One per player per match.
+   */
+  private async watchPresence(): Promise<void> {
+    const rows = await db.queryAsync<{ lobby_id: string; match_slug: string; status: string; loaded_at: number | null }>(
+      `SELECT l.id AS lobby_id, l.match_slug, m.status, m.loaded_at
+         FROM mm_lobbies l JOIN matches m ON m.slug = l.match_slug
+        WHERE l.status = 'ready'`
+    );
+    const now = this.clock();
+    const live = new Set<string>();
+    for (const row of rows) {
+      if (row.status !== 'loaded' && row.status !== 'live') continue;
+      live.add(row.match_slug);
+      let watch = this.presence.get(row.match_slug);
+      if (!watch) {
+        watch = { since: now, lastSeen: new Map() };
+        this.presence.set(row.match_slug, watch);
+      }
+      for (const p of playerConnectionService.getStatus(row.match_slug)?.connectedPlayers ?? []) {
+        watch.lastSeen.set(p.steamId, now);
+      }
+      const players = await db.queryAsync<{ player_id: string }>('SELECT player_id FROM mm_lobby_players WHERE lobby_id = ?', [
+        row.lobby_id,
+      ]);
+      const flagged = new Set(
+        (
+          await db.queryAsync<{ player_id: string }>(
+            "SELECT player_id FROM mm_penalties WHERE lobby_id = ? AND kind = 'abandon'",
+            [row.lobby_id]
+          )
+        ).map((r) => r.player_id)
+      );
+      for (const { player_id: id } of players) {
+        if (flagged.has(id)) continue;
+        const gone = isAbandon({
+          now,
+          serverReadyAt: Number(row.loaded_at ?? now),
+          watchingSince: watch.since,
+          lastSeen: watch.lastSeen.get(id) ?? null,
+        });
+        if (gone) {
+          await this.penalizeAbandon(id, row.lobby_id);
+          log.info(`[MATCHMAKING] ${id} abandoned ${row.match_slug}`);
+        }
+      }
+    }
+    for (const slug of [...this.presence.keys()]) if (!live.has(slug)) this.presence.delete(slug);
+  }
+
+  private async penalizeAbandon(playerId: string, lobbyId: string): Promise<void> {
+    const now = this.clock();
+    const row = await db.queryOneAsync<{ n: number | string }>(
+      "SELECT COUNT(*) AS n FROM mm_penalties WHERE player_id = ? AND kind = 'abandon' AND created_at > ? AND cleared_by IS NULL",
+      [playerId, now - ABANDON_WINDOW_SECONDS]
+    );
+    await db.runAsync(
+      "INSERT INTO mm_penalties (player_id, kind, lobby_id, created_at, cooldown_until) VALUES (?, 'abandon', ?, ?, ?)",
+      [playerId, lobbyId, now, now + abandonCooldownSeconds(Number(row?.n ?? 0))]
+    );
+  }
+
   // --- ratings (phase 2) -----------------------------------------------
 
   /**
@@ -537,9 +612,23 @@ export class MatchmakingService {
         { rank: ranks }
       );
       const now = this.clock();
+      // Who abandoned: their team's loss is theirs in full, and teammates who
+      // stayed lose less (scaled by how many were there).
+      const abandoned = new Set(
+        (
+          await db.queryAsync<{ player_id: string }>(
+            "SELECT player_id FROM mm_penalties WHERE lobby_id = ? AND kind = 'abandon'",
+            [lobby.id]
+          )
+        ).map((r) => r.player_id)
+      );
       const write = async (ids: string[], after: Array<{ mu: number; sigma: number }>, won: boolean) => {
+        const present = ids.filter((id) => !abandoned.has(id)).length;
         for (const [i, id] of ids.entries()) {
           const b = before.get(id)!;
+          if (!won && !abandoned.has(id) && present < ids.length && after[i].mu < b.mu) {
+            after[i] = { ...after[i], mu: b.mu + (after[i].mu - b.mu) * (present / ids.length) };
+          }
           await db.runAsync(
             `INSERT INTO mm_ratings (player_id, game, mode, mu, sigma, games, wins, updated_at)
              VALUES (?, 'cs2', ?, ?, ?, ?, ?, ?)
@@ -557,7 +646,7 @@ export class MatchmakingService {
       await write(team1, after1, winner === 'team1');
       await write(team2, after2, winner === 'team2');
       await db.runAsync("UPDATE mm_lobbies SET status = 'finished' WHERE id = ?", [lobby.id]);
-      await progressionService.awardMatchXp(matchSlug, winner);
+      await progressionService.awardMatchXp(matchSlug, winner, abandoned);
       log.info(`[MATCHMAKING] ${matchSlug} rated (${winner === 'none' ? 'draw' : `${winner} won`})`);
       return true;
     });

@@ -34,6 +34,37 @@ export function cooldownSeconds(previousOffencesIn24h: number): number {
   return COOLDOWN_LADDER_SECONDS[Math.min(step, COOLDOWN_LADDER_SECONDS.length - 1)];
 }
 
+/** Abandons (left or never joined): 1 h, doubling for each one in the last 7 days, at most 7 days. */
+export const ABANDON_WINDOW_SECONDS = 7 * 24 * 60 * 60;
+export const ABANDON_BASE_SECONDS = 60 * 60;
+
+export function abandonCooldownSeconds(previousAbandonsIn7d: number): number {
+  const n = Math.max(0, Math.floor(previousAbandonsIn7d));
+  return Math.min(ABANDON_WINDOW_SECONDS, ABANDON_BASE_SECONDS * 2 ** Math.min(n, 10));
+}
+
+/** How long a player may be missing from a match before it counts as an abandon. */
+export const ABANDON_GRACE_SECONDS = 5 * 60;
+
+/**
+ * Presence rule for one player of a matchmaking match, from what the watcher
+ * saw. `serverReadyAt`: when the match was loaded on the server.
+ * `watchingSince`: when the watcher started seeing this match (a restart
+ * forgets who was connected, so nobody is judged on time it did not see).
+ */
+export function isAbandon(input: {
+  now: number;
+  serverReadyAt: number;
+  watchingSince: number;
+  /** Last time the player was seen connected; null = never. */
+  lastSeen: number | null;
+}): boolean {
+  const from = Math.max(input.serverReadyAt, input.watchingSince);
+  if (input.now - from < ABANDON_GRACE_SECONDS) return false;
+  if (input.lastSeen === null) return true;
+  return input.now - input.lastSeen >= ABANDON_GRACE_SECONDS;
+}
+
 /** A party waiting in the queue. */
 export interface QueuedParty {
   entryId: string;

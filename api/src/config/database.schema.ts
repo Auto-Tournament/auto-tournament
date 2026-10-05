@@ -808,7 +808,7 @@ export function getSchemaSQL(): string {
     CREATE TABLE IF NOT EXISTS mm_penalties (
       id SERIAL PRIMARY KEY,
       player_id TEXT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
-      kind TEXT NOT NULL, -- 'decline' | 'no_show'
+      kind TEXT NOT NULL, -- 'decline' | 'no_show' | 'abandon'
       lobby_id TEXT,
       created_at INTEGER NOT NULL,
       cooldown_until INTEGER NOT NULL,
