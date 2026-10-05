@@ -4,10 +4,12 @@
  *
  * - `whitelist.set {enabled, steamids?}`: the whitelist plugin's list and
  *   on/off (`unsupported` without whitelist.so; at most 1000 ids);
- * - `practice.set {on}`: practice mode (`unsupported` without practice.so,
- *   `bad_phase` while a match is loaded);
+ * - `practice.set {on?, always?}`: practice mode (`unsupported` without
+ *   practice.so, `bad_phase` while a match is loaded); `always` makes it a
+ *   practice server (practice on at every map; Ready Up with `fleet.cmds.v1`);
  * - `plugins.set {enable?, disable?}`: load / unload plugins, remembered
- *   across restarts (not `match` / `fleet`; at most 16 per list).
+ *   across restarts (not `fleet`; `match` only with `fleet.cmds.v1`; at most
+ *   16 per list).
  *
  * The choice is stored per server (the Servers page shows it) and the
  * command's id is remembered so its answer can be shown.
@@ -20,8 +22,10 @@ import { isSteam64 } from './admins';
 import {
   createdPluginSet,
   pluginSetCommand,
+  pluginsSetFor,
   pluginsStateDiffers,
   pluginsStateOf,
+  runsFleetCmds,
   type StoredPlugins,
 } from './pluginSets';
 import { readPrefs, recordPush, writePref } from './store';
@@ -29,7 +33,7 @@ import { readPrefs, recordPush, writePref } from './store';
 export const MAX_WHITELIST = 1000;
 export const MAX_PLUGINS_PER_LIST = 16;
 const PLUGIN_NAME = /^[a-z0-9_-]{1,32}$/;
-const PROTECTED_PLUGINS = new Set(['match', 'fleet']);
+const PROTECTED_PLUGINS = new Set(['fleet']);
 /** A practice switch that could not be delivered in 10 minutes is dropped (answered `expired`). */
 const PRACTICE_TTL_MS = 10 * 60 * 1000;
 
@@ -130,6 +134,20 @@ export async function setPractice(
   return sent;
 }
 
+/** `practice.set {always}` alone: a practice server or not (no stored choice changes). */
+async function sendPracticeAlways(
+  serverId: string,
+  always: boolean,
+  issuedBy: IssuedBy
+): Promise<void> {
+  await sendCmd(serverId, {
+    name: 'practice.set',
+    args: { always },
+    issued_by: issuedBy,
+    expires_at: Date.now() + PRACTICE_TTL_MS,
+  });
+}
+
 export async function setPlugins(
   serverId: string,
   value: StoredPlugins,
@@ -137,20 +155,35 @@ export async function setPlugins(
   updatedBy: string | null
 ): Promise<{ id: string; seq: number; delivered: boolean }> {
   await writePref(serverId, 'plugins', value, updatedBy);
-  const sent = await sendPluginsSet(serverId, value, issuedBy);
-  // The Practice set is for a practice server: switch practice mode on, or
-  // the match plugin (always loaded: the fleet link runs in it) leaves the
-  // server in scrim warm-up. Sent after plugins.set, so practice.so is on.
-  if (value.preset === 'practice') await setPractice(serverId, true, issuedBy, updatedBy);
+  const fleetCmds = await runsFleetCmds(serverId);
+  const sent = await sendPluginsSet(serverId, value, issuedBy, fleetCmds);
+  // Sent after plugins.set, so practice.so is loaded. The Practice set is a
+  // practice server: practice on, and always=1 so it stays on at every map
+  // (Ready Up without fleet.cmds.v1 keeps match loaded and takes `on` only).
+  // Any other set with practice in it is not one: always off again.
+  if (value.preset === 'practice') {
+    await writePref(serverId, 'practice', true, updatedBy);
+    const practice = await sendCmd(serverId, {
+      name: 'practice.set',
+      args: fleetCmds ? { on: true, always: true } : { on: true },
+      issued_by: issuedBy,
+      expires_at: Date.now() + PRACTICE_TTL_MS,
+    });
+    await recordPush(serverId, 'practice', { id: practice.id, seq: practice.seq });
+  } else if (fleetCmds && value.enable.includes('practice')) {
+    await sendPracticeAlways(serverId, false, issuedBy);
+  }
   return sent;
 }
 
 /** Send a server its plugins.set lists (what is stored is not changed). */
 async function sendPluginsSet(
   serverId: string,
-  value: StoredPlugins,
-  issuedBy: IssuedBy
+  stored: StoredPlugins,
+  issuedBy: IssuedBy,
+  fleetCmds: boolean
 ): Promise<{ id: string; seq: number; delivered: boolean }> {
+  const value = pluginsSetFor(stored, fleetCmds);
   const args: Record<string, unknown> = {};
   if (value.enable.length > 0) args.enable = value.enable;
   if (value.disable.length > 0) args.disable = value.disable;
@@ -195,8 +228,9 @@ export async function pluginsOnHello(
   if (!state) return null;
   const last = prefs.pushed.plugins;
   if (last?.seq !== undefined && last.seq > hello.stream.last_rx_seq) return null;
-  if (!pluginsStateDiffers(prefs.plugins, state)) return null;
-  await sendPluginsSet(serverId, prefs.plugins, PLATFORM_ISSUER);
+  const fleetCmds = await runsFleetCmds(serverId);
+  if (!pluginsStateDiffers(pluginsSetFor(prefs.plugins, fleetCmds), state)) return null;
+  await sendPluginsSet(serverId, prefs.plugins, PLATFORM_ISSUER, fleetCmds);
   log.info(`[FLEET] ${serverId}: its plugins differ from its plugin set; plugins.set sent again`);
   return 'resync';
 }
