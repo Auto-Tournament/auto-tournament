@@ -468,7 +468,12 @@
       "cooldown": "Du takket nei til eller gikk glipp av en kamp. Du kan søke igjen om {{minutes}} min.",
       "rating_one": "Rating {{elo}} · {{count}} kamp · {{wins}} vunnet",
       "rating_other": "Rating {{elo}} · {{count}} kamper · {{wins}} vunnet",
-      "mode": "Modus"
+      "mode": "Modus",
+      "modeName": {
+        "5v5": "5v5",
+        "2v2": "2v2 Wingman",
+        "1v1": "1v1"
+      }
     },
     "queue": {
       "searching": "Søker {{mode}}",
@@ -591,6 +596,10 @@
       "review": "Spillere å se på (tommel ned)",
       "voters_one": "{{count}} stemme",
       "voters_other": "{{count}} stemmer"
+    },
+    "roulette": {
+      "rolling": "Velger kart …",
+      "picked": "Kart: {{map}}"
     }
   }
 }

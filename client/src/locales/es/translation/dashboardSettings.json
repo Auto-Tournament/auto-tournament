@@ -165,7 +165,14 @@
           "reservedDescription": "Tournament matches go first, but leave this many free servers for matchmaking while players are searching. 0 = none.",
           "reservedLabel": "Servers",
           "modesTitle": "Modes",
-          "modesDescription": "What players can search. 1v1 is an aim duel, and lets you test matchmaking with two accounts."
+          "modesDescription": "What players can search. 1v1 is an aim duel, and lets you test matchmaking with two accounts.",
+          "poolsTitle": "Maps per mode",
+          "poolsDescription": "The map pool each mode picks from (Maps page; Workshop maps work too). The match room shows a roulette over the pool before revealing the map.",
+          "poolDefault": {
+            "5v5": "Default: Active Duty",
+            "2v2": "Default: every wingman map",
+            "1v1": "Default: Active Duty"
+          }
         }
       }
     }

@@ -13,8 +13,16 @@ import { resolveViewerIdentity } from '../utils/viewerIdentity';
 import { isSameSiteRequest } from '../utils/accountConnections';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
-import { matchmakingService, MatchmakingError, MM_MODES, MM_RESERVED_SERVERS, MM_SEARCH_WINDOW } from '../services/matchmaking/matchmakingService';
-import { MODES, parseReservedServers, parseSearchWindow, validateSearchWindow } from '../services/matchmaking/rules';
+import {
+  matchmakingService,
+  MatchmakingError,
+  MM_MODE_POOLS,
+  MM_MODES,
+  MM_RESERVED_SERVERS,
+  MM_SEARCH_WINDOW,
+} from '../services/matchmaking/matchmakingService';
+import { MODES, parseModePools, parseReservedServers, parseSearchWindow, validateSearchWindow } from '../services/matchmaking/rules';
+import { hasIntegration, getIntegration } from '../integrations/registry';
 import { progressionService, ProgressionError } from '../services/matchmaking/progressionService';
 
 const router = Router();
@@ -115,6 +123,8 @@ router.get(
       enabled: true,
       modes: await matchmakingService.enabledModes(),
       allModes: MODES,
+      modePools: parseModePools(await db.getAppSettingAsync(MM_MODE_POOLS)),
+      pools: hasIntegration('cs2') ? ((await getIntegration('cs2').matchmakingPools?.()) ?? []) : [],
       openToPlayers: open,
       leaderboardPublic: board,
       searchWindow: searchWindowView(await db.getAppSettingAsync(MM_SEARCH_WINDOW)),
@@ -586,6 +596,23 @@ router.put(
     ) {
       return res.status(400).json({ success: false, error: `modes must be a non-empty list of ${MODES.join(', ')}` });
     }
+    const poolsInput = req.body?.modePools;
+    if (poolsInput !== undefined) {
+      const ok =
+        poolsInput !== null &&
+        typeof poolsInput === 'object' &&
+        !Array.isArray(poolsInput) &&
+        Object.entries(poolsInput as Record<string, unknown>).every(
+          ([m, id]) => MODES.includes(m as never) && (id === null || (Number.isInteger(id) && (id as number) > 0))
+        );
+      if (!ok) return res.status(400).json({ success: false, error: 'modePools maps a mode to a pool id, or null for the default' });
+      const next = { ...parseModePools(await db.getAppSettingAsync(MM_MODE_POOLS)) } as Record<string, number>;
+      for (const [m, id] of Object.entries(poolsInput as Record<string, number | null>)) {
+        if (id === null) delete next[m];
+        else next[m] = id;
+      }
+      await db.setAppSettingAsync(MM_MODE_POOLS, Object.keys(next).length ? JSON.stringify(next) : null);
+    }
     const reservedInput = req.body?.reservedServers;
     if (reservedInput !== undefined && !(Number.isInteger(reservedInput) && reservedInput >= 0 && reservedInput <= 50)) {
       return res.status(400).json({ success: false, error: 'reservedServers must be a whole number from 0 to 50' });
@@ -605,7 +632,14 @@ router.put(
       return res.status(400).json({ success: false, error: 'leaderboardPublic must be a boolean' });
     }
     if (modesInput !== undefined) await db.setAppSettingAsync(MM_MODES, JSON.stringify([...new Set(modesInput)]));
-    if (open === undefined && board === undefined && window === undefined && reservedInput === undefined && modesInput === undefined) {
+    if (
+      open === undefined &&
+      board === undefined &&
+      window === undefined &&
+      reservedInput === undefined &&
+      modesInput === undefined &&
+      poolsInput === undefined
+    ) {
       return res.status(400).json({
         success: false,
         error: 'Send openToPlayers, leaderboardPublic, searchWindow and/or reservedServers',
@@ -623,6 +657,7 @@ router.put(
       searchWindow: searchWindowView(await db.getAppSettingAsync(MM_SEARCH_WINDOW)),
       reservedServers: parseReservedServers(await db.getAppSettingAsync(MM_RESERVED_SERVERS)),
       modes: await matchmakingService.enabledModes(),
+      modePools: parseModePools(await db.getAppSettingAsync(MM_MODE_POOLS)),
     });
   })
 );

@@ -68,6 +68,10 @@ test.describe.serial('matchmaking: Play page', () => {
     }
 
     await expect(page).toHaveURL(new RegExp(`/play/${lobbyId}$`), { timeout: 30_000 });
+    // The map roulette rolls, then stops on the match's map.
+    await expect(page.getByTestId('mm-roulette')).toBeVisible();
+    await expect(page.getByTestId('mm-roulette-picked')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/^Map: /)).toBeVisible();
     await expect(page.getByTestId('mm-team-1')).toBeVisible();
     await expect(page.getByTestId('mm-team-2')).toBeVisible();
     await expect(page.getByText('Browser Player')).toBeVisible();

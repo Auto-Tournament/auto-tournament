@@ -789,6 +789,7 @@ export function getSchemaSQL(): string {
       accept_deadline INTEGER NOT NULL,
       cancel_reason TEXT, -- 'declined' | 'timeout' | 'restart'
       map TEXT,
+      map_pool TEXT, -- JSON [{ id, name, imageUrl }]: the maps the roulette shows, the chosen one among them
       match_slug TEXT,
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );

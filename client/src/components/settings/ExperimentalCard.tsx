@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
+import MenuItem from '@mui/material/MenuItem';
 import { useTranslation } from 'react-i18next';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -45,6 +46,8 @@ export function ExperimentalCard() {
   const [reserved, setReserved] = useState('0');
   const [mmModes, setMmModes] = useState<string[]>([]);
   const [allModes, setAllModes] = useState<string[]>([]);
+  const [pools, setPools] = useState<Array<{ id: number; name: string; maps: number }>>([]);
+  const [modePools, setModePools] = useState<Record<string, number>>({});
   const mmEnabled = features?.find((f) => f.id === 'matchmaking')?.enabled ?? false;
 
   useEffect(() => {
@@ -57,6 +60,8 @@ export function ExperimentalCard() {
         reservedServers?: number;
         modes?: string[];
         allModes?: string[];
+        pools?: Array<{ id: number; name: string; maps: number }>;
+        modePools?: Record<string, number>;
       }>(
         '/api/matchmaking/status'
       )
@@ -67,6 +72,8 @@ export function ExperimentalCard() {
         setReserved(String(res.reservedServers ?? 0));
         setMmModes(res.modes ?? []);
         setAllModes(res.allModes ?? []);
+        setPools(res.pools ?? []);
+        setModePools(res.modePools ?? {});
       })
       .catch(() => setMmOpen(null));
   }, [mmEnabled]);
@@ -77,6 +84,7 @@ export function ExperimentalCard() {
     searchWindow?: SearchWindow;
     reservedServers?: number;
     modes?: string[];
+    modePools?: Record<string, number | null>;
   }) => {
     setSaving('matchmaking-open');
     try {
@@ -86,6 +94,7 @@ export function ExperimentalCard() {
         searchWindow: SearchWindow;
         reservedServers: number;
         modes: string[];
+        modePools: Record<string, number>;
       }>(
         '/api/matchmaking/admin/settings',
         patch
@@ -95,6 +104,7 @@ export function ExperimentalCard() {
       setWin(windowStrings(res.searchWindow));
       setReserved(String(res.reservedServers));
       setMmModes(res.modes);
+      setModePools(res.modePools ?? {});
       showSuccess(t('settingsPage.experimental.saved'));
     } catch (err) {
       showError(apiErrorMessage(err, t('settingsPage.experimental.saveFailed')));
@@ -240,7 +250,7 @@ export function ExperimentalCard() {
                       {allModes.map((m) => (
                         <FormControlLabel
                           key={m}
-                          label={m}
+                          label={t(`matchmaking.play.modeName.${m}`, { defaultValue: m })}
                           control={
                             <Checkbox
                               size="small"
@@ -255,6 +265,41 @@ export function ExperimentalCard() {
                             />
                           }
                         />
+                      ))}
+                    </Stack>
+                    <Typography variant="subtitle2" mt={2}>
+                      {t('settingsPage.experimental.features.matchmaking.poolsTitle')}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" display="block" mb={1}>
+                      {t('settingsPage.experimental.features.matchmaking.poolsDescription')}
+                    </Typography>
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+                      {mmModes.map((m) => (
+                        <TextField
+                          key={m}
+                          select
+                          size="small"
+                          label={t(`matchmaking.play.modeName.${m}`, { defaultValue: m })}
+                          value={modePools[m] ? String(modePools[m]) : ''}
+                          onChange={(e) =>
+                            void saveMm({ modePools: { [m]: e.target.value ? Number(e.target.value) : null } })
+                          }
+                          SelectProps={{ displayEmpty: true }}
+                          InputLabelProps={{ shrink: true }}
+                          inputProps={{ 'data-testid': `settings-mm-pool-${m}` }}
+                          sx={{ minWidth: 200 }}
+                        >
+                          <MenuItem value="">
+                            {t(`settingsPage.experimental.features.matchmaking.poolDefault.${m}`, {
+                              defaultValue: t('settingsPage.experimental.features.matchmaking.poolDefault.5v5'),
+                            })}
+                          </MenuItem>
+                          {pools.map((p) => (
+                            <MenuItem key={p.id} value={String(p.id)}>
+                              {p.name} ({p.maps})
+                            </MenuItem>
+                          ))}
+                        </TextField>
                       ))}
                     </Stack>
                     <Typography variant="subtitle2" mt={2}>

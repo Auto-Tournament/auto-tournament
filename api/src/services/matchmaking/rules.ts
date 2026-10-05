@@ -5,14 +5,30 @@
  */
 import { randomInt } from 'crypto';
 
-export type MatchmakingMode = '5v5' | '1v1';
+export type MatchmakingMode = '5v5' | '2v2' | '1v1';
 
 /**
- * Players per team for each mode. 1v1 is off unless an admin turns it on
- * (`mm_modes`): an aim duel, and the way to test matchmaking with two
- * accounts. Wingman (2v2) comes after 3.1.
+ * Players per team for each mode. 2v2 is wingman (CS2's wingman rules and
+ * maps). 2v2 and 1v1 are off unless an admin turns them on (`mm_modes`); 1v1
+ * is an aim duel, and the way to test matchmaking with two accounts.
  */
-export const TEAM_SIZE: Record<MatchmakingMode, number> = { '5v5': 5, '1v1': 1 };
+export const TEAM_SIZE: Record<MatchmakingMode, number> = { '5v5': 5, '2v2': 2, '1v1': 1 };
+
+/** The admin's map pool per mode (`mm_mode_pools`, JSON `{ mode: poolId }`); unknown modes and bad ids dropped. */
+export function parseModePools(raw: unknown): Partial<Record<MatchmakingMode, number>> {
+  let v: unknown = raw;
+  try {
+    if (typeof raw === 'string') v = JSON.parse(raw);
+  } catch {
+    v = null;
+  }
+  const out: Partial<Record<MatchmakingMode, number>> = {};
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return out;
+  for (const [mode, id] of Object.entries(v as Record<string, unknown>)) {
+    if (isMode(mode) && typeof id === 'number' && Number.isInteger(id) && id > 0) out[mode] = id;
+  }
+  return out;
+}
 
 /** Modes on when the admin never chose (`mm_modes` unset). */
 export const DEFAULT_MODES: MatchmakingMode[] = ['5v5'];

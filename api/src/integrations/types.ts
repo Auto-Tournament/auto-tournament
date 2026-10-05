@@ -923,11 +923,18 @@ export interface GameIntegration {
    */
   configuredResourceCount?(): Promise<number>;
   /**
-   * The maps matchmaking picks from (docs/design/matchmaking.md: random from
-   * the pool). CS2: the Active Duty pool. Omitted or empty: the game has no
-   * matchmaking maps.
+   * The maps matchmaking picks from for a mode (docs/design/matchmaking.md:
+   * random from the pool), with what the map roulette shows. `poolId`: the
+   * pool an admin chose for that mode (`matchmakingPools`), else the game's
+   * default (CS2: Active Duty; all wingman maps for 2v2). Omitted or empty:
+   * no matchmaking maps for that mode.
    */
-  matchmakingMapPool?(): Promise<string[]>;
+  matchmakingMapPool?(
+    mode: string,
+    poolId?: number | null
+  ): Promise<Array<{ id: string; name: string; imageUrl: string | null }>>;
+  /** The map pools an admin can pick per matchmaking mode (CS2: the enabled map pools). */
+  matchmakingPools?(): Promise<Array<{ id: number; name: string; maps: number }>>;
   /**
    * How long a freed resource rests before the next match (CS2: the server
    * grace period). The core waits this long between shuffle rounds; 0 when

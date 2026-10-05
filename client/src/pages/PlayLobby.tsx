@@ -12,6 +12,7 @@ import { PageHead, Panel, SectionHead } from '../components/common/ui';
 import { pageTitle } from '../utils/pageTitle';
 import { useIntegration } from '../integrations/registry';
 import { MatchResult } from '../components/matchmaking/MatchResult';
+import { MapRoulette, type RouletteMap } from '../components/matchmaking/MapRoulette';
 import { paths, playerProfilePath } from '../paths';
 
 interface LobbyView {
@@ -21,6 +22,7 @@ interface LobbyView {
   map: string | null;
   matchSlug: string | null;
   matchStatus: string | null;
+  mapPool: RouletteMap[];
   teams: Array<{ team: number; players: Array<{ id: string; name: string; accepted: boolean }> }>;
 }
 
@@ -74,6 +76,11 @@ export default function PlayLobby() {
                 .filter(Boolean)
                 .join(' · ')}
             />
+            {lobby.map && lobby.mapPool.length > 1 && lobby.matchStatus !== 'completed' && (
+              <Panel sx={{ p: 3, mb: 2 }}>
+                <MapRoulette lobbyId={lobby.id} maps={lobby.mapPool} chosen={lobby.map} />
+              </Panel>
+            )}
             {lobby.matchSlug && lobby.matchStatus === 'completed' && (
               <Box sx={{ mb: 2 }}>
                 <MatchResult matchSlug={lobby.matchSlug} />

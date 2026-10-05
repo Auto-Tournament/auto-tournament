@@ -438,21 +438,62 @@ export const cs2Integration: GameIntegration = {
     return enabled + Number(unlinked?.n ?? 0);
   },
 
-  /** Matchmaking's map pool: the Active Duty pool (maps/mapSync.ts keeps it in step with Valve). */
-  async matchmakingMapPool() {
+  /**
+   * Matchmaking's maps for a mode: the pool the admin chose for it, else the
+   * Active Duty pool (maps/mapSync.ts keeps it in step with Valve), and for
+   * 2v2 every wingman map (Valve's and Workshop ones tagged Wingman).
+   */
+  async matchmakingMapPool(mode: string, poolId?: number | null) {
     const { db } = await import('../../config/database');
     const { ACTIVE_DUTY_POOL } = await import('./maps/mapSync');
-    const row = await db.queryOneAsync<{ map_ids: string }>(
-      'SELECT map_ids FROM cs2_map_pools WHERE name = ? AND enabled = 1',
-      [ACTIVE_DUTY_POOL]
-    );
-    if (!row) return [];
-    try {
-      const ids: unknown = JSON.parse(row.map_ids);
-      return Array.isArray(ids) ? ids.filter((id): id is string => typeof id === 'string' && id.length > 0) : [];
-    } catch {
-      return row.map_ids.split(',').map((id) => id.trim()).filter(Boolean);
+    const parseIds = (raw: string): string[] => {
+      try {
+        const ids: unknown = JSON.parse(raw);
+        return Array.isArray(ids) ? ids.filter((id): id is string => typeof id === 'string' && id.length > 0) : [];
+      } catch {
+        return raw.split(',').map((id) => id.trim()).filter(Boolean);
+      }
+    };
+    let ids: string[] = [];
+    const chosen = poolId
+      ? await db.queryOneAsync<{ map_ids: string }>('SELECT map_ids FROM cs2_map_pools WHERE id = ?', [poolId])
+      : undefined;
+    if (chosen) {
+      ids = parseIds(chosen.map_ids);
+    } else if (mode === '2v2') {
+      ids = (await db.queryAsync<{ id: string }>("SELECT id FROM cs2_maps WHERE game_mode = 'wingman' ORDER BY id")).map((r) => r.id);
+    } else {
+      const row = await db.queryOneAsync<{ map_ids: string }>(
+        'SELECT map_ids FROM cs2_map_pools WHERE name = ? AND enabled = 1',
+        [ACTIVE_DUTY_POOL]
+      );
+      ids = row ? parseIds(row.map_ids) : [];
     }
+    if (ids.length === 0) return [];
+    const rows = await db.queryAsync<{ id: string; display_name: string; image_url: string | null }>(
+      `SELECT id, display_name, image_url FROM cs2_maps WHERE id IN (${ids.map(() => '?').join(', ')})`,
+      ids
+    );
+    const byId = new Map(rows.map((r) => [r.id, r]));
+    return ids.map((id) => ({ id, name: byId.get(id)?.display_name ?? id, imageUrl: byId.get(id)?.image_url ?? null }));
+  },
+
+  /** The enabled map pools, for the admin's pick per matchmaking mode. */
+  async matchmakingPools() {
+    const { db } = await import('../../config/database');
+    const rows = await db.queryAsync<{ id: number; name: string; map_ids: string }>(
+      'SELECT id, name, map_ids FROM cs2_map_pools WHERE enabled = 1 ORDER BY name'
+    );
+    return rows.map((r) => {
+      let maps = 0;
+      try {
+        const ids: unknown = JSON.parse(r.map_ids);
+        maps = Array.isArray(ids) ? ids.length : 0;
+      } catch {
+        maps = r.map_ids.split(',').filter((x) => x.trim()).length;
+      }
+      return { id: Number(r.id), name: r.name, maps };
+    });
   },
 
   /** The server grace period (shorter in simulation mode). */
