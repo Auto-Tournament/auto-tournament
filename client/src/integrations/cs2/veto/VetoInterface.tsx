@@ -479,21 +479,21 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           p: { xs: 2, sm: 3 },
           bgcolor: 'background.paper',
           borderRadius: `${radius.lg}px`,
+          // Your turn: the whole veto card is outlined green.
+          border: '1px solid',
+          borderColor: isMyTurn ? color.live : 'transparent',
+          transition: 'border-color 200ms ease-out',
         }}
+        data-my-turn={isMyTurn ? 'true' : 'false'}
       >
         <Stack spacing={2}>
           {/* Big, high‑contrast turn banner */}
           <Box
             sx={() => {
-              // Inset row on paper3, as on the homepage veto card. The action
-              // colour (red ban, green pick, blue side) marks the outline and
-              // title; on your turn it glows.
-              const actionColor =
-                currentAction === 'ban'
-                  ? color.ban
-                  : currentAction === 'pick'
-                    ? color.pick
-                    : color.info;
+              // Inset row on paper3, as on the homepage veto card. Your turn is
+              // green whatever the action (a red "ban" outline read as an error),
+              // and it glows; waiting for the other team stays neutral.
+              const actionColor = color.live;
 
               return {
                 p: 2,
@@ -724,14 +724,8 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                   p: 1.5,
                   borderRadius: `${radius.lg}px`,
                   border: '1px dashed',
-                  borderColor: withAlpha(
-                    currentAction === 'ban' ? color.ban : currentAction === 'pick' ? color.pick : color.info,
-                    0.5
-                  ),
-                  bgcolor: withAlpha(
-                    currentAction === 'ban' ? color.ban : currentAction === 'pick' ? color.pick : color.info,
-                    0.05
-                  ),
+                  borderColor: withAlpha(color.live, 0.5),
+                  bgcolor: withAlpha(color.live, 0.05),
                 }
               : undefined
           }
