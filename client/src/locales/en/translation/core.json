@@ -8,6 +8,8 @@
       "waitingVeto": "Waiting for veto",
       "waitingServer": "Waiting for server",
       "matchReady": "Match ready – connect",
+      "matchReadyNamed": "Match ready: {{match}}.",
+      "openMatch": "Open match",
       "snackbarOpponentMoved": "Opponent made their move"
     },
     "home": "Home",

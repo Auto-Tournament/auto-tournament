@@ -234,6 +234,8 @@ test.describe.serial('Veto API', () => {
     const first = await (await request.get('/api/players/me/match-status')).json();
     expect(first.matchSlug).toBe(match!.slug);
     expect(first.status).toBe('your_turn_veto');
+    // The navbar toast names the match.
+    expect(first.matchName).toMatch(/ vs /);
 
     // Their opponent is correctly told to wait.
     expect(await impersonatePlayer(request, actingSteamIdFor(team2))).toBe(true);

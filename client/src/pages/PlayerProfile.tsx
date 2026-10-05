@@ -994,10 +994,7 @@ export default function PlayerProfile() {
     !playerVetoCompleted &&
     isEligibleFormatForSound &&
     currentMatch.veto?.status !== 'completed';
-  const serverReadyForPlayer =
-    !!currentMatch &&
-    Boolean(currentMatch.server) &&
-    (currentMatch.status === 'loaded' || currentMatch.status === 'live');
+  // The "match ready" sound plays with the navbar toast, on every page.
 
   const ownMatch = viewerIsPlayer ? currentMatch : null;
 
@@ -1009,7 +1006,6 @@ export default function PlayerProfile() {
           {ownMatch && (
             <MatchNotificationAudio
               vetoReady={vetoReadyForPlayer}
-              serverReady={serverReadyForPlayer}
               isMuted={isMuted}
               volume={volume}
               soundFile={soundFile}

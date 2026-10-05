@@ -8,6 +8,8 @@
       "waitingVeto": "等待选图",
       "waitingServer": "等待服务器",
       "matchReady": "比赛就绪 – 连接",
+      "matchReadyNamed": "比赛就绪：{{match}}。",
+      "openMatch": "打开比赛",
       "snackbarOpponentMoved": "对方已行动"
     },
     "home": "Home",

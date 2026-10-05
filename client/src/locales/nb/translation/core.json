@@ -8,6 +8,8 @@
       "waitingVeto": "Venter på veto",
       "waitingServer": "Venter på server",
       "matchReady": "Kampen er klar – koble til",
+      "matchReadyNamed": "Kampen er klar: {{match}}.",
+      "openMatch": "Åpne kampen",
       "snackbarOpponentMoved": "Motstanderen gjorde sitt valg"
     },
     "home": "Hjem",

@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   Divider,
+  Link,
   IconButton,
   ListItemIcon,
   ListItemText,
@@ -27,6 +28,7 @@ import { api } from '../../utils/api';
 import { fontDisplay, textSize } from '../../theme/tokens';
 import { paths, playerProfilePath, tournamentTabPath } from '../../paths';
 import { useMatchmaking } from '../matchmaking/matchmakingStore';
+import { soundNotification } from '../../utils/soundNotification';
 
 /** Top-bar text links: ink2 at rest, ink on hover and on the current page (the drafts' `.nav-links`). */
 const navLinkSx = {
@@ -57,6 +59,30 @@ function readCachedPlayerAvatarUrl(steamId: string): string | undefined {
 }
 
 type SiteLink = { to: string; label: string; testId: string; current: boolean };
+
+/**
+ * Matches whose "ready" toast this tab already showed. Kept in sessionStorage
+ * so a page change (the navbar remounts) or a reload does not toast again.
+ */
+const MATCH_READY_STORAGE_KEY = 'at.matchReadyAnnounced';
+let matchReadyAnnouncedFallback: string | null = null;
+
+function wasMatchReadyAnnounced(slug: string): boolean {
+  try {
+    return window.sessionStorage.getItem(MATCH_READY_STORAGE_KEY) === slug;
+  } catch {
+    return matchReadyAnnouncedFallback === slug;
+  }
+}
+
+function markMatchReadyAnnounced(slug: string): void {
+  matchReadyAnnouncedFallback = slug;
+  try {
+    window.sessionStorage.setItem(MATCH_READY_STORAGE_KEY, slug);
+  } catch {
+    // Storage blocked: the in-memory value still covers page changes.
+  }
+}
 
 interface SharedNavBarProps {
   /**
@@ -90,13 +116,15 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
   const navigate = useNavigate();
   const {
     status: matchStatus,
+    matchSlug,
+    matchName,
     label: matchStatusLabel,
     loading: matchStatusLoading,
     viewerTeam,
     vetoActionCount,
     lastVetoActionTeam,
   } = useCurrentMatchStatus(playerSteamId ?? null);
-  const { showSnackbar } = useSnackbar();
+  const { showSnackbar, closeSnackbar } = useSnackbar();
   const currentLanguage = useCurrentLanguage();
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -221,13 +249,11 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
             ? t('nav.matchStatus.snackbarOpponentMoved')
             : now.label === 'waiting_veto'
               ? t('nav.matchStatus.waitingVeto')
-              : now.label === 'match_ready'
-                ? t('nav.matchStatus.matchReady')
-                : now.label === 'waiting_server'
+              : now.label === 'waiting_server'
                   ? t('nav.matchStatus.waitingServer')
                   : null;
       if (msg) {
-        showSnackbar(msg, now.label === 'match_ready' ? 'success' : 'info');
+        showSnackbar(msg, 'info');
       }
     }
     prevMatchRef.current = now;
@@ -240,6 +266,48 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
     viewerTeam,
     lastVetoActionTeam,
     showSnackbar,
+    t,
+  ]);
+
+  // "Match ready": one toast per match, with the match name and a link to the
+  // player's page (where the connect button is). It stays until dismissed and
+  // is not repeated on every page change (the navbar mounts per page), and the
+  // ready sound plays with it, whatever page the player is on.
+  const readyToastKey = matchSlug ? `match-ready-${matchSlug}` : null;
+  React.useEffect(() => {
+    if (!playerSteamId || matchStatusLoading || !matchSlug || !readyToastKey) return;
+    if (matchStatus !== 'match_ready') {
+      closeSnackbar(readyToastKey);
+      return;
+    }
+    if (wasMatchReadyAnnounced(matchSlug)) return;
+    markMatchReadyAnnounced(matchSlug);
+    showSnackbar(
+      <span>
+        {matchName ? t('nav.matchStatus.matchReadyNamed', { match: matchName }) : t('nav.matchStatus.matchReady')}{' '}
+        <Link
+          component={RouterLink}
+          to={playerProfilePath(playerSteamId)}
+          onClick={() => closeSnackbar(readyToastKey)}
+          sx={{ color: 'inherit', fontWeight: 600, textDecorationColor: 'currentColor' }}
+          data-testid="match-ready-toast-link"
+        >
+          {t('nav.matchStatus.openMatch')}
+        </Link>
+      </span>,
+      'success',
+      { persist: true, key: readyToastKey }
+    );
+    soundNotification.playNotification();
+  }, [
+    playerSteamId,
+    matchStatusLoading,
+    matchStatus,
+    matchSlug,
+    matchName,
+    readyToastKey,
+    showSnackbar,
+    closeSnackbar,
     t,
   ]);
 
