@@ -63,6 +63,11 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
             ? t('vetoInterface.mapCardAria.ban', { map: displayName })
             : displayName;
 
+  // On your turn a tile takes the action's colour (ban red, pick green), and hovering it shows
+  // the action's icon over the map, so it is clear what a click does.
+  const actionColor = currentAction === 'ban' ? color.ban : color.pick;
+  const ActionIcon = currentAction === 'ban' ? ProhibitIcon : CheckCircleIcon;
+
   const content = (
     <>
       {/* Map Number Badge (for picked maps) */}
@@ -211,6 +216,26 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
           </Box>
         )}
       </CardContent>
+      {isClickable && (currentAction === 'ban' || currentAction === 'pick') && (
+        <Box
+          className="veto-hover-action"
+          aria-hidden
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            display: 'grid',
+            placeItems: 'center',
+            bgcolor: withAlpha(actionColor, 0.18),
+            color: actionColor,
+            opacity: 0,
+            transition: `opacity ${duration.base}ms ${ease.out}`,
+            pointerEvents: 'none',
+            zIndex: 2,
+          }}
+        >
+          <ActionIcon size={56} weight="bold" />
+        </Box>
+      )}
     </>
   );
 
@@ -223,19 +248,20 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
         borderRadius: `${radius.md}px`,
         // Banned tiles dim the image (scrim overlay) but keep the red name readable.
         border: 1,
-        borderColor: state === 'picked' ? color.pick : isCurrentTurn ? color.accent : color.rule,
+        borderColor: state === 'picked' ? color.pick : isCurrentTurn ? actionColor : color.rule,
         boxShadow:
           state === 'picked'
             ? `0 0 0 1px ${color.pick}`
             : isCurrentTurn
-            ? `0 0 0 1px ${withAlpha(color.accent, 0.5)}`
+            ? `0 0 0 1px ${withAlpha(actionColor, 0.5)}`
             : 'none',
         transition: `box-shadow ${duration.base}ms ${ease.out}, border-color ${duration.base}ms ${ease.out}`,
         '&:hover': isClickable
           ? {
-              boxShadow: `0 0 0 1px ${color.accent}`,
+              boxShadow: `0 0 0 2px ${actionColor}`,
             }
           : {},
+        '&:hover .veto-hover-action, &:focus-within .veto-hover-action': { opacity: 1 },
       }}
     >
       {isInteractive ? (

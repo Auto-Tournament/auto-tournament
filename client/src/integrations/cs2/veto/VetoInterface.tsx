@@ -13,6 +13,7 @@ import {
   LinearProgress,
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
+import { ArrowsLeftRightIcon, CheckCircleIcon, ProhibitIcon } from '@phosphor-icons/react';
 import { VetoMapCard } from './VetoMapCard';
 import { getMapData, getMapDisplayName } from '../maps/mapData';
 import { getVetoOrder } from './vetoOrders';
@@ -375,6 +376,11 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       ? currentTeamSlug === vetoState.team1Id
       : currentTeamSlug === vetoState.team2Id);
 
+  // The action's own colour and icon: ban red (danger), pick green, side choice blue. Your turn
+  // outlines the card, banner and map grid in it; waiting stays neutral.
+  const actionColor = currentAction === 'ban' ? color.ban : currentAction === 'pick' ? color.pick : color.info;
+  const ActionIcon = currentAction === 'ban' ? ProhibitIcon : currentAction === 'pick' ? CheckCircleIcon : ArrowsLeftRightIcon;
+
   return (
     <Box data-testid="veto-interface">
       {actionError && (
@@ -479,9 +485,9 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           p: { xs: 2, sm: 3 },
           bgcolor: 'background.paper',
           borderRadius: `${radius.lg}px`,
-          // Your turn: the whole veto card is outlined green.
+          // Your turn: the whole veto card is outlined in the action's colour.
           border: '1px solid',
-          borderColor: isMyTurn ? color.live : 'transparent',
+          borderColor: isMyTurn ? actionColor : 'transparent',
           transition: 'border-color 200ms ease-out',
         }}
         data-my-turn={isMyTurn ? 'true' : 'false'}
@@ -490,10 +496,8 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           {/* Big, high‑contrast turn banner */}
           <Box
             sx={() => {
-              // Inset row on paper3, as on the homepage veto card. Your turn is
-              // green whatever the action (a red "ban" outline read as an error),
-              // and it glows; waiting for the other team stays neutral.
-              const actionColor = color.live;
+              // Inset row on paper3, as on the homepage veto card, outlined and
+              // glowing in the action's colour on your turn.
 
               return {
                 p: 2,
@@ -518,7 +522,12 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           >
             {isMyTurn ? (
               <>
-                <Typography variant="h5" className="veto-turn-title">
+                <Typography
+                  variant="h5"
+                  className="veto-turn-title"
+                  sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}
+                >
+                  <ActionIcon size={26} weight="bold" aria-hidden />
                   {currentAction === 'ban'
                     ? t('vetoInterface.yourTurnToBan')
                     : currentAction === 'pick'
@@ -724,8 +733,8 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                   p: 1.5,
                   borderRadius: `${radius.lg}px`,
                   border: '1px dashed',
-                  borderColor: withAlpha(color.live, 0.5),
-                  bgcolor: withAlpha(color.live, 0.05),
+                  borderColor: withAlpha(actionColor, 0.5),
+                  bgcolor: withAlpha(actionColor, 0.05),
                 }
               : undefined
           }
