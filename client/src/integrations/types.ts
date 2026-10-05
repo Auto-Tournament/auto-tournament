@@ -783,6 +783,15 @@ export interface TournamentStatsViewProps {
 }
 
 /**
+ * A player's profile: this game's own statistics, under the profile's
+ * built-in facts (CS2: aim, utility, impact and map strength). The view
+ * fetches its own numbers and renders nothing when there are none.
+ */
+export interface PlayerProfileViewProps {
+  playerId: string;
+}
+
+/**
  * The Admin tools page: this module's own section (client API 0.2.2).
  *
  * Admin tools is core's page for what every instance has: the application
@@ -1016,6 +1025,9 @@ export interface ClientGameIntegration {
    * numbers the page already shows.
    */
   tournamentStatsView?: ComponentType<TournamentStatsViewProps>;
+
+  /** The player profile: this game's own statistics. */
+  playerProfileView?: ComponentType<PlayerProfileViewProps>;
 
   /** Shown to the teams before the match can be allocated (CS2: map veto). */
   preMatchView?: ComponentType<PreMatchViewProps>;

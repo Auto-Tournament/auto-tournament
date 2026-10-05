@@ -1534,5 +1534,26 @@
   },
   "fleetPush": {
     "summary": "Admins, settings and plugins sent to Ready Up servers"
+  },
+  "profile": {
+    "title": "Performance",
+    "kd": "K/D",
+    "kills": "Kills {{count}}",
+    "deaths": "Deaths {{count}}",
+    "headshots": "Headshots",
+    "adr": "ADR",
+    "average": "Average {{value}}",
+    "impact": "Impact",
+    "mvps": "MVPs",
+    "flashAssists": "flash assists / match",
+    "utilityDamage": "utility damage / round",
+    "maps": "Map strength",
+    "mapsAria": "Map strength: share of rounds won on each map",
+    "mapsFew": "The chart shows up once you have played three maps.",
+    "best": "Best · {{map}}",
+    "weakest": "Weakest · {{map}}",
+    "mapSummary": "{{pct}}% won · {{played}} played",
+    "mapRecord": "{{won}}/{{played}} won · rounds {{rounds}}",
+    "mapsNote": "From the share of rounds won on each map. Few rounds count less."
   }
 }

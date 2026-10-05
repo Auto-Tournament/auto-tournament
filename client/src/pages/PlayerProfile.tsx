@@ -812,6 +812,7 @@ export default function PlayerProfile() {
   // empty — its numbers are the rest of this page. Only for a player who has
   // played: someone with no matches has no part in those totals.
   const TournamentStatsView = gameIntegration.tournamentStatsView;
+  const PlayerProfileView = gameIntegration.playerProfileView;
   const hasAnyMatches = uniqueMatchHistory.length > 0;
 
   // --- Stats for the selected game, across the whole site ------------------
@@ -1061,6 +1062,9 @@ export default function PlayerProfile() {
             data-testid="profile-stats-grid"
             sx={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))' }}
           />
+
+          {/* The game's own numbers (CS2: aim, utility, map strength). */}
+          {PlayerProfileView && showGameStats && hasAnyMatches && <PlayerProfileView playerId={player.id} />}
 
           <Box
             sx={{
