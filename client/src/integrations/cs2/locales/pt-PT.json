@@ -1358,7 +1358,8 @@
     },
     "summary": "{{machines}} machine(s), {{online}} online · {{servers}} server(s)",
     "about": "Machines run CS2 Server Manager (csm). The platform starts, stops and creates servers on them by itself.",
-    "deleteServer": "Delete server"
+    "deleteServer": "Delete server",
+    "deleting": "Deleting…"
   },
   "failover": {
     "title": "Failover",
