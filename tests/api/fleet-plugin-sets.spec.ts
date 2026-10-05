@@ -311,6 +311,14 @@ test.describe.serial('Fleet plugin sets', () => {
         disable: ['whitelist', 'skins', 'midas', 'deathmatch', 'addons'],
       });
       client.send(answer(set, 1));
+      // Practice is for a practice server: practice mode goes on right after,
+      // so the server does not sit in the match plugin's scrim warm-up.
+      const practice = await client.next(
+        (msg) => msg.type === 'cmd' && (msg.payload as { name: string }).name === 'practice.set'
+      );
+      expect((practice.payload as { args: unknown }).args).toEqual({ on: true });
+      expect(practice.seq).toBeGreaterThan(set.seq);
+      client.send(answer(practice, 2));
 
       // An admin picks Tournament for this server.
       const changing = request.post(`/api/fleet/servers/${ru.serverId}/plugins`, {
@@ -321,7 +329,7 @@ test.describe.serial('Fleet plugin sets', () => {
         enable: ['match', 'essentials', 'whitelist'],
         disable: ['practice', 'skins', 'midas', 'deathmatch', 'addons'],
       });
-      client.send(answer(next, 2));
+      client.send(answer(next, 3));
       expect((await (await changing).json()).command).toMatchObject({ status: 'ok' });
       const state = await (await request.get(`/api/fleet/servers/${ru.serverId}/push`)).json();
       expect(state.pluginSet).toMatchObject({ preset: 'tournament' });

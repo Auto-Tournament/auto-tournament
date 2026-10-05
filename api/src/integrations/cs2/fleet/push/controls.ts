@@ -137,7 +137,12 @@ export async function setPlugins(
   updatedBy: string | null
 ): Promise<{ id: string; seq: number; delivered: boolean }> {
   await writePref(serverId, 'plugins', value, updatedBy);
-  return sendPluginsSet(serverId, value, issuedBy);
+  const sent = await sendPluginsSet(serverId, value, issuedBy);
+  // The Practice set is for a practice server: switch practice mode on, or
+  // the match plugin (always loaded: the fleet link runs in it) leaves the
+  // server in scrim warm-up. Sent after plugins.set, so practice.so is on.
+  if (value.preset === 'practice') await setPractice(serverId, true, issuedBy, updatedBy);
+  return sent;
 }
 
 /** Send a server its plugins.set lists (what is stored is not changed). */
