@@ -290,6 +290,32 @@ test.describe('Fleet normalizer', () => {
     expect(aloneLines.find((l) => l.account.externalId === HUMAN_1)!.metrics.rounds_played).toBe(1);
   });
 
+  test('match_restored -> the restored map score from state', () => {
+    const state = stateFor('m-norm');
+    state.series.maps['1'] = { ...state.series.maps['1'], score: { team1: 1, team2: 1 } };
+    const restored = normalizeFleetEvent(
+      eventFrame('event.match_restored', { map_number: 1, round: 3, backup_sha256: 'ab' }),
+      { state }
+    );
+    expect(restored).toEqual([
+      {
+        type: 'score.updated',
+        slug: 'm-norm',
+        eventId: 'fleet:match_restored:0:01M3BAZAGR50AY86C0444RSBPR',
+        mapNumber: 0,
+        team1: 1,
+        team2: 1,
+        phase: 'live',
+      },
+    ]);
+    // No state yet: nothing to set.
+    expect(
+      normalizeFleetEvent(
+        eventFrame('event.match_restored', { map_number: 1, round: 3, backup_sha256: 'ab' })
+      )
+    ).toEqual([]);
+  });
+
   test('halftime / overtime / pause -> score + phase', () => {
     const half = normalizeFleetEvent(load('live.event.halftime.json'));
     expect(half).toEqual([
