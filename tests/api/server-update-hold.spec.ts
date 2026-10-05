@@ -6,6 +6,8 @@ import {
 } from '../../api/src/integrations/cs2/services/updateHoldService';
 import { signInViaRequest, getAuthHeader } from '../helpers/auth';
 import { setupTournament } from '../helpers/tournamentSetup';
+import { resetEnrollRateLimit } from '../helpers/fleet';
+import { createPendingHost, enrollHost, newMachineId } from '../helpers/fleetHost';
 
 /**
  * `GET /api/servers/update-hold` — the answer CS2 Server Manager polls before
@@ -104,6 +106,25 @@ test.describe('update hold endpoint', () => {
 
     const wrong = await getHold(request, { 'X-Auto-Tournament-Token': `${TOKEN}-wrong` });
     expect(wrong.status, 'a wrong token must be refused').toBe(401);
+  });
+
+  test('a linked csm host may ask with its own host token (no csm updates platform needed)', async ({
+    request,
+  }) => {
+    expect(await signInViaRequest(request)).toBe(true);
+    await resetEnrollRateLimit(request);
+    const pending = await createPendingHost(request, `hold-host-${Date.now()}`);
+    const enrolled = await enrollHost(request, { code: pending.code }, newMachineId());
+    expect(enrolled.status, JSON.stringify(enrolled.body)).toBe(201);
+    const token = enrolled.body.token as string;
+
+    const asHost = await getHold(request, { Authorization: `Bearer ${token}` });
+    expect(asHost.status).toBe(200);
+    expect(asHost.body.success).toBe(true);
+    expect(typeof asHost.body.hold).toBe('boolean');
+
+    const forged = await getHold(request, { Authorization: `Bearer rhs_${'x'.repeat(40)}` });
+    expect(forged.status).toBe(401);
   });
 
   test('an admin session alone does not open it — the server token is the credential', async ({
