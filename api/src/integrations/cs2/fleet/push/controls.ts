@@ -15,6 +15,7 @@
  * command's id is remembered so its answer can be shown.
  */
 
+import { db } from '../../../../config/database';
 import { log } from '../../../../utils/logger';
 import { sendReliable } from '../reliable';
 import type { CmdPayload, HelloPayload } from '../protocol/v1';
@@ -201,6 +202,36 @@ async function sendPluginsSet(
 const PLATFORM_ISSUER: IssuedBy = { user_id: 'platform', name: 'Auto Tournament', root: false };
 
 /**
+ * A server csm created (an admin's Create server, not only the scaler's or a
+ * failover's) joins the match pool on its first hello, unless its plugin set
+ * turns match off (a practice server). Once: a cs2_servers row for it means
+ * it was linked before, and an admin's unlink keeps that row, so it sticks.
+ */
+async function linkCreatedOnce(serverId: string): Promise<void> {
+  // The scaler and failover link what they create themselves (with their own records).
+  const cmd = await db.queryOneAsync<{ issued_by: string | null }>(
+    `SELECT c.issued_by FROM cs2_fleet_servers s
+       JOIN cs2_fleet_enrollment_keys k ON k.id = s.enrollment_key_id
+       JOIN cs2_fleet_host_commands c ON c.message_id = k.command_id
+      WHERE s.id = ? AND c.type = 'server.create'`,
+    [serverId]
+  );
+  if (!cmd || cmd.issued_by === 'autoscale' || (cmd.issued_by ?? '').startsWith('platform:')) return;
+  const created = await createdPluginSet(serverId);
+  if (!created.created) return;
+  if (created.set && !created.set.plugins.includes('match')) return;
+  const seen = await db.queryOneAsync<{ id: string }>(
+    'SELECT id FROM cs2_servers WHERE id = ? OR fleet_server_id = ?',
+    [serverId, serverId]
+  );
+  if (seen) return;
+  const { linkFleetServer } = await import('../link');
+  const outcome = await linkFleetServer(serverId);
+  if (outcome.ok) log.info(`[FLEET] ${serverId}: created through csm; joined the match pool`);
+  else log.warn(`[FLEET] ${serverId}: created through csm but not linked: ${outcome.error}`);
+}
+
+/**
  * After a server's welcome (./index.ts):
  *
  * - a server csm created that was never given plugins gets the set its
@@ -215,6 +246,7 @@ export async function pluginsOnHello(
   hello: Pick<HelloPayload, 'plugins_state' | 'stream'> &
     Partial<Pick<HelloPayload, 'capabilities'>>
 ): Promise<'initial' | 'resync' | null> {
+  await linkCreatedOnce(serverId);
   const prefs = await readPrefs(serverId);
   if (!prefs.plugins) {
     if (prefs.pushed.plugins) return null;
