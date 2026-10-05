@@ -34,17 +34,15 @@ function EmptyLine({ children, testId }: { children: React.ReactNode; testId: st
 }
 
 /**
- * Same "connect" URI the team match page builds (see
- * `components/team/MatchInfoCard.tsx`), duplicated here rather than shared
- * because that component is off-limits while it's being rebuilt elsewhere.
+ * Same "connect" URI as the match panel (`integrations/cs2/match/MatchServerPanel.tsx`).
+ * steam://connect joins a CS2 that is already running; steam://run/730 only
+ * passed its arguments when it started the game.
  */
 function steamConnectUri(server: { host: string; port: number; password?: string }): string {
   const address = `${server.host}:${server.port}`;
-  const encodedPassword = server.password ? encodeURIComponent(server.password) : '';
-  const params = server.password
-    ? `+password%20${encodedPassword};%20+connect%20${address}`
-    : `+connect%20${address}`;
-  return `steam://run/730//${params}`;
+  return server.password
+    ? `steam://connect/${address}/${encodeURIComponent(server.password)}`
+    : `steam://connect/${address}`;
 }
 
 
