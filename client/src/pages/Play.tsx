@@ -128,7 +128,7 @@ export default function Play() {
                 >
                   {modes.map((m) => (
                     <ToggleButton key={m} value={m} data-testid={`mm-mode-${m}`}>
-                      {m}
+                      {t(`matchmaking.play.modeName.${m}`, { defaultValue: m })}
                     </ToggleButton>
                   ))}
                 </ToggleButtonGroup>

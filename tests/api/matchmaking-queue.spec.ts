@@ -492,4 +492,36 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
       await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5'] } });
     }
   });
+  test('2v2 wingman on a pool the admin picked; the room carries the roulette pool', TAGS, async () => {
+    const players4 = await Promise.all(Array.from({ length: 4 }, () => player()));
+    contexts.push(...players4.map((p) => p.ctx));
+    const status = await (await admin.get('/api/matchmaking/status')).json();
+    const activeDuty = (status.pools as Array<{ id: number; name: string; maps: number }>).find((p) => p.name === 'Active Duty');
+    expect(activeDuty, JSON.stringify(status.pools)).toBeTruthy();
+    expect((await admin.put('/api/matchmaking/admin/settings', { data: { modePools: { '2v2': 'x' } } })).status()).toBe(400);
+    expect(
+      (await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5', '2v2'], modePools: { '2v2': activeDuty!.id } } })).ok()
+    ).toBe(true);
+    try {
+      for (const p of players4) {
+        const res = await p.ctx.post('/api/matchmaking/queue', { data: { mode: '2v2' } });
+        expect(res.ok(), await res.text()).toBe(true);
+      }
+      const lobby = await lobbyOf(players4[0].ctx);
+      expect(lobby.total).toBe(4);
+      for (const p of players4) expect((await p.ctx.post(`/api/matchmaking/lobbies/${lobby.id}/accept`, { data: {} })).ok()).toBe(true);
+      const room = (await (await players4[0].ctx.get(`/api/matchmaking/lobbies/${lobby.id}`)).json()).lobby as {
+        mode: string;
+        map: string;
+        mapPool: Array<{ id: string; name: string }>;
+        teams: Array<{ players: unknown[] }>;
+      };
+      expect(room.mode).toBe('2v2');
+      expect(room.teams.map((t) => t.players.length)).toEqual([2, 2]);
+      expect(room.mapPool.length).toBe(activeDuty!.maps);
+      expect(room.mapPool.map((m) => m.id)).toContain(room.map);
+    } finally {
+      await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5'], modePools: { '2v2': null } } });
+    }
+  });
 });

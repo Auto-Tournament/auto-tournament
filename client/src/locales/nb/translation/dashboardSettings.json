@@ -265,7 +265,14 @@
           "reservedDescription": "Turneringskamper går først, men lar så mange ledige servere stå til matchmaking mens spillere søker. 0 = ingen.",
           "reservedLabel": "Servere",
           "modesTitle": "Moduser",
-          "modesDescription": "Hva spillere kan søke etter. 1v1 er en siktduell, og lar deg teste matchmaking med to kontoer."
+          "modesDescription": "Hva spillere kan søke etter. 1v1 er en siktduell, og lar deg teste matchmaking med to kontoer.",
+          "poolsTitle": "Kart per modus",
+          "poolsDescription": "Kartsamlingen hver modus velger fra (Kart-siden; Workshop-kart fungerer også). Kamprommet viser et lykkehjul over samlingen før kartet vises.",
+          "poolDefault": {
+            "5v5": "Standard: Active Duty",
+            "2v2": "Standard: alle wingman-kart",
+            "1v1": "Standard: Active Duty"
+          }
         }
       }
     }

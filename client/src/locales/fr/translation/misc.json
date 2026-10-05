@@ -468,7 +468,12 @@
       "cooldown": "You declined or missed a match. You can search again in {{minutes}} min.",
       "rating_one": "Rating {{elo}} · {{count}} game · {{wins}} won",
       "rating_other": "Rating {{elo}} · {{count}} games · {{wins}} won",
-      "mode": "Mode"
+      "mode": "Mode",
+      "modeName": {
+        "5v5": "5v5",
+        "2v2": "2v2 Wingman",
+        "1v1": "1v1"
+      }
     },
     "queue": {
       "searching": "Searching {{mode}}",
@@ -591,6 +596,10 @@
       "review": "Players to look at (thumbs down)",
       "voters_one": "{{count}} voter",
       "voters_other": "{{count}} voters"
+    },
+    "roulette": {
+      "rolling": "Picking the map…",
+      "picked": "Map: {{map}}"
     }
   }
 }

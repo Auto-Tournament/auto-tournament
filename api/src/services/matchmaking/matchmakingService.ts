@@ -34,6 +34,7 @@ import {
   isMode,
   MODES,
   parseEnabledModes,
+  parseModePools,
   OFFENCE_WINDOW_SECONDS,
   partyRating,
   parseReservedServers,
@@ -116,6 +117,9 @@ export const MM_SEARCH_WINDOW = 'mm_search_window';
 
 /** Setting: the modes players can search (JSON array, `rules.parseEnabledModes`). */
 export const MM_MODES = 'mm_modes';
+
+/** Setting: the map pool per mode (JSON `{ mode: poolId }`, `rules.parseModePools`). */
+export const MM_MODE_POOLS = 'mm_mode_pools';
 
 /** Setting: servers tournament matches leave free while matchmaking has players waiting. */
 export const MM_RESERVED_SERVERS = 'mm_reserved_servers';
@@ -491,9 +495,10 @@ export class MatchmakingService {
    */
   private async startMatch(lobby: LobbyRow, players: LobbyPlayerRow[]): Promise<void> {
     if (!hasIntegration('cs2')) throw new Error('The CS2 module is not installed');
-    const pool = (await getIntegration('cs2').matchmakingMapPool?.()) ?? [];
-    if (pool.length === 0) throw new Error('The CS2 matchmaking map pool is empty');
-    const map = pool[randomInt(pool.length)];
+    const poolId = parseModePools(await db.getAppSettingAsync(MM_MODE_POOLS))[lobby.mode as MatchmakingMode] ?? null;
+    const pool = (await getIntegration('cs2').matchmakingMapPool?.(lobby.mode, poolId)) ?? [];
+    if (pool.length === 0) throw new Error(`No CS2 maps for ${lobby.mode} matchmaking`);
+    const map = pool[randomInt(pool.length)].id;
 
     const names = new Map(
       (
@@ -524,13 +529,23 @@ export class MatchmakingService {
           team2: team(2),
           num_maps: 1,
           maplist: [map],
+          wingman: lobby.mode === '2v2',
         },
       },
       configuredPublicOrigin() ?? '',
       resolveTournamentId()
     );
     await db.runAsync("UPDATE matches SET source = 'matchmaking' WHERE slug = ?", [slug]);
-    await db.runAsync('UPDATE mm_lobbies SET match_slug = ?, map = ? WHERE id = ?', [slug, map, lobby.id]);
+    // The pool as it was, for the map roulette the players see: at most 30
+    // maps, the chosen one always among them.
+    const chosen = pool.find((m) => m.id === map)!;
+    const shown = pool.length <= 30 ? pool : [...pool.filter((m) => m.id !== map).slice(0, 29), chosen];
+    await db.runAsync('UPDATE mm_lobbies SET match_slug = ?, map = ?, map_pool = ? WHERE id = ?', [
+      slug,
+      map,
+      JSON.stringify(shown),
+      lobby.id,
+    ]);
     log.info(`[MATCHMAKING] lobby ${lobby.id}: match ${slug} on ${map}`);
 
     // Allocation is the scheduler's (manual matches go the same way); it keeps
@@ -825,10 +840,18 @@ export class MatchmakingService {
     map: string | null;
     matchSlug: string | null;
     matchStatus: string | null;
+    /** The maps the roulette rolls over; `map` is one of them. */
+    mapPool: Array<{ id: string; name: string; imageUrl: string | null }>;
     teams: Array<{ team: number; players: Array<{ id: string; name: string; accepted: boolean }> }>;
   }> {
     const { lobby, players } = await this.lobbyFor(playerId, lobbyId);
-    const row = lobby as LobbyRow & { map: string | null; match_slug: string | null };
+    const row = lobby as LobbyRow & { map: string | null; match_slug: string | null; map_pool: string | null };
+    let mapPool: Array<{ id: string; name: string; imageUrl: string | null }> = [];
+    try {
+      mapPool = row.map_pool ? JSON.parse(row.map_pool) : [];
+    } catch {
+      mapPool = [];
+    }
     const names = await db.queryAsync<{ id: string; name: string | null }>(
       `SELECT id, name FROM players WHERE id IN (${players.map(() => '?').join(', ')})`,
       players.map((p) => p.player_id)
@@ -844,6 +867,7 @@ export class MatchmakingService {
       map: row.map ?? null,
       matchSlug: row.match_slug ?? null,
       matchStatus: match?.status ?? null,
+      mapPool,
       teams: [1, 2].map((team) => ({
         team,
         players: players
