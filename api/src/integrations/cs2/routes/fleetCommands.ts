@@ -8,6 +8,7 @@
  * `status` / `errorCode` and the command id.
  */
 
+import { isSavedAdminSteamId } from '../../../utils/adminSteamIds';
 import type { Request, Response } from 'express';
 import { requestActorId, type AuthedRequest } from '../../../middleware/auth';
 import { transportOf } from '../driver';
@@ -20,18 +21,17 @@ import {
 import type { CmdName } from '../fleet/protocol/v1';
 
 /**
- * Root (FLEET.md D10: `exec`): an admin-scope API token, or a signed-in
- * admin whose Steam ID is in `ADMIN_STEAM_IDS` (the instance's operators).
- * Other admins drive matches but cannot run raw console commands on a Ready
- * Up server.
+ * Root (FLEET.md D10: `exec`): an admin-scope API token, the local admin
+ * account (created on /setup by whoever runs the instance), or a signed-in
+ * admin whose Steam ID is in Settings -> Sign-in -> Admin Steam IDs (the
+ * instance's operators). Other admins drive matches but cannot run raw
+ * console commands on a Ready Up server.
  */
 export function isRootRequest(req: Request): boolean {
   const token = (req as AuthedRequest).serviceToken;
   if (token) return token.scope === 'admin';
   const actor = requestActorId(req);
-  // ADMIN_STEAM_IDS: Steam64 IDs separated by commas, semicolons or spaces.
-  const operators = (process.env.ADMIN_STEAM_IDS ?? '').split(/[\s,;]+/).filter((id) => /^\d{17}$/.test(id));
-  return !!actor && operators.includes(actor);
+  return !!actor && (actor.startsWith('local-') || isSavedAdminSteamId(actor));
 }
 
 export function issuedBy(req: Request): IssuedBy & { actor: string | null } {
@@ -95,20 +95,27 @@ export async function fleetExec(
   req: Request,
   serverId: string,
   command: string
-): Promise<{ httpStatus: number; body: ReturnType<typeof fleetResponseBody> | { success: false; error: string } }> {
+): Promise<{
+  httpStatus: number;
+  body: ReturnType<typeof fleetResponseBody> | { success: false; error: string };
+}> {
   const who = issuedBy(req);
   if (!who.root) {
     return {
       httpStatus: 403,
       body: {
         success: false,
-        error: 'Raw console commands on Ready Up servers are for root admins only (ADMIN_STEAM_IDS or an admin API token)',
+        error:
+          'Raw console commands on Ready Up servers are for root admins only (the setup admin, Admin Steam IDs in Settings -> Sign-in, or an admin API token)',
       },
     };
   }
   const line = command.trim();
   if (!line || line.includes('\n') || Buffer.byteLength(line, 'utf8') > 512) {
-    return { httpStatus: 400, body: { success: false, error: 'exec takes one line of at most 512 bytes' } };
+    return {
+      httpStatus: 400,
+      body: { success: false, error: 'exec takes one line of at most 512 bytes' },
+    };
   }
   const outcome = await execOnFleetServer(serverId, line, who);
   return { httpStatus: outcome.httpStatus, body: fleetResponseBody(outcome) };

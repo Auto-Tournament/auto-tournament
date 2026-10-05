@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { parseAdminSteamIds } from '../../api/src/utils/adminSteamIds';
+import {
+  isSavedAdminSteamId,
+  parseAdminSteamIds,
+  setSavedAdminSteamIds,
+} from '../../api/src/utils/adminSteamIds';
 
 /**
  * Parsing ADMIN_STEAM_IDS.
@@ -18,11 +22,7 @@ test.describe('ADMIN_STEAM_IDS parsing', () => {
       '76561198000000001, 76561198000000002 76561198000000003;not-an-id 123'
     );
 
-    expect(valid).toEqual([
-      '76561198000000001',
-      '76561198000000002',
-      '76561198000000003',
-    ]);
+    expect(valid).toEqual(['76561198000000001', '76561198000000002', '76561198000000003']);
     // Refused loudly rather than turned into a junk player row.
     expect(invalid).toEqual(['not-an-id', '123']);
   });
@@ -35,5 +35,17 @@ test.describe('ADMIN_STEAM_IDS parsing', () => {
   test('treats unset and empty as "nothing to do", not as an error', () => {
     expect(parseAdminSteamIds(undefined)).toEqual({ valid: [], invalid: [] });
     expect(parseAdminSteamIds('   ')).toEqual({ valid: [], invalid: [] });
+  });
+});
+
+test.describe('saved admin Steam IDs (root for raw console commands)', () => {
+  test('the cache follows the saved list', () => {
+    setSavedAdminSteamIds('76561198000000001, not-an-id 76561198000000002');
+    expect(isSavedAdminSteamId('76561198000000001')).toBe(true);
+    expect(isSavedAdminSteamId('76561198000000002')).toBe(true);
+    expect(isSavedAdminSteamId('not-an-id')).toBe(false);
+    setSavedAdminSteamIds(null);
+    expect(isSavedAdminSteamId('76561198000000001')).toBe(false);
+    expect(isSavedAdminSteamId(null)).toBe(false);
   });
 });

@@ -17,7 +17,7 @@ import { parseAdminEmails, setSavedAdminEmails } from '../utils/adminEmails';
 import { shouldImportSetting, type AdminAccessPatch } from '../utils/adminAccessPatch';
 
 export { parseAdminAccessPatch } from '../utils/adminAccessPatch';
-import { parseAdminSteamIds } from '../utils/adminSteamIds';
+import { parseAdminSteamIds, setSavedAdminSteamIds } from '../utils/adminSteamIds';
 import { canDisableLocalAdminLogin } from '../utils/adminRules';
 import { effectiveProviderSettings, SIGN_IN_PROVIDERS } from '../config/signInProviders';
 import { seedAdminSteamIds } from './adminSeedService';
@@ -37,7 +37,6 @@ export interface AdminAccessView {
   adminEmails: string;
 }
 
-
 export class AdminAccessError extends Error {
   constructor(
     message: string,
@@ -47,11 +46,11 @@ export class AdminAccessError extends Error {
   }
 }
 
-
 class AdminAccessSettingsService {
-  /** Fill the admin-email cache. Call at boot and after a save. */
+  /** Fill the admin-email and admin-Steam-ID caches. Call at boot and after a save. */
   async load(): Promise<void> {
     setSavedAdminEmails(await db.getAppSettingAsync(KEYS.emails));
+    setSavedAdminSteamIds(await db.getAppSettingAsync(KEYS.steamIds));
   }
 
   async isLocalAdminLoginEnabled(): Promise<boolean> {
@@ -71,7 +70,9 @@ class AdminAccessSettingsService {
    * linked sign-in (auth_identities) for a provider that is on.
    */
   async countAdminsWithActiveProviderLogin(): Promise<number> {
-    const active = SIGN_IN_PROVIDERS.filter((p) => p.id !== 'steam' && effectiveProviderSettings(p.id).active).map((p) => p.id);
+    const active = SIGN_IN_PROVIDERS.filter(
+      (p) => p.id !== 'steam' && effectiveProviderSettings(p.id).active
+    ).map((p) => p.id);
     const steamOn = effectiveProviderSettings('steam').active;
     const row = await db.queryOneAsync<{ count: number | string }>(
       `SELECT COUNT(1) AS count FROM players p
@@ -136,11 +137,17 @@ class AdminAccessSettingsService {
         ['ADMIN_EMAILS', KEYS.emails],
       ] as const) {
         const saved = await db.getAppSettingAsync(key);
-        const action = shouldImportSetting({ envValue: env[envName], saved, seen: seen.has(envName) });
+        const action = shouldImportSetting({
+          envValue: env[envName],
+          saved,
+          seen: seen.has(envName),
+        });
         if (action === 'skip') continue;
         marked.push(envName);
         if (action === 'mark') {
-          log.info(`[SETUP] ${envName} is set, but Settings -> Sign-in already has a value; the saved one is used. You can remove it from .env`);
+          log.info(
+            `[SETUP] ${envName} is set, but Settings -> Sign-in already has a value; the saved one is used. You can remove it from .env`
+          );
           continue;
         }
         const value =
@@ -148,10 +155,7 @@ class AdminAccessSettingsService {
             ? parseAdminSteamIds(env[envName]).valid.join(', ')
             : [...parseAdminEmails(env[envName])].join(', ');
         await db.setAppSettingAsync(key, value || null);
-        log.info(
-          `[SETUP] imported ${envName} from environment; you can remove it from .env` +
-            (envName === 'ADMIN_STEAM_IDS' ? ' (keep it if you run raw console commands on Ready Up servers)' : '')
-        );
+        log.info(`[SETUP] imported ${envName} from environment; you can remove it from .env`);
       }
       await markEnvImported(marked);
       await this.load();
