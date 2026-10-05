@@ -9,6 +9,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#100908" />
     <title>Auto Tournament</title>
+    <meta name="description" content="Tournaments that run themselves: brackets, servers, map veto and results." />
+    <!-- Share previews (Discord, X, Slack). The image URL must be absolute:
+         docker/Caddyfile runs this file through its templates step, which puts
+         the instance's FRONTEND_BASE_URL in front. Elsewhere it stays /og.png. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Auto Tournament" />
+    <meta property="og:title" content="Auto Tournament" />
+    <meta property="og:description" content="Tournaments that run themselves: brackets, servers, map veto and results." />
+    <meta property="og:image" content='{{env `FRONTEND_BASE_URL` | trimSuffix `/`}}/og.png' />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
     <div id="root"></div>
