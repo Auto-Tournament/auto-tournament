@@ -459,6 +459,11 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
     }
 
     const description = describeMatch(match);
+    // "Team A vs Team B" for the navbar toast; null when the config names no teams.
+    const matchName =
+      description.team1.name && description.team2.name
+        ? `${description.team1.name} vs ${description.team2.name}`
+        : null;
     const t1 = describedPlayers(description.team1);
     const t2 = describedPlayers(description.team2);
     const in1 = t1.some((p) => p.steamid === steamId);
@@ -502,6 +507,7 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
         status: 'match_ready',
         matchSlug: match.slug,
         label: 'match_ready',
+        matchName,
       });
     }
 
@@ -518,6 +524,7 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
         status: myTurn ? 'your_turn_veto' : 'waiting_veto',
         matchSlug: match.slug,
         label: myTurn ? 'your_turn_veto' : 'waiting_veto',
+        matchName,
         viewerTeam: isTeam1 ? 'team1' : 'team2',
         vetoActionCount: vetoActions.length,
         lastVetoActionTeam: lastTeam === 'team1' || lastTeam === 'team2' ? lastTeam : null,
@@ -530,6 +537,7 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
         status: 'waiting_server',
         matchSlug: match.slug,
         label: 'waiting_server',
+        matchName,
       });
     }
 
@@ -538,6 +546,7 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
       status: 'match_ready',
       matchSlug: match.slug,
       label: 'match_ready',
+      matchName,
     });
   } catch (e) {
     log.error('Failed to compute match status for /me/match-status', e as Error);

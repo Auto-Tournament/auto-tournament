@@ -5,6 +5,8 @@
       "waitingVeto": "En attente du veto",
       "waitingServer": "En attente du serveur",
       "matchReady": "Match prêt – se connecter",
+      "matchReadyNamed": "Match prêt : {{match}}.",
+      "openMatch": "Ouvrir le match",
       "snackbarOpponentMoved": "L’adversaire a joué"
     },
     "home": "Home",

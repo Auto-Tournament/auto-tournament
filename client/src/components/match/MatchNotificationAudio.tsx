@@ -3,7 +3,6 @@ import type { NotificationSoundValue } from '../../utils/soundNotification';
 
 interface MatchNotificationAudioProps {
   vetoReady: boolean;
-  serverReady: boolean;
   isMuted: boolean;
   volume: number;
   soundFile: NotificationSoundValue;
@@ -11,14 +10,12 @@ interface MatchNotificationAudioProps {
 
 export function MatchNotificationAudio({
   vetoReady,
-  serverReady,
   isMuted,
   volume,
   soundFile,
 }: MatchNotificationAudioProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const previousVetoReady = useRef<boolean>(false);
-  const previousServerReady = useRef<boolean>(false);
 
   useEffect(() => {
     const playNotification = () => {
@@ -44,13 +41,8 @@ export function MatchNotificationAudio({
       playNotification();
     }
 
-    if (serverReady && !previousServerReady.current) {
-      playNotification();
-    }
-
     previousVetoReady.current = vetoReady;
-    previousServerReady.current = serverReady;
-  }, [vetoReady, serverReady, isMuted, volume]);
+  }, [vetoReady, isMuted, volume]);
 
   return (
     <audio
