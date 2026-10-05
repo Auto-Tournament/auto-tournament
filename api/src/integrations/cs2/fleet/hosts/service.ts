@@ -132,6 +132,15 @@ export async function sendHostCommand<T extends HostCommandType>(
   // set they get once they enroll: the create's own, else the fleet default
   // (../push/pluginSets.ts).
   let meta: Record<string, unknown> | null = opts.meta ?? null;
+  // server.remove: remember the Ready Up fleet server that lives in it, so
+  // its fleet entry goes too once csm has removed the server.
+  if (type === 'server.remove') {
+    const inventory = (await registry.getHostView(hostId))?.inventory;
+    const target = inventory?.servers.find((sv) => sv.name === body.server) as
+      | { readyup?: { server_id?: string } }
+      | undefined;
+    if (target?.readyup?.server_id) meta = { ...(meta ?? {}), fleetServerId: target.readyup.server_id };
+  }
   if (type === 'server.create') {
     const inventory = (await registry.getHostView(hostId))?.inventory;
     const own = meta?.plugins ? validatePluginSet(meta.plugins) : null;
@@ -200,9 +209,29 @@ async function followUpCreate(hostId: string, record: registry.HostCommandRecord
   log.info(`[FLEET-HOST] ${hostId}: installing Ready Up on ${servers.join(', ')} (after server.create ${record.id})`);
 }
 
+/**
+ * A server csm removed (`server.remove` ok): its Ready Up fleet entry goes
+ * too (unlinked from the match pool, disconnected, deleted), so it does not
+ * linger as an offline server.
+ */
+async function cleanUpRemoved(hostId: string, record: registry.HostCommandRecord): Promise<void> {
+  if (record.type !== 'server.remove' || record.status !== 'ok') return;
+  const fleetServerId = record.meta?.fleetServerId;
+  if (typeof fleetServerId !== 'string') return;
+  const { unlinkFleetServer } = await import('../link');
+  const { deleteFleetServer } = await import('../registry');
+  await unlinkFleetServer(fleetServerId).catch(() => null);
+  fleetBus().disconnect(fleetServerId, FLEET_CLOSE.REVOKED, 'removed with its csm server');
+  await deleteFleetServer(fleetServerId);
+  log.info(`[FLEET-HOST] ${hostId}: fleet server ${fleetServerId} removed with its csm server`);
+}
+
 hostEvents.on('result', (hostId: string, record: registry.HostCommandRecord) => {
   void followUpCreate(hostId, record).catch((error) => {
     log.warn(`[FLEET-HOST] ${hostId}: Ready Up install after server.create failed: ${(error as Error).message}`);
+  });
+  void cleanUpRemoved(hostId, record).catch((error) => {
+    log.warn(`[FLEET-HOST] ${hostId}: removing the fleet entry after server.remove failed: ${(error as Error).message}`);
   });
 });
 

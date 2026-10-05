@@ -6,8 +6,24 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { Box, Chip, FormControlLabel, MenuItem, Stack, Switch, TextField, Typography } from '@mui/material';
-import { api, apiErrorMessage, Panel, SectionHead, useModuleTranslation, useSnackbar } from '../../../module-sdk';
+import {
+  Box,
+  Chip,
+  FormControlLabel,
+  MenuItem,
+  Stack,
+  Switch,
+  TextField,
+  Typography,
+} from '@mui/material';
+import {
+  api,
+  apiErrorMessage,
+  Panel,
+  useModuleTranslation,
+  useSnackbar,
+} from '../../../module-sdk';
+import { ServerSection } from './ServerSection';
 
 interface FailoverSettingsResponse {
   settings: { auto: boolean; csm: boolean; reserve: number | null };
@@ -48,7 +64,12 @@ export default function FailoverSettingsPanel() {
     try {
       setData(await api.put<FailoverSettingsResponse>('/api/fleet/failover/settings', patch));
     } catch (err) {
-      showError(apiErrorMessage(err, t('failoverSettings.saveFailed', { defaultValue: 'Could not save the failover settings' })));
+      showError(
+        apiErrorMessage(
+          err,
+          t('failoverSettings.saveFailed', { defaultValue: 'Could not save the failover settings' })
+        )
+      );
     } finally {
       setBusy(false);
     }
@@ -56,13 +77,22 @@ export default function FailoverSettingsPanel() {
 
   if (!data) return null;
   // Nothing to fail over to or from yet.
-  if (data.reserve.poolSize === 0 && data.settings.auto && data.settings.reserve === null) return null;
+  if (data.reserve.poolSize === 0 && data.settings.auto && data.settings.reserve === null)
+    return null;
 
   const reserveValue = data.settings.reserve === null ? AUTO : String(data.settings.reserve);
 
   return (
-    <Box data-testid="failover-settings-panel" mt={4}>
-      <SectionHead title={t('failoverSettings.title', { defaultValue: 'Failover' })} />
+    <ServerSection
+      id="failover"
+      data-testid="failover-settings-panel"
+      summary={
+        data.settings.auto
+          ? t('failoverSettings.summaryOn', { defaultValue: 'Automatic moves on' })
+          : t('failoverSettings.summaryOff', { defaultValue: 'Automatic moves off' })
+      }
+      title={t('failoverSettings.title', { defaultValue: 'Failover' })}
+    >
       <Panel sx={{ p: 3 }}>
         <Stack spacing={2}>
           <Box>
@@ -95,7 +125,9 @@ export default function FailoverSettingsPanel() {
                   data-testid="failover-csm-switch"
                 />
               }
-              label={t('failoverSettings.csm', { defaultValue: 'Restart and create servers through csm' })}
+              label={t('failoverSettings.csm', {
+                defaultValue: 'Restart and create servers through csm',
+              })}
             />
             <Typography variant="body2" color="text.secondary">
               {t('failoverSettings.csmHelp', {
@@ -106,19 +138,27 @@ export default function FailoverSettingsPanel() {
           </Box>
 
           <Box>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ sm: 'center' }}>
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={2}
+              alignItems={{ sm: 'center' }}
+            >
               <TextField
                 select
                 size="small"
                 label={t('failoverSettings.reserve', { defaultValue: 'Spare servers' })}
                 value={reserveValue}
-                onChange={(e) => void save({ reserve: e.target.value === AUTO ? null : Number(e.target.value) })}
+                onChange={(e) =>
+                  void save({ reserve: e.target.value === AUTO ? null : Number(e.target.value) })
+                }
                 disabled={busy}
                 sx={{ minWidth: 220 }}
                 data-testid="failover-reserve-select"
               >
                 <MenuItem value={AUTO}>
-                  {t('failoverSettings.reserveAuto', { defaultValue: 'Automatic (1 once 2 servers are online)' })}
+                  {t('failoverSettings.reserveAuto', {
+                    defaultValue: 'Automatic (1 once 2 servers are online)',
+                  })}
                 </MenuItem>
                 {RESERVE_CHOICES.map((n) => (
                   <MenuItem key={n} value={String(n)}>
@@ -146,6 +186,6 @@ export default function FailoverSettingsPanel() {
           </Box>
         </Stack>
       </Panel>
-    </Box>
+    </ServerSection>
   );
 }
