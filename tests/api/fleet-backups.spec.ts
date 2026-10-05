@@ -114,6 +114,25 @@ test.describe('Round backup store', () => {
     });
   });
 
+  test('forget: a fresh start drops every backup and staged part of that slug, and only that slug', async () => {
+    const { store, persistence } = newStore();
+    await store.ingest({ matchSlug: SLUG, serverId: 's1', epoch: 1, backup: backupOf('old r5', { round: 5 }) });
+    await store.ingest({ matchSlug: SLUG, serverId: 's1', epoch: 1, backup: backupOf('old r11', { round: 11 }) });
+    await store.ingest({ matchSlug: 'other', serverId: 's1', epoch: 1, backup: backupOf('other r2', { round: 2 }) });
+    const half = Buffer.from('half of a file');
+    await store.ingest({
+      matchSlug: SLUG,
+      serverId: 's1',
+      epoch: 1,
+      backup: backupOf('half of a file', { round: 6, part: 1, parts: 2, data: half.subarray(0, 4).toString('base64') }),
+    });
+    expect(persistence.partCount()).toBe(1);
+    expect(await store.forget(SLUG)).toBe(2);
+    expect(await store.list(SLUG)).toEqual([]);
+    expect(persistence.partCount()).toBe(0);
+    expect(await store.list('other')).toHaveLength(1);
+  });
+
   test('bad files are refused: sha256, size, base64, encoding, limits', async () => {
     const { store, persistence } = newStore();
     const good = backupOf('abc');
