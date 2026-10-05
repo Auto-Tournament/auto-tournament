@@ -128,8 +128,17 @@ test.describe('update hold endpoint', () => {
 
     // `POST /api/tournament/start` answers before the row reaches
     // `in_progress`, so the hold is eventually consistent with the start.
+    // Flaked once in CI with `undefined` (a non-JSON or non-200 answer, not a
+    // `false`), and passed on retry in 2 s: poll the HTTP status too, so a
+    // repeat says what came back, and give a busy shard longer.
     await expect
-      .poll(async () => (await getHold(request)).body.hold, { timeout: 15_000 })
+      .poll(
+        async () => {
+          const { status, body } = await getHold(request);
+          return status === 200 ? body.hold : `HTTP ${status}`;
+        },
+        { timeout: 30_000, message: 'update hold never answered hold: true' }
+      )
       .toBe(true);
 
     const held = await getHold(request);
