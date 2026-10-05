@@ -972,6 +972,7 @@
       "adminTools": {
         "title": "Adminverktøy",
         "pauseAfterRestore": "Pause etter round restore (.stop) slik at lag kan koordinere",
+        "joinPassword": "Passord for å koble til kampservere (av: bare spillerne på laget slipper inn uansett)",
         "stopCommandAvailable": "Aktiver .stop (round restore)-kommandoen",
         "stopCommandNoDamage": "Deaktiver .stop etter skade på motstanderlaget",
         "usePauseForTacticalPause": "La .pause oppføre seg som taktisk pause"

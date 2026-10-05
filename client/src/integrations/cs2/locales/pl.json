@@ -1009,6 +1009,7 @@
       "adminTools": {
         "title": "Narzędzia admina",
         "pauseAfterRestore": "Pauzuj po przywróceniu rundy (.stop), aby drużyny mogły się skoordynować",
+        "joinPassword": "Join password on match servers (off: the roster whitelist alone keeps others out)",
         "stopCommandAvailable": "Włącz komendę .stop (przywrócenie rundy)",
         "stopCommandNoDamage": "Wyłącz .stop po zadaniu obrażeń drużynie przeciwnej",
         "usePauseForTacticalPause": "Spraw, aby .pause działało jak pauza taktyczna"

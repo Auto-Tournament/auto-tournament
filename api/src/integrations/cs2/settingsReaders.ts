@@ -95,6 +95,18 @@ class Cs2Settings {
     return normalized === '1' || normalized === 'true' || normalized === 'yes';
   }
 
+  /**
+   * Ready Up match servers get a join password (sv_password). Off by default: the
+   * roster whitelist already keeps everyone else out, and a password only made
+   * players type more (and went stale when a restarted server got a new one).
+   */
+  async isAtJoinPasswordEnabled(): Promise<boolean> {
+    const value = await this.getSetting('at_join_password');
+    if (!value) return false;
+    const normalized = value.toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'yes';
+  }
+
   async isAtStopCommandAvailable(): Promise<boolean> {
     const value = await this.getSetting('at_stop_command_available');
     if (!value) return false; // MatchZy Enhanced default
@@ -327,6 +339,7 @@ export async function readCs2InstanceSettings(): Promise<Record<string, unknown>
     atKickWhenNoMatchLoaded: atCore.kickWhenNoMatchLoaded,
     atWhitelistEnabledDefault: atCore.whitelistEnabledDefault,
     atPauseAfterRestore: atCore.pauseAfterRestore,
+    atJoinPassword: await cs2Settings.isAtJoinPasswordEnabled(),
     atStopCommandAvailable: atCore.stopCommandAvailable,
     atStopCommandNoDamage: atCore.stopCommandNoDamage,
     atUsePauseCommandForTacticalPause: atCore.usePauseCommandForTacticalPause,

@@ -971,6 +971,7 @@
       "adminTools": {
         "title": "Herramientas de admin",
         "pauseAfterRestore": "Pausar después de restaurar ronda (.stop) para que los equipos se coordinen",
+        "joinPassword": "Join password on match servers (off: the roster whitelist alone keeps others out)",
         "stopCommandAvailable": "Habilitar el comando .stop (restaurar ronda)",
         "stopCommandNoDamage": "Deshabilitar .stop tras daño al equipo contrario",
         "usePauseForTacticalPause": "Hacer que .pause se comporte como pausa táctica"

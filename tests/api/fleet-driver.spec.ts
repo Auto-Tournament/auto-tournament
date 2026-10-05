@@ -295,7 +295,8 @@ test.describe.serial('Fleet driver: Ready Up servers play matches (M1)', () => {
     expect(payload.config.maps).toEqual([{ number: 1, name: 'de_mirage', sides: 'team1_ct' }]);
     expect(payload.config.team1).toMatchObject({ name: 'Fleet Alpha' });
     expect(payload.config.team1.players).toHaveLength(2);
-    expect(payload.config.password).toMatch(/^[A-Za-z0-9]{10}$/);
+    // No join password by default (at_join_password off): the roster whitelist keeps others out.
+    expect(payload.config.password).toBe('');
     expect(payload.config.rules).toMatchObject({ max_rounds: 24, demo: { record: true, upload: false } });
     const epoch = payload.epoch;
 
