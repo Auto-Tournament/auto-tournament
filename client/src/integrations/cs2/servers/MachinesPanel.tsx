@@ -148,6 +148,9 @@ export default function MachinesPanel() {
   const [removeServer, setRemoveServer] = useState<{ host: FleetHost; server: string } | null>(
     null
   );
+  // Servers asked to be deleted from this page (`hostId/server`): shown as
+  // deleting at once, until csm's inventory no longer lists them.
+  const [removing, setRemoving] = useState<Set<string>>(() => new Set());
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
@@ -162,6 +165,39 @@ export default function MachinesPanel() {
   }, []);
 
   const anyPending = hosts.some((h) => h.commands.some((c) => c.status === 'pending'));
+
+  // Forget a deleting server once csm no longer lists it.
+  useEffect(() => {
+    setRemoving((prev) => {
+      if (prev.size === 0) return prev;
+      const listed = new Set(hosts.flatMap((h) => h.servers.map((s) => `${h.id}/${s.name}`)));
+      const next = new Set([...prev].filter((k) => listed.has(k)));
+      return next.size === prev.size ? prev : next;
+    });
+  }, [hosts]);
+
+  /** Being deleted: asked here, or a server.remove for it is still waiting for csm. */
+  const isDeleting = (host: FleetHost, name: string) =>
+    removing.has(`${host.id}/${name}`) ||
+    host.commands.some(
+      (c) =>
+        c.type === 'server.remove' &&
+        c.status === 'pending' &&
+        (c.server === name || c.payload.server === name)
+    );
+
+  const removeServerNow = async (host: FleetHost, server: string) => {
+    const key = `${host.id}/${server}`;
+    setRemoving((prev) => new Set(prev).add(key));
+    const ok = await send(host, 'server.remove', { server });
+    if (!ok) {
+      setRemoving((prev) => {
+        const next = new Set(prev);
+        next.delete(key);
+        return next;
+      });
+    }
+  };
   const pollMs = link || anyPending ? POLL_FAST_MS : POLL_MS;
 
   useEffect(() => {
@@ -340,150 +376,176 @@ export default function MachinesPanel() {
     return c.server ? `${what} · ${c.server}` : what;
   };
 
-  const renderServer = (host: FleetHost, s: FleetHostServer) => (
-    <Row
-      key={s.name}
-      columns={{
-        xs: 'auto minmax(0, 1fr)',
-        md: 'auto minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr) auto',
-      }}
-      data-testid={`machine-server-${host.id}-${s.name}`}
-    >
-      <StatusDot state={s.process.running ? (s.matchInProgress ? 'live' : 'free') : 'error'} />
-      <Box minWidth={0}>
-        <Typography fontWeight={600} noWrap>
-          {s.fleetServer?.name ?? s.name}
-        </Typography>
-        <Typography variant="caption" color="text.secondary" sx={mono} noWrap display="block">
-          {s.name} · :{s.game_port}
-        </Typography>
-        {/* Narrow screens: the status columns are hidden, so the essentials go here. */}
-        <Typography
-          variant="caption"
-          color={s.matchInProgress ? 'warning.main' : 'text.secondary'}
-          noWrap
-          display={{ xs: 'block', md: 'none' }}
-        >
-          {s.process.running
-            ? t('machinesPanel.process.running', { defaultValue: 'Running' })
-            : t('machinesPanel.process.stopped', { defaultValue: 'Stopped' })}
-          {s.matchInProgress
-            ? ` · ${t('machinesPanel.matchInProgress', { defaultValue: 'Match in progress' })}`
-            : ''}
-        </Typography>
-      </Box>
-      <Box minWidth={0} display={{ xs: 'none', md: 'block' }}>
-        <Chip
-          size="small"
-          label={
-            s.process.running
-              ? t('machinesPanel.process.running', { defaultValue: 'Running' })
-              : t('machinesPanel.process.stopped', { defaultValue: 'Stopped' })
-          }
-          color={s.process.running ? 'success' : 'default'}
-          variant={s.process.running ? 'filled' : 'outlined'}
-        />
-        {s.process.restarts_24h > 0 && (
-          <Typography variant="caption" color="warning.main" display="block" mt={0.5}>
-            {t('machinesPanel.restarts', {
-              defaultValue: '{{count}} restarts in 24 h',
-              count: s.process.restarts_24h,
-            })}
-          </Typography>
-        )}
-      </Box>
-      <Box minWidth={0} display={{ xs: 'none', md: 'block' }}>
-        <Typography variant="body2" noWrap>
-          {s.readyup.installed
-            ? t('machinesPanel.readyUp', {
-                defaultValue: 'Ready Up {{version}}',
-                version: s.readyup.installed,
-              })
-            : t('machinesPanel.noReadyUp', { defaultValue: 'No Ready Up' })}
-          {s.readyup.phase ? ` · ${s.readyup.phase}` : ''}
-        </Typography>
-        <Typography
-          variant="caption"
-          color={s.matchInProgress ? 'warning.main' : 'text.secondary'}
-          display="block"
-        >
-          {s.matchInProgress
-            ? t('machinesPanel.matchInProgress', { defaultValue: 'Match in progress' })
-            : t(`machinesPanel.health.${s.readyup.health}`, { defaultValue: s.readyup.health })}
-          {s.fleetServer
-            ? ` · ${
-                s.fleetServer.online
-                  ? t('machinesPanel.linked', { defaultValue: 'on the fleet link' })
-                  : t('machinesPanel.linkedOffline', { defaultValue: 'fleet link offline' })
-              }`
-            : ''}
-        </Typography>
-      </Box>
-      <Stack
-        direction="row"
-        gap={0.5}
-        justifyContent="flex-end"
-        gridColumn={{ xs: '1 / -1', md: 'auto' }}
+  const renderServer = (host: FleetHost, s: FleetHostServer) => {
+    const deleting = isDeleting(host, s.name);
+    const canAct = host.online && !deleting;
+    return (
+      <Row
+        key={s.name}
+        columns={{
+          xs: 'auto minmax(0, 1fr)',
+          md: 'auto minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr) auto',
+        }}
+        data-testid={`machine-server-${host.id}-${s.name}`}
+        data-deleting={deleting ? 'true' : undefined}
+        sx={deleting ? { opacity: 0.55 } : undefined}
       >
-        {!s.process.running && (
-          <Tooltip title={t('machinesPanel.start', { defaultValue: 'Start' })}>
-            <IconButton
-              size="small"
-              disabled={!host.online}
-              onClick={() => void send(host, 'server.start', { server: s.name })}
-              aria-label={t('machinesPanel.start', { defaultValue: 'Start' })}
-              data-testid={`machine-start-${s.name}`}
-            >
-              <PlayIcon size={20} />
-            </IconButton>
-          </Tooltip>
-        )}
-        <Tooltip title={t('machinesPanel.restart', { defaultValue: 'Restart' })}>
-          <IconButton
-            size="small"
-            disabled={!host.online}
-            onClick={() =>
-              void send(host, 'server.restart', {
-                server: s.name,
-                reason: 'restart from the Machines page',
-              })
-            }
-            aria-label={t('machinesPanel.restart', { defaultValue: 'Restart' })}
-            data-testid={`machine-restart-${s.name}`}
+        <StatusDot
+          state={
+            deleting
+              ? 'loading'
+              : s.process.running
+                ? s.matchInProgress
+                  ? 'live'
+                  : 'free'
+                : 'error'
+          }
+        />
+        <Box minWidth={0}>
+          <Stack direction="row" gap={1} alignItems="center" minWidth={0}>
+            <Typography fontWeight={600} noWrap>
+              {s.fleetServer?.name ?? s.name}
+            </Typography>
+            {deleting && (
+              <Chip
+                size="small"
+                variant="outlined"
+                label={t('machinesPanel.deleting', { defaultValue: 'Deleting…' })}
+                data-testid={`machine-deleting-${s.name}`}
+              />
+            )}
+          </Stack>
+          <Typography variant="caption" color="text.secondary" sx={mono} noWrap display="block">
+            {s.name} · :{s.game_port}
+          </Typography>
+          {/* Narrow screens: the status columns are hidden, so the essentials go here. */}
+          <Typography
+            variant="caption"
+            color={s.matchInProgress ? 'warning.main' : 'text.secondary'}
+            noWrap
+            display={{ xs: 'block', md: 'none' }}
           >
-            <ArrowClockwiseIcon size={20} />
-          </IconButton>
-        </Tooltip>
-        {/* csm removes the highest-numbered server only (it keeps server-N contiguous). */}
-        {host.servers.length > 0 && host.servers[host.servers.length - 1].name === s.name && (
-          <Tooltip title={t('machinesPanel.deleteServer', { defaultValue: 'Delete server' })}>
+            {s.process.running
+              ? t('machinesPanel.process.running', { defaultValue: 'Running' })
+              : t('machinesPanel.process.stopped', { defaultValue: 'Stopped' })}
+            {s.matchInProgress
+              ? ` · ${t('machinesPanel.matchInProgress', { defaultValue: 'Match in progress' })}`
+              : ''}
+          </Typography>
+        </Box>
+        <Box minWidth={0} display={{ xs: 'none', md: 'block' }}>
+          <Chip
+            size="small"
+            label={
+              s.process.running
+                ? t('machinesPanel.process.running', { defaultValue: 'Running' })
+                : t('machinesPanel.process.stopped', { defaultValue: 'Stopped' })
+            }
+            color={s.process.running ? 'success' : 'default'}
+            variant={s.process.running ? 'filled' : 'outlined'}
+          />
+          {s.process.restarts_24h > 0 && (
+            <Typography variant="caption" color="warning.main" display="block" mt={0.5}>
+              {t('machinesPanel.restarts', {
+                defaultValue: '{{count}} restarts in 24 h',
+                count: s.process.restarts_24h,
+              })}
+            </Typography>
+          )}
+        </Box>
+        <Box minWidth={0} display={{ xs: 'none', md: 'block' }}>
+          <Typography variant="body2" noWrap>
+            {s.readyup.installed
+              ? t('machinesPanel.readyUp', {
+                  defaultValue: 'Ready Up {{version}}',
+                  version: s.readyup.installed,
+                })
+              : t('machinesPanel.noReadyUp', { defaultValue: 'No Ready Up' })}
+            {s.readyup.phase ? ` · ${s.readyup.phase}` : ''}
+          </Typography>
+          <Typography
+            variant="caption"
+            color={s.matchInProgress ? 'warning.main' : 'text.secondary'}
+            display="block"
+          >
+            {s.matchInProgress
+              ? t('machinesPanel.matchInProgress', { defaultValue: 'Match in progress' })
+              : t(`machinesPanel.health.${s.readyup.health}`, { defaultValue: s.readyup.health })}
+            {s.fleetServer
+              ? ` · ${
+                  s.fleetServer.online
+                    ? t('machinesPanel.linked', { defaultValue: 'on the fleet link' })
+                    : t('machinesPanel.linkedOffline', { defaultValue: 'fleet link offline' })
+                }`
+              : ''}
+          </Typography>
+        </Box>
+        <Stack
+          direction="row"
+          gap={0.5}
+          justifyContent="flex-end"
+          gridColumn={{ xs: '1 / -1', md: 'auto' }}
+        >
+          {!s.process.running && (
+            <Tooltip title={t('machinesPanel.start', { defaultValue: 'Start' })}>
+              <IconButton
+                size="small"
+                disabled={!canAct}
+                onClick={() => void send(host, 'server.start', { server: s.name })}
+                aria-label={t('machinesPanel.start', { defaultValue: 'Start' })}
+                data-testid={`machine-start-${s.name}`}
+              >
+                <PlayIcon size={20} />
+              </IconButton>
+            </Tooltip>
+          )}
+          <Tooltip title={t('machinesPanel.restart', { defaultValue: 'Restart' })}>
             <IconButton
               size="small"
-              disabled={!host.online}
-              onClick={() => setRemoveServer({ host, server: s.name })}
-              aria-label={t('machinesPanel.deleteServer', { defaultValue: 'Delete server' })}
-              data-testid={`machine-delete-${s.name}`}
+              disabled={!canAct}
+              onClick={() =>
+                void send(host, 'server.restart', {
+                  server: s.name,
+                  reason: 'restart from the Machines page',
+                })
+              }
+              aria-label={t('machinesPanel.restart', { defaultValue: 'Restart' })}
+              data-testid={`machine-restart-${s.name}`}
             >
-              <TrashIcon size={20} />
+              <ArrowClockwiseIcon size={20} />
             </IconButton>
           </Tooltip>
-        )}
-        {s.process.running && (
-          <Tooltip title={t('machinesPanel.stop', { defaultValue: 'Stop' })}>
-            <IconButton
-              size="small"
-              disabled={!host.online}
-              onClick={() => void send(host, 'server.stop', { server: s.name })}
-              aria-label={t('machinesPanel.stop', { defaultValue: 'Stop' })}
-              data-testid={`machine-stop-${s.name}`}
-            >
-              <StopIcon size={20} />
-            </IconButton>
-          </Tooltip>
-        )}
-      </Stack>
-    </Row>
-  );
+          {/* csm removes the highest-numbered server only (it keeps server-N contiguous). */}
+          {host.servers.length > 0 && host.servers[host.servers.length - 1].name === s.name && (
+            <Tooltip title={t('machinesPanel.deleteServer', { defaultValue: 'Delete server' })}>
+              <IconButton
+                size="small"
+                disabled={!canAct}
+                onClick={() => setRemoveServer({ host, server: s.name })}
+                aria-label={t('machinesPanel.deleteServer', { defaultValue: 'Delete server' })}
+                data-testid={`machine-delete-${s.name}`}
+              >
+                <TrashIcon size={20} />
+              </IconButton>
+            </Tooltip>
+          )}
+          {s.process.running && (
+            <Tooltip title={t('machinesPanel.stop', { defaultValue: 'Stop' })}>
+              <IconButton
+                size="small"
+                disabled={!canAct}
+                onClick={() => void send(host, 'server.stop', { server: s.name })}
+                aria-label={t('machinesPanel.stop', { defaultValue: 'Stop' })}
+                data-testid={`machine-stop-${s.name}`}
+              >
+                <StopIcon size={20} />
+              </IconButton>
+            </Tooltip>
+          )}
+        </Stack>
+      </Row>
+    );
+  };
 
   const renderCommand = (c: FleetHostCommand) => (
     <Box key={c.id} py={0.75} data-testid={`machine-command-${c.id}`}>
@@ -1218,7 +1280,7 @@ export default function MachinesPanel() {
         onConfirm={() => {
           const target = removeServer;
           setRemoveServer(null);
-          if (target) void send(target.host, 'server.remove', { server: target.server });
+          if (target) void removeServerNow(target.host, target.server);
         }}
         onCancel={() => setRemoveServer(null)}
       />

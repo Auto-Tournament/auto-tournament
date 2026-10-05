@@ -7,6 +7,7 @@
 import { useEffect, useId, useState, type ReactNode } from 'react';
 import { Box, ButtonBase, Collapse, Stack, Typography } from '@mui/material';
 import { CaretDownIcon } from '@phosphor-icons/react';
+import { OPEN_EVENT } from './openServerSection';
 
 export interface ServerSectionProps {
   /** Stable id: the anchor (`#id`) and the remembered open state. */
@@ -47,14 +48,27 @@ export function ServerSection({
   const [open, setOpen] = useState(() => readOpen(id, defaultOpen));
   const contentId = useId();
 
-  // A link to #id (e.g. "see Automatic scaling") opens the section.
+  // A link to #id (e.g. "see Automatic scaling") or openServerSection(id) opens the section.
   useEffect(() => {
     const onHash = () => {
       if (window.location.hash === `#${id}`) setOpen(true);
     };
+    const onOpen = (e: Event) => {
+      if ((e as CustomEvent<string>).detail !== id) return;
+      setOpen(true);
+      try {
+        localStorage.setItem(storageKey(id), '1');
+      } catch {
+        // Not remembered; fine.
+      }
+    };
     onHash();
     window.addEventListener('hashchange', onHash);
-    return () => window.removeEventListener('hashchange', onHash);
+    window.addEventListener(OPEN_EVENT, onOpen);
+    return () => {
+      window.removeEventListener('hashchange', onHash);
+      window.removeEventListener(OPEN_EVENT, onOpen);
+    };
   }, [id]);
 
   const toggle = () => {
