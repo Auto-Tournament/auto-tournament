@@ -30,6 +30,7 @@ import * as matchTerminationService from '../services/matchTerminationService';
 import * as playerConnectionService from '../services/playerConnectionService';
 import * as settingsService from '../services/settingsService';
 import * as socketService from '../services/socketService';
+import * as adminSteamIds from '../utils/adminSteamIds';
 import * as cs2Version from '../utils/cs2Version';
 import * as eventLogger from '../utils/eventLogger';
 import * as logger from '../utils/logger';
@@ -66,6 +67,7 @@ const MODULES: Record<string, object> = {
   'services/settingsService': settingsService,
   'services/socketService': socketService,
   'types/adminCall.types': adminCallTypes,
+  'utils/adminSteamIds': adminSteamIds,
   'utils/cs2Version': cs2Version,
   'utils/eventLogger': eventLogger,
   'utils/logger': logger,

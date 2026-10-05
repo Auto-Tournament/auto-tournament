@@ -32,3 +32,18 @@ export function parseAdminSteamIds(raw: string | undefined): {
 
   return { valid, invalid };
 }
+
+/*
+ * The saved list (Settings -> Sign-in -> Admin Steam IDs), cached in memory
+ * so request handlers can check it without a database round trip. Filled by
+ * services/adminAccessSettings at boot and after every save.
+ */
+let savedAdminSteamIds: ReadonlySet<string> = new Set();
+
+export function setSavedAdminSteamIds(raw: string | null | undefined): void {
+  savedAdminSteamIds = new Set(parseAdminSteamIds(raw ?? undefined).valid);
+}
+
+export function isSavedAdminSteamId(id: string | null | undefined): boolean {
+  return !!id && savedAdminSteamIds.has(id);
+}

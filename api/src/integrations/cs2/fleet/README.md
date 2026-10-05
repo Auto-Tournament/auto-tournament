@@ -107,7 +107,7 @@ The CS2 pool (`../allocation.ts`) goes through `driverFor(serverId)`
 | restart in place | `match.unassign {admin}`, then a new assign (new epoch) |
 | move | `match.unassign {moved}` + "Match moved…" kick |
 | roster / names | `syncMatch` / `addPlayer` → `match.update` (CAS on config_rev, one retry on `conflict`) |
-| admin buttons (`/api/rcon/*`) | `runFleetCommand` → `cmd`, the route answers with the `cmd.result`; raw commands → `exec`, root only (`ADMIN_STEAM_IDS` or an admin API token), audit row first |
+| admin buttons (`/api/rcon/*`) | `runFleetCommand` → `cmd`, the route answers with the `cmd.result`; raw commands → `exec`, root only (the setup admin, Admin Steam IDs in Settings → Sign-in, or an admin API token), audit row first |
 
 Allocation: a linked server is free when its socket is up, it reports
 `available`, the database has no loaded/live match on it, and turnover holds
