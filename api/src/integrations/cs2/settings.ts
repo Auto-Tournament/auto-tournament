@@ -40,6 +40,7 @@ export type Cs2SettingKey =
   | 'at_kick_when_no_match_loaded'
   | 'at_whitelist_enabled_default'
   | 'at_pause_after_restore'
+  | 'at_join_password'
   | 'at_stop_command_available'
   | 'at_stop_command_no_damage'
   | 'at_use_pause_command_for_tactical_pause'
@@ -228,6 +229,7 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
   flag('at_kick_when_no_match_loaded', 'atKickWhenNoMatchLoaded', 130),
   flag('at_whitelist_enabled_default', 'atWhitelistEnabledDefault', 140),
   flag('at_pause_after_restore', 'atPauseAfterRestore', 150),
+  flag('at_join_password', 'atJoinPassword', 155),
   flag('at_stop_command_available', 'atStopCommandAvailable', 160),
   flag('at_stop_command_no_damage', 'atStopCommandNoDamage', 170),
   flag(

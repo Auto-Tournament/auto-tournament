@@ -247,6 +247,12 @@ test.describe.serial('Webhook events from match lifecycles', () => {
   test('Ready Up server (fleet): the connect password reaches the signed delivery only', async ({ request }) => {
     test.setTimeout(180_000);
     await resetEnrollRateLimit(request);
+    // Join passwords are off by default (the roster whitelist keeps others out); this test is
+    // about where a password may travel, so it turns them on.
+    expect((await request.put('/api/settings', { data: { atJoinPassword: true } })).ok()).toBe(true);
+    cleanup.push(async () => {
+      await request.put('/api/settings', { data: { atJoinPassword: false } });
+    });
     const bin = newBin('fleet');
     const endpoint = await createEndpoint(request, { url: await sinkUrl(request, bin), source: INTEGRATOR.label });
 

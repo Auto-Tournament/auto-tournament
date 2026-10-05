@@ -53,6 +53,7 @@ export interface Cs2DefaultsValues {
   atKickWhenNoMatchLoaded: boolean;
   atWhitelistEnabledDefault: boolean;
   atPauseAfterRestore: boolean;
+  atJoinPassword: boolean;
   atStopCommandAvailable: boolean;
   atStopCommandNoDamage: boolean;
   atUsePauseCommandForTacticalPause: boolean;
@@ -92,6 +93,7 @@ const DEFAULTS: Cs2DefaultsValues = {
   atKickWhenNoMatchLoaded: false,
   atWhitelistEnabledDefault: false,
   atPauseAfterRestore: true,
+  atJoinPassword: false,
   atStopCommandAvailable: false,
   atStopCommandNoDamage: false,
   atUsePauseCommandForTacticalPause: false,
@@ -622,6 +624,17 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
                               {t('settings.atCore.adminTools.title')}
                             </Typography>
                             <Stack spacing={1}>
+                              <FormControlLabel
+                                control={
+                                  <Switch
+                                    checked={vals.atJoinPassword}
+                                    onChange={(e) => update('atJoinPassword', e.target.checked)}
+                                    color="primary"
+                                    size="small"
+                                  />
+                                }
+                                label={t('settings.atCore.adminTools.joinPassword')}
+                              />
                               <FormControlLabel
                                 control={
                                   <Switch

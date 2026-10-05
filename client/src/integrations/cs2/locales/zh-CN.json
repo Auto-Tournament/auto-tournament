@@ -971,6 +971,7 @@
       "adminTools": {
         "title": "管理员工具",
         "pauseAfterRestore": "回合恢复（.stop）后自动暂停，便于队伍沟通",
+        "joinPassword": "Join password on match servers (off: the roster whitelist alone keeps others out)",
         "stopCommandAvailable": "启用 .stop（回合恢复）命令",
         "stopCommandNoDamage": "当发生对方队伤害后禁用 .stop",
         "usePauseForTacticalPause": "让 .pause 的行为类似战术暂停"

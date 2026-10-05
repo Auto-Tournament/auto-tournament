@@ -291,6 +291,7 @@ export interface SettingsResponse extends ApiResponse {
     atKickWhenNoMatchLoaded?: boolean;
     atWhitelistEnabledDefault?: boolean;
     atPauseAfterRestore?: boolean;
+    atJoinPassword?: boolean;
     atStopCommandAvailable?: boolean;
     atStopCommandNoDamage?: boolean;
     atUsePauseCommandForTacticalPause?: boolean;

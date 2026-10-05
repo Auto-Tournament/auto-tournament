@@ -1237,6 +1237,8 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   { key: 'webhooks_allow_private_targets', field: 'webhooksAllowPrivateTargets' },
   // Experimental feature toggles: /api/experimental only.
   { key: 'experimental_matchmaking', field: null },
+  // Ready Up match servers' join password (off by default; the roster whitelist keeps others out).
+  { key: 'at_join_password', field: 'atJoinPassword' },
 ];
 
 // --- tests -------------------------------------------------------------------

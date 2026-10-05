@@ -339,6 +339,15 @@ async function streamsDemos(fleetServerId: string): Promise<boolean> {
   }
 }
 
+async function joinPasswordEnabled(): Promise<boolean> {
+  try {
+    const { cs2Settings } = await import('../settingsReaders');
+    return await cs2Settings.isAtJoinPasswordEnabled();
+  } catch {
+    return false;
+  }
+}
+
 async function assignDefaults(): Promise<{ allowForceReady?: boolean; pauseAfterRestore?: boolean }> {
   try {
     const { cs2Settings } = await import('../settingsReaders');
@@ -382,7 +391,8 @@ export async function assignMatch(
 
   let config: AssignConfig;
   let served: MatchConfig;
-  const password = generateMatchPassword();
+  // No join password unless the admin turned it on: the roster whitelist keeps others out.
+  const password = (await joinPasswordEnabled()) ? generateMatchPassword() : '';
   try {
     served = await servedMatchConfig(match);
     config = buildAssignConfig(served, password, {

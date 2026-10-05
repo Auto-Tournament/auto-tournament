@@ -971,6 +971,7 @@
       "adminTools": {
         "title": "Admin-tools",
         "pauseAfterRestore": "Pauzeren na round restore (.stop) zodat teams kunnen overleggen",
+        "joinPassword": "Join password on match servers (off: the roster whitelist alone keeps others out)",
         "stopCommandAvailable": "Schakel .stop (round restore) commando in",
         "stopCommandNoDamage": "Schakel .stop uit na schade aan het andere team",
         "usePauseForTacticalPause": "Laat .pause zich gedragen als tactische pauze"
