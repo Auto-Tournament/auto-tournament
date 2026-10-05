@@ -393,8 +393,10 @@ history.
 
 ### XP and levels
 
-XP measures how much you play and finish, not how good you are. The rating
-is for skill. Keeping them apart means a weaker player who plays a lot still
+XP measures how experienced you are on this platform: how much you play and
+finish, not how good you are. The rating is for skill. A level can also gate
+things, for example a tournament that only takes players from level 5 up, so
+people have to play on the platform before they enter. Keeping them apart means a weaker player who plays a lot still
 levels up, and levels can't be farmed to fake skill.
 
 XP per finished match (the match ran to its end; you were present):
@@ -408,13 +410,26 @@ XP per finished match (the match ran to its end; you were present):
 
 - No XP for a cancelled match, an abandon, or a match you left early.
 - XP never goes down. Penalties are cooldowns, not lost XP.
-- Tournament matches give XP too, with the same table, so organisers' events
-  count toward levels. (Open question 9.)
+- Only matchmaking gives XP (decided 2026-10-05). Tournament matches don't.
 
-Levels: going from level *n* to *n + 1* takes `500 + 100 × (n − 1)` XP
-(level 2 at 500, level 10 at about 8,100 total, level 50 at about 147,000).
+Levels: going from level *n* to *n + 1* takes `400 + 50 × (n − 1)` XP. A
+match is worth about 200 XP on average, so the curve reads as "matches played"
+early on and slows down later:
+
+| Level | Total XP | About this many matches |
+| --- | --- | --- |
+| 5 | 1,900 | 10 |
+| 10 | 5,400 | 27 |
+| 20 | 16,150 | 80 |
+| 50 | 78,400 | 390 |
+
 No cap. Every 10 levels changes the badge colour, so veterans are visible at a
-glance in lobbies, scoreboards and on profiles.
+glance in lobbies, scoreboards and on profiles. The curve is a setting
+(`mm_level_base`, `mm_level_step`), so it can be tuned once real numbers come
+in.
+
+**Level requirement on tournaments.** A tournament can set a minimum level to
+register (default none). Later phase; it only needs `player_progress.level`.
 
 Stored as a ledger, so an admin can see and correct where XP came from:
 
@@ -441,8 +456,9 @@ Rules:
   it can be changed inside the window.
 - Never shown who voted.
 - Thumbs up: the profile shows the total and the most given tags.
-- Thumbs down: not shown on profiles. Admins see them. A player who gets
-  thumbs down from 5 or more different players in 30 days is listed for
+- Thumbs down: the profile shows the total next to the thumbs up (decided
+  2026-10-05), never who gave them. Admins also see the reasons. A player who
+  gets thumbs down from 5 or more different players in 30 days is listed for
   review under Manage. A whole party voting someone down counts as one voter.
 - No effect on rating or XP. (Later, matchmaking could avoid pairing players
   who downvoted each other; not now.)
@@ -457,7 +473,7 @@ API (same flag and rules as the rest):
 | --- | --- | --- |
 | GET | `/matches/:slug/result` | The post-match screen: score, scoreboard, my rating change, my XP breakdown, my commends given. |
 | PUT | `/matches/:slug/commends/:playerId` | Body `{ value: 1 \| -1, tag }`. Same-site JSON, signed-in player only. |
-| GET | `/players/:id/progress` | Level, XP, progress to next level, thumbs up and top tags. |
+| GET | `/players/:id/progress` | Level, XP, progress to next level, thumbs up and down, top tags. |
 | GET | `/admin/commends/review` | Players over the thumbs-down threshold. |
 
 ### Phases
@@ -467,13 +483,13 @@ and history). Commends go into phase 3 too. Nothing here needs phase 2's
 balancing, so the post-match screen can be built as soon as phase 1 has a
 match room.
 
-### Open questions (this section)
+### Decisions (Sivert, 2026-10-05)
 
-9. **Tournament XP**: do tournament matches give XP, or only matchmaking?
-10. **Thumbs down on profiles**: hidden (this design) or shown as a count?
-11. **Level curve**: is `500 + 100 × (n − 1)` per level right, or should early
-    levels come faster?
-12. **First win of the day**: keep the +100, or leave it out?
+- XP from matchmaking only.
+- Thumbs down shown as a count on profiles.
+- Levels show how experienced a player is on the platform; the curve above is
+  a starting point and a setting. Levels may gate tournaments later.
+- First win of the day (+100) stays.
 
 ## Phases
 
