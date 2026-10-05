@@ -321,7 +321,10 @@
     "mapChips": {
       "live": "Direkte",
       "tiebreak": "decided by tiebreak",
-      "tiebreakWin": "{{team}} won on tiebreak"
+      "tiebreakWin": "{{team}} won on tiebreak",
+      "yourPick": "vårt valg",
+      "theirPick": "deres valg",
+      "decider": "avgjørende"
     },
     "demos": {
       "title": "Kartdemoer",

@@ -287,7 +287,10 @@
     "mapChips": {
       "live": "Live",
       "tiebreak": "decided by tiebreak",
-      "tiebreakWin": "{{team}} won on tiebreak"
+      "tiebreakWin": "{{team}} won on tiebreak",
+      "yourPick": "your pick",
+      "theirPick": "their pick",
+      "decider": "decider"
     },
     "demos": {
       "title": "Map-demo's",

@@ -1021,6 +1021,12 @@ export interface ClientGameIntegration {
   preMatchView?: ComponentType<PreMatchViewProps>;
   /** Record of the pre-match phase, shown on the match details. */
   preMatchHistory?: ComponentType<PreMatchHistoryProps>;
+  /**
+   * Who chose each map of a match, in map order (CS2: the veto's picks;
+   * 'decider' for the leftover map). Null where nobody did. The map chips
+   * say "your pick" / "their pick" from it. Absent: the chips say nothing.
+   */
+  mapPickers?: (matchSlug: string) => Promise<Array<'team1' | 'team2' | 'decider' | null>>;
 
   /**
    * What this game gives the rest of the app, mirroring the API integration's
