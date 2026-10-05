@@ -75,6 +75,11 @@ export function adminRoute(path: string): string {
   return path.replace(/^\//, '');
 }
 
+/** The admin Matches page with one match open (a link an admin can share). */
+export function matchDetailsPath(slug: string): string {
+  return `${paths.matches}?match=${encodeURIComponent(slug)}`;
+}
+
 /** `/play/:lobbyId`: a matchmaking match room. */
 export function playLobbyPath(lobbyId: string): string {
   return `/play/${lobbyId}`;

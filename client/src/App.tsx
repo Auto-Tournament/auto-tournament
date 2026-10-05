@@ -1,6 +1,6 @@
 import React from 'react';
 import { ThemeProvider, CssBaseline, Box } from '@mui/material';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { PageHeaderProvider } from './contexts/PageHeaderContext';
 import { SnackbarProvider, useSnackbar } from './contexts/SnackbarContext';
@@ -55,7 +55,7 @@ import { listRouteIntegrations } from './integrations/registry';
 import { useModuleState } from './module-loader/useModuleState';
 import { ModulePendingRoute } from './components/common/ModuleNotInstalledNotice';
 import { MatchDetailsHost } from './components/modals/MatchDetailsHost';
-import { adminRoute, paths, playerProfilePath } from './paths';
+import { adminRoute, matchDetailsPath, paths, playerProfilePath } from './paths';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -448,6 +448,7 @@ function AppRoutes() {
         <Route path={adminRoute(paths.tournament)} element={<Tournament />} />
         <Route path={adminRoute(paths.bracket)} element={<Bracket />} />
         <Route path={adminRoute(paths.matches)} element={<Matches />} />
+        <Route path={`${adminRoute(paths.matches)}/:slug`} element={<MatchSlugRedirect />} />
         {/* Mounted for every instance, not only one whose game can have a
             dispute: the page itself says "nothing to settle here" when the
             tournament's module fills no queue, and a bookmarked URL is better
@@ -479,6 +480,13 @@ function AppRoutes() {
       <Route path="*" element={<ModulePendingRoute fallback={<NotFound />} />} />
     </Routes>
   );
+}
+
+
+/** `/matches/:slug` → the Matches page with that match open. */
+function MatchSlugRedirect() {
+  const { slug = '' } = useParams();
+  return <Navigate to={matchDetailsPath(slug)} replace />;
 }
 
 export default function App() {
