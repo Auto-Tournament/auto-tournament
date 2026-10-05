@@ -586,7 +586,16 @@ export async function buildStandaloneMatchConfig(
     // value. This keeps the manual match modal's "Max rounds" field
     // authoritative while still providing a sensible default that mirrors
     // tournament-generated matches.
-    if (!hasManualMaxRounds && defaults) {
+    // A maxRounds on the match config itself (the API / manual match) wins over the tournament
+    // fallback too: a standalone match with maxRounds 8 got mp_maxrounds 4 from the running
+    // tournament, and the server played 4.
+    const configMaxRounds =
+      typeof config.maxRounds === 'number' && Number.isFinite(config.maxRounds) && config.maxRounds > 0
+        ? Math.floor(config.maxRounds)
+        : null;
+    if (!hasManualMaxRounds && configMaxRounds !== null) {
+      config.cvars = { ...(config.cvars || {}), mp_maxrounds: configMaxRounds };
+    } else if (!hasManualMaxRounds && defaults) {
       config.cvars = {
         ...(config.cvars || {}),
         mp_maxrounds: resolveMaxRounds(defaults),
