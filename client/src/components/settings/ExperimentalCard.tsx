@@ -26,6 +26,30 @@ export function ExperimentalCard() {
   const { showSuccess, showError } = useSnackbar();
   const [features, setFeatures] = useState<ExperimentalFeatureState[] | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
+  // Matchmaking only: admins only until opened to players (null = not loaded).
+  const [mmOpen, setMmOpen] = useState<boolean | null>(null);
+  const mmEnabled = features?.find((f) => f.id === 'matchmaking')?.enabled ?? false;
+
+  useEffect(() => {
+    if (!mmEnabled) return;
+    api
+      .get<{ openToPlayers?: boolean }>('/api/matchmaking/status')
+      .then((res) => setMmOpen(res.openToPlayers === true))
+      .catch(() => setMmOpen(null));
+  }, [mmEnabled]);
+
+  const toggleMmOpen = async (open: boolean) => {
+    setSaving('matchmaking-open');
+    try {
+      const res = await api.put<{ openToPlayers: boolean }>('/api/matchmaking/admin/settings', { openToPlayers: open });
+      setMmOpen(res.openToPlayers);
+      showSuccess(t('settingsPage.experimental.saved'));
+    } catch (err) {
+      showError(apiErrorMessage(err, t('settingsPage.experimental.saveFailed')));
+    } finally {
+      setSaving(null);
+    }
+  };
 
   useEffect(() => {
     api
@@ -86,6 +110,29 @@ export function ExperimentalCard() {
             <Typography variant="caption" color="text.secondary" display="block">
               {t(`settingsPage.experimental.features.${feature.id}.description`)}
             </Typography>
+            {feature.id === 'matchmaking' && feature.enabled && mmOpen !== null && (
+              <Box sx={{ pl: 4, mt: 1 }}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={mmOpen}
+                      disabled={saving === 'matchmaking-open'}
+                      onChange={(event) => void toggleMmOpen(event.target.checked)}
+                      size="small"
+                      slotProps={{
+                        input: {
+                          'data-testid': 'settings-matchmaking-open',
+                        } as React.InputHTMLAttributes<HTMLInputElement>,
+                      }}
+                    />
+                  }
+                  label={t('settingsPage.experimental.features.matchmaking.openLabel')}
+                />
+                <Typography variant="caption" color="text.secondary" display="block">
+                  {t('settingsPage.experimental.features.matchmaking.openDescription')}
+                </Typography>
+              </Box>
+            )}
             {feature.source === 'env' && (
               <Typography variant="caption" color="warning.main" display="block">
                 {t('settingsPage.experimental.envOverride', { env: feature.env })}
