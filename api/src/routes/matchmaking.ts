@@ -13,8 +13,8 @@ import { resolveViewerIdentity } from '../utils/viewerIdentity';
 import { isSameSiteRequest } from '../utils/accountConnections';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
-import { matchmakingService, MatchmakingError, MM_SEARCH_WINDOW } from '../services/matchmaking/matchmakingService';
-import { MODES, parseSearchWindow, validateSearchWindow } from '../services/matchmaking/rules';
+import { matchmakingService, MatchmakingError, MM_RESERVED_SERVERS, MM_SEARCH_WINDOW } from '../services/matchmaking/matchmakingService';
+import { MODES, parseReservedServers, parseSearchWindow, validateSearchWindow } from '../services/matchmaking/rules';
 import { progressionService, ProgressionError } from '../services/matchmaking/progressionService';
 
 const router = Router();
@@ -117,6 +117,7 @@ router.get(
       openToPlayers: open,
       leaderboardPublic: board,
       searchWindow: searchWindowView(await db.getAppSettingAsync(MM_SEARCH_WINDOW)),
+      reservedServers: parseReservedServers(await db.getAppSettingAsync(MM_RESERVED_SERVERS)),
     });
   })
 );
@@ -577,6 +578,10 @@ router.put(
   handle('save the settings', async (req, res) => {
     const open = req.body?.openToPlayers;
     const board = req.body?.leaderboardPublic;
+    const reservedInput = req.body?.reservedServers;
+    if (reservedInput !== undefined && !(Number.isInteger(reservedInput) && reservedInput >= 0 && reservedInput <= 50)) {
+      return res.status(400).json({ success: false, error: 'reservedServers must be a whole number from 0 to 50' });
+    }
     const windowInput = req.body?.searchWindow;
     const window = windowInput === undefined ? undefined : validateSearchWindow(windowInput);
     if (window === null) {
@@ -591,9 +596,13 @@ router.put(
     if (board !== undefined && typeof board !== 'boolean') {
       return res.status(400).json({ success: false, error: 'leaderboardPublic must be a boolean' });
     }
-    if (open === undefined && board === undefined && window === undefined) {
-      return res.status(400).json({ success: false, error: 'Send openToPlayers, leaderboardPublic and/or searchWindow' });
+    if (open === undefined && board === undefined && window === undefined && reservedInput === undefined) {
+      return res.status(400).json({
+        success: false,
+        error: 'Send openToPlayers, leaderboardPublic, searchWindow and/or reservedServers',
+      });
     }
+    if (reservedInput !== undefined) await db.setAppSettingAsync(MM_RESERVED_SERVERS, reservedInput ? String(reservedInput) : null);
     if (window !== undefined) await db.setAppSettingAsync(MM_SEARCH_WINDOW, JSON.stringify(window));
     if (open !== undefined) await db.setAppSettingAsync(MM_OPEN_TO_PLAYERS, open ? '1' : null);
     if (board !== undefined) await db.setAppSettingAsync(MM_LEADERBOARD_PUBLIC, board ? '1' : null);
@@ -603,6 +612,7 @@ router.put(
       openToPlayers: (await db.getAppSettingAsync(MM_OPEN_TO_PLAYERS)) === '1',
       leaderboardPublic: (await db.getAppSettingAsync(MM_LEADERBOARD_PUBLIC)) === '1',
       searchWindow: searchWindowView(await db.getAppSettingAsync(MM_SEARCH_WINDOW)),
+      reservedServers: parseReservedServers(await db.getAppSettingAsync(MM_RESERVED_SERVERS)),
     });
   })
 );

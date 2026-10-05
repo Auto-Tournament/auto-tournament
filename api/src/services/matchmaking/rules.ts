@@ -283,3 +283,20 @@ export function inviteCode(): string {
   for (let i = 0; i < 10; i++) code += alphabet[randomInt(alphabet.length)];
   return code;
 }
+
+/**
+ * Free servers a tournament match may take while matchmaking is in use:
+ * tournaments go first, but `reserved` servers stay free for matchmaking
+ * (decided 2026-09-29). Only while matchmaking has players waiting, so
+ * nothing is held back for nobody.
+ */
+export function freeForTournament(free: number, reserved: number, matchmakingWaiting: boolean): number {
+  if (!matchmakingWaiting || reserved <= 0) return free;
+  return Math.max(0, free - reserved);
+}
+
+/** The admin's "servers kept free for matchmaking": a whole number 0-50, else 0. */
+export function parseReservedServers(raw: unknown): number {
+  const n = typeof raw === 'string' ? Number(raw) : raw;
+  return typeof n === 'number' && Number.isInteger(n) && n >= 0 && n <= 50 ? n : 0;
+}

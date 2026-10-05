@@ -260,7 +260,10 @@
             "cap": "Cap (Elo)",
             "uncappedAfterMinutes": "Anyone after (min)"
           },
-          "windowSave": "Save"
+          "windowSave": "Save",
+          "reservedTitle": "Servers kept free for matchmaking",
+          "reservedDescription": "Tournament matches go first, but leave this many free servers for matchmaking while players are searching. 0 = none.",
+          "reservedLabel": "Servers"
         }
       }
     }

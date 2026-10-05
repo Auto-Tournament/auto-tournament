@@ -41,30 +41,45 @@ export function ExperimentalCard() {
   const [mmBoard, setMmBoard] = useState(false);
   // The search window as typed (strings, so a field can be emptied while typing).
   const [win, setWin] = useState<Record<keyof SearchWindow, string> | null>(null);
+  const [reserved, setReserved] = useState('0');
   const mmEnabled = features?.find((f) => f.id === 'matchmaking')?.enabled ?? false;
 
   useEffect(() => {
     if (!mmEnabled) return;
     api
-      .get<{ openToPlayers?: boolean; leaderboardPublic?: boolean; searchWindow?: SearchWindow }>('/api/matchmaking/status')
+      .get<{ openToPlayers?: boolean; leaderboardPublic?: boolean; searchWindow?: SearchWindow; reservedServers?: number }>(
+        '/api/matchmaking/status'
+      )
       .then((res) => {
         setMmOpen(res.openToPlayers === true);
         setMmBoard(res.leaderboardPublic === true);
         if (res.searchWindow) setWin(windowStrings(res.searchWindow));
+        setReserved(String(res.reservedServers ?? 0));
       })
       .catch(() => setMmOpen(null));
   }, [mmEnabled]);
 
-  const saveMm = async (patch: { openToPlayers?: boolean; leaderboardPublic?: boolean; searchWindow?: SearchWindow }) => {
+  const saveMm = async (patch: {
+    openToPlayers?: boolean;
+    leaderboardPublic?: boolean;
+    searchWindow?: SearchWindow;
+    reservedServers?: number;
+  }) => {
     setSaving('matchmaking-open');
     try {
-      const res = await api.put<{ openToPlayers: boolean; leaderboardPublic: boolean; searchWindow: SearchWindow }>(
+      const res = await api.put<{
+        openToPlayers: boolean;
+        leaderboardPublic: boolean;
+        searchWindow: SearchWindow;
+        reservedServers: number;
+      }>(
         '/api/matchmaking/admin/settings',
         patch
       );
       setMmOpen(res.openToPlayers);
       setMmBoard(res.leaderboardPublic);
       setWin(windowStrings(res.searchWindow));
+      setReserved(String(res.reservedServers));
       showSuccess(t('settingsPage.experimental.saved'));
     } catch (err) {
       showError(apiErrorMessage(err, t('settingsPage.experimental.saveFailed')));
@@ -196,6 +211,30 @@ export function ExperimentalCard() {
                         disabled={saving === 'matchmaking-open'}
                         onClick={() => void saveMm({ searchWindow: windowFromStrings(win) })}
                         data-testid="settings-mm-window-save"
+                      >
+                        {t('settingsPage.experimental.features.matchmaking.windowSave')}
+                      </Button>
+                    </Stack>
+                    <Typography variant="subtitle2" mt={2}>
+                      {t('settingsPage.experimental.features.matchmaking.reservedTitle')}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" display="block" mb={1}>
+                      {t('settingsPage.experimental.features.matchmaking.reservedDescription')}
+                    </Typography>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <TextField
+                        size="small"
+                        type="number"
+                        label={t('settingsPage.experimental.features.matchmaking.reservedLabel')}
+                        value={reserved}
+                        onChange={(e) => setReserved(e.target.value)}
+                        inputProps={{ min: 0, max: 50, 'data-testid': 'settings-mm-reserved' }}
+                        sx={{ maxWidth: 160 }}
+                      />
+                      <Button
+                        disabled={saving === 'matchmaking-open'}
+                        onClick={() => void saveMm({ reservedServers: Number(reserved) })}
+                        data-testid="settings-mm-reserved-save"
                       >
                         {t('settingsPage.experimental.features.matchmaking.windowSave')}
                       </Button>

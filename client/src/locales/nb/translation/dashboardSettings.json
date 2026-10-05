@@ -260,7 +260,10 @@
             "cap": "Tak (Elo)",
             "uncappedAfterMinutes": "Alle etter (min)"
           },
-          "windowSave": "Lagre"
+          "windowSave": "Lagre",
+          "reservedTitle": "Servere holdt ledige for matchmaking",
+          "reservedDescription": "Turneringskamper går først, men lar så mange ledige servere stå til matchmaking mens spillere søker. 0 = ingen.",
+          "reservedLabel": "Servere"
         }
       }
     }

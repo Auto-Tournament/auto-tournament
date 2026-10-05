@@ -6,6 +6,8 @@ import {
   cooldownSeconds,
   findGroup,
   inviteCode,
+  freeForTournament,
+  parseReservedServers,
   partyRating,
   parseSearchWindow,
   searchWindow,
@@ -157,6 +159,14 @@ test.describe('matchmaking rules (pure)', () => {
     expect(validateSearchWindow({ start: 100, step: 50, cap: 400, uncappedAfterMinutes: 0 })).toBeNull();
   });
 
+  test('servers kept free for matchmaking: only while players wait', TAGS, () => {
+    expect(freeForTournament(3, 1, true)).toBe(2);
+    expect(freeForTournament(1, 2, true)).toBe(0);
+    expect(freeForTournament(3, 1, false)).toBe(3);
+    expect(freeForTournament(3, 0, true)).toBe(3);
+    expect([parseReservedServers('2'), parseReservedServers('x'), parseReservedServers(null), parseReservedServers('51')]).toEqual([2, 0, 0, 0]);
+  });
+
   test('invite codes: 10 characters, no lookalikes', TAGS, () => {
     const codes = new Set(Array.from({ length: 200 }, () => inviteCode()));
     expect(codes.size).toBe(200);
@@ -239,6 +249,10 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
       ).ok()
     ).toBe(true);
     expect((await admin.get('/api/matchmaking/admin/commends/review')).ok()).toBe(true);
+    expect((await admin.put('/api/matchmaking/admin/settings', { data: { reservedServers: 2.5 } })).status()).toBe(400);
+    expect((await admin.put('/api/matchmaking/admin/settings', { data: { reservedServers: 1 } })).ok()).toBe(true);
+    expect((await (await admin.get('/api/matchmaking/status')).json()).reservedServers).toBe(1);
+    expect((await admin.put('/api/matchmaking/admin/settings', { data: { reservedServers: 0 } })).ok()).toBe(true);
   });
 
   test('players are refused until matchmaking is open to them', TAGS, async () => {

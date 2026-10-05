@@ -449,9 +449,18 @@ export class Scheduler {
       }
 
       const integration = integrationForMatch(match);
-      const freeServerCount = capacityCount(
+      let freeServerCount = capacityCount(
         await integration.capacity({ tournamentId: match.tournament_id ?? null, slug: matchSlug })
       );
+      // Tournaments first, but the admin's "servers kept free for
+      // matchmaking" stay free while matchmaking has players waiting
+      // (services/matchmaking, rules.freeForTournament).
+      if (isBracketMatch && freeServerCount > 0) {
+        const { matchmakingService } = await import('../services/matchmaking/matchmakingService');
+        const { freeForTournament } = await import('../services/matchmaking/rules');
+        const reserved = await matchmakingService.serversReservedForMatchmaking().catch(() => 0);
+        freeServerCount = freeForTournament(freeServerCount, reserved, reserved > 0);
+      }
       if (freeServerCount === 0) {
         return { success: false, error: 'No available servers' };
       }
