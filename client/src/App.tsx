@@ -33,6 +33,7 @@ import TournamentMatchesTab from './pages/TournamentMatchesTab';
 import TournamentTeamsTab from './pages/TournamentTeamsTab';
 import Home from './pages/Home';
 import Browse from './pages/Browse';
+import PlayersDirectory from './pages/PlayersDirectory';
 import Compatibility from './pages/Compatibility';
 import Play from './pages/Play';
 import PlayLobby from './pages/PlayLobby';
@@ -390,6 +391,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly={false}>
             <Browse />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path={paths.browsePlayers}
+        element={
+          <ProtectedRoute adminOnly={false}>
+            <PlayersDirectory />
           </ProtectedRoute>
         }
       />
