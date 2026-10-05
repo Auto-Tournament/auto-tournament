@@ -24,6 +24,7 @@
  * | event.round_end {round}                 | score.updated, player.stats (map totals so far)   |
  * | event.halftime / event.overtime         | score.updated, phase.changed                      |
  * | event.pause                             | phase.changed (`paused` / `live`)                 |
+ * | event.match_restored                    | score.updated (the restored map score, from state) |
  * | event.map_result                        | map.result (with the series score), player.stats  |
  * | event.series_end                        | series.ended                                      |
  * | everything else                         | [] (live page / driver hooks, see ./inbound.ts)   |
@@ -316,6 +317,14 @@ export function normalizeFleetEvent(
         ...scoreUpdated(slug, key, map, data.score, 'overtime'),
         phaseChanged(slug, `${key}/phase`, 'overtime'),
       ];
+    }
+
+    case 'event.match_restored': {
+      // A restore (admin, vote, failover resume) goes back to an earlier
+      // score; without this the live score keeps the abandoned timeline's
+      // until the next round ends (seen in the NTLAN trial run).
+      const score = ctx.state?.series?.maps?.[String(fleetMap)]?.score;
+      return scoreUpdated(slug, `fleet:match_restored:${map}:${env.id}`, map, score, 'live');
     }
 
     case 'event.pause': {
