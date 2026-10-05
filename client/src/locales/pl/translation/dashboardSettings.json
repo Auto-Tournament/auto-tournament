@@ -151,7 +151,16 @@
           "openLabel": "Open to players",
           "openDescription": "Off: only admins can find matches, for testing. On: every signed-in player sees Play and can queue.",
           "boardLabel": "Leaderboard visible to everyone",
-          "boardDescription": "Off: only signed-in players see the matchmaking leaderboard. On: anyone with the link."
+          "boardDescription": "Off: only signed-in players see the matchmaking leaderboard. On: anyone with the link.",
+          "windowTitle": "Search window",
+          "windowDescription": "How far apart in rating players may be. It starts at the first number, grows by the step every 30 seconds up to the cap, and after the last number of minutes anyone is matched (leave it empty for never).",
+          "window": {
+            "start": "Start (Elo)",
+            "step": "Step (Elo)",
+            "cap": "Cap (Elo)",
+            "uncappedAfterMinutes": "Anyone after (min)"
+          },
+          "windowSave": "Save"
         }
       }
     }

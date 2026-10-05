@@ -4,9 +4,19 @@ import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Typography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
 import { useTranslation } from 'react-i18next';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
+
+interface SearchWindow {
+  start: number;
+  step: number;
+  cap: number;
+  /** null = never: the window never opens to any rating. */
+  uncappedAfterMinutes: number | null;
+}
 
 interface ExperimentalFeatureState {
   id: string;
@@ -29,25 +39,32 @@ export function ExperimentalCard() {
   // Matchmaking only: admins only until opened to players (null = not loaded).
   const [mmOpen, setMmOpen] = useState<boolean | null>(null);
   const [mmBoard, setMmBoard] = useState(false);
+  // The search window as typed (strings, so a field can be emptied while typing).
+  const [win, setWin] = useState<Record<keyof SearchWindow, string> | null>(null);
   const mmEnabled = features?.find((f) => f.id === 'matchmaking')?.enabled ?? false;
 
   useEffect(() => {
     if (!mmEnabled) return;
     api
-      .get<{ openToPlayers?: boolean; leaderboardPublic?: boolean }>('/api/matchmaking/status')
+      .get<{ openToPlayers?: boolean; leaderboardPublic?: boolean; searchWindow?: SearchWindow }>('/api/matchmaking/status')
       .then((res) => {
         setMmOpen(res.openToPlayers === true);
         setMmBoard(res.leaderboardPublic === true);
+        if (res.searchWindow) setWin(windowStrings(res.searchWindow));
       })
       .catch(() => setMmOpen(null));
   }, [mmEnabled]);
 
-  const saveMm = async (patch: { openToPlayers?: boolean; leaderboardPublic?: boolean }) => {
+  const saveMm = async (patch: { openToPlayers?: boolean; leaderboardPublic?: boolean; searchWindow?: SearchWindow }) => {
     setSaving('matchmaking-open');
     try {
-      const res = await api.put<{ openToPlayers: boolean; leaderboardPublic: boolean }>('/api/matchmaking/admin/settings', patch);
+      const res = await api.put<{ openToPlayers: boolean; leaderboardPublic: boolean; searchWindow: SearchWindow }>(
+        '/api/matchmaking/admin/settings',
+        patch
+      );
       setMmOpen(res.openToPlayers);
       setMmBoard(res.leaderboardPublic);
+      setWin(windowStrings(res.searchWindow));
       showSuccess(t('settingsPage.experimental.saved'));
     } catch (err) {
       showError(apiErrorMessage(err, t('settingsPage.experimental.saveFailed')));
@@ -156,6 +173,35 @@ export function ExperimentalCard() {
                 <Typography variant="caption" color="text.secondary" display="block">
                   {t('settingsPage.experimental.features.matchmaking.boardDescription')}
                 </Typography>
+                {win && (
+                  <Box mt={2}>
+                    <Typography variant="subtitle2">{t('settingsPage.experimental.features.matchmaking.windowTitle')}</Typography>
+                    <Typography variant="caption" color="text.secondary" display="block" mb={1}>
+                      {t('settingsPage.experimental.features.matchmaking.windowDescription')}
+                    </Typography>
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ sm: 'center' }}>
+                      {(['start', 'step', 'cap', 'uncappedAfterMinutes'] as const).map((key) => (
+                        <TextField
+                          key={key}
+                          size="small"
+                          type="number"
+                          label={t(`settingsPage.experimental.features.matchmaking.window.${key}`)}
+                          value={win[key]}
+                          onChange={(e) => setWin({ ...win, [key]: e.target.value })}
+                          inputProps={{ min: key === 'uncappedAfterMinutes' ? 1 : 0, 'data-testid': `settings-mm-window-${key}` }}
+                          sx={{ maxWidth: 160 }}
+                        />
+                      ))}
+                      <Button
+                        disabled={saving === 'matchmaking-open'}
+                        onClick={() => void saveMm({ searchWindow: windowFromStrings(win) })}
+                        data-testid="settings-mm-window-save"
+                      >
+                        {t('settingsPage.experimental.features.matchmaking.windowSave')}
+                      </Button>
+                    </Stack>
+                  </Box>
+                )}
               </Box>
             )}
             {feature.source === 'env' && (
@@ -169,3 +215,18 @@ export function ExperimentalCard() {
     </Box>
   );
 }
+
+const windowStrings = (w: SearchWindow): Record<keyof SearchWindow, string> => ({
+  start: String(w.start),
+  step: String(w.step),
+  cap: String(w.cap),
+  uncappedAfterMinutes: w.uncappedAfterMinutes === null ? '' : String(w.uncappedAfterMinutes),
+});
+
+/** An empty "any rating after" field means never. The API validates the rest. */
+const windowFromStrings = (w: Record<keyof SearchWindow, string>): SearchWindow => ({
+  start: Number(w.start),
+  step: Number(w.step),
+  cap: Number(w.cap),
+  uncappedAfterMinutes: w.uncappedAfterMinutes.trim() === '' ? null : Number(w.uncappedAfterMinutes),
+});

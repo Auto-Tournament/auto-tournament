@@ -342,6 +342,45 @@ export const progressionService = {
     return out;
   },
 
+  /**
+   * Admin review list: players who got a thumbs down from at least `min`
+   * different voters in the last 30 days. Voters who were in the same party
+   * in that match count as one, so a group can't pile on.
+   */
+  async reviewList(min = 5): Promise<
+    Array<{ id: string; name: string; voters: number; reasons: Array<{ tag: string; count: number }> }>
+  > {
+    const since = now() - 30 * 86400;
+    const rows = await db.queryAsync<{ to_player_id: string; voters: number | string }>(
+      `SELECT c.to_player_id, COUNT(DISTINCT c.match_slug || ':' || COALESCE(lp.party_id, c.from_player_id)) AS voters
+         FROM commends c
+         LEFT JOIN mm_lobbies l ON l.match_slug = c.match_slug
+         LEFT JOIN mm_lobby_players lp ON lp.lobby_id = l.id AND lp.player_id = c.from_player_id
+        WHERE c.value = -1 AND c.created_at > ?
+        GROUP BY c.to_player_id
+       HAVING COUNT(DISTINCT c.match_slug || ':' || COALESCE(lp.party_id, c.from_player_id)) >= ?
+        ORDER BY voters DESC
+        LIMIT 100`,
+      [since, min]
+    );
+    const out = [];
+    for (const r of rows) {
+      const name = await db.queryOneAsync<{ name: string | null }>('SELECT name FROM players WHERE id = ?', [r.to_player_id]);
+      const reasons = await db.queryAsync<{ tag: string; n: number | string }>(
+        `SELECT tag, COUNT(*) AS n FROM commends WHERE to_player_id = ? AND value = -1 AND created_at > ?
+          GROUP BY tag ORDER BY n DESC, tag`,
+        [r.to_player_id, since]
+      );
+      out.push({
+        id: r.to_player_id,
+        name: name?.name || r.to_player_id,
+        voters: Number(r.voters),
+        reasons: reasons.map((x) => ({ tag: x.tag, count: Number(x.n) })),
+      });
+    }
+    return out;
+  },
+
   /** Admin: add or remove XP by hand (`reason = admin`, with a note). */
   async adjustXp(playerId: string, amount: number, note: string): Promise<void> {
     if (!Number.isInteger(amount) || amount === 0 || Math.abs(amount) > 1_000_000) {

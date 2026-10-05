@@ -35,6 +35,7 @@ import {
   MODES,
   OFFENCE_WINDOW_SECONDS,
   partyRating,
+  parseSearchWindow,
   searchWindow,
   splitTeams,
   TEAM_SIZE,
@@ -105,6 +106,9 @@ export interface MatchmakingMe {
 }
 
 const LOOP_MS = 2000;
+
+/** Setting: the admin's search window (JSON, `rules.parseSearchWindow`). */
+export const MM_SEARCH_WINDOW = 'mm_search_window';
 
 /** A first matchmaking game starts this uncertain at least, so it settles fast. */
 const SEED_SIGMA = 6.5;
@@ -348,6 +352,7 @@ export class MatchmakingService {
     );
     const parties: QueuedParty[] = [];
     const now = this.clock();
+    const window = parseSearchWindow(await db.getAppSettingAsync(MM_SEARCH_WINDOW));
     for (const e of entries) {
       const players = await this.members(e.party_id);
       const ratings = await this.ratingsFor(players, mode);
@@ -360,7 +365,7 @@ export class MatchmakingService {
         queuedAt,
         mus,
         rating: partyRating(mus),
-        window: searchWindow(now - queuedAt),
+        window: searchWindow(now - queuedAt, window),
       });
     }
     return parties;

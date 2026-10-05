@@ -7,7 +7,9 @@ import {
   findGroup,
   inviteCode,
   partyRating,
+  parseSearchWindow,
   searchWindow,
+  validateSearchWindow,
   splitTeams,
   type QueuedParty,
 } from '../../api/src/services/matchmaking/rules';
@@ -138,6 +140,23 @@ test.describe('matchmaking rules (pure)', () => {
     expect(isAbandon({ serverReadyAt: 1000, watchingSince: 1900, now: 2200, lastSeen: null })).toBe(true);
   });
 
+  test('search window settings: stored values, defaults for anything missing or out of range', TAGS, () => {
+    expect(parseSearchWindow(null)).toMatchObject({ start: 100, step: 50, cap: 400, uncappedAfterSeconds: 300 });
+    expect(parseSearchWindow('{"start":200,"step":25,"cap":600,"uncappedAfterMinutes":10}')).toMatchObject({
+      start: 200,
+      step: 25,
+      cap: 600,
+      uncappedAfterSeconds: 600,
+    });
+    expect(parseSearchWindow('{"uncappedAfterMinutes":null}').uncappedAfterSeconds).toBe(Infinity);
+    expect(parseSearchWindow('{"start":-5,"cap":10}')).toMatchObject({ start: 100, cap: 100 });
+    expect(parseSearchWindow('not json').start).toBe(100);
+    expect(validateSearchWindow({ start: 100, step: 50, cap: 400, uncappedAfterMinutes: null })).not.toBeNull();
+    expect(validateSearchWindow({ start: 500, step: 50, cap: 400, uncappedAfterMinutes: 5 })).toBeNull();
+    expect(validateSearchWindow({ start: 100.5, step: 50, cap: 400, uncappedAfterMinutes: 5 })).toBeNull();
+    expect(validateSearchWindow({ start: 100, step: 50, cap: 400, uncappedAfterMinutes: 0 })).toBeNull();
+  });
+
   test('invite codes: 10 characters, no lookalikes', TAGS, () => {
     const codes = new Set(Array.from({ length: 200 }, () => inviteCode()));
     expect(codes.size).toBe(200);
@@ -198,6 +217,28 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
     await admin.put('/api/matchmaking/admin/settings', { data: { openToPlayers: false } });
     await admin.put('/api/experimental/matchmaking', { data: { enabled: false } });
     await admin.dispose();
+  });
+
+  test('admins set the search window; a bad one is refused', TAGS, async () => {
+    const bad = await admin.put('/api/matchmaking/admin/settings', {
+      data: { searchWindow: { start: 500, step: 50, cap: 100, uncappedAfterMinutes: 5 } },
+    });
+    expect(bad.status()).toBe(400);
+    const set = await admin.put('/api/matchmaking/admin/settings', {
+      data: { searchWindow: { start: 150, step: 25, cap: 500, uncappedAfterMinutes: null } },
+    });
+    expect(set.ok(), await set.text()).toBe(true);
+    const status = await (await admin.get('/api/matchmaking/status')).json();
+    expect(status.searchWindow).toEqual({ start: 150, step: 25, cap: 500, uncappedAfterMinutes: null });
+    // Back to the defaults for the rest of the suite.
+    expect(
+      (
+        await admin.put('/api/matchmaking/admin/settings', {
+          data: { searchWindow: { start: 100, step: 50, cap: 400, uncappedAfterMinutes: 5 } },
+        })
+      ).ok()
+    ).toBe(true);
+    expect((await admin.get('/api/matchmaking/admin/commends/review')).ok()).toBe(true);
   });
 
   test('players are refused until matchmaking is open to them', TAGS, async () => {
