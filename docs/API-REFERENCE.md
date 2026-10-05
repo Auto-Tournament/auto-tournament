@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 463 of them, 326 behind auth —
+Every endpoint this API serves — 464 of them, 326 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -204,6 +204,14 @@ How a player joins a CS2 match: its server, status and current map.
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/game/cs2/matches/:slug/connect` | public |
+
+### Player profile
+
+A player's CS2 totals, everyone's totals to compare with, and their results per map.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/game/cs2/players/:playerId/profile` | public |
 
 ### Round backups
 

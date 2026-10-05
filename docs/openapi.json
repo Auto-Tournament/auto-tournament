@@ -627,6 +627,10 @@
       "description": "Code modules: list built-in and on-disk modules, enable or disable one from the next restart, and serve its client files. Admin only, except the client files and the public manifest of modules to load. Modules are installed from the signed catalog (/api/catalog) or on disk, never uploaded."
     },
     {
+      "name": "Player profile",
+      "description": "A player's CS2 totals, everyone's totals to compare with, and their results per map."
+    },
+    {
       "name": "Players",
       "description": "Player records, ratings, match history and profiles."
     },
@@ -4277,6 +4281,30 @@
           },
           {
             "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/players/{playerId}/profile": {
+      "get": {
+        "tags": [
+          "Player profile"
+        ],
+        "summary": "GET /api/game/cs2/players/:playerId/profile",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "playerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ]
       }
