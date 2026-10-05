@@ -6232,6 +6232,33 @@
         ]
       }
     },
+    "/api/matchmaking/leaderboard": {
+      "get": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "The matchmaking leaderboard (experimental)",
+        "description": "Players with at least 10 rated matches in the last 30 days, best\nconservative rating first (top 100). Signed-in players only, unless\nan admin made it public.\n",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "mode",
+            "schema": {
+              "type": "string",
+              "default": "5v5"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The leaderboard"
+          },
+          "401": {
+            "description": "Not public and not signed in"
+          }
+        }
+      }
+    },
     "/api/matchmaking/lobbies/{id}": {
       "get": {
         "tags": [
@@ -6486,6 +6513,39 @@
           },
           "409": {
             "description": "In a match being accepted"
+          }
+        }
+      }
+    },
+    "/api/matchmaking/players/{id}/history": {
+      "get": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "A player's matchmaking matches (experimental)",
+        "description": "Newest first, with map, score, result and the rating before and after.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The matches"
           }
         }
       }

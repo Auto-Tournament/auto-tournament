@@ -28,21 +28,26 @@ export function ExperimentalCard() {
   const [saving, setSaving] = useState<string | null>(null);
   // Matchmaking only: admins only until opened to players (null = not loaded).
   const [mmOpen, setMmOpen] = useState<boolean | null>(null);
+  const [mmBoard, setMmBoard] = useState(false);
   const mmEnabled = features?.find((f) => f.id === 'matchmaking')?.enabled ?? false;
 
   useEffect(() => {
     if (!mmEnabled) return;
     api
-      .get<{ openToPlayers?: boolean }>('/api/matchmaking/status')
-      .then((res) => setMmOpen(res.openToPlayers === true))
+      .get<{ openToPlayers?: boolean; leaderboardPublic?: boolean }>('/api/matchmaking/status')
+      .then((res) => {
+        setMmOpen(res.openToPlayers === true);
+        setMmBoard(res.leaderboardPublic === true);
+      })
       .catch(() => setMmOpen(null));
   }, [mmEnabled]);
 
-  const toggleMmOpen = async (open: boolean) => {
+  const saveMm = async (patch: { openToPlayers?: boolean; leaderboardPublic?: boolean }) => {
     setSaving('matchmaking-open');
     try {
-      const res = await api.put<{ openToPlayers: boolean }>('/api/matchmaking/admin/settings', { openToPlayers: open });
+      const res = await api.put<{ openToPlayers: boolean; leaderboardPublic: boolean }>('/api/matchmaking/admin/settings', patch);
       setMmOpen(res.openToPlayers);
+      setMmBoard(res.leaderboardPublic);
       showSuccess(t('settingsPage.experimental.saved'));
     } catch (err) {
       showError(apiErrorMessage(err, t('settingsPage.experimental.saveFailed')));
@@ -117,7 +122,7 @@ export function ExperimentalCard() {
                     <Switch
                       checked={mmOpen}
                       disabled={saving === 'matchmaking-open'}
-                      onChange={(event) => void toggleMmOpen(event.target.checked)}
+                      onChange={(event) => void saveMm({ openToPlayers: event.target.checked })}
                       size="small"
                       slotProps={{
                         input: {
@@ -130,6 +135,26 @@ export function ExperimentalCard() {
                 />
                 <Typography variant="caption" color="text.secondary" display="block">
                   {t('settingsPage.experimental.features.matchmaking.openDescription')}
+                </Typography>
+                <FormControlLabel
+                  sx={{ mt: 1 }}
+                  control={
+                    <Switch
+                      checked={mmBoard}
+                      disabled={saving === 'matchmaking-open'}
+                      onChange={(event) => void saveMm({ leaderboardPublic: event.target.checked })}
+                      size="small"
+                      slotProps={{
+                        input: {
+                          'data-testid': 'settings-matchmaking-board',
+                        } as React.InputHTMLAttributes<HTMLInputElement>,
+                      }}
+                    />
+                  }
+                  label={t('settingsPage.experimental.features.matchmaking.boardLabel')}
+                />
+                <Typography variant="caption" color="text.secondary" display="block">
+                  {t('settingsPage.experimental.features.matchmaking.boardDescription')}
                 </Typography>
               </Box>
             )}

@@ -556,7 +556,22 @@
         "team_player": "Lagspiller",
         "leader": "Leder",
         "good_comms": "God kommunikasjon"
-      }
+      },
+      "history": "Matchmaking-kamper",
+      "historyEmpty": "Ingen matchmaking-kamper ennå.",
+      "win": "Seier",
+      "loss": "Tap",
+      "draw": "Uavgjort"
+    },
+    "leaderboard": {
+      "title": "Toppliste",
+      "subtitle_one": "Spillere med {{count}} eller flere kamper de siste 30 dagene.",
+      "subtitle_other": "Spillere med {{count}} eller flere kamper de siste 30 dagene.",
+      "empty_one": "Ingen ennå. Spill {{count}} kamp på 30 dager for å komme med her.",
+      "empty_other": "Ingen ennå. Spill {{count}} kamper på 30 dager for å komme med her.",
+      "level": "Nivå",
+      "games": "Kamper",
+      "winRate": "Vunnet"
     }
   }
 }

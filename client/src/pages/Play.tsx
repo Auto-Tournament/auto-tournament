@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Box, Button, CircularProgress, Container, Stack, TextField, Typography } from '@mui/material';
 import { CopyIcon, UsersThreeIcon } from '@phosphor-icons/react';
-import { useSearchParams } from 'react-router-dom';
+import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { PageHead, Panel, SectionHead } from '../components/common/ui';
@@ -77,11 +77,16 @@ export default function Play() {
           title={t('matchmaking.play.title')}
           subtitle={t('matchmaking.play.subtitle')}
           actions={
-            me?.rating ? (
-              <Typography color="text.secondary" data-testid="mm-rating">
-                {t('matchmaking.play.rating', { elo: me.rating.elo, count: me.rating.games, wins: me.rating.wins })}
-              </Typography>
-            ) : undefined
+            <Stack direction="row" spacing={2} alignItems="center">
+              {me?.rating && (
+                <Typography color="text.secondary" data-testid="mm-rating">
+                  {t('matchmaking.play.rating', { elo: me.rating.elo, count: me.rating.games, wins: me.rating.wins })}
+                </Typography>
+              )}
+              <Button component={RouterLink} to={paths.playLeaderboard} data-testid="mm-leaderboard-link">
+                {t('matchmaking.leaderboard.title')}
+              </Button>
+            </Stack>
           }
         />
 

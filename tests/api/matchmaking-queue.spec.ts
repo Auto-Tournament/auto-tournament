@@ -314,6 +314,27 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
     const progress = await (await admin.get(`/api/matchmaking/players/${winnerId}/progress`)).json();
     expect(progress.progress.thumbsUp).toBeGreaterThanOrEqual(1);
     expect(progress.progress.topTags).toContainEqual({ tag: 'team_player', count: 1 });
+
+    // History: the match with the rating before and after.
+    const history = (await (await admin.get(`/api/matchmaking/players/${winnerId}/history`)).json()).matches as Array<{
+      matchSlug: string;
+      eloBefore: number;
+      eloAfter: number;
+    }>;
+    expect(history[0]).toMatchObject({ matchSlug: view.matchSlug });
+    expect(history[0].eloAfter).toBeGreaterThan(history[0].eloBefore);
+
+    // Leaderboard: needs 10 matches in 30 days, so nobody from this test yet;
+    // signed in only until it is made public.
+    const board = await leader.ctx.get('/api/matchmaking/leaderboard?mode=5v5');
+    expect(board.ok(), await board.text()).toBe(true);
+    expect((await board.json()).players.some((p: { id: string }) => p.id === winnerId)).toBe(false);
+    const anon = await playwrightRequest.newContext({ baseURL: BASE_URL });
+    expect((await anon.get('/api/matchmaking/leaderboard')).status()).toBe(401);
+    expect((await admin.put('/api/matchmaking/admin/settings', { data: { leaderboardPublic: true } })).ok()).toBe(true);
+    expect((await anon.get('/api/matchmaking/leaderboard')).status()).toBe(200);
+    expect((await admin.put('/api/matchmaking/admin/settings', { data: { leaderboardPublic: false } })).ok()).toBe(true);
+    await anon.dispose();
     expect((await outsider.ctx.get(`/api/matchmaking/lobbies/${lobbyId}`)).status()).toBe(404);
   });
 

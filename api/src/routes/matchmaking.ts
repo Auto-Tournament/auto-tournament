@@ -98,7 +98,8 @@ router.get(
   requireAuth,
   handle('read the status', async (_req, res) => {
     const open = (await db.getAppSettingAsync(MM_OPEN_TO_PLAYERS)) === '1';
-    return res.json({ success: true, enabled: true, modes: MODES, openToPlayers: open });
+    const board = (await db.getAppSettingAsync(MM_LEADERBOARD_PUBLIC)) === '1';
+    return res.json({ success: true, enabled: true, modes: MODES, openToPlayers: open, leaderboardPublic: board });
   })
 );
 
@@ -439,6 +440,68 @@ router.get(
   })
 );
 
+/** Setting: '1' shows the leaderboard to visitors who are not signed in. */
+export const MM_LEADERBOARD_PUBLIC = 'mm_leaderboard_public';
+
+/**
+ * @openapi
+ * /api/matchmaking/leaderboard:
+ *   get:
+ *     tags: [Matchmaking]
+ *     summary: The matchmaking leaderboard (experimental)
+ *     description: |
+ *       Players with at least 10 rated matches in the last 30 days, best
+ *       conservative rating first (top 100). Signed-in players only, unless
+ *       an admin made it public.
+ *     parameters:
+ *       - in: query
+ *         name: mode
+ *         schema: { type: string, default: 5v5 }
+ *     responses:
+ *       200:
+ *         description: The leaderboard
+ *       401:
+ *         description: Not public and not signed in
+ */
+router.get(
+  '/leaderboard',
+  handle('read the leaderboard', async (req, res) => {
+    if ((await db.getAppSettingAsync(MM_LEADERBOARD_PUBLIC)) !== '1') {
+      const identity = await resolveViewerIdentity(req);
+      if (!identity.realSteamId) return res.status(401).json({ success: false, error: 'Sign in to see the leaderboard' });
+    }
+    const mode = typeof req.query.mode === 'string' && MODES.includes(req.query.mode as never) ? req.query.mode : '5v5';
+    return res.json({ success: true, mode, minGames: 10, players: await progressionService.leaderboard(mode) });
+  })
+);
+
+/**
+ * @openapi
+ * /api/matchmaking/players/{id}/history:
+ *   get:
+ *     tags: [Matchmaking]
+ *     summary: A player's matchmaking matches (experimental)
+ *     description: Newest first, with map, score, result and the rating before and after.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, default: 20, maximum: 100 }
+ *     responses:
+ *       200:
+ *         description: The matches
+ */
+router.get(
+  '/players/:id/history',
+  handle('read the history', async (req, res) => {
+    const limit = Number(req.query.limit) || 20;
+    return res.json({ success: true, matches: await progressionService.history(req.params.id, limit) });
+  })
+);
+
 /**
  * @openapi
  * /api/matchmaking/admin/players/{id}/xp:
@@ -495,10 +558,24 @@ router.put(
   sameSiteJson,
   handle('save the settings', async (req, res) => {
     const open = req.body?.openToPlayers;
-    if (typeof open !== 'boolean') return res.status(400).json({ success: false, error: 'openToPlayers must be a boolean' });
-    await db.setAppSettingAsync(MM_OPEN_TO_PLAYERS, open ? '1' : null);
-    log.info(`[AUDIT] Matchmaking ${open ? 'opened to players' : 'closed to players'} by ${requestActorId(req) ?? 'unknown'}`);
-    return res.json({ success: true, openToPlayers: open });
+    const board = req.body?.leaderboardPublic;
+    if (open !== undefined && typeof open !== 'boolean') {
+      return res.status(400).json({ success: false, error: 'openToPlayers must be a boolean' });
+    }
+    if (board !== undefined && typeof board !== 'boolean') {
+      return res.status(400).json({ success: false, error: 'leaderboardPublic must be a boolean' });
+    }
+    if (open === undefined && board === undefined) {
+      return res.status(400).json({ success: false, error: 'Send openToPlayers and/or leaderboardPublic' });
+    }
+    if (open !== undefined) await db.setAppSettingAsync(MM_OPEN_TO_PLAYERS, open ? '1' : null);
+    if (board !== undefined) await db.setAppSettingAsync(MM_LEADERBOARD_PUBLIC, board ? '1' : null);
+    log.info(`[AUDIT] Matchmaking settings changed by ${requestActorId(req) ?? 'unknown'}`, { openToPlayers: open, leaderboardPublic: board });
+    return res.json({
+      success: true,
+      openToPlayers: (await db.getAppSettingAsync(MM_OPEN_TO_PLAYERS)) === '1',
+      leaderboardPublic: (await db.getAppSettingAsync(MM_LEADERBOARD_PUBLIC)) === '1',
+    });
   })
 );
 
