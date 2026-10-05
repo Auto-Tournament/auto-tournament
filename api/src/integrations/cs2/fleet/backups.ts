@@ -128,6 +128,8 @@ export interface RoundBackupPersistence {
   dropParts(key: BackupPartKey): Promise<void>;
   /** Mark the backups of rounds > `afterRound` superseded; returns how many. */
   markSuperseded(matchSlug: string, mapNumber: number, afterRound: number, now: number): Promise<number>;
+  /** Delete every backup (and staged part) of a match; returns how many backups. */
+  deleteMatch(matchSlug: string): Promise<number>;
   /**
    * Delete the backups of matches that ended before `endedBefore` and of
    * matches that do not exist stored before it, and parts staged before
@@ -244,6 +246,16 @@ export class RoundBackupStore {
     return { kind: 'stored', backup: stored };
   }
 
+  /**
+   * A fresh assignment (not a resume) starts the match from round 1: backups
+   * already stored under its slug belong to an earlier match that had the same
+   * slug (a deleted and recreated tournament reuses r1m1, ...), and a failover
+   * would resume from them. Returns how many were deleted.
+   */
+  forget(matchSlug: string): Promise<number> {
+    return this.persistence.deleteMatch(matchSlug);
+  }
+
   /** `event.rounds_voided {from_round}`: the backups after `fromRound` are from the abandoned timeline. */
   roundsVoided(matchSlug: string, mapNumber: number, fromRound: number, now = nowS()): Promise<number> {
     return this.persistence.markSuperseded(matchSlug, mapNumber, fromRound, now);
@@ -332,6 +344,13 @@ export function createMemoryRoundBackupPersistence(
     },
     async dropParts(key) {
       parts.delete(partKey(key));
+    },
+    async deleteMatch(slug) {
+      const keep = rows.filter((r) => r.matchSlug !== slug);
+      const n = rows.length - keep.length;
+      rows.splice(0, rows.length, ...keep);
+      for (const k of [...parts.keys()]) if (k.startsWith(`${slug}|`)) parts.delete(k);
+      return n;
     },
     async markSuperseded(slug, map, afterRound, now) {
       let n = 0;
@@ -484,6 +503,11 @@ export function createDbRoundBackupPersistence(): RoundBackupPersistence {
         'DELETE FROM cs2_match_round_backup_parts WHERE match_slug = ? AND map_number = ? AND round = ? AND sha256 = ?',
         [key.matchSlug, key.mapNumber, key.round, key.sha256]
       );
+    },
+    async deleteMatch(slug) {
+      const result = await db.runAsync('DELETE FROM cs2_match_round_backups WHERE match_slug = ?', [slug]);
+      await db.runAsync('DELETE FROM cs2_match_round_backup_parts WHERE match_slug = ?', [slug]);
+      return result.changes;
     },
     async markSuperseded(slug, map, afterRound, now) {
       const result = await db.runAsync(

@@ -397,6 +397,14 @@ export async function assignMatch(
 
   const record = await liveStateStore.beginAssignment(matchSlug, fleetServerId, 1);
   const epoch = record.epoch;
+  if (!options.resume) {
+    // A fresh start: round backups under this slug are an earlier match's (a
+    // recreated tournament reuses the slugs). Left, a failover would resume
+    // from them (NTLAN trial run 2: r1m1 resumed at round 11 of the previous
+    // tournament's r1m1).
+    const stale = await roundBackupStore.forget(matchSlug);
+    if (stale > 0) log.info(`[FLEET] ${matchSlug}: ${stale} round backup(s) from an earlier match with this slug removed`);
+  }
   await saveAssignment({ matchSlug, epoch, serverId: fleetServerId, cs2ServerId, password });
 
   let sent;
