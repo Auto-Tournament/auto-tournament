@@ -12,6 +12,7 @@ import FailoverSettingsPanel from '../servers/FailoverSettingsPanel';
 import type {
   Server,
   ServersResponse,
+  FleetServersResponse,
   ServerStatusResponse,
   ServerMatchesResponse,
 } from '../cs2.types';
@@ -36,6 +37,10 @@ import {
 
 export default function Servers() {
   const [servers, setServers] = useState<Server[]>([]);
+  // Ready Up servers that enrolled but are not in the match pool (no
+  // cs2_servers row yet, e.g. a practice server). Listed by FleetPanel; counted
+  // here so the page never says "no servers" while it shows one.
+  const [unlinkedFleetCount, setUnlinkedFleetCount] = useState(0);
   const { showError, showSnackbar, showPersistentError, closeSnackbar } = useSnackbar();
   const [modalOpen, setModalOpen] = useState(false);
   const [batchModalOpen, setBatchModalOpen] = useState(false);
@@ -176,8 +181,12 @@ export default function Servers() {
     async (options?: { useCached?: boolean; autoRetry?: boolean }) => {
     setRefreshing(true);
     try {
-      const response = await api.get<ServersResponse>('/api/servers');
+      const [response, fleet] = await Promise.all([
+        api.get<ServersResponse>('/api/servers'),
+        api.get<FleetServersResponse>('/api/fleet/servers').catch(() => null),
+      ]);
       const serverList = response.servers || [];
+      setUnlinkedFleetCount((fleet?.servers ?? []).filter((s) => !s.linkedServerId).length);
 
       // Determine an initial status without treating "no recent events" as offline.
       // Actual reachability is populated shortly after via `/api/servers/:id/status`.
@@ -886,10 +895,10 @@ export default function Servers() {
     <Box data-testid="servers-page" sx={{ width: '100%', height: '100%' }}>
       <PageHead
         title={t('serversPage.title')}
-        subtitle={t('serversPage.fleet.total', { count: serverStats.total })}
+        subtitle={t('serversPage.fleet.total', { count: serverStats.total + unlinkedFleetCount })}
         actions={headActions}
       />
-      {servers.length === 0 ? (
+      {servers.length === 0 && unlinkedFleetCount > 0 ? null : servers.length === 0 ? (
           <Box>
             <EmptyState
               icon={HardDrivesIcon}
