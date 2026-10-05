@@ -36,6 +36,7 @@ import Browse from './pages/Browse';
 import Compatibility from './pages/Compatibility';
 import Play from './pages/Play';
 import PlayLobby from './pages/PlayLobby';
+import PlayLeaderboard from './pages/PlayLeaderboard';
 import { MatchmakingOverlay } from './components/matchmaking/MatchmakingOverlay';
 import AccountConnections from './pages/AccountConnections';
 import ConnectSteam from './pages/ConnectSteam';
@@ -417,6 +418,8 @@ function AppRoutes() {
           </RequireSignedIn>
         }
       />
+      {/* Public when an admin allows it; the API decides. */}
+      <Route path={paths.playLeaderboard} element={<PlayLeaderboard />} />
       <Route
         path={paths.playLobby}
         element={

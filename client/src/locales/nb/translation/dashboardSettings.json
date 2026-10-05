@@ -249,7 +249,9 @@
           "label": "Matchmaking",
           "description": "Finn kamp, stå i kø og godta, og spill på en ledig server. Bare CS2. Bare for admins mens det bygges.",
           "openLabel": "Åpen for spillere",
-          "openDescription": "Av: bare administratorer kan finne kamper, for testing. På: alle innloggede spillere ser Spill og kan stå i kø."
+          "openDescription": "Av: bare administratorer kan finne kamper, for testing. På: alle innloggede spillere ser Spill og kan stå i kø.",
+          "boardLabel": "Topplisten er synlig for alle",
+          "boardDescription": "Av: bare innloggede spillere ser topplisten. På: alle med lenken."
         }
       }
     }

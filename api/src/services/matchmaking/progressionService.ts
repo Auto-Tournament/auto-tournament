@@ -3,7 +3,9 @@
  * (docs/design/matchmaking.md, "After the match"). XP is a ledger
  * (`xp_events`); `player_progress` caches each player's total.
  */
+import { rating as osRating } from 'openskill';
 import { db } from '../../config/database';
+import { openSkillToDisplayElo } from '../../utils/ratingMath';
 import { log } from '../../utils/logger';
 import {
   COMMEND_WINDOW_SECONDS,
@@ -241,6 +243,103 @@ export const progressionService = {
       progress: await progressionService.progress(playerId),
       commendsGiven: given.map((g) => ({ playerId: g.to_player_id, value: Number(g.value), tag: g.tag })),
     };
+  },
+
+  /**
+   * The leaderboard for a mode: players with at least `minGames` rated
+   * matchmaking matches in the last 30 days, best conservative rating
+   * (mu − 3 sigma, shown as display Elo) first.
+   */
+  async leaderboard(mode: string, minGames = 10): Promise<
+    Array<{ rank: number; id: string; name: string; elo: number; games: number; wins: number; level: number }>
+  > {
+    const since = now() - 30 * 86400;
+    const rows = await db.queryAsync<{
+      player_id: string;
+      name: string | null;
+      mu: number;
+      sigma: number;
+      games: number;
+      wins: number;
+      total_xp: number | null;
+    }>(
+      `SELECT r.player_id, p.name, r.mu, r.sigma, r.games, r.wins, pp.total_xp
+         FROM mm_ratings r
+         JOIN players p ON p.id = r.player_id
+         LEFT JOIN player_progress pp ON pp.player_id = r.player_id
+        WHERE r.game = 'cs2' AND r.mode = ?
+          AND (SELECT COUNT(*) FROM mm_rating_history h
+                WHERE h.player_id = r.player_id AND h.mode = r.mode AND h.created_at > ?) >= ?
+        ORDER BY (r.mu - 3 * r.sigma) DESC, r.games DESC
+        LIMIT 100`,
+      [mode, since, minGames]
+    );
+    return rows.map((r, i) => ({
+      rank: i + 1,
+      id: r.player_id,
+      name: r.name || r.player_id,
+      elo: openSkillToDisplayElo(osRating({ mu: Number(r.mu), sigma: Number(r.sigma) })),
+      games: Number(r.games),
+      wins: Number(r.wins),
+      level: levelFor(Number(r.total_xp ?? 0)).level,
+    }));
+  },
+
+  /** A player's matchmaking matches, newest first, with the rating before and after each. */
+  async history(playerId: string, limit = 20): Promise<
+    Array<{
+      matchSlug: string;
+      at: number;
+      map: string | null;
+      own: number | null;
+      other: number | null;
+      result: 'win' | 'loss' | 'draw' | null;
+      eloBefore: number;
+      eloAfter: number;
+    }>
+  > {
+    const rows = await db.queryAsync<{
+      match_slug: string;
+      created_at: number;
+      mu_before: number;
+      sigma_before: number;
+      mu_after: number;
+      sigma_after: number;
+      team: number | null;
+      map: string | null;
+    }>(
+      `SELECT h.match_slug, h.created_at, h.mu_before, h.sigma_before, h.mu_after, h.sigma_after, lp.team, l.map
+         FROM mm_rating_history h
+         LEFT JOIN mm_lobbies l ON l.match_slug = h.match_slug
+         LEFT JOIN mm_lobby_players lp ON lp.lobby_id = l.id AND lp.player_id = h.player_id
+        WHERE h.player_id = ?
+        ORDER BY h.created_at DESC, h.id DESC
+        LIMIT ?`,
+      [playerId, Math.min(100, Math.max(1, limit))]
+    );
+    const out = [];
+    for (const r of rows) {
+      const m = await db.queryOneAsync<{ team1_score: number; team2_score: number; winner_team: string | null }>(
+        'SELECT team1_score, team2_score, winner_team FROM match_map_results WHERE match_slug = ? ORDER BY map_number LIMIT 1',
+        [r.match_slug]
+      );
+      const side = r.team === 1 ? 'team1' : r.team === 2 ? 'team2' : null;
+      const own = m && side ? Number(side === 'team1' ? m.team1_score : m.team2_score) : null;
+      const other = m && side ? Number(side === 'team1' ? m.team2_score : m.team1_score) : null;
+      const result: 'win' | 'loss' | 'draw' | null =
+        own === null || other === null ? null : own > other ? 'win' : own < other ? 'loss' : 'draw';
+      out.push({
+        matchSlug: r.match_slug,
+        at: Number(r.created_at),
+        map: r.map,
+        own,
+        other,
+        result,
+        eloBefore: openSkillToDisplayElo(osRating({ mu: Number(r.mu_before), sigma: Number(r.sigma_before) })),
+        eloAfter: openSkillToDisplayElo(osRating({ mu: Number(r.mu_after), sigma: Number(r.sigma_after) })),
+      });
+    }
+    return out;
   },
 
   /** Admin: add or remove XP by hand (`reason = admin`, with a note). */

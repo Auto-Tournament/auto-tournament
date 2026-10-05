@@ -36,6 +36,7 @@ export const paths = {
   /** Matchmaking (experimental): find a match, party, the match room. */
   play: '/play',
   playLobby: '/play/:lobbyId',
+  playLeaderboard: '/play/leaderboard',
   me: '/me',
   meConnections: '/me/connections',
   welcomeGames: '/welcome/games',

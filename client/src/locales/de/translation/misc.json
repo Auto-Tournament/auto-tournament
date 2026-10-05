@@ -556,7 +556,22 @@
         "team_player": "Team player",
         "leader": "Leader",
         "good_comms": "Good comms"
-      }
+      },
+      "history": "Matchmaking matches",
+      "historyEmpty": "No matchmaking matches yet.",
+      "win": "Win",
+      "loss": "Loss",
+      "draw": "Draw"
+    },
+    "leaderboard": {
+      "title": "Leaderboard",
+      "subtitle_one": "Players with {{count}} or more matches in the last 30 days.",
+      "subtitle_other": "Players with {{count}} or more matches in the last 30 days.",
+      "empty_one": "Nobody yet. Play {{count}} match in 30 days to show up here.",
+      "empty_other": "Nobody yet. Play {{count}} matches in 30 days to show up here.",
+      "level": "Level",
+      "games": "Matches",
+      "winRate": "Won"
     }
   }
 }
