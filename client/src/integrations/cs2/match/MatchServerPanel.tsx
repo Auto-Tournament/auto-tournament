@@ -152,29 +152,12 @@ export function MatchServerPanel({ matchSlug, viewerCanJoin, matchStatus }: Matc
   const onConnect = () => {
     if (!server) return;
     const address = `${server.host}:${server.port}`;
-    const encodedPassword = server.password ? encodeURIComponent(server.password) : '';
-
-    // Preferred CS2 launch syntax
-    const params = server.password
-      ? `+password%20${encodedPassword};%20+connect%20${address}`
-      : `+connect%20${address}`;
-    const steamUri = `steam://run/730//${params}`;
-
-    // Legacy CS:GO/Steam connect syntax as fallback
-    const legacyUri = server.password
-      ? `steam://connect/${address}/${server.password}`
+    // steam://connect, not steam://run/730//+connect: run only passes its
+    // arguments when it starts the game, so with CS2 already open the button
+    // did nothing. connect joins a running game too (the webhooks use it).
+    window.location.href = server.password
+      ? `steam://connect/${address}/${encodeURIComponent(server.password)}`
       : `steam://connect/${address}`;
-
-    let navigationTriggered = false;
-    try {
-      window.location.href = steamUri;
-      navigationTriggered = true;
-    } catch (error) {
-      console.warn('Failed to trigger Steam connect via run/730, falling back.', error);
-    }
-    if (!navigationTriggered) {
-      window.location.href = legacyUri;
-    }
 
     setConnected(true);
     setTimeout(() => setConnected(false), 3000);
