@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { validateServerToken } from '../../../middleware/serverAuth';
 import {
   getUpdateHoldStatus,
@@ -7,6 +7,7 @@ import {
 } from '../services/updateHoldService';
 import { resolveTournamentId } from '../../../utils/tournamentRow';
 import { log } from '../../../utils/logger';
+import { verifyHostToken } from '../fleet/hosts/registry';
 
 /**
  * The update hold CS2 Server Manager (csm) polls.
@@ -115,7 +116,28 @@ const router = Router();
  *       500:
  *         description: The hold could not be determined
  */
-router.get('/update-hold', validateServerToken, async (req: Request, res: Response) => {
+/**
+ * The server token (`X-Auto-Tournament-Token`, what `csm updates platform`
+ * stores), or a linked csm host's own token (`Authorization: Bearer rhs_…`):
+ * csm asks with the host link's credentials when nobody configured the
+ * platform by hand, so the tournament hold works on every linked machine.
+ */
+async function serverOrHostToken(req: Request, res: Response, next: NextFunction): Promise<void> {
+  const auth = req.headers.authorization;
+  const bearer = typeof auth === 'string' && auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
+  if (bearer.startsWith('rhs_')) {
+    const check = await verifyHostToken(bearer).catch(() => ({ ok: false as const }));
+    if (check.ok) {
+      next();
+      return;
+    }
+    res.status(401).json({ success: false, error: 'Unauthorized - invalid or revoked host token' });
+    return;
+  }
+  validateServerToken(req, res, next);
+}
+
+router.get('/update-hold', serverOrHostToken, async (req: Request, res: Response) => {
   try {
     const status = await getUpdateHoldStatus(resolveTournamentId(req));
     return res.json({ success: true, ...status, license: await licenseHandoff() });
