@@ -251,7 +251,16 @@
           "openLabel": "Åpen for spillere",
           "openDescription": "Av: bare administratorer kan finne kamper, for testing. På: alle innloggede spillere ser Spill og kan stå i kø.",
           "boardLabel": "Topplisten er synlig for alle",
-          "boardDescription": "Av: bare innloggede spillere ser topplisten. På: alle med lenken."
+          "boardDescription": "Av: bare innloggede spillere ser topplisten. På: alle med lenken.",
+          "windowTitle": "Søkevindu",
+          "windowDescription": "Hvor langt fra hverandre i rating spillere kan være. Det starter på det første tallet, øker med steget hvert 30. sekund opp til taket, og etter det siste antallet minutter blir hvem som helst matchet (la feltet stå tomt for aldri).",
+          "window": {
+            "start": "Start (Elo)",
+            "step": "Steg (Elo)",
+            "cap": "Tak (Elo)",
+            "uncappedAfterMinutes": "Alle etter (min)"
+          },
+          "windowSave": "Lagre"
         }
       }
     }

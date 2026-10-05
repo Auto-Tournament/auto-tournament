@@ -6126,6 +6126,28 @@
         ]
       }
     },
+    "/api/matchmaking/admin/commends/review": {
+      "get": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "Players to review for thumbs down (experimental)",
+        "description": "Admin. Players with a thumbs down from 5 or more different voters in\nthe last 30 days; voters in the same party in a match count as one.\nWith the reasons given.\n",
+        "responses": {
+          "200": {
+            "description": "The list"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/matchmaking/admin/players/{id}/cooldown": {
       "delete": {
         "tags": [

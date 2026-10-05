@@ -13,11 +13,22 @@ import { resolveViewerIdentity } from '../utils/viewerIdentity';
 import { isSameSiteRequest } from '../utils/accountConnections';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
-import { matchmakingService, MatchmakingError } from '../services/matchmaking/matchmakingService';
-import { MODES } from '../services/matchmaking/rules';
+import { matchmakingService, MatchmakingError, MM_SEARCH_WINDOW } from '../services/matchmaking/matchmakingService';
+import { MODES, parseSearchWindow, validateSearchWindow } from '../services/matchmaking/rules';
 import { progressionService, ProgressionError } from '../services/matchmaking/progressionService';
 
 const router = Router();
+
+/** The search window as the admin settings show it: display Elo, minutes (null = never). */
+function searchWindowView(raw: string | null) {
+  const w = parseSearchWindow(raw);
+  return {
+    start: w.start,
+    step: w.step,
+    cap: w.cap,
+    uncappedAfterMinutes: Number.isFinite(w.uncappedAfterSeconds) ? w.uncappedAfterSeconds / 60 : null,
+  };
+}
 
 /** Setting: '1' lets every signed-in player use matchmaking, not just admins. */
 export const MM_OPEN_TO_PLAYERS = 'mm_open_to_players';
@@ -99,7 +110,14 @@ router.get(
   handle('read the status', async (_req, res) => {
     const open = (await db.getAppSettingAsync(MM_OPEN_TO_PLAYERS)) === '1';
     const board = (await db.getAppSettingAsync(MM_LEADERBOARD_PUBLIC)) === '1';
-    return res.json({ success: true, enabled: true, modes: MODES, openToPlayers: open, leaderboardPublic: board });
+    return res.json({
+      success: true,
+      enabled: true,
+      modes: MODES,
+      openToPlayers: open,
+      leaderboardPublic: board,
+      searchWindow: searchWindowView(await db.getAppSettingAsync(MM_SEARCH_WINDOW)),
+    });
   })
 );
 
@@ -559,15 +577,24 @@ router.put(
   handle('save the settings', async (req, res) => {
     const open = req.body?.openToPlayers;
     const board = req.body?.leaderboardPublic;
+    const windowInput = req.body?.searchWindow;
+    const window = windowInput === undefined ? undefined : validateSearchWindow(windowInput);
+    if (window === null) {
+      return res.status(400).json({
+        success: false,
+        error: 'searchWindow needs whole numbers: start 0-2000, step 0-1000, cap 0-5000 (at least start), uncappedAfterMinutes 1-120 or null',
+      });
+    }
     if (open !== undefined && typeof open !== 'boolean') {
       return res.status(400).json({ success: false, error: 'openToPlayers must be a boolean' });
     }
     if (board !== undefined && typeof board !== 'boolean') {
       return res.status(400).json({ success: false, error: 'leaderboardPublic must be a boolean' });
     }
-    if (open === undefined && board === undefined) {
-      return res.status(400).json({ success: false, error: 'Send openToPlayers and/or leaderboardPublic' });
+    if (open === undefined && board === undefined && window === undefined) {
+      return res.status(400).json({ success: false, error: 'Send openToPlayers, leaderboardPublic and/or searchWindow' });
     }
+    if (window !== undefined) await db.setAppSettingAsync(MM_SEARCH_WINDOW, JSON.stringify(window));
     if (open !== undefined) await db.setAppSettingAsync(MM_OPEN_TO_PLAYERS, open ? '1' : null);
     if (board !== undefined) await db.setAppSettingAsync(MM_LEADERBOARD_PUBLIC, board ? '1' : null);
     log.info(`[AUDIT] Matchmaking settings changed by ${requestActorId(req) ?? 'unknown'}`, { openToPlayers: open, leaderboardPublic: board });
@@ -575,6 +602,7 @@ router.put(
       success: true,
       openToPlayers: (await db.getAppSettingAsync(MM_OPEN_TO_PLAYERS)) === '1',
       leaderboardPublic: (await db.getAppSettingAsync(MM_LEADERBOARD_PUBLIC)) === '1',
+      searchWindow: searchWindowView(await db.getAppSettingAsync(MM_SEARCH_WINDOW)),
     });
   })
 );
@@ -595,6 +623,28 @@ router.get(
   requireAuth,
   handle('read the queue', async (_req, res) => {
     return res.json({ success: true, ...(await matchmakingService.adminQueue()) });
+  })
+);
+
+/**
+ * @openapi
+ * /api/matchmaking/admin/commends/review:
+ *   get:
+ *     tags: [Matchmaking]
+ *     summary: Players to review for thumbs down (experimental)
+ *     description: |
+ *       Admin. Players with a thumbs down from 5 or more different voters in
+ *       the last 30 days; voters in the same party in a match count as one.
+ *       With the reasons given.
+ *     responses:
+ *       200:
+ *         description: The list
+ */
+router.get(
+  '/admin/commends/review',
+  requireAuth,
+  handle('read the review list', async (_req, res) => {
+    return res.json({ success: true, players: await progressionService.reviewList() });
   })
 );
 

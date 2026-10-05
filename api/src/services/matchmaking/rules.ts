@@ -109,6 +109,52 @@ export const DEFAULT_SEARCH_WINDOW: SearchWindowSettings = {
   uncappedAfterSeconds: 5 * 60,
 };
 
+/**
+ * The admin's search window (Settings -> Matchmaking), as stored in
+ * `mm_search_window`: display Elo, and minutes until any rating is accepted
+ * (null = never). Anything missing or out of range falls back to the default.
+ */
+export function parseSearchWindow(raw: unknown): SearchWindowSettings {
+  let v: Record<string, unknown> = {};
+  try {
+    v = (typeof raw === 'string' ? JSON.parse(raw) : raw) as Record<string, unknown>;
+  } catch {
+    v = {};
+  }
+  if (!v || typeof v !== 'object') v = {};
+  const num = (x: unknown, min: number, max: number, fallback: number) =>
+    typeof x === 'number' && Number.isFinite(x) && x >= min && x <= max ? Math.round(x) : fallback;
+  const d = DEFAULT_SEARCH_WINDOW;
+  const start = num(v.start, 0, 2000, d.start);
+  const step = num(v.step, 0, 1000, d.step);
+  const cap = Math.max(start, num(v.cap, 0, 5000, d.cap));
+  const minutes = v.uncappedAfterMinutes === null ? null : num(v.uncappedAfterMinutes, 1, 120, d.uncappedAfterSeconds / 60);
+  return {
+    start,
+    step,
+    everySeconds: d.everySeconds,
+    cap,
+    uncappedAfterSeconds: minutes === null ? Number.POSITIVE_INFINITY : minutes * 60,
+  };
+}
+
+/** Validate an admin's new search window; null when it is not valid. */
+export function validateSearchWindow(
+  input: unknown
+): { start: number; step: number; cap: number; uncappedAfterMinutes: number | null } | null {
+  const v = (input ?? {}) as Record<string, unknown>;
+  const int = (x: unknown, min: number, max: number) => typeof x === 'number' && Number.isInteger(x) && x >= min && x <= max;
+  if (!int(v.start, 0, 2000) || !int(v.step, 0, 1000) || !int(v.cap, 0, 5000)) return null;
+  if ((v.cap as number) < (v.start as number)) return null;
+  if (v.uncappedAfterMinutes !== null && !int(v.uncappedAfterMinutes, 1, 120)) return null;
+  return {
+    start: v.start as number,
+    step: v.step as number,
+    cap: v.cap as number,
+    uncappedAfterMinutes: v.uncappedAfterMinutes as number | null,
+  };
+}
+
 /** The search window in mu after `waitedSeconds` in the queue (Infinity = any rating). */
 export function searchWindow(waitedSeconds: number, s: SearchWindowSettings = DEFAULT_SEARCH_WINDOW): number {
   const waited = Math.max(0, waitedSeconds);

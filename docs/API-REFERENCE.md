@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 462 of them, 325 behind auth —
+Every endpoint this API serves — 463 of them, 326 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -738,6 +738,7 @@ Experimental (docs/design/matchmaking.md). 404 unless the matchmaking feature is
 | `POST` | `/api/matchmaking/admin/players/:id/xp` | admin |
 | `PUT` | `/api/matchmaking/admin/settings` | admin |
 | `GET` | `/api/matchmaking/admin/queue` | admin |
+| `GET` | `/api/matchmaking/admin/commends/review` | admin |
 | `DELETE` | `/api/matchmaking/admin/players/:id/cooldown` | admin |
 
 ### Test helpers

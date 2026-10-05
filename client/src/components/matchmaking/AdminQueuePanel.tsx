@@ -3,16 +3,25 @@
  * last day's cooldowns, which they can clear (GET /api/matchmaking/admin/queue).
  */
 import { useCallback, useEffect, useState } from 'react';
-import { Button, Stack, Typography } from '@mui/material';
+import { Box, Button, Stack, Typography } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Panel, SectionHead } from '../common/ui';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
+import { playerProfilePath } from '../../paths';
 
 interface AdminQueue {
   searching: Array<{ partyId: string; mode: string; waited: number; players: Array<{ id: string; name: string }> }>;
   lobbies: Array<{ id: string; mode: string; status: string; matchSlug: string | null; map: string | null; accepted: number; total: number }>;
   penalties: Array<{ id: number; playerId: string; name: string; kind: string; cooldownUntil: number; cleared: boolean }>;
+}
+
+interface ReviewRow {
+  id: string;
+  name: string;
+  voters: number;
+  reasons: Array<{ tag: string; count: number }>;
 }
 
 const minutes = (seconds: number) => Math.max(0, Math.round(seconds / 60));
@@ -23,11 +32,13 @@ export function AdminQueuePanel() {
   const [queue, setQueue] = useState<AdminQueue | null>(null);
   // When it was read: "minutes left" is counted from there (it refreshes every 5 s).
   const [readAt, setReadAt] = useState(0);
+  const [review, setReview] = useState<ReviewRow[]>([]);
 
   const load = useCallback(async () => {
     try {
       setQueue(await api.get<AdminQueue>('/api/matchmaking/admin/queue'));
       setReadAt(Date.now() / 1000);
+      setReview((await api.get<{ players: ReviewRow[] }>('/api/matchmaking/admin/commends/review')).players);
     } catch {
       setQueue(null);
     }
@@ -98,6 +109,24 @@ export function AdminQueuePanel() {
                   {t('matchmaking.admin.clear')}
                 </Button>
               </Stack>
+            ))}
+          </Stack>
+        </>
+      )}
+      {review.length > 0 && (
+        <>
+          <Typography variant="subtitle2" mt={2} mb={1}>
+            {t('matchmaking.admin.review')}
+          </Typography>
+          <Stack spacing={1} data-testid="mm-review-list">
+            {review.map((r) => (
+              <Typography key={r.id} variant="body2">
+                <Box component={RouterLink} to={playerProfilePath(r.id)} sx={{ color: 'text.primary' }}>
+                  {r.name}
+                </Box>{' '}
+                · {t('matchmaking.admin.voters', { count: r.voters })} ·{' '}
+                {r.reasons.map((x) => `${t(`matchmaking.result.downTag.${x.tag}`, { defaultValue: x.tag })} ${x.count}`).join(', ')}
+              </Typography>
             ))}
           </Stack>
         </>
