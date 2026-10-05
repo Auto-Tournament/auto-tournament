@@ -4,7 +4,7 @@ import { Box, Typography, LinearProgress, Snackbar, Alert, Stack, Button, Chip }
 import { GameControllerIcon, PlusIcon } from '@phosphor-icons/react';
 import { io } from 'socket.io-client';
 import { onSocketReconnect } from '../utils/socketResync';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { EmptyState } from '../components/shared/EmptyState';
@@ -45,6 +45,24 @@ export default function Matches() {
   const [liveMatches, setLiveMatches] = useState<Match[]>([]);
   const [matchHistory, setMatchHistory] = useState<Match[]>([]);
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+  // `?match=<slug>`: the open match, so its link can be shared (paths.ts matchDetailsPath).
+  const [searchParams, setSearchParams] = useSearchParams();
+  const linkedSlug = searchParams.get('match');
+  const selectMatch = useCallback(
+    (match: Match | null) => {
+      selectMatch(match);
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (match?.slug) next.set('match', match.slug);
+          else next.delete('match');
+          return next;
+        },
+        { replace: true }
+      );
+    },
+    [setSearchParams]
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [liveEvents, setLiveEvents] = useState<Map<string, MatchEvent['event']>>(new Map());
@@ -319,6 +337,13 @@ export default function Matches() {
   // Get all matches for numbering context
   const allMatches = [...upcomingMatches, ...liveMatches, ...matchHistory];
 
+  // A shared link opens its match once the lists have it.
+  useEffect(() => {
+    if (!linkedSlug || selectedMatch?.slug === linkedSlug) return;
+    const found = [...upcomingMatches, ...liveMatches, ...matchHistory].find((m) => m.slug === linkedSlug);
+    if (found) setSelectedMatch(found);
+  }, [linkedSlug, selectedMatch?.slug, upcomingMatches, liveMatches, matchHistory]);
+
   const toggleMatchSelected = (match: Match) => {
     if (!isManualMatchFlag(match)) {
       // For safety, only allow bulk deletion of manual matches.
@@ -579,7 +604,7 @@ export default function Matches() {
                         if (selectionMode && isManualMatchFlag(match)) {
                           toggleMatchSelected(match);
                         } else {
-                          setSelectedMatch(match);
+                          selectMatch(match);
                         }
                       }}
                     />
@@ -644,7 +669,7 @@ export default function Matches() {
                           if (selectionMode && isManualMatchFlag(match)) {
                             toggleMatchSelected(match);
                           } else {
-                            setSelectedMatch(match);
+                            selectMatch(match);
                           }
                         }}
                       />
@@ -674,7 +699,7 @@ export default function Matches() {
                       if (selectionMode && isManualMatchFlag(match)) {
                         toggleMatchSelected(match);
                       } else {
-                        setSelectedMatch(match);
+                        selectMatch(match);
                       }
                     }}
                   />
@@ -691,9 +716,9 @@ export default function Matches() {
           match={selectedMatch}
           matchNumber={getGlobalMatchNumber(selectedMatch, allMatches)}
           roundLabel={getRoundLabel(selectedMatch.round)}
-          onClose={() => setSelectedMatch(null)}
+          onClose={() => selectMatch(null)}
           onDeleted={(slug) => {
-            setSelectedMatch(null);
+            selectMatch(null);
             setUpcomingMatches((prev) => prev.filter((m) => m.slug !== slug));
             setLiveMatches((prev) => prev.filter((m) => m.slug !== slug));
             setMatchHistory((prev) => prev.filter((m) => m.slug !== slug));
