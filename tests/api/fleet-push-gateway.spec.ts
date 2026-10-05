@@ -326,7 +326,7 @@ test.describe.serial('Fleet pushes: admins, settings, switches, match.update', (
     });
     expect(state.pushed.whitelist).toMatchObject({ status: 'rejected', errorCode: 'unsupported' });
 
-    // match / fleet cannot be disabled over the link.
+    // fleet cannot be disabled over the link.
     const locked = await request.post(`/api/fleet/servers/${server.server_id}/plugins`, {
       data: { disable: ['fleet'] },
     });

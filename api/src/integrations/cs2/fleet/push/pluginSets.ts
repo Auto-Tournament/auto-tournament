@@ -12,8 +12,12 @@
  * - A server whose hello `plugins_state` (Ready Up 0.x+, installed .so files
  *   and plugins.json) does not match the set it was given gets it again, as
  *   the other push lists do.
- * - `fleet` and `match` are always on: the fleet link runs in them, and
- *   Ready Up refuses to disable them over the link.
+ * - `fleet` is always on: the fleet link runs in it. `match` is optional
+ *   on a server whose fleet.so runs the platform commands itself
+ *   (capability `fleet.cmds.v1`): the Practice set leaves it off, so the
+ *   server starts in practice mode. Older Ready Up refuses to disable match:
+ *   it stays on there (`sendPluginsSet`). A server whose set has match off
+ *   is never handed a match (`matchPluginDisabled`, ../driver.ts).
  * - csm's default Ready Up bundle (essentials) has fleet, match, essentials
  *   and practice. A set with anything else makes the install after a create
  *   use the full bundle.
@@ -38,8 +42,11 @@ export const PLUGIN_CATALOG = [
 ] as const;
 export type CatalogPlugin = (typeof PLUGIN_CATALOG)[number];
 
-/** Always on: the fleet link runs in them (Ready Up refuses to disable them over the link). */
-export const REQUIRED_PLUGINS: readonly CatalogPlugin[] = ['fleet', 'match'];
+/** Always on: the fleet link runs in it (Ready Up refuses to disable it over the link). */
+export const REQUIRED_PLUGINS: readonly CatalogPlugin[] = ['fleet'];
+
+/** Ready Up's fleet.so runs plugins.set / practice.set {always} itself, so match can be off. */
+export const FLEET_CMDS_CAPABILITY = 'fleet.cmds.v1';
 
 /** What csm's default bundle (`essentials`) installs; anything else needs the full bundle. */
 export const ESSENTIALS_BUNDLE_PLUGINS: readonly CatalogPlugin[] = [
@@ -52,7 +59,7 @@ export const ESSENTIALS_BUNDLE_PLUGINS: readonly CatalogPlugin[] = [
 export const PLUGIN_PRESETS = {
   tournament: ['match', 'essentials', 'whitelist'],
   practice: ['practice', 'essentials'],
-  fun: ['skins', 'midas', 'deathmatch', 'essentials'],
+  fun: ['match', 'skins', 'midas', 'deathmatch', 'essentials'],
 } as const satisfies Record<string, readonly CatalogPlugin[]>;
 
 export type PluginPresetName = keyof typeof PLUGIN_PRESETS;
@@ -168,6 +175,41 @@ export function pluginsStateOf(hello: Pick<HelloPayload, 'plugins_state'>): Plug
   if (!s || !Array.isArray(s.installed) || !Array.isArray(s.disabled)) return null;
   const names = (a: unknown[]) => a.filter((n): n is string => typeof n === 'string');
   return { installed: names(s.installed), disabled: names(s.disabled) };
+}
+
+/** Whether a fleet server announced `fleet.cmds.v1` in its last hello. */
+export async function runsFleetCmds(fleetServerId: string): Promise<boolean> {
+  const row = await db.queryOneAsync<{ capabilities: string | null }>(
+    'SELECT capabilities FROM cs2_fleet_servers WHERE id = ?',
+    [fleetServerId]
+  );
+  try {
+    const caps = row?.capabilities ? (JSON.parse(row.capabilities) as unknown) : [];
+    return Array.isArray(caps) && caps.includes(FLEET_CMDS_CAPABILITY);
+  } catch {
+    return false;
+  }
+}
+
+/** A plugins.set for a server: older Ready Up refuses to disable match, so match stays on there. */
+export function pluginsSetFor(value: StoredPlugins, fleetCmds: boolean): StoredPlugins {
+  if (fleetCmds || !value.disable.includes('match')) return value;
+  return { ...value, disable: value.disable.filter((n) => n !== 'match') };
+}
+
+/** The server's stored plugin set turns match off: it is not for matches (a practice server). */
+export async function matchPluginDisabled(fleetServerId: string): Promise<boolean> {
+  const row = await db.queryOneAsync<{ plugins: string | null }>(
+    'SELECT plugins FROM cs2_fleet_server_prefs WHERE server_id = ?',
+    [fleetServerId]
+  );
+  if (!row?.plugins) return false;
+  try {
+    const stored = JSON.parse(row.plugins) as Partial<StoredPlugins>;
+    return Array.isArray(stored.disable) && stored.disable.includes('match');
+  } catch {
+    return false;
+  }
 }
 
 // ---------------------------------------------------------------------------

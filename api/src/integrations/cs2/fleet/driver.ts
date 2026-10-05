@@ -52,6 +52,7 @@ import {
 } from './reliable';
 import { liveStateStore } from './state';
 import { DEMO_STREAM_CAPABILITY } from './limits';
+import { matchPluginDisabled } from './push/pluginSets';
 import { fleetBus, onFleetServerReady, setFleetAssignmentResolver } from './service';
 import type {
   AssignConfig,
@@ -273,7 +274,10 @@ export async function fleetServerStatus(cs2ServerId: string): Promise<FleetServe
 /** When each fleet server last became `available` (unix s), for turnover. */
 const availableSince = new Map<string, number>();
 
-/** A linked fleet server the allocator may hand a match: online and `available`. */
+/**
+ * A linked fleet server the allocator may hand a match: online and
+ * `available`, and its plugin set does not turn match off (a practice server).
+ */
 export async function fleetServerIsIdle(cs2ServerId: string): Promise<{
   idle: boolean;
   online: boolean;
@@ -283,7 +287,10 @@ export async function fleetServerIsIdle(cs2ServerId: string): Promise<{
   const s = await fleetServerStatus(cs2ServerId);
   // Ready Up's availability is the truth: a finished match it has unloaded
   // does not block it even before the platform's unassign (the notes §4).
-  const idle = s.online && s.availability === 'available';
+  const idle =
+    s.online &&
+    s.availability === 'available' &&
+    !(s.fleetServerId && (await matchPluginDisabled(s.fleetServerId)));
   return {
     idle,
     online: s.online,

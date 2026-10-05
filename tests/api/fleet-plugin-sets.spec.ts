@@ -114,6 +114,7 @@ async function hello(
     lastRx?: number;
     lastTx?: number;
     pluginsState?: { installed: string[]; disabled: string[] };
+    capabilities?: string[];
   } = {}
 ): Promise<FleetTestClient> {
   const client = await FleetTestClient.connect(ru.token);
@@ -124,6 +125,7 @@ async function hello(
       last_rx_seq: over.lastRx ?? 0,
     },
     ...(over.pluginsState ? { plugins_state: over.pluginsState } : {}),
+    ...(over.capabilities ? { capabilities: over.capabilities } : {}),
   });
   return client;
 }
@@ -169,7 +171,7 @@ test.describe.serial('Fleet plugin sets', () => {
       'deathmatch',
       'addons',
     ]);
-    expect(body.required).toEqual(['fleet', 'match']);
+    expect(body.required).toEqual(['fleet']);
     expect(body.presets.fun).toEqual([
       'fleet',
       'match',
@@ -197,10 +199,52 @@ test.describe.serial('Fleet plugin sets', () => {
     expect(saved.ok(), await saved.text()).toBe(true);
     expect((await saved.json()).default).toEqual({
       preset: 'custom',
-      plugins: ['fleet', 'match', 'essentials', 'addons'],
+      plugins: ['fleet', 'essentials', 'addons'],
     });
     const cleared = await request.put('/api/fleet/plugins/default', { data: { plugins: null } });
     expect((await cleared.json()).default).toBeNull();
+  });
+
+  test('Practice on Ready Up with fleet.cmds.v1: match off, practice.set {on, always}', async ({
+    request,
+  }) => {
+    test.setTimeout(60_000);
+    const m = await machine(request, 'plugins-practice');
+    try {
+      const created = await createServer(request, m, { preset: 'practice' });
+      const ru = await readyUpServer(request, created.enrollKey);
+      const client = await hello(ru, { capabilities: ['match.v1', 'fleet.cmds.v1'] });
+      const set = await client.next(isPluginsSet);
+      expect((set.payload as { args: unknown }).args).toEqual({
+        enable: ['essentials', 'practice'],
+        disable: ['match', 'whitelist', 'skins', 'midas', 'deathmatch', 'addons'],
+      });
+      client.send(answer(set, 1));
+      const practice = await client.next(
+        (msg) => msg.type === 'cmd' && (msg.payload as { name: string }).name === 'practice.set'
+      );
+      expect((practice.payload as { args: unknown }).args).toEqual({ on: true, always: true });
+      client.send(answer(practice, 2));
+
+      // A custom set with match and practice: not a practice server any more.
+      const changing = request.post(`/api/fleet/servers/${ru.serverId}/plugins`, {
+        data: { preset: 'custom', plugins: ['match', 'practice'] },
+      });
+      const next = await client.next((msg) => isPluginsSet(msg) && msg.id !== set.id);
+      client.send(answer(next, 3));
+      const off = await client.next(
+        (msg) =>
+          msg.type === 'cmd' &&
+          (msg.payload as { name: string }).name === 'practice.set' &&
+          msg.id !== practice.id
+      );
+      expect((off.payload as { args: unknown }).args).toEqual({ always: false });
+      client.send(answer(off, 4));
+      expect((await changing).ok()).toBe(true);
+      client.close();
+    } finally {
+      m.csm.close();
+    }
   });
 
   test('create with a preset: full bundle, plugins.set after the first hello, re-sent only when the server differs', async ({
@@ -306,8 +350,10 @@ test.describe.serial('Fleet plugin sets', () => {
       const ru = await readyUpServer(request, created.enrollKey);
       const client = await hello(ru);
       const set = await client.next(isPluginsSet);
+      // This Ready Up has no fleet.cmds.v1: it refuses to disable match, so
+      // match stays on (not in either list).
       expect((set.payload as { args: unknown }).args).toEqual({
-        enable: ['match', 'essentials', 'practice'],
+        enable: ['essentials', 'practice'],
         disable: ['whitelist', 'skins', 'midas', 'deathmatch', 'addons'],
       });
       client.send(answer(set, 1));
