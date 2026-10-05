@@ -5,10 +5,29 @@
  */
 import { randomInt } from 'crypto';
 
-export type MatchmakingMode = '5v5';
+export type MatchmakingMode = '5v5' | '1v1';
 
-/** Players per team for each mode. Wingman (2v2) comes after 3.1. */
-export const TEAM_SIZE: Record<MatchmakingMode, number> = { '5v5': 5 };
+/**
+ * Players per team for each mode. 1v1 is off unless an admin turns it on
+ * (`mm_modes`): an aim duel, and the way to test matchmaking with two
+ * accounts. Wingman (2v2) comes after 3.1.
+ */
+export const TEAM_SIZE: Record<MatchmakingMode, number> = { '5v5': 5, '1v1': 1 };
+
+/** Modes on when the admin never chose (`mm_modes` unset). */
+export const DEFAULT_MODES: MatchmakingMode[] = ['5v5'];
+
+/** The admin's modes (`mm_modes`, a JSON array); anything unknown is dropped, nothing left = the default. */
+export function parseEnabledModes(raw: unknown): MatchmakingMode[] {
+  let v: unknown = raw;
+  try {
+    if (typeof raw === 'string') v = JSON.parse(raw);
+  } catch {
+    v = null;
+  }
+  const modes = Array.isArray(v) ? [...new Set(v.filter((m): m is MatchmakingMode => isMode(m)))] : [];
+  return modes.length > 0 ? modes : DEFAULT_MODES;
+}
 
 export const MODES = Object.keys(TEAM_SIZE) as MatchmakingMode[];
 

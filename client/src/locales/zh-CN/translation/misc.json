@@ -467,7 +467,8 @@
       "leaderStarts": "Your party leader starts the search.",
       "cooldown": "You declined or missed a match. You can search again in {{minutes}} min.",
       "rating_one": "Rating {{elo}} · {{count}} game · {{wins}} won",
-      "rating_other": "Rating {{elo}} · {{count}} games · {{wins}} won"
+      "rating_other": "Rating {{elo}} · {{count}} games · {{wins}} won",
+      "mode": "Mode"
     },
     "queue": {
       "searching": "Searching {{mode}}",

@@ -3,7 +3,17 @@
  * `/play?join=CODE` joins a party from an invite link.
  */
 import { useEffect, useRef, useState } from 'react';
-import { Box, Button, CircularProgress, Container, Stack, TextField, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Container,
+  Stack,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from '@mui/material';
 import { CopyIcon, UsersThreeIcon } from '@phosphor-icons/react';
 import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -24,6 +34,7 @@ export default function Play() {
   const [params, setParams] = useSearchParams();
   const [busy, setBusy] = useState(false);
   const [code, setCode] = useState('');
+  const [picked, setPicked] = useState<string | null>(null);
 
   useEffect(() => {
     document.title = pageTitle(t('matchmaking.play.title'));
@@ -65,6 +76,9 @@ export default function Play() {
   }
 
   const party = me?.party ?? null;
+  const modes = me?.modes ?? ['5v5'];
+  // The party's mode once there is one; else what the player picked; else the first.
+  const mode = party?.mode && modes.includes(party.mode) ? party.mode : picked && modes.includes(picked) ? picked : modes[0];
   const isLeader = !party || party.leader === playerSteamId;
   const searching = !!me?.queue;
   const cooldown = me?.cooldownUntil ? secondsUntil(me.cooldownUntil, skew) : 0;
@@ -102,6 +116,23 @@ export default function Play() {
               <Typography color="text.secondary" mb={2}>
                 {searching ? t('matchmaking.play.searchingHelp') : t('matchmaking.play.findHelp')}
               </Typography>
+              {modes.length > 1 && !searching && (
+                <ToggleButtonGroup
+                  exclusive
+                  size="small"
+                  value={mode}
+                  onChange={(_e, value: string | null) => value && setPicked(value)}
+                  aria-label={t('matchmaking.play.mode')}
+                  disabled={!!party && party.members.length > 1}
+                  sx={{ mb: 2 }}
+                >
+                  {modes.map((m) => (
+                    <ToggleButton key={m} value={m} data-testid={`mm-mode-${m}`}>
+                      {m}
+                    </ToggleButton>
+                  ))}
+                </ToggleButtonGroup>
+              )}
               {cooldown > 0 && (
                 <Typography color="warning.main" mb={2} data-testid="mm-cooldown">
                   {t('matchmaking.play.cooldown', { minutes: Math.ceil(cooldown / 60) })}
@@ -123,7 +154,7 @@ export default function Play() {
                   variant="contained"
                   size="large"
                   disabled={busy || !isLeader || cooldown > 0 || me?.lobby?.status === 'accepting'}
-                  onClick={() => void run(() => matchmakingAction('POST', '/queue', { mode: '5v5' }))}
+                  onClick={() => void run(() => matchmakingAction('POST', '/queue', { mode }))}
                   data-testid="mm-find"
                 >
                   {t('matchmaking.play.find')}
@@ -182,7 +213,7 @@ export default function Play() {
                     <Button
                       startIcon={<UsersThreeIcon size={18} />}
                       disabled={busy}
-                      onClick={() => void run(() => matchmakingAction('POST', '/party', { mode: '5v5' }))}
+                      onClick={() => void run(() => matchmakingAction('POST', '/party', { mode }))}
                       data-testid="mm-create-party"
                     >
                       {t('matchmaking.party.create')}

@@ -186,6 +186,7 @@ interface Me {
   lobby: { id: string; status: string; accepted: number; total: number; youAccepted: boolean; team: number } | null;
   cooldownUntil: number | null;
   rating: { elo: number; games: number; wins: number } | null;
+  modes: string[];
 }
 
 async function player(): Promise<{ ctx: APIRequestContext; id: string }> {
@@ -463,6 +464,32 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
     } finally {
       sa.close();
       sb.close();
+    }
+  });
+  test('1v1: off until an admin turns it on, then two players make a match', TAGS, async () => {
+    const [a, b] = await Promise.all([player(), player()]);
+    contexts.push(a.ctx, b.ctx);
+    const off = await a.ctx.post('/api/matchmaking/queue', { data: { mode: '1v1' } });
+    expect(off.status()).toBe(409);
+    expect((await off.json()).code).toBe('mode_off');
+    expect((await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5', 'bogus'] } })).status()).toBe(400);
+    expect((await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5', '1v1'] } })).ok()).toBe(true);
+    try {
+      expect((await me(a.ctx)).modes).toEqual(['5v5', '1v1']);
+      for (const p of [a, b]) {
+        const res = await p.ctx.post('/api/matchmaking/queue', { data: { mode: '1v1' } });
+        expect(res.ok(), await res.text()).toBe(true);
+      }
+      const lobby = await lobbyOf(a.ctx);
+      expect(lobby.total).toBe(2);
+      for (const p of [a, b]) expect((await p.ctx.post(`/api/matchmaking/lobbies/${lobby.id}/accept`, { data: {} })).ok()).toBe(true);
+      const room = (await (await a.ctx.get(`/api/matchmaking/lobbies/${lobby.id}`)).json()).lobby;
+      expect(room.mode).toBe('1v1');
+      expect(room.teams.map((t: { players: unknown[] }) => t.players.length)).toEqual([1, 1]);
+      expect(room.matchSlug).toMatch(/^mm-/);
+      expect((await admin.get(`/api/matches/${room.matchSlug}`)).ok()).toBe(true);
+    } finally {
+      await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5'] } });
     }
   });
 });

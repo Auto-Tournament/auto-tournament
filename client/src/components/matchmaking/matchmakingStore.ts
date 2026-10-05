@@ -30,6 +30,8 @@ export interface MatchmakingMe {
   cooldownUntil: number | null;
   /** 5v5 matchmaking rating (display Elo), once the player has played. */
   rating: { elo: number; games: number; wins: number } | null;
+  /** The modes players can search on this site (5v5; 1v1 when an admin turned it on). */
+  modes?: string[];
 }
 
 interface State {
