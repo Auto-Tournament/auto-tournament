@@ -367,7 +367,8 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     expect(payload.match_id).toBe(slug);
     expect(assign.epoch).toBe(epoch + 1);
     expect(payload.epoch).toBe(epoch + 1);
-    expect(payload.config.password).not.toBe(password);
+    // No join password by default; with at_join_password on each assignment gets a fresh one.
+    expect(payload.config.password).toBe(password);
     expect(payload.resume).toMatchObject({ from_epoch: epoch, map_number: 1, round: backup.round, score: backup.score });
     expect(payload.resume.backup).toEqual({
       map_number: backup.map_number,
