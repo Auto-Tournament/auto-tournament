@@ -116,8 +116,20 @@ function useMatchConnect(
     // server_assigned, match_loaded and the like arrive as bracket updates.
     socket.on('bracket:update', reload);
     const offReconnect = onSocketReconnect(socket, reload);
+    // A failover or a restarted server does not always come with an event here, and the page
+    // kept the old server / password until a reload (live test). Ask again every 20 s and when
+    // the tab comes back into view.
+    const poll = setInterval(() => {
+      if (document.visibilityState === 'visible') void load();
+    }, 20_000);
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') reload();
+    };
+    document.addEventListener('visibilitychange', onVisible);
     return () => {
       if (timer.current) clearTimeout(timer.current);
+      clearInterval(poll);
+      document.removeEventListener('visibilitychange', onVisible);
       offReconnect();
       socket.off('match:update', onMatch);
       socket.off(`match:update:${matchSlug}`, reload);
