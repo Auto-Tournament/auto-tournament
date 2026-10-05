@@ -9,6 +9,7 @@ import MachinesPanel from '../servers/MachinesPanel';
 import AutoScalePanel from '../servers/AutoScalePanel';
 import FleetPushPanel from '../servers/FleetPushPanel';
 import FailoverSettingsPanel from '../servers/FailoverSettingsPanel';
+import { openServerSection } from '../servers/openServerSection';
 import { serverLimitText, useServerLimit } from '../servers/serverLimit';
 import type {
   Server,
@@ -917,7 +918,7 @@ export default function Servers() {
               description={t('serversPage.empty.description')}
               actionLabel={t('serversPage.empty.createServers')}
               actionIcon={PlusIcon}
-              onAction={() => document.getElementById('machines')?.scrollIntoView({ behavior: 'smooth' })}
+              onAction={() => openServerSection('machines')}
             />
             <Box display="flex" justifyContent="center" gap={1} mt={2} flexWrap="wrap">
               <Button size="small" onClick={() => handleOpenModal()} data-testid="servers-add-existing">

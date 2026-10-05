@@ -1358,7 +1358,8 @@
     },
     "summary": "{{machines}} maskin(er), {{online}} tilkoblet · {{servers}} server(e)",
     "about": "Maskiner kjører CS2 Server Manager (csm). Plattformen starter, stopper og lager servere på dem selv.",
-    "deleteServer": "Slett server"
+    "deleteServer": "Slett server",
+    "deleting": "Sletter…"
   },
   "failover": {
     "title": "Failover",
