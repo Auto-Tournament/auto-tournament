@@ -1136,7 +1136,8 @@
       "createServer": "Impossible de créer le code d’inscription",
       "createKey": "Impossible de créer la clé de flotte",
       "rotate": "Impossible de renouveler le jeton",
-      "action": "L’action a échoué"
+      "action": "L’action a échoué",
+      "rename": "Could not rename the server"
     },
     "confirm": {
       "revokeTitle": "Révoquer le serveur ?",
@@ -1159,7 +1160,10 @@
       "publicAddr": "annoncée par le serveur",
       "peer": "adresse depuis laquelle le serveur se connecte",
       "unknown": "pas encore confirmée par le serveur"
-    }
+    },
+    "rename": "Rename",
+    "renamed": "Renamed",
+    "renameSave": "Save"
   },
   "roundBackups": {
     "title": "Round backups",

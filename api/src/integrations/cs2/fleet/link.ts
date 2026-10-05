@@ -280,3 +280,18 @@ export async function syncLinkedAddress(fleetServerId: string): Promise<ConnectA
   log.info(`[FLEET] ${fleetServerId}: connect address ${row.host}:${row.port} -> ${next.host}:${next.port} (${next.source})`);
   return next;
 }
+
+/**
+ * A fleet server was renamed: the row it plays matches as took the name at
+ * link time, so give it the new one too (matches and the server list show
+ * that row's name). No-op when the server is not linked.
+ */
+export async function renameLinkedRow(fleetServerId: string, name: string): Promise<void> {
+  const cs2ServerId = await cs2ServerIdOf(fleetServerId);
+  if (!cs2ServerId) return;
+  await db.runAsync('UPDATE cs2_servers SET name = ?, updated_at = ? WHERE id = ?', [
+    name.slice(0, 100),
+    Math.floor(Date.now() / 1000),
+    cs2ServerId,
+  ]);
+}

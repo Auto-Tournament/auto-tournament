@@ -38,6 +38,7 @@ import { fleetBus, revokeServer, rotateServerToken } from './service';
 import {
   checkAddressOverride,
   cs2ServerIdOf,
+  renameLinkedRow,
   detectedAddress,
   linkFleetServer,
   listLinkAddresses,
@@ -257,6 +258,7 @@ fleetAdminRouter.patch('/servers/:id', handler('rename the server', async (req: 
   if (!name) return res.status(400).json({ success: false, error: 'name must be 1-100 characters' });
   const ok = await registry.renameFleetServer(req.params.id, name);
   if (!ok) return res.status(404).json({ success: false, error: 'Fleet server not found' });
+  await renameLinkedRow(req.params.id, name);
   return res.json({ success: true, server: await registry.getFleetServerView(req.params.id) });
 }));
 

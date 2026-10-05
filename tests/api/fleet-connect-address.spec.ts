@@ -96,6 +96,7 @@ let key: { id: string; value: string };
 
 interface Listed {
   id: string;
+  name: string;
   peerAddr: string | null;
   linkedServerId: string | null;
   connect: { host: string; port: number; address: string; source: string | null } | null;
@@ -231,5 +232,35 @@ test.describe.serial('connect address: link and hello', () => {
     // No port given: the server's game port.
     expect(await cs2Row(request, id)).toMatchObject({ host: 'play.example.com', port: 27055, hostOverride: true });
     expect((await listed(request, id)).connect).toMatchObject({ address: 'play.example.com:27055', source: 'override' });
+  });
+  test('rename: the fleet server and the row it plays matches as get the new name', async ({ request }) => {
+    const installId = newInstallId();
+    const res = await enroll(request, { key: key.value }, installId, { host: { hostname: 'cs2', game_port: 27055 } });
+    expect(res.status, JSON.stringify(res.body)).toBe(201);
+    const id = res.body.server_id;
+    cleanup.push(async () => {
+      await request.delete(`/api/fleet/servers/${id}/link`, { headers: getAuthHeader() });
+    });
+
+    // Not linked yet: only the fleet server has a name.
+    const first = await request.patch(`/api/fleet/servers/${id}`, {
+      headers: getAuthHeader(),
+      data: { name: 'Practice server #1' },
+    });
+    expect(first.ok(), await first.text()).toBe(true);
+    expect((await listed(request, id)).name).toBe('Practice server #1');
+
+    const linked = await request.post(`/api/fleet/servers/${id}/link`, { headers: getAuthHeader(), data: {} });
+    expect([200, 201], await linked.text()).toContain(linked.status());
+    const renamed = await request.patch(`/api/fleet/servers/${id}`, {
+      headers: getAuthHeader(),
+      data: { name: 'Main stage' },
+    });
+    expect(renamed.ok(), await renamed.text()).toBe(true);
+    expect((await listed(request, id)).name).toBe('Main stage');
+    expect(((await cs2Row(request, id)) as { name?: string }).name).toBe('Main stage');
+
+    const empty = await request.patch(`/api/fleet/servers/${id}`, { headers: getAuthHeader(), data: { name: '  ' } });
+    expect(empty.status()).toBe(400);
   });
 });

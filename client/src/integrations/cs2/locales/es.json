@@ -1136,7 +1136,8 @@
       "createServer": "No se pudo crear el código de registro",
       "createKey": "No se pudo crear la clave de flota",
       "rotate": "No se pudo renovar el token",
-      "action": "La acción falló"
+      "action": "La acción falló",
+      "rename": "Could not rename the server"
     },
     "confirm": {
       "revokeTitle": "¿Revocar el servidor?",
@@ -1159,7 +1160,10 @@
       "publicAddr": "informada por el servidor",
       "peer": "dirección desde la que se conecta el servidor",
       "unknown": "aún no confirmada por el servidor"
-    }
+    },
+    "rename": "Rename",
+    "renamed": "Renamed",
+    "renameSave": "Save"
   },
   "roundBackups": {
     "title": "Round backups",

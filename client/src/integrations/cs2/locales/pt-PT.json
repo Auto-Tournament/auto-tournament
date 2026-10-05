@@ -1136,7 +1136,8 @@
       "createServer": "Não foi possível criar o código de registo",
       "createKey": "Não foi possível criar a chave de frota",
       "rotate": "Não foi possível renovar o token",
-      "action": "A ação falhou"
+      "action": "A ação falhou",
+      "rename": "Could not rename the server"
     },
     "confirm": {
       "revokeTitle": "Revogar o servidor?",
@@ -1159,7 +1160,10 @@
       "publicAddr": "indicado pelo servidor",
       "peer": "endereço a partir do qual o servidor se liga",
       "unknown": "ainda não confirmado pelo servidor"
-    }
+    },
+    "rename": "Rename",
+    "renamed": "Renamed",
+    "renameSave": "Save"
   },
   "roundBackups": {
     "title": "Round backups",

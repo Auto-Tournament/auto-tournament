@@ -1136,7 +1136,8 @@
       "createServer": "Could not create the enrollment code",
       "createKey": "Could not create the fleet key",
       "rotate": "Could not rotate the token",
-      "action": "The action failed"
+      "action": "The action failed",
+      "rename": "Could not rename the server"
     },
     "confirm": {
       "revokeTitle": "Revoke server?",
@@ -1159,7 +1160,10 @@
       "publicAddr": "reported by the server",
       "peer": "address the server connects from",
       "unknown": "not confirmed by the server yet"
-    }
+    },
+    "rename": "Rename",
+    "renamed": "Renamed",
+    "renameSave": "Save"
   },
   "roundBackups": {
     "title": "Round backups",

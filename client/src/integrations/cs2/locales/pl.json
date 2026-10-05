@@ -1176,7 +1176,8 @@
       "createServer": "Nie udało się utworzyć kodu rejestracji",
       "createKey": "Nie udało się utworzyć klucza floty",
       "rotate": "Nie udało się odnowić tokenu",
-      "action": "Akcja nie powiodła się"
+      "action": "Akcja nie powiodła się",
+      "rename": "Could not rename the server"
     },
     "confirm": {
       "revokeTitle": "Unieważnić serwer?",
@@ -1199,7 +1200,10 @@
       "publicAddr": "zgłoszony przez serwer",
       "peer": "adres, z którego łączy się serwer",
       "unknown": "jeszcze niepotwierdzony przez serwer"
-    }
+    },
+    "rename": "Rename",
+    "renamed": "Renamed",
+    "renameSave": "Save"
   },
   "roundBackups": {
     "title": "Round backups",
