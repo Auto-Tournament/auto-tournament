@@ -71,6 +71,35 @@ function backupEvent(slug: string, epoch: number, seq: number): Envelope {
   return env;
 }
 
+/** A live event.* for `slug` / `epoch` at `seq` / `rev` (map 1). */
+function liveEvent(
+  slug: string,
+  epoch: number,
+  seq: number,
+  rev: number,
+  type: string,
+  data: Record<string, unknown>,
+  round: number
+): Envelope {
+  const env: Envelope = {
+    v: 1,
+    type,
+    id: ulid(),
+    ts: Date.now(),
+    seq,
+    epoch,
+    payload: { match_id: slug, map_number: 1, round, rev, patch: { live_rev: rev }, data },
+  } as Envelope;
+  expect(validateMessage(env)).toEqual({ ok: true, errors: [] });
+  return env;
+}
+
+async function liveScore(request: APIRequestContext, slug: string): Promise<string> {
+  const res = await request.get(`/api/matches/${slug}`, { headers: getAuthHeader() });
+  const m = (await res.json()).match as { team1Score?: number; team2Score?: number };
+  return `${m.team1Score ?? '-'}-${m.team2Score ?? '-'}`;
+}
+
 async function acked(client: FleetTestClient, seq: number): Promise<void> {
   await client.next(
     (m) => ['ack', 'ping', 'pong'].includes(m.type) && typeof m.ack === 'number' && m.ack >= seq,
@@ -206,6 +235,29 @@ test.describe.serial('Fleet round backups: event.backup -> stored -> restore_rou
 
     const after = await listBackups(request, slug);
     expect(after.restores[0]).toMatchObject({ id: payload.audit_id, status: 'ok', commandId: cmd.id });
+
+    // The match had gone on to 3-2; the restore takes the live score back to
+    // the restored backup's (round 1, 0-0), not the abandoned 3-2.
+    client.send(
+      liveEvent(slug, epoch, 3, 2, 'event.round_start', { round: 6, score: { team1: 3, team2: 2 } }, 6)
+    );
+    await acked(client, 3);
+    await expect.poll(() => liveScore(request, slug)).toBe('3-2');
+    client.send(
+      liveEvent(
+        slug,
+        epoch,
+        4,
+        3,
+        'event.match_restored',
+        { map_number: 1, round: 1, backup_sha256: sent.sha256, file: sent.file },
+        1
+      )
+    );
+    await acked(client, 4);
+    await expect
+      .poll(() => liveScore(request, slug))
+      .toBe(`${sent.score.team1}-${sent.score.team2}`);
     client.close();
   });
 
