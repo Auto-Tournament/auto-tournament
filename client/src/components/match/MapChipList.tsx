@@ -10,6 +10,10 @@ interface MapChipListProps {
   mapResults: MatchMapResult[];
   team1Name?: string;
   team2Name?: string;
+  /** Who chose each map (integration `mapPickers`), in map order. */
+  pickers?: Array<'team1' | 'team2' | 'decider' | null>;
+  /** The side the page is seen from, for "your pick" / "their pick". */
+  viewerTeam?: 'team1' | 'team2';
 }
 
 /** Winning side of a map: the recorded winner, else the higher score. */
@@ -27,13 +31,24 @@ export function MapChipList({
   mapResults,
   team1Name,
   team2Name,
+  pickers,
+  viewerTeam,
 }: MapChipListProps) {
   const { t } = useTranslation();
   return (
     <Box display="flex" flexWrap="wrap" gap={1} alignItems="center">
       {maps.map((map, idx) => {
         const displayName = getMapDisplayName(map) || map;
-        const labelBase = `${idx + 1}. ${displayName}`;
+        const picker = pickers?.[idx] ?? null;
+        const pickLabel =
+          picker === 'decider'
+            ? t('matchInfo.mapChips.decider')
+            : picker && viewerTeam
+              ? picker === viewerTeam
+                ? t('matchInfo.mapChips.yourPick')
+                : t('matchInfo.mapChips.theirPick')
+              : null;
+        const labelBase = `${idx + 1}. ${displayName}${pickLabel ? ` (${pickLabel})` : ''}`;
         const result = mapResults.find((mr) => mr.mapNumber === idx);
         let chipLabel = labelBase;
         let chipColor: 'default' | 'success' | 'error' | 'secondary' = 'default';

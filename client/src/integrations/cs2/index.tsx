@@ -3,6 +3,7 @@
  * pages render goes through one of these slots (see ../types.ts).
  */
 
+import { vetoMapPickers } from './veto/vetoMapPickers';
 import { HardDrivesIcon, MapTrifoldIcon } from '@phosphor-icons/react';
 import type { ClientGameIntegration } from '../types';
 import { links } from '../../module-sdk';
@@ -79,6 +80,7 @@ export const cs2ClientIntegration: ClientGameIntegration = {
 
   preMatchView: VetoInterface,
   preMatchHistory: MatchVetoHistory,
+  mapPickers: vetoMapPickers,
 
   // The team page roster: whether the roster has a Steam account for each
   // member, which a CS2 player needs to join the server.
