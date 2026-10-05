@@ -33,6 +33,7 @@ import { getOpenApiSpec } from './config/swagger';
 import { log, logger, LOG_HTTP_REQUESTS, LOG_DB_VERBOSE, LOG_DB_VALUES } from './utils/logger';
 import { cleanupOldLogs } from './utils/eventLogger';
 import { getIO, initializeSocket, type HandshakeMiddleware } from './services/socketService';
+import { matchmakingService } from './services/matchmaking/matchmakingService';
 import { registerShutdown } from './utils/restart';
 import { routeTable } from './routes/routeTable';
 import { listIntegrations } from './integrations/registry';
@@ -610,6 +611,11 @@ process.on('uncaughtException', (err) => {
       // The daily license check-in: only with a license key saved, in the
       // background, never blocking anything (services/license/checkin.ts).
       startLicenseCheckin();
+      // Matchmaking's 2-second loop (services/matchmaking). Idle while the
+      // experimental feature is off; cancels lobbies a restart left open.
+      matchmakingService.start().catch((error) => {
+        log.warn('Failed to start matchmaking', { error });
+      });
 
       // Recover matches and start the game integrations (CS2: bootstrap server
       // webhooks, fetch the MatchZy Enhanced version, start health monitoring) now the
