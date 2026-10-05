@@ -107,9 +107,9 @@ test.describe.serial('Veto UI', () => {
       await page.keyboard.press('Enter');
       expect((await actionResponse).ok()).toBe(true);
 
-      // The banned tile keeps its button role but is no longer selectable.
-      const bannedTile = page.getByRole('button', { name: /Inferno \(banned\)/i });
-      await expect(bannedTile).toHaveAttribute('aria-disabled', 'true');
+      // The banned map leaves the grid and is listed in the decided line instead.
+      await expect(page.getByTestId('veto-map-card-de_inferno')).toHaveCount(0);
+      await expect(page.getByTestId('veto-decided-summary')).toContainText(/Inferno/i);
 
       // History renders a translated action label, never the raw enum.
       const historyChip = page.getByTestId('veto-history-action').first();

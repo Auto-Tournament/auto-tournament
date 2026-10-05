@@ -370,6 +370,16 @@
       "noMapToPickSide": "No map to pick side for",
       "matchNotFound": "Match not found",
       "unauthorized": "Only players on one of the participating teams can perform veto actions for this match."
+    },
+    "question": {
+      "ban": "Which map do you want to ban?",
+      "pick": "Which map do you want to play?",
+      "side": "Which side do you want to start on?"
+    },
+    "decided": {
+      "map": "Map {{number}}",
+      "pickedBy": "picked by {{team}}",
+      "out": "Out:"
     }
   },
   "matchInfo": {
