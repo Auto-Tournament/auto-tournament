@@ -12,6 +12,7 @@ import { calculateOvertimeNumber } from '../../utils/matchUtils';
 import { MatchScoreboard } from './MatchScoreboard';
 import { MatchPlayerPerformance } from './MatchPlayerPerformance';
 import { MatchMapChips } from './MatchMapChips';
+import { SpectatorScoreboard } from './SpectatorScoreboard';
 import { useIntegrationFor } from '../../integrations/registry';
 import { api } from '../../utils/api';
 import { useAuth } from '../../contexts/AuthContext';
@@ -375,6 +376,22 @@ export function MatchInfoCard({
               </Box>
             </Box>
 
+            {!viewerIsTeamMember ? (
+              // Someone outside the match (design draft "Match C"): the score first, no join controls.
+              <SpectatorScoreboard
+                team1Name={match.team1?.name ?? match.config?.team1?.name ?? t('matchInfo.team1', { defaultValue: 'Team 1' })}
+                team2Name={match.team2?.name ?? match.config?.team2?.name ?? t('matchInfo.team2', { defaultValue: 'Team 2' })}
+                team1Rounds={mapRoundsTeam1}
+                team2Rounds={mapRoundsTeam2}
+                team1Maps={liveStats?.team1SeriesScore ?? deriveSeriesWins.team1}
+                team2Maps={liveStats?.team2SeriesScore ?? deriveSeriesWins.team2}
+                mapName={liveStats?.mapName ?? match.currentMap ?? null}
+                mapNumber={mapNumber}
+                totalMaps={liveStats?.totalMaps ?? match.maps?.length ?? null}
+                roundsPerMap={typeof maxRounds === 'number' ? maxRounds : null}
+                liveStatus={liveStatusDisplay}
+              />
+            ) : (
             <MatchScoreboard
               leftName={team?.name}
               rightName={match.opponent?.name}
@@ -397,6 +414,7 @@ export function MatchInfoCard({
               }
               hideMapRounds={hideMapRounds}
             />
+            )}
 
             {liveStats?.status === 'postgame' && match.status !== 'completed' && (
               <Typography variant="body2" color="text.secondary" mt={1}>
@@ -406,7 +424,7 @@ export function MatchInfoCard({
 
             {/* Connect first (design draft "Match A"): join, then where the series stands, then the numbers. */}
             {/* How to join: the module reads the server and the map by slug. */}
-            {ConnectPanel && (
+            {ConnectPanel && viewerIsTeamMember && (
               <ConnectPanel
                 matchSlug={match.slug}
                 viewerCanJoin={viewerIsTeamMember}
@@ -414,7 +432,7 @@ export function MatchInfoCard({
               />
             )}
 
-            {match.status !== 'live' && (
+            {match.status !== 'live' && viewerIsTeamMember && (
               <Alert
                 severity={playersReady ? 'success' : 'info'}
                 icon={<UsersIcon size={20} />}
