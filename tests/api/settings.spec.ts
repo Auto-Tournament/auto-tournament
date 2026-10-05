@@ -1239,6 +1239,8 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   { key: 'experimental_matchmaking', field: null },
   // Ready Up match servers' join password (off by default; the roster whitelist keeps others out).
   { key: 'at_join_password', field: 'atJoinPassword' },
+  // Auto-start after N minutes in warmup (fleet/autoStart.ts).
+  { key: 'at_autostart_after_minutes', field: 'atAutostartAfterMinutes' },
 ];
 
 // --- tests -------------------------------------------------------------------

@@ -993,6 +993,10 @@
         "demoNameFormatLabel": "Demo 文件名格式（不含 .dem）",
         "demoNameFormatHelper": "可用标记：{TIME}、{MATCH_ID}、{MAP}、{MAPNUMBER}、{TEAM1}、{TEAM2}"
       },
+      "autostart": {
+        "label": "Start matches after (minutes in warmup)",
+        "helper": "0 = wait for everyone to ready up. Otherwise a loaded match goes live after this many minutes, ready or not; players are warned 1 minute and 10 seconds before."
+      },
       "seriesEnd": {
         "title": "系列结束时间",
         "kickDelayNoDemoLabel": "禁用 Demo 时额外踢出延迟（秒）",

@@ -7,6 +7,7 @@
  * the server health monitor (which also runs the CS2 fleet/update checks).
  */
 
+import { startAutoStart } from './fleet/autoStart';
 import { log } from '../../utils/logger';
 import { settingsService } from '../../services/settingsService';
 import { serverService } from './services/serverService';
@@ -56,6 +57,8 @@ export async function startCs2(): Promise<void> {
   startDemoStreams();
   // server.cs2_update_required / server.selftest from Ready Up servers.
   startServerNotices();
+  // Matches left in warmup start after the admin's limit (at_autostart_after_minutes).
+  startAutoStart();
 
   // The Ready Up fleet gateway (/api/fleet/ws) first: it only attaches to the
   // HTTP server, and servers reconnecting after a restart should not wait on
