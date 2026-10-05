@@ -326,6 +326,18 @@ for (const provider of providers) {
       test('an unlinked account is sent to connect Steam, then linked', TAGS, async () => {
         const providerUserId = provider.newId();
         const steamId = randomSteamId();
+        // Since Steam became optional (#466), an unlinked sign-in gets an
+        // account of its own while self-registration is open or no admin
+        // exists. This path is the other one: registration closed, an admin
+        // present. Set both, so another spec's leftovers can't flip it.
+        const setup = await playwrightRequest.newContext({ baseURL: BASE_URL });
+        try {
+          expect(await signInViaRequest(setup)).toBe(true);
+          const closed = await setup.put('/api/settings', { data: { allowSelfRegister: false } });
+          expect(closed.ok(), await closed.text()).toBe(true);
+        } finally {
+          await setup.dispose();
+        }
         const ctx = await playwrightRequest.newContext({ baseURL: BASE_URL });
         try {
           const { state } = await start(ctx);
