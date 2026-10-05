@@ -1,18 +1,23 @@
 /**
  * Matchmaking phase 1 (docs/design/matchmaking.md): parties, the queue, the
  * matching loop and accept / decline with cooldowns. A lobby whose players
- * all accepted ends as `ready`; creating and allocating its match is the next
- * step (phase 1b).
+ * all accepted becomes a standalone match (`matches.source = 'matchmaking'`,
+ * one random map from the game's matchmaking pool) that the scheduler
+ * allocates like a manual match; Ready Up then whitelists the ten players.
  *
  * The queue lives in the database, so a restart loses nothing; lobbies that
  * were still accepting are cancelled without penalty and their parties go
  * back to searching. Every change runs through one in-process lock, so the
  * loop and the API never interleave.
  */
-import { randomUUID } from 'crypto';
+import { randomInt, randomUUID } from 'crypto';
 import { db } from '../../config/database';
 import { log } from '../../utils/logger';
 import { isExperimentalFeatureEnabled } from '../experimentalFeatures';
+import { hasIntegration, getIntegration } from '../../integrations/registry';
+import { matchService } from '../matchService';
+import { resolveTournamentId } from '../../utils/tournamentRow';
+import { configuredPublicOrigin } from '../../utils/publicOrigin';
 import {
   ACCEPT_SECONDS,
   cooldownSeconds,
@@ -76,6 +81,9 @@ export interface MatchmakingMe {
     id: string;
     status: string;
     acceptDeadline: number;
+    /** Set once the lobby's match exists. */
+    matchSlug: string | null;
+    map: string | null;
     accepted: number;
     total: number;
     youAccepted: boolean;
@@ -346,9 +354,18 @@ export class MatchmakingService {
       );
       const others = players.filter((p) => p.player_id !== playerId);
       if (others.every((p) => p.accepted_at !== null)) {
+        log.info(`[MATCHMAKING] lobby ${lobbyId}: everyone accepted`);
+        try {
+          await this.startMatch(lobby, [...others, players.find((p) => p.player_id === playerId)!]);
+        } catch (error) {
+          // No map pool, no CS2 module, a failed insert: nobody did anything
+          // wrong, so no cooldowns; everyone goes back to the front.
+          log.error(`[MATCHMAKING] lobby ${lobbyId}: could not create the match`, error as Error);
+          await this.cancel(lobbyId, 'match_failed');
+          return { status: 'cancelled' };
+        }
         await db.runAsync("UPDATE mm_lobbies SET status = 'ready' WHERE id = ?", [lobbyId]);
         await db.runAsync('DELETE FROM mm_queue_entries WHERE lobby_id = ?', [lobbyId]);
-        log.info(`[MATCHMAKING] lobby ${lobbyId}: everyone accepted`);
         return { status: 'ready' };
       }
       return { status: 'accepting' };
@@ -373,6 +390,63 @@ export class MatchmakingService {
       // to the front (queued_at is kept), answered or not.
       await db.runAsync('DELETE FROM mm_queue_entries WHERE party_id = ?', [party]);
       await this.cancel(lobbyId, 'declined');
+    });
+  }
+
+  /**
+   * Create the lobby's match: a standalone Bo1 on a random map from the
+   * game's matchmaking pool, teams as split, then ask the scheduler to give
+   * it a server.
+   */
+  private async startMatch(lobby: LobbyRow, players: LobbyPlayerRow[]): Promise<void> {
+    if (!hasIntegration('cs2')) throw new Error('The CS2 module is not installed');
+    const pool = (await getIntegration('cs2').matchmakingMapPool?.()) ?? [];
+    if (pool.length === 0) throw new Error('The CS2 matchmaking map pool is empty');
+    const map = pool[randomInt(pool.length)];
+
+    const names = new Map(
+      (
+        await db.queryAsync<{ id: string; name: string | null }>(
+          `SELECT id, name FROM players WHERE id IN (${players.map(() => '?').join(', ')})`,
+          players.map((p) => p.player_id)
+        )
+      ).map((r) => [r.id, r.name || r.id])
+    );
+    const team = (n: number) => {
+      const roster = players.filter((p) => p.team === n).map((p) => p.player_id).sort();
+      return {
+        name: `Team ${names.get(roster[0]) ?? n}`,
+        players: Object.fromEntries(roster.map((id) => [id, names.get(id) ?? id])),
+      };
+    };
+
+    const slug = `mm-${lobby.id.slice(0, 8)}`;
+    const teamSize = TEAM_SIZE[lobby.mode as MatchmakingMode];
+    await matchService.createMatch(
+      {
+        slug,
+        config: {
+          matchid: 0,
+          skip_veto: true,
+          players_per_team: teamSize,
+          team1: team(1),
+          team2: team(2),
+          num_maps: 1,
+          maplist: [map],
+        },
+      },
+      configuredPublicOrigin() ?? '',
+      resolveTournamentId()
+    );
+    await db.runAsync("UPDATE matches SET source = 'matchmaking' WHERE slug = ?", [slug]);
+    await db.runAsync('UPDATE mm_lobbies SET match_slug = ?, map = ? WHERE id = ?', [slug, map, lobby.id]);
+    log.info(`[MATCHMAKING] lobby ${lobby.id}: match ${slug} on ${map}`);
+
+    // Allocation is the scheduler's (manual matches go the same way); it keeps
+    // retrying while no server is free.
+    const { scheduler } = await import('../../core/scheduler');
+    setImmediate(() => {
+      void scheduler.tryImmediateAllocation();
     });
   }
 
@@ -444,6 +518,8 @@ export class MatchmakingService {
         id: lobbyRow.id,
         status: lobbyRow.status,
         acceptDeadline: Number(lobbyRow.accept_deadline),
+        matchSlug: (lobbyRow as LobbyRow & { match_slug?: string | null }).match_slug ?? null,
+        map: (lobbyRow as LobbyRow & { map?: string | null }).map ?? null,
         accepted: Number(counts?.accepted ?? 0),
         total: Number(counts?.total ?? 0),
         youAccepted: lobbyRow.accepted_at !== null,
@@ -463,6 +539,42 @@ export class MatchmakingService {
       queue: entry ? { mode: entry.mode, queuedAt: Number(entry.queued_at), status: entry.status } : null,
       lobby,
       cooldownUntil: await this.cooldownUntil(playerId),
+    };
+  }
+
+  /** The match room: teams with names, map and the match, for a player in the lobby. */
+  async lobbyView(playerId: string, lobbyId: string): Promise<{
+    id: string;
+    status: string;
+    mode: string;
+    map: string | null;
+    matchSlug: string | null;
+    matchStatus: string | null;
+    teams: Array<{ team: number; players: Array<{ id: string; name: string; accepted: boolean }> }>;
+  }> {
+    const { lobby, players } = await this.lobbyFor(playerId, lobbyId);
+    const row = lobby as LobbyRow & { map: string | null; match_slug: string | null };
+    const names = await db.queryAsync<{ id: string; name: string | null }>(
+      `SELECT id, name FROM players WHERE id IN (${players.map(() => '?').join(', ')})`,
+      players.map((p) => p.player_id)
+    );
+    const nameOf = new Map(names.map((n) => [n.id, n.name || n.id]));
+    const match = row.match_slug
+      ? await db.queryOneAsync<{ status: string }>('SELECT status FROM matches WHERE slug = ?', [row.match_slug])
+      : undefined;
+    return {
+      id: lobby.id,
+      status: lobby.status,
+      mode: lobby.mode,
+      map: row.map ?? null,
+      matchSlug: row.match_slug ?? null,
+      matchStatus: match?.status ?? null,
+      teams: [1, 2].map((team) => ({
+        team,
+        players: players
+          .filter((p) => p.team === team)
+          .map((p) => ({ id: p.player_id, name: nameOf.get(p.player_id) ?? p.player_id, accepted: p.accepted_at !== null })),
+      })),
     };
   }
 

@@ -33,6 +33,9 @@ export const paths = {
   findPlayer: '/player',
   playerProfile: '/player/:steamId',
   browse: '/browse',
+  /** Matchmaking (experimental): find a match, party, the match room. */
+  play: '/play',
+  playLobby: '/play/:lobbyId',
   me: '/me',
   meConnections: '/me/connections',
   welcomeGames: '/welcome/games',
@@ -69,6 +72,11 @@ export type AppPath = (typeof paths)[keyof typeof paths];
 /** Nested route form of an admin shell path: '/servers' → 'servers'. */
 export function adminRoute(path: string): string {
   return path.replace(/^\//, '');
+}
+
+/** `/play/:lobbyId`: a matchmaking match room. */
+export function playLobbyPath(lobbyId: string): string {
+  return `/play/${lobbyId}`;
 }
 
 /** `/player/:steamId` for one player. */

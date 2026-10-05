@@ -438,6 +438,23 @@ export const cs2Integration: GameIntegration = {
     return enabled + Number(unlinked?.n ?? 0);
   },
 
+  /** Matchmaking's map pool: the Active Duty pool (maps/mapSync.ts keeps it in step with Valve). */
+  async matchmakingMapPool() {
+    const { db } = await import('../../config/database');
+    const { ACTIVE_DUTY_POOL } = await import('./maps/mapSync');
+    const row = await db.queryOneAsync<{ map_ids: string }>(
+      'SELECT map_ids FROM cs2_map_pools WHERE name = ? AND enabled = 1',
+      [ACTIVE_DUTY_POOL]
+    );
+    if (!row) return [];
+    try {
+      const ids: unknown = JSON.parse(row.map_ids);
+      return Array.isArray(ids) ? ids.filter((id): id is string => typeof id === 'string' && id.length > 0) : [];
+    } catch {
+      return row.map_ids.split(',').map((id) => id.trim()).filter(Boolean);
+    }
+  },
+
   /** The server grace period (shorter in simulation mode). */
   async turnoverSeconds() {
     const { cs2ServerPool } = await import('./allocation');

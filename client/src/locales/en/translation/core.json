@@ -32,7 +32,8 @@
     "leaderboards": "Leaderboards",
     "theme": "Theme",
     "language": "Language",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "play": "Play"
   },
   "layout": {
     "pageTitle": {

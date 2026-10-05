@@ -6197,6 +6197,33 @@
         ]
       }
     },
+    "/api/matchmaking/lobbies/{id}": {
+      "get": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "The match room (experimental)",
+        "description": "Only a player in that match. Teams with names and who accepted, the map, and the match once it exists.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The lobby"
+          },
+          "404": {
+            "description": "No such match for the caller"
+          }
+        }
+      }
+    },
     "/api/matchmaking/lobbies/{id}/accept": {
       "post": {
         "tags": [
