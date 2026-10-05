@@ -295,6 +295,13 @@
     "demos": {
       "title": "Map-Demos",
       "download": "Demo von {{map}} herunterladen"
+    },
+    "spectator": {
+      "maps_one": "{{count}} map won",
+      "maps_other": "{{count}} maps won",
+      "mapOf": "Map {{n}} of {{total}}",
+      "scoreAria": "Round score {{a}} to {{b}}",
+      "roundsPlayed": "{{played}} of {{total}} rounds played"
     }
   },
   "teamProfile": {

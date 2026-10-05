@@ -329,6 +329,13 @@
     "demos": {
       "title": "Kartdemoer",
       "download": "Last ned demo for {{map}}"
+    },
+    "spectator": {
+      "maps_one": "{{count}} kart vunnet",
+      "maps_other": "{{count}} kart vunnet",
+      "mapOf": "Kart {{n}} av {{total}}",
+      "scoreAria": "Rundestilling {{a}} mot {{b}}",
+      "roundsPlayed": "{{played}} av {{total}} runder spilt"
     }
   },
   "disputes": {
