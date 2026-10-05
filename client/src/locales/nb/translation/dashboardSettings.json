@@ -247,7 +247,9 @@
       "features": {
         "matchmaking": {
           "label": "Matchmaking",
-          "description": "Finn kamp, stå i kø og godta, og spill på en ledig server. Bare CS2. Bare for admins mens det bygges."
+          "description": "Finn kamp, stå i kø og godta, og spill på en ledig server. Bare CS2. Bare for admins mens det bygges.",
+          "openLabel": "Åpen for spillere",
+          "openDescription": "Av: bare administratorer kan finne kamper, for testing. På: alle innloggede spillere ser Spill og kan stå i kø."
         }
       }
     }
