@@ -336,6 +336,12 @@
     "counterTerrorist": "反恐精英",
     "terrorist": "恐怖分子",
     "vetoHistory": "禁选历史",
+    "pickSummary": {
+      "map": "Map {{number}}",
+      "pickedBy": "picked by {{team}}",
+      "decider": "decider",
+      "starts": "{{team}} starts {{side}}"
+    },
     "historyStep": "第 {{step}} 步：",
     "startingSide": "初始 {{side}}",
     "otherTeam": "另一支队伍",
