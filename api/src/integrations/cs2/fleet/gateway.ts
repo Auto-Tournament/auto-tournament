@@ -29,6 +29,7 @@ import type { IncomingMessage, Server as HttpServer } from 'http';
 import type { Duplex } from 'stream';
 import { WebSocketServer, WebSocket, type RawData } from 'ws';
 import { log } from '../../../utils/logger';
+import { clearCs2UpdateIfCurrent } from './serverNotices';
 import { peerAddressOf } from './address';
 import { redactFleetSecrets, ulid } from './credentials';
 import {
@@ -456,6 +457,8 @@ class FleetSession {
       boot_id: hello.boot_id,
       peer_addr: this.peerAddr,
     });
+    // A server back on the current CS2 build is no longer out of date (serverNotices.ts).
+    void clearCs2UpdateIfCurrent(serverId, hello.versions).catch(() => undefined);
     if (this.closed) {
       // The socket went while we were writing; do not leave it marked online.
       await registry.markDisconnected(serverId, this.sessionId);
