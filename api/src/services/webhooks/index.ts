@@ -26,6 +26,59 @@ import { SOURCE_PATTERN } from '../teamExternalIds';
 
 export { reconcileMatch };
 
+/**
+ * `admin.called`: a player typed .admin in a match. One delivery per endpoint
+ * subscribed to it, with the match (connect details included while the match
+ * is on a server) and the call. A call outside a match sends nothing.
+ */
+export async function emitAdminCalledWebhook(call: {
+  callId: string;
+  matchSlug: string | null;
+  mapNumber: number | null;
+  serverId: string | null;
+  serverName: string | null;
+  player: { steamId: string | null; name: string | null; team: string | null; teamName: string | null };
+  message: string;
+  calledAt: string;
+}): Promise<void> {
+  if (!call.matchSlug) return;
+  const endpoints = (await store.listActiveEndpoints()).filter((e) => store.subscribes(e, 'admin.called'));
+  if (endpoints.length === 0) return;
+  const row = await readMatchRow({ slug: call.matchSlug });
+  if (!row) return;
+  const match = await buildMatchPayload(await readMatchFacts(row));
+  const base = await settingsService.getWebhookUrl().catch(() => null);
+  let origin: string | null = null;
+  try {
+    origin = base ? new URL(base).origin : null;
+  } catch {
+    origin = null;
+  }
+  const team = call.player.team === 'team1' || call.player.team === 'team2' ? call.player.team : null;
+  const envelope: WebhookEnvelope = {
+    id: store.newId('evt'),
+    type: 'admin.called',
+    created_at: new Date().toISOString(),
+    api_version: WEBHOOK_API_VERSION,
+    test: false,
+    data: {
+      match,
+      admin_call: {
+        id: call.callId,
+        player: { steam_id64: call.player.steamId, name: call.player.name, team, team_name: call.player.teamName },
+        message: call.message,
+        map_number: call.mapNumber,
+        server: { id: call.serverId, name: call.serverName },
+        match_url: origin ? `${origin}/matches?match=${encodeURIComponent(call.matchSlug)}` : null,
+        called_at: call.calledAt,
+      },
+      sequence: 0,
+    },
+  };
+  const queued = await enqueueEnvelope(endpoints, envelope, call.matchSlug);
+  if (queued.length > 0) wakeWorker();
+}
+
 export function startWebhooks(): void {
   startWorker();
   startReconciler();
