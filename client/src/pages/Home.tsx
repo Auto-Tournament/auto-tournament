@@ -38,8 +38,9 @@ function EmptyLine({ children, testId }: { children: React.ReactNode; testId: st
  * steam://connect joins a CS2 that is already running; steam://run/730 only
  * passed its arguments when it started the game.
  */
-function steamConnectUri(server: { host: string; port: number; password?: string }): string {
-  const address = `${server.host}:${server.port}`;
+function steamConnectUri(server: { host: string; ip?: string | null; port: number; password?: string }): string {
+  // The IP when known: CS2 ignores steam://connect with a hostname.
+  const address = `${server.ip || server.host}:${server.port}`;
   return server.password
     ? `steam://connect/${address}/${encodeURIComponent(server.password)}`
     : `steam://connect/${address}`;

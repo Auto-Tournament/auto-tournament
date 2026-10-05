@@ -151,7 +151,8 @@ export function MatchServerPanel({ matchSlug, viewerCanJoin, matchStatus }: Matc
 
   const onConnect = () => {
     if (!server) return;
-    const address = `${server.host}:${server.port}`;
+    // The IP, not the hostname: CS2 ignores steam://connect with a hostname.
+    const address = `${server.ip || server.host}:${server.port}`;
     // steam://connect, not steam://run/730//+connect: run only passes its
     // arguments when it starts the game, so with CS2 already open the button
     // did nothing. connect joins a running game too (the webhooks use it).
