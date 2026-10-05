@@ -847,6 +847,43 @@ export function getSchemaSQL(): string {
       UNIQUE (player_id, match_slug)
     );
 
+    -- XP (matchmaking only, decided 2026-10-05) as a ledger, so where it came
+    -- from can be seen and corrected. reason: 'completed' | 'win' | 'draw' |
+    -- 'performance' | 'first_win' | 'admin'.
+    CREATE TABLE IF NOT EXISTS xp_events (
+      id SERIAL PRIMARY KEY,
+      player_id TEXT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+      match_slug TEXT,
+      amount INTEGER NOT NULL,
+      reason TEXT NOT NULL,
+      note TEXT,
+      created_at INTEGER NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_xp_events_player ON xp_events(player_id, created_at);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_xp_events_match_reason ON xp_events(player_id, match_slug, reason) WHERE match_slug IS NOT NULL;
+
+    -- Cache of SUM(xp_events.amount) per player; the level is derived from it.
+    CREATE TABLE IF NOT EXISTS player_progress (
+      player_id TEXT PRIMARY KEY REFERENCES players(id) ON DELETE CASCADE,
+      total_xp INTEGER NOT NULL DEFAULT 0,
+      updated_at INTEGER NOT NULL
+    );
+
+    -- Thumbs up / down between players of one matchmaking match. Totals are
+    -- shown; who voted never is.
+    CREATE TABLE IF NOT EXISTS commends (
+      match_slug TEXT NOT NULL,
+      from_player_id TEXT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+      to_player_id TEXT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+      value INTEGER NOT NULL, -- 1 or -1
+      tag TEXT,
+      created_at INTEGER NOT NULL,
+      PRIMARY KEY (match_slug, from_player_id, to_player_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_commends_to ON commends(to_player_id, created_at);
+
     -- Session table for connect-pg-simple (express-session PostgreSQL store)
     -- This table is required for session persistence across API restarts
     CREATE TABLE IF NOT EXISTS session (

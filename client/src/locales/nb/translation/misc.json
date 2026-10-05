@@ -514,6 +514,49 @@
         "completed": "Kampen er ferdig.",
         "other": "Kamp: {{status}}"
       }
+    },
+    "result": {
+      "title": "Resultat",
+      "map": "Kart {{n}}",
+      "rating": "Rating",
+      "xp": "+{{xp}} XP · nivå {{level}}",
+      "levelProgress": "{{into}} av {{next}} XP til neste nivå",
+      "xpReason": {
+        "completed": "Spilt",
+        "win": "Seier",
+        "draw": "Uavgjort",
+        "performance": "Prestasjon",
+        "first_win": "Første seier i dag",
+        "admin": "Admin"
+      },
+      "player": "Spiller",
+      "commend": "Vurder",
+      "thumbsUp": "Tommel opp",
+      "thumbsDown": "Tommel ned",
+      "thumbsUpFor": "Tommel opp til {{name}}",
+      "thumbsDownFor": "Tommel ned til {{name}}",
+      "downReason": "Hvorfor?",
+      "downTag": {
+        "toxic": "Giftig",
+        "griefing": "Ødela for laget",
+        "afk": "AFK eller gikk",
+        "other": "Noe annet"
+      },
+      "commendFailed": "Kunne ikke lagre det"
+    },
+    "profile": {
+      "level": "Nivå {{level}}",
+      "xp": "{{xp}} XP",
+      "thumbsUp_one": "{{count}} tommel opp",
+      "thumbsUp_other": "{{count}} tommel opp",
+      "thumbsDown_one": "{{count}} tommel ned",
+      "thumbsDown_other": "{{count}} tommel ned",
+      "tag": {
+        "friendly": "Vennlig",
+        "team_player": "Lagspiller",
+        "leader": "Leder",
+        "good_comms": "God kommunikasjon"
+      }
     }
   }
 }

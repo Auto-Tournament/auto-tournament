@@ -514,6 +514,49 @@
         "completed": "The match is over.",
         "other": "Match: {{status}}"
       }
+    },
+    "result": {
+      "title": "Result",
+      "map": "Map {{n}}",
+      "rating": "Rating",
+      "xp": "+{{xp}} XP · level {{level}}",
+      "levelProgress": "{{into}} of {{next}} XP to the next level",
+      "xpReason": {
+        "completed": "Played",
+        "win": "Win",
+        "draw": "Draw",
+        "performance": "Performance",
+        "first_win": "First win today",
+        "admin": "Admin"
+      },
+      "player": "Player",
+      "commend": "Rate",
+      "thumbsUp": "Thumbs up",
+      "thumbsDown": "Thumbs down",
+      "thumbsUpFor": "Thumbs up for {{name}}",
+      "thumbsDownFor": "Thumbs down for {{name}}",
+      "downReason": "Why?",
+      "downTag": {
+        "toxic": "Toxic",
+        "griefing": "Griefing",
+        "afk": "AFK or left",
+        "other": "Something else"
+      },
+      "commendFailed": "Could not save that"
+    },
+    "profile": {
+      "level": "Level {{level}}",
+      "xp": "{{xp}} XP",
+      "thumbsUp_one": "{{count}} thumbs up",
+      "thumbsUp_other": "{{count}} thumbs up",
+      "thumbsDown_one": "{{count}} thumbs down",
+      "thumbsDown_other": "{{count}} thumbs down",
+      "tag": {
+        "friendly": "Friendly",
+        "team_player": "Team player",
+        "leader": "Leader",
+        "good_comms": "Good comms"
+      }
     }
   }
 }
