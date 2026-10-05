@@ -1129,7 +1129,8 @@
       "createServer": "Kon de aanmeldcode niet maken",
       "createKey": "Kon de vlootsleutel niet maken",
       "rotate": "Kon het token niet vernieuwen",
-      "action": "De actie is mislukt"
+      "action": "De actie is mislukt",
+      "rename": "Could not rename the server"
     },
     "confirm": {
       "revokeTitle": "Server intrekken?",
@@ -1152,7 +1153,10 @@
       "publicAddr": "gemeld door de server",
       "peer": "adres waarvandaan de server verbindt",
       "unknown": "nog niet bevestigd door de server"
-    }
+    },
+    "rename": "Rename",
+    "renamed": "Renamed",
+    "renameSave": "Save"
   },
   "roundBackups": {
     "title": "Round backups",

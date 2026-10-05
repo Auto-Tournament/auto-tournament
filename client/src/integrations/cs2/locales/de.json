@@ -1129,7 +1129,8 @@
       "createServer": "Anmeldecode konnte nicht erstellt werden",
       "createKey": "Flottenschlüssel konnte nicht erstellt werden",
       "rotate": "Token konnte nicht erneuert werden",
-      "action": "Aktion fehlgeschlagen"
+      "action": "Aktion fehlgeschlagen",
+      "rename": "Could not rename the server"
     },
     "confirm": {
       "revokeTitle": "Server widerrufen?",
@@ -1152,7 +1153,10 @@
       "publicAddr": "vom Server gemeldet",
       "peer": "Adresse, von der sich der Server verbindet",
       "unknown": "vom Server noch nicht bestätigt"
-    }
+    },
+    "rename": "Rename",
+    "renamed": "Renamed",
+    "renameSave": "Save"
   },
   "roundBackups": {
     "title": "Round backups",

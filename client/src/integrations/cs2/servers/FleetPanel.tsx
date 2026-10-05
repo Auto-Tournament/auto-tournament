@@ -36,6 +36,7 @@ import {
   LinkBreakIcon,
   LinkIcon,
   PasswordIcon,
+  PencilSimpleIcon,
   PlusIcon,
   ProhibitIcon,
   TrashIcon,
@@ -90,6 +91,7 @@ export default function FleetPanel() {
   const [serverName, setServerName] = useState('');
   const [keyForm, setKeyForm] = useState({ name: '', namePrefix: '', maxServers: '', expiresInDays: '' });
   const [addressDialog, setAddressDialog] = useState<AddressDialog | null>(null);
+  const [renameDialog, setRenameDialog] = useState<{ server: FleetServer; name: string } | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -118,6 +120,23 @@ export default function FleetPanel() {
       showSnackbar(t('fleetPanel.copied'), 'success');
     } catch {
       showError(t('fleetPanel.copyFailed'));
+    }
+  };
+
+  const renameServer = async () => {
+    if (!renameDialog) return;
+    const name = renameDialog.name.trim();
+    if (!name) return;
+    setBusy(true);
+    try {
+      await api.patch(`/api/fleet/servers/${renameDialog.server.id}`, { name });
+      setRenameDialog(null);
+      showSnackbar(t('fleetPanel.renamed'), 'success');
+      await load();
+    } catch (err) {
+      showError(apiErrorMessage(err, t('fleetPanel.errors.rename')));
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -442,6 +461,16 @@ export default function FleetPanel() {
                     </Tooltip>
                   </>
                 )}
+                <Tooltip title={t('fleetPanel.rename')}>
+                  <IconButton
+                    size="small"
+                    onClick={() => setRenameDialog({ server, name: server.name })}
+                    aria-label={t('fleetPanel.rename')}
+                    data-testid={`fleet-rename-${server.id}`}
+                  >
+                    <PencilSimpleIcon size={20} />
+                  </IconButton>
+                </Tooltip>
                 {server.status !== 'enrolled' && (
                   <Tooltip title={t('fleetPanel.remove')}>
                     <IconButton
@@ -524,6 +553,37 @@ export default function FleetPanel() {
           <Button onClick={() => setAddOpen(false)}>{t('common.cancel')}</Button>
           <Button variant="contained" onClick={() => void createServer()} disabled={busy} data-testid="fleet-create-code">
             {t('fleetPanel.createCode')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Rename */}
+      <Dialog open={renameDialog !== null} onClose={() => setRenameDialog(null)} maxWidth="xs" fullWidth>
+        <DialogTitle>{t('fleetPanel.rename')}</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            fullWidth
+            size="small"
+            sx={{ mt: 1 }}
+            label={t('fleetPanel.serverName')}
+            value={renameDialog?.name ?? ''}
+            onChange={(e) => renameDialog && setRenameDialog({ ...renameDialog, name: e.target.value })}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') void renameServer();
+            }}
+            inputProps={{ maxLength: 100, 'data-testid': 'fleet-rename-input' }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRenameDialog(null)}>{t('common.cancel')}</Button>
+          <Button
+            variant="contained"
+            onClick={() => void renameServer()}
+            disabled={busy || !renameDialog?.name.trim()}
+            data-testid="fleet-rename-save"
+          >
+            {t('fleetPanel.renameSave')}
           </Button>
         </DialogActions>
       </Dialog>

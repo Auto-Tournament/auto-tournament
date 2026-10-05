@@ -1129,7 +1129,8 @@
       "createServer": "Kunne ikke opprette innmeldingskoden",
       "createKey": "Kunne ikke opprette flåtenøkkelen",
       "rotate": "Kunne ikke fornye tokenet",
-      "action": "Handlingen mislyktes"
+      "action": "Handlingen mislyktes",
+      "rename": "Kunne ikke endre navnet på serveren"
     },
     "confirm": {
       "revokeTitle": "Tilbakekalle serveren?",
@@ -1152,7 +1153,10 @@
       "publicAddr": "oppgitt av serveren",
       "peer": "adressen serveren kobler til fra",
       "unknown": "ikke bekreftet av serveren ennå"
-    }
+    },
+    "rename": "Gi nytt navn",
+    "renamed": "Navnet er endret",
+    "renameSave": "Lagre"
   },
   "roundBackups": {
     "title": "Round backups",

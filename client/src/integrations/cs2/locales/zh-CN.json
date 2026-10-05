@@ -1129,7 +1129,8 @@
       "createServer": "无法创建注册代码",
       "createKey": "无法创建服务器组密钥",
       "rotate": "无法轮换令牌",
-      "action": "操作失败"
+      "action": "操作失败",
+      "rename": "Could not rename the server"
     },
     "confirm": {
       "revokeTitle": "吊销服务器？",
@@ -1152,7 +1153,10 @@
       "publicAddr": "由服务器报告",
       "peer": "服务器的连接来源地址",
       "unknown": "服务器尚未确认"
-    }
+    },
+    "rename": "Rename",
+    "renamed": "Renamed",
+    "renameSave": "Save"
   },
   "roundBackups": {
     "title": "Round backups",
