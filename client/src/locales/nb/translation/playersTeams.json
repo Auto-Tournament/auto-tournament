@@ -381,5 +381,28 @@
   "teamLinkActions": {
     "open": "Åpne lagets kampside",
     "copy": "Kopier lenke til lagets kampside"
+  },
+  "playersDirectory": {
+    "title": "Spillere",
+    "count_one": "{{count}} spiller",
+    "count_other": "{{count}} spillere",
+    "searchPlaceholder": "Søk på navn eller Steam ID",
+    "sortLabel": "Sorter etter",
+    "sort": {
+      "rating": "Rating",
+      "matches": "Kamper spilt",
+      "name": "Navn",
+      "newest": "Nyeste"
+    },
+    "columns": {
+      "player": "Spiller",
+      "rating": "Rating",
+      "matches": "Kamper"
+    },
+    "loading": "Laster spillere",
+    "loadError": "Kunne ikke laste spillerne.",
+    "emptyTitle": "Ingen spillere funnet",
+    "emptyDescription": "Ingen passer med det søket.",
+    "showMore": "Vis flere ({{count}})"
   }
 }

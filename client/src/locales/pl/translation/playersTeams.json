@@ -389,5 +389,28 @@
   "teamLinkActions": {
     "open": "Open team match page",
     "copy": "Copy team match link"
+  },
+  "playersDirectory": {
+    "title": "Players",
+    "count_one": "{{count}} player",
+    "count_other": "{{count}} players",
+    "searchPlaceholder": "Search by name or Steam ID",
+    "sortLabel": "Sort by",
+    "sort": {
+      "rating": "Rating",
+      "matches": "Matches played",
+      "name": "Name",
+      "newest": "Newest"
+    },
+    "columns": {
+      "player": "Player",
+      "rating": "Rating",
+      "matches": "Matches"
+    },
+    "loading": "Loading players",
+    "loadError": "The players could not be loaded.",
+    "emptyTitle": "No players found",
+    "emptyDescription": "Nobody matches that search.",
+    "showMore": "Show more ({{count}})"
   }
 }

@@ -33,6 +33,8 @@ export const paths = {
   findPlayer: '/player',
   playerProfile: '/player/:steamId',
   browse: '/browse',
+  /** Every player: search, sort by rating / matches / name (public, signed in). */
+  browsePlayers: '/browse/players',
   /** Matchmaking (experimental): find a match, party, the match room. */
   play: '/play',
   playLobby: '/play/:lobbyId',

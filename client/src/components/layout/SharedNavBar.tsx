@@ -346,6 +346,12 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
         browseLink,
         { to: teamsPath, label: t('nav.teams'), testId: 'nav-teams', current: pathname === teamsPath },
         {
+          to: paths.browsePlayers,
+          label: t('nav.players'),
+          testId: 'nav-players',
+          current: pathname === paths.browsePlayers,
+        },
+        {
           to: standingsPath,
           label: t('nav.leaderboards'),
           testId: 'nav-leaderboards',

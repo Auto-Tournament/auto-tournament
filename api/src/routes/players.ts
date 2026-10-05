@@ -170,6 +170,9 @@ router.get('/public-selection', async (_req: Request, res: Response) => {
       name: p.name,
       avatar: p.avatar,
       currentElo: p.currentElo,
+      // For the public Players page (sort by matches / newest).
+      matchCount: p.matchCount,
+      createdAt: p.createdAt,
       isAdmin: p.isAdmin,
     }));
 
