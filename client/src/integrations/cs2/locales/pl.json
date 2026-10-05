@@ -614,6 +614,13 @@
       "disabled": "DISABLED",
       "free": "FREE",
       "waiting": "WAITING"
+    },
+    "limit": {
+      "unlimited": "no server limit (non-commercial use)",
+      "unlicensed": "commercial use needs a license that covers every server",
+      "left": "your license covers {{max}}, {{left}} left",
+      "full": "your license covers {{max}}, all in use",
+      "over": "your license covers {{max}}, {{over}} over the limit"
     }
   },
   "serverModal": {
