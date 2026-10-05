@@ -6126,13 +6126,297 @@
         ]
       }
     },
+    "/api/matchmaking/admin/players/{id}/cooldown": {
+      "delete": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "Clear a player's matchmaking cooldown (experimental)",
+        "description": "Admin, same-site JSON.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cleared; `cleared` is how many penalties were lifted"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/matchmaking/admin/settings": {
+      "put": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "Matchmaking settings (experimental)",
+        "description": "Admin. `openToPlayers` lets every signed-in player use matchmaking.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "openToPlayers": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved"
+          },
+          "400": {
+            "description": "openToPlayers is not a boolean"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/matchmaking/lobbies/{id}/accept": {
+      "post": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "Accept a found match (experimental)",
+        "description": "Same-site JSON. Only a player in that match, before the deadline.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Accepted; `status` is `ready` once everyone has"
+          },
+          "404": {
+            "description": "No such match for the caller"
+          },
+          "409": {
+            "description": "The match is no longer waiting for answers"
+          }
+        }
+      }
+    },
+    "/api/matchmaking/lobbies/{id}/decline": {
+      "post": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "Decline a found match (experimental)",
+        "description": "Same-site JSON. The caller gets a cooldown and their party leaves the\nqueue; every other party goes back to the front of the queue.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Declined"
+          },
+          "404": {
+            "description": "No such match for the caller"
+          },
+          "409": {
+            "description": "The match is no longer waiting for answers"
+          }
+        }
+      }
+    },
+    "/api/matchmaking/me": {
+      "get": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "My party, search, match and cooldown (experimental)",
+        "description": "404 unless matchmaking is on. A signed-in player; admins only until\nmatchmaking is open to players.\n",
+        "responses": {
+          "200": {
+            "description": "The caller's matchmaking state"
+          },
+          "401": {
+            "description": "Not signed in"
+          },
+          "403": {
+            "description": "Not open to players yet, or impersonating"
+          }
+        }
+      }
+    },
+    "/api/matchmaking/party": {
+      "post": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "Create a party (experimental)",
+        "description": "Same-site JSON. Returns the caller's party (a new one with them as leader, or the one they are in) and its invite code.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "example": "5v5"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The party"
+          },
+          "400": {
+            "description": "Unknown mode"
+          }
+        }
+      }
+    },
+    "/api/matchmaking/party/join": {
+      "post": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "Join a party by invite code (experimental)",
+        "description": "Same-site JSON. Leaves the caller's current party first.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Joined"
+          },
+          "404": {
+            "description": "No party with that code"
+          },
+          "409": {
+            "description": "The party is full or searching, or the caller is in a match being accepted"
+          }
+        }
+      }
+    },
+    "/api/matchmaking/party/leave": {
+      "post": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "Leave the party (experimental)",
+        "description": "Same-site JSON. The leader leaving disbands the party. Stops a search.",
+        "responses": {
+          "200": {
+            "description": "Left"
+          },
+          "409": {
+            "description": "In a match being accepted"
+          }
+        }
+      }
+    },
+    "/api/matchmaking/queue": {
+      "post": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "Start searching (experimental)",
+        "description": "Same-site JSON. Party leader only (a solo player gets a party of one). Refused while a party member is on cooldown.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "example": "5v5"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Searching"
+          },
+          "403": {
+            "description": "Not the party leader"
+          },
+          "409": {
+            "description": "Cooldown, or the party is too big for the mode"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "Stop searching (experimental)",
+        "description": "Same-site JSON. Party leader only.",
+        "responses": {
+          "200": {
+            "description": "Stopped"
+          },
+          "409": {
+            "description": "In a match being accepted"
+          }
+        }
+      }
+    },
     "/api/matchmaking/status": {
       "get": {
         "tags": [
           "Matchmaking"
         ],
         "summary": "Matchmaking status (experimental)",
-        "description": "404 unless the experimental `matchmaking` feature is on. Admin only\nwhile matchmaking is being built. No queue exists yet.\n",
+        "description": "404 unless the experimental `matchmaking` feature is on. Admin only.\nWhich modes exist and whether players may use it yet.\n",
         "responses": {
           "200": {
             "description": "Matchmaking is on"

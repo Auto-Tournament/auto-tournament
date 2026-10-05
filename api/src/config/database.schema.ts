@@ -748,6 +748,74 @@ export function getSchemaSQL(): string {
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
 
+    -- Matchmaking (docs/design/matchmaking.md, experimental). Core, not the
+    -- CS2 module: "find opponents" will reuse it for other games. A solo
+    -- player is a party of one. Times are epoch seconds.
+    CREATE TABLE IF NOT EXISTS mm_parties (
+      id TEXT PRIMARY KEY,
+      leader_player_id TEXT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+      game TEXT NOT NULL DEFAULT 'cs2',
+      mode TEXT NOT NULL DEFAULT '5v5',
+      invite_code TEXT NOT NULL UNIQUE,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
+    -- A player is in at most one party (UNIQUE player_id).
+    CREATE TABLE IF NOT EXISTS mm_party_members (
+      party_id TEXT NOT NULL REFERENCES mm_parties(id) ON DELETE CASCADE,
+      player_id TEXT NOT NULL UNIQUE REFERENCES players(id) ON DELETE CASCADE,
+      joined_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      PRIMARY KEY (party_id, player_id)
+    );
+
+    -- One entry per searching party. queued_at is kept when a party that
+    -- accepted is put back at the front.
+    CREATE TABLE IF NOT EXISTS mm_queue_entries (
+      id TEXT PRIMARY KEY,
+      party_id TEXT NOT NULL UNIQUE REFERENCES mm_parties(id) ON DELETE CASCADE,
+      game TEXT NOT NULL DEFAULT 'cs2',
+      mode TEXT NOT NULL,
+      queued_at INTEGER NOT NULL,
+      status TEXT NOT NULL DEFAULT 'searching', -- 'searching' | 'found'
+      lobby_id TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS mm_lobbies (
+      id TEXT PRIMARY KEY,
+      game TEXT NOT NULL DEFAULT 'cs2',
+      mode TEXT NOT NULL,
+      status TEXT NOT NULL, -- 'accepting' | 'ready' | 'cancelled'
+      accept_deadline INTEGER NOT NULL,
+      cancel_reason TEXT, -- 'declined' | 'timeout' | 'restart'
+      map TEXT,
+      match_slug TEXT,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
+    CREATE TABLE IF NOT EXISTS mm_lobby_players (
+      lobby_id TEXT NOT NULL REFERENCES mm_lobbies(id) ON DELETE CASCADE,
+      player_id TEXT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+      party_id TEXT NOT NULL,
+      team INTEGER NOT NULL, -- 1 or 2
+      accepted_at INTEGER,
+      declined_at INTEGER,
+      PRIMARY KEY (lobby_id, player_id)
+    );
+
+    -- Declines and no-shows. cooldown_until is when the player may queue
+    -- again; an admin clearing it sets cleared_by.
+    CREATE TABLE IF NOT EXISTS mm_penalties (
+      id SERIAL PRIMARY KEY,
+      player_id TEXT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+      kind TEXT NOT NULL, -- 'decline' | 'no_show'
+      lobby_id TEXT,
+      created_at INTEGER NOT NULL,
+      cooldown_until INTEGER NOT NULL,
+      cleared_by TEXT
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_mm_penalties_player ON mm_penalties(player_id, created_at);
+
     -- Session table for connect-pg-simple (express-session PostgreSQL store)
     -- This table is required for session persistence across API restarts
     CREATE TABLE IF NOT EXISTS session (
