@@ -175,6 +175,10 @@ export async function recordAdminCall(
     message: call.message,
   });
   emitAdminCall(call);
+  // Integrator webhooks subscribed to admin.called (e.g. a Discord relay for the admins).
+  void import('./webhooks')
+    .then(({ emitAdminCalledWebhook }) => emitAdminCalledWebhook(call))
+    .catch((err: unknown) => log.warn('[ADMIN CALL] admin.called webhook failed', { error: String(err) }));
 
   // Keep the table small: resolved calls go after RESOLVED_RETENTION_SECONDS.
   try {

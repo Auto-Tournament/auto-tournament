@@ -39,6 +39,7 @@ export function sampleMatch(type: WebhookEventType, externalIds: { team1?: strin
     'match.finished': 'completed',
     'match.cancelled': 'cancelled',
     'match.reset': 'ready',
+    'admin.called': 'live',
   };
 
   let maps: WebhookMapScore[];
@@ -62,6 +63,7 @@ export function sampleMatch(type: WebhookEventType, externalIds: { team1?: strin
       ];
       break;
     case 'match.score_updated':
+    case 'admin.called':
       maps = [
         { number: 1, name: 'de_mirage', team1: 7, team2: 5, status: 'live', winner: null },
         { number: 2, name: 'de_inferno', team1: 0, team2: 0, status: 'upcoming', winner: null },
@@ -151,6 +153,19 @@ export function sampleEnvelope(
       ...(previous[type] ? { previous_status: previous[type] } : {}),
       ...(type === 'match.cancelled' ? { reason: 'cancelled' } : {}),
       ...(type === 'match.reset' ? { reason: 'unassigned' } : {}),
+      ...(type === 'admin.called'
+        ? {
+            admin_call: {
+              id: 'call_sample000000',
+              player: { steam_id64: '76561198000000001', name: 'Sample Player', team: 'team1' as const, team_name: match.team1?.name ?? null },
+              message: 'my game crashed',
+              map_number: 1,
+              server: { id: 'srv-sample', name: 'Sample server #1' },
+              match_url: 'https://tournament.example.com/matches?match=sample-match',
+              called_at: (opts.createdAt ?? new Date('2026-10-01T18:00:00.000Z')).toISOString(),
+            },
+          }
+        : {}),
       sequence: 1,
     },
   };

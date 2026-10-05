@@ -20,6 +20,7 @@ export const WEBHOOK_EVENT_TYPES = [
   'match.finished',
   'match.cancelled',
   'match.reset',
+  'admin.called',
 ] as const;
 
 export type WebhookEventType = (typeof WEBHOOK_EVENT_TYPES)[number];
@@ -75,6 +76,12 @@ export const WEBHOOK_EVENT_CATALOG: ReadonlyArray<WebhookEventTypeInfo> = [
     description:
       'The match went back to an earlier state: restarted, unassigned from its server, or its result undone. A match.ready follows when it is loaded again.',
     carriesConnect: false,
+  },
+  {
+    type: 'admin.called',
+    description:
+      'A player in a match typed .admin [message] on the server: `data.admin_call` says who and why, with a link to the match page; `data.match.connect` joins the server.',
+    carriesConnect: true,
   },
 ];
 
@@ -154,6 +161,20 @@ export interface WebhookMatch {
   connect: WebhookConnect | null;
 }
 
+export interface WebhookAdminCall {
+  /** The call's id; the same on every delivery of this call. */
+  id: string;
+  player: { steam_id64: string | null; name: string | null; team: TeamSide | null; team_name: string | null };
+  /** What the player typed after .admin; empty when nothing. */
+  message: string;
+  map_number: number | null;
+  server: { id: string | null; name: string | null };
+  /** The match on the admin pages, when the platform knows its address (Settings → webhook URL). */
+  match_url: string | null;
+  /** ISO 8601, UTC. */
+  called_at: string;
+}
+
 export interface WebhookEventData {
   match: WebhookMatch;
   /** match.map_ended: the map that just finished. */
@@ -162,6 +183,8 @@ export interface WebhookEventData {
   previous_status?: string | null;
   /** match.cancelled / match.reset: why. */
   reason?: string;
+  /** admin.called: the call. */
+  admin_call?: WebhookAdminCall;
   /**
    * Per-match counter, raised by every event of that match. Deliveries can
    * arrive out of order (retries): ignore an event whose sequence is lower
