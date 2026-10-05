@@ -3,6 +3,8 @@ import {
   cooldownSeconds,
   findGroup,
   inviteCode,
+  partyRating,
+  searchWindow,
   splitTeams,
   type QueuedParty,
 } from '../../api/src/services/matchmaking/rules';
@@ -56,6 +58,41 @@ test.describe('matchmaking rules (pure)', () => {
     }
   });
 
+  test('search window: ±100 Elo, +50 every 30 s, capped at 400, any rating after 5 min', TAGS, () => {
+    const elo = (s: number) => searchWindow(s) * 200;
+    expect([0, 29, 30, 90, 179, 180, 299].map(elo)).toEqual([100, 100, 150, 250, 350, 400, 400]);
+    expect(searchWindow(300)).toBe(Number.POSITIVE_INFINITY);
+  });
+
+  test('party rating leans to the best player, plus a small premium per extra member', TAGS, () => {
+    expect(partyRating([25])).toBe(25);
+    // 0.7 × 25 + 0.3 × 30 + 20 / 200
+    expect(partyRating([20, 30])).toBeCloseTo(0.7 * 25 + 0.3 * 30 + 0.1, 10);
+  });
+
+  test('ratings: only parties inside each other\'s window are grouped', TAGS, () => {
+    const rated = (id: string, mu: number, queuedAt: number, window: number): QueuedParty => ({
+      ...party(id, 1, queuedAt),
+      mus: [mu],
+      rating: mu,
+      window,
+    });
+    const near = Array.from({ length: 10 }, (_, i) => rated(`n${i}`, 25 + i * 0.05, i + 2, 0.5));
+    const far = rated('far', 40, 1, 0.5);
+    const group = findGroup([far, ...near], 5)!;
+    expect(group.map((p) => p.partyId)).not.toContain('p-far');
+    // After waiting long enough, anyone goes.
+    expect(findGroup([{ ...far, window: Infinity }, ...near.slice(0, 9).map((p) => ({ ...p, window: Infinity }))], 5)).not.toBeNull();
+  });
+
+  test('balanced split: the smallest gap in total mu', TAGS, () => {
+    const mus = [30, 29, 28, 27, 26, 25, 24, 23, 22, 21];
+    const group = mus.map((mu, i) => ({ ...party(`s${i}`, 1, i), mus: [mu], rating: mu }));
+    const [t1, t2] = splitTeams(group, 5)!;
+    const total = (t: QueuedParty[]) => t.reduce((n, p) => n + p.mus![0], 0);
+    expect(Math.abs(total(t1) - total(t2))).toBe(1);
+  });
+
   test('invite codes: 10 characters, no lookalikes', TAGS, () => {
     const codes = new Set(Array.from({ length: 200 }, () => inviteCode()));
     expect(codes.size).toBe(200);
@@ -74,6 +111,7 @@ interface Me {
   queue: { mode: string; queuedAt: number; status: string } | null;
   lobby: { id: string; status: string; accepted: number; total: number; youAccepted: boolean; team: number } | null;
   cooldownUntil: number | null;
+  rating: { elo: number; games: number; wins: number } | null;
 }
 
 async function player(): Promise<{ ctx: APIRequestContext; id: string }> {
@@ -186,6 +224,22 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
     expect(leaderTeam.players.some((p) => p.id === friend.id)).toBe(true);
     const match = await admin.get(`/api/matches/${view.matchSlug}`);
     expect(match.ok(), await match.text()).toBe(true);
+
+    // The match ends, team 1 wins: both teams get a matchmaking rating, the
+    // winners above the losers; a second result changes nothing.
+    const end = { slug: view.matchSlug, result: { winner: 'team1', team1Score: 1, team2Score: 0, games: [] } };
+    expect((await admin.post('/api/test/series-result', { data: end })).ok()).toBe(true);
+    const winnerId = view.teams.find((t) => t.team === 1)!.players[0].id;
+    const loserId = view.teams.find((t) => t.team === 2)!.players[0].id;
+    const ctxOf = (id: string) => players.find((p) => p.id === id)!.ctx;
+    await expect.poll(async () => (await me(ctxOf(winnerId))).rating?.games ?? 0).toBe(1);
+    const won = (await me(ctxOf(winnerId))).rating!;
+    const lost = (await me(ctxOf(loserId))).rating!;
+    expect(won.wins).toBe(1);
+    expect(lost).toMatchObject({ games: 1, wins: 0 });
+    expect((await admin.post('/api/test/series-result', { data: end })).ok()).toBe(true);
+    expect((await me(ctxOf(winnerId))).rating!.games).toBe(1);
+    expect((await me(leader.ctx)).lobby).toBeNull();
     expect((await outsider.ctx.get(`/api/matchmaking/lobbies/${lobbyId}`)).status()).toBe(404);
   });
 

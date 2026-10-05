@@ -636,6 +636,17 @@ async function processSeriesEnd(
       // rosters from the stored match config.
       await trackPlayerStatsForManualMatch(match, matchSlug, team1Score, team2Score);
 
+      // A matchmaking match: its own rating (never the tournament rating).
+      if ((match as DbMatchRow & { source?: string | null }).source === 'matchmaking') {
+        const side = winnerSide !== 'none' ? winnerSide : team1Score === team2Score ? 'none' : team1Score > team2Score ? 'team1' : 'team2';
+        try {
+          const { matchmakingService } = await import('../services/matchmaking/matchmakingService');
+          await matchmakingService.applyMatchResult(matchSlug, side);
+        } catch (error) {
+          log.error(`Could not rate matchmaking match ${matchSlug}`, error as Error);
+        }
+      }
+
       // The series is over here too: free the resource (CS2: a Ready Up
       // server is unassigned; the RCON plugin resets itself either way).
       await releaseMatch(match);

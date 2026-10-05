@@ -73,7 +73,17 @@ export default function Play() {
     <Box minHeight="100vh">
       <TopNavBar />
       <Container maxWidth="md" sx={{ py: { xs: 3, md: 6 } }}>
-        <PageHead title={t('matchmaking.play.title')} subtitle={t('matchmaking.play.subtitle')} />
+        <PageHead
+          title={t('matchmaking.play.title')}
+          subtitle={t('matchmaking.play.subtitle')}
+          actions={
+            me?.rating ? (
+              <Typography color="text.secondary" data-testid="mm-rating">
+                {t('matchmaking.play.rating', { elo: me.rating.elo, count: me.rating.games, wins: me.rating.wins })}
+              </Typography>
+            ) : undefined
+          }
+        />
 
         {!available ? (
           <Panel sx={{ p: 3 }} data-testid="mm-unavailable">

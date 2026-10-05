@@ -465,7 +465,9 @@
       "searchingHelp": "Searching. The bar at the bottom shows how long you've waited.",
       "find": "Find match",
       "leaderStarts": "Your party leader starts the search.",
-      "cooldown": "You declined or missed a match. You can search again in {{minutes}} min."
+      "cooldown": "You declined or missed a match. You can search again in {{minutes}} min.",
+      "rating_one": "Rating {{elo}} · {{count}} game · {{wins}} won",
+      "rating_other": "Rating {{elo}} · {{count}} games · {{wins}} won"
     },
     "queue": {
       "searching": "Searching {{mode}}",
