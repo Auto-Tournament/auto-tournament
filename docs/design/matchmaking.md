@@ -366,6 +366,131 @@ server. For them, matchmaking becomes "find opponents": the same queue and
 accept, then a lobby that shows who you play and a way to report the result
 (the existing manual report flow). Later, after CS2 works.
 
+## After the match: score, XP, levels and commends
+
+Added 2026-10-05 (Vikunja 1811, 1812). Servers start in about 10 seconds now,
+so a match is cheap to spin up; what keeps people coming back is what they
+see after it.
+
+### Post-match screen
+
+The match room (`/play/:lobbyId`) turns into the result when the series ends:
+
+- Final score, and per map for a Bo3.
+- Scoreboard for both teams from the match stats: K / D / A, ADR, HS %, MVPs.
+  Your own row is highlighted.
+- Rating change (matchmaking rating, display Elo).
+- XP gained, as a short breakdown (completed, win, performance, first win of
+  the day) and a level bar that fills up. A level-up gets its own moment.
+- Commend panel: every other player in the match, with thumbs up and thumbs
+  down (below).
+- The demo, once its upload has finished (the server is stopped right after
+  that; Vikunja 1810).
+- "Find another match", which queues the same party again.
+
+The same screen is reachable later from the match page and the player's
+history.
+
+### XP and levels
+
+XP measures how experienced you are on this platform: how much you play and
+finish, not how good you are. The rating is for skill. A level can also gate
+things, for example a tournament that only takes players from level 5 up, so
+people have to play on the platform before they enter. Keeping them apart means a weaker player who plays a lot still
+levels up, and levels can't be farmed to fake skill.
+
+XP per finished match (the match ran to its end; you were present):
+
+| Part | XP |
+| --- | --- |
+| Completed | 100 |
+| Win / draw | +50 / +25 |
+| Performance | 0 to +50: your rank in the lobby by match rating (top player +50, last 0) |
+| First win of the day | +100 |
+
+- No XP for a cancelled match, an abandon, or a match you left early.
+- XP never goes down. Penalties are cooldowns, not lost XP.
+- Only matchmaking gives XP (decided 2026-10-05). Tournament matches don't.
+
+Levels: going from level *n* to *n + 1* takes `400 + 50 × (n − 1)` XP. A
+match is worth about 200 XP on average, so the curve reads as "matches played"
+early on and slows down later:
+
+| Level | Total XP | About this many matches |
+| --- | --- | --- |
+| 5 | 1,900 | 10 |
+| 10 | 5,400 | 27 |
+| 20 | 16,150 | 80 |
+| 50 | 78,400 | 390 |
+
+No cap. Every 10 levels changes the badge colour, so veterans are visible at a
+glance in lobbies, scoreboards and on profiles. The curve is a setting
+(`mm_level_base`, `mm_level_step`), so it can be tuned once real numbers come
+in.
+
+**Level requirement on tournaments.** A tournament can set a minimum level to
+register (default none). Later phase; it only needs `player_progress.level`.
+
+Stored as a ledger, so an admin can see and correct where XP came from:
+
+- `xp_events`: `id`, `player_id`, `match_slug`, `amount`, `reason`
+  (`completed` / `win` / `draw` / `performance` / `first_win` / `admin`),
+  `created_at`.
+- `player_progress`: `player_id`, `total_xp`, `level`, `updated_at`. The level
+  is derived from `total_xp`; the row is a cache rebuilt from the ledger.
+
+Hooks in at `applySeriesResult`, next to the rating update. An admin can
+grant or remove XP (`reason = admin`, with a note).
+
+### Commends
+
+After a match, each player can rate every other player from that match once:
+
+- **Thumbs up**, with an optional tag: Friendly, Team player, Leader, Good comms.
+- **Thumbs down**, with a required reason: Toxic, Griefing, AFK / left, Other.
+
+Rules:
+
+- Only players who were in that match, only about the others in it, only
+  within 24 hours of the end. One vote per player per other player per match;
+  it can be changed inside the window.
+- Never shown who voted.
+- Thumbs up: the profile shows the total and the most given tags.
+- Thumbs down: the profile shows the total next to the thumbs up (decided
+  2026-10-05), never who gave them. Admins also see the reasons. A player who
+  gets thumbs down from 5 or more different players in 30 days is listed for
+  review under Manage. A whole party voting someone down counts as one voter.
+- No effect on rating or XP. (Later, matchmaking could avoid pairing players
+  who downvoted each other; not now.)
+
+Data: `commends`: `match_slug`, `from_player_id`, `to_player_id`, `value`
+(+1 / −1), `tag`, `created_at`, primary key
+`(match_slug, from_player_id, to_player_id)`.
+
+API (same flag and rules as the rest):
+
+| Method | Path | What |
+| --- | --- | --- |
+| GET | `/matches/:slug/result` | The post-match screen: score, scoreboard, my rating change, my XP breakdown, my commends given. |
+| PUT | `/matches/:slug/commends/:playerId` | Body `{ value: 1 \| -1, tag }`. Same-site JSON, signed-in player only. |
+| GET | `/players/:id/progress` | Level, XP, progress to next level, thumbs up and down, top tags. |
+| GET | `/admin/commends/review` | Players over the thumbs-down threshold. |
+
+### Phases
+
+XP, levels and the post-match screen go into phase 3 (with the leaderboard
+and history). Commends go into phase 3 too. Nothing here needs phase 2's
+balancing, so the post-match screen can be built as soon as phase 1 has a
+match room.
+
+### Decisions (Sivert, 2026-10-05)
+
+- XP from matchmaking only.
+- Thumbs down shown as a count on profiles.
+- Levels show how experienced a player is on the platform; the curve above is
+  a starting point and a setting. Levels may gate tournaments later.
+- First win of the day (+100) stays.
+
 ## Phases
 
 | Phase | Scope | Size |
