@@ -147,17 +147,18 @@ class Cs2Settings {
 
   async getAtSeriesEndKickDelayNoDemo(): Promise<number> {
     const value = await this.getSetting('at_series_end_kick_delay_no_demo');
-    if (!value) return 5; // MatchZy Enhanced default
+    // 60 s: players read the final scoreboard before they are kicked (5 s was too short).
+    if (!value) return 60;
     const parsed = Number(value);
-    if (!Number.isInteger(parsed) || parsed < 0) return 5;
+    if (!Number.isInteger(parsed) || parsed < 0) return 60;
     return parsed;
   }
 
   async getAtSeriesEndKickDelayDemoNoUpload(): Promise<number> {
     const value = await this.getSetting('at_series_end_kick_delay_demo_no_upload');
-    if (!value) return 10; // MatchZy Enhanced default
+    if (!value) return 60;
     const parsed = Number(value);
-    if (!Number.isInteger(parsed) || parsed < 0) return 10;
+    if (!Number.isInteger(parsed) || parsed < 0) return 60;
     return parsed;
   }
 
