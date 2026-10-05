@@ -292,6 +292,7 @@ export interface SettingsResponse extends ApiResponse {
     atWhitelistEnabledDefault?: boolean;
     atPauseAfterRestore?: boolean;
     atJoinPassword?: boolean;
+    atAutostartAfterMinutes?: number;
     atStopCommandAvailable?: boolean;
     atStopCommandNoDamage?: boolean;
     atUsePauseCommandForTacticalPause?: boolean;

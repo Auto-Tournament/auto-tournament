@@ -1031,6 +1031,10 @@
         "demoNameFormatLabel": "Format nazwy pliku dema (bez .dem)",
         "demoNameFormatHelper": "Tokeny: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
       },
+      "autostart": {
+        "label": "Start matches after (minutes in warmup)",
+        "helper": "0 = wait for everyone to ready up. Otherwise a loaded match goes live after this many minutes, ready or not; players are warned 1 minute and 10 seconds before."
+      },
       "seriesEnd": {
         "title": "Czas po zakończeniu serii",
         "kickDelayNoDemoLabel": "Dodatkowe opóźnienie kicka, gdy dema są wyłączone (sekundy)",

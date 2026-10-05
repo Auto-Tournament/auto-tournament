@@ -100,6 +100,13 @@ class Cs2Settings {
    * roster whitelist already keeps everyone else out, and a password only made
    * players type more (and went stale when a restarted server got a new one).
    */
+  /** Minutes a loaded match waits in warmup before it starts anyway; 0 = it waits for ready. */
+  async getAtAutostartAfterMinutes(): Promise<number> {
+    const value = await this.getSetting('at_autostart_after_minutes');
+    const parsed = Number(value);
+    return value && Number.isInteger(parsed) && parsed > 0 ? Math.min(parsed, 120) : 0;
+  }
+
   async isAtJoinPasswordEnabled(): Promise<boolean> {
     const value = await this.getSetting('at_join_password');
     if (!value) return false;
@@ -340,6 +347,7 @@ export async function readCs2InstanceSettings(): Promise<Record<string, unknown>
     atWhitelistEnabledDefault: atCore.whitelistEnabledDefault,
     atPauseAfterRestore: atCore.pauseAfterRestore,
     atJoinPassword: await cs2Settings.isAtJoinPasswordEnabled(),
+    atAutostartAfterMinutes: await cs2Settings.getAtAutostartAfterMinutes(),
     atStopCommandAvailable: atCore.stopCommandAvailable,
     atStopCommandNoDamage: atCore.stopCommandNoDamage,
     atUsePauseCommandForTacticalPause: atCore.usePauseCommandForTacticalPause,

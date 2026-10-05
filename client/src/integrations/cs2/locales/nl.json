@@ -993,6 +993,10 @@
         "demoNameFormatLabel": "Demo-bestandsnaamformaat (zonder .dem)",
         "demoNameFormatHelper": "Plaatsvervangers: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
       },
+      "autostart": {
+        "label": "Start matches after (minutes in warmup)",
+        "helper": "0 = wait for everyone to ready up. Otherwise a loaded match goes live after this many minutes, ready or not; players are warned 1 minute and 10 seconds before."
+      },
       "seriesEnd": {
         "title": "Timing einde serie",
         "kickDelayNoDemoLabel": "Extra kick-vertraging wanneer demo’s uit staan (seconden)",

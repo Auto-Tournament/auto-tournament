@@ -994,6 +994,10 @@
         "demoNameFormatLabel": "Demo-filnavnformat (uten .dem)",
         "demoNameFormatHelper": "Tokener: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
       },
+      "autostart": {
+        "label": "Start kamper etter (minutter i oppvarming)",
+        "helper": "0 = vent til alle er klare. Ellers går en lastet kamp live etter så mange minutter, klar eller ikke; spillerne varsles 1 minutt og 10 sekunder før."
+      },
       "seriesEnd": {
         "title": "Timing ved serieslutt",
         "kickDelayNoDemoLabel": "Ekstra kick-forsinkelse når demoer er av (sekunder)",

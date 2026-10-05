@@ -993,6 +993,10 @@
         "demoNameFormatLabel": "Formato del nombre del demo (sin .dem)",
         "demoNameFormatHelper": "Marcadores: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
       },
+      "autostart": {
+        "label": "Start matches after (minutes in warmup)",
+        "helper": "0 = wait for everyone to ready up. Otherwise a loaded match goes live after this many minutes, ready or not; players are warned 1 minute and 10 seconds before."
+      },
       "seriesEnd": {
         "title": "Tiempo al finalizar la serie",
         "kickDelayNoDemoLabel": "Retraso extra de expulsión cuando los demos están desactivados (segundos)",

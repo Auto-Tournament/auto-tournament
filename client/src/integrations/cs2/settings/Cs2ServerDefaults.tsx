@@ -54,6 +54,7 @@ export interface Cs2DefaultsValues {
   atWhitelistEnabledDefault: boolean;
   atPauseAfterRestore: boolean;
   atJoinPassword: boolean;
+  atAutostartAfterMinutes: number;
   atStopCommandAvailable: boolean;
   atStopCommandNoDamage: boolean;
   atUsePauseCommandForTacticalPause: boolean;
@@ -94,6 +95,7 @@ const DEFAULTS: Cs2DefaultsValues = {
   atWhitelistEnabledDefault: false,
   atPauseAfterRestore: true,
   atJoinPassword: false,
+  atAutostartAfterMinutes: 0,
   atStopCommandAvailable: false,
   atStopCommandNoDamage: false,
   atUsePauseCommandForTacticalPause: false,
@@ -473,6 +475,23 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
                         <Typography variant="caption" color="text.secondary">
                           {t('settings.atCore.seriesEnd.kickDelayHelper')}
                         </Typography>
+                        <TextField
+                          label={t('settings.atCore.autostart.label')}
+                          helperText={t('settings.atCore.autostart.helper')}
+                          type="number"
+                          value={vals.atAutostartAfterMinutes}
+                          onChange={(e) => {
+                            const v = parseInt(e.target.value, 10);
+                            if (!Number.isFinite(v)) return;
+                            update('atAutostartAfterMinutes', v);
+                          }}
+                          onBlur={flush}
+                          onKeyDown={onEnter}
+                          inputProps={{ min: 0, max: 120 }}
+                          size="small"
+                          fullWidth
+                          data-testid="setting-autostart-minutes"
+                        />
                       </Stack>
                     </Stack>
                   </AccordionDetails>

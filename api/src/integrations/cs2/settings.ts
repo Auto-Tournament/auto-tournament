@@ -41,6 +41,7 @@ export type Cs2SettingKey =
   | 'at_whitelist_enabled_default'
   | 'at_pause_after_restore'
   | 'at_join_password'
+  | 'at_autostart_after_minutes'
   | 'at_stop_command_available'
   | 'at_stop_command_no_damage'
   | 'at_use_pause_command_for_tactical_pause'
@@ -291,6 +292,12 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
     230
   ),
   kickDelay('at_series_end_kick_delay_demo_upload', 'atSeriesEndKickDelayDemoUpload', 240),
+  // Minutes a loaded match waits in warmup before it starts, ready or not (0 = never).
+  integer('at_autostart_after_minutes', 'atAutostartAfterMinutes', 245, {
+    min: 0,
+    max: 120,
+    message: 'at_autostart_after_minutes must be 0-120 minutes',
+  }),
   // MatchZy Enhanced v1.3.0 settings
   binary('at_autoready_enabled', 'atAutoreadyEnabled', 250),
   binary('at_both_teams_unpause_required', 'atBothTeamsUnpauseRequired', 260),
