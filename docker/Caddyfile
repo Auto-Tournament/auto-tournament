@@ -72,5 +72,10 @@
 	}
 	rewrite @notAPI {http.matchers.file.relative}
 
+	# index.html carries the share-preview image URL as a template
+	# ({{env `FRONTEND_BASE_URL`}}): crawlers need it absolute.
+	@indexHtml path /index.html
+	templates @indexHtml
+
 	file_server
 }
