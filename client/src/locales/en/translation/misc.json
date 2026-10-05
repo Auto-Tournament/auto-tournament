@@ -54,12 +54,12 @@
       "creditWikidata": "Game data from Wikidata"
     },
     "profile": {
-      "title": "Your games",
-      "description": "The games you play. Tournaments for these games are shown first.",
+      "title": "Games you play",
+      "description": "Pick the games you play. Tournaments for these games are shown first.",
       "empty": "You haven't picked any games yet.",
       "edit": "Edit",
       "add": "Add games",
-      "dialogTitle": "Your games",
+      "dialogTitle": "Games you play",
       "cancel": "Cancel",
       "save": "Save",
       "saved": "Games saved",
