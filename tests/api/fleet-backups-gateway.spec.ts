@@ -114,6 +114,15 @@ async function listBackups(request: APIRequestContext, slug: string) {
 }
 
 test.describe.serial('Fleet round backups: event.backup -> stored -> restore_round inline -> cmd.result', () => {
+  // Matches this spec creates: cancelled afterwards, pass or fail, so the
+  // allocator never hands them another spec's server.
+  const openMatches: string[] = [];
+  test.afterEach(async ({ request }) => {
+    for (const slug of openMatches.splice(0)) {
+      await request.post(`/api/matches/${slug}/force-cancel`, { headers: getAuthHeader(), data: {} });
+    }
+  });
+
   test.beforeEach(async ({ request }) => {
     expect(await signInViaRequest(request)).toBe(true);
     await resetEnrollRateLimit(request);
@@ -134,6 +143,7 @@ test.describe.serial('Fleet round backups: event.backup -> stored -> restore_rou
       },
     });
     expect(created.status(), await created.text()).toBe(201);
+    openMatches.push(slug);
     const epoch = await assign(request, slug, server.server_id);
 
     const client = await FleetTestClient.connect(server.token);
