@@ -923,6 +923,12 @@ export interface GameIntegration {
    */
   configuredResourceCount?(): Promise<number>;
   /**
+   * The maps matchmaking picks from (docs/design/matchmaking.md: random from
+   * the pool). CS2: the Active Duty pool. Omitted or empty: the game has no
+   * matchmaking maps.
+   */
+  matchmakingMapPool?(): Promise<string[]>;
+  /**
    * How long a freed resource rests before the next match (CS2: the server
    * grace period). The core waits this long between shuffle rounds; 0 when
    * omitted.

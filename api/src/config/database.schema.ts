@@ -69,6 +69,7 @@ export function getSchemaSQL(): string {
       server_id TEXT,
       config TEXT NOT NULL,
       game TEXT NOT NULL DEFAULT 'cs2', -- Game integration that owns this row (integrations/registry)
+      source TEXT, -- 'matchmaking' for a matchmaking match; NULL = tournament or manual
       status TEXT NOT NULL DEFAULT 'pending',
       -- Optional explicit slot wiring: where the inputs for this match come from.
       -- When populated, runtime progression can be driven entirely by these

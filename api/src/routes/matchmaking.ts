@@ -323,6 +323,32 @@ router.post(
 
 /**
  * @openapi
+ * /api/matchmaking/lobbies/{id}:
+ *   get:
+ *     tags: [Matchmaking]
+ *     summary: The match room (experimental)
+ *     description: Only a player in that match. Teams with names and who accepted, the map, and the match once it exists.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: The lobby
+ *       404:
+ *         description: No such match for the caller
+ */
+router.get(
+  '/lobbies/:id',
+  requirePlayer,
+  handle('read the match', async (req, res) => {
+    return res.json({ success: true, lobby: await matchmakingService.lobbyView(me(req), req.params.id) });
+  })
+);
+
+/**
+ * @openapi
  * /api/matchmaking/admin/settings:
  *   put:
  *     tags: [Matchmaking]

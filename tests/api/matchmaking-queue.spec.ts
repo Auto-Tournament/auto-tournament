@@ -169,6 +169,24 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
     const after = await me(leader.ctx);
     expect(after.lobby).toMatchObject({ status: 'ready', accepted: 10, total: 10 });
     expect(after.queue).toBeNull();
+
+    // The match exists: a standalone Bo1 on a map from the pool, both teams as split.
+    const room = await leader.ctx.get(`/api/matchmaking/lobbies/${lobbyId}`);
+    expect(room.ok(), await room.text()).toBe(true);
+    const view = (await room.json()).lobby as {
+      matchSlug: string;
+      map: string;
+      teams: Array<{ team: number; players: Array<{ id: string; accepted: boolean }> }>;
+    };
+    expect(view.matchSlug).toMatch(/^mm-/);
+    expect(view.map).toMatch(/^de_|^cs_/);
+    expect(view.teams.map((t) => t.players.length)).toEqual([5, 5]);
+    expect(view.teams.flatMap((t) => t.players).every((p) => p.accepted)).toBe(true);
+    const leaderTeam = view.teams.find((t) => t.players.some((p) => p.id === leader.id))!;
+    expect(leaderTeam.players.some((p) => p.id === friend.id)).toBe(true);
+    const match = await admin.get(`/api/matches/${view.matchSlug}`);
+    expect(match.ok(), await match.text()).toBe(true);
+    expect((await outsider.ctx.get(`/api/matchmaking/lobbies/${lobbyId}`)).status()).toBe(404);
   });
 
   test('a decline: cooldown for the decliner, everyone else back at the front', TAGS, async () => {
