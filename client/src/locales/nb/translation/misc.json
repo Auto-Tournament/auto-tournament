@@ -54,12 +54,12 @@
       "creditWikidata": "Spilldata fra Wikidata"
     },
     "profile": {
-      "title": "Dine spill",
-      "description": "Spillene du spiller. Turneringer i disse spillene vises først.",
+      "title": "Spill du spiller",
+      "description": "Velg spillene du spiller. Turneringer i disse spillene vises først.",
       "empty": "Du har ikke valgt noen spill ennå.",
       "edit": "Rediger",
       "add": "Legg til spill",
-      "dialogTitle": "Dine spill",
+      "dialogTitle": "Spill du spiller",
       "cancel": "Avbryt",
       "save": "Lagre",
       "saved": "Spillene er lagret",
