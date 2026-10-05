@@ -454,5 +454,64 @@
       "hint": "You run this instance, so you choose the games it offers. Players pick from these."
     },
     "signedBy": "Signed by {{label}} (key {{keyId}})"
+  },
+  "matchmaking": {
+    "play": {
+      "title": "Play",
+      "subtitle": "Find a 5v5 match. You're matched with players waiting longest, and your party always plays on the same team.",
+      "unavailable": "Matchmaking isn't open on this site yet.",
+      "findTitle": "Find a match",
+      "findHelp": "You can browse the site while you wait. When a match is found you have 20 seconds to accept.",
+      "searchingHelp": "Searching. The bar at the bottom shows how long you've waited.",
+      "find": "Find match",
+      "leaderStarts": "Your party leader starts the search.",
+      "cooldown": "You declined or missed a match. You can search again in {{minutes}} min."
+    },
+    "queue": {
+      "searching": "Searching {{mode}}",
+      "cancel": "Stop searching"
+    },
+    "found": {
+      "title": "Match found",
+      "accept": "Accept",
+      "decline": "Decline",
+      "waiting": "Waiting for the others",
+      "accepted": "{{accepted}} / {{total}} accepted",
+      "secondsLeft_one": "{{count}} second left",
+      "secondsLeft_other": "{{count}} seconds left"
+    },
+    "party": {
+      "title": "Party",
+      "help": "Play with friends: make a party and send them the link. Up to 5 players, always on the same team.",
+      "create": "Make a party",
+      "members_one": "{{count}} player in your party",
+      "members_other": "{{count}} players in your party",
+      "inviteLink": "Invite link",
+      "copy": "Copy",
+      "copied": "Invite link copied",
+      "code": "Invite code",
+      "join": "Join",
+      "joined": "You joined the party",
+      "leave": "Leave party",
+      "disband": "Disband party"
+    },
+    "room": {
+      "title": "Match room",
+      "missing": "This match doesn't exist, or you're not in it.",
+      "back": "Back to Play",
+      "team": "Team {{n}}",
+      "status": {
+        "accepting": "waiting for accepts",
+        "ready": "everyone accepted",
+        "cancelled": "cancelled"
+      },
+      "match": {
+        "ready": "Waiting for a free server.",
+        "loaded": "The server is ready. Join it.",
+        "live": "The match is live.",
+        "completed": "The match is over.",
+        "other": "Match: {{status}}"
+      }
+    }
   }
 }

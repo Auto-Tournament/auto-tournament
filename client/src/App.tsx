@@ -34,6 +34,9 @@ import TournamentTeamsTab from './pages/TournamentTeamsTab';
 import Home from './pages/Home';
 import Browse from './pages/Browse';
 import Compatibility from './pages/Compatibility';
+import Play from './pages/Play';
+import PlayLobby from './pages/PlayLobby';
+import { MatchmakingOverlay } from './components/matchmaking/MatchmakingOverlay';
 import AccountConnections from './pages/AccountConnections';
 import ConnectSteam from './pages/ConnectSteam';
 import Templates from './pages/Templates';
@@ -405,6 +408,24 @@ function AppRoutes() {
         }
       />
 
+      {/* Matchmaking (experimental): find a match, the match room. */}
+      <Route
+        path={paths.play}
+        element={
+          <RequireSignedIn>
+            <Play />
+          </RequireSignedIn>
+        }
+      />
+      <Route
+        path={paths.playLobby}
+        element={
+          <RequireSignedIn>
+            <PlayLobby />
+          </RequireSignedIn>
+        }
+      />
+
       {/* "What do you play?" onboarding: first-visit redirect target, and
           "Edit games" (?edit=1) entry points navigate here too. */}
       <Route
@@ -483,6 +504,9 @@ export default function App() {
               {/* Players calling for an admin from a game server: on every
                   page a signed-in admin opens, until someone resolves them. */}
               <AdminCallsHost />
+              {/* Matchmaking's queue bar and "Match found" dialog, on every
+                  page; nothing while matchmaking is off for this player. */}
+              <MatchmakingOverlay />
             </PageHeaderProvider>
           </SnackbarProvider>
         </AuthProvider>

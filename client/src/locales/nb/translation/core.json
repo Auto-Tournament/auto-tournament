@@ -32,7 +32,8 @@
     "leaderboards": "Topplister",
     "theme": "Tema",
     "language": "Språk",
-    "signIn": "Logg inn"
+    "signIn": "Logg inn",
+    "play": "Spill"
   },
   "layout": {
     "pageTitle": {

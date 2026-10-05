@@ -454,5 +454,64 @@
       "hint": "Du driver denne instansen, så du velger hvilke spill den tilbyr. Spillerne velger blant disse."
     },
     "signedBy": "Signert av {{label}} (nøkkel {{keyId}})"
+  },
+  "matchmaking": {
+    "play": {
+      "title": "Spill",
+      "subtitle": "Finn en 5v5-kamp. Du blir satt sammen med dem som har ventet lengst, og laget ditt spiller alltid på samme lag.",
+      "unavailable": "Matchmaking er ikke åpnet på denne siden ennå.",
+      "findTitle": "Finn en kamp",
+      "findHelp": "Du kan bruke siden mens du venter. Når en kamp er funnet, har du 20 sekunder på å godta.",
+      "searchingHelp": "Søker. Linjen nederst viser hvor lenge du har ventet.",
+      "find": "Finn kamp",
+      "leaderStarts": "Lederen i gruppen starter søket.",
+      "cooldown": "Du takket nei til eller gikk glipp av en kamp. Du kan søke igjen om {{minutes}} min."
+    },
+    "queue": {
+      "searching": "Søker {{mode}}",
+      "cancel": "Stopp søket"
+    },
+    "found": {
+      "title": "Kamp funnet",
+      "accept": "Godta",
+      "decline": "Avslå",
+      "waiting": "Venter på de andre",
+      "accepted": "{{accepted}} / {{total}} har godtatt",
+      "secondsLeft_one": "{{count}} sekund igjen",
+      "secondsLeft_other": "{{count}} sekunder igjen"
+    },
+    "party": {
+      "title": "Gruppe",
+      "help": "Spill med venner: lag en gruppe og send dem lenken. Opptil 5 spillere, alltid på samme lag.",
+      "create": "Lag en gruppe",
+      "members_one": "{{count}} spiller i gruppen",
+      "members_other": "{{count}} spillere i gruppen",
+      "inviteLink": "Invitasjonslenke",
+      "copy": "Kopier",
+      "copied": "Invitasjonslenken er kopiert",
+      "code": "Invitasjonskode",
+      "join": "Bli med",
+      "joined": "Du er med i gruppen",
+      "leave": "Forlat gruppen",
+      "disband": "Oppløs gruppen"
+    },
+    "room": {
+      "title": "Kamprom",
+      "missing": "Denne kampen finnes ikke, eller du er ikke med i den.",
+      "back": "Tilbake til Spill",
+      "team": "Lag {{n}}",
+      "status": {
+        "accepting": "venter på svar",
+        "ready": "alle har godtatt",
+        "cancelled": "avlyst"
+      },
+      "match": {
+        "ready": "Venter på en ledig server.",
+        "loaded": "Serveren er klar. Koble til.",
+        "live": "Kampen er i gang.",
+        "completed": "Kampen er ferdig.",
+        "other": "Kamp: {{status}}"
+      }
+    }
   }
 }

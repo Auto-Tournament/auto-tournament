@@ -26,6 +26,7 @@ import { generateAvatarDataUrl } from '../../generation/avatar';
 import { api } from '../../utils/api';
 import { fontDisplay, textSize } from '../../theme/tokens';
 import { paths, playerProfilePath, tournamentTabPath } from '../../paths';
+import { useMatchmaking } from '../matchmaking/matchmakingStore';
 
 /** Top-bar text links: ink2 at rest, ink on hover and on the current page (the drafts' `.nav-links`). */
 const navLinkSx = {
@@ -250,6 +251,10 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
   };
 
   const { pathname } = location;
+  const { available: matchmakingAvailable } = useMatchmaking();
+  const playLink: SiteLink[] = matchmakingAvailable
+    ? [{ to: paths.play, label: t('nav.play'), testId: 'nav-play', current: pathname.startsWith(paths.play) }]
+    : [];
   const browseLink: SiteLink = {
     to: paths.browse,
     label: t('nav.browse'),
@@ -264,10 +269,12 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
     ? [
         // The logo already leads to the admin home, so no separate Admin link.
         { to: paths.manage, label: t('nav.manage'), testId: 'nav-manage', current: adminArea },
+        ...playLink,
         browseLink,
       ]
     : [
         { to: paths.root, label: t('nav.home'), testId: 'nav-home', current: pathname === paths.root },
+        ...playLink,
         browseLink,
         { to: teamsPath, label: t('nav.teams'), testId: 'nav-teams', current: pathname === teamsPath },
         {
