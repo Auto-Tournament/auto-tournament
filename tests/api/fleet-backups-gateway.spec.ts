@@ -123,6 +123,17 @@ test.describe.serial('Fleet round backups: event.backup -> stored -> restore_rou
   test('a backup is stored once, listed, and restored inline on the server of the epoch', async ({ request }) => {
     const server = await enrollNew(request);
     const slug = `fleet-bk-${Date.now()}`;
+    // A match row, so its live score shows on the match API. A serverId keeps
+    // the allocator off it (the route only auto-allocates without one).
+    const created = await request.post('/api/matches', {
+      headers: getAuthHeader(),
+      data: {
+        slug,
+        serverId: server.server_id,
+        config: { team1: { name: 'A', players: {} }, team2: { name: 'B', players: {} } },
+      },
+    });
+    expect(created.status(), await created.text()).toBe(201);
     const epoch = await assign(request, slug, server.server_id);
 
     const client = await FleetTestClient.connect(server.token);

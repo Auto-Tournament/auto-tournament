@@ -901,6 +901,26 @@ async function onFleetEvent(notice: FleetEventNotice): Promise<void> {
     return;
   }
 
+  if (env.type === 'event.match_restored') {
+    // The live score goes back to the restored backup's (the round's start).
+    // Without this it keeps the abandoned timeline's score until a later
+    // round ends (NTLAN trial run: restored to 1-0, still shown 2-1).
+    const data = payload.data as FleetEventData['match_restored'];
+    const backups = await roundBackupStore.list(slug);
+    const backup =
+      backups.find((b) => b.sha256 === data.backup_sha256) ??
+      backups.find((b) => b.mapNumber === data.map_number && b.round === data.round);
+    if (backup) {
+      const stats = matchLiveStatsService.update(slug, {
+        mapNumber: toPlatformMapNumber(backup.mapNumber),
+        team1Score: backup.score.team1,
+        team2Score: backup.score.team2,
+      });
+      emitMatchUpdate({ slug, liveStats: stats });
+    }
+    return;
+  }
+
   const cs2ServerId = await cs2ServerIdOf(notice.serverId);
   if (!cs2ServerId) return;
   const now = nowS();
@@ -927,25 +947,6 @@ async function onFleetEvent(notice: FleetEventNotice): Promise<void> {
         }
       } else if (data.type === 'upload_succeeded' || data.type === 'upload_failed') {
         serverTurnoverTracker.recordEvent(cs2ServerId, { event: 'demo_upload_ended', matchid: matchId, map_number: map }, now);
-      }
-      break;
-    }
-    case 'event.match_restored': {
-      // The live score goes back to the restored backup's (the round's start).
-      // Without this it keeps the abandoned timeline's score until a later
-      // round ends (NTLAN trial run: restored to 1-0, still shown 2-1).
-      const data = payload.data as FleetEventData['match_restored'];
-      const backups = await roundBackupStore.list(slug);
-      const backup =
-        backups.find((b) => b.sha256 === data.backup_sha256) ??
-        backups.find((b) => b.mapNumber === data.map_number && b.round === data.round);
-      if (backup) {
-        const stats = matchLiveStatsService.update(slug, {
-          mapNumber: toPlatformMapNumber(backup.mapNumber),
-          team1Score: backup.score.team1,
-          team2Score: backup.score.team2,
-        });
-        emitMatchUpdate({ slug, liveStats: stats });
       }
       break;
     }
