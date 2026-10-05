@@ -586,6 +586,13 @@
       "disabled": "DEAKTIVERT",
       "free": "LEDIGE",
       "waiting": "VENTER"
+    },
+    "limit": {
+      "unlimited": "ingen grense for servere (ikke-kommersiell bruk)",
+      "unlicensed": "kommersiell bruk krever en lisens som dekker alle servere",
+      "left": "lisensen dekker {{max}}, {{left}} igjen",
+      "full": "lisensen dekker {{max}}, alle er i bruk",
+      "over": "lisensen dekker {{max}}, {{over}} over grensen"
     }
   },
   "serverModal": {

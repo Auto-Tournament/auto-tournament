@@ -9,6 +9,7 @@ import MachinesPanel from '../servers/MachinesPanel';
 import AutoScalePanel from '../servers/AutoScalePanel';
 import FleetPushPanel from '../servers/FleetPushPanel';
 import FailoverSettingsPanel from '../servers/FailoverSettingsPanel';
+import { serverLimitText, useServerLimit } from '../servers/serverLimit';
 import type {
   Server,
   ServersResponse,
@@ -75,6 +76,7 @@ export default function Servers() {
   const [latestPluginReleaseUrl, setLatestPluginReleaseUrl] = useState<string | null>(null);
   const [cs2OutdatedSnackbarKey, setCs2OutdatedSnackbarKey] = useState<SnackbarKey | null>(null);
   const { t } = useModuleTranslation('cs2');
+  const serverLimit = useServerLimit();
 
   const compareDottedVersions = React.useCallback((a: string, b: string): number | null => {
     const normalize = (v: string) => {
@@ -895,7 +897,16 @@ export default function Servers() {
     <Box data-testid="servers-page" sx={{ width: '100%', height: '100%' }}>
       <PageHead
         title={t('serversPage.title')}
-        subtitle={t('serversPage.fleet.total', { count: serverStats.total + unlinkedFleetCount })}
+        subtitle={
+          <span data-testid="servers-limit">
+            {t('serversPage.fleet.total', { count: serverStats.total + unlinkedFleetCount })}
+            {serverLimit &&
+              (() => {
+                const line = serverLimitText(serverLimit, serverStats.total + unlinkedFleetCount);
+                return ` · ${t(line.key, line.values)}`;
+              })()}
+          </span>
+        }
         actions={headActions}
       />
       {servers.length === 0 && unlinkedFleetCount > 0 ? null : servers.length === 0 ? (
