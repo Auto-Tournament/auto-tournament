@@ -20,10 +20,10 @@ import {
   api,
   apiErrorMessage,
   Panel,
-  SectionHead,
   useModuleTranslation,
   useSnackbar,
 } from '../../../module-sdk';
+import { ServerSection } from './ServerSection';
 
 interface AutoscaleSettings {
   enabled: boolean;
@@ -129,8 +129,16 @@ export default function AutoScalePanel() {
   const s = data.settings;
 
   return (
-    <Box data-testid="autoscale-panel" mt={4}>
-      <SectionHead title={t('autoscale.title', { defaultValue: 'Automatic scaling' })} />
+    <ServerSection
+      id="autoscale"
+      data-testid="autoscale-panel"
+      summary={
+        s.enabled
+          ? t('autoscale.summaryOn', { defaultValue: 'On' })
+          : t('autoscale.summaryOff', { defaultValue: 'Off' })
+      }
+      title={t('autoscale.title', { defaultValue: 'Automatic scaling' })}
+    >
       <Panel sx={{ p: 3 }}>
         <Stack spacing={2}>
           <Box>
@@ -277,6 +285,6 @@ export default function AutoScalePanel() {
           </Box>
         </Stack>
       </Panel>
-    </Box>
+    </ServerSection>
   );
 }

@@ -1163,7 +1163,8 @@
     },
     "rename": "Gi nytt navn",
     "renamed": "Navnet er endret",
-    "renameSave": "Lagre"
+    "renameSave": "Lagre",
+    "summary": "{{servers}} Ready Up-server(e), {{online}} tilkoblet · {{keys}} flåtenøkkel(er)"
   },
   "roundBackups": {
     "title": "Round backups",
@@ -1296,7 +1297,9 @@
       "removeTitle": "Remove this machine?",
       "revokeTitle": "Revoke this machine?",
       "removeMessage": "{{name}} is forgotten. csm can link it again with a new code.",
-      "revokeMessage": "{{name}} is disconnected and its token stops working. Its servers keep running and stay on the fleet link."
+      "revokeMessage": "{{name}} is disconnected and its token stops working. Its servers keep running and stay on the fleet link.",
+      "deleteServerTitle": "Slette {{name}}?",
+      "deleteServerMessage": "{{name}} stoppes og mappen på {{host}} slettes. Ready Up-oppføringen fjernes fra flåten. Avvises mens den spiller en kamp."
     },
     "hostStatus": {
       "online": "Online",
@@ -1352,7 +1355,10 @@
       "not_found": "Not found",
       "limit": "Too many log streams",
       "failed": "Failed"
-    }
+    },
+    "summary": "{{machines}} maskin(er), {{online}} tilkoblet · {{servers}} server(e)",
+    "about": "Maskiner kjører CS2 Server Manager (csm). Plattformen starter, stopper og lager servere på dem selv.",
+    "deleteServer": "Slett server"
   },
   "failover": {
     "title": "Failover",
@@ -1407,7 +1413,9 @@
     "reserve": "Spare servers",
     "reserveAuto": "Automatic (1 once 2 servers are online)",
     "reserveStatus": "{{effective}} of {{pool}} online server(s) kept free for failover",
-    "reserveHelp": "Spare servers stay idle: matches are not put on them, so one is ready when a server goes down. At least one server always takes matches. Spare servers count toward your license like any other server."
+    "reserveHelp": "Spare servers stay idle: matches are not put on them, so one is ready when a server goes down. At least one server always takes matches. Spare servers count toward your license like any other server.",
+    "summaryOn": "Automatisk flytting på",
+    "summaryOff": "Automatisk flytting av"
   },
   "pluginSets": {
     "presetLabel": "Utvidelsesoppsett",
@@ -1454,5 +1462,12 @@
     "errors": {
       "save": "Kunne ikke lagre standardutvidelsene"
     }
+  },
+  "autoscale": {
+    "summaryOn": "På",
+    "summaryOff": "Av"
+  },
+  "fleetPush": {
+    "summary": "Administratorer, innstillinger og programtillegg sendt til Ready Up-servere"
   }
 }

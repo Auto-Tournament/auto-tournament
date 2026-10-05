@@ -41,11 +41,11 @@ import {
   mono,
   Row,
   RowList,
-  SectionHead,
   StatusDot,
   useModuleTranslation,
   useSnackbar,
 } from '../../../module-sdk';
+import { ServerSection } from './ServerSection';
 import type { FleetServer, FleetServersResponse } from '../cs2.types';
 import FleetSettingsDialog from './FleetSettingsDialog';
 import PluginSetPicker, { presetValue, usePluginCatalog } from './PluginSetPicker';
@@ -374,34 +374,37 @@ export default function FleetPushPanel() {
   const extrasSet = new Set((admins?.extras ?? []).map((a) => a.steamid64));
 
   return (
-    <Box data-testid="fleet-push-panel" mt={4}>
-      <SectionHead
-        title={t('fleetPush.title', { defaultValue: 'Fleet settings' })}
-        action={
-          <Stack direction="row" gap={1} flexWrap="wrap">
-            <Button
-              size="small"
-              variant="outlined"
-              startIcon={<PuzzlePieceIcon />}
-              onClick={openDefaultPlugins}
-              disabled={!catalog}
-              data-testid="fleet-default-plugins-edit"
-            >
-              {t('pluginSets.defaultButton', { defaultValue: 'Default plugins' })}
-            </Button>
-            <Button
-              size="small"
-              variant="outlined"
-              startIcon={<GearIcon />}
-              onClick={() => setDialog({ kind: 'defaults' })}
-              data-testid="fleet-defaults-edit"
-            >
-              {t('fleetPush.editDefaults', { defaultValue: 'Fleet default settings' })}
-            </Button>
-          </Stack>
-        }
-      />
-
+    <ServerSection
+      id="fleet-settings"
+      data-testid="fleet-push-panel"
+      summary={t('fleetPush.summary', {
+        defaultValue: 'Admins, settings and plugins sent to Ready Up servers',
+      })}
+      title={t('fleetPush.title', { defaultValue: 'Fleet settings' })}
+      action={
+        <Stack direction="row" gap={1} flexWrap="wrap">
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<PuzzlePieceIcon />}
+            onClick={openDefaultPlugins}
+            disabled={!catalog}
+            data-testid="fleet-default-plugins-edit"
+          >
+            {t('pluginSets.defaultButton', { defaultValue: 'Default plugins' })}
+          </Button>
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<GearIcon />}
+            onClick={() => setDialog({ kind: 'defaults' })}
+            data-testid="fleet-defaults-edit"
+          >
+            {t('fleetPush.editDefaults', { defaultValue: 'Fleet default settings' })}
+          </Button>
+        </Stack>
+      }
+    >
       {/* In-game admins (admins.set) */}
       <Box mb={3}>
         <Stack direction="row" alignItems="center" gap={1} mb={1} flexWrap="wrap">
@@ -793,6 +796,6 @@ export default function FleetPushPanel() {
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </ServerSection>
   );
 }
