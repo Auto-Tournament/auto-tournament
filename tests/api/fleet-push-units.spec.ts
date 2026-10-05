@@ -572,8 +572,13 @@ test.describe('fleet pushes: plugin sets', () => {
 
   test('state: differs when an enabled plugin is off or a disabled one is not; missing ones listed', () => {
     const cmd = pluginSetCommand(presetSet('practice'));
-    const off = ['whitelist', 'skins', 'midas', 'deathmatch', 'addons'];
+    const off = ['match', 'whitelist', 'skins', 'midas', 'deathmatch', 'addons'];
     expect(pluginsStateDiffers(cmd, { installed: ['match'], disabled: off })).toBe(false);
+    // Older Ready Up keeps match on: compared against what it was sent.
+    expect(pluginsStateDiffers(cmd, { installed: ['match'], disabled: off.slice(1) })).toBe(true);
+    expect(
+      pluginsStateDiffers(pluginsSetFor(cmd, false), { installed: ['match'], disabled: off.slice(1) })
+    ).toBe(false);
     // Not installed is not a difference: re-sending would change nothing.
     expect(pluginsStateDiffers(cmd, { installed: [], disabled: off })).toBe(false);
     expect(pluginsStateDiffers(cmd, { installed: [], disabled: [...off, 'practice'] })).toBe(true);
