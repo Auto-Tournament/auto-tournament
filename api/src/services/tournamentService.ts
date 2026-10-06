@@ -204,8 +204,10 @@ class TournamentService {
   ): Promise<TournamentResponse> {
     const { name, type, format, teamIds, settings } = input;
 
-    // Shuffle tournaments don't use teams, skip validation
-    if (type !== 'shuffle') {
+    // Shuffle tournaments don't use teams, skip validation. With sign-up open
+    // the teams sign themselves up later; the count is checked at start.
+    const signupOpen = (settings as { registrationOpen?: unknown } | undefined)?.registrationOpen === true;
+    if (type !== 'shuffle' && !signupOpen) {
       // Validate team count based on tournament type
       validateTeamCount(type, teamIds.length);
     }
@@ -286,8 +288,12 @@ class TournamentService {
 
     const { name, type, format, teamIds, settings } = input;
 
-    // Validate team count if changing teams or type
-    if (type || teamIds) {
+    // Validate team count if changing teams or type (not while teams sign
+    // themselves up: then it is checked at start)
+    const signupOpen =
+      ((settings as { registrationOpen?: unknown } | undefined)?.registrationOpen ??
+        (existing.settings as { registrationOpen?: unknown } | undefined)?.registrationOpen) === true;
+    if ((type || teamIds) && !signupOpen) {
       validateTeamCount(type || existing.type, (teamIds || existing.teamIds).length);
     }
 

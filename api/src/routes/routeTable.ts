@@ -25,6 +25,7 @@ import teamRoutes from './teams';
 import matchRoutes from './matches';
 import steamRoutes from './steam';
 import tournamentRoutes from './tournament';
+import tournamentSignupRoutes from './tournamentSignup';
 import logsRoutes from './logs';
 import teamMatchRoutes from './teamMatch';
 import teamStatsRoutes from './teamStats';
@@ -90,6 +91,12 @@ const coreRoutes: MountedRouter[] = [
     router: tournamentRoutes,
     title: 'Tournament',
     description: 'The tournament itself — setup, bracket, rounds, standings.',
+  },
+  {
+    prefix: '/api/tournament-signup',
+    router: tournamentSignupRoutes,
+    title: 'Tournament sign-up',
+    description: 'Teams signing themselves up with a lineup, and check-in on the day.',
   },
   {
     prefix: '/api/logs',

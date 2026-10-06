@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 487 of them, 328 behind auth —
+Every endpoint this API serves — 493 of them, 328 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -452,6 +452,19 @@ The tournament itself — setup, bracket, rounds, standings.
 | `GET` | `/api/tournament/:id/elo-template` | admin |
 | `PUT` | `/api/tournament/:id/elo-template` | admin |
 | `POST` | `/api/tournament/:id/check-completion` | admin |
+
+### Tournament sign-up
+
+Teams signing themselves up with a lineup, and check-in on the day.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/tournament-signup/:id` | public |
+| `GET` | `/api/tournament-signup/:id/me` | public |
+| `POST` | `/api/tournament-signup/:id/register` | public |
+| `PUT` | `/api/tournament-signup/:id/lineup` | public |
+| `DELETE` | `/api/tournament-signup/:id/registration/:teamId` | public |
+| `POST` | `/api/tournament-signup/:id/check-in` | public |
 
 ### Logs
 

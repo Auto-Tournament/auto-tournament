@@ -4,6 +4,7 @@ import type { TournamentResponse } from '../../types/tournament.types';
 import type { MatchConfig, MatchPlayer } from '../../types/match.types';
 import { log } from '../../utils/logger';
 import { settingsService } from '../../services/settingsService';
+import { tournamentSignupService } from '../../services/tournamentSignupService';
 import { cs2Settings } from './settingsReaders';
 import { pluginConfigService } from './services/pluginConfigService';
 import { simulationTvCvars } from './utils/serverTurnover';
@@ -142,12 +143,25 @@ export const generateMatchConfig = async (
     }
   };
 
-  const team1Players = team1 ? convertPlayersToPluginFormat(team1.players) : {};
-  const team2Players = team2 ? convertPlayersToPluginFormat(team2.players) : {};
+  // A team that signed itself up plays with its lineup (starters and subs),
+  // not its whole roster (services/tournamentSignupService).
+  const team1Roster = team1
+    ? await tournamentSignupService.lineupRoster(tournament.id, team1.id, team1.players)
+    : null;
+  const team2Roster = team2
+    ? await tournamentSignupService.lineupRoster(tournament.id, team2.id, team2.players)
+    : null;
+  const team1Players = team1Roster ? convertPlayersToPluginFormat(team1Roster) : {};
+  const team2Players = team2Roster ? convertPlayersToPluginFormat(team2Roster) : {};
   const team1Count = Object.keys(team1Players).length;
   const team2Count = Object.keys(team2Players).length;
 
-  const playersPerTeam = Math.max(team1Count, team2Count, 1);
+  // A lineup carries subs, so its size is not the number of players per side:
+  // that is the tournament's team size.
+  const usesLineup =
+    (team1 && team1Roster !== team1.players) || (team2 && team2Roster !== team2.players);
+  const playersPerTeam =
+    usesLineup && tournament.teamSize ? tournament.teamSize : Math.max(team1Count, team2Count, 1);
 
   // Only set maplist after veto completes - no point storing the map pool
   let maplist: string[] | null = null;

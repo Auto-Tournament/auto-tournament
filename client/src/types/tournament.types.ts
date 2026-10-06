@@ -64,6 +64,14 @@ export interface TournamentSettings {
   rulebookUrl?: string;
   prizes?: EventPagePrize[];
   schedule?: EventPageScheduleItem[];
+
+  // Sign-up and check-in (tournament sign-up). Times are ISO 8601.
+  registrationOpen?: boolean;
+  registrationClosesAt?: string;
+  /** Team spots; sign-up stops once this many teams are in. */
+  maxTeams?: number | null;
+  checkInOpensAt?: string;
+  checkInClosesAt?: string;
 }
 
 export interface EventPagePrize {

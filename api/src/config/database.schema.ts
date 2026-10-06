@@ -78,6 +78,37 @@ export function getSchemaSQL(): string {
       media_type TEXT NOT NULL
     );
 
+    -- Teams that signed themselves up (tournament sign-up), and who did it.
+    CREATE TABLE IF NOT EXISTS tournament_registrations (
+      tournament_id INTEGER NOT NULL REFERENCES tournament(id) ON DELETE CASCADE,
+      team_id TEXT NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+      registered_by_uid UUID, -- players.uid of the owner or captain who signed up
+      rules_accepted_at INTEGER, -- when they confirmed every player read the rules
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      PRIMARY KEY (tournament_id, team_id)
+    );
+
+    -- Who plays for a signed-up team in this tournament: starters and subs.
+    CREATE TABLE IF NOT EXISTS tournament_lineups (
+      tournament_id INTEGER NOT NULL REFERENCES tournament(id) ON DELETE CASCADE,
+      team_id TEXT NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+      player_id TEXT NOT NULL, -- Steam ID (players.id), from the team's roster
+      role TEXT NOT NULL DEFAULT 'starter', -- 'starter' | 'sub'
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      PRIMARY KEY (tournament_id, team_id, player_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_tournament_lineups_player ON tournament_lineups(tournament_id, player_id);
+
+    -- Lineup players who said "I'm here" in the check-in window.
+    CREATE TABLE IF NOT EXISTS tournament_checkins (
+      tournament_id INTEGER NOT NULL REFERENCES tournament(id) ON DELETE CASCADE,
+      team_id TEXT NOT NULL,
+      player_id TEXT NOT NULL,
+      checked_in_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      PRIMARY KEY (tournament_id, player_id)
+    );
+
     -- Matches table
     CREATE TABLE IF NOT EXISTS matches (
       id SERIAL PRIMARY KEY,

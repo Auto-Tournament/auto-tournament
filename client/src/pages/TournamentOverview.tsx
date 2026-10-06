@@ -1,5 +1,5 @@
-import { Navigate } from 'react-router-dom';
-import { Box, Stack } from '@mui/material';
+import { Navigate, Link as RouterLink } from 'react-router-dom';
+import { Box, Button, Stack } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { KeyDatesBar } from '../components/tournament/overview/KeyDatesBar';
 import { MapPoolCard } from '../components/tournament/overview/MapPoolCard';
@@ -7,6 +7,11 @@ import { TeamsPreviewCard } from '../components/tournament/overview/TeamsPreview
 import { ScheduleCalendar } from '../components/tournament/overview/ScheduleCalendar';
 import { LiveStrip } from '../components/tournament/overview/LiveStrip';
 import { TournamentResults } from '../components/tournament/results/TournamentResults';
+import { RegisteredPanel } from '../components/tournament/signup/RegisteredPanel';
+import { CheckInPanel } from '../components/tournament/signup/CheckInPanel';
+import { signupPhase, useTournamentSignup, viewerRegistration } from '../hooks/useTournamentSignup';
+import { api } from '../utils/api';
+import { radii } from '../theme/tokens';
 import { YourePlayingPanel } from '../components/tournament/page/YourePlayingPanel';
 import { useTournamentPage } from '../components/tournament/page/tournamentPageContext';
 import { isLiveMatch } from '../components/tournament/page/matchHelpers';
@@ -29,6 +34,14 @@ export default function TournamentOverview() {
   const isShuffle = tournament.type === 'shuffle';
   const maps = tournament.maps ?? [];
   const schedule = tournament.settings?.schedule ?? [];
+  const signup = useTournamentSignup(tournament.id);
+  // eslint-disable-next-line react-hooks/purity -- the phase only needs to be right when the page renders
+  const phase = signupPhase(signup.window, Date.now());
+  const registration = viewerRegistration(signup);
+  const canManage = Boolean(registration && signup.eligibleTeams.some((team) => team.id === registration.teamId));
+  const spotsLeft = signup.window?.maxTeams ? signup.window.maxTeams - tournament.teamIds.length : null;
+  const canSignUp =
+    tournament.status === 'setup' && phase === 'open' && !registration && (spotsLeft === null || spotsLeft > 0);
 
   // While it runs, a player in it belongs on "Your match".
   if (yourMatchFirst(tournament.status, Boolean(viewerTeam))) {
@@ -47,9 +60,53 @@ export default function TournamentOverview() {
         linkTo={tournamentTabPath(tournament.id, 'matches')}
       />
 
-      {viewerTeam && <YourePlayingPanel tournament={tournament} team={viewerTeam} matches={matches} />}
+      {viewerTeam && !(registration && tournament.status === 'setup') && (
+        <YourePlayingPanel tournament={tournament} team={viewerTeam} matches={matches} />
+      )}
 
-      <KeyDatesBar tournament={tournament} />
+      {registration && tournament.status === 'setup' && phase === 'checkIn' && signup.window ? (
+        <CheckInPanel
+          tournament={tournament}
+          window={signup.window}
+          registration={registration}
+          registrations={signup.registrations}
+          steamId={signup.steamId}
+          onCheckIn={async () => {
+            await api.post(`/api/tournament-signup/${tournament.id}/check-in`, {});
+            await signup.reload();
+          }}
+        />
+      ) : registration && tournament.status === 'setup' ? (
+        <RegisteredPanel
+          tournament={tournament}
+          window={signup.window}
+          registration={registration}
+          registrations={signup.registrations}
+          canManage={canManage}
+          onWithdraw={async () => {
+            await api.delete(`/api/tournament-signup/${tournament.id}/registration/${registration.teamId}`);
+            await signup.reload();
+          }}
+        />
+      ) : (
+        <KeyDatesBar
+          tournament={tournament}
+          signup={signup.window}
+          action={
+            canSignUp ? (
+              <Button
+                component={RouterLink}
+                to={tournamentTabPath(tournament.id, 'signup')}
+                variant="contained"
+                data-testid="overview-sign-up"
+                sx={{ borderRadius: radii.pill, px: 3.25, py: 1.75, fontWeight: 600, whiteSpace: 'nowrap' }}
+              >
+                {t('signup.cta')}
+              </Button>
+            ) : undefined
+          }
+        />
+      )}
 
       {(maps.length > 0 || !isShuffle) && (
         <Box

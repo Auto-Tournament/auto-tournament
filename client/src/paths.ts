@@ -32,6 +32,7 @@ export const paths = {
   tournamentStandings: '/tournament/:id/standings',
   tournamentRules: '/tournament/:id/rules',
   tournamentYourMatch: '/tournament/:id/match',
+  tournamentSignup: '/tournament/:id/signup',
   /** The old address of Standings; redirects there. */
   tournamentLeaderboard: '/tournament/:id/leaderboard',
   findPlayer: '/player',
@@ -106,6 +107,8 @@ export const TOURNAMENT_TABS = [
   'teams',
   'standings',
   'rules',
+  // Not a tab you click: the sign-up form, reached from the Overview's button.
+  'signup',
 ] as const;
 export type TournamentTab = (typeof TOURNAMENT_TABS)[number];
 
