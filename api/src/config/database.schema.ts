@@ -26,11 +26,13 @@ export function getSchemaSQL(): string {
       tag TEXT,
       discord_role_id TEXT,
       players TEXT NOT NULL,
+      owner_uid UUID, -- players.uid of the player who made the team; one owned team per account
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
 
     CREATE INDEX IF NOT EXISTS idx_teams_name ON teams(name);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_teams_owner_uid ON teams(owner_uid) WHERE owner_uid IS NOT NULL;
 
     -- Tournament settings table
     CREATE TABLE IF NOT EXISTS tournament (

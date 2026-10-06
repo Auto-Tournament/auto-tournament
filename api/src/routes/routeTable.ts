@@ -28,6 +28,7 @@ import tournamentRoutes from './tournament';
 import logsRoutes from './logs';
 import teamMatchRoutes from './teamMatch';
 import teamStatsRoutes from './teamStats';
+import teamDirectoryRoutes from './teamDirectory';
 import settingsRoutes from './settings';
 import signInProvidersRoutes from './signInProviders';
 import templatesRoutes from './templates';
@@ -107,6 +108,12 @@ const coreRoutes: MountedRouter[] = [
     router: teamStatsRoutes,
     title: 'Team stats',
     description: 'Past results and aggregates for a team. Public.',
+  },
+  {
+    prefix: '/api/team-directory',
+    router: teamDirectoryRoutes,
+    title: 'Team directory',
+    description: "Every team (public), and the signed-in player's own teams: list them, make one (one owned team per account).",
   },
   {
     prefix: '/api/settings',

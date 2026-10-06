@@ -679,6 +679,10 @@
       "description": "The platform process: whether it can restart itself, and a restart (so a module update that waits for one can finish). Admin only; writes must be same-site JSON."
     },
     {
+      "name": "Team directory",
+      "description": "Every team (public), and the signed-in player's own teams: list them, make one (one owned team per account)."
+    },
+    {
       "name": "Team match view",
       "description": "A team's current match, oriented to that team. Public."
     },
@@ -9838,6 +9842,46 @@
             "apiToken": []
           }
         ]
+      }
+    },
+    "/api/team-directory": {
+      "get": {
+        "tags": [
+          "Team directory"
+        ],
+        "summary": "GET /api/team-directory",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/team-directory/mine": {
+      "get": {
+        "tags": [
+          "Team directory"
+        ],
+        "summary": "GET /api/team-directory/mine",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Team directory"
+        ],
+        "summary": "POST /api/team-directory/mine",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
       }
     },
     "/api/team/{teamId}/history": {
