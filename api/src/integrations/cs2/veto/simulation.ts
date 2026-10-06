@@ -44,6 +44,8 @@ interface VetoState {
     mapName: string;
     side?: 'CT' | 'T';
     timestamp: string;
+    /** Taken by the platform because the team ran out of time. */
+    timedOut?: boolean;
   }>;
   currentTurn: VetoTeam;
   currentAction: VetoActionType;
@@ -55,6 +57,17 @@ interface VetoState {
 }
 
 const DEFAULT_STEP_DELAY_MS = 1000;
+
+interface AutoVetoOptions {
+  stepDelayMs?: number;
+  /**
+   * The veto timer (./timer.ts): act whether or not simulation mode is on,
+   * take at most `maxSteps` steps, and mark them as the platform's
+   * (`timedOut`) because the team ran out of time.
+   */
+  timedOut?: boolean;
+  maxSteps?: number;
+}
 
 function getRandomElement<T>(items: T[]): T {
   return items[Math.floor(Math.random() * items.length)];
@@ -71,7 +84,7 @@ function getRandomElement<T>(items: T[]): T {
  */
 export async function autoCompleteVetoForMatch(
   matchSlug: string,
-  options?: { stepDelayMs?: number }
+  options?: AutoVetoOptions
 ): Promise<void> {
   // Two runs on one match would both walk the veto steps and overwrite each
   // other's picks. Toggling simulation while tournament start or match
@@ -177,11 +190,13 @@ export async function autoVetoPendingMatches(
 
 async function runAutoVeto(
   matchSlug: string,
-  options?: { stepDelayMs?: number }
+  options?: AutoVetoOptions
 ): Promise<void> {
   const stepDelayMs = options?.stepDelayMs ?? DEFAULT_STEP_DELAY_MS;
+  const timedOut = options?.timedOut === true;
+  let stepsLeft = options?.maxSteps ?? Infinity;
 
-  const simulationEnabled = await settingsService.isSimulationModeEnabled();
+  const simulationEnabled = timedOut || (await settingsService.isSimulationModeEnabled());
   if (!simulationEnabled) {
     log.debug(
       `[VETO-SIM] Simulation mode disabled; skipping auto veto for match ${matchSlug}`
@@ -296,7 +311,8 @@ async function runAutoVeto(
     };
   }
 
-  log.info(`[VETO-SIM] Starting automated veto for match ${matchSlug}`);
+  vetoState.status = 'in_progress';
+  log.info(`[VETO-SIM] ${timedOut ? 'Veto timer: acting for the team on' : 'Starting automated veto for'} match ${matchSlug}`);
 
   while (vetoState.currentStep <= vetoState.totalSteps) {
     const currentStepConfig = vetoOrder[vetoState.currentStep - 1];
@@ -327,6 +343,7 @@ async function runAutoVeto(
         action: 'ban',
         mapName: selectedMap,
         timestamp: new Date().toISOString(),
+        ...(timedOut ? { timedOut: true } : {}),
       });
     } else if (currentAction === 'pick' && selectedMap) {
       const mapNumber = vetoState.pickedMaps.length + 1;
@@ -343,6 +360,7 @@ async function runAutoVeto(
         action: 'pick',
         mapName: selectedMap,
         timestamp: new Date().toISOString(),
+        ...(timedOut ? { timedOut: true } : {}),
       });
     } else if (currentAction === 'side_pick' && selectedSide) {
       // For BO1/BO3 last step, ensure decider map is added if only one remains
@@ -379,6 +397,7 @@ async function runAutoVeto(
         mapName: lastPick?.mapName || 'unknown',
         side: selectedSide,
         timestamp: new Date().toISOString(),
+        ...(timedOut ? { timedOut: true } : {}),
       });
     }
 
@@ -487,6 +506,16 @@ async function runAutoVeto(
       const nextStepConfig = vetoOrder[vetoState.currentStep - 1];
       vetoState.currentTurn = nextStepConfig.team;
       vetoState.currentAction = nextStepConfig.action;
+
+      stepsLeft -= 1;
+      if (stepsLeft <= 0) {
+        // The timer took one step: save whose turn it is now, and stop.
+        await db.updateAsync('matches', { veto_state: JSON.stringify(vetoState) }, 'slug = ?', [
+          matchSlug,
+        ]);
+        emitVetoUpdate(matchSlug, vetoState as unknown as Parameters<typeof emitVetoUpdate>[1]);
+        break;
+      }
 
       // Small delay between automated steps to mimic human veto flow
       if (stepDelayMs > 0) {

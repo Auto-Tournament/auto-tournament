@@ -395,6 +395,14 @@
       "map": "Kart {{number}}",
       "pickedBy": "valgt av {{team}}",
       "out": "Ute:"
+    },
+    "timeUp": "Tiden er ute",
+    "yourTurnClock": "Din tur",
+    "theirTurnClock": "Deres tur",
+    "strip": {
+      "you": "dere",
+      "them": "de",
+      "timedOut": "tiden gikk ut"
     }
   },
   "matchInfo": {
@@ -1109,6 +1117,10 @@
       "servers": "Servere",
       "skins": "Skins",
       "inventories": "Spillerinventar"
+    },
+    "vetoTurn": {
+      "label": "Sekunder per veto-steg",
+      "helper": "Når et lag går tom for tid, banner eller velger plattformen et tilfeldig kart for det. 0 = ingen grense."
     }
   },
   "roster": {

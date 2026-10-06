@@ -21,7 +21,6 @@ import { getVetoOrder } from './vetoOrders';
 import type { MapSide, VetoMapInfo, VetoState, VetoStateResponse } from '../cs2.types';
 import { FadeInImage } from '../common/FadeInImage';
 import { onSocketReconnect, useSocket, tokens, mono, withAlpha, useModuleTranslation } from '../../../module-sdk';
-import { vetoHistoryRowSx, vetoMapNameSx } from './vetoStyles';
 import type { PreMatchViewProps as VetoInterfaceProps } from '../../types';
 
 const { color, radius } = tokens;
@@ -563,7 +562,11 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
               </>
             ) : (
               <>
-                <Typography variant="h6" className="veto-turn-title">
+                <Typography
+                  component="h2"
+                  className="veto-turn-title"
+                  sx={{ fontWeight: 600, fontSize: { xs: '1.35rem', md: '1.8rem' }, lineHeight: 1.2, color: color.ink2 }}
+                >
                   {currentAction === 'ban'
                     ? t('vetoInterface.waitingToBan', { team: currentTeamName })
                     : currentAction === 'pick'
@@ -575,30 +578,18 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                 </Typography>
               </>
             )}
+            {vetoState.turnDeadline && (
+              <TurnClock deadline={vetoState.turnDeadline} mine={isMyTurn} tone={actionColor} />
+            )}
           </Box>
 
-          {/* Step / progress row */}
-          <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="body2" color="text.secondary" sx={{ ...mono, fontSize: '0.75rem' }}>
-              {t('vetoInterface.stepOf', { current: vetoState.currentStep, total: vetoState.totalSteps })}
-            </Typography>
-            <Chip
-              label={currentAction === 'ban' ? t('vetoInterface.banPhase') : currentAction === 'pick' ? t('vetoInterface.pickPhase') : t('vetoInterface.sideChoice')}
-              size="small"
-              color={
-                currentAction === 'ban'
-                  ? 'error'
-                  : currentAction === 'pick'
-                  ? 'success'
-                  : 'info'
-              }
-            />
-          </Box>
-
-          <LinearProgress
-            variant="determinate"
-            value={(vetoState.currentStep / vetoState.totalSteps) * 100}
-            sx={{ height: 4 }}
+          {/* Every step in one strip (draft "Veto B"): what each one did, whose turn now, what is left. */}
+          <VetoStepStrip
+            vetoState={vetoState}
+            order={vetoOrder}
+            mySide={currentTeamSlug ? (currentTeamSlug === vetoState.team1Id ? 'team1' : currentTeamSlug === vetoState.team2Id ? 'team2' : null) : null}
+            teamName={(team) => (team === 'team1' ? team1Name : team2Name)}
+            mapName={(m) => allMaps.get(m)?.displayName || getMapDisplayName(m)}
           />
         </Stack>
       </Paper>
@@ -854,46 +845,122 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
         </Box>
       )}
 
-      {/* Veto History */}
-      {Array.isArray(vetoState.actions) && vetoState.actions.length > 0 && (
-        <Card sx={{ mt: 3 }}>
-          <CardContent>
-            <Typography variant="h6" fontWeight={600} mb={2}>
-              {t('vetoInterface.vetoHistory')}
-            </Typography>
-            <Stack spacing={1}>
-              {(vetoState.actions || []).map((action, idx) => (
-                <Box key={idx} sx={vetoHistoryRowSx(action.action)}>
-                  <Typography variant="body2">
-                    <strong>{t('vetoInterface.historyStep', { step: action.step })}</strong>{' '}
-                    {action.team === 'team1' ? team1Name : team2Name}{' '}
-                    <Chip
-                      data-testid="veto-history-action"
-                      label={t(`vetoInterface.actionLabels.${action.action}`, {
-                        defaultValue: action.action.toUpperCase(),
-                      })}
-                      size="small"
-                      color={
-                        action.action === 'ban'
-                          ? 'error'
-                          : action.action === 'pick'
-                          ? 'success'
-                          : 'info'
-                      }
-                      sx={{ mx: 1 }}
-                    />
-                    <Box component="span" sx={vetoMapNameSx(action.action)}>
-                      {allMaps.get(action.mapName || '')?.displayName ||
-                        getMapDisplayName(action.mapName || '')}
-                    </Box>
-                    {action.side && ` (${t('vetoInterface.startingSide', { side: action.side })})`}
-                  </Typography>
-                </Box>
-              ))}
-            </Stack>
-          </CardContent>
-        </Card>
-      )}
     </Box>
   );
 };
+
+
+/** The turn's countdown: "0:24", red in the last ten seconds, "Time's up" at zero. */
+function TurnClock({ deadline, mine, tone }: { deadline: string; mine: boolean; tone: string }) {
+  const { t } = useModuleTranslation('cs2');
+  const end = Date.parse(deadline);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 250);
+    return () => window.clearInterval(id);
+  }, []);
+  const left = Math.max(0, Math.ceil((end - now) / 1000));
+  const urgent = left <= 10;
+  const text = left > 0 ? `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}` : t('vetoInterface.timeUp');
+  return (
+    <Box
+      data-testid="veto-turn-clock"
+      role="timer"
+      aria-live={urgent ? 'assertive' : 'off'}
+      sx={{
+        position: { sm: 'absolute' },
+        top: { sm: 12 },
+        right: { sm: 12 },
+        mt: { xs: 1, sm: 0 },
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 0.75,
+        px: 1.25,
+        py: 0.5,
+        borderRadius: 999,
+        bgcolor: urgent ? withAlpha(color.ban, 0.18) : mine ? withAlpha(tone, 0.16) : color.paper2,
+        color: urgent ? color.ban : mine ? tone : color.ink2,
+        fontWeight: 600,
+        fontSize: '0.875rem',
+        ...mono,
+      }}
+    >
+      {mine ? t('vetoInterface.yourTurnClock') : t('vetoInterface.theirTurnClock')} · {text}
+    </Box>
+  );
+}
+
+/** One chip per veto step: done (map and who), now ("?" and whose turn), or still to come. */
+function VetoStepStrip({
+  vetoState,
+  order,
+  mySide,
+  teamName,
+  mapName,
+}: {
+  vetoState: VetoState;
+  order: Array<{ team: string; action: string }>;
+  mySide: 'team1' | 'team2' | null;
+  teamName: (team: string) => string;
+  mapName: (map: string) => string;
+}) {
+  const { t } = useModuleTranslation('cs2');
+  const actions = Array.isArray(vetoState.actions) ? vetoState.actions : [];
+  const steps = Array.from({ length: vetoState.totalSteps }, (_, i) => i + 1);
+  const who = (team: string) => (mySide ? (team === mySide ? t('vetoInterface.strip.you') : t('vetoInterface.strip.them')) : teamName(team));
+  const tone = (action: string) => (action === 'ban' ? color.ban : action === 'pick' ? color.pick : color.info);
+  return (
+    <Box
+      component="ol"
+      aria-label={t('vetoInterface.stepOf', { current: Math.min(vetoState.currentStep, vetoState.totalSteps), total: vetoState.totalSteps })}
+      data-testid="veto-step-strip"
+      sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gridTemplateColumns: `repeat(${Math.max(1, vetoState.totalSteps)}, minmax(0, 1fr))`, gap: 0.75 }}
+    >
+      {steps.map((step) => {
+        const done = actions.find((a) => a.step === step);
+        const current = !done && step === vetoState.currentStep && vetoState.status !== 'completed';
+        const planned = order[step - 1];
+        const action = done?.action ?? (current ? vetoState.currentAction : planned?.action) ?? 'ban';
+        const team = done?.team ?? (current ? vetoState.currentTurn : planned?.team);
+        return (
+          <Box
+            component="li"
+            key={step}
+            aria-current={current ? 'step' : undefined}
+            sx={{
+              minWidth: 0,
+              px: 1,
+              py: 0.75,
+              borderRadius: '10px',
+              bgcolor: done ? withAlpha(tone(action), 0.12) : color.paper2,
+              border: '1px solid',
+              borderColor: current ? tone(action) : 'transparent',
+              opacity: done || current ? 1 : 0.55,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 0.25,
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.75, fontSize: '0.6875rem', color: done || current ? tone(action) : color.muted, fontWeight: 600, letterSpacing: '0.04em' }}>
+              <span>{step}</span>
+              <span data-testid={done ? 'veto-history-action' : undefined}>
+                {t(`vetoInterface.actionLabels.${action}`, { defaultValue: String(action).toUpperCase() })}
+              </span>
+            </Box>
+            <Typography noWrap sx={{ fontSize: '0.8125rem', fontWeight: done ? 600 : 400, color: done ? color.ink : color.muted }}>
+              {done
+                ? done.action === 'side_pick'
+                  ? t('vetoInterface.startingSide', { side: done.side })
+                  : mapName(done.mapName)
+                : '?'}
+            </Typography>
+            <Typography noWrap sx={{ fontSize: '0.6875rem', color: color.muted }}>
+              {team ? who(team) : ''}
+              {done?.timedOut ? ` · ${t('vetoInterface.strip.timedOut')}` : ''}
+            </Typography>
+          </Box>
+        );
+      })}
+    </Box>
+  );
+}

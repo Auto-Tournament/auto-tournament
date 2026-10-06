@@ -8,6 +8,7 @@
  */
 
 import { startAutoStart } from './fleet/autoStart';
+import { startVetoTimer, stopVetoTimer } from './veto/timer';
 import { log } from '../../utils/logger';
 import { settingsService } from '../../services/settingsService';
 import { serverService } from './services/serverService';
@@ -59,6 +60,8 @@ export async function startCs2(): Promise<void> {
   startServerNotices();
   // Matches left in warmup start after the admin's limit (at_autostart_after_minutes).
   startAutoStart();
+  // A veto step a team does not take in time is taken for them (veto_turn_seconds).
+  startVetoTimer();
 
   // The Ready Up fleet gateway (/api/fleet/ws) first: it only attaches to the
   // HTTP server, and servers reconnecting after a restart should not wait on
@@ -102,6 +105,7 @@ export async function startCs2(): Promise<void> {
 
 export function stopCs2(): void {
   healthMonitoringService.stop();
+  stopVetoTimer();
   stopMapAutoSync();
   stopFleet();
   stopTurnoverRetry?.();

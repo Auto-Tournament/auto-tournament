@@ -276,6 +276,7 @@ jobs:
             # The license terms are accepted up front, so the admin UI opens
             # (tests/ui/license-consent.spec.ts covers the consent step).
             echo "AT_ACCEPT_LICENSE=noncommercial"
+            echo "AT_VETO_TURN_SECONDS_DEFAULT=0"
             echo "GAMES_ENRICH=off"
             # The suite saves test license keys: never check in with
             # autotournament.gg from CI (services/license/checkin.ts).

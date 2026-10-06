@@ -55,6 +55,7 @@ export interface Cs2DefaultsValues {
   atPauseAfterRestore: boolean;
   atJoinPassword: boolean;
   atAutostartAfterMinutes: number;
+  vetoTurnSeconds: number;
   atStopCommandAvailable: boolean;
   atStopCommandNoDamage: boolean;
   atUsePauseCommandForTacticalPause: boolean;
@@ -96,6 +97,7 @@ const DEFAULTS: Cs2DefaultsValues = {
   atPauseAfterRestore: true,
   atJoinPassword: false,
   atAutostartAfterMinutes: 0,
+  vetoTurnSeconds: 45,
   atStopCommandAvailable: false,
   atStopCommandNoDamage: false,
   atUsePauseCommandForTacticalPause: false,
@@ -491,6 +493,23 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
                           size="small"
                           fullWidth
                           data-testid="setting-autostart-minutes"
+                        />
+                        <TextField
+                          label={t('settings.vetoTurn.label')}
+                          helperText={t('settings.vetoTurn.helper')}
+                          type="number"
+                          value={vals.vetoTurnSeconds}
+                          onChange={(e) => {
+                            const v = parseInt(e.target.value, 10);
+                            if (!Number.isFinite(v)) return;
+                            update('vetoTurnSeconds', v);
+                          }}
+                          onBlur={flush}
+                          onKeyDown={onEnter}
+                          inputProps={{ min: 0, max: 600 }}
+                          size="small"
+                          fullWidth
+                          data-testid="setting-veto-turn-seconds"
                         />
                       </Stack>
                     </Stack>

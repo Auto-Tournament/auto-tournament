@@ -11,6 +11,16 @@
 import { settingsService } from '../../services/settingsService';
 import type { Cs2SettingKey } from './settings';
 
+/**
+ * A veto step's time limit when the admin never set one: 45 seconds, or
+ * AT_VETO_TURN_SECONDS_DEFAULT (the test suite sets 0, so tournaments other
+ * specs leave waiting on a veto stay put).
+ */
+export function defaultVetoTurnSeconds(): number {
+  const env = Number(process.env.AT_VETO_TURN_SECONDS_DEFAULT);
+  return process.env.AT_VETO_TURN_SECONDS_DEFAULT !== undefined && Number.isInteger(env) && env >= 0 ? Math.min(env, 600) : 45;
+}
+
 class Cs2Settings {
   private getSetting(key: Cs2SettingKey): Promise<string | null> {
     return settingsService.getSetting(key);
@@ -105,6 +115,14 @@ class Cs2Settings {
     const value = await this.getSetting('at_autostart_after_minutes');
     const parsed = Number(value);
     return value && Number.isInteger(parsed) && parsed > 0 ? Math.min(parsed, 120) : 0;
+  }
+
+  /** Seconds per veto step before the platform picks for the team (unset = defaultVetoTurnSeconds, 0 = no limit). */
+  async getVetoTurnSeconds(): Promise<number> {
+    const value = await this.getSetting('veto_turn_seconds');
+    if (value === null || value === undefined || value === '') return defaultVetoTurnSeconds();
+    const parsed = Number(value);
+    return Number.isInteger(parsed) && parsed > 0 ? Math.min(parsed, 600) : 0;
   }
 
   async isAtJoinPasswordEnabled(): Promise<boolean> {
@@ -348,6 +366,7 @@ export async function readCs2InstanceSettings(): Promise<Record<string, unknown>
     atPauseAfterRestore: atCore.pauseAfterRestore,
     atJoinPassword: await cs2Settings.isAtJoinPasswordEnabled(),
     atAutostartAfterMinutes: await cs2Settings.getAtAutostartAfterMinutes(),
+    vetoTurnSeconds: await cs2Settings.getVetoTurnSeconds(),
     atStopCommandAvailable: atCore.stopCommandAvailable,
     atStopCommandNoDamage: atCore.stopCommandNoDamage,
     atUsePauseCommandForTacticalPause: atCore.usePauseCommandForTacticalPause,

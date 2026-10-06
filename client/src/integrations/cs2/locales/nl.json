@@ -395,6 +395,14 @@
       "map": "Map {{number}}",
       "pickedBy": "picked by {{team}}",
       "out": "Out:"
+    },
+    "timeUp": "Tijd is om",
+    "yourTurnClock": "Jullie beurt",
+    "theirTurnClock": "Hun beurt",
+    "strip": {
+      "you": "jullie",
+      "them": "zij",
+      "timedOut": "tijd om"
     }
   },
   "matchInfo": {
@@ -1109,6 +1117,10 @@
       "servers": "Servers",
       "skins": "Skins",
       "inventories": "Player inventories"
+    },
+    "vetoTurn": {
+      "label": "Seconden per vetostap",
+      "helper": "Als een team geen tijd meer heeft, bant of kiest het platform een willekeurige map. 0 = geen limiet."
     }
   },
   "roster": {

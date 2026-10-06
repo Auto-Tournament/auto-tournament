@@ -278,6 +278,8 @@ export interface VetoAction {
   mapName: string;
   side?: MapSide;
   timestamp: number;
+  /** Taken by the platform because the team ran out of time. */
+  timedOut?: boolean;
 }
 
 export interface VetoMapResult {
@@ -308,6 +310,10 @@ export interface VetoState {
   team1Name?: string;
   team2Name?: string;
   completedAt?: string;
+  /** When the current turn runs out (ISO); absent without a time limit. */
+  turnDeadline?: string;
+  /** Seconds per turn (Match rules), with `turnDeadline`. */
+  turnSeconds?: number;
 }
 
 export interface VetoStep {
