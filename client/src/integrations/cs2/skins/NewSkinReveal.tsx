@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Box, Button, Dialog, Typography } from '@mui/material';
 import { sourceLabel } from './SkinParts';
 import { useModuleTranslation, useSocket, tokens, fontDisplay, mono, radii, withAlpha } from '../../../module-sdk';
@@ -72,6 +72,7 @@ function Reveal() {
             {skin.weaponName} · {skin.name}
           </Typography>
           {skin.sourceLabel && <Typography sx={{ color: color.muted }}>{sourceLabel(skin.sourceLabel)}</Typography>}
+          {skin.source === 'matchmaking' && skin.sourceRef && <MatchPill slug={skin.sourceRef} />}
         </Box>
         <Box sx={{ width: '100%', maxWidth: 640, height: { xs: 220, md: 320 }, borderRadius: '28px', bgcolor: color.paper2, border: `1px solid ${color.rule}`, borderBottom: `4px solid ${tone}`, display: 'grid', placeItems: 'center', position: 'relative', overflow: 'hidden' }}>
           <Box
@@ -111,5 +112,56 @@ function Reveal() {
         <Typography sx={{ fontSize: '0.8125rem', color: color.muted }}>{t('skins.notice')}</Typography>
       </Box>
     </Dialog>
+  );
+}
+
+interface MatchSummary {
+  myTeam?: number | null;
+  maps: Array<{ map: string | null; team1: number; team2: number }>;
+}
+
+/** The game the drop came from, "Won 13 – 9 · de_mirage", from your side. */
+function MatchPill({ slug }: { slug: string }) {
+  const { t } = useModuleTranslation('cs2');
+  const [result, setResult] = useState<MatchSummary | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    void fetch(`/api/matchmaking/matches/${encodeURIComponent(slug)}/result`, { credentials: 'same-origin' })
+      .then((r) => (r.ok ? (r.json() as Promise<MatchSummary>) : null))
+      .then((body) => {
+        if (!cancelled) setResult(body);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
+  const mine = result?.myTeam ?? null;
+  if (!result || mine === null || result.maps.length === 0) return null;
+  const ours = (m: MatchSummary['maps'][number]) => (mine === 2 ? m.team2 : m.team1);
+  const theirs = (m: MatchSummary['maps'][number]) => (mine === 2 ? m.team1 : m.team2);
+  const won = result.maps.filter((m) => ours(m) > theirs(m)).length;
+  const lost = result.maps.filter((m) => ours(m) < theirs(m)).length;
+  const outcome = won > lost ? 'won' : won < lost ? 'lost' : 'drew';
+  const score = result.maps.map((m) => `${ours(m)} – ${theirs(m)}`).join(', ');
+  const maps = result.maps.map((m) => m.map).filter(Boolean).join(', ');
+  return (
+    <Box
+      data-testid="new-skin-match"
+      sx={{
+        mt: 1.5,
+        display: 'inline-flex',
+        px: 1.75,
+        py: 0.5,
+        borderRadius: radii.pill,
+        bgcolor: color.paper2,
+        border: `1px solid ${color.rule}`,
+        fontSize: '0.8125rem',
+        color: outcome === 'won' ? color.pick : outcome === 'lost' ? color.ban : color.ink2,
+      }}
+    >
+      {t(`skins.match.${outcome}`, { score })}
+      {maps ? ` · ${maps}` : ''}
+    </Box>
   );
 }

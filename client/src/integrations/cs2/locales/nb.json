@@ -1715,7 +1715,20 @@
       "rewardTitle": "Premie for {{place}}",
       "done": "Ferdig"
     },
-    "tournamentRewardsSwitch": "Skin-premier for topp tre (når skins er slått på)"
+    "tournamentRewardsSwitch": "Skin-premier for topp tre (når skins er slått på)",
+    "whatThisMeans": "Hva dette betyr",
+    "meaning": {
+      "platformOnly": "Skins her finnes bare på denne siden: du vinner dem her og viser dem her.",
+      "noValue": "De har ingen pengeverdi og kan ikke byttes eller selges.",
+      "notInGame": "De legges ikke i Steam-inventaret ditt eller i selve Counter-Strike 2.",
+      "servers": "På sidens Ready Up-servere ser spillerne skinsene du har utstyrt her."
+    },
+    "close": "Lukk",
+    "match": {
+      "won": "Vant {{score}}",
+      "lost": "Tapte {{score}}",
+      "drew": "Uavgjort {{score}}"
+    }
   },
   "matchRules": {
     "title": "Kampregler",

@@ -1715,7 +1715,20 @@
       "rewardTitle": "Premio para {{place}}",
       "done": "Hecho"
     },
-    "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)"
+    "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)",
+    "whatThisMeans": "Qué significa",
+    "meaning": {
+      "platformOnly": "Las skins de aquí solo existen en este sitio: las ganas aquí y las enseñas aquí.",
+      "noValue": "No tienen valor monetario y no se pueden intercambiar ni vender.",
+      "notInGame": "No se añaden a tu inventario de Steam ni al propio Counter-Strike 2.",
+      "servers": "En los servidores Ready Up de este sitio, los jugadores ven las skins que equipaste aquí."
+    },
+    "close": "Cerrar",
+    "match": {
+      "won": "Ganada {{score}}",
+      "lost": "Perdida {{score}}",
+      "drew": "Empate {{score}}"
+    }
   },
   "matchRules": {
     "title": "Reglas de partida",

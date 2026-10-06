@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Box, ButtonBase, Dialog, IconButton, Link, Typography } from '@mui/material';
+import { Box, Button, ButtonBase, Dialog, IconButton, Link, Typography } from '@mui/material';
 import {
   CheckIcon,
   InfoIcon,
@@ -44,7 +44,42 @@ export function VirtualNotice({ compact = false }: { compact?: boolean }) {
     >
       {!compact && <InfoIcon size={16} aria-hidden />}
       {t('skins.notice')}
+      {!compact && <WhatThisMeans />}
     </Box>
+  );
+}
+
+/** "What this means": the virtual skins rule in plain words (board 1's banner link). */
+function WhatThisMeans() {
+  const { t } = useModuleTranslation('cs2');
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Box
+        component="button"
+        type="button"
+        onClick={() => setOpen(true)}
+        data-testid="skins-notice-more"
+        sx={{ all: 'unset', cursor: 'pointer', color: color.accent, fontWeight: 600, whiteSpace: 'nowrap', '&:focus-visible': { outline: `2px solid ${color.focus}` } }}
+      >
+        {t('skins.whatThisMeans')}
+      </Box>
+      <Dialog open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: radii.lg, bgcolor: color.paper2, backgroundImage: 'none', maxWidth: 460 } }}>
+        <Box sx={{ p: 3.5, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <Typography component="h2" sx={{ fontFamily: fontDisplay, fontSize: '1.375rem', fontWeight: 600 }}>
+            {t('skins.whatThisMeans')}
+          </Typography>
+          {(['platformOnly', 'noValue', 'notInGame', 'servers'] as const).map((key) => (
+            <Typography key={key} sx={{ color: color.ink2 }}>
+              {t(`skins.meaning.${key}`)}
+            </Typography>
+          ))}
+          <Button onClick={() => setOpen(false)} sx={{ alignSelf: 'flex-end', borderRadius: radii.pill }}>
+            {t('skins.close')}
+          </Button>
+        </Box>
+      </Dialog>
+    </>
   );
 }
 
@@ -133,11 +168,24 @@ export function SkinCard({
 }
 
 /** A loadout slot: the equipped skin's picture, or a plus when empty. */
-export function SlotTile({ label, skin }: { label: string; skin: OwnedSkin | null }) {
+export function SlotTile({ label, skin, onClick }: { label: string; skin: OwnedSkin | null; onClick?: () => void }) {
   return (
     <Box
       data-testid="loadout-slot"
+      component={onClick ? 'button' : 'div'}
+      type={onClick ? 'button' : undefined}
+      onClick={onClick}
+      aria-label={onClick ? (skin ? `${label}: ${skin.weaponName} ${skin.name}` : label) : undefined}
       sx={{
+        ...(onClick
+          ? {
+              all: 'unset',
+              cursor: 'pointer',
+              boxSizing: 'border-box',
+              '&:hover': { borderColor: color.muted },
+              '&:focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: 2 },
+            }
+          : {}),
         borderRadius: '14px',
         overflow: 'hidden',
         bgcolor: color.paper2,

@@ -122,7 +122,22 @@ export function InventoryPage() {
                       : slot === 'gloves'
                         ? t('skins.slot.gloves')
                         : inventory.find((s) => s.slot === slot)?.weaponName ?? slot;
-                  return <SlotTile key={slot} label={label} skin={skin} />;
+                  // An equipped slot opens its skin; an empty one shows the skins that fit it.
+                  return (
+                    <SlotTile
+                      key={slot}
+                      label={label}
+                      skin={skin}
+                      onClick={() => {
+                        if (skin) {
+                          setInspect(skin.id);
+                          return;
+                        }
+                        const owned = inventory.find((s) => s.slot === slot);
+                        setFilter(owned ? category(owned) : slot === 'knife' ? 'knives' : slot === 'gloves' ? 'gloves' : 'all');
+                      }}
+                    />
+                  );
                 })}
               </Box>
             </Box>

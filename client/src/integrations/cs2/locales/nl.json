@@ -1715,7 +1715,20 @@
       "rewardTitle": "Beloning voor {{place}}",
       "done": "Klaar"
     },
-    "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)"
+    "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)",
+    "whatThisMeans": "Wat dit betekent",
+    "meaning": {
+      "platformOnly": "Skins hier bestaan alleen op deze site: je wint ze hier en laat ze hier zien.",
+      "noValue": "Ze hebben geen geldwaarde en kunnen niet geruild of verkocht worden.",
+      "notInGame": "Ze komen niet in je Steam-inventaris of in Counter-Strike 2 zelf.",
+      "servers": "Op de Ready Up-servers van deze site zien spelers de skins die je hier uitrust."
+    },
+    "close": "Sluiten",
+    "match": {
+      "won": "Gewonnen {{score}}",
+      "lost": "Verloren {{score}}",
+      "drew": "Gelijk {{score}}"
+    }
   },
   "matchRules": {
     "title": "Wedstrijdregels",
