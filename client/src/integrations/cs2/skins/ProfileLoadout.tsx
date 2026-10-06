@@ -87,7 +87,27 @@ export function ProfileLoadout({ steamId, isOwn }: { steamId: string; isOwn: boo
     };
   }, [enabled, steamId, version]);
 
-  if (!enabled || !data || data.inventory.length === 0) return null;
+  if (!enabled || !data) return null;
+  // Your own profile keeps the section with nothing in it, so the inventory
+  // is one click away from day one; someone else's empty loadout stays hidden.
+  if (data.inventory.length === 0) {
+    if (!isOwn) return null;
+    return (
+      <Box component="section" aria-labelledby="profile-loadout" sx={{ mt: 6, display: 'flex', flexDirection: 'column', gap: 2 }} data-testid="profile-loadout">
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Typography id="profile-loadout" component="h2" sx={{ fontFamily: fontDisplay, fontSize: '1.25rem', fontWeight: 600, flex: 1 }}>
+            {t('skins.loadout')}
+          </Typography>
+          <Button size="small" component={RouterLink} to={skinPaths.inventory} sx={{ borderRadius: radii.pill, bgcolor: color.paper3, color: color.ink }}>
+            {t('skins.showInventory')}
+          </Button>
+        </Box>
+        <Box sx={{ borderRadius: radii.lg, border: `1px dashed ${color.rule}`, bgcolor: color.paper2, p: 3 }}>
+          <Typography sx={{ color: color.muted }}>{t('skins.emptyOwn')}</Typography>
+        </Box>
+      </Box>
+    );
+  }
   const items = arrange(data.inventory, data.showcase);
 
   const openArrange = () => {
