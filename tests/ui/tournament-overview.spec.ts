@@ -121,6 +121,8 @@ test.describe.serial('Tournament Overview UI', () => {
       await expect(page.getByTestId('tournament-hero')).toBeVisible();
       await expect(page.getByTestId('tournament-game')).toBeVisible();
       await expect(page.getByTestId('tournament-tab-overview')).toHaveAttribute('aria-current', 'page');
+      // "Your match" is only for a player whose team is in a running tournament.
+      await expect(page.getByTestId('tournament-tab-match')).toHaveCount(0);
 
       await page.getByTestId('tournament-tab-matches').click();
       await expect(page).toHaveURL(new RegExp(`/tournament/${id}/matches$`));

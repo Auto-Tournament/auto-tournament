@@ -1,3 +1,4 @@
+import { Navigate } from 'react-router-dom';
 import { Box, Stack } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { KeyDatesBar } from '../components/tournament/overview/KeyDatesBar';
@@ -10,7 +11,7 @@ import { useTournamentPage } from '../components/tournament/page/tournamentPageC
 import { isLiveMatch } from '../components/tournament/page/matchHelpers';
 import { usePublicBracket } from '../hooks/usePublicBracket';
 import { compareMatchOrder } from '../utils/matchUtils';
-import { tournamentTabPath } from '../paths';
+import { tournamentTabPath, yourMatchFirst } from '../paths';
 
 /**
  * The tournament page's Overview tab, kept to what a quick look needs (the
@@ -27,6 +28,11 @@ export default function TournamentOverview() {
   const isShuffle = tournament.type === 'shuffle';
   const maps = tournament.maps ?? [];
   const schedule = tournament.settings?.schedule ?? [];
+
+  // While it runs, a player in it belongs on "Your match".
+  if (yourMatchFirst(tournament.status, Boolean(viewerTeam))) {
+    return <Navigate to={tournamentTabPath(tournament.id, 'match')} replace />;
+  }
 
   return (
     <Stack spacing={{ xs: 3, md: 3.5 }} data-testid="public-tournament-overview">
