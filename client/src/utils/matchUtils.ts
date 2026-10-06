@@ -3,6 +3,7 @@
  */
 
 import i18n from '../i18n';
+import { bareSlug, isGrandFinalSlug, isLosersBracketSlug } from './matchSlug';
 
 /**
  * Format a Unix timestamp to a localized date string
@@ -64,7 +65,7 @@ export const isUnpairedSwissMatch = (match: {
   match.status === 'pending' &&
   !match.team1 &&
   !match.team2 &&
-  /^swiss-r\d+m\d+$/.test(match.slug ?? '');
+  /^swiss-r\d+m\d+$/.test(bareSlug(match.slug));
 
 export const waitingForPairingLabel = (): string =>
   i18n.t('matchesPage.statusLabel.waitingForPairing');
@@ -333,8 +334,8 @@ type BracketMatchRef = {
 /** 'WB' | 'LB' | 'GF' | 'GF_RESET' | 'SE' | null, falling back to the slug. */
 export const getMatchBracket = (match: Pick<BracketMatchRef, 'slug' | 'bracket'>): string | null => {
   if (match.bracket) return match.bracket;
-  if (match.slug === 'gf') return 'GF';
-  if (match.slug?.startsWith('lb-')) return 'LB';
+  if (isGrandFinalSlug(match.slug)) return 'GF';
+  if (isLosersBracketSlug(match.slug)) return 'LB';
   return null;
 };
 

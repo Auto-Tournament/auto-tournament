@@ -36,11 +36,66 @@ import type {
   TournamentSettingsInput,
   TournamentSettingsValidation,
 } from '../integrations/types';
+import { archiveCurrentTournament, readableTournamentId, TournamentArchiveError } from '../services/currentTournament';
+import { shuffleTeamId } from '../utils/matchSlug';
 
 const router = Router();
 
 
 // Public routes (before auth middleware)
+/**
+ * @openapi
+ * /api/tournament/current-id:
+ *   get:
+ *     tags:
+ *       - Tournament
+ *     summary: Which tournament is current (public)
+ *     description: |
+ *       No session. The id the public pages and the top bar link to. When the
+ *       last tournament was archived it is the id the next one gets, which has
+ *       no tournament yet.
+ *     responses:
+ *       200:
+ *         description: "{ id }"
+ */
+router.get('/current-id', (_req: Request, res: Response) => {
+  return res.json({ success: true, id: resolveTournamentId() });
+});
+
+/**
+ * @openapi
+ * /api/tournament/archive:
+ *   post:
+ *     tags:
+ *       - Tournament
+ *     summary: Archive the finished tournament so a new one can be created
+ *     description: |
+ *       The tournament keeps its matches, results and stats, and its public
+ *       pages stay at its id. The next tournament gets the next id. Only a
+ *       finished tournament (`completed`) can be archived.
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: "{ archivedId, currentId }"
+ *       404:
+ *         description: No tournament
+ *       409:
+ *         description: Not finished
+ */
+router.post('/archive', requireAuth, async (_req: Request, res: Response) => {
+  try {
+    const result = await archiveCurrentTournament();
+    return res.json({ success: true, ...result });
+  } catch (error) {
+    if (error instanceof TournamentArchiveError) {
+      return res.status(error.status).json({ success: false, error: error.message });
+    }
+    log.error('Error archiving the tournament', { error });
+    return res.status(500).json({ success: false, error: 'Failed to archive the tournament' });
+  }
+});
+
 /**
  * @openapi
  * /api/tournament/{id}/leaderboard:
@@ -66,14 +121,10 @@ const router = Router();
  */
 router.get('/:id/leaderboard', async (req: Request, res: Response) => {
   try {
-    const tournamentId = resolveTournamentId(req);
-    const { id } = req.params;
-
-    if (id !== String(tournamentId)) {
-      return res.status(400).json({
-        success: false,
-        error: `Only tournament ID ${tournamentId} is supported`,
-      });
+    // The current tournament, or an archived one (its results stay public).
+    const tournamentId = await readableTournamentId(req.params.id);
+    if (tournamentId === null) {
+      return res.status(404).json({ success: false, error: 'Tournament not found' });
     }
 
     const standings = await getTournamentLeaderboard(tournamentId);
@@ -248,12 +299,9 @@ router.get('/game', async (req: Request, res: Response) => {
  */
 router.get('/:id/bracket', async (req: Request, res: Response) => {
   try {
-    const tournamentId = resolveTournamentId(req);
-    if (req.params.id !== String(tournamentId)) {
-      return res.status(400).json({
-        success: false,
-        error: `Only tournament ID ${tournamentId} is supported`,
-      });
+    const tournamentId = await readableTournamentId(req.params.id);
+    if (tournamentId === null) {
+      return res.status(404).json({ success: false, error: 'Tournament not found' });
     }
 
     const bracket = await tournamentService.getBracket(tournamentId);
@@ -293,8 +341,8 @@ router.get('/:id/bracket', async (req: Request, res: Response) => {
  */
 router.get('/:id/banner', async (req: Request, res: Response) => {
   try {
-    const tournamentId = resolveTournamentId(req);
-    if (req.params.id !== String(tournamentId)) return res.status(404).end();
+    const tournamentId = await readableTournamentId(req.params.id);
+    if (tournamentId === null) return res.status(404).end();
     const banner = await tournamentBannerService.get(tournamentId);
     if (!banner) return res.status(404).end();
     res.setHeader('Content-Type', banner.type);
@@ -2017,8 +2065,8 @@ router.post('/:id/manual-matches', async (req: Request, res: Response) => {
         mp_maxrounds: resolvedMaxRounds,
       };
 
-      const team1Id = `shuffle-r0-m${index + 1}-team1`;
-      const team2Id = `shuffle-r0-m${index + 1}-team2`;
+      const team1Id = shuffleTeamId(tournamentId, 0, index + 1, 1);
+      const team2Id = shuffleTeamId(tournamentId, 0, index + 1, 2);
 
       const defaultTeam1Name = matchDef.team1Name || matchDef.label || `Shuffle Team ${index + 1}A`;
       const defaultTeam2Name = matchDef.team2Name || matchDef.label || `Shuffle Team ${index + 1}B`;

@@ -14,6 +14,7 @@ import type { Group, Round, Match as ViewerMatch, Participant } from 'brackets-v
 import '../../brackets-viewer/style.scss';
 import { deriveSeriesScore } from '../../utils/matchScoreDisplay';
 import { getRoundLabel } from '../../utils/matchUtils';
+import { bareSlug, isGrandFinalSlug, isLosersBracketSlug } from '../../utils/matchSlug';
 
 interface BracketsViewerVisualizationProps {
   matches: Array<Match & { liveStats?: MatchLiveStats | null }>;
@@ -33,8 +34,8 @@ interface SlotSource {
 function grandFinalParents(matches: Match[]): SlotSource[] {
   const last = (list: Match[]) =>
     [...list].sort((a, b) => b.round - a.round || a.matchNumber - b.matchNumber)[0];
-  const upperFinal = last(matches.filter((m) => /^r\d+m\d+$/.test(m.slug)));
-  const lowerFinal = last(matches.filter((m) => m.slug.startsWith('lb-')));
+  const upperFinal = last(matches.filter((m) => /^r\d+m\d+$/.test(bareSlug(m.slug))));
+  const lowerFinal = last(matches.filter((m) => isLosersBracketSlug(m.slug)));
   if (!upperFinal) return [];
   // Two teams have no losers bracket at all: the upper final's loser wins that
   // empty bracket unopposed and takes the grand final's second slot.
@@ -211,8 +212,8 @@ export default function BracketsViewerVisualization({
     });
 
     // Detect tournament structure
-    const hasLosersBracket = matches.some((m) => m.slug.startsWith('lb-'));
-    const hasGrandFinals = matches.some((m) => m.slug === 'gf');
+    const hasLosersBracket = matches.some((m) => isLosersBracketSlug(m.slug));
+    const hasGrandFinals = matches.some((m) => isGrandFinalSlug(m.slug));
 
     // brackets-viewer addresses groups by position, not by id: the first group
     // with matches is the winners bracket, the second the losers bracket and
@@ -241,9 +242,9 @@ export default function BracketsViewerVisualization({
     const matchesByRound: Record<string, Match[]> = {};
     matches.forEach((m) => {
       let key: string;
-      if (m.slug === 'gf') {
+      if (isGrandFinalSlug(m.slug)) {
         key = 'gf';
-      } else if (m.slug.startsWith('lb-')) {
+      } else if (isLosersBracketSlug(m.slug)) {
         key = `lb-${m.round}`;
       } else {
         key = `wb-${m.round}`;
@@ -452,7 +453,7 @@ export default function BracketsViewerVisualization({
 
     // Grand finals
     if (hasGrandFinals) {
-      const gfMatch = matches.find((m) => m.slug === 'gf');
+      const gfMatch = matches.find((m) => isGrandFinalSlug(m.slug));
       if (gfMatch) {
         rounds.push({
           id: roundCounter,
@@ -552,14 +553,14 @@ export default function BracketsViewerVisualization({
 
       const originalMatch = findOriginalMatch(matchId as Id);
       if (!originalMatch || originalMatch.status === 'completed') return;
-      if (originalMatch.slug.startsWith('lb-')) return;
+      if (isLosersBracketSlug(originalMatch.slug)) return;
 
       // The grand final's slots are fixed: upper bracket final winner first,
       // lower bracket final winner second. Its parents cannot be ordered by
       // match number (both finals are match 1), and the viewer's own hint names
       // the lower bracket final for both slots.
       const parents: SlotSource[] =
-        originalMatch.slug === 'gf'
+        isGrandFinalSlug(originalMatch.slug)
           ? grandFinalParents(matches)
           : [...(parentsByChildId.get(String(originalMatch.id)) ?? [])]
               .sort((a, b) => a.matchNumber - b.matchNumber)

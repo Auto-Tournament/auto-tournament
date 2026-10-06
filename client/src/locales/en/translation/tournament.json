@@ -161,7 +161,9 @@
       "templateSaved": "Template saved successfully!",
       "disableServersFailed": "Failed to disable one or more servers: {{message}}",
       "noChangesToSave": "No changes to save",
-      "invalidMapSelection": "Invalid map selection"
+      "invalidMapSelection": "Invalid map selection",
+      "archived": "Tournament archived. Create the next one.",
+      "archiveFailed": "Could not archive the tournament"
     },
     "outdatedServers": {
       "title": "Servers need update",
@@ -199,7 +201,8 @@
       "restartTooltip": "End all active matches on servers and reload them (useful for stuck matches)",
       "resetTooltip": "End all matches and reset tournament to setup mode (keeps tournament settings but clears all match data)",
       "reset": "Reset to Setup",
-      "dangerZone": "Danger zone"
+      "dangerZone": "Danger zone",
+      "newTournament": "New tournament"
     },
     "reviewCard": {
       "needPlayersWarning": "Need at least {{minPlayers}} players to start the tournament ({{teamSize}}v{{teamSize}} matches). Currently registered: {{registered}}",
@@ -642,6 +645,13 @@
       "starting": "Starting...",
       "startSimulation": "Start Simulation",
       "startingSimulation": "Starting Simulation..."
+    },
+    "archiveDialog": {
+      "title": "Start a new tournament?",
+      "message": "{{name}} is archived. Its results, matches and stats stay, and its page keeps its address. Then you create the next one.",
+      "confirm": "Archive and start new",
+      "delete": "Delete it and start new",
+      "deleteHint": "Or delete it: its results, matches and stats go with it."
     }
   },
   "bracket": {

@@ -114,6 +114,8 @@ export interface Tournament {
   updated_at: number;
   started_at?: number;
   completed_at?: number;
+  /** Archived (unix seconds): a finished tournament a new one replaced. Its pages are read-only. */
+  archived_at?: number | null;
 }
 
 export interface TournamentRow {
@@ -133,6 +135,8 @@ export interface TournamentRow {
   completed_at?: number;
   /** When the banner was last set; null without one (`tournament_banner` holds it). */
   banner_updated_at?: number | null;
+  /** When it was archived to make way for a new tournament; null for the current one. */
+  archived_at?: number | null;
 }
 
 export interface CreateTournamentInput {

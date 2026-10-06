@@ -19,6 +19,7 @@ import { DEFAULT_GAME } from '../integrations/types';
 import { getSwissStandingEntries } from './swissProgressionService';
 import { getRoundRobinStandingEntries } from './roundRobinStandingsService';
 import type { Player } from '../types/team.types';
+import { shuffleTeamId, shuffleTeamLike, tournamentSlugPrefix } from '../utils/matchSlug';
 
 /**
  * POST /api/tournament/shuffle. The map sequence and round rules belong to
@@ -108,7 +109,7 @@ export async function createShuffleTournament(
   // recreated multiple times (tests do) without PK conflicts.
   await db.runAsync('DELETE FROM matches WHERE tournament_id = ?', [tournamentId]);
   await db.runAsync('DELETE FROM shuffle_tournament_players WHERE tournament_id = ?', [tournamentId]);
-  await db.execAsync("DELETE FROM teams WHERE id LIKE 'shuffle-r%'");
+  await db.runAsync('DELETE FROM teams WHERE id LIKE ?', [shuffleTeamLike(tournamentId)]);
   await db.runAsync('DELETE FROM tournament WHERE id = ?', [tournamentId]);
 
   // The map sequence and round rules are the game module's (CS2:
@@ -425,9 +426,9 @@ export async function generateRoundMatches(
 
   // Build a set of team names that have already been used by previous shuffle
   // rounds so we never reuse a name within the same tournament.
-  const existingShuffleTeams = await db.queryAsync<DbTeamRow>(
-    "SELECT id, name, tag FROM teams WHERE id LIKE 'shuffle-r%'"
-  );
+  const existingShuffleTeams = await db.queryAsync<DbTeamRow>('SELECT id, name, tag FROM teams WHERE id LIKE ?', [
+    shuffleTeamLike(tournamentId),
+  ]);
   const usedTeamNames = new Set<string>(existingShuffleTeams.map((t) => t.name));
 
   // Create matches for each team pair
@@ -576,8 +577,8 @@ export async function generateRoundMatches(
     const team2 = teams[team2Index];
 
     // Create temporary teams
-    const team1Id = `shuffle-r${roundNumber}-m${matchNum + 1}-team1`;
-    const team2Id = `shuffle-r${roundNumber}-m${matchNum + 1}-team2`;
+    const team1Id = shuffleTeamId(tournamentId, roundNumber, matchNum + 1, 1);
+    const team2Id = shuffleTeamId(tournamentId, roundNumber, matchNum + 1, 2);
 
     // Pick two distinct, random, globally-unique team names for this match.
     const team1FriendlyName = generateUniqueTeamName(usedTeamNames);
@@ -631,7 +632,7 @@ export async function generateRoundMatches(
 
     // Build the match config through the game integration. For shuffle it is
     // Bo1 on the round's map (map sequence), random side, no veto.
-    const matchSlug = `shuffle-r${roundNumber}-m${matchNum + 1}`;
+    const matchSlug = `${tournamentSlugPrefix(tournamentId)}shuffle-r${roundNumber}-m${matchNum + 1}`;
     const config = await buildMatchConfigFor(
       { slug: matchSlug, round: roundNumber, team1Id, team2Id },
       tournament

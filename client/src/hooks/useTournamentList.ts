@@ -56,16 +56,42 @@ interface UseTournamentListResult {
 }
 
 /**
- * 3.0 hosts exactly one tournament row, always this id (see
- * `LEGACY_TOURNAMENT_ID` in `api/src/utils/tournamentRow.ts` — the one place
- * allowed to know it on the backend). The top bar's Teams and Leaderboards
- * links read it too, so this stays the client's one copy. It's needed here
- * because `GET /api/tournament` is admin-only; the per-id leaderboard route
- * is the one tournament endpoint that answers for anonymous visitors, so it's what "the existing public
- * endpoint" in this hook's job is. 3.1's `GET /api/tournaments` drops the
- * need for a known id entirely.
+ * 3.0 runs one tournament at a time. It was always id 1; since a finished
+ * tournament can be archived (it keeps its results at its id), the current
+ * one is whatever `GET /api/tournament/current-id` says. Asked once per page
+ * load; `resetCurrentTournamentId()` after archiving asks again. 3.1's
+ * `GET /api/tournaments` drops the need for a known id entirely.
  */
-export const CURRENT_TOURNAMENT_ID = 1;
+let currentIdRequest: Promise<number> | null = null;
+
+export function fetchCurrentTournamentId(): Promise<number> {
+  currentIdRequest ??= api
+    .get<{ success: boolean; id: number }>('/api/tournament/current-id')
+    .then((r) => (Number.isInteger(r.id) && r.id > 0 ? r.id : 1))
+    .catch(() => {
+      currentIdRequest = null;
+      return 1;
+    });
+  return currentIdRequest;
+}
+
+/** Forget the current id, so the next ask reads it again (after archiving a tournament). */
+export function resetCurrentTournamentId(): void {
+  currentIdRequest = null;
+}
+
+/** The current tournament's id: 1 until the answer arrives. */
+export function useCurrentTournamentId(): number {
+  const [id, setId] = useState(1);
+  useEffect(() => {
+    let cancelled = false;
+    void fetchCurrentTournamentId().then((value) => !cancelled && setId(value));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return id;
+}
 
 function toSummary(tournament: Tournament, extras: LeaderboardExtras = {}): TournamentSummary {
   return {
@@ -113,7 +139,7 @@ export function useTournamentList(): UseTournamentListResult {
     try {
       const response = await api.get<
         { success: boolean; tournament?: Tournament } & LeaderboardExtras
-      >(`/api/tournament/${CURRENT_TOURNAMENT_ID}/leaderboard`);
+      >(`/api/tournament/${await fetchCurrentTournamentId()}/leaderboard`);
       setTournaments(response.tournament ? [toSummary(response.tournament, response)] : []);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);

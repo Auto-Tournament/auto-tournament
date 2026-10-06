@@ -12,6 +12,7 @@ import type { DbMatchRow, DbTeamRow, DbTournamentRow } from '../types/database.t
 import type { TournamentResponse } from '../types/tournament.types';
 import { integrationForMatch } from '../integrations/registry';
 import { tournamentIdForMatch, tournamentRowToResponse } from './tournamentRow';
+import { bareSlug, tournamentSlugPrefix } from './matchSlug';
 
 /**
  * Advance winner to next match in bracket
@@ -46,7 +47,7 @@ export async function advanceWinnerToNextMatch(
       ) {
         // Winners bracket matches use slugs like "r1m1", "r2m3", etc. Losers
         // bracket and grand final use "lb-..." / "gf" and are NOT handled here.
-        const wbSlugMatch = currentMatch.slug.match(/^r(\d+)m(\d+)$/);
+        const wbSlugMatch = bareSlug(currentMatch.slug).match(/^r(\d+)m(\d+)$/);
 
         if (wbSlugMatch) {
           const wbRound = parseInt(wbSlugMatch[1], 10);
@@ -56,7 +57,7 @@ export async function advanceWinnerToNextMatch(
             `SELECT MAX(round) as max_round 
              FROM matches 
              WHERE tournament_id = ? 
-               AND slug NOT LIKE 'lb-%'`,
+               AND regexp_replace(slug, '^t[0-9]+-', '') NOT LIKE 'lb-%'`,
             [tournamentId]
           );
 
@@ -64,7 +65,7 @@ export async function advanceWinnerToNextMatch(
             const maxRound = maxRoundRow.max_round;
             if (wbRound < maxRound) {
               const nextMatchNum = Math.ceil(wbMatchNum / 2);
-              const inferredSlug = `r${wbRound + 1}m${nextMatchNum}`;
+              const inferredSlug = `${tournamentSlugPrefix(tournamentId)}r${wbRound + 1}m${nextMatchNum}`;
 
               const inferred = await db.queryOneAsync<DbMatchRow>(
                 'SELECT * FROM matches WHERE slug = ?',
@@ -148,7 +149,8 @@ export async function advanceLoserToLosersBracket(
 ): Promise<void> {
   try {
     // Only for winners bracket matches
-    if (!currentMatch.slug.startsWith('wb-') && !currentMatch.slug.startsWith('r')) {
+    const bare = bareSlug(currentMatch.slug);
+    if (!bare.startsWith('wb-') && !bare.startsWith('r')) {
       return;
     }
 
@@ -660,7 +662,7 @@ export async function reconcileDoubleElimination8Bracket(tournamentId: number): 
     const bySlug = new Map<string, DbMatchRow>();
     for (const row of rows) {
       if (row.slug) {
-        bySlug.set(row.slug, row);
+        bySlug.set(bareSlug(row.slug), row);
       }
     }
 
@@ -709,7 +711,7 @@ export async function reconcileDoubleElimination8Bracket(tournamentId: number): 
           [m.id]
         );
         if (refreshed) {
-          bySlug.set(refreshed.slug, refreshed);
+          bySlug.set(bareSlug(refreshed.slug), refreshed);
           return refreshed;
         }
       }
@@ -725,7 +727,7 @@ export async function reconcileDoubleElimination8Bracket(tournamentId: number): 
           m.id,
         ]);
         if (refreshed) {
-          bySlug.set(refreshed.slug, refreshed);
+          bySlug.set(bareSlug(refreshed.slug), refreshed);
         }
       }
     };
@@ -816,7 +818,7 @@ export async function reconcileDoubleElimination8Bracket(tournamentId: number): 
  */
 async function findLosersBracketMatch(wbMatch: DbMatchRow): Promise<DbMatchRow | undefined> {
   // Parse winners bracket match slug
-  const wbSlugMatch = wbMatch.slug.match(/^(?:wb-)?r(\d+)m(\d+)$/);
+  const wbSlugMatch = bareSlug(wbMatch.slug).match(/^(?:wb-)?r(\d+)m(\d+)$/);
   if (!wbSlugMatch) {
     log.warn('Invalid winners bracket slug format', { slug: wbMatch.slug });
     return undefined;
@@ -831,11 +833,11 @@ async function findLosersBracketMatch(wbMatch: DbMatchRow): Promise<DbMatchRow |
   // so losers bracket rounds often start at a higher numeric value (e.g. 4)
   // even though conceptually it's "Losers Round 1".
   const winnersRoundRow = await db.queryOneAsync<{ min_round: number }>(
-    "SELECT MIN(round) as min_round FROM matches WHERE tournament_id = ? AND slug NOT LIKE 'lb-%'",
+    "SELECT MIN(round) as min_round FROM matches WHERE tournament_id = ? AND regexp_replace(slug, '^t[0-9]+-', '') NOT LIKE 'lb-%'",
     [tournamentId]
   );
   const losersRoundRow = await db.queryOneAsync<{ min_round: number }>(
-    "SELECT MIN(round) as min_round FROM matches WHERE tournament_id = ? AND slug LIKE 'lb-%'",
+    "SELECT MIN(round) as min_round FROM matches WHERE tournament_id = ? AND regexp_replace(slug, '^t[0-9]+-', '') LIKE 'lb-%'",
     [tournamentId]
   );
 
@@ -852,11 +854,11 @@ async function findLosersBracketMatch(wbMatch: DbMatchRow): Promise<DbMatchRow |
   const losersBase = losersRoundRow.min_round;
   const roundOffset = losersBase - winnersBase;
   const winnersMaxRoundRow = await db.queryOneAsync<{ max_round: number }>(
-    "SELECT MAX(round) as max_round FROM matches WHERE tournament_id = ? AND slug NOT LIKE 'lb-%'",
+    "SELECT MAX(round) as max_round FROM matches WHERE tournament_id = ? AND regexp_replace(slug, '^t[0-9]+-', '') NOT LIKE 'lb-%'",
     [tournamentId]
   );
   const lbRounds = await db.queryAsync<{ round: number }>(
-    "SELECT DISTINCT round FROM matches WHERE tournament_id = ? AND slug LIKE 'lb-%'",
+    "SELECT DISTINCT round FROM matches WHERE tournament_id = ? AND regexp_replace(slug, '^t[0-9]+-', '') LIKE 'lb-%'",
     [tournamentId]
   );
 
@@ -902,7 +904,7 @@ async function findLosersBracketMatch(wbMatch: DbMatchRow): Promise<DbMatchRow |
     wbRound === winnersBase
       ? Math.ceil(wbMatchNum / 2)
       : wbMatchNum;
-  const lbSlug = `lb-r${lbRound}m${lbMatchNum}`;
+  const lbSlug = `${tournamentSlugPrefix(tournamentIdForMatch(wbMatch))}lb-r${lbRound}m${lbMatchNum}`;
 
   const lbMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
     lbSlug,

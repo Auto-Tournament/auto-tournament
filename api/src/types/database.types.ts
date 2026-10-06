@@ -59,6 +59,8 @@ export interface DbTournamentRow {
   elo_template_id?: string | null;
   /** When the banner in `tournament_banner` was last set; null without one. */
   banner_updated_at?: number | null;
+  /** When a new tournament replaced it (it keeps its matches and results); null for the current one. */
+  archived_at?: number | null;
 }
 
 export interface DbEventRow {

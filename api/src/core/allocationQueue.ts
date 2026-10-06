@@ -10,6 +10,8 @@
  * (MAT 2.4.7, 3 servers, 8-team Bo1): r1m3 and r1m4 loaded while r1m2, queue
  * position 2, waited for the next free server.
  */
+
+import { isGrandFinalSlug, isLosersBracketSlug } from '../utils/matchSlug';
 export interface QueueEntry {
   id: number;
   slug: string;
@@ -28,8 +30,8 @@ type QueueKey = Pick<QueueEntry, 'id' | 'round' | 'matchNumber'> & {
 export function matchBracketOf(match: { slug?: string; bracket?: string | null }): string | null {
   if (match.bracket) return match.bracket;
   const slug = match.slug ?? '';
-  if (slug === 'gf') return 'GF';
-  if (slug.startsWith('lb-')) return 'LB';
+  if (isGrandFinalSlug(slug)) return 'GF';
+  if (isLosersBracketSlug(slug)) return 'LB';
   return null;
 }
 

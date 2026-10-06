@@ -126,6 +126,8 @@ export function yourMatchFirst(status: string | undefined, hasTeam: boolean | un
 export function visibleTournamentTabs(
   tournament: {
     status?: string;
+    /** Archived: a finished tournament a new one replaced. Only its results tabs are its own. */
+    archived_at?: number | null;
     settings?: { rules?: string[]; rulebookUrl?: string; description?: string } | null;
   },
   viewer: { hasTeam?: boolean } = {}
@@ -136,6 +138,11 @@ export function visibleTournamentTabs(
       tournament.settings?.rulebookUrl ||
       (tournament.settings?.description?.length ?? 0) > 240
   );
+  // An archived tournament's matches and teams tabs would read the current
+  // tournament's, so it shows its results only.
+  if (tournament.archived_at) {
+    return hasRules ? ['overview', 'bracket', 'standings', 'rules'] : ['overview', 'bracket', 'standings'];
+  }
   const tabs: TournamentTab[] = [
     yourMatchFirst(tournament.status, viewer.hasTeam) ? 'match' : 'overview',
     'bracket',
