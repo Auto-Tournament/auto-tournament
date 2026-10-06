@@ -16,13 +16,10 @@ import {
   Typography,
 } from '@mui/material';
 import { DiceFiveIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
-import { useTranslation } from 'react-i18next';
-import { api } from '../../utils/api';
-import { useSnackbar } from '../../contexts/SnackbarContext';
-import { tokens, rarityColor, radii } from '../../theme/tokens';
-import ConfirmDialog from '../modals/ConfirmDialog';
-import { sourceLabel } from '../skins/SkinParts';
-import type { OwnedSkin } from '../../hooks/useSkins';
+import { api, useSnackbar, useModuleTranslation, tokens, radii, ConfirmDialog } from '../../../module-sdk';
+import { rarityColor } from './rarity';
+import { sourceLabel } from './SkinParts';
+import type { OwnedSkin } from './useSkins';
 
 const { color } = tokens;
 
@@ -59,7 +56,7 @@ const entryLabel = (e: CatalogEntry) => `${e.weaponName} · ${e.name}${e.variant
  * phase, float and pattern) or take them away.
  */
 export function SkinsInventoryAdmin() {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
   const { showSuccess, showError } = useSnackbar();
   const [query, setQuery] = useState('');
   const [players, setPlayers] = useState<AdminPlayer[]>([]);
@@ -252,7 +249,7 @@ function GiveSkinDialog({
   onClose: () => void;
   onGiven: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
   const { showSuccess, showError } = useSnackbar();
   const [query, setQuery] = useState('');
   const [options, setOptions] = useState<CatalogEntry[]>([]);

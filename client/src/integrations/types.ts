@@ -374,7 +374,12 @@ export interface ManageResourcesProps {
  * - `admin`: nested in the admin shell (`/` + `Layout`), path relative to it.
  * - `admin-standalone`: top level, admins only, outside the shell.
  */
-export type IntegrationRouteScope = 'admin' | 'admin-standalone';
+/**
+ * Where core mounts a module's page: `admin` inside the admin shell,
+ * `admin-standalone` on its own, `site` for signed-in players under the
+ * site's top bar (CS2: the skin inventory; client API 0.2.10).
+ */
+export type IntegrationRouteScope = 'admin' | 'admin-standalone' | 'site';
 
 export interface IntegrationRoute {
   /**
@@ -825,12 +830,41 @@ export type AdminToolsSectionProps = Record<string, never>;
  * `PUT /api/settings` with only its own fields in the body: every field there
  * is optional.
  */
-export type InstanceSettingsSectionProps = Record<string, never>;
+export interface InstanceSettingsSectionProps {
+  /** The open page's key, when the module lists `pages` (client API 0.2.10). */
+  page?: string;
+}
+
+/** One page of a module's settings: an entry under the module's group on the Settings page. */
+export interface InstanceSettingsPage {
+  key: string;
+  /** A key in the module's own namespace. */
+  labelKey: string;
+}
 
 export interface InstanceSettingsSlot {
-  /** The tab's label: a key in the module's own namespace (CS2: `settings.tab`). */
+  /** The group's label: a key in the module's own namespace (CS2: `settings.tab`). */
   labelKey: string;
+  /** Renders the open page; with `pages` it gets that page's key. */
   section: ComponentType<InstanceSettingsSectionProps>;
+  /** The module's settings as several pages. Absent: one page, labelled `labelKey`. */
+  pages?: InstanceSettingsPage[];
+}
+
+/** A link in the signed-in player's account menu (client API 0.2.10). */
+export interface AccountMenuItem {
+  key: string;
+  path: string;
+  /** A key in the module's own namespace. */
+  labelKey: string;
+}
+
+/** A section on a player's profile page (client API 0.2.10). */
+export interface PlayerProfileSectionProps {
+  /** The player's id (CS2: their Steam ID). */
+  playerId: string;
+  /** The viewer is this player. */
+  isOwn: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -1115,6 +1149,18 @@ export interface ClientGameIntegration {
    * whenever the module is installed; `links.settings(id)` opens it.
    */
   instanceSettings?: InstanceSettingsSlot;
+
+  /**
+   * Links for the signed-in player's account menu, asked for when it opens
+   * (CS2: Inventory, while skins are on). A throw reads as none.
+   */
+  accountMenuItems?: () => Promise<AccountMenuItem[]>;
+
+  /** Rendered once above every page, for anyone (CS2: the "new skin" reveal). */
+  globalOverlay?: ComponentType<Record<string, never>>;
+
+  /** A section on every player's profile, below the stats (CS2: the skin loadout). */
+  playerProfileSection?: ComponentType<PlayerProfileSectionProps>;
 
   /** Pages the integration owns. URLs come from `paths.ts`. */
   routes: IntegrationRoute[];

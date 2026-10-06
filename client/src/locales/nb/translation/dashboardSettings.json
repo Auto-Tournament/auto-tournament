@@ -103,10 +103,10 @@
     "title": "Innstillinger",
     "intro": "Innstillinger for hele nettstedet, uansett spill. Hver installerte spillmodul har sin egen fane.",
     "tabs": {
-      "integrations": "Integrasjoner",
+      "general": "Generelt",
       "signIn": "Innlogging",
       "players": "Spillere og tilgang",
-      "matches": "Rating",
+      "ratings": "Rating",
       "developer": "Utvikler",
       "license": "Lisens",
       "webhooks": "Webhooks",
@@ -275,7 +275,11 @@
           }
         }
       }
-    }
+    },
+    "groups": {
+      "platform": "Plattform"
+    },
+    "navLabel": "Innstillingssider"
   },
   "managePage": {
     "title": "Administrer",

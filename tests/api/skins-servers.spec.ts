@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { WEAPON_DEFINDEX } from '../../api/src/services/skinDefindex';
+import { WEAPON_DEFINDEX } from '../../api/src/integrations/cs2/skins/skinDefindex';
 
 /**
  * Skins on servers: the defindexes Ready Up gets in `skins.loadout` for the

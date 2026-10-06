@@ -433,8 +433,7 @@
       "maxTeams": "Team spots",
       "checkInOpensAt": "Check-in opens",
       "checkInClosesAt": "Check-in closes",
-      "signupHelp": "A team's owner or captain signs up with a lineup. Lineup players check in on the day.",
-      "skinRewards": "Skin rewards for the top three (when skins are on)"
+      "signupHelp": "A team's owner or captain signs up with a lineup. Lineup players check in on the day."
     },
     "setup": {
       "steps": {

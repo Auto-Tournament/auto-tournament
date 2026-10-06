@@ -3,10 +3,10 @@
     "title": "Instellingen",
     "intro": "Configureer integraties, in-game standaarden en ontwikkelaarsopties.",
     "tabs": {
-      "integrations": "Integraties & webhooks",
+      "general": "General",
       "signIn": "Sign-in",
       "players": "Spelers & toegang",
-      "matches": "Wedstrijden & ratings",
+      "ratings": "Wedstrijden & ratings",
       "developer": "Ontwikkelaar / simulatie",
       "license": "License",
       "webhooks": "Webhooks",
@@ -175,7 +175,11 @@
           }
         }
       }
-    }
+    },
+    "groups": {
+      "platform": "Platform"
+    },
+    "navLabel": "Settings pages"
   },
   "dashboard": {
     "title": "Admin",

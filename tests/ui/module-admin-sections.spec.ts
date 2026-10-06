@@ -52,31 +52,40 @@ test.describe('Module sections on Admin tools and Settings', () => {
   );
 
   test(
-    'with CS2 installed, Settings has a CS2 tab with the webhook URL, map sync and server defaults',
+    'with CS2 installed, Settings has a CS2 group: general, servers, skins and player inventories',
     { tag: ['@ui', '@modules', '@settings'] },
     async ({ page }) => {
       await page.goto('/settings');
-      const tab = page.getByTestId('settings-tab-module-cs2');
-      await expect(tab).toBeVisible({ timeout: 30000 });
+      const group = page.getByTestId('settings-nav-group-cs2');
+      await expect(group).toBeVisible({ timeout: 30000 });
 
-      // Core's tabs no longer carry CS2's fields, and "Advanced" (all CS2) is gone.
+      // The platform's pages carry none of CS2's fields, and "Advanced" (all CS2) is gone.
       await expect(page.getByTestId('settings-webhook-url-input')).toHaveCount(0);
-      await expect(page.locator('#settings-tab-advanced')).toHaveCount(0);
-      await page.locator('#settings-tab-matches').click();
-      await expect(page.locator('#settings-tabpanel-matches')).toBeVisible();
+      await expect(page.locator('#settings-nav-advanced')).toHaveCount(0);
+      await page.getByTestId('settings-nav-ratings').click();
+      await expect(page.locator('#settings-page-ratings')).toBeVisible();
       await expect(page.getByTestId('cs2-server-defaults')).toHaveCount(0);
 
-      await tab.click();
+      await page.getByTestId('settings-nav-cs2-general').click();
       await expect(page.getByTestId('settings-webhook-url-input')).toBeVisible({ timeout: 15000 });
       await expect(page.getByTestId('cs2-settings-map-sync')).toBeVisible();
-      // The defaults sent to every CS2 server moved here from core's tabs.
+
+      // The defaults sent to every CS2 server.
+      await page.getByTestId('settings-nav-cs2-servers').click();
       await expect(page.getByTestId('cs2-server-defaults')).toBeVisible();
       await expect(page.getByTestId('at-hostname-format-input')).toBeAttached();
       await expect(page.getByTestId('cs2-settings-reset-button')).toBeVisible();
 
-      // `links.settings('cs2')` opens the tab directly.
+      // Virtual skins are CS2's too.
+      await page.getByTestId('settings-nav-cs2-skins').click();
+      await expect(page.getByTestId('skins-settings')).toBeVisible({ timeout: 15000 });
+      await page.getByTestId('settings-nav-cs2-inventories').click();
+      await expect(page.getByTestId('skins-inventory-admin')).toBeVisible({ timeout: 15000 });
+
+      // `links.settings('cs2')` opens the group's first page.
       await page.goto('/settings?section=cs2');
       await expect(page.getByTestId('settings-webhook-url-input')).toBeVisible({ timeout: 30000 });
+      await expect(page.getByTestId('settings-nav-cs2-general')).toHaveAttribute('aria-current', 'page');
     }
   );
 
@@ -94,18 +103,15 @@ test.describe('Module sections on Admin tools and Settings', () => {
       await expect(page.getByTestId('admin-tools-module-cs2')).toHaveCount(0);
       await expect(page.getByTestId('cs2-admin-tools')).toHaveCount(0);
 
-      // A link to CS2's tab lands on core's first tab instead.
+      // A link to CS2's settings lands on the platform's first page instead.
       await page.goto('/settings?section=cs2');
       await expect(page.getByTestId('settings-version')).toBeVisible({ timeout: 15000 });
-      await expect(page.getByRole('tab', { selected: true })).toHaveAttribute(
-        'id',
-        'settings-tab-integrations'
-      );
-      await expect(page.getByTestId('settings-tab-module-cs2')).toHaveCount(0);
+      await expect(page.getByTestId('settings-nav-general')).toHaveAttribute('aria-current', 'page');
+      await expect(page.getByTestId('settings-nav-group-cs2')).toHaveCount(0);
       await expect(page.getByTestId('settings-webhook-url-input')).toHaveCount(0);
       await expect(page.getByTestId('cs2-settings-map-sync')).toHaveCount(0);
       await expect(page.getByTestId('cs2-server-defaults')).toHaveCount(0);
-      await expect(page.locator('#settings-tab-advanced')).toHaveCount(0);
+      await expect(page.locator('#settings-nav-advanced')).toHaveCount(0);
     }
   );
 });

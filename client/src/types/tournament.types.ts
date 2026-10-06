@@ -73,7 +73,6 @@ export interface TournamentSettings {
   checkInOpensAt?: string;
   checkInClosesAt?: string;
   /** Virtual skin rewards for the top three; on unless turned off here. */
-  skinRewards?: boolean;
 }
 
 export interface EventPagePrize {

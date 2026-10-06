@@ -1,4 +1,4 @@
-import { Box, TextField, Typography } from '@mui/material';
+import { Box, FormControlLabel, Switch, TextField, Typography } from '@mui/material';
 import { SegmentedControl, useModuleTranslation, radii } from '../../../module-sdk';
 import type { TournamentRulesStepProps as Cs2MatchSettingsProps } from '../../types';
 import {
@@ -131,6 +131,18 @@ export function Cs2MatchSettings({ settings, onChange, type, disabled = false }:
               : t('tournament.overtime.segmentsHelper')
           }
           sx={{ maxWidth: 360 }}
+        />
+      )}
+      {type !== 'shuffle' && (
+        <FormControlLabel
+          control={
+            <Switch
+              checked={value.skinRewards !== false}
+              onChange={(event) => update({ skinRewards: event.target.checked })}
+              disabled={disabled}
+            />
+          }
+          label={t('skins.tournamentRewardsSwitch')}
         />
       )}
     </Box>

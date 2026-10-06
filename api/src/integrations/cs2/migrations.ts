@@ -92,6 +92,7 @@ export const CS2_FLEET_AUTOSCALE_MIGRATION_ID = '014-fleet-autoscale';
 export const CS2_FLEET_PLUGINS_STATE_MIGRATION_ID = '015-fleet-plugins-state';
 export const CS2_SERVER_TOURNAMENT_USE_MIGRATION_ID = '016-server-tournament-use';
 export const CS2_SERVER_SKINS_MIGRATION_ID = '017-server-skins';
+export const CS2_SKINS_MIGRATION_ID = '018-skins';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -851,6 +852,53 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
     id: CS2_SERVER_SKINS_MIGRATION_ID,
     up: `
     ALTER TABLE cs2_servers ADD COLUMN IF NOT EXISTS skins INTEGER NOT NULL DEFAULT 0;
+`,
+  },
+  {
+    // Virtual skins (skins/skinService.ts), which core created until they
+    // moved into this module. An instance that ran core's version already has
+    // the tables; the ALTER is for one from before the variant column.
+    id: CS2_SKINS_MIGRATION_ID,
+    up: `
+    -- Virtual skins (owned on the platform; Ready Up servers with skins on
+    -- show the equipped ones): what each player owns, rolled like a case (float and pattern), and where it came from.
+    CREATE TABLE IF NOT EXISTS player_skins (
+      id SERIAL PRIMARY KEY,
+      player_uid UUID NOT NULL, -- players.uid
+      weapon TEXT NOT NULL, -- 'weapon_ak47', 'weapon_knife_karambit', 'sporty_gloves', ... (csm skins.json)
+      weapon_name TEXT NOT NULL,
+      paint_kit INTEGER NOT NULL,
+      name TEXT NOT NULL,
+      rarity TEXT NOT NULL,
+      image TEXT NOT NULL, -- file name under csm's skin_images
+      float_value REAL NOT NULL,
+      pattern INTEGER NOT NULL,
+      source TEXT NOT NULL, -- 'matchmaking' | 'tournament' | 'admin'
+      source_label TEXT, -- the map, or the tournament's name
+      source_ref TEXT, -- the match slug, or 'tournament:<id>:<name>'
+      place INTEGER, -- tournament placement (1, 2, 3)
+      variant TEXT, -- a phase of a multi-phase finish: 'Sapphire', 'Phase 2', ... (null for most skins)
+      seen BOOLEAN NOT NULL DEFAULT FALSE, -- the owner has seen the "new skin" reveal
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_player_skins_owner ON player_skins(player_uid);
+    CREATE INDEX IF NOT EXISTS idx_player_skins_source_ref ON player_skins(source_ref);
+
+    -- The skin equipped per slot (a weapon, or 'knife' / 'gloves').
+    CREATE TABLE IF NOT EXISTS player_loadout (
+      player_uid UUID NOT NULL,
+      slot TEXT NOT NULL,
+      skin_id INTEGER NOT NULL REFERENCES player_skins(id) ON DELETE CASCADE,
+      PRIMARY KEY (player_uid, slot)
+    );
+
+    -- The profile's skin showcase: up to eight skins in the owner's order, some shown big.
+    CREATE TABLE IF NOT EXISTS player_skin_showcase (
+      player_uid UUID PRIMARY KEY,
+      items TEXT NOT NULL DEFAULT '[]' -- JSON [{ skinId, big }]
+    );
+    ALTER TABLE player_skins ADD COLUMN IF NOT EXISTS variant TEXT;
 `,
   },
 ];

@@ -57,6 +57,8 @@ export interface Cs2TournamentSettings {
   mapPoolId?: number;
   /** Only maps of this type (wingman, hostage, …); absent: any. */
   mapMode?: MapMode;
+  /** False: the top three get no skin rewards (skins/skinService). Absent: on. */
+  skinRewards?: boolean;
 }
 
 /** The map pool size a veto order is checked against when nothing else says (Active Duty). */
@@ -287,6 +289,7 @@ function applyLayer(
     if (isMapMode(layer.mapMode)) into.mapMode = layer.mapMode;
     else if (layer.mapMode === null || layer.mapMode === '') delete into.mapMode;
   }
+  if (typeof layer.skinRewards === 'boolean') into.skinRewards = layer.skinRewards;
   if (layer.mapPoolId !== undefined) {
     const id = Number(layer.mapPoolId);
     if (layer.mapPoolId !== null && Number.isInteger(id) && id > 0) into.mapPoolId = id;
@@ -327,6 +330,7 @@ export const cs2TournamentSettings: ModuleTournamentSettings<Cs2TournamentSettin
       maxRounds: value?.maxRounds,
       overtimeMode: value?.overtimeMode,
       overtimeSegments: value?.overtimeSegments,
+      ...(value?.skinRewards !== undefined ? { skinRewards: value.skinRewards } : {}),
       ...(value?.mapPoolId !== undefined ? { mapPoolId: value.mapPoolId } : {}),
       ...(value?.mapMode ? { mapMode: value.mapMode } : {}),
     };

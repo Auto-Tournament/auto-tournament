@@ -672,7 +672,7 @@
     },
     {
       "name": "Skins",
-      "description": "Virtual skins: inventories, loadouts and showcases (platform only)."
+      "description": "Virtual CS2 skins: inventories, loadouts, showcases and the admin inventory manager (platform only)."
     },
     {
       "name": "Steam",
@@ -9719,7 +9719,13 @@
         "tags": [
           "Skins"
         ],
-        "summary": "Search the skin catalogue (admin)",
+        "summary": "GET /api/skins/admin/catalog",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
         "security": [
           {
             "bearerAuth": []
@@ -9727,32 +9733,7 @@
           {
             "apiToken": []
           }
-        ],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "q",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "all",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "1"
-              ]
-            },
-            "description": "Every paint kit (each Doppler phase) instead of one per name"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Up to 50 matching skins"
-          }
-        }
+        ]
       }
     },
     "/api/skins/admin/config": {
@@ -9760,7 +9741,13 @@
         "tags": [
           "Skins"
         ],
-        "summary": "The skins settings (admin)",
+        "summary": "GET /api/skins/admin/config",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
         "security": [
           {
             "bearerAuth": []
@@ -9768,18 +9755,19 @@
           {
             "apiToken": []
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "The settings"
-          }
-        }
+        ]
       },
       "put": {
         "tags": [
           "Skins"
         ],
-        "summary": "Change the skins settings (admin)",
+        "summary": "PUT /api/skins/admin/config",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
         "security": [
           {
             "bearerAuth": []
@@ -9787,21 +9775,7 @@
           {
             "apiToken": []
           }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "The saved settings"
-          }
-        }
+        ]
       }
     },
     "/api/skins/admin/players": {
@@ -9809,7 +9783,13 @@
         "tags": [
           "Skins"
         ],
-        "summary": "Find players to manage their inventory",
+        "summary": "GET /api/skins/admin/players",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
         "security": [
           {
             "bearerAuth": []
@@ -9817,23 +9797,7 @@
           {
             "apiToken": []
           }
-        ],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "q",
-            "schema": {
-              "type": "string"
-            },
-            "description": "Part of a name",
-            "or a Steam ID": null
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Up to 30 players with their skin counts"
-          }
-        }
+        ]
       }
     },
     "/api/skins/admin/players/{steamId}/inventory": {
@@ -9841,7 +9805,23 @@
         "tags": [
           "Skins"
         ],
-        "summary": "A player's whole inventory, for an admin",
+        "summary": "GET /api/skins/admin/players/:steamId/inventory",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "steamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "security": [
           {
             "bearerAuth": []
@@ -9849,25 +9829,7 @@
           {
             "apiToken": []
           }
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "steamId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "The player's skins"
-          },
-          "404": {
-            "description": "No such player"
-          }
-        }
+        ]
       }
     },
     "/api/skins/admin/players/{steamId}/skins": {
@@ -9875,8 +9837,23 @@
         "tags": [
           "Skins"
         ],
-        "summary": "Give a player a skin",
-        "description": "One exact paint kit. Float and pattern are rolled when left out.",
+        "summary": "POST /api/skins/admin/players/:steamId/skins",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "steamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "security": [
           {
             "bearerAuth": []
@@ -9884,60 +9861,7 @@
           {
             "apiToken": []
           }
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "steamId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "weapon",
-                  "paintKit"
-                ],
-                "properties": {
-                  "weapon": {
-                    "type": "string"
-                  },
-                  "paintKit": {
-                    "type": "integer"
-                  },
-                  "float": {
-                    "type": "number",
-                    "minimum": 0,
-                    "maximum": 1
-                  },
-                  "pattern": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 1000
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "The new skin's id"
-          },
-          "400": {
-            "description": "Not in the catalogue"
-          },
-          "404": {
-            "description": "No such player"
-          }
-        }
+        ]
       }
     },
     "/api/skins/admin/skins/{id}": {
@@ -9945,7 +9869,23 @@
         "tags": [
           "Skins"
         ],
-        "summary": "Take a skin away from its owner",
+        "summary": "DELETE /api/skins/admin/skins/:id",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "security": [
           {
             "bearerAuth": []
@@ -9953,25 +9893,7 @@
           {
             "apiToken": []
           }
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Removed"
-          },
-          "404": {
-            "description": "No such skin"
-          }
-        }
+        ]
       }
     },
     "/api/skins/me": {
@@ -9979,16 +9901,11 @@
         "tags": [
           "Skins"
         ],
-        "summary": "Your inventory, showcase, and skins you have not seen yet",
+        "summary": "GET /api/skins/me",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
-            "description": "The inventory"
-          },
-          "401": {
-            "description": "Not signed in"
-          },
-          "404": {
-            "description": "Skins are off"
+            "description": "Success"
           }
         }
       }
@@ -9998,28 +9915,11 @@
         "tags": [
           "Skins"
         ],
-        "summary": "Equip a skin in its slot",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "skinId": {
-                    "type": "integer"
-                  }
-                }
-              }
-            }
-          }
-        },
+        "summary": "POST /api/skins/me/equip",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
-            "description": "Equipped"
-          },
-          "404": {
-            "description": "Not in your inventory",
-            "or skins are off": null
+            "description": "Success"
           }
         }
       }
@@ -10029,22 +9929,23 @@
         "tags": [
           "Skins"
         ],
-        "summary": "Empty a loadout slot",
+        "summary": "DELETE /api/skins/me/equip/:slot",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
         "parameters": [
           {
-            "in": "path",
             "name": "slot",
+            "in": "path",
             "required": true,
             "schema": {
               "type": "string"
             }
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Emptied"
-          }
-        }
+        ]
       }
     },
     "/api/skins/me/seen": {
@@ -10052,27 +9953,11 @@
         "tags": [
           "Skins"
         ],
-        "summary": "Mark new skins as seen",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "ids": {
-                    "type": "array",
-                    "items": {
-                      "type": "integer"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
+        "summary": "POST /api/skins/me/seen",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
-            "description": "Marked"
+            "description": "Success"
           }
         }
       }
@@ -10082,35 +9967,11 @@
         "tags": [
           "Skins"
         ],
-        "summary": "Arrange the profile showcase (up to 8 skins, some big)",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "items": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "skinId": {
-                          "type": "integer"
-                        },
-                        "big": {
-                          "type": "boolean"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
+        "summary": "PUT /api/skins/me/showcase",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
-            "description": "Saved"
+            "description": "Success"
           }
         }
       }
@@ -10120,26 +9981,23 @@
         "tags": [
           "Skins"
         ],
-        "summary": "A player's skins (public)",
+        "summary": "GET /api/skins/players/:steamId",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
         "parameters": [
           {
-            "in": "path",
             "name": "steamId",
+            "in": "path",
             "required": true,
             "schema": {
               "type": "string"
             }
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Inventory and showcase"
-          },
-          "404": {
-            "description": "Skins are off",
-            "or no such player": null
-          }
-        }
+        ]
       }
     },
     "/api/skins/skin/{id}": {
@@ -10147,26 +10005,23 @@
         "tags": [
           "Skins"
         ],
-        "summary": "One skin and its owner (public)",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
+        "summary": "GET /api/skins/skin/:id",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
-            "description": "The skin"
-          },
-          "404": {
-            "description": "No such skin",
-            "or skins are off": null
+            "description": "Success"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/api/skins/status": {
@@ -10174,10 +10029,11 @@
         "tags": [
           "Skins"
         ],
-        "summary": "Whether virtual skins are on (public)",
+        "summary": "GET /api/skins/status",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
-            "description": "{ enabled }"
+            "description": "Success"
           }
         }
       }

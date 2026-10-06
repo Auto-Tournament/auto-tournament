@@ -1,8 +1,8 @@
 import { Box, Button, Dialog, Typography } from '@mui/material';
-import { useTranslation } from 'react-i18next';
-import { useMySkins, useSkinsEnabled } from '../../hooks/useSkins';
 import { sourceLabel } from './SkinParts';
-import { tokens, fontDisplay, mono, radii, rarityColor, withAlpha } from '../../theme/tokens';
+import { useModuleTranslation, tokens, fontDisplay, mono, radii, withAlpha } from '../../../module-sdk';
+import { useMySkins, useSkinsEnabled } from './useSkins';
+import { rarityColor } from './rarity';
 
 const { color } = tokens;
 
@@ -12,7 +12,7 @@ const { color } = tokens;
  * slowly (still for reduced motion). Equip now or keep it in the inventory.
  */
 export function NewSkinReveal() {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
   const enabled = useSkinsEnabled();
   const { inventory, unseen, equip, markSeen, available } = useMySkins();
   const skin = enabled && available ? inventory.find((s) => s.id === unseen[0]) ?? null : null;

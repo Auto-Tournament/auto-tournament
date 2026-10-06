@@ -3,10 +3,10 @@
     "title": "Ustawienia",
     "intro": "Skonfiguruj integracje, domyślne ustawienia w grze oraz opcje deweloperskie.",
     "tabs": {
-      "integrations": "Integracje i webhooki",
+      "general": "General",
       "signIn": "Sign-in",
       "players": "Gracze i dostęp",
-      "matches": "Mecze i rating",
+      "ratings": "Mecze i rating",
       "developer": "Deweloper / symulacja",
       "license": "License",
       "webhooks": "Webhooki",
@@ -175,7 +175,11 @@
           }
         }
       }
-    }
+    },
+    "groups": {
+      "platform": "Platform"
+    },
+    "navLabel": "Settings pages"
   },
   "dashboard": {
     "title": "Admin",

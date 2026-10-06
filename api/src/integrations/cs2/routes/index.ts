@@ -32,8 +32,15 @@ import { fleetAdminRouter, fleetEnrollRouter } from '../fleet/routes';
 import { fleetHostAdminRouter } from '../fleet/hosts/routes';
 import { fleetPushRouter } from '../fleet/push/routes';
 import { fleetAutoscaleRouter } from '../fleet/autoscale/routes';
+import skinsRoutes from '../skins/routes';
 
 export const cs2LegacyRoutes: LegacyRouteMount[] = [
+  {
+    prefix: '/api/skins',
+    router: skinsRoutes,
+    title: 'Skins',
+    description: 'Virtual CS2 skins: inventories, loadouts, showcases and the admin inventory manager (platform only).',
+  },
   {
     prefix: '/api/servers',
     router: serverBootstrapRoutes,

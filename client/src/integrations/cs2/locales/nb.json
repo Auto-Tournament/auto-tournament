@@ -1088,6 +1088,12 @@
       "success": "Innstillinger tilbakestilt til standardverdier",
       "error": "Klarte ikke å tilbakestille innstillinger",
       "button": "Tilbakestill serverstandarder"
+    },
+    "pages": {
+      "general": "Generelt",
+      "servers": "Servere",
+      "skins": "Skins",
+      "inventories": "Spillerinventar"
     }
   },
   "roster": {
@@ -1523,5 +1529,137 @@
     "bansMost": "Banner mest",
     "picksMost": "Velger mest",
     "vetoShare": "{{map}} · {{count}} av {{total}} vetoer"
+  },
+  "skins": {
+    "notice": "Virtuelle skins. De finnes bare på Auto Tournament, har ingen pengeverdi, kan ikke byttes eller selges, og vises ikke i Counter-Strike 2.",
+    "equipLabel": "Ta i bruk {{name}}",
+    "equippedLabel": "{{name}}, i bruk",
+    "new": "NY",
+    "inspect": "Se på {{name}}",
+    "rarity": {
+      "common": "Vanlig",
+      "uncommon": "Uvanlig",
+      "rare": "Sjelden",
+      "mythical": "Mytisk",
+      "legendary": "Legendarisk",
+      "ancient": "Eldgammel",
+      "immortal": "Udødelig"
+    },
+    "wear": {
+      "fn": "Factory New",
+      "mw": "Minimal Wear",
+      "ft": "Field-Tested",
+      "ww": "Well-Worn",
+      "bs": "Battle-Scarred"
+    },
+    "float": "Float",
+    "pattern": "Mønster",
+    "place": "#{{n}} i en turnering",
+    "wonMatchmaking": "Vant en matchmaking-kamp",
+    "equipped": "I bruk",
+    "inInventory": "I inventaret",
+    "theirInventory": "Inventaret til {{name}}",
+    "acquired": "Ny skin",
+    "equipNow": "Ta i bruk nå",
+    "keep": "Behold i inventaret",
+    "inventory": "Inventar",
+    "count": "{{count}} skins",
+    "equippedTitle": "I bruk",
+    "slot": {
+      "knife": "Kniv",
+      "gloves": "Hansker"
+    },
+    "filter": {
+      "all": "Alle",
+      "rifles": "Rifler",
+      "pistols": "Pistoler",
+      "smgs": "SMG-er",
+      "heavy": "Tunge",
+      "knives": "Kniver",
+      "gloves": "Hansker"
+    },
+    "sortLabel": "Sorter",
+    "sort": {
+      "rarity": "Sjeldenhet, beste først",
+      "newest": "Nyeste først"
+    },
+    "noneInFilter": "Ingen skins her.",
+    "emptyOwn": "Ingen skins ennå. Vinn matchmaking-kamper eller plasser deg i en turnering for å få en.",
+    "emptyTheirs": "Ingen skins ennå.",
+    "howToGet": "Hvordan får jeg skins?",
+    "howMatchmaking": "Vinn matchmaking-kamper: hver seier kan gi en skin.",
+    "howTournament": "Plasser deg i en turnering: de beste lagene får en skin hver.",
+    "off": "Skins er ikke slått på her.",
+    "loadout": "Utrustning",
+    "arrange": "Ordne",
+    "showInventory": "Vis inventar",
+    "arrangeTitle": "Ordne utrustningen",
+    "arrangeHint": "Velg opptil {{max}} skins, rekkefølgen, og hvilke som vises stort.",
+    "big": "Stor",
+    "moveUp": "Flytt opp",
+    "moveDown": "Flytt ned",
+    "hide": "Skjul",
+    "addToShowcase": "Legg til en skin",
+    "save": "Lagre",
+    "admin": {
+      "title": "Skins",
+      "mainHint": "Av skjuler inventar, utrustning og premier for alle. Ingenting slettes.",
+      "matchmaking": "Matchmaking",
+      "dropChance": "Sjanse for en skin når du vinner",
+      "whichRarity": "Hvilken sjeldenhet som faller (relativ vekt)",
+      "tournaments": "Turneringer",
+      "tournamentHint": "Alle spillerne på laget får skinen, hver med egen tilfeldig float og mønster, som å åpne en kasse. En turnering kan slå av premiene.",
+      "place1": "1.",
+      "place2": "2.",
+      "place3": "3.",
+      "random": "Tilfeldig",
+      "pickSkin": "Velg en skin",
+      "anyRarity": "En {{rarity}}",
+      "skin": "Skin",
+      "variantsNote": "En skin med flere faser (Doppler) gir en tilfeldig fase, som en kasse.",
+      "lowest": "Lavest",
+      "highest": "Høyest",
+      "seedsHint": "Tomt betyr hvilket som helst. Skriv et og trykk Enter.",
+      "addSeed": "Legg til et seed",
+      "notice": "Melding som vises med skins",
+      "noticeFixed": "Vises alltid. Kan ikke endres.",
+      "saved": "Skins-innstillinger lagret",
+      "inv": {
+        "title": "Spillerinventar",
+        "hint": "Velg en spiller for å se skinsene deres, gi dem et eller ta et bort.",
+        "player": "Spiller",
+        "playerHint": "Navn eller Steam-ID",
+        "give": "Gi et skin",
+        "giveTo": "Gi {{player}} et skin",
+        "skinHint": "Våpen, finish eller fase",
+        "phase": "Fase",
+        "wear": "Slitasje",
+        "wears": {
+          "fn": "Factory New",
+          "mw": "Minimal Wear",
+          "ft": "Field-Tested",
+          "ww": "Well-Worn",
+          "bs": "Battle-Scarred"
+        },
+        "float": "Float",
+        "pattern": "Mønsterseed",
+        "rollPattern": "Tilfeldig seed",
+        "emptyRolls": "La float eller mønster stå tomt for å trekke tilfeldig.",
+        "floatBad": "Mellom 0 og 1",
+        "patternBad": "Et heltall fra 0 til 1000",
+        "given": "Skin gitt til {{player}}",
+        "equipped": "utstyrt",
+        "source": {
+          "matchmaking": "Matchmaking",
+          "tournament": "Turnering",
+          "admin": "Gitt av en admin"
+        },
+        "remove": "Ta bort",
+        "removeTitle": "Ta bort dette skinet?",
+        "removeQuestion": "{{skin}} forsvinner fra inventaret og loadouten til {{player}}. Dette kan ikke angres.",
+        "removed": "Skin tatt bort"
+      }
+    },
+    "tournamentRewardsSwitch": "Skin-premier for topp tre (når skins er slått på)"
   }
 }

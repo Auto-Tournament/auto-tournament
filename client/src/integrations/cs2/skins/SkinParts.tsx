@@ -10,12 +10,11 @@ import {
   TrophyIcon,
   XIcon,
 } from '@phosphor-icons/react';
-import { useTranslation } from 'react-i18next';
-import type { OwnedSkin } from '../../hooks/useSkins';
-import { wearKey } from '../../hooks/useSkins';
-import { api } from '../../utils/api';
-import { getMapDisplayName } from '../../constants/maps';
-import { tokens, fontDisplay, mono, radii, rarityColor, withAlpha } from '../../theme/tokens';
+import { api, useModuleTranslation, tokens, fontDisplay, mono, radii, withAlpha } from '../../../module-sdk';
+import { wearKey, type OwnedSkin } from './useSkins';
+import { rarityColor } from './rarity';
+import { playerInventoryPath } from './paths';
+import { getMapDisplayName } from '../maps/mapData';
 
 const { color } = tokens;
 
@@ -26,7 +25,7 @@ export function sourceLabel(label: string): string {
 
 /** The fixed notice: skins exist only here. Admins cannot change it. */
 export function VirtualNotice({ compact = false }: { compact?: boolean }) {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
   return (
     <Box
       data-testid="skins-notice"
@@ -78,7 +77,7 @@ export function SkinCard({
   onInspect: (skin: OwnedSkin) => void;
   showNew?: boolean;
 }) {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
   return (
     <Box sx={{ position: 'relative', display: 'flex', '&:hover .inspect, & .inspect:focus-visible': { opacity: 1 } }}>
       <ButtonBase
@@ -171,7 +170,7 @@ interface InspectData {
  * and pattern, where it was won, and who owns it.
  */
 export function InspectSkinDialog({ skinId, onClose }: { skinId: number | null; onClose: () => void }) {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useModuleTranslation('cs2');
   const [data, setData] = useState<InspectData | null>(null);
 
   useEffect(() => {
@@ -241,7 +240,7 @@ export function InspectSkinDialog({ skinId, onClose }: { skinId: number | null; 
                 <Typography>{data.owner.name}</Typography>
                 <Typography sx={{ fontSize: '0.8125rem', color: color.muted }}>{skin.equipped ? t('skins.equipped') : t('skins.inInventory')}</Typography>
               </Box>
-              <Link component={RouterLink} to={`/player/${data.owner.steamId}/inventory`} onClick={onClose} sx={{ fontSize: '0.875rem', color: color.ink2 }}>
+              <Link component={RouterLink} to={playerInventoryPath(data.owner.steamId)} onClick={onClose} sx={{ fontSize: '0.875rem', color: color.ink2 }}>
                 {t('skins.theirInventory', { name: data.owner.name })}
               </Link>
             </Box>

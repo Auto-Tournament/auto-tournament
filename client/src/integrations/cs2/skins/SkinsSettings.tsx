@@ -16,10 +16,8 @@ import {
   Typography,
 } from '@mui/material';
 import { LockSimpleIcon, PlayCircleIcon, TrophyIcon } from '@phosphor-icons/react';
-import { useTranslation } from 'react-i18next';
-import { api } from '../../utils/api';
-import { useSnackbar } from '../../contexts/SnackbarContext';
-import { tokens, rarityColor } from '../../theme/tokens';
+import { api, useSnackbar, useModuleTranslation, tokens } from '../../../module-sdk';
+import { rarityColor } from './rarity';
 
 const { color } = tokens;
 const RARITIES = ['common', 'uncommon', 'rare', 'mythical', 'legendary', 'ancient', 'immortal'] as const;
@@ -57,7 +55,7 @@ const PLACE_COLOR = [color.medalGold, color.medalSilver, color.medalBronze];
 
 /** One placement's reward: random by rarity, or a picked skin with its float range and seeds. */
 function RewardRow({ reward, onChange }: { reward: Reward; onChange: (r: Reward) => void }) {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
   const [query, setQuery] = useState('');
   const [options, setOptions] = useState<CatalogSkin[]>([]);
   const [seedInput, setSeedInput] = useState('');
@@ -166,8 +164,8 @@ function RewardRow({ reward, onChange }: { reward: Reward; onChange: (r: Reward)
  * ways to get a skin: matchmaking (drop chance and rarity odds) and
  * tournaments (a reward per place). The notice players see is fixed.
  */
-export function SkinsCard() {
-  const { t } = useTranslation();
+export function SkinsSettings() {
+  const { t } = useModuleTranslation('cs2');
   const { showSuccess, showError } = useSnackbar();
   const [config, setConfig] = useState<Config | null>(null);
   const [saving, setSaving] = useState(false);

@@ -46,6 +46,8 @@ export interface Cs2TournamentSettings {
   mapPoolId?: number | null;
   /** Only maps of this type (a wingman tournament plays wingman maps); absent: any. */
   mapMode?: MapGameMode;
+  /** False: the top three get no skin rewards. Absent: on. */
+  skinRewards?: boolean;
 }
 
 export const CS2_DEFAULTS: Cs2TournamentSettings = {
@@ -88,6 +90,7 @@ function applyFields(into: Cs2TournamentSettings, source: Record<string, unknown
   } else if (source.mapPoolId === null) {
     into.mapPoolId = null;
   }
+  if (typeof source.skinRewards === 'boolean') into.skinRewards = source.skinRewards;
   if (isMapMode(source.mapMode)) into.mapMode = source.mapMode;
   else if (source.mapMode === null) delete into.mapMode;
 }
@@ -125,6 +128,7 @@ export function cs2Patch(next: Cs2TournamentSettings): Record<string, unknown> {
   };
   if (next.mapSequence) stored.mapSequence = next.mapSequence;
   if (next.mapPoolId !== undefined) stored.mapPoolId = next.mapPoolId;
+  if (next.skinRewards !== undefined) stored.skinRewards = next.skinRewards;
   // null clears a type set before (the API keeps a field a patch leaves out).
   stored.mapMode = next.mapMode ?? null;
   return { [CS2_SETTINGS_KEY]: stored };

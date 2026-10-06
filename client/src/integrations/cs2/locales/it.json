@@ -1088,7 +1088,13 @@
       "error": "Impossibile ripristinare le impostazioni",
       "button": "Reimposta impostazioni"
     },
-    "defaultsTitle": "Server defaults"
+    "defaultsTitle": "Server defaults",
+    "pages": {
+      "general": "General",
+      "servers": "Servers",
+      "skins": "Skins",
+      "inventories": "Player inventories"
+    }
   },
   "roster": {
     "steamLinked": "Steam linked",
@@ -1523,5 +1529,137 @@
     "bansMost": "Bans most",
     "picksMost": "Picks most",
     "vetoShare": "{{map}} · {{count}} of {{total}} vetoes"
+  },
+  "skins": {
+    "notice": "Virtual skins. They only exist on Auto Tournament, have no money value, can't be traded or sold, and don't appear in Counter-Strike 2.",
+    "equipLabel": "Equip {{name}}",
+    "equippedLabel": "{{name}}, equipped",
+    "new": "NEW",
+    "inspect": "Inspect {{name}}",
+    "rarity": {
+      "common": "Common",
+      "uncommon": "Uncommon",
+      "rare": "Rare",
+      "mythical": "Mythical",
+      "legendary": "Legendary",
+      "ancient": "Ancient",
+      "immortal": "Immortal"
+    },
+    "wear": {
+      "fn": "Factory New",
+      "mw": "Minimal Wear",
+      "ft": "Field-Tested",
+      "ww": "Well-Worn",
+      "bs": "Battle-Scarred"
+    },
+    "float": "Float",
+    "pattern": "Pattern",
+    "place": "#{{n}} in a tournament",
+    "wonMatchmaking": "Won a matchmaking game",
+    "equipped": "Equipped",
+    "inInventory": "In the inventory",
+    "theirInventory": "{{name}}'s inventory",
+    "acquired": "New skin acquired",
+    "equipNow": "Equip now",
+    "keep": "Keep in inventory",
+    "inventory": "Inventory",
+    "count": "{{count}} skins",
+    "equippedTitle": "Equipped",
+    "slot": {
+      "knife": "Knife",
+      "gloves": "Gloves"
+    },
+    "filter": {
+      "all": "All",
+      "rifles": "Rifles",
+      "pistols": "Pistols",
+      "smgs": "SMGs",
+      "heavy": "Heavy",
+      "knives": "Knives",
+      "gloves": "Gloves"
+    },
+    "sortLabel": "Sort",
+    "sort": {
+      "rarity": "Rarity, best first",
+      "newest": "Newest first"
+    },
+    "noneInFilter": "No skins here.",
+    "emptyOwn": "No skins yet. Win matchmaking games or place in a tournament to get one.",
+    "emptyTheirs": "No skins yet.",
+    "howToGet": "How do I get skins?",
+    "howMatchmaking": "Win matchmaking games: each win has a chance of a skin.",
+    "howTournament": "Place in a tournament: the top teams get a skin each.",
+    "off": "Skins are not turned on here.",
+    "loadout": "Loadout",
+    "arrange": "Arrange",
+    "showInventory": "Show inventory",
+    "arrangeTitle": "Arrange your loadout",
+    "arrangeHint": "Pick up to {{max}} skins, their order, and which are big.",
+    "big": "Big",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "hide": "Hide",
+    "addToShowcase": "Add a skin",
+    "save": "Save",
+    "admin": {
+      "title": "Skins",
+      "mainHint": "Off hides inventories, loadouts and rewards for everyone. Nothing is deleted.",
+      "matchmaking": "Matchmaking",
+      "dropChance": "Chance of a skin when you win",
+      "whichRarity": "Which rarity drops (relative weights)",
+      "tournaments": "Tournaments",
+      "tournamentHint": "Every player in the team gets the skin, each with their own random float and pattern, like opening a case. A tournament can turn its rewards off.",
+      "place1": "1st",
+      "place2": "2nd",
+      "place3": "3rd",
+      "random": "Random",
+      "pickSkin": "Pick a skin",
+      "anyRarity": "Any {{rarity}}",
+      "skin": "Skin",
+      "variantsNote": "A skin with several phases (Doppler) gives a random phase, like a case.",
+      "lowest": "Lowest",
+      "highest": "Highest",
+      "seedsHint": "Empty means any seed. Type one and press Enter.",
+      "addSeed": "Add a seed",
+      "notice": "Notice shown with skins",
+      "noticeFixed": "Always shown. It can't be changed.",
+      "saved": "Skins settings saved",
+      "inv": {
+        "title": "Player inventories",
+        "hint": "Pick a player to see their skins, give them one or take one away.",
+        "player": "Player",
+        "playerHint": "Name or Steam ID",
+        "give": "Give a skin",
+        "giveTo": "Give {{player}} a skin",
+        "skinHint": "Weapon, finish or phase",
+        "phase": "Phase",
+        "wear": "Wear",
+        "wears": {
+          "fn": "Factory New",
+          "mw": "Minimal Wear",
+          "ft": "Field-Tested",
+          "ww": "Well-Worn",
+          "bs": "Battle-Scarred"
+        },
+        "float": "Float",
+        "pattern": "Pattern seed",
+        "rollPattern": "Random seed",
+        "emptyRolls": "Leave float or pattern empty to roll it.",
+        "floatBad": "Between 0 and 1",
+        "patternBad": "A whole number, 0 to 1000",
+        "given": "Skin given to {{player}}",
+        "equipped": "equipped",
+        "source": {
+          "matchmaking": "Matchmaking",
+          "tournament": "Tournament",
+          "admin": "Given by an admin"
+        },
+        "remove": "Take away",
+        "removeTitle": "Take this skin away?",
+        "removeQuestion": "{{skin}} leaves {{player}}'s inventory and loadout. This cannot be undone.",
+        "removed": "Skin taken away"
+      }
+    },
+    "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)"
   }
 }

@@ -17,8 +17,8 @@
 /* global AbortController */
 import { randomInt } from 'crypto';
 import fetch from 'node-fetch';
-import { db } from '../config/database';
-import { log } from '../utils/logger';
+import { db } from '../../../config/database';
+import { log } from '../../../utils/logger';
 import { WEAPON_DEFINDEX } from './skinDefindex';
 
 export const SKIN_IMAGES_BASE =
