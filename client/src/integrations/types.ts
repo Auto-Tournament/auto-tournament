@@ -131,6 +131,11 @@ export interface PreMatchViewProps {
    * state: what the phase decided is the module's (client API 0.2.0).
    */
   onComplete?: () => void;
+  /**
+   * The page already shows who plays (the tournament's "Your match" card), so
+   * the phase leaves out its own "Team vs Team" header.
+   */
+  hideMatchHeader?: boolean;
 }
 
 /**

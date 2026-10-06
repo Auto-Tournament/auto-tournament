@@ -32,6 +32,7 @@ import TournamentBracketTab from './pages/TournamentBracketTab';
 import TournamentMatchesTab from './pages/TournamentMatchesTab';
 import TournamentTeamsTab from './pages/TournamentTeamsTab';
 import TournamentRulesTab from './pages/TournamentRulesTab';
+import TournamentYourMatchTab from './pages/TournamentYourMatchTab';
 import Home from './pages/Home';
 import Browse from './pages/Browse';
 import PlayersDirectory from './pages/PlayersDirectory';
@@ -372,6 +373,7 @@ function AppRoutes() {
         <Route path="teams" element={<TournamentTeamsTab />} />
         <Route path="standings" element={<TournamentLeaderboard />} />
         <Route path="rules" element={<TournamentRulesTab />} />
+        <Route path="match" element={<TournamentYourMatchTab />} />
       </Route>
       {/* Standings' old address, still in bookmarks and older links. */}
       <Route path={paths.tournamentLeaderboard} element={<LegacyLeaderboardRedirect />} />

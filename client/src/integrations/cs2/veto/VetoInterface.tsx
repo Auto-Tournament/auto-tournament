@@ -32,6 +32,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   team2Name: propTeam2Name,
   currentTeamSlug,
   onComplete,
+  hideMatchHeader = false,
 }) => {
   const { t } = useModuleTranslation('cs2');
 
@@ -398,89 +399,91 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
         </Alert>
       )}
 
-      {/* Match Header */}
-      <Paper sx={{ mb: 3, p: { xs: 2, sm: 3 }, bgcolor: 'background.paper', borderRadius: `${radius.lg}px` }}>
-        <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          gap={{ xs: 1.5, sm: 3 }}
-          flexWrap="wrap"
-        >
-          <Typography
-            variant="h4"
-            fontWeight={700}
-            component={
-              vetoState.team1Id &&
-              vetoState.team1Id !== 'team1' &&
-              vetoState.team1Id !== 'team2'
-                ? RouterLink
-                : 'span'
-            }
-            to={
-              vetoState.team1Id &&
-              vetoState.team1Id !== 'team1' &&
-              vetoState.team1Id !== 'team2'
-                ? `/team/${vetoState.team1Id}`
-                : undefined
-            }
-            sx={{
-              color: 'text.primary',
-              textDecoration: 'none',
-              overflowWrap: 'anywhere',
-              '&:hover': {
-                textDecoration:
-                  vetoState.team1Id &&
-                  vetoState.team1Id !== 'team1' &&
-                  vetoState.team1Id !== 'team2'
-                    ? 'underline'
-                    : 'none',
-              },
-            }}
+      {/* Match Header (left out where the page already shows who plays) */}
+      {!hideMatchHeader && (
+        <Paper sx={{ mb: 3, p: { xs: 2, sm: 3 }, bgcolor: 'background.paper', borderRadius: `${radius.lg}px` }}>
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            gap={{ xs: 1.5, sm: 3 }}
+            flexWrap="wrap"
           >
-            {team1Name}
-          </Typography>
-          <Typography variant="body2" color="text.disabled" sx={{ ...mono }}>
-            {t('teamMatchHistory.vs')}
-          </Typography>
-          <Typography
-            variant="h4"
-            fontWeight={700}
-            component={
-              vetoState.team2Id &&
-              vetoState.team2Id !== 'team1' &&
-              vetoState.team2Id !== 'team2'
-                ? RouterLink
-                : 'span'
-            }
-            to={
-              vetoState.team2Id &&
-              vetoState.team2Id !== 'team1' &&
-              vetoState.team2Id !== 'team2'
-                ? `/team/${vetoState.team2Id}`
-                : undefined
-            }
-            sx={{
-              color: 'text.primary',
-              textDecoration: 'none',
-              overflowWrap: 'anywhere',
-              '&:hover': {
-                textDecoration:
-                  vetoState.team2Id &&
-                  vetoState.team2Id !== 'team1' &&
-                  vetoState.team2Id !== 'team2'
-                    ? 'underline'
-                    : 'none',
-              },
-            }}
-          >
-            {team2Name}
-          </Typography>
-        </Box>
-        <Box display="flex" justifyContent="center" mt={1.5}>
-          <Chip size="small" label={vetoState.format.toUpperCase()} />
-        </Box>
-      </Paper>
+            <Typography
+              variant="h4"
+              fontWeight={700}
+              component={
+                vetoState.team1Id &&
+                vetoState.team1Id !== 'team1' &&
+                vetoState.team1Id !== 'team2'
+                  ? RouterLink
+                  : 'span'
+              }
+              to={
+                vetoState.team1Id &&
+                vetoState.team1Id !== 'team1' &&
+                vetoState.team1Id !== 'team2'
+                  ? `/team/${vetoState.team1Id}`
+                  : undefined
+              }
+              sx={{
+                color: 'text.primary',
+                textDecoration: 'none',
+                overflowWrap: 'anywhere',
+                '&:hover': {
+                  textDecoration:
+                    vetoState.team1Id &&
+                    vetoState.team1Id !== 'team1' &&
+                    vetoState.team1Id !== 'team2'
+                      ? 'underline'
+                      : 'none',
+                },
+              }}
+            >
+              {team1Name}
+            </Typography>
+            <Typography variant="body2" color="text.disabled" sx={{ ...mono }}>
+              {t('teamMatchHistory.vs')}
+            </Typography>
+            <Typography
+              variant="h4"
+              fontWeight={700}
+              component={
+                vetoState.team2Id &&
+                vetoState.team2Id !== 'team1' &&
+                vetoState.team2Id !== 'team2'
+                  ? RouterLink
+                  : 'span'
+              }
+              to={
+                vetoState.team2Id &&
+                vetoState.team2Id !== 'team1' &&
+                vetoState.team2Id !== 'team2'
+                  ? `/team/${vetoState.team2Id}`
+                  : undefined
+              }
+              sx={{
+                color: 'text.primary',
+                textDecoration: 'none',
+                overflowWrap: 'anywhere',
+                '&:hover': {
+                  textDecoration:
+                    vetoState.team2Id &&
+                    vetoState.team2Id !== 'team1' &&
+                    vetoState.team2Id !== 'team2'
+                      ? 'underline'
+                      : 'none',
+                },
+              }}
+            >
+              {team2Name}
+            </Typography>
+          </Box>
+          <Box display="flex" justifyContent="center" mt={1.5}>
+            <Chip size="small" label={vetoState.format.toUpperCase()} />
+          </Box>
+        </Paper>
+      )}
 
       {/* Progress Header */}
       <Paper

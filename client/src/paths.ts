@@ -31,6 +31,7 @@ export const paths = {
   tournamentTeams: '/tournament/:id/teams',
   tournamentStandings: '/tournament/:id/standings',
   tournamentRules: '/tournament/:id/rules',
+  tournamentYourMatch: '/tournament/:id/match',
   /** The old address of Standings; redirects there. */
   tournamentLeaderboard: '/tournament/:id/leaderboard',
   findPlayer: '/player',
@@ -97,23 +98,48 @@ export function playerProfilePath(steamId: string): string {
 }
 
 /** The public tournament page's tabs, in the order they are shown. */
-export const TOURNAMENT_TABS = ['overview', 'bracket', 'matches', 'teams', 'standings', 'rules'] as const;
+export const TOURNAMENT_TABS = [
+  'overview',
+  'match',
+  'bracket',
+  'matches',
+  'teams',
+  'standings',
+  'rules',
+] as const;
 export type TournamentTab = (typeof TOURNAMENT_TABS)[number];
+
+/** While the tournament runs, a player in it lands on "Your match" instead of Overview. */
+export function yourMatchFirst(status: string | undefined, hasTeam: boolean | undefined): boolean {
+  return status === 'in_progress' && Boolean(hasTeam);
+}
 
 /**
  * The tabs one tournament shows: Rules only when the organizer wrote some, or
- * a description too long for the header to show in full.
+ * a description too long for the header to show in full. While it runs, a
+ * player whose team is in it gets "Your match" in place of Overview: that is
+ * what they came for.
  */
-export function visibleTournamentTabs(tournament: {
-  settings?: { rules?: string[]; rulebookUrl?: string; description?: string } | null;
-}): TournamentTab[] {
+export function visibleTournamentTabs(
+  tournament: {
+    status?: string;
+    settings?: { rules?: string[]; rulebookUrl?: string; description?: string } | null;
+  },
+  viewer: { hasTeam?: boolean } = {}
+): TournamentTab[] {
   // The header shows three lines of the description; a longer one is read in full on Rules.
   const hasRules = Boolean(
     tournament.settings?.rules?.length ||
       tournament.settings?.rulebookUrl ||
       (tournament.settings?.description?.length ?? 0) > 240
   );
-  const tabs: TournamentTab[] = ['overview', 'bracket', 'matches', 'teams', 'standings'];
+  const tabs: TournamentTab[] = [
+    yourMatchFirst(tournament.status, viewer.hasTeam) ? 'match' : 'overview',
+    'bracket',
+    'matches',
+    'teams',
+    'standings',
+  ];
   if (hasRules) tabs.push('rules');
   return tabs;
 }

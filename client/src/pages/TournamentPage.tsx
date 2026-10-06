@@ -126,7 +126,7 @@ export default function TournamentPage() {
       <TournamentPageHeader
         tournament={tournament}
         tab={tab}
-        tabs={visibleTournamentTabs(tournament)}
+        tabs={visibleTournamentTabs(tournament, { hasTeam: Boolean(overview.viewerTeam) })}
         showManage={isAuthenticated && !impersonation}
       />
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 4 } }}>

@@ -697,7 +697,8 @@
       "teams": "Lag",
       "standings": "Tabell",
       "manage": "Administrer",
-      "rules": "Regler"
+      "rules": "Regler",
+      "match": "Din kamp"
     },
     "status": {
       "setup": "Kommende",
@@ -810,5 +811,19 @@
     "completedCount": "{{count}} ferdig",
     "playingCount": "{{count}} spilles",
     "pendingCount": "{{count}} venter"
+  },
+  "yourMatch": {
+    "loading": "Laster kampen din",
+    "bestOf": "Best av {{count}}",
+    "mapsScore": "Kart {{us}} – {{them}}",
+    "inServer": "På serveren",
+    "notJoined": "Ikke koblet til",
+    "waitingForPlayers": "Venter på spillere",
+    "inServerCount": "{{count}} av {{expected}} på serveren. Kampen starter når alle er klare.",
+    "live": "Live",
+    "round": "Runde {{n}}",
+    "vetoTitle": "Kartvalg pågår",
+    "finished": "Kampen er ferdig",
+    "mapOf": "Kart {{n}} av {{total}}"
   }
 }

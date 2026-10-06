@@ -699,7 +699,8 @@
       "teams": "Teams",
       "standings": "Standings",
       "manage": "Manage",
-      "rules": "Rules"
+      "rules": "Rules",
+      "match": "Your match"
     },
     "status": {
       "setup": "Upcoming",
@@ -812,5 +813,19 @@
     "completedCount": "{{count}} completed",
     "playingCount": "{{count}} playing",
     "pendingCount": "{{count}} pending"
+  },
+  "yourMatch": {
+    "loading": "Loading your match",
+    "bestOf": "Best of {{count}}",
+    "mapsScore": "Maps {{us}} – {{them}}",
+    "inServer": "In server",
+    "notJoined": "Not joined",
+    "waitingForPlayers": "Waiting for players",
+    "inServerCount": "{{count}} of {{expected}} in the server. The match starts when everyone is ready.",
+    "live": "Live",
+    "round": "Round {{n}}",
+    "vetoTitle": "Map veto in progress",
+    "finished": "Match finished",
+    "mapOf": "Map {{n}} of {{total}}"
   }
 }
