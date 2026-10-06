@@ -35,7 +35,8 @@
     "theme": "Theme",
     "language": "Language",
     "signIn": "Sign in",
-    "play": "Play"
+    "play": "Play",
+    "inventory": "Inventory"
   },
   "layout": {
     "pageTitle": {

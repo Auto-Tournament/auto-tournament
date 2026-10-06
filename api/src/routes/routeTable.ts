@@ -26,6 +26,7 @@ import matchRoutes from './matches';
 import steamRoutes from './steam';
 import tournamentRoutes from './tournament';
 import tournamentSignupRoutes from './tournamentSignup';
+import skinsRoutes from './skins';
 import logsRoutes from './logs';
 import teamMatchRoutes from './teamMatch';
 import teamStatsRoutes from './teamStats';
@@ -97,6 +98,12 @@ const coreRoutes: MountedRouter[] = [
     router: tournamentSignupRoutes,
     title: 'Tournament sign-up',
     description: 'Teams signing themselves up with a lineup, and check-in on the day.',
+  },
+  {
+    prefix: '/api/skins',
+    router: skinsRoutes,
+    title: 'Skins',
+    description: 'Virtual skins: inventories, loadouts and showcases (platform only).',
   },
   {
     prefix: '/api/logs',

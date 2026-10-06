@@ -187,6 +187,16 @@ async function persistPlayerMatchStats(options: {
   }
 
   log.debug(`Tracked player stats for ${written} players`, { matchSlug });
+
+  // A won matchmaking game can drop a virtual skin for each winner (off
+  // unless an admin turned skins on; never throws).
+  if (match.source === 'matchmaking' && result !== 'draw') {
+    const winners = (result === 'team1' ? team1Players : team2Players)
+      .map((p) => p.steamId)
+      .filter((id) => known.has(id));
+    const { skinService } = await import('../services/skinService');
+    await skinService.rollMatchDrops(matchSlug, winners, match.current_map ?? undefined);
+  }
 }
 
 /** The ids among `ids` that have a player record. */

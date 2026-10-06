@@ -109,6 +109,44 @@ export function getSchemaSQL(): string {
       PRIMARY KEY (tournament_id, player_id)
     );
 
+    -- Virtual skins (platform only, never sent to a game server): what each
+    -- player owns, rolled like a case (float and pattern), and where it came from.
+    CREATE TABLE IF NOT EXISTS player_skins (
+      id SERIAL PRIMARY KEY,
+      player_uid UUID NOT NULL, -- players.uid
+      weapon TEXT NOT NULL, -- 'weapon_ak47', 'weapon_knife_karambit', 'sporty_gloves', ... (csm skins.json)
+      weapon_name TEXT NOT NULL,
+      paint_kit INTEGER NOT NULL,
+      name TEXT NOT NULL,
+      rarity TEXT NOT NULL,
+      image TEXT NOT NULL, -- file name under csm's skin_images
+      float_value REAL NOT NULL,
+      pattern INTEGER NOT NULL,
+      source TEXT NOT NULL, -- 'matchmaking' | 'tournament' | 'admin'
+      source_label TEXT, -- the map, or the tournament's name
+      source_ref TEXT, -- the match slug, or 'tournament:<id>:<name>'
+      place INTEGER, -- tournament placement (1, 2, 3)
+      seen BOOLEAN NOT NULL DEFAULT FALSE, -- the owner has seen the "new skin" reveal
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_player_skins_owner ON player_skins(player_uid);
+    CREATE INDEX IF NOT EXISTS idx_player_skins_source_ref ON player_skins(source_ref);
+
+    -- The skin equipped per slot (a weapon, or 'knife' / 'gloves').
+    CREATE TABLE IF NOT EXISTS player_loadout (
+      player_uid UUID NOT NULL,
+      slot TEXT NOT NULL,
+      skin_id INTEGER NOT NULL REFERENCES player_skins(id) ON DELETE CASCADE,
+      PRIMARY KEY (player_uid, slot)
+    );
+
+    -- The profile's skin showcase: up to eight skins in the owner's order, some shown big.
+    CREATE TABLE IF NOT EXISTS player_skin_showcase (
+      player_uid UUID PRIMARY KEY,
+      items TEXT NOT NULL DEFAULT '[]' -- JSON [{ skinId, big }]
+    );
+
     -- Matches table
     CREATE TABLE IF NOT EXISTS matches (
       id SERIAL PRIMARY KEY,

@@ -41,6 +41,7 @@ export type EventPageFields = Pick<
   | 'maxTeams'
   | 'checkInOpensAt'
   | 'checkInClosesAt'
+  | 'skinRewards'
 >;
 
 /** An ISO time as the value a `datetime-local` input wants, in local time. */
@@ -111,12 +112,14 @@ export function EventPageSettingsCard({
   const [maxTeams, setMaxTeams] = useState(settings?.maxTeams ? String(settings.maxTeams) : '');
   const [checkInOpensAt, setCheckInOpensAt] = useState(toLocalInput(settings?.checkInOpensAt));
   const [checkInClosesAt, setCheckInClosesAt] = useState(toLocalInput(settings?.checkInClosesAt));
+  const [skinRewards, setSkinRewards] = useState(settings?.skinRewards !== false);
   const signupFields = () => ({
     registrationOpen,
     registrationClosesAt: fromLocalInput(registrationClosesAt),
     maxTeams: maxTeams ? Number(maxTeams) : null,
     checkInOpensAt: fromLocalInput(checkInOpensAt),
     checkInClosesAt: fromLocalInput(checkInClosesAt),
+    skinRewards,
   });
   const [localSaving, setLocalSaving] = useState(false);
 
@@ -140,7 +143,7 @@ export function EventPageSettingsCard({
       ...signupFields(),
     } as EventPageFields);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- signupFields reads the five values listed
-  }, [description, location, organizer, rulebookUrl, rules, prizes, schedule, registrationOpen, registrationClosesAt, maxTeams, checkInOpensAt, checkInClosesAt]);
+  }, [description, location, organizer, rulebookUrl, rules, prizes, schedule, registrationOpen, registrationClosesAt, maxTeams, checkInOpensAt, checkInClosesAt, skinRewards]);
 
   const handleSave = async () => {
     if (!onSave) return;
@@ -227,6 +230,10 @@ export function EventPageSettingsCard({
         <Typography variant="caption" color="text.secondary">
           {t('tournament.eventPage.signupHelp')}
         </Typography>
+        <FormControlLabel
+          control={<Switch checked={skinRewards} onChange={(e) => setSkinRewards(e.target.checked)} />}
+          label={t('tournament.eventPage.skinRewards')}
+        />
       </Stack>
       <TextField
         label={t('tournament.eventPage.descriptionLabel')}
