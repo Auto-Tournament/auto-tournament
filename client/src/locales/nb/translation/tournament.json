@@ -995,6 +995,16 @@
     "vouch": "Jeg bekrefter at alle spillerne i oppstillingen har lest",
     "vouchNote": "Jeg melder på på vegne av dem. Bryter en spiller reglene, kan hele laget straffes eller diskvalifiseres.",
     "send": "Meld på {{team}}",
-    "rulesLink": "reglene"
+    "rulesLink": "reglene",
+    "ownerTag": "eier",
+    "captainTag": "kaptein",
+    "check": {
+      "steam": "Steam",
+      "game": "{{game}}",
+      "noGame": "{{game}} ikke lagt til"
+    },
+    "remind": "Påminn",
+    "reminded": "Påminnelse sendt i lagchatten",
+    "done": "Ferdig"
   }
 }

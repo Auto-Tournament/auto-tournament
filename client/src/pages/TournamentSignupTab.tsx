@@ -16,7 +16,9 @@ import {
 import { CheckCircleIcon, PlayCircleIcon, UsersThreeIcon, WarningIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { useTournamentPage } from '../components/tournament/page/tournamentPageContext';
-import { useTournamentSignup, viewerRegistration } from '../hooks/useTournamentSignup';
+import { remindLineupPlayer, useTournamentSignup, viewerRegistration } from '../hooks/useTournamentSignup';
+import { useSnackbar } from '../contexts/SnackbarContext';
+import { useSetupGames } from '../components/tournament/setup/games';
 import { Face, PersonTile, TeamMark } from '../components/tournament/signup/PlayerFace';
 import { TabLoading } from '../components/tournament/page/TabState';
 import { api } from '../utils/api';
@@ -42,6 +44,17 @@ export default function TournamentSignupTab() {
   const signup = useTournamentSignup(tournament.id);
   const teamSize = tournament.teamSize ?? 5;
   const existing = viewerRegistration(signup);
+  const { games } = useSetupGames();
+  const gameName = games.find((entry) => entry.id === (tournament.game || 'cs2'))?.name ?? tournament.game ?? 'CS2';
+  const { showSuccess, showError } = useSnackbar();
+  const remind = async (teamId: string, steamId: string) => {
+    try {
+      await remindLineupPlayer(tournament.id, teamId, steamId);
+      showSuccess(t('signup.reminded'));
+    } catch (error) {
+      showError((error as Error).message);
+    }
+  };
 
   const [pickedTeamId, setPickedTeamId] = useState<string | null>(null);
   const [slots, setSlots] = useState<Record<string, Slot> | null>(null);
@@ -176,9 +189,41 @@ export default function TournamentSignupTab() {
                 <Box key={m.steamId} data-testid="signup-member" sx={{ display: 'grid', gridTemplateColumns: { xs: '44px minmax(0,1fr)', sm: '44px minmax(0,1fr) auto' }, gap: 1.75, alignItems: 'center', p: '10px 14px', borderRadius: '14px', bgcolor: color.paper2 }}>
                   <Face name={m.name} avatar={m.avatar} size={44} />
                   <Box sx={{ minWidth: 0 }}>
-                    <Typography sx={{ fontWeight: 600 }}>{m.name}</Typography>
-                    <Typography sx={{ fontSize: '0.8125rem', color: m.hasAccount ? color.muted : color.sideT }}>
-                      {m.hasAccount ? (m.rating !== null ? t('signup.rating', { rating: m.rating }) : '') : t('signup.problem.noAccount')}
+                    <Typography sx={{ fontWeight: 600 }}>
+                      {m.name}
+                      {m.owner ? (
+                        <Box component="span" sx={{ fontWeight: 400, color: color.muted }}>
+                          {' · '}
+                          {t('signup.ownerTag')}
+                        </Box>
+                      ) : m.captain ? (
+                        <Box component="span" sx={{ fontWeight: 400, color: color.muted }}>
+                          {' · '}
+                          {t('signup.captainTag')}
+                        </Box>
+                      ) : null}
+                    </Typography>
+                    <Typography component="div" sx={{ fontSize: '0.8125rem', color: color.muted, display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }} data-testid="signup-member-checks">
+                      <Box component="span" sx={{ color: m.hasAccount ? color.live : color.sideT }}>
+                        {m.hasAccount ? `✓ ${t('signup.check.steam')}` : t('signup.problem.noAccount')}
+                      </Box>
+                      {m.hasAccount && m.hasGame !== null && m.hasGame !== undefined && (
+                        <Box component="span" sx={{ color: m.hasGame ? color.live : color.sideT }}>
+                          · {m.hasGame ? `✓ ${t('signup.check.game', { game: gameName })}` : t('signup.check.noGame', { game: gameName })}
+                        </Box>
+                      )}
+                      {m.hasAccount && m.rating !== null && <span>· {t('signup.rating', { rating: m.rating })}</span>}
+                      {(!m.hasAccount || m.hasGame === false) && team && (
+                        <Link
+                          component="button"
+                          type="button"
+                          onClick={() => void remind(team.id, m.steamId)}
+                          sx={{ fontSize: 'inherit', color: color.accent }}
+                          data-testid="signup-remind"
+                        >
+                          {t('signup.remind')}
+                        </Link>
+                      )}
                     </Typography>
                   </Box>
                   <ToggleButtonGroup
@@ -254,7 +299,7 @@ export default function TournamentSignupTab() {
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'flex-start' }}>
                 {starters.map((m) => (
                   <Box key={m.steamId} sx={{ width: 84 }}>
-                    <PersonTile name={m.name} avatar={m.avatar} />
+                    <PersonTile name={m.name} avatar={m.avatar} note={m.owner || m.captain ? t('signup.captainTag') : undefined} />
                   </Box>
                 ))}
                 {subs.length > 0 && <Box sx={{ alignSelf: 'stretch', borderLeft: `1px dashed ${color.rule}`, mx: 1 }} />}

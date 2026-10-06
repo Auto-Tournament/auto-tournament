@@ -995,6 +995,16 @@
     "vouch": "I confirm every player in this lineup has read the",
     "vouchNote": "I sign up on their behalf. If a player breaks the rules, the whole team can be penalised or disqualified.",
     "send": "Sign up {{team}}",
-    "rulesLink": "rules"
+    "rulesLink": "rules",
+    "ownerTag": "eigenaar",
+    "captainTag": "captain",
+    "check": {
+      "steam": "Steam",
+      "game": "{{game}}",
+      "noGame": "{{game}} niet toegevoegd"
+    },
+    "remind": "Herinneren",
+    "reminded": "Herinnering in de teamchat gestuurd",
+    "done": "Klaar"
   }
 }
