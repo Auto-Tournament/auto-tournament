@@ -547,13 +547,63 @@ export const skinService = {
     return { paints, ...(knife ? { knife } : {}), ...(gloves ? { gloves } : {}) };
   },
 
+  /** Admin: the numbers at the top of the Skins page. */
+  async adminStats() {
+    const weekAgo = Math.floor(Date.now() / 1000) - 7 * 24 * 3600;
+    const counts = await db.queryOneAsync<{ given: number; week: number; owners: number; players: number }>(
+      `SELECT (SELECT COUNT(*)::int FROM cs2_player_skins) AS given,
+              (SELECT COUNT(*)::int FROM cs2_player_skins WHERE created_at > ?) AS week,
+              (SELECT COUNT(DISTINCT player_uid)::int FROM cs2_player_skins) AS owners,
+              (SELECT COUNT(*)::int FROM players) AS players`,
+      [weekAgo]
+    );
+    // The rarest skin anyone owns: highest rarity, the newest of those.
+    const rarest = await db.queryOneAsync<{ weapon_name: string; name: string; rarity: Rarity; image: string; owner: string | null }>(
+      `SELECT s.weapon_name, s.name, s.rarity, s.image, p.name AS owner
+         FROM cs2_player_skins s
+         LEFT JOIN players p ON p.uid = s.player_uid
+        ORDER BY array_position(ARRAY[${RARITIES.map((r) => `'${r}'`).join(',')}]::text[], s.rarity) DESC NULLS LAST, s.created_at DESC, s.id DESC
+        LIMIT 1`
+    );
+    return {
+      given: counts?.given ?? 0,
+      givenThisWeek: counts?.week ?? 0,
+      playersWithSkins: counts?.owners ?? 0,
+      players: counts?.players ?? 0,
+      rarest: rarest
+        ? {
+            weaponName: rarest.weapon_name,
+            name: rarest.name,
+            rarity: rarest.rarity,
+            imageUrl: `${SKIN_IMAGES_BASE}/${rarest.image}`,
+            owner: rarest.owner,
+          }
+        : null,
+    };
+  },
+
   /** Admin: players by name or Steam ID, with how many skins they own. */
   async adminFindPlayers(query: string) {
     const q = query.trim();
-    return db.queryAsync<{ id: string; name: string; avatar_url: string | null; skins: number }>(
+    return db.queryAsync<{
+      id: string;
+      name: string;
+      avatar_url: string | null;
+      skins: number;
+      best_weapon: string | null;
+      best_name: string | null;
+      best_rarity: Rarity | null;
+    }>(
       `SELECT p.id, p.name, p.avatar_url,
-              (SELECT COUNT(*)::int FROM cs2_player_skins s WHERE s.player_uid = p.uid) AS skins
+              (SELECT COUNT(*)::int FROM cs2_player_skins s WHERE s.player_uid = p.uid) AS skins,
+              best.weapon_name AS best_weapon, best.name AS best_name, best.rarity AS best_rarity
          FROM players p
+         LEFT JOIN LATERAL (
+           SELECT s.weapon_name, s.name, s.rarity FROM cs2_player_skins s
+            WHERE s.player_uid = p.uid
+            ORDER BY array_position(ARRAY[${RARITIES.map((r) => `'${r}'`).join(',')}]::text[], s.rarity) DESC NULLS LAST, s.id DESC
+            LIMIT 1
+         ) best ON TRUE
         WHERE (? = '' OR p.name ILIKE ? OR p.id = ?)
         ORDER BY skins DESC, p.name
         LIMIT 30`,

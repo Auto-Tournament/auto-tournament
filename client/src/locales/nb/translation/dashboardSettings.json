@@ -101,7 +101,7 @@
   },
   "settingsPage": {
     "title": "Innstillinger",
-    "intro": "Innstillinger for hele nettstedet, uansett spill. Hver installerte spillmodul har sin egen fane.",
+    "intro": "Plattformens egne innstillinger. Hvert spill har sine innstillinger i menyen.",
     "tabs": {
       "general": "Generelt",
       "signIn": "Innlogging",
@@ -170,8 +170,12 @@
         "emailsHelp": "Adresser som blir admin når eieren logger inn med en tjeneste som har bekreftet adressen (Google, Discord, GitHub).",
         "unsaved": "Ikke lagret ennå.",
         "saved": "Admintilgang lagret",
-        "loadError": "Kunne ikke laste admintilgang"
-      }
+        "loadError": "Kunne ikke laste admintilgang",
+        "short": "Hvem som kan logge inn som administrator"
+      },
+      "short": "Hvordan spillere og administratorer logger inn. Endringer gjelder med en gang.",
+      "enabledFor": "Innlogging med {{provider}}",
+      "setUp": "Sett opp {{provider}}"
     },
     "integrations": {
       "steam": {
@@ -191,7 +195,8 @@
         "title": "Ratingoppdateringer",
         "description": "Styr om fullførte kamper oppdaterer spillernes Skill Rating.",
         "toggleLabel": "Oppdater spiller-rating etter kamper",
-        "note": "Statistikk spores fortsatt selv om rating er deaktivert."
+        "note": "Statistikk spores fortsatt selv om rating er deaktivert.",
+        "short": "Rating endres etter hver kamp."
       }
     },
     "players": {
@@ -199,8 +204,11 @@
         "title": "Spillerregistrering",
         "description": "Styr om nye Steam-innlogginger automatisk oppretter spillerprofiler. Når deaktivert vil kun spillere som admins har opprettet eller importert vises i private turneringer og shuffle-pooler.",
         "toggleLabel": "Tillat at hvem som helst kan registrere seg via Steam-innlogging",
-        "recommendation": "Anbefalt: la dette være av for invitasjons‑ eller private turneringer, slik at tilfeldige Steam-innlogginger ikke fyller opp spillerlisten."
-      }
+        "recommendation": "Anbefalt: la dette være av for invitasjons‑ eller private turneringer, slik at tilfeldige Steam-innlogginger ikke fyller opp spillerlisten.",
+        "short": "Innlogging gjør hvem som helst nye til spiller. Av: bare spillere du legger til."
+      },
+      "title": "Spillere",
+      "short": "Hvem som blir med, og hvordan rating endres."
     },
     "developer": {
       "resetApiTitle": "Tilbakestill API og database",
@@ -274,12 +282,17 @@
             "1v1": "Standard: Active Duty"
           }
         }
-      }
+      },
+      "short": "Under arbeid: av som standard, bare administratorer ser dem."
     },
     "groups": {
       "platform": "Plattform"
     },
-    "navLabel": "Innstillingssider"
+    "navLabel": "Innstillingssider",
+    "gameLinks": {
+      "title": "Spillinnstillinger",
+      "hint": "Hvert spill har sine egne innstillinger i menyen."
+    }
   },
   "managePage": {
     "title": "Administrer",
@@ -403,7 +416,8 @@
       "note": "Av som standard. Lenker til lisensens offentlige sjekkside, og vises bare mens den lagrede nøkkelen er gyldig.",
       "on": "Offentlig lisenslinje slått på",
       "off": "Offentlig lisenslinje slått av",
-      "failed": "Kunne ikke endre den offentlige lisenslinjen"
+      "failed": "Kunne ikke endre den offentlige lisenslinjen",
+      "short": "Vises på offentlige sider."
     },
     "public": {
       "licensed": "Lisensiert"
@@ -484,6 +498,14 @@
     "warning": {
       "periodEnded": "Denne arrangementslisensen gjaldt til og med {{date}}. Testing og oppsett krever ingenting; et nytt arrangement får sin egen arrangementslisens.",
       "periodNotStarted": "Denne arrangementslisensen gjelder fra {{date}}. Det er helt greit å sette opp og teste før det."
+    },
+    "short": "Hvordan denne instansen brukes, og nøkkelen.",
+    "keyRow": "Lisensnøkkel",
+    "state": {
+      "active": "Aktiv",
+      "warning": "Sjekk",
+      "invalid": "Ugyldig",
+      "none": "Ingen nøkkel"
     }
   },
   "tournamentsPage": {

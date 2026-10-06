@@ -1,14 +1,18 @@
 {
   "nav": {
     "servers": "Servers",
-    "maps": "Maps & Map Pools"
+    "maps": "Maps & Map Pools",
+    "skins": "Skins",
+    "matchRules": "Match rules"
   },
   "layout": {
     "webhookNotConfigured": "Webhook URL is not configured. Matches and servers cannot receive events until it is set.",
     "openSettings": "Open settings",
     "pageTitle": {
       "servers": "Servers",
-      "maps": "Maps & Map Pools"
+      "maps": "Maps & Map Pools",
+      "skins": "Skins",
+      "matchRules": "Match rules"
     },
     "atDbDown": {
       "title": "MatchZy Enhanced DB unreachable",
@@ -25,6 +29,14 @@
       "maps": {
         "label": "Maps",
         "hint": "Pools and images"
+      },
+      "skins": {
+        "label": "Skins",
+        "hint": "Drops, rewards, players' skins"
+      },
+      "matchRules": {
+        "label": "Match rules",
+        "hint": "What servers are told each match"
       }
     },
     "servers": {
@@ -49,7 +61,10 @@
   "managePage": {
     "rail": {
       "servers": "Servers",
-      "maps": "Maps"
+      "maps": "Maps",
+      "group": "Counter-Strike 2",
+      "skins": "Skins",
+      "matchRules": "Match rules"
     },
     "status": {
       "serversFree": "SERVERS FREE"
@@ -1627,7 +1642,7 @@
       "noticeFixed": "Always shown. It can't be changed.",
       "saved": "Skins settings saved",
       "inv": {
-        "title": "Player inventories",
+        "title": "Players' skins",
         "hint": "Pick a player to see their skins, give them one or take one away.",
         "player": "Player",
         "playerHint": "Name or Steam ID",
@@ -1659,11 +1674,37 @@
         "remove": "Take away",
         "removeTitle": "Take this skin away?",
         "removeQuestion": "{{skin}} leaves {{player}}'s inventory and loadout. This cannot be undone.",
-        "removed": "Skin taken away"
+        "removed": "Skin taken away",
+        "none": "No players found.",
+        "giveShort": "Give",
+        "nobodyYet": "Nobody has a skin yet. Search for a player to give one."
       },
       "playDropChance": "Chance of a skin when you lose or draw",
-      "knivesByPrice": "Knives and gloves get their rarity from market price (Skinport, updated daily): cheap ones are common, expensive ones rare."
+      "knivesByPrice": "Knives and gloves get their rarity from market price (Skinport, updated daily): cheap ones are common, expensive ones rare.",
+      "pageHint": "Virtual skins players win here. Equipped ones show on Ready Up servers between maps.",
+      "on": "On",
+      "off": "Off",
+      "stats": {
+        "given": "Given out",
+        "thisWeek": "{{count}} this week",
+        "owners": "Players with skins",
+        "ofPlayers": "of {{count}}",
+        "rarest": "Rarest out there",
+        "noneYet": "None yet"
+      },
+      "win": "Win",
+      "lose": "Lose or draw",
+      "chance": "chance of a skin",
+      "whatDrops": "What drops. Drag the edges.",
+      "edge": "Between {{a}} and {{b}}",
+      "podiumHint": "Click a step to change what it gives.",
+      "rewardTitle": "Reward for {{place}}",
+      "done": "Done"
     },
     "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)"
+  },
+  "matchRules": {
+    "title": "Match rules",
+    "subtitle": "What every CS2 server is told when a match starts."
   }
 }
