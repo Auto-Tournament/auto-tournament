@@ -13,12 +13,30 @@ export interface OverviewTeamStanding {
   rank?: number;
 }
 
+/** One player's totals across this tournament (standard brackets). */
+export interface OverviewPlayer {
+  playerId: string;
+  name: string;
+  avatar?: string;
+  eloChange: number;
+  averageAdr?: number;
+  kills?: number;
+  deaths?: number;
+  assists?: number;
+  headshots?: number;
+  flashAssists?: number;
+  utilityDamage?: number;
+  roundsPlayed?: number;
+  team?: { id: string; name: string; tag?: string | null } | null;
+}
+
 interface TournamentOverviewResponse {
   success: boolean;
   tournament: Tournament;
   currentRound: number;
   totalRounds: number;
   teams?: OverviewTeamStanding[];
+  leaderboard?: OverviewPlayer[];
   liveMatchCount: number;
 }
 
@@ -34,6 +52,8 @@ export interface UsePublicTournamentOverviewResult {
   liveMatchCount: number;
   /** Team standings (not for shuffle, which ranks players), best first. */
   teams: OverviewTeamStanding[];
+  /** Every player's totals in this tournament, best rated first. */
+  players: OverviewPlayer[];
   /** Load again without the loading state (after a tournament update). */
   reload: () => Promise<void>;
   /** The signed-in player's team, when they're on the roster of a team in this tournament. */
@@ -60,6 +80,7 @@ export function usePublicTournamentOverview(
   const [totalRounds, setTotalRounds] = useState(0);
   const [liveMatchCount, setLiveMatchCount] = useState(0);
   const [teams, setTeams] = useState<OverviewTeamStanding[]>([]);
+  const [players, setPlayers] = useState<OverviewPlayer[]>([]);
   const [viewerTeam, setViewerTeam] = useState<ViewerTeam | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -80,6 +101,7 @@ export function usePublicTournamentOverview(
         setTotalRounds(response.totalRounds ?? 0);
         setLiveMatchCount(response.liveMatchCount ?? 0);
         setTeams(response.teams ?? []);
+        setPlayers(response.leaderboard ?? []);
       } catch (err: unknown) {
         // A background reload that fails keeps what is on screen.
         if (silent) return;
@@ -140,6 +162,7 @@ export function usePublicTournamentOverview(
     totalRounds,
     liveMatchCount,
     teams,
+    players,
     reload,
     viewerTeam: viewerTeamInTournament,
     viewerHasSteamIdentity: !!playerSteamId,

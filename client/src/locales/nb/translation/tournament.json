@@ -698,7 +698,8 @@
       "standings": "Tabell",
       "manage": "Administrer",
       "rules": "Regler",
-      "match": "Din kamp"
+      "match": "Din kamp",
+      "results": "Resultater"
     },
     "status": {
       "setup": "Kommende",
@@ -825,5 +826,37 @@
     "vetoTitle": "Kartvalg pågår",
     "finished": "Kampen er ferdig",
     "mapOf": "Kart {{n}} av {{total}}"
+  },
+  "results": {
+    "finalStandings": "Sluttstilling",
+    "awards": "Utmerkelser",
+    "players": "Spillere",
+    "matchesAndDemos": "Kamper og demoer",
+    "place": "#{{n}}",
+    "championsOf": "{{name}} · Vinnere",
+    "showAll": "Alle {{count}} spillere",
+    "showFewer": "Vis færre",
+    "mapResults": "Kartresultater",
+    "col": {
+      "player": "Spiller",
+      "team": "Lag",
+      "rating": "Rating ±"
+    },
+    "award": {
+      "mostKills": "Flest kills",
+      "bestAdr": "Høyest ADR",
+      "bestHeadshots": "Best headshot-%",
+      "mostFlashAssists": "Flest flash-assists",
+      "mostUtility": "Mest utility-skade",
+      "biggestGain": "Størst rating-økning"
+    },
+    "awardValue": {
+      "mostKills": "{{value}} kills",
+      "bestAdr": "{{value}} ADR",
+      "bestHeadshots": "{{value}} % headshots",
+      "mostFlashAssists": "{{value}} flash-assists",
+      "mostUtility": "{{value}} utility-skade",
+      "biggestGain": "+{{value}} rating"
+    }
   }
 }

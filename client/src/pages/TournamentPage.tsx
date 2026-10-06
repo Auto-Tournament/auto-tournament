@@ -116,6 +116,7 @@ export default function TournamentPage() {
     tournament,
     liveMatchCount: overview.liveMatchCount,
     teams: overview.teams,
+    players: overview.players,
     viewerTeam: overview.viewerTeam,
     viewerHasSteamIdentity: overview.viewerHasSteamIdentity,
   };

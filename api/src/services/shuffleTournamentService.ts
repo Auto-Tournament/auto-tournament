@@ -56,6 +56,16 @@ export interface PlayerLeaderboardEntry {
   winRate: number;
   eloChange: number; // Change since tournament start
   averageAdr?: number; // Future: average ADR across matches
+  /** This tournament's totals (standard brackets; absent for shuffle). */
+  kills?: number;
+  deaths?: number;
+  assists?: number;
+  headshots?: number;
+  flashAssists?: number;
+  utilityDamage?: number;
+  roundsPlayed?: number;
+  /** The tournament team the player is on, from the team rosters. */
+  team?: { id: string; name: string; tag?: string | null } | null;
 }
 
 export interface TeamLeaderboardEntry {
@@ -961,12 +971,27 @@ export async function getTournamentLeaderboard(tournamentId: number): Promise<{
 
   // Team standings for this tournament
   let teams: TeamLeaderboardEntry[] = [];
+  // Which team each player (by Steam ID) is on, for the player table.
+  const teamOfPlayer = new Map<string, { id: string; name: string; tag?: string | null }>();
   if (teamIds.length > 0) {
     const placeholders = teamIds.map(() => '?').join(',');
-    const teamRows = await db.queryAsync<DbTeamRow>(
-      `SELECT id, name, tag FROM teams WHERE id IN (${placeholders})`,
+    const teamRows = await db.queryAsync<DbTeamRow & { players: string | null }>(
+      `SELECT id, name, tag, players FROM teams WHERE id IN (${placeholders})`,
       teamIds
     );
+    for (const team of teamRows) {
+      let roster: Array<{ steamId?: string; steamid?: string }> = [];
+      try {
+        const parsed = JSON.parse(team.players ?? '[]') as unknown;
+        if (Array.isArray(parsed)) roster = parsed as typeof roster;
+      } catch {
+        roster = [];
+      }
+      for (const member of roster) {
+        const steamId = member.steamId ?? member.steamid;
+        if (steamId) teamOfPlayer.set(steamId, { id: team.id, name: team.name, tag: team.tag ?? null });
+      }
+    }
 
     // Get all completed matches for win/loss counts
     const matches = await db.queryAsync<DbMatchRow>(
@@ -1034,6 +1059,18 @@ export async function getTournamentLeaderboard(tournamentId: number): Promise<{
     }));
   }
 
+  // The champion, for the finished tournament's header (same rule the admin
+  // tournament route uses). Imported here to keep the two services from
+  // importing each other at load.
+  if (baseTournament.status === 'completed') {
+    const { tournamentService } = await import('./tournamentService');
+    baseTournament.winner = await tournamentService.getTournamentWinner(
+      baseTournament.id,
+      baseTournament.type,
+      baseTournament.teams
+    );
+  }
+
   // Player leaderboard for this tournament, sorted by current ELO
   const playerRows = await db.queryAsync<{
     player_id: string;
@@ -1049,6 +1086,9 @@ export async function getTournamentLeaderboard(tournamentId: number): Promise<{
     total_assists: number;
     total_damage: number;
     total_rounds: number;
+    total_headshots: number;
+    total_flash_assists: number;
+    total_utility_damage: number;
   }>(
     `
       SELECT
@@ -1064,7 +1104,10 @@ export async function getTournamentLeaderboard(tournamentId: number): Promise<{
         COALESCE(SUM(pms.deaths), 0) as total_deaths,
         COALESCE(SUM(pms.assists), 0) as total_assists,
         COALESCE(SUM(pms.total_damage), 0) as total_damage,
-        COALESCE(SUM(pms.rounds_played), 0) as total_rounds
+        COALESCE(SUM(pms.rounds_played), 0) as total_rounds,
+        COALESCE(SUM(pms.headshots), 0) as total_headshots,
+        COALESCE(SUM(pms.flash_assists), 0) as total_flash_assists,
+        COALESCE(SUM(pms.utility_damage), 0) as total_utility_damage
       FROM player_match_stats pms
       JOIN matches m ON pms.match_slug = m.slug
       JOIN players p ON p.id = pms.player_id
@@ -1129,6 +1172,14 @@ export async function getTournamentLeaderboard(tournamentId: number): Promise<{
       winRate,
       eloChange: eloChangeMap.get(pr.player_id) ?? 0,
       averageAdr: averageAdr ? Math.round(averageAdr * 100) / 100 : undefined,
+      kills: Number(pr.total_kills),
+      deaths: Number(pr.total_deaths),
+      assists: Number(pr.total_assists),
+      headshots: Number(pr.total_headshots),
+      flashAssists: Number(pr.total_flash_assists),
+      utilityDamage: Number(pr.total_utility_damage),
+      roundsPlayed: Number(pr.total_rounds),
+      team: teamOfPlayer.get(pr.player_id) ?? null,
     };
   });
 
