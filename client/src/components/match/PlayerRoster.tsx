@@ -21,6 +21,8 @@ interface PlayerRosterProps {
   team2Players: unknown;
   connectedPlayers: ConnectedPlayer[];
   isTeam1?: boolean; // If viewing from team perspective
+  /** A simulated match: bots play, so nobody is "offline". */
+  simulation?: boolean;
 }
 
 export const PlayerRoster: React.FC<PlayerRosterProps> = ({
@@ -28,6 +30,7 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
   team2Name,
   team1Players: team1PlayersRaw,
   team2Players: team2PlayersRaw,
+  simulation = false,
   connectedPlayers,
   isTeam1,
 }) => {
@@ -158,6 +161,13 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
                     size="small"
                     color="warning"
                     sx={{ fontWeight: 600, fontSize: '0.7rem' }}
+                  />
+                ) : simulation ? (
+                  <Chip
+                    label={t('matchDetailsModal.roster.bot')}
+                    size="small"
+                    data-testid="roster-bot"
+                    sx={{ bgcolor: 'action.selected', color: 'text.secondary', fontWeight: 600, fontSize: '0.7rem' }}
                   />
                 ) : (
                   <Chip
