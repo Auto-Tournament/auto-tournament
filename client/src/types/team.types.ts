@@ -204,5 +204,7 @@ export interface TeamMatchHistory {
   teamScore: number;
   opponentScore: number;
   completedAt: number;
+  /** The maps the series was played on, in order (empty when unknown). */
+  maps?: string[];
 }
 

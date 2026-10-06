@@ -18,7 +18,7 @@
 import { randomBytes } from 'node:crypto';
 import { db } from '../config/database';
 import { teamService } from './teamService';
-import { teamMembers, type TeamMemberRole } from './teamMembers';
+import { teamMembers, type TeamLineup, type TeamMemberRole } from './teamMembers';
 import type { Player } from '../types/team.types';
 
 export class TeamActionError extends Error {
@@ -39,7 +39,31 @@ export interface ManagedMember {
   name: string;
   avatar: string | null;
   role: TeamRole;
+  position: string | null;
+  lineup: TeamLineup;
 }
+
+/** A player the team asked on by name, still to answer. */
+export interface SentInvite {
+  uid: string;
+  steamId: string;
+  name: string;
+  avatar: string | null;
+  createdAt: number;
+}
+
+/** A team that asked the player on, for the player's Teams page. */
+export interface ReceivedInvite {
+  teamId: string;
+  name: string;
+  tag: string | null;
+  logoUrl: string | null;
+  invitedBy: string | null;
+  createdAt: number;
+}
+
+/** Positions are a game's own short ids ('awper', 'igl'). */
+const POSITION_RE = /^[a-z][a-z0-9_-]{0,23}$/;
 
 export interface JoinRequest {
   uid: string;
@@ -58,6 +82,7 @@ interface TeamRow {
   owner_uid: string | null;
   invite_code: string | null;
   logo_updated_at: number | null;
+  game?: string | null;
 }
 
 /** Logos: PNG, JPEG or WEBP, at most 256 KB, recognised by their first bytes. */
@@ -97,7 +122,7 @@ function parseRoster(players: string): Player[] {
 
 async function loadTeam(teamId: string): Promise<TeamRow> {
   const row = await db.queryOneAsync<TeamRow>(
-    'SELECT id, name, tag, players, owner_uid, invite_code, logo_updated_at FROM teams WHERE id = ?',
+    'SELECT id, name, tag, players, owner_uid, invite_code, logo_updated_at, game FROM teams WHERE id = ?',
     [teamId]
   );
   if (!row) throw new TeamActionError(404, 'Team not found');
@@ -169,19 +194,33 @@ export const teamSelfService = {
     const viewerRole = await requireRole(team, uid, ['owner', 'captain']);
     const roster = parseRoster(team.players);
     const accounts = await accountsBySteamId(roster.map((p) => p.steamId));
-    const roles = new Map((await teamMembers.list(team.id)).map((m) => [m.accountUid, m.role]));
+    const rows = new Map((await teamMembers.list(team.id)).map((m) => [m.accountUid, m]));
     const members: ManagedMember[] = roster.map((p) => {
       const account = accounts.get(p.steamId);
       const memberUid = account?.uid ?? '';
+      const row = rows.get(memberUid);
       return {
         uid: memberUid,
         steamId: p.steamId,
         name: account?.name || p.name,
         avatar: account?.avatar ?? p.avatar ?? null,
-        role:
-          memberUid && memberUid === team.owner_uid ? 'owner' : (roles.get(memberUid) ?? 'member'),
+        role: memberUid && memberUid === team.owner_uid ? 'owner' : (row?.role ?? 'member'),
+        position: row?.position ?? null,
+        lineup: row?.lineup ?? 'starter',
       };
     });
+    const invites = await db.queryAsync<{
+      account_uid: string;
+      id: string;
+      name: string;
+      avatar: string | null;
+      created_at: number;
+    }>(
+      `SELECT i.account_uid, p.id, p.name, p.avatar_url AS avatar, i.created_at
+         FROM team_invites i JOIN players p ON p.uid = i.account_uid
+        WHERE i.team_id = ? ORDER BY i.created_at`,
+      [team.id]
+    );
     const requests = await db.queryAsync<{
       account_uid: string;
       id: string;
@@ -202,6 +241,7 @@ export const teamSelfService = {
         tag: team.tag,
         logoUrl: logoUrl(team.id, team.logo_updated_at),
         inviteCode: team.invite_code,
+        game: team.game ?? null,
       },
       viewerRole,
       rosterLockedBy: await activeTournamentOf(team.id),
@@ -214,7 +254,136 @@ export const teamSelfService = {
         rating: r.current_elo === null ? null : Number(r.current_elo),
         createdAt: Number(r.created_at),
       })),
+      invites: invites.map((r): SentInvite => ({
+        uid: r.account_uid,
+        steamId: r.id,
+        name: r.name,
+        avatar: r.avatar,
+        createdAt: Number(r.created_at),
+      })),
     };
+  },
+
+  /** The team's main game, or none. Owner and captains. */
+  async setGame(teamId: string, uid: string, game: string | null): Promise<void> {
+    const team = await loadTeam(teamId);
+    await requireRole(team, uid, ['owner', 'captain']);
+    await db.runAsync(
+      'UPDATE teams SET game = ?, updated_at = EXTRACT(EPOCH FROM NOW())::INTEGER WHERE id = ?',
+      [game, team.id]
+    );
+  },
+
+  /**
+   * A member's position (their job in the game) and whether they start or
+   * sit on the bench. Owner and captains.
+   */
+  async setPlacement(
+    teamId: string,
+    uid: string,
+    memberUid: string,
+    placement: { position?: string | null; lineup?: TeamLineup }
+  ): Promise<void> {
+    const team = await loadTeam(teamId);
+    await requireRole(team, uid, ['owner', 'captain']);
+    if (
+      placement.position !== undefined &&
+      placement.position !== null &&
+      !POSITION_RE.test(placement.position)
+    )
+      throw new TeamActionError(400, 'That position is not one the game knows.');
+    if (!(await roleOf(team, memberUid))) throw new TeamActionError(404, 'Not on this team.');
+    await teamMembers.setPlacement(team.id, memberUid, placement);
+  },
+
+  /** Ask a player onto the team by name. Owner and captains. */
+  async invitePlayer(teamId: string, uid: string, steamId: string): Promise<SentInvite> {
+    const team = await loadTeam(teamId);
+    await requireRole(team, uid, ['owner', 'captain']);
+    const player = await db.queryOneAsync<{
+      uid: string;
+      id: string;
+      name: string;
+      avatar: string | null;
+    }>('SELECT uid, id, name, avatar_url AS avatar FROM players WHERE id = ?', [steamId]);
+    if (!player) throw new TeamActionError(404, 'No player with that Steam ID has signed in here.');
+    if (await roleOf(team, player.uid))
+      throw new TeamActionError(409, 'Already on the team.', 'member');
+    await db.runAsync(
+      `INSERT INTO team_invites (team_id, account_uid, invited_by) VALUES (?, ?, ?)
+       ON CONFLICT (team_id, account_uid) DO NOTHING`,
+      [team.id, player.uid, uid]
+    );
+    return {
+      uid: player.uid,
+      steamId: player.id,
+      name: player.name,
+      avatar: player.avatar,
+      createdAt: Math.floor(Date.now() / 1000),
+    };
+  },
+
+  /** Take back an invite. Owner and captains. */
+  async cancelInvite(teamId: string, uid: string, playerUid: string): Promise<void> {
+    const team = await loadTeam(teamId);
+    await requireRole(team, uid, ['owner', 'captain']);
+    await db.runAsync('DELETE FROM team_invites WHERE team_id = ? AND account_uid = ?', [
+      team.id,
+      playerUid,
+    ]);
+  },
+
+  /** The teams that asked this player on. */
+  async receivedInvites(uid: string): Promise<ReceivedInvite[]> {
+    const rows = await db.queryAsync<{
+      id: string;
+      name: string;
+      tag: string | null;
+      logo_updated_at: number | null;
+      invited_by: string | null;
+      created_at: number;
+    }>(
+      `SELECT t.id, t.name, t.tag, t.logo_updated_at, p.name AS invited_by, i.created_at
+         FROM team_invites i JOIN teams t ON t.id = i.team_id
+         LEFT JOIN players p ON p.uid = i.invited_by
+        WHERE i.account_uid = ? ORDER BY i.created_at DESC`,
+      [uid]
+    );
+    return rows.map((r) => ({
+      teamId: r.id,
+      name: r.name,
+      tag: r.tag || null,
+      logoUrl: logoUrl(r.id, r.logo_updated_at),
+      invitedBy: r.invited_by,
+      createdAt: Number(r.created_at),
+    }));
+  },
+
+  /** The invited player says yes (joins the roster) or no. */
+  async answerInvite(teamId: string, uid: string, accept: boolean): Promise<void> {
+    const team = await loadTeam(teamId);
+    const invite = await db.queryOneAsync<{ id: string; name: string; avatar: string | null }>(
+      `SELECT p.id, p.name, p.avatar_url AS avatar FROM team_invites i JOIN players p ON p.uid = i.account_uid
+        WHERE i.team_id = ? AND i.account_uid = ?`,
+      [team.id, uid]
+    );
+    if (!invite) throw new TeamActionError(404, 'That invite is gone.');
+    if (accept) {
+      await requireRosterUnlocked(team.id);
+      const roster = parseRoster(team.players);
+      if (!roster.some((p) => p.steamId === invite.id)) {
+        roster.push({ steamId: invite.id, name: invite.name, avatar: invite.avatar ?? undefined });
+        await teamService.updateTeam(team.id, { players: roster });
+      }
+      await db.runAsync('DELETE FROM team_join_requests WHERE team_id = ? AND account_uid = ?', [
+        team.id,
+        uid,
+      ]);
+    }
+    await db.runAsync('DELETE FROM team_invites WHERE team_id = ? AND account_uid = ?', [
+      team.id,
+      uid,
+    ]);
   },
 
   async rename(teamId: string, uid: string, name: string, tag: string): Promise<void> {

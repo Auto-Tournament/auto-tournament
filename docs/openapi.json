@@ -10657,6 +10657,86 @@
         ]
       }
     },
+    "/api/team-directory/{teamId}/invites": {
+      "post": {
+        "tags": [
+          "Team directory"
+        ],
+        "summary": "POST /api/team-directory/:teamId/invites",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/team-directory/{teamId}/invites/answer": {
+      "post": {
+        "tags": [
+          "Team directory"
+        ],
+        "summary": "POST /api/team-directory/:teamId/invites/answer",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/team-directory/{teamId}/invites/{uid}": {
+      "delete": {
+        "tags": [
+          "Team directory"
+        ],
+        "summary": "DELETE /api/team-directory/:teamId/invites/:uid",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/api/team-directory/{teamId}/logo": {
       "get": {
         "tags": [

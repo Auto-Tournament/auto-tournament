@@ -1719,5 +1719,13 @@
   "matchRules": {
     "title": "比赛规则",
     "subtitle": "每场比赛开始时每台 CS2 服务器收到的设置。"
+  },
+  "teamPositions": {
+    "rifler": "步枪手",
+    "awper": "狙击手",
+    "igl": "指挥",
+    "entry": "突破手",
+    "support": "辅助",
+    "lurker": "自由人"
   }
 }

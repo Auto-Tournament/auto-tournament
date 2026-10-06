@@ -7,10 +7,24 @@ import { Panel, Row, RowList } from '../../common/ui';
 import { getPlayerPageUrl } from '../../../utils/playerLinks';
 import type { Player } from '../../../types';
 import type { RosterMemberStatusProps } from '../../../integrations/types';
-import { textSize, tokens } from '../../../theme/tokens';
+import { fontMono, textSize, tokens } from '../../../theme/tokens';
+
+/** A roster entry with what the team page knows about the player in this team. */
+export type RosterPlayer = Player & {
+  /** The player's job (a position id from the team's game), or null. */
+  position?: string | null;
+  lineup?: 'starter' | 'sub';
+  /** Matches played for this team. */
+  matches?: number;
+  kd?: number | null;
+  adr?: number | null;
+  monthDelta?: number | null;
+};
 
 interface RosterListProps {
-  players: Player[];
+  players: RosterPlayer[];
+  /** Label for a position id (the team's game's own words), or none. */
+  positionLabel?: (position: string) => string;
   /**
    * The game module's line about each member's account for the game (CS2:
    * "Steam linked"). Absent for a game with nothing to say.
@@ -28,11 +42,17 @@ function hasProfile(player: Player): boolean {
  * avatar, name, a detail line with the role and the game's account status,
  * and the rating. Captains first, then by rating.
  */
-export function RosterList({ players, MemberStatus }: RosterListProps) {
+export function RosterList({ players, MemberStatus, positionLabel }: RosterListProps) {
   const { t } = useTranslation();
 
+  // Starters, then subs; within each, the owner and captains first, then by rating.
   const rank = (p: Player) => (p.role === 'owner' ? 2 : p.role === 'captain' ? 1 : 0);
-  const sorted = [...players].sort((a, b) => rank(b) - rank(a) || (b.elo ?? 0) - (a.elo ?? 0));
+  const sorted = [...players].sort(
+    (a, b) =>
+      Number(a.lineup === 'sub') - Number(b.lineup === 'sub') ||
+      rank(b) - rank(a) ||
+      (b.elo ?? 0) - (a.elo ?? 0)
+  );
 
   if (sorted.length === 0) {
     return (
@@ -54,6 +74,9 @@ export function RosterList({ players, MemberStatus }: RosterListProps) {
             : player.role === 'captain'
               ? t('teamProfile.roster.captain')
               : null;
+        const isSub = player.lineup === 'sub';
+        const position = player.position && positionLabel ? positionLabel(player.position) : null;
+        const hasNumbers = typeof player.kd === 'number' || typeof player.adr === 'number';
         return (
           <Row key={player.steamId || index} data-testid="team-profile-roster-row" sx={{ p: 0 }}>
             <Box
@@ -61,7 +84,10 @@ export function RosterList({ players, MemberStatus }: RosterListProps) {
               to={linkable ? getPlayerPageUrl(player.steamId) : undefined}
               sx={{
                 display: 'grid',
-                gridTemplateColumns: 'auto minmax(0, 1fr) auto',
+                gridTemplateColumns: {
+                  xs: 'auto minmax(0, 1fr) auto',
+                  sm: 'auto minmax(0, 1fr) auto auto',
+                },
                 alignItems: 'center',
                 gap: 2,
                 px: 3,
@@ -84,7 +110,7 @@ export function RosterList({ players, MemberStatus }: RosterListProps) {
                 <Typography variant="body2" fontWeight={600} noWrap>
                   {player.name}
                 </Typography>
-                {(roleLabel || MemberStatus) && (
+                {(roleLabel || position || isSub || MemberStatus) && (
                   <Box
                     component="small"
                     data-testid="team-profile-roster-detail"
@@ -99,17 +125,57 @@ export function RosterList({ players, MemberStatus }: RosterListProps) {
                       '& > * + *::before': { content: '"·"', mr: 0.75 },
                     }}
                   >
+                    {isSub && (
+                      <span data-testid="team-profile-roster-sub">
+                        {t('teamProfile.roster.subLine', { count: player.matches ?? 0 })}
+                      </span>
+                    )}
                     {roleLabel && <span>{roleLabel}</span>}
+                    {position && <span data-testid="team-profile-roster-position">{position}</span>}
                     {MemberStatus && <MemberStatus playerId={player.steamId ?? ''} />}
                   </Box>
                 )}
               </Box>
-              {typeof player.elo === 'number' && (
-                <Chip
-                  size="small"
-                  label={t('teamProfile.roster.rating', { rating: player.elo })}
-                  sx={{ flexShrink: 0 }}
-                />
+              <Box
+                data-testid="team-profile-roster-numbers"
+                sx={{
+                  display: { xs: 'none', sm: 'flex' },
+                  gap: 2,
+                  fontFamily: fontMono,
+                  fontSize: textSize.xs,
+                  color: tokens.color.muted,
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
+                {hasNumbers && (
+                  <>
+                    <span>{t('teamProfile.roster.kd', { kd: player.kd?.toFixed(2) ?? '—' })}</span>
+                    <span>{t('teamProfile.roster.adr', { adr: player.adr ?? '—' })}</span>
+                  </>
+                )}
+              </Box>
+              {typeof player.elo === 'number' ? (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0 }}>
+                  <Chip
+                    size="small"
+                    label={t('teamProfile.roster.rating', { rating: player.elo })}
+                  />
+                  {!!player.monthDelta && (
+                    <Box
+                      component="span"
+                      sx={{
+                        fontFamily: fontMono,
+                        fontSize: textSize.xs,
+                        color: player.monthDelta > 0 ? tokens.color.pick : tokens.color.ban,
+                      }}
+                    >
+                      {player.monthDelta > 0 ? '+' : ''}
+                      {player.monthDelta}
+                    </Box>
+                  )}
+                </Box>
+              ) : (
+                <span />
               )}
             </Box>
           </Row>

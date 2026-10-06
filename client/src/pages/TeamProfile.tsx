@@ -1,16 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
-import { Alert, Box, Button, CircularProgress, Container } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Container, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
-import { SectionHead } from '../components/common/ui';
+import { LiveChip, Panel, SectionHead } from '../components/common/ui';
 import { TeamHeader } from '../components/team/profile/TeamHeader';
-import { RosterList } from '../components/team/profile/RosterList';
+import { RosterList, type RosterPlayer } from '../components/team/profile/RosterList';
 import { TeamTournaments } from '../components/team/profile/TeamTournaments';
 import { useTeamProfileData } from '../hooks/useTeamProfileData';
 import { useInstalledIntegrations, useIntegration } from '../integrations/registry';
 import { TeamStatStrip, type TeamProfileNumbers } from '../components/team/profile/TeamStatStrip';
-import type { Player } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { pageTitle } from '../utils/pageTitle';
 import { api, apiErrorMessage } from '../utils/api';
@@ -39,7 +38,8 @@ export default function TeamProfile() {
   // get Manage, a member gets Leave.
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [numbers, setNumbers] = useState<TeamProfileNumbers | null>(null);
-  const [members, setMembers] = useState<Player[] | null>(null);
+  const [members, setMembers] = useState<RosterPlayer[] | null>(null);
+  const [teamGame, setTeamGame] = useState<string | null>(null);
   const gameViews = useInstalledIntegrations()
     .map((integration) => integration.teamProfileView)
     .filter((view): view is NonNullable<typeof view> => Boolean(view));
@@ -55,20 +55,33 @@ export default function TeamProfile() {
       .get<
         {
           success: boolean;
-          team: { logoUrl: string | null };
+          team: { logoUrl: string | null; game: string | null };
           members: Array<{
             steamId: string;
             name: string;
             avatar: string | null;
             rating: number | null;
             role: 'owner' | 'captain' | 'member';
+            position: string | null;
+            lineup: 'starter' | 'sub';
+            matches: number;
+            kd: number | null;
+            adr: number | null;
+            monthDelta: number | null;
           }>;
         } & TeamProfileNumbers
       >(`/api/team-directory/${encodeURIComponent(teamId)}/profile`)
       .then((res) => {
         if (cancelled) return;
         setLogoUrl(res.team?.logoUrl ?? null);
-        setNumbers({ rating: res.rating, record: res.record, rounds: res.rounds });
+        setTeamGame(res.team?.game ?? null);
+        setNumbers({
+          rating: res.rating,
+          record: res.record,
+          rounds: res.rounds,
+          monthDelta: res.monthDelta,
+          trophies: res.trophies,
+        });
         setMembers(
           res.members.map((m) => ({
             steamId: m.steamId,
@@ -76,6 +89,12 @@ export default function TeamProfile() {
             avatar: m.avatar ?? undefined,
             elo: m.rating ?? undefined,
             role: m.role,
+            position: m.position,
+            lineup: m.lineup,
+            matches: m.matches,
+            kd: m.kd,
+            adr: m.adr,
+            monthDelta: m.monthDelta,
           }))
         );
       })
@@ -125,9 +144,14 @@ export default function TeamProfile() {
     )
   ) : undefined;
 
-  // The team's game is its tournament's.
-  const integration = useIntegration(tournament?.game);
+  // The team's game is its tournament's, else the one it says it mainly plays.
+  const integration = useIntegration(tournament?.game ?? teamGame);
   const MemberStatus = integration.rosterMemberStatus;
+  const positionLabel = integration.teamPositions
+    ? (position: string) =>
+        t(`teamPositions.${position}`, { ns: integration.id, defaultValue: position })
+    : undefined;
+  const playingNow = hasMatch && (match?.status === 'live' || match?.status === 'loaded');
 
   useEffect(() => {
     document.title = pageTitle(
@@ -183,6 +207,41 @@ export default function TeamProfile() {
             }
           />
 
+          {playingNow && teamId && (
+            <Panel
+              data-testid="team-profile-playing-now"
+              sx={{
+                mt: 3,
+                px: 2.5,
+                py: 1.75,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
+                flexWrap: 'wrap',
+              }}
+            >
+              <LiveChip label={t('teamProfile.playingNow')} />
+              <Typography sx={{ flex: 1, minWidth: 0 }} noWrap>
+                {[
+                  tournament?.name,
+                  match?.opponent?.name
+                    ? t('teamProfile.tournaments.versus', { opponent: match.opponent.name })
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </Typography>
+              <Button
+                variant="contained"
+                size="small"
+                component={RouterLink}
+                to={paths.teamMatch.replace(':teamId', teamId)}
+              >
+                {t('teamProfile.watchMatch')}
+              </Button>
+            </Panel>
+          )}
+
           {numbers && <TeamStatStrip numbers={numbers} />}
 
           <Box
@@ -196,7 +255,11 @@ export default function TeamProfile() {
           >
             <Box component="section" aria-labelledby="team-roster">
               <SectionHead id="team-roster" title={t('teamProfile.roster.title')} />
-              <RosterList players={members ?? team?.players ?? []} MemberStatus={MemberStatus} />
+              <RosterList
+                players={members ?? team?.players ?? []}
+                MemberStatus={MemberStatus}
+                positionLabel={positionLabel}
+              />
             </Box>
 
             {/* Each game's own numbers for the team (CS2: map strength). */}

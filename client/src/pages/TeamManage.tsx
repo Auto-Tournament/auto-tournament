@@ -22,6 +22,8 @@ import { api, apiErrorMessage } from '../utils/api';
 import { pageTitle } from '../utils/pageTitle';
 import { paths, teamProfilePath } from '../paths';
 import { fontMono, radii, textSize, tokens } from '../theme/tokens';
+import { useSetupGames } from '../components/tournament/setup/games';
+import { useIntegration } from '../integrations/registry';
 
 const { color } = tokens;
 
@@ -34,10 +36,20 @@ interface ManageView {
     tag: string | null;
     logoUrl: string | null;
     inviteCode: string | null;
+    game: string | null;
   };
   viewerRole: Role;
   rosterLockedBy: string | null;
-  members: Array<{ uid: string; steamId: string; name: string; avatar: string | null; role: Role }>;
+  members: Array<{
+    uid: string;
+    steamId: string;
+    name: string;
+    avatar: string | null;
+    role: Role;
+    position: string | null;
+    lineup: 'starter' | 'sub';
+  }>;
+  invites: Array<{ uid: string; steamId: string; name: string; avatar: string | null }>;
   requests: Array<{
     uid: string;
     steamId: string;
@@ -66,6 +78,15 @@ export default function TeamManage() {
   const [notice, setNotice] = useState('');
   const [name, setName] = useState('');
   const [tag, setTag] = useState('');
+  const [game, setGame] = useState('');
+  const [query, setQuery] = useState('');
+  const [found, setFound] = useState<Array<{
+    id: string;
+    name: string;
+    avatar?: string | null;
+  }> | null>(null);
+  const [searching, setSearching] = useState(false);
+  const { games } = useSetupGames();
   const [transferTo, setTransferTo] = useState('');
   const [confirm, setConfirm] = useState<null | 'disband' | 'transfer'>(null);
   const [copied, setCopied] = useState(false);
@@ -84,6 +105,7 @@ export default function TeamManage() {
         setView(res);
         setName(res.team.name);
         setTag(res.team.tag ?? '');
+        setGame(res.team.game ?? '');
       })
       .catch((err) => {
         if (!cancelled) setLoadError(apiErrorMessage(err, t('teamManage.loadError')));
@@ -124,6 +146,28 @@ export default function TeamManage() {
     }, t('teamManage.logoSaved'));
   };
 
+  /** "Or find a player": by name, Steam ID or Steam profile link. */
+  const findPlayers = async () => {
+    const q = query.trim();
+    if (!q) return;
+    setSearching(true);
+    try {
+      const res = await api.get<{
+        success: boolean;
+        players?: Array<{ id: string; name: string; avatar?: string | null }>;
+      }>(`/api/players/find?query=${encodeURIComponent(q)}`);
+      setFound(res.success ? (res.players ?? []) : []);
+    } catch {
+      setFound([]);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  // The game's positions and team size, for the roster's selects and count.
+  const integration = useIntegration(game || null);
+  const positions = game ? (integration.teamPositions ?? []) : [];
+
   if (loadError) {
     return (
       <Box minHeight="100vh" bgcolor="transparent">
@@ -152,6 +196,15 @@ export default function TeamManage() {
     ? `${window.location.origin}${teamJoinPath(view.team.inviteCode)}`
     : '';
   const others = view.members.filter((m) => m.role !== 'owner' && m.uid);
+  const starters = view.members.filter((m) => m.lineup !== 'sub').length;
+  const subs = view.members.length - starters;
+  const teamSize = game ? integration.teamSize : undefined;
+  const memberIds = new Set(view.members.map((m) => m.steamId));
+  const invitedIds = new Set(view.invites.map((i) => i.steamId));
+  const identityChanged =
+    name.trim() !== view.team.name ||
+    tag !== (view.team.tag ?? '') ||
+    game !== (view.team.game ?? '');
 
   return (
     <Box minHeight="100vh" bgcolor="transparent" data-testid="team-manage-page">
@@ -164,7 +217,22 @@ export default function TeamManage() {
         >
           ← {t('teamManage.back', { name: view.team.name })}
         </Box>
-        <PageHead title={t('teamManage.title')} sx={{ mt: 1, mb: 3 }} />
+        <PageHead
+          title={t('teamManage.title')}
+          sx={{ mt: 1, mb: 3 }}
+          actions={
+            <Button
+              variant="contained"
+              data-testid="team-manage-save"
+              disabled={!identityChanged}
+              onClick={() =>
+                act(() => api.patch(base, { name, tag, game: game || null }), t('teamManage.saved'))
+              }
+            >
+              {t('teamManage.save')}
+            </Button>
+          }
+        />
 
         {error && (
           <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
@@ -269,16 +337,23 @@ export default function TeamManage() {
                   helperText={t('teamsDirectory.tagHelp')}
                   inputProps={{ maxLength: 5 }}
                 />
-                <Box>
-                  <Button
-                    variant="contained"
-                    data-testid="team-manage-save"
-                    disabled={name.trim() === view.team.name && tag === (view.team.tag ?? '')}
-                    onClick={() => act(() => api.patch(base, { name, tag }), t('teamManage.saved'))}
-                  >
-                    {t('teamManage.save')}
-                  </Button>
-                </Box>
+                <TextField
+                  select
+                  label={t('teamManage.game')}
+                  value={game}
+                  onChange={(e) => setGame(e.target.value)}
+                  helperText={t('teamManage.gameHelp')}
+                  SelectProps={{ displayEmpty: true }}
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{ 'data-testid': 'team-manage-game' }}
+                >
+                  <MenuItem value="">{t('teamManage.noGame')}</MenuItem>
+                  {games.map((g) => (
+                    <MenuItem key={g.id} value={g.id}>
+                      {g.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </Box>
             </Panel>
 
@@ -287,8 +362,14 @@ export default function TeamManage() {
                 id="team-manage-roster"
                 title={t('teamManage.roster')}
                 action={
-                  <Typography component="span" sx={{ fontSize: textSize.sm, color: color.muted }}>
-                    {t('teamsDirectory.members', { count: view.members.length })}
+                  <Typography
+                    component="span"
+                    data-testid="team-manage-lineup-count"
+                    sx={{ fontSize: textSize.sm, color: color.muted }}
+                  >
+                    {teamSize
+                      ? t('teamManage.lineupCount', { starters, size: teamSize, count: subs })
+                      : t('teamsDirectory.members', { count: view.members.length })}
                   </Typography>
                 }
               />
@@ -303,7 +384,10 @@ export default function TeamManage() {
                     key={m.steamId}
                     sx={{
                       display: 'grid',
-                      gridTemplateColumns: '40px minmax(0, 1fr) auto auto',
+                      gridTemplateColumns: {
+                        xs: '40px minmax(0, 1fr) auto',
+                        sm: `40px minmax(0, 1fr) ${positions.length ? 'auto ' : ''}auto auto auto`,
+                      },
                       gap: 1.5,
                       alignItems: 'center',
                       p: 1,
@@ -320,6 +404,49 @@ export default function TeamManage() {
                     <Typography noWrap sx={{ fontWeight: 600 }}>
                       {m.name}
                     </Typography>
+                    {positions.length > 0 && m.uid && (
+                      <Select
+                        size="small"
+                        displayEmpty
+                        value={m.position ?? ''}
+                        onChange={(e) =>
+                          act(() =>
+                            api.patch(`${base}/members/${encodeURIComponent(m.uid)}`, {
+                              position: e.target.value || null,
+                            })
+                          )
+                        }
+                        inputProps={{ 'aria-label': t('teamManage.positionFor', { name: m.name }) }}
+                        data-testid="team-manage-position"
+                        sx={{ minWidth: 120, gridColumn: { xs: '2 / -1', sm: 'auto' } }}
+                      >
+                        <MenuItem value="">{t('teamManage.noPosition')}</MenuItem>
+                        {positions.map((p) => (
+                          <MenuItem key={p} value={p}>
+                            {t(`teamPositions.${p}`, { ns: integration.id, defaultValue: p })}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    )}
+                    {m.uid && (
+                      <Select
+                        size="small"
+                        value={m.lineup}
+                        onChange={(e) =>
+                          act(() =>
+                            api.patch(`${base}/members/${encodeURIComponent(m.uid)}`, {
+                              lineup: e.target.value,
+                            })
+                          )
+                        }
+                        inputProps={{ 'aria-label': t('teamManage.lineupFor', { name: m.name }) }}
+                        data-testid="team-manage-lineup"
+                        sx={{ minWidth: 110, gridColumn: { xs: '2 / -1', sm: 'auto' } }}
+                      >
+                        <MenuItem value="starter">{t('teamManage.lineup.starter')}</MenuItem>
+                        <MenuItem value="sub">{t('teamManage.lineup.sub')}</MenuItem>
+                      </Select>
+                    )}
                     {isOwner && m.role !== 'owner' ? (
                       <Select
                         size="small"
@@ -426,6 +553,106 @@ export default function TeamManage() {
                   {inviteLink ? t('teamManage.inviteReset') : t('teamManage.inviteCreate')}
                 </Button>
               </Box>
+              <Typography sx={{ fontSize: textSize.sm, color: color.muted, mt: 1 }}>
+                {t('teamManage.findPlayer')}
+              </Typography>
+              <Box
+                component="form"
+                sx={{ display: 'flex', gap: 1 }}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void findPlayers();
+                }}
+              >
+                <TextField
+                  size="small"
+                  fullWidth
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={t('teamManage.findPlaceholder')}
+                  inputProps={{
+                    'aria-label': t('teamManage.findPlayer'),
+                    'data-testid': 'team-manage-find',
+                  }}
+                />
+                <Button type="submit" variant="outlined" disabled={searching || !query.trim()}>
+                  {t('teamManage.find')}
+                </Button>
+              </Box>
+              {found && found.length === 0 && (
+                <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>
+                  {t('teamManage.findNone')}
+                </Typography>
+              )}
+              {found?.map((p) => (
+                <Box
+                  key={p.id}
+                  sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                  data-testid="team-manage-found"
+                >
+                  <PlayerAvatar
+                    id={p.id}
+                    name={p.name}
+                    avatarUrl={p.avatar ?? undefined}
+                    size={32}
+                  />
+                  <Typography noWrap sx={{ flex: 1, minWidth: 0, fontWeight: 600 }}>
+                    {p.name}
+                  </Typography>
+                  {memberIds.has(p.id) ? (
+                    <Typography sx={{ fontSize: textSize.xs, color: color.muted }}>
+                      {t('teamManage.onTeam')}
+                    </Typography>
+                  ) : invitedIds.has(p.id) ? (
+                    <Typography sx={{ fontSize: textSize.xs, color: color.muted }}>
+                      {t('teamManage.invited')}
+                    </Typography>
+                  ) : (
+                    <Button
+                      size="small"
+                      variant="contained"
+                      data-testid="team-manage-invite-player"
+                      onClick={() =>
+                        act(
+                          () => api.post(`${base}/invites`, { steamId: p.id }),
+                          t('teamManage.inviteSent', { name: p.name })
+                        )
+                      }
+                    >
+                      {t('teamManage.invitePlayer')}
+                    </Button>
+                  )}
+                </Box>
+              ))}
+              {view.invites.length > 0 && (
+                <Box sx={{ display: 'grid', gap: 0.75, mt: 1 }} data-testid="team-manage-pending">
+                  <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>
+                    {t('teamsDirectory.invitesPending', { count: view.invites.length })}
+                  </Typography>
+                  {view.invites.map((i) => (
+                    <Box key={i.uid} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <PlayerAvatar
+                        id={i.steamId}
+                        name={i.name}
+                        avatarUrl={i.avatar ?? undefined}
+                        size={28}
+                      />
+                      <Typography noWrap sx={{ flex: 1, minWidth: 0, fontSize: textSize.sm }}>
+                        {i.name}
+                      </Typography>
+                      <IconButton
+                        size="small"
+                        aria-label={t('teamManage.cancelInvite', { name: i.name })}
+                        onClick={() =>
+                          act(() => api.delete(`${base}/invites/${encodeURIComponent(i.uid)}`))
+                        }
+                      >
+                        <XIcon size={14} />
+                      </IconButton>
+                    </Box>
+                  ))}
+                </Box>
+              )}
             </Panel>
 
             <Panel

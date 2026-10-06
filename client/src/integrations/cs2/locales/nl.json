@@ -1719,5 +1719,13 @@
   "matchRules": {
     "title": "Wedstrijdregels",
     "subtitle": "Wat elke CS2-server te horen krijgt als een wedstrijd begint."
+  },
+  "teamPositions": {
+    "rifler": "Rifler",
+    "awper": "AWPer",
+    "igl": "IGL",
+    "entry": "Entry",
+    "support": "Support",
+    "lurker": "Lurker"
   }
 }

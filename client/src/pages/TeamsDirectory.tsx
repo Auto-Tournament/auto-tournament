@@ -11,6 +11,8 @@ import {
   DialogContent,
   DialogTitle,
   InputBase,
+  MenuItem,
+  Select,
   TextField,
   Typography,
 } from '@mui/material';
@@ -22,6 +24,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { api } from '../utils/api';
 import { pageTitle } from '../utils/pageTitle';
 import { teamProfilePath } from '../paths';
+import { useSetupGames } from '../components/tournament/setup/games';
+import { useInstalledIntegrations } from '../integrations/registry';
 import { tokens, fontMono, radii, textSize, withAlpha } from '../theme/tokens';
 
 const { color } = tokens;
@@ -32,12 +36,34 @@ interface DirectoryTeam {
   tag: string | null;
   memberCount: number;
   ownerName: string | null;
+  logoUrl?: string | null;
   createdAt: number;
+  game?: string | null;
+  rating?: number | null;
+  record?: { wins: number; losses: number };
+  bestMap?: string | null;
+  pendingInvites?: number;
+}
+
+interface ReceivedInvite {
+  teamId: string;
+  name: string;
+  tag: string | null;
+  invitedBy: string | null;
 }
 
 interface MyTeams {
   owned: DirectoryTeam | null;
   memberOf: Array<DirectoryTeam & { role: 'captain' | 'member' }>;
+  invites: ReceivedInvite[];
+}
+
+type SortKey = 'rating' | 'name' | 'newest';
+
+/** "de_mirage" reads as "Mirage". */
+function prettyMap(map: string): string {
+  const name = map.replace(/^[a-z]+_/, '');
+  return name.charAt(0).toUpperCase() + name.slice(1);
 }
 
 /** The team's tag, or the first letters of its name, for the logo tile. */
@@ -82,7 +108,8 @@ function TeamTile({
 /**
  * Every team on the site (`/browse/teams`), and the viewer's own: the team
  * they own, the teams they play on, and "Create a team" when they own none.
- * Teams are not tied to a game; a team plays whatever the site runs.
+ * A team plays whatever the site runs; its game is the one it mainly plays,
+ * for the filter and "Looking for N".
  */
 export default function TeamsDirectory() {
   const { t } = useTranslation();
@@ -92,7 +119,19 @@ export default function TeamsDirectory() {
   const [mine, setMine] = useState<MyTeams | null>(null);
   const [error, setError] = useState(false);
   const [search, setSearch] = useState('');
+  const [gameFilter, setGameFilter] = useState('all');
+  const [sort, setSort] = useState<SortKey>('rating');
   const [createOpen, setCreateOpen] = useState(false);
+  const [answering, setAnswering] = useState<string | null>(null);
+  const { games } = useSetupGames();
+  const integrations = useInstalledIntegrations();
+  const gameName = (id: string) => games.find((g) => g.id === id)?.name ?? id;
+  const teamSizeFor = (game: string | null | undefined) =>
+    game
+      ? integrations.find(
+          (i) => i.id === game || i.catalogSlug === game || i.catalogGames?.includes(game)
+        )?.teamSize
+      : undefined;
 
   useEffect(() => {
     document.title = pageTitle(t('teamsDirectory.title'));
@@ -107,7 +146,11 @@ export default function TeamsDirectory() {
       api
         .get<{ success: boolean } & MyTeams>('/api/team-directory/mine')
         .then((res) =>
-          setMine(res.success ? { owned: res.owned, memberOf: res.memberOf ?? [] } : null)
+          setMine(
+            res.success
+              ? { owned: res.owned, memberOf: res.memberOf ?? [], invites: res.invites ?? [] }
+              : null
+          )
         )
         .catch(() => setMine(null));
     }
@@ -117,13 +160,42 @@ export default function TeamsDirectory() {
     load();
   }, [load]);
 
+  const answerInvite = async (teamId: string, accept: boolean) => {
+    setAnswering(teamId);
+    try {
+      await api.post(`/api/team-directory/${encodeURIComponent(teamId)}/invites/answer`, {
+        accept,
+      });
+      if (accept) navigate(teamProfilePath(teamId));
+      else load();
+    } catch {
+      load();
+    } finally {
+      setAnswering(null);
+    }
+  };
+
+  // The games the listed teams play, for the filter.
+  const teamGames = useMemo(
+    () => [...new Set((teams ?? []).map((team) => team.game).filter((g): g is string => !!g))],
+    [teams]
+  );
+
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return (teams ?? []).filter(
+    const list = (teams ?? []).filter(
       (team) =>
-        !q || team.name.toLowerCase().includes(q) || (team.tag ?? '').toLowerCase().includes(q)
+        (gameFilter === 'all' || team.game === gameFilter) &&
+        (!q || team.name.toLowerCase().includes(q) || (team.tag ?? '').toLowerCase().includes(q))
     );
-  }, [teams, search]);
+    return list.sort((a, b) =>
+      sort === 'name'
+        ? a.name.localeCompare(b.name)
+        : sort === 'newest'
+          ? b.createdAt - a.createdAt
+          : (b.rating ?? -1) - (a.rating ?? -1) || a.name.localeCompare(b.name)
+    );
+  }, [teams, search, gameFilter, sort]);
 
   return (
     <Box minHeight="100vh" bgcolor="transparent" data-testid="teams-directory-page">
@@ -134,6 +206,56 @@ export default function TeamsDirectory() {
           subtitle={teams ? t('teamsDirectory.count', { count: teams.length }) : undefined}
           sx={{ mb: 3 }}
         />
+
+        {playerSteamId && mine && mine.invites.length > 0 && (
+          <Box
+            component="section"
+            aria-label={t('teamsDirectory.invites.title')}
+            data-testid="teams-directory-invites"
+            sx={{ display: 'grid', gap: 1, mb: 2 }}
+          >
+            {mine.invites.map((invite) => (
+              <Panel
+                key={invite.teamId}
+                data-testid="teams-directory-invite"
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  flexWrap: 'wrap',
+                  borderColor: color.accent,
+                }}
+              >
+                <TeamTile team={invite} size={44} />
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography noWrap sx={{ fontWeight: 600 }}>
+                    {t('teamsDirectory.invites.line', { team: invite.name })}
+                  </Typography>
+                  {invite.invitedBy && (
+                    <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>
+                      {t('teamsDirectory.invites.by', { name: invite.invitedBy })}
+                    </Typography>
+                  )}
+                </Box>
+                <Button
+                  variant="contained"
+                  disabled={answering === invite.teamId}
+                  onClick={() => void answerInvite(invite.teamId, true)}
+                  data-testid="teams-directory-invite-accept"
+                >
+                  {t('teamsDirectory.invites.accept')}
+                </Button>
+                <Button
+                  disabled={answering === invite.teamId}
+                  onClick={() => void answerInvite(invite.teamId, false)}
+                >
+                  {t('teamsDirectory.invites.decline')}
+                </Button>
+              </Panel>
+            ))}
+          </Box>
+        )}
 
         {playerSteamId && mine && (
           <Box
@@ -166,7 +288,14 @@ export default function TeamsDirectory() {
                     {mine.owned.name}
                   </Typography>
                   <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>
-                    {t('teamsDirectory.members', { count: mine.owned.memberCount })}
+                    {[
+                      t('teamsDirectory.members', { count: mine.owned.memberCount }),
+                      mine.owned.pendingInvites
+                        ? t('teamsDirectory.invitesPending', { count: mine.owned.pendingInvites })
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
                   </Typography>
                 </Box>
                 <Button
@@ -277,6 +406,37 @@ export default function TeamsDirectory() {
               sx={{ flex: 1, minWidth: 0, fontSize: textSize.sm, color: color.ink }}
             />
           </Box>
+          {teamGames.length > 0 && (
+            <Select
+              size="small"
+              value={gameFilter}
+              onChange={(e) => setGameFilter(e.target.value)}
+              inputProps={{ 'aria-label': t('teamsDirectory.gameFilter') }}
+              data-testid="teams-directory-game"
+              sx={{ borderRadius: radii.pill, minWidth: 140 }}
+            >
+              <MenuItem value="all">{t('teamsDirectory.allGames')}</MenuItem>
+              {teamGames.map((g) => (
+                <MenuItem key={g} value={g}>
+                  {gameName(g)}
+                </MenuItem>
+              ))}
+            </Select>
+          )}
+          <Select
+            size="small"
+            value={sort}
+            onChange={(e) => setSort(e.target.value as SortKey)}
+            inputProps={{ 'aria-label': t('teamsDirectory.sortLabel') }}
+            data-testid="teams-directory-sort"
+            sx={{ borderRadius: radii.pill, minWidth: 140 }}
+          >
+            {(['rating', 'name', 'newest'] as const).map((key) => (
+              <MenuItem key={key} value={key}>
+                {t(`teamsDirectory.sort.${key}`)}
+              </MenuItem>
+            ))}
+          </Select>
         </Box>
 
         {error ? (
@@ -331,16 +491,65 @@ export default function TeamsDirectory() {
                 }}
               >
                 <TeamTile team={team} />
-                <Box sx={{ minWidth: 0 }}>
+                <Box sx={{ minWidth: 0, flex: 1 }}>
                   <Typography noWrap sx={{ fontWeight: 600 }}>
                     {team.name}
                   </Typography>
                   <Typography noWrap sx={{ fontSize: textSize.xs, color: color.muted }}>
-                    {[team.tag, t('teamsDirectory.members', { count: team.memberCount })]
+                    {[
+                      team.tag,
+                      team.game ? gameName(team.game) : null,
+                      t('teamsDirectory.members', { count: team.memberCount }),
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </Typography>
+                  <Typography
+                    noWrap
+                    data-testid="teams-directory-row-numbers"
+                    sx={{
+                      fontFamily: fontMono,
+                      fontSize: textSize.xs,
+                      color: color.ink2,
+                      mt: 0.25,
+                    }}
+                  >
+                    {[
+                      typeof team.rating === 'number' ? String(team.rating) : null,
+                      team.record && team.record.wins + team.record.losses > 0
+                        ? `${team.record.wins}–${team.record.losses}`
+                        : null,
+                      team.bestMap
+                        ? t('teamsDirectory.bestMap', { map: prettyMap(team.bestMap) })
+                        : !team.record || team.record.wins + team.record.losses === 0
+                          ? t('teamsDirectory.new')
+                          : null,
+                    ]
                       .filter(Boolean)
                       .join(' · ')}
                   </Typography>
                 </Box>
+                {(() => {
+                  const size = teamSizeFor(team.game);
+                  const open = size ? size - team.memberCount : 0;
+                  return open > 0 ? (
+                    <Box
+                      data-testid="teams-directory-looking"
+                      sx={{
+                        flex: 'none',
+                        px: 1,
+                        py: 0.25,
+                        borderRadius: radii.pill,
+                        bgcolor: withAlpha(color.accent, 0.14),
+                        color: color.accent,
+                        fontSize: textSize.xs,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {t('teamsDirectory.lookingFor', { count: open })}
+                    </Box>
+                  ) : null;
+                })()}
               </Box>
             ))}
           </Box>

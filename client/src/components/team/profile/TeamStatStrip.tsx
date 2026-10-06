@@ -10,17 +10,13 @@ export interface TeamProfileNumbers {
   rating: number | null;
   record: { wins: number; losses: number; last10: Array<'w' | 'l'> };
   rounds: { won: number; lost: number };
+  /** The roster's average rating change over the last 30 days. */
+  monthDelta?: number | null;
+  /** Names of the tournaments the team won, newest first. */
+  trophies?: string[];
 }
 
-function Tile({
-  label,
-  children,
-  testId,
-}: {
-  label: string;
-  children: ReactNode;
-  testId: string;
-}) {
+function Tile({ label, children, testId }: { label: string; children: ReactNode; testId: string }) {
   return (
     <Panel
       data-testid={testId}
@@ -50,14 +46,14 @@ function Big({ children, tone }: { children: ReactNode; tone?: string }) {
 
 /**
  * The team page's numbers, for any game: the team's rating (its roster's
- * average), its record with the last ten results, and its round difference.
- * Nothing shows for a team with no rated player and no finished match.
+ * average) and this month's change, its record with the last ten results,
+ * its round difference and its trophies. A new team shows the same tiles
+ * with dashes, so the page keeps its shape.
  */
 export function TeamStatStrip({ numbers }: { numbers: TeamProfileNumbers }) {
   const { t } = useTranslation();
-  const { rating, record, rounds } = numbers;
+  const { rating, record, rounds, monthDelta = null, trophies = [] } = numbers;
   const played = record.wins + record.losses;
-  if (rating === null && played === 0) return null;
   const diff = rounds.won - rounds.lost;
 
   return (
@@ -65,7 +61,11 @@ export function TeamStatStrip({ numbers }: { numbers: TeamProfileNumbers }) {
       data-testid="team-profile-stats"
       sx={{
         display: 'grid',
-        gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(3, minmax(0, 1fr))' },
+        gridTemplateColumns: {
+          xs: 'minmax(0, 1fr)',
+          sm: 'repeat(2, minmax(0, 1fr))',
+          md: 'repeat(4, minmax(0, 1fr))',
+        },
         gap: 1.5,
         mt: 4,
       }}
@@ -73,13 +73,23 @@ export function TeamStatStrip({ numbers }: { numbers: TeamProfileNumbers }) {
       <Tile label={t('teamProfile.stats.rating')} testId="team-profile-rating">
         <Big>{rating ?? '—'}</Big>
         <Typography sx={{ fontFamily: fontMono, fontSize: textSize.xs, color: color.muted }}>
-          {t('teamProfile.stats.ratingNote')}
+          {monthDelta ? (
+            <Box
+              component="span"
+              data-testid="team-profile-month-delta"
+              sx={{ color: monthDelta > 0 ? color.pick : color.ban }}
+            >
+              {t('teamProfile.stats.thisMonth', {
+                delta: `${monthDelta > 0 ? '+' : ''}${monthDelta}`,
+              })}
+            </Box>
+          ) : (
+            t('teamProfile.stats.ratingNote')
+          )}
         </Typography>
       </Tile>
       <Tile label={t('teamProfile.stats.record')} testId="team-profile-record">
-        <Big>
-          {record.wins}–{record.losses}
-        </Big>
+        <Big>{played === 0 ? '—' : `${record.wins}–${record.losses}`}</Big>
         {record.last10.length > 0 && (
           <Box
             sx={{ display: 'flex', gap: 0.5 }}
@@ -109,6 +119,20 @@ export function TeamStatStrip({ numbers }: { numbers: TeamProfileNumbers }) {
         </Big>
         <Typography sx={{ fontFamily: fontMono, fontSize: textSize.xs, color: color.muted }}>
           {t('teamProfile.stats.roundsNote', { won: rounds.won, lost: rounds.lost })}
+        </Typography>
+      </Tile>
+      <Tile label={t('teamProfile.stats.trophies')} testId="team-profile-trophies">
+        <Big tone={trophies.length > 0 ? color.accent : undefined}>
+          {trophies.length > 0 ? trophies.length : '—'}
+        </Big>
+        <Typography
+          noWrap
+          title={trophies.join(' · ')}
+          sx={{ fontFamily: fontMono, fontSize: textSize.xs, color: color.muted }}
+        >
+          {trophies.length > 0
+            ? trophies.slice(0, 2).join(' · ')
+            : t('teamProfile.stats.noTrophies')}
         </Typography>
       </Tile>
     </Box>

@@ -6,7 +6,12 @@
 import { vetoMapPickers } from './veto/vetoMapPickers';
 import { Cs2ProfileStats } from './profile/Cs2ProfileStats';
 import { Cs2TeamProfileStats } from './profile/Cs2TeamProfileStats';
-import { HardDrivesIcon, MapTrifoldIcon, SlidersHorizontalIcon, KnifeIcon } from '@phosphor-icons/react';
+import {
+  HardDrivesIcon,
+  MapTrifoldIcon,
+  SlidersHorizontalIcon,
+  KnifeIcon,
+} from '@phosphor-icons/react';
 import type { ClientGameIntegration } from '../types';
 import { links } from '../../module-sdk';
 import { MatchServerPanel } from './match/MatchServerPanel';
@@ -26,10 +31,7 @@ import { CreateManualMatchModal } from './standalone/CreateManualMatchModal';
 import { Cs2AdminWarnings } from './global/Cs2AdminWarnings';
 import { Cs2StartConfirm } from './start/Cs2StartConfirm';
 import { Cs2StartPreflight } from './start/Cs2StartPreflight';
-import {
-  Cs2OutdatedServersDialog,
-  parseCs2OutdatedError,
-} from './start/Cs2OutdatedServersDialog';
+import { Cs2OutdatedServersDialog, parseCs2OutdatedError } from './start/Cs2OutdatedServersDialog';
 import { Cs2AllocationBanner } from './bracket/Cs2AllocationBanner';
 import { Cs2NextAllocationChip } from './bracket/Cs2NextAllocationChip';
 import {
@@ -99,6 +101,10 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   // The team page roster: whether the roster has a Steam account for each
   // member, which a CS2 player needs to join the server.
   rosterMemberStatus: Cs2RosterSteamStatus,
+
+  // A team's jobs and size, for the team pages (strings: teamPositions.*).
+  teamPositions: ['rifler', 'awper', 'igl', 'entry', 'support', 'lurker'],
+  teamSize: 5,
 
   // The webhook URL a CS2 server reaches the platform on, and the MatchZy Enhanced
   // plugin's own database: both are settings only this game has, so the

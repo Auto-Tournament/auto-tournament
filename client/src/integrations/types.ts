@@ -979,6 +979,17 @@ export interface ClientGameIntegration {
   rosterMemberStatus?: ComponentType<RosterMemberStatusProps>;
 
   /**
+   * Team pages: the jobs a player has in this game's team (CS2: rifler, AWPer,
+   * IGL), as ids whose labels are `teamPositions.<id>` in the module's
+   * strings. A team whose game this is gives each member one. Absent for a
+   * game without positions.
+   */
+  teamPositions?: readonly string[];
+
+  /** Players a team fields in this game (CS2: 5), for "Looking for N" on the team list. */
+  teamSize?: number;
+
+  /**
    * The admin shell, every page: a setting this module needs before its
    * tournament can run (CS2: the webhook URL). Left empty by a module that
    * needs nothing configured, and the shell then says nothing.

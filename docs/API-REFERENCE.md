@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 526 of them, 345 behind auth —
+Every endpoint this API serves — 529 of them, 345 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -568,6 +568,9 @@ Every team (public), and the signed-in player's own teams: list them, make one (
 | `POST` | `/api/team-directory/:teamId/requests/:uid/decline` | public |
 | `PATCH` | `/api/team-directory/:teamId/members/:uid` | public |
 | `DELETE` | `/api/team-directory/:teamId/members/:uid` | public |
+| `POST` | `/api/team-directory/:teamId/invites` | public |
+| `POST` | `/api/team-directory/:teamId/invites/answer` | public |
+| `DELETE` | `/api/team-directory/:teamId/invites/:uid` | public |
 | `POST` | `/api/team-directory/:teamId/transfer` | public |
 | `DELETE` | `/api/team-directory/:teamId` | public |
 
