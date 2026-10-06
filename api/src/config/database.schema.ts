@@ -126,6 +126,7 @@ export function getSchemaSQL(): string {
       source_label TEXT, -- the map, or the tournament's name
       source_ref TEXT, -- the match slug, or 'tournament:<id>:<name>'
       place INTEGER, -- tournament placement (1, 2, 3)
+      variant TEXT, -- a phase of a multi-phase finish: 'Sapphire', 'Phase 2', ... (null for most skins)
       seen BOOLEAN NOT NULL DEFAULT FALSE, -- the owner has seen the "new skin" reveal
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );

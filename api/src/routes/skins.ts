@@ -18,7 +18,7 @@ import { Router, type Request, type Response } from 'express';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
 import { resolveViewerAccount } from '../utils/viewerIdentity';
-import { SkinError, skinService, type SkinsConfig } from '../services/skinService';
+import { SKIN_IMAGES_BASE, SkinError, skinService, variantOf, type SkinsConfig } from '../services/skinService';
 
 const router = Router();
 
@@ -280,17 +280,24 @@ router.put('/admin/config', requireAuth, async (req, res) => {
  *     security: [{ BearerAuth: [] }]
  *     parameters:
  *       - { in: query, name: q, schema: { type: string } }
+ *       - { in: query, name: all, schema: { type: string, enum: ['1'] }, description: Every paint kit (each Doppler phase) instead of one per name }
  *     responses:
- *       200: { description: Up to 50 matching skins, one per weapon and name }
+ *       200: { description: Up to 50 matching skins }
  */
 router.get('/admin/catalog', requireAuth, async (req, res) => {
   try {
-    const q = String(req.query.q ?? '').trim().toLowerCase();
+    const words = String(req.query.q ?? '').trim().toLowerCase().split(/\s+/).filter(Boolean);
+    // `all=1`: every paint kit, so each phase of a Doppler is its own row.
+    const all = req.query.all === '1';
     const seen = new Set<string>();
     const skins = (await skinService.catalog())
-      .filter((s) => !q || `${s.weaponName} ${s.name}`.toLowerCase().includes(q))
+      .map((s) => ({ ...s, variant: variantOf(s.paintKitName), imageUrl: `${SKIN_IMAGES_BASE}/${s.image}` }))
       .filter((s) => {
-        const key = `${s.weapon}|${s.name}`;
+        const text = `${s.weaponName} ${s.name} ${s.variant ?? ''}`.toLowerCase();
+        return words.every((w) => text.includes(w));
+      })
+      .filter((s) => {
+        const key = all ? `${s.weapon}|${s.paintKit}` : `${s.weapon}|${s.name}`;
         if (seen.has(key)) return false;
         seen.add(key);
         return true;
@@ -299,6 +306,120 @@ router.get('/admin/catalog', requireAuth, async (req, res) => {
     return res.json({ success: true, skins });
   } catch (error) {
     return fail(res, error, 'Searching the catalogue');
+  }
+});
+
+/**
+ * @openapi
+ * /api/skins/admin/players:
+ *   get:
+ *     tags: [Skins]
+ *     summary: Find players to manage their inventory
+ *     security: [{ BearerAuth: [] }]
+ *     parameters:
+ *       - { in: query, name: q, schema: { type: string }, description: Part of a name, or a Steam ID }
+ *     responses:
+ *       200: { description: Up to 30 players with their skin counts }
+ */
+router.get('/admin/players', requireAuth, async (req, res) => {
+  try {
+    const players = await skinService.adminFindPlayers(String(req.query.q ?? ''));
+    return res.json({
+      success: true,
+      players: players.map((p) => ({ steamId: p.id, name: p.name, avatarUrl: p.avatar_url, skins: p.skins })),
+    });
+  } catch (error) {
+    return fail(res, error, 'Finding players');
+  }
+});
+
+/**
+ * @openapi
+ * /api/skins/admin/players/{steamId}/inventory:
+ *   get:
+ *     tags: [Skins]
+ *     summary: A player's whole inventory, for an admin
+ *     security: [{ BearerAuth: [] }]
+ *     parameters:
+ *       - { in: path, name: steamId, required: true, schema: { type: string } }
+ *     responses:
+ *       200: { description: The player's skins }
+ *       404: { description: No such player }
+ */
+router.get('/admin/players/:steamId/inventory', requireAuth, async (req, res) => {
+  try {
+    return res.json({ success: true, inventory: await skinService.adminInventory(req.params.steamId) });
+  } catch (error) {
+    return fail(res, error, 'Reading the inventory');
+  }
+});
+
+/**
+ * @openapi
+ * /api/skins/admin/players/{steamId}/skins:
+ *   post:
+ *     tags: [Skins]
+ *     summary: Give a player a skin
+ *     description: One exact paint kit. Float and pattern are rolled when left out.
+ *     security: [{ BearerAuth: [] }]
+ *     parameters:
+ *       - { in: path, name: steamId, required: true, schema: { type: string } }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [weapon, paintKit]
+ *             properties:
+ *               weapon: { type: string }
+ *               paintKit: { type: integer }
+ *               float: { type: number, minimum: 0, maximum: 1 }
+ *               pattern: { type: integer, minimum: 0, maximum: 1000 }
+ *     responses:
+ *       200: { description: The new skin's id }
+ *       400: { description: Not in the catalogue }
+ *       404: { description: No such player }
+ */
+router.post('/admin/players/:steamId/skins', requireAuth, async (req, res) => {
+  try {
+    const body = req.body ?? {};
+    if (typeof body.weapon !== 'string' || !Number.isInteger(body.paintKit)) {
+      return res.status(400).json({ success: false, error: 'weapon and paintKit are required.' });
+    }
+    const id = await skinService.adminGive(req.params.steamId, {
+      weapon: body.weapon,
+      paintKit: body.paintKit,
+      float: typeof body.float === 'number' ? body.float : null,
+      pattern: Number.isInteger(body.pattern) ? body.pattern : null,
+    });
+    return res.json({ success: true, id });
+  } catch (error) {
+    return fail(res, error, 'Giving a skin');
+  }
+});
+
+/**
+ * @openapi
+ * /api/skins/admin/skins/{id}:
+ *   delete:
+ *     tags: [Skins]
+ *     summary: Take a skin away from its owner
+ *     security: [{ BearerAuth: [] }]
+ *     parameters:
+ *       - { in: path, name: id, required: true, schema: { type: integer } }
+ *     responses:
+ *       200: { description: Removed }
+ *       404: { description: No such skin }
+ */
+router.delete('/admin/skins/:id', requireAuth, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) return res.status(400).json({ success: false, error: 'Bad skin id.' });
+    await skinService.adminRemove(id);
+    return res.json({ success: true });
+  } catch (error) {
+    return fail(res, error, 'Removing a skin');
   }
 });
 

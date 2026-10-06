@@ -608,7 +608,42 @@
       "addSeed": "Legg til et seed",
       "notice": "Melding som vises med skins",
       "noticeFixed": "Vises alltid. Kan ikke endres.",
-      "saved": "Skins-innstillinger lagret"
+      "saved": "Skins-innstillinger lagret",
+      "inv": {
+        "title": "Spillerinventar",
+        "hint": "Velg en spiller for å se skinsene deres, gi dem et eller ta et bort.",
+        "player": "Spiller",
+        "playerHint": "Navn eller Steam-ID",
+        "give": "Gi et skin",
+        "giveTo": "Gi {{player}} et skin",
+        "skinHint": "Våpen, finish eller fase",
+        "phase": "Fase",
+        "wear": "Slitasje",
+        "wears": {
+          "fn": "Factory New",
+          "mw": "Minimal Wear",
+          "ft": "Field-Tested",
+          "ww": "Well-Worn",
+          "bs": "Battle-Scarred"
+        },
+        "float": "Float",
+        "pattern": "Mønsterseed",
+        "rollPattern": "Tilfeldig seed",
+        "emptyRolls": "La float eller mønster stå tomt for å trekke tilfeldig.",
+        "floatBad": "Mellom 0 og 1",
+        "patternBad": "Et heltall fra 0 til 1000",
+        "given": "Skin gitt til {{player}}",
+        "equipped": "utstyrt",
+        "source": {
+          "matchmaking": "Matchmaking",
+          "tournament": "Turnering",
+          "admin": "Gitt av en admin"
+        },
+        "remove": "Ta bort",
+        "removeTitle": "Ta bort dette skinet?",
+        "removeQuestion": "{{skin}} forsvinner fra inventaret og loadouten til {{player}}. Dette kan ikke angres.",
+        "removed": "Skin tatt bort"
+      }
     }
   }
 }
