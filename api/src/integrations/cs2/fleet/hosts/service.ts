@@ -9,7 +9,7 @@ import type { Server as HttpServer } from 'http';
 import { db } from '../../../../config/database';
 import { log } from '../../../../utils/logger';
 import { getIO } from '../../../../services/socketService';
-import { licenseConsentService } from '../../../../services/license/consent';
+import { settingsService } from '../../../../services/settingsService';
 import { ulid } from '../credentials';
 import { FLEET_TENANT } from '../registry';
 import { fleetBus } from '../service';
@@ -95,6 +95,21 @@ export interface SentHostCommand {
  * says `update_safe: false`, or its Ready Up server is busy) are refused with
  * `match_in_progress` unless `force` is given. csm checks the same itself.
  */
+/**
+ * The license use the admin accepted under Settings > License, or null.
+ * Read from the stored record (core's `license_consent` setting) since the
+ * module reaches core only through its bridge.
+ */
+async function acceptedLicenseUse(): Promise<'noncommercial' | 'commercial' | null> {
+  try {
+    const raw = await settingsService.getSetting('license_consent');
+    const use = raw ? (JSON.parse(raw) as { use?: unknown }).use : null;
+    return use === 'noncommercial' || use === 'commercial' ? use : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function sendHostCommand<T extends HostCommandType>(
   hostId: string,
   type: T,
@@ -113,8 +128,8 @@ export async function sendHostCommand<T extends HostCommandType>(
   // csm can run Ready Up's installer unattended on a host whose operator
   // gave no answer of their own (theirs always wins on the host).
   if (type === 'server.create' || type === 'host.update_plugins') {
-    const consent = await licenseConsentService.getRecord().catch(() => null);
-    if (consent) body.accept_license = consent.use;
+    const use = await acceptedLicenseUse();
+    if (use) body.accept_license = use;
   }
 
   let force: HostForce | null = null;
