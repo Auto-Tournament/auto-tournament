@@ -826,6 +826,29 @@ export function getSchemaSQL(): string {
       PRIMARY KEY (party_id, player_id)
     );
 
+    -- Chat (services/chatService.ts): a match's both teams and the admins,
+    -- a team, a matchmaking party. channel = 'match:<slug>', 'team:<id>',
+    -- 'party:<id>'. No foreign keys: the history outlives what it was about.
+    CREATE TABLE IF NOT EXISTS chat_messages (
+      id SERIAL PRIMARY KEY,
+      channel TEXT NOT NULL,
+      sender_id TEXT, -- players.id (Steam ID); NULL for a system line or an admin without one
+      sender_name TEXT NOT NULL,
+      sender_kind TEXT NOT NULL, -- 'player' | 'admin' | 'system'
+      sender_team TEXT, -- match channels: the sender's team id, to colour friend and enemy
+      body TEXT NOT NULL,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+    CREATE INDEX IF NOT EXISTS idx_chat_messages_channel ON chat_messages(channel, id);
+
+    -- How far each player has read each channel, for unread counts.
+    CREATE TABLE IF NOT EXISTS chat_reads (
+      player_id TEXT NOT NULL,
+      channel TEXT NOT NULL,
+      last_id INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (player_id, channel)
+    );
+
     -- One entry per searching party. queued_at is kept when a party that
     -- accepted is put back at the front.
     CREATE TABLE IF NOT EXISTS mm_queue_entries (

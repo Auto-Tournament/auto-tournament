@@ -641,5 +641,36 @@
       "rolling": "Velger kart …",
       "picked": "Kart: {{map}}"
     }
+  },
+  "chat": {
+    "title": "Chat",
+    "close": "Lukk chatten",
+    "tabsLabel": "Chatter",
+    "tabMatch": "Kamp",
+    "tabTeam": "Lag",
+    "tabParty": "Gruppe",
+    "matchWho": "Laget ditt, {{title}} og adminene",
+    "matchWhoAdmin": "Begge lagene og adminene",
+    "teamWho": "Alle på {{team}}",
+    "partyWho": "Alle i gruppa di",
+    "placeholderMatch": "Skriv til begge lagene og adminene",
+    "placeholderTeam": "Skriv til laget ditt",
+    "placeholderParty": "Skriv til gruppa di",
+    "send": "Send",
+    "you": "Du",
+    "adminBadge": "ADMIN",
+    "callAdmin": "Tilkall en admin",
+    "adminCalled": "En admin er tilkalt",
+    "callFailed": "Kunne ikke tilkalle en admin",
+    "sendFailed": "Kunne ikke sende meldingen",
+    "logLabel": "Chat: {{title}}",
+    "none": "Ingen chatter ennå. Kampen, laget og gruppa di dukker opp her.",
+    "empty": "Ingen meldinger ennå. Si hei.",
+    "loading": "Laster meldinger",
+    "readOnlyImpersonating": "Du ser siden som en annen spiller. Avslutt for å skrive.",
+    "peekMatch": "Kamp · {{title}}",
+    "peekTeam": "Lag",
+    "peekParty": "Gruppe",
+    "buttonUnread": "Chat, {{count}} uleste"
   }
 }

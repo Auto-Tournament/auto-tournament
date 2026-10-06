@@ -146,7 +146,8 @@
     "started": "Started:",
     "completed": "Completed:",
     "adminControls": "Admin Controls",
-    "slug": "Match slug:"
+    "slug": "Match slug:",
+    "openChat": "Match chat"
   },
   "bulkShuffleMatchesModal": {
     "title": "Zbiorczo utwórz mecze shuffle",
