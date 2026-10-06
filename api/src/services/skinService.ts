@@ -36,9 +36,26 @@ export interface CatalogSkin {
   weapon: string;
   weaponName: string;
   paintKit: number;
+  /** The game's paint kit name (`am_sapphire_marbleized`): tells the phases of one finish apart. */
+  paintKitName?: string;
   name: string;
   rarity: Rarity;
   image: string;
+}
+
+/**
+ * The phase of a multi-phase finish (Doppler, Gamma Doppler) from its paint
+ * kit name, as players call it: Ruby, Sapphire, Black Pearl, Emerald, Phase 1
+ * to 4. Null for a finish with one look.
+ */
+export function variantOf(paintKitName: string | undefined): string | null {
+  const name = (paintKitName ?? '').toLowerCase();
+  if (name.includes('ruby')) return 'Ruby';
+  if (name.includes('sapphire')) return 'Sapphire';
+  if (name.includes('blackpearl')) return 'Black Pearl';
+  if (name.includes('emerald')) return 'Emerald';
+  const phase = /phase(\d)/.exec(name);
+  return phase ? `Phase ${phase[1]}` : null;
 }
 
 export interface TournamentReward {
@@ -103,6 +120,8 @@ export interface OwnedSkin {
   sourceLabel: string | null;
   sourceRef: string | null;
   place: number | null;
+  /** A phase of a multi-phase finish ('Sapphire', 'Phase 2'), or null. */
+  variant: string | null;
   createdAt: number;
   seen: boolean;
   equipped: boolean;
@@ -122,6 +141,7 @@ interface SkinRow {
   source_label: string | null;
   source_ref: string | null;
   place: number | null;
+  variant: string | null;
   created_at: number;
   seen: boolean;
 }
@@ -166,7 +186,7 @@ function toRow(row: SkinRow, equipped: Set<number>): OwnedSkin {
     id: row.id,
     weapon: row.weapon,
     weaponName: row.weapon_name,
-    name: row.name,
+    name: row.variant ? `${row.name} (${row.variant})` : row.name,
     rarity: row.rarity,
     imageUrl: `${SKIN_IMAGES_BASE}/${row.image}`,
     slot: slotOf(row.weapon),
@@ -176,6 +196,7 @@ function toRow(row: SkinRow, equipped: Set<number>): OwnedSkin {
     sourceLabel: row.source_label,
     sourceRef: row.source_ref,
     place: row.place,
+    variant: row.variant ?? null,
     createdAt: row.created_at,
     seen: Boolean(row.seen),
     equipped: equipped.has(row.id),
@@ -272,8 +293,8 @@ export const skinService = {
   ): Promise<number> {
     const row = await db.queryOneAsync<{ id: number }>(
       `INSERT INTO player_skins
-         (player_uid, weapon, weapon_name, paint_kit, name, rarity, image, float_value, pattern, source, source_label, source_ref, place)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
+         (player_uid, weapon, weapon_name, paint_kit, name, rarity, image, float_value, pattern, source, source_label, source_ref, place, variant)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
       [
         playerUid,
         skin.weapon,
@@ -288,6 +309,7 @@ export const skinService = {
         source.label ?? null,
         source.ref ?? null,
         source.place ?? null,
+        variantOf(skin.paintKitName),
       ]
     );
     return row?.id ?? 0;
@@ -479,6 +501,58 @@ export const skinService = {
     }
     if (!paints.length) return null;
     return { paints, ...(knife ? { knife } : {}), ...(gloves ? { gloves } : {}) };
+  },
+
+  /** Admin: players by name or Steam ID, with how many skins they own. */
+  async adminFindPlayers(query: string) {
+    const q = query.trim();
+    return db.queryAsync<{ id: string; name: string; avatar_url: string | null; skins: number }>(
+      `SELECT p.id, p.name, p.avatar_url,
+              (SELECT COUNT(*)::int FROM player_skins s WHERE s.player_uid = p.uid) AS skins
+         FROM players p
+        WHERE (? = '' OR p.name ILIKE ? OR p.id = ?)
+        ORDER BY skins DESC, p.name
+        LIMIT 30`,
+      [q, `%${q}%`, q]
+    );
+  },
+
+  /** Admin: a player's whole inventory. */
+  async adminInventory(steamId: string): Promise<OwnedSkin[]> {
+    const uid = await uidOf(steamId);
+    if (!uid) throw new SkinError(404, 'No such player.');
+    return this.inventory(uid);
+  },
+
+  /** Admin: give a player one exact skin (a paint kit), with the float and pattern given or rolled. */
+  async adminGive(
+    steamId: string,
+    input: { weapon: string; paintKit: number; float?: number | null; pattern?: number | null },
+    adminLabel?: string
+  ): Promise<number> {
+    const uid = await uidOf(steamId);
+    if (!uid) throw new SkinError(404, 'No such player.');
+    const skin = (await this.catalog()).find((s) => s.weapon === input.weapon && s.paintKit === input.paintKit);
+    if (!skin) throw new SkinError(400, 'That skin is not in the catalogue.');
+    const float =
+      typeof input.float === 'number' && Number.isFinite(input.float) ? Math.max(0, Math.min(1, input.float)) : null;
+    const pattern =
+      typeof input.pattern === 'number' && Number.isInteger(input.pattern) && input.pattern >= 0 && input.pattern <= 1000
+        ? input.pattern
+        : null;
+    return this.grant(
+      uid,
+      skin,
+      { source: 'admin', label: adminLabel },
+      { floatMin: float ?? 0, floatMax: float ?? 1, seeds: pattern !== null ? [pattern] : [] }
+    );
+  },
+
+  /** Admin: take a skin away (it leaves the loadout and the showcase with it). */
+  async adminRemove(skinId: number): Promise<void> {
+    const row = await db.queryOneAsync<{ id: number }>('SELECT id FROM player_skins WHERE id = ?', [skinId]);
+    if (!row) throw new SkinError(404, 'No such skin.');
+    await db.runAsync('DELETE FROM player_skins WHERE id = ?', [skinId]);
   },
 
   /** One skin with its owner, for the inspect dialog. */

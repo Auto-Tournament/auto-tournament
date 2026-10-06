@@ -608,7 +608,42 @@
       "addSeed": "Add a seed",
       "notice": "Notice shown with skins",
       "noticeFixed": "Always shown. It can't be changed.",
-      "saved": "Skins settings saved"
+      "saved": "Skins settings saved",
+      "inv": {
+        "title": "Player inventories",
+        "hint": "Pick a player to see their skins, give them one or take one away.",
+        "player": "Player",
+        "playerHint": "Name or Steam ID",
+        "give": "Give a skin",
+        "giveTo": "Give {{player}} a skin",
+        "skinHint": "Weapon, finish or phase",
+        "phase": "Phase",
+        "wear": "Wear",
+        "wears": {
+          "fn": "Factory New",
+          "mw": "Minimal Wear",
+          "ft": "Field-Tested",
+          "ww": "Well-Worn",
+          "bs": "Battle-Scarred"
+        },
+        "float": "Float",
+        "pattern": "Pattern seed",
+        "rollPattern": "Random seed",
+        "emptyRolls": "Leave float or pattern empty to roll it.",
+        "floatBad": "Between 0 and 1",
+        "patternBad": "A whole number, 0 to 1000",
+        "given": "Skin given to {{player}}",
+        "equipped": "equipped",
+        "source": {
+          "matchmaking": "Matchmaking",
+          "tournament": "Tournament",
+          "admin": "Given by an admin"
+        },
+        "remove": "Take away",
+        "removeTitle": "Take this skin away?",
+        "removeQuestion": "{{skin}} leaves {{player}}'s inventory and loadout. This cannot be undone.",
+        "removed": "Skin taken away"
+      }
     }
   }
 }

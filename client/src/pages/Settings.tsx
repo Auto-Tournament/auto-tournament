@@ -32,6 +32,7 @@ import { LicenseCard } from '../components/settings/LicenseCard';
 import { WebhooksCard } from '../components/settings/WebhooksCard';
 import { ExperimentalCard } from '../components/settings/ExperimentalCard';
 import { SkinsCard } from '../components/settings/SkinsCard';
+import { SkinsInventoryAdmin } from '../components/settings/SkinsInventoryAdmin';
 import { SignInProvidersCard } from '../components/settings/SignInProvidersCard';
 import { useInstalledIntegrations } from '../integrations/registry';
 
@@ -329,7 +330,10 @@ export default function Settings() {
             </Box>
 
             <TabPanel value={activeTab} index="skins">
-              <SkinsCard />
+              <Stack spacing={3}>
+                <SkinsCard />
+                <SkinsInventoryAdmin />
+              </Stack>
             </TabPanel>
 
             <TabPanel value={activeTab} index="experimental">

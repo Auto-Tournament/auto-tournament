@@ -9735,12 +9735,22 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "in": "query",
+            "name": "all",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1"
+              ]
+            },
+            "description": "Every paint kit (each Doppler phase) instead of one per name"
           }
         ],
         "responses": {
           "200": {
-            "description": "Up to 50 matching skins",
-            "one per weapon and name": null
+            "description": "Up to 50 matching skins"
           }
         }
       }
@@ -9790,6 +9800,176 @@
         "responses": {
           "200": {
             "description": "The saved settings"
+          }
+        }
+      }
+    },
+    "/api/skins/admin/players": {
+      "get": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "Find players to manage their inventory",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Part of a name",
+            "or a Steam ID": null
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Up to 30 players with their skin counts"
+          }
+        }
+      }
+    },
+    "/api/skins/admin/players/{steamId}/inventory": {
+      "get": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "A player's whole inventory, for an admin",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "steamId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The player's skins"
+          },
+          "404": {
+            "description": "No such player"
+          }
+        }
+      }
+    },
+    "/api/skins/admin/players/{steamId}/skins": {
+      "post": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "Give a player a skin",
+        "description": "One exact paint kit. Float and pattern are rolled when left out.",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "steamId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "weapon",
+                  "paintKit"
+                ],
+                "properties": {
+                  "weapon": {
+                    "type": "string"
+                  },
+                  "paintKit": {
+                    "type": "integer"
+                  },
+                  "float": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "pattern": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The new skin's id"
+          },
+          "400": {
+            "description": "Not in the catalogue"
+          },
+          "404": {
+            "description": "No such player"
+          }
+        }
+      }
+    },
+    "/api/skins/admin/skins/{id}": {
+      "delete": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "Take a skin away from its owner",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Removed"
+          },
+          "404": {
+            "description": "No such skin"
           }
         }
       }
