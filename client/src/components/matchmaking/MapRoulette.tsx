@@ -7,7 +7,7 @@
  * Runs once per match per browser tab (sessionStorage), and not at all with
  * "reduce motion": then the chosen map is simply shown.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { tokens, radii, fontDisplay } from '../../theme/tokens';
@@ -19,6 +19,38 @@ export interface RouletteMap {
 }
 
 const COLUMNS = { xs: 3, sm: 4, md: 5 } as const;
+
+/**
+ * The roll's sound, made with Web Audio (no file): a short tick each time the
+ * light moves, so it slows with the roll, and a lower tone where it stops.
+ * The player has just clicked Accept, so the browser lets the page play it;
+ * when it does not, the roll is simply silent.
+ */
+let audio: globalThis.AudioContext | null = null;
+function blip(frequency: number, duration: number, volume: number) {
+  try {
+    const Ctx =
+      window.AudioContext ??
+      (window as unknown as { webkitAudioContext?: typeof globalThis.AudioContext }).webkitAudioContext;
+    if (!Ctx) return;
+    audio ??= new Ctx();
+    if (audio.state === 'suspended') void audio.resume();
+    const now = audio.currentTime;
+    const osc = audio.createOscillator();
+    const gain = audio.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(frequency, now);
+    gain.gain.setValueAtTime(volume, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    osc.connect(gain).connect(audio.destination);
+    osc.start(now);
+    osc.stop(now + duration);
+  } catch {
+    // No audio: silent roll.
+  }
+}
+const tick = () => blip(1400, 0.03, 0.05);
+const land = () => blip(520, 0.25, 0.08);
 
 /** The grid order a snake visits: row by row, every other row right to left. */
 function snakeOrder(count: number, columns: number): number[] {
@@ -35,9 +67,23 @@ function seenKey(lobbyId: string) {
   return `mm-roulette-${lobbyId}`;
 }
 
-export function MapRoulette({ lobbyId, maps, chosen }: { lobbyId: string; maps: RouletteMap[]; chosen: string }) {
+export function MapRoulette({
+  lobbyId,
+  maps,
+  chosen,
+  onDone,
+}: {
+  lobbyId: string;
+  maps: RouletteMap[];
+  chosen: string;
+  /** Called once the roll has stopped (at once when it does not roll). */
+  onDone?: () => void;
+}) {
   const { t } = useTranslation();
-  const target = Math.max(0, maps.findIndex((m) => m.id === chosen));
+  const target = Math.max(
+    0,
+    maps.findIndex((m) => m.id === chosen)
+  );
   const theme = useTheme();
   const md = useMediaQuery(theme.breakpoints.up('md'));
   const sm = useMediaQuery(theme.breakpoints.up('sm'));
@@ -45,6 +91,10 @@ export function MapRoulette({ lobbyId, maps, chosen }: { lobbyId: string; maps: 
   const order = useMemo(() => snakeOrder(maps.length, columns), [maps.length, columns]);
   const [lit, setLit] = useState<number | null>(null);
   const [done, setDone] = useState(false);
+  const doneRef = useRef(onDone);
+  useEffect(() => {
+    doneRef.current = onDone;
+  }, [onDone]);
 
   useEffect(() => {
     let skip = false;
@@ -58,6 +108,7 @@ export function MapRoulette({ lobbyId, maps, chosen }: { lobbyId: string; maps: 
     const finish = () => {
       setLit(target);
       setDone(true);
+      doneRef.current?.();
     };
     if (skip || reduce || maps.length < 2) {
       const id = setTimeout(finish, 0);
@@ -72,19 +123,36 @@ export function MapRoulette({ lobbyId, maps, chosen }: { lobbyId: string; maps: 
       const progress = i / steps;
       at += 45 + 260 * progress ** 3;
       const cell = order[i % order.length];
-      timers.push(setTimeout(() => setLit(cell), at));
+      timers.push(
+        setTimeout(() => {
+          setLit(cell);
+          tick();
+        }, at)
+      );
     }
-    timers.push(setTimeout(finish, at + 250));
+    timers.push(
+      setTimeout(() => {
+        land();
+        finish();
+      }, at + 250)
+    );
     return () => timers.forEach(clearTimeout);
   }, [lobbyId, maps.length, order, target]);
 
   return (
     <Box data-testid="mm-roulette" aria-live="polite">
       <Typography sx={{ fontFamily: fontDisplay, fontWeight: 700, fontSize: '1.25rem', mb: 1.5 }}>
-        {done ? t('matchmaking.roulette.picked', { map: maps[target]?.name ?? chosen }) : t('matchmaking.roulette.rolling')}
+        {done
+          ? t('matchmaking.roulette.picked', { map: maps[target]?.name ?? chosen })
+          : t('matchmaking.roulette.rolling')}
       </Typography>
       <Box
-        sx={{ display: 'grid', gap: 1, gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+        sx={{
+          display: 'grid',
+          gap: 1.5,
+          p: 0.5,
+          gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+        }}
       >
         {maps.map((m, i) => {
           const on = lit === i;
@@ -97,16 +165,20 @@ export function MapRoulette({ lobbyId, maps, chosen }: { lobbyId: string; maps: 
               sx={{
                 position: 'relative',
                 aspectRatio: '16 / 9',
-                borderRadius: `${radii.sm}px`,
+                borderRadius: radii.md,
                 overflow: 'hidden',
                 bgcolor: tokens.color.paper3,
                 backgroundImage: m.imageUrl ? `url(${m.imageUrl})` : undefined,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 outline: on ? `3px solid ${tokens.color.accent}` : '3px solid transparent',
-                filter: done && !picked ? 'grayscale(1) brightness(0.45)' : on ? 'none' : 'brightness(0.6)',
-                transform: picked ? 'scale(1.04)' : 'none',
-                transition: 'filter 120ms, transform 300ms',
+                filter:
+                  done && !picked
+                    ? 'grayscale(1) brightness(0.45)'
+                    : on
+                      ? 'none'
+                      : 'brightness(0.6)',
+                transition: 'filter 120ms',
               }}
             >
               <Typography

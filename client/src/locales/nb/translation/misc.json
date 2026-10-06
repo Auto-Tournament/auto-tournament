@@ -279,7 +279,14 @@
       "title": "Ingen turneringer passer filtrene",
       "description": "Prøv et annet spill eller en annen status, eller nullstill filtrene.",
       "clear": "Nullstill filtre"
-    }
+    },
+    "groups": {
+      "live": "Pågår",
+      "soon": "Kommer",
+      "finished": "Ferdige"
+    },
+    "showOlder_one": "Vis {{count}} eldre",
+    "showOlder_other": "Vis {{count}} eldre"
   },
   "modulesPage": {
     "title": "Moduler",
@@ -513,7 +520,38 @@
         "5v5": "5v5",
         "2v2": "2v2 Wingman",
         "1v1": "1v1"
-      }
+      },
+      "inQueue_one": "{{count}} i køen",
+      "inQueue_other": "{{count}} i køen",
+      "partyTitle": "Gruppa di",
+      "invite": "Inviter",
+      "partyOf": "{{count}} av {{max}}",
+      "you": "Du",
+      "selected": "Valgt",
+      "modeTitle": {
+        "5v5": "Konkurranse",
+        "2v2": "Wingman",
+        "1v1": "Duell"
+      },
+      "lookingTitle": "Leter etter spillere",
+      "seats": "{{count}} av {{total}} i køen",
+      "leaveQueue": "Forlat køen",
+      "level": "Ditt nivå",
+      "xp": "{{into}} / {{next}} XP",
+      "ratingShort": "Rating",
+      "recent": "Siste",
+      "noRecent": "Ingen kamper ennå.",
+      "result": {
+        "win": "Seier",
+        "loss": "Tap",
+        "draw": "Uavgjort"
+      },
+      "resultShort": {
+        "win": "S",
+        "loss": "T",
+        "draw": "U"
+      },
+      "backToMatch": "Tilbake til kampen din"
     },
     "queue": {
       "searching": "Søker {{mode}}",
@@ -526,7 +564,8 @@
       "waiting": "Venter på de andre",
       "accepted": "{{accepted}} / {{total}} har godtatt",
       "secondsLeft_one": "{{count}} sekund igjen",
-      "secondsLeft_other": "{{count}} sekunder igjen"
+      "secondsLeft_other": "{{count}} sekunder igjen",
+      "subtitle": "{{mode}} · godta innen {{seconds}} sekunder"
     },
     "party": {
       "title": "Gruppe",
@@ -559,7 +598,19 @@
         "live": "Kampen er i gang.",
         "completed": "Kampen er ferdig.",
         "other": "Kamp: {{status}}"
-      }
+      },
+      "pickedBy": "{{mode}} · kartlotteriet valgte",
+      "vs": "mot",
+      "you": "(deg)",
+      "accepted": "godtatt",
+      "matchChat": "Kampchat",
+      "playAgain": "Spill igjen",
+      "fullScoreboard": "Hele resultattavlen",
+      "newSkin": "Ny skin",
+      "inventory": "Inventar",
+      "victory": "Seier",
+      "defeat": "Tap",
+      "draw": "Uavgjort"
     },
     "result": {
       "title": "Resultat",

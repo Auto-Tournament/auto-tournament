@@ -279,7 +279,14 @@
       "title": "No tournaments match your filters",
       "description": "Try another game or status, or clear the filters.",
       "clear": "Clear filters"
-    }
+    },
+    "groups": {
+      "live": "Live",
+      "soon": "Coming up",
+      "finished": "Finished"
+    },
+    "showOlder_one": "Show {{count}} older",
+    "showOlder_other": "Show {{count}} older"
   },
   "modulesPage": {
     "title": "Modules",
@@ -513,7 +520,38 @@
         "5v5": "5v5",
         "2v2": "2v2 Wingman",
         "1v1": "1v1"
-      }
+      },
+      "inQueue_one": "{{count}} in the queue",
+      "inQueue_other": "{{count}} in the queue",
+      "partyTitle": "Your party",
+      "invite": "Invite",
+      "partyOf": "{{count}} of {{max}}",
+      "you": "You",
+      "selected": "Selected",
+      "modeTitle": {
+        "5v5": "Competitive",
+        "2v2": "Wingman",
+        "1v1": "Duel"
+      },
+      "lookingTitle": "Looking for players",
+      "seats": "{{count}} of {{total}} in the queue",
+      "leaveQueue": "Leave the queue",
+      "level": "Your level",
+      "xp": "{{into}} / {{next}} XP",
+      "ratingShort": "Rating",
+      "recent": "Recent",
+      "noRecent": "No matches yet.",
+      "result": {
+        "win": "Win",
+        "loss": "Loss",
+        "draw": "Draw"
+      },
+      "resultShort": {
+        "win": "W",
+        "loss": "L",
+        "draw": "D"
+      },
+      "backToMatch": "Back to your match"
     },
     "queue": {
       "searching": "Searching {{mode}}",
@@ -526,7 +564,8 @@
       "waiting": "Waiting for the others",
       "accepted": "{{accepted}} / {{total}} accepted",
       "secondsLeft_one": "{{count}} second left",
-      "secondsLeft_other": "{{count}} seconds left"
+      "secondsLeft_other": "{{count}} seconds left",
+      "subtitle": "{{mode}} · accept within {{seconds}} seconds"
     },
     "party": {
       "title": "Party",
@@ -559,7 +598,19 @@
         "live": "The match is live.",
         "completed": "The match is over.",
         "other": "Match: {{status}}"
-      }
+      },
+      "pickedBy": "{{mode}} · the map roulette picked",
+      "vs": "vs",
+      "you": "(you)",
+      "accepted": "accepted",
+      "matchChat": "Match chat",
+      "playAgain": "Play again",
+      "fullScoreboard": "Full scoreboard",
+      "newSkin": "New skin",
+      "inventory": "Inventory",
+      "victory": "Victory",
+      "defeat": "Defeat",
+      "draw": "Draw"
     },
     "result": {
       "title": "Result",

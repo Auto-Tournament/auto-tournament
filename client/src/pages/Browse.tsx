@@ -1,17 +1,27 @@
 import { pageTitle } from '../utils/pageTitle';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Alert, Box, Button, CircularProgress, Container, InputBase, MenuItem, Select } from '@mui/material';
-import { MagnifyingGlassIcon } from '@phosphor-icons/react';
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Container,
+  InputBase,
+  MenuItem,
+  Select,
+  Typography,
+} from '@mui/material';
+import { MagnifyingGlassIcon, TrophyIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { GameMark } from '../components/common/GameMark';
-import { EmptyPanel, LiveChip, PageHead, Row, RowList } from '../components/common/ui';
+import { EmptyPanel, LiveChip, PageHead } from '../components/common/ui';
 import { useTournamentList, type TournamentSummary } from '../hooks/useTournamentList';
 import { useAuth } from '../contexts/AuthContext';
 import { paths } from '../paths';
 import { formatLine, tournamentAction, tournamentWhen } from '../utils/tournamentSummary';
-import { tokens, fontMono, radii, textSize } from '../theme/tokens';
+import { tokens, fontDisplay, radii, textSize } from '../theme/tokens';
 
 const { color } = tokens;
 
@@ -40,17 +50,27 @@ function statusBucket(tournament: TournamentSummary): StatusFilter {
 }
 
 /**
- * The row grid (the draft's `.list li`): mark, name, format, when, action.
- * Below `md` the format, when and action stack under the name.
+ * A live or coming tournament's row (the Browse draft): mark, name with its
+ * format, when, action. Below `md` the when and action stack under the name.
  */
 const ROW_COLUMNS = {
   xs: 'auto minmax(0, 1fr)',
-  md: 'auto minmax(0, 2fr) minmax(0, 1.2fr) 10rem auto',
+  md: 'auto minmax(0, 1fr) 12rem auto',
 } as const;
+/** Finished tournaments shown before "Show older". */
+const FINISHED_SHOWN = 6;
 const STACKED_CELL_SX = { gridColumn: { xs: 2, md: 'auto' } } as const;
 
 /** A pill filter with its label inline (the draft's `.field`). */
-function FilterField({ label, grow, children }: { label?: string; grow?: boolean; children: ReactNode }) {
+function FilterField({
+  label,
+  grow,
+  children,
+}: {
+  label?: string;
+  grow?: boolean;
+  children: ReactNode;
+}) {
   return (
     <Box
       component="label"
@@ -121,7 +141,10 @@ export default function Browse() {
 
   const showWhereFilter = useMemo(() => tournaments.some((tour) => !!tour.location), [tournaments]);
   const filtersActive =
-    search.trim() !== '' || game !== 'all' || status !== 'all' || (showWhereFilter && where !== 'all');
+    search.trim() !== '' ||
+    game !== 'all' ||
+    status !== 'all' ||
+    (showWhereFilter && where !== 'all');
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -144,6 +167,22 @@ export default function Browse() {
       return true;
     });
   }, [tournaments, search, game, status, where, showWhereFilter]);
+
+  const [showAllFinished, setShowAllFinished] = useState(false);
+  const groups = useMemo(
+    () =>
+      (['live', 'registration_open', 'finished'] as const).map((key) => ({
+        key: key === 'registration_open' ? ('soon' as const) : key,
+        rows: filtered
+          .filter((tour) => statusBucket(tour) === key)
+          .sort((a, b) =>
+            key === 'finished'
+              ? (b.completedAt ?? 0) - (a.completedAt ?? 0)
+              : (a.startsAt ?? Infinity) - (b.startsAt ?? Infinity)
+          ),
+      })),
+    [filtered]
+  );
 
   const clearFilters = () => {
     setSearch('');
@@ -178,7 +217,10 @@ export default function Browse() {
         />
 
         {hasTournaments && (
-          <Box role="search" sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center', mb: 3 }}>
+          <Box
+            role="search"
+            sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center', mb: 3 }}
+          >
             <FilterField grow>
               <MagnifyingGlassIcon size={18} aria-hidden />
               <InputBase
@@ -202,7 +244,11 @@ export default function Browse() {
               >
                 <MenuItem value="all">{t('browsePage.filters.allGames')}</MenuItem>
                 {gameOptions.map((g) => (
-                  <MenuItem key={g.slug} value={g.slug} data-testid={`browse-filter-game-${g.slug}`}>
+                  <MenuItem
+                    key={g.slug}
+                    value={g.slug}
+                    data-testid={`browse-filter-game-${g.slug}`}
+                  >
                     {g.name}
                   </MenuItem>
                 ))}
@@ -253,7 +299,9 @@ export default function Browse() {
           <EmptyPanel
             title={t('browsePage.emptyNone.title')}
             description={
-              isAdmin ? t('browsePage.emptyNone.descriptionAdmin') : t('browsePage.emptyNone.description')
+              isAdmin
+                ? t('browsePage.emptyNone.descriptionAdmin')
+                : t('browsePage.emptyNone.description')
             }
             data-testid="browse-empty"
           />
@@ -264,90 +312,229 @@ export default function Browse() {
             data-testid="browse-empty"
           >
             {filtersActive && (
-              <Button variant="outlined" size="small" onClick={clearFilters} data-testid="browse-clear-filters">
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={clearFilters}
+                data-testid="browse-clear-filters"
+              >
                 {t('browsePage.emptyFiltered.clear')}
               </Button>
             )}
           </EmptyPanel>
         ) : (
-          <RowList data-testid="browse-list" aria-label={t('browsePage.listLabel')}>
-            <Row
-              columns={ROW_COLUMNS}
-              aria-hidden
-              sx={{
-                display: { xs: 'none', md: 'grid' },
-                py: 1.5,
-                fontFamily: fontMono,
-                fontSize: textSize.xs,
-                fontWeight: 500,
-                lineHeight: 1,
-                color: color.muted,
-                textTransform: 'uppercase',
-              }}
-            >
-              <span />
-              <span>{t('browsePage.columns.tournament')}</span>
-              <span>{t('browsePage.columns.format')}</span>
-              <span>{t('browsePage.columns.when')}</span>
-              <span />
-            </Row>
-            {filtered.map((tournament) => {
-              const when = tournamentWhen(t, tournament, i18n.language);
-              const action = tournamentAction(tournament);
-              const byline = [tournament.organizer, tournament.location].filter(Boolean).join(' · ');
-              return (
-                <Row
-                  key={tournament.id}
-                  columns={ROW_COLUMNS}
-                  data-testid={`browse-tournament-${tournament.id}`}
+          <Box
+            data-testid="browse-list"
+            aria-label={t('browsePage.listLabel')}
+            sx={{ display: 'flex', flexDirection: 'column', gap: 5 }}
+          >
+            {groups.map((group) =>
+              group.rows.length === 0 ? null : (
+                <Box
+                  component="section"
+                  key={group.key}
+                  aria-labelledby={`browse-group-${group.key}`}
+                  data-testid={`browse-group-${group.key}`}
                 >
-                  <GameMark name={tournament.game ?? tournament.name} slug={tournament.game} size={36} />
-                  <Box sx={{ minWidth: 0 }}>
-                    <Box component="b" sx={{ display: 'block', fontWeight: 600, overflowWrap: 'anywhere' }}>
-                      {tournament.name}
-                    </Box>
-                    {byline && (
-                      <Box component="small" sx={{ display: 'block', color: color.muted, fontSize: textSize.xs }}>
-                        {byline}
-                      </Box>
+                  <Typography
+                    id={`browse-group-${group.key}`}
+                    component="h2"
+                    sx={{
+                      m: 0,
+                      mb: 2,
+                      fontFamily: fontDisplay,
+                      fontSize: textSize.xl,
+                      fontWeight: 600,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1.25,
+                    }}
+                  >
+                    {group.key === 'live' && (
+                      <Box
+                        component="span"
+                        aria-hidden
+                        sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: color.live }}
+                      />
                     )}
-                  </Box>
-                  <Box
-                    component="span"
-                    data-testid={`browse-format-${tournament.id}`}
-                    sx={[STACKED_CELL_SX, { fontSize: textSize.sm, color: color.ink2 }]}
-                  >
-                    {formatLine(t, tournament)}
-                  </Box>
-                  <Box
-                    component="span"
-                    data-testid={`browse-when-${tournament.id}`}
-                    sx={[
-                      STACKED_CELL_SX,
-                      {
-                        fontSize: textSize.sm,
-                        fontVariantNumeric: 'tabular-nums',
-                        color: when.kind === 'text' && when.muted ? color.muted : color.ink,
-                      },
-                    ]}
-                  >
-                    {when.kind === 'live' ? <LiveChip label={t('browsePage.status.live')} /> : when.text}
-                  </Box>
-                  <Box sx={[STACKED_CELL_SX, { justifySelf: 'start' }]}>
-                    <Button
-                      component={RouterLink}
-                      to={action.to}
-                      variant={action.primary ? 'contained' : 'outlined'}
-                      size="small"
-                      data-testid={`browse-action-${tournament.id}`}
-                    >
-                      {t(`browsePage.actions.${action.key}`)}
-                    </Button>
-                  </Box>
-                </Row>
-              );
-            })}
-          </RowList>
+                    {t(`browsePage.groups.${group.key}`)}
+                  </Typography>
+                  {group.key === 'finished' ? (
+                    <>
+                      <Box
+                        sx={{
+                          display: 'grid',
+                          gap: 1.5,
+                          gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))',
+                        }}
+                      >
+                        {(showAllFinished ? group.rows : group.rows.slice(0, FINISHED_SHOWN)).map(
+                          (tournament) => {
+                            const when = tournamentWhen(t, tournament, i18n.language);
+                            const action = tournamentAction(tournament);
+                            return (
+                              <Box
+                                key={tournament.id}
+                                component={RouterLink}
+                                to={action.to}
+                                data-testid={`browse-tournament-${tournament.id}`}
+                                sx={{
+                                  p: 2,
+                                  borderRadius: radii.lg,
+                                  bgcolor: color.paper2,
+                                  border: `1px solid ${color.rule}`,
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  gap: 2,
+                                  alignItems: 'center',
+                                  textDecoration: 'none',
+                                  color: color.ink,
+                                  '&:hover': { borderColor: color.muted },
+                                }}
+                              >
+                                <Box sx={{ minWidth: 0 }}>
+                                  <Box sx={{ fontWeight: 600, overflowWrap: 'anywhere' }}>
+                                    {tournament.name}
+                                  </Box>
+                                  <Box
+                                    data-testid={`browse-when-${tournament.id}`}
+                                    sx={{ fontSize: textSize.sm, color: color.muted }}
+                                  >
+                                    {when.kind === 'text' ? when.text : ''}
+                                  </Box>
+                                </Box>
+                                {tournament.winner && (
+                                  <Box
+                                    sx={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: 0.75,
+                                      fontSize: textSize.sm,
+                                      color: color.medalGold,
+                                      flex: 'none',
+                                    }}
+                                  >
+                                    <TrophyIcon size={16} aria-hidden />
+                                    {tournament.winner.name}
+                                  </Box>
+                                )}
+                              </Box>
+                            );
+                          }
+                        )}
+                      </Box>
+                      {!showAllFinished && group.rows.length > FINISHED_SHOWN && (
+                        <Button
+                          onClick={() => setShowAllFinished(true)}
+                          sx={{ mt: 1.5 }}
+                          data-testid="browse-show-older"
+                        >
+                          {t('browsePage.showOlder', { count: group.rows.length - FINISHED_SHOWN })}
+                        </Button>
+                      )}
+                    </>
+                  ) : (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                      {group.rows.map((tournament) => {
+                        const when = tournamentWhen(t, tournament, i18n.language);
+                        const action = tournamentAction(tournament);
+                        const byline = [tournament.organizer, tournament.location]
+                          .filter(Boolean)
+                          .join(' · ');
+                        return (
+                          <Box
+                            key={tournament.id}
+                            data-testid={`browse-tournament-${tournament.id}`}
+                            sx={{
+                              display: 'grid',
+                              gridTemplateColumns: ROW_COLUMNS,
+                              gap: { xs: 1.5, md: 2.5 },
+                              alignItems: 'center',
+                              p: { xs: 2, md: 2.25 },
+                              borderRadius: radii.lg,
+                              bgcolor: color.paper2,
+                              border: `1px solid ${group.key === 'live' ? color.accent : color.rule}`,
+                            }}
+                          >
+                            <GameMark
+                              name={tournament.game ?? tournament.name}
+                              slug={tournament.game}
+                              size={56}
+                            />
+                            <Box sx={{ minWidth: 0 }}>
+                              <Box
+                                component="b"
+                                sx={{
+                                  display: 'block',
+                                  fontFamily: fontDisplay,
+                                  fontSize: textSize.lg,
+                                  fontWeight: 600,
+                                  overflowWrap: 'anywhere',
+                                }}
+                              >
+                                {tournament.name}
+                              </Box>
+                              <Box
+                                component="span"
+                                data-testid={`browse-format-${tournament.id}`}
+                                sx={{ display: 'block', fontSize: textSize.sm, color: color.ink2 }}
+                              >
+                                {formatLine(t, tournament)}
+                              </Box>
+                              {byline && (
+                                <Box
+                                  component="small"
+                                  sx={{
+                                    display: 'block',
+                                    color: color.muted,
+                                    fontSize: textSize.xs,
+                                  }}
+                                >
+                                  {byline}
+                                </Box>
+                              )}
+                            </Box>
+                            <Box
+                              component="span"
+                              data-testid={`browse-when-${tournament.id}`}
+                              sx={[
+                                STACKED_CELL_SX,
+                                {
+                                  fontSize: textSize.sm,
+                                  fontVariantNumeric: 'tabular-nums',
+                                  color:
+                                    when.kind === 'text' && when.muted ? color.muted : color.ink,
+                                },
+                              ]}
+                            >
+                              {when.kind === 'live' ? (
+                                <LiveChip label={t('browsePage.status.live')} />
+                              ) : (
+                                when.text
+                              )}
+                            </Box>
+                            <Box
+                              sx={[STACKED_CELL_SX, { justifySelf: { xs: 'start', md: 'end' } }]}
+                            >
+                              <Button
+                                component={RouterLink}
+                                to={action.to}
+                                variant={action.primary ? 'contained' : 'outlined'}
+                                data-testid={`browse-action-${tournament.id}`}
+                                sx={{ borderRadius: radii.pill, px: 2.5 }}
+                              >
+                                {t(`browsePage.actions.${action.key}`)}
+                              </Button>
+                            </Box>
+                          </Box>
+                        );
+                      })}
+                    </Box>
+                  )}
+                </Box>
+              )
+            )}
+          </Box>
         )}
       </Container>
     </Box>

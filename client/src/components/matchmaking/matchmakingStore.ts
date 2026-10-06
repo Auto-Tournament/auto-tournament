@@ -14,8 +14,18 @@ import { io, type Socket } from 'socket.io-client';
 import { apiErrorMessage } from '../../utils/api';
 
 export interface MatchmakingMe {
-  party: { id: string; leader: string; mode: string; inviteCode: string; members: string[] } | null;
+  party: {
+    id: string;
+    leader: string;
+    mode: string;
+    inviteCode: string;
+    members: string[];
+    /** The members with names and avatars (older APIs: missing). */
+    people?: Array<{ id: string; name: string; avatarUrl: string | null }>;
+  } | null;
   queue: { mode: string; queuedAt: number; status: string } | null;
+  /** Players searching right now, per mode. */
+  queueCounts?: Record<string, number>;
   lobby: {
     id: string;
     status: string;
@@ -143,4 +153,10 @@ export async function matchmakingAction<T = unknown>(
 /** Seconds from now (server clock) until an epoch-seconds time. */
 export function secondsUntil(epoch: number, skew: number): number {
   return Math.max(0, Math.ceil(epoch - (Date.now() / 1000 + skew)));
+}
+
+/** Players a match of `mode` needs ('5v5' → 10, '2v2' → 4, '1v1' → 2). */
+export function playersFor(mode: string): number {
+  const m = /^(\d+)v(\d+)$/.exec(mode);
+  return m ? Number(m[1]) + Number(m[2]) : 10;
 }
