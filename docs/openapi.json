@@ -13832,6 +13832,34 @@
         }
       }
     },
+    "/api/tournament/archive": {
+      "post": {
+        "tags": [
+          "Tournament"
+        ],
+        "summary": "Archive the finished tournament so a new one can be created",
+        "description": "The tournament keeps its matches, results and stats, and its public\npages stay at its id. The next tournament gets the next id. Only a\nfinished tournament (`completed`) can be archived.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{ archivedId, currentId }"
+          },
+          "404": {
+            "description": "No tournament"
+          },
+          "409": {
+            "description": "Not finished"
+          }
+        }
+      }
+    },
     "/api/tournament/banner": {
       "put": {
         "tags": [
@@ -13951,6 +13979,20 @@
           },
           "400": {
             "description": "Cannot regenerate bracket without force flag"
+          }
+        }
+      }
+    },
+    "/api/tournament/current-id": {
+      "get": {
+        "tags": [
+          "Tournament"
+        ],
+        "summary": "Which tournament is current (public)",
+        "description": "No session. The id the public pages and the top bar link to. When the\nlast tournament was archived it is the id the next one gets, which has\nno tournament yet.\n",
+        "responses": {
+          "200": {
+            "description": "{ id }"
           }
         }
       }

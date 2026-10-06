@@ -50,7 +50,7 @@ export function getSchemaSQL(): string {
 
     -- Tournament settings table
     CREATE TABLE IF NOT EXISTS tournament (
-      id SERIAL PRIMARY KEY CHECK (id = 1),
+      id SERIAL PRIMARY KEY,
       name TEXT NOT NULL,
       type TEXT NOT NULL,
       format TEXT NOT NULL,
@@ -67,7 +67,8 @@ export function getSchemaSQL(): string {
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       started_at INTEGER,
       completed_at INTEGER,
-      banner_updated_at INTEGER -- set when a banner is stored in tournament_banner; it versions the banner URL
+      banner_updated_at INTEGER, -- set when a banner is stored in tournament_banner; it versions the banner URL
+      archived_at INTEGER -- set when a finished tournament made way for a new one; it keeps its matches and results
     );
 
     -- The tournament page's banner image, kept apart so reading the tournament row

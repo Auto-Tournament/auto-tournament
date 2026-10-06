@@ -21,6 +21,7 @@ import { runSchemaMigrations } from './schemaMigrations';
 import { markModuleMigrationsFailed, runModuleMigrations } from './moduleMigrations';
 import { addCs2ForeignKeys, CS2_MODULE_ID, handOverCs2Tables } from './cs2TableHandover';
 import { DATABASE_NAME, renameLegacyDatabase } from './databaseRename';
+import { setCurrentTournamentId } from '../utils/tournamentRow';
 
 const MAX_DB_VALUES_SAMPLE = 5;
 
@@ -396,6 +397,16 @@ class DatabaseManager {
       // (settings.cs2.mapPoolId), with no key. The CS2 module loaded from the
       // catalog adds them again once its tables exist (modules/loader.ts).
       await addCs2ForeignKeys(client);
+
+      // Which tournament is current (services/currentTournament.ts): the
+      // newest not archived, else the next id. After a wipe that is 1 again.
+      {
+        const open = await client.query<{ id: number }>(
+          'SELECT id FROM tournament WHERE archived_at IS NULL ORDER BY id DESC LIMIT 1'
+        );
+        const next = await client.query<{ next: number }>('SELECT COALESCE(MAX(id), 0) + 1 AS next FROM tournament');
+        setCurrentTournamentId(Number(open.rows[0]?.id ?? next.rows[0]?.next ?? 1));
+      }
 
       // Integration default data (CS2: new maps from maps.json and the
       // default map pools; it logs its own failures and does not throw). A

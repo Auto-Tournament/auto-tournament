@@ -17,11 +17,23 @@ import { moduleResponseFields } from './moduleTournamentSettings';
 export const LEGACY_TOURNAMENT_ID = 1;
 
 /**
- * The tournament a request acts on. Always the single row for now; 3.1 reads
- * it from the route or session.
+ * The current tournament's id: the newest one not archived, or the id the
+ * next one gets once the last was archived. Kept here (synchronously
+ * readable) and refreshed by services/currentTournament.ts at boot and when a
+ * tournament is archived.
+ */
+let currentTournamentId = LEGACY_TOURNAMENT_ID;
+
+export function setCurrentTournamentId(id: number): void {
+  if (Number.isInteger(id) && id > 0) currentTournamentId = id;
+}
+
+/**
+ * The tournament a request acts on: the current one. 3.1 reads it from the
+ * route or session.
  */
 export function resolveTournamentId(_req?: Request): number {
-  return LEGACY_TOURNAMENT_ID;
+  return currentTournamentId;
 }
 
 /**
@@ -30,7 +42,7 @@ export function resolveTournamentId(_req?: Request): number {
  * so 3.1 can decide what a standalone match resolves to in one place.
  */
 export function tournamentIdForMatch(match: { tournament_id?: number | null } | null | undefined): number {
-  return match?.tournament_id ?? LEGACY_TOURNAMENT_ID;
+  return match?.tournament_id ?? currentTournamentId;
 }
 
 function parseJson<T>(raw: string | null | undefined, fallback: T): T {
@@ -118,6 +130,7 @@ export function tournamentRowToResponse(row: DbTournamentRow): TournamentRespons
     updated_at: row.updated_at ?? row.created_at,
     started_at: row.started_at,
     completed_at: row.completed_at,
+    archived_at: row.archived_at ?? null,
     teams: [],
     mapSequence: moduleFields.mapSequence,
     teamSize: nullToUndefined(row.team_size),

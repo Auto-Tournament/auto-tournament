@@ -19,6 +19,7 @@ import {
   CheckIcon,
   EyeIcon,
   PencilSimpleIcon,
+  PlusIcon,
   TrashIcon,
   TrophyIcon,
   XIcon,
@@ -60,6 +61,8 @@ interface TournamentLiveProps {
   onViewBracket: () => void;
   onReset: () => void;
   onDelete: () => void;
+  /** A finished tournament: archive it (results stay) and start a new one. */
+  onNewTournament?: () => void;
   playerCount?: number;
 }
 
@@ -71,6 +74,7 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
   onViewBracket,
   onReset,
   onDelete,
+  onNewTournament,
   playerCount,
 }) => {
   const { t } = useTranslation();
@@ -285,6 +289,19 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
               ? t('tournament.live.alert.liveBody')
               : t('tournament.live.alert.pendingBody')}
           </Typography>
+          {isCompleted && onNewTournament && (
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<PlusIcon />}
+              onClick={onNewTournament}
+              disabled={saving}
+              sx={{ mt: 1.5 }}
+              data-testid="tournament-new-after-finish"
+            >
+              {t('tournament.live.newTournament')}
+            </Button>
+          )}
         </Alert>
 
         <Grid container spacing={2} sx={{ mb: 3 }}>

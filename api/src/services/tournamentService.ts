@@ -34,6 +34,7 @@ import type {
   BracketMatch,
   BracketResponse,
 } from '../types/tournament.types';
+import { bareSlug, isGrandFinalSlug, isLosersBracketSlug, shuffleTeamLike, tournamentSlugPrefix } from '../utils/matchSlug';
 
 /**
  * A generated slot's stored status. The generators hold every match with both
@@ -155,10 +156,10 @@ class TournamentService {
     };
 
     if (type === 'single_elimination' || type === 'double_elimination') {
-      const grandFinal = rows.find((r) => r.slug === 'gf');
+      const grandFinal = rows.find((r) => isGrandFinalSlug(r.slug));
       let final: DbMatchRow | undefined = grandFinal;
       if (!final) {
-        const winnersBracket = rows.filter((r) => !r.slug.startsWith('lb-'));
+        const winnersBracket = rows.filter((r) => !isLosersBracketSlug(r.slug));
         const maxRound = Math.max(...winnersBracket.map((r) => r.round));
         const candidates = winnersBracket
           .filter((r) => r.round === maxRound)
@@ -421,11 +422,13 @@ class TournamentService {
       // The generator returns neutral slots. Each slot's game config comes
       // from the match's integration, built before the rows are inserted (the
       // slugs have no row yet, exactly as when the generators built them).
+      // A tournament after the first carries its id in its slugs (utils/matchSlug.ts).
+      const slugPrefix = tournamentSlugPrefix(tournamentId);
       const configs = await Promise.all(
         result.matches.map((slot) =>
           buildMatchConfigFor(
             {
-              slug: slot.slug,
+              slug: slugPrefix + slot.slug,
               game,
               round: slot.round,
               bracket: slot.bracket ?? null,
@@ -446,7 +449,7 @@ class TournamentService {
         const status = initialSlotStatus(matchData, tournament.format, preMatchPhase);
         const createdAt = Math.floor(Date.now() / 1000);
         const insertResult = await db.insertAsync('matches', {
-          slug: matchData.slug,
+          slug: slugPrefix + matchData.slug,
           tournament_id: tournamentId,
           game,
           round: matchData.round,
@@ -467,7 +470,7 @@ class TournamentService {
 
         matches.push({
           id: insertResult.lastInsertRowid as number,
-          slug: matchData.slug,
+          slug: slugPrefix + matchData.slug,
           round: matchData.round,
           matchNumber: matchData.matchNum,
           // Bracket grouping is currently inferred from slug in the client,
@@ -607,7 +610,7 @@ class TournamentService {
       // Clean up shuffle-specific state. We intentionally KEEP registrations in
       // shuffle_tournament_players so admins don't lose their selected player
       // pool when resetting back to setup.
-      await db.execAsync("DELETE FROM teams WHERE id LIKE 'shuffle-r%'");
+      await db.runAsync('DELETE FROM teams WHERE id LIKE ?', [shuffleTeamLike(tournamentId)]);
 
       await db.updateAsync(
         'tournament',
@@ -775,7 +778,7 @@ class TournamentService {
   ): Promise<void> {
     // Link winners‑bracket matches (both single and double elimination)
     if (tournamentType === 'single_elimination' || tournamentType === 'double_elimination') {
-      const winnersMatches = matches.filter((m) => !m.slug.startsWith('lb-') && m.slug !== 'gf');
+      const winnersMatches = matches.filter((m) => !isLosersBracketSlug(m.slug) && !isGrandFinalSlug(m.slug));
       if (winnersMatches.length > 0) {
         const maxRound = Math.max(...winnersMatches.map((m) => m.round));
 
@@ -819,7 +822,7 @@ class TournamentService {
         //
         // This matches the standard double‑elimination structure where some
         // losers rounds "fan in" multiple prior matches.
-        const lbMatches = matches.filter((m) => m.slug.startsWith('lb-'));
+        const lbMatches = matches.filter((m) => isLosersBracketSlug(m.slug));
         if (lbMatches.length > 0) {
           const lbRounds = Array.from(new Set(lbMatches.map((m) => m.round))).sort((a, b) => a - b);
 
@@ -864,7 +867,7 @@ class TournamentService {
               const target = nextRoundMatches.find((nm) => nm.matchNumber === targetMatchNumber);
               if (!target) continue;
 
-              const nextMatchId = slugToDbId.get(target.slug);
+              const nextMatchId = slugToDbId.get(bareSlug(target.slug));
               if (!nextMatchId) continue;
 
               await db.updateAsync('matches', { next_match_id: nextMatchId }, 'id = ?', [m.id]);
@@ -885,7 +888,7 @@ class TournamentService {
         if (grandFinalId && winnersMatches.length > 0) {
           const lastWinnersRound = Math.max(...winnersMatches.map((m) => m.round));
           const winnersFinal = winnersMatches.find(
-            (m) => m.round === lastWinnersRound && !m.slug.startsWith('lb-')
+            (m) => m.round === lastWinnersRound && !isLosersBracketSlug(m.slug)
           );
 
           const losersFinal =

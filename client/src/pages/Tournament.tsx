@@ -1,7 +1,7 @@
 import { pageTitle } from '../utils/pageTitle';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Box, CircularProgress } from '@mui/material';
+import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { TournamentLive } from '../components/tournament/TournamentLive';
@@ -45,6 +45,7 @@ import { MATCH_FORMATS } from '../constants/tournament';
 import type { Tournament as TournamentRecord, TournamentTemplate } from '../types/tournament.types';
 import type { ShuffleTournamentSettings } from '../components/tournament/ShuffleTournamentConfigStep';
 import type { EloCalculationTemplate } from '../types/elo.types';
+import { resetCurrentTournamentId } from '../hooks/useTournamentList';
 
 /** Human label for a match format ("bo3" -> "Best of 3"), raw value if unknown. */
 const formatLabel = (value: string): string =>
@@ -210,6 +211,7 @@ const Tournament: React.FC = () => {
 
   // Dialog state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   // True from the moment "start" is clicked until the module's own check has
@@ -886,6 +888,24 @@ const Tournament: React.FC = () => {
     }
   };
 
+  // A finished tournament makes way for a new one: archived, it keeps its
+  // matches, results and stats, and its public page stays at its id.
+  const handleArchive = async () => {
+    setSaving(true);
+    setShowArchiveConfirm(false);
+    try {
+      await api.post('/api/tournament/archive');
+      resetCurrentTournamentId();
+      showSuccess(t('tournament.toasts.archived'));
+      await refreshData();
+    } catch (err) {
+      const error = err as Error;
+      showError(error.message || t('tournament.toasts.archiveFailed'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleRegenerate = async () => {
     setSaving(true);
     setShowRegenerateConfirm(false);
@@ -1157,6 +1177,7 @@ const Tournament: React.FC = () => {
           onViewBracket={() => navigate('/bracket')}
           onReset={() => setShowResetConfirm(true)}
           onDelete={() => setShowDeleteConfirm(true)}
+          onNewTournament={() => setShowArchiveConfirm(true)}
           playerCount={tournament.type === 'shuffle' ? registeredPlayerCount : undefined}
         />
       )}
@@ -1173,6 +1194,41 @@ const Tournament: React.FC = () => {
       )}
 
       {/* Dialogs */}
+      <Dialog
+        open={showArchiveConfirm}
+        onClose={() => !saving && setShowArchiveConfirm(false)}
+        aria-labelledby="new-tournament-dialog-title"
+        data-testid="new-tournament-dialog"
+      >
+        <DialogTitle id="new-tournament-dialog-title">{t('tournament.archiveDialog.title')}</DialogTitle>
+        <DialogContent sx={{ display: 'grid', gap: 1.5 }}>
+          <Typography variant="body2">
+            {t('tournament.archiveDialog.message', { name: tournament?.name ?? '' })}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {t('tournament.archiveDialog.deleteHint')}
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ flexWrap: 'wrap', gap: 1 }}>
+          <Button onClick={() => setShowArchiveConfirm(false)} disabled={saving}>
+            {t('common.cancel')}
+          </Button>
+          <Button
+            color="error"
+            onClick={() => {
+              setShowArchiveConfirm(false);
+              setShowDeleteConfirm(true);
+            }}
+            disabled={saving}
+            data-testid="new-tournament-delete"
+          >
+            {t('tournament.archiveDialog.delete')}
+          </Button>
+          <Button variant="contained" onClick={() => void handleArchive()} disabled={saving} data-testid="new-tournament-archive">
+            {t('tournament.archiveDialog.confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
       <TournamentDialogs
         deleteOpen={showDeleteConfirm}
         regenerateOpen={showRegenerateConfirm}

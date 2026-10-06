@@ -161,7 +161,9 @@
       "templateSaved": "Malen er lagret!",
       "disableServersFailed": "Kunne ikke deaktivere én eller flere servere: {{message}}",
       "noChangesToSave": "Ingen endringer å lagre",
-      "invalidMapSelection": "Ugyldig kartvalg"
+      "invalidMapSelection": "Ugyldig kartvalg",
+      "archived": "Turneringen er arkivert. Opprett den neste.",
+      "archiveFailed": "Kunne ikke arkivere turneringen"
     },
     "outdatedServers": {
       "title": "Servere trenger oppdatering",
@@ -199,7 +201,8 @@
       "restartTooltip": "Avslutt alle aktive kamper på serverne og last dem inn på nytt (nyttig for kamper som har låst seg)",
       "resetTooltip": "Avslutt alle kamper og tilbakestill turneringen til oppsettmodus (beholder turneringsinnstillingene, men sletter alle kampdata)",
       "reset": "Tilbakestill til oppsett",
-      "dangerZone": "Faresone"
+      "dangerZone": "Faresone",
+      "newTournament": "Ny turnering"
     },
     "reviewCard": {
       "needPlayersWarning": "Du trenger minst {{minPlayers}} spillere for å starte turneringen ({{teamSize}}v{{teamSize}}-kamper). Registrert nå: {{registered}}",
@@ -642,6 +645,13 @@
       "starting": "Starter...",
       "startSimulation": "Start simulering",
       "startingSimulation": "Starter simulering..."
+    },
+    "archiveDialog": {
+      "title": "Starte en ny turnering?",
+      "message": "{{name}} arkiveres. Resultatene, kampene og statistikken blir værende, og siden står fortsatt på sin adresse. Deretter oppretter du den neste.",
+      "confirm": "Arkiver og start ny",
+      "delete": "Slett den og start ny",
+      "deleteHint": "Eller slett den: da forsvinner resultatene, kampene og statistikken."
     }
   },
   "bracket": {

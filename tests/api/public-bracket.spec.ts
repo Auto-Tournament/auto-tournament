@@ -85,9 +85,9 @@ test.describe('Public bracket API', () => {
         expect(names).toContain(team1.name);
         expect(names).toContain(team2.name);
 
-        // Another tournament id is refused, as on the leaderboard route.
+        // A tournament id that does not exist is not found, as on the leaderboard route.
         const other = await stranger.get(`/api/tournament/${tournament!.id + 1000}/bracket`);
-        expect(other.status()).toBe(400);
+        expect(other.status()).toBe(404);
       } finally {
         await stranger.dispose();
       }

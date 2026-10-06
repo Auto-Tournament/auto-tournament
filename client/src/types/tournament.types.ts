@@ -25,6 +25,8 @@ export interface Tournament {
   updated_at?: number;
   started_at?: number | null;
   completed_at?: number | null;
+  /** Archived: a new tournament replaced it; it keeps its results at its id. */
+  archived_at?: number | null;
   // Shuffle tournament specific fields
   teamSize?: number;
   maxRounds?: number;

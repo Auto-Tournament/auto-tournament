@@ -25,6 +25,7 @@ import {
 } from '../utils/swissPairing';
 import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
 import type { SwissStandingEntry } from '../types/tournament.types';
+import { tournamentSlugPrefix } from '../utils/matchSlug';
 
 interface RoundRow extends DbMatchRow {
   team1_rounds?: number | string | null;
@@ -154,7 +155,7 @@ async function advanceOnce(tournamentId: number): Promise<void> {
   // Brackets generated before byes existed have one slot too few for an odd
   // team count; add the missing placeholder.
   for (let n = slots.length + 1; n <= needed; n++) {
-    const slug = `swiss-r${nextRound}m${n}`;
+    const slug = `${tournamentSlugPrefix(tournamentId)}swiss-r${nextRound}m${n}`;
     await db.runAsync(
       `INSERT INTO matches (slug, tournament_id, game, round, match_number, config, status, created_at)
        VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)

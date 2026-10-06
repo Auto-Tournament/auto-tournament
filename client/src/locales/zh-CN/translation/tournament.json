@@ -161,7 +161,9 @@
       "templateSaved": "模板已保存！",
       "disableServersFailed": "无法禁用一台或多台服务器：{{message}}",
       "noChangesToSave": "没有需要保存的更改",
-      "invalidMapSelection": "地图选择无效"
+      "invalidMapSelection": "地图选择无效",
+      "archived": "Tournament archived. Create the next one.",
+      "archiveFailed": "Could not archive the tournament"
     },
     "outdatedServers": {
       "title": "服务器需要更新",
@@ -199,7 +201,8 @@
       "restartTooltip": "结束服务器上所有进行中的比赛并重新加载（适用于卡住的比赛）",
       "resetTooltip": "结束所有比赛并将赛事重置为设置状态（保留赛事设置，但清除所有比赛数据）",
       "reset": "重置为设置状态",
-      "dangerZone": "Danger zone"
+      "dangerZone": "Danger zone",
+      "newTournament": "New tournament"
     },
     "reviewCard": {
       "needPlayersWarning": "至少需要 {{minPlayers}} 名玩家才能开始赛事（{{teamSize}}v{{teamSize}} 比赛）。当前已注册：{{registered}}",
@@ -642,6 +645,13 @@
       "starting": "Starting...",
       "startSimulation": "Start Simulation",
       "startingSimulation": "Starting Simulation..."
+    },
+    "archiveDialog": {
+      "title": "Start a new tournament?",
+      "message": "{{name}} is archived. Its results, matches and stats stay, and its page keeps its address. Then you create the next one.",
+      "confirm": "Archive and start new",
+      "delete": "Delete it and start new",
+      "deleteHint": "Or delete it: its results, matches and stats go with it."
     }
   },
   "bracket": {

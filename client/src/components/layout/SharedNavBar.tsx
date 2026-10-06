@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { useCurrentMatchStatus } from '../../hooks/useCurrentMatchStatus';
-import { CURRENT_TOURNAMENT_ID } from '../../hooks/useTournamentList';
+import { useCurrentTournamentId } from '../../hooks/useTournamentList';
 import { FlagIcon, LanguageMenu, useCurrentLanguage } from '../common/LanguageSwitcher';
 import { ThemeMenu, ThemeSwatch, activeTheme } from '../common/ThemeSwitcher';
 import { DevAccountSwitcherGate } from '../dev/DevAccountSwitcherGate';
@@ -323,6 +323,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
 
   const { pathname } = location;
   const { available: matchmakingAvailable } = useMatchmaking();
+  const currentTournamentId = useCurrentTournamentId();
   const moduleMenuItems = useModuleAccountMenuItems(playerSteamId ?? null);
   const playLink: SiteLink[] = matchmakingAvailable
     ? [
@@ -341,9 +342,9 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
     current: pathname === paths.browse,
   };
   // The current tournament's Standings tab. 3.0 hosts one tournament
-  // (`CURRENT_TOURNAMENT_ID`); its page says so when it has none. Teams is the
+  // (`useCurrentTournamentId`); its page says so when it has none. Teams is the
   // site-wide team list: a team is not tied to a tournament.
-  const standingsPath = tournamentTabPath(CURRENT_TOURNAMENT_ID, 'standings');
+  const standingsPath = tournamentTabPath(currentTournamentId, 'standings');
   const siteLinks: SiteLink[] = showAdminLinks
     ? [
         // The logo already leads to the admin home, so no separate Admin link.
