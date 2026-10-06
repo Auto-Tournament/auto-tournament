@@ -19,6 +19,9 @@ import { log } from '../../utils/logger';
 import { settingsService } from '../settingsService';
 import { getIO, ADMIN_ROOM } from '../socketService';
 import { attemptDelivery, type AttemptResult } from './deliver';
+import { discordMessage } from './discord';
+import { matchPageUrl, platformOrigin } from './links';
+import type { WebhookEnvelope } from './events';
 import { isSuccessStatus, MAX_ATTEMPTS, nextRetryDelayMs, parseRetryAfter } from './retry';
 import { scrubSecrets, truncateResponseBody } from './redact';
 import {
@@ -133,6 +136,13 @@ async function tick(): Promise<void> {
   schedule(next === null ? IDLE_POLL_MS : next - Date.now());
 }
 
+/** The queued envelope as a Discord message. */
+async function discordBody(body: string): Promise<string> {
+  const envelope = JSON.parse(body) as WebhookEnvelope;
+  const url = matchPageUrl(await platformOrigin(), envelope.data.match.slug);
+  return JSON.stringify(discordMessage(envelope, url));
+}
+
 function headersFor(endpoint: WebhookEndpointWithSecrets, delivery: Delivery): Record<string, string> {
   const t = Math.floor(Date.now() / 1000);
   const secrets = [endpoint.secret, ...(endpoint.previousSecret ? [endpoint.previousSecret] : [])];
@@ -160,10 +170,13 @@ async function deliverOne(delivery: Delivery): Promise<void> {
   const allowPrivate = await settingsService.areWebhookPrivateTargetsAllowed().catch(() => false);
   let result: AttemptResult;
   try {
+    // A Discord endpoint gets Discord's message format instead of the signed
+    // envelope (./discord): no signature, nothing secret in it.
+    const discord = endpoint.format === 'discord';
     result = await attemptDelivery({
       url: endpoint.url,
-      body: delivery.body,
-      headers: headersFor(endpoint, delivery),
+      body: discord ? await discordBody(delivery.body) : delivery.body,
+      headers: discord ? { 'User-Agent': USER_AGENT } : headersFor(endpoint, delivery),
       allowPrivate,
       timeoutMs: webhookTiming.attemptTimeoutMs,
     });

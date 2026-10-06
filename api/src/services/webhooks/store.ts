@@ -32,6 +32,9 @@ const num = (v: unknown): number | null => (v === null || v === undefined ? null
 // Endpoints
 // ---------------------------------------------------------------------------
 
+export const WEBHOOK_FORMATS = ['signed', 'discord'] as const;
+export type WebhookFormat = (typeof WEBHOOK_FORMATS)[number];
+
 interface EndpointRow {
   id: string;
   url: string;
@@ -39,6 +42,7 @@ interface EndpointRow {
   event_types: string;
   active: boolean;
   source: string | null;
+  format: string | null;
   secret: string;
   previous_secret: string | null;
   previous_secret_expires_at: string | null;
@@ -58,6 +62,8 @@ export interface WebhookEndpoint {
   eventTypes: string[];
   active: boolean;
   source: string | null;
+  /** 'signed': the signed JSON envelope. 'discord': a Discord webhook, sent an embed message. */
+  format: WebhookFormat;
   disabledReason: string | null;
   disabledAt: number | null;
   lastSuccessAt: number | null;
@@ -94,6 +100,7 @@ function toEndpoint(row: EndpointRow): WebhookEndpointWithSecrets {
     eventTypes: parseEventTypes(row.event_types),
     active: row.active,
     source: row.source,
+    format: row.format === 'discord' ? 'discord' : 'signed',
     disabledReason: row.disabled_reason,
     disabledAt: num(row.disabled_at),
     lastSuccessAt: num(row.last_success_at),
@@ -115,6 +122,7 @@ export function publicEndpoint(e: WebhookEndpointWithSecrets): WebhookEndpoint {
     eventTypes: e.eventTypes,
     active: e.active,
     source: e.source,
+    format: e.format,
     disabledReason: e.disabledReason,
     disabledAt: e.disabledAt,
     lastSuccessAt: e.lastSuccessAt,
@@ -164,14 +172,15 @@ export async function insertEndpoint(input: {
   eventTypes: string[];
   active: boolean;
   source: string | null;
+  format: WebhookFormat;
   secret: string;
 }): Promise<WebhookEndpointWithSecrets> {
   const id = newId('whk');
   const now = Date.now();
   await sql(
-    `INSERT INTO webhook_endpoints (id, url, description, event_types, active, source, secret, created_at, updated_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $8)`,
-    [id, input.url, input.description, JSON.stringify(input.eventTypes), input.active, input.source, input.secret, now]
+    `INSERT INTO webhook_endpoints (id, url, description, event_types, active, source, format, secret, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $9)`,
+    [id, input.url, input.description, JSON.stringify(input.eventTypes), input.active, input.source, input.format, input.secret, now]
   );
   const created = await getEndpoint(id);
   if (!created) throw new Error('Failed to read back the webhook endpoint');
@@ -180,7 +189,7 @@ export async function insertEndpoint(input: {
 
 export async function updateEndpoint(
   id: string,
-  patch: Partial<{ url: string; description: string; eventTypes: string[]; active: boolean; source: string | null }>
+  patch: Partial<{ url: string; description: string; eventTypes: string[]; active: boolean; source: string | null; format: WebhookFormat }>
 ): Promise<WebhookEndpointWithSecrets | null> {
   const sets: string[] = [];
   const params: unknown[] = [];
@@ -192,6 +201,7 @@ export async function updateEndpoint(
   if (patch.description !== undefined) add('description', patch.description);
   if (patch.eventTypes !== undefined) add('event_types', JSON.stringify(patch.eventTypes));
   if (patch.source !== undefined) add('source', patch.source);
+  if (patch.format !== undefined) add('format', patch.format);
   if (patch.active !== undefined) {
     add('active', patch.active);
     // Switching it on again is the admin's answer to "disabled after failures".

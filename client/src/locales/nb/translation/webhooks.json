@@ -55,6 +55,11 @@
       "save": "Kunne ikke lagre webhook-endepunktet",
       "test": "Kunne ikke sende testhendelsen",
       "resend": "Kunne ikke sende leveringen på nytt"
-    }
+    },
+    "format": "Format",
+    "formatSigned": "Signert JSON (integrasjoner)",
+    "formatDiscord": "Discord-melding",
+    "formatSignedHelp": "Den signerte hendelses-JSON-en, for din egen tjeneste. Sjekk signaturen med hemmeligheten.",
+    "formatDiscordHelp": "Lim inn en Discord-kanals webhook-URL (Kanalinnstillinger → Integrasjoner → Webhooks). Hver hendelse poster en melding; ingen passord eller connect-linjer går til Discord, bare en lenke til kampsiden."
   }
 }

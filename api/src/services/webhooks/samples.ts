@@ -40,6 +40,7 @@ export function sampleMatch(type: WebhookEventType, externalIds: { team1?: strin
     'match.cancelled': 'cancelled',
     'match.reset': 'ready',
     'admin.called': 'live',
+    'admin.call_resolved': 'live',
   };
 
   let maps: WebhookMapScore[];
@@ -64,6 +65,7 @@ export function sampleMatch(type: WebhookEventType, externalIds: { team1?: strin
       break;
     case 'match.score_updated':
     case 'admin.called':
+    case 'admin.call_resolved':
       maps = [
         { number: 1, name: 'de_mirage', team1: 7, team2: 5, status: 'live', winner: null },
         { number: 2, name: 'de_inferno', team1: 0, team2: 0, status: 'upcoming', winner: null },
@@ -88,7 +90,7 @@ export function sampleMatch(type: WebhookEventType, externalIds: { team1?: strin
       break;
   }
   const current = maps.find((m) => m.status === 'live') ?? [...maps].reverse().find((m) => m.status === 'finished') ?? null;
-  const connectable = status[type] === 'loaded' || status[type] === 'live';
+  const connectable = (status[type] === 'loaded' || status[type] === 'live') && type !== 'admin.call_resolved';
 
   return {
     id: 42,
@@ -153,7 +155,7 @@ export function sampleEnvelope(
       ...(previous[type] ? { previous_status: previous[type] } : {}),
       ...(type === 'match.cancelled' ? { reason: 'cancelled' } : {}),
       ...(type === 'match.reset' ? { reason: 'unassigned' } : {}),
-      ...(type === 'admin.called'
+      ...(type === 'admin.called' || type === 'admin.call_resolved'
         ? {
             admin_call: {
               id: 'call_sample000000',
@@ -166,6 +168,7 @@ export function sampleEnvelope(
             },
           }
         : {}),
+      ...(type === 'admin.call_resolved' ? { resolved_by: 'Sample Admin', resolution_note: 'restarted the round' } : {}),
       sequence: 1,
     },
   };

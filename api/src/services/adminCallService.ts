@@ -239,6 +239,7 @@ export async function resolveAdminCall(
   if (updated) {
     log.info('[ADMIN CALL] Resolved', { id, resolvedBy });
     emitAdminCallResolved(resolvedPayload([id], resolvedAt, resolvedBy));
+    resolvedWebhook(call);
   }
   return { call, changed: Boolean(updated) };
 }
@@ -260,8 +261,21 @@ export async function resolveAllAdminCalls(
   if (ids.length > 0) {
     log.info('[ADMIN CALL] Resolved every open call', { count: ids.length, resolvedBy });
     emitAdminCallResolved(resolvedPayload(ids, resolvedAt, resolvedBy));
+    for (const id of ids) {
+      const call = await getAdminCall(id).catch(() => null);
+      if (call) resolvedWebhook(call);
+    }
   }
   return ids;
+}
+
+/** Integrator webhooks subscribed to admin.call_resolved (the Discord #admins channel says it was answered). */
+function resolvedWebhook(call: AdminCall): void {
+  void import('./webhooks')
+    .then(({ emitAdminCallResolvedWebhook }) =>
+      emitAdminCallResolvedWebhook(call, { by: call.resolvedByName ?? call.resolvedBy, note: call.resolutionNote })
+    )
+    .catch((err: unknown) => log.warn('[ADMIN CALL] admin.call_resolved webhook failed', { error: String(err) }));
 }
 
 function resolvedPayload(

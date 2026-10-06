@@ -23,6 +23,8 @@ import { buildMatchPayload, readMatchFacts, readMatchRow } from './matchPayload'
 import * as store from './store';
 import { startWorker, stopWorker, wakeWorker } from './worker';
 import { SOURCE_PATTERN } from '../teamExternalIds';
+import { isDiscordWebhookUrl } from './discord';
+import { matchPageUrl, platformOrigin } from './links';
 
 export { reconcileMatch };
 
@@ -31,7 +33,22 @@ export { reconcileMatch };
  * subscribed to it, with the match (connect details included while the match
  * is on a server) and the call. A call outside a match sends nothing.
  */
-export async function emitAdminCalledWebhook(call: {
+export async function emitAdminCalledWebhook(call: AdminCallForWebhook): Promise<void> {
+  await emitAdminCallEvent('admin.called', call);
+}
+
+/**
+ * `admin.call_resolved`: an admin answered a call. Same shape as admin.called
+ * plus who answered and their note; no connect details (nothing to join).
+ */
+export async function emitAdminCallResolvedWebhook(
+  call: AdminCallForWebhook,
+  resolution: { by: string | null; note: string | null }
+): Promise<void> {
+  await emitAdminCallEvent('admin.call_resolved', call, resolution);
+}
+
+interface AdminCallForWebhook {
   callId: string;
   matchSlug: string | null;
   mapNumber: number | null;
@@ -40,24 +57,25 @@ export async function emitAdminCalledWebhook(call: {
   player: { steamId: string | null; name: string | null; team: string | null; teamName: string | null };
   message: string;
   calledAt: string;
-}): Promise<void> {
+}
+
+async function emitAdminCallEvent(
+  type: 'admin.called' | 'admin.call_resolved',
+  call: AdminCallForWebhook,
+  resolution?: { by: string | null; note: string | null }
+): Promise<void> {
   if (!call.matchSlug) return;
-  const endpoints = (await store.listActiveEndpoints()).filter((e) => store.subscribes(e, 'admin.called'));
+  const endpoints = (await store.listActiveEndpoints()).filter((e) => store.subscribes(e, type));
   if (endpoints.length === 0) return;
   const row = await readMatchRow({ slug: call.matchSlug });
   if (!row) return;
   const match = await buildMatchPayload(await readMatchFacts(row));
-  const base = await settingsService.getWebhookUrl().catch(() => null);
-  let origin: string | null = null;
-  try {
-    origin = base ? new URL(base).origin : null;
-  } catch {
-    origin = null;
-  }
+  if (type === 'admin.call_resolved') match.connect = null;
+  const origin = await platformOrigin();
   const team = call.player.team === 'team1' || call.player.team === 'team2' ? call.player.team : null;
   const envelope: WebhookEnvelope = {
     id: store.newId('evt'),
-    type: 'admin.called',
+    type,
     created_at: new Date().toISOString(),
     api_version: WEBHOOK_API_VERSION,
     test: false,
@@ -69,9 +87,10 @@ export async function emitAdminCalledWebhook(call: {
         message: call.message,
         map_number: call.mapNumber,
         server: { id: call.serverId, name: call.serverName },
-        match_url: origin ? `${origin}/matches?match=${encodeURIComponent(call.matchSlug)}` : null,
+        match_url: matchPageUrl(origin, call.matchSlug),
         called_at: call.calledAt,
       },
+      ...(resolution ? { resolved_by: resolution.by, resolution_note: resolution.note } : {}),
       sequence: 0,
     },
   };
@@ -143,8 +162,26 @@ function cleanEventTypes(raw: unknown): string[] {
   return result.types;
 }
 
+/** 'signed' (default) or 'discord'. */
+function cleanFormat(raw: unknown): store.WebhookFormat {
+  if (raw === undefined || raw === null || raw === '') return 'signed';
+  if (typeof raw !== 'string' || !(store.WEBHOOK_FORMATS as readonly string[]).includes(raw)) {
+    throw new WebhookInputError(`format must be one of: ${store.WEBHOOK_FORMATS.join(', ')}`);
+  }
+  return raw as store.WebhookFormat;
+}
+
+/** A Discord endpoint must be a Discord webhook URL (it gets Discord's message format). */
+function checkFormatUrl(format: store.WebhookFormat, url: string): void {
+  if (format === 'discord' && !isDiscordWebhookUrl(url)) {
+    throw new WebhookInputError('A Discord endpoint needs a Discord webhook URL (https://discord.com/api/webhooks/...)');
+  }
+}
+
 export async function createEndpoint(body: Record<string, unknown>): Promise<{ endpoint: store.WebhookEndpoint; secret: string }> {
   const url = await checkUrl(body.url);
+  const format = cleanFormat(body.format);
+  checkFormatUrl(format, url);
   if (body.active !== undefined && typeof body.active !== 'boolean') throw new WebhookInputError('active must be a boolean');
   const secret = generateWebhookSecret();
   const created = await store.insertEndpoint({
@@ -153,6 +190,7 @@ export async function createEndpoint(body: Record<string, unknown>): Promise<{ e
     eventTypes: cleanEventTypes(body.eventTypes),
     active: body.active !== false,
     source: cleanSource(body.source),
+    format,
     secret,
   });
   invalidateEndpointCache();
@@ -168,6 +206,8 @@ export async function updateEndpoint(id: string, body: Record<string, unknown>):
   if (body.description !== undefined) patch.description = cleanDescription(body.description);
   if (body.eventTypes !== undefined) patch.eventTypes = cleanEventTypes(body.eventTypes);
   if (body.source !== undefined) patch.source = cleanSource(body.source);
+  if (body.format !== undefined) patch.format = cleanFormat(body.format);
+  checkFormatUrl(patch.format ?? existing.format, patch.url ?? existing.url);
   if (body.active !== undefined) {
     if (typeof body.active !== 'boolean') throw new WebhookInputError('active must be a boolean');
     patch.active = body.active;
