@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 467 of them, 326 behind auth —
+Every endpoint this API serves — 482 of them, 326 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -476,6 +476,21 @@ Every team (public), and the signed-in player's own teams: list them, make one (
 | `GET` | `/api/team-directory` | public |
 | `GET` | `/api/team-directory/mine` | public |
 | `POST` | `/api/team-directory/mine` | public |
+| `GET` | `/api/team-directory/:teamId` | public |
+| `GET` | `/api/team-directory/invite/:code` | public |
+| `POST` | `/api/team-directory/invite/:code` | public |
+| `GET` | `/api/team-directory/:teamId/logo` | public |
+| `GET` | `/api/team-directory/:teamId/manage` | public |
+| `PATCH` | `/api/team-directory/:teamId` | public |
+| `PUT` | `/api/team-directory/:teamId/logo` | public |
+| `DELETE` | `/api/team-directory/:teamId/logo` | public |
+| `POST` | `/api/team-directory/:teamId/invite` | public |
+| `POST` | `/api/team-directory/:teamId/requests/:uid/accept` | public |
+| `POST` | `/api/team-directory/:teamId/requests/:uid/decline` | public |
+| `PATCH` | `/api/team-directory/:teamId/members/:uid` | public |
+| `DELETE` | `/api/team-directory/:teamId/members/:uid` | public |
+| `POST` | `/api/team-directory/:teamId/transfer` | public |
+| `DELETE` | `/api/team-directory/:teamId` | public |
 
 ### Settings
 

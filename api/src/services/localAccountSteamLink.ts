@@ -110,6 +110,23 @@ async function foldInto(client: PoolClient, from: PlayerRow, to: PlayerRow): Pro
   );
   await run('team_members', 'UPDATE team_members SET account_uid = $2 WHERE account_uid = $1', [from.uid, to.uid]);
   await client.query(
+    `DELETE FROM team_join_requests r WHERE r.account_uid = $1 AND EXISTS
+       (SELECT 1 FROM team_join_requests o WHERE o.account_uid = $2 AND o.team_id = r.team_id)`,
+    [from.uid, to.uid]
+  );
+  await run('team_join_requests', 'UPDATE team_join_requests SET account_uid = $2 WHERE account_uid = $1', [
+    from.uid,
+    to.uid,
+  ]);
+  // One owned team per account: when the Steam player already owns one, the
+  // other team keeps no owner rather than breaking the unique index.
+  await run(
+    'teams',
+    `UPDATE teams SET owner_uid = CASE WHEN EXISTS (SELECT 1 FROM teams o WHERE o.owner_uid = $2) THEN NULL ELSE $2::uuid END
+      WHERE owner_uid = $1`,
+    [from.uid, to.uid]
+  );
+  await client.query(
     `DELETE FROM match_stat_values v WHERE v.player_uid = $1 AND EXISTS
        (SELECT 1 FROM match_stat_values o WHERE o.player_uid = $2 AND o.match_slug = v.match_slug
           AND o.map_number IS NOT DISTINCT FROM v.map_number AND o.field_id = v.field_id)`,

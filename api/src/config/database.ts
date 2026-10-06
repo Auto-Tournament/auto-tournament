@@ -321,6 +321,7 @@ class DatabaseManager {
         { table: 'player_games', column: 'player_uid' },
         // 3.0 phase D: team membership and reported custom stats.
         { table: 'team_members', column: 'account_uid' },
+        { table: 'team_join_requests', column: 'account_uid' },
         { table: 'match_stat_values', column: 'player_uid' },
       ];
       for (const { table, column } of uidForeignKeys) {

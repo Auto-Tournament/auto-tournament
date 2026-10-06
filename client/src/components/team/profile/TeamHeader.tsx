@@ -1,3 +1,4 @@
+import type React from 'react';
 import { Box, Button } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +13,10 @@ interface TeamHeaderProps {
   canEdit: boolean;
   /** The game the team plays in its tournament, for the game badge. */
   game?: { slug: string; name: string } | null;
+  /** The team's uploaded logo, shown in place of its initial. */
+  logoUrl?: string | null;
+  /** Buttons for the viewer's own team (Manage, Leave), beside the name. */
+  actions?: React.ReactNode;
 }
 
 /**
@@ -22,7 +27,7 @@ interface TeamHeaderProps {
  * No logo, location or "since" year: the team record carries none of those,
  * so they are left out rather than faked.
  */
-export function TeamHeader({ team, canEdit, game }: TeamHeaderProps) {
+export function TeamHeader({ team, canEdit, game, logoUrl, actions }: TeamHeaderProps) {
   const { t } = useTranslation();
 
   const initial = (team?.name || '?').trim().charAt(0).toUpperCase() || '?';
@@ -54,9 +59,19 @@ export function TeamHeader({ team, canEdit, game }: TeamHeaderProps) {
           fontWeight: 700,
           fontSize: textSize['2xl'],
           color: tokens.color.accent,
+          overflow: 'hidden',
         }}
       >
-        {initial}
+        {logoUrl ? (
+          <Box
+            component="img"
+            src={logoUrl}
+            alt=""
+            sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        ) : (
+          initial
+        )}
       </Box>
 
       <Box sx={{ minWidth: 0 }}>
@@ -77,7 +92,9 @@ export function TeamHeader({ team, canEdit, game }: TeamHeaderProps) {
           }
           subtitle={captain ? t('teamProfile.captainLine', { name: captain.name }) : undefined}
           actions={
-            canEdit && team ? (
+            actions ? (
+              actions
+            ) : canEdit && team ? (
               <Button
                 data-testid="team-profile-edit-link"
                 variant="outlined"

@@ -336,7 +336,12 @@
       }
     },
     "headerLabel": "Team",
-    "captainLine": "captain {{name}}"
+    "captainLine": "captain {{name}}",
+    "manage": "Manage team",
+    "leave": "Leave team",
+    "leaveTitle": "Leave the team?",
+    "leaveConfirm": "You leave {{name}}. To come back you need a new invite.",
+    "leaveFailed": "Could not leave the team."
   },
   "disputes": {
     "title": "Disputes",
@@ -443,5 +448,61 @@
     "cancel": "Cancel",
     "createSubmit": "Create team",
     "createFailed": "The team could not be made."
+  },
+  "teamManage": {
+    "title": "Manage your team",
+    "pageTitle": "Manage {{name}}",
+    "loading": "Loading the team",
+    "loadError": "The team could not be loaded.",
+    "actionFailed": "That did not work.",
+    "back": "{{name}}'s page",
+    "identity": "Name and logo",
+    "locked": "The roster is locked while {{tournament}} is in progress. Ask an admin if it has to change.",
+    "uploadLogo": "Upload logo",
+    "removeLogo": "Remove logo",
+    "logoHelp": "PNG, JPEG or WEBP, square, up to 256 KB",
+    "logoSaved": "Logo saved.",
+    "save": "Save changes",
+    "saved": "Saved.",
+    "roster": "Roster",
+    "roleFor": "Role for {{name}}",
+    "role": {
+      "owner": "Owner",
+      "captain": "Captain",
+      "member": "Player"
+    },
+    "remove": "Remove {{name}}",
+    "invite": "Invite players",
+    "inviteHelp": "Anyone with the link can ask to join. You or a captain accept each one.",
+    "copy": "Copy the invite link",
+    "inviteReset": "New link (the old one stops working)",
+    "inviteCreate": "Make an invite link",
+    "requests": "Wants to join",
+    "requestsNone": "Nobody is asking right now.",
+    "rating": "Rating {{rating}}",
+    "accept": "Accept",
+    "decline": "Decline {{name}}",
+    "owner": "Owner",
+    "ownerHelp": "You can own one team. Hand it over to a teammate to make a new one.",
+    "transferTo": "New owner",
+    "transfer": "Hand over",
+    "transferTitle": "Hand the team over?",
+    "transferConfirm": "{{name}} becomes the owner. You stay on the team as a captain.",
+    "disband": "Disband team",
+    "disbandTitle": "Disband the team?",
+    "disbandConfirm": "{{name}} is deleted for everyone on it. This cannot be undone.",
+    "disbandHelp": "Past matches keep their results."
+  },
+  "teamJoin": {
+    "title": "Join a team",
+    "pageTitle": "Join {{name}}",
+    "loading": "Loading the invite",
+    "invalid": "This invite link is not valid any more.",
+    "failed": "The request could not be sent.",
+    "invited": "You are invited to",
+    "ask": "Ask to join",
+    "requested": "Request sent. The owner or a captain will answer it.",
+    "alreadyMember": "You are on this team",
+    "signIn": "Sign in to join"
   }
 }

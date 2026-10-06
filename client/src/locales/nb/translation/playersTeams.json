@@ -138,7 +138,12 @@
       }
     },
     "headerLabel": "Lag",
-    "captainLine": "kaptein {{name}}"
+    "captainLine": "kaptein {{name}}",
+    "manage": "Administrer laget",
+    "leave": "Forlat laget",
+    "leaveTitle": "Forlate laget?",
+    "leaveConfirm": "Du forlater {{name}}. For å komme tilbake trenger du en ny invitasjon.",
+    "leaveFailed": "Kunne ikke forlate laget."
   },
   "leaderboardPage": {
     "emptyTitle": "Ingen turneringstoppliste ennå",
@@ -443,5 +448,61 @@
     "cancel": "Avbryt",
     "createSubmit": "Lag laget",
     "createFailed": "Laget kunne ikke lages."
+  },
+  "teamManage": {
+    "title": "Administrer laget",
+    "pageTitle": "Administrer {{name}}",
+    "loading": "Laster laget",
+    "loadError": "Laget kunne ikke lastes.",
+    "actionFailed": "Det gikk ikke.",
+    "back": "Siden til {{name}}",
+    "identity": "Navn og logo",
+    "locked": "Laglisten er låst mens {{tournament}} pågår. Spør en admin om den må endres.",
+    "uploadLogo": "Last opp logo",
+    "removeLogo": "Fjern logo",
+    "logoHelp": "PNG, JPEG eller WEBP, kvadratisk, opptil 256 KB",
+    "logoSaved": "Logoen er lagret.",
+    "save": "Lagre endringer",
+    "saved": "Lagret.",
+    "roster": "Lagliste",
+    "roleFor": "Rolle for {{name}}",
+    "role": {
+      "owner": "Eier",
+      "captain": "Kaptein",
+      "member": "Spiller"
+    },
+    "remove": "Fjern {{name}}",
+    "invite": "Inviter spillere",
+    "inviteHelp": "Alle med lenken kan be om å bli med. Du eller en kaptein godtar hver enkelt.",
+    "copy": "Kopier invitasjonslenken",
+    "inviteReset": "Ny lenke (den gamle slutter å virke)",
+    "inviteCreate": "Lag en invitasjonslenke",
+    "requests": "Vil bli med",
+    "requestsNone": "Ingen spør akkurat nå.",
+    "rating": "Rating {{rating}}",
+    "accept": "Godta",
+    "decline": "Avslå {{name}}",
+    "owner": "Eier",
+    "ownerHelp": "Du kan eie ett lag. Gi det til en lagkamerat for å lage et nytt.",
+    "transferTo": "Ny eier",
+    "transfer": "Gi bort",
+    "transferTitle": "Gi bort laget?",
+    "transferConfirm": "{{name}} blir eier. Du blir på laget som kaptein.",
+    "disband": "Oppløs laget",
+    "disbandTitle": "Oppløse laget?",
+    "disbandConfirm": "{{name}} slettes for alle på laget. Dette kan ikke angres.",
+    "disbandHelp": "Tidligere kamper beholder resultatene sine."
+  },
+  "teamJoin": {
+    "title": "Bli med i et lag",
+    "pageTitle": "Bli med i {{name}}",
+    "loading": "Laster invitasjonen",
+    "invalid": "Denne invitasjonslenken virker ikke lenger.",
+    "failed": "Forespørselen kunne ikke sendes.",
+    "invited": "Du er invitert til",
+    "ask": "Be om å bli med",
+    "requested": "Forespørselen er sendt. Eieren eller en kaptein svarer på den.",
+    "alreadyMember": "Du er på dette laget",
+    "signIn": "Logg inn for å bli med"
   }
 }

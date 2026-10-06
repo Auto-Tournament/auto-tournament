@@ -27,12 +27,26 @@ export function getSchemaSQL(): string {
       discord_role_id TEXT,
       players TEXT NOT NULL,
       owner_uid UUID, -- players.uid of the player who made the team; one owned team per account
+      invite_code TEXT, -- the team's join link code; anyone with it can ask to join
+      logo BYTEA, -- the team's logo (PNG, JPEG or WEBP, at most 256 KB)
+      logo_type TEXT, -- its media type
+      logo_updated_at INTEGER, -- for the logo URL, so a new logo is not served from cache
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
 
     CREATE INDEX IF NOT EXISTS idx_teams_name ON teams(name);
     CREATE UNIQUE INDEX IF NOT EXISTS idx_teams_owner_uid ON teams(owner_uid) WHERE owner_uid IS NOT NULL;
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_teams_invite_code ON teams(invite_code) WHERE invite_code IS NOT NULL;
+
+    -- Players asking to join a team through its invite link; the owner or a
+    -- captain accepts or declines.
+    CREATE TABLE IF NOT EXISTS team_join_requests (
+      team_id TEXT NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+      account_uid UUID NOT NULL, -- players.uid
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      PRIMARY KEY (team_id, account_uid)
+    );
 
     -- Tournament settings table
     CREATE TABLE IF NOT EXISTS tournament (
