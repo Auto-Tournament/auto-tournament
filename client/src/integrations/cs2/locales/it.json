@@ -1558,7 +1558,8 @@
     "teamMapsFew": "The chart shows up once the team has played three maps.",
     "bansMost": "Bans most",
     "picksMost": "Picks most",
-    "vetoShare": "{{map}} · {{count}} of {{total}} vetoes"
+    "vetoShare": "{{map}} · {{count}} of {{total}} vetoes",
+    "noMatchesYet": "I numeri compaiono dopo la prima partita di CS2."
   },
   "skins": {
     "notice": "Virtual skins. They only exist on Auto Tournament, have no money value, can't be traded or sold, and don't appear in Counter-Strike 2.",
@@ -1714,7 +1715,20 @@
       "rewardTitle": "Premio per {{place}}",
       "done": "Fatto"
     },
-    "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)"
+    "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)",
+    "whatThisMeans": "Cosa significa",
+    "meaning": {
+      "platformOnly": "Le skin qui esistono solo su questo sito: le vinci qui e le mostri qui.",
+      "noValue": "Non hanno valore economico e non si possono scambiare né vendere.",
+      "notInGame": "Non vengono aggiunte al tuo inventario Steam né a Counter-Strike 2.",
+      "servers": "Sui server Ready Up del sito, i giocatori vedono le skin che hai equipaggiato qui."
+    },
+    "close": "Chiudi",
+    "match": {
+      "won": "Vinta {{score}}",
+      "lost": "Persa {{score}}",
+      "drew": "Pareggio {{score}}"
+    }
   },
   "matchRules": {
     "title": "Regole partita",

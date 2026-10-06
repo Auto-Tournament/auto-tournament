@@ -1558,7 +1558,8 @@
     "teamMapsFew": "Diagrammet vises når laget har spilt tre kart.",
     "bansMost": "Banner mest",
     "picksMost": "Velger mest",
-    "vetoShare": "{{map}} · {{count}} av {{total}} vetoer"
+    "vetoShare": "{{map}} · {{count}} av {{total}} vetoer",
+    "noMatchesYet": "Tallene vises etter første CS2-kamp."
   },
   "skins": {
     "notice": "Virtuelle skins. De finnes bare på Auto Tournament, har ingen pengeverdi, kan ikke byttes eller selges, og vises ikke i Counter-Strike 2.",
@@ -1714,7 +1715,20 @@
       "rewardTitle": "Premie for {{place}}",
       "done": "Ferdig"
     },
-    "tournamentRewardsSwitch": "Skin-premier for topp tre (når skins er slått på)"
+    "tournamentRewardsSwitch": "Skin-premier for topp tre (når skins er slått på)",
+    "whatThisMeans": "Hva dette betyr",
+    "meaning": {
+      "platformOnly": "Skins her finnes bare på denne siden: du vinner dem her og viser dem her.",
+      "noValue": "De har ingen pengeverdi og kan ikke byttes eller selges.",
+      "notInGame": "De legges ikke i Steam-inventaret ditt eller i selve Counter-Strike 2.",
+      "servers": "På sidens Ready Up-servere ser spillerne skinsene du har utstyrt her."
+    },
+    "close": "Lukk",
+    "match": {
+      "won": "Vant {{score}}",
+      "lost": "Tapte {{score}}",
+      "drew": "Uavgjort {{score}}"
+    }
   },
   "matchRules": {
     "title": "Kampregler",

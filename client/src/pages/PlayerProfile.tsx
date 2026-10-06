@@ -853,9 +853,11 @@ export default function PlayerProfile() {
 
   // Rating change over the same last-N-matches window the rating chart plots.
   const sortedRatingHistoryAsc = [...ratingHistory].sort((a, b) => a.createdAt - b.createdAt);
-  const recentRatingHistory = sortedRatingHistoryAsc.slice(-RATING_CHART_WINDOW);
-  const profileRatingChange =
-    recentRatingHistory.length > 0 ? player.currentElo - recentRatingHistory[0].eloBefore : 0;
+  // The headline change is this month's (draft A2: "+86 this month"): from
+  // the rating before the month's first rated match to now.
+  const monthAgo = Date.now() / 1000 - 30 * 24 * 3600;
+  const thisMonth = sortedRatingHistoryAsc.filter((entry) => entry.createdAt >= monthAgo);
+  const profileRatingChange = thisMonth.length > 0 ? player.currentElo - thisMonth[0].eloBefore : 0;
 
   // RATING (+change), MATCHES, WIN RATE, and ADR and K/D for a game that
   // measures them. TITLES is left out: no record of tournaments won survives
@@ -880,7 +882,7 @@ export default function PlayerProfile() {
               }}
             >
               {profileRatingChange > 0 ? '+' : ''}
-              {profileRatingChange}
+              {profileRatingChange} {t('playerPage.stats.thisMonth')}
             </Box>
           )}
         </>
@@ -1026,6 +1028,7 @@ export default function PlayerProfile() {
             joinedAt={player.createdAt}
             team={headerTeam}
             isOwnProfile={isOwnProfile}
+            lastResults={recentMatchEntries.map((m) => m.wonMatch)}
           />
 
           {/* Matchmaking level and commends; nothing while matchmaking is off. */}
@@ -1069,7 +1072,7 @@ export default function PlayerProfile() {
           />
 
           {/* The game's own numbers (CS2: aim, utility, map strength). */}
-          {PlayerProfileView && showGameStats && hasAnyMatches && <PlayerProfileView playerId={player.id} />}
+          {PlayerProfileView && showGameStats && <PlayerProfileView playerId={player.id} />}
 
           {/* Installed modules' own sections (CS2: the skin loadout, while skins are on). */}
           {profileSections.map(({ id, Section }) => (

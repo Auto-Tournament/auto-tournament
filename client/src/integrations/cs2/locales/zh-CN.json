@@ -1558,7 +1558,8 @@
     "teamMapsFew": "The chart shows up once the team has played three maps.",
     "bansMost": "Bans most",
     "picksMost": "Picks most",
-    "vetoShare": "{{map}} · {{count}} of {{total}} vetoes"
+    "vetoShare": "{{map}} · {{count}} of {{total}} vetoes",
+    "noMatchesYet": "第一场 CS2 比赛后会显示数据。"
   },
   "skins": {
     "notice": "Virtual skins. They only exist on Auto Tournament, have no money value, can't be traded or sold, and don't appear in Counter-Strike 2.",
@@ -1714,7 +1715,20 @@
       "rewardTitle": "{{place}} 的奖励",
       "done": "完成"
     },
-    "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)"
+    "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)",
+    "whatThisMeans": "这是什么意思",
+    "meaning": {
+      "platformOnly": "这里的皮肤只存在于本站：在这里获得，也在这里展示。",
+      "noValue": "它们没有金钱价值，不能交易或出售。",
+      "notInGame": "它们不会加入你的 Steam 库存，也不会进入 Counter-Strike 2 本身。",
+      "servers": "在本站的 Ready Up 服务器上，其他玩家能看到你在这里装备的皮肤。"
+    },
+    "close": "关闭",
+    "match": {
+      "won": "胜 {{score}}",
+      "lost": "负 {{score}}",
+      "drew": "平 {{score}}"
+    }
   },
   "matchRules": {
     "title": "比赛规则",
