@@ -37,6 +37,14 @@ import type {
 import { refreshCurrentTournamentId } from './currentTournament';
 import { bareSlug, isGrandFinalSlug, isLosersBracketSlug, shuffleTeamLike, tournamentSlugPrefix } from '../utils/matchSlug';
 
+/** Players per team from a request (2-10), or null when it names none. */
+function validTeamSize(value: unknown): number | null {
+  if (value === undefined || value === null) return null;
+  const n = Number(value);
+  if (!Number.isInteger(n) || n < 1 || n > 10) throw new Error('Players per team must be a whole number from 1 to 10.');
+  return n;
+}
+
 /**
  * A generated slot's stored status. The generators hold every match with both
  * teams as `pending` for the map veto (all series formats have one); a game
@@ -205,6 +213,7 @@ class TournamentService {
     options: { game?: GameId; draft?: boolean } = {}
   ): Promise<TournamentResponse> {
     const { name, type, format, teamIds, settings } = input;
+    const teamSize = validTeamSize(input.teamSize);
     // A draft with no teams yet: no count check and no bracket until it has some.
     const emptyDraft = options.draft === true && (teamIds?.length ?? 0) === 0;
 
@@ -241,6 +250,7 @@ class TournamentService {
       status: 'setup',
       ...(options.game ? { game: options.game } : {}),
       team_ids: JSON.stringify(teamIds || []), // Shuffle tournaments have no fixed teams
+      ...(teamSize !== null && type !== 'shuffle' ? { team_size: teamSize } : {}),
       settings: JSON.stringify(tournamentSettings),
       created_at: now,
       updated_at: now,
@@ -321,6 +331,8 @@ class TournamentService {
     if (type) updates.type = type;
     if (format) updates.format = format;
     if (teamIds) updates.team_ids = JSON.stringify(teamIds);
+    const teamSize = validTeamSize(input.teamSize);
+    if (teamSize !== null && (type ?? existing.type) !== 'shuffle') updates.team_size = teamSize;
     // settings.matchFormat mirrors `format`, so settings are rewritten when
     // either changes (or an edited format leaves the old value behind in
     // settings), and whenever the game module's object changes: the module
@@ -348,20 +360,33 @@ class TournamentService {
     // pool changed size).
     const needsRegeneration =
       type || teamIds || moduleSettingsChangeBracket(existing.game, existing.settings, merged);
+    let teamsReverted = false;
     if (needsRegeneration) {
       try {
         await this.regenerateBracket(tournamentId, true);
         log.debug('Bracket regenerated after update');
       } catch (err) {
-        log.error('Failed to regenerate bracket after update', err);
-        // Revert changes to teams if bracket generation fails
-        if (teamIds) {
-          const oldTeamId = existing.teamIds;
-          await db.updateAsync('tournament', { team_ids: JSON.stringify(oldTeamId) }, 'id = ?', [
-            tournamentId,
-          ]);
+        if (signupOpen) {
+          // Teams are still signing up: a count the format cannot draw yet
+          // (3 of 4) stands, with no bracket until it can (as a sign-up does).
+          await db.runAsync("DELETE FROM matches WHERE tournament_id = ? AND status = 'pending'", [tournamentId]);
+        } else {
+          log.error('Failed to regenerate bracket after update', err);
+          // Revert changes to teams if bracket generation fails
+          if (teamIds) {
+            teamsReverted = true;
+            const oldTeamId = existing.teamIds;
+            await db.updateAsync('tournament', { team_ids: JSON.stringify(oldTeamId) }, 'id = ?', [
+              tournamentId,
+            ]);
+          }
         }
       }
+    }
+    if (teamIds && !teamsReverted) {
+      // A signed-up team taken out loses its sign-up, lineup and check-ins.
+      const { tournamentSignupService } = await import('./tournamentSignupService');
+      await tournamentSignupService.dropRemovedTeams(tournamentId, teamIds);
     }
 
     const updated = await this.getTournament(tournamentId);

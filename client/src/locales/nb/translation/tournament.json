@@ -588,7 +588,8 @@
         "players_other": "{{count}} spillere",
         "maps": "Kart",
         "mapsRounds": "{{maps}} · {{rounds}}",
-        "notSet": "Ikke satt"
+        "notSet": "Ikke satt",
+        "signUpOpen": "Lag melder seg på · {{size}} per lag"
       },
       "checklist": {
         "title": "Før du kan starte",
@@ -638,6 +639,29 @@
           "auto_confirm": "Ta rapporten",
           "escalate": "Spør en administrator"
         }
+      },
+      "signup": {
+        "how": "Hvordan kommer lagene med?",
+        "organizer": "Bare lag jeg legger til",
+        "open": "Lag kan melde seg på",
+        "organizerHelp": "Du velger alle lagene. Ingen kan melde seg på fra turneringssiden.",
+        "openHelp": "Lagets eier eller kaptein melder laget på med en oppstilling fra turneringssiden, og oppstillingen sjekker inn på dagen. Du kan fortsatt legge til lag selv nedenfor.",
+        "teamSize": "Spillere per lag",
+        "teamSizeHelp": "Startspillere et lag velger når det melder seg på (pluss opptil 2 innbyttere).",
+        "maxTeamsHelp": "Tomt: ingen grense.",
+        "save": "Lagre påmeldingsinnstillinger",
+        "saved": "Påmeldingsinnstillingene er lagret",
+        "inTournament": "I turneringen ({{count}})",
+        "signedUp": "Påmeldt",
+        "addedByYou": "Lagt til av deg",
+        "lineup": "{{starters}} av {{size}} startspillere",
+        "checkedIn": "{{count}} sjekket inn",
+        "remove": "Fjern",
+        "removed": "{{team}} er tatt ut av turneringen",
+        "noneYet": "Ingen lag ennå. De dukker opp her når de melder seg på.",
+        "noTeams": "Ingen lag ennå.",
+        "addYourself": "Legg til lag selv",
+        "pickTeams": "Velg lagene"
       }
     },
     "startButton": {
@@ -809,7 +833,9 @@
       "emptyTitle": "Ingen lag ennå",
       "emptyDescription": "Lagene vises her når arrangøren legger dem til.",
       "yours": "Laget ditt",
-      "record": "{{wins}}–{{losses}}"
+      "record": "{{wins}}–{{losses}}",
+      "emptySignupOpen": "Påmeldingen er åpen. Lagene vises her når de melder seg på.",
+      "signUp": "Meld på laget ditt"
     },
     "allMatches": "Alle kamper",
     "keyDates": {

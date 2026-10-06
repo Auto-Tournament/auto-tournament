@@ -42,6 +42,8 @@ export interface SetupValidationInput {
   type: string;
   format: string;
   teamCount: number;
+  /** Teams sign themselves up: the count is checked at start, not here. */
+  signupOpen?: boolean;
   teamSize: number;
   /**
    * The game module's own check of its settings (`tournamentSetup.stepError`):
@@ -73,7 +75,7 @@ export function stepError(
       }
       return input.moduleError?.('rules') ?? null;
     case 'teams': {
-      if (isShuffle) return null;
+      if (isShuffle || input.signupOpen) return null;
       if (input.teamCount === 0) return t('tournament.toasts.selectAtLeastTwoTeams');
       const validation = validateTeamCountForType(input.type, input.teamCount, t);
       return validation.isValid

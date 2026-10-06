@@ -93,7 +93,10 @@ export const useTournament = () => {
     game?: string;
     type: string;
     format: string;
-    teamIds: string[];
+    /** On create only: a saved tournament's teams change one at a time. */
+    teamIds?: string[];
+    /** Players per team, when teams sign themselves up. */
+    teamSize?: number;
     settings: {
       seedingMethod: string;
       grandFinalMode?: 'none' | 'simple' | 'double';

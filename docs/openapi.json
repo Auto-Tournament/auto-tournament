@@ -15186,6 +15186,103 @@
         ]
       }
     },
+    "/api/tournaments/{id}/teams": {
+      "post": {
+        "tags": [
+          "Tournament"
+        ],
+        "summary": "Add a team to a tournament by hand (before it starts), next to the teams that signed up",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "teamId"
+                ],
+                "properties": {
+                  "teamId": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ teamIds }"
+          },
+          "404": {
+            "description": "No such tournament or team"
+          },
+          "409": {
+            "description": "Already started"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/tournaments/{id}/teams/{teamId}": {
+      "delete": {
+        "tags": [
+          "Tournament"
+        ],
+        "summary": "Take a team out of a tournament (before it starts); its sign-up, lineup and check-ins go too",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{ teamIds }"
+          },
+          "409": {
+            "description": "Already started"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/api/veto/{matchSlug}": {
       "get": {
         "tags": [

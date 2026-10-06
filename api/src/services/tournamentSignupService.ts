@@ -449,6 +449,48 @@ export const tournamentSignupService = {
     await setTeamIds(tournamentId, teamIds);
   },
 
+  /**
+   * An admin adds a team by hand, next to the teams that signed themselves
+   * up. It plays with its whole roster (see `registrations`). Only while the
+   * tournament is being set up; sign-up does not have to be open.
+   */
+  async adminAdd(tournamentId: number, teamId: string): Promise<string[]> {
+    const tournament = await loadTournament(tournamentId);
+    if (tournament.status !== 'setup') {
+      throw new SignupError(409, 'Teams are added before the tournament starts.', 'started');
+    }
+    const team = await teamRow(teamId).catch(() => null);
+    if (!team) throw new SignupError(404, 'No such team.', 'no_team');
+    const teamIds = parse<string[]>(tournament.team_ids, []);
+    if (teamIds.includes(teamId)) return teamIds;
+    const next = [...teamIds, teamId];
+    await setTeamIds(tournamentId, next);
+    return next;
+  },
+
+  /** An admin takes a team out: its sign-up, lineup and check-ins go with it. */
+  async adminRemove(tournamentId: number, teamId: string): Promise<string[]> {
+    const tournament = await loadTournament(tournamentId);
+    if (tournament.status !== 'setup') {
+      throw new SignupError(409, 'Teams are removed before the tournament starts.', 'started');
+    }
+    const next = parse<string[]>(tournament.team_ids, []).filter((id) => id !== teamId);
+    await this.dropRemovedTeams(tournamentId, next);
+    await setTeamIds(tournamentId, next);
+    return next;
+  },
+
+  /**
+   * An admin changed the tournament's teams: a signed-up team they took out
+   * loses its sign-up, lineup and check-ins too, so it does not linger in the
+   * list of signed-up teams.
+   */
+  async dropRemovedTeams(tournamentId: number, keep: string[]): Promise<void> {
+    for (const table of ['tournament_registrations', 'tournament_lineups', 'tournament_checkins']) {
+      await db.runAsync(`DELETE FROM ${table} WHERE tournament_id = ? AND NOT (team_id = ANY(?::text[]))`, [tournamentId, keep]);
+    }
+  },
+
   /** A lineup player says "I'm here" inside the check-in window. */
   async checkIn(tournamentId: number, steamId: string): Promise<void> {
     const tournament = await loadTournament(tournamentId);
