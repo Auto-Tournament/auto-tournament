@@ -5,6 +5,7 @@
 
 import { vetoMapPickers } from './veto/vetoMapPickers';
 import { Cs2ProfileStats } from './profile/Cs2ProfileStats';
+import { Cs2TeamProfileStats } from './profile/Cs2TeamProfileStats';
 import { HardDrivesIcon, MapTrifoldIcon } from '@phosphor-icons/react';
 import type { ClientGameIntegration } from '../types';
 import { links } from '../../module-sdk';
@@ -85,6 +86,8 @@ export const cs2ClientIntegration: ClientGameIntegration = {
 
   // The player profile: aim, utility, impact and the map strength radar.
   playerProfileView: Cs2ProfileStats,
+  // The team page: map strength, and the maps the team bans and picks.
+  teamProfileView: Cs2TeamProfileStats,
 
   // The team page roster: whether the roster has a Steam account for each
   // member, which a CS2 player needs to join the server.

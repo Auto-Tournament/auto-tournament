@@ -8,7 +8,9 @@ import { TeamHeader } from '../components/team/profile/TeamHeader';
 import { RosterList } from '../components/team/profile/RosterList';
 import { TeamTournaments } from '../components/team/profile/TeamTournaments';
 import { useTeamProfileData } from '../hooks/useTeamProfileData';
-import { useIntegration } from '../integrations/registry';
+import { useInstalledIntegrations, useIntegration } from '../integrations/registry';
+import { TeamStatStrip, type TeamProfileNumbers } from '../components/team/profile/TeamStatStrip';
+import type { Player } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { pageTitle } from '../utils/pageTitle';
 import { api, apiErrorMessage } from '../utils/api';
@@ -36,6 +38,11 @@ export default function TeamProfile() {
   // The team's logo, and the viewer's place on it: the owner and captains
   // get Manage, a member gets Leave.
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [numbers, setNumbers] = useState<TeamProfileNumbers | null>(null);
+  const [members, setMembers] = useState<Player[] | null>(null);
+  const gameViews = useInstalledIntegrations()
+    .map((integration) => integration.teamProfileView)
+    .filter((view): view is NonNullable<typeof view> => Boolean(view));
   const [own, setOwn] = useState<{ role: 'owner' | 'captain' | 'member'; uid: string } | null>(
     null
   );
@@ -45,10 +52,33 @@ export default function TeamProfile() {
     if (!teamId) return;
     let cancelled = false;
     api
-      .get<{ success: boolean; team?: { logoUrl: string | null } }>(
-        `/api/team-directory/${encodeURIComponent(teamId)}`
-      )
-      .then((res) => !cancelled && setLogoUrl(res.team?.logoUrl ?? null))
+      .get<
+        {
+          success: boolean;
+          team: { logoUrl: string | null };
+          members: Array<{
+            steamId: string;
+            name: string;
+            avatar: string | null;
+            rating: number | null;
+            role: 'owner' | 'captain' | 'member';
+          }>;
+        } & TeamProfileNumbers
+      >(`/api/team-directory/${encodeURIComponent(teamId)}/profile`)
+      .then((res) => {
+        if (cancelled) return;
+        setLogoUrl(res.team?.logoUrl ?? null);
+        setNumbers({ rating: res.rating, record: res.record, rounds: res.rounds });
+        setMembers(
+          res.members.map((m) => ({
+            steamId: m.steamId,
+            name: m.name,
+            avatar: m.avatar ?? undefined,
+            elo: m.rating ?? undefined,
+            role: m.role,
+          }))
+        );
+      })
       .catch(() => undefined);
     if (playerSteamId) {
       api
@@ -153,6 +183,8 @@ export default function TeamProfile() {
             }
           />
 
+          {numbers && <TeamStatStrip numbers={numbers} />}
+
           <Box
             sx={{
               display: 'grid',
@@ -164,8 +196,11 @@ export default function TeamProfile() {
           >
             <Box component="section" aria-labelledby="team-roster">
               <SectionHead id="team-roster" title={t('teamProfile.roster.title')} />
-              <RosterList players={team?.players ?? []} MemberStatus={MemberStatus} />
+              <RosterList players={members ?? team?.players ?? []} MemberStatus={MemberStatus} />
             </Box>
+
+            {/* Each game's own numbers for the team (CS2: map strength). */}
+            {teamId && gameViews.map((View, i) => <View key={i} teamId={teamId} />)}
 
             <Box component="section" aria-labelledby="team-tournaments">
               <SectionHead id="team-tournaments" title={t('teamProfile.tournaments.title')} />

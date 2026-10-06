@@ -687,6 +687,10 @@
       "description": "A team's current match, oriented to that team. Public."
     },
     {
+      "name": "Team profile",
+      "description": "A team's CS2 results per map, and the maps it bans and picks most in the veto."
+    },
+    {
       "name": "Team stats",
       "description": "Past results and aggregates for a team. Public."
     },
@@ -4304,6 +4308,30 @@
         "parameters": [
           {
             "name": "playerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/teams/{teamId}/profile": {
+      "get": {
+        "tags": [
+          "Team profile"
+        ],
+        "summary": "GET /api/game/cs2/teams/:teamId/profile",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "teamId",
             "in": "path",
             "required": true,
             "schema": {
@@ -10167,6 +10195,30 @@
           },
           {
             "name": "uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/team-directory/{teamId}/profile": {
+      "get": {
+        "tags": [
+          "Team directory"
+        ],
+        "summary": "GET /api/team-directory/:teamId/profile",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "teamId",
             "in": "path",
             "required": true,
             "schema": {

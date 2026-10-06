@@ -180,3 +180,42 @@ test.describe('Running a team', () => {
     }
   );
 });
+
+test.describe('Team page numbers', () => {
+  test(
+    'a new team: its roster, its rating and an empty record',
+    { tag: ['@api', '@teams'] },
+    async ({ playwright, baseURL }) => {
+      const owner = await playwright.request.newContext({ baseURL });
+      const id = steamId();
+      expect(await signInAsPlayerViaRequest(owner, id, `Num ${id.slice(-4)}`)).toBe(true);
+      const team = (
+        await (
+          await owner.post('/api/team-directory/mine', {
+            data: { name: `Num ${id.slice(-5)}`, tag: 'NUM' },
+          })
+        ).json()
+      ).team;
+
+      const anon = await playwright.request.newContext({ baseURL });
+      const profile = await (await anon.get(`/api/team-directory/${team.id}/profile`)).json();
+      expect(profile.members).toHaveLength(1);
+      expect(profile.members[0]).toMatchObject({ steamId: id, role: 'owner' });
+      expect(typeof profile.rating).toBe('number');
+      expect(profile.rating).toBe(profile.members[0].rating);
+      expect(profile.record).toEqual({ wins: 0, losses: 0, last10: [] });
+      expect(profile.rounds).toEqual({ won: 0, lost: 0 });
+
+      const cs2 = await (await anon.get(`/api/game/cs2/teams/${team.id}/profile`)).json();
+      expect(cs2).toMatchObject({
+        success: true,
+        maps: [],
+        veto: { count: 0, mostBanned: null, mostPicked: null },
+      });
+
+      expect((await anon.get('/api/team-directory/no-such-team/profile')).status()).toBe(404);
+      await owner.dispose();
+      await anon.dispose();
+    }
+  );
+});

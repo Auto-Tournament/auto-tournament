@@ -31,10 +31,8 @@ function hasProfile(player: Player): boolean {
 export function RosterList({ players, MemberStatus }: RosterListProps) {
   const { t } = useTranslation();
 
-  const sorted = [...players].sort((a, b) => {
-    const captainFirst = Number(b.role === 'captain') - Number(a.role === 'captain');
-    return captainFirst || (b.elo ?? 0) - (a.elo ?? 0);
-  });
+  const rank = (p: Player) => (p.role === 'owner' ? 2 : p.role === 'captain' ? 1 : 0);
+  const sorted = [...players].sort((a, b) => rank(b) - rank(a) || (b.elo ?? 0) - (a.elo ?? 0));
 
   if (sorted.length === 0) {
     return (
@@ -50,13 +48,14 @@ export function RosterList({ players, MemberStatus }: RosterListProps) {
     <RowList data-testid="team-profile-roster">
       {sorted.map((player, index) => {
         const linkable = hasProfile(player);
-        const isCaptain = player.role === 'captain';
+        const roleLabel =
+          player.role === 'owner'
+            ? t('teamProfile.roster.owner')
+            : player.role === 'captain'
+              ? t('teamProfile.roster.captain')
+              : null;
         return (
-          <Row
-            key={player.steamId || index}
-            data-testid="team-profile-roster-row"
-            sx={{ p: 0 }}
-          >
+          <Row key={player.steamId || index} data-testid="team-profile-roster-row" sx={{ p: 0 }}>
             <Box
               component={linkable ? RouterLink : 'div'}
               to={linkable ? getPlayerPageUrl(player.steamId) : undefined}
@@ -85,7 +84,7 @@ export function RosterList({ players, MemberStatus }: RosterListProps) {
                 <Typography variant="body2" fontWeight={600} noWrap>
                   {player.name}
                 </Typography>
-                {(isCaptain || MemberStatus) && (
+                {(roleLabel || MemberStatus) && (
                   <Box
                     component="small"
                     data-testid="team-profile-roster-detail"
@@ -100,7 +99,7 @@ export function RosterList({ players, MemberStatus }: RosterListProps) {
                       '& > * + *::before': { content: '"·"', mr: 0.75 },
                     }}
                   >
-                    {isCaptain && <span>{t('teamProfile.roster.captain')}</span>}
+                    {roleLabel && <span>{roleLabel}</span>}
                     {MemberStatus && <MemberStatus playerId={player.steamId ?? ''} />}
                   </Box>
                 )}

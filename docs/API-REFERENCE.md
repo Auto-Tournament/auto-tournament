@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 482 of them, 326 behind auth —
+Every endpoint this API serves — 484 of them, 326 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -212,6 +212,14 @@ A player's CS2 totals, everyone's totals to compare with, and their results per 
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/game/cs2/players/:playerId/profile` | public |
+
+### Team profile
+
+A team's CS2 results per map, and the maps it bans and picks most in the veto.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/game/cs2/teams/:teamId/profile` | public |
 
 ### Round backups
 
@@ -477,6 +485,7 @@ Every team (public), and the signed-in player's own teams: list them, make one (
 | `GET` | `/api/team-directory/mine` | public |
 | `POST` | `/api/team-directory/mine` | public |
 | `GET` | `/api/team-directory/:teamId` | public |
+| `GET` | `/api/team-directory/:teamId/profile` | public |
 | `GET` | `/api/team-directory/invite/:code` | public |
 | `POST` | `/api/team-directory/invite/:code` | public |
 | `GET` | `/api/team-directory/:teamId/logo` | public |

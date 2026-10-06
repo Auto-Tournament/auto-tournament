@@ -24,6 +24,7 @@ import mapRoutes from '../maps/routes';
 import mapPoolRoutes from '../maps/poolRoutes';
 import matchConnectRoutes from './matchConnect';
 import playerProfileRoutes from './playerProfile';
+import teamProfileRoutes from './teamProfile';
 import roundBackupRoutes from './roundBackups';
 import { failoverMatchRouter, failoverSettingsRouter } from './failover';
 import testHelperRoutes from './testHelpers';
@@ -115,6 +116,13 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     router: playerProfileRoutes,
     title: 'Player profile',
     description: "A player's CS2 totals, everyone's totals to compare with, and their results per map.",
+  },
+  {
+    // Public, like the player profile route above.
+    prefix: '/api/game/cs2',
+    router: teamProfileRoutes,
+    title: 'Team profile',
+    description: "A team's CS2 results per map, and the maps it bans and picks most in the veto.",
   },
   {
     // Admin only, per route (requireAuth on each): the router shares its

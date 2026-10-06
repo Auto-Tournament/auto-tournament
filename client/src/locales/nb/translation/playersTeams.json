@@ -115,7 +115,8 @@
       "title": "Lagoppstilling",
       "empty": "Dette laget har ingen spillere ennå.",
       "rating": "Rating {{rating}}",
-      "captain": "Kaptein"
+      "captain": "Kaptein",
+      "owner": "Eier"
     },
     "tournaments": {
       "title": "Turneringer",
@@ -143,7 +144,15 @@
     "leave": "Forlat laget",
     "leaveTitle": "Forlate laget?",
     "leaveConfirm": "Du forlater {{name}}. For å komme tilbake trenger du en ny invitasjon.",
-    "leaveFailed": "Kunne ikke forlate laget."
+    "leaveFailed": "Kunne ikke forlate laget.",
+    "stats": {
+      "rating": "Lagrating",
+      "ratingNote": "Snitt av laglisten",
+      "record": "Resultater",
+      "last10": "Siste {{total}} kamper: {{won}} vunnet",
+      "rounds": "Rundedifferanse",
+      "roundsNote": "{{won}} vunnet · {{lost}} tapt"
+    }
   },
   "leaderboardPage": {
     "emptyTitle": "Ingen turneringstoppliste ennå",
