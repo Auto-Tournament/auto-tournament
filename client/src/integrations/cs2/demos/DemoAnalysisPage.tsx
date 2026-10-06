@@ -16,6 +16,7 @@ import {
   withAlpha,
 } from '../../../module-sdk';
 import { getMapDisplayName } from '../maps/mapData';
+import { ReplayViewer } from './ReplayViewer';
 
 const { color } = tokens;
 
@@ -52,6 +53,7 @@ interface Kill {
 interface PlayerLine {
   id: string;
   name: string;
+  avatar?: string | null;
   team: TeamKey;
   rating: number | null;
   kills: number;
@@ -271,6 +273,17 @@ export function DemoAnalysisPage() {
             {score.team2}
           </Box>
         </Box>
+      </Box>
+
+      {/* The 2D replay, when the worker stored one. */}
+      <Box component="section" aria-labelledby="analysis-replay" sx={{ mb: 5 }}>
+        <SectionHead id="analysis-replay" title={t('analysis.replay.title')} />
+        <ReplayViewer
+          matchSlug={matchSlug}
+          mapNumber={Number(mapNumber)}
+          team1Ids={new Set(data.players.filter((p) => p.team === 'team1').map((p) => p.id))}
+          avatars={Object.fromEntries(data.players.map((p) => [p.id, p.avatar ?? null]))}
+        />
       </Box>
 
       {/* The rounds: who won each, and each side's buy. */}

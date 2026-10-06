@@ -1827,6 +1827,29 @@
       "ttd": "Time to damage",
       "money": "Spent"
     },
-    "note": "Read from the demo after the match. Rating is Auto Tournament's own (1.00 is average). Crosshair: degrees off the head when an enemy came into view."
+    "note": "Read from the demo after the match. Rating is Auto Tournament's own (1.00 is average). Crosshair: degrees off the head when an enemy came into view.",
+    "replay": {
+      "title": "2D replay",
+      "aria": "2D replay of {{map}}",
+      "noRadar": "No radar for this map: drawn on a grid.",
+      "play": "Play",
+      "pause": "Pause",
+      "scrub": "Time",
+      "speed": "Speed",
+      "level": "Level",
+      "levels": {
+        "default": "Upper",
+        "lower": "Lower"
+      }
+    },
+    "feed": {
+      "blind": "blind",
+      "flashAssist": "flash assist",
+      "inAir": "in the air",
+      "noScope": "no scope",
+      "smoke": "through smoke",
+      "wallbang": "wallbang",
+      "headshot": "headshot"
+    }
   }
 }

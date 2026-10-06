@@ -25,6 +25,7 @@ import mapPoolRoutes from '../maps/poolRoutes';
 import matchConnectRoutes from './matchConnect';
 import playerProfileRoutes from './playerProfile';
 import demoAnalysisRoutes from './demoAnalysis';
+import radarRoutes from './radars';
 import teamProfileRoutes from './teamProfile';
 import roundBackupRoutes from './roundBackups';
 import { failoverMatchRouter, failoverSettingsRouter } from './failover';
@@ -133,6 +134,13 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     title: 'Demo analysis',
     description:
       'The worker container reads stored demos after the match: its job queue, and each map\'s rounds, kills and 2D replay.',
+  },
+  {
+    // Reading is public (the 2D replay); the worker's upload takes an API token.
+    prefix: '/api/game/cs2',
+    router: radarRoutes,
+    title: 'Map radars',
+    description: "Map radar images and coordinates for the 2D replay, read from a CS2 install's own files by the worker.",
   },
   {
     // Public, like the player profile route above.

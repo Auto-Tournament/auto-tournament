@@ -130,7 +130,8 @@ router.get('/matches/:slug/maps/:map/replay', async (req: Request, res: Response
     return res.status(404).json({ success: false, error: 'No replay for this map' });
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Content-Encoding', 'gzip');
-  res.setHeader('Cache-Control', 'public, max-age=300');
+  // A re-read (a newer worker) replaces it in place, so always ask again.
+  res.setHeader('Cache-Control', 'no-cache');
   return fs.createReadStream(file).pipe(res);
 });
 

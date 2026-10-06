@@ -98,6 +98,11 @@ services:
       - ../.env
     environment:
       - AT_URL=http://auto-tournament:3000
+      # Map radars for the 2D replay, from a CS2 install on this host
+      # (read-only): set CS2_GAME_DIR in .env to its game/csgo.
+      - AT_CS2_DIR=${CS2_GAME_DIR:+/cs2}
+    volumes:
+      - ${CS2_GAME_DIR:-./data/no-cs2}:/cs2:ro
     networks:
       - auto-tournament-network
 

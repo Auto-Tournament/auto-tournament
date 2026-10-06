@@ -2,7 +2,10 @@ module github.com/Auto-Tournament/auto-tournament/worker
 
 go 1.24.0
 
-require github.com/markus-wa/demoinfocs-golang/v5 v5.2.0
+require (
+	github.com/markus-wa/demoinfocs-golang/v5 v5.2.0
+	github.com/pierrec/lz4/v4 v4.1.33
+)
 
 require (
 	github.com/golang/geo v0.0.0-20230421003525-6adc56603217 // indirect

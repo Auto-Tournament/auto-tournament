@@ -134,15 +134,25 @@ export async function claimDemoJob(worker: string, analyzerVersion = 0): Promise
       };
     }
     if (pass > 1) break;
+    // A stored demo that never had a job: per map, or (older uploads) on the
+    // match, its map from the `mapN/` folder it was stored under.
     const unseen = await db.queryOneAsync<{
       match_slug: string;
       map_number: number;
       demo_file_path: string;
     }>(
-      `SELECT r.match_slug, r.map_number, r.demo_file_path FROM match_map_results r
-        WHERE r.demo_file_path IS NOT NULL AND r.demo_file_path <> ''
-          AND NOT EXISTS (SELECT 1 FROM cs2_demo_jobs j WHERE j.match_slug = r.match_slug AND j.map_number = r.map_number)
-        ORDER BY r.completed_at DESC LIMIT 1`
+      `SELECT match_slug, map_number, demo_file_path FROM (
+         SELECT r.match_slug, r.map_number, r.demo_file_path, r.completed_at AS at
+           FROM match_map_results r
+          WHERE r.demo_file_path IS NOT NULL AND r.demo_file_path <> ''
+         UNION ALL
+         SELECT m.slug, COALESCE(NULLIF(substring(m.demo_file_path from 'map([0-9]+)/'), '')::int - 1, 0),
+                m.demo_file_path, COALESCE(m.completed_at, 0)
+           FROM matches m
+          WHERE m.demo_file_path IS NOT NULL AND m.demo_file_path <> ''
+       ) d
+       WHERE NOT EXISTS (SELECT 1 FROM cs2_demo_jobs j WHERE j.match_slug = d.match_slug AND j.map_number = d.map_number)
+       ORDER BY at DESC LIMIT 1`
     );
     if (unseen) {
       await enqueueDemoJob(unseen.match_slug, Number(unseen.map_number), unseen.demo_file_path);
