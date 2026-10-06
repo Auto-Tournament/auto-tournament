@@ -74,9 +74,16 @@ export const progressionService = {
       'SELECT player_id, score, adr FROM player_match_stats WHERE match_slug = ?',
       [matchSlug]
     );
-    const ranked = [...stats].sort(
-      (a, b) => Number(b.score ?? 0) - Number(a.score ?? 0) || Number(b.adr ?? 0) - Number(a.adr ?? 0)
-    );
+    // Ranked only when the game reported how they played: rows with no
+    // score and no damage for anyone (a game without stats, or stats that
+    // never arrived) hold zeros, and ranking those would hand the
+    // performance XP to whoever sorted first.
+    const reported = stats.some((s) => Number(s.score ?? 0) > 0 || Number(s.adr ?? 0) > 0);
+    const ranked = reported
+      ? [...stats].sort(
+          (a, b) => Number(b.score ?? 0) - Number(a.score ?? 0) || Number(b.adr ?? 0) - Number(a.adr ?? 0)
+        )
+      : [];
     const rankOf = new Map(ranked.map((s, i) => [s.player_id, i]));
     const dayStart = startOfUtcDay(now());
     for (const p of players) {
