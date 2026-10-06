@@ -6,6 +6,10 @@
  * everyone (the "site average" the profile compares against), and how the
  * player's team did on each map they played.
  *
+ * `detail` is what only Ready Up servers send (cs2_player_map_stats):
+ * rounds per side, openings, clutches, flashes on teammates and the rating,
+ * for the player and for everyone. Null for a player with none of those maps.
+ *
  * Public, like the rest of the profile: these are the numbers the
  * leaderboards already show, summed.
  */
@@ -13,6 +17,7 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
+import { hltvRating } from '../fleet/mapStats';
 
 const router = Router();
 
@@ -80,6 +85,69 @@ const TOTALS_SELECT = `
   JOIN matches m ON pms.match_slug = m.slug
 `;
 
+interface DetailRow {
+  maps: number | string | null;
+  rounds_played: number | string | null;
+  kills: number | string | null;
+  deaths: number | string | null;
+  entry_kills: number | string | null;
+  entry_deaths: number | string | null;
+  trade_kills: number | string | null;
+  clutches_won: number | string | null;
+  enemies_flashed: number | string | null;
+  friendlies_flashed: number | string | null;
+  multi_1k: number | string | null;
+  multi_2k: number | string | null;
+  multi_3k: number | string | null;
+  multi_4k: number | string | null;
+  multi_5k: number | string | null;
+  ct_rounds: number | string | null;
+  ct_rounds_won: number | string | null;
+  t_rounds: number | string | null;
+  t_rounds_won: number | string | null;
+}
+
+const DETAIL_SELECT = `
+  SELECT COUNT(*) AS maps,
+    SUM(rounds_played) AS rounds_played, SUM(kills) AS kills, SUM(deaths) AS deaths,
+    SUM(entry_kills) AS entry_kills, SUM(entry_deaths) AS entry_deaths,
+    SUM(trade_kills) AS trade_kills, SUM(clutches_won) AS clutches_won,
+    SUM(enemies_flashed) AS enemies_flashed, SUM(friendlies_flashed) AS friendlies_flashed,
+    SUM(multi_1k) AS multi_1k, SUM(multi_2k) AS multi_2k, SUM(multi_3k) AS multi_3k,
+    SUM(multi_4k) AS multi_4k, SUM(multi_5k) AS multi_5k,
+    SUM(ct_rounds) AS ct_rounds, SUM(ct_rounds_won) AS ct_rounds_won,
+    SUM(t_rounds) AS t_rounds, SUM(t_rounds_won) AS t_rounds_won
+  FROM cs2_player_map_stats
+`;
+
+function detail(row: DetailRow | undefined) {
+  if (!row || !num(row.maps) || !num(row.rounds_played)) return null;
+  const t = {
+    rounds_played: num(row.rounds_played),
+    kills: num(row.kills),
+    deaths: num(row.deaths),
+    multi_1k: num(row.multi_1k),
+    multi_2k: num(row.multi_2k),
+    multi_3k: num(row.multi_3k),
+    multi_4k: num(row.multi_4k),
+    multi_5k: num(row.multi_5k),
+  };
+  return {
+    maps: num(row.maps),
+    roundsPlayed: t.rounds_played,
+    rating: hltvRating(t),
+    openingKills: num(row.entry_kills),
+    openingDeaths: num(row.entry_deaths),
+    tradeKills: num(row.trade_kills),
+    clutchesWon: num(row.clutches_won),
+    enemiesFlashed: num(row.enemies_flashed),
+    friendliesFlashed: num(row.friendlies_flashed),
+    multiKills: [t.multi_2k, t.multi_3k, t.multi_4k, t.multi_5k],
+    ct: { rounds: num(row.ct_rounds), won: num(row.ct_rounds_won) },
+    t: { rounds: num(row.t_rounds), won: num(row.t_rounds_won) },
+  };
+}
+
 router.get('/players/:playerId/profile', async (req: Request, res: Response) => {
   const { playerId } = req.params;
   try {
@@ -109,10 +177,16 @@ router.get('/players/:playerId/profile', async (req: Request, res: Response) => 
       [playerId]
     );
 
+    const playerDetail = await db.queryOneAsync<DetailRow>(`${DETAIL_SELECT} WHERE player_id = ?`, [
+      playerId,
+    ]);
+    const everyoneDetail = await db.queryOneAsync<DetailRow>(DETAIL_SELECT);
+
     return res.json({
       success: true,
       player: totals(player),
       everyone: totals(everyone),
+      detail: { player: detail(playerDetail), everyone: detail(everyoneDetail) },
       maps: maps.map((row) => ({
         map: row.map_name,
         played: num(row.played),

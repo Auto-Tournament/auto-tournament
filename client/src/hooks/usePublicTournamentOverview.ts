@@ -27,6 +27,11 @@ export interface OverviewPlayer {
   flashAssists?: number;
   utilityDamage?: number;
   roundsPlayed?: number;
+  /** The game's per-tournament rating, 1.00 average (CS2, Ready Up servers). */
+  rating?: number | null;
+  clutchesWon?: number;
+  /** Times the player flashed a teammate. */
+  teamFlashes?: number;
   team?: { id: string; name: string; tag?: string | null } | null;
 }
 

@@ -36,11 +36,14 @@ import type {
   TournamentSettingsInput,
   TournamentSettingsValidation,
 } from '../integrations/types';
-import { archiveCurrentTournament, readableTournamentId, TournamentArchiveError } from '../services/currentTournament';
+import {
+  archiveCurrentTournament,
+  readableTournamentId,
+  TournamentArchiveError,
+} from '../services/currentTournament';
 import { shuffleTeamId } from '../utils/matchSlug';
 
 const router = Router();
-
 
 // Public routes (before auth middleware)
 /**
@@ -128,6 +131,20 @@ router.get('/:id/leaderboard', async (req: Request, res: Response) => {
     }
 
     const standings = await getTournamentLeaderboard(tournamentId);
+
+    // The game's own per-player numbers (CS2: rating, clutches), when it has any.
+    const integration = integrationForMatch({ game: standings.tournament.game });
+    if (integration.tournamentPlayerExtras && standings.leaderboard.length) {
+      try {
+        const extras = await integration.tournamentPlayerExtras(tournamentId);
+        standings.leaderboard = standings.leaderboard.map((p) => ({
+          ...p,
+          ...(extras[p.playerId] ?? {}),
+        }));
+      } catch (error) {
+        log.warn("Could not read the game's tournament player numbers", { error, tournamentId });
+      }
+    }
 
     return res.json({
       success: true,
@@ -634,7 +651,9 @@ function validateGameSettings(
  * Length caps here are what keep an organizer's paste from blowing up the
  * page (or the settings JSON column) rather than a hard product limit.
  */
-function validateEventPageSettings(settings: unknown): { valid: true } | { valid: false; error: string } {
+function validateEventPageSettings(
+  settings: unknown
+): { valid: true } | { valid: false; error: string } {
   if (!settings || typeof settings !== 'object') {
     return { valid: true };
   }
@@ -646,7 +665,12 @@ function validateEventPageSettings(settings: unknown): { valid: true } | { valid
     return { valid: false, error: 'settings.registrationOpen must be true or false' };
   }
   if (s.maxTeams !== undefined && s.maxTeams !== null) {
-    if (typeof s.maxTeams !== 'number' || !Number.isInteger(s.maxTeams) || s.maxTeams < 2 || s.maxTeams > 256) {
+    if (
+      typeof s.maxTeams !== 'number' ||
+      !Number.isInteger(s.maxTeams) ||
+      s.maxTeams < 2 ||
+      s.maxTeams > 256
+    ) {
       return { valid: false, error: 'settings.maxTeams must be a whole number from 2 to 256' };
     }
   }
@@ -725,14 +749,20 @@ function validateEventPageSettings(settings: unknown): { valid: true } | { valid
     }
     for (const prize of s.prizes) {
       if (!prize || typeof prize !== 'object') {
-        return { valid: false, error: 'settings.prizes items must be objects with place and prize' };
+        return {
+          valid: false,
+          error: 'settings.prizes items must be objects with place and prize',
+        };
       }
       const p = prize as Record<string, unknown>;
       if (typeof p.place !== 'string' || p.place.length === 0 || p.place.length > 40) {
         return { valid: false, error: 'settings.prizes items need a place (1-40 characters)' };
       }
       if (typeof p.prize !== 'string' || p.prize.length > 200) {
-        return { valid: false, error: 'settings.prizes items need a prize string (0-200 characters)' };
+        return {
+          valid: false,
+          error: 'settings.prizes items need a prize string (0-200 characters)',
+        };
       }
     }
   }
@@ -815,10 +845,13 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     // With sign-up open the teams arrive later; the count is checked at start.
-    const signupOpen = (input.settings as { registrationOpen?: unknown } | undefined)?.registrationOpen === true;
+    const signupOpen =
+      (input.settings as { registrationOpen?: unknown } | undefined)?.registrationOpen === true;
     // A draft made from the tournament list (POST /api/tournaments) may start
     // with no teams; they are picked, or sign up, before it starts.
-    const draft = (req as Request & { atDraft?: boolean }).atDraft === true && (input.teamIds?.length ?? 0) === 0;
+    const draft =
+      (req as Request & { atDraft?: boolean }).atDraft === true &&
+      (input.teamIds?.length ?? 0) === 0;
     if (input.teamIds.length < 2 && !signupOpen && !draft) {
       return res.status(400).json({
         success: false,
@@ -1625,7 +1658,8 @@ router.post('/wipe-table/:table', async (req: Request, res: Response) => {
       // through the template view rather than a column.
       const { templateService } = await import('../services/templateService');
       for (const template of await templateService.getAllTemplates()) {
-        if (template.mapPoolId) await db.runAsync('DELETE FROM tournament_templates WHERE id = ?', [template.id]);
+        if (template.mapPoolId)
+          await db.runAsync('DELETE FROM tournament_templates WHERE id = ?', [template.id]);
       }
       await db.execAsync('DELETE FROM cs2_map_pools');
     } else if (table === 'tournament_templates') {
@@ -1966,8 +2000,7 @@ router.post('/:id/manual-matches', async (req: Request, res: Response) => {
         return maxRounds;
       }
       const raw = tournament.maxRounds;
-      const parsed =
-        typeof raw === 'number' && Number.isFinite(raw) && raw > 0 ? raw : undefined;
+      const parsed = typeof raw === 'number' && Number.isFinite(raw) && raw > 0 ? raw : undefined;
       const value =
         typeof parsed === 'number' && Number.isFinite(parsed) && parsed > 0 ? parsed : 24;
       return value;

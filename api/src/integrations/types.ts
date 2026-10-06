@@ -971,6 +971,12 @@ export interface GameIntegration {
    */
   seriesPlayerStats?(slug: string): Promise<ReportedStatLine[]>;
   /**
+   * Extra per-player numbers for a tournament's results, by player id (CS2:
+   * a rating, clutches won, teammates flashed). The core adds them to the
+   * leaderboard rows; the results page gives awards for them.
+   */
+  tournamentPlayerExtras?(tournamentId: number): Promise<Record<string, TournamentPlayerExtras>>;
+  /**
    * The integration's columns of a `player_match_stats` row for one player's
    * metrics (CS2: adr, total_damage, kills, …). The core writes them next to
    * its own columns (player, match, team, won_match, created_at). A player the
@@ -1095,4 +1101,13 @@ export interface LegacyRouteMount {
    * were generated in.
    */
   testOnly?: boolean;
+}
+
+/** See `GameIntegration.tournamentPlayerExtras`. */
+export interface TournamentPlayerExtras {
+  /** A per-tournament player rating, 1.00 average (CS2: HLTV 1.0). */
+  rating?: number | null;
+  clutchesWon?: number;
+  /** Times the player flashed a teammate. */
+  teamFlashes?: number;
 }

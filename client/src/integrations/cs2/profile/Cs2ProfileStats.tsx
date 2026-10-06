@@ -28,11 +28,54 @@ interface Totals {
   kast: number | null;
 }
 
+/** What only Ready Up servers send (the API's cs2_player_map_stats). */
+interface Detail {
+  maps: number;
+  roundsPlayed: number;
+  rating: number | null;
+  openingKills: number;
+  openingDeaths: number;
+  tradeKills: number;
+  clutchesWon: number;
+  enemiesFlashed: number;
+  friendliesFlashed: number;
+  /** Rounds with 2, 3, 4 and 5 kills. */
+  multiKills: number[];
+  ct: { rounds: number; won: number };
+  t: { rounds: number; won: number };
+}
+
 interface ProfileResponse {
   success: boolean;
   player: Totals;
   everyone: Totals;
+  detail?: { player: Detail | null; everyone: Detail | null };
   maps: MapResult[];
+}
+
+type Role = 'entry' | 'clutch' | 'support' | 'fragger';
+
+/**
+ * What the numbers say the player does most, against everyone's rate: opening
+ * kills, clutches, flashes, or kills. Null when nothing stands out.
+ */
+function roleOf(me: Detail, all: Detail | null): Role | null {
+  const per = (n: number, d: Detail) => (d.roundsPlayed ? n / d.roundsPlayed : 0);
+  const lift = (mine: number, avg: number | null) => (avg ? mine / avg : mine > 0 ? 2 : 0);
+  if (me.roundsPlayed < 30) return null;
+  const scores: Array<[Role, number]> = [
+    [
+      'entry',
+      me.openingKills > me.openingDeaths
+        ? lift(per(me.openingKills, me), all && per(all.openingKills, all))
+        : 0,
+    ],
+    ['clutch', lift(per(me.clutchesWon, me), all && per(all.clutchesWon, all))],
+    ['support', lift(per(me.enemiesFlashed, me), all && per(all.enemiesFlashed, all))],
+  ];
+  const [role, score] = scores.sort((a, b) => b[1] - a[1])[0];
+  if (score >= 1.25) return role;
+  return (me.rating ?? 0) >= 1.15 ? 'fragger' : null;
 }
 
 const ratio = (a: number, b: number): number | null => (b > 0 ? a / b : null);
@@ -67,27 +110,49 @@ export function Cs2ProfileStats({ playerId }: PlayerProfileViewProps) {
   // No CS2 match yet: the same tiles with dashes, so the profile keeps its shape.
   if (data.player.matches === 0) {
     return (
-      <Box component="section" aria-labelledby="cs2-profile-stats" data-testid="cs2-profile-stats-empty" sx={{ mt: 6 }}>
+      <Box
+        component="section"
+        aria-labelledby="cs2-profile-stats"
+        data-testid="cs2-profile-stats-empty"
+        sx={{ mt: 6 }}
+      >
         <SectionHead id="cs2-profile-stats" title={t('profile.title')} />
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', md: 'repeat(4, minmax(0, 1fr))' },
+            gridTemplateColumns: {
+              xs: 'repeat(2, minmax(0, 1fr))',
+              md: 'repeat(4, minmax(0, 1fr))',
+            },
             gap: 1.5,
           }}
         >
-          {[t('profile.kd'), t('profile.headshots'), t('profile.adr'), t('profile.impact')].map((label) => (
-            <Panel key={label} sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 1.5, borderStyle: 'dashed' }}>
-              <Label>{label}</Label>
-              <Big>—</Big>
-            </Panel>
-          ))}
+          {[t('profile.kd'), t('profile.headshots'), t('profile.adr'), t('profile.impact')].map(
+            (label) => (
+              <Panel
+                key={label}
+                sx={{
+                  p: 2.5,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 1.5,
+                  borderStyle: 'dashed',
+                }}
+              >
+                <Label>{label}</Label>
+                <Big>—</Big>
+              </Panel>
+            )
+          )}
         </Box>
         <Small>{t('profile.noMatchesYet')}</Small>
       </Box>
     );
   }
   const { player, everyone, maps } = data;
+  const mine = data.detail?.player ?? null;
+  const avg = data.detail?.everyone ?? null;
+  const role = mine ? roleOf(mine, avg) : null;
 
   const kd = ratio(player.kills, player.deaths) ?? player.kills;
   const hsPct = ratio(player.headshots, player.kills);
@@ -111,7 +176,28 @@ export function Cs2ProfileStats({ playerId }: PlayerProfileViewProps) {
       data-testid="cs2-profile-stats"
       sx={{ mt: 6 }}
     >
-      <SectionHead id="cs2-profile-stats" title={t('profile.title')} />
+      <SectionHead
+        id="cs2-profile-stats"
+        title={t('profile.title')}
+        action={
+          role ? (
+            <Box
+              component="span"
+              data-testid="cs2-profile-role"
+              sx={{
+                px: 1.25,
+                py: 0.25,
+                borderRadius: 999,
+                bgcolor: withAlpha(tokens.color.accent, 0.14),
+                color: tokens.color.accent,
+                fontSize: textSize.sm,
+              }}
+            >
+              {t(`profile.role.${role}`)}
+            </Box>
+          ) : undefined
+        }
+      />
 
       <Box
         sx={{
@@ -182,6 +268,8 @@ export function Cs2ProfileStats({ playerId }: PlayerProfileViewProps) {
           </Box>
         </Panel>
       </Box>
+
+      <DetailRow mine={mine} avg={avg} />
 
       {ranked.length > 0 && (
         <Panel
@@ -258,6 +346,103 @@ export function Cs2ProfileStats({ playerId }: PlayerProfileViewProps) {
         </Panel>
       )}
     </Box>
+  );
+}
+
+/**
+ * Rating, sides, openings and clutches, and flashes: what a Ready Up server
+ * records. Dashed tiles with a note for a player whose matches were all on
+ * servers that don't send them.
+ */
+function DetailRow({ mine, avg }: { mine: Detail | null; avg: Detail | null }) {
+  const { t } = useModuleTranslation('cs2');
+  const pct = (won: number, rounds: number) =>
+    rounds ? `${Math.round((won / rounds) * 100)}%` : '—';
+  const perRound = (n: number) => (mine?.roundsPlayed ? (n / mine.roundsPlayed).toFixed(2) : '—');
+  const dashed = mine ? undefined : 'dashed';
+  return (
+    <>
+      <Box
+        data-testid="cs2-profile-detail"
+        sx={{
+          mt: 1.5,
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: 'minmax(0, 1fr)',
+            sm: 'repeat(2, minmax(0, 1fr))',
+            md: 'repeat(4, minmax(0, 1fr))',
+          },
+          gap: 1.5,
+        }}
+      >
+        <Panel
+          sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 1.5, borderStyle: dashed }}
+          data-testid="cs2-profile-rating"
+        >
+          <Label>{t('profile.rating')}</Label>
+          <Big>{mine?.rating?.toFixed(2) ?? '—'}</Big>
+          <Small>
+            {avg?.rating != null
+              ? t('profile.average', { value: avg.rating.toFixed(2) })
+              : t('profile.ratingNote')}
+          </Small>
+        </Panel>
+        <Panel
+          sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 1.5, borderStyle: dashed }}
+          data-testid="cs2-profile-sides"
+        >
+          <Label>{t('profile.sides')}</Label>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 1.5 }}>
+            <Fact
+              value={mine ? pct(mine.ct.won, mine.ct.rounds) : '—'}
+              label={t('profile.ctWon', { count: mine?.ct.rounds ?? 0 })}
+            />
+            <Fact
+              value={mine ? pct(mine.t.won, mine.t.rounds) : '—'}
+              label={t('profile.tWon', { count: mine?.t.rounds ?? 0 })}
+            />
+          </Box>
+        </Panel>
+        <Panel
+          sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 1.5, borderStyle: dashed }}
+          data-testid="cs2-profile-openings"
+        >
+          <Label>{t('profile.openings')}</Label>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 1.5 }}>
+            <Fact
+              value={mine ? perRound(mine.openingKills) : '—'}
+              label={t('profile.openingKillsPerRound')}
+            />
+            <Fact value={mine ? String(mine.clutchesWon) : '—'} label={t('profile.clutchesWon')} />
+            <Fact
+              value={mine ? `${mine.openingKills}–${mine.openingDeaths}` : '—'}
+              label={t('profile.openingDuels')}
+            />
+            <Fact
+              value={mine ? String(mine.multiKills.slice(1).reduce((a, b) => a + b, 0)) : '—'}
+              label={t('profile.multiKills')}
+            />
+          </Box>
+        </Panel>
+        <Panel
+          sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 1.5, borderStyle: dashed }}
+          data-testid="cs2-profile-flashes"
+        >
+          <Label>{t('profile.flashes')}</Label>
+          {mine ? (
+            <SplitBar
+              left={mine.enemiesFlashed}
+              right={mine.friendliesFlashed}
+              leftLabel={t('profile.enemiesFlashed', { count: mine.enemiesFlashed })}
+              rightLabel={t('profile.friendliesFlashed', { count: mine.friendliesFlashed })}
+            />
+          ) : (
+            <Big>—</Big>
+          )}
+        </Panel>
+      </Box>
+      {!mine && <Small>{t('profile.readyUpOnly')}</Small>}
+    </>
   );
 }
 
