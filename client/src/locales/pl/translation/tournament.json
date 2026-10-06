@@ -1018,5 +1018,21 @@
     "remind": "Przypomnij",
     "reminded": "Przypomnienie wysłane na czat drużyny",
     "done": "Gotowe"
+  },
+  "bracketCards": {
+    "upper": "Drabinka górna",
+    "lower": "Drabinka dolna",
+    "grandFinal": "Wielki finał",
+    "thirdPlace": "Trzecie miejsce",
+    "live": "Na żywo",
+    "veto": "Veto",
+    "done": "Zakończony",
+    "mapOf": "Mapa {{n}} z {{total}}",
+    "banning": "Banowanie map",
+    "bestOf_one": "Bo{{count}}",
+    "bestOf_other": "Bo{{count}}",
+    "winnerOf": "Zwycięzca {{match}}",
+    "loserOf": "Przegrany {{match}}",
+    "tbd": "Do ustalenia"
   }
 }

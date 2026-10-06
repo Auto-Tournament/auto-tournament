@@ -1016,5 +1016,21 @@
     "remind": "Rappeler",
     "reminded": "Rappel envoyé dans le chat de l’équipe",
     "done": "Prêt"
+  },
+  "bracketCards": {
+    "upper": "Tableau supérieur",
+    "lower": "Tableau inférieur",
+    "grandFinal": "Grande finale",
+    "thirdPlace": "Troisième place",
+    "live": "En direct",
+    "veto": "Veto",
+    "done": "Terminé",
+    "mapOf": "Carte {{n}} sur {{total}}",
+    "banning": "Bans en cours",
+    "bestOf_one": "Best of {{count}}",
+    "bestOf_other": "Best of {{count}}",
+    "winnerOf": "Vainqueur {{match}}",
+    "loserOf": "Perdant {{match}}",
+    "tbd": "À déterminer"
   }
 }

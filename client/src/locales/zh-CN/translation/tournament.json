@@ -1016,5 +1016,21 @@
     "remind": "提醒",
     "reminded": "已在队伍聊天中发送提醒",
     "done": "完成"
+  },
+  "bracketCards": {
+    "upper": "胜者组",
+    "lower": "败者组",
+    "grandFinal": "总决赛",
+    "thirdPlace": "季军赛",
+    "live": "直播中",
+    "veto": "禁选",
+    "done": "已结束",
+    "mapOf": "第 {{n}}/{{total}} 张图",
+    "banning": "正在禁图",
+    "bestOf_one": "BO{{count}}",
+    "bestOf_other": "BO{{count}}",
+    "winnerOf": "{{match}} 胜者",
+    "loserOf": "{{match}} 败者",
+    "tbd": "待定"
   }
 }

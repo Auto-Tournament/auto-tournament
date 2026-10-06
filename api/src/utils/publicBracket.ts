@@ -30,6 +30,10 @@ export type PublicBracketMatch = Pick<
   | 'team1MapScore'
   | 'team2MapScore'
   | 'mapResults'
+  | 'bracket'
+  | 'currentMap'
+  | 'mapNumber'
+  | 'vetoing'
 > & {
   team1?: { id: string; name: string; tag?: string } | null;
   team2?: { id: string; name: string; tag?: string } | null;
@@ -63,6 +67,10 @@ export function toPublicBracketMatch(match: BracketMatch): PublicBracketMatch {
     team2SeriesScore: match.team2SeriesScore,
     team1MapScore: match.team1MapScore,
     team2MapScore: match.team2MapScore,
+    bracket: match.bracket ?? null,
+    currentMap: match.currentMap ?? null,
+    mapNumber: match.mapNumber ?? null,
+    vetoing: match.vetoing === true,
     ...(match.mapResults
       ? {
           mapResults: match.mapResults.map((result) => ({

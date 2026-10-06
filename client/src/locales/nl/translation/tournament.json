@@ -1016,5 +1016,21 @@
     "remind": "Herinneren",
     "reminded": "Herinnering in de teamchat gestuurd",
     "done": "Klaar"
+  },
+  "bracketCards": {
+    "upper": "Winnaarsbracket",
+    "lower": "Verliezersbracket",
+    "grandFinal": "Grote finale",
+    "thirdPlace": "Derde plaats",
+    "live": "Live",
+    "veto": "Veto",
+    "done": "Klaar",
+    "mapOf": "Map {{n}} van {{total}}",
+    "banning": "Maps bannen",
+    "bestOf_one": "Best of {{count}}",
+    "bestOf_other": "Best of {{count}}",
+    "winnerOf": "Winnaar {{match}}",
+    "loserOf": "Verliezer {{match}}",
+    "tbd": "Nog niet bekend"
   }
 }

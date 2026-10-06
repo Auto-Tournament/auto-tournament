@@ -777,6 +777,13 @@ class TournamentService {
         createdAt: row.created_at,
         loadedAt: row.loaded_at,
         completedAt: row.completed_at,
+        bracket: row.bracket ?? null,
+        currentMap: row.current_map ?? null,
+        mapNumber: row.map_number ?? null,
+        vetoing:
+          row.status === 'pending' &&
+          Boolean(row.team1_id && row.team2_id) &&
+          !String(row.veto_state ?? '').includes('"status":"completed"'),
       };
 
       // Integration-owned config, forwarded as-is (client slots: PR 12).

@@ -1016,5 +1016,21 @@
     "remind": "Påminn",
     "reminded": "Påminnelse sendt i lagchatten",
     "done": "Ferdig"
+  },
+  "bracketCards": {
+    "upper": "Øvre bracket",
+    "lower": "Nedre bracket",
+    "grandFinal": "Storfinale",
+    "thirdPlace": "Tredjeplass",
+    "live": "Direkte",
+    "veto": "Veto",
+    "done": "Ferdig",
+    "mapOf": "Kart {{n}} av {{total}}",
+    "banning": "Banner kart",
+    "bestOf_one": "Best av {{count}}",
+    "bestOf_other": "Best av {{count}}",
+    "winnerOf": "Vinner {{match}}",
+    "loserOf": "Taper {{match}}",
+    "tbd": "Ikke avgjort"
   }
 }

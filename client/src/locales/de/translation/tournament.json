@@ -1016,5 +1016,21 @@
     "remind": "Erinnern",
     "reminded": "Erinnerung im Team-Chat gesendet",
     "done": "Fertig"
+  },
+  "bracketCards": {
+    "upper": "Oberes Bracket",
+    "lower": "Unteres Bracket",
+    "grandFinal": "Grand Final",
+    "thirdPlace": "Platz drei",
+    "live": "Live",
+    "veto": "Veto",
+    "done": "Fertig",
+    "mapOf": "Map {{n}} von {{total}}",
+    "banning": "Maps werden gebannt",
+    "bestOf_one": "Best of {{count}}",
+    "bestOf_other": "Best of {{count}}",
+    "winnerOf": "Sieger {{match}}",
+    "loserOf": "Verlierer {{match}}",
+    "tbd": "Noch offen"
   }
 }

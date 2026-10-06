@@ -37,6 +37,8 @@ export interface Match {
   team2Players?: PlayerStats[];
   matchPhase?: MatchPhase; // warmup, knife, veto, live, post_match
   currentMap?: string | null; // Current map being played (e.g., de_mirage)
+  /** Both teams are in and it waits on its map veto (public bracket). */
+  vetoing?: boolean;
   mapNumber?: number | null; // Current map number in series (0-indexed)
   demoFilePath?: string;
   config?: MatchConfig;
