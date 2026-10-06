@@ -1840,6 +1840,11 @@
       "levels": {
         "default": "Øvre",
         "lower": "Nedre"
+      },
+      "bomb": {
+        "planted": "Bomben plantet",
+        "defused": "Bomben desarmert",
+        "exploded": "Bomben gikk av"
       }
     },
     "feed": {

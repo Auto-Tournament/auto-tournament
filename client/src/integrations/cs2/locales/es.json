@@ -1840,6 +1840,11 @@
       "levels": {
         "default": "Upper",
         "lower": "Lower"
+      },
+      "bomb": {
+        "planted": "Bomb planted",
+        "defused": "Bomb defused",
+        "exploded": "Bomb exploded"
       }
     },
     "feed": {

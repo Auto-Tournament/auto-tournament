@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
-import { Box, ButtonBase, MenuItem, Select, Slider, Typography } from '@mui/material';
+import { Box, ButtonBase, MenuItem, Select, Typography } from '@mui/material';
 import {
   ArrowUpIcon,
   CloudIcon,
@@ -21,6 +21,7 @@ import {
   useModuleTranslation,
   withAlpha,
 } from '../../../module-sdk';
+import { ReplayTimeline, type TimelineMark } from './ReplayTimeline';
 
 const { color } = tokens;
 
@@ -308,6 +309,43 @@ export function ReplayViewer({
       return { ...pl, p: blend };
     });
   }, [replay, tick]);
+
+  // The timeline's marks: kills in the killer's side colour, and the bomb.
+  const marks = useMemo<TimelineMark[]>(() => {
+    if (!replay) return [];
+    const ids = replay.players.map((p) => p.id);
+    const sideAt = (id: string | null, at: number): number | null => {
+      const i = id ? ids.indexOf(id) : -1;
+      if (i < 0) return null;
+      let lo = 0;
+      let hi = replay.frames.length - 1;
+      while (lo < hi) {
+        const mid = (lo + hi + 1) >> 1;
+        if (replay.frames[mid]![0] <= at) lo = mid;
+        else hi = mid - 1;
+      }
+      for (let f = lo; f >= 0 && f > lo - 20; f -= 1) {
+        const p = replay.frames[f]![1][i];
+        if (p) return p[4];
+      }
+      return null;
+    };
+    const name = (id: string | null) => replay.players.find((p) => p.id === id)?.name ?? '—';
+    return [
+      ...replay.kills.map((k) => ({
+        tick: k.tick,
+        kind: 'kill' as const,
+        side: sideAt(k.attacker, k.tick),
+        headshot: k.headshot,
+        label: `${name(k.attacker)} › ${name(k.victim)}`,
+      })),
+      ...(replay.bomb ?? []).map((b) => ({
+        tick: b.tick,
+        kind: b.kind as TimelineMark['kind'],
+        label: t(`analysis.replay.bomb.${b.kind}`, { defaultValue: b.kind }),
+      })),
+    ];
+  }, [replay, t]);
 
   // Draw.
   useEffect(() => {
@@ -812,15 +850,6 @@ export function ReplayViewer({
         >
           {playing ? <PauseIcon size={18} weight="fill" /> : <PlayIcon size={18} weight="fill" />}
         </ButtonBase>
-        <Slider
-          size="small"
-          min={first}
-          max={last}
-          value={tick}
-          onChange={(_, v) => setTick(v as number)}
-          aria-label={t('analysis.replay.scrub')}
-          sx={{ flex: 1, minWidth: 160 }}
-        />
         <Select
           size="small"
           value={round?.number ?? ''}
@@ -881,6 +910,17 @@ export function ReplayViewer({
             : ''}
         </Box>
       </Box>
+      <ReplayTimeline
+        first={first}
+        last={last}
+        tick={tick}
+        tickrate={replay.tickrate}
+        rounds={replay.rounds}
+        marks={marks}
+        label={t('analysis.replay.scrub')}
+        roundLabel={(n) => t('analysis.roundLabel', { n })}
+        onSeek={setTick}
+      />
     </Panel>
   );
 }
