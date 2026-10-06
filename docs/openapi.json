@@ -503,6 +503,10 @@
       "description": "The game catalog: every pack and code module this instance has or can install, from the feed, its cache and the offline snapshot, with install, update, enable, disable, uninstall and purge. Code modules install only from signed releases. Admin only; writes must be same-site JSON."
     },
     {
+      "name": "Chat",
+      "description": "Your match (both teams and the admins), your team and your party."
+    },
+    {
       "name": "Compatibility",
       "description": "Ready Up compatibility with the latest CS2 build: the runs its CI reports (token-guarded push), and public reads for the /compatibility page and a shields.io badge. 404 unless COMPAT_INGEST_TOKEN or COMPAT_FEED_URL is set."
     },
@@ -2101,6 +2105,184 @@
             "description": "Another catalog operation is running"
           }
         }
+      }
+    },
+    "/api/chat/channels": {
+      "get": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Your chats (your current match, your team, your party) with unread counts",
+        "responses": {
+          "200": {
+            "description": "{ channels }"
+          },
+          "401": {
+            "description": "Not signed in"
+          }
+        }
+      }
+    },
+    "/api/chat/{channel}/call-admin": {
+      "post": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Call an admin to your match (match chats; a player in the match)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "maxLength": 200
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Called"
+          },
+          "409": {
+            "description": "Already called and not resolved yet"
+          }
+        },
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/chat/{channel}/messages": {
+      "get": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "A chat's messages, newest page (or the page before `before`), oldest first",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channel",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "match:<slug>, team:<id> or party:<id>"
+          },
+          {
+            "in": "query",
+            "name": "before",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{ messages, myTeam }"
+          },
+          "403": {
+            "description": "Not your chat"
+          },
+          "404": {
+            "description": "No such chat"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Write in a chat",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "body"
+                ],
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "maxLength": 500
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ message }"
+          },
+          "429": {
+            "description": "Too many messages"
+          }
+        },
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/chat/{channel}/read": {
+      "post": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Mark a chat read up to a message",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "lastId"
+                ],
+                "properties": {
+                  "lastId": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved"
+          }
+        },
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/api/compat/badge.json": {

@@ -144,7 +144,8 @@
     "started": "Started:",
     "completed": "Completed:",
     "adminControls": "Admin Controls",
-    "slug": "Match slug:"
+    "slug": "Match slug:",
+    "openChat": "Match chat"
   },
   "bulkShuffleMatchesModal": {
     "title": "Bulk Create Shuffle Matches",

@@ -641,5 +641,36 @@
       "rolling": "Picking the map…",
       "picked": "Map: {{map}}"
     }
+  },
+  "chat": {
+    "title": "Chat",
+    "close": "Close chat",
+    "tabsLabel": "Chats",
+    "tabMatch": "Match",
+    "tabTeam": "Team",
+    "tabParty": "Party",
+    "matchWho": "Your team, {{title}} and the admins",
+    "matchWhoAdmin": "Both teams and the admins",
+    "teamWho": "Everyone on {{team}}",
+    "partyWho": "Everyone in your party",
+    "placeholderMatch": "Message both teams and the admins",
+    "placeholderTeam": "Message your team",
+    "placeholderParty": "Message your party",
+    "send": "Send",
+    "you": "You",
+    "adminBadge": "ADMIN",
+    "callAdmin": "Call an admin",
+    "adminCalled": "An admin has been called",
+    "callFailed": "Could not call an admin",
+    "sendFailed": "Could not send the message",
+    "logLabel": "Chat: {{title}}",
+    "none": "No chats yet. Your match, your team and your party show up here.",
+    "empty": "No messages yet. Say hello.",
+    "loading": "Loading messages",
+    "readOnlyImpersonating": "You are viewing as another player. Stop impersonating to write.",
+    "peekMatch": "Match · {{title}}",
+    "peekTeam": "Team",
+    "peekParty": "Party",
+    "buttonUnread": "Chat, {{count}} unread"
   }
 }

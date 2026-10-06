@@ -294,3 +294,11 @@ export function emitAdminCallResolved(payload: AdminCallResolvedEvent): void {
     log.debug('Emitted admin call resolved', { ids: payload.ids });
   }
 }
+
+/** A chat message, to the players in its channel (rooms `player:<id>`) and, for a match, the admins. */
+export function emitChatMessage(playerIds: Iterable<string>, toAdmins: boolean, message: unknown): void {
+  if (!io) return;
+  const rooms = [...new Set(playerIds)].map(playerRoom);
+  if (toAdmins) rooms.push(ADMIN_ROOM);
+  if (rooms.length > 0) io.to(rooms).emit('chat:message', message);
+}

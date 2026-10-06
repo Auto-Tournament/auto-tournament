@@ -48,6 +48,7 @@ import Play from './pages/Play';
 import PlayLobby from './pages/PlayLobby';
 import PlayLeaderboard from './pages/PlayLeaderboard';
 import { MatchmakingOverlay } from './components/matchmaking/MatchmakingOverlay';
+import { ChatDock } from './components/chat/ChatDock';
 import AccountConnections from './pages/AccountConnections';
 import ConnectSteam from './pages/ConnectSteam';
 import Templates from './pages/Templates';
@@ -585,6 +586,8 @@ export default function App() {
               {/* Matchmaking's queue bar and "Match found" dialog, on every
                   page; nothing while matchmaking is off for this player. */}
               <MatchmakingOverlay />
+              {/* Chat: the viewer's match, team and party, on every page. */}
+              <ChatDock />
             </PageHeaderProvider>
           </SnackbarProvider>
         </AuthProvider>

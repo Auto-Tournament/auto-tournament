@@ -23,6 +23,7 @@ import {
 import {
   CalendarBlankIcon,
   CaretDownIcon,
+  ChatCircleIcon,
   CodeIcon,
   MapTrifoldIcon,
   TrophyIcon,
@@ -45,6 +46,7 @@ import { usePlayerConnections } from '../../hooks/usePlayerConnections';
 import { useLiveStats } from '../../hooks/useLiveStats';
 import { getPlayerPageUrl } from '../../utils/playerLinks';
 import AdminMatchControls from '../admin/AdminMatchControls';
+import { openChat } from '../chat/chatStore';
 import { PlayerRoster } from '../match/PlayerRoster';
 import { AddBackupPlayer } from '../admin/AddBackupPlayer';
 import { FleetRosterEditor } from '../admin/FleetRosterEditor';
@@ -520,9 +522,24 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                   : roundLabel}
               </Typography>
             </Box>
-            <IconButton onClick={onClose} edge="end">
-              <XIcon />
-            </IconButton>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {/* Both teams and the admins; the chat docks beside the page. */}
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<ChatCircleIcon />}
+                data-testid="match-details-open-chat"
+                onClick={() => {
+                  onClose();
+                  openChat(`match:${match.slug}`, `${team1Name} vs ${team2Name}`);
+                }}
+              >
+                {t('matchDetailsModal.openChat')}
+              </Button>
+              <IconButton onClick={onClose} edge="end">
+                <XIcon />
+              </IconButton>
+            </Box>
           </Box>
         </DialogTitle>
         <DialogContent>

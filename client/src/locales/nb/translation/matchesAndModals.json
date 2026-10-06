@@ -248,7 +248,8 @@
     "started": "Startet:",
     "completed": "Ferdig:",
     "adminControls": "Adminkontroller",
-    "slug": "Kamp-ID:"
+    "slug": "Kamp-ID:",
+    "openChat": "Kampchat"
   },
   "bulkShuffleMatchesModal": {
     "title": "Opprett shuffle-kamper i bulk",
