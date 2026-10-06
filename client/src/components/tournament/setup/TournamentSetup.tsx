@@ -28,6 +28,15 @@ import {
   type ShuffleTournamentSettings,
 } from '../ShuffleTournamentConfigStep';
 import { EventPageSettingsCard, type EventPageFields } from '../EventPageSettingsCard';
+import {
+  SignupSettings,
+  signupOf,
+  signupSettingsPatch,
+  useSavedSignup,
+  type SignupFields,
+} from './SignupSettings';
+import { TournamentTeamsList } from './TournamentTeamsList';
+import { useSnackbar } from '../../../contexts/SnackbarContext';
 import { useTournamentFormData } from '../useTournamentFormData';
 import { SetupColumn } from './SetupColumn';
 import { SetupSummary, type ChecklistItem, type SummaryRow } from './SetupSummary';
@@ -72,6 +81,8 @@ export interface SetupFormValues {
   plannedTeams: number;
   /** Event page fields held until the tournament is created. */
   eventPage: EventPageFields;
+  /** How teams get in (sign-up), held until the tournament is created. */
+  signup: SignupFields;
 }
 
 export interface SetupFormHandlers {
@@ -86,6 +97,7 @@ export interface SetupFormHandlers {
   onEloTemplateChange: (templateId: string) => void;
   onPlannedTeamsChange: (count: number) => void;
   onEventPageChange: (fields: EventPageFields) => void;
+  onSignupChange: (fields: SignupFields) => void;
 }
 
 export interface SetupTournament extends ReviewTournament {
@@ -199,6 +211,50 @@ export function TournamentSetup(props: TournamentSetupProps) {
   const [serverModalOpen, setServerModalOpen] = useState(false);
   const [batchServerModalOpen, setBatchServerModalOpen] = useState(false);
 
+  // ---- Teams and sign-up ---------------------------------------------------
+  // A saved tournament's sign-up settings save on their own; its teams are
+  // added and removed one at a time, so a team signing up meanwhile is never
+  // dropped by a save that still held the old list.
+  const { showError: toastError, showSuccess: toastSuccess } = useSnackbar();
+  const savedSignup = useSavedSignup(signupOf(tournament?.settings, tournament?.teamSize));
+  const signup = tournament ? savedSignup.value : form.signup;
+  const [savingSignup, setSavingSignup] = useState(false);
+  const saveSignup = async () => {
+    setSavingSignup(true);
+    try {
+      await api.put('/api/tournament', {
+        settings: signupSettingsPatch(savedSignup.value),
+        teamSize: savedSignup.value.teamSize,
+      });
+      toastSuccess(t('tournament.setup.signup.saved'));
+      await props.onRefreshTeams();
+    } catch (error) {
+      toastError((error as Error).message);
+    } finally {
+      setSavingSignup(false);
+    }
+  };
+  const [changingTeams, setChangingTeams] = useState(false);
+  const changeTeams = async (next: string[]) => {
+    if (!tournament) {
+      handlers.onTeamsChange(next);
+      return;
+    }
+    const current = form.selectedTeams;
+    const added = next.filter((id) => !current.includes(id));
+    const removed = current.filter((id) => !next.includes(id));
+    setChangingTeams(true);
+    try {
+      for (const teamId of added) await api.post(`/api/tournaments/${tournament.id}/teams`, { teamId });
+      for (const teamId of removed) await api.delete(`/api/tournaments/${tournament.id}/teams/${encodeURIComponent(teamId)}`);
+    } catch (error) {
+      toastError((error as Error).message);
+    } finally {
+      setChangingTeams(false);
+      await props.onRefreshTeams();
+    }
+  };
+
 
   // ---- Templates ("Start from a template") ---------------------------------
   const [templates, setTemplates] = useState<TournamentTemplate[]>([]);
@@ -224,6 +280,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
     format: form.format,
     teamCount: form.selectedTeams.length,
     teamSize: form.shuffleSettings.teamSize,
+    signupOpen: tournament ? tournament.settings?.registrationOpen === true : form.signup.registrationOpen,
     // Only a step the game has: a game without match rules has nothing to check.
     moduleError: (step: 'rules' | 'content') =>
       (step === 'rules' ? RulesStep : ContentStep)
@@ -346,7 +403,9 @@ export function TournamentSetup(props: TournamentSetupProps) {
       : {
           key: 'signup',
           label: t('tournament.setup.summary.signUp'),
-          value: t('tournament.setup.summary.signUpOrganizer'),
+          value: signup.registrationOpen
+            ? t('tournament.setup.summary.signUpOpen', { size: signup.teamSize })
+            : t('tournament.setup.summary.signUpOrganizer'),
         },
     // The game's own rows (CS2: the map pool).
     ...gameSummary.rows,
@@ -586,6 +645,28 @@ export function TournamentSetup(props: TournamentSetupProps) {
           );
         }
         return (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <SignupSettings
+              value={signup}
+              onChange={tournament ? savedSignup.setValue : handlers.onSignupChange}
+              disabled={locked}
+              {...(tournament
+                ? { onSave: () => void saveSignup(), dirty: savedSignup.dirty, saving: savingSignup }
+                : {})}
+            />
+            {tournament && (
+              <TournamentTeamsList
+                tournamentId={tournament.id}
+                teamSize={tournament.teamSize ?? signup.teamSize}
+                teamKey={form.selectedTeams.join(',')}
+                canEdit={canEdit}
+                live={tournament.settings?.registrationOpen === true}
+                onRemoved={props.onRefreshTeams}
+              />
+            )}
+            <Typography variant="subtitle2">
+              {signup.registrationOpen ? t('tournament.setup.signup.addYourself') : t('tournament.setup.signup.pickTeams')}
+            </Typography>
           <TeamSelectionStep
             teams={props.teams}
             selectedTeams={form.selectedTeams}
@@ -599,13 +680,14 @@ export function TournamentSetup(props: TournamentSetupProps) {
             }
             loadingServers={needsServers && loadingServers}
             canEdit={canEdit}
-            saving={saving}
-            onTeamsChange={handlers.onTeamsChange}
+            saving={saving || changingTeams}
+            onTeamsChange={(next) => void changeTeams(next)}
             onCreateTeam={() => setTeamModalOpen(true)}
             onImportTeams={() => setTeamImportModalOpen(true)}
             onAddServer={() => setServerModalOpen(true)}
             onBatchAddServers={() => setBatchServerModalOpen(true)}
           />
+          </Box>
         );
 
       case 'maps': {

@@ -49,12 +49,29 @@ export default function TournamentTeamsTab() {
     .filter((team): team is NonNullable<typeof team> => !!team);
 
   if (teams.length === 0) {
+    const signupOpen = tournament.status === 'setup' && tournament.settings?.registrationOpen === true;
     return (
       <TabEmpty
         title={t('overviewPage.teamsTab.emptyTitle')}
-        description={t('overviewPage.teamsTab.emptyDescription')}
+        description={
+          signupOpen ? t('overviewPage.teamsTab.emptySignupOpen') : t('overviewPage.teamsTab.emptyDescription')
+        }
         data-testid="public-teams-empty"
-      />
+      >
+        {signupOpen && (
+          <Box sx={{ mt: 1 }}>
+            <Button
+              component={RouterLink}
+              to={tournamentTabPath(tournament.id, 'signup')}
+              variant="contained"
+              size="small"
+              data-testid="public-teams-signup"
+            >
+              {t('overviewPage.teamsTab.signUp')}
+            </Button>
+          </Box>
+        )}
+      </TabEmpty>
     );
   }
 

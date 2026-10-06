@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 520 of them, 340 behind auth —
+Every endpoint this API serves — 522 of them, 342 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -488,6 +488,8 @@ Every tournament: the list, creating another one, which is featured, archiving.
 | `PUT` | `/api/tournaments/:id/feature` | admin |
 | `DELETE` | `/api/tournaments/:id/feature` | admin |
 | `POST` | `/api/tournaments/:id/archive` | admin |
+| `POST` | `/api/tournaments/:id/teams` | admin |
+| `DELETE` | `/api/tournaments/:id/teams/:teamId` | admin |
 
 ### Chat
 

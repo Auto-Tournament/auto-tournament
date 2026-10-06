@@ -12,6 +12,10 @@ import {
   type EventPageFields,
 } from '../components/tournament/EventPageSettingsCard';
 import {
+  DEFAULT_SIGNUP,
+  signupSettingsPatch,
+} from '../components/tournament/setup/SignupSettings';
+import {
   TournamentSetup,
   type SetupFormHandlers,
   type SetupFormValues,
@@ -91,6 +95,7 @@ const DEFAULT_FORM: SetupFormValues = {
   eloTemplateId: DEFAULT_ELO_TEMPLATE_ID,
   plannedTeams: 8,
   eventPage: EMPTY_EVENT_PAGE,
+  signup: DEFAULT_SIGNUP,
 };
 
 const isEventPageEmpty = (fields: EventPageFields) =>
@@ -103,6 +108,17 @@ const grandFinalModeOf = (
   const stored = (tournament?.settings as { grandFinalMode?: string } | undefined)?.grandFinalMode;
   return stored === 'none' || stored === 'double' ? stored : 'simple';
 };
+
+/**
+ * The same without the teams and (outside shuffle) the players per team,
+ * which change on the Teams step without the rest of the form.
+ */
+const restKeyOf = (tournament: TournamentRecord) =>
+  formKeyOf({
+    ...tournament,
+    teamIds: [],
+    teamSize: tournament.type === 'shuffle' ? tournament.teamSize : undefined,
+  });
 
 /** The fields of a saved tournament the setup form edits, for "did the server copy change?". */
 const formKeyOf = (tournament: TournamentRecord) =>
@@ -400,12 +416,26 @@ const Tournament: React.FC = () => {
   // settings the form doesn't hold, so unsaved edits elsewhere survive it.
   const syncedKeyRef = useRef<string | null>(null);
   const syncedIdRef = useRef<number | null>(null);
+  /** The synced key with the teams left out (see below). */
+  const syncedRestRef = useRef<string | null>(null);
   useEffect(() => {
     if (loading) return;
     if (tournament) {
       const key = formKeyOf(tournament);
       if (key === syncedKeyRef.current) return;
       const isNewTournament = syncedIdRef.current !== tournament.id;
+      // Only its teams changed (added or removed on the Teams step, or a team
+      // signed up): take the new list and keep any other unsaved edits.
+      if (
+        !isNewTournament &&
+        syncedKeyRef.current !== null &&
+        restKeyOf(tournament) === syncedRestRef.current
+      ) {
+        syncedKeyRef.current = key;
+        setForm((prev) => ({ ...prev, selectedTeams: tournament.teamIds || [] }));
+        return;
+      }
+      syncedRestRef.current = restKeyOf(tournament);
       syncedKeyRef.current = key;
       syncedIdRef.current = tournament.id;
       setForm(formFromTournament(tournament));
@@ -453,6 +483,7 @@ const Tournament: React.FC = () => {
           teamSize: values.shuffleSettings?.teamSize ?? DEFAULT_FORM.shuffleSettings.teamSize,
         },
         eventPage: { ...EMPTY_EVENT_PAGE, ...(values.eventPage ?? {}) },
+        signup: { ...DEFAULT_SIGNUP, ...(values.signup ?? {}) },
       });
       // A draft saved for one game can hold a step the next game does not
       // have, so the bound is that game's own list.
@@ -580,6 +611,7 @@ const Tournament: React.FC = () => {
       onEloTemplateChange: (templateId) => patchForm({ eloTemplateId: templateId }),
       onPlannedTeamsChange: (count) => patchForm({ plannedTeams: count }),
       onEventPageChange: (fields) => patchForm({ eventPage: fields }),
+      onSignupChange: (fields) => patchForm({ signup: fields }),
     }),
     // handleTypeChange reads grandFinalModePicked and the saved tournament.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -627,16 +659,20 @@ const Tournament: React.FC = () => {
       return;
     }
 
-    // Validate team count for non-shuffle tournaments
-    const validation = validateTeamCountForType(type, selectedTeams.length, t);
-    if (!validation.isValid) {
-      showError(validation.error || t('tournament.toasts.invalidTeamCount'));
-      return;
-    }
+    // Validate team count for a new tournament the organizer fills. With
+    // sign-up open, or once it exists (teams change on the Teams step), the
+    // count is checked at start.
+    if (!tournament && !form.signup.registrationOpen) {
+      const validation = validateTeamCountForType(type, selectedTeams.length, t);
+      if (!validation.isValid) {
+        showError(validation.error || t('tournament.toasts.invalidTeamCount'));
+        return;
+      }
 
-    if (selectedTeams.length === 0) {
-      showError(t('tournament.toasts.selectAtLeastTwoTeams'));
-      return;
+      if (selectedTeams.length === 0) {
+        showError(t('tournament.toasts.selectAtLeastTwoTeams'));
+        return;
+      }
     }
 
     // Check for changes if editing
@@ -805,8 +841,9 @@ const Tournament: React.FC = () => {
         autoAdvance: true,
         checkInRequired: false,
         seedingMethod: 'random',
-        // Event page fields filled in before the tournament existed.
+        // Event page and sign-up fields filled in before the tournament existed.
         ...(isEventPageEmpty(form.eventPage) ? {} : form.eventPage),
+        ...signupSettingsPatch(form.signup),
       };
 
       // Keep every existing setting the setup doesn't show (seeding, third
@@ -828,7 +865,10 @@ const Tournament: React.FC = () => {
         // Only on create: the API's update route does not take a game, and a
         // tournament's matches were built by the module that owns it.
         ...(tournament ? {} : { game: form.game }),
-        teamIds: selectedTeams,
+        // A saved tournament's teams change one at a time on the Teams step
+        // (teams may be signing up meanwhile), so only a new one sends them.
+        ...(tournament ? {} : { teamIds: selectedTeams }),
+        ...(tournament || !form.signup.registrationOpen ? {} : { teamSize: form.signup.teamSize }),
         settings,
       };
 
@@ -1072,7 +1112,8 @@ const Tournament: React.FC = () => {
 
       // For any status-bearing update, refresh tournament data so the page
       // can move into the correct view (setup vs live).
-      if (data.status) {
+      // A team signing up or withdrawing changes the teams the checklist counts.
+      if (data.status || data.action === 'tournament_updated') {
         void refreshDataRef.current();
       }
     };

@@ -151,6 +151,11 @@ export interface CreateTournamentInput {
   format: MatchFormat;
   maps: string[];
   teamIds: string[];
+  /**
+   * Players per team for a team tournament (1-10): how many starters a team
+   * that signs itself up picks. Shuffle tournaments set it on their own route.
+   */
+  teamSize?: number;
   settings?: Partial<TournamentSettings>;
   // Optional global round-limit settings (applies to all tournament types).
   // For shuffle, maxRounds/overtime settings are provided via the dedicated shuffle endpoint.
@@ -173,6 +178,11 @@ export interface UpdateTournamentInput {
   format?: MatchFormat;
   maps?: string[];
   teamIds?: string[];
+  /**
+   * Players per team for a team tournament (1-10): how many starters a team
+   * that signs itself up picks. Shuffle tournaments set it on their own route.
+   */
+  teamSize?: number;
   settings?: Partial<TournamentSettings>;
   maxRounds?: number;
   overtimeMode?: 'enabled' | 'disabled';

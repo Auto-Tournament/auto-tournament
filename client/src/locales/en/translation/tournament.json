@@ -588,7 +588,8 @@
         "players_other": "{{count}} players",
         "maps": "Maps",
         "mapsRounds": "{{maps}} · {{rounds}}",
-        "notSet": "Not set"
+        "notSet": "Not set",
+        "signUpOpen": "Teams sign up · {{size}} per team"
       },
       "checklist": {
         "title": "Before you can start",
@@ -638,6 +639,29 @@
           "auto_confirm": "Take the report",
           "escalate": "Ask an admin"
         }
+      },
+      "signup": {
+        "how": "How do teams get in?",
+        "organizer": "Only teams I add",
+        "open": "Teams can sign up",
+        "organizerHelp": "You pick every team. Nobody can sign up from the tournament page.",
+        "openHelp": "A team's owner or captain signs up with a lineup from the tournament page, and the lineup checks in on the day. You can still add teams yourself below.",
+        "teamSize": "Players per team",
+        "teamSizeHelp": "Starters a team picks when it signs up (up to 2 subs on top).",
+        "maxTeamsHelp": "Empty: no limit.",
+        "save": "Save sign-up settings",
+        "saved": "Sign-up settings saved",
+        "inTournament": "In the tournament ({{count}})",
+        "signedUp": "Signed up",
+        "addedByYou": "Added by you",
+        "lineup": "{{starters}} of {{size}} starters",
+        "checkedIn": "{{count}} checked in",
+        "remove": "Remove",
+        "removed": "{{team}} is out of the tournament",
+        "noneYet": "No teams yet. They show up here as they sign up.",
+        "noTeams": "No teams yet.",
+        "addYourself": "Add teams yourself",
+        "pickTeams": "Pick the teams"
       }
     },
     "startButton": {
@@ -809,7 +833,9 @@
       "emptyTitle": "No teams yet",
       "emptyDescription": "Teams appear here once the organizer adds them.",
       "yours": "Your team",
-      "record": "{{wins}}–{{losses}}"
+      "record": "{{wins}}–{{losses}}",
+      "emptySignupOpen": "Sign-up is open. Teams show up here as they sign up.",
+      "signUp": "Sign up your team"
     },
     "allMatches": "All matches",
     "keyDates": {

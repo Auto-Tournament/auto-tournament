@@ -18,6 +18,7 @@ import {
   TournamentArchiveError,
 } from '../services/currentTournament';
 import { tournamentService } from '../services/tournamentService';
+import { SignupError, tournamentSignupService } from '../services/tournamentSignupService';
 import type { DbTournamentRow } from '../types/database.types';
 import { log } from '../utils/logger';
 import { resolveTournamentId, tournamentRowToResponse } from '../utils/tournamentRow';
@@ -285,5 +286,66 @@ router.post('/:id/archive', requireAuth, async (req: Request, res: Response) => 
     return res.status(500).json({ success: false, error: 'Failed to archive the tournament' });
   }
 });
+
+/**
+ * @openapi
+ * /api/tournaments/{id}/teams:
+ *   post:
+ *     tags:
+ *       - Tournament
+ *     summary: Add a team to a tournament by hand (before it starts), next to the teams that signed up
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { type: object, required: [teamId], properties: { teamId: { type: string } } }
+ *     responses:
+ *       200:
+ *         description: "{ teamIds }"
+ *       404:
+ *         description: No such tournament or team
+ *       409:
+ *         description: Already started
+ * /api/tournaments/{id}/teams/{teamId}:
+ *   delete:
+ *     tags:
+ *       - Tournament
+ *     summary: Take a team out of a tournament (before it starts); its sign-up, lineup and check-ins go too
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: "{ teamIds }"
+ *       409:
+ *         description: Already started
+ */
+function teamAction(action: (id: number, teamId: string) => Promise<string[]>, teamIdOf: (req: Request) => unknown) {
+  return async (req: Request, res: Response) => {
+    try {
+      const id = Number(req.params.id);
+      const teamId = teamIdOf(req);
+      if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ success: false, error: 'Bad tournament id' });
+      if (typeof teamId !== 'string' || !teamId) return res.status(400).json({ success: false, error: 'teamId is required' });
+      return res.json({ success: true, teamIds: await action(id, teamId) });
+    } catch (error) {
+      if (error instanceof SignupError) return res.status(error.status).json({ success: false, error: error.message });
+      log.error('Error changing a tournament\'s teams', { error });
+      return res.status(500).json({ success: false, error: 'Failed to change the teams' });
+    }
+  };
+}
+
+router.post(
+  '/:id/teams',
+  requireAuth,
+  teamAction((id, teamId) => tournamentSignupService.adminAdd(id, teamId), (req) => req.body?.teamId)
+);
+router.delete(
+  '/:id/teams/:teamId',
+  requireAuth,
+  teamAction((id, teamId) => tournamentSignupService.adminRemove(id, teamId), (req) => req.params.teamId)
+);
 
 export default router;
