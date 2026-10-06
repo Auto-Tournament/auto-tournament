@@ -24,6 +24,7 @@ import mapRoutes from '../maps/routes';
 import mapPoolRoutes from '../maps/poolRoutes';
 import matchConnectRoutes from './matchConnect';
 import playerProfileRoutes from './playerProfile';
+import demoAnalysisRoutes from './demoAnalysis';
 import teamProfileRoutes from './teamProfile';
 import roundBackupRoutes from './roundBackups';
 import { failoverMatchRouter, failoverSettingsRouter } from './failover';
@@ -123,6 +124,15 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     router: playerProfileRoutes,
     title: 'Player profile',
     description: "A player's CS2 totals, everyone's totals to compare with, and their results per map.",
+  },
+  {
+    // The worker's routes take an API token (requireAuth on each); a map's
+    // analysis and replay are public, like its demo.
+    prefix: '/api/game/cs2',
+    router: demoAnalysisRoutes,
+    title: 'Demo analysis',
+    description:
+      'The worker container reads stored demos after the match: its job queue, and each map\'s rounds, kills and 2D replay.',
   },
   {
     // Public, like the player profile route above.

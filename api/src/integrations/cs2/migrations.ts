@@ -94,6 +94,7 @@ export const CS2_SERVER_TOURNAMENT_USE_MIGRATION_ID = '016-server-tournament-use
 export const CS2_SERVER_SKINS_MIGRATION_ID = '017-server-skins';
 export const CS2_SKINS_MIGRATION_ID = '018-skins';
 export const CS2_PLAYER_MAP_STATS_MIGRATION_ID = '019-player-map-stats';
+export const CS2_DEMO_ANALYSIS_MIGRATION_ID = '020-demo-analysis';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -942,6 +943,49 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
     );
 
     CREATE INDEX IF NOT EXISTS cs2_player_map_stats_player_idx ON cs2_player_map_stats(player_id);
+`,
+  },
+  {
+    // Demo analysis (demos/jobs.ts): the worker container reads each stored
+    // demo after the match and fills in what live events don't carry.
+    id: CS2_DEMO_ANALYSIS_MIGRATION_ID,
+    up: `
+    -- What only the demo gives, next to the map stats Ready Up sends.
+    -- source: 'fleet' (Ready Up's map_result) or 'demo' (only the demo had it).
+    ALTER TABLE cs2_player_map_stats ADD COLUMN IF NOT EXISTS source TEXT NOT NULL DEFAULT 'fleet';
+    ALTER TABLE cs2_player_map_stats ADD COLUMN IF NOT EXISTS demo_analyzed INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE cs2_player_map_stats ADD COLUMN IF NOT EXISTS traded_deaths INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE cs2_player_map_stats ADD COLUMN IF NOT EXISTS clutches_played INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE cs2_player_map_stats ADD COLUMN IF NOT EXISTS utility_damage INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE cs2_player_map_stats ADD COLUMN IF NOT EXISTS money_spent INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE cs2_player_map_stats ADD COLUMN IF NOT EXISTS shots INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE cs2_player_map_stats ADD COLUMN IF NOT EXISTS hits INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE cs2_player_map_stats ADD COLUMN IF NOT EXISTS spray_shots INTEGER NOT NULL DEFAULT 0; -- 4th bullet of a spray on
+    ALTER TABLE cs2_player_map_stats ADD COLUMN IF NOT EXISTS spray_hits INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE cs2_player_map_stats ADD COLUMN IF NOT EXISTS crosshair_angle_sum REAL NOT NULL DEFAULT 0; -- degrees off the head before a duel's first shot, summed
+    ALTER TABLE cs2_player_map_stats ADD COLUMN IF NOT EXISTS crosshair_samples INTEGER NOT NULL DEFAULT 0;
+
+    -- One job per stored demo map; the worker claims, analyzes and reports.
+    CREATE TABLE IF NOT EXISTS cs2_demo_jobs (
+      match_slug TEXT NOT NULL,
+      map_number INTEGER NOT NULL, -- 0-based
+      demo_path TEXT NOT NULL, -- under DEMOS_DIR
+      status TEXT NOT NULL DEFAULT 'pending', -- pending | running | done | failed
+      attempts INTEGER NOT NULL DEFAULT 0,
+      worker TEXT,
+      claimed_at INTEGER,
+      finished_at INTEGER,
+      error TEXT,
+      analyzer_version INTEGER,
+      map_name TEXT,
+      rounds TEXT, -- JSON RoundInfo[]
+      kills TEXT, -- JSON KillInfo[]
+      replay_path TEXT, -- gzip JSON under DATA_DIR/demo-replays
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      PRIMARY KEY (match_slug, map_number)
+    );
+
+    CREATE INDEX IF NOT EXISTS cs2_demo_jobs_status_idx ON cs2_demo_jobs(status, created_at);
 `,
   },
 ];

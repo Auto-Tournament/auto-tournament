@@ -43,6 +43,14 @@ interface Detail {
   multiKills: number[];
   ct: { rounds: number; won: number };
   t: { rounds: number; won: number };
+  /** From the demo (the worker); null until one of theirs was read. */
+  aim: {
+    accuracy: number | null;
+    sprayAccuracy: number | null;
+    /** Degrees off the enemy's head when they came into view; lower is better. */
+    crosshairDegrees: number | null;
+    moneyPerRound: number;
+  } | null;
 }
 
 interface ProfileResponse {
@@ -442,6 +450,84 @@ function DetailRow({ mine, avg }: { mine: Detail | null; avg: Detail | null }) {
         </Panel>
       </Box>
       {!mine && <Small>{t('profile.readyUpOnly')}</Small>}
+      <AimRow aim={mine?.aim ?? null} avg={avg?.aim ?? null} />
+    </>
+  );
+}
+
+/**
+ * Aim and economy, from the demos the worker read: crosshair placement,
+ * accuracy, spray control and money spent per round, against everyone.
+ */
+function AimRow({ aim, avg }: { aim: Detail['aim']; avg: Detail['aim'] }) {
+  const { t } = useModuleTranslation('cs2');
+  const pct = (v: number | null | undefined) =>
+    v === null || v === undefined ? '—' : `${Math.round(v * 100)}%`;
+  const tiles: Array<{ key: string; label: string; value: string; note: string | null }> = [
+    {
+      key: 'crosshair',
+      label: t('profile.crosshair'),
+      value: aim?.crosshairDegrees != null ? `${aim.crosshairDegrees.toFixed(1)}°` : '—',
+      note:
+        avg?.crosshairDegrees != null
+          ? t('profile.average', { value: `${avg.crosshairDegrees.toFixed(1)}°` })
+          : t('profile.crosshairNote'),
+    },
+    {
+      key: 'accuracy',
+      label: t('profile.accuracy'),
+      value: pct(aim?.accuracy),
+      note: avg?.accuracy != null ? t('profile.average', { value: pct(avg.accuracy) }) : null,
+    },
+    {
+      key: 'spray',
+      label: t('profile.spray'),
+      value: pct(aim?.sprayAccuracy),
+      note:
+        avg?.sprayAccuracy != null
+          ? t('profile.average', { value: pct(avg.sprayAccuracy) })
+          : t('profile.sprayNote'),
+    },
+    {
+      key: 'money',
+      label: t('profile.moneyPerRound'),
+      value: aim ? `$${aim.moneyPerRound.toLocaleString()}` : '—',
+      note: avg ? t('profile.average', { value: `$${avg.moneyPerRound.toLocaleString()}` }) : null,
+    },
+  ];
+  return (
+    <>
+      <Box
+        data-testid="cs2-profile-aim"
+        sx={{
+          mt: 1.5,
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: 'minmax(0, 1fr)',
+            sm: 'repeat(2, minmax(0, 1fr))',
+            md: 'repeat(4, minmax(0, 1fr))',
+          },
+          gap: 1.5,
+        }}
+      >
+        {tiles.map((tile) => (
+          <Panel
+            key={tile.key}
+            sx={{
+              p: 2.5,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1.5,
+              borderStyle: aim ? undefined : 'dashed',
+            }}
+          >
+            <Label>{tile.label}</Label>
+            <Big>{tile.value}</Big>
+            {tile.note && <Small>{tile.note}</Small>}
+          </Panel>
+        ))}
+      </Box>
+      {!aim && <Small>{t('profile.demoOnly')}</Small>}
     </>
   );
 }

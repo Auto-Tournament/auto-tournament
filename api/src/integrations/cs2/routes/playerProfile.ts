@@ -105,6 +105,14 @@ interface DetailRow {
   ct_rounds_won: number | string | null;
   t_rounds: number | string | null;
   t_rounds_won: number | string | null;
+  demo_rounds: number | string | null;
+  money_spent: number | string | null;
+  shots: number | string | null;
+  hits: number | string | null;
+  spray_shots: number | string | null;
+  spray_hits: number | string | null;
+  crosshair_angle_sum: number | string | null;
+  crosshair_samples: number | string | null;
 }
 
 const DETAIL_SELECT = `
@@ -116,7 +124,11 @@ const DETAIL_SELECT = `
     SUM(multi_1k) AS multi_1k, SUM(multi_2k) AS multi_2k, SUM(multi_3k) AS multi_3k,
     SUM(multi_4k) AS multi_4k, SUM(multi_5k) AS multi_5k,
     SUM(ct_rounds) AS ct_rounds, SUM(ct_rounds_won) AS ct_rounds_won,
-    SUM(t_rounds) AS t_rounds, SUM(t_rounds_won) AS t_rounds_won
+    SUM(t_rounds) AS t_rounds, SUM(t_rounds_won) AS t_rounds_won,
+    SUM(CASE WHEN demo_analyzed = 1 THEN rounds_played ELSE 0 END) AS demo_rounds,
+    SUM(money_spent) AS money_spent, SUM(shots) AS shots, SUM(hits) AS hits,
+    SUM(spray_shots) AS spray_shots, SUM(spray_hits) AS spray_hits,
+    SUM(crosshair_angle_sum) AS crosshair_angle_sum, SUM(crosshair_samples) AS crosshair_samples
   FROM cs2_player_map_stats
 `;
 
@@ -145,6 +157,17 @@ function detail(row: DetailRow | undefined) {
     multiKills: [t.multi_2k, t.multi_3k, t.multi_4k, t.multi_5k],
     ct: { rounds: num(row.ct_rounds), won: num(row.ct_rounds_won) },
     t: { rounds: num(row.t_rounds), won: num(row.t_rounds_won) },
+    // From the demo (the worker): null until a demo of theirs was read.
+    aim: num(row.demo_rounds)
+      ? {
+          accuracy: num(row.shots) ? num(row.hits) / num(row.shots) : null,
+          sprayAccuracy: num(row.spray_shots) ? num(row.spray_hits) / num(row.spray_shots) : null,
+          crosshairDegrees: num(row.crosshair_samples)
+            ? Math.round((num(row.crosshair_angle_sum) / num(row.crosshair_samples)) * 10) / 10
+            : null,
+          moneyPerRound: Math.round(num(row.money_spent) / num(row.demo_rounds)),
+        }
+      : null,
   };
 }
 

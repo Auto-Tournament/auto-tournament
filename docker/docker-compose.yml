@@ -83,6 +83,24 @@ services:
     networks:
       - auto-tournament-network
 
+  # The demo worker (worker/README.md): reads each match's demos after the
+  # match for trades, aim, money and the 2D replay. Opt in with
+  #   COMPOSE_PROFILES=worker docker compose up -d
+  # It authenticates with the first of API_TOKENS in .env.
+  auto-tournament-worker:
+    image: sivertio/auto-tournament-worker:next
+    container_name: auto-tournament-worker
+    restart: unless-stopped
+    profiles: ['worker']
+    depends_on:
+      - auto-tournament
+    env_file:
+      - ../.env
+    environment:
+      - AT_URL=http://auto-tournament:3000
+    networks:
+      - auto-tournament-network
+
 networks:
   auto-tournament-network:
     driver: bridge
