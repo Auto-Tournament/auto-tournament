@@ -15,44 +15,47 @@ export interface GameSwitchProps {
 }
 
 /**
- * Pill switch for which of the player's games the stats below describe.
+ * The profile's tabs (draft A2): Overview, which counts every game, then one
+ * tab per game the player has match data for. `selectedId` is '' for
+ * Overview, else the game's id.
  *
- * Only games the player has recorded match data for are offered (see the
- * `games` list on `/api/players/:id/summary`, derived from the match `game`
- * column via the integrations registry — never a hard-coded game name).
- *
- * With a single game there is nothing to switch, so it renders as one
- * non-interactive, already-selected pill instead of a pointless toggle.
+ * Games come from the `games` list on `/api/players/:id/summary`, derived
+ * from the match `game` column via the integrations registry, never a
+ * hard-coded game name. With no games there is nothing to choose.
  */
 export function GameSwitch({ games, selectedId, onSelect }: GameSwitchProps) {
   const { t } = useTranslation();
   if (games.length === 0) return null;
 
-  const single = games.length === 1;
+  const tabs: Array<{ id: string; name: string; mark?: string }> = [
+    { id: '', name: t('playerPage.tabs.overview') },
+    ...games.map((game) => ({ id: game.id, name: game.name, mark: gameMonogram(game.name) })),
+  ];
 
   return (
     <Box
-      role="group"
+      role="tablist"
       aria-label={t('playerPage.gameSwitchLabel')}
       data-testid="profile-game-switch"
       sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}
     >
-      {games.map((game) => {
-        const selected = game.id === selectedId;
+      {tabs.map((tab) => {
+        const selected = tab.id === selectedId;
         return (
           <Box
-            key={game.id}
-            component={single ? 'div' : 'button'}
-            type={single ? undefined : 'button'}
-            aria-pressed={selected}
-            onClick={single ? undefined : () => onSelect(game.id)}
-            data-testid={`profile-game-switch-${game.id}`}
+            key={tab.id || 'overview'}
+            component="button"
+            type="button"
+            role="tab"
+            aria-selected={selected}
+            onClick={() => onSelect(tab.id)}
+            data-testid={`profile-game-switch-${tab.id || 'overview'}`}
             sx={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: 1,
-              px: 1.25,
-              py: 0.5,
+              px: 1.5,
+              py: 0.625,
               borderRadius: radii.pill,
               border: '1px solid',
               borderColor: selected ? 'text.secondary' : 'divider',
@@ -60,30 +63,33 @@ export function GameSwitch({ games, selectedId, onSelect }: GameSwitchProps) {
               color: selected ? 'text.primary' : 'text.secondary',
               font: 'inherit',
               fontFamily: 'inherit',
-              fontSize: '0.8125rem',
+              fontSize: '0.875rem',
               fontWeight: 500,
-              cursor: single ? 'default' : 'pointer',
+              cursor: 'pointer',
               whiteSpace: 'nowrap',
+              '&:hover': { color: 'text.primary' },
             }}
           >
-            <Box
-              aria-hidden
-              sx={{
-                width: 22,
-                height: 22,
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                bgcolor: 'background.surface3',
-                fontFamily: fontDisplay,
-                fontWeight: 700,
-                fontSize: '0.625rem',
-              }}
-            >
-              {gameMonogram(game.name)}
-            </Box>
-            {game.name}
+            {tab.mark && (
+              <Box
+                aria-hidden
+                sx={{
+                  width: 22,
+                  height: 22,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: 'background.surface3',
+                  fontFamily: fontDisplay,
+                  fontWeight: 700,
+                  fontSize: '0.625rem',
+                }}
+              >
+                {tab.mark}
+              </Box>
+            )}
+            {tab.name}
           </Box>
         );
       })}

@@ -808,6 +808,7 @@
       "leaveQueue": "Leave the queue",
       "searching": "Searching for a match",
       "leaderQueues": "The leader starts the search"
-    }
+    },
+    "back": "Back"
   }
 }

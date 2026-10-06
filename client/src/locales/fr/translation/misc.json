@@ -808,6 +808,7 @@
       "leaveQueue": "Quitter la file",
       "searching": "Recherche d’un match",
       "leaderQueues": "Le chef lance la recherche"
-    }
+    },
+    "back": "Retour"
   }
 }

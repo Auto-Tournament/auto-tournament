@@ -83,7 +83,10 @@
       "leaderboard": "Resultatliste"
     },
     "gameSwitchLabel": "Spill",
-    "yourMatch": "Din kamp"
+    "yourMatch": "Din kamp",
+    "tabs": {
+      "overview": "Oversikt"
+    }
   },
   "teamPage": {
     "tournamentFinished": "Turneringen er ferdig",

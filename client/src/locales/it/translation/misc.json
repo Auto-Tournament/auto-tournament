@@ -808,6 +808,7 @@
       "leaveQueue": "Esci dalla coda",
       "searching": "Ricerca partita",
       "leaderQueues": "Il leader avvia la ricerca"
-    }
+    },
+    "back": "Indietro"
   }
 }

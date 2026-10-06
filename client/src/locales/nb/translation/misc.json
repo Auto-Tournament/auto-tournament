@@ -808,6 +808,7 @@
       "leaveQueue": "Forlat køen",
       "searching": "Søker etter kamp",
       "leaderQueues": "Lederen starter søket"
-    }
+    },
+    "back": "Tilbake"
   }
 }
