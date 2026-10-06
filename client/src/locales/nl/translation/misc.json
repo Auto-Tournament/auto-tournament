@@ -759,6 +759,31 @@
     "peekMatch": "Match · {{title}}",
     "peekTeam": "Team",
     "peekParty": "Party",
-    "buttonUnread": "Chat, {{count}} unread"
+    "buttonUnread": "Chat, {{count}} unread",
+    "system": {
+      "vetoStarted": "Veto gestart · {{team}} begint",
+      "vetoBan": "{{team}} bande {{map}}",
+      "vetoPick": "{{team}} koos {{map}}",
+      "vetoSide": "{{team}} begint {{side}} op {{map}}",
+      "vetoDone": "Veto klaar · {{maps}}",
+      "serverReady": "Server klaar · {{map}} · join via de wedstrijdpagina",
+      "playerJoined": "{{name}} zit op de server · {{n}} binnen",
+      "playerLeft": "{{name}} verliet de server · {{n}} binnen",
+      "mapLive": "Map {{n}} is bezig · {{map}}",
+      "mapResult": "Map {{n}} · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
+      "seriesWon": "{{team}} wint de serie {{a}}–{{b}}",
+      "adminCalled": "{{name}} riep een admin",
+      "timedOut": "tijd om"
+    },
+    "party": {
+      "inviteCopied": "Uitnodigingslink gekopieerd",
+      "inviteFailed": "Kon de link niet kopiëren",
+      "leader": "leider",
+      "invite": "Uitnodigen",
+      "queue": "Samen zoeken",
+      "leaveQueue": "Wachtrij verlaten",
+      "searching": "Zoeken naar een wedstrijd",
+      "leaderQueues": "De leider start het zoeken"
+    }
   }
 }

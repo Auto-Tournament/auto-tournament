@@ -5,6 +5,7 @@
 
 import { emitMatchUpdate } from './socketService';
 import { log } from '../utils/logger';
+import { postMatchChatLine } from './matchChatLines';
 
 export interface ConnectedPlayer {
   steamId: string;
@@ -54,6 +55,7 @@ class PlayerConnectionService {
         isReady: false,
       });
       log.debug(`Player connected: ${name} (${steamId})`, { matchSlug, team });
+      void postMatchChatLine(matchSlug, 'playerJoined', { name, n: players.length });
     }
 
     this.emitUpdate(matchSlug);
@@ -71,6 +73,7 @@ class PlayerConnectionService {
       const player = players[index];
       log.debug(`Player disconnected: ${player.name} (${steamId})`, { matchSlug });
       players.splice(index, 1);
+      void postMatchChatLine(matchSlug, 'playerLeft', { name: player.name, n: players.length });
       this.emitUpdate(matchSlug);
     }
   }

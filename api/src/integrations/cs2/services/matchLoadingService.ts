@@ -5,7 +5,8 @@
 
 import { db } from '../../../config/database';
 import { rconService } from './rconService';
-import { emitMatchUpdate, emitBracketUpdate } from '../../../services/socketService';
+import { emitMatchUpdate, emitBracketUpdate, postMatchChatLine } from '../../../services/socketService';
+import { firstMapOf } from '../utils/firstMap';
 import { log } from '../../../utils/logger';
 import type { DbMatchRow } from '../../../types/database.types';
 import type { MatchConfig } from '../../../types/match.types';
@@ -355,6 +356,7 @@ export async function loadMatchOnServer(
         [matchSlug]
       );
       log.matchLoaded(matchSlug, serverId, true);
+      void postMatchChatLine(matchSlug, 'serverReady', { map: firstMapOf(match) });
       const updatedMatch = await db.queryOneAsync<DbMatchRow>(
         'SELECT * FROM matches WHERE slug = ?',
         [matchSlug]
@@ -439,6 +441,7 @@ export async function loadMatchOnServer(
         [matchSlug]
       );
       log.matchLoaded(matchSlug, serverId, true);
+      void postMatchChatLine(matchSlug, 'serverReady', { map: firstMapOf(match) });
 
       // Emit websocket events to notify clients
       const updatedMatch = await db.queryOneAsync<DbMatchRow>(

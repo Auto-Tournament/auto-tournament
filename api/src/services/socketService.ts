@@ -310,3 +310,17 @@ export function emitChatMessage(playerIds: Iterable<string>, toAdmins: boolean, 
   if (toAdmins) rooms.push(ADMIN_ROOM);
   if (rooms.length > 0) io.to(rooms).emit('chat:message', message);
 }
+
+/**
+ * A platform line in a match's chat (veto steps, the server being ready),
+ * for a game module: it reaches core through this bridged module.
+ * See ./matchChatLines.ts.
+ */
+export async function postMatchChatLine(
+  slug: string,
+  key: import('./matchChatLines').MatchChatKey,
+  params: Record<string, string | number | boolean | string[]> = {}
+): Promise<void> {
+  const lines = await import('./matchChatLines');
+  await lines.postMatchChatLine(slug, key, params);
+}
