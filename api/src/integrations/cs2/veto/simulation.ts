@@ -3,6 +3,7 @@ import { log } from '../../../utils/logger';
 import type { DbMatchRow, DbTournamentRow } from '../../../types/database.types';
 import type { TournamentResponse } from '../../../types/tournament.types';
 import { getVetoOrder } from './config';
+import { postVetoProgress } from './chatLines';
 import { emitVetoUpdate } from '../../../services/socketService';
 import { settingsService } from '../../../services/settingsService';
 import { buildMatchConfigFor, serializeMatchConfig } from '../../../utils/matchIntegration';
@@ -389,6 +390,7 @@ async function runAutoVeto(
       matchSlug,
     ]);
     emitVetoUpdate(matchSlug, vetoState);
+    if (vetoState.currentStep <= vetoState.totalSteps) void postVetoProgress(matchSlug, vetoState);
 
     // Check for completion
     if (vetoState.currentStep > vetoState.totalSteps) {
@@ -415,6 +417,7 @@ async function runAutoVeto(
       );
       emitVetoUpdate(matchSlug, vetoState);
 
+      void postVetoProgress(matchSlug, vetoState);
       log.success(`[VETO-SIM] Automated veto completed for match ${matchSlug}`, {
         pickedMaps: vetoState.pickedMaps.map((m) => m.mapName),
       });

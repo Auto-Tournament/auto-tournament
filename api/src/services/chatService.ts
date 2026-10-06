@@ -14,6 +14,7 @@ import { db } from '../config/database';
 import { describeMatch } from '../utils/matchIntegration';
 import { emitChatMessage } from './socketService';
 import { recordAdminCall } from './adminCallService';
+import { chatLineBody } from './matchChatLines';
 
 export type ChatKind = 'match' | 'team' | 'party';
 
@@ -345,7 +346,7 @@ export const chatService = {
       message: note.replace(/\s+/g, ' ').trim(),
       calledAt: now,
     });
-    await this.system(channel, `${name ?? 'A player'} called an admin`);
+    await this.system(channel, chatLineBody('adminCalled', { name: name ?? '' }));
   },
 
   async markRead(viewer: ChatViewer, channel: string, lastId: number): Promise<void> {
