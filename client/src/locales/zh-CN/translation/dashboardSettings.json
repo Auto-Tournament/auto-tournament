@@ -532,7 +532,8 @@
       "featured": "Featured",
       "shown": "Shown",
       "hidden": "Hidden",
-      "archived": "Archived"
+      "archived": "Archived",
+      "results": "结果"
     },
     "won": "{{name}} won",
     "selected": "selected",
@@ -558,7 +559,16 @@
     "blankHint": "Pick the game, format and maps in the setup",
     "copy": "Copy {{name}}",
     "copyHint": "Same format, maps, rules and page. Teams and dates start empty.",
-    "create": "Create and set up"
+    "create": "Create and set up",
+    "round": "第 {{n}} 轮",
+    "whenToday": "今天 {{time}} 起",
+    "whenTomorrow": "明天 {{time}}",
+    "notSet": "未设置",
+    "emptyTitle": "还没有比赛",
+    "template": "模板",
+    "templateHint": "已保存的设置：赛制、地图和规则。队伍和日期由你选择。",
+    "copyOne": "复制一个比赛",
+    "copyWhich": "哪一个"
   },
   "playedMatches": {
     "title": "All matches",

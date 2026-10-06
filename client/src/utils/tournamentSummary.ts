@@ -16,13 +16,24 @@ export function formatBadge(format: string): string {
   return known?.label ?? format;
 }
 
-/** "8 teams · Single elimination · Bo1" */
+/** "5v5 · Single elimination · Bo3": team size (when set), type, series format. */
 export function formatLine(t: TFunction, tournament: TournamentSummary): string {
   return [
-    t('browsePage.teamsCount', { count: tournament.teamCount }),
+    tournament.teamSize ? `${tournament.teamSize}v${tournament.teamSize}` : null,
     t(`tournament.typeSelector.types.${tournament.type}.label`),
     formatBadge(tournament.format),
-  ].join(' · ');
+  ]
+    .filter(Boolean)
+    .join(' · ');
+}
+
+/** "12 / 16 players", "5 / 8 teams", or "8 teams" without a cap; players for a shuffle. */
+export function entriesLine(t: TFunction, tournament: TournamentSummary): string {
+  const n = tournament.entries ?? tournament.teamCount;
+  const key = tournament.type === 'shuffle' ? 'browsePage.entries.players' : 'browsePage.entries.teams';
+  return tournament.maxEntries
+    ? t(`${key}Of`, { count: n, max: tournament.maxEntries })
+    : t(key, { count: n });
 }
 
 /** "Sat 5 Apr, 14:00" in the UI language. */

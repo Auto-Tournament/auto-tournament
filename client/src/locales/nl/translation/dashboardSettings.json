@@ -532,7 +532,8 @@
       "featured": "Featured",
       "shown": "Shown",
       "hidden": "Hidden",
-      "archived": "Archived"
+      "archived": "Archived",
+      "results": "Uitslagen"
     },
     "won": "{{name}} won",
     "selected": "selected",
@@ -558,7 +559,16 @@
     "blankHint": "Pick the game, format and maps in the setup",
     "copy": "Copy {{name}}",
     "copyHint": "Same format, maps, rules and page. Teams and dates start empty.",
-    "create": "Create and set up"
+    "create": "Create and set up",
+    "round": "ronde {{n}}",
+    "whenToday": "Vandaag, vanaf {{time}}",
+    "whenTomorrow": "Morgen, {{time}}",
+    "notSet": "Niet ingesteld",
+    "emptyTitle": "Nog geen toernooien",
+    "template": "Een sjabloon",
+    "templateHint": "Een opgeslagen opzet: format, maps en regels. Teams en data kies jij.",
+    "copyOne": "Een toernooi kopiëren",
+    "copyWhich": "Welke"
   },
   "playedMatches": {
     "title": "All matches",

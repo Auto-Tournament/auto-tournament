@@ -22,6 +22,7 @@ import { SignupError, tournamentSignupService } from '../services/tournamentSign
 import type { DbTournamentRow } from '../types/database.types';
 import { log } from '../utils/logger';
 import { resolveTournamentId, tournamentRowToResponse } from '../utils/tournamentRow';
+import { getEffectiveViewerSteamId } from '../utils/viewerIdentity';
 import tournamentRoutes from './tournament';
 
 const router = Router();
@@ -50,6 +51,14 @@ export interface TournamentListItem {
   archived: boolean;
   /** Setup with sign-up closed: only admins see it. */
   draft: boolean;
+  /** While it runs: the lowest round with a match not finished yet (the stage it is at). */
+  currentRound: number | null;
+  /** Matches loaded or live right now. */
+  liveMatchCount: number;
+  /** Players per team (5 for 5v5), when set. */
+  teamSize: number | null;
+  /** The viewer plays in it: their team is in it or signed up, or they are in a lineup or the shuffle pool. */
+  mine: boolean;
 }
 
 function startOf(settings: Record<string, unknown>, startedAt: number | undefined): number | null {
@@ -62,7 +71,27 @@ function startOf(settings: Record<string, unknown>, startedAt: number | undefine
   return startedAt ?? null;
 }
 
-async function listItems(includeDrafts: boolean): Promise<TournamentListItem[]> {
+/** The viewer's teams and the tournaments they are in by name (lineups, the shuffle pool). */
+async function viewerEntries(steamId: string | null): Promise<{ teams: Set<string>; tournaments: Set<number> }> {
+  if (!steamId) return { teams: new Set(), tournaments: new Set() };
+  const teams = await db.queryAsync<{ team_id: string }>(
+    'SELECT tm.team_id FROM team_members tm JOIN players p ON p.uid = tm.account_uid WHERE p.id = ?',
+    [steamId]
+  );
+  const named = await db.queryAsync<{ tournament_id: number }>(
+    `SELECT tournament_id FROM tournament_lineups WHERE player_id = ?
+     UNION SELECT tournament_id FROM shuffle_tournament_players WHERE player_id = ?
+     UNION SELECT r.tournament_id FROM tournament_registrations r
+             JOIN team_members tm ON tm.team_id = r.team_id
+             JOIN players p ON p.uid = tm.account_uid
+            WHERE p.id = ?`,
+    [steamId, steamId, steamId]
+  );
+  return { teams: new Set(teams.map((t) => t.team_id)), tournaments: new Set(named.map((n) => Number(n.tournament_id))) };
+}
+
+async function listItems(includeDrafts: boolean, viewerSteamId: string | null = null): Promise<TournamentListItem[]> {
+  const viewer = await viewerEntries(viewerSteamId);
   const rows = await db.queryAsync<DbTournamentRow>('SELECT * FROM tournament ORDER BY id DESC');
   const featuredId = resolveTournamentId();
   const out: TournamentListItem[] = [];
@@ -90,6 +119,25 @@ async function listItems(includeDrafts: boolean): Promise<TournamentListItem[]> 
 
     const winner =
       t.status === 'completed' ? await tournamentService.getTournamentWinner(t.id, t.type, []).catch(() => null) : null;
+    const currentRound =
+      t.status === 'in_progress'
+        ? ((
+            await db.queryOneAsync<{ r: number | null }>(
+              `SELECT MIN(round) AS r FROM matches WHERE tournament_id = ? AND round > 0 AND status <> 'completed'`,
+              [t.id]
+            )
+          )?.r ?? null)
+        : null;
+    const liveMatchCount =
+      t.status === 'in_progress'
+        ? ((
+            await db.queryOneAsync<{ n: number }>(
+              `SELECT COUNT(*)::int AS n FROM matches WHERE tournament_id = ? AND status IN ('loaded', 'live')`,
+              [t.id]
+            )
+          )?.n ?? 0)
+        : 0;
+    const mine = viewer.tournaments.has(t.id) || (t.teamIds ?? []).some((id) => viewer.teams.has(id));
 
     out.push({
       id: t.id,
@@ -111,6 +159,10 @@ async function listItems(includeDrafts: boolean): Promise<TournamentListItem[]> 
       featured: t.id === featuredId,
       archived: Boolean(row.archived_at),
       draft,
+      currentRound: currentRound === null ? null : Number(currentRound),
+      liveMatchCount,
+      teamSize: typeof (t as { teamSize?: unknown }).teamSize === 'number' ? (t as { teamSize: number }).teamSize : null,
+      mine,
     });
   }
   return out;
@@ -136,7 +188,7 @@ router.get('/', async (req: Request, res: Response) => {
     const admin = (await checkAdminAccess(req)).ok;
     return res.json({
       success: true,
-      tournaments: await listItems(admin),
+      tournaments: await listItems(admin, await getEffectiveViewerSteamId(req)),
       featuredId: resolveTournamentId(),
       // The id a new tournament gets: the setup page creates at it.
       ...(admin ? { nextId: await nextTournamentId() } : {}),

@@ -532,7 +532,8 @@
       "featured": "Featured",
       "shown": "Shown",
       "hidden": "Hidden",
-      "archived": "Archived"
+      "archived": "Archived",
+      "results": "Resultados"
     },
     "won": "{{name}} won",
     "selected": "selected",
@@ -558,7 +559,16 @@
     "blankHint": "Pick the game, format and maps in the setup",
     "copy": "Copy {{name}}",
     "copyHint": "Same format, maps, rules and page. Teams and dates start empty.",
-    "create": "Create and set up"
+    "create": "Create and set up",
+    "round": "ronda {{n}}",
+    "whenToday": "Hoje, a partir das {{time}}",
+    "whenTomorrow": "Amanhã, {{time}}",
+    "notSet": "Não definido",
+    "emptyTitle": "Ainda não há torneios",
+    "template": "Um modelo",
+    "templateHint": "Uma configuração guardada: formato, mapas e regras. Escolhe equipas e datas.",
+    "copyOne": "Copiar um torneio",
+    "copyWhich": "Qual"
   },
   "playedMatches": {
     "title": "All matches",

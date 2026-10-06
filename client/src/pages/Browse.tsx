@@ -20,8 +20,9 @@ import { EmptyPanel, LiveChip, PageHead } from '../components/common/ui';
 import { useTournamentList, type TournamentSummary } from '../hooks/useTournamentList';
 import { useAuth } from '../contexts/AuthContext';
 import { paths } from '../paths';
-import { formatLine, tournamentAction, tournamentWhen } from '../utils/tournamentSummary';
-import { tokens, fontDisplay, radii, textSize } from '../theme/tokens';
+import { entriesLine, formatLine, tournamentAction, tournamentWhen } from '../utils/tournamentSummary';
+import { eliminationRoundCount, getRoundLabel } from '../utils/matchUtils';
+import { tokens, fontDisplay, fontMono, radii, textSize, withAlpha } from '../theme/tokens';
 
 const { color } = tokens;
 
@@ -118,6 +119,7 @@ export default function Browse() {
   const [game, setGame] = useState('all');
   const [status, setStatus] = useState<StatusFilter>('all');
   const [where, setWhere] = useState<WhereFilter>('all');
+  const [mineOnly, setMineOnly] = useState(false);
 
   useEffect(() => {
     document.title = pageTitle(t('browsePage.title'));
@@ -140,7 +142,9 @@ export default function Browse() {
   }, [tournaments]);
 
   const showWhereFilter = useMemo(() => tournaments.some((tour) => !!tour.location), [tournaments]);
+  const hasMine = tournaments.some((tour) => tour.mine);
   const filtersActive =
+    mineOnly ||
     search.trim() !== '' ||
     game !== 'all' ||
     status !== 'all' ||
@@ -157,6 +161,7 @@ export default function Browse() {
       ) {
         return false;
       }
+      if (mineOnly && !tour.mine) return false;
       if (game !== 'all' && tour.game !== game) return false;
       if (status !== 'all' && statusBucket(tour) !== status) return false;
       if (showWhereFilter && where !== 'all') {
@@ -166,7 +171,7 @@ export default function Browse() {
       }
       return true;
     });
-  }, [tournaments, search, game, status, where, showWhereFilter]);
+  }, [tournaments, search, game, status, where, showWhereFilter, mineOnly]);
 
   const [showAllFinished, setShowAllFinished] = useState(false);
   const groups = useMemo(
@@ -185,6 +190,7 @@ export default function Browse() {
   );
 
   const clearFilters = () => {
+    setMineOnly(false);
     setSearch('');
     setGame('all');
     setStatus('all');
@@ -221,6 +227,30 @@ export default function Browse() {
             role="search"
             sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center', mb: 3 }}
           >
+            {hasMine && (
+              <Box role="group" aria-label={t('browsePage.mine.label')} sx={{ display: 'flex', p: 0.5, borderRadius: radii.pill, bgcolor: color.paper2, border: `1px solid ${color.rule}` }}>
+                {[false, true].map((value) => (
+                  <Button
+                    key={String(value)}
+                    size="small"
+                    aria-pressed={mineOnly === value}
+                    onClick={() => setMineOnly(value)}
+                    data-testid={value ? 'browse-mine' : 'browse-all'}
+                    sx={{
+                      borderRadius: radii.pill,
+                      px: 2,
+                      minWidth: 0,
+                      textTransform: 'none',
+                      bgcolor: mineOnly === value ? color.ink : 'transparent',
+                      color: mineOnly === value ? color.accentInk : color.ink2,
+                      '&:hover': { bgcolor: mineOnly === value ? color.ink : color.paper3 },
+                    }}
+                  >
+                    {value ? t('browsePage.mine.mine') : t('browsePage.mine.all')}
+                  </Button>
+                ))}
+              </Box>
+            )}
             <FilterField grow>
               <MagnifyingGlassIcon size={18} aria-hidden />
               <InputBase
@@ -456,11 +486,18 @@ export default function Browse() {
                               border: `1px solid ${group.key === 'live' ? color.accent : color.rule}`,
                             }}
                           >
-                            <GameMark
-                              name={tournament.game ?? tournament.name}
-                              slug={tournament.game}
-                              size={56}
-                            />
+                            {tournament.bannerUrl ? (
+                              <Box
+                                aria-hidden
+                                sx={{ width: 56, height: 56, borderRadius: radii.md, backgroundImage: `url(${tournament.bannerUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                              />
+                            ) : (
+                              <GameMark
+                                name={tournament.game ?? tournament.name}
+                                slug={tournament.game}
+                                size={56}
+                              />
+                            )}
                             <Box sx={{ minWidth: 0 }}>
                               <Box
                                 component="b"
@@ -508,23 +545,50 @@ export default function Browse() {
                               ]}
                             >
                               {when.kind === 'live' ? (
-                                <LiveChip label={t('browsePage.status.live')} />
+                                <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                                  <LiveChip label={t('browsePage.status.live')} />
+                                  {tournament.currentRound ? (
+                                    <span data-testid={`browse-stage-${tournament.id}`}>
+                                      {tournament.type === 'single_elimination' || tournament.type === 'double_elimination'
+                                        ? getRoundLabel(tournament.currentRound, eliminationRoundCount(tournament.teamCount, tournament.type))
+                                        : t('browsePage.roundN', { n: tournament.currentRound })}
+                                    </span>
+                                  ) : null}
+                                </Box>
                               ) : (
                                 when.text
                               )}
+                              <Box
+                                component="span"
+                                data-testid={`browse-entries-${tournament.id}`}
+                                sx={{ display: 'block', mt: 0.5, fontFamily: fontMono, fontSize: textSize.xs, color: color.muted }}
+                              >
+                                {entriesLine(t, tournament)}
+                              </Box>
                             </Box>
                             <Box
                               sx={[STACKED_CELL_SX, { justifySelf: { xs: 'start', md: 'end' } }]}
                             >
-                              <Button
-                                component={RouterLink}
-                                to={action.to}
-                                variant={action.primary ? 'contained' : 'outlined'}
-                                data-testid={`browse-action-${tournament.id}`}
-                                sx={{ borderRadius: radii.pill, px: 2.5 }}
-                              >
-                                {t(`browsePage.actions.${action.key}`)}
-                              </Button>
+                              {action.key === 'signUp' && tournament.mine ? (
+                                <Button
+                                  component={RouterLink}
+                                  to={action.to}
+                                  data-testid={`browse-action-${tournament.id}`}
+                                  sx={{ borderRadius: radii.pill, px: 2.5, bgcolor: withAlpha(color.pick, 0.14), color: color.pick, '&:hover': { bgcolor: withAlpha(color.pick, 0.22) } }}
+                                >
+                                  {t('browsePage.actions.youreIn')}
+                                </Button>
+                              ) : (
+                                <Button
+                                  component={RouterLink}
+                                  to={action.to}
+                                  variant={action.primary ? 'contained' : 'outlined'}
+                                  data-testid={`browse-action-${tournament.id}`}
+                                  sx={{ borderRadius: radii.pill, px: 2.5 }}
+                                >
+                                  {t(`browsePage.actions.${action.key}`)}
+                                </Button>
+                              )}
                             </Box>
                           </Box>
                         );

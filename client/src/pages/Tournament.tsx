@@ -381,6 +381,9 @@ const Tournament: React.FC = () => {
         if (response.success && response.template) {
           // Templates opened by link don't bring their teams.
           applyTemplate(response.template, { withTeams: false });
+          // The name typed in New tournament wins over the template's.
+          const presetName = new URLSearchParams(window.location.search).get('name');
+          if (presetName) setForm((prev) => ({ ...prev, name: presetName.slice(0, 100) }));
         }
       } catch (error) {
         console.error('Error loading template:', error);
@@ -463,6 +466,13 @@ const Tournament: React.FC = () => {
     draftRestoredRef.current = true;
     // A template link fills the form itself.
     if (searchParams.get('template')) return;
+    // New tournament with a name (the Tournaments page): a fresh form under
+    // that name, not an older draft.
+    const presetName = searchParams.get('name');
+    if (presetName) {
+      setForm({ ...DEFAULT_FORM, name: presetName.slice(0, 100) });
+      return;
+    }
     try {
       const saved = sessionStorage.getItem(STORAGE_KEY);
       if (!saved) return;

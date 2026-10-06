@@ -290,7 +290,8 @@
     "actions": {
       "signUp": "Sign up",
       "watch": "Watch",
-      "results": "Results"
+      "results": "Results",
+      "youreIn": "Ci sei"
     },
     "emptyNone": {
       "title": "No tournaments yet",
@@ -308,7 +309,21 @@
       "finished": "Finished"
     },
     "showOlder_one": "Show {{count}} older",
-    "showOlder_other": "Show {{count}} older"
+    "showOlder_other": "Show {{count}} older",
+    "mine": {
+      "label": "Quali tornei",
+      "all": "Tutti",
+      "mine": "I miei"
+    },
+    "roundN": "Turno {{n}}",
+    "entries": {
+      "teams_one": "{{count}} squadra",
+      "teams_other": "{{count}} squadre",
+      "teamsOf": "{{count}} / {{max}} squadre",
+      "players_one": "{{count}} giocatore",
+      "players_other": "{{count}} giocatori",
+      "playersOf": "{{count}} / {{max}} giocatori"
+    }
   },
   "modulesPage": {
     "title": "Modules",

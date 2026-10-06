@@ -532,7 +532,8 @@
       "featured": "Fremhevet",
       "shown": "Vises",
       "hidden": "Skjult",
-      "archived": "Arkivert"
+      "archived": "Arkivert",
+      "results": "Resultater"
     },
     "won": "{{name}} vant",
     "selected": "valgt",
@@ -558,7 +559,16 @@
     "blankHint": "Velg spill, format og kart i oppsettet",
     "copy": "Kopier {{name}}",
     "copyHint": "Samme format, kart, regler og side. Lag og datoer starter tomme.",
-    "create": "Opprett og sett opp"
+    "create": "Opprett og sett opp",
+    "round": "runde {{n}}",
+    "whenToday": "I dag, fra {{time}}",
+    "whenTomorrow": "I morgen, {{time}}",
+    "notSet": "Ikke satt",
+    "emptyTitle": "Ingen turneringer ennå",
+    "template": "En mal",
+    "templateHint": "Et lagret oppsett: format, kart og regler. Du velger lag og datoer.",
+    "copyOne": "Kopier en turnering",
+    "copyWhich": "Hvilken"
   },
   "playedMatches": {
     "title": "Alle kamper",

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -18,6 +18,8 @@ import {
 } from '@mui/material';
 import { DotsThreeIcon, PlusIcon, StarIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
+import { eliminationRoundCount, getRoundLabel } from '../utils/matchUtils';
 import { PageHead } from '../components/common/ui';
 import ConfirmDialog from '../components/modals/ConfirmDialog';
 import { useAdminTournament, type TournamentListItem } from '../contexts/AdminTournamentContext';
@@ -36,10 +38,29 @@ function statusTone(t: TournamentListItem): { label: string; fg: string; bg: str
   return { label: 'draft', fg: color.ink2, bg: color.paper3 };
 }
 
-function when(t: TournamentListItem, locale: string): string {
+/** "semis", "round 2": the stage a running tournament is at. */
+function stageOf(t: TournamentListItem, tr: TFunction): string | null {
+  if (t.status !== 'in_progress' || !t.currentRound) return null;
+  return t.type === 'single_elimination' || t.type === 'double_elimination'
+    ? getRoundLabel(t.currentRound, eliminationRoundCount(t.entries, t.type as never)).toLowerCase()
+    : tr('tournamentsPage.round', { n: t.currentRound });
+}
+
+/** "Today, from 13:00", "Tomorrow, 18:00", "Fri 9 Oct, 20:00"; empty without a date. */
+function when(t: TournamentListItem, locale: string, tr: TFunction): string {
   const at = t.status === 'completed' ? t.completedAt : (t.startsAt ?? t.startedAt);
   if (!at) return '';
-  return new Date(at * 1000).toLocaleString(locale, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const date = new Date(at * 1000);
+  const time = date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+  const day = new Date(date);
+  day.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diff = Math.round((day.getTime() - today.getTime()) / 86_400_000);
+  if (t.status === 'completed') return date.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
+  if (diff === 0) return tr('tournamentsPage.whenToday', { time });
+  if (diff === 1) return tr('tournamentsPage.whenTomorrow', { time });
+  return date.toLocaleString(locale, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
 
 /**
@@ -95,7 +116,16 @@ export default function Tournaments() {
       />
 
       {tournaments.length === 0 ? (
-        <Typography color="text.secondary">{t('tournamentsPage.empty')}</Typography>
+        <Box
+          data-testid="tournaments-empty"
+          sx={{ border: `1px dashed ${color.rule}`, borderRadius: radii.lg, p: { xs: 3, md: 5 }, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1.5 }}
+        >
+          <Typography sx={{ fontWeight: 600 }}>{t('tournamentsPage.emptyTitle')}</Typography>
+          <Typography color="text.secondary">{t('tournamentsPage.empty')}</Typography>
+          <Button variant="contained" startIcon={<PlusIcon />} onClick={() => setCreating(true)}>
+            {t('tournamentsPage.new')}
+          </Button>
+        </Box>
       ) : (
         <Box role="table" aria-label={t('tournamentsPage.title')} sx={{ border: `1px solid ${color.rule}`, borderRadius: radii.lg, overflow: 'hidden' }}>
           <Box role="row" sx={{ display: { xs: 'none', md: 'grid' }, gridTemplateColumns: 'minmax(0, 1.6fr) 150px 190px 110px 120px 44px', gap: 2, px: 2.5, py: 1.5, bgcolor: color.paper2, fontSize: '0.8125rem', color: color.muted }}>
@@ -130,7 +160,7 @@ export default function Tournaments() {
                     {x.name}
                   </Box>
                   <Typography variant="caption" color="text.secondary" display="block">
-                    {[x.format.toUpperCase(), t(`tournament.typeSelector.types.${x.type}.label`, { defaultValue: x.type }), x.winner ? t('tournamentsPage.won', { name: x.winner.name }) : null, selected ? t('tournamentsPage.selected') : null]
+                    {[x.teamSize ? `${x.teamSize}v${x.teamSize}` : x.format.toUpperCase(), t(`tournament.typeSelector.types.${x.type}.label`, { defaultValue: x.type }), x.winner ? t('tournamentsPage.won', { name: x.winner.name }) : null, selected ? t('tournamentsPage.selected') : null]
                       .filter(Boolean)
                       .join(' · ')}
                   </Typography>
@@ -138,15 +168,25 @@ export default function Tournaments() {
                 <Box role="cell" sx={{ display: { xs: 'none', md: 'block' } }}>
                   <Box component="span" sx={{ px: 1.25, py: 0.5, borderRadius: radii.pill, bgcolor: tone.bg, color: tone.fg, fontSize: '0.8125rem', fontWeight: 600 }}>
                     {t(`tournamentsPage.status.${tone.label}`)}
+                    {stageOf(x, t) ? ` · ${stageOf(x, t)}` : ''}
                   </Box>
                 </Box>
-                <Box role="cell" sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.875rem', color: color.ink2 }}>{when(x, i18n.language) || '—'}</Box>
+                <Box role="cell" sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.875rem', color: color.ink2 }}>{when(x, i18n.language, t) || t('tournamentsPage.notSet')}</Box>
                 <Box role="cell" sx={{ display: { xs: 'none', md: 'block' }, fontFamily: fontMono, fontSize: '0.875rem' }}>
                   {x.maxEntries ? `${x.entries} / ${x.maxEntries}` : x.entries}
                 </Box>
                 <Box role="cell" sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 0.75, fontSize: '0.875rem', color: x.id === featuredId ? color.medalGold : color.ink2 }}>
                   {x.id === featuredId && <StarIcon weight="fill" size={16} />}
-                  {x.id === featuredId
+                  {x.status === 'completed' && x.id !== featuredId ? (
+                    <Box
+                      component={RouterLink}
+                      to={tournamentTabPath(x.id, 'standings')}
+                      data-testid={`tournaments-results-${x.id}`}
+                      sx={{ color: color.medalGold, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                    >
+                      {t('tournamentsPage.front.results')}
+                    </Box>
+                  ) : x.id === featuredId
                     ? t('tournamentsPage.front.featured')
                     : x.archived
                       ? t('tournamentsPage.front.archived')
@@ -201,10 +241,15 @@ export default function Tournaments() {
         open={creating}
         onClose={() => setCreating(false)}
         tournaments={tournaments}
-        onBlank={() => {
+        onBlank={(name) => {
           setCreating(false);
           if (nextId) select(nextId);
-          navigate(paths.tournament);
+          navigate(name ? `${paths.tournament}?name=${encodeURIComponent(name)}` : paths.tournament);
+        }}
+        onTemplate={(templateId, name) => {
+          setCreating(false);
+          if (nextId) select(nextId);
+          navigate(`${paths.tournament}?template=${templateId}${name ? `&name=${encodeURIComponent(name)}` : ''}`);
         }}
         onCopied={async (id) => {
           setCreating(false);
@@ -217,35 +262,61 @@ export default function Tournaments() {
   );
 }
 
-/** New tournament (board 4b): a name and where to start from. */
+/** New tournament (board 4b): a name, then where to start from: blank, a template or a copy. */
 function NewTournamentDialog({
   open,
   onClose,
   tournaments,
   onBlank,
+  onTemplate,
   onCopied,
 }: {
   open: boolean;
   onClose: () => void;
   tournaments: TournamentListItem[];
-  onBlank: () => void;
+  onBlank: (name: string) => void;
+  onTemplate: (templateId: number, name: string) => void;
   onCopied: (id: number) => void | Promise<void>;
 }) {
   const { t } = useTranslation();
   const { showError } = useSnackbar();
   const [name, setName] = useState('');
-  const [from, setFrom] = useState<string>('blank');
+  const [from, setFrom] = useState<'blank' | 'template' | 'copy'>('blank');
+  const [templates, setTemplates] = useState<Array<{ id: number; name: string; format?: string; type?: string }>>([]);
+  const [templateId, setTemplateId] = useState<number | ''>('');
+  const [copyId, setCopyId] = useState<number | ''>(tournaments[0]?.id ?? '');
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    api
+      .get<{ templates: Array<{ id: number; name: string; format?: string; type?: string }> }>('/api/templates')
+      .then((r) => {
+        if (cancelled) return;
+        setTemplates(r.templates ?? []);
+        setTemplateId((current) => current || (r.templates?.[0]?.id ?? ''));
+      })
+      .catch(() => !cancelled && setTemplates([]));
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
 
   const create = async () => {
     if (from === 'blank') {
-      onBlank();
+      onBlank(name.trim());
       return;
     }
+    if (from === 'template') {
+      if (templateId) onTemplate(Number(templateId), name.trim());
+      return;
+    }
+    if (!copyId) return;
     setBusy(true);
     try {
       const r = await api.post<{ tournament: { id: number } }>('/api/tournaments', {
-        copyFrom: Number(from),
+        copyFrom: Number(copyId),
         ...(name.trim() ? { name: name.trim() } : {}),
       });
       await onCopied(r.tournament.id);
@@ -256,6 +327,27 @@ function NewTournamentDialog({
     }
   };
 
+  const option = (value: 'blank' | 'template' | 'copy', title: string, hint: string, extra?: React.ReactNode) => (
+    <Box
+      sx={{ p: 1.5, borderRadius: radii.md, border: `1px solid ${from === value ? color.accent : color.rule}`, bgcolor: from === value ? color.paper2 : 'transparent' }}
+    >
+      <FormControlLabel
+        value={value}
+        control={<Radio />}
+        label={
+          <Box>
+            <Typography fontWeight={600}>{title}</Typography>
+            <Typography variant="caption" color="text.secondary">
+              {hint}
+            </Typography>
+          </Box>
+        }
+        sx={{ m: 0, alignItems: 'flex-start', '& .MuiRadio-root': { pt: 0.25 } }}
+      />
+      {from === value && extra ? <Box sx={{ mt: 1.25, pl: 4.5 }}>{extra}</Box> : null}
+    </Box>
+  );
+
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" data-testid="new-tournament-dialog">
       <DialogTitle>{t('tournamentsPage.new')}</DialogTitle>
@@ -264,20 +356,54 @@ function NewTournamentDialog({
           label={t('tournamentsPage.newName')}
           value={name}
           onChange={(e) => setName(e.target.value)}
-          disabled={from === 'blank'}
-          helperText={from === 'blank' ? t('tournamentsPage.newNameBlank') : ' '}
+          autoFocus
           fullWidth
+          inputProps={{ maxLength: 100, 'data-testid': 'new-tournament-name' }}
         />
-        <RadioGroup value={from} onChange={(e) => setFrom(e.target.value)} aria-label={t('tournamentsPage.startFrom')}>
-          <FormControlLabel value="blank" control={<Radio />} label={<Box><Typography fontWeight={600}>{t('tournamentsPage.blank')}</Typography><Typography variant="caption" color="text.secondary">{t('tournamentsPage.blankHint')}</Typography></Box>} />
-          {tournaments.slice(0, 6).map((x) => (
-            <FormControlLabel
-              key={x.id}
-              value={String(x.id)}
-              control={<Radio />}
-              label={<Box><Typography fontWeight={600}>{t('tournamentsPage.copy', { name: x.name })}</Typography><Typography variant="caption" color="text.secondary">{t('tournamentsPage.copyHint')}</Typography></Box>}
-            />
-          ))}
+        <RadioGroup value={from} onChange={(e) => setFrom(e.target.value as typeof from)} aria-label={t('tournamentsPage.startFrom')} sx={{ display: 'grid', gap: 1 }}>
+          {option('blank', t('tournamentsPage.blank'), t('tournamentsPage.blankHint'))}
+          {templates.length > 0 &&
+            option(
+              'template',
+              t('tournamentsPage.template'),
+              t('tournamentsPage.templateHint'),
+              <TextField
+                select
+                size="small"
+                fullWidth
+                label={t('tournamentsPage.template')}
+                value={templateId}
+                onChange={(e) => setTemplateId(Number(e.target.value))}
+                inputProps={{ 'data-testid': 'new-tournament-template' }}
+              >
+                {templates.map((tpl) => (
+                  <MenuItem key={tpl.id} value={tpl.id}>
+                    {tpl.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          {tournaments.length > 0 &&
+            option(
+              'copy',
+              t('tournamentsPage.copyOne'),
+              t('tournamentsPage.copyHint'),
+              <TextField
+                select
+                size="small"
+                fullWidth
+                label={t('tournamentsPage.copyWhich')}
+                value={copyId}
+                onChange={(e) => setCopyId(Number(e.target.value))}
+                inputProps={{ 'data-testid': 'new-tournament-copy' }}
+              >
+                {tournaments.map((x) => (
+                  <MenuItem key={x.id} value={x.id}>
+                    {x.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
         </RadioGroup>
       </DialogContent>
       <DialogActions>
