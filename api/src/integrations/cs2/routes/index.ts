@@ -26,6 +26,7 @@ import matchConnectRoutes from './matchConnect';
 import playerProfileRoutes from './playerProfile';
 import demoAnalysisRoutes from './demoAnalysis';
 import radarRoutes from './radars';
+import highlightRoutes from './highlights';
 import teamProfileRoutes from './teamProfile';
 import roundBackupRoutes from './roundBackups';
 import { failoverMatchRouter, failoverSettingsRouter } from './failover';
@@ -134,6 +135,13 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     title: 'Demo analysis',
     description:
       'The worker container reads stored demos after the match: its job queue, and each map\'s rounds, kills and 2D replay.',
+  },
+  {
+    // A player's clips are public; the recorder's routes take an API token.
+    prefix: '/api/game/cs2',
+    router: highlightRoutes,
+    title: 'Highlights',
+    description: "Each player's best moments, picked from the demo analysis, and the clips the recorder makes of them.",
   },
   {
     // Reading is public (the 2D replay); the worker's upload takes an API token.

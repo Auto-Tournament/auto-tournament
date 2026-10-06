@@ -97,6 +97,7 @@ export const CS2_PLAYER_MAP_STATS_MIGRATION_ID = '019-player-map-stats';
 export const CS2_DEMO_ANALYSIS_MIGRATION_ID = '020-demo-analysis';
 export const CS2_DEMO_ANALYSIS_V2_MIGRATION_ID = '021-demo-analysis-v2';
 export const CS2_MAP_RADARS_MIGRATION_ID = '022-map-radars';
+export const CS2_HIGHLIGHTS_MIGRATION_ID = '023-highlights';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -1017,6 +1018,39 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       PRIMARY KEY (map, level)
     );
+`,
+  },
+  {
+    // Highlights (demos/highlights.ts): each player's best moments of a map,
+    // picked from its analysis, and the clip the recorder made of each.
+    id: CS2_HIGHLIGHTS_MIGRATION_ID,
+    up: `
+    CREATE TABLE IF NOT EXISTS cs2_highlights (
+      id SERIAL PRIMARY KEY,
+      match_slug TEXT NOT NULL,
+      map_number INTEGER NOT NULL,
+      player_id TEXT NOT NULL, -- Steam ID 64
+      kind TEXT NOT NULL, -- 'ace' | '4k' | '3k' | '2k' | 'clutch' | 'flair'
+      score INTEGER NOT NULL,
+      round INTEGER NOT NULL,
+      start_tick INTEGER NOT NULL,
+      end_tick INTEGER NOT NULL,
+      slowmo_tick INTEGER NOT NULL, -- the last kill: the slow motion lands here
+      kill_ticks TEXT NOT NULL, -- JSON number[]
+      title TEXT NOT NULL, -- "3 kills · AK-47 · round 14"
+      status TEXT NOT NULL DEFAULT 'pending', -- pending | recording | done | failed | skipped
+      attempts INTEGER NOT NULL DEFAULT 0,
+      recorder TEXT,
+      claimed_at INTEGER,
+      error TEXT,
+      clip_path TEXT, -- under DATA_DIR/highlights
+      clip_bytes BIGINT,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      UNIQUE (match_slug, map_number, player_id, start_tick)
+    );
+
+    CREATE INDEX IF NOT EXISTS cs2_highlights_player_idx ON cs2_highlights(player_id, score DESC);
+    CREATE INDEX IF NOT EXISTS cs2_highlights_status_idx ON cs2_highlights(status, score DESC);
 `,
   },
 ];
