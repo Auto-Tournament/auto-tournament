@@ -340,7 +340,7 @@ export const SCHEMA_MIGRATIONS: readonly SchemaMigration[] = [
   {
     id: '2026-10-06-tournament-archive',
     description:
-      'Let a finished tournament stay when a new one starts: drop the single-row CHECK (id = 1) on tournament',
+      'Let a finished tournament stay when a new one starts: drop the single-row CHECK on tournament ids',
     async up(client) {
       // The CHECK dates from 2.x, which hosted one tournament row. A finished
       // tournament is now archived (archived_at) and the next one gets the next
