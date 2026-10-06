@@ -121,7 +121,11 @@
       "empty": "Dette laget har ingen spillere ennå.",
       "rating": "Rating {{rating}}",
       "captain": "Kaptein",
-      "owner": "Eier"
+      "owner": "Eier",
+      "subLine_one": "Innbytter · {{count}} kamp med laget",
+      "subLine_other": "Innbytter · {{count}} kamper med laget",
+      "kd": "K/D {{kd}}",
+      "adr": "ADR {{adr}}"
     },
     "tournaments": {
       "title": "Turneringer",
@@ -141,7 +145,8 @@
         "ready": "Påmelding",
         "in_progress": "Pågår",
         "completed": "Ferdig"
-      }
+      },
+      "allMatches": "Alle kamper"
     },
     "headerLabel": "Lag",
     "captainLine": "kaptein {{name}}",
@@ -156,8 +161,13 @@
       "record": "Resultater",
       "last10": "Siste {{total}} kamper: {{won}} vunnet",
       "rounds": "Rundedifferanse",
-      "roundsNote": "{{won}} vunnet · {{lost}} tapt"
-    }
+      "roundsNote": "{{won}} vunnet · {{lost}} tapt",
+      "thisMonth": "{{delta}} denne måneden",
+      "trophies": "Troféer",
+      "noTrophies": "Ingen titler ennå"
+    },
+    "playingNow": "Spiller nå",
+    "watchMatch": "Se kampen"
   },
   "leaderboardPage": {
     "emptyTitle": "Ingen turneringstoppliste ennå",
@@ -462,7 +472,28 @@
     "tagHelp": "2 til 5 bokstaver eller tall, vises i hakeparentes og på resultattavler.",
     "cancel": "Avbryt",
     "createSubmit": "Lag laget",
-    "createFailed": "Laget kunne ikke lages."
+    "createFailed": "Laget kunne ikke lages.",
+    "invites": {
+      "title": "Laginvitasjoner",
+      "line": "{{team}} vil ha deg med",
+      "by": "Invitert av {{name}}",
+      "accept": "Bli med",
+      "decline": "Avslå"
+    },
+    "invitesPending_one": "{{count}} invitasjon venter",
+    "invitesPending_other": "{{count}} invitasjoner venter",
+    "gameFilter": "Spill",
+    "allGames": "Alle spill",
+    "sortLabel": "Sorter",
+    "sort": {
+      "rating": "Sorter: rating",
+      "name": "Sorter: navn",
+      "newest": "Sorter: nyeste"
+    },
+    "bestMap": "Best: {{map}}",
+    "new": "Nytt",
+    "lookingFor_one": "Søker {{count}}",
+    "lookingFor_other": "Søker {{count}}"
   },
   "teamManage": {
     "title": "Administrer laget",
@@ -506,7 +537,28 @@
     "disband": "Oppløs laget",
     "disbandTitle": "Oppløse laget?",
     "disbandConfirm": "{{name}} slettes for alle på laget. Dette kan ikke angres.",
-    "disbandHelp": "Tidligere kamper beholder resultatene sine."
+    "disbandHelp": "Tidligere kamper beholder resultatene sine.",
+    "game": "Spill",
+    "gameHelp": "Spillet laget mest spiller. Det kan fortsatt delta i alle turneringer.",
+    "noGame": "Ikke noe hovedspill",
+    "lineupCount_one": "{{starters}} av {{size}} startere · {{count}} innbytter",
+    "lineupCount_other": "{{starters}} av {{size}} startere · {{count}} innbyttere",
+    "positionFor": "Posisjon for {{name}}",
+    "noPosition": "Ingen posisjon",
+    "lineupFor": "Starter eller innbytter, {{name}}",
+    "lineup": {
+      "starter": "Starter",
+      "sub": "Innbytter"
+    },
+    "findPlayer": "Eller finn en spiller",
+    "findPlaceholder": "Navn, Steam-ID eller profillenke",
+    "find": "Finn",
+    "findNone": "Fant ingen spiller. De må logge inn her én gang først.",
+    "onTeam": "På laget",
+    "invited": "Invitert",
+    "invitePlayer": "Inviter",
+    "inviteSent": "Invitasjon sendt til {{name}}",
+    "cancelInvite": "Trekk tilbake invitasjonen til {{name}}"
   },
   "teamJoin": {
     "title": "Bli med i et lag",

@@ -17,7 +17,9 @@ const router = Router();
  */
 async function gameDisplayName(game: string): Promise<string> {
   if (hasIntegration(game)) return getIntegration(game).displayName;
-  const row = await db.queryOneAsync<{ name: string }>('SELECT name FROM games WHERE slug = ?', [game]);
+  const row = await db.queryOneAsync<{ name: string }>('SELECT name FROM games WHERE slug = ?', [
+    game,
+  ]);
   return row?.name ?? game;
 }
 
@@ -75,57 +77,75 @@ router.get('/:teamId/history', async (req: Request, res: Response) => {
       bracket: string | null;
     }>('SELECT id, slug, round, match_number, bracket FROM matches');
     const numbers = globalMatchNumbers(orderRows);
+    // The maps each series was played on, in order.
+    const slugs = matches.map((m) => m.slug);
+    const mapsBySlug = new Map<string, string[]>();
+    if (slugs.length) {
+      const mapRows = await db.queryAsync<{ match_slug: string; map_name: string | null }>(
+        'SELECT match_slug, map_name FROM match_map_results WHERE match_slug = ANY(?::text[]) ORDER BY match_slug, map_number',
+        [slugs]
+      );
+      for (const r of mapRows) {
+        if (!r.map_name) continue;
+        mapsBySlug.set(r.match_slug, [...(mapsBySlug.get(r.match_slug) ?? []), r.map_name]);
+      }
+    }
 
-    const history = await Promise.all(matches.map(async (match) => {
-      const isTeam1 = match.team1_id === teamId;
-      const opponent = isTeam1
-        ? { id: match.team2_id, name: match.team2_name, tag: match.team2_tag }
-        : { id: match.team1_id, name: match.team1_name, tag: match.team1_tag };
+    const history = await Promise.all(
+      matches.map(async (match) => {
+        const isTeam1 = match.team1_id === teamId;
+        const opponent = isTeam1
+          ? { id: match.team2_id, name: match.team2_name, tag: match.team2_tag }
+          : { id: match.team1_id, name: match.team1_name, tag: match.team1_tag };
 
-      const won = match.winner_id === teamId;
+        const won = match.winner_id === teamId;
 
-      // Get scores from latest series_end event
-      const scoreEvent = await db.queryOneAsync<DbEventRow>(
-        `SELECT event_data FROM match_events 
+        // Get scores from latest series_end event
+        const scoreEvent = await db.queryOneAsync<DbEventRow>(
+          `SELECT event_data FROM match_events 
          WHERE match_slug = ? AND event_type = 'series_end' 
          ORDER BY received_at DESC, id DESC LIMIT 1`,
-        [match.slug]
-      );
+          [match.slug]
+        );
 
-      let teamScore = 0;
-      let opponentScore = 0;
+        let teamScore = 0;
+        let opponentScore = 0;
 
-      if (scoreEvent) {
-        try {
-          const eventData = JSON.parse(scoreEvent.event_data);
-          const team1Score = eventData.team1_series_score || 0;
-          const team2Score = eventData.team2_series_score || 0;
-          
-          if (isTeam1) {
-            teamScore = team1Score;
-            opponentScore = team2Score;
-          } else {
-            teamScore = team2Score;
-            opponentScore = team1Score;
+        if (scoreEvent) {
+          try {
+            const eventData = JSON.parse(scoreEvent.event_data);
+            const team1Score = eventData.team1_series_score || 0;
+            const team2Score = eventData.team2_series_score || 0;
+
+            if (isTeam1) {
+              teamScore = team1Score;
+              opponentScore = team2Score;
+            } else {
+              teamScore = team2Score;
+              opponentScore = team1Score;
+            }
+          } catch {
+            // Ignore parse errors
           }
-        } catch {
-          // Ignore parse errors
         }
-      }
 
-      return {
-        slug: match.slug,
-        round: match.round,
-        matchNumber: match.match_number,
-        globalMatchNumber: numbers.get(match.slug) ?? match.match_number,
-        bracket: matchBracketOf(match),
-        opponent: opponent.id ? { id: opponent.id, name: opponent.name, tag: opponent.tag } : null,
-        won,
-        teamScore,
-        opponentScore,
-        completedAt: match.completed_at,
-      };
-    }));
+        return {
+          slug: match.slug,
+          round: match.round,
+          matchNumber: match.match_number,
+          globalMatchNumber: numbers.get(match.slug) ?? match.match_number,
+          bracket: matchBracketOf(match),
+          opponent: opponent.id
+            ? { id: opponent.id, name: opponent.name, tag: opponent.tag }
+            : null,
+          won,
+          teamScore,
+          opponentScore,
+          completedAt: match.completed_at,
+          maps: (mapsBySlug.get(match.slug) ?? []).filter(Boolean),
+        };
+      })
+    );
 
     return res.json({
       success: true,
@@ -269,4 +289,3 @@ router.get('/:teamId/stats', async (req: Request, res: Response) => {
 });
 
 export default router;
-

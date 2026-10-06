@@ -1733,5 +1733,13 @@
   "matchRules": {
     "title": "Kampregler",
     "subtitle": "Hva hver CS2-server får vite når en kamp starter."
+  },
+  "teamPositions": {
+    "rifler": "Rifler",
+    "awper": "AWPer",
+    "igl": "IGL",
+    "entry": "Entry",
+    "support": "Support",
+    "lurker": "Lurker"
   }
 }

@@ -1,7 +1,8 @@
 /**
  * Teams for players: the public team list, and a player's own teams.
  *
- * Teams belong to no game: one team plays every game the site runs. A player
+ * A team can play every game the site runs; `game` only names the one it
+ * mainly plays, for the team list. A player
  * can make a team and own at most one (the unique `teams.owner_uid` index),
  * and can be a member of any number. The maker becomes the team's owner and a
  * captain in `team_members`; the roster JSON (`teams.players`) starts with
@@ -13,13 +14,16 @@
  *
  * Running a team (services/teamSelfService.ts has who may do what):
  * GET    /:teamId/manage                    the owner view
- * PATCH  /:teamId                           name and tag
+ * PATCH  /:teamId                           name and tag, and/or game
  * PUT    /:teamId/logo, DELETE              the logo (PNG, JPEG or WEBP body)
  * GET    /:teamId/logo                      the logo, public
  * POST   /:teamId/invite                    a new invite link code
  * GET    /invite/:code, POST /invite/:code  the join page; ask to join
  * POST   /:teamId/requests/:uid/accept|decline
- * PATCH  /:teamId/members/:uid              role: captain | member (owner)
+ * PATCH  /:teamId/members/:uid              role: captain | member (owner);
+ *                                           position, lineup (owner, captains)
+ * POST   /:teamId/invites, DELETE /:uid     ask a player on by Steam ID; take it back
+ * POST   /:teamId/invites/answer            the invited player: { accept }
  * DELETE /:teamId/members/:uid              remove a member, or leave
  * POST   /:teamId/transfer                  make another member the owner
  * DELETE /:teamId                           disband (owner)
@@ -51,6 +55,7 @@ interface DirectoryRow {
   owner_uid: string | null;
   owner_name: string | null;
   logo_updated_at: number | null;
+  game: string | null;
   created_at: number | string;
 }
 
@@ -61,7 +66,80 @@ export interface DirectoryTeam {
   memberCount: number;
   ownerName: string | null;
   logoUrl: string | null;
+  game: string | null;
   createdAt: number;
+  /** The roster's average rating; null with no rated player. */
+  rating?: number | null;
+  record?: { wins: number; losses: number };
+  /** The map the team has won most, or null. */
+  bestMap?: string | null;
+}
+
+function rosterIds(players: string): string[] {
+  try {
+    const list = JSON.parse(players) as unknown;
+    return Array.isArray(list)
+      ? list.map((p) => (p as { steamId?: string }).steamId).filter((id): id is string => !!id)
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Rating, record and best map for the list's cards, in three queries. */
+async function withNumbers(rows: DirectoryRow[]): Promise<DirectoryTeam[]> {
+  const teams = rows.map(toDirectoryTeam);
+  if (rows.length === 0) return teams;
+  const ids = rows.map((r) => r.id);
+  const steamIds = [...new Set(rows.flatMap((r) => rosterIds(r.players)))];
+  const elo = new Map(
+    (steamIds.length
+      ? await db.queryAsync<{ id: string; current_elo: number }>(
+          'SELECT id, current_elo FROM players WHERE id = ANY(?::text[])',
+          [steamIds]
+        )
+      : []
+    ).map((p) => [p.id, Number(p.current_elo)])
+  );
+  const records = new Map(
+    (
+      await db.queryAsync<{ team_id: string; wins: string | number; played: string | number }>(
+        `SELECT x.team_id, SUM(CASE WHEN x.winner_id = x.team_id THEN 1 ELSE 0 END) AS wins, COUNT(*) AS played
+           FROM (SELECT team1_id AS team_id, winner_id FROM matches WHERE status = 'completed' AND winner_id IS NOT NULL
+                 UNION ALL
+                 SELECT team2_id AS team_id, winner_id FROM matches WHERE status = 'completed' AND winner_id IS NOT NULL) x
+          WHERE x.team_id = ANY(?::text[])
+          GROUP BY x.team_id`,
+        [ids]
+      )
+    ).map((r) => [r.team_id, { wins: Number(r.wins), losses: Number(r.played) - Number(r.wins) }])
+  );
+  const maps = await db.queryAsync<{ team_id: string; map_name: string; won: string | number }>(
+    `SELECT CASE WHEN r.winner_team = 'team1' THEN m.team1_id ELSE m.team2_id END AS team_id,
+            r.map_name, COUNT(*) AS won
+       FROM match_map_results r JOIN matches m ON m.slug = r.match_slug
+      WHERE r.map_name IS NOT NULL AND r.winner_team IN ('team1', 'team2')
+        AND (CASE WHEN r.winner_team = 'team1' THEN m.team1_id ELSE m.team2_id END) = ANY(?::text[])
+      GROUP BY 1, 2`,
+    [ids]
+  );
+  const best = new Map<string, { map: string; won: number }>();
+  for (const m of maps) {
+    const won = Number(m.won);
+    const current = best.get(m.team_id);
+    if (!current || won > current.won) best.set(m.team_id, { map: m.map_name, won });
+  }
+  return teams.map((team, i) => {
+    const rated = rosterIds(rows[i].players)
+      .map((id) => elo.get(id))
+      .filter((v): v is number => v !== undefined);
+    return {
+      ...team,
+      rating: rated.length ? Math.round(rated.reduce((a, b) => a + b, 0) / rated.length) : null,
+      record: records.get(team.id) ?? { wins: 0, losses: 0 },
+      bestMap: best.get(team.id)?.map ?? null,
+    };
+  });
 }
 
 function rosterSize(players: string): number {
@@ -81,12 +159,13 @@ function toDirectoryTeam(row: DirectoryRow): DirectoryTeam {
     memberCount: rosterSize(row.players),
     ownerName: row.owner_name,
     logoUrl: logoUrl(row.id, row.logo_updated_at),
+    game: row.game ?? null,
     createdAt: Number(row.created_at),
   };
 }
 
 const DIRECTORY_SELECT = `
-  SELECT t.id, t.name, t.tag, t.players, t.owner_uid, p.name AS owner_name, t.logo_updated_at, t.created_at
+  SELECT t.id, t.name, t.tag, t.players, t.owner_uid, p.name AS owner_name, t.logo_updated_at, t.game, t.created_at
     FROM teams t
     LEFT JOIN players p ON p.uid = t.owner_uid
 `;
@@ -117,7 +196,7 @@ function newTeamId(name: string): string {
 router.get('/', async (_req: Request, res: Response) => {
   try {
     const rows = await db.queryAsync<DirectoryRow>(`${DIRECTORY_SELECT} ORDER BY t.name`);
-    return res.json({ success: true, teams: rows.map(toDirectoryTeam) });
+    return res.json({ success: true, teams: await withNumbers(rows) });
   } catch (error) {
     log.error('[TeamDirectory] Failed to list teams', { error });
     return res.status(500).json({ success: false, error: 'Failed to list teams' });
@@ -143,13 +222,29 @@ router.get('/mine', async (req: Request, res: Response) => {
         )
       : [];
     const role = new Map(memberships.map((m) => [m.teamId, m.role]));
+    // Invites sent by name that the player has not answered yet, per team.
+    const pending = new Map(
+      (
+        await db.queryAsync<{ team_id: string; n: string | number }>(
+          'SELECT team_id, COUNT(*) AS n FROM team_invites WHERE team_id = ANY(?::text[]) GROUP BY team_id',
+          [[...ids, ...(owned ? [owned.id] : [])]]
+        )
+      ).map((r) => [r.team_id, Number(r.n)])
+    );
     return res.json({
       success: true,
       accountUid: viewer.uid,
-      owned: owned ? toDirectoryTeam(owned) : null,
+      owned: owned
+        ? { ...toDirectoryTeam(owned), pendingInvites: pending.get(owned.id) ?? 0 }
+        : null,
       memberOf: rows
         .filter((r) => r.id !== owned?.id)
-        .map((r) => ({ ...toDirectoryTeam(r), role: role.get(r.id) ?? 'member' })),
+        .map((r) => ({
+          ...toDirectoryTeam(r),
+          role: role.get(r.id) ?? 'member',
+          pendingInvites: pending.get(r.id) ?? 0,
+        })),
+      invites: await teamSelfService.receivedInvites(viewer.uid),
     });
   } catch (error) {
     log.error('[TeamDirectory] Failed to list own teams', { error });
@@ -307,18 +402,77 @@ router.get('/:teamId/profile', async (req: Request, res: Response) => {
         )
       : [];
     const byId = new Map(accounts.map((a) => [a.id, a]));
-    const roles = new Map((await teamMembers.list(row.id)).map((m) => [m.accountUid, m.role]));
+    const memberRows = new Map((await teamMembers.list(row.id)).map((m) => [m.accountUid, m]));
+    // Each player's numbers in this team's matches, and their rating change
+    // over the last 30 days.
+    const played = ids.length
+      ? await db.queryAsync<{
+          player_id: string;
+          matches: string | number;
+          kills: string | number | null;
+          deaths: string | number | null;
+          adr: string | number | null;
+        }>(
+          `SELECT s.player_id, COUNT(*) AS matches, SUM(s.kills) AS kills, SUM(s.deaths) AS deaths, AVG(s.adr) AS adr
+             FROM player_match_stats s JOIN matches m ON m.slug = s.match_slug
+            WHERE s.player_id = ANY(?::text[])
+              AND ((s.team = 'team1' AND m.team1_id = ?) OR (s.team = 'team2' AND m.team2_id = ?))
+            GROUP BY s.player_id`,
+          [ids, row.id, row.id]
+        )
+      : [];
+    const playedBy = new Map(played.map((p) => [p.player_id, p]));
+    const monthAgo = Math.floor(Date.now() / 1000) - 30 * 24 * 3600;
+    const monthStart = new Map(
+      (ids.length
+        ? await db.queryAsync<{ player_id: string; elo_before: number }>(
+            `SELECT DISTINCT ON (player_id) player_id, elo_before FROM player_rating_history
+              WHERE player_id = ANY(?::text[]) AND created_at >= ?
+              ORDER BY player_id, created_at ASC`,
+            [ids, monthAgo]
+          )
+        : []
+      ).map((r) => [r.player_id, Number(r.elo_before)])
+    );
     const members = roster.map((p) => {
       const a = byId.get(p.steamId);
+      const m = a ? memberRows.get(a.uid) : undefined;
+      const stats = playedBy.get(p.steamId);
+      const rating = a ? Number(a.current_elo) : null;
+      const start = monthStart.get(p.steamId);
+      const deaths = Number(stats?.deaths ?? 0);
       return {
         steamId: p.steamId,
         name: a?.name || p.name,
         avatar: a?.avatar ?? p.avatar ?? null,
-        rating: a ? Number(a.current_elo) : null,
-        role:
-          a && a.uid === row.owner_uid ? 'owner' : a ? (roles.get(a.uid) ?? 'member') : 'member',
+        rating,
+        role: a && a.uid === row.owner_uid ? 'owner' : (m?.role ?? 'member'),
+        position: m?.position ?? null,
+        lineup: m?.lineup ?? 'starter',
+        matches: Number(stats?.matches ?? 0),
+        kd: stats ? Math.round((Number(stats.kills ?? 0) / Math.max(1, deaths)) * 100) / 100 : null,
+        adr: stats?.adr !== null && stats?.adr !== undefined ? Math.round(Number(stats.adr)) : null,
+        monthDelta: rating !== null && start !== undefined ? rating - start : null,
       };
     });
+    const deltas = members.map((m) => m.monthDelta).filter((d): d is number => d !== null);
+    const monthDelta = deltas.length
+      ? Math.round(
+          deltas.reduce((a, b) => a + b, 0) / members.filter((m) => m.rating !== null).length
+        )
+      : null;
+    // Elimination tournaments the team won: it won the last match with no
+    // match after it.
+    const trophies = await db.queryAsync<{ name: string; completed_at: number | null }>(
+      `SELECT f.name, f.completed_at FROM (
+         SELECT DISTINCT ON (m.tournament_id) m.tournament_id, m.winner_id, t.name, t.completed_at
+           FROM matches m JOIN tournament t ON t.id = m.tournament_id
+          WHERE t.status = 'completed' AND t.type IN ('single_elimination', 'double_elimination')
+            AND m.status = 'completed' AND m.next_match_id IS NULL
+          ORDER BY m.tournament_id, m.round DESC, m.completed_at DESC NULLS LAST
+       ) f WHERE f.winner_id = ? ORDER BY f.completed_at DESC NULLS LAST`,
+      [row.id]
+    );
     const rated = members.filter((m) => m.rating !== null);
     const rating = rated.length
       ? Math.round(rated.reduce((sum, m) => sum + (m.rating as number), 0) / rated.length)
@@ -353,6 +507,8 @@ router.get('/:teamId/profile', async (req: Request, res: Response) => {
         last10: results.slice(0, 10).map((r) => (r.winner_id === row.id ? 'w' : 'l')),
       },
       rounds: { won: Number(rounds?.won ?? 0), lost: Number(rounds?.lost ?? 0) },
+      monthDelta,
+      trophies: trophies.map((t) => t.name),
     });
   } catch (error) {
     log.error('[TeamDirectory] Failed to read a team profile', { error });
@@ -394,9 +550,17 @@ router.get(
 router.patch(
   '/:teamId',
   teamAction(async (req, uid) => {
-    const fields = validateTeamFields(req.body?.name, req.body?.tag);
-    if (typeof fields === 'string') throw new TeamActionError(400, fields);
-    await teamSelfService.rename(req.params.teamId, uid!, fields.name, fields.tag);
+    if (req.body && 'game' in req.body) {
+      const game = req.body.game;
+      if (game !== null && (typeof game !== 'string' || !/^[a-z0-9][a-z0-9-]{0,31}$/.test(game)))
+        throw new TeamActionError(400, 'game is a game id or null');
+      await teamSelfService.setGame(req.params.teamId, uid!, game);
+    }
+    if (req.body?.name !== undefined || req.body?.tag !== undefined) {
+      const fields = validateTeamFields(req.body?.name, req.body?.tag);
+      if (typeof fields === 'string') throw new TeamActionError(400, fields);
+      await teamSelfService.rename(req.params.teamId, uid!, fields.name, fields.tag);
+    }
     return {};
   })
 );
@@ -445,10 +609,23 @@ for (const answer of ['accept', 'decline'] as const) {
 router.patch(
   '/:teamId/members/:uid',
   teamAction(async (req, uid) => {
-    const role = req.body?.role;
-    if (role !== 'captain' && role !== 'member')
+    const { role, position, lineup } = req.body ?? {};
+    if (role === undefined && position === undefined && lineup === undefined)
+      throw new TeamActionError(400, 'Nothing to change');
+    if (role !== undefined && role !== 'captain' && role !== 'member')
       throw new TeamActionError(400, 'role is captain or member');
-    await teamSelfService.setRole(req.params.teamId, uid!, req.params.uid, role);
+    if (position !== undefined && position !== null && typeof position !== 'string')
+      throw new TeamActionError(400, 'position is a string or null');
+    if (lineup !== undefined && lineup !== 'starter' && lineup !== 'sub')
+      throw new TeamActionError(400, 'lineup is starter or sub');
+    if (position !== undefined || lineup !== undefined) {
+      await teamSelfService.setPlacement(req.params.teamId, uid!, req.params.uid, {
+        position,
+        lineup,
+      });
+    }
+    if (role !== undefined)
+      await teamSelfService.setRole(req.params.teamId, uid!, req.params.uid, role);
     return {};
   })
 );
@@ -456,6 +633,29 @@ router.delete(
   '/:teamId/members/:uid',
   teamAction(async (req, uid) => {
     await teamSelfService.removeMember(req.params.teamId, uid!, req.params.uid);
+    return {};
+  })
+);
+
+router.post(
+  '/:teamId/invites',
+  teamAction(async (req, uid) => {
+    const steamId = typeof req.body?.steamId === 'string' ? req.body.steamId : '';
+    if (!steamId) throw new TeamActionError(400, 'steamId is required');
+    return { invite: await teamSelfService.invitePlayer(req.params.teamId, uid!, steamId) };
+  })
+);
+router.post(
+  '/:teamId/invites/answer',
+  teamAction(async (req, uid) => {
+    await teamSelfService.answerInvite(req.params.teamId, uid!, req.body?.accept === true);
+    return {};
+  })
+);
+router.delete(
+  '/:teamId/invites/:uid',
+  teamAction(async (req, uid) => {
+    await teamSelfService.cancelInvite(req.params.teamId, uid!, req.params.uid);
     return {};
   })
 );

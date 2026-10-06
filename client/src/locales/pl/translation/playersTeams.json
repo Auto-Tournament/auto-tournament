@@ -328,7 +328,11 @@
       "empty": "This team has no players yet.",
       "rating": "Rating {{rating}}",
       "captain": "Captain",
-      "owner": "Owner"
+      "owner": "Owner",
+      "subLine_one": "Sub · {{count}} match with the team",
+      "subLine_other": "Sub · {{count}} matches with the team",
+      "kd": "K/D {{kd}}",
+      "adr": "ADR {{adr}}"
     },
     "tournaments": {
       "title": "Tournaments",
@@ -348,7 +352,8 @@
         "ready": "Sign-up",
         "in_progress": "In progress",
         "completed": "Finished"
-      }
+      },
+      "allMatches": "All matches"
     },
     "headerLabel": "Team",
     "captainLine": "captain {{name}}",
@@ -363,8 +368,13 @@
       "record": "Record",
       "last10": "Last {{total}} matches: {{won}} won",
       "rounds": "Round difference",
-      "roundsNote": "{{won}} won · {{lost}} lost"
-    }
+      "roundsNote": "{{won}} won · {{lost}} lost",
+      "thisMonth": "{{delta}} this month",
+      "trophies": "Trophies",
+      "noTrophies": "No titles yet"
+    },
+    "playingNow": "Playing now",
+    "watchMatch": "Watch the match"
   },
   "disputes": {
     "title": "Disputes",
@@ -470,7 +480,28 @@
     "tagHelp": "2 to 5 letters or digits, shown in brackets and on scoreboards.",
     "cancel": "Cancel",
     "createSubmit": "Create team",
-    "createFailed": "The team could not be made."
+    "createFailed": "The team could not be made.",
+    "invites": {
+      "title": "Team invites",
+      "line": "{{team}} asked you to join",
+      "by": "Invited by {{name}}",
+      "accept": "Join",
+      "decline": "Decline"
+    },
+    "invitesPending_one": "{{count}} invite pending",
+    "invitesPending_other": "{{count}} invites pending",
+    "gameFilter": "Game",
+    "allGames": "All games",
+    "sortLabel": "Sort",
+    "sort": {
+      "rating": "Sort: rating",
+      "name": "Sort: name",
+      "newest": "Sort: newest"
+    },
+    "bestMap": "Best: {{map}}",
+    "new": "New",
+    "lookingFor_one": "Looking for {{count}}",
+    "lookingFor_other": "Looking for {{count}}"
   },
   "teamManage": {
     "title": "Manage your team",
@@ -514,7 +545,28 @@
     "disband": "Disband team",
     "disbandTitle": "Disband the team?",
     "disbandConfirm": "{{name}} is deleted for everyone on it. This cannot be undone.",
-    "disbandHelp": "Past matches keep their results."
+    "disbandHelp": "Past matches keep their results.",
+    "game": "Game",
+    "gameHelp": "The game the team mainly plays. It can still enter any tournament.",
+    "noGame": "No main game",
+    "lineupCount_one": "{{starters}} of {{size}} starters · {{count}} sub",
+    "lineupCount_other": "{{starters}} of {{size}} starters · {{count}} subs",
+    "positionFor": "Position for {{name}}",
+    "noPosition": "No position",
+    "lineupFor": "Starter or sub, {{name}}",
+    "lineup": {
+      "starter": "Starter",
+      "sub": "Sub"
+    },
+    "findPlayer": "Or find a player",
+    "findPlaceholder": "Name, Steam ID or profile link",
+    "find": "Find",
+    "findNone": "No player found. They have to sign in here once first.",
+    "onTeam": "On the team",
+    "invited": "Invited",
+    "invitePlayer": "Invite",
+    "inviteSent": "Invite sent to {{name}}",
+    "cancelInvite": "Take back the invite to {{name}}"
   },
   "teamJoin": {
     "title": "Join a team",

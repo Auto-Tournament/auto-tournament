@@ -1733,5 +1733,13 @@
   "matchRules": {
     "title": "Regole partita",
     "subtitle": "Cosa riceve ogni server CS2 quando inizia una partita."
+  },
+  "teamPositions": {
+    "rifler": "Rifler",
+    "awper": "AWPer",
+    "igl": "IGL",
+    "entry": "Entry",
+    "support": "Supporto",
+    "lurker": "Lurker"
   }
 }

@@ -1,4 +1,5 @@
-import { Box, Chip, Link, Typography } from '@mui/material';
+import { useState } from 'react';
+import { Box, Button, Chip, Link, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { formatDate, getBracketMatchLabel } from '../../../utils/matchUtils';
@@ -22,6 +23,12 @@ interface TeamTournamentsProps {
   tournament: TeamTournamentInfo | null;
   standing: TeamStanding | null;
   recentResults: TeamMatchHistory[];
+}
+
+/** "de_mirage" reads as "Mirage". */
+function prettyMap(map: string): string {
+  const name = map.replace(/^[a-z]+_/, '');
+  return name.charAt(0).toUpperCase() + name.slice(1);
 }
 
 /** A quiet "Open" link on the right of a row. */
@@ -61,6 +68,22 @@ export function TeamTournaments({
   recentResults,
 }: TeamTournamentsProps) {
   const { t } = useTranslation();
+  // "All matches" swaps the latest five for the team's whole history.
+  const [allResults, setAllResults] = useState<TeamMatchHistory[] | null>(null);
+  const [loadingAll, setLoadingAll] = useState(false);
+  const results = allResults ?? recentResults;
+  const showAll = async () => {
+    setLoadingAll(true);
+    try {
+      const res = await fetch(`/api/team/${encodeURIComponent(teamId)}/history?limit=100`);
+      const body = (await res.json()) as { matches?: TeamMatchHistory[] };
+      setAllResults(body.matches ?? recentResults);
+    } catch {
+      setAllResults(recentResults);
+    } finally {
+      setLoadingAll(false);
+    }
+  };
 
   const isLive = hasMatch && (match?.status === 'live' || match?.status === 'loaded');
   const isUpcoming = hasMatch && !isLive;
@@ -154,15 +177,31 @@ export function TeamTournaments({
         </Panel>
       )}
 
-      {recentResults.length > 0 && (
+      {results.length > 0 && (
         <Box component="section" aria-labelledby="team-recent-results" sx={{ mt: 4 }}>
           <SectionHead
             id="team-recent-results"
             level={3}
-            title={t('teamProfile.tournaments.recentResults')}
+            title={
+              allResults
+                ? t('teamProfile.tournaments.allMatches')
+                : t('teamProfile.tournaments.recentResults')
+            }
+            action={
+              !allResults && recentResults.length >= 5 ? (
+                <Button
+                  size="small"
+                  onClick={() => void showAll()}
+                  disabled={loadingAll}
+                  data-testid="team-profile-all-matches"
+                >
+                  {t('teamProfile.tournaments.allMatches')}
+                </Button>
+              ) : undefined
+            }
           />
           <RowList>
-            {recentResults.map((result) => (
+            {results.map((result) => (
               <Row
                 key={result.slug}
                 columns="2.2rem minmax(0, 1fr) auto"
@@ -194,7 +233,12 @@ export function TeamTournaments({
                     })}
                   </Typography>
                   <Typography variant="caption" color="text.secondary" component="div" noWrap>
-                    {getBracketMatchLabel(result) || formatDate(result.completedAt)}
+                    {[
+                      getBracketMatchLabel(result) || formatDate(result.completedAt),
+                      result.maps?.length ? result.maps.map(prettyMap).join(' · ') : null,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
                   </Typography>
                 </Box>
                 <Typography

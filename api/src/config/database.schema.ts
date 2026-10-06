@@ -31,6 +31,7 @@ export function getSchemaSQL(): string {
       logo BYTEA, -- the team's logo (PNG, JPEG or WEBP, at most 256 KB)
       logo_type TEXT, -- its media type
       logo_updated_at INTEGER, -- for the logo URL, so a new logo is not served from cache
+      game TEXT, -- the game the team mainly plays (an integration id), for the team list; it still enters any game's tournament
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
@@ -38,6 +39,18 @@ export function getSchemaSQL(): string {
     CREATE INDEX IF NOT EXISTS idx_teams_name ON teams(name);
     CREATE UNIQUE INDEX IF NOT EXISTS idx_teams_owner_uid ON teams(owner_uid) WHERE owner_uid IS NOT NULL;
     CREATE UNIQUE INDEX IF NOT EXISTS idx_teams_invite_code ON teams(invite_code) WHERE invite_code IS NOT NULL;
+
+    -- Players the owner or a captain asked onto the team by name; the player
+    -- accepts or declines from the Teams page.
+    CREATE TABLE IF NOT EXISTS team_invites (
+      team_id TEXT NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+      account_uid UUID NOT NULL, -- players.uid of the invited player
+      invited_by UUID, -- players.uid of who asked
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      PRIMARY KEY (team_id, account_uid)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_team_invites_account ON team_invites(account_uid);
 
     -- Players asking to join a team through its invite link; the owner or a
     -- captain accepts or declines.
@@ -411,6 +424,8 @@ export function getSchemaSQL(): string {
       team_id TEXT NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
       account_uid UUID NOT NULL, -- players.uid
       role TEXT NOT NULL DEFAULT 'member', -- 'captain' | 'member'
+      position TEXT, -- the player's job in the team's game (CS2: 'awper', 'igl', ...), or NULL
+      lineup TEXT NOT NULL DEFAULT 'starter', -- 'starter' | 'sub'
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       PRIMARY KEY (team_id, account_uid)

@@ -1733,5 +1733,13 @@
   "matchRules": {
     "title": "Match rules",
     "subtitle": "What every CS2 server is told when a match starts."
+  },
+  "teamPositions": {
+    "rifler": "Rifler",
+    "awper": "AWPer",
+    "igl": "IGL",
+    "entry": "Entry",
+    "support": "Support",
+    "lurker": "Lurker"
   }
 }
