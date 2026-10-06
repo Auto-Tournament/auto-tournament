@@ -22,7 +22,7 @@ import { rating as osRating, rate as osRate } from 'openskill';
 import { DEFAULT_SIGMA, openSkillToDisplayElo } from '../../utils/ratingMath';
 import { progressionService } from './progressionService';
 import { playerConnectionService } from '../playerConnectionService';
-import { emitMatchmakingChanged } from '../socketService';
+import { emitMatchmakingChanged, onlinePlayerCount } from '../socketService';
 import { settingsService } from '../settingsService';
 import {
   ABANDON_WINDOW_SECONDS,
@@ -119,7 +119,18 @@ export interface MatchmakingMe {
   rating: { elo: number; games: number; wins: number } | null;
   /** The modes players can search on this site. */
   modes: string[];
+  /** Signed-in players with the site open. */
+  online: number;
+  /** Typical seconds from searching to a match found, per mode; null with too few recent games. */
+  waitSeconds: Record<string, number | null>;
+  /** Each mode's rules for its card: rounds per half (MR) and the map pool's name (null = the default pool). */
+  modeRules: Record<string, { maxRounds: number; pool: string | null }>;
 }
+
+/** Rounds per half Ready Up plays: wingman MR8, everything else MR12. */
+const MODE_MAX_ROUNDS: Record<MatchmakingMode, number> = { '5v5': 12, '2v2': 8, '1v1': 12 };
+/** Fewer found matches than this in the last week says nothing about the wait. */
+const MIN_WAIT_SAMPLES = 3;
 
 const LOOP_MS = 2000;
 
@@ -419,8 +430,8 @@ export class MatchmakingService {
       for (const party of team) {
         for (const player of party.players) {
           await db.runAsync(
-            'INSERT INTO mm_lobby_players (lobby_id, player_id, party_id, team) VALUES (?, ?, ?, ?)',
-            [lobbyId, player, party.partyId, index + 1]
+            'INSERT INTO mm_lobby_players (lobby_id, player_id, party_id, team, queued_at) VALUES (?, ?, ?, ?, ?)',
+            [lobbyId, player, party.partyId, index + 1, party.queuedAt]
           );
         }
         await db.runAsync("UPDATE mm_queue_entries SET status = 'found', lobby_id = ? WHERE id = ?", [
@@ -830,7 +841,42 @@ export class MatchmakingService {
       cooldownUntil: await this.cooldownUntil(playerId),
       rating: await this.ratingSummary(playerId, entry?.mode ?? party?.mode ?? '5v5'),
       modes: await this.enabledModes(),
+      online: onlinePlayerCount(),
+      waitSeconds: await this.waitEstimates(),
+      modeRules: await this.modeRules(),
     };
+  }
+
+  /**
+   * The median wait from searching to a match found, per mode, over the last
+   * week's lobbies. One sample per party, so a full party counts once.
+   */
+  private async waitEstimates(): Promise<Record<string, number | null>> {
+    const since = this.clock() - 7 * 24 * 3600;
+    const rows = await db.queryAsync<{ mode: string; waited: number | string }>(
+      `SELECT DISTINCT ON (l.id, p.party_id) l.mode, (l.created_at - p.queued_at) AS waited
+         FROM mm_lobbies l JOIN mm_lobby_players p ON p.lobby_id = l.id
+        WHERE l.created_at >= ? AND p.queued_at IS NOT NULL`,
+      [since]
+    );
+    const byMode = new Map<string, number[]>();
+    for (const r of rows) {
+      byMode.set(r.mode, [...(byMode.get(r.mode) ?? []), Math.max(0, Number(r.waited))]);
+    }
+    const out: Record<string, number | null> = {};
+    for (const mode of MODES) {
+      const waits = (byMode.get(mode) ?? []).sort((x, y) => x - y);
+      out[mode] = waits.length >= MIN_WAIT_SAMPLES ? waits[Math.floor(waits.length / 2)] : null;
+    }
+    return out;
+  }
+
+  /** Rounds per half and the map pool's name per mode, for the mode cards. */
+  private async modeRules(): Promise<Record<string, { maxRounds: number; pool: string | null }>> {
+    const chosen = parseModePools(await db.getAppSettingAsync(MM_MODE_POOLS));
+    const pools = hasIntegration('cs2') ? ((await getIntegration('cs2').matchmakingPools?.()) ?? []) : [];
+    const name = (id: number | undefined) => (id ? (pools.find((p) => p.id === id)?.name ?? null) : null);
+    return Object.fromEntries(MODES.map((mode) => [mode, { maxRounds: MODE_MAX_ROUNDS[mode], pool: name(chosen[mode]) }]));
   }
 
   private async people(ids: string[]): Promise<Array<{ id: string; name: string; avatarUrl: string | null }>> {
