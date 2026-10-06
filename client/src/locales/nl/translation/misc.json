@@ -186,11 +186,14 @@
     "live": {
       "title": "Live now",
       "count": "{{count}} running",
-      "chip": "Live"
+      "chip": "Live",
+      "matchesOn_one": "{{count}} wedstrijd bezig",
+      "matchesOn_other": "{{count}} wedstrijden bezig"
     },
     "quiet": {
       "title": "Coming up",
-      "more": "Also coming up"
+      "more": "Also coming up",
+      "next": "Hierna"
     },
     "play": {
       "title": "Play a match now",
@@ -222,7 +225,26 @@
     },
     "teams": "Teams: {{count}}",
     "none": "No tournaments yet. Check back soon.",
-    "allTournaments": "All tournaments"
+    "allTournaments": "All tournaments",
+    "empty": {
+      "soon": "Binnenkort",
+      "heroTitle": "Nog geen toernooi",
+      "heroHint": "Zodra het volgende toernooi is aangekondigd, staat het hier met datum en inschrijving.",
+      "create": "Toernooi maken",
+      "nextTitle": "Verder niets gepland",
+      "nextHint": "Het volgende toernooi verschijnt hier.",
+      "signupTitle": "Niets om je voor in te schrijven",
+      "signupHint": "Toernooien met open inschrijving verschijnen hier.",
+      "slotTitle": "Plek voor nog één",
+      "slotHint": "Hier kan nog een toernooi komen.",
+      "championTitle": "Nog geen kampioen",
+      "championHint": "De eerste winnaar verschijnt hier."
+    },
+    "browse": {
+      "title": "Vind spelers en teams",
+      "hint": "Zie wie hier speelt en vind een team.",
+      "cta": "Spelers bekijken"
+    }
   },
   "browsePage": {
     "title": "Browse tournaments",

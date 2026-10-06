@@ -186,11 +186,14 @@
     "live": {
       "title": "Live now",
       "count": "{{count}} running",
-      "chip": "Live"
+      "chip": "Live",
+      "matchesOn_one": "{{count}} 场比赛进行中",
+      "matchesOn_other": "{{count}} 场比赛进行中"
     },
     "quiet": {
       "title": "Coming up",
-      "more": "Also coming up"
+      "more": "Also coming up",
+      "next": "下一场"
     },
     "play": {
       "title": "Play a match now",
@@ -222,7 +225,26 @@
     },
     "teams": "Teams: {{count}}",
     "none": "No tournaments yet. Check back soon.",
-    "allTournaments": "All tournaments"
+    "allTournaments": "All tournaments",
+    "empty": {
+      "soon": "即将推出",
+      "heroTitle": "还没有比赛",
+      "heroHint": "下一场比赛公布后，会在这里显示日期和报名。",
+      "create": "创建比赛",
+      "nextTitle": "暂无其他安排",
+      "nextHint": "之后的下一场比赛会显示在这里。",
+      "signupTitle": "暂无可报名的比赛",
+      "signupHint": "开放报名的比赛会显示在这里。",
+      "slotTitle": "还可以再放一个",
+      "slotHint": "这里可以再放一场比赛。",
+      "championTitle": "还没有冠军",
+      "championHint": "第一位冠军会显示在这里。"
+    },
+    "browse": {
+      "title": "寻找玩家和队伍",
+      "hint": "看看谁在这里玩，找一支队伍加入。",
+      "cta": "浏览玩家"
+    }
   },
   "browsePage": {
     "title": "Browse tournaments",
