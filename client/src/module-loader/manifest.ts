@@ -223,6 +223,7 @@ export const COMPONENT_SLOTS = [
   'instanceSettings.section',
   'globalOverlay',
   'playerProfileSection',
+  'playerProfileTab.Component',
 ] as const;
 
 export type ComponentSlot = (typeof COMPONENT_SLOTS)[number];

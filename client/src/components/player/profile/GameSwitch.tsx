@@ -10,6 +10,8 @@ export interface ProfileGame {
 
 export interface GameSwitchProps {
   games: ProfileGame[];
+  /** Modules' own tabs after the games (CS2: Loadout), ids prefixed by the caller. */
+  extraTabs?: Array<{ id: string; name: string }>;
   selectedId: string;
   onSelect: (id: string) => void;
 }
@@ -23,13 +25,14 @@ export interface GameSwitchProps {
  * from the match `game` column via the integrations registry, never a
  * hard-coded game name. With no games there is nothing to choose.
  */
-export function GameSwitch({ games, selectedId, onSelect }: GameSwitchProps) {
+export function GameSwitch({ games, extraTabs = [], selectedId, onSelect }: GameSwitchProps) {
   const { t } = useTranslation();
-  if (games.length === 0) return null;
+  if (games.length === 0 && extraTabs.length === 0) return null;
 
   const tabs: Array<{ id: string; name: string; mark?: string }> = [
     { id: '', name: t('playerPage.tabs.overview') },
     ...games.map((game) => ({ id: game.id, name: game.name, mark: gameMonogram(game.name) })),
+    ...extraTabs,
   ];
 
   return (

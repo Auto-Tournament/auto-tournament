@@ -1,5 +1,5 @@
 /* global AbortController */
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import {
   Box,
@@ -259,6 +259,15 @@ export default function PlayerProfile() {
   const [matchHistory, setMatchHistory] = useState<MatchHistoryEntry[]>([]);
   const [games, setGames] = useState<Array<{ id: string; name: string }>>([]);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
+  // A module's own tab (CS2: Loadout), by module id, and which of them have
+  // anything for this player (each tab's probe says).
+  const [moduleTabId, setModuleTabId] = useState<string | null>(null);
+  const [tabAvailable, setTabAvailable] = useState<Record<string, boolean>>({});
+  const reportTab = useCallback(
+    (id: string, available: boolean) =>
+      setTabAvailable((prev) => (prev[id] === available ? prev : { ...prev, [id]: available })),
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentMatch, setCurrentMatch] = useState<TeamMatchInfo | null>(null);
@@ -817,6 +826,10 @@ export default function PlayerProfile() {
   const TournamentStatsView = gameIntegration.tournamentStatsView;
   const PlayerProfileView = gameIntegration.playerProfileView;
   const GameProfileView = selectedGameId ? selectedIntegration.playerProfileView : PlayerProfileView;
+  const moduleTabs = installedIntegrations.flatMap((integration) =>
+    integration.playerProfileTab ? [{ id: integration.id, ...integration.playerProfileTab }] : []
+  );
+  const activeModuleTab = moduleTabs.find((tab) => tab.id === moduleTabId && tabAvailable[tab.id]) ?? null;
   const profileSections = installedIntegrations.flatMap((integration) =>
     integration.playerProfileSection ? [{ id: integration.id, Section: integration.playerProfileSection }] : []
   );
@@ -1059,10 +1072,35 @@ export default function PlayerProfile() {
           <Box sx={{ mt: 6, mb: 3 }}>
             <GameSwitch
               games={games}
-              selectedId={selectedGameId ?? ''}
-              onSelect={(id) => setSelectedGameId(id || null)}
+              extraTabs={moduleTabs
+                .filter((tab) => tabAvailable[tab.id])
+                .map((tab) => ({ id: `module:${tab.id}`, name: t(tab.labelKey, { ns: tab.id }) }))}
+              selectedId={activeModuleTab ? `module:${activeModuleTab.id}` : (selectedGameId ?? '')}
+              onSelect={(id) => {
+                if (id.startsWith('module:')) {
+                  setModuleTabId(id.slice('module:'.length));
+                } else {
+                  setModuleTabId(null);
+                  setSelectedGameId(id || null);
+                }
+              }}
             />
           </Box>
+          {/* Each module tab's probe: whether it has anything for this player. */}
+          {moduleTabs.map(({ id, Component }) => (
+            <Component
+              key={id}
+              probe
+              playerId={player.id}
+              isOwn={playerSteamId === player.id}
+              onAvailability={(available) => reportTab(id, available)}
+            />
+          ))}
+
+          {activeModuleTab ? (
+            <activeModuleTab.Component playerId={player.id} isOwn={playerSteamId === player.id} />
+          ) : (
+          <>
 
           {/* auto-fit: the tiles there are fill the row, with no empty cells
               after them when a game measures fewer than six things. */}
@@ -1137,6 +1175,8 @@ export default function PlayerProfile() {
             <Box sx={{ mt: 6 }}>
               <TournamentStatsView tournamentId={gameTournamentId} />
             </Box>
+          )}
+          </>
           )}
 
           {/* Self-service contact details: only on the viewer's own profile, and not

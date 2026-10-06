@@ -5,7 +5,7 @@ import { ArrowDownIcon, ArrowUpIcon, PencilSimpleIcon } from '@phosphor-icons/re
 import { InspectSkinDialog } from './SkinParts';
 import { api, useModuleTranslation, tokens, fontDisplay, radii } from '../../../module-sdk';
 import { useSkinsEnabled, useMySkins, type OwnedSkin, type ShowcaseItem } from './useSkins';
-import type { PlayerProfileSectionProps } from '../../types';
+import type { PlayerProfileSectionProps, PlayerProfileTabProps } from '../../types';
 import { rarityColor } from './rarity';
 import { playerInventoryPath, skinPaths } from './paths';
 
@@ -64,7 +64,17 @@ function Tile({ skin, big, onClick }: { skin: OwnedSkin; big: boolean; onClick: 
  * default, the rest as a shelf, at most eight. The owner arranges which ones
  * show and which are big. "Show inventory" opens everything they own.
  */
-export function ProfileLoadout({ steamId, isOwn }: { steamId: string; isOwn: boolean }) {
+export function ProfileLoadout({
+  steamId,
+  isOwn,
+  probe = false,
+  onAvailability,
+}: {
+  steamId: string;
+  isOwn: boolean;
+  probe?: boolean;
+  onAvailability?: (available: boolean) => void;
+}) {
   const { t } = useModuleTranslation('cs2');
   const enabled = useSkinsEnabled();
   const mine = useMySkins();
@@ -87,7 +97,13 @@ export function ProfileLoadout({ steamId, isOwn }: { steamId: string; isOwn: boo
     };
   }, [enabled, steamId, version]);
 
-  if (!enabled || !data) return null;
+  // Something to show: skins on, and an owned skin (or it's your own profile).
+  const available = Boolean(enabled && data && (data.inventory.length > 0 || isOwn));
+  useEffect(() => {
+    onAvailability?.(available);
+  }, [available, onAvailability]);
+
+  if (probe || !enabled || !data) return null;
   // Your own profile keeps the section with nothing in it, so the inventory
   // is one click away from day one; someone else's empty loadout stays hidden.
   if (data.inventory.length === 0) {
@@ -213,4 +229,9 @@ export function ProfileLoadout({ steamId, isOwn }: { steamId: string; isOwn: boo
 /** The `playerProfileSection` slot: the loadout on any player's profile. */
 export function ProfileLoadoutSection({ playerId, isOwn }: PlayerProfileSectionProps) {
   return <ProfileLoadout steamId={playerId} isOwn={isOwn} />;
+}
+
+/** The profile's Loadout tab (`playerProfileTab`). */
+export function ProfileLoadoutTab({ playerId, isOwn, probe, onAvailability }: PlayerProfileTabProps) {
+  return <ProfileLoadout steamId={playerId} isOwn={isOwn} probe={probe} onAvailability={onAvailability} />;
 }

@@ -867,6 +867,16 @@ export interface PlayerProfileSectionProps {
   isOwn: boolean;
 }
 
+/**
+ * A module's profile tab. Core mounts it once with `probe` to learn whether
+ * the tab has anything for this player (render nothing, call
+ * `onAvailability`), and again without `probe` when the tab is open.
+ */
+export interface PlayerProfileTabProps extends PlayerProfileSectionProps {
+  probe?: boolean;
+  onAvailability?: (available: boolean) => void;
+}
+
 // ---------------------------------------------------------------------------
 // The integration
 // ---------------------------------------------------------------------------
@@ -1172,6 +1182,13 @@ export interface ClientGameIntegration {
 
   /** A section on every player's profile, below the stats (CS2: the skin loadout). */
   playerProfileSection?: ComponentType<PlayerProfileSectionProps>;
+
+  /**
+   * A tab of its own on player profiles, after the game tabs (CS2: Loadout).
+   * `labelKey` is in the module's strings. Shown only when the probe says
+   * the tab has something for that player.
+   */
+  playerProfileTab?: { labelKey: string; Component: ComponentType<PlayerProfileTabProps> };
 
   /** Pages the integration owns. URLs come from `paths.ts`. */
   routes: IntegrationRoute[];

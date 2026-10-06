@@ -110,5 +110,9 @@
  * - `instanceSettings.pages`: a module's settings as several pages; the
  *   section gets the open page's key as `page`.
  * - SDK export `fontDisplay`, the display font stack.
+ *
+ * 0.2.11 (additive): `playerProfileTab` (`{ labelKey, Component }`): a tab
+ * of its own on profiles. The component gets `PlayerProfileTabProps`; with
+ * `probe` it renders nothing and calls `onAvailability`.
  */
-export const CLIENT_API_VERSION = '0.2.10';
+export const CLIENT_API_VERSION = '0.2.11';
