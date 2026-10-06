@@ -19,7 +19,7 @@ import { useTranslation } from 'react-i18next';
 import { tokens, radii, fontDisplay, fontMono } from '../../theme/tokens';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { matchmakingAction, secondsUntil, useMatchmaking } from './matchmakingStore';
+import { matchmakingAction, secondsUntil, useMatchmaking, playersFor } from './matchmakingStore';
 import { playLobbyPath } from '../../paths';
 
 const ACCEPT_SECONDS = 20;
@@ -110,6 +110,10 @@ export function MatchmakingOverlay() {
       : 0;
   const left = accepting && lobby ? secondsUntil(lobby.acceptDeadline, skew) : 0;
   const isLeader = !!me.party && me.party.leader === playerSteamId;
+  // "7 of 10" on the bar too (draft 6b): the players searching in this mode, of a full match.
+  const queueMode = me.queue?.mode ?? '5v5';
+  const seatsInMode = playersFor(queueMode);
+  const queuedInMode = me.queueCounts?.[queueMode];
 
   return (
     <>
@@ -144,6 +148,12 @@ export function MatchmakingOverlay() {
             >
               {clock(waited)}
             </Box>
+            {typeof queuedInMode === 'number' && (
+              <Box component="span" sx={{ color: 'text.secondary' }}>
+                {' · '}
+                {t('matchmaking.play.seats', { count: Math.min(queuedInMode, seatsInMode), total: seatsInMode })}
+              </Box>
+            )}
           </Typography>
           {isLeader && (
             <Button

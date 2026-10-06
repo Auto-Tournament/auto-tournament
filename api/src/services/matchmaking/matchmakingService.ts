@@ -23,6 +23,7 @@ import { DEFAULT_SIGMA, openSkillToDisplayElo } from '../../utils/ratingMath';
 import { progressionService } from './progressionService';
 import { playerConnectionService } from '../playerConnectionService';
 import { emitMatchmakingChanged } from '../socketService';
+import { settingsService } from '../settingsService';
 import {
   ABANDON_WINDOW_SECONDS,
   abandonCooldownSeconds,
@@ -874,7 +875,17 @@ export class MatchmakingService {
     matchStatus: string | null;
     /** The maps the roulette rolls over; `map` is one of them. */
     mapPool: Array<{ id: string; name: string; imageUrl: string | null }>;
-    teams: Array<{ team: number; players: Array<{ id: string; name: string; avatarUrl: string | null; accepted: boolean }> }>;
+    teams: Array<{
+      team: number;
+      /** The side this team starts on, from the match config; null for a knife round or before the match exists. */
+      startSide: 'CT' | 'T' | null;
+      players: Array<{ id: string; name: string; avatarUrl: string | null; accepted: boolean; inServer: boolean }>;
+    }>;
+    /** Players on the server right now, of `total`. */
+    inServer: number;
+    total: number;
+    /** Minutes a loaded match waits in warmup before it starts anyway (0 = until everyone is in). */
+    autostartMinutes: number;
   }> {
     const { lobby, players } = await this.lobbyFor(playerId, lobbyId);
     const row = lobby as LobbyRow & { map: string | null; match_slug: string | null; map_pool: string | null };
@@ -891,8 +902,23 @@ export class MatchmakingService {
     const nameOf = new Map(names.map((n) => [n.id, n.name || n.id]));
     const avatarOf = new Map(names.map((n) => [n.id, n.avatar_url]));
     const match = row.match_slug
-      ? await db.queryOneAsync<{ status: string }>('SELECT status FROM matches WHERE slug = ?', [row.match_slug])
+      ? await db.queryOneAsync<{ status: string; config: string | null }>('SELECT status, config FROM matches WHERE slug = ?', [row.match_slug])
       : undefined;
+    // Who is on the server (the game reports joins), and the sides from the match config.
+    const connected = new Set(
+      (row.match_slug ? playerConnectionService.getStatus(row.match_slug)?.connectedPlayers ?? [] : []).map((c) => c.steamId)
+    );
+    let team1Side: 'CT' | 'T' | null = null;
+    try {
+      const sides = match?.config ? (JSON.parse(match.config) as { map_sides?: string[] }).map_sides : undefined;
+      team1Side = sides?.[0] === 'team1_ct' ? 'CT' : sides?.[0] === 'team2_ct' ? 'T' : null;
+    } catch {
+      team1Side = null;
+    }
+    const sideOf = (team: number): 'CT' | 'T' | null =>
+      team1Side === null ? null : team === 1 ? team1Side : team1Side === 'CT' ? 'T' : 'CT';
+    const autostartRaw = Number(await settingsService.getSetting('at_autostart_after_minutes').catch(() => null));
+    const autostartMinutes = Number.isInteger(autostartRaw) && autostartRaw > 0 ? Math.min(autostartRaw, 120) : 0;
     return {
       id: lobby.id,
       status: lobby.status,
@@ -903,6 +929,7 @@ export class MatchmakingService {
       mapPool,
       teams: [1, 2].map((team) => ({
         team,
+        startSide: sideOf(team),
         players: players
           .filter((p) => p.team === team)
           .map((p) => ({
@@ -910,8 +937,12 @@ export class MatchmakingService {
             name: nameOf.get(p.player_id) ?? p.player_id,
             avatarUrl: avatarOf.get(p.player_id) ?? null,
             accepted: p.accepted_at !== null,
+            inServer: connected.has(p.player_id),
           })),
       })),
+      inServer: players.filter((p) => connected.has(p.player_id)).length,
+      total: players.length,
+      autostartMinutes,
     };
   }
 

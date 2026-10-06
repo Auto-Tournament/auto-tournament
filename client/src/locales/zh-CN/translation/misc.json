@@ -632,7 +632,19 @@
       "inventory": "Inventory",
       "victory": "Victory",
       "defeat": "Defeat",
-      "draw": "Draw"
+      "draw": "Draw",
+      "inServer": "服务器内 {{n}}/{{total}} 人",
+      "warmupRule": "热身会等到 {{total}} 人全部进入。",
+      "warmupRuleTimed": "热身会等到 {{total}} 人全部进入，或 {{minutes}} 分钟后以在场人员开始。",
+      "teamLetter": "{{letter}} 队",
+      "sideFirst": "先 {{side}}",
+      "presence": {
+        "in": "已在服务器",
+        "notYet": "尚未进入"
+      },
+      "equip": "装备",
+      "equipped": "已装备",
+      "equipFailed": "无法装备"
     },
     "result": {
       "title": "Result",
@@ -661,7 +673,17 @@
         "afk": "AFK or left",
         "other": "Something else"
       },
-      "commendFailed": "Could not save that"
+      "commendFailed": "Could not save that",
+      "outcome": {
+        "win": "胜利",
+        "loss": "失败",
+        "draw": "平局"
+      },
+      "minutes_one": "{{count}} 分钟",
+      "minutes_other": "{{count}} 分钟",
+      "yourGame": "你的表现",
+      "fullBoard": "完整计分板",
+      "hideBoard": "隐藏计分板"
     },
     "profile": {
       "level": "Level {{level}}",

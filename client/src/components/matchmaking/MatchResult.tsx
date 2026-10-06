@@ -7,7 +7,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   Box,
+  Button,
   Chip,
+  Collapse,
   IconButton,
   LinearProgress,
   MenuItem,
@@ -27,10 +29,12 @@ import { Panel, SectionHead } from '../common/ui';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { apiErrorMessage } from '../../utils/api';
-import { tokens } from '../../theme/tokens';
+import { fontDisplay, tokens } from '../../theme/tokens';
 
 interface Result {
   status: string | null;
+  myTeam?: number | null;
+  durationSeconds?: number | null;
   maps: Array<{ map: string | null; team1: number; team2: number; winner: string | null }>;
   scoreboard: Array<{
     team: number;
@@ -56,12 +60,13 @@ const DOWN_TAGS = ['toxic', 'griefing', 'afk', 'other'] as const;
 /** Display Elo from OpenSkill (utils/ratingMath on the API: ordinal × 200 + 1500). */
 const elo = (mu: number, sigma: number) => Math.round((mu - 3 * sigma) * 200 + 1500);
 
-export function MatchResult({ matchSlug }: { matchSlug: string }) {
+export function MatchResult({ matchSlug, modeLabel }: { matchSlug: string; modeLabel?: string }) {
   const { t } = useTranslation();
   const { playerSteamId } = useAuth();
   const { showError } = useSnackbar();
   const [result, setResult] = useState<Result | null>(null);
   const [downFor, setDownFor] = useState<string | null>(null);
+  const [fullBoard, setFullBoard] = useState(false);
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/matchmaking/matches/${encodeURIComponent(matchSlug)}/result`, {
@@ -104,22 +109,80 @@ export function MatchResult({ matchSlug }: { matchSlug: string }) {
       elo(result.rating.before, result.rating.sigmaBefore)
     : null;
 
+  // Won, lost or drew, from your side: maps won against maps lost.
+  const mine = result.myTeam ?? null;
+  const mapsWon = result.maps.filter((m) => (mine === 1 ? m.team1 > m.team2 : m.team2 > m.team1)).length;
+  const mapsLost = result.maps.filter((m) => (mine === 1 ? m.team1 < m.team2 : m.team2 < m.team1)).length;
+  const outcome = mine === null || result.maps.length === 0 ? null : mapsWon > mapsLost ? 'win' : mapsWon < mapsLost ? 'loss' : 'draw';
+  const outcomeColor = outcome === 'win' ? tokens.color.pick : outcome === 'loss' ? tokens.color.ban : tokens.color.ink2;
+  const scoreLine = result.maps
+    .map((m) => (mine === 2 ? `${m.team2} – ${m.team1}` : `${m.team1} – ${m.team2}`))
+    .join(', ');
+  const meRow = result.scoreboard.flatMap((team) => team.players).find((p) => p.id === playerSteamId);
+  const minutes = result.durationSeconds ? Math.round(result.durationSeconds / 60) : null;
+  const facts = [
+    result.maps.map((m, i) => m.map ?? t('matchmaking.result.map', { n: i + 1 })).join(', '),
+    modeLabel,
+    minutes ? t('matchmaking.result.minutes', { count: minutes }) : null,
+  ].filter(Boolean);
+  const tiles = meRow
+    ? [
+        { label: 'K / D / A', value: `${meRow.kills ?? '–'} / ${meRow.deaths ?? '–'} / ${meRow.assists ?? '–'}` },
+        { label: 'ADR', value: meRow.adr !== null ? String(Math.round(meRow.adr)) : '–' },
+        { label: 'HS%', value: meRow.hsPercent !== null ? `${meRow.hsPercent}%` : '–' },
+        { label: 'MVP', value: meRow.mvps !== null ? String(meRow.mvps) : '–' },
+      ]
+    : [];
+
   return (
     <Stack spacing={2} data-testid="mm-result">
       <Panel sx={{ p: 3 }}>
-        <SectionHead title={t('matchmaking.result.title')} />
-        <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
-          {result.maps.map((m, i) => (
+        {outcome && (
+          <Box sx={{ mb: 2 }} data-testid="mm-result-outcome">
             <Typography
-              key={i}
-              sx={{ fontVariantNumeric: 'tabular-nums' }}
-              data-testid="mm-result-map"
+              component="h2"
+              sx={{ m: 0, fontFamily: fontDisplay, fontWeight: 700, fontSize: { xs: '2.25rem', md: '3rem' }, letterSpacing: '0.02em', lineHeight: 1, color: outcomeColor }}
             >
-              {m.map ?? t('matchmaking.result.map', { n: i + 1 })}: <strong>{m.team1}</strong> –{' '}
-              <strong>{m.team2}</strong>
+              {t(`matchmaking.result.outcome.${outcome}`)}
             </Typography>
-          ))}
-        </Stack>
+            <Typography sx={{ mt: 0.75, fontFamily: fontDisplay, fontSize: '1.5rem', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
+              {scoreLine}
+            </Typography>
+            <Typography sx={{ color: tokens.color.muted }}>{facts.join(' · ')}</Typography>
+          </Box>
+        )}
+        {!outcome && (
+          <>
+            <SectionHead title={t('matchmaking.result.title')} />
+            <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
+              {result.maps.map((m, i) => (
+                <Typography key={i} sx={{ fontVariantNumeric: 'tabular-nums' }} data-testid="mm-result-map">
+                  {m.map ?? t('matchmaking.result.map', { n: i + 1 })}: <strong>{m.team1}</strong> – <strong>{m.team2}</strong>
+                </Typography>
+              ))}
+            </Stack>
+          </>
+        )}
+
+        {tiles.length > 0 && (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="caption" color="text.secondary">
+              {t('matchmaking.result.yourGame')}
+            </Typography>
+            <Box
+              data-testid="mm-result-your-game"
+              sx={{ mt: 0.75, display: 'grid', gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', sm: 'repeat(4, minmax(0, 1fr))' }, gap: 1 }}
+            >
+              {tiles.map((tile) => (
+                <Box key={tile.label} sx={{ p: 1.5, borderRadius: '14px', bgcolor: tokens.color.paper3 }}>
+                  <Typography sx={{ fontSize: '0.75rem', color: tokens.color.muted }}>{tile.label}</Typography>
+                  <Typography sx={{ fontFamily: fontDisplay, fontSize: '1.375rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{tile.value}</Typography>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        )}
+
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} mt={2}>
           {ratingDelta !== null && (
             <Box data-testid="mm-result-rating">
@@ -161,12 +224,22 @@ export function MatchResult({ matchSlug }: { matchSlug: string }) {
             </Stack>
           </Box>
         </Stack>
+        <Button
+          onClick={() => setFullBoard((v) => !v)}
+          aria-expanded={fullBoard}
+          data-testid="mm-result-full-board"
+          sx={{ mt: 2, px: 0, textTransform: 'none' }}
+        >
+          {fullBoard ? t('matchmaking.result.hideBoard') : t('matchmaking.result.fullBoard')}
+        </Button>
       </Panel>
 
+      <Collapse in={fullBoard} unmountOnExit>
+      <Stack spacing={2}>
       {result.scoreboard.map((team) => (
         <Panel key={team.team} sx={{ p: { xs: 1, sm: 2 }, overflowX: 'auto' }}>
-          <SectionHead title={t('matchmaking.room.team', { n: team.team })} />
-          <Table size="small" aria-label={t('matchmaking.room.team', { n: team.team })}>
+          <SectionHead title={t('matchmaking.room.teamLetter', { letter: team.team === 1 ? 'A' : 'B' })} />
+          <Table size="small" aria-label={t('matchmaking.room.teamLetter', { letter: team.team === 1 ? 'A' : 'B' })}>
             <TableHead>
               <TableRow>
                 <TableCell>{t('matchmaking.result.player')}</TableCell>
@@ -258,6 +331,8 @@ export function MatchResult({ matchSlug }: { matchSlug: string }) {
           </Table>
         </Panel>
       ))}
+      </Stack>
+      </Collapse>
     </Stack>
   );
 }

@@ -9,9 +9,21 @@ import { Box, Button, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Panel } from '../common/ui';
+import { useSnackbar } from '../../contexts/SnackbarContext';
 import { fontDisplay, radii, textSize, tokens } from '../../theme/tokens';
 
 const { color } = tokens;
+
+/** The rarity colours CS2 uses (the same as the skins module's). */
+const RARITY_COLOR: Record<string, string> = {
+  common: '#b0c3d9',
+  uncommon: '#5e98d9',
+  rare: '#4b69ff',
+  mythical: '#8847ff',
+  legendary: '#d32ce6',
+  ancient: '#eb4b4b',
+  immortal: '#e4ae39',
+};
 
 interface Drop {
   id: number;
@@ -19,6 +31,7 @@ interface Drop {
   name: string;
   rarity: string;
   imageUrl: string;
+  equipped?: boolean;
   source: string;
   sourceRef: string | null;
   variant: string | null;
@@ -27,6 +40,27 @@ interface Drop {
 export function MatchDrop({ matchSlug }: { matchSlug: string }) {
   const { t } = useTranslation();
   const [drop, setDrop] = useState<Drop | null>(null);
+  const [equipping, setEquipping] = useState(false);
+  const { showError } = useSnackbar();
+
+  const equip = async () => {
+    if (!drop) return;
+    setEquipping(true);
+    try {
+      const res = await fetch('/api/skins/me/equip', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ skinId: drop.id }),
+      });
+      if (!res.ok) throw new Error(t('matchmaking.room.equipFailed'));
+      setDrop({ ...drop, equipped: true });
+    } catch (error) {
+      showError((error as Error).message);
+    } finally {
+      setEquipping(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -77,18 +111,25 @@ export function MatchDrop({ matchSlug }: { matchSlug: string }) {
           {drop.weaponName} · {drop.name}
           {drop.variant ? ` (${drop.variant})` : ''}
         </Typography>
-        <Typography sx={{ fontSize: textSize.sm, color: color.muted, textTransform: 'capitalize' }}>
+        <Box sx={{ mt: 0.75, height: 4, borderRadius: 2, bgcolor: RARITY_COLOR[drop.rarity] ?? color.rule }} aria-hidden />
+        <Typography sx={{ mt: 0.5, fontSize: textSize.sm, color: RARITY_COLOR[drop.rarity] ?? color.muted, textTransform: 'capitalize' }}>
           {drop.rarity}
         </Typography>
       </Box>
-      <Button
-        component={RouterLink}
-        to="/inventory"
-        variant="outlined"
-        sx={{ alignSelf: 'flex-start', borderRadius: radii.pill }}
-      >
-        {t('matchmaking.room.inventory')}
-      </Button>
+      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+        <Button
+          variant="contained"
+          disabled={equipping || drop.equipped}
+          onClick={() => void equip()}
+          data-testid="mm-drop-equip"
+          sx={{ borderRadius: radii.pill }}
+        >
+          {drop.equipped ? t('matchmaking.room.equipped') : t('matchmaking.room.equip')}
+        </Button>
+        <Button component={RouterLink} to="/inventory" variant="outlined" sx={{ borderRadius: radii.pill }}>
+          {t('matchmaking.room.inventory')}
+        </Button>
+      </Box>
     </Panel>
   );
 }
