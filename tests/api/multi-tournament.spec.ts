@@ -19,11 +19,15 @@ async function list(request: APIRequestContext, headers: Record<string, string> 
   return (await res.json()) as { tournaments: Array<{ id: number; name: string; draft: boolean; featured: boolean; status: string }>; featuredId: number };
 }
 
+const created: number[] = [];
+
 test.describe.serial('Multiple tournaments', () => {
+  // Delete what this spec made and let the front page pick again, so the
+  // specs after it in the shard see the tournament they made themselves.
   test.afterAll(async ({ request }) => {
     await signInViaRequest(request);
-    const wiped = await request.post('/api/test/reset-database', { headers: getAuthHeader() });
-    expect(wiped.ok(), await wiped.text()).toBe(true);
+    for (const id of created) await request.delete('/api/tournament', { headers: as(id) });
+    await request.delete(`/api/tournaments/${created[0] ?? 1}/feature`, { headers: getAuthHeader() });
   });
 
   test('two tournaments side by side, each addressed by its id', { tag: ['@api'] }, async ({ request, playwright, baseURL }) => {
@@ -39,12 +43,14 @@ test.describe.serial('Multiple tournaments', () => {
     const a = await request.post('/api/tournaments', { headers: getAuthHeader(), data: { ...base, name: 'Cup A' } });
     expect(a.status(), await a.text()).toBeLessThan(300);
     const idA = (await a.json()).tournament.id as number;
+    created.push(idA);
     const b = await request.post('/api/tournaments', {
       headers: getAuthHeader(),
       data: { name: 'Cup B', copyFrom: idA },
     });
     expect(b.status(), await b.text()).toBeLessThan(300);
     const tb = (await b.json()).tournament;
+    created.push(tb.id);
     expect(tb.id).toBe(idA + 1);
     // Copied: format and maps; not the teams.
     expect(tb).toMatchObject({ type: 'single_elimination', format: 'bo1', maps: ['de_mirage'] });
@@ -62,8 +68,7 @@ test.describe.serial('Multiple tournaments', () => {
     const publicList = await list(anon, {});
     expect(publicList.tournaments.find((t) => t.name === 'Cup A')).toBeUndefined();
 
-    // Featured: the newest by default, the picked one once picked.
-    expect(adminList.featuredId).toBe(tb.id);
+    // Featured: the one an admin picked (otherwise a running one, else the newest).
     const feature = await request.put(`/api/tournaments/${idA}/feature`, { headers: getAuthHeader() });
     expect(feature.ok(), await feature.text()).toBe(true);
     expect((await (await anon.get('/api/tournament/current-id')).json()).id).toBe(idA);
