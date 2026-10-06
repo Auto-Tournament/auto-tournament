@@ -135,11 +135,26 @@ test.describe.serial('Fleet hosts (csm)', () => {
     await expect.poll(async () => (await getHost(request, m.hostId)).online).toBe(false);
   });
 
+  test.afterAll(async ({ request }) => {
+    await request.post('/api/test/license-consent', { data: { action: 'restore' }, headers: { 'Content-Type': 'application/json' } });
+  });
+
   test('create server: progress, result, and the new server enrolls itself under the machine', async ({ request }) => {
     const m = await linkMachine(request, 'creator');
     const csm = await FakeCsm.connect(m.token, m.hostId, m.machineId);
     await csm.handshake();
     csm.sendEphemeral('host.inventory', inventory(m.hostId, [inventoryServer('server-1')]));
+
+    // Installs carry the license use accepted on the platform: record one
+    // here, since another spec in the shard may have cleared it.
+    const accepted = await request.post('/api/test/license-consent', {
+      data: {
+        action: 'set',
+        record: { use: 'noncommercial', acceptedAt: new Date().toISOString(), acceptedBy: 'test', source: 'admin', termsVersion: 1 },
+      },
+      headers: { 'Content-Type': 'application/json' },
+    });
+    expect(accepted.ok(), await accepted.text()).toBe(true);
 
     const sent = await command(request, m.hostId, { type: 'server.create', payload: { count: 1 } });
     expect(sent.status, JSON.stringify(sent.body)).toBe(202);
@@ -154,7 +169,7 @@ test.describe.serial('Fleet hosts (csm)', () => {
     expect(payload).toMatchObject({ count: 1, enroll: true });
     expect(payload.enroll_key).toMatch(/^rfk_/);
     // The license use accepted on the platform, for Ready Up's unattended installer.
-    expect((create.payload as { accept_license?: string }).accept_license).toMatch(/^(noncommercial|commercial)$/);
+    expect((create.payload as { accept_license?: string }).accept_license).toBe('noncommercial');
     const enrollKey = payload.enroll_key;
 
     csm.sendEphemeral('host.progress', { ref: commandId, step: 'provisioning server-2', pct: 40 });
@@ -170,7 +185,7 @@ test.describe.serial('Fleet hosts (csm)', () => {
     const install = await csm.nextCommand('host.update_plugins');
     const { accept_license: acceptLicense, ...installPayload } = install.payload as Record<string, unknown>;
     expect(installPayload).toEqual({ servers: ['server-2'], readyup: { version: 'latest', bundle: 'default' } });
-    expect(acceptLicense).toMatch(/^(noncommercial|commercial)$/);
+    expect(acceptLicense).toBe('noncommercial');
     const done = (await (await request.get(`/api/fleet/hosts/${m.hostId}/commands/${commandId}`)).json()).command;
     expect(done).toMatchObject({ status: 'ok', output: 'created server-2', type: 'server.create' });
     expect(done.meta).toMatchObject({ serversBefore: ['server-1'], newServers: ['server-2'], followUp: install.id });
