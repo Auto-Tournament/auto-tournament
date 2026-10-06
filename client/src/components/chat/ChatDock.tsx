@@ -12,6 +12,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Box, Button, ButtonBase, CircularProgress, IconButton, InputBase, Typography, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
+import { systemLineText } from './systemLine';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { useMatchmaking } from '../matchmaking/matchmakingStore';
@@ -103,7 +104,7 @@ function MessageLine({
         data-testid="chat-system-line"
         sx={{ alignSelf: 'center', fontSize: textSize.xs, color: color.muted, px: 1.5, py: 0.6, borderRadius: radii.pill, bgcolor: color.paper3, textAlign: 'center' }}
       >
-        {message.body}
+        {systemLineText(message.body, t)}
       </Typography>
     );
   }
@@ -521,7 +522,7 @@ export function ChatDock() {
               </Box>
             </Box>
             <Box component="span" sx={{ fontSize: textSize.md, color: color.ink2, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-              {peek.body}
+              {peek.senderKind === 'system' ? systemLineText(peek.body, t) : peek.body}
             </Box>
           </Box>
         </ButtonBase>

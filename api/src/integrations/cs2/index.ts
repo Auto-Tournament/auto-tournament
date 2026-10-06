@@ -286,7 +286,13 @@ export const cs2Integration: GameIntegration = {
   /** The veto's current turn, derived from the veto order before the first action. */
   async preMatchTurn(match) {
     const { resolveCurrentVetoTurn } = await import('./veto/context');
-    return (await resolveCurrentVetoTurn(match))?.currentTurn ?? null;
+    const turn = await resolveCurrentVetoTurn(match);
+    // The first time a player is told the veto is on, the match chat says so too.
+    if (turn && !match.veto_state && match.team1_id && match.team2_id) {
+      const { postVetoStarted } = await import('./veto/chatLines');
+      void postVetoStarted(match.slug, turn.currentTurn, turn.currentAction);
+    }
+    return turn?.currentTurn ?? null;
   },
 
   /** Simulation mode: auto-veto every match of the tournament waiting on a veto. */

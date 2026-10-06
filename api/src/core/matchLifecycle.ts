@@ -63,6 +63,7 @@ import {
   trackPlayerStatsForMatch,
   updateRatingsForMatch,
 } from './playerResults';
+import { matchTeamNames, postMatchChatLine } from '../services/matchChatLines';
 
 type MapResultEvent = Extract<NormalizedEvent, { type: 'map.result' }>;
 
@@ -79,14 +80,34 @@ const INTEGRATION_RESULT: ResultMeta = { source: 'integration', actorId: null };
 async function ingest(events: NormalizedEvent[]): Promise<void> {
   for (const event of events) {
     switch (event.type) {
+      case 'map.started':
+        void postMatchChatLine(event.slug, 'mapLive', { n: event.mapNumber + 1, map: event.mapName ?? '' });
+        break;
       case 'map.result': {
         const match = await matchBySlug(event.slug);
         if (match) {
           await handleMapCompletion(match, event);
+          const names = await matchTeamNames(event.slug);
+          void postMatchChatLine(event.slug, 'mapResult', {
+            n: event.mapNumber + 1,
+            map: event.mapName ?? '',
+            team1: names.team1,
+            team2: names.team2,
+            s1: event.team1Score,
+            s2: event.team2Score,
+          });
         }
         break;
       }
       case 'series.ended':
+        if (event.winner === 'team1' || event.winner === 'team2') {
+          const names = await matchTeamNames(event.slug);
+          void postMatchChatLine(event.slug, 'seriesWon', {
+            team: event.winner === 'team1' ? names.team1 : names.team2,
+            a: Math.max(event.team1SeriesScore, event.team2SeriesScore),
+            b: Math.min(event.team1SeriesScore, event.team2SeriesScore),
+          });
+        }
         await applySeriesResult(
           event.slug,
           {

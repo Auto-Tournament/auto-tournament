@@ -744,6 +744,21 @@
     "peekMatch": "Match · {{title}}",
     "peekTeam": "Team",
     "peekParty": "Party",
-    "buttonUnread": "Chat, {{count}} unread"
+    "buttonUnread": "Chat, {{count}} unread",
+    "system": {
+      "vetoStarted": "Veto rozpoczęte · zaczyna {{team}}",
+      "vetoBan": "{{team}} zbanowali {{map}}",
+      "vetoPick": "{{team}} wybrali {{map}}",
+      "vetoSide": "{{team}} zaczyna {{side}} na {{map}}",
+      "vetoDone": "Veto zakończone · {{maps}}",
+      "serverReady": "Serwer gotowy · {{map}} · dołącz ze strony meczu",
+      "playerJoined": "{{name}} wszedł na serwer · w środku: {{n}}",
+      "playerLeft": "{{name}} opuścił serwer · w środku: {{n}}",
+      "mapLive": "Mapa {{n}} trwa · {{map}}",
+      "mapResult": "Mapa {{n}} · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
+      "seriesWon": "{{team}} wygrywa serię {{a}}–{{b}}",
+      "adminCalled": "{{name}} wezwał admina",
+      "timedOut": "skończył się czas"
+    }
   }
 }

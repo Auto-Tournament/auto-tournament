@@ -744,6 +744,21 @@
     "peekMatch": "Kamp · {{title}}",
     "peekTeam": "Lag",
     "peekParty": "Gruppe",
-    "buttonUnread": "Chat, {{count}} uleste"
+    "buttonUnread": "Chat, {{count}} uleste",
+    "system": {
+      "vetoStarted": "Veto startet · {{team}} begynner",
+      "vetoBan": "{{team}} bannet {{map}}",
+      "vetoPick": "{{team}} valgte {{map}}",
+      "vetoSide": "{{team}} starter {{side}} på {{map}}",
+      "vetoDone": "Veto ferdig · {{maps}}",
+      "serverReady": "Serveren er klar · {{map}} · bli med fra kampsiden",
+      "playerJoined": "{{name}} kom inn på serveren · {{n}} inne",
+      "playerLeft": "{{name}} forlot serveren · {{n}} inne",
+      "mapLive": "Kart {{n}} er i gang · {{map}}",
+      "mapResult": "Kart {{n}} · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
+      "seriesWon": "{{team}} vinner serien {{a}}–{{b}}",
+      "adminCalled": "{{name}} tilkalte en admin",
+      "timedOut": "tiden gikk ut"
+    }
   }
 }
