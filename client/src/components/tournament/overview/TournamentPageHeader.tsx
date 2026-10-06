@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import type { Tournament } from '../../../types';
 import { GameMark } from '../../common/GameMark';
 import { useSetupGames } from '../setup/games';
+import { usePublicBracket } from '../../../hooks/usePublicBracket';
 import { MATCH_FORMATS } from '../../../constants/tournament';
 import { paths, tournamentTabPath, type TournamentTab } from '../../../paths';
 import { tokens, textSize, fontDisplay, mono, radii, withAlpha } from '../../../theme/tokens';
@@ -159,6 +160,24 @@ export function TournamentPageHeader({ tournament, tab, tabs, showManage }: Tour
   const isLive = tournament.status === 'in_progress';
   // A finished tournament with a champion puts the champion on the banner.
   const isFinished = tournament.status === 'completed' && Boolean(tournament.winner);
+  // "Won it 2–1 over Kebabgutta" (board 9): the champion's last match, read
+  // from the public bracket once the tournament is over.
+  const { matches } = usePublicBracket(isFinished ? tournament.id : undefined);
+  const final = isFinished
+    ? [...matches]
+        .filter((m) => m.status === 'completed' && m.winner?.id === tournament.winner?.id)
+        .sort((a, b) => (b.round ?? 0) - (a.round ?? 0) || Number(b.id) - Number(a.id))[0]
+    : undefined;
+  const championIsTeam1 = final?.team1?.id === tournament.winner?.id;
+  const finalOpponent = final ? (championIsTeam1 ? final.team2?.name : final.team1?.name) : undefined;
+  const finalLine =
+    final && finalOpponent && typeof final.team1Score === 'number' && typeof final.team2Score === 'number'
+      ? t('results.wonFinal', {
+          a: Math.max(final.team1Score, final.team2Score),
+          b: Math.min(final.team1Score, final.team2Score),
+          opponent: finalOpponent,
+        })
+      : null;
   const description = tournament.settings?.description?.trim();
 
   const typeLabelKey = `tournament.typeSelector.types.${tournament.type}.label`;
@@ -232,6 +251,11 @@ export function TournamentPageHeader({ tournament, tab, tabs, showManage }: Tour
             >
               {tournament.winner?.name}
             </Typography>
+            {finalLine && (
+              <Typography data-testid="tournament-champion-final" sx={{ color: color.ink2 }}>
+                {finalLine}
+              </Typography>
+            )}
           </Box>
         ) : isLive ? (
           <Box sx={{ flex: 1, bgcolor: withAlpha(color.paper, 0.82), display: 'flex', alignItems: 'center' }}>

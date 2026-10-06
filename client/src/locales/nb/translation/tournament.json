@@ -912,7 +912,8 @@
       "mostFlashAssists": "{{value}} flash-assists",
       "mostUtility": "{{value}} utility-skade",
       "biggestGain": "+{{value}} rating"
-    }
+    },
+    "wonFinal": "Vant finalen {{a}}–{{b}} mot {{opponent}}"
   },
   "signup": {
     "cta": "Meld på laget ditt",

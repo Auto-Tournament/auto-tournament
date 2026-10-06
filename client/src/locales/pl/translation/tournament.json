@@ -914,7 +914,8 @@
       "mostFlashAssists": "{{value}} flash assists",
       "mostUtility": "{{value}} utility damage",
       "biggestGain": "+{{value}} rating"
-    }
+    },
+    "wonFinal": "Wygrali finał {{a}}–{{b}} z {{opponent}}"
   },
   "signup": {
     "cta": "Sign up your team",
