@@ -29,11 +29,27 @@ export function setCurrentTournamentId(id: number): void {
 }
 
 /**
- * The tournament a request acts on: the current one. 3.1 reads it from the
- * route or session.
+ * The tournament a request names, or null: a `:tournamentId` route param, an
+ * `X-Tournament-Id` header (the admin UI sends the one it has selected; a
+ * tournament page sends its own), or `?tournamentId=`. Whether it exists is
+ * the route's to check, as with any id.
  */
-export function resolveTournamentId(_req?: Request): number {
-  return currentTournamentId;
+export function requestedTournamentId(req: Request | undefined): number | null {
+  if (!req) return null;
+  const params = (req.params ?? {}) as Record<string, unknown>;
+  const query = (req.query ?? {}) as Record<string, unknown>;
+  const header = typeof req.get === 'function' ? req.get('x-tournament-id') : undefined;
+  const raw = params.tournamentId ?? header ?? query.tournamentId;
+  const id = Number(Array.isArray(raw) ? raw[0] : raw);
+  return Number.isInteger(id) && id > 0 ? id : null;
+}
+
+/**
+ * The tournament a request acts on: the one it names
+ * (`requestedTournamentId`), else the featured one (services/currentTournament.ts).
+ */
+export function resolveTournamentId(req?: Request): number {
+  return requestedTournamentId(req) ?? currentTournamentId;
 }
 
 /**

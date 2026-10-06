@@ -182,7 +182,47 @@
     },
     "yourGames": "Games you play",
     "loading": "Loading your home page",
-    "nextMatch": "Your next match"
+    "nextMatch": "Your next match",
+    "live": {
+      "title": "Live now",
+      "count": "{{count}} running",
+      "chip": "Live"
+    },
+    "quiet": {
+      "title": "Coming up",
+      "more": "Also coming up"
+    },
+    "play": {
+      "title": "Play a match now",
+      "quietTitle": "Nothing on? Play a match.",
+      "hint": "Matchmaking puts you in a game as soon as enough players are queued.",
+      "cta": "Join the queue"
+    },
+    "signup": {
+      "open": "Sign-up open",
+      "cta": "Sign up",
+      "short": "Sign up",
+      "view": "View",
+      "title": "Sign up",
+      "aside": "Coming up"
+    },
+    "champions": {
+      "title": "Champions",
+      "aside": "Recently finished",
+      "all": "All results",
+      "won": "won {{name}}",
+      "finished": "Finished"
+    },
+    "lastTime": {
+      "title": "Last time",
+      "results": "Full results",
+      "second": "2nd",
+      "third": "3rd",
+      "champion": "Champion"
+    },
+    "teams": "Teams: {{count}}",
+    "none": "No tournaments yet. Check back soon.",
+    "allTournaments": "All tournaments"
   },
   "browsePage": {
     "title": "Browse tournaments",

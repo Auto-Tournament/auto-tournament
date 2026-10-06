@@ -16,6 +16,7 @@ import { tournamentService } from '../services/tournamentService';
 import { emitTournamentUpdate, emitBracketUpdate } from '../services/socketService';
 import { generateRoundMatches, advanceToNextRound } from '../services/shuffleTournamentService';
 import { resolveTournamentId, tournamentIdForMatch } from '../utils/tournamentRow';
+import { runningTournamentIds } from '../services/currentTournament';
 import { log } from '../utils/logger';
 import { settingsService } from '../services/settingsService';
 import type { DbMatchRow } from '../types/database.types';
@@ -1425,48 +1426,47 @@ export class Scheduler {
       }
 
       // Fleet-level trigger (a server freed up): no single tournament in the
-      // call chain. 3.1 walks every tournament with ready matches here.
-      const tournamentId = resolveTournamentId();
-      const readyMatches = await this.getReadyMatches(tournamentId);
+      // call chain, so every running tournament's ready matches get a try,
+      // oldest tournament first.
+      const tournamentIds = [...new Set([...(await runningTournamentIds()), resolveTournamentId()])];
       const standaloneSlugs = await this.getReadyStandaloneMatchSlugs();
-      if (readyMatches.length === 0 && standaloneSlugs.length === 0) {
-        return;
-      }
+      let anyReady = false;
+      for (const tournamentId of tournamentIds) {
+        const readyMatches = await this.getReadyMatches(tournamentId);
+        if (readyMatches.length === 0) continue;
+        anyReady = true;
 
-      const availableCount = await this.getAvailableServerCount(tournamentId);
-      if (availableCount === 0) {
-        return;
-      }
+        const availableCount = await this.getAvailableServerCount(tournamentId);
+        if (availableCount === 0) continue;
 
-      if (readyMatches.length === 0) {
-        await this.allocateStandaloneMatches(standaloneSlugs, webhookUrl);
-        return;
-      }
+        log.info(
+          `[ALLOCATION] Triggering immediate allocation attempt for ${readyMatches.length} ready match(es) of tournament ${tournamentId} (${availableCount} server(s) available)`
+        );
 
-      log.info(
-        `[ALLOCATION] Triggering immediate allocation attempt for ${readyMatches.length} ready match(es) (${availableCount} server(s) available)`
-      );
+        // Try to allocate each ready match (will stop when no more servers available)
+        const results = await this.allocateSpecificMatches(
+          tournamentId,
+          readyMatches.map((m) => m.slug),
+          webhookUrl
+        );
 
-      // Try to allocate each ready match (will stop when no more servers available)
-      const results = await this.allocateSpecificMatches(
-        tournamentId,
-        readyMatches.map((m) => m.slug),
-        webhookUrl
-      );
-
-      const successful = results.filter((r) => r.success).length;
-      if (successful > 0) {
-        log.success(`[ALLOCATION] Immediately allocated ${successful} match(es)`);
-      }
-
-      // Start polling for matches that couldn't be allocated immediately
-      const failed = results.filter((r) => !r.success);
-      if (failed.length > 0 && failed.length < readyMatches.length) {
-        // Only start polling if some (but not all) matches failed,
-        // indicating we might have servers available soon
-        for (const result of failed) {
-          this.startPollingForServer(result.matchSlug, webhookUrl);
+        const successful = results.filter((r) => r.success).length;
+        if (successful > 0) {
+          log.success(`[ALLOCATION] Immediately allocated ${successful} match(es)`);
         }
+
+        // Start polling for matches that couldn't be allocated immediately
+        const failed = results.filter((r) => !r.success);
+        if (failed.length > 0 && failed.length < readyMatches.length) {
+          // Only start polling if some (but not all) matches failed,
+          // indicating we might have servers available soon
+          for (const result of failed) {
+            this.startPollingForServer(result.matchSlug, webhookUrl);
+          }
+        }
+      }
+      if (!anyReady && standaloneSlugs.length === 0) {
+        return;
       }
 
       // Bracket matches first (they have a queue); manual matches take what is left.

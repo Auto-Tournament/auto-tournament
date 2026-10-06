@@ -6,6 +6,7 @@ import { log } from '../utils/logger';
 import { db } from '../config/database';
 import { integrationForMatch, listIntegrations } from '../integrations/registry';
 import packageJson from '../../package.json';
+import { runningTournamentIds } from '../services/currentTournament';
 
 const router = Router();
 
@@ -95,7 +96,12 @@ router.put('/', async (req: Request, res: Response) => {
   try {
     const error = await settingsService.applyUpdate(body, {
       tournamentId,
-      startPendingPreMatchPhases: () => startAutoVetoForRunningTournament(tournamentId),
+      // Instance settings: every running tournament's pending pre-match phases.
+      startPendingPreMatchPhases: async () => {
+        for (const id of new Set([tournamentId, ...(await runningTournamentIds())])) {
+          await startAutoVetoForRunningTournament(id);
+        }
+      },
     });
     if (error) {
       return res.status(400).json({ success: false, error });

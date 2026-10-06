@@ -34,6 +34,7 @@ import type {
   BracketMatch,
   BracketResponse,
 } from '../types/tournament.types';
+import { refreshCurrentTournamentId } from './currentTournament';
 import { bareSlug, isGrandFinalSlug, isLosersBracketSlug, shuffleTeamLike, tournamentSlugPrefix } from '../utils/matchSlug';
 
 /**
@@ -201,14 +202,16 @@ class TournamentService {
   async createTournament(
     tournamentId: number,
     input: CreateTournamentInput,
-    options: { game?: GameId } = {}
+    options: { game?: GameId; draft?: boolean } = {}
   ): Promise<TournamentResponse> {
     const { name, type, format, teamIds, settings } = input;
+    // A draft with no teams yet: no count check and no bracket until it has some.
+    const emptyDraft = options.draft === true && (teamIds?.length ?? 0) === 0;
 
     // Shuffle tournaments don't use teams, skip validation. With sign-up open
     // the teams sign themselves up later; the count is checked at start.
     const signupOpen = (settings as { registrationOpen?: unknown } | undefined)?.registrationOpen === true;
-    if (type !== 'shuffle' && !signupOpen) {
+    if (type !== 'shuffle' && !signupOpen && !emptyDraft) {
       // Validate team count based on tournament type
       validateTeamCount(type, teamIds.length);
     }
@@ -247,8 +250,8 @@ class TournamentService {
 
     // Shuffle tournaments don't use bracket generation. With sign-up open and
     // too few teams for the format yet, the bracket is drawn as teams sign up.
-    let drawNow = true;
-    if (signupOpen) {
+    let drawNow = !emptyDraft;
+    if (signupOpen && drawNow) {
       try {
         validateTeamCount(type, teamIds.length);
       } catch {
@@ -283,6 +286,7 @@ class TournamentService {
       throw new Error('Failed to create tournament');
     }
 
+    await refreshCurrentTournamentId();
     return created;
   }
 
@@ -373,6 +377,10 @@ class TournamentService {
    * Note: Server cleanup (ending matches) should be done by the caller before this
    */
   async deleteTournament(tournamentId: number): Promise<void> {
+    // Its matches' live stats go with it; other tournaments' stay.
+    const slugs = await db.queryAsync<{ slug: string }>('SELECT slug FROM matches WHERE tournament_id = ?', [
+      tournamentId,
+    ]);
     // First, clear server_id from all matches to clean up references
     await db.runAsync('UPDATE matches SET server_id = NULL WHERE tournament_id = ?', [tournamentId]);
     log.debug('Cleared server references from matches');
@@ -381,9 +389,10 @@ class TournamentService {
     await db.runAsync('DELETE FROM tournament WHERE id = ?', [tournamentId]);
     log.debug('Tournament deleted from database');
 
-    // Live stats are keyed by slug, and the next bracket reuses slugs (r1m1...):
+    // Live stats are keyed by slug, and a replacing bracket reuses slugs (r1m1...):
     // without this a new r1m1 started with the old one's series score.
-    matchLiveStatsService.clearAll();
+    for (const { slug } of slugs) matchLiveStatsService.clear(slug);
+    await refreshCurrentTournamentId();
   }
 
   /**
@@ -598,11 +607,15 @@ class TournamentService {
     // history before the matches go. (deleteTournament keeps both.)
     await discardTournamentRatings(tournamentId);
 
+    // This tournament's live stats go, so its new bracket does not inherit
+    // stale scores; other tournaments' stay.
+    const resetSlugs = await db.queryAsync<{ slug: string }>('SELECT slug FROM matches WHERE tournament_id = ?', [
+      tournamentId,
+    ]);
+    for (const { slug } of resetSlugs) matchLiveStatsService.clear(slug);
+
     // Delete all matches (this also clears all veto states stored in matches)
     await db.runAsync('DELETE FROM matches WHERE tournament_id = ?', [tournamentId]);
-
-    // Also clear any in-memory live stats so new brackets don't inherit stale scores
-    matchLiveStatsService.clearAll();
 
     // Shuffle tournaments have their own dynamic match/round generation and
     // temporary teams. Resetting should NOT attempt to regenerate a static bracket.

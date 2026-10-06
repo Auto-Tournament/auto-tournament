@@ -309,7 +309,10 @@
         "people": "Deltakere",
         "game": "Spill",
         "configuration": "Konfigurasjon"
-      }
+      },
+      "allTournaments": "Alle turneringer",
+      "switcher": "Turnering",
+      "newTournament": "Ny turnering"
     },
     "status": {
       "live": "LIVE",
@@ -481,5 +484,57 @@
       "periodEnded": "Denne arrangementslisensen gjaldt til og med {{date}}. Testing og oppsett krever ingenting; et nytt arrangement får sin egen arrangementslisens.",
       "periodNotStarted": "Denne arrangementslisensen gjelder fra {{date}}. Det er helt greit å sette opp og teste før det."
     }
+  },
+  "tournamentsPage": {
+    "title": "Turneringer",
+    "subtitle": "Alle turneringene på siden. Velgeren øverst i menyen bestemmer hvilken de andre adminsidene gjelder.",
+    "liveShared": "{{count}} pågår og deler serverne. Kampene får server i den rekkefølgen de ble klare.",
+    "new": "Ny turnering",
+    "empty": "Ingen turneringer ennå. Opprett den første.",
+    "col": {
+      "name": "Navn",
+      "status": "Status",
+      "when": "Når",
+      "entries": "Påmeldte",
+      "frontPage": "Forsiden",
+      "actions": "Handlinger"
+    },
+    "status": {
+      "live": "Pågår",
+      "finished": "Ferdig",
+      "signup": "Påmelding åpen",
+      "draft": "Utkast"
+    },
+    "front": {
+      "featured": "Fremhevet",
+      "shown": "Vises",
+      "hidden": "Skjult",
+      "archived": "Arkivert"
+    },
+    "won": "{{name}} vant",
+    "selected": "valgt",
+    "more": "Mer for {{name}}",
+    "menu": {
+      "open": "Åpne",
+      "page": "Offentlig side",
+      "feature": "Fremhev på forsiden",
+      "archive": "Arkiver (fjern fra forsiden)",
+      "delete": "Slett"
+    },
+    "toast": {
+      "featured": "Fremhevet på forsiden",
+      "archived": "Arkivert",
+      "deleted": "Turneringen er slettet"
+    },
+    "deleteTitle": "Slette denne turneringen?",
+    "deleteMessage": "{{name}} og kampene, resultatene og statistikken slettes. Dette kan ikke angres.",
+    "newName": "Navn",
+    "newNameBlank": "Du gir den navn i oppsettet",
+    "startFrom": "Start fra",
+    "blank": "Tom",
+    "blankHint": "Velg spill, format og kart i oppsettet",
+    "copy": "Kopier {{name}}",
+    "copyHint": "Samme format, kart, regler og side. Lag og datoer starter tomme.",
+    "create": "Opprett og sett opp"
   }
 }

@@ -83,9 +83,9 @@ router.get('/current-id', (_req: Request, res: Response) => {
  *       409:
  *         description: Not finished
  */
-router.post('/archive', requireAuth, async (_req: Request, res: Response) => {
+router.post('/archive', requireAuth, async (req: Request, res: Response) => {
   try {
-    const result = await archiveCurrentTournament();
+    const result = await archiveCurrentTournament(resolveTournamentId(req));
     return res.json({ success: true, ...result });
   } catch (error) {
     if (error instanceof TournamentArchiveError) {
@@ -816,7 +816,10 @@ router.post('/', async (req: Request, res: Response) => {
 
     // With sign-up open the teams arrive later; the count is checked at start.
     const signupOpen = (input.settings as { registrationOpen?: unknown } | undefined)?.registrationOpen === true;
-    if (input.teamIds.length < 2 && !signupOpen) {
+    // A draft made from the tournament list (POST /api/tournaments) may start
+    // with no teams; they are picked, or sign up, before it starts.
+    const draft = (req as Request & { atDraft?: boolean }).atDraft === true && (input.teamIds?.length ?? 0) === 0;
+    if (input.teamIds.length < 2 && !signupOpen && !draft) {
       return res.status(400).json({
         success: false,
         error: 'At least 2 teams are required',
@@ -838,11 +841,10 @@ router.post('/', async (req: Request, res: Response) => {
       });
     }
 
-    const tournament = await tournamentService.createTournament(
-      tournamentId,
-      input,
-      game ? { game } : {}
-    );
+    const tournament = await tournamentService.createTournament(tournamentId, input, {
+      ...(game ? { game } : {}),
+      ...(draft ? { draft: true } : {}),
+    });
 
     return res.json({
       success: true,
@@ -1896,15 +1898,13 @@ router.post('/shuffle', async (req: Request, res: Response) => {
  */
 router.post('/:id/manual-matches', async (req: Request, res: Response) => {
   try {
-    const tournamentId = resolveTournamentId(req);
-    const { id } = req.params;
+    // The tournament in the URL: any that exists.
+    const urlTournamentId = await readableTournamentId(req.params.id);
 
-    if (id !== String(tournamentId)) {
-      return res.status(400).json({
-        success: false,
-        error: `Only tournament ID ${tournamentId} is supported`,
-      });
+    if (urlTournamentId === null) {
+      return res.status(404).json({ success: false, error: 'Tournament not found' });
     }
+    const tournamentId = urlTournamentId;
 
     const tournament = await tournamentService.getTournament(tournamentId);
     if (!tournament || tournament.type !== 'shuffle') {
@@ -2254,16 +2254,14 @@ router.post('/:id/manual-matches', async (req: Request, res: Response) => {
  */
 router.post('/:id/register-players', async (req: Request, res: Response) => {
   try {
-    const tournamentId = resolveTournamentId(req);
-    const { id } = req.params;
+    // The tournament in the URL: any that exists.
+    const urlTournamentId = await readableTournamentId(req.params.id);
     const { playerIds } = req.body;
 
-    if (id !== String(tournamentId)) {
-      return res.status(400).json({
-        success: false,
-        error: `Only tournament ID ${tournamentId} is supported`,
-      });
+    if (urlTournamentId === null) {
+      return res.status(404).json({ success: false, error: 'Tournament not found' });
     }
+    const tournamentId = urlTournamentId;
 
     if (!Array.isArray(playerIds) || playerIds.length === 0) {
       return res.status(400).json({
@@ -2334,16 +2332,14 @@ router.post('/:id/register-players', async (req: Request, res: Response) => {
  */
 router.put('/:id/set-players', async (req: Request, res: Response) => {
   try {
-    const tournamentId = resolveTournamentId(req);
-    const { id } = req.params;
+    // The tournament in the URL: any that exists.
+    const urlTournamentId = await readableTournamentId(req.params.id);
     const { playerIds } = req.body;
 
-    if (id !== String(tournamentId)) {
-      return res.status(400).json({
-        success: false,
-        error: `Only tournament ID ${tournamentId} is supported`,
-      });
+    if (urlTournamentId === null) {
+      return res.status(404).json({ success: false, error: 'Tournament not found' });
     }
+    const tournamentId = urlTournamentId;
 
     if (!Array.isArray(playerIds)) {
       return res.status(400).json({
@@ -2402,15 +2398,13 @@ router.put('/:id/set-players', async (req: Request, res: Response) => {
  */
 router.get('/:id/players', async (req: Request, res: Response) => {
   try {
-    const tournamentId = resolveTournamentId(req);
-    const { id } = req.params;
+    // The tournament in the URL: any that exists.
+    const urlTournamentId = await readableTournamentId(req.params.id);
 
-    if (id !== String(tournamentId)) {
-      return res.status(400).json({
-        success: false,
-        error: `Only tournament ID ${tournamentId} is supported`,
-      });
+    if (urlTournamentId === null) {
+      return res.status(404).json({ success: false, error: 'Tournament not found' });
     }
+    const tournamentId = urlTournamentId;
 
     const players = await getRegisteredPlayers(tournamentId);
 
@@ -2456,15 +2450,13 @@ router.get('/:id/players', async (req: Request, res: Response) => {
  */
 router.get('/:id/round-status', async (req: Request, res: Response) => {
   try {
-    const tournamentId = resolveTournamentId(req);
-    const { id } = req.params;
+    // The tournament in the URL: any that exists.
+    const urlTournamentId = await readableTournamentId(req.params.id);
 
-    if (id !== String(tournamentId)) {
-      return res.status(400).json({
-        success: false,
-        error: `Only tournament ID ${tournamentId} is supported`,
-      });
+    if (urlTournamentId === null) {
+      return res.status(404).json({ success: false, error: 'Tournament not found' });
     }
+    const tournamentId = urlTournamentId;
 
     const leaderboardData = await getTournamentLeaderboard(tournamentId);
 
@@ -2491,16 +2483,14 @@ router.get('/:id/round-status', async (req: Request, res: Response) => {
  */
 router.post('/:id/generate-round', async (req: Request, res: Response) => {
   try {
-    const tournamentId = resolveTournamentId(req);
-    const { id } = req.params;
+    // The tournament in the URL: any that exists.
+    const urlTournamentId = await readableTournamentId(req.params.id);
     const { roundNumber } = req.body;
 
-    if (id !== String(tournamentId)) {
-      return res.status(400).json({
-        success: false,
-        error: `Only tournament ID ${tournamentId} is supported`,
-      });
+    if (urlTournamentId === null) {
+      return res.status(404).json({ success: false, error: 'Tournament not found' });
     }
+    const tournamentId = urlTournamentId;
 
     if (!roundNumber || typeof roundNumber !== 'number') {
       return res.status(400).json({

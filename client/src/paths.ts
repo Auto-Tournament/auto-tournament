@@ -59,6 +59,8 @@ export const paths = {
   players: '/players',
   servers: '/servers',
   tournament: '/tournament',
+  /** Admin: every tournament, and creating another. */
+  tournaments: '/tournaments',
   bracket: '/bracket',
   matches: '/matches',
   /** Results nobody agrees on (3.0 phase D, PR D8). */

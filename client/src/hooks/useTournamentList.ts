@@ -33,21 +33,64 @@ export interface TournamentSummary {
   /** Matches live or loading right now. */
   liveMatchCount?: number;
   winner?: { id: string; name: string; tag?: string } | null;
+  /** The front page's big card (one at a time). */
+  featured?: boolean;
+  /** Finished and off the front page's lists; its page stays. */
+  archived?: boolean;
+  description?: string | null;
+  bannerUrl?: string | null;
+  registrationOpen?: boolean;
+  /** Teams signed up (players for a shuffle), against the cap when there is one. */
+  entries?: number;
+  maxEntries?: number | null;
 }
 
-/** The public leaderboard's extras next to the tournament. */
-interface LeaderboardExtras {
-  liveMatchCount?: number;
+/** A tournament as `GET /api/tournaments` lists it. */
+interface ListedTournament {
+  id: number;
+  name: string;
+  game: string;
+  type: Tournament['type'];
+  format: Tournament['format'];
+  status: Tournament['status'];
+  description: string | null;
+  bannerUrl: string | null;
+  entries: number;
+  maxEntries: number | null;
+  registrationOpen: boolean;
+  startsAt: number | null;
+  startedAt: number | null;
+  completedAt: number | null;
+  winner: { id: string; name: string; tag?: string } | null;
+  featured: boolean;
+  archived: boolean;
+  draft: boolean;
 }
 
-/** Epoch ms of the first schedule row, or of the start; undefined when neither is known. */
-function startTime(tournament: Tournament): number | undefined {
-  const scheduled = (tournament.settings?.schedule ?? [])
-    .map((item) => new Date(item.at).getTime())
-    .filter((time) => Number.isFinite(time));
-  if (scheduled.length > 0) return Math.min(...scheduled);
-  return tournament.started_at ? tournament.started_at * 1000 : undefined;
+function fromListed(t: ListedTournament): TournamentSummary {
+  return {
+    id: t.id,
+    name: t.name,
+    game: catalogSlugFor(t.game),
+    status: t.status,
+    type: t.type,
+    format: t.format,
+    teamCount: t.entries,
+    startsAt: t.startsAt ? t.startsAt * 1000 : undefined,
+    completedAt: t.completedAt ? t.completedAt * 1000 : undefined,
+    isLive: t.status === 'in_progress',
+    winner: t.winner,
+    featured: t.featured,
+    archived: t.archived,
+    description: t.description,
+    bannerUrl: t.bannerUrl,
+    registrationOpen: t.registrationOpen,
+    entries: t.entries,
+    maxEntries: t.maxEntries,
+  };
 }
+
+
 
 interface UseTournamentListResult {
   tournaments: TournamentSummary[];
@@ -93,40 +136,10 @@ export function useCurrentTournamentId(): number {
   return id;
 }
 
-function toSummary(tournament: Tournament, extras: LeaderboardExtras = {}): TournamentSummary {
-  return {
-    id: tournament.id,
-    name: tournament.name,
-    // The row's own game, as a catalogue slug. It was hard-coded to CS2 while
-    // that was the only game a tournament could be for; from 3.0 phase D it
-    // can be any of them (PR D9).
-    game: catalogSlugFor(tournament.game),
-    status: tournament.status,
-    type: tournament.type,
-    format: tournament.format,
-    teamCount: tournament.teamIds?.length ?? 0,
-    teamSize: tournament.teamSize,
-    startsAt: startTime(tournament),
-    completedAt: tournament.completed_at ? tournament.completed_at * 1000 : undefined,
-    organizer: tournament.settings?.organizer?.trim() || undefined,
-    location: tournament.settings?.location,
-    isLive: tournament.status === 'in_progress',
-    liveMatchCount: extras.liveMatchCount,
-    winner: tournament.winner ?? null,
-  };
-}
 
 /**
- * The tournaments this instance knows about, shaped for list views.
- *
- * 3.1: switch to GET /api/tournaments (plural) — pages don't change. Today
- * there is exactly one tournament row per instance and no admin-free way to
- * ask for it directly, so this fetches it through the public per-tournament
- * leaderboard route (the same one `usePublicTournamentOverview` uses, and
- * the same "not found comes back as a 500 whose message says so" quirk that
- * hook already works around) and returns an array of 0 or 1 entries.
- * Callers (Home, Browse) are written against the array so that swap is the
- * only thing that has to change.
+ * The tournaments this instance runs, shaped for list views: every one but
+ * the drafts, newest first (`GET /api/tournaments`).
  */
 export function useTournamentList(): UseTournamentListResult {
   const [tournaments, setTournaments] = useState<TournamentSummary[]>([]);
@@ -137,10 +150,9 @@ export function useTournamentList(): UseTournamentListResult {
     setLoading(true);
     setError('');
     try {
-      const response = await api.get<
-        { success: boolean; tournament?: Tournament } & LeaderboardExtras
-      >(`/api/tournament/${await fetchCurrentTournamentId()}/leaderboard`);
-      setTournaments(response.tournament ? [toSummary(response.tournament, response)] : []);
+      // Every tournament, newest first; drafts stay on the admin pages.
+      const response = await api.get<{ success: boolean; tournaments?: ListedTournament[] }>('/api/tournaments');
+      setTournaments((response.tournaments ?? []).filter((t) => !t.draft).map(fromListed));
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       const isNotFound = message.includes('404') || message.toLowerCase().includes('not found');

@@ -309,7 +309,10 @@
       },
       "label": "Admin",
       "publicPage": "Public page",
-      "opensInNewTab": "(opens in a new tab)"
+      "opensInNewTab": "(opens in a new tab)",
+      "allTournaments": "All tournaments",
+      "switcher": "Tournament",
+      "newTournament": "New tournament"
     },
     "status": {
       "live": "LIVE",
@@ -481,5 +484,57 @@
       "periodEnded": "此赛事许可证的适用日期截至 {{date}}。测试和准备无需任何操作；新的赛事需要单独的赛事许可证。",
       "periodNotStarted": "此赛事许可证从 {{date}} 起适用。在此之前进行准备和测试完全没问题。"
     }
+  },
+  "tournamentsPage": {
+    "title": "Tournaments",
+    "subtitle": "Every tournament on this site. The switcher at the top of the menu picks the one the other admin pages act on.",
+    "liveShared": "{{count}} live, sharing the servers. Matches get a server in the order they became ready.",
+    "new": "New tournament",
+    "empty": "No tournaments yet. Create the first one.",
+    "col": {
+      "name": "Name",
+      "status": "Status",
+      "when": "When",
+      "entries": "Entries",
+      "frontPage": "Front page",
+      "actions": "Actions"
+    },
+    "status": {
+      "live": "Live",
+      "finished": "Finished",
+      "signup": "Sign-up open",
+      "draft": "Draft"
+    },
+    "front": {
+      "featured": "Featured",
+      "shown": "Shown",
+      "hidden": "Hidden",
+      "archived": "Archived"
+    },
+    "won": "{{name}} won",
+    "selected": "selected",
+    "more": "More for {{name}}",
+    "menu": {
+      "open": "Open",
+      "page": "Public page",
+      "feature": "Feature on the front page",
+      "archive": "Archive (off the front page)",
+      "delete": "Delete"
+    },
+    "toast": {
+      "featured": "Featured on the front page",
+      "archived": "Archived",
+      "deleted": "Tournament deleted"
+    },
+    "deleteTitle": "Delete this tournament?",
+    "deleteMessage": "{{name}} and its matches, results and stats are deleted. This cannot be undone.",
+    "newName": "Name",
+    "newNameBlank": "You name it in the setup",
+    "startFrom": "Start from",
+    "blank": "Blank",
+    "blankHint": "Pick the game, format and maps in the setup",
+    "copy": "Copy {{name}}",
+    "copyHint": "Same format, maps, rules and page. Teams and dates start empty.",
+    "create": "Create and set up"
   }
 }
