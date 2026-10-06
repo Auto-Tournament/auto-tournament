@@ -607,6 +607,10 @@
       "description": "Named sets of maps for veto and match config."
     },
     {
+      "name": "Map radars",
+      "description": "Map radar images and coordinates for the 2D replay, read from a CS2 install's own files by the worker."
+    },
+    {
       "name": "Maps",
       "description": "The map catalogue."
     },
@@ -4751,6 +4755,116 @@
             "schema": {
               "type": "string"
             }
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/radars": {
+      "get": {
+        "tags": [
+          "Map radars"
+        ],
+        "summary": "GET /api/game/cs2/radars",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/game/cs2/radars/{map}": {
+      "get": {
+        "tags": [
+          "Map radars"
+        ],
+        "summary": "GET /api/game/cs2/radars/:map",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "map",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/radars/{map}/{file}": {
+      "get": {
+        "tags": [
+          "Map radars"
+        ],
+        "summary": "GET /api/game/cs2/radars/:map/:file",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "map",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "file",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/radars/{map}/{level}": {
+      "put": {
+        "tags": [
+          "Map radars"
+        ],
+        "summary": "PUT /api/game/cs2/radars/:map/:level",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "map",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "level",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
           }
         ]
       }
