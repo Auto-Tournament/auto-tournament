@@ -53,7 +53,7 @@ import { SkinsAdminPage } from './skins/SkinsAdminPage';
 import { cs2AdminPaths } from './adminPaths';
 import { InventoryPage } from './skins/InventoryPage';
 import { NewSkinReveal } from './skins/NewSkinReveal';
-import { ProfileLoadoutSection } from './skins/ProfileLoadout';
+import { ProfileLoadoutTab } from './skins/ProfileLoadout';
 import { skinPaths } from './skins/paths';
 import { skinsAccountMenuItems } from './skins/useSkins';
 import { cs2Locales } from './locales';
@@ -187,7 +187,8 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   // skins are on, the "new skin" reveal, and the loadout on profiles.
   accountMenuItems: skinsAccountMenuItems,
   globalOverlay: NewSkinReveal,
-  playerProfileSection: ProfileLoadoutSection,
+  // The profile's Loadout tab, while skins are on.
+  playerProfileTab: { labelKey: 'skins.loadout', Component: ProfileLoadoutTab },
 
   // At URLs the platform keeps. The Steam connect page these used to include
   // is core's now: Steam is the platform's sign-in, not this game's.
