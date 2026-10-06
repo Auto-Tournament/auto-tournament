@@ -27,7 +27,7 @@ Or a binary: `go build -o at-worker .` (Linux), `GOOS=windows go build -o at-wor
 | Variable | Default | |
 |---|---|---|
 | `AT_URL` | `http://auto-tournament:3000` | the platform |
-| `AT_WORKER_TOKEN` | first of `API_TOKENS` | an API token |
+| `AT_WORKER_TOKEN` | the first of `API_TOKENS` (its secret, without the `label:`) | an API token |
 | `AT_POLL_SECONDS` | `30` | wait between empty checks |
 
 ## Develop

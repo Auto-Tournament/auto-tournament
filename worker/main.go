@@ -50,6 +50,23 @@ func env(key, fallback string) string {
 	return fallback
 }
 
+// firstToken is the secret of the first API_TOKENS entry. Entries are split
+// by commas, semicolons or whitespace, and each is `label:secret` or a bare
+// secret (api/src/utils/serviceTokens.ts).
+func firstToken(raw string) string {
+	for _, entry := range strings.FieldsFunc(raw, func(r rune) bool {
+		return r == ',' || r == ';' || r == ' ' || r == '\t' || r == '\n' || r == '\r'
+	}) {
+		if i := strings.Index(entry, ":"); i >= 0 {
+			entry = entry[i+1:]
+		}
+		if entry = strings.TrimSpace(entry); entry != "" {
+			return entry
+		}
+	}
+	return ""
+}
+
 func (c *client) do(ctx context.Context, method, path, contentType string, body io.Reader) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, method, c.base+path, body)
 	if err != nil {
@@ -182,7 +199,7 @@ func main() {
 		return
 	}
 
-	token := env("AT_WORKER_TOKEN", strings.TrimSpace(strings.Split(os.Getenv("API_TOKENS"), ",")[0]))
+	token := env("AT_WORKER_TOKEN", firstToken(os.Getenv("API_TOKENS")))
 	if token == "" {
 		log.Fatal("Set AT_WORKER_TOKEN (or API_TOKENS) to an API token of the platform.")
 	}
