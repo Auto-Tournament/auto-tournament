@@ -2,6 +2,7 @@ import type { Request } from 'express';
 import type { DbTournamentRow } from '../types/database.types';
 import type { TournamentResponse, TournamentSettings } from '../types/tournament.types';
 import { DEFAULT_GAME, type GameId } from '../integrations/types';
+import { bannerUrl } from '../services/tournamentBannerService';
 import { moduleResponseFields } from './moduleTournamentSettings';
 
 /**
@@ -125,5 +126,6 @@ export function tournamentRowToResponse(row: DbTournamentRow): TournamentRespons
     overtimeSegments: moduleFields.overtimeSegments,
     ...(moduleFields.mapPoolId !== undefined ? { mapPoolId: moduleFields.mapPoolId } : {}),
     eloTemplateId: row.elo_template_id ?? undefined,
+    bannerUrl: bannerUrl(row.id, row.banner_updated_at),
   };
 }

@@ -93,6 +93,8 @@ export interface SetupTournament extends ReviewTournament {
   /** Game integration (API `game`); new tournaments use the setup's game. */
   game?: string;
   settings?: TournamentSettings;
+  /** The page banner's URL, once one is uploaded. */
+  bannerUrl?: string | null;
 }
 
 interface TournamentSetupProps {
@@ -640,6 +642,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
             key={`event-page-${tournament.id}`}
             variant="embedded"
             settings={tournament.settings}
+            bannerUrl={tournament.bannerUrl}
             saving={saving}
             onSave={props.onSaveEventPage}
           />

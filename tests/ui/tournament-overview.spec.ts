@@ -7,9 +7,10 @@ import { createTestTeams } from '../helpers/teams';
  * Public tournament "Overview" page.
  *
  * `/tournament/:id` is a public route (adminOnly={false}): the page renders
- * from the tournament's public leaderboard payload, and a section (About,
- * Rules, Prizes, Schedule) only shows up when the organizer actually filled
- * it in — no "—" placeholders on the real page.
+ * from the tournament's public leaderboard payload. The header carries the
+ * description; the overview has the key dates, the map pool and the schedule
+ * as a calendar; rules are on their own tab. A section only shows up when the
+ * organizer filled it in.
  *
  * @tag ui
  * @tag public
@@ -22,7 +23,7 @@ test.describe.serial('Tournament Overview UI', () => {
   });
 
   test(
-    'shows description, rules, prizes and schedule when the organizer set them',
+    'shows the description, map pool, schedule calendar and a Rules tab when the organizer set them',
     { tag: ['@ui', '@public', '@tournament'] },
     async ({ page, request }) => {
       const teams = await createTestTeams(request, 'overview-filled');
@@ -50,15 +51,22 @@ test.describe.serial('Tournament Overview UI', () => {
 
       await expect(page.getByTestId('overview-about')).toBeVisible();
       await expect(page.getByTestId('overview-about')).toContainText('spring LAN main event');
-      await expect(page.getByTestId('overview-rules')).toBeVisible();
-      await expect(page.getByTestId('overview-prizes')).toBeVisible();
-      await expect(page.getByTestId('overview-prizes')).toContainText('$500');
+      await expect(page.getByTestId('overview-key-starts')).toBeVisible();
       await expect(page.getByTestId('overview-schedule')).toBeVisible();
+      await expect(page.getByTestId('schedule-event')).toContainText('Quarterfinals');
+
+      // The map pool is a row of icons; it opens the maps with their pictures.
+      await page.getByTestId('overview-map-pool').click();
+      await expect(page.getByTestId('map-pool-dialog-maps')).toContainText('Mirage');
+      await page.keyboard.press('Escape');
+
+      await page.getByTestId('tournament-tab-rules').click();
+      await expect(page.getByTestId('overview-rules')).toContainText('Be ready 10 minutes');
     }
   );
 
   test(
-    'hides About, Rules and Prizes when the organizer set none of them',
+    'hides the description, schedule and Rules tab when the organizer set none of them',
     { tag: ['@ui', '@public', '@tournament'] },
     async ({ page, request }) => {
       const teams = await createTestTeams(request, 'overview-empty');
@@ -78,18 +86,18 @@ test.describe.serial('Tournament Overview UI', () => {
       await expect(page.getByTestId('public-tournament-overview')).toBeVisible({ timeout: 15000 });
 
       await expect(page.getByTestId('overview-about')).toHaveCount(0);
-      await expect(page.getByTestId('overview-rules')).toHaveCount(0);
-      await expect(page.getByTestId('overview-prizes')).toHaveCount(0);
       await expect(page.getByTestId('overview-schedule')).toHaveCount(0);
+      await expect(page.getByTestId('tournament-tab-rules')).toHaveCount(0);
 
-      // The facts grid (teams, format, etc.) is derived from the tournament
-      // itself, so it should still show up even with no organizer content.
-      await expect(page.getByTestId('overview-facts')).toBeVisible();
+      // The team count and the map pool come from the tournament itself, so
+      // they show up even with no organizer content.
+      await expect(page.getByTestId('overview-key-teams')).toContainText('2');
+      await expect(page.getByTestId('overview-map-pool')).toBeVisible();
     }
   );
 
   test(
-    'has one H1, the organizer line and a tab for bracket, matches, teams and standings',
+    'has one H1 on the banner header and a tab for bracket, matches, teams and standings',
     { tag: ['@ui', '@public', '@tournament'] },
     async ({ page, request }) => {
       const teams = await createTestTeams(request, 'overview-tabs');
@@ -110,7 +118,7 @@ test.describe.serial('Tournament Overview UI', () => {
 
       await page.goto(`/tournament/${id}`, { waitUntil: 'domcontentloaded' });
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(name, { timeout: 15000 });
-      await expect(page.getByTestId('tournament-header')).toContainText('Edition 35 LAN');
+      await expect(page.getByTestId('tournament-hero')).toBeVisible();
       await expect(page.getByTestId('tournament-game')).toBeVisible();
       await expect(page.getByTestId('tournament-tab-overview')).toHaveAttribute('aria-current', 'page');
 

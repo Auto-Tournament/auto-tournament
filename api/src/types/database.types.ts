@@ -55,6 +55,8 @@ export interface DbTournamentRow {
   game?: string;
   team_size?: number | null;
   elo_template_id?: string | null;
+  /** When the banner in `tournament_banner` was last set; null without one. */
+  banner_updated_at?: number | null;
 }
 
 export interface DbEventRow {

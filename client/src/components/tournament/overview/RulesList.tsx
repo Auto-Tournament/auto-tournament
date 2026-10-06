@@ -10,7 +10,7 @@ interface RulesListProps {
 
 /** Numbered rules, plus an optional "Full rulebook" link. */
 export function RulesList({ rules, rulebookUrl, rulebookLinkLabel }: RulesListProps) {
-  if (rules.length === 0) return null;
+  if (rules.length === 0 && !rulebookUrl) return null;
 
   return (
     <Box data-testid="overview-rules">

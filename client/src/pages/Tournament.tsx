@@ -1166,6 +1166,7 @@ const Tournament: React.FC = () => {
       {tournament && isLive && (
         <EventPageSettingsCard
           settings={tournament.settings}
+          bannerUrl={tournament.bannerUrl}
           saving={saving}
           onSave={updateSettings}
         />

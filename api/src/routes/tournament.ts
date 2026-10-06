@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import express, { Router, Request, Response } from 'express';
 import { tournamentService } from '../services/tournamentService';
 import { scheduler } from '../core/scheduler';
 import { db } from '../config/database';
@@ -25,6 +25,11 @@ import { integrationForMatch } from '../integrations/registry';
 import { resolveGameRef } from '../services/gameCatalogService';
 import { teamMembers } from '../services/teamMembers';
 import { toPublicBracket } from '../utils/publicBracket';
+import {
+  BANNER_MAX_BYTES,
+  BannerError,
+  tournamentBannerService,
+} from '../services/tournamentBannerService';
 import type {
   GameId,
   TournamentSettingsInput,
@@ -262,8 +267,120 @@ router.get('/:id/bracket', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * @openapi
+ * /api/tournament/{id}/banner:
+ *   get:
+ *     tags:
+ *       - Tournament
+ *     summary: The tournament page's banner image (public)
+ *     description: |
+ *       No session. The wide image behind the tournament page header, as the
+ *       PNG, JPEG or WEBP the admin uploaded. The tournament's `bannerUrl`
+ *       carries a version (`?v=`), so the response is cached for good.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: The image
+ *       404:
+ *         description: No banner
+ */
+router.get('/:id/banner', async (req: Request, res: Response) => {
+  try {
+    const tournamentId = resolveTournamentId(req);
+    if (req.params.id !== String(tournamentId)) return res.status(404).end();
+    const banner = await tournamentBannerService.get(tournamentId);
+    if (!banner) return res.status(404).end();
+    res.setHeader('Content-Type', banner.type);
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    return res.send(banner.data);
+  } catch (error) {
+    log.error('Error reading the tournament banner', { error });
+    return res.status(500).end();
+  }
+});
+
 // Protect all routes
 router.use(requireAuth);
+
+/**
+ * @openapi
+ * /api/tournament/banner:
+ *   put:
+ *     tags:
+ *       - Tournament
+ *     summary: Set the tournament page's banner
+ *     description: The request body is the image itself (PNG, JPEG or WEBP, at most 2 MB).
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         image/png: {}
+ *         image/jpeg: {}
+ *         image/webp: {}
+ *     responses:
+ *       200:
+ *         description: Stored; `bannerUrl` is the new address
+ *       404:
+ *         description: No tournament exists
+ *       413:
+ *         description: Larger than 2 MB
+ *       415:
+ *         description: Not a PNG, JPEG or WEBP image
+ *   delete:
+ *     tags:
+ *       - Tournament
+ *     summary: Remove the tournament page's banner
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Removed
+ */
+router.put(
+  '/banner',
+  express.raw({ type: ['image/png', 'image/jpeg', 'image/webp'], limit: BANNER_MAX_BYTES }),
+  async (req: Request, res: Response) => {
+    const tournamentId = resolveTournamentId(req);
+    await bannerAction(res, tournamentId, async () => {
+      if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
+        throw new BannerError(415, 'Send the banner as a PNG, JPEG or WEBP image.');
+      }
+      await tournamentBannerService.set(tournamentId, req.body);
+    });
+  }
+);
+router.delete('/banner', async (req: Request, res: Response) => {
+  const tournamentId = resolveTournamentId(req);
+  await bannerAction(res, tournamentId, () => tournamentBannerService.set(tournamentId, null));
+});
+
+async function bannerAction(
+  res: Response,
+  tournamentId: number,
+  run: () => Promise<void>
+): Promise<void> {
+  try {
+    await run();
+    const tournament = await tournamentService.getTournament(tournamentId);
+    if (tournament) emitTournamentUpdate({ action: 'tournament_updated', ...tournament });
+    res.json({ success: true, bannerUrl: tournament?.bannerUrl ?? null });
+  } catch (error) {
+    if (error instanceof BannerError) {
+      res.status(error.status).json({ success: false, error: error.message });
+      return;
+    }
+    log.error('Error saving the tournament banner', { error });
+    res.status(500).json({ success: false, error: 'Failed to save the banner' });
+  }
+}
 
 /**
  * @openapi

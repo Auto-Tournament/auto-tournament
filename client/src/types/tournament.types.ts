@@ -36,6 +36,8 @@ export interface Tournament {
    * / swiss when the top spot is shared.
    */
   winner?: { id: string; name: string; tag?: string } | null;
+  /** The page banner (`/api/tournament/1/banner?v=…`), or null without one. */
+  bannerUrl?: string | null;
 }
 
 export interface TournamentSettings {

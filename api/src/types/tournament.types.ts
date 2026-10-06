@@ -131,6 +131,8 @@ export interface TournamentRow {
   updated_at: number;
   started_at?: number;
   completed_at?: number;
+  /** When the banner was last set; null without one (`tournament_banner` holds it). */
+  banner_updated_at?: number | null;
 }
 
 export interface CreateTournamentInput {
@@ -269,6 +271,8 @@ export interface TournamentResponse extends Omit<Tournament, 'settings' | 'maps'
    * tournaments, and for round robin when the top spot is shared).
    */
   winner?: { id: string; name: string; tag?: string } | null;
+  /** The page banner's URL (`GET /api/tournament/{id}/banner?v=…`), or null without one. */
+  bannerUrl?: string | null;
 }
 
 /** One row of the Swiss standings, in the order the pairing uses. */

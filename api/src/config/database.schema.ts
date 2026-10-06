@@ -66,7 +66,16 @@ export function getSchemaSQL(): string {
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       started_at INTEGER,
-      completed_at INTEGER
+      completed_at INTEGER,
+      banner_updated_at INTEGER -- set when a banner is stored in tournament_banner; it versions the banner URL
+    );
+
+    -- The tournament page's banner image, kept apart so reading the tournament row
+    -- never pulls the image bytes.
+    CREATE TABLE IF NOT EXISTS tournament_banner (
+      tournament_id INTEGER PRIMARY KEY REFERENCES tournament(id) ON DELETE CASCADE,
+      data BYTEA NOT NULL, -- PNG, JPEG or WEBP, at most 2 MB
+      media_type TEXT NOT NULL
     );
 
     -- Matches table

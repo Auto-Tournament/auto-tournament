@@ -13257,6 +13257,64 @@
         }
       }
     },
+    "/api/tournament/banner": {
+      "put": {
+        "tags": [
+          "Tournament"
+        ],
+        "summary": "Set the tournament page's banner",
+        "description": "The request body is the image itself (PNG, JPEG or WEBP, at most 2 MB).",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "image/png": {},
+            "image/jpeg": {},
+            "image/webp": {}
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stored; `bannerUrl` is the new address"
+          },
+          "404": {
+            "description": "No tournament exists"
+          },
+          "413": {
+            "description": "Larger than 2 MB"
+          },
+          "415": {
+            "description": "Not a PNG, JPEG or WEBP image"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Tournament"
+        ],
+        "summary": "Remove the tournament page's banner",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Removed"
+          }
+        }
+      }
+    },
     "/api/tournament/bracket": {
       "get": {
         "tags": [
@@ -13626,6 +13684,33 @@
         "responses": {
           "200": {
             "description": "Table wiped successfully"
+          }
+        }
+      }
+    },
+    "/api/tournament/{id}/banner": {
+      "get": {
+        "tags": [
+          "Tournament"
+        ],
+        "summary": "The tournament page's banner image (public)",
+        "description": "No session. The wide image behind the tournament page header, as the\nPNG, JPEG or WEBP the admin uploaded. The tournament's `bannerUrl`\ncarries a version (`?v=`), so the response is cached for good.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The image"
+          },
+          "404": {
+            "description": "No banner"
           }
         }
       }

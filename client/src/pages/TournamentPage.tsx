@@ -10,7 +10,12 @@ import { usePublicTournamentOverview } from '../hooks/usePublicTournamentOvervie
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../hooks/useSocket';
 import { onSocketReconnect } from '../utils/socketResync';
-import { TOURNAMENT_TABS, tournamentTabPath, type TournamentTab } from '../paths';
+import {
+  TOURNAMENT_TABS,
+  tournamentTabPath,
+  visibleTournamentTabs,
+  type TournamentTab,
+} from '../paths';
 import { pageTitle } from '../utils/pageTitle';
 
 /** The tab a path is on: `/tournament/1/bracket` → 'bracket', `/tournament/1` → 'overview'. */
@@ -34,9 +39,8 @@ function Shell({ children }: { children: ReactNode }) {
 }
 
 /**
- * The public tournament page: one header (game, status, H1, organizer ·
- * dates · location) and the tabs Overview, Bracket, Matches, Teams and
- * Standings, plus Manage for admins. Each tab is a nested route rendered in
+ * The public tournament page: the banner header (game, format, H1,
+ * description) and the tabs, plus Manage for admins. Each tab is a nested route rendered in
  * the outlet, with the tournament loaded here once (`useTournamentPage`).
  *
  * 3.0 hosts exactly one tournament, so there is no list around it: the id in
@@ -119,13 +123,14 @@ export default function TournamentPage() {
   return (
     <Box minHeight="100vh" bgcolor="transparent" data-testid="tournament-page">
       <TopNavBar />
-      <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
-        <TournamentPageHeader
-          tournament={tournament}
-          tab={tab}
-          showManage={isAuthenticated && !impersonation}
-        />
-        <Box component="main" aria-labelledby="tournament-title" sx={{ mt: 3 }}>
+      <TournamentPageHeader
+        tournament={tournament}
+        tab={tab}
+        tabs={visibleTournamentTabs(tournament)}
+        showManage={isAuthenticated && !impersonation}
+      />
+      <Container maxWidth="lg" sx={{ py: { xs: 3, md: 4 } }}>
+        <Box component="main" aria-labelledby="tournament-title">
           <Outlet context={context} />
         </Box>
         {/* Off unless an admin turns it on, and only for a valid license key. */}
