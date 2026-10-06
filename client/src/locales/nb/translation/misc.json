@@ -588,7 +588,18 @@
         "loss": "T",
         "draw": "U"
       },
-      "backToMatch": "Tilbake til kampen din"
+      "backToMatch": "Tilbake til kampen din",
+      "online_one": "{{count}} pålogget",
+      "online_other": "{{count}} pålogget",
+      "usuallyWait_one": "vanligvis rundt {{count}} minutt",
+      "usuallyWait_other": "vanligvis rundt {{count}} minutter",
+      "aboutWait_one": "rundt {{count}} min",
+      "aboutWait_other": "rundt {{count}} min",
+      "defaultPool": {
+        "5v5": "Active Duty",
+        "2v2": "Wingman-kart",
+        "1v1": "Active Duty"
+      }
     },
     "queue": {
       "searching": "Søker {{mode}}",

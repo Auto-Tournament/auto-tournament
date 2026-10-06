@@ -381,6 +381,12 @@ export default function Play() {
                     ●{' '}
                   </Box>
                   {t('matchmaking.play.inQueue', { count: totalQueued })}
+                  {typeof me?.online === 'number' && (
+                    <Box component="span" sx={{ color: color.muted }} data-testid="mm-online">
+                      {' · '}
+                      {t('matchmaking.play.online', { count: me.online })}
+                    </Box>
+                  )}
                 </Typography>
               </Box>
 
@@ -438,35 +444,49 @@ export default function Play() {
                       // Your party fills the first seats with its faces; the rest are anonymous.
                       const face = partyPeople[i];
                       return (
-                      <Box
-                        key={i}
-                        title={face?.name}
-                        sx={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: '50%',
-                          boxSizing: 'border-box',
-                          display: 'grid',
-                          placeItems: 'center',
-                          fontWeight: 600,
-                          color: color.ink,
-                          backgroundImage: face?.avatarUrl ? `url(${face.avatarUrl})` : undefined,
-                          backgroundSize: 'cover',
-                          ...(i < inQueue
-                            ? {
-                                bgcolor: withAlpha(color.accent, 0.25),
-                                boxShadow: `0 0 0 2px ${color.paper2}, 0 0 0 4px ${color.accent}`,
-                              }
-                            : { border: `2px dashed ${color.rule}` }),
-                        }}
-                      >
-                        {face && !face.avatarUrl ? (face.name.trim()[0] ?? '?').toUpperCase() : null}
-                      </Box>
+                        <Box
+                          key={i}
+                          title={face?.name}
+                          sx={{
+                            width: 44,
+                            height: 44,
+                            borderRadius: '50%',
+                            boxSizing: 'border-box',
+                            display: 'grid',
+                            placeItems: 'center',
+                            fontWeight: 600,
+                            color: color.ink,
+                            backgroundImage: face?.avatarUrl ? `url(${face.avatarUrl})` : undefined,
+                            backgroundSize: 'cover',
+                            ...(i < inQueue
+                              ? {
+                                  bgcolor: withAlpha(color.accent, 0.25),
+                                  boxShadow: `0 0 0 2px ${color.paper2}, 0 0 0 4px ${color.accent}`,
+                                }
+                              : { border: `2px dashed ${color.rule}` }),
+                          }}
+                        >
+                          {face && !face.avatarUrl
+                            ? (face.name.trim()[0] ?? '?').toUpperCase()
+                            : null}
+                        </Box>
                       );
                     })}
                   </Box>
                   <Typography sx={{ fontSize: textSize.md, color: color.ink2 }}>
                     {t('matchmaking.play.seats', { count: inQueue, total: need })}
+                    {typeof me?.waitSeconds?.[queueMode] === 'number' && (
+                      <Box
+                        component="span"
+                        sx={{ color: color.muted }}
+                        data-testid="mm-searching-wait"
+                      >
+                        {' · '}
+                        {t('matchmaking.play.usuallyWait', {
+                          count: Math.max(1, Math.round(me.waitSeconds[queueMode]! / 60)),
+                        })}
+                      </Box>
+                    )}
                   </Typography>
                   {isLeader && (
                     <Button
@@ -700,11 +720,32 @@ export default function Play() {
                             >
                               {t(`matchmaking.play.modeTitle.${m}`, { defaultValue: m })}
                             </Typography>
-                            <Typography sx={{ fontSize: textSize.md, color: color.ink2 }}>
-                              {t(`matchmaking.play.modeName.${m}`, { defaultValue: m })}
+                            <Typography
+                              sx={{ fontSize: textSize.md, color: color.ink2 }}
+                              data-testid={`mm-mode-rules-${m}`}
+                            >
+                              {me?.modeRules?.[m]
+                                ? [
+                                    t(`matchmaking.play.modeName.${m}`, { defaultValue: m }),
+                                    `MR${me.modeRules[m].maxRounds}`,
+                                    me.modeRules[m].pool ??
+                                      t(`matchmaking.play.defaultPool.${m}`, { defaultValue: '' }),
+                                  ]
+                                    .filter(Boolean)
+                                    .join(' · ')
+                                : t(`matchmaking.play.modeName.${m}`, { defaultValue: m })}
                             </Typography>
                             <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>
-                              {t('matchmaking.play.inQueue', { count: counts[m] ?? 0 })}
+                              {[
+                                t('matchmaking.play.inQueue', { count: counts[m] ?? 0 }),
+                                typeof me?.waitSeconds?.[m] === 'number'
+                                  ? t('matchmaking.play.aboutWait', {
+                                      count: Math.max(1, Math.round(me.waitSeconds[m]! / 60)),
+                                    })
+                                  : null,
+                              ]
+                                .filter(Boolean)
+                                .join(' · ')}
                             </Typography>
                           </Box>
                         </ButtonBase>

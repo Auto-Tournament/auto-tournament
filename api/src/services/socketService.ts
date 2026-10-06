@@ -270,6 +270,19 @@ export function emitCompatUpdate(payload: CompatUpdateEvent): void {
 const playerRoom = (playerId: string) => `player:${playerId}`;
 
 /**
+ * Signed-in players with the site open right now: the `player:<id>` rooms
+ * that have a socket in them (each tab asks for its room on connect).
+ */
+export function onlinePlayerCount(): number {
+  if (!io) return 0;
+  let n = 0;
+  for (const [room, sockets] of io.sockets.adapter.rooms) {
+    if (room.startsWith('player:') && sockets.size > 0) n += 1;
+  }
+  return n;
+}
+
+/**
  * Tell players their matchmaking state changed (`mm:changed`, no payload: the
  * client reads GET /api/matchmaking/me again). Rooms `player:<id>`.
  */

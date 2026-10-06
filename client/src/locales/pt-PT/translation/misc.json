@@ -588,7 +588,18 @@
         "loss": "L",
         "draw": "D"
       },
-      "backToMatch": "Back to your match"
+      "backToMatch": "Back to your match",
+      "online_one": "{{count}} online",
+      "online_other": "{{count}} online",
+      "usuallyWait_one": "usually about {{count}} minute",
+      "usuallyWait_other": "usually about {{count}} minutes",
+      "aboutWait_one": "about {{count}} min",
+      "aboutWait_other": "about {{count}} min",
+      "defaultPool": {
+        "5v5": "Active Duty",
+        "2v2": "Wingman maps",
+        "1v1": "Active Duty"
+      }
     },
     "queue": {
       "searching": "Searching {{mode}}",

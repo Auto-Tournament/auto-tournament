@@ -151,7 +151,18 @@ export function MatchmakingOverlay() {
             {typeof queuedInMode === 'number' && (
               <Box component="span" sx={{ color: 'text.secondary' }}>
                 {' · '}
-                {t('matchmaking.play.seats', { count: Math.min(queuedInMode, seatsInMode), total: seatsInMode })}
+                {t('matchmaking.play.seats', {
+                  count: Math.min(queuedInMode, seatsInMode),
+                  total: seatsInMode,
+                })}
+              </Box>
+            )}
+            {typeof me.waitSeconds?.[queueMode] === 'number' && (
+              <Box component="span" sx={{ color: 'text.secondary' }} data-testid="mm-overlay-wait">
+                {' · '}
+                {t('matchmaking.play.usuallyWait', {
+                  count: Math.max(1, Math.round(me.waitSeconds[queueMode]! / 60)),
+                })}
               </Box>
             )}
           </Typography>

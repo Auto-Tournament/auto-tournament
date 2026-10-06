@@ -26,6 +26,12 @@ export interface MatchmakingMe {
   queue: { mode: string; queuedAt: number; status: string } | null;
   /** Players searching right now, per mode. */
   queueCounts?: Record<string, number>;
+  /** Signed-in players with the site open (older APIs: missing). */
+  online?: number;
+  /** Typical seconds to a match found, per mode; null with too little history. */
+  waitSeconds?: Record<string, number | null>;
+  /** Rounds per half and the map pool's name per mode (null pool = the default). */
+  modeRules?: Record<string, { maxRounds: number; pool: string | null }>;
   lobby: {
     id: string;
     status: string;

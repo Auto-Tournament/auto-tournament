@@ -897,6 +897,7 @@ export function getSchemaSQL(): string {
       player_id TEXT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
       party_id TEXT NOT NULL,
       team INTEGER NOT NULL, -- 1 or 2
+      queued_at INTEGER, -- when the player's party started searching, for the wait estimate
       accepted_at INTEGER,
       declined_at INTEGER,
       PRIMARY KEY (lobby_id, player_id)
