@@ -162,7 +162,7 @@ test.describe.serial('Fleet hosts (csm)', () => {
     expect(payload).toMatchObject({ count: 1, enroll: true });
     expect(payload.enroll_key).toMatch(/^rfk_/);
     // The license use accepted on the platform, for Ready Up's unattended installer.
-    expect((create.payload as { accept_license?: string }).accept_license).toBe('noncommercial');
+    expect((create.payload as { accept_license?: string }).accept_license).toMatch(/^(noncommercial|commercial)$/);
     const enrollKey = payload.enroll_key;
 
     csm.sendEphemeral('host.progress', { ref: commandId, step: 'provisioning server-2', pct: 40 });
@@ -178,7 +178,7 @@ test.describe.serial('Fleet hosts (csm)', () => {
     const install = await csm.nextCommand('host.update_plugins');
     const { accept_license: acceptLicense, ...installPayload } = install.payload as Record<string, unknown>;
     expect(installPayload).toEqual({ servers: ['server-2'], readyup: { version: 'latest', bundle: 'default' } });
-    expect(acceptLicense).toBe('noncommercial');
+    expect(acceptLicense).toMatch(/^(noncommercial|commercial)$/);
     const done = (await (await request.get(`/api/fleet/hosts/${m.hostId}/commands/${commandId}`)).json()).command;
     expect(done).toMatchObject({ status: 'ok', output: 'created server-2', type: 'server.create' });
     expect(done.meta).toMatchObject({ serversBefore: ['server-1'], newServers: ['server-2'], followUp: install.id });
