@@ -128,7 +128,7 @@ export interface ServerConfigPayload {
 
 export interface PingPayload {
   t: number;
-  health?: { players?: number; tick_ms_p99?: number; spool_msgs?: number; uptime_s?: number };
+  health?: { players?: number; tick_ms_p99?: number; spool_msgs?: number; uptime_s?: number; frame_age_ms?: number };
 }
 
 export interface PongPayload {
