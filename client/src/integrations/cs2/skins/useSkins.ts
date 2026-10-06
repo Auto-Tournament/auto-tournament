@@ -53,7 +53,8 @@ export function useSkinsEnabled(): boolean | null {
 
 /** Every skins view reloads after a change made in any of them (the reveal, the grid, the profile). */
 const CHANGED = 'skins:changed';
-function announceChange(): void {
+/** Every open skins view reads again (after a change here, or a push from the platform). */
+export function announceChange(): void {
   window.dispatchEvent(new Event(CHANGED));
 }
 

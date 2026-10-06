@@ -279,6 +279,14 @@ export function emitMatchmakingChanged(playerIds: Iterable<string>): void {
   if (rooms.length > 0) io.to(rooms).emit('mm:changed');
 }
 
+/**
+ * Tell a player their skins changed (`skins:changed`, no payload: the client
+ * reads GET /api/skins/me again and shows the new-skin reveal). Room `player:<id>`.
+ */
+export function emitSkinsChanged(playerId: string): void {
+  if (io) io.to(playerRoom(playerId)).emit('skins:changed');
+}
+
 /** A new admin call, to the signed-in admins (room `admins`). */
 export function emitAdminCall(call: AdminCall): void {
   if (io) {
