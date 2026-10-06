@@ -12,9 +12,9 @@
 
 import { Router, type Request, type Response } from 'express';
 import { log } from '../utils/logger';
-import { resolveTournamentId } from '../utils/tournamentRow';
 import { resolveViewerAccount } from '../utils/viewerIdentity';
 import { SignupError, tournamentSignupService } from '../services/tournamentSignupService';
+import { readableTournamentId } from '../services/currentTournament';
 
 const router = Router();
 
@@ -29,8 +29,9 @@ function signupAction(
 ) {
   return async (req: Request, res: Response) => {
     try {
-      const tournamentId = resolveTournamentId(req);
-      if (req.params.id !== String(tournamentId)) {
+      // The tournament in the URL, any that exists (several can take sign-ups at once).
+      const tournamentId = await readableTournamentId(req.params.id);
+      if (tournamentId === null) {
         return res.status(404).json({ success: false, error: 'No such tournament' });
       }
       const viewer = await resolveViewerAccount(req);

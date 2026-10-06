@@ -169,6 +169,7 @@ export async function createShuffleTournament(
     overtimeSegments: tournament.overtimeSegments,
   });
 
+  await (await import('./currentTournament')).refreshCurrentTournamentId();
   return tournament;
 }
 

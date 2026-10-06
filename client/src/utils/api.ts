@@ -8,6 +8,48 @@
  * All API calls should use '/api' prefix (e.g., '/api/servers', '/api/teams')
  */
 
+/**
+ * Which tournament requests are about (the API's `X-Tournament-Id`): the one
+ * the admin picked in the rail, kept across reloads, except on a tournament's
+ * own page, which is about the tournament in its URL.
+ * Without either the API answers for the featured tournament.
+ */
+const ADMIN_SCOPE_KEY = 'at:adminTournamentId';
+function readStoredScope(): number | null {
+  try {
+    const id = Number(window.localStorage.getItem(ADMIN_SCOPE_KEY));
+    return Number.isInteger(id) && id > 0 ? id : null;
+  } catch {
+    return null;
+  }
+}
+let adminScope: number | null = typeof window === 'undefined' ? null : readStoredScope();
+
+export function getAdminTournamentScope(): number | null {
+  return adminScope;
+}
+
+export function setAdminTournamentScope(id: number | null): void {
+  adminScope = id;
+  try {
+    if (id === null) window.localStorage.removeItem(ADMIN_SCOPE_KEY);
+    else window.localStorage.setItem(ADMIN_SCOPE_KEY, String(id));
+  } catch {
+    // Storage blocked: the pick lasts until the page reloads.
+  }
+}
+
+/** On a tournament's own page (`/tournament/<id>/...`), that tournament. */
+function pageScope(): number | null {
+  if (typeof window === 'undefined') return null;
+  const m = /^\/tournament\/(\d+)(?:\/|$)/.exec(window.location.pathname);
+  return m ? Number(m[1]) : null;
+}
+
+function tournamentScope(): number | null {
+  return pageScope() ?? adminScope;
+}
+
 export const api = {
   /**
    * Make an authenticated API request
@@ -25,6 +67,7 @@ export const api = {
       ...rest,
       headers: {
         'Content-Type': 'application/json',
+        ...(tournamentScope() ? { 'X-Tournament-Id': String(tournamentScope()) } : {}),
         ...(headers || {}),
       },
     });

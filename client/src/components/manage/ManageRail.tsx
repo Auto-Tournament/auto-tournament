@@ -1,6 +1,8 @@
 import React from 'react';
-import { Box } from '@mui/material';
+import { Box, MenuItem, TextField } from '@mui/material';
+import { useOptionalAdminTournament } from '../../contexts/AdminTournamentContext';
 import {
+  ListBulletsIcon,
   ArrowSquareOutIcon,
   BellIcon,
   BookOpenIcon,
@@ -82,6 +84,43 @@ function isCurrent(pathname: string, to: string): boolean {
  * (see `useShellIntegrations`); core names none of them. A module with no
  * pages leaves its group out.
  */
+/**
+ * Which tournament the admin pages are about (several can exist): a select
+ * at the top of the rail. Matches, Bracket, Needs you and the setup all act
+ * on the one picked here.
+ */
+function TournamentSwitcher() {
+  const { t } = useTranslation();
+  const admin = useOptionalAdminTournament();
+  if (!admin || (admin.tournaments.length === 0 && admin.selectedId === null)) return null;
+  const { tournaments, selectedId, nextId, select } = admin;
+  const value = selectedId ?? '';
+  const isNew = selectedId !== null && selectedId === nextId && !tournaments.some((x) => x.id === selectedId);
+  return (
+    <Box sx={{ mb: 1.5, minWidth: { xs: 200, md: 0 } }}>
+      <TextField
+        select
+        size="small"
+        fullWidth
+        label={t('managePage.rail.switcher')}
+        value={value}
+        onChange={(e) => select(Number(e.target.value))}
+        inputProps={{ 'data-testid': 'tournament-switcher' }}
+        SelectProps={{ MenuProps: { PaperProps: { sx: { maxHeight: 420 } } } }}
+      >
+        {tournaments
+          .filter((x) => !x.archived || x.id === selectedId)
+          .map((x) => (
+            <MenuItem key={x.id} value={x.id}>
+              {x.name}
+            </MenuItem>
+          ))}
+        {isNew && <MenuItem value={selectedId}>{t('managePage.rail.newTournament')}</MenuItem>}
+      </TextField>
+    </Box>
+  );
+}
+
 export const ManageRail: React.FC = () => {
   const { t } = useTranslation();
   const { pathname } = useLocation();
@@ -127,6 +166,12 @@ export const ManageRail: React.FC = () => {
       key: 'tournament',
       label: t('managePage.rail.groups.tournament'),
       items: [
+        {
+          key: 'tournaments',
+          label: t('managePage.rail.allTournaments'),
+          to: paths.tournaments,
+          icon: ListBulletsIcon,
+        },
         {
           key: 'tournament',
           label: t('managePage.rail.tournament'),
@@ -225,6 +270,7 @@ export const ManageRail: React.FC = () => {
         fontSize: textSize.sm,
       }}
     >
+      <TournamentSwitcher />
       <Box
         ref={scrollerRef}
         data-testid="manage-rail-scroller"

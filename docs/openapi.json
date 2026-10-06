@@ -723,6 +723,10 @@
       "description": "Saved tournament configurations."
     },
     {
+      "name": "Tournaments",
+      "description": "Every tournament: the list, creating another one, which is featured, archiving."
+    },
+    {
       "name": "Update hold",
       "description": "Whether a game host should pause automatic CS2 updates."
     },
@@ -14861,6 +14865,143 @@
             "description": "Invalid request, tournament not in setup status, or tournament not found"
           }
         }
+      }
+    },
+    "/api/tournaments": {
+      "get": {
+        "tags": [
+          "Tournament"
+        ],
+        "summary": "Every tournament (public)",
+        "description": "Newest first. Drafts (set up, sign-up closed) only for admins. Each\nsays whether it is featured (the front page's big card) and archived\n(finished and off the front page's lists).\n",
+        "responses": {
+          "200": {
+            "description": "{ tournaments, featuredId }"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Tournament"
+        ],
+        "summary": "Create another tournament",
+        "description": "The same body as `POST /api/tournament` (or `/api/tournament/shuffle`\nfor `type: shuffle`), but it never replaces one: the new tournament\ngets the next id. `copyFrom` (a tournament id) starts from that\ntournament's format, maps, rules and page; teams, dates and sign-up\nstart empty. Fields in the body win.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "The new tournament"
+          },
+          "404": {
+            "description": "copyFrom not found"
+          }
+        }
+      }
+    },
+    "/api/tournaments/{id}/archive": {
+      "post": {
+        "tags": [
+          "Tournament"
+        ],
+        "summary": "Archive a finished tournament (off the front page's lists, results kept)",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{ archivedId, currentId }"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Not finished"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/tournaments/{id}/feature": {
+      "put": {
+        "tags": [
+          "Tournament"
+        ],
+        "summary": "Feature a tournament on the front page",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{ featuredId }"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Tournament"
+        ],
+        "summary": "Let the front page pick (running first, else the newest)",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{ featuredId }"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/api/veto/{matchSlug}": {

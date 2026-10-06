@@ -13,6 +13,7 @@ import Manage from './pages/Manage';
 import Teams from './pages/Teams';
 import Players from './pages/Players';
 import Tournament from './pages/Tournament';
+import Tournaments from './pages/Tournaments';
 import Bracket from './pages/Bracket';
 import Matches from './pages/Matches';
 import Disputes from './pages/Disputes';
@@ -52,6 +53,13 @@ import ConnectSteam from './pages/ConnectSteam';
 import Templates from './pages/Templates';
 import ELOTemplates from './pages/ELOTemplates';
 import Layout from './components/layout/Layout';
+import { AdminTournamentProvider, useAdminTournament } from './contexts/AdminTournamentContext';
+
+/** The admin shell, remounted when the admin picks another tournament so every page reloads for it. */
+function ScopedLayout() {
+  const { version } = useAdminTournament();
+  return <Layout key={version} />;
+}
 import { AdminCallsHost } from './components/admin/AdminCallsHost';
 import NotFound from './pages/NotFound';
 import { theme } from './theme';
@@ -223,7 +231,9 @@ function RootRoute() {
     // The admin shell opens once the license terms are accepted.
     return (
       <LicenseConsentGate>
-        <Layout />
+        <AdminTournamentProvider>
+          <ScopedLayout />
+        </AdminTournamentProvider>
       </LicenseConsentGate>
     );
   }
@@ -501,6 +511,7 @@ function AppRoutes() {
         <Route path={adminRoute(paths.teams)} element={<Teams />} />
         <Route path={adminRoute(paths.players)} element={<Players />} />
         <Route path={adminRoute(paths.tournament)} element={<Tournament />} />
+        <Route path={adminRoute(paths.tournaments)} element={<Tournaments />} />
         <Route path={adminRoute(paths.bracket)} element={<Bracket />} />
         <Route path={adminRoute(paths.matches)} element={<Matches />} />
         <Route path={`${adminRoute(paths.matches)}/:slug`} element={<MatchSlugRedirect />} />

@@ -70,6 +70,7 @@ import { reportCompatConfig } from './services/compatService';
 import { startCompatFeed, stopCompatFeed } from './services/compatFeedService';
 import { startLicenseCheckin, stopLicenseCheckin } from './services/license/checkinService';
 import { startWebhooks, stopWebhooks } from './services/webhooks';
+import { refreshCurrentTournamentId, startCurrentTournamentRefresh } from './services/currentTournament';
 
 const app = express();
 const httpServer = createServer(app);
@@ -481,6 +482,10 @@ process.on('uncaughtException', (err) => {
     // Initialize database first (including schema)
     await db.init();
     log.success('Database initialized successfully');
+
+    // Which tournament is featured (services/currentTournament.ts), kept fresh.
+    await refreshCurrentTournamentId();
+    startCurrentTournamentRefresh();
 
     // Sign-in providers saved on Settings -> Sign-in. The strategies were
     // registered from the environment alone at import; redo them now that

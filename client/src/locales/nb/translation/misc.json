@@ -182,7 +182,47 @@
     },
     "yourGames": "Spill du spiller",
     "loading": "Laster hjemmesiden din",
-    "nextMatch": "Din neste kamp"
+    "nextMatch": "Din neste kamp",
+    "live": {
+      "title": "Pågår nå",
+      "count": "{{count}} pågår",
+      "chip": "Direkte"
+    },
+    "quiet": {
+      "title": "Kommer snart",
+      "more": "Også på vei"
+    },
+    "play": {
+      "title": "Spill en kamp nå",
+      "quietTitle": "Ingenting på? Spill en kamp.",
+      "hint": "Matchmaking setter deg i en kamp så snart nok spillere står i kø.",
+      "cta": "Still deg i kø"
+    },
+    "signup": {
+      "open": "Påmelding åpen",
+      "cta": "Meld på",
+      "short": "Meld på",
+      "view": "Se",
+      "title": "Påmelding",
+      "aside": "Kommer snart"
+    },
+    "champions": {
+      "title": "Vinnere",
+      "aside": "Nylig ferdige",
+      "all": "Alle resultater",
+      "won": "vant {{name}}",
+      "finished": "Ferdig"
+    },
+    "lastTime": {
+      "title": "Sist",
+      "results": "Alle resultater",
+      "second": "2.",
+      "third": "3.",
+      "champion": "Vinner"
+    },
+    "teams": "Lag: {{count}}",
+    "none": "Ingen turneringer ennå. Kom tilbake snart.",
+    "allTournaments": "Alle turneringer"
   },
   "browsePage": {
     "title": "Utforsk turneringer",

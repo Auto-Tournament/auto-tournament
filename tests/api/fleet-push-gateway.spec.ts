@@ -1,5 +1,6 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import { getAuthHeader, signInViaRequest } from '../helpers/auth';
+import { configureWebhook } from '../helpers/setup';
 import {
   FleetTestClient,
   createFleetKey,
@@ -83,6 +84,9 @@ test.describe.serial('Fleet pushes: admins, settings, switches, match.update', (
     expect(await signInViaRequest(request)).toBe(true);
     await resetEnrollRateLimit(request);
     if (!key) key = await createFleetKey(request, { name: 'push-tests' });
+    // match.update loads a match, which needs a webhook URL; an earlier spec
+    // in the same worker may have wiped the settings.
+    expect(await configureWebhook(request, 'http://localhost:3069')).toBe(true);
   });
 
   test.afterAll(async ({ request }) => {

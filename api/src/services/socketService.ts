@@ -150,6 +150,9 @@ export function getIO(): SocketIOServer {
  * Emit tournament update
  */
 export function emitTournamentUpdate(tournament: TournamentUpdateEvent): void {
+  // A tournament changed status (created, started, finished, ...): which one
+  // is featured may have changed with it.
+  void import('./currentTournament').then((m) => m.refreshCurrentTournamentId()).catch(() => undefined);
   if (io) {
     io.emit('tournament:update', tournament);
     log.debug('Emitted tournament update', { tournamentId: tournament.id });
