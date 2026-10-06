@@ -3,6 +3,7 @@ import { DownloadSimpleIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import type { MatchMapResult } from '../../types';
 import { getMapDisplayName } from '../../constants/maps';
+import { useInstalledIntegrations } from '../../integrations/registry';
 
 interface MapDemoDownloadsProps {
   maps: string[];
@@ -10,6 +11,8 @@ interface MapDemoDownloadsProps {
   matchSlug: string;
   /** The map being played: listed as "Recording" (draft Match A) until its demo is in. */
   recordingMapIndex?: number | null;
+  /** Leaving the page from a map's action (the list may be in a dialog). */
+  onNavigate?: () => void;
 }
 
 export function MapDemoDownloads({
@@ -17,8 +20,13 @@ export function MapDemoDownloads({
   mapResults,
   matchSlug,
   recordingMapIndex = null,
+  onNavigate,
 }: MapDemoDownloadsProps) {
   const { t } = useTranslation();
+  // Modules' controls beside each map (CS2: its analysis).
+  const mapActions = useInstalledIntegrations().flatMap((i) =>
+    i.matchMapAction ? [{ id: i.id, Action: i.matchMapAction }] : []
+  );
   const handleDownloadDemo = (mapNumber: number) => {
     const link = document.createElement('a');
     link.href = `/api/demos/${matchSlug}/download/${mapNumber}`;
@@ -43,10 +51,14 @@ export function MapDemoDownloads({
         displayName,
       };
     })
-    .filter((item): item is { mapNumber: number; mapName: string; displayName: string } => item !== null);
+    .filter(
+      (item): item is { mapNumber: number; mapName: string; displayName: string } => item !== null
+    );
 
   const recording =
-    recordingMapIndex !== null && maps[recordingMapIndex] && !mapsWithDemos.some((m) => m.mapNumber === recordingMapIndex)
+    recordingMapIndex !== null &&
+    maps[recordingMapIndex] &&
+    !mapsWithDemos.some((m) => m.mapNumber === recordingMapIndex)
       ? getMapDisplayName(maps[recordingMapIndex]) || maps[recordingMapIndex]
       : null;
 
@@ -62,20 +74,38 @@ export function MapDemoDownloads({
       <Divider sx={{ mb: 2 }} />
       <Stack spacing={1}>
         {mapsWithDemos.map(({ mapNumber, mapName }) => (
-          <Button
-            key={mapNumber}
-            variant="outlined"
-            fullWidth
-            startIcon={<DownloadSimpleIcon />}
-            onClick={() => handleDownloadDemo(mapNumber)}
-            sx={{ justifyContent: 'flex-start' }}
-          >
-            {t('matchInfo.demos.download', { map: mapName })}
-          </Button>
+          <Box key={mapNumber} sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="outlined"
+              fullWidth
+              startIcon={<DownloadSimpleIcon />}
+              onClick={() => handleDownloadDemo(mapNumber)}
+              sx={{ justifyContent: 'flex-start' }}
+            >
+              {t('matchInfo.demos.download', { map: mapName })}
+            </Button>
+            {mapActions.map(({ id, Action }) => (
+              <Action
+                key={id}
+                matchSlug={matchSlug}
+                mapNumber={mapNumber}
+                onNavigate={onNavigate}
+              />
+            ))}
+          </Box>
         ))}
         {recording && (
-          <Button variant="outlined" fullWidth disabled sx={{ justifyContent: 'flex-start' }} data-testid="demo-recording">
-            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'error.main', mr: 1.25 }} />
+          <Button
+            variant="outlined"
+            fullWidth
+            disabled
+            sx={{ justifyContent: 'flex-start' }}
+            data-testid="demo-recording"
+          >
+            <Box
+              component="span"
+              sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'error.main', mr: 1.25 }}
+            />
             {t('matchInfo.demos.recording', { map: recording })}
           </Button>
         )}
@@ -83,4 +113,3 @@ export function MapDemoDownloads({
     </Box>
   );
 }
-

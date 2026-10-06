@@ -1201,6 +1201,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                           maps={mapsToShow}
                           mapResults={match.mapResults}
                           matchSlug={match.slug}
+                          onNavigate={onClose}
                         />
                       </Box>
                     )}

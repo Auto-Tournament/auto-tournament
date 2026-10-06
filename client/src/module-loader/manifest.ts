@@ -224,6 +224,7 @@ export const COMPONENT_SLOTS = [
   'globalOverlay',
   'playerProfileSection',
   'playerProfileTab.Component',
+  'matchMapAction',
 ] as const;
 
 export type ComponentSlot = (typeof COMPONENT_SLOTS)[number];

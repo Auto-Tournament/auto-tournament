@@ -15,39 +15,6 @@ import { log } from '../../../utils/logger';
 import { isDevBotId } from './normalize';
 import type { MapStats } from './protocol/v1';
 
-/** One player's row, as summed over any set of maps. */
-export interface MapStatTotals {
-  rounds_played: number;
-  kills: number;
-  deaths: number;
-  multi_1k: number;
-  multi_2k: number;
-  multi_3k: number;
-  multi_4k: number;
-  multi_5k: number;
-}
-
-/**
- * HLTV's rating 1.0 from summed map rows: kills, survival and multi-kill
- * rounds per round, each against its average, so 1.00 is an average player.
- * Null with no rounds played.
- */
-export function hltvRating(t: MapStatTotals): number | null {
-  const rounds = Number(t.rounds_played);
-  if (!rounds) return null;
-  const kill = Number(t.kills) / rounds / 0.679;
-  const survival = (rounds - Number(t.deaths)) / rounds / 0.317;
-  const multi =
-    (Number(t.multi_1k) +
-      4 * Number(t.multi_2k) +
-      9 * Number(t.multi_3k) +
-      16 * Number(t.multi_4k) +
-      25 * Number(t.multi_5k)) /
-    rounds /
-    1.277;
-  return Math.round(((kill + 0.7 * survival + multi) / 2.7) * 100) / 100;
-}
-
 /**
  * Save a map's stats. `mapNumber` is the platform's (0-based). Dev bots are
  * left out unless the match is a simulation. Never throws: a failure here

@@ -4,7 +4,7 @@ import "math"
 
 // AnalyzerVersion goes up when the numbers change meaning; the platform
 // re-queues older analyses.
-const AnalyzerVersion = 1
+const AnalyzerVersion = 2
 
 const (
 	// TradeTicks: the killer dies to the victim's team within five seconds.
@@ -26,6 +26,9 @@ type Round struct {
 	EndTick   int     `json:"endTick"`
 	Winner    *string `json:"winner"`
 	Reason    *string `json:"reason"`
+	// Each side's equipment value when the freeze time ended (its buy).
+	CTEquipment int `json:"ctEquipment"`
+	TEquipment  int `json:"tEquipment"`
 }
 
 // Kill is one death, with who traded it.
@@ -81,6 +84,12 @@ type PlayerStats struct {
 	EnemiesFlashed    int     `json:"enemiesFlashed"`
 	FriendliesFlashed int     `json:"friendliesFlashed"`
 	UtilityDamage     int     `json:"utilityDamage"`
+	// KastRounds: rounds with a kill, an assist, survival or a traded death.
+	KastRounds int `json:"kastRounds"`
+	// Time to damage: from first seeing an enemy to first hurting them, in
+	// ms, for spots answered within a second.
+	TimeToDamageSum     float64 `json:"timeToDamageSum"`
+	TimeToDamageSamples int     `json:"timeToDamageSamples"`
 }
 
 // Shot is one bullet fired from a gun.
@@ -246,6 +255,33 @@ func CountShots(s *PlayerStats, shots []Shot, hitTicks []int) {
 	for i := range hit {
 		if bullet[i] >= sprayFromBullet {
 			s.SprayHits++
+		}
+	}
+}
+
+// CountKast adds a KAST round to each player on the roster who got a kill
+// or an assist, survived, or whose death was traded.
+func CountKast(round Round, roster map[string]string, kills []Kill, stats func(id string) *PlayerStats) {
+	good := map[string]bool{}
+	died := map[string]bool{}
+	for _, k := range kills {
+		if k.Round != round.Number {
+			continue
+		}
+		died[k.Victim] = true
+		if k.Traded {
+			good[k.Victim] = true
+		}
+		if k.Attacker != nil && !sameSide(k.AttackerSide, k.VictimSide) {
+			good[*k.Attacker] = true
+		}
+		if k.Assister != nil {
+			good[*k.Assister] = true
+		}
+	}
+	for id := range roster {
+		if good[id] || !died[id] {
+			stats(id).KastRounds++
 		}
 	}
 }

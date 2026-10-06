@@ -17,7 +17,7 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
-import { hltvRating } from '../fleet/mapStats';
+import { atRating } from '../rating';
 
 const router = Router();
 
@@ -105,6 +105,11 @@ interface DetailRow {
   ct_rounds_won: number | string | null;
   t_rounds: number | string | null;
   t_rounds_won: number | string | null;
+  assists: number | string | null;
+  damage: number | string | null;
+  kast_rounds: number | string | null;
+  time_to_damage_sum: number | string | null;
+  time_to_damage_samples: number | string | null;
   demo_rounds: number | string | null;
   money_spent: number | string | null;
   shots: number | string | null;
@@ -128,7 +133,9 @@ const DETAIL_SELECT = `
     SUM(CASE WHEN demo_analyzed = 1 THEN rounds_played ELSE 0 END) AS demo_rounds,
     SUM(money_spent) AS money_spent, SUM(shots) AS shots, SUM(hits) AS hits,
     SUM(spray_shots) AS spray_shots, SUM(spray_hits) AS spray_hits,
-    SUM(crosshair_angle_sum) AS crosshair_angle_sum, SUM(crosshair_samples) AS crosshair_samples
+    SUM(crosshair_angle_sum) AS crosshair_angle_sum, SUM(crosshair_samples) AS crosshair_samples,
+    SUM(assists) AS assists, SUM(damage) AS damage, SUM(kast_rounds) AS kast_rounds,
+    SUM(time_to_damage_sum) AS time_to_damage_sum, SUM(time_to_damage_samples) AS time_to_damage_samples
   FROM cs2_player_map_stats
 `;
 
@@ -147,7 +154,13 @@ function detail(row: DetailRow | undefined) {
   return {
     maps: num(row.maps),
     roundsPlayed: t.rounds_played,
-    rating: hltvRating(t),
+    rating: atRating({
+      ...t,
+      assists: num(row.assists),
+      damage: num(row.damage),
+      kast_rounds: num(row.kast_rounds),
+    }),
+    kast: Math.round((num(row.kast_rounds) / t.rounds_played) * 100),
     openingKills: num(row.entry_kills),
     openingDeaths: num(row.entry_deaths),
     tradeKills: num(row.trade_kills),
@@ -166,6 +179,9 @@ function detail(row: DetailRow | undefined) {
             ? Math.round((num(row.crosshair_angle_sum) / num(row.crosshair_samples)) * 10) / 10
             : null,
           moneyPerRound: Math.round(num(row.money_spent) / num(row.demo_rounds)),
+          timeToDamageMs: num(row.time_to_damage_samples)
+            ? Math.round(num(row.time_to_damage_sum) / num(row.time_to_damage_samples))
+            : null,
         }
       : null,
   };

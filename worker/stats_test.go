@@ -50,6 +50,15 @@ func TestOpeningsTradesClutches(t *testing.T) {
 	if players[b2].ClutchesPlayed != 1 || players[b2].ClutchesWon != 1 {
 		t.Errorf("clutch: %+v", players[b2])
 	}
+	for _, rd := range []Round{{Number: 1, Winner: str("T")}} {
+		CountKast(rd, map[string]string{a1: "CT", a2: "CT", b1: "T", b2: "T"}, kills, stats)
+	}
+	// a1 killed, b1's death was traded, b2 killed and survived; a2 did nothing and died.
+	for id, want := range map[string]int{a1: 1, a2: 0, b1: 1, b2: 1} {
+		if players[id].KastRounds != want {
+			t.Errorf("KAST %s: %d, want %d", id, players[id].KastRounds, want)
+		}
+	}
 	if players[b2].MultiKills != [5]int{0, 1, 0, 0, 0} {
 		t.Errorf("multi: %v", players[b2].MultiKills)
 	}

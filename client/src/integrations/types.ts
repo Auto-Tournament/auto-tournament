@@ -867,6 +867,15 @@ export interface PlayerProfileSectionProps {
   isOwn: boolean;
 }
 
+/** A map's row in the match's demo list (`matchMapAction`). */
+export interface MatchMapActionProps {
+  matchSlug: string;
+  /** 0-based. */
+  mapNumber: number;
+  /** Call before navigating away (the list may sit in a dialog that should close). */
+  onNavigate?: () => void;
+}
+
 /**
  * A module's profile tab. Core mounts it once with `probe` to learn whether
  * the tab has anything for this player (render nothing, call
@@ -1189,6 +1198,9 @@ export interface ClientGameIntegration {
    * the tab has something for that player.
    */
   playerProfileTab?: { labelKey: string; Component: ComponentType<PlayerProfileTabProps> };
+
+  /** Beside each map's demo download (CS2: a link to the map's analysis). */
+  matchMapAction?: ComponentType<MatchMapActionProps>;
 
   /** Pages the integration owns. URLs come from `paths.ts`. */
   routes: IntegrationRoute[];

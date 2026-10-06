@@ -114,5 +114,8 @@
  * 0.2.11 (additive): `playerProfileTab` (`{ labelKey, Component }`): a tab
  * of its own on profiles. The component gets `PlayerProfileTabProps`; with
  * `probe` it renders nothing and calls `onAvailability`.
+ *
+ * 0.2.12 (additive): `matchMapAction` (`MatchMapActionProps`): a control
+ * beside each map's demo download (CS2: the map's analysis).
  */
-export const CLIENT_API_VERSION = '0.2.11';
+export const CLIENT_API_VERSION = '0.2.12';
