@@ -1,7 +1,7 @@
 import React, { useId, useState } from 'react';
-import { Box, ButtonBase, Collapse, Typography } from '@mui/material';
+import { Box, Collapse, IconButton, Typography } from '@mui/material';
 import { CaretDownIcon } from '@phosphor-icons/react';
-import { tokens, radii } from '../../theme/tokens';
+import { tokens } from '../../theme/tokens';
 
 const { color } = tokens;
 
@@ -33,38 +33,28 @@ export function SettingsRow({ leading, title, sub, control, children, defaultOpe
   return (
     <Box sx={{ borderTop: `1px solid ${color.rule}` }} data-testid={rest['data-testid']}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1.5, minHeight: 56 }}>
-        {children ? (
-          <ButtonBase
+        {/* The text toggles the fold-out for a mouse; the caret is the real
+            button, since the line under the title may hold links. */}
+        <Box
+          onClick={children ? () => setOpen((o) => !o) : undefined}
+          sx={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 1.5, cursor: children ? 'pointer' : undefined }}
+        >
+          {leading}
+          <RowText title={title} sub={sub} />
+        </Box>
+        {control && <Box sx={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 1 }}>{control}</Box>}
+        {children && (
+          <IconButton
+            size="small"
             onClick={() => setOpen((o) => !o)}
             aria-expanded={open}
             aria-controls={bodyId}
-            aria-label={openLabel}
-            sx={{
-              flex: 1,
-              minWidth: 0,
-              justifyContent: 'flex-start',
-              textAlign: 'left',
-              gap: 1.5,
-              borderRadius: radii.md,
-              '&:focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: 2 },
-            }}
+            aria-label={openLabel ?? (typeof title === 'string' ? title : undefined)}
+            sx={{ flex: 'none', color: color.muted }}
           >
-            {leading}
-            <RowText title={title} sub={sub} />
-            <CaretDownIcon
-              size={14}
-              color={color.muted}
-              aria-hidden
-              style={{ marginLeft: 'auto', flex: 'none', transform: open ? 'rotate(180deg)' : undefined, transition: 'transform 150ms' }}
-            />
-          </ButtonBase>
-        ) : (
-          <Box sx={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            {leading}
-            <RowText title={title} sub={sub} />
-          </Box>
+            <CaretDownIcon size={16} style={{ transform: open ? 'rotate(180deg)' : undefined, transition: 'transform 150ms' }} />
+          </IconButton>
         )}
-        {control && <Box sx={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 1 }}>{control}</Box>}
       </Box>
       {children && (
         <Collapse in={open} id={bodyId}>

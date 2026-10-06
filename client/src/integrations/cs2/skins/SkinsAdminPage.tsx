@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ChangeEvent, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent, type InputHTMLAttributes, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import {
   Autocomplete,
   Box,
@@ -330,7 +330,7 @@ function SkinsCard({ id, title, checked, onToggle, children }: { id: string; tit
         <Typography id={id} component="h2" sx={{ fontFamily: fontDisplay, fontSize: '1.1875rem', fontWeight: 600 }}>
           {title}
         </Typography>
-        <Switch checked={checked} onChange={(e) => onToggle(e.target.checked)} inputProps={{ 'aria-label': title }} />
+        <Switch checked={checked} onChange={(e) => onToggle(e.target.checked)} slotProps={{ input: { 'aria-label': title } as InputHTMLAttributes<HTMLInputElement> }} />
       </Box>
       <Box sx={{ opacity: checked ? 1 : 0.5, transition: 'opacity 150ms', display: 'flex', flexDirection: 'column', gap: 2.25 }}>{children}</Box>
     </Box>
@@ -450,7 +450,7 @@ export function SkinsAdminPage() {
             <Switch
               checked={config.enabled}
               onChange={(e) => set({ enabled: e.target.checked })}
-              inputProps={{ 'aria-label': t('skins.admin.title'), 'data-testid': 'skins-enabled' } as Record<string, string>}
+              slotProps={{ input: { 'aria-label': t('skins.admin.title'), 'data-testid': 'skins-enabled' } as InputHTMLAttributes<HTMLInputElement> }}
             />
           </Box>
         }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type InputHTMLAttributes } from 'react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -206,7 +206,7 @@ function ProviderSection({
             checked={provider.enabled}
             disabled={busy}
             onChange={(e) => void save({ enabled: e.target.checked })}
-            inputProps={{ 'aria-label': t('settingsPage.signIn.enabledFor', { provider: provider.label }) }}
+            slotProps={{ input: { 'aria-label': t('settingsPage.signIn.enabledFor', { provider: provider.label }) } as InputHTMLAttributes<HTMLInputElement> }}
             data-testid={`${idPrefix}-enabled`}
           />
         )

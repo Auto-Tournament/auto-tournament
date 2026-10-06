@@ -1,7 +1,7 @@
 {
   "settingsPage": {
     "title": "Ajustes",
-    "intro": "Configura integraciones, valores por defecto en juego y opciones de desarrollo.",
+    "intro": "Los ajustes propios de la plataforma. Cada juego tiene los suyos en el menú.",
     "tabs": {
       "general": "General",
       "signIn": "Sign-in",
@@ -70,8 +70,12 @@
         "emailsHelp": "Addresses that get admin when their owner signs in with a provider that verified them (Google, Discord, GitHub).",
         "unsaved": "Not saved yet.",
         "saved": "Admin access saved",
-        "loadError": "Could not load the admin access settings"
-      }
+        "loadError": "Could not load the admin access settings",
+        "short": "Quién puede entrar como administrador"
+      },
+      "short": "Cómo inician sesión jugadores y administradores. Los cambios se aplican al momento.",
+      "enabledFor": "Inicio de sesión con {{provider}}",
+      "setUp": "Configurar {{provider}}"
     },
     "integrations": {
       "steam": {
@@ -91,7 +95,8 @@
         "title": "Actualizaciones de rating",
         "description": "Controla si los partidos completados actualizan el Skill Rating de los jugadores.",
         "toggleLabel": "Actualizar el rating de los jugadores con los partidos completados",
-        "note": "Cuando está deshabilitado, los partidos seguirán registrando estadísticas (ADR, K/D, etc.), pero el Skill Rating no cambiará."
+        "note": "Cuando está deshabilitado, los partidos seguirán registrando estadísticas (ADR, K/D, etc.), pero el Skill Rating no cambiará.",
+        "short": "Las puntuaciones cambian tras cada partida."
       }
     },
     "players": {
@@ -99,8 +104,11 @@
         "title": "Registro de jugadores",
         "description": "Controla si los nuevos inicios de sesión con Steam crean automáticamente registros de jugador. Cuando está deshabilitado, solo los jugadores creados o importados por admins aparecerán en torneos privados y pools shuffle.",
         "toggleLabel": "Permitir que cualquiera se registre mediante inicio de sesión con Steam",
-        "recommendation": "Recomendado: mantenlo desactivado para torneos por invitación o privados, para que inicios de sesión aleatorios no ensucien la lista de jugadores."
-      }
+        "recommendation": "Recomendado: mantenlo desactivado para torneos por invitación o privados, para que inicios de sesión aleatorios no ensucien la lista de jugadores.",
+        "short": "Iniciar sesión crea un jugador para cualquiera nuevo. Desactivado: solo los jugadores que añadas."
+      },
+      "title": "Jugadores",
+      "short": "Quién entra y cómo cambian las puntuaciones."
     },
     "developer": {
       "resetApiTitle": "Restablecer API y base de datos",
@@ -174,12 +182,17 @@
             "1v1": "Default: Active Duty"
           }
         }
-      }
+      },
+      "short": "Aún en desarrollo: desactivadas por defecto, solo las ven los administradores."
     },
     "groups": {
       "platform": "Platform"
     },
-    "navLabel": "Settings pages"
+    "navLabel": "Settings pages",
+    "gameLinks": {
+      "title": "Ajustes del juego",
+      "hint": "Cada juego tiene sus propios ajustes en el menú."
+    }
   },
   "dashboard": {
     "title": "Admin",
@@ -403,7 +416,8 @@
       "note": "Desactivado por defecto. Enlaza a la página pública de comprobación de la licencia y solo se muestra mientras la clave guardada sea válida.",
       "on": "Línea pública de licencia activada",
       "off": "Línea pública de licencia desactivada",
-      "failed": "No se pudo cambiar la línea pública de licencia"
+      "failed": "No se pudo cambiar la línea pública de licencia",
+      "short": "Se muestra en las páginas públicas."
     },
     "public": {
       "licensed": "Con licencia"
@@ -484,6 +498,14 @@
     "warning": {
       "periodEnded": "Esta licencia de evento cubría hasta el {{date}}. Las pruebas y la preparación no requieren nada; un evento nuevo lleva su propia licencia de evento.",
       "periodNotStarted": "Esta licencia de evento cubre desde el {{date}}. Preparar y probar antes de esa fecha está bien."
+    },
+    "short": "Cómo se usa esta instancia, y su clave.",
+    "keyRow": "Clave de licencia",
+    "state": {
+      "active": "Activa",
+      "warning": "Revisar",
+      "invalid": "No válida",
+      "none": "Sin clave"
     }
   },
   "tournamentsPage": {

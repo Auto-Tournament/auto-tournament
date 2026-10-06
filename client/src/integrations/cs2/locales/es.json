@@ -1,14 +1,18 @@
 {
   "nav": {
     "servers": "Servidores",
-    "maps": "Mapas y pools"
+    "maps": "Mapas y pools",
+    "skins": "Skins",
+    "matchRules": "Reglas de partida"
   },
   "layout": {
     "webhookNotConfigured": "La URL del webhook no está configurada. Los partidos y servidores no pueden recibir eventos hasta que se configure.",
     "openSettings": "Abrir ajustes",
     "pageTitle": {
       "servers": "Servidores",
-      "maps": "Mapas y pools"
+      "maps": "Mapas y pools",
+      "skins": "Skins",
+      "matchRules": "Reglas de partida"
     },
     "atDbDown": {
       "title": "Base de datos de MatchZy Enhanced inaccesible",
@@ -25,6 +29,14 @@
       "maps": {
         "label": "Maps",
         "hint": "Pools and images"
+      },
+      "skins": {
+        "label": "Skins",
+        "hint": "Drops, premios, skins de los jugadores"
+      },
+      "matchRules": {
+        "label": "Reglas de partida",
+        "hint": "Lo que se dice a los servidores en cada partida"
       }
     },
     "servers": {
@@ -49,7 +61,10 @@
   "managePage": {
     "rail": {
       "servers": "Servers",
-      "maps": "Maps"
+      "maps": "Maps",
+      "group": "Counter-Strike 2",
+      "skins": "Skins",
+      "matchRules": "Reglas de partida"
     },
     "status": {
       "serversFree": "SERVERS FREE"
@@ -1659,11 +1674,37 @@
         "remove": "Take away",
         "removeTitle": "Take this skin away?",
         "removeQuestion": "{{skin}} leaves {{player}}'s inventory and loadout. This cannot be undone.",
-        "removed": "Skin taken away"
+        "removed": "Skin taken away",
+        "none": "No se encontraron jugadores.",
+        "nobodyYet": "Nadie tiene una skin aún. Busca un jugador para darle una.",
+        "giveShort": "Dar"
       },
       "playDropChance": "Chance of a skin when you lose or draw",
-      "knivesByPrice": "Knives and gloves get their rarity from market price (Skinport, updated daily): cheap ones are common, expensive ones rare."
+      "knivesByPrice": "Knives and gloves get their rarity from market price (Skinport, updated daily): cheap ones are common, expensive ones rare.",
+      "pageHint": "Skins virtuales que los jugadores ganan aquí. Las equipadas se ven en los servidores Ready Up entre mapas.",
+      "on": "Activado",
+      "off": "Desactivado",
+      "stats": {
+        "given": "Repartidas",
+        "thisWeek": "{{count}} esta semana",
+        "owners": "Jugadores con skins",
+        "ofPlayers": "de {{count}}",
+        "rarest": "La más rara",
+        "noneYet": "Ninguna aún"
+      },
+      "win": "Victoria",
+      "lose": "Derrota o empate",
+      "chance": "probabilidad de una skin",
+      "whatDrops": "Qué cae. Arrastra los bordes.",
+      "edge": "Entre {{a}} y {{b}}",
+      "podiumHint": "Haz clic en un escalón para cambiar lo que da.",
+      "rewardTitle": "Premio para {{place}}",
+      "done": "Hecho"
     },
     "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)"
+  },
+  "matchRules": {
+    "title": "Reglas de partida",
+    "subtitle": "Lo que se dice a cada servidor de CS2 cuando empieza una partida."
   }
 }

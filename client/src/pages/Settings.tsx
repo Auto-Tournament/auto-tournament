@@ -260,7 +260,7 @@ export default function Settings() {
                     <Switch
                       checked={values.allowSelfRegister}
                       onChange={(event) => setValues((prev) => ({ ...prev, allowSelfRegister: event.target.checked }))}
-                      inputProps={{ 'aria-label': t('settingsPage.players.registration.toggleLabel'), 'data-testid': 'settings-self-register' } as Record<string, string>}
+                      slotProps={{ input: { 'aria-label': t('settingsPage.players.registration.toggleLabel'), 'data-testid': 'settings-self-register' } as React.InputHTMLAttributes<HTMLInputElement> }}
                     />
                   }
                 />
@@ -271,7 +271,7 @@ export default function Settings() {
                     <Switch
                       checked={values.ratingsEnabled}
                       onChange={(event) => setValues((prev) => ({ ...prev, ratingsEnabled: event.target.checked }))}
-                      inputProps={{ 'aria-label': t('settingsPage.matchRating.ratings.toggleLabel'), 'data-testid': 'settings-ratings-enabled' } as Record<string, string>}
+                      slotProps={{ input: { 'aria-label': t('settingsPage.matchRating.ratings.toggleLabel'), 'data-testid': 'settings-ratings-enabled' } as React.InputHTMLAttributes<HTMLInputElement> }}
                     />
                   }
                 />

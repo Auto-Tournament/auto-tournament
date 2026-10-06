@@ -1,7 +1,7 @@
 {
   "settingsPage": {
     "title": "Instellingen",
-    "intro": "Configureer integraties, in-game standaarden en ontwikkelaarsopties.",
+    "intro": "De eigen instellingen van het platform. Elk spel heeft zijn instellingen in het menu.",
     "tabs": {
       "general": "General",
       "signIn": "Sign-in",
@@ -70,8 +70,12 @@
         "emailsHelp": "Addresses that get admin when their owner signs in with a provider that verified them (Google, Discord, GitHub).",
         "unsaved": "Not saved yet.",
         "saved": "Admin access saved",
-        "loadError": "Could not load the admin access settings"
-      }
+        "loadError": "Could not load the admin access settings",
+        "short": "Wie als admin kan inloggen"
+      },
+      "short": "Hoe spelers en admins inloggen. Wijzigingen gelden meteen.",
+      "enabledFor": "Inloggen met {{provider}}",
+      "setUp": "{{provider}} instellen"
     },
     "integrations": {
       "steam": {
@@ -91,7 +95,8 @@
         "title": "Rating-updates",
         "description": "Bepaal of afgeronde wedstrijden de Skill Rating van spelers bijwerken.",
         "toggleLabel": "Werk spelersratings bij op basis van afgeronde wedstrijden",
-        "note": "Wanneer uitgeschakeld, blijven wedstrijden statistieken bijhouden (ADR, K/D, etc.), maar Skill Ratings veranderen niet."
+        "note": "Wanneer uitgeschakeld, blijven wedstrijden statistieken bijhouden (ADR, K/D, etc.), maar Skill Ratings veranderen niet.",
+        "short": "Ratings veranderen na elke wedstrijd."
       }
     },
     "players": {
@@ -99,8 +104,11 @@
         "title": "Spelerregistratie",
         "description": "Bepaal of nieuwe Steam-logins automatisch spelersrecords aanmaken. Wanneer uitgeschakeld, verschijnen in private toernooien en shuffle-pools alleen spelers die door admins zijn aangemaakt of geïmporteerd.",
         "toggleLabel": "Sta iedereen toe om zich te registreren via Steam-login",
-        "recommendation": "Aanbevolen: laat dit uit voor invite-only of private toernooien, zodat willekeurige Steam-logins de spelerslijst niet vervuilen."
-      }
+        "recommendation": "Aanbevolen: laat dit uit voor invite-only of private toernooien, zodat willekeurige Steam-logins de spelerslijst niet vervuilen.",
+        "short": "Inloggen maakt van iedereen die nieuw is een speler. Uit: alleen spelers die jij toevoegt."
+      },
+      "title": "Spelers",
+      "short": "Wie meedoet, en hoe ratings veranderen."
     },
     "developer": {
       "resetApiTitle": "API & database resetten",
@@ -174,12 +182,17 @@
             "1v1": "Default: Active Duty"
           }
         }
-      }
+      },
+      "short": "Nog in de maak: standaard uit, alleen admins zien ze."
     },
     "groups": {
       "platform": "Platform"
     },
-    "navLabel": "Settings pages"
+    "navLabel": "Settings pages",
+    "gameLinks": {
+      "title": "Spelinstellingen",
+      "hint": "Elk spel heeft zijn eigen instellingen in het menu."
+    }
   },
   "dashboard": {
     "title": "Admin",
@@ -403,7 +416,8 @@
       "note": "Standaard uit. Linkt naar de openbare controlepagina van de licentie en verschijnt alleen zolang de opgeslagen sleutel geldig is.",
       "on": "Openbare licentieregel ingeschakeld",
       "off": "Openbare licentieregel uitgeschakeld",
-      "failed": "De openbare licentieregel kon niet worden gewijzigd"
+      "failed": "De openbare licentieregel kon niet worden gewijzigd",
+      "short": "Getoond op openbare pagina’s."
     },
     "public": {
       "licensed": "Gelicentieerd"
@@ -484,6 +498,14 @@
     "warning": {
       "periodEnded": "Deze evenementlicentie gold tot en met {{date}}. Testen en opzetten vragen niets; een nieuw evenement krijgt een eigen evenementlicentie.",
       "periodNotStarted": "Deze evenementlicentie geldt vanaf {{date}}. Opzetten en testen vóór die tijd is prima."
+    },
+    "short": "Hoe deze instantie gebruikt wordt, en de sleutel.",
+    "keyRow": "Licentiesleutel",
+    "state": {
+      "active": "Actief",
+      "warning": "Controleren",
+      "invalid": "Ongeldig",
+      "none": "Geen sleutel"
     }
   },
   "tournamentsPage": {

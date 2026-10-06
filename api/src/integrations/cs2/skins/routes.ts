@@ -317,7 +317,7 @@ router.get('/admin/catalog', requireAuth, async (req, res) => {
  *     summary: How many skins are out there, and the rarest one
  *     security: [{ BearerAuth: [] }]
  *     responses:
- *       200: { description: Counts, and the rarest skin with its owner }
+ *       200: { description: 'Counts, and the rarest skin with its owner' }
  */
 router.get('/admin/stats', requireAuth, async (_req, res) => {
   try {

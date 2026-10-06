@@ -1,7 +1,7 @@
 {
   "settingsPage": {
     "title": "Definições",
-    "intro": "Configura integrações, predefinições no jogo e opções de desenvolvimento.",
+    "intro": "As definições próprias da plataforma. Cada jogo tem as suas no menu.",
     "tabs": {
       "general": "General",
       "signIn": "Sign-in",
@@ -70,8 +70,12 @@
         "emailsHelp": "Addresses that get admin when their owner signs in with a provider that verified them (Google, Discord, GitHub).",
         "unsaved": "Not saved yet.",
         "saved": "Admin access saved",
-        "loadError": "Could not load the admin access settings"
-      }
+        "loadError": "Could not load the admin access settings",
+        "short": "Quem pode entrar como administrador"
+      },
+      "short": "Como jogadores e administradores iniciam sessão. As alterações aplicam-se de imediato.",
+      "enabledFor": "Início de sessão com {{provider}}",
+      "setUp": "Configurar {{provider}}"
     },
     "integrations": {
       "steam": {
@@ -91,7 +95,8 @@
         "title": "Atualizações de rating",
         "description": "Controla se jogos concluídos atualizam o Skill Rating dos jogadores.",
         "toggleLabel": "Atualizar o rating dos jogadores a partir de jogos concluídos",
-        "note": "Quando desativado, os jogos continuam a registar estatísticas (ADR, K/D, etc.), mas o Skill Rating mantém-se inalterado."
+        "note": "Quando desativado, os jogos continuam a registar estatísticas (ADR, K/D, etc.), mas o Skill Rating mantém-se inalterado.",
+        "short": "As classificações mudam após cada partida."
       }
     },
     "players": {
@@ -99,8 +104,11 @@
         "title": "Registo de jogadores",
         "description": "Controla se novos logins Steam criam automaticamente registos de jogador. Quando desativado, apenas jogadores criados ou importados por admins aparecem em torneios privados e pools shuffle.",
         "toggleLabel": "Permitir que qualquer pessoa se registe via login Steam",
-        "recommendation": "Recomendado: mantém isto desativado para torneios por convite ou privados, para que logins Steam aleatórios não poluam a lista de jogadores."
-      }
+        "recommendation": "Recomendado: mantém isto desativado para torneios por convite ou privados, para que logins Steam aleatórios não poluam a lista de jogadores.",
+        "short": "Iniciar sessão cria um jogador para qualquer pessoa nova. Desligado: só os jogadores que adicionar."
+      },
+      "title": "Jogadores",
+      "short": "Quem entra, e como mudam as classificações."
     },
     "developer": {
       "resetApiTitle": "Repor API e base de dados",
@@ -174,12 +182,17 @@
             "1v1": "Default: Active Duty"
           }
         }
-      }
+      },
+      "short": "Ainda em construção: desligadas por omissão, só os administradores as veem."
     },
     "groups": {
       "platform": "Platform"
     },
-    "navLabel": "Settings pages"
+    "navLabel": "Settings pages",
+    "gameLinks": {
+      "title": "Definições do jogo",
+      "hint": "Cada jogo tem as suas próprias definições no menu."
+    }
   },
   "dashboard": {
     "title": "Admin",
@@ -403,7 +416,8 @@
       "note": "Desativado por predefinição. Liga à página pública de verificação da licença e só aparece enquanto a chave guardada for válida.",
       "on": "Linha pública de licença ativada",
       "off": "Linha pública de licença desativada",
-      "failed": "Não foi possível alterar a linha pública de licença"
+      "failed": "Não foi possível alterar a linha pública de licença",
+      "short": "Mostrado nas páginas públicas."
     },
     "public": {
       "licensed": "Licenciado"
@@ -484,6 +498,14 @@
     "warning": {
       "periodEnded": "Esta licença de evento cobria as datas até {{date}}. Testes e configuração não exigem nada; um evento novo tem a sua própria licença de evento.",
       "periodNotStarted": "Esta licença de evento cobre as datas a partir de {{date}}. Configurar e testar antes disso não tem problema."
+    },
+    "short": "Como esta instância é usada, e a sua chave.",
+    "keyRow": "Chave de licença",
+    "state": {
+      "active": "Ativa",
+      "warning": "Verificar",
+      "invalid": "Inválida",
+      "none": "Sem chave"
     }
   },
   "tournamentsPage": {

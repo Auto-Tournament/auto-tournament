@@ -10149,6 +10149,28 @@
         ]
       }
     },
+    "/api/skins/admin/stats": {
+      "get": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "GET /api/skins/admin/stats",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/skins/me": {
       "get": {
         "tags": [

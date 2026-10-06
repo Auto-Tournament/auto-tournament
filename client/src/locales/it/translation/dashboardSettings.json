@@ -1,7 +1,7 @@
 {
   "settingsPage": {
     "title": "Impostazioni",
-    "intro": "Configura integrazioni, valori predefiniti in gioco e opzioni di sviluppo.",
+    "intro": "Le impostazioni della piattaforma. Ogni gioco ha le sue nel menu.",
     "tabs": {
       "general": "General",
       "signIn": "Sign-in",
@@ -70,8 +70,12 @@
         "emailsHelp": "Addresses that get admin when their owner signs in with a provider that verified them (Google, Discord, GitHub).",
         "unsaved": "Not saved yet.",
         "saved": "Admin access saved",
-        "loadError": "Could not load the admin access settings"
-      }
+        "loadError": "Could not load the admin access settings",
+        "short": "Chi può accedere come admin"
+      },
+      "short": "Come accedono giocatori e admin. Le modifiche valgono subito.",
+      "enabledFor": "Accesso con {{provider}}",
+      "setUp": "Configura {{provider}}"
     },
     "integrations": {
       "steam": {
@@ -91,7 +95,8 @@
         "title": "Aggiornamenti rating",
         "description": "Controlla se i match completati aggiornano lo Skill Rating dei giocatori.",
         "toggleLabel": "Aggiorna il rating dei giocatori dai match completati",
-        "note": "Quando disabilitato, i match continueranno a tracciare le statistiche (ADR, K/D, ecc.), ma lo Skill Rating non cambierà."
+        "note": "Quando disabilitato, i match continueranno a tracciare le statistiche (ADR, K/D, ecc.), ma lo Skill Rating non cambierà.",
+        "short": "I rating cambiano dopo ogni partita."
       }
     },
     "players": {
@@ -99,8 +104,11 @@
         "title": "Registrazione giocatori",
         "description": "Controlla se i nuovi accessi Steam creano automaticamente profili giocatore. Quando disabilitato, solo i giocatori creati o importati dagli admin compariranno in tornei privati e shuffle pool.",
         "toggleLabel": "Consenti a chiunque di registrarsi tramite accesso Steam",
-        "recommendation": "Consigliato: lascialo disattivato per tornei su invito o privati, così accessi Steam casuali non “sporcano” la lista giocatori."
-      }
+        "recommendation": "Consigliato: lascialo disattivato per tornei su invito o privati, così accessi Steam casuali non “sporcano” la lista giocatori.",
+        "short": "L’accesso crea un giocatore per chiunque sia nuovo. Disattivato: solo i giocatori che aggiungi tu."
+      },
+      "title": "Giocatori",
+      "short": "Chi partecipa e come cambiano i rating."
     },
     "developer": {
       "resetApiTitle": "Reimposta API e database",
@@ -174,12 +182,17 @@
             "1v1": "Default: Active Duty"
           }
         }
-      }
+      },
+      "short": "Ancora in lavorazione: disattivate di default, le vedono solo gli admin."
     },
     "groups": {
       "platform": "Platform"
     },
-    "navLabel": "Settings pages"
+    "navLabel": "Settings pages",
+    "gameLinks": {
+      "title": "Impostazioni del gioco",
+      "hint": "Ogni gioco ha le sue impostazioni nel menu."
+    }
   },
   "dashboard": {
     "title": "Admin",
@@ -403,7 +416,8 @@
       "note": "Disattivato di default. Rimanda alla pagina pubblica di verifica della licenza e compare solo finché la chiave salvata è valida.",
       "on": "Riga pubblica della licenza attivata",
       "off": "Riga pubblica della licenza disattivata",
-      "failed": "Impossibile modificare la riga pubblica della licenza"
+      "failed": "Impossibile modificare la riga pubblica della licenza",
+      "short": "Mostrato sulle pagine pubbliche."
     },
     "public": {
       "licensed": "Con licenza"
@@ -484,6 +498,14 @@
     "warning": {
       "periodEnded": "Questa licenza evento copriva le date fino al {{date}}. Prove e configurazione non richiedono nulla; un nuovo evento ha la sua licenza evento.",
       "periodNotStarted": "Questa licenza evento copre le date dal {{date}}. Configurare e fare prove prima va benissimo."
+    },
+    "short": "Come si usa questa istanza, e la sua chiave.",
+    "keyRow": "Chiave di licenza",
+    "state": {
+      "active": "Attiva",
+      "warning": "Da controllare",
+      "invalid": "Non valida",
+      "none": "Nessuna chiave"
     }
   },
   "tournamentsPage": {

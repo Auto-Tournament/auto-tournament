@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type InputHTMLAttributes } from 'react';
 import {
   Alert,
   Box,
@@ -311,7 +311,7 @@ export function WebhooksCard() {
                 <Switch
                   checked={endpoint.active}
                   onChange={() => void toggleActive(endpoint)}
-                  inputProps={{ 'aria-label': endpoint.active ? t('webhooksPage.disable') : t('webhooksPage.enable') }}
+                  slotProps={{ input: { 'aria-label': endpoint.active ? t('webhooksPage.disable') : t('webhooksPage.enable') } as InputHTMLAttributes<HTMLInputElement> }}
                 />
               </>
             }
@@ -401,7 +401,7 @@ export function WebhooksCard() {
           <Switch
             checked={data.allowPrivateTargets}
             onChange={(event) => void setAllowPrivate(event.target.checked)}
-            inputProps={{ 'aria-label': t('webhooksPage.allowPrivate') }}
+            slotProps={{ input: { 'aria-label': t('webhooksPage.allowPrivate') } as InputHTMLAttributes<HTMLInputElement> }}
             data-testid="webhooks-allow-private"
           />
         }
