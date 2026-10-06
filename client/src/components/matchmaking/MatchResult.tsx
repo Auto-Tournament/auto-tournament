@@ -64,7 +64,9 @@ export function MatchResult({ matchSlug }: { matchSlug: string }) {
   const [downFor, setDownFor] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const res = await fetch(`/api/matchmaking/matches/${encodeURIComponent(matchSlug)}/result`, { credentials: 'same-origin' });
+    const res = await fetch(`/api/matchmaking/matches/${encodeURIComponent(matchSlug)}/result`, {
+      credentials: 'same-origin',
+    });
     if (res.ok) setResult(((await res.json()) as { result: Result }).result);
   }, [matchSlug]);
 
@@ -84,7 +86,9 @@ export function MatchResult({ matchSlug }: { matchSlug: string }) {
       }
     );
     if (!res.ok) {
-      showError(apiErrorMessage(new Error(await res.text()), t('matchmaking.result.commendFailed')));
+      showError(
+        apiErrorMessage(new Error(await res.text()), t('matchmaking.result.commendFailed'))
+      );
       return;
     }
     setDownFor(null);
@@ -96,7 +100,8 @@ export function MatchResult({ matchSlug }: { matchSlug: string }) {
   const given = new Map(result.commendsGiven.map((c) => [c.playerId, c]));
   const xpTotal = result.xp.reduce((n, x) => n + x.amount, 0);
   const ratingDelta = result.rating
-    ? elo(result.rating.after, result.rating.sigmaAfter) - elo(result.rating.before, result.rating.sigmaBefore)
+    ? elo(result.rating.after, result.rating.sigmaAfter) -
+      elo(result.rating.before, result.rating.sigmaBefore)
     : null;
 
   return (
@@ -105,8 +110,13 @@ export function MatchResult({ matchSlug }: { matchSlug: string }) {
         <SectionHead title={t('matchmaking.result.title')} />
         <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
           {result.maps.map((m, i) => (
-            <Typography key={i} sx={{ fontVariantNumeric: 'tabular-nums' }} data-testid="mm-result-map">
-              {m.map ?? t('matchmaking.result.map', { n: i + 1 })}: <strong>{m.team1}</strong> – <strong>{m.team2}</strong>
+            <Typography
+              key={i}
+              sx={{ fontVariantNumeric: 'tabular-nums' }}
+              data-testid="mm-result-map"
+            >
+              {m.map ?? t('matchmaking.result.map', { n: i + 1 })}: <strong>{m.team1}</strong> –{' '}
+              <strong>{m.team2}</strong>
             </Typography>
           ))}
         </Stack>
@@ -116,7 +126,12 @@ export function MatchResult({ matchSlug }: { matchSlug: string }) {
               <Typography variant="caption" color="text.secondary">
                 {t('matchmaking.result.rating')}
               </Typography>
-              <Typography sx={{ fontWeight: 700, color: ratingDelta >= 0 ? tokens.color.live : tokens.color.ban }}>
+              <Typography
+                sx={{
+                  fontWeight: 700,
+                  color: ratingDelta >= 0 ? tokens.color.live : tokens.color.ban,
+                }}
+              >
                 {ratingDelta >= 0 ? '+' : ''}
                 {ratingDelta}
               </Typography>
@@ -137,7 +152,11 @@ export function MatchResult({ matchSlug }: { matchSlug: string }) {
             />
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
               {result.xp.map((x) => (
-                <Chip key={x.reason} size="small" label={`${t(`matchmaking.result.xpReason.${x.reason}`)} +${x.amount}`} />
+                <Chip
+                  key={x.reason}
+                  size="small"
+                  label={`${t(`matchmaking.result.xpReason.${x.reason}`)} +${x.amount}`}
+                />
               ))}
             </Stack>
           </Box>
@@ -185,7 +204,10 @@ export function MatchResult({ matchSlug }: { matchSlug: string }) {
                               onClick={() => void commend(p.id, 1)}
                               data-testid={`mm-up-${p.id}`}
                             >
-                              <ThumbsUpIcon size={18} weight={g?.value === 1 ? 'fill' : 'regular'} />
+                              <ThumbsUpIcon
+                                size={18}
+                                weight={g?.value === 1 ? 'fill' : 'regular'}
+                              />
                             </IconButton>
                           </Tooltip>
                           {downFor === p.id ? (
@@ -219,7 +241,10 @@ export function MatchResult({ matchSlug }: { matchSlug: string }) {
                                 onClick={() => setDownFor(p.id)}
                                 data-testid={`mm-down-${p.id}`}
                               >
-                                <ThumbsDownIcon size={18} weight={g?.value === -1 ? 'fill' : 'regular'} />
+                                <ThumbsDownIcon
+                                  size={18}
+                                  weight={g?.value === -1 ? 'fill' : 'regular'}
+                                />
                               </IconButton>
                             </Tooltip>
                           )}

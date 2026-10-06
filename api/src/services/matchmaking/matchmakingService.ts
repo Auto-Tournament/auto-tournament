@@ -89,8 +89,18 @@ interface LobbyPlayerRow {
 }
 
 export interface MatchmakingMe {
-  party: { id: string; leader: string; mode: string; inviteCode: string; members: string[] } | null;
+  party: {
+    id: string;
+    leader: string;
+    mode: string;
+    inviteCode: string;
+    members: string[];
+    /** The members with their names and avatars, in `members` order. */
+    people: Array<{ id: string; name: string; avatarUrl: string | null }>;
+  } | null;
   queue: { mode: string; queuedAt: number; status: string } | null;
+  /** Players searching right now, per mode (the Play page's "in the queue"). */
+  queueCounts: Record<string, number>;
   lobby: {
     id: string;
     status: string;
@@ -775,6 +785,7 @@ export class MatchmakingService {
 
   async me(playerId: string): Promise<MatchmakingMe> {
     const party = await this.partyOf(playerId);
+    const members = party ? await this.members(party.id) : [];
     const entry = party ? await this.entryOf(party.id) : undefined;
     let lobby: MatchmakingMe['lobby'] = null;
     const lobbyRow = await db.queryOneAsync<LobbyRow & { team: number; accepted_at: number | null }>(
@@ -808,15 +819,36 @@ export class MatchmakingService {
             leader: party.leader_player_id,
             mode: party.mode,
             inviteCode: party.invite_code,
-            members: await this.members(party.id),
+            members,
+            people: await this.people(members),
           }
         : null,
+      queueCounts: await this.queueCounts(),
       queue: entry ? { mode: entry.mode, queuedAt: Number(entry.queued_at), status: entry.status } : null,
       lobby,
       cooldownUntil: await this.cooldownUntil(playerId),
       rating: await this.ratingSummary(playerId, entry?.mode ?? party?.mode ?? '5v5'),
       modes: await this.enabledModes(),
     };
+  }
+
+  private async people(ids: string[]): Promise<Array<{ id: string; name: string; avatarUrl: string | null }>> {
+    if (ids.length === 0) return [];
+    const rows = await db.queryAsync<{ id: string; name: string | null; avatar_url: string | null }>(
+      `SELECT id, name, avatar_url FROM players WHERE id IN (${ids.map(() => '?').join(', ')})`,
+      ids
+    );
+    const byId = new Map(rows.map((r) => [r.id, r]));
+    return ids.map((id) => ({ id, name: byId.get(id)?.name || id, avatarUrl: byId.get(id)?.avatar_url ?? null }));
+  }
+
+  private async queueCounts(): Promise<Record<string, number>> {
+    const rows = await db.queryAsync<{ mode: string; n: number | string }>(
+      `SELECT e.mode, COUNT(m.player_id) AS n FROM mm_queue_entries e
+         JOIN mm_party_members m ON m.party_id = e.party_id
+        WHERE e.status = 'searching' GROUP BY e.mode`
+    );
+    return Object.fromEntries(rows.map((r) => [r.mode, Number(r.n)]));
   }
 
   private async ratingSummary(playerId: string, mode: string): Promise<MatchmakingMe['rating']> {
@@ -842,7 +874,7 @@ export class MatchmakingService {
     matchStatus: string | null;
     /** The maps the roulette rolls over; `map` is one of them. */
     mapPool: Array<{ id: string; name: string; imageUrl: string | null }>;
-    teams: Array<{ team: number; players: Array<{ id: string; name: string; accepted: boolean }> }>;
+    teams: Array<{ team: number; players: Array<{ id: string; name: string; avatarUrl: string | null; accepted: boolean }> }>;
   }> {
     const { lobby, players } = await this.lobbyFor(playerId, lobbyId);
     const row = lobby as LobbyRow & { map: string | null; match_slug: string | null; map_pool: string | null };
@@ -852,11 +884,12 @@ export class MatchmakingService {
     } catch {
       mapPool = [];
     }
-    const names = await db.queryAsync<{ id: string; name: string | null }>(
-      `SELECT id, name FROM players WHERE id IN (${players.map(() => '?').join(', ')})`,
+    const names = await db.queryAsync<{ id: string; name: string | null; avatar_url: string | null }>(
+      `SELECT id, name, avatar_url FROM players WHERE id IN (${players.map(() => '?').join(', ')})`,
       players.map((p) => p.player_id)
     );
     const nameOf = new Map(names.map((n) => [n.id, n.name || n.id]));
+    const avatarOf = new Map(names.map((n) => [n.id, n.avatar_url]));
     const match = row.match_slug
       ? await db.queryOneAsync<{ status: string }>('SELECT status FROM matches WHERE slug = ?', [row.match_slug])
       : undefined;
@@ -872,7 +905,12 @@ export class MatchmakingService {
         team,
         players: players
           .filter((p) => p.team === team)
-          .map((p) => ({ id: p.player_id, name: nameOf.get(p.player_id) ?? p.player_id, accepted: p.accepted_at !== null })),
+          .map((p) => ({
+            id: p.player_id,
+            name: nameOf.get(p.player_id) ?? p.player_id,
+            avatarUrl: avatarOf.get(p.player_id) ?? null,
+            accepted: p.accepted_at !== null,
+          })),
       })),
     };
   }

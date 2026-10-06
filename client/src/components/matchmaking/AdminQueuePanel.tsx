@@ -12,9 +12,29 @@ import { useSnackbar } from '../../contexts/SnackbarContext';
 import { playerProfilePath } from '../../paths';
 
 interface AdminQueue {
-  searching: Array<{ partyId: string; mode: string; waited: number; players: Array<{ id: string; name: string }> }>;
-  lobbies: Array<{ id: string; mode: string; status: string; matchSlug: string | null; map: string | null; accepted: number; total: number }>;
-  penalties: Array<{ id: number; playerId: string; name: string; kind: string; cooldownUntil: number; cleared: boolean }>;
+  searching: Array<{
+    partyId: string;
+    mode: string;
+    waited: number;
+    players: Array<{ id: string; name: string }>;
+  }>;
+  lobbies: Array<{
+    id: string;
+    mode: string;
+    status: string;
+    matchSlug: string | null;
+    map: string | null;
+    accepted: number;
+    total: number;
+  }>;
+  penalties: Array<{
+    id: number;
+    playerId: string;
+    name: string;
+    kind: string;
+    cooldownUntil: number;
+    cleared: boolean;
+  }>;
 }
 
 interface ReviewRow {
@@ -38,7 +58,9 @@ export function AdminQueuePanel() {
     try {
       setQueue(await api.get<AdminQueue>('/api/matchmaking/admin/queue'));
       setReadAt(Date.now() / 1000);
-      setReview((await api.get<{ players: ReviewRow[] }>('/api/matchmaking/admin/commends/review')).players);
+      setReview(
+        (await api.get<{ players: ReviewRow[] }>('/api/matchmaking/admin/commends/review')).players
+      );
     } catch {
       setQueue(null);
     }
@@ -82,12 +104,14 @@ export function AdminQueuePanel() {
       <Stack spacing={1} mb={2}>
         {queue.searching.map((p) => (
           <Typography key={p.partyId} variant="body2">
-            {p.players.map((x) => x.name).join(', ')} · {p.mode} · {t('matchmaking.admin.waited', { minutes: minutes(p.waited) })}
+            {p.players.map((x) => x.name).join(', ')} · {p.mode} ·{' '}
+            {t('matchmaking.admin.waited', { minutes: minutes(p.waited) })}
           </Typography>
         ))}
         {queue.lobbies.map((l) => (
           <Typography key={l.id} variant="body2">
-            {t(`matchmaking.room.status.${l.status}`, { defaultValue: l.status })} · {l.accepted}/{l.total}
+            {t(`matchmaking.room.status.${l.status}`, { defaultValue: l.status })} · {l.accepted}/
+            {l.total}
             {l.map ? ` · ${l.map}` : ''}
             {l.matchSlug ? ` · ${l.matchSlug}` : ''}
           </Typography>
@@ -105,7 +129,11 @@ export function AdminQueuePanel() {
                   {p.name} · {t(`matchmaking.admin.kind.${p.kind}`, { defaultValue: p.kind })} ·{' '}
                   {t('matchmaking.admin.until', { minutes: minutes(p.cooldownUntil - now) })}
                 </Typography>
-                <Button size="small" onClick={() => void clear(p.playerId)} data-testid={`mm-clear-${p.playerId}`}>
+                <Button
+                  size="small"
+                  onClick={() => void clear(p.playerId)}
+                  data-testid={`mm-clear-${p.playerId}`}
+                >
                   {t('matchmaking.admin.clear')}
                 </Button>
               </Stack>
@@ -121,11 +149,20 @@ export function AdminQueuePanel() {
           <Stack spacing={1} data-testid="mm-review-list">
             {review.map((r) => (
               <Typography key={r.id} variant="body2">
-                <Box component={RouterLink} to={playerProfilePath(r.id)} sx={{ color: 'text.primary' }}>
+                <Box
+                  component={RouterLink}
+                  to={playerProfilePath(r.id)}
+                  sx={{ color: 'text.primary' }}
+                >
                   {r.name}
                 </Box>{' '}
                 · {t('matchmaking.admin.voters', { count: r.voters })} ·{' '}
-                {r.reasons.map((x) => `${t(`matchmaking.result.downTag.${x.tag}`, { defaultValue: x.tag })} ${x.count}`).join(', ')}
+                {r.reasons
+                  .map(
+                    (x) =>
+                      `${t(`matchmaking.result.downTag.${x.tag}`, { defaultValue: x.tag })} ${x.count}`
+                  )
+                  .join(', ')}
               </Typography>
             ))}
           </Stack>
