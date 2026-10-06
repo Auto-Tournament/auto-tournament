@@ -55,6 +55,11 @@
       "save": "Não foi possível guardar o endpoint de webhook",
       "test": "Não foi possível enviar o evento de teste",
       "resend": "Não foi possível reenviar a entrega"
-    }
+    },
+    "format": "Format",
+    "formatSigned": "Signed JSON (integrations)",
+    "formatDiscord": "Discord message",
+    "formatSignedHelp": "The signed event JSON, for your own service. Check the signature with the secret.",
+    "formatDiscordHelp": "Paste a Discord channel webhook URL (Channel settings → Integrations → Webhooks). Each event posts a message; no passwords or connect lines go to Discord, only a link to the match page."
   }
 }

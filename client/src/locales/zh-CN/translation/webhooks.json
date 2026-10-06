@@ -55,6 +55,11 @@
       "save": "无法保存 Webhook 端点",
       "test": "无法发送测试事件",
       "resend": "无法重新发送投递"
-    }
+    },
+    "format": "Format",
+    "formatSigned": "Signed JSON (integrations)",
+    "formatDiscord": "Discord message",
+    "formatSignedHelp": "The signed event JSON, for your own service. Check the signature with the secret.",
+    "formatDiscordHelp": "Paste a Discord channel webhook URL (Channel settings → Integrations → Webhooks). Each event posts a message; no passwords or connect lines go to Discord, only a link to the match page."
   }
 }

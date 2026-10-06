@@ -695,6 +695,7 @@ export function getSchemaSQL(): string {
       event_types TEXT NOT NULL DEFAULT '["*"]', -- JSON array of event type ids; "*" = all
       active BOOLEAN NOT NULL DEFAULT TRUE,
       source TEXT, -- Teams API source (token label) whose externalId the payloads carry as external_id
+      format TEXT NOT NULL DEFAULT 'signed', -- 'signed' (the signed JSON envelope) or 'discord' (a Discord webhook: an embed message)
       secret TEXT NOT NULL, -- whsec_...; needed in clear to sign, never returned after create/rotate
       previous_secret TEXT, -- The secret before the last rotation, still signed with until previous_secret_expires_at
       previous_secret_expires_at BIGINT, -- Epoch ms

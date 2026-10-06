@@ -21,6 +21,7 @@ export const WEBHOOK_EVENT_TYPES = [
   'match.cancelled',
   'match.reset',
   'admin.called',
+  'admin.call_resolved',
 ] as const;
 
 export type WebhookEventType = (typeof WEBHOOK_EVENT_TYPES)[number];
@@ -82,6 +83,12 @@ export const WEBHOOK_EVENT_CATALOG: ReadonlyArray<WebhookEventTypeInfo> = [
     description:
       'A player in a match typed .admin [message] on the server: `data.admin_call` says who and why, with a link to the match page; `data.match.connect` joins the server.',
     carriesConnect: true,
+  },
+  {
+    type: 'admin.call_resolved',
+    description:
+      'An admin answered a call (resolved it on the admin pages): `data.admin_call` is the call, `data.resolved_by` who answered and `data.resolution_note` their note.',
+    carriesConnect: false,
   },
 ];
 
@@ -183,8 +190,12 @@ export interface WebhookEventData {
   previous_status?: string | null;
   /** match.cancelled / match.reset: why. */
   reason?: string;
-  /** admin.called: the call. */
+  /** admin.called / admin.call_resolved: the call. */
   admin_call?: WebhookAdminCall;
+  /** admin.call_resolved: the admin who answered (their name), when known. */
+  resolved_by?: string | null;
+  /** admin.call_resolved: the admin's note, when they left one. */
+  resolution_note?: string | null;
   /**
    * Per-match counter, raised by every event of that match. Deliveries can
    * arrive out of order (retries): ignore an event whose sequence is lower

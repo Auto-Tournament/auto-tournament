@@ -43,6 +43,8 @@ interface Endpoint {
   eventTypes: string[];
   active: boolean;
   source: string | null;
+  /** 'signed' JSON envelope, or a 'discord' webhook (an embed message). */
+  format?: 'signed' | 'discord';
   disabledReason: string | null;
   lastSuccessAt: number | null;
   lastFailureAt: number | null;
@@ -76,6 +78,7 @@ interface EndpointForm {
   url: string;
   description: string;
   source: string;
+  format: 'signed' | 'discord';
   allTypes: boolean;
   eventTypes: string[];
   active: boolean;
@@ -85,6 +88,7 @@ const EMPTY_FORM: EndpointForm = {
   url: '',
   description: '',
   source: '',
+  format: 'signed',
   allTypes: true,
   eventTypes: [],
   active: true,
@@ -165,6 +169,7 @@ export function WebhooksCard() {
       url: form.url.trim(),
       description: form.description,
       source: form.source.trim() || null,
+      format: form.format,
       eventTypes: form.allTypes ? ['*'] : form.eventTypes,
       active: form.active,
     };
@@ -174,7 +179,9 @@ export function WebhooksCard() {
         showSuccess(t('webhooksPage.saved'));
       } else {
         const res = await api.post<{ endpoint: Endpoint; secret: string }>('/api/webhooks', body);
-        setSecret({ endpointId: res.endpoint.id, value: res.secret });
+        // A Discord endpoint is not signed: its secret is of no use to anyone.
+        if (form.format === 'discord') showSuccess(t('webhooksPage.saved'));
+        else setSecret({ endpointId: res.endpoint.id, value: res.secret });
       }
       setForm(null);
       await load();
@@ -286,6 +293,7 @@ export function WebhooksCard() {
                 label={endpoint.active ? t('webhooksPage.active') : t('webhooksPage.inactive')}
               />
               {endpoint.source && <Chip size="small" variant="outlined" label={`source: ${endpoint.source}`} />}
+              {endpoint.format === 'discord' && <Chip size="small" variant="outlined" label="Discord" data-testid={`webhook-discord-${endpoint.id}`} />}
             </Stack>
             {endpoint.description && (
               <Typography variant="body2" color="text.secondary">
@@ -315,6 +323,7 @@ export function WebhooksCard() {
                     url: endpoint.url,
                     description: endpoint.description,
                     source: endpoint.source ?? '',
+                    format: endpoint.format ?? 'signed',
                     allTypes: endpoint.eventTypes.includes('*'),
                     eventTypes: endpoint.eventTypes.filter((x) => x !== '*'),
                     active: endpoint.active,
@@ -379,10 +388,31 @@ export function WebhooksCard() {
           <DialogContent>
             <Stack spacing={2} mt={1}>
               <TextField
+                select
+                label={t('webhooksPage.format')}
+                value={form.format}
+                onChange={(e) => {
+                  const format = e.target.value as EndpointForm['format'];
+                  // A new Discord endpoint starts on the admin calls, what a #admins channel is for.
+                  setForm(
+                    format === 'discord' && !form.id && form.allTypes
+                      ? { ...form, format, allTypes: false, eventTypes: ['admin.called', 'admin.call_resolved'] }
+                      : { ...form, format }
+                  );
+                }}
+                helperText={form.format === 'discord' ? t('webhooksPage.formatDiscordHelp') : t('webhooksPage.formatSignedHelp')}
+                SelectProps={{ native: true }}
+                inputProps={{ 'data-testid': 'webhook-format' }}
+                fullWidth
+              >
+                <option value="signed">{t('webhooksPage.formatSigned')}</option>
+                <option value="discord">{t('webhooksPage.formatDiscord')}</option>
+              </TextField>
+              <TextField
                 label={t('webhooksPage.url')}
                 value={form.url}
                 onChange={(e) => setForm({ ...form, url: e.target.value })}
-                placeholder="https://example.com/hooks/auto-tournament"
+                placeholder={form.format === 'discord' ? 'https://discord.com/api/webhooks/…' : 'https://example.com/hooks/auto-tournament'}
                 fullWidth
                 required
               />
