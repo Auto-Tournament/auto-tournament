@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 529 of them, 345 behind auth —
+Every endpoint this API serves — 535 of them, 349 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -236,6 +236,19 @@ A player's CS2 totals, everyone's totals to compare with, and their results per 
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/game/cs2/players/:playerId/profile` | public |
+
+### Demo analysis
+
+The worker container reads stored demos after the match: its job queue, and each map's rounds, kills and 2D replay.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `POST` | `/api/game/cs2/demo-worker/claim` | admin |
+| `PUT` | `/api/game/cs2/demo-worker/jobs/:slug/:map/replay` | admin |
+| `POST` | `/api/game/cs2/demo-worker/jobs/:slug/:map/result` | admin |
+| `POST` | `/api/game/cs2/demo-worker/jobs/:slug/:map/fail` | admin |
+| `GET` | `/api/game/cs2/matches/:slug/maps/:map/analysis` | public |
+| `GET` | `/api/game/cs2/matches/:slug/maps/:map/replay` | public |
 
 ### Team profile
 

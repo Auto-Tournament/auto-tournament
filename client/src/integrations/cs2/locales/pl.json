@@ -1623,7 +1623,14 @@
       "clutch": "Clutch player · from clutches won",
       "support": "Support · from flashes",
       "fragger": "Star player · from rating"
-    }
+    },
+    "crosshair": "Crosshair placement",
+    "crosshairNote": "Degrees off the head when an enemy comes into view",
+    "accuracy": "Accuracy",
+    "spray": "Spray control",
+    "sprayNote": "Hits from the fourth bullet of a spray on",
+    "moneyPerRound": "Money per round",
+    "demoOnly": "Aim and money come from the match demos, read after each match."
   },
   "skins": {
     "notice": "Virtual skins. They only exist on Auto Tournament, have no money value, can't be traded or sold, and don't appear in Counter-Strike 2.",

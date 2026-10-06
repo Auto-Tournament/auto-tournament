@@ -511,6 +511,10 @@
       "description": "Ready Up compatibility with the latest CS2 build: the runs its CI reports (token-guarded push), and public reads for the /compatibility page and a shields.io badge. 404 unless COMPAT_INGEST_TOKEN or COMPAT_FEED_URL is set."
     },
     {
+      "name": "Demo analysis",
+      "description": "The worker container reads stored demos after the match: its job queue, and each map's rounds, kills and 2D replay."
+    },
+    {
       "name": "Demos",
       "description": "Demo upload from the game server, and download."
     },
@@ -4289,6 +4293,148 @@
         ]
       }
     },
+    "/api/game/cs2/demo-worker/claim": {
+      "post": {
+        "tags": [
+          "Demo analysis"
+        ],
+        "summary": "POST /api/game/cs2/demo-worker/claim",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/demo-worker/jobs/{slug}/{map}/fail": {
+      "post": {
+        "tags": [
+          "Demo analysis"
+        ],
+        "summary": "POST /api/game/cs2/demo-worker/jobs/:slug/:map/fail",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "map",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/demo-worker/jobs/{slug}/{map}/replay": {
+      "put": {
+        "tags": [
+          "Demo analysis"
+        ],
+        "summary": "PUT /api/game/cs2/demo-worker/jobs/:slug/:map/replay",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "map",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/demo-worker/jobs/{slug}/{map}/result": {
+      "post": {
+        "tags": [
+          "Demo analysis"
+        ],
+        "summary": "POST /api/game/cs2/demo-worker/jobs/:slug/:map/result",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "map",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/game/cs2/matches/{slug}/connect": {
       "get": {
         "tags": [
@@ -4453,6 +4599,70 @@
           },
           {
             "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/matches/{slug}/maps/{map}/analysis": {
+      "get": {
+        "tags": [
+          "Demo analysis"
+        ],
+        "summary": "GET /api/game/cs2/matches/:slug/maps/:map/analysis",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "map",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/matches/{slug}/maps/{map}/replay": {
+      "get": {
+        "tags": [
+          "Demo analysis"
+        ],
+        "summary": "GET /api/game/cs2/matches/:slug/maps/:map/replay",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "map",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ]
       }

@@ -15,6 +15,7 @@ import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { emitMatchUpdate } from '../../../services/socketService';
 import { getMapResults } from '../../../services/matchMapResultService';
+import { enqueueDemoJob } from '../demos/jobs';
 import type { DbMatchRow } from '../../../types/database.types';
 
 /** Demos, under DATA_DIR so they survive container recreates (config/dataDir.ts). */
@@ -55,6 +56,8 @@ export async function linkStoredDemo(
         [relativePath, matchSlug, mapNumber]
       );
       mapLinked = result.changes > 0;
+      // The worker reads it after the match (demos/jobs.ts).
+      if (mapLinked) await enqueueDemoJob(matchSlug, mapNumber, relativePath);
       log.debug(`${logPrefix} Stored demo path for map`, {
         matchSlug,
         mapNumber,

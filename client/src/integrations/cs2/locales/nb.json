@@ -1583,7 +1583,14 @@
       "clutch": "Clutch-spiller · fra vunne clutcher",
       "support": "Support · fra flasher",
       "fragger": "Stjernespiller · fra rating"
-    }
+    },
+    "crosshair": "Siktepunkt",
+    "crosshairNote": "Grader fra hodet når en motstander dukker opp",
+    "accuracy": "Treffsikkerhet",
+    "spray": "Spraykontroll",
+    "sprayNote": "Treff fra fjerde kule i en spray",
+    "moneyPerRound": "Penger per runde",
+    "demoOnly": "Sikte og penger kommer fra kampdemoene, som leses etter hver kamp."
   },
   "skins": {
     "notice": "Virtuelle skins. De finnes bare på Auto Tournament, har ingen pengeverdi, kan ikke byttes eller selges, og vises ikke i Counter-Strike 2.",

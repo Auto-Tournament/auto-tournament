@@ -24,6 +24,26 @@ env:
   SHARD_MAX: 16
 
 jobs:
+  # The demo worker (worker/): a Go module of its own, outside the yarn
+  # workspaces. Vet and unit-test it on every change.
+  worker:
+    name: Demo worker (Go)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: worker/go.mod
+          cache-dependency-path: worker/go.sum
+      - run: test -z "$(gofmt -l .)" || (gofmt -l . && exit 1)
+      - run: go vet ./...
+      - run: go test ./...
+      - run: GOOS=windows go build -o /dev/null .
+
   static:
     name: Lint & typecheck
     runs-on: ubuntu-latest
