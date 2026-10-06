@@ -1559,7 +1559,31 @@
     "bansMost": "Banner mest",
     "picksMost": "Velger mest",
     "vetoShare": "{{map}} · {{count}} av {{total}} vetoer",
-    "noMatchesYet": "Tallene vises etter første CS2-kamp."
+    "noMatchesYet": "Tallene vises etter første CS2-kamp.",
+    "rating": "Rating",
+    "ratingNote": "1,00 er en gjennomsnittlig spiller",
+    "sides": "Runder vunnet per side",
+    "ctWon_one": "CT · {{count}} runde",
+    "ctWon_other": "CT · {{count}} runder",
+    "tWon_one": "T · {{count}} runde",
+    "tWon_other": "T · {{count}} runder",
+    "openings": "Åpninger og clutcher",
+    "openingKillsPerRound": "Åpningskills per runde",
+    "clutchesWon": "Clutcher vunnet",
+    "openingDuels": "Åpningsdueller vunnet–tapt",
+    "multiKills": "Runder med 3+ kills",
+    "flashes": "Hvem flashene dine treffer",
+    "enemiesFlashed_one": "{{count}} motstander",
+    "enemiesFlashed_other": "{{count}} motstandere",
+    "friendliesFlashed_one": "{{count}} lagkamerat",
+    "friendliesFlashed_other": "{{count}} lagkamerater",
+    "readyUpOnly": "Rating, sider, åpninger og flasher kommer fra kamper på Ready Up-servere.",
+    "role": {
+      "entry": "Entry fragger · fra åpningskills",
+      "clutch": "Clutch-spiller · fra vunne clutcher",
+      "support": "Support · fra flasher",
+      "fragger": "Stjernespiller · fra rating"
+    }
   },
   "skins": {
     "notice": "Virtuelle skins. De finnes bare på Auto Tournament, har ingen pengeverdi, kan ikke byttes eller selges, og vises ikke i Counter-Strike 2.",

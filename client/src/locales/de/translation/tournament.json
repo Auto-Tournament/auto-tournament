@@ -895,7 +895,8 @@
     "col": {
       "player": "Player",
       "team": "Team",
-      "rating": "Rating ±"
+      "rating": "Rating ±",
+      "hltv": "Rating"
     },
     "award": {
       "mostKills": "Most kills",
@@ -903,7 +904,10 @@
       "bestHeadshots": "Best headshot %",
       "mostFlashAssists": "Most flash assists",
       "mostUtility": "Most utility damage",
-      "biggestGain": "Biggest rating gain"
+      "biggestGain": "Biggest rating gain",
+      "bestPlayer": "Best player",
+      "mostClutches": "Most clutches",
+      "mostTeamFlashes": "Most team flashes"
     },
     "awardValue": {
       "mostKills": "{{value}} kills",
@@ -911,7 +915,10 @@
       "bestHeadshots": "{{value}} % headshots",
       "mostFlashAssists": "{{value}} flash assists",
       "mostUtility": "{{value}} utility damage",
-      "biggestGain": "+{{value}} rating"
+      "biggestGain": "+{{value}} rating",
+      "bestPlayer": "rating {{value}}",
+      "mostTeamFlashes": "{{value}} teammates flashed",
+      "mostClutches": "{{value}} clutches won"
     },
     "wonFinal": "Finale {{a}}–{{b}} gegen {{opponent}} gewonnen"
   },

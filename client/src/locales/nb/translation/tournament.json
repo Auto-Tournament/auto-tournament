@@ -895,7 +895,8 @@
     "col": {
       "player": "Spiller",
       "team": "Lag",
-      "rating": "Rating ±"
+      "rating": "Rating ±",
+      "hltv": "Rating"
     },
     "award": {
       "mostKills": "Flest kills",
@@ -903,7 +904,10 @@
       "bestHeadshots": "Best headshot-%",
       "mostFlashAssists": "Flest flash-assists",
       "mostUtility": "Mest utility-skade",
-      "biggestGain": "Størst rating-økning"
+      "biggestGain": "Størst rating-økning",
+      "bestPlayer": "Beste spiller",
+      "mostClutches": "Flest clutcher",
+      "mostTeamFlashes": "Flest flasher på eget lag"
     },
     "awardValue": {
       "mostKills": "{{value}} kills",
@@ -911,7 +915,10 @@
       "bestHeadshots": "{{value}} % headshots",
       "mostFlashAssists": "{{value}} flash-assists",
       "mostUtility": "{{value}} utility-skade",
-      "biggestGain": "+{{value}} rating"
+      "biggestGain": "+{{value}} rating",
+      "bestPlayer": "rating {{value}}",
+      "mostTeamFlashes": "{{value}} lagkamerater flashet",
+      "mostClutches": "{{value}} clutcher vunnet"
     },
     "wonFinal": "Vant finalen {{a}}–{{b}} mot {{opponent}}"
   },

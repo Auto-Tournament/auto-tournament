@@ -1559,7 +1559,31 @@
     "bansMost": "Bans most",
     "picksMost": "Picks most",
     "vetoShare": "{{map}} · {{count}} of {{total}} vetoes",
-    "noMatchesYet": "Die Zahlen erscheinen nach dem ersten CS2-Match."
+    "noMatchesYet": "Die Zahlen erscheinen nach dem ersten CS2-Match.",
+    "rating": "Rating",
+    "ratingNote": "1.00 is an average player",
+    "sides": "Rounds won by side",
+    "ctWon_one": "CT · {{count}} round",
+    "ctWon_other": "CT · {{count}} rounds",
+    "tWon_one": "T · {{count}} round",
+    "tWon_other": "T · {{count}} rounds",
+    "openings": "Openings and clutches",
+    "openingKillsPerRound": "Opening kills per round",
+    "clutchesWon": "Clutches won",
+    "openingDuels": "Opening duels won–lost",
+    "multiKills": "Rounds with 3+ kills",
+    "flashes": "Who your flashes hit",
+    "enemiesFlashed_one": "{{count}} enemy",
+    "enemiesFlashed_other": "{{count}} enemies",
+    "friendliesFlashed_one": "{{count}} teammate",
+    "friendliesFlashed_other": "{{count}} teammates",
+    "readyUpOnly": "Rating, sides, openings and flashes come from matches on Ready Up servers.",
+    "role": {
+      "entry": "Entry fragger · from opening kills",
+      "clutch": "Clutch player · from clutches won",
+      "support": "Support · from flashes",
+      "fragger": "Star player · from rating"
+    }
   },
   "skins": {
     "notice": "Virtual skins. They only exist on Auto Tournament, have no money value, can't be traded or sold, and don't appear in Counter-Strike 2.",

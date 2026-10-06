@@ -362,8 +362,16 @@ test.describe.serial('Fleet gateway: match state and events (step 3)', () => {
 
     // Map 1 won by team1 13-5, series 1-0; then the series end.
     const mapResult = example('live.event.map_result.json');
+    // The example's players are dev bots, which are not stored outside a
+    // simulation: one becomes a person, so its map stats are kept.
+    const botId = '12731676150871359538';
+    const personId = `7656119${String(Date.now()).slice(-10)}`;
+    const mapData = JSON.parse(
+      JSON.stringify(mapResult.payload.data).split(botId).join(personId)
+    ) as { stats: { players: Array<{ id: string; bot: boolean }> } };
+    for (const p of mapData.stats.players) if (p.id === personId) p.bot = false;
     const data = {
-      ...(mapResult.payload.data as Record<string, unknown>),
+      ...(mapData as unknown as Record<string, unknown>),
       slug,
       winner: 'team1',
       team1_score: 13,
@@ -406,6 +414,15 @@ test.describe.serial('Fleet gateway: match state and events (step 3)', () => {
       'event.series_end',
     ]);
     expect(rows.map((r) => r.error)).toEqual([null, null, null]);
+
+    // The map's extra numbers (cs2_player_map_stats) reach the CS2 profile.
+    const profile = await request.get(`/api/game/cs2/players/${personId}/profile`);
+    expect(profile.ok()).toBe(true);
+    const detail = (await profile.json()).detail?.player;
+    expect(detail?.maps).toBe(1);
+    expect(detail?.roundsPlayed).toBe(4);
+    expect(typeof detail?.rating).toBe('number');
+    expect(detail.ct.rounds + detail.t.rounds).toBe(4);
     client.close();
   });
 });

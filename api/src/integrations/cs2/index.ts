@@ -542,6 +542,11 @@ export const cs2Integration: GameIntegration = {
   },
 
   /** MatchZy Enhanced's series stats as stat lines, team1's block first (./stats maps the fields). */
+  async tournamentPlayerExtras(tournamentId) {
+    const { tournamentPlayerExtras } = await import('./tournamentExtras');
+    return tournamentPlayerExtras(tournamentId);
+  },
+
   async seriesPlayerStats(slug) {
     const { seriesPlayerStats } = await import('./events/matchEvents');
     const bySide = await seriesPlayerStats(slug);

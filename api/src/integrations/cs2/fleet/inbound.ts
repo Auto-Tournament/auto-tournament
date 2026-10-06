@@ -30,6 +30,8 @@ import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { redactFleetSecrets } from './credentials';
 import { recordCommandResult, type FleetCommandRecord } from './commands';
+import { saveMapStats } from './mapStats';
+import { toPlatformMapNumber } from './normalize';
 import { ingestFleetEvent } from './ingest';
 import {
   isFleetEventType,
@@ -341,6 +343,16 @@ async function applyEvent(ctx: InboundContext, env: Envelope): Promise<void> {
     state: record?.state ?? null,
     ...(mapRounds ? { mapRounds } : {}),
   });
+  if (env.type === 'event.map_result') {
+    const data = payload.data as FleetEventData['map_result'];
+    await saveMapStats(
+      payload.match_id,
+      toPlatformMapNumber(data.map_number ?? payload.map_number),
+      data.map_name ?? null,
+      data.stats,
+      { includeBots: record?.state?.rules?.simulation !== undefined }
+    );
+  }
   fleetInbound.emit('event', {
     serverId: ctx.serverId,
     envelope: env,

@@ -93,6 +93,7 @@ export const CS2_FLEET_PLUGINS_STATE_MIGRATION_ID = '015-fleet-plugins-state';
 export const CS2_SERVER_TOURNAMENT_USE_MIGRATION_ID = '016-server-tournament-use';
 export const CS2_SERVER_SKINS_MIGRATION_ID = '017-server-skins';
 export const CS2_SKINS_MIGRATION_ID = '018-skins';
+export const CS2_PLAYER_MAP_STATS_MIGRATION_ID = '019-player-map-stats';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -899,6 +900,48 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       items TEXT NOT NULL DEFAULT '[]' -- JSON [{ skinId, big }]
     );
     ALTER TABLE cs2_player_skins ADD COLUMN IF NOT EXISTS variant TEXT;
+`,
+  },
+  {
+    // The numbers a Ready Up server sends at map end that player_match_stats
+    // has no column for (fleet/mapStats.ts): openings, clutches, multi-kills,
+    // flashes on teammates, and rounds per side. One row per player per map;
+    // a replayed map_result overwrites its row.
+    id: CS2_PLAYER_MAP_STATS_MIGRATION_ID,
+    up: `
+    CREATE TABLE IF NOT EXISTS cs2_player_map_stats (
+      match_slug TEXT NOT NULL,
+      map_number INTEGER NOT NULL, -- 0-based, as match_map_results
+      player_id TEXT NOT NULL, -- Steam ID 64
+      map_name TEXT,
+      team TEXT NOT NULL, -- 'team1' | 'team2'
+      rounds_played INTEGER NOT NULL DEFAULT 0,
+      kills INTEGER NOT NULL DEFAULT 0,
+      deaths INTEGER NOT NULL DEFAULT 0,
+      assists INTEGER NOT NULL DEFAULT 0,
+      damage INTEGER NOT NULL DEFAULT 0,
+      headshot_kills INTEGER NOT NULL DEFAULT 0,
+      kast_rounds INTEGER NOT NULL DEFAULT 0,
+      entry_kills INTEGER NOT NULL DEFAULT 0, -- opening kills, both sides
+      entry_deaths INTEGER NOT NULL DEFAULT 0,
+      trade_kills INTEGER NOT NULL DEFAULT 0,
+      clutches_won INTEGER NOT NULL DEFAULT 0, -- 1vX rounds won, any X
+      enemies_flashed INTEGER NOT NULL DEFAULT 0,
+      friendlies_flashed INTEGER NOT NULL DEFAULT 0,
+      multi_1k INTEGER NOT NULL DEFAULT 0, -- rounds with exactly one kill
+      multi_2k INTEGER NOT NULL DEFAULT 0,
+      multi_3k INTEGER NOT NULL DEFAULT 0,
+      multi_4k INTEGER NOT NULL DEFAULT 0,
+      multi_5k INTEGER NOT NULL DEFAULT 0,
+      ct_rounds INTEGER NOT NULL DEFAULT 0, -- rounds played on CT
+      ct_rounds_won INTEGER NOT NULL DEFAULT 0,
+      t_rounds INTEGER NOT NULL DEFAULT 0,
+      t_rounds_won INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      PRIMARY KEY (match_slug, map_number, player_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS cs2_player_map_stats_player_idx ON cs2_player_map_stats(player_id);
 `,
   },
 ];
