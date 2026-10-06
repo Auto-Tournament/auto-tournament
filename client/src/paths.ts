@@ -30,6 +30,7 @@ export const paths = {
   tournamentMatches: '/tournament/:id/matches',
   tournamentTeams: '/tournament/:id/teams',
   tournamentStandings: '/tournament/:id/standings',
+  tournamentRules: '/tournament/:id/rules',
   /** The old address of Standings; redirects there. */
   tournamentLeaderboard: '/tournament/:id/leaderboard',
   findPlayer: '/player',
@@ -96,8 +97,26 @@ export function playerProfilePath(steamId: string): string {
 }
 
 /** The public tournament page's tabs, in the order they are shown. */
-export const TOURNAMENT_TABS = ['overview', 'bracket', 'matches', 'teams', 'standings'] as const;
+export const TOURNAMENT_TABS = ['overview', 'bracket', 'matches', 'teams', 'standings', 'rules'] as const;
 export type TournamentTab = (typeof TOURNAMENT_TABS)[number];
+
+/**
+ * The tabs one tournament shows: Rules only when the organizer wrote some, or
+ * a description too long for the header to show in full.
+ */
+export function visibleTournamentTabs(tournament: {
+  settings?: { rules?: string[]; rulebookUrl?: string; description?: string } | null;
+}): TournamentTab[] {
+  // The header shows three lines of the description; a longer one is read in full on Rules.
+  const hasRules = Boolean(
+    tournament.settings?.rules?.length ||
+      tournament.settings?.rulebookUrl ||
+      (tournament.settings?.description?.length ?? 0) > 240
+  );
+  const tabs: TournamentTab[] = ['overview', 'bracket', 'matches', 'teams', 'standings'];
+  if (hasRules) tabs.push('rules');
+  return tabs;
+}
 
 /** `/tournament/:id` for Overview, `/tournament/:id/<tab>` for the other tabs. */
 export function tournamentTabPath(

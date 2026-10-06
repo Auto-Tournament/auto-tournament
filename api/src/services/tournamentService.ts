@@ -23,6 +23,7 @@ import type { DbMatchRow, DbTeamRow } from '../types/database.types';
 import { DEFAULT_GAME, type GameId } from '../integrations/types';
 import { integrationForMatch } from '../integrations/registry';
 import { determineInitialMatchStatus } from '../utils/matchStatusHelpers';
+import { bannerUrl } from './tournamentBannerService';
 import type {
   Tournament,
   TournamentRow,
@@ -109,6 +110,7 @@ class TournamentService {
       updated_at: tournament.updated_at,
       started_at: tournament.started_at,
       completed_at: tournament.completed_at,
+      bannerUrl: bannerUrl(row.id, row.banner_updated_at),
       teams,
       winner:
         tournament.status === 'completed'

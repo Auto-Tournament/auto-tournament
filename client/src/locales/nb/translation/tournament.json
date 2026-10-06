@@ -419,7 +419,14 @@
       "saveSuccess": "Arrangementsside lagret.",
       "saveError": "Kunne ikke lagre arrangementsside: {{message}}",
       "organizerLabel": "Arrangør",
-      "organizerPlaceholder": "f.eks. Edition 35 LAN"
+      "organizerPlaceholder": "f.eks. Edition 35 LAN",
+      "bannerLabel": "Banner",
+      "bannerUpload": "Last opp et banner",
+      "bannerReplace": "Bytt",
+      "bannerRemove": "Fjern",
+      "bannerHelp": "Et bredt bilde øverst på turneringssiden. PNG, JPEG eller WEBP, opptil 2 MB; 1920 × 600 passer godt.",
+      "bannerWrongType": "Banneret må være et PNG-, JPEG- eller WEBP-bilde.",
+      "bannerTooLarge": "Banneret kan være høyst 2 MB."
     },
     "setup": {
       "steps": {
@@ -689,7 +696,8 @@
       "matches": "Kamper",
       "teams": "Lag",
       "standings": "Tabell",
-      "manage": "Administrer"
+      "manage": "Administrer",
+      "rules": "Regler"
     },
     "status": {
       "setup": "Kommende",
@@ -783,7 +791,15 @@
       "yours": "Laget ditt",
       "record": "{{wins}}–{{losses}}"
     },
-    "allMatches": "Alle kamper"
+    "allMatches": "Alle kamper",
+    "keyDates": {
+      "starts": "Starter",
+      "lastOnSchedule": "Sist på programmet",
+      "teams": "Lag"
+    },
+    "mapPoolCount": "Kartpool · {{count}} kart",
+    "mapPoolNote": "Kapteinene banner og velger fra disse før hver serie.",
+    "addToCalendar": "Legg til i kalender"
   },
   "roundStatusCard": {
     "roundOf": "Runde {{current}} av {{total}}",

@@ -16,6 +16,10 @@ const getFullImageUrl = (mapName: string): string =>
 const getThumbnailUrl = (mapName: string): string =>
   `${MAP_IMAGE_BASE}/${mapName}_thumb.webp`;
 
+/** The map's flat icon (`de_mirage_icon.svg`), for small marks and pills. */
+export const getMapIconUrl = (mapName: string): string =>
+  `${MAP_IMAGE_BASE}/${mapName}_icon.svg`;
+
 export const CS2_MAPS: CS2MapData[] = [
   {
     name: 'de_ancient',

@@ -15,6 +15,7 @@ import { ArrowDownIcon, ArrowUpIcon, PlusIcon, TrashIcon } from '@phosphor-icons
 import { useTranslation } from 'react-i18next';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { EventPagePrize, EventPageScheduleItem, TournamentSettings } from '../../types';
+import { TournamentBannerField } from './TournamentBannerField';
 
 const MAX_RULES = 20;
 const MAX_PRIZES = 5;
@@ -41,6 +42,8 @@ interface EventPageSettingsCardProps {
   onDraftChange?: (fields: EventPageFields) => void;
   /** 'embedded' drops the card chrome and heading, for use inside a setup step. */
   variant?: 'card' | 'embedded';
+  /** The tournament's banner. Shown (with Upload) only once the tournament exists. */
+  bannerUrl?: string | null;
 }
 
 /** Reorder helper: move an array item up (-1) or down (+1), clamped to bounds. */
@@ -64,6 +67,7 @@ export function EventPageSettingsCard({
   onSave,
   onDraftChange,
   variant = 'card',
+  bannerUrl,
 }: EventPageSettingsCardProps) {
   const { t } = useTranslation();
   const { showSuccess, showError } = useSnackbar();
@@ -115,6 +119,7 @@ export function EventPageSettingsCard({
 
   const fields = (
     <Stack spacing={3}>
+      {onSave && !onDraftChange && <TournamentBannerField bannerUrl={bannerUrl} />}
       <TextField
         label={t('tournament.eventPage.descriptionLabel')}
         value={description}
