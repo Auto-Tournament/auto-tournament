@@ -1,6 +1,6 @@
 import { useCallback, type ReactNode } from 'react';
 import { Box, CircularProgress, Typography } from '@mui/material';
-import { ClockIcon, PlayCircleIcon, UsersThreeIcon } from '@phosphor-icons/react';
+import { ClockIcon, PlayCircleIcon, TrophyIcon, UsersThreeIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import type { TeamMatchInfo } from '../../../types';
 import { useTeamMatchData } from '../../../hooks/useTeamMatchData';
@@ -251,6 +251,17 @@ export function YourMatchCard({ teamId }: { teamId: string }) {
     (match.config?.players_per_team ? match.config.players_per_team * 2 : 10);
   const inServer = match.connectionStatus?.totalConnected ?? 0;
 
+  // Which side each team is on now (draft 7c): the map's starting side from
+  // the config, swapped after the first half. Nothing for a knife round.
+  const config = (match.config ?? {}) as { map_sides?: string[]; cvars?: Record<string, unknown> };
+  const sideCode = typeof mapNumber === 'number' ? config.map_sides?.[mapNumber] : undefined;
+  const team1Starts = sideCode === 'team1_ct' ? 'CT' : sideCode === 'team2_ct' ? 'T' : null;
+  const half = Number(config.cvars?.mp_maxrounds ?? 24) / 2;
+  const swapped = (live?.roundNumber ?? 0) > half;
+  const team1Now = team1Starts === null ? null : swapped ? (team1Starts === 'CT' ? 'T' : 'CT') : team1Starts;
+  const ourSide = team1Now === null ? null : match.isTeam1 ? team1Now : team1Now === 'CT' ? 'T' : 'CT';
+  const theirSide = ourSide === null ? null : ourSide === 'CT' ? 'T' : 'CT';
+
   const join = ConnectPanel && viewerIsMember ? (
     <Box sx={{ width: '100%' }}>
       <ConnectPanel matchSlug={match.slug} viewerCanJoin={viewerIsMember} matchStatus={match.status} />
@@ -325,6 +336,11 @@ export function YourMatchCard({ teamId }: { teamId: string }) {
           detail={live?.roundNumber ? t('yourMatch.round', { n: live.roundNumber }) : undefined}
         />
         {join}
+        {join && (
+          <Typography sx={{ fontSize: '0.8125rem', color: color.muted, mt: -1.5 }} data-testid="your-match-rejoin">
+            {t('yourMatch.rejoin')}
+          </Typography>
+        )}
         {live?.playerStats && (
           <MatchPlayerPerformance
             playerStats={live.playerStats}
@@ -336,7 +352,16 @@ export function YourMatchCard({ teamId }: { teamId: string }) {
       </>
     );
   } else {
-    body = <StatusLine tone={color.muted} icon={<ClockIcon size={24} />} title={t('yourMatch.finished')} />;
+    // Over: who won, by how much (draft 7c); the maps and demos follow below.
+    const outcome = ourMaps > theirMaps ? 'won' : ourMaps < theirMaps ? 'lost' : 'draw';
+    body = (
+      <StatusLine
+        tone={outcome === 'won' ? color.live : outcome === 'lost' ? color.ban : color.muted}
+        icon={outcome === 'won' ? <TrophyIcon size={24} /> : <ClockIcon size={24} />}
+        title={t(`yourMatch.outcome.${outcome}`, { us: ourMaps, them: theirMaps, opponent: theirName })}
+        detail={t('yourMatch.finished')}
+      />
+    );
   }
 
   return (
@@ -376,9 +401,16 @@ export function YourMatchCard({ teamId }: { teamId: string }) {
         <Box sx={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto minmax(0,1fr)', alignItems: 'center', gap: { xs: 1.5, md: 3 } }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 0 }}>
             <TeamMark tag={ourTag} name={ourName} highlight />
-            <Typography sx={{ fontFamily: fontDisplay, fontSize: { xs: '1.125rem', md: '1.625rem' }, fontWeight: 700, overflowWrap: 'anywhere' }}>
-              {ourName}
-            </Typography>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography sx={{ fontFamily: fontDisplay, fontSize: { xs: '1.125rem', md: '1.625rem' }, fontWeight: 700, overflowWrap: 'anywhere' }}>
+                {ourName}
+              </Typography>
+              {phase === 'live' && ourSide && (
+                <Typography data-testid="your-match-side" sx={{ ...mono, fontSize: '0.75rem', color: ourSide === 'CT' ? color.info : color.sideT }}>
+                  {t('yourMatch.sideYou', { side: ourSide })}
+                </Typography>
+              )}
+            </Box>
           </Box>
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
             {score}
@@ -387,9 +419,14 @@ export function YourMatchCard({ teamId }: { teamId: string }) {
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'flex-end', minWidth: 0 }}>
-            <Typography sx={{ fontFamily: fontDisplay, fontSize: { xs: '1.125rem', md: '1.625rem' }, fontWeight: 700, textAlign: 'right', overflowWrap: 'anywhere' }}>
-              {theirName}
-            </Typography>
+            <Box sx={{ minWidth: 0, textAlign: 'right' }}>
+              <Typography sx={{ fontFamily: fontDisplay, fontSize: { xs: '1.125rem', md: '1.625rem' }, fontWeight: 700, textAlign: 'right', overflowWrap: 'anywhere' }}>
+                {theirName}
+              </Typography>
+              {phase === 'live' && theirSide && (
+                <Typography sx={{ ...mono, fontSize: '0.75rem', color: theirSide === 'CT' ? color.info : color.sideT }}>{theirSide}</Typography>
+              )}
+            </Box>
             <TeamMark tag={theirTag} name={theirName} />
           </Box>
         </Box>

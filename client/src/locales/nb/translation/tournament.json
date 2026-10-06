@@ -873,7 +873,14 @@
     "round": "Runde {{n}}",
     "vetoTitle": "Kartvalg pågår",
     "finished": "Kampen er ferdig",
-    "mapOf": "Kart {{n}} av {{total}}"
+    "mapOf": "Kart {{n}} av {{total}}",
+    "sideYou": "{{side}} · dere",
+    "rejoin": "Falt ut? Bli med igjen med samme knapp: plassen din holdes.",
+    "outcome": {
+      "won": "Dere vant {{us}}–{{them}} mot {{opponent}}",
+      "lost": "Dere tapte {{us}}–{{them}} mot {{opponent}}",
+      "draw": "{{us}}–{{them}} mot {{opponent}}"
+    }
   },
   "results": {
     "finalStandings": "Sluttstilling",

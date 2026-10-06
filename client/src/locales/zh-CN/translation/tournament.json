@@ -873,7 +873,14 @@
     "round": "Round {{n}}",
     "vetoTitle": "Map veto in progress",
     "finished": "Match finished",
-    "mapOf": "Map {{n}} of {{total}}"
+    "mapOf": "Map {{n}} of {{total}}",
+    "sideYou": "{{side}} · 你们",
+    "rejoin": "掉线了？用同一个按钮重新加入，位置会保留。",
+    "outcome": {
+      "won": "你们以 {{us}}–{{them}} 战胜 {{opponent}}",
+      "lost": "你们以 {{us}}–{{them}} 负于 {{opponent}}",
+      "draw": "对阵 {{opponent}} {{us}}–{{them}}"
+    }
   },
   "results": {
     "finalStandings": "Final standings",

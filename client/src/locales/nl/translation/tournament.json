@@ -873,7 +873,14 @@
     "round": "Round {{n}}",
     "vetoTitle": "Map veto in progress",
     "finished": "Match finished",
-    "mapOf": "Map {{n}} of {{total}}"
+    "mapOf": "Map {{n}} of {{total}}",
+    "sideYou": "{{side}} · jullie",
+    "rejoin": "Eruit gevallen? Doe weer mee met dezelfde knop: je plek blijft.",
+    "outcome": {
+      "won": "Gewonnen {{us}}–{{them}} tegen {{opponent}}",
+      "lost": "Verloren {{us}}–{{them}} tegen {{opponent}}",
+      "draw": "{{us}}–{{them}} tegen {{opponent}}"
+    }
   },
   "results": {
     "finalStandings": "Final standings",
