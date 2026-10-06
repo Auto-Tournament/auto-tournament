@@ -963,7 +963,9 @@
       "firstMatchIn": "Første kamp om",
       "count": "{{in}} av {{total}}",
       "you": "deg",
-      "everyone": "Alle"
+      "everyone": "Alle",
+      "soundOn": "Lyd på: du hører når det er tid",
+      "soundOff": "Lyd av"
     },
     "noTeamTitle": "Ingen lag å melde på",
     "noTeamBody": "Bare lagets eier eller en kaptein kan melde det på. Lag et lag, eller spør kapteinen din.",

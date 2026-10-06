@@ -963,7 +963,9 @@
       "firstMatchIn": "First match in",
       "count": "{{in}} of {{total}}",
       "you": "you",
-      "everyone": "Everyone"
+      "everyone": "Everyone",
+      "soundOn": "Sonido activado: oirás cuando sea la hora",
+      "soundOff": "Sonido desactivado"
     },
     "noTeamTitle": "No team to sign up",
     "noTeamBody": "Only a team’s owner or a captain can sign it up. Make a team, or ask your captain.",
