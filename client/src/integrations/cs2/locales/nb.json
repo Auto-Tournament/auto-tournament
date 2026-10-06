@@ -1190,12 +1190,14 @@
       "override": "satt av en admin",
       "publicAddr": "oppgitt av serveren",
       "peer": "adressen serveren kobler til fra",
-      "unknown": "ikke bekreftet av serveren ennå"
+      "unknown": "ikke bekreftet av serveren ennå",
+      "machine": "adressen til maskinen den kjører på"
     },
     "rename": "Gi nytt navn",
     "renamed": "Navnet er endret",
     "renameSave": "Lagre",
-    "summary": "{{servers}} Ready Up-server(e), {{online}} tilkoblet · {{keys}} flåtenøkkel(er)"
+    "summary": "{{servers}} Ready Up-server(e), {{online}} tilkoblet · {{keys}} flåtenøkkel(er)",
+    "connectGuessed": "Gjettet ut fra hvor serveren kobler seg til fra. Sjekk den, eller sett adressen spillerne bruker."
   },
   "roundBackups": {
     "title": "Round backups",

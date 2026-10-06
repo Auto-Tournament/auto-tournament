@@ -279,6 +279,8 @@ export default function FleetPanel() {
         return t('fleetPanel.connectSource.override', { defaultValue: 'set by an admin' });
       case 'public_addr':
         return t('fleetPanel.connectSource.publicAddr', { defaultValue: 'reported by the server' });
+      case 'machine':
+        return t('fleetPanel.connectSource.machine', { defaultValue: 'the address of the machine it runs on' });
       case 'peer':
         return t('fleetPanel.connectSource.peer', {
           defaultValue: 'address the server connects from',
@@ -387,6 +389,18 @@ export default function FleetPanel() {
                     display="block"
                   >
                     {server.host ? `${server.host.hostname}:${server.host.game_port}` : server.id}
+                  </Typography>
+                )}
+                {server.connect?.source === 'peer' && (
+                  <Typography
+                    variant="caption"
+                    color="warning.main"
+                    display="block"
+                    data-testid={`fleet-connect-guessed-${server.id}`}
+                  >
+                    {t('fleetPanel.connectGuessed', {
+                      defaultValue: 'Guessed from where the server connects from. Check it, or set the address players use.',
+                    })}
                   </Typography>
                 )}
               </Box>

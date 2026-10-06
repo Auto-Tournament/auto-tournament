@@ -25,6 +25,11 @@
       "type": "string",
       "maxLength": 64
     },
+    "address": {
+      "type": "string",
+      "maxLength": 255,
+      "description": "this machine's primary address (the one csm writes as public_addr into the fleet.cfg of servers it creates): where players connect to its servers unless a server reports its own. Absent from csm before 1.21."
+    },
     "os": {
       "type": "string",
       "maxLength": 128

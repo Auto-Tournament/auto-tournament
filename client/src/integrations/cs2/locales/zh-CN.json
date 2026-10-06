@@ -1190,12 +1190,14 @@
       "override": "由管理员设置",
       "publicAddr": "由服务器报告",
       "peer": "服务器的连接来源地址",
-      "unknown": "服务器尚未确认"
+      "unknown": "服务器尚未确认",
+      "machine": "the address of the machine it runs on"
     },
     "rename": "Rename",
     "renamed": "Renamed",
     "renameSave": "Save",
-    "summary": "{{servers}} Ready Up server(s), {{online}} online · {{keys}} fleet key(s)"
+    "summary": "{{servers}} Ready Up server(s), {{online}} online · {{keys}} fleet key(s)",
+    "connectGuessed": "Guessed from where the server connects from. Check it, or set the address players use."
   },
   "roundBackups": {
     "title": "Round backups",

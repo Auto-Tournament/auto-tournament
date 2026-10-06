@@ -107,6 +107,8 @@ export interface HostInventoryPayload {
   hostname: string;
   csm_version: string;
   os: string;
+  /** This machine's address (csm 1.21+): where its servers' players connect unless a server reports its own. */
+  address?: string;
   resources: {
     cpus: number;
     load1: number;
