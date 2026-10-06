@@ -55,7 +55,11 @@
       "joined": "ble med {{date}}",
       "editProfile": "Rediger profil",
       "label": "Spiller",
-      "captain": "kaptein"
+      "captain": "kaptein",
+      "levelBadge": "Nivå {{level}}",
+      "level": "Nivå {{level}}",
+      "xpToNext": "{{xp}} XP til nivå {{level}}",
+      "lastN": "Siste {{count}}"
     },
     "stats": {
       "rating": "RATING",
@@ -63,7 +67,8 @@
       "winRate": "SEIERSRATE",
       "adr": "ADR",
       "kd": "K/D",
-      "label": "Statistikk"
+      "label": "Statistikk",
+      "thisMonth": "denne måneden"
     },
     "ratingChart": {
       "sectionTitle": "Rating",

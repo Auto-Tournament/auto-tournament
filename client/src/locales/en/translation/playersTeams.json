@@ -55,7 +55,11 @@
       "joined": "joined {{date}}",
       "editProfile": "Edit profile",
       "label": "Player",
-      "captain": "captain"
+      "captain": "captain",
+      "levelBadge": "Level {{level}}",
+      "level": "Level {{level}}",
+      "xpToNext": "{{xp}} XP to level {{level}}",
+      "lastN": "Last {{count}}"
     },
     "stats": {
       "rating": "RATING",
@@ -63,7 +67,8 @@
       "winRate": "WIN RATE",
       "adr": "ADR",
       "kd": "K/D",
-      "label": "Stats"
+      "label": "Stats",
+      "thisMonth": "this month"
     },
     "ratingChart": {
       "sectionTitle": "Rating",

@@ -63,7 +63,30 @@ export function Cs2ProfileStats({ playerId }: PlayerProfileViewProps) {
   }, [playerId]);
 
   const data = loaded?.playerId === playerId ? loaded.data : null;
-  if (!data || data.player.matches === 0) return null;
+  if (!data) return null;
+  // No CS2 match yet: the same tiles with dashes, so the profile keeps its shape.
+  if (data.player.matches === 0) {
+    return (
+      <Box component="section" aria-labelledby="cs2-profile-stats" data-testid="cs2-profile-stats-empty" sx={{ mt: 6 }}>
+        <SectionHead id="cs2-profile-stats" title={t('profile.title')} />
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', md: 'repeat(4, minmax(0, 1fr))' },
+            gap: 1.5,
+          }}
+        >
+          {[t('profile.kd'), t('profile.headshots'), t('profile.adr'), t('profile.impact')].map((label) => (
+            <Panel key={label} sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 1.5, borderStyle: 'dashed' }}>
+              <Label>{label}</Label>
+              <Big>—</Big>
+            </Panel>
+          ))}
+        </Box>
+        <Small>{t('profile.noMatchesYet')}</Small>
+      </Box>
+    );
+  }
   const { player, everyone, maps } = data;
 
   const kd = ratio(player.kills, player.deaths) ?? player.kills;

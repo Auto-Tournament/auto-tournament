@@ -1558,7 +1558,8 @@
     "teamMapsFew": "The chart shows up once the team has played three maps.",
     "bansMost": "Bans most",
     "picksMost": "Picks most",
-    "vetoShare": "{{map}} · {{count}} of {{total}} vetoes"
+    "vetoShare": "{{map}} · {{count}} of {{total}} vetoes",
+    "noMatchesYet": "Numbers show up after the first CS2 match."
   },
   "skins": {
     "notice": "Virtual skins. They only exist on Auto Tournament, have no money value, can't be traded or sold, and don't appear in Counter-Strike 2.",

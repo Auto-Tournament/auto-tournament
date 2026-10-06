@@ -55,7 +55,11 @@
       "joined": "joined {{date}}",
       "editProfile": "Edit profile",
       "label": "Player",
-      "captain": "captain"
+      "captain": "captain",
+      "levelBadge": "{{level}} 级",
+      "level": "{{level}} 级",
+      "xpToNext": "距 {{level}} 级还差 {{xp}} XP",
+      "lastN": "最近 {{count}} 场"
     },
     "stats": {
       "rating": "RATING",
@@ -63,7 +67,8 @@
       "winRate": "WIN RATE",
       "adr": "ADR",
       "kd": "K/D",
-      "label": "Stats"
+      "label": "Stats",
+      "thisMonth": "本月"
     },
     "ratingChart": {
       "sectionTitle": "Rating",

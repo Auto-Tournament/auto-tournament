@@ -1558,7 +1558,8 @@
     "teamMapsFew": "Diagrammet vises når laget har spilt tre kart.",
     "bansMost": "Banner mest",
     "picksMost": "Velger mest",
-    "vetoShare": "{{map}} · {{count}} av {{total}} vetoer"
+    "vetoShare": "{{map}} · {{count}} av {{total}} vetoer",
+    "noMatchesYet": "Tallene vises etter første CS2-kamp."
   },
   "skins": {
     "notice": "Virtuelle skins. De finnes bare på Auto Tournament, har ingen pengeverdi, kan ikke byttes eller selges, og vises ikke i Counter-Strike 2.",

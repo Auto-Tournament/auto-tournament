@@ -8,6 +8,7 @@ import { PlayerAvatar } from '../PlayerAvatar';
 import { PageHead } from '../../common/ui';
 import { fetchMyGames } from '../../games/gamesApi';
 import { teamProfilePath } from '../../../paths';
+import { tokens, fontDisplay } from '../../../theme/tokens';
 
 export interface ProfileHeaderTeam {
   id?: string;
@@ -27,6 +28,15 @@ export interface ProfileHeaderProps {
   team?: ProfileHeaderTeam | null;
   /** True when the viewer is looking at their own profile (not impersonating). */
   isOwnProfile: boolean;
+  /** The last matches, newest first: true won, false lost (draft A2's "Last 10"). */
+  lastResults?: boolean[];
+}
+
+interface Progress {
+  level: number;
+  totalXp: number;
+  intoLevel: number;
+  forNext: number;
 }
 
 /**
@@ -49,9 +59,23 @@ export function ProfileHeader({
   joinedAt,
   team,
   isOwnProfile,
+  lastResults = [],
 }: ProfileHeaderProps) {
   const { t, i18n } = useTranslation();
   const [ownGameNames, setOwnGameNames] = useState<string[] | null>(null);
+  // Matchmaking level (draft A2): on the avatar and beside the name. Nothing
+  // while matchmaking is off or before the first XP.
+  const [progress, setProgress] = useState<Progress | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    void fetch(`/api/matchmaking/players/${encodeURIComponent(playerId)}/progress`, { credentials: 'same-origin' })
+      .then((res) => (res.ok ? (res.json() as Promise<{ progress: Progress }>) : null))
+      .then((body) => !cancelled && setProgress(body?.progress && body.progress.totalXp > 0 ? body.progress : null))
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [playerId]);
 
   useEffect(() => {
     if (!isOwnProfile) return;
@@ -99,7 +123,35 @@ export function ProfileHeader({
         alignItems: 'center',
       }}
     >
-      <PlayerAvatar id={playerId} name={name} avatarUrl={avatarUrl} size={80} isAdmin={isAdmin} />
+      <Box sx={{ position: 'relative', width: 80, height: 80 }}>
+        <PlayerAvatar id={playerId} name={name} avatarUrl={avatarUrl} size={80} isAdmin={isAdmin} />
+        {progress && (
+          <Box
+            data-testid="profile-level-badge"
+            aria-label={t('playerPage.profileHeader.levelBadge', { level: progress.level })}
+            sx={{
+              position: 'absolute',
+              right: -6,
+              bottom: -6,
+              minWidth: 30,
+              height: 30,
+              px: 0.75,
+              boxSizing: 'border-box',
+              borderRadius: '10px',
+              bgcolor: tokens.color.accent,
+              color: tokens.color.accentInk,
+              border: `3px solid ${tokens.color.paper}`,
+              display: 'grid',
+              placeItems: 'center',
+              fontFamily: fontDisplay,
+              fontWeight: 700,
+              fontSize: '0.8125rem',
+            }}
+          >
+            {progress.level}
+          </Box>
+        )}
+      </Box>
       <Box sx={{ minWidth: 0 }}>
         <PageHead
           sx={{ mb: 0, alignItems: 'center' }}
@@ -115,7 +167,33 @@ export function ProfileHeader({
             </Box>
           }
           actions={
-            isOwnProfile ? (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, flexWrap: 'wrap' }}>
+              {progress && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 140 }} data-testid="profile-level">
+                  <Box component="span" sx={{ fontWeight: 600 }}>
+                    {t('playerPage.profileHeader.level', { level: progress.level })}
+                  </Box>
+                  <Box sx={{ height: 6, borderRadius: 3, bgcolor: tokens.color.rule, overflow: 'hidden' }}>
+                    <Box sx={{ height: '100%', width: `${Math.min(100, (progress.intoLevel / Math.max(1, progress.forNext)) * 100)}%`, bgcolor: tokens.color.accent }} />
+                  </Box>
+                  <Box component="span" sx={{ fontSize: '0.75rem', color: tokens.color.muted }}>
+                    {t('playerPage.profileHeader.xpToNext', { xp: Math.max(0, progress.forNext - progress.intoLevel), level: progress.level + 1 })}
+                  </Box>
+                </Box>
+              )}
+              {lastResults.length > 0 && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }} data-testid="profile-last-ten">
+                  <Box component="span" sx={{ fontSize: '0.75rem', color: tokens.color.muted }}>
+                    {t('playerPage.profileHeader.lastN', { count: Math.min(10, lastResults.length) })}
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 0.5 }} role="img" aria-label={lastResults.slice(0, 10).map((w) => (w ? 'W' : 'L')).join(' ')}>
+                    {lastResults.slice(0, 10).map((won, i) => (
+                      <Box key={i} sx={{ width: 10, height: 22, borderRadius: '3px', bgcolor: won ? tokens.color.live : tokens.color.ban, opacity: won ? 1 : 0.75 }} />
+                    ))}
+                  </Box>
+                </Box>
+              )}
+              {isOwnProfile ? (
               <Button
                 variant="outlined"
                 size="small"
@@ -125,7 +203,8 @@ export function ProfileHeader({
               >
                 {t('playerPage.profileHeader.editProfile')}
               </Button>
-            ) : undefined
+              ) : null}
+            </Box>
           }
         />
         {(teamLabel || isAdmin) && (
