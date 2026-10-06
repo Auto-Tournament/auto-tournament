@@ -209,7 +209,7 @@ export default function TeamManage() {
                   sx={{
                     width: 120,
                     height: 120,
-                    borderRadius: `${radii.lg}px`,
+                    borderRadius: radii.lg,
                     border: `2px solid ${color.accent}`,
                     bgcolor: color.paper3,
                     display: 'grid',
@@ -307,7 +307,7 @@ export default function TeamManage() {
                       gap: 1.5,
                       alignItems: 'center',
                       p: 1,
-                      borderRadius: `${radii.md}px`,
+                      borderRadius: radii.md,
                       bgcolor: color.paper3,
                     }}
                   >
@@ -393,7 +393,7 @@ export default function TeamManage() {
                       px: 1.5,
                       display: 'flex',
                       alignItems: 'center',
-                      borderRadius: `${radii.md}px`,
+                      borderRadius: radii.md,
                       bgcolor: color.paper3,
                       fontFamily: fontMono,
                       fontSize: textSize.xs,
