@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 522 of them, 342 behind auth —
+Every endpoint this API serves — 524 of them, 344 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -155,6 +155,7 @@ Demo upload from the game server, and download.
 | `GET` | `/api/demos/:matchSlug/download/:mapNumber?` | public |
 | `GET` | `/api/demos/:matchSlug/status` | admin |
 | `GET` | `/api/demos/:matchSlug/info` | admin |
+| `GET` | `/api/demos/archive.tar` | admin |
 
 ### MatchZy Enhanced
 
@@ -418,6 +419,7 @@ Create, load, restart and cancel matches; read match state.
 | `DELETE` | `/api/matches/:slug` | admin |
 | `POST` | `/api/matches/bulk-delete` | admin |
 | `GET` | `/api/matches` | public |
+| `GET` | `/api/matches/played` | admin |
 | `GET` | `/api/matches/:slug` | public |
 | `POST` | `/api/matches` | admin |
 | `POST` | `/api/matches/:slug/load` | admin |

@@ -510,7 +510,9 @@ router.delete('/:slug', requireAuth, async (req: Request, res: Response) => {
     // Bracket matches always have round >= 1 and are managed by the
     // tournament/bracket flows; deleting them directly could corrupt
     // progression or historical stats.
-    if (match.round !== 0) {
+    // A played match kept from a deleted tournament (tournament_id NULL) is in
+    // no bracket any more, so it may go too.
+    if (match.round !== 0 && match.tournament_id !== null) {
       return res.status(400).json({
         success: false,
         error:
@@ -918,6 +920,123 @@ router.get('/', async (req: Request, res: Response) => {
       success: false,
       error: 'Failed to fetch matches',
     });
+  }
+});
+
+/**
+ * @openapi
+ * /api/matches/played:
+ *   get:
+ *     tags:
+ *       - Matches
+ *     summary: Every played match (tournament, standalone, matchmaking), newest first, with its demos
+ *     description: |
+ *       Admin only. Includes the matches of deleted tournaments (their name is
+ *       kept as `tournamentName`). `demos` lists the maps that have a demo; a
+ *       match-level demo is map 0.
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, default: 500, maximum: 2000 }
+ *     responses:
+ *       200:
+ *         description: "{ matches }"
+ */
+router.get('/played', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const limit = Math.min(2000, Math.max(1, Number(req.query.limit) || 500));
+    const rows = await db.queryAsync<{
+      slug: string;
+      game: string | null;
+      source: string | null;
+      tournament_id: number | null;
+      tournament_name: string | null;
+      round: number;
+      match_number: number;
+      completed_at: number | null;
+      config: string | null;
+      team1_name: string | null;
+      team2_name: string | null;
+      winner_id: string | null;
+      team1_id: string | null;
+      team2_id: string | null;
+      demo_file_path: string | null;
+    }>(
+      `SELECT m.slug, m.game, m.source, m.tournament_id, COALESCE(t.name, m.played_in) AS tournament_name,
+              m.round, m.match_number, m.completed_at, m.config, m.winner_id, m.team1_id, m.team2_id,
+              m.demo_file_path, t1.name AS team1_name, t2.name AS team2_name
+         FROM matches m
+         LEFT JOIN tournament t ON t.id = m.tournament_id
+         LEFT JOIN teams t1 ON t1.id = m.team1_id
+         LEFT JOIN teams t2 ON t2.id = m.team2_id
+        WHERE m.status = 'completed'
+        ORDER BY m.completed_at DESC NULLS LAST, m.id DESC
+        LIMIT ${limit}`
+    );
+    const slugs = rows.map((r) => r.slug);
+    const maps = slugs.length
+      ? await db.queryAsync<{
+          match_slug: string;
+          map_number: number;
+          map_name: string | null;
+          team1_score: number;
+          team2_score: number;
+          winner_team: string | null;
+          demo_file_path: string | null;
+        }>(
+          `SELECT match_slug, map_number, map_name, team1_score, team2_score, winner_team, demo_file_path
+             FROM match_map_results WHERE match_slug = ANY(?::text[]) ORDER BY map_number`,
+          [slugs]
+        )
+      : [];
+    const mapsOf = new Map<string, typeof maps>();
+    for (const m of maps) mapsOf.set(m.match_slug, [...(mapsOf.get(m.match_slug) ?? []), m]);
+    const configName = (config: string | null, side: 'team1' | 'team2'): string | null => {
+      try {
+        return ((config ? JSON.parse(config) : null)?.[side]?.name as string | undefined) ?? null;
+      } catch {
+        return null;
+      }
+    };
+    const matches = rows.map((r) => {
+      const played = mapsOf.get(r.slug) ?? [];
+      const team1Maps = played.filter((m) => m.winner_team === 'team1').length;
+      const team2Maps = played.filter((m) => m.winner_team === 'team2').length;
+      const demos = played.filter((m) => m.demo_file_path).map((m) => ({ mapNumber: m.map_number, map: m.map_name }));
+      if (demos.length === 0 && r.demo_file_path) demos.push({ mapNumber: 0, map: null });
+      const winner = r.winner_id
+        ? r.winner_id === r.team1_id
+          ? 'team1'
+          : r.winner_id === r.team2_id
+            ? 'team2'
+            : null
+        : team1Maps > team2Maps
+          ? 'team1'
+          : team2Maps > team1Maps
+            ? 'team2'
+            : null;
+      return {
+        slug: r.slug,
+        game: r.game,
+        kind: r.source === 'matchmaking' ? 'matchmaking' : r.tournament_id !== null || r.tournament_name ? 'tournament' : 'standalone',
+        tournamentId: r.tournament_id,
+        tournamentName: r.tournament_name,
+        round: r.round,
+        matchNumber: r.match_number,
+        completedAt: r.completed_at,
+        team1: r.team1_name ?? configName(r.config, 'team1') ?? 'Team 1',
+        team2: r.team2_name ?? configName(r.config, 'team2') ?? 'Team 2',
+        winner,
+        maps: played.map((m) => ({ mapNumber: m.map_number, map: m.map_name, team1: m.team1_score, team2: m.team2_score })),
+        demos,
+      };
+    });
+    return res.json({ success: true, matches });
+  } catch (error) {
+    log.error('Error listing played matches', error);
+    return res.status(500).json({ success: false, error: 'Failed to list played matches' });
   }
 });
 

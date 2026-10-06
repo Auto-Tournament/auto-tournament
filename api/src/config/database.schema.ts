@@ -115,6 +115,8 @@ export function getSchemaSQL(): string {
       id SERIAL PRIMARY KEY,
       slug TEXT NOT NULL UNIQUE,
       tournament_id INTEGER DEFAULT 1,
+      played_in TEXT, -- the tournament's name, kept when the tournament is deleted and the played match stays (tournament_id NULL)
+      played_in_id INTEGER, -- that tournament's id: its slugs carry it, so no new tournament gets it while the match stays
       round INTEGER NOT NULL,
       match_number INTEGER NOT NULL,
       -- Optional logical bracket grouping for visualization / wiring:

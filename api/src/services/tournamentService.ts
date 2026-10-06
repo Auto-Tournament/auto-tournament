@@ -401,7 +401,12 @@ class TournamentService {
    * Delete tournament and all associated matches
    * Note: Server cleanup (ending matches) should be done by the caller before this
    */
-  async deleteTournament(tournamentId: number): Promise<void> {
+  /**
+   * Delete a tournament. With `keepPlayed` (the admin UI's delete), its
+   * played matches stay; without it (scripts, tests, wipes) everything goes,
+   * as it always did.
+   */
+  async deleteTournament(tournamentId: number, options: { keepPlayed?: boolean } = {}): Promise<void> {
     // Its matches' live stats go with it; other tournaments' stay.
     const slugs = await db.queryAsync<{ slug: string }>('SELECT slug FROM matches WHERE tournament_id = ?', [
       tournamentId,
@@ -409,6 +414,24 @@ class TournamentService {
     // First, clear server_id from all matches to clean up references
     await db.runAsync('UPDATE matches SET server_id = NULL WHERE tournament_id = ?', [tournamentId]);
     log.debug('Cleared server references from matches');
+
+    // Matches that were played stay, with their stats, ratings and demos
+    // (Vikunja 1834): they leave the tournament (tournament_id NULL, like a
+    // standalone match) and keep its name in played_in. Their slugs carry the
+    // tournament's id, so that id is never given out again
+    // (currentTournament.nextTournamentId).
+    if (options.keepPlayed) {
+      const kept = await db.queryAsync<{ slug: string }>(
+        `UPDATE matches SET tournament_id = NULL,
+                played_in = (SELECT name FROM tournament WHERE id = ?), played_in_id = ?,
+                team1_from_match_id = NULL, team2_from_match_id = NULL, next_match_id = NULL
+          WHERE tournament_id = ? AND status = 'completed' RETURNING slug`,
+        [tournamentId, tournamentId, tournamentId]
+      );
+      if (kept.length > 0) {
+        log.info(`Kept ${kept.length} played match(es) of deleted tournament ${tournamentId}`);
+      }
+    }
 
     // Delete tournament (CASCADE will also delete matches and events)
     await db.runAsync('DELETE FROM tournament WHERE id = ?', [tournamentId]);

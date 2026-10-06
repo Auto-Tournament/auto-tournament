@@ -192,7 +192,7 @@ export default function Tournaments() {
         loading={busy}
         onConfirm={() =>
           deleting &&
-          void run(() => api.fetch('/api/tournament', { method: 'DELETE', headers: { 'X-Tournament-Id': String(deleting.id) } }), t('tournamentsPage.toast.deleted')).then(() => setDeleting(null))
+          void run(() => api.fetch('/api/tournament?keepPlayed=1', { method: 'DELETE', headers: { 'X-Tournament-Id': String(deleting.id) } }), t('tournamentsPage.toast.deleted')).then(() => setDeleting(null))
         }
         onCancel={() => setDeleting(null)}
       />

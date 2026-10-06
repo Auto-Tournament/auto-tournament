@@ -312,7 +312,8 @@
       },
       "allTournaments": "All tournaments",
       "switcher": "Tournament",
-      "newTournament": "New tournament"
+      "newTournament": "New tournament",
+      "playedMatches": "All matches"
     },
     "status": {
       "live": "LIVE",
@@ -536,5 +537,27 @@
     "copy": "Copy {{name}}",
     "copyHint": "Same format, maps, rules and page. Teams and dates start empty.",
     "create": "Create and set up"
+  },
+  "playedMatches": {
+    "title": "All matches",
+    "subtitle": "Every match played on this site: tournaments (deleted ones too), standalone matches and matchmaking, with their demos.",
+    "downloadAll_one": "Download {{count}} match's demos",
+    "downloadAll_other": "Download demos of {{count}} matches",
+    "search": "Search teams or tournaments",
+    "kindLabel": "Kind",
+    "kind": {
+      "all": "All kinds",
+      "tournament": "Tournament",
+      "standalone": "Standalone",
+      "matchmaking": "Matchmaking"
+    },
+    "withDemos": "With demos",
+    "none": "No matches have been played yet.",
+    "noneFiltered": "No matches match these filters.",
+    "vs": "vs",
+    "deleted": "tournament deleted",
+    "noDemo": "No demo",
+    "demo": "Demo",
+    "map": "Map {{n}}"
   }
 }
