@@ -13,7 +13,8 @@
         "players": { "type": "integer", "minimum": 0 },
         "tick_ms_p99": { "type": "number", "minimum": 0 },
         "spool_msgs": { "type": "integer", "minimum": 0 },
-        "uptime_s": { "type": "integer", "minimum": 0 }
+        "uptime_s": { "type": "integer", "minimum": 0 },
+        "frame_age_ms": { "type": "integer", "minimum": -1, "description": "ms since the game thread's last frame; -1 before the first. FLEET.md §6.2" }
       }
     }
   }
