@@ -20,13 +20,13 @@ export type Cs2UpToDateResult = {
 };
 
 const CACHE_TTL_SECONDS = 5 * 60; // 5 minutes
-const cache = new Map<number, { result: Cs2UpToDateResult; cachedAt: number }>();
+const cache = new Map<string, { result: Cs2UpToDateResult; cachedAt: number }>();
 
 function toUnixSecondsNow(): number {
   return Math.floor(Date.now() / 1000);
 }
 
-async function callUpToDateCheck(installedBuildId: number, apiKey: string | null): Promise<{
+async function callUpToDateCheck(installedBuildId: number | string, apiKey: string | null): Promise<{
   upToDate: boolean;
   requiredVersion: number | null;
   usedApiKey: boolean;
@@ -66,15 +66,20 @@ async function callUpToDateCheck(installedBuildId: number, apiKey: string | null
 
 export const cs2UpdateService = {
   /**
-   * Check whether an installed CS2 BuildID is up-to-date according to Steam.
+   * Check whether an installed CS2 version is up-to-date according to Steam.
+   * Steam reads it as a patch version: "1.41.8.9", or the same digits run
+   * together (14189), the form CS2's own update message prints. A steam.inf
+   * ServerVersion (2000924) is not one, and Steam calls any such number up
+   * to date.
    *
    * Uses STEAM_API_KEY when configured, but falls back to a public/no-key call
    * if the keyed request fails (Steam may ignore/reject keys depending on policy).
    */
-  async upToDateCheck(installedBuildId: number): Promise<Cs2UpToDateResult> {
+  async upToDateCheck(installedBuildId: number | string): Promise<Cs2UpToDateResult> {
     const now = toUnixSecondsNow();
 
-    const existing = cache.get(installedBuildId);
+    const key = String(installedBuildId);
+    const existing = cache.get(key);
     if (existing && now - existing.cachedAt < CACHE_TTL_SECONDS) {
       return existing.result;
     }
@@ -107,7 +112,7 @@ export const cs2UpdateService = {
       }
     }
 
-    cache.set(installedBuildId, { result, cachedAt: now });
+    cache.set(key, { result, cachedAt: now });
     return result;
   },
 };

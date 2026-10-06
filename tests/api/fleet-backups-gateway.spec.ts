@@ -125,6 +125,9 @@ test.describe.serial('Fleet round backups: event.backup -> stored -> restore_rou
 
   test.beforeEach(async ({ request }) => {
     expect(await signInViaRequest(request)).toBe(true);
+    // Loading a match needs a webhook URL; another spec in the same shard may have cleared it.
+    const webhook = await request.put('/api/settings', { headers: getAuthHeader(), data: { webhookUrl: 'http://localhost:3000' } });
+    expect(webhook.ok()).toBe(true);
     await resetEnrollRateLimit(request);
     if (!key) key = await createFleetKey(request, { name: 'round-backup-tests' });
   });

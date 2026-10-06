@@ -1334,9 +1334,9 @@
     "updateReadyUp": "Update Ready Up…",
     "updatesHold": "Automatic updates",
     "hold": {
-      "auto": "Automatic (wait for idle)",
-      "on": "Held",
-      "off": "Not held"
+      "auto": "Automatic (not during tournaments)",
+      "on": "Paused",
+      "off": "Always (even during tournaments)"
     },
     "noServers": "No servers on this machine yet.",
     "enrolledElsewhere": "Enrolled from this machine: {{names}}",

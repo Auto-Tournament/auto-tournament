@@ -93,7 +93,12 @@
         "master_build": {
           "type": "integer",
           "minimum": 0,
-          "description": "ServerVersion from the master install's game/csgo/steam.inf (the unit Ready Up reports as cs2_build); 0 when unknown"
+          "description": "ServerVersion from the steam.inf of the CS2 install new servers run (the current game version on an instance host, the master install otherwise; the unit Ready Up reports as cs2_build); 0 when unknown"
+        },
+        "master_patch": {
+          "type": "string",
+          "maxLength": 32,
+          "description": "PatchVersion (1.41.8.9) from the same steam.inf: what Steam's UpToDateCheck takes. The platform asks Steam with it and sends host.update_game when it is behind. Absent from csm before 1.20."
         },
         "update_available": {
           "type": "boolean",

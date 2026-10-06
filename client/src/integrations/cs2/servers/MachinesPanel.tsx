@@ -884,6 +884,16 @@ export default function MachinesPanel() {
                   </TextField>
                 </Stack>
               )}
+              {host.status === 'enrolled' && host.autoUpdate && (
+                <Box data-testid={`machine-auto-update-${host.id}`} sx={{ mt: 1, display: 'grid', gap: 0.25 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    <Box component="span" sx={{ color: 'text.primary', fontWeight: 600 }}>CS2</Box> · {host.autoUpdate.game}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    <Box component="span" sx={{ color: 'text.primary', fontWeight: 600 }}>Ready Up</Box> · {host.autoUpdate.readyUp}
+                  </Typography>
+                </Box>
+              )}
 
               {host.servers.length > 0 && (
                 <RowList sx={{ mt: 1 }} data-testid={`machine-servers-${host.id}`}>
