@@ -16,6 +16,7 @@ import { DATA_DIR } from '../../../config/dataDir';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { atRating } from '../rating';
+import { pickMoments, saveMoments } from './highlights';
 
 /** Replays, under DATA_DIR so they survive container recreates. */
 export const REPLAYS_DIR = path.join(DATA_DIR, 'demo-replays');
@@ -353,6 +354,8 @@ export async function completeDemoJob(job: DemoJob, analysis: DemoAnalysisPayloa
       job.mapNumber,
     ]
   );
+  // The map's best moments, for the highlight recorder.
+  await saveMoments(job.matchSlug, job.mapNumber, pickMoments(analysis));
   log.info(
     `[DEMO-JOBS] ${job.matchSlug} map ${job.mapNumber}: analyzed (${Object.keys(analysis.players).length} players)`
   );
