@@ -6,6 +6,7 @@ import { MapPoolCard } from '../components/tournament/overview/MapPoolCard';
 import { TeamsPreviewCard } from '../components/tournament/overview/TeamsPreviewCard';
 import { ScheduleCalendar } from '../components/tournament/overview/ScheduleCalendar';
 import { LiveStrip } from '../components/tournament/overview/LiveStrip';
+import { TournamentResults } from '../components/tournament/results/TournamentResults';
 import { YourePlayingPanel } from '../components/tournament/page/YourePlayingPanel';
 import { useTournamentPage } from '../components/tournament/page/tournamentPageContext';
 import { isLiveMatch } from '../components/tournament/page/matchHelpers';
@@ -22,7 +23,7 @@ import { tournamentTabPath, yourMatchFirst } from '../paths';
  */
 export default function TournamentOverview() {
   const { t } = useTranslation();
-  const { tournament, teams, viewerTeam } = useTournamentPage();
+  const { tournament, teams, players, viewerTeam } = useTournamentPage();
   const { matches } = usePublicBracket(tournament.id);
   const liveMatches = matches.filter(isLiveMatch).sort(compareMatchOrder);
   const isShuffle = tournament.type === 'shuffle';
@@ -32,6 +33,10 @@ export default function TournamentOverview() {
   // While it runs, a player in it belongs on "Your match".
   if (yourMatchFirst(tournament.status, Boolean(viewerTeam))) {
     return <Navigate to={tournamentTabPath(tournament.id, 'match')} replace />;
+  }
+  // Once it is over, the overview is the results.
+  if (tournament.status === 'completed' && !isShuffle) {
+    return <TournamentResults tournament={tournament} teams={teams} players={players} />;
   }
 
   return (

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Container, Typography } from '@mui/material';
-import { ColumnsIcon, TreeStructureIcon } from '@phosphor-icons/react';
+import { ColumnsIcon, TreeStructureIcon, TrophyIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import type { Tournament } from '../../../types';
 import { GameMark } from '../../common/GameMark';
@@ -157,6 +157,8 @@ const tabLinkSx = {
 export function TournamentPageHeader({ tournament, tab, tabs, showManage }: TournamentPageHeaderProps) {
   const { t } = useTranslation();
   const isLive = tournament.status === 'in_progress';
+  // A finished tournament with a champion puts the champion on the banner.
+  const isFinished = tournament.status === 'completed' && Boolean(tournament.winner);
   const description = tournament.settings?.description?.trim();
 
   const typeLabelKey = `tournament.typeSelector.types.${tournament.type}.label`;
@@ -170,13 +172,68 @@ export function TournamentPageHeader({ tournament, tab, tabs, showManage }: Tour
         data-has-banner={tournament.bannerUrl ? 'true' : 'false'}
         sx={{
           ...bannerSx(tournament),
-          height: isLive ? { xs: 96, md: 120 } : { xs: 320, md: 400 },
+          height: isLive ? { xs: 96, md: 120 } : isFinished ? { xs: 320, md: 360 } : { xs: 320, md: 400 },
           display: 'flex',
-          alignItems: isLive ? 'stretch' : 'flex-end',
+          alignItems: isLive || isFinished ? 'stretch' : 'flex-end',
           transition: `height ${tokens.duration.slow}ms ${tokens.ease.inOut}`,
         }}
       >
-        {isLive ? (
+        {isFinished ? (
+          <Box
+            data-testid="tournament-champion"
+            sx={{
+              flex: 1,
+              bgcolor: withAlpha(color.paper, 0.8),
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 1.5,
+              textAlign: 'center',
+              px: 2,
+            }}
+          >
+            <TrophyIcon size={36} color={color.medalGold} aria-hidden />
+            <Typography
+              id="tournament-title"
+              component="h1"
+              sx={{ ...mono, m: 0, fontSize: '0.8125rem', color: color.medalGold, textTransform: 'uppercase' }}
+            >
+              {t('results.championsOf', { name: tournament.name })}
+            </Typography>
+            <Box
+              component="span"
+              aria-hidden
+              sx={{
+                width: { xs: 72, md: 96 },
+                height: { xs: 72, md: 96 },
+                borderRadius: '24px',
+                bgcolor: color.paper3,
+                border: `3px solid ${color.medalGold}`,
+                display: 'grid',
+                placeItems: 'center',
+                fontFamily: fontDisplay,
+                fontWeight: 700,
+                fontSize: { xs: '1.125rem', md: '1.5rem' },
+                color: color.medalGold,
+              }}
+            >
+              {(tournament.winner?.tag || tournament.winner?.name.slice(0, 3) || '').slice(0, 4).toUpperCase()}
+            </Box>
+            <Typography
+              sx={{
+                fontFamily: fontDisplay,
+                fontSize: { xs: '2.25rem', md: '3rem' },
+                fontWeight: 700,
+                letterSpacing: '-0.02em',
+                lineHeight: 1.05,
+                overflowWrap: 'anywhere',
+              }}
+            >
+              {tournament.winner?.name}
+            </Typography>
+          </Box>
+        ) : isLive ? (
           <Box sx={{ flex: 1, bgcolor: withAlpha(color.paper, 0.82), display: 'flex', alignItems: 'center' }}>
             <Container maxWidth="lg" sx={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 0 }}>
               <Typography
@@ -288,7 +345,9 @@ export function TournamentPageHeader({ tournament, tab, tabs, showManage }: Tour
                 data-testid={`tournament-tab-${key}`}
                 sx={tabLinkSx}
               >
-                {t(`overviewPage.tabs.${key}`)}
+                {key === 'overview' && tournament.status === 'completed'
+                  ? t('overviewPage.tabs.results')
+                  : t(`overviewPage.tabs.${key}`)}
               </Box>
             ))}
             {showManage && (

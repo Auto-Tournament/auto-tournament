@@ -1,6 +1,10 @@
 import { useOutletContext } from 'react-router-dom';
 import type { Tournament } from '../../../types';
-import type { OverviewTeamStanding, ViewerTeam } from '../../../hooks/usePublicTournamentOverview';
+import type {
+  OverviewPlayer,
+  OverviewTeamStanding,
+  ViewerTeam,
+} from '../../../hooks/usePublicTournamentOverview';
 
 /**
  * What the tournament page (`pages/TournamentPage.tsx`) hands each tab through
@@ -12,6 +16,8 @@ export interface TournamentPageContext {
   liveMatchCount: number;
   /** Team standings from the leaderboard route, best first (empty for shuffle). */
   teams: OverviewTeamStanding[];
+  /** Every player's totals in this tournament. */
+  players: OverviewPlayer[];
   /** The signed-in player's team, when it is in this tournament. */
   viewerTeam: ViewerTeam | null;
   viewerHasSteamIdentity: boolean;

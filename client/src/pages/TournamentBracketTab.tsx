@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import BracketsViewerVisualization from '../components/visualizations/BracketsViewerVisualization';
 import SwissView from '../components/visualizations/SwissView';
 import { ChampionBanner } from '../components/tournament/ChampionBanner';
+import { BracketResults } from '../components/tournament/results/BracketResults';
 import { useTournamentPage } from '../components/tournament/page/tournamentPageContext';
 import { TabEmpty, TabError, TabLoading } from '../components/tournament/page/TabState';
 import { usePublicBracket } from '../hooks/usePublicBracket';
@@ -83,6 +84,7 @@ export default function TournamentBracketTab() {
           rankingTeamIds={bracket.roundRobinStandings.map((standing) => standing.teamId)}
         />
       )}
+      <BracketResults matches={bracket.matches} tournamentId={tournament.id} />
     </Box>
   );
 }

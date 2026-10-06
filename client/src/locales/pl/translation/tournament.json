@@ -700,7 +700,8 @@
       "standings": "Standings",
       "manage": "Manage",
       "rules": "Rules",
-      "match": "Your match"
+      "match": "Your match",
+      "results": "Results"
     },
     "status": {
       "setup": "Upcoming",
@@ -827,5 +828,37 @@
     "vetoTitle": "Map veto in progress",
     "finished": "Match finished",
     "mapOf": "Map {{n}} of {{total}}"
+  },
+  "results": {
+    "finalStandings": "Final standings",
+    "awards": "Awards",
+    "players": "Players",
+    "matchesAndDemos": "Matches and demos",
+    "place": "#{{n}}",
+    "championsOf": "{{name}} · Champions",
+    "showAll": "All {{count}} players",
+    "showFewer": "Show fewer",
+    "mapResults": "Map results",
+    "col": {
+      "player": "Player",
+      "team": "Team",
+      "rating": "Rating ±"
+    },
+    "award": {
+      "mostKills": "Most kills",
+      "bestAdr": "Highest ADR",
+      "bestHeadshots": "Best headshot %",
+      "mostFlashAssists": "Most flash assists",
+      "mostUtility": "Most utility damage",
+      "biggestGain": "Biggest rating gain"
+    },
+    "awardValue": {
+      "mostKills": "{{value}} kills",
+      "bestAdr": "{{value}} ADR",
+      "bestHeadshots": "{{value}} % headshots",
+      "mostFlashAssists": "{{value}} flash assists",
+      "mostUtility": "{{value}} utility damage",
+      "biggestGain": "+{{value}} rating"
+    }
   }
 }
