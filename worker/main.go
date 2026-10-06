@@ -8,8 +8,12 @@
 //	AT_URL           the platform, e.g. http://auto-tournament:3000
 //	AT_WORKER_TOKEN  an API token (else the first of API_TOKENS)
 //	AT_POLL_SECONDS  how long to wait when there is no work (default 30)
+//	AT_CS2_DIR       a CS2 install's game/csgo, read-only: the worker sends the
+//	                 platform each map's radar for the 2D replay (optional)
+//	AT_WORKSHOP_DIRS more directories with workshop map .vpk files, colon-separated
 //
-// `at-worker analyze <file.dem> [map]` reads one demo and prints the analysis.
+// `at-worker analyze <file.dem> [map]` reads one demo and prints the analysis;
+// `at-worker radars <game/csgo> [workshop dirs...]` lists the radars it would send.
 package main
 
 import (
@@ -199,6 +203,14 @@ func main() {
 		return
 	}
 
+	if len(os.Args) >= 3 && os.Args[1] == "radars" {
+		radars, _ := localRadars(os.Args[2], os.Args[3:])
+		for key, r := range radars {
+			fmt.Printf("%-32s pos %v,%v scale %v crc %08x\n", key, r.PosX, r.PosY, r.Scale, r.CRC)
+		}
+		return
+	}
+
 	token := env("AT_WORKER_TOKEN", firstToken(os.Getenv("API_TOKENS")))
 	if token == "" {
 		log.Fatal("Set AT_WORKER_TOKEN (or API_TOKENS) to an API token of the platform.")
@@ -217,6 +229,26 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	log.Printf("analyzer v%d, platform %s", AnalyzerVersion, c.base)
+
+	// Radars for the 2D replay, from the game's own files: now, then every 6 hours.
+	if cs2Dir := env("AT_CS2_DIR", ""); cs2Dir != "" {
+		var workshop []string
+		if w := env("AT_WORKSHOP_DIRS", ""); w != "" {
+			workshop = strings.Split(w, ":")
+		}
+		go func() {
+			for {
+				if err := c.SyncRadars(ctx, cs2Dir, workshop); err != nil {
+					log.Printf("radars: %v", err)
+				}
+				select {
+				case <-ctx.Done():
+					return
+				case <-time.After(6 * time.Hour):
+				}
+			}
+		}()
+	}
 
 	for ctx.Err() == nil {
 		j, err := c.claim(ctx)

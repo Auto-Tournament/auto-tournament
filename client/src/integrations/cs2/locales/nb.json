@@ -1827,6 +1827,29 @@
       "ttd": "Tid til skade",
       "money": "Brukt"
     },
-    "note": "Lest fra demoen etter kampen. Ratingen er Auto Tournaments egen (1,00 er snitt). Sikte: grader fra hodet når en motstander dukket opp."
+    "note": "Lest fra demoen etter kampen. Ratingen er Auto Tournaments egen (1,00 er snitt). Sikte: grader fra hodet når en motstander dukket opp.",
+    "replay": {
+      "title": "2D-reprise",
+      "aria": "2D-reprise av {{map}}",
+      "noRadar": "Ingen radar for dette kartet: tegnet på et rutenett.",
+      "play": "Spill av",
+      "pause": "Pause",
+      "scrub": "Tid",
+      "speed": "Fart",
+      "level": "Etasje",
+      "levels": {
+        "default": "Øvre",
+        "lower": "Nedre"
+      }
+    },
+    "feed": {
+      "blind": "blindet",
+      "flashAssist": "flash-assist",
+      "inAir": "i lufta",
+      "noScope": "uten kikkert",
+      "smoke": "gjennom røyk",
+      "wallbang": "gjennom vegg",
+      "headshot": "hodeskudd"
+    }
   }
 }

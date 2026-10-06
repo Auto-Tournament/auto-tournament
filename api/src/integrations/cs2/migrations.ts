@@ -96,6 +96,7 @@ export const CS2_SKINS_MIGRATION_ID = '018-skins';
 export const CS2_PLAYER_MAP_STATS_MIGRATION_ID = '019-player-map-stats';
 export const CS2_DEMO_ANALYSIS_MIGRATION_ID = '020-demo-analysis';
 export const CS2_DEMO_ANALYSIS_V2_MIGRATION_ID = '021-demo-analysis-v2';
+export const CS2_MAP_RADARS_MIGRATION_ID = '022-map-radars';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -995,6 +996,27 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
     up: `
     ALTER TABLE cs2_player_map_stats ADD COLUMN IF NOT EXISTS time_to_damage_sum REAL NOT NULL DEFAULT 0; -- ms from spotting an enemy to first hurting them, summed
     ALTER TABLE cs2_player_map_stats ADD COLUMN IF NOT EXISTS time_to_damage_samples INTEGER NOT NULL DEFAULT 0;
+`,
+  },
+  {
+    // Map radars for the 2D replay, read out of a CS2 install's own files by
+    // the worker (worker/radar.go): the image and where world coordinates
+    // land on it, per vertical level (Nuke's "lower").
+    id: CS2_MAP_RADARS_MIGRATION_ID,
+    up: `
+    CREATE TABLE IF NOT EXISTS cs2_map_radars (
+      map TEXT NOT NULL,
+      level TEXT NOT NULL DEFAULT 'default',
+      png BYTEA NOT NULL,
+      crc BIGINT NOT NULL, -- the game texture's CRC, so the worker skips unchanged ones
+      pos_x REAL NOT NULL,
+      pos_y REAL NOT NULL,
+      scale REAL NOT NULL,
+      altitude_min REAL,
+      altitude_max REAL,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      PRIMARY KEY (map, level)
+    );
 `,
   },
 ];

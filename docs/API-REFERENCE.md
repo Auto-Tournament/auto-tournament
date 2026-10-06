@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 535 of them, 349 behind auth —
+Every endpoint this API serves — 539 of them, 350 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -249,6 +249,17 @@ The worker container reads stored demos after the match: its job queue, and each
 | `POST` | `/api/game/cs2/demo-worker/jobs/:slug/:map/fail` | admin |
 | `GET` | `/api/game/cs2/matches/:slug/maps/:map/analysis` | public |
 | `GET` | `/api/game/cs2/matches/:slug/maps/:map/replay` | public |
+
+### Map radars
+
+Map radar images and coordinates for the 2D replay, read from a CS2 install's own files by the worker.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/game/cs2/radars` | public |
+| `GET` | `/api/game/cs2/radars/:map` | public |
+| `GET` | `/api/game/cs2/radars/:map/:file` | public |
+| `PUT` | `/api/game/cs2/radars/:map/:level` | admin |
 
 ### Team profile
 
