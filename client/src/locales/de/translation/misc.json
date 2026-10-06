@@ -186,11 +186,14 @@
     "live": {
       "title": "Live now",
       "count": "{{count}} running",
-      "chip": "Live"
+      "chip": "Live",
+      "matchesOn_one": "{{count}} Match läuft",
+      "matchesOn_other": "{{count}} Matches laufen"
     },
     "quiet": {
       "title": "Coming up",
-      "more": "Also coming up"
+      "more": "Also coming up",
+      "next": "Als Nächstes"
     },
     "play": {
       "title": "Play a match now",
@@ -222,7 +225,26 @@
     },
     "teams": "Teams: {{count}}",
     "none": "No tournaments yet. Check back soon.",
-    "allTournaments": "All tournaments"
+    "allTournaments": "All tournaments",
+    "empty": {
+      "soon": "Bald",
+      "heroTitle": "Noch kein Turnier",
+      "heroHint": "Sobald das nächste Turnier angekündigt ist, erscheint es hier mit Datum und Anmeldung.",
+      "create": "Turnier erstellen",
+      "nextTitle": "Sonst nichts geplant",
+      "nextHint": "Das nächste Turnier danach erscheint hier.",
+      "signupTitle": "Keine Anmeldung offen",
+      "signupHint": "Turniere mit offener Anmeldung erscheinen hier.",
+      "slotTitle": "Platz für ein weiteres",
+      "slotHint": "Hier kann ein weiteres Turnier stehen.",
+      "championTitle": "Noch kein Champion",
+      "championHint": "Der erste Sieger erscheint hier."
+    },
+    "browse": {
+      "title": "Spieler und Teams finden",
+      "hint": "Sieh, wer hier spielt, und finde ein Team.",
+      "cta": "Spieler ansehen"
+    }
   },
   "browsePage": {
     "title": "Browse tournaments",
