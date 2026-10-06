@@ -221,6 +221,8 @@ export const COMPONENT_SLOTS = [
   'dashboardWidgets.manageResources',
   'adminToolsSection',
   'instanceSettings.section',
+  'globalOverlay',
+  'playerProfileSection',
 ] as const;
 
 export type ComponentSlot = (typeof COMPONENT_SLOTS)[number];
@@ -230,7 +232,7 @@ export type ComponentSlot = (typeof COMPONENT_SLOTS)[number];
  * each is a function, and the adapter makes a throw read as "nothing".
  * (`tournamentStart.ownsFailure` is checked and guarded on its own.)
  */
-export const CALLBACKS = ['summarizeAvailability', 'manageNeedsYou', 'adminHomeSetup'] as const;
+export const CALLBACKS = ['summarizeAvailability', 'manageNeedsYou', 'adminHomeSetup', 'accountMenuItems'] as const;
 
 /** Slot groups every integration carries, even when it fills none of them. */
 export const REQUIRED_GROUPS = [

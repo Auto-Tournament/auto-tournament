@@ -141,13 +141,21 @@ function shapeProblem(def: Record<string, unknown>): string | null {
   if (isObject(settings)) {
     if (typeof settings.labelKey !== 'string') return 'instanceSettings.labelKey is not a string';
     if (settings.section === undefined) return 'instanceSettings.section is missing';
+    if (settings.pages !== undefined) {
+      if (!Array.isArray(settings.pages)) return 'instanceSettings.pages is not an array';
+      for (const [index, page] of settings.pages.entries()) {
+        if (!isObject(page) || typeof page.key !== 'string' || typeof page.labelKey !== 'string') {
+          return `instanceSettings.pages[${index}] needs a key and a labelKey`;
+        }
+      }
+    }
   }
 
   if (!Array.isArray(def.routes)) return 'routes is not an array';
   for (const [index, route] of def.routes.entries()) {
     if (!isObject(route) || typeof route.path !== 'string') return `routes[${index}].path is not a string`;
-    if (route.scope !== 'admin' && route.scope !== 'admin-standalone') {
-      return `routes[${index}].scope is not 'admin' or 'admin-standalone'`;
+    if (route.scope !== 'admin' && route.scope !== 'admin-standalone' && route.scope !== 'site') {
+      return `routes[${index}].scope is not 'admin', 'admin-standalone' or 'site'`;
     }
     if (!isElement(route.element)) return `routes[${index}].element is not a React element`;
   }

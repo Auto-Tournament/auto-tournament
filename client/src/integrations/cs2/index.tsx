@@ -46,7 +46,12 @@ import {
 import Servers from './pages/Servers';
 import Maps from './pages/Maps';
 import { Cs2AdminTools } from './admin/Cs2AdminTools';
-import { Cs2SettingsSection } from './settings/Cs2SettingsSection';
+import { CS2_SETTINGS_PAGES, Cs2SettingsSection } from './settings/Cs2SettingsSection';
+import { InventoryPage } from './skins/InventoryPage';
+import { NewSkinReveal } from './skins/NewSkinReveal';
+import { ProfileLoadoutSection } from './skins/ProfileLoadout';
+import { skinPaths } from './skins/paths';
+import { skinsAccountMenuItems } from './skins/useSkins';
 import { cs2Locales } from './locales';
 
 export const cs2ClientIntegration: ClientGameIntegration = {
@@ -173,13 +178,22 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   instanceSettings: {
     labelKey: 'settings.tab',
     section: Cs2SettingsSection,
+    pages: CS2_SETTINGS_PAGES,
   },
+
+  // Virtual skins (skins/): the inventory pages, the Inventory link while
+  // skins are on, the "new skin" reveal, and the loadout on profiles.
+  accountMenuItems: skinsAccountMenuItems,
+  globalOverlay: NewSkinReveal,
+  playerProfileSection: ProfileLoadoutSection,
 
   // At URLs the platform keeps. The Steam connect page these used to include
   // is core's now: Steam is the platform's sign-in, not this game's.
   routes: [
     { path: links.servers(), scope: 'admin', element: <Servers /> },
     { path: links.maps(), scope: 'admin', element: <Maps /> },
+    { path: skinPaths.inventory, scope: 'site', element: <InventoryPage /> },
+    { path: skinPaths.playerInventory, scope: 'site', element: <InventoryPage /> },
   ],
 
   // Labelled from this module's own strings: `cs2:nav.servers` and so on.

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { api } from '../utils/api';
-import { useAuth } from '../contexts/AuthContext';
+import { api, useAuth } from '../../../module-sdk';
+import type { AccountMenuItem } from '../../types';
+import { skinPaths } from './paths';
 
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'mythical' | 'legendary' | 'ancient' | 'immortal';
 
@@ -28,6 +29,12 @@ export interface ShowcaseItem {
   big: boolean;
 }
 
+/** The account menu's Inventory link, while skins are on (`accountMenuItems`). */
+export async function skinsAccountMenuItems(): Promise<AccountMenuItem[]> {
+  const status = await api.get<{ enabled: boolean }>('/api/skins/status');
+  return status.enabled ? [{ key: 'inventory', path: skinPaths.inventory, labelKey: 'skins.inventory' }] : [];
+}
+
 /** Whether virtual skins are on. Null while unknown. */
 export function useSkinsEnabled(): boolean | null {
   const [enabled, setEnabled] = useState<boolean | null>(null);
@@ -52,7 +59,7 @@ function announceChange(): void {
 
 /** The signed-in player's inventory, showcase and new skins, with the actions on them. */
 export function useMySkins() {
-  const { playerSteamId } = useAuth();
+  const { playerUid } = useAuth();
   const [inventory, setInventory] = useState<OwnedSkin[]>([]);
   const [showcase, setShowcase] = useState<ShowcaseItem[]>([]);
   const [unseen, setUnseen] = useState<number[]>([]);
@@ -60,7 +67,7 @@ export function useMySkins() {
   const [available, setAvailable] = useState(false);
 
   const reload = useCallback(async () => {
-    if (!playerSteamId) {
+    if (!playerUid) {
       setLoading(false);
       setAvailable(false);
       return;
@@ -76,7 +83,7 @@ export function useMySkins() {
     } finally {
       setLoading(false);
     }
-  }, [playerSteamId]);
+  }, [playerUid]);
 
   useEffect(() => {
     void reload();

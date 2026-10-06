@@ -572,6 +572,21 @@ export const cs2Integration: GameIntegration = {
     return { team1: steamIds(cfg.team1?.players), team2: steamIds(cfg.team2?.players) };
   },
 
+  /** A finished matchmaking game can drop a virtual skin for each player, likelier for winners (skins/skinService). */
+  async onMatchmakingResult({ matchSlug, winners, others, map }) {
+    const { skinService } = await import('./skins/skinService');
+    await skinService.rollMatchDrops(matchSlug, winners, others, map);
+  },
+
+  /** The top three of a finished tournament get its skin rewards, unless the tournament turned them off. */
+  async onTournamentPlacements({ tournamentId, tournamentName, settings, placements }) {
+    const { skinService } = await import('./skins/skinService');
+    // `settings.cs2.skinRewards`; tournaments from before it moved here kept it at the top level.
+    const own = settings.cs2 as { skinRewards?: unknown } | undefined;
+    const rewards = typeof own?.skinRewards === 'boolean' ? own.skinRewards : settings.skinRewards;
+    await skinService.awardTournament(tournamentId, tournamentName, placements, rewards === false);
+  },
+
   /** A stored MatchZy Enhanced event through the same handling as the events route, minus its checks. */
   async replayEvent(event) {
     const { applyMatchEvent } = await import('./events/matchEvents');

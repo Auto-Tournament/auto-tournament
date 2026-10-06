@@ -2,14 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, ButtonBase, CircularProgress, Container, Dialog, MenuItem, Select, Typography } from '@mui/material';
 import { PlayCircleIcon, QuestionIcon, TrophyIcon } from '@phosphor-icons/react';
-import { useTranslation } from 'react-i18next';
-import { TopNavBar } from '../components/layout/TopNavBar';
-import { InspectSkinDialog, SkinCard, SlotTile, VirtualNotice } from '../components/skins/SkinParts';
-import { loadoutSlots, useMySkins, useSkinsEnabled, type OwnedSkin, type Rarity } from '../hooks/useSkins';
-import { useAuth } from '../contexts/AuthContext';
-import { api } from '../utils/api';
-import { pageTitle } from '../utils/pageTitle';
-import { tokens, fontDisplay, radii } from '../theme/tokens';
+import { api, pageTitle, useModuleTranslation, tokens, fontDisplay, radii } from '../../../module-sdk';
+import { InspectSkinDialog, SkinCard, SlotTile, VirtualNotice } from './SkinParts';
+import { loadoutSlots, useMySkins, useSkinsEnabled, type OwnedSkin, type Rarity } from './useSkins';
 
 const { color } = tokens;
 const RARITY_ORDER: Rarity[] = ['immortal', 'ancient', 'legendary', 'mythical', 'rare', 'uncommon', 'common'];
@@ -34,11 +29,11 @@ function category(skin: OwnedSkin): Filter {
  * as a picture card, one click to equip (saved at once). On someone else's
  * page (`/player/:steamId/inventory`) the same view, read only.
  */
-export default function Inventory() {
-  const { t } = useTranslation();
+export function InventoryPage() {
+  const { t } = useModuleTranslation('cs2');
   const { steamId } = useParams<{ steamId?: string }>();
-  const { playerSteamId } = useAuth();
-  const own = !steamId || steamId === playerSteamId;
+  // /inventory is your own; /player/:steamId/inventory is anyone's, read only.
+  const own = !steamId;
   const enabled = useSkinsEnabled();
   const mine = useMySkins();
   const [theirs, setTheirs] = useState<OwnedSkin[] | null>(null);
@@ -94,8 +89,7 @@ export default function Inventory() {
   );
 
   return (
-    <Box minHeight="100vh" bgcolor="transparent" data-testid="inventory-page">
-      <TopNavBar />
+    <Box data-testid="inventory-page">
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, display: 'flex', flexDirection: 'column', gap: 3.5 }}>
         {enabled === false ? (
           <Typography sx={{ color: color.ink2 }}>{t('skins.off')}</Typography>

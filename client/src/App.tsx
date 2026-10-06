@@ -34,8 +34,8 @@ import TournamentTeamsTab from './pages/TournamentTeamsTab';
 import TournamentRulesTab from './pages/TournamentRulesTab';
 import TournamentYourMatchTab from './pages/TournamentYourMatchTab';
 import TournamentSignupTab from './pages/TournamentSignupTab';
-import Inventory from './pages/Inventory';
-import { NewSkinReveal } from './components/skins/NewSkinReveal';
+import { TopNavBar } from './components/layout/TopNavBar';
+import { ModuleGlobalOverlays } from './components/layout/ModuleGlobalOverlays';
 import Home from './pages/Home';
 import Browse from './pages/Browse';
 import PlayersDirectory from './pages/PlayersDirectory';
@@ -397,22 +397,24 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path={paths.inventory}
-        element={
-          <ProtectedRoute adminOnly={false}>
-            <Inventory />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path={paths.playerInventory}
-        element={
-          <ProtectedRoute adminOnly={false}>
-            <Inventory />
-          </ProtectedRoute>
-        }
-      />
+      {/* Pages for signed-in players, owned by a game integration (CS2: the
+          skin inventory), under the site's top bar. */}
+      {integrationRoutes
+        .filter((route) => route.scope === 'site')
+        .map((route) => (
+          <Route
+            key={route.path}
+            path={route.path}
+            element={
+              <ProtectedRoute adminOnly={false}>
+                <Box minHeight="100vh" bgcolor="transparent">
+                  <TopNavBar />
+                  {route.element}
+                </Box>
+              </ProtectedRoute>
+            }
+          />
+        ))}
       <Route
         path={paths.browse}
         element={
@@ -553,7 +555,7 @@ export default function App() {
               {/* Rendered above every route: impersonation applies app-wide,
                   including the public/player-facing pages it exists to test. */}
               <ImpersonationBanner />
-              <NewSkinReveal />
+              <ModuleGlobalOverlays />
               {/* "What do you play?": redirects to /welcome/games once per
                   account, from whatever page the player lands on. The API
                   decides whether it is due. */}

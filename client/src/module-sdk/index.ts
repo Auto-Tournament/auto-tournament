@@ -90,7 +90,7 @@ export type ModuleAuth = {
 export const useAuth: () => ModuleAuth = useAuthInternal;
 
 // Design tokens
-export { tokens, radii, mono, textSize, withAlpha } from '../theme/tokens';
+export { tokens, radii, mono, textSize, withAlpha, fontDisplay } from '../theme/tokens';
 // The icon size scale, 16/20/24 px (client API 0.2.8; see theme/icons.tsx)
 export { ICON_SIZE } from '../theme/icons';
 

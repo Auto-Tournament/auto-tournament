@@ -16,10 +16,8 @@ import {
   Typography,
 } from '@mui/material';
 import { LockSimpleIcon, PlayCircleIcon, TrophyIcon } from '@phosphor-icons/react';
-import { useTranslation } from 'react-i18next';
-import { api } from '../../utils/api';
-import { useSnackbar } from '../../contexts/SnackbarContext';
-import { tokens, rarityColor } from '../../theme/tokens';
+import { api, useSnackbar, useModuleTranslation, tokens } from '../../../module-sdk';
+import { rarityColor } from './rarity';
 
 const { color } = tokens;
 const RARITIES = ['common', 'uncommon', 'rare', 'mythical', 'legendary', 'ancient', 'immortal'] as const;
@@ -40,6 +38,7 @@ interface Config {
   enabled: boolean;
   matchmakingDrops: boolean;
   dropChance: number;
+  playDropChance: number;
   rarityWeights: Record<Rarity, number>;
   tournamentRewards: boolean;
   rewards: Reward[];
@@ -57,7 +56,7 @@ const PLACE_COLOR = [color.medalGold, color.medalSilver, color.medalBronze];
 
 /** One placement's reward: random by rarity, or a picked skin with its float range and seeds. */
 function RewardRow({ reward, onChange }: { reward: Reward; onChange: (r: Reward) => void }) {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
   const [query, setQuery] = useState('');
   const [options, setOptions] = useState<CatalogSkin[]>([]);
   const [seedInput, setSeedInput] = useState('');
@@ -166,8 +165,8 @@ function RewardRow({ reward, onChange }: { reward: Reward; onChange: (r: Reward)
  * ways to get a skin: matchmaking (drop chance and rarity odds) and
  * tournaments (a reward per place). The notice players see is fixed.
  */
-export function SkinsCard() {
-  const { t } = useTranslation();
+export function SkinsSettings() {
+  const { t } = useModuleTranslation('cs2');
   const { showSuccess, showError } = useSnackbar();
   const [config, setConfig] = useState<Config | null>(null);
   const [saving, setSaving] = useState(false);
@@ -225,6 +224,13 @@ export function SkinsCard() {
             <Typography>{t('skins.admin.dropChance')}</Typography>
             <TextField size="small" type="number" value={config.dropChance} onChange={(e) => set({ dropChance: Number(e.target.value) })} inputProps={{ min: 0, max: 100, 'aria-label': t('skins.admin.dropChance') }} sx={{ width: 110 }} InputProps={{ endAdornment: '%' }} />
           </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+            <Typography>{t('skins.admin.playDropChance')}</Typography>
+            <TextField size="small" type="number" value={config.playDropChance} onChange={(e) => set({ playDropChance: Number(e.target.value) })} inputProps={{ min: 0, max: 100, 'aria-label': t('skins.admin.playDropChance'), 'data-testid': 'skins-play-drop-chance' }} sx={{ width: 110 }} InputProps={{ endAdornment: '%' }} />
+          </Box>
+          <Typography variant="caption" color="text.secondary" sx={{ mt: -1 }}>
+            {t('skins.admin.knivesByPrice')}
+          </Typography>
           <Box>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               {t('skins.admin.whichRarity')}

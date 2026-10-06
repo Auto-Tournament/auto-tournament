@@ -103,10 +103,10 @@
     "title": "Settings",
     "intro": "Settings for the whole site, whatever game it runs. Each installed game module has a tab of its own.",
     "tabs": {
-      "integrations": "Integrations",
+      "general": "General",
       "signIn": "Sign-in",
       "players": "Players & Access",
-      "matches": "Ratings",
+      "ratings": "Ratings",
       "developer": "Developer",
       "license": "License",
       "webhooks": "Webhooks",
@@ -275,7 +275,11 @@
           }
         }
       }
-    }
+    },
+    "groups": {
+      "platform": "Platform"
+    },
+    "navLabel": "Settings pages"
   },
   "managePage": {
     "title": "Manage",

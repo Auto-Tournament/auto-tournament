@@ -49,6 +49,28 @@ Served by the app itself rather than a router.
 | `GET` | `/health` | public |
 | `GET` | `/api/health/fleet` | public |
 
+### Skins
+
+Virtual CS2 skins: inventories, loadouts, showcases and the admin inventory manager (platform only).
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/skins/status` | public |
+| `GET` | `/api/skins/me` | public |
+| `POST` | `/api/skins/me/equip` | public |
+| `DELETE` | `/api/skins/me/equip/:slot` | public |
+| `POST` | `/api/skins/me/seen` | public |
+| `PUT` | `/api/skins/me/showcase` | public |
+| `GET` | `/api/skins/players/:steamId` | public |
+| `GET` | `/api/skins/skin/:id` | public |
+| `GET` | `/api/skins/admin/config` | admin |
+| `PUT` | `/api/skins/admin/config` | admin |
+| `GET` | `/api/skins/admin/catalog` | admin |
+| `GET` | `/api/skins/admin/players` | admin |
+| `GET` | `/api/skins/admin/players/:steamId/inventory` | admin |
+| `POST` | `/api/skins/admin/players/:steamId/skins` | admin |
+| `DELETE` | `/api/skins/admin/skins/:id` | admin |
+
 ### Server bootstrap
 
 Self-registration for a CS2 server coming online.
@@ -465,28 +487,6 @@ Teams signing themselves up with a lineup, and check-in on the day.
 | `PUT` | `/api/tournament-signup/:id/lineup` | public |
 | `DELETE` | `/api/tournament-signup/:id/registration/:teamId` | public |
 | `POST` | `/api/tournament-signup/:id/check-in` | public |
-
-### Skins
-
-Virtual skins: inventories, loadouts and showcases (platform only).
-
-| Method | Path | Auth |
-| --- | --- | --- |
-| `GET` | `/api/skins/status` | public |
-| `GET` | `/api/skins/me` | public |
-| `POST` | `/api/skins/me/equip` | public |
-| `DELETE` | `/api/skins/me/equip/:slot` | public |
-| `POST` | `/api/skins/me/seen` | public |
-| `PUT` | `/api/skins/me/showcase` | public |
-| `GET` | `/api/skins/players/:steamId` | public |
-| `GET` | `/api/skins/skin/:id` | public |
-| `GET` | `/api/skins/admin/config` | admin |
-| `PUT` | `/api/skins/admin/config` | admin |
-| `GET` | `/api/skins/admin/catalog` | admin |
-| `GET` | `/api/skins/admin/players` | admin |
-| `GET` | `/api/skins/admin/players/:steamId/inventory` | admin |
-| `POST` | `/api/skins/admin/players/:steamId/skins` | admin |
-| `DELETE` | `/api/skins/admin/skins/:id` | admin |
 
 ### Logs
 

@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Checkbox, Dialog, FormControlLabel, IconButton, Typography } from '@mui/material';
 import { ArrowDownIcon, ArrowUpIcon, PencilSimpleIcon } from '@phosphor-icons/react';
-import { useTranslation } from 'react-i18next';
-import { api } from '../../utils/api';
-import { useSkinsEnabled, useMySkins, type OwnedSkin, type ShowcaseItem } from '../../hooks/useSkins';
 import { InspectSkinDialog } from './SkinParts';
-import { tokens, fontDisplay, radii, rarityColor } from '../../theme/tokens';
+import { api, useModuleTranslation, tokens, fontDisplay, radii } from '../../../module-sdk';
+import { useSkinsEnabled, useMySkins, type OwnedSkin, type ShowcaseItem } from './useSkins';
+import type { PlayerProfileSectionProps } from '../../types';
+import { rarityColor } from './rarity';
+import { playerInventoryPath, skinPaths } from './paths';
 
 const { color } = tokens;
 const MAX = 8;
@@ -64,7 +65,7 @@ function Tile({ skin, big, onClick }: { skin: OwnedSkin; big: boolean; onClick: 
  * show and which are big. "Show inventory" opens everything they own.
  */
 export function ProfileLoadout({ steamId, isOwn }: { steamId: string; isOwn: boolean }) {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
   const enabled = useSkinsEnabled();
   const mine = useMySkins();
   const [data, setData] = useState<{ inventory: OwnedSkin[]; showcase: ShowcaseItem[] } | null>(null);
@@ -115,7 +116,7 @@ export function ProfileLoadout({ steamId, isOwn }: { steamId: string; isOwn: boo
             {t('skins.arrange')}
           </Button>
         )}
-        <Button size="small" component={RouterLink} to={isOwn ? '/inventory' : `/player/${steamId}/inventory`} sx={{ borderRadius: radii.pill, bgcolor: color.paper3, color: color.ink }}>
+        <Button size="small" component={RouterLink} to={isOwn ? skinPaths.inventory : playerInventoryPath(steamId)} sx={{ borderRadius: radii.pill, bgcolor: color.paper3, color: color.ink }}>
           {t('skins.showInventory')}
         </Button>
       </Box>
@@ -187,4 +188,9 @@ export function ProfileLoadout({ steamId, isOwn }: { steamId: string; isOwn: boo
       </Dialog>
     </Box>
   );
+}
+
+/** The `playerProfileSection` slot: the loadout on any player's profile. */
+export function ProfileLoadoutSection({ playerId, isOwn }: PlayerProfileSectionProps) {
+  return <ProfileLoadout steamId={playerId} isOwn={isOwn} />;
 }

@@ -3,10 +3,10 @@
     "title": "Einstellungen",
     "intro": "Konfiguriere Integrationen, Ingame-Defaults und Entwickleroptionen.",
     "tabs": {
-      "integrations": "Integrationen & Webhooks",
+      "general": "General",
       "signIn": "Sign-in",
       "players": "Spieler & Zugriff",
-      "matches": "Übereinstimmungen & Bewertungen",
+      "ratings": "Übereinstimmungen & Bewertungen",
       "developer": "Entwickler / Simulation",
       "license": "License",
       "webhooks": "Webhooks",
@@ -175,7 +175,11 @@
           }
         }
       }
-    }
+    },
+    "groups": {
+      "platform": "Platform"
+    },
+    "navLabel": "Settings pages"
   },
   "dashboard": {
     "title": "Admin",

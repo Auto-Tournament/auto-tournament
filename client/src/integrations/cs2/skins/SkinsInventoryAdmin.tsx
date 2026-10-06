@@ -16,13 +16,10 @@ import {
   Typography,
 } from '@mui/material';
 import { DiceFiveIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
-import { useTranslation } from 'react-i18next';
-import { api } from '../../utils/api';
-import { useSnackbar } from '../../contexts/SnackbarContext';
-import { tokens, rarityColor, radii } from '../../theme/tokens';
-import ConfirmDialog from '../modals/ConfirmDialog';
-import { sourceLabel } from '../skins/SkinParts';
-import type { OwnedSkin } from '../../hooks/useSkins';
+import { api, useSnackbar, useModuleTranslation, tokens, radii, ConfirmDialog } from '../../../module-sdk';
+import { rarityColor } from './rarity';
+import { sourceLabel } from './SkinParts';
+import type { OwnedSkin } from './useSkins';
 
 const { color } = tokens;
 
@@ -41,6 +38,8 @@ interface CatalogEntry {
   variant: string | null;
   rarity: string;
   imageUrl: string;
+  /** Knives and gloves: market price in USD, which set the rarity. */
+  price?: number;
 }
 
 /** The wear bands, as float ranges. A chip rolls a float inside its band. */
@@ -59,7 +58,7 @@ const entryLabel = (e: CatalogEntry) => `${e.weaponName} · ${e.name}${e.variant
  * phase, float and pattern) or take them away.
  */
 export function SkinsInventoryAdmin() {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
   const { showSuccess, showError } = useSnackbar();
   const [query, setQuery] = useState('');
   const [players, setPlayers] = useState<AdminPlayer[]>([]);
@@ -252,7 +251,7 @@ function GiveSkinDialog({
   onClose: () => void;
   onGiven: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useModuleTranslation('cs2');
   const { showSuccess, showError } = useSnackbar();
   const [query, setQuery] = useState('');
   const [options, setOptions] = useState<CatalogEntry[]>([]);
@@ -333,6 +332,11 @@ function GiveSkinDialog({
             <Box component="li" {...props} key={`${o.weapon}|${o.paintKit}`} sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
               <Box component="img" src={o.imageUrl} alt="" loading="lazy" sx={{ width: 48, height: 34, objectFit: 'contain' }} />
               <Typography sx={{ flex: 1 }}>{entryLabel(o)}</Typography>
+              {o.price !== undefined && (
+                <Typography variant="caption" color="text.secondary">
+                  ${Math.round(o.price).toLocaleString('en-US')}
+                </Typography>
+              )}
               <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: rarityColor[o.rarity] }} aria-hidden />
             </Box>
           )}

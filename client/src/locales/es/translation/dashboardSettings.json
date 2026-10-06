@@ -3,10 +3,10 @@
     "title": "Ajustes",
     "intro": "Configura integraciones, valores por defecto en juego y opciones de desarrollo.",
     "tabs": {
-      "integrations": "Integraciones y webhooks",
+      "general": "General",
       "signIn": "Sign-in",
       "players": "Jugadores y acceso",
-      "matches": "Partidos y rating",
+      "ratings": "Partidos y rating",
       "developer": "Desarrollador / simulación",
       "license": "License",
       "webhooks": "Webhooks",
@@ -175,7 +175,11 @@
           }
         }
       }
-    }
+    },
+    "groups": {
+      "platform": "Platform"
+    },
+    "navLabel": "Settings pages"
   },
   "dashboard": {
     "title": "Admin",

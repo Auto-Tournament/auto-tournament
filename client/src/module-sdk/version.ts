@@ -101,5 +101,14 @@
  * (`MatchAdminPanelProps` `{ matchSlug, matchStatus?, onSuccess?, onError? }`):
  * the module's own controls in the match details' admin section (CS2: round
  * backups and "restore to round N").
+ *
+ * 0.2.10 (additive): what CS2's virtual skins needed to leave core.
+ * - Route scope `site`: a page for signed-in players under the site's top bar.
+ * - `accountMenuItems()`: links for the player's account menu.
+ * - `globalOverlay`: a component above every page.
+ * - `playerProfileSection` (`{ playerId, isOwn }`): a section on profiles.
+ * - `instanceSettings.pages`: a module's settings as several pages; the
+ *   section gets the open page's key as `page`.
+ * - SDK export `fontDisplay`, the display font stack.
  */
-export const CLIENT_API_VERSION = '0.2.9';
+export const CLIENT_API_VERSION = '0.2.10';

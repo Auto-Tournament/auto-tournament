@@ -9,8 +9,10 @@ import {
   Stack,
   Button,
   LinearProgress,
-  Tabs,
-  Tab,
+  ButtonBase,
+  ListSubheader,
+  MenuItem,
+  Select,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -31,46 +33,43 @@ import { SiteNameCard } from '../components/settings/SiteNameCard';
 import { LicenseCard } from '../components/settings/LicenseCard';
 import { WebhooksCard } from '../components/settings/WebhooksCard';
 import { ExperimentalCard } from '../components/settings/ExperimentalCard';
-import { SkinsCard } from '../components/settings/SkinsCard';
-import { SkinsInventoryAdmin } from '../components/settings/SkinsInventoryAdmin';
 import { SignInProvidersCard } from '../components/settings/SignInProvidersCard';
 import { useInstalledIntegrations } from '../integrations/registry';
 
 declare const __APP_VERSION__: string | undefined;
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: string;
-  value: string;
-  'data-testid'?: string;
+/** One entry of the Settings nav: a page. */
+interface NavEntry {
+  key: string;
+  label: string;
 }
 
-/** A module's tab key: its settings live on a tab of their own (`instanceSettings`). */
-function moduleTabKey(moduleId: string): string {
-  return `module-${moduleId}`;
+/** A group of pages: the platform's, then one per game module with settings. */
+interface NavGroup {
+  id: string;
+  label: string;
+  entries: NavEntry[];
 }
 
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
+/** Old `?section=` values, from before the pages were regrouped (bookmarks, links in docs). */
+const SECTION_ALIASES: Record<string, string> = {
+  integrations: 'general',
+  matches: 'ratings',
+  skins: 'cs2:skins',
+};
 
+/** The open page's content, labelled by its nav entry. */
+function SettingsPage({ pageKey, children, ...rest }: { pageKey: string; children: React.ReactNode; 'data-testid'?: string }) {
   return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`settings-tabpanel-${index}`}
-      aria-labelledby={`settings-tab-${index}`}
-      {...other}
+    <Box
+      role="region"
+      id={`settings-page-${pageKey.replace(':', '-')}`}
+      aria-labelledby={`settings-nav-${pageKey.replace(':', '-')}`}
+      {...rest}
     >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
+      {children}
+    </Box>
   );
-}
-
-function a11yProps(index: string) {
-  return {
-    id: `settings-tab-${index}`,
-    'aria-controls': `settings-tabpanel-${index}`,
-  };
 }
 
 const ACCORDION_SX = {
@@ -124,58 +123,64 @@ export default function Settings() {
   const isDev = useIsDevelopment();
   const { t } = useTranslation();
 
-  // Tabs: core's, then one per installed module that has settings of its own,
-  // then Developer. `?section=<module id>` opens that module's tab (the SDK's
-  // `links.settings(id)`); a code module may arrive after the page mounts.
-  const [searchParams] = useSearchParams();
-  const requestedSection = searchParams.get('section');
+  // The nav: the platform's pages, then a group per installed module with
+  // settings of its own (`instanceSettings`), each module page keyed
+  // `<module>:<page>`. `?section=` names the open page; a module's id alone
+  // opens its first page (the SDK's `links.settings(id)`). A code module may
+  // arrive after the page mounts.
+  const [searchParams, setSearchParams] = useSearchParams();
   const moduleSettings = useInstalledIntegrations().flatMap((integration) =>
     integration.instanceSettings
       ? [
           {
             id: integration.id,
             labelKey: integration.instanceSettings.labelKey,
+            pages: integration.instanceSettings.pages,
             Section: integration.instanceSettings.section,
           },
         ]
       : []
   );
-  const moduleTabKeys = moduleSettings.map(({ id }) => moduleTabKey(id)).join(' ');
-  const [tab, setTab] = useState<string>('integrations');
-  useEffect(() => {
-    if (!requestedSection) return;
-    // `?section=license`: the admin home's License card links here;
-    // `?section=signin`: its "Finish setting up" sign-in row.
-    if (
-      requestedSection === 'license' ||
-      requestedSection === 'webhooks' ||
-      requestedSection === 'signin' ||
-      requestedSection === 'skins'
-    ) {
-      setTab(requestedSection);
-      return;
-    }
-    const key = moduleTabKey(requestedSection);
-    if (moduleTabKeys.split(' ').includes(key)) setTab(key);
-  }, [requestedSection, moduleTabKeys]);
-  const tabKeys = [
-    'integrations',
-    'signin',
-    'players',
-    'matches',
-    'license',
-    'webhooks',
-    'skins',
-    'experimental',
-    ...moduleTabKeys.split(' ').filter(Boolean),
-    ...(isDev ? ['developer'] : []),
+  const groups: NavGroup[] = [
+    {
+      id: 'platform',
+      label: t('settingsPage.groups.platform'),
+      entries: [
+        { key: 'general', label: t('settingsPage.tabs.general') },
+        { key: 'signin', label: t('settingsPage.tabs.signIn') },
+        { key: 'players', label: t('settingsPage.tabs.players') },
+        { key: 'ratings', label: t('settingsPage.tabs.ratings') },
+        { key: 'webhooks', label: t('settingsPage.tabs.webhooks') },
+        { key: 'license', label: t('settingsPage.tabs.license') },
+        { key: 'experimental', label: t('settingsPage.tabs.experimental') },
+        ...(isDev ? [{ key: 'developer', label: t('settingsPage.tabs.developer') }] : []),
+      ],
+    },
+    ...moduleSettings.map(({ id, labelKey, pages }) => ({
+      id,
+      label: t(labelKey, { ns: id }),
+      entries: pages?.length
+        ? pages.map((page) => ({ key: `${id}:${page.key}`, label: t(page.labelKey, { ns: id }) }))
+        : [{ key: id, label: t(labelKey, { ns: id }) }],
+    })),
   ];
-  // A module tab whose module broke or went away falls back to the first tab.
-  const activeTab = tabKeys.includes(tab) ? tab : 'integrations';
-
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: string) => {
-    setTab(newValue);
+  const entryKeys = groups.flatMap((group) => group.entries.map((entry) => entry.key));
+  const requested = searchParams.get('section') ?? '';
+  const wanted = SECTION_ALIASES[requested] ?? requested;
+  // A module's id opens its first page; a page whose module went away falls back to General.
+  const active =
+    (entryKeys.includes(wanted) && wanted) ||
+    groups.find((group) => group.id === wanted && group.id !== 'platform')?.entries[0]?.key ||
+    'general';
+  const openPage = (key: string) => {
+    const next = new URLSearchParams(searchParams);
+    next.set('section', key);
+    setSearchParams(next, { replace: true });
   };
+  const activeModule = moduleSettings.find(
+    ({ id }) => active === id || active.startsWith(`${id}:`)
+  );
+  const activeModulePage = activeModule && active.includes(':') ? active.slice(activeModule.id.length + 1) : undefined;
 
   const fetchSettings = useCallback(async () => {
     setLoading(true);
@@ -262,97 +267,96 @@ export default function Settings() {
 
       {!loading && (
         <>
-          <Paper sx={{ mb: 2 }}>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-              <Tabs
-                value={activeTab}
-                onChange={handleTabChange}
-                textColor="secondary"
-                indicatorColor="secondary"
-                aria-label={t('settingsPage.title')}
-                variant="scrollable"
-                scrollButtons="auto"
-              >
-                <Tab
-                  label={t('settingsPage.tabs.integrations')}
-                  value="integrations"
-                  {...a11yProps('integrations')}
-                />
-                <Tab
-                  label={t('settingsPage.tabs.signIn')}
-                  value="signin"
-                  data-testid="settings-tab-signin"
-                  {...a11yProps('signin')}
-                />
-                <Tab label={t('settingsPage.tabs.players')} value="players" {...a11yProps('players')} />
-                <Tab label={t('settingsPage.tabs.matches')} value="matches" {...a11yProps('matches')} />
-                <Tab
-                  label={t('settingsPage.tabs.license')}
-                  value="license"
-                  data-testid="settings-tab-license"
-                  {...a11yProps('license')}
-                />
-                <Tab
-                  label={t('settingsPage.tabs.webhooks')}
-                  value="webhooks"
-                  data-testid="settings-tab-webhooks"
-                  {...a11yProps('webhooks')}
-                />
-                <Tab
-                  label={t('skins.admin.tab')}
-                  value="skins"
-                  data-testid="settings-tab-skins"
-                  {...a11yProps('skins')}
-                />
-                <Tab
-                  label={t('settingsPage.tabs.experimental')}
-                  value="experimental"
-                  data-testid="settings-tab-experimental"
-                  {...a11yProps('experimental')}
-                />
-                {moduleSettings.map(({ id, labelKey }) => (
-                  <Tab
-                    key={id}
-                    label={t(labelKey, { ns: id })}
-                    value={moduleTabKey(id)}
-                    data-testid={`settings-tab-module-${id}`}
-                    {...a11yProps(moduleTabKey(id))}
-                  />
-                ))}
-                {isDev && (
-                  <Tab
-                    label={t('settingsPage.tabs.developer')}
-                    value="developer"
-                    {...a11yProps('developer')}
-                  />
-                )}
-              </Tabs>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: '220px minmax(0, 1fr)' },
+              gap: { xs: 2, md: 3 },
+              alignItems: 'start',
+            }}
+          >
+            {/* Phones: one dropdown, grouped the same way. */}
+            <Select
+              size="small"
+              value={active}
+              onChange={(event) => openPage(String(event.target.value))}
+              sx={{ display: { xs: 'flex', md: 'none' } }}
+              inputProps={{ 'aria-label': t('settingsPage.navLabel'), 'data-testid': 'settings-nav-select' }}
+            >
+              {groups.flatMap((group) => [
+                <ListSubheader key={`group-${group.id}`}>{group.label}</ListSubheader>,
+                ...group.entries.map((entry) => (
+                  <MenuItem key={entry.key} value={entry.key}>
+                    {entry.label}
+                  </MenuItem>
+                )),
+              ])}
+            </Select>
+
+            <Box
+              component="nav"
+              aria-label={t('settingsPage.navLabel')}
+              sx={{ display: { xs: 'none', md: 'flex' }, flexDirection: 'column', gap: 2.5, position: 'sticky', top: 16 }}
+            >
+              {groups.map((group) => (
+                <Box key={group.id} data-testid={`settings-nav-group-${group.id}`}>
+                  <Typography
+                    variant="overline"
+                    color="text.secondary"
+                    sx={{ display: 'block', px: 1.5, mb: 0.5, lineHeight: 2 }}
+                  >
+                    {group.label}
+                  </Typography>
+                  <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+                    {group.entries.map((entry) => {
+                      const current = entry.key === active;
+                      return (
+                        <li key={entry.key}>
+                          <ButtonBase
+                            id={`settings-nav-${entry.key.replace(':', '-')}`}
+                            data-testid={`settings-nav-${entry.key.replace(':', '-')}`}
+                            aria-current={current ? 'page' : undefined}
+                            onClick={() => openPage(entry.key)}
+                            sx={{
+                              width: '100%',
+                              justifyContent: 'flex-start',
+                              textAlign: 'left',
+                              px: 1.5,
+                              py: 0.875,
+                              borderRadius: 1.5,
+                              fontSize: '0.875rem',
+                              fontWeight: current ? 600 : 400,
+                              color: current ? 'text.primary' : 'text.secondary',
+                              bgcolor: current ? 'action.selected' : 'transparent',
+                              '&:hover': { bgcolor: current ? 'action.selected' : 'action.hover', color: 'text.primary' },
+                              '&:focus-visible': { outline: 2, outlineColor: 'primary.main', outlineOffset: 1 },
+                            }}
+                          >
+                            {entry.label}
+                          </ButtonBase>
+                        </li>
+                      );
+                    })}
+                  </Box>
+                </Box>
+              ))}
             </Box>
 
-            <TabPanel value={activeTab} index="skins">
-              <Stack spacing={3}>
-                <SkinsCard />
-                <SkinsInventoryAdmin />
-              </Stack>
-            </TabPanel>
-
-            <TabPanel value={activeTab} index="experimental">
-              <ExperimentalCard />
-            </TabPanel>
-
-            <TabPanel value={activeTab} index="integrations">
+            <Paper sx={{ p: { xs: 2, md: 3 }, minWidth: 0 }}>
+            {active === 'general' && (
+              <SettingsPage pageKey="general">
               <Stack spacing={3}>
                 <SiteNameCard />
               </Stack>
-            </TabPanel>
-
-            {/* Sign-in providers: Steam, Discord, Google, GitHub, Twitch */}
-            <TabPanel value={activeTab} index="signin">
+              </SettingsPage>
+            )}
+            {active === 'signin' && (
+              <SettingsPage pageKey="signin">
               <SignInProvidersCard welcome={searchParams.get('welcome') === 'setup'} />
-            </TabPanel>
-
-            {/* Players & access control */}
-            <TabPanel value={activeTab} index="players">
+              </SettingsPage>
+            )}
+            {active === 'players' && (
+              <SettingsPage pageKey="players">
               <Stack spacing={3}>
                 <Box>
                   <Typography variant="h6" fontWeight={600} gutterBottom>
@@ -379,10 +383,10 @@ export default function Settings() {
                   </Typography>
                 </Box>
               </Stack>
-            </TabPanel>
-
-            {/* Rating rules: every game's completed matches update ratings */}
-            <TabPanel value={activeTab} index="matches">
+              </SettingsPage>
+            )}
+            {active === 'ratings' && (
+              <SettingsPage pageKey="ratings">
               <Stack spacing={3}>
                 <Accordion defaultExpanded sx={ACCORDION_SX}>
                   <AccordionSummary expandIcon={<CaretDownIcon />} sx={ACCORDION_SUMMARY_SX}>
@@ -415,32 +419,33 @@ export default function Settings() {
                   </AccordionDetails>
                 </Accordion>
               </Stack>
-            </TabPanel>
-
-            {/* The Auto Tournament license key: status only, never a lockout */}
-            <TabPanel value={activeTab} index="license">
-              <LicenseCard />
-            </TabPanel>
-
-            {/* Integrator webhooks (docs/WEBHOOKS.md) */}
-            <TabPanel value={activeTab} index="webhooks">
+              </SettingsPage>
+            )}
+            {active === 'webhooks' && (
+              <SettingsPage pageKey="webhooks">
               <WebhooksCard />
-            </TabPanel>
+              </SettingsPage>
+            )}
+            {active === 'license' && (
+              <SettingsPage pageKey="license">
+              <LicenseCard />
+              </SettingsPage>
+            )}
+            {active === 'experimental' && (
+              <SettingsPage pageKey="experimental">
+              <ExperimentalCard />
+              </SettingsPage>
+            )}
 
-            {/* Each installed module's own settings (CS2: webhook URL, map sync, server defaults) */}
-            {moduleSettings.map(({ id, Section }) => (
-              <TabPanel
-                key={id}
-                value={activeTab}
-                index={moduleTabKey(id)}
-                data-testid={`settings-module-${id}`}
-              >
-                <Section />
-              </TabPanel>
-            ))}
+            {/* The open module page (CS2: general, servers, skins, player inventories) */}
+            {activeModule && (
+              <SettingsPage pageKey={active} data-testid={`settings-module-${activeModule.id}`}>
+                <activeModule.Section page={activeModulePage} />
+              </SettingsPage>
+            )}
 
-            {isDev && (
-              <TabPanel value={activeTab} index="developer">
+            {isDev && active === 'developer' && (
+              <SettingsPage pageKey="developer">
                 <Stack spacing={3}>
                   <Box>
                     <Typography variant="h6" fontWeight={600} gutterBottom color="error">
@@ -462,9 +467,10 @@ export default function Settings() {
                     </Button>
                   </Box>
                 </Stack>
-              </TabPanel>
+              </SettingsPage>
             )}
-          </Paper>
+            </Paper>
+          </Box>
 
           <Box mt={2} display="flex" justifyContent="flex-end" alignItems="center">
             <Typography

@@ -28,7 +28,7 @@ import { api } from '../../utils/api';
 import { fontDisplay, textSize } from '../../theme/tokens';
 import { paths, playerProfilePath, tournamentTabPath } from '../../paths';
 import { useMatchmaking } from '../matchmaking/matchmakingStore';
-import { useSkinsEnabled } from '../../hooks/useSkins';
+import { useModuleAccountMenuItems } from '../../hooks/useModuleAccountMenuItems';
 import { soundNotification } from '../../utils/soundNotification';
 
 /** Top-bar text links: ink2 at rest, ink on hover and on the current page (the drafts' `.nav-links`). */
@@ -323,7 +323,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
 
   const { pathname } = location;
   const { available: matchmakingAvailable } = useMatchmaking();
-  const skinsEnabled = useSkinsEnabled();
+  const moduleMenuItems = useModuleAccountMenuItems(playerSteamId ?? null);
   const playLink: SiteLink[] = matchmakingAvailable
     ? [
         {
@@ -570,17 +570,18 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
               {t('nav.myProfile')}
             </MenuItem>
           )}
-          {playerSteamId && skinsEnabled && (
+          {moduleMenuItems.map((item) => (
             <MenuItem
+              key={`${item.moduleId}:${item.key}`}
               onClick={() => {
                 handleAvatarMenuClose();
-                navigate(paths.inventory);
+                navigate(item.path);
               }}
-              data-testid="nav-inventory"
+              data-testid={`nav-${item.key}`}
             >
-              {t('nav.inventory')}
+              {t(item.labelKey, { ns: item.moduleId })}
             </MenuItem>
-          )}
+          ))}
           {playerSteamId && (
             <MenuItem
               onClick={() => {

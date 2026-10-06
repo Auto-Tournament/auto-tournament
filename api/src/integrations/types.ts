@@ -999,6 +999,27 @@ export interface GameIntegration {
    */
   replayEvent?(event: unknown): Promise<void>;
 
+  // --- results -------------------------------------------------------------
+
+  /**
+   * A matchmaking match this game owns finished: the winners' and everyone
+   * else's Steam IDs (a draw has no winners), only those with a player
+   * record, and the map. CS2: virtual skin drops. Must not reject.
+   */
+  onMatchmakingResult?(ctx: { matchSlug: string; winners: string[]; others: string[]; map?: string }): Promise<void>;
+  /**
+   * An elimination tournament this game owns finished: its top three, each
+   * with the players who played for it (the lineup when the team signed up
+   * with one). CS2: tournament skin rewards. Must not reject.
+   */
+  onTournamentPlacements?(ctx: {
+    tournamentId: number;
+    tournamentName: string;
+    /** The tournament's settings object (CS2 reads `skinRewards`). */
+    settings: Record<string, unknown>;
+    placements: Array<{ place: 1 | 2 | 3; steamIds: string[] }>;
+  }): Promise<void>;
+
   // --- plumbing ------------------------------------------------------------
 
   /** Module routes, mounted at `/api/game/<id>`. */

@@ -15,10 +15,10 @@
  */
 
 import { Router, type Request, type Response } from 'express';
-import { requireAuth } from '../middleware/auth';
-import { log } from '../utils/logger';
-import { resolveViewerAccount } from '../utils/viewerIdentity';
-import { SKIN_IMAGES_BASE, SkinError, skinService, variantOf, type SkinsConfig } from '../services/skinService';
+import { requireAuth } from '../../../middleware/auth';
+import { log } from '../../../utils/logger';
+import { resolveViewerAccount } from '../../../utils/viewerIdentity';
+import { SKIN_IMAGES_BASE, SkinError, skinService, variantOf, type SkinsConfig } from './skinService';
 
 const router = Router();
 

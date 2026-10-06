@@ -1,8 +1,10 @@
 /**
- * CS2's tab on the Settings page (slot `instanceSettings`, client API 0.2.2):
- * the webhook URL its servers call back on, the map sync (also in the Maps
- * page header, ../maps/useMapSync), and the defaults
- * sent to every server with a match (`Cs2ServerDefaults`).
+ * CS2's group on the Settings page (slot `instanceSettings`, client API 0.2.2;
+ * pages since 0.2.10): General, the webhook URL its servers call back on and
+ * the map sync (also in the Maps page header, ../maps/useMapSync); Servers,
+ * the defaults sent to every server with a match (`Cs2ServerDefaults`);
+ * Skins, the virtual skin rewards; Player inventories, giving and taking
+ * skins.
  *
  * Both were the first thing on core's Settings page until the module split
  * (audit chunk 9). The API is unchanged: the webhook URL is still the
@@ -28,8 +30,18 @@ import type { InstanceSettingsSectionProps } from '../../types';
 import type { WebhookSettings, WebhookSettingsResponse } from '../cs2.types';
 import { useMapSync } from '../maps/useMapSync';
 import { Cs2ServerDefaults } from './Cs2ServerDefaults';
+import { SkinsSettings } from '../skins/SkinsSettings';
+import { SkinsInventoryAdmin } from '../skins/SkinsInventoryAdmin';
 
-export const Cs2SettingsSection: React.FC<InstanceSettingsSectionProps> = () => {
+/** CS2's settings pages, in nav order (`instanceSettings.pages`). */
+export const CS2_SETTINGS_PAGES = [
+  { key: 'general', labelKey: 'settings.pages.general' },
+  { key: 'servers', labelKey: 'settings.pages.servers' },
+  { key: 'skins', labelKey: 'settings.pages.skins' },
+  { key: 'inventories', labelKey: 'settings.pages.inventories' },
+];
+
+export const Cs2SettingsSection: React.FC<InstanceSettingsSectionProps> = ({ page = 'general' }) => {
   const { t } = useModuleTranslation('cs2');
   const { showSuccess, showError } = useSnackbar();
   const [loading, setLoading] = useState(true);
@@ -101,8 +113,21 @@ export const Cs2SettingsSection: React.FC<InstanceSettingsSectionProps> = () => 
     };
   }, [loading, webhookUrl, savedWebhookUrl, save]);
 
+  // The skin pages load their own data.
+  if (page === 'skins') return <SkinsSettings />;
+  if (page === 'inventories') return <SkinsInventoryAdmin />;
+
   if (loading) {
     return <LinearProgress />;
+  }
+
+  // The defaults sent to every server with a match.
+  if (page === 'servers') {
+    return (
+      <Stack spacing={3} data-testid="cs2-settings">
+        <Cs2ServerDefaults initial={initialSettings} />
+      </Stack>
+    );
   }
 
   return (
@@ -154,10 +179,6 @@ export const Cs2SettingsSection: React.FC<InstanceSettingsSectionProps> = () => 
           {syncingMaps ? t('settings.mapSync.buttonSyncing') : t('settings.mapSync.buttonIdle')}
         </Button>
       </Box>
-
-      <Divider />
-
-      <Cs2ServerDefaults initial={initialSettings} />
     </Stack>
   );
 };

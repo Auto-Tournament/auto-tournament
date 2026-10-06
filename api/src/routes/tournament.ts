@@ -594,9 +594,6 @@ function validateEventPageSettings(settings: unknown): { valid: true } | { valid
   const s = settings as Record<string, unknown>;
 
   // Sign-up and check-in (tournament sign-up): a switch, a team cap and three times.
-  if (s.skinRewards !== undefined && typeof s.skinRewards !== 'boolean') {
-    return { valid: false, error: 'settings.skinRewards must be true or false' };
-  }
   if (s.registrationOpen !== undefined && typeof s.registrationOpen !== 'boolean') {
     return { valid: false, error: 'settings.registrationOpen must be true or false' };
   }

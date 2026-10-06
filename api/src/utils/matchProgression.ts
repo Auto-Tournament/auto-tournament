@@ -360,13 +360,15 @@ export async function propagateMatchBySlotSources(matchId: number): Promise<void
 /**
  * The teams placed 1st, 2nd and 3rd of a finished elimination tournament, each
  * with its players (the lineup when the team signed up with one), handed to
- * the skin rewards.
+ * the game's module (CS2: skin rewards).
  */
-async function awardTournamentSkins(tournamentId: number, tournament: DbTournamentRow): Promise<void> {
+async function reportTournamentPlacements(tournamentId: number, tournament: DbTournamentRow): Promise<void> {
   if (tournament.type !== 'single_elimination' && tournament.type !== 'double_elimination') return;
+  const onPlacements = integrationForMatch(tournament).onTournamentPlacements;
+  if (!onPlacements) return;
   const settings = (() => {
     try {
-      return JSON.parse(tournament.settings ?? '{}') as { skinRewards?: boolean };
+      return JSON.parse(tournament.settings ?? '{}') as Record<string, unknown>;
     } catch {
       return {};
     }
@@ -399,8 +401,7 @@ async function awardTournamentSkins(tournamentId: number, tournament: DbTourname
     }>;
     placements.push({ place, steamIds: roster.map((p) => (p.steamId ?? p.steamid) as string).filter(Boolean) });
   }
-  const { skinService } = await import('../services/skinService');
-  await skinService.awardTournament(tournamentId, tournament.name, placements, settings.skinRewards === false);
+  await onPlacements({ tournamentId, tournamentName: tournament.name, settings, placements });
 }
 
 export async function checkTournamentCompletion(tournamentId: number): Promise<void> {
@@ -512,8 +513,8 @@ export async function checkTournamentCompletion(tournamentId: number): Promise<v
       emitBracketUpdate({ action: 'tournament_completed' });
 
       // Virtual skin rewards for the top three (off unless skins are on).
-      await awardTournamentSkins(tournamentId, tournament).catch((error) =>
-        log.warn('[TOURNAMENT] Skin rewards failed', { tournamentId, error: (error as Error).message })
+      await reportTournamentPlacements(tournamentId, tournament).catch((error) =>
+        log.warn('[TOURNAMENT] The game module failed on the placements', { tournamentId, error: (error as Error).message })
       );
     } else {
       log.debug(`[TOURNAMENT] Tournament ${tournamentId} not complete yet:`, {

@@ -15,7 +15,7 @@
 
 import { db } from '../../../../config/database';
 import { log } from '../../../../utils/logger';
-import { skinService } from '../../../../services/skinService';
+import { skinService } from '../../skins/skinService';
 import { sendReliable } from '../reliable';
 import { getLiveState } from '../state';
 import type { SkinsLoadoutPayload } from '../protocol/v1';

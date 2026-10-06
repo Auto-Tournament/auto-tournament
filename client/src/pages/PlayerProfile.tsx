@@ -27,7 +27,6 @@ import { ProfileHeader } from '../components/player/profile/ProfileHeader';
 import { PlayerProgress } from '../components/matchmaking/PlayerProgress';
 import { GameSwitch } from '../components/player/profile/GameSwitch';
 import { FactGrid, Panel, SectionHead, type Fact } from '../components/common/ui';
-import { ProfileLoadout } from '../components/skins/ProfileLoadout';
 import { useGameCapabilities } from '../hooks/useGameCapabilities';
 import { RatingChart } from '../components/player/profile/RatingChart';
 import { RecentMatches, type RecentMatchEntry } from '../components/player/profile/RecentMatches';
@@ -47,6 +46,7 @@ import type {
 import { textSize, tokens } from '../theme/tokens';
 import { paths } from '../paths';
 import { pageTitle } from '../utils/pageTitle';
+import { useInstalledIntegrations } from '../integrations/registry';
 
 interface RatingHistoryEntry {
   /** Stable per row: the slug, or the row's position for a deleted match. */
@@ -253,6 +253,7 @@ export default function PlayerProfile() {
   };
 
   const { steamId } = useParams<{ steamId: string }>();
+  const installedIntegrations = useInstalledIntegrations();
   const [player, setPlayer] = useState<PlayerDetail | null>(null);
   const [ratingHistory, setRatingHistory] = useState<RatingHistoryEntry[]>([]);
   const [matchHistory, setMatchHistory] = useState<MatchHistoryEntry[]>([]);
@@ -814,6 +815,9 @@ export default function PlayerProfile() {
   // played: someone with no matches has no part in those totals.
   const TournamentStatsView = gameIntegration.tournamentStatsView;
   const PlayerProfileView = gameIntegration.playerProfileView;
+  const profileSections = installedIntegrations.flatMap((integration) =>
+    integration.playerProfileSection ? [{ id: integration.id, Section: integration.playerProfileSection }] : []
+  );
   const hasAnyMatches = uniqueMatchHistory.length > 0;
 
   // --- Stats for the selected game, across the whole site ------------------
@@ -1067,8 +1071,10 @@ export default function PlayerProfile() {
           {/* The game's own numbers (CS2: aim, utility, map strength). */}
           {PlayerProfileView && showGameStats && hasAnyMatches && <PlayerProfileView playerId={player.id} />}
 
-          {/* Virtual skins: the loadout showcase (only while skins are on). */}
-          <ProfileLoadout steamId={player.id} isOwn={playerSteamId === player.id} />
+          {/* Installed modules' own sections (CS2: the skin loadout, while skins are on). */}
+          {profileSections.map(({ id, Section }) => (
+            <Section key={id} playerId={player.id} isOwn={playerSteamId === player.id} />
+          ))}
 
           <Box
             sx={{

@@ -29,12 +29,13 @@ test.describe.serial('Settings UI', () => {
       await expect(page).toHaveTitle(/Settings/i);
       await page.waitForLoadState('networkidle');
 
-      // The webhook URL is CS2's (its own Settings tab since client API 0.2.2),
+      // The webhook URL is CS2's (its own Settings group since client API 0.2.2),
       // and the suite runs with CS2 installed.
-      await page.getByTestId('settings-tab-module-cs2').click({ timeout: 15000 });
+      await page.getByTestId('settings-nav-cs2-general').click({ timeout: 15000 });
       await expect(page.getByTestId('settings-webhook-url-input')).toBeVisible({ timeout: 15000 });
 
-      // CS2's server defaults and their reset are on the same tab (0.2.4).
+      // CS2's server defaults and their reset are its Servers page (0.2.10).
+      await page.getByTestId('settings-nav-cs2-servers').click();
       await expect(page.getByTestId('cs2-server-defaults')).toBeVisible();
       await expect(page.getByTestId('cs2-settings-reset-button')).toBeVisible();
 
@@ -103,7 +104,7 @@ test.describe.serial('Settings UI', () => {
       // A field the tab does not touch, to prove its saves are partial.
       const before = await readSettings();
 
-      await page.goto('/settings?section=cs2');
+      await page.goto('/settings?section=cs2:servers');
       await page.getByTestId('cs2-settings-demos-summary').click({ timeout: 30000 });
       const hostname = page.getByTestId('at-hostname-format-input');
       await expect(hostname).toBeVisible({ timeout: 15000 });

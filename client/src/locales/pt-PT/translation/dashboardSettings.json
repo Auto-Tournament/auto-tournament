@@ -3,10 +3,10 @@
     "title": "Definições",
     "intro": "Configura integrações, predefinições no jogo e opções de desenvolvimento.",
     "tabs": {
-      "integrations": "Integrações e webhooks",
+      "general": "General",
       "signIn": "Sign-in",
       "players": "Jogadores e acesso",
-      "matches": "Jogos e rating",
+      "ratings": "Jogos e rating",
       "developer": "Programador / simulação",
       "license": "License",
       "webhooks": "Webhooks",
@@ -175,7 +175,11 @@
           }
         }
       }
-    }
+    },
+    "groups": {
+      "platform": "Platform"
+    },
+    "navLabel": "Settings pages"
   },
   "dashboard": {
     "title": "Admin",

@@ -103,10 +103,10 @@
     "title": "设置",
     "intro": "配置核心集成、游戏内默认值以及开发者选项。",
     "tabs": {
-      "integrations": "集成与 Webhook",
+      "general": "General",
       "signIn": "Sign-in",
       "players": "选手与访问控制",
-      "matches": "比赛与评分",
+      "ratings": "比赛与评分",
       "developer": "开发者 / 模拟",
       "license": "License",
       "webhooks": "Webhook",
@@ -275,7 +275,11 @@
           }
         }
       }
-    }
+    },
+    "groups": {
+      "platform": "Platform"
+    },
+    "navLabel": "Settings pages"
   },
   "managePage": {
     "title": "Manage",
