@@ -290,7 +290,8 @@
     "actions": {
       "signUp": "Sign up",
       "watch": "Watch",
-      "results": "Results"
+      "results": "Results",
+      "youreIn": "Je doet mee"
     },
     "emptyNone": {
       "title": "No tournaments yet",
@@ -308,7 +309,21 @@
       "finished": "Finished"
     },
     "showOlder_one": "Show {{count}} older",
-    "showOlder_other": "Show {{count}} older"
+    "showOlder_other": "Show {{count}} older",
+    "mine": {
+      "label": "Welke toernooien",
+      "all": "Alle",
+      "mine": "Mijn"
+    },
+    "roundN": "Ronde {{n}}",
+    "entries": {
+      "teams_one": "{{count}} team",
+      "teams_other": "{{count}} teams",
+      "teamsOf": "{{count}} / {{max}} teams",
+      "players_one": "{{count}} speler",
+      "players_other": "{{count}} spelers",
+      "playersOf": "{{count}} / {{max}} spelers"
+    }
   },
   "modulesPage": {
     "title": "Modules",

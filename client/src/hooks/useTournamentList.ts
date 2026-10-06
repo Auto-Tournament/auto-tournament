@@ -43,6 +43,10 @@ export interface TournamentSummary {
   /** Teams signed up (players for a shuffle), against the cap when there is one. */
   entries?: number;
   maxEntries?: number | null;
+  /** While it runs: the lowest round not finished (its stage). */
+  currentRound?: number | null;
+  /** The viewer plays in it. */
+  mine?: boolean;
 }
 
 /** A tournament as `GET /api/tournaments` lists it. */
@@ -65,6 +69,10 @@ interface ListedTournament {
   featured: boolean;
   archived: boolean;
   draft: boolean;
+  currentRound?: number | null;
+  liveMatchCount?: number;
+  teamSize?: number | null;
+  mine?: boolean;
 }
 
 function fromListed(t: ListedTournament): TournamentSummary {
@@ -87,6 +95,10 @@ function fromListed(t: ListedTournament): TournamentSummary {
     registrationOpen: t.registrationOpen,
     entries: t.entries,
     maxEntries: t.maxEntries,
+    currentRound: t.currentRound ?? null,
+    liveMatchCount: t.liveMatchCount,
+    teamSize: t.teamSize ?? undefined,
+    mine: t.mine === true,
   };
 }
 

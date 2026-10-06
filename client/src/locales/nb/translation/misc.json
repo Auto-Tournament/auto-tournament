@@ -287,7 +287,8 @@
     "actions": {
       "signUp": "Meld på",
       "watch": "Se",
-      "results": "Resultater"
+      "results": "Resultater",
+      "youreIn": "Du er med"
     },
     "status": {
       "live": "Live"
@@ -308,7 +309,21 @@
       "finished": "Ferdige"
     },
     "showOlder_one": "Vis {{count}} eldre",
-    "showOlder_other": "Vis {{count}} eldre"
+    "showOlder_other": "Vis {{count}} eldre",
+    "mine": {
+      "label": "Hvilke turneringer",
+      "all": "Alle",
+      "mine": "Mine"
+    },
+    "roundN": "Runde {{n}}",
+    "entries": {
+      "teams_one": "{{count}} lag",
+      "teams_other": "{{count}} lag",
+      "teamsOf": "{{count}} / {{max}} lag",
+      "players_one": "{{count}} spiller",
+      "players_other": "{{count}} spillere",
+      "playersOf": "{{count}} / {{max}} spillere"
+    }
   },
   "modulesPage": {
     "title": "Moduler",

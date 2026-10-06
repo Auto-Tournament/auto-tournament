@@ -23,6 +23,10 @@ export interface TournamentListItem {
   featured: boolean;
   archived: boolean;
   draft: boolean;
+  /** While it runs: the lowest round not finished (its stage). */
+  currentRound?: number | null;
+  /** Players per team, when set. */
+  teamSize?: number | null;
 }
 
 interface AdminTournamentState {

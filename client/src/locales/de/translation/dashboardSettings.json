@@ -532,7 +532,8 @@
       "featured": "Featured",
       "shown": "Shown",
       "hidden": "Hidden",
-      "archived": "Archived"
+      "archived": "Archived",
+      "results": "Ergebnisse"
     },
     "won": "{{name}} won",
     "selected": "selected",
@@ -558,7 +559,16 @@
     "blankHint": "Pick the game, format and maps in the setup",
     "copy": "Copy {{name}}",
     "copyHint": "Same format, maps, rules and page. Teams and dates start empty.",
-    "create": "Create and set up"
+    "create": "Create and set up",
+    "round": "Runde {{n}}",
+    "whenToday": "Heute, ab {{time}}",
+    "whenTomorrow": "Morgen, {{time}}",
+    "notSet": "Nicht gesetzt",
+    "emptyTitle": "Noch keine Turniere",
+    "template": "Eine Vorlage",
+    "templateHint": "Ein gespeichertes Setup: Format, Maps und Regeln. Teams und Termine wählst du.",
+    "copyOne": "Ein Turnier kopieren",
+    "copyWhich": "Welches"
   },
   "playedMatches": {
     "title": "All matches",

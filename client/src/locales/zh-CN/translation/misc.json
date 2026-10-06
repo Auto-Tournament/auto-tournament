@@ -290,7 +290,8 @@
     "actions": {
       "signUp": "Sign up",
       "watch": "Watch",
-      "results": "Results"
+      "results": "Results",
+      "youreIn": "你已报名"
     },
     "emptyNone": {
       "title": "No tournaments yet",
@@ -308,7 +309,21 @@
       "finished": "Finished"
     },
     "showOlder_one": "Show {{count}} older",
-    "showOlder_other": "Show {{count}} older"
+    "showOlder_other": "Show {{count}} older",
+    "mine": {
+      "label": "哪些比赛",
+      "all": "全部",
+      "mine": "我的"
+    },
+    "roundN": "第 {{n}} 轮",
+    "entries": {
+      "teams_one": "{{count}} 支队伍",
+      "teams_other": "{{count}} 支队伍",
+      "teamsOf": "{{count}} / {{max}} 支队伍",
+      "players_one": "{{count}} 名玩家",
+      "players_other": "{{count}} 名玩家",
+      "playersOf": "{{count}} / {{max}} 名玩家"
+    }
   },
   "modulesPage": {
     "title": "Modules",

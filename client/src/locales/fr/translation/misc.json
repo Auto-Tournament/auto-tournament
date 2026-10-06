@@ -290,7 +290,8 @@
     "actions": {
       "signUp": "Sign up",
       "watch": "Watch",
-      "results": "Results"
+      "results": "Results",
+      "youreIn": "Vous y êtes"
     },
     "emptyNone": {
       "title": "No tournaments yet",
@@ -308,7 +309,21 @@
       "finished": "Finished"
     },
     "showOlder_one": "Show {{count}} older",
-    "showOlder_other": "Show {{count}} older"
+    "showOlder_other": "Show {{count}} older",
+    "mine": {
+      "label": "Quels tournois",
+      "all": "Tous",
+      "mine": "Les miens"
+    },
+    "roundN": "Tour {{n}}",
+    "entries": {
+      "teams_one": "{{count}} équipe",
+      "teams_other": "{{count}} équipes",
+      "teamsOf": "{{count}} / {{max}} équipes",
+      "players_one": "{{count}} joueur",
+      "players_other": "{{count}} joueurs",
+      "playersOf": "{{count}} / {{max}} joueurs"
+    }
   },
   "modulesPage": {
     "title": "Modules",
