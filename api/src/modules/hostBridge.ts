@@ -29,6 +29,7 @@ import * as matchMapResultService from '../services/matchMapResultService';
 import * as matchTerminationService from '../services/matchTerminationService';
 import * as playerConnectionService from '../services/playerConnectionService';
 import * as settingsService from '../services/settingsService';
+import * as skinService from '../services/skinService';
 import * as tournamentSignupService from '../services/tournamentSignupService';
 import * as socketService from '../services/socketService';
 import * as adminSteamIds from '../utils/adminSteamIds';
@@ -66,6 +67,7 @@ const MODULES: Record<string, object> = {
   'services/matchTerminationService': matchTerminationService,
   'services/playerConnectionService': playerConnectionService,
   'services/settingsService': settingsService,
+  'services/skinService': skinService,
   'services/tournamentSignupService': tournamentSignupService,
   'services/socketService': socketService,
   'types/adminCall.types': adminCallTypes,

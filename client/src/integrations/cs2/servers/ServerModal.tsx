@@ -54,6 +54,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
   const [password, setPassword] = useState('');
   const [enabled, setEnabled] = useState(true);
   const [tournamentUse, setTournamentUse] = useState(true);
+  const [skins, setSkins] = useState(false);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [checking, setChecking] = useState(false);
@@ -71,6 +72,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
       setPassword(server.password);
       setEnabled(server.enabled);
       setTournamentUse(server.tournamentUse !== false);
+      setSkins(server.skins === true);
     } else {
       resetForm();
     }
@@ -164,6 +166,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
         password: password.trim(),
         enabled,
         tournamentUse,
+        skins,
         atConfig: null,
       };
 
@@ -176,6 +179,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
           password: payload.password,
           enabled: payload.enabled,
           tournamentUse: payload.tournamentUse,
+          skins: payload.skins,
           atConfig: payload.atConfig,
         });
         console.log('Server updated successfully');
@@ -428,6 +432,32 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
                 </Box>
               }
             />
+
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={skins}
+                  onChange={(e) => setSkins(e.target.checked)}
+                  inputProps={{ 'aria-label': t('serverModal.skinsLabel') }}
+                  data-testid="server-skins"
+                />
+              }
+              label={
+                <Box>
+                  <Typography variant="body2" fontWeight={500}>
+                    {t('serverModal.skinsLabel')}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {t('serverModal.skinsHelper')}
+                  </Typography>
+                </Box>
+              }
+            />
+            {skins && server?.steamToken === true && (
+              <Alert severity="warning" data-testid="server-skins-token-warning">
+                {t('serverModal.skinsTokenWarning')}
+              </Alert>
+            )}
           </Box>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>

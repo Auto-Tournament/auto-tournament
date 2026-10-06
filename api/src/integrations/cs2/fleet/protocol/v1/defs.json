@@ -47,6 +47,10 @@
         "game_port": { "$ref": "#/$defs/port" },
         "tv_port": { "$ref": "#/$defs/port" },
         "public_addr": { "type": "string", "maxLength": 255 },
+        "steam_token": {
+          "type": "boolean",
+          "description": "The server logs in with a Valve game server login token (+sv_setsteamaccount). The platform keeps skins off on such a server."
+        },
         "status_port": { "$ref": "#/$defs/port" }
       }
     }

@@ -59,6 +59,8 @@ export interface HostInfo {
   game_port: number;
   tv_port?: number;
   public_addr?: string;
+  /** The server logs in with a Valve game server token (+sv_setsteamaccount): no skins there. */
+  steam_token?: boolean;
   status_port?: number;
 }
 

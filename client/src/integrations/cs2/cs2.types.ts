@@ -31,6 +31,10 @@ export interface Server {
   enabled: boolean;
   /** False: a practice/community server that tournament matches never go to. */
   tournamentUse?: boolean;
+  /** The platform's virtual skins go to this server. */
+  skins?: boolean;
+  /** Fleet servers: it runs with a Valve game server token (skins stay off). */
+  steamToken?: boolean | null;
   createdAt: number;
   updatedAt: number;
   rconPassword?: string;

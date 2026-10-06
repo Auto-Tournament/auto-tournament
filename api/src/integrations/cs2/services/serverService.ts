@@ -19,7 +19,26 @@ export class ServerService {
       ? await db.getAllAsync<Server>('cs2_servers', 'enabled = ?', [1])
       : await db.getAllAsync<Server>('cs2_servers');
 
-    return servers.map(this.toResponse);
+    return this.withSteamToken(servers.map(this.toResponse));
+  }
+
+  /** Fleet servers: whether their last hello reported a Valve game server token. */
+  private async withSteamToken(list: ServerResponse[]): Promise<ServerResponse[]> {
+    const ids = list.map((s) => s.fleetServerId).filter((id): id is string => Boolean(id));
+    if (!ids.length) return list;
+    const rows = await db
+      .queryAsync<{ id: string; host: string | null }>('SELECT id, host FROM cs2_fleet_servers WHERE id = ANY(?::text[])', [ids])
+      .catch(() => []);
+    const token = new Map(
+      rows.map((r) => {
+        try {
+          return [r.id, (JSON.parse(r.host ?? '{}') as { steam_token?: boolean }).steam_token ?? null] as const;
+        } catch {
+          return [r.id, null] as const;
+        }
+      })
+    );
+    return list.map((s) => (s.fleetServerId ? { ...s, steamToken: token.get(s.fleetServerId) ?? null } : s));
   }
 
   /**
@@ -37,7 +56,7 @@ export class ServerService {
    */
   async getServerById(id: string): Promise<ServerResponse | null> {
     const server = await db.getOneAsync<Server>('cs2_servers', 'id = ?', [id]);
-    return server ? this.toResponse(server) : null;
+    return server ? (await this.withSteamToken([this.toResponse(server)]))[0] : null;
   }
 
   /**
@@ -100,6 +119,7 @@ export class ServerService {
       password: input.password,
       enabled: input.enabled !== undefined ? (input.enabled ? 1 : 0) : 1,
       tournament_use: input.tournamentUse === false ? 0 : 1,
+      skins: input.skins === true ? 1 : 0,
       at_config: atConfig,
     });
 
@@ -156,6 +176,7 @@ export class ServerService {
     if (input.password !== undefined) updateData.password = input.password;
     if (input.enabled !== undefined) updateData.enabled = input.enabled ? 1 : 0;
     if (input.tournamentUse !== undefined) updateData.tournament_use = input.tournamentUse ? 1 : 0;
+    if (input.skins !== undefined) updateData.skins = input.skins ? 1 : 0;
 
     if (input.atConfig !== undefined) {
       const hasKeys =
@@ -282,6 +303,7 @@ export class ServerService {
       password: server.password,
       enabled: server.enabled === 1,
       tournamentUse: server.tournament_use !== 0,
+      skins: server.skins === 1,
       atConfig,
       created_at: server.created_at,
       updated_at: server.updated_at,
