@@ -20,6 +20,7 @@ import { resolveViewerIdentity } from '../../../utils/viewerIdentity';
 import { requireAuth } from '../../../middleware/auth';
 import { tournamentRowToResponse } from '../../../utils/tournamentRow';
 import { mapService } from '../maps/mapService';
+import { vetoTurnDeadline } from './timer';
 import { postVetoProgress } from './chatLines';
 
 const router = Router();
@@ -292,6 +293,13 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
 
     // A player on both teams cannot represent either side, so they see the same
     // redacted view as a spectator. The /action endpoint explains why.
+    // The current turn's time limit (./timer.ts), for both views.
+    const turnClock = vetoState.status === 'completed' ? null : await vetoTurnDeadline(matchSlug, match.veto_state);
+    if (turnClock) {
+      vetoState.turnDeadline = turnClock.deadline;
+      vetoState.turnSeconds = turnClock.seconds;
+    }
+
     if (!viewerTeam || viewerTeam === 'both') {
       const publicVeto = {
         matchSlug: vetoState.matchSlug,
@@ -299,6 +307,9 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
         status: vetoState.status,
         team1Name: vetoState.team1Name,
         team2Name: vetoState.team2Name,
+        currentTurn: vetoState.status === 'completed' ? undefined : vetoState.currentTurn,
+        turnDeadline: vetoState.turnDeadline,
+        turnSeconds: vetoState.turnSeconds,
         pickedMaps: Array.isArray(vetoState.pickedMaps)
           ? vetoState.pickedMaps.map((p: { mapNumber?: number; mapName: string }) => ({
               mapNumber: p.mapNumber,

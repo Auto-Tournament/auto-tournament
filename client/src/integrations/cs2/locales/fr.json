@@ -395,6 +395,14 @@
       "map": "Map {{number}}",
       "pickedBy": "picked by {{team}}",
       "out": "Out:"
+    },
+    "timeUp": "Temps écoulé",
+    "yourTurnClock": "À vous",
+    "theirTurnClock": "À eux",
+    "strip": {
+      "you": "vous",
+      "them": "eux",
+      "timedOut": "temps écoulé"
     }
   },
   "matchInfo": {
@@ -1109,6 +1117,10 @@
       "servers": "Servers",
       "skins": "Skins",
       "inventories": "Player inventories"
+    },
+    "vetoTurn": {
+      "label": "Secondes par étape de veto",
+      "helper": "Si une équipe n’a plus de temps, la plateforme bannit ou choisit une carte au hasard. 0 = sans limite."
     }
   },
   "roster": {

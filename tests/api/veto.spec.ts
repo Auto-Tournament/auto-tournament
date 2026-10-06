@@ -278,6 +278,51 @@ test.describe.serial('Veto API', () => {
     await stopImpersonating(request);
   });
 
+  test('a team that runs out of time has its step taken for it, and the next turn gets a clock', {
+    tag: ['@api', '@veto', '@timer'],
+  }, async ({ request }) => {
+    const tournament = await createAndStartTournament(request, {
+      name: `Veto Timer Test ${Date.now()}`,
+      type: 'single_elimination',
+      format: 'bo1',
+      maps,
+      teamIds: [team1Id, team2Id],
+    });
+    expect(tournament).toBeTruthy();
+    const match = await findMatchByTeams(request, team1Id, team2Id);
+    expect(match).toBeTruthy();
+
+    const set = await request.put('/api/settings', { data: { vetoTurnSeconds: 2 } });
+    expect(set.ok(), await set.text()).toBe(true);
+    try {
+      // The opening turn has a deadline before anyone acts.
+      await expect
+        .poll(async () => (await getVetoState(request, match!.slug, actingSteamIdFor(team1))).turnDeadline ?? null, {
+          message: 'the first turn to get a deadline',
+          timeout: 15000,
+        })
+        .not.toBeNull();
+      const opening = await getVetoState(request, match!.slug, actingSteamIdFor(team1));
+      expect(opening.turnSeconds).toBe(2);
+
+      // Nobody acts: the platform bans for team1, marked as out of time.
+      await expect
+        .poll(
+          async () => {
+            const veto = await getVetoState(request, match!.slug, actingSteamIdFor(team1));
+            return (veto.actions ?? []).length;
+          },
+          { message: 'the timer to take a step', timeout: 20000 }
+        )
+        .toBeGreaterThan(0);
+      const after = await getVetoState(request, match!.slug, actingSteamIdFor(team1));
+      expect(after.actions[0]).toMatchObject({ team: 'team1', action: 'ban', timedOut: true });
+      expect(after.turnDeadline).toBeTruthy();
+    } finally {
+      await request.put('/api/settings', { data: { vetoTurnSeconds: null } });
+    }
+  });
+
   test('should validate and reject invalid custom veto orders', {
     tag: ['@api', '@veto', '@custom'],
   }, async ({ request }) => {

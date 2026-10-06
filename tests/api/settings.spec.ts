@@ -1241,6 +1241,8 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   { key: 'at_join_password', field: 'atJoinPassword' },
   // Auto-start after N minutes in warmup (fleet/autoStart.ts).
   { key: 'at_autostart_after_minutes', field: 'atAutostartAfterMinutes' },
+  // Seconds per veto step before the platform takes it (veto/timer.ts).
+  { key: 'at_veto_turn_seconds', field: 'vetoTurnSeconds' },
 ];
 
 // --- tests -------------------------------------------------------------------

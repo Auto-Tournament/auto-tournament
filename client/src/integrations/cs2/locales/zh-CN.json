@@ -395,6 +395,14 @@
       "map": "Map {{number}}",
       "pickedBy": "picked by {{team}}",
       "out": "Out:"
+    },
+    "timeUp": "时间到",
+    "yourTurnClock": "轮到你们",
+    "theirTurnClock": "轮到对方",
+    "strip": {
+      "you": "你们",
+      "them": "对方",
+      "timedOut": "超时"
     }
   },
   "matchInfo": {
@@ -1109,6 +1117,10 @@
       "servers": "Servers",
       "skins": "Skins",
       "inventories": "Player inventories"
+    },
+    "vetoTurn": {
+      "label": "每个禁选步骤的秒数",
+      "helper": "队伍超时后，平台会为其随机禁用或选择一张地图。0 = 不限时。"
     }
   },
   "roster": {
