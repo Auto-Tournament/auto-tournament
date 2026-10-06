@@ -317,6 +317,6 @@ export async function trackPlayerStatsForManualMatch(
       result,
     });
   } catch (error) {
-    log.error('Error tracking player stats for manual match', { error, matchSlug });
+    log.error('Error tracking player stats for manual match', { error: (error as Error).message, matchSlug });
   }
 }

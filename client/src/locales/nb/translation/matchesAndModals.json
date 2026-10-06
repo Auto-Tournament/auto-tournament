@@ -199,7 +199,8 @@
       "openPlayerPage": "Åpne spillersiden",
       "ready": "KLAR",
       "connected": "TILKOBLET",
-      "offline": "FRAKOBLET"
+      "offline": "FRAKOBLET",
+      "bot": "BOT"
     },
     "decision": {
       "body": "Every map has been played but the series is level on maps, rounds and damage. Choose the winner to advance the bracket.",

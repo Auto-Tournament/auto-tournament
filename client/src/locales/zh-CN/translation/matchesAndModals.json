@@ -95,7 +95,8 @@
       "openPlayerPage": "打开玩家页面",
       "ready": "已准备",
       "connected": "已连接",
-      "offline": "未连接"
+      "offline": "未连接",
+      "bot": "BOT"
     },
     "decision": {
       "body": "Every map has been played but the series is level on maps, rounds and damage. Choose the winner to advance the bracket.",

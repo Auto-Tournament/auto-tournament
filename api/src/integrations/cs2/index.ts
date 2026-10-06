@@ -563,12 +563,21 @@ export const cs2Integration: GameIntegration = {
     } catch {
       return null;
     }
-    const cfg = parsed as {
-      team1?: { players?: Array<{ steamid?: string }> };
-      team2?: { players?: Array<{ steamid?: string }> };
+    const cfg = parsed as { team1?: { players?: unknown }; team2?: { players?: unknown } };
+    // A roster is a list of `{ steamid }` (matchmaking, the platform's own
+    // configs) or MatchZy's `{ "<steamid>": "<name>" }` (a match made by hand
+    // or from a template). The second used to throw here, so a finished
+    // standalone match wrote no player stats and never showed in anyone's
+    // recent matches (NTLAN test, Vikunja 1831).
+    const steamIds = (players: unknown): string[] => {
+      if (Array.isArray(players)) {
+        return players
+          .map((p) => (p && typeof p === 'object' ? ((p as { steamid?: string; steamId?: string }).steamid ?? (p as { steamId?: string }).steamId) : null))
+          .filter((p): p is string => typeof p === 'string' && p !== '');
+      }
+      if (players && typeof players === 'object') return Object.keys(players).filter((id) => /^\d+$/.test(id));
+      return [];
     };
-    const steamIds = (players: Array<{ steamid?: string }> | undefined): string[] =>
-      players?.map((p) => (p.steamid ? p.steamid : null)).filter((p): p is string => !!p) ?? [];
     return { team1: steamIds(cfg.team1?.players), team2: steamIds(cfg.team2?.players) };
   },
 

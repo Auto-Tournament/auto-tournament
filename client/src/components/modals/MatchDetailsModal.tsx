@@ -921,6 +921,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                         team1Players={match.config?.team1?.players || []}
                         team2Players={match.config?.team2?.players || []}
                         connectedPlayers={connectionStatus?.connectedPlayers || []}
+                        simulation={match.config?.simulation === true}
                       />
                     </AccordionDetails>
                   </Accordion>
