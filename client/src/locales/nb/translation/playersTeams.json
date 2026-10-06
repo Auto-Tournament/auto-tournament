@@ -342,7 +342,8 @@
     },
     "demos": {
       "title": "Kartdemoer",
-      "download": "Last ned demo for {{map}}"
+      "download": "Last ned demo for {{map}}",
+      "recording": "Tar opp {{map}}…"
     },
     "spectator": {
       "maps_one": "{{count}} kart vunnet",

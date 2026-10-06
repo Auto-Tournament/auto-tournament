@@ -294,7 +294,8 @@
     },
     "demos": {
       "title": "Démos des cartes",
-      "download": "Télécharger la démo de {{map}}"
+      "download": "Télécharger la démo de {{map}}",
+      "recording": "Enregistrement de {{map}}…"
     },
     "spectator": {
       "maps_one": "{{count}} map won",

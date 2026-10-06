@@ -8,12 +8,15 @@ interface MapDemoDownloadsProps {
   maps: string[];
   mapResults: MatchMapResult[];
   matchSlug: string;
+  /** The map being played: listed as "Recording" (draft Match A) until its demo is in. */
+  recordingMapIndex?: number | null;
 }
 
 export function MapDemoDownloads({
   maps,
   mapResults,
   matchSlug,
+  recordingMapIndex = null,
 }: MapDemoDownloadsProps) {
   const { t } = useTranslation();
   const handleDownloadDemo = (mapNumber: number) => {
@@ -42,7 +45,12 @@ export function MapDemoDownloads({
     })
     .filter((item): item is { mapNumber: number; mapName: string; displayName: string } => item !== null);
 
-  if (mapsWithDemos.length === 0) {
+  const recording =
+    recordingMapIndex !== null && maps[recordingMapIndex] && !mapsWithDemos.some((m) => m.mapNumber === recordingMapIndex)
+      ? getMapDisplayName(maps[recordingMapIndex]) || maps[recordingMapIndex]
+      : null;
+
+  if (mapsWithDemos.length === 0 && !recording) {
     return null;
   }
 
@@ -65,6 +73,12 @@ export function MapDemoDownloads({
             {t('matchInfo.demos.download', { map: mapName })}
           </Button>
         ))}
+        {recording && (
+          <Button variant="outlined" fullWidth disabled sx={{ justifyContent: 'flex-start' }} data-testid="demo-recording">
+            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'error.main', mr: 1.25 }} />
+            {t('matchInfo.demos.recording', { map: recording })}
+          </Button>
+        )}
       </Stack>
     </Box>
   );

@@ -423,7 +423,8 @@
       "movedBody": "The old server went down. Connect to the server below (it has a new password): the match continues from the last round backup.",
       "resumedTitle": "The server restarted",
       "resumedBody": "Connect again: the match continues from the last round backup.",
-      "noPassword": "No password: you're on the list."
+      "noPassword": "No password: you're on the list.",
+      "startsGame": "没开 CS2？按钮会启动它。"
     }
   },
   "serversPage": {

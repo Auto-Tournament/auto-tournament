@@ -294,7 +294,8 @@
     },
     "demos": {
       "title": "Map-demo's",
-      "download": "Demo van {{map}} downloaden"
+      "download": "Demo van {{map}} downloaden",
+      "recording": "{{map}} wordt opgenomen…"
     },
     "spectator": {
       "maps_one": "{{count}} map won",

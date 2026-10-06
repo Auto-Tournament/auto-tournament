@@ -342,7 +342,8 @@
     },
     "demos": {
       "title": "Map Demos",
-      "download": "Download {{map}} demo"
+      "download": "Download {{map}} demo",
+      "recording": "Recording {{map}}…"
     },
     "spectator": {
       "maps_one": "{{count}} map won",

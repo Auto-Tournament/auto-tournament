@@ -41,12 +41,14 @@ export function MatchMapChips({ match, currentMapNumber }: MatchMapChipsProps) {
         pickers={pickers}
         viewerTeam={match.isTeam1 ? 'team1' : 'team2'}
       />
-      {match.mapResults && match.mapResults.some((mr) => mr.demoFilePath) && (
+      {((match.mapResults && match.mapResults.some((mr) => mr.demoFilePath)) ||
+        (match.status === 'live' && currentMapNumber !== null)) && (
         <Box mt={3}>
           <MapDemoDownloads
             maps={match.maps}
-            mapResults={match.mapResults}
+            mapResults={match.mapResults || []}
             matchSlug={match.slug}
+            recordingMapIndex={match.status === 'live' ? currentMapNumber : null}
           />
         </Box>
       )}
