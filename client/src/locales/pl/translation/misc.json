@@ -186,11 +186,14 @@
     "live": {
       "title": "Live now",
       "count": "{{count}} running",
-      "chip": "Live"
+      "chip": "Live",
+      "matchesOn_one": "Trwa {{count}} mecz",
+      "matchesOn_other": "Trwa meczów: {{count}}"
     },
     "quiet": {
       "title": "Coming up",
-      "more": "Also coming up"
+      "more": "Also coming up",
+      "next": "Następny"
     },
     "play": {
       "title": "Play a match now",
@@ -222,7 +225,26 @@
     },
     "teams": "Teams: {{count}}",
     "none": "No tournaments yet. Check back soon.",
-    "allTournaments": "All tournaments"
+    "allTournaments": "All tournaments",
+    "empty": {
+      "soon": "Wkrótce",
+      "heroTitle": "Jeszcze nie ma turnieju",
+      "heroHint": "Gdy następny turniej zostanie ogłoszony, pojawi się tu z datą i zapisami.",
+      "create": "Utwórz turniej",
+      "nextTitle": "Nic więcej nie zaplanowano",
+      "nextHint": "Kolejny turniej pojawi się tutaj.",
+      "signupTitle": "Brak otwartych zapisów",
+      "signupHint": "Turnieje z otwartymi zapisami pojawiają się tutaj.",
+      "slotTitle": "Miejsce na jeszcze jeden",
+      "slotHint": "Tu może pojawić się kolejny turniej.",
+      "championTitle": "Jeszcze nie ma mistrza",
+      "championHint": "Pierwszy zwycięzca pojawi się tutaj."
+    },
+    "browse": {
+      "title": "Znajdź graczy i drużyny",
+      "hint": "Zobacz, kto tu gra, i znajdź drużynę.",
+      "cta": "Zobacz graczy"
+    }
   },
   "browsePage": {
     "title": "Browse tournaments",
@@ -722,6 +744,31 @@
     "peekMatch": "Match · {{title}}",
     "peekTeam": "Team",
     "peekParty": "Party",
-    "buttonUnread": "Chat, {{count}} unread"
+    "buttonUnread": "Chat, {{count}} unread",
+    "system": {
+      "vetoStarted": "Veto rozpoczęte · zaczyna {{team}}",
+      "vetoBan": "{{team}} zbanowali {{map}}",
+      "vetoPick": "{{team}} wybrali {{map}}",
+      "vetoSide": "{{team}} zaczyna {{side}} na {{map}}",
+      "vetoDone": "Veto zakończone · {{maps}}",
+      "serverReady": "Serwer gotowy · {{map}} · dołącz ze strony meczu",
+      "playerJoined": "{{name}} wszedł na serwer · w środku: {{n}}",
+      "playerLeft": "{{name}} opuścił serwer · w środku: {{n}}",
+      "mapLive": "Mapa {{n}} trwa · {{map}}",
+      "mapResult": "Mapa {{n}} · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
+      "seriesWon": "{{team}} wygrywa serię {{a}}–{{b}}",
+      "adminCalled": "{{name}} wezwał admina",
+      "timedOut": "skończył się czas"
+    },
+    "party": {
+      "inviteCopied": "Skopiowano link zaproszenia",
+      "inviteFailed": "Nie udało się skopiować linku",
+      "leader": "lider",
+      "invite": "Zaproś",
+      "queue": "Szukaj razem",
+      "leaveQueue": "Opuść kolejkę",
+      "searching": "Szukanie meczu",
+      "leaderQueues": "Lider rozpoczyna wyszukiwanie"
+    }
   }
 }

@@ -186,11 +186,14 @@
     "live": {
       "title": "Pågår nå",
       "count": "{{count}} pågår",
-      "chip": "Direkte"
+      "chip": "Direkte",
+      "matchesOn_one": "{{count}} kamp pågår",
+      "matchesOn_other": "{{count}} kamper pågår"
     },
     "quiet": {
       "title": "Kommer snart",
-      "more": "Også på vei"
+      "more": "Også på vei",
+      "next": "Neste"
     },
     "play": {
       "title": "Spill en kamp nå",
@@ -222,7 +225,26 @@
     },
     "teams": "Lag: {{count}}",
     "none": "Ingen turneringer ennå. Kom tilbake snart.",
-    "allTournaments": "Alle turneringer"
+    "allTournaments": "Alle turneringer",
+    "empty": {
+      "soon": "Kommer snart",
+      "heroTitle": "Ingen turnering ennå",
+      "heroHint": "Når neste turnering blir annonsert, vises den her med dato og påmelding.",
+      "create": "Lag en turnering",
+      "nextTitle": "Ingenting annet planlagt",
+      "nextHint": "Neste turnering etter denne vises her.",
+      "signupTitle": "Ingenting å melde seg på",
+      "signupHint": "Turneringer med åpen påmelding vises her.",
+      "slotTitle": "Plass til én til",
+      "slotHint": "En turnering til kan komme her.",
+      "championTitle": "Ingen mester ennå",
+      "championHint": "Den første vinneren vises her."
+    },
+    "browse": {
+      "title": "Finn spillere og lag",
+      "hint": "Se hvem som spiller her, og finn et lag å bli med i.",
+      "cta": "Se spillere"
+    }
   },
   "browsePage": {
     "title": "Utforsk turneringer",
@@ -722,6 +744,31 @@
     "peekMatch": "Kamp · {{title}}",
     "peekTeam": "Lag",
     "peekParty": "Gruppe",
-    "buttonUnread": "Chat, {{count}} uleste"
+    "buttonUnread": "Chat, {{count}} uleste",
+    "system": {
+      "vetoStarted": "Veto startet · {{team}} begynner",
+      "vetoBan": "{{team}} bannet {{map}}",
+      "vetoPick": "{{team}} valgte {{map}}",
+      "vetoSide": "{{team}} starter {{side}} på {{map}}",
+      "vetoDone": "Veto ferdig · {{maps}}",
+      "serverReady": "Serveren er klar · {{map}} · bli med fra kampsiden",
+      "playerJoined": "{{name}} kom inn på serveren · {{n}} inne",
+      "playerLeft": "{{name}} forlot serveren · {{n}} inne",
+      "mapLive": "Kart {{n}} er i gang · {{map}}",
+      "mapResult": "Kart {{n}} · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
+      "seriesWon": "{{team}} vinner serien {{a}}–{{b}}",
+      "adminCalled": "{{name}} tilkalte en admin",
+      "timedOut": "tiden gikk ut"
+    },
+    "party": {
+      "inviteCopied": "Invitasjonslenke kopiert",
+      "inviteFailed": "Kunne ikke kopiere lenken",
+      "leader": "leder",
+      "invite": "Inviter",
+      "queue": "Søk sammen",
+      "leaveQueue": "Forlat køen",
+      "searching": "Søker etter kamp",
+      "leaderQueues": "Lederen starter søket"
+    }
   }
 }

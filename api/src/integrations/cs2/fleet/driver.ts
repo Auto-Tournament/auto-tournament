@@ -29,7 +29,8 @@
 
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
-import { emitBracketUpdate, emitMatchUpdate } from '../../../services/socketService';
+import { emitBracketUpdate, emitMatchUpdate, postMatchChatLine } from '../../../services/socketService';
+import { firstMapOf } from '../utils/firstMap';
 import { matchLiveStatsService } from '../../../services/matchLiveStatsService';
 import { recordAdminCall } from '../../../services/adminCallService';
 import { currentMatchConfig } from '../../../utils/matchIntegration';
@@ -474,6 +475,7 @@ export async function assignMatch(
   if (updated) {
     emitMatchUpdate(updated);
     emitBracketUpdate({ action: 'match_loaded', matchSlug });
+    if (!options.resume) void postMatchChatLine(matchSlug, 'serverReady', { map: firstMapOf(updated) });
   }
   // With rules.demo.upload the server streams each map's demo; turnover
   // holds the server until the receiver (./demoStream.ts) has it.

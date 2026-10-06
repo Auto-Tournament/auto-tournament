@@ -186,11 +186,14 @@
     "live": {
       "title": "Live now",
       "count": "{{count}} running",
-      "chip": "Live"
+      "chip": "Live",
+      "matchesOn_one": "{{count}} 场比赛进行中",
+      "matchesOn_other": "{{count}} 场比赛进行中"
     },
     "quiet": {
       "title": "Coming up",
-      "more": "Also coming up"
+      "more": "Also coming up",
+      "next": "下一场"
     },
     "play": {
       "title": "Play a match now",
@@ -222,7 +225,26 @@
     },
     "teams": "Teams: {{count}}",
     "none": "No tournaments yet. Check back soon.",
-    "allTournaments": "All tournaments"
+    "allTournaments": "All tournaments",
+    "empty": {
+      "soon": "即将推出",
+      "heroTitle": "还没有比赛",
+      "heroHint": "下一场比赛公布后，会在这里显示日期和报名。",
+      "create": "创建比赛",
+      "nextTitle": "暂无其他安排",
+      "nextHint": "之后的下一场比赛会显示在这里。",
+      "signupTitle": "暂无可报名的比赛",
+      "signupHint": "开放报名的比赛会显示在这里。",
+      "slotTitle": "还可以再放一个",
+      "slotHint": "这里可以再放一场比赛。",
+      "championTitle": "还没有冠军",
+      "championHint": "第一位冠军会显示在这里。"
+    },
+    "browse": {
+      "title": "寻找玩家和队伍",
+      "hint": "看看谁在这里玩，找一支队伍加入。",
+      "cta": "浏览玩家"
+    }
   },
   "browsePage": {
     "title": "Browse tournaments",
@@ -722,6 +744,31 @@
     "peekMatch": "Match · {{title}}",
     "peekTeam": "Team",
     "peekParty": "Party",
-    "buttonUnread": "Chat, {{count}} unread"
+    "buttonUnread": "Chat, {{count}} unread",
+    "system": {
+      "vetoStarted": "禁选开始 · {{team}} 先手",
+      "vetoBan": "{{team}} 禁用了 {{map}}",
+      "vetoPick": "{{team}} 选择了 {{map}}",
+      "vetoSide": "{{team}} 在 {{map}} 以 {{side}} 开局",
+      "vetoDone": "禁选完成 · {{maps}}",
+      "serverReady": "服务器已就绪 · {{map}} · 从比赛页面加入",
+      "playerJoined": "{{name}} 进入了服务器 · 已有 {{n}} 人",
+      "playerLeft": "{{name}} 离开了服务器 · 已有 {{n}} 人",
+      "mapLive": "第 {{n}} 张图开始 · {{map}}",
+      "mapResult": "第 {{n}} 张图 · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
+      "seriesWon": "{{team}} 以 {{a}}–{{b}} 赢下系列赛",
+      "adminCalled": "{{name}} 呼叫了管理员",
+      "timedOut": "超时"
+    },
+    "party": {
+      "inviteCopied": "邀请链接已复制",
+      "inviteFailed": "无法复制链接",
+      "leader": "队长",
+      "invite": "邀请",
+      "queue": "一起排队",
+      "leaveQueue": "退出排队",
+      "searching": "正在寻找比赛",
+      "leaderQueues": "由队长开始排队"
+    }
   }
 }

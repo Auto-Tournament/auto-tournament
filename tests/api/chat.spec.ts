@@ -183,6 +183,6 @@ test.describe.serial('Chat', () => {
 
     const lines = (await (await a1.ctx.get(`${path}/messages`)).json()).messages as Array<{ senderKind: string; body: string }>;
     expect(lines.at(-1)).toMatchObject({ senderKind: 'system' });
-    expect(lines.at(-1)!.body).toContain('called an admin');
+    expect(lines.at(-1)!.body).toContain('"key":"adminCalled"');
   });
 });
