@@ -2484,6 +2484,40 @@
         }
       }
     },
+    "/api/demos/archive.tar": {
+      "get": {
+        "tags": [
+          "Demos"
+        ],
+        "summary": "Several matches' demos in one download (a .tar, one folder per match)",
+        "description": "Admin only. `slugs` names the matches (comma separated); without it, every played match's demos.",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "slugs",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "application/x-tar"
+          },
+          "404": {
+            "description": "No demos for those matches"
+          }
+        }
+      }
+    },
     "/api/demos/{matchSlug}/download/{mapNumber}?": {
       "get": {
         "tags": [
@@ -6072,6 +6106,39 @@
             "apiToken": []
           }
         ]
+      }
+    },
+    "/api/matches/played": {
+      "get": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "Every played match (tournament, standalone, matchmaking), newest first, with its demos",
+        "description": "Admin only. Includes the matches of deleted tournaments (their name is\nkept as `tournamentName`). `demos` lists the maps that have a demo; a\nmatch-level demo is map 0.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 500,
+              "maximum": 2000
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{ matches }"
+          }
+        }
       }
     },
     "/api/matches/{slug}": {
@@ -13745,13 +13812,25 @@
           "Tournament"
         ],
         "summary": "Delete tournament",
-        "description": "Ends all matches on servers and deletes the current tournament and all associated data",
+        "description": "Ends all matches on servers and deletes the tournament and its data.\nWith `keepPlayed=1` its finished matches stay (with stats and demos),\nlisted under /api/matches/played with the tournament's name.\n",
         "security": [
           {
             "bearerAuth": []
           },
           {
             "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "keepPlayed",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1"
+              ]
+            }
           }
         ],
         "responses": {

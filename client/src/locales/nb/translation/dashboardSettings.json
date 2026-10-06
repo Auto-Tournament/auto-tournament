@@ -312,7 +312,8 @@
       },
       "allTournaments": "Alle turneringer",
       "switcher": "Turnering",
-      "newTournament": "Ny turnering"
+      "newTournament": "Ny turnering",
+      "playedMatches": "Alle kamper"
     },
     "status": {
       "live": "LIVE",
@@ -536,5 +537,27 @@
     "copy": "Kopier {{name}}",
     "copyHint": "Samme format, kart, regler og side. Lag og datoer starter tomme.",
     "create": "Opprett og sett opp"
+  },
+  "playedMatches": {
+    "title": "Alle kamper",
+    "subtitle": "Alle kamper spilt på denne siden: turneringer (også slettede), frittstående kamper og matchmaking, med demoer.",
+    "downloadAll_one": "Last ned demoene fra {{count}} kamp",
+    "downloadAll_other": "Last ned demoene fra {{count}} kamper",
+    "search": "Søk etter lag eller turneringer",
+    "kindLabel": "Type",
+    "kind": {
+      "all": "Alle typer",
+      "tournament": "Turnering",
+      "standalone": "Frittstående",
+      "matchmaking": "Matchmaking"
+    },
+    "withDemos": "Med demoer",
+    "none": "Ingen kamper er spilt ennå.",
+    "noneFiltered": "Ingen kamper passer filtrene.",
+    "vs": "mot",
+    "deleted": "turneringen er slettet",
+    "noDemo": "Ingen demo",
+    "demo": "Demo",
+    "map": "Kart {{n}}"
   }
 }

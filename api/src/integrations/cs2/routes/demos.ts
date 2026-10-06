@@ -13,6 +13,7 @@ import fs from 'fs';
 import type { DbMatchRow } from '../../../types/database.types';
 import { demoMatchIdFromHeader } from '../../../utils/serverAttribution';
 import { DEMOS_DIR, ensureDemosDir, linkStoredDemo } from '../utils/demoFiles';
+import { writeTar } from '../utils/tarStream';
 
 const router = Router();
 
@@ -500,6 +501,69 @@ router.get('/:matchSlug/info', requireAuth, async (req: Request, res: Response) 
       success: false,
       error: 'Failed to get demo info',
     });
+    return;
+  }
+});
+
+/**
+ * @openapi
+ * /api/demos/archive.tar:
+ *   get:
+ *     tags: [Demos]
+ *     summary: Several matches' demos in one download (a .tar, one folder per match)
+ *     description: Admin only. `slugs` names the matches (comma separated); without it, every played match's demos.
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: slugs
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: application/x-tar
+ *       404:
+ *         description: No demos for those matches
+ */
+router.get('/archive.tar', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const slugs = typeof req.query.slugs === 'string' && req.query.slugs.trim()
+      ? req.query.slugs.split(',').map((s) => s.trim()).filter(Boolean).slice(0, 2000)
+      : null;
+    const where = slugs ? 'AND m.slug = ANY(?::text[])' : '';
+    const params = slugs ? [slugs] : [];
+    const rows = await db.queryAsync<{ slug: string; match_demo: string | null; map_demo: string | null }>(
+      `SELECT m.slug, m.demo_file_path AS match_demo, r.demo_file_path AS map_demo
+         FROM matches m LEFT JOIN match_map_results r ON r.match_slug = m.slug
+        WHERE m.status = 'completed' ${where}
+        ORDER BY m.completed_at DESC NULLS LAST, m.slug, r.map_number`,
+      params
+    );
+    const files: Array<{ name: string; path: string }> = [];
+    const seen = new Set<string>();
+    for (const row of rows) {
+      for (const stored of [row.map_demo, row.match_demo]) {
+        if (!stored) continue;
+        let filepath = path.join(DEMOS_DIR, stored);
+        if (!fs.existsSync(filepath) && !stored.includes(path.sep)) filepath = path.join(DEMOS_DIR, row.slug, stored);
+        // Inside the demos folder only, once each.
+        const resolved = path.resolve(filepath);
+        if (!resolved.startsWith(path.resolve(DEMOS_DIR) + path.sep) || seen.has(resolved)) continue;
+        if (!fs.existsSync(resolved)) continue;
+        seen.add(resolved);
+        files.push({ name: `${row.slug}/${path.basename(stored)}`, path: resolved });
+      }
+    }
+    if (files.length === 0) return res.status(404).json({ success: false, error: 'No demos for those matches' });
+    const stamp = new Date().toISOString().slice(0, 10);
+    res.setHeader('Content-Type', 'application/x-tar');
+    res.setHeader('Content-Disposition', `attachment; filename="demos-${stamp}.tar"`);
+    await writeTar(res, files);
+    res.end();
+    return;
+  } catch (error) {
+    log.error('Error building the demo archive', error);
+    if (!res.headersSent) res.status(500).json({ success: false, error: 'Failed to build the demo archive' });
+    else res.end();
     return;
   }
 });

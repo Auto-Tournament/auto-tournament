@@ -3,6 +3,7 @@ import { Box, MenuItem, TextField } from '@mui/material';
 import { useOptionalAdminTournament } from '../../contexts/AdminTournamentContext';
 import {
   ListBulletsIcon,
+  FilmStripIcon,
   ArrowSquareOutIcon,
   BellIcon,
   BookOpenIcon,
@@ -171,6 +172,12 @@ export const ManageRail: React.FC = () => {
           label: t('managePage.rail.allTournaments'),
           to: paths.tournaments,
           icon: ListBulletsIcon,
+        },
+        {
+          key: 'playedMatches',
+          label: t('managePage.rail.playedMatches'),
+          to: paths.playedMatches,
+          icon: FilmStripIcon,
         },
         {
           key: 'tournament',

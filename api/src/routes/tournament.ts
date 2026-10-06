@@ -987,9 +987,16 @@ router.put('/', async (req: Request, res: Response) => {
  *     tags:
  *       - Tournament
  *     summary: Delete tournament
- *     description: Ends all matches on servers and deletes the current tournament and all associated data
+ *     description: |
+ *       Ends all matches on servers and deletes the tournament and its data.
+ *       With `keepPlayed=1` its finished matches stay (with stats and demos),
+ *       listed under /api/matches/played with the tournament's name.
  *     security:
  *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: keepPlayed
+ *         schema: { type: string, enum: ['1'] }
  *     responses:
  *       200:
  *         description: Tournament deleted successfully
@@ -1025,8 +1032,10 @@ router.delete('/', async (req: Request, res: Response) => {
       await new Promise((resolve) => setTimeout(resolve, 2000));
     }
 
-    // Now delete the tournament (will also delete matches via CASCADE)
-    await tournamentService.deleteTournament(tournamentId);
+    // Now delete the tournament (will also delete matches via CASCADE). The
+    // admin UI asks to keep the played ones (?keepPlayed=1).
+    const keepPlayed = req.query.keepPlayed === '1' || req.query.keepPlayed === 'true';
+    await tournamentService.deleteTournament(tournamentId, { keepPlayed });
 
     log.success(`Tournament deleted successfully. ${matchesEnded} match(es) ended on servers.`);
 

@@ -130,7 +130,8 @@ export const useTournament = () => {
   };
 
   const deleteTournament = async () => {
-    await api.delete('/api/tournament');
+    // Played matches stay (with their demos) under All matches.
+    await api.delete('/api/tournament?keepPlayed=1');
     setTournament(null);
   };
 

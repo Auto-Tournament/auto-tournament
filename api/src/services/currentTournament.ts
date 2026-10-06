@@ -53,9 +53,21 @@ export async function featuredTournamentId(): Promise<number> {
   return nextTournamentId();
 }
 
-/** The id a new tournament gets. */
+/**
+ * The id a new tournament gets: past every tournament there is, and past any
+ * deleted one whose played matches stayed (`matches.played_in_id`): their
+ * slugs carry its id (t<id>-r1m1), so it is not given out while they stay.
+ */
 export async function nextTournamentId(): Promise<number> {
-  const row = await db.queryOneAsync<{ next: number }>('SELECT COALESCE(MAX(id), 0) + 1 AS next FROM tournament');
+  const row = await db.queryOneAsync<{ next: number }>(
+    `SELECT GREATEST(
+        COALESCE((SELECT MAX(id) FROM tournament), 0),
+        COALESCE((SELECT MAX(played_in_id) FROM matches), 0),
+        -- Any other match out of a tournament under a t<id>- slug.
+        COALESCE((SELECT MAX(substring(slug from '^t([0-9]{1,9})-')::int) FROM matches
+                   WHERE tournament_id IS NULL AND slug ~ '^t[0-9]{1,9}-'), 0)
+      ) + 1 AS next`
+  );
   return Number(row?.next ?? 1);
 }
 

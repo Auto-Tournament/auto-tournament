@@ -88,6 +88,9 @@ test.describe.serial('Chat', () => {
 
   test.afterAll(async ({ request }) => {
     await signInViaRequest(request);
+    // The admin call this spec makes would stay open on every admin page,
+    // over buttons later UI specs in the same worker click.
+    await request.post('/api/admin-calls/resolve-all', { headers: getAuthHeader(), data: {} });
     for (const id of made) await request.delete('/api/tournament', { headers: as(id) });
     for (const id of teamIds) await request.delete(`/api/teams/${id}`, { headers: getAuthHeader() });
     await Promise.all(contexts.map((c) => c.dispose()));

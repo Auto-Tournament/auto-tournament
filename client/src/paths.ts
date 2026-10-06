@@ -65,6 +65,8 @@ export const paths = {
   matches: '/matches',
   /** Results nobody agrees on (3.0 phase D, PR D8). */
   disputes: '/disputes',
+  /** Every played match, any tournament (deleted ones too), with demos. */
+  playedMatches: '/played',
   admin: '/admin',
   settings: '/settings',
   maps: '/maps',
