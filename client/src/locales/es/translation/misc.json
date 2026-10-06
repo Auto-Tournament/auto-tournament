@@ -808,6 +808,7 @@
       "leaveQueue": "Salir de la cola",
       "searching": "Buscando partida",
       "leaderQueues": "El líder inicia la búsqueda"
-    }
+    },
+    "back": "Atrás"
   }
 }

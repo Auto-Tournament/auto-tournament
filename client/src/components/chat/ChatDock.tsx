@@ -355,6 +355,19 @@ function Panel({ phone, wide }: { phone: boolean; wide: boolean }) {
       <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
       <Box sx={{ px: 2.25, pt: 2, pb: 1.5, display: 'flex', flexDirection: 'column', gap: 1.5, borderBottom: `1px solid ${color.rule}` }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+          {/* On a phone the chat is a full screen: Back, where Close would be. */}
+          {phone && (
+            <IconButton
+              aria-label={t('chat.back')}
+              data-testid="chat-back"
+              onClick={closeChat}
+              sx={{ width: 36, height: 36, ml: -0.75, color: color.ink2 }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </IconButton>
+          )}
           <Typography id="chat-title" component="h2" sx={{ m: 0, fontFamily: fontDisplay, fontSize: textSize.lg, fontWeight: 600, flex: 1 }}>
             {t('chat.title')}
           </Typography>
@@ -362,7 +375,7 @@ function Panel({ phone, wide }: { phone: boolean; wide: boolean }) {
             aria-label={t('chat.close')}
             data-testid="chat-close"
             onClick={closeChat}
-            sx={{ width: 36, height: 36, borderRadius: '10px', border: `1px solid ${color.rule}`, color: color.ink2 }}
+            sx={{ display: phone ? 'none' : undefined, width: 36, height: 36, borderRadius: '10px', border: `1px solid ${color.rule}`, color: color.ink2 }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
               <path d="M6 6l12 12M18 6L6 18" />

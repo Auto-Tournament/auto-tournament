@@ -808,6 +808,7 @@
       "leaveQueue": "退出排队",
       "searching": "正在寻找比赛",
       "leaderQueues": "由队长开始排队"
-    }
+    },
+    "back": "返回"
   }
 }

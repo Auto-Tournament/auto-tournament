@@ -83,7 +83,10 @@
       "leaderboard": "Leaderboard"
     },
     "gameSwitchLabel": "Game",
-    "yourMatch": "Your match"
+    "yourMatch": "Your match",
+    "tabs": {
+      "overview": "概览"
+    }
   },
   "teamPage": {
     "tournamentFinished": "锦标赛已结束",

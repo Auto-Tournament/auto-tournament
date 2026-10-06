@@ -808,6 +808,7 @@
       "leaveQueue": "Wachtrij verlaten",
       "searching": "Zoeken naar een wedstrijd",
       "leaderQueues": "De leider start het zoeken"
-    }
+    },
+    "back": "Terug"
   }
 }

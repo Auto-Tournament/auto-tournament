@@ -46,7 +46,7 @@ import type {
 import { textSize, tokens } from '../theme/tokens';
 import { paths } from '../paths';
 import { pageTitle } from '../utils/pageTitle';
-import { useInstalledIntegrations } from '../integrations/registry';
+import { useInstalledIntegrations, useIntegration } from '../integrations/registry';
 
 interface RatingHistoryEntry {
   /** Stable per row: the slug, or the row's position for a deleted match. */
@@ -279,6 +279,8 @@ export default function PlayerProfile() {
     tournamentId: gameTournamentId,
   } = useGameCapabilities();
   const showGameStats = gameCapabilities.playerStats;
+  // A game tab shows that game's own view (CS2: aim, utility, map strength).
+  const selectedIntegration = useIntegration(selectedGameId);
   const showDemos = gameCapabilities.demos;
   const { matchSlug: statusMatchSlug } = useCurrentMatchStatus(
     steamId && playerSteamId === steamId ? steamId : null
@@ -457,9 +459,8 @@ export default function PlayerProfile() {
 
       const loadedGames = summaryResponse.games || [];
       setGames(loadedGames);
-      setSelectedGameId((prev) =>
-        prev && loadedGames.some((g) => g.id === prev) ? prev : loadedGames[0]?.id ?? null
-      );
+      // Overview (null) unless a game tab is open that the player still has.
+      setSelectedGameId((prev) => (prev && loadedGames.some((g) => g.id === prev) ? prev : null));
 
       // The current or upcoming match (veto, connect): only the player's own
       // view shows it, so only that view asks.
@@ -815,6 +816,7 @@ export default function PlayerProfile() {
   // played: someone with no matches has no part in those totals.
   const TournamentStatsView = gameIntegration.tournamentStatsView;
   const PlayerProfileView = gameIntegration.playerProfileView;
+  const GameProfileView = selectedGameId ? selectedIntegration.playerProfileView : PlayerProfileView;
   const profileSections = installedIntegrations.flatMap((integration) =>
     integration.playerProfileSection ? [{ id: integration.id, Section: integration.playerProfileSection }] : []
   );
@@ -1053,12 +1055,12 @@ export default function PlayerProfile() {
             </Box>
           )}
 
-          {/* Which game the stats below describe. */}
+          {/* Overview (every game), or one game's tab. */}
           <Box sx={{ mt: 6, mb: 3 }}>
             <GameSwitch
               games={games}
               selectedId={selectedGameId ?? ''}
-              onSelect={setSelectedGameId}
+              onSelect={(id) => setSelectedGameId(id || null)}
             />
           </Box>
 
@@ -1072,7 +1074,10 @@ export default function PlayerProfile() {
           />
 
           {/* The game's own numbers (CS2: aim, utility, map strength). */}
-          {PlayerProfileView && showGameStats && <PlayerProfileView playerId={player.id} />}
+          {/* On the game's own tab (or the only view, with no games yet). */}
+          {GameProfileView && showGameStats && (selectedGameId || games.length === 0) && (
+            <GameProfileView playerId={player.id} />
+          )}
 
           {/* Installed modules' own sections (CS2: the skin loadout, while skins are on). */}
           {profileSections.map(({ id, Section }) => (

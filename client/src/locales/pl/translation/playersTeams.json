@@ -83,7 +83,10 @@
       "leaderboard": "Leaderboard"
     },
     "gameSwitchLabel": "Game",
-    "yourMatch": "Your match"
+    "yourMatch": "Your match",
+    "tabs": {
+      "overview": "Przegląd"
+    }
   },
   "teamPage": {
     "tournamentFinished": "Turniej zakończony",

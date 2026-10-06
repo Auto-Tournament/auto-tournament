@@ -808,6 +808,7 @@
       "leaveQueue": "Opuść kolejkę",
       "searching": "Szukanie meczu",
       "leaderQueues": "Lider rozpoczyna wyszukiwanie"
-    }
+    },
+    "back": "Wstecz"
   }
 }
