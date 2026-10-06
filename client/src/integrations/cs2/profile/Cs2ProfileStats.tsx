@@ -50,6 +50,8 @@ interface Detail {
     /** Degrees off the enemy's head when they came into view; lower is better. */
     crosshairDegrees: number | null;
     moneyPerRound: number;
+    /** From first seeing an enemy to first hurting them. */
+    timeToDamageMs?: number | null;
   } | null;
 }
 
@@ -469,9 +471,11 @@ function AimRow({ aim, avg }: { aim: Detail['aim']; avg: Detail['aim'] }) {
       label: t('profile.crosshair'),
       value: aim?.crosshairDegrees != null ? `${aim.crosshairDegrees.toFixed(1)}°` : '—',
       note:
-        avg?.crosshairDegrees != null
-          ? t('profile.average', { value: `${avg.crosshairDegrees.toFixed(1)}°` })
-          : t('profile.crosshairNote'),
+        aim?.timeToDamageMs != null
+          ? t('profile.ttdLine', { ms: aim.timeToDamageMs })
+          : avg?.crosshairDegrees != null
+            ? t('profile.average', { value: `${avg.crosshairDegrees.toFixed(1)}°` })
+            : t('profile.crosshairNote'),
     },
     {
       key: 'accuracy',

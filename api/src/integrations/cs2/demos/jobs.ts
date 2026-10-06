@@ -15,6 +15,7 @@ import path from 'path';
 import { DATA_DIR } from '../../../config/dataDir';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
+import { atRating } from '../rating';
 
 /** Replays, under DATA_DIR so they survive container recreates. */
 export const REPLAYS_DIR = path.join(DATA_DIR, 'demo-replays');
@@ -60,6 +61,9 @@ export interface DemoPlayerStats {
   enemiesFlashed: number;
   friendliesFlashed: number;
   utilityDamage: number;
+  kastRounds?: number;
+  timeToDamageSum?: number;
+  timeToDamageSamples?: number;
 }
 
 export interface DemoAnalysisPayload {
@@ -106,8 +110,8 @@ export async function enqueueDemoJob(
  * Hand the worker the oldest queued job (or one whose worker went quiet).
  * With nothing queued, queue one stored demo that never had a job.
  */
-export async function claimDemoJob(worker: string): Promise<DemoJob | null> {
-  for (let pass = 0; pass < 2; pass += 1) {
+export async function claimDemoJob(worker: string, analyzerVersion = 0): Promise<DemoJob | null> {
+  for (let pass = 0; pass < 3; pass += 1) {
     const row = await db.queryOneAsync<{ match_slug: string; map_number: number }>(
       `UPDATE cs2_demo_jobs SET status = 'running', worker = ?, claimed_at = ?, attempts = attempts + 1
         WHERE (match_slug, map_number) = (
@@ -129,7 +133,7 @@ export async function claimDemoJob(worker: string): Promise<DemoJob | null> {
         mapName: map?.map_name ?? null,
       };
     }
-    if (pass > 0) break;
+    if (pass > 1) break;
     const unseen = await db.queryOneAsync<{
       match_slug: string;
       map_number: number;
@@ -140,8 +144,22 @@ export async function claimDemoJob(worker: string): Promise<DemoJob | null> {
           AND NOT EXISTS (SELECT 1 FROM cs2_demo_jobs j WHERE j.match_slug = r.match_slug AND j.map_number = r.map_number)
         ORDER BY r.completed_at DESC LIMIT 1`
     );
-    if (!unseen) return null;
-    await enqueueDemoJob(unseen.match_slug, Number(unseen.map_number), unseen.demo_file_path);
+    if (unseen) {
+      await enqueueDemoJob(unseen.match_slug, Number(unseen.map_number), unseen.demo_file_path);
+      continue;
+    }
+    // Nothing new: read again, one at a time, a map an older worker analyzed.
+    const stale = analyzerVersion
+      ? await db.runAsync(
+          `UPDATE cs2_demo_jobs SET status = 'pending', attempts = 0
+            WHERE (match_slug, map_number) = (
+              SELECT match_slug, map_number FROM cs2_demo_jobs
+               WHERE status = 'done' AND COALESCE(analyzer_version, 0) < ?
+               ORDER BY finished_at DESC NULLS LAST LIMIT 1)`,
+          [analyzerVersion]
+        )
+      : null;
+    if (!stale?.changes) return null;
   }
   return null;
 }
@@ -263,6 +281,8 @@ export async function completeDemoJob(job: DemoJob, analysis: DemoAnalysisPayloa
       spray_hits: n(s.sprayHits),
       crosshair_angle_sum: n(s.crosshairAngleSum),
       crosshair_samples: n(s.crosshairSamples),
+      time_to_damage_sum: n(s.timeToDamageSum),
+      time_to_damage_samples: n(s.timeToDamageSamples),
     };
     // Numbers Ready Up also sends live: the demo's only for a map without them.
     const both = {
@@ -289,6 +309,7 @@ export async function completeDemoJob(job: DemoJob, analysis: DemoAnalysisPayloa
       ct_rounds_won: n(s.ctRoundsWon),
       t_rounds: n(s.tRounds),
       t_rounds_won: n(s.tRoundsWon),
+      kast_rounds: n(s.kastRounds),
     };
     const cols = { ...both, ...demoOnly, source: 'demo' };
     const names = Object.keys(cols);
@@ -348,12 +369,64 @@ export async function readDemoAnalysis(job: DemoJob) {
       return [];
     }
   };
+  const players = await db.queryAsync<Record<string, unknown>>(
+    `SELECT s.*, p.name AS player_name, p.avatar_url AS avatar
+       FROM cs2_player_map_stats s LEFT JOIN players p ON p.id = s.player_id
+      WHERE s.match_slug = ? AND s.map_number = ?
+      ORDER BY s.team, s.kills DESC`,
+    [job.matchSlug, job.mapNumber]
+  );
   return {
+    players: players.map((r) => playerLine(r)),
     status: row.status,
     map: row.map_name,
     rounds: parse(row.rounds),
     kills: parse(row.kills),
     hasReplay: Boolean(row.replay_path),
     analyzedAt: row.finished_at === null ? null : Number(row.finished_at),
+  };
+}
+
+/** A player's line on the analyzer page, from their map row. */
+function playerLine(r: Record<string, unknown>) {
+  const rounds = n(Number(r.rounds_played));
+  const num = (k: string) => n(Number(r[k]));
+  return {
+    id: String(r.player_id),
+    name: (r.player_name as string | null) ?? String(r.player_id),
+    avatar: (r.avatar as string | null) ?? null,
+    team: r.team as string,
+    rating: atRating({
+      rounds_played: rounds,
+      kills: num('kills'),
+      deaths: num('deaths'),
+      assists: num('assists'),
+      damage: num('damage'),
+      kast_rounds: num('kast_rounds'),
+    }),
+    kills: num('kills'),
+    deaths: num('deaths'),
+    assists: num('assists'),
+    adr: rounds ? Math.round(num('damage') / rounds) : null,
+    kast: rounds ? Math.round((num('kast_rounds') / rounds) * 100) : null,
+    headshotPct: num('kills') ? Math.round((num('headshot_kills') / num('kills')) * 100) : null,
+    openingKills: num('entry_kills'),
+    openingDeaths: num('entry_deaths'),
+    tradeKills: num('trade_kills'),
+    tradedDeaths: num('traded_deaths'),
+    clutchesWon: num('clutches_won'),
+    clutchesPlayed: num('clutches_played'),
+    multiKills: [num('multi_2k'), num('multi_3k'), num('multi_4k'), num('multi_5k')],
+    utilityDamage: num('utility_damage'),
+    enemiesFlashed: num('enemies_flashed'),
+    friendliesFlashed: num('friendlies_flashed'),
+    moneySpent: num('money_spent'),
+    accuracy: num('shots') ? num('hits') / num('shots') : null,
+    crosshairDegrees: num('crosshair_samples')
+      ? Math.round((num('crosshair_angle_sum') / num('crosshair_samples')) * 10) / 10
+      : null,
+    timeToDamageMs: num('time_to_damage_samples')
+      ? Math.round(num('time_to_damage_sum') / num('time_to_damage_samples'))
+      : null,
   };
 }

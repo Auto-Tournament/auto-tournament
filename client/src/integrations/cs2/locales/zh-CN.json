@@ -1590,7 +1590,8 @@
     "spray": "Spray control",
     "sprayNote": "Hits from the fourth bullet of a spray on",
     "moneyPerRound": "Money per round",
-    "demoOnly": "Aim and money come from the match demos, read after each match."
+    "demoOnly": "Aim and money come from the match demos, read after each match.",
+    "ttdLine": "Time to damage {{ms}} ms"
   },
   "skins": {
     "notice": "Virtual skins. They only exist on Auto Tournament, have no money value, can't be traded or sold, and don't appear in Counter-Strike 2.",
@@ -1772,5 +1773,60 @@
     "entry": "突破手",
     "support": "辅助",
     "lurker": "自由人"
+  },
+  "analysis": {
+    "open": "Analysis",
+    "analyzing": "Analyzing…",
+    "title": "{{map}} analysis",
+    "titlePlain": "Demo analysis",
+    "eyebrow": "Demo analysis",
+    "back": "Back",
+    "missing": "This map has no analysis yet. The demo worker reads each demo after the match.",
+    "loading": "Loading the analysis",
+    "rounds": "Rounds",
+    "roundLabel": "Round {{n}}",
+    "noKills": "No kills this round.",
+    "world": "the world",
+    "hs": "headshot",
+    "wallbang": "wallbang",
+    "smoke": "through smoke",
+    "opening": "Opening",
+    "trade": "Trade",
+    "traded": "Traded",
+    "team1": "Team 1",
+    "team2": "Team 2",
+    "buy": {
+      "pistol": "Pistol",
+      "eco": "Eco",
+      "force": "Force",
+      "full": "Full buy"
+    },
+    "reason": {
+      "bomb_exploded": "bomb exploded",
+      "bomb_defused": "bomb defused",
+      "t_killed": "Ts eliminated",
+      "ct_killed": "CTs eliminated",
+      "time_ran_out": "time ran out",
+      "t_surrender": "T surrender",
+      "ct_surrender": "CT surrender",
+      "draw": "draw",
+      "other": "round over"
+    },
+    "col": {
+      "player": "Player",
+      "rating": "Rating",
+      "kda": "K-D-A",
+      "adr": "ADR",
+      "kast": "KAST",
+      "hs": "HS",
+      "opening": "Opening",
+      "trades": "Trades",
+      "clutches": "Clutches",
+      "multi": "3k+",
+      "crosshair": "Crosshair",
+      "ttd": "Time to damage",
+      "money": "Spent"
+    },
+    "note": "Read from the demo after the match. Rating is Auto Tournament's own (1.00 is average). Crosshair: degrees off the head when an enemy came into view."
   }
 }

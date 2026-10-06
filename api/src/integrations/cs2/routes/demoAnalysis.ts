@@ -43,7 +43,8 @@ const workerName = (req: Request) =>
 
 router.post('/demo-worker/claim', requireAuth, async (req: Request, res: Response) => {
   try {
-    const job = await claimDemoJob(workerName(req));
+    const version = Number(req.body?.analyzerVersion);
+    const job = await claimDemoJob(workerName(req), Number.isInteger(version) ? version : 0);
     if (!job) return res.status(204).end();
     return res.json({ success: true, job });
   } catch (error) {

@@ -137,6 +137,9 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 		shots     = map[string][]Shot{}
 		hitTicks  = map[string][]int{}
 		spotted   = map[[2]uint64]bool{}
+		spotTick  = map[[2]uint64]int{}
+		equipCT   int
+		equipT    int
 		frames    = map[int]map[string][5]float64{}
 		lastFrame = -FrameStep
 	)
@@ -163,6 +166,7 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 		shots, hitTicks = map[string][]Shot{}, map[string][]int{}
 		frames = map[int]map[string][5]float64{}
 		spotted = map[[2]uint64]bool{}
+		spotTick = map[[2]uint64]int{}
 	}
 
 	// Live play: from the last match start (a restart starts it again).
@@ -170,6 +174,16 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 	p.RegisterEventHandler(func(events.RoundFreezetimeEnd) {
 		if live && !gs.IsWarmupPeriod() {
 			inRound = true
+			// What each side bought this round (bots too: it is the team's economy).
+			equipCT, equipT = 0, 0
+			for _, pl := range gs.Participants().Playing() {
+				switch pl.Team {
+				case common.TeamCounterTerrorists:
+					equipCT += pl.EquipmentValueFreezeTimeEnd()
+				case common.TeamTerrorists:
+					equipT += pl.EquipmentValueFreezeTimeEnd()
+				}
+			}
 		}
 	})
 	p.RegisterEventHandler(func(e events.RoundEnd) {
@@ -182,7 +196,7 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 			start = rounds[len(rounds)-1].EndTick
 		}
 		reason := reasonName(e.Reason)
-		rd := Round{Number: len(rounds) + 1, StartTick: start, EndTick: gs.IngameTick(), Winner: sideName(e.Winner), Reason: &reason}
+		rd := Round{Number: len(rounds) + 1, StartTick: start, EndTick: gs.IngameTick(), Winner: sideName(e.Winner), Reason: &reason, CTEquipment: equipCT, TEquipment: equipT}
 		rounds = append(rounds, rd)
 		roster := map[string]string{}
 		for _, pl := range gs.Participants().Playing() {
@@ -267,7 +281,17 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 		if e.Weapon != nil && e.Weapon.Class() == common.EqClassGrenade {
 			s.UtilityDamage += e.HealthDamageTaken
 		} else if isGun(e.Weapon) {
-			hitTicks[id(e.Attacker)] = append(hitTicks[id(e.Attacker)], gs.IngameTick())
+			tick := gs.IngameTick()
+			hitTicks[id(e.Attacker)] = append(hitTicks[id(e.Attacker)], tick)
+			// Time to damage: the first hit on an enemy since spotting them.
+			key := [2]uint64{e.Attacker.SteamID64, e.Player.SteamID64}
+			if t0, ok := spotTick[key]; ok {
+				delete(spotTick, key)
+				if ms := float64(tick-t0) * 1000 / p.TickRate(); ms >= 0 && ms < 1000 {
+					s.TimeToDamageSum += ms
+					s.TimeToDamageSamples++
+				}
+			}
 		}
 	})
 
@@ -309,6 +333,7 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 						s := named(a)
 						s.CrosshairAngleSum += AimError(eyes(a), pitchOf(a), float64(a.ViewDirectionX()), eyes(e))
 						s.CrosshairSamples++
+						spotTick[key] = tick
 					}
 					spotted[key] = now
 				}
@@ -348,6 +373,7 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 	CountKills(kills, stats)
 	for _, rd := range rounds {
 		CountClutches(rd, sides[rd.Number], kills, stats)
+		CountKast(rd, sides[rd.Number], kills, stats)
 	}
 	for sid, list := range shots {
 		CountShots(stats(sid), list, hitTicks[sid])
