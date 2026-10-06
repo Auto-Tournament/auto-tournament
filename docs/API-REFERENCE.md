@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 493 of them, 328 behind auth —
+Every endpoint this API serves — 504 of them, 331 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -465,6 +465,24 @@ Teams signing themselves up with a lineup, and check-in on the day.
 | `PUT` | `/api/tournament-signup/:id/lineup` | public |
 | `DELETE` | `/api/tournament-signup/:id/registration/:teamId` | public |
 | `POST` | `/api/tournament-signup/:id/check-in` | public |
+
+### Skins
+
+Virtual skins: inventories, loadouts and showcases (platform only).
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/skins/status` | public |
+| `GET` | `/api/skins/me` | public |
+| `POST` | `/api/skins/me/equip` | public |
+| `DELETE` | `/api/skins/me/equip/:slot` | public |
+| `POST` | `/api/skins/me/seen` | public |
+| `PUT` | `/api/skins/me/showcase` | public |
+| `GET` | `/api/skins/players/:steamId` | public |
+| `GET` | `/api/skins/skin/:id` | public |
+| `GET` | `/api/skins/admin/config` | admin |
+| `PUT` | `/api/skins/admin/config` | admin |
+| `GET` | `/api/skins/admin/catalog` | admin |
 
 ### Logs
 

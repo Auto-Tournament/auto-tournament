@@ -31,6 +31,7 @@ import { SiteNameCard } from '../components/settings/SiteNameCard';
 import { LicenseCard } from '../components/settings/LicenseCard';
 import { WebhooksCard } from '../components/settings/WebhooksCard';
 import { ExperimentalCard } from '../components/settings/ExperimentalCard';
+import { SkinsCard } from '../components/settings/SkinsCard';
 import { SignInProvidersCard } from '../components/settings/SignInProvidersCard';
 import { useInstalledIntegrations } from '../integrations/registry';
 
@@ -144,7 +145,12 @@ export default function Settings() {
     if (!requestedSection) return;
     // `?section=license`: the admin home's License card links here;
     // `?section=signin`: its "Finish setting up" sign-in row.
-    if (requestedSection === 'license' || requestedSection === 'webhooks' || requestedSection === 'signin') {
+    if (
+      requestedSection === 'license' ||
+      requestedSection === 'webhooks' ||
+      requestedSection === 'signin' ||
+      requestedSection === 'skins'
+    ) {
       setTab(requestedSection);
       return;
     }
@@ -158,6 +164,7 @@ export default function Settings() {
     'matches',
     'license',
     'webhooks',
+    'skins',
     'experimental',
     ...moduleTabKeys.split(' ').filter(Boolean),
     ...(isDev ? ['developer'] : []),
@@ -291,6 +298,12 @@ export default function Settings() {
                   {...a11yProps('webhooks')}
                 />
                 <Tab
+                  label={t('skins.admin.tab')}
+                  value="skins"
+                  data-testid="settings-tab-skins"
+                  {...a11yProps('skins')}
+                />
+                <Tab
                   label={t('settingsPage.tabs.experimental')}
                   value="experimental"
                   data-testid="settings-tab-experimental"
@@ -314,6 +327,10 @@ export default function Settings() {
                 )}
               </Tabs>
             </Box>
+
+            <TabPanel value={activeTab} index="skins">
+              <SkinsCard />
+            </TabPanel>
 
             <TabPanel value={activeTab} index="experimental">
               <ExperimentalCard />

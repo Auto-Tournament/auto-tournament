@@ -671,6 +671,10 @@
       "description": "Steam, Discord, Google, GitHub and Twitch sign-in, set up from Settings -> Sign-in. Admin only; secrets are write-only."
     },
     {
+      "name": "Skins",
+      "description": "Virtual skins: inventories, loadouts and showcases (platform only)."
+    },
+    {
       "name": "Steam",
       "description": "Steam Web API lookups (profiles, avatars, key health)."
     },
@@ -9708,6 +9712,294 @@
             "apiToken": []
           }
         ]
+      }
+    },
+    "/api/skins/admin/catalog": {
+      "get": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "Search the skin catalogue (admin)",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Up to 50 matching skins",
+            "one per weapon and name": null
+          }
+        }
+      }
+    },
+    "/api/skins/admin/config": {
+      "get": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "The skins settings (admin)",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The settings"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "Change the skins settings (admin)",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The saved settings"
+          }
+        }
+      }
+    },
+    "/api/skins/me": {
+      "get": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "Your inventory, showcase, and skins you have not seen yet",
+        "responses": {
+          "200": {
+            "description": "The inventory"
+          },
+          "401": {
+            "description": "Not signed in"
+          },
+          "404": {
+            "description": "Skins are off"
+          }
+        }
+      }
+    },
+    "/api/skins/me/equip": {
+      "post": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "Equip a skin in its slot",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "skinId": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Equipped"
+          },
+          "404": {
+            "description": "Not in your inventory",
+            "or skins are off": null
+          }
+        }
+      }
+    },
+    "/api/skins/me/equip/{slot}": {
+      "delete": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "Empty a loadout slot",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slot",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Emptied"
+          }
+        }
+      }
+    },
+    "/api/skins/me/seen": {
+      "post": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "Mark new skins as seen",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Marked"
+          }
+        }
+      }
+    },
+    "/api/skins/me/showcase": {
+      "put": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "Arrange the profile showcase (up to 8 skins, some big)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "skinId": {
+                          "type": "integer"
+                        },
+                        "big": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved"
+          }
+        }
+      }
+    },
+    "/api/skins/players/{steamId}": {
+      "get": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "A player's skins (public)",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "steamId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Inventory and showcase"
+          },
+          "404": {
+            "description": "Skins are off",
+            "or no such player": null
+          }
+        }
+      }
+    },
+    "/api/skins/skin/{id}": {
+      "get": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "One skin and its owner (public)",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The skin"
+          },
+          "404": {
+            "description": "No such skin",
+            "or skins are off": null
+          }
+        }
+      }
+    },
+    "/api/skins/status": {
+      "get": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "Whether virtual skins are on (public)",
+        "responses": {
+          "200": {
+            "description": "{ enabled }"
+          }
+        }
       }
     },
     "/api/steam/player/{steamId}": {

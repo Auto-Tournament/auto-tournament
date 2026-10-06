@@ -17,6 +17,8 @@ export interface DbMatchRow {
   config?: string;
   /** Game integration that owns the match (integrations/registry); 'cs2' by default. */
   game?: string;
+  /** 'matchmaking' for a matchmaking match; null for tournament and manual matches. */
+  source?: string | null;
   next_match_id?: number;
   team1_from_match_id?: number | null;
   team1_from_outcome?: 'winner' | 'loser' | null | string;

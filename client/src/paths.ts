@@ -33,6 +33,9 @@ export const paths = {
   tournamentRules: '/tournament/:id/rules',
   tournamentYourMatch: '/tournament/:id/match',
   tournamentSignup: '/tournament/:id/signup',
+  /** Your virtual skins; `/player/:steamId/inventory` for someone else's. */
+  inventory: '/inventory',
+  playerInventory: '/player/:steamId/inventory',
   /** The old address of Standings; redirects there. */
   tournamentLeaderboard: '/tournament/:id/leaderboard',
   findPlayer: '/player',

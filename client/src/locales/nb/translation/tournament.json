@@ -433,7 +433,8 @@
       "maxTeams": "Lagplasser",
       "checkInOpensAt": "Innsjekken åpner",
       "checkInClosesAt": "Innsjekken stenger",
-      "signupHelp": "Lagets eier eller en kaptein melder på med en oppstilling. Spillerne i oppstillingen sjekker inn på dagen."
+      "signupHelp": "Lagets eier eller en kaptein melder på med en oppstilling. Spillerne i oppstillingen sjekker inn på dagen.",
+      "skinRewards": "Skin-premier for topp tre (når skins er slått på)"
     },
     "setup": {
       "steps": {

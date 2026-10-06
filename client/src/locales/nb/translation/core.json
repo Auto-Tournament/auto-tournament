@@ -35,7 +35,8 @@
     "theme": "Tema",
     "language": "Språk",
     "signIn": "Logg inn",
-    "play": "Spill"
+    "play": "Spill",
+    "inventory": "Inventar"
   },
   "layout": {
     "pageTitle": {

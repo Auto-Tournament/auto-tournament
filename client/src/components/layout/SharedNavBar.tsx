@@ -28,6 +28,7 @@ import { api } from '../../utils/api';
 import { fontDisplay, textSize } from '../../theme/tokens';
 import { paths, playerProfilePath, tournamentTabPath } from '../../paths';
 import { useMatchmaking } from '../matchmaking/matchmakingStore';
+import { useSkinsEnabled } from '../../hooks/useSkins';
 import { soundNotification } from '../../utils/soundNotification';
 
 /** Top-bar text links: ink2 at rest, ink on hover and on the current page (the drafts' `.nav-links`). */
@@ -322,6 +323,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
 
   const { pathname } = location;
   const { available: matchmakingAvailable } = useMatchmaking();
+  const skinsEnabled = useSkinsEnabled();
   const playLink: SiteLink[] = matchmakingAvailable
     ? [
         {
@@ -566,6 +568,17 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
               }}
             >
               {t('nav.myProfile')}
+            </MenuItem>
+          )}
+          {playerSteamId && skinsEnabled && (
+            <MenuItem
+              onClick={() => {
+                handleAvatarMenuClose();
+                navigate(paths.inventory);
+              }}
+              data-testid="nav-inventory"
+            >
+              {t('nav.inventory')}
             </MenuItem>
           )}
           {playerSteamId && (

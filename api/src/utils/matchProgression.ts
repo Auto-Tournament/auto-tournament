@@ -357,6 +357,52 @@ export async function propagateMatchBySlotSources(matchId: number): Promise<void
  * For shuffle tournaments, matches are generated dynamically per round, so completion
  * is handled separately in shuffleTournamentService.
  */
+/**
+ * The teams placed 1st, 2nd and 3rd of a finished elimination tournament, each
+ * with its players (the lineup when the team signed up with one), handed to
+ * the skin rewards.
+ */
+async function awardTournamentSkins(tournamentId: number, tournament: DbTournamentRow): Promise<void> {
+  if (tournament.type !== 'single_elimination' && tournament.type !== 'double_elimination') return;
+  const settings = (() => {
+    try {
+      return JSON.parse(tournament.settings ?? '{}') as { skinRewards?: boolean };
+    } catch {
+      return {};
+    }
+  })();
+  const finals = await db.queryAsync<{ team1_id: string | null; team2_id: string | null; winner_id: string | null; round: number }>(
+    `SELECT team1_id, team2_id, winner_id, round FROM matches
+      WHERE tournament_id = ? AND round >= 1 AND next_match_id IS NULL AND status = 'completed'
+      ORDER BY round DESC, match_number ASC`,
+    [tournamentId]
+  );
+  const final = finals[0];
+  if (!final?.winner_id) return;
+  const loserOf = (m: { team1_id: string | null; team2_id: string | null; winner_id: string | null }) =>
+    m.winner_id === m.team1_id ? m.team2_id : m.team1_id;
+  const third = finals.find((m) => m !== final && m.winner_id);
+  const places: Array<{ place: 1 | 2 | 3; teamId: string | null }> = [
+    { place: 1, teamId: final.winner_id },
+    { place: 2, teamId: loserOf(final) },
+    { place: 3, teamId: third?.winner_id ?? null },
+  ];
+  const { tournamentSignupService } = await import('../services/tournamentSignupService');
+  const placements: Array<{ place: 1 | 2 | 3; steamIds: string[] }> = [];
+  for (const { place, teamId } of places) {
+    if (!teamId) continue;
+    const team = await db.queryOneAsync<{ players: string }>('SELECT players FROM teams WHERE id = ?', [teamId]);
+    if (!team) continue;
+    const roster = JSON.parse(await tournamentSignupService.lineupRoster(tournamentId, teamId, team.players)) as Array<{
+      steamId?: string;
+      steamid?: string;
+    }>;
+    placements.push({ place, steamIds: roster.map((p) => (p.steamId ?? p.steamid) as string).filter(Boolean) });
+  }
+  const { skinService } = await import('../services/skinService');
+  await skinService.awardTournament(tournamentId, tournament.name, placements, settings.skinRewards === false);
+}
+
 export async function checkTournamentCompletion(tournamentId: number): Promise<void> {
   try {
     log.debug(`[TOURNAMENT] Starting completion check for tournament ${tournamentId}`);
@@ -464,6 +510,11 @@ export async function checkTournamentCompletion(tournamentId: number): Promise<v
       
       log.success(`[TOURNAMENT] Tournament ${tournamentId} marked as completed! Status: ${updated?.status}, completed_at: ${updated?.completed_at}`);
       emitBracketUpdate({ action: 'tournament_completed' });
+
+      // Virtual skin rewards for the top three (off unless skins are on).
+      await awardTournamentSkins(tournamentId, tournament).catch((error) =>
+        log.warn('[TOURNAMENT] Skin rewards failed', { tournamentId, error: (error as Error).message })
+      );
     } else {
       log.debug(`[TOURNAMENT] Tournament ${tournamentId} not complete yet:`, {
         hasMatches: totalMatchesCount > 0,

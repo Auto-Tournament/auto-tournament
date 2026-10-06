@@ -27,6 +27,7 @@ import { ProfileHeader } from '../components/player/profile/ProfileHeader';
 import { PlayerProgress } from '../components/matchmaking/PlayerProgress';
 import { GameSwitch } from '../components/player/profile/GameSwitch';
 import { FactGrid, Panel, SectionHead, type Fact } from '../components/common/ui';
+import { ProfileLoadout } from '../components/skins/ProfileLoadout';
 import { useGameCapabilities } from '../hooks/useGameCapabilities';
 import { RatingChart } from '../components/player/profile/RatingChart';
 import { RecentMatches, type RecentMatchEntry } from '../components/player/profile/RecentMatches';
@@ -1065,6 +1066,9 @@ export default function PlayerProfile() {
 
           {/* The game's own numbers (CS2: aim, utility, map strength). */}
           {PlayerProfileView && showGameStats && hasAnyMatches && <PlayerProfileView playerId={player.id} />}
+
+          {/* Virtual skins: the loadout showcase (only while skins are on). */}
+          <ProfileLoadout steamId={player.id} isOwn={playerSteamId === player.id} />
 
           <Box
             sx={{
