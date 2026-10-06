@@ -187,6 +187,14 @@ async function setTeamIds(tournamentId: number, teamIds: string[]): Promise<void
     'UPDATE tournament SET team_ids = ?, updated_at = EXTRACT(EPOCH FROM NOW())::INTEGER WHERE id = ?',
     [JSON.stringify(teamIds), tournamentId]
   );
+  // Draw the bracket again with the teams now in. A count the format cannot
+  // draw yet (3 of 4) leaves no bracket until it can.
+  const { tournamentService } = await import('./tournamentService');
+  try {
+    await tournamentService.regenerateBracket(tournamentId, true);
+  } catch {
+    await db.runAsync("DELETE FROM matches WHERE tournament_id = ? AND status = 'pending'", [tournamentId]);
+  }
   emitTournamentUpdate({ id: tournamentId, action: 'tournament_updated' });
 }
 
