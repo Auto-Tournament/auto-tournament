@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
@@ -10,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
+import { SettingsRow } from './SettingsRow';
 
 interface AdminAccess {
   localAdminLoginEnabled: boolean;
@@ -59,17 +59,13 @@ export function AdminAccessSection() {
   const lockedOn = data.localAdminLoginEnabled && !data.canDisableLocalAdminLogin;
 
   return (
-    <Paper
-      variant="outlined"
-      component="section"
-      aria-labelledby="admin-access-title"
+    <SettingsRow
       data-testid="admin-access"
-      sx={{ p: { xs: 2, md: 3 } }}
+      title={<span id="admin-access-title">{t('settingsPage.signIn.adminAccess.title')}</span>}
+      sub={t('settingsPage.signIn.adminAccess.short')}
+      openLabel={t('settingsPage.signIn.adminAccess.title')}
     >
-      <Typography id="admin-access-title" variant="subtitle1" fontWeight={600} component="h3">
-        {t('settingsPage.signIn.adminAccess.title')}
-      </Typography>
-      <Stack spacing={2} mt={1.5}>
+      <Stack spacing={2}>
         <div>
           <FormControlLabel
             control={
@@ -130,6 +126,6 @@ export function AdminAccessSection() {
           </Button>
         </div>
       </Stack>
-    </Paper>
+    </SettingsRow>
   );
 }

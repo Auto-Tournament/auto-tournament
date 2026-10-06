@@ -6,7 +6,7 @@
 import { vetoMapPickers } from './veto/vetoMapPickers';
 import { Cs2ProfileStats } from './profile/Cs2ProfileStats';
 import { Cs2TeamProfileStats } from './profile/Cs2TeamProfileStats';
-import { HardDrivesIcon, MapTrifoldIcon } from '@phosphor-icons/react';
+import { HardDrivesIcon, MapTrifoldIcon, SlidersHorizontalIcon, KnifeIcon } from '@phosphor-icons/react';
 import type { ClientGameIntegration } from '../types';
 import { links } from '../../module-sdk';
 import { MatchServerPanel } from './match/MatchServerPanel';
@@ -46,7 +46,9 @@ import {
 import Servers from './pages/Servers';
 import Maps from './pages/Maps';
 import { Cs2AdminTools } from './admin/Cs2AdminTools';
-import { CS2_SETTINGS_PAGES, Cs2SettingsSection } from './settings/Cs2SettingsSection';
+import { MatchRulesPage } from './settings/MatchRulesPage';
+import { SkinsAdminPage } from './skins/SkinsAdminPage';
+import { cs2AdminPaths } from './adminPaths';
 import { InventoryPage } from './skins/InventoryPage';
 import { NewSkinReveal } from './skins/NewSkinReveal';
 import { ProfileLoadoutSection } from './skins/ProfileLoadout';
@@ -171,16 +173,10 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   // The admin home's "Add a server" row; this module counts its own servers.
   adminHomeSetup: serversSetupItems,
 
-  // Admin tools: RCON on its servers and their live event feed. Settings: the
-  // webhook URL its servers call back on, and the map sync. Both were core's
-  // until the module split (client API 0.2.2).
+  // Admin tools: RCON on its servers and their live event feed (core's until
+  // the module split, client API 0.2.2). Its settings are its own rail pages:
+  // Skins and Match rules.
   adminToolsSection: Cs2AdminTools,
-  instanceSettings: {
-    labelKey: 'settings.tab',
-    section: Cs2SettingsSection,
-    pages: CS2_SETTINGS_PAGES,
-  },
-
   // Virtual skins (skins/): the inventory pages, the Inventory link while
   // skins are on, the "new skin" reveal, and the loadout on profiles.
   accountMenuItems: skinsAccountMenuItems,
@@ -192,6 +188,8 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   routes: [
     { path: links.servers(), scope: 'admin', element: <Servers /> },
     { path: links.maps(), scope: 'admin', element: <Maps /> },
+    { path: cs2AdminPaths.skins, scope: 'admin', element: <SkinsAdminPage /> },
+    { path: cs2AdminPaths.matchRules, scope: 'admin', element: <MatchRulesPage /> },
     { path: skinPaths.inventory, scope: 'site', element: <InventoryPage /> },
     { path: skinPaths.playerInventory, scope: 'site', element: <InventoryPage /> },
   ],
@@ -201,5 +199,7 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   navItems: [
     { key: 'servers', path: links.servers(), icon: HardDrivesIcon },
     { key: 'maps', path: links.maps(), icon: MapTrifoldIcon },
+    { key: 'skins', path: cs2AdminPaths.skins, icon: KnifeIcon },
+    { key: 'matchRules', path: cs2AdminPaths.matchRules, icon: SlidersHorizontalIcon },
   ],
 };

@@ -3,11 +3,11 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { DEFAULT_SITE_NAME } from '../../hooks/useAdminHomeData';
+import { SettingsCardHead } from './SettingsRow';
 
 /** The API's limit (`SITE_NAME_MAX_LENGTH`). */
 const MAX_LENGTH = 80;
@@ -62,12 +62,7 @@ export function SiteNameCard() {
 
   return (
     <Box data-testid="settings-site-name-card">
-      <Typography variant="h6" fontWeight={600} gutterBottom>
-        {t('settingsPage.site.title')}
-      </Typography>
-      <Typography variant="body2" color="text.secondary" mb={2}>
-        {t('settingsPage.site.description')}
-      </Typography>
+      <SettingsCardHead title={t('settingsPage.site.title')} hint={t('settingsPage.site.description')} />
       <Stack
         component="form"
         direction={{ xs: 'column', sm: 'row' }}
@@ -85,7 +80,6 @@ export function SiteNameCard() {
           disabled={saving}
           size="small"
           placeholder={DEFAULT_SITE_NAME}
-          helperText={t('settingsPage.site.helper')}
           sx={{ flex: 1 }}
           slotProps={{ htmlInput: { maxLength: MAX_LENGTH, 'data-testid': 'settings-site-name-input' } }}
         />

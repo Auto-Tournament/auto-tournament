@@ -17,7 +17,8 @@
 import * as React from 'react';
 import { Box, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useSnackbar, api, links, useModuleTranslation } from '../../../module-sdk';
+import { useSnackbar, api, useModuleTranslation } from '../../../module-sdk';
+import { cs2AdminPaths } from '../adminPaths';
 import type { WebhookSettings, WebhookSettingsResponse } from '../cs2.types';
 import type { AdminGlobalWarningProps } from '../../types';
 
@@ -27,7 +28,7 @@ export const WebhookWarning: React.FC<AdminGlobalWarningProps> = () => {
   const navigate = useNavigate();
   // The field is on CS2's own Settings tab (0.2.2), so open that tab rather
   // than the page core's `onOpenSettings` goes to.
-  const openSettings = React.useCallback(() => navigate(links.settings('cs2')), [navigate]);
+  const openSettings = React.useCallback(() => navigate(cs2AdminPaths.matchRules), [navigate]);
   const hasShownWebhookWarningRef = React.useRef(false);
   const [webhookConfigured, setWebhookConfigured] = React.useState<boolean | null>(null);
 

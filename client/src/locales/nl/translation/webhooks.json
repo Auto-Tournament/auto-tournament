@@ -60,6 +60,11 @@
     "formatSigned": "Signed JSON (integrations)",
     "formatDiscord": "Discord message",
     "formatSignedHelp": "The signed event JSON, for your own service. Check the signature with the secret.",
-    "formatDiscordHelp": "Paste a Discord channel webhook URL (Channel settings → Integrations → Webhooks). Each event posts a message; no passwords or connect lines go to Discord, only a link to the match page."
+    "formatDiscordHelp": "Paste a Discord channel webhook URL (Channel settings → Integrations → Webhooks). Each event posts a message; no passwords or connect lines go to Discord, only a link to the match page.",
+    "short": "Stuur gebeurtenissen naar Discord of je eigen diensten.",
+    "addShort": "Toevoegen",
+    "working": "Werkt",
+    "failedCount": "{{count}} mislukt",
+    "allowPrivateShort": "Voor diensten op je eigen netwerk (LAN, Docker)."
   }
 }

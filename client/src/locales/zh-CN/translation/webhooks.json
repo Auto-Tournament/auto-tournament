@@ -60,6 +60,11 @@
     "formatSigned": "Signed JSON (integrations)",
     "formatDiscord": "Discord message",
     "formatSignedHelp": "The signed event JSON, for your own service. Check the signature with the secret.",
-    "formatDiscordHelp": "Paste a Discord channel webhook URL (Channel settings → Integrations → Webhooks). Each event posts a message; no passwords or connect lines go to Discord, only a link to the match page."
+    "formatDiscordHelp": "Paste a Discord channel webhook URL (Channel settings → Integrations → Webhooks). Each event posts a message; no passwords or connect lines go to Discord, only a link to the match page.",
+    "short": "将事件发送到 Discord 或你自己的服务。",
+    "addShort": "添加",
+    "working": "正常",
+    "failedCount": "{{count}} 个失败",
+    "allowPrivateShort": "用于你自己网络上的服务（局域网、Docker）。"
   }
 }

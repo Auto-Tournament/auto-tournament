@@ -1,7 +1,7 @@
 {
   "settingsPage": {
     "title": "Ustawienia",
-    "intro": "Skonfiguruj integracje, domyślne ustawienia w grze oraz opcje deweloperskie.",
+    "intro": "Własne ustawienia platformy. Każda gra ma swoje ustawienia w menu.",
     "tabs": {
       "general": "General",
       "signIn": "Sign-in",
@@ -70,8 +70,12 @@
         "emailsHelp": "Addresses that get admin when their owner signs in with a provider that verified them (Google, Discord, GitHub).",
         "unsaved": "Not saved yet.",
         "saved": "Admin access saved",
-        "loadError": "Could not load the admin access settings"
-      }
+        "loadError": "Could not load the admin access settings",
+        "short": "Kto może zalogować się jako administrator"
+      },
+      "short": "Jak logują się gracze i administratorzy. Zmiany działają od razu.",
+      "enabledFor": "Logowanie przez {{provider}}",
+      "setUp": "Skonfiguruj {{provider}}"
     },
     "integrations": {
       "steam": {
@@ -91,7 +95,8 @@
         "title": "Aktualizacje ratingu",
         "description": "Kontroluj, czy zakończone mecze aktualizują Skill Rating graczy.",
         "toggleLabel": "Aktualizuj rating graczy na podstawie zakończonych meczów",
-        "note": "Gdy wyłączone, mecze nadal będą zapisywać statystyki (ADR, K/D, itd.), ale Skill Rating pozostanie bez zmian."
+        "note": "Gdy wyłączone, mecze nadal będą zapisywać statystyki (ADR, K/D, itd.), ale Skill Rating pozostanie bez zmian.",
+        "short": "Rankingi zmieniają się po każdym meczu."
       }
     },
     "players": {
@@ -99,8 +104,11 @@
         "title": "Rejestracja graczy",
         "description": "Kontroluj, czy nowe logowania Steam automatycznie tworzą rekordy graczy. Gdy wyłączone, w prywatnych turniejach i pulach shuffle pojawią się tylko gracze utworzeni lub zaimportowani przez adminów.",
         "toggleLabel": "Pozwól każdemu rejestrować się przez logowanie Steam",
-        "recommendation": "Zalecane: pozostaw to wyłączone dla turniejów prywatnych lub na zaproszenie, aby przypadkowe logowania Steam nie zaśmiecały listy graczy."
-      }
+        "recommendation": "Zalecane: pozostaw to wyłączone dla turniejów prywatnych lub na zaproszenie, aby przypadkowe logowania Steam nie zaśmiecały listy graczy.",
+        "short": "Logowanie tworzy gracza dla każdej nowej osoby. Wyłączone: tylko gracze dodani przez ciebie."
+      },
+      "title": "Gracze",
+      "short": "Kto dołącza i jak zmieniają się rankingi."
     },
     "developer": {
       "resetApiTitle": "Reset API i bazy danych",
@@ -174,12 +182,17 @@
             "1v1": "Default: Active Duty"
           }
         }
-      }
+      },
+      "short": "Wciąż w budowie: domyślnie wyłączone, widzą je tylko administratorzy."
     },
     "groups": {
       "platform": "Platform"
     },
-    "navLabel": "Settings pages"
+    "navLabel": "Settings pages",
+    "gameLinks": {
+      "title": "Ustawienia gry",
+      "hint": "Każda gra ma swoje ustawienia w menu."
+    }
   },
   "dashboard": {
     "title": "Admin",
@@ -407,7 +420,8 @@
       "note": "Domyślnie wyłączone. Prowadzi do publicznej strony sprawdzania licencji i pojawia się tylko, gdy zapisany klucz jest ważny.",
       "on": "Publiczna informacja o licencji włączona",
       "off": "Publiczna informacja o licencji wyłączona",
-      "failed": "Nie udało się zmienić publicznej informacji o licencji"
+      "failed": "Nie udało się zmienić publicznej informacji o licencji",
+      "short": "Widoczne na stronach publicznych."
     },
     "public": {
       "licensed": "Licencjonowane"
@@ -488,6 +502,14 @@
     "warning": {
       "periodEnded": "Ta licencja na wydarzenie obejmowała daty do {{date}}. Testy i konfiguracja nie wymagają niczego; nowe wydarzenie ma własną licencję na wydarzenie.",
       "periodNotStarted": "Ta licencja na wydarzenie obejmuje daty od {{date}}. Konfiguracja i testy przed tym terminem są w porządku."
+    },
+    "short": "Jak używana jest ta instancja, i jej klucz.",
+    "keyRow": "Klucz licencji",
+    "state": {
+      "active": "Aktywna",
+      "warning": "Sprawdź",
+      "invalid": "Nieważna",
+      "none": "Brak klucza"
     }
   },
   "tournamentsPage": {

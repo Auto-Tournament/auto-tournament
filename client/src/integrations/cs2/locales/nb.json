@@ -1,14 +1,18 @@
 {
   "nav": {
     "servers": "Servere",
-    "maps": "Kart og kartpooler"
+    "maps": "Kart og kartpooler",
+    "skins": "Skins",
+    "matchRules": "Kampregler"
   },
   "layout": {
     "webhookNotConfigured": "Webhook-URL er ikke konfigurert. Kamper og servere kan ikke motta hendelser før den er satt.",
     "openSettings": "Åpne innstillinger",
     "pageTitle": {
       "servers": "Servere",
-      "maps": "Kart og kartpooler"
+      "maps": "Kart og kartpooler",
+      "skins": "Skins",
+      "matchRules": "Kampregler"
     },
     "atDbDown": {
       "title": "MatchZy Enhanced-databasen er utilgjengelig",
@@ -25,6 +29,14 @@
       "maps": {
         "label": "Kart",
         "hint": "Pooler og bilder"
+      },
+      "skins": {
+        "label": "Skins",
+        "hint": "Drops, premier, spillernes skins"
+      },
+      "matchRules": {
+        "label": "Kampregler",
+        "hint": "Hva serverne får vite hver kamp"
       }
     },
     "servers": {
@@ -49,7 +61,10 @@
   "managePage": {
     "rail": {
       "servers": "Servere",
-      "maps": "Kart"
+      "maps": "Kart",
+      "group": "Counter-Strike 2",
+      "skins": "Skins",
+      "matchRules": "Kampregler"
     },
     "status": {
       "serversFree": "LEDIGE SERVERE"
@@ -1627,7 +1642,7 @@
       "noticeFixed": "Vises alltid. Kan ikke endres.",
       "saved": "Skins-innstillinger lagret",
       "inv": {
-        "title": "Spillerinventar",
+        "title": "Spillernes skins",
         "hint": "Velg en spiller for å se skinsene deres, gi dem et eller ta et bort.",
         "player": "Spiller",
         "playerHint": "Navn eller Steam-ID",
@@ -1659,11 +1674,37 @@
         "remove": "Ta bort",
         "removeTitle": "Ta bort dette skinet?",
         "removeQuestion": "{{skin}} forsvinner fra inventaret og loadouten til {{player}}. Dette kan ikke angres.",
-        "removed": "Skin tatt bort"
+        "removed": "Skin tatt bort",
+        "none": "Fant ingen spillere.",
+        "giveShort": "Gi",
+        "nobodyYet": "Ingen har en skin ennå. Søk etter en spiller for å gi en."
       },
       "playDropChance": "Sjanse for et skin når du taper eller spiller uavgjort",
-      "knivesByPrice": "Kniver og hansker får sjeldenhet etter markedspris (Skinport, oppdatert daglig): billige er vanlige, dyre er sjeldne."
+      "knivesByPrice": "Kniver og hansker får sjeldenhet etter markedspris (Skinport, oppdatert daglig): billige er vanlige, dyre er sjeldne.",
+      "pageHint": "Virtuelle skins spillerne vinner her. Utstyrte skins vises på Ready Up-servere mellom kartene.",
+      "on": "På",
+      "off": "Av",
+      "stats": {
+        "given": "Delt ut",
+        "thisWeek": "{{count}} denne uka",
+        "owners": "Spillere med skins",
+        "ofPlayers": "av {{count}}",
+        "rarest": "Sjeldneste",
+        "noneYet": "Ingen ennå"
+      },
+      "win": "Seier",
+      "lose": "Tap eller uavgjort",
+      "chance": "sjanse for en skin",
+      "whatDrops": "Hva som dropper. Dra i kantene.",
+      "edge": "Mellom {{a}} og {{b}}",
+      "podiumHint": "Klikk et trinn for å endre hva det gir.",
+      "rewardTitle": "Premie for {{place}}",
+      "done": "Ferdig"
     },
     "tournamentRewardsSwitch": "Skin-premier for topp tre (når skins er slått på)"
+  },
+  "matchRules": {
+    "title": "Kampregler",
+    "subtitle": "Hva hver CS2-server får vite når en kamp starter."
   }
 }

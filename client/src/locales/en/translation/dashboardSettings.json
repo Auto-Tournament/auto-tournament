@@ -101,7 +101,7 @@
   },
   "settingsPage": {
     "title": "Settings",
-    "intro": "Settings for the whole site, whatever game it runs. Each installed game module has a tab of its own.",
+    "intro": "The platform's own settings. Each game keeps its settings with it in the menu.",
     "tabs": {
       "general": "General",
       "signIn": "Sign-in",
@@ -170,8 +170,12 @@
         "emailsHelp": "Addresses that get admin when their owner signs in with a provider that verified them (Google, Discord, GitHub).",
         "unsaved": "Not saved yet.",
         "saved": "Admin access saved",
-        "loadError": "Could not load the admin access settings"
-      }
+        "loadError": "Could not load the admin access settings",
+        "short": "Who can sign in as an admin"
+      },
+      "short": "How players and admins sign in. Changes apply at once.",
+      "enabledFor": "{{provider}} sign-in",
+      "setUp": "Set up {{provider}}"
     },
     "integrations": {
       "steam": {
@@ -191,7 +195,8 @@
         "title": "Rating Updates",
         "description": "Control whether completed matches update player Skill Ratings. Disable this for events where an external system (for example your Excel sheet) is the source of truth for ratings.",
         "toggleLabel": "Update player ratings from completed matches",
-        "note": "When disabled, all matches will still track stats (ADR, K/D, etc.), but player Skill Ratings will remain unchanged."
+        "note": "When disabled, all matches will still track stats (ADR, K/D, etc.), but player Skill Ratings will remain unchanged.",
+        "short": "Ratings change after every match."
       }
     },
     "players": {
@@ -199,8 +204,11 @@
         "title": "Player registration",
         "description": "Control whether signing in creates a player record for someone new, whichever sign-in method they use (Steam, Discord, Google and the others you enabled). When disabled, only players created or imported by admins appear in private tournaments and shuffle pools.",
         "toggleLabel": "Allow anyone to register by signing in",
-        "recommendation": "Recommended: keep this off for invite‑only or private tournaments so random sign-ins do not fill up the player list."
-      }
+        "recommendation": "Recommended: keep this off for invite‑only or private tournaments so random sign-ins do not fill up the player list.",
+        "short": "Signing in makes a player of anyone new. Off: only players you add."
+      },
+      "title": "Players",
+      "short": "Who joins, and how ratings move."
     },
     "developer": {
       "resetApiTitle": "Reset API & Database",
@@ -274,12 +282,17 @@
             "1v1": "Default: Active Duty"
           }
         }
-      }
+      },
+      "short": "Still being built: off by default, only admins see them."
     },
     "groups": {
       "platform": "Platform"
     },
-    "navLabel": "Settings pages"
+    "navLabel": "Settings pages",
+    "gameLinks": {
+      "title": "Game settings",
+      "hint": "Each game keeps its own settings with it in the menu."
+    }
   },
   "managePage": {
     "title": "Manage",
@@ -403,7 +416,8 @@
       "note": "Off by default. Links to the license's public check page, and only shows while the saved key is valid.",
       "on": "Public license line turned on",
       "off": "Public license line turned off",
-      "failed": "Could not change the public license line"
+      "failed": "Could not change the public license line",
+      "short": "Shown on public pages."
     },
     "public": {
       "licensed": "Licensed"
@@ -484,6 +498,14 @@
     "warning": {
       "periodEnded": "This event license covered dates up to {{date}}. Testing and setting up need no action; a new event gets its own event license.",
       "periodNotStarted": "This event license covers dates from {{date}}. Setting up and testing before then is fine."
+    },
+    "short": "How this instance is used, and its key.",
+    "keyRow": "License key",
+    "state": {
+      "active": "Active",
+      "warning": "Check",
+      "invalid": "Invalid",
+      "none": "No key"
     }
   },
   "tournamentsPage": {

@@ -60,6 +60,11 @@
     "formatSigned": "Signert JSON (integrasjoner)",
     "formatDiscord": "Discord-melding",
     "formatSignedHelp": "Den signerte hendelses-JSON-en, for din egen tjeneste. Sjekk signaturen med hemmeligheten.",
-    "formatDiscordHelp": "Lim inn en Discord-kanals webhook-URL (Kanalinnstillinger → Integrasjoner → Webhooks). Hver hendelse poster en melding; ingen passord eller connect-linjer går til Discord, bare en lenke til kampsiden."
+    "formatDiscordHelp": "Lim inn en Discord-kanals webhook-URL (Kanalinnstillinger → Integrasjoner → Webhooks). Hver hendelse poster en melding; ingen passord eller connect-linjer går til Discord, bare en lenke til kampsiden.",
+    "short": "Send hendelser til Discord eller egne tjenester.",
+    "addShort": "Legg til",
+    "working": "Virker",
+    "failedCount": "{{count}} feilet",
+    "allowPrivateShort": "For tjenester på ditt eget nett (LAN, Docker)."
   }
 }

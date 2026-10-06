@@ -1,7 +1,7 @@
 {
   "settingsPage": {
     "title": "Paramètres",
-    "intro": "Configurez les intégrations, les valeurs par défaut en jeu et les options de développement.",
+    "intro": "Les réglages propres à la plateforme. Chaque jeu garde les siens dans le menu.",
     "tabs": {
       "general": "General",
       "signIn": "Sign-in",
@@ -70,8 +70,12 @@
         "emailsHelp": "Addresses that get admin when their owner signs in with a provider that verified them (Google, Discord, GitHub).",
         "unsaved": "Not saved yet.",
         "saved": "Admin access saved",
-        "loadError": "Could not load the admin access settings"
-      }
+        "loadError": "Could not load the admin access settings",
+        "short": "Qui peut se connecter en admin"
+      },
+      "short": "Comment les joueurs et les admins se connectent. Les changements s’appliquent tout de suite.",
+      "enabledFor": "Connexion avec {{provider}}",
+      "setUp": "Configurer {{provider}}"
     },
     "integrations": {
       "steam": {
@@ -91,7 +95,8 @@
         "title": "Mises à jour du rating",
         "description": "Contrôlez si les matchs terminés mettent à jour le Skill Rating des joueurs.",
         "toggleLabel": "Mettre à jour le rating des joueurs à partir des matchs terminés",
-        "note": "Quand désactivé, les stats (ADR, K/D, etc.) sont toujours enregistrées, mais les Skill Ratings ne changent pas."
+        "note": "Quand désactivé, les stats (ADR, K/D, etc.) sont toujours enregistrées, mais les Skill Ratings ne changent pas.",
+        "short": "Les classements changent après chaque match."
       }
     },
     "players": {
@@ -99,8 +104,11 @@
         "title": "Inscription des joueurs",
         "description": "Contrôlez si les nouvelles connexions Steam créent automatiquement des fiches joueur. Quand désactivé, seuls les joueurs créés ou importés par les admins apparaîtront dans les tournois privés et les pools shuffle.",
         "toggleLabel": "Autoriser tout le monde à s’inscrire via la connexion Steam",
-        "recommendation": "Recommandé : laissez ceci désactivé pour les tournois sur invitation/privés afin d’éviter que des connexions Steam aléatoires n’encombrent la liste des joueurs."
-      }
+        "recommendation": "Recommandé : laissez ceci désactivé pour les tournois sur invitation/privés afin d’éviter que des connexions Steam aléatoires n’encombrent la liste des joueurs.",
+        "short": "La connexion crée un joueur pour tout nouveau venu. Désactivé : seulement les joueurs que vous ajoutez."
+      },
+      "title": "Joueurs",
+      "short": "Qui participe, et comment les classements évoluent."
     },
     "developer": {
       "resetApiTitle": "Réinitialiser l’API & la base de données",
@@ -174,12 +182,17 @@
             "1v1": "Default: Active Duty"
           }
         }
-      }
+      },
+      "short": "Encore en chantier : désactivées par défaut, visibles des admins seulement."
     },
     "groups": {
       "platform": "Platform"
     },
-    "navLabel": "Settings pages"
+    "navLabel": "Settings pages",
+    "gameLinks": {
+      "title": "Réglages du jeu",
+      "hint": "Chaque jeu garde ses propres réglages dans le menu."
+    }
   },
   "dashboard": {
     "title": "Admin",
@@ -403,7 +416,8 @@
       "note": "Désactivé par défaut. Renvoie vers la page publique de vérification de la licence et ne s’affiche que tant que la clé enregistrée est valide.",
       "on": "Ligne de licence publique activée",
       "off": "Ligne de licence publique désactivée",
-      "failed": "Impossible de modifier la ligne de licence publique"
+      "failed": "Impossible de modifier la ligne de licence publique",
+      "short": "Affiché sur les pages publiques."
     },
     "public": {
       "licensed": "Sous licence"
@@ -484,6 +498,14 @@
     "warning": {
       "periodEnded": "Cette licence d’événement couvrait les dates jusqu’au {{date}}. Les tests et la mise en place ne demandent rien ; un nouvel événement a sa propre licence d’événement.",
       "periodNotStarted": "Cette licence d’événement couvre les dates à partir du {{date}}. Préparer et tester avant, c’est très bien."
+    },
+    "short": "L’usage de cette instance, et sa clé.",
+    "keyRow": "Clé de licence",
+    "state": {
+      "active": "Active",
+      "warning": "À vérifier",
+      "invalid": "Invalide",
+      "none": "Aucune clé"
     }
   },
   "tournamentsPage": {

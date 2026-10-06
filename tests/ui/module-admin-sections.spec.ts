@@ -52,40 +52,44 @@ test.describe('Module sections on Admin tools and Settings', () => {
   );
 
   test(
-    'with CS2 installed, Settings has a CS2 group: general, servers, skins and player inventories',
+    'with CS2 installed, its settings are its own pages in the rail: Skins and Match rules',
     { tag: ['@ui', '@modules', '@settings'] },
     async ({ page }) => {
       await page.goto('/settings');
-      const group = page.getByTestId('settings-nav-group-cs2');
-      await expect(group).toBeVisible({ timeout: 30000 });
+      await expect(page.getByTestId('settings-card-site')).toBeVisible({ timeout: 30000 });
 
-      // The platform's pages carry none of CS2's fields, and "Advanced" (all CS2) is gone.
+      // Settings is the platform's only: none of CS2's fields, no second nav.
       await expect(page.getByTestId('settings-webhook-url-input')).toHaveCount(0);
-      await expect(page.locator('#settings-nav-advanced')).toHaveCount(0);
-      await page.getByTestId('settings-nav-ratings').click();
-      await expect(page.locator('#settings-page-ratings')).toBeVisible();
       await expect(page.getByTestId('cs2-server-defaults')).toHaveCount(0);
+      await expect(page.locator('[id^="settings-nav-"]')).toHaveCount(0);
+      await expect(page.getByTestId('settings-game-links')).toBeVisible({ timeout: 30000 });
 
-      await page.getByTestId('settings-nav-cs2-general').click();
+      // The rail's CS2 group: Servers, Maps, Skins, Match rules.
+      const group = page.getByTestId('manage-rail-group-game');
+      await expect(group).toBeVisible({ timeout: 30000 });
+      for (const name of ['Servers', 'Maps', 'Skins', 'Match rules']) {
+        await expect(group.getByRole('link', { name })).toBeVisible();
+      }
+
+      await group.getByRole('link', { name: 'Match rules' }).click();
       await expect(page.getByTestId('settings-webhook-url-input')).toBeVisible({ timeout: 15000 });
-      await expect(page.getByTestId('cs2-settings-map-sync')).toBeVisible();
-
-      // The defaults sent to every CS2 server.
-      await page.getByTestId('settings-nav-cs2-servers').click();
       await expect(page.getByTestId('cs2-server-defaults')).toBeVisible();
       await expect(page.getByTestId('at-hostname-format-input')).toBeAttached();
-      await expect(page.getByTestId('cs2-settings-reset-button')).toBeVisible();
 
-      // Virtual skins are CS2's too.
-      await page.getByTestId('settings-nav-cs2-skins').click();
+      await group.getByRole('link', { name: 'Skins' }).click();
       await expect(page.getByTestId('skins-settings')).toBeVisible({ timeout: 15000 });
-      await page.getByTestId('settings-nav-cs2-inventories').click();
-      await expect(page.getByTestId('skins-inventory-admin')).toBeVisible({ timeout: 15000 });
+      await expect(page.getByTestId('skins-stats')).toBeVisible();
+      await expect(page.getByTestId('skins-rarity-bar')).toBeVisible();
+      await expect(page.getByTestId('skins-inventory-admin')).toBeVisible();
 
-      // `links.settings('cs2')` opens the group's first page.
+      // Old links to CS2's settings land on its pages.
       await page.goto('/settings?section=cs2');
-      await expect(page.getByTestId('settings-webhook-url-input')).toBeVisible({ timeout: 30000 });
-      await expect(page.getByTestId('settings-nav-cs2-general')).toHaveAttribute('aria-current', 'page');
+      await expect(page).toHaveURL(/\/match-rules$/, { timeout: 30000 });
+      await page.goto('/settings?section=cs2:skins');
+      await expect(page).toHaveURL(/\/skins$/, { timeout: 30000 });
+      // A platform section scrolls to its card.
+      await page.goto('/settings?section=license');
+      await expect(page.getByTestId('settings-card-license')).toBeInViewport({ timeout: 15000 });
     }
   );
 
@@ -103,15 +107,14 @@ test.describe('Module sections on Admin tools and Settings', () => {
       await expect(page.getByTestId('admin-tools-module-cs2')).toHaveCount(0);
       await expect(page.getByTestId('cs2-admin-tools')).toHaveCount(0);
 
-      // A link to CS2's settings lands on the platform's first page instead.
-      await page.goto('/settings?section=cs2');
+      // Settings shows the platform's cards and no game links.
+      await page.goto('/settings');
       await expect(page.getByTestId('settings-version')).toBeVisible({ timeout: 15000 });
-      await expect(page.getByTestId('settings-nav-general')).toHaveAttribute('aria-current', 'page');
-      await expect(page.getByTestId('settings-nav-group-cs2')).toHaveCount(0);
+      await expect(page.getByTestId('settings-card-site')).toBeVisible();
+      await expect(page.getByTestId('settings-game-links')).toHaveCount(0);
       await expect(page.getByTestId('settings-webhook-url-input')).toHaveCount(0);
       await expect(page.getByTestId('cs2-settings-map-sync')).toHaveCount(0);
       await expect(page.getByTestId('cs2-server-defaults')).toHaveCount(0);
-      await expect(page.locator('#settings-nav-advanced')).toHaveCount(0);
     }
   );
 });

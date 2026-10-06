@@ -1,14 +1,18 @@
 {
   "nav": {
     "servers": "Spelservers",
-    "maps": "Kaarten & map-pools"
+    "maps": "Kaarten & map-pools",
+    "skins": "Skins",
+    "matchRules": "Wedstrijdregels"
   },
   "layout": {
     "webhookNotConfigured": "Webhook-URL is niet ingesteld. Wedstrijden en servers kunnen geen events ontvangen totdat dit is ingesteld.",
     "openSettings": "Instellingen openen",
     "pageTitle": {
       "servers": "Spelservers",
-      "maps": "Kaarten & map-pools"
+      "maps": "Kaarten & map-pools",
+      "skins": "Skins",
+      "matchRules": "Wedstrijdregels"
     },
     "atDbDown": {
       "title": "MatchZy Enhanced-database onbereikbaar",
@@ -25,6 +29,14 @@
       "maps": {
         "label": "Maps",
         "hint": "Pools and images"
+      },
+      "skins": {
+        "label": "Skins",
+        "hint": "Drops, beloningen, skins van spelers"
+      },
+      "matchRules": {
+        "label": "Wedstrijdregels",
+        "hint": "Wat servers bij elke wedstrijd te horen krijgen"
       }
     },
     "servers": {
@@ -49,7 +61,10 @@
   "managePage": {
     "rail": {
       "servers": "Servers",
-      "maps": "Maps"
+      "maps": "Maps",
+      "group": "Counter-Strike 2",
+      "skins": "Skins",
+      "matchRules": "Wedstrijdregels"
     },
     "status": {
       "serversFree": "SERVERS FREE"
@@ -1659,11 +1674,37 @@
         "remove": "Take away",
         "removeTitle": "Take this skin away?",
         "removeQuestion": "{{skin}} leaves {{player}}'s inventory and loadout. This cannot be undone.",
-        "removed": "Skin taken away"
+        "removed": "Skin taken away",
+        "none": "Geen spelers gevonden.",
+        "nobodyYet": "Nog niemand heeft een skin. Zoek een speler om er een te geven.",
+        "giveShort": "Geven"
       },
       "playDropChance": "Chance of a skin when you lose or draw",
-      "knivesByPrice": "Knives and gloves get their rarity from market price (Skinport, updated daily): cheap ones are common, expensive ones rare."
+      "knivesByPrice": "Knives and gloves get their rarity from market price (Skinport, updated daily): cheap ones are common, expensive ones rare.",
+      "pageHint": "Virtuele skins die spelers hier winnen. Uitgeruste skins verschijnen tussen maps op Ready Up-servers.",
+      "on": "Aan",
+      "off": "Uit",
+      "stats": {
+        "given": "Uitgedeeld",
+        "thisWeek": "{{count}} deze week",
+        "owners": "Spelers met skins",
+        "ofPlayers": "van {{count}}",
+        "rarest": "De zeldzaamste",
+        "noneYet": "Nog geen"
+      },
+      "win": "Winst",
+      "lose": "Verlies of gelijkspel",
+      "chance": "kans op een skin",
+      "whatDrops": "Wat er dropt. Sleep aan de randen.",
+      "edge": "Tussen {{a}} en {{b}}",
+      "podiumHint": "Klik op een trede om te veranderen wat die geeft.",
+      "rewardTitle": "Beloning voor {{place}}",
+      "done": "Klaar"
     },
     "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)"
+  },
+  "matchRules": {
+    "title": "Wedstrijdregels",
+    "subtitle": "Wat elke CS2-server te horen krijgt als een wedstrijd begint."
   }
 }

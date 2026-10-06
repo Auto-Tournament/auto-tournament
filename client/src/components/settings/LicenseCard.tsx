@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import FormControlLabel from '@mui/material/FormControlLabel';
+import Chip from '@mui/material/Chip';
 import LinearProgress from '@mui/material/LinearProgress';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
@@ -22,6 +22,7 @@ import {
   type LicenseStatusResponse,
 } from '../../hooks/useLicenseStatus';
 import { LicenseConsentSection } from '../license/LicenseConsentSection';
+import { SettingsCardHead, SettingsRow } from './SettingsRow';
 
 /**
  * Settings → License: the accepted terms and declared use (change it here),
@@ -85,32 +86,29 @@ export function LicenseCard() {
   const { license, warnings } = status;
   const hasKey = status.status !== 'none';
 
+  const chip =
+    status.status === 'invalid'
+      ? { label: t('license.state.invalid'), color: 'error' as const }
+      : status.status === 'warning'
+        ? { label: t('license.state.warning'), color: 'warning' as const }
+        : hasKey
+          ? { label: t('license.state.active'), color: 'success' as const }
+          : { label: t('license.state.none'), color: 'default' as const };
+
   return (
     <Box data-testid="settings-license-card">
-      <Typography variant="h6" fontWeight={600} gutterBottom>
-        {t('license.title')}
-      </Typography>
-      <Typography variant="body2" color="text.secondary" mb={2}>
-        {t('license.description')}
-      </Typography>
+      <SettingsCardHead title={t('license.title')} hint={t('license.short')} />
 
-      <Stack spacing={2}>
-        {/* The use declared when the terms were accepted, and "Change" */}
+      {/* The use declared when the terms were accepted, and "Change" */}
+      <Box sx={{ pb: 1.5 }}>
         <LicenseConsentSection hasKey={hasKey} onChanged={() => void reload()} />
+      </Box>
 
-        {!hasKey && (
-          <Typography variant="body2" color="text.secondary" data-testid="settings-license-none">
-            {t('license.none')}{' '}
-            <ExternalLink href={status.pricingUrl}>{t('license.pricing')}</ExternalLink>
-          </Typography>
-        )}
-
-        {license && (
-          <Box data-testid="settings-license-summary">
-            <Typography variant="body1" fontWeight={600}>
-              {licenseSummary(license, t)}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
+      <SettingsRow
+        title={license ? <span data-testid="settings-license-summary">{licenseSummary(license, t)}</span> : t('license.keyRow')}
+        sub={
+          license ? (
+            <>
               {t('license.id', { id: license.id })}
               {status.verifyUrl && (
                 <>
@@ -120,104 +118,109 @@ export function LicenseCard() {
                   </ExternalLink>
                 </>
               )}
-            </Typography>
-          </Box>
-        )}
+            </>
+          ) : (
+            <span data-testid="settings-license-none">
+              {t('license.none')} <ExternalLink href={status.pricingUrl}>{t('license.pricing')}</ExternalLink>
+            </span>
+          )
+        }
+        control={<Chip size="small" color={chip.color} label={chip.label} data-testid="settings-license-state" />}
+        defaultOpen={status.status === 'invalid' || status.status === 'warning'}
+        openLabel={hasKey ? t('license.replaceLabel') : t('license.label')}
+      >
+        <Stack spacing={2}>
+          {status.status === 'invalid' && (
+            <Alert severity="warning" data-testid="settings-license-invalid">
+              {t('license.invalid')} {warnings[0]?.message}
+            </Alert>
+          )}
+          {status.status === 'warning' && (
+            <Alert severity="warning" data-testid="settings-license-warnings">
+              <Box component="ul" sx={{ m: 0, pl: 2 }}>
+                {warnings.map((w) => (
+                  <li key={w.code}>{licenseWarningText(w, license, t)}</li>
+                ))}
+              </Box>
+              <Typography variant="caption" display="block" mt={1}>
+                {t('license.warningsNote')}
+              </Typography>
+            </Alert>
+          )}
 
-        {status.status === 'invalid' && (
-          <Alert severity="warning" data-testid="settings-license-invalid">
-            {t('license.invalid')} {warnings[0]?.message}
-          </Alert>
-        )}
-        {status.status === 'warning' && (
-          <Alert severity="warning" data-testid="settings-license-warnings">
-            <Box component="ul" sx={{ m: 0, pl: 2 }}>
-              {warnings.map((w) => (
-                <li key={w.code}>{licenseWarningText(w, license, t)}</li>
-              ))}
-            </Box>
-            <Typography variant="caption" display="block" mt={1}>
-              {t('license.warningsNote')}
-            </Typography>
-          </Alert>
-        )}
+          <Stack
+            component="form"
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2}
+            alignItems={{ sm: 'flex-start' }}
+            onSubmit={(e: React.FormEvent) => {
+              e.preventDefault();
+              if (key.trim()) void save();
+            }}
+          >
+            <TextField
+              label={hasKey ? t('license.replaceLabel') : t('license.label')}
+              value={key}
+              onChange={(e) => setKey(e.target.value)}
+              disabled={busy}
+              size="small"
+              placeholder="ATL1.…"
+              multiline
+              minRows={2}
+              maxRows={6}
+              autoComplete="off"
+              helperText={<Trans t={t} i18nKey="license.helper" components={consoleLinkComponents} />}
+              sx={{ flex: 1 }}
+              slotProps={{
+                htmlInput: { spellCheck: false, 'data-testid': 'settings-license-input' },
+              }}
+            />
+            <Stack direction="row" spacing={1}>
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={!key.trim() || busy}
+                data-testid="settings-license-save"
+              >
+                {t('license.save')}
+              </Button>
+              {hasKey && (
+                <Button
+                  color="inherit"
+                  onClick={() => void remove()}
+                  disabled={busy}
+                  data-testid="settings-license-remove"
+                >
+                  {t('license.remove')}
+                </Button>
+              )}
+            </Stack>
+          </Stack>
+          <Typography variant="caption" color="text.secondary" display="block" data-testid="settings-license-checkin">
+            {t('license.checkInNote')}
+          </Typography>
+          {status.checkin && <CheckinDetails status={status} />}
+        </Stack>
+      </SettingsRow>
 
-        <Stack
-          component="form"
-          direction={{ xs: 'column', sm: 'row' }}
-          spacing={2}
-          alignItems={{ sm: 'flex-start' }}
-          onSubmit={(e: React.FormEvent) => {
-            e.preventDefault();
-            if (key.trim()) void save();
-          }}
-        >
-          <TextField
-            label={hasKey ? t('license.replaceLabel') : t('license.label')}
-            value={key}
-            onChange={(e) => setKey(e.target.value)}
+      <SettingsRow
+        title={t('license.badge.label')}
+        sub={t('license.badge.short')}
+        control={
+          <Switch
+            checked={status.publicBadge}
+            onChange={(event) => void setBadge(event.target.checked)}
             disabled={busy}
-            size="small"
-            placeholder="ATL1.…"
-            multiline
-            minRows={2}
-            maxRows={6}
-            autoComplete="off"
-            helperText={<Trans t={t} i18nKey="license.helper" components={consoleLinkComponents} />}
-            sx={{ flex: 1 }}
+            color="primary"
             slotProps={{
-              htmlInput: { spellCheck: false, 'data-testid': 'settings-license-input' },
+              input: {
+                'data-testid': 'settings-license-badge',
+                'aria-label': t('license.badge.label'),
+              } as React.InputHTMLAttributes<HTMLInputElement>,
             }}
           />
-          <Stack direction="row" spacing={1}>
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={!key.trim() || busy}
-              data-testid="settings-license-save"
-            >
-              {t('license.save')}
-            </Button>
-            {hasKey && (
-              <Button
-                color="inherit"
-                onClick={() => void remove()}
-                disabled={busy}
-                data-testid="settings-license-remove"
-              >
-                {t('license.remove')}
-              </Button>
-            )}
-          </Stack>
-        </Stack>
-        <Typography variant="caption" color="text.secondary" display="block" data-testid="settings-license-checkin">
-          {t('license.checkInNote')}
-        </Typography>
-        {status.checkin && <CheckinDetails status={status} />}
-
-        <Box>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={status.publicBadge}
-                onChange={(event) => void setBadge(event.target.checked)}
-                disabled={busy}
-                color="primary"
-                size="small"
-                slotProps={{
-                  input: {
-                    'data-testid': 'settings-license-badge',
-                  } as React.InputHTMLAttributes<HTMLInputElement>,
-                }}
-              />
-            }
-            label={t('license.badge.label')}
-          />
-          <Typography variant="caption" color="text.secondary" display="block">
-            {t('license.badge.note')}
-          </Typography>
-        </Box>
-      </Stack>
+        }
+      />
     </Box>
   );
 }

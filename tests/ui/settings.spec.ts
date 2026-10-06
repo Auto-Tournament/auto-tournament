@@ -29,13 +29,17 @@ test.describe.serial('Settings UI', () => {
       await expect(page).toHaveTitle(/Settings/i);
       await page.waitForLoadState('networkidle');
 
-      // The webhook URL is CS2's (its own Settings group since client API 0.2.2),
-      // and the suite runs with CS2 installed.
-      await page.getByTestId('settings-nav-cs2-general').click({ timeout: 15000 });
-      await expect(page.getByTestId('settings-webhook-url-input')).toBeVisible({ timeout: 15000 });
+      // One page: the platform's cards, no second nav and nothing of CS2's.
+      for (const card of ['site', 'signin', 'players', 'webhooks', 'license', 'advanced']) {
+        await expect(page.getByTestId(`settings-card-${card}`)).toBeVisible({ timeout: 15000 });
+      }
+      await expect(page.locator('[id^="settings-nav-"]')).toHaveCount(0);
+      await expect(page.getByTestId('settings-webhook-url-input')).toHaveCount(0);
 
-      // CS2's server defaults and their reset are its Servers page (0.2.10).
-      await page.getByTestId('settings-nav-cs2-servers').click();
+      // CS2's settings are its Match rules page, linked from here.
+      await page.getByTestId('settings-game-links').getByRole('link', { name: 'Match rules' }).click();
+      await expect(page).toHaveURL(/\/match-rules$/);
+      await expect(page.getByTestId('settings-webhook-url-input')).toBeVisible({ timeout: 15000 });
       await expect(page.getByTestId('cs2-server-defaults')).toBeVisible();
       await expect(page.getByTestId('cs2-settings-reset-button')).toBeVisible();
 
@@ -50,7 +54,7 @@ test.describe.serial('Settings UI', () => {
       tag: ['@ui', '@settings', '@configuration'],
     },
     async ({ page }) => {
-      await page.goto('/settings?section=cs2');
+      await page.goto('/match-rules');
       await page.waitForLoadState('networkidle');
 
       const webhookInput = page.getByTestId('settings-webhook-url-input');
@@ -104,7 +108,7 @@ test.describe.serial('Settings UI', () => {
       // A field the tab does not touch, to prove its saves are partial.
       const before = await readSettings();
 
-      await page.goto('/settings?section=cs2:servers');
+      await page.goto('/match-rules');
       await page.getByTestId('cs2-settings-demos-summary').click({ timeout: 30000 });
       const hostname = page.getByTestId('at-hostname-format-input');
       await expect(hostname).toBeVisible({ timeout: 15000 });

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type InputHTMLAttributes } from 'react';
 import {
   Alert,
   Box,
@@ -13,7 +13,6 @@ import {
   FormGroup,
   IconButton,
   MenuItem,
-  Paper,
   Select,
   Stack,
   Switch,
@@ -26,10 +25,12 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import { ArrowClockwiseIcon, CopyIcon, PaperPlaneTiltIcon, TrashIcon } from '@phosphor-icons/react';
+import { ArrowClockwiseIcon, CopyIcon, PaperPlaneTiltIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
+import { tokens, radii } from '../../theme/tokens';
+import { SettingsCardHead, SettingsRow } from './SettingsRow';
 
 interface EventTypeInfo {
   type: string;
@@ -112,6 +113,15 @@ function when(ms: number | null): string {
  * type, the delivery log (connect details redacted by the API) with resend,
  * and the switch for private / local targets (LAN events).
  */
+/** An endpoint's host, to name it in its row when it has no description. */
+function hostOf(url: string): string {
+  try {
+    return new URL(url).host;
+  } catch {
+    return url;
+  }
+}
+
 export function WebhooksCard() {
   const { t } = useTranslation();
   const { showSuccess, showError } = useSnackbar();
@@ -241,145 +251,161 @@ export function WebhooksCard() {
   };
 
   return (
-    <Stack spacing={3} data-testid="settings-webhooks-card">
-      <Box>
-        <Typography variant="h6" fontWeight={600} gutterBottom>
-          {t('webhooksPage.title')}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {t('webhooksPage.description')}
-        </Typography>
-      </Box>
+    <Stack spacing={0} data-testid="settings-webhooks-card">
+      <SettingsCardHead
+        title={t('webhooksPage.title')}
+        hint={t('webhooksPage.short')}
+        action={
+          <Button
+            size="small"
+            startIcon={<PlusIcon size={14} />}
+            onClick={() => setForm({ ...EMPTY_FORM })}
+            data-testid="webhook-add"
+            sx={{ borderRadius: radii.pill, bgcolor: tokens.color.paper3, color: tokens.color.ink, px: 1.75, flex: 'none' }}
+          >
+            {t('webhooksPage.addShort')}
+          </Button>
+        }
+      />
 
       {data.endpoints
         .filter((e) => e.disabledReason)
         .map((e) => (
-          <Alert severity="error" key={`disabled-${e.id}`} data-testid="webhook-disabled-notice">
-            <strong>{e.url}</strong> — {e.disabledReason}
+          <Alert severity="error" key={`disabled-${e.id}`} data-testid="webhook-disabled-notice" sx={{ mb: 1.5 }}>
+            <strong>{e.url}</strong>: {e.disabledReason}
           </Alert>
         ))}
 
-      <FormControlLabel
-        control={
-          <Switch
-            checked={data.allowPrivateTargets}
-            onChange={(event) => void setAllowPrivate(event.target.checked)}
-            size="small"
-            data-testid="webhooks-allow-private"
-          />
-        }
-        label={t('webhooksPage.allowPrivate')}
-      />
-      <Typography variant="caption" color="text.secondary" sx={{ mt: -2 }}>
-        {t('webhooksPage.allowPrivateHelp')}
-      </Typography>
-
       {data.endpoints.length === 0 && (
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" color="text.secondary" sx={{ pb: 1.5 }}>
           {t('webhooksPage.empty')}
         </Typography>
       )}
 
-      {data.endpoints.map((endpoint) => (
-        <Paper key={endpoint.id} variant="outlined" sx={{ p: 2 }} data-testid={`webhook-endpoint-${endpoint.id}`}>
-          <Stack spacing={1}>
-            <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-              <Typography fontWeight={600} sx={{ wordBreak: 'break-all' }}>
+      {data.endpoints.map((endpoint) => {
+        const failed = endpoint.deliveries.failed ?? 0;
+        const health = !endpoint.active
+          ? { label: t('webhooksPage.inactive'), color: 'default' as const }
+          : failed > 0
+            ? { label: t('webhooksPage.failedCount', { count: failed }), color: 'error' as const }
+            : { label: t('webhooksPage.working'), color: 'success' as const };
+        return (
+          <SettingsRow
+            key={endpoint.id}
+            data-testid={`webhook-endpoint-${endpoint.id}`}
+            title={
+              <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+                <Box component="span" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {endpoint.description || hostOf(endpoint.url)}
+                </Box>
+                {endpoint.format === 'discord' && (
+                  <Chip size="small" variant="outlined" label="Discord" data-testid={`webhook-discord-${endpoint.id}`} />
+                )}
+              </Box>
+            }
+            sub={endpoint.eventTypes.includes('*') ? t('webhooksPage.allEvents') : endpoint.eventTypes.join(', ')}
+            openLabel={t('webhooksPage.edit')}
+            control={
+              <>
+                <Chip size="small" color={health.color} label={health.label} />
+                <Switch
+                  checked={endpoint.active}
+                  onChange={() => void toggleActive(endpoint)}
+                  slotProps={{ input: { 'aria-label': endpoint.active ? t('webhooksPage.disable') : t('webhooksPage.enable') } as InputHTMLAttributes<HTMLInputElement> }}
+                />
+              </>
+            }
+          >
+            <Stack spacing={1.25}>
+              <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
                 {endpoint.url}
+                {endpoint.source ? ` · source: ${endpoint.source}` : ''}
               </Typography>
-              <Chip
-                size="small"
-                color={endpoint.active ? 'success' : 'default'}
-                label={endpoint.active ? t('webhooksPage.active') : t('webhooksPage.inactive')}
-              />
-              {endpoint.source && <Chip size="small" variant="outlined" label={`source: ${endpoint.source}`} />}
-              {endpoint.format === 'discord' && <Chip size="small" variant="outlined" label="Discord" data-testid={`webhook-discord-${endpoint.id}`} />}
-            </Stack>
-            {endpoint.description && (
-              <Typography variant="body2" color="text.secondary">
-                {endpoint.description}
+              <Typography variant="caption" color="text.secondary">
+                {t('webhooksPage.counts', {
+                  succeeded: endpoint.deliveries.succeeded ?? 0,
+                  pending: (endpoint.deliveries.pending ?? 0) + (endpoint.deliveries.delivering ?? 0),
+                  failed,
+                })}
+                {' · '}
+                {t('webhooksPage.lastSuccess', { when: when(endpoint.lastSuccessAt) })}
               </Typography>
-            )}
-            <Typography variant="caption" color="text.secondary">
-              {endpoint.eventTypes.includes('*') ? t('webhooksPage.allEvents') : endpoint.eventTypes.join(', ')}
-              {' · '}
-              {t('webhooksPage.counts', {
-                succeeded: endpoint.deliveries.succeeded ?? 0,
-                pending: (endpoint.deliveries.pending ?? 0) + (endpoint.deliveries.delivering ?? 0),
-                failed: endpoint.deliveries.failed ?? 0,
-              })}
-              {' · '}
-              {t('webhooksPage.lastSuccess', { when: when(endpoint.lastSuccessAt) })}
-            </Typography>
-            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-              <Button size="small" onClick={() => void toggleActive(endpoint)}>
-                {endpoint.active ? t('webhooksPage.disable') : t('webhooksPage.enable')}
-              </Button>
-              <Button
-                size="small"
-                onClick={() =>
-                  setForm({
-                    id: endpoint.id,
-                    url: endpoint.url,
-                    description: endpoint.description,
-                    source: endpoint.source ?? '',
-                    format: endpoint.format ?? 'signed',
-                    allTypes: endpoint.eventTypes.includes('*'),
-                    eventTypes: endpoint.eventTypes.filter((x) => x !== '*'),
-                    active: endpoint.active,
-                  })
-                }
-              >
-                {t('webhooksPage.edit')}
-              </Button>
-              <Button
-                size="small"
-                onClick={() => {
-                  setLogFor(endpoint);
-                  void loadDeliveries(endpoint);
-                }}
-              >
-                {t('webhooksPage.deliveries')}
-              </Button>
-              <Button size="small" onClick={() => void rotate(endpoint)}>
-                {t('webhooksPage.rotate')}
-              </Button>
-              <Select
-                size="small"
-                value={testType[endpoint.id] ?? 'match.ready'}
-                onChange={(e) => setTestType((prev) => ({ ...prev, [endpoint.id]: e.target.value }))}
-                sx={{ minWidth: 200 }}
-                inputProps={{ 'aria-label': t('webhooksPage.testType') }}
-              >
-                {data.eventTypes.map((et) => (
-                  <MenuItem key={et.type} value={et.type}>
-                    {et.type}
-                  </MenuItem>
-                ))}
-              </Select>
-              <Button
-                size="small"
-                variant="outlined"
-                startIcon={<PaperPlaneTiltIcon />}
-                disabled={!endpoint.active}
-                onClick={() => void sendTest(endpoint)}
-                data-testid={`webhook-test-${endpoint.id}`}
-              >
-                {t('webhooksPage.sendTest')}
-              </Button>
-              <IconButton size="small" color="error" onClick={() => setConfirmDelete(endpoint)} aria-label={t('webhooksPage.delete')}>
-                <TrashIcon />
-              </IconButton>
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap alignItems="center">
+                <Button
+                  size="small"
+                  onClick={() =>
+                    setForm({
+                      id: endpoint.id,
+                      url: endpoint.url,
+                      description: endpoint.description,
+                      source: endpoint.source ?? '',
+                      format: endpoint.format ?? 'signed',
+                      allTypes: endpoint.eventTypes.includes('*'),
+                      eventTypes: endpoint.eventTypes.filter((x) => x !== '*'),
+                      active: endpoint.active,
+                    })
+                  }
+                >
+                  {t('webhooksPage.edit')}
+                </Button>
+                <Button
+                  size="small"
+                  onClick={() => {
+                    setLogFor(endpoint);
+                    void loadDeliveries(endpoint);
+                  }}
+                >
+                  {t('webhooksPage.deliveries')}
+                </Button>
+                <Button size="small" onClick={() => void rotate(endpoint)}>
+                  {t('webhooksPage.rotate')}
+                </Button>
+                <IconButton size="small" color="error" onClick={() => setConfirmDelete(endpoint)} aria-label={t('webhooksPage.delete')}>
+                  <TrashIcon />
+                </IconButton>
+              </Stack>
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap alignItems="center">
+                <Select
+                  size="small"
+                  value={testType[endpoint.id] ?? 'match.ready'}
+                  onChange={(e) => setTestType((prev) => ({ ...prev, [endpoint.id]: e.target.value }))}
+                  sx={{ minWidth: 200 }}
+                  inputProps={{ 'aria-label': t('webhooksPage.testType') }}
+                >
+                  {data.eventTypes.map((et) => (
+                    <MenuItem key={et.type} value={et.type}>
+                      {et.type}
+                    </MenuItem>
+                  ))}
+                </Select>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<PaperPlaneTiltIcon />}
+                  disabled={!endpoint.active}
+                  onClick={() => void sendTest(endpoint)}
+                  data-testid={`webhook-test-${endpoint.id}`}
+                >
+                  {t('webhooksPage.sendTest')}
+                </Button>
+              </Stack>
             </Stack>
-          </Stack>
-        </Paper>
-      ))}
+          </SettingsRow>
+        );
+      })}
 
-      <Box>
-        <Button variant="contained" onClick={() => setForm({ ...EMPTY_FORM })} data-testid="webhook-add">
-          {t('webhooksPage.add')}
-        </Button>
-      </Box>
+      <SettingsRow
+        title={t('webhooksPage.allowPrivate')}
+        sub={t('webhooksPage.allowPrivateShort')}
+        control={
+          <Switch
+            checked={data.allowPrivateTargets}
+            onChange={(event) => void setAllowPrivate(event.target.checked)}
+            slotProps={{ input: { 'aria-label': t('webhooksPage.allowPrivate') } as InputHTMLAttributes<HTMLInputElement> }}
+            data-testid="webhooks-allow-private"
+          />
+        }
+      />
 
       {/* Create / edit */}
       <Dialog open={form !== null} onClose={() => setForm(null)} fullWidth maxWidth="sm">

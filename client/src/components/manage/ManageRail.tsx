@@ -206,16 +206,21 @@ export const ManageRail: React.FC = () => {
         { key: 'players', label: t('managePage.rail.players'), to: paths.players, icon: UserIcon },
       ],
     },
-    {
-      key: 'game',
-      label: t('managePage.rail.groups.game'),
-      items: moduleNavItems(shell).map((item) => ({
-        key: item.key,
-        label: navItemLabel(t, item, 'rail'),
-        to: item.path,
-        icon: item.icon,
+    // One group per game module, named by it (CS2: Counter-Strike 2, with
+    // Servers, Maps, Skins and Match rules): a game's pages and its settings
+    // sit together, and Settings below keeps only the platform's.
+    ...shell
+      .filter((integration) => integration.navItems.length > 0)
+      .map((integration, index) => ({
+        key: index === 0 ? 'game' : `game-${integration.id}`,
+        label: t('managePage.rail.group', { ns: integration.id, defaultValue: t('managePage.rail.groups.game') }),
+        items: moduleNavItems([integration]).map((item) => ({
+          key: item.key,
+          label: navItemLabel(t, item, 'rail'),
+          to: item.path,
+          icon: item.icon,
+        })),
       })),
-    },
     {
       key: 'configuration',
       label: t('managePage.rail.groups.configuration'),

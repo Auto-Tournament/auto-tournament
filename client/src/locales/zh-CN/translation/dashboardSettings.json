@@ -101,7 +101,7 @@
   },
   "settingsPage": {
     "title": "设置",
-    "intro": "配置核心集成、游戏内默认值以及开发者选项。",
+    "intro": "平台本身的设置。每个游戏的设置都在菜单中各自的位置。",
     "tabs": {
       "general": "General",
       "signIn": "Sign-in",
@@ -170,8 +170,12 @@
         "emailsHelp": "Addresses that get admin when their owner signs in with a provider that verified them (Google, Discord, GitHub).",
         "unsaved": "Not saved yet.",
         "saved": "Admin access saved",
-        "loadError": "Could not load the admin access settings"
-      }
+        "loadError": "Could not load the admin access settings",
+        "short": "谁可以以管理员身份登录"
+      },
+      "short": "玩家和管理员如何登录。更改立即生效。",
+      "enabledFor": "{{provider}} 登录",
+      "setUp": "设置 {{provider}}"
     },
     "integrations": {
       "steam": {
@@ -191,7 +195,8 @@
         "title": "评分更新",
         "description": "控制已完成的比赛是否会更新玩家 Skill Rating。若外部系统（例如 Excel 表）是评分真值来源，可在此禁用。",
         "toggleLabel": "根据完成的比赛更新玩家评分",
-        "note": "禁用后，所有比赛仍会记录数据（ADR、K/D 等），但玩家 Skill Rating 将保持不变。"
+        "note": "禁用后，所有比赛仍会记录数据（ADR、K/D 等），但玩家 Skill Rating 将保持不变。",
+        "short": "每场比赛后评分都会变化。"
       }
     },
     "players": {
@@ -199,8 +204,11 @@
         "title": "玩家注册",
         "description": "控制新的 Steam 登录是否自动创建玩家记录。禁用后，只有管理员创建或导入的玩家才会出现在私有锦标赛和洗牌池中。",
         "toggleLabel": "允许任何人通过 Steam 登录注册",
-        "recommendation": "建议：邀请制或私有锦标赛请保持关闭，以免随机 Steam 登录污染玩家列表。"
-      }
+        "recommendation": "建议：邀请制或私有锦标赛请保持关闭，以免随机 Steam 登录污染玩家列表。",
+        "short": "登录会为任何新用户创建玩家。关闭：只有你添加的玩家。"
+      },
+      "title": "玩家",
+      "short": "谁可以加入，以及评分如何变化。"
     },
     "developer": {
       "resetApiTitle": "重置 API 与数据库",
@@ -274,12 +282,17 @@
             "1v1": "Default: Active Duty"
           }
         }
-      }
+      },
+      "short": "仍在开发中：默认关闭，仅管理员可见。"
     },
     "groups": {
       "platform": "Platform"
     },
-    "navLabel": "Settings pages"
+    "navLabel": "Settings pages",
+    "gameLinks": {
+      "title": "游戏设置",
+      "hint": "每个游戏的设置都在菜单中。"
+    }
   },
   "managePage": {
     "title": "Manage",
@@ -403,7 +416,8 @@
       "note": "默认关闭。链接到该许可证的公开查询页面，且仅在已保存的密钥有效时显示。",
       "on": "公开许可证提示已开启",
       "off": "公开许可证提示已关闭",
-      "failed": "无法更改公开许可证提示"
+      "failed": "无法更改公开许可证提示",
+      "short": "显示在公开页面上。"
     },
     "public": {
       "licensed": "已授权"
@@ -484,6 +498,14 @@
     "warning": {
       "periodEnded": "此赛事许可证的适用日期截至 {{date}}。测试和准备无需任何操作；新的赛事需要单独的赛事许可证。",
       "periodNotStarted": "此赛事许可证从 {{date}} 起适用。在此之前进行准备和测试完全没问题。"
+    },
+    "short": "此实例的用途及其密钥。",
+    "keyRow": "许可证密钥",
+    "state": {
+      "active": "有效",
+      "warning": "需检查",
+      "invalid": "无效",
+      "none": "无密钥"
     }
   },
   "tournamentsPage": {

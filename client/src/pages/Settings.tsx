@@ -1,95 +1,90 @@
 import { pageTitle } from '../utils/pageTitle';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { PageHead } from '../components/common/ui';
+import { PageHead, Panel } from '../components/common/ui';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import {
   Box,
   Typography,
-  Paper,
   Stack,
   Button,
   LinearProgress,
-  ButtonBase,
-  ListSubheader,
-  MenuItem,
-  Select,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
 } from '@mui/material';
 import Switch from '@mui/material/Switch';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import { CaretDownIcon } from '@phosphor-icons/react';
 import { api } from '../utils/api';
 import type { SettingsResponse } from '../types/api.types';
 import { useIsDevelopment } from '../hooks/useIsDevelopment';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
+import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom';
 import { SiteNameCard } from '../components/settings/SiteNameCard';
 import { LicenseCard } from '../components/settings/LicenseCard';
 import { WebhooksCard } from '../components/settings/WebhooksCard';
 import { ExperimentalCard } from '../components/settings/ExperimentalCard';
 import { SignInProvidersCard } from '../components/settings/SignInProvidersCard';
+import { SettingsCardHead, SettingsRow } from '../components/settings/SettingsRow';
 import { useInstalledIntegrations } from '../integrations/registry';
+import { moduleNavItems, navItemLabel } from '../utils/moduleNavLabels';
+import { tokens, radii } from '../theme/tokens';
 
 declare const __APP_VERSION__: string | undefined;
 
-/** One entry of the Settings nav: a page. */
-interface NavEntry {
-  key: string;
-  label: string;
-}
+const { color } = tokens;
 
-/** A group of pages: the platform's, then one per game module with settings. */
-interface NavGroup {
-  id: string;
-  label: string;
-  entries: NavEntry[];
-}
-
-/** Old `?section=` values, from before the pages were regrouped (bookmarks, links in docs). */
-const SECTION_ALIASES: Record<string, string> = {
-  integrations: 'general',
-  matches: 'ratings',
-  skins: 'cs2:skins',
+/**
+ * `?section=` values, old and new, to the card they open. Settings was a page
+ * per section with a nav beside it; it is one page now, and a section scrolls
+ * to its card (bookmarks, links in docs, `SIGN_IN_SETTINGS_PATH`).
+ */
+const SECTION_CARDS: Record<string, string> = {
+  general: 'site',
+  integrations: 'site',
+  site: 'site',
+  signin: 'signin',
+  players: 'players',
+  ratings: 'players',
+  matches: 'players',
+  webhooks: 'webhooks',
+  license: 'license',
+  experimental: 'advanced',
+  developer: 'advanced',
+  advanced: 'advanced',
 };
 
-/** The open page's content, labelled by its nav entry. */
-function SettingsPage({ pageKey, children, ...rest }: { pageKey: string; children: React.ReactNode; 'data-testid'?: string }) {
+/**
+ * CS2's settings moved out of Settings to its own pages in the admin menu
+ * (Skins, Match rules); its old sections, and `links.settings('cs2')`, go there.
+ */
+const MOVED_SECTIONS: Record<string, string> = {
+  cs2: '/match-rules',
+  'cs2:general': '/match-rules',
+  'cs2:servers': '/match-rules',
+  skins: '/skins',
+  'cs2:skins': '/skins',
+  'cs2:inventories': '/skins',
+};
+
+/** One card on the page, found by `?section=` (`settings-<key>`). */
+function SettingsCard({ cardKey, children, highlight }: { cardKey: string; children: React.ReactNode; highlight: boolean }) {
   return (
-    <Box
-      role="region"
-      id={`settings-page-${pageKey.replace(':', '-')}`}
-      aria-labelledby={`settings-nav-${pageKey.replace(':', '-')}`}
-      {...rest}
+    <Panel
+      component="section"
+      id={`settings-${cardKey}`}
+      data-testid={`settings-card-${cardKey}`}
+      sx={{
+        p: { xs: 2, md: 3 },
+        minWidth: 0,
+        scrollMarginTop: 96,
+        transition: 'border-color 600ms',
+        borderColor: highlight ? color.accent : color.rule,
+      }}
     >
       {children}
-    </Box>
+    </Panel>
   );
 }
-
-const ACCORDION_SX = {
-  bgcolor: 'background.paper',
-  border: 1,
-  borderColor: 'divider',
-  boxShadow: 'none',
-  // MUI renders a default divider line via :before; hide it so our border is the only separator
-  '&:before': { display: 'none' },
-} as const;
-
-const ACCORDION_SUMMARY_SX = {
-  bgcolor: 'background.paper',
-} as const;
-
-const ACCORDION_DETAILS_SX = {
-  bgcolor: 'background.surface2',
-  borderTop: 1,
-  borderColor: 'divider',
-} as const;
 
 /** Core's own settings: the ones every game uses. */
 interface CoreSettings {
@@ -107,10 +102,9 @@ function coreSettingsFrom(settings: SettingsResponse['settings'] | undefined): C
 }
 
 /**
- * Settings: what the whole site uses, whatever game it runs (game catalog
- * art, who may sign up, rating updates), then one tab per installed game
- * module with settings of its own (`instanceSettings`; CS2: its webhook URL,
- * map sync and the defaults sent to its servers), and the developer tools.
+ * Settings: the platform's own, on one page of cards (site, sign-in, players,
+ * webhooks, license, advanced). A game's settings are its own pages in the
+ * admin menu (CS2: Skins, Match rules), linked at the bottom.
  */
 export default function Settings() {
   const { showSuccess, showError } = useSnackbar();
@@ -123,13 +117,13 @@ export default function Settings() {
   const isDev = useIsDevelopment();
   const { t } = useTranslation();
 
-  // The nav: the platform's pages, then a group per installed module with
-  // settings of its own (`instanceSettings`), each module page keyed
-  // `<module>:<page>`. `?section=` names the open page; a module's id alone
-  // opens its first page (the SDK's `links.settings(id)`). A code module may
-  // arrive after the page mounts.
-  const [searchParams, setSearchParams] = useSearchParams();
-  const moduleSettings = useInstalledIntegrations().flatMap((integration) =>
+  // `?section=` scrolls to that card; CS2's old sections open its own pages.
+  // Modules other than CS2 that still have `instanceSettings` get a card
+  // each at the end, found by their id.
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const installed = useInstalledIntegrations();
+  const moduleSettings = installed.flatMap((integration) =>
     integration.instanceSettings
       ? [
           {
@@ -141,46 +135,15 @@ export default function Settings() {
         ]
       : []
   );
-  const groups: NavGroup[] = [
-    {
-      id: 'platform',
-      label: t('settingsPage.groups.platform'),
-      entries: [
-        { key: 'general', label: t('settingsPage.tabs.general') },
-        { key: 'signin', label: t('settingsPage.tabs.signIn') },
-        { key: 'players', label: t('settingsPage.tabs.players') },
-        { key: 'ratings', label: t('settingsPage.tabs.ratings') },
-        { key: 'webhooks', label: t('settingsPage.tabs.webhooks') },
-        { key: 'license', label: t('settingsPage.tabs.license') },
-        { key: 'experimental', label: t('settingsPage.tabs.experimental') },
-        ...(isDev ? [{ key: 'developer', label: t('settingsPage.tabs.developer') }] : []),
-      ],
-    },
-    ...moduleSettings.map(({ id, labelKey, pages }) => ({
-      id,
-      label: t(labelKey, { ns: id }),
-      entries: pages?.length
-        ? pages.map((page) => ({ key: `${id}:${page.key}`, label: t(page.labelKey, { ns: id }) }))
-        : [{ key: id, label: t(labelKey, { ns: id }) }],
-    })),
-  ];
-  const entryKeys = groups.flatMap((group) => group.entries.map((entry) => entry.key));
+  const gameLinks = moduleNavItems(installed);
   const requested = searchParams.get('section') ?? '';
-  const wanted = SECTION_ALIASES[requested] ?? requested;
-  // A module's id opens its first page; a page whose module went away falls back to General.
-  const active =
-    (entryKeys.includes(wanted) && wanted) ||
-    groups.find((group) => group.id === wanted && group.id !== 'platform')?.entries[0]?.key ||
-    'general';
-  const openPage = (key: string) => {
-    const next = new URLSearchParams(searchParams);
-    next.set('section', key);
-    setSearchParams(next, { replace: true });
-  };
-  const activeModule = moduleSettings.find(
-    ({ id }) => active === id || active.startsWith(`${id}:`)
-  );
-  const activeModulePage = activeModule && active.includes(':') ? active.slice(activeModule.id.length + 1) : undefined;
+  const moved = MOVED_SECTIONS[requested];
+  const target = SECTION_CARDS[requested] ?? (moduleSettings.some(({ id }) => requested === id || requested.startsWith(`${id}:`)) ? requested.split(':')[0] : '');
+  const [highlight, setHighlight] = useState('');
+
+  useEffect(() => {
+    if (moved) navigate(moved, { replace: true });
+  }, [moved, navigate]);
 
   const fetchSettings = useCallback(async () => {
     setLoading(true);
@@ -255,14 +218,20 @@ export default function Settings() {
     }
   }, [fetchSettings, showError, showSuccess, t]);
 
+  useEffect(() => {
+    if (loading || !target) return;
+    document.getElementById(`settings-${target}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setHighlight(target);
+    const timer = setTimeout(() => setHighlight(''), 1600);
+    return () => clearTimeout(timer);
+  }, [loading, target]);
+
   return (
     <Box sx={{ width: '100%', height: '100%' }}>
       <PageHead title={t('layout.pageTitle.settings')} subtitle={t('settingsPage.intro')} />
 
       {loading && (
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <LinearProgress />
-        </Paper>
+        <LinearProgress />
       )}
 
       {!loading && (
@@ -270,184 +239,56 @@ export default function Settings() {
           <Box
             sx={{
               display: 'grid',
-              gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: '220px minmax(0, 1fr)' },
-              gap: { xs: 2, md: 3 },
+              gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: 'repeat(2, minmax(0, 1fr))' },
+              gap: 2,
               alignItems: 'start',
             }}
           >
-            {/* Phones: one dropdown, grouped the same way. */}
-            <Select
-              size="small"
-              value={active}
-              onChange={(event) => openPage(String(event.target.value))}
-              sx={{ display: { xs: 'flex', md: 'none' } }}
-              inputProps={{ 'aria-label': t('settingsPage.navLabel'), 'data-testid': 'settings-nav-select' }}
-            >
-              {groups.flatMap((group) => [
-                <ListSubheader key={`group-${group.id}`}>{group.label}</ListSubheader>,
-                ...group.entries.map((entry) => (
-                  <MenuItem key={entry.key} value={entry.key}>
-                    {entry.label}
-                  </MenuItem>
-                )),
-              ])}
-            </Select>
-
-            <Box
-              component="nav"
-              aria-label={t('settingsPage.navLabel')}
-              sx={{ display: { xs: 'none', md: 'flex' }, flexDirection: 'column', gap: 2.5, position: 'sticky', top: 16 }}
-            >
-              {groups.map((group) => (
-                <Box key={group.id} data-testid={`settings-nav-group-${group.id}`}>
-                  <Typography
-                    variant="overline"
-                    color="text.secondary"
-                    sx={{ display: 'block', px: 1.5, mb: 0.5, lineHeight: 2 }}
-                  >
-                    {group.label}
-                  </Typography>
-                  <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
-                    {group.entries.map((entry) => {
-                      const current = entry.key === active;
-                      return (
-                        <li key={entry.key}>
-                          <ButtonBase
-                            id={`settings-nav-${entry.key.replace(':', '-')}`}
-                            data-testid={`settings-nav-${entry.key.replace(':', '-')}`}
-                            aria-current={current ? 'page' : undefined}
-                            onClick={() => openPage(entry.key)}
-                            sx={{
-                              width: '100%',
-                              justifyContent: 'flex-start',
-                              textAlign: 'left',
-                              px: 1.5,
-                              py: 0.875,
-                              borderRadius: 1.5,
-                              fontSize: '0.875rem',
-                              fontWeight: current ? 600 : 400,
-                              color: current ? 'text.primary' : 'text.secondary',
-                              bgcolor: current ? 'action.selected' : 'transparent',
-                              '&:hover': { bgcolor: current ? 'action.selected' : 'action.hover', color: 'text.primary' },
-                              '&:focus-visible': { outline: 2, outlineColor: 'primary.main', outlineOffset: 1 },
-                            }}
-                          >
-                            {entry.label}
-                          </ButtonBase>
-                        </li>
-                      );
-                    })}
-                  </Box>
-                </Box>
-              ))}
-            </Box>
-
-            <Paper sx={{ p: { xs: 2, md: 3 }, minWidth: 0 }}>
-            {active === 'general' && (
-              <SettingsPage pageKey="general">
-              <Stack spacing={3}>
+            <Stack spacing={2} sx={{ minWidth: 0 }}>
+              <SettingsCard cardKey="site" highlight={highlight === 'site'}>
                 <SiteNameCard />
-              </Stack>
-              </SettingsPage>
-            )}
-            {active === 'signin' && (
-              <SettingsPage pageKey="signin">
-              <SignInProvidersCard welcome={searchParams.get('welcome') === 'setup'} />
-              </SettingsPage>
-            )}
-            {active === 'players' && (
-              <SettingsPage pageKey="players">
-              <Stack spacing={3}>
-                <Box>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
-                    {t('settingsPage.players.registration.title')}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" mb={2}>
-                    {t('settingsPage.players.registration.description')}
-                  </Typography>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={values.allowSelfRegister}
-                        onChange={(event) =>
-                          setValues((prev) => ({ ...prev, allowSelfRegister: event.target.checked }))
-                        }
-                        color="primary"
-                        size="small"
-                      />
-                    }
-                    label={t('settingsPage.players.registration.toggleLabel')}
-                  />
-                  <Typography variant="caption" color="text.secondary" display="block">
-                    {t('settingsPage.players.registration.recommendation')}
-                  </Typography>
-                </Box>
-              </Stack>
-              </SettingsPage>
-            )}
-            {active === 'ratings' && (
-              <SettingsPage pageKey="ratings">
-              <Stack spacing={3}>
-                <Accordion defaultExpanded sx={ACCORDION_SX}>
-                  <AccordionSummary expandIcon={<CaretDownIcon />} sx={ACCORDION_SUMMARY_SX}>
-                    <Box>
-                      <Typography variant="h6" fontWeight={600}>
-                        {t('settingsPage.matchRating.ratings.title')}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {t('settingsPage.matchRating.ratings.description')}
-                      </Typography>
-                    </Box>
-                  </AccordionSummary>
-                  <AccordionDetails sx={ACCORDION_DETAILS_SX}>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={values.ratingsEnabled}
-                          onChange={(event) =>
-                            setValues((prev) => ({ ...prev, ratingsEnabled: event.target.checked }))
-                          }
-                          color="primary"
-                          size="small"
-                        />
-                      }
-                      label={t('settingsPage.matchRating.ratings.toggleLabel')}
+              </SettingsCard>
+              <SettingsCard cardKey="signin" highlight={highlight === 'signin'}>
+                <SignInProvidersCard welcome={searchParams.get('welcome') === 'setup'} />
+              </SettingsCard>
+              <SettingsCard cardKey="players" highlight={highlight === 'players'}>
+                <SettingsCardHead title={t('settingsPage.players.title')} hint={t('settingsPage.players.short')} />
+                <SettingsRow
+                  title={t('settingsPage.players.registration.toggleLabel')}
+                  sub={t('settingsPage.players.registration.short')}
+                  control={
+                    <Switch
+                      checked={values.allowSelfRegister}
+                      onChange={(event) => setValues((prev) => ({ ...prev, allowSelfRegister: event.target.checked }))}
+                      slotProps={{ input: { 'aria-label': t('settingsPage.players.registration.toggleLabel'), 'data-testid': 'settings-self-register' } as React.InputHTMLAttributes<HTMLInputElement> }}
                     />
-                    <Typography variant="caption" color="text.secondary" display="block">
-                      {t('settingsPage.matchRating.ratings.note')}
-                    </Typography>
-                  </AccordionDetails>
-                </Accordion>
-              </Stack>
-              </SettingsPage>
-            )}
-            {active === 'webhooks' && (
-              <SettingsPage pageKey="webhooks">
-              <WebhooksCard />
-              </SettingsPage>
-            )}
-            {active === 'license' && (
-              <SettingsPage pageKey="license">
-              <LicenseCard />
-              </SettingsPage>
-            )}
-            {active === 'experimental' && (
-              <SettingsPage pageKey="experimental">
-              <ExperimentalCard />
-              </SettingsPage>
-            )}
+                  }
+                />
+                <SettingsRow
+                  title={t('settingsPage.matchRating.ratings.toggleLabel')}
+                  sub={t('settingsPage.matchRating.ratings.short')}
+                  control={
+                    <Switch
+                      checked={values.ratingsEnabled}
+                      onChange={(event) => setValues((prev) => ({ ...prev, ratingsEnabled: event.target.checked }))}
+                      slotProps={{ input: { 'aria-label': t('settingsPage.matchRating.ratings.toggleLabel'), 'data-testid': 'settings-ratings-enabled' } as React.InputHTMLAttributes<HTMLInputElement> }}
+                    />
+                  }
+                />
+              </SettingsCard>
+            </Stack>
 
-            {/* The open module page (CS2: general, servers, skins, player inventories) */}
-            {activeModule && (
-              <SettingsPage pageKey={active} data-testid={`settings-module-${activeModule.id}`}>
-                <activeModule.Section page={activeModulePage} />
-              </SettingsPage>
-            )}
-
-            {isDev && active === 'developer' && (
-              <SettingsPage pageKey="developer">
-                <Stack spacing={3}>
-                  <Box>
+            <Stack spacing={2} sx={{ minWidth: 0 }}>
+              <SettingsCard cardKey="webhooks" highlight={highlight === 'webhooks'}>
+                <WebhooksCard />
+              </SettingsCard>
+              <SettingsCard cardKey="license" highlight={highlight === 'license'}>
+                <LicenseCard />
+              </SettingsCard>
+              <SettingsCard cardKey="advanced" highlight={highlight === 'advanced'}>
+                <ExperimentalCard />
+                {isDev && (
+                  <Box sx={{ mt: 3, pt: 3, borderTop: `1px solid ${color.rule}` }} data-testid="settings-developer">
                     <Typography variant="h6" fontWeight={600} gutterBottom color="error">
                       {t('settingsPage.developer.resetApiTitle')}
                     </Typography>
@@ -466,11 +307,68 @@ export default function Settings() {
                         : t('settingsPage.developer.resetApiButton')}
                     </Button>
                   </Box>
-                </Stack>
-              </SettingsPage>
-            )}
-            </Paper>
+                )}
+              </SettingsCard>
+            </Stack>
           </Box>
+
+          {/* Modules that still keep settings here: a card each. */}
+          {moduleSettings.map(({ id, labelKey, pages, Section }) => (
+            <SettingsCard key={id} cardKey={id} highlight={highlight === id}>
+              <Box data-testid={`settings-module-${id}`}>
+                <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
+                  {t(labelKey, { ns: id })}
+                </Typography>
+                {pages?.length ? (
+                  <Stack spacing={3}>
+                    {pages.map((page) => (
+                      <Section key={page.key} page={page.key} />
+                    ))}
+                  </Stack>
+                ) : (
+                  <Section />
+                )}
+              </Box>
+            </SettingsCard>
+          ))}
+
+          {/* Each game's own settings sit with the game in the admin menu. */}
+          {gameLinks.length > 0 && (
+            <Box
+              data-testid="settings-game-links"
+              sx={{
+                mt: 2,
+                border: `1px dashed ${color.rule}`,
+                borderRadius: radii.lg,
+                p: { xs: 2, md: 2.5 },
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 2,
+                flexWrap: 'wrap',
+              }}
+            >
+              <Box sx={{ minWidth: 0 }}>
+                <Typography sx={{ fontWeight: 600 }}>{t('settingsPage.gameLinks.title')}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {t('settingsPage.gameLinks.hint')}
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                {gameLinks.map((item) => (
+                  <Button
+                    key={`${item.moduleId}-${item.key}`}
+                    component={RouterLink}
+                    to={item.path}
+                    size="small"
+                    sx={{ borderRadius: radii.pill, bgcolor: color.paper3, color: color.ink, px: 2 }}
+                  >
+                    {navItemLabel(t, item, 'rail')}
+                  </Button>
+                ))}
+              </Box>
+            </Box>
+          )}
 
           <Box mt={2} display="flex" justifyContent="flex-end" alignItems="center">
             <Typography

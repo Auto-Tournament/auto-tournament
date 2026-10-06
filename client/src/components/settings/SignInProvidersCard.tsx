@@ -1,11 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type InputHTMLAttributes } from 'react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import LinearProgress from '@mui/material/LinearProgress';
-import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
@@ -17,6 +14,7 @@ import { useSnackbar } from '../../contexts/SnackbarContext';
 import { ExternalLink } from '../common/ExternalLink';
 import { ProviderLogo } from '../auth/ProviderLogo';
 import { AdminAccessSection } from './AdminAccessSection';
+import { SettingsCardHead, SettingsRow } from './SettingsRow';
 
 /** One provider as GET /api/sign-in-providers returns it. Never carries a secret. */
 export interface AdminSignInProvider {
@@ -75,32 +73,25 @@ export function SignInProvidersCard({ welcome = false }: { welcome?: boolean }) 
   if (!data) return <LinearProgress aria-label={t('settingsPage.signIn.title')} />;
 
   return (
-    <Stack spacing={3} data-testid="sign-in-providers">
+    <Stack spacing={0} data-testid="sign-in-providers">
       {welcome && (
-        <Alert severity="info" data-testid="sign-in-welcome">
+        <Alert severity="info" data-testid="sign-in-welcome" sx={{ mb: 2 }}>
           <Typography variant="subtitle2" component="p" fontWeight={600}>
             {t('settingsPage.signIn.welcomeTitle')}
           </Typography>
           <Typography variant="body2">{t('settingsPage.signIn.welcomeBody')}</Typography>
         </Alert>
       )}
-      <Box>
-        <Typography variant="h6" fontWeight={600} gutterBottom>
-          {t('settingsPage.signIn.title')}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {t('settingsPage.signIn.intro')}
-        </Typography>
-        <Typography variant="caption" color="text.secondary" display="block" mt={1}>
-          {data.secretsKeySource === 'default'
-            ? t('settingsPage.signIn.keySourceDefault')
-            : t('settingsPage.signIn.keySource', { name: data.secretsKeySource })}
-        </Typography>
-      </Box>
+      <SettingsCardHead title={t('settingsPage.signIn.title')} hint={t('settingsPage.signIn.short')} />
       {data.providers.map((provider) => (
         <ProviderSection key={provider.id} provider={provider} onSaved={setData} />
       ))}
       <AdminAccessSection />
+      <Typography variant="caption" color="text.secondary" sx={{ pt: 1.5 }}>
+        {data.secretsKeySource === 'default'
+          ? t('settingsPage.signIn.keySourceDefault')
+          : t('settingsPage.signIn.keySource', { name: data.secretsKeySource })}
+      </Typography>
     </Stack>
   );
 }
@@ -197,23 +188,35 @@ function ProviderSection({
         ? { label: t('settingsPage.signIn.status.missing'), color: 'warning' as const }
         : { label: t('settingsPage.signIn.status.off'), color: 'default' as const };
 
+  const statusTone = { success: 'success.main', warning: 'warning.main', default: 'text.secondary' }[status.color];
+
   return (
-    <Paper
-      variant="outlined"
-      component="section"
-      aria-labelledby={`${idPrefix}-title`}
+    <SettingsRow
       data-testid={idPrefix}
-      sx={{ p: { xs: 2, md: 3 } }}
+      leading={<ProviderLogo id={provider.id} />}
+      title={<span id={`${idPrefix}-title`}>{provider.label}</span>}
+      sub={
+        <Box component="span" sx={{ color: statusTone }} data-testid={`${idPrefix}-status`}>
+          {status.label}
+        </Box>
+      }
+      control={
+        provider.comingSoon ? undefined : (
+          <Switch
+            checked={provider.enabled}
+            disabled={busy}
+            onChange={(e) => void save({ enabled: e.target.checked })}
+            slotProps={{ input: { 'aria-label': t('settingsPage.signIn.enabledFor', { provider: provider.label }) } as InputHTMLAttributes<HTMLInputElement> }}
+            data-testid={`${idPrefix}-enabled`}
+          />
+        )
+      }
+      defaultOpen={provider.enabled && !provider.configured && !provider.comingSoon}
+      openLabel={t('settingsPage.signIn.setUp', { provider: provider.label })}
     >
-      <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap>
-        <ProviderLogo id={provider.id} />
-        <Typography id={`${idPrefix}-title`} variant="subtitle1" fontWeight={600} component="h3">
-          {provider.label}
-        </Typography>
-        <Chip size="small" label={status.label} color={status.color} data-testid={`${idPrefix}-status`} />
-        <Box sx={{ flexGrow: 1 }} />
+      <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap sx={{ mb: 2 }}>
         {/* The URL to paste into the provider's console, one click away. Steam needs none. */}
-        {provider.id !== 'steam' && (
+        {provider.id !== 'steam' && !provider.comingSoon && (
           <Button
             size="small"
             startIcon={<CopyIcon size={16} aria-hidden />}
@@ -237,26 +240,11 @@ function ProviderSection({
       </Stack>
 
       {provider.comingSoon ? (
-        <Typography variant="body2" color="text.secondary" mt={1}>
+        <Typography variant="body2" color="text.secondary">
           {t('settingsPage.signIn.comingSoonNote', { provider: provider.label })}
         </Typography>
       ) : (
-        <Stack spacing={2} mt={2}>
-          <Box>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={provider.enabled}
-                  disabled={busy}
-                  onChange={(e) => void save({ enabled: e.target.checked })}
-                  size="small"
-                  data-testid={`${idPrefix}-enabled`}
-                />
-              }
-              label={t('settingsPage.signIn.enabled')}
-            />
-          </Box>
-
+        <Stack spacing={2}>
           {provider.hasIssuer && (
             <TextField
               label={t('settingsPage.signIn.issuerUrl')}
@@ -376,6 +364,6 @@ function ProviderSection({
           )}
         </Stack>
       )}
-    </Paper>
+    </SettingsRow>
   );
 }

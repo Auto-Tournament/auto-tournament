@@ -10,6 +10,7 @@ import Checkbox from '@mui/material/Checkbox';
 import MenuItem from '@mui/material/MenuItem';
 import { useTranslation } from 'react-i18next';
 import { api, apiErrorMessage } from '../../utils/api';
+import { SettingsCardHead, SettingsRow } from './SettingsRow';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 
 interface SearchWindow {
@@ -143,37 +144,39 @@ export function ExperimentalCard() {
 
   return (
     <Box data-testid="settings-experimental-card">
-      <Typography variant="h6" fontWeight={600} gutterBottom>
-        {t('settingsPage.experimental.title')}
-      </Typography>
-      <Typography variant="body2" color="text.secondary" mb={2}>
-        {t('settingsPage.experimental.description')}
-      </Typography>
-      <Stack spacing={2}>
+      <SettingsCardHead title={t('settingsPage.experimental.title')} hint={t('settingsPage.experimental.short')} />
+      <Box>
         {features.map((feature) => (
-          <Box key={feature.id}>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={feature.enabled}
-                  disabled={feature.source === 'env' || saving === feature.id}
-                  onChange={(event) => void toggle(feature.id, event.target.checked)}
-                  color="primary"
-                  size="small"
-                  slotProps={{
-                    input: {
-                      'data-testid': `settings-experimental-${feature.id}`,
-                    } as React.InputHTMLAttributes<HTMLInputElement>,
-                  }}
-                />
-              }
-              label={t(`settingsPage.experimental.features.${feature.id}.label`)}
-            />
-            <Typography variant="caption" color="text.secondary" display="block">
-              {t(`settingsPage.experimental.features.${feature.id}.description`)}
-            </Typography>
-            {feature.id === 'matchmaking' && feature.enabled && mmOpen !== null && (
-              <Box sx={{ pl: 4, mt: 1 }}>
+          <SettingsRow
+            key={feature.id}
+            title={t(`settingsPage.experimental.features.${feature.id}.label`)}
+            sub={
+              feature.source === 'env' ? (
+                <Box component="span" sx={{ color: 'warning.main' }}>
+                  {t('settingsPage.experimental.envOverride', { env: feature.env })}
+                </Box>
+              ) : (
+                t(`settingsPage.experimental.features.${feature.id}.description`)
+              )
+            }
+            openLabel={t(`settingsPage.experimental.features.${feature.id}.label`)}
+            control={
+              <Switch
+                checked={feature.enabled}
+                disabled={feature.source === 'env' || saving === feature.id}
+                onChange={(event) => void toggle(feature.id, event.target.checked)}
+                color="primary"
+                slotProps={{
+                  input: {
+                    'data-testid': `settings-experimental-${feature.id}`,
+                    'aria-label': t(`settingsPage.experimental.features.${feature.id}.label`),
+                  } as React.InputHTMLAttributes<HTMLInputElement>,
+                }}
+              />
+            }
+          >
+            {feature.id === 'matchmaking' && feature.enabled && mmOpen !== null ? (
+              <Box>
                 <FormControlLabel
                   control={
                     <Switch
@@ -329,15 +332,10 @@ export function ExperimentalCard() {
                   </Box>
                 )}
               </Box>
-            )}
-            {feature.source === 'env' && (
-              <Typography variant="caption" color="warning.main" display="block">
-                {t('settingsPage.experimental.envOverride', { env: feature.env })}
-              </Typography>
-            )}
-          </Box>
+            ) : undefined}
+          </SettingsRow>
         ))}
-      </Stack>
+      </Box>
     </Box>
   );
 }

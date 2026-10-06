@@ -1,14 +1,18 @@
 {
   "nav": {
     "servers": "服务器",
-    "maps": "地图与地图池"
+    "maps": "地图与地图池",
+    "skins": "皮肤",
+    "matchRules": "比赛规则"
   },
   "layout": {
     "webhookNotConfigured": "尚未配置 Webhook URL。配置完成之前，比赛和服务器无法接收事件。",
     "openSettings": "打开设置",
     "pageTitle": {
       "servers": "服务器",
-      "maps": "地图与地图池"
+      "maps": "地图与地图池",
+      "skins": "皮肤",
+      "matchRules": "比赛规则"
     },
     "atDbDown": {
       "title": "无法连接 MatchZy Enhanced 数据库",
@@ -25,6 +29,14 @@
       "maps": {
         "label": "Maps",
         "hint": "Pools and images"
+      },
+      "skins": {
+        "label": "皮肤",
+        "hint": "掉落、奖励、玩家的皮肤"
+      },
+      "matchRules": {
+        "label": "比赛规则",
+        "hint": "每场比赛服务器收到的设置"
       }
     },
     "servers": {
@@ -49,7 +61,10 @@
   "managePage": {
     "rail": {
       "servers": "Servers",
-      "maps": "Maps"
+      "maps": "Maps",
+      "group": "Counter-Strike 2",
+      "skins": "皮肤",
+      "matchRules": "比赛规则"
     },
     "status": {
       "serversFree": "SERVERS FREE"
@@ -1659,11 +1674,37 @@
         "remove": "Take away",
         "removeTitle": "Take this skin away?",
         "removeQuestion": "{{skin}} leaves {{player}}'s inventory and loadout. This cannot be undone.",
-        "removed": "Skin taken away"
+        "removed": "Skin taken away",
+        "none": "未找到玩家。",
+        "nobodyYet": "还没有人拥有皮肤。搜索一名玩家来给他一个。",
+        "giveShort": "给予"
       },
       "playDropChance": "Chance of a skin when you lose or draw",
-      "knivesByPrice": "Knives and gloves get their rarity from market price (Skinport, updated daily): cheap ones are common, expensive ones rare."
+      "knivesByPrice": "Knives and gloves get their rarity from market price (Skinport, updated daily): cheap ones are common, expensive ones rare.",
+      "pageHint": "玩家在这里赢得的虚拟皮肤。已装备的皮肤会在换图之间出现在 Ready Up 服务器上。",
+      "on": "开",
+      "off": "关",
+      "stats": {
+        "given": "已发放",
+        "thisWeek": "本周 {{count}} 个",
+        "owners": "拥有皮肤的玩家",
+        "ofPlayers": "共 {{count}} 人",
+        "rarest": "最稀有",
+        "noneYet": "暂无"
+      },
+      "win": "胜利",
+      "lose": "失败或平局",
+      "chance": "获得皮肤的几率",
+      "whatDrops": "掉落什么。拖动边缘调整。",
+      "edge": "{{a}} 与 {{b}} 之间",
+      "podiumHint": "点击一个台阶来更改它的奖励。",
+      "rewardTitle": "{{place}} 的奖励",
+      "done": "完成"
     },
     "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)"
+  },
+  "matchRules": {
+    "title": "比赛规则",
+    "subtitle": "每场比赛开始时每台 CS2 服务器收到的设置。"
   }
 }

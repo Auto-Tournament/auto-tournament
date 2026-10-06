@@ -1,7 +1,7 @@
 {
   "settingsPage": {
     "title": "Einstellungen",
-    "intro": "Konfiguriere Integrationen, Ingame-Defaults und Entwickleroptionen.",
+    "intro": "Die eigenen Einstellungen der Plattform. Jedes Spiel hat seine Einstellungen im Menü.",
     "tabs": {
       "general": "General",
       "signIn": "Sign-in",
@@ -70,8 +70,12 @@
         "emailsHelp": "Addresses that get admin when their owner signs in with a provider that verified them (Google, Discord, GitHub).",
         "unsaved": "Not saved yet.",
         "saved": "Admin access saved",
-        "loadError": "Could not load the admin access settings"
-      }
+        "loadError": "Could not load the admin access settings",
+        "short": "Wer sich als Admin anmelden kann"
+      },
+      "short": "Wie sich Spieler und Admins anmelden. Änderungen gelten sofort.",
+      "enabledFor": "Anmeldung mit {{provider}}",
+      "setUp": "{{provider}} einrichten"
     },
     "integrations": {
       "steam": {
@@ -91,7 +95,8 @@
         "title": "Rating-Updates",
         "description": "Steuere, ob abgeschlossene Matches die Skill Ratings der Spieler aktualisieren.",
         "toggleLabel": "Spieler-Ratings aus abgeschlossenen Matches aktualisieren",
-        "note": "Wenn deaktiviert, werden weiterhin Stats (ADR, K/D, usw.) erfasst, aber Skill Ratings bleiben unverändert."
+        "note": "Wenn deaktiviert, werden weiterhin Stats (ADR, K/D, usw.) erfasst, aber Skill Ratings bleiben unverändert.",
+        "short": "Ratings ändern sich nach jedem Match."
       }
     },
     "players": {
@@ -99,8 +104,11 @@
         "title": "Spielerregistrierung",
         "description": "Steuere, ob neue Steam-Logins automatisch Spielerprofile erstellen. Wenn deaktiviert, erscheinen in privaten Turnieren und Shuffle-Pools nur Spieler, die von Admins erstellt oder importiert wurden.",
         "toggleLabel": "Allen erlauben, sich per Steam-Login zu registrieren",
-        "recommendation": "Empfohlen: Für Einladungs- oder private Turniere deaktiviert lassen, damit zufällige Steam-Logins die Spielerliste nicht „vermüllen“."
-      }
+        "recommendation": "Empfohlen: Für Einladungs- oder private Turniere deaktiviert lassen, damit zufällige Steam-Logins die Spielerliste nicht „vermüllen“.",
+        "short": "Anmelden macht jeden Neuen zum Spieler. Aus: nur Spieler, die du hinzufügst."
+      },
+      "title": "Spieler",
+      "short": "Wer mitmacht und wie sich Ratings ändern."
     },
     "developer": {
       "resetApiTitle": "API & Datenbank zurücksetzen",
@@ -174,12 +182,17 @@
             "1v1": "Default: Active Duty"
           }
         }
-      }
+      },
+      "short": "Noch in Arbeit: standardmäßig aus, nur Admins sehen sie."
     },
     "groups": {
       "platform": "Platform"
     },
-    "navLabel": "Settings pages"
+    "navLabel": "Settings pages",
+    "gameLinks": {
+      "title": "Spieleinstellungen",
+      "hint": "Jedes Spiel hat seine eigenen Einstellungen im Menü."
+    }
   },
   "dashboard": {
     "title": "Admin",
@@ -403,7 +416,8 @@
       "note": "Standardmäßig aus. Verlinkt auf die öffentliche Prüfseite der Lizenz und erscheint nur, solange der gespeicherte Schlüssel gültig ist.",
       "on": "Öffentliche Lizenzzeile eingeschaltet",
       "off": "Öffentliche Lizenzzeile ausgeschaltet",
-      "failed": "Die öffentliche Lizenzzeile konnte nicht geändert werden"
+      "failed": "Die öffentliche Lizenzzeile konnte nicht geändert werden",
+      "short": "Auf öffentlichen Seiten angezeigt."
     },
     "public": {
       "licensed": "Lizenziert"
@@ -484,6 +498,14 @@
     "warning": {
       "periodEnded": "Diese Event-Lizenz galt bis {{date}}. Testen und Einrichten erfordern nichts; ein neues Event bekommt eine eigene Event-Lizenz.",
       "periodNotStarted": "Diese Event-Lizenz gilt ab {{date}}. Einrichten und Testen vorher ist in Ordnung."
+    },
+    "short": "Wie diese Instanz genutzt wird, und ihr Schlüssel.",
+    "keyRow": "Lizenzschlüssel",
+    "state": {
+      "active": "Aktiv",
+      "warning": "Prüfen",
+      "invalid": "Ungültig",
+      "none": "Kein Schlüssel"
     }
   },
   "tournamentsPage": {

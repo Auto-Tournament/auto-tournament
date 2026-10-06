@@ -311,6 +311,24 @@ router.get('/admin/catalog', requireAuth, async (req, res) => {
 
 /**
  * @openapi
+ * /api/skins/admin/stats:
+ *   get:
+ *     tags: [Skins]
+ *     summary: How many skins are out there, and the rarest one
+ *     security: [{ BearerAuth: [] }]
+ *     responses:
+ *       200: { description: 'Counts, and the rarest skin with its owner' }
+ */
+router.get('/admin/stats', requireAuth, async (_req, res) => {
+  try {
+    return res.json({ success: true, ...(await skinService.adminStats()) });
+  } catch (error) {
+    return fail(res, error, 'Reading skin stats');
+  }
+});
+
+/**
+ * @openapi
  * /api/skins/admin/players:
  *   get:
  *     tags: [Skins]
@@ -326,7 +344,13 @@ router.get('/admin/players', requireAuth, async (req, res) => {
     const players = await skinService.adminFindPlayers(String(req.query.q ?? ''));
     return res.json({
       success: true,
-      players: players.map((p) => ({ steamId: p.id, name: p.name, avatarUrl: p.avatar_url, skins: p.skins })),
+      players: players.map((p) => ({
+        steamId: p.id,
+        name: p.name,
+        avatarUrl: p.avatar_url,
+        skins: p.skins,
+        best: p.best_name ? { weaponName: p.best_weapon, name: p.best_name, rarity: p.best_rarity } : null,
+      })),
     });
   } catch (error) {
     return fail(res, error, 'Finding players');
