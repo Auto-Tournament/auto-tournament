@@ -166,8 +166,8 @@ export const progressionService = {
   async result(playerId: string, matchSlug: string) {
     const players = await lobbyPlayersOfMatch(matchSlug);
     if (!players.some((p) => p.player_id === playerId)) throw new ProgressionError(404, 'No such match for you');
-    const match = await db.queryOneAsync<{ status: string }>(
-      'SELECT status FROM matches WHERE slug = ?',
+    const match = await db.queryOneAsync<{ status: string; loaded_at: number | null; completed_at: number | null }>(
+      'SELECT status, loaded_at, completed_at FROM matches WHERE slug = ?',
       [matchSlug]
     );
     const ids = players.map((p) => p.player_id);
@@ -212,6 +212,13 @@ export const progressionService = {
     return {
       matchSlug,
       status: match?.status ?? null,
+      /** The caller's team (1 or 2), for "Victory" or "Defeat". */
+      myTeam: players.find((p) => p.player_id === playerId)?.team ?? null,
+      /** From loading on the server to the end, warmup included; null until it ended. */
+      durationSeconds:
+        match?.loaded_at && match.completed_at && match.completed_at > match.loaded_at
+          ? Number(match.completed_at) - Number(match.loaded_at)
+          : null,
       maps: maps.map((m) => ({
         map: m.map_name,
         team1: Number(m.team1_score),

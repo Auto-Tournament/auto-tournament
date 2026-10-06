@@ -302,6 +302,7 @@ export default function Play() {
   }
 
   const party = me?.party ?? null;
+  const partyPeople = party?.people ?? [];
   const modes = me?.modes ?? ['5v5'];
   // The party's mode once there is one; else what the player picked; else the first.
   const mode =
@@ -433,14 +434,24 @@ export default function Play() {
                       justifyContent: 'center',
                     }}
                   >
-                    {Array.from({ length: need }, (_, i) => (
+                    {Array.from({ length: need }, (_, i) => {
+                      // Your party fills the first seats with its faces; the rest are anonymous.
+                      const face = partyPeople[i];
+                      return (
                       <Box
                         key={i}
+                        title={face?.name}
                         sx={{
                           width: 44,
                           height: 44,
                           borderRadius: '50%',
                           boxSizing: 'border-box',
+                          display: 'grid',
+                          placeItems: 'center',
+                          fontWeight: 600,
+                          color: color.ink,
+                          backgroundImage: face?.avatarUrl ? `url(${face.avatarUrl})` : undefined,
+                          backgroundSize: 'cover',
                           ...(i < inQueue
                             ? {
                                 bgcolor: withAlpha(color.accent, 0.25),
@@ -448,8 +459,11 @@ export default function Play() {
                               }
                             : { border: `2px dashed ${color.rule}` }),
                         }}
-                      />
-                    ))}
+                      >
+                        {face && !face.avatarUrl ? (face.name.trim()[0] ?? '?').toUpperCase() : null}
+                      </Box>
+                      );
+                    })}
                   </Box>
                   <Typography sx={{ fontSize: textSize.md, color: color.ink2 }}>
                     {t('matchmaking.play.seats', { count: inQueue, total: need })}

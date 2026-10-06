@@ -632,7 +632,19 @@
       "inventory": "Inventar",
       "victory": "Seier",
       "defeat": "Tap",
-      "draw": "Uavgjort"
+      "draw": "Uavgjort",
+      "inServer": "{{n}} av {{total}} på serveren",
+      "warmupRule": "Oppvarmingen venter til alle {{total}} er inne.",
+      "warmupRuleTimed": "Oppvarmingen venter til alle {{total}} er inne, eller {{minutes}} minutter har gått: da starter den med dem som er der.",
+      "teamLetter": "Lag {{letter}}",
+      "sideFirst": "{{side}} først",
+      "presence": {
+        "in": "På serveren",
+        "notYet": "Ikke inne ennå"
+      },
+      "equip": "Utstyr",
+      "equipped": "Utstyrt",
+      "equipFailed": "Kunne ikke utstyre den"
     },
     "result": {
       "title": "Resultat",
@@ -661,7 +673,17 @@
         "afk": "AFK eller gikk",
         "other": "Noe annet"
       },
-      "commendFailed": "Kunne ikke lagre det"
+      "commendFailed": "Kunne ikke lagre det",
+      "outcome": {
+        "win": "SEIER",
+        "loss": "TAP",
+        "draw": "UAVGJORT"
+      },
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "yourGame": "Ditt spill",
+      "fullBoard": "Hele resultattavlen",
+      "hideBoard": "Skjul resultattavlen"
     },
     "profile": {
       "level": "Nivå {{level}}",

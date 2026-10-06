@@ -632,7 +632,19 @@
       "inventory": "Inventory",
       "victory": "Victory",
       "defeat": "Defeat",
-      "draw": "Draw"
+      "draw": "Draw",
+      "inServer": "{{n}} sur {{total}} sur le serveur",
+      "warmupRule": "L’échauffement attend que les {{total}} soient là.",
+      "warmupRuleTimed": "L’échauffement attend que les {{total}} soient là, ou {{minutes}} minutes : ensuite il démarre avec ceux présents.",
+      "teamLetter": "Équipe {{letter}}",
+      "sideFirst": "{{side}} d’abord",
+      "presence": {
+        "in": "Sur le serveur",
+        "notYet": "Pas encore là"
+      },
+      "equip": "Équiper",
+      "equipped": "Équipé",
+      "equipFailed": "Impossible de l’équiper"
     },
     "result": {
       "title": "Result",
@@ -661,7 +673,17 @@
         "afk": "AFK or left",
         "other": "Something else"
       },
-      "commendFailed": "Could not save that"
+      "commendFailed": "Could not save that",
+      "outcome": {
+        "win": "VICTOIRE",
+        "loss": "DÉFAITE",
+        "draw": "ÉGALITÉ"
+      },
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "yourGame": "Votre partie",
+      "fullBoard": "Tableau complet",
+      "hideBoard": "Masquer le tableau"
     },
     "profile": {
       "level": "Level {{level}}",

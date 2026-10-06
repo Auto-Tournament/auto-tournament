@@ -34,8 +34,13 @@ interface LobbyView {
   mapPool: RouletteMap[];
   teams: Array<{
     team: number;
-    players: Array<{ id: string; name: string; avatarUrl?: string | null; accepted: boolean }>;
+    /** The side this team starts on; null for a knife round or before the match exists. */
+    startSide?: 'CT' | 'T' | null;
+    players: Array<{ id: string; name: string; avatarUrl?: string | null; accepted: boolean; inServer?: boolean }>;
   }>;
+  inServer?: number;
+  total?: number;
+  autostartMinutes?: number;
 }
 
 export default function PlayLobby() {
@@ -98,6 +103,9 @@ export default function PlayLobby() {
   }
 
   const completed = lobby.matchStatus === 'completed';
+  // Loaded on a server, waiting in warmup for everyone to join.
+  const waiting = lobby.matchStatus === 'loaded';
+  const onServer = lobby.matchStatus === 'loaded' || lobby.matchStatus === 'live';
   const rolls = !!lobby.map && lobby.mapPool.length > 1 && !completed;
   const revealed = !!lobby.map && (!rolls || rolled);
   const mapName = lobby.map
@@ -172,7 +180,17 @@ export default function PlayLobby() {
                 data-testid="mm-match-status"
               >
                 {statusLine}
+                {waiting && typeof lobby.inServer === 'number' && lobby.total
+                  ? ` · ${t('matchmaking.room.inServer', { n: lobby.inServer, total: lobby.total })}`
+                  : ''}
               </Typography>
+              {waiting && (
+                <Typography sx={{ fontSize: textSize.sm, color: color.ink2, maxWidth: 520 }} data-testid="mm-warmup-rule">
+                  {lobby.autostartMinutes
+                    ? t('matchmaking.room.warmupRuleTimed', { total: lobby.total ?? 10, minutes: lobby.autostartMinutes })
+                    : t('matchmaking.room.warmupRule', { total: lobby.total ?? 10 })}
+                </Typography>
+              )}
             </Box>
             {lobby.matchSlug && !completed && ConnectPanel && (
               <Box
@@ -216,7 +234,7 @@ export default function PlayLobby() {
               alignItems: 'start',
             }}
           >
-            <MatchResult matchSlug={lobby.matchSlug} />
+            <MatchResult matchSlug={lobby.matchSlug} modeLabel={modeLabel} />
             <MatchDrop matchSlug={lobby.matchSlug} />
           </Box>
         )}
@@ -262,7 +280,12 @@ export default function PlayLobby() {
                     fontWeight: 600,
                   }}
                 >
-                  {t('matchmaking.room.team', { n: team.team })}
+                  {t('matchmaking.room.teamLetter', { letter: team.team === 1 ? 'A' : 'B' })}
+                  {team.startSide && (
+                    <Box component="span" sx={{ ml: 1, fontSize: textSize.sm, fontWeight: 500, color: team.startSide === 'CT' ? color.info : color.medalGold }}>
+                      {t('matchmaking.room.sideFirst', { side: team.startSide })}
+                    </Box>
+                  )}
                 </Typography>
                 <Box
                   component="ul"
@@ -312,6 +335,15 @@ export default function PlayLobby() {
                           </Box>
                         )}
                       </Typography>
+                      {onServer && !completed && (
+                        <Typography
+                          data-testid="mm-player-presence"
+                          sx={{ fontSize: textSize.sm, color: p.inServer ? color.pick : color.muted, display: 'flex', alignItems: 'center', gap: 0.75 }}
+                        >
+                          <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: p.inServer ? color.pick : color.rule }} />
+                          {p.inServer ? t('matchmaking.room.presence.in') : t('matchmaking.room.presence.notYet')}
+                        </Typography>
+                      )}
                       {lobby.status === 'accepting' && (
                         <Typography
                           sx={{
