@@ -290,6 +290,33 @@ test.describe.serial('Fleet hosts (csm)', () => {
     again.close();
   });
 
+  test('an agent that starts over (linked again) gets the next command numbered from where it is', async ({ request }) => {
+    // csm #108: after a re-link the agent had received nothing (last_rx_seq 0)
+    // but the platform carried on numbering from the old session, so the
+    // next command waited forever for messages that no longer exist.
+    const m = await linkMachine(request, 'relinked');
+    const csm = await FakeCsm.connect(m.token, m.hostId, m.machineId);
+    await csm.handshake();
+    const first = await command(request, m.hostId, { type: 'host.updates_hold', payload: { mode: 'on' } });
+    expect(first.status).toBe(202);
+    const got = await csm.nextCommand('host.updates_hold');
+    expect(got.seq).toBe(1);
+    // Let the platform store the ack before the link drops.
+    await new Promise((r) => setTimeout(r, 300));
+    csm.close();
+    await csm.client.waitClosed();
+
+    // Queued while offline, then the agent comes back with no state at all.
+    const queued = await command(request, m.hostId, { type: 'host.updates_hold', payload: { mode: 'off' } });
+    expect(queued.status).toBe(202);
+    const fresh = await FakeCsm.connect(m.token, m.hostId, m.machineId);
+    await fresh.handshake({ stream: { id: 'csm-stream-fresh', last_tx_seq: 0, last_rx_seq: 0 } });
+    const replayed = await fresh.nextCommand('host.updates_hold');
+    expect(replayed.id).toBe(queued.body.command.id);
+    expect(replayed.seq).toBe(1);
+    fresh.close();
+  });
+
   test('rotate the token over the socket; revoke closes it with 4403', async ({ request }) => {
     const m = await linkMachine(request, 'to-revoke');
     const csm = await FakeCsm.connect(m.token, m.hostId, m.machineId);
