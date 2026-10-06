@@ -93,7 +93,7 @@ export function tournamentAction(tournament: TournamentSummary): TournamentActio
     return { key: 'watch', to: tournamentTabPath(tournament.id), primary: false };
   }
   if (tournament.status === 'completed') {
-    return { key: 'results', to: tournamentTabPath(tournament.id, 'standings'), primary: false };
+    return { key: 'results', to: tournamentTabPath(tournament.id), primary: false };
   }
   return { key: 'signUp', to: tournamentTabPath(tournament.id), primary: true };
 }

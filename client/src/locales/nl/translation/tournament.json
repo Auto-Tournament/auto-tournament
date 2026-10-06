@@ -845,7 +845,11 @@
     },
     "mapPoolCount": "Map pool · {{count}} maps",
     "mapPoolNote": "Captains ban and pick from these before each series.",
-    "addToCalendar": "Add to calendar"
+    "addToCalendar": "Add to calendar",
+    "scheduleSoon": "De organisator heeft het schema nog niet gepubliceerd.",
+    "checkInWindow": "Inchecken",
+    "mapPoolSoonTitle": "Mappool",
+    "mapPoolSoon": "De organisator heeft de maps nog niet gekozen."
   },
   "roundStatusCard": {
     "roundOf": "Round {{current}} of {{total}}",

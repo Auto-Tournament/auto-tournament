@@ -45,7 +45,18 @@ function MapIconTile({ map, size }: { map: string; size: number }) {
 export function MapPoolCard({ maps }: { maps: string[] }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  if (maps.length === 0) return null;
+  // No pool yet: a placeholder the same size, so the row keeps its shape.
+  if (maps.length === 0) {
+    return (
+      <Box
+        data-testid="overview-map-pool-empty"
+        sx={{ border: `1px dashed ${tokens.color.rule}`, borderRadius: radii.lg, p: 2.5, minHeight: 96, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 0.5 }}
+      >
+        <Typography sx={{ fontWeight: 600, color: tokens.color.ink2 }}>{t('overviewPage.mapPoolSoonTitle')}</Typography>
+        <Typography sx={{ fontSize: '0.875rem', color: tokens.color.muted }}>{t('overviewPage.mapPoolSoon')}</Typography>
+      </Box>
+    );
+  }
 
   return (
     <>

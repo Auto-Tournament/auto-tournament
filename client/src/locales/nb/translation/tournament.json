@@ -845,7 +845,11 @@
     },
     "mapPoolCount": "Kartpool · {{count}} kart",
     "mapPoolNote": "Kapteinene banner og velger fra disse før hver serie.",
-    "addToCalendar": "Legg til i kalender"
+    "addToCalendar": "Legg til i kalender",
+    "scheduleSoon": "Arrangøren har ikke publisert timeplanen ennå.",
+    "checkInWindow": "Innsjekk",
+    "mapPoolSoonTitle": "Kartpool",
+    "mapPoolSoon": "Arrangøren har ikke valgt kartene ennå."
   },
   "roundStatusCard": {
     "roundOf": "Runde {{current}} av {{total}}",

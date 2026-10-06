@@ -123,9 +123,10 @@ export function yourMatchFirst(status: string | undefined, hasTeam: boolean | un
 
 /**
  * The tabs one tournament shows: Rules only when the organizer wrote some, or
- * a description too long for the header to show in full. While it runs, a
- * player whose team is in it gets "Your match" in place of Overview: that is
- * what they came for.
+ * a description too long for the header to show in full. Before it starts:
+ * Overview and Teams. While it runs, a player whose team is in it gets "Your
+ * match" in place of Overview: that is what they came for. Once it is over:
+ * the results (Overview), Bracket and Matches.
  */
 export function visibleTournamentTabs(
   tournament: {
@@ -146,6 +147,16 @@ export function visibleTournamentTabs(
   // tournament's, so it shows its results only.
   if (tournament.archived_at) {
     return hasRules ? ['overview', 'bracket', 'standings', 'rules'] : ['overview', 'bracket', 'standings'];
+  }
+  // Before it starts there is nothing to follow yet (tournament drafts,
+  // board 1): the page, who is in, and the rules.
+  if (tournament.status === 'setup' || tournament.status === 'ready') {
+    return hasRules ? ['overview', 'teams', 'rules'] : ['overview', 'teams'];
+  }
+  // Once it is over the results lead (board 9): the overview is the results
+  // page, and the bracket and every match (with demos) are kept.
+  if (tournament.status === 'completed') {
+    return hasRules ? ['overview', 'bracket', 'matches', 'rules'] : ['overview', 'bracket', 'matches'];
   }
   const tabs: TournamentTab[] = [
     yourMatchFirst(tournament.status, viewer.hasTeam) ? 'match' : 'overview',

@@ -845,7 +845,11 @@
     },
     "mapPoolCount": "Map pool · {{count}} maps",
     "mapPoolNote": "Captains ban and pick from these before each series.",
-    "addToCalendar": "Add to calendar"
+    "addToCalendar": "Add to calendar",
+    "scheduleSoon": "主办方还没有公布赛程。",
+    "checkInWindow": "签到",
+    "mapPoolSoonTitle": "地图池",
+    "mapPoolSoon": "主办方还没有选好地图。"
   },
   "roundStatusCard": {
     "roundOf": "Round {{current}} of {{total}}",
