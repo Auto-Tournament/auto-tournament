@@ -1,7 +1,8 @@
+import { useEffect } from 'react';
 import { Box, Button, Dialog, Typography } from '@mui/material';
 import { sourceLabel } from './SkinParts';
-import { useModuleTranslation, tokens, fontDisplay, mono, radii, withAlpha } from '../../../module-sdk';
-import { useMySkins, useSkinsEnabled } from './useSkins';
+import { useModuleTranslation, useSocket, tokens, fontDisplay, mono, radii, withAlpha } from '../../../module-sdk';
+import { announceChange, useMySkins, useSkinsEnabled } from './useSkins';
 import { rarityColor } from './rarity';
 
 const { color } = tokens;
@@ -12,10 +13,44 @@ const { color } = tokens;
  * slowly (still for reduced motion). Equip now or keep it in the inventory.
  */
 export function NewSkinReveal() {
-  const { t } = useModuleTranslation('cs2');
   const enabled = useSkinsEnabled();
-  const { inventory, unseen, equip, markSeen, available } = useMySkins();
-  const skin = enabled && available ? inventory.find((s) => s.id === unseen[0]) ?? null : null;
+  const { available } = useMySkins();
+  if (!enabled || !available) return null;
+  return (
+    <>
+      <SkinsLive />
+      <Reveal />
+    </>
+  );
+}
+
+/**
+ * Listens for `skins:changed` in the player's own socket room, so a skin given
+ * (a drop, a reward, an admin) shows the reveal at once, with no reload.
+ */
+function SkinsLive() {
+  const socket = useSocket();
+  useEffect(() => {
+    // Rooms don't survive a reconnect: ask again on every connect, and read
+    // again in case a skin came while disconnected.
+    const onConnect = () => {
+      socket.emit('player:subscribe');
+      announceChange();
+    };
+    socket.on('connect', onConnect);
+    socket.on('skins:changed', announceChange);
+    return () => {
+      socket.off('connect', onConnect);
+      socket.off('skins:changed', announceChange);
+    };
+  }, [socket]);
+  return null;
+}
+
+function Reveal() {
+  const { t } = useModuleTranslation('cs2');
+  const { inventory, unseen, equip, markSeen } = useMySkins();
+  const skin = inventory.find((s) => s.id === unseen[0]) ?? null;
   if (!skin) return null;
   const tone = rarityColor[skin.rarity];
 

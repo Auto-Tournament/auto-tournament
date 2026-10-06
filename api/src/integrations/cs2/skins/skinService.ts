@@ -19,6 +19,7 @@ import { randomInt } from 'crypto';
 import fetch from 'node-fetch';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
+import { emitSkinsChanged } from '../../../services/socketService';
 import { WEAPON_DEFINDEX } from './skinDefindex';
 import { knifeAndGlovePrices, priceFor, priceKey, rarityIndexByPrice } from './skinPrices';
 
@@ -346,6 +347,9 @@ export const skinService = {
         variantOf(skin.paintKitName),
       ]
     );
+    // The reveal shows at once on any page the player has open.
+    const player = await db.queryOneAsync<{ id: string }>('SELECT id FROM players WHERE uid = ?', [playerUid]);
+    if (player) emitSkinsChanged(player.id);
     return row?.id ?? 0;
   },
 
