@@ -410,6 +410,19 @@ Up, logs); Ready Up's own link stays for the match.
   have no Ready Up, so a successful create is followed by `host.update_plugins`
   (`latest`, `default`) for the new servers; they then self-enroll and join
   the machine by `install_id`.
+- **Automatic updates** (`hosts/autoUpdate.ts`): every 5 minutes the
+  platform checks each online machine. CS2 is behind when Steam's
+  UpToDateCheck says `inventory.cs2.master_patch` is old (csm 1.20+), or a
+  server printed csm's update marker. Ready Up is behind when a server last
+  reported an older version than the newest release on its channel. Either
+  sends `host.update_game` / `host.update_plugins` (issued by `platform`,
+  `meta.auto`) naming the servers that may update: never one with a match in
+  progress, only stopped ones while a tournament runs (hold `auto`), none
+  when the machine's hold is `on`. Nothing is resent while one is in flight,
+  or for the same target within 6 h (30 min after a failure). csm 1.20+ on an
+  enrolled host no longer starts updates itself; its monitor only restarts
+  idle servers onto what is installed. The admin page shows the last plan
+  per machine (`autoUpdate`).
 - **Inventory join** (§18.3): each `server-N` joins its Ready Up server on
   `readyup.install_id`, else `readyup.server_id`.
 

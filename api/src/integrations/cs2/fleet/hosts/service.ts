@@ -34,6 +34,7 @@ import {
 } from './join';
 import * as registry from './registry';
 import { bundleFor, pluginSetForCreate, validatePluginSet, type PluginSet } from '../push/pluginSets';
+import { autoUpdateStatus, startAutoUpdates, stopAutoUpdates } from './autoUpdate';
 
 /** The plugin set a server.create was stored with (meta.plugins), if any. */
 function pluginSetOfMeta(meta: Record<string, unknown> | null): PluginSet | null {
@@ -282,6 +283,8 @@ export async function hostServers(hostId: string): Promise<HostServerView[]> {
 
 export interface HostAdminView extends registry.FleetHostView {
   servers: HostServerView[];
+  /** What the platform's automatic updates are doing on this machine (./autoUpdate.ts), once it has looked. */
+  autoUpdate: { at: number; game: string; readyUp: string } | null;
   /** Ready Up servers enrolled with a key minted for this machine that its inventory does not list (yet). */
   enrolledServers: HostFleetServerRef[];
   commands: registry.HostCommandRecord[];
@@ -311,6 +314,7 @@ export async function listHostViews(opts: { commands?: number; health?: number }
       ...host,
       online: gateway.session(host.id) !== null,
       servers,
+      autoUpdate: autoUpdateStatus(host.id),
       enrolledServers,
       commands: await registry.listHostCommands(host.id, opts.commands ?? 10),
       health: await registry.listHealth(host.id, opts.health ?? 5),
@@ -368,6 +372,8 @@ export async function startFleetHosts(server?: HttpServer): Promise<void> {
   }
   await registry.markAllHostsOffline();
   gateway.attach(http);
+  // The platform starts CS2 and Ready Up updates on enrolled machines (./autoUpdate.ts).
+  startAutoUpdates();
   if (!rotationTimer) {
     rotationTimer = setInterval(() => {
       void rotateDue().catch((error) => log.warn(`[FLEET-HOST] rotation check failed: ${(error as Error).message}`));
@@ -377,6 +383,7 @@ export async function startFleetHosts(server?: HttpServer): Promise<void> {
 }
 
 export function stopFleetHosts(): void {
+  stopAutoUpdates();
   if (rotationTimer) clearInterval(rotationTimer);
   rotationTimer = null;
   gateway.shutdown();

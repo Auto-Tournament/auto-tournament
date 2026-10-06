@@ -114,7 +114,7 @@ export interface HostInventoryPayload {
     ram_free_mb: number;
     disk: Array<{ mount: string; total_gb: number; free_gb: number }>;
   };
-  cs2: { master_build: number; update_available: boolean; updates_hold: UpdatesHoldMode };
+  cs2: { master_build: number; master_patch?: string; update_available: boolean; updates_hold: UpdatesHoldMode };
   servers: HostInventoryServer[];
 }
 

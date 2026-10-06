@@ -607,7 +607,7 @@ export interface FleetHost {
       ram_free_mb: number;
       disk: Array<{ mount: string; total_gb: number; free_gb: number }>;
     };
-    cs2: { master_build: number; update_available: boolean; updates_hold: 'on' | 'off' | 'auto' };
+    cs2: { master_build: number; master_patch?: string; update_available: boolean; updates_hold: 'on' | 'off' | 'auto' };
   } | null;
   inventoryAt: number | null;
   token: { id: string; createdAt: number; lastUsedAt: number | null; rotationDueAt: number; rotationPending: boolean } | null;
@@ -615,6 +615,8 @@ export interface FleetHost {
   codeExpiresAt: number | null;
   servers: FleetHostServer[];
   enrolledServers: FleetHostServerRef[];
+  /** What the platform's automatic updates are doing here, once it has looked. */
+  autoUpdate: { at: number; game: string; readyUp: string } | null;
   commands: FleetHostCommand[];
   health: Array<{ id: number; server: string; event: string; exitCode: number | null; detail: string | null; receivedAt: number }>;
 }

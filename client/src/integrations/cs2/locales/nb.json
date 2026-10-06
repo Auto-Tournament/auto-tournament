@@ -1294,9 +1294,9 @@
     "updateReadyUp": "Update Ready Up…",
     "updatesHold": "Automatic updates",
     "hold": {
-      "auto": "Automatic (wait for idle)",
-      "on": "Held",
-      "off": "Not held"
+      "auto": "Automatisk (ikke under turneringer)",
+      "on": "På pause",
+      "off": "Alltid (også under turneringer)"
     },
     "noServers": "No servers on this machine yet.",
     "enrolledElsewhere": "Enrolled from this machine: {{names}}",
