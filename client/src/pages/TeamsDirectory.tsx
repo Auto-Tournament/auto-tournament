@@ -65,7 +65,7 @@ function TeamTile({
         width: size,
         height: size,
         flex: 'none',
-        borderRadius: `${radii.md}px`,
+        borderRadius: radii.md,
         bgcolor: color.paper3,
         display: 'grid',
         placeItems: 'center',
@@ -318,7 +318,7 @@ export default function TeamsDirectory() {
                 data-testid="teams-directory-row"
                 sx={{
                   p: 2,
-                  borderRadius: `${radii.lg}px`,
+                  borderRadius: radii.lg,
                   bgcolor: color.paper2,
                   border: `1px solid ${color.rule}`,
                   display: 'flex',

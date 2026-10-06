@@ -75,7 +75,7 @@ export default function TeamJoin() {
               sx={{
                 width: 96,
                 height: 96,
-                borderRadius: `${radii.lg}px`,
+                borderRadius: radii.lg,
                 bgcolor: color.paper3,
                 border: `2px solid ${color.accent}`,
                 display: 'grid',
