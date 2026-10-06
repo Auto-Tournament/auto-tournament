@@ -759,6 +759,16 @@
       "seriesWon": "{{team}} 以 {{a}}–{{b}} 赢下系列赛",
       "adminCalled": "{{name}} 呼叫了管理员",
       "timedOut": "超时"
+    },
+    "party": {
+      "inviteCopied": "邀请链接已复制",
+      "inviteFailed": "无法复制链接",
+      "leader": "队长",
+      "invite": "邀请",
+      "queue": "一起排队",
+      "leaveQueue": "退出排队",
+      "searching": "正在寻找比赛",
+      "leaderQueues": "由队长开始排队"
     }
   }
 }

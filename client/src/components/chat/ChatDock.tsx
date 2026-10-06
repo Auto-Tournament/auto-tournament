@@ -15,7 +15,8 @@ import { useTranslation } from 'react-i18next';
 import { systemLineText } from './systemLine';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
-import { useMatchmaking } from '../matchmaking/matchmakingStore';
+import { matchmakingAction, refreshMatchmaking, useMatchmaking } from '../matchmaking/matchmakingStore';
+import { paths } from '../../paths';
 import { fontDisplay, radii, textSize, tokens } from '../../theme/tokens';
 import {
   callAdmin,
@@ -32,6 +33,9 @@ import {
 
 const { color } = tokens;
 const PANEL_WIDTH = 420;
+/** On a wide screen: the chats listed on the left, the open one beside them (draft 5c). */
+const WIDE_PANEL_WIDTH = 720;
+const LIST_WIDTH = 220;
 const PEEK_MS = 8000;
 const MAX_BODY = 500;
 
@@ -173,11 +177,16 @@ function MessageLine({
   );
 }
 
-function Tabs({ channels, active }: { channels: ChatChannel[]; active: string | null }) {
+function Tabs({ channels, active, vertical = false }: { channels: ChatChannel[]; active: string | null; vertical?: boolean }) {
   const { t } = useTranslation();
   const label = (c: ChatChannel) => (c.kind === 'match' ? t('chat.tabMatch') : c.kind === 'team' ? t('chat.tabTeam') : t('chat.tabParty'));
   return (
-    <Box role="tablist" aria-label={t('chat.tabsLabel')} sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+    <Box
+      role="tablist"
+      aria-label={t('chat.tabsLabel')}
+      aria-orientation={vertical ? 'vertical' : 'horizontal'}
+      sx={{ display: 'flex', flexDirection: vertical ? 'column' : 'row', gap: 0.75, flexWrap: vertical ? 'nowrap' : 'wrap' }}
+    >
       {channels.map((c) => {
         const selected = c.channel === active;
         return (
@@ -190,7 +199,9 @@ function Tabs({ channels, active }: { channels: ChatChannel[]; active: string | 
             sx={{
               px: 1.75,
               py: 1,
-              borderRadius: radii.pill,
+              justifyContent: vertical ? 'space-between' : 'center',
+              textAlign: 'left',
+              borderRadius: vertical ? radii.md : radii.pill,
               border: selected ? 0 : `1px solid ${color.rule}`,
               bgcolor: selected ? color.ink : 'transparent',
               color: selected ? color.accentInk : color.ink2,
@@ -200,7 +211,16 @@ function Tabs({ channels, active }: { channels: ChatChannel[]; active: string | 
               '&:focus-visible': { outline: `2px solid ${color.accent}`, outlineOffset: 2 },
             }}
           >
-            {label(c)}
+            {vertical ? (
+              <Box component="span" sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                <span>{label(c)}</span>
+                <Box component="span" sx={{ fontSize: textSize.xs, color: selected ? color.accentInk : color.muted, opacity: 0.8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {c.title}
+                </Box>
+              </Box>
+            ) : (
+              label(c)
+            )}
             {c.unread > 0 && !selected && (
               <Box component="span" sx={{ minWidth: 18, height: 18, px: 0.5, borderRadius: radii.pill, bgcolor: color.accent, color: color.accentInk, fontSize: '0.6875rem', display: 'grid', placeItems: 'center' }}>
                 {c.unread}
@@ -213,7 +233,7 @@ function Tabs({ channels, active }: { channels: ChatChannel[]; active: string | 
   );
 }
 
-function Panel({ phone }: { phone: boolean }) {
+function Panel({ phone, wide }: { phone: boolean; wide: boolean }) {
   const { t } = useTranslation();
   const { showError, showSuccess } = useSnackbar();
   const { playerSteamId, impersonation } = useAuth();
@@ -317,16 +337,22 @@ function Panel({ phone }: { phone: boolean }) {
         top: 0,
         right: 0,
         bottom: 0,
-        width: phone ? '100vw' : PANEL_WIDTH,
+        width: phone ? '100vw' : wide ? WIDE_PANEL_WIDTH : PANEL_WIDTH,
         zIndex: theme.zIndex.drawer + 2,
         bgcolor: color.paper2,
         borderLeft: phone ? 0 : `1px solid ${color.rule}`,
         boxShadow: phone ? 'none' : `-12px 0 32px ${color.shadow}`,
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: 'row',
         minHeight: 0,
       })}
     >
+      {wide && channels.length > 0 && (
+        <Box sx={{ width: LIST_WIDTH, flex: 'none', borderRight: `1px solid ${color.rule}`, px: 1.5, pt: 9, overflowY: 'auto' }}>
+          <Tabs channels={channels} active={active} vertical />
+        </Box>
+      )}
+      <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
       <Box sx={{ px: 2.25, pt: 2, pb: 1.5, display: 'flex', flexDirection: 'column', gap: 1.5, borderBottom: `1px solid ${color.rule}` }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
           <Typography id="chat-title" component="h2" sx={{ m: 0, fontFamily: fontDisplay, fontSize: textSize.lg, fontWeight: 600, flex: 1 }}>
@@ -343,8 +369,9 @@ function Panel({ phone }: { phone: boolean }) {
             </svg>
           </IconButton>
         </Box>
-        {channels.length > 0 && <Tabs channels={channels} active={active} />}
+        {channels.length > 0 && !wide && <Tabs channels={channels} active={active} />}
         {subtitle && <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>{subtitle}</Typography>}
+        {channel?.kind === 'party' && !readOnly && <PartyBar />}
       </Box>
 
       <Box
@@ -444,6 +471,90 @@ function Panel({ phone }: { phone: boolean }) {
           )}
         </Box>
       )}
+      </Box>
+    </Box>
+  );
+}
+
+/**
+ * The party above its chat (draft 5c): who is in it (the leader marked, and
+ * who is in a match), Invite (copies the link) and, for the leader, Queue
+ * together in the party's mode.
+ */
+function PartyBar() {
+  const { t } = useTranslation();
+  const { showError, showSuccess } = useSnackbar();
+  const { playerSteamId } = useAuth();
+  const { me } = useMatchmaking();
+  const [busy, setBusy] = useState(false);
+  const party = me?.party;
+  if (!party) return null;
+  const people = party.people ?? party.members.map((id) => ({ id, name: id, avatarUrl: null }));
+  const isLeader = party.leader === playerSteamId;
+  const searching = !!me?.queue;
+  const inLobby = !!me?.lobby;
+
+  const invite = async () => {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}${paths.play}?join=${party.inviteCode}`);
+      showSuccess(t('chat.party.inviteCopied'));
+    } catch {
+      showError(t('chat.party.inviteFailed'));
+    }
+  };
+  const queue = async () => {
+    setBusy(true);
+    try {
+      await matchmakingAction(searching ? 'DELETE' : 'POST', '/queue', searching ? {} : { mode: party.mode });
+      await refreshMatchmaking();
+    } catch (error) {
+      showError((error as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Box data-testid="chat-party-bar" sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+      <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+        {people.map((p) => (
+          <Box component="li" key={p.id} sx={{ display: 'flex', alignItems: 'center', gap: 0.75, pl: 0.5, pr: 1.25, py: 0.5, borderRadius: radii.pill, bgcolor: color.paper3, fontSize: textSize.sm }}>
+            <Box
+              component="span"
+              sx={{ width: 22, height: 22, borderRadius: '50%', bgcolor: color.paper, display: 'grid', placeItems: 'center', fontSize: '0.6875rem', fontWeight: 600, overflow: 'hidden', backgroundImage: p.avatarUrl ? `url(${p.avatarUrl})` : undefined, backgroundSize: 'cover' }}
+            >
+              {p.avatarUrl ? '' : (p.name.trim()[0] ?? '?').toUpperCase()}
+            </Box>
+            <span>{p.name}</span>
+            {p.id === party.leader && (
+              <Box component="span" sx={{ color: color.medalGold, fontSize: textSize.xs, fontWeight: 600 }}>
+                {t('chat.party.leader')}
+              </Box>
+            )}
+          </Box>
+        ))}
+      </Box>
+      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+        <Button size="small" onClick={() => void invite()} data-testid="chat-party-invite" sx={{ borderRadius: radii.pill, bgcolor: color.paper3, color: color.ink, px: 1.75, textTransform: 'none' }}>
+          {t('chat.party.invite')}
+        </Button>
+        {isLeader && !inLobby && (
+          <Button
+            size="small"
+            disabled={busy}
+            onClick={() => void queue()}
+            data-testid="chat-party-queue"
+            sx={{ borderRadius: radii.pill, bgcolor: searching ? color.paper3 : color.pick, color: searching ? color.ink : color.accentInk, px: 1.75, textTransform: 'none', fontWeight: 600, '&:hover': { bgcolor: searching ? color.paper3 : color.pick } }}
+          >
+            {searching ? t('chat.party.leaveQueue') : t('chat.party.queue')}
+          </Button>
+        )}
+        {!isLeader && (
+          <Typography sx={{ fontSize: textSize.sm, color: color.muted, alignSelf: 'center' }}>
+            {searching ? t('chat.party.searching') : t('chat.party.leaderQueues')}
+          </Typography>
+        )}
+      </Box>
     </Box>
   );
 }
@@ -452,6 +563,7 @@ export function ChatDock() {
   const { t } = useTranslation();
   const theme = useTheme();
   const phone = useMediaQuery(theme.breakpoints.down('sm'));
+  const wide = useMediaQuery('(min-width: 1400px)');
   const { playerSteamId, isAuthenticated: isAdmin } = useAuth();
   const { channels, open, peek } = useChat({ steamId: playerSteamId ?? null, isAdmin });
   const { me } = useMatchmaking();
@@ -463,7 +575,7 @@ export function ChatDock() {
     return () => clearTimeout(id);
   }, [peek]);
 
-  if (open) return <Panel phone={phone} />;
+  if (open) return <Panel phone={phone} wide={wide && !phone} />;
   if (channels.length === 0) return null;
 
   const peekChannel = peek ? channels.find((c) => c.channel === peek.channel) : null;

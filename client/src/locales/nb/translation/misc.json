@@ -759,6 +759,16 @@
       "seriesWon": "{{team}} vinner serien {{a}}–{{b}}",
       "adminCalled": "{{name}} tilkalte en admin",
       "timedOut": "tiden gikk ut"
+    },
+    "party": {
+      "inviteCopied": "Invitasjonslenke kopiert",
+      "inviteFailed": "Kunne ikke kopiere lenken",
+      "leader": "leder",
+      "invite": "Inviter",
+      "queue": "Søk sammen",
+      "leaveQueue": "Forlat køen",
+      "searching": "Søker etter kamp",
+      "leaderQueues": "Lederen starter søket"
     }
   }
 }

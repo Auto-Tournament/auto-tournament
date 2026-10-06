@@ -759,6 +759,16 @@
       "seriesWon": "{{team}} vence a série {{a}}–{{b}}",
       "adminCalled": "{{name}} chamou um admin",
       "timedOut": "sem tempo"
+    },
+    "party": {
+      "inviteCopied": "Link de convite copiado",
+      "inviteFailed": "Não foi possível copiar o link",
+      "leader": "líder",
+      "invite": "Convidar",
+      "queue": "Procurar juntos",
+      "leaveQueue": "Sair da fila",
+      "searching": "À procura de partida",
+      "leaderQueues": "O líder inicia a procura"
     }
   }
 }

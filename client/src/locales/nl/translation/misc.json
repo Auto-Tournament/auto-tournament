@@ -759,6 +759,16 @@
       "seriesWon": "{{team}} wint de serie {{a}}–{{b}}",
       "adminCalled": "{{name}} riep een admin",
       "timedOut": "tijd om"
+    },
+    "party": {
+      "inviteCopied": "Uitnodigingslink gekopieerd",
+      "inviteFailed": "Kon de link niet kopiëren",
+      "leader": "leider",
+      "invite": "Uitnodigen",
+      "queue": "Samen zoeken",
+      "leaveQueue": "Wachtrij verlaten",
+      "searching": "Zoeken naar een wedstrijd",
+      "leaderQueues": "De leider start het zoeken"
     }
   }
 }

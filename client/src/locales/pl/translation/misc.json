@@ -759,6 +759,16 @@
       "seriesWon": "{{team}} wygrywa serię {{a}}–{{b}}",
       "adminCalled": "{{name}} wezwał admina",
       "timedOut": "skończył się czas"
+    },
+    "party": {
+      "inviteCopied": "Skopiowano link zaproszenia",
+      "inviteFailed": "Nie udało się skopiować linku",
+      "leader": "lider",
+      "invite": "Zaproś",
+      "queue": "Szukaj razem",
+      "leaveQueue": "Opuść kolejkę",
+      "searching": "Szukanie meczu",
+      "leaderQueues": "Lider rozpoczyna wyszukiwanie"
     }
   }
 }
