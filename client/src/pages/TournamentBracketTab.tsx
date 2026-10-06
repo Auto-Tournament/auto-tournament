@@ -9,6 +9,7 @@ import { useTournamentPage } from '../components/tournament/page/tournamentPageC
 import { TabEmpty, TabError, TabLoading } from '../components/tournament/page/TabState';
 import { usePublicBracket } from '../hooks/usePublicBracket';
 import { tournamentTabPath } from '../paths';
+import { CardBracket } from '../components/tournament/page/CardBracket';
 
 /**
  * The tournament page's Bracket tab: the same bracket, Swiss or round robin
@@ -77,6 +78,8 @@ export default function TournamentBracketTab() {
           standings={bracket.swissStandings}
           totalRounds={bracket.totalRounds}
         />
+      ) : tournament.type === 'single_elimination' || tournament.type === 'double_elimination' ? (
+        <CardBracket matches={bracket.matches} tournamentType={tournament.type} format={tournament.format} />
       ) : (
         <BracketsViewerVisualization
           matches={bracket.matches}

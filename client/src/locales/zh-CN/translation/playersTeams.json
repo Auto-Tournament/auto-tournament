@@ -294,7 +294,8 @@
     },
     "demos": {
       "title": "地图录像",
-      "download": "下载 {{map}} 录像"
+      "download": "下载 {{map}} 录像",
+      "recording": "正在录制 {{map}}…"
     },
     "spectator": {
       "maps_one": "{{count}} map won",

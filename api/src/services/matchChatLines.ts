@@ -22,7 +22,9 @@ export type MatchChatKey =
   | 'mapLive'
   | 'mapResult'
   | 'seriesWon'
-  | 'adminCalled';
+  | 'adminCalled'
+  | 'remindAccount'
+  | 'remindGame';
 
 export function chatLineBody(key: MatchChatKey, params: Record<string, string | number | boolean | string[]> = {}): string {
   return `i18n:${JSON.stringify({ key, params })}`;

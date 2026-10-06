@@ -289,6 +289,7 @@ export function MatchServerPanel({ matchSlug, viewerCanJoin, matchStatus }: Matc
           {currentMapData ? ` · ${currentMapData.displayName}` : ''}
           {server.status ? ` · ${statusLabel}` : ''}
           {server.password ? '' : ` · ${t('matchInfo.server.noPassword', { defaultValue: "No password: you're on the list." })}`}
+          {` ${t('matchInfo.server.startsGame', { defaultValue: 'CS2 not open? The button starts it.' })}`}
         </Typography>
 
         {copyFallbackCommand && (

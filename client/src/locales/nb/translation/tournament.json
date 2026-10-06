@@ -845,7 +845,11 @@
     },
     "mapPoolCount": "Kartpool · {{count}} kart",
     "mapPoolNote": "Kapteinene banner og velger fra disse før hver serie.",
-    "addToCalendar": "Legg til i kalender"
+    "addToCalendar": "Legg til i kalender",
+    "scheduleSoon": "Arrangøren har ikke publisert timeplanen ennå.",
+    "checkInWindow": "Innsjekk",
+    "mapPoolSoonTitle": "Kartpool",
+    "mapPoolSoon": "Arrangøren har ikke valgt kartene ennå."
   },
   "roundStatusCard": {
     "roundOf": "Runde {{current}} av {{total}}",
@@ -869,7 +873,14 @@
     "round": "Runde {{n}}",
     "vetoTitle": "Kartvalg pågår",
     "finished": "Kampen er ferdig",
-    "mapOf": "Kart {{n}} av {{total}}"
+    "mapOf": "Kart {{n}} av {{total}}",
+    "sideYou": "{{side}} · dere",
+    "rejoin": "Falt ut? Bli med igjen med samme knapp: plassen din holdes.",
+    "outcome": {
+      "won": "Dere vant {{us}}–{{them}} mot {{opponent}}",
+      "lost": "Dere tapte {{us}}–{{them}} mot {{opponent}}",
+      "draw": "{{us}}–{{them}} mot {{opponent}}"
+    }
   },
   "results": {
     "finalStandings": "Sluttstilling",
@@ -901,7 +912,8 @@
       "mostFlashAssists": "{{value}} flash-assists",
       "mostUtility": "{{value}} utility-skade",
       "biggestGain": "+{{value}} rating"
-    }
+    },
+    "wonFinal": "Vant finalen {{a}}–{{b}} mot {{opponent}}"
   },
   "signup": {
     "cta": "Meld på laget ditt",
@@ -952,7 +964,9 @@
       "firstMatchIn": "Første kamp om",
       "count": "{{in}} av {{total}}",
       "you": "deg",
-      "everyone": "Alle"
+      "everyone": "Alle",
+      "soundOn": "Lyd på: du hører når det er tid",
+      "soundOff": "Lyd av"
     },
     "noTeamTitle": "Ingen lag å melde på",
     "noTeamBody": "Bare lagets eier eller en kaptein kan melde det på. Lag et lag, eller spør kapteinen din.",
@@ -991,6 +1005,32 @@
     "vouch": "Jeg bekrefter at alle spillerne i oppstillingen har lest",
     "vouchNote": "Jeg melder på på vegne av dem. Bryter en spiller reglene, kan hele laget straffes eller diskvalifiseres.",
     "send": "Meld på {{team}}",
-    "rulesLink": "reglene"
+    "rulesLink": "reglene",
+    "ownerTag": "eier",
+    "captainTag": "kaptein",
+    "check": {
+      "steam": "Steam",
+      "game": "{{game}}",
+      "noGame": "{{game}} ikke lagt til"
+    },
+    "remind": "Påminn",
+    "reminded": "Påminnelse sendt i lagchatten",
+    "done": "Ferdig"
+  },
+  "bracketCards": {
+    "upper": "Øvre bracket",
+    "lower": "Nedre bracket",
+    "grandFinal": "Storfinale",
+    "thirdPlace": "Tredjeplass",
+    "live": "Direkte",
+    "veto": "Veto",
+    "done": "Ferdig",
+    "mapOf": "Kart {{n}} av {{total}}",
+    "banning": "Banner kart",
+    "bestOf_one": "Best av {{count}}",
+    "bestOf_other": "Best av {{count}}",
+    "winnerOf": "Vinner {{match}}",
+    "loserOf": "Taper {{match}}",
+    "tbd": "Ikke avgjort"
   }
 }

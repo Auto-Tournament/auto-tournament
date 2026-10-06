@@ -86,7 +86,9 @@ test.describe.serial('Tournament Overview UI', () => {
       await expect(page.getByTestId('public-tournament-overview')).toBeVisible({ timeout: 15000 });
 
       await expect(page.getByTestId('overview-about')).toHaveCount(0);
+      // No schedule: a placeholder keeps its place on the page.
       await expect(page.getByTestId('overview-schedule')).toHaveCount(0);
+      await expect(page.getByTestId('overview-schedule-empty')).toBeVisible();
       await expect(page.getByTestId('tournament-tab-rules')).toHaveCount(0);
 
       // The team count and the map pool come from the tournament itself, so
@@ -97,7 +99,7 @@ test.describe.serial('Tournament Overview UI', () => {
   );
 
   test(
-    'has one H1 on the banner header and a tab for bracket, matches, teams and standings',
+    'has one H1 on the banner header, and Overview and Teams before the start',
     { tag: ['@ui', '@public', '@tournament'] },
     async ({ page, request }) => {
       const teams = await createTestTeams(request, 'overview-tabs');
@@ -123,14 +125,10 @@ test.describe.serial('Tournament Overview UI', () => {
       await expect(page.getByTestId('tournament-tab-overview')).toHaveAttribute('aria-current', 'page');
       // "Your match" is only for a player whose team is in a running tournament.
       await expect(page.getByTestId('tournament-tab-match')).toHaveCount(0);
-
-      await page.getByTestId('tournament-tab-matches').click();
-      await expect(page).toHaveURL(new RegExp(`/tournament/${id}/matches$`));
-      await expect(page.getByTestId('public-matches')).toContainText(team1.name);
-
-      await page.getByTestId('tournament-tab-bracket').click();
-      await expect(page).toHaveURL(new RegExp(`/tournament/${id}/bracket$`));
-      await expect(page.getByTestId('public-bracket')).toBeVisible();
+      // Before it starts: the page and who is in, nothing to follow yet.
+      await expect(page.getByTestId('tournament-tab-teams')).toBeVisible();
+      await expect(page.getByTestId('tournament-tab-matches')).toHaveCount(0);
+      await expect(page.getByTestId('tournament-tab-bracket')).toHaveCount(0);
 
       await page.getByTestId('tournament-tab-teams').click();
       await expect(page.getByTestId(`public-team-${team2.id}`)).toBeVisible();
@@ -138,10 +136,6 @@ test.describe.serial('Tournament Overview UI', () => {
       // Leaderboard was renamed Standings; the old address still lands there.
       await page.goto(`/tournament/${id}/leaderboard`, { waitUntil: 'domcontentloaded' });
       await expect(page).toHaveURL(new RegExp(`/tournament/${id}/standings$`));
-      await expect(page.getByTestId('tournament-tab-standings')).toHaveAttribute(
-        'aria-current',
-        'page'
-      );
     }
   );
 });

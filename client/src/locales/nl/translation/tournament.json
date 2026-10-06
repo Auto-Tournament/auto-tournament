@@ -845,7 +845,11 @@
     },
     "mapPoolCount": "Map pool · {{count}} maps",
     "mapPoolNote": "Captains ban and pick from these before each series.",
-    "addToCalendar": "Add to calendar"
+    "addToCalendar": "Add to calendar",
+    "scheduleSoon": "De organisator heeft het schema nog niet gepubliceerd.",
+    "checkInWindow": "Inchecken",
+    "mapPoolSoonTitle": "Mappool",
+    "mapPoolSoon": "De organisator heeft de maps nog niet gekozen."
   },
   "roundStatusCard": {
     "roundOf": "Round {{current}} of {{total}}",
@@ -869,7 +873,14 @@
     "round": "Round {{n}}",
     "vetoTitle": "Map veto in progress",
     "finished": "Match finished",
-    "mapOf": "Map {{n}} of {{total}}"
+    "mapOf": "Map {{n}} of {{total}}",
+    "sideYou": "{{side}} · jullie",
+    "rejoin": "Eruit gevallen? Doe weer mee met dezelfde knop: je plek blijft.",
+    "outcome": {
+      "won": "Gewonnen {{us}}–{{them}} tegen {{opponent}}",
+      "lost": "Verloren {{us}}–{{them}} tegen {{opponent}}",
+      "draw": "{{us}}–{{them}} tegen {{opponent}}"
+    }
   },
   "results": {
     "finalStandings": "Final standings",
@@ -901,7 +912,8 @@
       "mostFlashAssists": "{{value}} flash assists",
       "mostUtility": "{{value}} utility damage",
       "biggestGain": "+{{value}} rating"
-    }
+    },
+    "wonFinal": "Won de finale {{a}}–{{b}} van {{opponent}}"
   },
   "signup": {
     "cta": "Sign up your team",
@@ -952,7 +964,9 @@
       "firstMatchIn": "First match in",
       "count": "{{in}} of {{total}}",
       "you": "you",
-      "everyone": "Everyone"
+      "everyone": "Everyone",
+      "soundOn": "Geluid aan: je hoort wanneer het tijd is",
+      "soundOff": "Geluid uit"
     },
     "noTeamTitle": "No team to sign up",
     "noTeamBody": "Only a team’s owner or a captain can sign it up. Make a team, or ask your captain.",
@@ -991,6 +1005,32 @@
     "vouch": "I confirm every player in this lineup has read the",
     "vouchNote": "I sign up on their behalf. If a player breaks the rules, the whole team can be penalised or disqualified.",
     "send": "Sign up {{team}}",
-    "rulesLink": "rules"
+    "rulesLink": "rules",
+    "ownerTag": "eigenaar",
+    "captainTag": "captain",
+    "check": {
+      "steam": "Steam",
+      "game": "{{game}}",
+      "noGame": "{{game}} niet toegevoegd"
+    },
+    "remind": "Herinneren",
+    "reminded": "Herinnering in de teamchat gestuurd",
+    "done": "Klaar"
+  },
+  "bracketCards": {
+    "upper": "Winnaarsbracket",
+    "lower": "Verliezersbracket",
+    "grandFinal": "Grote finale",
+    "thirdPlace": "Derde plaats",
+    "live": "Live",
+    "veto": "Veto",
+    "done": "Klaar",
+    "mapOf": "Map {{n}} van {{total}}",
+    "banning": "Maps bannen",
+    "bestOf_one": "Best of {{count}}",
+    "bestOf_other": "Best of {{count}}",
+    "winnerOf": "Winnaar {{match}}",
+    "loserOf": "Verliezer {{match}}",
+    "tbd": "Nog niet bekend"
   }
 }

@@ -39,7 +39,17 @@ export interface EligibleTeam {
   name: string;
   tag: string | null;
   role: 'owner' | 'captain';
-  members: Array<{ steamId: string; name: string; avatar: string | null; rating: number | null; hasAccount: boolean }>;
+  members: Array<{
+    steamId: string;
+    name: string;
+    avatar: string | null;
+    rating: number | null;
+    hasAccount: boolean;
+    /** Has the tournament's game on their profile; null when unknown. */
+    hasGame?: boolean | null;
+    owner?: boolean;
+    captain?: boolean;
+  }>;
 }
 
 export interface TournamentSignupState {
@@ -133,4 +143,18 @@ export function viewerRegistration(state: TournamentSignupState): Registration |
     registrations.find((r) => eligibleTeams.some((t) => t.id === r.teamId)) ??
     null
   );
+}
+
+/** Remind a lineup player what to fix before check-in (a line in the team's chat). */
+export async function remindLineupPlayer(tournamentId: number, teamId: string, steamId: string): Promise<void> {
+  const res = await fetch(`/api/tournament-signup/${tournamentId}/remind`, {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ teamId, steamId }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(body.error ?? `HTTP ${res.status}`);
+  }
 }

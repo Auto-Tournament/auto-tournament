@@ -64,6 +64,7 @@ export interface Registration {
 
 interface TournamentRow {
   id: number;
+  name: string;
   status: string;
   game: string | null;
   team_ids: string;
@@ -104,7 +105,7 @@ function isPast(iso: string | null, now = Date.now()): boolean {
 
 async function loadTournament(tournamentId: number): Promise<TournamentRow> {
   const row = await db.queryOneAsync<TournamentRow>(
-    'SELECT id, status, game, team_ids, team_size, settings FROM tournament WHERE id = ?',
+    'SELECT id, name, status, game, team_ids, team_size, settings FROM tournament WHERE id = ?',
     [tournamentId]
   );
   if (!row) throw new SignupError(404, 'There is no tournament.');
@@ -197,6 +198,9 @@ async function setTeamIds(tournamentId: number, teamIds: string[]): Promise<void
   }
   emitTournamentUpdate({ id: tournamentId, action: 'tournament_updated' });
 }
+
+/** When each lineup player was last reminded (tournament:steamId), for the ten-minute pause. */
+const remindedAt = new Map<string, number>();
 
 export const tournamentSignupService = {
   windowOf,
@@ -333,7 +337,9 @@ export const tournamentSignupService = {
   },
 
   /** Teams the account may sign up (owner or captain), with their rosters. */
-  async eligibleTeams(uid: string) {
+  async eligibleTeams(uid: string, tournamentId?: number) {
+    // The tournament's game, to say who has it on their profile (null: unknown).
+    const gameId = tournamentId ? await gameRowId((await loadTournament(tournamentId)).game).catch(() => null) : null;
     const memberships = await teamMembers.listForAccount(uid);
     const captainOf = memberships.filter((m) => m.role === 'captain').map((m) => m.teamId);
     const owned = await db.queryAsync<{ id: string }>('SELECT id FROM teams WHERE owner_uid = ?', [uid]);
@@ -344,12 +350,23 @@ export const tournamentSignupService = {
       const roster = rosterSteamIds(team.players);
       const steamIds = roster.map((p) => (p.steamId ?? p.steamid) as string);
       const players = steamIds.length
-        ? await db.queryAsync<{ id: string; name: string; avatar_url: string | null; current_elo: number }>(
-            'SELECT id, name, avatar_url, current_elo FROM players WHERE id = ANY(?::text[])',
-            [steamIds]
+        ? await db.queryAsync<{ id: string; name: string; avatar_url: string | null; current_elo: number; uid: string; has_game: boolean }>(
+            `SELECT p.id, p.name, p.avatar_url, p.current_elo, p.uid, (pg.player_uid IS NOT NULL) AS has_game
+               FROM players p
+               LEFT JOIN player_games pg ON pg.player_uid = p.uid AND pg.game_id = ?
+              WHERE p.id = ANY(?::text[])`,
+            [gameId ?? -1, steamIds]
           )
         : [];
       const byId = new Map(players.map((p) => [p.id, p]));
+      const captains = new Set(
+        (
+          await db.queryAsync<{ account_uid: string }>(
+            "SELECT account_uid FROM team_members WHERE team_id = ? AND role = 'captain'",
+            [team.id]
+          )
+        ).map((c) => c.account_uid)
+      );
       teams.push({
         id: team.id,
         name: team.name,
@@ -364,11 +381,43 @@ export const tournamentSignupService = {
             avatar: player?.avatar_url ?? p.avatar ?? null,
             rating: player?.current_elo ?? null,
             hasAccount: Boolean(player),
+            /** Has the tournament's game on their profile; null when the game is unknown or there is no account. */
+            hasGame: player && gameId !== null ? Boolean(player.has_game) : null,
+            owner: Boolean(player && team.owner_uid && player.uid === team.owner_uid),
+            captain: Boolean(player && captains.has(player.uid)),
           };
         }),
       });
     }
     return teams;
+  },
+
+  /**
+   * "Remind": a line in the team's chat telling a lineup player what to fix
+   * before check-in (an account, or the game on their profile). Owner or
+   * captain only; once per player per ten minutes.
+   */
+  async remind(tournamentId: number, uid: string, input: { teamId: string; steamId: string }): Promise<void> {
+    await requireCaptain(input.teamId, uid);
+    const key = `${tournamentId}:${input.steamId}`;
+    const last = remindedAt.get(key) ?? 0;
+    if (Date.now() - last < 10 * 60 * 1000) throw new SignupError(429, 'Reminded a moment ago.', 'too_soon');
+    const tournament = await loadTournament(tournamentId);
+    const gameId = await gameRowId(tournament.game).catch(() => null);
+    const player = await db.queryOneAsync<{ name: string; uid: string; has_game: boolean }>(
+      `SELECT p.name, p.uid, (pg.player_uid IS NOT NULL) AS has_game FROM players p
+         LEFT JOIN player_games pg ON pg.player_uid = p.uid AND pg.game_id = ?
+        WHERE p.id = ?`,
+      [gameId ?? -1, input.steamId]
+    );
+    const team = await teamRow(input.teamId);
+    const name = player?.name ?? rosterSteamIds(team.players).find((p) => (p.steamId ?? p.steamid) === input.steamId)?.name ?? input.steamId;
+    const missing = !player ? 'account' : gameId !== null && !player.has_game ? 'game' : null;
+    if (!missing) throw new SignupError(409, 'Nothing to fix for this player.', 'ready');
+    remindedAt.set(key, Date.now());
+    const { chatService } = await import('./chatService');
+    const { chatLineBody } = await import('./matchChatLines');
+    await chatService.system(`team:${input.teamId}`, chatLineBody(missing === 'account' ? 'remindAccount' : 'remindGame', { name, tournament: tournament.name }));
   },
 
   async register(

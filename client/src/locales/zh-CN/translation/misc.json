@@ -795,7 +795,9 @@
       "mapResult": "第 {{n}} 张图 · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
       "seriesWon": "{{team}} 以 {{a}}–{{b}} 赢下系列赛",
       "adminCalled": "{{name}} 呼叫了管理员",
-      "timedOut": "超时"
+      "timedOut": "超时",
+      "remindAccount": "{{name}}：请用 Steam 登录一次，才能参加 {{tournament}}。",
+      "remindGame": "{{name}}：请在 {{tournament}} 签到前把游戏添加到个人资料（你玩的游戏）。"
     },
     "party": {
       "inviteCopied": "邀请链接已复制",

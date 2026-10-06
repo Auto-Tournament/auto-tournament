@@ -36,6 +36,12 @@ const PUBLIC_MATCH_KEYS = new Set([
   'team1MapScore',
   'team2MapScore',
   'mapResults',
+  // The card bracket's live state: which half of a double elimination, the
+  // map being played, and whether it waits on its veto.
+  'bracket',
+  'currentMap',
+  'mapNumber',
+  'vetoing',
 ]);
 
 test.describe('Public bracket API', () => {

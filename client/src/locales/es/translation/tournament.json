@@ -845,7 +845,11 @@
     },
     "mapPoolCount": "Map pool · {{count}} maps",
     "mapPoolNote": "Captains ban and pick from these before each series.",
-    "addToCalendar": "Add to calendar"
+    "addToCalendar": "Add to calendar",
+    "scheduleSoon": "El organizador aún no ha publicado el horario.",
+    "checkInWindow": "Check-in",
+    "mapPoolSoonTitle": "Mapas",
+    "mapPoolSoon": "El organizador aún no ha elegido los mapas."
   },
   "roundStatusCard": {
     "roundOf": "Round {{current}} of {{total}}",
@@ -869,7 +873,14 @@
     "round": "Round {{n}}",
     "vetoTitle": "Map veto in progress",
     "finished": "Match finished",
-    "mapOf": "Map {{n}} of {{total}}"
+    "mapOf": "Map {{n}} of {{total}}",
+    "sideYou": "{{side}} · vosotros",
+    "rejoin": "¿Te has caído? Vuelve con el mismo botón: tu plaza se guarda.",
+    "outcome": {
+      "won": "Ganasteis {{us}}–{{them}} contra {{opponent}}",
+      "lost": "Perdisteis {{us}}–{{them}} contra {{opponent}}",
+      "draw": "{{us}}–{{them}} contra {{opponent}}"
+    }
   },
   "results": {
     "finalStandings": "Final standings",
@@ -901,7 +912,8 @@
       "mostFlashAssists": "{{value}} flash assists",
       "mostUtility": "{{value}} utility damage",
       "biggestGain": "+{{value}} rating"
-    }
+    },
+    "wonFinal": "Ganó la final {{a}}–{{b}} contra {{opponent}}"
   },
   "signup": {
     "cta": "Sign up your team",
@@ -952,7 +964,9 @@
       "firstMatchIn": "First match in",
       "count": "{{in}} of {{total}}",
       "you": "you",
-      "everyone": "Everyone"
+      "everyone": "Everyone",
+      "soundOn": "Sonido activado: oirás cuando sea la hora",
+      "soundOff": "Sonido desactivado"
     },
     "noTeamTitle": "No team to sign up",
     "noTeamBody": "Only a team’s owner or a captain can sign it up. Make a team, or ask your captain.",
@@ -991,6 +1005,32 @@
     "vouch": "I confirm every player in this lineup has read the",
     "vouchNote": "I sign up on their behalf. If a player breaks the rules, the whole team can be penalised or disqualified.",
     "send": "Sign up {{team}}",
-    "rulesLink": "rules"
+    "rulesLink": "rules",
+    "ownerTag": "dueño",
+    "captainTag": "capitán",
+    "check": {
+      "steam": "Steam",
+      "game": "{{game}}",
+      "noGame": "{{game}} sin añadir"
+    },
+    "remind": "Recordar",
+    "reminded": "Recordatorio enviado al chat del equipo",
+    "done": "Listo"
+  },
+  "bracketCards": {
+    "upper": "Cuadro superior",
+    "lower": "Cuadro inferior",
+    "grandFinal": "Gran final",
+    "thirdPlace": "Tercer puesto",
+    "live": "En directo",
+    "veto": "Veto",
+    "done": "Terminado",
+    "mapOf": "Mapa {{n}} de {{total}}",
+    "banning": "Vetando mapas",
+    "bestOf_one": "Al mejor de {{count}}",
+    "bestOf_other": "Al mejor de {{count}}",
+    "winnerOf": "Ganador {{match}}",
+    "loserOf": "Perdedor {{match}}",
+    "tbd": "Por decidir"
   }
 }

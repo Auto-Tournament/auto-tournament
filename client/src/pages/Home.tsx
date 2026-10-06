@@ -340,7 +340,7 @@ export default function Home() {
                 <SectionTitle id="home-champions-title" title={t('home.champions.title')} aside={t('home.champions.aside')} link={{ to: paths.browse, label: t('home.champions.all') }} />
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'repeat(3, minmax(0, 1fr))' }, gap: 2.5 }}>
                   {champions.map((tour) => (
-                    <Box key={tour.id} component={RouterLink} to={tournamentTabPath(tour.id, 'standings')} data-testid={`home-champion-${tour.id}`} sx={{ p: 2.25, borderRadius: '20px', bgcolor: color.paper2, border: `1px solid ${color.rule}`, color: color.ink, textDecoration: 'none', display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr)', gap: 1.75, alignItems: 'center', '&:hover': { borderColor: color.muted } }}>
+                    <Box key={tour.id} component={RouterLink} to={tournamentTabPath(tour.id)} data-testid={`home-champion-${tour.id}`} sx={{ p: 2.25, borderRadius: '20px', bgcolor: color.paper2, border: `1px solid ${color.rule}`, color: color.ink, textDecoration: 'none', display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr)', gap: 1.75, alignItems: 'center', '&:hover': { borderColor: color.muted } }}>
                       <Box sx={{ width: 48, height: 48, borderRadius: '14px', bgcolor: 'rgba(232,176,75,0.16)', color: color.medalGold, display: 'grid', placeItems: 'center' }}>
                         <TrophyIcon size={24} />
                       </Box>
@@ -495,7 +495,7 @@ function LastTime({ tournament }: { tournament: TournamentSummary }) {
         id="home-last-title"
         title={t('home.lastTime.title')}
         aside={[tournament.name, tournament.completedAt ? new Date(tournament.completedAt).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short' }) : null].filter(Boolean).join(' · ')}
-        link={{ to: tournamentTabPath(tournament.id, 'standings'), label: t('home.lastTime.results') }}
+        link={{ to: tournamentTabPath(tournament.id), label: t('home.lastTime.results') }}
       />
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: { xs: 1.25, md: 2.5 }, alignItems: 'end' }}>
         {place(second, t('home.lastTime.second'), 120, color.medalSilver)}

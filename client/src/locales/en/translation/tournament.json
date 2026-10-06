@@ -845,7 +845,11 @@
     },
     "mapPoolCount": "Map pool · {{count}} maps",
     "mapPoolNote": "Captains ban and pick from these before each series.",
-    "addToCalendar": "Add to calendar"
+    "addToCalendar": "Add to calendar",
+    "scheduleSoon": "The organizer has not published the schedule yet.",
+    "checkInWindow": "Check-in",
+    "mapPoolSoonTitle": "Map pool",
+    "mapPoolSoon": "The organizer has not picked the maps yet."
   },
   "roundStatusCard": {
     "roundOf": "Round {{current}} of {{total}}",
@@ -869,7 +873,14 @@
     "round": "Round {{n}}",
     "vetoTitle": "Map veto in progress",
     "finished": "Match finished",
-    "mapOf": "Map {{n}} of {{total}}"
+    "mapOf": "Map {{n}} of {{total}}",
+    "sideYou": "{{side}} · you",
+    "rejoin": "Dropped out? Join again with the same button: your spot is kept.",
+    "outcome": {
+      "won": "You won {{us}}–{{them}} against {{opponent}}",
+      "lost": "You lost {{us}}–{{them}} against {{opponent}}",
+      "draw": "{{us}}–{{them}} against {{opponent}}"
+    }
   },
   "results": {
     "finalStandings": "Final standings",
@@ -901,7 +912,8 @@
       "mostFlashAssists": "{{value}} flash assists",
       "mostUtility": "{{value}} utility damage",
       "biggestGain": "+{{value}} rating"
-    }
+    },
+    "wonFinal": "Won the final {{a}}–{{b}} over {{opponent}}"
   },
   "signup": {
     "cta": "Sign up your team",
@@ -952,7 +964,9 @@
       "firstMatchIn": "First match in",
       "count": "{{in}} of {{total}}",
       "you": "you",
-      "everyone": "Everyone"
+      "everyone": "Everyone",
+      "soundOn": "Sound on: you'll hear when it's time",
+      "soundOff": "Sound off"
     },
     "noTeamTitle": "No team to sign up",
     "noTeamBody": "Only a team’s owner or a captain can sign it up. Make a team, or ask your captain.",
@@ -991,6 +1005,32 @@
     "vouch": "I confirm every player in this lineup has read the",
     "vouchNote": "I sign up on their behalf. If a player breaks the rules, the whole team can be penalised or disqualified.",
     "send": "Sign up {{team}}",
-    "rulesLink": "rules"
+    "rulesLink": "rules",
+    "ownerTag": "owner",
+    "captainTag": "captain",
+    "check": {
+      "steam": "Steam",
+      "game": "{{game}}",
+      "noGame": "{{game}} not added"
+    },
+    "remind": "Remind",
+    "reminded": "Reminder sent in your team chat",
+    "done": "Done"
+  },
+  "bracketCards": {
+    "upper": "Upper bracket",
+    "lower": "Lower bracket",
+    "grandFinal": "Grand final",
+    "thirdPlace": "Third place",
+    "live": "Live",
+    "veto": "Veto",
+    "done": "Done",
+    "mapOf": "Map {{n}} of {{total}}",
+    "banning": "Banning maps",
+    "bestOf_one": "Best of {{count}}",
+    "bestOf_other": "Best of {{count}}",
+    "winnerOf": "Winner {{match}}",
+    "loserOf": "Loser {{match}}",
+    "tbd": "To be decided"
   }
 }

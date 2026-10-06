@@ -116,7 +116,7 @@ export function ScheduleCalendar({ schedule, tournamentName, tournamentId }: Sch
               {day.events.map((event, index) => {
                 const top = ((event.start - day.midnight) / HOUR - firstHour) * ROW + 2;
                 const height = Math.max(((event.end - event.start) / HOUR) * ROW - 4, 30);
-                const accent = event.isLast ? color.sideT : color.accent;
+                const accent = event.isCheckIn ? color.medalGold : event.isLast ? color.sideT : color.accent;
                 const width = `calc(${100 / event.lanes}% - ${event.lanes > 1 ? 4 : 0}px)`;
                 return (
                   <Box
@@ -148,7 +148,7 @@ export function ScheduleCalendar({ schedule, tournamentName, tournamentId }: Sch
                       sx={{
                         fontSize: '0.8125rem',
                         fontWeight: 600,
-                        color: event.isLast ? color.sideT : color.ink,
+                        color: event.isCheckIn ? color.medalGold : event.isLast ? color.sideT : color.ink,
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: height < 50 ? 'nowrap' : 'normal',
@@ -157,7 +157,7 @@ export function ScheduleCalendar({ schedule, tournamentName, tournamentId }: Sch
                       {event.label}
                     </Typography>
                     <Typography sx={{ ...mono, fontSize: '0.75rem', color: color.muted, flex: 'none' }}>
-                      {time.format(event.start)}
+                      {time.format(event.start)} – {time.format(event.end)}
                     </Typography>
                   </Box>
                 );

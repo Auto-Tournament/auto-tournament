@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Box, Button, Typography } from '@mui/material';
-import { CheckCircleIcon, CheckIcon, ClockIcon } from '@phosphor-icons/react';
+import { CheckCircleIcon, CheckIcon, ClockIcon, SpeakerHighIcon, SpeakerSlashIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import type { Tournament } from '../../../types';
 import type { Registration, SignupWindow } from '../../../hooks/useTournamentSignup';
 import { PersonTile, TeamMark, Face } from './PlayerFace';
 import { tokens, fontDisplay, mono, radii, withAlpha } from '../../../theme/tokens';
+import { useSoundSettings } from '../../../hooks/useSoundSettings';
 
 const { color } = tokens;
 
@@ -53,6 +54,8 @@ export function CheckInPanel({
   const [busy, setBusy] = useState(false);
   const me = registration.lineup.find((p) => p.steamId === steamId) ?? null;
   const checkedIn = Boolean(me?.checkedInAt);
+  // The match is called with a sound (draft 6b): on unless the player muted it.
+  const sound = useSoundSettings();
   const closes = signupWindow.checkInClosesAt ? new Date(signupWindow.checkInClosesAt).getTime() : null;
   const firstAt = (tournament.settings?.schedule ?? [])
     .map((item) => new Date(item.at).getTime())
@@ -100,6 +103,34 @@ export function CheckInPanel({
               {me ? t('signup.checkIn.done') : t('signup.checkIn.teamTitle', { team: registration.teamName })}
             </Typography>
             <Typography sx={{ color: color.ink2 }}>{t('signup.checkIn.keepOpen')}</Typography>
+            {me && (
+              <Box
+                component="button"
+                type="button"
+                onClick={sound.toggleMute}
+                aria-pressed={!sound.isMuted}
+                data-testid="signup-sound"
+                sx={{
+                  all: 'unset',
+                  cursor: 'pointer',
+                  mt: 1,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 0.75,
+                  px: 1.5,
+                  py: 0.5,
+                  borderRadius: radii.pill,
+                  bgcolor: sound.isMuted ? color.paper3 : withAlpha(color.live, 0.18),
+                  color: sound.isMuted ? color.ink2 : color.live,
+                  fontSize: '0.8125rem',
+                  fontWeight: 600,
+                  '&:focus-visible': { outline: `2px solid ${color.focus}` },
+                }}
+              >
+                {sound.isMuted ? <SpeakerSlashIcon size={14} aria-hidden /> : <SpeakerHighIcon size={14} aria-hidden />}
+                {sound.isMuted ? t('signup.checkIn.soundOff') : t('signup.checkIn.soundOn')}
+              </Box>
+            )}
           </Box>
           {firstAt && (
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>

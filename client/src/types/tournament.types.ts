@@ -86,6 +86,9 @@ export interface EventPageScheduleItem {
   /** ISO 8601 datetime string. */
   at: string;
   label: string;
+  /** Client-derived items only (the check-in window): when it ends, and what it is. */
+  end?: string;
+  kind?: 'checkin';
 }
 
 /** Swiss standings row from the API, in the order the round pairing uses. */

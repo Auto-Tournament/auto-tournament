@@ -11,6 +11,8 @@ export interface CalendarEvent {
   lanes: number;
   /** The last item of the whole schedule (often the final). */
   isLast: boolean;
+  /** The check-in window (gold on the calendar). */
+  isCheckIn?: boolean;
 }
 
 export interface CalendarDay {
@@ -49,12 +51,17 @@ function localDayKey(time: number): string {
  */
 export function layoutSchedule(schedule: EventPageScheduleItem[]): CalendarLayout | null {
   const items = schedule
-    .map((item) => ({ label: item.label, start: new Date(item.at).getTime() }))
+    .map((item) => ({
+      label: item.label,
+      start: new Date(item.at).getTime(),
+      fixedEnd: item.end ? new Date(item.end).getTime() : null,
+      isCheckIn: item.kind === 'checkin',
+    }))
     .filter((item) => Number.isFinite(item.start))
     .sort((a, b) => a.start - b.start);
   if (items.length === 0) return null;
 
-  const lastStart = items[items.length - 1].start;
+  const lastStart = items.filter((item) => !item.isCheckIn).at(-1)?.start ?? items[items.length - 1].start;
   const byDay = new Map<string, typeof items>();
   for (const item of items) {
     const key = localDayKey(item.start);
@@ -69,7 +76,10 @@ export function layoutSchedule(schedule: EventPageScheduleItem[]): CalendarLayou
     const starts = [...new Set(dayItems.map((item) => item.start))];
     const events = dayItems.map((item) => {
       const next = starts.find((start) => start > item.start);
-      const end = item.start + Math.min(next !== undefined ? next - item.start : DEFAULT_LENGTH, MAX_LENGTH);
+      const end =
+        item.fixedEnd && item.fixedEnd > item.start
+          ? Math.min(item.fixedEnd, midnight + 24 * HOUR)
+          : item.start + Math.min(next !== undefined ? next - item.start : DEFAULT_LENGTH, MAX_LENGTH);
       const sameStart = dayItems.filter((other) => other.start === item.start);
       return {
         label: item.label,
@@ -77,7 +87,8 @@ export function layoutSchedule(schedule: EventPageScheduleItem[]): CalendarLayou
         end,
         lane: sameStart.indexOf(item),
         lanes: sameStart.length,
-        isLast: item.start === lastStart,
+        isLast: !item.isCheckIn && item.start === lastStart,
+        isCheckIn: item.isCheckIn,
       };
     });
     for (const event of events) {

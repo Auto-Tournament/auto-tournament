@@ -1,5 +1,5 @@
 import { Navigate, Link as RouterLink } from 'react-router-dom';
-import { Box, Button, Stack } from '@mui/material';
+import { Box, Button, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { KeyDatesBar } from '../components/tournament/overview/KeyDatesBar';
 import { MapPoolCard } from '../components/tournament/overview/MapPoolCard';
@@ -11,7 +11,7 @@ import { RegisteredPanel } from '../components/tournament/signup/RegisteredPanel
 import { CheckInPanel } from '../components/tournament/signup/CheckInPanel';
 import { signupPhase, useTournamentSignup, viewerRegistration } from '../hooks/useTournamentSignup';
 import { api } from '../utils/api';
-import { radii } from '../theme/tokens';
+import { fontDisplay, radii, tokens } from '../theme/tokens';
 import { YourePlayingPanel } from '../components/tournament/page/YourePlayingPanel';
 import { useTournamentPage } from '../components/tournament/page/tournamentPageContext';
 import { isLiveMatch } from '../components/tournament/page/matchHelpers';
@@ -35,6 +35,20 @@ export default function TournamentOverview() {
   const maps = tournament.maps ?? [];
   const schedule = tournament.settings?.schedule ?? [];
   const signup = useTournamentSignup(tournament.id);
+  // The calendar shows the check-in window too (gold), when there is one and
+  // the organizer did not put it in the schedule themselves.
+  const calendar =
+    signup.window?.checkInOpensAt && signup.window.checkInClosesAt && !schedule.some((s) => /check/i.test(s.label))
+      ? [
+          ...schedule,
+          {
+            at: signup.window.checkInOpensAt,
+            end: signup.window.checkInClosesAt,
+            label: t('overviewPage.checkInWindow'),
+            kind: 'checkin' as const,
+          },
+        ]
+      : schedule;
   // eslint-disable-next-line react-hooks/purity -- the phase only needs to be right when the page renders
   const phase = signupPhase(signup.window, Date.now());
   const registration = viewerRegistration(signup);
@@ -124,12 +138,21 @@ export default function TournamentOverview() {
         </Box>
       )}
 
-      {schedule.length > 0 && (
+      {calendar.length > 0 ? (
         <ScheduleCalendar
-          schedule={schedule}
+          schedule={calendar}
           tournamentName={tournament.name}
           tournamentId={tournament.id}
         />
+      ) : (
+        <Box component="section" aria-labelledby="overview-schedule-empty" data-testid="overview-schedule-empty">
+          <Typography id="overview-schedule-empty" component="h2" sx={{ fontFamily: fontDisplay, fontSize: '1.25rem', fontWeight: 600, mb: 1.5 }}>
+            {t('overviewPage.schedule')}
+          </Typography>
+          <Box sx={{ border: `1px dashed ${tokens.color.rule}`, borderRadius: radii.lg, p: 3, color: tokens.color.muted }}>
+            {t('overviewPage.scheduleSoon')}
+          </Box>
+        </Box>
       )}
     </Stack>
   );

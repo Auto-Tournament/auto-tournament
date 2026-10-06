@@ -11,7 +11,8 @@ import {
 } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import type { Tournament } from '../../../types';
-import type { Registration, SignupWindow } from '../../../hooks/useTournamentSignup';
+import { remindLineupPlayer, type Registration, type SignupWindow } from '../../../hooks/useTournamentSignup';
+import { useSnackbar } from '../../../contexts/SnackbarContext';
 import { Face, PersonTile, TeamMark } from './PlayerFace';
 import { tokens, fontDisplay, mono, radii } from '../../../theme/tokens';
 
@@ -129,6 +130,15 @@ export function RegisteredPanel({
   const { t, i18n } = useTranslation();
   const [fixOpen, setFixOpen] = useState(false);
   const [confirmWithdraw, setConfirmWithdraw] = useState(false);
+  const { showSuccess, showError } = useSnackbar();
+  const remind = async (steamId: string) => {
+    try {
+      await remindLineupPlayer(tournament.id, registration.teamId, steamId);
+      showSuccess(t('signup.reminded'));
+    } catch (error) {
+      showError((error as Error).message);
+    }
+  };
   const problems = registration.lineup.flatMap((p) => p.problems.map((problem) => ({ player: p, problem })));
   const dayAndTime = new Intl.DateTimeFormat(i18n.language, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   const firstAt = (tournament.settings?.schedule ?? [])
@@ -206,7 +216,13 @@ export function RegisteredPanel({
                 key={p.steamId}
                 name={p.name}
                 avatar={p.avatar}
-                note={p.problems.length ? t(`signup.problemShort.${p.problems[0]}`) : p.role === 'sub' ? t('signup.sub') : undefined}
+                note={
+                  p.problems.length
+                    ? [p.role === 'sub' ? t('signup.sub') : null, ...p.problems.map((problem) => t(`signup.problemShort.${problem}`))].filter(Boolean).join(' · ')
+                    : p.role === 'sub'
+                      ? t('signup.sub')
+                      : undefined
+                }
                 noteTone={p.problems.length ? color.sideT : undefined}
                 badge={
                   p.problems.length
@@ -231,7 +247,7 @@ export function RegisteredPanel({
             </IconButton>
           </Box>
           {registration.lineup.map((p) => (
-            <Box key={p.steamId} sx={{ display: 'grid', gridTemplateColumns: '22px 44px minmax(0,1fr)', gap: 1.75, alignItems: 'center', py: 1.75, borderBottom: `1px solid ${color.rule}` }}>
+            <Box key={p.steamId} sx={{ display: 'grid', gridTemplateColumns: '22px 44px minmax(0,1fr) auto', gap: 1.75, alignItems: 'center', py: 1.75, borderBottom: `1px solid ${color.rule}` }}>
               <Box sx={{ color: p.problems.length ? color.sideT : color.live, display: 'flex' }} aria-hidden>
                 {p.problems.length ? <WarningIcon size={22} /> : <CheckCircleIcon size={22} />}
               </Box>
@@ -242,6 +258,18 @@ export function RegisteredPanel({
                   {p.problems.length ? p.problems.map((problem) => t(`signup.problem.${problem}`)).join(' · ') : t('signup.ready')}
                 </Typography>
               </Box>
+              {p.problems.length > 0 && canManage ? (
+                <Button
+                  size="small"
+                  onClick={() => void remind(p.steamId)}
+                  data-testid="signup-fix-remind"
+                  sx={{ borderRadius: radii.pill, bgcolor: color.paper3, color: color.ink, px: 2 }}
+                >
+                  {t('signup.remind')}
+                </Button>
+              ) : (
+                <Typography sx={{ fontSize: '0.8125rem', color: color.live, fontWeight: 600 }}>{p.problems.length ? '' : t('signup.done')}</Typography>
+              )}
             </Box>
           ))}
           <Typography sx={{ fontSize: '0.8125rem', color: color.muted, pt: 1.25 }}>{t('signup.todo.fixNote')}</Typography>

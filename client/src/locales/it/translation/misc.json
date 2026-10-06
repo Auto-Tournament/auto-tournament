@@ -795,7 +795,9 @@
       "mapResult": "Mappa {{n}} · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
       "seriesWon": "{{team}} vince la serie {{a}}–{{b}}",
       "adminCalled": "{{name}} ha chiamato un admin",
-      "timedOut": "tempo scaduto"
+      "timedOut": "tempo scaduto",
+      "remindAccount": "{{name}}: accedi una volta con Steam per giocare a {{tournament}}.",
+      "remindGame": "{{name}}: aggiungi il gioco al profilo (I tuoi giochi) prima del check-in di {{tournament}}."
     },
     "party": {
       "inviteCopied": "Link di invito copiato",

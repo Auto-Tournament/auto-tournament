@@ -845,7 +845,11 @@
     },
     "mapPoolCount": "Map pool · {{count}} maps",
     "mapPoolNote": "Captains ban and pick from these before each series.",
-    "addToCalendar": "Add to calendar"
+    "addToCalendar": "Add to calendar",
+    "scheduleSoon": "主办方还没有公布赛程。",
+    "checkInWindow": "签到",
+    "mapPoolSoonTitle": "地图池",
+    "mapPoolSoon": "主办方还没有选好地图。"
   },
   "roundStatusCard": {
     "roundOf": "Round {{current}} of {{total}}",
@@ -869,7 +873,14 @@
     "round": "Round {{n}}",
     "vetoTitle": "Map veto in progress",
     "finished": "Match finished",
-    "mapOf": "Map {{n}} of {{total}}"
+    "mapOf": "Map {{n}} of {{total}}",
+    "sideYou": "{{side}} · 你们",
+    "rejoin": "掉线了？用同一个按钮重新加入，位置会保留。",
+    "outcome": {
+      "won": "你们以 {{us}}–{{them}} 战胜 {{opponent}}",
+      "lost": "你们以 {{us}}–{{them}} 负于 {{opponent}}",
+      "draw": "对阵 {{opponent}} {{us}}–{{them}}"
+    }
   },
   "results": {
     "finalStandings": "Final standings",
@@ -901,7 +912,8 @@
       "mostFlashAssists": "{{value}} flash assists",
       "mostUtility": "{{value}} utility damage",
       "biggestGain": "+{{value}} rating"
-    }
+    },
+    "wonFinal": "决赛以 {{a}}–{{b}} 战胜 {{opponent}}"
   },
   "signup": {
     "cta": "Sign up your team",
@@ -952,7 +964,9 @@
       "firstMatchIn": "First match in",
       "count": "{{in}} of {{total}}",
       "you": "you",
-      "everyone": "Everyone"
+      "everyone": "Everyone",
+      "soundOn": "声音已开启：到时会提醒你",
+      "soundOff": "声音已关闭"
     },
     "noTeamTitle": "No team to sign up",
     "noTeamBody": "Only a team’s owner or a captain can sign it up. Make a team, or ask your captain.",
@@ -991,6 +1005,32 @@
     "vouch": "I confirm every player in this lineup has read the",
     "vouchNote": "I sign up on their behalf. If a player breaks the rules, the whole team can be penalised or disqualified.",
     "send": "Sign up {{team}}",
-    "rulesLink": "rules"
+    "rulesLink": "rules",
+    "ownerTag": "所有者",
+    "captainTag": "队长",
+    "check": {
+      "steam": "Steam",
+      "game": "{{game}}",
+      "noGame": "未添加 {{game}}"
+    },
+    "remind": "提醒",
+    "reminded": "已在队伍聊天中发送提醒",
+    "done": "完成"
+  },
+  "bracketCards": {
+    "upper": "胜者组",
+    "lower": "败者组",
+    "grandFinal": "总决赛",
+    "thirdPlace": "季军赛",
+    "live": "直播中",
+    "veto": "禁选",
+    "done": "已结束",
+    "mapOf": "第 {{n}}/{{total}} 张图",
+    "banning": "正在禁图",
+    "bestOf_one": "BO{{count}}",
+    "bestOf_other": "BO{{count}}",
+    "winnerOf": "{{match}} 胜者",
+    "loserOf": "{{match}} 败者",
+    "tbd": "待定"
   }
 }

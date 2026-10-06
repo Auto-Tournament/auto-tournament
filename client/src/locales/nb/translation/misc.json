@@ -795,7 +795,9 @@
       "mapResult": "Kart {{n}} · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
       "seriesWon": "{{team}} vinner serien {{a}}–{{b}}",
       "adminCalled": "{{name}} tilkalte en admin",
-      "timedOut": "tiden gikk ut"
+      "timedOut": "tiden gikk ut",
+      "remindAccount": "{{name}}: logg inn med Steam én gang så du kan spille i {{tournament}}.",
+      "remindGame": "{{name}}: legg til spillet på profilen din (Spill du spiller) før innsjekk til {{tournament}}."
     },
     "party": {
       "inviteCopied": "Invitasjonslenke kopiert",

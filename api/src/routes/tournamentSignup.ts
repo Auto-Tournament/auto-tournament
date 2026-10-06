@@ -105,10 +105,40 @@ router.get(
  */
 router.get(
   '/:id/me',
-  signupAction(async (_tournamentId, viewer) => ({
+  signupAction(async (tournamentId, viewer) => ({
     steamId: viewer.steamId,
-    teams: await tournamentSignupService.eligibleTeams(viewer.uid as string),
+    teams: await tournamentSignupService.eligibleTeams(viewer.uid as string, tournamentId),
   }))
+);
+
+/**
+ * @openapi
+ * /api/tournament-signup/{id}/remind:
+ *   post:
+ *     tags:
+ *       - Tournament sign-up
+ *     summary: Remind a lineup player what to fix before check-in
+ *     description: Owner or captain. Posts a line in the team's chat naming what is missing (an account, or the game on their profile). Once per player per ten minutes.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Reminded }
+ *       409: { description: Nothing to fix }
+ *       429: { description: Reminded a moment ago }
+ */
+router.post(
+  '/:id/remind',
+  signupAction(async (tournamentId, viewer, req) => {
+    const body = (req.body ?? {}) as { teamId?: unknown; steamId?: unknown };
+    if (typeof body.teamId !== 'string' || typeof body.steamId !== 'string') {
+      throw new SignupError(400, 'teamId and steamId are required.', 'invalid');
+    }
+    await tournamentSignupService.remind(tournamentId, viewer.uid as string, { teamId: body.teamId, steamId: body.steamId });
+    return { reminded: true };
+  })
 );
 
 /**

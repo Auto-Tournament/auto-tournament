@@ -217,6 +217,13 @@ export interface BracketMatch {
   serverId?: string | null;
   status: 'pending' | 'ready' | 'loaded' | 'live' | 'completed';
   nextMatchId?: number | null;
+  /** 'WB', 'LB', 'GF' in a double elimination; absent otherwise. */
+  bracket?: string | null;
+  /** The map being played and its 0-based number in the series, once on a server. */
+  currentMap?: string | null;
+  mapNumber?: number | null;
+  /** Both teams are in and it waits on its map veto. */
+  vetoing?: boolean;
   createdAt?: number;
   loadedAt?: number;
   completedAt?: number;
