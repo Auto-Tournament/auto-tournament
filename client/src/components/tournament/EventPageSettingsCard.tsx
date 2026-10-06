@@ -10,6 +10,8 @@ import {
   IconButton,
   Divider,
   Grid,
+  FormControlLabel,
+  Switch,
 } from '@mui/material';
 import { ArrowDownIcon, ArrowUpIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
@@ -27,8 +29,33 @@ const MAX_ORGANIZER = 80;
 /** The event page fields, as stored in the tournament settings. */
 export type EventPageFields = Pick<
   TournamentSettings,
-  'description' | 'location' | 'organizer' | 'rulebookUrl' | 'rules' | 'prizes' | 'schedule'
+  | 'description'
+  | 'location'
+  | 'organizer'
+  | 'rulebookUrl'
+  | 'rules'
+  | 'prizes'
+  | 'schedule'
+  | 'registrationOpen'
+  | 'registrationClosesAt'
+  | 'maxTeams'
+  | 'checkInOpensAt'
+  | 'checkInClosesAt'
 >;
+
+/** An ISO time as the value a `datetime-local` input wants, in local time. */
+function toLocalInput(iso: string | undefined | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/** A `datetime-local` value back to ISO, or '' when empty. */
+function fromLocalInput(value: string): string {
+  return value ? new Date(value).toISOString() : '';
+}
 
 interface EventPageSettingsCardProps {
   settings: EventPageFields | undefined;
@@ -79,6 +106,18 @@ export function EventPageSettingsCard({
   const [rules, setRules] = useState<string[]>(settings?.rules ?? []);
   const [prizes, setPrizes] = useState<EventPagePrize[]>(settings?.prizes ?? []);
   const [schedule, setSchedule] = useState<EventPageScheduleItem[]>(settings?.schedule ?? []);
+  const [registrationOpen, setRegistrationOpen] = useState(settings?.registrationOpen ?? false);
+  const [registrationClosesAt, setRegistrationClosesAt] = useState(toLocalInput(settings?.registrationClosesAt));
+  const [maxTeams, setMaxTeams] = useState(settings?.maxTeams ? String(settings.maxTeams) : '');
+  const [checkInOpensAt, setCheckInOpensAt] = useState(toLocalInput(settings?.checkInOpensAt));
+  const [checkInClosesAt, setCheckInClosesAt] = useState(toLocalInput(settings?.checkInClosesAt));
+  const signupFields = () => ({
+    registrationOpen,
+    registrationClosesAt: fromLocalInput(registrationClosesAt),
+    maxTeams: maxTeams ? Number(maxTeams) : null,
+    checkInOpensAt: fromLocalInput(checkInOpensAt),
+    checkInClosesAt: fromLocalInput(checkInClosesAt),
+  });
   const [localSaving, setLocalSaving] = useState(false);
 
   // Draft mode: report every edit (but not the initial values) to the parent.
@@ -90,8 +129,18 @@ export function EventPageSettingsCard({
       firstRender.current = false;
       return;
     }
-    draftChangeRef.current?.({ description, location, organizer, rulebookUrl, rules, prizes, schedule });
-  }, [description, location, organizer, rulebookUrl, rules, prizes, schedule]);
+    draftChangeRef.current?.({
+      description,
+      location,
+      organizer,
+      rulebookUrl,
+      rules,
+      prizes,
+      schedule,
+      ...signupFields(),
+    } as EventPageFields);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- signupFields reads the five values listed
+  }, [description, location, organizer, rulebookUrl, rules, prizes, schedule, registrationOpen, registrationClosesAt, maxTeams, checkInOpensAt, checkInClosesAt]);
 
   const handleSave = async () => {
     if (!onSave) return;
@@ -105,6 +154,7 @@ export function EventPageSettingsCard({
         rules,
         prizes,
         schedule,
+        ...signupFields(),
       });
       showSuccess(t('tournament.eventPage.saveSuccess'));
     } catch (err) {
@@ -120,6 +170,64 @@ export function EventPageSettingsCard({
   const fields = (
     <Stack spacing={3}>
       {onSave && !onDraftChange && <TournamentBannerField bannerUrl={bannerUrl} />}
+      <Stack spacing={2} data-testid="event-page-signup">
+        <Typography variant="subtitle2">{t('tournament.eventPage.signupHeading')}</Typography>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={registrationOpen}
+              onChange={(e) => setRegistrationOpen(e.target.checked)}
+              inputProps={{ 'aria-label': t('tournament.eventPage.signupOpen') }}
+            />
+          }
+          label={t('tournament.eventPage.signupOpen')}
+        />
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              fullWidth
+              type="datetime-local"
+              label={t('tournament.eventPage.signupClosesAt')}
+              value={registrationClosesAt}
+              onChange={(e) => setRegistrationClosesAt(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              fullWidth
+              type="number"
+              label={t('tournament.eventPage.maxTeams')}
+              value={maxTeams}
+              onChange={(e) => setMaxTeams(e.target.value)}
+              inputProps={{ min: 2, max: 256 }}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              fullWidth
+              type="datetime-local"
+              label={t('tournament.eventPage.checkInOpensAt')}
+              value={checkInOpensAt}
+              onChange={(e) => setCheckInOpensAt(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              fullWidth
+              type="datetime-local"
+              label={t('tournament.eventPage.checkInClosesAt')}
+              value={checkInClosesAt}
+              onChange={(e) => setCheckInClosesAt(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+            />
+          </Grid>
+        </Grid>
+        <Typography variant="caption" color="text.secondary">
+          {t('tournament.eventPage.signupHelp')}
+        </Typography>
+      </Stack>
       <TextField
         label={t('tournament.eventPage.descriptionLabel')}
         value={description}

@@ -21,6 +21,7 @@ import { eloTemplateService } from '../services/eloTemplateService';
 import { settingsService } from '../services/settingsService';
 import { checkTournamentCompletion } from '../utils/matchProgression';
 import { resolveTournamentId } from '../utils/tournamentRow';
+import { validateTeamCount } from '../utils/tournamentHelpers';
 import { integrationForMatch } from '../integrations/registry';
 import { resolveGameRef } from '../services/gameCatalogService';
 import { teamMembers } from '../services/teamMembers';
@@ -592,6 +593,23 @@ function validateEventPageSettings(settings: unknown): { valid: true } | { valid
 
   const s = settings as Record<string, unknown>;
 
+  // Sign-up and check-in (tournament sign-up): a switch, a team cap and three times.
+  if (s.registrationOpen !== undefined && typeof s.registrationOpen !== 'boolean') {
+    return { valid: false, error: 'settings.registrationOpen must be true or false' };
+  }
+  if (s.maxTeams !== undefined && s.maxTeams !== null) {
+    if (typeof s.maxTeams !== 'number' || !Number.isInteger(s.maxTeams) || s.maxTeams < 2 || s.maxTeams > 256) {
+      return { valid: false, error: 'settings.maxTeams must be a whole number from 2 to 256' };
+    }
+  }
+  for (const key of ['registrationClosesAt', 'checkInOpensAt', 'checkInClosesAt'] as const) {
+    const value = s[key];
+    if (value === undefined || value === null || value === '') continue;
+    if (typeof value !== 'string' || Number.isNaN(new Date(value).getTime())) {
+      return { valid: false, error: `settings.${key} must be a date and time` };
+    }
+  }
+
   if (s.description !== undefined && s.description !== null) {
     if (typeof s.description !== 'string') {
       return { valid: false, error: 'settings.description must be a string' };
@@ -748,7 +766,9 @@ router.post('/', async (req: Request, res: Response) => {
       });
     }
 
-    if (input.teamIds.length < 2) {
+    // With sign-up open the teams arrive later; the count is checked at start.
+    const signupOpen = (input.settings as { registrationOpen?: unknown } | undefined)?.registrationOpen === true;
+    if (input.teamIds.length < 2 && !signupOpen) {
       return res.status(400).json({
         success: false,
         error: 'At least 2 teams are required',
@@ -1231,6 +1251,21 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
           '[VETO-SIM] Failed to enable simulation mode via /api/tournament/start payload',
           err as Error
         );
+      }
+    }
+
+    // Teams that signed themselves up were never counted on the way in: the
+    // bracket needs a count its format can draw.
+    const toStart = await tournamentService.getTournament(tournamentId);
+    if (toStart && toStart.type !== 'shuffle') {
+      try {
+        validateTeamCount(toStart.type, toStart.teamIds.length);
+      } catch (countError) {
+        return res.status(400).json({
+          success: false,
+          errorCode: 'team_count',
+          message: countError instanceof Error ? countError.message : String(countError),
+        });
       }
     }
 

@@ -1,8 +1,15 @@
 import type { ReactNode } from 'react';
 import { Box, Typography } from '@mui/material';
-import { FlagCheckeredIcon, PlayCircleIcon, UsersThreeIcon } from '@phosphor-icons/react';
+import {
+  CheckCircleIcon,
+  FlagCheckeredIcon,
+  LockSimpleIcon,
+  PlayCircleIcon,
+  UsersThreeIcon,
+} from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import type { Tournament } from '../../../types';
+import type { SignupWindow } from '../../../hooks/useTournamentSignup';
 import { tokens, fontDisplay, radii } from '../../../theme/tokens';
 
 const { color } = tokens;
@@ -36,7 +43,16 @@ function startAndEnd(tournament: Tournament): { start: number | null; end: numbe
  * Each cell is an icon, a short label and one value; a cell without data is
  * left out, and the bar is left out when it would be empty.
  */
-export function KeyDatesBar({ tournament, action }: { tournament: Tournament; action?: ReactNode }) {
+export function KeyDatesBar({
+  tournament,
+  signup,
+  action,
+}: {
+  tournament: Tournament;
+  /** Sign-up and check-in windows; their cells replace "last on the schedule". */
+  signup?: SignupWindow | null;
+  action?: ReactNode;
+}) {
   const { t, i18n } = useTranslation();
   const { start, end } = startAndEnd(tournament);
   const dayAndTime = new Intl.DateTimeFormat(i18n.language, {
@@ -56,7 +72,28 @@ export function KeyDatesBar({ tournament, action }: { tournament: Tournament; ac
       value: dayAndTime.format(start),
     });
   }
-  if (end !== null) {
+  const time = new Intl.DateTimeFormat(i18n.language, { hour: '2-digit', minute: '2-digit' });
+  const showSignup = Boolean(signup?.registrationOpen && signup.registrationClosesAt);
+  const showCheckIn = Boolean(signup?.checkInOpensAt && signup.checkInClosesAt);
+  if (showSignup && signup?.registrationClosesAt) {
+    cells.push({
+      key: 'signupCloses',
+      icon: <LockSimpleIcon size={22} color={color.muted} />,
+      label: t('signup.keyDates.closes'),
+      value: dayAndTime.format(new Date(signup.registrationClosesAt)),
+    });
+  }
+  if (showCheckIn && signup?.checkInOpensAt && signup.checkInClosesAt) {
+    const opens = new Date(signup.checkInOpensAt);
+    const sameDay = opens.toDateString() === new Date(signup.checkInClosesAt).toDateString();
+    cells.push({
+      key: 'checkIn',
+      icon: <CheckCircleIcon size={22} color={color.sideT} />,
+      label: t('signup.keyDates.checkIn'),
+      value: `${dayAndTime.format(opens)} – ${(sameDay ? time : dayAndTime).format(new Date(signup.checkInClosesAt))}`,
+    });
+  }
+  if (end !== null && !showSignup && !showCheckIn) {
     cells.push({
       key: 'ends',
       icon: <FlagCheckeredIcon size={22} color={color.muted} />,
@@ -65,11 +102,26 @@ export function KeyDatesBar({ tournament, action }: { tournament: Tournament; ac
     });
   }
   if (tournament.type !== 'shuffle') {
+    const max = signup?.maxTeams ?? null;
+    const left = max !== null ? Math.max(max - tournament.teamIds.length, 0) : null;
     cells.push({
       key: 'teams',
       icon: <UsersThreeIcon size={22} color={color.accent} />,
-      label: t('overviewPage.keyDates.teams'),
-      value: String(tournament.teamIds.length),
+      label: max !== null ? t('signup.keyDates.spots') : t('overviewPage.keyDates.teams'),
+      value:
+        left !== null ? (
+          <>
+            <Box component="span" sx={{ color: left > 0 ? color.accent : color.ink }}>
+              {left > 0 ? t('signup.keyDates.left', { count: left }) : t('signup.keyDates.full')}
+            </Box>
+            <Box component="span" sx={{ color: color.muted, fontWeight: 500 }}>
+              {' '}
+              {t('signup.keyDates.of', { max })}
+            </Box>
+          </>
+        ) : (
+          String(tournament.teamIds.length)
+        ),
     });
   }
   if (cells.length === 0 && !action) return null;

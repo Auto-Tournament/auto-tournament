@@ -36,6 +36,11 @@ export const CORE_SETTINGS_KEYS: ReadonlySet<string> = new Set([
   'rulebookUrl',
   'prizes',
   'schedule',
+  'registrationOpen',
+  'registrationClosesAt',
+  'maxTeams',
+  'checkInOpensAt',
+  'checkInClosesAt',
 ]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {

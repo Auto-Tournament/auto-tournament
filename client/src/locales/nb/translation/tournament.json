@@ -426,7 +426,14 @@
       "bannerRemove": "Fjern",
       "bannerHelp": "Et bredt bilde øverst på turneringssiden. PNG, JPEG eller WEBP, opptil 2 MB; 1920 × 600 passer godt.",
       "bannerWrongType": "Banneret må være et PNG-, JPEG- eller WEBP-bilde.",
-      "bannerTooLarge": "Banneret kan være høyst 2 MB."
+      "bannerTooLarge": "Banneret kan være høyst 2 MB.",
+      "signupHeading": "Påmelding og innsjekk",
+      "signupOpen": "Lag kan melde seg på selv",
+      "signupClosesAt": "Påmeldingen stenger",
+      "maxTeams": "Lagplasser",
+      "checkInOpensAt": "Innsjekken åpner",
+      "checkInClosesAt": "Innsjekken stenger",
+      "signupHelp": "Lagets eier eller en kaptein melder på med en oppstilling. Spillerne i oppstillingen sjekker inn på dagen."
     },
     "setup": {
       "steps": {
@@ -699,7 +706,8 @@
       "manage": "Administrer",
       "rules": "Regler",
       "match": "Din kamp",
-      "results": "Resultater"
+      "results": "Resultater",
+      "signup": "Påmelding"
     },
     "status": {
       "setup": "Kommende",
@@ -858,5 +866,95 @@
       "mostUtility": "{{value}} utility-skade",
       "biggestGain": "+{{value}} rating"
     }
+  },
+  "signup": {
+    "cta": "Meld på laget ditt",
+    "keyDates": {
+      "closes": "Påmelding stenger",
+      "checkIn": "Innsjekk",
+      "spots": "Lagplasser",
+      "left": "{{count}} igjen",
+      "full": "Fullt",
+      "of": "av {{max}}"
+    },
+    "ladder": {
+      "title": "Lag etter rating",
+      "yourPlace": "Dere er {{place}} av {{count}}"
+    },
+    "todo": {
+      "signedUp": "Påmeldt",
+      "beforeTheDay": "Før dagen",
+      "toFix": "{{count}} å fikse",
+      "lineup": "Lagoppstilling",
+      "allReady": "Alle er klare",
+      "notSet": "Ikke satt",
+      "showFixes": "Vis hva som må fikses",
+      "fixNote": "Fiks dette før innsjekk, ellers kan ikke spilleren bli med."
+    },
+    "yourLineup": "Lagoppstillingen din",
+    "change": "Endre",
+    "withdraw": "Trekk laget",
+    "withdrawTitle": "Trekke {{team}}?",
+    "withdrawBody": "Laget forlater turneringen, og plassen åpnes for et annet lag.",
+    "sub": "reserve",
+    "ready": "Klar",
+    "problem": {
+      "noAccount": "Har ikke logget inn på Auto Tournament ennå",
+      "noGame": "Spillet mangler på profilen"
+    },
+    "problemShort": {
+      "noAccount": "ikke logget inn",
+      "noGame": "mangler spillet"
+    },
+    "checkIn": {
+      "open": "Innsjekken er åpen",
+      "closesIn": "Stenger {{time}} · {{left}} igjen",
+      "imHere": "Jeg er her",
+      "done": "Du er sjekket inn",
+      "teamTitle": "{{team}} sjekker inn",
+      "keepOpen": "Hold siden åpen. Den sier fra når kampen din er klar.",
+      "firstMatchIn": "Første kamp om",
+      "count": "{{in}} av {{total}}",
+      "you": "deg",
+      "everyone": "Alle"
+    },
+    "noTeamTitle": "Ingen lag å melde på",
+    "noTeamBody": "Bare lagets eier eller en kaptein kan melde det på. Lag et lag, eller spør kapteinen din.",
+    "goToTeams": "Lag",
+    "steps": {
+      "lineup": "Lagoppstilling",
+      "review": "Se over"
+    },
+    "whichTeam": "Hvilket lag melder du på?",
+    "role": {
+      "owner": "Du eier laget",
+      "captain": "Du er kaptein"
+    },
+    "playerCount": "{{count}} spillere",
+    "whoPlays": "Hvem spiller?",
+    "whoPlaysHint": "Velg {{count}} startspillere og opptil {{subs}} reserver. Du kan endre oppstillingen til innsjekken stenger.",
+    "rating": "Rating {{rating}}",
+    "slotFor": "Rolle for {{name}}",
+    "starter": "Start",
+    "out": "Ute",
+    "starters": "Startspillere",
+    "subs": "Reserver",
+    "lineupRating": "Lagets rating",
+    "missingAccounts": "{{names}} må fortsatt logge inn",
+    "fixBeforeCheckIn": "Du kan melde på nå. Fiks det før innsjekk.",
+    "saveLineup": "Lagre oppstilling",
+    "nextReview": "Neste: se over",
+    "readyToSend": "Klar til å sende?",
+    "next": {
+      "lastSpot": "Tar den siste plassen",
+      "takesSpot": "Tar en plass",
+      "spotsLeft": "{{count}} igjen før dette",
+      "checkIn": "Sjekk inn på dagen",
+      "firstMatch": "Første kamp"
+    },
+    "vouch": "Jeg bekrefter at alle spillerne i oppstillingen har lest",
+    "vouchNote": "Jeg melder på på vegne av dem. Bryter en spiller reglene, kan hele laget straffes eller diskvalifiseres.",
+    "send": "Meld på {{team}}",
+    "rulesLink": "reglene"
   }
 }

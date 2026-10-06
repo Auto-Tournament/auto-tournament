@@ -428,7 +428,14 @@
       "bannerRemove": "Remove",
       "bannerHelp": "A wide image across the top of the tournament page. PNG, JPEG or WEBP, up to 2 MB; 1920 × 600 works well.",
       "bannerWrongType": "The banner must be a PNG, JPEG or WEBP image.",
-      "bannerTooLarge": "The banner must be 2 MB or smaller."
+      "bannerTooLarge": "The banner must be 2 MB or smaller.",
+      "signupHeading": "Sign-up and check-in",
+      "signupOpen": "Teams can sign themselves up",
+      "signupClosesAt": "Sign-up closes",
+      "maxTeams": "Team spots",
+      "checkInOpensAt": "Check-in opens",
+      "checkInClosesAt": "Check-in closes",
+      "signupHelp": "A team's owner or captain signs up with a lineup. Lineup players check in on the day."
     },
     "setup": {
       "steps": {
@@ -701,7 +708,8 @@
       "manage": "Manage",
       "rules": "Rules",
       "match": "Your match",
-      "results": "Results"
+      "results": "Results",
+      "signup": "Sign up"
     },
     "status": {
       "setup": "Upcoming",
@@ -860,5 +868,95 @@
       "mostUtility": "{{value}} utility damage",
       "biggestGain": "+{{value}} rating"
     }
+  },
+  "signup": {
+    "cta": "Sign up your team",
+    "keyDates": {
+      "closes": "Sign-up closes",
+      "checkIn": "Check-in",
+      "spots": "Team spots",
+      "left": "{{count}} left",
+      "full": "Full",
+      "of": "of {{max}}"
+    },
+    "ladder": {
+      "title": "Teams by rating",
+      "yourPlace": "You're {{place}} of {{count}}"
+    },
+    "todo": {
+      "signedUp": "Signed up",
+      "beforeTheDay": "Before the day",
+      "toFix": "{{count}} to fix",
+      "lineup": "Lineup",
+      "allReady": "Everyone ready",
+      "notSet": "Not set",
+      "showFixes": "Show what to fix",
+      "fixNote": "Fix these before check-in, or the player cannot join."
+    },
+    "yourLineup": "Your lineup",
+    "change": "Change",
+    "withdraw": "Withdraw",
+    "withdrawTitle": "Withdraw {{team}}?",
+    "withdrawBody": "The team leaves the tournament and its spot opens for another team.",
+    "sub": "sub",
+    "ready": "Ready",
+    "problem": {
+      "noAccount": "Has not signed in to Auto Tournament yet",
+      "noGame": "The game is missing from their profile"
+    },
+    "problemShort": {
+      "noAccount": "not signed in",
+      "noGame": "needs the game"
+    },
+    "checkIn": {
+      "open": "Check-in is open",
+      "closesIn": "Closes {{time}} · {{left}} left",
+      "imHere": "I'm here",
+      "done": "You're checked in",
+      "teamTitle": "{{team}} is checking in",
+      "keepOpen": "Keep this page open. It tells you when your match is ready.",
+      "firstMatchIn": "First match in",
+      "count": "{{in}} of {{total}}",
+      "you": "you",
+      "everyone": "Everyone"
+    },
+    "noTeamTitle": "No team to sign up",
+    "noTeamBody": "Only a team’s owner or a captain can sign it up. Make a team, or ask your captain.",
+    "goToTeams": "Teams",
+    "steps": {
+      "lineup": "Lineup",
+      "review": "Review"
+    },
+    "whichTeam": "Which team are you signing up?",
+    "role": {
+      "owner": "You own it",
+      "captain": "You're a captain"
+    },
+    "playerCount": "{{count}} players",
+    "whoPlays": "Who plays?",
+    "whoPlaysHint": "Pick {{count}} starters and up to {{subs}} subs. You can change the lineup until check-in closes.",
+    "rating": "Rating {{rating}}",
+    "slotFor": "Role for {{name}}",
+    "starter": "Starter",
+    "out": "Out",
+    "starters": "Starters",
+    "subs": "Subs",
+    "lineupRating": "Lineup rating",
+    "missingAccounts": "{{names}} still need to sign in",
+    "fixBeforeCheckIn": "You can sign up now. Fix it before check-in.",
+    "saveLineup": "Save lineup",
+    "nextReview": "Next: review",
+    "readyToSend": "Ready to send?",
+    "next": {
+      "lastSpot": "Takes the last spot",
+      "takesSpot": "Takes a spot",
+      "spotsLeft": "{{count}} left before this",
+      "checkIn": "Check in on the day",
+      "firstMatch": "First match"
+    },
+    "vouch": "I confirm every player in this lineup has read the",
+    "vouchNote": "I sign up on their behalf. If a player breaks the rules, the whole team can be penalised or disqualified.",
+    "send": "Sign up {{team}}",
+    "rulesLink": "rules"
   }
 }
