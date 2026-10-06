@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Alert, Box, CircularProgress, Container } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
+import { Alert, Box, Button, CircularProgress, Container } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { SectionHead } from '../components/common/ui';
@@ -11,6 +11,9 @@ import { useTeamProfileData } from '../hooks/useTeamProfileData';
 import { useIntegration } from '../integrations/registry';
 import { useAuth } from '../contexts/AuthContext';
 import { pageTitle } from '../utils/pageTitle';
+import { api, apiErrorMessage } from '../utils/api';
+import { paths, teamManagePath } from '../paths';
+import ConfirmDialog from '../components/modals/ConfirmDialog';
 
 /**
  * Public team profile (`/t/team/:teamId`), the 3.0 draft's `team.html`: the
@@ -25,9 +28,72 @@ import { pageTitle } from '../utils/pageTitle';
 export default function TeamProfile() {
   const { teamId } = useParams<{ teamId: string }>();
   const { t } = useTranslation();
-  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const { isAuthenticated, playerSteamId } = useAuth();
   const { team, hasMatch, match, tournament, standing, recentResults, loading, notFound, error } =
     useTeamProfileData(teamId);
+
+  // The team's logo, and the viewer's place on it: the owner and captains
+  // get Manage, a member gets Leave.
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [own, setOwn] = useState<{ role: 'owner' | 'captain' | 'member'; uid: string } | null>(
+    null
+  );
+  const [leaving, setLeaving] = useState(false);
+  const [leaveError, setLeaveError] = useState('');
+  useEffect(() => {
+    if (!teamId) return;
+    let cancelled = false;
+    api
+      .get<{ success: boolean; team?: { logoUrl: string | null } }>(
+        `/api/team-directory/${encodeURIComponent(teamId)}`
+      )
+      .then((res) => !cancelled && setLogoUrl(res.team?.logoUrl ?? null))
+      .catch(() => undefined);
+    if (playerSteamId) {
+      api
+        .get<{
+          success: boolean;
+          accountUid: string;
+          owned: { id: string } | null;
+          memberOf: Array<{ id: string; role: 'captain' | 'member' }>;
+        }>('/api/team-directory/mine')
+        .then((res) => {
+          if (cancelled) return;
+          const role =
+            res.owned?.id === teamId ? 'owner' : res.memberOf.find((m) => m.id === teamId)?.role;
+          setOwn(role ? { role, uid: res.accountUid } : null);
+        })
+        .catch(() => undefined);
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [teamId, playerSteamId]);
+
+  const ownActions = own ? (
+    own.role === 'member' ? (
+      <Button
+        variant="outlined"
+        size="small"
+        color="error"
+        onClick={() => setLeaving(true)}
+        data-testid="team-profile-leave"
+      >
+        {t('teamProfile.leave')}
+      </Button>
+    ) : (
+      <Button
+        variant="outlined"
+        size="small"
+        component={RouterLink}
+        to={teamManagePath(teamId ?? '')}
+        data-testid="team-profile-manage"
+      >
+        {t('teamProfile.manage')}
+      </Button>
+    )
+  ) : undefined;
 
   // The team's game is its tournament's.
   const integration = useIntegration(tournament?.game);
@@ -78,6 +144,8 @@ export default function TeamProfile() {
           <TeamHeader
             team={team}
             canEdit={isAuthenticated}
+            logoUrl={logoUrl}
+            actions={ownActions}
             game={
               tournament?.game && tournament.gameName
                 ? { slug: tournament.game, name: tournament.gameName }
@@ -111,8 +179,32 @@ export default function TeamProfile() {
               />
             </Box>
           </Box>
+          {leaveError && (
+            <Alert severity="error" sx={{ mt: 3 }}>
+              {leaveError}
+            </Alert>
+          )}
         </Box>
       </Container>
+      <ConfirmDialog
+        open={leaving}
+        title={t('teamProfile.leaveTitle')}
+        message={t('teamProfile.leaveConfirm', { name: team?.name ?? '' })}
+        confirmLabel={t('teamProfile.leave')}
+        confirmColor="error"
+        onCancel={() => setLeaving(false)}
+        onConfirm={async () => {
+          setLeaving(false);
+          try {
+            await api.delete(
+              `/api/team-directory/${encodeURIComponent(teamId ?? '')}/members/${encodeURIComponent(own?.uid ?? '')}`
+            );
+            navigate(paths.browseTeams);
+          } catch (err) {
+            setLeaveError(apiErrorMessage(err, t('teamProfile.leaveFailed')));
+          }
+        }}
+      />
     </Box>
   );
 }

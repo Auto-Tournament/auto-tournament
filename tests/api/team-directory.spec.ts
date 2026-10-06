@@ -79,3 +79,104 @@ test.describe('Team directory', () => {
     }
   );
 });
+
+test.describe('Running a team', () => {
+  // A 1x1 PNG.
+  const PNG = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+    'base64'
+  );
+
+  test(
+    'invite, accept, roles, logo, leave, hand over and disband',
+    { tag: ['@api', '@teams'] },
+    async ({ playwright, baseURL }) => {
+      const owner = await playwright.request.newContext({ baseURL });
+      const joiner = await playwright.request.newContext({ baseURL });
+      const ownerId = steamId();
+      const joinerId = steamId();
+      expect(await signInAsPlayerViaRequest(owner, ownerId, `Own ${ownerId.slice(-4)}`)).toBe(true);
+      expect(await signInAsPlayerViaRequest(joiner, joinerId, `Join ${joinerId.slice(-4)}`)).toBe(
+        true
+      );
+
+      const team = (
+        await (
+          await owner.post('/api/team-directory/mine', {
+            data: { name: `Run ${ownerId.slice(-5)}`, tag: 'RUN' },
+          })
+        ).json()
+      ).team;
+      const base = `/api/team-directory/${team.id}`;
+
+      // Only the owner and captains see the owner view.
+      expect((await joiner.get(`${base}/manage`)).status()).toBe(403);
+
+      const code = (await (await owner.post(`${base}/invite`)).json()).inviteCode;
+      expect(code).toBeTruthy();
+      expect((await joiner.get(`/api/team-directory/invite/${code}`)).ok()).toBe(true);
+      expect(await (await joiner.post(`/api/team-directory/invite/${code}`)).json()).toMatchObject({
+        status: 'requested',
+      });
+
+      let view = await (await owner.get(`${base}/manage`)).json();
+      expect(view.viewerRole).toBe('owner');
+      expect(view.requests).toHaveLength(1);
+      const joinerUid = view.requests[0].uid;
+      expect((await owner.post(`${base}/requests/${joinerUid}/accept`)).ok()).toBe(true);
+      view = await (await owner.get(`${base}/manage`)).json();
+      expect(view.members.map((m: { steamId: string }) => m.steamId).sort()).toEqual(
+        [joinerId, ownerId].sort()
+      );
+      expect(view.requests).toHaveLength(0);
+
+      // Members cannot rename; captains can.
+      expect((await joiner.patch(base, { data: { name: 'Hijacked', tag: 'HJK' } })).status()).toBe(
+        403
+      );
+      expect(
+        (await owner.patch(`${base}/members/${joinerUid}`, { data: { role: 'captain' } })).ok()
+      ).toBe(true);
+      expect(
+        (
+          await joiner.patch(base, { data: { name: `Run ${ownerId.slice(-5)} B`, tag: 'RNB' } })
+        ).ok()
+      ).toBe(true);
+
+      // Logo: an image is stored and served; anything else is refused.
+      expect(
+        (
+          await owner.put(`${base}/logo`, { data: PNG, headers: { 'Content-Type': 'image/png' } })
+        ).ok()
+      ).toBe(true);
+      const logoUrl = (await (await owner.get(`/api/team-directory/${team.id}`)).json()).team
+        .logoUrl;
+      expect(logoUrl).toContain(`/api/team-directory/${team.id}/logo?v=`);
+      const logo = await owner.get(logoUrl);
+      expect(logo.headers()['content-type']).toBe('image/png');
+      expect(
+        (
+          await owner.put(`${base}/logo`, {
+            data: Buffer.from('<svg/>'),
+            headers: { 'Content-Type': 'image/png' },
+          })
+        ).status()
+      ).toBe(415);
+
+      // The owner cannot leave; a captain can be handed the team.
+      const ownerUid = view.members.find((m: { role: string }) => m.role === 'owner').uid;
+      expect((await owner.delete(`${base}/members/${ownerUid}`)).status()).toBe(400);
+      expect((await owner.post(`${base}/transfer`, { data: { uid: joinerUid } })).ok()).toBe(true);
+      expect((await (await joiner.get(`${base}/manage`)).json()).viewerRole).toBe('owner');
+
+      // The old owner leaves; the new owner disbands.
+      expect((await owner.delete(`${base}/members/${ownerUid}`)).ok()).toBe(true);
+      expect((await owner.delete(base)).status()).toBe(403);
+      expect((await joiner.delete(base)).ok()).toBe(true);
+      expect((await owner.get(`/api/team-directory/${team.id}`)).status()).toBe(404);
+
+      await owner.dispose();
+      await joiner.dispose();
+    }
+  );
+});

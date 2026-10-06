@@ -22,6 +22,8 @@ export const paths = {
   // Viewer and player-facing pages
   teamMatch: '/team/:teamId',
   teamProfile: '/t/team/:teamId',
+  teamManage: '/t/team/:teamId/manage',
+  teamJoin: '/join/team/:code',
   tournamentOverview: '/tournament/:id',
   // The tournament page's other tabs, nested under `tournamentOverview`.
   tournamentBracket: '/tournament/:id/bracket',
@@ -109,4 +111,9 @@ export function tournamentTabPath(
 /** `/t/team/:teamId` for one team's public profile page. */
 export function teamProfilePath(teamId: string): string {
   return paths.teamProfile.replace(':teamId', teamId);
+}
+
+/** `/t/team/:teamId/manage`: the team's owner view. */
+export function teamManagePath(teamId: string): string {
+  return paths.teamManage.replace(':teamId', teamId);
 }

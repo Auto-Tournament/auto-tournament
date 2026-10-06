@@ -10,6 +10,19 @@
  * GET  /api/team-directory          every team, public
  * GET  /api/team-directory/mine     the signed-in player's teams
  * POST /api/team-directory/mine     make a team (name, tag) owned by them
+ *
+ * Running a team (services/teamSelfService.ts has who may do what):
+ * GET    /:teamId/manage                    the owner view
+ * PATCH  /:teamId                           name and tag
+ * PUT    /:teamId/logo, DELETE              the logo (PNG, JPEG or WEBP body)
+ * GET    /:teamId/logo                      the logo, public
+ * POST   /:teamId/invite                    a new invite link code
+ * GET    /invite/:code, POST /invite/:code  the join page; ask to join
+ * POST   /:teamId/requests/:uid/accept|decline
+ * PATCH  /:teamId/members/:uid              role: captain | member (owner)
+ * DELETE /:teamId/members/:uid              remove a member, or leave
+ * POST   /:teamId/transfer                  make another member the owner
+ * DELETE /:teamId                           disband (owner)
  */
 
 import { randomBytes } from 'node:crypto';
@@ -20,6 +33,13 @@ import { resolveViewerAccount } from '../utils/viewerIdentity';
 import { teamService } from '../services/teamService';
 import { teamMembers } from '../services/teamMembers';
 import { playerService } from '../services/playerService';
+import express from 'express';
+import {
+  teamSelfService,
+  TeamActionError,
+  LOGO_MAX_BYTES,
+  logoUrl,
+} from '../services/teamSelfService';
 
 const router = Router();
 
@@ -30,6 +50,7 @@ interface DirectoryRow {
   players: string;
   owner_uid: string | null;
   owner_name: string | null;
+  logo_updated_at: number | null;
   created_at: number | string;
 }
 
@@ -39,6 +60,7 @@ export interface DirectoryTeam {
   tag: string | null;
   memberCount: number;
   ownerName: string | null;
+  logoUrl: string | null;
   createdAt: number;
 }
 
@@ -58,12 +80,13 @@ function toDirectoryTeam(row: DirectoryRow): DirectoryTeam {
     tag: row.tag || null,
     memberCount: rosterSize(row.players),
     ownerName: row.owner_name,
+    logoUrl: logoUrl(row.id, row.logo_updated_at),
     createdAt: Number(row.created_at),
   };
 }
 
 const DIRECTORY_SELECT = `
-  SELECT t.id, t.name, t.tag, t.players, t.owner_uid, p.name AS owner_name, t.created_at
+  SELECT t.id, t.name, t.tag, t.players, t.owner_uid, p.name AS owner_name, t.logo_updated_at, t.created_at
     FROM teams t
     LEFT JOIN players p ON p.uid = t.owner_uid
 `;
@@ -122,6 +145,7 @@ router.get('/mine', async (req: Request, res: Response) => {
     const role = new Map(memberships.map((m) => [m.teamId, m.role]));
     return res.json({
       success: true,
+      accountUid: viewer.uid,
       owned: owned ? toDirectoryTeam(owned) : null,
       memberOf: rows
         .filter((r) => r.id !== owned?.id)
@@ -194,5 +218,178 @@ router.post('/mine', async (req: Request, res: Response) => {
     return res.status(500).json({ success: false, error: 'Failed to make the team' });
   }
 });
+
+/** The signed-in account for a team action, or a 401/403 already sent. */
+async function actingAccount(req: Request, res: Response): Promise<string | null> {
+  const viewer = await resolveViewerAccount(req);
+  if (!viewer.uid) {
+    res.status(401).json({ success: false, error: 'Sign in first' });
+    return null;
+  }
+  if (viewer.isImpersonating) {
+    res.status(403).json({ success: false, error: 'Stop impersonating to act for a team.' });
+    return null;
+  }
+  return viewer.uid;
+}
+
+/** Runs a team action and answers with its result, or its refusal. */
+function teamAction(
+  action: (req: Request, uid: string | null) => Promise<unknown>,
+  { signIn = true }: { signIn?: boolean } = {}
+) {
+  return async (req: Request, res: Response) => {
+    try {
+      let uid: string | null = null;
+      if (signIn) {
+        uid = await actingAccount(req, res);
+        if (!uid) return;
+      }
+      const result = await action(req, uid);
+      return res.json({ success: true, ...(result && typeof result === 'object' ? result : {}) });
+    } catch (error) {
+      if (error instanceof TeamActionError) {
+        return res
+          .status(error.status)
+          .json({ success: false, error: error.message, code: error.code });
+      }
+      log.error('[TeamDirectory] Team action failed', { error, path: req.path });
+      return res.status(500).json({ success: false, error: 'The team action failed' });
+    }
+  };
+}
+
+/** One team's directory entry (logo, owner), for its profile header. Public. */
+router.get('/:teamId', async (req: Request, res: Response, next) => {
+  if (req.params.teamId === 'mine') return next();
+  try {
+    const row = await db.queryOneAsync<DirectoryRow>(`${DIRECTORY_SELECT} WHERE t.id = ?`, [
+      req.params.teamId,
+    ]);
+    if (!row) return res.status(404).json({ success: false, error: 'Team not found' });
+    return res.json({ success: true, team: toDirectoryTeam(row) });
+  } catch (error) {
+    log.error('[TeamDirectory] Failed to read a team', { error });
+    return res.status(500).json({ success: false, error: 'Failed to read the team' });
+  }
+});
+
+router.get(
+  '/invite/:code',
+  teamAction(async (req) => ({ team: await teamSelfService.invite(req.params.code) }), {
+    signIn: false,
+  })
+);
+router.post(
+  '/invite/:code',
+  teamAction(async (req, uid) => teamSelfService.requestToJoin(req.params.code, uid!))
+);
+
+router.get('/:teamId/logo', async (req: Request, res: Response) => {
+  try {
+    const logo = await teamSelfService.logo(req.params.teamId);
+    if (!logo) return res.status(404).end();
+    res.setHeader('Content-Type', logo.type);
+    // The URL carries the update time, so the bytes behind it never change.
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    return res.send(logo.data);
+  } catch (error) {
+    log.error('[TeamDirectory] Failed to read a logo', { error });
+    return res.status(500).end();
+  }
+});
+
+router.get(
+  '/:teamId/manage',
+  teamAction(async (req, uid) => teamSelfService.manageView(req.params.teamId, uid!))
+);
+
+router.patch(
+  '/:teamId',
+  teamAction(async (req, uid) => {
+    const fields = validateTeamFields(req.body?.name, req.body?.tag);
+    if (typeof fields === 'string') throw new TeamActionError(400, fields);
+    await teamSelfService.rename(req.params.teamId, uid!, fields.name, fields.tag);
+    return {};
+  })
+);
+
+router.put(
+  '/:teamId/logo',
+  express.raw({ type: ['image/png', 'image/jpeg', 'image/webp'], limit: LOGO_MAX_BYTES }),
+  teamAction(async (req, uid) => {
+    if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
+      throw new TeamActionError(415, 'Send the logo as a PNG, JPEG or WEBP image.');
+    }
+    await teamSelfService.setLogo(req.params.teamId, uid!, req.body);
+    return {};
+  })
+);
+router.delete(
+  '/:teamId/logo',
+  teamAction(async (req, uid) => {
+    await teamSelfService.setLogo(req.params.teamId, uid!, null);
+    return {};
+  })
+);
+
+router.post(
+  '/:teamId/invite',
+  teamAction(async (req, uid) => ({
+    inviteCode: await teamSelfService.resetInvite(req.params.teamId, uid!),
+  }))
+);
+
+for (const answer of ['accept', 'decline'] as const) {
+  router.post(
+    `/:teamId/requests/:uid/${answer}`,
+    teamAction(async (req, uid) => {
+      await teamSelfService.answerRequest(
+        req.params.teamId,
+        uid!,
+        req.params.uid,
+        answer === 'accept'
+      );
+      return {};
+    })
+  );
+}
+
+router.patch(
+  '/:teamId/members/:uid',
+  teamAction(async (req, uid) => {
+    const role = req.body?.role;
+    if (role !== 'captain' && role !== 'member')
+      throw new TeamActionError(400, 'role is captain or member');
+    await teamSelfService.setRole(req.params.teamId, uid!, req.params.uid, role);
+    return {};
+  })
+);
+router.delete(
+  '/:teamId/members/:uid',
+  teamAction(async (req, uid) => {
+    await teamSelfService.removeMember(req.params.teamId, uid!, req.params.uid);
+    return {};
+  })
+);
+
+router.post(
+  '/:teamId/transfer',
+  teamAction(async (req, uid) => {
+    const to = typeof req.body?.uid === 'string' ? req.body.uid : '';
+    if (!to) throw new TeamActionError(400, 'uid of the new owner is required');
+    await teamSelfService.transfer(req.params.teamId, uid!, to);
+    return {};
+  })
+);
+
+router.delete(
+  '/:teamId',
+  teamAction(async (req, uid) => {
+    await teamSelfService.disband(req.params.teamId, uid!);
+    return {};
+  })
+);
 
 export default router;
