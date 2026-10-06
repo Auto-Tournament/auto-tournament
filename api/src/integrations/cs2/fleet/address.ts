@@ -12,7 +12,11 @@
  *    `net_public_adr`), unless it is a private / loopback IP while the link's
  *    peer address is public: a server behind NAT reports the address it binds
  *    to, players need the one the platform sees.
- * 3. The WebSocket (or enrollment) peer address, after the reverse proxy hops
+ * 3. The address of the csm machine the server runs on
+ *    (`host.inventory.address`, csm 1.21+), by the same private-behind-NAT
+ *    rule. Before it the peer address was all there was, and behind a proxy
+ *    or tunnel the peer is another machine (NTLAN 2026-10-05).
+ * 4. The WebSocket (or enrollment) peer address, after the reverse proxy hops
  *    the app trusts (`TRUST_PROXY_HOPS`, the same setting as Express's
  *    `trust proxy`). On a LAN a private address is what players use.
  *
@@ -31,7 +35,7 @@ export interface ParsedAddr {
   port: number | null;
 }
 
-export type ConnectSource = 'override' | 'public_addr' | 'peer';
+export type ConnectSource = 'override' | 'public_addr' | 'machine' | 'peer';
 
 export interface ConnectAddress {
   host: string;
@@ -147,18 +151,25 @@ export function peerAddressOf(req: IncomingMessage, hops: number = TRUST_PROXY_H
  */
 export function chooseConnectAddress(
   host: Pick<HostInfo, 'public_addr' | 'game_port'> | null | undefined,
-  peerAddr: string | null | undefined
+  peerAddr: string | null | undefined,
+  machineAddr?: string | null
 ): ConnectAddress | null {
   const reported = parseAddr(host?.public_addr);
+  const machine = parseAddr(machineAddr)?.host ?? null;
   const peerIp = peerAddr ? unmapV4(peerAddr.trim()) : '';
   const peer = peerIp && isIP(peerIp) && peerIp !== '0.0.0.0' && peerIp !== '::' ? peerIp : null;
   const gamePort = host?.game_port && validPort(host.game_port) ? host.game_port : DEFAULT_GAME_PORT;
   const port = reported?.port ?? gamePort;
+  // A private address while the link comes from a public one: the server is
+  // behind NAT, and players need the address the platform sees.
+  const behindNat = (addr: string) => !!peer && isPrivateOrLoopback(addr) && !isPrivateOrLoopback(peer);
   if (reported) {
-    if (peer && isPrivateOrLoopback(reported.host) && !isPrivateOrLoopback(peer)) {
-      return { host: peer, port, source: 'peer' };
-    }
+    if (behindNat(reported.host)) return { host: peer as string, port, source: 'peer' };
     return { host: reported.host, port, source: 'public_addr' };
+  }
+  if (machine) {
+    if (behindNat(machine)) return { host: peer as string, port, source: 'peer' };
+    return { host: machine, port, source: 'machine' };
   }
   if (peer) return { host: peer, port, source: 'peer' };
   return null;

@@ -26,7 +26,7 @@ admin actions): what exists, and the calls to use.
 | `normalize.ts` | fleet `event.*` → `NormalizedEvent[]` (pure) |
 | `ingest.ts` | normalize → `events/matchEvents.applyNormalizedEvents` → `matchLifecycle.ingest` |
 | `link.ts` | which `cs2_servers` row a fleet server plays matches as (`transport = 'fleet'`) |
-| `address.ts` | where players connect (pure): admin override, `hello.host.public_addr`, the link's peer address after the trusted proxy hops; never the hello `hostname` |
+| `address.ts` | where players connect (pure): admin override, `hello.host.public_addr`, the csm machine's address (`host.inventory.address`), the link's peer address after the trusted proxy hops; never the hello `hostname` |
 | `assignConfig.ts` | the served match config → `match.assign.config` (typed `rules`, engine `cvars`), roster diff (pure) |
 | `driver.ts` | **the fleet driver**: assign / unassign / update / cmd, link hooks (see below) |
 | `backups.ts` | **the round backup store** (`roundBackupStore`): `event.backup` in (checked, parts joined, newest per round), retention |

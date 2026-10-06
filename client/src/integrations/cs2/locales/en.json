@@ -1190,12 +1190,14 @@
       "override": "set by an admin",
       "publicAddr": "reported by the server",
       "peer": "address the server connects from",
-      "unknown": "not confirmed by the server yet"
+      "unknown": "not confirmed by the server yet",
+      "machine": "the address of the machine it runs on"
     },
     "rename": "Rename",
     "renamed": "Renamed",
     "renameSave": "Save",
-    "summary": "{{servers}} Ready Up server(s), {{online}} online · {{keys}} fleet key(s)"
+    "summary": "{{servers}} Ready Up server(s), {{online}} online · {{keys}} fleet key(s)",
+    "connectGuessed": "Guessed from where the server connects from. Check it, or set the address players use."
   },
   "roundBackups": {
     "title": "Round backups",

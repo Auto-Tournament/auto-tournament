@@ -1190,12 +1190,14 @@
       "override": "ingesteld door een admin",
       "publicAddr": "gemeld door de server",
       "peer": "adres waarvandaan de server verbindt",
-      "unknown": "nog niet bevestigd door de server"
+      "unknown": "nog niet bevestigd door de server",
+      "machine": "the address of the machine it runs on"
     },
     "rename": "Rename",
     "renamed": "Renamed",
     "renameSave": "Save",
-    "summary": "{{servers}} Ready Up server(s), {{online}} online · {{keys}} fleet key(s)"
+    "summary": "{{servers}} Ready Up server(s), {{online}} online · {{keys}} fleet key(s)",
+    "connectGuessed": "Guessed from where the server connects from. Check it, or set the address players use."
   },
   "roundBackups": {
     "title": "Round backups",

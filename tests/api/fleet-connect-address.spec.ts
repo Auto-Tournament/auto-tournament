@@ -90,6 +90,27 @@ test.describe('connect address: choosing it (no server)', () => {
     expect(formatConnectAddress('2001:db8::7', 27015)).toBe('[2001:db8::7]:27015');
     expect(formatConnectAddress('203.0.113.9', 27055)).toBe('203.0.113.9:27055');
   });
+
+  test("the csm machine's address comes before the peer (NTLAN 2026-10-05: the peer was the proxy)", () => {
+    const host = { game_port: 27025 };
+    // The link came through a proxy on .147; the machine is .196.
+    expect(chooseConnectAddress(host, '192.168.50.147', '192.168.50.196')).toEqual({
+      host: '192.168.50.196',
+      port: 27025,
+      source: 'machine',
+    });
+    // The server's own public_addr still wins.
+    expect(chooseConnectAddress({ ...host, public_addr: 'play.example.com' }, '192.168.50.147', '192.168.50.196')).toEqual({
+      host: 'play.example.com',
+      port: 27025,
+      source: 'public_addr',
+    });
+    // A machine behind NAT (private address, public link): players need the public one.
+    expect(chooseConnectAddress(host, '203.0.113.9', '10.0.0.4')).toEqual({ host: '203.0.113.9', port: 27025, source: 'peer' });
+    // No usable machine address: the peer, as before.
+    expect(chooseConnectAddress(host, '192.168.50.147', '')).toEqual({ host: '192.168.50.147', port: 27025, source: 'peer' });
+    expect(chooseConnectAddress(host, null, '192.168.50.196')).toEqual({ host: '192.168.50.196', port: 27025, source: 'machine' });
+  });
 });
 
 let key: { id: string; value: string };

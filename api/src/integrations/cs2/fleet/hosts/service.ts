@@ -19,6 +19,7 @@ import {
   type HostCommandType,
   type HostCommands,
   type HostForce,
+  type HostInventoryPayload,
 } from '../protocol/host/v1';
 import { HostGateway, hostEvents } from './gateway';
 import {
@@ -35,6 +36,7 @@ import {
 import * as registry from './registry';
 import { bundleFor, pluginSetForCreate, validatePluginSet, type PluginSet } from '../push/pluginSets';
 import { autoUpdateStatus, startAutoUpdates, stopAutoUpdates } from './autoUpdate';
+import { syncLinkedAddress } from '../link';
 
 /** The plugin set a server.create was stored with (meta.plugins), if any. */
 function pluginSetOfMeta(meta: Record<string, unknown> | null): PluginSet | null {
@@ -46,6 +48,7 @@ function pluginSetOfMeta(meta: Record<string, unknown> | null): PluginSet | null
 const ROTATION_CHECK_MS = 60 * 60 * 1000;
 
 const gateway = new HostGateway();
+let inventoryListener: ((hostId: string, payload: HostInventoryPayload) => void) | null = null;
 let rotationTimer: NodeJS.Timeout | null = null;
 
 gateway.onHostReady(async (hostId) => {
@@ -374,6 +377,17 @@ export async function startFleetHosts(server?: HttpServer): Promise<void> {
   gateway.attach(http);
   // The platform starts CS2 and Ready Up updates on enrolled machines (./autoUpdate.ts).
   startAutoUpdates();
+  // A machine's address (inventory.address) is where its servers' players
+  // connect unless a server reports its own: move their linked rows to it.
+  if (!inventoryListener) {
+    inventoryListener = (_hostId: string, payload: HostInventoryPayload) => {
+      for (const s of payload.servers) {
+        const id = s.readyup.server_id;
+        if (id) void syncLinkedAddress(id).catch((error) => log.warn(`[FLEET-HOST] address sync for ${id}: ${(error as Error).message}`));
+      }
+    };
+    hostEvents.on('inventory', inventoryListener);
+  }
   if (!rotationTimer) {
     rotationTimer = setInterval(() => {
       void rotateDue().catch((error) => log.warn(`[FLEET-HOST] rotation check failed: ${(error as Error).message}`));

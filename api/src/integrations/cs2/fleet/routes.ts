@@ -40,6 +40,8 @@ import {
   cs2ServerIdOf,
   renameLinkedRow,
   detectedAddress,
+  machineAddressOf,
+  machineAddresses,
   linkFleetServer,
   listLinkAddresses,
   setLinkAddress,
@@ -170,7 +172,7 @@ interface ConnectView {
   port: number;
   /** `host:port` as players type it after `connect`. */
   address: string;
-  /** override: an admin set it; public_addr / peer: detected (./address.ts); null: nothing yet. */
+  /** override: an admin set it; public_addr / machine / peer: detected (./address.ts); null: nothing yet. */
   source: ConnectSource | null;
 }
 
@@ -179,13 +181,19 @@ interface ConnectView {
  * the match pool). `connect`: where players connect: the linked row's address,
  * or for an unlinked server the one a link would store now.
  */
-async function withLinks<T extends { id: string; host: { public_addr?: string; game_port: number } | null; peerAddr: string | null }>(
+async function withLinks<
+  T extends { id: string; installId?: string | null; host: { public_addr?: string; game_port: number } | null; peerAddr: string | null },
+>(
   servers: T[]
 ): Promise<Array<T & { linkedServerId: string | null; connect: ConnectView | null }>> {
   const links = await listLinkAddresses();
+  const machines = await machineAddresses();
   return servers.map((s) => {
     const link = links.get(s.id);
-    const detected = detectedAddress({ host: s.host ? JSON.stringify(s.host) : null, peer_addr: s.peerAddr });
+    const detected = detectedAddress(
+      { host: s.host ? JSON.stringify(s.host) : null, peer_addr: s.peerAddr },
+      machineAddressOf(machines, { id: s.id, install_id: s.installId ?? null })
+    );
     let connect: ConnectView | null = null;
     if (link && link.host && link.host !== '0.0.0.0') {
       connect = {

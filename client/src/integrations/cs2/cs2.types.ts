@@ -492,7 +492,7 @@ export interface FleetConnect {
   /** `host:port` as typed after `connect`. */
   address: string;
   /** override: set by an admin; public_addr: the server's own report; peer: the link's client address. */
-  source: 'override' | 'public_addr' | 'peer' | null;
+  source: 'override' | 'public_addr' | 'machine' | 'peer' | null;
 }
 
 export interface FleetServersResponse extends Cs2ApiResponse {

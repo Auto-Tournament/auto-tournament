@@ -99,8 +99,47 @@ export async function listLinkAddresses(): Promise<Map<string, LinkAddress>> {
 }
 
 /** Where a fleet server's players would connect if it were linked now (null = nothing usable yet). */
-export function detectedAddress(fleet: Pick<FleetServerRow, 'host' | 'peer_addr'>): ConnectAddress | null {
-  return chooseConnectAddress(parseHost(fleet.host), fleet.peer_addr ?? null);
+export function detectedAddress(
+  fleet: Pick<FleetServerRow, 'host' | 'peer_addr'>,
+  machineAddr?: string | null
+): ConnectAddress | null {
+  return chooseConnectAddress(parseHost(fleet.host), fleet.peer_addr ?? null, machineAddr);
+}
+
+/**
+ * The address of the csm machine each fleet server runs on
+ * (`host.inventory.address`, csm 1.21+), keyed by fleet server id and by
+ * `install:<install id>`, from the machines' inventories.
+ */
+export async function machineAddresses(): Promise<Map<string, string>> {
+  const rows = await db.queryAsync<{ inventory: string | null }>(
+    `SELECT inventory FROM cs2_fleet_hosts WHERE status = 'enrolled' AND inventory IS NOT NULL`
+  );
+  const out = new Map<string, string>();
+  for (const row of rows) {
+    try {
+      const inv = JSON.parse(row.inventory as string) as {
+        address?: unknown;
+        servers?: Array<{ readyup?: { server_id?: string; install_id?: string } }>;
+      };
+      if (typeof inv.address !== 'string' || !inv.address) continue;
+      for (const s of inv.servers ?? []) {
+        if (s.readyup?.server_id) out.set(s.readyup.server_id, inv.address);
+        if (s.readyup?.install_id) out.set(`install:${s.readyup.install_id}`, inv.address);
+      }
+    } catch {
+      // An inventory that does not parse names no machine.
+    }
+  }
+  return out;
+}
+
+/** One fleet server's machine address from `machineAddresses()`, or null. */
+export function machineAddressOf(
+  addresses: Map<string, string>,
+  fleet: { id: string; install_id?: string | null }
+): string | null {
+  return addresses.get(fleet.id) ?? (fleet.install_id ? addresses.get(`install:${fleet.install_id}`) : undefined) ?? null;
 }
 
 function blank(v: unknown): boolean {
@@ -184,7 +223,7 @@ export async function linkFleetServer(
   }
 
   const gamePort = parseHost(fleet.host)?.game_port ?? DEFAULT_GAME_PORT;
-  const detected = detectedAddress(fleet);
+  const detected = detectedAddress(fleet, machineAddressOf(await machineAddresses(), fleet));
   const override = options.address ?? null;
   // Nothing detected yet (never connected, enrolled before peer addresses
   // were kept): an address that is at least not the machine's name; the next
@@ -269,7 +308,7 @@ export async function syncLinkedAddress(fleetServerId: string): Promise<ConnectA
   if (!row || Number(row.host_override ?? 0) === 1) return null;
   const fleet = await getFleetServer(fleetServerId);
   if (!fleet) return null;
-  const next = detectedAddress(fleet);
+  const next = detectedAddress(fleet, machineAddressOf(await machineAddresses(), fleet));
   if (!next || (next.host === row.host && next.port === Number(row.port))) return null;
   await db.runAsync(`UPDATE cs2_servers SET host = ?, port = ?, updated_at = ? WHERE id = ?`, [
     next.host,
