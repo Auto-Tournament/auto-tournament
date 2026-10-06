@@ -1658,7 +1658,9 @@
         "removeTitle": "Ta bort dette skinet?",
         "removeQuestion": "{{skin}} forsvinner fra inventaret og loadouten til {{player}}. Dette kan ikke angres.",
         "removed": "Skin tatt bort"
-      }
+      },
+      "playDropChance": "Sjanse for et skin når du taper eller spiller uavgjort",
+      "knivesByPrice": "Kniver og hansker får sjeldenhet etter markedspris (Skinport, oppdatert daglig): billige er vanlige, dyre er sjeldne."
     },
     "tournamentRewardsSwitch": "Skin-premier for topp tre (når skins er slått på)"
   }

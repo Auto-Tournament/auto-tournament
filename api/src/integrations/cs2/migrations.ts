@@ -862,7 +862,7 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
     up: `
     -- Virtual skins (owned on the platform; Ready Up servers with skins on
     -- show the equipped ones): what each player owns, rolled like a case (float and pattern), and where it came from.
-    CREATE TABLE IF NOT EXISTS player_skins (
+    CREATE TABLE IF NOT EXISTS cs2_player_skins (
       id SERIAL PRIMARY KEY,
       player_uid UUID NOT NULL, -- players.uid
       weapon TEXT NOT NULL, -- 'weapon_ak47', 'weapon_knife_karambit', 'sporty_gloves', ... (csm skins.json)
@@ -882,23 +882,23 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
 
-    CREATE INDEX IF NOT EXISTS idx_player_skins_owner ON player_skins(player_uid);
-    CREATE INDEX IF NOT EXISTS idx_player_skins_source_ref ON player_skins(source_ref);
+    CREATE INDEX IF NOT EXISTS cs2_player_skins_owner_idx ON cs2_player_skins(player_uid);
+    CREATE INDEX IF NOT EXISTS cs2_player_skins_source_ref_idx ON cs2_player_skins(source_ref);
 
     -- The skin equipped per slot (a weapon, or 'knife' / 'gloves').
-    CREATE TABLE IF NOT EXISTS player_loadout (
+    CREATE TABLE IF NOT EXISTS cs2_player_loadout (
       player_uid UUID NOT NULL,
       slot TEXT NOT NULL,
-      skin_id INTEGER NOT NULL REFERENCES player_skins(id) ON DELETE CASCADE,
+      skin_id INTEGER NOT NULL REFERENCES cs2_player_skins(id) ON DELETE CASCADE,
       PRIMARY KEY (player_uid, slot)
     );
 
     -- The profile's skin showcase: up to eight skins in the owner's order, some shown big.
-    CREATE TABLE IF NOT EXISTS player_skin_showcase (
+    CREATE TABLE IF NOT EXISTS cs2_player_skin_showcase (
       player_uid UUID PRIMARY KEY,
       items TEXT NOT NULL DEFAULT '[]' -- JSON [{ skinId, big }]
     );
-    ALTER TABLE player_skins ADD COLUMN IF NOT EXISTS variant TEXT;
+    ALTER TABLE cs2_player_skins ADD COLUMN IF NOT EXISTS variant TEXT;
 `,
   },
 ];

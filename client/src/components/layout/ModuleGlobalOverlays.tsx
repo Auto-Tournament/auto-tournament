@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import { useInstalledIntegrations } from '../../integrations/registry';
 
 /**
@@ -12,7 +13,9 @@ export function ModuleGlobalOverlays() {
   return (
     <>
       {overlays.map(({ id, Overlay }) => (
-        <Overlay key={id} />
+        <Fragment key={id}>
+          <Overlay />
+        </Fragment>
       ))}
     </>
   );

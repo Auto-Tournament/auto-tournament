@@ -1698,7 +1698,9 @@
         "removeTitle": "Take this skin away?",
         "removeQuestion": "{{skin}} leaves {{player}}'s inventory and loadout. This cannot be undone.",
         "removed": "Skin taken away"
-      }
+      },
+      "playDropChance": "Chance of a skin when you lose or draw",
+      "knivesByPrice": "Knives and gloves get their rarity from market price (Skinport, updated daily): cheap ones are common, expensive ones rare."
     },
     "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)"
   }

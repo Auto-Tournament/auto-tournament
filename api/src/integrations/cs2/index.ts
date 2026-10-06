@@ -572,10 +572,10 @@ export const cs2Integration: GameIntegration = {
     return { team1: steamIds(cfg.team1?.players), team2: steamIds(cfg.team2?.players) };
   },
 
-  /** A won matchmaking game can drop a virtual skin for each winner (skins/skinService). */
-  async onMatchmakingWin({ matchSlug, winners, map }) {
+  /** A finished matchmaking game can drop a virtual skin for each player, likelier for winners (skins/skinService). */
+  async onMatchmakingResult({ matchSlug, winners, others, map }) {
     const { skinService } = await import('./skins/skinService');
-    await skinService.rollMatchDrops(matchSlug, winners, map);
+    await skinService.rollMatchDrops(matchSlug, winners, others, map);
   },
 
   /** The top three of a finished tournament get its skin rewards, unless the tournament turned them off. */

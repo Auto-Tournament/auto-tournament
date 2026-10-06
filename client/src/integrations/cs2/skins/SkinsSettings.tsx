@@ -38,6 +38,7 @@ interface Config {
   enabled: boolean;
   matchmakingDrops: boolean;
   dropChance: number;
+  playDropChance: number;
   rarityWeights: Record<Rarity, number>;
   tournamentRewards: boolean;
   rewards: Reward[];
@@ -223,6 +224,13 @@ export function SkinsSettings() {
             <Typography>{t('skins.admin.dropChance')}</Typography>
             <TextField size="small" type="number" value={config.dropChance} onChange={(e) => set({ dropChance: Number(e.target.value) })} inputProps={{ min: 0, max: 100, 'aria-label': t('skins.admin.dropChance') }} sx={{ width: 110 }} InputProps={{ endAdornment: '%' }} />
           </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+            <Typography>{t('skins.admin.playDropChance')}</Typography>
+            <TextField size="small" type="number" value={config.playDropChance} onChange={(e) => set({ playDropChance: Number(e.target.value) })} inputProps={{ min: 0, max: 100, 'aria-label': t('skins.admin.playDropChance'), 'data-testid': 'skins-play-drop-chance' }} sx={{ width: 110 }} InputProps={{ endAdornment: '%' }} />
+          </Box>
+          <Typography variant="caption" color="text.secondary" sx={{ mt: -1 }}>
+            {t('skins.admin.knivesByPrice')}
+          </Typography>
           <Box>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               {t('skins.admin.whichRarity')}

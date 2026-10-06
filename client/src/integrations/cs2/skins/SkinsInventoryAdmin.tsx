@@ -38,6 +38,8 @@ interface CatalogEntry {
   variant: string | null;
   rarity: string;
   imageUrl: string;
+  /** Knives and gloves: market price in USD, which set the rarity. */
+  price?: number;
 }
 
 /** The wear bands, as float ranges. A chip rolls a float inside its band. */
@@ -330,6 +332,11 @@ function GiveSkinDialog({
             <Box component="li" {...props} key={`${o.weapon}|${o.paintKit}`} sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
               <Box component="img" src={o.imageUrl} alt="" loading="lazy" sx={{ width: 48, height: 34, objectFit: 'contain' }} />
               <Typography sx={{ flex: 1 }}>{entryLabel(o)}</Typography>
+              {o.price !== undefined && (
+                <Typography variant="caption" color="text.secondary">
+                  ${Math.round(o.price).toLocaleString('en-US')}
+                </Typography>
+              )}
               <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: rarityColor[o.rarity] }} aria-hidden />
             </Box>
           )}

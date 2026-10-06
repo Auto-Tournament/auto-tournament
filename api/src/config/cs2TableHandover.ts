@@ -59,6 +59,13 @@ type Queryable = Pick<PoolClient, 'query'>;
 
 export const CS2_MODULE_ID = 'cs2';
 
+/** The skin tables core created in the 3.0 betas, and their names in CS2's namespace. */
+const SKIN_TABLES: ReadonlyArray<[string, string]> = [
+  ['player_skins', 'cs2_player_skins'],
+  ['player_loadout', 'cs2_player_loadout'],
+  ['player_skin_showcase', 'cs2_player_skin_showcase'],
+];
+
 export interface LegacyCs2Table {
   from: string;
   to: string;
@@ -363,6 +370,18 @@ export async function handOverCs2Tables(
         report.renamed.push({ from: table.from, to: table.to });
       }
       if (hasOld || hasNew) await renameDependents(client, table, report);
+    }
+
+    // Virtual skins' tables: core's in the 3.0 betas up to beta.41, CS2's
+    // since (`018-skins`, which recreates their indexes under CS2's names).
+    for (const [from, to] of SKIN_TABLES) {
+      if ((await tableExists(client, from)) && !(await tableExists(client, to))) {
+        await client.query(`ALTER TABLE ${ident(from)} RENAME TO ${ident(to)}`);
+        log.info(`[PostgreSQL] CS2 handover: renamed ${from} to ${to}`);
+      }
+    }
+    for (const index of ['idx_player_skins_owner', 'idx_player_skins_source_ref']) {
+      await client.query(`DROP INDEX IF EXISTS ${ident(index)}`);
     }
 
     if (cs2) await adoptFirstMigration(client, cs2, report);
