@@ -19,6 +19,7 @@ import { randomInt } from 'crypto';
 import fetch from 'node-fetch';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
+import { WEAPON_DEFINDEX } from './skinDefindex';
 
 export const SKIN_IMAGES_BASE =
   'https://cdn.jsdelivr.net/gh/Auto-Tournament/cs2-server-manager@master/skin_images';
@@ -438,6 +439,46 @@ export const skinService = {
     if (!uid) return null;
     const inventory = await this.inventory(uid);
     return { inventory, showcase: await this.showcase(uid) };
+  },
+
+  /**
+   * A player's equipped skins as Ready Up's `skins.loadout` items: a paint
+   * per equipped weapon, knife and gloves (with the knife and gloves also
+   * named, so the plugin swaps them in). Null without an account, while skins
+   * are off, or with nothing equipped.
+   */
+  async loadoutItems(steamId: string): Promise<{
+    paints: Array<{ team: 0; defindex: number; paint: number; wear: number; seed: number }>;
+    knife?: Array<{ team: 0; defindex: number }>;
+    gloves?: Array<{ team: 0; defindex: number }>;
+  } | null> {
+    if (!(await this.config()).enabled) return null;
+    const uid = await uidOf(steamId);
+    if (!uid) return null;
+    const rows = await db.queryAsync<{ weapon: string; paint_kit: number; float_value: number; pattern: number; slot: string }>(
+      `SELECT s.weapon, s.paint_kit, s.float_value, s.pattern, l.slot
+         FROM player_loadout l JOIN player_skins s ON s.id = l.skin_id
+        WHERE l.player_uid = ?`,
+      [uid]
+    );
+    const paints: Array<{ team: 0; defindex: number; paint: number; wear: number; seed: number }> = [];
+    let knife: Array<{ team: 0; defindex: number }> | undefined;
+    let gloves: Array<{ team: 0; defindex: number }> | undefined;
+    for (const row of rows) {
+      const defindex = WEAPON_DEFINDEX[row.weapon];
+      if (!defindex || !row.paint_kit) continue;
+      paints.push({
+        team: 0,
+        defindex,
+        paint: row.paint_kit,
+        wear: Math.max(0, Math.min(1, Number(row.float_value))),
+        seed: Math.max(0, Math.min(1000, row.pattern)),
+      });
+      if (row.slot === 'knife') knife = [{ team: 0, defindex }];
+      if (row.slot === 'gloves') gloves = [{ team: 0, defindex }];
+    }
+    if (!paints.length) return null;
+    return { paints, ...(knife ? { knife } : {}), ...(gloves ? { gloves } : {}) };
   },
 
   /** One skin with its owner, for the inspect dialog. */

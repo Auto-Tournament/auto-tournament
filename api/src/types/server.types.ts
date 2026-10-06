@@ -11,6 +11,8 @@ export interface Server {
   enabled: number; // PostgreSQL stores boolean as 0/1 in INTEGER column
   /** 0 = practice/community server: never given tournament matches. */
   tournament_use?: number | null;
+  /** 1 = the platform's virtual skins go to this server (fleet servers). */
+  skins?: number | null;
   at_config?: string | null; // JSON blob with per-server MatchZy Enhanced ConVar overrides
   persistent_config_sent?: number | null; // Unix timestamp when persistent config was last sent
   plugin_version?: string | null; // MatchZy Enhanced version (e.g., "1.3.6")
@@ -61,6 +63,7 @@ export interface CreateServerInput {
   password: string;
   enabled?: boolean; // Optional, defaults to true
   tournamentUse?: boolean; // Optional, defaults to true
+  skins?: boolean; // Optional, defaults to false
   atConfig?: AtServerConfigInput;
 }
 
@@ -71,6 +74,7 @@ export interface UpdateServerInput {
   password?: string;
   enabled?: boolean;
   tournamentUse?: boolean;
+  skins?: boolean;
   atConfig?: AtServerConfigInput | null;
 }
 
@@ -88,6 +92,10 @@ export interface ServerResponse {
   enabled: boolean;
   /** False: a practice/community server that tournament matches never go to. */
   tournamentUse: boolean;
+  /** The platform's virtual skins go to this server. */
+  skins: boolean;
+  /** Fleet servers: it runs with a Valve game server token, so skins stay off. Null when unknown. */
+  steamToken?: boolean | null;
   atConfig: AtServerConfig | null;
   created_at: number;
   updated_at: number;

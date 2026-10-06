@@ -43,6 +43,7 @@ import {
   type StatePatchPayload,
   type StateSnapshotPayload,
 } from './protocol/v1';
+import { pushSkinsOnConnect } from './push/skins';
 import {
   liveStateStore,
   type LiveMatchRecord,
@@ -408,6 +409,11 @@ export async function processInbound(
   try {
     if (isFleetEventType(env.type)) {
       await applyEvent(ctx, env);
+      if (env.type === 'event.player_connect') {
+        const p = env.payload as unknown as { match_id: string; data: { steamid64: string } };
+        // Not awaited: a loadout never holds up the event stream.
+        void pushSkinsOnConnect(ctx.serverId, p.match_id, p.data.steamid64);
+      }
     } else {
       switch (env.type) {
         case 'state.patch':

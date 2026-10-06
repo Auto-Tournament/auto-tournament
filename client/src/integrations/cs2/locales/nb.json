@@ -678,7 +678,10 @@
     "confirmDelete": {
       "title": "Slett server",
       "message": "Er du sikker på at du vil slette \"{{name}}\"? Dette kan ikke angres."
-    }
+    },
+    "skinsLabel": "Skins på denne serveren",
+    "skinsHelper": "Spillernes virtuelle skins sendes til serveren i oppvarming og mellom kart, aldri midt i et kart. Krever skins-pluginen til Ready Up og en server uten Steam-servertoken.",
+    "skinsTokenWarning": "Denne serveren kjører med et Steam-servertoken (+sv_setsteamaccount), så den får ingen skins: Valve stenger tokenet, og kontoen bak, for servere som deler ut gjenstander. Fjern tokenet i csm for å bruke skins her."
   },
   "mapPoolModal": {
     "titleCreate": "Lag kartpool",

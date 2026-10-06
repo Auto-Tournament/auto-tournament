@@ -706,7 +706,10 @@
     "confirmDelete": {
       "title": "Usuń serwer",
       "message": "Czy na pewno chcesz usunąć \"{{name}}\"? Tej akcji nie można cofnąć."
-    }
+    },
+    "skinsLabel": "Skins on this server",
+    "skinsHelper": "Players' equipped virtual skins are sent to the server in warmup and between maps, never mid-map. Needs Ready Up's skins plugin and a server without a Steam server token.",
+    "skinsTokenWarning": "This server runs with a Steam server token (+sv_setsteamaccount), so it gets no skins: Valve bans the token, and the account behind it, of a server that hands out items. Remove the token in csm to use skins here."
   },
   "mapPoolModal": {
     "titleCreate": "Create Map Pool",
