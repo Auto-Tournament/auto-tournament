@@ -274,6 +274,92 @@ router.get('/:teamId', async (req: Request, res: Response, next) => {
   }
 });
 
+/**
+ * The team page's numbers, for any game: the roster with ratings and roles,
+ * the team's rating (the roster's average), its record and last ten results,
+ * and its rounds won and lost. Public.
+ */
+router.get('/:teamId/profile', async (req: Request, res: Response) => {
+  try {
+    const row = await db.queryOneAsync<DirectoryRow>(`${DIRECTORY_SELECT} WHERE t.id = ?`, [
+      req.params.teamId,
+    ]);
+    if (!row) return res.status(404).json({ success: false, error: 'Team not found' });
+
+    let roster: Array<{ steamId: string; name: string; avatar?: string }> = [];
+    try {
+      const parsed = JSON.parse(row.players) as unknown;
+      if (Array.isArray(parsed)) roster = parsed;
+    } catch {
+      roster = [];
+    }
+    const ids = roster.map((p) => p.steamId).filter(Boolean);
+    const accounts = ids.length
+      ? await db.queryAsync<{
+          id: string;
+          uid: string;
+          name: string;
+          avatar: string | null;
+          current_elo: number;
+        }>(
+          'SELECT id, uid, name, avatar_url AS avatar, current_elo FROM players WHERE id = ANY(?::text[])',
+          [ids]
+        )
+      : [];
+    const byId = new Map(accounts.map((a) => [a.id, a]));
+    const roles = new Map((await teamMembers.list(row.id)).map((m) => [m.accountUid, m.role]));
+    const members = roster.map((p) => {
+      const a = byId.get(p.steamId);
+      return {
+        steamId: p.steamId,
+        name: a?.name || p.name,
+        avatar: a?.avatar ?? p.avatar ?? null,
+        rating: a ? Number(a.current_elo) : null,
+        role:
+          a && a.uid === row.owner_uid ? 'owner' : a ? (roles.get(a.uid) ?? 'member') : 'member',
+      };
+    });
+    const rated = members.filter((m) => m.rating !== null);
+    const rating = rated.length
+      ? Math.round(rated.reduce((sum, m) => sum + (m.rating as number), 0) / rated.length)
+      : null;
+
+    const results = await db.queryAsync<{ winner_id: string | null }>(
+      `SELECT winner_id FROM matches
+        WHERE (team1_id = ? OR team2_id = ?) AND status = 'completed' AND winner_id IS NOT NULL
+        ORDER BY completed_at DESC NULLS LAST`,
+      [row.id, row.id]
+    );
+    const wins = results.filter((r) => r.winner_id === row.id).length;
+    const rounds = await db.queryOneAsync<{
+      won: number | string | null;
+      lost: number | string | null;
+    }>(
+      `SELECT SUM(CASE WHEN m.team1_id = ? THEN r.team1_score ELSE r.team2_score END) AS won,
+              SUM(CASE WHEN m.team1_id = ? THEN r.team2_score ELSE r.team1_score END) AS lost
+         FROM match_map_results r JOIN matches m ON m.slug = r.match_slug
+        WHERE (m.team1_id = ? OR m.team2_id = ?) AND r.winner_team IS NOT NULL`,
+      [row.id, row.id, row.id, row.id]
+    );
+
+    return res.json({
+      success: true,
+      team: toDirectoryTeam(row),
+      members,
+      rating,
+      record: {
+        wins,
+        losses: results.length - wins,
+        last10: results.slice(0, 10).map((r) => (r.winner_id === row.id ? 'w' : 'l')),
+      },
+      rounds: { won: Number(rounds?.won ?? 0), lost: Number(rounds?.lost ?? 0) },
+    });
+  } catch (error) {
+    log.error('[TeamDirectory] Failed to read a team profile', { error });
+    return res.status(500).json({ success: false, error: 'Failed to read the team' });
+  }
+});
+
 router.get(
   '/invite/:code',
   teamAction(async (req) => ({ team: await teamSelfService.invite(req.params.code) }), {

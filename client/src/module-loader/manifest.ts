@@ -207,6 +207,7 @@ export const COMPONENT_SLOTS = [
   'adminDisputesView',
   'tournamentStatsView',
   'playerProfileView',
+  'teamProfileView',
   'preMatchView',
   'preMatchHistory',
   'tournamentSetupSteps.rules',

@@ -1554,6 +1554,11 @@
     "weakest": "Weakest · {{map}}",
     "mapSummary": "{{pct}}% won · {{played}} played",
     "mapRecord": "{{won}}/{{played}} won · rounds {{rounds}}",
-    "mapsNote": "From the share of rounds won on each map. Few rounds count less."
+    "mapsNote": "From the share of rounds won on each map. Few rounds count less.",
+    "teamMapsAria": "Team map strength: share of rounds won on each map",
+    "teamMapsFew": "The chart shows up once the team has played three maps.",
+    "bansMost": "Bans most",
+    "picksMost": "Picks most",
+    "vetoShare": "{{map}} · {{count}} of {{total}} vetoes"
   }
 }

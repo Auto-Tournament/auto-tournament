@@ -1514,6 +1514,11 @@
     "weakest": "Svakest · {{map}}",
     "mapSummary": "{{pct}} % vunnet · {{played}} spilt",
     "mapRecord": "{{won}}/{{played}} vunnet · runder {{rounds}}",
-    "mapsNote": "Ut fra andelen runder vunnet på hvert kart. Få runder teller mindre."
+    "mapsNote": "Ut fra andelen runder vunnet på hvert kart. Få runder teller mindre.",
+    "teamMapsAria": "Lagets kartstyrke: andel runder vunnet på hvert kart",
+    "teamMapsFew": "Diagrammet vises når laget har spilt tre kart.",
+    "bansMost": "Banner mest",
+    "picksMost": "Velger mest",
+    "vetoShare": "{{map}} · {{count}} av {{total}} vetoer"
   }
 }

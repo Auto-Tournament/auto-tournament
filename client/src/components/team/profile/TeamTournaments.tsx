@@ -92,10 +92,7 @@ export function TeamTournaments({
     <Box data-testid="team-profile-tournaments">
       {tournament ? (
         <RowList>
-          <Row
-            columns="auto minmax(0, 1fr) auto"
-            data-testid="team-profile-current-tournament"
-          >
+          <Row columns="auto minmax(0, 1fr) auto" data-testid="team-profile-current-tournament">
             {isLive ? (
               <LiveChip label={t('teamProfile.tournaments.live')} />
             ) : isUpcoming ? (
@@ -118,9 +115,12 @@ export function TeamTournaments({
                 #{standing.position}
               </Box>
             ) : (
-              <Chip size="small" label={t(`teamProfile.tournaments.status.${tournament.status}`, {
-                defaultValue: tournament.status,
-              })} />
+              <Chip
+                size="small"
+                label={t(`teamProfile.tournaments.status.${tournament.status}`, {
+                  defaultValue: tournament.status,
+                })}
+              />
             )}
             <Box minWidth={0}>
               <Typography variant="body2" fontWeight={600} noWrap>
@@ -183,7 +183,9 @@ export function TeamTournaments({
                     color: result.won ? tokens.color.live : tokens.color.ban,
                   }}
                 >
-                  {result.won ? t('teamProfile.tournaments.win') : t('teamProfile.tournaments.loss')}
+                  {result.won
+                    ? t('teamProfile.tournaments.win')
+                    : t('teamProfile.tournaments.loss')}
                 </Box>
                 <Box minWidth={0}>
                   <Typography variant="body2" noWrap>

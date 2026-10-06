@@ -321,7 +321,8 @@
       "title": "Roster",
       "empty": "This team has no players yet.",
       "rating": "Rating {{rating}}",
-      "captain": "Captain"
+      "captain": "Captain",
+      "owner": "Owner"
     },
     "tournaments": {
       "title": "Tournaments",
@@ -349,7 +350,15 @@
     "leave": "Leave team",
     "leaveTitle": "Leave the team?",
     "leaveConfirm": "You leave {{name}}. To come back you need a new invite.",
-    "leaveFailed": "Could not leave the team."
+    "leaveFailed": "Could not leave the team.",
+    "stats": {
+      "rating": "Team rating",
+      "ratingNote": "Average of the roster",
+      "record": "Record",
+      "last10": "Last {{total}} matches: {{won}} won",
+      "rounds": "Round difference",
+      "roundsNote": "{{won}} won · {{lost}} lost"
+    }
   },
   "disputes": {
     "title": "Disputes",

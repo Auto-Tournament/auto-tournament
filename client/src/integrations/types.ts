@@ -792,6 +792,16 @@ export interface PlayerProfileViewProps {
 }
 
 /**
+ * A team's page: this game's own statistics for the team (CS2: map strength
+ * and the maps it bans and picks). Teams play every game, so the page shows
+ * the view of each installed game that has one; a view with no data for the
+ * team renders nothing.
+ */
+export interface TeamProfileViewProps {
+  teamId: string;
+}
+
+/**
  * The Admin tools page: this module's own section (client API 0.2.2).
  *
  * Admin tools is core's page for what every instance has: the application
@@ -1028,6 +1038,9 @@ export interface ClientGameIntegration {
 
   /** The player profile: this game's own statistics. */
   playerProfileView?: ComponentType<PlayerProfileViewProps>;
+
+  /** The team page: this game's own statistics for the team. */
+  teamProfileView?: ComponentType<TeamProfileViewProps>;
 
   /** Shown to the teams before the match can be allocated (CS2: map veto). */
   preMatchView?: ComponentType<PreMatchViewProps>;
