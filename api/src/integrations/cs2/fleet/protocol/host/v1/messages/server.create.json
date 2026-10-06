@@ -32,6 +32,13 @@
     },
     "expires_at": {
       "$ref": "../defs.json#/$defs/expiresAt"
+    },
+    "accept_license": {
+      "enum": [
+        "noncommercial",
+        "commercial"
+      ],
+      "description": "csm addition: the Ready Up license use the platform's admin accepted (Settings > License). csm saves it as the host's answer when the host has none of its own (an operator's `csm plugins license` or AT_ACCEPT_LICENSE always wins), so unattended Ready Up installs can run."
     }
   }
 }

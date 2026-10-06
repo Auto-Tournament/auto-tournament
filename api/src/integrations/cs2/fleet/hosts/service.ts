@@ -9,6 +9,7 @@ import type { Server as HttpServer } from 'http';
 import { db } from '../../../../config/database';
 import { log } from '../../../../utils/logger';
 import { getIO } from '../../../../services/socketService';
+import { licenseConsentService } from '../../../../services/license/consent';
 import { ulid } from '../credentials';
 import { FLEET_TENANT } from '../registry';
 import { fleetBus } from '../service';
@@ -108,6 +109,13 @@ export async function sendHostCommand<T extends HostCommandType>(
   delete body.force;
   // The fleet key is the platform's to add, at send time (./gateway.ts).
   if (type === 'server.create') delete body.enroll_key;
+  // Installs carry the license use the admin accepted on the platform, so
+  // csm can run Ready Up's installer unattended on a host whose operator
+  // gave no answer of their own (theirs always wins on the host).
+  if (type === 'server.create' || type === 'host.update_plugins') {
+    const consent = await licenseConsentService.getRecord().catch(() => null);
+    if (consent) body.accept_license = consent.use;
+  }
 
   let force: HostForce | null = null;
   if (HOST_DISRUPTIVE_TYPES.has(type)) {

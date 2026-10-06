@@ -163,6 +163,8 @@ export interface HostCommands {
     enroll: boolean;
     /** csm addition: the fleet key the new servers enroll with (minted per command at send time). */
     enroll_key?: string;
+    /** csm addition: the Ready Up license use accepted on the platform (added at send time). */
+    accept_license?: 'noncommercial' | 'commercial';
   };
   'server.remove': Expiring & { server: string; keep_files?: boolean; force?: HostForce };
   'server.set_launch_args': Expiring & { server: string; args: string[]; force?: HostForce };
@@ -171,6 +173,8 @@ export interface HostCommands {
     servers?: string[];
     readyup: { version: string; bundle: 'default' | 'skins' };
     force?: HostForce;
+    /** csm addition: as on server.create. */
+    accept_license?: 'noncommercial' | 'commercial';
   };
   'host.updates_hold': Expiring & { mode: UpdatesHoldMode };
   'logs.tail': Expiring & {
