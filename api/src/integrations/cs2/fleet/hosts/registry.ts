@@ -676,6 +676,40 @@ export async function appendHostOutbox(
   });
 }
 
+/**
+ * The machine's agent lost its stream state (linked again, reinstalled, or
+ * another csm user on the same machine): it says it has received only up to
+ * `lastRx`, below what the platform already had acknowledged. It takes
+ * commands strictly in order, so the next one (after the old numbering) was
+ * never delivered: it waited for messages that no longer exist, and the
+ * command stayed "in progress" forever (csm #108). Renumber what is still
+ * queued from `lastRx + 1` and carry on from there. Returns how many queued
+ * messages were renumbered.
+ */
+export async function rebaseHostTx(hostId: string, lastRx: number): Promise<number> {
+  return tx(async (c) => {
+    const rows = (
+      await c.query<{ message: string }>('SELECT message FROM cs2_fleet_host_outbox WHERE host_id = $1 ORDER BY seq ASC', [hostId])
+    ).rows;
+    await c.query('DELETE FROM cs2_fleet_host_outbox WHERE host_id = $1', [hostId]);
+    let seq = lastRx;
+    for (const row of rows) {
+      seq += 1;
+      const envelope = JSON.parse(row.message) as Envelope;
+      envelope.seq = seq;
+      await c.query(`INSERT INTO cs2_fleet_host_outbox (host_id, seq, type, message) VALUES ($1, $2, $3, $4)`, [
+        hostId,
+        seq,
+        envelope.type,
+        JSON.stringify(envelope),
+      ]);
+      await c.query(`UPDATE cs2_fleet_host_commands SET seq = $1 WHERE message_id = $2`, [seq, envelope.id]);
+    }
+    await c.query('UPDATE cs2_fleet_hosts SET tx_seq = $2, tx_acked = $3 WHERE id = $1', [hostId, seq, lastRx]);
+    return rows.length;
+  });
+}
+
 export async function pendingHostOutbox(hostId: string, afterSeq: number): Promise<Envelope[]> {
   const rows = await db.queryAsync<{ message: string }>(
     'SELECT message FROM cs2_fleet_host_outbox WHERE host_id = ? AND seq > ? ORDER BY seq ASC',

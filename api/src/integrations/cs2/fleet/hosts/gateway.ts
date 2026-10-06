@@ -395,6 +395,16 @@ class HostSession {
     }
     this.rxStreamId = hello.stream.id;
     if (result === 'reset') await registry.setHostRxState(hostId, hello.stream.id, 0);
+    // The agent has received less than it once acknowledged: it starts over
+    // (linked again, reinstalled). Continue the numbering from where it is,
+    // or the next command waits forever for ones it can never get.
+    if (hello.stream.last_rx_seq < stream.txAcked) {
+      const renumbered = await registry.rebaseHostTx(hostId, hello.stream.last_rx_seq);
+      log.warn(
+        `[FLEET-HOST] ${hostId}: the agent starts over at seq ${hello.stream.last_rx_seq} (platform had ${stream.txAcked} acknowledged); ${renumbered} queued message(s) renumbered`
+      );
+      stream.txAcked = hello.stream.last_rx_seq;
+    }
     if (hello.stream.last_rx_seq > 0) {
       await registry.ensureHostTxSeqAtLeast(hostId, hello.stream.last_rx_seq);
       await registry.ackHostOutbox(hostId, hello.stream.last_rx_seq);
