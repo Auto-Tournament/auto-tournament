@@ -119,7 +119,7 @@ class Cs2Settings {
 
   /** Seconds per veto step before the platform picks for the team (unset = defaultVetoTurnSeconds, 0 = no limit). */
   async getVetoTurnSeconds(): Promise<number> {
-    const value = await this.getSetting('veto_turn_seconds');
+    const value = await this.getSetting('at_veto_turn_seconds');
     if (value === null || value === undefined || value === '') return defaultVetoTurnSeconds();
     const parsed = Number(value);
     return Number.isInteger(parsed) && parsed > 0 ? Math.min(parsed, 600) : 0;

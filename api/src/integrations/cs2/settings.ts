@@ -42,7 +42,7 @@ export type Cs2SettingKey =
   | 'at_pause_after_restore'
   | 'at_join_password'
   | 'at_autostart_after_minutes'
-  | 'veto_turn_seconds'
+  | 'at_veto_turn_seconds'
   | 'at_stop_command_available'
   | 'at_stop_command_no_damage'
   | 'at_use_pause_command_for_tactical_pause'
@@ -300,10 +300,10 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
     message: 'at_autostart_after_minutes must be 0-120 minutes',
   }),
   // Seconds each team gets for a veto step before the platform picks for it (0 = no limit).
-  integer('veto_turn_seconds', 'vetoTurnSeconds', 246, {
+  integer('at_veto_turn_seconds', 'vetoTurnSeconds', 246, {
     min: 0,
     max: 600,
-    message: 'veto_turn_seconds must be 0-600 seconds',
+    message: 'at_veto_turn_seconds must be 0-600 seconds',
   }),
   // MatchZy Enhanced v1.3.0 settings
   binary('at_autoready_enabled', 'atAutoreadyEnabled', 250),

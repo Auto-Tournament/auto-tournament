@@ -1,5 +1,5 @@
 /**
- * The veto timer: each team gets `veto_turn_seconds` (Match rules, default
+ * The veto timer: each team gets `at_veto_turn_seconds` (Match rules, default
  * 45, 0 = no limit) for a step. When the time is up the platform takes the
  * step for them, at random like the simulation does, marked `timedOut` in the
  * veto's actions, and the next team's clock starts. A team that never shows
