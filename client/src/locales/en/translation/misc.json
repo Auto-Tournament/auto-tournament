@@ -744,6 +744,31 @@
     "peekMatch": "Match · {{title}}",
     "peekTeam": "Team",
     "peekParty": "Party",
-    "buttonUnread": "Chat, {{count}} unread"
+    "buttonUnread": "Chat, {{count}} unread",
+    "system": {
+      "vetoStarted": "Veto started · {{team}} goes first",
+      "vetoBan": "{{team}} banned {{map}}",
+      "vetoPick": "{{team}} picked {{map}}",
+      "vetoSide": "{{team}} starts {{side}} on {{map}}",
+      "vetoDone": "Veto done · {{maps}}",
+      "serverReady": "Server ready · {{map}} · join from the match page",
+      "playerJoined": "{{name}} joined the server · {{n}} in",
+      "playerLeft": "{{name}} left the server · {{n}} in",
+      "mapLive": "Map {{n}} is live · {{map}}",
+      "mapResult": "Map {{n}} · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
+      "seriesWon": "{{team}} wins the series {{a}}–{{b}}",
+      "adminCalled": "{{name}} called an admin",
+      "timedOut": "out of time"
+    },
+    "party": {
+      "inviteCopied": "Invite link copied",
+      "inviteFailed": "Could not copy the link",
+      "leader": "leader",
+      "invite": "Invite",
+      "queue": "Queue together",
+      "leaveQueue": "Leave the queue",
+      "searching": "Searching for a match",
+      "leaderQueues": "The leader starts the search"
+    }
   }
 }

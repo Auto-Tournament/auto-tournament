@@ -20,6 +20,7 @@ import { resolveViewerIdentity } from '../../../utils/viewerIdentity';
 import { requireAuth } from '../../../middleware/auth';
 import { tournamentRowToResponse } from '../../../utils/tournamentRow';
 import { mapService } from '../maps/mapService';
+import { postVetoProgress } from './chatLines';
 
 const router = Router();
 
@@ -723,6 +724,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
 
     // Emit update via Socket.io
     emitVetoUpdate(matchSlug, vetoState);
+    void postVetoProgress(matchSlug, vetoState);
 
     log.debug(`Veto action processed for ${matchSlug}`, {
       step: vetoState.currentStep - 1,

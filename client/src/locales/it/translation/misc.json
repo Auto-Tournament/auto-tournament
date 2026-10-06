@@ -744,6 +744,31 @@
     "peekMatch": "Match · {{title}}",
     "peekTeam": "Team",
     "peekParty": "Party",
-    "buttonUnread": "Chat, {{count}} unread"
+    "buttonUnread": "Chat, {{count}} unread",
+    "system": {
+      "vetoStarted": "Veto iniziato · inizia {{team}}",
+      "vetoBan": "{{team}} ha bannato {{map}}",
+      "vetoPick": "{{team}} ha scelto {{map}}",
+      "vetoSide": "{{team}} inizia {{side}} su {{map}}",
+      "vetoDone": "Veto finito · {{maps}}",
+      "serverReady": "Server pronto · {{map}} · entra dalla pagina della partita",
+      "playerJoined": "{{name}} è entrato nel server · {{n}} dentro",
+      "playerLeft": "{{name}} ha lasciato il server · {{n}} dentro",
+      "mapLive": "Mappa {{n}} in corso · {{map}}",
+      "mapResult": "Mappa {{n}} · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
+      "seriesWon": "{{team}} vince la serie {{a}}–{{b}}",
+      "adminCalled": "{{name}} ha chiamato un admin",
+      "timedOut": "tempo scaduto"
+    },
+    "party": {
+      "inviteCopied": "Link di invito copiato",
+      "inviteFailed": "Impossibile copiare il link",
+      "leader": "leader",
+      "invite": "Invita",
+      "queue": "Cerca insieme",
+      "leaveQueue": "Esci dalla coda",
+      "searching": "Ricerca partita",
+      "leaderQueues": "Il leader avvia la ricerca"
+    }
   }
 }
