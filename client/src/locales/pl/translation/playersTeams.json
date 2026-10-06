@@ -419,5 +419,37 @@
     "emptyTitle": "No players found",
     "emptyDescription": "Nobody matches that search.",
     "showMore": "Show more ({{count}})"
+  },
+  "teamsDirectory": {
+    "title": "Teams",
+    "count_one": "{{count}} team",
+    "count_other": "{{count}} teams",
+    "yourTeam": "YOUR TEAM · OWNER",
+    "members_one": "{{count}} player",
+    "members_other": "{{count}} players",
+    "open": "Open",
+    "noTeamTitle": "No team yet?",
+    "noTeamBody": "Name it and pick a tag. One team plays every game here.",
+    "create": "Create a team",
+    "alsoOn": "You also play on",
+    "alsoOnNone": "No other teams yet.",
+    "role": {
+      "captain": "captain",
+      "member": "player"
+    },
+    "ownOne": "You can own one team and play on as many as you like.",
+    "searchPlaceholder": "Search teams or tags",
+    "loading": "Loading teams",
+    "loadError": "The teams could not be loaded.",
+    "emptyTitle": "No teams yet",
+    "emptyDescription": "Be the first to make one.",
+    "noMatchTitle": "No teams found",
+    "noMatchDescription": "No team matches that search.",
+    "nameLabel": "Team name",
+    "tagLabel": "Tag",
+    "tagHelp": "2 to 5 letters or digits, shown in brackets and on scoreboards.",
+    "cancel": "Cancel",
+    "createSubmit": "Create team",
+    "createFailed": "The team could not be made."
   }
 }

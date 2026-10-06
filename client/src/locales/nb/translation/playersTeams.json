@@ -411,5 +411,37 @@
     "emptyTitle": "Ingen spillere funnet",
     "emptyDescription": "Ingen passer med det søket.",
     "showMore": "Vis flere ({{count}})"
+  },
+  "teamsDirectory": {
+    "title": "Lag",
+    "count_one": "{{count}} lag",
+    "count_other": "{{count}} lag",
+    "yourTeam": "DITT LAG · EIER",
+    "members_one": "{{count}} spiller",
+    "members_other": "{{count}} spillere",
+    "open": "Åpne",
+    "noTeamTitle": "Ikke noe lag ennå?",
+    "noTeamBody": "Gi det et navn og en tagg. Ett lag spiller alle spillene her.",
+    "create": "Lag et lag",
+    "alsoOn": "Du spiller også på",
+    "alsoOnNone": "Ingen andre lag ennå.",
+    "role": {
+      "captain": "kaptein",
+      "member": "spiller"
+    },
+    "ownOne": "Du kan eie ett lag og spille på så mange du vil.",
+    "searchPlaceholder": "Søk etter lag eller tagg",
+    "loading": "Laster lag",
+    "loadError": "Lagene kunne ikke lastes.",
+    "emptyTitle": "Ingen lag ennå",
+    "emptyDescription": "Bli den første som lager et.",
+    "noMatchTitle": "Fant ingen lag",
+    "noMatchDescription": "Ingen lag passer til søket.",
+    "nameLabel": "Lagnavn",
+    "tagLabel": "Tagg",
+    "tagHelp": "2 til 5 bokstaver eller tall, vises i hakeparentes og på resultattavler.",
+    "cancel": "Avbryt",
+    "createSubmit": "Lag laget",
+    "createFailed": "Laget kunne ikke lages."
   }
 }

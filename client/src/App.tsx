@@ -34,6 +34,7 @@ import TournamentTeamsTab from './pages/TournamentTeamsTab';
 import Home from './pages/Home';
 import Browse from './pages/Browse';
 import PlayersDirectory from './pages/PlayersDirectory';
+import TeamsDirectory from './pages/TeamsDirectory';
 import Compatibility from './pages/Compatibility';
 import Play from './pages/Play';
 import PlayLobby from './pages/PlayLobby';
@@ -399,6 +400,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly={false}>
             <PlayersDirectory />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path={paths.browseTeams}
+        element={
+          <ProtectedRoute adminOnly={false}>
+            <TeamsDirectory />
           </ProtectedRoute>
         }
       />

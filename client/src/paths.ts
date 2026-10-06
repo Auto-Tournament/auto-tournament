@@ -35,6 +35,7 @@ export const paths = {
   browse: '/browse',
   /** Every player: search, sort by rating / matches / name (public, signed in). */
   browsePlayers: '/browse/players',
+  browseTeams: '/browse/teams',
   /** Matchmaking (experimental): find a match, party, the match room. */
   play: '/play',
   playLobby: '/play/:lobbyId',

@@ -250,8 +250,8 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
             : now.label === 'waiting_veto'
               ? t('nav.matchStatus.waitingVeto')
               : now.label === 'waiting_server'
-                  ? t('nav.matchStatus.waitingServer')
-                  : null;
+                ? t('nav.matchStatus.waitingServer')
+                : null;
       if (msg) {
         showSnackbar(msg, 'info');
       }
@@ -284,7 +284,9 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
     markMatchReadyAnnounced(matchSlug);
     showSnackbar(
       <span>
-        {matchName ? t('nav.matchStatus.matchReadyNamed', { match: matchName }) : t('nav.matchStatus.matchReady')}{' '}
+        {matchName
+          ? t('nav.matchStatus.matchReadyNamed', { match: matchName })
+          : t('nav.matchStatus.matchReady')}{' '}
         <Link
           component={RouterLink}
           to={playerProfilePath(playerSteamId)}
@@ -321,7 +323,14 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
   const { pathname } = location;
   const { available: matchmakingAvailable } = useMatchmaking();
   const playLink: SiteLink[] = matchmakingAvailable
-    ? [{ to: paths.play, label: t('nav.play'), testId: 'nav-play', current: pathname.startsWith(paths.play) }]
+    ? [
+        {
+          to: paths.play,
+          label: t('nav.play'),
+          testId: 'nav-play',
+          current: pathname.startsWith(paths.play),
+        },
+      ]
     : [];
   const browseLink: SiteLink = {
     to: paths.browse,
@@ -329,9 +338,9 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
     testId: 'nav-browse',
     current: pathname === paths.browse,
   };
-  // The current tournament's Teams and Standings tabs. 3.0 hosts one
-  // tournament (`CURRENT_TOURNAMENT_ID`); its page says so when it has none.
-  const teamsPath = tournamentTabPath(CURRENT_TOURNAMENT_ID, 'teams');
+  // The current tournament's Standings tab. 3.0 hosts one tournament
+  // (`CURRENT_TOURNAMENT_ID`); its page says so when it has none. Teams is the
+  // site-wide team list: a team is not tied to a tournament.
   const standingsPath = tournamentTabPath(CURRENT_TOURNAMENT_ID, 'standings');
   const siteLinks: SiteLink[] = showAdminLinks
     ? [
@@ -341,10 +350,20 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
         browseLink,
       ]
     : [
-        { to: paths.root, label: t('nav.home'), testId: 'nav-home', current: pathname === paths.root },
+        {
+          to: paths.root,
+          label: t('nav.home'),
+          testId: 'nav-home',
+          current: pathname === paths.root,
+        },
         ...playLink,
         browseLink,
-        { to: teamsPath, label: t('nav.teams'), testId: 'nav-teams', current: pathname === teamsPath },
+        {
+          to: paths.browseTeams,
+          label: t('nav.teams'),
+          testId: 'nav-teams',
+          current: pathname === paths.browseTeams,
+        },
         {
           to: paths.browsePlayers,
           label: t('nav.players'),
@@ -360,10 +379,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
       ];
 
   const ctaLabel =
-    playerSteamId &&
-    matchStatus !== 'none' &&
-    matchStatusLabel &&
-    ctaLabels[matchStatusLabel];
+    playerSteamId && matchStatus !== 'none' && matchStatusLabel && ctaLabels[matchStatusLabel];
 
   const signedIn = Boolean(playerSteamId || isAuthenticated);
 
@@ -384,13 +400,26 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
           whiteSpace: 'nowrap',
         }}
       >
-        <Box sx={{ height: 26, width: 26, flex: 'none', borderRadius: '7px', overflow: 'hidden', display: 'flex' }}>
+        <Box
+          sx={{
+            height: 26,
+            width: 26,
+            flex: 'none',
+            borderRadius: '7px',
+            overflow: 'hidden',
+            display: 'flex',
+          }}
+        >
           <AtIcon size={26} title="Auto Tournament" />
         </Box>
         <Box
           component="span"
           aria-hidden
-          sx={{ display: { xs: 'none', sm: 'inline' }, overflow: 'hidden', textOverflow: 'ellipsis' }}
+          sx={{
+            display: { xs: 'none', sm: 'inline' },
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
         >
           Auto Tournament
         </Box>
@@ -506,7 +535,16 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
             />
           ) : (
             // Signed out: the menu still holds the theme and language.
-            <Avatar sx={{ width: 32, height: 32, bgcolor: 'background.paper', color: 'text.secondary', border: 1, borderColor: 'divider' }}>
+            <Avatar
+              sx={{
+                width: 32,
+                height: 32,
+                bgcolor: 'background.paper',
+                color: 'text.secondary',
+                border: 1,
+                borderColor: 'divider',
+              }}
+            >
               <UserIcon size={20} />
             </Avatar>
           )}
