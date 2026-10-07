@@ -152,38 +152,40 @@
       "saveFailed": "Could not save the feature",
       "loadFailed": "Could not load experimental features",
       "envOverride": "Set by the {{env}} environment variable. Change it there.",
-      "features": {
-        "matchmaking": {
-          "label": "Matchmaking",
-          "description": "Find match, queue and accept, then play on a free server. CS2 only. Admin only while it is being built.",
-          "openLabel": "Open to players",
-          "openDescription": "Off: only admins can find matches, for testing. On: every signed-in player sees Play and can queue.",
-          "boardLabel": "Leaderboard visible to everyone",
-          "boardDescription": "Off: only signed-in players see the matchmaking leaderboard. On: anyone with the link.",
-          "windowTitle": "Search window",
-          "windowDescription": "How far apart in rating players may be. It starts at the first number, grows by the step every 30 seconds up to the cap, and after the last number of minutes anyone is matched (leave it empty for never).",
-          "window": {
-            "start": "Start (Elo)",
-            "step": "Step (Elo)",
-            "cap": "Cap (Elo)",
-            "uncappedAfterMinutes": "Anyone after (min)"
-          },
-          "windowSave": "Save",
-          "reservedTitle": "Servers kept free for matchmaking",
-          "reservedDescription": "Tournament matches go first, but leave this many free servers for matchmaking while players are searching. 0 = none.",
-          "reservedLabel": "Servers",
-          "modesTitle": "Modes",
-          "modesDescription": "What players can search. 1v1 is an aim duel, and lets you test matchmaking with two accounts.",
-          "poolsTitle": "Maps per mode",
-          "poolsDescription": "The map pool each mode picks from (Maps page; Workshop maps work too). The match room shows a roulette over the pool before revealing the map.",
-          "poolDefault": {
-            "5v5": "Default: Active Duty",
-            "2v2": "Default: every wingman map",
-            "1v1": "Default: Active Duty"
-          }
-        }
-      },
+      "features": {},
       "short": "Nog in de maak: standaard uit, alleen admins zien ze."
+    },
+    "matchmaking": {
+      "openLabel": "Open to players",
+      "openDescription": "Off: only admins can find matches, for testing. On: every signed-in player sees Play and can queue.",
+      "boardLabel": "Leaderboard visible to everyone",
+      "boardDescription": "Off: only signed-in players see the matchmaking leaderboard. On: anyone with the link.",
+      "windowTitle": "Search window",
+      "windowDescription": "How far apart in rating players may be. It starts at the first number, grows by the step every 30 seconds up to the cap, and after the last number of minutes anyone is matched (leave it empty for never).",
+      "window": {
+        "start": "Start (Elo)",
+        "step": "Step (Elo)",
+        "cap": "Cap (Elo)",
+        "uncappedAfterMinutes": "Anyone after (min)"
+      },
+      "reservedTitle": "Servers kept free for matchmaking",
+      "reservedDescription": "Tournament matches go first, but leave this many free servers for matchmaking while players are searching. 0 = none.",
+      "reservedLabel": "Servers",
+      "modesTitle": "Modes",
+      "modesDescription": "What players can search. 1v1 is an aim duel, and lets you test matchmaking with two accounts.",
+      "poolsTitle": "Maps per mode",
+      "poolsDescription": "The map pool each mode picks from (Maps page; Workshop maps work too). The match room shows a roulette over the pool before revealing the map.",
+      "poolDefault": {
+        "5v5": "Default: Active Duty",
+        "2v2": "Default: every wingman map",
+        "1v1": "Default: Active Duty"
+      },
+      "save": "Save",
+      "title": "Matchmaking",
+      "short": "Find match, queue and accept, then play on a free server. CS2 only. Admin only while it is being built.",
+      "saved": "Saved",
+      "saveFailed": "Could not save the matchmaking settings",
+      "loadFailed": "Could not load the matchmaking settings"
     },
     "groups": {
       "platform": "Platform"

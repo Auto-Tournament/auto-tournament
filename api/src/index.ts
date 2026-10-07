@@ -616,8 +616,7 @@ process.on('uncaughtException', (err) => {
       // The daily license check-in: only with a license key saved, in the
       // background, never blocking anything (services/license/checkin.ts).
       startLicenseCheckin();
-      // Matchmaking's 2-second loop (services/matchmaking). Idle while the
-      // experimental feature is off; cancels lobbies a restart left open.
+      // Matchmaking's 2-second loop (services/matchmaking). Cancels lobbies a restart left open.
       matchmakingService.start().catch((error) => {
         log.warn('Failed to start matchmaking', { error });
       });

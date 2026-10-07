@@ -528,7 +528,7 @@
     },
     {
       "name": "Experimental features",
-      "description": "Work in progress that ships dark: list the experimental features and turn one on or off. Off by default; an environment variable (e.g. EXPERIMENTAL_MATCHMAKING=1) overrides the admin toggle. Admin only; writes must be same-site JSON."
+      "description": "Work in progress that ships dark: list the experimental features and turn one on or off. Off by default; an environment variable overrides the admin toggle. Empty while no feature is experimental. Admin only; writes must be same-site JSON."
     },
     {
       "name": "Fleet",
@@ -628,7 +628,7 @@
     },
     {
       "name": "Matchmaking",
-      "description": "Experimental (docs/design/matchmaking.md). 404 unless the matchmaking feature is on; admin only while it is being built."
+      "description": "Parties, the queue, matches and the matchmaking leaderboard (docs/design/matchmaking.md). On by default for signed-in players; an admin can limit it to admins."
     },
     {
       "name": "MatchZy Enhanced",
@@ -7278,7 +7278,7 @@
         "tags": [
           "Matchmaking"
         ],
-        "summary": "Players to review for thumbs down (experimental)",
+        "summary": "Players to review for thumbs down",
         "description": "Admin. Players with a thumbs down from 5 or more different voters in\nthe last 30 days; voters in the same party in a match count as one.\nWith the reasons given.\n",
         "responses": {
           "200": {
@@ -7300,7 +7300,7 @@
         "tags": [
           "Matchmaking"
         ],
-        "summary": "Clear a player's matchmaking cooldown (experimental)",
+        "summary": "Clear a player's matchmaking cooldown",
         "description": "Admin, same-site JSON.",
         "parameters": [
           {
@@ -7332,7 +7332,7 @@
         "tags": [
           "Matchmaking"
         ],
-        "summary": "Add or remove XP by hand (experimental)",
+        "summary": "Add or remove XP by hand",
         "description": "Admin, same-site JSON. Body `{ amount, note }`; the total never goes below 0.",
         "parameters": [
           {
@@ -7367,7 +7367,7 @@
         "tags": [
           "Matchmaking"
         ],
-        "summary": "The live queue (experimental)",
+        "summary": "The live queue",
         "description": "Admin. Parties searching (and how long), open lobbies, and penalties from the last 24 hours.",
         "responses": {
           "200": {
@@ -7389,7 +7389,7 @@
         "tags": [
           "Matchmaking"
         ],
-        "summary": "Matchmaking settings (experimental)",
+        "summary": "Matchmaking settings",
         "description": "Admin. `openToPlayers` lets every signed-in player use matchmaking.",
         "requestBody": {
           "content": {
@@ -7428,7 +7428,7 @@
         "tags": [
           "Matchmaking"
         ],
-        "summary": "The matchmaking leaderboard (experimental)",
+        "summary": "The matchmaking leaderboard",
         "description": "Players with at least 10 rated matches in the last 30 days, best\nconservative rating first (top 100). Signed-in players only, unless\nan admin made it public.\n",
         "parameters": [
           {
@@ -7455,7 +7455,7 @@
         "tags": [
           "Matchmaking"
         ],
-        "summary": "The match room (experimental)",
+        "summary": "The match room",
         "description": "Only a player in that match. Teams with names and who accepted, the map, and the match once it exists.",
         "parameters": [
           {
@@ -7482,7 +7482,7 @@
         "tags": [
           "Matchmaking"
         ],
-        "summary": "Accept a found match (experimental)",
+        "summary": "Accept a found match",
         "description": "Same-site JSON. Only a player in that match, before the deadline.",
         "parameters": [
           {
@@ -7512,7 +7512,7 @@
         "tags": [
           "Matchmaking"
         ],
-        "summary": "Decline a found match (experimental)",
+        "summary": "Decline a found match",
         "description": "Same-site JSON. The caller gets a cooldown and their party leaves the\nqueue; every other party goes back to the front of the queue.\n",
         "parameters": [
           {
@@ -7542,7 +7542,7 @@
         "tags": [
           "Matchmaking"
         ],
-        "summary": "Thumbs up or down for a player of the same match (experimental)",
+        "summary": "Thumbs up or down for a player of the same match",
         "description": "Same-site JSON, within 24 hours of the match ending. Body `{ value: 1, tag? }`\n(tag: friendly, team_player, leader, good_comms) or `{ value: -1, tag }`\n(tag: toxic, griefing, afk, other). Sending again changes it.\n",
         "parameters": [
           {
@@ -7583,7 +7583,7 @@
         "tags": [
           "Matchmaking"
         ],
-        "summary": "The post-match screen (experimental)",
+        "summary": "The post-match screen",
         "description": "Only a player of that match. Map scores, the scoreboard, the caller's rating change, XP breakdown and level, and the commends they gave.",
         "parameters": [
           {
@@ -7610,7 +7610,7 @@
         "tags": [
           "Matchmaking"
         ],
-        "summary": "My party, search, match and cooldown (experimental)",
+        "summary": "My party, search, match and cooldown",
         "description": "404 unless matchmaking is on. A signed-in player; admins only until\nmatchmaking is open to players.\n",
         "responses": {
           "200": {
@@ -7630,7 +7630,7 @@
         "tags": [
           "Matchmaking"
         ],
-        "summary": "Create a party (experimental)",
+        "summary": "Create a party",
         "description": "Same-site JSON. Returns the caller's party (a new one with them as leader, or the one they are in) and its invite code.",
         "requestBody": {
           "content": {
@@ -7662,7 +7662,7 @@
         "tags": [
           "Matchmaking"
         ],
-        "summary": "Join a party by invite code (experimental)",
+        "summary": "Join a party by invite code",
         "description": "Same-site JSON. Leaves the caller's current party first.",
         "requestBody": {
           "content": {
@@ -7696,7 +7696,7 @@
         "tags": [
           "Matchmaking"
         ],
-        "summary": "Leave the party (experimental)",
+        "summary": "Leave the party",
         "description": "Same-site JSON. The leader leaving disbands the party. Stops a search.",
         "responses": {
           "200": {
@@ -7713,7 +7713,7 @@
         "tags": [
           "Matchmaking"
         ],
-        "summary": "A player's matchmaking matches (experimental)",
+        "summary": "A player's matchmaking matches",
         "description": "Newest first, with map, score, result and the rating before and after.",
         "parameters": [
           {
@@ -7746,7 +7746,7 @@
         "tags": [
           "Matchmaking"
         ],
-        "summary": "A player's level, XP and commends (experimental)",
+        "summary": "A player's level, XP and commends",
         "description": "404 while matchmaking is off. Level, XP into the level, thumbs up and down totals and the most given tags; never who gave them.",
         "parameters": [
           {
@@ -7770,7 +7770,7 @@
         "tags": [
           "Matchmaking"
         ],
-        "summary": "Start searching (experimental)",
+        "summary": "Start searching",
         "description": "Same-site JSON. Party leader only (a solo player gets a party of one). Refused while a party member is on cooldown.",
         "requestBody": {
           "content": {
@@ -7803,7 +7803,7 @@
         "tags": [
           "Matchmaking"
         ],
-        "summary": "Stop searching (experimental)",
+        "summary": "Stop searching",
         "description": "Same-site JSON. Party leader only.",
         "responses": {
           "200": {
@@ -7820,14 +7820,11 @@
         "tags": [
           "Matchmaking"
         ],
-        "summary": "Matchmaking status (experimental)",
-        "description": "404 unless the experimental `matchmaking` feature is on. Admin only.\nWhich modes exist and whether players may use it yet.\n",
+        "summary": "Matchmaking status",
+        "description": "Which modes exist and whether players may use it (on unless an admin\nclosed it).\n",
         "responses": {
           "200": {
-            "description": "Matchmaking is on"
-          },
-          "404": {
-            "description": "Matchmaking is off"
+            "description": "Matchmaking status"
           }
         },
         "security": [

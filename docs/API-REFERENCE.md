@@ -870,7 +870,7 @@ Teams API for integrators: idempotent upsert of teams by the integrator's own ex
 
 ### Experimental features
 
-Work in progress that ships dark: list the experimental features and turn one on or off. Off by default; an environment variable (e.g. EXPERIMENTAL_MATCHMAKING=1) overrides the admin toggle. Admin only; writes must be same-site JSON.
+Work in progress that ships dark: list the experimental features and turn one on or off. Off by default; an environment variable overrides the admin toggle. Empty while no feature is experimental. Admin only; writes must be same-site JSON.
 
 | Method | Path | Auth |
 | --- | --- | --- |
@@ -879,7 +879,7 @@ Work in progress that ships dark: list the experimental features and turn one on
 
 ### Matchmaking
 
-Experimental (docs/design/matchmaking.md). 404 unless the matchmaking feature is on; admin only while it is being built.
+Parties, the queue, matches and the matchmaking leaderboard (docs/design/matchmaking.md). On by default for signed-in players; an admin can limit it to admins.
 
 | Method | Path | Auth |
 | --- | --- | --- |

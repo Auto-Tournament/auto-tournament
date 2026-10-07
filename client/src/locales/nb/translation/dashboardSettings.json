@@ -252,38 +252,40 @@
       "saveFailed": "Kunne ikke lagre funksjonen",
       "loadFailed": "Kunne ikke hente eksperimentelle funksjoner",
       "envOverride": "Styrt av miljøvariabelen {{env}}. Endre den der.",
-      "features": {
-        "matchmaking": {
-          "label": "Matchmaking",
-          "description": "Finn kamp, stå i kø og godta, og spill på en ledig server. Bare CS2. Bare for admins mens det bygges.",
-          "openLabel": "Åpen for spillere",
-          "openDescription": "Av: bare administratorer kan finne kamper, for testing. På: alle innloggede spillere ser Spill og kan stå i kø.",
-          "boardLabel": "Topplisten er synlig for alle",
-          "boardDescription": "Av: bare innloggede spillere ser topplisten. På: alle med lenken.",
-          "windowTitle": "Søkevindu",
-          "windowDescription": "Hvor langt fra hverandre i rating spillere kan være. Det starter på det første tallet, øker med steget hvert 30. sekund opp til taket, og etter det siste antallet minutter blir hvem som helst matchet (la feltet stå tomt for aldri).",
-          "window": {
-            "start": "Start (Elo)",
-            "step": "Steg (Elo)",
-            "cap": "Tak (Elo)",
-            "uncappedAfterMinutes": "Alle etter (min)"
-          },
-          "windowSave": "Lagre",
-          "reservedTitle": "Servere holdt ledige for matchmaking",
-          "reservedDescription": "Turneringskamper går først, men lar så mange ledige servere stå til matchmaking mens spillere søker. 0 = ingen.",
-          "reservedLabel": "Servere",
-          "modesTitle": "Moduser",
-          "modesDescription": "Hva spillere kan søke etter. 1v1 er en siktduell, og lar deg teste matchmaking med to kontoer.",
-          "poolsTitle": "Kart per modus",
-          "poolsDescription": "Kartsamlingen hver modus velger fra (Kart-siden; Workshop-kart fungerer også). Kamprommet viser et lykkehjul over samlingen før kartet vises.",
-          "poolDefault": {
-            "5v5": "Standard: Active Duty",
-            "2v2": "Standard: alle wingman-kart",
-            "1v1": "Standard: Active Duty"
-          }
-        }
-      },
+      "features": {},
       "short": "Under arbeid: av som standard, bare administratorer ser dem."
+    },
+    "matchmaking": {
+      "openLabel": "Åpen for spillere",
+      "openDescription": "På: alle innloggede spillere ser Spill og kan stå i kø. Av: bare administratorer kan finne kamper.",
+      "boardLabel": "Topplisten er synlig for alle",
+      "boardDescription": "Av: bare innloggede spillere ser topplisten. På: alle med lenken.",
+      "windowTitle": "Søkevindu",
+      "windowDescription": "Hvor langt fra hverandre i rating spillere kan være. Det starter på det første tallet, øker med steget hvert 30. sekund opp til taket, og etter det siste antallet minutter blir hvem som helst matchet (la feltet stå tomt for aldri).",
+      "window": {
+        "start": "Start (Elo)",
+        "step": "Steg (Elo)",
+        "cap": "Tak (Elo)",
+        "uncappedAfterMinutes": "Alle etter (min)"
+      },
+      "reservedTitle": "Servere holdt ledige for matchmaking",
+      "reservedDescription": "Turneringskamper går først, men lar så mange ledige servere stå til matchmaking mens spillere søker. 0 = ingen.",
+      "reservedLabel": "Servere",
+      "modesTitle": "Moduser",
+      "modesDescription": "Hva spillere kan søke etter. Alle moduser er på som standard. 1v1 er en siktduell.",
+      "poolsTitle": "Kart per modus",
+      "poolsDescription": "Kartsamlingen hver modus velger fra (Kart-siden; Workshop-kart fungerer også). Kamprommet viser et lykkehjul over samlingen før kartet vises.",
+      "poolDefault": {
+        "5v5": "Standard: Active Duty",
+        "2v2": "Standard: alle wingman-kart",
+        "1v1": "Standard: Active Duty"
+      },
+      "save": "Lagre",
+      "title": "Matchmaking",
+      "short": "Alltid på. Spillere finner kamp, står i kø og godtar, og spiller på en ledig server.",
+      "saved": "Lagret",
+      "saveFailed": "Kunne ikke lagre matchmaking-innstillingene",
+      "loadFailed": "Kunne ikke hente matchmaking-innstillingene"
     },
     "groups": {
       "platform": "Plattform"

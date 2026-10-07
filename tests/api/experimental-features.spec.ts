@@ -1,16 +1,18 @@
 import { test, expect } from '@playwright/test';
 import {
   EXPERIMENTAL_FEATURES,
-  findExperimentalFeature,
   resolveExperimentalFeature,
+  type ExperimentalFeature,
 } from '../../api/src/services/experimentalFeatures';
 import { CORE_SETTINGS } from '../../api/src/services/settingsService';
+import { DEFAULT_MODES, MODES, parseEnabledModes } from '../../api/src/services/matchmaking/rules';
 import { signInViaRequest } from '../helpers/auth';
 
 /**
  * Experimental features (services/experimentalFeatures): off by default, an
  * admin toggle stored as a setting, an environment override that wins both
- * ways. While `matchmaking` is off, /api/matchmaking answers 404 to everyone.
+ * ways. The list is empty: matchmaking graduated and is always on, with every
+ * mode enabled when the admin never chose.
  *
  * The first part is pure; the second runs against the server.
  *
@@ -18,38 +20,42 @@ import { signInViaRequest } from '../helpers/auth';
  * @tag settings
  */
 
-const matchmaking = findExperimentalFeature('matchmaking')!;
 const json = { 'Content-Type': 'application/json' };
 
+// The framework is generic; exercise it with a made-up feature.
+const sample: ExperimentalFeature = {
+  id: 'sample',
+  settingKey: 'experimental_matchmaking',
+  env: 'EXPERIMENTAL_SAMPLE',
+};
+
 test.describe('experimental features: resolution', () => {
-  test('matchmaking is the first feature, stored under a core setting', () => {
-    expect(EXPERIMENTAL_FEATURES[0].id).toBe('matchmaking');
-    expect(matchmaking.env).toBe('EXPERIMENTAL_MATCHMAKING');
+  test('no feature is experimental right now; stored keys stay out of PUT /api/settings', () => {
+    expect(EXPERIMENTAL_FEATURES).toHaveLength(0);
     const coreKeys: string[] = CORE_SETTINGS.map((definition) => definition.key);
     for (const feature of EXPERIMENTAL_FEATURES) {
       expect(coreKeys).toContain(feature.settingKey);
-      // Never settable through PUT /api/settings.
       expect(CORE_SETTINGS.find((d) => d.key === feature.settingKey)?.field).toBeUndefined();
     }
   });
 
   test('off by default', () => {
-    expect(resolveExperimentalFeature(matchmaking, null, {})).toMatchObject({
+    expect(resolveExperimentalFeature(sample, null, {})).toMatchObject({
       enabled: false,
       source: 'default',
     });
-    expect(resolveExperimentalFeature(matchmaking, '  ', {})).toMatchObject({
+    expect(resolveExperimentalFeature(sample, '  ', {})).toMatchObject({
       enabled: false,
       source: 'default',
     });
   });
 
   test('the stored setting decides without an override', () => {
-    expect(resolveExperimentalFeature(matchmaking, '1', {})).toMatchObject({
+    expect(resolveExperimentalFeature(sample, '1', {})).toMatchObject({
       enabled: true,
       source: 'setting',
     });
-    expect(resolveExperimentalFeature(matchmaking, '0', {})).toMatchObject({
+    expect(resolveExperimentalFeature(sample, '0', {})).toMatchObject({
       enabled: false,
       source: 'setting',
     });
@@ -57,28 +63,27 @@ test.describe('experimental features: resolution', () => {
 
   test('the environment wins over the setting, both ways', () => {
     expect(
-      resolveExperimentalFeature(matchmaking, null, { EXPERIMENTAL_MATCHMAKING: '1' })
+      resolveExperimentalFeature(sample, null, { EXPERIMENTAL_SAMPLE: '1' })
     ).toMatchObject({ enabled: true, source: 'env' });
     expect(
-      resolveExperimentalFeature(matchmaking, '0', { EXPERIMENTAL_MATCHMAKING: 'true' })
-    ).toMatchObject({ enabled: true, source: 'env' });
-    expect(
-      resolveExperimentalFeature(matchmaking, '1', { EXPERIMENTAL_MATCHMAKING: '0' })
+      resolveExperimentalFeature(sample, '1', { EXPERIMENTAL_SAMPLE: '0' })
     ).toMatchObject({ enabled: false, source: 'env' });
     // An empty variable is no override.
     expect(
-      resolveExperimentalFeature(matchmaking, '1', { EXPERIMENTAL_MATCHMAKING: '' })
+      resolveExperimentalFeature(sample, '1', { EXPERIMENTAL_SAMPLE: '' })
     ).toMatchObject({ enabled: true, source: 'setting' });
+  });
+
+  test('matchmaking modes: every mode is on when the admin never chose', () => {
+    expect(MODES).toEqual(['5v5', '2v2', '1v1']);
+    expect(DEFAULT_MODES).toEqual(MODES);
+    expect(parseEnabledModes(null)).toEqual(MODES);
+    expect(parseEnabledModes('["1v1"]')).toEqual(['1v1']);
   });
 });
 
 test.describe.serial('experimental features: HTTP', () => {
-  test.skip(
-    Boolean(process.env.EXPERIMENTAL_MATCHMAKING),
-    'EXPERIMENTAL_MATCHMAKING overrides the toggle in this environment'
-  );
-
-  test('admin only', async ({ playwright }) => {
+  test('admin only; the list is empty; nothing to toggle', async ({ request, playwright }) => {
     const anon = await playwright.request.newContext({
       baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069',
     });
@@ -88,48 +93,31 @@ test.describe.serial('experimental features: HTTP', () => {
         .status()
     ).toBe(401);
     await anon.dispose();
-  });
 
-  test('toggling matchmaking opens and closes /api/matchmaking', async ({ request, playwright }) => {
     expect(await signInViaRequest(request)).toBe(true);
-
-    const off = await request.put('/api/experimental/matchmaking', {
-      data: { enabled: false },
-      headers: json,
-    });
-    expect(off.status()).toBe(200);
-    expect((await off.json()).feature).toMatchObject({ enabled: false, source: 'setting' });
-    expect((await request.get('/api/matchmaking/status')).status()).toBe(404);
-
     const list = await (await request.get('/api/experimental')).json();
-    expect(list.features.map((f: { id: string }) => f.id)).toContain('matchmaking');
-
+    expect(list.features).toEqual([]);
     expect(
-      (await request.put('/api/experimental/matchmaking', { data: { enabled: 'yes' }, headers: json }))
-        .status()
-    ).toBe(400);
-    expect(
-      (await request.put('/api/experimental/nope', { data: { enabled: true }, headers: json }))
+      (await request.put('/api/experimental/matchmaking', { data: { enabled: true }, headers: json }))
         .status()
     ).toBe(404);
+  });
 
-    const on = await request.put('/api/experimental/matchmaking', {
-      data: { enabled: true },
-      headers: json,
-    });
-    expect((await on.json()).feature).toMatchObject({ enabled: true, source: 'setting' });
-    const status = await request.get('/api/matchmaking/status');
-    expect(status.status()).toBe(200);
-    expect((await status.json()).enabled).toBe(true);
+  test('matchmaking needs no setting: status works and lists every mode', async ({ request, playwright }) => {
+    expect(await signInViaRequest(request)).toBe(true);
+    const res = await request.get('/api/matchmaking/status');
+    expect(res.status()).toBe(200);
+    const status = await res.json();
+    expect(status.enabled).toBe(true);
+    expect(status.allModes).toEqual(['5v5', '2v2', '1v1']);
+    expect(Array.isArray(status.modes)).toBe(true);
+    expect(status.modes.length).toBeGreaterThan(0);
+    expect(typeof status.openToPlayers).toBe('boolean');
 
-    // On, but still admin only while it is being built.
     const anon = await playwright.request.newContext({
       baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069',
     });
     expect((await anon.get('/api/matchmaking/status')).status()).toBe(401);
     await anon.dispose();
-
-    await request.put('/api/experimental/matchmaking', { data: { enabled: false }, headers: json });
-    expect((await request.get('/api/matchmaking/status')).status()).toBe(404);
   });
 });

@@ -14,7 +14,6 @@ import { getGameRatings } from '../gameRatings';
 import { randomInt, randomUUID } from 'crypto';
 import { db } from '../../config/database';
 import { log } from '../../utils/logger';
-import { isExperimentalFeatureEnabled } from '../experimentalFeatures';
 import { hasIntegration, getIntegration } from '../../integrations/registry';
 import { matchService } from '../matchService';
 import { resolveTournamentId } from '../../utils/tournamentRow';
@@ -1059,12 +1058,12 @@ export class MatchmakingService {
 
   /**
    * How many free servers a tournament match must leave for matchmaking right
-   * now: the admin's number while the feature is on and someone is searching,
+   * now: the admin's number while someone is searching,
    * answering or waiting for a server; else 0.
    */
   async serversReservedForMatchmaking(): Promise<number> {
     const reserved = parseReservedServers(await db.getAppSettingAsync(MM_RESERVED_SERVERS));
-    if (reserved === 0 || !(await isExperimentalFeatureEnabled('matchmaking'))) return 0;
+    if (reserved === 0) return 0;
     const waiting = await db.queryOneAsync<{ n: number | string }>(
       `SELECT (SELECT COUNT(*) FROM mm_queue_entries)
             + (SELECT COUNT(*) FROM mm_lobbies l JOIN matches m ON m.slug = l.match_slug
@@ -1083,9 +1082,7 @@ export class MatchmakingService {
     });
     if (this.timer) return;
     this.timer = setInterval(() => {
-      void isExperimentalFeatureEnabled('matchmaking')
-        .then((on) => (on ? this.tick() : undefined))
-        .catch((error) => log.warn('[MATCHMAKING] loop failed', { error: (error as Error).message }));
+      void this.tick().catch((error) => log.warn('[MATCHMAKING] loop failed', { error: (error as Error).message }));
     }, LOOP_MS);
     this.timer.unref?.();
   }
