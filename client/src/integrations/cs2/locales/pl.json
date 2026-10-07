@@ -1896,5 +1896,13 @@
       "wallbang": "wallbang",
       "headshot": "headshot"
     }
+  },
+  "highlights": {
+    "title": "Highlights",
+    "queued_one": "{{count}} more on the way",
+    "queued_other": "{{count}} more on the way",
+    "pending": "Waiting for the recorder",
+    "recording": "Recording…",
+    "mapN": "Map {{n}}"
   }
 }
