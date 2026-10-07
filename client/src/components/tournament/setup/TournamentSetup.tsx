@@ -684,8 +684,8 @@ export function TournamentSetup(props: TournamentSetupProps) {
             onTeamsChange={(next) => void changeTeams(next)}
             onCreateTeam={() => setTeamModalOpen(true)}
             onImportTeams={() => setTeamImportModalOpen(true)}
-            onAddServer={() => setServerModalOpen(true)}
-            onBatchAddServers={() => setBatchServerModalOpen(true)}
+            onAddServer={AddResourceDialog ? () => setServerModalOpen(true) : undefined}
+            onBatchAddServers={BatchResourceDialog ? () => setBatchServerModalOpen(true) : undefined}
           />
           </Box>
         );

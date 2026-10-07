@@ -2044,5 +2044,71 @@
     },
     "readyIn": "ready in about {{minutes}} min",
     "matchReelRecording": "Match reel · being recorded"
+  },
+  "serversBoard": {
+    "addFirstServers": "Add the first servers",
+    "addHelp": "On {{name}}. New servers get Ready Up and connect to this platform on their own; they show up below as they are made.",
+    "autoUpdates": "Automatic updates",
+    "close": "Close",
+    "cs2UpToDate": "CS2 up to date",
+    "cs2UpdateAvailable": "CS2 · update available",
+    "csmOnIt": "csm is on it",
+    "deleteLastOnly": "csm deletes the last server on a machine only, so the numbers stay in order.",
+    "details": "Details and activity",
+    "errors": {
+      "command": "The command failed"
+    },
+    "facts": {
+      "link": "Platform link",
+      "match": "Match",
+      "ports": "Ports",
+      "restarts": "Restarts (24 h)",
+      "since": "Running since",
+      "state": "State",
+      "usage": "CPU · memory"
+    },
+    "fleetSettings": "Fleet settings",
+    "fleetSettingsAbout": "Starting and stopping servers on their own, the fleet link, what goes out to every server, and failover.",
+    "health": "Server health",
+    "linkNone": "Not enrolled yet",
+    "linkOffline": "Not connected",
+    "linkOnline": "Connected",
+    "machineOffline": "Its machine is offline",
+    "mapOf": "Map {{n}} of {{count}}",
+    "matchHint": "A match is on this server: stopping or restarting it asks for a reason, and failover can move the match first.",
+    "newServer": "New server {{n}}",
+    "notAnswering": "Not answering",
+    "openMatch": "Open the match",
+    "other": {
+      "about": "Added by address, or enrolled on their own. They keep working; new servers are made on a machine.",
+      "disabled": "Disabled",
+      "title": "Servers not on a machine"
+    },
+    "state": {
+      "creating": "Creating…",
+      "deleting": "Deleting…",
+      "free": "Free",
+      "match": "Match",
+      "offline": "Down",
+      "restarting": "Restarting…",
+      "starting": "Starting…",
+      "stopped": "Stopped",
+      "stopping": "Stopping…",
+      "updating": "Updating…",
+      "veto": "Veto",
+      "warmup": "Warmup"
+    },
+    "stoppedLine": "Starts when a match needs it",
+    "summary": "All servers",
+    "update": "Update",
+    "updateEllipsis": "Update…",
+    "updatingWhat": "Updating {{what}}",
+    "versions": "Versions and updates",
+    "waitingForCsm": "Waiting for csm",
+    "createN_one": "Create {{count}} server",
+    "createN_other": "Create {{count}} servers",
+    "restarts_one": "{{count}} restart in 24 h",
+    "restarts_other": "{{count}} restarts in 24 h",
+    "offlineFor": "Offline for {{time}}"
   }
 }
