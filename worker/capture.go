@@ -178,6 +178,9 @@ func (r *recorder) launchGame(ctx context.Context, logPath string) (*game, error
 		conn.Close()
 		return nil, fmt.Errorf("something already listens on port %d (another CS2?); stop it first", netconPort)
 	}
+	if err := awaitSteam(ctx, 3*time.Minute); err != nil {
+		return nil, err
+	}
 	w, h := strconv.Itoa(r.width), strconv.Itoa(r.height)
 	args := []string{"--backend", "headless", "-W", w, "-H", h, "-w", w, "-h", h, "-r", "120", "--"}
 	if r.sniper != "" {
