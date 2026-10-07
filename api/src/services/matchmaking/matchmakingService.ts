@@ -10,6 +10,7 @@
  * back to searching. Every change runs through one in-process lock, so the
  * loop and the API never interleave.
  */
+import { getGameRatings } from '../gameRatings';
 import { randomInt, randomUUID } from 'crypto';
 import { db } from '../../config/database';
 import { log } from '../../utils/logger';
@@ -664,15 +665,12 @@ export class MatchmakingService {
     for (const r of stored) out.set(r.player_id, { mu: Number(r.mu), sigma: Number(r.sigma), games: Number(r.games), wins: Number(r.wins) });
     const missing = players.filter((p) => !out.has(p));
     if (missing.length > 0) {
-      const base = await db.queryAsync<{ id: string; openskill_mu: number | null; openskill_sigma: number | null }>(
-        `SELECT id, openskill_mu, openskill_sigma FROM players WHERE id IN (${missing.map(() => '?').join(', ')})`,
-        missing
-      );
-      const byId = new Map(base.map((b) => [b.id, b]));
+      // Seeded from the player's CS2 tournament rating.
+      const byId = await getGameRatings(missing, 'cs2');
       for (const p of missing) {
         const b = byId.get(p);
-        const mu = b?.openskill_mu != null ? Number(b.openskill_mu) : 25;
-        const sigma = Math.max(SEED_SIGMA, b?.openskill_sigma != null ? Number(b.openskill_sigma) : DEFAULT_SIGMA);
+        const mu = b ? b.mu : 25;
+        const sigma = Math.max(SEED_SIGMA, b ? b.sigma : DEFAULT_SIGMA);
         out.set(p, { mu, sigma, games: 0, wins: 0 });
       }
     }

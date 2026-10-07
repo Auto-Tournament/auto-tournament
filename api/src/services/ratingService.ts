@@ -3,7 +3,6 @@
  * Handles OpenSkill rating calculations and Skill Rating conversions
  */
 
-import { rating, type Rating } from 'openskill';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { eloTemplateService } from './eloTemplateService';
@@ -13,6 +12,7 @@ import type { DbTournamentRow } from '../types/database.types';
 import { toIntegrationTournament } from '../utils/matchIntegration';
 import { tournamentRowToResponse } from '../utils/tournamentRow';
 import { settingsService } from './settingsService';
+import { getGameRatings, ratingGame, setGameRating } from './gameRatings';
 import {
   MAX_DISPLAY_ELO,
   MIN_DISPLAY_ELO,
@@ -26,6 +26,33 @@ import {
 export { eloToOpenSkill, openSkillToDisplayElo };
 
 /**
+ * Put each player's rating, per game, back to where it stood before the
+ * earliest of these history rows. Returns the rollbacks made.
+ */
+async function restoreRatings(rows: Array<RatingHistoryRow & { game: string | null }>) {
+  const byGame = new Map<string, RatingHistoryRow[]>();
+  for (const row of rows) {
+    const game = ratingGame(row.game);
+    byGame.set(game, [...(byGame.get(game) ?? []), row]);
+  }
+  const all = [];
+  for (const [game, gameRows] of byGame) {
+    const rollbacks = ratingRollbacks(gameRows);
+    const current = await getGameRatings(rollbacks.map((rb) => rb.playerId), game);
+    for (const rb of rollbacks) {
+      await setGameRating(rb.playerId, game, {
+        elo: rb.elo,
+        mu: rb.mu,
+        sigma: rb.sigma,
+        matchCount: (current.get(rb.playerId)?.matchCount ?? rb.matches) - rb.matches,
+      });
+    }
+    all.push(...rollbacks);
+  }
+  return all;
+}
+
+/**
  * Reset only ("play it again"): undo a tournament's rating changes and remove
  * that run's history, before its matches are deleted. Without the rollback
  * every reset run stacked on the last (QA 2.4.11: a player seeded at 1500 sat
@@ -33,25 +60,15 @@ export { eloToOpenSkill, openSkillToDisplayElo };
  * the history rows just lose their match link (ON DELETE SET NULL).
  */
 export async function discardTournamentRatings(tournamentId: number): Promise<number> {
-  const rows = await db.queryAsync<RatingHistoryRow>(
+  const rows = await db.queryAsync<RatingHistoryRow & { game: string | null }>(
     `SELECT prh.id, prh.player_id, prh.match_slug, prh.elo_before, prh.mu_before,
-            prh.sigma_before, prh.created_at
+            prh.sigma_before, prh.created_at, COALESCE(prh.game, m.game) AS game
        FROM player_rating_history prh
        JOIN matches m ON m.slug = prh.match_slug
       WHERE m.tournament_id = ?`,
     [tournamentId]
   );
-  const rollbacks = ratingRollbacks(rows);
-  const now = Math.floor(Date.now() / 1000);
-  for (const rb of rollbacks) {
-    await db.runAsync(
-      `UPDATE players
-          SET current_elo = ?, openskill_mu = ?, openskill_sigma = ?,
-              match_count = GREATEST(0, match_count - ?), updated_at = ?
-        WHERE id = ?`,
-      [rb.elo, rb.mu, rb.sigma, rb.matches, now, rb.playerId]
-    );
-  }
+  const rollbacks = await restoreRatings(rows);
   await db.runAsync(
     `DELETE FROM player_rating_history
       WHERE match_slug IN (SELECT slug FROM matches WHERE tournament_id = ?)`,
@@ -81,10 +98,12 @@ export async function discardTournamentRatings(tournamentId: number): Promise<nu
  * Returns the number of players rolled back, or `null` when it refused.
  */
 export async function discardMatchRatings(matchSlug: string): Promise<number | null> {
-  const rows = await db.queryAsync<RatingHistoryRow>(
-    `SELECT id, player_id, match_slug, elo_before, mu_before, sigma_before, created_at
-       FROM player_rating_history
-      WHERE match_slug = ?`,
+  const rows = await db.queryAsync<RatingHistoryRow & { game: string | null }>(
+    `SELECT prh.id, prh.player_id, prh.match_slug, prh.elo_before, prh.mu_before, prh.sigma_before,
+            prh.created_at, COALESCE(prh.game, m.game) AS game
+       FROM player_rating_history prh
+       LEFT JOIN matches m ON m.slug = prh.match_slug
+      WHERE prh.match_slug = ?`,
     [matchSlug]
   );
   if (rows.length === 0) return 0;
@@ -106,17 +125,7 @@ export async function discardMatchRatings(matchSlug: string): Promise<number | n
     return null;
   }
 
-  const rollbacks = ratingRollbacks(rows);
-  const now = Math.floor(Date.now() / 1000);
-  for (const rb of rollbacks) {
-    await db.runAsync(
-      `UPDATE players
-          SET current_elo = ?, openskill_mu = ?, openskill_sigma = ?,
-              match_count = GREATEST(0, match_count - ?), updated_at = ?
-        WHERE id = ?`,
-      [rb.elo, rb.mu, rb.sigma, rb.matches, now, rb.playerId]
-    );
-  }
+  const rollbacks = await restoreRatings(rows);
   await db.runAsync('DELETE FROM player_rating_history WHERE match_slug = ?', [matchSlug]);
   log.info(`[RATINGS] Reverted ${matchSlug} for ${rollbacks.length} player(s)`);
   return rollbacks.length;
@@ -143,26 +152,33 @@ export async function updatePlayerRatings(
       log.info('[RATINGS] Ratings update skipped because ratings_enabled=false', { matchSlug });
       return;
     }
-    // Fetch all players with their current ratings
-    const allPlayerIds = [...team1Players, ...team2Players];
-    const players = await Promise.all(
-      allPlayerIds.map(async (playerId) => {
-        const player = await db.queryOneAsync<{
-          id: string;
-          current_elo: number;
-          openskill_mu: number;
-          openskill_sigma: number;
-          match_count: number;
-        }>(
-          'SELECT id, current_elo, openskill_mu, openskill_sigma, match_count FROM players WHERE id = ?',
-          [playerId]
-        );
-        if (!player) {
-          throw new Error(`Player not found: ${playerId}`);
-        }
-        return player;
-      })
+    // The match's game: the ratings it moves are the players' in that game.
+    // Labels are copied onto the history rows: they outlive the match when
+    // the tournament is deleted.
+    const match = await db.queryOneAsync<{
+      tournament_id: number;
+      game: string | null;
+      match_label: string | null;
+    }>(
+      `SELECT m.tournament_id, m.game, t1.name || ' vs ' || t2.name AS match_label
+         FROM matches m
+         LEFT JOIN teams t1 ON t1.id = m.team1_id
+         LEFT JOIN teams t2 ON t2.id = m.team2_id
+        WHERE m.slug = ?`,
+      [matchSlug]
     );
+    const game = ratingGame(match?.game);
+
+    // Each player's current rating in that game
+    const allPlayerIds = [...team1Players, ...team2Players];
+    const ratings = await getGameRatings(allPlayerIds, game);
+    const players = allPlayerIds.map((playerId) => {
+      const r = ratings.get(playerId);
+      if (!r) {
+        throw new Error(`Player not found: ${playerId}`);
+      }
+      return { id: playerId, current_elo: r.elo, openskill_mu: r.mu, openskill_sigma: r.sigma, match_count: r.matchCount };
+    });
 
     // Separate into teams
     const team1PlayerData = players.filter((p) => team1Players.includes(p.id));
@@ -180,20 +196,6 @@ export async function updatePlayerRatings(
     );
 
     // Get tournament's template ID (if any)
-    // Labels are copied onto the history rows: they outlive the match when the
-    // tournament is deleted.
-    const match = await db.queryOneAsync<{
-      tournament_id: number;
-      game: string | null;
-      match_label: string | null;
-    }>(
-      `SELECT m.tournament_id, m.game, t1.name || ' vs ' || t2.name AS match_label
-         FROM matches m
-         LEFT JOIN teams t1 ON t1.id = m.team1_id
-         LEFT JOIN teams t2 ON t2.id = m.team2_id
-        WHERE m.slug = ?`,
-      [matchSlug]
-    );
     const tournament = match
       ? await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
           match.tournament_id,
@@ -282,19 +284,13 @@ export async function updatePlayerRatings(
       const oldMu = player.openskill_mu;
       const oldSigma = player.openskill_sigma;
 
-      // Update player with final ELO (base + adjustments)
-      await db.updateAsync(
-        'players',
-        {
-          current_elo: finalElo,
-          openskill_mu: newRating.mu,
-          openskill_sigma: newRating.sigma,
-          match_count: player.match_count + 1,
-          updated_at: Math.floor(Date.now() / 1000),
-        },
-        'id = ?',
-        [player.id]
-      );
+      // The player's rating in this game, with final ELO (base + adjustments)
+      await setGameRating(player.id, game, {
+        elo: finalElo,
+        mu: newRating.mu,
+        sigma: newRating.sigma,
+        matchCount: player.match_count + 1,
+      });
 
       // Record rating history
       const matchResult = team1Players.includes(player.id)
@@ -310,7 +306,7 @@ export async function updatePlayerRatings(
         match_slug: matchSlug,
         match_label: match?.match_label ?? matchSlug,
         tournament_name: tournament?.name ?? null,
-        game: match?.game ?? null,
+        game,
         elo_before: oldElo,
         elo_after: finalElo,
         elo_change: finalElo - oldElo,
@@ -341,37 +337,6 @@ export async function updatePlayerRatings(
     log.error('Error updating player ratings', { error, matchSlug });
     throw error;
   }
-}
-
-/**
- * Get player's current rating
- * @param playerId - Player Steam ID
- * @returns OpenSkill Rating object
- */
-export async function getPlayerRating(playerId: string): Promise<Rating | null> {
-  const player = await db.queryOneAsync<{
-    openskill_mu: number;
-    openskill_sigma: number;
-  }>('SELECT openskill_mu, openskill_sigma FROM players WHERE id = ?', [playerId]);
-
-  if (!player) {
-    return null;
-  }
-
-  return rating({ mu: player.openskill_mu, sigma: player.openskill_sigma });
-}
-
-/**
- * Get player's display ELO (converted from OpenSkill)
- * @param playerId - Player Steam ID
- * @returns Display ELO number
- */
-export async function getDisplayElo(playerId: string): Promise<number | null> {
-  const rating = await getPlayerRating(playerId);
-  if (!rating) {
-    return null;
-  }
-  return openSkillToDisplayElo(rating);
 }
 
 /**

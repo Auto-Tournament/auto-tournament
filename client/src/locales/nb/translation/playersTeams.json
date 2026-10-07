@@ -574,5 +574,36 @@
     "requested": "Forespørselen er sendt. Eieren eller en kaptein svarer på den.",
     "alreadyMember": "Du er på dette laget",
     "signIn": "Logg inn for å bli med"
+  },
+  "videoHighlights": {
+    "title": "Høydepunkter",
+    "seeAll": "Se alle {{count}}",
+    "favourite": "Favoritt",
+    "makeFavourite": "Gjør til favoritt",
+    "unfavourite": "Ikke favoritt lenger",
+    "beingRecorded_one": "{{count}} høydepunkt tas opp.",
+    "beingRecorded_other": "{{count}} høydepunkter tas opp.",
+    "queued_one": "{{count}} til på vei",
+    "queued_other": "{{count}} til på vei",
+    "readyIn": "klar om omtrent {{minutes}} min",
+    "reelBadge": "REEL",
+    "player": {
+      "play": "Spill av",
+      "pause": "Pause",
+      "back": "5 sekunder tilbake",
+      "forward": "5 sekunder fram",
+      "mute": "Demp",
+      "unmute": "Slå på lyd",
+      "seek": "Spol",
+      "speed": "Hastighet {{speed}}×",
+      "share": "Del",
+      "download": "Last ned",
+      "fullscreen": "Fullskjerm",
+      "exitFullscreen": "Avslutt fullskjerm",
+      "linkCopied": "Lenke kopiert",
+      "slowmo": "Sakte film",
+      "kill": "Kill",
+      "lastKill": "Siste kill"
+    }
   }
 }

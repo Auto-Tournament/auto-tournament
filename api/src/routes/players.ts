@@ -1814,6 +1814,9 @@ router.put('/:playerId', async (req: Request, res: Response) => {
     if (input.isAdmin !== undefined && typeof input.isAdmin !== 'boolean') {
       return res.status(400).json({ success: false, error: 'isAdmin must be true or false' });
     }
+    if (input.game !== undefined && (typeof input.game !== 'string' || !input.game.trim())) {
+      return res.status(400).json({ success: false, error: 'game must be a game id, such as cs2' });
+    }
     const before = await playerService.getPlayerById(playerId);
     const adminChange =
       before && input.isAdmin !== undefined && before.isAdmin !== input.isAdmin ? input.isAdmin : undefined;

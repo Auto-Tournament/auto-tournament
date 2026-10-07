@@ -15,6 +15,7 @@
  * players a running match expects. Admins can still edit it on the Teams page.
  */
 
+import { RATING_ELO, ratingGame, ratingJoin } from './gameRatings';
 import { randomBytes } from 'node:crypto';
 import { db } from '../config/database';
 import { teamService } from './teamService';
@@ -229,10 +230,11 @@ export const teamSelfService = {
       current_elo: number | null;
       created_at: number;
     }>(
-      `SELECT r.account_uid, p.id, p.name, p.avatar_url AS avatar, p.current_elo, r.created_at
+      `SELECT r.account_uid, p.id, p.name, p.avatar_url AS avatar, ${RATING_ELO} AS current_elo, r.created_at
          FROM team_join_requests r JOIN players p ON p.uid = r.account_uid
+         ${ratingJoin('p')}
         WHERE r.team_id = ? ORDER BY r.created_at`,
-      [team.id]
+      [ratingGame(team.game), team.id]
     );
     return {
       team: {

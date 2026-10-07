@@ -277,6 +277,24 @@ export function getSchemaSQL(): string {
 
     CREATE INDEX IF NOT EXISTS idx_players_name ON players(name);
     CREATE INDEX IF NOT EXISTS idx_players_elo ON players(current_elo);
+
+    -- The tournament rating per player per game (services/gameRatings). A
+    -- player without a row for a game stands at players.starting_elo there.
+    -- players.current_elo, openskill_mu, openskill_sigma and match_count are
+    -- what 2.x and early 3.0 kept for every game at once; they are no longer
+    -- read or written (2026-10-07-per-game-rating moved them here).
+    CREATE TABLE IF NOT EXISTS player_game_ratings (
+      player_id TEXT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+      game TEXT NOT NULL, -- the match's game, lowercased (services/gameRatings.ratingGame)
+      current_elo INTEGER NOT NULL,
+      openskill_mu REAL NOT NULL,
+      openskill_sigma REAL NOT NULL,
+      match_count INTEGER NOT NULL DEFAULT 0,
+      updated_at INTEGER NOT NULL,
+      PRIMARY KEY (player_id, game)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_player_game_ratings_game ON player_game_ratings(game, current_elo);
     CREATE INDEX IF NOT EXISTS idx_players_discord_id ON players(discord_id);
     CREATE UNIQUE INDEX IF NOT EXISTS idx_players_uid ON players(uid);
 

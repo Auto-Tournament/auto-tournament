@@ -18,6 +18,7 @@
  *   client/src/integrations/<id>/**       one integration (cs2, later manual-report)
  */
 
+import type { PlayerHighlightsFeed } from '../components/highlights/feed';
 import type { ComponentType, ReactElement } from 'react';
 import type { TFunction } from 'i18next';
 
@@ -1127,6 +1128,14 @@ export interface ClientGameIntegration {
 
   /** The player profile: this game's own statistics. */
   playerProfileView?: ComponentType<PlayerProfileViewProps>;
+
+  /**
+   * A player's highlight videos from this game (client API 0.2.14): a hook
+   * core calls on the profile's tab for the game, and lays out as its
+   * Highlights section. `undefined` while loading, `null` when the game has
+   * nothing to say about this player.
+   */
+  usePlayerHighlights?: (playerId: string) => PlayerHighlightsFeed | null | undefined;
 
   /** The team page: this game's own statistics for the team. */
   teamProfileView?: ComponentType<TeamProfileViewProps>;

@@ -2013,24 +2013,6 @@
       "funny": "FUNNY",
       "flair": "FLAIR"
     },
-    "player": {
-      "play": "Play",
-      "pause": "Pause",
-      "back": "Back 5 seconds",
-      "forward": "Forward 5 seconds",
-      "mute": "Mute",
-      "unmute": "Unmute",
-      "seek": "Seek",
-      "speed": "Playback speed {{speed}}×",
-      "share": "Share",
-      "download": "Download",
-      "fullscreen": "Full screen",
-      "exitFullscreen": "Leave full screen",
-      "linkCopied": "Link copied",
-      "slowmo": "Slow motion",
-      "kill": "Kill",
-      "lastKill": "Last kill"
-    },
     "watch": {
       "missing": "This video is not there (any more).",
       "playerReel": "{{name}} · {{map}} reel",

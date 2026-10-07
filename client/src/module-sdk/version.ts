@@ -126,6 +126,9 @@
  * and `links.tournament`.
  *
  * 0.2.14 (additive): `PlayerProfileViewProps.isOwn`, whether the viewer is
- * the player.
+ * the player; `usePlayerHighlights`, a game's highlight videos for core's
+ * Highlights section on the profile; and the SDK's highlight pieces
+ * (`HighlightPlayer`, `HighlightCard`, `VideoThumb`, `RecordingCard`,
+ * `RecordingDot`, `FavouriteChip`, `thumbAt`, `clock`).
  */
 export const CLIENT_API_VERSION = '0.2.14';

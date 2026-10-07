@@ -1,4 +1,6 @@
 /* global AbortController */
+import { ProfileHighlights } from '../components/highlights/ProfileHighlights';
+import type { PlayerHighlightsFeed } from '../components/highlights/feed';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import {
@@ -226,6 +228,18 @@ function normalizeMatchForPlayerView(rawMatch: TeamMatchInfo, steamId: string): 
  * wired up to stamp it) count under CS2, matching the API's own default.
  */
 const FALLBACK_GAME_ID = 'cs2';
+
+/** One game's highlights on the profile: its hook, then core's section. */
+function GameHighlights({
+  useHighlights,
+  playerId,
+}: {
+  useHighlights: (playerId: string) => PlayerHighlightsFeed | null | undefined;
+  playerId: string;
+}) {
+  const feed = useHighlights(playerId);
+  return feed ? <ProfileHighlights feed={feed} /> : null;
+}
 
 /** How many matches the rating chart plots, and the rating change covers. */
 const RATING_CHART_WINDOW = 20;
@@ -468,8 +482,16 @@ export default function PlayerProfile() {
 
       const loadedGames = summaryResponse.games || [];
       setGames(loadedGames);
-      // Overview (null) unless a game tab is open that the player still has.
-      setSelectedGameId((prev) => (prev && loadedGames.some((g) => g.id === prev) ? prev : null));
+      // A game tab is always open: the one already open if the player still
+      // has it, else the game they have played most.
+      const played = new Map<string, number>();
+      for (const m of summaryResponse.matches || []) {
+        const game = m.game || FALLBACK_GAME_ID;
+        played.set(game, (played.get(game) ?? 0) + 1);
+      }
+      const mostPlayed =
+        [...loadedGames].sort((a, b) => (played.get(b.id) ?? 0) - (played.get(a.id) ?? 0))[0]?.id ?? null;
+      setSelectedGameId((prev) => (prev && loadedGames.some((g) => g.id === prev) ? prev : mostPlayed));
 
       // The current or upcoming match (veto, connect): only the player's own
       // view shows it, so only that view asks.
@@ -826,6 +848,9 @@ export default function PlayerProfile() {
   const TournamentStatsView = gameIntegration.tournamentStatsView;
   const PlayerProfileView = gameIntegration.playerProfileView;
   const GameProfileView = selectedGameId ? selectedIntegration.playerProfileView : PlayerProfileView;
+  const highlightsIntegration = selectedGameId ? selectedIntegration : gameIntegration;
+  const GameHighlightsHook = highlightsIntegration.usePlayerHighlights;
+  const GameHighlightsGame = highlightsIntegration.id;
   const moduleTabs = installedIntegrations.flatMap((integration) =>
     integration.playerProfileTab ? [{ id: integration.id, ...integration.playerProfileTab }] : []
   );
@@ -867,12 +892,17 @@ export default function PlayerProfile() {
   const profileKd = kdSamples.length > 0 && totalDeaths > 0 ? totalKills / totalDeaths : null;
 
   // Rating change over the same last-N-matches window the rating chart plots.
-  const sortedRatingHistoryAsc = [...ratingHistory].sort((a, b) => a.createdAt - b.createdAt);
+  // Ratings are per game: the open game's rating, its history and its change.
+  const gameRatingHistory = ratingHistory.filter((entry) => inSelectedGame(entry.game));
+  const selectedRating = selectedGameId
+    ? (player.ratings?.find((r) => r.game === selectedGameId.toLowerCase())?.elo ?? player.startingElo)
+    : player.currentElo;
+  const sortedRatingHistoryAsc = [...gameRatingHistory].sort((a, b) => a.createdAt - b.createdAt);
   // The headline change is this month's (draft A2: "+86 this month"): from
   // the rating before the month's first rated match to now.
   const monthAgo = Date.now() / 1000 - 30 * 24 * 3600;
   const thisMonth = sortedRatingHistoryAsc.filter((entry) => entry.createdAt >= monthAgo);
-  const profileRatingChange = thisMonth.length > 0 ? player.currentElo - thisMonth[0].eloBefore : 0;
+  const profileRatingChange = thisMonth.length > 0 ? selectedRating - thisMonth[0].eloBefore : 0;
 
   // RATING (+change), MATCHES, WIN RATE, and ADR and K/D for a game that
   // measures them. TITLES is left out: no record of tournaments won survives
@@ -884,7 +914,7 @@ export default function PlayerProfile() {
       label: t('playerPage.stats.rating'),
       value: (
         <>
-          {player.currentElo}
+          {selectedRating}
           {profileRatingChange !== 0 && (
             <Box
               component="small"
@@ -994,13 +1024,13 @@ export default function PlayerProfile() {
   // The rating trend starts at the player's starting rating, so the first
   // match already draws a line.
   const ratingChartHistory =
-    ratingHistory.length > 0
+    gameRatingHistory.length > 0
       ? [
           {
             eloAfter: ratingHistoryBaseline(player.startingElo),
-            createdAt: Math.min(...ratingHistory.map((e) => e.createdAt)) - 1,
+            createdAt: Math.min(...gameRatingHistory.map((e) => e.createdAt)) - 1,
           },
-          ...ratingHistory.map((entry) => ({ eloAfter: entry.eloAfter, createdAt: entry.createdAt })),
+          ...gameRatingHistory.map((entry) => ({ eloAfter: entry.eloAfter, createdAt: entry.createdAt })),
         ]
       : [];
 
@@ -1068,7 +1098,7 @@ export default function PlayerProfile() {
             </Box>
           )}
 
-          {/* Overview (every game), or one game's tab. */}
+          {/* One tab per game the player has played. */}
           <Box sx={{ mt: 6, mb: 3 }}>
             <GameSwitch
               games={games}
@@ -1111,11 +1141,18 @@ export default function PlayerProfile() {
             sx={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))' }}
           />
 
+          {/* The player's highlight videos from the open game: core lays them
+              out, the game says what there is. */}
+          {(selectedGameId || games.length === 0) && GameHighlightsHook && (
+            <GameHighlights key={GameHighlightsGame} useHighlights={GameHighlightsHook} playerId={player.id} />
+          )}
+
           {/* The game's own numbers (CS2: aim, utility, map strength). */}
           {/* On the game's own tab (or the only view, with no games yet). */}
           {GameProfileView && showGameStats && (selectedGameId || games.length === 0) && (
             <GameProfileView playerId={player.id} isOwn={playerSteamId === player.id} />
           )}
+
 
           {/* Installed modules' own sections (CS2: the skin loadout, while skins are on). */}
           {profileSections.map(({ id, Section }) => (

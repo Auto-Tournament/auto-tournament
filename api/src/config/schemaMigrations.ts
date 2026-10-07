@@ -353,6 +353,35 @@ export const SCHEMA_MIGRATIONS: readonly SchemaMigration[] = [
       );
     },
   },
+  {
+    id: '2026-10-07-per-game-rating',
+    description: "Move each player's tournament rating to player_game_ratings, under the game they were rated in",
+    async up(client) {
+      // Every rating so far is one number across all games. It goes to the
+      // game most of the player's rated matches were in (CS2 for a player
+      // whose history names none). A player never rated, still at their seed,
+      // needs no row: the seed is their rating in every game.
+      await client.query(
+        `INSERT INTO player_game_ratings (player_id, game, current_elo, openskill_mu, openskill_sigma, match_count, updated_at)
+         SELECT p.id,
+                COALESCE((
+                  SELECT LOWER(TRIM(COALESCE(h.game, m.game)))
+                    FROM player_rating_history h
+                    LEFT JOIN matches m ON m.slug = h.match_slug
+                   WHERE h.player_id = p.id AND COALESCE(h.game, m.game) IS NOT NULL
+                   GROUP BY 1
+                   ORDER BY COUNT(*) DESC, 1
+                   LIMIT 1
+                ), 'cs2'),
+                p.current_elo, p.openskill_mu, p.openskill_sigma, p.match_count, p.updated_at
+           FROM players p
+          WHERE p.match_count > 0
+             OR p.current_elo <> p.starting_elo
+             OR EXISTS (SELECT 1 FROM player_rating_history h WHERE h.player_id = p.id)
+         ON CONFLICT (player_id, game) DO NOTHING`
+      );
+    },
+  },
 ];
 
 /** A fixed key for the advisory lock, so two API processes never run one migration twice. */
