@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Button } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import { FilmStripIcon } from '@phosphor-icons/react';
 import { api, useModuleTranslation } from '../../../module-sdk';
 import type { MatchMapActionProps } from '../../types';
 import { watchMatchReelPath } from '../highlights/data';
+import { RecordingDot } from '../highlights/HighlightCard';
 
 interface MatchReel {
   mapNumber: number;
@@ -36,6 +37,19 @@ export function MatchReelButton({ matchSlug, mapNumber, onNavigate }: MatchMapAc
     };
   }, [matchSlug, mapNumber]);
 
+  // Still being made: say so where the button will be.
+  if (reel && !reel.video && (reel.status === 'recording' || reel.status === 'pending')) {
+    return (
+      <Box
+        role="status"
+        data-testid={`match-reel-recording-${mapNumber}`}
+        sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, px: 1.5, height: 36, borderRadius: 999, border: '1px dashed', borderColor: 'divider', color: 'text.secondary', fontSize: '0.8125rem', whiteSpace: 'nowrap', flex: 'none' }}
+      >
+        <RecordingDot />
+        {t('highlights.matchReelRecording')}
+      </Box>
+    );
+  }
   if (!reel?.video) return null;
   return (
     <Button

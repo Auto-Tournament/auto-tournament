@@ -719,11 +719,20 @@ export async function failMatchReel(matchSlug: string, mapNumber: number, error:
   );
 }
 
-/** A match's reels per map, and whether each is still being made. */
+/**
+ * A match's reels per map, and whether each is still being made: a map whose
+ * highlights the recorder has not finished shows as `recording` before its
+ * reel is even queued.
+ */
 export async function matchReels(matchSlug: string) {
   const rows = await db.queryAsync<{ map_number: number; status: string; clips: number | null; clip_path: string | null }>(
-    'SELECT map_number, status, clips, clip_path FROM cs2_match_reels WHERE match_slug = ? ORDER BY map_number',
-    [matchSlug]
+    `SELECT map_number, status, clips, clip_path FROM cs2_match_reels WHERE match_slug = ?
+     UNION ALL
+     SELECT DISTINCT h.map_number, 'recording'::text, NULL::integer, NULL::text FROM cs2_highlights h
+      WHERE h.match_slug = ? AND h.status IN ('pending', 'recording')
+        AND NOT EXISTS (SELECT 1 FROM cs2_match_reels r WHERE r.match_slug = h.match_slug AND r.map_number = h.map_number)
+     ORDER BY map_number`,
+    [matchSlug, matchSlug]
   );
   return rows.map((r) => ({
     mapNumber: Number(r.map_number),

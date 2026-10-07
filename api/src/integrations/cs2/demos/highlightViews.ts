@@ -254,6 +254,28 @@ export async function playerReelViews(playerId: string, limit: number) {
   );
 }
 
+/** About how long the recorder takes per clip, for the "ready in about N min" hint. */
+export const MINUTES_PER_CLIP = 5;
+
+/**
+ * A player's clips still waiting for the recorder, and about how long until
+ * the last of them is done: everything recording or waiting with a better
+ * score goes first (the recorder takes the best first).
+ */
+export async function recordingQueue(playerId: string): Promise<{ count: number; etaMinutes: number } | null> {
+  const mine = await db.queryOneAsync<{ n: number | string; lowest: number | null }>(
+    "SELECT COUNT(*) AS n, MIN(score) AS lowest FROM cs2_highlights WHERE player_id = ? AND status IN ('pending', 'recording')",
+    [playerId]
+  );
+  const count = Number(mine?.n ?? 0);
+  if (!count) return null;
+  const ahead = await db.queryOneAsync<{ n: number | string }>(
+    "SELECT COUNT(*) AS n FROM cs2_highlights WHERE status = 'recording' OR (status = 'pending' AND score >= ?)",
+    [Number(mine?.lowest ?? 0)]
+  );
+  return { count, etaMinutes: Math.max(1, Number(ahead?.n ?? count) * MINUTES_PER_CLIP) };
+}
+
 export async function favouriteOf(playerId: string): Promise<number | null> {
   const row = await db.queryOneAsync<{ highlight_id: number }>(
     'SELECT highlight_id FROM cs2_highlight_favourites WHERE player_id = ?',

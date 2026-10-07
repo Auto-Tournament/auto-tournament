@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Box } from '@mui/material';
+import { Box, Skeleton } from '@mui/material';
 import { CaretRightIcon } from '@phosphor-icons/react';
 import { api, SectionHead, textSize, tokens, useModuleTranslation } from '../../../module-sdk';
 import {
@@ -15,7 +15,15 @@ import {
   type PlayerHighlights,
   type PlayerReel,
 } from '../highlights/data';
-import { FavouriteChip, HighlightCard, KindBadge, thumbAt, VideoThumb } from '../highlights/HighlightCard';
+import {
+  FavouriteChip,
+  HighlightCard,
+  KindBadge,
+  RecordingCard,
+  RecordingDot,
+  thumbAt,
+  VideoThumb,
+} from '../highlights/HighlightCard';
 
 /** One of the three beside the favourite: a still on the left, two lines on the right. */
 function SideItem({ to, video, at, title, sub, badge }: { to: string; video: string; at: number; title: string; sub: string; badge?: string }) {
@@ -54,6 +62,22 @@ function SideItem({ to, video, at, title, sub, badge }: { to: string; video: str
   );
 }
 
+/** A side item still being recorded: the same shape, shimmering. */
+function RecordingSideItem() {
+  return (
+    <Box
+      aria-hidden
+      sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 46%) minmax(0, 1fr)', gap: 1.5, alignItems: 'center', p: 1, borderRadius: '16px', bgcolor: tokens.color.paper2, border: `1px solid ${tokens.color.rule}` }}
+    >
+      <Skeleton variant="rectangular" animation="wave" sx={{ aspectRatio: '16 / 9', height: 'auto', borderRadius: '10px', bgcolor: tokens.color.paper3 }} />
+      <Box>
+        <Skeleton animation="wave" width="80%" sx={{ bgcolor: tokens.color.paper3 }} />
+        <Skeleton animation="wave" width="50%" sx={{ bgcolor: tokens.color.paper3 }} />
+      </Box>
+    </Box>
+  );
+}
+
 /**
  * A player's highlights on their profile (the drafts' profile board): their
  * favourite large (or, until they pick one, their best), three more beside
@@ -82,14 +106,22 @@ export function Cs2ProfileHighlights({ playerId }: { playerId: string }) {
   const data = loaded?.playerId === playerId ? loaded : null;
   if (!data) return null;
   const done = data.highlights.filter((h) => h.status === 'done' && h.video);
-  const queued = data.highlights.length - done.length;
+  const queued = data.queue?.count ?? data.highlights.length - done.length;
+  const eta = data.queue ? t('highlights.readyIn', { minutes: data.queue.etaMinutes }) : undefined;
   if (done.length === 0 && data.reels.length === 0) {
     if (queued === 0) return null;
+    // Nothing recorded yet: the section as it will look, shimmering, so the
+    // player knows their highlights are coming and where they will be.
     return (
       <Box component="section" aria-labelledby="cs2-profile-highlights" data-testid="cs2-profile-highlights" sx={{ mt: 6 }}>
         <SectionHead id="cs2-profile-highlights" title={t('highlights.title')} />
-        <Box sx={{ p: 3, borderRadius: '18px', border: `1px dashed ${tokens.color.rule}`, color: tokens.color.muted }}>
-          {t('highlights.beingRecorded', { count: queued })}
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1.7fr) minmax(0, 1fr)' }, gap: 2, alignItems: 'start' }}>
+          <RecordingCard large label={t('highlights.beingRecorded', { count: queued })} hint={eta} />
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, flexDirection: 'column', gap: 1.5 }}>
+            {[0, 1, 2].map((i) => (
+              <RecordingSideItem key={i} />
+            ))}
+          </Box>
         </Box>
       </Box>
     );
@@ -168,7 +200,10 @@ export function Cs2ProfileHighlights({ playerId }: { playerId: string }) {
             />
           )}
           {queued > 0 && (
-            <Box sx={{ color: tokens.color.muted, fontSize: '0.75rem', px: 0.5 }}>{t('highlights.queued', { count: queued })}</Box>
+            <Box role="status" sx={{ display: 'flex', alignItems: 'center', gap: 1, color: tokens.color.muted, fontSize: '0.75rem', px: 0.5 }}>
+              <RecordingDot />
+              {[t('highlights.queued', { count: queued }), eta].filter(Boolean).join(' · ')}
+            </Box>
           )}
         </Box>
       </Box>

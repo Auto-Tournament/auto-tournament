@@ -69,11 +69,18 @@ export interface PlayerReel {
   createdAt: number;
 }
 
+/** A player's clips still waiting for the recorder, and about when the last is done. */
+export interface RecordingQueue {
+  count: number;
+  etaMinutes: number;
+}
+
 export interface PlayerHighlights {
   reels: PlayerReel[];
   highlights: Clip[];
   favourite: number | null;
   isOwn: boolean;
+  queue?: RecordingQueue | null;
 }
 
 export interface TournamentReel {
