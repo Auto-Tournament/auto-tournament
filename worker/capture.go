@@ -339,10 +339,16 @@ func (g *game) play(from, to int, scale float64, name string, started func() err
 		return s, err
 	}
 	time.Sleep(3 * time.Second)
+	// A seek drops the spectated player, and CS2 ignores spec_player while the
+	// seek still loads: ask once it has landed, again once paused, and again
+	// just after resuming (the run-up before the moment covers the switch).
+	if err := g.spectate(name); err != nil {
+		return s, err
+	}
+	time.Sleep(500 * time.Millisecond)
 	if err := g.pause(); err != nil {
 		return s, err
 	}
-	// Seeking can drop the spectated player; follow them again.
 	if err := g.spectate(name); err != nil {
 		return s, err
 	}
@@ -354,6 +360,7 @@ func (g *game) play(from, to int, scale float64, name string, started func() err
 	if err != nil {
 		return s, err
 	}
+	_ = g.spectate(name)
 	tick, _ := strconv.Atoi(v)
 	s.fromTick, s.resumed = tick-g.startTick, at
 	gameSeconds := float64(to-s.fromTick) / tickrate
