@@ -20,7 +20,7 @@ package main
 //	AT_SNIPER_RUN    Steam's SteamLinuxRuntime_sniper/run, which cs2.sh needs
 //	AT_RECORD_DIR    scratch space for raw frames (default: the system temp dir; ~6 GB a moment)
 //	AT_RESOLUTION    WIDTHxHEIGHT (default 2560x1440)
-//	AT_ENCODER       ffmpeg video encoder (default libx264)
+//	AT_ENCODER       ffmpeg video encoder (default libx265: H.265 in MP4; hevc_nvenc on the GPU)
 //	AT_AUDIO_TARGET  the PipeWire sink CS2 plays into (default: the default sink)
 //	AT_KEEP_SCRATCH  set to keep each moment's raw frames, sound and logs
 //
@@ -668,7 +668,7 @@ func newRecorder(c *client) (*recorder, error) {
 	}
 	r := &recorder{client: c, gameDir: gameDir, sniper: env("AT_SNIPER_RUN", ""),
 		scratch: env("AT_RECORD_DIR", os.TempDir()), width: w, height: h,
-		encoder: env("AT_ENCODER", "libx264"), sink: defaultSink()}
+		encoder: env("AT_ENCODER", "libx265"), sink: defaultSink()}
 	r.logo = filepath.Join(r.scratch, "at-watermark.png")
 	if err := os.WriteFile(r.logo, watermarkPNG, 0o644); err != nil {
 		return nil, err

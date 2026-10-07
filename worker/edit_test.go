@@ -117,3 +117,15 @@ func TestIntroSlowsTheOpeningUntilTheCardLeaves(t *testing.T) {
 		t.Fatalf("opening runs into the kill: %+v", short)
 	}
 }
+
+func TestEncodeArgsH265ByDefault(t *testing.T) {
+	args := strings.Join(encodeArgs("libx265"), " ")
+	for _, want := range []string{"-c:v libx265", "-tag:v hvc1", "-r 120", "-g 240"} {
+		if !strings.Contains(args, want) {
+			t.Fatalf("%q missing from %s", want, args)
+		}
+	}
+	if gpu := strings.Join(encodeArgs("hevc_nvenc"), " "); !strings.Contains(gpu, "-tag:v hvc1") {
+		t.Fatalf("hevc_nvenc not tagged hvc1: %s", gpu)
+	}
+}
