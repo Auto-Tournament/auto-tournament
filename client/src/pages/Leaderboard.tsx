@@ -53,11 +53,12 @@ export default function Leaderboard() {
 
   useEffect(() => {
     let cancelled = false;
-    setError(false);
     api
       .get<{ success: boolean } & Board>(`/api/leaderboard${asked ? `?game=${encodeURIComponent(asked)}` : ''}`)
       .then((res) => {
-        if (!cancelled) setBoard(res.success ? res : { games: [], game: null, players: [] });
+        if (cancelled) return;
+        setError(false);
+        setBoard(res.success ? res : { games: [], game: null, players: [] });
       })
       .catch(() => {
         if (!cancelled) setError(true);
