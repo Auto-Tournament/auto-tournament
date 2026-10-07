@@ -5,7 +5,7 @@
  * queue for your mode instead. `/play?join=CODE` joins a party from an
  * invite link.
  */
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Avatar,
   Box,
@@ -13,11 +13,10 @@ import {
   ButtonBase,
   CircularProgress,
   Container,
-  InputBase,
   LinearProgress,
   Typography,
 } from '@mui/material';
-import { PlayCircleIcon, PlusIcon } from '@phosphor-icons/react';
+import { PlayCircleIcon, PlusIcon, XIcon } from '@phosphor-icons/react';
 import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
@@ -33,6 +32,9 @@ import {
   useMatchmaking,
 } from '../components/matchmaking/matchmakingStore';
 import { AdminQueuePanel } from '../components/matchmaking/AdminQueuePanel';
+import { InvitePicker } from '../components/social/InvitePicker';
+import { FriendsCard } from '../components/social/FriendsCard';
+import { answerPartyInvite, cancelPartyInvite } from '../components/social/socialStore';
 import { getMapData } from '../constants/maps';
 import { paths, playLobbyPath } from '../paths';
 import { fontDisplay, fontMono, radii, textSize, tokens, withAlpha } from '../theme/tokens';
@@ -254,8 +256,8 @@ export default function Play() {
   const { showError, showSnackbar } = useSnackbar();
   const [params, setParams] = useSearchParams();
   const [busy, setBusy] = useState(false);
-  const [code, setCode] = useState('');
   const [picked, setPicked] = useState<string | null>(null);
+  const [inviteAnchor, setInviteAnchor] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
     document.title = pageTitle(t('matchmaking.play.title'));
@@ -329,14 +331,9 @@ export default function Play() {
     else setPicked(m);
   };
 
-  const copyInvite = async () => {
-    if (!party) {
-      await run(() => matchmakingAction('POST', '/party', { mode }));
-      return;
-    }
-    await navigator.clipboard.writeText(inviteLink);
-    showSnackbar(t('matchmaking.party.copied'), 'success');
-  };
+  const invited = party?.invited ?? [];
+  const invites = me?.invites ?? [];
+  const notReady = me?.notReady ?? [];
 
   const queueMode = me?.queue?.mode ?? mode;
   const waited =
@@ -511,6 +508,31 @@ export default function Play() {
                 </Panel>
               ) : (
                 <>
+                  {invites.map((inv) => (
+                    <Panel
+                      key={inv.partyId}
+                      data-testid="mm-incoming-invite"
+                      sx={{ p: 1.75, display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', borderColor: color.accent }}
+                    >
+                      <Avatar src={inv.from.avatarUrl ?? undefined} sx={{ width: 36, height: 36, bgcolor: color.rule }}>
+                        {inv.from.name.trim()[0]?.toUpperCase()}
+                      </Avatar>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography sx={{ fontSize: textSize.sm }}>
+                          <Box component="b">{inv.from.name}</Box> {t('social.notice.partyInvite')}
+                        </Typography>
+                        <Typography sx={{ fontSize: '0.75rem', color: color.muted }}>
+                          {t('social.notice.partyDetail', { mode: inv.mode, size: inv.size })}
+                        </Typography>
+                      </Box>
+                      <Button size="small" variant="contained" disabled={busy} onClick={() => void run(() => answerPartyInvite(inv.partyId, true))}>
+                        {t('social.notice.join')}
+                      </Button>
+                      <Button size="small" variant="outlined" disabled={busy} onClick={() => void run(() => answerPartyInvite(inv.partyId, false))}>
+                        {t('social.notice.decline')}
+                      </Button>
+                    </Panel>
+                  ))}
                   <Panel
                     component="section"
                     aria-labelledby="mm-party"
@@ -540,11 +562,43 @@ export default function Play() {
                       ) : (
                         <PersonChip name={t('matchmaking.play.you')} avatarUrl={null} you />
                       )}
-                      {(!party || party.members.length < MAX_PARTY) && (
+                      {invited.map((p) => (
+                        <Box
+                          key={p.id}
+                          data-testid={`mm-invited-${p.id}`}
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.75,
+                            pl: 0.5,
+                            pr: 0.5,
+                            py: 0.5,
+                            borderRadius: radii.pill,
+                            border: `1px dashed ${color.accent}`,
+                            color: color.ink2,
+                            fontSize: textSize.sm,
+                          }}
+                        >
+                          <Avatar src={p.avatarUrl ?? undefined} sx={{ width: 28, height: 28, fontSize: textSize.xs, bgcolor: color.rule, opacity: 0.6 }}>
+                            {p.name.trim()[0]?.toUpperCase()}
+                          </Avatar>
+                          {t('social.invite.chip', { name: p.name })}
+                          <ButtonBase
+                            aria-label={t('social.invite.cancel', { name: p.name })}
+                            onClick={() => void run(() => cancelPartyInvite(p.id))}
+                            sx={{ borderRadius: '50%', p: 0.5, color: color.muted }}
+                          >
+                            <XIcon size={12} />
+                          </ButtonBase>
+                        </Box>
+                      ))}
+                      {(!party || party.members.length + invited.length < MAX_PARTY) && (
                         <ButtonBase
-                          onClick={() => void copyInvite()}
+                          onClick={(e) => setInviteAnchor(e.currentTarget)}
                           disabled={busy}
-                          data-testid={party ? 'mm-invite' : 'mm-create-party'}
+                          aria-haspopup="dialog"
+                          aria-expanded={inviteAnchor ? 'true' : undefined}
+                          data-testid="mm-invite"
                           sx={{
                             display: 'flex',
                             alignItems: 'center',
@@ -557,9 +611,22 @@ export default function Play() {
                           }}
                         >
                           <PlusIcon size={14} weight="bold" />
-                          {party ? t('matchmaking.play.invite') : t('matchmaking.party.create')}
+                          {t('matchmaking.play.invite')}
                         </ButtonBase>
                       )}
+                      <InvitePicker
+                        anchorEl={inviteAnchor}
+                        onClose={() => setInviteAnchor(null)}
+                        members={party?.members ?? (playerSteamId ? [playerSteamId] : [])}
+                        invited={invited.map((p) => p.id)}
+                        inviteLink={party ? inviteLink : null}
+                        busy={busy}
+                        onMakeLink={() => void run(() => matchmakingAction('POST', '/party', { mode }))}
+                        onJoinCode={(c) => {
+                          setInviteAnchor(null);
+                          void run(() => matchmakingAction('POST', '/party/join', { code: c }), t('matchmaking.party.joined'));
+                        }}
+                      />
                     </Box>
                     <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>
                       {t('matchmaking.play.partyOf', {
@@ -577,25 +644,6 @@ export default function Play() {
                           flexWrap: 'wrap',
                         }}
                       >
-                        <InputBase
-                          value={inviteLink}
-                          readOnly
-                          inputProps={{
-                            'data-testid': 'mm-invite-link',
-                            'aria-label': t('matchmaking.party.inviteLink'),
-                          }}
-                          sx={{
-                            flex: 1,
-                            minWidth: 200,
-                            px: 1.5,
-                            py: 0.5,
-                            borderRadius: radii.md,
-                            bgcolor: color.paper,
-                            border: `1px solid ${color.rule}`,
-                            fontSize: textSize.sm,
-                            color: color.ink2,
-                          }}
-                        />
                         <Button
                           size="small"
                           color="inherit"
@@ -606,46 +654,6 @@ export default function Play() {
                           {party.leader === playerSteamId
                             ? t('matchmaking.party.disband')
                             : t('matchmaking.party.leave')}
-                        </Button>
-                      </Box>
-                    )}
-                    {!party && (
-                      <Box
-                        component="form"
-                        onSubmit={(e: React.FormEvent) => {
-                          e.preventDefault();
-                          void run(
-                            () => matchmakingAction('POST', '/party/join', { code: code.trim() }),
-                            t('matchmaking.party.joined')
-                          );
-                        }}
-                        sx={{ width: '100%', display: 'flex', gap: 1, alignItems: 'center' }}
-                      >
-                        <InputBase
-                          value={code}
-                          onChange={(e) => setCode(e.target.value.toUpperCase())}
-                          placeholder={t('matchmaking.party.code')}
-                          inputProps={{
-                            maxLength: 16,
-                            'data-testid': 'mm-join-code',
-                            'aria-label': t('matchmaking.party.code'),
-                          }}
-                          sx={{
-                            width: 180,
-                            px: 1.5,
-                            py: 0.5,
-                            borderRadius: radii.md,
-                            bgcolor: color.paper,
-                            border: `1px solid ${color.rule}`,
-                            fontSize: textSize.sm,
-                          }}
-                        />
-                        <Button
-                          size="small"
-                          type="submit"
-                          disabled={busy || code.trim().length < 6}
-                        >
-                          {t('matchmaking.party.join')}
                         </Button>
                       </Box>
                     )}
@@ -762,6 +770,23 @@ export default function Play() {
                     })}
                   </Box>
 
+                  {notReady.length > 0 && (
+                    <Panel data-testid="mm-not-ready" sx={{ p: 2, borderColor: color.warning, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                      <Typography sx={{ fontWeight: 600, fontSize: textSize.sm }}>{t('social.setup.title')}</Typography>
+                      {notReady.map((p) => (
+                        <Typography key={p.id} sx={{ fontSize: textSize.sm, color: color.ink2 }}>
+                          {p.id === playerSteamId
+                            ? t(p.missing === 'game' ? 'social.setup.youGame' : 'social.setup.youAccount')
+                            : t(p.missing === 'game' ? 'social.setup.theyGame' : 'social.setup.theyAccount', { name: p.name })}
+                        </Typography>
+                      ))}
+                      {notReady.some((p) => p.id === playerSteamId) && (
+                        <Button component={RouterLink} to={paths.meConnections} size="small" variant="outlined" sx={{ alignSelf: 'flex-start', mt: 0.5 }}>
+                          {t('social.setup.fix')}
+                        </Button>
+                      )}
+                    </Panel>
+                  )}
                   {cooldown > 0 && (
                     <Typography color="warning.main" data-testid="mm-cooldown">
                       {t('matchmaking.play.cooldown', { minutes: Math.ceil(cooldown / 60) })}
@@ -770,7 +795,7 @@ export default function Play() {
                   <Button
                     variant="contained"
                     disabled={
-                      busy || !isLeader || cooldown > 0 || me?.lobby?.status === 'accepting'
+                      busy || !isLeader || cooldown > 0 || notReady.length > 0 || me?.lobby?.status === 'accepting'
                     }
                     onClick={() => void run(() => matchmakingAction('POST', '/queue', { mode }))}
                     data-testid="mm-find"
@@ -802,7 +827,12 @@ export default function Play() {
                 </>
               )}
             </Box>
-            {playerSteamId && <YouColumn playerId={playerSteamId} rating={me?.rating ?? null} />}
+            {playerSteamId && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                <YouColumn playerId={playerSteamId} rating={me?.rating ?? null} />
+                <FriendsCard members={party?.members ?? [playerSteamId]} invited={invited.map((p) => p.id)} />
+              </Box>
+            )}
             {isAdmin && (
               <Box sx={{ gridColumn: '1 / -1' }}>
                 <AdminQueuePanel />

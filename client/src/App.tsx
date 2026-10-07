@@ -42,6 +42,8 @@ import Home from './pages/Home';
 import Browse from './pages/Browse';
 import PlayersDirectory from './pages/PlayersDirectory';
 import Leaderboard from './pages/Leaderboard';
+import Friends from './pages/Friends';
+import Notifications from './pages/Notifications';
 import TeamsDirectory from './pages/TeamsDirectory';
 import TeamManage from './pages/TeamManage';
 import TeamJoin from './pages/TeamJoin';
@@ -51,6 +53,7 @@ import PlayLobby from './pages/PlayLobby';
 import PlayLeaderboard from './pages/PlayLeaderboard';
 import { MatchmakingOverlay } from './components/matchmaking/MatchmakingOverlay';
 import { ChatDock } from './components/chat/ChatDock';
+import { PartyInviteToast } from './components/social/PartyInviteToast';
 import AccountConnections from './pages/AccountConnections';
 import ConnectSteam from './pages/ConnectSteam';
 import Templates from './pages/Templates';
@@ -439,6 +442,22 @@ function AppRoutes() {
         }
       />
       <Route
+        path={paths.friends}
+        element={
+          <ProtectedRoute adminOnly={false}>
+            <Friends />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path={paths.notifications}
+        element={
+          <ProtectedRoute adminOnly={false}>
+            <Notifications />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path={paths.leaderboards}
         element={
           <ProtectedRoute adminOnly={false}>
@@ -601,6 +620,8 @@ export default function App() {
               <MatchmakingOverlay />
               {/* Chat: the viewer's match, team and party, on every page. */}
               <ChatDock />
+              {/* A party invite arriving: a card under the top bar on every page. */}
+              <PartyInviteToast />
             </PageHeaderProvider>
           </SnackbarProvider>
         </AuthProvider>

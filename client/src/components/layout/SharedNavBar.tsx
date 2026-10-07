@@ -27,6 +27,8 @@ import { api } from '../../utils/api';
 import { fontDisplay, textSize } from '../../theme/tokens';
 import { paths, playerProfilePath } from '../../paths';
 import { useMatchmaking } from '../matchmaking/matchmakingStore';
+import { NotificationBell } from '../social/NotificationBell';
+import { useSocial } from '../social/socialStore';
 import { useModuleAccountMenuItems } from '../../hooks/useModuleAccountMenuItems';
 import { soundNotification } from '../../utils/soundNotification';
 
@@ -114,6 +116,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
   } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const friendRequests = useSocial(Boolean(playerSteamId) && !impersonation).incoming.length;
   const {
     status: matchStatus,
     matchSlug,
@@ -505,6 +508,8 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
           </Button>
         )}
 
+        {playerSteamId && !impersonation && <NotificationBell viewerId={playerSteamId} />}
+
         <IconButton
           onClick={handleAvatarMenuOpen}
           size="small"
@@ -565,6 +570,22 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
               }}
             >
               {t('nav.myProfile')}
+            </MenuItem>
+          )}
+          {playerSteamId && (
+            <MenuItem
+              onClick={() => {
+                handleAvatarMenuClose();
+                navigate(paths.friends);
+              }}
+              data-testid="nav-friends"
+            >
+              <ListItemText primary={t('social.friends.title')} />
+              {friendRequests > 0 && (
+                <Box component="span" sx={{ ml: 2, fontSize: '0.6875rem', fontWeight: 600, color: 'primary.main' }}>
+                  {t('social.friends.requestCount', { count: friendRequests })}
+                </Box>
+              )}
             </MenuItem>
           )}
           {moduleMenuItems.map((item) => (

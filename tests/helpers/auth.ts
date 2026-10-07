@@ -133,9 +133,10 @@ export async function ensureSignedIn(page: Page): Promise<void> {
 export async function signInAsPlayer(
   page: Page,
   steamId: string = DEFAULT_PLAYER_STEAM_ID,
-  name?: string
+  name?: string,
+  options: { games?: string[] } = {}
 ): Promise<boolean> {
-  return signInAsPlayerViaRequest(page.request, steamId, name);
+  return signInAsPlayerViaRequest(page.request, steamId, name, options);
 }
 
 /**
@@ -144,11 +145,13 @@ export async function signInAsPlayer(
 export async function signInAsPlayerViaRequest(
   request: APIRequestContext,
   steamId: string = DEFAULT_PLAYER_STEAM_ID,
-  name?: string
+  name?: string,
+  /** games: game ids to put on the player's profile (matchmaking needs its game there). */
+  options: { games?: string[] } = {}
 ): Promise<boolean> {
   try {
     const response = await request.post('/api/test/login-player', {
-      data: { steamId, ...(name ? { name } : {}) },
+      data: { steamId, ...(name ? { name } : {}), ...(options.games ? { games: options.games } : {}) },
     });
     if (!response.ok()) {
       console.error('login-player test helper failed:', await response.text());

@@ -192,7 +192,7 @@ interface Me {
 async function player(): Promise<{ ctx: APIRequestContext; id: string }> {
   const ctx = await playwrightRequest.newContext({ baseURL: BASE_URL });
   const id = `7656119${digits(10)}`;
-  expect(await signInAsPlayerViaRequest(ctx, id, `mm-${id.slice(-4)}`)).toBe(true);
+  expect(await signInAsPlayerViaRequest(ctx, id, `mm-${id.slice(-4)}`, { games: ['cs2'] })).toBe(true);
   return { ctx, id };
 }
 

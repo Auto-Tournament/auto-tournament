@@ -15,6 +15,7 @@
  */
 
 /* global AbortController */
+import { notificationService } from '../../../services/notificationService';
 import { randomInt } from 'crypto';
 import fetch from 'node-fetch';
 import { db } from '../../../config/database';
@@ -361,7 +362,17 @@ export const skinService = {
     }
     // The reveal shows at once on any page the player has open.
     const player = await db.queryOneAsync<{ id: string }>('SELECT id FROM players WHERE uid = ?', [playerUid]);
-    if (player) emitSkinsChanged(player.id);
+    if (player) {
+      emitSkinsChanged(player.id);
+      if (row?.id) {
+        await notificationService.notify(
+          player.id,
+          'skin',
+          { skinId: row.id, name: skin.name, weapon: skin.weaponName, rarity: skin.rarity, image: skin.image, source: source.label ?? source.source },
+          `skin:${row.id}`
+        );
+      }
+    }
     return row?.id ?? 0;
   },
 

@@ -695,6 +695,10 @@
       "description": "Virtual CS2 skins: inventories, loadouts, showcases and the admin inventory manager (platform only)."
     },
     {
+      "name": "Social",
+      "description": "Friends, friend requests, finding players, and the signed-in player's notifications (the bell)."
+    },
+    {
       "name": "Steam",
       "description": "Steam Web API lookups (profiles, avatars, key health)."
     },
@@ -7451,6 +7455,63 @@
         ]
       }
     },
+    "/api/matchmaking/invites/{partyId}/accept": {
+      "post": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "Join the party that invited you",
+        "description": "Same-site JSON. Leaves your current party first.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "partyId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Joined; your matchmaking state"
+          },
+          "404": {
+            "description": "The invite is gone"
+          },
+          "409": {
+            "description": "The party is searching or full",
+            "or you are answering a match": null
+          }
+        }
+      }
+    },
+    "/api/matchmaking/invites/{partyId}/decline": {
+      "post": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "Decline a party invite",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "partyId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Declined"
+          },
+          "404": {
+            "description": "The invite is gone"
+          }
+        }
+      }
+    },
     "/api/matchmaking/leaderboard": {
       "get": {
         "tags": [
@@ -7681,6 +7742,64 @@
           },
           "400": {
             "description": "Unknown mode"
+          }
+        }
+      }
+    },
+    "/api/matchmaking/party/invites": {
+      "post": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "Invite a player to your party",
+        "description": "Same-site JSON. Any member may invite; a solo player gets a party of one. The invite shows in their bell and pops up on any page they have open. The party holds at most the biggest mode, counting open invites.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "playerId": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Invited; your matchmaking state"
+          },
+          "404": {
+            "description": "No such player"
+          },
+          "409": {
+            "description": "Already in the party",
+            "or the party is full": null
+          }
+        }
+      }
+    },
+    "/api/matchmaking/party/invites/{playerId}": {
+      "delete": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "Take back an invite to your party",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "playerId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Taken back"
           }
         }
       }
@@ -11198,6 +11317,356 @@
         "responses": {
           "200": {
             "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/social/friends": {
+      "get": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "Your friends, and friend requests to and from you",
+        "description": "Friends come playing first, then searching, then online, then offline by when they were last on the site. Each has `online`, `lastSeenAt` and `activity` (searching in a mode, or playing a match).",
+        "responses": {
+          "200": {
+            "description": "Friends",
+            "incoming and sent requests": null
+          },
+          "401": {
+            "description": "Not signed in"
+          }
+        }
+      }
+    },
+    "/api/social/friends/requests": {
+      "post": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "Send a friend request",
+        "description": "Same-site JSON. If they already asked you, this accepts their request. Returns how you relate now.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "playerId": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "`relation`: sent or friend"
+          },
+          "400": {
+            "description": "Not a player",
+            "or yourself": null
+          },
+          "404": {
+            "description": "No such player"
+          },
+          "409": {
+            "description": "Too many requests waiting",
+            "or too many friends": null
+          }
+        }
+      }
+    },
+    "/api/social/friends/requests/{playerId}": {
+      "delete": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "Take back a friend request you sent",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "playerId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cancelled"
+          }
+        }
+      }
+    },
+    "/api/social/friends/requests/{playerId}/accept": {
+      "post": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "Accept a friend request",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "playerId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "You are friends"
+          },
+          "404": {
+            "description": "No request from them"
+          }
+        }
+      }
+    },
+    "/api/social/friends/requests/{playerId}/decline": {
+      "post": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "Decline a friend request",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "playerId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Declined (they are not told)"
+          }
+        }
+      }
+    },
+    "/api/social/friends/{playerId}": {
+      "delete": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "Remove a friend",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "playerId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Removed",
+            "on both sides": null
+          }
+        }
+      }
+    },
+    "/api/social/news": {
+      "post": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "Send news to every player (admin)",
+        "description": "A notice in every signed-in player's bell. `url` (optional) is where it leads.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "body": {
+                    "type": "string"
+                  },
+                  "url": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "`sent`: how many players got it"
+          },
+          "400": {
+            "description": "No title"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/social/notifications": {
+      "get": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "Your notifications (the bell)",
+        "description": "Newest first, 30 at a time (`before` = the last id you have). Kinds: party_invite, friend_request, friend_accepted, skin, highlight, tournament, news. An answered one carries `data.answer`.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "before",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "`items`, `unread` and `more`"
+          }
+        }
+      }
+    },
+    "/api/social/notifications/read": {
+      "post": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "Mark notifications read",
+        "description": "Same-site JSON. `ids` marks those; no `ids` marks all. Returns the unread count.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "`unread`"
+          }
+        }
+      }
+    },
+    "/api/social/people": {
+      "get": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "Find players to add or invite",
+        "description": "With `q` (two characters or more): players by name, or by Steam id or profile link. Without: people you played with or against lately who are not your friends yet. Each with how you relate.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Players"
+          }
+        }
+      }
+    },
+    "/api/social/relation/{playerId}": {
+      "get": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "How you relate to a player",
+        "description": "`self`, `friend`, `sent` (you asked), `incoming` (they asked) or `none`. For the buttons on a profile.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "playerId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The relation"
+          }
+        }
+      }
+    },
+    "/api/social/settings": {
+      "get": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "Your social settings",
+        "description": "`partyInvitesFrom`: who may invite you to a matchmaking party (everyone, friends, nobody).",
+        "responses": {
+          "200": {
+            "description": "The settings"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "Change your social settings",
+        "description": "Same-site JSON.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "partyInvitesFrom": {
+                    "type": "string",
+                    "enum": [
+                      "everyone",
+                      "friends",
+                      "nobody"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The settings",
+            "saved": null
+          },
+          "400": {
+            "description": "Not one of the choices"
           }
         }
       }

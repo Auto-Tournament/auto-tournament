@@ -1,3 +1,4 @@
+import { noticeTournamentStarted } from '../services/tournamentNotices';
 import express, { Router, Request, Response } from 'express';
 import { tournamentService } from '../services/tournamentService';
 import { scheduler } from '../core/scheduler';
@@ -1429,6 +1430,7 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
         const result = await scheduler.startTournament(tournamentId, baseUrl);
 
         if (result.success) {
+          void noticeTournamentStarted(tournamentId);
           log.success(result.message, {
             allocated: result.allocated,
             failed: result.failed,

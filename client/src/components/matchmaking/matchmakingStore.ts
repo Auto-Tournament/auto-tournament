@@ -22,7 +22,13 @@ export interface MatchmakingMe {
     members: string[];
     /** The members with names and avatars (older APIs: missing). */
     people?: Array<{ id: string; name: string; avatarUrl: string | null }>;
+    /** Players invited who have not answered yet (older APIs: missing). */
+    invited?: Array<{ id: string; name: string; avatarUrl: string | null }>;
   } | null;
+  /** Party members (or the viewer) not set up for the game yet; searching waits for them (older APIs: missing). */
+  notReady?: Array<{ id: string; name: string; missing: 'game' | 'account' }>;
+  /** Open invites to the viewer from other parties, newest first (older APIs: missing). */
+  invites?: Array<{ partyId: string; from: { id: string; name: string; avatarUrl: string | null }; mode: string; size: number }>;
   queue: { mode: string; queuedAt: number; status: string } | null;
   /** Players searching right now, per mode. */
   queueCounts?: Record<string, number>;

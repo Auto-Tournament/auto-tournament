@@ -12,6 +12,7 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { emitSocialChanged, isPlayerOnline, onPresence } from './socketService';
 import { notificationService } from './notificationService';
+import { canInvite, INVITE_POLICIES, invitePolicy, type InvitePolicy } from './gameReadiness';
 
 export class SocialError extends Error {
   constructor(
@@ -36,7 +37,11 @@ export interface FriendView extends Person {
   /** What they are doing on the platform right now, if anything. */
   activity: { kind: 'searching'; mode: string } | { kind: 'playing'; matchSlug: string; label: string } | null;
   since: number;
+  /** Whether you can invite them to a CS2 party: true, or why not. */
+  invite: Invitable;
 }
+
+export type Invitable = true | 'nobody' | 'friends' | 'no_game';
 
 export type Relation = 'self' | 'friend' | 'sent' | 'incoming' | 'none';
 
@@ -117,16 +122,18 @@ export const socialService = {
       [playerId]
     );
     const doing = await activities(rows.map((r) => r.id));
-    const friends: FriendView[] = rows.map((r) => {
+    const friends: FriendView[] = [];
+    for (const r of rows) {
       const online = isPlayerOnline(r.id);
-      return {
+      friends.push({
         ...person(r),
         online,
         lastSeenAt: online || r.last_seen_at === null ? null : Number(r.last_seen_at),
         activity: doing.get(r.id) ?? null,
         since: Number(r.created_at),
-      };
-    });
+        invite: await canInvite(playerId, r.id, 'cs2'),
+      });
+    }
     // Playing, then searching, then online, then offline by when they were last here.
     const rank = (f: FriendView) => (f.activity?.kind === 'playing' ? 0 : f.activity ? 1 : f.online ? 2 : 3);
     friends.sort((a, b) => rank(a) - rank(b) || (b.lastSeenAt ?? 0) - (a.lastSeenAt ?? 0));
@@ -240,7 +247,7 @@ export const socialService = {
   },
 
   /** Players by name (or exact Steam id, or a Steam profile link), with how they relate to the caller. */
-  async search(playerId: string, query: unknown): Promise<Array<Person & { relation: Relation; matches: number }>> {
+  async search(playerId: string, query: unknown): Promise<Array<Person & { relation: Relation; matches: number; invite: Invitable }>> {
     const q = typeof query === 'string' ? query.trim().slice(0, 100) : '';
     if (q.length < 2) return [];
     const steamId = /(?:^|profiles\/)(7656\d{13})\b/.exec(q)?.[1];
@@ -258,7 +265,7 @@ export const socialService = {
   },
 
   /** People the player played with or against lately, most recent first, who are not friends yet. */
-  async recent(playerId: string): Promise<Array<Person & { relation: Relation; matches: number }>> {
+  async recent(playerId: string): Promise<Array<Person & { relation: Relation; matches: number; invite: Invitable }>> {
     const rows = await db.queryAsync<PersonRow & { matches: number | string }>(
       `SELECT p.id, p.name, p.avatar_url, COUNT(DISTINCT o.match_slug) AS matches
          FROM player_match_stats s
@@ -276,7 +283,28 @@ export const socialService = {
 
   async withRelations(playerId: string, rows: Array<PersonRow & { matches: number | string }>) {
     const out = [];
-    for (const r of rows) out.push({ ...person(r), matches: Number(r.matches), relation: await this.relation(playerId, r.id) });
+    for (const r of rows) {
+      out.push({
+        ...person(r),
+        matches: Number(r.matches),
+        relation: await this.relation(playerId, r.id),
+        invite: (await canInvite(playerId, r.id, 'cs2')) as Invitable,
+      });
+    }
     return out;
+  },
+
+  async settings(playerId: string): Promise<{ partyInvitesFrom: InvitePolicy }> {
+    return { partyInvitesFrom: await invitePolicy(playerId) };
+  },
+
+  async saveSettings(playerId: string, input: { partyInvitesFrom?: unknown }): Promise<{ partyInvitesFrom: InvitePolicy }> {
+    if (input.partyInvitesFrom !== undefined) {
+      if (!INVITE_POLICIES.includes(input.partyInvitesFrom as InvitePolicy)) {
+        throw new SocialError(400, 'invalid_setting', `partyInvitesFrom is one of ${INVITE_POLICIES.join(', ')}`);
+      }
+      await db.runAsync('UPDATE players SET party_invites_from = ? WHERE id = ?', [input.partyInvitesFrom, playerId]);
+    }
+    return this.settings(playerId);
   },
 };

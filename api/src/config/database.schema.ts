@@ -273,7 +273,8 @@ export function getSchemaSQL(): string {
       uid UUID NOT NULL DEFAULT gen_random_uuid(), -- Stable account id, never regenerated. Player-owned data (player_games, ...) keys on this rather than the Steam ID, so 3.1 can have accounts without Steam
       games_prompt_dismissed_at INTEGER, -- Epoch when the player skipped or answered the "What do you play?" dialog; NULL = show it while they have no games
       last_sign_in_at INTEGER, -- Epoch of the player's last sign-in (Steam or SSO); NULL = never since this column exists. Admin-only, never in a public response
-      last_seen_at INTEGER -- Epoch the player last closed the site (their last socket left); shown to their friends only
+      last_seen_at INTEGER, -- Epoch the player last closed the site (their last socket left); shown to their friends only
+      party_invites_from TEXT NOT NULL DEFAULT 'everyone' -- Who may invite them to a matchmaking party: 'everyone' | 'friends' | 'nobody'
     );
 
     CREATE INDEX IF NOT EXISTS idx_players_name ON players(name);
