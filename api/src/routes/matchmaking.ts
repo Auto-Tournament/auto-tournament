@@ -217,6 +217,40 @@ router.post(
 
 /**
  * @openapi
+ * /api/matchmaking/party/mode:
+ *   put:
+ *     tags: [Matchmaking]
+ *     summary: Pick the party's mode
+ *     description: Same-site JSON. Party leader only (a solo player gets a party of one). Not while searching.
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               mode: { type: string, example: 2v2 }
+ *     responses:
+ *       200:
+ *         description: The party, in its new mode
+ *       400:
+ *         description: Unknown mode
+ *       403:
+ *         description: Not the party leader
+ *       409:
+ *         description: Searching, the mode is off, or the party is too big for it
+ */
+router.put(
+  '/party/mode',
+  requirePlayer,
+  sameSiteJson,
+  handle('change the party mode', async (req, res) => {
+    await matchmakingService.setPartyMode(me(req), req.body?.mode);
+    return res.json({ success: true, ...(await matchmakingService.me(me(req))) });
+  })
+);
+
+/**
+ * @openapi
  * /api/matchmaking/party/leave:
  *   post:
  *     tags: [Matchmaking]

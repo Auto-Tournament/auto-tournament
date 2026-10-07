@@ -28,6 +28,7 @@ import { pageTitle } from '../utils/pageTitle';
 import {
   matchmakingAction,
   playersFor,
+  teamSizeOf,
   secondsUntil,
   useMatchmaking,
 } from '../components/matchmaking/matchmakingStore';
@@ -318,7 +319,15 @@ export default function Play() {
   const totalQueued = Object.values(counts).reduce((a, b) => a + b, 0);
   const people =
     party?.people ?? party?.members.map((id) => ({ id, name: id, avatarUrl: null })) ?? [];
-  const lockedMode = !!party && party.members.length > 1;
+  // The leader picks the party's mode (saved, so everyone in it sees it); a
+  // party can't pick a mode it's too big for, and members only watch.
+  const partySize = party?.members.length ?? 1;
+  const modeOpen = (m: string) => m === mode || (isLeader && !searching && partySize <= teamSizeOf(m));
+  const pickMode = (m: string) => {
+    if (m === mode || busy) return;
+    if (party) void run(() => matchmakingAction('PUT', '/party/mode', { mode: m }));
+    else setPicked(m);
+  };
 
   const copyInvite = async () => {
     if (!party) {
@@ -662,8 +671,8 @@ export default function Play() {
                           key={m}
                           role="radio"
                           aria-checked={selected}
-                          disabled={lockedMode && !selected}
-                          onClick={() => setPicked(m)}
+                          disabled={!modeOpen(m)}
+                          onClick={() => pickMode(m)}
                           data-testid={`mm-mode-${m}`}
                           sx={{
                             height: { xs: 200, md: 280 },
