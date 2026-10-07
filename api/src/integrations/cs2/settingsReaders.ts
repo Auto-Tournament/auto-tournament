@@ -389,5 +389,7 @@ export async function readCs2InstanceSettings(): Promise<Record<string, unknown>
     atFfwEnabled: atEnhanced.at_ffw_enabled,
     atFfwTime: atEnhanced.at_ffw_time,
     atDemoRecordingEnabled: atEnhanced.at_demo_recording_enabled,
+    // The Auto Tournament logo on highlight videos: on unless turned off.
+    highlightsWatermark: (await settingsService.getSetting('highlights_watermark'))?.trim() !== '0',
   };
 }
