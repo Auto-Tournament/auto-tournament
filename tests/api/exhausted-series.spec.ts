@@ -201,4 +201,41 @@ test.describe.serial('Series out of maps without series_end', () => {
       expect(again.status()).toBe(409);
     }
   );
+  test(
+    'series_end with no winner in an elimination bracket: waits for an admin, never completes winnerless',
+    { tag: ['@api', '@regression'] },
+    async ({ request }) => {
+      // NTLAN bracket simulation (2026-10-07): a Bo1 semi ended 2-2, the server
+      // sent series_end with winner none, and the final waited forever.
+      await startBo3(request, [team1, team2]);
+      const slug = (await findMatchByTeams(request, team1.id, team2.id))!.slug;
+
+      await sendMapResult(request, slug, 0, [2, 2], [0, 0], 'none');
+      const end = await request.post(`/api/events/${slug}`, {
+        headers: HEADERS,
+        data: {
+          event: 'series_end',
+          matchid: slug,
+          team1_series_score: 0,
+          team2_series_score: 0,
+          winner: { side: 'none', team: 'none' },
+          time_until_restore: 10,
+        },
+      });
+      expect(end.ok(), await end.text()).toBe(true);
+
+      await expect
+        .poll(async () => (await getMatch(request, slug)).status, { timeout: 15000 })
+        .toBe('needs_decision');
+
+      const set = await request.post(`/api/matches/${slug}/winner`, {
+        headers: getAuthHeader(),
+        data: { winner: 'team2' },
+      });
+      expect(set.ok(), await set.text()).toBe(true);
+      const match = await getMatch(request, slug);
+      expect(match.status).toBe('completed');
+      expect(match.winner?.id).toBe(match.team2?.id);
+    }
+  );
 });
