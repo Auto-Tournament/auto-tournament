@@ -307,15 +307,14 @@ function teamDamage(lines: LivePlayerStatLine[] | undefined): number {
 }
 
 /**
- * Finish a series whose maps are all played but that has no series winner
- * (see utils/exhaustedSeries). Picks the winner by maps, then total rounds,
- * then map-0 damage; if still level, parks the match for an admin decision.
+ * Who wins a series that ended level: maps, then total rounds, then map-0
+ * damage (utils/exhaustedSeries). No winner when all three are level.
  */
-async function finishExhaustedSeries(
+function decideLevelSeries(
   match: DbMatchRow,
   results: Awaited<ReturnType<typeof getMapResults>>,
   totalMaps: number
-): Promise<void> {
+) {
   const inSeries = results.filter((r) => r.mapNumber >= 0 && r.mapNumber < totalMaps);
   const map0 = matchLiveStatsService.getStats(match.slug)?.playerStatsByMap?.[0];
   const map0Damage = map0
@@ -331,6 +330,50 @@ async function finishExhaustedSeries(
     map0Damage,
     mapWinners: inSeries.map((r) => `${r.mapNumber}:${r.winnerTeam ?? 'none'}`).join(','),
   };
+  return { inSeries, decision, summary };
+}
+
+/** Park a series nobody won for an admin, who sets the winner (POST /api/matches/:slug/winner). */
+async function awaitAdminDecision(
+  match: DbMatchRow,
+  inSeries: Awaited<ReturnType<typeof getMapResults>>,
+  results: Awaited<ReturnType<typeof getMapResults>>,
+  decision: ReturnType<typeof decideExhaustedSeries>,
+  totalMaps: number
+): Promise<void> {
+  const lastMapIndex = Math.min(
+    totalMaps - 1,
+    inSeries.reduce((max, r) => Math.max(max, r.mapNumber), 0)
+  );
+  await db.updateAsync(
+    'matches',
+    { status: NEEDS_DECISION_STATUS, current_map: null, map_number: lastMapIndex },
+    'id = ?',
+    [match.id]
+  );
+  await releaseMatch(match);
+  emitMatchUpdate({
+    id: match.id,
+    slug: match.slug,
+    status: NEEDS_DECISION_STATUS,
+    team1Score: decision.team1Maps,
+    team2Score: decision.team2Maps,
+    mapResults: results,
+  });
+  emitBracketUpdate({ action: 'match_status', matchSlug: match.slug, status: NEEDS_DECISION_STATUS });
+}
+
+/**
+ * Finish a series whose maps are all played but that has no series winner
+ * (see utils/exhaustedSeries). Picks the winner by maps, then total rounds,
+ * then map-0 damage; if still level, parks the match for an admin decision.
+ */
+async function finishExhaustedSeries(
+  match: DbMatchRow,
+  results: Awaited<ReturnType<typeof getMapResults>>,
+  totalMaps: number
+): Promise<void> {
+  const { inSeries, decision, summary } = decideLevelSeries(match, results, totalMaps);
 
   if (decision.winner) {
     log.warn(
@@ -350,30 +393,11 @@ async function finishExhaustedSeries(
     return;
   }
 
-  const lastMapIndex = Math.min(
-    totalMaps - 1,
-    inSeries.reduce((max, r) => Math.max(max, r.mapNumber), 0)
-  );
   log.warn(
     `[SERIES GUARD] ${match.slug} ran out of maps level on maps, rounds and map-0 damage; waiting for an admin to set the winner`,
     summary
   );
-  await db.updateAsync(
-    'matches',
-    { status: NEEDS_DECISION_STATUS, current_map: null, map_number: lastMapIndex },
-    'id = ?',
-    [match.id]
-  );
-  await releaseMatch(match);
-  emitMatchUpdate({
-    id: match.id,
-    slug: match.slug,
-    status: NEEDS_DECISION_STATUS,
-    team1Score: decision.team1Maps,
-    team2Score: decision.team2Maps,
-    mapResults: results,
-  });
-  emitBracketUpdate({ action: 'match_status', matchSlug: match.slug, status: NEEDS_DECISION_STATUS });
+  await awaitAdminDecision(match, inSeries, results, decision, totalMaps);
 }
 
 // ---------------------------------------------------------------------------
@@ -686,6 +710,41 @@ async function processSeriesEnd(
       return true;
     }
 
+    // An elimination match must have a winner: the next match waits for it.
+    // A level result (a server without the damage tiebreak, a manual result,
+    // a bug) is decided like a series that ran out of maps, or waits for an
+    // admin, never completed without one.
+    if (isDrawFromScores && (await isEliminationMatch(match))) {
+      const results = await getMapResults(matchSlug);
+      const { inSeries, decision, summary } = decideLevelSeries(
+        match,
+        results,
+        Math.max(1, description.seriesLength)
+      );
+      if (decision.winner) {
+        log.warn(
+          `[SERIES GUARD] ${matchSlug} ended level in an elimination bracket; finishing it for ${decision.winner} (decided by ${decision.decidedBy})`,
+          summary
+        );
+        winnerId = decision.winner === 'team1' ? match.team1_id ?? null : match.team2_id ?? null;
+      } else {
+        log.warn(
+          `[SERIES GUARD] ${matchSlug} ended level in an elimination bracket on maps, rounds and map-0 damage; waiting for an admin to set the winner`,
+          summary
+        );
+        await awaitAdminDecision(
+          match,
+          inSeries,
+          results,
+          decision,
+          Math.max(1, description.seriesLength)
+        );
+        return true;
+      }
+    }
+  }
+
+  if (!winnerId) {
     // For non-manual matches, treat a true series draw (no winner and equal
     // series scores) as a completed match with no winner_id. This ensures that
     // tie games no longer appear as "live" forever and that player stats are
