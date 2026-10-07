@@ -466,16 +466,17 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
       sb.close();
     }
   });
-  test('1v1: off until an admin turns it on, then two players make a match', TAGS, async () => {
+  test('1v1: on by default, refused when an admin turns it off, then two players make a match', TAGS, async () => {
     const [a, b] = await Promise.all([player(), player()]);
     contexts.push(a.ctx, b.ctx);
-    const off = await a.ctx.post('/api/matchmaking/queue', { data: { mode: '1v1' } });
-    expect(off.status()).toBe(409);
-    expect((await off.json()).code).toBe('mode_off');
     expect((await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5', 'bogus'] } })).status()).toBe(400);
-    expect((await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5', '1v1'] } })).ok()).toBe(true);
+    expect((await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5'] } })).ok()).toBe(true);
     try {
-      expect((await me(a.ctx)).modes).toEqual(['5v5', '1v1']);
+      const off = await a.ctx.post('/api/matchmaking/queue', { data: { mode: '1v1' } });
+      expect(off.status()).toBe(409);
+      expect((await off.json()).code).toBe('mode_off');
+      expect((await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5', '2v2', '1v1'] } })).ok()).toBe(true);
+      expect((await me(a.ctx)).modes).toEqual(['5v5', '2v2', '1v1']);
       for (const p of [a, b]) {
         const res = await p.ctx.post('/api/matchmaking/queue', { data: { mode: '1v1' } });
         expect(res.ok(), await res.text()).toBe(true);
