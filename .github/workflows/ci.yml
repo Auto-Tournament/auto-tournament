@@ -358,9 +358,18 @@ jobs:
         if: steps.pw-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
 
+      # apt sometimes stalls on a slow mirror; without a limit that took the
+      # whole shard's 15 minutes (2026-10-07, several PRs). Three tries of
+      # three minutes each.
       - name: Install Playwright system deps
         if: steps.pw-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium
+        timeout-minutes: 10
+        run: |
+          for i in 1 2 3; do
+            timeout 180 npx playwright install-deps chromium && exit 0
+            echo "::warning::playwright install-deps attempt $i stalled or failed; retrying"
+          done
+          exit 1
 
       # Poll until the build job has uploaded the image, or give up as soon as
       # that job ends without success.
