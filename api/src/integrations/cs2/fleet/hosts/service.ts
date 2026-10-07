@@ -47,10 +47,16 @@ function pluginSetOfMeta(meta: Record<string, unknown> | null): PluginSet | null
 }
 
 const ROTATION_CHECK_MS = 60 * 60 * 1000;
+/** A command csm hasn't started (no answer, no progress) this long after it reached the machine fails. */
+const COMMAND_NOT_STARTED_S = 3 * 60;
+/** A command whose progress stopped this long ago fails (CS2 downloads report as they go). */
+const COMMAND_STALLED_S = 15 * 60;
+const QUIET_CHECK_MS = 30 * 1000;
 
 const gateway = new HostGateway();
 let inventoryListener: ((hostId: string, payload: HostInventoryPayload) => void) | null = null;
 let rotationTimer: NodeJS.Timeout | null = null;
+let quietTimer: NodeJS.Timeout | null = null;
 
 gateway.onHostReady(async (hostId) => {
   const due = await registry.hostsDueForRotation();
@@ -411,6 +417,21 @@ export async function startFleetHosts(server?: HttpServer): Promise<void> {
     };
     hostEvents.on('inventory', inventoryListener);
   }
+  // csm commands nobody answers fail with a reason instead of waiting forever.
+  if (!quietTimer) {
+    quietTimer = setInterval(() => {
+      void registry
+        .timeOutQuietCommands({ notStartedS: COMMAND_NOT_STARTED_S, stalledS: COMMAND_STALLED_S })
+        .then((records) => {
+          for (const record of records) {
+            log.warn(`[FLEET-HOST] ${record.hostId}: ${record.type} ${record.id} timed out: ${record.errorMessage}`);
+            hostEvents.emit('result', record.hostId, record);
+          }
+        })
+        .catch((error) => log.warn(`[FLEET-HOST] command timeout check failed: ${(error as Error).message}`));
+    }, QUIET_CHECK_MS);
+    quietTimer.unref?.();
+  }
   if (!rotationTimer) {
     rotationTimer = setInterval(() => {
       void rotateDue().catch((error) => log.warn(`[FLEET-HOST] rotation check failed: ${(error as Error).message}`));
@@ -423,5 +444,7 @@ export function stopFleetHosts(): void {
   stopAutoUpdates();
   if (rotationTimer) clearInterval(rotationTimer);
   rotationTimer = null;
+  if (quietTimer) clearInterval(quietTimer);
+  quietTimer = null;
   gateway.shutdown();
 }
