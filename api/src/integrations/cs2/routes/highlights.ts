@@ -39,6 +39,7 @@ import {
   failTournamentReel,
   favouriteOf,
   matchReelView,
+  recordingQueue,
   playerClips,
   playerReelView,
   playerReelViews,
@@ -212,17 +213,19 @@ router.put('/players/me/highlights/favourite', async (req: Request, res: Respons
 
 router.get('/players/:playerId/highlights', async (req: Request, res: Response) => {
   const all = req.query.all === '1';
-  const [reels, highlights, favourite, viewer] = await Promise.all([
+  const [reels, highlights, favourite, viewer, queue] = await Promise.all([
     playerReelViews(req.params.playerId, all ? 200 : 12),
     playerClips(req.params.playerId, all ? 300 : 24),
     favouriteOf(req.params.playerId),
     resolveViewerAccount(req),
+    recordingQueue(req.params.playerId),
   ]);
   return res.json({
     success: true,
     reels,
     highlights,
     favourite,
+    queue,
     isOwn: !!viewer.playerId && viewer.playerId === req.params.playerId && !viewer.isImpersonating,
   });
 });

@@ -2016,7 +2016,10 @@
       "players_one": "{{count}} spiller",
       "players_other": "{{count}} spillere",
       "none": "Ingen høydepunkter ennå. De dukker opp her etter hvert som demoene tas opp.",
-      "playOfTheTournament": "Turneringens spill"
-    }
+      "playOfTheTournament": "Turneringens spill",
+      "firstSoon": "De første spillene dukker opp her snart"
+    },
+    "readyIn": "klar om omtrent {{minutes}} min",
+    "matchReelRecording": "Kampreel · tas opp"
   }
 }

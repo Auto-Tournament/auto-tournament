@@ -26,7 +26,7 @@ import {
   type HighlightFilter,
   type TournamentHighlights,
 } from './data';
-import { HighlightCard, KindBadge, thumbAt, VideoThumb } from './HighlightCard';
+import { HighlightCard, KindBadge, RecordingCard, thumbAt, VideoThumb } from './HighlightCard';
 import { Chip } from './PlayerHighlightsPage';
 
 /** A tournament's highlights, loaded once per tournament. */
@@ -143,6 +143,7 @@ export function TournamentHighlightsTab({ tournamentId, probe, onAvailability }:
   const [filter, setFilter] = useState<HighlightFilter>('all');
   const [all, setAll] = useState(false);
   const any = !!h && (h.plays.length > 0 || h.matches.length > 0 || !!h.reel?.video);
+  const recording = !!h && h.matches.some((m) => m.recording);
   useEffect(() => {
     if (probe && h) onAvailability?.(any);
   }, [probe, h, any, onAvailability]);
@@ -161,6 +162,16 @@ export function TournamentHighlightsTab({ tournamentId, probe, onAvailability }:
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }} data-testid="cs2-tournament-highlights">
       <Hero h={h} tournamentId={tournamentId} height={{ xs: 260, md: 400 }} />
+
+      {h.plays.length === 0 && recording && (
+        <Box component="section" aria-label={t('highlights.tournament.topPlays')}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', sm: 'repeat(2, minmax(0,1fr))', md: 'repeat(4, minmax(0,1fr))' }, gap: 1.5 }}>
+            {[0, 1, 2, 3].map((i) => (
+              <RecordingCard key={i} label={t('highlights.recording')} hint={i === 0 ? t('highlights.tournament.firstSoon') : undefined} />
+            ))}
+          </Box>
+        </Box>
+      )}
 
       {h.plays.length > 0 && (
         <Box component="section" aria-labelledby="hl-top-plays">
